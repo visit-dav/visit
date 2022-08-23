@@ -211,11 +211,16 @@ Blueprint_MultiCompArray_To_VTKDataArray(const Node &n,
 }
 
 // ****************************************************************************
+// ****************************************************************************
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 //                               BLUEPRINT --> VTK
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 // ****************************************************************************
+// ****************************************************************************
 
+// ****************************************************************************
+//                             Helper functions
+// ****************************************************************************
 
 // ****************************************************************************
 //  Method: ConduitArrayToVTKDataArray
@@ -866,6 +871,10 @@ UnstructuredTopologyToVTKUnstructuredGrid(int domain,
 }
 
 // ****************************************************************************
+//                             API functions
+// ****************************************************************************
+
+// ****************************************************************************
 //  Method: avtConduitBlueprintDataAdaptor::BlueprintToVTK::MeshToVTK
 //
 //  Modifications:
@@ -944,9 +953,15 @@ avtConduitBlueprintDataAdaptor::BlueprintToVTK::FieldToVTK(
 }
 
 // ****************************************************************************
+// ****************************************************************************
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 //                               VTK --> BLUEPRINT
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+// ****************************************************************************
+// ****************************************************************************
+
+// ****************************************************************************
+//                             Helper functions
 // ****************************************************************************
 
 void
@@ -1078,7 +1093,9 @@ void vtkPointsToNode(Node &node, vtkPoints *points, const int dims)
 }
 
 // ****************************************************************************
-void vtkUnstructuredToNode(Node &node, vtkUnstructuredGrid *grid, const int dims)
+void vtkUnstructuredToNode(Node &node, 
+                           vtkUnstructuredGrid *grid, 
+                           const int dims)
 {
   const int npts = grid->GetNumberOfPoints();
   const int nzones = grid->GetNumberOfCells();
@@ -1086,7 +1103,8 @@ void vtkUnstructuredToNode(Node &node, vtkUnstructuredGrid *grid, const int dims
   if(nzones == 0)
   {
     AVT_CONDUIT_BP_EXCEPTION1(InvalidVariableException,
-                              "Unstructured grids must have at least one zone");
+                              "Unstructured grids must have at least one "
+                              "zone");
   }
 
   bool single_shape = true;
@@ -1104,7 +1122,8 @@ void vtkUnstructuredToNode(Node &node, vtkUnstructuredGrid *grid, const int dims
   if(!single_shape)
   {
     AVT_CONDUIT_BP_EXCEPTION1(InvalidVariableException,
-                              "Only usntructured grids with a single cell type is currently supported");
+                              "Only usntructured grids with a single cell type"
+                              " is currently supported");
   }
 
   const std::string shape_name = VTKCellTypeToElementShapeName(cell_type);
@@ -1150,6 +1169,10 @@ void vtkUnstructuredToNode(Node &node, vtkUnstructuredGrid *grid, const int dims
 
   }
 }
+
+// ****************************************************************************
+//                             API functions
+// ****************************************************************************
 
 // ****************************************************************************
 //  Method: avtConduitBlueprintDataAdaptor::VTKToBlueprint::VTKFieldNameToBlueprint
@@ -1360,12 +1383,15 @@ avtConduitBlueprintDataAdaptor::VTKToBlueprint::VTKToBlueprintMesh(
 
 // ****************************************************************************
 // ****************************************************************************
-///
-/// MFEM Data Adaptor Functions
-///
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+//                               MFEM --> BLUEPRINT
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 // ****************************************************************************
 // ****************************************************************************
 
+// ****************************************************************************
+//                             Helper functions
+// ****************************************************************************
 
 // ****************************************************************************
 int
@@ -1433,6 +1459,9 @@ ShapeNameToGeomType(const std::string &shape_name)
    return res;
 }
 
+// ****************************************************************************
+//                             API functions
+// ****************************************************************************
 
 //---------------------------------------------------------------------------//
 //---------------------------------------------------------------------------//
