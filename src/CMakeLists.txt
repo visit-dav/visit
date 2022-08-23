@@ -1462,8 +1462,10 @@ IF(NOT VISIT_BUILD_MINIMAL_PLUGINS OR VISIT_SELECTED_DATABASE_PLUGINS)
     INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindPIDX.cmake)
 
     # Configure VTKh support.
-    if(VISIT_VTKH_DIR)
-        INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindVTKh.cmake)
+    if(VTK_VERSION VERSION_EQUAL "8.1.0")
+        if(VISIT_VTKH_DIR)
+            INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindVTKh.cmake)
+        endif()
     endif()
 
     # Configure GFortran support.

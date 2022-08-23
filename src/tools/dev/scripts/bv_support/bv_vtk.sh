@@ -572,7 +572,7 @@ function apply_vtk9_libxmlversionheader_patch
   
   configure_file(include/libxml/xmlversion.h.in include/libxml/xmlversion.h)
 ! #if (FALSE) # XXX(kitware): mask installation rules
-! install(FILES ${CMAKE_CURRENT_BINARY_DIR}/include/libxml/xmlversion.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/libxml2/libxml)
+! install(FILES ${CMAKE_CURRENT_BINARY_DIR}/include/libxml/xmlversion.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/vtk-9.1/vtklibxml2/include/libxml)
 ! #endif ()
   
   if(MSVC)
