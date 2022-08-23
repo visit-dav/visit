@@ -49,7 +49,6 @@
 #include "conduit_blueprint_mpi.hpp"
 #endif
 
-#include "avtBlueprintDataAdaptor.h"
 #include "avtBlueprintLogging.h"
 
 using     std::string;
