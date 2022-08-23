@@ -68,12 +68,34 @@ using std::string;
 using namespace conduit;
 using namespace mfem;
 
+// ****************************************************************************
+//  Method: ConduitArrayToVTKDataArray
+//
+//  Purpose: Initialize the conduit blueprint data adaptor.
+//
+//  Programmer: Justin Privitera
+//  Creation:   Mon Aug 22 17:15:06 PDT 2022
+//
+//  Modifications:
+//
+// ****************************************************************************
 void
 avtConduitBlueprintDataAdaptor::Initialize()
 {
     SetInfoWarningHandlers();
 }
 
+// ****************************************************************************
+//  Method: ConduitArrayToVTKDataArray
+//
+//  Purpose: Set the info and warning handlers for conduit info and warnings.
+//
+//  Programmer: Justin Privitera
+//  Creation:   Mon Aug 22 17:15:06 PDT 2022
+//
+//  Modifications:
+//
+// ****************************************************************************
 void
 avtConduitBlueprintDataAdaptor::SetInfoWarningHandlers()
 {

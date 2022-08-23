@@ -62,6 +62,9 @@ class vtkDataArray;
 //  Creation:    May 31, 2022
 //
 //  Modifications:
+//      Justin Privitera, Mon Aug 22 17:15:06 PDT 2022
+//      Added all functions, mostly taken from the blueprint plugin data 
+//      adaptor.
 //
 // ****************************************************************************
 
@@ -97,8 +100,8 @@ public:
                                          vtkDataSet* dataset);
 
         static void VTKToBlueprintMesh(conduit::Node &mesh,
-                                   vtkDataSet* dataset,
-                                   const int ndims);
+                                       vtkDataSet* dataset,
+                                       const int ndims);
     };
 
     class BlueprintToMFEM
