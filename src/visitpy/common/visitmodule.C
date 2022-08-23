@@ -1306,6 +1306,7 @@ CreateDictionaryFromDBOptions(DBOptionsAttributes &opts)
             PyDict_SetItemString(dict,name,PyString_FromString(opts.GetString(name).c_str()));
             break;
           case DBOptionsAttributes::Enum:
+          {
             // If you modify this section, also check the Enum case in
             // FillDBOptionsFromDictionary
             int enumIndex = opts.GetEnum(name);
@@ -1322,6 +1323,13 @@ CreateDictionaryFromDBOptions(DBOptionsAttributes &opts)
                 }
             }
             PyDict_SetItemString(dict,name,PyString_FromString(itemString.c_str()));
+            break;
+          }
+          case DBOptionsAttributes::MultiLineString:
+            PyDict_SetItemString(dict,name,PyString_FromString(opts.GetMultiLineString(name).c_str()));
+            break;
+          default:
+            PyDict_SetItemString(dict,name,PyString_FromString("ERROR - Unhandled DBOptionsAttribute type - ERROR"));
         }
         delete[] name;
     }
