@@ -6768,7 +6768,7 @@ VisWindow::GetCompactDomainsAutoThreshold() const
     return rendering->GetCompactDomainsAutoThreshold();
 }
 
-#ifdef VISIT_OSPRAY
+#if defined(VISIT_OSPRAY) || defined(HAVE_OSPRAY)
 // ****************************************************************************
 // Method: VisWindow::SetOsprayRendering
 //
@@ -6782,6 +6782,8 @@ VisWindow::GetCompactDomainsAutoThreshold() const
 // Creation:   Tue 24 Apr 2018 11:15:25 AM EDT
 //
 // Modifications:
+//   Kathleen Biagas, Wed Aug 17, 2022
+//   Send flag to view and interactions.
 //
 // ****************************************************************************
 
@@ -6791,6 +6793,10 @@ VisWindow::SetOsprayRendering(bool enabled)
     if (enabled != rendering->GetOsprayRendering())
     {
         rendering->SetOsprayRendering(enabled);
+#ifdef HAVE_OSPRAY
+        view->SetOsprayRendering(enabled);
+        interactions->SetOsprayRendering(enabled);
+#endif
     }
 }
 
