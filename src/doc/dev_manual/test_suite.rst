@@ -27,6 +27,7 @@ The regression suite relies on having a working VisIt_ build and test data avail
 Our test data and baselines are stored using `git lfs <https://www.atlassian.com/git/tutorials/git-lfs>`__.
 Git lfs is an extension to git to *effectively* support large, binary files.
 To run VisIt_'s regression suite, git lfs needs to be installed and the command ``git lfs pull`` needs be run.
+Any time ``git pull`` operations update lfs'd files, ``git lfs pull`` may again need to be run.
 
 Git lfs handles files similarly to the way C/C++ handles pointers except that a pointer file (the git part) and the real file to which the pointer refers (the lfs part) both have the same name.
 When a file is in its *pointer* state, its contents look something like ::
