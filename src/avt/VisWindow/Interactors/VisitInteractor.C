@@ -30,12 +30,15 @@ ViewCallback   VisitInteractor::viewCallback     = NULL;
 //    Hank Childs, Mon Mar 18 13:31:30 PST 2002
 //    Initialized data members about which buttons are pushed.
 //
-//    Kathleen Bonnell, Fri Dec 13 14:07:15 PST 2002   
-//    Initialized new data members Center, MotionFactor and OldX/OldY. 
+//    Kathleen Bonnell, Fri Dec 13 14:07:15 PST 2002
+//    Initialized new data members Center, MotionFactor and OldX/OldY.
 //    Added call to UseTimersOn().
 //
-//    Kathleen Bonnell, Tue Jan 11 16:06:33 PST 2005 
-//    Initialized spinOldX, spinOldY, spinNewX, spinNewY. 
+//    Kathleen Bonnell, Tue Jan 11 16:06:33 PST 2005
+//    Initialized spinOldX, spinOldY, spinNewX, spinNewY.
+//
+//    Kathleen Biagas, Wed Aug 17, 2022
+//    Added useOSPray.
 //
 // ****************************************************************************
 
@@ -57,6 +60,7 @@ VisitInteractor::VisitInteractor(VisWindowInteractorProxy &p) : proxy(p)
     spinOldY = 0.f;
     spinNewX = 0;
     spinNewY = 0;
+    useOSPRay = false;
 }
 
 // ****************************************************************************
@@ -124,9 +128,9 @@ VisitInteractor::RegisterViewCallback(ViewCallback vc)
 //    Eric Brugger, Tue Aug 21 09:56:49 PDT 2001
 //    I removed the avtViewInfo argument from viewCallback.
 //
-//    Kathleen Bonnell, Fri Dec 13 16:13:00 PST 2002 
+//    Kathleen Bonnell, Fri Dec 13 16:13:00 PST 2002
 //    Removed arguments to reflect vtk's new interactor api. Removed call
-//    to parent class' OnMouseMove method. 
+//    to parent class' OnMouseMove method.
 //
 // ****************************************************************************
 
@@ -234,7 +238,7 @@ VisitInteractor::IssueViewCallback(bool inSpinMode)
 //  Creation:   May 19, 2000
 //
 //  Modifications:
-//    Kathleen Bonnell, Fri Dec 13 14:07:15 PST 2002  
+//    Kathleen Bonnell, Fri Dec 13 14:07:15 PST 2002
 //    Removed arguments to comply with vtk's new interactor interface.
 //    Values are now accessed from the RenderWindowInteractor.
 //
@@ -281,7 +285,7 @@ VisitInteractor::PrepTrackball()
 //    I moved the call to MotionBegin into the hotpoint interactor so it
 //    is not called twice.
 //
-//    Kathleen Bonnell, Fri Dec 13 14:07:15 PST 2002  
+//    Kathleen Bonnell, Fri Dec 13 14:07:15 PST 2002
 //    Removed arguments to comply with vtk's new interactor interface.
 //
 // ****************************************************************************
@@ -323,7 +327,7 @@ VisitInteractor::OnLeftButtonDown()
 //    I moved the call to MotionEnd into the hotpoint interactor so it
 //    is not called twice.
 //
-//    Kathleen Bonnell, Fri Dec 13 14:07:15 PST 2002  
+//    Kathleen Bonnell, Fri Dec 13 14:07:15 PST 2002
 //    Removed arguments to comply with vtk's new interactor interface.
 //
 // ****************************************************************************
@@ -367,7 +371,7 @@ VisitInteractor::OnLeftButtonUp()
 //    I moved the call to MotionBegin into the hotpoint interactor so it
 //    is not called twice.
 //
-//    Kathleen Bonnell, Fri Dec 13 14:07:15 PST 2002  
+//    Kathleen Bonnell, Fri Dec 13 14:07:15 PST 2002
 //    Removed arguments to comply with vtk's new interactor interface.
 //
 // ****************************************************************************
@@ -409,7 +413,7 @@ VisitInteractor::OnMiddleButtonDown()
 //    I moved the call to MotionBegin into the hotpoint interactor so it
 //    is not called twice.
 //
-//    Kathleen Bonnell, Fri Dec 13 14:07:15 PST 2002  
+//    Kathleen Bonnell, Fri Dec 13 14:07:15 PST 2002
 //    Removed arguments to comply with vtk's new interactor interface.
 //
 // ****************************************************************************
@@ -452,7 +456,7 @@ VisitInteractor::OnMiddleButtonUp()
 //    I removed the call to MotionBegin since we use the right button for
 //    the menu and having it generate a MotionBegin "event" is misleading.
 //
-//    Kathleen Bonnell, Fri Dec 13 14:07:15 PST 2002  
+//    Kathleen Bonnell, Fri Dec 13 14:07:15 PST 2002
 //    Removed arguments to comply with vtk's new interactor interface.
 //
 // ****************************************************************************
@@ -495,7 +499,7 @@ VisitInteractor::OnRightButtonDown()
 //    I removed the call to MotionBegin since we use the right button for
 //    the menu and having it generate a MotionBegin "event" is misleading.
 //
-//    Kathleen Bonnell, Fri Dec 13 14:07:15 PST 2002  
+//    Kathleen Bonnell, Fri Dec 13 14:07:15 PST 2002
 //    Removed arguments to comply with vtk's new interactor interface.
 //
 // ****************************************************************************
@@ -515,7 +519,7 @@ VisitInteractor::OnRightButtonUp()
 //  Method: VisitInteractor::OnChar
 //
 //  Purpose:
-//    Redefines the virtual function that handles characters.  This 
+//    Redefines the virtual function that handles characters.  This
 //    disregards all keystrokes.
 //
 //  Arguments:
@@ -528,7 +532,7 @@ VisitInteractor::OnRightButtonUp()
 //  Creation:   July 6, 2000
 //
 //  Modifications:
-//    Kathleen Bonnell, Fri Dec 13 14:07:15 PST 2002  
+//    Kathleen Bonnell, Fri Dec 13 14:07:15 PST 2002
 //    Removed arguments to comply with vtk's new interactor interface.
 //
 // ****************************************************************************
@@ -556,7 +560,7 @@ VisitInteractor::OnChar()
 //  Creation:   March 18, 2002
 //
 //  Modifications:
-//    Kathleen Bonnell, Fri Dec 13 14:07:15 PST 2002  
+//    Kathleen Bonnell, Fri Dec 13 14:07:15 PST 2002
 //    Removed arguments to comply with vtk's new interactor interface.
 //
 //    Eric Brugger, Mon Jun 24 13:34:32 PDT 2013
@@ -565,7 +569,7 @@ VisitInteractor::OnChar()
 //    mouse button pressed. Pressing the ctrl key and the left mouse button
 //    still pans the image. I corrected a bug where pressing the ctrl key and
 //    the left mouse button would result in the window being stuck in pan mode
-//    if the shift key was released before the left mouse button. 
+//    if the shift key was released before the left mouse button.
 //
 // ****************************************************************************
 
@@ -615,7 +619,7 @@ VisitInteractor::NewButtonPress()
 //  Creation:   March 18, 2002
 //
 //  Modifications:
-//    Kathleen Bonnell, Fri Dec 13 14:07:15 PST 2002  
+//    Kathleen Bonnell, Fri Dec 13 14:07:15 PST 2002
 //    Removed arguments to comply with vtk's new interactor interface.
 //
 // ****************************************************************************
@@ -643,7 +647,7 @@ VisitInteractor::StartLeftButtonAction()
 //  Creation:   March 18, 2002
 //
 //  Modifications:
-//    Kathleen Bonnell, Fri Dec 13 14:07:15 PST 2002  
+//    Kathleen Bonnell, Fri Dec 13 14:07:15 PST 2002
 //    Removed arguments to comply with vtk's new interactor interface.
 //
 // ****************************************************************************
@@ -671,7 +675,7 @@ VisitInteractor::AbortLeftButtonAction()
 //  Creation:   March 18, 2002
 //
 //  Modifications:
-//    Kathleen Bonnell, Fri Dec 13 14:07:15 PST 2002  
+//    Kathleen Bonnell, Fri Dec 13 14:07:15 PST 2002
 //    Removed arguments to comply with vtk's new interactor interface.
 //
 // ****************************************************************************
@@ -699,7 +703,7 @@ VisitInteractor::EndLeftButtonAction()
 //  Creation:   March 18, 2002
 //
 //  Modifications:
-//    Kathleen Bonnell, Fri Dec 13 14:07:15 PST 2002  
+//    Kathleen Bonnell, Fri Dec 13 14:07:15 PST 2002
 //    Removed arguments to comply with vtk's new interactor interface.
 //
 // ****************************************************************************
@@ -727,7 +731,7 @@ VisitInteractor::StartMiddleButtonAction()
 //  Creation:   March 18, 2002
 //
 //  Modifications:
-//    Kathleen Bonnell, Fri Dec 13 14:07:15 PST 2002  
+//    Kathleen Bonnell, Fri Dec 13 14:07:15 PST 2002
 //    Removed arguments to comply with vtk's new interactor interface.
 //
 // ****************************************************************************
@@ -755,7 +759,7 @@ VisitInteractor::AbortMiddleButtonAction()
 //  Creation:   March 18, 2002
 //
 //  Modifications:
-//    Kathleen Bonnell, Fri Dec 13 14:07:15 PST 2002  
+//    Kathleen Bonnell, Fri Dec 13 14:07:15 PST 2002
 //    Removed arguments to comply with vtk's new interactor interface.
 //
 // ****************************************************************************
@@ -786,7 +790,7 @@ VisitInteractor::EndMiddleButtonAction()
 //    Brad Whitlock, Fri Nov 3 13:35:16 PST 2000
 //    I added code to tell the VisWindow to show its menu.
 //
-//    Kathleen Bonnell, Fri Dec 13 14:07:15 PST 2002  
+//    Kathleen Bonnell, Fri Dec 13 14:07:15 PST 2002
 //    Removed arguments to comply with vtk's new interactor interface.
 //
 //    Brad Whitlock, Mon Aug 18 11:23:49 PDT 2014
@@ -824,7 +828,7 @@ VisitInteractor::StartRightButtonAction()
 //  Creation:   March 18, 2002
 //
 //  Modifications:
-//    Kathleen Bonnell, Fri Dec 13 14:07:15 PST 2002  
+//    Kathleen Bonnell, Fri Dec 13 14:07:15 PST 2002
 //    Removed arguments to comply with vtk's new interactor interface.
 //
 // ****************************************************************************
@@ -852,7 +856,7 @@ VisitInteractor::AbortRightButtonAction()
 //  Creation:   March 18, 2002
 //
 //  Modifications:
-//    Kathleen Bonnell, Fri Dec 13 14:07:15 PST 2002  
+//    Kathleen Bonnell, Fri Dec 13 14:07:15 PST 2002
 //    Removed arguments to comply with vtk's new interactor interface.
 //
 // ****************************************************************************
@@ -925,7 +929,7 @@ VisitInteractor::EndBoundingBox(void)
 }
 
 // ****************************************************************************
-//  Method: VisitInteractor::ZoomCamera2D(double) 
+//  Method: VisitInteractor::ZoomCamera2D(double)
 //
 //  Purpose:
 //    Handle zooming the camera.
@@ -936,11 +940,11 @@ VisitInteractor::EndBoundingBox(void)
 //  Modificatios:
 //    Gunther H. Weber, Tue Aug  7 11:25:52 PDT 2007
 //    Split into two functions, one computing the zoom factor from the
-//    mouse move and one computing the zoomed view so that mouse wheel 
+//    mouse move and one computing the zoomed view so that mouse wheel
 //    events can make use of this function.
 //
 //    Gunther H. Weber, Fri Sep 28 14:05:10 PDT 2007
-//    Added a fix suggested by Brad Whitlock to fix the problem that 
+//    Added a fix suggested by Brad Whitlock to fix the problem that
 //    zooming in with a mouse wheel can result in an invalid view
 //
 //    Eric Brugger, Thu May 26 12:37:11 PDT 2011
@@ -985,7 +989,7 @@ VisitInteractor::ZoomCamera2D(double f)
         double    yScale;
 
         size[0] = rwi->GetRenderWindow()->GetSize()[0];
-        size[1] = rwi->GetRenderWindow()->GetSize()[1]; 
+        size[1] = rwi->GetRenderWindow()->GetSize()[1];
 
         yScale = ((newView2D.viewport[3] - newView2D.viewport[2]) /
                 (newView2D.viewport[1] - newView2D.viewport[0])) *
@@ -1038,7 +1042,7 @@ VisitInteractor::ZoomCamera2D(double f)
 //
 //    Gunther H. Weber, Tue Aug  7 11:25:52 PDT 2007
 //    Split into two functions, one computing the zoom factor from the
-//    mouse move and one computing the zommed view so that mouse wheel 
+//    mouse move and one computing the zommed view so that mouse wheel
 //    events can make use of this function.
 //
 // ****************************************************************************
@@ -1258,7 +1262,7 @@ VisitInteractor::PanCamera3D(const int x, const int y)
 //
 //    Gunther H. Weber, Tue Aug  7 11:25:52 PDT 2007
 //    Split into two functions, one computing the zoom factor from the
-//    mouse move and one computing the zommed view so that mouse wheel 
+//    mouse move and one computing the zommed view so that mouse wheel
 //    events can make use of this function.
 //
 //    Eric Brugger, Thu May 26 12:37:11 PDT 2011
@@ -1310,7 +1314,7 @@ VisitInteractor::ZoomImage3D(double f)
 //
 //    Gunther H. Weber, Tue Aug  7 11:25:52 PDT 2007
 //    Split into two functions, one computing the zoom factor from the
-//    mouse move and one computing the zommed view so that mouse wheel 
+//    mouse move and one computing the zommed view so that mouse wheel
 //    events can make use of this function.
 //
 // ****************************************************************************
@@ -1486,7 +1490,7 @@ VisitInteractor::DollyCameraAndFocus3D(const int x, const int y)
 //    Eric Brugger, Wed Dec 29 10:54:02 PST 2004
 //    I added useCenter, a flag that forces the routine to rotate about the
 //    center of rotation if set.
-// 
+//
 //    Eric Brugger, Thu May 26 12:37:11 PDT 2011
 //    Remove an unnecessary render call.
 //
@@ -1792,13 +1796,13 @@ VisitInteractor::RotateAboutCamera3D(const int x, const int y)
 //  Method: VisitInteractor::SetInteractor
 //
 //  Purpose:
-//      Associate this 'style' with the passed render window interactor. 
+//      Associate this 'style' with the passed render window interactor.
 //
 //  Arguments:
 //      rwi     The render window interactor.
-// 
-//  Programmer: Kathleen Bonnell 
-//  Creation:   November 25, 2002 
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   November 25, 2002
 //
 // ****************************************************************************
 

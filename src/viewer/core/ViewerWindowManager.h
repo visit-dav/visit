@@ -133,7 +133,7 @@ typedef struct {
 //    Added SetPreshift and preshiftX/Y for further correction of some
 //    window managers.
 //
-//    Kathleen Bonnell, Wed Sep 26 11:49:18 PDT 2001 
+//    Kathleen Bonnell, Wed Sep 26 11:49:18 PDT 2001
 //    Added SetPlotColors to send foreground/background color information
 //    to the plots.
 //
@@ -159,9 +159,9 @@ typedef struct {
 //    Eric Brugger, Wed Nov 21 12:11:35 PST 2001
 //    I added methods to deal with animation attributes.
 //
-//    Kathleen Bonnell, Tue Nov 27 16:03:00 PST 2001 
+//    Kathleen Bonnell, Tue Nov 27 16:03:00 PST 2001
 //    Added pick attributes and related methods.
-//    Added method 'ClearPickPoints'. 
+//    Added method 'ClearPickPoints'.
 //
 //    Brad Whitlock, Mon Jan 28 16:27:14 PST 2002
 //    Added support for a stack of views.
@@ -179,7 +179,7 @@ typedef struct {
 //    Sean Ahern, Tue Apr 16 12:36:24 PDT 2002
 //    Added the ability to show/hide all windows and have deferred creation.
 //
-//    Kathleen Bonnell, Thu May  9 09:57:56 PDT 2002  
+//    Kathleen Bonnell, Thu May  9 09:57:56 PDT 2002
 //    Added methods in support of Lineout: ClearRefLines, AddToLineoutWindow,
 //    ResetLineoutDesignation.
 //
@@ -189,11 +189,11 @@ typedef struct {
 //    Hank Childs, Wed May 29 08:42:29 PDT 2002
 //    Added ToggleSpinMode.
 //
-//    Kathleen Bonnell, Wed May 29 11:24:14 PDT 2002  
-//    Changed arguments to method AddtoLineoutWindow. 
+//    Kathleen Bonnell, Wed May 29 11:24:14 PDT 2002
+//    Changed arguments to method AddtoLineoutWindow.
 //
-//    Kathleen Bonnell, Mon Jun 10 17:22:57 PDT 2002 
-//    Replace 'AddToLineoutWindow' with 'GetLineoutWindow'. 
+//    Kathleen Bonnell, Mon Jun 10 17:22:57 PDT 2002
+//    Replace 'AddToLineoutWindow' with 'GetLineoutWindow'.
 //
 //    Brad Whitlock, Thu Jun 27 16:37:21 PST 2002
 //    Added methods to copy attributes from one window to another window.
@@ -220,9 +220,9 @@ typedef struct {
 //    Brad Whitlock, Mon Nov 11 11:55:57 PDT 2002
 //    I added methods to toggle locktime and locktools.
 //
-//    Kathleen Bonnell, Fri Nov 15 09:07:36 PST 2002 
+//    Kathleen Bonnell, Fri Nov 15 09:07:36 PST 2002
 //    Removed PickAttributes and related Set/Get methods. Now handled
-//    by ViewerQueryManager. 
+//    by ViewerQueryManager.
 //
 //    Brad Whitlock, Tue Nov 19 14:44:36 PST 2002
 //    I added more default arguments to UpdateViewAtts.
@@ -230,7 +230,7 @@ typedef struct {
 //    Eric Brugger, Mon Nov 25 09:58:47 PST 2002
 //    I added GetKeyframeClientAtts and SetKeyframeAttsFromClient.
 //
-//    Kathleen Bonnell, Mon Dec 23 13:14:18 PST 2002 
+//    Kathleen Bonnell, Mon Dec 23 13:14:18 PST 2002
 //    Remove Lineout.
 //
 //    Eric Brugger, Mon Jan  6 12:27:06 PST 2003
@@ -240,7 +240,7 @@ typedef struct {
 //    Eric Brugger, Wed Jan 29 11:08:28 PST 2003
 //    I added MoveViewKeyframe.
 //
-//    Eric Brugger, Fri Jan 31 13:43:37 PST 2003 
+//    Eric Brugger, Fri Jan 31 13:43:37 PST 2003
 //    I removed the state argument from UpdateAnimationState.
 //
 //    Brad Whitlock, Fri Jan 31 12:39:24 PDT 2003
@@ -259,11 +259,11 @@ typedef struct {
 //    Eric Brugger, Fri Apr 18 12:36:15 PDT 2003
 //    I replaced ToggleAutoCenterMode with ToggleMaintainViewMode.
 //
-//    Kathleen Bonnell, Wed May 14 17:07:07 PDT 2003  
-//    Removed 'Pick' method. 
+//    Kathleen Bonnell, Wed May 14 17:07:07 PDT 2003
+//    Removed 'Pick' method.
 //
-//    Kathleen Bonnell, Thu May 15 10:00:02 PDT 2003 
-//    Added ToggleFullFrameMode. 
+//    Kathleen Bonnell, Thu May 15 10:00:02 PDT 2003
+//    Added ToggleFullFrameMode.
 //
 //    Brad Whitlock, Mon Jun 30 12:39:19 PDT 2003
 //    Added methods to save/read state.
@@ -292,7 +292,7 @@ typedef struct {
 //    I also added a method to close a database.
 //
 //    Kathleen Bonnell,  Fri Mar 19 07:26:27 PST 2004
-//    Added GetEmptyWindow and GetWindow methods. 
+//    Added GetEmptyWindow and GetWindow methods.
 //
 //    Eric Brugger, Mon Mar 29 14:53:52 PST 2004
 //    I added ToggleMaintainDataMode.
@@ -304,16 +304,16 @@ typedef struct {
 //    Added optional bool to GetLineoutWindow to return NULL if window
 //    doesn't already exist
 //
-//    Kathleen Bonnell, Tue Jul 20 10:47:26 PDT 2004 
-//    Added optional int arg to GetTimeQueryWindow. 
+//    Kathleen Bonnell, Tue Jul 20 10:47:26 PDT 2004
+//    Added optional int arg to GetTimeQueryWindow.
 //
-//    Kathleen Bonnell, Thu Jul 22 09:23:25 PDT 200 
+//    Kathleen Bonnell, Thu Jul 22 09:23:25 PDT 200
 //    Added optional int arg to GetLineoutWindow, removed bool arg.
 //
 //    Brad Whitlock, Tue Jul 27 10:22:15 PDT 2004
 //    Added CheckForNewStates.
 //
-//    Kathleen Bonnell, Wed Aug 18 09:28:51 PDT 2004 
+//    Kathleen Bonnell, Wed Aug 18 09:28:51 PDT 2004
 //    Added interactorAtts and related methods.
 //
 //    Brad Whitlock, Thu Feb 3 14:34:45 PST 2005
@@ -346,9 +346,9 @@ typedef struct {
 //    since it is the VWM that managers the GlobalAttributes where these
 //    are defined.
 //
-//    Kathleen Bonnell, Tue Oct  9 14:40:10 PDT 2007 
-//    Added methods to SetCreateMeshQualityExpressions and 
-//    SetCreateTimeDerivativeExpressions. 
+//    Kathleen Bonnell, Tue Oct  9 14:40:10 PDT 2007
+//    Added methods to SetCreateMeshQualityExpressions and
+//    SetCreateTimeDerivativeExpressions.
 //
 //    Dave Bremer, Wed Oct 31 15:48:16 PDT 2007
 //    Added flag to clear the external renderer's cached image if disabling it.
@@ -371,7 +371,7 @@ typedef struct {
 //    Brad Whitlock, Wed Feb 13 14:15:27 PST 2008
 //    Added argument to SetFromNode.
 //
-//    Kathleen Bonnell, Thu Mar  6 09:21:02 PST 2008 
+//    Kathleen Bonnell, Thu Mar  6 09:21:02 PST 2008
 //    Made return type of SetPlotFollowsTime be 'void'.
 //
 //    Cyrus Harrison, Tue Apr 14 13:35:54 PDT 2009
@@ -406,6 +406,9 @@ typedef struct {
 //
 //    Kathleen Biagas, Thu Dec 18 15:17:21 PST 2014
 //    Added SetRemoveDuplicateNodes.
+//
+//    Kathleen Biagas, Wed Aug 17, 2022
+//    Added CheckForOSPRayRendering.
 //
 // ****************************************************************************
 
@@ -514,7 +517,7 @@ public:
 
     void SetViewExtentsType(avtExtentType, int windowIndex = -1);
     void UpdateColorTable(const std::string &ctName);
-    void ResetLineoutDesignation(int windowIndex = -1); 
+    void ResetLineoutDesignation(int windowIndex = -1);
     void ResetTimeQueryDesignation(int windowIndex = -1);
     void ResetNetworkIds(const EngineKey &k);
     int             *GetWindowIndices(int *nwin) const;
@@ -582,14 +585,13 @@ public:
     DatabaseCorrelation *CreateMultiWindowCorrelation(const intVector &windowIds);
     void CloseDatabase(const std::string &dbName);
 
-    void CreateNode(DataNode *parentNode, 
+    void CreateNode(DataNode *parentNode,
                     const std::map<std::string, std::string> &, bool detailed);
     void SetFromNode(DataNode *parentNode,
                      const std::map<std::string, std::string> &,
                      const std::string &);
     static bool SessionContainsErrors(DataNode *);
 
-public:
     avtImage_p CreateSingleImage(int pixelData, int windowIndex,
                                  int width, int height, bool screenCapture,
                                  bool leftEye);
@@ -598,7 +600,6 @@ public:
                                      int windowIndex, int width, int height,
                                      bool screenCapture, bool leftEye);
 
-public:
     static ViewerWindowManagerAttributes *GetWindowAtts();
     static void                          ViewCallback(VisWindow *);
     static void                          RenderInformationCallback(void *data);
@@ -622,6 +623,8 @@ public:
     static void                          SetDefaultInteractorAttsFromClient();
 
     void GetDatabasesForWindows(const intVector &,stringVector &, bool) const;
+
+    void CheckForOSPRayRendering(void) const;
 
   protected:
     ViewerWindowManager();
