@@ -58,6 +58,8 @@ class vtkDataArray;
 //  Creation:    May 31, 2022
 //
 //  Modifications:
+//    Justin Privitera, Tue Aug 23 14:52:34 PDT 2022
+//    Added all functions, mostly taken from the blueprint plugin data adaptor.
 //
 // ****************************************************************************
 

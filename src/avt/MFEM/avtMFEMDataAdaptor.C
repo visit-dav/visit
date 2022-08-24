@@ -45,10 +45,10 @@
 #include <vtkDoubleArray.h>
 #include <vtkUnsignedIntArray.h>
 #include <vtkUnstructuredGrid.h>
-#include "vtkFloatArray.h"
-#include "vtkCellArray.h"
+#include <vtkFloatArray.h>
+#include <vtkCellArray.h>
 #include <vtkCellData.h>
-#include "vtkIdTypeArray.h"
+#include <vtkIdTypeArray.h>
 #include <vtkLine.h>
 #include <vtkTriangle.h>
 #include <vtkHexahedron.h>
@@ -59,9 +59,6 @@
 // visit includes
 //-----------------------------------------------------------------------------
 #include "InvalidVariableException.h"
-#include "Expression.h"
-#include "ExpressionList.h"
-#include "UnexpectedValueException.h"
 
 #include "avtMFEMLogging.h"
 
