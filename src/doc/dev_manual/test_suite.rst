@@ -255,8 +255,8 @@ Because image tests tend to be the most difficult to make portable, a better des
 
 The above explanation is offered as a rational to justify that whenever possible adding *new* tests to the test suite should use the ``TestValueXX()`` approach as much as practical.
 
-More About TestValueXX Type Tests
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+More About TestValueXX and TestPOA/FOA Type Tests
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The ``TestValueXX()`` methods are similar in spirit to ``Test()`` and ``TestText()`` except operates on Python *values* passed as args both for the *current* (actual) and the *baseline* (expected) results. 
 The values can be any Python object. 
@@ -285,7 +285,18 @@ Otherwise they will compare them as strings.
     Passes if bucket *contains* expected according to ``eqoper`` equality operator.
     Fails otherwise.
 
-For some examples, see `test_values_simple.py <https://github.com/visit-dav/visit/blob/develop/src/test/tests/unit/test_value_simple.py>`_.
+``TestFOA(name, tag='unk') :
+    Fail on arrival with test case outcome name the concatenation of ``name`` and ``tag``.
+    Whenever python execution arrives at a line with ``TestFOA()``, the test is considered a failure.
+    Typically, ``tag`` is ``LINE()`` to indicate the python line number where failure occured.
+    A given bit of test logic (e.g. a test *case*) can have *many* ``TestFOA()`` calls of the same ``name`` but with different ``tag``.
+    
+``TestPOA(name)``
+    Pass on arrival with test case outcome name just ``name``.
+    Whenever python execution arrives at a line with ``TestPOA()``, the test is considered a pass.
+    A given bit of test logic (e.g. a test *case*) can have *only one* ``TestPOA()`` call.
+
+For some examples, see `test_values_simple.py <https://github.com/visit-dav/visit/blob/develop/src/test/tests/unit/test_value_simple.py>`__ and `test_atts.py <https://github.com/visit-dav/visit/blob/develop/src/test/tests/unit/test_atts.py>`__.
 
 Filtering Image Differences
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
