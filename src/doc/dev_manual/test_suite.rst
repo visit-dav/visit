@@ -230,8 +230,19 @@ So, a ``gorfo.py`` file structured as in the following
       ...
       TestAutoName() # 'gorfo_curve_1'
       
+The one down side to using the auto-naming methods is that restructuring the python code can lead to renaming of baseline files.
+Existing, top-level functions can be moved relative to each other without issue.
+New tests can be added without issue.
+But, removing *earlier* tests from a function or moving tests relative to each other *within* a function leads to renaming.
+One option to improve the implementation of auto-naming would be to replace sequential indexing with some kind of a hash computed from some immutable property of the test (e.g. some preceding number VisIt CLI calls needed to compute the rest result).
+
 When they can be used, the ``TestValueXX()`` are a little more convenient because they do not involve storing data in files and having to maintain separate baseline files. 
 Instead the ``TestTextXX()`` methods take both an *actual* (current) and *expected* (baseline) result as arguments directly coded in the calling ``.py`` file.
+Likewise, the ``TestPOA()`` (pass on arrival) and ``TestFOA()`` (fail on arrival) are convenient ways to test python logic itself with if-then-else or try-catch-except blocks.
+These methods are useful for cases where the majority of logic for determining a passed or failed test exists primarily as the python code itself being executed.
+A good example is the ``unit/atts_assign.py`` tests.
+While there may be many instances of ``TestFOA()`` with the same ``name`` argument in a given sequence of logic for a single test outcome, they can be differentiated by a unique *tag* (typically the ``LINE()`` method identifing the line number.
+However, there should be only a single ``TestPOA()`` instance with the same name for the associated test outcome.
 
 As VisIt_ testing has evolved over the past twenty years, understanding and improving productivity related to test design has not been a priority. 
 As a result, there are likely far more image test results than are truly needed to fully vet all of VisIt_'s plotting features. 
