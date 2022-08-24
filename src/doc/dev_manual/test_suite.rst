@@ -73,10 +73,18 @@ In addition, various operations involving lfs'd files in their *pointer* state w
     CMake Error: Problem with archive_read_open_file(): Unrecognized archive format
     CMake Error: Problem extracting tar: /Users/miller86/visit/visit/data/zipwrapper_test_data.tar.xz
 
-or as another example using ImageMagick's ``display`` command on a ``.png`` file ::
+or as another example using ImageMagick's ``display`` command on an lfs'd ``.png`` file still in its *pointer* state ::
 
     % display ../test/baseline//databases/silo/silo_curvilinear_3d_surface_6.png
     display: improper image header '../test/baseline//databases/silo/silo_curvilinear_3d_surface_6.png'
+    
+In cases like these, the remedy is to run a ``git lfs pull`` command.
+This will mutate all lfs'd *pointer* files in the current branch to their *real* contents.
+Or, in cases where that operation might take too long, restrict it to the needed files as in ::
+
+    git lfs pull --include zipwrapper_test_data.tar.xz
+    git lfs pull --include ../test/baseline/databases/silo/silo_curvilinear_3d_surface_6.png
+    git lfs pull --include "*.silo"
 
 How to run the regression tests manually
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
