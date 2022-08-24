@@ -238,7 +238,7 @@ One option to improve the implementation of auto-naming would be to replace sequ
 
 When they can be used, the ``TestValueXX()`` are a little more convenient because they do not involve storing data in files and having to maintain separate baseline files. 
 Instead the ``TestTextXX()`` methods take both an *actual* (current) and *expected* (baseline) result as arguments directly coded in the calling ``.py`` file.
-Likewise, the ``TestPOA()`` (pass on arrival) and ``TestFOA()`` (fail on arrival) are convenient ways to test python logic itself with if-then-else or try-catch-except blocks.
+Likewise, the ``TestPOA()`` (pass on arrival) and ``TestFOA()`` (fail on arrival) methods are convenient ways to implement a test based primarily upon python logic itself with if-then-else or try-except blocks.
 These methods are useful for cases where the majority of logic for determining a passed or failed test exists primarily as the python code itself being executed.
 A good example is the ``unit/atts_assign.py`` tests.
 While there may be many instances of ``TestFOA()`` with the same ``name`` argument in a given sequence of logic for a single test outcome, they can be differentiated by a unique *tag* (typically the ``LINE()`` method identifing the line number.
