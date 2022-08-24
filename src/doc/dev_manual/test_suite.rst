@@ -73,10 +73,10 @@ In addition, various operations involving lfs'd files in their *pointer* state w
     CMake Error: Problem with archive_read_open_file(): Unrecognized archive format
     CMake Error: Problem extracting tar: /Users/miller86/visit/visit/data/zipwrapper_test_data.tar.xz
 
-or as another example using ImageMagick's ``display`` command on a ``.png` file ::
+or as another example using ImageMagick's ``display`` command on a ``.png`` file ::
 
     % display ../test/baseline//databases/silo/silo_curvilinear_3d_surface_6.png
-    display: improper image header `../test/baseline//databases/silo/silo_curvilinear_3d_surface_6.png' @ error/png.c/ReadPNGImage/4059
+    display: improper image header `../test/baseline//databases/silo/silo_curvilinear_3d_surface_6.png'
 
 How to run the regression tests manually
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
