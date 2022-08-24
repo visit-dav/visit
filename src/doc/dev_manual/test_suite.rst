@@ -97,7 +97,6 @@ When you configure VisIt_, a bash script is generated in the build directory tha
     cd visit-build/test/
     ./run_visit_test_suite.sh
 
-
 Here is an example of the contents of the generated ``run_visit_test_suite.sh`` script ::
 
     /Users/harrison37/Work/github/visit-dav/visit/build-mb-develop-darwin-10.13-x86_64/thirdparty_shared/third_party/python/2.7.14/darwin-x86_64/bin/python2.7  
@@ -106,7 +105,6 @@ Here is an example of the contents of the generated ``run_visit_test_suite.sh`` 
        -b /Users/harrison37/Work/github/visit-dav/visit/src/test/../../test/baseline/   \
        -o output \
        -e /Users/harrison37/Work/github/visit-dav/visit/build-mb-develop-darwin-10.13-x86_64/build-debug/bin/visit "$@"
-
 
 Once the test suite has run, the results can be found in the ``output/html`` directory.
 There, you will find an ``index.html`` file entry that you can use to browse all the results.
@@ -166,11 +164,17 @@ The actual image and text raw results will be in the current directory and diffe
 The difference images are essentially binary bitmaps of the pixels that are different and not the actual pixel differences themselves. 
 This is to facilitate identifying the location and cause of the differences.
 
-Adding a test involves:
+Adding a test often involves:
 
-a) adding a .py file to the appropriate subdirectory in ``src/test/tests``, 
-b) adding the expected baselines to ``test/baselines`` and, depending on the test, 
-c) adding any necessary input data files to ``src/testdata``. 
+a) adding a ``.py`` file to the appropriate test *category* subdirectory in ``src/test/tests``, 
+b) optionally adding the expected baseline files to ``test/baselines`` and, depending on the test, 
+c) optionally adding any necessary input data files to the top-level ``data`` directory. 
+
+.. warning::
+
+   Steps b) and c) can almost never be avoided for tests involving new database plugins.
+   However, in almost all other cases, steps b) and c) can and probably should be avoided.
+   Instead, developers are encouraged to adopt new practices and use new testing features where tests *and* their expected outcomes are programmatically included in *just* the ``.py``, so there is no need for separate *baseline* files and/or new data files.
 
 The test suite will find your added .py files the next time it runs. 
 So, you don't have to do anything special other than adding the .py file.
@@ -191,19 +195,41 @@ The default skip list file is ``src/test/skip.json``.
 
 .. _three_results_types:
 
-Three Types of Test Results
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Types of Test Results
+~~~~~~~~~~~~~~~~~~~~~
 
 VisIt_'s testing system, ``visit_test_main.py``, uses three different methods
 to process and check results.
 
-* ``Test()`` which processes ``.png`` image files.
-* ``TestText()`` which process ``.txt`` text files.
+* ``Test()`` and ``TestAutoName()`` which processes ``.png`` image files
+* ``TestText()`` and ``TestTextAutoName()`` which process ``.txt`` text files.
 * ``TestValueXX()`` (where ``XX``==>``EQ``, ``LT``, ``LE``, etc.) which processes no files and simply checks *actual* and *expected* values passed as arguments.
+* ``TestPOA()`` and ``TestFOA()`` which process python try/catch logic
 
-The ``Test()`` and ``TestText()`` methods both take the name of a file. 
+The ``Test()`` and ``TestText()`` methods both take the name of a file.
 To process a test result, these methods output a file produced by the *current* test run and then compare it to a blessed *baseline* file stored in
 `test/baseline <https://github.com/visit-dav/visit/tree/develop/test/baseline>`_.
+
+The ``TestAutoName()`` and ``TestTextAutoName()`` methods are preferred and perform the equivalent work of ``Test()`` and ``TestText()`` but generate the names of the baseline files automatically.
+The auto-naming algorithm depends on the ``.py`` file being structured such that calls to ``TestAutoName()`` and/or ``TestTextAutoName()`` are made only from within top-level functions in the ``.py`` file.
+Auto naming does not work if these methods are called from either the top/main of the ``.py`` file or from functions two or more levels deep.
+Auto naming catenates the ``.py`` file's name with the name of the top-level function from which the call was made and adds an index/count.
+So, a ``gorfo.py`` file structured as in the following
+
+.. code:: python
+
+  def histogram():
+      ...
+      TestAutoName() # 'gorfo_histogram_0' and calls TestSection('histogram')
+      ...
+      TestAutoName() # 'gorfo_histogram_1'
+  
+  def curve():
+      ...
+      TestAutoName() # 'gorfo_curve_0' and calls TestSection('curve')
+      ...
+      TestAutoName() # 'gorfo_curve_1'
+      
 When they can be used, the ``TestValueXX()`` are a little more convenient because they do not involve storing data in files and having to maintain separate baseline files. 
 Instead the ``TestTextXX()`` methods take both an *actual* (current) and *expected* (baseline) result as arguments directly coded in the calling ``.py`` file.
 
