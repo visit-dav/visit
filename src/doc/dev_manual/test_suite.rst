@@ -8,24 +8,76 @@ VisIt_'s test suite involves a combination of python scripts in ``src/test``, ra
 Regression tests are run on a nightly basis and results are posted to VisIt_'s `test dashboard <https://visit-dav.github.io/dashboard/>`_.
 Testing exercises VisIt_'s viewer, mdserver, engine and cli but not the GUI.
 
-
 Running regression tests
 ------------------------
 
 Where nightly regression tests are run
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The regression suite is run on `LLNL's Pascal Cluster <https://hpc.llnl.gov/hardware/platforms/pascal>`_.
-Pascal runs the TOSS3 operating system, which is a flavor of Linux.
+Pascal runs the TOSS operating system, which is a flavor of Linux.
 If you are going to run the regression suite yourself you should run on a similar system or there will be differences due to numeric precision issues.
 If you do have to run the test suite on a different system there are options for doing :ref:`fuzzy matching <Fuzzy Matching Thresholds>`.
 
 The regression suite is run on Pascal using a cron job that checks out VisIt_ source code, builds it, and then runs the tests.
 
-How to run the regression tests manually
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+A note about git lfs
+~~~~~~~~~~~~~~~~~~~~
 
 The regression suite relies on having a working VisIt_ build and test data available on your local computer.
-Our test data and baselines are stored using git lfs, so you need to setup git lfs and pull to have all the necessary files. 
+Our test data and baselines are stored using `git lfs <https://www.atlassian.com/git/tutorials/git-lfs>`__.
+Git lfs is an extension to git to *effectively* support large, binary files.
+To run VisIt_'s regression suite, git lfs needs to be installed and the command ``git lfs pull`` needs be run.
+
+Git lfs handles files similarly to the way C/C++ handles pointers except that a pointer file (the git part) and the real file to which the pointer refers (the lfs part) both have the same name.
+When a file is in its *pointer* state, its contents look something like ::
+
+    version https://git-lfs.github.com/spec/v1
+    oid sha256:4d7a214614ab2935c943f9e0ff69d22eadbb8f32b1258daaa5e2ca24d17e2393
+    size 12345
+
+A git lfs file's content *mutates* between its *pointer* state and its *real* state as various git (and git lfs) operations are performed.
+In particular, the command ``git lfs pull`` is used to *dereference* pointer files causing *all* pointer files in the currently checked out branch to be replaced with their real contents.
+Watch out!
+If there are many *pointer* files in the current branch and/or the actual files to which the pointer files refer are very large, a ``git lfs pull`` operation can take a long time (many minutes or more).
+The operation can be restricted to specific files using the ``--include`` and ``--exclude`` options to ``git lfs``.
+Likewise, ``git pull`` operations which wind up updating the contents of a *real* lfs file in the local checkout will replace the file with the updated *pointer* contents.
+
+There are tell tale signs a ``git lfs pull`` operation has been negelected.
+First, the *pointer* files are very small text files, usually less than 150 bytes ::
+
+     % wc -c xolotl_test_data.tar.xz xyz_test_data.tar.xz zipwrapper_test_data.tar.xz
+     1294672 xolotl_test_data.tar.xz
+      348584 xyz_test_data.tar.xz
+         132 zipwrapper_test_data.tar.xz
+
+The ``files`` command will show ``ASCII text`` ::
+
+    % file xolotl_test_data.tar.xz xyz_test_data.tar.xz zipwrapper_test_data.tar.xz          
+    xolotl_test_data.tar.xz:     XZ compressed data
+    xyz_test_data.tar.xz:        XZ compressed data
+    zipwrapper_test_data.tar.xz: ASCII text
+
+The file's contents will show the lfs *pointer* data ::
+
+    % cat zipwrapper_test_data.tar.xz 
+    version https://git-lfs.github.com/spec/v1
+    oid sha256:0de21481f2a2e1ddd0eb8e5bcf44e12980285455ce4724557d146c1fa884eb1e
+    size 6696960
+
+In addition, various operations involving lfs'd files in their *pointer* state will fail with some kind of error indicating a problem with the file's *format* ::
+
+    % make ANAME=zipwrapper_test_data.tar.xz expand
+    [100%] Generating _archive_expand
+    CMake Error: Problem with archive_read_open_file(): Unrecognized archive format
+    CMake Error: Problem extracting tar: /Users/miller86/visit/visit/data/zipwrapper_test_data.tar.xz
+
+or as another example using ImageMagick's ``display`` command on a ``.png` file ::
+
+    % display ../test/baseline//databases/silo/silo_curvilinear_3d_surface_6.png
+    display: improper image header `../test/baseline//databases/silo/silo_curvilinear_3d_surface_6.png' @ error/png.c/ReadPNGImage/4059
+
+How to run the regression tests manually
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The test suite is written in python and the source is in ``src/test``.
 The main driver to run the whole test suite is ``src/test/visit_test_main.py``.
