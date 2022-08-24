@@ -87,22 +87,8 @@ avtMOABFileFormat::avtMOABFileFormat(const char *filename, const DBOptionsAttrib
 // ****************************************************************************
 
 avtMOABFileFormat::~avtMOABFileFormat() {
-    debug1 << " avtMOABFileFormat::~avtMOABFileFormat: freeing file descriptor\n";
-    if (file_descriptor) {
-        free(file_descriptor);
-        file_descriptor = NULL;
-    }
-#ifdef PARALLEL
-    if (pcomm)
-    {
-        delete pcomm;
-        pcomm = NULL;
-    }
-#endif
-    if (mbCore) {
-        delete mbCore;
-        mbCore = NULL;
-    }
+    debug1 << " avtMOABFileFormat::~avtMOABFileFormat \n";
+    FreeUpResources();
 }
 void
 avtMOABFileFormat::FreeUpResources(void) {
