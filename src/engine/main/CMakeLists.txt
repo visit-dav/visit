@@ -39,6 +39,9 @@
 #    Eric Brugger, Tue Jul 20 11:55:04 PDT 2021
 #    Added OPENGL_INCLUDE_DIR to the include directories if building IceT
 #    with MesaGL.
+# 
+#    Justin Privitera, Wed Aug 24 11:08:51 PDT 2022
+#    Added logic to be aware of avtMFEM and avtBP libs.
 #
 #****************************************************************************
 

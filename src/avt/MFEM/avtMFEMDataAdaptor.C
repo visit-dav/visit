@@ -486,6 +486,7 @@ avtMFEMDataAdaptor::LegacyRefineGridFunctionToVTK(mfem::Mesh *mesh,
         rv->SetNumberOfComponents(3);
     else
         rv->SetNumberOfComponents(ncomps);
+
     if(var_is_nodal)
         rv->SetNumberOfTuples(npts);
     else

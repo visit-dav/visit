@@ -27,6 +27,9 @@
 #   David Camp, Thu Aug 27 09:25:33 PDT 2015
 #   Added the SaveSessionRPCExecutor.C and RestoreSessionRPCExecutor.C files.
 #   They are used for the remove save and load of session files.
+# 
+#   Justin Privitera, Wed Aug 24 11:08:51 PDT 2022
+#   Added logic to make mdserver aware of avtMFEM and avtBP libs.
 #
 #****************************************************************************
 

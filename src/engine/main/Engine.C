@@ -771,6 +771,9 @@ public:
 //
 //   Alok Hota, Tue Feb 23 19:10:32 PST 2016
 //   Add support for OSPRay.
+// 
+//   Justin Privitera, Wed Aug 24 11:08:51 PDT 2022
+//   Call `avtConduitBlueprintDataAdaptor::Initialize();`.
 //
 // ****************************************************************************
 
