@@ -62,9 +62,6 @@
 
 #include "avtMFEMLogging.h"
 
-#include "mfem.hpp"
-
-using std::string;
 using namespace mfem;
 
 //---------------------------------------------------------------------------//
@@ -156,6 +153,9 @@ VTKCellTypeSize(int cell_type)
 // 
 //    Justin Privitera, Wed Apr 13 13:53:06 PDT 2022
 //    Renamed RefineMeshToVTK to LegacyRefineMeshToVTK.
+// 
+//    Justin Privitera, Mon Aug 22 17:15:06 PDT 2022
+//    Moved from blueprint plugin to MFEM data adaptor.
 //
 // ****************************************************************************
 
@@ -280,6 +280,10 @@ avtMFEMDataAdaptor::LegacyRefineMeshToVTK(mfem::Mesh *mesh,
 //
 //  Programmer: Justin Privitera
 //  Creation:   Wed Apr 13 13:53:06 PDT 2022
+// 
+//  Modifications:
+//    Justin Privitera, Mon Aug 22 17:15:06 PDT 2022
+//    Moved from blueprint plugin to MFEM data adaptor.
 //
 // ****************************************************************************
 vtkDataSet *
@@ -383,6 +387,9 @@ avtMFEMDataAdaptor::LowOrderMeshToVTK(mfem::Mesh *mesh)
 // Modifications:
 //    Justin Privitera, Tue Jul 26 13:04:31 PDT 2022
 //    Use new makerefined constructor.
+// 
+//    Justin Privitera, Mon Aug 22 17:15:06 PDT 2022
+//    Moved from blueprint plugin to MFEM data adaptor.
 //
 // ****************************************************************************
 vtkDataSet *
@@ -439,6 +446,9 @@ avtMFEMDataAdaptor::RefineMeshToVTK(mfem::Mesh *mesh,
 // 
 //    Justin Privitera, Fri May  6 15:23:56 PDT 2022
 //    Renamed RefineGridFunctionToVTK to LegacyRefineGridFunctionToVTK.
+// 
+//    Justin Privitera, Mon Aug 22 17:15:06 PDT 2022
+//    Moved from blueprint plugin to MFEM data adaptor.
 //
 // ****************************************************************************
 vtkDataArray *
@@ -528,7 +538,10 @@ avtMFEMDataAdaptor::LegacyRefineGridFunctionToVTK(mfem::Mesh *mesh,
 //  Programmer: Justin Privitera
 //  Creation:   Fri May  6 15:23:56 PDT 2022
 //
-//
+//  Modifications:
+//    Justin Privitera, Mon Aug 22 17:15:06 PDT 2022
+//    Moved from blueprint plugin to MFEM data adaptor.
+// 
 // ****************************************************************************
 
 vtkDataArray *
@@ -608,6 +621,9 @@ avtMFEMDataAdaptor::LowOrderGridFunctionToVTK(mfem::GridFunction *gf)
 //     Justin Privitera, Fri Jul 22 16:10:43 PDT 2022
 //     Added back in the L2 logic, and fixed it.
 //     Use new makerefined constructor.
+// 
+//    Justin Privitera, Mon Aug 22 17:15:06 PDT 2022
+//    Moved from blueprint plugin to MFEM data adaptor.
 //
 // ****************************************************************************
 vtkDataArray *
@@ -699,6 +715,9 @@ avtMFEMDataAdaptor::RefineGridFunctionToVTK(mfem::Mesh *mesh,
 //    Alister Maguire, Wed Jan 15 09:18:05 PST 2020
 //    Casting geom to Geometry::Type where appropariate. This is required
 //    with the mfem upgrade to 4.0.
+// 
+//    Justin Privitera, Mon Aug 22 17:15:06 PDT 2022
+//    Moved from blueprint plugin to MFEM data adaptor.
 //
 // ****************************************************************************
 vtkDataArray *
@@ -780,6 +799,9 @@ avtMFEMDataAdaptor::RefineElementColoringToVTK(mfem::Mesh *mesh,
 //    Alister Maguire, Wed Jan 15 09:18:05 PST 2020
 //    Casting geom to Geometry::Type where appropariate. This is required
 //    with the mfem upgrade to 4.0.
+// 
+//    Justin Privitera, Mon Aug 22 17:15:06 PDT 2022
+//    Moved from blueprint plugin to MFEM data adaptor.
 //
 // ****************************************************************************
 vtkDataArray *

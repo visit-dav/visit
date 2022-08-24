@@ -447,6 +447,8 @@ BuildSelections(Node &domains,
 //  This code originated in OpenFile()
 //
 //  Modifications:
+//     Justin Privitera, Wed Aug 24 11:08:51 PDT 2022
+//     Call vtk to bp from the avt conduit bp data adaptor.
 //
 // ****************************************************************************
 void

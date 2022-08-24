@@ -13,11 +13,6 @@
 #include <string>
 #include <sstream>
 
-#include <vtkFloatArray.h>
-#include <vtkRectilinearGrid.h>
-#include <vtkStructuredGrid.h>
-#include <vtkUnstructuredGrid.h>
-
 #include <avtDatabaseMetaData.h>
 
 #include <DebugStream.h>
@@ -32,23 +27,9 @@
 // NOTE: This is from avtmfem lib
 #include "avtMFEMDataAdaptor.h"
 
-#include <StringHelpers.h>
 #include <visit_gzstream.h>
-#include <vtkUnsignedIntArray.h>
-#include <vtkUnstructuredGrid.h>
-#include <vtkCell.h>
-#include <vtkCellData.h>
-#include <vtkLine.h>
-#include <vtkTriangle.h>
-#include <vtkHexahedron.h>
-#include <vtkQuad.h>
-#include <vtkTetra.h>
-#include <vtkPoints.h>
-#include "mfem.hpp"
 
 #include <JSONRoot.h>
-
-#include <zlib.h>
 
 // Controls whether to create original cell numbers.
 #define CREATE_ORIGINAL_CELL_NUMBERS
@@ -678,6 +659,9 @@ avtMFEMFileFormat::FetchMesh(const std::string &mesh_name,int domain)
 //    Alister Maguire, Thu Jan  2 15:23:13 MST 2020
 //    Casting int to Geom::Type where appropriate. This is required after the
 //    upgrade to mfem 4.0.
+// 
+//    Justin Privitera, Wed Aug 24 10:59:27 PDT 2022
+//    Deleted the function. Use `avtMFEMDataAdaptor::RefineMeshToVTK()`.
 //
 // ****************************************************************************
 
@@ -829,9 +813,12 @@ avtMFEMFileFormat::GetRefinedVar(const std::string &var_name,
 //   Alister Maguire, Thu Jan  2 15:23:13 MST 2020
 //   Casting int to Geom::Type where appropriate. This is required after the
 //   upgrade to mfem 4.0.
+// 
+//    Justin Privitera, Wed Aug 24 10:59:27 PDT 2022
+//    Deleted the function. Use 
+//    `avtMFEMDataAdaptor::RefineElementColoringToVTK()`.
 //
 // ****************************************************************************
-
 
 // ****************************************************************************
 //  Method: avtMFEMFileFormat::GetRefinedElementAttribute
@@ -854,8 +841,11 @@ avtMFEMFileFormat::GetRefinedVar(const std::string &var_name,
 //    Casting int to Geom::Type where appropriate. This is required after the
 //    upgrade to mfem 4.0.
 // 
+//    Justin Privitera, Wed Aug 24 10:59:27 PDT 2022
+//    Deleted the function. Use 
+//    `avtMFEMDataAdaptor::RefineElementAttributeToVTK()`.
+// 
 // ****************************************************************************
-
 
 // ****************************************************************************
 //  Method: avtMFEMFileFormat::RegisterDataSelections
@@ -884,6 +874,3 @@ avtMFEMFileFormat::RegisterDataSelections(const std::vector<avtDataSelection_p>&
         }
     }
 }
-
-
-

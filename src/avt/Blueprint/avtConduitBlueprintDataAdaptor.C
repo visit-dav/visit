@@ -64,7 +64,6 @@
 #include <vtkRectilinearGrid.h>
 #include <vtkStructuredGrid.h>
 
-using std::string;
 using namespace conduit;
 using namespace mfem;
 
