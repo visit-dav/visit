@@ -791,6 +791,9 @@ PointsTopologyToVTKUnstructuredGrid(const Node &n_coords,
 // 
 //    Justin Privitera, Mon Aug 22 17:15:06 PDT 2022
 //    Moved from blueprint plugin to conduit blueprint data adaptor.
+// 
+//    Justin Privitera, Tue Aug 23 14:40:24 PDT 2022
+//    Removed `CONDUIT_HAVE_PARTITION_FLATTEN` check.
 //
 // ****************************************************************************
 vtkDataSet *
@@ -811,38 +814,30 @@ UnstructuredTopologyToVTKUnstructuredGrid(int domain,
         if (n_topo["elements/shape"].as_string() == "polyhedral" || 
             n_topo["elements/shape"].as_string() == "polygonal")
         {
-            #if CONDUIT_HAVE_PARTITION_FLATTEN == 1
-                Node s2dmap, d2smap, options;
-                blueprint::mesh::topology::unstructured::generate_sides(
-                    n_topo,
-                    res["topologies/" + n_topo.name()],
-                    res["coordsets/" + n_topo["coordset"].as_string()],
-                    s2dmap,
-                    d2smap);
+            Node s2dmap, d2smap, options;
+            blueprint::mesh::topology::unstructured::generate_sides(
+                n_topo,
+                res["topologies/" + n_topo.name()],
+                res["coordsets/" + n_topo["coordset"].as_string()],
+                s2dmap,
+                d2smap);
 
-                unsigned_int_accessor values = d2smap["values"].value();
+            unsigned_int_accessor values = d2smap["values"].value();
 
-                oca = vtkUnsignedIntArray::New();
-                oca->SetName("avtOriginalCellNumbers");
-                oca->SetNumberOfComponents(2);
+            oca = vtkUnsignedIntArray::New();
+            oca->SetName("avtOriginalCellNumbers");
+            oca->SetNumberOfComponents(2);
 
-                for (int i = 0; i < values.number_of_elements(); i ++)
-                {
-                    unsigned int ocdata[2] = {static_cast<unsigned int>(domain), 
-                                              static_cast<unsigned int>(values[i])};
-                    oca->InsertNextTypedTuple(ocdata);
-                }
+            for (int i = 0; i < values.number_of_elements(); i ++)
+            {
+                unsigned int ocdata[2] = {static_cast<unsigned int>(domain), 
+                                          static_cast<unsigned int>(values[i])};
+                oca->InsertNextTypedTuple(ocdata);
+            }
 
-                coords_ptr = res.fetch_ptr(
-                    "coordsets/" + n_topo["coordset"].as_string());
-                topo_ptr = res.fetch_ptr("topologies/" + n_topo.name());
-            #else
-                Node about;
-                conduit::about(about);
-                AVT_CONDUIT_BP_EXCEPTION1(InvalidVariableException,
-                    "VisIt Conduit Blueprint Data Adaptor requires Conduit >= 0.8.0 to read polytopal meshes."
-                    "VisIt was built with Conduit version:"  << about["version"].as_string());
-            #endif
+            coords_ptr = res.fetch_ptr(
+                "coordsets/" + n_topo["coordset"].as_string());
+            topo_ptr = res.fetch_ptr("topologies/" + n_topo.name());
         }
     }
 

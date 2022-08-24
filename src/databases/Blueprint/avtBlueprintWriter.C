@@ -181,6 +181,9 @@ blueprint_writer_plugin_error_handler(const std::string &msg,
 //
 //  Chris Laganella Wed Dec 15 17:57:09 EST 2021
 //  Add conditional compilation based on flatten/partition support
+// 
+//    Justin Privitera, Tue Aug 23 14:40:24 PDT 2022
+//    Removed `CONDUIT_HAVE_PARTITION_FLATTEN` check.
 //
 // ****************************************************************************
 
@@ -191,7 +194,6 @@ avtBlueprintWriter::avtBlueprintWriter(DBOptionsAttributes *options) :m_stem(),
 
     m_op = BP_MESH_OP_NONE;
 
-#if CONDUIT_HAVE_PARTITION_FLATTEN == 1
     if(options)
     {
         int op_val = options->GetEnum("Operation");
@@ -223,7 +225,6 @@ avtBlueprintWriter::avtBlueprintWriter(DBOptionsAttributes *options) :m_stem(),
             }
         }
     }
-#endif
 
     conduit::utils::set_info_handler(blueprint_writer_plugin_info_handler);
     conduit::utils::set_warning_handler(blueprint_writer_plugin_warning_handler);
@@ -372,9 +373,11 @@ avtBlueprintWriter::WriteChunk(vtkDataSet *ds, int chunk)
 //
 //  Brad Whitlock, Fri Apr  1 13:41:32 PDT 2022
 //  Removed /c0 since Conduit scalars are no longer mcarrays.
+// 
+//    Justin Privitera, Tue Aug 23 14:40:24 PDT 2022
+//    Removed `CONDUIT_HAVE_PARTITION_FLATTEN` check.
 //
 // ****************************************************************************
-#if CONDUIT_HAVE_PARTITION_FLATTEN == 1
 static void
 BuildSelections(Node &domains,
                                     Node &selections)
@@ -431,7 +434,6 @@ BuildSelections(Node &domains,
     }
     BP_PLUGIN_INFO("Done building selections." << selections.schema().to_json());
 }
-#endif
 
 // ****************************************************************************
 //  Method: avtBlueprintWriter::ChunkToBpMesh
@@ -643,6 +645,10 @@ avtBlueprintWriter::WriteMeshDomain(Node &mesh, int domain_id)
 //  Added BuildSelections call and surrounding logic
 //
 //  Chris Laganella Wed Dec 15 18:01:21 EST 2021
+// 
+//    Justin Privitera, Tue Aug 23 14:40:24 PDT 2022
+//    Removed `CONDUIT_HAVE_PARTITION_FLATTEN` check.
+//
 // ****************************************************************************
 void
 avtBlueprintWriter::CloseFile(void)
@@ -651,7 +657,6 @@ avtBlueprintWriter::CloseFile(void)
     BP_PLUGIN_INFO("I'm rank " << writeContext.Rank() << " and I called CloseFile().");
 #endif
 
-#if CONDUIT_HAVE_PARTITION_FLATTEN == 1
     if(m_op == BP_MESH_OP_FLATTEN_CSV || m_op == BP_MESH_OP_FLATTEN_HDF5)
     {
         debug5 << "Flatten options:\n" << m_options.to_string() << std::endl;
@@ -742,7 +747,6 @@ avtBlueprintWriter::CloseFile(void)
             }
         }
     }
-#endif
 }
 
 // ****************************************************************************

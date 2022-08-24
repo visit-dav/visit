@@ -1609,6 +1609,9 @@ avtBlueprintFileFormat::GetMesh(int domain, const char *abs_meshname)
 //    `m_new_refine` is passed to `RefineGridFunctionToVTK` so it can choose
 //    the appropriate MFEM LOR scheme.
 // 
+//    Justin Privitera, Tue Aug 23 14:40:24 PDT 2022
+//    Removed `CONDUIT_HAVE_PARTITION_FLATTEN` check.
+// 
 // ****************************************************************************
 
 vtkDataArray *
@@ -1735,36 +1738,28 @@ avtBlueprintFileFormat::GetVar(int domain, const char *abs_varname)
                 if (n_topo["elements/shape"].as_string() == "polyhedral" || 
                     n_topo["elements/shape"].as_string() == "polygonal")
                 {
-                    #if CONDUIT_HAVE_PARTITION_FLATTEN == 1
-                        string field_name, coords_name;
-                        // get name of coordset from topology
-                        coords_name = n_topo["coordset"].as_string();
+                    string field_name, coords_name;
+                    // get name of coordset from topology
+                    coords_name = n_topo["coordset"].as_string();
 
-                        Node s2dmap, d2smap, options;
-                        Node &side_coords = side_mesh["coordsets/" + coords_name];
-                        Node &side_topo = side_mesh["topologies/" + topo_name];
-                        Node &side_fields = side_mesh["fields"];
+                    Node s2dmap, d2smap, options;
+                    Node &side_coords = side_mesh["coordsets/" + coords_name];
+                    Node &side_topo = side_mesh["topologies/" + topo_name];
+                    Node &side_fields = side_mesh["fields"];
 
-                        field_name = FileFunctions::Basename(abs_varname_str);
-                        n_mesh["fields/" + field_name].set_external(*field_ptr);
+                    field_name = FileFunctions::Basename(abs_varname_str);
+                    n_mesh["fields/" + field_name].set_external(*field_ptr);
 
-                        blueprint::mesh::topology::unstructured::generate_sides(
-                          n_mesh["topologies/" + topo_name],
-                          side_topo,
-                          side_coords,
-                          side_fields,
-                          s2dmap,
-                          d2smap,
-                          options);
+                    blueprint::mesh::topology::unstructured::generate_sides(
+                      n_mesh["topologies/" + topo_name],
+                      side_topo,
+                      side_coords,
+                      side_fields,
+                      s2dmap,
+                      d2smap,
+                      options);
 
-                        field_ptr = side_fields.fetch_ptr(field_name);
-                    #else
-                        Node about;
-                        conduit::about(about);
-                        BP_PLUGIN_EXCEPTION1(InvalidVariableException,
-                            "VisIt Blueprint Plugin requires Conduit >= 0.8.0 to read polytopal meshes."
-                            "VisIt was built with Conduit version:"  << about["version"].as_string());
-                    #endif
+                    field_ptr = side_fields.fetch_ptr(field_name);
                 }
             }
 
