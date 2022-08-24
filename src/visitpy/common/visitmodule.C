@@ -1306,27 +1306,22 @@ CreateDictionaryFromDBOptions(DBOptionsAttributes &opts)
             PyDict_SetItemString(dict,name,PyString_FromString(opts.GetString(name).c_str()));
             break;
           case DBOptionsAttributes::Enum:
+            // If you modify this section, also check the Enum case in
+            // FillDBOptionsFromDictionary
+            int enumIndex = opts.GetEnum(name);
+            stringVector enumStrings = opts.GetEnumStrings(name);
+            std::string itemString(enumStrings[enumIndex]);
+            if (enumStrings.size() > 1)
             {
-                // If you modify this section, also check the Enum case in
-                // FillDBOptionsFromDictionary
-                int enumIndex = opts.GetEnum(name);
-                stringVector enumStrings = opts.GetEnumStrings(name);
-                std::string itemString(enumStrings[enumIndex]);
-                if (enumStrings.size() > 1)
+                itemString += " # Options are: ";
+                for (size_t i = 0; i < enumStrings.size(); ++i)
                 {
-                    itemString += " # Options are: ";
-                    for (size_t i = 0; i < enumStrings.size(); ++i)
-                    {
-                        itemString += enumStrings[i];
-                        if (i != enumStrings.size()-1)
-                            itemString += ", ";
-                    }
+                    itemString += enumStrings[i];
+                    if (i != enumStrings.size()-1)
+                        itemString += ", ";
                 }
-                PyDict_SetItemString(dict,name,PyString_FromString(itemString.c_str()));
             }
-            break;
-          default:
-            PyDict_SetItemString(dict,name,PyString_FromString("**ERROR**:Unknown Option Type"));
+            PyDict_SetItemString(dict,name,PyString_FromString(itemString.c_str()));
         }
         delete[] name;
     }
