@@ -214,7 +214,7 @@ The ``TestAutoName()`` and ``TestTextAutoName()`` methods are preferred and perf
 The auto-naming algorithm depends on the ``.py`` file being structured such that calls to ``TestAutoName()`` and/or ``TestTextAutoName()`` are made only from within top-level functions in the ``.py`` file.
 Auto naming does not work if these methods are called from either the top/main of the ``.py`` file or from functions two or more levels deep.
 Auto naming catenates the ``.py`` file's name with the name of the top-level function from which the call was made and adds an index/count.
-So, a ``gorfo.py`` file structured as in the following
+So, given a python file named ``gorfo.py`` structured as below, the resulting auto generated names (and section names) are indicated in the associated comments.
 
 .. code:: python
 
@@ -238,11 +238,12 @@ One option to improve the implementation of auto-naming would be to replace sequ
 
 When they can be used, the ``TestValueXX()`` are a little more convenient because they do not involve storing data in files and having to maintain separate baseline files. 
 Instead the ``TestTextXX()`` methods take both an *actual* (current) and *expected* (baseline) result as arguments directly coded in the calling ``.py`` file.
+
 Likewise, the ``TestPOA()`` (pass on arrival) and ``TestFOA()`` (fail on arrival) methods are convenient ways to implement a test based primarily upon python logic itself with if-then-else or try-except blocks.
 These methods are useful for cases where the majority of logic for determining a passed or failed test exists primarily as the python code itself being executed.
 A good example is the ``unit/atts_assign.py`` tests.
-While there may be many instances of ``TestFOA()`` with the same ``name`` argument in a given sequence of logic for a single test outcome, they can be differentiated by a unique *tag* (typically the ``LINE()`` method identifing the line number.
-However, there should be only a single ``TestPOA()`` instance with the same name for the associated test outcome.
+While there may be many instances of ``TestFOA()`` (many ways a given bit of logic can fail) with the same ``name`` argument in a given sequence of logic for a single test outcome, they can be differentiated by a unique *tag* (typically the ``LINE()`` method identifing the line number.
+However, there should be only a single ``TestPOA()`` (the one way a given bit of logic can succeed) instance with the same name for the associated test outcome.
 
 As VisIt_ testing has evolved over the past twenty years, understanding and improving productivity related to test design has not been a priority. 
 As a result, there are likely far more image test results than are truly needed to fully vet all of VisIt_'s plotting features. 
