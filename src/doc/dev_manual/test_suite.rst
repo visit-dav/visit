@@ -41,7 +41,7 @@ In particular, the command ``git lfs pull`` is used to *dereference* pointer fil
 Watch out!
 If there are many *pointer* files in the current branch and/or the actual files to which the pointer files refer are very large, a ``git lfs pull`` operation can take a long time (many minutes or more).
 The operation can be restricted to specific files using the ``--include`` and ``--exclude`` options to ``git lfs``.
-Likewise, ``git pull`` operations which wind up updating the contents of a *real* lfs file in the local checkout will replace the file with the updated *pointer* contents.
+Likewise, ``git pull`` operations which wind up updating the contents of a *real* lfs file in the local checkout will replace the file with its updated *pointer* contents.
 
 There are tell tale signs a ``git lfs pull`` operation has been negelected.
 First, the *pointer* files are very small text files, usually less than 150 bytes ::
