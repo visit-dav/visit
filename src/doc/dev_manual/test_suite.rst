@@ -76,7 +76,7 @@ In addition, various operations involving lfs'd files in their *pointer* state w
 or as another example using ImageMagick's ``display`` command on a ``.png`` file ::
 
     % display ../test/baseline//databases/silo/silo_curvilinear_3d_surface_6.png
-    display: improper image header `../test/baseline//databases/silo/silo_curvilinear_3d_surface_6.png'
+    display: improper image header '../test/baseline//databases/silo/silo_curvilinear_3d_surface_6.png'
 
 How to run the regression tests manually
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
