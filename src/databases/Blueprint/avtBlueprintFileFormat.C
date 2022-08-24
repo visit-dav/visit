@@ -611,6 +611,9 @@ avtBlueprintFileFormat::ReadBlueprintMatset(int domain,
 //
 //    Justin Privitera, Mon 07 Mar 2022 03:08:01 PM PST
 //    Added case for implicit points topology.
+// 
+//    Justin Privitera, Fri Jul 22 16:10:43 PDT 2022
+//    Added check for mfem zone centered field.
 //
 // ****************************************************************************
 void
@@ -796,6 +799,16 @@ avtBlueprintFileFormat::AddBlueprintMeshAndFieldMetadata(avtDatabaseMetaData *md
                 // treat the mesh as an mfem mesh, even if it lacks a basis func
 
                 m_mfem_mesh_map[var_topo_name] = true;
+
+                // H1 is nodal
+                // L2 is zonal
+                std::string basis = n_field["basis"].as_string();
+                // if the basis is *not* H1 (it is L2 instead) 
+                // and new LOR is turned on
+                if (basis.find("H1_") == std::string::npos && m_new_refine)
+                {
+                    cent = AVT_ZONECENT;
+                }
             }
 
             if (ncomps == 1)

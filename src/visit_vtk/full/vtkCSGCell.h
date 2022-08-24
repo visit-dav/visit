@@ -12,9 +12,11 @@
 // "Boundary" in this interface and it will make pretty good sense.
 #ifndef __vtkCSGCell_h
 #define __vtkCSGCell_h
-#include <visit_vtk_exports.h>
 
-#include "vtkCell.h"
+#include <visit_vtk_exports.h>
+#include <visit-config.h> // For LIB_VERSION_LE
+
+#include <vtkCell.h>
 
 class vtkPointLocator;
 
@@ -35,22 +37,40 @@ public:
   int GetNumberOfFaces() override {return 0;};
   vtkCell *GetEdge(int) override {return 0;};
   vtkCell *GetFace(int) override {return 0;};
-  int CellBoundary(int subId, double pcoords[3], vtkIdList *pts) override;
 
-  virtual void Contour(double, vtkDataArray*, vtkIncrementalPointLocator*, vtkCellArray*, vtkCellArray*, vtkCellArray*, vtkPointData*, vtkPointData*, vtkCellData*, vtkIdType, vtkCellData*) override;
+  void Contour(double, vtkDataArray*, vtkIncrementalPointLocator*, vtkCellArray*, vtkCellArray*, vtkCellArray*, vtkPointData*, vtkPointData*, vtkCellData*, vtkIdType, vtkCellData*) override {}
 
-  virtual void Clip(double, vtkDataArray*, vtkIncrementalPointLocator*, vtkCellArray*, vtkPointData*, vtkPointData*, vtkCellData*, vtkIdType, vtkCellData*, int) override;
+  void Clip(double, vtkDataArray*, vtkIncrementalPointLocator*, vtkCellArray*, vtkPointData*, vtkPointData*, vtkCellData*, vtkIdType, vtkCellData*, int) override {}
 
+  int Triangulate(int index, vtkIdList *ptIds, vtkPoints *pts) override;
+
+// There is const differences in arguments between VTK8 and VTK9 for these fns
+#if LIB_VERSION_LE(VTK, 8,1,0)
+  int CellBoundary(int subId, double pcoords[3], vtkIdList *pts) override 
+      { return 0; }
   int EvaluatePosition(double x[3], double* closestPoint, 
                        int& subId, double pcoords[3], 
-                       double& dist2, double *weights) override;
+                       double& dist2, double *weights) override { return 0; }
   void EvaluateLocation(int& subId, double pcoords[3], double x[3],
-                        double *weights) override;
+                        double *weights) override {;}
   int IntersectWithLine(double p1[3], double p2[3], double tol, double& t,
                         double x[3], double pcoords[3], int& subId) override;
-  int Triangulate(int index, vtkIdList *ptIds, vtkPoints *pts) override;
   void Derivatives(int subId, double pcoords[3], double *values, 
-                   int dim, double *derivs) override;
+                   int dim, double *derivs) override {}
+#else
+  int CellBoundary(int subId, const double pcoords[3], vtkIdList *pts) override
+      { return 0; }
+  int EvaluatePosition(const double x[3], double* closestPoint, 
+                       int& subId, double pcoords[3], 
+                       double& dist2, double *weights) override { return 0; }
+  void EvaluateLocation(int& subId, const double pcoords[3], double x[3],
+                        double *weights) override {;}
+  int IntersectWithLine(const double p1[3], const double p2[3], double tol,
+                        double& t, double x[3], double pcoords[3], int& subId) override;
+  void Derivatives(int subId, const double pcoords[3], const double *values, 
+                   int dim, double *derivs) override {}
+#endif
+ 
 
 protected:
   vtkCSGCell() {};
@@ -58,8 +78,8 @@ protected:
 
 
 private:
-  vtkCSGCell(const vtkCSGCell&);  // Not implemented.
-  void operator=(const vtkCSGCell&);  // Not implemented.
+  vtkCSGCell(const vtkCSGCell&)=delete;
+  void operator=(const vtkCSGCell&)=delete;
 };
 
 #endif

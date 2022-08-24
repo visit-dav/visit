@@ -24,6 +24,9 @@
 # 
 #    Justin Privitera, Wed Jun 15 16:43:34 PDT 2022
 #    Added tests for new blueprint output.
+# 
+#    Justin Privitera, Wed Jul 20 13:54:06 PDT 2022
+#    Added query output msg tests and tests for query errors.
 #
 # ----------------------------------------------------------------------------
 
@@ -290,9 +293,8 @@ Query("XRay Image", "png", outdir_set, 1, 0.0, 2.5, 10.0, 0, 0, 10., 10., 300, 3
 os.rename(outdir_set + "/output00.png", out_path(out_base, "xrayimage30.png"))
 Test("xrayimage30", 0, 1)
 
-# TODO figure out where the query output string goes and add tests for it
-# s = GetQueryOutputString()
-# TestText("xrayimage31", s)
+s = GetQueryOutputString()
+TestText("xrayimage31", s)
 DeleteAllPlots()
 CloseDatabase(silo_data_path("curv3d.silo"))
 
@@ -309,6 +311,8 @@ AddPlot("Pseudocolor", "d")
 DrawPlots()
 
 Query("XRay Image", "hdf5", outdir_set, 1, 0.0, 2.5, 10.0, 0, 0, 10., 10., 300, 300, ("d", "p"))
+s = GetQueryOutputString()
+TestText("xrayimage32", s)
 DeleteAllPlots()
 CloseDatabase(silo_data_path("curv3d.silo"))
 OpenDatabase(conduit_db)
@@ -327,6 +331,8 @@ AddPlot("Pseudocolor", "d")
 DrawPlots()
 
 Query("XRay Image", "json", outdir_set, 1, 0.0, 2.5, 10.0, 0, 0, 10., 10., 300, 300, ("d", "p"))
+s = GetQueryOutputString()
+TestText("xrayimage33", s)
 DeleteAllPlots()
 CloseDatabase(silo_data_path("curv3d.silo"))
 OpenDatabase(conduit_db)
@@ -345,6 +351,8 @@ AddPlot("Pseudocolor", "d")
 DrawPlots()
 
 Query("XRay Image", "yaml", outdir_set, 1, 0.0, 2.5, 10.0, 0, 0, 10., 10., 300, 300, ("d", "p"))
+s = GetQueryOutputString()
+TestText("xrayimage34", s)
 DeleteAllPlots()
 CloseDatabase(silo_data_path("curv3d.silo"))
 OpenDatabase(conduit_db)
@@ -355,5 +363,81 @@ Test("Blueprint_YAML_X_Ray_Output")
 DeleteAllPlots()
 CloseDatabase(conduit_db)
 os.remove(conduit_db)
+
+# 
+# test catching failures
+# 
+
+# write to dir that does not exist
+
+dir_dne = outdir_set + "/doesnotexist"
+if os.path.isdir(dir_dne):
+    os.rmdir(dir_dne)
+
+OpenDatabase(silo_data_path("curv3d.silo"))
+AddPlot("Pseudocolor", "d")
+DrawPlots()
+
+Query("XRay Image", "hdf5", dir_dne, 1, 0.0, 2.5, 10.0, 0, 0, 10., 10., 300, 300, ("d", "p"))
+s = GetQueryOutputString()
+TestText("xrayimage35", s)
+DeleteAllPlots()
+CloseDatabase(silo_data_path("curv3d.silo"))
+
+
+# Why is the following commented out?
+# There is an issue with how conduit exceptions are thrown within visit.
+# This issue will likely be addressed as part of https://github.com/visit-dav/visit/pull/17698
+# Once that has happened, the conduit exception that this test is meant to capture 
+# should work as expected, and the following lines can be uncommented.
+
+# # write to dir w/ read only permissions
+
+# outdir_bad = "/tmp/baddir"
+# if not os.path.isdir(outdir_bad):
+#     os.mkdir(outdir_bad)
+# os.chmod(outdir_bad, 0o444)
+
+# OpenDatabase(silo_data_path("curv3d.silo"))
+# AddPlot("Pseudocolor", "d")
+# DrawPlots()
+
+# Query("XRay Image", "hdf5", outdir_bad, 1, 0.0, 2.5, 10.0, 0, 0, 10., 10., 300, 300, ("d", "p"))
+# s = GetQueryOutputString()
+# TestText("xrayimage36", s)
+# DeleteAllPlots()
+# CloseDatabase(silo_data_path("curv3d.silo"))
+
+#
+# Test that we get decent error messages for common cases
+#
+import numpy
+
+nporig = numpy.array([0.0, 2.5, 10.0])
+
+params = dict(output_type=2, output_dir=".", divide_emis_by_absorb=1, \
+    origin=nporig, up_vector=(0, 1, 0), theta=0, phi=0, \
+    width = 10., height=10., image_size=(300, 300), vars=("da", "pa"))
+try:
+    Query("XRay Image", params)
+except (visit.VisItException, VisItException) as e:
+    if '"origin"' in e.args[0] and "position 4" in e.args[0] and "type numpy.ndarray" in e.args[0]:
+        TestPOA('detect and warn numpy array as query param')
+    else:
+        TestFOA('detect and warn numpy array as query param', LINE())
+    pass
+except:
+    TestFOA('detect and warn numpy array as query param', LINE())
+    pass
+
+params = dict(output_type=2, output_dir=".", divide_emis_by_absorb=1, \
+    origin=nporig.tolist(), up_vector=(0, 1, 0), theta=0, phi=0, \
+    width = 10., height=10., image_size=(300, 300), vars=("da", "pa"))
+try:
+    Query("XRay Image", params)
+    TestPOA('numpy array converted to list works as query param')
+except:
+    TestFOA('numpy array converted to list works as query param', LINE())
+    pass
 
 Exit()

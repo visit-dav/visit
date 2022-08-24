@@ -6,6 +6,8 @@
 
 #include "vtkCQS.h"
 
+#include <visit-config.h> // For LIB_VERSION_LE
+
 #include <vtkMath.h>
 #include <vtkTriangle.h>
 #include <vtkInformationVector.h>
@@ -164,8 +166,13 @@ int vtkCQS::RequestData(vtkInformation *request,
                 int nf = cell->GetNumberOfFaces();
                 for(int f=0;f<nf;f++)
                 {
+#if LIB_VERSION_LE(VTK,8,1,0)
                     int* faceIds = 0;
                     int nfp = cell->GetFace(f)->GetNumberOfPoints();
+#else
+                    const vtkIdType *faceIds = 0;
+                    vtkIdType nfp = cell->GetFace(f)->GetNumberOfPoints();
+#endif
                     cell3d->GetFacePoints(f,faceIds);
                     if( nfp == 3 ) // face is a triangle
                     {

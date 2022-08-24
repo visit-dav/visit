@@ -13,17 +13,22 @@
 #   Kathleen Biagas, Tue Mar 11 10:44:54 MST 2014
 #   Change how newer versions are handled.
 #
+#   Kathleen Biagas, Tue Aug 2, 2022
+#   Set JPEG_LIBRARY, needed for VTK 9.
+#
 #****************************************************************************/
 
-# Use the JPEG_DIR hint from the config-site .cmake file 
-
-INCLUDE(${VISIT_SOURCE_DIR}/CMake/SetUpThirdParty.cmake)
+# Use the JPEG_DIR hint from the config-site .cmake file
 
 IF (WIN32)
+  INCLUDE(${VISIT_SOURCE_DIR}/CMake/SetUpThirdParty.cmake)
+
   if (JPEG_LIBNAME_PREFIX_LIB)
       SET_UP_THIRD_PARTY(JPEG LIBS libjpeg)
   else() 
       SET_UP_THIRD_PARTY(JPEG LIBS jpeg)
   endif()
+  # VTK's (9) Find needs this var set.
+  set(JPEG_LIBRARY ${JPEG_LIBRARY_DIR}/${JPEG_LIB})
 ENDIF (WIN32)
 

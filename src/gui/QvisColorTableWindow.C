@@ -40,6 +40,8 @@
 #define SELECT_FOR_CONTINUOUS 0
 #define SELECT_FOR_DISCRETE   1
 
+constexpr int MAX_ALLOWED_TAGS{9999};
+
 // ****************************************************************************
 // Method: QvisColorTableWindow::QvisColorTableWindow
 //
@@ -70,6 +72,9 @@
 // 
 //   Justin Privitera, Thu Jun 16 18:01:49 PDT 2022
 //   Added new tag-related vars to constructor.
+// 
+//   Justin Privitera, Thu Jul 14 16:57:42 PDT 2022
+//   Added new searching-related vars to the constructor.
 //
 // ****************************************************************************
 
@@ -87,6 +92,8 @@ QvisColorTableWindow::QvisColorTableWindow(
     colorTableTypeGroup = 0;
     tagsVisible = false;
     tagsMatchAny = true;
+    searchingOn = false;
+    searchTerm = QString("");
 }
 
 // ****************************************************************************
@@ -173,6 +180,13 @@ QvisColorTableWindow::~QvisColorTableWindow()
 // 
 //   Justin Privitera, Thu Jun 16 18:01:49 PDT 2022
 //   Completely redid the gui to remove categories and add tags.
+// 
+//   Justin Privitera, Wed Jul 13 15:24:42 PDT 2022
+//   Called `QvisNoDefaultColorTableButton` constructor with its new boolean
+//   argument that signals if the button is discrete or continuous.
+//
+//   Justin Privitera, Thu Jul 14 16:57:42 PDT 2022
+//   Added searchbox gui element and hooked up signals and slots for searching.
 //
 // ****************************************************************************
 
@@ -190,14 +204,14 @@ QvisColorTableWindow::CreateWindowContents()
     innerDefaultTopLayout->addLayout(innerDefaultLayout);
     innerDefaultLayout->setColumnMinimumWidth(1, 10);
 
-    defaultContinuous = new QvisNoDefaultColorTableButton(defaultGroup);
+    defaultContinuous = new QvisNoDefaultColorTableButton(defaultGroup, false);
     connect(defaultContinuous, SIGNAL(selectedColorTable(const QString &)),
             this, SLOT(setDefaultContinuous(const QString &)));
     innerDefaultLayout->addWidget(defaultContinuous, 0, 1);
     defaultContinuousLabel = new QLabel(tr("Continuous"), defaultGroup);
     innerDefaultLayout->addWidget(defaultContinuousLabel, 0, 0);
 
-    defaultDiscrete = new QvisNoDefaultColorTableButton(defaultGroup);
+    defaultDiscrete = new QvisNoDefaultColorTableButton(defaultGroup, true);
     connect(defaultDiscrete, SIGNAL(selectedColorTable(const QString &)),
             this, SLOT(setDefaultDiscrete(const QString &)));
     innerDefaultLayout->addWidget(defaultDiscrete, 1, 1);
@@ -252,16 +266,6 @@ QvisColorTableWindow::CreateWindowContents()
             this, SLOT(highlightColorTable(QTreeWidgetItem *, QTreeWidgetItem*)));
     mgLayout->addWidget(nameListBox, 3, 0, 1, 6);
 
-    QLabel *colorTableName = new QLabel(tr("Name"), colorTableWidgetGroup);
-    mgLayout->addWidget(colorTableName, 4, 0, 1, 1, Qt::AlignLeft);
-    nameLineEdit = new QLineEdit(colorTableWidgetGroup);
-    mgLayout->addWidget(nameLineEdit, 4, 1, 1, 5);
-
-    tagLabel = new QLabel(tr("Tags"), colorTableWidgetGroup);
-    mgLayout->addWidget(tagLabel, 5, 0, 1, 1, Qt::AlignLeft);
-    tagLineEdit = new QLineEdit(colorTableWidgetGroup);
-    mgLayout->addWidget(tagLineEdit, 5, 1, 1, 5);
-
     tagTable = new QTreeWidget(colorTableWidgetGroup);
     QStringList headers;
     headers << tr("Enabled") << tr("Tag Name");
@@ -276,6 +280,23 @@ QvisColorTableWindow::CreateWindowContents()
     tagTable->setMinimumWidth(250);
     tagTable->setColumnCount(2);
     mgLayout->addWidget(tagTable, 3, 0, 1, 3);
+
+    QLabel *colorTableName = new QLabel(tr("Name"), colorTableWidgetGroup);
+    mgLayout->addWidget(colorTableName, 4, 0, 1, 1, Qt::AlignLeft);
+    nameLineEdit = new QLineEdit(colorTableWidgetGroup);
+    connect(nameLineEdit, SIGNAL(textEdited(const QString &)),
+            this, SLOT(searchEdited(const QString &)));
+    mgLayout->addWidget(nameLineEdit, 4, 1, 1, 2);
+
+    searchToggle = new QCheckBox(tr("Enable Searching"), colorTableWidgetGroup);
+    connect(searchToggle, SIGNAL(toggled(bool)),
+            this, SLOT(searchingToggled(bool)));
+    mgLayout->addWidget(searchToggle, 4, 3, 1, 3);
+
+    tagLabel = new QLabel(tr("Tags"), colorTableWidgetGroup);
+    mgLayout->addWidget(tagLabel, 5, 0, 1, 1, Qt::AlignLeft);
+    tagLineEdit = new QLineEdit(colorTableWidgetGroup);
+    mgLayout->addWidget(tagLineEdit, 5, 1, 1, 5);
 
     // Add the group box that will contain the color-related widgets.
     colorWidgetGroup = new QGroupBox(central);
@@ -583,6 +604,10 @@ QvisColorTableWindow::SetFromNode(DataNode *parentNode, const int *borders)
 // 
 //   Justin Privitera, Thu Jun 16 18:01:49 PDT 2022
 //   Removed categories and added tags.
+// 
+//   Justin Privitera, Wed Aug  3 19:46:13 PDT 2022
+//   The tag label and tag line edit are now always visible so they do not
+//   need to have their visibility set in this function.
 //
 // ****************************************************************************
 
@@ -660,8 +685,6 @@ QvisColorTableWindow::UpdateWindow(bool doAll)
             tagFilterToggle->blockSignals(true);
             tagFilterToggle->setChecked(colorAtts->GetTaggingFlag());
             tagsVisible = colorAtts->GetTaggingFlag();
-            tagLabel->setVisible(tagsVisible);
-            tagLineEdit->setVisible(tagsVisible);
             tagTable->setVisible(tagsVisible);
             updateNameBoxPosition(tagsVisible);
             tagCombiningBehaviorChoice->setVisible(tagsVisible);
@@ -785,8 +808,9 @@ QvisColorTableWindow::AddToTagTable(std::string currtag, int index)
     item->setCheckState(0, activeTags[index] ? Qt::Checked : Qt::Unchecked);
     item->setText(1, currtag.c_str());
     // this next column is secret and is for passing around the tag index
-    // should allow you to have up to 10^10 tags
-    char buf[10];
+    // should allow you to have up to 9999 tags
+    // hence why MAX_ALLOWED_TAGS is defined as 9999 at the top of the file.
+    char buf[4];
     sprintf(buf, "%d", index);
     item->setText(2, buf);
 }
@@ -805,12 +829,26 @@ QvisColorTableWindow::AddToTagTable(std::string currtag, int index)
 //    Justin Privitera, Mon Jun 27 17:33:23 PDT 2022
 //    Added call to AddToTagTable() to reduce code bloat.
 //    Renamed `run_before` to `first_time`.
+// 
+//    Justin Privitera, Fri Aug 19 20:57:38 PDT 2022
+//    We now throw an error if there are too many tags.
 //
 // ****************************************************************************
 
 void
 QvisColorTableWindow::AddGlobalTag(std::string currtag, bool first_time)
 {
+    if (tagList.size() >= MAX_ALLOWED_TAGS)
+    {
+        QString tmp;
+        std::stringstream err_msg;
+        err_msg << "You have too many tags. VisIt can only support up to "
+            << MAX_ALLOWED_TAGS << " tags.";
+        tmp = QString(err_msg.str().c_str());
+        Error(tmp);
+        return;
+    }
+
     // if the given tag is NOT in the global tag list
     if (std::find(tagList.begin(), tagList.end(), currtag) == tagList.end())
     {
@@ -932,6 +970,13 @@ QvisColorTableWindow::UpdateTags()
 // 
 //   Justin Privitera, Wed Jun 29 17:50:24 PDT 2022
 //   Refactored the block that fills the namelistbox.
+// 
+//   Justin Privitera, Thu Jul 14 16:57:42 PDT 2022
+//   Added logic for searching for color tables. Now there is a search filter
+//   applied at the end of the function.
+// 
+//   Justin Privitera, Wed Aug  3 19:46:13 PDT 2022
+//   The tag line edit only needs to be populated if searching is disabled.
 //
 // ****************************************************************************
 
@@ -1003,10 +1048,22 @@ QvisColorTableWindow::UpdateNames()
         // if the color table is active
         if (colorAtts->GetActiveElement(i))
         {
-            QString item(colorAtts->GetNames()[i].c_str());
-            QTreeWidgetItem *treeItem = new QTreeWidgetItem(nameListBox);
-            treeItem->setText(0, item);
-            nameListBox->addTopLevelItem(treeItem);            
+            QString ctName(colorAtts->GetNames()[i].c_str());
+            if (searchingOn)
+            {
+                if (ctName.contains(searchTerm, Qt::CaseInsensitive))
+                {
+                    QTreeWidgetItem *treeItem = new QTreeWidgetItem(nameListBox);
+                    treeItem->setText(0, ctName);
+                    nameListBox->addTopLevelItem(treeItem);  
+                }
+            }
+            else
+            {
+                QTreeWidgetItem *treeItem = new QTreeWidgetItem(nameListBox);
+                treeItem->setText(0, ctName);
+                nameListBox->addTopLevelItem(treeItem);
+            }
         }
     }
 
@@ -1026,8 +1083,11 @@ QvisColorTableWindow::UpdateNames()
             ++it;
         }
         // Set the text of the default color table into the name line edit.
-        nameLineEdit->setText(QString(colorAtts->GetNames()[index].c_str()));
-        tagLineEdit->setText(QString(colorAtts->GetColorTables(index).GetTagsAsString().c_str()));
+        if (!searchingOn)
+        {
+            nameLineEdit->setText(QString(colorAtts->GetNames()[index].c_str()));
+            tagLineEdit->setText(QString(colorAtts->GetColorTables(index).GetTagsAsString().c_str()));
+        }
     }
 
     tagTable->blockSignals(false);
@@ -1384,29 +1444,36 @@ QvisColorTableWindow::PopupColorSelect(const QColor &c, const QPoint &p)
 // 
 //   Justin Privitera, Wed May 18 11:25:46 PDT 2022
 //   Changed *active* to *default* for everything related to color tables.
+// 
+//    Justin Privitera, Wed Jul 27 12:23:56 PDT 2022
+//    Added new `skip_update` argument which will prevent the current ctrl pt
+//    from having its color changed if enabled.
 //
 // ****************************************************************************
 
 void
-QvisColorTableWindow::ShowSelectedColor(const QColor &c)
+QvisColorTableWindow::ShowSelectedColor(const QColor &c, bool skip_update)
 {
     int i;
 
-    const ColorControlPointList *ccpl = GetDefaultColorControlPoints();
-    bool updateDiscrete = (ccpl && ccpl->GetDiscreteFlag());
+    if (!skip_update)
+    {
+        const ColorControlPointList *ccpl = GetDefaultColorControlPoints();
+        bool updateDiscrete = (ccpl && ccpl->GetDiscreteFlag());
 
-    // Update the color
-    if(updateDiscrete)
-    {
-        discreteColors->blockSignals(true);
-        discreteColors->setPaletteColor(c, discreteColors->selectedIndex());
-        discreteColors->blockSignals(false);
-    }
-    else
-    {
-        spectrumBar->blockSignals(true);
-        spectrumBar->setControlPointColor(spectrumBar->activeControlPoint(), c);
-        spectrumBar->blockSignals(false);
+        // Update the color
+        if(updateDiscrete)
+        {
+            discreteColors->blockSignals(true);
+            discreteColors->setPaletteColor(c, discreteColors->selectedIndex());
+            discreteColors->blockSignals(false);
+        }
+        else
+        {
+            spectrumBar->blockSignals(true);
+            spectrumBar->setControlPointColor(spectrumBar->activeControlPoint(), c);
+            spectrumBar->blockSignals(false);
+        }
     }
 
     // Disable signals in the sliders.
@@ -1573,6 +1640,9 @@ QvisColorTableWindow::GetNextColor()
 // 
 //   Justin Privitera, Thu Jun 16 18:01:49 PDT 2022
 //   Removed categories and added logic to preserve the tags.
+// 
+//    Justin Privitera, Wed Jul 27 12:23:56 PDT 2022
+//    Logic to preserve builtin attribute.
 //
 // ****************************************************************************
 
@@ -1621,6 +1691,8 @@ QvisColorTableWindow::GetCurrentValues(int which_widget)
         ColorControlPointList *ccpl = GetDefaultColorControlPoints();
         // preserve the tags
         cpts.SetTagNames(ccpl->GetTagNames());
+        // preserve the `built-in` attribute
+        cpts.SetBuiltIn(ccpl->GetBuiltIn());
         if(ccpl)
         {
             ColorControlPointList &activeControlPoints = *ccpl;
@@ -1712,12 +1784,26 @@ QvisColorTableWindow::apply()
 // Modifications:
 //   Brad Whitlock, Mon Jul 14 15:04:07 PST 2003
 //   Added code to block signals.
+// 
+//    Justin Privitera, Wed Jul 27 12:23:56 PDT 2022
+//    Error on edit of a builtin color table.
 //
 // ****************************************************************************
 
 void
 QvisColorTableWindow::alignControlPoints()
 {
+    // built-in CTs should not be editable
+    if (colorAtts->GetColorControlPoints(currentColorTable.toStdString())->GetBuiltIn())
+    {
+        QString tmp;
+        tmp = tr("The color table ") +
+              QString("\"") + currentColorTable + QString("\"") +
+              tr(" is built-in. You cannot edit a built-in color table.");
+        Error(tmp);
+        return;
+    }
+
     // Align the control points.
     spectrumBar->blockSignals(true);
     spectrumBar->alignControlPoints();
@@ -1740,12 +1826,43 @@ QvisColorTableWindow::alignControlPoints()
 // Creation:   Mon Jun 11 11:39:32 PDT 2001
 //
 // Modifications:
+//    Justin Privitera, Wed Jul 27 12:23:56 PDT 2022
+//    Error on edit of a builtin color table and reset original values.
 //
 // ****************************************************************************
 
 void
-QvisColorTableWindow::controlPointMoved(int, float)
+QvisColorTableWindow::controlPointMoved(int index, float position)
 {
+    // Get a pointer to the default color table's control points.
+    ColorControlPointList *ccpl = GetDefaultColorControlPoints();
+
+    // built-in CTs should not be editable
+    if (ccpl->GetBuiltIn())
+    {
+        QString tmp;
+        tmp = tr("The color table ") +
+              QString("\"") + currentColorTable + QString("\"") +
+              tr(" is built-in. You cannot edit a built-in color table.");
+        Error(tmp);
+        spectrumBar->blockSignals(true);
+        // This is overkill, but it gets the job done.
+        const int num_ctrl_pts = ccpl->GetNumControlPoints();
+        for (int i = 0; i < num_ctrl_pts; i ++)
+        {
+            float pos = ccpl->GetControlPoints(i).GetPosition();
+            unsigned char *colors = ccpl->GetControlPoints(i).GetColors();
+            QColor c;
+            c.setRgb(colors[0], colors[1], colors[2], colors[3]);
+            spectrumBar->setControlPointPosition(i, pos);
+            spectrumBar->setControlPointColor(i, c);
+        }
+        QColor selectedColor = spectrumBar->controlPointColor(index);
+        ShowSelectedColor(selectedColor, true);
+        spectrumBar->blockSignals(false);        
+        return;
+    }
+    
     // Get the current attributes.
     GetCurrentValues(0);
     SetUpdate(false);
@@ -1822,6 +1939,9 @@ QvisColorTableWindow::chooseDiscreteColor(const QColor &c, int, int,
 //   Brad Whitlock, Thu Nov 21 12:54:01 PDT 2002
 //   I modified the routine so it behaves differently if the menu was
 //   activated by choosing a discrete color table.
+// 
+//    Justin Privitera, Wed Jul 27 12:23:56 PDT 2022
+//    Error on edit of a builtin color table and reset original values.
 //
 // ****************************************************************************
 
@@ -1830,6 +1950,23 @@ QvisColorTableWindow::selectedColor(const QColor &color)
 {
     // Hide the popup menu.
     colorSelect->hide();
+
+    // Get a pointer to the default color table's control points.
+    ColorControlPointList *ccpl = GetDefaultColorControlPoints();
+
+    // built-in CTs should not be editable
+    if (ccpl->GetBuiltIn())
+    {
+        QString tmp;
+        tmp = tr("The color table ") +
+              QString("\"") + currentColorTable + QString("\"") +
+              tr(" is built-in. You cannot edit a built-in color table.");
+        Error(tmp);
+        smoothingMethod->blockSignals(true);
+        smoothingMethod->setCurrentIndex(ccpl->GetSmoothing());
+        smoothingMethod->blockSignals(false);
+        return;
+    }
 
     if(color.isValid())
     {
@@ -1868,6 +2005,9 @@ QvisColorTableWindow::selectedColor(const QColor &color)
 // 
 //   Justin Privitera, Wed May 18 11:25:46 PDT 2022
 //   Changed *active* to *default* for everything related to color tables.
+// 
+//    Justin Privitera, Wed Jul 27 12:23:56 PDT 2022
+//    Error on edit of a builtin color table and reset original values.
 //
 // ****************************************************************************
 
@@ -1876,6 +2016,20 @@ QvisColorTableWindow::smoothingMethodChanged(int val)
 {
     // Get a pointer to the default color table's control points.
     ColorControlPointList *ccpl = GetDefaultColorControlPoints();
+
+    // built-in CTs should not be editable
+    if (ccpl->GetBuiltIn())
+    {
+        QString tmp;
+        tmp = tr("The color table ") +
+              QString("\"") + currentColorTable + QString("\"") +
+              tr(" is built-in. You cannot edit a built-in color table.");
+        Error(tmp);
+        smoothingMethod->blockSignals(true);
+        smoothingMethod->setCurrentIndex(ccpl->GetSmoothing());
+        smoothingMethod->blockSignals(false);
+        return;
+    }
 
     if(ccpl)
     {
@@ -1918,7 +2072,10 @@ QvisColorTableWindow::showIndexHintsToggled(bool val)
 // Modifications:
 //   Justin Privitera, Wed May 18 11:25:46 PDT 2022
 //   Changed *active* to *default* for everything related to color tables.
-//
+// 
+//    Justin Privitera, Wed Jul 27 12:23:56 PDT 2022
+//    Error on edit of a builtin color table and reset original values.
+// 
 // ****************************************************************************
 
 void
@@ -1926,6 +2083,20 @@ QvisColorTableWindow::equalSpacingToggled(bool)
 {
     // Get a pointer to the default color table's control points.
     ColorControlPointList *ccpl = GetDefaultColorControlPoints();
+
+    // built-in CTs should not be editable
+    if (ccpl->GetBuiltIn())
+    {
+        QString tmp;
+        tmp = tr("The color table ") +
+              QString("\"") + currentColorTable + QString("\"") +
+              tr(" is built-in. You cannot edit a built-in color table.");
+        Error(tmp);
+        equalCheckBox->blockSignals(true);
+        equalCheckBox->setChecked(ccpl->GetEqualSpacingFlag());
+        equalCheckBox->blockSignals(false);
+        return;
+    }
 
     if(ccpl)
     {
@@ -1967,12 +2138,27 @@ QvisColorTableWindow::equalSpacingToggled(bool)
 // 
 //   Justin Privitera, Wed Jun 29 17:50:24 PDT 2022
 //   SetTagChangesMade for copied color tables.
+// 
+//   Justin Privitera, Wed Jul 20 14:18:20 PDT 2022
+//   Added error if users try to add a color table while searching is enabled.
+// 
+//    Justin Privitera, Wed Jul 27 12:23:56 PDT 2022
+//    Set builtin flag to false for new color tables.
 //
 // ****************************************************************************
 
 void
 QvisColorTableWindow::addColorTable()
 {
+    if (searchingOn)
+    {
+        QString tmp;
+        tmp = tr("Cannot add a color table while searching is enabled. "
+                 "Please disable searching first.");
+        Error(tmp);
+        return;
+    }
+
     // Get a pointer to the default color table's control points.
     ColorControlPointList *ccpl = GetDefaultColorControlPoints();
 
@@ -1988,6 +2174,7 @@ QvisColorTableWindow::addColorTable()
             ColorControlPointList cpts(*ccpl);
             cpts.AddTag("User Defined");
             cpts.SetTagChangesMade(true); // need to set manually b/c orig val was copied
+            cpts.SetBuiltIn(false);
             colorAtts->AddColorTable(currentColorTable.toStdString(), cpts);
         }
         else
@@ -2004,6 +2191,7 @@ QvisColorTableWindow::addColorTable()
             cpts.SetEqualSpacingFlag(false);
             cpts.SetDiscreteFlag(false);
             cpts.AddTag("User Defined");
+            cpts.SetBuiltIn(false);
             colorAtts->AddColorTable(currentColorTable.toStdString(), cpts);
         }
 
@@ -2037,16 +2225,41 @@ QvisColorTableWindow::addColorTable()
 //    Kathleen Biagas, Fri Aug 8 08:44:12 PDT 2014
 //    nameListBox object is now a QTreeWidget.
 //
+//    Justin Privitera, Wed Jul 20 14:18:20 PDT 2022
+//    Error when deleting a CT while searching is enabled.
+// 
+//    Justin Privitera, Wed Jul 27 12:23:56 PDT 2022
+//    Error on edit of a builtin color table.
+// 
 // ****************************************************************************
 
 void
 QvisColorTableWindow::deleteColorTable()
 {
+    if (searchingOn)
+    {
+        QString tmp;
+        tmp = tr("Cannot delete a color table while searching is enabled. "
+                 "Please disable searching first.");
+        Error(tmp);
+        return;
+    }
+
     // Get the index of the currently selected color table and tell the viewer
     // to remove it from the list of color tables.
     std::string ctName = nameListBox->currentItem()->text(0).toStdString();
 
-    GetViewerMethods()->DeleteColorTable(ctName.c_str());
+    if (colorAtts->GetColorControlPoints(ctName)->GetBuiltIn())
+    {
+        QString tmp;
+        tmp = tr("The color table ") +
+              QString("\"") + currentColorTable + QString("\"") +
+              tr(" is built-in. You cannot delete a built-in color table.");
+        Error(tmp);
+        return;
+    }
+    else
+        GetViewerMethods()->DeleteColorTable(ctName.c_str());
 }
 
 // ****************************************************************************
@@ -2077,6 +2290,10 @@ QvisColorTableWindow::deleteColorTable()
 // 
 //   Justin Privitera, Thu Jun 16 18:01:49 PDT 2022
 //   Removed categories and added tags.
+// 
+//   Justin Privitera, Wed Aug  3 19:46:13 PDT 2022
+//   The tag line edit is always visible now so it must be updated even if
+//   tagging is disabled.
 //
 // ****************************************************************************
 
@@ -2090,8 +2307,7 @@ QvisColorTableWindow::highlightColorTable(QTreeWidgetItem *current,
         currentColorTable = current->text(0);
         nameLineEdit->setText(currentColorTable);
         int index = colorAtts->GetColorTableIndex(currentColorTable.toStdString());
-        if (tagFilterToggle->isChecked())
-            tagLineEdit->setText(QString(colorAtts->GetColorTables(index).GetTagsAsString().c_str()));
+        tagLineEdit->setText(QString(colorAtts->GetColorTables(index).GetTagsAsString().c_str()));
         UpdateEditor();
     }
 }
@@ -2139,6 +2355,9 @@ QvisColorTableWindow::tagTableItemSelected(QTreeWidgetItem *item, int column)
 // Modifications:
 //   Justin Privitera, Wed May 18 11:25:46 PDT 2022
 //   Changed *active* to *default* for everything related to color tables.
+// 
+//    Justin Privitera, Wed Jul 27 12:23:56 PDT 2022
+//    Error on edit of a builtin color table and reset original values.
 //
 // ****************************************************************************
 
@@ -2148,6 +2367,19 @@ QvisColorTableWindow::setColorTableType(int index)
     ColorControlPointList *ccpl = GetDefaultColorControlPoints();
     if(ccpl)
     {
+        // built-in CTs should not be editable
+        if (ccpl->GetBuiltIn())
+        {
+            QString tmp;
+            tmp = tr("The color table ") +
+                  QString("\"") + currentColorTable + QString("\"") +
+                  tr(" is built-in. You cannot edit a built-in color table.");
+            Error(tmp);
+            colorTableTypeGroup->blockSignals(true);
+            colorTableTypeGroup->button(ccpl->GetDiscreteFlag()?1:0)->setChecked(true);
+            colorTableTypeGroup->blockSignals(false);
+            return;
+        }
         ccpl->SetDiscreteFlag(index == 1);
         colorAtts->SelectColorTables();
         // When discrete set the smoothing to none so the legend is correct.
@@ -2225,6 +2457,9 @@ QvisColorTableWindow::activateDiscreteColor(const QColor &c, int)
 // 
 //   Justin Privitera, Wed May 18 11:25:46 PDT 2022
 //   Changed *active* to *default* for everything related to color tables.
+// 
+//    Justin Privitera, Wed Jul 27 12:23:56 PDT 2022
+//    Error on edit of a builtin color table and reset original values.
 //
 // ****************************************************************************
 
@@ -2240,6 +2475,23 @@ QvisColorTableWindow::redValueChanged(int r)
             c = discreteColors->selectedColor();
         else
             c = spectrumBar->controlPointColor(spectrumBar->activeControlPoint());
+
+        // built-in CTs should not be editable
+        if (ccpl->GetBuiltIn())
+        {
+            QString tmp;
+            tmp = tr("The color table ") +
+                  QString("\"") + currentColorTable + QString("\"") +
+                  tr(" is built-in. You cannot edit a built-in color table.");
+            Error(tmp);
+            componentSpinBoxes[0]->blockSignals(true);
+            componentSliders[0]->blockSignals(true);
+            componentSpinBoxes[0]->setValue(c.red());
+            componentSliders[0]->setValue(c.red());
+            componentSpinBoxes[0]->blockSignals(false);
+            componentSliders[0]->blockSignals(false);
+            return;
+        }
 
         c.setRgb(r, c.green(), c.blue(), c.alpha());
         ChangeSelectedColor(c);
@@ -2265,6 +2517,9 @@ QvisColorTableWindow::redValueChanged(int r)
 // 
 //   Justin Privitera, Wed May 18 11:25:46 PDT 2022
 //   Changed *active* to *default* for everything related to color tables.
+// 
+//    Justin Privitera, Wed Jul 27 12:23:56 PDT 2022
+//    Error on edit of a builtin color table and reset original values.
 //
 // ****************************************************************************
 
@@ -2280,6 +2535,23 @@ QvisColorTableWindow::greenValueChanged(int g)
             c = discreteColors->selectedColor();
         else
             c = spectrumBar->controlPointColor(spectrumBar->activeControlPoint());
+
+        // built-in CTs should not be editable
+        if (ccpl->GetBuiltIn())
+        {
+            QString tmp;
+            tmp = tr("The color table ") +
+                  QString("\"") + currentColorTable + QString("\"") +
+                  tr(" is built-in. You cannot edit a built-in color table.");
+            Error(tmp);
+            componentSpinBoxes[1]->blockSignals(true);
+            componentSliders[1]->blockSignals(true);
+            componentSpinBoxes[1]->setValue(c.green());
+            componentSliders[1]->setValue(c.green());
+            componentSpinBoxes[1]->blockSignals(false);
+            componentSliders[1]->blockSignals(false);
+            return;
+        }
 
         c.setRgb(c.red(), g, c.blue(), c.alpha());
         ChangeSelectedColor(c);
@@ -2305,6 +2577,9 @@ QvisColorTableWindow::greenValueChanged(int g)
 // 
 //   Justin Privitera, Wed May 18 11:25:46 PDT 2022
 //   Changed *active* to *default* for everything related to color tables.
+// 
+//    Justin Privitera, Wed Jul 27 12:23:56 PDT 2022
+//    Error on edit of a builtin color table and reset original values.
 //
 // ****************************************************************************
 
@@ -2320,6 +2595,23 @@ QvisColorTableWindow::blueValueChanged(int b)
             c = discreteColors->selectedColor();
         else
             c = spectrumBar->controlPointColor(spectrumBar->activeControlPoint());
+
+        // built-in CTs should not be editable
+        if (ccpl->GetBuiltIn())
+        {
+            QString tmp;
+            tmp = tr("The color table ") +
+                  QString("\"") + currentColorTable + QString("\"") +
+                  tr(" is built-in. You cannot edit a built-in color table.");
+            Error(tmp);
+            componentSpinBoxes[2]->blockSignals(true);
+            componentSliders[2]->blockSignals(true);
+            componentSpinBoxes[2]->setValue(c.blue());
+            componentSliders[2]->setValue(c.blue());
+            componentSpinBoxes[2]->blockSignals(false);
+            componentSliders[2]->blockSignals(false);
+            return;
+        }
 
         c.setRgb(c.red(), c.green(), b, c.alpha());
         ChangeSelectedColor(c);
@@ -2342,6 +2634,9 @@ QvisColorTableWindow::blueValueChanged(int b)
 // Modifications:
 //   Justin Privitera, Wed May 18 11:25:46 PDT 2022
 //   Changed *active* to *default* for everything related to color tables.
+// 
+//    Justin Privitera, Wed Jul 27 12:23:56 PDT 2022
+//    Error on edit of a builtin color table and reset original values.
 //
 // ****************************************************************************
 
@@ -2357,6 +2652,23 @@ QvisColorTableWindow::alphaValueChanged(int a)
             c = discreteColors->selectedColor();
         else
             c = spectrumBar->controlPointColor(spectrumBar->activeControlPoint());
+
+        // built-in CTs should not be editable
+        if (ccpl->GetBuiltIn())
+        {
+            QString tmp;
+            tmp = tr("The color table ") +
+                  QString("\"") + currentColorTable + QString("\"") +
+                  tr(" is built-in. You cannot edit a built-in color table.");
+            Error(tmp);
+            componentSpinBoxes[3]->blockSignals(true);
+            componentSliders[3]->blockSignals(true);
+            componentSpinBoxes[3]->setValue(c.alpha());
+            componentSliders[3]->setValue(c.alpha());
+            componentSpinBoxes[3]->blockSignals(false);
+            componentSliders[3]->blockSignals(false);
+            return;
+        }
 
         c.setRgb(c.red(), c.green(), c.blue(), a);
         ChangeSelectedColor(c);
@@ -2480,6 +2792,9 @@ QvisColorTableWindow::setDefaultDiscrete(const QString &ct)
 // 
 //   Justin Privitera, Wed May 18 11:25:46 PDT 2022
 //   Changed *active* to *default* for everything related to color tables.
+// 
+//    Justin Privitera, Wed Jul 27 12:23:56 PDT 2022
+//    Error on resize of a builtin color table.
 //
 // ****************************************************************************
 
@@ -2489,6 +2804,20 @@ QvisColorTableWindow::resizeColorTable(int size)
     ColorControlPointList *ccpl = GetDefaultColorControlPoints();
     if(ccpl)
     {
+        // built-in CTs should not be editable
+        if (ccpl->GetBuiltIn())
+        {
+            QString tmp;
+            tmp = tr("The color table ") +
+                  QString("\"") + currentColorTable + QString("\"") +
+                  tr(" is built-in. You cannot edit a built-in color table.");
+            Error(tmp);
+            colorNumColors->blockSignals(true);
+            colorNumColors->setValue(ccpl->GetNumControlPoints());
+            colorNumColors->blockSignals(false);
+            return;
+        }
+
         int i;
 
         if(ccpl->GetDiscreteFlag())
@@ -2584,13 +2913,37 @@ QvisColorTableWindow::resizeColorTable(int size)
 // Creation:   Tue Jul 1 16:40:39 PST 2003
 //
 // Modifications:
+//    Justin Privitera, Wed Jul 20 14:18:20 PDT 2022
+//    Error when trying to export a CT while searching is enabled.
+// 
+//    Justin Privitera, Wed Jul 27 12:23:56 PDT 2022
+//    Error on export of a builtin color table.
 //
 // ****************************************************************************
 
 void
 QvisColorTableWindow::exportColorTable()
 {
-    GetViewerMethods()->ExportColorTable(currentColorTable.toStdString());
+    if (searchingOn)
+    {
+        QString tmp;
+        tmp = tr("Cannot export a color table while searching is enabled. "
+                 "Please disable searching first.");
+        Error(tmp);
+        return;
+    }
+    else if (colorAtts->GetColorControlPoints(
+        currentColorTable.toStdString())->GetBuiltIn())
+    {
+        QString tmp;
+        tmp = tr("The color table ") +
+              QString("\"") + currentColorTable + QString("\"") +
+              tr(" is built-in. You cannot export a built-in color table.");
+        Error(tmp);
+        return;
+    }
+    else
+        GetViewerMethods()->ExportColorTable(currentColorTable.toStdString());
 }
 
 
@@ -2643,6 +2996,66 @@ QvisColorTableWindow::tagCombiningChanged(int index)
         UpdateNames();
         colorAtts->SetChangesMade(true);
         ctObserver.SetUpdate(true);
+        Apply(true);
+    }
+}
+
+
+// ****************************************************************************
+// Method: QvisColorTableWindow::searchingToggled
+//
+// Purpose:
+//   This is a Qt slot function that enables or disables searching.
+//
+// Programmer: Justin Privitera
+// Creation:   Thu Jul  7 10:22:58 PDT 2022
+//
+// Modifications:
+//    Justin Privitera, Wed Aug  3 19:46:13 PDT 2022
+//    The tag line edit is cleared when searching is enabled.
+//
+// ****************************************************************************
+
+void
+QvisColorTableWindow::searchingToggled(bool checked)
+{
+    searchingOn = checked;
+    if (!searchingOn)
+        searchTerm = QString("");
+    else
+    {
+        nameLineEdit->setText(searchTerm);
+        tagLineEdit->setText(QString(""));
+    }
+    Apply(true);
+}
+
+
+// ****************************************************************************
+// Method: QvisColorTableWindow::searchEdited
+//
+// Purpose:
+//   This is a Qt slot function that updates the search term.
+//
+// Programmer: Justin Privitera
+// Creation:   Thu Jul  7 10:22:58 PDT 2022
+//
+// Modifications:
+//   Justin Privitera, Wed Jul 20 14:18:20 PDT 2022
+//   Added guard to prevent Apply() from being called when searching is off.
+// 
+//   Justin Privitera, Wed Aug  3 19:46:13 PDT 2022
+//   The tag line edit is cleared when searching is ongoing.
+//
+// ****************************************************************************
+
+void
+QvisColorTableWindow::searchEdited(const QString &newSearchTerm)
+{
+    if (searchingOn)
+    {
+        searchTerm = newSearchTerm;
+        tagLineEdit->setText(QString(""));
         Apply(true);
     }
 }

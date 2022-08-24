@@ -66,6 +66,7 @@ void ColorControlPointList::Init()
     discreteFlag = false;
     externalFlag = false;
     tagChangesMade = true;
+    builtIn = true;
 
     ColorControlPointList::SelectAll();
 }
@@ -110,6 +111,7 @@ void ColorControlPointList::Copy(const ColorControlPointList &obj)
     externalFlag = obj.externalFlag;
     tagNames = obj.tagNames;
     tagChangesMade = obj.tagChangesMade;
+    builtIn = obj.builtIn;
 
     ColorControlPointList::SelectAll();
 }
@@ -286,7 +288,8 @@ ColorControlPointList::operator == (const ColorControlPointList &obj) const
             (discreteFlag == obj.discreteFlag) &&
             (externalFlag == obj.externalFlag) &&
             (tagNames == obj.tagNames) &&
-            (tagChangesMade == obj.tagChangesMade));
+            (tagChangesMade == obj.tagChangesMade) &&
+            (builtIn == obj.builtIn));
 }
 
 // ****************************************************************************
@@ -437,6 +440,7 @@ ColorControlPointList::SelectAll()
     Select(ID_externalFlag,     (void *)&externalFlag);
     Select(ID_tagNames,         (void *)&tagNames);
     Select(ID_tagChangesMade,   (void *)&tagChangesMade);
+    Select(ID_builtIn,          (void *)&builtIn);
 }
 
 // ****************************************************************************
@@ -480,6 +484,9 @@ ColorControlPointList::CreateSubAttributeGroup(int)
 // Modifications:
 //   Justin Privitera, Thu Jun 16 18:01:49 PDT 2022
 //   Added tags and removed categories.
+// 
+//   Justin Privitera, Wed Jul 27 12:16:06 PDT 2022
+//   Added logic for "builtin" attribute.
 //
 // ****************************************************************************
 
@@ -525,6 +532,12 @@ ColorControlPointList::CreateNode(DataNode *parentNode, bool completeSave, bool 
         node->AddNode(new DataNode("tags", tagNames));
     }
 
+    if(completeSave || !FieldsEqual(ID_builtIn, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("builtin", builtIn));
+    }
+
     // Add the node to the parent node.
     if(addToParent || forceAdd)
         parentNode->AddNode(node);
@@ -557,6 +570,9 @@ ColorControlPointList::CreateNode(DataNode *parentNode, bool completeSave, bool 
 // 
 //   Justin Privitera, Thu Jun 16 18:01:49 PDT 2022
 //   Added tags and removed categories.
+// 
+//   Justin Privitera, Wed Jul 27 12:16:06 PDT 2022
+//   Added logic for "builtin" attribute.
 //
 // ****************************************************************************
 
@@ -654,6 +670,8 @@ ColorControlPointList::SetFromNode(DataNode *parentNode)
         SetExternalFlag(node->AsBool());
     if((node = searchNode->GetNode("tags")) != 0)
         SetTagNames(node->AsStringVector());
+    if((node = searchNode->GetNode("builtin")) != 0)
+        SetBuiltIn(node->AsBool());
 }
 ///////////////////////////////////////////////////////////////////////////////
 // Set property methods
@@ -718,6 +736,13 @@ ColorControlPointList::SetTagChangesMade(bool tagChangesMade_)
     Select(ID_tagChangesMade, (void *)&tagChangesMade);
 }
 
+void
+ColorControlPointList::SetBuiltIn(bool builtIn_)
+{
+    builtIn = builtIn_;
+    Select(ID_builtIn, (void *)&builtIn);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Get property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -774,6 +799,12 @@ bool
 ColorControlPointList::GetTagChangesMade() const
 {
     return tagChangesMade;
+}
+
+bool
+ColorControlPointList::GetBuiltIn() const
+{
+    return builtIn;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1020,6 +1051,7 @@ ColorControlPointList::GetFieldName(int index) const
     case ID_externalFlag:     return "externalFlag";
     case ID_tagNames:         return "tagNames";
     case ID_tagChangesMade:   return "tagChangesMade";
+    case ID_builtIn:          return "builtIn";
     default:  return "invalid index";
     }
 }
@@ -1051,6 +1083,7 @@ ColorControlPointList::GetFieldType(int index) const
     case ID_externalFlag:     return FieldType_bool;
     case ID_tagNames:         return FieldType_stringVector;
     case ID_tagChangesMade:   return FieldType_bool;
+    case ID_builtIn:          return FieldType_bool;
     default:  return FieldType_unknown;
     }
 }
@@ -1082,6 +1115,7 @@ ColorControlPointList::GetFieldTypeName(int index) const
     case ID_externalFlag:     return "bool";
     case ID_tagNames:         return "stringVector";
     case ID_tagChangesMade:   return "bool";
+    case ID_builtIn:          return "bool";
     default:  return "invalid index";
     }
 }
@@ -1150,6 +1184,11 @@ ColorControlPointList::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_tagChangesMade:
         {  // new scope
         retval = (tagChangesMade == obj.tagChangesMade);
+        }
+        break;
+    case ID_builtIn:
+        {  // new scope
+        retval = (builtIn == obj.builtIn);
         }
         break;
     default: retval = false;

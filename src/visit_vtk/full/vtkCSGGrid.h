@@ -697,8 +697,6 @@ void operator=(const vtkCSGGrid&);         // Not implemented.
 
 inline vtkIdType vtkCSGGrid::GetNumberOfPoints()
 {
-vtkErrorMacro("GetNumberOfPoints() means GetNumberOfBoundaries()");
-vtkErrorMacro("Use GetNumberOfBoundaries() to avoid this message");
 return GetNumberOfBoundaries();
 };
 

@@ -7,7 +7,7 @@
 #include <math.h>
 #include <string.h>
 
-// supress the following since silo uses char * in its API
+// suppress the following since silo uses char * in its API
 #if defined(__clang__)
 # pragma GCC diagnostic ignored "-Wdeprecated-writable-strings"
 #elif defined(__GNUC__)

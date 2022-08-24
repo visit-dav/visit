@@ -285,6 +285,17 @@
       ]
     },
     {
+      "network": "nci",
+      "files": [
+        {
+          "name": "customlauncher"
+        },
+        {
+          "name": "host_gadi.xml"
+        }
+      ]
+    },
+    {
       "network": "ncsa",
       "files": [
         {

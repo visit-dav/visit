@@ -23,10 +23,16 @@ ${VISIT_SOURCE_DIR}/avt/Math
 ${VTK_INCLUDE_DIRS}
 )
 
+if(VTK_VERSION VERSION_EQUAL "8.1.0")
+    set(vtklibs vtkCommonCore vtkFiltersCore)
+else()
+    set(vtklibs VTK::CommonCore VTK::FiltersCore)
+endif()
+
 # Add link directories
 LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY} )
 
 ADD_LIBRARY(avtshapelets ${AVTSHAPELETS_SOURCES})
-TARGET_LINK_LIBRARIES(avtshapelets visitcommon avtmath vtkCommonCore vtkFiltersCore)
+TARGET_LINK_LIBRARIES(avtshapelets visitcommon avtmath ${vtklibs})
 
 VISIT_INSTALL_TARGETS(avtshapelets)

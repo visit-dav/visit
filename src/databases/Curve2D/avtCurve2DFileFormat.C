@@ -291,13 +291,15 @@ avtCurve2DFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //    Kathleen Biagas, Fri Aug 31 14:23:59 PDT 2018
 //    Support matlab-sytle comments ("%").
 //
+//    Justin Privitera, Tue Jul  5 14:40:55 PDT 2022
+//    Changed 'supressed' to 'suppressed'.
 // ****************************************************************************
 
 #define INVALID_POINT_WARNING(X)                                        \
 {                                                                       \
     if (invalidPointCount++ < 6)                                        \
     {                                                                   \
-        char msg[512] = "Further warnings will be supressed";           \
+        char msg[512] = "Further warnings will be suppressed";           \
         if (invalidPointCount < 6)                                      \
         {                                                               \
             snprintf(msg, sizeof(msg),"Encountered invalid point "      \
