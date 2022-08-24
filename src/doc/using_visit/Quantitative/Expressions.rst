@@ -2182,11 +2182,6 @@ smallest neighbor Function: ``smallest_neighbor()`` : ``smallest_neighbor(expr0)
 neighbor average Function: ``neighbor_average()`` : ``neighbor_average(expr0)``
     No description available.
 
-.. _Displacement_Expression_Function:
-
-Displacement Function: ``displacement()`` : ``displacement(expr0)``
-    No description available.
-
 .. _Expression_Compatibility_Gotchas:
 
 Expression Compatibility Gotchas
