@@ -44,6 +44,7 @@ The operation can be restricted to specific files using the ``--include`` and ``
 Likewise, ``git pull`` operations which wind up updating the contents of a *real* lfs file in the local checkout will replace the file with its updated *pointer* contents.
 
 There are tell tale signs a ``git lfs pull`` operation has been negelected.
+In the examples below, ``xolotl_test_data.tar.xz`` and ``xyz_test_data.tar.xz`` are in their *real* state while ``zipwrapper_test_data.tar.xz`` is in its pointer state.
 First, the *pointer* files are very small text files, usually less than 150 bytes ::
 
      % wc -c xolotl_test_data.tar.xz xyz_test_data.tar.xz zipwrapper_test_data.tar.xz
