@@ -122,7 +122,7 @@ ViewerStateManager::~ViewerStateManager()
 // ****************************************************************************
 // Method: ViewerStateManager::CreateState
 //
-// Purpose: 
+// Purpose:
 //   Creates the viewer's state objects and adds them to the viewerState
 //   object, which lets us more easily create copies of the viewer's state.
 //
@@ -145,7 +145,7 @@ ViewerStateManager::CreateState()
     // ViewerState object with those of the other viewer objects.
     //
     // Since the important viewer objects now inherit from ViewerBase, they should
-    // use the object from ViewerState *ViewerBase::GetViewerState() when possible 
+    // use the object from ViewerState *ViewerBase::GetViewerState() when possible
     // instead of maintaining their own objects. If we eventually switch to that
     // paradigm then we can delete this code!
 
@@ -156,7 +156,7 @@ ViewerStateManager::CreateState()
 // ****************************************************************************
 // Method: ViewerStateManager::ConnectDefaultState
 //
-// Purpose: 
+// Purpose:
 //   Connects initial ViewerState objects to the config manager.
 //
 // Programmer: Brad Whitlock
@@ -209,7 +209,7 @@ ViewerStateManager::ConnectDefaultState()
 // ****************************************************************************
 // Method: ViewerStateManager::ConnectPluginDefaultState
 //
-// Purpose: 
+// Purpose:
 //   Connects the plugin state objects from ViewerState to the config manager.
 //
 // Notes: This method must be called after plugin loading.
@@ -241,7 +241,7 @@ ViewerStateManager::ConnectPluginDefaultState()
 // ****************************************************************************
 // Method: ViewerStateManager::ProcessSettings
 //
-// Purpose: 
+// Purpose:
 //   Processes the config file settings that were read in.
 //
 // Programmer: Brad Whitlock
@@ -251,10 +251,10 @@ ViewerStateManager::ConnectPluginDefaultState()
 //   Kathleen Bonnell, Wed Dec 17 14:44:26 PST 2003
 //   Added PickAtts.
 //
-//   Kathleen Bonnell, Wed Mar 31 11:08:05 PST 2004 
+//   Kathleen Bonnell, Wed Mar 31 11:08:05 PST 2004
 //   Added QueryOverTimeAtts.
 //
-//   Kathleen Bonnell, Wed Aug 18 09:25:33 PDT 2004 
+//   Kathleen Bonnell, Wed Aug 18 09:25:33 PDT 2004
 //   Added InteractorAtts.
 //
 //   Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
@@ -341,11 +341,11 @@ ViewerStateManager::ProcessSettings()
 //   Processes any local settings that have been read.
 //
 // Arguments:
-//   
 //
-// Returns:    
 //
-// Note:       
+// Returns:
+//
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Aug 28 17:43:54 PDT 2014
@@ -422,9 +422,9 @@ ViewerStateManager::ProcessLocalSettings()
 // Arguments:
 //   specifiedConfig : True if the user specified a config file name.
 //
-// Returns:    
+// Returns:
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Aug 28 21:50:36 PDT 2014
@@ -561,9 +561,9 @@ ViewerStateManager::WriteConfigFile()
 //   filename : The name of the session file to save.
 //   hostname : The host name to save the session file on.
 //
-// Returns:    
+// Returns:
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Aug 28 22:43:13 PDT 2014
@@ -640,7 +640,7 @@ ViewerStateManager::WriteCallback(DataNode *viewerNode, bool writeDetail, void *
 // ****************************************************************************
 // Method: ViewerStateManager::CreateNode
 //
-// Purpose: 
+// Purpose:
 //   Saves the viewer's state to a DataNode object.
 //
 // Arguments:
@@ -748,11 +748,16 @@ ViewerStateManager::CreateNode(DataNode *parentNode, bool detailed)
 //    Brad Whitlock, Wed Jul 18 10:43:39 PDT 2018
 //    Read the file and pass its contents to the other RestoreSession method.
 //
+//    Kathleen Biagas, Wed Aug 17, 2022
+//    Added call to ViewerWindowManager:::CheckForOSPRayRendering after
+//    session file is restored, to ensure -ospray from command line is
+//    preserved.
+//
 // ****************************************************************************
 
 void
-ViewerStateManager::RestoreSession(const std::string &hostname, 
-    const std::string &filename, 
+ViewerStateManager::RestoreSession(const std::string &hostname,
+    const std::string &filename,
     bool inVisItDir, const stringVector &sources)
 {
     // If we're importing a session, delete the localSettings in case the
@@ -814,6 +819,9 @@ ViewerStateManager::RestoreSession(const std::string &hostname,
     {
         // We have some session contents. Try and process it.
         RestoreSession(file2, sessionContents, sources);
+
+        // This checks if -ospray was specified on command line
+        ViewerWindowManager::Instance()->CheckForOSPRayRendering();
     }
 }
 
@@ -889,7 +897,7 @@ ViewerStateManager::RestoreSession(const std::string &filename,
                 sourceToDB = BuildSourceMap(viewerNode, sources);
 
                 // Let the other viewer objects read their settings.
-                bool fatalError = SetFromNode(viewerNode, sourceToDB, 
+                bool fatalError = SetFromNode(viewerNode, sourceToDB,
                                               configVersion.c_str());
 
                 if(fatalError)
@@ -932,7 +940,7 @@ ViewerStateManager::RestoreSession(const std::string &filename,
 //
 // Returns:    A source map.
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Aug 28 22:20:20 PDT 2014
@@ -953,7 +961,7 @@ ViewerStateManager::BuildSourceMap(DataNode *viewerNode, const stringVector &sou
         int nSourceIds = (int)sources.size();
         DataNode *vsNode = viewerNode->GetNode("ViewerSubject");
         DataNode *sourceMapNode = 0;
-        if(vsNode != 0 && 
+        if(vsNode != 0 &&
            (sourceMapNode = vsNode->GetNode("SourceMap")) != 0)
         {
             if(sourceMapNode->GetNumChildren() > nSourceIds)
@@ -991,11 +999,11 @@ ViewerStateManager::BuildSourceMap(DataNode *viewerNode, const stringVector &sou
     {
         // Get the SourceMap node and use it to construct a map
         // that lets the rest of the session reading routines
-        // pick out the right database name when they see a 
+        // pick out the right database name when they see a
         // given source id.
         DataNode *vsNode = viewerNode->GetNode("ViewerSubject");
         DataNode *sourceMapNode = 0;
-        if(vsNode != 0 && 
+        if(vsNode != 0 &&
            (sourceMapNode = vsNode->GetNode("SourceMap")) != 0)
         {
             DataNode **srcFields = sourceMapNode->GetChildren();
@@ -1017,7 +1025,7 @@ ViewerStateManager::BuildSourceMap(DataNode *viewerNode, const stringVector &sou
 // ****************************************************************************
 // Method: ViewerStateManager::SetFromNode
 //
-// Purpose: 
+// Purpose:
 //   Sets the viewer's state from a DataNode object.
 //
 // Arguments:
@@ -1045,7 +1053,7 @@ ViewerStateManager::BuildSourceMap(DataNode *viewerNode, const stringVector &sou
 //
 //   Cyrus Harrison, Fri Mar 16 09:02:17 PDT 2007
 //   Added support for ViewerEngineManager to restore its settings
-//   from a node. 
+//   from a node.
 //
 //   Brad Whitlock, Wed Feb 13 14:08:18 PST 2008
 //   Added configVersion argument.
@@ -1057,8 +1065,8 @@ ViewerStateManager::BuildSourceMap(DataNode *viewerNode, const stringVector &sou
 // ****************************************************************************
 
 bool
-ViewerStateManager::SetFromNode(DataNode *parentNode, 
-    const std::map<std::string,std::string> &sourceToDB, 
+ViewerStateManager::SetFromNode(DataNode *parentNode,
+    const std::map<std::string,std::string> &sourceToDB,
     const std::string &configVersion)
 {
     bool fatalError = true;
@@ -1103,7 +1111,7 @@ ViewerStateManager::SetFromNode(DataNode *parentNode,
 // ****************************************************************************
 
 void
-ViewerStateManager::ReadEngineSettingsFromNode(DataNode *vsNode, 
+ViewerStateManager::ReadEngineSettingsFromNode(DataNode *vsNode,
     const std::string &configVersion)
 {
     GetViewerEngineManager()->SetFromNode(vsNode, configVersion);
@@ -1172,9 +1180,9 @@ ViewerStateManager::ReadHostProfiles()
 //   dir   : The directory from which we'll read host profiles.
 //   clear : Whether to clear the list first.
 //
-// Returns:    
+// Returns:
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Dec 15 14:56:40 PST 2014
@@ -1353,7 +1361,7 @@ CleanHostProfileCallback(void *,
 //   Jeremy Meredith, Thu Apr 29 15:05:52 EDT 2010
 //   Don't completely override the old one -- instead, import it over top of
 //   the original one.  We no longer assume that host profiles saved to disk
-//   are complete -- they now only contain values users changed from the 
+//   are complete -- they now only contain values users changed from the
 //   system-global host profiles.
 //
 // ****************************************************************************
@@ -1417,7 +1425,7 @@ ReadHostProfileCallback(void *hpl,
 //
 // Returns:    A pointer to the database correlation methods.
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Sep  8 09:50:04 PDT 2014
@@ -1440,7 +1448,7 @@ ViewerStateManager::GetDatabaseCorrelationMethods()
 //
 // Returns:    A pointer to the variable helper methods.
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Sep  8 16:28:18 PDT 2014
@@ -1462,7 +1470,7 @@ MaterialAttributes *ViewerStateManager::materialDefaultAtts = NULL;
 // ****************************************************************************
 //  Method: ViewerWindowManager::GetMaterialDefaultAtts
 //
-//  Purpose: 
+//  Purpose:
 //    Returns a pointer to the default material attributes.
 //
 //  Returns:    A pointer to the default material attributes.
@@ -1526,7 +1534,7 @@ MeshManagementAttributes *ViewerStateManager::meshManagementDefaultAtts = NULL;
 //
 //  Purpose: Returns a pointer to the default meshManagement attributes.
 //
-//  Programmer: Mark C. Miller 
+//  Programmer: Mark C. Miller
 //  Creation:   November 5, 2005
 //
 // ****************************************************************************
@@ -1545,7 +1553,7 @@ ViewerStateManager::GetMeshManagementDefaultAtts()
 //
 //  Purpose: Copy the current client atts to be the default.
 //
-//  Programmer: Mark C. Miller 
+//  Programmer: Mark C. Miller
 //  Creation:   November 5, 2005
 // ****************************************************************************
 
@@ -1554,7 +1562,7 @@ ViewerStateManager::SetClientMeshManagementAttsFromDefault()
 {
     *(GetViewerState()->GetMeshManagementAttributes()) = *GetMeshManagementDefaultAtts();
     GetViewerState()->GetMeshManagementAttributes()->Notify();
-    
+
 }
 
 // ****************************************************************************
@@ -1562,7 +1570,7 @@ ViewerStateManager::SetClientMeshManagementAttsFromDefault()
 //
 //  Purpose: Copy the default atts back to the client.
 //
-//  Programmer: Mark C. Miller 
+//  Programmer: Mark C. Miller
 //  Creation:   November 5, 2005
 //
 // ****************************************************************************

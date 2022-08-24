@@ -29,7 +29,7 @@
 
 using     std::vector;
 
-bool OSPRaySortImgMetaDataByDepth(ospray::ImgMetaData const& before, 
+bool OSPRaySortImgMetaDataByDepth(ospray::ImgMetaData const& before,
                                   ospray::ImgMetaData const& after)
 { return before.avg_z > after.avg_z; }
 bool OSPRaySortImgMetaDataByEyeSpaceDepth(ospray::ImgMetaData const& before,
@@ -71,7 +71,7 @@ avtOSPRayRayTracer::avtOSPRayRayTracer() : avtRayTracerBase()
     aoDistance = 1e6;
     samplingRate = 3.0;
     minContribution = 0.001;
-    
+
     materialProperties[0] = 0.4;
     materialProperties[1] = 0.75;
     materialProperties[2] = 0.0;
@@ -103,7 +103,7 @@ avtOSPRayRayTracer::~avtOSPRayRayTracer()
 //  Method: avtOSPRayRayTracer::Execute
 //
 //  Purpose:
-//      Executes the ray tracer.  
+//      Executes the ray tracer.
 //      This means:
 //      - Put the input mesh through a transform so it is in camera space.
 //      - Get the sample points.
@@ -134,8 +134,8 @@ avtOSPRayRayTracer::~avtOSPRayRayTracer()
 //    Added code to set the gradient background colors, background mode in
 //    the ray compositer.
 //
-//    Kathleen Bonnell, Tue Apr 30 12:34:54 PDT 2002  
-//    Use new version of CopyTo. 
+//    Kathleen Bonnell, Tue Apr 30 12:34:54 PDT 2002
+//    Use new version of CopyTo.
 //
 //    Hank Childs, Fri Sep 13 12:04:04 PDT 2002
 //    Reverse arguments for CopyTo (we weren't sending in the input correctly).
@@ -194,8 +194,12 @@ avtOSPRayRayTracer::~avtOSPRayRayTracer()
 //    Added support for raycasting ospray
 //
 //    Alister Maguire, Tue Jul 23 15:15:22 PDT 2019
-//    Added a patch from Johannes Guenther that enables lighting, 
-//    shadows, transparency, and spp. 
+//    Added a patch from Johannes Guenther that enables lighting,
+//    shadows, transparency, and spp.
+//
+//    Kathleen Biagas, Wed Aug 17, 2022
+//    Incorporate ARSanderson's OSPRAY 2.8.0 work for VTK 9: view changed to
+//    viewInfo.
 //
 // ****************************************************************************
 
@@ -207,7 +211,7 @@ avtOSPRayRayTracer::Execute()
     //======================================================================//
     // check memory in the beginning
     ospout << "[avrRayTracer] entering execute" << std::endl;
-    ospray::CheckMemoryHere("[avtOSPRayRayTracer] Execute", "ospout");    
+    ospray::CheckMemoryHere("[avtOSPRayRayTracer] Execute", "ospout");
 
     // initialize current time
     StackTimer t0("Ray Tracing");
@@ -236,15 +240,17 @@ avtOSPRayRayTracer::Execute()
 
     double scale[3] = {1,1,1};
     vtkMatrix4x4 *transform = vtkMatrix4x4::New();
-    avtWorldSpaceToImageSpaceTransform::CalculateTransform(view, transform,
+    avtWorldSpaceToImageSpaceTransform::CalculateTransform(viewInfo, transform,
                                                            scale, aspect);
     double newNearPlane, newFarPlane, oldNearPlane, oldFarPlane;
-    TightenClippingPlanes(view, transform, newNearPlane, newFarPlane);
-    oldNearPlane = view.nearPlane;  oldFarPlane  = view.farPlane;
-    view.nearPlane = newNearPlane;  view.farPlane  = newFarPlane;
+    TightenClippingPlanes(viewInfo, transform, newNearPlane, newFarPlane);
+    oldNearPlane = viewInfo.nearPlane;
+    oldFarPlane  = viewInfo.farPlane;
+    viewInfo.nearPlane = newNearPlane;
+    viewInfo.farPlane  = newFarPlane;
     transform->Delete();
 
-    avtWorldSpaceToImageSpaceTransform trans(view, aspect);
+    avtWorldSpaceToImageSpaceTransform trans(viewInfo, aspect);
     trans.SetInput(GetInput());
     trans.SetPassThruRectilinearGrids(true);
 
@@ -266,10 +272,10 @@ avtOSPRayRayTracer::Execute()
     double         dbounds[6];  // Extents of the volume in world coordinates
     {
         GetSpatialExtents(dbounds);
-        ospray::ComputeProjections(view, aspect, oldNearPlane, oldFarPlane,
+        ospray::ComputeProjections(viewInfo, aspect, oldNearPlane, oldFarPlane,
                                    scale, dbounds, screen,
-                                   model_to_screen_transform, 
-                                   screen_to_model_transform, 
+                                   model_to_screen_transform,
+                                   screen_to_model_transform,
                                    screen_to_camera_transform,
                                    sceneSize, renderingExtents);
         for (int y = 0; y < screen[1]; ++y) {
@@ -279,9 +285,9 @@ avtOSPRayRayTracer::Execute()
                 double screenDepth = opaqueImageZB[index] * 2 - 1;
                 double worldCoord[3];
                 ospray::ProjectScreenToCamera
-                    (screenCoord, screenDepth, 
+                    (screenCoord, screenDepth,
                      screen[0], screen[1],
-                     screen_to_camera_transform, 
+                     screen_to_camera_transform,
                      worldCoord);
                 opaqueImageDepth[index] = -worldCoord[2];
             }
@@ -289,44 +295,44 @@ avtOSPRayRayTracer::Execute()
         // Debug
         ospout << "[avtOSPRayRayTracer] avtViewInfo settings: " << endl
                << "\tcamera: "
-               << view.camera[0] << ", " 
-               << view.camera[1] << ", " 
-               << view.camera[2] << std::endl
+               << viewInfo.camera[0] << ", "
+               << viewInfo.camera[1] << ", "
+               << viewInfo.camera[2] << std::endl
                << "\tfocus: "
-               << view.focus[0] << ", " 
-               << view.focus[1] << ", " 
-               << view.focus[2] << std::endl
-               << "\tviewUp: "    
-               << view.viewUp[0] << ", " 
-               << view.viewUp[1] << ", " 
-               << view.viewUp[2] << std::endl
-               << "\tviewAngle: " << view.viewAngle << std::endl
-               << "\teyeAngle:  " << view.eyeAngle  << std::endl
-               << "\tparallelScale: " << view.parallelScale  << std::endl
-               << "\tsetScale: " << view.setScale << std::endl
-               << "\tnearPlane: " << view.nearPlane << std::endl
-               << "\tfarPlane:  " << view.farPlane  << std::endl
-               << "\timagePan[0]: " << view.imagePan[0] << std::endl 
-               << "\timagePan[1]: " << view.imagePan[1] << std::endl
-               << "\timageZoom:   " << view.imageZoom   << std::endl
-               << "\torthographic: " << view.orthographic << std::endl
-               << "\tshear[0]: " << view.shear[0] << std::endl
-               << "\tshear[1]: " << view.shear[1] << std::endl
-               << "\tshear[2]: " << view.shear[2] << std::endl;
+               << viewInfo.focus[0] << ", "
+               << viewInfo.focus[1] << ", "
+               << viewInfo.focus[2] << std::endl
+               << "\tviewUp: "
+               << viewInfo.viewUp[0] << ", "
+               << viewInfo.viewUp[1] << ", "
+               << viewInfo.viewUp[2] << std::endl
+               << "\tviewAngle: " << viewInfo.viewAngle << std::endl
+               << "\teyeAngle:  " << viewInfo.eyeAngle  << std::endl
+               << "\tparallelScale: " << viewInfo.parallelScale  << std::endl
+               << "\tsetScale: " << viewInfo.setScale << std::endl
+               << "\tnearPlane: " << viewInfo.nearPlane << std::endl
+               << "\tfarPlane:  " << viewInfo.farPlane  << std::endl
+               << "\timagePan[0]: " << viewInfo.imagePan[0] << std::endl
+               << "\timagePan[1]: " << viewInfo.imagePan[1] << std::endl
+               << "\timageZoom:   " << viewInfo.imageZoom   << std::endl
+               << "\torthographic: " << viewInfo.orthographic << std::endl
+               << "\tshear[0]: " << viewInfo.shear[0] << std::endl
+               << "\tshear[1]: " << viewInfo.shear[1] << std::endl
+               << "\tshear[2]: " << viewInfo.shear[2] << std::endl;
         ospout << "[avtOSPRayRayTracer] other settings " << std::endl
                << "\toldNearPlane: " << oldNearPlane
                << std::endl
                << "\toldFarPlane:  " << oldFarPlane
                << std::endl
                << "\taspect: " << aspect << std::endl
-               << "\tscale:    " 
-               << scale[0] << " " 
-               << scale[1] << " " 
+               << "\tscale:    "
+               << scale[0] << " "
+               << scale[1] << " "
                << scale[2] << " " << std::endl;
-        ospout << "[avtOSPRayRayTracer] sceneSize: " 
-               << sceneSize[0] << " " 
+        ospout << "[avtOSPRayRayTracer] sceneSize: "
+               << sceneSize[0] << " "
                << sceneSize[1] << std::endl;
-        ospout << "[avtOSPRayRayTracer] screen: " 
+        ospout << "[avtOSPRayRayTracer] screen: "
                << screen[0] << " " << screen[1] << std::endl;
         ospout << "[avtOSPRayRayTracer] data bounds: "
                << dbounds[0] << " " << dbounds[1] << std::endl
@@ -334,39 +340,39 @@ avtOSPRayRayTracer::Execute()
                << dbounds[2] << " " << dbounds[3] << std::endl
                << "               data bounds  "
                << dbounds[4] << " " << dbounds[5] << std::endl;
-        ospout << "[avtOSPRayRayTracer] rendering extents: " 
+        ospout << "[avtOSPRayRayTracer] rendering extents: "
                << renderingExtents[0] << " " << renderingExtents[1]
                << std::endl
                << "               rendering extents: "
                << renderingExtents[2] << " " << renderingExtents[3]
                << std::endl;
-        ospout << "[avtOSPRayRayTracer] full image size: " 
+        ospout << "[avtOSPRayRayTracer] full image size: "
                << renderingExtents[1] - renderingExtents[0] << " "
                << renderingExtents[3] - renderingExtents[2] << std::endl;
-        ospout << "[avtOSPRayRayTracer] model_to_screen_transform: " 
+        ospout << "[avtOSPRayRayTracer] model_to_screen_transform: "
                << *model_to_screen_transform << std::endl;
-        ospout << "[avtOSPRayRayTracer] screen_to_model_transform: " 
+        ospout << "[avtOSPRayRayTracer] screen_to_model_transform: "
                << *screen_to_model_transform << std::endl;
-        ospout << "[avtOSPRayRayTracer] screen_to_camera_transform: " 
+        ospout << "[avtOSPRayRayTracer] screen_to_camera_transform: "
                << *screen_to_camera_transform << std::endl;
 
     }
-    
+
     //===================================================================//
     // ospray stuffs
     //===================================================================//
-    ospray::CheckMemoryHere("[avtOSPRayRayTracer] Execute before ospray", 
-                            "ospout");    
+    ospray::CheckMemoryHere("[avtOSPRayRayTracer] Execute before ospray",
+                            "ospout");
 
     ospray::InitOSP(); // initialize ospray
     ospray::Context* ospray = (ospray::Context*)ospray_core;
 
-    ospray->SetVariableName(activeVariable);    
+    ospray->SetVariableName(activeVariable);
     ospray->SetBackgroundBuffer(opaqueImageData, opaqueImageDepth.data(),
                                 screen);
 
     ospray->SetAdaptiveSampling(false);
-    ospray->SetAoSamples(aoSamples); 
+    ospray->SetAoSamples(aoSamples);
     ospray->SetSpp(spp);
     ospray->SetOneSidedLighting(oneSidedLighting);
     ospray->SetShadowsEnabled(shadowsEnabled);
@@ -377,12 +383,12 @@ avtOSPRayRayTracer::Execute()
     ospray->SetGradientShadingEnabled(gradientShadingEnabled);
     ospray->SetSamplingRate(samplingRate);
     ospray->SetScaleAndDataBounds(scale, dbounds);
-    ospray->SetSpecular(materialProperties[2], materialProperties[3]);    
-    
+    ospray->SetSpecular(materialProperties[2], materialProperties[3]);
+
     ospout << "[avrRayTracer] make ospray camera" << std::endl;
     ospray::Camera cam(ospray->camera);
-    cam.Set(view.orthographic, view.camera, view.focus, view.viewUp,
-            view.viewAngle, view.imagePan, view.imageZoom, oldNearPlane,
+    cam.Set(viewInfo.orthographic, viewInfo.camera, viewInfo.focus, viewInfo.viewUp,
+            viewInfo.viewAngle, viewInfo.imagePan, viewInfo.imageZoom, oldNearPlane,
             sceneSize, screen, renderingExtents);
 
     ospout << "[avrRayTracer] make ospray transfer function" << std::endl;
@@ -391,17 +397,17 @@ avtOSPRayRayTracer::Execute()
             transferFn1D->GetNumberOfTableEntries(),
             transferFn1D->GetMin(),
             transferFn1D->GetMax());
-    
+
     ospout << "[avrRayTracer] make ospray renderer" << std::endl;
     ospray::Renderer ren(ospray->renderer);
     ren.Init();
     ren.ResetLights();
     double light_scale = gradientShadingEnabled ? 0.9 : 1.0;
-    ren.AddLight().Set(true,  materialProperties[0], light_scale); // ambient 
+    ren.AddLight().Set(true,  materialProperties[0], light_scale); // ambient
     ren.AddLight().Set(false, materialProperties[1], light_scale,
                        viewDirection);
     ren.AddLight().Set(false, 1.5, light_scale,
-                       viewDirection); 
+                       viewDirection);
     for (int i = 0; i < 8; ++i) { // in VisIt there are only 8 lights
         const LightAttributes& la = lightList.GetLight(i);
         if (la.GetEnabledFlag()) {
@@ -415,15 +421,15 @@ avtOSPRayRayTracer::Execute()
                                    (double)la.GetColor().Red() / 255.0,
                                    (double)la.GetColor().Green() / 255.0,
                                    (double)la.GetColor().Blue() / 255.0,
-                                   la.GetDirection());        
+                                   la.GetDirection());
 
-            }          
+            }
         }
-    }    
+    }
     ren.FinalizeLights();
     ren.Set(aoSamples, spp, oneSidedLighting, shadowsEnabled, aoTransparencyEnabled);
     ospray::CheckMemoryHere("[avtOSPRayRayTracer] Execute after ospray",
-                            "ospout");    
+                            "ospout");
 
     //===================================================================//
     // continuation of previous pipeline
@@ -438,11 +444,11 @@ avtOSPRayRayTracer::Execute()
     extractor.SetTransferFn(transferFn1D);
     extractor.SetInput(trans.GetOutput());
     extractor.SetOSPRay(ospray_core);
-    extractor.SetViewInfo(view);
-    extractor.SetSamplingRate(samplingRate); 
+    extractor.SetViewInfo(viewInfo);
+    extractor.SetSamplingRate(samplingRate);
     extractor.SetRenderingExtents(renderingExtents); // rendered region
     extractor.SetMVPMatrix(model_to_screen_transform);
-    
+
     //
     // For curvilinear and unstructured meshes, it makes sense to convert the
     // cells to image space.  But for rectilinear meshes, it is not the
@@ -451,7 +457,7 @@ avtOSPRayRayTracer::Execute()
     //
     {
         trans.SetPassThruRectilinearGrids(true);
-        extractor.SetRectilinearGridsAreInWorldSpace(true, view, aspect);
+        extractor.SetRectilinearGridsAreInWorldSpace(true, viewInfo, aspect);
     }
 
     //===================================================================//
@@ -461,7 +467,7 @@ avtOSPRayRayTracer::Execute()
                             "raytracing setup done",
                             "ospout");
 
-    
+
     //===================================================================//
     // Execute rendering
     //===================================================================//
@@ -469,15 +475,15 @@ avtOSPRayRayTracer::Execute()
         StackTimer t1("AllPatchRendering");
         extractor.Update(GetGeneralContract());
     }
-    
+
     /*
     avtDataObject_p samples = extractor.GetOutput();
-    // Only required to force an update 
+    // Only required to force an update
     // Need to find a way to get rid of that!!!!
     avtRayCompositer rc(rayfoo);
     rc.SetInput(samples);
     avtImage_p image  = rc.GetTypedOutput();
-    image->Update(GetGeneralContract());     
+    image->Update(GetGeneralContract());
     */
 
     //===================================================================//
@@ -490,21 +496,21 @@ avtOSPRayRayTracer::Execute()
     int compositedExtents[4];
     // Debug
     int numPatches = extractor.GetImgPatchSize();
-    ospout << "[avtOSPRayRayTracer] Total num of patches " 
+    ospout << "[avtOSPRayRayTracer] Total num of patches "
            << numPatches << std::endl;
     for (int i=0; i<numPatches; i++) {
         ospray::ImgMetaData currImgMeta = extractor.GetImgMetaPatch(i);
         ospout << "[avtOSPRayRayTracer] Rank " << PAR_Rank() << " "
-               << "Idx " << i << " (" << currImgMeta.patchNumber << ") " 
+               << "Idx " << i << " (" << currImgMeta.patchNumber << ") "
                << " depth " << currImgMeta.eye_z << std::endl
-               << "current patch size = " 
-               << currImgMeta.dims[0] << ", " 
+               << "current patch size = "
+               << currImgMeta.dims[0] << ", "
                << currImgMeta.dims[1] << std::endl
-               << "current patch starting" 
-               << " X = " << currImgMeta.screen_ll[0] 
+               << "current patch starting"
+               << " X = " << currImgMeta.screen_ll[0]
                << " Y = " << currImgMeta.screen_ll[1] << std::endl
-               << "current patch ending" 
-               << " X = " << currImgMeta.screen_ur[0] 
+               << "current patch ending"
+               << " X = " << currImgMeta.screen_ur[0]
                << " Y = " << currImgMeta.screen_ur[1] << std::endl;
     }
     //-------------------------------------------------------------------//
@@ -521,7 +527,7 @@ avtOSPRayRayTracer::Execute()
         //---------------------------------------------------------------//
         //---------------------------------------------------------------//
         // First Composition
-        if (PAR_Size() > 1) { 
+        if (PAR_Size() > 1) {
             compositedW = renderingExtents[1] - renderingExtents[0];
             compositedH = renderingExtents[3] - renderingExtents[2];
             compositedExtents[0] = renderingExtents[0];
@@ -529,18 +535,18 @@ avtOSPRayRayTracer::Execute()
             compositedExtents[2] = renderingExtents[2];
             compositedExtents[3] = renderingExtents[3];
             if (PAR_Rank() == 0) {
-                compositedData = 
+                compositedData =
                     new float[4 * compositedW * compositedH]();
             }
-            int currExtents[4] = 
-                {std::max(currMeta.screen_ll[0]-renderingExtents[0], 0), 
-                 std::min(currMeta.screen_ur[0]-renderingExtents[0], 
-                          compositedW), 
+            int currExtents[4] =
+                {std::max(currMeta.screen_ll[0]-renderingExtents[0], 0),
+                 std::min(currMeta.screen_ur[0]-renderingExtents[0],
+                          compositedW),
                  std::max(currMeta.screen_ll[1]-renderingExtents[2], 0),
                  std::min(currMeta.screen_ur[1]-renderingExtents[2],
                           compositedH)};
             imgComm.IceTInit(compositedW, compositedH);
-            imgComm.IceTSetTile(currData.imagePatch, 
+            imgComm.IceTSetTile(currData.imagePatch,
                                 currExtents,
                                 currMeta.eye_z);
             imgComm.IceTComposite(compositedData);
@@ -562,7 +568,7 @@ avtOSPRayRayTracer::Execute()
         //---------------------------------------------------------------//
         // Memory
         ospray::CheckMemoryHere("[avtOSPRayRayTracer] Execute "
-                                "IceT Compositing Done", 
+                                "IceT Compositing Done",
                                 "ospout");
         //---------------------------------------------------------------//
     }
@@ -593,7 +599,7 @@ avtOSPRayRayTracer::Execute()
         ospray::CheckSectionStart("avtOSPRayRayTracer", "Execute", timingIdx,
                                   "Serial-Composite: Sort with the Largest "
                                   "z First");
-        std::sort(allPatchMeta.begin(), allPatchMeta.end(), 
+        std::sort(allPatchMeta.begin(), allPatchMeta.end(),
                   &OSPRaySortImgMetaDataByEyeSpaceDepth);
         ospray::CheckSectionStop("avtOSPRayRayTracer", "Execute", timingIdx,
                                  "Serial-Composite: Sort with the Largest "
@@ -608,7 +614,7 @@ avtOSPRayRayTracer::Execute()
         compositedExtents[0] = renderingExtents[0];
         compositedExtents[1] = renderingExtents[0] + compositedW;
         compositedExtents[2] = renderingExtents[2];
-        compositedExtents[3] = renderingExtents[2] + compositedH;           
+        compositedExtents[3] = renderingExtents[2] + compositedH;
         if (PAR_Rank() == 0) {
             compositedData = new float[compositedW * compositedH * 4]();
         }
@@ -620,12 +626,12 @@ avtOSPRayRayTracer::Execute()
             extractor.GetAndDelImgData /* do shallow copy inside */
                 (currImgMeta.patchNumber, currImgData);
             const float* currData = currImgData.imagePatch;
-            const int currExtents[4] = 
-                {currImgMeta.screen_ll[0], currImgMeta.screen_ur[0], 
+            const int currExtents[4] =
+                {currImgMeta.screen_ll[0], currImgMeta.screen_ur[0],
                  currImgMeta.screen_ll[1], currImgMeta.screen_ur[1]};
             avtOSPRayImageCompositor::BlendBackToFront(currData,
                                                        currExtents,
-                                                       compositedData, 
+                                                       compositedData,
                                                        compositedExtents);
             if (currImgData.imagePatch != NULL) {
                 delete[] currImgData.imagePatch;
@@ -640,14 +646,14 @@ avtOSPRayRayTracer::Execute()
         //---------------------------------------------------------------//
         // Memory
         ospray::CheckMemoryHere("[avtOSPRayRayTracer] Execute "
-                                "Sequential Compositing Done", 
+                                "Sequential Compositing Done",
                                 "ospout");
         //---------------------------------------------------------------//
-    } 
+    }
     //-------------------------------------------------------------------//
     // PARALLEL: Customized Parallel Direct Send Method
     //-------------------------------------------------------------------//
-    else { 
+    else {
         //---------------------------------------------------------------//
         // Parallel Direct Send
         ospray::CheckSectionStart("avtOSPRayRayTracer", "Execute", timingIdx,
@@ -660,12 +666,12 @@ avtOSPRayRayTracer::Execute()
         int myRegionHeight =
             imgComm.ParallelDirectSendManyPatches
             (extractor.imgDataHashMap, extractor.imageMetaPatchVector,
-             numPatches, regions, imgComm.GetParSize(), tags, 
+             numPatches, regions, imgComm.GetParSize(), tags,
              renderingExtents);
-        imgComm.gatherImages(regions, imgComm.GetParSize(), 
-                             imgComm.intermediateImage, 
-                             imgComm.intermediateImageExtents, 
-                             imgComm.intermediateImageExtents, 
+        imgComm.gatherImages(regions, imgComm.GetParSize(),
+                             imgComm.intermediateImage,
+                             imgComm.intermediateImageExtents,
+                             imgComm.intermediateImageExtents,
                              tagGather, renderingExtents, myRegionHeight);
 
         ospray::CheckSectionStop("avtOSPRayRayTracer", "Execute", timingIdx,
@@ -681,17 +687,17 @@ avtOSPRayRayTracer::Execute()
         regions = NULL;
         if (imgComm.intermediateImage != NULL)
             delete [] imgComm.intermediateImage;
-        imgComm.intermediateImage = NULL;               
+        imgComm.intermediateImage = NULL;
         imgComm.Barrier();
         ospray::CheckSectionStop("avtOSPRayRayTracer", "Execute", timingIdx,
                                  "Parallel-Composite: Some Cleanup");
         //---------------------------------------------------------------//
         //---------------------------------------------------------------//
         // Setup for Final Composition
-        compositedW = 
+        compositedW =
             imgComm.finalImageExtents[1] -
             imgComm.finalImageExtents[0];
-        compositedH = 
+        compositedH =
             imgComm.finalImageExtents[3] -
             imgComm.finalImageExtents[2];
         compositedExtents[0] = imgComm.finalImageExtents[0];
@@ -705,10 +711,10 @@ avtOSPRayRayTracer::Execute()
         //--------------------------------------------------------------//
         // Memory
         ospray::CheckMemoryHere("[avtOSPRayRayTracer] Execute "
-                                "Parallel Compositing Done", 
+                                "Parallel Compositing Done",
                                 "ospout");
         //--------------------------------------------------------------//
-    }   
+    }
 
     ///////////////////////////////////////////////////////////////////
     //
@@ -717,10 +723,10 @@ avtOSPRayRayTracer::Execute()
     ///////////////////////////////////////////////////////////////////
     if (PAR_Rank() == 0) {
         avtImage_p finalImage = new avtImage(this);
-        vtkImageData *finalVTKImage = 
+        vtkImageData *finalVTKImage =
             avtImageRepresentation::NewImage(screen[0], screen[1]);
         finalImage->GetImage() = finalVTKImage;
-        unsigned char *finalImageBuffer = 
+        unsigned char *finalImageBuffer =
             finalImage->GetImage().GetRGBBuffer();
         ospray::CompositeBackground(screen,
                                     compositedExtents,
@@ -733,10 +739,10 @@ avtOSPRayRayTracer::Execute()
         finalVTKImage->Delete();
         SetOutput(finalImage);
     }
-    if (compositedData != NULL) { 
+    if (compositedData != NULL) {
         delete [] compositedData;
     }
-    compositedData = NULL; 
+    compositedData = NULL;
     ospout << "[avtOSPRayRayTracer] Raycasting OSPRay is Done !" << std::endl;
 
     ///////////////////////////////////////////////////////////////////
