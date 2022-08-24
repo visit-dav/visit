@@ -67,16 +67,6 @@ class vtkDataArray;
 //      Justin Privitera, Wed Mar 23 12:26:31 PDT 2022
 //      Added "domain" as first arg of MeshToVTK.
 // 
-//      Justin Privitera, Mon Apr 11 18:20:19 PDT 2022
-//      Added "new_refine" as an arg to RefineMeshToVTK.
-// 
-//      Justin Privitera, Wed Apr 13 13:49:43 PDT 2022
-//      Added LegacyRefineMeshToVTK and LowOrderMeshToVTK to MFEM class.
-// 
-//      Justin Privitera, Mon May  9 14:35:18 PDT 2022
-//      Added LegacyRefineGridFunctionToVTK and LowOrderGridFunctionToVTK to 
-//      MFEM class and added "new_refine" as an arg to RefineGridFunctionToVTK.
-// 
 //  Modifications:
 //      Justin Privitera, Mon Aug 22 17:15:06 PDT 2022
 //      Added all functions, mostly taken from the blueprint plugin data 

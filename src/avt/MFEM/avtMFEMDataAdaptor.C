@@ -379,6 +379,10 @@ avtMFEMDataAdaptor::LowOrderMeshToVTK(mfem::Mesh *mesh)
 //
 // Notes: See LegacyRefineMeshToVTK for the function originally 
 //   with this name.
+// 
+// Modifications:
+//    Justin Privitera, Tue Jul 26 13:04:31 PDT 2022
+//    Use new makerefined constructor.
 //
 // ****************************************************************************
 vtkDataSet *
@@ -407,13 +411,9 @@ avtMFEMDataAdaptor::RefineMeshToVTK(mfem::Mesh *mesh,
     AVT_MFEM_INFO("High Order Mesh is not periodic.");
 
     // refine the mesh
-    mfem::Mesh *lo_mesh = new mfem::Mesh(mesh, 
-                                         lod, 
-                                         mfem::BasisType::GaussLobatto);
+    mfem::Mesh lo_mesh = mfem::Mesh::MakeRefined(*mesh, lod, mfem::BasisType::GaussLobatto);
 
-    vtkDataSet *retval = LowOrderMeshToVTK(lo_mesh);
-    delete lo_mesh;
-    return retval;
+    return LowOrderMeshToVTK(&lo_mesh);
 }
 
 // ****************************************************************************
@@ -603,6 +603,11 @@ avtMFEMDataAdaptor::LowOrderGridFunctionToVTK(mfem::GridFunction *gf)
 //
 //  Notes: See LegacyRefineGridFunctionToVTK for the function originally 
 //   with this name.
+// 
+//  Modifications:
+//     Justin Privitera, Fri Jul 22 16:10:43 PDT 2022
+//     Added back in the L2 logic, and fixed it.
+//     Use new makerefined constructor.
 //
 // ****************************************************************************
 vtkDataArray *
@@ -638,46 +643,37 @@ avtMFEMDataAdaptor::RefineGridFunctionToVTK(mfem::Mesh *mesh,
             "RefineGridFunctionToVTK: high order gf finite element space is null");
     }
     // create the low order grid function
-    mfem::FiniteElementCollection *lo_col = new mfem::LinearFECollection;
+    mfem::FiniteElementCollection *lo_col;
 
-#if 0
-    /*Note: The following code is commented out because it appears that
-    MFEM's LOR always gives us back node centered data,
-    no matter if the input is H1 or L2. However,
-    this logic may be relevant if the mesh is periodic,
-    which is currently unsupported, but may be in the future.*/
+    // H1 is nodal
+    // L2 is zonal
 
     std::string basis(gf->FESpace()->FEColl()->Name());
     // we only have L2 or H1 at this point
-    bool node_centered = basis.find("H1_") == std::string::npos;
+    bool node_centered = basis.find("H1_") != std::string::npos;
     if(node_centered)
     {
         lo_col = new mfem::LinearFECollection;
     }
     else
     {
-        int  p = 0; // single scalar
+        int p = 0; // single scalar
         lo_col = new mfem::L2_FECollection(p, mesh->Dimension(), 1);
     }
-#endif
     
     // refine the mesh and convert to vtk
     // it would be nice if this was cached somewhere but we will do it again
-    mfem::Mesh *lo_mesh = new mfem::Mesh(mesh, lod, 
-                                         mfem::BasisType::GaussLobatto);
-    mfem::FiniteElementSpace *lo_fes = new mfem::FiniteElementSpace(lo_mesh, lo_col, ho_fes->GetVDim());
-    mfem::GridFunction *lo_gf = new mfem::GridFunction(lo_fes);
+    mfem::Mesh lo_mesh = mfem::Mesh::MakeRefined(*mesh, lod, mfem::BasisType::GaussLobatto);
+    mfem::FiniteElementSpace lo_fes(&lo_mesh, lo_col, ho_fes->GetVDim());
+    mfem::GridFunction lo_gf(&lo_fes);
     // transform the higher order function to a low order function somehow
     mfem::OperatorHandle hi_to_lo;
-    lo_fes->GetTransferOperator(*ho_fes, hi_to_lo);
-    hi_to_lo.Ptr()->Mult(*gf, *lo_gf);
+    lo_fes.GetTransferOperator(*ho_fes, hi_to_lo);
+    hi_to_lo.Ptr()->Mult(*gf, lo_gf);
 
-    vtkDataArray *retval = LowOrderGridFunctionToVTK(lo_gf);
+    vtkDataArray *retval = LowOrderGridFunctionToVTK(&lo_gf);
     
-    delete lo_mesh;
     delete lo_col;
-    delete lo_fes;
-    delete lo_gf;
 
     return retval;
 }

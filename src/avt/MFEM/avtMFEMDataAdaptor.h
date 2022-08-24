@@ -57,6 +57,17 @@ class vtkDataArray;
 //  Programmer:  Cyrus Harrison
 //  Creation:    May 31, 2022
 //
+//  Modifications to Blueprint Data Adaptor (now deprecated and moved here):
+//      Justin Privitera, Mon Apr 11 18:20:19 PDT 2022
+//      Added "new_refine" as an arg to RefineMeshToVTK.
+// 
+//      Justin Privitera, Wed Apr 13 13:49:43 PDT 2022
+//      Added LegacyRefineMeshToVTK and LowOrderMeshToVTK to MFEM class.
+// 
+//      Justin Privitera, Mon May  9 14:35:18 PDT 2022
+//      Added LegacyRefineGridFunctionToVTK and LowOrderGridFunctionToVTK to 
+//      MFEM class and added "new_refine" as an arg to RefineGridFunctionToVTK.
+// 
 //  Modifications:
 //    Justin Privitera, Tue Aug 23 14:52:34 PDT 2022
 //    Added all functions, mostly taken from the blueprint plugin data adaptor.
