@@ -285,7 +285,7 @@ Otherwise they will compare them as strings.
     Passes if bucket *contains* expected according to ``eqoper`` equality operator.
     Fails otherwise.
 
-``TestFOA(name, tag='unk') :
+``TestFOA(name, tag='unk')``
     Fail on arrival with test case outcome name the concatenation of ``name`` and ``tag``.
     Whenever python execution arrives at a line with ``TestFOA()``, the test is considered a failure.
     Typically, ``tag`` is ``LINE()`` to indicate the python line number where failure occured.
