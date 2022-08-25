@@ -3,11 +3,11 @@ Regression Testing
 
 Overview
 --------
-VisIt_ has a large and continually growing test suite.
-VisIt_'s test suite involves a combination of python scripts in ``src/test``, raw data in archives in the top-level ``data`` directory and data generation sources in ``src/tools/data/datagen``.
-Regression tests are run on a nightly basis and results are posted to VisIt_'s `test dashboard <https://visit-dav.github.io/dashboard/>`_.
-Testing exercises VisIt_'s viewer, mdserver, engine and cli but not the GUI.
-
+VisIt_ has a large and growing test suite.
+VisIt_'s test suite involves a combination of python scripts in ``src/test``, raw input data files in archives in the top-level ``data`` directory and data generation tools in ``src/tools/data/datagen``.
+Regression tests are run nightly and results are posted to VisIt_'s `test dashboard <https://visit-dav.github.io/dashboard/>`_.
+Testing exercises VisIt_'s viewer, mdserver, engine and cli.
+The GUI, however, is not exercised during regression testing and is instead tested manually.
 
 Running regression tests
 ------------------------
@@ -15,26 +15,95 @@ Running regression tests
 Where nightly regression tests are run
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The regression suite is run on `LLNL's Pascal Cluster <https://hpc.llnl.gov/hardware/platforms/pascal>`_.
-Pascal runs the TOSS3 operating system, which is a flavor of Linux.
+Pascal runs the TOSS operating system, which is a flavor of Linux.
 If you are going to run the regression suite yourself you should run on a similar system or there will be differences due to numeric precision issues.
 If you do have to run the test suite on a different system there are options for doing :ref:`fuzzy matching <Fuzzy Matching Thresholds>`.
 
 The regression suite is run on Pascal using a cron job that checks out VisIt_ source code, builds it, and then runs the tests.
 
+A note about git lfs
+~~~~~~~~~~~~~~~~~~~~
+
+The regression suite relies on having a working VisIt_ build and test data available on your local computer.
+Our test data and baselines are stored using `git lfs <https://www.atlassian.com/git/tutorials/git-lfs>`__.
+Git lfs is an extension to git to *effectively* support large, binary files.
+To run VisIt_'s regression suite, git lfs needs to be installed and the command ``git lfs pull`` needs be run.
+In addition, ``git lfs pull`` will likely need to be periodically rerun as various git operations update files.
+
+Files in git lfs exist as either a *pointer/proxy* file or as the *actual/real* file.
+A git lfs file's content *mutates* between these two state as various git (and git lfs) operations are performed.
+Only the pointer/proxy file, which is a small (< 150 bytes) text file, is managed in git.
+The actual/real file, which can be very large, is managed in git lfs.
+When a file is in its *pointer/proxy* state, its contents look something like ::
+
+    version https://git-lfs.github.com/spec/v1
+    oid sha256:4d7a214614ab2935c943f9e0ff69d22eadbb8f32b1258daaa5e2ca24d17e2393
+    size 12345
+
+The command ``git lfs pull`` *dereferences* pointer/proxy files causing *all* pointer/proxy files in the currently checked out branch to be replaced with their actual/real contents.
+
+.. warning::
+
+   If there are many pointer/proxy files in the current branch and/or the actual/real files to which the pointer files refer are very large, a ``git lfs pull`` operation can take a long time (many minutes or more).
+   The operation can be restricted to specific files using the ``--include`` and ``--exclude`` options to ``git lfs``.
+
+Other git operations can wind up updating the contents of an actual/real lfs file in the local checkout and replacing the file with updated pointer/proxy contents.
+
+Being aware of these two states of a git lfs file is important because when such files are in their pointer/proxy state, various other kinds of VisIt_ development activities can fail indicating a problem with the file's *format*.
+For example, expanding a data archive can fail ::
+
+    % make ANAME=zipwrapper_test_data.tar.xz expand
+    [100%] Generating _archive_expand
+    CMake Error: Problem with archive_read_open_file(): Unrecognized archive format
+    CMake Error: Problem extracting tar: /Users/miller86/visit/visit/data/zipwrapper_test_data.tar.xzor as another example using ImageMagick's ``display`` command on an lfs'd ``.png`` file still in its *pointer* state ::
+
+Or, trying to display a baseline image can fail ::
+
+    % display ../test/baseline//databases/silo/silo_curvilinear_3d_surface_6.png
+    display: improper image header '../test/baseline//databases/silo/silo_curvilinear_3d_surface_6.png'
+    
+When this happens, its likely because a ``git lfs pull`` operation is again needed.
+
+There are other tell tale signs to help recognize whether an lfs'd file is in its pointer/proxy state or actua/real state.
+In the examples below, ``xolotl_test_data.tar.xz`` and ``xyz_test_data.tar.xz`` are in their actual/real state while ``zipwrapper_test_data.tar.xz`` is in its pointer/proxy state.
+First, in their pointer/proxy state, the files are very small text files, usually less than 150 bytes ::
+
+     % wc -c xolotl_test_data.tar.xz xyz_test_data.tar.xz zipwrapper_test_data.tar.xz
+     1294672 xolotl_test_data.tar.xz
+      348584 xyz_test_data.tar.xz
+         132 zipwrapper_test_data.tar.xz
+
+The ``file`` command will show ``ASCII text`` ::
+
+    % file xolotl_test_data.tar.xz xyz_test_data.tar.xz zipwrapper_test_data.tar.xz          
+    xolotl_test_data.tar.xz:     XZ compressed data
+    xyz_test_data.tar.xz:        XZ compressed data
+    zipwrapper_test_data.tar.xz: ASCII text
+
+The file's contents will show the lfs pointer/proxy data ::
+
+    % cat zipwrapper_test_data.tar.xz 
+    version https://git-lfs.github.com/spec/v1
+    oid sha256:0de21481f2a2e1ddd0eb8e5bcf44e12980285455ce4724557d146c1fa884eb1e
+    size 6696960
+
+A ``git lfs pull`` operation will mutate all lfs'd pointer/proxy files in the current branch to their actual/real contents.
+Or, in cases where that operation might take too long, restrict it to the needed files as in ::
+
+    git lfs pull --include zipwrapper_test_data.tar.xz
+    git lfs pull --include ../test/baseline/databases/silo/silo_curvilinear_3d_surface_6.png
+    git lfs pull --include "*.silo"
+
 How to run the regression tests manually
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The regression suite relies on having a working VisIt_ build and test data available on your local computer.
-Our test data and baselines are stored using git lfs, so you need to setup git lfs and pull to have all the necessary files. 
-
 The test suite is written in python and the source is in ``src/test``.
 The main driver to run the whole test suite is ``src/test/visit_test_main.py``.
-Individual test `.py` files are in ``src/test/tests/<category>/*.py``.
+Individual test ``.py`` files are in ``src/test/tests/<category>/*.py``.
 When you configure VisIt_, a bash script is generated in the build directory that you can use to run the test suite out of source with all the proper data and baseline directory arguments. ::
 
     cd visit-build/test/
     ./run_visit_test_suite.sh
-
 
 Here is an example of the contents of the generated ``run_visit_test_suite.sh`` script ::
 
@@ -44,7 +113,6 @@ Here is an example of the contents of the generated ``run_visit_test_suite.sh`` 
        -b /Users/harrison37/Work/github/visit-dav/visit/src/test/../../test/baseline/   \
        -o output \
        -e /Users/harrison37/Work/github/visit-dav/visit/build-mb-develop-darwin-10.13-x86_64/build-debug/bin/visit "$@"
-
 
 Once the test suite has run, the results can be found in the ``output/html`` directory.
 There, you will find an ``index.html`` file entry that you can use to browse all the results.
@@ -95,28 +163,34 @@ Use of these options on platforms other than the currently adopted testing platf
 
 There are a number of different categories of tests. 
 The test categories are the names of all the directories under ``src/test/tests``. 
-The .py files in this directory tree are all the actual test driver files that drive VisIt_'s CLI and generate images and text to compare with baselines. 
+The ``.py`` files in this directory tree are all the actual test driver files that drive VisIt_'s CLI and generate images and text to compare with baselines. 
 In addition, the ``src/test/visit_test_main.py`` file defines a number of helper Python functions that facilitate testing including two key functions; ``Test()`` for testing image outputs and ``TestText()`` for testing text outputs. 
-Of course, all the .py files in ``src/test/tests`` subtree are excellent examples of test scripts.
+Of course, all the ``.py`` files in ``src/test/tests`` subtree are excellent examples of test scripts.
 
 When the test suite finishes, it will have created a web-browseable HTML tree in the html directory. 
 The actual image and text raw results will be in the current directory and difference images will be in the diff directory. 
 The difference images are essentially binary bitmaps of the pixels that are different and not the actual pixel differences themselves. 
 This is to facilitate identifying the location and cause of the differences.
 
-Adding a test involves:
+Adding a test often involves:
 
-a) adding a .py file to the appropriate subdirectory in ``src/test/tests``, 
-b) adding the expected baselines to ``test/baselines`` and, depending on the test, 
-c) adding any necessary input data files to ``src/testdata``. 
+a) adding a ``.py`` file to the appropriate test *category* subdirectory in ``src/test/tests``, 
+b) optionally adding the expected baseline files to ``test/baselines`` and, depending on the test, 
+c) optionally adding any necessary input data files to the top-level ``data`` directory. 
 
-The test suite will find your added .py files the next time it runs. 
+.. warning::
+
+   Steps b) and c) can almost never be avoided for tests involving new database plugins.
+   However, in almost all other cases, steps b) and c) can and probably should be avoided.
+   Instead, developers are encouraged to adopt new practices and use new testing features where tests *and* their expected outcomes are programmatically included in *just* the ``.py``, so there is no need for separate *baseline* files and/or new data files.
+
+The test suite will find your added ``.py`` files the next time it runs. 
 So, you don't have to do anything special other than adding the .py file.
 
 One subtlety about the current test modality is what we call *mode specific baselines*. 
-In theory, it should not matter what mode VisIt_ is run in to produce an image. 
-The image should be identical across modes. 
-In practice there is a long list of things that can contribute to a handful of pixel differences in the same test images run in different modes. 
+In theory, it should not matter what mode VisIt_ uses to produce an image or numerical/textual output. 
+The results should be identical across modes. 
+In practice there is a long list of things that can contribute to subtle pixel differences images and small numerical differences in text.
 This has lead to mode specific baselines. 
 In the baseline directory, there are subdirectories with names corresponding to modes we currently run. 
 When it becomes necessary to add a mode specific baseline, the baseline file should be added to the appropriate baseline subdirectory.
@@ -129,23 +203,56 @@ The default skip list file is ``src/test/skip.json``.
 
 .. _three_results_types:
 
-Three Types of Test Results
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Types of Test Results
+~~~~~~~~~~~~~~~~~~~~~
 
 VisIt_'s testing system, ``visit_test_main.py``, uses three different methods
 to process and check results.
 
-* ``Test()`` which processes ``.png`` image files.
-* ``TestText()`` which process ``.txt`` text files.
+* ``Test()`` and ``TestAutoName()`` which processes ``.png`` image files
+* ``TestText()`` and ``TestTextAutoName()`` which process ``.txt`` text files.
 * ``TestValueXX()`` (where ``XX``==>``EQ``, ``LT``, ``LE``, etc.) which processes no files and simply checks *actual* and *expected* values passed as arguments.
+* ``TestPOA()`` and ``TestFOA()`` which integrate directly with python if-then-else and try-except logic.
 
-The ``Test()`` and ``TestText()`` methods both take the name of a file. 
+The ``Test()`` and ``TestText()`` methods both take the name of a file.
 To process a test result, these methods output a file produced by the *current* test run and then compare it to a blessed *baseline* file stored in
 `test/baseline <https://github.com/visit-dav/visit/tree/develop/test/baseline>`_.
+
+The ``TestAutoName()`` and ``TestTextAutoName()`` methods are preferred and perform the equivalent work of ``Test()`` and ``TestText()`` but generate the names of the baseline files automatically.
+The auto-naming algorithm depends on the ``.py`` file being structured such that calls to ``TestAutoName()`` and/or ``TestTextAutoName()`` are made only from within top-level functions in the ``.py`` file.
+Auto naming does not work if these methods are called from either the top/main of the ``.py`` file or from functions two or more levels deep.
+Auto naming catenates the ``.py`` file's name with the name of the top-level function from which the call was made and adds an index/count.
+So, given a python file named ``gorfo.py`` structured as below, the resulting auto generated names (and section names) are indicated in the associated comments.
+
+.. code:: python
+
+  def histogram():
+      ...
+      TestAutoName() # 'gorfo_histogram_0' and calls TestSection('histogram')
+      ...
+      TestAutoName() # 'gorfo_histogram_1'
+  
+  def curve():
+      ...
+      TestAutoName() # 'gorfo_curve_0' and calls TestSection('curve')
+      ...
+      TestAutoName() # 'gorfo_curve_1'
+      
+The one down side to using the auto-naming methods is that restructuring the python code can lead to renaming of baseline files.
+Existing, top-level functions can be moved relative to each other without issue.
+New tests can be added without issue.
+But, removing *earlier* tests from a function or moving tests relative to each other *within* a function leads to renaming.
+
 When they can be used, the ``TestValueXX()`` are a little more convenient because they do not involve storing data in files and having to maintain separate baseline files. 
 Instead the ``TestTextXX()`` methods take both an *actual* (current) and *expected* (baseline) result as arguments directly coded in the calling ``.py`` file.
 
-As VisIt_ testing has evolved over the past twenty years, understanding and improving productivity related to test design has not been a priority. 
+Likewise, the ``TestPOA()`` (pass on arrival) and ``TestFOA()`` (fail on arrival) methods are convenient ways to implement a test based primarily upon python logic itself with if-then-else or try-except blocks.
+These methods are useful for cases where the majority of logic for determining a passed or failed test exists primarily as the python code itself being executed.
+A good example is the ``unit/atts_assign.py`` tests.
+While there may be many instances of ``TestFOA()`` (many ways a given bit of logic can fail) with the same ``name`` argument in a given sequence of logic for a single test outcome, they can be differentiated by a unique *tag* (typically the ``LINE()`` method identifing the line number.
+However, there should be only a single ``TestPOA()`` (the one way a given bit of logic can succeed) instance with the same name for the associated test outcome.
+
+As VisIt_ testing has evolved, understanding and improving productivity related to test design has not been a priority. 
 As a result, there are likely far more image test results than are truly needed to fully vet all of VisIt_'s plotting features. 
 Or, image tests are used unecessarily to confirm non-visual behavior like that a given database reader is working. 
 Some text tests are better handled as ``TestValueXX()`` tests and other text tests often contain 90% *noise* text unrelated to the functionality being tested. 
@@ -153,10 +260,10 @@ This has made maintaining and ensuring portability of the test suite more labori
 
 Because image tests tend to be the most difficult to make portable, a better design would minimize image tests to only those needed to validate visual behaviors, text tests would involve only the *essenteial* text of the test and a majority of tests would involve *value* type tests.
 
-The above explanation is offered as a rational to justify that whenever possible adding *new* tests to the test suite should use the ``TestValueXX()`` approach as much as practical.
+The above explanation is offered as a rational to justify that whenever possible adding *new* tests to the test suite should use the ``TestValueXX()`` or ``TestPOA()``/``TestFOA()`` approach as much as practical.
 
-More About TestValueXX Type Tests
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+More About TestValueXX and TestPOA/FOA Type Tests
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The ``TestValueXX()`` methods are similar in spirit to ``Test()`` and ``TestText()`` except operates on Python *values* passed as args both for the *current* (actual) and the *baseline* (expected) results. 
 The values can be any Python object. 
@@ -185,7 +292,18 @@ Otherwise they will compare them as strings.
     Passes if bucket *contains* expected according to ``eqoper`` equality operator.
     Fails otherwise.
 
-For some examples, see `test_values_simple.py <https://github.com/visit-dav/visit/blob/develop/src/test/tests/unit/test_value_simple.py>`_.
+``TestFOA(name, tag='unk')``
+    Fail on arrival with test case outcome name the concatenation of ``name`` and ``tag``.
+    Whenever python execution arrives at a line with ``TestFOA()``, the test is considered a failure.
+    Typically, ``tag`` is ``LINE()`` to indicate the python line number where failure occured.
+    A given bit of test logic (e.g. a test *case*) can have *many* ``TestFOA()`` calls of the same ``name`` but with different ``tag``.
+    
+``TestPOA(name)``
+    Pass on arrival with test case outcome name just ``name``.
+    Whenever python execution arrives at a line with ``TestPOA()``, the test is considered a pass.
+    A given bit of test logic (e.g. a test *case*) should have *only one* ``TestPOA()`` call.
+
+For some examples, see `test_values_simple.py <https://github.com/visit-dav/visit/blob/develop/src/test/tests/unit/test_value_simple.py>`__ and `atts_assign.py <https://github.com/visit-dav/visit/blob/develop/src/test/tests/unit/atts_assign.py>`__.
 
 Filtering Image Differences
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
