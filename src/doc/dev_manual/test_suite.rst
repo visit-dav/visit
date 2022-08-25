@@ -296,7 +296,7 @@ Otherwise they will compare them as strings.
     Whenever python execution arrives at a line with ``TestPOA()``, the test is considered a pass.
     A given bit of test logic (e.g. a test *case*) can have *only one* ``TestPOA()`` call.
 
-For some examples, see `test_values_simple.py <https://github.com/visit-dav/visit/blob/develop/src/test/tests/unit/test_value_simple.py>`__ and `test_atts.py <https://github.com/visit-dav/visit/blob/develop/src/test/tests/unit/atts_assign.py>`__.
+For some examples, see `test_values_simple.py <https://github.com/visit-dav/visit/blob/develop/src/test/tests/unit/test_value_simple.py>`__ and `atts_assign.py <https://github.com/visit-dav/visit/blob/develop/src/test/tests/unit/atts_assign.py>`__.
 
 Filtering Image Differences
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
