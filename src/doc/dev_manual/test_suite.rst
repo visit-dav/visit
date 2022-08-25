@@ -3,10 +3,11 @@ Regression Testing
 
 Overview
 --------
-VisIt_ has a large and continually growing test suite.
-VisIt_'s test suite involves a combination of python scripts in ``src/test``, raw data in archives in the top-level ``data`` directory and data generation sources in ``src/tools/data/datagen``.
-Regression tests are run on a nightly basis and results are posted to VisIt_'s `test dashboard <https://visit-dav.github.io/dashboard/>`_.
-Testing exercises VisIt_'s viewer, mdserver, engine and cli but not the GUI.
+VisIt_ has a large and growing test suite.
+VisIt_'s test suite involves a combination of python scripts in ``src/test``, raw input data files in archives in the top-level ``data`` directory and data generation tools in ``src/tools/data/datagen``.
+Regression tests are run nightly and results are posted to VisIt_'s `test dashboard <https://visit-dav.github.io/dashboard/>`_.
+Testing exercises VisIt_'s viewer, mdserver, engine and cli.
+The GUI, however, is not exercised during regression testing and is instead tested manually.
 
 Running regression tests
 ------------------------
@@ -27,59 +28,66 @@ The regression suite relies on having a working VisIt_ build and test data avail
 Our test data and baselines are stored using `git lfs <https://www.atlassian.com/git/tutorials/git-lfs>`__.
 Git lfs is an extension to git to *effectively* support large, binary files.
 To run VisIt_'s regression suite, git lfs needs to be installed and the command ``git lfs pull`` needs be run.
-Any time ``git pull`` operations update lfs'd files, ``git lfs pull`` may again need to be run.
+In addition, ``git lfs pull`` will likely need to be periodically rerun as various git operations update files.
 
-Git lfs handles files similarly to the way C/C++ handles pointers except that a pointer file (the git part) and the real file to which the pointer refers (the lfs part) both have the same name.
-When a file is in its *pointer* state, its contents look something like ::
+Files in git lfs exist as either a *pointer/proxy* file or as the *actual/real* file.
+A git lfs file's content *mutates* between these two state as various git (and git lfs) operations are performed.
+Only the pointer/proxy file, which is a small (< 150 bytes) text file, is managed in git.
+The actual/real file, which can be very large, is managed in git lfs.
+When a file is in its *pointer/proxy* state, its contents look something like ::
 
     version https://git-lfs.github.com/spec/v1
     oid sha256:4d7a214614ab2935c943f9e0ff69d22eadbb8f32b1258daaa5e2ca24d17e2393
     size 12345
 
-A git lfs file's content *mutates* between its *pointer* state and its *real* state as various git (and git lfs) operations are performed.
-In particular, the command ``git lfs pull`` is used to *dereference* pointer files causing *all* pointer files in the currently checked out branch to be replaced with their real contents.
-Watch out!
-If there are many *pointer* files in the current branch and/or the actual files to which the pointer files refer are very large, a ``git lfs pull`` operation can take a long time (many minutes or more).
-The operation can be restricted to specific files using the ``--include`` and ``--exclude`` options to ``git lfs``.
-Likewise, ``git pull`` operations which wind up updating the contents of a *real* lfs file in the local checkout will replace the file with its updated *pointer* contents.
+The command ``git lfs pull`` *dereferences* pointer/proxy files causing *all* pointer/proxy files in the currently checked out branch to be replaced with their actual/real contents.
 
-There are tell tale signs a ``git lfs pull`` operation has been negelected.
-In the examples below, ``xolotl_test_data.tar.xz`` and ``xyz_test_data.tar.xz`` are in their *real* state while ``zipwrapper_test_data.tar.xz`` is in its pointer state.
-First, the *pointer* files are very small text files, usually less than 150 bytes ::
+.. warning::
+
+   If there are many pointer/proxy files in the current branch and/or the actual/real files to which the pointer files refer are very large, a ``git lfs pull`` operation can take a long time (many minutes or more).
+   The operation can be restricted to specific files using the ``--include`` and ``--exclude`` options to ``git lfs``.
+
+Other git operations can wind up updating the contents of an actual/real lfs file in the local checkout and replacing the file with updated pointer/proxy contents.
+
+Being aware of these two states of a git lfs file is important because when such files are in their pointer/proxy state, various other kinds of VisIt_ development activities can fail indicating a problem with the file's *format*.
+For example, expanding a data archive can fail ::
+
+    % make ANAME=zipwrapper_test_data.tar.xz expand
+    [100%] Generating _archive_expand
+    CMake Error: Problem with archive_read_open_file(): Unrecognized archive format
+    CMake Error: Problem extracting tar: /Users/miller86/visit/visit/data/zipwrapper_test_data.tar.xzor as another example using ImageMagick's ``display`` command on an lfs'd ``.png`` file still in its *pointer* state ::
+
+Or, trying to display a baseline image can fail ::
+
+    % display ../test/baseline//databases/silo/silo_curvilinear_3d_surface_6.png
+    display: improper image header '../test/baseline//databases/silo/silo_curvilinear_3d_surface_6.png'
+    
+When this happens, its likely because a ``git lfs pull`` operation is again needed.
+
+There are other tell tale signs to help recognize whether an lfs'd file is in its pointer/proxy state or actua/real state.
+In the examples below, ``xolotl_test_data.tar.xz`` and ``xyz_test_data.tar.xz`` are in their actual/real state while ``zipwrapper_test_data.tar.xz`` is in its pointer/proxy state.
+First, in their pointer/proxy state, the files are very small text files, usually less than 150 bytes ::
 
      % wc -c xolotl_test_data.tar.xz xyz_test_data.tar.xz zipwrapper_test_data.tar.xz
      1294672 xolotl_test_data.tar.xz
       348584 xyz_test_data.tar.xz
          132 zipwrapper_test_data.tar.xz
 
-The ``files`` command will show ``ASCII text`` ::
+The ``file`` command will show ``ASCII text`` ::
 
     % file xolotl_test_data.tar.xz xyz_test_data.tar.xz zipwrapper_test_data.tar.xz          
     xolotl_test_data.tar.xz:     XZ compressed data
     xyz_test_data.tar.xz:        XZ compressed data
     zipwrapper_test_data.tar.xz: ASCII text
 
-The file's contents will show the lfs *pointer* data ::
+The file's contents will show the lfs pointer/proxy data ::
 
     % cat zipwrapper_test_data.tar.xz 
     version https://git-lfs.github.com/spec/v1
     oid sha256:0de21481f2a2e1ddd0eb8e5bcf44e12980285455ce4724557d146c1fa884eb1e
     size 6696960
 
-In addition, various operations involving lfs'd files in their *pointer* state will fail with some kind of error indicating a problem with the file's *format* ::
-
-    % make ANAME=zipwrapper_test_data.tar.xz expand
-    [100%] Generating _archive_expand
-    CMake Error: Problem with archive_read_open_file(): Unrecognized archive format
-    CMake Error: Problem extracting tar: /Users/miller86/visit/visit/data/zipwrapper_test_data.tar.xz
-
-or as another example using ImageMagick's ``display`` command on an lfs'd ``.png`` file still in its *pointer* state ::
-
-    % display ../test/baseline//databases/silo/silo_curvilinear_3d_surface_6.png
-    display: improper image header '../test/baseline//databases/silo/silo_curvilinear_3d_surface_6.png'
-    
-In cases like these, the remedy is to run a ``git lfs pull`` command.
-This will mutate all lfs'd *pointer* files in the current branch to their *real* contents.
+A ``git lfs pull`` operation will mutate all lfs'd pointer/proxy files in the current branch to their actual/real contents.
 Or, in cases where that operation might take too long, restrict it to the needed files as in ::
 
     git lfs pull --include zipwrapper_test_data.tar.xz
@@ -91,7 +99,7 @@ How to run the regression tests manually
 
 The test suite is written in python and the source is in ``src/test``.
 The main driver to run the whole test suite is ``src/test/visit_test_main.py``.
-Individual test `.py` files are in ``src/test/tests/<category>/*.py``.
+Individual test ``.py`` files are in ``src/test/tests/<category>/*.py``.
 When you configure VisIt_, a bash script is generated in the build directory that you can use to run the test suite out of source with all the proper data and baseline directory arguments. ::
 
     cd visit-build/test/
@@ -155,9 +163,9 @@ Use of these options on platforms other than the currently adopted testing platf
 
 There are a number of different categories of tests. 
 The test categories are the names of all the directories under ``src/test/tests``. 
-The .py files in this directory tree are all the actual test driver files that drive VisIt_'s CLI and generate images and text to compare with baselines. 
+The ``.py`` files in this directory tree are all the actual test driver files that drive VisIt_'s CLI and generate images and text to compare with baselines. 
 In addition, the ``src/test/visit_test_main.py`` file defines a number of helper Python functions that facilitate testing including two key functions; ``Test()`` for testing image outputs and ``TestText()`` for testing text outputs. 
-Of course, all the .py files in ``src/test/tests`` subtree are excellent examples of test scripts.
+Of course, all the ``.py`` files in ``src/test/tests`` subtree are excellent examples of test scripts.
 
 When the test suite finishes, it will have created a web-browseable HTML tree in the html directory. 
 The actual image and text raw results will be in the current directory and difference images will be in the diff directory. 
@@ -176,13 +184,13 @@ c) optionally adding any necessary input data files to the top-level ``data`` di
    However, in almost all other cases, steps b) and c) can and probably should be avoided.
    Instead, developers are encouraged to adopt new practices and use new testing features where tests *and* their expected outcomes are programmatically included in *just* the ``.py``, so there is no need for separate *baseline* files and/or new data files.
 
-The test suite will find your added .py files the next time it runs. 
+The test suite will find your added ``.py`` files the next time it runs. 
 So, you don't have to do anything special other than adding the .py file.
 
 One subtlety about the current test modality is what we call *mode specific baselines*. 
-In theory, it should not matter what mode VisIt_ is run in to produce an image. 
-The image should be identical across modes. 
-In practice there is a long list of things that can contribute to a handful of pixel differences in the same test images run in different modes. 
+In theory, it should not matter what mode VisIt_ uses to produce an image or numerical/textual output. 
+The results should be identical across modes. 
+In practice there is a long list of things that can contribute to subtle pixel differences images and small numerical differences in text.
 This has lead to mode specific baselines. 
 In the baseline directory, there are subdirectories with names corresponding to modes we currently run. 
 When it becomes necessary to add a mode specific baseline, the baseline file should be added to the appropriate baseline subdirectory.
@@ -204,7 +212,7 @@ to process and check results.
 * ``Test()`` and ``TestAutoName()`` which processes ``.png`` image files
 * ``TestText()`` and ``TestTextAutoName()`` which process ``.txt`` text files.
 * ``TestValueXX()`` (where ``XX``==>``EQ``, ``LT``, ``LE``, etc.) which processes no files and simply checks *actual* and *expected* values passed as arguments.
-* ``TestPOA()`` and ``TestFOA()`` which process python try/catch logic
+* ``TestPOA()`` and ``TestFOA()`` which integrate directly with python if-then-else and try-except logic.
 
 The ``Test()`` and ``TestText()`` methods both take the name of a file.
 To process a test result, these methods output a file produced by the *current* test run and then compare it to a blessed *baseline* file stored in
@@ -234,7 +242,6 @@ The one down side to using the auto-naming methods is that restructuring the pyt
 Existing, top-level functions can be moved relative to each other without issue.
 New tests can be added without issue.
 But, removing *earlier* tests from a function or moving tests relative to each other *within* a function leads to renaming.
-One option to improve the implementation of auto-naming would be to replace sequential indexing with some kind of a hash computed from some immutable property of the test (e.g. some preceding number VisIt CLI calls needed to compute the rest result).
 
 When they can be used, the ``TestValueXX()`` are a little more convenient because they do not involve storing data in files and having to maintain separate baseline files. 
 Instead the ``TestTextXX()`` methods take both an *actual* (current) and *expected* (baseline) result as arguments directly coded in the calling ``.py`` file.
@@ -245,7 +252,7 @@ A good example is the ``unit/atts_assign.py`` tests.
 While there may be many instances of ``TestFOA()`` (many ways a given bit of logic can fail) with the same ``name`` argument in a given sequence of logic for a single test outcome, they can be differentiated by a unique *tag* (typically the ``LINE()`` method identifing the line number.
 However, there should be only a single ``TestPOA()`` (the one way a given bit of logic can succeed) instance with the same name for the associated test outcome.
 
-As VisIt_ testing has evolved over the past twenty years, understanding and improving productivity related to test design has not been a priority. 
+As VisIt_ testing has evolved, understanding and improving productivity related to test design has not been a priority. 
 As a result, there are likely far more image test results than are truly needed to fully vet all of VisIt_'s plotting features. 
 Or, image tests are used unecessarily to confirm non-visual behavior like that a given database reader is working. 
 Some text tests are better handled as ``TestValueXX()`` tests and other text tests often contain 90% *noise* text unrelated to the functionality being tested. 
@@ -253,7 +260,7 @@ This has made maintaining and ensuring portability of the test suite more labori
 
 Because image tests tend to be the most difficult to make portable, a better design would minimize image tests to only those needed to validate visual behaviors, text tests would involve only the *essenteial* text of the test and a majority of tests would involve *value* type tests.
 
-The above explanation is offered as a rational to justify that whenever possible adding *new* tests to the test suite should use the ``TestValueXX()`` approach as much as practical.
+The above explanation is offered as a rational to justify that whenever possible adding *new* tests to the test suite should use the ``TestValueXX()`` or ``TestPOA()``/``TestFOA()`` approach as much as practical.
 
 More About TestValueXX and TestPOA/FOA Type Tests
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -294,7 +301,7 @@ Otherwise they will compare them as strings.
 ``TestPOA(name)``
     Pass on arrival with test case outcome name just ``name``.
     Whenever python execution arrives at a line with ``TestPOA()``, the test is considered a pass.
-    A given bit of test logic (e.g. a test *case*) can have *only one* ``TestPOA()`` call.
+    A given bit of test logic (e.g. a test *case*) should have *only one* ``TestPOA()`` call.
 
 For some examples, see `test_values_simple.py <https://github.com/visit-dav/visit/blob/develop/src/test/tests/unit/test_value_simple.py>`__ and `atts_assign.py <https://github.com/visit-dav/visit/blob/develop/src/test/tests/unit/atts_assign.py>`__.
 
