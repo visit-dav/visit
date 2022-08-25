@@ -517,9 +517,7 @@ QvisColorTableWindow::StringifyTagChanges()
         std::stringstream changes;
         changes << mapitem.first << ":";
         for (const auto& setitem : mapitem.second)
-        {
             changes << setitem.first << "," << setitem.second << ";";
-        }
         retval.emplace_back(changes.str());
     }
     return retval;
