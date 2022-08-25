@@ -488,6 +488,58 @@ QvisColorTableWindow::CreateWindowContents()
 }
 
 // ****************************************************************************
+stringVector
+QvisColorTableWindow::StringifyTagChanges()
+{
+    stringVector retval;
+    for (const auto& mapitem : tagChanges)
+    {
+        std::stringstream changes;
+        changes << mapitem.first << ":";
+        for (const auto& setitem : mapitem.second)
+        {
+            changes << setitem.first << "," << setitem.second << ";";
+        }
+        retval.emplace_back(changes.str());
+    }
+    return retval;
+}
+
+// ****************************************************************************
+void
+QvisColorTableWindow::UnstringifyAndMergeTagChanges(stringVector changes)
+{
+    std::for_each(changes.begin(), changes.end(), 
+        [this](std::string ctTagChanges)
+        {
+            size_t titleSep = ctTagChanges.find(":");
+            std::string ctName{ctTagChanges.substr(0, titleSep)};
+            std::string table{ctTagChanges.substr(titleSep + 1)};
+
+            auto *ccpl{const_cast<ColorControlPointList *>(colorAtts->GetColorControlPoints(ctName))};
+
+            size_t addRemoveSep{table.find(",")};
+            size_t entrySep{0};
+
+            while (addRemoveSep != std::string::npos)
+            {
+                std::string addRemoveText{table.substr(entrySep, addRemoveSep - entrySep)};
+                entrySep = table.find(";", entrySep);
+                addRemoveSep += 1;
+                std::string tagName{table.substr(addRemoveSep, entrySep - addRemoveSep)};
+                addRemoveSep = table.find(",", addRemoveSep);
+                entrySep += 1;
+
+                if (addRemoveText == "0" && ! ccpl->HasTag(tagName))
+                    addTagToColorTable(ctName, tagName, ccpl);
+                else if (addRemoveText == "1" && ccpl->HasTag(tagName))
+                    removeTagFromColorTable(ctName, tagName, ccpl);
+            }
+        });
+}
+
+
+// ****************************************************************************
 // Method: QvisColorTableWindow::CreateNode
 //
 // Purpose:
@@ -527,6 +579,7 @@ QvisColorTableWindow::CreateNode(DataNode *parentNode)
         node->AddNode(new DataNode("activeTags", activeTags));
         node->AddNode(new DataNode("tagsVisible", tagsVisible));
         node->AddNode(new DataNode("tagsMatchAny", tagsMatchAny));
+        node->AddNode(new DataNode("tagChanges", StringifyTagChanges()));
     }
 }
 
@@ -567,7 +620,9 @@ QvisColorTableWindow::SetFromNode(DataNode *parentNode, const int *borders)
     if((node = winNode->GetNode("tagsVisible")) != 0)
         tagsVisible = node->AsBool();
     if((node = winNode->GetNode("tagsMatchAny")) != 0)
-        tagsMatchAny = node->AsBool();    
+        tagsMatchAny = node->AsBool();
+    if((node = winNode->GetNode("tagChanges")) != 0)
+        UnstringifyAndMergeTagChanges(node->AsStringVector());
 
     // Call the base class's function.
     QvisPostableWindowSimpleObserver::SetFromNode(parentNode, borders);
@@ -3024,6 +3079,7 @@ QvisColorTableWindow::searchingToggled(bool checked)
     {
         nameLineEdit->setText(searchTerm);
         tagLineEdit->setText(QString(""));
+        tagEditorLineEdit->setText(QString(""));
     }
     Apply(true);
 }
@@ -3080,6 +3136,57 @@ QvisColorTableWindow::tagEdited()
 
 
 // ****************************************************************************
+void
+QvisColorTableWindow::addTagToColorTable(const std::string ctName, 
+                                         const std::string tagName,
+                                         ColorControlPointList* ccpl)
+{
+    auto tagChangeReverseAction{std::make_pair(REMOVETAG, tagName)};
+    if (tagChanges[ctName].find(tagChangeReverseAction) != 
+        tagChanges[ctName].end())
+        tagChanges[ctName].erase(tagChangeReverseAction);
+    else
+        tagChanges[ctName].insert(std::make_pair(ADDTAG, tagName));
+    ccpl->AddTag(tagName);
+}
+
+
+// ****************************************************************************
+void
+QvisColorTableWindow::removeTagFromColorTable(const std::string ctName, 
+                                              const std::string tagName,
+                                              ColorControlPointList* ccpl)
+{
+    auto tagChangeReverseAction{std::make_pair(ADDTAG, tagName)};
+    if (tagChanges[ctName].find(tagChangeReverseAction) != 
+        tagChanges[ctName].end())
+    {
+        tagChanges[ctName].erase(tagChangeReverseAction);
+        ccpl->RemoveTag(tagName);
+    }
+    else
+    {
+        // if this is a built in color table, you can only remove a 
+        // tag if the add tag action is already there
+        if (ccpl->GetBuiltIn())
+        {
+            QString tmp;
+            tmp = tr("The color table ") +
+                  QString("\"") + QString(ctName.c_str()) + QString("\"") +
+                  tr(" is built-in. You cannot delete a default tag "
+                     "from a built-in color table.");
+            Error(tmp);
+            return;
+        }
+        else
+        {
+            tagChanges[ctName].insert(std::make_pair(REMOVETAG, tagName));
+            ccpl->RemoveTag(tagName);
+        }
+    }
+}
+
+// ****************************************************************************
 // Method: QvisColorTableWindow::addRemoveTag
 //
 // Purpose:
@@ -3095,55 +3202,16 @@ QvisColorTableWindow::tagEdited()
 void
 QvisColorTableWindow::addRemoveTag()
 {
-    auto newtag{tagEdit.toStdString()};
+    auto tagName{tagEdit.toStdString()};
     auto *ccpl{GetDefaultColorControlPoints()};
-    if (newtag != "" && ccpl)
+    if (tagName != "" && ccpl)
     {
         auto index{colorAtts->GetColorTableIndex(currentColorTable.toStdString())};
         auto ctName(static_cast<std::string>(colorAtts->GetNames()[index]));
-
-        // if we are trying to remove the tag
-        if (ccpl->HasTag(newtag))
-        {
-            auto tagChangeReverseAction{std::make_pair(ADDTAG, newtag)};
-            if (tagChanges[ctName].find(tagChangeReverseAction) != 
-                tagChanges[ctName].end())
-            {
-                tagChanges[ctName].erase(tagChangeReverseAction);
-                ccpl->RemoveTag(newtag);
-            }
-            else
-            {
-                // if this is a built in color table, you can only remove a 
-                // tag if the add tag action is already there
-                if (ccpl->GetBuiltIn())
-                {
-                    QString tmp;
-                    tmp = tr("The color table ") +
-                          QString("\"") + currentColorTable + QString("\"") +
-                          tr(" is built-in. You cannot delete a default tag "
-                             "from a built-in color table.");
-                    Error(tmp);
-                    return;
-                }
-                else
-                {
-                    tagChanges[ctName].insert(std::make_pair(REMOVETAG, newtag));
-                    ccpl->RemoveTag(newtag);
-                }
-            }
-        }
-        // if we are trying to add a new tag
+        if (ccpl->HasTag(tagName))
+            removeTagFromColorTable(ctName, tagName, ccpl);
         else
-        {
-            auto tagChangeReverseAction{std::make_pair(REMOVETAG, newtag)};
-            if (tagChanges[ctName].find(tagChangeReverseAction) != 
-                tagChanges[ctName].end())
-                tagChanges[ctName].erase(tagChangeReverseAction);
-            else
-                tagChanges[ctName].insert(std::make_pair(ADDTAG, newtag));
-            ccpl->AddTag(newtag);
-        }
+            addTagToColorTable(ctName, tagName, ccpl);
     }
     Apply();
 }

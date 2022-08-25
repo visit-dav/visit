@@ -1793,7 +1793,7 @@ ColorControlPointList::CompactCreateNode(DataNode *parentNode, bool completeSave
 // ****************************************************************************
 
 void
-ColorControlPointList::AddTag(std::string newtag)
+ColorControlPointList::AddTag(const std::string newtag)
 {
     // If the tag is already in the tag list then we will do nothing.
     if (!HasTag(newtag))
@@ -1817,7 +1817,7 @@ ColorControlPointList::AddTag(std::string newtag)
 // ****************************************************************************
 
 void
-ColorControlPointList::RemoveTag(std::string tag)
+ColorControlPointList::RemoveTag(const std::string tag)
 {
     // If the tag is not in the tag list then we will do nothing.
     int index = GetTagIndex(tag);
@@ -1866,7 +1866,7 @@ ColorControlPointList::ClearTags()
 // ****************************************************************************
 
 std::string
-ColorControlPointList::GetTag(int index)
+ColorControlPointList::GetTag(const int index) const
 {
     if (index >= 0 && index < tagNames.size())
         return tagNames[index];
@@ -1887,7 +1887,7 @@ ColorControlPointList::GetTag(int index)
 // ****************************************************************************
 
 int
-ColorControlPointList::GetNumTags()
+ColorControlPointList::GetNumTags() const
 {
     return tagNames.size();
 }
@@ -1906,7 +1906,7 @@ ColorControlPointList::GetNumTags()
 // ****************************************************************************
 
 std::string
-ColorControlPointList::GetTagsAsString()
+ColorControlPointList::GetTagsAsString() const
 {
     int numtags = tagNames.size();
     if (numtags == 0)
@@ -1936,7 +1936,7 @@ ColorControlPointList::GetTagsAsString()
 // ****************************************************************************
 
 bool
-ColorControlPointList::HasTag(std::string tag)
+ColorControlPointList::HasTag(const std::string tag) const
 {
     for (int i = 0; i < tagNames.size(); i ++)
         if (tagNames[i] == tag)
@@ -1958,7 +1958,7 @@ ColorControlPointList::HasTag(std::string tag)
 // ****************************************************************************
 
 int
-ColorControlPointList::GetTagIndex(std::string tag)
+ColorControlPointList::GetTagIndex(const std::string tag) const
 {
     for (int i = 0; i < tagNames.size(); i ++)
         if (tagNames[i] == tag)
