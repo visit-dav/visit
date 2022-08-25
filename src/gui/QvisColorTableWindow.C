@@ -3206,37 +3206,24 @@ QvisColorTableWindow::addRemoveTag()
 {
     auto tagName{tagEdit.toStdString()};
     auto *ccpl{GetDefaultColorControlPoints()};
-    if (tagName == "")
-    {
-        Error(tr("In order to add or remove a tag, the Tag Editor must not be "
-            "empty."));
-        return;
-    }
-    // Check that the tag is alphanumeric or contains one of the allowed
-    // special characters.
-    if (! std::all_of(tagName.begin(), tagName.end(), 
-            [](char const &c)
-            {
-                return std::isalnum(c) || c == ' ' || c == '-' || c == '=' || c == '<' || c == '>';
-            }))
-    {
-        QString tmp;
-        tmp = tr("The tag name ") +
-              QString("\"") + QString(tagName.c_str()) + QString("\"") +
-              tr(" is not valid. Tag names must contain only alphanumeric") + 
-              tr(" characters accompanied by the following 5 characters: ") +
-              tr("\" \", \"-\", \"=\", \"<\", and \">\".");
-        Error(tmp);
-        return;
-    }
     if (ccpl)
     {
-        auto index{colorAtts->GetColorTableIndex(currentColorTable.toStdString())};
-        auto ctName(static_cast<std::string>(colorAtts->GetNames()[index]));
-        if (ccpl->HasTag(tagName))
-            removeTagFromColorTable(ctName, tagName, ccpl);
+        auto result{ccpl->ValidateTag(tagName)};
+        if (result.first)
+        {
+            auto index{colorAtts->GetColorTableIndex(currentColorTable.toStdString())};
+            auto ctName(static_cast<std::string>(colorAtts->GetNames()[index]));
+            if (ccpl->HasTag(tagName))
+                removeTagFromColorTable(ctName, tagName, ccpl);
+            else
+                addTagToColorTable(ctName, tagName, ccpl);
+        }
         else
-            addTagToColorTable(ctName, tagName, ccpl);
+        {
+            auto tmp{tr("Tag Editing WARNING: ") + QString(result.second.c_str())};
+            Error(tmp);
+            return;
+        }
     }
     Apply();
 }

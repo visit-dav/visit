@@ -55,6 +55,8 @@
     </Function>
     <Function name="GetTagIndex" user="true" member="true">
     </Function>
+    <Function name="ValidateTag" user="true" member="true">
+    </Function>
     <Function name="SetNumControlPoints" user="true" member="true">
     </Function>
     <Function name="ColorControlPointList_SetNumControlPoints" user="true" member="true">

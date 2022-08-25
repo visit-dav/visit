@@ -127,6 +127,7 @@ public:
     std::string GetTagsAsString() const;
     bool HasTag(const std::string tag) const;
     int GetTagIndex(const std::string tag) const;
+    std::pair<bool, std::string> ValidateTag(const std::string tag) const;
     void SetNumControlPoints(const int n);
     virtual void ProcessOldVersions(DataNode *parentNode, const char *configVersion);
 

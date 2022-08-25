@@ -725,35 +725,15 @@ ColorControlPointList::SetExternalFlag(bool externalFlag_)
 void
 ColorControlPointList::SetTagNames(const stringVector &tagNames_)
 {
-    tagNames = tagNames_;
-    int i = 0;
-    while (i < tagNames.size())
-    {
-        auto currtag{tagNames[i]};
-        if (currtag == "")
+    std::for_each(tagNames_.begin(), tagNames_.end(),
+        [this, tagNames_](std::string currtag)
         {
-            debug1 << "ColorControlPointList WARNING: A tag for a color table "
-                   << "is an empty string. This tag will be discarded.\n";
-            tagNames.erase(tagNames.begin() + i);
-        }
-        // Check that the tag is alphanumeric or contains one of the allowed
-        // special characters.
-        else if (! std::all_of(currtag.begin(), currtag.end(), 
-                [](char const &c)
-                {
-                    return std::isalnum(c) || c == ' ' || c == '-' || c == '=' || c == '<' || c == '>';
-                }))
-        {
-            debug1 << "ColorControlPointList WARNING: The tag name \""
-                   << currtag << "\" is not valid. Tag names must contain "
-                   << "only alphanumeric characters accompanied by the "
-                   << "following 5 characters: \" \", \"-\", \"=\", \"<\", "
-                   << "and \">\". This tag will be discarded.\n";
-            tagNames.erase(tagNames.begin() + i);
-        }
-        else
-            i ++;
-    }
+            auto result{ValidateTag(currtag)};
+            if (result.first)
+                tagNames.emplace_back(currtag);
+            else
+                debug1 << "ColorControlPointList WARNING: " << result.second;
+        });
     tagChangesMade = true;
     Select(ID_tagNames, (void *)&tagNames);
 }
@@ -1814,6 +1794,10 @@ ColorControlPointList::CompactCreateNode(DataNode *parentNode, bool completeSave
 //
 // Programmer: Justin Privitera
 // Creation:   Fri Jun  3 11:27:43 PDT 2022
+// 
+// Note: We assume the following: the tag is not an empty string AND the tag 
+//   contains only alphanumeric characters and characters in " -=<>". In other
+//   words, we assume that the result of `ValidateTag` is true.
 //
 // Modifications:
 //    Justin Privitera, Wed Jun 29 17:50:24 PDT 2022
@@ -1827,7 +1811,7 @@ ColorControlPointList::AddTag(const std::string newtag)
     // If the tag is already in the tag list then we will do nothing.
     if (!HasTag(newtag))
     {
-        tagNames.push_back(newtag);
+        tagNames.emplace_back(newtag);
         tagChangesMade = true;
     }
 }
@@ -1993,6 +1977,51 @@ ColorControlPointList::GetTagIndex(const std::string tag) const
         if (tagNames[i] == tag)
             return i;
     return -1;
+}
+
+// ****************************************************************************
+// Method: ColorControlPointList::ValidateTag
+//
+// Purpose:
+//   TODO
+//
+// Programmer: Justin Privitera
+// Creation:   Thu Aug 25 10:05:45 PDT 2022
+//
+// Modifications:
+//
+// ****************************************************************************
+
+std::pair<bool, std::string>
+ColorControlPointList::ValidateTag(const std::string currtag) const
+{
+    auto success{false};
+    std::string outstr;
+    if (currtag == "")
+    {
+        outstr = "A tag for a color table "
+            "is an empty string. This tag will be discarded.\n";
+    }
+    // Check that the tag is alphanumeric or contains one of the allowed
+    // special characters.
+    else if (! std::all_of(currtag.begin(), currtag.end(), 
+            [](char const &c)
+            {
+                return std::isalnum(c) || c == ' ' || c == '-' || c == '=' || c == '<' || c == '>';
+            }))
+    {
+        outstr = "The tag name \""
+            + currtag + "\" is not valid. Tag names must contain "
+            "only alphanumeric characters accompanied by the "
+            "following 5 characters: \" \", \"-\", \"=\", \"<\", "
+            "and \">\". This tag will be discarded.\n";
+    }
+    else
+    {
+        success = true;
+        outstr = "";
+    }
+    return std::make_pair(success, outstr);
 }
 
 // ****************************************************************************
