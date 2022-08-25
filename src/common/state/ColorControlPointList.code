@@ -1211,15 +1211,17 @@ Definition:
 // Method: ColorControlPointList::SetTagNames
 //
 // Purpose:
-//   Setter for names.
+//   Setter for tagNames.
 //
-// Note:       There needs to be a custom setter to make sure that every time
-//             the tagNames are set, tagChangesMade is set to true.
+// Note:       We need a custom setter to vet the tag names before they are
+//             added to the tagNames vector.
 //
 // Programmer: Justin Privitera
 // Creation:   Wed Jun 29 16:38:18 PDT 2022
 //
 // Modifications:
+//     Justin Privitera, Thu Aug 25 15:04:55 PDT 2022
+//     Validate tags before adding them to the list.
 //
 // ****************************************************************************
 
@@ -1231,11 +1233,10 @@ ColorControlPointList::SetTagNames(const stringVector &tagNames_)
         {
             auto result{ValidateTag(currtag)};
             if (result.first)
-                tagNames.emplace_back(currtag);
+                AddTag(currtag);
             else
                 debug1 << "ColorControlPointList WARNING: " << result.second;
         });
-    tagChangesMade = true;
     Select(ID_tagNames, (void *)&tagNames);
 }
 

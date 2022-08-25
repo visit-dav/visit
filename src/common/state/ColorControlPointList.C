@@ -712,8 +712,7 @@ ColorControlPointList::SetExternalFlag(bool externalFlag_)
 // Purpose:
 //   Setter for names.
 //
-// Note:       There needs to be a custom setter to make sure that every time
-//             the tagNames are set, tagChangesMade is set to true.
+// Note:       TODO
 //
 // Programmer: Justin Privitera
 // Creation:   Wed Jun 29 16:38:18 PDT 2022
@@ -730,11 +729,10 @@ ColorControlPointList::SetTagNames(const stringVector &tagNames_)
         {
             auto result{ValidateTag(currtag)};
             if (result.first)
-                tagNames.emplace_back(currtag);
+                AddTag(currtag);
             else
                 debug1 << "ColorControlPointList WARNING: " << result.second;
         });
-    tagChangesMade = true;
     Select(ID_tagNames, (void *)&tagNames);
 }
 
