@@ -3206,7 +3206,30 @@ QvisColorTableWindow::addRemoveTag()
 {
     auto tagName{tagEdit.toStdString()};
     auto *ccpl{GetDefaultColorControlPoints()};
-    if (tagName != "" && ccpl)
+    if (tagName == "")
+    {
+        Error(tr("In order to add or remove a tag, the Tag Editor must not be "
+            "empty."));
+        return;
+    }
+    // Check that the tag is alphanumeric or contains one of the allowed
+    // special characters.
+    if (! std::all_of(tagName.begin(), tagName.end(), 
+            [](char const &c)
+            {
+                return std::isalnum(c) || c == '-' || c == '=' || c == '<' || c == '>';
+            }))
+    {
+        QString tmp;
+        tmp = tr("The tag name ") +
+              QString("\"") + QString(tagName.c_str()) + QString("\"") +
+              tr(" is not valid. Tag names must contain only alphanumeric") + 
+              tr(" characters accompanied by the following 4 characters: ") +
+              tr("\"-\", \"=\", \"<\", and \">\".");
+        Error(tmp);
+        return;
+    }
+    if (ccpl)
     {
         auto index{colorAtts->GetColorTableIndex(currentColorTable.toStdString())};
         auto ctName(static_cast<std::string>(colorAtts->GetNames()[index]));
