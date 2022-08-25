@@ -54,4 +54,7 @@
     <Field name="distributedResample" label="distributedResample" type="bool">
       false
     </Field>
+    <Field name="perRankResample" label="perRankResample" type="bool">
+      false
+    </Field>
   </Attribute>

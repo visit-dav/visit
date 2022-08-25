@@ -14,7 +14,6 @@
 #include <vtkCellType.h>
 #include <vtkCharArray.h>
 #include <vtkCompositeDataIterator.h>
-#include <vtkConfigure.h>
 #include <vtkDataObject.h>
 #include <vtkDoubleArray.h>
 #include <vtkDataArray.h>

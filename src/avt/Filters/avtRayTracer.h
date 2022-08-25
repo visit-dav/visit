@@ -57,6 +57,9 @@
 //    Pascal Grosset, Fri Sep 20 2013
 //    Added ray casting slivr & trilinear interpolation
 //
+//    Kathleen Biagas, Wed Aug 17, 2022
+//    Use override keyword.
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtRayTracer : public avtRayTracerBase
@@ -65,18 +68,18 @@ class AVTFILTERS_API avtRayTracer : public avtRayTracerBase
                           avtRayTracer();
     virtual              ~avtRayTracer();
 
-    virtual const char   *GetType(void) { return "avtRayTracer"; };
-    virtual const char   *GetDescription(void) { return "Ray tracing"; };
+    const char           *GetType(void) override { return "avtRayTracer"; }
+    const char           *GetDescription(void) override { return "Ray tracing"; }
 
-    void                  SetBackgroundMode(int mode);
+    void                  SetBackgroundMode(int mode) override;
     void                  SetGradientBackgroundColors(const double [3],
-                                                      const double [3]);
+                                                      const double [3]) override;
   protected:
     int                   backgroundMode;
     double                gradBG1[3];
     double                gradBG2[3];
 
-    virtual void          Execute(void);
+    void                  Execute(void) override;
 };
 
 

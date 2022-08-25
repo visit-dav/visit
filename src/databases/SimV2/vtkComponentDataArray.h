@@ -7,6 +7,8 @@
 #include <vtkTypedDataArray.h>
 #include <vtkIdList.h>
 
+#include <visit-config.h> // For LIB_VERSION_LE
+
 #include "vtkArrayComponent.h"
 
 // NOTE: this macro is crucial so NewInstance() calls on the array will return
@@ -103,7 +105,11 @@ public:
         temporaryTuple = NULL;
     }
 
+#if LIB_VERSION_LE(VTK,8,1,0)
     bool HasStandardMemoryLayout() override { return false; }
+#else
+    bool HasStandardMemoryLayout() const override { return false; }
+#endif
 
     void SetNumberOfTuples(vtkIdType nt) override
     {

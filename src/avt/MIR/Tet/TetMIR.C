@@ -4,6 +4,8 @@
 
 #include "TetMIR.h"
 
+#include <visit-config.h> // For LIB_VERSION_LE
+
 #include <stdio.h>
 #include <limits.h>
 #include <math.h>
@@ -114,11 +116,11 @@ static void AddNodes(int, const vtkIdType *, NodeList *, int, int=0, int* =NULL,
 //  Method:  ReconstructedCoord::HashFunction
 //
 //  Purpose:
-//    Hash function for a ReconstructedCoord.  
+//    Hash function for a ReconstructedCoord.
 //    Map it to a 1e6 x 1e6 x 1e6 grid and then hash the resulting ints.
 //
 //  Arguments:
-//    
+//
 //
 //  Programmer:  Jeremy Meredith
 //  Creation:    December 12, 2000
@@ -152,7 +154,7 @@ TetMIR::ReconstructedCoord::HashFunction(TetMIR::ReconstructedCoord &c)
 //    Map it to a 1e6 x 1e6 x 1e6 grid and then compare the resulting ints.
 //
 //  Arguments:
-//    
+//
 //
 //  Programmer:  Jeremy Meredith
 //  Creation:    December 12, 2000
@@ -163,7 +165,7 @@ TetMIR::ReconstructedCoord::HashFunction(TetMIR::ReconstructedCoord &c)
 //
 // ****************************************************************************
 bool
-TetMIR::ReconstructedCoord::operator==(const ReconstructedCoord &c) 
+TetMIR::ReconstructedCoord::operator==(const ReconstructedCoord &c)
 {
     return ((int(x * xGrid) == int(c.x * xGrid)) &&
             (int(y * yGrid) == int(c.y * yGrid)) &&
@@ -197,7 +199,7 @@ TetMIR::TetMIR()
 {
     mesh   = NULL;
     outPts = NULL;
-    coordsHash = NULL; 
+    coordsHash = NULL;
     coordsListType = VTK_FLOAT;
 }
 
@@ -345,6 +347,10 @@ TetMIR::~TetMIR()
 //    Hank Childs, Fri Jan 28 15:39:23 PST 2005
 //    Use exception macros.
 //
+//    Kathleen Biagas, Thu Aug 11 2022
+//    Support VTK 9's change in store for vtkCellArray class:
+//    separate connectivity and offsets arrays.
+//
 // ****************************************************************************
 bool
 TetMIR::Reconstruct3DMesh(vtkDataSet *mesh, avtMaterial *mat_orig)
@@ -413,7 +419,7 @@ TetMIR::Reconstruct3DMesh(vtkDataSet *mesh, avtMaterial *mat_orig)
 
     // create the faces' zonecnt/vf list
     FaceHash *face_hash = NULL;
-    if (subdivisionLevel == MIROptions::Med || 
+    if (subdivisionLevel == MIROptions::Med ||
         subdivisionLevel == MIROptions::High)
     {
         int timerHandle2 = visitTimer->StartTimer();
@@ -476,6 +482,7 @@ TetMIR::Reconstruct3DMesh(vtkDataSet *mesh, avtMaterial *mat_orig)
     int *mix_index = new int[nmat];
     float *zone_vf = new float[nmat];
     Tetrahedralizer tetrahedralizer(nmat);
+#if LIB_VERSION_LE(VTK,8,1,0)
     const vtkIdType *c_ptr = conn.connectivity;
     for (int c=0; c<nCells; c++,  c_ptr += (*c_ptr)+1)
     {
@@ -512,6 +519,46 @@ TetMIR::Reconstruct3DMesh(vtkDataSet *mesh, avtMaterial *mat_orig)
             }
         }
     }
+#else
+    for (int c=0; c<nCells; c++)
+    {
+        bool clean       = (*real_clean_zones)[c];
+        int  clean_matno = mat->GetMatlist()[c];
+        // using c+1 is safe here because offsets size is nCells+1
+        vtkIdType numIds = conn.offsets[c+1] - conn.offsets[c];
+        const vtkIdType *ids = &conn.connectivity[conn.offsets[c]];
+        if (options.leaveCleanZonesWhole && clean)
+        {
+            someClean = true;
+            ReconstructCleanCell(clean_matno, c, int(numIds), ids,
+                                 conn.celltype[c]);
+            continue;
+        }
+
+        mat->ExtractCellMatInfo(c, zone_vf, mix_index);
+
+        ExtractCellVFs(c, int(numIds), ids, conn.celltype[c], nmat,
+                       zone_vf, node_list, face_hash, edge_hash,
+                       vf_zone, vf_node, vf_face, vf_edge);
+
+        tetrahedralizer.Tetrahedralize(subdivisionLevel, conn.celltype[c],
+                                       int(numIds), ids, vf_zone, vf_node, vf_face, vf_edge);
+        for (int t=0; t<tetrahedralizer.GetNumberOfTets(); t++)
+        {
+            if (clean)
+            {
+                ReconstructCleanTet(clean_matno, c, int(numIds), ids,
+                                    tetrahedralizer.GetTet(t));
+            }
+            else
+            {
+                ReconstructTet(c, int(numIds), ids, tetrahedralizer.GetTet(t),
+                               vf_zone, mix_index, nmat);
+            }
+        }
+    }
+#endif
+
     visitTimer->StopTimer(timerHandle6, "MIR: Tetrahedron based cell reconstruction");
 
     delete[] zone_vf;
@@ -628,6 +675,10 @@ TetMIR::Reconstruct3DMesh(vtkDataSet *mesh, avtMaterial *mat_orig)
 //
 //    Hank Childs, Fri Jan 28 15:36:03 PST 2005
 //    Use exception macros.
+//
+//    Kathleen Biagas, Thu Aug 11 2022
+//    Support VTK 9's change in storage for vtkCellArray class:
+//    separate connectivity and offsets arrays.
 //
 // ****************************************************************************
 bool
@@ -747,6 +798,7 @@ TetMIR::Reconstruct2DMesh(vtkDataSet *mesh, avtMaterial *mat_orig)
     int *mix_index = new int[nmat];
     float *zone_vf = new float[nmat];
     Triangulator triangulator(nmat);
+#if LIB_VERSION_LE(VTK,8,1,0)
     const vtkIdType *c_ptr = conn.connectivity;
     for (int c=0; c<nCells; c++,  c_ptr += (*c_ptr)+1)
     {
@@ -780,6 +832,44 @@ TetMIR::Reconstruct2DMesh(vtkDataSet *mesh, avtMaterial *mat_orig)
                                vf_zone, mix_index, nmat);
         }
     }
+#else
+    for (int c=0; c<nCells; c++)
+    {
+        bool clean       = (*real_clean_zones)[c];
+        int  clean_matno = mat->GetMatlist()[c];
+        // using c+1 is safe here because offsets size is nCells+1
+        vtkIdType numIds = conn.offsets[c+1] - conn.offsets[c];
+        const vtkIdType *ids = &conn.connectivity[conn.offsets[c]];
+
+        if (options.leaveCleanZonesWhole && clean)
+        {
+            someClean = true;
+            ReconstructCleanCell(clean_matno, c, int(numIds), ids,
+                                 conn.celltype[c]);
+            continue;
+        }
+
+        mat->ExtractCellMatInfo(c, zone_vf, mix_index);
+
+        ExtractCellVFs(c, int(numIds), ids, conn.celltype[c], nmat,
+                       zone_vf, node_list, NULL, edge_hash,
+                       vf_zone, vf_node, NULL, vf_edge);
+
+        triangulator.Triangulate(subdivisionLevel, conn.celltype[c],
+                                 int(numIds), ids, vf_zone, vf_node, vf_edge);
+
+        for (int t=0; t<triangulator.GetNumberOfTris(); t++)
+        {
+            if (clean)
+                ReconstructCleanTri(clean_matno, c, int(numIds), ids,
+                                    triangulator.GetTri(t));
+            else
+                ReconstructTri(c, int(numIds), ids, triangulator.GetTri(t),
+                               vf_zone, mix_index, nmat);
+        }
+    }
+#endif
+
     visitTimer->StopTimer(timerHandle6,
                           "MIR: Triangle based cell reconstruction");
 
@@ -821,7 +911,7 @@ TetMIR::Reconstruct2DMesh(vtkDataSet *mesh, avtMaterial *mat_orig)
 //    Jeremy Meredith, Tue Jul 24 15:00:03 PDT 2001
 //    Added support to pass along ghost zone info and original cell numbers.
 //
-//    Kathleen Bonnell, Thu Nov  8 09:20:50 PST 2001 
+//    Kathleen Bonnell, Thu Nov  8 09:20:50 PST 2001
 //    Changed ids to vtkIdType to match VTK 4.0 API.
 //
 //    Eric Brugger, Tue Dec 11 12:04:40 PST 2001
@@ -844,6 +934,10 @@ TetMIR::Reconstruct2DMesh(vtkDataSet *mesh, avtMaterial *mat_orig)
 //    Hank Childs, Mon Oct  7 16:05:35 PDT 2002
 //    Remove costly VTK calls.
 //
+//    Kathleen Biagas, Thu Aug 11 2022
+//    Support VTK 9's change in storage for vtkCellArray class:
+//    separate connectivity and offsets arrays.
+//
 // ****************************************************************************
 bool
 TetMIR::ReconstructCleanMesh(vtkDataSet *mesh, avtMaterial *mat,
@@ -865,24 +959,38 @@ TetMIR::ReconstructCleanMesh(vtkDataSet *mesh, avtMaterial *mat,
     // extract cells
     int        nCells  = conn.ncells;
     const int *matlist = mat->GetMatlist();
+#if LIB_VERSION_LE(VTK,8,1,0)
     vtkIdType *conn_ptr = conn.connectivity;
+#endif
     zonesList.resize(nCells);
     for (int c=0; c<nCells; c++)
     {
+#if LIB_VERSION_LE(VTK,8,1,0)
         int        nIds = *conn_ptr;
         const vtkIdType *ids = conn_ptr+1;
+#else
+        // use of c+1 is safe here because offsets size is nCells+1
+        vtkIdType        nIds = conn.offsets[c+1] - conn.offsets[c];
+        const vtkIdType *ids = &conn.connectivity[conn.offsets[c]];
+#endif
 
         ReconstructedZone &zone = zonesList[c];
         zone.origzone   = c;
         zone.mat        = matlist[c];
         zone.celltype   = conn.celltype[c];
+#if LIB_VERSION_LE(VTK,8,1,0)
         zone.nnodes     = nIds;
+#else
+        zone.nnodes     = int(nIds);
+#endif
         zone.startindex = (int)indexList.size();
         zone.mix_index  = -1;
 
         for (int n=0; n<nIds; n++)
             indexList.push_back(ids[n]);
+#if LIB_VERSION_LE(VTK,8,1,0)
         conn_ptr += nIds+1;
+#endif
     }
 
     return true;
@@ -893,7 +1001,7 @@ TetMIR::ReconstructCleanMesh(vtkDataSet *mesh, avtMaterial *mat,
 //
 //  Purpose:
 //      Get the reconstructured mesh (for possibly a subset of materials).
-//      Also reconstruct all nodal and zonal variable, including mixed 
+//      Also reconstruct all nodal and zonal variable, including mixed
 //      variables if appropriate.  Finally, add an array indicating material
 //      number if requested.
 //
@@ -934,12 +1042,12 @@ TetMIR::ReconstructCleanMesh(vtkDataSet *mesh, avtMaterial *mat,
 //    "clean-zones-only" mixed material index before looking it up.
 //
 //    Mark C. Miller, Tue Jan 15 13:22:29 PST 2013
-//    Adjusted logic to overwrite mix values to use SetTuple instead of 
+//    Adjusted logic to overwrite mix values to use SetTuple instead of
 //    assuming a float* array.
 // ****************************************************************************
 
 vtkDataSet *
-TetMIR::GetDataset(vector<int> mats, vtkDataSet *ds, 
+TetMIR::GetDataset(vector<int> mats, vtkDataSet *ds,
                    vector<avtMixedVariable *> mixvars, bool doMats,
                    avtMaterial *)
 {
@@ -1202,7 +1310,7 @@ TetMIR::GetDataset(vector<int> mats, vtkDataSet *ds,
 //    Jeremy Meredith, Fri Aug 30 18:02:46 PDT 2002
 //    Made use of the pre-extracted coordinates for a big speedup.
 //
-//    Hank Childs, Mon Oct  7 17:43:41 PDT 2002 
+//    Hank Childs, Mon Oct  7 17:43:41 PDT 2002
 //    Remove costly VTK calls.
 //
 // ****************************************************************************
@@ -1217,7 +1325,7 @@ TetMIR::IndexTetNode(Tet::Node &node, int c, int npts, const vtkIdType *c_ptr,
     ReconstructedCoord coord;
     int w;
     for (w=0; w<npts; w++)
-        coord.weight[w] = 
+        coord.weight[w] =
             (node.weight[0] * mattet.node[0].weight[w]) +
             (node.weight[1] * mattet.node[1].weight[w]) +
             (node.weight[2] * mattet.node[2].weight[w]) +
@@ -1285,7 +1393,7 @@ TetMIR::IndexTetNode(Tet::Node &node, int c, int npts, const vtkIdType *c_ptr,
 //    Jeremy Meredith, Fri Aug 30 18:02:46 PDT 2002
 //    Made use of the pre-extracted coordinates for a big speedup.
 //
-//    Hank Childs, Mon Oct  7 17:43:41 PDT 2002 
+//    Hank Childs, Mon Oct  7 17:43:41 PDT 2002
 //    Remove costly VTK calls.
 //
 // ****************************************************************************
@@ -1300,7 +1408,7 @@ TetMIR::IndexTriNode(Tri::Node &node, int c, int npts, const vtkIdType *c_ptr,
     ReconstructedCoord coord;
     int w;
     for (w=0; w<npts; w++)
-        coord.weight[w] = 
+        coord.weight[w] =
             (node.weight[0] * mattri.node[0].weight[w]) +
             (node.weight[1] * mattri.node[1].weight[w]) +
             (node.weight[2] * mattri.node[2].weight[w]);
@@ -1360,7 +1468,7 @@ TetMIR::ReconstructCleanCell(int matno, int c, int nIds, const vtkIdType *ids,
     zone.nnodes     = nIds;
     zone.startindex = (int)indexList.size();
     zone.mix_index  = -1;
-        
+
     zonesList.push_back(zone);
 
     for (int n=0; n<nIds; n++)
@@ -1607,7 +1715,7 @@ TetMIR::ReconstructTet(int c, int npts, const vtkIdType *c_ptr,
                                wedge.node[dx],
                                -1);
             }
-            
+
             continue;
         }
 
@@ -1682,7 +1790,7 @@ TetMIR::ReconstructCleanTet(int matno, int c, int npts, const vtkIdType *c_ptr,
     zone.mat        = matno;
     zone.origzone   = c;
     zone.mix_index  = -1;
-        
+
     zonesList.push_back(zone);
 
     //
@@ -1916,7 +2024,7 @@ TetMIR::ReconstructCleanTri(int matno, int c, int npts, const vtkIdType *c_ptr,
     zone.mat        = matno;
     zone.origzone   = c;
     zone.mix_index  = -1;
-        
+
     zonesList.push_back(zone);
 
     for (n=0; n<3; n++)
@@ -2009,7 +2117,7 @@ FindIntersect(double a1, double b1, double a2, double b2)
 //    Jeremy Meredith, Mon Feb  4 14:08:43 PST 2002
 //    Made the intersection points use the original index if the intersection
 //    falls upon one of the original nodes.  Note -- a cleaner way to do this
-//    may be, for example, to never claim that there is an intersection 
+//    may be, for example, to never claim that there is an intersection
 //    between nodes 0 and 1 if there is an intersection *at* node 0.  In this
 //    case, maxmat[0] should not have been either m1 or m2, but some other
 //    value to indicate that there is an intersection here.  This will,
@@ -2028,7 +2136,7 @@ FindIntersect(double a1, double b1, double a2, double b2)
 //    the forced material instead of the normal requested material.
 //
 //    Jeremy Meredith, Mon Jan  6 10:06:49 PST 2003
-//    VTK tets are inverted from Silo tets, so I flipped the ordering of 
+//    VTK tets are inverted from Silo tets, so I flipped the ordering of
 //    the created wedge nodes to correct this.
 //
 //    Jeremy Meredith, Tue Jan 14 14:37:46 PST 2003
@@ -2184,7 +2292,7 @@ TetMIR::MergeTetsHelper(TetList &tetlist, WedgeList &wedgelist,
     }
     else
     {
-        // Internal Error in MergeTetsHelper() 
+        // Internal Error in MergeTetsHelper()
         EXCEPTION0(VisItException);
     }
 
@@ -2322,7 +2430,7 @@ TetMIR::MergeTrisHelper(TriList &trilist, int c, int npts, const vtkIdType *c_pt
     }
     else
     {
-        // Internal Error in MergeTrisHelper() 
+        // Internal Error in MergeTrisHelper()
         EXCEPTION0(VisItException);
     }
 }
@@ -2558,13 +2666,18 @@ TetMIR::MergeTris(TriList &trilist, int c, int npts, const vtkIdType *c_ptr,
 //    Hank Childs, Mon Oct  7 16:15:56 PDT 2002
 //    Removed costly VTK calls.
 //
+//    Kathleen Biagas, Thu Aug 11 2022
+//    Support VTK 9's new storage for vtkCellArray class:
+//    separate connectivity and offsets arrays.
+//
 // ****************************************************************************
 static FaceHash *
-CreateFaceHash(MIRConnectivity &conn, int nmat, 
+CreateFaceHash(MIRConnectivity &conn, int nmat,
                unsigned int (*hashfunc)(Face&))
 {
     FaceHash *face_hash = new FaceHash(conn.ncells*3, hashfunc);
 
+#if LIB_VERSION_LE(VTK,8,1,0)
     int nCells = conn.ncells;
     vtkIdType *c_ptr = conn.connectivity;
     for (int c=0; c<nCells; c++)
@@ -2572,6 +2685,12 @@ CreateFaceHash(MIRConnectivity &conn, int nmat,
         AddFaces(conn.celltype[c], c_ptr+1, face_hash, nmat);
         c_ptr += *c_ptr+1;
     }
+#else
+    for (int c=0; c < conn.ncells; c++)
+    {
+        AddFaces(conn.celltype[c], &conn.connectivity[conn.offsets[c]], face_hash, nmat);
+    }
+#endif
 
     return face_hash;
 }
@@ -2719,20 +2838,31 @@ AddFaces(int celltype, const vtkIdType *cellids, FaceHash *face_hash, int nmat,
 //    Hank Childs, Mon Oct  7 16:47:29 PDT 2002
 //    Removed costly VTK calls.
 //
+//    Kathleen Biagas, Thu Aug 11 2022
+//    Support VTK 9's new storage for vtkCellArray class:
+//    separate connectivity and offsets arrays.
+//
 // ****************************************************************************
 static EdgeHash *
-CreateEdgeHash(MIRConnectivity &conn, int nmat, 
+CreateEdgeHash(MIRConnectivity &conn, int nmat,
                unsigned int (*hashfunc)(Edge&))
 {
     int nCells = conn.ncells;
     EdgeHash *edge_hash = new EdgeHash(nCells*3, hashfunc);
 
+#if LIB_VERSION_LE(VTK,8,1,0)
     const vtkIdType *c_ptr = conn.connectivity;
     for (int c=0; c<nCells; c++)
     {
         AddEdges(conn.celltype[c], c_ptr+1, edge_hash, nmat);
         c_ptr += *c_ptr+1;
     }
+#else
+    for (int c=0; c<nCells; c++)
+    {
+        AddEdges(conn.celltype[c], &conn.connectivity[conn.offsets[c]], edge_hash, nmat);
+    }
+#endif
 
     return edge_hash;
 }
@@ -2768,7 +2898,7 @@ AddEdges(int celltype, const vtkIdType *cellids, EdgeHash *edge_hash, int nmat,
          int nRealMat, int *materials, float *vf)
 {
     static int tetra_edges[6][2] = { {0,1}, {1,2}, {2,0}, {0,3}, {1,3}, {2,3}};
-    static int pyramid_edges[8][2] = { {0,1}, {1,2}, {2,3}, {3,0}, {0,4}, 
+    static int pyramid_edges[8][2] = { {0,1}, {1,2}, {2,3}, {3,0}, {0,4},
                                        {1,4}, {2,4}, {3,4} };
     static int hexahedron_edges[12][2] =  { {0,1}, {1,2}, {3,2}, {0,3}, {4,5},
                                             {5,6}, {7,6}, {4,7}, {0,4}, {1,5},
@@ -2886,7 +3016,7 @@ AddNodes(int nPts, const vtkIdType *cellids, NodeList *node_list, int nmat,
 //  Creation:    May 31, 2001
 //
 //  Modifications:
-//    Kathleen Bonnell, Thu Nov  8 09:20:50 PST 2001 
+//    Kathleen Bonnell, Thu Nov  8 09:20:50 PST 2001
 //    Changed ids to vtkIdType to match VTK 4.0 API.
 //
 //    Eric Brugger, Tue Dec 11 12:04:40 PST 2001
@@ -2907,9 +3037,13 @@ AddNodes(int nPts, const vtkIdType *cellids, NodeList *node_list, int nmat,
 //    zone, we may still need to split clean zones that don't fit the
 //    "one material dominant at all nodes" criterion.
 //
+//    Kathleen Biagas, Thu Aug 11 2022
+//    Support VTK 9's new storage for vtkCellArrayClass:
+//    separate connectivity and offsets arrays.
+//
 // ****************************************************************************
 ZoneCleanList *
-CreateZoneCleanList(MIRConnectivity &conn, int nPts, avtMaterial *mat, 
+CreateZoneCleanList(MIRConnectivity &conn, int nPts, avtMaterial *mat,
                     int nmat, int *mat_cnt, NodeList *node_list,
                     int &nrealclean, int &nrealmixed)
 {
@@ -2923,18 +3057,28 @@ CreateZoneCleanList(MIRConnectivity &conn, int nPts, avtMaterial *mat,
     {
         dom_mat[i] = -1;
     }
+#if LIB_VERSION_LE(VTK,8,1,0)
     const vtkIdType *c_ptr = conn.connectivity;
+#endif
     for (int c=0; c<nCells; c++)
     {
         if (mat->GetMatlist()[c] < 0)
         {
             nrealmixed++;
+#if LIB_VERSION_LE(VTK,8,1,0)
             c_ptr += *c_ptr+1;
+#endif
             continue;
         }
         int        clean_mat = mat->GetMatlist()[c];
+#if LIB_VERSION_LE(VTK,8,1,0)
         int        nPts = *c_ptr;
         const vtkIdType *ids  = c_ptr+1;
+#else
+        // use of c+1 is safe here because offsets size is nCells +1
+        vtkIdType        nPts = conn.offsets[c+1]-conn.offsets[c];
+        const vtkIdType *ids = &conn.connectivity[conn.offsets[c]];
+#endif
 
         bool       real_clean = mat_cnt[c] < 3;
         for (int n=0; n<nPts && real_clean; n++)
@@ -2957,7 +3101,9 @@ CreateZoneCleanList(MIRConnectivity &conn, int nPts, avtMaterial *mat,
             if (vf_list[dom_mat[id]] > clean_vf)
                 real_clean = false;
         }
+#if LIB_VERSION_LE(VTK,8,1,0)
         c_ptr += *c_ptr+1;
+#endif
 
         (*real_clean_zones)[c] = real_clean;
         if (real_clean)
@@ -2991,7 +3137,7 @@ CreateZoneCleanList(MIRConnectivity &conn, int nPts, avtMaterial *mat,
 //    Hank Childs, Tue Apr 10 16:46:10 PDT 2001
 //    Reduced number of virtual function calls.
 //
-//    Kathleen Bonnell, Thu Nov  8 09:20:50 PST 2001 
+//    Kathleen Bonnell, Thu Nov  8 09:20:50 PST 2001
 //    Changed ids to vtkIdType to match VTK 4.0 API.
 //
 //    Eric Brugger, Tue Dec 11 12:04:40 PST 2001
@@ -3008,15 +3154,19 @@ CreateZoneCleanList(MIRConnectivity &conn, int nPts, avtMaterial *mat,
 //    and edges.  Added code to extract the number of how many materials
 //    have nonzero volume fractions at any of the cells nodes into mat_cnt.
 //
+//    Kathleen Biagas, Thu Aug 11 2022
+//    Support VTK 9's new storage for vtkCellArray class:
+//    separate connectivity and offsets arrays.
+//
 // ****************************************************************************
 static void
 SubsampleVFsAndCreateNodeList(MIRConnectivity      &conn,
-                              int                        npts,
-                              avtMaterial               *mat,
-                              int                       *mat_cnt,
-                              NodeList                  *node_list,
-                              FaceHash                  *face_hash,
-                              EdgeHash                  *edge_hash)
+                              int                   npts,
+                              avtMaterial          *mat,
+                              int                  *mat_cnt,
+                              NodeList             *node_list,
+                              FaceHash             *face_hash,
+                              EdgeHash             *edge_hash)
 {
     int          nCells  = conn.ncells;
 
@@ -3034,12 +3184,20 @@ SubsampleVFsAndCreateNodeList(MIRConnectivity      &conn,
     // Go through each cell, extract the materials from the avtMaterial,
     // and subsample the zone volume fractions to the nodes and the faces.
     //
+#if LIB_VERSION_LE(VTK,8,1,0)
     const vtkIdType *c_ptr = conn.connectivity;
     int c;
     for (c=0; c<nCells; c++)
     {
         int        nPts = *c_ptr;
         const vtkIdType *ids  = c_ptr+1;
+#else
+    for (int c=0; c<nCells; c++)
+    {
+        // use of c+1 is safe here because offsets size is nCells+1
+        vtkIdType        nPts = conn.offsets[c+1] - conn.offsets[c];
+        const vtkIdType *ids  = &conn.connectivity[conn.offsets[c]];
+#endif
 
         //
         // Create a list of materials and their corresponding volume
@@ -3068,7 +3226,7 @@ SubsampleVFsAndCreateNodeList(MIRConnectivity      &conn,
         }
 
         // sample to the nodes
-        AddNodes(nPts, ids, node_list, nMat,
+        AddNodes(int(nPts), ids, node_list, nMat,
                  nRealMat, materials, volumeFractions);
 
         // sample to the faces
@@ -3084,7 +3242,9 @@ SubsampleVFsAndCreateNodeList(MIRConnectivity      &conn,
             AddEdges(conn.celltype[c], ids, edge_hash, nMat,
                      nRealMat, materials, volumeFractions);
         }
+#if LIB_VERSION_LE(VTK,8,1,0)
         c_ptr += *c_ptr+1;
+#endif
     }
 
 
@@ -3123,16 +3283,24 @@ SubsampleVFsAndCreateNodeList(MIRConnectivity      &conn,
     // Go through each cell and determine how many non-zero material
     // fractions it has at any node.
     //
+#if LIB_VERSION_LE(VTK,8,1,0)
     c_ptr = conn.connectivity;
     for (c=0; c<nCells; c++)
     {
         int        nPts = *c_ptr;
         const vtkIdType *ids  = c_ptr+1;
+#else
+    for (int c=0; c<nCells; c++)
+    {
+        // use of c+1 is safe here because offsets size is nCells+1
+        vtkIdType        nPts = conn.offsets[c+1]-conn.offsets[c];
+        const vtkIdType *ids  = &conn.connectivity[conn.offsets[c]];
+#endif
 
         mat_cnt[c] = 0;
         for (int m=0; m<nMat; m++)
         {
-            for (int n=0; n<nPts; n++)
+            for (vtkIdType n=0; n<nPts; n++)
             {
                 if ((*node_list)[ids[n]].vf[m] > 0)
                 {
@@ -3141,7 +3309,9 @@ SubsampleVFsAndCreateNodeList(MIRConnectivity      &conn,
                 }
             }
         }
+#if LIB_VERSION_LE(VTK,8,1,0)
         c_ptr += *c_ptr+1;
+#endif
     }
 
     delete [] materials;
@@ -3179,7 +3349,7 @@ SubsampleVFsAndCreateNodeList(MIRConnectivity      &conn,
 //    I removed some vector resizes of vf_zone, vf_node, vf_face and vf_edge
 //    assuming they are sized properly before being called.
 //
-//    Kathleen Bonnell, Thu Nov  8 09:20:50 PST 2001 
+//    Kathleen Bonnell, Thu Nov  8 09:20:50 PST 2001
 //    Changed ids to vtkIdType to match VTK 4.0 API.
 //
 //    Eric Brugger, Tue Dec 11 12:04:40 PST 2001
@@ -3239,7 +3409,7 @@ ExtractCellVFs(int c, int nPts, const vtkIdType *ids, int celltype, int nmat,
 //  Modifications:
 //    Brad Whitlock, Wed Apr 11 21:18:46 PDT 2012
 //    Double coordinates.
-// 
+//
 // ****************************************************************************
 
 void
@@ -3250,7 +3420,7 @@ SetUpCoords(vtkDataSet *mesh, vector<TetMIR::ReconstructedCoord> &coordsList,
     int i, j, k;
 
     coordsList.resize(nPoints);
-    
+
     int dstype = mesh->GetDataObjectType();
     if (dstype == VTK_RECTILINEAR_GRID)
     {
