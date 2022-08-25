@@ -30,6 +30,7 @@
 #include <ColorControlPointList.h>
 #include <DataNode.h>
 #include <ViewerProxy.h>
+#include <DebugStream.h>
 
 
 // Defines. Make these part of ColorTableAttributes sometime.
@@ -78,6 +79,9 @@
 // 
 //   Justin Privitera, Thu Jul 14 16:57:42 PDT 2022
 //   Added new searching-related vars to the constructor.
+// 
+//   Justin Privitera, Thu Aug 25 15:04:55 PDT 2022
+//   TagEdit added.
 //
 // ****************************************************************************
 
@@ -191,6 +195,9 @@ QvisColorTableWindow::~QvisColorTableWindow()
 //
 //   Justin Privitera, Thu Jul 14 16:57:42 PDT 2022
 //   Added searchbox gui element and hooked up signals and slots for searching.
+// 
+//   Justin Privitera, Thu Aug 25 15:04:55 PDT 2022
+//   Added tag editor gui elements.
 //
 // ****************************************************************************
 
@@ -490,6 +497,17 @@ QvisColorTableWindow::CreateWindowContents()
 }
 
 // ****************************************************************************
+// Method: QvisColorTableWindow::StringifyTagChanges
+//
+// Purpose: Packs the tag changes data structure into a string vector so it
+//    can be easily written to a node.
+//
+// Programmer: Justin Privitera
+// Creation:   Thu Aug 25 15:04:55 PDT 2022
+//
+// Modifications:
+//
+// ****************************************************************************
 stringVector
 QvisColorTableWindow::StringifyTagChanges()
 {
@@ -507,6 +525,18 @@ QvisColorTableWindow::StringifyTagChanges()
     return retval;
 }
 
+// ****************************************************************************
+// Method: QvisColorTableWindow::UnstringifyAndMergeTagChanges
+//
+// Purpose: Converts a stringvector representation of tag changes into 
+//    actionable tag changes. Adds them to the tag changes data structure and
+//    makes the changes happen.
+//
+// Programmer: Justin Privitera
+// Creation:   Thu Aug 25 15:04:55 PDT 2022
+//
+// Modifications:
+//
 // ****************************************************************************
 void
 QvisColorTableWindow::UnstringifyAndMergeTagChanges(stringVector changes)
@@ -532,10 +562,20 @@ QvisColorTableWindow::UnstringifyAndMergeTagChanges(stringVector changes)
                 addRemoveSep = table.find(",", addRemoveSep);
                 entrySep += 1;
 
-                if (addRemoveText == ADDTAGSTR && ! ccpl->HasTag(tagName))
-                    addTagToColorTable(ctName, tagName, ccpl);
-                else if (addRemoveText == REMOVETAGSTR && ccpl->HasTag(tagName))
-                    removeTagFromColorTable(ctName, tagName, ccpl);
+                auto result{ccpl->ValidateTag(tagName)};
+                if (result.first)
+                {
+                    if (addRemoveText == ADDTAGSTR && ! ccpl->HasTag(tagName))
+                        addTagToColorTable(ctName, tagName, ccpl);
+                    else if (addRemoveText == REMOVETAGSTR && ccpl->HasTag(tagName))
+                        removeTagFromColorTable(ctName, tagName, ccpl);
+                }
+                else
+                {
+                    debug1 << "QvisColorTableWindow WARNING: " << result.second;
+                }
+
+                
             }
         });
 }
@@ -559,6 +599,9 @@ QvisColorTableWindow::UnstringifyAndMergeTagChanges(stringVector changes)
 // 
 //   Justin Privitera, Thu Jun 16 18:01:49 PDT 2022
 //   Added ability for tag settings to be written to config/session files.
+// 
+//   Justin Privitera, Thu Aug 25 15:04:55 PDT 2022
+//   Write tag changes to node.
 //
 // ****************************************************************************
 
@@ -600,6 +643,9 @@ QvisColorTableWindow::CreateNode(DataNode *parentNode)
 // 
 //   Justin Privitera, Thu Jun 16 18:01:49 PDT 2022
 //   Added ability for tag settings to be read from config/session files.
+// 
+//   Justin Privitera, Thu Aug 25 15:04:55 PDT 2022
+//   Read tag changes from node if possible.
 //
 // ****************************************************************************
 
@@ -3068,6 +3114,9 @@ QvisColorTableWindow::tagCombiningChanged(int index)
 // Modifications:
 //    Justin Privitera, Wed Aug  3 19:46:13 PDT 2022
 //    The tag line edit is cleared when searching is enabled.
+// 
+//    Justin Privitera, Thu Aug 25 15:04:55 PDT 2022
+//    The tag editor line edit is cleared when searching is enabled.
 //
 // ****************************************************************************
 
@@ -3121,7 +3170,8 @@ QvisColorTableWindow::searchEdited(const QString &newSearchTerm)
 // Method: QvisColorTableWindow::tagEdited
 //
 // Purpose:
-//   TODO
+//   Qt slot function that sets the tagEdit once the tagEditorLineEdit is done
+//   being edited.
 //
 // Programmer: Justin Privitera
 // Creation:   Wed Aug 10 15:35:58 PDT 2022
@@ -3129,7 +3179,6 @@ QvisColorTableWindow::searchEdited(const QString &newSearchTerm)
 // Modifications:
 //
 // ****************************************************************************
-
 void
 QvisColorTableWindow::tagEdited()
 {
@@ -3137,6 +3186,17 @@ QvisColorTableWindow::tagEdited()
 }
 
 
+// ****************************************************************************
+// Method: QvisColorTableWindow::addTagToColorTable
+//
+// Purpose:
+//    Helper function for adding tags to color tables... carefully!
+//
+// Programmer: Justin Privitera
+// Creation:   Thu Aug 25 15:04:55 PDT 2022
+//
+// Modifications:
+//
 // ****************************************************************************
 void
 QvisColorTableWindow::addTagToColorTable(const std::string ctName, 
@@ -3153,6 +3213,17 @@ QvisColorTableWindow::addTagToColorTable(const std::string ctName,
 }
 
 
+// ****************************************************************************
+// Method: QvisColorTableWindow::removeTagFromColorTable
+//
+// Purpose:
+//    Helper function for removing tags from color tables... carefully!
+//
+// Programmer: Justin Privitera
+// Creation:   Thu Aug 25 15:04:55 PDT 2022
+//
+// Modifications:
+//
 // ****************************************************************************
 void
 QvisColorTableWindow::removeTagFromColorTable(const std::string ctName, 
@@ -3192,7 +3263,8 @@ QvisColorTableWindow::removeTagFromColorTable(const std::string ctName,
 // Method: QvisColorTableWindow::addRemoveTag
 //
 // Purpose:
-//    TODO
+//    Qt slot function that is called when a user attempts to either add
+//    or remove a tag from a color table.
 //
 // Programmer: Justin Privitera
 // Creation:   Wed Aug 10 15:35:58 PDT 2022

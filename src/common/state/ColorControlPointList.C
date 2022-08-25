@@ -710,14 +710,17 @@ ColorControlPointList::SetExternalFlag(bool externalFlag_)
 // Method: ColorControlPointList::SetTagNames
 //
 // Purpose:
-//   Setter for names.
+//   Setter for tagNames.
 //
-// Note:       TODO
+// Note:       We need a custom setter to vet the tag names before they are
+//             added to the tagNames vector.
 //
 // Programmer: Justin Privitera
 // Creation:   Wed Jun 29 16:38:18 PDT 2022
 //
 // Modifications:
+//     Justin Privitera, Thu Aug 25 15:04:55 PDT 2022
+//     Validate tags before adding them to the list.
 //
 // ****************************************************************************
 
@@ -1800,6 +1803,9 @@ ColorControlPointList::CompactCreateNode(DataNode *parentNode, bool completeSave
 // Modifications:
 //    Justin Privitera, Wed Jun 29 17:50:24 PDT 2022
 //    Set tagChangesMade to true every time a tag is added.
+// 
+//    Justin Privitera, Thu Aug 25 15:04:55 PDT 2022
+//    Now takes a const string and uses `emplace_back`.
 //
 // ****************************************************************************
 
@@ -1824,6 +1830,8 @@ ColorControlPointList::AddTag(const std::string newtag)
 // Creation:   Wed Aug 10 15:35:58 PDT 2022
 //
 // Modifications:
+//    Justin Privitera, Thu Aug 25 15:04:55 PDT 2022
+//    Made the "tag" arg const.
 //
 // ****************************************************************************
 
@@ -1873,6 +1881,9 @@ ColorControlPointList::ClearTags()
 // Creation:   Fri Jun  3 11:27:43 PDT 2022
 //
 // Modifications:
+//    Justin Privitera, Thu Aug 25 15:04:55 PDT 2022
+//    Made it a const function that takes a const int.
+
 //
 // ****************************************************************************
 
@@ -1894,6 +1905,8 @@ ColorControlPointList::GetTag(const int index) const
 // Creation:   Fri Jun  3 11:27:43 PDT 2022
 //
 // Modifications:
+//    Justin Privitera, Thu Aug 25 15:04:55 PDT 2022
+//    Made it a const function.
 //
 // ****************************************************************************
 
@@ -1913,6 +1926,8 @@ ColorControlPointList::GetNumTags() const
 // Creation:   Fri Jun  3 11:27:43 PDT 2022
 //
 // Modifications:
+//    Justin Privitera, Thu Aug 25 15:04:55 PDT 2022
+//    Made it a const function.
 //
 // ****************************************************************************
 
@@ -1943,6 +1958,8 @@ ColorControlPointList::GetTagsAsString() const
 // Creation:   Wed Jun  8 11:46:21 PDT 2022
 //
 // Modifications:
+//    Justin Privitera, Thu Aug 25 15:04:55 PDT 2022
+//    Made it a const function that takes a const arg.
 //
 // ****************************************************************************
 
@@ -1959,7 +1976,7 @@ ColorControlPointList::HasTag(const std::string tag) const
 // Method: ColorControlPointList::GetTagIndex
 //
 // Purpose:
-//   TODO
+//   Gets the index in the tag names vector of a given tag.
 //
 // Programmer: Justin Privitera
 // Creation:   Wed Aug 10 15:35:58 PDT 2022
@@ -1980,8 +1997,9 @@ ColorControlPointList::GetTagIndex(const std::string tag) const
 // ****************************************************************************
 // Method: ColorControlPointList::ValidateTag
 //
-// Purpose:
-//   TODO
+// Purpose: Make sure a tag conforms to rules. Returns a pair, where the first 
+//      element is a flag to say if the tag is good or not, and the second
+//      element is a string that contains an error message for use as needed.
 //
 // Programmer: Justin Privitera
 // Creation:   Thu Aug 25 10:05:45 PDT 2022

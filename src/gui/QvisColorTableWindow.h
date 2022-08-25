@@ -100,6 +100,14 @@ class QvisNoDefaultColorTableButton;
 //   Reorganized gui elements so they appear in the header file in the same 
 //   order they appear in the gui.
 // 
+//   Justin Privitera, Thu Aug 25 15:04:55 PDT 2022
+//   Made the following changes:
+//    - Included set
+//    - Added StringifyTagChanges, UnstringifyAndMergeTagChanges, tagEdited,
+//      addRemoveTag, addTagToColorTable, and removeTagFromColorTable.
+//    - Added tagEdit (a string for editing tags)
+//    - Added a data structure to store changes to tags
+// 
 // ****************************************************************************
 
 class GUI_API QvisColorTableWindow : public QvisPostableWindowObserver
@@ -206,9 +214,6 @@ private:
     // tag changes. It will be used to determine if a tag change is legal
     // (particularly if a color table is built in), and it will be saved out
     // to state files.
-
-    // TODO change to map of maps????
-
 
     // 
     // Widgets and layouts.
