@@ -63,4 +63,10 @@
     </Function>
     <Function name="ProcessOldVersions" user="true" member="true">
     </Function>
+    <Include file="source" quoted="false">
+      DebugStream.h
+    </Include>
+    <Include file="header" quoted="false">
+      algorithm
+    </Include>
   </Attribute>

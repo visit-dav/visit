@@ -9,6 +9,7 @@
 #include <AttributeSubject.h>
 
 class ColorControlPoint;
+#include <algorithm>
 
 // ****************************************************************************
 // Class: ColorControlPointList

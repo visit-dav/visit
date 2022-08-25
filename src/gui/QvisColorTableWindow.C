@@ -3217,15 +3217,15 @@ QvisColorTableWindow::addRemoveTag()
     if (! std::all_of(tagName.begin(), tagName.end(), 
             [](char const &c)
             {
-                return std::isalnum(c) || c == '-' || c == '=' || c == '<' || c == '>';
+                return std::isalnum(c) || c == ' ' || c == '-' || c == '=' || c == '<' || c == '>';
             }))
     {
         QString tmp;
         tmp = tr("The tag name ") +
               QString("\"") + QString(tagName.c_str()) + QString("\"") +
               tr(" is not valid. Tag names must contain only alphanumeric") + 
-              tr(" characters accompanied by the following 4 characters: ") +
-              tr("\"-\", \"=\", \"<\", and \">\".");
+              tr(" characters accompanied by the following 5 characters: ") +
+              tr("\" \", \"-\", \"=\", \"<\", and \">\".");
         Error(tmp);
         return;
     }

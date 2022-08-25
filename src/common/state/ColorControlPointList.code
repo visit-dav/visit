@@ -1175,6 +1175,34 @@ void
 ColorControlPointList::SetTagNames(const stringVector &tagNames_)
 {
     tagNames = tagNames_;
+    int i = 0;
+    while (i < tagNames.size())
+    {
+        auto currtag{tagNames[i]};
+        if (currtag == "")
+        {
+            debug1 << "ColorControlPointList WARNING: A tag for a color table "
+                   << "is an empty string. This tag will be discarded.\n";
+            tagNames.erase(tagNames.begin() + i);
+        }
+        // Check that the tag is alphanumeric or contains one of the allowed
+        // special characters.
+        else if (! std::all_of(currtag.begin(), currtag.end(), 
+                [](char const &c)
+                {
+                    return std::isalnum(c) || c == ' ' || c == '-' || c == '=' || c == '<' || c == '>';
+                }))
+        {
+            debug1 << "ColorControlPointList WARNING: The tag name \""
+                   << currtag << "\" is not valid. Tag names must contain "
+                   << "only alphanumeric characters accompanied by the "
+                   << "following 5 characters: \" \", \"-\", \"=\", \"<\", "
+                   << "and \">\". This tag will be discarded.\n";
+            tagNames.erase(tagNames.begin() + i);
+        }
+        else
+            i ++;
+    }
     tagChangesMade = true;
     Select(ID_tagNames, (void *)&tagNames);
 }
