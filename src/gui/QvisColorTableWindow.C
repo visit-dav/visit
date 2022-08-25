@@ -40,8 +40,10 @@
 #define SELECT_FOR_CONTINUOUS 0
 #define SELECT_FOR_DISCRETE   1
 
-#define ADDTAG    0
-#define REMOVETAG 1
+#define ADDTAG        0
+#define REMOVETAG     1
+#define ADDTAGSTR    "0"
+#define REMOVETAGSTR "1"
 
 // ****************************************************************************
 // Method: QvisColorTableWindow::QvisColorTableWindow
@@ -530,9 +532,9 @@ QvisColorTableWindow::UnstringifyAndMergeTagChanges(stringVector changes)
                 addRemoveSep = table.find(",", addRemoveSep);
                 entrySep += 1;
 
-                if (addRemoveText == "0" && ! ccpl->HasTag(tagName))
+                if (addRemoveText == ADDTAGSTR && ! ccpl->HasTag(tagName))
                     addTagToColorTable(ctName, tagName, ccpl);
-                else if (addRemoveText == "1" && ccpl->HasTag(tagName))
+                else if (addRemoveText == REMOVETAGSTR && ccpl->HasTag(tagName))
                     removeTagFromColorTable(ctName, tagName, ccpl);
             }
         });
