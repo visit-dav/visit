@@ -21,14 +21,18 @@
 //  Programmer:  Jeremy Meredith
 //  Creation:    August 18, 2005
 //
+//  Modifications:
+//    Kathleen Biagas, Thu Aug 11 2022
+//    Removed MIRConnectivity from constructor as it isn't used.
+//
 // ****************************************************************************
+
 RecursiveCellReconstructor::RecursiveCellReconstructor(vtkDataSet *d,
                                                        avtMaterial *m,
                                                        ResampledMat &r,
                                                        int np, int nc,
-                                                       MIRConnectivity &mc,
                                                        ZooMIR &z)
-    : CellReconstructor(d,m,r,np,nc,true,mc,z)
+    : CellReconstructor(d,m,r,np,nc,true,z)
 {
 }
 
@@ -56,7 +60,7 @@ RecursiveCellReconstructor::RecursiveCellReconstructor(vtkDataSet *d,
 //    2. Added ST_TRI and ST_QUA output shape types for 2D MIR.
 //    3. Fixed a bug with material interface smoothing; a test was inverted.
 //    4. Had to remove the faster way to calculate the variable "newexists",
-//    as it was blatantly wrong.  The faster way was using matsAtCellOneAway, 
+//    as it was blatantly wrong.  The faster way was using matsAtCellOneAway,
 //    but it needed to be using matsAtCellOrig.
 //
 //    Jeremy Meredith, Thu Jun 24 10:38:05 PDT 2004
@@ -322,7 +326,7 @@ RecursiveCellReconstructor::ReconstructCell(int cellid_, int celltype_,
                 if (numOutput == 1)
                 {
                     int newmat = (lookup_case==0) ? old.mat : matno;
-                    
+
                     // Worry about that "artificial smoothing" toggle
                     if (mir.options.smoothing)
                     {
@@ -467,7 +471,7 @@ RecursiveCellReconstructor::ReconstructCell(int cellid_, int celltype_,
         for (int n=0; n<outcell.nnodes; n++)
             mir.indexList.push_back(outcell.ids[n]);
 
-        
+
         if (outputvols)
         {
             double coords[MAX_NODES_PER_ZONE][3];

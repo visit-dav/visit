@@ -13,6 +13,7 @@
 
 #include <vtkInteractorStyleTrackballCamera.h>
 #include <avtViewInfo.h>
+#include <cmath>
 
 class VisWindow;
 class VisWindowInteractorProxy;
@@ -26,10 +27,10 @@ typedef   void (*ViewCallback)(VisWindow *);
 //
 //  Purpose:
 //    An abstract type that all of Visit's interactions should be derived
-//    from.  This is a derived type of vtkInteractorStyle because it is not 
+//    from.  This is a derived type of vtkInteractorStyle because it is not
 //    easy to remap the mouse button presses through interactor's method, but
-//    very easy to redefine the virtual methods for each button 
-//    press/release.  It is derived from a trackball interactor so that we 
+//    very easy to redefine the virtual methods for each button
+//    press/release.  It is derived from a trackball interactor so that we
 //    can use the trackball features free of charge.
 //
 //  Note:    Although this type is derived from a VTK type, it does not follow
@@ -60,9 +61,9 @@ typedef   void (*ViewCallback)(VisWindow *);
 //    to VisitInteractor.
 //
 //    Kathleen Bonnell, Fri Dec 13 14:07:15 PST 2002
-//    Inherit from vtkInteractorStyleTrackballCamera as 
+//    Inherit from vtkInteractorStyleTrackballCamera as
 //    vtkInteractorStyleTrackball has been deprecated.  Comply with new
-//    interactor interface by removing arguments from all Button methods, 
+//    interactor interface by removing arguments from all Button methods,
 //    OnMouseMove, and PrepTrackball.  Added members that were part of old
 //    parent class, but are not in the new: OldX/Y, Center, MotionFactor.
 //
@@ -93,7 +94,10 @@ typedef   void (*ViewCallback)(VisWindow *);
 //    Katleen Biagas, Wed Mar 16, 2022
 //    Added new signatures with double argument for DollyCameraTowardFocus3D
 //    and DollyCameraAndFocus3D to aid in mouse wheel interaction.
-// 
+//
+//    Kathleen Biagas, Wed Aug 17, 2022
+//    Add SetOsprayRendering.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisitInteractor : public vtkInteractorStyleTrackballCamera
@@ -101,7 +105,7 @@ class VISWINDOW_API VisitInteractor : public vtkInteractorStyleTrackballCamera
   public:
                                 VisitInteractor(VisWindowInteractorProxy &);
     virtual                    ~VisitInteractor();
- 
+
     static void                 RegisterViewCallback(ViewCallback);
 
     virtual void                OnLeftButtonDown();
@@ -114,8 +118,8 @@ class VISWINDOW_API VisitInteractor : public vtkInteractorStyleTrackballCamera
 
     // Define these to make sure they are no-ops, and that we don't get the
     // VTK behavior.  Derived classes are welcome to redefine them.
-    virtual void                OnMouseWheelForward()  {;}
-    virtual void                OnMouseWheelBackward() {;}
+    virtual void                OnMouseWheelForward() {;};
+    virtual void                OnMouseWheelBackward() {;};
 
     virtual void                OnMouseMove();
 
@@ -140,6 +144,9 @@ class VISWINDOW_API VisitInteractor : public vtkInteractorStyleTrackballCamera
     virtual bool                RightButtonIsDown(void)
                                                   { return rightButtonDown; }
 
+    void                        SetOsprayRendering(bool enabled)
+                                                  { useOSPRay = enabled; }
+
   protected:
     VisWindowInteractorProxy   &proxy;
 
@@ -154,6 +161,8 @@ class VISWINDOW_API VisitInteractor : public vtkInteractorStyleTrackballCamera
     int                         spinNewX, spinNewY;
     float                       Center[2];
     float                       MotionFactor;
+
+    bool                        useOSPRay;
 
 
     void                        PrepTrackball();
@@ -298,7 +307,7 @@ VisitInteractor::VectorSubtract(const double v1[3], const double v2[3],
 inline double
 VisitInteractor::VectorLength(const double v[3]) const
 {
-    return sqrt((v[0] * v[0]) + (v[1] * v[1]) + (v[2] * v[2]));
+    return std::sqrt((v[0] * v[0]) + (v[1] * v[1]) + (v[2] * v[2]));
 }
 
 // ****************************************************************************

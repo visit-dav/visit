@@ -77,7 +77,7 @@ VisWindowProtectionProxy::ProxiedSetInteractor(VisitInteractor *interactor)
 // ****************************************************************************
 // Method: VisWindowProtectionProxy::ProxiedGetBoundingBoxMode
 //
-// Purpose: 
+// Purpose:
 //   Returns the bounding box mode.
 //
 // Returns:    The bounding box mode.
@@ -86,7 +86,7 @@ VisWindowProtectionProxy::ProxiedSetInteractor(VisitInteractor *interactor)
 // Creation:   Thu Oct 4 08:43:20 PDT 2001
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 bool
@@ -119,7 +119,7 @@ VisWindowProtectionProxy::ProxiedGetForegroundColor(double fg[3])
 // ****************************************************************************
 // Method: VisWindowProtectionProxy::GetHotPoint
 //
-// Purpose: 
+// Purpose:
 //   Returns a pointer to the hotpoint that is clicked at point (x,y).
 //
 // Arguments:
@@ -127,13 +127,13 @@ VisWindowProtectionProxy::ProxiedGetForegroundColor(double fg[3])
 //   y : The y location of the click in device coordinates.
 //   h : A reference to the return hotpoint.
 //
-// Returns:   A boolean value indicating whether or not a hotpoint was clicked. 
+// Returns:   A boolean value indicating whether or not a hotpoint was clicked.
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Oct 1 14:14:29 PST 2001
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 bool
@@ -209,7 +209,7 @@ void VisWindowProtectionProxy::ProxiedGetWindowSize(int &width, int &height) con
 //  Method: VisWindowProtectionProxy::ProxiedGetBackground
 //
 //  Purpose:
-//      Gets the background renderer of the VisWindow through its friend 
+//      Gets the background renderer of the VisWindow through its friend
 //      access.
 //
 //  Returns:    The background renderer.
@@ -230,7 +230,7 @@ VisWindowProtectionProxy::ProxiedGetBackground()
 //  Method: VisWindowProtectionProxy::ProxiedGetForeground
 //
 //  Purpose:
-//      Gets the foreground renderer of the VisWindow through its friend 
+//      Gets the foreground renderer of the VisWindow through its friend
 //      access.
 //
 //  Returns:    The foreground renderer.
@@ -400,14 +400,14 @@ VisWindowProtectionProxy::ProxiedUpdatesEnabled()
 // ****************************************************************************
 // Method: VisWindowProtectionProxy::ProxiedDisableUpdates
 //
-// Purpose: 
+// Purpose:
 //   Disables updates in the VisWindow.
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Oct 12 09:46:15 PDT 2001
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -419,14 +419,14 @@ VisWindowProtectionProxy::ProxiedDisableUpdates()
 // ****************************************************************************
 // Method: VisWindowProtectionProxy::ProxiedEnableUpdates
 //
-// Purpose: 
+// Purpose:
 //   Enables updates in the VisWindow.
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Oct 12 09:46:15 PDT 2001
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -478,7 +478,7 @@ VisWindowProtectionProxy::ProxiedGetBounds(double bounds[6])
 // ****************************************************************************
 // Method: VisWindowProtectionProxy::ProxiedSetHighlightEnabled
 //
-// Purpose: 
+// Purpose:
 //   Turns the hotpoint highlights on/off.
 //
 // Arguments:
@@ -488,7 +488,7 @@ VisWindowProtectionProxy::ProxiedGetBounds(double bounds[6])
 // Creation:   Wed Oct 3 00:03:32 PDT 2001
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -501,15 +501,15 @@ VisWindowProtectionProxy::ProxiedSetHighlightEnabled(bool val)
 // ****************************************************************************
 // Method: VisWindowProtectionProxy::ProxiedPick
 //
-// Purpose: 
+// Purpose:
 //   Tells the viswin to perform a Pick.
 //
 // Arguments:
-//   x, y  The screen coordinates of the picked point. 
+//   x, y  The screen coordinates of the picked point.
 //
 //
 // Programmer:  Kathleen Bonnell
-// Creation:    November 12, 2001 
+// Creation:    November 12, 2001
 //
 // ****************************************************************************
 
@@ -545,14 +545,14 @@ VisWindowProtectionProxy::ProxiedUpdatePlotList(vector<avtActor_p> &lst)
 // ****************************************************************************
 // Method: VisWindowProtectionProxy::ProxiedLineout
 //
-// Purpose: 
+// Purpose:
 //   Tells the viswin to perform a Lineout.
 //
 // Arguments:
-//   x1, y1, x2, y2    The screen coordinate endpoints of the picked line. 
+//   x1, y1, x2, y2    The screen coordinate endpoints of the picked line.
 //
 // Programmer:  Kathleen Bonnell
-// Creation:    December 17, 2001 
+// Creation:    December 17, 2001
 //
 // ****************************************************************************
 
@@ -566,21 +566,21 @@ VisWindowProtectionProxy::ProxiedLineout(int x1, int y1, int x2, int y2)
 // ****************************************************************************
 // Method: VisWindowProtectionProxy::ProxiedComputeVectorTextScaleFactor
 //
-// Purpose:     Have the VisWindow's Compute a scale factor for vector text. 
+// Purpose:     Have the VisWindow's Compute a scale factor for vector text.
 //
-// Returns:     The scale factor. 
+// Returns:     The scale factor.
 //
-// Arguments: 
+// Arguments:
 //   p          A 3d-world coordinate position to use in the calculation.
 //   v          An alternate viewport (optional).
 //
 // Programmer:  Kathleen Bonnell
-// Creation:    May 8, 2002 
+// Creation:    May 8, 2002
 //
 // ****************************************************************************
 
 double
-VisWindowProtectionProxy::ProxiedComputeVectorTextScaleFactor(const double *p, 
+VisWindowProtectionProxy::ProxiedComputeVectorTextScaleFactor(const double *p,
                                                               const double *v)
 {
     return viswin->ComputeVectorTextScaleFactor(p, v);
@@ -590,11 +590,11 @@ VisWindowProtectionProxy::ProxiedComputeVectorTextScaleFactor(const double *p,
 // ****************************************************************************
 //  Method: VisWindowProtectionProxy::ProxiedMotionBegin
 //
-//  Purpose:     
+//  Purpose:
 //      Tells the vis window that motion began.
 //
 //  Programmer:  Hank Childs
-//  Creation:    July 11, 2002 
+//  Creation:    July 11, 2002
 //
 // ****************************************************************************
 
@@ -608,11 +608,11 @@ VisWindowProtectionProxy::ProxiedMotionBegin(void)
 // ****************************************************************************
 //  Method: VisWindowProtectionProxy::ProxiedMotionEnd
 //
-//  Purpose:     
+//  Purpose:
 //      Tells the vis window that motion end.
 //
 //  Programmer:  Hank Childs
-//  Creation:    July 11, 2002 
+//  Creation:    July 11, 2002
 //
 // ****************************************************************************
 
@@ -626,11 +626,11 @@ VisWindowProtectionProxy::ProxiedMotionEnd(void)
 // ****************************************************************************
 //  Method: VisWindowProtectionProxy::ProxiedGetAmbientOn
 //
-//  Purpose:     
-//      Retrieve the flag specifying where ambient lighting is on. 
+//  Purpose:
+//      Retrieve the flag specifying where ambient lighting is on.
 //
-//  Programmer:  Kathleen Bonnell 
-//  Creation:    August 12, 2002 
+//  Programmer:  Kathleen Bonnell
+//  Creation:    August 12, 2002
 //
 // ****************************************************************************
 
@@ -644,11 +644,11 @@ VisWindowProtectionProxy::ProxiedGetAmbientOn(void)
 // ****************************************************************************
 //  Method: VisWindowProtectionProxy::ProxiedGetAmbientCoefficient
 //
-//  Purpose:     
-//      Retrieve the ambient lighting coefficient. 
+//  Purpose:
+//      Retrieve the ambient lighting coefficient.
 //
-//  Programmer:  Kathleen Bonnell 
-//  Creation:    August 12, 2002 
+//  Programmer:  Kathleen Bonnell
+//  Creation:    August 12, 2002
 //
 // ****************************************************************************
 
@@ -662,11 +662,11 @@ VisWindowProtectionProxy::ProxiedGetAmbientCoefficient(void)
 // ****************************************************************************
 //  Method: VisWindowProtectionProxy::ProxiedGetLighting
 //
-//  Purpose:     
-//      Retrieve the flag specifying whether lighting is on or off. 
+//  Purpose:
+//      Retrieve the flag specifying whether lighting is on or off.
 //
-//  Programmer:  Kathleen Bonnell 
-//  Creation:    August 12, 2002 
+//  Programmer:  Kathleen Bonnell
+//  Creation:    August 12, 2002
 //
 // ****************************************************************************
 
@@ -680,11 +680,11 @@ VisWindowProtectionProxy::ProxiedGetLighting(void)
 // ****************************************************************************
 //  Method: VisWindowProtectionProxy::ProxiedUpateLightPositions
 //
-//  Purpose:     
-//     Notifies VisWindow that lights should update position. 
+//  Purpose:
+//     Notifies VisWindow that lights should update position.
 //
-//  Programmer:  Kathleen Bonnell 
-//  Creation:    August 12, 2002 
+//  Programmer:  Kathleen Bonnell
+//  Creation:    August 12, 2002
 //
 // ****************************************************************************
 
@@ -697,14 +697,14 @@ VisWindowProtectionProxy::ProxiedUpdateLightPositions()
 // ****************************************************************************
 // Method: VisWindowProtectionProxy::ProxiedGetSurfaceRepresentation
 //
-// Purpose: 
+// Purpose:
 //   Returns the surface representation.
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Sep 23 16:32:24 PST 2002
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 int
@@ -716,11 +716,11 @@ VisWindowProtectionProxy::ProxiedGetSurfaceRepresentation()
 // ****************************************************************************
 // Method: VisWindowProtectionProxy::ProxiedDisableExternalRenderRequests
 //
-// Purpose: 
+// Purpose:
 //    Disable external render requests
 //
 // Programmer: Mark C. Miller
-// Creation:   February 5, 2003 
+// Creation:   February 5, 2003
 //
 // ****************************************************************************
 
@@ -733,11 +733,11 @@ VisWindowProtectionProxy::ProxiedDisableExternalRenderRequests(bool bClearImage)
 // ****************************************************************************
 // Method: VisWindowProtectionProxy::ProxiedEnableExternalRenderRequests
 //
-// Purpose: 
+// Purpose:
 //    Enable external render requests
 //
 // Programmer: Mark C. Miller
-// Creation:   February 5, 2003 
+// Creation:   February 5, 2003
 //
 // ****************************************************************************
 
@@ -751,16 +751,16 @@ VisWindowProtectionProxy::ProxiedEnableExternalRenderRequests(void)
 // ****************************************************************************
 // Method: VisWindowProtectionProxy::ProxiedGetScaleFactorAndType
 //
-// Purpose:     Gets the VisWindow's axis scale factor and scale type. 
+// Purpose:     Gets the VisWindow's axis scale factor and scale type.
 //
-// Returns:     (via args) The current scale factor and scale type used in the 
+// Returns:     (via args) The current scale factor and scale type used in the
 //              VisWindow.
 //
 // Programmer:  Kathleen Bonnell
-// Creation:    May 13, 2003 
+// Creation:    May 13, 2003
 //
 // Modifications:
-//   Kathleen Bonnell, Mon May 19 09:00:54 PDT 2003 
+//   Kathleen Bonnell, Mon May 19 09:00:54 PDT 2003
 //   Removed 'return'.
 // ****************************************************************************
 
@@ -778,7 +778,7 @@ VisWindowProtectionProxy::ProxiedGetScaleFactorAndType(double &s, int &t)
 //              to the render window.  For anti-aliasing mode.
 //
 // Programmer:  Kathleen Bonnell
-// Creation:    May 28, 2003 
+// Creation:    May 28, 2003
 //
 // ****************************************************************************
 
@@ -797,7 +797,7 @@ VisWindowProtectionProxy::ProxiedReAddColleaguesToRenderWindow()
 // Returns:     The antialising mode.
 //
 // Programmer:  Kathleen Bonnell
-// Creation:    May 28, 2003 
+// Creation:    May 28, 2003
 //
 // ****************************************************************************
 
@@ -816,7 +816,7 @@ VisWindowProtectionProxy::ProxiedGetAntialiasing()
 // Returns:     The fullframe mode.
 //
 // Programmer:  Kathleen Bonnell
-// Creation:    June 6, 2003. 
+// Creation:    June 6, 2003.
 //
 // ****************************************************************************
 
@@ -894,7 +894,7 @@ VisWindowProtectionProxy::ProxiedGetSpecularColor()
 // ****************************************************************************
 // Method: VisWindowProtectionProxy::TransparenciesExist
 //
-// Purpose:     Returns whether or not there are transparent actors. 
+// Purpose:     Returns whether or not there are transparent actors.
 //
 // Programmer:  Kathleen Bonnell
 // Creation:    December 3, 2003
@@ -912,10 +912,10 @@ VisWindowProtectionProxy::ProxiedTransparenciesExist()
 // Method: VisWindowProtectionProxy::ProxiedReAddToolsToRenderWindow
 //
 // Purpose:     Tells the VisWindow to allow tools to re-add themsevles
-//              to the render window.  
+//              to the render window.
 //
 // Programmer:  Kathleen Bonnell
-// Creation:    May 28, 2003 
+// Creation:    May 28, 2003
 //
 // ****************************************************************************
 
@@ -929,14 +929,14 @@ VisWindowProtectionProxy::ProxiedReAddToolsToRenderWindow()
 // ****************************************************************************
 // Method: VisWindowProtectionProxy::ProxiedGetFrameAndState
 //
-// Purpose: 
+// Purpose:
 //   Returns the vis window's frame and state information.
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Nov 6 14:16:54 PST 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1026,8 +1026,8 @@ VisWindowProtectionProxy::ProxiedResumeTranslucentGeometry()
 //  Purpose:
 //    Returns the maximum amount the plots have been shifted in Z.
 //
-//  Programmer: Kathleen Bonnell 
-//  Creation:   June 27, 2005 
+//  Programmer: Kathleen Bonnell
+//  Creation:   June 27, 2005
 //
 // ***************************************************************************
 
@@ -1042,8 +1042,8 @@ VisWindowProtectionProxy::ProxiedGetMaxPlotZShift()
 //
 //  Purpose: Query of the window is making external render requests
 //
-//  Programmer: Mark C. Miller 
-//  Creation:   March 28, 2007 
+//  Programmer: Mark C. Miller
+//  Creation:   March 28, 2007
 //
 // ***************************************************************************
 bool
@@ -1055,10 +1055,10 @@ VisWindowProtectionProxy::ProxiedIsMakingExternalRenderRequests(void) const
 // ****************************************************************************
 //  Method: VisWindowProtectionProxy::ProxiedGetAverageExternalRenderingTime
 //
-//  Purpose: Return average rendering time for external render requests 
+//  Purpose: Return average rendering time for external render requests
 //
-//  Programmer: Mark C. Miller 
-//  Creation:   March 28, 2007 
+//  Programmer: Mark C. Miller
+//  Creation:   March 28, 2007
 //
 // ***************************************************************************
 double
@@ -1072,8 +1072,8 @@ VisWindowProtectionProxy::ProxiedGetAverageExternalRenderingTime(void) const
 //
 //  Purpose: Force next render to render only the 'in-progress' visual queue
 //
-//  Programmer: Mark C. Miller 
-//  Creation:   March 28, 2007 
+//  Programmer: Mark C. Miller
+//  Creation:   March 28, 2007
 //
 // ***************************************************************************
 void
@@ -1095,7 +1095,7 @@ VisWindowProtectionProxy::ProxiedDoNextExternalRenderAsVisualQueue(
 // Creation:   Mon Nov 19 17:45:21 PST 2007
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 int
@@ -1163,7 +1163,7 @@ VisWindowProtectionProxy::ProxiedGetExtents(double ext[2])
      return viswin->GetExtents(ext);
 }
 
-#ifdef VISIT_OSPRAY
+#if defined(VISIT_OSPRAY) || defined(HAVE_OSPRAY)
 // ****************************************************************************
 // Method: VisWindowProtectionProxy::ProxiedGetOsprayRendering
 //

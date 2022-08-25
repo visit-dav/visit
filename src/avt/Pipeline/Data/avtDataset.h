@@ -25,7 +25,7 @@ class   avtWebpage;
 //
 //  Purpose:
 //      The only example of a data object in our component base.  It contains
-//      multiple blocks of a dataset, with each block in the form of a 
+//      multiple blocks of a dataset, with each block in the form of a
 //      vtkDataSet.
 //
 //  Programmer: Hank Childs
@@ -33,19 +33,19 @@ class   avtWebpage;
 //
 //  Modifications:
 //
-//    Kathleen Bonnell, Fri Feb  9 17:11:18 PST 2001 
-//    Changed representation of domains to avtDomainTree. 
+//    Kathleen Bonnell, Fri Feb  9 17:11:18 PST 2001
+//    Changed representation of domains to avtDomainTree.
 //
-//    Kathleen Bonnell, Thu Apr  5 13:34:11 PDT 2001 
-//    avtDomainTree renamed as avtDataTree, avtDomain renamed 
-//    as avtDataRepresentation.  What used to be domains, an array of 
-//    avtDomainTrees, is now just one avtDataTree. 
+//    Kathleen Bonnell, Thu Apr  5 13:34:11 PDT 2001
+//    avtDomainTree renamed as avtDataTree, avtDomain renamed
+//    as avtDataRepresentation.  What used to be domains, an array of
+//    avtDomainTrees, is now just one avtDataTree.
 //
 //    Hank Childs, Tue May 22 20:56:19 PDT 2001
 //    Use database specifications instead of domain lists.
 //
-//    Kathleen Bonnell, Wed Sep 19 13:45:33 PDT 200 
-//    Added method to write out tree structure. 
+//    Kathleen Bonnell, Wed Sep 19 13:45:33 PDT 200
+//    Added method to write out tree structure.
 //
 //    Hank Childs, Fri Sep 28 13:41:36 PDT 2001
 //    Add Compact method.
@@ -114,6 +114,10 @@ class   avtWebpage;
 //    Burlen Loring, Sun Sep  6 14:58:03 PDT 2015
 //    Changed the return type of GetNumberOfCells to long long
 //
+//    Kathleen Biagas, Wed Aug 17, 2022
+//    Incorporate ARSanderson's OSPRAY 2.8.0 work for VTK 9:
+//    Make GetDataTree a public method.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDataset : public avtDataObject
@@ -144,12 +148,12 @@ class PIPELINE_API avtDataset : public avtDataObject
                              avtDataset(vtkDataSet *, avtDataset *);
     virtual                 ~avtDataset();
 
-    virtual const char      *GetType(void)  { return "avtDataset"; };
+    virtual const char      *GetType(void)  { return "avtDataset"; }
     virtual long long        GetNumberOfCells(bool polysOnly = false) const;
     virtual void             ReleaseData(void);
 
     virtual avtDataObject   *Instance(void);
-    virtual avtDataObjectWriter 
+    virtual avtDataObjectWriter
                             *InstantiateWriter(void);
 
     void                     SetActiveVariable(const char *);
@@ -162,12 +166,14 @@ class PIPELINE_API avtDataset : public avtDataObject
     virtual void             DebugDump(avtWebpage *, const char *);
 
     std::string              GetDatasetAsString();
+
+    avtDataTree_p           &GetDataTree() { return dataTree; }
+
   protected:
     avtDataTree_p            dataTree;
 
     void                     SetDataTree(avtDataTree_p);
     void                     SetDataTree(avtDataRepresentation &);
-    avtDataTree_p           &GetDataTree() { return dataTree; };
 
     virtual void             DerivedCopy(avtDataObject *);
     virtual void             DerivedMerge(avtDataObject *);
@@ -176,7 +182,7 @@ class PIPELINE_API avtDataset : public avtDataObject
     // This method is defined to prevent accidental use of bitwise copy
     // implementations.  If you want to re-define it to do something
     // meaningful, that's fine.
-    avtDataset              &operator=(const avtDataset &) { return *this; };
+    avtDataset              &operator=(const avtDataset &) { return *this; }
 };
 
 

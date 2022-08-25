@@ -163,8 +163,8 @@ protected:
     avtViewInfo            visit_view; 
 
 private:
-    vtkLabelMapperBase(const vtkLabelMapperBase&) VTK_DELETE_FUNCTION;
-    void operator=(const vtkLabelMapperBase&) VTK_DELETE_FUNCTION;
+    vtkLabelMapperBase(const vtkLabelMapperBase&) = delete;
+    void operator=(const vtkLabelMapperBase&) = delete;
 };
 
 #endif

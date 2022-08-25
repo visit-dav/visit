@@ -49,6 +49,7 @@ vtkStandardNewMacro(vtkCEAucdReader);
 #define vtkDebugMacro(x) std::cout<<"" x; std::cout.flush()
 #endif
 
+using std::ifstream;
 
 static int UCD2VTK[8] =
 {

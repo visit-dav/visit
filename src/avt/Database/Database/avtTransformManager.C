@@ -5,6 +5,11 @@
 // ************************************************************************* //
 //                           avtTransformManager.C                           //
 // ************************************************************************* //
+
+#include <avtTransformManager.h>
+
+#include <visit-config.h> // For LIB_VERSION_LE
+
 #include <vtkCellArray.h>
 #include <vtkCellData.h>
 #include <vtkCSGGrid.h>
@@ -44,7 +49,7 @@
 #include <avtParallel.h>
 #include <avtScalarMetaData.h>
 #include <avtSourceFromDatabase.h>
-#include <avtTransformManager.h>
+
 
 #include <ImproperUseException.h>
 #include <PointerNotInCacheException.h>
@@ -63,13 +68,13 @@ using std::map;
 
 
 // ****************************************************************************
-//  Function: GetArrayTypeName 
+//  Function: GetArrayTypeName
 //
 //  Purpose: Given a vtk data array, return the a char * for its type name
 //
-//  Programmer: Mark C. Miller 
-//  Creation:   April 4, 2005 
-// 
+//  Programmer: Mark C. Miller
+//  Creation:   April 4, 2005
+//
 //  Modifications:
 //
 //    Hank Childs, Fri Jun  9 14:03:55 PDT 2006
@@ -86,10 +91,10 @@ static const char *DataArrayTypeName(vtkDataArray *arr)
 {
     switch (arr->GetDataType())
     {
-        case VTK_VOID:           return "void*"; 
+        case VTK_VOID:           return "void*";
         // case VTK_BIT: not sure what to do here
-        case VTK_CHAR:           return "char"; 
-        case VTK_UNSIGNED_CHAR:  return "unsigned char"; 
+        case VTK_CHAR:           return "char";
+        case VTK_UNSIGNED_CHAR:  return "unsigned char";
         case VTK_SHORT:          return "short";
         case VTK_UNSIGNED_SHORT: return "unsigned short";
         case VTK_INT:            return "int";
@@ -109,11 +114,11 @@ static const char *DataArrayTypeName(vtkDataArray *arr)
 // ****************************************************************************
 //  Function: PrecisionInBytes
 //
-//  Purpose: Given a vtk data type, return its precision in bytes 
+//  Purpose: Given a vtk data type, return its precision in bytes
 //
-//  Programmer: Mark C. Miller 
-//  Creation:   April 4, 2005 
-// 
+//  Programmer: Mark C. Miller
+//  Creation:   April 4, 2005
+//
 //  Modifications:
 //     Mark C. Miller, Tue Sep 13 20:07:48 PDT 2005
 //     Made it just take data type as arg instead of a vtkDataArray
@@ -155,13 +160,13 @@ PrecisionInBytes(int dataType)
 // ****************************************************************************
 //  Function: PrecisionInBytes
 //
-//  Purpose: Given a vtk data array, return its precision in bytes 
+//  Purpose: Given a vtk data array, return its precision in bytes
 //
-//  Programmer: Mark C. Miller 
-//  Creation:   August 10, 2005 
+//  Programmer: Mark C. Miller
+//  Creation:   August 10, 2005
 //
 //  Modifications:
-// 
+//
 //    Mark C. Miller, Wed Sep 13 09:06:07 PDT 2006
 //    Moved here from avtGenericDatabase.C
 //
@@ -181,11 +186,11 @@ PrecisionInBytes(vtkDataArray *var)
 //  Purpose: Given a vector of admissible types and a given type, return
 //  whehter or not the given type is in the vector
 //
-//  Programmer: Mark C. Miller 
-//  Creation:   April 4, 2005 
+//  Programmer: Mark C. Miller
+//  Creation:   April 4, 2005
 //
 //  Modifications:
-// 
+//
 //    Mark C. Miller, Wed Sep 13 09:06:07 PDT 2006
 //    Moved here from avtGenericDatabase.C
 //
@@ -205,10 +210,10 @@ IsAdmissibleDataType(const vector<int>& admissibleTypes, const int type)
 // ****************************************************************************
 //  Template: ConvertToType
 //
-//  Purpose: Template for conversion, usually to float 
+//  Purpose: Template for conversion, usually to float
 //
-//  Programmer: Mark C. Miller 
-//  Creation:   April 4, 2005 
+//  Programmer: Mark C. Miller
+//  Creation:   April 4, 2005
 //
 //  Modifications:
 //
@@ -227,14 +232,14 @@ static void ConvertToType(oT *obuf, const iT* ibuf, size_t n)
 }
 
 // ****************************************************************************
-//  Function: ConvertDataArrayToFloat 
+//  Function: ConvertDataArrayToFloat
 //
 //  Purpose: Given a vtk data array, make a copie of it that is converted
 //  to float
 //
-//  Programmer: Mark C. Miller 
-//  Creation:   April 4, 2005 
-// 
+//  Programmer: Mark C. Miller
+//  Creation:   April 4, 2005
+//
 //  Modifications:
 //    Jeremy Meredith, Tue Apr  5 11:49:30 PDT 2005
 //    Removed the templating.  It was causing compiler errors.
@@ -260,10 +265,10 @@ static void ConvertToType(oT *obuf, const iT* ibuf, size_t n)
 //
 // ****************************************************************************
 
-static vtkDataArray * 
+static vtkDataArray *
 ConvertDataArrayToFloat(vtkDataArray *oldArr)
 {
-    vtkDataArray *newArr = 0; 
+    vtkDataArray *newArr = 0;
 
     if (oldArr->GetDataType() != VTK_FLOAT)
     {
@@ -276,7 +281,7 @@ ConvertDataArrayToFloat(vtkDataArray *oldArr)
         newArr->SetNumberOfTuples(numTuples);
 
         debug1 << "avtTransformManager: Converting vktDataArray, ";
-        if (oldArr->GetName() != NULL) 
+        if (oldArr->GetName() != NULL)
         {
                debug1 << "\"" << oldArr->GetName() << "\", ";
         }
@@ -308,7 +313,7 @@ ConvertDataArrayToFloat(vtkDataArray *oldArr)
         newArr->SetName(oldArr->GetName());
 
     vtkInformation* info = oldArr->GetInformation();
-    if (info && info->Has(avtVariableCache::OFFSET_3())) 
+    if (info && info->Has(avtVariableCache::OFFSET_3()))
     {
         double* vals = info->Get(avtVariableCache::OFFSET_3());
         vtkInformation* newInfo = newArr->GetInformation();
@@ -353,7 +358,7 @@ ConvertDataArrayToDouble(vtkDataArray *oldArr)
         void *oldBuf = oldArr->GetVoidPointer(0);
 
         debug1 << "avtTransformManager: Converting vktDataArray, ";
-        if (oldArr->GetName() != NULL) 
+        if (oldArr->GetName() != NULL)
         {
                debug1 << "\"" << oldArr->GetName() << "\", ";
         }
@@ -406,22 +411,22 @@ ConvertDataArrayToDouble(vtkDataArray *oldArr)
                     snprintf(msg, sizeof(msg),
                         "Cannot convert from type \"%s\" to double",
                         DataArrayTypeName(oldArr));
-                    EXCEPTION1(ImproperUseException, msg); 
+                    EXCEPTION1(ImproperUseException, msg);
                 }
         }
     }
 
     if (newArr)
         newArr->SetName(oldArr->GetName());
-  
+
     vtkInformation* info = oldArr->GetInformation();
-    if (info && info->Has(avtVariableCache::OFFSET_3())) 
+    if (info && info->Has(avtVariableCache::OFFSET_3()))
     {
         double* vals = info->Get(avtVariableCache::OFFSET_3());
         vtkInformation* newInfo = newArr->GetInformation();
         newInfo->Set(avtVariableCache::OFFSET_3(), vals[0], vals[1], vals[2]);
     }
-  
+
     return newArr;
 }
 
@@ -431,9 +436,9 @@ ConvertDataArrayToDouble(vtkDataArray *oldArr)
 //  Purpose: Given a vtkDataSet, return a sample the first of its
 //  coordinate arrays
 //
-//  Programmer: Mark C. Miller 
-//  Creation:   April 4, 2005 
-// 
+//  Programmer: Mark C. Miller
+//  Creation:   April 4, 2005
+//
 //  Modifications:
 //    Mark C. Miller, Tue Sep 13 20:07:48 PDT 2005
 //    Made it return the coordinate data type explicitly. Also, made it
@@ -442,7 +447,7 @@ ConvertDataArrayToDouble(vtkDataArray *oldArr)
 //    Mark C. Miller, Wed Sep 13 09:06:07 PDT 2006
 //    Moved here from avtGenericDatabase.C
 // ****************************************************************************
-static int 
+static int
 GetCoordDataType(vtkDataSet *ds)
 {
     switch (ds->GetDataObjectType())
@@ -478,11 +483,11 @@ GetCoordDataType(vtkDataSet *ds)
 //  Purpose: Given a vtkDataSet, convert its coordinate arrays, if any,
 //  to float
 //
-//  Programmer: Mark C. Miller 
-//  Creation:   April 4, 2005 
+//  Programmer: Mark C. Miller
+//  Creation:   April 4, 2005
 //
 //  Moficiations:
-// 
+//
 //    Mark C. Miller, Wed Sep 13 09:06:07 PDT 2006
 //    Moved here from avtGenericDatabase.C
 //
@@ -490,7 +495,7 @@ GetCoordDataType(vtkDataSet *ds)
 //    Added toFloat argument.
 //
 // ****************************************************************************
-static vtkDataSet * 
+static vtkDataSet *
 ConvertDataSet(vtkDataSet *oldds, bool toFloat)
 {
     vtkDataSet *newds = 0;
@@ -513,7 +518,7 @@ ConvertDataSet(vtkDataSet *oldds, bool toFloat)
 
                     if (newArr != 0)
                     {
-                        vtkPointSet *newps = oldps->NewInstance(); 
+                        vtkPointSet *newps = oldps->NewInstance();
                         newps->DeepCopy(oldps);
 
                         vtkPoints *newpts = vtkPoints::New();
@@ -589,8 +594,8 @@ ConvertDataSet(vtkDataSet *oldds, bool toFloat)
 //  Purpose: Build a mapping array to handle changes in zone/node numbering
 //  and order when dealing with variables
 //
-//  Programmer: Mark C. Miller 
-//  Creation:   December 4, 2006 
+//  Programmer: Mark C. Miller
+//  Creation:   December 4, 2006
 //
 // ****************************************************************************
 template <class iT>
@@ -616,8 +621,8 @@ BuildMappedArray(const iT *const ibuf, int ncomps, const vector<int> &valsToMap)
 //  Purpose: Build a mapping array to handle changes in zone/node numbering
 //  and order when dealing with variables
 //
-//  Programmer: Mark C. Miller 
-//  Creation:   December 4, 2006 
+//  Programmer: Mark C. Miller
+//  Creation:   December 4, 2006
 //
 //  Modifications:
 //
@@ -690,7 +695,7 @@ BuildMappedArray(vtkDataArray *da, const vector<int> &valsToMap)
             {   char msg[256];
                 snprintf(msg, sizeof(msg), "Cannot transform array of type \"%s\"",
                     DataArrayTypeName(da));
-                EXCEPTION1(ImproperUseException, msg); 
+                EXCEPTION1(ImproperUseException, msg);
             }
     }
 
@@ -708,10 +713,10 @@ BuildMappedArray(vtkDataArray *da, const vector<int> &valsToMap)
 //  Function: ShouldIgnoreVariableForConversions
 //
 //  Purpose: Filter certain internal AVT arrays that should not undergo
-//  conversion 
+//  conversion
 //
-//  Programmer: Mark C. Miller 
-//  Creation:   December 5, 2006 
+//  Programmer: Mark C. Miller
+//  Creation:   December 5, 2006
 //
 //    Mark C. Miller, Fri Apr 13 10:32:47 PDT 2012
 //    Renamed to serve as a more generalized filter for ignoring variables
@@ -734,7 +739,7 @@ ShouldIgnoreVariableForConversions(vtkDataArray *da,
             ignoreIt = true;
     }
 
-    if (ignoreIt) 
+    if (ignoreIt)
     {
         debug4 << "Ignoring variable/array \"" << da->GetName()
                << "\" for type conversions" << endl;
@@ -746,10 +751,10 @@ ShouldIgnoreVariableForConversions(vtkDataArray *da,
 // ****************************************************************************
 //  Function: DestructDspec
 //
-//  Purpose: To support caching of avtDataRequest objects 
+//  Purpose: To support caching of avtDataRequest objects
 //
-//  Programmer: Mark C. Miller 
-//  Creation:   December 4, 2006 
+//  Programmer: Mark C. Miller
+//  Creation:   December 4, 2006
 //
 // ****************************************************************************
 static void
@@ -781,7 +786,7 @@ avtTransformManager::FreeUpResources(int lastts)
 // ****************************************************************************
 // Method: avtTransformManager::CoordinatesHaveExcessPrecision
 //
-// Purpose: 
+// Purpose:
 //   Determines whether the input dataset's coordinates have excess precision
 //   that we can forfeit in the interest of using float for lower memory usage.
 //
@@ -789,9 +794,9 @@ avtTransformManager::FreeUpResources(int lastts)
 //   ds                  : The input dataset.
 //   needNativePrecision : Whether the contract says we need native precision.
 //
-// Returns:    
+// Returns:
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Sat Apr 21 23:53:45 PDT 2012
@@ -804,7 +809,7 @@ avtTransformManager::FreeUpResources(int lastts)
 // ****************************************************************************
 
 bool
-avtTransformManager::CoordinatesHaveExcessPrecision(vtkDataSet *ds, 
+avtTransformManager::CoordinatesHaveExcessPrecision(vtkDataSet *ds,
     bool needNativePrecision) const
 {
     bool excessPrecision;
@@ -906,7 +911,7 @@ avtTransformManager::DataHasExcessPrecision(vtkDataArray *da,
         // The transform manager makes a decision here that since we don't
         // need native precision (according to the contract) that it's okay
         // to lose some precision.
-        excessPrecision = !needNativePrecision && 
+        excessPrecision = !needNativePrecision &&
             pType != AVT_PRECISION_NATIVE &&
             ((size_t)PrecisionInBytes(da) > sizeof(float));
     }
@@ -963,8 +968,8 @@ avtTransformManager::DataHasInsufficientPrecision(vtkDataArray *da,
 //  Purpose: Convert dataset and/or data arrays defined on it to from their
 //  native type to float or double
 //
-//  Programmer: Mark C. Miller 
-//  Creation:   December 4, 2006 
+//  Programmer: Mark C. Miller
+//  Creation:   December 4, 2006
 //
 //  Modifications:
 //
@@ -974,7 +979,7 @@ avtTransformManager::DataHasInsufficientPrecision(vtkDataArray *da,
 //
 //    Mark C. Miller, Tue Dec  5 18:14:58 PST 2006
 //    Made it handle cases where vars are not cached in generic db's cache.
-//    Made it ignore certain internal AVT arrays. 
+//    Made it ignore certain internal AVT arrays.
 //    Added more debugging output.
 //
 //    Mark C. Miller, Wed Dec  6 13:40:17 PST 2006
@@ -989,7 +994,7 @@ avtTransformManager::DataHasInsufficientPrecision(vtkDataArray *da,
 //    Make delete logic squeaky clean.
 //
 //    Brad Whitlock, Sun Apr 22 00:02:42 PDT 2012
-//    Call some helper functions to help determine whether there is 
+//    Call some helper functions to help determine whether there is
 //    excess precision. Print the reason for conversion to the logs.
 //
 //    Kathleen Biagas, Wed Aug  7 12:51:33 PDT 2013
@@ -1042,7 +1047,7 @@ avtTransformManager::NativeToFloat(const avtDatabaseMetaData *const md,
         case VTK_FLOAT:              debug4 << "VTK_FLOAT"; break;
         case VTK_DOUBLE:             debug4 << "VTK_DOUBLE"; doubleAllowed = true; break;
         case VTK_ID_TYPE:            debug4 << "VTK_ID_TYPE"; break;
-        default:                     debug4 << admissibleDataTypes[q]; break;                
+        default:                     debug4 << admissibleDataTypes[q]; break;
         }
         debug4 << ",";
     }
@@ -1064,7 +1069,7 @@ avtTransformManager::NativeToFloat(const avtDatabaseMetaData *const md,
         }
 
         //
-        // Deal with mesh first 
+        // Deal with mesh first
         //
         bool disallowedType =
              !IsAdmissibleDataType(admissibleDataTypes, GetCoordDataType(ds));
@@ -1184,7 +1189,7 @@ avtTransformManager::NativeToFloat(const avtDatabaseMetaData *const md,
             {
                 avtVarType vt = md->DetermineVarType(da->GetName());
                 ignore = (vt == AVT_MATERIAL || vt == AVT_MATSPECIES);
-                if (ignore) 
+                if (ignore)
                 {
                     debug4 << "Conversion to double ignored for " << "da->GetName()" << endl;
                 }
@@ -1319,7 +1324,7 @@ avtTransformManager::NativeToFloat(const avtDatabaseMetaData *const md,
                     }
 
                     // look up this vtk object's "key" in GenericDb's cache
-                    objectWasCachedInGenericDB[da] = 
+                    objectWasCachedInGenericDB[da] =
                         gdbCache->GetVTKObjectKey(&vname, &type, &ts, dom, &mat, da);
 
                     vtkDataArray *newda = 0;
@@ -1393,12 +1398,12 @@ avtTransformManager::NativeToFloat(const avtDatabaseMetaData *const md,
 
 
 // ****************************************************************************
-//  Method: FindMatchingCSGDiscretization 
+//  Method: FindMatchingCSGDiscretization
 //
 //  Purpose: Search all timesteps in cache for matching discretization.
 //
-//  Programmer: Mark C. Miller 
-//  Creation:   Friday, February 13, 2009 
+//  Programmer: Mark C. Miller
+//  Creation:   Friday, February 13, 2009
 //
 //  Modifications:
 //    Eric Brugger, Wed Nov 19 08:46:49 PST 2014
@@ -1432,14 +1437,14 @@ avtTransformManager::FindMatchingCSGDiscretization(
         avtDataRequest *oldDr = (avtDataRequest *) *oldVrDr;
         if ((oldDr->DiscBoundaryOnly() == dataRequest->DiscBoundaryOnly()) &&
             (oldDr->DiscTol() == dataRequest->DiscTol()) &&
-            (oldDr->FlatTol() == dataRequest->FlatTol()) && 
+            (oldDr->FlatTol() == dataRequest->FlatTol()) &&
             (oldDr->DiscMode() == dataRequest->DiscMode()))
         {
             //
             // If we arrive here, we know that the CSGGrid objects
             // are the same as well as the discretization parameters
             //
-            debug1 << "For CSGGrid object \"" << vname << "\"(ts=" << ts 
+            debug1 << "For CSGGrid object \"" << vname << "\"(ts=" << ts
                    << "), found matching discretization at (ts=" << -1 << ")." << endl;
             return (vtkDataSet*) cache.GetVTKObject(vname, "DISCRETIZED_CSG", -1, dom, mat);
         }
@@ -1455,7 +1460,7 @@ avtTransformManager::FindMatchingCSGDiscretization(
 //    the longest dimension.
 //
 //  Programmer: Eric Brugger
-//  Creation:   July 25, 2012 
+//  Creation:   July 25, 2012
 //
 //  Modifications:
 //
@@ -1498,8 +1503,8 @@ double ComputeCellSize(double tol,
 //
 //  Note: We currently do not support point data
 //
-//  Programmer: Mark C. Miller 
-//  Creation:   December 4, 2006 
+//  Programmer: Mark C. Miller
+//  Creation:   December 4, 2006
 //
 //  Modifications:
 //
@@ -1729,7 +1734,7 @@ avtTransformManager::CSGToDiscrete(avtDatabaseMetaData *md,
         {
             // Look to see if there's a processed mesh we
             // stored for all domains.
-            vtkDataSet *processed = 
+            vtkDataSet *processed =
                 (vtkDataSet*)cache.GetVTKObject(vname, type, -1, -1, mat);
 
             // If so, make sure the settings used to generate it
@@ -1741,7 +1746,7 @@ avtTransformManager::CSGToDiscrete(avtDatabaseMetaData *md,
                 avtDataRequest *oldDr = (avtDataRequest *) *oldVrDr;
                 if (oldDr->DiscBoundaryOnly() != dataRequest->DiscBoundaryOnly() ||
                     oldDr->DiscTol() != dataRequest->DiscTol() ||
-                    oldDr->FlatTol() != dataRequest->FlatTol() || 
+                    oldDr->FlatTol() != dataRequest->FlatTol() ||
                     oldDr->DiscMode() != dataRequest->DiscMode())
                 {
                     processed = NULL;
@@ -1796,11 +1801,11 @@ avtTransformManager::CSGToDiscrete(avtDatabaseMetaData *md,
         // Ok, this is a bit of a hack. We want to cache BOTH the
         // discretized result AND the original CSG input mesh in such
         // a way that a later ClearTimestep() WILL NOT delete 'em. So,
-        // we stick them in the cache at timestep=-1. Also, we use 
+        // we stick them in the cache at timestep=-1. Also, we use
         // a TransformManager unique 'type' of "DISCRETEIZED_CSG" to
         // disambiguate between the csg input and its discretized output.
         // We do this caching so that if a CSG grid does NOT change with
-        // time, we can avoid re-discretizing it each timestep. 
+        // time, we can avoid re-discretizing it each timestep.
         //
         if (cache.GetVTKObject(vname, type, -1, csgdom, mat) == NULL)
         {
@@ -1877,8 +1882,8 @@ avtTransformManager::CSGToDiscrete(avtDatabaseMetaData *md,
 //
 //  Note: We currently do not support point data
 //
-//  Programmer: Mark C. Miller 
-//  Creation:   December 4, 2006 
+//  Programmer: Mark C. Miller
+//  Creation:   December 4, 2006
 //
 //  Modifications:
 //
@@ -1933,7 +1938,7 @@ avtTransformManager::TransformMaterialDataset(avtDatabaseMetaData *md,
         {
             EXCEPTION1(PointerNotInCacheException, *vr);
         }
-    
+
         // Determine if the cache is valid based on whether or not the
         // discretization parameters have changed.
         bool cache_valid = true;
@@ -2047,7 +2052,7 @@ avtTransformManager::AddVertexCellsToPointsOnlyDataset(avtDatabaseMetaData *md,
 {
     int i, doType = ds->GetDataObjectType();
 
-    if (doType != VTK_POLY_DATA && 
+    if (doType != VTK_POLY_DATA &&
         doType != VTK_UNSTRUCTURED_GRID)
         return ds; // no-op
 
@@ -2162,15 +2167,15 @@ CopyDataArrayVals(vtkDataArray *inda, vtkDataArray *outda, int npts, int skip)
 //  Method: ConvertCurvesToRectGrids
 //
 //  Purpose: Handle situations in which a plugin serves up what amounts to
-//  curve data as a 1D, non-rectilinear-grid, dataset. 
+//  curve data as a 1D, non-rectilinear-grid, dataset.
 //
 //  Programmer: Mark C. Miller
 //  Creation: February 9, 2009
-//  
+//
 //  Modifications:
 //    Mark C. Miller, Fri Feb 13 09:12:38 PST 2009
 //    Fixed problem where cmd could be non-zero after exiting loop looking
-//    for curve mds of the given name. 
+//    for curve mds of the given name.
 //
 //    Mark C. Miller, Wed Feb 18 17:24:29 PST 2009
 //    Fixed lookup of vtk object key to use yvals data array instead of the
@@ -2184,10 +2189,10 @@ vtkDataSet *ds, int dom)
     // As cheaply as possible, we want to avoid as much as possible the
     // call to GetVTKObjectKey() which does a reverse lookup in generic
     // db's cache. So, we first do a number of checks to see if we
-    // indeed have any work to do. 
+    // indeed have any work to do.
 
     // If this dataset is for a curve, then if its already a rect grid,
-    // we don't have any work to do on it. 
+    // we don't have any work to do on it.
     int doType = ds->GetDataObjectType();
     if (doType == VTK_RECTILINEAR_GRID)
         return ds;
@@ -2289,7 +2294,7 @@ vtkDataSet *ds, int dom)
     // it to the form VisIt wants.
     //
     vtkRectilinearGrid *rg = vtkVisItUtility::Create1DRGrid(npts, xvalsType);
-    vtkDataArray *xvalsNew = rg->GetXCoordinates(); 
+    vtkDataArray *xvalsNew = rg->GetXCoordinates();
     vtkDataArray *yvalsNew = vtkDataArray::CreateDataArray(yvalsType);
     yvalsNew->SetNumberOfComponents(1);
     yvalsNew->SetName(cmd->name.c_str());
@@ -2319,8 +2324,8 @@ vtkDataSet *ds, int dom)
 //  anyway and then NOT attempt to cache it in transform manager's cache
 //  either.
 //
-//  Programmer: Mark C. Miller 
-//  Creation:   December 4, 2006 
+//  Programmer: Mark C. Miller
+//  Creation:   December 4, 2006
 //
 //  Modifications:
 //
@@ -2328,7 +2333,7 @@ vtkDataSet *ds, int dom)
 //    Pass in domain IDs to transforming functions, because they are needed
 //    to efficiently access cache.
 //    Mark C. Miller, Thu Feb 12 02:18:45 PST 2009
-//    Convert datasets that are intended to be curves but served up as 
+//    Convert datasets that are intended to be curves but served up as
 //    non-rectilinear-grid, 1D datasets to correct type.
 //
 //    Mark C. Miller, Mon Nov  9 10:34:15 PST 2009
@@ -2391,7 +2396,7 @@ avtTransformManager::TransformSingleDataset(vtkDataSet *ds,
 //
 //  Programmer: Mark C. Miller
 //  Creation: July 2, 2014
-//  
+//
 //  Modifications:
 //
 // ****************************************************************************
@@ -2405,7 +2410,7 @@ avtTransformManager::RemoveDuplicateNodes(vtkDataSet *ds)
     //    a) unstructured grid, and
     //    b) more than 1,000,000 points, and
     //    c) number of points is 3x more than number of cells
- 
+
     if (ds->GetDataObjectType() != VTK_UNSTRUCTURED_GRID)
     {
         return ds;
@@ -2427,19 +2432,19 @@ avtTransformManager::RemoveDuplicateNodes(vtkDataSet *ds)
 
     // build list of unique points
     vtkPoints *pts = ugrid->GetPoints();
-    std::map<double, std::map<double, std::map<double, vtkIdType> > > uniqpts;
+    map<double, map<double, map<double, vtkIdType> > > uniqpts;
     int n = 0;
     for (int i = 0; i < pts->GetNumberOfPoints(); i++)
     {
         double pt[3];
         pts->GetPoint(i, pt);
-        std::map<double, std::map<double, std::map<double, vtkIdType> > >::iterator e0it = uniqpts.find(pt[0]);
+        map<double, map<double, map<double, vtkIdType> > >::iterator e0it = uniqpts.find(pt[0]);
         if (e0it != uniqpts.end())
         {
-            std::map<double, std::map<double, vtkIdType> >::iterator e1it = e0it->second.find(pt[1]);
+            map<double, map<double, vtkIdType> >::iterator e1it = e0it->second.find(pt[1]);
             if (e1it != e0it->second.end())
             {
-                std::map<double, vtkIdType>::iterator e2it = e1it->second.find(pt[2]);
+                map<double, vtkIdType>::iterator e2it = e1it->second.find(pt[2]);
                 if (e2it != e1it->second.end())
                     continue;
             }
@@ -2451,21 +2456,30 @@ avtTransformManager::RemoveDuplicateNodes(vtkDataSet *ds)
            << "% of points are spatially unique." << endl;
     debug2 << "...now reconnecting mesh using unique points." << endl;
 
+#if LIB_VERSION_LE(VTK,8,1,0)
     for (int i = 0; i < ugrid->GetNumberOfCells(); i++)
     {
         vtkIdType nCellPts=0, *cellPts=0;
         ugrid->GetCellPoints(i, nCellPts, cellPts);
-        for (int j = 0; j < nCellPts; j++)
+#else
+    vtkNew<vtkIdList> cell;
+    for (int i = 0; i < ugrid->GetNumberOfCells(); i++)
+    {
+        ugrid->GetCellPoints(i, cell);
+        vtkIdType nCellPts= cell->GetNumberOfIds();
+        vtkIdType *cellPts=cell->GetPointer(0);
+#endif
+        for (vtkIdType j = 0; j < nCellPts; j++)
         {
             double pt[3];
             pts->GetPoint(cellPts[j], pt);
-            std::map<double, std::map<double, std::map<double, vtkIdType> > >::const_iterator e0it = uniqpts.find(pt[0]);
+            map<double, map<double, map<double, vtkIdType> > >::const_iterator e0it = uniqpts.find(pt[0]);
             if (e0it == uniqpts.end())
                 continue;
-            std::map<double, std::map<double, vtkIdType> >::const_iterator e1it = e0it->second.find(pt[1]);
+            map<double, map<double, vtkIdType> >::const_iterator e1it = e0it->second.find(pt[1]);
             if (e1it == e0it->second.end())
                 continue;
-            std::map<double, vtkIdType>::const_iterator e2it = e1it->second.find(pt[2]);
+            map<double, vtkIdType>::const_iterator e2it = e1it->second.find(pt[2]);
             if (e2it == e1it->second.end())
                 continue;
             cellPts[j] = e2it->second;
@@ -2475,15 +2489,13 @@ avtTransformManager::RemoveDuplicateNodes(vtkDataSet *ds)
 
     pts->Initialize();
     pts->SetNumberOfPoints(n);
-    std::map<double, 
-             std::map<double, std::map<double, vtkIdType> >
-            >::iterator e0it;
+    map<double, map<double, map<double, vtkIdType> > >::iterator e0it;
     for (e0it = uniqpts.begin(); e0it != uniqpts.end(); e0it++)
     {
-        std::map<double, std::map<double, vtkIdType> >::iterator e1it;
+        map<double, map<double, vtkIdType> >::iterator e1it;
         for (e1it = e0it->second.begin(); e1it != e0it->second.end(); e1it++)
         {
-            std::map<double, vtkIdType>::iterator e2it;
+            map<double, vtkIdType>::iterator e2it;
             for (e2it = e1it->second.begin(); e2it != e1it->second.end(); e2it++)
                 pts->SetPoint(e2it->second, e0it->first, e1it->first, e2it->first);
         }
@@ -2496,7 +2508,7 @@ avtTransformManager::RemoveDuplicateNodes(vtkDataSet *ds)
 //
 //  Purpose: Prevent blocks that would result in overflow in integer indexing
 //  arithmetic from making it any further down the pipelines and issue warning
-//  
+//
 //  There are numerous places in VisIt code where int rather than size_t type
 //  is used to index into dataset arrays. If a given block is big enough, these
 //  can result in integer overflow and typicall result in VisIt crashing. This

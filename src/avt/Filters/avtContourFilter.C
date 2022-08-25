@@ -27,6 +27,7 @@
 #include <vtkPolyData.h>
 #include <vtkRectilinearGrid.h>
 #include <vtkStructuredGrid.h>
+#include <vtkUnsignedCharArray.h>
 #include <vtkUnstructuredGrid.h>
 #include <vtkVisItContourFilter.h>
 #include <vtkVisItScalarTree.h>
