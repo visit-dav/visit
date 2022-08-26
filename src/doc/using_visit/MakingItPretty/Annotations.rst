@@ -558,7 +558,8 @@ The list of values currently supported are
     | zlabel             |    %s    |  z axis label                       |
     +--------------------+----------+-------------------------------------+
 
-For example, to display the current cycle number always with 6 digits and leading zeros when necessary, use the string ``$cycle:%06d``.
+For example, to create a text annoation which displays ``State index = XXX`` where ``XXX`` is the number for the index, set the annotation string to ``State index = $index``.
+To display the current cycle number always with 6 digits and leading zeros when necessary, use the string ``$cycle:%06d`` where the optional ``:`` followed by a printf-style format string is specified.
 To display the first 3 characters of the variable name, use the string ``$varname:%.3s``.
 
 The ``$dbcomment`` is often useful because it allows any arbitrary text defined in the database for the current state to be used.
