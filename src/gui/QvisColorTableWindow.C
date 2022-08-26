@@ -30,6 +30,7 @@
 #include <ColorControlPointList.h>
 #include <DataNode.h>
 #include <ViewerProxy.h>
+#include <DebugStream.h>
 
 
 // Defines. Make these part of ColorTableAttributes sometime.
@@ -39,6 +40,11 @@
 
 #define SELECT_FOR_CONTINUOUS 0
 #define SELECT_FOR_DISCRETE   1
+
+#define ADDTAG        0
+#define REMOVETAG     1
+#define ADDTAGSTR    "0"
+#define REMOVETAGSTR "1"
 
 constexpr int MAX_ALLOWED_TAGS{9999};
 
@@ -75,6 +81,9 @@ constexpr int MAX_ALLOWED_TAGS{9999};
 // 
 //   Justin Privitera, Thu Jul 14 16:57:42 PDT 2022
 //   Added new searching-related vars to the constructor.
+// 
+//   Justin Privitera, Thu Aug 25 15:04:55 PDT 2022
+//   TagEdit added.
 //
 // ****************************************************************************
 
@@ -94,6 +103,7 @@ QvisColorTableWindow::QvisColorTableWindow(
     tagsMatchAny = true;
     searchingOn = false;
     searchTerm = QString("");
+    tagEdit = QString("");
 }
 
 // ****************************************************************************
@@ -187,6 +197,9 @@ QvisColorTableWindow::~QvisColorTableWindow()
 //
 //   Justin Privitera, Thu Jul 14 16:57:42 PDT 2022
 //   Added searchbox gui element and hooked up signals and slots for searching.
+// 
+//   Justin Privitera, Thu Aug 25 15:04:55 PDT 2022
+//   Added tag editor gui elements.
 //
 // ****************************************************************************
 
@@ -281,7 +294,7 @@ QvisColorTableWindow::CreateWindowContents()
     tagTable->setColumnCount(2);
     mgLayout->addWidget(tagTable, 3, 0, 1, 3);
 
-    QLabel *colorTableName = new QLabel(tr("Name"), colorTableWidgetGroup);
+    colorTableName = new QLabel(tr("Name"), colorTableWidgetGroup);
     mgLayout->addWidget(colorTableName, 4, 0, 1, 1, Qt::AlignLeft);
     nameLineEdit = new QLineEdit(colorTableWidgetGroup);
     connect(nameLineEdit, SIGNAL(textEdited(const QString &)),
@@ -297,6 +310,17 @@ QvisColorTableWindow::CreateWindowContents()
     mgLayout->addWidget(tagLabel, 5, 0, 1, 1, Qt::AlignLeft);
     tagLineEdit = new QLineEdit(colorTableWidgetGroup);
     mgLayout->addWidget(tagLineEdit, 5, 1, 1, 5);
+
+    // Tag editor
+    tagEditorLabel = new QLabel(tr("Tag Editor"), colorTableWidgetGroup);
+    mgLayout->addWidget(tagEditorLabel, 6, 0, 1, 1, Qt::AlignLeft);
+    tagEditorLineEdit = new QLineEdit(colorTableWidgetGroup);
+    connect(tagEditorLineEdit, SIGNAL(editingFinished()),
+            this, SLOT(tagEdited()));
+    mgLayout->addWidget(tagEditorLineEdit, 6, 1, 1, 3);
+    tagAddRemoveButton = new QPushButton(tr("Add/Remove Tag"), colorTableWidgetGroup);
+    connect(tagAddRemoveButton, SIGNAL(clicked()), this, SLOT(addRemoveTag()));
+    mgLayout->addWidget(tagAddRemoveButton, 6, 4, 1, 2);
 
     // Add the group box that will contain the color-related widgets.
     colorWidgetGroup = new QGroupBox(central);
@@ -475,6 +499,87 @@ QvisColorTableWindow::CreateWindowContents()
 }
 
 // ****************************************************************************
+// Method: QvisColorTableWindow::StringifyTagChanges
+//
+// Purpose: Packs the tag changes data structure into a string vector so it
+//    can be easily written to a node.
+//
+// Programmer: Justin Privitera
+// Creation:   Thu Aug 25 15:04:55 PDT 2022
+//
+// Modifications:
+//
+// ****************************************************************************
+stringVector
+QvisColorTableWindow::StringifyTagChanges()
+{
+    stringVector retval;
+    for (const auto& mapitem : tagChanges)
+    {
+        std::stringstream changes;
+        changes << mapitem.first << ":";
+        for (const auto& setitem : mapitem.second)
+            changes << setitem.first << "," << setitem.second << ";";
+        retval.emplace_back(changes.str());
+    }
+    return retval;
+}
+
+// ****************************************************************************
+// Method: QvisColorTableWindow::UnstringifyAndMergeTagChanges
+//
+// Purpose: Converts a stringvector representation of tag changes into 
+//    actionable tag changes. Adds them to the tag changes data structure and
+//    makes the changes happen.
+//
+// Programmer: Justin Privitera
+// Creation:   Thu Aug 25 15:04:55 PDT 2022
+//
+// Modifications:
+//
+// ****************************************************************************
+void
+QvisColorTableWindow::UnstringifyAndMergeTagChanges(stringVector changes)
+{
+    std::for_each(changes.begin(), changes.end(), 
+        [this](std::string ctTagChanges)
+        {
+            size_t titleSep = ctTagChanges.find(":");
+            std::string ctName{ctTagChanges.substr(0, titleSep)};
+            std::string table{ctTagChanges.substr(titleSep + 1)};
+
+            auto *ccpl{const_cast<ColorControlPointList *>(colorAtts->GetColorControlPoints(ctName))};
+
+            size_t addRemoveSep{table.find(",")};
+            size_t entrySep{0};
+
+            while (addRemoveSep != std::string::npos)
+            {
+                std::string addRemoveText{table.substr(entrySep, addRemoveSep - entrySep)};
+                entrySep = table.find(";", entrySep);
+                addRemoveSep += 1;
+                std::string tagName{table.substr(addRemoveSep, entrySep - addRemoveSep)};
+                addRemoveSep = table.find(",", addRemoveSep);
+                entrySep += 1;
+
+                auto result{ccpl->ValidateTag(tagName)};
+                if (result.first)
+                {
+                    if (addRemoveText == ADDTAGSTR && ! ccpl->HasTag(tagName))
+                        addTagToColorTable(ctName, tagName, ccpl);
+                    else if (addRemoveText == REMOVETAGSTR && ccpl->HasTag(tagName))
+                        removeTagFromColorTable(ctName, tagName, ccpl);
+                }
+                else
+                {
+                    debug1 << "QvisColorTableWindow WARNING: " << result.second;
+                }
+            }
+        });
+}
+
+
+// ****************************************************************************
 // Method: QvisColorTableWindow::CreateNode
 //
 // Purpose:
@@ -492,6 +597,9 @@ QvisColorTableWindow::CreateWindowContents()
 // 
 //   Justin Privitera, Thu Jun 16 18:01:49 PDT 2022
 //   Added ability for tag settings to be written to config/session files.
+// 
+//   Justin Privitera, Thu Aug 25 15:04:55 PDT 2022
+//   Write tag changes to node.
 //
 // ****************************************************************************
 
@@ -514,6 +622,7 @@ QvisColorTableWindow::CreateNode(DataNode *parentNode)
         node->AddNode(new DataNode("activeTags", activeTags));
         node->AddNode(new DataNode("tagsVisible", tagsVisible));
         node->AddNode(new DataNode("tagsMatchAny", tagsMatchAny));
+        node->AddNode(new DataNode("tagChanges", StringifyTagChanges()));
     }
 }
 
@@ -532,6 +641,9 @@ QvisColorTableWindow::CreateNode(DataNode *parentNode)
 // 
 //   Justin Privitera, Thu Jun 16 18:01:49 PDT 2022
 //   Added ability for tag settings to be read from config/session files.
+// 
+//   Justin Privitera, Thu Aug 25 15:04:55 PDT 2022
+//   Read tag changes from node if possible.
 //
 // ****************************************************************************
 
@@ -554,7 +666,9 @@ QvisColorTableWindow::SetFromNode(DataNode *parentNode, const int *borders)
     if((node = winNode->GetNode("tagsVisible")) != 0)
         tagsVisible = node->AsBool();
     if((node = winNode->GetNode("tagsMatchAny")) != 0)
-        tagsMatchAny = node->AsBool();    
+        tagsMatchAny = node->AsBool();
+    if((node = winNode->GetNode("tagChanges")) != 0)
+        UnstringifyAndMergeTagChanges(node->AsStringVector());
 
     // Call the base class's function.
     QvisPostableWindowSimpleObserver::SetFromNode(parentNode, borders);
@@ -3013,6 +3127,9 @@ QvisColorTableWindow::tagCombiningChanged(int index)
 // Modifications:
 //    Justin Privitera, Wed Aug  3 19:46:13 PDT 2022
 //    The tag line edit is cleared when searching is enabled.
+// 
+//    Justin Privitera, Thu Aug 25 15:04:55 PDT 2022
+//    The tag editor line edit is cleared when searching is enabled.
 //
 // ****************************************************************************
 
@@ -3026,6 +3143,7 @@ QvisColorTableWindow::searchingToggled(bool checked)
     {
         nameLineEdit->setText(searchTerm);
         tagLineEdit->setText(QString(""));
+        tagEditorLineEdit->setText(QString(""));
     }
     Apply(true);
 }
@@ -3058,6 +3176,141 @@ QvisColorTableWindow::searchEdited(const QString &newSearchTerm)
         tagLineEdit->setText(QString(""));
         Apply(true);
     }
+}
+
+
+// ****************************************************************************
+// Method: QvisColorTableWindow::tagEdited
+//
+// Purpose:
+//   Qt slot function that sets the tagEdit once the tagEditorLineEdit is done
+//   being edited.
+//
+// Programmer: Justin Privitera
+// Creation:   Wed Aug 10 15:35:58 PDT 2022
+//
+// Modifications:
+//
+// ****************************************************************************
+void
+QvisColorTableWindow::tagEdited()
+{
+    tagEdit = tagEditorLineEdit->text();
+}
+
+
+// ****************************************************************************
+// Method: QvisColorTableWindow::addTagToColorTable
+//
+// Purpose:
+//    Helper function for adding tags to color tables... carefully!
+//
+// Programmer: Justin Privitera
+// Creation:   Thu Aug 25 15:04:55 PDT 2022
+//
+// Modifications:
+//
+// ****************************************************************************
+void
+QvisColorTableWindow::addTagToColorTable(const std::string ctName, 
+                                         const std::string tagName,
+                                         ColorControlPointList* ccpl)
+{
+    auto tagChangeReverseAction{std::make_pair(REMOVETAG, tagName)};
+    if (tagChanges[ctName].find(tagChangeReverseAction) != 
+        tagChanges[ctName].end())
+        tagChanges[ctName].erase(tagChangeReverseAction);
+    else
+        tagChanges[ctName].insert(std::make_pair(ADDTAG, tagName));
+    ccpl->AddTag(tagName);
+}
+
+
+// ****************************************************************************
+// Method: QvisColorTableWindow::removeTagFromColorTable
+//
+// Purpose:
+//    Helper function for removing tags from color tables... carefully!
+//
+// Programmer: Justin Privitera
+// Creation:   Thu Aug 25 15:04:55 PDT 2022
+//
+// Modifications:
+//
+// ****************************************************************************
+void
+QvisColorTableWindow::removeTagFromColorTable(const std::string ctName, 
+                                              const std::string tagName,
+                                              ColorControlPointList* ccpl)
+{
+    auto tagChangeReverseAction{std::make_pair(ADDTAG, tagName)};
+    if (tagChanges[ctName].find(tagChangeReverseAction) != 
+        tagChanges[ctName].end())
+    {
+        tagChanges[ctName].erase(tagChangeReverseAction);
+        ccpl->RemoveTag(tagName);
+    }
+    else
+    {
+        // if this is a built in color table, you can only remove a 
+        // tag if the add tag action is already there
+        if (ccpl->GetBuiltIn())
+        {
+            QString tmp;
+            tmp = tr("The color table ") +
+                  QString("\"") + QString(ctName.c_str()) + QString("\"") +
+                  tr(" is built-in. You cannot delete a default tag "
+                     "from a built-in color table.");
+            Error(tmp);
+            return;
+        }
+        else
+        {
+            tagChanges[ctName].insert(std::make_pair(REMOVETAG, tagName));
+            ccpl->RemoveTag(tagName);
+        }
+    }
+}
+
+// ****************************************************************************
+// Method: QvisColorTableWindow::addRemoveTag
+//
+// Purpose:
+//    Qt slot function that is called when a user attempts to either add
+//    or remove a tag from a color table.
+//
+// Programmer: Justin Privitera
+// Creation:   Wed Aug 10 15:35:58 PDT 2022
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisColorTableWindow::addRemoveTag()
+{
+    auto tagName{tagEdit.toStdString()};
+    auto *ccpl{GetDefaultColorControlPoints()};
+    if (ccpl)
+    {
+        auto result{ccpl->ValidateTag(tagName)};
+        if (result.first)
+        {
+            auto index{colorAtts->GetColorTableIndex(currentColorTable.toStdString())};
+            auto ctName(static_cast<std::string>(colorAtts->GetNames()[index]));
+            if (ccpl->HasTag(tagName))
+                removeTagFromColorTable(ctName, tagName, ccpl);
+            else
+                addTagToColorTable(ctName, tagName, ccpl);
+        }
+        else
+        {
+            auto tmp{tr("Tag Editing WARNING: ") + QString(result.second.c_str())};
+            Error(tmp);
+            return;
+        }
+    }
+    Apply();
 }
 
 
