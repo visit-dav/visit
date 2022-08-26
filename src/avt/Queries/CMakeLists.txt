@@ -221,7 +221,8 @@ ENDIF(VISIT_PYTHON_FILTERS)
 
 #********************************* SERIAL ************************************
 ADD_LIBRARY(avtquery_ser ${AVTQUERY_SOURCES})
-TARGET_LINK_LIBRARIES(avtquery_ser visitcommon avtmath avtshapelets avtexpressions_ser avtfilters_ser visit_vtk)
+find_library(LIBRT rt)
+TARGET_LINK_LIBRARIES(avtquery_ser visitcommon avtmath avtshapelets avtexpressions_ser avtfilters_ser visit_vtk ${LIBRT})
 IF(VISIT_PYTHON_FILTERS)
     TARGET_LINK_LIBRARIES(avtquery_ser avtpythonfilters_ser)
 ENDIF(VISIT_PYTHON_FILTERS)
