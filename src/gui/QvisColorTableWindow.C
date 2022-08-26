@@ -574,8 +574,6 @@ QvisColorTableWindow::UnstringifyAndMergeTagChanges(stringVector changes)
                 {
                     debug1 << "QvisColorTableWindow WARNING: " << result.second;
                 }
-
-                
             }
         });
 }

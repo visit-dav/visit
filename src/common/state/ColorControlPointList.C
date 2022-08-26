@@ -1843,8 +1843,10 @@ ColorControlPointList::RemoveTag(const std::string tag)
     if (index != -1)
     {
         stringVector::iterator pos = tagNames.begin();
-        for (int i = 0; i < index; i ++) pos ++;
-        if(pos != tagNames.end()) tagNames.erase(pos);
+        for (int i = 0; i < index; i ++) 
+            pos ++;
+        if(pos != tagNames.end()) 
+            tagNames.erase(pos);
         tagChangesMade = true;
     }
 }
