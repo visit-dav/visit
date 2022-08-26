@@ -5,6 +5,8 @@
 #include <ColorControlPointList.h>
 #include <DataNode.h>
 #include <DebugStream.h>
+#include <algorithm>
+#include <string.h>
 #include <ColorControlPoint.h>
 
 //
@@ -2009,7 +2011,6 @@ ColorControlPointList::GetTagIndex(const std::string tag) const
 // Modifications:
 //
 // ****************************************************************************
-
 std::pair<bool, std::string>
 ColorControlPointList::ValidateTag(const std::string currtag) const
 {
@@ -2023,10 +2024,7 @@ ColorControlPointList::ValidateTag(const std::string currtag) const
     // Check that the tag is alphanumeric or contains one of the allowed
     // special characters.
     else if (! std::all_of(currtag.begin(), currtag.end(), 
-            [](char const &c)
-            {
-                return std::isalnum(c) || c == ' ' || c == '-' || c == '=' || c == '<' || c == '>';
-            }))
+             [](char const &c){return std::isalnum(c) || strchr(" -=<>", c);}))
     {
         outstr = "The tag name \""
             + currtag + "\" is not valid. Tag names must contain "

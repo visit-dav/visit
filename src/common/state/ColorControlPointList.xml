@@ -68,7 +68,10 @@
     <Include file="source" quoted="false">
       DebugStream.h
     </Include>
-    <Include file="header" quoted="false">
+    <Include file="source" quoted="false">
       algorithm
+    </Include>
+    <Include file="source" quoted="false">
+      string.h
     </Include>
   </Attribute>
