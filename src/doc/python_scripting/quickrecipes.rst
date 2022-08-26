@@ -259,6 +259,7 @@ If you want to force VisIt to process the new plot you must call the DrawPlots f
 
     # Names of all available plot plugins 
     print(PlotPlugins())
+
     # Create plots 
     AddPlot("Pseudocolor", "pressure") 
     AddPlot("Mesh", "quadmesh") 
@@ -972,30 +973,35 @@ User-defined color tables can be modified by Adding or Removing ControlPoints, a
     :language: Python
     :start-after: # modifyTable1 {
     :end-before: # modifyTable1 }
+    :dedent: 4
 
 
 .. literalinclude:: ../../test/tests/quickrecipes/colortables.py
     :language: Python
     :start-after: # modifyTable2 {
     :end-before: # modifyTable2 }
+    :dedent: 4
 
 
 .. literalinclude:: ../../test/tests/quickrecipes/colortables.py
     :language: Python
     :start-after: # modifyTable3 {
     :end-before: # modifyTable3 }
+    :dedent: 4
 
 
 .. literalinclude:: ../../test/tests/quickrecipes/colortables.py
     :language: Python
     :start-after: # modifyTable4 {
     :end-before: # modifyTable4 }
+    :dedent: 4
 
 
 .. literalinclude:: ../../test/tests/quickrecipes/colortables.py
     :language: Python
     :start-after: # modifyTable5 {
     :end-before: # modifyTable5 }
+    :dedent: 4
 
 In the set of images below we can see how the plot changes as the color table it uses is modified: with original 'hot' color table; after removing control points; after changing colors; after using equal spacing and  after changing positions.
 
@@ -1026,6 +1032,7 @@ The ``ColorControlPointList`` is then passed as an argument to ``AddColorTable``
     :language: Python
     :start-after: # continuous1 {
     :end-before: # continuous1 }
+    :dedent: 4
 
 .. figure::  https://media.githubusercontent.com/media/visit-dav/visit/develop/test/baseline/quickrecipes/colortables/rainbow_continuous.png 
 
@@ -1045,6 +1052,7 @@ Here's an example of creating a discrete color table using named colors from the
     :language: Python
     :start-after: # discrete1 {
     :end-before: # discrete1 }
+    :dedent: 4
 
 .. figure::  https://media.githubusercontent.com/media/visit-dav/visit/develop/test/baseline/quickrecipes/colortables/discrete_using_vtk.png
 
@@ -1066,6 +1074,7 @@ Here is an example using ``RemoveControlPoints``:
     :language: Python
     :start-after: # removeControlPoints {
     :end-before: # removeControlPoints }
+    :dedent: 4
 
 Here is an example using ``AddControlPoints``:
 
@@ -1073,6 +1082,7 @@ Here is an example using ``AddControlPoints``:
     :language: Python
     :start-after: # addControlPoints {
     :end-before: # addControlPoints }
+    :dedent: 4
 
 Here is an example using ``SetNumControlPoints``:
 
@@ -1080,6 +1090,7 @@ Here is an example using ``SetNumControlPoints``:
     :language: Python
     :start-after: # setNumControlPoints {
     :end-before: # setNumControlPoints }
+    :dedent: 4
 
 Here is an example using a named color table and ``SetColorControlPoints``:
 
@@ -1087,6 +1098,7 @@ Here is an example using a named color table and ``SetColorControlPoints``:
     :language: Python
     :start-after: # setFromColorTable {
     :end-before: # setFromColorTable }
+    :dedent: 4
 
 Available color table names can be found via ``ColorTableNames()``.
 
