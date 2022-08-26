@@ -503,7 +503,7 @@ Database values in text annotations
 
 A variety of values from a database can be displayed in text annotations.
 These are introduced with a leading ``$`` character followed by the database value's name.
-An optional colon ``:`` and printf-style formatting string can be used to control the value's printed format.
+An optional colon ``:`` and `printf-style formatting string <https://en.wikipedia.org/wiki/Printf_format_string>`__ can be used to control the value's printed format.
 
 .. warning::
 
