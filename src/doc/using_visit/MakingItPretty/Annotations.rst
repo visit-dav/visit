@@ -503,7 +503,7 @@ Database values in text annotations
 
 A variety of values from a database can be displayed in text annotations.
 These are introduced with a leading ``$`` character followed by the database value's name.
-An optional colon ``:`` and `printf-style formatting string <https://en.wikipedia.org/wiki/Printf_format_string>`__ can be used to control the value's printed format.
+An optional ``%`` character following the value's name introduces a `printf-style formatting string <https://en.wikipedia.org/wiki/Printf_format_string>`__ which can be used to control the value's printed format.
 
 .. warning::
 
@@ -559,8 +559,8 @@ The list of values currently supported are
     +--------------------+----------+-------------------------------------+
 
 For example, to create a text annoation which displays ``State index = XXX`` where ``XXX`` is the number for the index, set the annotation string to ``State index = $index``.
-To display the current cycle number always with 6 digits and leading zeros when necessary, use the string ``$cycle:%06d`` where the optional ``:`` followed by a printf-style format string is specified.
-To display the first 3 characters of the variable name, use the string ``$varname:%.3s``.
+To display the current cycle number always with 6 digits and leading zeros when necessary, use the string ``$cycle%06d`` where the optional ``%`` followed by a printf-style format string is specified.
+To display the first 3 characters of the variable name, use the string ``$varname%.3s``.
 
 The ``$dbcomment`` is often useful because it allows any arbitrary text defined in the database for the current state to be used.
 In particular, if the *state space* of a given database is rather complicated involving, for example, not only iterations of the main PDE solve loop but also mesh adaptivity iterations, material advection iterations, etc, the database comment is a way to capture all relevant iteration identifiers.
