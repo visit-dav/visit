@@ -1091,7 +1091,7 @@ Here is an example using a named color table and ``SetColorControlPoints``:
 Available color table names can be found via ``ColorTableNames()``.
 
 Creating an expression that maps materials to values
----------------------------------------------------
+----------------------------------------------------
 
 A use case that has come up with some VisIt users is the ability to associated a scalar with material.
 The following example defines a function that creates an expression that maps material numbers to values.
