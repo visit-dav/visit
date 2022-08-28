@@ -17,7 +17,7 @@
 # comments of the form '# sometext {' and '# sometext }' bracket the sections
 # that are 'literalinclude'd in quickrecipes.rst.
 
-# mapMaterialToValue {
+# mapMaterialsToValues {
 # Create an expression that maps materials to scalars.
 #
 # var is the name of the expression.
@@ -51,7 +51,7 @@ create_mat_value_expr("myvar", "mat1", "quadmesh2d", mat_val_pairs)
 OpenDatabase("/usr/gapps/visit/data/rect2d.silo")
 AddPlot("Pseudocolor", "myvar")
 DrawPlots()
-# mapMaterialToValue }
+# mapMaterialsToValues }
 
 Test("materials_to_values")
 
