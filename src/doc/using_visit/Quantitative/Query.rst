@@ -825,12 +825,10 @@ average of a zonal (or cell-centered) field:
   py_filter = CellAvgQuery
 
 
-This example is from:
- `the query example <https://github.com/visit-dav/visit/blob/develop/src/visitpy/pyavt/examples/py_query.py>`_
+This example is from our `pyavt examples. <https://github.com/visit-dav/visit/blob/develop/src/visitpy/pyavt/examples/py_query.py>`_
 
 This example inherits from `SimplePythonQuery`. The base classes of VisIt_'s
-Python Filters are defined here:
- https://github.com/visit-dav/visit/blob/develop/src/visitpy/pyavt/py_src/filters.py
+Python Filters are defined in `the  pyavt module. <https://github.com/visit-dav/visit/blob/develop/src/visitpy/pyavt/py_src/filters.py>`_
 
 You can select the variables passed to your Query using the Python Query
 variable list:
