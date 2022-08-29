@@ -1093,7 +1093,7 @@ Available color table names can be found via ``ColorTableNames()``.
 Creating an expression that maps materials to values
 ----------------------------------------------------
 
-A use case that has come up with some VisIt users is the ability to associated a scalar with material.
+A use case that has come up with some VisIt users is the ability to associate scalar values with material numbers.
 The following example defines a function that creates an expression that maps material numbers to values.
 It take a list of tuples of material number and value.
 The material number of the last tuple is ignored and the value is used for any unspecified materials.
