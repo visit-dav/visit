@@ -792,7 +792,7 @@ You can use the Python Query tab in the Query Window to create a Python query:
 
 In your query you can access and process Python wrapped versions of the VTK
 objects that represent your data.
-To demonstrate this, here is share an example Python Query that computes a
+To demonstrate this, here is an example Python Query that computes the
 average of a zonal (or cell-centered) field:
 
 ::
