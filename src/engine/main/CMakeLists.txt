@@ -41,7 +41,7 @@
 #    with MesaGL.
 # 
 #    Justin Privitera, Wed Aug 24 11:08:51 PDT 2022
-#    Added logic to be aware of avtMFEM and avtBP libs.
+#    Added logic to be aware of avtBP lib.
 #
 #****************************************************************************
 

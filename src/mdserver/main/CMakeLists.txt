@@ -29,7 +29,7 @@
 #   They are used for the remove save and load of session files.
 # 
 #   Justin Privitera, Wed Aug 24 11:08:51 PDT 2022
-#   Added logic to make mdserver aware of avtMFEM and avtBP libs.
+#   Added logic to make mdserver aware of avtBP lib.
 #
 #****************************************************************************
 
