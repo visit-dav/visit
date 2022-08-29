@@ -828,7 +828,7 @@ average of a zonal (or cell-centered) field:
 This example is from:
  https://github.com/visit-dav/visit/blob/develop/src/visitpy/pyavt/examples/py_query.py
 
-This example inherits from `SimplePythonQuery`. The base classes of VisIt's
+This example inherits from `SimplePythonQuery`. The base classes of VisIt_'s
 Python Filters are defined here:
  https://github.com/visit-dav/visit/blob/develop/src/visitpy/pyavt/py_src/filters.py
 
