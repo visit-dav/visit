@@ -855,7 +855,7 @@ Pre Execute : ``pre_execute(self)``
    and the total number of cells.
 
 Execute Chunk : ``execute_chunk(self,ds_in,domain_id)``
-   This method is called to process each domain. When VisIt runs with MPI,
+   This method is called to process each domain. When VisIt_ runs with MPI,
    `execute_chunk()` will be called in parallel across MPI tasks. 
    ``ds_in`` is a Python-wrapped VTK object and ``domain_id`` provides 
    the domain id of ``ds_in``. 
