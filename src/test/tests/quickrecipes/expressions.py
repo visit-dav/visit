@@ -18,7 +18,7 @@
 # that are 'literalinclude'd in quickrecipes.rst.
 
 # mapMaterialsToValues {
-# Create an expression that maps materials to scalars.
+# Create an expression that maps material numbers to scalar values.
 #
 # var is the name of the expression.
 # mat is the name of the material variable.
