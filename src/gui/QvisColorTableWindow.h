@@ -31,6 +31,13 @@ class QvisColorSelectionWidget;
 class QvisColorGridWidget;
 class QvisNoDefaultColorTableButton;
 
+typedef struct TagMetaData
+{
+    bool active;
+    int numrefs;
+    QTreeWidgetItem *tagTableItem;
+} TagInfo;
+
 // ****************************************************************************
 // Class: QvisColorTableWindow
 //
@@ -115,7 +122,7 @@ protected:
     void UpdateColorControlPoints();
     void UpdateDiscreteSettings();
     void AddGlobalTag(std::string currtag, bool run_before);
-    void AddToTagTable(std::string currtag, int index);
+    void AddToTagTable(std::string currtag);
     void UpdateTags();
     void UpdateNames();
     void Apply(bool ignore = false);
@@ -165,8 +172,7 @@ private:
     QString                  currentColorTable;
     int                      popupMode;
     bool                     sliding;
-    stringVector             tagList;
-    std::vector<bool>        activeTags;
+    std::map<std::string, TagInfo> tagInfo;
     bool                     tagsVisible;
     bool                     tagsMatchAny;
     bool                     searchingOn;

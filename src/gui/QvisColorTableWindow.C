@@ -40,8 +40,6 @@
 #define SELECT_FOR_CONTINUOUS 0
 #define SELECT_FOR_DISCRETE   1
 
-constexpr int MAX_ALLOWED_TAGS{9999};
-
 // ****************************************************************************
 // Method: QvisColorTableWindow::QvisColorTableWindow
 //
@@ -510,8 +508,9 @@ QvisColorTableWindow::CreateNode(DataNode *parentNode)
         // Save the current color table.
         std::string ct(currentColorTable.toStdString());
         node->AddNode(new DataNode("currentColorTable", ct));
-        node->AddNode(new DataNode("tagList", tagList));
-        node->AddNode(new DataNode("activeTags", activeTags));
+        // TODO
+        // node->AddNode(new DataNode("tagList", tagList));
+        // node->AddNode(new DataNode("activeTags", activeTags));
         node->AddNode(new DataNode("tagsVisible", tagsVisible));
         node->AddNode(new DataNode("tagsMatchAny", tagsMatchAny));
     }
@@ -546,11 +545,12 @@ QvisColorTableWindow::SetFromNode(DataNode *parentNode, const int *borders)
     DataNode *node, *node2;
     if((node = winNode->GetNode("currentColorTable")) != 0)
         currentColorTable = QString(node->AsString().c_str());
-    if((node = winNode->GetNode("tagList")) != 0 && (node2 = winNode->GetNode("activeTags")) != 0)
-    {
-        tagList = node->AsStringVector();
-        activeTags = node2->AsBoolVector();
-    }
+    // TODO
+    // if((node = winNode->GetNode("tagList")) != 0 && (node2 = winNode->GetNode("activeTags")) != 0)
+    // {
+    //     tagList = node->AsStringVector();
+    //     activeTags = node2->AsBoolVector();
+    // }
     if((node = winNode->GetNode("tagsVisible")) != 0)
         tagsVisible = node->AsBool();
     if((node = winNode->GetNode("tagsMatchAny")) != 0)
@@ -802,17 +802,11 @@ QvisColorTableWindow::UpdateEditor()
 // ****************************************************************************
 
 void
-QvisColorTableWindow::AddToTagTable(std::string currtag, int index)
+QvisColorTableWindow::AddToTagTable(std::string currtag)
 {
     QTreeWidgetItem *item = new QTreeWidgetItem(tagTable);
-    item->setCheckState(0, activeTags[index] ? Qt::Checked : Qt::Unchecked);
+    item->setCheckState(0, tagInfo[currtag].active ? Qt::Checked : Qt::Unchecked);
     item->setText(1, currtag.c_str());
-    // this next column is secret and is for passing around the tag index
-    // should allow you to have up to 9999 tags
-    // hence why MAX_ALLOWED_TAGS is defined as 9999 at the top of the file.
-    char buf[4];
-    sprintf(buf, "%d", index);
-    item->setText(2, buf);
 }
 
 // ****************************************************************************
@@ -838,27 +832,13 @@ QvisColorTableWindow::AddToTagTable(std::string currtag, int index)
 void
 QvisColorTableWindow::AddGlobalTag(std::string currtag, bool first_time)
 {
-    if (tagList.size() >= MAX_ALLOWED_TAGS)
-    {
-        QString tmp;
-        std::stringstream err_msg;
-        err_msg << "You have too many tags. VisIt can only support up to "
-            << MAX_ALLOWED_TAGS << " tags.";
-        tmp = QString(err_msg.str().c_str());
-        Error(tmp);
-        return;
-    }
-
     // if the given tag is NOT in the global tag list
-    if (std::find(tagList.begin(), tagList.end(), currtag) == tagList.end())
+    if (tagInfo.find(currtag) == tagInfo.end())
     {
-        tagList.push_back(currtag);
+        tagInfo[currtag];
         // make the "Standard" tag active the very first time the tags are enabled
-        if (currtag == "Standard" && first_time)
-            activeTags.push_back(true);
-        else
-            activeTags.push_back(false);
-        AddToTagTable(currtag, tagList.size() - 1);
+        tagInfo[currtag].active = currtag == "Standard" && first_time;
+        AddToTagTable(currtag);
     }
     else
     {
@@ -867,21 +847,7 @@ QvisColorTableWindow::AddGlobalTag(std::string currtag, bool first_time)
             QString::fromStdString(currtag), Qt::MatchExactly, 1);
         // If the given tag IS in the global tag list but does not have a tagTable entry
         if (items.count() == 0)
-        {
-            // Get index of tag in taglist
-            int index = 0;
-            // This index is guaranteed to be found, since if it wasn't found then 
-            // the first case up above would be true.
-            for (int i = 0; i < tagList.size(); i ++)
-            {
-                if (tagList[i] == currtag)
-                {
-                    index = i;
-                    break;
-                }
-            }
-            AddToTagTable(currtag, index);
-        }
+            AddToTagTable(currtag);
     }
 }
 
@@ -1003,17 +969,17 @@ QvisColorTableWindow::UpdateNames()
         {
             bool tagFound = false;
             // go thru global tags
-            for (int j = 0; j < tagList.size(); j ++)
+            for (const auto& mapitem : tagInfo)
             {
                 // if the global tag is active
-                if (activeTags[j])
+                if (mapitem.second.active)
                 {
                     tagFound = false;
                     // go thru local tags
                     for (int k = 0; k < colorAtts->GetColorTables(i).GetNumTags(); k ++)
                     {
                         // if the current global tag is the same as our local tag
-                        if (tagList[j] == colorAtts->GetColorTables(i).GetTag(k))
+                        if (mapitem.first == colorAtts->GetColorTables(i).GetTag(k))
                         {
                             tagFound = true;
                             break;
@@ -2203,8 +2169,7 @@ QvisColorTableWindow::highlightColorTable(QTreeWidgetItem *current,
 void
 QvisColorTableWindow::tagTableItemSelected(QTreeWidgetItem *item, int column)
 {
-    int index = std::stoi(item->text(2).toStdString());
-    activeTags[index] = item->checkState(0) == Qt::Checked;
+    tagInfo[item->text(1).toStdString()].active = item->checkState(0) == Qt::Checked;
     UpdateNames();
     colorAtts->SetChangesMade(true);
     ctObserver.SetUpdate(true);
