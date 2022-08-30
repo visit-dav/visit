@@ -25,10 +25,10 @@ class vtkCamera;
 //   Hank Childs, Wed Dec 27 14:28:01 PST 2000
 //   Added viewUp.
 //
-//   Kathleen Bonnell, Thu Jan  4 15:40:32 PST 2001 
+//   Kathleen Bonnell, Thu Jan  4 15:40:32 PST 2001
 //   Added method to set the data members from a vtkCamera.
 //
-//   Kathleen Bonnell, Mon Jan  8 11:56:50 PST 2001 
+//   Kathleen Bonnell, Mon Jan  8 11:56:50 PST 2001
 //   Added method to set the data members to a vtkCamera.
 //
 //   Hank Childs, Mon Jun 18 09:03:19 PDT 2001
@@ -42,6 +42,9 @@ class vtkCamera;
 //
 //   Jeremy Meredith, Mon Aug  2 14:23:08 EDT 2010
 //   Add shear for oblique projection support.
+//
+//   Kathleen Biagas, Wed Aug 17, 2022
+//   Added useOSPRay.
 //
 // ****************************************************************************
 
@@ -61,6 +64,7 @@ struct AVTVIEW_API avtViewInfo
     bool     orthographic;
     double   shear[3];
 
+    bool     useOSPRay;
   public:
                     avtViewInfo();
     avtViewInfo   & operator=(const avtViewInfo &);

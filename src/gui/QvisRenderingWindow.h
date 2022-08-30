@@ -12,6 +12,7 @@
 class QButtonGroup;
 class QCheckBox;
 class QLabel;
+class QGroupBox;
 class QRadioButton;
 class QSlider;
 class QSpinBox;
@@ -27,7 +28,7 @@ class QLineEdit;
 //   This class implements a window that displays rendering settings from the
 //   viewer and also allows some settings to be changed.
 //
-// Notes:      
+// Notes:
 //
 // Programmer: Brad Whitlock
 // Creation:   Wed Sep 18 14:33:24 PST 2002
@@ -36,14 +37,14 @@ class QLineEdit;
 //   Brad Whitlock, Thu Oct 24 13:33:31 PST 2002
 //   I made the stereo radio buttons class members.
 //
-//   Kathleen Bonnell, Wed Dec  4 18:42:48 PST 2002  
-//   Removed quality slider, no longer needed. 
+//   Kathleen Bonnell, Wed Dec  4 18:42:48 PST 2002
+//   Removed quality slider, no longer needed.
 //
 //   Jeremy Meredith, Fri Nov 14 16:03:31 PST 2003
 //   Added specular lighting.
 //
 //   Mark C. Miller, Tue Apr 27 14:41:35 PDT 2004
-//   Added stuff to deal with adjusting scalable threshold with a spinbox 
+//   Added stuff to deal with adjusting scalable threshold with a spinbox
 //
 //   Hank Childs, Sun May  9 15:54:29 PDT 2004
 //   Add support for multiple display list modes.
@@ -54,8 +55,8 @@ class QLineEdit;
 //   Mark C. Miller, Fri Mar  4 13:05:02 PST 2005
 //   Changed approxNumTriangles to approxNumPrimitives
 //
-//   Kathleen Bonnell, Thu Jun 30 15:29:55 PDT 2005 
-//   Added redgreen radio button. 
+//   Kathleen Bonnell, Thu Jun 30 15:29:55 PDT 2005
+//   Added redgreen radio button.
 //
 //   Mark C. Miller, Thu Nov  3 16:59:41 PST 2005
 //   Added compression controls
@@ -93,6 +94,10 @@ class QLineEdit;
 //
 //   Burlen Loring, Tue Sep 29 11:49:41 PDT 2015
 //   Added option to set the compositer thread pool size
+//
+//   Kathleen Biagas, Wed Aug 17, 2022
+//   Incorporate ARSanderson's OSPRAY 2.8.0 work for VTK 9:
+//   add osprayGroup.
 //
 // ****************************************************************************
 
@@ -222,13 +227,18 @@ private:
     QLabel            *depthCueingEndLabel;
     QLineEdit         *depthCueingEndEdit;
     QCheckBox         *colorTexturingToggle;
+#ifdef VISIT_OSPRAY
     QCheckBox         *osprayRenderingToggle;
+#elif defined(HAVE_OSPRAY)
+    QGroupBox         *osprayGroup;
+#endif
+#if defined(VISIT_OSPRAY) || defined(HAVE_OSPRAY)
     QLabel            *ospraySPPLabel;
     QSpinBox          *ospraySPP;
     QLabel            *osprayAOLabel;
     QSpinBox          *osprayAO;
     QCheckBox         *osprayShadowsToggle;
-
+#endif
     // Labels to display renderer information.
     QLabel            *scalrenUsingLabel;
     QLabel            *compactDomainsUsingLabel;

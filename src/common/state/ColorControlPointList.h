@@ -70,6 +70,7 @@ public:
     void SetExternalFlag(bool externalFlag_);
     void SetTagNames(const stringVector &tagNames_);
     void SetTagChangesMade(bool tagChangesMade_);
+    void SetBuiltIn(bool builtIn_);
 
     // Property getting methods
     const AttributeGroupVector &GetControlPoints() const;
@@ -81,6 +82,7 @@ public:
     const stringVector &GetTagNames() const;
           stringVector &GetTagNames();
     bool               GetTagChangesMade() const;
+    bool               GetBuiltIn() const;
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -116,12 +118,15 @@ public:
     void GetColorsCubicSpline(unsigned char *rgb, int ncolors, unsigned char *alpha=NULL) const;
     void GetColors(unsigned char *rgb, int ncolors, unsigned char *alpha=NULL) const;
     bool CompactCreateNode(DataNode *parentNode, bool completeSave, bool forceAdd);
-    void AddTag(std::string newtag);
+    void AddTag(const std::string newtag);
+    void RemoveTag(const std::string tag);
     void ClearTags();
-    std::string GetTag(int index);
-    int GetNumTags();
-    std::string GetTagsAsString();
-    bool HasTag(std::string tag);
+    std::string GetTag(const int index) const;
+    int GetNumTags() const;
+    std::string GetTagsAsString() const;
+    bool HasTag(const std::string tag) const;
+    int GetTagIndex(const std::string tag) const;
+    std::pair<bool, std::string> ValidateTag(const std::string tag) const;
     void SetNumControlPoints(const int n);
     virtual void ProcessOldVersions(DataNode *parentNode, const char *configVersion);
 
@@ -134,6 +139,7 @@ public:
         ID_externalFlag,
         ID_tagNames,
         ID_tagChangesMade,
+        ID_builtIn,
         ID__LAST
     };
 
@@ -147,11 +153,12 @@ private:
     bool                 externalFlag;
     stringVector         tagNames;
     bool                 tagChangesMade;
+    bool                 builtIn;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define COLORCONTROLPOINTLIST_TMFS "a*ibbbs*b"
+#define COLORCONTROLPOINTLIST_TMFS "a*ibbbs*bb"
 
 #endif

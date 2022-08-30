@@ -18,16 +18,19 @@
 #define ICON_NX 32
 #define ICON_NY 16
 
+const int DISC = 0;
+const int CONT = 1;
+
 //
 // Static members.
 //
 
 int           QvisNoDefaultColorTableButton::numInstances = 0;
-QMenu        *QvisNoDefaultColorTableButton::colorTableMenu = 0;
-QActionGroup *QvisNoDefaultColorTableButton::colorTableMenuActionGroup = 0;
 QvisNoDefaultColorTableButton::ColorTableButtonVector QvisNoDefaultColorTableButton::buttons;
-QStringList  QvisNoDefaultColorTableButton::colorTableNames;
-bool        QvisNoDefaultColorTableButton::popupHasEntries = false;
+QActionGroup *QvisNoDefaultColorTableButton::colorTableMenuActionGroup[2] = {0, 0};
+QMenu        *QvisNoDefaultColorTableButton::colorTableMenu[2] = {0, 0};
+QStringList   QvisNoDefaultColorTableButton::colorTableNames[2];
+bool          QvisNoDefaultColorTableButton::popupHasEntries[2] = {false, false};
 ColorTableAttributes *QvisNoDefaultColorTableButton::colorTableAtts = NULL;
 
 // ****************************************************************************
@@ -49,21 +52,25 @@ ColorTableAttributes *QvisNoDefaultColorTableButton::colorTableAtts = NULL;
 //
 //   Brad Whitlock, Fri May  9 11:23:57 PDT 2008
 //   Qt 4.
+// 
+//   Justin Privitera, Wed Jul 13 15:24:42 PDT 2022
+//   Added `discrete` boolean argument to set the buttonType to 
+//   discrete or continuous. Used it to index into arrays.
 //
 // ****************************************************************************
 
-QvisNoDefaultColorTableButton::QvisNoDefaultColorTableButton(QWidget *parent) :
-    QPushButton(parent), colorTable("")
+QvisNoDefaultColorTableButton::QvisNoDefaultColorTableButton(QWidget *parent, 
+    bool discrete) : QPushButton(parent), colorTable(""), 
+    buttonType(discrete)
 {
     // Increase the instance count.
     ++numInstances;
 
     // Create the button's color table popup menu.
-    if(colorTableMenu == 0)
+    if (colorTableMenu[buttonType] == 0)
     {
-        colorTableMenuActionGroup = new QActionGroup(0);
-
-        colorTableMenu = new QMenu(0);
+        colorTableMenuActionGroup[buttonType] = new QActionGroup(0);
+        colorTableMenu[buttonType] = new QMenu(0);
     }
     buttons.push_back(this);
 
@@ -89,6 +96,10 @@ QvisNoDefaultColorTableButton::QvisNoDefaultColorTableButton(QWidget *parent) :
 // 
 //   Justin Privitera, Thu Jun 16 18:01:49 PDT 2022
 //   Removed mappedColorTableNames.
+// 
+//   Justin Privitera, Wed Jul 13 15:24:42 PDT 2022
+//   Deleted only the static pieces of the button that belong to the button 
+//   being deleted.
 //
 // ****************************************************************************
 
@@ -118,25 +129,20 @@ QvisNoDefaultColorTableButton::~QvisNoDefaultColorTableButton()
         buttons.pop_back();
     }
 
-    if(numInstances == 0)
+    if (colorTableMenuActionGroup[buttonType] != 0)
     {
-        if(colorTableMenuActionGroup != 0)
-        {
-            delete colorTableMenuActionGroup;
-            colorTableMenuActionGroup = 0;
-        }
-
-        // Delete the popup menu if it exists because it will not be deleted
-        // unless we do it since it is a parentless widget.
-        if(colorTableMenu != 0)
-        {
-            delete colorTableMenu;
-            colorTableMenu = 0;
-        }
-
-        // Delete the color table names.
-        colorTableNames.clear();
+        delete colorTableMenuActionGroup[buttonType];
+        colorTableMenuActionGroup[buttonType] = 0;
     }
+    // Delete the popup menu if it exists because it will not be deleted
+    // unless we do it since it is a parentless widget.
+    if (colorTableMenu[buttonType] != 0)
+    {
+        delete colorTableMenu[buttonType];
+        colorTableMenu[buttonType] = 0;
+    }
+    // Delete the color table names.
+    colorTableNames[buttonType].clear();
 }
 
 // ****************************************************************************
@@ -200,6 +206,17 @@ QvisNoDefaultColorTableButton::sizePolicy() const
 //
 //   Brad Whitlock, Tue Jan 17 11:41:44 PDT 2006
 //   Added a tooltip so long color table names can be put in a tooltip.
+// 
+//   Justin Privitera, Wed Jul 13 15:24:42 PDT 2022
+//   Using buttonType to index into the array vars.
+// 
+//   Justin Privitera, Wed Jul 20 14:15:34 PDT 2022
+//   Added guard to prevent rare index out of bounds error caused by using
+//   specific tags and searching simultaneously.
+// 
+//    Justin Privitera, Wed Aug  3 19:46:13 PDT 2022
+//    Added logic to prevent CT from being changed when CT passed out of the 
+//    tag filtering selection.
 //
 // ****************************************************************************
 
@@ -208,20 +225,27 @@ QvisNoDefaultColorTableButton::setColorTable(const QString &ctName)
 {
 debug1 << "QvisNoDefaultColorTableButton::setColorTable" << endl;
 debug1 <<"    ctName: " << ctName.toStdString() << endl;
-    if(getColorTableIndex(ctName) != -1)
+    if (getColorTableIndex(ctName, buttonType) != -1)
     {
         colorTable = ctName;
         setText(colorTable);
         setToolTip(colorTable);
         setIcon(getIcon(ctName));
     }
-    else
+    else if (colorTableNames[buttonType].size() > 0)
     {
-        colorTable = colorTableNames[0];
-        setText(colorTable);
-        setToolTip(colorTable);
-        setIcon(getIcon(colorTable));
+        // if this color table was deleted
+        if (colorTableAtts->GetColorTableIndex(ctName.toStdString()) == -1)
+        {
+            colorTable = colorTableNames[buttonType][0];
+            setText(colorTable);
+            setToolTip(colorTable);
+            setIcon(getIcon(colorTable));
+        }
+        // but if it was filtered, we don't want to do anything
     }
+    // If there are no available color tables, we don't want anything to
+    // change.
 debug1 << "QvisNoDefaultColorTableButton::setColorTable ... done" << endl;
 }
 
@@ -246,6 +270,25 @@ QvisNoDefaultColorTableButton::getColorTable() const
     return colorTable;
 }
 
+// ****************************************************************************
+// Method: QvisNoDefaultColorTableButton::getButtonType
+//
+// Purpose: 
+//   Returns the button type (continuous or discrete).
+//
+// Programmer: Justin Privitera
+// Creation:   Wed Jul 13 14:48:42 PDT 2022
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+const int
+QvisNoDefaultColorTableButton::getButtonType() const
+{
+    return buttonType;
+}
+
 //
 // Qt slot functions.
 //
@@ -261,16 +304,18 @@ QvisNoDefaultColorTableButton::getColorTable() const
 // Creation:   Sat Jun 16 20:10:16 PST 2001
 //
 // Modifications:
+//    Justin Privitera, Wed Jul 13 15:19:47 PDT 2022
+//    Index into all the vars since they are now arrays.
 //   
 // ****************************************************************************
 
 void
 QvisNoDefaultColorTableButton::popupPressed()
 {
-    if(isDown() && colorTableMenu)
+    if (isDown() && colorTableMenu[buttonType])
     {
         // If the popup menu does not have anything in it, fill it up.
-        if(!popupHasEntries)
+        if (!popupHasEntries[buttonType])
             regeneratePopupMenu();
 
         QPoint p1(mapToGlobal(rect().bottomLeft()));
@@ -280,18 +325,15 @@ QvisNoDefaultColorTableButton::popupPressed()
 
         // Disconnect all other color table buttons.
         for(size_t i = 0; i < buttons.size(); ++i)
-        {
-            disconnect(colorTableMenuActionGroup, SIGNAL(triggered(QAction *)),
+            disconnect(colorTableMenuActionGroup[buttonType], SIGNAL(triggered(QAction *)),
                        buttons[i], SLOT(colorTableSelected(QAction *)));
-        }
-
         // Connect this colorbutton to the popup menu.
-        connect(colorTableMenuActionGroup, SIGNAL(triggered(QAction *)),
+        connect(colorTableMenuActionGroup[buttonType], SIGNAL(triggered(QAction *)),
                 this, SLOT(colorTableSelected(QAction *)));
 
         // Figure out a good place to popup the menu.
-        int menuW = colorTableMenu->sizeHint().width();
-        int menuH = colorTableMenu->sizeHint().height();
+        int menuW = colorTableMenu[buttonType]->sizeHint().width();
+        int menuH = colorTableMenu[buttonType]->sizeHint().height();
         int menuX = buttonMiddle.x();
         int menuY = buttonMiddle.y() - (menuH >> 1);
 
@@ -307,8 +349,8 @@ QvisNoDefaultColorTableButton::popupPressed()
         else if(menuY + menuH > QApplication::desktop()->height())
            menuY -= ((menuY + menuH) - QApplication::desktop()->height());
 
-        // Show the popup menu.         
-        colorTableMenu->exec(QPoint(menuX, menuY));
+        // Show the popup menu.
+        colorTableMenu[buttonType]->exec(QPoint(menuX, menuY));
         setDown(false);
     }
 }
@@ -339,15 +381,17 @@ QvisNoDefaultColorTableButton::popupPressed()
 // 
 //   Justin Privitera, Thu Jun 16 18:01:49 PDT 2022
 //   Removed categories/grouping.
+// 
+//   Justin Privitera, Wed Jul 13 15:19:47 PDT 2022
+//   Index into the vars since they are now arrays.
 //
 // ****************************************************************************
 
 void
 QvisNoDefaultColorTableButton::colorTableSelected(QAction *action)
 {
-    int index = colorTableMenuActionGroup->actions().indexOf(action);
-
-    QString ctName = colorTableNames.at(index);
+    int index = colorTableMenuActionGroup[buttonType]->actions().indexOf(action);
+    QString ctName = colorTableNames[buttonType].at(index);
 
     emit selectedColorTable(ctName);
     setText(ctName);
@@ -371,16 +415,21 @@ QvisNoDefaultColorTableButton::colorTableSelected(QAction *action)
 // Modifications:
 //   Justin Privitera, Thu Jun 16 18:01:49 PDT 2022
 //   Removed mappedColorTableNames.
+// 
+//   Justin Privitera, Wed Jul 13 15:19:47 PDT 2022
+//   Clear out both lists of color table names and set both popup bools.
 //   
 // ****************************************************************************
 
 void
 QvisNoDefaultColorTableButton::clearAllColorTables()
 {
-    colorTableNames.clear();
+    colorTableNames[DISC].clear();
+    colorTableNames[CONT].clear();
 
     // Clear out the popup menu.
-    popupHasEntries = false;
+    popupHasEntries[DISC] = false;
+    popupHasEntries[CONT] = false;
 }
 
 // ****************************************************************************
@@ -402,14 +451,20 @@ QvisNoDefaultColorTableButton::clearAllColorTables()
 // 
 //   Justin Privitera, Thu Jun 16 18:01:49 PDT 2022
 //   Removed category arg and removed mappedColorTableNames.
+// 
+//   Justin Privitera, Wed Jul 13 15:19:47 PDT 2022
+//   Figure out the right destination for incoming ctNames.
 //
 // ****************************************************************************
 
 void
 QvisNoDefaultColorTableButton::addColorTable(const QString &ctName)
 {
-    colorTableNames.append(ctName);
-    colorTableNames.sort();
+    std::string name_str = ctName.toStdString();
+    int index = colorTableAtts->GetColorTableIndex(name_str);
+    int ct_discrete = colorTableAtts->GetColorTables(index).GetDiscreteFlag();
+    colorTableNames[ct_discrete].append(ctName);
+    colorTableNames[ct_discrete].sort();
 }
 
 // ****************************************************************************
@@ -427,6 +482,9 @@ QvisNoDefaultColorTableButton::addColorTable(const QString &ctName)
 // Modifications:
 //   Justin Privitera, Thu Jun 16 18:01:49 PDT 2022
 //   Handle the case where the color tables are gone by doing nothing.
+// 
+//   Justin Privitera, Wed Jul 13 15:19:47 PDT 2022
+//   Added call to getbuttontype() to specify which button.
 //   
 // ****************************************************************************
 
@@ -435,12 +493,13 @@ QvisNoDefaultColorTableButton::updateColorTableButtons()
 {
     for(size_t i = 0; i < buttons.size(); ++i)
     {
-        if (getColorTableIndex(buttons[i]->getColorTable()) != -1)
+        if (getColorTableIndex(
+            buttons[i]->getColorTable(), buttons[i]->getButtonType()) != -1)
         {
             buttons[i]->setIcon(getIcon(buttons[i]->text()));
         }
-        // If there are no available color tables, we don't want the 
-        // entries to change.            
+        // If there are no available color tables, we don't want anything to
+        // change.
     }
 }
 
@@ -453,6 +512,7 @@ QvisNoDefaultColorTableButton::updateColorTableButtons()
 //
 // Arguments:
 //   ctName : The name of the color table to look for.
+//   whichButton : The index of the ct button.
 //
 // Returns:    The index of the color table, or -1.
 //
@@ -462,13 +522,18 @@ QvisNoDefaultColorTableButton::updateColorTableButtons()
 // Modifications:
 //   Kathleen Biagas, Mon Aug  4 15:59:18 PDT 2014
 //   Use the indexOf method for QStringList.
+// 
+//   Justin Privitera, Wed Jul 13 14:48:42 PDT 2022
+//   Added the whichButton argument to take into account the fact that there
+//   are 2 buttons with different colorTableNames.
 //   
 // ****************************************************************************
 
 int
-QvisNoDefaultColorTableButton::getColorTableIndex(const QString &ctName)
+QvisNoDefaultColorTableButton::getColorTableIndex(const QString &ctName,
+                                                  const int whichButton)
 {
-    return colorTableNames.indexOf(ctName);
+    return colorTableNames[whichButton].indexOf(ctName);
 }
 
 // ****************************************************************************
@@ -493,6 +558,10 @@ QvisNoDefaultColorTableButton::getColorTableIndex(const QString &ctName)
 // 
 //   Justin Privitera, Thu Jun 16 18:01:49 PDT 2022
 //   Removed categories/grouping.
+// 
+//   Justin Privitera, Wed Jul 13 14:48:42 PDT 2022
+//   Most member vars this function deals with are now arrays, so indexing
+//   was added.
 //
 // ****************************************************************************
 
@@ -500,20 +569,22 @@ void
 QvisNoDefaultColorTableButton::regeneratePopupMenu()
 {
     // Remove all items and add the default.
-    QList<QAction*> actions = colorTableMenuActionGroup->actions();
-    for(int i = 0; i < actions.count(); ++i)
-        colorTableMenuActionGroup->removeAction(actions[i]);
-    colorTableMenu->clear();
+    QList<QAction*> actions = colorTableMenuActionGroup[buttonType]->actions();
+    for (int i = 0; i < actions.count(); ++i)
+        colorTableMenuActionGroup[buttonType]->removeAction(actions[i]);
+    colorTableMenu[buttonType]->clear();
 
     // Add an item for each color table.
-    for(int i = 0; i < colorTableNames.size(); ++i)
+    for (int i = 0; i < colorTableNames[buttonType].size(); ++i)
     {
-        QAction *action = colorTableMenu->addAction(makeIcon(colorTableNames.at(i)), colorTableNames.at(i));
-        colorTableMenuActionGroup->addAction(action);
+        QAction *action = colorTableMenu[buttonType]->addAction(
+            makeIcon(colorTableNames[buttonType].at(i)), 
+            colorTableNames[buttonType].at(i));
+        colorTableMenuActionGroup[buttonType]->addAction(action);
     }
 
     // Indicate that we've added choices to the menu.
-    popupHasEntries = true;
+    popupHasEntries[buttonType] = true;
 }
 
 // ****************************************************************************
@@ -526,16 +597,22 @@ QvisNoDefaultColorTableButton::regeneratePopupMenu()
 // Creation:   Wed Apr 25 16:04:54 PDT 2012
 //
 // Modifications:
+//   Justin Privitera, Wed Jul 13 14:48:42 PDT 2022
+//   Modified to handle the fact that there are now two lists of actions.
 //
 // ****************************************************************************
 
 QIcon
 QvisNoDefaultColorTableButton::getIcon(const QString &ctName)
 {
-    QList<QAction*> a = colorTableMenuActionGroup->actions();
-    for(int i = 0; i < a.size(); ++i)
-        if(a[i]->text() == ctName)
-            return a[i]->icon();
+    QList<QAction*> a1 = colorTableMenuActionGroup[DISC]->actions();
+    QList<QAction*> a2 = colorTableMenuActionGroup[CONT]->actions();
+    for (int i = 0; i < a1.size(); i ++)
+        if (a1[i]->text() == ctName)
+            return a1[i]->icon();
+    for (int i = 0; i < a2.size(); i ++)
+        if (a2[i]->text() == ctName)
+            return a2[i]->icon();
 
     return makeIcon(ctName);
 }

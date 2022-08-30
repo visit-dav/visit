@@ -24,6 +24,9 @@
     <Field name="tagChangesMade" label="tagChangesMade" type="bool" internal="true" persistent="false">
       true
     </Field>
+    <Field name="builtIn" label="builtIn" type="bool" internal="true" persistent="true">
+      true
+    </Field>
     <Function name="EvalCubicSpline" user="true" member="true" access="private">
     </Function>
     <Function name="GetColorsCubicSpline" user="true" member="true" access="private">
@@ -38,6 +41,8 @@
     </Function>
     <Function name="AddTag" user="true" member="true">
     </Function>
+    <Function name="RemoveTag" user="true" member="true">
+    </Function>
     <Function name="ClearTags" user="true" member="true">
     </Function>
     <Function name="GetTag" user="true" member="true">
@@ -48,6 +53,10 @@
     </Function>
     <Function name="HasTag" user="true" member="true">
     </Function>
+    <Function name="GetTagIndex" user="true" member="true">
+    </Function>
+    <Function name="ValidateTag" user="true" member="true">
+    </Function>
     <Function name="SetNumControlPoints" user="true" member="true">
     </Function>
     <Function name="ColorControlPointList_SetNumControlPoints" user="true" member="true">
@@ -56,4 +65,13 @@
     </Function>
     <Function name="ProcessOldVersions" user="true" member="true">
     </Function>
+    <Include file="source" quoted="false">
+      DebugStream.h
+    </Include>
+    <Include file="source" quoted="false">
+      algorithm
+    </Include>
+    <Include file="source" quoted="false">
+      string.h
+    </Include>
   </Attribute>

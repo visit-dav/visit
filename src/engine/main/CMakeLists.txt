@@ -156,6 +156,12 @@ if(WIN32 AND MSVC)
     set_target_properties(engine_ser_exe PROPERTIES LINK_FLAGS "/STACK:4000000")
 endif()
 
+if (VTK_VERSION VERSION_EQUAL "8.1.0")
+    set(vtk_img_libs vtkjpeg vtkpng)
+else()
+    set(vtk_img_libs VTK::jpeg VTK::png)
+endif()
+
 target_link_libraries(engine_ser_exe
     ${VISIT_EXE_LINKER_FLAGS}
     ${engine_ser_exe_IDatabase}
@@ -166,9 +172,7 @@ target_link_libraries(engine_ser_exe
     ${engine_ser_exe_EPlot_ser}
     engine_ser
     visit_verdict
-    vtkjpeg
-    vtkpng
-    ${VTK_FREETYPE_LIBRARIES}
+    ${vtk_img_libs}
     ${ALL_THIRDPARTY_IO_LIB}
     ${CMAKE_THREAD_LIBS}
     ${ZLIB_LIBRARY}
@@ -272,9 +276,7 @@ if(VISIT_PARALLEL)
         ${engine_par_exe_EPlot_par}
         engine_par
         visit_verdict
-        vtkjpeg
-        vtkpng
-        ${VTK_FREETYPE_LIBRARIES}
+        ${vtk_img_libs}
         ${ALL_THIRDPARTY_IO_LIB}
         ${ICET_STATIC_LIB}
         ${CMAKE_THREAD_LIBS}

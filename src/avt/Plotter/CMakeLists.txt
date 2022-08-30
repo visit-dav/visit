@@ -15,7 +15,7 @@
 #   Add support for Manta.
 #
 #   Kathleen Biagas, Tue Jul 31 12:08:32 MST 2012
-#   Change CONFIGURE_FILE settings so things work correctly with 
+#   Change CONFIGURE_FILE settings so things work correctly with
 #   out-of-source builds.
 #
 #   Kathleen Biagas, Tue Sep  3 11:08:03 PDT 2013
@@ -47,7 +47,7 @@
 #   into volume plot.
 #
 #   Qi WU, Sat Jun 10 22:21:27 MST 2018
-#   Remove the old VISIT_OSPRAY configurations because they are too old. 
+#   Remove the old VISIT_OSPRAY configurations because they are too old.
 #   Additional Note: The FindOSPRay.cmake file is broken for a recent version
 #                    of OSPRay. We should use the built-inosprayConfig.cmake
 #                    file to find OSPRay instead.
@@ -67,7 +67,10 @@
 #
 #   Kathleen Biagas, Tue Apr 13 2021
 #   Add vtk/vtkVisItDatasetMapper.
-# 
+#
+#   Kathleen Biagas, Wed Aug 17, 2022
+#   Incorporate ARSanderson's OSPRAY 2.8.0 work for VTK 9.
+#
 #****************************************************************************/
 
 SET(AVTPLOTTER_OPENGL_SOURCES
@@ -76,34 +79,40 @@ vtk/vtkOpenGLTexturedBackgroundMapper.C
 )
 
 SET(AVTPLOTTER_VTK_SOURCES
-vtk/InitVTKRendering.C 
-vtk/vtkAxesActor2D.C 
-vtk/vtkBackgroundActor.C 
-vtk/vtkLineLegend.C 
-vtk/vtkMultiFontVectorText.C 
-vtk/vtkParallelImageSpaceRedistributor.C 
-vtk/vtkPointGlyphMapper.C 
-vtk/vtkPointMapper.C 
-vtk/vtkTexturedBackgroundActor.C 
-vtk/vtkTimeSliderActor.C 
-vtk/vtkTriad2D.C 
-vtk/vtkVectorFontCharacterData.C 
-vtk/vtkVisItAxisActor.C 
-vtk/vtkVisItAxisActor2D.C 
-vtk/vtkVisItCubeAxesActor.C 
-vtk/vtkVisItDataSetMapper.C 
-vtk/vtkVisItScalarBarActor.C 
-vtk/vtkVisItScalarBarWithOpacityActor.C 
+vtk/InitVTKRendering.C
+vtk/vtkAxesActor2D.C
+vtk/vtkBackgroundActor.C
+vtk/vtkLineLegend.C
+vtk/vtkMultiFontVectorText.C
+vtk/vtkParallelImageSpaceRedistributor.C
+vtk/vtkPointGlyphMapper.C
+vtk/vtkPointMapper.C
+vtk/vtkTexturedBackgroundActor.C
+vtk/vtkTimeSliderActor.C
+vtk/vtkTriad2D.C
+vtk/vtkVectorFontCharacterData.C
+vtk/vtkVisItAxisActor.C
+vtk/vtkVisItAxisActor2D.C
+vtk/vtkVisItCubeAxesActor.C
+vtk/vtkVisItDataSetMapper.C
+vtk/vtkVisItScalarBarActor.C
+vtk/vtkVisItScalarBarWithOpacityActor.C
 vtk/vtkVisItTextActor.C
 vtk/vtkVisItFullFrameMapper2D.C
 )
 
-if(VISIT_OSPRAY)
+if(VTK_VERSION VERSION_EQUAL "8.1.0" AND VISIT_OSPRAY)
     list(APPEND AVTPLOTTER_VTK_SOURCES
          vtk/vtkOSPRayVisItCubeAxesActorNode.C
          vtk/vtkOSPRayVisItAxisActorNode.C
+         vtk/vtkVisItViewNodeFactory.C)
+elseif(VTK_VERSION VERSION_EQUAL "9.1.0" AND HAVE_LIBOSPRAY)
+    list(APPEND AVTPLOTTER_VTK_SOURCES
+         vtk/vtkOSPRayVisItDataSetMapperNode.C
+         vtk/vtkOSPRayVisItCubeAxesActorNode.C
+         vtk/vtkOSPRayVisItAxisActorNode.C
          vtk/vtkVisItViewNodeFactory.C
-        )
+    )
 endif()
 
 SET(AVTPLOTTER_SOURCES
@@ -170,19 +179,28 @@ ${PROJECT_BINARY_DIR}/avt/Plotter/vtk/
 ${VTK_INCLUDE_DIRS}
 )
 
+if(VTK_VERSION VERSION_EQUAL "8.1.0")
+    set(vtklibs vtkCommonExecutionModel vtkFiltersHybrid
+            vtkRenderingCore vtkRenderingFreeType vtkRenderingOpenGL2)
+else()
+    set(vtklibs VTK::CommonExecutionModel VTK::FiltersHybrid
+            VTK::RenderingCore VTK::RenderingFreeType VTK::RenderingOpenGL2)
+endif()
 # Add link directories
 LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY})
 
 
 #********************************* SERIAL ************************************
 ADD_LIBRARY(avtplotter_ser ${AVTPLOTTER_SOURCES})
-TARGET_LINK_LIBRARIES(avtplotter_ser 
-    visitcommon avtmath avtview avtfilters_ser avtpipeline_ser visit_vtk 
-    lightweight_visit_vtk vtkCommonExecutionModel vtkFiltersHybrid
-    vtkRenderingCore vtkRenderingFreeType vtkRenderingOpenGL2
-    ${OPENGL_LIBRARIES})
-if(VISIT_OSPRAY)
+TARGET_LINK_LIBRARIES(avtplotter_ser
+    visitcommon avtmath avtview avtfilters_ser avtpipeline_ser visit_vtk
+    lightweight_visit_vtk ${vtklibs} ${OPENGL_LIBRARIES})
+
+if(VTK_VERSION VERSION_EQUAL "8.1.0" AND VISIT_OSPRAY)
     target_link_libraries(avtplotter_ser vtkRenderingOSPRay)
+elseif(TARGET VTK::RenderingRayTracing)
+    # RenderingRayTracing only available if VTK 9 was built with OSPRAY support
+    target_link_libraries(avtplotter_ser VTK::RenderingRayTracing)
 endif()
 VISIT_INSTALL_TARGETS(avtplotter_ser)
 
@@ -191,11 +209,12 @@ IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(avtplotter_par ${AVTPLOTTER_SOURCES})
     TARGET_LINK_LIBRARIES(avtplotter_par
         visitcommon avtmath avtview avtfilters_par avtpipeline_par visit_vtk
-        lightweight_visit_vtk vtkCommonExecutionModel vtkFiltersHybrid
-        vtkRenderingCore vtkRenderingFreeType vtkRenderingOpenGL2
-        ${OPENGL_LIBRARIES})
-    if(VISIT_OSPRAY)
+        lightweight_visit_vtk ${vtklibs} ${OPENGL_LIBRARIES})
+    if(VTK_VERSION VERSION_EQUAL "8.1.0" AND VISIT_OSPRAY)
         target_link_libraries(avtplotter_par vtkRenderingOSPRay)
+    elseif(TARGET VTK::RenderingRayTracing)
+        # RenderingRayTracing only available if VTK 9 was built with OSPRAY support
+        target_link_libraries(avtplotter_par VTK::RenderingRayTracing)
     endif()
     VISIT_INSTALL_TARGETS(avtplotter_par)
 ENDIF(VISIT_PARALLEL)

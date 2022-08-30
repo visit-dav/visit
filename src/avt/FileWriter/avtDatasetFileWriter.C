@@ -8,12 +8,17 @@
 
 #include <avtDatasetFileWriter.h>
 
+#include <visit-config.h>
+
 #include <visitstream.h>
 #include <visit_gzstream.h>
 
 #include <vtkAppendFilter.h>
 #include <vtkAppendPolyData.h>
 #include <vtkCellArray.h>
+#if LIB_VERSION_GE(VTK,9,1,0)
+#include <vtkCellArrayIterator.h>
+#endif
 #include <vtkCellData.h>
 #include <vtkCellDataToPointData.h>
 #include <vtkDataSetWriter.h>
@@ -47,10 +52,8 @@
 #include <float.h>
 #include <math.h>
 
-#include <visit-config.h>
 
-
-// This array contains strings that correspond to the file types that are 
+// This array contains strings that correspond to the file types that are
 // enumerated in the DatasetFileFormat enum.
 const char *avtDatasetFileWriter::extensions[] = { ".curve", ".obj",
                                                    ".stl", ".vtk", ".ultra",
@@ -124,8 +127,8 @@ avtDatasetFileWriter::~avtDatasetFileWriter()
 //  Purpose:
 //    Saves DBOptionsAttibutes for file formats that use them.
 //
-//  Programmer: Kathleen Biagas 
-//  Creation:   August 31, 2018 
+//  Programmer: Kathleen Biagas
+//  Creation:   August 31, 2018
 //
 // ****************************************************************************
 
@@ -188,7 +191,7 @@ avtDatasetFileWriter::Write(DatasetFileFormat format, const char *filename,
             if (quality > 9) quality = 9;
         }
     }
-    
+
     switch (format)
     {
       case CURVE:
@@ -225,7 +228,7 @@ avtDatasetFileWriter::Write(DatasetFileFormat format, const char *filename,
 //  Method: avtDatasetFileWriter::WriteOBJFamily
 //
 //  Purpose:
-//      Writes out the input as a wavefront obj file.  This will remap the 
+//      Writes out the input as a wavefront obj file.  This will remap the
 //      data to a texture coordinate between 0 and 1.
 //
 //  Programmer: Hank Childs
@@ -360,7 +363,7 @@ avtDatasetFileWriter::WriteOBJTree(avtDataTree_p dt, int idx,
 //  Creation:   May 27, 2002
 //
 //  Modifications:
-//    Kathleen Bonnell, Thu Jan  2 15:16:50 PST 2003 
+//    Kathleen Bonnell, Thu Jan  2 15:16:50 PST 2003
 //    Replace MakeObject() with NewInstance() to match new vtk api.
 //
 //    Brad Whitlock, Thu Feb 16 10:08:08 PST 2012
@@ -382,7 +385,7 @@ avtDatasetFileWriter::WriteOBJFile(vtkDataSet *ds, const char *fname,
 
     //
     // The OBJ file is going to expect the dataset as having node-centered
-    // data.  
+    // data.
     //
     vtkCellDataToPointData *cd2pd = NULL;
     if (activeDS->GetCellData()->GetScalars() != NULL)
@@ -391,7 +394,7 @@ avtDatasetFileWriter::WriteOBJFile(vtkDataSet *ds, const char *fname,
         cd2pd->SetInputData(activeDS);
         geom->SetInputConnection(cd2pd->GetOutputPort());
     }
-    else 
+    else
     {
         geom->SetInputData(activeDS);
     }
@@ -460,7 +463,7 @@ avtDatasetFileWriter::WriteOBJFile(vtkDataSet *ds, const char *fname,
 //  Method: avtDatasetFileWriter::WriteVTKFamily
 //
 //  Purpose:
-//      Writes out the input as a VTK family. 
+//      Writes out the input as a VTK family.
 //
 //  Programmer: Hank Childs
 //  Creation:   May 27, 2002
@@ -699,15 +702,15 @@ avtDatasetFileWriter::WritePLYFile(const char *filename, bool binary)
         writer->SetFileTypeToASCII();
 
     vtkDataArray *arr = ds->GetPointData()->GetScalars();
-    
+
     if (arr == NULL)
         arr = ds->GetCellData()->GetScalars();
     if (arr)
         writer->SetArrayName(arr->GetName());
-    
+
     writer->SetInputData(ds);
     writer->SetFileName(filename);
-    
+
     vtkScalarsToColors *lut = (arr ? GetColorTableFromEnv() : NULL);
     if (lut)
         writer->SetLookupTable(lut);
@@ -792,7 +795,7 @@ avtDatasetFileWriter::WriteCurveFile(const char *filename, int quality, int comp
         ofile() << std::setprecision(16);
         for (size_t j = 0 ; j < line_segments[i].size() ; j++)
         {
-            double pt[3]; 
+            double pt[3];
             pts->GetPoint(line_segments[i][j], pt);
             ofile() << pt[0] << " " << pt[1] << endl;
         }
@@ -806,8 +809,8 @@ avtDatasetFileWriter::WriteCurveFile(const char *filename, int quality, int comp
 // ****************************************************************************
 //  Method: avtDatasetFileWriter::CreateFilename
 //
-//  Purpose: 
-//      Creates a filename with the appropriate file extension and returns it 
+//  Purpose:
+//      Creates a filename with the appropriate file extension and returns it
 //      as a dynamically allocated array of characters.
 //
 //  Arguments:
@@ -870,7 +873,7 @@ avtDatasetFileWriter::CreateFilename(const char *base, bool family,
     str = new char[total_len];
 
     if (family)
-        snprintf(str, total_len-1, "%s%04d%s", base, nFilesWritten, 
+        snprintf(str, total_len-1, "%s%04d%s", base, nFilesWritten,
                                                extensions[(int)format]);
     else
         snprintf(str, total_len-1, "%s%s", base, extensions[(int)format]);
@@ -899,7 +902,7 @@ avtDatasetFileWriter::CreateFilename(const char *base, bool family,
 //    Kathleen Bonnell, Wed May 17 14:44:08 PDT 2006
 //    Changed GetNumberOfInputs to GetTotalNumberOfInputConnections.  Can
 //    no longer call 'GetInputs' on vtkAppendFillter, must get individual port
-//    info, then the dataset from the info. 
+//    info, then the dataset from the info.
 //
 //    Dave Pugmire, Tue Aug 24 11:32:12 EDT 2010
 //    Add compact domain options.
@@ -931,7 +934,7 @@ avtDatasetFileWriter::GetSingleDataset(void)
         dt->Traverse(CAddInputToAppendFilter, &pmap, dummy);
     }
 
-    if (pmap.af->GetTotalNumberOfInputConnections() > 1 && 
+    if (pmap.af->GetTotalNumberOfInputConnections() > 1 &&
         pmap.pf->GetTotalNumberOfInputConnections() > 1)
     {
         //
@@ -944,7 +947,7 @@ avtDatasetFileWriter::GetSingleDataset(void)
         {
             inInfo = pmap.pf->GetInputPortInformation(i);
             pmap.af->AddInputData(vtkPolyData::SafeDownCast(
-                              inInfo->Get(vtkDataObject::DATA_OBJECT()))); 
+                              inInfo->Get(vtkDataObject::DATA_OBJECT())));
         }
         pmap.pf->RemoveAllInputs();
     }
@@ -1068,7 +1071,7 @@ AddSegment(int *seg_list, int id1, int id2)
         if (seg_list[2*id1+1] != -1)
         {
             // Can't handle 3 lines intersecting at one point.
-            EXCEPTION0(NoCurveException); 
+            EXCEPTION0(NoCurveException);
         }
         else
         {
@@ -1096,6 +1099,9 @@ AddSegment(int *seg_list, int id1, int id2)
 //    Hank Childs, Fri Feb 15 16:29:37 PST 2008
 //    Fix memory leak.
 //
+//    Kathleen Biagas, Thu Aug 11 2022
+//    Support VTK9: use vtkCellArrayIterator.
+//
 // ****************************************************************************
 
 static void
@@ -1104,7 +1110,7 @@ SortLineSegments(vtkPolyData *pd, std::vector< std::vector<int> > &ls)
     int   i;
 
     ls.clear();
-    
+
     int ntotalpts = pd->GetNumberOfPoints();
 
     int *seg_list = new int[2*ntotalpts];
@@ -1114,10 +1120,20 @@ SortLineSegments(vtkPolyData *pd, std::vector< std::vector<int> > &ls)
         seg_list[i] = -1;
     }
 
+    vtkIdType npts;
+
+#if LIB_VERSION_LE(VTK,8,1,0)
     vtkCellArray *lines = pd->GetLines();
-    vtkIdType npts, *ids;
+    vtkIdType *ids;
     for (lines->InitTraversal() ; lines->GetNextCell(npts, ids) ; )
     {
+#else
+    auto lines = vtk::TakeSmartPointer(pd->GetLines()->NewIterator());
+    const vtkIdType *ids;
+    for (lines->GoToFirstCell() ; !lines->IsDoneWithTraversal(); lines->GoToNextCell())
+    {
+        lines->GetCurrentCell(npts, ids);
+#endif
         if (npts == 2)
         {
             AddSegment(seg_list, ids[0], ids[1]);
@@ -1209,7 +1225,7 @@ TakeOffPolyLine(int *seg_list,int start_pt,std::vector< std::vector<int> > &ls)
         {
             seg_list[2*nextPt] = seg_list[2*nextPt+1];
             seg_list[2*nextPt+1] = -1;
-        } 
+        }
         else
         {
             // This should never happen.  Internal error.
@@ -1681,7 +1697,7 @@ avtDatasetFileWriter::WritePOVRayFile(vtkDataSet *ds,
 
     vtkIdType npts, *ids;
     vtkIdList *idlist = vtkIdList::New();
-    
+
     //
     // We need to accumulate the data and spatial extents to
     // set a good max/min and camera default for the user
@@ -2029,7 +2045,7 @@ avtDatasetFileWriter::WritePOVRayFile(vtkDataSet *ds,
         out << endl;
         out << "        finish {VertFinish}" << endl;
         out << "    }" << endl;
-            
+
         out << "#declare vertctr = vertctr+1;" << endl;
         out << "#end"<<endl;
         out << "};" << endl;
@@ -2083,7 +2099,7 @@ avtDatasetFileWriter::WritePOVRayFile(vtkDataSet *ds,
         }
         out << "        #end" << endl;
         out << "        finish {VecFinish}" << endl;;
-        out << "    }" << endl;            
+        out << "    }" << endl;
         out << "#declare vecctr = vecctr+1;" << endl;
         out << "#end"<<endl;
         out << "};" << endl;
@@ -2438,13 +2454,13 @@ static vtkScalarsToColors * GetColorTableFromEnv()
     char *ctName = getenv("VISIT_EXPORT_COLORTABLE");
     char *ctMin = getenv("VISIT_EXPORT_COLORTABLE_MIN");
     char *ctMax = getenv("VISIT_EXPORT_COLORTABLE_MAX");
-    
+
     if (ctName == NULL || ctMin == NULL || ctMax == NULL)
         return NULL;
 
     float tableMin = atof(ctMin);
     float tableMax = atof(ctMax);
-    
+
     const ColorTableAttributes *colorTables = avtColorTables::Instance()->GetColorTables();
     int nCT = colorTables->GetNumColorTables();
     for (int i=0; i<nCT; i++)
@@ -2462,7 +2478,7 @@ static vtkScalarsToColors * GetColorTableFromEnv()
                 vals[j*3 + 1] = pt.GetColors()[1]/255.0;
                 vals[j*3 + 2] = pt.GetColors()[2]/255.0;
             }
-            
+
             lut->BuildFunctionFromTable(tableMin, tableMax, table.GetNumControlPoints(), vals);
             delete [] vals;
 

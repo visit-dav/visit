@@ -50,8 +50,9 @@ set(VISIT_PLUGIN_INCLUDES
     ${VISIT_INCLUDE_DIR}/avt/VisWindow/VisWindow
     ${VISIT_INCLUDE_DIR}/visit_vtk/full
     ${VISIT_INCLUDE_DIR}/visit_vtk/lightweight
-    ${VTK_INCLUDE_DIRS} 
+    ${VTK_INCLUDE_DIRS}
 )
+
 
 set(VISIT_DATABASE_INCLUDES
     ${VISIT_PLUGIN_INCLUDES}

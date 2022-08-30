@@ -55,7 +55,7 @@ class     VisitInteractor;
 //    Added ProxiedUpdatePlotList.  Blew away older comments.
 //
 //    Kathleen Bonnell, Wed May  8 14:06:50 PDT 2002
-//    Added Proxied Set/Get TypeIsCurve, GetCurveYScale, 
+//    Added Proxied Set/Get TypeIsCurve, GetCurveYScale,
 //    ComputeVectorTextScaleFactor, and ProxiedLineout method.
 //
 //    Hank Childs, Thu Jul 11 17:45:50 PDT 2002
@@ -63,19 +63,19 @@ class     VisitInteractor;
 //
 //    Kathleen Bonnell, Tue Aug 13 15:15:37 PDT 2002
 //    Added GetLighting, GetAmbientOn, GetAmbientCoefficient,
-//    and UpdateLightPositions. 
+//    and UpdateLightPositions.
 //
 //    Hank Childs, Wed Sep  4 08:26:55 PDT 2002
 //    Added RecalculateRenderOrder.
 //
-//    Kathleen Bonnell, Thu May 15 09:46:46 PDT 2003 
+//    Kathleen Bonnell, Thu May 15 09:46:46 PDT 2003
 //    Replaced GetCurveYScale with more generic GetScaleFactorAndType.
 //
-//    Kathleen Bonnell, Wed May 28 16:04:50 PDT 2003  
+//    Kathleen Bonnell, Wed May 28 16:04:50 PDT 2003
 //    Added methods ReAddColleaguesToRenderWindow, GetAntialiasing.
 //
-//    Kathleen Bonnell, Wed May 28 16:04:50 PDT 2003  
-//    Added GetFullFrameMode. 
+//    Kathleen Bonnell, Wed May 28 16:04:50 PDT 2003
+//    Added GetFullFrameMode.
 //
 //    Eric Brugger, Wed Aug 20 10:04:13 PDT 2003
 //    Removed ProxiedGetTypeIsCurve and ProxiedSetTypeIsCurve.
@@ -86,7 +86,7 @@ class     VisitInteractor;
 //    Brad Whitlock, Thu Nov 6 14:13:40 PST 2003
 //    Added GetFrameAndState method.
 //
-//    Kathleen Bonnell, Wed Dec  3 16:49:14 PST 2003 
+//    Kathleen Bonnell, Wed Dec  3 16:49:14 PST 2003
 //    Added methods TransparenciesExist, ReAddToolsToRenderWindow.
 //
 //    Hank Childs, Mon May 10 08:31:01 PDT 2004
@@ -96,7 +96,7 @@ class     VisitInteractor;
 //    Added 4 functions for suspending and resuming opaque and
 //    translucent geometry.
 //
-//    Kathleen Bonnell, Mon Jun 27 14:54:36 PDT 2005 
+//    Kathleen Bonnell, Mon Jun 27 14:54:36 PDT 2005
 //    Added ProxiedGetMaxPlotZShift.
 //
 //    Mark Blair, Wed Aug 30 14:09:00 PDT 2006
@@ -141,14 +141,14 @@ class     VisitInteractor;
 class VISWINDOW_API VisWindowProtectionProxy
 {
   public:
-                        VisWindowProtectionProxy(VisWindow *vw) 
-                                                 { viswin = vw; };
+                        VisWindowProtectionProxy(VisWindow *vw)
+                                                 { viswin = vw; }
 
     //
     // Allow the proxy to masquerade as a VisWindow pointer whenever
     // it is convenient.
     //
-    operator            VisWindow *()   { return viswin; };
+    operator            VisWindow *()   { return viswin; }
 
   protected:
     VisWindow          *viswin;
@@ -186,7 +186,7 @@ class VISWINDOW_API VisWindowProtectionProxy
     void                ProxiedPick(int, int);
     void                ProxiedUpdatePlotList(std::vector<avtActor_p> &);
     void                ProxiedLineout(int, int, int, int);
-    double              ProxiedComputeVectorTextScaleFactor(const double *p, 
+    double              ProxiedComputeVectorTextScaleFactor(const double *p,
                                                         const double *v = NULL);
     void                ProxiedMotionBegin(void);
     void                ProxiedMotionEnd(void);
@@ -224,7 +224,7 @@ class VISWINDOW_API VisWindowProtectionProxy
                             int w, int h, const double *c);
 
     void                ProxiedGetExtents(double ext[2]); // TODO: remove with VTK8.
-#ifdef VISIT_OSPRAY
+#if defined(VISIT_OSPRAY) || defined(HAVE_OSPRAY)
     bool                ProxiedGetOsprayRendering();
     int                 ProxiedGetOspraySPP();
     int                 ProxiedGetOsprayAO();

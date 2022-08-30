@@ -44,6 +44,9 @@ avtViewInfo::avtViewInfo()
 //    Jeremy Meredith, Mon Aug  2 13:47:52 EDT 2010
 //    Added shear.
 //
+//    Kathleen Biagas, Wed Aug 17, 2022
+//    Add useOSPRay.
+//
 // ****************************************************************************
 
 avtViewInfo &
@@ -71,6 +74,7 @@ avtViewInfo::operator=(const avtViewInfo &vi)
     shear[0]     = vi.shear[0];
     shear[1]     = vi.shear[1];
     shear[2]     = vi.shear[2];
+    useOSPRay    = vi.useOSPRay;
 
     return *this;
 }
@@ -94,6 +98,9 @@ avtViewInfo::operator=(const avtViewInfo &vi)
 //
 //    Jeremy Meredith, Mon Aug  2 13:47:52 EDT 2010
 //    Added shear.
+//
+//    Kathleen Biagas, Wed Aug 17, 2022
+//    Add useOSPRay.
 //
 // ****************************************************************************
 
@@ -155,6 +162,10 @@ avtViewInfo::operator==(const avtViewInfo &vi)
         return false;
     }
 
+    if (useOSPRay != vi.useOSPRay)
+    {
+        return false;
+    }
 
     return true;
 }
@@ -178,6 +189,9 @@ avtViewInfo::operator==(const avtViewInfo &vi)
 //
 //    Jeremy Meredith, Mon Aug  2 14:23:08 EDT 2010
 //    Add shear for oblique projection support.
+//
+//    Kathleen Biagas, Wed Aug 17, 2022
+//    Add useOSPRay.
 //
 // ****************************************************************************
 
@@ -206,6 +220,7 @@ avtViewInfo::SetToDefault()
     shear[0]     =  0.;
     shear[1]     =  0.;
     shear[2]     =  1.;
+    useOSPRay    = false;
 }
 
 // ****************************************************************************
@@ -251,7 +266,7 @@ avtViewInfo::SetViewFromCamera(vtkCamera *vtkcam)
 //  Method: avtViewInfo::SetCameraFromView
 //
 //  Arguments:
-//    vtkcam      The camera in which to store the view info. 
+//    vtkcam      The camera in which to store the view info.
 //
 //  Programmer:  Kathleen Bonnell
 //  Creation:    January 08, 2001
@@ -260,7 +275,7 @@ avtViewInfo::SetViewFromCamera(vtkCamera *vtkcam)
 //    Eric Brugger, Fri Jun  6 15:30:49 PDT 2003
 //    I added image pan and image zoom.
 //
-//    Eric Brugger, Wed Jun 18 17:46:36 PDT 2003 
+//    Eric Brugger, Wed Jun 18 17:46:36 PDT 2003
 //    I modified the call to SetWindowCenter since the meaning of its
 //    arguments changed.
 //
@@ -273,6 +288,11 @@ avtViewInfo::SetViewFromCamera(vtkCamera *vtkcam)
 //    Kathleen Bonnell, Wed Jun  8 14:17:36 PDT 2011
 //    Set user transform matrix when zooming (used to be done by hack inside
 //    vtkCamera).
+//
+//    Kathleen Biagas, Wed Aug 17, 2022
+//    Test useOSPRay to determine if ospray-path should be used.
+//    It will be true only if HAVE_OSPRAY is true and ospray rendering is
+//    currently being used.
 //
 // ****************************************************************************
 #include<vtkMatrix4x4.h>
@@ -295,24 +315,32 @@ avtViewInfo::SetCameraFromView(vtkCamera *vtkcam) const
     vtkcam->SetViewUp(viewUp);
     vtkcam->SetWindowCenter(2.0*imagePan[0], 2.0*imagePan[1]);
     vtkcam->SetFocalDisk(imageZoom);
-#ifdef VISIT_OSPRAY_XXX
-    vtkcam->Zoom(imageZoom);
-#else
-    if (imageZoom != 1.0)
+
+    if (useOSPRay)
     {
-        double matrix[4][4];
-        vtkMatrix4x4::Identity(*matrix);
- 
-        matrix[0][0] = imageZoom;
-        matrix[1][1] = imageZoom;
-        vtkTransform *trans = vtkTransform::New();
-        trans->SetMatrix(*matrix); 
-        vtkcam->SetUserTransform(trans);
-        trans->Delete();
+        // Currently the SetWindowCenter and SetUserTransform do not get
+        // used in the vtkOSPRayCameraNode so instead use the Zoom here and
+        // in the Navigate3D.C and Zoom3D.C pan the camera rather than the
+        // image.
+        vtkcam->Zoom(imageZoom);
     }
     else
     {
-        vtkcam->SetUserTransform(NULL);
-    }
-#endif
+        if (imageZoom != 1.0)
+        {
+            double matrix[4][4];
+            vtkMatrix4x4::Identity(*matrix);
+
+            matrix[0][0] = imageZoom;
+            matrix[1][1] = imageZoom;
+            vtkTransform *trans = vtkTransform::New();
+            trans->SetMatrix(*matrix);
+            vtkcam->SetUserTransform(trans);
+            trans->Delete();
+        }
+        else
+        {
+            vtkcam->SetUserTransform(NULL);
+        }
+   }
 }
