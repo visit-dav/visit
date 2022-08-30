@@ -2,7 +2,7 @@
 
 MakeHostProfile
 ~~~~~~~~~~~~~~~
-This program shows how to host to create a host profile, add it to the host profile list, and send it to the viewer.
+This program shows how to create a host profile, add it to the host profile list, and send it to the viewer.
 The program then goes on to access data on the remote computer, making use of the host profile that was created.
 Additional options such as how to launch the engine in parallel could be added to the host profile.
 Also, more profiles could be added to the host profile list before sending it to the viewer. 
