@@ -866,7 +866,7 @@ Post Execute : ``post_execute(self)``
    In this example, we use MPI to combine the local results across MPI tasks.
 
 The final aspect required is to bind your new Python Query Filter class to `py_filter`,
-this is the name VisIt uses to connect your Python script to the
+this is the name VisIt_ uses to connect your Python script to the
 Python Filter Runtime in the engine.
 
 When you run your Python Query, results are presented like any other Query: Displayed in the Query window and can be accessed via VisIt's Query output CLI functions.
