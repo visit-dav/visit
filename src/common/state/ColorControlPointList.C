@@ -6,6 +6,7 @@
 #include <DataNode.h>
 #include <DebugStream.h>
 #include <algorithm>
+#include <cctype>
 #include <string.h>
 #include <ColorControlPoint.h>
 
