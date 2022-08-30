@@ -54,8 +54,6 @@ queries, the controls in the **Query parameters** area may change.
 
 .. image:: images/queryparams_db2.png
 
-.. image:: images/queryparams_db3.png
-
 .. image:: images/queryparams_point.png
 
 .. _queryparams_line:
@@ -777,3 +775,103 @@ always place the new Curve plot in a specific window, turn off the
 window number into the **Window#** text field. After setting these
 options, subsequent Curve plots created by querying over time will be
 added to the specified vis window.
+
+
+Python Queries
+~~~~~~~~~~~~~~~~~~~~
+
+Python Queries allow you to use a Python script to define a custom query.
+You can use the Python Query tab in the Query Window to create a Python query:
+
+.. _querywindowpython:
+
+.. figure:: images/querywindow_python.png
+
+   Python Query Editor
+
+
+In your query you can access and process Python wrapped versions of the VTK
+objects that represent your data.
+To demonstrate this, here is an example Python Query that computes the
+average of a zonal (or cell-centered) field:
+
+::
+  
+  # simple cell average query
+  class CellAvgQuery(SimplePythonQuery):
+      def __init__(self):
+          SimplePythonQuery.__init__(self)
+          self.name = "CellAvgQuery"
+          self.description = "Calculate the average cell value."
+      def pre_execute(self):
+          # init vars used to compute the average
+          self.total_ncells = 0
+          self.total_sum    = 0.0
+      def execute_chunk(self,ds_in,domain_id):
+          # sum over cell data array passed to query args
+          ncells = ds_in.GetNumberOfCells()
+          self.total_ncells += ncells
+          cell_data = ds_in.GetCellData().GetArray(self.input_var_names[0])
+          for i in range(ncells):
+              self.total_sum += cell_data.GetTuple1(i)
+      def post_execute(self):
+          # calculate average and set results
+          res_val = mpicom.sum(self.total_sum) / mpicom.sum(self.total_ncells)
+          res_txt = "The average value = " + self.float_format
+          res_txt = res_txt % res_val
+          self.set_result_text(res_txt)
+          self.set_result_value(res_val)
+  
+  py_filter = CellAvgQuery
+
+
+This example is from our `pyavt examples. <https://github.com/visit-dav/visit/blob/develop/src/visitpy/pyavt/examples/py_query.py>`_
+
+This example inherits from `SimplePythonQuery`. The base classes of VisIt_'s
+Python Filters are defined in `the  pyavt module. <https://github.com/visit-dav/visit/blob/develop/src/visitpy/pyavt/py_src/filters.py>`_
+
+You can select the variables passed to your Query using the Python Query
+variable list:
+
+.. _querywindowpythonvars:
+
+.. figure:: images/querywindow_python_vars.png
+
+   Python Query Variable list
+
+In the script, your class needs to implement four methods:
+
+Constructor : 
+   Called to initialize the Python Query Filter object. Use this to call
+   the base class constructor and provide a name and description of 
+   your custom query.
+
+Pre Execute : ``pre_execute(self)``
+   This method is called on all MPI tasks before any domains have been processed.
+   Use this to initialize any state needed before parallel execution. 
+   In this example we initialize variables used to hold the total field value sum
+   and the total number of cells.
+
+Execute Chunk : ``execute_chunk(self,ds_in,domain_id)``
+   This method is called to process each domain. When VisIt_ runs with MPI,
+   `execute_chunk()` will be called in parallel across MPI tasks. 
+   ``ds_in`` is a Python-wrapped VTK object and ``domain_id`` provides 
+   the domain id of ``ds_in``. 
+   In this example, for each domain we get the field value array and update
+   the aggregate sum and the total number of cells.
+
+Post Execute : ``post_execute(self)`` 
+   This method is called on all MPI tasks after all domains have been processed. 
+   Use this to finalize results after parallel execution. 
+   In this example, we use MPI to combine the local results across MPI tasks.
+
+The final aspect required is to bind your new Python Query Filter class to `py_filter`,
+this is the name VisIt_ uses to connect your Python script to the
+Python Filter Runtime in the engine.
+
+When you run your Python Query, results are presented like any other Query: Displayed in the Query window and can be accessed via VisIt_'s Query output CLI functions.
+
+
+
+
+
