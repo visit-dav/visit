@@ -31,6 +31,7 @@ class QvisColorSelectionWidget;
 class QvisColorGridWidget;
 class QvisNoDefaultColorTableButton;
 
+// TODO make a class instead so we can have default vals
 typedef struct TagMetaData
 {
     bool active;
@@ -172,7 +173,7 @@ private:
     QString                  currentColorTable;
     int                      popupMode;
     bool                     sliding;
-    std::map<std::string, TagInfo> tagInfo;
+    std::map<std::string, TagInfo> tagList;
     bool                     tagsVisible;
     bool                     tagsMatchAny;
     bool                     searchingOn;

@@ -805,7 +805,8 @@ void
 QvisColorTableWindow::AddToTagTable(std::string currtag)
 {
     QTreeWidgetItem *item = new QTreeWidgetItem(tagTable);
-    item->setCheckState(0, tagInfo[currtag].active ? Qt::Checked : Qt::Unchecked);
+    tagList[currtag].tagTableItem = item;
+    item->setCheckState(0, tagList[currtag].active ? Qt::Checked : Qt::Unchecked);
     item->setText(1, currtag.c_str());
 }
 
@@ -833,11 +834,11 @@ void
 QvisColorTableWindow::AddGlobalTag(std::string currtag, bool first_time)
 {
     // if the given tag is NOT in the global tag list
-    if (tagInfo.find(currtag) == tagInfo.end())
+    if (tagList.find(currtag) == tagList.end())
     {
-        tagInfo[currtag];
+        tagList[currtag];
         // make the "Standard" tag active the very first time the tags are enabled
-        tagInfo[currtag].active = currtag == "Standard" && first_time;
+        tagList[currtag].active = currtag == "Standard" && first_time;
         AddToTagTable(currtag);
     }
     else
@@ -969,7 +970,7 @@ QvisColorTableWindow::UpdateNames()
         {
             bool tagFound = false;
             // go thru global tags
-            for (const auto& mapitem : tagInfo)
+            for (const auto& mapitem : tagList)
             {
                 // if the global tag is active
                 if (mapitem.second.active)
@@ -2169,7 +2170,7 @@ QvisColorTableWindow::highlightColorTable(QTreeWidgetItem *current,
 void
 QvisColorTableWindow::tagTableItemSelected(QTreeWidgetItem *item, int column)
 {
-    tagInfo[item->text(1).toStdString()].active = item->checkState(0) == Qt::Checked;
+    tagList[item->text(1).toStdString()].active = item->checkState(0) == Qt::Checked;
     UpdateNames();
     colorAtts->SetChangesMade(true);
     ctObserver.SetUpdate(true);
