@@ -3,7 +3,7 @@
 OpenGUI
 ~~~~~~~
 
-This program shows how to host to start the VisIt_ **GUI** from within your Java application.
+This program shows how to start the VisIt_ **GUI** from within your Java application.
 By altering the arguments passed to the ``OpenClient()`` method, you could launch other VisIt_ clients too.
 A VisIt_ client is a program that uses the ``ViewerProxy`` class to control the viewer.
 Examples of VisIt_ clients are: VisIt_'s **GUI**, VisIt_'s Python interface (**CLI**), and any program that uses the VisIt_ Java interface. 
@@ -18,7 +18,7 @@ From a released client to an installed VisIt_ of the same version:
     java -cp . OpenGUI -stay -path /path/to/visit/bin -datapath /path/to/silodata
 
 
-From a devlopment build/java directory:
+From a development build/java directory:
 
 .. code-block:: shell
 

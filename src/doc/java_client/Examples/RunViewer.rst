@@ -20,7 +20,7 @@ From a released client to an installed VisIt_ of the same version:
     java -cp . RunViewer -stay -path /path/to/visit/bin -datapath /path/to/silodata
 
 
-From a devlopment build/java directory:
+From a development build/java directory:
 
 .. code-block:: shell
 

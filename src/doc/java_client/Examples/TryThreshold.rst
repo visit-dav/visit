@@ -1,7 +1,7 @@
 .. _TryThreshold:
 
 TryThreshold
-~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~
 
 This example program shows how to use a Threshold operator with a Pseudocolor plot.
 
@@ -16,7 +16,7 @@ From a released client to an installed VisIt_ of the same version:
     java -cp . TryThreshold -stay -path /path/to/visit/bin -datapath /path/to/silodata
 
 
-From a devlopment build/java directory:
+From a development build/java directory:
 
 .. code-block:: shell
 
