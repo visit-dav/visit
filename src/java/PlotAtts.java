@@ -51,6 +51,8 @@ public class PlotAtts extends RunViewer
 
             // Set the pseudocolor attributes
             PseudocolorAttributes p = (PseudocolorAttributes)viewer.GetPlotAttributes("Pseudocolor");
+            // set Pseudocolor's opacity type to constant
+            p.SetOpacityType(p.OPACITYTYPE_CONSTANT);
             p.SetOpacity(0.3);
             p.Notify();
             viewer.GetViewerMethods().SetPlotOptions("Pseudocolor");

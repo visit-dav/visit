@@ -386,6 +386,7 @@ NIFGUI.java
 OpenGUI.java 
 PlotAtts.java 
 PlotTypes.java
+PlotVector.java 
 RunViewer.java 
 TryAnnotations.java 
 TryLighting.java 
