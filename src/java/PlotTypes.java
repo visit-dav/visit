@@ -41,8 +41,8 @@ public class PlotTypes extends RunViewer
     public final static int LABEL             = 0x0200;
     public final static int ARRAY             = 0x0400;
 
-    // The Plugin interface should have a GetVariableTypes method but I
-    // didn't do it at the time (do for 2.0). For now, this will suffice.
+    // The Plugin interface should have a GetVariableTypes method.
+    // For now, this will suffice.
     public int GetVariableTypes(String plotName)
     {
         Hashtable namestovar = new Hashtable();
