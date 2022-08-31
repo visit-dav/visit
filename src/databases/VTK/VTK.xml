@@ -29,6 +29,8 @@
       vtkVisItXMLPDataReader.C
       PVTKParser.C
       VTMParser.C
+      GEOSXParser.C
+      avtGEOSXFileReader.C
     </Files>
     <Files components="E">
       avtPVDFileReader.C
@@ -44,6 +46,8 @@
       vtkVisItXMLPDataReader.C
       PVTKParser.C
       VTMParser.C
+      GEOSXParser.C
+      avtGEOSXFileReader.C
     </Files>
     <LIBS>
       vtkFiltersGeneral

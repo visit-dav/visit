@@ -22,7 +22,7 @@ class vtkXMLDataParser;
 //    Parses .vtm (vtk multi block) files.
 //
 //  Programmer: Kathleen Biagas
-//  Creation:   August 12, 2015 
+//  Creation:   August 12, 2015
 //
 //  Modifications:
 //
@@ -41,7 +41,7 @@ class VTMParser
 
     int                       GetNumberOfGroups()
                                 { return nGroups; }
-    std::string              &GetGroupPieceName() 
+    std::string              &GetGroupPieceName()
                                 { return groupPieceName; }
     std::vector<std::string> &GetGroupNames()
                                 { return groupNames; }
@@ -60,7 +60,7 @@ class VTMParser
                                 { return errorMessage; }
 
   private:
-   
+
     std::string               fileName;
     std::string               baseDir;
     std::string               blockExtension;
@@ -81,8 +81,8 @@ class VTMParser
 
     std::string               errorMessage;
 
-    VTMParser(const VTMParser &);      // Not implemented    
-    void operator=(const VTMParser &); // Not implemented    
+    VTMParser(const VTMParser &);      // Not implemented
+    void operator=(const VTMParser &); // Not implemented
 };
 
 #endif

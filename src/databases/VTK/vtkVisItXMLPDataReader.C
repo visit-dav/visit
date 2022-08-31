@@ -60,15 +60,15 @@ const char* vtkVisItXMLPDataReader::GetDataSetName()
 vtkVisItXMLPDataReader::vtkVisItXMLPDataReader()
 {
   this->GhostLevel = 0;
-  
+
   this->NumberOfPieces = 0;
-  
+
   this->PieceElements = 0;
-  
+
   this->PathName = 0;
 
   this->Extension = 0;
-  
+
   // Setup a callback for the internal serial readers to report
   // progress.
   this->PieceProgressObserver = vtkCallbackCommand::New();
@@ -133,7 +133,7 @@ int vtkVisItXMLPDataReader::ReadXMLInformation()
 {
   // First setup the filename components.
   this->SplitFileName();
-  
+
   // Now proceed with reading the information.
   return this->Superclass::ReadXMLInformation();
 }
@@ -150,7 +150,7 @@ void vtkVisItXMLPDataReader::CopyOutputInformation(vtkInformation *outInfo,
                                               int port)
 {
 #if 0
-  vtkInformation *localInfo = 
+  vtkInformation *localInfo =
     this->GetExecutive()->GetOutputInformation( port );
   if ( localInfo->Has(vtkDataObject::POINT_DATA_VECTOR()) )
     {
@@ -176,7 +176,7 @@ int vtkVisItXMLPDataReader::ReadPrimaryElement(vtkXMLDataElement* ePrimary)
     {
     this->GhostLevel = 0;
     }
-  
+
   // Read information about the pieces.
   this->PPointDataElement = 0;
   this->PCellDataElement = 0;
@@ -212,7 +212,7 @@ int vtkVisItXMLPDataReader::ReadPrimaryElement(vtkXMLDataElement* ePrimary)
         }
       }
     }
-  
+
   return 1;
 }
 
@@ -279,7 +279,7 @@ int vtkVisItXMLPDataReader::ReadPiece(vtkXMLDataElement* ePiece, int index)
     sscanf(extent, "%d %d %d %d %d %d",
            &(ext[0]), &(ext[1]), &(ext[2]), &(ext[3]), &(ext[4]), &(ext[5]));
     }
-  
+
   return 1;
 }
 
@@ -320,26 +320,26 @@ void vtkVisItXMLPDataReader::SplitFileName()
   char* begin = fileName;
   char* end = fileName + length;
   char* s;
-  
+
 #if defined(_WIN32)
   // Convert to UNIX-style slashes.
   for(s=begin;s != end;++s) { if(*s == '\\') { *s = '/'; } }
 #endif
-  
+
   // Extract the path name up to the last '/'.
-  if(this->PathName) 
-    { 
-    delete [] this->PathName; 
-    this->PathName = 0; 
+  if(this->PathName)
+    {
+    delete [] this->PathName;
+    this->PathName = 0;
     }
   char* rbegin = end-1;
   char* rend = begin-1;
-  for(s=rbegin;s != rend;--s) 
-    { 
-    if(*s == '/') 
-      { 
-      break; 
-      } 
+  for(s=rbegin;s != rend;--s)
+    {
+    if(*s == '/')
+      {
+      break;
+      }
     }
   if(s >= begin)
     {
@@ -348,12 +348,12 @@ void vtkVisItXMLPDataReader::SplitFileName()
     strncpy(this->PathName, this->FileName, length);
     this->PathName[length] = '\0';
     }
-  
+
   // Pull out the extension (assume last 4 characters of filename).
-  if(this->Extension) 
-    { 
-    delete [] this->Extension; 
-    this->Extension = 0; 
+  if(this->Extension)
+    {
+    delete [] this->Extension;
+    this->Extension = 0;
     }
   length = 4;
   this->Extension = new char[length+1];

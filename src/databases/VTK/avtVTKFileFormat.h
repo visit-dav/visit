@@ -67,7 +67,7 @@ protected:
 #include <avtSTMDFileFormat.h>
 
 // ****************************************************************************
-//  Class: avtPVTK_STMDFileFormat
+//  Class: avtPVTKFileFormat
 //
 //  Purpose:
 //      Reads in PVTK flavor of STMD files as a plugin to VisIt.
@@ -79,12 +79,12 @@ protected:
 
 class avtPVTKFileReader;
 
-class avtPVTK_STMDFileFormat : public avtSTMDFileFormat
+class avtPVTKFileFormat : public avtSTMDFileFormat
 {
 public:
-                       avtPVTK_STMDFileFormat(const char *filename,
-                                             const DBOptionsAttributes *);
-    virtual           ~avtPVTK_STMDFileFormat();
+                       avtPVTKFileFormat(const char *filename,
+                                         const DBOptionsAttributes *);
+    virtual           ~avtPVTKFileFormat();
 
     virtual const char    *GetType(void);
     virtual void           FreeUpResources(void);
@@ -110,7 +110,7 @@ protected:
 
 
 // ****************************************************************************
-//  Class: avtVTKM_STMDFileFormat
+//  Class: avtVTKMFileFormat
 //
 //  Purpose:
 //      Reads in VTM flavor of STMD files as a plugin to VisIt.
@@ -122,12 +122,12 @@ protected:
 
 class avtVTMFileReader;
 
-class avtVTM_STMDFileFormat : public avtSTMDFileFormat
+class avtVTMFileFormat : public avtSTMDFileFormat
 {
 public:
-    avtVTM_STMDFileFormat(const char *filename,
-    const DBOptionsAttributes *);
-    virtual           ~avtVTM_STMDFileFormat();
+    avtVTMFileFormat(const char *filename,
+                     const DBOptionsAttributes *);
+    virtual           ~avtVTMFileFormat();
 
     virtual const char    *GetType(void);
     virtual void           FreeUpResources(void);
@@ -151,9 +151,47 @@ protected:
     mutable int cycleFromFilename;
 };
 
+// ****************************************************************************
+//  Class: avtGEOSXFileFormat
+//
+//  Purpose:
+//      Reads in GEOSX flavor of vtm files as a plugin to VisIt.
+//
+//  Programmer: Kathleen Biagas
+//  Creation:   July 7, 2022
+//
+// ****************************************************************************
+
+class avtGEOSXFileReader;
+
+class avtGEOSXFileFormat : public avtSTMDFileFormat
+{
+public:
+    avtGEOSXFileFormat(const char *filename,
+                       const DBOptionsAttributes *);
+    virtual           ~avtGEOSXFileFormat();
+
+    virtual const char    *GetType(void);
+    virtual void           FreeUpResources(void);
+
+    virtual int            GetCycleFromFilename(const char *f) const;
+    virtual int            GetCycle(void);
+    virtual double         GetTime(void);
+
+    virtual void           PopulateDatabaseMetaData(avtDatabaseMetaData *);
+
+    virtual vtkDataSet    *GetMesh(int domain, const char *);
+    virtual vtkDataArray  *GetVar(int domain, const char *);
+    virtual vtkDataArray  *GetVectorVar(int domain, const char *);
+
+protected:
+    avtGEOSXFileReader *reader;
+
+    mutable int cycleFromFilename;
+};
 
 // ****************************************************************************
-//  Class: avtPVD_MTMDFileFormat
+//  Class: avtPVDFileFormat
 //
 //  Purpose:
 //      Reads in PVD files as a plugin to VisIt.
@@ -166,12 +204,12 @@ protected:
 class avtPVDFileReader;
 #include <avtMTMDFileFormat.h>
 
-class avtPVD_MTMDFileFormat : public avtMTMDFileFormat
+class avtPVDFileFormat : public avtMTMDFileFormat
 {
   public:
-                       avtPVD_MTMDFileFormat(const char *filename,
-                                             const DBOptionsAttributes *);
-    virtual           ~avtPVD_MTMDFileFormat();
+                       avtPVDFileFormat(const char *filename,
+                                        const DBOptionsAttributes *);
+    virtual           ~avtPVDFileFormat();
 
     int                GetNTimesteps(void) override;
     void               GetTimes(std::vector<double> &) override;

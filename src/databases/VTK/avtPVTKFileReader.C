@@ -26,7 +26,7 @@ using std::vector;
 //      fname    The file name.
 //
 //  Programmer:  Kathleen Biagas
-//  Creation:    June 24, 2022 
+//  Creation:    June 24, 2022
 //
 //  Modifications:
 //
@@ -47,8 +47,8 @@ avtPVTKFileReader::avtPVTKFileReader(const char *fname,
 // ****************************************************************************
 //  Method: avtPVTKFileReader destructor
 //
-//  Programmer: Kathleen Biagas 
-//  Creation:   June 24, 2022 
+//  Programmer: Kathleen Biagas
+//  Creation:   June 24, 2022
 //
 //  Modifications:
 //

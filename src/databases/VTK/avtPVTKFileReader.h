@@ -20,7 +20,7 @@
 //
 //  Notes: Originally part of the avtVTKFileReader class.
 //
-//  Programmer: Kathleen Biagas 
+//  Programmer: Kathleen Biagas
 //  Creation:   June 24, 2022
 //
 //  Modifications:
@@ -35,7 +35,7 @@ class avtPVTKFileReader : public avtVTKMultiBlockFileReader
 
 
   protected:
-    virtual void  ReadInFile(int _domain=-1); 
+    virtual void  ReadInFile(int _domain=-1);
     std::string   fileExtension;
 };
 

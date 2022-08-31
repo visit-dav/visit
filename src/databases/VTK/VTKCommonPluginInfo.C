@@ -12,6 +12,10 @@
 #include <avtMTMDFileFormatInterface.h>
 #include <avtGenericDatabase.h>
 
+#include <vtkNew.h>
+#include <vtkXMLDataParser.h>
+#include <vtkXMLDataElement.h>
+
 using std::string;
 
 VTKCommonPluginInfo::VTKCommonPluginInfo() : CommonDatabasePluginInfo(), VTKGeneralPluginInfo()
@@ -81,25 +85,57 @@ VTKCommonPluginInfo::SetupDatabase(const char *const *list,
 
         // Only using 1 timestepgroup
         avtMTMDFileFormat **ffl = new avtMTMDFileFormat*[1];
-        ffl[0] = new avtPVD_MTMDFileFormat(fn.c_str(), readOptions);
+        ffl[0] = new avtPVDFileFormat(fn.c_str(), readOptions);
         avtMTMDFileFormatInterface *inter = new avtMTMDFileFormatInterface(ffl, 1);
         db = new avtGenericDatabase(inter);
 
         return db;
     }
+
     else if (ext == "vtm")
     {
         dbType = DB_TYPE_STMD;
-
-        // STMD case
-        avtSTMDFileFormat **ffl = new avtSTMDFileFormat*[nList];
-        for (int i = 0; i < nList; i++)
+        bool isGEOSX = false;
+        // test if this is GEOSX by parsing the file and searching for
+        // specific elements that should exist
+        vtkNew<vtkXMLDataParser> parser;
+        parser->SetFileName(list[0]);
+        if(parser->Parse())
         {
-            ffl[i] = new avtVTM_STMDFileFormat(list[i], readOptions);
+            vtkXMLDataElement *root = parser->GetRootElement();
+            if(root)
+            {
+                vtkXMLDataElement *mbdsNode = root->GetNestedElement(0);
+                vtkXMLDataElement *grid =
+                    mbdsNode->FindNestedElementWithNameAndAttribute(
+                        "Block", "name", "backgroundGrid");
+                if(grid && grid->FindNestedElementWithNameAndAttribute(
+                   "Block", "name", "CellElementRegion"))
+                {
+                    avtSTMDFileFormat **ffl = new avtSTMDFileFormat*[nList];
+                    for (int i = 0; i < nList; i++)
+                    {
+                        ffl[i] = new avtGEOSXFileFormat(list[i], readOptions);
+                    }
+                    avtSTMDFileFormatInterface *inter
+                       = new avtSTMDFileFormatInterface(ffl, nList);
+                    db = new avtGenericDatabase(inter);
+                    isGEOSX = true;
+                }
+            }
         }
-        avtSTMDFileFormatInterface *inter
-           = new avtSTMDFileFormatInterface(ffl, nList);
-        db = new avtGenericDatabase(inter);
+
+        if (!isGEOSX)
+        {
+            avtSTMDFileFormat **ffl = new avtSTMDFileFormat*[nList];
+            for (int i = 0; i < nList; i++)
+            {
+                ffl[i] = new avtVTMFileFormat(list[i], readOptions);
+            }
+            avtSTMDFileFormatInterface *inter
+               = new avtSTMDFileFormatInterface(ffl, nList);
+            db = new avtGenericDatabase(inter);
+        }
     }
     else if (ext[0] == 'p')
     {
@@ -109,7 +145,7 @@ VTKCommonPluginInfo::SetupDatabase(const char *const *list,
         avtSTMDFileFormat **ffl = new avtSTMDFileFormat*[nList];
         for (int i = 0; i < nList; i++)
         {
-            ffl[i] = new avtPVTK_STMDFileFormat(list[i], readOptions);
+            ffl[i] = new avtPVTKFileFormat(list[i], readOptions);
         }
         avtSTMDFileFormatInterface *inter
            = new avtSTMDFileFormatInterface(ffl, nList);

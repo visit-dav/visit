@@ -102,7 +102,6 @@ class avtVTKFileReader : public avtVTKFileReaderBase
 
     vtkDataSet   *GetMesh(const char *);
     vtkDataArray *GetVar(const char *);
-    vtkDataArray *GetVectorVar(const char *);
     void         *GetAuxiliaryData(const char *var,
                                    const char *type, void *,
                                    DestructorFunction &df);

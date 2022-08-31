@@ -164,8 +164,8 @@ avtVTKMultiBlockFileReader::GetNumberOfDomains()
 //  Purpose:
 //      Reads in the dataset.
 //
-//  Programmer: Kathleen Biagas 
-//  Creation:   June 24, 2022 
+//  Programmer: Kathleen Biagas
+//  Creation:   June 24, 2022
 //
 //  Modifications:
 //
@@ -174,7 +174,7 @@ avtVTKMultiBlockFileReader::GetNumberOfDomains()
 void
 avtVTKMultiBlockFileReader::ReadInDataset(int domain)
 {
-    debug4 << "Reading in dataset from VTK file "; 
+    debug4 << "Reading in dataset from VTK file ";
     debug4 << pieceFileNames[domain];
     debug4 << " (domain = " << domain << ") " << endl;
 
@@ -201,8 +201,8 @@ avtVTKMultiBlockFileReader::ReadInDataset(int domain)
 // ****************************************************************************
 //  Method: avtVTKMultiBlockFileReader::GetAuxiliaryData
 //
-//  Programmer: Kathleen Biagas 
-//  Creation:   June 24, 2022 
+//  Programmer: Kathleen Biagas
+//  Creation:   June 24, 2022
 //
 //  Modifications:
 //
@@ -238,8 +238,8 @@ avtVTKMultiBlockFileReader::GetAuxiliaryData(const char *var, int domain,
 //
 //  Returns:    The mesh as a VTK dataset.
 //
-//  Programmer: Kathleen Biagas 
-//  Creation:   June 24, 2022 
+//  Programmer: Kathleen Biagas
+//  Creation:   June 24, 2022
 //
 //  Modifications:
 //
@@ -309,41 +309,13 @@ avtVTKMultiBlockFileReader::GetVar(int domain, const char *real_name)
 
 
 // ****************************************************************************
-//  Method: avtVTKMultiBlockFileReader::GetVectorVar
-//
-//  Purpose:
-//      Gets the vector variable.
-//
-//  Arguments:
-//      var      The desired vector varname.
-//
-//  Returns:     The vector variable.
-//
-//  Programmer: Kathleen Biagas
-//  Creation:   June 24, 2022 
-//
-//  Modifications:
-//
-// ****************************************************************************
-
-vtkDataArray *
-avtVTKMultiBlockFileReader::GetVectorVar(int domain, const char *var)
-{
-    //
-    // There is no difference between vectors and scalars for this class.
-    //
-    return GetVar(domain, var);
-}
-
-
-// ****************************************************************************
 //  Method: avtVTKMultiBlockFileReader::PopulateDatabaseMetaData
 //
 //  Purpose:
 //      Sets the database meta data.
 //
-//  Programmer: Kathleen Biagas 
-//  Creation:   June 24, 2022 
+//  Programmer: Kathleen Biagas
+//  Creation:   June 24, 2022
 //
 //  Modifications:
 //
@@ -362,7 +334,7 @@ avtVTKMultiBlockFileReader::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         ReadInDataset(0);
     }
 
- 
+
     string useMeshName;
     if(vtk_meshname.empty())
     {
@@ -372,7 +344,7 @@ avtVTKMultiBlockFileReader::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     {
         useMeshName = vtk_meshname;
     }
-  
+
     // Use only the first 'piece' as we are working under the assumption that
     // all 'pieces' will have the same topology, mesh type,
     // #, names, and types of variable

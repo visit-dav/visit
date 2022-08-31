@@ -36,11 +36,11 @@ public:
   vtkTypeMacro(vtkVisItXMLPDataReader,vtkXMLReader);
   void PrintSelf(ostream& os, vtkIndent indent) override;
   static vtkVisItXMLPDataReader *New();
-  
+
   // Description:
   // Get the number of pieces from the summary file being read.
-  vtkGetMacro(NumberOfPieces, int);  
-  
+  vtkGetMacro(NumberOfPieces, int);
+
   // Description:
   // Get the ghost level.
   vtkGetMacro(GhostLevel, int);
@@ -78,7 +78,7 @@ public:
 protected:
   vtkVisItXMLPDataReader();
   ~vtkVisItXMLPDataReader();
-  
+
   void SetupEmptyOutput() override;
 
   const char* GetDataSetName() override;
@@ -87,33 +87,33 @@ protected:
   void SetupOutputInformation(vtkInformation *outInfo) override;
 
   int ReadPrimaryElement(vtkXMLDataElement* ePrimary) override;
-  
+
   void SetupOutputData() override;
-  
+
   void SetupPieces(int numPieces);
   void DestroyPieces();
   int ReadPiece(vtkXMLDataElement* ePiece, int index);
-  
+
   char* CreatePieceFileName(const char* fileName);
   void SplitFileName();
-  
+
   // Callback registered with the PieceProgressObserver.
   static void PieceProgressCallbackFunction(vtkObject*, unsigned long, void*,
                                            void*);
   void PieceProgressCallback();
-  
+
   // Pieces from the input summary file.
   int NumberOfPieces;
-  
+
   // The ghost level available on each input piece.
   int GhostLevel;
-  
+
   // The piece currently being read.
   int Piece;
-  
+
   // The path to the input file without the file name.
   char* PathName;
-  
+
   // The extension of the file name.
   char* Extension;
 
@@ -128,18 +128,18 @@ protected:
 
   // The extents of the piece files.
   int** Extents;
- 
+
   // Information per-piece.
   vtkXMLDataElement** PieceElements;
-  
+
   // The PPointData and PCellData element representations.
   vtkXMLDataElement* PPointDataElement;
-  vtkXMLDataElement* PCellDataElement;  
-  
+  vtkXMLDataElement* PCellDataElement;
+
   // The observer to report progress from reading serial data in each
   // piece.
-  vtkCallbackCommand* PieceProgressObserver;  
-  
+  vtkCallbackCommand* PieceProgressObserver;
+
 private:
   vtkVisItXMLPDataReader(const vtkVisItXMLPDataReader&);  // Not implemented.
   void operator=(const vtkVisItXMLPDataReader&);  // Not implemented.

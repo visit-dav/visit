@@ -29,6 +29,8 @@ avtVTKOptions.C
 vtkVisItXMLPDataReader.C
 PVTKParser.C
 VTMParser.C
+GEOSXParser.C
+avtGEOSXFileReader.C
 )
 
 SET(LIBE_SOURCES
@@ -47,6 +49,8 @@ avtVTKWriter.C
 vtkVisItXMLPDataReader.C
 PVTKParser.C
 VTMParser.C
+GEOSXParser.C
+avtGEOSXFileReader.C
 )
 
 INCLUDE_DIRECTORIES(

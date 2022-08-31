@@ -246,10 +246,10 @@ avtVTKFileReader::~avtVTKFileReader()
 void
 avtVTKFileReader::ReadInDataset()
 {
-    debug4 << "Reading in dataset from VTK file " << filename << endl; 
+    debug4 << "Reading in dataset from VTK file " << filename << endl;
 
     if(dataset != nullptr)
-        dataset->Delete(); 
+        dataset->Delete();
 
     dataset = ReadVTKDataset(filename);
     dataset->Register(NULL);
@@ -410,46 +410,6 @@ avtVTKFileReader::GetVar(const char *real_name)
 
 
 // ****************************************************************************
-//  Method: avtVTKFileReader::GetVectorVar
-//
-//  Purpose:
-//      Gets the vector variable.
-//
-//  Arguments:
-//      var      The desired varname, this should be VARNAME.
-//
-//  Returns:     The varialbe as VTK vectors.
-//
-//  Programmer: Hank Childs
-//  Creation:   March 20, 2001
-//
-//  Modifications:
-//    Hank Childs, Tue Mar 26 13:33:43 PST 2002
-//    Add a reference so that reference counting tricks work.
-//
-//    Kathleen Bonnell, Wed Mar 27 15:47:14 PST 2002
-//    vtkVectors has been deprecated in VTK 4.0, use vtkDataArray instead.
-//
-//    Hank Childs, Thu Aug 15 09:17:14 PDT 2002
-//    Route the vector call through the scalar variable call, since there is
-//    now no effective difference between the two.
-//
-//    Eric Brugger, Mon Jun 18 12:28:25 PDT 2012
-//    I enhanced the reader so that it can read parallel VTK files.
-//
-// ****************************************************************************
-
-vtkDataArray *
-avtVTKFileReader::GetVectorVar(const char *var)
-{
-    //
-    // There is no difference between vectors and scalars for this class.
-    //
-    return GetVar(var);
-}
-
-
-// ****************************************************************************
 //  Method: avtVTKFileReader::PopulateDatabaseMetaData
 //
 //  Purpose:
@@ -560,7 +520,7 @@ avtVTKFileReader::GetVectorVar(const char *var)
 //    Kathleen Biagas, Fri August 13, 2021
 //    Add call to ReadInDataset if pieceDataset[0] is NULL.
 //
-//    Kathleen Biagas, Fri June 24, 2022 
+//    Kathleen Biagas, Fri June 24, 2022
 //    Bulk of logic moved to new base class methods.
 //
 // ****************************************************************************
@@ -582,8 +542,8 @@ avtVTKFileReader::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     {
         useMeshName = vtk_meshname;
     }
-   
-    // send some dummy vars for non-used mesh meta data 
+
+    // send some dummy vars for non-used mesh meta data
     string empty;
     vector<string> vs;
     vector<int> vi;

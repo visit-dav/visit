@@ -41,7 +41,6 @@ class avtVTKMultiBlockFileReader : public avtVTKFileReaderBase
 
     vtkDataSet   *GetMesh(int, const char *);
     vtkDataArray *GetVar(int, const char *);
-    vtkDataArray *GetVectorVar(int, const char *);
     void         *GetAuxiliaryData(const char *var, int,
                                    const char *type, void *, DestructorFunction &df);
 

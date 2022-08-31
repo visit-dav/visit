@@ -1250,7 +1250,7 @@ avtVTKFileReaderBase::FillMeshMetaData(avtDatabaseMetaData *md, vtkDataSet *ds,
     mesh->meshType = type;
     mesh->spatialDimension = spat;
     mesh->topologicalDimension = topo;
-    if (nGroups > 1)
+    if (nGroups > 0)
     {
         mesh->numGroups = nGroups;
         if (!GroupNames.empty())
@@ -1359,6 +1359,90 @@ avtVTKFileReaderBase::FillMeshMetaData(avtDatabaseMetaData *md, vtkDataSet *ds,
 // ****************************************************************************
 
 void
+avtVTKFileReaderBase::FillMaterialMetaData(avtDatabaseMetaData *md,
+    const std::string &meshName, const std::string &varName,
+    vtkDataArray *arr, vtkDataArray *materialIds)
+{
+    std::map<int, bool> valMap;
+    vtkIntArray  *iarr = NULL;
+    // check for field data "MaterialIds" that can directly provide us
+    // the proper set of material ids.
+    vtkDataArray *mids_arr = nullptr;
+    if(materialIds)
+        iarr = vtkIntArray::SafeDownCast(materialIds);
+    else
+        iarr = vtkIntArray::SafeDownCast(arr);
+
+    int *iptr = iarr->GetPointer(0);
+    int ntuples = iarr->GetNumberOfTuples();
+    for (int j = 0; j < ntuples; j++)
+        valMap[iptr[j]] = true;
+
+    std::map<int, bool>::const_iterator it;
+    for (it = valMap.begin(); it != valMap.end(); it++)
+    {
+        string tmpname = std::to_string(it->first);
+        matnames.push_back(tmpname);
+        matnos.push_back(it->first);
+    }
+
+    avtMaterialMetaData *mmd = new avtMaterialMetaData("materials",
+         meshName, int(valMap.size()), matnames);
+    md->Add(mmd);
+
+    matvarname = varName;
+}
+
+void
+avtVTKFileReaderBase::FillSingleVarMetaData(avtDatabaseMetaData *md,
+    const std::string &meshName, const std::string &varName,
+    int ncomp, int dataType, avtCentering center)
+{
+    if (ncomp == 1)
+    {
+        bool ascii = (dataType == VTK_CHAR);
+        AddScalarVarToMetaData(md, varName, meshName, center, NULL, ascii);
+    }
+    else if (ncomp <= 4)
+    {
+        AddVectorVarToMetaData(md, varName, meshName, center, ncomp);
+    }
+    else if (ncomp == 6)
+    {
+        AddSymmetricTensorVarToMetaData(md, varName, meshName, center);
+    }
+    else if (ncomp == 9)
+    {
+        AddTensorVarToMetaData(md, varName, meshName, center);
+    }
+    else
+    {
+        if(dataType == VTK_UNSIGNED_CHAR || dataType == VTK_CHAR)
+        {
+            md->Add(new avtLabelMetaData(varName, meshName, center));
+        }
+        else
+        {
+            AddArrayVarToMetaData(md, varName, ncomp, meshName, center);
+            string baseName = varName + "/comp_";
+            string baseDef = string("array_decompose(<") + varName + string(">, ");
+            string exp_name;
+            string exp_def;
+            for(int c = 0; c < ncomp; ++c)
+            {
+                exp_name = baseName + std::to_string(c);
+                exp_def = baseDef + std::to_string(c) + string(")");
+                Expression e;
+                e.SetType(Expression::ScalarMeshVar);
+                e.SetName(exp_name);
+                e.SetDefinition(exp_def);
+                md->AddExpression(&e);
+            }
+        }
+    }
+}
+
+void
 avtVTKFileReaderBase::FillVarsMetaData(avtDatabaseMetaData *md,
     vtkDataSetAttributes *atts, const std::string &meshName,
     avtCentering center, vtkFieldData *fieldData)
@@ -1368,100 +1452,31 @@ avtVTKFileReaderBase::FillVarsMetaData(avtDatabaseMetaData *md,
     {
         vtkDataArray *arr = atts->GetArray(i);
         int ncomp = arr->GetNumberOfComponents();
-        const char *name = arr->GetName();
+        char *tname = arr->GetName();
         char buffer[1024];
-        char buffer2[1024];
-        if (name == NULL || strcmp(name, "") == 0)
+        if (tname == NULL || strcmp(tname, "") == 0)
         {
             sprintf(buffer, "%s%d", VARNAME, nvars);
-            name = buffer;
+            tname = buffer;
         }
-        if (strncmp(name, "avt", strlen("avt")) == 0)
+        string name(tname);
+        if (name.find("avt") == 0)
         {
-            sprintf(buffer2, "internal_var_%s", name+strlen("avt"));
-            name = buffer2;
+            name = "internal_var_" + name.substr(3);
         }
         if (center == AVT_ZONECENT &&
-            ((arr->GetDataType() == VTK_INT) && (ncomp == 1) &&
-            ((strncmp(name, "internal_var_Subsets", strlen("internal_var_Subsets")) == 0) ||
-            ((strncmp(name, "material", strlen("material")) == 0)))))
+           ((arr->GetDataType() == VTK_INT) && (ncomp == 1) &&
+            ((name == "internal_var_Subsets")  || (name == "material"))))
         {
-            std::map<int, bool> valMap;
-            vtkIntArray  *iarr = NULL;
-            // check for field data "MaterialIds" that can directly provide us
-            // the proper set of material ids.
+            vtkDataArray *mids = nullptr;
             if(fieldData)
-            {
-                vtkDataArray *mids_arr = fieldData->GetArray("MaterialIds");
-                if( mids_arr != NULL)
-                    iarr = vtkIntArray::SafeDownCast(mids_arr);
-                else
-                    iarr = vtkIntArray::SafeDownCast(arr);
-
-                int *iptr = iarr->GetPointer(0);
-                int ntuples = iarr->GetNumberOfTuples();
-                for (int j = 0; j < ntuples; j++)
-                    valMap[iptr[j]] = true;
-
-                std::map<int, bool>::const_iterator it;
-                for (it = valMap.begin(); it != valMap.end(); it++)
-                {
-                    char tmpname[32];
-                    snprintf(tmpname, sizeof(tmpname), "%d", it->first);
-                    matnames.push_back(tmpname);
-                    matnos.push_back(it->first);
-                }
-
-                avtMaterialMetaData *mmd =
-                    new avtMaterialMetaData("materials", meshName,
-                                            (int)valMap.size(), matnames);
-                md->Add(mmd);
-
-                if (strncmp(name, "internal_var_Subsets", strlen("internal_var_Subsets")) == 0)
-                    matvarname = strdup("internal_var_Subsets");
-                else
-                    matvarname = strdup("material");
-            }
-        }
-        else if (ncomp == 1)
-        {
-            bool ascii = arr->GetDataType() == VTK_CHAR;
-            AddScalarVarToMetaData(md, name, meshName, center, NULL, ascii);
-        }
-        else if (ncomp <= 4)
-        {
-            AddVectorVarToMetaData(md, name, meshName, center, ncomp);
-        }
-        else if (ncomp == 9)
-        {
-            AddTensorVarToMetaData(md, name, meshName, center);
+                mids = fieldData->GetArray("MaterialIds");
+            FillMaterialMetaData(md, meshName, name, arr, mids);
         }
         else
         {
-            if(arr->GetDataType() == VTK_UNSIGNED_CHAR ||
-               arr->GetDataType() == VTK_CHAR)
-            {
-                md->Add(new avtLabelMetaData(name, meshName, center));
-            }
-            else
-            {
-                AddArrayVarToMetaData(md, name, ncomp, meshName, center);
-                int compnamelen = int(strlen(name) + 40);
-                char *exp_name = new char[compnamelen];
-                char *exp_def = new char[compnamelen];
-                for(int c = 0; c < ncomp; ++c)
-                {
-                    snprintf(exp_name, compnamelen, "%s/comp_%d", name, c);
-                    snprintf(exp_def,  compnamelen, "array_decompose(<%s>, %d)",  name, c);
-                    Expression e;
-                    e.SetType(Expression::ScalarMeshVar);
-                    e.SetName(exp_name);
-                    e.SetDefinition(exp_def);
-                    md->AddExpression(&e);
-                }
-                delete [] exp_name;
-                delete [] exp_def;
-            }
+            FillSingleVarMetaData(md, meshName, name, ncomp, arr->GetDataType(),
+                                  center);
         }
     }
 }
@@ -1579,6 +1594,38 @@ avtVTKFileReaderBase::AddTensorVarToMetaData(avtDatabaseMetaData *md,
     string name, string mesh, avtCentering cent, int dim)
 {
     avtTensorMetaData *tensor = new avtTensorMetaData();
+    tensor->name = name;
+    tensor->meshName = mesh;
+    tensor->centering = cent;
+    tensor->dim = dim;
+
+    md->Add(tensor);
+}
+
+
+// ****************************************************************************
+//  Method: avtFileFormat::AddSymmetricTensorVarToMetaData
+//
+//  Purpose:
+//      A convenience routine to add a symmetric tensor variable to the meta-data.
+//
+//  Arguments:
+//      md        The meta-data object to add the tensor var to.
+//      name      The name of the tensor variable.
+//      mesh      The mesh the tensor var is defined on.
+//      cent      The centering type - node vs cell.
+//      dim       The dimension of the tensor variable. (optional = 3)
+//
+//  Programmer: Kathleen Biagas
+//  Creation:   August 31, 2022
+//
+// ****************************************************************************
+
+void
+avtVTKFileReaderBase::AddSymmetricTensorVarToMetaData(avtDatabaseMetaData *md,
+    string name, string mesh, avtCentering cent, int dim)
+{
+    avtSymmetricTensorMetaData *tensor = new avtSymmetricTensorMetaData();
     tensor->name = name;
     tensor->meshName = mesh;
     tensor->centering = cent;

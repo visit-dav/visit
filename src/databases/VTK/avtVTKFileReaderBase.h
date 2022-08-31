@@ -132,6 +132,7 @@ class avtVTKFileReaderBase
 
     std::map<std::string, vtkRectilinearGrid *> vtkCurves;
 
+    // Helper methods that handle common checks for mesh and var retrieval
     vtkDataSet   *GetMeshFromDataset(vtkDataSet *, const char *);
     vtkDataArray *GetVarFromDataset(vtkDataSet *, const char *);
     void         *GetAuxiliaryDataFromDataset(vtkDataSet *, const char *var,
@@ -143,7 +144,7 @@ class avtVTKFileReaderBase
     vtkDataSet *ReadVTKDataset(const std::string &filename,
                                const int *ext=nullptr);
 
-    // Helper methods for filling in Mesh and Variable MetaData.
+    // Helper methods for filling in Mesh, Variable, and Material MetaData.
     void        FillMeshMetaData(avtDatabaseMetaData *md, vtkDataSet *ds,
                     const std::string &meshName,
                     const int nGroups, const std::string &GroupPieceName,
@@ -151,6 +152,14 @@ class avtVTKFileReaderBase
                     const std::vector<int> &GroupIds,
                     const int nBlocks, const std::string &BlockPieceName,
                     const std::vector<std::string> &BlockNames);
+
+    void        FillMaterialMetaData(avtDatabaseMetaData *md,
+                    const std::string &meshName, const std::string &varName,
+                    vtkDataArray *arr, vtkDataArray *materialIds);
+
+    void        FillSingleVarMetaData(avtDatabaseMetaData *md,
+                    const std::string &meshName, const std::string &varName,
+                    int ncomp, int dataType, avtCentering center);
 
     void        FillVarsMetaData(avtDatabaseMetaData *md,
                     vtkDataSetAttributes *atts,
@@ -160,20 +169,22 @@ class avtVTKFileReaderBase
 
 private:
 
-    void        CreateCurves(vtkRectilinearGrid *rgrid);
+    void   CreateCurves(vtkRectilinearGrid *rgrid);
 
     // Borrowed from avtFileFormat.
-    void       AddScalarVarToMetaData(avtDatabaseMetaData *, std::string,
-                                      std::string, avtCentering,
-                                      const double * = NULL,
-                                      const bool = false);
-    void       AddVectorVarToMetaData(avtDatabaseMetaData *, std::string,
-                                      std::string, avtCentering, int = 3,
-                                      const double * = NULL);
-    void       AddTensorVarToMetaData(avtDatabaseMetaData *, std::string,
-                                      std::string, avtCentering, int = 3);
-    void       AddArrayVarToMetaData(avtDatabaseMetaData *, std::string, int,
-                                     std::string, avtCentering);
+    void   AddScalarVarToMetaData(avtDatabaseMetaData *, std::string,
+                                  std::string, avtCentering,
+                                  const double * = NULL,
+                                  const bool = false);
+    void   AddVectorVarToMetaData(avtDatabaseMetaData *, std::string,
+                                  std::string, avtCentering, int = 3,
+                                  const double * = NULL);
+    void   AddTensorVarToMetaData(avtDatabaseMetaData *, std::string,
+                                  std::string, avtCentering, int = 3);
+    void   AddSymmetricTensorVarToMetaData(avtDatabaseMetaData *, std::string,
+                                  std::string, avtCentering, int = 3);
+    void   AddArrayVarToMetaData(avtDatabaseMetaData *, std::string, int,
+                                 std::string, avtCentering);
 };
 
 

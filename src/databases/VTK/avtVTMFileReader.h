@@ -18,8 +18,8 @@
 //  Purpose:
 //      Handles files of the .vtm file format.
 //
-//  Programmer: Kathleen Biagas 
-//  Creation:   June 24, 2022 
+//  Programmer: Kathleen Biagas
+//  Creation:   June 24, 2022
 //
 //  Modifications:
 //

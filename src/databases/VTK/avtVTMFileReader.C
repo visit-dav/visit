@@ -21,8 +21,8 @@ using std::string;
 //  Arguments:
 //      fname    The file name.
 //
-//  Programmer:  Kathleen Biagas 
-//  Creation:    June 24, 2022 
+//  Programmer:  Kathleen Biagas
+//  Creation:    June 24, 2022
 //
 //  Modifications:
 //
