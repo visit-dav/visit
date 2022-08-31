@@ -836,7 +836,6 @@ QvisColorTableWindow::AddGlobalTag(std::string currtag, bool first_time)
     // if the given tag is NOT in the global tag list
     if (tagList.find(currtag) == tagList.end())
     {
-        tagList[currtag];
         // make the "Standard" tag active the very first time the tags are enabled
         tagList[currtag].active = currtag == "Standard" && first_time;
         AddToTagTable(currtag);
@@ -850,6 +849,14 @@ QvisColorTableWindow::AddGlobalTag(std::string currtag, bool first_time)
         if (items.count() == 0)
             AddToTagTable(currtag);
     }
+    // Only the very first time can we guarantee that each reference to each
+    // tag has not been encountered before, so it is safe to increment here.
+    if (first_time)
+        // We have to do this logic AFTER the above logic because otherwise 
+        // currtag will already be added to the tagList, which will mess up
+        // our searching for it.
+        tagList[currtag].numrefs ++;
+
 }
 
 // ****************************************************************************
@@ -902,6 +909,22 @@ QvisColorTableWindow::UpdateTags()
             }
         }
         first_time = false;
+
+        // Purge tagList/tagTable entries that have 0 refcount.
+        auto itr = tagList.begin();
+        while (itr != tagList.end())
+        {
+            if (itr->second.numrefs <= 0)
+            {
+                // TODO err messages and guards
+                auto index = tagTable->indexOfTopLevelItem(itr->second.tagTableItem);
+                tagTable->takeTopLevelItem(index);
+            }
+            itr ++;
+        }
+
+        // TODO still need to *delete* from tagList
+
         tagTable->sortByColumn(1, Qt::AscendingOrder);
     }
 }
@@ -2028,6 +2051,8 @@ QvisColorTableWindow::addColorTable()
             cpts.AddTag("User Defined");
             cpts.SetTagChangesMade(true); // need to set manually b/c orig val was copied
             colorAtts->AddColorTable(currentColorTable.toStdString(), cpts);
+            for (auto tag : cpts.GetTagNames())
+                tagList[tag].numrefs ++;
         }
         else
         {
@@ -2044,6 +2069,8 @@ QvisColorTableWindow::addColorTable()
             cpts.SetDiscreteFlag(false);
             cpts.AddTag("User Defined");
             colorAtts->AddColorTable(currentColorTable.toStdString(), cpts);
+            for (auto tag : cpts.GetTagNames())
+                tagList[tag].numrefs ++;
         }
 
         // Tell all of the observers to update.
@@ -2096,6 +2123,8 @@ QvisColorTableWindow::deleteColorTable()
     // Get the index of the currently selected color table and tell the viewer
     // to remove it from the list of color tables.
     std::string ctName = nameListBox->currentItem()->text(0).toStdString();
+    for (auto tag : colorAtts->GetColorControlPoints(ctName)->GetTagNames())
+        tagList[tag].numrefs --;
 
     GetViewerMethods()->DeleteColorTable(ctName.c_str());
 }

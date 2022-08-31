@@ -31,13 +31,13 @@ class QvisColorSelectionWidget;
 class QvisColorGridWidget;
 class QvisNoDefaultColorTableButton;
 
-// TODO make a class instead so we can have default vals
-typedef struct TagMetaData
+class TagInfo
 {
-    bool active;
-    int numrefs;
-    QTreeWidgetItem *tagTableItem;
-} TagInfo;
+public:
+    bool active = false;
+    int numrefs = 0;
+    QTreeWidgetItem *tagTableItem = nullptr;
+};
 
 // ****************************************************************************
 // Class: QvisColorTableWindow
