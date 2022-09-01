@@ -72,6 +72,9 @@
       algorithm
     </Include>
     <Include file="source" quoted="false">
+      cctype
+    </Include>
+    <Include file="source" quoted="false">
       string.h
     </Include>
   </Attribute>

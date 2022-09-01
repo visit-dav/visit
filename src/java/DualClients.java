@@ -106,7 +106,6 @@ public class DualClients extends RunViewer implements SimpleObserver
             args.addElement(new String("-newconsole"));
             viewer.GetViewerMethods().OpenClient("CLI",
                  "visit",
-//                 viewer.GetVisItLauncher(),
                  args);
             launched = true;
 
