@@ -1250,7 +1250,7 @@ avtVTKFileReaderBase::FillMeshMetaData(avtDatabaseMetaData *md, vtkDataSet *ds,
     mesh->meshType = type;
     mesh->spatialDimension = spat;
     mesh->topologicalDimension = topo;
-    if (nGroups > 0)
+    if (nGroups > 1)
     {
         mesh->numGroups = nGroups;
         if (!GroupNames.empty())
