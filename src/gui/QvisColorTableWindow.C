@@ -911,20 +911,19 @@ QvisColorTableWindow::UpdateTags()
         first_time = false;
 
         // Purge tagList/tagTable entries that have 0 refcount.
-        auto itr = tagList.begin();
-        while (itr != tagList.end())
+        for (auto itr = tagList.begin(); itr != tagList.end();)
         {
             if (itr->second.numrefs <= 0)
             {
                 // TODO err messages and guards
                 auto index = tagTable->indexOfTopLevelItem(itr->second.tagTableItem);
                 tagTable->takeTopLevelItem(index);
+                delete itr->second.tagTableItem;
+                itr = tagList.erase(itr);
             }
-            itr ++;
+            else
+                itr ++;
         }
-
-        // TODO still need to *delete* from tagList
-
         tagTable->sortByColumn(1, Qt::AscendingOrder);
     }
 }
@@ -2116,6 +2115,15 @@ QvisColorTableWindow::deleteColorTable()
         QString tmp;
         tmp = tr("Cannot delete a color table while searching is enabled. "
                  "Please disable searching first.");
+        Error(tmp);
+        return;
+    }
+
+    if (nameListBox->topLevelItemCount() == 0)
+    {
+        QString tmp;
+        tmp = tr("Not able to delete a color table; there are no color tables"
+                 " to delete.");
         Error(tmp);
         return;
     }
