@@ -911,14 +911,22 @@ QvisColorTableWindow::UpdateTags()
         first_time = false;
 
         // Purge tagList/tagTable entries that have 0 refcount.
-        for (auto itr = tagList.begin(); itr != tagList.end();)
+        for (auto itr{tagList.begin()}; itr != tagList.end();)
         {
             if (itr->second.numrefs <= 0)
             {
-                // TODO err messages and guards
-                auto index = tagTable->indexOfTopLevelItem(itr->second.tagTableItem);
-                tagTable->takeTopLevelItem(index);
-                delete itr->second.tagTableItem;
+                if (QTreeWidgetItem *tagTableItem = itr->second.tagTableItem)
+                {
+                    auto index = tagTable->indexOfTopLevelItem(tagTableItem);
+                    // For some reason, the item is not in the tag table. This 
+                    // should not be possible, but if it does happen, we can 
+                    // recover.
+                    if (index != -1)
+                    {
+                        tagTable->takeTopLevelItem(index);
+                        delete tagTableItem;
+                    }
+                }
                 itr = tagList.erase(itr);
             }
             else
@@ -1056,23 +1064,32 @@ QvisColorTableWindow::UpdateNames()
         }
     }
 
+    // 
     // Select the default color table.
-    int index = colorAtts->GetColorTableIndex(currentColorTable.toStdString());
-    if(index >= 0)
+    // 
+
+    // First, make sure that the nameListBox is not currently empty.
+    if (nameListBox->topLevelItemCount() != 0)
     {
-        QTreeWidgetItemIterator it(nameListBox);
-        while(*it)
+        // Then check that the currentColorTable is actually in the box.
+        QList<QTreeWidgetItem*> items = nameListBox->findItems(
+            currentColorTable, Qt::MatchExactly, 0);
+        QTreeWidgetItem *item;
+        // If the currentColorTable is NOT in the box, change it to one that is
+        if (items.count() == 0)
         {
-            if ((*it)->text(0) == currentColorTable)
-            {
-                nameListBox->setCurrentItem(*it);
-                (*it)->setSelected(true);
-                 break;
-            }
-            ++it;
+            item = nameListBox->topLevelItem(0);
+            currentColorTable = item->text(0);
         }
+        // If the currentColorTable IS in the box...
+        else
+            item = items[0];
+        nameListBox->setCurrentItem(item);
+        item->setSelected(true);
+
         // Set the text of the default color table into the name line edit.
-        if (!searchingOn)
+        auto index = colorAtts->GetColorTableIndex(currentColorTable.toStdString());
+        if (index >= 0 && !searchingOn)
         {
             nameLineEdit->setText(QString(colorAtts->GetNames()[index].c_str()));
             tagLineEdit->setText(QString(colorAtts->GetColorTables(index).GetTagsAsString().c_str()));
@@ -2130,11 +2147,20 @@ QvisColorTableWindow::deleteColorTable()
 
     // Get the index of the currently selected color table and tell the viewer
     // to remove it from the list of color tables.
-    std::string ctName = nameListBox->currentItem()->text(0).toStdString();
-    for (auto tag : colorAtts->GetColorControlPoints(ctName)->GetTagNames())
-        tagList[tag].numrefs --;
+    if (QTreeWidgetItem *item = nameListBox->currentItem())
+    {
+        std::string ctName = item->text(0).toStdString();
+        for (auto tag : colorAtts->GetColorControlPoints(ctName)->GetTagNames())
+            tagList[tag].numrefs --;
+        GetViewerMethods()->DeleteColorTable(ctName.c_str());
+    }
+    else
+    {
+        QString tmp = tr("No color table selected; cannot delete.");
+        Error(tmp);
+        return;
+    }
 
-    GetViewerMethods()->DeleteColorTable(ctName.c_str());
 }
 
 // ****************************************************************************
