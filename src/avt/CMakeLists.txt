@@ -42,7 +42,7 @@ ELSE(VISIT_DBIO_ONLY)
     if(MFEM_FOUND)
         add_subdirectory(MFEM)
     endif()
-    if(CONDUIT_FOUND)
+    if(CONDUIT_FOUND AND MFEM_FOUND)
         add_subdirectory(Blueprint)
     endif()
 
