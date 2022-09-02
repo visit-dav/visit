@@ -239,6 +239,10 @@ debug1 <<"    ctName: " << ctName.toStdString() << endl;
         // if this color table was deleted
         if (colorTableAtts->GetColorTableIndex(ctName.toStdString()) == -1)
         {
+            if (buttonType == CONT)
+                colorTableAtts->SetDefaultContinuous(colorTableNames[buttonType][0].toStdString());
+            else
+                colorTableAtts->SetDefaultDiscrete(colorTableNames[buttonType][0].toStdString());
             colorTable = colorTableNames[buttonType][0];
             setText(colorTable);
             setToolTip(colorTable);
@@ -522,8 +526,12 @@ QvisNoDefaultColorTableButton::updateColorTableButtons()
                         // Does this color table match the type of this button?
                         if (colorTableAtts->GetColorTables(i).GetDiscreteFlag() == myButtonType)
                         {
-                            QString myColorTable{colorTableAtts->GetNames()[i].c_str()};
-                            buttons[i]->setColorTable(myColorTable);
+                            std::string myColorTable{colorTableAtts->GetNames()[i]};
+                            if (myButtonType == CONT)
+                                colorTableAtts->SetDefaultContinuous(myColorTable);
+                            else
+                                colorTableAtts->SetDefaultDiscrete(myColorTable);
+                            buttons[i]->setColorTable(QString(myColorTable.c_str()));
                             break;
                         }
                     }
@@ -531,7 +539,14 @@ QvisNoDefaultColorTableButton::updateColorTableButtons()
                 // Else there are CTs here of the correct type
                 else
                 {
+                    // This code might *seem* redundant, but it ensures `setColorTable`
+                    // hits the first case, instead of it having to go through
+                    // 3 conditions to get to the right behavior.
                     QString myColorTable{colorTableNames[myButtonType][0]};
+                    if (myButtonType == CONT)
+                        colorTableAtts->SetDefaultContinuous(myColorTable.toStdString());
+                    else
+                        colorTableAtts->SetDefaultDiscrete(myColorTable.toStdString());
                     buttons[i]->setColorTable(myColorTable);
                 }
             }

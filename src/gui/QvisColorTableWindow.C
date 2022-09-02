@@ -508,9 +508,15 @@ QvisColorTableWindow::CreateNode(DataNode *parentNode)
         // Save the current color table.
         std::string ct(currentColorTable.toStdString());
         node->AddNode(new DataNode("currentColorTable", ct));
-        // TODO
-        // node->AddNode(new DataNode("tagList", tagList));
-        // node->AddNode(new DataNode("activeTags", activeTags));
+        stringVector tagNames;
+        std::vector<bool> activeTags;
+        for (const auto mapitem : tagList)
+        {
+            tagNames.emplace_back(mapitem.first);
+            activeTags.emplace_back(mapitem.second.active);
+        }
+        node->AddNode(new DataNode("tagList", tagNames));
+        node->AddNode(new DataNode("activeTags", activeTags));
         node->AddNode(new DataNode("tagsVisible", tagsVisible));
         node->AddNode(new DataNode("tagsMatchAny", tagsMatchAny));
     }
@@ -545,12 +551,16 @@ QvisColorTableWindow::SetFromNode(DataNode *parentNode, const int *borders)
     DataNode *node, *node2;
     if((node = winNode->GetNode("currentColorTable")) != 0)
         currentColorTable = QString(node->AsString().c_str());
-    // TODO
-    // if((node = winNode->GetNode("tagList")) != 0 && (node2 = winNode->GetNode("activeTags")) != 0)
-    // {
-    //     tagList = node->AsStringVector();
-    //     activeTags = node2->AsBoolVector();
-    // }
+    if((node = winNode->GetNode("tagList")) != 0 && (node2 = winNode->GetNode("activeTags")) != 0)
+    {
+        stringVector tagNames{node->AsStringVector()};
+        std::vector<bool> activeTags{node2->AsBoolVector()};
+        if (tagNames.size() == activeTags.size())
+        {
+            for (int i = 0; i < tagNames.size(); i ++)
+                tagList[tagNames[i]].active = activeTags[i];
+        }
+    }
     if((node = winNode->GetNode("tagsVisible")) != 0)
         tagsVisible = node->AsBool();
     if((node = winNode->GetNode("tagsMatchAny")) != 0)
