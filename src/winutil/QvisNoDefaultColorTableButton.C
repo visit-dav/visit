@@ -225,13 +225,15 @@ QvisNoDefaultColorTableButton::setColorTable(const QString &ctName)
 {
 debug1 << "QvisNoDefaultColorTableButton::setColorTable" << endl;
 debug1 <<"    ctName: " << ctName.toStdString() << endl;
+    // Is the color table in our local list?
     if (getColorTableIndex(ctName, buttonType) != -1)
     {
         colorTable = ctName;
         setText(colorTable);
         setToolTip(colorTable);
-        setIcon(getIcon(ctName));
+        setIcon(getIcon(colorTable));
     }
+    // While the CT is not in our local list, our list is not empty
     else if (colorTableNames[buttonType].size() > 0)
     {
         // if this color table was deleted
@@ -244,8 +246,15 @@ debug1 <<"    ctName: " << ctName.toStdString() << endl;
         }
         // but if it was filtered, we don't want to do anything
     }
-    // If there are no available color tables, we don't want anything to
-    // change.
+    // The color table is not in our list of color tables because our list is empty...
+    // so we can't make any assumptions about its type and must check it at the door
+    else if (colorTableAtts->GetColorControlPoints(ctName.toStdString())->GetDiscreteFlag() == buttonType) 
+    {
+        colorTable = ctName;
+        setText(colorTable);
+        setToolTip(colorTable);
+        setIcon(getIcon(colorTable));
+    }
 debug1 << "QvisNoDefaultColorTableButton::setColorTable ... done" << endl;
 }
 
@@ -493,13 +502,42 @@ QvisNoDefaultColorTableButton::updateColorTableButtons()
 {
     for(size_t i = 0; i < buttons.size(); ++i)
     {
-        if (getColorTableIndex(
-            buttons[i]->getColorTable(), buttons[i]->getButtonType()) != -1)
-        {
+        int myButtonType = buttons[i]->getButtonType();
+        auto ctName = buttons[i]->getColorTable();
+        // If the color table is in our local (possibly filtered) list of CTs
+        if (getColorTableIndex(ctName, myButtonType) != -1)
             buttons[i]->setIcon(getIcon(buttons[i]->text()));
+        // Else the color table is not in our local list of CTs
+        else
+        {
+            // If the color table was deleted
+            if (colorTableAtts->GetColorTableIndex(ctName.toStdString()) == -1)
+            {
+                // If there are no CTs of the correct type in the current filtering selection
+                if (colorTableNames[myButtonType].isEmpty())
+                {
+                    // Then we must find any CT that is continuous/discrete as a fall-back
+                    for (int i = 0; i < colorTableAtts->GetNumColorTables(); i ++)
+                    {
+                        // Does this color table match the type of this button?
+                        if (colorTableAtts->GetColorTables(i).GetDiscreteFlag() == myButtonType)
+                        {
+                            QString myColorTable{colorTableAtts->GetNames()[i].c_str()};
+                            buttons[i]->setColorTable(myColorTable);
+                            break;
+                        }
+                    }
+                }
+                // Else there are CTs here of the correct type
+                else
+                {
+                    QString myColorTable{colorTableNames[myButtonType][0]};
+                    buttons[i]->setColorTable(myColorTable);
+                }
+            }
+            // Otherwise, we don't want anything to change.
+            // When filtering occurs, it shouldn't change the buttons.
         }
-        // If there are no available color tables, we don't want anything to
-        // change.            
     }
 }
 

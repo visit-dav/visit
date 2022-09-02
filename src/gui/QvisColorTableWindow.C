@@ -885,7 +885,7 @@ QvisColorTableWindow::UpdateTags()
     // We want the 'Standard' tag to be checked the very first time tag
     // filtering is enabled, hence the inclusion of `first_time`.
     static bool first_time = true;
-    if (tagFilterToggle->isChecked())
+    if (tagFilterToggle->isChecked() || first_time)
     {
         // populate tags list
         // iterate thru each color table
@@ -2150,7 +2150,27 @@ QvisColorTableWindow::deleteColorTable()
     if (QTreeWidgetItem *item = nameListBox->currentItem())
     {
         std::string ctName = item->text(0).toStdString();
-        for (auto tag : colorAtts->GetColorControlPoints(ctName)->GetTagNames())
+        // TODO remove the `const_cast` on develop; this issue has been solved there.
+        auto ccpl{const_cast<ColorControlPointList *>(colorAtts->GetColorControlPoints(ctName))};
+        if (tagList["Continuous"].numrefs == 1 && ccpl->HasTag("Continuous"))
+        {
+            QString tmp;
+            tmp = tr("This is the last Continuous Color Table. There must be"
+                     " at least one Continuous Color Table, so this Color"
+                     " Table will not be deleted.");
+            Error(tmp);
+            return;
+        }
+        if (tagList["Discrete"].numrefs == 1 && ccpl->HasTag("Discrete"))
+        {
+            QString tmp;
+            tmp = tr("This is the last Discrete Color Table. There must be"
+                     " at least one Discrete Color Table, so this Color"
+                     " Table will not be deleted.");
+            Error(tmp);
+            return;
+        }
+        for (auto tag : ccpl->GetTagNames())
             tagList[tag].numrefs --;
         GetViewerMethods()->DeleteColorTable(ctName.c_str());
     }
