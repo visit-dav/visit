@@ -8,6 +8,7 @@
 #include <QvisPostableWindowObserver.h>
 #include <AttributeSubject.h>
 #include <ColorTableObserver.h>
+#include <set>
 
 // Forward declarations
 class ColorControlPointList;
@@ -95,6 +96,18 @@ class QvisNoDefaultColorTableButton;
 //   Justin Privitera, Wed Jul 27 12:23:56 PDT 2022
 //   Added `skip_update` option to `ShowSelectedColor()`.
 // 
+//   Justin Privitera, Wed Aug 10 13:24:26 PDT 2022
+//   Reorganized gui elements so they appear in the header file in the same 
+//   order they appear in the gui.
+// 
+//   Justin Privitera, Thu Aug 25 15:04:55 PDT 2022
+//   Made the following changes:
+//    - Included set
+//    - Added StringifyTagChanges, UnstringifyAndMergeTagChanges, tagEdited,
+//      addRemoveTag, addTagToColorTable, and removeTagFromColorTable.
+//    - Added tagEdit (a string for editing tags)
+//    - Added a data structure to store changes to tags
+// 
 // ****************************************************************************
 
 class GUI_API QvisColorTableWindow : public QvisPostableWindowObserver
@@ -129,6 +142,8 @@ protected:
     void ChangeSelectedColor(const QColor &c);
     void PopupColorSelect(const QColor &, const QPoint &p);
     QColor GetNextColor();
+    stringVector StringifyTagChanges();
+    void UnstringifyAndMergeTagChanges(stringVector changes);
 
 private slots:
     void resizeColorTable(int);
@@ -161,6 +176,14 @@ private slots:
     void tagCombiningChanged(int index);
     void searchingToggled(bool checked);
     void searchEdited(const QString &newSearchTerm);
+    void tagEdited();
+    void addRemoveTag();
+    void addTagToColorTable(const std::string ctName, 
+                            const std::string tagName,
+                            ColorControlPointList* ccpl);
+    void removeTagFromColorTable(const std::string ctName, 
+                                 const std::string tagName,
+                                 ColorControlPointList* ccpl);
     void updateNameBoxPosition(bool tagsOn);
 private:
     ColorTableAttributes     *colorAtts;
@@ -174,48 +197,82 @@ private:
     bool                     tagsMatchAny;
     bool                     searchingOn;
     QString                  searchTerm;
+    QString                  tagEdit;
 
+    // This object also observes the color table attributes.
+    ColorTableObserver       ctObserver;
+
+    // data object to store tag changes
+    std::map<std::string, std::set<std::pair<int, std::string>>> tagChanges;
+    // We are mapping color table names (std::string)
+    // to sets (std::set) of representations of tag changes.
+    // These representations consist of pairs (std::pair), where the first element in each
+    // is a constant equal to either ADDTAG (0) or REMOVETAG (1) and the
+    // second element is the name of the tag (std::string) being added or removed.
+    // 
+    // This data structure will be updated on the fly to reflect the latest 
+    // tag changes. It will be used to determine if a tag change is legal
+    // (particularly if a color table is built in), and it will be saved out
+    // to state files.
+
+    // 
     // Widgets and layouts.
+    // 
+
+    // Default Color Table
     QGroupBox                *defaultGroup;
     QvisNoDefaultColorTableButton *defaultContinuous;
     QLabel                   *defaultContinuousLabel;
     QvisNoDefaultColorTableButton *defaultDiscrete;
     QLabel                   *defaultDiscreteLabel;
-    QCheckBox                *tagFilterToggle;
-    QComboBox                *tagCombiningBehaviorChoice;
-    QCheckBox                *searchToggle;
+    // End Default Color Table
+
+    // Manager
+    QGroupBox                *colorTableWidgetGroup;
     QGridLayout              *mgLayout;
 
-    QGroupBox                *colorTableWidgetGroup;
     QPushButton              *newButton;
     QPushButton              *deleteButton;
     QPushButton              *exportButton;
-    QLineEdit                *nameLineEdit;
+
+    QCheckBox                *tagFilterToggle;
+    QComboBox                *tagCombiningBehaviorChoice;
+
+    QTreeWidget              *tagTable;
     QTreeWidget              *nameListBox;
+
+    QLabel                   *colorTableName;
+    QLineEdit                *nameLineEdit;
+    QCheckBox                *searchToggle;
+    
     QLabel                   *tagLabel;
     QLineEdit                *tagLineEdit;
-    QTreeWidget              *tagTable;
 
+    QLabel                   *tagEditorLabel;
+    QLineEdit                *tagEditorLineEdit;
+    QPushButton              *tagAddRemoveButton;
+    // End Manager
+
+    // Editor
     QGroupBox                *colorWidgetGroup;
 
     QSpinBox                 *colorNumColors;
     QButtonGroup             *colorTableTypeGroup;
 
+    QPushButton              *alignPointButton;
     QLabel                   *smoothLabel;
     QComboBox                *smoothingMethod;
     QCheckBox                *equalCheckBox;
+    
     QvisSpectrumBar          *spectrumBar;
     QvisColorSelectionWidget *colorSelect;
-    QPushButton              *alignPointButton;
     QCheckBox                *showIndexHintsCheckBox;
 
     QvisColorGridWidget      *discreteColors;
     QLabel                   *componentLabels[4];
     QSlider                  *componentSliders[4];
     QSpinBox                 *componentSpinBoxes[4];
-
-    // This object also observes the color table attributes.
-    ColorTableObserver       ctObserver;
+    // End Editor
 };
 
 #endif

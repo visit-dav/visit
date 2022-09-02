@@ -4,6 +4,10 @@
 
 #include <ColorControlPointList.h>
 #include <DataNode.h>
+#include <DebugStream.h>
+#include <algorithm>
+#include <cctype>
+#include <string.h>
 #include <ColorControlPoint.h>
 
 //
@@ -709,23 +713,32 @@ ColorControlPointList::SetExternalFlag(bool externalFlag_)
 // Method: ColorControlPointList::SetTagNames
 //
 // Purpose:
-//   Setter for names.
+//   Setter for tagNames.
 //
-// Note:       There needs to be a custom setter to make sure that every time
-//             the tagNames are set, tagChangesMade is set to true.
+// Note:       We need a custom setter to vet the tag names before they are
+//             added to the tagNames vector.
 //
 // Programmer: Justin Privitera
 // Creation:   Wed Jun 29 16:38:18 PDT 2022
 //
 // Modifications:
+//     Justin Privitera, Thu Aug 25 15:04:55 PDT 2022
+//     Validate tags before adding them to the list.
 //
 // ****************************************************************************
 
 void
 ColorControlPointList::SetTagNames(const stringVector &tagNames_)
 {
-    tagNames = tagNames_;
-    tagChangesMade = true;
+    std::for_each(tagNames_.begin(), tagNames_.end(),
+        [this, tagNames_](std::string currtag)
+        {
+            auto result{ValidateTag(currtag)};
+            if (result.first)
+                AddTag(currtag);
+            else
+                debug1 << "ColorControlPointList WARNING: " << result.second;
+        });
     Select(ID_tagNames, (void *)&tagNames);
 }
 
@@ -1785,20 +1798,58 @@ ColorControlPointList::CompactCreateNode(DataNode *parentNode, bool completeSave
 //
 // Programmer: Justin Privitera
 // Creation:   Fri Jun  3 11:27:43 PDT 2022
+// 
+// Note: We assume the following: the tag is not an empty string AND the tag 
+//   contains only alphanumeric characters and characters in " -=<>". In other
+//   words, we assume that the result of `ValidateTag` is true.
 //
 // Modifications:
 //    Justin Privitera, Wed Jun 29 17:50:24 PDT 2022
 //    Set tagChangesMade to true every time a tag is added.
+// 
+//    Justin Privitera, Thu Aug 25 15:04:55 PDT 2022
+//    Now takes a const string and uses `emplace_back`.
 //
 // ****************************************************************************
 
 void
-ColorControlPointList::AddTag(std::string newtag)
+ColorControlPointList::AddTag(const std::string newtag)
 {
     // If the tag is already in the tag list then we will do nothing.
     if (!HasTag(newtag))
     {
-        tagNames.push_back(newtag);
+        tagNames.emplace_back(newtag);
+        tagChangesMade = true;
+    }
+}
+
+// ****************************************************************************
+// Method: ColorControlPointList::RemoveTag
+//
+// Purpose:
+//   Remove the tag from the list of local tags.
+//
+// Programmer: Justin Privitera
+// Creation:   Wed Aug 10 15:35:58 PDT 2022
+//
+// Modifications:
+//    Justin Privitera, Thu Aug 25 15:04:55 PDT 2022
+//    Made the "tag" arg const.
+//
+// ****************************************************************************
+
+void
+ColorControlPointList::RemoveTag(const std::string tag)
+{
+    // If the tag is not in the tag list then we will do nothing.
+    int index = GetTagIndex(tag);
+    if (index != -1)
+    {
+        stringVector::iterator pos = tagNames.begin();
+        for (int i = 0; i < index; i ++) 
+            pos ++;
+        if(pos != tagNames.end()) 
+            tagNames.erase(pos);
         tagChangesMade = true;
     }
 }
@@ -1835,11 +1886,14 @@ ColorControlPointList::ClearTags()
 // Creation:   Fri Jun  3 11:27:43 PDT 2022
 //
 // Modifications:
+//    Justin Privitera, Thu Aug 25 15:04:55 PDT 2022
+//    Made it a const function that takes a const int.
+
 //
 // ****************************************************************************
 
 std::string
-ColorControlPointList::GetTag(int index)
+ColorControlPointList::GetTag(const int index) const
 {
     if (index >= 0 && index < tagNames.size())
         return tagNames[index];
@@ -1856,11 +1910,13 @@ ColorControlPointList::GetTag(int index)
 // Creation:   Fri Jun  3 11:27:43 PDT 2022
 //
 // Modifications:
+//    Justin Privitera, Thu Aug 25 15:04:55 PDT 2022
+//    Made it a const function.
 //
 // ****************************************************************************
 
 int
-ColorControlPointList::GetNumTags()
+ColorControlPointList::GetNumTags() const
 {
     return tagNames.size();
 }
@@ -1875,11 +1931,13 @@ ColorControlPointList::GetNumTags()
 // Creation:   Fri Jun  3 11:27:43 PDT 2022
 //
 // Modifications:
+//    Justin Privitera, Thu Aug 25 15:04:55 PDT 2022
+//    Made it a const function.
 //
 // ****************************************************************************
 
 std::string
-ColorControlPointList::GetTagsAsString()
+ColorControlPointList::GetTagsAsString() const
 {
     int numtags = tagNames.size();
     if (numtags == 0)
@@ -1905,16 +1963,82 @@ ColorControlPointList::GetTagsAsString()
 // Creation:   Wed Jun  8 11:46:21 PDT 2022
 //
 // Modifications:
+//    Justin Privitera, Thu Aug 25 15:04:55 PDT 2022
+//    Made it a const function that takes a const arg.
 //
 // ****************************************************************************
 
 bool
-ColorControlPointList::HasTag(std::string tag)
+ColorControlPointList::HasTag(const std::string tag) const
 {
     for (int i = 0; i < tagNames.size(); i ++)
         if (tagNames[i] == tag)
             return true;
     return false;
+}
+
+// ****************************************************************************
+// Method: ColorControlPointList::GetTagIndex
+//
+// Purpose:
+//   Gets the index in the tag names vector of a given tag.
+//
+// Programmer: Justin Privitera
+// Creation:   Wed Aug 10 15:35:58 PDT 2022
+//
+// Modifications:
+//
+// ****************************************************************************
+
+int
+ColorControlPointList::GetTagIndex(const std::string tag) const
+{
+    for (int i = 0; i < tagNames.size(); i ++)
+        if (tagNames[i] == tag)
+            return i;
+    return -1;
+}
+
+// ****************************************************************************
+// Method: ColorControlPointList::ValidateTag
+//
+// Purpose: Make sure a tag conforms to rules. Returns a pair, where the first 
+//      element is a flag to say if the tag is good or not, and the second
+//      element is a string that contains an error message for use as needed.
+//
+// Programmer: Justin Privitera
+// Creation:   Thu Aug 25 10:05:45 PDT 2022
+//
+// Modifications:
+//
+// ****************************************************************************
+std::pair<bool, std::string>
+ColorControlPointList::ValidateTag(const std::string currtag) const
+{
+    auto success{false};
+    std::string outstr;
+    if (currtag == "")
+    {
+        outstr = "A tag for a color table "
+            "is an empty string. This tag will be discarded.\n";
+    }
+    // Check that the tag is alphanumeric or contains one of the allowed
+    // special characters.
+    else if (! std::all_of(currtag.begin(), currtag.end(), 
+             [](char const &c){return std::isalnum(c) || strchr(" -=<>", c);}))
+    {
+        outstr = "The tag name \""
+            + currtag + "\" is not valid. Tag names must contain "
+            "only alphanumeric characters accompanied by the "
+            "following 5 characters: \" \", \"-\", \"=\", \"<\", "
+            "and \">\". This tag will be discarded.\n";
+    }
+    else
+    {
+        success = true;
+        outstr = "";
+    }
+    return std::make_pair(success, outstr);
 }
 
 // ****************************************************************************

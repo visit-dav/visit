@@ -41,6 +41,8 @@
     </Function>
     <Function name="AddTag" user="true" member="true">
     </Function>
+    <Function name="RemoveTag" user="true" member="true">
+    </Function>
     <Function name="ClearTags" user="true" member="true">
     </Function>
     <Function name="GetTag" user="true" member="true">
@@ -51,6 +53,10 @@
     </Function>
     <Function name="HasTag" user="true" member="true">
     </Function>
+    <Function name="GetTagIndex" user="true" member="true">
+    </Function>
+    <Function name="ValidateTag" user="true" member="true">
+    </Function>
     <Function name="SetNumControlPoints" user="true" member="true">
     </Function>
     <Function name="ColorControlPointList_SetNumControlPoints" user="true" member="true">
@@ -59,4 +65,16 @@
     </Function>
     <Function name="ProcessOldVersions" user="true" member="true">
     </Function>
+    <Include file="source" quoted="false">
+      DebugStream.h
+    </Include>
+    <Include file="source" quoted="false">
+      algorithm
+    </Include>
+    <Include file="source" quoted="false">
+      cctype
+    </Include>
+    <Include file="source" quoted="false">
+      string.h
+    </Include>
   </Attribute>
