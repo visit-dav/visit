@@ -490,6 +490,9 @@ QvisColorTableWindow::CreateWindowContents()
 // 
 //   Justin Privitera, Thu Jun 16 18:01:49 PDT 2022
 //   Added ability for tag settings to be written to config/session files.
+// 
+//   Justin Privitera, Fri Sep  2 16:46:21 PDT 2022
+//   Now plays nice with the new tag data structure.
 //
 // ****************************************************************************
 
@@ -537,6 +540,9 @@ QvisColorTableWindow::CreateNode(DataNode *parentNode)
 // 
 //   Justin Privitera, Thu Jun 16 18:01:49 PDT 2022
 //   Added ability for tag settings to be read from config/session files.
+// 
+//   Justin Privitera, Fri Sep  2 16:46:21 PDT 2022
+//   Now plays nice with the new tag data structure.
 //
 // ****************************************************************************
 
@@ -808,6 +814,11 @@ QvisColorTableWindow::UpdateEditor()
 // Creation:   Mon Jun 27 17:30:16 PDT 2022
 //
 // Modifications:
+//    Justin Privitera, Fri Sep  2 16:46:21 PDT 2022
+//    Tag index argument is deprecated; it is no longer needed with the 
+//    refactor.
+//    Thus there is also no need for the secret tag table column for storing
+//    the index of the tag.
 //
 // ****************************************************************************
 
@@ -837,6 +848,12 @@ QvisColorTableWindow::AddToTagTable(std::string currtag)
 // 
 //    Justin Privitera, Fri Aug 19 20:57:38 PDT 2022
 //    We now throw an error if there are too many tags.
+// 
+//    Justin Privitera, Fri Sep  2 16:46:21 PDT 2022
+//    No limit on the number of tags.
+//    Refactor allows for much cleaner interface for working with tag data.
+//    No need to collect indices of tags anymore due to refactor.
+//    Calculate refcount for each tag on the very first iteration through.
 //
 // ****************************************************************************
 
@@ -886,6 +903,11 @@ QvisColorTableWindow::AddGlobalTag(std::string currtag, bool first_time)
 //    Renamed `run_before` to `first_time`.
 //    Added guard to make sure code to fill tag table and tag list
 //    is only run as much as it needs to be run.
+// 
+//    Justin Privitera, Fri Sep  2 16:46:21 PDT 2022
+//    Run the tag table generation the first time so we can set up the tagInfo
+//    map.
+//    Purge tagList and tagTable entries that have 0 refcount.
 //
 // ****************************************************************************
 
@@ -984,6 +1006,10 @@ QvisColorTableWindow::UpdateTags()
 // 
 //   Justin Privitera, Wed Aug  3 19:46:13 PDT 2022
 //   The tag line edit only needs to be populated if searching is disabled.
+// 
+//   Justin Privitera, Fri Sep  2 16:46:21 PDT 2022
+//   Rework for accessing tag information b/c of refactor.
+//   Fix so current CT can never be set to one that is not in the CT name box.
 //
 // ****************************************************************************
 
@@ -2047,6 +2073,9 @@ QvisColorTableWindow::equalSpacingToggled(bool)
 //   Justin Privitera, Wed Jul 20 14:18:20 PDT 2022
 //   Added error if users try to add a color table while searching is enabled.
 //
+//   Justin Privitera, Fri Sep  2 16:46:21 PDT 2022
+//   Update tag refcount on creation of a new CT.
+//
 // ****************************************************************************
 
 void
@@ -2131,6 +2160,12 @@ QvisColorTableWindow::addColorTable()
 //
 //    Justin Privitera, Wed Jul 20 14:18:20 PDT 2022
 //    Error when deleting a CT while searching is enabled.
+// 
+//    Justin Privitera, Fri Sep  2 16:46:21 PDT 2022
+//    Error when attempting to delete a CT when there are no CTs.
+//    Error when attempting to delete a CT when one is not selected.
+//    Error when attempting to delete the last continuous or discrete CT.
+//    Update tag refcount before deleting CT.
 // 
 // ****************************************************************************
 
@@ -2257,6 +2292,9 @@ QvisColorTableWindow::highlightColorTable(QTreeWidgetItem *current,
 // Creation:   Mon Jun  6 14:02:16 PDT 2022
 //
 // Modifications:
+//    Justin Privitera, Fri Sep  2 16:46:21 PDT 2022
+//    The secret tag table column is gone; there is no need to read the index
+//    from it anymore. We can use the map instead.
 //
 // ****************************************************************************
 

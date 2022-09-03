@@ -5077,6 +5077,10 @@ ViewerSubject::HandleSILAttsUpdated(const string &host,
 //   Justin Privitera, Wed Jul 13 15:24:42 PDT 2022
 //   Added `setColorTableAttributes` call for the QvisColorTableButton and
 //   QvisNoDefaultColorTableButton.
+// 
+//   Justin Privitera, Fri Sep  2 16:46:21 PDT 2022
+//   Added the missing logic from the ctObserver. Now we check if a CT is 
+//   "active" before trying to put it in the buttons.
 //
 // ****************************************************************************
 

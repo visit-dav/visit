@@ -100,6 +100,11 @@ public:
 //   `searchingOn`, QString `searchTerm`, QCheckBox `searchToggle`, and 
 //   functions `searchingToggled` and `searchEdited`.
 // 
+//   Justin Privitera, Fri Sep  2 16:46:21 PDT 2022
+//   Added `TagInfo` class to store tag info all in one place.
+//   I removed the tagList and activeTags stringVectors and replaced them with
+//   the new tagList, which is a map from tagnames to `TagInfo`s.
+// 
 // ****************************************************************************
 
 class GUI_API QvisColorTableWindow : public QvisPostableWindowObserver

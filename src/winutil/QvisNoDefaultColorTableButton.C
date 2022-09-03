@@ -217,6 +217,10 @@ QvisNoDefaultColorTableButton::sizePolicy() const
 //    Justin Privitera, Wed Aug  3 19:46:13 PDT 2022
 //    Added logic to prevent CT from being changed when CT passed out of the 
 //    tag filtering selection.
+// 
+//    Justin Privitera, Fri Sep  2 16:46:21 PDT 2022
+//    Logic was added to ensure no desync with the color table atts and to
+//    react to color tables outside the filtering selection.
 //
 // ****************************************************************************
 
@@ -498,6 +502,11 @@ QvisNoDefaultColorTableButton::addColorTable(const QString &ctName)
 // 
 //   Justin Privitera, Wed Jul 13 15:19:47 PDT 2022
 //   Added call to getbuttontype() to specify which button.
+// 
+//   Justin Privitera, Fri Sep  2 16:46:21 PDT 2022
+//   Guards are in place now to protect the buttons from falling out of sync
+//   with the color table attributes and to ensure that they always represent
+//   valid color table choices.
 //   
 // ****************************************************************************
 
