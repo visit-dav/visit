@@ -815,10 +815,7 @@ QvisColorTableWindow::UpdateEditor()
 //
 // Modifications:
 //    Justin Privitera, Fri Sep  2 16:46:21 PDT 2022
-//    Tag index argument is deprecated; it is no longer needed with the 
-//    refactor.
-//    Thus there is also no need for the secret tag table column for storing
-//    the index of the tag.
+ // Eliminated tag index arg as well as need for secret tag table column.
 //
 // ****************************************************************************
 
