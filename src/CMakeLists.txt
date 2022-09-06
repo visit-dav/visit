@@ -2185,11 +2185,17 @@ SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${VISIT_EXE_LINKER_FLAGS}"
 # we would simply rely on cmake to propgate transitive dependency details.
 #
 
-set(AVT_REQUIRED_LIB_DIR "" CACHE INTERNAL "Engine AVT Required I/O lib dirs")
+set(__AVT_REQUIRED_LIB_DIR_LIST "")
 if(CONDUIT_FOUND)
-    set(AVT_REQUIRED_LIB_DIR ${CONDUIT_LIBRARY_DIR} CACHE INTERNAL "Engine AVT Required I/O lib dirs")
+    list(APPEND __AVT_REQUIRED_LIB_DIR_LIST ${CONDUIT_LIBRARY_DIR})
 endif()
 
+if(MFEM_FOUND)
+    list(APPEND __AVT_REQUIRED_LIB_DIR_LIST ${MFEM_LIBRARY_DIR})
+endif()
+
+
+set(AVT_REQUIRED_LIB_DIR "${__AVT_REQUIRED_LIB_DIR_LIST}" CACHE INTERNAL "Engine AVT Required I/O lib dirs")
 
 FUNCTION(CREATE_PLUGIN_DEPENDENCIES target comp type)
     FOREACH(P ${ARGN})

@@ -39,6 +39,9 @@
 #    Eric Brugger, Tue Jul 20 11:55:04 PDT 2021
 #    Added OPENGL_INCLUDE_DIR to the include directories if building IceT
 #    with MesaGL.
+# 
+#    Justin Privitera, Wed Aug 24 11:08:51 PDT 2022
+#    Added logic to be aware of avtBP lib.
 #
 #****************************************************************************
 
@@ -139,6 +142,23 @@ target_link_libraries(engine_ser
     avtpipeline_ser
 )
 
+if(CONDUIT_FOUND AND MFEM_FOUND)
+    LINK_DIRECTORIES(
+        ${MFEM_LIBRARY_DIR}
+        ${CONDUIT_LIBRARY_DIR}
+        )
+    INCLUDE_DIRECTORIES(
+        ${MFEM_INCLUDE_DIR}
+        ${CONDUIT_INCLUDE_DIR}
+        ${VISIT_SOURCE_DIR}/avt/Blueprint
+        )
+    TARGET_LINK_LIBRARIES(engine_ser 
+        ${MFEM_LIB} 
+        avtblueprint
+        )
+endif()
+
+
 if(HAVE_OSMESA OR HAVE_EGL)
     target_link_libraries(engine_ser visit_vtk_offscreen)
 endif()
@@ -238,6 +258,13 @@ if(VISIT_PARALLEL)
         cognomen
         ${ICET_DYNAMIC_LIB}
     )
+
+    if(CONDUIT_FOUND AND MFEM_FOUND)
+        TARGET_LINK_LIBRARIES(engine_par
+            ${MFEM_LIB} 
+            avtblueprint
+            )
+    endif()
 
     if(HAVE_OSMESA OR HAVE_EGL)
         target_link_libraries(engine_par visit_vtk_offscreen)
