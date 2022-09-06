@@ -102,10 +102,6 @@
 #   Added VISIT_ROOT_INCLUDE_DIR for ThirdParty and .cmake includes, so that
 #   VISIT_INCLUDE_DIR can be used for visit includes.
 #
-#   Kathleen Biagas, Wed Aug 10 15:41:22 PDT 2022
-#   VTK_VERSION is needed for version comparisons so that both VTK 9 and
-#   VTK 8 can be supported.
-#
 #   Justin Privitera, Tue Aug 23 14:40:24 PDT 2022
 #   Removed `CONDUIT_HAVE_PARTITION_FLATTEN` check.
 #
