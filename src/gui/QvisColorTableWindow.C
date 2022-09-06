@@ -815,10 +815,7 @@ QvisColorTableWindow::UpdateEditor()
 //
 // Modifications:
 //    Justin Privitera, Fri Sep  2 16:46:21 PDT 2022
-//    Tag index argument is deprecated; it is no longer needed with the 
-//    refactor.
-//    Thus there is also no need for the secret tag table column for storing
-//    the index of the tag.
+ // Eliminated tag index arg as well as need for secret tag table column.
 //
 // ****************************************************************************
 
@@ -906,8 +903,7 @@ QvisColorTableWindow::AddGlobalTag(std::string currtag, bool first_time)
 // 
 //    Justin Privitera, Fri Sep  2 16:46:21 PDT 2022
 //    Run the tag table generation the first time so we can set up the tagInfo
-//    map.
-//    Purge tagList and tagTable entries that have 0 refcount.
+//    map. Purge tagList and tagTable entries that have 0 refcount.
 //
 // ****************************************************************************
 
@@ -1009,7 +1005,7 @@ QvisColorTableWindow::UpdateTags()
 // 
 //   Justin Privitera, Fri Sep  2 16:46:21 PDT 2022
 //   Rework for accessing tag information b/c of refactor.
-//   Fix so current CT can never be set to one that is not in the CT name box.
+//   Ensure current CT name is one of the existing names.
 //
 // ****************************************************************************
 
