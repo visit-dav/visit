@@ -27,6 +27,9 @@
 #   David Camp, Thu Aug 27 09:25:33 PDT 2015
 #   Added the SaveSessionRPCExecutor.C and RestoreSessionRPCExecutor.C files.
 #   They are used for the remove save and load of session files.
+# 
+#   Justin Privitera, Wed Aug 24 11:08:51 PDT 2022
+#   Added logic to make mdserver aware of avtBP lib.
 #
 #****************************************************************************
 
@@ -92,6 +95,7 @@ ${SIMV2_PLUGIN_DIR}
 LINK_DIRECTORIES(
 ${LIBRARY_OUTPUT_DIRECTORY}
 ${ALL_THIRDPARTY_IO_LIBRARY_DIR}
+${AVT_REQUIRED_LIB_DIR}
 )
 
 ADD_EXECUTABLE(mdserver ${VISIT_APPLICATION_STYLE} ${MDSERVER_SOURCES} ${MDSERVER_STATIC_SOURCES} ${VISIT_MDSERVER_RESOURCE_FILE})
@@ -114,6 +118,22 @@ TARGET_LINK_LIBRARIES(mdserver
     ${CMAKE_THREAD_LIBS}
     ${DL_LIB}
 )
+
+if(CONDUIT_FOUND AND MFEM_FOUND)
+    LINK_DIRECTORIES(
+        ${MFEM_LIBRARY_DIR}
+        ${CONDUIT_LIBRARY_DIR}
+        )
+    INCLUDE_DIRECTORIES(
+        ${MFEM_INCLUDE_DIR}
+        ${CONDUIT_INCLUDE_DIR}
+        ${VISIT_SOURCE_DIR}/avt/Blueprint
+        )
+    TARGET_LINK_LIBRARIES(mdserver 
+        ${MFEM_LIB} 
+        avtblueprint
+        )
+endif()
 
 if(WIN32 AND MSVC)
     set_target_properties(mdserver PROPERTIES LINK_FLAGS "/STACK:4000000")
