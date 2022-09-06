@@ -512,7 +512,7 @@ QvisColorTableWindow::CreateNode(DataNode *parentNode)
         std::string ct(currentColorTable.toStdString());
         node->AddNode(new DataNode("currentColorTable", ct));
         stringVector tagNames;
-        std::vector<bool> activeTags;
+        boolVector activeTags;
         for (const auto mapitem : tagList)
         {
             tagNames.emplace_back(mapitem.first);
