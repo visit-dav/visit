@@ -31,6 +31,14 @@ class QvisColorSelectionWidget;
 class QvisColorGridWidget;
 class QvisNoDefaultColorTableButton;
 
+class TagInfo
+{
+public:
+    bool active = false;
+    int numrefs = 0;
+    QTreeWidgetItem *tagTableItem = nullptr;
+};
+
 // ****************************************************************************
 // Class: QvisColorTableWindow
 //
@@ -92,6 +100,11 @@ class QvisNoDefaultColorTableButton;
 //   `searchingOn`, QString `searchTerm`, QCheckBox `searchToggle`, and 
 //   functions `searchingToggled` and `searchEdited`.
 // 
+//   Justin Privitera, Fri Sep  2 16:46:21 PDT 2022
+//   Added `TagInfo` class to store tag info all in one place.
+//   I removed the tagList and activeTags stringVectors and replaced them with
+//   the new tagList, which is a map from tagnames to `TagInfo`s.
+// 
 // ****************************************************************************
 
 class GUI_API QvisColorTableWindow : public QvisPostableWindowObserver
@@ -115,7 +128,7 @@ protected:
     void UpdateColorControlPoints();
     void UpdateDiscreteSettings();
     void AddGlobalTag(std::string currtag, bool run_before);
-    void AddToTagTable(std::string currtag, int index);
+    void AddToTagTable(std::string currtag);
     void UpdateTags();
     void UpdateNames();
     void Apply(bool ignore = false);
@@ -165,8 +178,7 @@ private:
     QString                  currentColorTable;
     int                      popupMode;
     bool                     sliding;
-    stringVector             tagList;
-    std::vector<bool>        activeTags;
+    std::map<std::string, TagInfo> tagList;
     bool                     tagsVisible;
     bool                     tagsMatchAny;
     bool                     searchingOn;
