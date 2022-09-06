@@ -1009,7 +1009,7 @@ QvisColorTableWindow::UpdateTags()
 // 
 //   Justin Privitera, Fri Sep  2 16:46:21 PDT 2022
 //   Rework for accessing tag information b/c of refactor.
-//   Fix so current CT can never be set to one that is not in the CT name box.
+//   Ensure current CT name is one of the existing names.
 //
 // ****************************************************************************
 
