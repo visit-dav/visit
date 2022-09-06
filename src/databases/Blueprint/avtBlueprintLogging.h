@@ -24,12 +24,12 @@
 
 #define BP_PLUGIN_INFO(  msg  )                                     \
 {                                                                   \
-    CONDUIT_INFO( msg );                                            \
+    debug5 << msg;                                                  \
 }                                                                   \
 
 #define BP_PLUGIN_WARNING(  msg  )                                  \
 {                                                                   \
-    CONDUIT_INFO( "[blueprint warning] " << msg );                  \
+    debug5 << "[blueprint warning] " << msg;                        \
 }                                                                   \
 
 #define BP_PLUGIN_EXCEPTION1(  etype , msg )                        \

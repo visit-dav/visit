@@ -80,6 +80,10 @@ GetBlueprintReadOptions(void)
 //  
 //  Chris Laganella Wed Dec 15 17:54:25 EST 2021
 //  Only add the options if flatten/partition are supported.
+// 
+//    Justin Privitera, Tue Aug 23 14:40:24 PDT 2022
+//    Removed `CONDUIT_HAVE_PARTITION_FLATTEN` check.
+//
 // ****************************************************************************
 
 DBOptionsAttributes *
@@ -87,7 +91,6 @@ GetBlueprintWriteOptions(void)
 {
     DBOptionsAttributes *rv = new DBOptionsAttributes;
 
-#if CONDUIT_HAVE_PARTITION_FLATTEN == 1
     rv->SetEnum("Operation", 0);
     std::vector<std::string> ops;
     ops.push_back("None");
@@ -99,7 +102,6 @@ GetBlueprintWriteOptions(void)
     rv->SetInt("Partition target number of domains", 0);
 
     rv->SetMultiLineString("Flatten / Partition extra options", "");
-#endif
 
     return rv;
 }
