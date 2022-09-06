@@ -906,8 +906,7 @@ QvisColorTableWindow::AddGlobalTag(std::string currtag, bool first_time)
 // 
 //    Justin Privitera, Fri Sep  2 16:46:21 PDT 2022
 //    Run the tag table generation the first time so we can set up the tagInfo
-//    map.
-//    Purge tagList and tagTable entries that have 0 refcount.
+//    map. Purge tagList and tagTable entries that have 0 refcount.
 //
 // ****************************************************************************
 
