@@ -5,6 +5,12 @@
 """
 VisIt's test suite.
 """
+# ----------------------------------------------------------------------------
+#  Modifications:
+#    Cyrus Harrison, Wed Sep  7 11:34:36 PDT 2022
+#    Work around for dual use (inside and outside of py module)
+#
+# ----------------------------------------------------------------------------
 
 import sys
 import os
@@ -22,13 +28,23 @@ import json
 import traceback
 
 
-
 from os.path import join as pjoin
 from optparse import OptionParser
 
-from visit_test_common import *
-from visit_test_reports import *
-from visit_test_ctest import *
+try:
+    from visit_test_common import *
+    from visit_test_reports import *
+    from visit_test_ctest import *
+except:
+    pass
+
+try:
+    from .visit_test_common import *
+    from .visit_test_reports import *
+    from .visit_test_ctest import *
+except:
+    pass
+
 
 def known_mode_keys():
     return ['serial','parallel','scalable','dlb','pdb','hdf5','icet']

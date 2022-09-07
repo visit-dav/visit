@@ -24,7 +24,16 @@ import glob
 from os.path import join as pjoin
 from collections import namedtuple
 
-from visit_test_common import *
+try:
+    from visit_test_common import *
+except:
+    pass
+
+try:
+    from .visit_test_common import *
+except:
+    pass
+
 
 # ----------------------------------------------------------------------------
 #  Method: test_root_dir
