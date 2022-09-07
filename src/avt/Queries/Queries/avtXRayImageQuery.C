@@ -1263,15 +1263,10 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
             nearDx = (2. * nearWidth)  / imageSize[0];
             nearDy = (2. * nearHeight) / imageSize[1];
 
-            // Q1: When I open the bp output in visit, it still shows the dimensions from 0 to 300 in x and y
-            //     Why? When I print the bp, it shows me the correct vals.
-            //     Does it have to do with mesh topo rectilinear using implicit coords?
-            //     Should I change the mesh topo type?
-
             // Q2: What is up with `viewWidth  = (imageSize[1] / imageSize[0]) * viewHeight;`?
             //     It looks like a bug.
 
-            // Q3: Do we want to use the near plane? What about the view plane? Just another option.
+            // TODO we may want spatial extent coords to be output as metadata
 
             // set up coords
             data_out["coordsets/image_coords/type"] = "rectilinear";
@@ -1358,7 +1353,7 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
             data_out["state/xray_view/imagePan/y"] = imagePan[1];
             data_out["state/xray_view/imageZoom"] = imageZoom;
             data_out["state/xray_view/perspective"] = perspective;
-            
+
             // verify
             conduit::Node verify_info;
             if(!conduit::blueprint::mesh::verify(data_out, verify_info))
