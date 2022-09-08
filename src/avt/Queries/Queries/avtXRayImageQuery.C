@@ -1322,6 +1322,9 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
             data_out["state/xray_view/imageZoom"] = imageZoom;
             data_out["state/xray_view/perspective"] = perspective;
 
+            // calculate spatial extent coords
+            // (the physical extents of the image projected on the near plane)
+
             const double viewHeight = parallelScale;
             const double viewWidth = (static_cast<float>(imageSize[0]) / static_cast<float>(imageSize[1])) * viewHeight;
             double nearHeight, nearWidth;
@@ -1343,12 +1346,12 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
             const double nearDy = (2. * nearHeight) / imageSize[1];
 
             // set up spatial extents coords
-            data_out["state/image_coords/x"].set(conduit::DataType::float32(x_coords_dim));
-            float *spatial_xvals = data_out["state/image_coords/x"].value();
+            data_out["state/xray_view/image_coords/x"].set(conduit::DataType::float32(x_coords_dim));
+            float *spatial_xvals = data_out["state/xray_view/image_coords/x"].value();
             for (int i = 0; i < x_coords_dim; i ++) { spatial_xvals[i] = i * nearDx; }
 
-            data_out["state/image_coords/y"].set(conduit::DataType::float32(y_coords_dim));
-            float *spatial_yvals = data_out["state/image_coords/y"].value();
+            data_out["state/xray_view/image_coords/y"].set(conduit::DataType::float32(y_coords_dim));
+            float *spatial_yvals = data_out["state/xray_view/image_coords/y"].value();
             for (int i = 0; i < y_coords_dim; i ++) { spatial_yvals[i] = i * nearDy; }
 
             // verify
