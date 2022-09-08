@@ -30,6 +30,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Color Table buttons now correctly preserve their value if the selected table has been filtered out of the list of color tables.</li>
   <li>Resolved a rare issue with the default color table buttons that caused them to occasionally select a different color table if tagging and searching were enabled at the same time.</li>
   <li>An error is now thrown if the number of color table tags exceeds capacity. VisIt can support up to 9999 tags.</li>
+  <li>Fixed an issue with the x ray image query that caused rays to sometimes be cast incorrectly when specifying non-square output.</li>
 </ul>
 
 <a name="Enhancements"></a>
@@ -41,6 +42,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Added support for MFEM Low Order Refinement of piece-wise constant (L2) basis functions.</li>
   <li>The x ray image query now outputs result messages in the case of failure while running in batch mode.</li>
   <li>The Tag Bar in the Manager portion of the Color Table Window is now always visible, instead of only being visible when tag filtering was enabled.</li>
+  <li>The x ray image query now outputs spatial extents metadata (the physical dimensions of the image).</li>
 </ul>
 
 <a name="Dev_changes"></a>
