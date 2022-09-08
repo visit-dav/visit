@@ -957,6 +957,9 @@ avtXRayImageQuery::GetSecondaryVars(std::vector<std::string> &outVars)
 //    Justin Privitera, Wed Jul 20 13:54:06 PDT 2022
 //    Use stringstreams for output messages, use ostringstreams for error
 //    messages, and set result messages for error cases.
+// 
+//    Justin Privitera, Thu Sep  8 16:29:06 PDT 2022
+//    Added spatial extents meta data to blueprint outputs.
 //
 // ****************************************************************************
 

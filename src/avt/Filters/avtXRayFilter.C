@@ -2270,6 +2270,9 @@ avtXRayFilter::RedistributeLines(int nLeaves, int *nLinesPerDataset,
 //  Modifications:
 //    Eric Brugger, Thu Jun  4 15:58:10 PDT 2015
 //    I added an option to enable outputting the ray bounds to a vtk file.
+// 
+//    Justin Privitera, Thu Sep  8 16:29:06 PDT 2022
+//    Fixed a bug causing the viewWidth to be calculated incorrectly.
 //
 // ****************************************************************************
 
