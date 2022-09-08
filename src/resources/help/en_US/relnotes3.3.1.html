@@ -29,7 +29,13 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Fixed an issue with the Tag Bar in the Manager portion of the Color Table Window that caused it to display incorrect information while using the search feature.</li>
   <li>Color Table buttons now correctly preserve their value if the selected table has been filtered out of the list of color tables.</li>
   <li>Resolved a rare issue with the default color table buttons that caused them to occasionally select a different color table if tagging and searching were enabled at the same time.</li>
-  <li>An error is now thrown if the number of color table tags exceeds capacity. VisIt can support up to 9999 tags.</li>
+  <li>Fixed a bug where the default continuous and default discrete color table buttons no longer reflected accurate information when large numbers of color tables were deleted.</li>
+  <li>Fixed a bug where if a user deleted the final continuous/discrete color table in a filtering selection, the default continuous/discrete button did not update to a fall-back color table.</li>
+  <li>Fixed an issue where the default continuous and discrete color table buttons had a different idea of what the default color tables were than other parts of VisIt.</li>
+  <li>Added a guard so it is impossible to delete the last continuous or last discrete color table.</li>
+  <li>Fixed a bug where it was possible to select a color table that was not in the tag-filtered list of color tables.</li>
+  <li>Fixed a crash caused by deleting a color table that was not in the filtered list of color tables.</li>
+  <li>Fixed a crash caused by clicking the delete button when no more color tables were in the filtered list.</li>
   <li>Fixed an issue with the x ray image query that caused rays to sometimes be cast incorrectly when specifying non-square output.</li>
 </ul>
 
@@ -42,6 +48,8 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Added support for MFEM Low Order Refinement of piece-wise constant (L2) basis functions.</li>
   <li>The x ray image query now outputs result messages in the case of failure while running in batch mode.</li>
   <li>The Tag Bar in the Manager portion of the Color Table Window is now always visible, instead of only being visible when tag filtering was enabled.</li>
+  <li>Color Table Tags are now deleted once no more color tables are associated with them.</li>
+  <li>There is no longer a limit to the number of color table tags VisIt supports.</li>
   <li>The x ray image query now outputs spatial extents metadata (the physical dimensions of the image).</li>
 </ul>
 
