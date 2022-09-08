@@ -1,1 +1,0 @@
-../visit_test_suite.py
