@@ -1236,50 +1236,18 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
             const int y_coords_dim = ny + 1;
             const int z_coords_dim = numBins + 1;
 
-            double nearHeight, nearWidth, viewHeight, viewWidth;
-
-            viewHeight = parallelScale;
-            viewWidth  = (imageSize[1] / imageSize[0]) * viewHeight;
-            if (perspective)
-            {
-                double viewDist = viewHeight / tan ((viewAngle * 3.1415926535) / 360.);
-                double nearDist = viewDist + nearPlane;
-                double farDist  = viewDist + farPlane;
-
-                nearHeight = (nearDist * viewHeight) / viewDist;
-                nearWidth  = (nearDist * viewWidth) / viewDist;
-            }
-            else
-            {
-                nearHeight = viewHeight;
-                nearWidth  = viewWidth;
-            }
-
-            // Adjust for the image zoom.
-            nearHeight = nearHeight / imageZoom;
-            nearWidth  = nearWidth  / imageZoom;
-
-            double nearDx, nearDy;
-            nearDx = (2. * nearWidth)  / imageSize[0];
-            nearDy = (2. * nearHeight) / imageSize[1];
-
-            // Q2: What is up with `viewWidth  = (imageSize[1] / imageSize[0]) * viewHeight;`?
-            //     It looks like a bug.
-
-            // TODO we may want spatial extent coords to be output as metadata
-
             // set up coords
             data_out["coordsets/image_coords/type"] = "rectilinear";
-            data_out["coordsets/image_coords/values/x"].set(conduit::DataType::float32(x_coords_dim));
-            float *xvals = data_out["coordsets/image_coords/values/x"].value();
-            for (int i = 0; i < x_coords_dim; i ++) { xvals[i] = i * nearDx; }
+            data_out["coordsets/image_coords/values/x"].set(conduit::DataType::int32(x_coords_dim));
+            int *xvals = data_out["coordsets/image_coords/values/x"].value();
+            for (int i = 0; i < x_coords_dim; i ++) { xvals[i] = i; }
 
-            data_out["coordsets/image_coords/values/y"].set(conduit::DataType::float32(y_coords_dim));
-            float *yvals = data_out["coordsets/image_coords/values/y"].value();
-            for (int i = 0; i < y_coords_dim; i ++) { yvals[i] = i * nearDy; }
+            data_out["coordsets/image_coords/values/y"].set(conduit::DataType::int32(y_coords_dim));
+            int *yvals = data_out["coordsets/image_coords/values/y"].value();
+            for (int i = 0; i < y_coords_dim; i ++) { yvals[i] = i; }
 
-            data_out["coordsets/image_coords/values/z"].set(conduit::DataType::float32(z_coords_dim));
-            float *zvals = data_out["coordsets/image_coords/values/z"].value();
+            data_out["coordsets/image_coords/values/z"].set(conduit::DataType::int32(z_coords_dim));
+            int *zvals = data_out["coordsets/image_coords/values/z"].value();
             for (int i = 0; i < z_coords_dim; i ++) { zvals[i] = i; }
 
             // TODO get units piped through
@@ -1353,6 +1321,35 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
             data_out["state/xray_view/imagePan/y"] = imagePan[1];
             data_out["state/xray_view/imageZoom"] = imageZoom;
             data_out["state/xray_view/perspective"] = perspective;
+
+            const double viewHeight = parallelScale;
+            const double viewWidth = (static_cast<float>(imageSize[0]) / static_cast<float>(imageSize[1])) * viewHeight;
+            double nearHeight, nearWidth;
+            if (perspective)
+            {
+                const double viewDist = parallelScale / tan ((viewAngle * 3.1415926535) / 360.);
+                const double nearDist = viewDist + nearPlane;
+                const double nearDist_over_viewDist = nearDist / viewDist;
+                nearHeight = (nearDist_over_viewDist * viewHeight) / imageZoom;
+                nearWidth = (nearDist_over_viewDist * viewWidth) / imageZoom;
+            }
+            else
+            {
+                nearHeight = viewHeight / imageZoom;
+                nearWidth = viewWidth / imageZoom;
+            }
+
+            const double nearDx = (2. * nearWidth)  / imageSize[0];
+            const double nearDy = (2. * nearHeight) / imageSize[1];
+
+            // set up spatial extents coords
+            data_out["state/image_coords/x"].set(conduit::DataType::float32(x_coords_dim));
+            float *spatial_xvals = data_out["state/image_coords/x"].value();
+            for (int i = 0; i < x_coords_dim; i ++) { spatial_xvals[i] = i * nearDx; }
+
+            data_out["state/image_coords/y"].set(conduit::DataType::float32(y_coords_dim));
+            float *spatial_yvals = data_out["state/image_coords/y"].value();
+            for (int i = 0; i < y_coords_dim; i ++) { spatial_yvals[i] = i * nearDy; }
 
             // verify
             conduit::Node verify_info;
