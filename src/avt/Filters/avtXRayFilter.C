@@ -2293,7 +2293,7 @@ avtXRayFilter::CalculateLines(void)
     double nearWidth, viewWidth, farWidth;
 
     viewHeight = parallelScale;
-    viewWidth  = (imageSize[1] / imageSize[0]) * viewHeight;
+    viewWidth  = (static_cast<float>(imageSize[0]) / static_cast<float>(imageSize[1])) * viewHeight;
     if (perspective)
     {
         double viewDist = parallelScale / tan ((viewAngle * 3.1415926535) / 360.);
