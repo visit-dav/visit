@@ -22,7 +22,9 @@
 #include <vtkIntArray.h>
 #include <vtkUnsignedIntArray.h>
 #include <vtkLongArray.h>
+#include <vtkLongLongArray.h>
 #include <vtkUnsignedLongArray.h>
+#include <vtkUnsignedLongLongArray.h>
 #include <vtkFloatArray.h>
 #include <vtkCellArray.h>
 #include <vtkIdTypeArray.h>
