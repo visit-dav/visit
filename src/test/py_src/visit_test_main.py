@@ -16,7 +16,7 @@ notes:   Ported/refactored from 'Testing.py'
 #    *nix 'diff', so content can be generated on Windows.
 #
 #    Cyrus Harrison, Wed Sep  7 11:34:36 PDT 2022
-#    Work around for dual use (inside and outside of py module)
+#    Refactored to module.
 #
 # ----------------------------------------------------------------------------
 
@@ -37,18 +37,8 @@ import sys
 import tempfile
 import time
 
-try:
-    import HtmlDiff
-    import HtmlPython
-else:
-    pass
-
-try:
-    import .HtmlDiff
-    import .HtmlPython
-else:
-    pass
-
+import .HtmlDiff
+import .HtmlPython
 
 from stat import *
 
@@ -78,18 +68,8 @@ except ImportError as vtkImpErr:
 # used to acccess visit_test_common
 sys.path.append(os.path.abspath(os.path.split(__visit_script_file__)[0]))
 
-try:
-    from visit_test_common import *
-    from visit_test_ctest import *
-except:
-    pass
-
-try:
-    from .visit_test_common import *
-    from .visit_test_ctest import *
-except:
-    pass
-
+from .visit_test_common import *
+from .visit_test_ctest import *
 
 # list of files to clean up at exit
 filesToRemoveUponExit = []
