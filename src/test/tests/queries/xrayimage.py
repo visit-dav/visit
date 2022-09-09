@@ -305,9 +305,7 @@ DeleteAllPlots()
 CloseDatabase(silo_data_path("curv3d.silo"))
 
 #
-## 
-### test blueprint output
-## 
+# test blueprint output
 #
 
 conduit_db = out_path(outdir_set, "output.cycle_000048.root")
