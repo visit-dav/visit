@@ -26,7 +26,6 @@
             <lib name="gdal"/>
             <lib name="glu"/>
             <lib name="h5part"/>
-            <lib name="hdf4"/>
             <lib name="hdf5"/>
             <lib name="icet"/>
             <lib name="ispc"/>
@@ -79,7 +78,6 @@
             <lib name="gdal"/>
             <lib name="glu"/>
             <lib name="h5part"/>
-            <lib name="hdf4"/>
             <lib name="hdf5"/>
             <lib name="icet"/>
             <lib name="ispc"/>
@@ -178,7 +176,6 @@
         # Releasibility of these libs is not yet understood
         -->
         <group name="advanced" comment="Must be manually downloaded" enabled="no">
-            <lib name="hdf4"/>
 <!--        <lib name="mdsplus"/>    Removed for now by Allen Sanderson-->
             <lib name="mili"/>
         </group>
