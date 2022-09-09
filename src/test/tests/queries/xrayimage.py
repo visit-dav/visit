@@ -367,7 +367,7 @@ def test_bp_state(testname):
     TestValueEQ(testname + "_SpatialExtents3", [spatial_coords_x[-1], spatial_coords_y[-1]], [15.0, 10.0])
 
 #
-## hdf5
+# hdf5
 #
 
 setup_bp_test()
