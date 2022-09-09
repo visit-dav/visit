@@ -48,7 +48,7 @@ public:
     // set warning and info handlers to redirect conduit warnings and info
     static void SetInfoWarningHandlers();
 
-    class BlueprintToVTK
+    class AVTBLUEPRINT_API BlueprintToVTK
     {
     public:
         /// Helpers for converting Mesh and Field Blueprint conforming data
@@ -58,7 +58,7 @@ public:
         static vtkDataArray*  FieldToVTK(const conduit::Node &field);
     };
 
-    class VTKToBlueprint
+    class AVTBLUEPRINT_API VTKToBlueprint
     {
     public:
         /// Helpers for converting vtk datasets to Mesh and Field Blueprint
@@ -76,7 +76,7 @@ public:
                                        const int ndims);
     };
 
-    class BlueprintToMFEM
+    class AVTBLUEPRINT_API BlueprintToMFEM
     {
     public:
         static mfem::Mesh         *MeshToMFEM(const conduit::Node &mesh,
