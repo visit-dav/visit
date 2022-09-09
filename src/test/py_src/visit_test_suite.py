@@ -8,7 +8,7 @@ VisIt's test suite.
 # ----------------------------------------------------------------------------
 #  Modifications:
 #    Cyrus Harrison, Wed Sep  7 11:34:36 PDT 2022
-#    Work around for dual use (inside and outside of py module)
+#    Refactored to module.
 #
 # ----------------------------------------------------------------------------
 
@@ -31,19 +31,9 @@ import traceback
 from os.path import join as pjoin
 from optparse import OptionParser
 
-try:
-    from visit_test_common import *
-    from visit_test_reports import *
-    from visit_test_ctest import *
-except:
-    pass
-
-try:
-    from .visit_test_common import *
-    from .visit_test_reports import *
-    from .visit_test_ctest import *
-except:
-    pass
+from .visit_test_common import *
+from .visit_test_reports import *
+from .visit_test_ctest import *
 
 
 def known_mode_keys():
@@ -1203,7 +1193,9 @@ def run_visit_tests(tests,
     return JSONIndex.load_results(res_file,True)
 
 
-if __name__ == "__main__":
+def run_main():
     opts, tests = parse_args()
     main(opts,tests)
 
+if __name__ == "__main__":
+    run_main()

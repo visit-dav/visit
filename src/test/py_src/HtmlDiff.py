@@ -20,21 +20,13 @@
 #    hence the choice of SequenceMatcher and get_opcodes.
 #
 #    Cyrus Harrison, Wed Sep  7 11:34:36 PDT 2022
-#    Work around for dual use (inside and outside of py module)
+#    Refactored to module.
 #
 # ----------------------------------------------------------------------------
 
 import os, string, cgi, difflib
 
-try:
-    from HtmlPython import LeadingSpaceToHtmlFormat
-except:
-    pass
-
-try:
-    from .HtmlPython import LeadingSpaceToHtmlFormat
-except:
-    pass
+from .HtmlPython import LeadingSpaceToHtmlFormat
 
 class TextFile:
     def __init__(self, fn, msg):

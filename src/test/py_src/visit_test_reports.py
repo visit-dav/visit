@@ -10,7 +10,8 @@ date: Fri Jan 13 13:45:13 PST 2012
 """
 # ----------------------------------------------------------------------------
 #  Modifications:
-#
+#    Cyrus Harrison, Wed Sep  7 11:34:36 PDT 2022
+#    Refactored to module.
 # ----------------------------------------------------------------------------
 
 import sys
@@ -24,15 +25,8 @@ import glob
 from os.path import join as pjoin
 from collections import namedtuple
 
-try:
-    from visit_test_common import *
-except:
-    pass
 
-try:
-    from .visit_test_common import *
-except:
-    pass
+from .visit_test_common import *
 
 
 # ----------------------------------------------------------------------------
