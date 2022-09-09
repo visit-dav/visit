@@ -1466,11 +1466,11 @@ CMFE function and its friend, the connectivity-based CMFE function,
 needed when working with variables from *different* meshes in the *same*
 expression. *CMFE* is an abbreviation for *cross-mesh field evaluation*.
 
-The syntax for specifying CMFE expressions can be complicated. Therefore, the
-GUI supports a *wizard* to help create them. See the
-:ref:`Data-Level Comparisons Wizard <DataLevelComparisonsWizard>` for more
-information. Here, we describe the details of creating CMFE expressions
-manually.
+The syntax for specifying CMFE expressions can be complicated.
+Therefore, the GUI supports a *wizard* to help create them.
+See the :ref:`Data-Level Comparisons Wizard <DataLevelComparisonsWizard>` for more information.
+It sometimes makes sense to use the wizard to create an *initial* CMFE expression and then modify it manually, often to adjust the state indexing.
+Here, we describe the details of creating CMFE expressions manually.
 
 All of the comparison expressions involve the concepts of a *donor variable*
 and a *target mesh*. The donor variable (e.g. *pressure*) is the variable to
