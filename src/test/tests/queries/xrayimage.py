@@ -454,22 +454,22 @@ CloseDatabase(silo_data_path("curv3d.silo"))
 # Once that has happened, the conduit exception that this test is meant to capture 
 # should work as expected, and the following lines can be uncommented.
 
-# # write to dir w/ read only permissions
+# write to dir w/ read only permissions
 
-# outdir_bad = "/tmp/baddir"
-# if not os.path.isdir(outdir_bad):
-#     os.mkdir(outdir_bad)
-# os.chmod(outdir_bad, 0o444)
+outdir_bad = "/tmp/baddir"
+if not os.path.isdir(outdir_bad):
+    os.mkdir(outdir_bad)
+os.chmod(outdir_bad, 0o444)
 
-# OpenDatabase(silo_data_path("curv3d.silo"))
-# AddPlot("Pseudocolor", "d")
-# DrawPlots()
+OpenDatabase(silo_data_path("curv3d.silo"))
+AddPlot("Pseudocolor", "d")
+DrawPlots()
 
-# Query("XRay Image", "hdf5", outdir_bad, 1, 0.0, 2.5, 10.0, 0, 0, 10., 10., 300, 300, ("d", "p"))
-# s = GetQueryOutputString()
-# TestText("xrayimage36", s)
-# DeleteAllPlots()
-# CloseDatabase(silo_data_path("curv3d.silo"))
+Query("XRay Image", "hdf5", outdir_bad, 1, 0.0, 2.5, 10.0, 0, 0, 10., 10., 300, 300, ("d", "p"))
+s = GetQueryOutputString()
+TestText("xrayimage36", s)
+DeleteAllPlots()
+CloseDatabase(silo_data_path("curv3d.silo"))
 
 #
 # Test that we get decent error messages for common cases
