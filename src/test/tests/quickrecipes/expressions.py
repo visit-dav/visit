@@ -7,6 +7,9 @@
 #  Date:       August 26, 2022
 #
 #  Modificatons:
+#    Kathleen Biagas, Mon Sep 12, 2022
+#    Change OpenDatabase call to use 'silo_data_path' so that the test can
+#    run on Windows.
 #
 # ----------------------------------------------------------------------------
 
@@ -48,7 +51,7 @@ mat_val_pairs = [(1, 0.75), (3, 1.2), (6, 0.2), (7, 1.6), (8, 1.8), (11, 2.2), (
 create_mat_value_expr("myvar", "mat1", "quadmesh2d", mat_val_pairs)
 
 # Create a pseudocolor plot of the expression.
-OpenDatabase("/usr/gapps/visit/data/rect2d.silo")
+OpenDatabase(silo_data_path("rect2d.silo"))
 AddPlot("Pseudocolor", "myvar")
 DrawPlots()
 # mapMaterialsToValues }
