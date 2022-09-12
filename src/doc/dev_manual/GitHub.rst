@@ -36,6 +36,8 @@ The "skip smudge" command sets up LFS in a way that skips automatically pulling 
 To obtain these files you will need to do some extra incantations followed by an explicit::
 
     git lfs pull
+    
+For more details about using Git LFS, read :ref:`our additional notes <git_lfs_note>`.
 
 Accessing GitHub
 ----------------
