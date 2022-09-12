@@ -447,13 +447,6 @@ TestText("xrayimage35", s)
 DeleteAllPlots()
 CloseDatabase(silo_data_path("curv3d.silo"))
 
-
-# Why is the following commented out?
-# There is an issue with how conduit exceptions are thrown within visit.
-# This issue will likely be addressed as part of https://github.com/visit-dav/visit/pull/17698
-# Once that has happened, the conduit exception that this test is meant to capture 
-# should work as expected, and the following lines can be uncommented.
-
 # write to dir w/ read only permissions
 
 outdir_bad = "/tmp/baddir"
