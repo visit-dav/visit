@@ -443,6 +443,9 @@ USAGE: visit [options]::
                              >>> OpenGUI('-debug-malloc', 'MallocDebug', 'gui')
                              Connect to the gui with MallocDebug and do your
                              sampling.
+        -nsys <args> <comp>
+                             Run Nsight Systems cli with <args> on component <comp>.
+                             Default <args> are: profile --stats=true --gpu-metrics-device=all
 
         -numrestarts <#>     Number of attempts to restart a failed engine.
         -quiet               Don't print the Running message.
