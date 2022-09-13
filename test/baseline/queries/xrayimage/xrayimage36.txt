@@ -1,6 +1,6 @@
 engine_ser: Conduit Exception in X Ray Image Query Execute: 
 
-file: /usr/workspace/justin/build_containers/3.3RC/conduit-v0.8.3/src/libs/relay/conduit_relay_io_hdf5.cpp
-line: 3002
+
+
 message: 
 HDF5 Error code-1 Error opening HDF5 file for writing: /tmp/baddir/output.cycle_000048.root
