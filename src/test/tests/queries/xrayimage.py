@@ -460,6 +460,9 @@ DrawPlots()
 
 Query("XRay Image", "hdf5", outdir_bad, 1, 0.0, 2.5, 10.0, 0, 0, 10., 10., 300, 300, ("d", "p"))
 s = GetQueryOutputString()
+# strip out two lines that make the test machine dependent
+s = '\n'.join([line if line[:4] != "file" else '' for line in s.split('\n')])
+s = '\n'.join([line if line[:4] != "line" else '' for line in s.split('\n')])
 TestText("xrayimage36", s)
 DeleteAllPlots()
 CloseDatabase(silo_data_path("curv3d.silo"))
