@@ -17,6 +17,6 @@ link_directories(${LIBRARY_OUTPUT_DIRECTORY} ${MFEM_LIBRARY_DIR} )
 
 add_library(avtmfem ${AVTMFEM_SOURCES})
 
-target_link_libraries(avtmfem ${MFEM_LIB} vtkCommonCore vtkFiltersCore)
+target_link_libraries(avtmfem visitcommon ${MFEM_LIB} vtkCommonCore vtkFiltersCore)
 
 VISIT_INSTALL_TARGETS(avtmfem)
