@@ -957,6 +957,9 @@ avtXRayImageQuery::GetSecondaryVars(std::vector<std::string> &outVars)
 //    Justin Privitera, Wed Jul 20 13:54:06 PDT 2022
 //    Use stringstreams for output messages, use ostringstreams for error
 //    messages, and set result messages for error cases.
+// 
+//    Justin Privitera, Thu Sep  8 16:29:06 PDT 2022
+//    Added spatial extents meta data to blueprint outputs.
 //
 // ****************************************************************************
 
@@ -1241,7 +1244,6 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
             data_out["coordsets/image_coords/values/x"].set(conduit::DataType::int32(x_coords_dim));
             int *xvals = data_out["coordsets/image_coords/values/x"].value();
             for (int i = 0; i < x_coords_dim; i ++) { xvals[i] = i; }
-            // TODO use `set` instead?
 
             data_out["coordsets/image_coords/values/y"].set(conduit::DataType::int32(y_coords_dim));
             int *yvals = data_out["coordsets/image_coords/values/y"].value();
@@ -1322,7 +1324,39 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
             data_out["state/xray_view/imagePan/y"] = imagePan[1];
             data_out["state/xray_view/imageZoom"] = imageZoom;
             data_out["state/xray_view/perspective"] = perspective;
-            
+
+            // calculate spatial extent coords
+            // (the physical extents of the image projected on the near plane)
+
+            const double viewHeight = parallelScale;
+            const double viewWidth = (static_cast<float>(imageSize[0]) / static_cast<float>(imageSize[1])) * viewHeight;
+            double nearHeight, nearWidth;
+            if (perspective)
+            {
+                const double viewDist = parallelScale / tan ((viewAngle * 3.1415926535) / 360.);
+                const double nearDist = viewDist + nearPlane;
+                const double nearDist_over_viewDist = nearDist / viewDist;
+                nearHeight = (nearDist_over_viewDist * viewHeight) / imageZoom;
+                nearWidth = (nearDist_over_viewDist * viewWidth) / imageZoom;
+            }
+            else
+            {
+                nearHeight = viewHeight / imageZoom;
+                nearWidth = viewWidth / imageZoom;
+            }
+
+            const double nearDx = (2. * nearWidth)  / imageSize[0];
+            const double nearDy = (2. * nearHeight) / imageSize[1];
+
+            // set up spatial extents coords
+            data_out["state/xray_view/image_coords/x"].set(conduit::DataType::float32(x_coords_dim));
+            float *spatial_xvals = data_out["state/xray_view/image_coords/x"].value();
+            for (int i = 0; i < x_coords_dim; i ++) { spatial_xvals[i] = i * nearDx; }
+
+            data_out["state/xray_view/image_coords/y"].set(conduit::DataType::float32(y_coords_dim));
+            float *spatial_yvals = data_out["state/xray_view/image_coords/y"].value();
+            for (int i = 0; i < y_coords_dim; i ++) { spatial_yvals[i] = i * nearDy; }
+
             // verify
             conduit::Node verify_info;
             if(!conduit::blueprint::mesh::verify(data_out, verify_info))
