@@ -41,6 +41,8 @@ class EXPRESSION_API avtStrainTensorExpression
                                (double dNx[8], double dNy[8], double dNz[8],
                                 double coorX[8], double coorY[8], 
                                 double coorZ[8]);
+    vtkDataArray           *CalculateEvolOrRelvol(vtkDataSet *in, 
+                                                  bool vol_strain);
     virtual avtVarType     GetVariableType(void) { return AVT_TENSOR_VAR; };
 };
 

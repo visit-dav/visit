@@ -3,10 +3,10 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ************************************************************************* //
-//                       avtRelativeVolumeExpression.C                       //
+//                       avtStrainVolumetricExpression.C                     //
 // ************************************************************************* //
 
-#include <avtRelativeVolumeExpression.h>
+#include <avtStrainVolumetricExpression.h>
 #include <math.h>
 
 #include <vtkCellType.h>
@@ -21,33 +21,33 @@
 #include <vector>
 
 // ****************************************************************************
-//  Method: avtRelativeVolumeExpression constructor
+//  Method: avtStrainVolumetricExpression constructor
 //
 //  Programmer: Justin Privitera
 //  Creation:   Fri Sep  9 10:37:12 PDT 2022
 //
 // ****************************************************************************
 
-avtRelativeVolumeExpression::avtRelativeVolumeExpression()
+avtStrainVolumetricExpression::avtStrainVolumetricExpression()
 {
     ;
 }
 
 // ****************************************************************************
-//  Method: avtRelativeVolumeExpression destructor
+//  Method: avtStrainVolumetricExpression destructor
 //
 //  Programmer: Justin Privitera
 //  Creation:   Fri Sep  9 10:37:12 PDT 2022
 //
 // ****************************************************************************
 
-avtRelativeVolumeExpression::~avtRelativeVolumeExpression()
+avtStrainVolumetricExpression::~avtStrainVolumetricExpression()
 {
     ;
 }
 
 // ****************************************************************************
-//  Method: avtRelativeVolumeExpression::DeriveVariable
+//  Method: avtStrainVolumetricExpression::DeriveVariable
 //
 //  Purpose:
 //      TODO
@@ -60,9 +60,9 @@ avtRelativeVolumeExpression::~avtRelativeVolumeExpression()
 // ****************************************************************************
 
 vtkDataArray *
-avtRelativeVolumeExpression::DeriveVariable (vtkDataSet *in_ds, 
+avtStrainVolumetricExpression::DeriveVariable (vtkDataSet *in_ds, 
                                              int currentDomainsIndex)
 {
-    auto do_vol_strain{false};
+    auto do_vol_strain{true};
     return avtStrainTensorExpression::CalculateEvolOrRelvol(in_ds, do_vol_strain);
 }

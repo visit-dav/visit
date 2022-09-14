@@ -3,18 +3,18 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ************************************************************************* //
-//                       avtRelativeVolumeExpression.h                       //
+//                       avtStrainVolumetricExpression.h                     //
 // ************************************************************************* //
 
-#ifndef AVT_RELATIVE_VOLUME_FILTER_H
-#define AVT_RELATIVE_VOLUME_FILTER_H
+#ifndef AVT_STRAIN_VOLUMETRIC_FILTER_H
+#define AVT_STRAIN_VOLUMETRIC_FILTER_H
 
 
 #include <avtStrainTensorExpression.h>
 
 
 // ****************************************************************************
-//  Class: avtRelativeVolumeExpression
+//  Class: avtStrainVolumetricExpression
 //
 //  Purpose:
 //      TODO
@@ -24,17 +24,17 @@
 //
 // ****************************************************************************
 
-class EXPRESSION_API avtRelativeVolumeExpression
+class EXPRESSION_API avtStrainVolumetricExpression
     : public avtStrainTensorExpression
 {
   public:
-                               avtRelativeVolumeExpression();
-    virtual                   ~avtRelativeVolumeExpression();
+                               avtStrainVolumetricExpression();
+    virtual                   ~avtStrainVolumetricExpression();
 
     virtual const char       *GetType(void)  
-                               { return "avtRelativeVolumeExpression"; };
+                               { return "avtStrainVolumetricExpression"; };
     virtual const char       *GetDescription(void)
-                               {return "Calculating relative volume";};
+                               {return "Calculating volumetric strain";};
     virtual int               NumVariableArguments() { return 2; }
 
   protected:

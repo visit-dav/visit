@@ -2750,22 +2750,48 @@ avtMiliFileFormat::AddMiliDerivedVariables(avtDatabaseMetaData *md,
         }
     }
 
+    std::string varName;
+    std::string varPath;
+    std::string varPathBase = "Derived/Shared/strain/";
+
+    std::string initCoordsName = meshPath +
+        "Derived/Shared/strain/initial_strain_coords";
+    Expression initCoordsExpr;
+    initCoordsExpr.SetName(initCoordsName);
+    initCoordsExpr.SetDefinition("conn_cmfe(coord(<[0]i:" +
+        meshName + ">)," + meshName + ")");
+    initCoordsExpr.SetType(Expression::VectorMeshVar);
+    initCoordsExpr.SetHidden(true);
+    md->AddExpression(&initCoordsExpr);
+
+    //
+    // Relative volume.
+    //
+    varName = "relative_volume";
+    varPath = meshPath + varPathBase + varName;
+
+    Expression relVol;
+    relVol.SetName(varPath);
+    relVol.SetDefinition("relative_volume(" + meshName +
+        ",<" + initCoordsName + ">)");
+    relVol.SetType(Expression::ScalarMeshVar);
+    md->AddExpression(&relVol);
+
+    //
+    // Volumetric Strain.
+    //
+    varName = "strain_volumetric";
+    varPath = meshPath + varPathBase + varName;
+
+    Expression eVol;
+    eVol.SetName(varPath);
+    eVol.SetDefinition("strain_volumetric(" + meshName +
+        ",<" + initCoordsName + ">)");
+    eVol.SetType(Expression::ScalarMeshVar);
+    md->AddExpression(&eVol);
+
     if (mustDeriveStrain)
     {
-        std::string initCoordsName = meshPath +
-            "Derived/Shared/strain/initial_strain_coords";
-        Expression initCoordsExpr;
-        initCoordsExpr.SetName(initCoordsName);
-        initCoordsExpr.SetDefinition("conn_cmfe(coord(<[0]i:" +
-            meshName + ">)," + meshName + ")");
-        initCoordsExpr.SetType(Expression::VectorMeshVar);
-        initCoordsExpr.SetHidden(true);
-        md->AddExpression(&initCoordsExpr);
-
-        std::string varName;
-        std::string varPath;
-        std::string varPathBase = "Derived/Shared/strain/";
-
         std::vector<std::string> tensorCompNames;
         tensorCompNames.push_back("x");
         tensorCompNames.push_back("y");

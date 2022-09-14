@@ -105,6 +105,8 @@ Derivations/avtEffectiveTensorExpression.C
 Derivations/avtLocalizedCompactnessExpression.C
 Derivations/avtPrincipalDeviatoricTensorExpression.C
 Derivations/avtPrincipalTensorExpression.C
+Derivations/avtRelativeVolumeExpression.C
+Derivations/avtStrainVolumetricExpression.C
 Derivations/avtStrainAlmansiExpression.C
 Derivations/avtStrainGreenLagrangeExpression.C
 Derivations/avtStrainInfinitesimalExpression.C
