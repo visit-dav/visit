@@ -17,7 +17,7 @@ VISITPY_API PyObject *PyMapNode_Wrap(const MapNode&);
 //
 // Helper to convert a Python Dictionary  to a VisIt MapNode.
 //
-VISITPY_API static std::string PyMapNode_VoidString = "__void__";
+static std::string PyMapNode_VoidString = "__void__";
 VISITPY_API bool PyDict_To_MapNode(PyObject *, MapNode&, std::string& errmsg = PyMapNode_VoidString);
 
 #endif
