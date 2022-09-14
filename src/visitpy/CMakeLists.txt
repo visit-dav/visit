@@ -52,6 +52,10 @@
 #
 #  Chris Laganella, Mon Feb  7 20:36:34 EST 2022
 #  Link the visitmodule to "rt" on non windows platforms.
+#
+#  Kathleen Biagas, Fri Sep 9, 2022
+#  Link with CMAKE_THREAD_LIBS.
+#
 #****************************************************************************
 
 #########################################################
@@ -387,6 +391,7 @@ avtdbatts
 viewerrpc
 visitcommon
 ${PYTHON_LIBRARIES}
+${CMAKE_THREAD_LIBS}
 )
 
 # Create the CLI

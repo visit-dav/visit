@@ -150,6 +150,37 @@ the key whose value you want to look up to the subscript [] operator.
     for c in colors.keys(): 
        print "%s in French is: %s" % (c, colors[c]) 
 
+NumPy Arrays
+~~~~~~~~~~~~
+
+VisIt_ is often used together with NumPy.
+It is natural to want to use NumPy arrays in assignments to members of VisIt_ attribute and dictionary objects or as arguments to functions.
+For the most part, NumPy arrays do work in assignment to members of attribute objects or via setter functions on attribute objects.
+In cases where entries in a NumPy array are to be interpreted as arguments to a function, it is possible to *dereference* a NumPy array by preceding it with ``*``.
+For example, this does not work ::
+
+    NumPyArray = numpy.array([1.1,2.2,3.3,4.4])
+    va = VolumeAttributes()
+    va.SetMaterialProperties(NumPyArray)
+
+whereas this does ::
+
+    NumPyArray = numpy.array([1.1,2.2,3.3,4.4])
+    va = VolumeAttributes()
+    va.SetMaterialProperties(*NumPyArray)
+
+as well as this ::
+
+    NumPyArray = numpy.array([1.1,2.2,3.3,4.4])
+    va = VolumeAttributes()
+    va.materialProperties = NumPyArray
+
+Whenever passing NumPy arrays to VisIt_ is causing problems, it is possible to *convert* them to *list* objects using the ``.tolist()`` method as in ::
+
+    NumPyArray = numpy.array([1.1,2.2,3.3,4.4])
+    va = VolumeAttributes()
+    va.SetMaterialProperties(NumPyArray.tolist())
+
 Control flow
 ------------
 

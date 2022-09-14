@@ -27,10 +27,16 @@
 # 
 #    Justin Privitera, Wed Jul 20 13:54:06 PDT 2022
 #    Added query output msg tests and tests for query errors.
+# 
+#    Justin Privitera, Thu Sep  8 16:29:06 PDT 2022
+#    Added new tests for blueprint output metadata.
 #
 # ----------------------------------------------------------------------------
 
 import os
+import conduit
+import conduit.blueprint
+import conduit.relay 
 
 #
 # Test a single block structured grid with scalars.
@@ -298,59 +304,117 @@ TestText("xrayimage31", s)
 DeleteAllPlots()
 CloseDatabase(silo_data_path("curv3d.silo"))
 
-# 
+#
 # test blueprint output
-# 
+#
 
 conduit_db = out_path(outdir_set, "output.cycle_000048.root")
 
+def setup_bp_test():
+    OpenDatabase(silo_data_path("curv3d.silo"))
+    AddPlot("Pseudocolor", "d")
+    DrawPlots()
+
+def test_bp_state(testname):
+    xrayout = conduit.Node()
+    conduit.relay.io.blueprint.load_mesh(xrayout, conduit_db)
+    
+    cycle = xrayout["domain_000000/state/cycle"]
+    TestValueEQ(testname + "_Cycle", cycle, 48)
+
+    normalx = xrayout["domain_000000/state/xray_view/normal/x"]
+    normaly = xrayout["domain_000000/state/xray_view/normal/y"]
+    normalz = xrayout["domain_000000/state/xray_view/normal/z"]
+    TestValueEQ(testname + "_Normal", [normalx, normaly, normalz], [0,0,1])
+    
+    focusx = xrayout["domain_000000/state/xray_view/focus/x"]
+    focusy = xrayout["domain_000000/state/xray_view/focus/y"]
+    focusz = xrayout["domain_000000/state/xray_view/focus/z"]
+    TestValueEQ(testname + "_Focus", [focusx, focusy, focusz], [0,2.5,10])
+    
+    viewUpx = xrayout["domain_000000/state/xray_view/viewUp/x"]
+    viewUpy = xrayout["domain_000000/state/xray_view/viewUp/y"]
+    viewUpz = xrayout["domain_000000/state/xray_view/viewUp/z"]
+    TestValueEQ(testname + "_ViewUp", [viewUpx, viewUpy, viewUpz], [0,1,0])
+    
+    viewAngle = xrayout["domain_000000/state/xray_view/viewAngle"]
+    TestValueEQ(testname + "_ViewAngle", viewAngle, 30)
+    
+    parallelScale = xrayout["domain_000000/state/xray_view/parallelScale"]
+    TestValueEQ(testname + "_ParallelScale", parallelScale, 5)
+    
+    nearPlane = xrayout["domain_000000/state/xray_view/nearPlane"]
+    TestValueEQ(testname + "_NearPlane", nearPlane, -100)
+    
+    farPlane = xrayout["domain_000000/state/xray_view/farPlane"]
+    TestValueEQ(testname + "_FarPlane", farPlane, 100)
+    
+    imagePanx = xrayout["domain_000000/state/xray_view/imagePan/x"]
+    imagePany = xrayout["domain_000000/state/xray_view/imagePan/y"]
+    TestValueEQ(testname + "_ImagePan", [imagePanx, imagePany], [0,0])
+    
+    imageZoom = xrayout["domain_000000/state/xray_view/imageZoom"]
+    TestValueEQ(testname + "_ImageZoom", imageZoom, 1)
+    
+    perspective = xrayout["domain_000000/state/xray_view/perspective"]
+    TestValueEQ(testname + "_Perspective", perspective, 0)
+    
+    spatial_coords_x = xrayout["domain_000000/state/xray_view/image_coords/x"]
+    spatial_coords_y = xrayout["domain_000000/state/xray_view/image_coords/y"]
+    TestValueEQ(testname + "_SpatialExtents0", [spatial_coords_x[0], spatial_coords_y[0]], [0.0, 0.0])
+    TestValueEQ(testname + "_SpatialExtents1", [spatial_coords_x[1], spatial_coords_y[1]], [0.05, 0.05])
+    TestValueEQ(testname + "_SpatialExtents2", [spatial_coords_x[2], spatial_coords_y[2]], [0.1, 0.1])
+    TestValueEQ(testname + "_SpatialExtents3", [spatial_coords_x[-1], spatial_coords_y[-1]], [15.0, 10.0])
+
+#
 # hdf5
+#
 
-OpenDatabase(silo_data_path("curv3d.silo"))
-AddPlot("Pseudocolor", "d")
-DrawPlots()
+setup_bp_test()
 
-Query("XRay Image", "hdf5", outdir_set, 1, 0.0, 2.5, 10.0, 0, 0, 10., 10., 300, 300, ("d", "p"))
+# run query and test the output message
+Query("XRay Image", "hdf5", outdir_set, 1, 0.0, 2.5, 10.0, 0, 0, 10., 10., 300, 200, ("d", "p"))
 s = GetQueryOutputString()
 TestText("xrayimage32", s)
 DeleteAllPlots()
 CloseDatabase(silo_data_path("curv3d.silo"))
-OpenDatabase(conduit_db)
 
+# test opening the bp output and visualizing in visit
+OpenDatabase(conduit_db)
 AddPlot("Pseudocolor", "mesh_image_topo/intensities")
 DrawPlots()
 Test("Blueprint_HDF5_X_Ray_Output")
 DeleteAllPlots()
 CloseDatabase(conduit_db)
+
+test_bp_state("Blueprint_HDF5_X_Ray_Output")
+
 os.remove(conduit_db)
 
 # json
 
-OpenDatabase(silo_data_path("curv3d.silo"))
-AddPlot("Pseudocolor", "d")
-DrawPlots()
+setup_bp_test()
 
-Query("XRay Image", "json", outdir_set, 1, 0.0, 2.5, 10.0, 0, 0, 10., 10., 300, 300, ("d", "p"))
+Query("XRay Image", "json", outdir_set, 1, 0.0, 2.5, 10.0, 0, 0, 10., 10., 300, 200, ("d", "p"))
 s = GetQueryOutputString()
 TestText("xrayimage33", s)
 DeleteAllPlots()
 CloseDatabase(silo_data_path("curv3d.silo"))
-OpenDatabase(conduit_db)
 
+OpenDatabase(conduit_db)
 AddPlot("Pseudocolor", "mesh_image_topo/intensities")
 DrawPlots()
 Test("Blueprint_JSON_X_Ray_Output")
 DeleteAllPlots()
 CloseDatabase(conduit_db)
+
 os.remove(conduit_db)
 
 # conduit_json
 
-OpenDatabase(silo_data_path("curv3d.silo"))
-AddPlot("Pseudocolor", "d")
-DrawPlots()
+setup_bp_test()
 
-Query("XRay Image", "yaml", outdir_set, 1, 0.0, 2.5, 10.0, 0, 0, 10., 10., 300, 300, ("d", "p"))
+Query("XRay Image", "yaml", outdir_set, 1, 0.0, 2.5, 10.0, 0, 0, 10., 10., 300, 200, ("d", "p"))
 s = GetQueryOutputString()
 TestText("xrayimage34", s)
 DeleteAllPlots()
@@ -362,6 +426,7 @@ DrawPlots()
 Test("Blueprint_YAML_X_Ray_Output")
 DeleteAllPlots()
 CloseDatabase(conduit_db)
+
 os.remove(conduit_db)
 
 # 
@@ -374,9 +439,7 @@ dir_dne = outdir_set + "/doesnotexist"
 if os.path.isdir(dir_dne):
     os.rmdir(dir_dne)
 
-OpenDatabase(silo_data_path("curv3d.silo"))
-AddPlot("Pseudocolor", "d")
-DrawPlots()
+setup_bp_test()
 
 Query("XRay Image", "hdf5", dir_dne, 1, 0.0, 2.5, 10.0, 0, 0, 10., 10., 300, 300, ("d", "p"))
 s = GetQueryOutputString()
@@ -384,28 +447,56 @@ TestText("xrayimage35", s)
 DeleteAllPlots()
 CloseDatabase(silo_data_path("curv3d.silo"))
 
+# write to dir w/ read only permissions
 
-# Why is the following commented out?
-# There is an issue with how conduit exceptions are thrown within visit.
-# This issue will likely be addressed as part of https://github.com/visit-dav/visit/pull/17698
-# Once that has happened, the conduit exception that this test is meant to capture 
-# should work as expected, and the following lines can be uncommented.
+outdir_bad = "/tmp/baddir"
+if not os.path.isdir(outdir_bad):
+    os.mkdir(outdir_bad)
+os.chmod(outdir_bad, 0o444)
 
-# # write to dir w/ read only permissions
+OpenDatabase(silo_data_path("curv3d.silo"))
+AddPlot("Pseudocolor", "d")
+DrawPlots()
 
-# outdir_bad = "/tmp/baddir"
-# if not os.path.isdir(outdir_bad):
-#     os.mkdir(outdir_bad)
-# os.chmod(outdir_bad, 0o444)
+Query("XRay Image", "hdf5", outdir_bad, 1, 0.0, 2.5, 10.0, 0, 0, 10., 10., 300, 300, ("d", "p"))
+s = GetQueryOutputString()
+# strip out two lines that make the test machine dependent
+s = '\n'.join([line if line[:4] != "file" else '' for line in s.split('\n')])
+s = '\n'.join([line if line[:4] != "line" else '' for line in s.split('\n')])
+TestText("xrayimage36", s)
+DeleteAllPlots()
+CloseDatabase(silo_data_path("curv3d.silo"))
 
-# OpenDatabase(silo_data_path("curv3d.silo"))
-# AddPlot("Pseudocolor", "d")
-# DrawPlots()
+#
+# Test that we get decent error messages for common cases
+#
+import numpy
 
-# Query("XRay Image", "hdf5", outdir_bad, 1, 0.0, 2.5, 10.0, 0, 0, 10., 10., 300, 300, ("d", "p"))
-# s = GetQueryOutputString()
-# TestText("xrayimage36", s)
-# DeleteAllPlots()
-# CloseDatabase(silo_data_path("curv3d.silo"))
+nporig = numpy.array([0.0, 2.5, 10.0])
+
+params = dict(output_type=2, output_dir=".", divide_emis_by_absorb=1, \
+    origin=nporig, up_vector=(0, 1, 0), theta=0, phi=0, \
+    width = 10., height=10., image_size=(300, 300), vars=("da", "pa"))
+try:
+    Query("XRay Image", params)
+except (visit.VisItException, VisItException) as e:
+    if '"origin"' in e.args[0] and "position 4" in e.args[0] and "type numpy.ndarray" in e.args[0]:
+        TestPOA('detect and warn numpy array as query param')
+    else:
+        TestFOA('detect and warn numpy array as query param', LINE())
+    pass
+except:
+    TestFOA('detect and warn numpy array as query param', LINE())
+    pass
+
+params = dict(output_type=2, output_dir=".", divide_emis_by_absorb=1, \
+    origin=nporig.tolist(), up_vector=(0, 1, 0), theta=0, phi=0, \
+    width = 10., height=10., image_size=(300, 300), vars=("da", "pa"))
+try:
+    Query("XRay Image", params)
+    TestPOA('numpy array converted to list works as query param')
+except:
+    TestFOA('numpy array converted to list works as query param', LINE())
+    pass
 
 Exit()

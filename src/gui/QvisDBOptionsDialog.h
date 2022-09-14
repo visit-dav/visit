@@ -11,7 +11,7 @@ class QPushButton;
 class QCheckBox;
 class QLineEdit;
 class QComboBox;
-class QTextEdit;
+class QPlainTextEdit;
 class DBOptionsAttributes;
 
 // ****************************************************************************
@@ -20,7 +20,7 @@ class DBOptionsAttributes;
 // Purpose:
 //   A dialog showing DB options.
 //
-// Notes:      
+// Notes:
 //
 // Programmer: Jeremy Meredith
 // Creation:   July 19, 2007
@@ -31,6 +31,11 @@ class DBOptionsAttributes;
 //
 //    Mark C. Miller, Thu Dec 18 13:19:38 PST 2014
 //    Added helpClicked and helpButton.
+//
+//    Kathleen Biagas, Tue Sep 13, 2022
+//    Use QPlainTextEdit for MultiLineString instead of QTextEdit, so that
+//    multiple lines are properly displayed.
+//
 // ****************************************************************************
 
 class QvisDBOptionsDialog : public QDialog
@@ -45,11 +50,11 @@ public slots:
 
 private:
     DBOptionsAttributes *atts;
-    
-    QList<QCheckBox*>    checkboxes;
-    QList<QLineEdit*>    lineedits;
-    QList<QComboBox*>    comboboxes;
-    QList<QTextEdit*>    multiLineEdits;
+
+    QList<QCheckBox*>       checkboxes;
+    QList<QLineEdit*>       lineedits;
+    QList<QComboBox*>       comboboxes;
+    QList<QPlainTextEdit*>  multiLineEdits;
 
     QPushButton         *okButton;
     QPushButton         *helpButton;

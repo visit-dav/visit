@@ -9,6 +9,11 @@
 #ifndef AVT_BLUEPRINT_FILE_FORMAT_H
 #define AVT_BLUEPRINT_FILE_FORMAT_H
 
+// NOTE: This is from avtblueprint lib
+#include "avtConduitBlueprintDataAdaptor.h"
+// NOTE: This is from avtmfem lib
+#include "avtMFEMDataAdaptor.h"
+
 #include "avtSTMDFileFormat.h"
 
 #include "conduit.hpp"
@@ -33,6 +38,9 @@ class     DBOptionsAttributes;
 //    Justin Privitera, Mon Apr 11 18:20:19 PDT 2022
 //    Added `m_new_refine`, a boolean to toggle between using new MFEM LOR or 
 //    legacy MFEM LOR. When true, the new scheme is enabled.
+// 
+//     Justin Privitera, Wed Aug 24 11:08:51 PDT 2022
+//     Added includes for new avtmfem and avtblueprint libs.
 //
 // ****************************************************************************
 
