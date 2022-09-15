@@ -2621,6 +2621,7 @@ avtMiliFileFormat::AddMiliVariableToMetaData(avtDatabaseMetaData *avtMD,
 //      Only add pressure for stress.
 //
 //      Mark C. Miller, Wed Sep 14 23:28:17 PDT 2022
+//      Handle displacements only on main mesh.
 //      Just define the existence of init_mesh_coords vector variable here.
 // ****************************************************************************
 
@@ -2644,11 +2645,12 @@ avtMiliFileFormat::AddMiliDerivedVariables(avtDatabaseMetaData *md,
 
     //
     // First, check if node displacement exists. If not, add it now.
+    // Do this only for the main mesh, not the sand mesh.
     //
     MiliVariableMetaData *noddisp = miliMetaData[meshId]->
         GetVarMDByShortName("noddisp", "node");
 
-    if (noddisp == NULL)
+    if (meshPath == "" && noddisp == NULL)
     {
         //
         // Node displacement is the difference between the node positions
