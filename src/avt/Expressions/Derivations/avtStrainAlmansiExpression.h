@@ -10,7 +10,7 @@
 #define AVT_STRAIN_ALMANSI_FILTER_H
 
 
-#include <avtStrainTensorExpression.h>
+#include <avtStrainExpression.h>
 
 
 // ****************************************************************************
@@ -25,7 +25,7 @@
 // ****************************************************************************
 
 class EXPRESSION_API avtStrainAlmansiExpression
-    : public avtStrainTensorExpression
+    : public avtStrainExpression
 {
   public:
                                avtStrainAlmansiExpression();

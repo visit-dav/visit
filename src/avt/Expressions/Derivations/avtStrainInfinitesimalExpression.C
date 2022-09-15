@@ -145,7 +145,7 @@ avtStrainInfinitesimalExpression::DeriveVariable(vtkDataSet *in_ds, int currentD
             }
             //
             // This is where the strain algorithms start to differ
-            avtStrainTensorExpression::HexPartialDerivative
+            avtStrainExpression::HexPartialDerivative
                 (px, py, pz, x, y, z);
             for (size_t j = 0; j < 9; j++) 
                 F[j] = 0.0;

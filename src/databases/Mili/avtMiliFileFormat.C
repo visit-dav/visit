@@ -2752,7 +2752,7 @@ avtMiliFileFormat::AddMiliDerivedVariables(avtDatabaseMetaData *md,
 
     std::string varName;
     std::string varPath;
-    std::string varPathBase = "Derived/Shared/strain/";
+    std::string varPathBase = "Derived/Shared/";
 
     std::string initCoordsName = meshPath +
         "Derived/Shared/strain/initial_strain_coords";
@@ -2780,7 +2780,7 @@ avtMiliFileFormat::AddMiliDerivedVariables(avtDatabaseMetaData *md,
     //
     // Volumetric Strain.
     //
-    varName = "strain_volumetric";
+    varName = "volumetric_strain";
     varPath = meshPath + varPathBase + varName;
 
     Expression eVol;
@@ -2792,6 +2792,8 @@ avtMiliFileFormat::AddMiliDerivedVariables(avtDatabaseMetaData *md,
 
     if (mustDeriveStrain)
     {
+        varPathBase = "Derived/Shared/strain/";
+
         std::vector<std::string> tensorCompNames;
         tensorCompNames.push_back("x");
         tensorCompNames.push_back("y");

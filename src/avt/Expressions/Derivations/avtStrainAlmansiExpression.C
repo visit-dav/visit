@@ -144,7 +144,7 @@ avtStrainAlmansiExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomains
             }
             //
             // This is where the strain algorithms start to differ
-            avtStrainTensorExpression::HexPartialDerivative
+            avtStrainExpression::HexPartialDerivative
                 (px, py, pz, xx, yy, zz);
             for (size_t j = 0; j < 9; j++) 
                 F[j] = 0.0;

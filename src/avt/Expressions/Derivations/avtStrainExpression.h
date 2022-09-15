@@ -3,7 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ************************************************************************* //
-//                       avtStrainTensorExpression.h                         //
+//                       avtStrainExpression.h                               //
 // ************************************************************************* //
 
 #ifndef AVT_STRAIN_TENSOR_FILTER_H
@@ -13,7 +13,7 @@
 
 
 // ****************************************************************************
-//  Class: avtStrainTensorExpression
+//  Class: avtStrainExpression
 //
 //  Purpose:
 //      Calculates the strain tensor.
@@ -23,15 +23,15 @@
 //
 // ****************************************************************************
 
-class EXPRESSION_API avtStrainTensorExpression
+class EXPRESSION_API avtStrainExpression
     : public avtMultipleInputExpressionFilter
 {
   public:
-                           avtStrainTensorExpression();
-    virtual                ~avtStrainTensorExpression();
+                           avtStrainExpression();
+    virtual                ~avtStrainExpression();
 
     virtual const char     *GetType(void)  
-                               { return "avtStrainTensorExpression"; };
+                               { return "avtStrainExpression"; };
     virtual const char     *GetDescription(void)
                                {return "Calculating strain tensor";};
     virtual int            NumVariableArguments() { return 2; }

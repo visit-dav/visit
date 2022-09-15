@@ -64,5 +64,5 @@ avtStrainVolumetricExpression::DeriveVariable (vtkDataSet *in_ds,
                                              int currentDomainsIndex)
 {
     auto do_vol_strain{true};
-    return avtStrainTensorExpression::CalculateEvolOrRelvol(in_ds, do_vol_strain);
+    return avtStrainExpression::CalculateEvolOrRelvol(in_ds, do_vol_strain);
 }

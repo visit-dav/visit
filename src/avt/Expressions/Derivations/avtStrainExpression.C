@@ -3,10 +3,10 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ************************************************************************* //
-//                       avtStrainTensorExpression.C                         //
+//                       avtStrainExpression.C                               //
 // ************************************************************************* //
 
-#include <avtStrainTensorExpression.h>
+#include <avtStrainExpression.h>
 
 #include <vtkDataArray.h>
 #include <vtkCellType.h>
@@ -18,33 +18,33 @@
 #include <ExpressionException.h>
 
 // ****************************************************************************
-//  Method: avtStrainTensorExpression constructor
+//  Method: avtStrainExpression constructor
 //
 //  Programmer: Thomas R. Treadway
 //  Creation:   Tue Nov 14 12:59:38 PST 2006
 //
 // ****************************************************************************
 
-avtStrainTensorExpression::avtStrainTensorExpression()
+avtStrainExpression::avtStrainExpression()
 {
     ;
 }
 
 // ****************************************************************************
-//  Method: avtStrainTensorExpression destructor
+//  Method: avtStrainExpression destructor
 //
 //  Programmer: Thomas R. Treadway
 //  Creation:   Tue Nov 14 12:59:38 PST 2006
 //
 // ****************************************************************************
 
-avtStrainTensorExpression::~avtStrainTensorExpression()
+avtStrainExpression::~avtStrainExpression()
 {
     ;
 }
 
 // ****************************************************************************
-//  Method: avtStrainTensorExpression::HexPartialDerivative
+//  Method: avtStrainExpression::HexPartialDerivative
 //
 //  Purpose:
 //      Computes the the partial derivative of the 8 brick shape
@@ -58,7 +58,7 @@ avtStrainTensorExpression::~avtStrainTensorExpression()
 // ****************************************************************************
 
 void
-avtStrainTensorExpression::HexPartialDerivative
+avtStrainExpression::HexPartialDerivative
     (double dNx[8], double dNy[8], double dNz[8],
     double coorX[8], double coorY[8], double coorZ[8])
 {   // copied from Griz
@@ -132,7 +132,7 @@ avtStrainTensorExpression::HexPartialDerivative
 // ****************************************************************************
 
 vtkDataArray *
-avtStrainTensorExpression::CalculateEvolOrRelvol(vtkDataSet *in_ds, 
+avtStrainExpression::CalculateEvolOrRelvol(vtkDataSet *in_ds, 
                                                  bool vol_strain)
 {
     char msg[1024];
@@ -211,7 +211,7 @@ avtStrainTensorExpression::CalculateEvolOrRelvol(vtkDataSet *in_ds,
                 zz[j] = vals[2];
             }
             //
-            avtStrainTensorExpression::HexPartialDerivative
+            avtStrainExpression::HexPartialDerivative
                 (dNx, dNy, dNz, x, y, z);
             for (size_t j = 0; j < 9; j++) 
                 F[j] = 0.0;

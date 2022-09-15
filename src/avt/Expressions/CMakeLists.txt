@@ -111,7 +111,7 @@ Derivations/avtStrainAlmansiExpression.C
 Derivations/avtStrainGreenLagrangeExpression.C
 Derivations/avtStrainInfinitesimalExpression.C
 Derivations/avtStrainRateExpression.C
-Derivations/avtStrainTensorExpression.C
+Derivations/avtStrainExpression.C
 Derivations/avtTensorMaximumShearExpression.C
 )
 

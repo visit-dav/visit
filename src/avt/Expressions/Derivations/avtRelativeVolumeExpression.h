@@ -10,7 +10,7 @@
 #define AVT_RELATIVE_VOLUME_FILTER_H
 
 
-#include <avtStrainTensorExpression.h>
+#include <avtStrainExpression.h>
 
 
 // ****************************************************************************
@@ -25,7 +25,7 @@
 // ****************************************************************************
 
 class EXPRESSION_API avtRelativeVolumeExpression
-    : public avtStrainTensorExpression
+    : public avtStrainExpression
 {
   public:
                                avtRelativeVolumeExpression();

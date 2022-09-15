@@ -10,7 +10,7 @@
 #define AVT_STRAIN_RATE_FILTER_H
 
 
-#include <avtStrainTensorExpression.h>
+#include <avtStrainExpression.h>
 
 
 // ****************************************************************************
@@ -25,7 +25,7 @@
 // ****************************************************************************
 
 class EXPRESSION_API avtStrainRateExpression
-    : public avtStrainTensorExpression
+    : public avtStrainExpression
 {
   public:
                                avtStrainRateExpression();
