@@ -39,6 +39,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Fixed an issue with the x ray image query that caused rays to sometimes be cast incorrectly when specifying non-square output.</li>
   <li>Added a patch for the Mili plugin that increases the maximum path length for input files from 300 to 4096 characters.</li>
   <li>The widget for displaying Blueprint export options was improved to use a fixed-width font and ensure newlines are preserved.</li>
+  <li>Mili plugin correctly computes displacements from the initial coordinates (via <code>mc_load_nodes()</code> from the Mili A file). Previously, it was computing displacements relative to the nodal positions (<code>nodpos</code> variable) at the initial timestep.</li>
 </ul>
 
 <a name="Enhancements"></a>
