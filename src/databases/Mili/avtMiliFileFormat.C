@@ -1772,6 +1772,8 @@ avtMiliFileFormat::GetVar(int timestep,
 //  Mark C. Miller, Wed Sep 14 23:29:22 PDT 2022
 //  Add logic to handle get for init_mesh_coords.
 //
+//  Mark C. Miller, Fri Sep 16 11:28:10 PDT 2022
+//  Support init_mesh_coords on main mesh and sand mesh.
 // ****************************************************************************
 
 vtkDataArray *
@@ -1782,7 +1784,7 @@ avtMiliFileFormat::GetVectorVar(int timestep,
     int gvvTimer = visitTimer->StartTimer();
     int meshId   = ExtractMeshIdFromPath(varPath);
 
-    if (string(varPath) == "Primal/node/init_mesh_coords")
+    if (string(varPath).find("Primal/node/init_mesh_coords") != std::string::npos)
     {
         if (!datasets[dom][meshId] && datasets[dom][meshId]->GetPoints() == NULL)
         {
@@ -2623,6 +2625,9 @@ avtMiliFileFormat::AddMiliVariableToMetaData(avtDatabaseMetaData *avtMD,
 //      Mark C. Miller, Wed Sep 14 23:28:17 PDT 2022
 //      Handle displacements only on main mesh.
 //      Just define the existence of init_mesh_coords vector variable here.
+//
+//      Mark C. Miller, Fri Sep 16 11:26:22 PDT 2022
+//      Handle displacements on sand mesh too...they are same as main mesh.
 // ****************************************************************************
 
 void
@@ -2650,7 +2655,7 @@ avtMiliFileFormat::AddMiliDerivedVariables(avtDatabaseMetaData *md,
     MiliVariableMetaData *noddisp = miliMetaData[meshId]->
         GetVarMDByShortName("noddisp", "node");
 
-    if (meshPath == "" && noddisp == NULL)
+    if (noddisp == NULL)
     {
         //
         // Node displacement is the difference between the node positions
