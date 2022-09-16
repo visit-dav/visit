@@ -1769,6 +1769,11 @@ avtMiliFileFormat::GetVar(int timestep,
 //
 //  Modifications
 //
+//  Mark C. Miller, Wed Sep 14 23:29:22 PDT 2022
+//  Add logic to handle get for init_mesh_coords.
+//
+//  Mark C. Miller, Fri Sep 16 11:28:10 PDT 2022
+//  Support init_mesh_coords on main mesh and sand mesh.
 // ****************************************************************************
 
 vtkDataArray *
@@ -1778,6 +1783,20 @@ avtMiliFileFormat::GetVectorVar(int timestep,
 {
     int gvvTimer = visitTimer->StartTimer();
     int meshId   = ExtractMeshIdFromPath(varPath);
+
+    if (string(varPath).find("Primal/node/init_mesh_coords") != std::string::npos)
+    {
+        if (!datasets[dom][meshId] && datasets[dom][meshId]->GetPoints() == NULL)
+        {
+            debug1 << "MILI: Unable to find nodes! This shouldn't happen..";
+            char msg[128];
+            snprintf(msg, 128, "Unable to load nodes from Mili!");
+            EXCEPTION1(ImproperUseException, msg);
+        }
+        vtkFloatArray *rv = vtkFloatArray::New();
+        rv->ShallowCopy(datasets[dom][meshId]->GetPoints()->GetData());
+        return rv;
+    }
 
     MiliVariableMetaData *varMD = miliMetaData[meshId]->
         GetVarMDByPath(varPath);
@@ -2606,6 +2625,12 @@ avtMiliFileFormat::AddMiliVariableToMetaData(avtDatabaseMetaData *avtMD,
 //      Justin Privitera, Fri Sep 16 11:58:19 PDT 2022
 //      Added derived variables volumetric strain and relative volume.
 //
+//      Mark C. Miller, Wed Sep 14 23:28:17 PDT 2022
+//      Handle displacements only on main mesh.
+//      Just define the existence of init_mesh_coords vector variable here.
+//
+//      Mark C. Miller, Fri Sep 16 11:26:22 PDT 2022
+//      Handle displacements on sand mesh too...they are same as main mesh.
 // ****************************************************************************
 
 void
@@ -2628,6 +2653,7 @@ avtMiliFileFormat::AddMiliDerivedVariables(avtDatabaseMetaData *md,
 
     //
     // First, check if node displacement exists. If not, add it now.
+    // Do this only for the main mesh, not the sand mesh.
     //
     MiliVariableMetaData *noddisp = miliMetaData[meshId]->
         GetVarMDByShortName("noddisp", "node");
@@ -2636,17 +2662,12 @@ avtMiliFileFormat::AddMiliDerivedVariables(avtDatabaseMetaData *md,
     {
         //
         // Node displacement is the difference between the node positions
-        // at the current time step and some previous time step.
-        // For now, we only allow comparison to the first time step.
+        // at the current time step and the initial mesh coordinates.
+        // The initial mesh coordinates are read via mc_load_nodes and
+        // stored as the points for the cached datasets.
         //
-        Expression  initialMeshCoords;
-        std::string initMeshCoordsName = derivedNodePath + "/init_mesh_coords";
-        initialMeshCoords.SetName(initMeshCoordsName);
-        initialMeshCoords.SetDefinition
-            ("conn_cmfe(coord(<[0]i:" + meshName + ">)," + meshName + ")");
-        initialMeshCoords.SetType(Expression::VectorMeshVar);
-        initialMeshCoords.SetHidden(true);
-        md->AddExpression(&initialMeshCoords);
+        std::string initMeshCoordsName = meshPath + "Primal/node/init_mesh_coords";
+        AddVectorVarToMetaData(md, initMeshCoordsName, meshName, AVT_NODECENT, 3);
 
         Expression nodeDisp;
         std::string nodeDispName = derivedNodePath + "/displacement";

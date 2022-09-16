@@ -36,7 +36,10 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Fixed a bug where it was possible to select a color table that was not in the tag-filtered list of color tables.</li>
   <li>Fixed a crash caused by deleting a color table that was not in the filtered list of color tables.</li>
   <li>Fixed a crash caused by clicking the delete button when no more color tables were in the filtered list.</li>
-
+  <li>Fixed an issue with the x ray image query that caused rays to sometimes be cast incorrectly when specifying non-square output.</li>
+  <li>Added a patch for the Mili plugin that increases the maximum path length for input files from 300 to 4096 characters.</li>
+  <li>The widget for displaying Blueprint export options was improved to use a fixed-width font and ensure newlines are preserved.</li>
+  <li>Mili plugin correctly computes displacements from the initial coordinates (via <code>mc_load_nodes()</code> from the Mili A file). Previously, it was computing displacements relative to the nodal positions (<code>nodpos</code> variable) at the initial timestep.</li>
 </ul>
 
 <a name="Enhancements"></a>
@@ -47,10 +50,12 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Added a color table searching feature to help users more easily find the color tables they wish to use.</li>
   <li>Added support for MFEM Low Order Refinement of piece-wise constant (L2) basis functions.</li>
   <li>The x ray image query now outputs result messages in the case of failure while running in batch mode.</li>
+  <li>Nsight systems cli is available to profile a VisIt component (viewer, gui, etc).</li>
   <li>The Tag Bar in the Manager portion of the Color Table Window is now always visible, instead of only being visible when tag filtering was enabled.</li>
   <li>Color Table Tags are now deleted once no more color tables are associated with them.</li>
   <li>There is no longer a limit to the number of color table tags VisIt supports.</li>
   <li>Mili derived variables volumetric strain and relative volume are now available in VisIt.</li>
+  <li>The x ray image query now outputs spatial extents metadata (the physical dimensions of the image).</li>
 </ul>
 
 <a name="Dev_changes"></a>
@@ -59,6 +64,11 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Added a patch to build_visit so that mili will build on Debian 11 systems using gcc 10.2."</li>
   <li>Enhanced the cmake packaging logic that adds the <code>libicui18n</code>, <code>libicudata</code> and <code>libicuuc</code> system libraries used by Qt to the lib directory to look in additional directories for the libraries to work on a broader set of operating systems.</li>
   <li>Fixed a bug with <code>FindVTKh.cmake</code> where it wouldn't install the shared libraries when VTK-h was built with <code>spack</code>.</li>
+  <li>Fixed build errors where avtqueries need '-lrt' on Linux, and visitpy needed thread libs.</li>
+  <li>Removed --hdf4 as an option from build_visit.</li>
+  <li>Fixed VisIt's find module for Nektar++ so it will correctly find the 5.0.0 version built by build_visit.</li>
+  <li>Added a patch to build_visit so that Qt 5.14.2 will build on Arch Linux systems using gcc 12.2.</li>
+  <li>Updated build_visit to build Conduit 0.8.4.</li>
 </ul>
 
 <p>Click the following link to view the release notes for the previous version
