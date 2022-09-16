@@ -2621,6 +2621,9 @@ avtMiliFileFormat::AddMiliVariableToMetaData(avtDatabaseMetaData *avtMD,
 //
 //      Alister Maguire, Wed Apr  7 11:26:57 PDT 2021
 //      Only add pressure for stress.
+// 
+//      Justin Privitera, Fri Sep 16 11:58:19 PDT 2022
+//      Added derived variables volumetric strain and relative volume.
 //
 //      Mark C. Miller, Wed Sep 14 23:28:17 PDT 2022
 //      Handle displacements only on main mesh.
@@ -2771,21 +2774,49 @@ avtMiliFileFormat::AddMiliDerivedVariables(avtDatabaseMetaData *md,
         }
     }
 
+    std::string varName;
+    std::string varPath;
+    std::string varPathBase = "Derived/Shared/";
+
+    std::string initCoordsName = meshPath +
+        "Derived/Shared/strain/initial_strain_coords";
+    Expression initCoordsExpr;
+    initCoordsExpr.SetName(initCoordsName);
+    initCoordsExpr.SetDefinition("conn_cmfe(coord(<[0]i:" +
+        meshName + ">)," + meshName + ")");
+    initCoordsExpr.SetType(Expression::VectorMeshVar);
+    initCoordsExpr.SetHidden(true);
+    md->AddExpression(&initCoordsExpr);
+
+    //
+    // Relative volume.
+    //
+    varName = "relative_volume";
+    varPath = meshPath + varPathBase + varName;
+
+    Expression relVol;
+    relVol.SetName(varPath);
+    relVol.SetDefinition("relative_volume(" + meshName +
+        ",<" + initCoordsName + ">)");
+    relVol.SetType(Expression::ScalarMeshVar);
+    md->AddExpression(&relVol);
+
+    //
+    // Volumetric Strain.
+    //
+    varName = "volumetric_strain";
+    varPath = meshPath + varPathBase + varName;
+
+    Expression eVol;
+    eVol.SetName(varPath);
+    eVol.SetDefinition("strain_volumetric(" + meshName +
+        ",<" + initCoordsName + ">)");
+    eVol.SetType(Expression::ScalarMeshVar);
+    md->AddExpression(&eVol);
+
     if (mustDeriveStrain)
     {
-        std::string initCoordsName = meshPath +
-            "Derived/Shared/strain/initial_strain_coords";
-        Expression initCoordsExpr;
-        initCoordsExpr.SetName(initCoordsName);
-        initCoordsExpr.SetDefinition("conn_cmfe(coord(<[0]i:" +
-            meshName + ">)," + meshName + ")");
-        initCoordsExpr.SetType(Expression::VectorMeshVar);
-        initCoordsExpr.SetHidden(true);
-        md->AddExpression(&initCoordsExpr);
-
-        std::string varName;
-        std::string varPath;
-        std::string varPathBase = "Derived/Shared/strain/";
+        varPathBase = "Derived/Shared/strain/";
 
         std::vector<std::string> tensorCompNames;
         tensorCompNames.push_back("x");
