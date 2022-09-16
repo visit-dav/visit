@@ -1174,7 +1174,7 @@ avtPickQuery::RetrieveNodes(vtkDataSet *ds, int zone, bool needRealId)
                 if(!skipNode)
                 {
                     std::vector<int>::iterator it =
-                        std::find(nodes.begin(), nodes.end(), oNode);
+                        std::find(nodes.begin(), nodes.end(), oNode+nodeOrigin);
                     if (it == nodes.end())
                     {
                         nodes.push_back(oNode+nodeOrigin);
