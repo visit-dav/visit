@@ -37,8 +37,8 @@ import sys
 import tempfile
 import time
 
-import .HtmlDiff
-import .HtmlPython
+from visit_testing import HtmlDiff
+from visit_testing import HtmlPython
 
 from stat import *
 
@@ -68,8 +68,8 @@ except ImportError as vtkImpErr:
 # used to acccess visit_test_common
 sys.path.append(os.path.abspath(os.path.split(__visit_script_file__)[0]))
 
-from .visit_test_common import *
-from .visit_test_ctest import *
+from visit_testing.visit_test_common import *
+from visit_testing.visit_test_ctest import *
 
 # list of files to clean up at exit
 filesToRemoveUponExit = []
