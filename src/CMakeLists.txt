@@ -900,10 +900,8 @@ ENDIF (NOT WIN32)
 VISIT_3RDPARTY_VAR(ICET_DIR   "Path containing the Ice-T library's include and lib")
 
 # Libraries some third-parties are dependent upon
-IF(WIN32)
-  VISIT_3RDPARTY_VAR(JPEG_DIR   "Path containing the jpeg library's include and lib")
-  VISIT_3RDPARTY_VAR(SZIP_DIR   "Path containing the szip library's include and lib")
-ENDIF(WIN32)
+VISIT_3RDPARTY_VAR(JPEG_DIR   "Path containing the jpeg library's include and lib")
+VISIT_3RDPARTY_VAR(SZIP_DIR   "Path containing the szip library's include and lib")
 
 # Define the options that let us pick I/O library installation locations. When
 # the library option is defined then we also define the variable name passed as
@@ -1356,10 +1354,8 @@ ENDIF(VISIT_PARALLEL)
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindZlib.cmake)
 
 # szip and jpeg
-IF(WIN32)
-    INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindJPEG.cmake)
-    INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindSzip.cmake)
-ENDIF(WIN32)
+INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindJPEG.cmake)
+INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindSzip.cmake)
 
 # dl and large file support.
 IF(CMAKE_HOST_UNIX)
@@ -2094,7 +2090,11 @@ if(LINUX)
         file(GLOB libicui18n_libs "/lib64/libicui18n.so*")
         file(GLOB libicudata_libs "/lib64/libicudata.so*")
         file(GLOB libicuuc_libs "/lib64/libicuuc.so*")
-        install(FILES ${libicui18n_libs} ${libicudata_libs} ${libicuuc_libs}
+        set(icu_libs "")
+        list(APPEND icu_libs ${libicui18n_libs})
+        list(APPEND icu_libs ${libicudata_libs})
+        list(APPEND icu_libs ${libicuuc_libs})
+        install(FILES ${icu_libs}
                 DESTINATION ${VISIT_INSTALLED_VERSION_LIB}
                 PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
                             GROUP_READ GROUP_WRITE GROUP_EXECUTE
@@ -2103,7 +2103,11 @@ if(LINUX)
         file(GLOB libicui18n_libs "/lib/x86_64-linux-gnu/libicui18n.so*")
         file(GLOB libicudata_libs "/lib/x86_64-linux-gnu/libicudata.so*")
         file(GLOB libicuuc_libs "/lib/x86_64-linux-gnu/libicuuc.so*")
-        install(FILES ${libicui18n_libs} ${libicudata_libs} ${libicuuc_libs}
+        set(icu_libs "")
+        list(APPEND icu_libs ${libicui18n_libs})
+        list(APPEND icu_libs ${libicudata_libs})
+        list(APPEND icu_libs ${libicuuc_libs})
+        install(FILES ${icu_libs}
                 DESTINATION ${VISIT_INSTALLED_VERSION_LIB}
                 PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
                             GROUP_READ GROUP_WRITE GROUP_EXECUTE
@@ -2112,7 +2116,11 @@ if(LINUX)
         file(GLOB libicui18n_libs "/usr/lib/x86_64-linux-gnu/libicui18n.so*")
         file(GLOB libicudata_libs "/usr/lib/x86_64-linux-gnu/libicudata.so*")
         file(GLOB libicuuc_libs "/usr/lib/x86_64-linux-gnu/libicuuc.so*")
-        install(FILES ${libicui18n_libs} ${libicudata_libs} ${libicuuc_libs}
+        set(icu_libs "")
+        list(APPEND icu_libs ${libicui18n_libs})
+        list(APPEND icu_libs ${libicudata_libs})
+        list(APPEND icu_libs ${libicuuc_libs})
+        install(FILES ${icu_libs}
                 DESTINATION ${VISIT_INSTALLED_VERSION_LIB}
                 PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
                             GROUP_READ GROUP_WRITE GROUP_EXECUTE
