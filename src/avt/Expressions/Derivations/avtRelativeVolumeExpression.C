@@ -50,7 +50,7 @@ avtRelativeVolumeExpression::~avtRelativeVolumeExpression()
 //  Method: avtRelativeVolumeExpression::DeriveVariable
 //
 //  Purpose:
-//      TODO
+//      Calls the base class relative volume calculation.
 //
 //  Programmer: Justin Privitera
 //  Creation:   Fri Sep  9 10:37:12 PDT 2022

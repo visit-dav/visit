@@ -22,6 +22,10 @@
 //
 //  Programmer: Thomas R. Treadway
 //  Creation:   Tue Nov 14 12:59:38 PST 2006
+// 
+//  Modifications:
+//    Justin Privitera, Fri Sep 16 11:58:19 PDT 2022
+//    Renamed avtStrainTensorExpression to avtStrainExpression.
 //
 // ****************************************************************************
 
@@ -35,6 +39,10 @@ avtStrainExpression::avtStrainExpression()
 //
 //  Programmer: Thomas R. Treadway
 //  Creation:   Tue Nov 14 12:59:38 PST 2006
+// 
+//  Modifications:
+//    Justin Privitera, Fri Sep 16 11:58:19 PDT 2022
+//    Renamed avtStrainTensorExpression to avtStrainExpression.
 //
 // ****************************************************************************
 
@@ -54,6 +62,10 @@ avtStrainExpression::~avtStrainExpression()
 //
 //  Programmer: Thomas R. Treadway
 //  Creation:   Tue Nov 14 12:59:38 PST 2006
+// 
+//  Modifications:
+//    Justin Privitera, Fri Sep 16 11:58:19 PDT 2022
+//    Renamed avtStrainTensorExpression to avtStrainExpression.
 //
 // ****************************************************************************
 
@@ -119,10 +131,10 @@ avtStrainExpression::HexPartialDerivative
 }
 
 // ****************************************************************************
-//  Method: avtRelativeVolumeExpression::DeriveVariable
+//  Method: avtStrainExpression::CalculateEvolOrRelvol
 //
 //  Purpose:
-//      TODO
+//      Computes either the volumetric strain or the relative volume.
 //
 //  Programmer: Justin Privitera
 //  Creation:   Fri Sep  9 10:37:12 PDT 2022
@@ -133,7 +145,7 @@ avtStrainExpression::HexPartialDerivative
 
 vtkDataArray *
 avtStrainExpression::CalculateEvolOrRelvol(vtkDataSet *in_ds, 
-                                                 bool vol_strain)
+                                           bool vol_strain)
 {
     char msg[1024];
     double vals[3];

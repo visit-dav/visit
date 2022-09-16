@@ -2602,6 +2602,9 @@ avtMiliFileFormat::AddMiliVariableToMetaData(avtDatabaseMetaData *avtMD,
 //
 //      Alister Maguire, Wed Apr  7 11:26:57 PDT 2021
 //      Only add pressure for stress.
+// 
+//      Justin Privitera, Fri Sep 16 11:58:19 PDT 2022
+//      Added derived variables volumetric strain and relative volume.
 //
 // ****************************************************************************
 

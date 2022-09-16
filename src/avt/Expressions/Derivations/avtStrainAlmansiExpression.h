@@ -21,6 +21,10 @@
 //
 //  Programmer: Thomas R. Treadway
 //  Creation:   Wed Nov 15 12:57:36 PST 2006
+// 
+//  Modifications:
+//    Justin Privitera, Fri Sep 16 11:58:19 PDT 2022
+//    Renamed avtStrainTensorExpression to avtStrainExpression.
 //
 // ****************************************************************************
 

@@ -20,6 +20,11 @@
 //
 //  Programmer: Thomas R. Treadway
 //  Creation:   Tue Nov  7 15:59:56 PST 2006
+// 
+//  Modifications:
+//    Justin Privitera, Fri Sep 16 11:58:19 PDT 2022
+//    Renamed avtStrainTensorExpression to avtStrainExpression.
+//    Added CalculateEvolOrRelvol.
 //
 // ****************************************************************************
 

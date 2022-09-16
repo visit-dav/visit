@@ -50,7 +50,7 @@ avtStrainVolumetricExpression::~avtStrainVolumetricExpression()
 //  Method: avtStrainVolumetricExpression::DeriveVariable
 //
 //  Purpose:
-//      TODO
+//      Calls base class volumetric strain calculation.
 //
 //  Programmer: Justin Privitera
 //  Creation:   Fri Sep  9 10:37:12 PDT 2022

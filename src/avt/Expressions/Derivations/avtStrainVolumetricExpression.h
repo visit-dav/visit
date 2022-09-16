@@ -17,7 +17,7 @@
 //  Class: avtStrainVolumetricExpression
 //
 //  Purpose:
-//      TODO
+//      Calculates the volumetric strain.
 //
 //  Programmer: Justin Privitera
 //  Creation:   Fri Sep  9 10:37:12 PDT 2022

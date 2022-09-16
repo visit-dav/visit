@@ -17,7 +17,7 @@
 //  Class: avtRelativeVolumeExpression
 //
 //  Purpose:
-//      TODO
+//      Calculates the relative volume.
 //
 //  Programmer: Justin Privitera
 //  Creation:   Fri Sep  9 10:37:12 PDT 2022

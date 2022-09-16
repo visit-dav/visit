@@ -58,6 +58,9 @@ avtStrainAlmansiExpression::~avtStrainAlmansiExpression()
 //  Modifications:
 //    Kathleen Biagas, Wed Apr 12 12:00:10 PDT 2012
 //    Set output array's data type to same as input's.
+// 
+//    Justin Privitera, Fri Sep 16 11:58:19 PDT 2022
+//    Renamed avtStrainTensorExpression to avtStrainExpression.
 //
 // ****************************************************************************
 

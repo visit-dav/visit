@@ -51,6 +51,8 @@
 // Creation:   Thu May 21 08:55:58 PDT 2009
 //
 // Modifications:
+//   Justin Privitera, Fri Sep 16 11:58:19 PDT 2022
+//   Added relative volume and volumetric strain.
 //   
 // ****************************************************************************
 

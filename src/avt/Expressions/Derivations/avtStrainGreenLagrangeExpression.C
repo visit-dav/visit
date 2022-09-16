@@ -58,6 +58,9 @@ avtStrainGreenLagrangeExpression::~avtStrainGreenLagrangeExpression()
 //  Modifications:
 //    Kathleen Biagas, Wed Apr 4 12:02:10 PDT 2012
 //    Set output's data type to same as input.
+// 
+//    Justin Privitera, Fri Sep 16 11:58:19 PDT 2022
+//    Renamed avtStrainTensorExpression to avtStrainExpression.
 //
 // ****************************************************************************
 
