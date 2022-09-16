@@ -1177,7 +1177,7 @@ avtPickQuery::RetrieveNodes(vtkDataSet *ds, int zone, bool needRealId)
                         std::find(nodes.begin(), nodes.end(), oNode);
                     if (it == nodes.end())
                     {
-                        nodes.push_back(oNode);
+                        nodes.push_back(oNode+nodeOrigin);
                     }
                     else
                     {
@@ -1187,7 +1187,7 @@ avtPickQuery::RetrieveNodes(vtkDataSet *ds, int zone, bool needRealId)
             }
             else
             {
-                nodes.push_back(ptId);
+                nodes.push_back(ptId + nodeOrigin);
             }
             if (!skipNode)
             {
