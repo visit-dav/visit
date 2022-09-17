@@ -494,7 +494,7 @@ QvisColorTableWindow::CreateWindowContents()
 //   Justin Privitera, Fri Sep  2 16:46:21 PDT 2022
 //   Now plays nice with the new tag data structure.
 //
-//   Justin Privitera, Fri Sep 16 14:28:51 PDT 2022
+//   Cyrus Harrison, Fri Sep 16 14:28:51 PDT 2022
 //   Avoid emplace_back due to evil nature of std::vector<bool>
 //
 // ****************************************************************************
