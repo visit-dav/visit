@@ -213,11 +213,11 @@ static void FreeUpCacheSlot(void *item)
     string filename = iface->GetFilename(0);
     debug5 << "Removing decompressed file \"" << filename << "\"" << endl;
     delete iface;
-    errno = 0;
     static int issuedWarnings = 0;
 
     if (finfo->rmDirname == "")
     {
+        errno = 0;
         if (unlink(filename.c_str()) != 0 && errno != ENOENT)
         {
             if (issuedWarnings < 5)
@@ -273,6 +273,7 @@ static void FreeUpCacheSlot(void *item)
             }
         }
     }
+    delete finfo;
 }
 
 // ****************************************************************************
