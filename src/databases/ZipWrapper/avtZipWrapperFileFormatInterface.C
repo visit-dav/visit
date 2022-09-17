@@ -23,6 +23,7 @@
 #include <shlwapi.h>
 #include <process.h>
 #else
+#include <dirent.h>
 #include <unistd.h>
 #include <sys/wait.h>  // for WIFEXITED and WEXITSTATUS
 #endif
@@ -60,6 +61,11 @@ string avtZipWrapperFileFormatInterface::decompCmd;
 vector<avtZipWrapperFileFormatInterface*> avtZipWrapperFileFormatInterface::objList;
 int avtZipWrapperFileFormatInterface::maxDecompressedFiles = 50;
 static bool atExiting = false;
+
+typedef struct DecompressedFileInfo {
+    string rmDirname;
+    avtFileFormatInterface *iface;
+} DecompressedFileInfo;
 
 // ****************************************************************************
 //  Class: avtZWGenercDatabase
@@ -202,21 +208,69 @@ class avtZipWrapperFileFormat : public avtMTMDFileFormat
 // ****************************************************************************
 static void FreeUpCacheSlot(void *item)
 {
-    avtZWFileFormatInterface *iface = (avtZWFileFormatInterface*) item;
+    DecompressedFileInfo *finfo = (DecompressedFileInfo*) item;
+    avtZWFileFormatInterface *iface = (avtZWFileFormatInterface*) finfo->iface;
     string filename = iface->GetFilename(0);
     debug5 << "Removing decompressed file \"" << filename << "\"" << endl;
     delete iface;
     errno = 0;
-    if (unlink(filename.c_str()) != 0 && errno != ENOENT)
+    static int issuedWarnings = 0;
+
+    if (finfo->rmDirname == "")
     {
-        static int issuedWarning = 0;
-        if (issuedWarning < 5)
+        if (unlink(filename.c_str()) != 0 && errno != ENOENT)
         {
-            debug5 << "Unable to unlink() decompressed file \"" << filename << "\"" << endl;
-            debug5 << "unlink() reported errno=" << errno << " (\"" << strerror(errno) << "\")" << endl;
-            cerr << "Unable to remove decompressed file \"" << filename << "\"" << endl;
-            cerr << "unlink() reported errno=" << errno << " (\"" << strerror(errno) << "\")" << endl;
-            issuedWarning++;
+            if (issuedWarnings < 5)
+            {
+                debug5 << "Unable to unlink() decompressed file \"" << filename << "\"" << endl;
+                debug5 << "unlink() reported errno=" << errno << " (\"" << strerror(errno) << "\")" << endl;
+                cerr << "Unable to remove decompressed file \"" << filename << "\"" << endl;
+                cerr << "unlink() reported errno=" << errno << " (\"" << strerror(errno) << "\")" << endl;
+                issuedWarnings++;
+            }
+        }
+    }
+    else
+    {
+        DIR *dirp = opendir(finfo->rmDirname.c_str());
+        if (!dirp)
+        {
+            if (issuedWarnings < 5)
+            {
+                debug5 << "Unable to descend into directory \"" << finfo->rmDirname << "\" to remove its contents." << endl;
+                cerr << "Unable to descend into directory \"" << finfo->rmDirname << "\" to remove its contents." << endl;
+                issuedWarnings++;
+            }
+
+        }
+        dirent *dp;
+        while ((dp = readdir(dirp)))
+        {
+            errno = 0;
+            if (unlink(dp->d_name) != 0 && errno != ENOENT)
+            {
+                if (issuedWarnings < 5)
+                {
+                    debug5 << "Unable to unlink() \"" << dp->d_name << "\"" << endl;
+                    debug5 << "unlink() reported errno=" << errno << " (\"" << strerror(errno) << "\")" << endl;
+                    cerr << "Unable to unlink() \"" << dp->d_name << "\"" << endl;
+                    cerr << "unlink() reported errno=" << errno << " (\"" << strerror(errno) << "\")" << endl;
+                    issuedWarnings++;
+                }
+            }
+        }
+        closedir(dirp);
+        errno = 0;
+        if (rmdir(finfo->rmDirname.c_str()) != 0)
+        {
+            if (issuedWarnings < 5)
+            {
+                debug5 << "Unable to rmdir() \"" << finfo->rmDirname << "\"" << endl;
+                debug5 << "rmdir() reported errno=" << errno << " (\"" << strerror(errno) << "\")" << endl;
+                cerr << "Unable to rmdir() \"" << finfo->rmDirname << "\"" << endl;
+                cerr << "rmdir() reported errno=" << errno << " (\"" << strerror(errno) << "\")" << endl;
+                issuedWarnings++;
+            }
         }
     }
 }
@@ -701,7 +755,8 @@ avtZipWrapperFileFormatInterface::GetRealInterface(int ts, int dom, bool dontCac
     if (decompressedFilesCache.exists(compressedName))
     {
         debug5 << "Found interface object for file \"" << compressedName << "\" in cache" << endl;
-        avtFileFormatInterface *retval = decompressedFilesCache[compressedName];
+        DecompressedFileInfo *finfo = decompressedFilesCache[compressedName];
+        avtFileFormatInterface *retval = finfo->iface;
         // Always update the interface object to whatever the dummy format thinks
         // is right before returning the object for use.
         UpdateRealFileFormatInterface(retval);
@@ -883,9 +938,14 @@ avtZipWrapperFileFormatInterface::GetRealInterface(int ts, int dom, bool dontCac
 
     if (!dontCache)
     {
+        DecompressedFileInfo *finfo = new DecompressedFileInfo();
+        finfo->iface = realInterface;
+        finfo->rmDirname = "";
+        if (dcmd.substr(0,5) == "tar x")
+            finfo->rmDirname = bname;
         UpdateRealFileFormatInterface(realInterface);
         realInterface->SetDatabaseMetaData(&mdCopy, 0);
-        decompressedFilesCache[compressedName] = realInterface;
+        decompressedFilesCache[compressedName] = finfo;
     }
 
     return realInterface;

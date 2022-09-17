@@ -20,6 +20,7 @@ class avtZipWrapperFileFormat;
 class DBOptionsAttributes;
 class CommonDatabasePluginInfo;
 class DatabasePluginManager;
+struct DecompressedFileInfo;
 
 // ****************************************************************************
 //  Class: avtZipWrapperFileFormatInterface
@@ -130,8 +131,8 @@ class avtZipWrapperFileFormatInterface : public avtFileFormatInterface
                                { return false; }
 
   protected:
-    virtual int             GetNumberOfFileFormats(void) { return 1; };
-    virtual avtFileFormat  *GetFormat(int) const;
+    virtual int                    GetNumberOfFileFormats(void) { return 1; };
+    virtual avtFileFormat         *GetFormat(int) const;
 
   private:
       static void                  Initialize(int procNum, int procCount,
@@ -140,8 +141,8 @@ class avtZipWrapperFileFormatInterface : public avtFileFormatInterface
       static void                  CleanUpAtExit();
       static std::vector<avtZipWrapperFileFormatInterface*>
                                    objList;
-      static std::string                tmpDir;
-      static std::string                decompCmd;
+      static std::string           tmpDir;
+      static std::string           decompCmd;
       static int                   maxDecompressedFiles;
 
       int                          procNum;
@@ -163,7 +164,7 @@ class avtZipWrapperFileFormatInterface : public avtFileFormatInterface
       std::string                       pluginId;
       bool                         realPluginWasLoadedByMe;
 
-      MRUCache<std::string, avtFileFormatInterface*, MRUCache_CallbackDelete, 20>
+      MRUCache<std::string, DecompressedFileInfo*, MRUCache_CallbackDelete, 20>
                                    decompressedFilesCache;
 };
 
