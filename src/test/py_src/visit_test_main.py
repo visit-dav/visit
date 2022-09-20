@@ -14,7 +14,12 @@ notes:   Ported/refactored from 'Testing.py'
 #    Kathleen Biagas, Tue Feb 9, 2021
 #    When creating text diff output use difflib.context_diff instead of
 #    *nix 'diff', so content can be generated on Windows.
+#
+#    Cyrus Harrison, Wed Sep  7 11:34:36 PDT 2022
+#    Refactored to module.
+#
 # ----------------------------------------------------------------------------
+
 
 import atexit
 import difflib
@@ -32,8 +37,8 @@ import sys
 import tempfile
 import time
 
-import HtmlDiff
-import HtmlPython
+from visit_testing import HtmlDiff
+from visit_testing import HtmlPython
 
 from stat import *
 
@@ -63,8 +68,8 @@ except ImportError as vtkImpErr:
 # used to acccess visit_test_common
 sys.path.append(os.path.abspath(os.path.split(__visit_script_file__)[0]))
 
-from visit_test_common import *
-from visit_test_ctest import *
+from visit_testing.visit_test_common import *
+from visit_testing.visit_test_ctest import *
 
 # list of files to clean up at exit
 filesToRemoveUponExit = []

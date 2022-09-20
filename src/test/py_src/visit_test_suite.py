@@ -5,6 +5,12 @@
 """
 VisIt's test suite.
 """
+# ----------------------------------------------------------------------------
+#  Modifications:
+#    Cyrus Harrison, Wed Sep  7 11:34:36 PDT 2022
+#    Refactored to module.
+#
+# ----------------------------------------------------------------------------
 
 import sys
 import os
@@ -22,13 +28,13 @@ import json
 import traceback
 
 
-
 from os.path import join as pjoin
 from optparse import OptionParser
 
-from visit_test_common import *
-from visit_test_reports import *
-from visit_test_ctest import *
+from .visit_test_common import *
+from .visit_test_reports import *
+from .visit_test_ctest import *
+
 
 def known_mode_keys():
     return ['serial','parallel','scalable','dlb','pdb','hdf5','icet']
@@ -1187,7 +1193,9 @@ def run_visit_tests(tests,
     return JSONIndex.load_results(res_file,True)
 
 
-if __name__ == "__main__":
+def run_main():
     opts, tests = parse_args()
     main(opts,tests)
 
+if __name__ == "__main__":
+    run_main()
