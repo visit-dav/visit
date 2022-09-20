@@ -211,7 +211,7 @@ static void FreeUpCacheSlot(void *item)
     DecompressedFileInfo *finfo = (DecompressedFileInfo*) item;
     avtZWFileFormatInterface *iface = (avtZWFileFormatInterface*) finfo->iface;
     string filename = iface->GetFilename(0);
-    debug5 << "Removing decompressed file \"" << filename << "\"" << endl;
+    debug5 << "Removing decompressed entry \"" << filename << "\"" << endl;
     delete iface;
     static int issuedWarnings = 0;
 
@@ -273,6 +273,7 @@ static void FreeUpCacheSlot(void *item)
             }
         }
     }
+
     delete finfo;
 }
 
@@ -635,11 +636,7 @@ avtZipWrapperFileFormatInterface::~avtZipWrapperFileFormatInterface()
     decompressedFilesCache.clear();
 
     delete dummyFileFormat;
-
-    // We use FreeUpCacheSlot here even though dummyInterface isn't cached
-    // because FreeUpCacheSlot is where all the logic for deleting the
-    // decompressed file associated with an interface resides.
-    FreeUpCacheSlot(dummyInterface);
+    delete dummyInterface;
 
     // if this is the last instance we have, finalize the class too
     if (objList.size() == 0)
