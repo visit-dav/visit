@@ -547,9 +547,9 @@ avtZipWrapperFileFormatInterface::avtZipWrapperFileFormatInterface(
     //
     // Make sure the necessary real plugin is loaded.
     //
-    string ext = StringHelpers::ExtractRESubstr(inputFileList[0][0].c_str(), "<\\.(gz|bz|bz2|zip)$>");
+    string ext = StringHelpers::ExtractRESubstr(inputFileList[0][0].c_str(), "<\\.(xz|gz|bz|bz2|zip)$>");
     const char *bname = FileFunctions::Basename(inputFileList[0][0].c_str());
-    string dcname = StringHelpers::ExtractRESubstr(bname, "<(.*)\\.(gz|bz|bz2|zip)$> \\1");
+    string dcname = StringHelpers::ExtractRESubstr(bname, "<(.*)\\.(xz|gz|bz|bz2|zip)$> \\1");
 
     // Save the pointer to the plugin manager.
     pluginManager = zwinfo->GetPluginManager();
@@ -762,9 +762,9 @@ avtZipWrapperFileFormatInterface::GetRealInterface(int ts, int dom, bool dontCac
     }
     debug5 << "Interface object for file \"" << compressedName << "\" not in cache" << endl;
 
-    string ext = StringHelpers::ExtractRESubstr(compressedName.c_str(), "<\\.(gz|bz|bz2|zip)$>");
+    string ext = StringHelpers::ExtractRESubstr(compressedName.c_str(), "<\\.(xz|gz|bz|bz2|zip)$>");
     const char *bname = FileFunctions::Basename(compressedName.c_str());
-    string dcname = StringHelpers::ExtractRESubstr(bname, "<(.*)\\.(gz|bz|bz2|zip)$> \\1");
+    string dcname = StringHelpers::ExtractRESubstr(bname, "<(.*)\\.(xz|gz|bz|bz2|zip)$> \\1");
 
     string dcmd = decompCmd;
     if (dcmd == "")
