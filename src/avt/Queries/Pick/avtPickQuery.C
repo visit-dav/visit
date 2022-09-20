@@ -1086,6 +1086,9 @@ avtPickQuery::RetrieveVarInfo(vtkDataSet* ds, const int findElement,
 //    Use all cells corresponding to original when looking for incident nodes,
 //    but only when original zones weren't preserved and we have the original
 //    cells array.  Also, don't include 'added' nodes (original node id -1).
+// 
+//    Kathleen Biagas and Justin Privitera, Fri Sep 16 17:15:07 PDT 2022
+//    Took into account node origin in incident nodes calculation.
 //
 // ****************************************************************************
 
@@ -1174,10 +1177,10 @@ avtPickQuery::RetrieveNodes(vtkDataSet *ds, int zone, bool needRealId)
                 if(!skipNode)
                 {
                     std::vector<int>::iterator it =
-                        std::find(nodes.begin(), nodes.end(), oNode);
+                        std::find(nodes.begin(), nodes.end(), oNode+nodeOrigin);
                     if (it == nodes.end())
                     {
-                        nodes.push_back(oNode);
+                        nodes.push_back(oNode+nodeOrigin);
                     }
                     else
                     {
@@ -1187,7 +1190,7 @@ avtPickQuery::RetrieveNodes(vtkDataSet *ds, int zone, bool needRealId)
             }
             else
             {
-                nodes.push_back(ptId);
+                nodes.push_back(ptId + nodeOrigin);
             }
             if (!skipNode)
             {

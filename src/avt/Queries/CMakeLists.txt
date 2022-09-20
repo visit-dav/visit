@@ -28,6 +28,10 @@
 #
 #    Cyrus Harrison, Mon May  9 14:01:56 PDT 2022
 #    Added logic to use and link conduit in queries
+#
+#    Kathleen Biagas, Fri Sep 9, 2022
+#    Link with 'rt' on Linux.
+#
 #****************************************************************************/
 
 
@@ -222,6 +226,9 @@ ENDIF(VISIT_PYTHON_FILTERS)
 #********************************* SERIAL ************************************
 ADD_LIBRARY(avtquery_ser ${AVTQUERY_SOURCES})
 TARGET_LINK_LIBRARIES(avtquery_ser visitcommon avtmath avtshapelets avtexpressions_ser avtfilters_ser visit_vtk)
+IF(CMAKE_SYSTEM_NAME MATCHES Linux)
+    TARGET_LINK_LIBRARIES(avtquery_ser rt)
+ENDIF()
 IF(VISIT_PYTHON_FILTERS)
     TARGET_LINK_LIBRARIES(avtquery_ser avtpythonfilters_ser)
 ENDIF(VISIT_PYTHON_FILTERS)
@@ -236,6 +243,9 @@ VISIT_INSTALL_TARGETS(avtquery_ser)
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(avtquery_par ${AVTQUERY_SOURCES})
     TARGET_LINK_LIBRARIES(avtquery_par visitcommon avtmath avtshapelets avtexpressions_par avtfilters_par visit_vtk)
+    IF(CMAKE_SYSTEM_NAME MATCHES Linux)
+        TARGET_LINK_LIBRARIES(avtquery_par rt)
+    ENDIF()
     IF(VISIT_PYTHON_FILTERS)
         TARGET_LINK_LIBRARIES(avtquery_par avtpythonfilters_par)
     ENDIF(VISIT_PYTHON_FILTERS)

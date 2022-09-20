@@ -55,6 +55,12 @@
 #
 #    Kathleen Biagas, Wed June 15, 2022
 #    Added General/avtCrackWidthExpression.C
+# 
+#    Justin Privitera, Fri Sep 16 11:58:19 PDT 2022
+#    Added Derivations/avtRelativeVolumeExpression
+#    Added Derivations/avtStrainVolumetricExpression
+#    Renamed Derivations/avtStrainTensorExpression to
+#    Derivations/avtStrainExpression
 #
 #****************************************************************************/
 
@@ -105,11 +111,13 @@ Derivations/avtEffectiveTensorExpression.C
 Derivations/avtLocalizedCompactnessExpression.C
 Derivations/avtPrincipalDeviatoricTensorExpression.C
 Derivations/avtPrincipalTensorExpression.C
+Derivations/avtRelativeVolumeExpression.C
+Derivations/avtStrainVolumetricExpression.C
 Derivations/avtStrainAlmansiExpression.C
 Derivations/avtStrainGreenLagrangeExpression.C
 Derivations/avtStrainInfinitesimalExpression.C
 Derivations/avtStrainRateExpression.C
-Derivations/avtStrainTensorExpression.C
+Derivations/avtStrainExpression.C
 Derivations/avtTensorMaximumShearExpression.C
 )
 

@@ -256,10 +256,10 @@ static void ExecuteClientMethod(ClientMethod *method, bool onNewThread);
 static int InitializeViewerProxy(ViewerProxy* viewerproxy = NULL);
 
 //
-// VISIT_METHODS_MAX_SIZE Controls the pre-allocated size of 
+// VISIT_METHODS_MAX_SIZE Controls the pre-allocated size of
 // the VisItMethods std::vector.
 //
-// This vector is used to hold structs that are handed to python 
+// This vector is used to hold structs that are handed to python
 // as pointers. These structs can't be realloced, or else Python
 // will dance around in memory when trying to call our module
 // methods!
@@ -664,12 +664,12 @@ VisItUnlockPythonInterpreter(VISIT_PY_THREAD_LOCK_STATE state)
 // Modifications:
 //
 // ****************************************************************************
-void 
+void
 cli_PyRun_SimpleFile(FILE *fp, const char *fileName)
 {
     // check if we are in auto 2to3 mode, which is indicated by:
     //  visit_utils.builtin.GetAutoPy2to3()
-    
+
     // users can change this at any time, so we need to check its current
     // value
 
@@ -1038,6 +1038,7 @@ void PickleInit()
 //
 //    Chris Laganella, Mon Feb 14 14:37:24 EST 2022
 //    Support MultiLineString from DBOptionsAttributes
+//
 // ****************************************************************************
 bool
 FillDBOptionsFromDictionary(PyObject *obj, DBOptionsAttributes &opts)
@@ -1193,7 +1194,7 @@ FillDBOptionsFromDictionary(PyObject *obj, DBOptionsAttributes &opts)
                     }
                     VisItErrorFunc(errorMsg.c_str());
                     return false;
-                } 
+                }
                 else
                 {
                     opts.SetEnum(name, ival);
@@ -1220,7 +1221,7 @@ FillDBOptionsFromDictionary(PyObject *obj, DBOptionsAttributes &opts)
                             found = true;
                         }
                     }
-                    if (!found) 
+                    if (!found)
                     {
                         sprintf(msg,"'%s' is not a valid enum string for '%s'."
                                 "\nValid options are in the range of [0,%d]."
@@ -1277,6 +1278,9 @@ FillDBOptionsFromDictionary(PyObject *obj, DBOptionsAttributes &opts)
 //    Kathleen Biagas, Fri Feb 17 2017
 //    Allow Enums to be represented by string.
 //
+//    Kathleen Biagas, Tue Sept 13, 2022
+//    Support MultiLineString option type.
+//
 // ****************************************************************************
 PyObject *
 CreateDictionaryFromDBOptions(DBOptionsAttributes &opts)
@@ -1304,6 +1308,9 @@ CreateDictionaryFromDBOptions(DBOptionsAttributes &opts)
             break;
           case DBOptionsAttributes::String:
             PyDict_SetItemString(dict,name,PyString_FromString(opts.GetString(name).c_str()));
+            break;
+          case DBOptionsAttributes::MultiLineString:
+            PyDict_SetItemString(dict,name,PyString_FromString(opts.GetMultiLineString(name).c_str()));
             break;
           case DBOptionsAttributes::Enum:
             // If you modify this section, also check the Enum case in
@@ -3411,13 +3418,13 @@ visit_DeleteExpression(PyObject *self, PyObject *args)
 
     bool found  = false;
     bool success =false;
-    
+
     char *exprName;
     if (!PyArg_ParseTuple(args, "s", &exprName))
        return NULL;
 
     char buff[512];
-    
+
     // Access the expression list and delete the proper expression
     MUTEX_LOCK();
 
@@ -3463,16 +3470,16 @@ visit_DeleteExpression(PyObject *self, PyObject *args)
         }
 
     MUTEX_UNLOCK();
-    
+
     if(!found)
         snprintf(buff,512,"Cannot delete unknown expression \"%s\".",exprName);
-         
+
     if(!success)
     {
         VisItErrorFunc(buff);
         return NULL;
     }
-    
+
     return IntReturnValue(Synchronize());
 }
 
@@ -3821,7 +3828,7 @@ visit_AddPlot(PyObject *self, PyObject *args)
         VisItErrorFunc("Invalid plot plugin name!");
         return NULL;
     }
-   
+
     MUTEX_LOCK();
         // Set the apply to all plots toggle.
         bool applyOperatorSave = GetViewerState()->GetGlobalAttributes()->GetApplyOperator();
@@ -4081,18 +4088,18 @@ visit_CloseComputeEngine(PyObject *self, PyObject *args)
 // Modifications:
 //
 // ****************************************************************************
- 
+
 STATIC PyObject *
 visit_SetPlotFrameRange(PyObject *self, PyObject *args)
 {
     ENSURE_VIEWER_EXISTS();
- 
+
     int plotId, frame0, frame1;
     if(!PyArg_ParseTuple(args, "iii", &plotId, &frame0, &frame1))
         return NULL;
- 
+
     GetViewerMethods()->SetPlotFrameRange(plotId, frame0, frame1);
- 
+
     Py_INCREF(Py_None);
     return Py_None;
 }
@@ -4112,18 +4119,18 @@ visit_SetPlotFrameRange(PyObject *self, PyObject *args)
 // Modifications:
 //
 // ****************************************************************************
- 
+
 STATIC PyObject *
 visit_DeletePlotKeyframe(PyObject *self, PyObject *args)
 {
     ENSURE_VIEWER_EXISTS();
- 
+
     int plotId, frame;
     if(!PyArg_ParseTuple(args, "ii", &plotId, &frame))
         return NULL;
- 
+
     GetViewerMethods()->DeletePlotKeyframe(plotId, frame);
- 
+
     Py_INCREF(Py_None);
     return Py_None;
 }
@@ -4143,18 +4150,18 @@ visit_DeletePlotKeyframe(PyObject *self, PyObject *args)
 // Modifications:
 //
 // ****************************************************************************
- 
+
 STATIC PyObject *
 visit_MovePlotKeyframe(PyObject *self, PyObject *args)
 {
     ENSURE_VIEWER_EXISTS();
- 
+
     int plotId, oldFrame, newFrame;
     if(!PyArg_ParseTuple(args, "iii", &plotId, &oldFrame, &newFrame))
         return NULL;
- 
+
     GetViewerMethods()->MovePlotKeyframe(plotId, oldFrame, newFrame);
- 
+
     Py_INCREF(Py_None);
     return Py_None;
 }
@@ -4174,18 +4181,18 @@ visit_MovePlotKeyframe(PyObject *self, PyObject *args)
 // Modifications:
 //
 // ****************************************************************************
- 
+
 STATIC PyObject *
 visit_SetPlotDatabaseState(PyObject *self, PyObject *args)
 {
     ENSURE_VIEWER_EXISTS();
- 
+
     int plotId, frame, state;
     if(!PyArg_ParseTuple(args, "iii", &plotId, &frame, &state))
         return NULL;
- 
+
     GetViewerMethods()->SetPlotDatabaseState(plotId, frame, state);
- 
+
     Py_INCREF(Py_None);
     return Py_None;
 }
@@ -4205,18 +4212,18 @@ visit_SetPlotDatabaseState(PyObject *self, PyObject *args)
 // Modifications:
 //
 // ****************************************************************************
- 
+
 STATIC PyObject *
 visit_DeletePlotDatabaseKeyframe(PyObject *self, PyObject *args)
 {
     ENSURE_VIEWER_EXISTS();
- 
+
     int plotId, frame;
     if(!PyArg_ParseTuple(args, "ii", &plotId, &frame))
         return NULL;
- 
+
     GetViewerMethods()->DeletePlotDatabaseKeyframe(plotId, frame);
- 
+
     Py_INCREF(Py_None);
     return Py_None;
 }
@@ -4236,18 +4243,18 @@ visit_DeletePlotDatabaseKeyframe(PyObject *self, PyObject *args)
 // Modifications:
 //
 // ****************************************************************************
- 
+
 STATIC PyObject *
 visit_MovePlotDatabaseKeyframe(PyObject *self, PyObject *args)
 {
     ENSURE_VIEWER_EXISTS();
- 
+
     int plotId, oldFrame, newFrame;
     if(!PyArg_ParseTuple(args, "iii", &plotId, &oldFrame, &newFrame))
         return NULL;
- 
+
     GetViewerMethods()->MovePlotDatabaseKeyframe(plotId, oldFrame, newFrame);
- 
+
     Py_INCREF(Py_None);
     return Py_None;
 }
@@ -4768,7 +4775,7 @@ visit_ClearPickPoints(PyObject *self, PyObject *args)
 // Function: visit_RemovePicks
 //
 // Purpose:
-//   Tells the viewer to remove a list of pick points. 
+//   Tells the viewer to remove a list of pick points.
 //
 // Notes:
 //
@@ -4801,7 +4808,7 @@ visit_RemovePicks(PyObject *self, PyObject *args)
     if (!suppressQueryOutputState)
         ToggleSuppressQueryOutput_NoLogging(false);
 
-    std::string removedPicks = 
+    std::string removedPicks =
         GetViewerState()->GetPickAttributes()->GetRemovedPicks();
 
     return PyString_FromString(removedPicks.c_str());
@@ -5175,7 +5182,7 @@ visit_ChooseCenterOfRotation(PyObject *self, PyObject *args)
         havePoint = false;
         PyErr_Clear();
     }
-    
+
 
     MUTEX_LOCK();
         if(havePoint)
@@ -5302,7 +5309,7 @@ STATIC PyObject *
 visit_SaveSession(PyObject *self, PyObject *args)
 {
     ENSURE_VIEWER_EXISTS();
-   
+
     char *filename;
     if(!PyArg_ParseTuple(args, "s", &filename))
         return NULL;
@@ -5313,7 +5320,7 @@ visit_SaveSession(PyObject *self, PyObject *args)
     if( rpos  == std::string::npos || rpos != session_file.size() - 8)
         session_file += ".session";
     std::string hostname;
-        
+
     MUTEX_LOCK();
         GetViewerMethods()->ExportEntireState(session_file.c_str(), hostname);
     MUTEX_UNLOCK();
@@ -5427,7 +5434,7 @@ visit_GetEngineProperties(PyObject *self, PyObject *args)
                 {
                     if(sims[i] == sim)
                     {
-                        index = (int)i; 
+                        index = (int)i;
                         break;
                     }
                 }
@@ -6101,12 +6108,12 @@ visit_GetMachineProfileNames(PyObject *self, PyObject *args)
 // Modifications:
 //
 // ****************************************************************************
- 
+
 STATIC PyObject *
 visit_SetKeyframeAttributes(PyObject *self, PyObject *args)
 {
     ENSURE_VIEWER_EXISTS();
- 
+
     PyObject *keyframe = NULL;
     // Try and get the keyframe pointer.
     if(!PyArg_ParseTuple(args,"O",&keyframe))
@@ -6122,7 +6129,7 @@ visit_SetKeyframeAttributes(PyObject *self, PyObject *args)
 
     MUTEX_LOCK();
         KeyframeAttributes *va = PyKeyframeAttributes_FromPyObject(keyframe);
- 
+
         // Copy the object into the view attributes.
         *(GetViewerState()->GetKeyframeAttributes()) = *va;
         GetViewerState()->GetKeyframeAttributes()->Notify();
@@ -6146,7 +6153,7 @@ visit_SetKeyframeAttributes(PyObject *self, PyObject *args)
 // Modifications:
 //
 // ****************************************************************************
- 
+
 STATIC PyObject *
 visit_GetKeyframeAttributes(PyObject *self, PyObject *args)
 {
@@ -6155,10 +6162,10 @@ visit_GetKeyframeAttributes(PyObject *self, PyObject *args)
 
     PyObject *retval = PyKeyframeAttributes_New();
     KeyframeAttributes *aa = PyKeyframeAttributes_FromPyObject(retval);
- 
+
     // Copy the viewer proxy's keyframe atts into the return data structure.
     *aa = *(GetViewerState()->GetKeyframeAttributes());
- 
+
     return retval;
 }
 
@@ -7850,7 +7857,7 @@ visit_ListPlots(PyObject *self, PyObject *args)
                     plot.GetBeginFrame(),
                     plot.GetEndFrame());
              strLen = strlen(tmpStr);
- 
+
              // Print out the keyframes.
              const std::vector<int> &keyframes = plot.GetKeyframes();
              for(j = 0; j < keyframes.size(); ++j)
@@ -8402,7 +8409,7 @@ visit_SetPlotFollowsTime(PyObject *self, PyObject *args)
         NO_ARGUMENTS();
         PyErr_Clear();
     }
-    
+
     MUTEX_LOCK();
 
     // Set the follows time value for the active plots.
@@ -8647,7 +8654,7 @@ visit_SetOperatorOptions(PyObject *self, PyObject *args)
         bool applyOperatorSave = GetViewerState()->GetGlobalAttributes()->GetApplyOperator();
         GetViewerState()->GetGlobalAttributes()->SetApplyOperator(applyToAllPlots != 0);
         GetViewerState()->GetGlobalAttributes()->Notify();
- 
+
         // If the active operator was set, change the plot selection so we can set
         // the active operator.
         intVector selectedPlots, newActiveOperators, newExpandedPlots;
@@ -9373,7 +9380,7 @@ visit_SetPlotSILRestriction(PyObject *self, PyObject *args)
         // Set the sil restriction.
         avtSILRestriction_p silr = PySILRestriction_FromPyObject(obj);
         GetViewerProxy()->SetPlotSILRestriction(silr);
-        
+
         // Restore apply selection toggle
         GetViewerState()->GetGlobalAttributes()->SetApplySelection(applySelectionSave);
         GetViewerState()->GetGlobalAttributes()->Notify();
@@ -9434,7 +9441,7 @@ visit_GetPickOutput(PyObject *self, PyObject *args)
 //   Assumes the xml pick result is a serialized MapNode.
 //
 //
-// Programmer: Kathleen Biagas 
+// Programmer: Kathleen Biagas
 // Creation:   September 22, 2011
 //
 // Modifications:
@@ -9549,7 +9556,7 @@ visit_GetQueryOutputXML(PyObject *self, PyObject *args)
     ENSURE_VIEWER_EXISTS();
     NO_ARGUMENTS();
 
-    
+
     QueryAttributes *qa = GetViewerState()->GetQueryAttributes();
     std::string xml_string = qa->GetXmlResult();
     return PyString_FromString(xml_string.c_str());
@@ -9919,7 +9926,7 @@ TurnOnOffHelper(SILCategoryRole role, bool val, const stringVector &names)
 
     // Send the modified SIL restriction to the viewer.
     GetViewerProxy()->SetPlotSILRestriction(silr);
-        
+
     // Restore apply selection toggle
     GetViewerState()->GetGlobalAttributes()->SetApplySelection(applySelectionSave);
     GetViewerState()->GetGlobalAttributes()->Notify();
@@ -10303,7 +10310,7 @@ visit_NumColorTables(PyObject *self, PyObject *args)
 // Modifications:
 //   Brad Whitlock, Tue Dec 3 11:07:48 PDT 2002
 //   Renamed the function.
-// 
+//
 //   Justin Privitera, Wed May 18 11:25:46 PDT 2022
 //   Changed *active* to *default* for everything related to color tables.
 //   In this case I changed the name of the function.
@@ -11140,7 +11147,7 @@ visit_LoadAttribute(PyObject *self, PyObject *args)
                        "If this check is incorrect, please contact a "
                        "developer.");
         return NULL;
-        
+
     }
 
     AttributeSubject *as =
@@ -11148,7 +11155,7 @@ visit_LoadAttribute(PyObject *self, PyObject *args)
 
     if (!as || !filename)
         return NULL;
-        
+
     SingleAttributeConfigManager mgr(as);
     mgr.Import(filename);
     as->SelectAll();
@@ -11192,7 +11199,7 @@ visit_SaveAttribute(PyObject *self, PyObject *args)
                        "If this check is incorrect, please contact a "
                        "developer.");
         return NULL;
-        
+
     }
 
     AttributeSubject *as =
@@ -11200,7 +11207,7 @@ visit_SaveAttribute(PyObject *self, PyObject *args)
 
     if (!as || !filename)
         return NULL;
-        
+
     SingleAttributeConfigManager mgr(as);
     mgr.Export(filename);
 
@@ -11703,7 +11710,7 @@ visit_WriteConfigFile(PyObject *self, PyObject *args)
 //
 // Notes:
 //
-// Programmer: Kathleen Biagas 
+// Programmer: Kathleen Biagas
 // Creation:   July 19, 2011
 //
 // Modifications:
@@ -11740,7 +11747,7 @@ visit_GetQueryParameters(PyObject *self, PyObject *args)
         Py_INCREF(retval);
     }
 
-    return retval; 
+    return retval;
 }
 
 
@@ -11816,7 +11823,7 @@ visit_GetQueryParameters(PyObject *self, PyObject *args)
 //   Remove test for queryName == 'Pick'.
 //
 //   Kathleen Biagas, Tue Jul 19 12:00:04 PDT 2011
-//   Used parsed args to set MapNode query parameters which is now sent to 
+//   Used parsed args to set MapNode query parameters which is now sent to
 //   Viewer.  Made this a deprecated method, in favor of one that uses
 //   python dictionary and/or named arguments.
 //
@@ -11826,7 +11833,7 @@ visit_GetQueryParameters(PyObject *self, PyObject *args)
 //   Kathleen Biagas, Thu Feb 27 15:17:45 PST 2014
 //   Change return type (Object/Value/String) based on user request from
 //   SetQueryOutputToxxx calls. Default is string.
-// 
+//
 //   Justin Privitera, Thu May 19 18:52:29 PDT 2022
 //   Now you can pass the output type directly to the xray image query as a
 //   string and it will handle which output type it should be internally.
@@ -11843,23 +11850,23 @@ visit_Query_deprecated(PyObject *self, PyObject *args)
     char *output_name = NULL;
     int arg1 = 0, arg2 = 0;
     double darg;
-    doubleVector darg1(3), darg2(2), darg3(2); 
+    doubleVector darg1(3), darg2(2), darg3(2);
     PyObject *tuple = NULL;
-    
+
     bool parse_success = false;
-  
+
     // create the MapNode to store the parameters that will be parsed
     // below.
     MapNode params;
- 
+
     parse_success = PyArg_ParseTuple(args, "siidddddd|O", &queryName,
                                      &arg1, &arg2,
                                      &(darg1[0]), &(darg1[1]), &(darg1[2]),
                                      &darg, &(darg2[0]), &(darg2[1]),
                                      &tuple);
-    if (parse_success) 
+    if (parse_success)
     {
-        debug3 << mn <<  "parsed "  << queryName 
+        debug3 << mn <<  "parsed "  << queryName
                << " with 1st attempt (siidddddd)" << endl;
         //HohlraumFlux with DivEmisByAsborb
         params["num_lines"] = arg1;
@@ -11869,7 +11876,7 @@ visit_Query_deprecated(PyObject *self, PyObject *args)
         params["theta"] = darg2[0];
         params["phi"] = darg2[1];
     }
-    else 
+    else
     {
         // Handle the x ray image query.
         char *imageType = NULL;
@@ -11879,12 +11886,12 @@ visit_Query_deprecated(PyObject *self, PyObject *args)
         parse_success = PyArg_ParseTuple(args, "sssidddddddii|O", &queryName,
                                          &imageType, &outputDir, &arg2,
                                          &(darg1[0]), &(darg1[1]), &(darg1[2]),
-                                         &(darg2[0]), &(darg2[1]), 
-                                         &(darg3[0]), &(darg3[1]), 
+                                         &(darg2[0]), &(darg2[1]),
+                                         &(darg3[0]), &(darg3[1]),
                                          &(ps[0]), &(ps[1]), &tuple);
         if (parse_success)
         {
-            debug3 << mn << "parsed " <<  queryName 
+            debug3 << mn << "parsed " <<  queryName
                    << " with 2nd attempt (sssidddddddii)" << endl;
             params["output_type"] = imageType;
             params["output_dir"] = outputDir;
@@ -11904,12 +11911,12 @@ visit_Query_deprecated(PyObject *self, PyObject *args)
             parse_success = PyArg_ParseTuple(args, "sisidddddddii|O", &queryName,
                                              &arg1, &outputDir, &arg2,
                                              &(darg1[0]), &(darg1[1]), &(darg1[2]),
-                                             &(darg2[0]), &(darg2[1]), 
-                                             &(darg3[0]), &(darg3[1]), 
+                                             &(darg2[0]), &(darg2[1]),
+                                             &(darg3[0]), &(darg3[1]),
                                              &(ps[0]), &(ps[1]), &tuple);
             if (parse_success)
             {
-                debug3 << mn << "parsed " <<  queryName 
+                debug3 << mn << "parsed " <<  queryName
                        << " with 3rd attempt (sisidddddddii)" << endl;
                 params["output_type"] = arg1;
                 params["output_dir"] = outputDir;
@@ -11937,7 +11944,7 @@ visit_Query_deprecated(PyObject *self, PyObject *args)
             (strcmp(dump, "DumpSteps") == 0 ||
              strcmp(dump, "dumpSteps") == 0))
         {
-            debug3 << mn << "parsed " << queryName 
+            debug3 << mn << "parsed " << queryName
                    << " with 4th attempt (ss)" << endl;
             params["dump_steps"] = 1;
         }
@@ -11954,7 +11961,7 @@ visit_Query_deprecated(PyObject *self, PyObject *args)
                                          &tuple);
         if (parse_success)
         {
-            debug3 << mn << "parsed " << queryName 
+            debug3 << mn << "parsed " << queryName
                    << " with 5th attempt (sidddddd)" << endl;
             //HohlraumFlux without DivEmisByAsborb
             params["num_lines"] = arg1;
@@ -11973,7 +11980,7 @@ visit_Query_deprecated(PyObject *self, PyObject *args)
                                          &tuple);
         if (parse_success)
         {
-           debug3 << mn << "parsed " << queryName 
+           debug3 << mn << "parsed " << queryName
                   << " with 6th attempt (siidd)" << endl;
            // Line-Scan type queries:
            //Chord Length Distribution
@@ -11986,7 +11993,7 @@ visit_Query_deprecated(PyObject *self, PyObject *args)
            params["max"] = darg1[1];
         }
     }
-    
+
     if(!parse_success)
     {
         // shapelets (with output)
@@ -11997,18 +12004,18 @@ visit_Query_deprecated(PyObject *self, PyObject *args)
         if (parse_success)
         {
             if (std::string(queryName) == "Shapelet Decomposition")
-            { 
-               debug3 << mn << "parsed " << queryName 
+            {
+               debug3 << mn << "parsed " << queryName
                       << " with 7th attempt (sdis)" << endl;
                 params["beta"] = darg1[0];
                 params["nmax"] = arg1;
                 params["recomp_file"] = std::string(output_name);
             }
             else
-                parse_success = false; 
+                parse_success = false;
         }
     }
-    
+
     if(!parse_success)
     {
         PyErr_Clear();
@@ -12016,7 +12023,7 @@ visit_Query_deprecated(PyObject *self, PyObject *args)
                                          &(darg1[0]), &arg1, &tuple);
         if (parse_success)
         {
-            debug3 << mn << "parsed " << queryName 
+            debug3 << mn << "parsed " << queryName
                    << " with 8th attempt (sdi)" << endl;
             // args for Zone Center and Node Coords need a special fix here.
             std::string qname(queryName);
@@ -12043,11 +12050,11 @@ visit_Query_deprecated(PyObject *self, PyObject *args)
                                          &arg1, &arg2, &tuple);
         if (parse_success)
         {
-            debug3 << mn << "parsed " << queryName 
+            debug3 << mn << "parsed " << queryName
                    << " with 9th attempt (sii)" << endl;
         }
     }
-    
+
     if(!parse_success)
     {
         PyErr_Clear();
@@ -12055,17 +12062,17 @@ visit_Query_deprecated(PyObject *self, PyObject *args)
                                          &tuple);
         if (parse_success)
         {
-            debug3 << mn << "parsed " << queryName 
+            debug3 << mn << "parsed " << queryName
                    << " with 10th attempt (si)" << endl;
             // SpatialExtents with 0/1 for "use_actual_data"
-            // Global Node Coords/Zone Center with int for element id 
+            // Global Node Coords/Zone Center with int for element id
             if (strncmp(queryName, "SpatialExtents", 14)==0)
             {
                 params["use_actual_data"] = arg1;
             }
         }
     }
-    
+
     if(!parse_success)
     {
         // simple queries, only passing along the name, and possibly vars
@@ -12074,11 +12081,11 @@ visit_Query_deprecated(PyObject *self, PyObject *args)
         parse_success = PyArg_ParseTuple(args, "s|O", &queryName, &tuple);
         if (parse_success)
         {
-            debug3 << mn << "parsed " << queryName 
+            debug3 << mn << "parsed " << queryName
                    << " with 11th attempt (s)" << endl;
         }
     }
-    
+
     // we could not parse the args!
     if(!parse_success)
         return NULL;
@@ -12100,11 +12107,11 @@ visit_Query_deprecated(PyObject *self, PyObject *args)
         params["use_global_id"] = 1;
         params["element"] = arg1;
     }
-    
+
     // Check the tuple argument.
     stringVector vars;
     GetStringVectorFromPyObject(tuple, vars);
-    
+
     if (vars.size() == 1)
     {
         if (strcmp(vars[0].c_str(), "original") == 0)
@@ -12183,7 +12190,7 @@ visit_Query(PyObject *self, PyObject *args, PyObject *kwargs)
     ENSURE_VIEWER_EXISTS();
 
     std::string queryName("");
-    
+
     bool parse_success = true;
     MapNode queryParams;
 
@@ -12193,7 +12200,7 @@ visit_Query(PyObject *self, PyObject *args, PyObject *kwargs)
         VisItErrorFunc("Query requires at least one argument: the query name.");
         return NULL;
     }
-  
+
     if (!(PyString_Check(PyTuple_GetItem(args, 0))))
     {
          VisItErrorFunc("Query requires first argument to be the query name.");
@@ -12202,7 +12209,7 @@ visit_Query(PyObject *self, PyObject *args, PyObject *kwargs)
     char *str_val = PyString_AsString(PyTuple_GetItem(args, 0));
     queryName = std::string(str_val);
     PyString_AsString_Cleanup(str_val);
- 
+
     // parse other arguments.  First check if second arg (if present) is
     // a python dictionary object
     // If no second 'args', check for named args (kwargs).
@@ -12215,7 +12222,7 @@ visit_Query(PyObject *self, PyObject *args, PyObject *kwargs)
             return visit_Query_deprecated(self, args);
         }
 	std::string errmsg = "Query: ";
-        parse_success = PyDict_To_MapNode(PyTuple_GetItem(args,1), queryParams, errmsg); 
+        parse_success = PyDict_To_MapNode(PyTuple_GetItem(args,1), queryParams, errmsg);
         if (!parse_success)
         {
            VisItErrorFunc(errmsg.c_str());
@@ -12225,7 +12232,7 @@ visit_Query(PyObject *self, PyObject *args, PyObject *kwargs)
     else if (kwargs != NULL)
     {
 	std::string errmsg = "Query: ";
-        parse_success = PyDict_To_MapNode(kwargs, queryParams, errmsg); 
+        parse_success = PyDict_To_MapNode(kwargs, queryParams, errmsg);
         if (!parse_success)
         {
             VisItErrorFunc(errmsg.c_str());
@@ -12614,7 +12621,7 @@ visit_SuppressQueryOutputOff(PyObject *self, PyObject *args)
 //   Sets query return type to be the object(XML) form.
 //
 // Programmer: Kathleen Biagas
-// Creation:   February 27, 2014 
+// Creation:   February 27, 2014
 //
 // Modifications:
 //
@@ -12639,7 +12646,7 @@ visit_SetQueryOutputToObject(PyObject *self, PyObject *args)
 //   Sets query return type to be the value form.
 //
 // Programmer: Kathleen Biagas
-// Creation:   February 27, 2014 
+// Creation:   February 27, 2014
 //
 // Modifications:
 //
@@ -12664,7 +12671,7 @@ visit_SetQueryOutputToValue(PyObject *self, PyObject *args)
 //   Sets query return type to be the string form.
 //
 // Programmer: Kathleen Biagas
-// Creation:   February 27, 2014 
+// Creation:   February 27, 2014
 //
 // Modifications:
 //
@@ -12700,9 +12707,9 @@ visit_SetQueryOutputToString(PyObject *self, PyObject *args)
 //
 //    Alister Maguire, Tue May 22 10:17:15 PDT 2018
 //    Moved the location of this function so that NodePick and ZonePick
-//    could have access to it. I also added retrieval of "return_curves" 
-//    and updated the condition in which time values are retrieved. 
-//    
+//    could have access to it. I also added retrieval of "return_curves"
+//    and updated the condition in which time values are retrieved.
+//
 //
 // ****************************************************************************
 
@@ -12714,7 +12721,7 @@ ParseTimePickOptions(MapNode &pickParams)
                          pickParams.HasNumericEntry("return_curves") &&
                          pickParams.GetEntry("return_curves")->ToBool());
 
-    if (((pickParams.HasNumericEntry("do_time") && 
+    if (((pickParams.HasNumericEntry("do_time") &&
         pickParams.GetEntry("do_time")->ToBool()) ||
         returnCurves) &&
         !pickParams.HasEntry("time_options"))
@@ -12774,12 +12781,12 @@ visit_SetQueryFloatFormat(PyObject *self, PyObject *args)
         VisItErrorFunc("Invalid floating point format string.");
         return NULL;
     }
-        
+
     MUTEX_LOCK();
         GetViewerMethods()->SetQueryFloatFormat(format_string);
     MUTEX_UNLOCK();
-    
-    
+
+
     Py_INCREF(Py_None);
     return Py_None;
 }
@@ -12805,14 +12812,14 @@ visit_SetQueryFloatFormat(PyObject *self, PyObject *args)
 //
 //   Brad Whitlock, Tue Jan 10 14:04:35 PST 2006
 //   Changed logging.
-//  
+//
 //   Kathleen Bonnell, Wed Mar  2 17:37:47 PST 2011
 //   Remove test for queryName == 'Pick'.
 //
 //   Kathleen Biagas, Tue Jul 19 12:50:28 PDT 2011
 //   Create MapNode from parsed args to pass to viewer. Make this method
 //   deprecated in favor of one that accepts python dictionary/named args.
-// 
+//
 //   Kathleen Biagas, Wed Jan  9 11:27:59 PST 2013
 //   Remove LogFile_Write, it is handled by logging of RPC's.
 //
@@ -12830,7 +12837,7 @@ visit_QueryOverTime_deprecated(PyObject *self, PyObject *args)
 
     MapNode params;
 
-    bool parse_success = PyArg_ParseTuple(args, "sii|O", &queryName, &arg1, 
+    bool parse_success = PyArg_ParseTuple(args, "sii|O", &queryName, &arg1,
                                           &arg2, &tuple);
 
     if (parse_success)
@@ -12841,7 +12848,7 @@ visit_QueryOverTime_deprecated(PyObject *self, PyObject *args)
     else
     {
         PyErr_Clear();
-        parse_success = PyArg_ParseTuple(args, "si|O", &queryName, &arg1, 
+        parse_success = PyArg_ParseTuple(args, "si|O", &queryName, &arg1,
                                          &tuple);
 
         if (parse_success)
@@ -12919,13 +12926,13 @@ visit_QueryOverTime(PyObject *self, PyObject *args, PyObject *kwargs)
 
     if (args == NULL)
     {
-        VisItErrorFunc("QueryOverTime: requires at least one argument, the query name."); 
+        VisItErrorFunc("QueryOverTime: requires at least one argument, the query name.");
         return NULL;
     }
-  
+
     if (!(PyString_Check(PyTuple_GetItem(args, 0))))
     {
-         VisItErrorFunc("QueryOverTime: requires first argument to be the query name."); 
+         VisItErrorFunc("QueryOverTime: requires first argument to be the query name.");
          return NULL;
     }
 
@@ -12945,7 +12952,7 @@ visit_QueryOverTime(PyObject *self, PyObject *args, PyObject *kwargs)
             return visit_QueryOverTime_deprecated(self, args);
         }
         std::string errmsg = "QueryOverTime: ";
-        parse_success = PyDict_To_MapNode(PyTuple_GetItem(args,1), queryParams, errmsg); 
+        parse_success = PyDict_To_MapNode(PyTuple_GetItem(args,1), queryParams, errmsg);
         if (!parse_success)
         {
           VisItErrorFunc(errmsg.c_str());
@@ -12955,7 +12962,7 @@ visit_QueryOverTime(PyObject *self, PyObject *args, PyObject *kwargs)
     else if (kwargs != NULL)
     {
         std::string errmsg = "QueryOverTime: ";
-        parse_success = PyDict_To_MapNode(kwargs, queryParams, errmsg); 
+        parse_success = PyDict_To_MapNode(kwargs, queryParams, errmsg);
         if (!parse_success)
         {
           VisItErrorFunc(errmsg.c_str());
@@ -13068,7 +13075,7 @@ visit_ZonePick_deprecated(PyObject *self, PyObject *args)
 
     MapNode params;
     if (!vars.empty())
-        params["vars"] = vars; 
+        params["vars"] = vars;
     if (!wp)
     {
         params["query_name"] = std::string("Pick");
@@ -13143,7 +13150,7 @@ visit_ZonePick(PyObject *self, PyObject *args, PyObject *kwargs)
             return visit_ZonePick_deprecated(self, args);
         }
         std::string errmsg = "ZonePick: ";
-        parse_success = PyDict_To_MapNode(PyTuple_GetItem(args,0), pickParams, errmsg); 
+        parse_success = PyDict_To_MapNode(PyTuple_GetItem(args,0), pickParams, errmsg);
         if (!parse_success)
         {
            VisItErrorFunc(errmsg.c_str());
@@ -13153,7 +13160,7 @@ visit_ZonePick(PyObject *self, PyObject *args, PyObject *kwargs)
     else if (kwargs != NULL)
     {
         std::string errmsg = "ZonePick: ";
-        parse_success = PyDict_To_MapNode(kwargs, pickParams, errmsg); 
+        parse_success = PyDict_To_MapNode(kwargs, pickParams, errmsg);
         if (!parse_success)
         {
             VisItErrorFunc(errmsg.c_str());
@@ -13163,11 +13170,11 @@ visit_ZonePick(PyObject *self, PyObject *args, PyObject *kwargs)
     if (pickParams.HasEntry("coord"))
     {
         pickParams["pick_type"] = std::string("Zone");
-    } 
+    }
     else if (pickParams.HasEntry("x") && pickParams.HasEntry("y"))
     {
         pickParams["pick_type"] = std::string("ScreenZone");
-    } 
+    }
     else
     {
         VisItErrorFunc("ZonePick: requires \"coord\" argument.");
@@ -13350,7 +13357,7 @@ visit_NodePick(PyObject *self, PyObject *args, PyObject *kwargs)
             return visit_NodePick_deprecated(self, args);
         }
         std::string errmsg = "NodePick: ";
-        parse_success = PyDict_To_MapNode(PyTuple_GetItem(args,0), pickParams, errmsg); 
+        parse_success = PyDict_To_MapNode(PyTuple_GetItem(args,0), pickParams, errmsg);
         if (!parse_success)
         {
            VisItErrorFunc(errmsg.c_str());
@@ -13360,7 +13367,7 @@ visit_NodePick(PyObject *self, PyObject *args, PyObject *kwargs)
     else if (kwargs != NULL)
     {
         std::string errmsg = "NodePick: ";
-        parse_success = PyDict_To_MapNode(kwargs, pickParams, errmsg); 
+        parse_success = PyDict_To_MapNode(kwargs, pickParams, errmsg);
         if (!parse_success)
         {
             VisItErrorFunc(errmsg.c_str());
@@ -13370,11 +13377,11 @@ visit_NodePick(PyObject *self, PyObject *args, PyObject *kwargs)
     if (pickParams.HasEntry("coord"))
     {
         pickParams["pick_type"] = std::string("Node");
-    } 
+    }
     else if (pickParams.HasEntry("x") && pickParams.HasEntry("y"))
     {
         pickParams["pick_type"] = std::string("ScreenNode");
-    } 
+    }
     else
     {
         VisItErrorFunc("NodePick:  requires \"coord\" arguments.");
@@ -13856,7 +13863,7 @@ visit_SetQueryOverTimeAttributes(PyObject *self, PyObject *args)
         // backwards compatibility, strideFlag is new
         if (tqa->GetStride() != 1)
             tqa->SetStrideFlag(true);
-        
+
 
         // Copy the object into the query over time attributes.
         *(GetViewerState()->GetQueryOverTimeAttributes()) = *tqa;
@@ -14123,7 +14130,7 @@ visit_PickByZone_deprecated(PyObject *self, PyObject *args)
 //   Use new helper method that doesn't log the SuppressQueryOutput call.
 //
 //   Matt Larsen, Mon Dec  12 09:23:11 PST 2016
-//   Allow pick only by range and not specify element id. 
+//   Allow pick only by range and not specify element id.
 //
 // ****************************************************************************
 
@@ -14147,7 +14154,7 @@ visit_PickByZone(PyObject *self, PyObject *args, PyObject *kwargs)
             return visit_PickByZone_deprecated(self, args);
         }
         std::string errmsg = "PickByZone: ";
-        parse_success = PyDict_To_MapNode(PyTuple_GetItem(args,0), pickParams, errmsg); 
+        parse_success = PyDict_To_MapNode(PyTuple_GetItem(args,0), pickParams, errmsg);
         if (!parse_success)
         {
            VisItErrorFunc(errmsg.c_str());
@@ -14157,21 +14164,21 @@ visit_PickByZone(PyObject *self, PyObject *args, PyObject *kwargs)
     else if (kwargs != NULL)
     {
         std::string errmsg = "PickByZone: ";
-        parse_success = PyDict_To_MapNode(kwargs, pickParams, errmsg); 
+        parse_success = PyDict_To_MapNode(kwargs, pickParams, errmsg);
         if (!parse_success)
         {
             VisItErrorFunc(errmsg.c_str());
             return NULL;
         }
     }
-    if (!pickParams.HasEntry("element") && 
+    if (!pickParams.HasEntry("element") &&
         !pickParams.HasEntry("pick_range") )
     {
         VisItErrorFunc("PickByZone: requires \"element\" or \"pick_range\" argument.");
         return NULL;
-    } 
+    }
     pickParams["query_name"] = std::string("Pick");
-    
+
     pickParams["pick_type"] = std::string("DomainZone");
 
     ParseTimePickOptions(pickParams);
@@ -14220,7 +14227,7 @@ visit_PickByZoneLabel(PyObject *self, PyObject *args, PyObject *kwargs)
     if (PyTuple_Size(args) > 0)
     {
         std::string errmsg = "PickByZoneLabel: ";
-        parse_success = PyDict_To_MapNode(PyTuple_GetItem(args,0), pickParams, errmsg); 
+        parse_success = PyDict_To_MapNode(PyTuple_GetItem(args,0), pickParams, errmsg);
         if (!parse_success)
         {
            VisItErrorFunc(errmsg.c_str());
@@ -14230,7 +14237,7 @@ visit_PickByZoneLabel(PyObject *self, PyObject *args, PyObject *kwargs)
     else if (kwargs != NULL)
     {
         std::string errmsg = "PickByZoneLabel: ";
-        parse_success = PyDict_To_MapNode(kwargs, pickParams, errmsg); 
+        parse_success = PyDict_To_MapNode(kwargs, pickParams, errmsg);
         if (!parse_success)
         {
             VisItErrorFunc(errmsg.c_str());
@@ -14241,9 +14248,9 @@ visit_PickByZoneLabel(PyObject *self, PyObject *args, PyObject *kwargs)
     {
         VisItErrorFunc("PickByZoneLabel: requires \"element_name\" argument.");
         return NULL;
-    } 
+    }
     pickParams["query_name"] = std::string("Pick");
-    
+
     pickParams["pick_type"] = std::string("ZoneLabel");
     pickParams["element"] = 0;
 
@@ -14292,7 +14299,7 @@ visit_PickByNodeLabel(PyObject *self, PyObject *args, PyObject *kwargs)
     if (PyTuple_Size(args) > 0)
     {
         std::string errmsg = "PickByNodeLabel: ";
-        parse_success = PyDict_To_MapNode(PyTuple_GetItem(args,0), pickParams, errmsg); 
+        parse_success = PyDict_To_MapNode(PyTuple_GetItem(args,0), pickParams, errmsg);
         if (!parse_success)
         {
            VisItErrorFunc(errmsg.c_str());
@@ -14302,7 +14309,7 @@ visit_PickByNodeLabel(PyObject *self, PyObject *args, PyObject *kwargs)
     else if (kwargs != NULL)
     {
         std::string errmsg = "PickByNodeLabel: ";
-        parse_success = PyDict_To_MapNode(kwargs, pickParams, errmsg); 
+        parse_success = PyDict_To_MapNode(kwargs, pickParams, errmsg);
         if (!parse_success)
         {
             VisItErrorFunc(errmsg.c_str());
@@ -14313,9 +14320,9 @@ visit_PickByNodeLabel(PyObject *self, PyObject *args, PyObject *kwargs)
     {
         VisItErrorFunc("PickByNodeLabel: requires \"element_name\" argument.");
         return NULL;
-    } 
+    }
     pickParams["query_name"] = std::string("Pick");
-    
+
     pickParams["pick_type"] = std::string("NodeLabel");
     pickParams["element"] = 0;
 
@@ -14426,7 +14433,7 @@ visit_PickByGlobalZone_deprecated(PyObject *self, PyObject *args)
 //   Use new helper method that doesn't log the SuppressQueryOutput call.
 //
 //   Matt Larsen, Mon Dec  12 09:23:11 PST 2016
-//   Allow pick only by range and not specify element id. 
+//   Allow pick only by range and not specify element id.
 //
 // ****************************************************************************
 
@@ -14450,7 +14457,7 @@ visit_PickByGlobalZone(PyObject *self, PyObject *args, PyObject *kwargs)
             return visit_PickByGlobalZone_deprecated(self, args);
         }
         std::string errmsg = "PickByGlobalZone: ";
-        parse_success = PyDict_To_MapNode(PyTuple_GetItem(args,0), pickParams, errmsg); 
+        parse_success = PyDict_To_MapNode(PyTuple_GetItem(args,0), pickParams, errmsg);
         if (!parse_success)
         {
            VisItErrorFunc(errmsg.c_str());
@@ -14460,7 +14467,7 @@ visit_PickByGlobalZone(PyObject *self, PyObject *args, PyObject *kwargs)
     else if (kwargs != NULL)
     {
         std::string errmsg = "PickByGlobalZone: ";
-        parse_success = PyDict_To_MapNode(kwargs, pickParams, errmsg); 
+        parse_success = PyDict_To_MapNode(kwargs, pickParams, errmsg);
         if (!parse_success)
         {
             VisItErrorFunc(errmsg.c_str());
@@ -14471,7 +14478,7 @@ visit_PickByGlobalZone(PyObject *self, PyObject *args, PyObject *kwargs)
     {
         VisItErrorFunc("PickByGlobalZone: requires \"element\" argument.");
         return NULL;
-    } 
+    }
     pickParams["query_name"] = std::string("Pick");
     pickParams["pick_type"] = std::string("DomainZone");
     pickParams["use_global_id"] = 1;
@@ -14593,7 +14600,7 @@ visit_PickByNode_deprecated(PyObject *self, PyObject *args)
 //   Use new helper method that doesn't log the SuppressQueryOutput call.
 //
 //   Matt Larsen, Mon Dec  12 09:23:11 PST 2016
-//   Allow pick only by range and not specify element id. 
+//   Allow pick only by range and not specify element id.
 //
 // ****************************************************************************
 
@@ -14617,7 +14624,7 @@ visit_PickByNode(PyObject *self, PyObject *args, PyObject *kwargs)
             return visit_PickByNode_deprecated(self, args);
         }
         std::string errmsg = "PickByNode: ";
-        parse_success = PyDict_To_MapNode(PyTuple_GetItem(args,0), pickParams, errmsg); 
+        parse_success = PyDict_To_MapNode(PyTuple_GetItem(args,0), pickParams, errmsg);
         if (!parse_success)
         {
            VisItErrorFunc(errmsg.c_str());
@@ -14627,7 +14634,7 @@ visit_PickByNode(PyObject *self, PyObject *args, PyObject *kwargs)
     else if (kwargs != NULL)
     {
         std::string errmsg = "PickByNode: ";
-        parse_success = PyDict_To_MapNode(kwargs, pickParams, errmsg); 
+        parse_success = PyDict_To_MapNode(kwargs, pickParams, errmsg);
         if (!parse_success)
         {
             VisItErrorFunc(errmsg.c_str());
@@ -14639,7 +14646,7 @@ visit_PickByNode(PyObject *self, PyObject *args, PyObject *kwargs)
         VisItErrorFunc("PickByNode: requires \"element\" argument.");
         return NULL;
     }
-  
+
     pickParams["query_name"] = std::string("Pick");
     pickParams["pick_type"] = std::string("DomainNode");
 
@@ -14752,7 +14759,7 @@ visit_PickByGlobalNode_deprecated(PyObject *self, PyObject *args)
 //   Use new helper method that doesn't log the SuppressQueryOutput call.
 //
 //   Matt Larsen, Mon Dec  12 09:23:11 PST 2016
-//   Allow pick only by range and not specify element id. 
+//   Allow pick only by range and not specify element id.
 //
 // ****************************************************************************
 
@@ -14776,7 +14783,7 @@ visit_PickByGlobalNode(PyObject *self, PyObject *args, PyObject *kwargs)
             return visit_PickByGlobalNode_deprecated(self, args);
         }
         std::string errmsg = "PickByGlobalNode: ";
-        parse_success = PyDict_To_MapNode(PyTuple_GetItem(args,0), pickParams, errmsg); 
+        parse_success = PyDict_To_MapNode(PyTuple_GetItem(args,0), pickParams, errmsg);
         if (!parse_success)
         {
            VisItErrorFunc(errmsg.c_str());
@@ -14786,7 +14793,7 @@ visit_PickByGlobalNode(PyObject *self, PyObject *args, PyObject *kwargs)
     else if (kwargs != NULL)
     {
         std::string errmsg = "PickByGlobalNode: ";
-        parse_success = PyDict_To_MapNode(kwargs, pickParams, errmsg); 
+        parse_success = PyDict_To_MapNode(kwargs, pickParams, errmsg);
         if (!parse_success)
         {
             VisItErrorFunc(errmsg.c_str());
@@ -14797,7 +14804,7 @@ visit_PickByGlobalNode(PyObject *self, PyObject *args, PyObject *kwargs)
     {
         VisItErrorFunc("PickByGlobalNode:  requires \"element\" argument.");
         return NULL;
-    } 
+    }
     pickParams["query_name"] = std::string("Pick");
     pickParams["pick_type"] = std::string("DomainNode");
     pickParams["use_global_id"] = 1;
@@ -14908,7 +14915,7 @@ visit_Lineout_deprecated(PyObject *self, PyObject *args)
                        "specified as a tuple of coordinates.");
         return NULL;
     }
- 
+
     // Extract the starting point from the second object.
     double p1[3] = {0.,0.,0.};
     if(!GetDoubleArrayFromPyObject(p1tuple, p1, 3))
@@ -14924,7 +14931,7 @@ visit_Lineout_deprecated(PyObject *self, PyObject *args)
 
     MUTEX_LOCK();
         // Lineout should not be applied to more than one plot at a time.
-        bool applyOperatorSave = 
+        bool applyOperatorSave =
             GetViewerState()->GetGlobalAttributes()->GetApplyOperator();
         GetViewerState()->GetGlobalAttributes()->SetApplyOperator(false);
         GetViewerState()->GetGlobalAttributes()->Notify();
@@ -14965,7 +14972,7 @@ visit_Lineout_deprecated(PyObject *self, PyObject *args)
 //
 // Notes:
 //
-// Programmer: Kathleen Biagas 
+// Programmer: Kathleen Biagas
 // Creation:   January 8, 2013
 //
 // Modifications:
@@ -14987,7 +14994,7 @@ visit_Lineout(PyObject *self, PyObject *args, PyObject *kwargs)
         VisItErrorFunc("Lineout requires at least two arguments: start_point and end_point");
         return NULL;
     }
-  
+
     // parse other arguments.  First check if first arg (if present) is
     // a python dictionary object
     // If no 'args', check for named args (kwargs).
@@ -15000,7 +15007,7 @@ visit_Lineout(PyObject *self, PyObject *args, PyObject *kwargs)
             return visit_Lineout_deprecated(self, args);
         }
         std::string errmsg = "Lineout: ";
-        parse_success = PyDict_To_MapNode(PyTuple_GetItem(args,0), queryParams, errmsg); 
+        parse_success = PyDict_To_MapNode(PyTuple_GetItem(args,0), queryParams, errmsg);
         if (!parse_success)
         {
            VisItErrorFunc(errmsg.c_str());
@@ -15011,7 +15018,7 @@ visit_Lineout(PyObject *self, PyObject *args, PyObject *kwargs)
     else if (kwargs != NULL)
     {
         std::string errmsg = "Lineout: ";
-        parse_success = PyDict_To_MapNode(kwargs, queryParams, errmsg); 
+        parse_success = PyDict_To_MapNode(kwargs, queryParams, errmsg);
         if (!parse_success)
         {
             VisItErrorFunc(errmsg.c_str());
@@ -15022,7 +15029,7 @@ visit_Lineout(PyObject *self, PyObject *args, PyObject *kwargs)
     queryParams["query_name"] = std::string("Lineout");
     MUTEX_LOCK();
         // Lineout should not be applied to more than one plot at a time.
-        bool applyOperatorSave = 
+        bool applyOperatorSave =
             GetViewerState()->GetGlobalAttributes()->GetApplyOperator();
         GetViewerState()->GetGlobalAttributes()->SetApplyOperator(false);
         GetViewerState()->GetGlobalAttributes()->Notify();
@@ -15255,7 +15262,7 @@ PyObject *
 CreateAnnotationWrapper(AnnotationObject *annot)
 {
     // TODO: FIX WITH PURE PYTHON WRAPPERS
-    
+
     PyObject *retval = NULL;
     if(annot->GetObjectType() == AnnotationObject::Text2D)
     {
@@ -15427,7 +15434,7 @@ visit_CreateAnnotationObject(PyObject *self, PyObject *args)
             ref.object = localCopy;
             ref.refCount = 1;
             ref.index = (int)localObjectMap.size();
-          
+
             localObjectMap[newObject.GetObjectName()] = ref;
 
             retval = CreateAnnotationWrapper(localCopy);
@@ -15849,7 +15856,7 @@ visit_CreateNamedSelection(PyObject *self, PyObject *args)
             const SelectionProperties *p = PySelectionProperties_FromPyObject(props);
 
             // Create the named selection.
-            MUTEX_LOCK();   
+            MUTEX_LOCK();
                 GetViewerMethods()->CreateNamedSelection(p->GetName(), *p);
             MUTEX_UNLOCK();
         }
@@ -15859,7 +15866,7 @@ visit_CreateNamedSelection(PyObject *self, PyObject *args)
     else
     {
         // Create the named selection.
-        MUTEX_LOCK();        
+        MUTEX_LOCK();
             GetViewerMethods()->CreateNamedSelection(selName);
         MUTEX_UNLOCK();
     }
@@ -15902,7 +15909,7 @@ visit_DeleteNamedSelection(PyObject *self, PyObject *args)
 // ****************************************************************************
 // Function: visit_UpdateNamedSelection
 //
-// Purpose: 
+// Purpose:
 //   Tells the viewer to update a named selection.
 //
 // Programmer: Brad Whitlock
@@ -15955,7 +15962,7 @@ visit_UpdateNamedSelection(PyObject *self, PyObject *args)
 
             // Create the named selection.
             MUTEX_LOCK();
-                GetViewerMethods()->UpdateNamedSelection(selName, *p, 
+                GetViewerMethods()->UpdateNamedSelection(selName, *p,
                     updatePlots!=0, allowCaching!=0);
             MUTEX_UNLOCK();
         }
@@ -15965,7 +15972,7 @@ visit_UpdateNamedSelection(PyObject *self, PyObject *args)
     else
     {
         // Create the named selection.
-        MUTEX_LOCK();        
+        MUTEX_LOCK();
             GetViewerMethods()->UpdateNamedSelection(selName, updatePlots!=0);
         MUTEX_UNLOCK();
     }
@@ -16145,14 +16152,14 @@ visit_SetAutoUpdate(PyObject *self, PyObject *args)
 // ****************************************************************************
 // Function: visit_SetNamedSelectionAutoApply
 //
-// Purpose: 
+// Purpose:
 //   Tells the viewer to set the named selection auto apply mode.
 //
 // Programmer: Brad Whitlock
 // Creation:   Wed Aug 11 16:05:26 PDT 2010
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 STATIC PyObject *
@@ -16176,14 +16183,14 @@ visit_SetNamedSelectionAutoApply(PyObject *self, PyObject *args)
 // ****************************************************************************
 // Method: visit_GetSelection
 //
-// Purpose: 
+// Purpose:
 //   Return the selection with the right name.
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Jun  2 15:42:46 PDT 2011
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 STATIC PyObject *
@@ -16213,14 +16220,14 @@ visit_GetSelection(PyObject *self, PyObject *args)
 // ****************************************************************************
 // Method: visit_GetSelectionSummary
 //
-// Purpose: 
+// Purpose:
 //   Return the selection with the right name.
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Jun  2 15:42:46 PDT 2011
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 STATIC PyObject *
@@ -16250,14 +16257,14 @@ visit_GetSelectionSummary(PyObject *self, PyObject *args)
 // ****************************************************************************
 // Method: visit_GetSelectionList
 //
-// Purpose: 
+// Purpose:
 //   Return the current selection list.
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Dec 17 11:18:58 PST 2010
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 STATIC PyObject *
@@ -16280,14 +16287,14 @@ visit_GetSelectionList(PyObject *self, PyObject *args)
 // ****************************************************************************
 // Function: visit_InitializeNamedSelectionVariables
 //
-// Purpose: 
+// Purpose:
 //   Tells the viewer to set the named selection auto apply mode.
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon May  2 14:58:48 PDT 2011
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 STATIC PyObject *
@@ -16367,7 +16374,7 @@ STATIC PyObject *
 visit_Argv(PyObject *self, PyObject *args)
 {
     NO_ARGUMENTS();
-          
+
     // Allocate a tuple the with enough entries to hold the argv list.
     PyObject *retval = PyTuple_New(cli_argc_after_s);
     for(int i = 0; i < cli_argc_after_s; ++i)
@@ -16671,7 +16678,7 @@ visit_ExecuteMacro(PyObject *self, PyObject *args)
         ret = Py_None;
         Py_INCREF(Py_None);
     }
- 
+
     return ret;
 }
 
@@ -17425,16 +17432,16 @@ ExecuteClientMethod(ClientMethod *method, bool onNewThread)
         {
             // If onNewThread is true then we got into this method on the 2nd
             // thread, which means that xfer's update will be set to false. That
-            // means that calling Notify on the client information would not 
-            // make xfer send it to the viewer. To combat this problem, we set 
-            // xfer's update to true temporarily so we can send the object to 
-            // the viewer.  We only do it on the 2nd thread because if this 
-            // method is called from the first thread, we did not arrive here 
+            // means that calling Notify on the client information would not
+            // make xfer send it to the viewer. To combat this problem, we set
+            // xfer's update to true temporarily so we can send the object to
+            // the viewer.  We only do it on the 2nd thread because if this
+            // method is called from the first thread, we did not arrive here
             // from xfer and turning off its updates messes up Synchronize.
             if(onNewThread)
                GetViewerProxy()->SetXferUpdate(true);
 
-            // We don't want to get here re-entrantly so disable the client 
+            // We don't want to get here re-entrantly so disable the client
             // method observer temporarily.
             clientMethodObserver->SetUpdate(false);
 
@@ -17457,7 +17464,7 @@ ExecuteClientMethod(ClientMethod *method, bool onNewThread)
     {
         // Determine whether the method is supported by this client.
         int okay = GetViewerProxy()->MethodRequestHasRequiredInformation();
-     
+
         if(okay == 0)
         {
             debug1 << "Client method " << method->GetMethodName().c_str()
@@ -17491,7 +17498,7 @@ ExecuteClientMethod(ClientMethod *method, bool onNewThread)
                     delete m;
                     delete [] cbData;
                     fprintf(stderr, "VisIt: Error - Could not create work "
-                            "thread to execute %s client method.\n", 
+                            "thread to execute %s client method.\n",
                             m->GetMethodName().c_str());
                 }
 #else
@@ -17502,7 +17509,7 @@ ExecuteClientMethod(ClientMethod *method, bool onNewThread)
                     delete m;
                     delete [] cbData;
                     fprintf(stderr, "VisIt: Error - Could not create work "
-                            "thread to execute %s client method.\n", 
+                            "thread to execute %s client method.\n",
                             m->GetMethodName().c_str());
                 }
 #endif
@@ -17547,7 +17554,7 @@ std::vector<PyMethodDef> VisItMethods;
 //   Since we hand pointers of these structs to python, we need
 //   to make sure the memory backing them isn't re/deallocated as we call
 //   push_back. This was not an issue with python 2 b/c how the module
-//   was inited, but realloc did cause problems with python 3 due 
+//   was inited, but realloc did cause problems with python 3 due
 //   to required multi-step init.
 //
 // ****************************************************************************
@@ -17581,7 +17588,7 @@ AddMethod(const char *methodName,
         // ERROR!
         std::ostringstream emsg;
         emsg << "Internal Error: Attempt to add method beyond pre-allocated "
-             << "max VisItMethods.size() = " << VISIT_METHODS_MAX_SIZE 
+             << "max VisItMethods.size() = " << VISIT_METHODS_MAX_SIZE
              <<  ". A VisIt developer must adjust compiled "
              << "VISIT_METHODS_MAX_SIZE (in visitmodule.C) .";
         EXCEPTION1(VisItException,emsg.str());
@@ -17609,7 +17616,7 @@ AddMethod(const char *methodName,
 //   Since we hand pointers of these structs to python, we need
 //   to make sure the memory backing them isn't re/deallocated as we call
 //   push_back. This was not an issue with python 2 b/c how the module
-//   was inited, but realloc did cause problems with python 3 due 
+//   was inited, but realloc did cause problems with python 3 due
 //   to required multi-step init.
 //
 // ****************************************************************************
@@ -17640,7 +17647,7 @@ AddMethod(const char *methodName,
         // ERROR!
         std::ostringstream emsg;
         emsg << "Internal Error: Attempt to add method beyond pre-allocated "
-             << "max VisItMethods.size() = " << VISIT_METHODS_MAX_SIZE 
+             << "max VisItMethods.size() = " << VISIT_METHODS_MAX_SIZE
              <<  ". A VisIt developer must adjust compiled "
              << "VISIT_METHODS_MAX_SIZE (in visitmodule.C) .";
         EXCEPTION1(VisItException,emsg.str());
@@ -17951,7 +17958,7 @@ AddMethod(const char *methodName,
 //
 //   Kathleen Biagas, Mon Dec 22 10:29:52 PST 2014
 //   Added SetRemoveDuplicateNodes to Proxy methods.
-// 
+//
 //   Justin Privitera, Wed May 18 11:25:46 PDT 2022
 //   Changed *active* to *default* for everything related to color tables.
 //
@@ -18121,7 +18128,7 @@ AddProxyMethods()
     AddMethod("GetPickAttributes", visit_GetPickAttributes,
                                                   visit_GetPickAttributes_doc);
     AddMethod("GetPickOutput", visit_GetPickOutput, visit_GetPickOutput_doc);
-    AddMethod("GetPickOutputObject", visit_GetPickOutputObject, 
+    AddMethod("GetPickOutputObject", visit_GetPickOutputObject,
               visit_GetPickOutputObject_doc);
     AddMethod("GetPipelineCachingMode", visit_GetPipelineCachingMode,
                                              visit_GetPipelineCachingMode_doc);
@@ -18151,7 +18158,7 @@ AddProxyMethods()
     AddMethod("HideToolbars", visit_HideToolbars, visit_HideToolbars_doc);
     AddMethod("IconifyAllWindows", visit_IconifyAllWindows,
                                                   visit_IconifyAllWindows_doc);
-    AddMethod("InitializeNamedSelectionVariables", visit_InitializeNamedSelectionVariables, 
+    AddMethod("InitializeNamedSelectionVariables", visit_InitializeNamedSelectionVariables,
                                                    visit_InitializeNamedSelectionVariables_doc);
     AddMethod("InvertBackgroundColor", visit_InvertBackgroundColor,
                                               visit_InvertBackgroundColor_doc);
@@ -18306,7 +18313,7 @@ AddProxyMethods()
     AddMethod("SetPlotDatabaseState", visit_SetPlotDatabaseState,
                                                visit_SetPlotDatabaseState_doc);
     AddMethod("SetPlotDescription", visit_SetPlotDescription, visit_SetPlotDescription_doc);
-    AddMethod("SetPlotFollowsTime", visit_SetPlotFollowsTime, 
+    AddMethod("SetPlotFollowsTime", visit_SetPlotFollowsTime,
                                                visit_SetPlotFollowsTime_doc);
     AddMethod("SetPlotFrameRange", visit_SetPlotFrameRange,
                                                   visit_SetPlotFrameRange_doc);
@@ -18343,7 +18350,7 @@ AddProxyMethods()
     AddMethod("SetView3D", visit_SetView3D, visit_SetView3D_doc);
     AddMethod("SetViewKeyframe", visit_SetViewKeyframe,
                                                     visit_SetViewKeyframe_doc);
-          
+
     AddMethod("SetWindowArea", visit_SetWindowArea, visit_SetWindowArea_doc);
     AddMethod("SetWindowLayout", visit_SetWindowLayout,
                                                     visit_SetWindowLayout_doc);
@@ -18418,7 +18425,7 @@ AddProxyMethods()
     AddMethod("TurnMaterialsOn", visit_TurnMaterialsOn, visit_TurnMaterialsOn_doc);
     AddMethod("QueriesOverTime",  visit_QueriesOverTime,
                                                     visit_QueriesOverTime_doc);
-    AddMethod("SetColorTexturingEnabled", visit_SetColorTexturingEnabled, 
+    AddMethod("SetColorTexturingEnabled", visit_SetColorTexturingEnabled,
               visit_SetColorTexturingEnabled_doc);
     AddMethod("GetMetaData", visit_GetMetaData, visit_GetMetaData_doc);
     AddMethod("GetPlotList", visit_GetPlotList, visit_GetPlotList_doc);
@@ -18433,7 +18440,7 @@ AddProxyMethods()
 
     AddMethod("GetCallbackNames", visit_GetCallbackNames, visit_GetCallbackNames_doc);
     AddMethod("RegisterCallback", visit_RegisterCallback, visit_RegisterCallback_doc);
-    AddMethod("GetCallbackArgumentCount", visit_GetCallbackArgumentCount, 
+    AddMethod("GetCallbackArgumentCount", visit_GetCallbackArgumentCount,
               visit_GetCallbackArgumentCount_doc);
 
     AddMethod("LoadAttribute", visit_LoadAttribute, visit_LoadAttribute_doc);
@@ -19105,8 +19112,8 @@ NeedToLoadPlugins(Subject *, void *)
 //
 //   Kathleen Bonnell, Thu Apr 28 13:34:55 MST 2011
 //   Change location of visitlog.py on Windows to be users' VisIt directory, as
-//   the '.' directory when running VisIt on Windows may be VisIt's install 
-//   directory, and user may not have write permissions there, making command 
+//   the '.' directory when running VisIt on Windows may be VisIt's install
+//   directory, and user may not have write permissions there, making command
 //   logging fail silently.
 //
 // ****************************************************************************
@@ -19171,15 +19178,15 @@ InitializeModule()
         ret = true;
     }
     ENDTRY
-    
+
     AddDefaultMethods();
     AddMethod(NULL, (PyCFunction)NULL);
     moduleInitialized = true;
-    
+
     return 0;
 }
 
-static int 
+static int
 InitializeViewerProxy(ViewerProxy* proxy)
 {
     /// if viewer already initialized do not enter..
@@ -19401,7 +19408,7 @@ LaunchViewer(const char *visitProgram)
     // from "import visit" in a regular Python shell. Let's do our best
     // to set up VISITPLUGINDIR using the provided visitProgram.
     //
-    
+
     std::string visit_plugin_dir;
     if(getenv("VISITPLUGINDIR") != NULL)
     {
@@ -19729,7 +19736,7 @@ cli_initvisit(int debugLevel, bool verbose,
 //   Cyrus Harrison, Wed Sep 30 07:53:17 PDT 2009
 //   Added book keeping to track execution stack of source files.
 //
-//   Kathleen Biagas, Tue Apr 20 2021 
+//   Kathleen Biagas, Tue Apr 20 2021
 //   On Windows, convert fileName's backslashes to forward (Python 3 change).
 //
 // ****************************************************************************
@@ -19914,7 +19921,7 @@ visitmodule_traverse(PyObject *m, visitproc visit, void *arg)
 }
 
 //---------------------------------------------------------------------------//
-static int 
+static int
 visitmodule_clear(PyObject *m)
 {
     Py_CLEAR(GETSTATE(m)->error);
@@ -19922,13 +19929,13 @@ visitmodule_clear(PyObject *m)
 }
 
 //---------------------------------------------------------------------------//
-static struct PyModuleDef visitmodule_def = 
+static struct PyModuleDef visitmodule_def =
 {
         PyModuleDef_HEAD_INIT,
         "visit",
         NULL,
         sizeof(struct module_state),
-        NULL, /* NEED TO SET THIS AT RUNTIME, exists in a std vector */ 
+        NULL, /* NEED TO SET THIS AT RUNTIME, exists in a std vector */
         NULL,
         visitmodule_traverse,
         visitmodule_clear,
@@ -20013,10 +20020,10 @@ UpdateModuleMethods(PyObject *module,std::vector<PyMethodDef> &methods)
 //---------------------------------------------------------------------------//
 // One module entry point supporting both python 2 and 3.
 //---------------------------------------------------------------------------//
-// cyrush note: 
+// cyrush note:
 // This init dance is a multi step process
 // There is probably a way to break things part to make the flow
-// of the process much easier to understand, but right now I am 
+// of the process much easier to understand, but right now I am
 // relying on following the control flow of the tried and true python 2 logic.
 //
 // One Python 2 change I made was to update the method table instead of creating
@@ -20038,7 +20045,7 @@ initialize_visit_python_module()
         PyEval_InitThreads();
         // save a pointer to the main PyThreadState object
         mainThreadState = PyThreadState_Get();
-        
+
         MUTEX_CREATE();
 #ifndef POLLING_SYNCHRONIZE
         SYNC_CREATE();
@@ -20062,12 +20069,12 @@ initialize_visit_python_module()
         // the multi call style of initialize_visit_python_module
         // worked in python 2 b/c the module was created and
         // added to the system modules.
-        // 
-        // in python 3, the story is a bit more complex. 
+        //
+        // in python 3, the story is a bit more complex.
         // unless we add this to the sys.modules
         // calling initialize_visit_python_module multiple times
-        // can cause dlopens and imports that don't share the 
-        // same static vars, leading to havoc (well leading to 
+        // can cause dlopens and imports that don't share the
+        // same static vars, leading to havoc (well leading to
         // a viewer launch that doesn't the proper args)
         //
 
@@ -20133,7 +20140,7 @@ initialize_visit_python_module()
     // update our methods table for the visit module on subsequent calls
     // to init
     UpdateModuleMethods(visitModule,VisItMethods);
-    
+
 //---------------------------------------------------------------------------//
 #else // PYTHON 2
 //---------------------------------------------------------------------------//
@@ -20314,7 +20321,7 @@ visit_eventloop(void *)
 //   Do not synchronize when using embedded viewer. It will cause deadlock.
 //
 //   Cyrus Harrison, Wed Feb 24 16:09:45 PST 2021
-//   Adjustments for Pyside 2 support. 
+//   Adjustments for Pyside 2 support.
 //
 // ****************************************************************************
 
