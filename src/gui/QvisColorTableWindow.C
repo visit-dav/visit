@@ -624,7 +624,7 @@ QvisColorTableWindow::CreateNode(DataNode *parentNode)
         for (const auto mapitem : tagList)
         {
             tagNames.emplace_back(mapitem.first);
-            activeTags.emplace_back(mapitem.second.active);
+            activeTags.push_back(mapitem.second.active);
         }
         node->AddNode(new DataNode("tagList", tagNames));
         node->AddNode(new DataNode("activeTags", activeTags));
@@ -3313,6 +3313,7 @@ QvisColorTableWindow::addTagToColorTable(const std::string ctName,
     else
         tagChanges[ctName].insert(std::make_pair(ADDTAG, tagName));
     ccpl->AddTag(tagName);
+    tagList[tagName].numrefs ++;
 }
 
 
@@ -3339,6 +3340,7 @@ QvisColorTableWindow::removeTagFromColorTable(const std::string ctName,
     {
         tagChanges[ctName].erase(tagChangeReverseAction);
         ccpl->RemoveTag(tagName);
+        tagList[tagName].numrefs --;
     }
     else
     {
@@ -3358,6 +3360,7 @@ QvisColorTableWindow::removeTagFromColorTable(const std::string ctName,
         {
             tagChanges[ctName].insert(std::make_pair(REMOVETAG, tagName));
             ccpl->RemoveTag(tagName);
+            tagList[tagName].numrefs --;
         }
     }
 }
