@@ -494,6 +494,9 @@ QvisColorTableWindow::CreateWindowContents()
 //   Justin Privitera, Fri Sep  2 16:46:21 PDT 2022
 //   Now plays nice with the new tag data structure.
 //
+//   Cyrus Harrison, Fri Sep 16 14:28:51 PDT 2022
+//   Avoid emplace_back due to evil nature of std::vector<bool>
+//
 // ****************************************************************************
 
 void
@@ -516,7 +519,7 @@ QvisColorTableWindow::CreateNode(DataNode *parentNode)
         for (const auto mapitem : tagList)
         {
             tagNames.emplace_back(mapitem.first);
-            activeTags.emplace_back(mapitem.second.active);
+            activeTags.push_back(mapitem.second.active);
         }
         node->AddNode(new DataNode("tagList", tagNames));
         node->AddNode(new DataNode("activeTags", activeTags));
