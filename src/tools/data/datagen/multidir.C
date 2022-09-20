@@ -53,6 +53,13 @@ float g_Center[2];
 //   
 //    Mark C. Miller, Tue Jul 17 20:12:32 PDT 2012
 //    Add option controlling use of absolute file paths in multi-block objects.
+//
+//    Mark C. Miller, Tue Sep 20 13:12:48 PDT 2022
+//    Added dirPerTimestep option. Originally, this program created a directory
+//    for each domain and then wrote timesteps out in each domain. Thats fine
+//    but not typically what our application codes do. Instead, they write a 
+//    directory per timestep with all domain files in that directory. If
+//    dirPerTimestep is true, this program will behave that way.
 // ****************************************************************************
 
 class ProgramOptions
@@ -62,7 +69,8 @@ public:
         isteps(40),
         jsteps(40),
         driver(DB_PDB),
-        useAbsoluteFilePaths(false)
+        useAbsoluteFilePaths(false),
+        dirPerTimestep(false)
     {
     }
 
@@ -70,6 +78,7 @@ public:
     int jsteps;
     int driver;
     bool useAbsoluteFilePaths;
+    bool dirPerTimestep;
 };
 
 // ****************************************************************************
@@ -135,7 +144,7 @@ GotoDirectory(const std::string &dirname)
 }
 
 // ****************************************************************************
-// Function: DomainFileName
+// Function: InstanceFileName
 //
 // Purpose: 
 //   Returns the domain filename at a given cycle.
@@ -155,10 +164,13 @@ GotoDirectory(const std::string &dirname)
 // ****************************************************************************
 
 std::string
-DomainFileName(int d)
+InstanceFileName(int c, int d, ProgramOptions const &opt)
 {
     char filename[100];
-    snprintf(filename, 100, "TIME%04d.silo", d);
+    if (opt.dirPerTimestep)
+        snprintf(filename, 100, "DOMAIN%03d.silo", d);
+    else
+        snprintf(filename, 100, "TIME%05d.silo", c);
     return filename;
 }
 
@@ -183,10 +195,14 @@ DomainFileName(int d)
 // ****************************************************************************
 
 std::string
-DirectoryName(int d)
+DirectoryName(int c, int d, ProgramOptions const &opt)
 {
     char dirname[100];
-    snprintf(dirname, 100, "p%05d", d);
+
+    if (opt.dirPerTimestep)
+        snprintf(dirname, 100, "c%05d", c);
+    else
+        snprintf(dirname, 100, "p%03d", d);
     return dirname;
 }
 
@@ -288,7 +304,7 @@ WriteDomainFile(int cycle, int dom, const ProgramOptions &opt)
     M.CreateNodalData("Array_comps/Array_002", RadialCos2, "cm");
     M.CreateNodalData("Array_comps/Array_003", Wavy, "cm");
 
-    std::string filename = DomainFileName(cycle);
+    std::string filename = InstanceFileName(cycle, dom, opt);
     DBfile *db;
     db = DBCreate(filename.c_str(), DB_CLOBBER, DB_LOCAL, 
             "This is one domain of a dataset that tests multimeshes and "
@@ -322,7 +338,7 @@ WriteMasterFile(int cycle, const ProgramOptions &opt)
 #define MAX_STRING 500
 
     char root[MAX_STRING];
-    snprintf(root, MAX_STRING, "multidir%04d.root", cycle);
+    snprintf(root, MAX_STRING, "multidir%05d.root", cycle);
     DBfile *db = DBCreate(root, DB_CLOBBER, DB_LOCAL, 
             "Master file of a dataset that tests multimeshes and "
             "multivars with various directory heirarchy levels", opt.driver);
@@ -338,10 +354,10 @@ WriteMasterFile(int cycle, const ProgramOptions &opt)
     std::string cwd = GetCurrentDirectory() + "/";
     
 
-    std::string filename = DomainFileName(cycle);
     for(int dom = 0; dom < MAX_DOMAINS; ++dom)
     {
-        std::string dirname = DirectoryName(dom);
+        std::string dirname = DirectoryName(cycle, dom, opt);
+        std::string filename = InstanceFileName(cycle, dom, opt);
 
         meshNames[dom] = new char[MAX_STRING];
         snprintf(meshNames[dom], MAX_STRING, "%s%s/%s:/Mesh", opt.useAbsoluteFilePaths?cwd.c_str():"",
@@ -422,10 +438,10 @@ void
 WriteCycle(int cycle, const ProgramOptions &opt)
 {
     std::string topdir = GetCurrentDirectory();
-   
-    for(int dom = 0; dom < MAX_DOMAINS; ++dom)
+
+    for (int dom = 0; dom < MAX_DOMAINS; ++dom)
     {
-        std::string dirname = DirectoryName(dom);
+        std::string dirname = DirectoryName(cycle, dom, opt);
         GotoDirectory(dirname);
 
         // Create the file
@@ -450,6 +466,9 @@ WriteCycle(int cycle, const ProgramOptions &opt)
 //   
 //    Mark C. Miller, Tue Jul 17 20:12:15 PDT 2012
 //    Add option to use absolute file paths for multi-block objects.
+//
+//    Mark C. Miller, Tue Sep 20 13:15:06 PDT 2022
+//    Add dirpts option
 // ****************************************************************************
 
 int
@@ -460,12 +479,14 @@ main(int argc, char *argv[])
     // Look through command line args.
     for(int j = 1; j < argc; ++j)
     {
-        if (strcmp(argv[j], "DB_HDF5") == 0)
+        if (!strncmp(argv[j], "DB_HDF5", 7))
             opt.driver = DB_HDF5;
-        else if (strcmp(argv[j], "DB_PDB") == 0)
+        else if (!strncmp(argv[j], "DB_PDB", 6))
             opt.driver = DB_PDB;
-        else if (strcmp(argv[j], "-abspaths") == 0)
+        else if (!strncmp(argv[j], "-abspaths", 9))
             opt.useAbsoluteFilePaths = true;
+        else if (!strncmp(argv[j], "-dirpts", 7))
+            opt.dirPerTimestep = true;
         else
            fprintf(stderr,"Unrecognized driver name \"%s\"\n", argv[j]);
     }
