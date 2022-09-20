@@ -338,7 +338,10 @@ WriteMasterFile(int cycle, const ProgramOptions &opt)
 #define MAX_STRING 500
 
     char root[MAX_STRING];
-    snprintf(root, MAX_STRING, "multidir%05d.root", cycle);
+    if (opt.dirPerTimestep)
+        snprintf(root, MAX_STRING, "%s.root", DirectoryName(cycle, 0, opt).c_str());
+    else
+        snprintf(root, MAX_STRING, "multidir%05d.root", cycle);
     DBfile *db = DBCreate(root, DB_CLOBBER, DB_LOCAL, 
             "Master file of a dataset that tests multimeshes and "
             "multivars with various directory heirarchy levels", opt.driver);
