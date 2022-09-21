@@ -1044,7 +1044,11 @@ QvisColorTableWindow::UpdateTags()
             {
                 // if this table doesn't have tags, then add the no-tags tag
                 if (colorAtts->GetColorTables(i).GetNumTags() == 0)
+                {
                     colorAtts->GetColorTables(i).AddTag("No Tags");
+                    if (! first_time)
+                        tagList["No Tags"].numrefs ++;
+                }
 
                 // iterate thru each tag in the given color table
                 for (int j = 0; j < colorAtts->GetColorTables(i).GetNumTags(); j ++)
