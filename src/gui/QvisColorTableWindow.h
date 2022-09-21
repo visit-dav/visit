@@ -216,11 +216,11 @@ private:
 
     // data object to store tag changes
     std::map<std::string, std::set<std::pair<int, std::string>>> tagChanges;
-    // We are mapping color table names (std::string)
+    // We are mapping tag names (std::string)
     // to sets (std::set) of representations of tag changes.
     // These representations consist of pairs (std::pair), where the first element in each
     // is a constant equal to either ADDTAG (0) or REMOVETAG (1) and the
-    // second element is the name of the tag (std::string) being added or removed.
+    // second element is the name of the color table (std::string) being added to or removed from.
     // 
     // This data structure will be updated on the fly to reflect the latest 
     // tag changes. It will be used to determine if a tag change is legal

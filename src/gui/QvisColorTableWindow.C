@@ -543,10 +543,8 @@ QvisColorTableWindow::UnstringifyAndMergeTagChanges(stringVector changes)
         [this](std::string ctTagChanges)
         {
             size_t titleSep = ctTagChanges.find(":");
-            std::string ctName{ctTagChanges.substr(0, titleSep)};
+            std::string tagName{ctTagChanges.substr(0, titleSep)};
             std::string table{ctTagChanges.substr(titleSep + 1)};
-
-            auto *ccpl{const_cast<ColorControlPointList *>(colorAtts->GetColorControlPoints(ctName))};
 
             size_t addRemoveSep{table.find(",")};
             size_t entrySep{0};
@@ -556,10 +554,11 @@ QvisColorTableWindow::UnstringifyAndMergeTagChanges(stringVector changes)
                 std::string addRemoveText{table.substr(entrySep, addRemoveSep - entrySep)};
                 entrySep = table.find(";", entrySep);
                 addRemoveSep += 1;
-                std::string tagName{table.substr(addRemoveSep, entrySep - addRemoveSep)};
+                std::string ctName{table.substr(addRemoveSep, entrySep - addRemoveSep)};
                 addRemoveSep = table.find(",", addRemoveSep);
                 entrySep += 1;
 
+                auto *ccpl{const_cast<ColorControlPointList *>(colorAtts->GetColorControlPoints(ctName))};
                 auto result{ccpl->ValidateTag(tagName)};
                 if (result.first)
                 {
@@ -678,6 +677,7 @@ QvisColorTableWindow::SetFromNode(DataNode *parentNode, const int *borders)
             for (int i = 0; i < tagNames.size(); i ++)
                 tagList[tagNames[i]].active = activeTags[i];
         }
+        // TODO else
     }
     if((node = winNode->GetNode("tagsVisible")) != 0)
         tagsVisible = node->AsBool();
@@ -929,7 +929,7 @@ QvisColorTableWindow::UpdateEditor()
 //
 // Modifications:
 //    Justin Privitera, Fri Sep  2 16:46:21 PDT 2022
- // Eliminated tag index arg as well as need for secret tag table column.
+//    Eliminated tag index arg as well as need for secret tag table column.
 //
 // ****************************************************************************
 
@@ -3306,12 +3306,12 @@ QvisColorTableWindow::addTagToColorTable(const std::string ctName,
                                          const std::string tagName,
                                          ColorControlPointList* ccpl)
 {
-    auto tagChangeReverseAction{std::make_pair(REMOVETAG, tagName)};
-    if (tagChanges[ctName].find(tagChangeReverseAction) != 
-        tagChanges[ctName].end())
-        tagChanges[ctName].erase(tagChangeReverseAction);
+    auto tagChangeReverseAction{std::make_pair(REMOVETAG, ctName)};
+    if (tagChanges[tagName].find(tagChangeReverseAction) != 
+        tagChanges[tagName].end())
+        tagChanges[tagName].erase(tagChangeReverseAction);
     else
-        tagChanges[ctName].insert(std::make_pair(ADDTAG, tagName));
+        tagChanges[tagName].insert(std::make_pair(ADDTAG, ctName));
     ccpl->AddTag(tagName);
     tagList[tagName].numrefs ++;
 }
@@ -3334,18 +3334,18 @@ QvisColorTableWindow::removeTagFromColorTable(const std::string ctName,
                                               const std::string tagName,
                                               ColorControlPointList* ccpl)
 {
-    auto tagChangeReverseAction{std::make_pair(ADDTAG, tagName)};
-    if (tagChanges[ctName].find(tagChangeReverseAction) != 
-        tagChanges[ctName].end())
+    auto tagChangeReverseAction{std::make_pair(ADDTAG, ctName)};
+    if (tagChanges[tagName].find(tagChangeReverseAction) != 
+        tagChanges[tagName].end())
     {
-        tagChanges[ctName].erase(tagChangeReverseAction);
+        tagChanges[tagName].erase(tagChangeReverseAction);
         ccpl->RemoveTag(tagName);
         tagList[tagName].numrefs --;
     }
     else
     {
         // if this is a built in color table, you can only remove a 
-        // tag if the add tag action is already there
+        // tag if the add tag action is already there (the previous case)
         if (ccpl->GetBuiltIn())
         {
             QString tmp;
@@ -3358,7 +3358,7 @@ QvisColorTableWindow::removeTagFromColorTable(const std::string ctName,
         }
         else
         {
-            tagChanges[ctName].insert(std::make_pair(REMOVETAG, tagName));
+            tagChanges[tagName].insert(std::make_pair(REMOVETAG, ctName));
             ccpl->RemoveTag(tagName);
             tagList[tagName].numrefs --;
         }
