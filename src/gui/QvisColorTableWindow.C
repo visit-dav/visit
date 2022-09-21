@@ -512,11 +512,11 @@ stringVector
 QvisColorTableWindow::StringifyTagChanges()
 {
     stringVector retval;
-    for (const auto& mapitem : tagChanges)
+    for (const auto& mapitem : tagList)
     {
         std::stringstream changes;
         changes << mapitem.first << ":";
-        for (const auto& setitem : mapitem.second)
+        for (const auto& setitem : mapitem.second.changes)
             changes << setitem.first << "," << setitem.second << ";";
         retval.emplace_back(changes.str());
     }
@@ -989,11 +989,17 @@ QvisColorTableWindow::AddGlobalTag(std::string currtag, bool first_time)
     }
     // Only the very first time can we guarantee that each reference to each
     // tag has not been encountered before, so it is safe to increment here.
+    // Why is this? `AddGlobalTag()` is getting called unconditionally FOR
+    // EVERY tag in the CCPL, whether or not that tag has been added before.
     if (first_time)
         // We have to do this logic AFTER the above logic because otherwise 
         // currtag will already be added to the tagList, which will mess up
         // our searching for it.
         tagList[currtag].numrefs ++;
+        // Whether or not we end up adding to the tag table, the fact that 
+        // this function was called with this tag means there is another
+        // reference to it, so we should update the numrefs. Hence why
+        // we do NOT update the numrefs in `AddToTagTable()`.
 
 }
 
@@ -1057,6 +1063,7 @@ QvisColorTableWindow::UpdateTags()
         {
             if (itr->second.numrefs <= 0)
             {
+                // if this tag list item has an associated tag table entry
                 if (QTreeWidgetItem *tagTableItem = itr->second.tagTableItem)
                 {
                     auto index = tagTable->indexOfTopLevelItem(tagTableItem);
@@ -1069,6 +1076,7 @@ QvisColorTableWindow::UpdateTags()
                         delete tagTableItem;
                     }
                 }
+                // else - there is no tag table entry to delete so we can continue
                 itr = tagList.erase(itr);
             }
             else
@@ -1166,13 +1174,13 @@ QvisColorTableWindow::UpdateNames()
                     // If both are true, that means...
                     // 1) tagsMatchAny is true so we only need one tag from 
                     //    the global tag list to be present in the local tag
-                    //    list.
+                    //    list, AND
                     // 2) tagFound is true, so there is no need to keep 
                     //    searching for a tag that is in both the local and
                     //    global tag lists. Thus we can end iteration early.
                     // If both are false, that means...
                     // 1) tagsMatchAny is false so we need every tag from the
-                    //    global tag list to be present in the local tag list.
+                    //    global tag list to be present in the local tag list, AND
                     // 2) tagFound is false, so there exists a global tag that
                     //    is not in the local tag list, hence we can give up 
                     //    early because we know that this color table does not
@@ -3307,11 +3315,11 @@ QvisColorTableWindow::addTagToColorTable(const std::string ctName,
                                          ColorControlPointList* ccpl)
 {
     auto tagChangeReverseAction{std::make_pair(REMOVETAG, ctName)};
-    if (tagChanges[tagName].find(tagChangeReverseAction) != 
-        tagChanges[tagName].end())
-        tagChanges[tagName].erase(tagChangeReverseAction);
+    if (tagList[tagName].changes.find(tagChangeReverseAction) != 
+        tagList[tagName].changes.end())
+        tagList[tagName].changes.erase(tagChangeReverseAction);
     else
-        tagChanges[tagName].insert(std::make_pair(ADDTAG, ctName));
+        tagList[tagName].changes.insert(std::make_pair(ADDTAG, ctName));
     ccpl->AddTag(tagName);
     tagList[tagName].numrefs ++;
 }
@@ -3335,10 +3343,10 @@ QvisColorTableWindow::removeTagFromColorTable(const std::string ctName,
                                               ColorControlPointList* ccpl)
 {
     auto tagChangeReverseAction{std::make_pair(ADDTAG, ctName)};
-    if (tagChanges[tagName].find(tagChangeReverseAction) != 
-        tagChanges[tagName].end())
+    if (tagList[tagName].changes.find(tagChangeReverseAction) != 
+        tagList[tagName].changes.end())
     {
-        tagChanges[tagName].erase(tagChangeReverseAction);
+        tagList[tagName].changes.erase(tagChangeReverseAction);
         ccpl->RemoveTag(tagName);
         tagList[tagName].numrefs --;
     }
@@ -3358,7 +3366,7 @@ QvisColorTableWindow::removeTagFromColorTable(const std::string ctName,
         }
         else
         {
-            tagChanges[tagName].insert(std::make_pair(REMOVETAG, ctName));
+            tagList[tagName].changes.insert(std::make_pair(REMOVETAG, ctName));
             ccpl->RemoveTag(tagName);
             tagList[tagName].numrefs --;
         }
