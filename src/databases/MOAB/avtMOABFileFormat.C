@@ -168,13 +168,21 @@ avtMOABFileFormat::gatherMhdfInformation()
     debug1 << "Nodes: " << num_nodes << " dense tags: " <<  number_node_tags << "\n";
     for (int i=0; i< number_node_tags; i++)
     {
-        const char * tag_name = file_descriptor->tags[file_descriptor->nodes.dense_tag_indices[i]].name;
+        MHDF_TagDesc & tagStr = file_descriptor->tags[file_descriptor->nodes.dense_tag_indices[i]];
+        const char * tag_name = tagStr.name;
 
-        int sizeTag = file_descriptor->tags[file_descriptor->nodes.dense_tag_indices[i]].size;
+        int sizeTag = tagStr.size;
         debug1 << "   tag "<< i << " "  << tag_name << " size:" << sizeTag << "\n";
         struct tagBasic  tag1;
         tag1.nameTag=string(tag_name);
         tag1.size=sizeTag;
+        if (tagStr.default_value && ( sizeTag == 1 ) &&
+                ( (tagStr.type == mhdf_INTEGER) || (tagStr.type == mhdf_FLOAT )) )
+        {
+            tag1.defValue = tagStr.default_value;
+            tag1.type = tagStr.type;
+        }
+
         debug1 << "  node     tag "<< i << " "  << tag_name <<" size:" << sizeTag << "\n";
         nodeTags.push_back(tag1);
     }
@@ -191,12 +199,19 @@ avtMOABFileFormat::gatherMhdfInformation()
             << number_elem_tags <<"\n";
         for (int j=0; j<number_elem_tags; j++)
         {
-            const char * tag_name = file_descriptor->tags[edesc.dense_tag_indices[j]].name;
-            int sizeTag = file_descriptor->tags[edesc.dense_tag_indices[j]].size;
+            MHDF_TagDesc & tagStr = file_descriptor->tags[edesc.dense_tag_indices[j]];
+            const char * tag_name = tagStr.name;
+            int sizeTag = tagStr.size;
             struct tagBasic  tag1;
 
             tag1.nameTag=string(tag_name);
             tag1.size=sizeTag;
+            if (tagStr.default_value && ( sizeTag == 1 ) &&
+                            ( (tagStr.type == mhdf_INTEGER) || (tagStr.type == mhdf_FLOAT )) )
+            {
+                tag1.defValue = tagStr.default_value;
+                tag1.type = tagStr.type;
+            }
 
             debug2 << " elem   tag "<< j << " "  << tag_name <<" size:" << sizeTag << "\n";
             elemTags.insert(tag1);
@@ -288,7 +303,25 @@ avtMOABFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
             struct tagBasic tag = *setIter;
             nameDisplay += tag.nameTag;
             if (tag.size == 1)
-              AddScalarVarToMetaData(md, nameDisplay.c_str(), meshname, AVT_ZONECENT);
+            {
+                avtScalarMetaData *smd = new avtScalarMetaData;
+                smd->name = nameDisplay.c_str();
+                smd->meshName = meshname;
+                smd->centering = AVT_ZONECENT;
+                double defValDouble = 0;
+                if (tag.defValue && tag.type == 1) // integer
+                {
+                    defValDouble = *((int*)(tag.defValue));
+                }
+                if (tag.defValue && tag.type == 2) // double
+                {
+                    defValDouble = *((double*)(tag.defValue));
+                }
+                double values[2] = {defValDouble, defValDouble};
+                smd->SetMissingData(values);
+                smd->SetMissingDataType(avtScalarMetaData::MissingData_Value);
+                md->Add(smd);
+            }
             else if (tag.size == 2 || tag.size == 3)
               AddVectorVarToMetaData(md, nameDisplay.c_str(), meshname, AVT_ZONECENT, tag.size);
             else
@@ -300,7 +333,26 @@ avtMOABFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
             struct tagBasic tag = nodeTags[i];
             nameDisplay +=tag.nameTag;
             if (tag.size == 1)
-              AddScalarVarToMetaData(md, nameDisplay.c_str(), meshname, AVT_NODECENT);
+            {
+                avtScalarMetaData *smd = new avtScalarMetaData;
+                smd->name = nameDisplay.c_str();
+                smd->meshName = meshname;
+                smd->centering = AVT_NODECENT;
+                double defValDouble = 0;
+                if (tag.defValue && tag.type == 1) // integer
+                {
+                    defValDouble = *((int*)(tag.defValue));
+                }
+                if (tag.defValue && tag.type == 2) // double
+                {
+                    defValDouble = *((double*)(tag.defValue));
+                }
+                double values[2] = {defValDouble, defValDouble};
+                smd->SetMissingData(values);
+                smd->SetMissingDataType(avtScalarMetaData::MissingData_Value);
+                md->Add(smd);
+            }
+              // AddScalarVarToMetaData(md, nameDisplay.c_str(), meshname, AVT_NODECENT);
             else if (tag.size == 2 || tag.size == 3)
               AddVectorVarToMetaData(md, nameDisplay.c_str(), meshname, AVT_NODECENT, tag.size);
             else
