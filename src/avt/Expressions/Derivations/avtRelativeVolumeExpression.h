@@ -3,54 +3,50 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ************************************************************************* //
-//                       avtStrainRateExpression.h                           //
+//                       avtRelativeVolumeExpression.h                       //
 // ************************************************************************* //
 
-#ifndef AVT_STRAIN_RATE_FILTER_H
-#define AVT_STRAIN_RATE_FILTER_H
+#ifndef AVT_RELATIVE_VOLUME_FILTER_H
+#define AVT_RELATIVE_VOLUME_FILTER_H
 
 
 #include <avtStrainExpression.h>
 
 
 // ****************************************************************************
-//  Class: avtStrainRateExpression
+//  Class: avtRelativeVolumeExpression
 //
 //  Purpose:
-//      Calculates the Rate based strain tensor.
+//      Calculates the relative volume.
 //
-//  Programmer: Thomas R. Treadway
-//  Creation:   Wed Nov 15 12:57:36 PST 2006
-// 
-//  Modifications:
-//    Justin Privitera, Fri Sep 16 11:58:19 PDT 2022
-//    Renamed avtStrainTensorExpression to avtStrainExpression.
+//  Programmer: Justin Privitera
+//  Creation:   Fri Sep  9 10:37:12 PDT 2022
 //
 // ****************************************************************************
 
-class EXPRESSION_API avtStrainRateExpression
+class EXPRESSION_API avtRelativeVolumeExpression
     : public avtStrainExpression
 {
   public:
-                               avtStrainRateExpression();
-    virtual                   ~avtStrainRateExpression();
+                               avtRelativeVolumeExpression();
+    virtual                   ~avtRelativeVolumeExpression();
 
     virtual const char       *GetType(void)  
-                               { return "avtStrainRateExpression"; };
+                               { return "avtRelativeVolumeExpression"; };
     virtual const char       *GetDescription(void)
-                               {return "Calculating Rate based strain tensor";};
+                               {return "Calculating relative volume";};
     virtual int               NumVariableArguments() { return 2; }
 
   protected:
-    virtual vtkDataArray     *DeriveVariable(vtkDataSet *in, int currentDomainsIndex);
-    virtual avtVarType        GetVariableType(void) { return AVT_TENSOR_VAR; };
+    virtual vtkDataArray     *DeriveVariable(vtkDataSet *in, 
+                                             int currentDomainsIndex);
+    virtual avtVarType        GetVariableType(void) { return AVT_SCALAR_VAR; };
     virtual int               GetNumberOfComponentsInOutput(int ncompsIn1,
                                                             int ncompsIn2)
                                          { return (ncompsIn1 > ncompsIn2
                                                     ? ncompsIn1
                                                     : ncompsIn2);
                                          };
-    virtual int               GetVariableDimension(void);
 };
 
 #endif

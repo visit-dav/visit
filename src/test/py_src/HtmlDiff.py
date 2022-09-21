@@ -19,10 +19,14 @@
 #    creating html output, the html created here serves our purposes better,
 #    hence the choice of SequenceMatcher and get_opcodes.
 #
+#    Cyrus Harrison, Wed Sep  7 11:34:36 PDT 2022
+#    Refactored to module.
+#
 # ----------------------------------------------------------------------------
 
 import os, string, cgi, difflib
-from HtmlPython import LeadingSpaceToHtmlFormat
+
+from .HtmlPython import LeadingSpaceToHtmlFormat
 
 class TextFile:
     def __init__(self, fn, msg):
