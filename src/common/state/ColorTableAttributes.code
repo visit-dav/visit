@@ -437,14 +437,38 @@ ColorTableAttributes::RemoveColorTable(int index)
         if(isDefaultContinuous)
         {
             if(names.size() > 0)
-                SetDefaultContinuous(names[0]);
+            {
+                auto found{false};
+                for (int i = 0; i < names.size(); i ++)
+                {
+                    if (! GetColorTables(i).GetDiscreteFlag())
+                    {
+                        SetDefaultContinuous(names[i]);
+                        found = true;
+                    }
+                }
+                if (! found)
+                    SetDefaultContinuous(std::string(""));
+            }
             else
                 SetDefaultContinuous(std::string(""));
         }
         if(isDefaultDiscrete)
         {
             if(names.size() > 0)
-                SetDefaultDiscrete(names[0]);
+            {
+                auto found{false};
+                for (int i = 0; i < names.size(); i ++)
+                {
+                    if (GetColorTables(i).GetDiscreteFlag())
+                    {
+                        SetDefaultDiscrete(names[i]);
+                        found = true;
+                    }
+                }
+                if (! found)
+                    SetDefaultDiscrete(std::string(""));
+            }
             else
                 SetDefaultDiscrete(std::string(""));
         }
