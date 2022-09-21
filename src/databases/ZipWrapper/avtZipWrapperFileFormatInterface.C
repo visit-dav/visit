@@ -240,22 +240,29 @@ static void FreeUpCacheSlot(void *item)
                 debug5 << "Unable to descend into directory \"" << finfo->rmDirname << "\" to remove its contents." << endl;
                 cerr << "Unable to descend into directory \"" << finfo->rmDirname << "\" to remove its contents." << endl;
                 issuedWarnings++;
+                goto done;
             }
-
         }
         dirent *dp;
         while ((dp = readdir(dirp)))
         {
             errno = 0;
-            if (unlink(dp->d_name) != 0 && errno != ENOENT)
+            if (string(dp->d_name) == ".")
+                continue;
+            if (string(dp->d_name) == "..")
+                continue;
+            string tmp = finfo->rmDirname + "/" + string(dp->d_name);
+printf("unlinking \"%s\"\n", tmp.c_str());
+            if (unlink(tmp.c_str()) != 0 && errno != ENOENT)
             {
                 if (issuedWarnings < 5)
                 {
-                    debug5 << "Unable to unlink() \"" << dp->d_name << "\"" << endl;
+                    debug5 << "Unable to unlink() \"" << tmp << "\"" << endl;
                     debug5 << "unlink() reported errno=" << errno << " (\"" << strerror(errno) << "\")" << endl;
-                    cerr << "Unable to unlink() \"" << dp->d_name << "\"" << endl;
+                    cerr << "Unable to unlink() \"" << tmp << "\"" << endl;
                     cerr << "unlink() reported errno=" << errno << " (\"" << strerror(errno) << "\")" << endl;
                     issuedWarnings++;
+                    goto done;
                 }
             }
         }
@@ -273,6 +280,8 @@ static void FreeUpCacheSlot(void *item)
             }
         }
     }
+
+done:
 
     delete finfo;
 }
@@ -547,9 +556,9 @@ avtZipWrapperFileFormatInterface::avtZipWrapperFileFormatInterface(
     //
     // Make sure the necessary real plugin is loaded.
     //
-    string ext = StringHelpers::ExtractRESubstr(inputFileList[0][0].c_str(), "<\\.(xz|gz|bz|bz2|zip)$>");
+    string ext = StringHelpers::ExtractRESubstr(inputFileList[0][0].c_str(), "<\\.(txz|tgz|tbz|tbz2|xz|gz|bz|bz2|zip)$>");
     const char *bname = FileFunctions::Basename(inputFileList[0][0].c_str());
-    string dcname = StringHelpers::ExtractRESubstr(bname, "<(.*)\\.(xz|gz|bz|bz2|zip)$> \\1");
+    string dcname = StringHelpers::ExtractRESubstr(bname, "<(.*)\\.(txz|tgz|tbz|tbz2|xz|gz|bz|bz2|zip)$> \\1");
 
     // Save the pointer to the plugin manager.
     pluginManager = zwinfo->GetPluginManager();
@@ -564,7 +573,9 @@ avtZipWrapperFileFormatInterface::avtZipWrapperFileFormatInterface(
     pluginId = "";
     dummyInterface = 0;
     const bool searchAllPlugins = true;
-    vector<string> ids = pluginManager->GetMatchingPluginIds(dcname.c_str(), searchAllPlugins);
+    //vector<string> ids = pluginManager->GetMatchingPluginIds(dcname.c_str(), searchAllPlugins);
+#warning FIXME
+    vector<string> ids = pluginManager->GetMatchingPluginIds("foo.silo", searchAllPlugins);
     for (size_t i = 0; i < ids.size() && dummyInterface == 0; i++)
     {
         realPluginWasLoadedByMe = pluginManager->LoadSinglePluginNow(ids[i]);
@@ -762,9 +773,9 @@ avtZipWrapperFileFormatInterface::GetRealInterface(int ts, int dom, bool dontCac
     }
     debug5 << "Interface object for file \"" << compressedName << "\" not in cache" << endl;
 
-    string ext = StringHelpers::ExtractRESubstr(compressedName.c_str(), "<\\.(xz|gz|bz|bz2|zip)$>");
+    string ext = StringHelpers::ExtractRESubstr(compressedName.c_str(), "<\\.(txz|tgz|tbz|tbz2|xz|gz|bz|bz2|zip)$>");
     const char *bname = FileFunctions::Basename(compressedName.c_str());
-    string dcname = StringHelpers::ExtractRESubstr(bname, "<(.*)\\.(xz|gz|bz|bz2|zip)$> \\1");
+    string dcname = StringHelpers::ExtractRESubstr(bname, "<(.*)\\.(txz|tgz|tbz|tbz2|xz|gz|bz|bz2|zip)$> \\1");
 
     string dcmd = decompCmd;
     if (dcmd == "")
@@ -918,6 +929,8 @@ avtZipWrapperFileFormatInterface::GetRealInterface(int ts, int dom, bool dontCac
 #endif
 
     string newfname = tmpDir + VISIT_SLASH_STRING + dcname;
+    if (dcmd.substr(0,5) == "tar x")
+        newfname = newfname + ".root"; // its in a sub-dir of same name
     const char *tmpstr = newfname.c_str();
 
     vector<string> dummyPlugins;
@@ -940,7 +953,7 @@ avtZipWrapperFileFormatInterface::GetRealInterface(int ts, int dom, bool dontCac
         finfo->iface = realInterface;
         finfo->rmDirname = "";
         if (dcmd.substr(0,5) == "tar x")
-            finfo->rmDirname = bname;
+            finfo->rmDirname = tmpDir + VISIT_SLASH_STRING + dcname;
         UpdateRealFileFormatInterface(realInterface);
         realInterface->SetDatabaseMetaData(&mdCopy, 0);
         decompressedFilesCache[compressedName] = finfo;
