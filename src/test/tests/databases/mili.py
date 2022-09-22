@@ -404,6 +404,16 @@ def TestDerivedVariables():
     Test("mili_derived_12")
     DeleteAllPlots()
 
+    AddPlot("Pseudocolor", "Derived/Shared/relative_volume")
+    DrawPlots()
+    Test("mili_derived_13")
+    DeleteAllPlots()
+
+    AddPlot("Pseudocolor", "Derived/Shared/volumetric_strain")
+    DrawPlots()
+    Test("mili_derived_14")
+    DeleteAllPlots()
+
 
 def TestGlobalIntegrationPoint():
     TestSection("Global integration point")
