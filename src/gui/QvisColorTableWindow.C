@@ -46,6 +46,33 @@
 #define ADDTAGSTR    "0"
 #define REMOVETAGSTR "1"
 
+class TagInfo
+{
+public:
+    // Is this tag turned on or off?
+    bool active = false;
+
+    // How many color tables are associated with this tag
+    int numrefs = 0;
+
+    // data object to store tag changes
+    std::set<std::pair<int, std::string>> changes;
+    // Each tag is associated with a set (std::set) of representations of tag 
+    // changes. These representations consist of pairs (std::pair), where the 
+    // first element in each is a constant equal to either ADDTAG (0) or 
+    // REMOVETAG (1) and the second element is the name of the color table 
+    // (std::string) being added to or removed from.
+    // 
+    // This data structure is updated on the fly to reflect the latest tag 
+    // changes. It is also used to determine if a tag change is legal
+    // (particularly if a color table is built in), and it is saved out to 
+    // state files.
+
+    // A ptr to the tag table entry for this tag so it can be easily found
+    // and deleted if `numrefs` drops to 0.
+    QTreeWidgetItem *tagTableItem = nullptr;
+};
+
 // ****************************************************************************
 // Method: QvisColorTableWindow::QvisColorTableWindow
 //
