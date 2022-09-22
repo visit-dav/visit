@@ -140,6 +140,12 @@ public:
 //   I removed the tagList and activeTags stringVectors and replaced them with
 //   the new tagList, which is a map from tagnames to `TagInfo`s.
 // 
+//   Justin Privitera, Wed Sep 21 16:51:24 PDT 2022
+//   `TagInfo` now includes lengthy comments describing each member.
+//   The tagList and tagChanges data structures have been merged into
+//   the tagList. Thus TagInfo contains a new member representing the 
+//   tag changes.
+// 
 // ****************************************************************************
 
 class GUI_API QvisColorTableWindow : public QvisPostableWindowObserver

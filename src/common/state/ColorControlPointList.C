@@ -1933,6 +1933,9 @@ ColorControlPointList::GetNumTags() const
 // Modifications:
 //    Justin Privitera, Thu Aug 25 15:04:55 PDT 2022
 //    Made it a const function.
+// 
+//    Justin Privitera, Wed Sep 21 16:51:24 PDT 2022
+//    Added whitespace between the tag names in the tag bar.
 //
 // ****************************************************************************
 

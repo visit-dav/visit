@@ -506,6 +506,8 @@ QvisColorTableWindow::CreateWindowContents()
 // Creation:   Thu Aug 25 15:04:55 PDT 2022
 //
 // Modifications:
+//    Justin Privitera, Wed Sep 21 16:51:24 PDT 2022
+//    The tagList and tagChanges data structures have been merged.
 //
 // ****************************************************************************
 stringVector
@@ -534,6 +536,10 @@ QvisColorTableWindow::StringifyTagChanges()
 // Creation:   Thu Aug 25 15:04:55 PDT 2022
 //
 // Modifications:
+//    Justin Privitera, Wed Sep 21 16:51:24 PDT 2022
+//    Reversed how tag changes are represented (internally and when saved to
+//    files) so now tag names are mapped to sets of pairs of color table names
+//    and integers.
 //
 // ****************************************************************************
 void
@@ -600,6 +606,9 @@ QvisColorTableWindow::UnstringifyAndMergeTagChanges(stringVector changes)
 // 
 //   Justin Privitera, Fri Sep  2 16:46:21 PDT 2022
 //   Now plays nice with the new tag data structure.
+// 
+//   Cyrus Harrison, Fri Sep 16 14:28:51 PDT 2022
+//   Avoid emplace_back due to evil nature of std::vector<bool>
 //
 // ****************************************************************************
 
@@ -654,6 +663,9 @@ QvisColorTableWindow::CreateNode(DataNode *parentNode)
 // 
 //   Justin Privitera, Fri Sep  2 16:46:21 PDT 2022
 //   Now plays nice with the new tag data structure.
+// 
+//   Justin Privitera, Wed Sep 21 16:51:24 PDT 2022
+//   Error on size mismatch of tagnames and active tags vectors and recovery.
 //
 // ****************************************************************************
 
@@ -677,7 +689,16 @@ QvisColorTableWindow::SetFromNode(DataNode *parentNode, const int *borders)
             for (int i = 0; i < tagNames.size(); i ++)
                 tagList[tagNames[i]].active = activeTags[i];
         }
-        // TODO else
+        else
+        {
+            QString tmp;
+            tmp = tr("The color table tag names list and active tags list ") + 
+                  tr("should be the same size. ") + 
+                  tr("Has your config/session file been corrupted?");
+            Error(tmp);
+            for (int i = 0; i < tagNames.size(); i ++)
+                tagList[tagNames[i]].active = false;
+        }
     }
     if((node = winNode->GetNode("tagsVisible")) != 0)
         tagsVisible = node->AsBool();
@@ -965,6 +986,9 @@ QvisColorTableWindow::AddToTagTable(std::string currtag)
 //    Refactor allows for much cleaner interface for working with tag data.
 //    No need to collect indices of tags anymore due to refactor.
 //    Calculate refcount for each tag on the very first iteration through.
+// 
+//    Justin Privitera, Wed Sep 21 16:51:24 PDT 2022
+//    Extra clarifying comments.
 //
 // ****************************************************************************
 
@@ -1024,6 +1048,9 @@ QvisColorTableWindow::AddGlobalTag(std::string currtag, bool first_time)
 //    Justin Privitera, Fri Sep  2 16:46:21 PDT 2022
 //    Run the tag table generation the first time so we can set up the tagInfo
 //    map. Purge tagList and tagTable entries that have 0 refcount.
+// 
+//    Justin Privitera, Wed Sep 21 16:51:24 PDT 2022
+//    Make sure the refcount for the "No Tags" tag is updated properly.
 //
 // ****************************************************************************
 
@@ -3311,6 +3338,9 @@ QvisColorTableWindow::tagEdited()
 // Creation:   Thu Aug 25 15:04:55 PDT 2022
 //
 // Modifications:
+//    Justin Privitera, Wed Sep 21 16:51:24 PDT 2022
+//    Merged tagList and tagChanges data structures.
+//    Kept track of tag refcount on deletion.
 //
 // ****************************************************************************
 void
@@ -3339,6 +3369,9 @@ QvisColorTableWindow::addTagToColorTable(const std::string ctName,
 // Creation:   Thu Aug 25 15:04:55 PDT 2022
 //
 // Modifications:
+//    Justin Privitera, Wed Sep 21 16:51:24 PDT 2022
+//    Merged tagList and tagChanges data structures.
+//    Kept track of tag refcount on deletion.
 //
 // ****************************************************************************
 void
