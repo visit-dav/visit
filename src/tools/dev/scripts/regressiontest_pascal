@@ -103,6 +103,10 @@
 #   Kathleen Biagas, Thu June 16, 2022
 #   Modified cmakeCmd to use 3.3's 3.18.2 version and to use gcc-7.3
 #   for test_trunk. Modified the test_branch to build 3.2.
+#
+#   Cyrus Harrison, Thu Sep  8 12:42:42 PDT 2022
+#   Use new entry point for visit testing module.
+#
 
 # Determine the users name and e-mail address.
 #
@@ -422,7 +426,7 @@ for m in \$modes; do
 
 
     # Run the test
-    python ../../src/test/visit_test_suite.py --parallel-launch "srun" -b ../../test/baseline -d ../../build/testdata -e ../../build/bin/visit -o \$resDir -m "\$m" -n 2 --cmake $cmakeCmd >> ../../../buildlog 2>&1
+    python ../../build/test/run_visit_test_suite.sh  --parallel-launch "srun" -b ../../test/baseline -d ../../build/testdata -e ../../build/bin/visit -o \$resDir -m "\$m" -n 2 --cmake $cmakeCmd >> ../../../buildlog 2>&1
     mv \$resDir/html \$dateTag/\$theMode
 
     # Move the results to the consolidation directory
