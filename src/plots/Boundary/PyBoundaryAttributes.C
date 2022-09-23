@@ -1043,112 +1043,6 @@ PyBoundaryAttributes_getattr(PyObject *self, char *name)
                     "It's value is being ignored, " \
                     "please remove it from your script.\n", type);
 
-#if VISIT_OBSOLETE_AT_VERSION(3,3,1)
-#error This code is obsolete in this version. Please remove it.
-#else
-    //
-    // Changed in 2.13.0, made internal
-    //
-    // boundaryType and it's possible enumerations
-    bool boundaryTypeFound = false;
-    if (strcmp(name, "boundaryType") == 0)
-    {
-        boundaryTypeFound = true;
-    }
-    else if (strcmp(name, "Domain") == 0)
-    {
-        boundaryTypeFound = true;
-    }
-    else if (strcmp(name, "Group") == 0)
-    {
-        boundaryTypeFound = true;
-    }
-    else if (strcmp(name, "Material") == 0)
-    {
-        boundaryTypeFound = true;
-    }
-    else if (strcmp(name, "Unknown") == 0)
-    {
-        boundaryTypeFound = true;
-    }
-    if (boundaryTypeFound)
-    {
-        DEPRECATED_MESSAGE("boundaryType");
-        return PyInt_FromLong(0L);
-    }
-    // pointType and it's possible enumerations
-    bool pointTypeFound = false;
-    if (strcmp(name, "pointType") == 0)
-    {
-        pointTypeFound = true;
-    }
-    else if (strcmp(name, "Box") == 0)
-    {
-        pointTypeFound = true;
-    }
-    else if (strcmp(name, "Axis") == 0)
-    {
-        pointTypeFound = true;
-    }
-    else if (strcmp(name, "Icosahedron") == 0)
-    {
-        pointTypeFound = true;
-    }
-    else if (strcmp(name, "Octahedron") == 0)
-    {
-        pointTypeFound = true;
-    }
-    else if (strcmp(name, "Tetrahedron") == 0)
-    {
-        pointTypeFound = true;
-    }
-    else if (strcmp(name, "SphereGeometry") == 0)
-    {
-        pointTypeFound = true;
-    }
-    else if (strcmp(name, "Point") == 0)
-    {
-        pointTypeFound = true;
-    }
-    else if (strcmp(name, "Sphere") == 0)
-    {
-        pointTypeFound = true;
-    }
-    if (pointTypeFound)
-    {
-        DEPRECATED_MESSAGE("pointType");
-        return PyInt_FromLong(0L);
-    }
-    if (strcmp(name, "pointSize") == 0)
-    {
-        DEPRECATED_MESSAGE("pointSize");
-        return PyInt_FromLong(0L);
-    }
-    else if (strcmp(name, "pointSizePixels") == 0)
-    {
-        DEPRECATED_MESSAGE("pointSizePixels");
-        return PyInt_FromLong(0L);
-    }
-    else if (strcmp(name, "pointSizeVarEnabled") == 0)
-    {
-        DEPRECATED_MESSAGE("pointSizeVarEnabled");
-        return PyInt_FromLong(0L);
-    }
-    else if (strcmp(name, "pointSizeVar") == 0)
-    {
-        DEPRECATED_MESSAGE("pointSizeVar");
-        return PyInt_FromLong(0L);
-    }
-    //
-    // Removed in 2.13.0
-    //
-    else if (strcmp(name, "filledFlag") == 0)
-    {
-        DEPRECATED_MESSAGE("filledFlag");
-        return PyInt_FromLong(0L);
-    }
-#endif
-
 #if VISIT_OBSOLETE_AT_VERSION(3,3,2)
 #error This code is obsolete in this version. Please remove it.
 #else
@@ -1227,60 +1121,13 @@ PyBoundaryAttributes_setattr(PyObject *self, char *name, PyObject *args)
     else if(strcmp(name, "smoothingLevel") == 0)
         obj = BoundaryAttributes_SetSmoothingLevel(self, args);
 
-#if VISIT_OBSOLETE_AT_VERSION(3,3,1)
-#error This code is obsolete in this version. Please remove it.
-#else
     // Try and handle legacy fields
     if(obj == &NULL_PY_OBJ)
     {
-        if(strcmp(name, "filledFlag") == 0)
-        {
-            PyErr_WarnFormat(NULL, 3, "'%s' is obsolete. It is being ignored", name);
-            Py_INCREF(Py_None);
-            obj = Py_None;
-        }
-        else if(strcmp(name, "boundaryType") == 0)
-        {
-            PyErr_WarnFormat(NULL, 3, "'%s' is obsolete. It is being ignored", name);
-            Py_INCREF(Py_None);
-            obj = Py_None;
-        }
-        else if(strcmp(name, "pointType") == 0)
-        {
-            PyErr_WarnFormat(NULL, 3, "'%s' is obsolete. It is being ignored", name);
-            Py_INCREF(Py_None);
-            obj = Py_None;
-        }
-        else if(strcmp(name, "pointSize") == 0)
-        {
-            PyErr_WarnFormat(NULL, 3, "'%s' is obsolete. It is being ignored", name);
-            Py_INCREF(Py_None);
-            obj = Py_None;
-        }
-        else if(strcmp(name, "pointSizePixels") == 0)
-        {
-            PyErr_WarnFormat(NULL, 3, "'%s' is obsolete. It is being ignored", name);
-            Py_INCREF(Py_None);
-            obj = Py_None;
-        }
-        else if(strcmp(name, "pointSizeVarEnabled") == 0)
-        {
-            PyErr_WarnFormat(NULL, 3, "'%s' is obsolete. It is being ignored", name);
-            Py_INCREF(Py_None);
-            obj = Py_None;
-        }
-        else if(strcmp(name, "pointSizeVar") == 0)
-        {
-            PyErr_WarnFormat(NULL, 3, "'%s' is obsolete. It is being ignored", name);
-            Py_INCREF(Py_None);
-            obj = Py_None;
-        }
-#endif
-
 #if VISIT_OBSOLETE_AT_VERSION(3,3,2)
 #error This code is obsolete in this version. Please remove it.
 #else
-        else if(strcmp(name, "lineStyle") == 0)
+        if(strcmp(name, "lineStyle") == 0)
         {
             PyErr_WarnFormat(NULL, 3, "'%s' is obsolete. It is being ignored", name);
             Py_INCREF(Py_None);

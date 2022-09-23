@@ -344,8 +344,6 @@
       </Function>
       <Function name="ChangesRequireRecalculation" user="true" member="true">
       </Function>
-      <Function name="ProcessOldVersions" user="true" member="true">
-      </Function>
       <Function name="IntegralCurveViewerEnginePluginInfo::GetOperatorVarDescription" user="false" member="true">
       </Function>
       <Include file="source" quoted="false">

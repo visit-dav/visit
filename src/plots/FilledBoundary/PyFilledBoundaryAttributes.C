@@ -1615,54 +1615,14 @@ PyFilledBoundaryAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "pointSizePixels") == 0)
         return FilledBoundaryAttributes_GetPointSizePixels(self, NULL);
 
-#if VISIT_OBSOLETE_AT_VERSION(3,3,1)
-#error This code is obsolete in this version. Please remove it.
-#else
-    // Try and handle legacy fields
-
-    //
-    // Removed in 2.13.0
-    //
-    bool boundaryTypeFound = false;
-    bool lineStyleFound = false;
-    // boundaryType and it's possible enumerations
-    if (strcmp(name, "boundaryType") == 0)
-    {
-        boundaryTypeFound = true;
-    }
-    else if (strcmp(name, "Domain") == 0)
-    {
-        boundaryTypeFound = true;
-    }
-    else if (strcmp(name, "Group") == 0)
-    {
-        boundaryTypeFound = true;
-    }
-    else if (strcmp(name, "Material") == 0)
-    {
-        boundaryTypeFound = true;
-    }
-    else if (strcmp(name, "Unknown") == 0)
-    {
-        boundaryTypeFound = true;
-    }
-    if (strcmp(name, "filledFlag") == 0)
-    {
-        PyErr_WarnEx(NULL,
-            "filledFlag is no longer a valid FilledBoundary "
-            "attribute.\nIt's value is being ignored, please remove "
-            "it from your script.\n", 3);
-        return PyInt_FromLong(0L);
-    }
-#endif
-
 #if VISIT_OBSOLETE_AT_VERSION(3,3,2)
 #error This code is obsolete in this version. Please remove it.
 #else
     // Removed in 3.0.0
     //
     // lineStyle and it's possible enumerations
-    else if (strcmp(name, "lineStyle") == 0)
+    bool lineStyleFound = false;
+    if (strcmp(name, "lineStyle") == 0)
     {
         lineStyleFound = true;
     }
@@ -1681,14 +1641,6 @@ PyFilledBoundaryAttributes_getattr(PyObject *self, char *name)
     else if (strcmp(name, "DOTDASH") == 0)
     {
         lineStyleFound = true;
-    }
-    if (boundaryTypeFound)
-    {
-        PyErr_WarnEx(NULL,
-            "boundaryType is no longer a valid FilledBoundary "
-            "attribute.\nIt's value is being ignored, please remove "
-            "it from your script.\n", 3);
-        return PyInt_FromLong(0L);
     }
     if (lineStyleFound)
     {

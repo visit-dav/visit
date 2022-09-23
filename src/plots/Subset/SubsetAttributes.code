@@ -82,21 +82,6 @@ SubsetAttributes::ProcessOldVersions(DataNode *parentNode,
     DataNode *searchNode = parentNode->GetNode("SubsetAttributes");
     if(searchNode == 0)
         return;
-#if VISIT_OBSOLETE_AT_VERSION(3,3,1)
-#error This code is obsolete in this version. Please remove it.
-#else
-    if (VersionLessThan(configVersion, "2.13.0"))
-    {
-        if (searchNode->GetNode("filledFlag") != 0)
-        {
-#ifdef VIEWER
-            avtCallback::IssueWarning(DeprecationMessage("filledFlag", "3.3.1"));
-#endif
-            searchNode->RemoveNode("filledFlag");
-        }
-    }
-#endif
-
 #if VISIT_OBSOLETE_AT_VERSION(3,3,2)
 #error This code is obsolete in this version. Please remove it.
 #else
@@ -156,52 +141,6 @@ Target: xml2python
 Code: PySubsetAttributes_getattr
 Prefix:
 Postfix:
-#if VISIT_OBSOLETE_AT_VERSION(3,3,1)
-#error This code is obsolete in this version. Please remove it.
-#else
-    // Try and handle legacy fields
-
-    //
-    //  Changed in 2.13.0 to be internal
-    //
-    // subsetType and it's possible enumerations
-    // these should have been internal all along ...
-    if (strcmp(name, "subsetType") == 0)
-    {
-        PyErr_WarnFormat(NULL, 3, "'%s' is obsolete. It is being ignored.", name);
-        return PyInt_FromLong(0L);
-    }
-    else if (strcmp(name, "Domain") == 0)
-    {
-        PyErr_WarnFormat(NULL, 3, "'%s' is obsolete. It is being ignored.", name);
-        return PyInt_FromLong(0L);
-    }
-    else if (strcmp(name, "Group") == 0)
-    {
-        PyErr_WarnFormat(NULL, 3, "'%s' is obsolete. It is being ignored.", name);
-        return PyInt_FromLong(0L);
-    }
-    else if (strcmp(name, "Material") == 0)
-    {
-        PyErr_WarnFormat(NULL, 3, "'%s' is obsolete. It is being ignored.", name);
-        return PyInt_FromLong(0L);
-    }
-    else if (strcmp(name, "Unknown") == 0)
-    {
-        PyErr_WarnFormat(NULL, 3, "'%s' is obsolete. It is being ignored.", name);
-        return PyInt_FromLong(0L);
-    }
-    //
-    //  Removed in 2.13.0
-    //
-    // filledFlag -- hasn't been used in a LONG time
-    else if (strcmp(name, "filledFlag") == 0)
-    {
-        PyErr_WarnFormat(NULL, 3, "'%s' is obsolete. It is being ignored.", name);
-        return PyInt_FromLong(0L);
-    }
-#endif
-
 #if VISIT_OBSOLETE_AT_VERSION(3,3,2)
 #error This code is obsolete in this version. Please remove it.
 #else
@@ -209,7 +148,7 @@ Postfix:
     //  Removed in 3.0.0
     //
     // lineStyle and it's possible enumerations
-    else if (strcmp(name, "lineStyle") == 0)
+    if (strcmp(name, "lineStyle") == 0)
     {
         PyErr_WarnFormat(NULL, 3, "'%s' is obsolete. It is being ignored.", name);
         return PyInt_FromLong(0L);
@@ -243,44 +182,20 @@ Postfix:
     // Try and handle legacy fields
     if(obj == &NULL_PY_OBJ)
     {
-#if VISIT_OBSOLETE_AT_VERSION(3,3,1)
-#error This code is obsolete in this version. Please remove it.
-#else
-        //
-        //  Removed in 2.13.0
-        //
-        if(strcmp(name, "filledFlag") == 0)
-        {
-            PyErr_WarnFormat(NULL, 3, "'%s' is obsolete. It is being ignored.", name);
-            Py_INCREF(Py_None);
-            obj = Py_None;
-        }
-        //
-        //  Changed in 2.13.0 to be internal
-        //
-        // internal only, shouldn't be set by scripts
-        else if(strcmp(name, "subsetType") == 0)
-        {
-            PyErr_WarnFormat(NULL, 3, "'%s' is obsolete. It is being ignored.", name);
-            Py_INCREF(Py_None);
-            obj = Py_None;
-        }
-#endif
-
 #if VISIT_OBSOLETE_AT_VERSION(3,3,2)
 #error This code is obsolete in this version. Please remove it.
 #else
         //
         //  Removed in 3.0.0
         //
-        else if(strcmp(name, "lineStyle") == 0)
+        if(strcmp(name, "lineStyle") == 0)
         {
             PyErr_WarnFormat(NULL, 3, "'%s' is obsolete. It is being ignored.", name);
             Py_INCREF(Py_None);
             obj = Py_None;
         }
-    }
 #endif
+    }
 
 
 Function: PySubsetAttributes_SetDefaults
