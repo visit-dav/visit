@@ -412,7 +412,7 @@ echo "Starting tests:\`date\`"
 
 # Run the tests, consolidating the results in one directory
 cd ../src/test
-rm -rf 2022-??-??-??:?? py_src output *.pyc
+rm -rf 2022-??-??-??:?? output *.pyc
 mkdir \$dateTag output
 for m in \$modes; do
     theMode=\`echo \$m | tr ',' '_'\`
@@ -426,7 +426,7 @@ for m in \$modes; do
 
 
     # Run the test
-    python ../../build/test/run_visit_test_suite.sh  --parallel-launch "srun" -b ../../test/baseline -d ../../build/testdata -e ../../build/bin/visit -o \$resDir -m "\$m" -n 2 --cmake $cmakeCmd >> ../../../buildlog 2>&1
+    ../../build/test/run_visit_test_suite.sh  --parallel-launch "srun" -o \$resDir -m "\$m" -n 2 --cmake $cmakeCmd >> ../../../buildlog 2>&1
     mv \$resDir/html \$dateTag/\$theMode
 
     # Move the results to the consolidation directory
