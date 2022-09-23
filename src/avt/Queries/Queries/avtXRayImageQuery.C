@@ -1172,15 +1172,20 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
         const int cycle = GetInput()->GetInfo().GetAttributes().GetCycle();
         if (filenameScheme == FAMILYFILES)
         {
-            bool keepTrying = false;
+            auto keepTrying{true};
             while (keepTrying)
             {
+                keepTrying = false;
                 //
                 // Create the file base name and increment the family number.
                 //
                 baseName.clear();
                 baseName.str(std::string());
-                baseName << "output" << std::setfill('0') << std::setw(4) << iFileFamily << ".";
+                baseName << "output" << std::setfill('0') << std::setw(4) << iFileFamily;
+                if (!outputTypeIsBlueprint(outputType))
+                    baseName << ".";
+                else
+                    baseName << ".00";
 
                 if (iFileFamily < 9999) iFileFamily ++;
 
@@ -1192,7 +1197,10 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
                 std::stringstream fileName;
                 if (outputDir != ".")
                     fileName << outputDir.c_str() << "/";
-                fileName << baseName.str() << "00." << file_extensions[outputType];
+                if outputTypeIsBlueprint(outputType)
+                    fileName << baseName.str() << file_extensions[outputType];
+                else
+                    fileName << baseName.str() << "00." << file_extensions[outputType];
 
                 ifstream ifile(fileName.str());
                 if (!ifile.fail() && iFileFamily < 9999)
@@ -1203,14 +1211,17 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
         }
         else if (filenameScheme == CYCLEFILES)
         {
-            if (outputTypeIsBlueprint(outputType))
-                baseName << "output";
+            baseName << "output.cycle_" << std::setfill('0') << std::setw(6) << cycle;
+            if (!outputTypeIsBlueprint(outputType))
+                baseName << ".";
             else
-                baseName << "output.cycle_" << std::setfill('0') << std::setw(6) << cycle << ".";
+                baseName << ".00";
         }
         else
         {
             baseName << "output";
+            if (outputTypeIsBlueprint(outputType))
+                baseName << "00";
         }
 
         // neither have the file extension in them though
@@ -1390,9 +1401,7 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
             data_out["fields/path_length/strides"].set(data_out["fields/intensities/strides"]);
 
             data_out["state/time"] = GetInput()->GetInfo().GetAttributes().GetTime();
-            // TODO is this right?
-            if (filenameScheme == CYCLEFILES)
-                data_out["state/cycle"] = cycle;
+            data_out["state/cycle"] = cycle;
             data_out["state/xray_view/normal/x"] = normal[0];
             data_out["state/xray_view/normal/y"] = normal[1];
             data_out["state/xray_view/normal/z"] = normal[2];
@@ -1454,25 +1463,16 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
 
             try
             {
+                conduit::Node opts;
+                opts["suffix"] = "none";
                 // save out
                 conduit::relay::io::blueprint::save_mesh(data_out,
                                                          out_filename_w_path.c_str(),
-                                                         file_protocols[outputType]);
+                                                         file_protocols[outputType],
+                                                         opts);
 
-                // AFTER the file has been saved, update the basename to reflect 
-                // reality for the later output messages
-                if (filenameScheme == CYCLEFILES)
-                {
-                    baseName.clear();
-                    baseName.str(std::string());
-                    baseName << out_filename << ".cycle_" << std::setfill('0') 
-                        << std::setw(6) << cycle;
-                    out_filename = baseName.str();
-                    if (outputDir == ".")
-                        out_filename_w_path = out_filename;
-                    else
-                        out_filename_w_path = outputDir + "/" + out_filename;                    
-                }
+                out_filename += ".";
+                out_filename_w_path += ".";
             }
             catch (conduit::Error &e)
             {
@@ -1542,15 +1542,15 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
                     << std::setfill('0') << std::setw(2)
                     << 2*numBins - 1 << "."
                     << file_extensions[outputType] << "\n";
+#ifdef HAVE_CONDUIT
             else if (outputTypeIsBlueprint(outputType))
             {
-#ifdef HAVE_CONDUIT
                 buf << "The x ray image query results were "
                     << "written to the file "
-                    << out_filename_w_path << "."
+                    << out_filename_w_path
                     << file_extensions[outputType] << "\n";
-#endif
             }
+#endif
             else
             {
                 // this is safe because at the beginning of the function we check that the output type is valid
