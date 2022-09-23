@@ -1181,11 +1181,7 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
                 //
                 baseName.clear();
                 baseName.str(std::string());
-                baseName << "output" << std::setfill('0') << std::setw(4) << iFileFamily;
-                if (!outputTypeIsBlueprint(outputType))
-                    baseName << ".";
-                else
-                    baseName << ".00";
+                baseName << "output" << std::setfill('0') << std::setw(4) << iFileFamily << ".";
 
                 if (iFileFamily < 9999) iFileFamily ++;
 
@@ -1197,10 +1193,7 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
                 std::stringstream fileName;
                 if (outputDir != ".")
                     fileName << outputDir.c_str() << "/";
-                if outputTypeIsBlueprint(outputType)
-                    fileName << baseName.str() << file_extensions[outputType];
-                else
-                    fileName << baseName.str() << "00." << file_extensions[outputType];
+                fileName << baseName.str() << "00." << file_extensions[outputType];
 
                 ifstream ifile(fileName.str());
                 if (!ifile.fail() && iFileFamily < 9999)
@@ -1210,18 +1203,14 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
             }
         }
         else if (filenameScheme == CYCLEFILES)
-        {
-            baseName << "output.cycle_" << std::setfill('0') << std::setw(6) << cycle;
-            if (!outputTypeIsBlueprint(outputType))
-                baseName << ".";
-            else
-                baseName << ".00";
-        }
+            baseName << "output.cycle_" << std::setfill('0') << std::setw(6) << cycle << ".";
         else
         {
-            baseName << "output";
             if (outputTypeIsBlueprint(outputType))
-                baseName << "00";
+                baseName << "output.00";
+            else
+                baseName << "output.";
+
         }
 
         // neither have the file extension in them though
@@ -1470,16 +1459,13 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
                                                          out_filename_w_path.c_str(),
                                                          file_protocols[outputType],
                                                          opts);
-
-                out_filename += ".";
-                out_filename_w_path += ".";
             }
             catch (conduit::Error &e)
             {
                 std::ostringstream err_oss;
-                err_oss <<  "Conduit Exception in X Ray Image Query "
-                            << "Execute: " << endl
-                            << e.message();
+                err_oss << "Conduit Exception in X Ray Image Query "
+                        << "Execute: " << endl
+                        << e.message();
                 SetResultMessage(err_oss.str());
                 EXCEPTION1(VisItException, err_oss.str());
             }
