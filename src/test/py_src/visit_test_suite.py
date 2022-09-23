@@ -1084,7 +1084,6 @@ def main(opts,tests):
     """
     Main entry point for the test suite.
     """
-    print("visit_test_suite.py :main")
     finalize_options(opts)
     Log("[[VisIt Test Suite]]")
     if opts["check_data"]:
