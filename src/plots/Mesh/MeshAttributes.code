@@ -2,7 +2,7 @@ Target: xml2python
 Code: PyMeshAttributes_getattr
 Prefix:
 Postfix:
-#if VISIT_OBSOLETE_AT_VERSION(3,3,1)
+#if VISIT_OBSOLETE_AT_VERSION(3,3,2)
 #error This code is obsolete in this version. Please remove it.
 #else
     // Try and handle legacy fields in MeshAttributes
@@ -45,7 +45,7 @@ Postfix:
 Code: PyMeshAttributes_setattr
 Prefix:
 Postfix:
-#if VISIT_OBSOLETE_AT_VERSION(3,3,1)
+#if VISIT_OBSOLETE_AT_VERSION(3,3,2)
 #error This code is obsolete in this version. Please remove it.
 #else
     // Try and handle legacy fields in MeshAttributes
