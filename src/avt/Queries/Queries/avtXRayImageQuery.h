@@ -118,8 +118,8 @@ class QUERY_API avtXRayImageQuery : public avtDatasetQuery
                                   const doubleVector &intensities);
     void                      SetDebugRay(const int &ray);
     void                      SetOutputRayBounds(const bool &flag);
-    void                      SetFilenameType(int type);
-    void                      SetFilenameType(const std::string &type);
+    void                      SetFilenameScheme(int type);
+    void                      SetFilenameScheme(const std::string &type);
     void                      SetOutputType(int type);
     void                      SetOutputType(const std::string &type);
     void                      SetOutputDir(const std::string &dir);
@@ -131,7 +131,7 @@ class QUERY_API avtXRayImageQuery : public avtDatasetQuery
     int                       nBackgroundIntensities;
     int                       debugRay;
     bool                      outputRayBounds;
-    int                       filenameType;
+    int                       filenameScheme;
     static int                iFileFamily;
     int                       outputType;
     std::string               outputDir;

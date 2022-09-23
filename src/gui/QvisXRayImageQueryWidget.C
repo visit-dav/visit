@@ -183,12 +183,12 @@ QvisXRayImageQueryWidget::QvisXRayImageQueryWidget(QWidget *parent,
     //
     // Filename Type
     //
-    topLayout->addWidget(new QLabel(tr("Filename Type")), 14, 0);
+    topLayout->addWidget(new QLabel(tr("Filenaming scheme")), 14, 0);
     filenameType = new QComboBox();
-    filenameType->addItem("neither");
+    filenameType->addItem("none");
     filenameType->addItem("family");
     filenameType->addItem("cycle");
-    filenameType->setCurrentIndex(2);
+    filenameType->setCurrentIndex(0);
     topLayout->addWidget(filenameType, 14, 1);
 
     //

@@ -38,15 +38,15 @@ int avtXRayImageQuery::iFileFamily = 0;
 
 const int NUM_FILENAME_TYPES = 3;
 
-const char *filename_types[NUM_FILENAME_TYPES] = {"neither", "family", "cycle"};
+const char *filename_types[NUM_FILENAME_TYPES] = {"none", "family", "cycle"};
 
-const int NEITHER = 0;
+const int NONE = 0;
 const int FAMILYFILES = 1;
 const int CYCLEFILES = 2;
 
 
 // a filename type is valid if it is an int in [0,3)
-inline bool filenameTypeValid(int ftype)
+inline bool filenameSchemeValid(int ftype)
 {
     return ftype >= 0 && ftype < 3;
 }
@@ -167,7 +167,7 @@ avtXRayImageQuery::avtXRayImageQuery():
     backgroundIntensities = NULL;
     nBackgroundIntensities = 0;
     debugRay = -1;
-    filenameType = NEITHER;
+    filenameScheme = NONE;
     outputType = PNG_OUT;
     outputDir = ".";
     useSpecifiedUpVector = true;
@@ -319,9 +319,9 @@ avtXRayImageQuery::SetInputParams(const MapNode &params)
     if (params.HasEntry("filename_type"))
     {
         if (params.GetEntry("filename_type")->TypeName() == "int")
-            SetFilenameType(params.GetEntry("filename_type")->AsInt());
+            SetFilenameScheme(params.GetEntry("filename_type")->AsInt());
         else if (params.GetEntry("filename_type")->TypeName() == "string")
-            SetFilenameType(params.GetEntry("filename_type")->AsString());
+            SetFilenameScheme(params.GetEntry("filename_type")->AsString());
     }
 
     if (params.HasEntry("output_type"))
@@ -763,7 +763,7 @@ avtXRayImageQuery::SetOutputRayBounds(const bool &flag)
 // ****************************************************************************
 
 // ****************************************************************************
-//  Method: avtXRayImageQuery::SetFilenameType
+//  Method: avtXRayImageQuery::SetFilenameScheme
 //
 //  Purpose:
 //    Set the output image type.
@@ -776,10 +776,10 @@ avtXRayImageQuery::SetOutputRayBounds(const bool &flag)
 // ****************************************************************************
 
 void
-avtXRayImageQuery::SetFilenameType(int type)
+avtXRayImageQuery::SetFilenameScheme(int type)
 {
-    if (filenameTypeValid(filenameType))
-        filenameType = type;
+    if (filenameSchemeValid(filenameScheme))
+        filenameScheme = type;
     else
     {
         std::ostringstream err_oss;
@@ -789,7 +789,7 @@ avtXRayImageQuery::SetFilenameType(int type)
 }
 
 // ****************************************************************************
-//  Method: avtXRayImageQuery::SetFilenameType
+//  Method: avtXRayImageQuery::SetFilenameScheme
 //
 //  Purpose:
 //    Set the output image type.
@@ -802,7 +802,7 @@ avtXRayImageQuery::SetFilenameType(int type)
 // ****************************************************************************
 
 void
-avtXRayImageQuery::SetFilenameType(const std::string &type)
+avtXRayImageQuery::SetFilenameScheme(const std::string &type)
 {
     int i = 0;
     while (i < NUM_FILENAME_TYPES)
@@ -810,7 +810,7 @@ avtXRayImageQuery::SetFilenameType(const std::string &type)
         // the output type indexes the file extensions array
         if (type == filename_types[i])
         {
-            filenameType = i;
+            filenameScheme = i;
             return;
         }
         i ++;
@@ -1051,10 +1051,10 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
         EXCEPTION1(VisItException, err_oss.str());
     }
     // check validity of output type before proceeding
-    if (!filenameTypeValid(filenameType))
+    if (!filenameSchemeValid(filenameScheme))
     {
         std::ostringstream err_oss;
-        err_oss << "Filename type " << filenameType << " is invalid.\n";
+        err_oss << "Filename type " << filenameScheme << " is invalid.\n";
         SetResultMessage(err_oss.str());
         EXCEPTION1(VisItException, err_oss.str());
     }
@@ -1170,7 +1170,7 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
         //
         std::stringstream baseName;
         const int cycle = GetInput()->GetInfo().GetAttributes().GetCycle();
-        if (filenameType == FAMILYFILES)
+        if (filenameScheme == FAMILYFILES)
         {
             bool keepTrying = false;
             while (keepTrying)
@@ -1201,7 +1201,7 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
                 }
             }
         }
-        else if (filenameType == CYCLEFILES)
+        else if (filenameScheme == CYCLEFILES)
         {
             if (outputTypeIsBlueprint(outputType))
                 baseName << "output";
@@ -1391,7 +1391,7 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
 
             data_out["state/time"] = GetInput()->GetInfo().GetAttributes().GetTime();
             // TODO is this right?
-            if (filenameType == CYCLEFILES)
+            if (filenameScheme == CYCLEFILES)
                 data_out["state/cycle"] = cycle;
             data_out["state/xray_view/normal/x"] = normal[0];
             data_out["state/xray_view/normal/y"] = normal[1];
@@ -1461,7 +1461,7 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
 
                 // AFTER the file has been saved, update the basename to reflect 
                 // reality for the later output messages
-                if (filenameType == CYCLEFILES)
+                if (filenameScheme == CYCLEFILES)
                 {
                     baseName.clear();
                     baseName.str(std::string());
