@@ -119,6 +119,7 @@ class QUERY_API avtXRayImageQuery : public avtDatasetQuery
     void                      SetDebugRay(const int &ray);
     void                      SetOutputRayBounds(const bool &flag);
     void                      SetFilenameType(int type);
+    void                      SetFilenameType(const std::string &type);
     void                      SetOutputType(int type);
     void                      SetOutputType(const std::string &type);
     void                      SetOutputDir(const std::string &dir);
