@@ -181,11 +181,15 @@ QvisXRayImageQueryWidget::QvisXRayImageQueryWidget(QWidget *parent,
     topLayout->addWidget(perspective, 13, 0, 1, 2);
 
     //
-    // Family output files
+    // Filename Type
     //
-    family = new QCheckBox(tr("Family output files"));
-    family->setChecked(1);
-    topLayout->addWidget(family, 14, 0, 1, 2);
+    topLayout->addWidget(new QLabel(tr("Filename Type")), 14, 0);
+    filenameType = new QComboBox();
+    filenameType->addItem("neither");
+    filenameType->addItem("family");
+    filenameType->addItem("cycle");
+    filenameType->setCurrentIndex(2);
+    topLayout->addWidget(filenameType, 14, 1);
 
     //
     // Output ray bounds
@@ -502,7 +506,7 @@ QvisXRayImageQueryWidget::GetQueryParameters(MapNode &params)
         params["image_pan"] = imagePan;
         params["image_zoom"] = imageZoom;
         params["perspective"] = (int)perspective->isChecked();
-        params["family_files"] = (int)family->isChecked();
+        params["filename_type"] = filenameType->currentText().toStdString();
         params["output_ray_bounds"] = (int)outputRayBounds->isChecked();
         params["image_size"] = imageSize;
     }

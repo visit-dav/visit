@@ -36,6 +36,22 @@
 
 int avtXRayImageQuery::iFileFamily = 0;
 
+const int NUM_FILENAME_TYPES = 3;
+
+const char *filename_types[NUM_FILENAME_TYPES] = {"neither", "family", "cycle"};
+
+const int NEITHER = 0;
+const int FAMILYFILES = 1;
+const int CYCLEFILES = 2;
+
+
+// a filename type is valid if it is an int in [0,3)
+inline bool filenameTypeValid(int ftype)
+{
+    return ftype >= 0 && ftype < 3;
+}
+
+
 //
 // Output Type information and handling
 //
@@ -151,7 +167,7 @@ avtXRayImageQuery::avtXRayImageQuery():
     backgroundIntensities = NULL;
     nBackgroundIntensities = 0;
     debugRay = -1;
-    familyFiles = false;
+    filenameType = NEITHER;
     outputType = PNG_OUT;
     outputDir = ".";
     useSpecifiedUpVector = true;
@@ -300,8 +316,13 @@ avtXRayImageQuery::SetInputParams(const MapNode &params)
     if (params.HasNumericEntry("output_ray_bounds"))
         SetOutputRayBounds(params.GetEntry("output_ray_bounds")->ToBool());
 
-    if (params.HasNumericEntry("family_files"))
-        SetFamilyFiles(params.GetEntry("family_files")->ToBool());
+    if (params.HasEntry("filename_type"))
+    {
+        if (params.GetEntry("filename_type")->TypeName() == "int")
+            SetFilenameType(params.GetEntry("filename_type")->AsInt());
+        else if (params.GetEntry("filename_type")->TypeName() == "string")
+            SetFilenameType(params.GetEntry("filename_type")->AsString());
+    }
 
     if (params.HasEntry("output_type"))
     {
@@ -736,12 +757,67 @@ avtXRayImageQuery::SetOutputRayBounds(const bool &flag)
 //  Programmer: Eric Brugger
 //  Creation:   May 27, 2015
 //
+//  Modifications:
+//     Justin Privitera, Thu Sep 22 16:46:46 PDT 2022
+//     Deleted the function.
+// ****************************************************************************
+
+// ****************************************************************************
+//  Method: avtXRayImageQuery::SetFilenameType
+//
+//  Purpose:
+//    Set the output image type.
+//
+//  Programmer: 
+//  Creation:   
+// 
+//  Modifications:
+// 
 // ****************************************************************************
 
 void
-avtXRayImageQuery::SetFamilyFiles(const bool &flag)
+avtXRayImageQuery::SetFilenameType(int type)
 {
-    familyFiles = flag;
+    if (filenameTypeValid(filenameType))
+        filenameType = type;
+    else
+    {
+        std::ostringstream err_oss;
+        err_oss << "Filename type " << type << " is invalid.\n";
+        EXCEPTION1(VisItException, err_oss.str());
+    }
+}
+
+// ****************************************************************************
+//  Method: avtXRayImageQuery::SetFilenameType
+//
+//  Purpose:
+//    Set the output image type.
+//
+//  Programmer: 
+//  Creation:   
+//
+//  Modifications:
+// 
+// ****************************************************************************
+
+void
+avtXRayImageQuery::SetFilenameType(const std::string &type)
+{
+    int i = 0;
+    while (i < NUM_FILENAME_TYPES)
+    {
+        // the output type indexes the file extensions array
+        if (type == filename_types[i])
+        {
+            filenameType = i;
+            return;
+        }
+        i ++;
+    }
+    std::ostringstream err_oss;
+    err_oss << "Output type " << type << " is invalid.\n";
+    EXCEPTION1(VisItException, err_oss.str());
 }
 
 // ****************************************************************************
@@ -974,6 +1050,14 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
         SetResultMessage(err_oss.str());
         EXCEPTION1(VisItException, err_oss.str());
     }
+    // check validity of output type before proceeding
+    if (!filenameTypeValid(filenameType))
+    {
+        std::ostringstream err_oss;
+        err_oss << "Filename type " << filenameType << " is invalid.\n";
+        SetResultMessage(err_oss.str());
+        EXCEPTION1(VisItException, err_oss.str());
+    }
     // It would be nice to have something that could check the validity of the 
     // output directory without needing conduit.
 #ifdef HAVE_CONDUIT
@@ -1086,21 +1170,19 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
         //
         std::stringstream baseName;
         const int cycle = GetInput()->GetInfo().GetAttributes().GetCycle();
-        bool keepTrying = true;
-        while (keepTrying)
+        if (filenameType == FAMILYFILES)
         {
-            keepTrying = false;
-            if (familyFiles)
+            bool keepTrying = false;
+            while (keepTrying)
             {
                 //
                 // Create the file base name and increment the family number.
                 //
                 baseName.clear();
                 baseName.str(std::string());
-                baseName << "output" << std::setfill('0') << std::setw(4) << iFileFamily;
-                if (!outputTypeIsBlueprint(outputType)) baseName << ".";
+                baseName << "output" << std::setfill('0') << std::setw(4) << iFileFamily << ".";
 
-                if (iFileFamily < 9999) iFileFamily++;
+                if (iFileFamily < 9999) iFileFamily ++;
 
                 //
                 // Check if the first file created with the file base name
@@ -1110,12 +1192,7 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
                 std::stringstream fileName;
                 if (outputDir != ".")
                     fileName << outputDir.c_str() << "/";
-                fileName << baseName.str();
-                if (outputTypeIsBlueprint(outputType))
-                    fileName << ".cycle_" << std::setfill('0') << std::setw(6) << cycle;
-                else
-                    fileName << "00";
-                fileName << "." << file_extensions[outputType];
+                fileName << baseName.str() << "00." << file_extensions[outputType];
 
                 ifstream ifile(fileName.str());
                 if (!ifile.fail() && iFileFamily < 9999)
@@ -1123,10 +1200,17 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
                     keepTrying = true;
                 }
             }
-            else
-            {
+        }
+        else if (filenameType == CYCLEFILES)
+        {
+            if (outputTypeIsBlueprint(outputType))
                 baseName << "output";
-            }
+            else
+                baseName << "output.cycle_" << std::setfill('0') << std::setw(6) << cycle << ".";
+        }
+        else
+        {
+            baseName << "output";
         }
 
         // neither have the file extension in them though
@@ -1306,7 +1390,9 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
             data_out["fields/path_length/strides"].set(data_out["fields/intensities/strides"]);
 
             data_out["state/time"] = GetInput()->GetInfo().GetAttributes().GetTime();
-            data_out["state/cycle"] = cycle;
+            // TODO is this right?
+            if (filenameType == CYCLEFILES)
+                data_out["state/cycle"] = cycle;
             data_out["state/xray_view/normal/x"] = normal[0];
             data_out["state/xray_view/normal/y"] = normal[1];
             data_out["state/xray_view/normal/z"] = normal[2];
@@ -1375,15 +1461,18 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
 
                 // AFTER the file has been saved, update the basename to reflect 
                 // reality for the later output messages
-                baseName.clear();
-                baseName.str(std::string());
-                baseName << out_filename << ".cycle_" << std::setfill('0') 
-                    << std::setw(6) << cycle;
-                out_filename = baseName.str();
-                if (outputDir == ".")
-                    out_filename_w_path = out_filename;
-                else
-                    out_filename_w_path = outputDir + "/" + out_filename;
+                if (filenameType == CYCLEFILES)
+                {
+                    baseName.clear();
+                    baseName.str(std::string());
+                    baseName << out_filename << ".cycle_" << std::setfill('0') 
+                        << std::setw(6) << cycle;
+                    out_filename = baseName.str();
+                    if (outputDir == ".")
+                        out_filename_w_path = out_filename;
+                    else
+                        out_filename_w_path = outputDir + "/" + out_filename;                    
+                }
             }
             catch (conduit::Error &e)
             {

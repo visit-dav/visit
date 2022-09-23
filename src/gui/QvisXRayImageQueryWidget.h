@@ -73,7 +73,7 @@ private:
     QLineEdit       *imagePan;
     QLineEdit       *imageZoom;
     QCheckBox       *perspective;
-    QCheckBox       *family;
+    QComboBox       *filenameType;
     QCheckBox       *outputRayBounds;
     QLineEdit       *imageSize;
 };
