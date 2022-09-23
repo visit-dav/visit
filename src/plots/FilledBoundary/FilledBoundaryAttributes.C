@@ -1381,7 +1381,7 @@ FilledBoundaryAttributes::ProcessOldVersions(DataNode *parentNode,
         if (searchNode->GetNode("lineStyle") != 0)
         {
 #ifdef VIEWER
-            avtCallback::IssueWarning(DeprecationMessage("boundaryType", "3.3.2"));
+            avtCallback::IssueWarning(DeprecationMessage("lineStyle", "3.3.2"));
 #endif
             searchNode->RemoveNode("lineStyle");
         }
