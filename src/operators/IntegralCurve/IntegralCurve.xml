@@ -148,7 +148,7 @@
         0.000000
         1.000000
       </Field>
-      <Field name="useWholeBox" label="Use Whole Box" type="bool" enabler="sourceType:Box">
+      <Field name="useWholeBox" label="Use Whole Box" type="bool" enabler="sourceType:SpecifiedBox">
         true
       </Field>
       <Field name="pointList" label="List of Points" type="doubleVector" enabler="sourceType:PointList">
@@ -162,7 +162,7 @@
         1.000000
         0.000000
       </Field>
-      <Field name="fieldData" label="Field Data" type="doubleVector" enabler="sourceType:FeildData">
+      <Field name="fieldData" label="Field Data" type="doubleVector" enabler="sourceType:FieldData">
       </Field>
       <Field name="sampleDensity0" label="sampleDensity0" type="int">
         2

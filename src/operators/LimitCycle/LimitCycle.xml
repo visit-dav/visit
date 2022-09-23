@@ -73,27 +73,27 @@
       <Field name="sourceType" label="Source" type="enum" subtype="SourceType">
         SpecifiedLine
       </Field>
-      <Field name="lineStart" label="Line start" type="doubleArray" length="3" enabler="sourceType:Line">
+      <Field name="lineStart" label="Line start" type="doubleArray" length="3" enabler="sourceType:SpecifiedLine">
         0.000000
         0.000000
         0.000000
       </Field>
-      <Field name="lineEnd" label="Line end" type="doubleArray" length="3" enabler="sourceType:Line">
+      <Field name="lineEnd" label="Line end" type="doubleArray" length="3" enabler="sourceType:SpecifiedLine">
         1.000000
         0.000000
         0.000000
       </Field>
-      <Field name="planeOrigin" label="Plane origin" type="doubleArray" length="3" enabler="sourceType:Plane">
+      <Field name="planeOrigin" label="Plane origin" type="doubleArray" length="3" enabler="sourceType:SpecifiedPlane">
         0.000000
         0.000000
         0.000000
       </Field>
-      <Field name="planeNormal" label="Plane normal" type="doubleArray" length="3" enabler="sourceType:Plane">
+      <Field name="planeNormal" label="Plane normal" type="doubleArray" length="3" enabler="sourceType:SpecifiedPlane">
         0.000000
         0.000000
         1.000000
       </Field>
-      <Field name="planeUpAxis" label="Plane up axis" type="doubleArray" length="3" enabler="sourceType:Plane">
+      <Field name="planeUpAxis" label="Plane up axis" type="doubleArray" length="3" enabler="sourceType:SpecifiedPlane">
         0.000000
         1.000000
         0.000000
