@@ -1118,7 +1118,7 @@ PyBoundaryAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = BoundaryAttributes_SetOpacity(self, args);
     else if(strcmp(name, "wireframe") == 0)
         obj = BoundaryAttributes_SetWireframe(self, args);
-    else if(strcmp(name, "smoothingLevel") == 0)
+    if(strcmp(name, "smoothingLevel") == 0)
         obj = BoundaryAttributes_SetSmoothingLevel(self, args);
 
     // Try and handle legacy fields
