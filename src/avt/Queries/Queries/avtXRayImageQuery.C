@@ -1712,7 +1712,7 @@ avtXRayImageQuery::WriteImage(const char *baseName, int iImage, int nPixels,
 
     std::stringstream fileName;
     if (write_bin_info_to_filename)
-        fileName << baseName << std::setfill('0') << std::setw(2) << iImage;
+        fileName << baseName << "." << std::setfill('0') << std::setw(2) << iImage;
     else
         fileName << baseName;
 
@@ -1737,7 +1737,6 @@ avtXRayImageQuery::WriteImage(const char *baseName, int iImage, int nPixels,
     }
     else if (outputType == PNG_OUT)
     {
-        std::cout << "png" << std::endl;
         vtkImageWriter *writer = vtkPNGWriter::New();
         fileName << ".png";
         writer->SetFileName(fileName.str().c_str());
@@ -1784,7 +1783,7 @@ avtXRayImageQuery::WriteFloats(const char *baseName, int iImage, int nPixels,
     T *fbuf)
 {
     std::stringstream fileName;
-    fileName << baseName << std::setfill('0') << std::setw(2) << iImage << ".bof";
+    fileName << baseName << "." << std::setfill('0') << std::setw(2) << iImage << ".bof";
     FILE *file = fopen(fileName.str().c_str(), "w");
     fwrite(fbuf, sizeof(T), nPixels, file);
     fclose(file);
@@ -1817,7 +1816,7 @@ avtXRayImageQuery::WriteBOVHeader(const char *baseName, const char *varName,
     int iBin, int nx, int ny, const char *type)
 {
     std::stringstream fileName;
-    fileName << baseName << std::setfill('0') << std::setw(2) << iBin << ".bov";
+    fileName << baseName << "." << std::setfill('0') << std::setw(2) << iBin << ".bov";
     FILE *file = fopen(fileName.str().c_str(), "w");
     fprintf(file, "TIME: 0\n");
     fprintf(file, "DATA_FILE: %s%02d.bof\n", baseName, iBin);
