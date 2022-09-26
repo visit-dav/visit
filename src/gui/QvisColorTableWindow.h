@@ -31,6 +31,7 @@ class QvisSpectrumBar;
 class QvisColorSelectionWidget;
 class QvisColorGridWidget;
 class QvisNoDefaultColorTableButton;
+class TagInfo;
 
 // ****************************************************************************
 // Class: QvisColorTableWindow
@@ -108,6 +109,20 @@ class QvisNoDefaultColorTableButton;
 //    - Added tagEdit (a string for editing tags)
 //    - Added a data structure to store changes to tags
 // 
+//   Justin Privitera, Fri Sep  2 16:46:21 PDT 2022
+//   Added `TagInfo` class to store tag info all in one place.
+//   I removed the tagList and activeTags stringVectors and replaced them with
+//   the new tagList, which is a map from tagnames to `TagInfo`s.
+// 
+//   Justin Privitera, Wed Sep 21 16:51:24 PDT 2022
+//   `TagInfo` now includes lengthy comments describing each member.
+//   The tagList and tagChanges data structures have been merged into
+//   the tagList. Thus TagInfo contains a new member representing the 
+//   tag changes.
+// 
+//   Justin Privitera, Thu Sep 22 10:50:46 PDT 2022
+//   Moved TagInfo class implementation to the .C file.
+// 
 // ****************************************************************************
 
 class GUI_API QvisColorTableWindow : public QvisPostableWindowObserver
@@ -131,7 +146,7 @@ protected:
     void UpdateColorControlPoints();
     void UpdateDiscreteSettings();
     void AddGlobalTag(std::string currtag, bool run_before);
-    void AddToTagTable(std::string currtag, int index);
+    void AddToTagTable(std::string currtag);
     void UpdateTags();
     void UpdateNames();
     void Apply(bool ignore = false);
@@ -191,29 +206,18 @@ private:
     QString                  currentColorTable;
     int                      popupMode;
     bool                     sliding;
-    stringVector             tagList;
-    std::vector<bool>        activeTags;
     bool                     tagsVisible;
     bool                     tagsMatchAny;
     bool                     searchingOn;
     QString                  searchTerm;
     QString                  tagEdit;
 
-    // This object also observes the color table attributes.
-    ColorTableObserver       ctObserver;
+    // This is your one stop shop for information about each tag.
+    std::map<std::string, TagInfo> tagList;
+    // We are mapping tag names (std::string) to metadata (TagInfo).
 
-    // data object to store tag changes
-    std::map<std::string, std::set<std::pair<int, std::string>>> tagChanges;
-    // We are mapping color table names (std::string)
-    // to sets (std::set) of representations of tag changes.
-    // These representations consist of pairs (std::pair), where the first element in each
-    // is a constant equal to either ADDTAG (0) or REMOVETAG (1) and the
-    // second element is the name of the tag (std::string) being added or removed.
-    // 
-    // This data structure will be updated on the fly to reflect the latest 
-    // tag changes. It will be used to determine if a tag change is legal
-    // (particularly if a color table is built in), and it will be saved out
-    // to state files.
+    // This object also observes the color table attributes.
+    ColorTableObserver       ctObserver;    
 
     // 
     // Widgets and layouts.
