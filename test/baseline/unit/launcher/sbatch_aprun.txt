@@ -4,13 +4,13 @@ CASE: sbatch/aprun
 INPUT: visit -engine -norun engine_par -l sbatch/aprun -np 8 -p pbatch -b bdivp -nn 1 -sla "-arg1 -arg2" -host 127.0.0.1 -port 5600
 
 RESULTS:
-sbatch --export=HOME=$HOME,LIBPATH=$VISITDIR/lib,LD_LIBRARY_PATH=$VISITDIR/lib/osmesa:$VISITDIR/lib/mesagl:$VISITDIR/lib:/usr/tce/packages/cuda/cuda-8.0/lib64:/usr/tce/packages/mvapich2/mvapich2-2.3-intel-19.0.4/lib:/usr/tce/packages/intel/intel-19.0.4/lib/intel64,VISITHOME=$VISITDIR,VISITARCHHOME=$VISITDIR/,VISITPLUGINDIR=$HOME/.visit/$VERSION/$PLATFORM/plugins:$VISITDIR/plugins --partition=pbatch --account=bdivp --ntasks=8 --nodes=1 --tasks-per-node=8 $LAUNCHSCRIPT
+sbatch --export=HOME=$HOME,LIBPATH=/usr/WS1/visit/test_trunk/visit/build/lib,LD_LIBRARY_PATH=/usr/WS1/visit/test_trunk/visit/build/lib/osmesa:/usr/WS1/visit/test_trunk/visit/build/lib/mesagl:/usr/WS1/visit/test_trunk/visit/build/lib:/usr/tce/packages/cuda/cuda-8.0/lib64:/usr/tce/packages/mvapich2/mvapich2-2.3-intel-19.0.4/lib:/usr/tce/packages/intel/intel-19.0.4/lib/intel64,VISITHOME=/usr/WS1/visit/test_trunk/visit/build,VISITARCHHOME=/usr/WS1/visit/test_trunk/visit/build/,VISITPLUGINDIR=$HOME/.visit/$VERSION/$PLATFORM/plugins:/usr/WS1/visit/test_trunk/visit/build/plugins --partition=pbatch --account=bdivp --ntasks=8 --nodes=1 --tasks-per-node=8 $LAUNCHSCRIPT
 
 Contents of $LAUNCHSCRIPT:
 #!/bin/sh
 cd $VISIT_TEST_DIR
 ulimit -c 0
-aprun -arg1 -arg2 -n 8 -N 8 $VISIT_EXE_DIR/engine_par -dv -host $HOST -port 5600
+aprun -arg1 -arg2 -n 8 -N 8 /usr/WS1/visit/test_trunk/visit/build/exe/engine_par -dv -host $HOST -port 5600
 
 
 ================================================================================
@@ -19,13 +19,13 @@ CASE: sbatch/aprun -totalview engine_par
 INPUT: visit -engine -norun engine_par -l sbatch/aprun -np 8 -p pbatch -b bdivp -nn 1 -sla "-arg1 -arg2" -host 127.0.0.1 -port 5600 -totalview engine_par
 
 RESULTS:
-sbatch --export=HOME=$HOME,LIBPATH=$VISITDIR/lib,LD_LIBRARY_PATH=$VISITDIR/lib/osmesa:$VISITDIR/lib/mesagl:$VISITDIR/lib:/usr/tce/packages/cuda/cuda-8.0/lib64:/usr/tce/packages/mvapich2/mvapich2-2.3-intel-19.0.4/lib:/usr/tce/packages/intel/intel-19.0.4/lib/intel64,VISITHOME=$VISITDIR,VISITARCHHOME=$VISITDIR/,VISITPLUGINDIR=$HOME/.visit/$VERSION/$PLATFORM/plugins:$VISITDIR/plugins --partition=pbatch --account=bdivp --ntasks=8 --nodes=1 --tasks-per-node=8 $LAUNCHSCRIPT
+sbatch --export=HOME=$HOME,LIBPATH=/usr/WS1/visit/test_trunk/visit/build/lib,LD_LIBRARY_PATH=/usr/WS1/visit/test_trunk/visit/build/lib/osmesa:/usr/WS1/visit/test_trunk/visit/build/lib/mesagl:/usr/WS1/visit/test_trunk/visit/build/lib:/usr/tce/packages/cuda/cuda-8.0/lib64:/usr/tce/packages/mvapich2/mvapich2-2.3-intel-19.0.4/lib:/usr/tce/packages/intel/intel-19.0.4/lib/intel64,VISITHOME=/usr/WS1/visit/test_trunk/visit/build,VISITARCHHOME=/usr/WS1/visit/test_trunk/visit/build/,VISITPLUGINDIR=$HOME/.visit/$VERSION/$PLATFORM/plugins:/usr/WS1/visit/test_trunk/visit/build/plugins --partition=pbatch --account=bdivp --ntasks=8 --nodes=1 --tasks-per-node=8 $LAUNCHSCRIPT
 
 Contents of $LAUNCHSCRIPT:
 #!/bin/sh
 cd $VISIT_TEST_DIR
 ulimit -c 0
-totalview aprun -a -dograb -arg1 -arg2 -n 8 -N 8 $VISIT_EXE_DIR/engine_par -dv -host $HOST -port 5600
+totalview aprun -a -dograb -arg1 -arg2 -n 8 -N 8 /usr/WS1/visit/test_trunk/visit/build/exe/engine_par -dv -host $HOST -port 5600
 
 
 ================================================================================
@@ -34,13 +34,13 @@ CASE: sbatch/aprun -valgrind engine_par
 INPUT: visit -engine -norun engine_par -l sbatch/aprun -np 8 -p pbatch -b bdivp -nn 1 -sla "-arg1 -arg2" -host 127.0.0.1 -port 5600 -valgrind engine_par
 
 RESULTS:
-sbatch --export=HOME=$HOME,LIBPATH=$VISITDIR/lib,LD_LIBRARY_PATH=$VISITDIR/lib/osmesa:$VISITDIR/lib/mesagl:$VISITDIR/lib:/usr/tce/packages/cuda/cuda-8.0/lib64:/usr/tce/packages/mvapich2/mvapich2-2.3-intel-19.0.4/lib:/usr/tce/packages/intel/intel-19.0.4/lib/intel64,VISITHOME=$VISITDIR,VISITARCHHOME=$VISITDIR/,VISITPLUGINDIR=$HOME/.visit/$VERSION/$PLATFORM/plugins:$VISITDIR/plugins --partition=pbatch --account=bdivp --ntasks=8 --nodes=1 --tasks-per-node=8 $LAUNCHSCRIPT
+sbatch --export=HOME=$HOME,LIBPATH=/usr/WS1/visit/test_trunk/visit/build/lib,LD_LIBRARY_PATH=/usr/WS1/visit/test_trunk/visit/build/lib/osmesa:/usr/WS1/visit/test_trunk/visit/build/lib/mesagl:/usr/WS1/visit/test_trunk/visit/build/lib:/usr/tce/packages/cuda/cuda-8.0/lib64:/usr/tce/packages/mvapich2/mvapich2-2.3-intel-19.0.4/lib:/usr/tce/packages/intel/intel-19.0.4/lib/intel64,VISITHOME=/usr/WS1/visit/test_trunk/visit/build,VISITARCHHOME=/usr/WS1/visit/test_trunk/visit/build/,VISITPLUGINDIR=$HOME/.visit/$VERSION/$PLATFORM/plugins:/usr/WS1/visit/test_trunk/visit/build/plugins --partition=pbatch --account=bdivp --ntasks=8 --nodes=1 --tasks-per-node=8 $LAUNCHSCRIPT
 
 Contents of $LAUNCHSCRIPT:
 #!/bin/sh
 cd $VISIT_TEST_DIR
 ulimit -c 0
-aprun -arg1 -arg2 -n 8 -N 8 valgrind --tool=memcheck --error-limit=no --num-callers=50 --leak-check=full --track-origins=yes --show-reachable=yes --log-file=vg_engine_par_%p.log $VISIT_EXE_DIR/engine_par -dv -host $HOST -port 5600
+aprun -arg1 -arg2 -n 8 -N 8 valgrind --tool=memcheck --error-limit=no --num-callers=50 --leak-check=full --track-origins=yes --show-reachable=yes --log-file=vg_engine_par_%p.log /usr/WS1/visit/test_trunk/visit/build/exe/engine_par -dv -host $HOST -port 5600
 
 
 ================================================================================
@@ -49,12 +49,12 @@ CASE: sbatch/aprun -strace engine_par
 INPUT: visit -engine -norun engine_par -l sbatch/aprun -np 8 -p pbatch -b bdivp -nn 1 -sla "-arg1 -arg2" -host 127.0.0.1 -port 5600 -strace engine_par
 
 RESULTS:
-sbatch --export=HOME=$HOME,LIBPATH=$VISITDIR/lib,LD_LIBRARY_PATH=$VISITDIR/lib/osmesa:$VISITDIR/lib/mesagl:$VISITDIR/lib:/usr/tce/packages/cuda/cuda-8.0/lib64:/usr/tce/packages/mvapich2/mvapich2-2.3-intel-19.0.4/lib:/usr/tce/packages/intel/intel-19.0.4/lib/intel64,VISITHOME=$VISITDIR,VISITARCHHOME=$VISITDIR/,VISITPLUGINDIR=$HOME/.visit/$VERSION/$PLATFORM/plugins:$VISITDIR/plugins --partition=pbatch --account=bdivp --ntasks=8 --nodes=1 --tasks-per-node=8 $LAUNCHSCRIPT
+sbatch --export=HOME=$HOME,LIBPATH=/usr/WS1/visit/test_trunk/visit/build/lib,LD_LIBRARY_PATH=/usr/WS1/visit/test_trunk/visit/build/lib/osmesa:/usr/WS1/visit/test_trunk/visit/build/lib/mesagl:/usr/WS1/visit/test_trunk/visit/build/lib:/usr/tce/packages/cuda/cuda-8.0/lib64:/usr/tce/packages/mvapich2/mvapich2-2.3-intel-19.0.4/lib:/usr/tce/packages/intel/intel-19.0.4/lib/intel64,VISITHOME=/usr/WS1/visit/test_trunk/visit/build,VISITARCHHOME=/usr/WS1/visit/test_trunk/visit/build/,VISITPLUGINDIR=$HOME/.visit/$VERSION/$PLATFORM/plugins:/usr/WS1/visit/test_trunk/visit/build/plugins --partition=pbatch --account=bdivp --ntasks=8 --nodes=1 --tasks-per-node=8 $LAUNCHSCRIPT
 
 Contents of $LAUNCHSCRIPT:
 #!/bin/sh
 cd $VISIT_TEST_DIR
 ulimit -c 0
-aprun -arg1 -arg2 -n 8 -N 8 strace -ttt -T $VISIT_EXE_DIR/engine_par -dv -host $HOST -port 5600
+aprun -arg1 -arg2 -n 8 -N 8 strace -ttt -T /usr/WS1/visit/test_trunk/visit/build/exe/engine_par -dv -host $HOST -port 5600
 
 

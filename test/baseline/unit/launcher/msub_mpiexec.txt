@@ -4,7 +4,7 @@ CASE: msub/mpiexec
 INPUT: visit -engine -norun engine_par -l msub/mpiexec -np 8 -slpre "echo 'slprecommand'" -slpost "echo 'slpostcommand'" -sla "-arg1 -arg2" -machinefile machine.txt -hw-pre startx -hw-post stopx -host 127.0.0.1 -port 5600
 
 RESULTS:
-msub -v HOME=$HOME,LIBPATH=$VISITDIR/lib,LD_LIBRARY_PATH=$VISITDIR/lib/osmesa:$VISITDIR/lib/mesagl:$VISITDIR/lib:/usr/tce/packages/cuda/cuda-8.0/lib64:/usr/tce/packages/mvapich2/mvapich2-2.3-intel-19.0.4/lib:/usr/tce/packages/intel/intel-19.0.4/lib/intel64,VISITHOME=$VISITDIR,VISITARCHHOME=$VISITDIR/,VISITPLUGINDIR=$HOME/.visit/$VERSION/$PLATFORM/plugins:$VISITDIR/plugins -l nodes=8:ppn=1 $LAUNCHSCRIPT
+msub -v HOME=$HOME,LIBPATH=/usr/WS1/visit/test_trunk/visit/build/lib,LD_LIBRARY_PATH=/usr/WS1/visit/test_trunk/visit/build/lib/osmesa:/usr/WS1/visit/test_trunk/visit/build/lib/mesagl:/usr/WS1/visit/test_trunk/visit/build/lib:/usr/tce/packages/cuda/cuda-8.0/lib64:/usr/tce/packages/mvapich2/mvapich2-2.3-intel-19.0.4/lib:/usr/tce/packages/intel/intel-19.0.4/lib/intel64,VISITHOME=/usr/WS1/visit/test_trunk/visit/build,VISITARCHHOME=/usr/WS1/visit/test_trunk/visit/build/,VISITPLUGINDIR=$HOME/.visit/$VERSION/$PLATFORM/plugins:/usr/WS1/visit/test_trunk/visit/build/plugins -l nodes=8:ppn=1 $LAUNCHSCRIPT
 
 Contents of $LAUNCHSCRIPT:
 #!/bin/sh
@@ -12,7 +12,7 @@ cd $VISIT_TEST_DIR
 ulimit -c 0
 startx
 echo 'slprecommand'
-mpiexec -arg1 -arg2 -n 8 -machinefile machine.txt $VISIT_EXE_DIR/engine_par -dv -host $HOST -port 5600
+mpiexec -arg1 -arg2 -n 8 -machinefile machine.txt /usr/WS1/visit/test_trunk/visit/build/exe/engine_par -dv -host $HOST -port 5600
 echo 'slpostcommand'
 stopx
 
@@ -23,7 +23,7 @@ CASE: msub/mpiexec -totalview engine_par
 INPUT: visit -engine -norun engine_par -l msub/mpiexec -np 8 -slpre "echo 'slprecommand'" -slpost "echo 'slpostcommand'" -sla "-arg1 -arg2" -machinefile machine.txt -hw-pre startx -hw-post stopx -host 127.0.0.1 -port 5600 -totalview engine_par
 
 RESULTS:
-msub -v HOME=$HOME,LIBPATH=$VISITDIR/lib,LD_LIBRARY_PATH=$VISITDIR/lib/osmesa:$VISITDIR/lib/mesagl:$VISITDIR/lib:/usr/tce/packages/cuda/cuda-8.0/lib64:/usr/tce/packages/mvapich2/mvapich2-2.3-intel-19.0.4/lib:/usr/tce/packages/intel/intel-19.0.4/lib/intel64,VISITHOME=$VISITDIR,VISITARCHHOME=$VISITDIR/,VISITPLUGINDIR=$HOME/.visit/$VERSION/$PLATFORM/plugins:$VISITDIR/plugins -l nodes=8:ppn=1 $LAUNCHSCRIPT
+msub -v HOME=$HOME,LIBPATH=/usr/WS1/visit/test_trunk/visit/build/lib,LD_LIBRARY_PATH=/usr/WS1/visit/test_trunk/visit/build/lib/osmesa:/usr/WS1/visit/test_trunk/visit/build/lib/mesagl:/usr/WS1/visit/test_trunk/visit/build/lib:/usr/tce/packages/cuda/cuda-8.0/lib64:/usr/tce/packages/mvapich2/mvapich2-2.3-intel-19.0.4/lib:/usr/tce/packages/intel/intel-19.0.4/lib/intel64,VISITHOME=/usr/WS1/visit/test_trunk/visit/build,VISITARCHHOME=/usr/WS1/visit/test_trunk/visit/build/,VISITPLUGINDIR=$HOME/.visit/$VERSION/$PLATFORM/plugins:/usr/WS1/visit/test_trunk/visit/build/plugins -l nodes=8:ppn=1 $LAUNCHSCRIPT
 
 Contents of $LAUNCHSCRIPT:
 #!/bin/sh
@@ -31,7 +31,7 @@ cd $VISIT_TEST_DIR
 ulimit -c 0
 startx
 echo 'slprecommand'
-totalview mpiexec -a -dograb -arg1 -arg2 -n 8 -machinefile machine.txt $VISIT_EXE_DIR/engine_par -dv -host $HOST -port 5600
+totalview mpiexec -a -dograb -arg1 -arg2 -n 8 -machinefile machine.txt /usr/WS1/visit/test_trunk/visit/build/exe/engine_par -dv -host $HOST -port 5600
 echo 'slpostcommand'
 stopx
 
@@ -42,7 +42,7 @@ CASE: msub/mpiexec -valgrind engine_par
 INPUT: visit -engine -norun engine_par -l msub/mpiexec -np 8 -slpre "echo 'slprecommand'" -slpost "echo 'slpostcommand'" -sla "-arg1 -arg2" -machinefile machine.txt -hw-pre startx -hw-post stopx -host 127.0.0.1 -port 5600 -valgrind engine_par
 
 RESULTS:
-msub -v HOME=$HOME,LIBPATH=$VISITDIR/lib,LD_LIBRARY_PATH=$VISITDIR/lib/osmesa:$VISITDIR/lib/mesagl:$VISITDIR/lib:/usr/tce/packages/cuda/cuda-8.0/lib64:/usr/tce/packages/mvapich2/mvapich2-2.3-intel-19.0.4/lib:/usr/tce/packages/intel/intel-19.0.4/lib/intel64,VISITHOME=$VISITDIR,VISITARCHHOME=$VISITDIR/,VISITPLUGINDIR=$HOME/.visit/$VERSION/$PLATFORM/plugins:$VISITDIR/plugins -l nodes=8:ppn=1 $LAUNCHSCRIPT
+msub -v HOME=$HOME,LIBPATH=/usr/WS1/visit/test_trunk/visit/build/lib,LD_LIBRARY_PATH=/usr/WS1/visit/test_trunk/visit/build/lib/osmesa:/usr/WS1/visit/test_trunk/visit/build/lib/mesagl:/usr/WS1/visit/test_trunk/visit/build/lib:/usr/tce/packages/cuda/cuda-8.0/lib64:/usr/tce/packages/mvapich2/mvapich2-2.3-intel-19.0.4/lib:/usr/tce/packages/intel/intel-19.0.4/lib/intel64,VISITHOME=/usr/WS1/visit/test_trunk/visit/build,VISITARCHHOME=/usr/WS1/visit/test_trunk/visit/build/,VISITPLUGINDIR=$HOME/.visit/$VERSION/$PLATFORM/plugins:/usr/WS1/visit/test_trunk/visit/build/plugins -l nodes=8:ppn=1 $LAUNCHSCRIPT
 
 Contents of $LAUNCHSCRIPT:
 #!/bin/sh
@@ -50,7 +50,7 @@ cd $VISIT_TEST_DIR
 ulimit -c 0
 startx
 echo 'slprecommand'
-mpiexec -arg1 -arg2 -n 8 -machinefile machine.txt valgrind --tool=memcheck --error-limit=no --num-callers=50 --leak-check=full --track-origins=yes --show-reachable=yes --log-file=vg_engine_par_%p.log $VISIT_EXE_DIR/engine_par -dv -host $HOST -port 5600
+mpiexec -arg1 -arg2 -n 8 -machinefile machine.txt valgrind --tool=memcheck --error-limit=no --num-callers=50 --leak-check=full --track-origins=yes --show-reachable=yes --log-file=vg_engine_par_%p.log /usr/WS1/visit/test_trunk/visit/build/exe/engine_par -dv -host $HOST -port 5600
 echo 'slpostcommand'
 stopx
 
@@ -61,7 +61,7 @@ CASE: msub/mpiexec -strace engine_par
 INPUT: visit -engine -norun engine_par -l msub/mpiexec -np 8 -slpre "echo 'slprecommand'" -slpost "echo 'slpostcommand'" -sla "-arg1 -arg2" -machinefile machine.txt -hw-pre startx -hw-post stopx -host 127.0.0.1 -port 5600 -strace engine_par
 
 RESULTS:
-msub -v HOME=$HOME,LIBPATH=$VISITDIR/lib,LD_LIBRARY_PATH=$VISITDIR/lib/osmesa:$VISITDIR/lib/mesagl:$VISITDIR/lib:/usr/tce/packages/cuda/cuda-8.0/lib64:/usr/tce/packages/mvapich2/mvapich2-2.3-intel-19.0.4/lib:/usr/tce/packages/intel/intel-19.0.4/lib/intel64,VISITHOME=$VISITDIR,VISITARCHHOME=$VISITDIR/,VISITPLUGINDIR=$HOME/.visit/$VERSION/$PLATFORM/plugins:$VISITDIR/plugins -l nodes=8:ppn=1 $LAUNCHSCRIPT
+msub -v HOME=$HOME,LIBPATH=/usr/WS1/visit/test_trunk/visit/build/lib,LD_LIBRARY_PATH=/usr/WS1/visit/test_trunk/visit/build/lib/osmesa:/usr/WS1/visit/test_trunk/visit/build/lib/mesagl:/usr/WS1/visit/test_trunk/visit/build/lib:/usr/tce/packages/cuda/cuda-8.0/lib64:/usr/tce/packages/mvapich2/mvapich2-2.3-intel-19.0.4/lib:/usr/tce/packages/intel/intel-19.0.4/lib/intel64,VISITHOME=/usr/WS1/visit/test_trunk/visit/build,VISITARCHHOME=/usr/WS1/visit/test_trunk/visit/build/,VISITPLUGINDIR=$HOME/.visit/$VERSION/$PLATFORM/plugins:/usr/WS1/visit/test_trunk/visit/build/plugins -l nodes=8:ppn=1 $LAUNCHSCRIPT
 
 Contents of $LAUNCHSCRIPT:
 #!/bin/sh
@@ -69,7 +69,7 @@ cd $VISIT_TEST_DIR
 ulimit -c 0
 startx
 echo 'slprecommand'
-mpiexec -arg1 -arg2 -n 8 -machinefile machine.txt strace -ttt -T $VISIT_EXE_DIR/engine_par -dv -host $HOST -port 5600
+mpiexec -arg1 -arg2 -n 8 -machinefile machine.txt strace -ttt -T /usr/WS1/visit/test_trunk/visit/build/exe/engine_par -dv -host $HOST -port 5600
 echo 'slpostcommand'
 stopx
 

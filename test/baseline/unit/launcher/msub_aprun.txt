@@ -4,14 +4,14 @@ CASE: msub/aprun
 INPUT: visit -engine -norun engine_par -l msub/aprun -np 8 -nn 1 -sla "-arg1 -arg2" -hw-pre startx -hw-post stopx -host 127.0.0.1 -port 5600
 
 RESULTS:
-msub -v HOME=$HOME,LIBPATH=$VISITDIR/lib,LD_LIBRARY_PATH=$VISITDIR/lib/osmesa:$VISITDIR/lib/mesagl:$VISITDIR/lib:/usr/tce/packages/cuda/cuda-8.0/lib64:/usr/tce/packages/mvapich2/mvapich2-2.3-intel-19.0.4/lib:/usr/tce/packages/intel/intel-19.0.4/lib/intel64,VISITHOME=$VISITDIR,VISITARCHHOME=$VISITDIR/,VISITPLUGINDIR=$HOME/.visit/$VERSION/$PLATFORM/plugins:$VISITDIR/plugins -l nodes=1:ppn=8 $LAUNCHSCRIPT
+msub -v HOME=$HOME,LIBPATH=/usr/WS1/visit/test_trunk/visit/build/lib,LD_LIBRARY_PATH=/usr/WS1/visit/test_trunk/visit/build/lib/osmesa:/usr/WS1/visit/test_trunk/visit/build/lib/mesagl:/usr/WS1/visit/test_trunk/visit/build/lib:/usr/tce/packages/cuda/cuda-8.0/lib64:/usr/tce/packages/mvapich2/mvapich2-2.3-intel-19.0.4/lib:/usr/tce/packages/intel/intel-19.0.4/lib/intel64,VISITHOME=/usr/WS1/visit/test_trunk/visit/build,VISITARCHHOME=/usr/WS1/visit/test_trunk/visit/build/,VISITPLUGINDIR=$HOME/.visit/$VERSION/$PLATFORM/plugins:/usr/WS1/visit/test_trunk/visit/build/plugins -l nodes=1:ppn=8 $LAUNCHSCRIPT
 
 Contents of $LAUNCHSCRIPT:
 #!/bin/sh
 cd $VISIT_TEST_DIR
 ulimit -c 0
 startx
-aprun -arg1 -arg2 -n 8 -N 8 $VISIT_EXE_DIR/engine_par -dv -host $HOST -port 5600
+aprun -arg1 -arg2 -n 8 -N 8 /usr/WS1/visit/test_trunk/visit/build/exe/engine_par -dv -host $HOST -port 5600
 stopx
 
 
@@ -21,14 +21,14 @@ CASE: msub/aprun -totalview engine_par
 INPUT: visit -engine -norun engine_par -l msub/aprun -np 8 -nn 1 -sla "-arg1 -arg2" -hw-pre startx -hw-post stopx -host 127.0.0.1 -port 5600 -totalview engine_par
 
 RESULTS:
-msub -v HOME=$HOME,LIBPATH=$VISITDIR/lib,LD_LIBRARY_PATH=$VISITDIR/lib/osmesa:$VISITDIR/lib/mesagl:$VISITDIR/lib:/usr/tce/packages/cuda/cuda-8.0/lib64:/usr/tce/packages/mvapich2/mvapich2-2.3-intel-19.0.4/lib:/usr/tce/packages/intel/intel-19.0.4/lib/intel64,VISITHOME=$VISITDIR,VISITARCHHOME=$VISITDIR/,VISITPLUGINDIR=$HOME/.visit/$VERSION/$PLATFORM/plugins:$VISITDIR/plugins -l nodes=1:ppn=8 $LAUNCHSCRIPT
+msub -v HOME=$HOME,LIBPATH=/usr/WS1/visit/test_trunk/visit/build/lib,LD_LIBRARY_PATH=/usr/WS1/visit/test_trunk/visit/build/lib/osmesa:/usr/WS1/visit/test_trunk/visit/build/lib/mesagl:/usr/WS1/visit/test_trunk/visit/build/lib:/usr/tce/packages/cuda/cuda-8.0/lib64:/usr/tce/packages/mvapich2/mvapich2-2.3-intel-19.0.4/lib:/usr/tce/packages/intel/intel-19.0.4/lib/intel64,VISITHOME=/usr/WS1/visit/test_trunk/visit/build,VISITARCHHOME=/usr/WS1/visit/test_trunk/visit/build/,VISITPLUGINDIR=$HOME/.visit/$VERSION/$PLATFORM/plugins:/usr/WS1/visit/test_trunk/visit/build/plugins -l nodes=1:ppn=8 $LAUNCHSCRIPT
 
 Contents of $LAUNCHSCRIPT:
 #!/bin/sh
 cd $VISIT_TEST_DIR
 ulimit -c 0
 startx
-totalview aprun -a -dograb -arg1 -arg2 -n 8 -N 8 $VISIT_EXE_DIR/engine_par -dv -host $HOST -port 5600
+totalview aprun -a -dograb -arg1 -arg2 -n 8 -N 8 /usr/WS1/visit/test_trunk/visit/build/exe/engine_par -dv -host $HOST -port 5600
 stopx
 
 
@@ -38,14 +38,14 @@ CASE: msub/aprun -valgrind engine_par
 INPUT: visit -engine -norun engine_par -l msub/aprun -np 8 -nn 1 -sla "-arg1 -arg2" -hw-pre startx -hw-post stopx -host 127.0.0.1 -port 5600 -valgrind engine_par
 
 RESULTS:
-msub -v HOME=$HOME,LIBPATH=$VISITDIR/lib,LD_LIBRARY_PATH=$VISITDIR/lib/osmesa:$VISITDIR/lib/mesagl:$VISITDIR/lib:/usr/tce/packages/cuda/cuda-8.0/lib64:/usr/tce/packages/mvapich2/mvapich2-2.3-intel-19.0.4/lib:/usr/tce/packages/intel/intel-19.0.4/lib/intel64,VISITHOME=$VISITDIR,VISITARCHHOME=$VISITDIR/,VISITPLUGINDIR=$HOME/.visit/$VERSION/$PLATFORM/plugins:$VISITDIR/plugins -l nodes=1:ppn=8 $LAUNCHSCRIPT
+msub -v HOME=$HOME,LIBPATH=/usr/WS1/visit/test_trunk/visit/build/lib,LD_LIBRARY_PATH=/usr/WS1/visit/test_trunk/visit/build/lib/osmesa:/usr/WS1/visit/test_trunk/visit/build/lib/mesagl:/usr/WS1/visit/test_trunk/visit/build/lib:/usr/tce/packages/cuda/cuda-8.0/lib64:/usr/tce/packages/mvapich2/mvapich2-2.3-intel-19.0.4/lib:/usr/tce/packages/intel/intel-19.0.4/lib/intel64,VISITHOME=/usr/WS1/visit/test_trunk/visit/build,VISITARCHHOME=/usr/WS1/visit/test_trunk/visit/build/,VISITPLUGINDIR=$HOME/.visit/$VERSION/$PLATFORM/plugins:/usr/WS1/visit/test_trunk/visit/build/plugins -l nodes=1:ppn=8 $LAUNCHSCRIPT
 
 Contents of $LAUNCHSCRIPT:
 #!/bin/sh
 cd $VISIT_TEST_DIR
 ulimit -c 0
 startx
-aprun -arg1 -arg2 -n 8 -N 8 valgrind --tool=memcheck --error-limit=no --num-callers=50 --leak-check=full --track-origins=yes --show-reachable=yes --log-file=vg_engine_par_%p.log $VISIT_EXE_DIR/engine_par -dv -host $HOST -port 5600
+aprun -arg1 -arg2 -n 8 -N 8 valgrind --tool=memcheck --error-limit=no --num-callers=50 --leak-check=full --track-origins=yes --show-reachable=yes --log-file=vg_engine_par_%p.log /usr/WS1/visit/test_trunk/visit/build/exe/engine_par -dv -host $HOST -port 5600
 stopx
 
 
@@ -55,14 +55,14 @@ CASE: msub/aprun -strace engine_par
 INPUT: visit -engine -norun engine_par -l msub/aprun -np 8 -nn 1 -sla "-arg1 -arg2" -hw-pre startx -hw-post stopx -host 127.0.0.1 -port 5600 -strace engine_par
 
 RESULTS:
-msub -v HOME=$HOME,LIBPATH=$VISITDIR/lib,LD_LIBRARY_PATH=$VISITDIR/lib/osmesa:$VISITDIR/lib/mesagl:$VISITDIR/lib:/usr/tce/packages/cuda/cuda-8.0/lib64:/usr/tce/packages/mvapich2/mvapich2-2.3-intel-19.0.4/lib:/usr/tce/packages/intel/intel-19.0.4/lib/intel64,VISITHOME=$VISITDIR,VISITARCHHOME=$VISITDIR/,VISITPLUGINDIR=$HOME/.visit/$VERSION/$PLATFORM/plugins:$VISITDIR/plugins -l nodes=1:ppn=8 $LAUNCHSCRIPT
+msub -v HOME=$HOME,LIBPATH=/usr/WS1/visit/test_trunk/visit/build/lib,LD_LIBRARY_PATH=/usr/WS1/visit/test_trunk/visit/build/lib/osmesa:/usr/WS1/visit/test_trunk/visit/build/lib/mesagl:/usr/WS1/visit/test_trunk/visit/build/lib:/usr/tce/packages/cuda/cuda-8.0/lib64:/usr/tce/packages/mvapich2/mvapich2-2.3-intel-19.0.4/lib:/usr/tce/packages/intel/intel-19.0.4/lib/intel64,VISITHOME=/usr/WS1/visit/test_trunk/visit/build,VISITARCHHOME=/usr/WS1/visit/test_trunk/visit/build/,VISITPLUGINDIR=$HOME/.visit/$VERSION/$PLATFORM/plugins:/usr/WS1/visit/test_trunk/visit/build/plugins -l nodes=1:ppn=8 $LAUNCHSCRIPT
 
 Contents of $LAUNCHSCRIPT:
 #!/bin/sh
 cd $VISIT_TEST_DIR
 ulimit -c 0
 startx
-aprun -arg1 -arg2 -n 8 -N 8 strace -ttt -T $VISIT_EXE_DIR/engine_par -dv -host $HOST -port 5600
+aprun -arg1 -arg2 -n 8 -N 8 strace -ttt -T /usr/WS1/visit/test_trunk/visit/build/exe/engine_par -dv -host $HOST -port 5600
 stopx
 
 

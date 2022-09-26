@@ -4,7 +4,7 @@ CASE: dmpirun
 INPUT: visit -engine -norun engine_par -l dmpirun -np 8 -b bdivp -host 127.0.0.1 -port 5600
 
 RESULTS:
-dmpirun -np 8 $VISIT_EXE_DIR/engine_par -dv -host $HOST -port 5600
+dmpirun -np 8 /usr/WS1/visit/test_trunk/visit/build/exe/engine_par -dv -host $HOST -port 5600
 
 ================================================================================
 CASE: dmpirun -totalview engine_par
@@ -12,7 +12,7 @@ CASE: dmpirun -totalview engine_par
 INPUT: visit -engine -norun engine_par -l dmpirun -np 8 -b bdivp -host 127.0.0.1 -port 5600 -totalview engine_par
 
 RESULTS:
-totalview dmpirun -a -dograb -np 8 $VISIT_EXE_DIR/engine_par -dv -host $HOST -port 5600
+totalview dmpirun -a -dograb -np 8 /usr/WS1/visit/test_trunk/visit/build/exe/engine_par -dv -host $HOST -port 5600
 
 ================================================================================
 CASE: dmpirun -valgrind engine_par
@@ -20,7 +20,7 @@ CASE: dmpirun -valgrind engine_par
 INPUT: visit -engine -norun engine_par -l dmpirun -np 8 -b bdivp -host 127.0.0.1 -port 5600 -valgrind engine_par
 
 RESULTS:
-dmpirun -np 8 valgrind --tool=memcheck --error-limit=no --num-callers=50 --leak-check=full --track-origins=yes --show-reachable=yes --log-file=vg_engine_par_%p.log $VISIT_EXE_DIR/engine_par -dv -host $HOST -port 5600
+dmpirun -np 8 valgrind --tool=memcheck --error-limit=no --num-callers=50 --leak-check=full --track-origins=yes --show-reachable=yes --log-file=vg_engine_par_%p.log /usr/WS1/visit/test_trunk/visit/build/exe/engine_par -dv -host $HOST -port 5600
 
 ================================================================================
 CASE: dmpirun -strace engine_par
@@ -28,5 +28,5 @@ CASE: dmpirun -strace engine_par
 INPUT: visit -engine -norun engine_par -l dmpirun -np 8 -b bdivp -host 127.0.0.1 -port 5600 -strace engine_par
 
 RESULTS:
-dmpirun -np 8 strace -ttt -T $VISIT_EXE_DIR/engine_par -dv -host $HOST -port 5600
+dmpirun -np 8 strace -ttt -T /usr/WS1/visit/test_trunk/visit/build/exe/engine_par -dv -host $HOST -port 5600
 
