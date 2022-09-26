@@ -169,7 +169,7 @@ class QUERY_API avtXRayImageQuery : public avtDatasetQuery
     virtual void              Execute(avtDataTree_p);
 
     template <typename T>
-    void                      WriteImage(const char *, int, int, T*);
+    void                      WriteImage(const char *, int, int, T*, bool);
     template <typename T>
     void                      WriteFloats(const char *, int, int, T*);
     void                      WriteBOVHeader(const char *, const char *,
