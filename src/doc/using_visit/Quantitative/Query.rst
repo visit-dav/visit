@@ -431,20 +431,21 @@ XRay Image
     | *filename_scheme*        | The naming convention for output filenames.  |
     +------+-------------------+----------------------------------------------+
     |      | "none" or 0       | The default. Output filenames will be of the |
-    |      |                   | form ``output.ext``, where ``ext`` is |br|   |
-    |      |                   | the file extension. If the filename already  |
-    |      |                   | exists, VisIt_ will overwrite it.            |
+    |      |                   | form ``output.ext``, where |br|              |
+    |      |                   | ``ext`` is the file extension. If the        |
+    |      |                   | filename already exists, VisIt_ will |br|    |
+    |      |                   | overwrite it.                                |
     +------+-------------------+----------------------------------------------+
     |      | "family" or 1     | If on, VisIt_ will attempt to family output  |
-    |      |                   | files. Output filenames will |br| be of the  | 
+    |      |                   | files. Output filenames will be |br| of the  | 
     |      |                   | form ``output.XXXX.ext``, where ``XXXX`` is  |
-    |      |                   | chosen to be the smallest integer |br| such  |
+    |      |                   | chosen to be the smallest |br| integer such  |
     |      |                   | that the filename is unique.                 |
     +------+-------------------+----------------------------------------------+
     |      | "cycle" or 2      | VisIt_ will put cycle information in the     |
-    |      |                   | filename. Output filenames will |br| be of   |
+    |      |                   | filename. Output filenames will be |br| of   |
     |      |                   | the form ``output.cycle_XXXXXX.ext``, where  |
-    |      |                   | ``XXXXXX`` is the cycle number. If |br|      |
+    |      |                   | ``XXXXXX`` is the cycle number. |br| If      |
     |      |                   | another file exists with this name, VisIt_   |
     |      |                   | will overwrite it.                           |
     +------+-------------------+----------------------------------------------+
