@@ -5,4 +5,7 @@ env PYTHONPATH=@CMAKE_BINARY_DIR@/lib/site-packages/ \
    -b @CMAKE_CURRENT_SOURCE_DIR@/../../test/baseline/  \
    -t @CMAKE_CURRENT_SOURCE_DIR@/tests \
    -o output \
+   -s @VISIT_SOURCE_DIR@/test/skip.json \
+   --src @VISIT_SOURCE_DIR@ \
+   --cmake @CMAKE_COMMAND@ \
    -e @CMAKE_BINARY_DIR@/bin/visit "$@"

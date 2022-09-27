@@ -1461,52 +1461,6 @@ PySubsetAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "pointSizePixels") == 0)
         return SubsetAttributes_GetPointSizePixels(self, NULL);
 
-#if VISIT_OBSOLETE_AT_VERSION(3,3,1)
-#error This code is obsolete in this version. Please remove it.
-#else
-    // Try and handle legacy fields
-
-    //
-    //  Changed in 2.13.0 to be internal
-    //
-    // subsetType and it's possible enumerations
-    // these should have been internal all along ...
-    if (strcmp(name, "subsetType") == 0)
-    {
-        PyErr_WarnFormat(NULL, 3, "'%s' is obsolete. It is being ignored.", name);
-        return PyInt_FromLong(0L);
-    }
-    else if (strcmp(name, "Domain") == 0)
-    {
-        PyErr_WarnFormat(NULL, 3, "'%s' is obsolete. It is being ignored.", name);
-        return PyInt_FromLong(0L);
-    }
-    else if (strcmp(name, "Group") == 0)
-    {
-        PyErr_WarnFormat(NULL, 3, "'%s' is obsolete. It is being ignored.", name);
-        return PyInt_FromLong(0L);
-    }
-    else if (strcmp(name, "Material") == 0)
-    {
-        PyErr_WarnFormat(NULL, 3, "'%s' is obsolete. It is being ignored.", name);
-        return PyInt_FromLong(0L);
-    }
-    else if (strcmp(name, "Unknown") == 0)
-    {
-        PyErr_WarnFormat(NULL, 3, "'%s' is obsolete. It is being ignored.", name);
-        return PyInt_FromLong(0L);
-    }
-    //
-    //  Removed in 2.13.0
-    //
-    // filledFlag -- hasn't been used in a LONG time
-    else if (strcmp(name, "filledFlag") == 0)
-    {
-        PyErr_WarnFormat(NULL, 3, "'%s' is obsolete. It is being ignored.", name);
-        return PyInt_FromLong(0L);
-    }
-#endif
-
 #if VISIT_OBSOLETE_AT_VERSION(3,3,2)
 #error This code is obsolete in this version. Please remove it.
 #else
@@ -1514,7 +1468,7 @@ PySubsetAttributes_getattr(PyObject *self, char *name)
     //  Removed in 3.0.0
     //
     // lineStyle and it's possible enumerations
-    else if (strcmp(name, "lineStyle") == 0)
+    if (strcmp(name, "lineStyle") == 0)
     {
         PyErr_WarnFormat(NULL, 3, "'%s' is obsolete. It is being ignored.", name);
         return PyInt_FromLong(0L);
@@ -1599,44 +1553,20 @@ PySubsetAttributes_setattr(PyObject *self, char *name, PyObject *args)
     // Try and handle legacy fields
     if(obj == &NULL_PY_OBJ)
     {
-#if VISIT_OBSOLETE_AT_VERSION(3,3,1)
-#error This code is obsolete in this version. Please remove it.
-#else
-        //
-        //  Removed in 2.13.0
-        //
-        if(strcmp(name, "filledFlag") == 0)
-        {
-            PyErr_WarnFormat(NULL, 3, "'%s' is obsolete. It is being ignored.", name);
-            Py_INCREF(Py_None);
-            obj = Py_None;
-        }
-        //
-        //  Changed in 2.13.0 to be internal
-        //
-        // internal only, shouldn't be set by scripts
-        else if(strcmp(name, "subsetType") == 0)
-        {
-            PyErr_WarnFormat(NULL, 3, "'%s' is obsolete. It is being ignored.", name);
-            Py_INCREF(Py_None);
-            obj = Py_None;
-        }
-#endif
-
 #if VISIT_OBSOLETE_AT_VERSION(3,3,2)
 #error This code is obsolete in this version. Please remove it.
 #else
         //
         //  Removed in 3.0.0
         //
-        else if(strcmp(name, "lineStyle") == 0)
+        if(strcmp(name, "lineStyle") == 0)
         {
             PyErr_WarnFormat(NULL, 3, "'%s' is obsolete. It is being ignored.", name);
             Py_INCREF(Py_None);
             obj = Py_None;
         }
-    }
 #endif
+    }
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
