@@ -471,57 +471,65 @@ CloseDatabase(silo_data_path("curv3d.silo"))
 # Test filenames and output types
 # 
 
-# outdir_set = out_base + "/testdir"
-# if not os.path.isdir(outdir_set):
-#     os.mkdir(outdir_set)
+outdir_set = out_base + "/testdir"
+if not os.path.isdir(outdir_set):
+    os.mkdir(outdir_set)
 
-# setup_bp_test()
+setup_bp_test()
 
-# DefineScalarExpression("d1", 'recenter(d, "zonal")')
-# DefineScalarExpression("p1", 'recenter(p, "zonal")')
+DefineScalarExpression("d1", 'recenter(d, "zonal")')
+DefineScalarExpression("p1", 'recenter(p, "zonal")')
 
-# DefineArrayExpression("da", "array_compose(d1,d1)")
-# DefineArrayExpression("pa", "array_compose(p1,p1)")
+DefineArrayExpression("da", "array_compose(d1,d1)")
+DefineArrayExpression("pa", "array_compose(p1,p1)")
 
-# def query_variety(otype, scheme, thevars, outdir):
-#     SetQueryFloatFormat("%g")
-#     Query("XRay Image", 
-#         background_intensity=0, 
-#         divide_emis_by_absorb=0, 
-#         far_plane=20, 
-#         filename_type=scheme, 
-#         focus=(0, 0, 0), 
-#         image_pan=(0, 0), 
-#         image_size=(3, 3), 
-#         image_zoom=1, 
-#         near_plane=-20, 
-#         normal=(0, 0, 1), 
-#         output_dir=outdir, 
-#         output_ray_bounds=0, 
-#         output_type=otype, 
-#         parallel_scale=10, 
-#         perspective=0, 
-#         view_angle=30, 
-#         view_up=(0, 1, 0), 
-#         vars=thevars)
-#     return GetQueryOutputString()
+def query_variety(otype, scheme, thevars, outdir):
+    SetQueryFloatFormat("%g")
+    Query("XRay Image", 
+        background_intensity=0, 
+        divide_emis_by_absorb=0, 
+        far_plane=20, 
+        filename_type=scheme, 
+        focus=(0, 0, 0), 
+        image_pan=(0, 0), 
+        image_size=(3, 3), 
+        image_zoom=1, 
+        near_plane=-20, 
+        normal=(0, 0, 1), 
+        output_dir=outdir, 
+        output_ray_bounds=0, 
+        output_type=otype, 
+        parallel_scale=10, 
+        perspective=0, 
+        view_angle=30, 
+        view_up=(0, 1, 0), 
+        vars=thevars)
+    return GetQueryOutputString()
 
-# create a dummy file to test the file familying
-# open(outdir_set + "/output.0001.png", 'w').close()
+outdir_set = out_base + "/testdir"
+if not os.path.isdir(outdir_set):
+    os.mkdir(outdir_set)
 
 # uncomment when https://github.com/visit-dav/visit/issues/18152 is fixed
 # output_types = ["bmp", "jpeg", "png", "tif", "bof", "bov", "json", "hdf5", "yaml"]
-# output_types = ["jpeg", "png", "tif", "bof", "bov", "json", "hdf5", "yaml"]
-# filename_schemes = ["family", "family", "cycle", "none"]
-# vars_options = [("d", "p"), ("da", "pa")]
+output_types = ["jpeg", "png", "tif", "bof", "bov", "json", "hdf5", "yaml"]
+filename_schemes = ["family", "family", "cycle", "none"]
+vars_options = [("d", "p"), ("da", "pa")]
 
-# info = ""
-# for i in range(0, len(output_types)):
-#     for j in range(0, len(filename_schemes)):
-#         for k in range(0, len(vars_options)):
-#             info += query_variety(output_types[i], filename_schemes[j], vars_options[k], outdir_set)
-# info += os.listdir(outdir)
-# TestText("Test filenames and output types", info)
+info = ""
+for i in range(0, len(output_types)):
+    outdir_set_otype = outdir_set + "_" + output_types[i]
+    if not os.path.isdir(outdir_set_otype):
+        os.mkdir(outdir_set_otype)
+    if output_types[i] == "jpeg":
+        # create a dummy file to test the file familying
+        open(outdir_set_otype + "/output.0000.jpg", 'w').close()
+    info = ""
+    for j in range(0, len(filename_schemes)):
+        for k in range(0, len(vars_options)):
+            info += query_variety(output_types[i], filename_schemes[j], vars_options[k], outdir_set_otype)
+    info += str(os.listdir(outdir_set_otype))
+    TestText("Test_filenames_for_" + output_types[i] + "_outputs", info)
 
 #
 # Test that we get decent error messages for common cases

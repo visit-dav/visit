@@ -1,0 +1,9 @@
+The x ray image query results were written to the file VISIT_TOP_DIR/test/current/queries/xrayimage/testdir_yaml/output.0029.root
+The x ray image query results were written to the file VISIT_TOP_DIR/test/current/queries/xrayimage/testdir_yaml/output.0030.root
+The x ray image query results were written to the file VISIT_TOP_DIR/test/current/queries/xrayimage/testdir_yaml/output.0031.root
+The x ray image query results were written to the file VISIT_TOP_DIR/test/current/queries/xrayimage/testdir_yaml/output.0032.root
+The x ray image query results were written to the file VISIT_TOP_DIR/test/current/queries/xrayimage/testdir_yaml/output.cycle_000048.root
+The x ray image query results were written to the file VISIT_TOP_DIR/test/current/queries/xrayimage/testdir_yaml/output.cycle_000048.root
+The x ray image query results were written to the file VISIT_TOP_DIR/test/current/queries/xrayimage/testdir_yaml/output.root
+The x ray image query results were written to the file VISIT_TOP_DIR/test/current/queries/xrayimage/testdir_yaml/output.root
+['output.0029.root', 'output.0030.root', 'output.0031.root', 'output.0032.root', 'output.cycle_000048.root', 'output.root']
