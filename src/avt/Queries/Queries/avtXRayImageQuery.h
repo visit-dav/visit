@@ -85,6 +85,11 @@
 //    Justin Privitera, Tue Jun 14 10:21:03 PDT 2022
 //    Added conduit include here, added output dir field + setter, 
 //    added write arrays method for writing conduit blueprint output.
+// 
+//    Justin Privitera, Tue Sep 27 10:52:59 PDT 2022
+//    Replaced familyfiles with filenamescheme.
+//    Added boolean argument to `WriteImage` to control what info goes in the
+//    filename.
 //
 // ****************************************************************************
 

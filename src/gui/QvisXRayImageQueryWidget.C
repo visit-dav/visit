@@ -48,6 +48,9 @@
 // 
 //   Justin Privitera, Tue Jun 14 10:02:21 PDT 2022
 //   Added new output type options and added output dir option.
+// 
+//   Justin Privitera, Tue Sep 27 10:52:59 PDT 2022
+//   Replaced family files with filename scheme, which has more options.
 //
 // ****************************************************************************
 
@@ -181,15 +184,15 @@ QvisXRayImageQueryWidget::QvisXRayImageQueryWidget(QWidget *parent,
     topLayout->addWidget(perspective, 13, 0, 1, 2);
 
     //
-    // Filename Type
+    // Filename Scheme
     //
     topLayout->addWidget(new QLabel(tr("Filenaming scheme")), 14, 0);
-    filenameType = new QComboBox();
-    filenameType->addItem("none");
-    filenameType->addItem("family");
-    filenameType->addItem("cycle");
-    filenameType->setCurrentIndex(0);
-    topLayout->addWidget(filenameType, 14, 1);
+    filenameScheme = new QComboBox();
+    filenameScheme->addItem("none");
+    filenameScheme->addItem("family");
+    filenameScheme->addItem("cycle");
+    filenameScheme->setCurrentIndex(0);
+    topLayout->addWidget(filenameScheme, 14, 1);
 
     //
     // Output ray bounds
@@ -436,6 +439,9 @@ QvisXRayImageQueryWidget::GetIntValues(int whichWidget, int *pt)
 //
 //   Eric Brugger, Thu Jun  4 17:26:57 PDT 2015
 //   I added an option to enable outputting the ray bounds to a vtk file.
+// 
+//   Justin Privitera, Tue Sep 27 10:52:59 PDT 2022
+//   Replaced family files with filename scheme.
 //
 // ****************************************************************************
 bool
@@ -506,7 +512,7 @@ QvisXRayImageQueryWidget::GetQueryParameters(MapNode &params)
         params["image_pan"] = imagePan;
         params["image_zoom"] = imageZoom;
         params["perspective"] = (int)perspective->isChecked();
-        params["filename_type"] = filenameType->currentText().toStdString();
+        params["filename_scheme"] = filenameScheme->currentText().toStdString();
         params["output_ray_bounds"] = (int)outputRayBounds->isChecked();
         params["image_size"] = imageSize;
     }

@@ -30,6 +30,10 @@
 # 
 #    Justin Privitera, Thu Sep  8 16:29:06 PDT 2022
 #    Added new tests for blueprint output metadata.
+# 
+#    Justin Privitera, Tue Sep 27 10:52:59 PDT 2022
+#    Changed names of most output files to reflect new naming conventions.
+#    Added tests for filenames, all output types, and result messages.
 #
 # ----------------------------------------------------------------------------
 
@@ -489,7 +493,7 @@ def query_variety(otype, scheme, thevars, outdir):
         background_intensity=0, 
         divide_emis_by_absorb=0, 
         far_plane=20, 
-        filename_type=scheme, 
+        filename_scheme=scheme, 
         focus=(0, 0, 0), 
         image_pan=(0, 0), 
         image_size=(3, 3), 

@@ -33,14 +33,28 @@
 #include <string>
 #include <vector>
 
-const int NUMFAMILYFILES = 9999;
-
 int avtXRayImageQuery::iFileFamily = 0;
 
-const int NUM_FILENAME_TYPES = 3;
+const int NUMFAMILYFILES = 9999;
 
-const char *filename_types[NUM_FILENAME_TYPES] = {"none", "family", "cycle"};
+// 
+// Filename Scheme information and handling
+// 
 
+// To add new filename schemes, these are the changes to make:
+//    1) increment `NUM_FILENAME_SCHEMES` by however many filename schemes you are planning to add
+//    2) add new entries to the `filename_schemes` array
+//    3) add new constants for your filename schemes (make sure in the same order as in `filename_schemes`)
+//    4) add new cases where necessary (probably just in `avtXRayImageQuery::Execute` baseName setup)
+//    5) add them to `src/gui/QvisXRayImageQueryWidget.C` in the constructor.
+
+// a constant for how many valid filename schemes there are
+const int NUM_FILENAME_SCHEMES = 3;
+
+// member filenameScheme indexes this array.
+const char *filename_schemes[NUM_FILENAME_SCHEMES] = {"none", "family", "cycle"};
+
+// constants for each of the filename schemes
 const int NONE = 0;
 const int FAMILYFILES = 1;
 const int CYCLEFILES = 2;
@@ -160,6 +174,9 @@ inline bool multipleOutputFiles(int otype, int numBins)
 //    Justin Privitera, Tue Jun 14 11:30:54 PDT 2022
 //    Changed default output type to use constant instead of magic number and
 //    added default outdir value.
+// 
+//    Justin Privitera, Tue Sep 27 10:52:59 PDT 2022
+//    Replaced familyfiles with filenamescheme.
 //
 // ****************************************************************************
 
@@ -286,6 +303,9 @@ avtXRayImageQuery::~avtXRayImageQuery()
 // 
 //    Justin Privitera, Tue Jun 14 11:30:54 PDT 2022
 //    Handled sending the output directory through.
+// 
+//    Justin Privitera, Tue Sep 27 10:52:59 PDT 2022
+//    Removed family_files option and replaced with filename scheme.
 //
 // ****************************************************************************
 
@@ -321,12 +341,12 @@ avtXRayImageQuery::SetInputParams(const MapNode &params)
     if (params.HasNumericEntry("output_ray_bounds"))
         SetOutputRayBounds(params.GetEntry("output_ray_bounds")->ToBool());
 
-    if (params.HasEntry("filename_type"))
+    if (params.HasEntry("filename_scheme"))
     {
-        if (params.GetEntry("filename_type")->TypeName() == "int")
-            SetFilenameScheme(params.GetEntry("filename_type")->AsInt());
-        else if (params.GetEntry("filename_type")->TypeName() == "string")
-            SetFilenameScheme(params.GetEntry("filename_type")->AsString());
+        if (params.GetEntry("filename_scheme")->TypeName() == "int")
+            SetFilenameScheme(params.GetEntry("filename_scheme")->AsInt());
+        else if (params.GetEntry("filename_scheme")->TypeName() == "string")
+            SetFilenameScheme(params.GetEntry("filename_scheme")->AsString());
     }
 
     if (params.HasEntry("output_type"))
@@ -771,10 +791,10 @@ avtXRayImageQuery::SetOutputRayBounds(const bool &flag)
 //  Method: avtXRayImageQuery::SetFilenameScheme
 //
 //  Purpose:
-//    Set the output image type.
+//    Set the filename scheme.
 //
-//  Programmer: 
-//  Creation:   
+//  Programmer: Justin Privitera
+//  Creation:   Tue Sep 27 10:52:59 PDT 2022
 // 
 //  Modifications:
 // 
@@ -788,7 +808,7 @@ avtXRayImageQuery::SetFilenameScheme(int type)
     else
     {
         std::ostringstream err_oss;
-        err_oss << "Filename type " << type << " is invalid.\n";
+        err_oss << "Filename scheme " << type << " is invalid.\n";
         EXCEPTION1(VisItException, err_oss.str());
     }
 }
@@ -797,10 +817,10 @@ avtXRayImageQuery::SetFilenameScheme(int type)
 //  Method: avtXRayImageQuery::SetFilenameScheme
 //
 //  Purpose:
-//    Set the output image type.
+//    Set the filename scheme.
 //
-//  Programmer: 
-//  Creation:   
+//  Programmer: Justin Privitera
+//  Creation:   Tue Sep 27 10:52:59 PDT 2022
 //
 //  Modifications:
 // 
@@ -810,10 +830,10 @@ void
 avtXRayImageQuery::SetFilenameScheme(const std::string &type)
 {
     int i = 0;
-    while (i < NUM_FILENAME_TYPES)
+    while (i < NUM_FILENAME_SCHEMES)
     {
         // the output type indexes the file extensions array
-        if (type == filename_types[i])
+        if (type == filename_schemes[i])
         {
             filenameScheme = i;
             return;
@@ -821,7 +841,7 @@ avtXRayImageQuery::SetFilenameScheme(const std::string &type)
         i ++;
     }
     std::ostringstream err_oss;
-    err_oss << "Output type " << type << " is invalid.\n";
+    err_oss << "Filename scheme " << type << " is invalid.\n";
     EXCEPTION1(VisItException, err_oss.str());
 }
 
@@ -1041,6 +1061,22 @@ avtXRayImageQuery::GetSecondaryVars(std::vector<std::string> &outVars)
 // 
 //    Justin Privitera, Thu Sep  8 16:29:06 PDT 2022
 //    Added spatial extents meta data to blueprint outputs.
+// 
+//    Justin Privitera, Tue Sep 27 10:52:59 PDT 2022
+//     - Added check to see if the filename scheme is one of the valid options.
+//     - Reworked the file naming system.
+//     - Moved calculation of numbins to earlier so that info can be used when
+//    deciding on the file naming scheme.
+//     - Determined whether or not bmp, jpeg, png, and tif outputs should 
+//    write bin info in the filename or exclude it.
+//     - Combined rawfloats and bov logic into one block with some 
+//    conditionals.
+//     - Removed all the filenaming logic that was specific to blueprint.
+//     - Passed options node to conduit save_mesh call.
+//     - Removed unused code.
+//     - Updated output messages to reflect new filenaming schemes.
+//     - Moved ifdef conduit guards to reflect desired behavior.
+//     - Cleaned up result message handling.
 //
 // ****************************************************************************
 
@@ -1666,6 +1702,10 @@ avtXRayImageQuery::CheckData(vtkDataSet **dataSets,  const int nsets)
 //    Justin Privitera, Wed Jul 20 13:54:06 PDT 2022
 //    Use stringstreams. Fixes issue with long baseName being written
 //    to fixed length buffers.
+// 
+//    Justin Privitera, Tue Sep 27 10:52:59 PDT 2022
+//    Added new arg to control if bin info is written to filenames. It is only
+//    written if necessary.
 //
 // ****************************************************************************
 
@@ -1774,6 +1814,9 @@ avtXRayImageQuery::WriteImage(const char *baseName, int iImage, int nPixels,
 // 
 //    Justin Privitera, Wed Jul 20 13:54:06 PDT 2022
 //    Use stringstreams.
+// 
+//    Justin Privitera, Tue Sep 27 10:52:59 PDT 2022
+//    Extra dot added for filenames.
 //
 // ****************************************************************************
 
@@ -1808,6 +1851,9 @@ avtXRayImageQuery::WriteFloats(const char *baseName, int iImage, int nPixels,
 // 
 //    Justin Privitera, Wed Jul 20 13:54:06 PDT 2022
 //    Use stringstreams.
+// 
+//    Justin Privitera, Tue Sep 27 10:52:59 PDT 2022
+//    Extra dot added for filenames.
 //
 // ****************************************************************************
 
