@@ -64,6 +64,7 @@ function bv_ospray_depends_on
 
         depends_on="cmake"
    else
+        depends_on="cmake ispc embree"
         if [[ "$DO_TBB" == "yes" ]]; then
             depends_on="${depends_on} tbb"
         else
