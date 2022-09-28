@@ -494,6 +494,7 @@ def query_variety(otype, scheme, thevars, outdir):
         divide_emis_by_absorb=0, 
         far_plane=20, 
         filename_scheme=scheme, 
+        family_files=0, # this is to test that family_files is ignored when filename_scheme is set
         focus=(0, 0, 0), 
         image_pan=(0, 0), 
         image_size=(3, 3), 
@@ -510,6 +511,29 @@ def query_variety(otype, scheme, thevars, outdir):
         vars=thevars)
     return GetQueryOutputString()
 
+def query_family_backwards_compat(family, thevars, outdir):
+    SetQueryFloatFormat("%g")
+    Query("XRay Image", 
+        background_intensity=0, 
+        divide_emis_by_absorb=0, 
+        far_plane=20, 
+        family_files=family,
+        focus=(0, 0, 0), 
+        image_pan=(0, 0), 
+        image_size=(3, 3), 
+        image_zoom=1, 
+        near_plane=-20, 
+        normal=(0, 0, 1), 
+        output_dir=outdir, 
+        output_ray_bounds=0, 
+        output_type="png", 
+        parallel_scale=10, 
+        perspective=0, 
+        view_angle=30, 
+        view_up=(0, 1, 0), 
+        vars=thevars)
+    return GetQueryOutputString()
+
 outdir_set = out_base + "/testdir"
 if not os.path.isdir(outdir_set):
     os.mkdir(outdir_set)
@@ -518,6 +542,7 @@ if not os.path.isdir(outdir_set):
 # output_types = ["bmp", "jpeg", "png", "tif", "bof", "bov", "json", "hdf5", "yaml"]
 output_types = ["jpeg", "png", "tif", "bof", "bov", "json", "hdf5", "yaml"]
 filename_schemes = ["family", "family", "cycle", "none"]
+family_options = [0, 1]
 vars_options = [("d", "p"), ("da", "pa")]
 
 info = ""
@@ -534,6 +559,17 @@ for i in range(0, len(output_types)):
             info += query_variety(output_types[i], filename_schemes[j], vars_options[k], outdir_set_otype)
     info += str(os.listdir(outdir_set_otype))
     TestText("Test_filenames_for_" + output_types[i] + "_outputs", info)
+
+# test backwards compatibility with family_files option
+for i in range(0, len(family_options)):
+    outdir_set_family = outdir_set + "_family_" + str(family_options[i])
+    if not os.path.isdir(outdir_set_family):
+        os.mkdir(outdir_set_family)
+    info = ""
+    for j in range(0, len(vars_options)):
+        info += query_family_backwards_compat(family_options[i], vars_options[j], outdir_set_family)
+    info += str(os.listdir(outdir_set_family))
+    TestText("Test_filenames_for_family" + str(family_options[i]) + "_outputs", info)
 
 #
 # Test that we get decent error messages for common cases
