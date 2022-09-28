@@ -426,9 +426,15 @@ XRay Image
     |                          | the output file is ``outputXXXX.ext``,       |
     |                          | where ``XXXX`` is chosen                     |
     |                          | to be the |br| smallest integer not to       |
-    |                          | overwrite any existing files.                |
+    |                          | overwrite any existing files. As of VisIt_   |
+    |                          | 3.4, |br| it is recommended to use           |
+    |                          | *filename_scheme* in lieu of *family_files*. |
     +------+-------------------+----------------------------------------------+
     | *filename_scheme*        | The naming convention for output filenames.  |
+    |                          | This option is available |br| in VisIt_ 3.4, |
+    |                          | and is meant to replace the *family_files*   |
+    |                          | option. If both |br| are provided,           |    
+    |                          | *filename_scheme* will be used.              |
     +------+-------------------+----------------------------------------------+
     |      | "none" or 0       | The default. Output filenames will be of the |
     |      |                   | form ``output.ext``, where |br|              |
