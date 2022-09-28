@@ -123,6 +123,7 @@ class QUERY_API avtXRayImageQuery : public avtDatasetQuery
                                   const doubleVector &intensities);
     void                      SetDebugRay(const int &ray);
     void                      SetOutputRayBounds(const bool &flag);
+    void                      SetFamilyFiles(const bool &flag);
     void                      SetFilenameScheme(int type);
     void                      SetFilenameScheme(const std::string &type);
     void                      SetOutputType(int type);

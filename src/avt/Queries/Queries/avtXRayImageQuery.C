@@ -305,7 +305,8 @@ avtXRayImageQuery::~avtXRayImageQuery()
 //    Handled sending the output directory through.
 // 
 //    Justin Privitera, Tue Sep 27 10:52:59 PDT 2022
-//    Removed family_files option and replaced with filename scheme.
+//    Added filename scheme option. Only call family files option if
+//    filename scheme is not present.
 //
 // ****************************************************************************
 
@@ -347,6 +348,11 @@ avtXRayImageQuery::SetInputParams(const MapNode &params)
             SetFilenameScheme(params.GetEntry("filename_scheme")->AsInt());
         else if (params.GetEntry("filename_scheme")->TypeName() == "string")
             SetFilenameScheme(params.GetEntry("filename_scheme")->AsString());
+    }
+    else
+    {
+        if (params.HasNumericEntry("family_files"))
+            SetFamilyFiles(params.GetEntry("family_files")->ToBool());
     }
 
     if (params.HasEntry("output_type"))
@@ -777,15 +783,22 @@ avtXRayImageQuery::SetOutputRayBounds(const bool &flag)
 //  Method: avtXRayImageQuery::SetFamilyFiles
 //
 //  Purpose:
-//    Set the family files flag.
+//    Set the filename scheme.
 //
 //  Programmer: Eric Brugger
 //  Creation:   May 27, 2015
 //
 //  Modifications:
 //     Justin Privitera, Thu Sep 22 16:46:46 PDT 2022
-//     Deleted the function.
+//     Instead of setting the familyfiles flag, now it sets the filename scheme
+//     appropriately.
 // ****************************************************************************
+
+void
+avtXRayImageQuery::SetFamilyFiles(const bool &flag)
+{
+    filenameScheme = flag ? FAMILYFILES : NONE;
+}
 
 // ****************************************************************************
 //  Method: avtXRayImageQuery::SetFilenameScheme
