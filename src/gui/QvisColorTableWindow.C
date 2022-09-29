@@ -1078,6 +1078,9 @@ QvisColorTableWindow::AddGlobalTag(std::string currtag, bool first_time)
 // 
 //    Justin Privitera, Wed Sep 21 16:51:24 PDT 2022
 //    Make sure the refcount for the "No Tags" tag is updated properly.
+// 
+//     Justin Privitera, Thu Sep 29 15:22:38 PDT 2022
+//     Replaced braces w/ equals to avoid init list behavior.
 //
 // ****************************************************************************
 
@@ -1117,7 +1120,7 @@ QvisColorTableWindow::UpdateTags()
         first_time = false;
 
         // Purge tagList/tagTable entries that have 0 refcount.
-        for (auto itr{tagList.begin()}; itr != tagList.end();)
+        for (auto itr = tagList.begin(); itr != tagList.end();)
         {
             if (itr->second.numrefs <= 0)
             {
@@ -2462,6 +2465,8 @@ QvisColorTableWindow::addColorTable()
 //    Error when attempting to delete the last continuous or discrete CT.
 //    Update tag refcount before deleting CT.
 // 
+//     Justin Privitera, Thu Sep 29 15:22:38 PDT 2022
+//     Replaced braces w/ parens to avoid init list behavior.
 // ****************************************************************************
 
 void
@@ -2490,7 +2495,7 @@ QvisColorTableWindow::deleteColorTable()
     if (QTreeWidgetItem *item = nameListBox->currentItem())
     {
         std::string ctName = item->text(0).toStdString();
-        auto ccpl{colorAtts->GetColorControlPoints(ctName)};
+        auto ccpl(colorAtts->GetColorControlPoints(ctName));
         if (ccpl->GetBuiltIn())
         {
             QString tmp;
