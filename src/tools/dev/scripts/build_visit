@@ -46,7 +46,7 @@
 #10. bv_<module>_is_installed check if the module is properly installed
 #11. bv_<module>_is_enabled and finally check if it is enabled
 
-export VISIT_VERSION=${VISIT_VERSION:-"3.3.0"}
+export VISIT_VERSION=${VISIT_VERSION:-"3.3.1"}
 
 ####
 # Trunk:
@@ -58,17 +58,17 @@ export VISIT_VERSION=${VISIT_VERSION:-"3.3.0"}
 ###
 # RC Branch:
 ###
-export TRUNK_BUILD="no"
-export RC_BUILD="yes"
-export TAGGED_BUILD="no"
+#export TRUNK_BUILD="no"
+#export RC_BUILD="yes"
+#export TAGGED_BUILD="no"
 
 
 ###
 # Tagged Release:
 ###
-#export TRUNK_BUILD="no"
-#export RC_BUILD="no"
-#export TAGGED_BUILD="yes"
+export TRUNK_BUILD="no"
+export RC_BUILD="no"
+export TAGGED_BUILD="yes"
 
 export INITIAL_PWD=$PWD
 
