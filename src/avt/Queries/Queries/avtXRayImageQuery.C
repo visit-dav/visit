@@ -1151,6 +1151,11 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
 
         if (outputTypeIsBmpJpegPngOrTif(outputType))
         {
+            if (outputType == BMP_OUT)
+                debug1 << "WARNING: The X Ray Image Query results may not be "
+                       << "written when using the bmp output type. Use at "
+                       << "your own risk. The bmp output type will be removed "
+                       << "in VisIt 3.4.";
             for (int i = 0; i < numBins; i++)
             {
                 intensity= leaves[i]->GetPointData()->GetArray("Intensity");
@@ -1429,6 +1434,11 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
 
             if (outputTypeIsBmpJpegPngOrTif(outputType))
             {
+                if (outputType == BMP_OUT)
+                    buf << "WARNING: The X Ray Image Query results may not be "
+                        << "written when using the bmp output type. Use at "
+                        << "your own risk. The bmp output type will be "
+                        << "removed in VisIt 3.4.\n";
                 if (numBins == 1)
                     buf << "The x ray image query results were "
                         << "written to the file "
@@ -1443,6 +1453,8 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
                         << std::setfill('0') << std::setw(2)
                         << numBins - 1 << "."
                         << file_extensions[outputType] << "\n";
+                
+
             }
             else if (outputTypeIsRawfloatsOrBov(outputType))
                 buf << "The x ray image query results were "
