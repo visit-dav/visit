@@ -56,6 +56,8 @@ avtStrainVolumetricExpression::~avtStrainVolumetricExpression()
 //  Creation:   Fri Sep  9 10:37:12 PDT 2022
 //
 //  Modifications:
+//     Justin Privitera, Thu Sep 29 15:22:38 PDT 2022
+//     Replaced auto with bool.
 //
 // ****************************************************************************
 

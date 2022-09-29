@@ -907,6 +907,9 @@ QvisColorTableWindow::AddGlobalTag(std::string currtag, bool first_time)
 //    Justin Privitera, Fri Sep  2 16:46:21 PDT 2022
 //    Run the tag table generation the first time so we can set up the tagInfo
 //    map. Purge tagList and tagTable entries that have 0 refcount.
+// 
+//     Justin Privitera, Thu Sep 29 15:22:38 PDT 2022
+//     Replaced braces w/ equals to avoid init list behavior.
 //
 // ****************************************************************************
 
@@ -2166,6 +2169,8 @@ QvisColorTableWindow::addColorTable()
 //    Error when attempting to delete the last continuous or discrete CT.
 //    Update tag refcount before deleting CT.
 // 
+//     Justin Privitera, Thu Sep 29 15:22:38 PDT 2022
+//     Replaced braces w/ parens to avoid init list behavior.
 // ****************************************************************************
 
 void
@@ -2194,7 +2199,6 @@ QvisColorTableWindow::deleteColorTable()
     if (QTreeWidgetItem *item = nameListBox->currentItem())
     {
         std::string ctName = item->text(0).toStdString();
-        // TODO remove the `const_cast` on develop; this issue has been solved there.
         auto ccpl(const_cast<ColorControlPointList *>(colorAtts->GetColorControlPoints(ctName)));
         if (tagList["Continuous"].numrefs == 1 && ccpl->HasTag("Continuous"))
         {
