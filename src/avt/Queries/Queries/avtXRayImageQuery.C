@@ -1228,7 +1228,7 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
         const int cycle = GetInput()->GetInfo().GetAttributes().GetCycle();
         if (filenameScheme == FAMILYFILES)
         {
-            auto keepTrying{true};
+            bool keepTrying{true};
             while (keepTrying)
             {
                 keepTrying = false;
@@ -1277,7 +1277,7 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
 #endif
         if (outputTypeIsBmpJpegPngOrTif(outputType))
         {
-            const auto write_bin_info_to_filename{numBins > 1};
+            const bool write_bin_info_to_filename{numBins > 1};
             for (int i = 0; i < numBins; i++)
             {
                 intensity = leaves[i]->GetPointData()->GetArray("Intensity");
@@ -1297,7 +1297,7 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
         }
         else if (outputTypeIsRawfloatsOrBov(outputType))
         {
-            const auto bovOut{outputType == BOV_OUT};
+            const bool bovOut{outputType == BOV_OUT};
             for (int i = 0; i < numBins; i++)
             {
                 intensity = leaves[i]->GetPointData()->GetArray("Intensity");
