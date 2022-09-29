@@ -942,7 +942,7 @@ QvisColorTableWindow::UpdateTags()
         first_time = false;
 
         // Purge tagList/tagTable entries that have 0 refcount.
-        for (auto itr{tagList.begin()}; itr != tagList.end();)
+        for (auto itr = tagList.begin(); itr != tagList.end();)
         {
             if (itr->second.numrefs <= 0)
             {
@@ -2195,7 +2195,7 @@ QvisColorTableWindow::deleteColorTable()
     {
         std::string ctName = item->text(0).toStdString();
         // TODO remove the `const_cast` on develop; this issue has been solved there.
-        auto ccpl{const_cast<ColorControlPointList *>(colorAtts->GetColorControlPoints(ctName))};
+        auto ccpl(const_cast<ColorControlPointList *>(colorAtts->GetColorControlPoints(ctName)));
         if (tagList["Continuous"].numrefs == 1 && ccpl->HasTag("Continuous"))
         {
             QString tmp;

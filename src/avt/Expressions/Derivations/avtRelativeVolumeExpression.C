@@ -63,6 +63,6 @@ vtkDataArray *
 avtRelativeVolumeExpression::DeriveVariable (vtkDataSet *in_ds, 
                                              int currentDomainsIndex)
 {
-    auto do_vol_strain{false};
+    bool do_vol_strain{false};
     return avtStrainExpression::CalculateEvolOrRelvol(in_ds, do_vol_strain);
 }
