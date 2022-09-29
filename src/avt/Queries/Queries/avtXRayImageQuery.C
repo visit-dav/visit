@@ -1155,7 +1155,7 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
                 debug1 << "WARNING: The X Ray Image Query results may not be "
                        << "written when using the bmp output type. Use at "
                        << "your own risk. The bmp output type will be removed "
-                       << "in VisIt 3.4.";
+                       << "in VisIt 3.4.\n";
             for (int i = 0; i < numBins; i++)
             {
                 intensity= leaves[i]->GetPointData()->GetArray("Intensity");
