@@ -64,6 +64,7 @@ function bv_ospray_depends_on
 
         depends_on="cmake"
    else
+        depends_on="cmake ispc embree"
         if [[ "$DO_TBB" == "yes" ]]; then
             depends_on="${depends_on} tbb"
         else
@@ -169,7 +170,7 @@ function bv_ospray_is_enabled
 function bv_ospray_ensure
 {
     if [[ "$DO_OSPRAY" == "yes" && "$USE_SYSTEM_OSPRAY" == "no" ]]; then
-        if [[ "$DO_VTK9" ]]; then
+        if [[ "$DO_VTK9" == "yes" ]]; then
            ensure_built_or_ready "ospray" $OSPRAY_VERSION $OSPRAY_BUILD_DIR $OSPRAY_FILE $OSPRAY_URL
             if [[ $? != 0 ]] ; then
                 ANY_ERRORS="yes"
