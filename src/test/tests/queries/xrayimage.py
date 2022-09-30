@@ -30,6 +30,12 @@
 # 
 #    Justin Privitera, Thu Sep  8 16:29:06 PDT 2022
 #    Added new tests for blueprint output metadata.
+# 
+#    Justin Privitera, Fri Sep 30 15:54:40 PDT 2022
+#    Changed location of temp output files.
+#    os.remove is gone.
+#    tmp/baddir is gone, replaced.
+#    These changes were made so the tests no longer crash on windows.
 #
 # ----------------------------------------------------------------------------
 
