@@ -308,14 +308,15 @@ CloseDatabase(silo_data_path("curv3d.silo"))
 # test blueprint output
 #
 
-conduit_db = out_path(outdir_set, "output.cycle_000048.root")
-
-def setup_bp_test():
+def setup_bp_test(outdir_set, subdir):
+    conduit_dir = outdir_set + "/" + subdir
+    if not os.path.isdir(conduit_dir):
+        os.mkdir(conduit_dir)
     OpenDatabase(silo_data_path("curv3d.silo"))
     AddPlot("Pseudocolor", "d")
     DrawPlots()
 
-def test_bp_state(testname):
+def test_bp_state(testname, conduit_db):
     xrayout = conduit.Node()
     conduit.relay.io.blueprint.load_mesh(xrayout, conduit_db)
     
@@ -370,16 +371,17 @@ def test_bp_state(testname):
 # hdf5
 #
 
-setup_bp_test()
+setup_bp_test(outdir_set, "hdf5")
 
 # run query and test the output message
-Query("XRay Image", "hdf5", outdir_set, 1, 0.0, 2.5, 10.0, 0, 0, 10., 10., 300, 200, ("d", "p"))
+Query("XRay Image", "hdf5", outdir_set + "/hdf5", 1, 0.0, 2.5, 10.0, 0, 0, 10., 10., 300, 200, ("d", "p"))
 s = GetQueryOutputString()
 TestText("xrayimage32", s)
 DeleteAllPlots()
 CloseDatabase(silo_data_path("curv3d.silo"))
 
 # test opening the bp output and visualizing in visit
+conduit_db = out_path(outdir_set + "/hdf5", "output.cycle_000048.root")
 OpenDatabase(conduit_db)
 AddPlot("Pseudocolor", "mesh_image_topo/intensities")
 DrawPlots()
@@ -387,20 +389,19 @@ Test("Blueprint_HDF5_X_Ray_Output")
 DeleteAllPlots()
 CloseDatabase(conduit_db)
 
-test_bp_state("Blueprint_HDF5_X_Ray_Output")
-
-os.remove(conduit_db)
+test_bp_state("Blueprint_HDF5_X_Ray_Output", conduit_db)
 
 # json
 
-setup_bp_test()
+setup_bp_test(outdir_set, "json")
 
-Query("XRay Image", "json", outdir_set, 1, 0.0, 2.5, 10.0, 0, 0, 10., 10., 300, 200, ("d", "p"))
+Query("XRay Image", "json", outdir_set + "/json", 1, 0.0, 2.5, 10.0, 0, 0, 10., 10., 300, 200, ("d", "p"))
 s = GetQueryOutputString()
 TestText("xrayimage33", s)
 DeleteAllPlots()
 CloseDatabase(silo_data_path("curv3d.silo"))
 
+conduit_db = out_path(outdir_set + "/json", "output.cycle_000048.root")
 OpenDatabase(conduit_db)
 AddPlot("Pseudocolor", "mesh_image_topo/intensities")
 DrawPlots()
@@ -408,26 +409,23 @@ Test("Blueprint_JSON_X_Ray_Output")
 DeleteAllPlots()
 CloseDatabase(conduit_db)
 
-os.remove(conduit_db)
+# yaml
 
-# conduit_json
+setup_bp_test(outdir_set, "yaml")
 
-setup_bp_test()
-
-Query("XRay Image", "yaml", outdir_set, 1, 0.0, 2.5, 10.0, 0, 0, 10., 10., 300, 200, ("d", "p"))
+Query("XRay Image", "yaml", outdir_set + "/yaml", 1, 0.0, 2.5, 10.0, 0, 0, 10., 10., 300, 200, ("d", "p"))
 s = GetQueryOutputString()
 TestText("xrayimage34", s)
 DeleteAllPlots()
 CloseDatabase(silo_data_path("curv3d.silo"))
-OpenDatabase(conduit_db)
 
+conduit_db = out_path(outdir_set + "/yaml", "output.cycle_000048.root")
+OpenDatabase(conduit_db)
 AddPlot("Pseudocolor", "mesh_image_topo/intensities")
 DrawPlots()
 Test("Blueprint_YAML_X_Ray_Output")
 DeleteAllPlots()
 CloseDatabase(conduit_db)
-
-os.remove(conduit_db)
 
 # 
 # test catching failures
@@ -439,7 +437,9 @@ dir_dne = outdir_set + "/doesnotexist"
 if os.path.isdir(dir_dne):
     os.rmdir(dir_dne)
 
-setup_bp_test()
+OpenDatabase(silo_data_path("curv3d.silo"))
+AddPlot("Pseudocolor", "d")
+DrawPlots()
 
 Query("XRay Image", "hdf5", dir_dne, 1, 0.0, 2.5, 10.0, 0, 0, 10., 10., 300, 300, ("d", "p"))
 s = GetQueryOutputString()
