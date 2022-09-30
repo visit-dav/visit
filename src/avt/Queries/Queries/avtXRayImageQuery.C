@@ -960,6 +960,9 @@ avtXRayImageQuery::GetSecondaryVars(std::vector<std::string> &outVars)
 // 
 //    Justin Privitera, Thu Sep  8 16:29:06 PDT 2022
 //    Added spatial extents meta data to blueprint outputs.
+// 
+//    Justin Privitera, Thu Sep 29 17:35:07 PDT 2022
+//    Added warning message for bmp output in result message and to debug1.
 //
 // ****************************************************************************
 
@@ -1151,6 +1154,11 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
 
         if (outputTypeIsBmpJpegPngOrTif(outputType))
         {
+            if (outputType == BMP_OUT)
+                debug1 << "WARNING: The X Ray Image Query results may not be "
+                       << "written when using the bmp output type. Use at "
+                       << "your own risk. The bmp output type will be removed "
+                       << "in VisIt 3.4.\n";
             for (int i = 0; i < numBins; i++)
             {
                 intensity= leaves[i]->GetPointData()->GetArray("Intensity");
@@ -1429,6 +1437,11 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
 
             if (outputTypeIsBmpJpegPngOrTif(outputType))
             {
+                if (outputType == BMP_OUT)
+                    buf << "WARNING: The X Ray Image Query results may not be "
+                        << "written when using the bmp output type. Use at "
+                        << "your own risk. The bmp output type will be "
+                        << "removed in VisIt 3.4.\n";
                 if (numBins == 1)
                     buf << "The x ray image query results were "
                         << "written to the file "
