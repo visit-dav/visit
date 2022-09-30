@@ -397,6 +397,9 @@ Definition:
 //   Justin Privitera, Wed Sep 21 16:51:24 PDT 2022
 //   Added additional logic to try and find the next appropriate color table
 //   if either the default continuous or discrete color tables are deleted.
+// 
+//    Justin Privitera, Thu Sep 29 17:27:37 PDT 2022
+//    Replace auto w/ bool. Add in missing breaks.
 //
 // ****************************************************************************
 

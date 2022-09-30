@@ -567,6 +567,9 @@ QvisColorTableWindow::StringifyTagChanges()
 //    Reversed how tag changes are represented (internally and when saved to
 //    files) so now tag names are mapped to sets of pairs of color table names
 //    and integers.
+// 
+//    Justin Privitera, Thu Sep 29 17:27:37 PDT 2022
+//    Replace braces with parens for auto.
 //
 // ****************************************************************************
 void
@@ -3373,6 +3376,9 @@ QvisColorTableWindow::tagEdited()
 //    Justin Privitera, Wed Sep 21 16:51:24 PDT 2022
 //    Merged tagList and tagChanges data structures.
 //    Kept track of tag refcount on deletion.
+// 
+//    Justin Privitera, Thu Sep 29 17:27:37 PDT 2022
+//    Replace braces with parens for auto.
 //
 // ****************************************************************************
 void
@@ -3404,6 +3410,9 @@ QvisColorTableWindow::addTagToColorTable(const std::string ctName,
 //    Justin Privitera, Wed Sep 21 16:51:24 PDT 2022
 //    Merged tagList and tagChanges data structures.
 //    Kept track of tag refcount on deletion.
+// 
+//    Justin Privitera, Thu Sep 29 17:27:37 PDT 2022
+//    Replace braces with parens for auto.
 //
 // ****************************************************************************
 void
@@ -3453,6 +3462,8 @@ QvisColorTableWindow::removeTagFromColorTable(const std::string ctName,
 // Creation:   Wed Aug 10 15:35:58 PDT 2022
 //
 // Modifications:
+//    Justin Privitera, Thu Sep 29 17:27:37 PDT 2022
+//    Replace braces with parens for auto.
 //
 // ****************************************************************************
 
