@@ -285,7 +285,7 @@ DeleteAllPlots()
 # 
 # test setting output directory
 # 
-outdir_set = out_base + "/testdir"
+outdir_set = TestEnv.params["run_dir"] + "/testdir"
 if not os.path.isdir(outdir_set):
     os.mkdir(outdir_set)
 
