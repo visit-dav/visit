@@ -1453,8 +1453,6 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
                         << std::setfill('0') << std::setw(2)
                         << numBins - 1 << "."
                         << file_extensions[outputType] << "\n";
-                
-
             }
             else if (outputTypeIsRawfloatsOrBov(outputType))
                 buf << "The x ray image query results were "
