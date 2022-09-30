@@ -567,6 +567,9 @@ QvisColorTableWindow::StringifyTagChanges()
 //    Reversed how tag changes are represented (internally and when saved to
 //    files) so now tag names are mapped to sets of pairs of color table names
 //    and integers.
+// 
+//    Justin Privitera, Thu Sep 29 17:27:37 PDT 2022
+//    Replace braces with parens for auto.
 //
 // ****************************************************************************
 void
@@ -591,8 +594,8 @@ QvisColorTableWindow::UnstringifyAndMergeTagChanges(stringVector changes)
                 addRemoveSep = table.find(",", addRemoveSep);
                 entrySep += 1;
 
-                auto *ccpl{const_cast<ColorControlPointList *>(colorAtts->GetColorControlPoints(ctName))};
-                auto result{ccpl->ValidateTag(tagName)};
+                auto *ccpl(const_cast<ColorControlPointList *>(colorAtts->GetColorControlPoints(ctName)));
+                auto result(ccpl->ValidateTag(tagName));
                 if (result.first)
                 {
                     if (addRemoveText == ADDTAGSTR && ! ccpl->HasTag(tagName))
@@ -1078,6 +1081,9 @@ QvisColorTableWindow::AddGlobalTag(std::string currtag, bool first_time)
 // 
 //    Justin Privitera, Wed Sep 21 16:51:24 PDT 2022
 //    Make sure the refcount for the "No Tags" tag is updated properly.
+// 
+//     Justin Privitera, Thu Sep 29 15:22:38 PDT 2022
+//     Replaced braces w/ equals to avoid init list behavior.
 //
 // ****************************************************************************
 
@@ -1117,7 +1123,7 @@ QvisColorTableWindow::UpdateTags()
         first_time = false;
 
         // Purge tagList/tagTable entries that have 0 refcount.
-        for (auto itr{tagList.begin()}; itr != tagList.end();)
+        for (auto itr = tagList.begin(); itr != tagList.end();)
         {
             if (itr->second.numrefs <= 0)
             {
@@ -2462,6 +2468,8 @@ QvisColorTableWindow::addColorTable()
 //    Error when attempting to delete the last continuous or discrete CT.
 //    Update tag refcount before deleting CT.
 // 
+//     Justin Privitera, Thu Sep 29 15:22:38 PDT 2022
+//     Replaced braces w/ parens to avoid init list behavior.
 // ****************************************************************************
 
 void
@@ -2490,7 +2498,7 @@ QvisColorTableWindow::deleteColorTable()
     if (QTreeWidgetItem *item = nameListBox->currentItem())
     {
         std::string ctName = item->text(0).toStdString();
-        auto ccpl{colorAtts->GetColorControlPoints(ctName)};
+        auto ccpl(colorAtts->GetColorControlPoints(ctName));
         if (ccpl->GetBuiltIn())
         {
             QString tmp;
@@ -3368,6 +3376,9 @@ QvisColorTableWindow::tagEdited()
 //    Justin Privitera, Wed Sep 21 16:51:24 PDT 2022
 //    Merged tagList and tagChanges data structures.
 //    Kept track of tag refcount on deletion.
+// 
+//    Justin Privitera, Thu Sep 29 17:27:37 PDT 2022
+//    Replace braces with parens for auto.
 //
 // ****************************************************************************
 void
@@ -3375,7 +3386,7 @@ QvisColorTableWindow::addTagToColorTable(const std::string ctName,
                                          const std::string tagName,
                                          ColorControlPointList* ccpl)
 {
-    auto tagChangeReverseAction{std::make_pair(REMOVETAG, ctName)};
+    auto tagChangeReverseAction(std::make_pair(REMOVETAG, ctName));
     if (tagList[tagName].changes.find(tagChangeReverseAction) != 
         tagList[tagName].changes.end())
         tagList[tagName].changes.erase(tagChangeReverseAction);
@@ -3399,6 +3410,9 @@ QvisColorTableWindow::addTagToColorTable(const std::string ctName,
 //    Justin Privitera, Wed Sep 21 16:51:24 PDT 2022
 //    Merged tagList and tagChanges data structures.
 //    Kept track of tag refcount on deletion.
+// 
+//    Justin Privitera, Thu Sep 29 17:27:37 PDT 2022
+//    Replace braces with parens for auto.
 //
 // ****************************************************************************
 void
@@ -3406,7 +3420,7 @@ QvisColorTableWindow::removeTagFromColorTable(const std::string ctName,
                                               const std::string tagName,
                                               ColorControlPointList* ccpl)
 {
-    auto tagChangeReverseAction{std::make_pair(ADDTAG, ctName)};
+    auto tagChangeReverseAction(std::make_pair(ADDTAG, ctName));
     if (tagList[tagName].changes.find(tagChangeReverseAction) != 
         tagList[tagName].changes.end())
     {
@@ -3448,20 +3462,22 @@ QvisColorTableWindow::removeTagFromColorTable(const std::string ctName,
 // Creation:   Wed Aug 10 15:35:58 PDT 2022
 //
 // Modifications:
+//    Justin Privitera, Thu Sep 29 17:27:37 PDT 2022
+//    Replace braces with parens for auto.
 //
 // ****************************************************************************
 
 void
 QvisColorTableWindow::addRemoveTag()
 {
-    auto tagName{tagEdit.toStdString()};
-    auto *ccpl{GetDefaultColorControlPoints()};
+    auto tagName(tagEdit.toStdString());
+    auto *ccpl(GetDefaultColorControlPoints());
     if (ccpl)
     {
-        auto result{ccpl->ValidateTag(tagName)};
+        auto result(ccpl->ValidateTag(tagName));
         if (result.first)
         {
-            auto index{colorAtts->GetColorTableIndex(currentColorTable.toStdString())};
+            auto index(colorAtts->GetColorTableIndex(currentColorTable.toStdString()));
             auto ctName(static_cast<std::string>(colorAtts->GetNames()[index]));
             if (ccpl->HasTag(tagName))
                 removeTagFromColorTable(ctName, tagName, ccpl);
@@ -3470,7 +3486,7 @@ QvisColorTableWindow::addRemoveTag()
         }
         else
         {
-            auto tmp{tr("Tag Editing WARNING: ") + QString(result.second.c_str())};
+            auto tmp(tr("Tag Editing WARNING: ") + QString(result.second.c_str()));
             Error(tmp);
             return;
         }
