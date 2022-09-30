@@ -960,6 +960,9 @@ avtXRayImageQuery::GetSecondaryVars(std::vector<std::string> &outVars)
 // 
 //    Justin Privitera, Thu Sep  8 16:29:06 PDT 2022
 //    Added spatial extents meta data to blueprint outputs.
+// 
+//    Justin Privitera, Thu Sep 29 17:35:07 PDT 2022
+//    Added warning message for bmp output in result message and to debug1.
 //
 // ****************************************************************************
 
