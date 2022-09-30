@@ -591,8 +591,8 @@ QvisColorTableWindow::UnstringifyAndMergeTagChanges(stringVector changes)
                 addRemoveSep = table.find(",", addRemoveSep);
                 entrySep += 1;
 
-                auto *ccpl{const_cast<ColorControlPointList *>(colorAtts->GetColorControlPoints(ctName))};
-                auto result{ccpl->ValidateTag(tagName)};
+                auto *ccpl(const_cast<ColorControlPointList *>(colorAtts->GetColorControlPoints(ctName)));
+                auto result(ccpl->ValidateTag(tagName));
                 if (result.first)
                 {
                     if (addRemoveText == ADDTAGSTR && ! ccpl->HasTag(tagName))
@@ -3380,7 +3380,7 @@ QvisColorTableWindow::addTagToColorTable(const std::string ctName,
                                          const std::string tagName,
                                          ColorControlPointList* ccpl)
 {
-    auto tagChangeReverseAction{std::make_pair(REMOVETAG, ctName)};
+    auto tagChangeReverseAction(std::make_pair(REMOVETAG, ctName));
     if (tagList[tagName].changes.find(tagChangeReverseAction) != 
         tagList[tagName].changes.end())
         tagList[tagName].changes.erase(tagChangeReverseAction);
@@ -3411,7 +3411,7 @@ QvisColorTableWindow::removeTagFromColorTable(const std::string ctName,
                                               const std::string tagName,
                                               ColorControlPointList* ccpl)
 {
-    auto tagChangeReverseAction{std::make_pair(ADDTAG, ctName)};
+    auto tagChangeReverseAction(std::make_pair(ADDTAG, ctName));
     if (tagList[tagName].changes.find(tagChangeReverseAction) != 
         tagList[tagName].changes.end())
     {
@@ -3459,14 +3459,14 @@ QvisColorTableWindow::removeTagFromColorTable(const std::string ctName,
 void
 QvisColorTableWindow::addRemoveTag()
 {
-    auto tagName{tagEdit.toStdString()};
-    auto *ccpl{GetDefaultColorControlPoints()};
+    auto tagName(tagEdit.toStdString());
+    auto *ccpl(GetDefaultColorControlPoints());
     if (ccpl)
     {
-        auto result{ccpl->ValidateTag(tagName)};
+        auto result(ccpl->ValidateTag(tagName));
         if (result.first)
         {
-            auto index{colorAtts->GetColorTableIndex(currentColorTable.toStdString())};
+            auto index(colorAtts->GetColorTableIndex(currentColorTable.toStdString()));
             auto ctName(static_cast<std::string>(colorAtts->GetNames()[index]));
             if (ccpl->HasTag(tagName))
                 removeTagFromColorTable(ctName, tagName, ccpl);
@@ -3475,7 +3475,7 @@ QvisColorTableWindow::addRemoveTag()
         }
         else
         {
-            auto tmp{tr("Tag Editing WARNING: ") + QString(result.second.c_str())};
+            auto tmp(tr("Tag Editing WARNING: ") + QString(result.second.c_str()));
             Error(tmp);
             return;
         }

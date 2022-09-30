@@ -733,7 +733,7 @@ ColorControlPointList::SetTagNames(const stringVector &tagNames_)
     std::for_each(tagNames_.begin(), tagNames_.end(),
         [this, tagNames_](std::string currtag)
         {
-            auto result{ValidateTag(currtag)};
+            auto result(ValidateTag(currtag));
             if (result.first)
                 AddTag(currtag);
             else
@@ -2018,7 +2018,7 @@ ColorControlPointList::GetTagIndex(const std::string tag) const
 std::pair<bool, std::string>
 ColorControlPointList::ValidateTag(const std::string currtag) const
 {
-    auto success{false};
+    bool success{false};
     std::string outstr;
     if (currtag == "")
     {
