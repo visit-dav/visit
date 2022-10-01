@@ -1352,6 +1352,9 @@ ColorTableAttributes::RemoveColorTable(const std::string &name)
 //   Justin Privitera, Wed Sep 21 16:51:24 PDT 2022
 //   Added additional logic to try and find the next appropriate color table
 //   if either the default continuous or discrete color tables are deleted.
+// 
+//    Justin Privitera, Thu Sep 29 17:27:37 PDT 2022
+//    Replace auto w/ bool. Add in missing breaks.
 //
 // ****************************************************************************
 
@@ -1397,13 +1400,14 @@ ColorTableAttributes::RemoveColorTable(int index)
         {
             if(names.size() > 0)
             {
-                auto found{false};
+                bool found{false};
                 for (int i = 0; i < names.size(); i ++)
                 {
                     if (! GetColorTables(i).GetDiscreteFlag())
                     {
                         SetDefaultContinuous(names[i]);
                         found = true;
+                        break;
                     }
                 }
                 if (! found)
@@ -1416,13 +1420,14 @@ ColorTableAttributes::RemoveColorTable(int index)
         {
             if(names.size() > 0)
             {
-                auto found{false};
+                bool found{false};
                 for (int i = 0; i < names.size(); i ++)
                 {
                     if (GetColorTables(i).GetDiscreteFlag())
                     {
                         SetDefaultDiscrete(names[i]);
                         found = true;
+                        break;
                     }
                 }
                 if (! found)

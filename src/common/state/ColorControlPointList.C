@@ -724,6 +724,9 @@ ColorControlPointList::SetExternalFlag(bool externalFlag_)
 // Modifications:
 //     Justin Privitera, Thu Aug 25 15:04:55 PDT 2022
 //     Validate tags before adding them to the list.
+// 
+//    Justin Privitera, Thu Sep 29 17:27:37 PDT 2022
+//    Replace braces with parens for auto.
 //
 // ****************************************************************************
 
@@ -733,7 +736,7 @@ ColorControlPointList::SetTagNames(const stringVector &tagNames_)
     std::for_each(tagNames_.begin(), tagNames_.end(),
         [this, tagNames_](std::string currtag)
         {
-            auto result{ValidateTag(currtag)};
+            auto result(ValidateTag(currtag));
             if (result.first)
                 AddTag(currtag);
             else
@@ -2013,12 +2016,14 @@ ColorControlPointList::GetTagIndex(const std::string tag) const
 // Creation:   Thu Aug 25 10:05:45 PDT 2022
 //
 // Modifications:
+//    Justin Privitera, Thu Sep 29 17:27:37 PDT 2022
+//    Replace auto with bool.
 //
 // ****************************************************************************
 std::pair<bool, std::string>
 ColorControlPointList::ValidateTag(const std::string currtag) const
 {
-    auto success{false};
+    bool success{false};
     std::string outstr;
     if (currtag == "")
     {
