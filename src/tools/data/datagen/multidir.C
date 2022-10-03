@@ -339,7 +339,7 @@ WriteMasterFile(int cycle, const ProgramOptions &opt)
 
     char root[MAX_STRING];
     if (opt.dirPerTimestep)
-        snprintf(root, MAX_STRING, "%s.root", DirectoryName(cycle, 0, opt).c_str());
+        snprintf(root, MAX_STRING, "%s.silo", DirectoryName(cycle, 0, opt).c_str());
     else
         snprintf(root, MAX_STRING, "multidir%05d.root", cycle);
     DBfile *db = DBCreate(root, DB_CLOBBER, DB_LOCAL, 
