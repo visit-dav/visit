@@ -252,7 +252,6 @@ static void FreeUpCacheSlot(void *item)
             if (string(dp->d_name) == "..")
                 continue;
             string tmp = finfo->rmDirname + "/" + string(dp->d_name);
-printf("unlinking \"%s\"\n", tmp.c_str());
             if (unlink(tmp.c_str()) != 0 && errno != ENOENT)
             {
                 if (issuedWarnings < 5)
@@ -450,7 +449,7 @@ avtZipWrapperFileFormatInterface::Initialize(int procNum, int procCount,
     char procNumStr[32];
     snprintf(procNumStr, sizeof(procNumStr), "_%04d", procNum);
     tmpDir = tmpDir + VISIT_SLASH_STRING + "visitzw_" + userName + "_" +
-             string(VisItInit::GetComponentName()) +
+//             string(VisItInit::GetComponentName()) +
              (procCount > 1 ? string(procNumStr) : "");
     debug5 << "ZipWrapper is using \"" << tmpDir << "\" as the temporary directory" << endl;
 
@@ -560,6 +559,7 @@ avtZipWrapperFileFormatInterface::avtZipWrapperFileFormatInterface(
     const char *bname = FileFunctions::Basename(inputFileList[0][0].c_str());
     string dcname = StringHelpers::ExtractRESubstr(bname, "<(.*)\\.(txz|tgz|tbz|tbz2|xz|gz|bz|bz2|zip)$> \\1");
 
+
     // Save the pointer to the plugin manager.
     pluginManager = zwinfo->GetPluginManager();
 
@@ -573,9 +573,7 @@ avtZipWrapperFileFormatInterface::avtZipWrapperFileFormatInterface(
     pluginId = "";
     dummyInterface = 0;
     const bool searchAllPlugins = true;
-    //vector<string> ids = pluginManager->GetMatchingPluginIds(dcname.c_str(), searchAllPlugins);
-#warning FIXME
-    vector<string> ids = pluginManager->GetMatchingPluginIds("foo.silo", searchAllPlugins);
+    vector<string> ids = pluginManager->GetMatchingPluginIds(dcname.c_str(), searchAllPlugins);
     for (size_t i = 0; i < ids.size() && dummyInterface == 0; i++)
     {
         realPluginWasLoadedByMe = pluginManager->LoadSinglePluginNow(ids[i]);
@@ -773,9 +771,14 @@ avtZipWrapperFileFormatInterface::GetRealInterface(int ts, int dom, bool dontCac
     }
     debug5 << "Interface object for file \"" << compressedName << "\" not in cache" << endl;
 
-    string ext = StringHelpers::ExtractRESubstr(compressedName.c_str(), "<\\.(txz|tgz|tbz|tbz2|xz|gz|bz|bz2|zip)$>");
-    const char *bname = FileFunctions::Basename(compressedName.c_str());
-    string dcname = StringHelpers::ExtractRESubstr(bname, "<(.*)\\.(txz|tgz|tbz|tbz2|xz|gz|bz|bz2|zip)$> \\1");
+    string zext = StringHelpers::ExtractRESubstr(compressedName.c_str(), "<\\.(txz|tgz|tbz|tbz2|xz|gz|bz|bz2|zip)$>");
+    string vext = StringHelpers::ExtractRESubstr(compressedName.c_str(), "<(.*)(\\..*)\\.(txz|tgz|tbz|tbz2|xz|gz|bz|bz2|zip)$> \\2");
+    string bname = FileFunctions::Basename(compressedName);
+    string dcname = StringHelpers::ExtractRESubstr(bname.c_str(), "<(.*)\\.(txz|tgz|tbz|tbz2|xz|gz|bz|bz2|zip)$> \\1");
+    string bnameNoExt = FileFunctions::Basename(compressedName, vext+zext);
+printf("bnameNoExt = \"%s\"\n",bnameNoExt.c_str());
+printf("zext = \"%s\"\n", zext.c_str());
+printf("vext = \"%s\"\n", vext.c_str());
 
     string dcmd = decompCmd;
     if (dcmd == "")
@@ -801,20 +804,20 @@ avtZipWrapperFileFormatInterface::GetRealInterface(int ts, int dom, bool dontCac
 
 #else
         // have to handle tar archives first in this logic
-        if (ext == ".tar.gz" || ext == ".tgz" ||
-            ext == ".tar.bz" || ext == ".tbz" ||
-            ext == ".tar.bz2" || ext == ".tbz2" ||
-            ext == ".tar.xz" || ext == ".txz")
+        if (zext == ".tar.gz" || zext == ".tgz" ||
+            zext == ".tar.bz" || zext == ".tbz" ||
+            zext == ".tar.bz2" || zext == ".tbz2" ||
+            zext == ".tar.xz" || zext == ".txz")
             dcmd = "tar xvf";
-        else if (ext == ".gz")
+        else if (zext == ".gz")
             dcmd = "gunzip -f";
-        else if (ext == ".xz")
+        else if (zext == ".xz")
             dcmd = "unxz -f";
-        else if (ext == ".bz")
+        else if (zext == ".bz")
             dcmd = "bunzip -f";
-        else if (ext == ".bz2")
+        else if (zext == ".bz2")
             dcmd = "bunzip2 -f";
-        else if (ext == "zip")
+        else if (zext == "zip")
             dcmd = "unzip -o";
 #endif
     }
@@ -909,8 +912,9 @@ avtZipWrapperFileFormatInterface::GetRealInterface(int ts, int dom, bool dontCac
 #else
     char tmpcmd[1024];
     snprintf(tmpcmd, sizeof(tmpcmd), "cd %s ; cp %s . ; touch %s.lck ; %s %s ; rm -f %s.lck",
-        tmpDir.c_str(), compressedName.c_str(), dcname.c_str(), dcmd.c_str(), bname, dcname.c_str());
+        tmpDir.c_str(), compressedName.c_str(), dcname.c_str(), dcmd.c_str(), bname.c_str(), dcname.c_str());
     debug5 << "Using decompression command: \"" << tmpcmd << "\"" << endl;
+#ifdef MDSERVER
     int ret = system(tmpcmd);
     if (WIFEXITED(ret))
     {
@@ -927,10 +931,9 @@ avtZipWrapperFileFormatInterface::GetRealInterface(int ts, int dom, bool dontCac
         EXCEPTION1(InvalidFilesException, "Decompression command exited abnormally");
     }
 #endif
+#endif
 
     string newfname = tmpDir + VISIT_SLASH_STRING + dcname;
-    if (dcmd.substr(0,5) == "tar x")
-        newfname = newfname + ".root"; // its in a sub-dir of same name
     const char *tmpstr = newfname.c_str();
 
     vector<string> dummyPlugins;
@@ -953,7 +956,7 @@ avtZipWrapperFileFormatInterface::GetRealInterface(int ts, int dom, bool dontCac
         finfo->iface = realInterface;
         finfo->rmDirname = "";
         if (dcmd.substr(0,5) == "tar x")
-            finfo->rmDirname = tmpDir + VISIT_SLASH_STRING + dcname;
+            finfo->rmDirname = tmpDir + VISIT_SLASH_STRING + bnameNoExt;
         UpdateRealFileFormatInterface(realInterface);
         realInterface->SetDatabaseMetaData(&mdCopy, 0);
         decompressedFilesCache[compressedName] = finfo;
