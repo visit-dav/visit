@@ -11,6 +11,7 @@
 #include <cerrno>
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 
@@ -30,9 +31,38 @@
 #include <pwd.h>
 #endif
 
-
 const int STATIC_BUF_SIZE = 4096;
 static char StaticStringBuf[STATIC_BUF_SIZE];
+
+//
+// very simple circular cache for short-lived strings returned to callers
+//
+static size_t const max_retstrs = 32;
+static char const * retstrbuf[max_retstrs];
+static char const * save_returned_string(char const * const retstr)
+{
+    static size_t n = 0;
+    int modn = (int) (n++ % max_retstrs);
+    if (retstr == 0) // to wholly free memory if ever needed.
+    {
+        for (n = 0; n < max_retstrs; n++)
+        {
+            if (retstrbuf[n])
+                free((void*)retstrbuf[n]);
+        }
+        n = 0;
+        return 0;
+    }
+    if (retstrbuf[modn])
+        free((void*)retstrbuf[modn]);
+    retstrbuf[modn] = strdup(retstr);
+    return retstrbuf[modn];
+}
+
+static std::string save_returned_string(std::string const &retstr)
+{
+    return std::string(save_returned_string(retstr.c_str()));
+}
 
 // ****************************************************************************
 // Method: FileFunctions::VisItStat
@@ -591,13 +621,11 @@ basename(char const *path, int& start, char const *suffix=0)
 
    if (path == 0)
    {
-       strcpy(StaticStringBuf, ".");
-       return StaticStringBuf;
+       return save_returned_string(".");
    }
    else if (*path == '\0')
    {
-       strcpy(StaticStringBuf, ".");
-       return StaticStringBuf;
+       return save_returned_string(".");
    }
    else
    {
@@ -609,8 +637,7 @@ basename(char const *path, int& start, char const *suffix=0)
        // deal with string too large
        if (n == STATIC_BUF_SIZE)
        {
-           strcpy(StaticStringBuf, ".");
-           return StaticStringBuf;
+           return save_returned_string(".");
        }
 
        // backup, skipping over all trailing slash chars
@@ -622,8 +649,7 @@ basename(char const *path, int& start, char const *suffix=0)
        if (j == -1)
        {
            start = -1;
-           strcpy(StaticStringBuf, VISIT_SLASH_STRING);
-           return StaticStringBuf;
+           return save_returned_string(VISIT_SLASH_STRING);
        }
 
        // backup to just after next slash char
@@ -648,7 +674,7 @@ basename(char const *path, int& start, char const *suffix=0)
                StaticStringBuf[k-n] = '\0';
        }
 
-       return StaticStringBuf;
+       return save_returned_string(StaticStringBuf);
    }
 }
 
@@ -669,9 +695,7 @@ FileFunctions::Basename(char const *path, char const *suffix)
     {
         suffString = suffix;
     }
-    std::string fbn = Basename(std::string(path), suffString);
-    strcpy(StaticStringBuf, fbn.c_str());
-    return StaticStringBuf;
+    return save_returned_string(Basename(path, suffString.c_str()));
 #else
    int dummy1;
    return basename(path, dummy1, suffix);
@@ -735,13 +759,12 @@ FileFunctions::Dirname(const char *path)
     {
         // preserve the previous assumption of 'current directory' if 'path'
         // contains no directory information
-        strcpy(StaticStringBuf, ".");
+        return save_returned_string(".");
     }
     else
     {
-        strcpy(StaticStringBuf, fsp.parent_path().string().c_str());
+        return save_returned_string(fsp.parent_path().string().c_str());
     }
-    return StaticStringBuf;
 #else
     int start;
 
@@ -750,13 +773,11 @@ FileFunctions::Dirname(const char *path)
 
     if (start == -1)
     {
-        strcpy(StaticStringBuf, VISIT_SLASH_STRING);
-        return StaticStringBuf;
+        return save_returned_string(VISIT_SLASH_STRING);
     }
     else if (start == 0)
     {
-        strcpy(StaticStringBuf, ".");
-        return StaticStringBuf;
+        return save_returned_string(".");
     }
     else
     {
@@ -768,7 +789,7 @@ FileFunctions::Dirname(const char *path)
             StaticStringBuf[i-1] = '\0';
         else
             StaticStringBuf[i] = '\0';
-        return StaticStringBuf;
+        return save_returned_string(StaticStringBuf);
     }
 #endif
 }
@@ -782,8 +803,7 @@ FileFunctions::Dirname(const std::string &path)
     {
         // preserve the previous assumption of 'current directory' if 'path'
         // contains no directory information 
-        strcpy(StaticStringBuf, ".");
-        return StaticStringBuf;
+        return save_returned_string(".");
     }
     else
     {
@@ -886,9 +906,7 @@ FileFunctions::Normalize(const char *path, const char *pathSep)
 
     if (retval == "" && !noCharsRemainingToBackup) retval = ".";
 
-    StaticStringBuf[0] = '\0';
-    strcat(StaticStringBuf, retval.c_str());
-    return StaticStringBuf;
+    return save_returned_string(retval.c_str());
 }
 
 std::string
@@ -926,36 +944,30 @@ FileFunctions::Absname(const char *cwd_context, const char *path,
     // cwd_context is null or empty string
     if (!cwd_context || cwd_context[0] == '\0')
     {
-        if (!path) return StaticStringBuf;
-        if (path[0] != pathSep[0]) return StaticStringBuf;
+        if (!path) return save_returned_string("");
+        if (path[0] != pathSep[0]) return save_returned_string("");
 
-        std::string npath(Normalize(path, pathSep));
-        strcpy(StaticStringBuf, npath.c_str());
-        return StaticStringBuf;
+        return save_returned_string(Normalize(path, pathSep));
     }
 
     // path is null or empty string
     if (!path || path[0] == '\0')
     {
-        if (!cwd_context) return StaticStringBuf;
-        if (cwd_context[0] != pathSep[0]) return StaticStringBuf;
+        if (!cwd_context) return save_returned_string("");
+        if (cwd_context[0] != pathSep[0]) return save_returned_string("");
 
-        std::string ncwd(Normalize(cwd_context, pathSep));
-        strcpy(StaticStringBuf, ncwd.c_str());
-        return StaticStringBuf;
+        return save_returned_string(Normalize(cwd_context, pathSep));
     }
 
     if (path[0] == pathSep[0])
     {
-        std::string npath(Normalize(path, pathSep));
-        strcpy(StaticStringBuf, npath.c_str());
-        return StaticStringBuf;
+        return save_returned_string(Normalize(path, pathSep));
     }
 
 #ifndef _WIN32
     if (cwd_context[0] != pathSep[0])
     {
-        return StaticStringBuf;
+        return save_returned_string("");
     }
 #else
     if(cwd_context[0] == '.')
@@ -963,19 +975,17 @@ FileFunctions::Absname(const char *cwd_context, const char *path,
         if (PathIsRelative(path))
         {
             if(_fullpath(StaticStringBuf, ".\\", _MAX_PATH) != NULL)
-                return StaticStringBuf;
+                return save_returned_string("");
             else
-                return path;
+                return save_returned_string(path);
         }
-        return path;
+        return save_returned_string(path);
     }
 #endif
 
     // Catenate path to cwd_context and then Normalize the result
     std::string path2 = std::string(cwd_context) + std::string(pathSep) + std::string(path);
-    std::string npath = Normalize(path2.c_str(), pathSep);
-    strcpy(StaticStringBuf, npath.c_str());
-    return StaticStringBuf;
+    return save_returned_string(Normalize(path2.c_str(), pathSep));
 }
 
 std::string
