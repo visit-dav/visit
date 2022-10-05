@@ -41,6 +41,9 @@ class MapNode;
 // 
 //   Justin Privitera, Tue Jun 14 10:21:03 PDT 2022
 //   Added outdir line edit.
+// 
+//   Justin Privitera, Tue Sep 27 10:52:59 PDT 2022
+//   Replaced family files with filename scheme.
 //
 // ****************************************************************************
 
@@ -73,7 +76,7 @@ private:
     QLineEdit       *imagePan;
     QLineEdit       *imageZoom;
     QCheckBox       *perspective;
-    QCheckBox       *family;
+    QComboBox       *filenameScheme;
     QCheckBox       *outputRayBounds;
     QLineEdit       *imageSize;
 };

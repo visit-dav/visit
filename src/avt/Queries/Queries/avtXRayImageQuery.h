@@ -85,6 +85,11 @@
 //    Justin Privitera, Tue Jun 14 10:21:03 PDT 2022
 //    Added conduit include here, added output dir field + setter, 
 //    added write arrays method for writing conduit blueprint output.
+// 
+//    Justin Privitera, Tue Sep 27 10:52:59 PDT 2022
+//    Replaced familyfiles with filenamescheme.
+//    Added boolean argument to `WriteImage` to control what info goes in the
+//    filename.
 //
 // ****************************************************************************
 
@@ -119,6 +124,8 @@ class QUERY_API avtXRayImageQuery : public avtDatasetQuery
     void                      SetDebugRay(const int &ray);
     void                      SetOutputRayBounds(const bool &flag);
     void                      SetFamilyFiles(const bool &flag);
+    void                      SetFilenameScheme(int type);
+    void                      SetFilenameScheme(const std::string &type);
     void                      SetOutputType(int type);
     void                      SetOutputType(const std::string &type);
     void                      SetOutputDir(const std::string &dir);
@@ -130,7 +137,7 @@ class QUERY_API avtXRayImageQuery : public avtDatasetQuery
     int                       nBackgroundIntensities;
     int                       debugRay;
     bool                      outputRayBounds;
-    bool                      familyFiles;
+    int                       filenameScheme;
     static int                iFileFamily;
     int                       outputType;
     std::string               outputDir;
@@ -168,7 +175,7 @@ class QUERY_API avtXRayImageQuery : public avtDatasetQuery
     virtual void              Execute(avtDataTree_p);
 
     template <typename T>
-    void                      WriteImage(const char *, int, int, T*);
+    void                      WriteImage(const char *, int, int, T*, bool);
     template <typename T>
     void                      WriteFloats(const char *, int, int, T*);
     void                      WriteBOVHeader(const char *, const char *,

@@ -426,7 +426,34 @@ XRay Image
     |                          | the output file is ``outputXXXX.ext``,       |
     |                          | where ``XXXX`` is chosen                     |
     |                          | to be the |br| smallest integer not to       |
-    |                          | overwrite any existing files.                |
+    |                          | overwrite any existing files. As of VisIt_   |
+    |                          | 3.4, |br| it is recommended to use           |
+    |                          | *filename_scheme* in lieu of *family_files*. |
+    +------+-------------------+----------------------------------------------+
+    | *filename_scheme*        | The naming convention for output filenames.  |
+    |                          | This option is available |br| in VisIt_ 3.4, |
+    |                          | and is meant to replace the *family_files*   |
+    |                          | option. If both |br| are provided,           |    
+    |                          | *filename_scheme* will be used.              |
+    +------+-------------------+----------------------------------------------+
+    |      | "none" or 0       | The default. Output filenames will be of the |
+    |      |                   | form ``output.ext``, where |br|              |
+    |      |                   | ``ext`` is the file extension. If the        |
+    |      |                   | filename already exists, VisIt_ will |br|    |
+    |      |                   | overwrite it.                                |
+    +------+-------------------+----------------------------------------------+
+    |      | "family" or 1     | If on, VisIt_ will attempt to family output  |
+    |      |                   | files. Output filenames will be |br| of the  | 
+    |      |                   | form ``output.XXXX.ext``, where ``XXXX`` is  |
+    |      |                   | chosen to be the smallest |br| integer such  |
+    |      |                   | that the filename is unique.                 |
+    +------+-------------------+----------------------------------------------+
+    |      | "cycle" or 2      | VisIt_ will put cycle information in the     |
+    |      |                   | filename. Output filenames will be |br| of   |
+    |      |                   | the form ``output.cycle_XXXXXX.ext``, where  |
+    |      |                   | ``XXXXXX`` is the cycle number. |br| If      |
+    |      |                   | another file exists with this name, VisIt_   |
+    |      |                   | will overwrite it.                           |
     +------+-------------------+----------------------------------------------+
     | *image_size*             | The width and height of the image in pixels. |
     |                          | The default is 200 x 200.                    |
@@ -445,18 +472,18 @@ XRay Image
 
     When specifying "bov" output, 2 files are created for each variable.
     One contains the ``intensity`` and the other the ``path_length``.
-    The files are named ``outputXX.bof`` and ``outputXX.bov`` with ``XX`` being a sequence number.
+    The files are named ``output.XX.bof`` and ``output.XX.bov`` with ``XX`` being a sequence number.
     The ``intensity`` variables are first followed by the ``path_length`` variables in the sequence.
     For example, if the input array variables were composed of 2 scalar variables, the files would be named as follows:
 
-    * output00.bof
-    * output00.bov - ``intensity`` from the first variable of the array variable.
-    * output01.bof
-    * output01.bov - ``intensity`` from the second variable of the array variable.
-    * output02.bof
-    * output02.bov - ``path_length`` from the first variable of the array variable.
-    * output03.bof
-    * output03.bov - ``path_length`` from the second variable of the array variable.
+    * output.00.bof
+    * output.00.bov - ``intensity`` from the first variable of the array variable.
+    * output.01.bof
+    * output.01.bov - ``intensity`` from the second variable of the array variable.
+    * output.02.bof
+    * output.02.bov - ``path_length`` from the first variable of the array variable.
+    * output.03.bof
+    * output.03.bov - ``path_length`` from the second variable of the array variable.
 
     The query also takes arguments that specify the orientation of the camera
     in 3 dimensions. This can take 2 forms. The first is a simplified

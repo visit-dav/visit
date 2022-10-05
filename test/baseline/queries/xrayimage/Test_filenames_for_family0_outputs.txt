@@ -1,0 +1,3 @@
+The x ray image query results were written to the file VISIT_TOP_DIR/test/current/queries/xrayimage/testdir_family_0/output.png
+The x ray image query results were written to the files VISIT_TOP_DIR/test/current/queries/xrayimage/testdir_family_0/output.00.png - VISIT_TOP_DIR/test/current/queries/xrayimage/testdir_family_0/output.01.png
+['output.png', 'output.00.png', 'output.01.png']

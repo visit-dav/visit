@@ -3,4 +3,4 @@ engine_ser: Conduit Exception in X Ray Image Query Execute:
 
 
 message: 
-HDF5 Error code-1 Error opening HDF5 file for writing: /tmp/baddir/output.cycle_000048.root
+HDF5 Error code-1 Error opening HDF5 file for writing: /tmp/baddir/output.root

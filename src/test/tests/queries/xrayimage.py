@@ -30,6 +30,10 @@
 # 
 #    Justin Privitera, Thu Sep  8 16:29:06 PDT 2022
 #    Added new tests for blueprint output metadata.
+# 
+#    Justin Privitera, Tue Sep 27 10:52:59 PDT 2022
+#    Changed names of most output files to reflect new naming conventions.
+#    Added tests for filenames, all output types, and result messages.
 #
 # ----------------------------------------------------------------------------
 
@@ -56,7 +60,7 @@ out_base = out_path("current","queries","xrayimage")
 if not os.path.isdir(out_base):
     os.mkdir(out_base)
 
-os.rename("output00.png", out_path(out_base,"xrayimage00.png"))
+os.rename("output.png", out_path(out_base,"xrayimage00.png"))
 Test("xrayimage00", 0, 1)
 
 s = GetQueryOutputString()
@@ -82,8 +86,8 @@ DrawPlots()
 params = dict(output_type=2, output_dir=".", divide_emis_by_absorb=1, origin=(0.0, 2.5, 10.0), up_vector=(0, 1, 0), theta=0, phi=0, width = 10., height=10., image_size=(300, 300), vars=("da", "pa"))
 Query("XRay Image", params)
 
-os.rename("output00.png", out_path(out_base,"xrayimage02.png"))
-os.rename("output01.png", out_path(out_base,"xrayimage03.png"))
+os.rename("output.00.png", out_path(out_base,"xrayimage02.png"))
+os.rename("output.01.png", out_path(out_base,"xrayimage03.png"))
 
 Test("xrayimage02", 0, 1)
 Test("xrayimage03", 0, 1)
@@ -111,7 +115,7 @@ params['height'] = 10.
 params['vars'] = ("d", "p")
 Query("XRay Image", params)
 
-os.rename("output00.png", out_path(out_base,"xrayimage05.png"))
+os.rename("output.png", out_path(out_base,"xrayimage05.png"))
 Test("xrayimage05", 0, 1)
 
 s = GetQueryOutputString()
@@ -121,7 +125,7 @@ params['theta'] = 90
 params['phi'] =  0
 Query("XRay Image", params)
 
-os.rename("output00.png", out_path(out_base,"xrayimage07.png"))
+os.rename("output.png", out_path(out_base,"xrayimage07.png"))
 Test("xrayimage07", 0, 1)
 
 s = GetQueryOutputString()
@@ -152,7 +156,7 @@ params['height'] = 1.
 params['vars'] = ("w1", "v1")
 Query("XRay Image", params)
 
-os.rename("output00.png", out_path(out_base,"xrayimage09.png"))
+os.rename("output.png", out_path(out_base,"xrayimage09.png"))
 Test("xrayimage09", 0, 1)
 
 s = GetQueryOutputString()
@@ -164,7 +168,7 @@ params['height'] = 4.
 
 Query("XRay Image", params)
 
-os.rename("output00.png", out_path(out_base,"xrayimage11.png"))
+os.rename("output.png", out_path(out_base,"xrayimage11.png"))
 Test("xrayimage11", 0, 1)
 
 s = GetQueryOutputString()
@@ -175,7 +179,7 @@ params['theta'] = 0
 params['vars'] = ("w1", "v2")
 Query("XRay Image", params) 
 
-os.rename("output00.png", out_path(out_base,"xrayimage13.png"))
+os.rename("output.png", out_path(out_base,"xrayimage13.png"))
 Test("xrayimage13", 0, 1)
 
 s = GetQueryOutputString()
@@ -184,7 +188,7 @@ TestText("xrayimage14", s)
 params['theta'] = 90
 Query("XRay Image", params)
 
-os.rename("output00.png", out_path(out_base,"xrayimage15.png"))
+os.rename("output.png", out_path(out_base,"xrayimage15.png"))
 Test("xrayimage15", 0, 1)
 
 s = GetQueryOutputString()
@@ -197,7 +201,7 @@ params['height'] = 8.
 params['vars'] = ("w1", "v3")
 Query("XRay Image", params)
 
-os.rename("output00.png", out_path(out_base,"xrayimage17.png"))
+os.rename("output.png", out_path(out_base,"xrayimage17.png"))
 Test("xrayimage17", 0, 1)
 
 
@@ -209,7 +213,7 @@ params['width'] = 20.
 params['height'] = 20.
 Query("XRay Image", params)
 
-os.rename("output00.png", out_path(out_base,"xrayimage19.png"))
+os.rename("output.png", out_path(out_base,"xrayimage19.png"))
 Test("xrayimage19", 0, 1)
 
 s = GetQueryOutputString()
@@ -220,7 +224,7 @@ params['theta'] = 0
 params['vars'] = ("w1", "v4")
 Query("XRay Image", params)
 
-os.rename("output00.png", out_path(out_base,"xrayimage21.png"))
+os.rename("output.png", out_path(out_base,"xrayimage21.png"))
 Test("xrayimage21", 0, 1)
 
 s = GetQueryOutputString()
@@ -229,7 +233,7 @@ TestText("xrayimage22", s)
 params['theta'] = 90
 Query("XRay Image", params)
 
-os.rename("output00.png", out_path(out_base,"xrayimage23.png"))
+os.rename("output.png", out_path(out_base,"xrayimage23.png"))
 Test("xrayimage23", 0, 1)
 
 s = GetQueryOutputString()
@@ -248,7 +252,7 @@ DrawPlots()
 params = dict(output_type="png", output_dir=".", divide_emis_by_absorb=1, focus=(0.0, 2.5, 15.0), view_up=(0., 1., 0.), normal=(0., 0., 1.), view_angle=30., parallel_scale = 16.0078, near_plane = -32.0156, far_plane = 32.0156, image_pan=(0., 0.), image_zoom = 2.4, perspective = 1, image_size=(300, 300), vars=("d", "p"))
 Query("XRay Image", params)
 
-os.rename("output00.png", out_path(out_base,"xrayimage25.png"))
+os.rename("output.png", out_path(out_base,"xrayimage25.png"))
 
 Test("xrayimage25", 0, 1)
 
@@ -271,8 +275,8 @@ DrawPlots()
 params = dict(output_type="png", output_dir=".", divide_emis_by_absorb=1, theta=90., phi=0., width=20., height=20., image_size=(300, 300), vars=("wa", "va"), background_intensities=(0.05, 0.1))
 Query("XRay Image", params)
 
-os.rename("output00.png", out_path(out_base,"xrayimage27.png"))
-os.rename("output01.png", out_path(out_base,"xrayimage28.png"))
+os.rename("output.00.png", out_path(out_base,"xrayimage27.png"))
+os.rename("output.01.png", out_path(out_base,"xrayimage28.png"))
 
 Test("xrayimage27", 0, 1)
 Test("xrayimage28", 0, 1)
@@ -296,7 +300,7 @@ DrawPlots()
 
 # old style argument passing
 Query("XRay Image", "png", outdir_set, 1, 0.0, 2.5, 10.0, 0, 0, 10., 10., 300, 300, ("d", "p"))
-os.rename(outdir_set + "/output00.png", out_path(out_base, "xrayimage30.png"))
+os.rename(outdir_set + "/output.png", out_path(out_base, "xrayimage30.png"))
 Test("xrayimage30", 0, 1)
 
 s = GetQueryOutputString()
@@ -308,7 +312,7 @@ CloseDatabase(silo_data_path("curv3d.silo"))
 # test blueprint output
 #
 
-conduit_db = out_path(outdir_set, "output.cycle_000048.root")
+conduit_db = out_path(outdir_set, "output.root")
 
 def setup_bp_test():
     OpenDatabase(silo_data_path("curv3d.silo"))
@@ -466,6 +470,106 @@ s = '\n'.join([line if line[:4] != "line" else '' for line in s.split('\n')])
 TestText("xrayimage36", s)
 DeleteAllPlots()
 CloseDatabase(silo_data_path("curv3d.silo"))
+
+# 
+# Test filenames and output types
+# 
+
+outdir_set = out_base + "/testdir"
+if not os.path.isdir(outdir_set):
+    os.mkdir(outdir_set)
+
+setup_bp_test()
+
+DefineScalarExpression("d1", 'recenter(d, "zonal")')
+DefineScalarExpression("p1", 'recenter(p, "zonal")')
+
+DefineArrayExpression("da", "array_compose(d1,d1)")
+DefineArrayExpression("pa", "array_compose(p1,p1)")
+
+def query_variety(otype, scheme, thevars, outdir):
+    SetQueryFloatFormat("%g")
+    Query("XRay Image", 
+        background_intensity=0, 
+        divide_emis_by_absorb=0, 
+        far_plane=20, 
+        filename_scheme=scheme, 
+        family_files=0, # this is to test that family_files is ignored when filename_scheme is set
+        focus=(0, 0, 0), 
+        image_pan=(0, 0), 
+        image_size=(3, 3), 
+        image_zoom=1, 
+        near_plane=-20, 
+        normal=(0, 0, 1), 
+        output_dir=outdir, 
+        output_ray_bounds=0, 
+        output_type=otype, 
+        parallel_scale=10, 
+        perspective=0, 
+        view_angle=30, 
+        view_up=(0, 1, 0), 
+        vars=thevars)
+    return GetQueryOutputString()
+
+def query_family_backwards_compat(family, thevars, outdir):
+    SetQueryFloatFormat("%g")
+    Query("XRay Image", 
+        background_intensity=0, 
+        divide_emis_by_absorb=0, 
+        far_plane=20, 
+        family_files=family,
+        focus=(0, 0, 0), 
+        image_pan=(0, 0), 
+        image_size=(3, 3), 
+        image_zoom=1, 
+        near_plane=-20, 
+        normal=(0, 0, 1), 
+        output_dir=outdir, 
+        output_ray_bounds=0, 
+        output_type="png", 
+        parallel_scale=10, 
+        perspective=0, 
+        view_angle=30, 
+        view_up=(0, 1, 0), 
+        vars=thevars)
+    return GetQueryOutputString()
+
+outdir_set = out_base + "/testdir"
+if not os.path.isdir(outdir_set):
+    os.mkdir(outdir_set)
+
+# uncomment when https://github.com/visit-dav/visit/issues/18152 is fixed
+# output_types = ["bmp", "jpeg", "png", "tif", "bof", "bov", "json", "hdf5", "yaml"]
+output_types = ["jpeg", "png", "tif", "bof", "bov", "json", "hdf5", "yaml"]
+filename_schemes = ["family", "family", "cycle", "none"]
+family_options = [0, 1]
+vars_options = [("d", "p"), ("da", "pa")]
+
+info = ""
+for i in range(0, len(output_types)):
+    outdir_set_otype = outdir_set + "_" + output_types[i]
+    if not os.path.isdir(outdir_set_otype):
+        os.mkdir(outdir_set_otype)
+    if output_types[i] == "jpeg":
+        # create a dummy file to test the file familying
+        open(outdir_set_otype + "/output.0000.jpg", 'w').close()
+    info = ""
+    for j in range(0, len(filename_schemes)):
+        for k in range(0, len(vars_options)):
+            info += query_variety(output_types[i], filename_schemes[j], vars_options[k], outdir_set_otype)
+    info += str(os.listdir(outdir_set_otype))
+    TestText("Test_filenames_for_" + output_types[i] + "_outputs", info)
+
+# test backwards compatibility with family_files option
+for i in range(0, len(family_options)):
+    outdir_set_family = outdir_set + "_family_" + str(family_options[i])
+    if not os.path.isdir(outdir_set_family):
+        os.mkdir(outdir_set_family)
+    info = ""
+    for j in range(0, len(vars_options)):
+        info += query_family_backwards_compat(family_options[i], vars_options[j], outdir_set_family)
+    info += str(os.listdir(outdir_set_family))
+    TestText("Test_filenames_for_family" + str(family_options[i]) + "_outputs", info)
 
 #
 # Test that we get decent error messages for common cases
