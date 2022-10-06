@@ -109,6 +109,9 @@
 #   Justin Privitera, Tue Aug 23 14:40:24 PDT 2022
 #   Removed `CONDUIT_HAVE_PARTITION_FLATTEN` check.
 #
+#   Kathleen Biagas, Mon Sep 26, 2022
+#   Remove HDF4 support.
+#
 #****************************************************************************/
 
 ##
@@ -263,10 +266,6 @@ set(EXODUSII_LIB @EXODUSII_LIB@)
 set(GDAL_INCLUDE_DIR ${VISIT_ROOT_INCLUDE_DIR}/gdal/include)
 set(GDAL_LIBRARY_DIR ${VISIT_LIBRARY_DIR} ${VISIT_ARCHIVE_DIR})
 set(GDAL_LIB @GDAL_LIB@)
-
-set(HDF4_INCLUDE_DIR ${VISIT_ROOT_INCLUDE_DIR}/hdf4/include)
-set(HDF4_LIBRARY_DIR ${VISIT_LIBRARY_DIR} ${VISIT_ARCHIVE_DIR})
-set(HDF4_LIB @HDF4_LIB@)
 
 set(HDF5_INCLUDE_DIR ${VISIT_ROOT_INCLUDE_DIR}/hdf5/include)
 set(HDF5_LIBRARY_DIR ${VISIT_LIBRARY_DIR} ${VISIT_ARCHIVE_DIR})

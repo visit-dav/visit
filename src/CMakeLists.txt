@@ -520,6 +520,9 @@
 #    Consolidated some python scripting logic.
 #    Disable pyside temporarily.
 #
+#    Kathleen Biagas, Mon Sep 26, 2022
+#    Remove HDF4 support.
+#
 #****************************************************************************
 
 cmake_minimum_required(VERSION 3.15 FATAL_ERROR)
@@ -939,8 +942,6 @@ VISIT_3RDPARTY_VAR(FMS_DIR       "Path containing the FMS library's include and 
 VISIT_3RDPARTY_DEP(FMS_LIBDEP    "FMS library dependencies")
 VISIT_3RDPARTY_VAR(GDAL_DIR      "Path containing the GDAL library's include and lib")
 VISIT_3RDPARTY_VAR(GFORTRAN_DIR  "Path containing the GFortran library's include and lib")
-VISIT_3RDPARTY_VAR(HDF4_DIR      "Path containing the HDF4 library's include and lib")
-VISIT_3RDPARTY_DEP(HDF4_LIBDEP   "HDF4 library dependencies")
 VISIT_3RDPARTY_VAR(HDF5_DIR      "Path containing the HDF5 library's include and lib")
 VISIT_3RDPARTY_DEP(HDF5_LIBDEP   "HDF5 library dependencies")
 VISIT_3RDPARTY_VAR(HDF5_MPI_DIR  "Path containing the parallel HDF5 library's include and lib")
@@ -1414,15 +1415,6 @@ IF(NOT VISIT_BUILD_MINIMAL_PLUGINS OR VISIT_SELECTED_DATABASE_PLUGINS)
 
     # Configure gdal support.
     INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindGDAL.cmake)
-
-    # Configure HDF4 support.
-    IF(VISIT_STATIC)
-      # There's a problem including HDF4 and Netcdf in the same executable due
-      # to some netcdf-like symbols in libmfhdf
-      MESSAGE(STATUS "HDF4 disabled for static builds due to collision with NetCDF.")
-    ELSE(VISIT_STATIC)
-      INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindHDF4.cmake)
-    ENDIF(VISIT_STATIC)
 
     # Configure h5part support.
     INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindH5Part.cmake)

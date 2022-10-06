@@ -33,7 +33,7 @@ VISIT_OPTION_DEFAULT(VISIT_THREAD ON TYPE BOOL)
 ##
 ## Database reader plugin support libraries
 ##
-## The HDF4, HDF5 and NetCDF libraries must be first so that
+## The HDF5 and NetCDF libraries must be first so that
 ## their libdeps are defined for any plugins that need them.
 ##
 ## For libraries with LIBDEP settings, order matters.
@@ -137,12 +137,6 @@ VISIT_OPTION_DEFAULT(VISIT_CONDUIT_LIBDEP HDF5_LIBRARY_DIR hdf5 ${VISIT_HDF5_LIB
 ## GDAL
 ##
 VISIT_OPTION_DEFAULT(VISIT_GDAL_DIR ${VISITHOME}/gdal/2.2.4/${VISITARCH})
-
-##
-## HDF4
-##
-VISIT_OPTION_DEFAULT(VISIT_HDF4_DIR ${VISITHOME}/hdf4/4.2.5/${VISITARCH})
-VISIT_OPTION_DEFAULT(VISIT_HDF4_LIBDEP ${VISITHOME}/szip/2.1/${VISITARCH}/lib sz ${VISITHOME}/vtk/${VTK_VERSION}/${VISITARCH}/lib vtkjpeg-${VTK_MAJOR_VERSION}.${VTK_MINOR_VERSION} TYPE STRING)
 
 ##
 ## Ice-T

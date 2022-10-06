@@ -151,17 +151,6 @@ VISIT_OPTION_DEFAULT(VISIT_ZLIB_DIR     ${VISITHOME}/zlib/1.2.11)
 ## Library's LIBDEP settings must come after them.
 ##############################################################
 
-##
-## HDF4
-##
-set(HDF4_LIBNAMES_AFFIX_DLL false CACHE INTERNAL "Is 'dll' appended to hdf4 libnames")
-VISIT_OPTION_DEFAULT(VISIT_HDF4_DIR     ${VISITHOME}/hdf/4.2.13)
-
-VISIT_OPTION_DEFAULT(VISIT_HDF4_LIBDEP
-      JPEG_LIBRARY_DIR JPEG_LIB
-      SZIP_LIBRARY_DIR SZIP_LIB
-      ZLIB_LIBRARY_DIR ZLIB_LIB
-      TYPE STRING)
 
 ##
 ## HDF5
