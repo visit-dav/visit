@@ -1276,12 +1276,12 @@ Neighbor Function: ``neighbor()`` : ``neighbor(<Mesh>)``
 .. _Node_Degree_Function:
 
 Node Degree Function: ``node_degree()`` : ``node_degree(<Mesh>)``
-    Return a *zone* centered, integer valued variable which indicates the *number* of mesh zones/cells that share each node.
+    Return a *node* centered, integer valued variable which indicates the *number* of mesh zones/cells that share each node.
 
 .. _Degree_Expression_Function:
 
 Degree Function: ``degree()`` : ``degree(expr0)``
-    Return a *zone* centered, integer valued variable which indicates the *number* of mesh edges incident to each node.
+    Return a *node* centered, integer valued variable which indicates the *number* of mesh edges incident to each node.
 
 .. _Aspect_Function:
 
