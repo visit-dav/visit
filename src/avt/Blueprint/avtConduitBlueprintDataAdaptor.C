@@ -86,12 +86,14 @@ avtConduitBlueprintDataAdaptor::SetInfoWarningHandlers()
 static int
 ElementShapeNameToVTKCellType(const std::string &shape_name)
 {
-    if (shape_name == "point") return VTK_VERTEX;
-    if (shape_name == "line")  return VTK_LINE;
-    if (shape_name == "tri")   return VTK_TRIANGLE;
-    if (shape_name == "quad")  return VTK_QUAD;
-    if (shape_name == "hex")   return VTK_HEXAHEDRON;
-    if (shape_name == "tet")   return VTK_TETRA;
+    if (shape_name == "point")   return VTK_VERTEX;
+    if (shape_name == "line")    return VTK_LINE;
+    if (shape_name == "tri")     return VTK_TRIANGLE;
+    if (shape_name == "quad")    return VTK_QUAD;
+    if (shape_name == "hex")     return VTK_HEXAHEDRON;
+    if (shape_name == "tet")     return VTK_TETRA;
+    if (shape_name == "wedge")   return VTK_WEDGE;
+    if (shape_name == "pyramid") return VTK_PYRAMID;
     AVT_CONDUIT_BP_WARNING("Unsupported Element Shape: " << shape_name);
     return 0;
 }
@@ -106,6 +108,8 @@ VTKCellTypeSize(int cell_type)
     if (cell_type == VTK_QUAD)       return 4;
     if (cell_type == VTK_HEXAHEDRON) return 8;
     if (cell_type == VTK_TETRA)      return 4;
+    if (cell_type == VTK_WEDGE)      return 6;
+    if (cell_type == VTK_PYRAMID)    return 5;
     return 0;
 }
 
@@ -120,6 +124,8 @@ VTKCellTypeToElementShapeName(const int vtk_cell_type)
     if (vtk_cell_type == VTK_HEXAHEDRON) return "hex";
     if (vtk_cell_type == VTK_VOXEL)      return "hex";
     if (vtk_cell_type == VTK_TETRA)      return "tet";
+    if (vtk_cell_type == VTK_WEDGE)      return "wedge";
+    if (vtk_cell_type == VTK_PYRAMID)    return "pyramid";
 
     AVT_CONDUIT_BP_WARNING("Unsupported vtkCellType : " << vtk_cell_type);
     return "";
