@@ -1,1 +1,0 @@
-quartz386.cmake
