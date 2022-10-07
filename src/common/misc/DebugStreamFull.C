@@ -132,6 +132,9 @@ close_streams()
 //    I made it print the name of the signal to the debug log so we have
 //    an idea of whether or not VisIt quit due to handling a signal.
 //
+//    Mark C. Miller, Fri Oct  7 16:12:22 PDT 2022
+//    Macroize case statements to avoid misspelled signal ids and reduce
+//    code duplication.
 // ****************************************************************************
 
 #if !defined(_WIN32)
