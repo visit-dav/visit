@@ -150,7 +150,7 @@ signalhandler_core(int sig)
           close_streams(); abort(); // HOOKS_IGNORE
           break;
       case SIGABRT:
-          debug1 << "signalhandler_core: SIGBRT!" << endl;
+          debug1 << "signalhandler_core: SIGABRT!" << endl;
           close_streams(); abort(); // HOOKS_IGNORE
           break;
       case SIGFPE:
