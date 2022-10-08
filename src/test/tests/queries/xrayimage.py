@@ -455,7 +455,7 @@ CloseDatabase(silo_data_path("curv3d.silo"))
 
 # write to dir w/ read only permissions
 
-outdir_bad = outdir_set + "/baddir"
+outdir_bad = pjoin(outdir_set, "baddir")
 if not os.path.isdir(outdir_bad):
     os.mkdir(outdir_bad)
 os.chmod(outdir_bad, 0o444)
