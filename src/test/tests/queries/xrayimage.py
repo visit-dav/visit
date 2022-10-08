@@ -387,7 +387,7 @@ DeleteAllPlots()
 CloseDatabase(silo_data_path("curv3d.silo"))
 
 # test opening the bp output and visualizing in visit
-conduit_db = out_path(outdir_set + "/hdf5", "output.cycle_000048.root")
+conduit_db = pjoin(outdir_set , "hdf5", "output.cycle_000048.root")
 OpenDatabase(conduit_db)
 AddPlot("Pseudocolor", "mesh_image_topo/intensities")
 DrawPlots()
