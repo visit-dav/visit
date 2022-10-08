@@ -315,7 +315,7 @@ CloseDatabase(silo_data_path("curv3d.silo"))
 #
 
 def setup_bp_test(outdir_set, subdir):
-    conduit_dir = outdir_set + "/" + subdir
+    conduit_dir = pjoin(outdir_set, subdir)
     if not os.path.isdir(conduit_dir):
         os.mkdir(conduit_dir)
     OpenDatabase(silo_data_path("curv3d.silo"))
