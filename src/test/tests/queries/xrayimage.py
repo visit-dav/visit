@@ -407,7 +407,7 @@ TestText("xrayimage33", s)
 DeleteAllPlots()
 CloseDatabase(silo_data_path("curv3d.silo"))
 
-conduit_db = out_path(outdir_set + "/json", "output.cycle_000048.root")
+conduit_db = pjoin(outdir_set, "json", "output.cycle_000048.root")
 OpenDatabase(conduit_db)
 AddPlot("Pseudocolor", "mesh_image_topo/intensities")
 DrawPlots()
