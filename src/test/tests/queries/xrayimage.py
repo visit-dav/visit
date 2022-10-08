@@ -291,7 +291,7 @@ DeleteAllPlots()
 # 
 # test setting output directory
 # 
-outdir_set = TestEnv.params["run_dir"] + "/testdir"
+outdir_set = pjoin(TestEnv.params["run_dir"], "testdir")
 if not os.path.isdir(outdir_set):
     os.mkdir(outdir_set)
 
