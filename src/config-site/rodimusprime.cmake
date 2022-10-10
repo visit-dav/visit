@@ -35,7 +35,7 @@ VISIT_OPTION_DEFAULT(VISIT_THREAD OFF TYPE BOOL)
 ##
 ## Database reader plugin support libraries
 ##
-## The HDF4, HDF5 and NetCDF libraries must be first so that
+## The HDF5 and NetCDF libraries must be first so that
 ## their libdeps are defined for any plugins that need them.
 ##
 ## For libraries with LIBDEP settings, order matters.

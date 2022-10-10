@@ -197,6 +197,9 @@
 #    Gabriel Wlazłowski & Andrzej Makowski, Tue 15 Sep, 2021
 #    Add WData plugin.
 #
+#    Kathleen Biagas, Mon Sep 26, 2022
+#    Remove HDF4-dependent plugins: Cosmos, RAGE, ZeusMP.
+#
 #****************************************************************************
 
 IF(NOT WIN32)
@@ -361,10 +364,6 @@ CHECK_THIRDPARTY_SATISFIED(Boxlib3D BOXLIB)
 CHECK_THIRDPARTY_SATISFIED(FITS CFITSIO)
 CHECK_THIRDPARTY_SATISFIED(FMS FMS MFEM)
 CHECK_THIRDPARTY_SATISFIED(GDAL GDAL)
-
-CHECK_THIRDPARTY_SATISFIED(Cosmos HDF4)
-CHECK_THIRDPARTY_SATISFIED(RAGE   HDF4)
-CHECK_THIRDPARTY_SATISFIED(ZeusMP HDF4)
 
 CHECK_THIRDPARTY_SATISFIED(MDSplus MDSPLUS)
 CHECK_THIRDPARTY_SATISFIED(Mili    MILI)
