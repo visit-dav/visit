@@ -1,1 +1,1 @@
-engine_par: Directory VISIT_TOP_DIR/test/current/queries/xrayimage/testdir/doesnotexist does not exist.
+engine_par: Directory VISIT_TOP_DIR/test/testdir/doesnotexist does not exist.

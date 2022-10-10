@@ -34,6 +34,12 @@
 #    Justin Privitera, Tue Sep 27 10:52:59 PDT 2022
 #    Changed names of most output files to reflect new naming conventions.
 #    Added tests for filenames, all output types, and result messages.
+# 
+#    Justin Privitera, Fri Sep 30 15:54:40 PDT 2022
+#    Changed location of temp output files.
+#    os.remove is gone.
+#    tmp/baddir is gone, replaced.
+#    These changes were made so the tests no longer crash on windows.
 #
 # ----------------------------------------------------------------------------
 
@@ -289,7 +295,7 @@ DeleteAllPlots()
 # 
 # test setting output directory
 # 
-outdir_set = out_base + "/testdir"
+outdir_set = pjoin(TestEnv.params["run_dir"], "testdir")
 if not os.path.isdir(outdir_set):
     os.mkdir(outdir_set)
 
@@ -312,14 +318,22 @@ CloseDatabase(silo_data_path("curv3d.silo"))
 # test blueprint output
 #
 
-conduit_db = out_path(outdir_set, "output.root")
+conduit_dir_hdf5 = pjoin(outdir_set, "hdf5")
+if not os.path.isdir(conduit_dir_hdf5):
+    os.mkdir(conduit_dir_hdf5)
+conduit_dir_json = pjoin(outdir_set, "json")
+if not os.path.isdir(conduit_dir_json):
+    os.mkdir(conduit_dir_json)
+conduit_dir_yaml = pjoin(outdir_set, "yaml")
+if not os.path.isdir(conduit_dir_yaml):
+    os.mkdir(conduit_dir_yaml)
 
 def setup_bp_test():
     OpenDatabase(silo_data_path("curv3d.silo"))
     AddPlot("Pseudocolor", "d")
     DrawPlots()
 
-def test_bp_state(testname):
+def test_bp_state(testname, conduit_db):
     xrayout = conduit.Node()
     conduit.relay.io.blueprint.load_mesh(xrayout, conduit_db)
     
@@ -377,13 +391,14 @@ def test_bp_state(testname):
 setup_bp_test()
 
 # run query and test the output message
-Query("XRay Image", "hdf5", outdir_set, 1, 0.0, 2.5, 10.0, 0, 0, 10., 10., 300, 200, ("d", "p"))
+Query("XRay Image", "hdf5", conduit_dir_hdf5, 1, 0.0, 2.5, 10.0, 0, 0, 10., 10., 300, 200, ("d", "p"))
 s = GetQueryOutputString()
 TestText("xrayimage32", s)
 DeleteAllPlots()
 CloseDatabase(silo_data_path("curv3d.silo"))
 
 # test opening the bp output and visualizing in visit
+conduit_db = pjoin(conduit_dir_hdf5, "output.cycle_000048.root")
 OpenDatabase(conduit_db)
 AddPlot("Pseudocolor", "mesh_image_topo/intensities")
 DrawPlots()
@@ -391,20 +406,19 @@ Test("Blueprint_HDF5_X_Ray_Output")
 DeleteAllPlots()
 CloseDatabase(conduit_db)
 
-test_bp_state("Blueprint_HDF5_X_Ray_Output")
-
-os.remove(conduit_db)
+test_bp_state("Blueprint_HDF5_X_Ray_Output", conduit_db)
 
 # json
 
 setup_bp_test()
 
-Query("XRay Image", "json", outdir_set, 1, 0.0, 2.5, 10.0, 0, 0, 10., 10., 300, 200, ("d", "p"))
+Query("XRay Image", "json", conduit_dir_json, 1, 0.0, 2.5, 10.0, 0, 0, 10., 10., 300, 200, ("d", "p"))
 s = GetQueryOutputString()
 TestText("xrayimage33", s)
 DeleteAllPlots()
 CloseDatabase(silo_data_path("curv3d.silo"))
 
+conduit_db = pjoin(conduit_dir_json, "output.cycle_000048.root")
 OpenDatabase(conduit_db)
 AddPlot("Pseudocolor", "mesh_image_topo/intensities")
 DrawPlots()
@@ -412,26 +426,23 @@ Test("Blueprint_JSON_X_Ray_Output")
 DeleteAllPlots()
 CloseDatabase(conduit_db)
 
-os.remove(conduit_db)
-
-# conduit_json
+# yaml
 
 setup_bp_test()
 
-Query("XRay Image", "yaml", outdir_set, 1, 0.0, 2.5, 10.0, 0, 0, 10., 10., 300, 200, ("d", "p"))
+Query("XRay Image", "yaml", conduit_dir_yaml, 1, 0.0, 2.5, 10.0, 0, 0, 10., 10., 300, 200, ("d", "p"))
 s = GetQueryOutputString()
 TestText("xrayimage34", s)
 DeleteAllPlots()
 CloseDatabase(silo_data_path("curv3d.silo"))
-OpenDatabase(conduit_db)
 
+conduit_db = pjoin(conduit_dir_yaml, "output.cycle_000048.root")
+OpenDatabase(conduit_db)
 AddPlot("Pseudocolor", "mesh_image_topo/intensities")
 DrawPlots()
 Test("Blueprint_YAML_X_Ray_Output")
 DeleteAllPlots()
 CloseDatabase(conduit_db)
-
-os.remove(conduit_db)
 
 # 
 # test catching failures
@@ -451,25 +462,27 @@ TestText("xrayimage35", s)
 DeleteAllPlots()
 CloseDatabase(silo_data_path("curv3d.silo"))
 
-# write to dir w/ read only permissions
+# os.chmod does not work on windows
+if not platform.system() == "Windows":
+    # write to dir w/ read only permissions
 
-outdir_bad = "/tmp/baddir"
-if not os.path.isdir(outdir_bad):
-    os.mkdir(outdir_bad)
-os.chmod(outdir_bad, 0o444)
+    outdir_bad = pjoin(outdir_set, "baddir")
+    if not os.path.isdir(outdir_bad):
+        os.mkdir(outdir_bad)
+    os.chmod(outdir_bad, 0o444)
 
-OpenDatabase(silo_data_path("curv3d.silo"))
-AddPlot("Pseudocolor", "d")
-DrawPlots()
+    OpenDatabase(silo_data_path("curv3d.silo"))
+    AddPlot("Pseudocolor", "d")
+    DrawPlots()
 
-Query("XRay Image", "hdf5", outdir_bad, 1, 0.0, 2.5, 10.0, 0, 0, 10., 10., 300, 300, ("d", "p"))
-s = GetQueryOutputString()
-# strip out two lines that make the test machine dependent
-s = '\n'.join([line if line[:4] != "file" else '' for line in s.split('\n')])
-s = '\n'.join([line if line[:4] != "line" else '' for line in s.split('\n')])
-TestText("xrayimage36", s)
-DeleteAllPlots()
-CloseDatabase(silo_data_path("curv3d.silo"))
+    Query("XRay Image", "hdf5", outdir_bad, 1, 0.0, 2.5, 10.0, 0, 0, 10., 10., 300, 300, ("d", "p"))
+    s = GetQueryOutputString()
+    # strip out two lines that make the test machine dependent
+    s = '\n'.join([line if line[:4] != "file" else '' for line in s.split('\n')])
+    s = '\n'.join([line if line[:4] != "line" else '' for line in s.split('\n')])
+    TestText("xrayimage36", s)
+    DeleteAllPlots()
+    CloseDatabase(silo_data_path("curv3d.silo"))
 
 # 
 # Test filenames and output types
