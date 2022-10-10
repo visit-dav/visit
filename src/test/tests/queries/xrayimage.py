@@ -458,25 +458,27 @@ TestText("xrayimage35", s)
 DeleteAllPlots()
 CloseDatabase(silo_data_path("curv3d.silo"))
 
-# write to dir w/ read only permissions
+# os.chmod does not work on windows
+if not platform.system() == "Windows":
+    # write to dir w/ read only permissions
 
-outdir_bad = pjoin(outdir_set, "baddir")
-if not os.path.isdir(outdir_bad):
-    os.mkdir(outdir_bad)
-os.chmod(outdir_bad, 0o444)
+    outdir_bad = pjoin(outdir_set, "baddir")
+    if not os.path.isdir(outdir_bad):
+        os.mkdir(outdir_bad)
+    os.chmod(outdir_bad, 0o444)
 
-OpenDatabase(silo_data_path("curv3d.silo"))
-AddPlot("Pseudocolor", "d")
-DrawPlots()
+    OpenDatabase(silo_data_path("curv3d.silo"))
+    AddPlot("Pseudocolor", "d")
+    DrawPlots()
 
-Query("XRay Image", "hdf5", outdir_bad, 1, 0.0, 2.5, 10.0, 0, 0, 10., 10., 300, 300, ("d", "p"))
-s = GetQueryOutputString()
-# strip out two lines that make the test machine dependent
-s = '\n'.join([line if line[:4] != "file" else '' for line in s.split('\n')])
-s = '\n'.join([line if line[:4] != "line" else '' for line in s.split('\n')])
-TestText("xrayimage36", s)
-DeleteAllPlots()
-CloseDatabase(silo_data_path("curv3d.silo"))
+    Query("XRay Image", "hdf5", outdir_bad, 1, 0.0, 2.5, 10.0, 0, 0, 10., 10., 300, 300, ("d", "p"))
+    s = GetQueryOutputString()
+    # strip out two lines that make the test machine dependent
+    s = '\n'.join([line if line[:4] != "file" else '' for line in s.split('\n')])
+    s = '\n'.join([line if line[:4] != "line" else '' for line in s.split('\n')])
+    TestText("xrayimage36", s)
+    DeleteAllPlots()
+    CloseDatabase(silo_data_path("curv3d.silo"))
 
 #
 # Test that we get decent error messages for common cases
