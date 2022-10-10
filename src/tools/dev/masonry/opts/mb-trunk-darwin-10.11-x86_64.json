@@ -16,6 +16,7 @@
                  "conduit",
                  "eavl",
                  "gdal",
+                 "hdf4",
                  "h5part",
                  "hdf5",
                  "mfem",
