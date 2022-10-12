@@ -19,8 +19,7 @@
 
 #include "mfem.hpp"
 class JSONRoot;
-
-
+class DBOptionsAttributes;
 
 // ****************************************************************************
 //  Class: avtMFEMFileFormat
@@ -52,7 +51,8 @@ class JSONRoot;
 class avtMFEMFileFormat : public avtSTMDFileFormat
 {
   public:
-                       avtMFEMFileFormat(const char *);
+                       avtMFEMFileFormat(const char *, 
+                                         const DBOptionsAttributes *);
     virtual           ~avtMFEMFileFormat();
     
     // VisIt can't cache for us b/c we need to implement LOD support. 

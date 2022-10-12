@@ -14,6 +14,7 @@
 #include <sstream>
 
 #include <avtDatabaseMetaData.h>
+#include <DBOptionsAttributes.h>
 
 #include <DebugStream.h>
 #include <Expression.h>
@@ -63,12 +64,22 @@ using namespace mfem;
 //
 // ****************************************************************************
 
-avtMFEMFileFormat::avtMFEMFileFormat(const char *filename)
+avtMFEMFileFormat::avtMFEMFileFormat(const char *filename, 
+                                     const DBOptionsAttributes *readOpts)
     : avtSTMDFileFormat(&filename, 1)
 {
     selectedLOD = 0;
     root        = NULL;
-    m_new_refine = false;
+    if (readOpts->GetEnum("MFEM LOR Setting") == 0)
+    {
+        // legacy LOR was requested
+        m_new_refine = false;
+    }
+    else
+    {
+        // new LOR was requested
+        m_new_refine = true;
+    }    
 }
 
 // ****************************************************************************
