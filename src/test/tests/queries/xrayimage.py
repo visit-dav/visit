@@ -488,10 +488,6 @@ if not platform.system() == "Windows":
 # Test filenames and output types
 # 
 
-outdir_set = pjoin(out_base, "testdir")
-if not os.path.isdir(outdir_set):
-    os.mkdir(outdir_set)
-
 setup_bp_test()
 
 DefineScalarExpression("d1", 'recenter(d, "zonal")')
@@ -546,10 +542,6 @@ def query_family_backwards_compat(family, thevars, outdir):
         view_up=(0, 1, 0), 
         vars=thevars)
     return GetQueryOutputString()
-
-outdir_set = pjoin(out_base, "testdir")
-if not os.path.isdir(outdir_set):
-    os.mkdir(outdir_set)
 
 # uncomment when https://github.com/visit-dav/visit/issues/18152 is fixed
 # output_types = ["bmp", "jpeg", "png", "tif", "bof", "bov", "json", "hdf5", "yaml"]

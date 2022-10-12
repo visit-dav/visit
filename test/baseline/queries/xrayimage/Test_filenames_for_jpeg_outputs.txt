@@ -1,9 +1,9 @@
-The x ray image query results were written to the file VISIT_TOP_DIR/test/current/queries/xrayimage/testdir_jpeg/output.0001.jpg
-The x ray image query results were written to the files VISIT_TOP_DIR/test/current/queries/xrayimage/testdir_jpeg/output.0002.00.jpg - VISIT_TOP_DIR/test/current/queries/xrayimage/testdir_jpeg/output.0002.01.jpg
-The x ray image query results were written to the file VISIT_TOP_DIR/test/current/queries/xrayimage/testdir_jpeg/output.0003.jpg
-The x ray image query results were written to the files VISIT_TOP_DIR/test/current/queries/xrayimage/testdir_jpeg/output.0004.00.jpg - VISIT_TOP_DIR/test/current/queries/xrayimage/testdir_jpeg/output.0004.01.jpg
-The x ray image query results were written to the file VISIT_TOP_DIR/test/current/queries/xrayimage/testdir_jpeg/output.cycle_000048.jpg
-The x ray image query results were written to the files VISIT_TOP_DIR/test/current/queries/xrayimage/testdir_jpeg/output.cycle_000048.00.jpg - VISIT_TOP_DIR/test/current/queries/xrayimage/testdir_jpeg/output.cycle_000048.01.jpg
-The x ray image query results were written to the file VISIT_TOP_DIR/test/current/queries/xrayimage/testdir_jpeg/output.jpg
-The x ray image query results were written to the files VISIT_TOP_DIR/test/current/queries/xrayimage/testdir_jpeg/output.00.jpg - VISIT_TOP_DIR/test/current/queries/xrayimage/testdir_jpeg/output.01.jpg
+The x ray image query results were written to the file VISIT_TOP_DIR/test/testdir_jpeg/output.0001.jpg
+The x ray image query results were written to the files VISIT_TOP_DIR/test/testdir_jpeg/output.0002.00.jpg - VISIT_TOP_DIR/test/testdir_jpeg/output.0002.01.jpg
+The x ray image query results were written to the file VISIT_TOP_DIR/test/testdir_jpeg/output.0003.jpg
+The x ray image query results were written to the files VISIT_TOP_DIR/test/testdir_jpeg/output.0004.00.jpg - VISIT_TOP_DIR/test/testdir_jpeg/output.0004.01.jpg
+The x ray image query results were written to the file VISIT_TOP_DIR/test/testdir_jpeg/output.cycle_000048.jpg
+The x ray image query results were written to the files VISIT_TOP_DIR/test/testdir_jpeg/output.cycle_000048.00.jpg - VISIT_TOP_DIR/test/testdir_jpeg/output.cycle_000048.01.jpg
+The x ray image query results were written to the file VISIT_TOP_DIR/test/testdir_jpeg/output.jpg
+The x ray image query results were written to the files VISIT_TOP_DIR/test/testdir_jpeg/output.00.jpg - VISIT_TOP_DIR/test/testdir_jpeg/output.01.jpg
 ['output.0000.jpg', 'output.0001.jpg', 'output.0002.00.jpg', 'output.0002.01.jpg', 'output.0003.jpg', 'output.0004.00.jpg', 'output.0004.01.jpg', 'output.cycle_000048.jpg', 'output.cycle_000048.00.jpg', 'output.cycle_000048.01.jpg', 'output.jpg', 'output.00.jpg', 'output.01.jpg']
