@@ -34,6 +34,9 @@
 #    Justin Privitera, Tue Sep 27 10:52:59 PDT 2022
 #    Changed names of most output files to reflect new naming conventions.
 #    Added tests for filenames, all output types, and result messages.
+# 
+#    Justin Privitera, Wed Oct 12 11:38:11 PDT 2022
+#    Changed output type for many tests since bmp output type is removed.
 #
 # ----------------------------------------------------------------------------
 
