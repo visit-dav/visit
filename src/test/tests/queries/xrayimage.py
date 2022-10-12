@@ -450,7 +450,7 @@ CloseDatabase(conduit_db)
 
 # write to dir that does not exist
 
-dir_dne = outdir_set + "/doesnotexist"
+dir_dne = pjoin(outdir_set, "doesnotexist")
 if os.path.isdir(dir_dne):
     os.rmdir(dir_dne)
 
@@ -488,7 +488,7 @@ if not platform.system() == "Windows":
 # Test filenames and output types
 # 
 
-outdir_set = out_base + "/testdir"
+outdir_set = pjoin(out_base, "testdir")
 if not os.path.isdir(outdir_set):
     os.mkdir(outdir_set)
 
@@ -547,7 +547,7 @@ def query_family_backwards_compat(family, thevars, outdir):
         vars=thevars)
     return GetQueryOutputString()
 
-outdir_set = out_base + "/testdir"
+outdir_set = pjoin(out_base, "testdir")
 if not os.path.isdir(outdir_set):
     os.mkdir(outdir_set)
 
