@@ -4,7 +4,6 @@
 
 #include <avtXRayImageQuery.h>
 
-#include <vtkBMPWriter.h>
 #include <vtkImageData.h>
 #include <vtkJPEGWriter.h>
 #include <vtkPointData.h>
@@ -78,24 +77,23 @@ inline bool filenameSchemeValid(int ftype)
 //    6) add them to `src/gui/QvisXRayImageQueryWidget.C` in the constructor.
 
 // a constant for how many valid output types there are
-const int NUM_OUTPUT_TYPES = 9;
+const int NUM_OUTPUT_TYPES = 8;
 
 // member `outputType` indexes these arrays
-const char *file_protocols[NUM_OUTPUT_TYPES] = {"bmp", "jpeg", "png", "tif", "bof", "bov", 
+const char *file_protocols[NUM_OUTPUT_TYPES] = {"jpeg", "png", "tif", "bof", "bov", 
     /*conduit blueprint output types */ "json", "hdf5", "yaml"}; // removed conduit_bin and conduit_json
-const char *file_extensions[NUM_OUTPUT_TYPES] = {"bmp", "jpg", "png", "tif", "bof", "bov", 
+const char *file_extensions[NUM_OUTPUT_TYPES] = {"jpg", "png", "tif", "bof", "bov", 
     /*conduit blueprint output types */ "root", "root", "root"};
 
 // constants for each of the output types
-const int BMP_OUT = 0;
-const int JPEG_OUT = 1;
-const int PNG_OUT = 2;
-const int TIF_OUT = 3;
-const int RAWFLOATS_OUT = 4;
-const int BOV_OUT = 5;
-const int BLUEPRINT_JSON_OUT = 6;
-const int BLUEPRINT_HDF5_OUT = 7;
-const int BLUEPRINT_YAML_OUT = 8;
+const int JPEG_OUT = 0;
+const int PNG_OUT = 1;
+const int TIF_OUT = 2;
+const int RAWFLOATS_OUT = 3;
+const int BOV_OUT = 4;
+const int BLUEPRINT_JSON_OUT = 5;
+const int BLUEPRINT_HDF5_OUT = 6;
+const int BLUEPRINT_YAML_OUT = 7;
 
 // an output type is valid if it is an int in [0,NUM_OUTPUT_TYPES)
 inline bool outputTypeValid(int otype)
@@ -103,10 +101,9 @@ inline bool outputTypeValid(int otype)
     return otype >= 0 && otype < NUM_OUTPUT_TYPES;
 }
 
-inline bool outputTypeIsBmpJpegPngOrTif(int otype)
+inline bool outputTypeIsJpegPngOrTif(int otype)
 {
-    return otype == BMP_OUT || otype == JPEG_OUT || 
-        otype == PNG_OUT || otype == TIF_OUT;
+    return otype == JPEG_OUT || otype == PNG_OUT || otype == TIF_OUT;
 }
 
 inline bool outputTypeIsRawfloatsOrBov(int otype)
@@ -122,7 +119,7 @@ inline bool outputTypeIsBlueprint(int otype)
 
 inline bool multipleOutputFiles(int otype, int numBins)
 {
-    return (outputTypeIsBmpJpegPngOrTif(otype) && numBins > 1) || 
+    return (outputTypeIsJpegPngOrTif(otype) && numBins > 1) || 
         outputTypeIsRawfloatsOrBov(otype);
 }
 
@@ -1090,6 +1087,9 @@ avtXRayImageQuery::GetSecondaryVars(std::vector<std::string> &outVars)
 //     - Updated output messages to reflect new filenaming schemes.
 //     - Moved ifdef conduit guards to reflect desired behavior.
 //     - Cleaned up result message handling.
+// 
+//    Justin Privitera, Wed Oct 12 11:38:11 PDT 2022
+//    Removed bmp output type.
 //
 // ****************************************************************************
 
@@ -1275,7 +1275,7 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
 #ifdef HAVE_CONDUIT
         conduit::Node data_out;
 #endif
-        if (outputTypeIsBmpJpegPngOrTif(outputType))
+        if (outputTypeIsJpegPngOrTif(outputType))
         {
             const bool write_bin_info_to_filename{numBins > 1};
             for (int i = 0; i < numBins; i++)
@@ -1523,7 +1523,7 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
         {
             std::stringstream buf;
 
-            if (outputTypeIsBmpJpegPngOrTif(outputType))
+            if (outputTypeIsJpegPngOrTif(outputType))
             {
                 if (numBins == 1)
                     buf << "The x ray image query results were "
@@ -1719,6 +1719,9 @@ avtXRayImageQuery::CheckData(vtkDataSet **dataSets,  const int nsets)
 //    Justin Privitera, Tue Sep 27 10:52:59 PDT 2022
 //    Added new arg to control if bin info is written to filenames. It is only
 //    written if necessary.
+// 
+//    Justin Privitera, Wed Oct 12 11:38:11 PDT 2022
+//    Removed bmp output type.
 //
 // ****************************************************************************
 
@@ -1769,17 +1772,7 @@ avtXRayImageQuery::WriteImage(const char *baseName, int iImage, int nPixels,
     else
         fileName << baseName;
 
-    if (outputType == BMP_OUT)
-    {
-        vtkImageWriter *writer = vtkBMPWriter::New();
-        std::stringstream fileName;
-        fileName << ".bmp";
-        writer->SetFileName(fileName.str().c_str());
-        writer->SetInputData(image);
-        writer->Write();
-        writer->Delete();
-    }
-    else if (outputType == JPEG_OUT)
+    if (outputType == JPEG_OUT)
     {
         vtkImageWriter *writer = vtkJPEGWriter::New();
         fileName << ".jpg";
