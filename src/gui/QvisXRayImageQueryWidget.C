@@ -51,6 +51,9 @@
 // 
 //   Justin Privitera, Tue Sep 27 10:52:59 PDT 2022
 //   Replaced family files with filename scheme, which has more options.
+// 
+//    Justin Privitera, Wed Oct 12 11:38:11 PDT 2022
+//    Removed bmp output type.
 //
 // ****************************************************************************
 
