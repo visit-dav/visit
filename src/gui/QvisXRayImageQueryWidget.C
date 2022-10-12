@@ -69,7 +69,6 @@ QvisXRayImageQueryWidget::QvisXRayImageQueryWidget(QWidget *parent,
     // 
     topLayout->addWidget(new QLabel(tr("Output Image Format")), 0, 0);
     imageFormat = new QComboBox();
-    imageFormat->addItem(tr("bmp"));
     imageFormat->addItem(tr("jpeg"));
     imageFormat->addItem(tr("png"));
     imageFormat->addItem(tr("tiff"));
@@ -78,7 +77,7 @@ QvisXRayImageQueryWidget::QvisXRayImageQueryWidget(QWidget *parent,
     imageFormat->addItem(tr("json"));
     imageFormat->addItem(tr("hdf5"));
     imageFormat->addItem(tr("yaml"));
-    imageFormat->setCurrentIndex(2);
+    imageFormat->setCurrentIndex(1);
     topLayout->addWidget(imageFormat, 0, 1);
 
     // 
