@@ -1087,6 +1087,9 @@ avtXRayImageQuery::GetSecondaryVars(std::vector<std::string> &outVars)
 //     - Updated output messages to reflect new filenaming schemes.
 //     - Moved ifdef conduit guards to reflect desired behavior.
 //     - Cleaned up result message handling.
+// 
+//    Justin Privitera, Wed Oct 12 11:38:11 PDT 2022
+//    Removed bmp output type.
 //
 // ****************************************************************************
 
@@ -1716,6 +1719,9 @@ avtXRayImageQuery::CheckData(vtkDataSet **dataSets,  const int nsets)
 //    Justin Privitera, Tue Sep 27 10:52:59 PDT 2022
 //    Added new arg to control if bin info is written to filenames. It is only
 //    written if necessary.
+// 
+//    Justin Privitera, Wed Oct 12 11:38:11 PDT 2022
+//    Removed bmp output type.
 //
 // ****************************************************************************
 
