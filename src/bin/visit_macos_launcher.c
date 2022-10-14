@@ -28,77 +28,52 @@
 
 int system(char const *); /* declare instead of #include <stdlib.h> */
 
+/* Implement this as macro so any error is returned from main.
+   Wrap with do-while to enforce normal semicolon termination. */
+#define COPYCHARS(CHARS)                     \
+do                                           \
+{                                            \
+    for (int i = 0; CHARS[i]; i++, cmdidx++) \
+    {                                        \
+        if (cmdidx >= sizeof(syscmd))        \
+            return 12; /* ENOMEM */          \
+        syscmd[cmdidx] = CHARS[i];           \
+    }                                        \
+} while (0)
+
 int main(int argc, char **argv)
 {
     char const *peerPath = "/../Resources/bin/visit";
-    int const m = 23; /* length of peerPath */
-    int useDot = 0;
+    int cmdidx;
     char syscmd[8192];
 
-    /* initialize syscmd to all null */
-    int i = 0;
-    while (i < sizeof(syscmd))
-    {
-        syscmd[i] = '\0';
-        i++;
-    }
+    /* initialize syscmd to all null chars */
+    cmdidx = 0;
+    while (cmdidx < sizeof(syscmd))
+        syscmd[cmdidx++] = '\0';
+    cmdidx = 0;
 
-    /* get length of argv[0] string */
-    int n = 0;
-    while (argv[0][n]) n++;
+    /* start by building from full copy of argv[0] */
+    COPYCHARS(argv[0]);
 
     /* walk backwards from end of argv[0] to first slash char */
-    int i0 = n;
-    while (argv[0][i0] != '/' && i0 >= 0) i0--;
+    while (syscmd[cmdidx] != '/' && cmdidx >= 0) cmdidx--;
 
-    /* if we didn't actually find a slash char, i0 will be -1
+    /* if we didn't actually find a slash char, cmdidx will be -1
        and we're in a funky place. Just use "." */
-    if (i0 == -1)
+    if (cmdidx == -1)
     {
-        i0 = 1;
-        useDot = 1;
+        cmdidx = 0;
+        COPYCHARS(".");
     }
 
-    /* start building system command */
-    if (i0 + m >= sizeof(syscmd))
-        return 12; /* ENOMEM */
-
-    /* copy chars up to last slash char */
-    int i1 = 0;
-    while (i1 != i0)
-    {
-        syscmd[i1] = useDot ? '.' : argv[0][i1];
-        i1++;
-    }
-
-    /* copy path to tack on after last slash char */
-    int i2 = 0;
-    while (i1 < i0 + m)
-    {
-        syscmd[i1] = peerPath[i2];
-        i1++;
-        i2++;
-    }
+    COPYCHARS(peerPath);
 
     /* add any command-line arguments */
-    for (i = 1; i < argc; i++)
+    for (int j = 1; j < argc; j++)
     {
-        if (i1 >= sizeof(syscmd))
-            return 12; /* ENOMEM */
-
-        syscmd[i1] = ' ';
-        i1++;
-    
-        int i3 = 0;
-        while (argv[i][i3])
-        {
-            if (i1 >= sizeof(syscmd))
-                return 12; /* ENOMEM */
-
-            syscmd[i1] = argv[i][i3];
-            i1++;
-            i3++;
-        }
+        COPYCHARS(" ");
+        COPYCHARS(argv[j]);
     }
     
     /* do what we came here for */
