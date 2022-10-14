@@ -60,7 +60,7 @@ int main(int argc, char **argv)
     }
 
     /* start building system command */
-    if (i0 + m > sizeof(syscmd))
+    if (i0 + m >= sizeof(syscmd))
         return 12; /* ENOMEM */
 
     /* copy chars up to last slash char */
@@ -83,12 +83,18 @@ int main(int argc, char **argv)
     /* add any command-line arguments */
     for (i = 1; i < argc; i++)
     {
+        if (i1 >= sizeof(syscmd))
+            return 12; /* ENOMEM */
+
         syscmd[i1] = ' ';
         i1++;
     
         int i3 = 0;
         while (argv[i][i3])
         {
+            if (i1 >= sizeof(syscmd))
+                return 12; /* ENOMEM */
+
             syscmd[i1] = argv[i][i3];
             i1++;
             i3++;
