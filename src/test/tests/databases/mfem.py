@@ -26,6 +26,27 @@ input_meshs  = [ f for f in mfem_roots if f.count("ex0") == 0]
 ex01_results = [ f for f in mfem_roots if f.count("ex01") == 1]
 ex02_results = [ f for f in mfem_roots if f.count("ex02") == 1]
 
+def set_test_view():
+    v = View3DAttributes()
+    v.viewNormal = (-0.510614, 0.302695, 0.804767)
+    v.focus = (0, 0, 0)
+    v.viewUp = (-0.0150532, 0.932691, -0.360361)
+    v.viewAngle = 30
+    v.parallelScale = 17.3205
+    v.nearPlane = -34.641
+    v.farPlane = 34.641
+    v.imagePan = (0, 0)
+    v.imageZoom = 1
+    v.perspective = 1
+    v.eyeAngle = 2
+    v.centerOfRotationSet = 0
+    v.centerOfRotation = (0, 0, 0)
+    v.axis3DScaleFlag = 0
+    v.axis3DScales = (1, 1, 1)
+    v.shear = (0, 0, 1)
+    v.windowValid = 1
+    SetView3D(v)
+
 TestSection("Input Mesh Files")
 for f in input_meshs:
     base = os.path.splitext(os.path.basename(f))[0]
@@ -93,5 +114,107 @@ DrawPlots()
 Test("mfem_expressions_3")
 DeleteAllPlots()
 CloseDatabase(data_path("mfem_test_data/ex02-beam-tet.mfem_root"))
+
+def test_mfem_lor_mesh(tag_name, dbfile):
+    base = os.path.splitext(os.path.basename(dbfile))[0]
+
+    # get default options
+    readOptions = GetDefaultFileOpenOptions("MFEM")
+    readOptions["MFEM LOR Setting"] = "MFEM LOR"
+    SetDefaultFileOpenOptions("MFEM", readOptions)
+    OpenDatabase(dbfile)
+
+    # we want to test a picture of a wireframe
+    # new LOR should only have the outer edge
+    AddPlot("Subset", "main")
+    SubsetAtts = SubsetAttributes()
+    SubsetAtts.wireframe = 1
+    SetPlotOptions(SubsetAtts)
+    set_test_view()
+    DrawPlots()
+    Test(tag_name + "_" + base + "_lor")
+    DeleteAllPlots()
+    ResetView()
+    CloseDatabase(dbfile)
+
+    ##############################
+
+    # examine legacy
+    readOptions = GetDefaultFileOpenOptions("MFEM")
+    readOptions["MFEM LOR Setting"] = "Legacy LOR"
+    SetDefaultFileOpenOptions("MFEM", readOptions)
+    OpenDatabase(dbfile)
+
+    # old LOR leaves a busy wireframe
+    AddPlot("Subset", "main")
+    SubsetAtts = SubsetAttributes()
+    SubsetAtts.wireframe = 1
+    SetPlotOptions(SubsetAtts)
+    set_test_view()
+    DrawPlots()
+    Test(tag_name + "_" + base + "_legacy_lor")
+    DeleteAllPlots()
+    ResetView()
+    CloseDatabase(dbfile)
+
+    # restore default
+    readOptions = GetDefaultFileOpenOptions("MFEM")
+    readOptions["MFEM LOR Setting"] = "MFEM LOR"
+    SetDefaultFileOpenOptions("MFEM", readOptions)
+
+TestSection("Legacy and New LOR")
+for dbfile in input_meshs:
+    test_mfem_lor_mesh("LOR", dbfile)
+
+def test_mfem_lor_field(tag_name, dbfile):
+    base = os.path.splitext(os.path.basename(dbfile))[0]
+
+    readOptions = GetDefaultFileOpenOptions("MFEM")
+    readOptions["MFEM LOR Setting"] = "MFEM LOR"
+    SetDefaultFileOpenOptions("MFEM", readOptions)
+    OpenDatabase(dbfile)
+
+    AddPlot("Pseudocolor","gf")
+    AddOperator("MultiresControl", 1)
+    SetActivePlots(0)
+    MultiresControlAtts = MultiresControlAttributes()
+    MultiresControlAtts.resolution = 3
+    SetOperatorOptions(MultiresControlAtts, 0, 1)
+    set_test_view()
+    DrawPlots()
+    Test(tag_name + "_" + base + "_pseudocolor_gf_lor")
+    DeleteAllPlots()
+    ResetView()
+
+    CloseDatabase(dbfile)
+
+    ##############################
+
+    # examine legacy
+    readOptions = GetDefaultFileOpenOptions("MFEM")
+    readOptions["MFEM LOR Setting"] = "Legacy LOR"
+    SetDefaultFileOpenOptions("MFEM", readOptions)
+    OpenDatabase(dbfile)
+
+    AddPlot("Pseudocolor","gf")
+    AddOperator("MultiresControl", 1)
+    SetActivePlots(0)
+    MultiresControlAtts = MultiresControlAttributes()
+    MultiresControlAtts.resolution = 3
+    SetOperatorOptions(MultiresControlAtts, 0, 1)
+    set_test_view()
+    DrawPlots()
+    Test(tag_name + "_" + base + "_pseudocolor_gf_legacy_lor")
+    DeleteAllPlots()
+    ResetView()
+
+    # restore default
+    readOptions = GetDefaultFileOpenOptions("MFEM")
+    readOptions["MFEM LOR Setting"] = "MFEM LOR"
+    SetDefaultFileOpenOptions("MFEM", readOptions)
+
+TestSection("Legacy and New LOR Fields")
+for dbfile in ex01_results:
+    test_mfem_lor_field("LOR_Fields", dbfile)
 
 Exit()

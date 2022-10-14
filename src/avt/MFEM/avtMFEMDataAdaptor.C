@@ -372,13 +372,25 @@ avtMFEMDataAdaptor::RefineMeshToVTK(mfem::Mesh *mesh,
         return LegacyRefineMeshToVTK(mesh, domain, lod);
     }
 
-    // Check if the mesh is periodic.
-    const L2_FECollection *L2_coll = dynamic_cast<const L2_FECollection *>
-                                     (mesh->GetNodes()->FESpace()->FEColl());
-    if (L2_coll)
+    if (mesh)
     {
-        AVT_MFEM_INFO("High Order Mesh is periodic; falling back to Legacy LOR.");
-        return LegacyRefineMeshToVTK(mesh, domain, lod);
+        if (mesh->GetNodes())
+        {
+            if (mesh->GetNodes()->FESpace())
+            {
+                if (mesh->GetNodes()->FESpace()->FEColl())
+                {
+                    // Check if the mesh is periodic.
+                    const L2_FECollection *L2_coll = dynamic_cast<const L2_FECollection *>
+                                                     (mesh->GetNodes()->FESpace()->FEColl());
+                    if (L2_coll)
+                    {
+                        AVT_MFEM_INFO("High Order Mesh is periodic; falling back to Legacy LOR.");
+                        return LegacyRefineMeshToVTK(mesh, domain, lod);
+                    }
+                }
+            }
+        }
     }
 
     AVT_MFEM_INFO("High Order Mesh is not periodic.");
@@ -608,13 +620,25 @@ avtMFEMDataAdaptor::RefineGridFunctionToVTK(mfem::Mesh *mesh,
         return LegacyRefineGridFunctionToVTK(mesh, gf, lod, var_is_nodal);
     }
 
-    // Check if the mesh is periodic.
-    const L2_FECollection *L2_coll = dynamic_cast<const L2_FECollection *>
-                                     (mesh->GetNodes()->FESpace()->FEColl());
-    if (L2_coll)
+    if (mesh)
     {
-        AVT_MFEM_INFO("High Order Mesh is periodic; falling back to Legacy LOR.");
-        return LegacyRefineGridFunctionToVTK(mesh, gf, lod, var_is_nodal);
+        if (mesh->GetNodes())
+        {
+            if (mesh->GetNodes()->FESpace())
+            {
+                if (mesh->GetNodes()->FESpace()->FEColl())
+                {
+                    // Check if the mesh is periodic.
+                    const L2_FECollection *L2_coll = dynamic_cast<const L2_FECollection *>
+                                                     (mesh->GetNodes()->FESpace()->FEColl());
+                    if (L2_coll)
+                    {
+                        AVT_MFEM_INFO("High Order Mesh is periodic; falling back to Legacy LOR.");
+                        return LegacyRefineGridFunctionToVTK(mesh, gf, lod, var_is_nodal);
+                    }
+                }
+            }
+        }
     }
 
     AVT_MFEM_INFO("High Order Mesh is not periodic.");
@@ -632,9 +656,26 @@ avtMFEMDataAdaptor::RefineGridFunctionToVTK(mfem::Mesh *mesh,
     // L2 is zonal
 
     std::string basis(gf->FESpace()->FEColl()->Name());
-    // we only have L2 or H1 at this point
-    bool node_centered = basis.find("H1_") != std::string::npos;
-    if(node_centered)
+    // we may have more than just L2 or H1 at this point
+    bool l2 = basis.find("L2_") != std::string::npos;
+    bool h1 = basis.find("H1_") != std::string::npos;
+    bool node_centered;
+    if (h1 && l2)
+    {
+        AVT_MFEM_EXCEPTION1(InvalidVariableException, 
+            "RefineGridFunctionToVTK: grid function cannot be both H1 and L2");
+    }
+    else if (!h1 && !l2) // defer
+        node_centered = var_is_nodal;
+    else if (h1 && !l2)
+        node_centered = true;
+    else if (!h1 && l2)
+        node_centered = false;
+
+    if (node_centered != var_is_nodal)
+        AVT_MFEM_INFO("WARNING: RefineGridFunctionToVTK: nodal determination mismatch, is var_is_nodal using default value?")
+
+    if (node_centered)
     {
         lo_col = new mfem::LinearFECollection;
     }
