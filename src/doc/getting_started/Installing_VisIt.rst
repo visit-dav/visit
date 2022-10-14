@@ -28,6 +28,13 @@ Installing on macOS
 
 VisIt_ releases include an app-bundle for macOS packaged in a DMG image.
 Download and open the DMG file and copy the VisIt_ app-bundle to your applications directory or any other path.
+
+.. note::
+   If you have a previous version of VisIt already installed, you may be prompted by macOS to decide if you want to **Keep both** versions or **Replace** the old version with the new version.
+   If you choose **Keep both**, macOS will automatically adjust the name of the new version to something like ``VisIt 2``.
+   The space will cause problems and it will have to be removed by changing the name to something without spaces like ``VisIt2`` or ``VisIt-2`` or ``VisIt-x.y.z`` where ``x.y.z`` is the version number of the installation.
+   If you do not have the necessary privileges to change the name, a system administrator's help may be needed.
+
 To run VisIt_ double click on the VisIt_ app-bundle.
 Alternatively, VisIt_ can be run on macOS from the ``Terminal`` using a command of the form:
 

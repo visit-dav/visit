@@ -100,6 +100,16 @@ SET(VISIT_BIN_FILES
         xmltest)
 
 IF (NOT WIN32)
+
+    IF (APPLE)
+        #--------------------------------------------------------------------------
+        # Create launcher binary for macos. This is the thing double-clicking the
+        # icon actually has the effect of executing.
+        #--------------------------------------------------------------------------
+        ADD_EXECUTABLE(visit_macos_launcher ${VISIT_APPLICATION_STYLE} visit_macos_launcher.c ${VISIT_VISIT_RESOURCE_FILE})
+        SET_SOURCE_FILES_PROPERTIES(visit_macos_launcher.c PROPERTIES LANGUAGE C)
+    ENDIF(APPLE)
+
     #
     # Copy files to the bin and exe directories. We have to explicitly
     # create the exe directory since we can't control when it gets created

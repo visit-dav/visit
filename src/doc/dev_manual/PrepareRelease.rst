@@ -214,7 +214,7 @@ Additional macOS Checks
 5. Verify OSpray is installed (look at the 'Advanced' tab under Options->Rendering...).
 6. Verify that the xmledit tool works from the bundle (/Application/VisIt.app/Contents/Resources/bin/xmledit).
 7. Verify that the DMG has been signed with a Developer ID and works properly.
-8. Try descending into ``Downloads`` and ``Documents`` from an instance launched from the Terminal.
+8. Try descending into ``Downloads``, ``Documents`` and ``Desktop`` from an instance launched by double-clicking the icon and from an instance launched from the Terminal command line.
 
 Preparing for a Major Release
 -----------------------------
