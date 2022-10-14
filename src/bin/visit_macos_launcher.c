@@ -1,8 +1,6 @@
-/*
-// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
-// Project developers.  See the top-level LICENSE file for dates and other
-// details.  No copyright assignment is required to contribute to VisIt.
-*/
+/* Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+   Project developers.  See the top-level LICENSE file for dates and other
+   details.  No copyright assignment is required to contribute to VisIt.  */
 
 /******************************************************************************
  *
@@ -15,7 +13,7 @@
  * and not a shell or python script for example, so that it is recognized by
  * macOS security framework as the VisIt application and can be managed by the
  * security framework as its own, unique application with its own unique
- * permissions and settings.
+ * permissions/settings. See https://github.com/visit-dav/visit/issues/18182.
  *
  * It is assumed that argv[0], this executable's name which possibly includes
  * absolute or relative path components, is peer to ../Resources/bin/visit,
@@ -28,12 +26,12 @@
  * Mark C. Miller, Wed Oct 12 09:48:36 PDT 2022
  *****************************************************************************/
 
-int system(char const *); /* declare ourselves instead of #include */
+int system(char const *); /* declare instead of #include <stdlib.h> */
 
 int main(int argc, char **argv)
 {
     char const *peerPath = "/../Resources/bin/visit";
-    int const m = 23 + 1; /* length of peerPath + null char */
+    int const m = 23; /* length of peerPath */
     int useDot = 0;
     char syscmd[8192];
 
@@ -69,8 +67,8 @@ int main(int argc, char **argv)
     int i1 = 0;
     while (i1 != i0)
     {
-            syscmd[i1] = useDot ? '.' : argv[0][i1];
-            i1++;
+        syscmd[i1] = useDot ? '.' : argv[0][i1];
+        i1++;
     }
 
     /* copy path to tack on after last slash char */
@@ -80,6 +78,21 @@ int main(int argc, char **argv)
         syscmd[i1] = peerPath[i2];
         i1++;
         i2++;
+    }
+
+    /* add any command-line arguments */
+    for (i = 1; i < argc; i++)
+    {
+        syscmd[i1] = ' ';
+        i1++;
+    
+        int i3 = 0;
+        while (argv[i][i3])
+        {
+            syscmd[i1] = argv[i][i3];
+            i1++;
+            i3++;
+        }
     }
     
     /* do what we came here for */
