@@ -287,11 +287,11 @@ to the name of the function.
 
     return value
 
+.. _finding_stuff_from_python:
+
 Finding Stuff from Python Prompt
 --------------------------------
 
-Most Python functions and objects in VisIt_ have ``_doc_`` strings specified.
-This means, you can use ``help(thing)``, where ``thing`` may be a string (see below) or an object or function, to get useful information about them.
 If you are having trouble finding the right functions or objects, you can use ``apropos(regex)``, where regex is a regular expression string, and you will get back a list of all objects and functions whose names, doc strings or stringified instances (for objects only) match the regular expression.
 For example, 
 
@@ -306,9 +306,44 @@ For example,
 
 ``apropos()`` also always does case-insensitive searches.
 
-One drawback with using Python's ``help(thing)`` facility is that it requires prior knowledge of the name(s) (including correct capitalization) of the things you want to use.
-Consequently, VisIt_'s Python environment adjusts the default behavior of ``help(thing)`` slightly to first present Python's *normal* help but then to also follow that up with the output of ``apropos(thing)``.
-For example,
+In `Python Regular Expressions <https://docs.python.org/3/library/re.html>`_ the ``.*`` is needed for an arbitrary number of unspecified characters.
+See `this HOWTO <https://docs.python.org/3/howto/regex.html>`_ for more information about Python Regular Expressions.
+The function name ``apropos`` was inspired by a `function of similar name and purpose <https://en.wikipedia.org/wiki/Apropos_(Unix)>`_ in the Unix operating system. 
+
+Just use ``help()``
+~~~~~~~~~~~~~~~~~~~
+
+One drawback with using Python's *standard* ``help(thing)`` facility is that it requires prior knowledge of the name(s) (including correct capitalization) of the thing.
+Consequently, VisIt_'s Python environment adjusts the default behavior of ``help(thing)`` in a couple of ways.
+First, it accepts string arguments and then returns the result of ``apropos(thing)``.
+Second, for non-string arguments it will attempt to present Python's *normal* help but then to also follow that up with the output of ``apropos(thing)``.
+For example, ``help("materials")`` (e.g. passing a string to ``help()``) produces...
+
+::
+
+    >>> help("materials")
+    NOTE: The following VisIt functions and objects also mention 'materials'...
+    ['GetActiveTimeSlider', 'GetMaterialAttributes', 'GetMaterials', 'ListDomains', 'ListMaterials', 'MaterialAttributes', 'SetViewExtentsType', 'TurnDomainsOff', 'TurnDomainsOn', 'TurnMaterialsOff', 'TurnMaterialsOn']
+
+whereas passing the name of a function such as ``TurnMaterialsOn`` produces the help for that function followed by a list of other items that mention that funciton...
+
+::
+
+    >>> help(TurnMaterialsOn)
+    Help on built-in function TurnMaterialsOn:
+
+
+    TurnMaterialsOn(...)
+        TurnMaterialsOn
+
+    .
+    .
+    .
+
+    NOTE: The following VisIt functions and objects also mention 'TurnMaterialsOn'...
+    ['TurnDomainsOff', 'TurnDomainsOn', 'TurnMaterialsOff', 'TurnMaterialsOn']
+
+For another example,
 
 ::
 
@@ -324,8 +359,6 @@ For example,
     
         The following documentation is automatically generated from the Python
         source files.  It may be incomplete, incorrect or include features that
-        are considered implementation detail and may vary between Python
-        implementations.  When in doubt, consult the module reference at the
         location listed above.
 
     DESCRIPTION
@@ -337,15 +370,30 @@ For example,
                 x = copy.deepcopy(y)    # make a deep copy of y
     
         For module specific errors, copy.Error is raised.
+
     .
     .
     .
+
     NOTE: The following VisIt functions and objects also mention 'copy'...
     ['CopyAnnotationsToWindow', 'CopyLightingToWindow', 'CopyPlotsToWindow', 'CopyViewToWindow', 'GetPlotList', 'InitializeNamedSelectionVariables']
 
-In `Python Regular Expressions <https://docs.python.org/3/library/re.html>`_ the ``.*`` is needed for an arbitrary number of unspecified characters.
-See `this HOWTO <https://docs.python.org/3/howto/regex.html>`_ for more information about Python Regular Expressions.
-The function name ``apropos`` was inspired by a `function of similar name and purpose <https://en.wikipedia.org/wiki/Apropos_(Unix)>`_ in the Unix operating system. 
-
 If there is a need to bypass VisIt_'s override of ``help()``, ``python_help()`` is an alias for Python's *default* ``help()``.
 Likewise, ``visit_help()`` is an alias for VisIt_'s overridden ``help()``.
+
+Use lsearch to limit search results
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+VisIt_'s *CLI* provides a large set of functions.
+The scope of a search can be limited using the ``lsearch()`` helper function in the visit_utils module: ::
+
+    from visit_utils.common import lsearch
+    lsearch(dir(),"Material")
+    lsearch(apropos("subset"),"domain"))
+
+*lsearch()* returns a python list of strings with the names that match the given pattern.
+Here is another example that prints each of the result strings on a separate line. ::
+
+    from visit_utils.common import lsearch
+    for value in lsearch(dir(),"Material"):
+        print value
