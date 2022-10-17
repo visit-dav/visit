@@ -5,6 +5,12 @@
 """
 VisIt's test suite.
 """
+# ----------------------------------------------------------------------------
+#  Modifications:
+#    Cyrus Harrison, Wed Sep  7 11:34:36 PDT 2022
+#    Refactored to module.
+#
+# ----------------------------------------------------------------------------
 
 import sys
 import os
@@ -22,13 +28,13 @@ import json
 import traceback
 
 
-
 from os.path import join as pjoin
 from optparse import OptionParser
 
-from visit_test_common import *
-from visit_test_reports import *
-from visit_test_ctest import *
+from .visit_test_common import *
+from .visit_test_reports import *
+from .visit_test_ctest import *
+
 
 def known_mode_keys():
     return ['serial','parallel','scalable','dlb','pdb','hdf5','icet']
@@ -502,12 +508,17 @@ def finalize_options(opts):
     if isinstance(opts["classes"],str):
         opts["classes"]  = opts["classes"].split(",")
     opts["skip_list"]    = None
-    if not opts["skip_file"] is None and os.path.isfile(opts["skip_file"]):
-        try:
-            if opts["no_skip"] == False:
-                opts["skip_list"] = json_load(opts["skip_file"])
-        except:
-            opts["skip_list"] = None
+
+    if not opts["skip_file"] is None:
+        if not os.path.isfile(opts["skip_file"]):
+            opts["skip_file"] = abs_path(opts["tests_dir"], "../", "skip.json")
+        if os.path.isfile(opts["skip_file"]):
+            try:
+                if opts["no_skip"] == False:
+                    opts["skip_list"] = json_load(opts["skip_file"])
+            except:
+                opts["skip_list"] = None
+
 
 # ----------------------------------------------------------------------------
 #  Method: parse_args
@@ -1073,6 +1084,7 @@ def main(opts,tests):
     """
     Main entry point for the test suite.
     """
+    print("visit_test_suite.py :main")
     finalize_options(opts)
     Log("[[VisIt Test Suite]]")
     if opts["check_data"]:
@@ -1187,7 +1199,9 @@ def run_visit_tests(tests,
     return JSONIndex.load_results(res_file,True)
 
 
-if __name__ == "__main__":
+def run_main():
     opts, tests = parse_args()
     main(opts,tests)
 
+if __name__ == "__main__":
+    run_main()

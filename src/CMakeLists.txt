@@ -503,6 +503,11 @@
 #    Kathleen Biagas, Thu Jun 16, 2022 
 #    Changed minimum cmake version to 3.15.
 #
+#    Kathleen Biagas, Fri July 1, 2022 
+#    For Windows package creation: added custom command to 7zip the install
+#    dir for use by installer creation script. Changed default install
+#    prefix to remove the space between 'VisIt' and '<verison>'. 
+#
 #    Eric Brugger, Tue Jul  5 09:10:18 PDT 2022
 #    Added support for the Blosc library.
 #
@@ -895,10 +900,8 @@ ENDIF (NOT WIN32)
 VISIT_3RDPARTY_VAR(ICET_DIR   "Path containing the Ice-T library's include and lib")
 
 # Libraries some third-parties are dependent upon
-IF(WIN32)
-  VISIT_3RDPARTY_VAR(JPEG_DIR   "Path containing the jpeg library's include and lib")
-  VISIT_3RDPARTY_VAR(SZIP_DIR   "Path containing the szip library's include and lib")
-ENDIF(WIN32)
+VISIT_3RDPARTY_VAR(JPEG_DIR   "Path containing the jpeg library's include and lib")
+VISIT_3RDPARTY_VAR(SZIP_DIR   "Path containing the szip library's include and lib")
 
 # Define the options that let us pick I/O library installation locations. When
 # the library option is defined then we also define the variable name passed as
@@ -1005,7 +1008,7 @@ IF(WIN32)
     # if it wasn't specified via command line,
     IF(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
       IF( NOT APPENDED_VISIT_VERSION_TO_INSTALL_PATH)
-        SET(CMAKE_INSTALL_PREFIX "${VISIT_BINARY_DIR}/VisIt ${VISIT_VERSION}"
+        SET(CMAKE_INSTALL_PREFIX "${VISIT_BINARY_DIR}/VisIt${VISIT_VERSION}"
             CACHE PATH "Install path prefix, prepended onto install directories" FORCE)
         SET(APPENDED_VISIT_VERSION_TO_INSTALL_PATH TRUE CACHE INTERNAL "")
       ENDIF( NOT APPENDED_VISIT_VERSION_TO_INSTALL_PATH)
@@ -1351,10 +1354,8 @@ ENDIF(VISIT_PARALLEL)
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindZlib.cmake)
 
 # szip and jpeg
-IF(WIN32)
-    INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindJPEG.cmake)
-    INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindSzip.cmake)
-ENDIF(WIN32)
+INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindJPEG.cmake)
+INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindSzip.cmake)
 
 # dl and large file support.
 IF(CMAKE_HOST_UNIX)
@@ -2089,7 +2090,11 @@ if(LINUX)
         file(GLOB libicui18n_libs "/lib64/libicui18n.so*")
         file(GLOB libicudata_libs "/lib64/libicudata.so*")
         file(GLOB libicuuc_libs "/lib64/libicuuc.so*")
-        install(FILES ${libicui18n_libs} ${libicudata_libs} ${libicuuc_libs}
+        set(icu_libs "")
+        list(APPEND icu_libs ${libicui18n_libs})
+        list(APPEND icu_libs ${libicudata_libs})
+        list(APPEND icu_libs ${libicuuc_libs})
+        install(FILES ${icu_libs}
                 DESTINATION ${VISIT_INSTALLED_VERSION_LIB}
                 PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
                             GROUP_READ GROUP_WRITE GROUP_EXECUTE
@@ -2098,7 +2103,11 @@ if(LINUX)
         file(GLOB libicui18n_libs "/lib/x86_64-linux-gnu/libicui18n.so*")
         file(GLOB libicudata_libs "/lib/x86_64-linux-gnu/libicudata.so*")
         file(GLOB libicuuc_libs "/lib/x86_64-linux-gnu/libicuuc.so*")
-        install(FILES ${libicui18n_libs} ${libicudata_libs} ${libicuuc_libs}
+        set(icu_libs "")
+        list(APPEND icu_libs ${libicui18n_libs})
+        list(APPEND icu_libs ${libicudata_libs})
+        list(APPEND icu_libs ${libicuuc_libs})
+        install(FILES ${icu_libs}
                 DESTINATION ${VISIT_INSTALLED_VERSION_LIB}
                 PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
                             GROUP_READ GROUP_WRITE GROUP_EXECUTE
@@ -2107,7 +2116,11 @@ if(LINUX)
         file(GLOB libicui18n_libs "/usr/lib/x86_64-linux-gnu/libicui18n.so*")
         file(GLOB libicudata_libs "/usr/lib/x86_64-linux-gnu/libicudata.so*")
         file(GLOB libicuuc_libs "/usr/lib/x86_64-linux-gnu/libicuuc.so*")
-        install(FILES ${libicui18n_libs} ${libicudata_libs} ${libicuuc_libs}
+        set(icu_libs "")
+        list(APPEND icu_libs ${libicui18n_libs})
+        list(APPEND icu_libs ${libicudata_libs})
+        list(APPEND icu_libs ${libicuuc_libs})
+        install(FILES ${icu_libs}
                 DESTINATION ${VISIT_INSTALLED_VERSION_LIB}
                 PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
                             GROUP_READ GROUP_WRITE GROUP_EXECUTE
@@ -2161,11 +2174,17 @@ SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${VISIT_EXE_LINKER_FLAGS}"
 # we would simply rely on cmake to propgate transitive dependency details.
 #
 
-set(AVT_REQUIRED_LIB_DIR "" CACHE INTERNAL "Engine AVT Required I/O lib dirs")
+set(__AVT_REQUIRED_LIB_DIR_LIST "")
 if(CONDUIT_FOUND)
-    set(AVT_REQUIRED_LIB_DIR ${CONDUIT_LIBRARY_DIR} CACHE INTERNAL "Engine AVT Required I/O lib dirs")
+    list(APPEND __AVT_REQUIRED_LIB_DIR_LIST ${CONDUIT_LIBRARY_DIR})
 endif()
 
+if(MFEM_FOUND)
+    list(APPEND __AVT_REQUIRED_LIB_DIR_LIST ${MFEM_LIBRARY_DIR})
+endif()
+
+
+set(AVT_REQUIRED_LIB_DIR "${__AVT_REQUIRED_LIB_DIR_LIST}" CACHE INTERNAL "Engine AVT Required I/O lib dirs")
 
 FUNCTION(CREATE_PLUGIN_DEPENDENCIES target comp type)
     FOREACH(P ${ARGN})
@@ -2322,7 +2341,7 @@ IF (NOT WIN32)
         SET (CPACK_BUNDLE_NAME "VisIt")
         SET (CPACK_BUNDLE_ICON "${VISIT_SOURCE_DIR}/common/icons/VisItIcon.icns")
         SET (CPACK_BUNDLE_PLIST "${VISIT_BINARY_DIR}/tools/dev/scripts/Info.plist")
-        SET (CPACK_BUNDLE_STARTUP_COMMAND "${VISIT_SOURCE_DIR}/tools/dev/scripts/LaunchVisItFromAppBundle.sh")
+        SET (CPACK_BUNDLE_STARTUP_COMMAND "${VISIT_BINARY_DIR}/exe/visit_macos_launcher")
     ELSE(APPLE AND VISIT_CREATE_APPBUNDLE_PACKAGE)
         SET(CPACK_GENERATOR "TGZ")
 
@@ -2360,6 +2379,7 @@ ELSE () # on windows
            set(codesign "/DCODESIGN_HASH=${CODESIGN_HASH}")
         endif()
         ADD_CUSTOM_COMMAND(OUTPUT visit${VISIT_VERSION}.exe
+            COMMAND "${VISIT_WINDOWS_DIR}/MSVC2017/p7zip/18.05/7z.exe" a -t7z -m0=lzma2 -mx9  visit${VISIT_VERSION}.7z VisIt${VISIT_VERSION}
             COMMAND ${MAKENSIS}
                     /DVISIT_SOURCE_DIR=${VSD_NATIVE}
                     /DVISIT_WINDOWS_DIR=${VWD_NATIVE}

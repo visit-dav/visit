@@ -48,14 +48,3 @@ endif()
 if(CONDUIT_FOUND)
     set(HAVE_CONDUIT TRUE CACHE BOOL "Have Conduit libraries")
 endif()
-
-# Temporary, allow users to build VisIt with older Conduit
-#  and disable partition/flatten support conditionally
-set(CONDUIT_HAVE_PARTITION_FLATTEN 0)
-if(DEFINED CONDUIT_VERSION)
-    if(${CONDUIT_VERSION} VERSION_GREATER_EQUAL 0.8.0)
-        set(CONDUIT_HAVE_PARTITION_FLATTEN 1)
-    endif()
-endif()
-
-message(STATUS "Conduit has partition/flatten functionality? ${CONDUIT_HAVE_PARTITION_FLATTEN}")

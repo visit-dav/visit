@@ -31,6 +31,7 @@ JSONRoot.C
 INCLUDE_DIRECTORIES(
 ${CMAKE_CURRENT_SOURCE_DIR}
 ${MFEM_INCLUDE_DIR}
+${VISIT_INCLUDE_DIR}/avt/MFEM
 ${VISIT_INCLUDE_DIR}/third_party_builtin
 ${VISIT_DATABASE_INCLUDES}
 )
@@ -43,19 +44,19 @@ SET(INSTALLTARGETS IMFEMDatabase)
 
 IF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
     ADD_LIBRARY(MMFEMDatabase ${LIBM_SOURCES})
-    TARGET_LINK_LIBRARIES(MMFEMDatabase visitcommon avtdbatts avtdatabase_ser ${MFEM_LIB} )
+    TARGET_LINK_LIBRARIES(MMFEMDatabase visitcommon avtdbatts avtdatabase_ser avtmfem ${MFEM_LIB} )
     ADD_TARGET_DEFINITIONS(MMFEMDatabase MDSERVER)
     SET(INSTALLTARGETS ${INSTALLTARGETS} MMFEMDatabase)
 ENDIF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
 
 ADD_LIBRARY(EMFEMDatabase_ser ${LIBE_SOURCES})
-TARGET_LINK_LIBRARIES(EMFEMDatabase_ser visitcommon avtpipeline_ser avtdatabase_ser ${MFEM_LIB} )
+TARGET_LINK_LIBRARIES(EMFEMDatabase_ser visitcommon avtpipeline_ser avtdatabase_ser avtmfem ${MFEM_LIB} )
 ADD_TARGET_DEFINITIONS(EMFEMDatabase_ser ENGINE)
 SET(INSTALLTARGETS ${INSTALLTARGETS} EMFEMDatabase_ser)
 
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(EMFEMDatabase_par ${LIBE_SOURCES})
-    TARGET_LINK_LIBRARIES(EMFEMDatabase_par visitcommon avtpipeline_par avtdatabase_par ${MFEM_LIB} )
+    TARGET_LINK_LIBRARIES(EMFEMDatabase_par visitcommon avtpipeline_par avtdatabase_par avtmfem ${MFEM_LIB} )
     ADD_TARGET_DEFINITIONS(EMFEMDatabase_par ENGINE)
     SET(INSTALLTARGETS ${INSTALLTARGETS} EMFEMDatabase_par)
 ENDIF(VISIT_PARALLEL)

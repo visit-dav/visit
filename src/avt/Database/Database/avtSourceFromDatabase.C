@@ -202,39 +202,22 @@ avtSourceFromDatabase::FetchDataset(avtDataRequest_p spec,
         rv = true;
     }
 
-/* THE CALL TO GetDomainList IS NOT CHEAP AND I DO NOT BELIEVE THIS CODE
- * IS DOING ANYTHING MEANINGFUL ANYMORE, SO I'M COMMENTING IT OUT.
- * (I am not removing it because I want to leave a visible reminder for)
- * (the next few months in case something weird happens.)
-    if (rv)
+    //
+    // PruneTree does an additional service that is a bit hidden.  If the
+    // output from the database is NULL, many of our filters will choke
+    // on that.  PruneTree puts it in a more digestible form.  The "right"
+    // thing to do in this case is to not call GetOutput on the database
+    // when the last data specification is the same as the current one.
+    // However, I'm a bit scared to do that because it may break other
+    // things.  In addition, if the database threw an error, we are not
+    // catching that.  So, if an error was thrown, and we did re-work the
+    // logic to not call "GetOutput" unnecessarily, we would have to
+    // remember the error and re-call it in that case.
+    //
+    if ((*tree == NULL) ||
+        (!tree->HasData() && (tree->GetNChildren() == 0)))
     {
-        vector<int> list;
-        avtSILRestrictionTraverser trav(spec->GetRestriction());
-        trav.GetDomainList(list);
-        int t0 = visitTimer->StartTimer();
-        tree = tree->PruneTree(list);
-        visitTimer->StopTimer(t0, "PruneTree from avtSourceFromDatabase");
-    }
-    else
- */
-    {
-        //
-        // PruneTree does an additional service that is a bit hidden.  If the
-        // output from the database is NULL, many of our filters will choke
-        // on that.  PruneTree puts it in a more digestible form.  The "right"
-        // thing to do in this case is to not call GetOutput on the database
-        // when the last data specification is the same as the current one.
-        // However, I'm a bit scared to do that because it may break other
-        // things.  In addition, if the database threw an error, we are not
-        // catching that.  So, if an error was thrown, and we did re-work the
-        // logic to not call "GetOutput" unnecessarily, we would have to
-        // remember the error and re-call it in that case.
-        //
-        if ((*tree == NULL) ||
-            (!tree->HasData() && (tree->GetNChildren() == 0)))
-        {
-            tree = new avtDataTree();
-        }
+        tree = new avtDataTree();
     }
 
     const bool forceReadAllCyclesTimes = false;

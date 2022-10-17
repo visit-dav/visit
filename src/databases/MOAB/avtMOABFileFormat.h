@@ -68,6 +68,9 @@ class avtMOABFileFormat : public avtSTMDFileFormat
     struct tagBasic {
       std::string nameTag;
       int size;
+      void * defValue; // size 4 or 8 usually
+      int type; // mhdf_INTEGER = 1,    /**< Integer type */
+                // mhdf_FLOAT = 2,      /**< Floating point value */ (double)
     };
     struct compare1 {
       bool operator () (const tagBasic& lhs, const tagBasic& rhs) const

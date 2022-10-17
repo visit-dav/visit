@@ -278,6 +278,10 @@ function apply_qt_patch
         if [[ $? != 0 ]] ; then
             return 1
         fi
+        apply_qt_5142_cmath_patch
+        if [[ $? != 0 ]] ; then
+            return 1
+        fi
         if [[ "$OPSYS" == "Linux" ]]; then
             if [[ "$DO_MESAGL" == "yes" ]] ; then
                 apply_qt_5142_linux_mesagl_patch
@@ -537,6 +541,32 @@ diff -c qtbase/src/corelib/text/qbytearraymatcher.h.orig c qtbase/src/corelib/te
 EOF
     if [[ $? != 0 ]] ; then
         warn "qt 5.14.2 for numeric-limits patch3 failed"
+        return 1
+    fi
+
+    return 0
+}
+
+function apply_qt_5142_cmath_patch
+{
+    info "Patching qt 5.14.2 for qjp2handler cmath include"
+    patch -p0 <<EOF
+diff -c qtimageformats/src/plugins/imageformats/jp2/qjp2handler.cpp.orig qtimageformats/src/plugins/imageformats/jp2/qjp2handler.cpp
+*** qtimageformats/src/plugins/imageformats/jp2/qjp2handler.cpp.orig
+--- qtimageformats/src/plugins/imageformats/jp2/qjp2handler.cpp
+***************
+*** 45,50 ****
+--- 45,51 ----
+  #include "qcolor.h"
+
+  #include <jasper/jasper.h>
++ #include <cmath>
+
+  QT_BEGIN_NAMESPACE
+
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "qt 5.14.2 for qjp2handler cmath include"
         return 1
     fi
 

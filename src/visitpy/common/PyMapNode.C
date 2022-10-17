@@ -2,6 +2,8 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
+#include <string>
+#include <sstream>
 
 #include <Python.h>
 #include <Py2and3Support.h>
@@ -99,7 +101,7 @@ PyMapNode_Wrap(const MapNode &node)
 // ****************************************************************************
 
 bool
-PyDict_To_MapNode(PyObject *obj, MapNode &mn)
+PyDict_To_MapNode(PyObject *obj, MapNode &mn, std::string& errmsg)
 {
     if (!PyDict_Check(obj))
         return false;
@@ -252,9 +254,20 @@ PyDict_To_MapNode(PyObject *obj, MapNode &mn)
         }
         else
         {
-            debug3 << "PyDict_To_MapNode: type "
+            std::stringstream ss;
+
+            ss << "PyDict_To_MapNode: argument named \""
+                   << mkey
+                   << "\" at position " 
+                   << pos 
+                   << " with type "
                    << value->ob_type->tp_name
                    << " not currently implemented." << endl;
+            debug3 << ss.str();
+
+            if (errmsg != PyMapNode_VoidString)
+                errmsg += ss.str();
+
             return false;
         }
     }
