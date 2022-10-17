@@ -1601,6 +1601,10 @@ avtMiliFileFormat::GetVar(int timestep,
 //  Creation:    April 15, 2019
 //
 //  Modifications
+//    Eric Brugger, Mon Oct 17 08:44:34 PDT 2022
+//    I fixed a bug where material variables weren't being read properly.
+//    They are only stored with domain 0, so the domain needs to be set to
+//    0 when reading a material variable.
 //
 // ****************************************************************************
 
@@ -1620,14 +1624,21 @@ avtMiliFileFormat::GetVar(int timestep,
         EXCEPTION1(ImproperUseException, msg);
     }
 
-    SubrecInfo *SRInfo = miliMetaData[meshId]->GetSubrecInfo(dom);
+    //
+    // Material variables are only defined on domain 0. The variable
+    // domVar handles this case by being defined as 0 for a material
+    // variable and the normal domain number in other cases.
+    //
+    int domVar = varMD->IsMatVar() ? 0 : dom;
+
+    SubrecInfo *SRInfo = miliMetaData[meshId]->GetSubrecInfo(domVar);
 
     if (SRInfo == NULL)
     {
         EXCEPTION1(InvalidVariableException, varMD->GetLongName());
     }
 
-    intVector SRIds    = varMD->GetSubrecIds(dom);
+    intVector SRIds    = varMD->GetSubrecIds(domVar);
     int nSRs           = SRIds.size();
     int vType          = varMD->GetNumType();
     string vShortName  = varMD->GetShortName();
@@ -1672,7 +1683,7 @@ avtMiliFileFormat::GetVar(int timestep,
 
         if (isMatVar)
         {
-            dBuffSize  = materials[dom][meshId]->GetNMaterials();
+            dBuffSize  = materials[domVar][meshId]->GetNMaterials();
             dataBuffer = new float[dBuffSize];
         }
         else if (isGlobal)
@@ -1700,10 +1711,10 @@ avtMiliFileFormat::GetVar(int timestep,
         string className = varMD->GetClassShortName();
         int start = miliMetaData[meshId]->
             GetClassMDByShortName(className.c_str())->
-            GetConnectivityOffset(dom);
+            GetConnectivityOffset(domVar);
 
         ReadMiliVarToBuffer(namePtr, SRIds, SRInfo, start,
-            vType, 1, timestep + 1, dom, dataBuffer);
+            vType, 1, timestep + 1, domVar, dataBuffer);
 
         if (isMatVar)
         {
