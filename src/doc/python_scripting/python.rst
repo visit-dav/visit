@@ -359,6 +359,8 @@ For another example,
     
         The following documentation is automatically generated from the Python
         source files.  It may be incomplete, incorrect or include features that
+        are considered implementation detail and may vary between Python
+        implementations.  When in doubt, consult the module reference at the
         location listed above.
 
     DESCRIPTION
