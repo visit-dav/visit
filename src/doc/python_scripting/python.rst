@@ -316,7 +316,7 @@ Just use ``help()``
 One drawback with using Python's *standard* ``help(thing)`` facility is that it requires prior knowledge of the name(s) (including correct capitalization) of the thing.
 Consequently, VisIt_'s Python environment adjusts the default behavior of ``help(thing)`` in a couple of ways.
 First, it accepts string arguments and then returns the result of ``apropos(thing)``.
-Second, for non-string arguments it will attempt to present Python's *normal* help but then to also follow that up with the output of ``apropos(thing)``.
+Second, for non-string arguments it will attempt to present output from Python's *standard* help but then to also follow that up with the output of ``apropos(thing)``.
 For example, ``help("materials")`` (e.g. passing a string to ``help()``) produces...
 
 ::
