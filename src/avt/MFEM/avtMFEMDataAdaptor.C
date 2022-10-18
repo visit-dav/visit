@@ -372,6 +372,7 @@ avtMFEMDataAdaptor::RefineMeshToVTK(mfem::Mesh *mesh,
         return LegacyRefineMeshToVTK(mesh, domain, lod);
     }
 
+    // We do not want to call dynamic_cast on something undefined, which is possible.
     if (mesh)
     {
         if (mesh->GetNodes())
@@ -620,6 +621,7 @@ avtMFEMDataAdaptor::RefineGridFunctionToVTK(mfem::Mesh *mesh,
         return LegacyRefineGridFunctionToVTK(mesh, gf, lod, var_is_nodal);
     }
 
+    // We do not want to call dynamic_cast on something undefined, which is possible.
     if (mesh)
     {
         if (mesh->GetNodes())
@@ -666,7 +668,16 @@ avtMFEMDataAdaptor::RefineGridFunctionToVTK(mfem::Mesh *mesh,
             "RefineGridFunctionToVTK: grid function cannot be both H1 and L2");
     }
     else if (!h1 && !l2) // defer
-        node_centered = var_is_nodal;
+    {
+        AVT_MFEM_INFO("WARNING: RefineGridFunctionToVTK: Grid Function is "
+                      "neither H1 nor L2. Deferring to arguments to determine "
+                      "if grid function is nodal or zonal.");
+        node_centered = var_is_nodal; 
+        // the only danger is that var_is_nodal has a default value
+        // however, the mfem plugin will always pass var_is_nodal, and the 
+        // blueprint plugin always produces h1 or l2.
+    }
+    // The next two cases will override whatever was passed in for var_is_nodal
     else if (h1 && !l2)
         node_centered = true;
     else if (!h1 && l2)
