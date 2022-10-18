@@ -1,28 +1,27 @@
 Attribute Reference
 ===================
 
-This chapter shows all the attributes that can be set to control the
-behavior of VisIt. The attributes themselves are not documented, but
-their names are usually quite explanatory. When a member of an attribute
-can take values from a given list of options, the default option is printed
-first in italic followed by a comma separated list of the other available
+This chapter is an alphabetical listing of all the VisIt_ python *attribute* objects used to control VisIt_'s behavior.
+By and large, VisIt's python attribute objects resemble C++ classes with constructors, public members and setter/getter methods.
+
+For example, for the attribute object controlling the **Coordinate Swap** operator, the function ``CoordSwapAttributes()`` serves as the constructor (or *instantiator*).
+It has members, ``newCoord1``, ``newCoord2``, and ``newCoord3`` each of which is an enumeration type that can take one of the three values, ``Coord1``, ``Coord2``, ``Coord3``.
+In addition, it has setter/getter methods, ``SetNewCoord1()``, ``GetNewCoord1()`` and so forth.
+
+For each attribute object, the constructor function is given in italics followed by a table of the object's member names.
+The members themselves are not documented here, but in most cases their names are self explanatory.
+The setter/getter *methods* are not documented here either.
+When a member can take values only from a given list of options (e.g. an *enumeration*), the default option is printed first in italic followed by a comma separated list of the other available
 options.
 
-The listing is ordered in alphabetical ordering of the name of the
-attribute set. For each set the function that will provide you with
-these attributes is printed in italic.
+From within the running CLI, printing an attribute object with Python's ``print()`` method will list the members whereas diring an attribute object with Python's ``dir()`` method will list the setter/getter methods.
+For more information on finding things and getting help from within the running CLI, be sure to read :ref:`the section on apropos <finding_stuff_from_python>`.
 
-Many of the **Plot** and **Operator** attribute methods accept an optional
-``1`` argument to indicate whether or not to return the *default* or
-*current* attributes. For example, ``CurveAttributes()`` returns the default
-attributes for a **Curve** plot where as ``CurveAttributes(1)`` returns the
-attributes of either the currently active **Curve** plot or the *first*
-**Curve** plot in the plot list regardless of whether it is selected or
-hidden.
+Many of the **Plot** and **Operator** attribute methods accept an optional ``1`` argument to indicate whether or not to return the *default* or *current* attributes.
+For example, ``CurveAttributes()`` returns the default attributes for a **Curve** plot whereas ``CurveAttributes(1)`` returns the attributes of either the currently active **Curve** plot or the *first* **Curve** plot in the plot list regardless of whether it is selected or hidden.
 
 Many functions return an integer where 1 means success and 0 means failure.
-This behavior is represented by the type ``CLI_return_t`` in an attempt to
-distinguish it from functions that may utilize the full range of integers.
+This behavior is represented by the type ``CLI_return_t`` in an attempt to distinguish it from functions that may utilize the full range of integers.
 
 **AMRStitchCell**: *AMRStitchCellAttributes()*
 ----------------------------------------------
@@ -893,7 +892,8 @@ distinguish it from functions that may utilize the full range of integers.
     +--------------------------------------------------+-----------------------------+
     | defaultPalette.discreteFlag                      | 1                           |
     +--------------------------------------------------+-----------------------------+
-    | defaultPalette.categoryName                      | "Standard"                  |
+    | defaultPalette.tagNames                          |  ("Standard",               |
+    |                                                  |  "Discrete")                |
     +--------------------------------------------------+-----------------------------+
     | changedColors                                    | ()                          |
     +--------------------------------------------------+-----------------------------+
@@ -910,6 +910,15 @@ distinguish it from functions that may utilize the full range of integers.
     | lineWidth                                        | 0                           |
     +--------------------------------------------------+-----------------------------+
     | singleColor                                      | (255, 0, 0, 255)            |
+    +--------------------------------------------------+-----------------------------+
+    | contourMethod                                    |  **Level**, Value,          |
+    |                                                  |  Percent                    |
+    +--------------------------------------------------+-----------------------------+
+    | contourNLevels                                   | 10                          |
+    +--------------------------------------------------+-----------------------------+
+    | contourValue                                     | ()                          |
+    +--------------------------------------------------+-----------------------------+
+    | contourPercent                                   | ()                          |
     +--------------------------------------------------+-----------------------------+
     |                                                  |  *SetMultiColor(0,*         |
     |                                                  |  *(255, 0, 0, 255))*        |
@@ -940,15 +949,6 @@ distinguish it from functions that may utilize the full range of integers.
     +--------------------------------------------------+-----------------------------+
     |                                                  |  *SetMultiColor(9,*         |
     |                                                  |  *(255, 68, 68, 255))*      |
-    +--------------------------------------------------+-----------------------------+
-    | contourNLevels                                   | 10                          |
-    +--------------------------------------------------+-----------------------------+
-    | contourValue                                     | ()                          |
-    +--------------------------------------------------+-----------------------------+
-    | contourPercent                                   | ()                          |
-    +--------------------------------------------------+-----------------------------+
-    | contourMethod                                    |  **Level**, Value,          |
-    |                                                  |  Percent                    |
     +--------------------------------------------------+-----------------------------+
     | minFlag                                          | 0                           |
     +--------------------------------------------------+-----------------------------+
@@ -2555,7 +2555,8 @@ distinguish it from functions that may utilize the full range of integers.
     +--------------------------------------------------+-----------------------------+
     | defaultPalette.discreteFlag                      | 1                           |
     +--------------------------------------------------+-----------------------------+
-    | defaultPalette.categoryName                      | "Standard"                  |
+    | defaultPalette.tagNames                          |  ("Standard",               |
+    |                                                  |  "Discrete")                |
     +--------------------------------------------------+-----------------------------+
     | changedColors                                    | ()                          |
     +--------------------------------------------------+-----------------------------+
@@ -4451,7 +4452,7 @@ distinguish it from functions that may utilize the full range of integers.
     +-----------------------------------------------------+------------------------------+
     | colorControlPoints.discreteFlag                     | 0                            |
     +-----------------------------------------------------+------------------------------+
-    | colorControlPoints.categoryName                     | ""                           |
+    | colorControlPoints.tagNames                         | ()                           |
     +-----------------------------------------------------+------------------------------+
     | opacityAttenuation                                  | 1                            |
     +-----------------------------------------------------+------------------------------+
