@@ -394,26 +394,40 @@ XRay Image
     +------+-------------------+----------------------------------------------+
     | *output_type*            | The format of the image. The default is PNG. |
     +------+-------------------+----------------------------------------------+
-    |      | "bmp" or 0        | BMP image format.                            |
+    |      | "bmp" or 0        | BMP image format. This is deprecated as of   |
+    |      |                   | VisIt_ 3.4.                                  |
     +------+-------------------+----------------------------------------------+
-    |      | "jpeg" or 1       | JPEG image format.                           |
+    |      | "jpeg" or 0 |br|  | JPEG image format.                           |
+    |      | (1 prior to       |                                              |
+    |      | VisIt_ 3.4)       |                                              |
     +------+-------------------+----------------------------------------------+
-    |      | "png" or 2        | PNG image format.                            |
+    |      | "png" or 1 |br|   | PNG image format.                            |
+    |      | (2 prior to       |                                              |
+    |      | VisIt_ 3.4)       |                                              |
     +------+-------------------+----------------------------------------------+
-    |      | "tif" or 3        | TIFF image format.                           |
+    |      | "tif" or 2 |br|   | TIFF image format.                           |
+    |      | (3 prior to       |                                              |
+    |      | VisIt_ 3.4)       |                                              |
     +------+-------------------+----------------------------------------------+
-    |      | "rawfloats" or 4  | File of 32 or 64 bit floating point values   |
-    |      |                   | in IEEE format.                              |
+    |      | "rawfloats" or 3  | File of 32 or 64 bit floating point values   |
+    |      | |br| (4 prior to  | in IEEE format.                              |
+    |      | VisIt_ 3.4)       |                                              |
     +------+-------------------+----------------------------------------------+
-    |      | "bov" or 5        | BOV (Brick Of Values) format, which consists |
-    |      |                   | of a text header |br| file describing a      |
-    |      |                   | rawfloats file.                              |
+    |      | "bov" or 4 |br|   | BOV (Brick Of Values) format, which consists |
+    |      | (5 prior to       | of a text header |br| file describing a      |
+    |      | VisIt_ 3.4)       | rawfloats file.                              |
     +------+-------------------+----------------------------------------------+
-    |      | "json" or 6       | Conduit JSON output.                         |
+    |      | "json" or 5 |br|  | Conduit JSON output.                         |
+    |      | (6 prior to       |                                              |
+    |      | VisIt_ 3.4)       |                                              |
     +------+-------------------+----------------------------------------------+
-    |      | "hdf5" or 7       | Conduit HDF5 output.                         |
+    |      | "hdf5" or 6 |br|  | Conduit HDF5 output.                         |
+    |      | (7 prior to       |                                              |
+    |      | VisIt_ 3.4)       |                                              |
     +------+-------------------+----------------------------------------------+
-    |      | "yaml" or 8       | Conduit YAML output.                         |
+    |      | "yaml" or 7 |br|  | Conduit YAML output.                         |
+    |      | (8 prior to       |                                              |
+    |      | VisIt_ 3.4)       |                                              |
     +------+-------------------+----------------------------------------------+
     | *output_dir*             | The output directory. The default is "."     |
     +------+-------------------+----------------------------------------------+
