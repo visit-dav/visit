@@ -35,23 +35,6 @@ GetMFEMReadOptions(void)
     rv->SetEnumStrings("MFEM LOR Setting", mfem_lor_setting);
     
     return rv;
-/* EXAMPLE OF OPTIONS
-    rv->SetBool("Binary format", true);
-    rv->SetBool("Big Endian", false);
-    rv->SetEnum("Dimension", 1);
-    vector<string> dims;
-    dims.push_back("0D");
-    dims.push_back("1D");
-    dims.push_back("2D");
-    dims.push_back("3D");
-    rv->SetEnumStrings("Dimension", dims);
-    rv->SetInt("Number of variables", 5);
-    rv->SetString("Name of auxiliary file", );
-    rv->SetDouble("Displacement factor", 1.0);
-
-    // When reading or writing the file, you can get the options out of this object like:
-    rv->GetDouble("Displacement factor");
-*/
 }
 
 
