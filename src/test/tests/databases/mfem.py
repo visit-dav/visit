@@ -13,6 +13,10 @@
 #    The MFEM reader now provides original cells so artificial mesh lines
 #    get removed. There's less of a point to seeing them here. Keep min/max
 #    refinement levels only. 
+# 
+#    Justin Privitera, Mon Oct 17 17:33:30 PDT 2022
+#    Added new tests for the new LOR settings. All prior tests use the legacy
+#    LOR setting, while new tests use a mix of both.
 #
 # ----------------------------------------------------------------------------
 RequiredDatabasePlugin("MFEM")
@@ -114,6 +118,11 @@ DrawPlots()
 Test("mfem_expressions_3")
 DeleteAllPlots()
 CloseDatabase(data_path("mfem_test_data/ex02-beam-tet.mfem_root"))
+
+# reset default
+readOptions = GetDefaultFileOpenOptions("MFEM")
+readOptions["MFEM LOR Setting"] = "MFEM LOR"
+SetDefaultFileOpenOptions("MFEM", readOptions)
 
 def test_mfem_lor_mesh(tag_name, dbfile):
     ResetView()
