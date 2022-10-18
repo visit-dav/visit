@@ -61,6 +61,9 @@ using namespace mfem;
 //  Modifications:
 //    Justin Privitera, Wed Aug 24 11:08:51 PDT 2022
 //    Defatult set `m_new_refine` to false. This will change later.
+// 
+//    Justin Privitera, Tue Oct 18 09:53:50 PDT 2022
+//    Added logic for setting LOR setting from read options.
 //
 // ****************************************************************************
 

@@ -46,6 +46,10 @@ class DBOptionsAttributes;
 //    Added `m_new_refine`, a boolean to toggle between using new MFEM LOR or 
 //    legacy MFEM LOR. When true, the new scheme is enabled. It is never set to
 //    true yet, but will be in the future.
+// 
+//    Justin Privitera, Tue Oct 18 09:53:50 PDT 2022
+//    Added DBOptionsAttributes forward declaration and as an argument to
+//    avtMFEMFileFormat.
 // ****************************************************************************
 
 class avtMFEMFileFormat : public avtSTMDFileFormat

@@ -25,6 +25,9 @@
 //  Modifications:
 //      Justin Privitera, Mon Apr 11 18:20:19 PDT 2022
 //      Added setting for Legacy or New MFEM LOR and added it to options.
+// 
+//      Justin Privitera, Tue Oct 18 09:53:50 PDT 2022
+//      Removed inaccurate comment.
 //
 // ****************************************************************************
 

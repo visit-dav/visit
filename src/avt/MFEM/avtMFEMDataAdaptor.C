@@ -356,6 +356,9 @@ avtMFEMDataAdaptor::LowOrderMeshToVTK(mfem::Mesh *mesh)
 // 
 //    Justin Privitera, Mon Aug 22 17:15:06 PDT 2022
 //    Moved from blueprint plugin to MFEM data adaptor.
+// 
+//    Justin Privitera, Tue Oct 18 09:53:50 PDT 2022
+//    Added guards to prevent segfault.
 //
 // ****************************************************************************
 vtkDataSet *
@@ -372,7 +375,7 @@ avtMFEMDataAdaptor::RefineMeshToVTK(mfem::Mesh *mesh,
         return LegacyRefineMeshToVTK(mesh, domain, lod);
     }
 
-    // We do not want to call dynamic_cast on something undefined, which is possible.
+    // This logic avoids segfaults
     if (mesh)
     {
         if (mesh->GetNodes())
@@ -604,6 +607,10 @@ avtMFEMDataAdaptor::LowOrderGridFunctionToVTK(mfem::GridFunction *gf)
 // 
 //    Justin Privitera, Mon Aug 22 17:15:06 PDT 2022
 //    Moved from blueprint plugin to MFEM data adaptor.
+// 
+//    Justin Privitera, Tue Oct 18 09:53:50 PDT 2022
+//    Added logic for determining nodal vs zonal vars.
+//    Added guards to prevent segfault.
 //
 // ****************************************************************************
 vtkDataArray *
@@ -621,7 +628,7 @@ avtMFEMDataAdaptor::RefineGridFunctionToVTK(mfem::Mesh *mesh,
         return LegacyRefineGridFunctionToVTK(mesh, gf, lod, var_is_nodal);
     }
 
-    // We do not want to call dynamic_cast on something undefined, which is possible.
+    // This logic avoids segfaults
     if (mesh)
     {
         if (mesh->GetNodes())
