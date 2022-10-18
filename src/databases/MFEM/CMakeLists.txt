@@ -18,6 +18,7 @@ SET(LIBM_SOURCES
 MFEMMDServerPluginInfo.C
 ${COMMON_SOURCES}
 avtMFEMFileFormat.C
+avtMFEMOptions.C
 JSONRoot.C
 )
 
@@ -25,6 +26,7 @@ SET(LIBE_SOURCES
 MFEMEnginePluginInfo.C
 ${COMMON_SOURCES}
 avtMFEMFileFormat.C
+avtMFEMOptions.C
 JSONRoot.C
 )
 

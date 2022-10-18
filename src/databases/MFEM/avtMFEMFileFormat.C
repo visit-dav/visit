@@ -14,6 +14,7 @@
 #include <sstream>
 
 #include <avtDatabaseMetaData.h>
+#include <DBOptionsAttributes.h>
 
 #include <DebugStream.h>
 #include <Expression.h>
@@ -60,15 +61,28 @@ using namespace mfem;
 //  Modifications:
 //    Justin Privitera, Wed Aug 24 11:08:51 PDT 2022
 //    Defatult set `m_new_refine` to false. This will change later.
+// 
+//    Justin Privitera, Tue Oct 18 09:53:50 PDT 2022
+//    Added logic for setting LOR setting from read options.
 //
 // ****************************************************************************
 
-avtMFEMFileFormat::avtMFEMFileFormat(const char *filename)
+avtMFEMFileFormat::avtMFEMFileFormat(const char *filename, 
+                                     const DBOptionsAttributes *readOpts)
     : avtSTMDFileFormat(&filename, 1)
 {
     selectedLOD = 0;
     root        = NULL;
-    m_new_refine = false;
+    if (readOpts->GetEnum("MFEM LOR Setting") == 0)
+    {
+        // legacy LOR was requested
+        m_new_refine = false;
+    }
+    else
+    {
+        // new LOR was requested
+        m_new_refine = true;
+    }    
 }
 
 // ****************************************************************************
