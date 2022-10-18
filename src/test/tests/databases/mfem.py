@@ -116,6 +116,7 @@ DeleteAllPlots()
 CloseDatabase(data_path("mfem_test_data/ex02-beam-tet.mfem_root"))
 
 def test_mfem_lor_mesh(tag_name, dbfile):
+    ResetView()
     base = os.path.splitext(os.path.basename(dbfile))[0]
 
     # get default options
@@ -167,6 +168,7 @@ for dbfile in input_meshs:
     test_mfem_lor_mesh("LOR", dbfile)
 
 def test_mfem_lor_field(tag_name, dbfile):
+    ResetView()
     base = os.path.splitext(os.path.basename(dbfile))[0]
 
     readOptions = GetDefaultFileOpenOptions("MFEM")
