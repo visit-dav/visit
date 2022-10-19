@@ -621,6 +621,10 @@ avtBlueprintFileFormat::ReadBlueprintMatset(int domain,
 // 
 //    Justin Privitera, Fri Jul 22 16:10:43 PDT 2022
 //    Added check for mfem zone centered field.
+// 
+//    Justin Privitera, Wed Oct 19 15:03:26 PDT 2022
+//    Added logic to determine nodal vs zonal association for mfem grid 
+//    functions.
 //
 // ****************************************************************************
 void

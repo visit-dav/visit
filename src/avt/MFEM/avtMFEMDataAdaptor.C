@@ -611,6 +611,9 @@ avtMFEMDataAdaptor::LowOrderGridFunctionToVTK(mfem::GridFunction *gf)
 //    Justin Privitera, Tue Oct 18 09:53:50 PDT 2022
 //    Added logic for determining nodal vs zonal vars.
 //    Added guards to prevent segfault.
+// 
+//    Justin Privitera, Wed Oct 19 15:03:26 PDT 2022
+//    Cleaned up nodal/zonal logic to match blueprint plugin.
 //
 // ****************************************************************************
 vtkDataArray *
