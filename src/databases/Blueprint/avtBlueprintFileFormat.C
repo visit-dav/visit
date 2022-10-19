@@ -807,14 +807,31 @@ avtBlueprintFileFormat::AddBlueprintMeshAndFieldMetadata(avtDatabaseMetaData *md
 
                 m_mfem_mesh_map[var_topo_name] = true;
 
-                // H1 is nodal
-                // L2 is zonal
-                std::string basis = n_field["basis"].as_string();
-                // if the basis is *not* H1 (it is L2 instead) 
-                // and new LOR is turned on
-                if (basis.find("H1_") == std::string::npos && m_new_refine)
+                // if new LOR is turned on
+                if (m_new_refine)
                 {
-                    cent = AVT_ZONECENT;
+                    // H1 is nodal
+                    // L2 is zonal
+                    std::string basis = n_field["basis"].as_string();
+                    bool l2 = basis.find("L2_") != std::string::npos;
+                    bool h1 = basis.find("H1_") != std::string::npos;
+                    bool node_centered;
+                    if (h1 && l2)
+                    {
+                        BP_PLUGIN_EXCEPTION1(InvalidVariableException, 
+                            "AddBlueprintMeshAndFieldMetadata: grid function cannot be both H1 and L2");
+                    }
+                    else if (!h1 && !l2) // guess
+                    {
+                        BP_PLUGIN_INFO("WARNING: AddBlueprintMeshAndFieldMetadata: Grid Function is "
+                                      "neither H1 nor L2. Guessing nodal association.");
+                        node_centered = true; 
+                    }
+                    else
+                        node_centered = h1 && !l2;
+                    
+                    if (!node_centered)
+                        cent = AVT_ZONECENT;
                 }
             }
 
