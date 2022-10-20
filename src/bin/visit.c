@@ -734,10 +734,13 @@ VisItLauncherMain(int argc, char *argv[])
     {
         FreeConsole();
         AllocConsole();
-#ifdef VISIT_WINDOWS_APPLICATION
-        // If we're running a parallel engine then let's hide the console window.
         if(component == "engine_par")
+#ifdef VISIT_WINDOWS_APPLICATION
+            // Hide the parallel engine console window.
             ShowWindow(GetConsoleWindow(), SW_HIDE);
+#else
+            // Prevent parallel engine console window from stealing focus.
+            ShowWindow(GetConsoleWindow(), SW_SHOWMINNOACTIVE);
 #endif
     }
 
