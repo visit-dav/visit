@@ -611,6 +611,9 @@ avtMFEMDataAdaptor::LowOrderGridFunctionToVTK(mfem::GridFunction *gf)
 //    Justin Privitera, Tue Oct 18 09:53:50 PDT 2022
 //    Added logic for determining nodal vs zonal vars.
 //    Added guards to prevent segfault.
+// 
+//    Justin Privitera, Wed Oct 19 15:03:26 PDT 2022
+//    Cleaned up nodal/zonal logic to match blueprint plugin.
 //
 // ****************************************************************************
 vtkDataArray *
@@ -684,11 +687,9 @@ avtMFEMDataAdaptor::RefineGridFunctionToVTK(mfem::Mesh *mesh,
         // however, the mfem plugin will always pass var_is_nodal, and the 
         // blueprint plugin always produces h1 or l2.
     }
-    // The next two cases will override whatever was passed in for var_is_nodal
-    else if (h1 && !l2)
-        node_centered = true;
-    else if (!h1 && l2)
-        node_centered = false;
+    // This case will override whatever was passed in for var_is_nodal
+    else
+        node_centered = h1 && !l2;
 
     if (node_centered != var_is_nodal)
         AVT_MFEM_INFO("WARNING: RefineGridFunctionToVTK: nodal determination mismatch, is var_is_nodal using default value?")
