@@ -51,8 +51,6 @@ JMFileFormat.C
 INCLUDE_DIRECTORIES(
 ${CMAKE_CURRENT_SOURCE_DIR}
 ${PDB_INCLUDE_DIR}
-${VISIT_INCLUDE_DIR}/third_party_builtin/bow
-${VISIT_INCLUDE_DIR}/visit/third_party_builtin/bow
 ${VISIT_DATABASE_INCLUDES}
 )
 

@@ -23,33 +23,62 @@
 #   Kathleen Biagas, Thu July 15, 2021
 #   Add BOXLIB_WIN32_DEFINES (used by xml2cmake to add preprocessor defines).
 #
+#   Kathleen Biagas, Tue Oct 25, 2022
+#   Create import targets for Boxlib::Box2d and Boxlib::Box3d.
+#
 #****************************************************************************/
 
-# Use the BOXLIB_DIR hint from the config-site .cmake file 
 
-INCLUDE(${VISIT_SOURCE_DIR}/CMake/SetUpThirdParty.cmake)
+if(DEFINED VISIT_BOXLIB_DIR AND EXISTS ${VISIT_BOXLIB_DIR})
 
-IF (WIN32)
-  SET_UP_THIRD_PARTY(BOXLIB LIBS BoxLib2D BoxLib3D)
-ELSE (WIN32)
-  SET_UP_THIRD_PARTY(BOXLIB LIBS box2D box3D)
-ENDIF (WIN32)
+    set(Boxlib2D_NAMES BoxLib2D box2D)
+    set(Boxlib3D_NAMES BoxLib3D box3D)
 
-IF(BOXLIB_FOUND)
-  # place the 2D and 3D libraries into separate vars for plugin use.
-  LIST(GET BOXLIB_LIB 0 tmp)
-  SET(BOXLIB_2D_LIB ${tmp} CACHE STRING "2D boxlib" FORCE)
+    find_path(Boxlib_INCLUDE_DIR NAMES BoxLib.h ${VISIT_BOXLIB_DIR} PATH_SUFFIXES include)
 
-  LIST(GET BOXLIB_LIB 1 tmp)
-  SET(BOXLIB_3D_LIB ${tmp} CACHE STRING "3D boxlib" FORCE)
-
-  if(WIN32)
-     set(BOXLIB_WIN32_DEFINES "BL_FORT_USE_UPPERCASE")
-  endif()
-
-  # unset unneeded vars.
-  UNSET(tmp)
-  UNSET(BOXLIB_LIB CACHE)
-ENDIF(BOXLIB_FOUND)
+    find_library(Boxlib2D_LIBRARY NAMES ${Boxlib2D_NAMES} PATHS ${VISIT_BOXLIB_DIR} PATH_SUFFIXES lib)
+    find_library(Boxlib3D_LIBRARY NAMES ${Boxlib3D_NAMES} PATHS ${VISIT_BOXLIB_DIR} PATH_SUFFIXES lib)
 
 
+    include(${VISIT_SOURCE_DIR}/CMake/ThirdPartyInstallLibrary.cmake)
+
+    if(Boxlib_INCLUDE_DIR)
+        THIRD_PARTY_INSTALL_INCLUDE(boxlib ${Boxlib_INCLUDE_DIR})
+    endif()
+
+    if(Boxlib2D_LIBRARY)
+        if(NOT TARGET Boxlib::Box2D)
+            add_library(Boxlib::Box2D UNKNOWN IMPORTED)
+            set_target_properties(Boxlib::Box2D PROPERTIES
+                INTERFACE_INCLUDE_DIRECTORIES "${Boxlib_INCLUDE_DIR}"
+                IMPORTED_LOCATION "${Boxlib2D_LIBRARY}"
+                COMPILE_DEFINITIONS BL_SPACEDIM=2)
+            if(WIN32)
+                set_target_properties(Boxlib::Box2D PROPERTIES
+                    COMPILE_DEFINITIONS BL_FORT_USE_UPPERCASE)
+            endif()
+        endif()
+        visit_install_tp_import_lib(Boxlib::Box2D)
+
+        # for current expectation of BOXLIB_2D_LIB
+        set(BOXLIB_2D_LIB Boxlib::Box2D)
+    endif()
+
+    if(Boxlib3D_LIBRARY)
+        if(NOT TARGET Boxlib::Box3D)
+            add_library(Boxlib::Box3D UNKNOWN IMPORTED)
+            set_target_properties(Boxlib::Box3D PROPERTIES
+                INTERFACE_INCLUDE_DIRECTORIES "${Boxlib_INCLUDE_DIR}"
+                IMPORTED_LOCATION "${Boxlib3D_LIBRARY}"
+                COMPILE_DEFINITIONS BL_SPACEDIM=3)
+            if(WIN32)
+                set_target_properties(Boxlib::Box3D PROPERTIES
+                    COMPILE_DEFINITIONS BL_FORT_USE_UPPERCASE)
+            endif()
+        endif()
+        visit_install_tp_import_lib(Boxlib::Box3D)
+
+        # for current expectation of BOXLIB_3D_LIB
+        set(BOXLIB_3D_LIB Boxlib::Box3D)
+    endif()
+endif()

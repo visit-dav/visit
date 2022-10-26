@@ -10,22 +10,27 @@
 #   Brad Whitlock, Thu Apr 18 14:40:01 PDT 2013
 #   Provide a macro name for zlib.
 #
+#   Kathleen Biagas, Tue Oct 25, 2022
+#   Modernize CMake usage: add includes to target property, use BUILD and
+#   INSTALL interfaces.  Install target with proper exports.
+#
 #****************************************************************************
 
-SET(BOW_SOURCES
-bow.C
-fwav.C
-gzlib.C
-)
+add_library(bow bow.C fwav.C gzlib.C)
 
-INCLUDE_DIRECTORIES(
-${CMAKE_CURRENT_SOURCE_DIR}
-${VISIT_COMMON_INCLUDES}
-${VTK_INCLUDE_DIRS}
-)
+target_include_directories(bow PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+  PRIVATE
+  $<BUILD_INTERFACE:${ZLIB_INCLUDE_DIR}>)
 
-ADD_LIBRARY(bow ${BOW_SOURCES})
-TARGET_LINK_LIBRARIES(bow ${ZLIB_LIBRARY})
+if(NOT VISIT_HEADERS_SKIP_INSTALL)
+    target_include_directories(bow PUBLIC
+      $<INSTALL_INTERFACE:include/visit/third_party_builtin/bow>)
+endif()
 
-VISIT_INSTALL_TARGETS(bow)
-SET_TARGET_PROPERTIES(bow PROPERTIES FOLDER thirdparty_builtin/bow)
+target_link_libraries(bow PRIVATE ${ZLIB_LIBRARY})
+
+visit_install_targets_export(bow)
+
+set_target_properties(bow PROPERTIES FOLDER thirdparty_builtin/bow)
+

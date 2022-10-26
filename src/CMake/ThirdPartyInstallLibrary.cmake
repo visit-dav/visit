@@ -274,3 +274,64 @@ FUNCTION(THIRD_PARTY_INSTALL_EXECUTABLE)
         ENDIF(EXISTS ${exe})
     ENDFOREACH(exe ${ARGN})
 ENDFUNCTION(THIRD_PARTY_INSTALL_EXECUTABLE exes)
+
+# -----------------------------------------------------------------------
+# visit_find_imported_location
+#   Examines properties of 'target' for its IMPORTED LOCATION
+#   First tries to match config with CMAKE_BUILD_TYPE, then will use
+#   first available config, or will try Release, RelWithDebInfo, Debug
+#   or non-config-specific.
+#
+# -----------------------------------------------------------------------
+macro(visit_find_imported_location target target_location)
+
+    # see if the package populated it's supported configurations
+    get_target_property(tconfigs ${target} IMPORTED_CONFIGURATIONS)
+    if(tconfigs)
+        if(DEFINED CMAKE_BUILD_TYPE)
+            string(TOUPPER ${CMAKE_BUILD_TYPE} ucbuildtype)
+            list(FIND tconfigs ${ucbuildtype} t_has_config)
+            if(${t_has_config} GREATER -1)
+                get_target_property(tloc ${target} IMPORTED_LOCATION_${ucbuildtype})
+            endif()
+        endif()
+        if(NOT tloc)
+           # use first defined configuration
+           list(GET tloc 0 useconfig)
+           get_target_property(tloc ${target} IMPORTED_LOCATION_${useconfig})
+        endif()
+    endif()
+
+    # fallbacks for situation where "target" did not populate configs
+    if(NOT tloc)
+        get_target_property(tloc ${target} IMPORTED_LOCATION_RELEASE)
+    endif()
+    if(NOT tloc)
+        get_target_property(tloc ${target} IMPORTED_LOCATION_RELWITHDEBINFO)
+    endif()
+    if(NOT tloc)
+        get_target_property(tloc ${target} IMPORTED_LOCATION_DEBUG)
+    endif()
+    if(NOT tloc)
+        get_target_property(tloc ${target} IMPORTED_LOCATION)
+    endif()
+    if(tloc)
+        set(target_location ${tloc})
+    endif()
+endmacro()
+
+# -----------------------------------------------------------------------
+# visit_install_tp_import_lib
+#   Function to install a third-party library that was set up as an
+#   import target.
+#   Utilizes visit_find_imported_location to determine the full path
+#   to the imported library target.
+# -----------------------------------------------------------------------
+function(visit_install_tp_import_lib target)
+    visit_find_imported_location(${target} tloc)
+    if(NOT tloc)
+        message(FATAL_ERROR "Could not locate imported location for third party imported library: ${target}")
+    endif()
+
+    THIRD_PARTY_INSTALL_LIBRARY(${tloc})
+endfunction()

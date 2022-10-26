@@ -730,6 +730,11 @@ PROJECT(VISIT)
 
 include(${VISIT_SOURCE_DIR}/CMake/CheckMinimumCompilerVersion.cmake)
 
+#-----------------------------------------------------------------------------
+# Include visit-defined CMake functions
+#-----------------------------------------------------------------------------
+
+include(${VISIT_SOURCE_DIR}/CMake/VisItFunctions.cmake)
 
 #-----------------------------------------------------------------------------
 # Set extended platlform defs.
@@ -2480,3 +2485,34 @@ ENDIF (NOT WIN32)
 if(VISIT_INSTALL_THIRD_PARTY)
     include(${VISIT_SOURCE_DIR}/CMake/PluginVsInstallHelpers.cmake)
 endif()
+
+#-------------------------------------------------------------------------
+#
+# Setup Export package configurations
+#
+#-------------------------------------------------------------------------
+
+include(CMakePackageConfigHelpers)
+
+# generate the top level config file
+configure_package_config_file(${CMAKE_CURRENT_SOURCE_DIR}/visitConfig.cmake.in
+    ${CMAKE_CURRENT_BINARY_DIR}/visitConfig.cmake
+    INSTALL_DESTINATION ${VISIT_INSTALLED_VERSION}/cmake)
+
+# generate the version config file
+write_basic_package_version_file(
+  ${CMAKE_CURRENT_BINARY_DIR}/visitConfigVersion.cmake
+  VERSION ${VISIT_VERSION}
+  COMPATIBILITY SameMinorVersion)
+
+# install the config files
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/visitConfig.cmake
+              ${CMAKE_CURRENT_BINARY_DIR}/visitConfigVersion.cmake
+        DESTINATION ${VISIT_INSTALLED_VERSION}/cmake)
+
+
+# install the target files
+install(EXPORT visitTargets
+        NAMESPACE visit::
+        DESTINATION cmake)
+
