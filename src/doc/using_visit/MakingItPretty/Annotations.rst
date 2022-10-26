@@ -839,8 +839,6 @@ You can also use the file browser to locate the image file if you click on the "
    The *path* used must be the *same* on both the local (client) and remote (server) machines.
    Often, the only way to achieve this may be to have the image file in ``/tmp`` or ``/var/tmp``.
 
-Note that since image annotations are incorporated into a visualization inside of VisIt_'s viewer component, the image file must be located on the same computer that runs the viewer.
-
 .. _fig-MakingItPretty-AnnotationObjectImage:
 
 .. figure:: images/MakingItPretty-AnnotationObjectImage.png
