@@ -17,6 +17,6 @@
       avtBOVWriter.C
       avtBOVFileFormat.C
     </Files>
-    <Attribute name="" purpose="" persistent="false" keyframe="true" exportAPI="" exportInclude="">
+    <Attribute name="" purpose="" persistent="false" keyframe="true" exportAPI="" exportInclude="" codefile=BOV.code>
     </Attribute>
   </Plugin>

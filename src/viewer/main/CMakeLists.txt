@@ -20,6 +20,9 @@
 #  Kevin Griffin, Mon Oct 19 09:43:37 PDT 2020
 #  Updated the bundle name, icon file name, identifier and copyright
 #
+#   Kathleen Biagas, Thu Oct 27, 2022
+#   On Windows, viewer library has direct dependence on ws2_32.
+#
 #****************************************************************************
 
 IF(VISIT_PARALLEL AND WIN32 AND HAVE_HPC_SCHEDULER)
@@ -188,7 +191,11 @@ LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY})
 ADD_LIBRARY(viewer ${VIEWERLIB_SOURCES})
 IF (WIN32)
     SET_TARGET_PROPERTIES(viewer PROPERTIES OUTPUT_NAME viewerlib)
+    target_link_libraries(viewer ws2_32)
 ENDIF (WIN32)
+
+# should these icons be moved to viewer/main instead of living in common/icons?
+target_include_directories(viewer PRIVATE ${VISIT_SOURCE_DIR}/common/icons)
 
 SET(VIEWER_QT_LIBS 
 ${QT_QTGUI_LIBRARY}

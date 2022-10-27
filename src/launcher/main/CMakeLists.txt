@@ -16,6 +16,9 @@
 #   Brad Whitlock, Fri May 18 16:09:34 PST 2012
 #   Use different resource file.
 #
+#   Kathleen Biagas, Thu Oct 27, 2022
+#   On Windows, vcl has direct dependence on ws2_32.
+#
 #****************************************************************************
 
 SET(VCL_SOURCES
@@ -45,6 +48,10 @@ TARGET_LINK_LIBRARIES(vcl
     ${CMAKE_THREAD_LIBS}
     ${DL_LIB}
 )
+
+if(WIN32)
+    target_link_libraries(vcl ws2_32)
+endif()
 
 IF(VISIT_CREATE_SOCKET_RELAY_EXECUTABLE AND NOT WIN32)
     ADD_EXECUTABLE(visit_socket_relay SocketRelayMain.C)

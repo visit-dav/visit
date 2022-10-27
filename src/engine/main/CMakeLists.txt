@@ -43,6 +43,9 @@
 #    Justin Privitera, Wed Aug 24 11:08:51 PDT 2022
 #    Added logic to be aware of avtBP lib.
 #
+#    Kathleen Biagas, Thu Oct 27, 2022
+#    On Windows, engine library has direct dependence on ws2_32.
+#
 #****************************************************************************
 
 set(LIBENGINE_SOURCES
@@ -129,6 +132,7 @@ link_directories(${LIBRARY_OUTPUT_DIRECTORY} ${AVT_REQUIRED_LIB_DIR})
 add_library(engine_ser ${LIBENGINE_SOURCES})
 if(WIN32)
     set_target_properties(engine_ser PROPERTIES OUTPUT_NAME enginelib_ser)
+    target_link_libraries(engine_ser ws2_32)
 endif()
 
 target_link_libraries(engine_ser
@@ -229,6 +233,7 @@ if(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(engine_par ${LIBENGINE_SOURCES} ${ENGINE_PAR_SOURCES} ${ICET_SOURCES})
     if (WIN32)
         set_target_properties(engine_par PROPERTIES OUTPUT_NAME enginelib_par)
+        target_link_libraries(engine_par ws2_32)
     endif (WIN32)
 
     # If we have Ice-T then add -DHAVE_ICET to the compilation flags.

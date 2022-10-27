@@ -24,7 +24,10 @@
 #include <XMLEditCodeGeneratorWindow.h>
 #include <XMLEditCodeSelectionDialog.h>
 
-#include <visitstream.h>
+#include <iostream>
+
+using std::cerr;
+using std::endl;
 
 // ****************************************************************************
 //  Constructor: XMLEdit::XMLEdit

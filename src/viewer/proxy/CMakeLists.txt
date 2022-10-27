@@ -7,6 +7,9 @@
 #  Kathleen Biagas, Thu Feb 27 2020
 #  Only build examples if VISIT_ENABLE_EXAMPLES is ON (the default is ON).
 #
+#   Kathleen Biagas, Thu Oct 27, 2022
+#   On Windows, viewerproxy has direct dependence on ws2_32.
+#
 #****************************************************************************
 
 SET(VIEWERPROXY_SOURCES
@@ -25,6 +28,9 @@ LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY})
 
 ADD_LIBRARY(viewerproxy ${VIEWERPROXY_SOURCES})
 TARGET_LINK_LIBRARIES(viewerproxy viewerrpc visitcommon avtdbatts)
+if(WIN32)
+    target_link_libraries(viewerproxy ws2_32)
+endif()
 
 if(VISIT_ENABLE_EXAMPLES)
   add_executable(proxyexample proxyexample.C)

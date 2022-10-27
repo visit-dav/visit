@@ -8,6 +8,9 @@
 #    Cyrus Harrison, Tue Dec 10 08:51:21 PST 2019
 #    Add xml tools code gen targets
 #
+#   Kathleen Biagas, Thu Oct 27, 2022
+#   On Windows, viewer_core has direct dependence on ws2_32.
+#
 #****************************************************************************
 
 #
@@ -123,6 +126,10 @@ link_directories(${LIBRARY_OUTPUT_DIRECTORY})
 add_library(viewercore_ser ${VIEWERCORE_SOURCES})
 set_target_properties(viewercore_ser PROPERTIES HAS_CXX ON)
 
+if(WIN32)
+    target_link_libraries(viewercore_ser ws2_32)
+endif()
+
 target_link_libraries(viewercore_ser
 viewerrpc
 visitcommon
@@ -147,6 +154,10 @@ endif()
 if(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(viewercore_par ${VIEWERCORE_SOURCES})
     set_target_properties(viewercore_par PROPERTIES HAS_CXX ON)
+
+    if(WIN32)
+        target_link_libraries(viewercore_par ws2_32)
+    endif()
 
     target_link_libraries(viewercore_par
     viewerrpc

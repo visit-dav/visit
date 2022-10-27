@@ -6,13 +6,17 @@
 #include <qapplication.h>
 #include <XMLEdit.h>
 
-#include <visitstream.h>
+#include <iostream>
 #include <stdlib.h>
 
 #include <QFileDialog>
 
 #include <QString>
 #include <QTextStream>
+
+using std::cerr;
+using std::endl;
+
 QTextStream cOut(stdout), cErr(stderr);
 QString Endl("\n");
 

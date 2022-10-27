@@ -31,3 +31,9 @@ ZipWrapperCommonPluginInfo::SetupDatabase(const char *const *list,
                new avtZipWrapperFileFormatInterface(list, nList, nBlock,
                                                     readOptions, this));
 }
+
+Target: xml2cmake
+Condition: WIN32
+MLinkLibraries: shlwapi
+ELinkLibraries: shlwapi
+

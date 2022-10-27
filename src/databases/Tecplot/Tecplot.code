@@ -47,3 +47,8 @@ TecplotCommonPluginInfo::SetupDatabase(const char *const *list,
     return new avtGenericDatabase(inter);
 }
 
+Target: xml2cmake
+Condition: WIN32
+MLinkLibraries: shlwapi
+ELinkLibraries: shlwapi
+

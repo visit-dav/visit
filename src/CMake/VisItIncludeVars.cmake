@@ -11,24 +11,18 @@
 #     VISIT_DATABASE_INCLUDES:  used by database plugins
 #     VISIT_OPERATOR_INCLUDES:  used by operator plugins
 #     VISIT_PLOT_INCLUDES:      used by plot plugins
+#
+#  Modifications:
+#    Kathleen Biagas, Thu Oct 27, 2022
+#    CMake modernization: Remove src/common from VISIT_COMMON_INCLUDES,
+#    they are now part of the interface for visitcommon.
+#
 #*****************************************************************************
 
 # Set up easy to use includes for the common directory
 set(VISIT_COMMON_INCLUDES
     ${VISIT_BINARY_DIR}/include
     ${VISIT_INCLUDE_DIR}/include
-    ${VISIT_INCLUDE_DIR}/common/Exceptions/Database
-    ${VISIT_INCLUDE_DIR}/common/Exceptions/Pipeline
-    ${VISIT_INCLUDE_DIR}/common/Exceptions/Plotter
-    ${VISIT_INCLUDE_DIR}/common/comm
-    ${VISIT_INCLUDE_DIR}/common/expr
-    ${VISIT_INCLUDE_DIR}/common/icons
-    ${VISIT_INCLUDE_DIR}/common/misc
-    ${VISIT_INCLUDE_DIR}/common/parser
-    ${VISIT_INCLUDE_DIR}/common/plugin
-    ${VISIT_INCLUDE_DIR}/common/proxybase
-    ${VISIT_INCLUDE_DIR}/common/state
-    ${VISIT_INCLUDE_DIR}/common/utility
     ${ZLIB_INCLUDE_DIR}
     )
 
