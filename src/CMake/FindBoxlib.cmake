@@ -28,17 +28,21 @@
 #
 #****************************************************************************/
 
+message("VISIT_BOXLIB_DIR: ${VISIT_BOXLIB_DIR}")
 
 if(DEFINED VISIT_BOXLIB_DIR AND EXISTS ${VISIT_BOXLIB_DIR})
 
     set(Boxlib2D_NAMES BoxLib2D box2D)
     set(Boxlib3D_NAMES BoxLib3D box3D)
 
-    find_path(Boxlib_INCLUDE_DIR NAMES BoxLib.h ${VISIT_BOXLIB_DIR} PATH_SUFFIXES include)
+    find_path(Boxlib_INCLUDE_DIR BoxLib.H PATHS ${VISIT_BOXLIB_DIR} PATH_SUFFIXES include)
 
     find_library(Boxlib2D_LIBRARY NAMES ${Boxlib2D_NAMES} PATHS ${VISIT_BOXLIB_DIR} PATH_SUFFIXES lib)
     find_library(Boxlib3D_LIBRARY NAMES ${Boxlib3D_NAMES} PATHS ${VISIT_BOXLIB_DIR} PATH_SUFFIXES lib)
 
+    if(Boxlib_INCLUDE_DIR AND Boxlib2D_LIBRARY AND Boxlib3D_LIBRARY)
+        set(BOXLIB_FOUND true)
+    endif()
 
     include(${VISIT_SOURCE_DIR}/CMake/ThirdPartyInstallLibrary.cmake)
 
@@ -52,10 +56,10 @@ if(DEFINED VISIT_BOXLIB_DIR AND EXISTS ${VISIT_BOXLIB_DIR})
             set_target_properties(Boxlib::Box2D PROPERTIES
                 INTERFACE_INCLUDE_DIRECTORIES "${Boxlib_INCLUDE_DIR}"
                 IMPORTED_LOCATION "${Boxlib2D_LIBRARY}"
-                COMPILE_DEFINITIONS BL_SPACEDIM=2)
+                INTERFACE_COMPILE_DEFINITIONS BL_SPACEDIM=2)
             if(WIN32)
                 set_target_properties(Boxlib::Box2D PROPERTIES
-                    COMPILE_DEFINITIONS BL_FORT_USE_UPPERCASE)
+                    INTERFACE_COMPILE_DEFINITIONS BL_FORT_USE_UPPERCASE)
             endif()
         endif()
         visit_install_tp_import_lib(Boxlib::Box2D)
@@ -70,10 +74,10 @@ if(DEFINED VISIT_BOXLIB_DIR AND EXISTS ${VISIT_BOXLIB_DIR})
             set_target_properties(Boxlib::Box3D PROPERTIES
                 INTERFACE_INCLUDE_DIRECTORIES "${Boxlib_INCLUDE_DIR}"
                 IMPORTED_LOCATION "${Boxlib3D_LIBRARY}"
-                COMPILE_DEFINITIONS BL_SPACEDIM=3)
+                INTERFACE_COMPILE_DEFINITIONS BL_SPACEDIM=3)
             if(WIN32)
                 set_target_properties(Boxlib::Box3D PROPERTIES
-                    COMPILE_DEFINITIONS BL_FORT_USE_UPPERCASE)
+                    INTERFACE_COMPILE_DEFINITIONS BL_FORT_USE_UPPERCASE)
             endif()
         endif()
         visit_install_tp_import_lib(Boxlib::Box3D)
