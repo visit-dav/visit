@@ -28,8 +28,6 @@
 #
 #****************************************************************************/
 
-message("VISIT_BOXLIB_DIR: ${VISIT_BOXLIB_DIR}")
-
 if(DEFINED VISIT_BOXLIB_DIR AND EXISTS ${VISIT_BOXLIB_DIR})
 
     set(Boxlib2D_NAMES BoxLib2D box2D)
@@ -58,8 +56,10 @@ if(DEFINED VISIT_BOXLIB_DIR AND EXISTS ${VISIT_BOXLIB_DIR})
                 IMPORTED_LOCATION "${Boxlib2D_LIBRARY}"
                 INTERFACE_COMPILE_DEFINITIONS BL_SPACEDIM=2)
             if(WIN32)
-                set_target_properties(Boxlib::Box2D PROPERTIES
+                set_property(TARGET Boxlib::Box2D APPEND PROPERTY
                     INTERFACE_COMPILE_DEFINITIONS BL_FORT_USE_UPPERCASE)
+                set_target_properties(Boxlib::Box2D PROPERTIES
+                     INTERFACE_LINK_LIBRARIES shlwapi)
             endif()
         endif()
         visit_install_tp_import_lib(Boxlib::Box2D)
@@ -76,8 +76,10 @@ if(DEFINED VISIT_BOXLIB_DIR AND EXISTS ${VISIT_BOXLIB_DIR})
                 IMPORTED_LOCATION "${Boxlib3D_LIBRARY}"
                 INTERFACE_COMPILE_DEFINITIONS BL_SPACEDIM=3)
             if(WIN32)
-                set_target_properties(Boxlib::Box3D PROPERTIES
+                set_property(TARGET Boxlib::Box3D APPEND PROPERTY
                     INTERFACE_COMPILE_DEFINITIONS BL_FORT_USE_UPPERCASE)
+                set_target_properties(Boxlib::Box3D PROPERTIES
+                     INTERFACE_LINK_LIBRARIES shlwapi)
             endif()
         endif()
         visit_install_tp_import_lib(Boxlib::Box3D)
