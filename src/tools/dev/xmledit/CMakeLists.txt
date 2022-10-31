@@ -7,81 +7,70 @@
 #   Kathleen Bonnell, Wed Jan 05 10:25:13 PST 2010
 #   Add FOLDER property.
 #
+#   Kathleen Biagas, Mon Oct 31, 2022
+#   Modernize CMake usage: don't create unnecessary variables, use automoc,
+#   use BUILD_INTERFACE for includes.
+#
 #****************************************************************************
 
-SET(XMLEDIT_SOURCES
-XMLEditMain.C
-XMLDocument.C
-XMLEdit.C
-XMLEditAttribute.C
-XMLEditPlugin.C
-XMLEditEnums.C
-XMLEditFields.C
-XMLEditFunctions.C
-XMLEditCode.C
-XMLEditCodeGeneratorWindow.C
-XMLEditCodeSelectionDialog.C
-XMLEditConstants.C
-XMLEditIncludes.C
-XMLEditMakefile.C
+add_executable(xmledit
+    XMLEditMain.C
+    XMLDocument.C
+    XMLEdit.C
+    XMLEditAttribute.C
+    XMLEditPlugin.C
+    XMLEditEnums.C
+    XMLEditFields.C
+    XMLEditFunctions.C
+    XMLEditCode.C
+    XMLEditCodeGeneratorWindow.C
+    XMLEditCodeSelectionDialog.C
+    XMLEditConstants.C
+    XMLEditIncludes.C
+    XMLEditMakefile.C
 )
 
-SET(XMLEDIT_MOC_SOURCES
-XMLEdit.h
-XMLEditAttribute.h
-XMLEditPlugin.h
-XMLEditEnums.h
-XMLEditFields.h
-XMLEditFunctions.h
-XMLEditCode.h
-XMLEditCodeGeneratorWindow.h
-XMLEditCodeSelectionDialog.h
-XMLEditConstants.h
-XMLEditIncludes.h
-XMLEditMakefile.h
-)
-QT_WRAP_CPP(xmledit XMLEDIT_SOURCES ${XMLEDIT_MOC_SOURCES})
+target_include_directories(xmledit PRIVATE
+    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>"
+    "$<BUILD_INTERFACE:${VISIT_SOURCE_DIR}/tools/dev/xml>"
+    "$<BUILD_INTERFACE:${VISIT_COMMON_INCLUDES}>")
 
-INCLUDE_DIRECTORIES(
-${CMAKE_CURRENT_SOURCE_DIR}
-${VISIT_COMMON_INCLUDES}
-${VISIT_SOURCE_DIR}/tools/dev/xml
-)
-
-IF(APPLE)
-    ADD_EXECUTABLE(xmledit MACOSX_BUNDLE ${XMLEDIT_SOURCES})
-    SET(MACOSX_BUNDLE_BUNDLE_NAME          "XmlEdit ${VISIT_VERSION}")
-    SET(MACOSX_BUNDLE_INFO_STRING          "Editor for VisIt plugin XML files")
-    SET(MACOSX_BUNDLE_ICON_FILE            ${VISIT_SOURCE_DIR}/common/icons/VisItIcon.icns)
-    SET_SOURCE_FILES_PROPERTIES(${VISIT_SOURCE_DIR}/common/icons/VisItIcon.icns
+if(APPLE)
+    set_target_properties(xmledit PROPERTIES MACOSX_BUNDLE)
+    set(MACOSX_BUNDLE_BUNDLE_NAME          "XmlEdit ${VISIT_VERSION}")
+    set(MACOSX_BUNDLE_INFO_STRING          "Editor for VisIt plugin XML files")
+    set(MACOSX_BUNDLE_ICON_FILE            ${VISIT_SOURCE_DIR}/common/icons/VisItIcon.icns)
+    set_source_files_properties(${VISIT_SOURCE_DIR}/common/icons/VisItIcon.icns
         PROPERTIES
         MACOSX_PACKAGE_LOCATION Resources
     )
-    SET(MACOSX_BUNDLE_GUI_IDENTIFIER       VISI)
-    SET(MACOSX_BUNDLE_LONG_VERSION_STRING  "XmlEdit version ${VISIT_VERSION}")
-    SET(MACOSX_BUNDLE_SHORT_VERSION_STRING "XmlEdit ${VISIT_VERSION}")
-    SET(MACOSX_BUNDLE_BUNDLE_VERSION       ${VISIT_VERSION})
-    SET(MACOSX_BUNDLE_COPYRIGHT            "Copyright (c) 2000 - 2022, Lawrence Livermore National Security, LLC")
-ELSE(APPLE)
-    ADD_EXECUTABLE(xmledit ${VISIT_APPLICATION_STYLE} ${XMLEDIT_SOURCES})
-ENDIF(APPLE)
+    set(MACOSX_BUNDLE_GUI_IDENTIFIER       VISI)
+    set(MACOSX_BUNDLE_LONG_VERSION_STRING  "XmlEdit version ${VISIT_VERSION}")
+    set(MACOSX_BUNDLE_SHORT_VERSION_STRING "XmlEdit ${VISIT_VERSION}")
+    set(MACOSX_BUNDLE_BUNDLE_VERSION       ${VISIT_VERSION})
+    set(MACOSX_BUNDLE_COPYRIGHT            "Copyright (c) 2000 - 2022, Lawrence Livermore National Security, LLC")
+elseif(WIN32)
+    set_target_properties(xmledit PROPERTIES ${VISIT_APPLICATION_STYLE}
+                                              Qt5_NO_LINK_QTMAIN ON)
+endif()
 
-SET(RELEVANT_QT_LIBS 
-${QT_QTGUI_LIBRARY}
-${QT_QTXML_LIBRARY}
-${QT_QTCORE_LIBRARY}
-)
-IF(VISIT_STATIC)
+set_target_properties(xmledit PROPERTIES AUTOMOC ON)
+
+if(VISIT_STATIC)
     MAC_NIB_INSTALL(xmledit)
-    SET(RELEVANT_QT_LIBS
+    target_link_libraries(xmledit PRIVATE
         ${RELEVANT_QT_LIBS}
         ${QT_QTGUI_LIB_DEPENDENCIES}
         ${QT_QTXML_LIB_DEPENDENCIES}
-        ${QT_QTCORE_LIB_DEPENDENCIES}
-    )
-ENDIF(VISIT_STATIC)
+        ${QT_QTCORE_LIB_DEPENDENCIES})
+else()
+    target_link_libraries(xmledit PRIVATE
+        ${QT_QTGUI_LIBRARY}
+        ${QT_QTXML_LIBRARY}
+        ${QT_QTCORE_LIBRARY})
+endif()
 
-TARGET_LINK_LIBRARIES(xmledit ${RELEVANT_QT_LIBS})
+visit_install_targets_export(xmledit)
 
-VISIT_INSTALL_TARGETS(xmledit)
 VISIT_TOOLS_ADD_FOLDER(xml xmledit)
+
