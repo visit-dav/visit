@@ -829,17 +829,15 @@ their size, and optional transparency color.
   
    An Example of a visualization with two overlaid image annotations
 
-The first step in incorporating an image annotation into a visualization
-is to choose the file that contains the image that will serve as the
-annotation. To choose an image file for the image annotation, type in
-the full path and filename to the file that you want to use into the
-**Image source** text field. You can also use the file browser to locate
-the image file if you click on the "..." button to the right of the
-**Image source** text field in the **Image annotation interface**, shown
-in :numref:`Figure %s <fig-MakingItPretty-AnnotationObjectImage>`. Note
-that since image annotations are incorporated into a visualization inside
-of VisIt_'s viewer component, the image file must be located on the same
-computer that runs the viewer.
+The first step in incorporating an image annotation into a visualization is to choose the file that contains the image that will serve as the annotation.
+To choose an image file for the image annotation, type in the full path and filename to the file that you want to use into the **Image source** text field.
+You can also use the file browser to locate the image file if you click on the "..." button to the right of the **Image source** text field in the **Image annotation interface**, shown in :numref:`Figure %s <fig-MakingItPretty-AnnotationObjectImage>`.
+
+.. warning::
+
+   Currently, there is a limitation in the use of image annotations while operating in client/server mode.
+   The *path* used must be the *same* on both the local (client) and remote (server) machines.
+   Often, the only way to achieve this may be to have the image file in ``/tmp`` or ``/var/tmp``.
 
 .. _fig-MakingItPretty-AnnotationObjectImage:
 

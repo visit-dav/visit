@@ -6,6 +6,6 @@ SET PYTHONPATH=@CMAKE_BINARY_DIR@/lib/@CMAKE_BUILD_TYPE@/site-packages/
    -t @VISIT_SOURCE_DIR@/test/tests ^
    -s @VISIT_SOURCE_DIR@/test/skip.json ^
    --src @VISIT_SOURCE_DIR@ ^
-   --cmake @CMAKE_COMMAND@ ^
+   --cmake "@CMAKE_COMMAND@" ^
    -o testing_output ^
    -e @CMAKE_RUNTIME_OUTPUT_DIRECTORY@/@CMAKE_BUILD_TYPE@/visit.exe %*
