@@ -2514,5 +2514,5 @@ install(FILES ${CMAKE_CURRENT_BINARY_DIR}/visitConfig.cmake
 # install the target files
 install(EXPORT visitTargets
         NAMESPACE visit::
-        DESTINATION cmake)
+        DESTINATION ${VISIT_INSTALLED_VERSION}/cmake)
 
