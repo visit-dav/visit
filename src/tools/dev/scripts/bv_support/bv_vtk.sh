@@ -1952,6 +1952,42 @@ EOF
     return 0;
 }
 
+function apply_vtk_osmesa_render_patch
+{
+    # Apply a patch where the OSMesaMakeCurrent could sometimes pass the
+    # wrong window size for the buffer.
+    patch -p0 << \EOF
+diff -u Rendering/OpenGL2/vtkOSOpenGLRenderWindow.cxx.orig Rendering/OpenGL2/vtkOSOpenGLRenderWindow.cxx
+--- Rendering/OpenGL2/vtkOSOpenGLRenderWindow.cxx.orig  2022-10-31 14:53:21.228362000 -0700
++++ Rendering/OpenGL2/vtkOSOpenGLRenderWindow.cxx       2022-10-31 14:55:24.072140000 -0700
+@@ -201,7 +201,6 @@
+       this->Internal->OffScreenContextId = OSMesaCreateContext(GL_RGBA, nullptr);
+     }
+   }
+-  this->MakeCurrent();
+ 
+   this->Mapped = 0;
+   this->Size[0] = width;
+@@ -330,8 +329,8 @@
+ {
+   if ((this->Size[0] != width)||(this->Size[1] != height))
+   {
+-    this->Superclass::SetSize(width, height);
+     this->ResizeOffScreenWindow(width, height);
++    this->Superclass::SetSize(width, height);
+     this->Modified();
+   }
+ }
+EOF
+
+    if [[ $? != 0 ]] ; then
+      warn "vtk patch for compiler version check failed."
+      return 1
+    fi
+
+    return 0;
+}
+
 
 function apply_vtk_patch
 {
@@ -2045,6 +2081,10 @@ function apply_vtk_patch
         fi
     fi
 
+    apply_vtk_osmesa_render_patch
+    if [[ $? != 0 ]] ; then
+        return 1
+    fi
     return 0
 }
 
