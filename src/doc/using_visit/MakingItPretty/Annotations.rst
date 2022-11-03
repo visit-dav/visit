@@ -510,7 +510,7 @@ An optional ``%`` character following the value's name introduces a `printf-styl
    Presently, the ``$`` values that are displayed are taken always from the *first* plot in the plot list.
    If the plot list is changed such that the first plot that was in effect at the time the annotation was created, the rendered text for the annotation may change.
 
-The list of values currently supported are 
+The list of values currently supported along with their default formats are 
 
     +--------------------+----------+-------------------------------------+
     |   **Value name**   | **Fmt**  |       **Meaning**                   |
@@ -838,6 +838,7 @@ You can also use the file browser to locate the image file if you click on the "
    Currently, there is a limitation in the use of image annotations while operating in client/server mode.
    The *path* used must be the *same* on both the local (client) and remote (server) machines.
    Often, the only way to achieve this may be to have the image file in ``/tmp`` or ``/var/tmp``.
+   For parallel engines, this may necessitate a complicated set of manual steps to a) wait for the parallel job to start, b) identify the node running MPI rank 0 (the only MPI rank where annotations are processed) and c) copy the file to the ``/tmp`` directory on that node assuming access controls will even allow that.
 
 .. _fig-MakingItPretty-AnnotationObjectImage:
 
