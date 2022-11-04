@@ -1244,7 +1244,7 @@ include_dirs =
 EOF
     info "Installing numpy (~ 2 min) ..."
     sed -i 's#\\\\\"%s\\\\\"#%s#' numpy/distutils/system_info.py
-    BLAS=None LAPACK=None ATLAS=None ${PYTHON_COMMAND} ./setup.py install --prefix="${PYHOME}"
+    CC=${CMAKE_C_COMPILER} BLAS=None LAPACK=None ATLAS=None ${PYTHON_COMMAND} ./setup.py install --prefix="${PYHOME}"
     if test $? -ne 0 ; then
         popd > /dev/null
         warn "Could not install numpy"
@@ -2032,12 +2032,14 @@ function bv_python_build
 
             check_if_py_module_installed "PIL"
             # use Pillow for when python 3
-            info "Building the Python Pillow Imaging Library"
-            build_pillow
             if [[ $? != 0 ]] ; then
-                error "Pillow build failed. Bailing out."
+                info "Building the Python Pillow Imaging Library"
+                build_pillow
+                if [[ $? != 0 ]] ; then
+                    error "Pillow build failed. Bailing out."
+                fi
+                info "Done building the Python Pillow Imaging Library"
             fi
-            info "Done building the Python Pillow Imaging Library"
 
             if [[ "$BUILD_MPI4PY" == "yes" ]]; then
 
