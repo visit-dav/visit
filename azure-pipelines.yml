@@ -48,7 +48,7 @@ stages:
   jobs:
   - job: Main_Build
     pool:
-      vmImage: 'ubuntu-18.04'
+      vmImage: 'ubuntu-latest'
     timeoutInMinutes: 0
     container: ${{ variables.container_tag }}
     variables:

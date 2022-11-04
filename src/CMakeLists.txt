@@ -523,6 +523,9 @@
 #    Kathleen Biagas, Mon Sep 26, 2022
 #    Remove HDF4 support.
 #
+#    Cyrus Harrison, Fri Nov  4 13:38:24 PDT 2022
+#    Wire up BLT CMake Build System Helpers.
+#
 #****************************************************************************
 
 cmake_minimum_required(VERSION 3.15 FATAL_ERROR)
@@ -541,6 +544,7 @@ if(COMMAND cmake_policy)
         endif()
     endif()
 endif()
+
 
 #
 # Try to capture the initial set of cmake command line args passed by
@@ -721,12 +725,14 @@ SET(CMAKE_C_COMPILER ${VISIT_C_COMPILER})
 SET(CMAKE_CXX_COMPILER ${VISIT_CXX_COMPILER})
 SET(CMAKE_Fortran_COMPILER ${VISIT_FORTRAN_COMPILER})
 
+
 #-----------------------------------------------------------------------------
 # VisIt project. Declare the project after including the input because
 #                this lets us set up defaults in the config-site.
 #-----------------------------------------------------------------------------
 
 PROJECT(VISIT)
+
 
 include(${VISIT_SOURCE_DIR}/CMake/CheckMinimumCompilerVersion.cmake)
 
@@ -1005,6 +1011,13 @@ list(GET v_list 0 VISIT_VERSION_MAJOR)
 list(GET v_list 1 VISIT_VERSION_MINOR)
 list(GET v_list 2 VISIT_VERSION_PATCH)
 unset(v_list)
+
+#-----------------------------------------------------------------------------
+# Init BLT
+#-----------------------------------------------------------------------------
+# This also includes 
+# VisIt's BLT defaults
+include(cmake/SetupBLT.cmake)
 
 #-----------------------------------------------------------------------------
 # Set up some installation related value and macros (needs version).
