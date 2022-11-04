@@ -1965,7 +1965,6 @@ resrad Function: ``resrad()`` : ``resrad(expr0)``
 .. _CrackWidth_Expression_Function:
 
 crack width Function: ``crack_width()`` : ``crack_width(crack_num, <crack1_dir>, <crack2_dir>, <crack3_dir>, <strain_tensor>, volume2(<mesh_name>))``
-
     Calculates crack width using the following formula:
 
         | crackwidth = L * (1 - (exp(-delta))  
