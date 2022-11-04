@@ -32,3 +32,14 @@ evaluated until after the ExternalSurface operator has been applied.
 
    DeferExpression operator example
 
+
+Deferring multiple expressions
+""""""""""""""""""""""""""""""
+
+What if you want to color a surface by a new variable equal to **(1.0 - X)^2** where **X** is the x-component of the surface's normal?
+Starting with the previous example, and supposing the surface normal expression was defined as **surfn=point_surface_normal("mesh")**.
+You would create a new expression to grab the x-component of the normal: **X=(1.0-surfn[0])^2**.
+Add a :ref:`Pseudocolor plot` of **X**.
+Apply the :ref:`ExternalSurface operator`.
+Apply the DeferExpression operator and add both **surfn** and **X** to the list of variables being deferred.
+
