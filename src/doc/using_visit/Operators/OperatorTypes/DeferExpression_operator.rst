@@ -4,10 +4,9 @@ DeferExpression operator
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
 The DeferExpression operator is a special-purpose operator that defers 
-expression execution until later in VisIt's pipeline execution cycle. This 
-means that instead of expression execution taking place before any operators 
-are applied, expression execution can instead take place after operators have 
-been applied.
+expression execution until later in VisIt's pipeline execution cycle.
+This means that instead of expression evaluation taking place before any operators are applied, expression evaluation can instead take place after operators have been applied, at whatever point in the pipeline the DeferOperator exists.
+This may be necessary in cases where an expression involves the *output* of an operator, or the operator behaves in such a way as to change the outcome of an expression.
 
 Plotting surface normals
 """"""""""""""""""""""""

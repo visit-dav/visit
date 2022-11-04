@@ -2258,7 +2258,7 @@ Deferring expression evaluation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Expressions are generally evaluated before any operators are applied to the data.
-There are instances where one may want to defer the evaluation until after other filters have been applied.
+In cases where an expression involves the *output* of an operator, or the operator behaves in such a way as to change the outcome of an expression,  then it is necessary to *defer*  evaluation of such an expression until *after* operators have been applied.
 The :ref:`DeferExpression operator` is designed for this purpose.
 It will cause expressions in its list to be evaluated at the time of it's own execution in the pipeline.
 
