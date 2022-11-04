@@ -1017,7 +1017,7 @@ unset(v_list)
 #-----------------------------------------------------------------------------
 # This also includes 
 # VisIt's BLT defaults
-include(cmake/SetupBLT.cmake)
+include(CMake/SetupBLT.cmake)
 
 #-----------------------------------------------------------------------------
 # Set up some installation related value and macros (needs version).
