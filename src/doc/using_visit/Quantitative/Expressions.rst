@@ -1048,14 +1048,12 @@ Material Error Function: ``materror()`` : ``materror(<Mat>,[Const,Const...])``
     as an integer. If multiple materials are to be selected from the 
     *material variable*, enclose them in square brackets as a list.
 
-    Examples...
+    Examples... ::
 
-::
-
-    materror(materials, 1)
-    materror(materials, [1,3])
-    materror(materials, "copper")
-    materror(materials, ["copper", "steel"])
+     materror(materials, 1)
+     materror(materials, [1,3])
+     materror(materials, "copper")
+     materror(materials, ["copper", "steel"])
 
 .. _Matvf_Expression_Function:
 
@@ -1066,14 +1064,12 @@ Material Volume Fractions Function: ``matvf()`` : ``matvf(<Mat>,[Const,Const,...
     the ``Const`` argument(s) identify one or more materials within the
     *material variable*. 
     
-    Examples...
+    Examples... ::
 
-::
-
-    matvf(materials, 1)
-    matvf(materials, [1,3])
-    matvf(materials, "copper")
-    matvf(materials, ["copper", "steel"])
+     matvf(materials, 1)
+     matvf(materials, [1,3])
+     matvf(materials, "copper")
+     matvf(materials, ["copper", "steel"])
 
 .. _NMats_Expression_Function:
 
@@ -1091,13 +1087,11 @@ Specmf Function: ``specmf()`` : ``specmf(<Spec>,<MConst>,[Const,Const,...])``
     The ``<Const>`` argument(s) identify which species within the
     *species variable* to select.
 
-    Examples:
+    Examples: ::
 
-::
-
-    specmf(species, 1, 1)
-    specmf(species, "copper", 1)
-    specmf(species, "copper", [1,3])
+     specmf(species, 1, 1)
+     specmf(species, "copper", 1)
+     specmf(species, "copper", [1,3])
 
 .. _Value_For_Material_Expression_Function:
 
@@ -1961,7 +1955,7 @@ resrad Function: ``resrad()`` : ``resrad(expr0)``
 
 crack width Function: ``crack_width()`` : ``crack_width(crack_num, <crack1_dir>, <crack2_dir>, <crack3_dir>, <strain_tensor>, volume2(<mesh_name>))``
 
-    Calculates crack width using the following formula:
+    Calculates crack width using the following formula: ::
 
         | crackwidth = L * (1 - (exp(-delta))  
         | where: 
