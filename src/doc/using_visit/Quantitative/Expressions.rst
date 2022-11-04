@@ -1048,14 +1048,12 @@ Material Error Function: ``materror()`` : ``materror(<Mat>,[Const,Const...])``
     as an integer. If multiple materials are to be selected from the 
     *material variable*, enclose them in square brackets as a list.
 
-    Examples...
+    Examples... ::
 
-::
-
-    materror(materials, 1)
-    materror(materials, [1,3])
-    materror(materials, "copper")
-    materror(materials, ["copper", "steel"])
+     materror(materials, 1)
+     materror(materials, [1,3])
+     materror(materials, "copper")
+     materror(materials, ["copper", "steel"])
 
 .. _Matvf_Expression_Function:
 
@@ -1066,14 +1064,12 @@ Material Volume Fractions Function: ``matvf()`` : ``matvf(<Mat>,[Const,Const,...
     the ``Const`` argument(s) identify one or more materials within the
     *material variable*. 
     
-    Examples...
+    Examples... ::
 
-::
-
-    matvf(materials, 1)
-    matvf(materials, [1,3])
-    matvf(materials, "copper")
-    matvf(materials, ["copper", "steel"])
+     matvf(materials, 1)
+     matvf(materials, [1,3])
+     matvf(materials, "copper")
+     matvf(materials, ["copper", "steel"])
 
 .. _NMats_Expression_Function:
 
@@ -1091,13 +1087,11 @@ Specmf Function: ``specmf()`` : ``specmf(<Spec>,<MConst>,[Const,Const,...])``
     The ``<Const>`` argument(s) identify which species within the
     *species variable* to select.
 
-    Examples:
+    Examples: ::
 
-::
-
-    specmf(species, 1, 1)
-    specmf(species, "copper", 1)
-    specmf(species, "copper", [1,3])
+     specmf(species, 1, 1)
+     specmf(species, "copper", 1)
+     specmf(species, "copper", [1,3])
 
 .. _Value_For_Material_Expression_Function:
 
@@ -1203,18 +1197,15 @@ Global Nodeid Function: ``global_nodeid()`` : ``global_nodeid(expr0)``
 .. _Ghost_Zoneid_Expression_Function:
 
 Ghost Zoneid Function: ``ghost_zoneid()`` : ``ghost_zoneid(<Mesh>)``
-    Returns the ghost zone id of each zone in the mesh. The ghost zone id could be any combination of the following:
+    Returns the ghost zone id of each zone in the mesh. The ghost zone id could be any combination of the following: ::
 
-::
+     DUPLICATED_ZONE_INTERNAL_TO_PROBLEM = 0,
+     ENHANCED_CONNECTIVITY_ZONE = 1,
+     REDUCED_CONNECTIVITY_ZONE = 2,
+     REFINED_ZONE_IN_AMR_GRID = 3,
+     ZONE_EXTERIOR_TO_PROBLEM = 4,
+     ZONE_NOT_APPLICABLE_TO_PROBLEM = 5
 
-    DUPLICATED_ZONE_INTERNAL_TO_PROBLEM = 0,
-    ENHANCED_CONNECTIVITY_ZONE = 1,
-    REDUCED_CONNECTIVITY_ZONE = 2,
-    REFINED_ZONE_IN_AMR_GRID = 3,
-    ZONE_EXTERIOR_TO_PROBLEM = 4,
-    ZONE_NOT_APPLICABLE_TO_PROBLEM = 5
-
-:
     where each flag represents a bit shift by the specified number of bits. So if a zone is not a ghost zone, the value returned would be 0, while if it was a ``DUPLICATED_ZONE_INTERNAL_TO_PROBLEM`` and a ``REFINED_ZONE_IN_AMR_GRID``, the value returned would be 1001 in binary, or 9 in decimal.
 
 .. _Volume_Function:
@@ -1582,9 +1573,7 @@ Position-Based CMFE Function: ``pos_cmfe()`` : ``pos_cmfe(<Donor Variable>,<Targ
    the expression properly identifies the different states of the donor
    variable instead of always mapping a fixed state.
 
-   Examples...
-   
-::
+   Examples... ::
 
     # Case A: Donor variable, "pressure" in same database as mesh, "ucdmesh"
     # Note that due to a limitation in Expression parsing, the '[0]id:' is
@@ -1965,18 +1954,18 @@ resrad Function: ``resrad()`` : ``resrad(expr0)``
 .. _CrackWidth_Expression_Function:
 
 crack width Function: ``crack_width()`` : ``crack_width(crack_num, <crack1_dir>, <crack2_dir>, <crack3_dir>, <strain_tensor>, volume2(<mesh_name>))``
-    Calculates crack width using the following formula:
+    Calculates crack width using the following formula: ::
 
-        | crackwidth = L * (1 - (exp(-delta))  
-        | where: 
-        |  L = ZoneVol / (Area perpendicular to crack_dir)
-        |     find Area by slicing the cell by plane with origin == cell center
-        |     and Normal == crack_dir.  Take area of that slice.
-        | 
-        |  delta =
-        |     T11 for crack dir1 = component 0 of strain_tensor 
-        |     T22 for crack dir2 = component 4 of strain_tensor
-        |     T33 for crack dir3 = component 8 of strain_tensor
+     crackwidth = L * (1 - (exp(-delta))  
+     where: 
+        L = ZoneVol / (Area perpendicular to crack_dir)
+            find Area by slicing the cell by plane with origin == cell center
+            and Normal == crack_dir.  Take area of that slice.
+         
+        delta =
+            T11 for crack dir1 = component 0 of strain_tensor 
+            T22 for crack dir2 = component 4 of strain_tensor
+            T33 for crack dir3 = component 8 of strain_tensor
    
 Time Iteration Expressions
 """"""""""""""""""""""""""
@@ -2219,9 +2208,7 @@ for the result. If this is not the desired result, the
 :ref:`recenter() <Recenter_Expression_Function>` expression function should be
 used, where appropriate, to adjust centering of some of the
 terms in the expression.  Note that ordering of operations will probably be
-important. For example
-
-::
+important. For example ::
 
     node_var + recenter(zone_var)
     recenter(zone_var + node_var)
