@@ -520,6 +520,9 @@
 #    Consolidated some python scripting logic.
 #    Disable pyside temporarily.
 #
+#    Kathleen Biagas, Mon Sep 26, 2022
+#    Remove HDF4 support.
+#
 #****************************************************************************
 
 cmake_minimum_required(VERSION 3.15 FATAL_ERROR)
@@ -906,10 +909,8 @@ ENDIF (NOT WIN32)
 VISIT_3RDPARTY_VAR(ICET_DIR   "Path containing the Ice-T library's include and lib")
 
 # Libraries some third-parties are dependent upon
-IF(WIN32)
-  VISIT_3RDPARTY_VAR(JPEG_DIR   "Path containing the jpeg library's include and lib")
-  VISIT_3RDPARTY_VAR(SZIP_DIR   "Path containing the szip library's include and lib")
-ENDIF(WIN32)
+VISIT_3RDPARTY_VAR(JPEG_DIR   "Path containing the jpeg library's include and lib")
+VISIT_3RDPARTY_VAR(SZIP_DIR   "Path containing the szip library's include and lib")
 
 # Define the options that let us pick I/O library installation locations. When
 # the library option is defined then we also define the variable name passed as
@@ -941,8 +942,6 @@ VISIT_3RDPARTY_VAR(FMS_DIR       "Path containing the FMS library's include and 
 VISIT_3RDPARTY_DEP(FMS_LIBDEP    "FMS library dependencies")
 VISIT_3RDPARTY_VAR(GDAL_DIR      "Path containing the GDAL library's include and lib")
 VISIT_3RDPARTY_VAR(GFORTRAN_DIR  "Path containing the GFortran library's include and lib")
-VISIT_3RDPARTY_VAR(HDF4_DIR      "Path containing the HDF4 library's include and lib")
-VISIT_3RDPARTY_DEP(HDF4_LIBDEP   "HDF4 library dependencies")
 VISIT_3RDPARTY_VAR(HDF5_DIR      "Path containing the HDF5 library's include and lib")
 VISIT_3RDPARTY_DEP(HDF5_LIBDEP   "HDF5 library dependencies")
 VISIT_3RDPARTY_VAR(HDF5_MPI_DIR  "Path containing the parallel HDF5 library's include and lib")
@@ -1280,10 +1279,8 @@ IF(EXISTS ${VISIT_OSPRAY_DIR})
 endif()
 
 # szip and jpeg
-IF(WIN32)
-    INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindJPEG.cmake)
-    INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindSzip.cmake)
-ENDIF(WIN32)
+INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindJPEG.cmake)
+INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindSzip.cmake)
 
 # Configure Qt and Qwt support.
 IF(NOT VISIT_DBIO_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_SERVER_COMPONENTS_ONLY)
@@ -1418,15 +1415,6 @@ IF(NOT VISIT_BUILD_MINIMAL_PLUGINS OR VISIT_SELECTED_DATABASE_PLUGINS)
 
     # Configure gdal support.
     INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindGDAL.cmake)
-
-    # Configure HDF4 support.
-    IF(VISIT_STATIC)
-      # There's a problem including HDF4 and Netcdf in the same executable due
-      # to some netcdf-like symbols in libmfhdf
-      MESSAGE(STATUS "HDF4 disabled for static builds due to collision with NetCDF.")
-    ELSE(VISIT_STATIC)
-      INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindHDF4.cmake)
-    ENDIF(VISIT_STATIC)
 
     # Configure h5part support.
     INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindH5Part.cmake)
@@ -2113,7 +2101,11 @@ if(LINUX)
         file(GLOB libicui18n_libs "/lib64/libicui18n.so*")
         file(GLOB libicudata_libs "/lib64/libicudata.so*")
         file(GLOB libicuuc_libs "/lib64/libicuuc.so*")
-        install(FILES ${libicui18n_libs} ${libicudata_libs} ${libicuuc_libs}
+        set(icu_libs "")
+        list(APPEND icu_libs ${libicui18n_libs})
+        list(APPEND icu_libs ${libicudata_libs})
+        list(APPEND icu_libs ${libicuuc_libs})
+        install(FILES ${icu_libs}
                 DESTINATION ${VISIT_INSTALLED_VERSION_LIB}
                 PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
                             GROUP_READ GROUP_WRITE GROUP_EXECUTE
@@ -2122,7 +2114,11 @@ if(LINUX)
         file(GLOB libicui18n_libs "/lib/x86_64-linux-gnu/libicui18n.so*")
         file(GLOB libicudata_libs "/lib/x86_64-linux-gnu/libicudata.so*")
         file(GLOB libicuuc_libs "/lib/x86_64-linux-gnu/libicuuc.so*")
-        install(FILES ${libicui18n_libs} ${libicudata_libs} ${libicuuc_libs}
+        set(icu_libs "")
+        list(APPEND icu_libs ${libicui18n_libs})
+        list(APPEND icu_libs ${libicudata_libs})
+        list(APPEND icu_libs ${libicuuc_libs})
+        install(FILES ${icu_libs}
                 DESTINATION ${VISIT_INSTALLED_VERSION_LIB}
                 PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
                             GROUP_READ GROUP_WRITE GROUP_EXECUTE
@@ -2131,7 +2127,11 @@ if(LINUX)
         file(GLOB libicui18n_libs "/usr/lib/x86_64-linux-gnu/libicui18n.so*")
         file(GLOB libicudata_libs "/usr/lib/x86_64-linux-gnu/libicudata.so*")
         file(GLOB libicuuc_libs "/usr/lib/x86_64-linux-gnu/libicuuc.so*")
-        install(FILES ${libicui18n_libs} ${libicudata_libs} ${libicuuc_libs}
+        set(icu_libs "")
+        list(APPEND icu_libs ${libicui18n_libs})
+        list(APPEND icu_libs ${libicudata_libs})
+        list(APPEND icu_libs ${libicuuc_libs})
+        install(FILES ${icu_libs}
                 DESTINATION ${VISIT_INSTALLED_VERSION_LIB}
                 PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
                             GROUP_READ GROUP_WRITE GROUP_EXECUTE
@@ -2185,11 +2185,17 @@ SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${VISIT_EXE_LINKER_FLAGS}"
 # we would simply rely on cmake to propgate transitive dependency details.
 #
 
-set(AVT_REQUIRED_LIB_DIR "" CACHE INTERNAL "Engine AVT Required I/O lib dirs")
+set(__AVT_REQUIRED_LIB_DIR_LIST "")
 if(CONDUIT_FOUND)
-    set(AVT_REQUIRED_LIB_DIR ${CONDUIT_LIBRARY_DIR} CACHE INTERNAL "Engine AVT Required I/O lib dirs")
+    list(APPEND __AVT_REQUIRED_LIB_DIR_LIST ${CONDUIT_LIBRARY_DIR})
 endif()
 
+if(MFEM_FOUND)
+    list(APPEND __AVT_REQUIRED_LIB_DIR_LIST ${MFEM_LIBRARY_DIR})
+endif()
+
+
+set(AVT_REQUIRED_LIB_DIR "${__AVT_REQUIRED_LIB_DIR_LIST}" CACHE INTERNAL "Engine AVT Required I/O lib dirs")
 
 FUNCTION(CREATE_PLUGIN_DEPENDENCIES target comp type)
     FOREACH(P ${ARGN})
@@ -2346,7 +2352,7 @@ IF (NOT WIN32)
         SET (CPACK_BUNDLE_NAME "VisIt")
         SET (CPACK_BUNDLE_ICON "${VISIT_SOURCE_DIR}/common/icons/VisItIcon.icns")
         SET (CPACK_BUNDLE_PLIST "${VISIT_BINARY_DIR}/tools/dev/scripts/Info.plist")
-        SET (CPACK_BUNDLE_STARTUP_COMMAND "${VISIT_SOURCE_DIR}/tools/dev/scripts/LaunchVisItFromAppBundle.sh")
+        SET (CPACK_BUNDLE_STARTUP_COMMAND "${VISIT_BINARY_DIR}/exe/visit_macos_launcher")
     ELSE(APPLE AND VISIT_CREATE_APPBUNDLE_PACKAGE)
         SET(CPACK_GENERATOR "TGZ")
 

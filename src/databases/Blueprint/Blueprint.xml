@@ -2,6 +2,8 @@
   <Plugin name="Blueprint" type="database" label="Blueprint" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" dbtype="STMD" haswriter="true" hasoptions="true" haslicense="false" filePatternsStrict="false" opensWholeDirectory="false">
     <CXXFLAGS>
       ${CONDUIT_INCLUDE_DIR}
+      ${VISIT_INCLUDE_DIR}/avt/MFEM
+      ${VISIT_INCLUDE_DIR}/avt/Blueprint
       ${MFEM_INCLUDE_DIR}
       ${HDF5_INCLUDE_DIR}
     </CXXFLAGS>
@@ -10,12 +12,11 @@
       ${CONDUIT_LIBRARY_DIR}
     </LDFLAGS>
     <LIBS>
+      avtmfem
+      avtblueprint 
       ${CONDUIT_LIB}
       ${MFEM_LIB}
     </LIBS>
-    <DEFINES>
-      -DCONDUIT_HAVE_PARTITION_FLATTEN=${CONDUIT_HAVE_PARTITION_FLATTEN}
-    </DEFINES>
     <FilePatterns>
       *.blueprint_root
       *.blueprint_root_hdf5
@@ -23,13 +24,11 @@
     </FilePatterns>
     <Files components="M">
       avtBlueprintFileFormat.C
-      avtBlueprintDataAdaptor.C
       avtBlueprintTreeCache.C
       avtBlueprintOptions.C
     </Files>
     <Files components="E">
       avtBlueprintFileFormat.C
-      avtBlueprintDataAdaptor.C
       avtBlueprintTreeCache.C
       avtBlueprintWriter.C
       avtBlueprintOptions.C

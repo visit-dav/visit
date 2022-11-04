@@ -393,6 +393,13 @@ Definition:
 // 
 //   Justin Privitera, Wed Aug  3 19:46:13 PDT 2022
 //   Do nothing if color table is built in.
+// 
+//   Justin Privitera, Wed Sep 21 16:51:24 PDT 2022
+//   Added additional logic to try and find the next appropriate color table
+//   if either the default continuous or discrete color tables are deleted.
+// 
+//    Justin Privitera, Thu Sep 29 17:27:37 PDT 2022
+//    Replace auto w/ bool. Add in missing breaks.
 //
 // ****************************************************************************
 
@@ -437,14 +444,40 @@ ColorTableAttributes::RemoveColorTable(int index)
         if(isDefaultContinuous)
         {
             if(names.size() > 0)
-                SetDefaultContinuous(names[0]);
+            {
+                bool found{false};
+                for (int i = 0; i < names.size(); i ++)
+                {
+                    if (! GetColorTables(i).GetDiscreteFlag())
+                    {
+                        SetDefaultContinuous(names[i]);
+                        found = true;
+                        break;
+                    }
+                }
+                if (! found)
+                    SetDefaultContinuous(std::string(""));
+            }
             else
                 SetDefaultContinuous(std::string(""));
         }
         if(isDefaultDiscrete)
         {
             if(names.size() > 0)
-                SetDefaultDiscrete(names[0]);
+            {
+                bool found{false};
+                for (int i = 0; i < names.size(); i ++)
+                {
+                    if (GetColorTables(i).GetDiscreteFlag())
+                    {
+                        SetDefaultDiscrete(names[i]);
+                        found = true;
+                        break;
+                    }
+                }
+                if (! found)
+                    SetDefaultDiscrete(std::string(""));
+            }
             else
                 SetDefaultDiscrete(std::string(""));
         }

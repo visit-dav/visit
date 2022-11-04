@@ -19,8 +19,7 @@
 
 #include "mfem.hpp"
 class JSONRoot;
-
-
+class DBOptionsAttributes;
 
 // ****************************************************************************
 //  Class: avtMFEMFileFormat
@@ -37,12 +36,27 @@ class JSONRoot;
 //
 //   Mark C. Miller, Mon Dec 11 15:50:16 PST 2017
 //   Add support for an mfem_cat file
+// 
+//   Justin Privitera, Wed Aug 24 11:08:51 PDT 2022
+//   Removed `GetRefinedMesh`, `GetRefinedElementColoring`, and
+//   `GetRefinedElementAttribute`. These methods can be found in the avtMFEM
+//   lib.
+// 
+//    Justin Privitera, Wed Aug 24 11:08:51 PDT 2022
+//    Added `m_new_refine`, a boolean to toggle between using new MFEM LOR or 
+//    legacy MFEM LOR. When true, the new scheme is enabled. It is never set to
+//    true yet, but will be in the future.
+// 
+//    Justin Privitera, Tue Oct 18 09:53:50 PDT 2022
+//    Added DBOptionsAttributes forward declaration and as an argument to
+//    avtMFEMFileFormat.
 // ****************************************************************************
 
 class avtMFEMFileFormat : public avtSTMDFileFormat
 {
   public:
-                       avtMFEMFileFormat(const char *);
+                       avtMFEMFileFormat(const char *, 
+                                         const DBOptionsAttributes *);
     virtual           ~avtMFEMFileFormat();
     
     // VisIt can't cache for us b/c we need to implement LOD support. 
@@ -75,23 +89,11 @@ class avtMFEMFileFormat : public avtSTMDFileFormat
 
     mfem::Mesh                     *FetchMesh(const std::string &mesh_name,
                                               int chunk);
-                                              
-    vtkDataSet                      *GetRefinedMesh(const std::string &mesh_name,
-                                                    int chunk,
-                                                    int lod);
-                                                    
+                                                                                                  
     vtkDataArray                    *GetRefinedVar(const std::string &mesh_name,
                                                    int chunk,
                                                    int lod);
                                                    
-    vtkDataArray                    *GetRefinedElementColoring(const std::string &mesh_name, 
-                                                                int domain, 
-                                                                int lod);
-                                                                
-    vtkDataArray                    *GetRefinedElementAttribute(const std::string &mesh_name, 
-                                                                int domain, 
-                                                                int lod);
-                                             
     JSONRoot                        *root;  
 
     // For handling .mfem_cat files
@@ -100,6 +102,8 @@ class avtMFEMFileFormat : public avtSTMDFileFormat
                                                           const std::string &mesh_path,
                                                           std::istringstream &imeshstr);
     std::map<std::string, std::pair<size_t,size_t> > catFileMap;
+
+    bool                            m_new_refine;
 };
 
 #endif

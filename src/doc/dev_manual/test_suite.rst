@@ -21,6 +21,8 @@ If you do have to run the test suite on a different system there are options for
 
 The regression suite is run on Pascal using a cron job that checks out VisIt_ source code, builds it, and then runs the tests.
 
+.. _git_lfs_note:
+
 A note about git lfs
 ~~~~~~~~~~~~~~~~~~~~
 

@@ -58,7 +58,6 @@ def add_tank_bnds_plot():
     sub_atts.legendFlag = 1
     sub_atts.singleColor = (204, 255, 204, 255)
     sub_atts.subsetNames = ("1", "2", "3", "4", "5", "6")
-    sub_atts.subsetType = sub_atts.Domain  # Domain, Group, Material, EnumScalar, Mesh, Unknown
     sub_atts.opacity = 1
     sub_atts.wireframe = 0
     sub_atts.drawInternal = 0

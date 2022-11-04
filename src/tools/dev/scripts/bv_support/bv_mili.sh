@@ -70,6 +70,38 @@ function bv_mili_ensure
 #                          Function 8.2, build_mili                           #
 # *************************************************************************** #
 
+function apply_mili_221_path_length_patch
+{
+    info "Applying Mili 22.1 max path length patch."
+    patch -p0 << \EOF
+diff -c mili-22.1/src/mili.h mili-22.1/src/mili.h.pathlenpatch 
+*** mili-22.1/src/mili.h    Wed Jun  1 15:21:14 2022
+--- mili-22.1/src/mili.h.pathlenpatch   Mon Sep 12 13:39:59 2022
+***************
+*** 200,206 ****
+  /*
+   * Miscellaneous limits
+   */
+! #define M_MAX_NAME_LEN   (300) /* Longest name length */
+  #define M_MAX_ARRAY_DIMS (6)   /* Maximum number of array dimensions */
+  #define M_MAX_STRING_LEN (512) /* Maximum string length */
+  
+--- 200,206 ----
+  /*
+   * Miscellaneous limits
+   */
+! #define M_MAX_NAME_LEN   (4096) /* Longest name length */
+  #define M_MAX_ARRAY_DIMS (6)   /* Maximum number of array dimensions */
+  #define M_MAX_STRING_LEN (512) /* Maximum string length */
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "Unable to apply max path length patch to Mili 22.1"
+        return 1
+    fi
+
+    return 0
+}
+
 function apply_mili_151_darwin_patch1
 {
     info "Applying Mili 15.1 darwin patch 1."
@@ -428,6 +460,10 @@ function apply_mili_patch
             return 1
         fi
         apply_mili_221_write_funcs_patch
+        if [[ $? != 0 ]] ; then
+            return 1
+        fi
+        apply_mili_221_path_length_patch
         if [[ $? != 0 ]] ; then
             return 1
         fi

@@ -106,6 +106,12 @@
 #   VTK_VERSION is needed for version comparisons so that both VTK 9 and
 #   VTK 8 can be supported.
 #
+#   Justin Privitera, Tue Aug 23 14:40:24 PDT 2022
+#   Removed `CONDUIT_HAVE_PARTITION_FLATTEN` check.
+#
+#   Kathleen Biagas, Mon Sep 26, 2022
+#   Remove HDF4 support.
+#
 #****************************************************************************/
 
 ##
@@ -261,10 +267,6 @@ set(GDAL_INCLUDE_DIR ${VISIT_ROOT_INCLUDE_DIR}/gdal/include)
 set(GDAL_LIBRARY_DIR ${VISIT_LIBRARY_DIR} ${VISIT_ARCHIVE_DIR})
 set(GDAL_LIB @GDAL_LIB@)
 
-set(HDF4_INCLUDE_DIR ${VISIT_ROOT_INCLUDE_DIR}/hdf4/include)
-set(HDF4_LIBRARY_DIR ${VISIT_LIBRARY_DIR} ${VISIT_ARCHIVE_DIR})
-set(HDF4_LIB @HDF4_LIB@)
-
 set(HDF5_INCLUDE_DIR ${VISIT_ROOT_INCLUDE_DIR}/hdf5/include)
 set(HDF5_LIBRARY_DIR ${VISIT_LIBRARY_DIR} ${VISIT_ARCHIVE_DIR})
 set(HDF5_LIB @HDF5_LIB@)
@@ -312,7 +314,6 @@ set(XDMF_LIB @XDMF_LIB@)
 set(CONDUIT_INCLUDE_DIR  ${VISIT_ROOT_INCLUDE_DIR}/conduit/conduit)
 set(CONDUIT_LIBRARY_DIR  ${VISIT_LIBRARY_DIR} ${VISIT_ARCHIVE_DIR})
 set(CONDUIT_LIB @CONDUIT_LIB@)
-set(CONDUIT_HAVE_PARTITION_FLATTEN @CONDUIT_HAVE_PARTITION_FLATTEN@)
 if(VISIT_PARALLEL)
     set(CONDUIT_MPI_INCLUDE_DIR ${VISIT_ROOT_INCLUDE_DIR}/conduit/conduit)
     set(CONDUIT_MPI_LIBRARY_DIR ${VISIT_LIBRARY_DIR} ${VISIT_ARCHIVE_DIR})

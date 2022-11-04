@@ -48,6 +48,12 @@
 // 
 //   Justin Privitera, Tue Jun 14 10:02:21 PDT 2022
 //   Added new output type options and added output dir option.
+// 
+//   Justin Privitera, Tue Sep 27 10:52:59 PDT 2022
+//   Replaced family files with filename scheme, which has more options.
+// 
+//    Justin Privitera, Wed Oct 12 11:38:11 PDT 2022
+//    Removed bmp output type.
 //
 // ****************************************************************************
 
@@ -66,7 +72,6 @@ QvisXRayImageQueryWidget::QvisXRayImageQueryWidget(QWidget *parent,
     // 
     topLayout->addWidget(new QLabel(tr("Output Image Format")), 0, 0);
     imageFormat = new QComboBox();
-    imageFormat->addItem(tr("bmp"));
     imageFormat->addItem(tr("jpeg"));
     imageFormat->addItem(tr("png"));
     imageFormat->addItem(tr("tiff"));
@@ -75,7 +80,7 @@ QvisXRayImageQueryWidget::QvisXRayImageQueryWidget(QWidget *parent,
     imageFormat->addItem(tr("json"));
     imageFormat->addItem(tr("hdf5"));
     imageFormat->addItem(tr("yaml"));
-    imageFormat->setCurrentIndex(2);
+    imageFormat->setCurrentIndex(1);
     topLayout->addWidget(imageFormat, 0, 1);
 
     // 
@@ -181,11 +186,15 @@ QvisXRayImageQueryWidget::QvisXRayImageQueryWidget(QWidget *parent,
     topLayout->addWidget(perspective, 13, 0, 1, 2);
 
     //
-    // Family output files
+    // Filename Scheme
     //
-    family = new QCheckBox(tr("Family output files"));
-    family->setChecked(1);
-    topLayout->addWidget(family, 14, 0, 1, 2);
+    topLayout->addWidget(new QLabel(tr("Filenaming scheme")), 14, 0);
+    filenameScheme = new QComboBox();
+    filenameScheme->addItem("none");
+    filenameScheme->addItem("family");
+    filenameScheme->addItem("cycle");
+    filenameScheme->setCurrentIndex(0);
+    topLayout->addWidget(filenameScheme, 14, 1);
 
     //
     // Output ray bounds
@@ -432,6 +441,9 @@ QvisXRayImageQueryWidget::GetIntValues(int whichWidget, int *pt)
 //
 //   Eric Brugger, Thu Jun  4 17:26:57 PDT 2015
 //   I added an option to enable outputting the ray bounds to a vtk file.
+// 
+//   Justin Privitera, Tue Sep 27 10:52:59 PDT 2022
+//   Replaced family files with filename scheme.
 //
 // ****************************************************************************
 bool
@@ -502,7 +514,7 @@ QvisXRayImageQueryWidget::GetQueryParameters(MapNode &params)
         params["image_pan"] = imagePan;
         params["image_zoom"] = imageZoom;
         params["perspective"] = (int)perspective->isChecked();
-        params["family_files"] = (int)family->isChecked();
+        params["filename_scheme"] = filenameScheme->currentText().toStdString();
         params["output_ray_bounds"] = (int)outputRayBounds->isChecked();
         params["image_size"] = imageSize;
     }

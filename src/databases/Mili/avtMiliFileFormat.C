@@ -1607,6 +1607,10 @@ avtMiliFileFormat::GetVar(int timestep,
 //  Creation:    April 15, 2019
 //
 //  Modifications
+//    Eric Brugger, Mon Oct 17 08:44:34 PDT 2022
+//    I fixed a bug where material variables weren't being read properly.
+//    They are only stored with domain 0, so the domain needs to be set to
+//    0 when reading a material variable.
 //
 // ****************************************************************************
 
@@ -1626,14 +1630,21 @@ avtMiliFileFormat::GetVar(int timestep,
         EXCEPTION1(ImproperUseException, msg);
     }
 
-    SubrecInfo *SRInfo = miliMetaData[meshId]->GetSubrecInfo(dom);
+    //
+    // Material variables are only defined on domain 0. The variable
+    // domVar handles this case by being defined as 0 for a material
+    // variable and the normal domain number in other cases.
+    //
+    int domVar = varMD->IsMatVar() ? 0 : dom;
+
+    SubrecInfo *SRInfo = miliMetaData[meshId]->GetSubrecInfo(domVar);
 
     if (SRInfo == NULL)
     {
         EXCEPTION1(InvalidVariableException, varMD->GetLongName());
     }
 
-    intVector SRIds    = varMD->GetSubrecIds(dom);
+    intVector SRIds    = varMD->GetSubrecIds(domVar);
     int nSRs           = SRIds.size();
     int vType          = varMD->GetNumType();
     string vShortName  = varMD->GetShortName();
@@ -1678,7 +1689,7 @@ avtMiliFileFormat::GetVar(int timestep,
 
         if (isMatVar)
         {
-            dBuffSize  = materials[dom][meshId]->GetNMaterials();
+            dBuffSize  = materials[domVar][meshId]->GetNMaterials();
             dataBuffer = new float[dBuffSize];
         }
         else if (isGlobal)
@@ -1706,10 +1717,10 @@ avtMiliFileFormat::GetVar(int timestep,
         string className = varMD->GetClassShortName();
         int start = miliMetaData[meshId]->
             GetClassMDByShortName(className.c_str())->
-            GetConnectivityOffset(dom);
+            GetConnectivityOffset(domVar);
 
         ReadMiliVarToBuffer(namePtr, SRIds, SRInfo, start,
-            vType, 1, timestep + 1, dom, dataBuffer);
+            vType, 1, timestep + 1, domVar, dataBuffer);
 
         if (isMatVar)
         {
@@ -1775,6 +1786,11 @@ avtMiliFileFormat::GetVar(int timestep,
 //
 //  Modifications
 //
+//  Mark C. Miller, Wed Sep 14 23:29:22 PDT 2022
+//  Add logic to handle get for init_mesh_coords.
+//
+//  Mark C. Miller, Fri Sep 16 11:28:10 PDT 2022
+//  Support init_mesh_coords on main mesh and sand mesh.
 // ****************************************************************************
 
 vtkDataArray *
@@ -1784,6 +1800,20 @@ avtMiliFileFormat::GetVectorVar(int timestep,
 {
     int gvvTimer = visitTimer->StartTimer();
     int meshId   = ExtractMeshIdFromPath(varPath);
+
+    if (string(varPath).find("Primal/node/init_mesh_coords") != std::string::npos)
+    {
+        if (!datasets[dom][meshId] && datasets[dom][meshId]->GetPoints() == NULL)
+        {
+            debug1 << "MILI: Unable to find nodes! This shouldn't happen..";
+            char msg[128];
+            snprintf(msg, 128, "Unable to load nodes from Mili!");
+            EXCEPTION1(ImproperUseException, msg);
+        }
+        vtkFloatArray *rv = vtkFloatArray::New();
+        rv->ShallowCopy(datasets[dom][meshId]->GetPoints()->GetData());
+        return rv;
+    }
 
     MiliVariableMetaData *varMD = miliMetaData[meshId]->
         GetVarMDByPath(varPath);
@@ -2608,7 +2638,16 @@ avtMiliFileFormat::AddMiliVariableToMetaData(avtDatabaseMetaData *avtMD,
 //
 //      Alister Maguire, Wed Apr  7 11:26:57 PDT 2021
 //      Only add pressure for stress.
+// 
+//      Justin Privitera, Fri Sep 16 11:58:19 PDT 2022
+//      Added derived variables volumetric strain and relative volume.
 //
+//      Mark C. Miller, Wed Sep 14 23:28:17 PDT 2022
+//      Handle displacements only on main mesh.
+//      Just define the existence of init_mesh_coords vector variable here.
+//
+//      Mark C. Miller, Fri Sep 16 11:26:22 PDT 2022
+//      Handle displacements on sand mesh too...they are same as main mesh.
 // ****************************************************************************
 
 void
@@ -2631,6 +2670,7 @@ avtMiliFileFormat::AddMiliDerivedVariables(avtDatabaseMetaData *md,
 
     //
     // First, check if node displacement exists. If not, add it now.
+    // Do this only for the main mesh, not the sand mesh.
     //
     MiliVariableMetaData *noddisp = miliMetaData[meshId]->
         GetVarMDByShortName("noddisp", "node");
@@ -2639,17 +2679,12 @@ avtMiliFileFormat::AddMiliDerivedVariables(avtDatabaseMetaData *md,
     {
         //
         // Node displacement is the difference between the node positions
-        // at the current time step and some previous time step.
-        // For now, we only allow comparison to the first time step.
+        // at the current time step and the initial mesh coordinates.
+        // The initial mesh coordinates are read via mc_load_nodes and
+        // stored as the points for the cached datasets.
         //
-        Expression  initialMeshCoords;
-        std::string initMeshCoordsName = derivedNodePath + "/init_mesh_coords";
-        initialMeshCoords.SetName(initMeshCoordsName);
-        initialMeshCoords.SetDefinition
-            ("conn_cmfe(coord(<[0]i:" + meshName + ">)," + meshName + ")");
-        initialMeshCoords.SetType(Expression::VectorMeshVar);
-        initialMeshCoords.SetHidden(true);
-        md->AddExpression(&initialMeshCoords);
+        std::string initMeshCoordsName = meshPath + "Primal/node/init_mesh_coords";
+        AddVectorVarToMetaData(md, initMeshCoordsName, meshName, AVT_NODECENT, 3);
 
         Expression nodeDisp;
         std::string nodeDispName = derivedNodePath + "/displacement";
@@ -2756,21 +2791,49 @@ avtMiliFileFormat::AddMiliDerivedVariables(avtDatabaseMetaData *md,
         }
     }
 
+    std::string varName;
+    std::string varPath;
+    std::string varPathBase = "Derived/Shared/";
+
+    std::string initCoordsName = meshPath +
+        "Derived/Shared/strain/initial_strain_coords";
+    Expression initCoordsExpr;
+    initCoordsExpr.SetName(initCoordsName);
+    initCoordsExpr.SetDefinition("conn_cmfe(coord(<[0]i:" +
+        meshName + ">)," + meshName + ")");
+    initCoordsExpr.SetType(Expression::VectorMeshVar);
+    initCoordsExpr.SetHidden(true);
+    md->AddExpression(&initCoordsExpr);
+
+    //
+    // Relative volume.
+    //
+    varName = "relative_volume";
+    varPath = meshPath + varPathBase + varName;
+
+    Expression relVol;
+    relVol.SetName(varPath);
+    relVol.SetDefinition("relative_volume(" + meshName +
+        ",<" + initCoordsName + ">)");
+    relVol.SetType(Expression::ScalarMeshVar);
+    md->AddExpression(&relVol);
+
+    //
+    // Volumetric Strain.
+    //
+    varName = "volumetric_strain";
+    varPath = meshPath + varPathBase + varName;
+
+    Expression eVol;
+    eVol.SetName(varPath);
+    eVol.SetDefinition("strain_volumetric(" + meshName +
+        ",<" + initCoordsName + ">)");
+    eVol.SetType(Expression::ScalarMeshVar);
+    md->AddExpression(&eVol);
+
     if (mustDeriveStrain)
     {
-        std::string initCoordsName = meshPath +
-            "Derived/Shared/strain/initial_strain_coords";
-        Expression initCoordsExpr;
-        initCoordsExpr.SetName(initCoordsName);
-        initCoordsExpr.SetDefinition("conn_cmfe(coord(<[0]i:" +
-            meshName + ">)," + meshName + ")");
-        initCoordsExpr.SetType(Expression::VectorMeshVar);
-        initCoordsExpr.SetHidden(true);
-        md->AddExpression(&initCoordsExpr);
-
-        std::string varName;
-        std::string varPath;
-        std::string varPathBase = "Derived/Shared/strain/";
+        varPathBase = "Derived/Shared/strain/";
 
         std::vector<std::string> tensorCompNames;
         tensorCompNames.push_back("x");

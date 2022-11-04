@@ -2286,6 +2286,9 @@ avtXRayFilter::RedistributeLines(int nLeaves, int *nLinesPerDataset,
 //  Modifications:
 //    Eric Brugger, Thu Jun  4 15:58:10 PDT 2015
 //    I added an option to enable outputting the ray bounds to a vtk file.
+// 
+//    Justin Privitera, Thu Sep  8 16:29:06 PDT 2022
+//    Fixed a bug causing the viewWidth to be calculated incorrectly.
 //
 // ****************************************************************************
 
@@ -2309,7 +2312,7 @@ avtXRayFilter::CalculateLines(void)
     double nearWidth, viewWidth, farWidth;
 
     viewHeight = parallelScale;
-    viewWidth  = (imageSize[1] / imageSize[0]) * viewHeight;
+    viewWidth  = (static_cast<float>(imageSize[0]) / static_cast<float>(imageSize[1])) * viewHeight;
     if (perspective)
     {
         double viewDist = parallelScale / tan ((viewAngle * 3.1415926535) / 360.);

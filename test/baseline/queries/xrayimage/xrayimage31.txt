@@ -1,1 +1,1 @@
-The x ray image query results were written to the file VISIT_TOP_DIR/test/current/queries/xrayimage/testdir/output00.png
+The x ray image query results were written to the file VISIT_TOP_DIR/test/testdir/output.png

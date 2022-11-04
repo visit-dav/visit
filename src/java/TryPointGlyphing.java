@@ -11,9 +11,8 @@ import llnl.visit.plots.MeshAttributes;
 // Class: TryPointGlyphing
 //
 // Purpose:
-//   This example program sets up a Pseudocolor plot with threshold operator.
-//
-// Notes:      Based on threshold.py of test-suite.
+//   This example program sets up a Mesh plot of a point mesh and modifies
+//   the point size and shape (glyph) settings.
 //
 // Programmer: Kathleen Biagas
 // Creation:   March 31, 2017
@@ -39,12 +38,23 @@ public class TryPointGlyphing extends RunViewer
 
             // Set the pseudocolor attributes
             MeshAttributes m = (MeshAttributes)viewer.GetPlotAttributes("Mesh");
-            m.SetPointSize(1.0);
+            // Sets the size for 'Point' type
             m.SetPointSizePixels(5);
+            // Sets the size for all other types
+            m.SetPointSize(1.0);
 
             m.SetMeshColorSource(1);
             m.SetMeshColor(new ColorAttribute(204,153,255,0));
             // Run through all the point types
+            // 0 : Box
+            // 1 : Axis
+            // 2 : Icosahedron
+            // 3 : Octahedron
+            // 4 : Tetrahedron
+            // 5 : SphereGeometry
+            // 6 : Point
+            // 7 : Sphere
+ 
             for (int i = 0; i < 8; ++i)
             {
                 m.SetPointType(i);

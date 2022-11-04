@@ -34,6 +34,10 @@
 #
 #    Mark C. Miller, Thu Sep 23 21:23:42 PDT 2010
 #    Remove override of pass/fail for long long data since now using silo-4.8
+#
+#    Eric Brugger, Mon Sep 26 11:35:01 PDT 2022
+#    Changed use of test_root_path to more appropriate test_baseline_path.
+#
 # ----------------------------------------------------------------------------
 TurnOffAllAnnotations() # defines global object 'a'
 
@@ -131,9 +135,9 @@ for smode in ("hdf5", "pdb"):
                          file=filename
                          cur  = pjoin("silo_datatypes","current","%s.png" % filename)
                          diff = pjoin("silo_datatypes","diff","%s.png" % filename)
-                         base = test_root_path("baseline","databases",
-                                               "silo_datatypes",
-                                               "silo_datatypes_%s_%s.png"%(mt,fvarname))
+                         base = test_baseline_path("databases",
+                                                   "silo_datatypes",
+                                                   "silo_datatypes_%s_%s.png"%(mt,fvarname))
                          (tPixs, pPixs, dPixs, davg) = DiffUsingPIL(file, cur, diff, base, "")
                          result = "PASSED"
                          if (dPixs > 0 and davg > 1):

@@ -54,8 +54,6 @@ queries, the controls in the **Query parameters** area may change.
 
 .. image:: images/queryparams_db2.png
 
-.. image:: images/queryparams_db3.png
-
 .. image:: images/queryparams_point.png
 
 .. _queryparams_line:
@@ -396,26 +394,40 @@ XRay Image
     +------+-------------------+----------------------------------------------+
     | *output_type*            | The format of the image. The default is PNG. |
     +------+-------------------+----------------------------------------------+
-    |      | "bmp" or 0        | BMP image format.                            |
+    |      | "bmp" or 0        | BMP image format. This is deprecated as of   |
+    |      |                   | VisIt_ 3.4.                                  |
     +------+-------------------+----------------------------------------------+
-    |      | "jpeg" or 1       | JPEG image format.                           |
+    |      | "jpeg" or 0 |br|  | JPEG image format.                           |
+    |      | (1 prior to       |                                              |
+    |      | VisIt_ 3.4)       |                                              |
     +------+-------------------+----------------------------------------------+
-    |      | "png" or 2        | PNG image format.                            |
+    |      | "png" or 1 |br|   | PNG image format.                            |
+    |      | (2 prior to       |                                              |
+    |      | VisIt_ 3.4)       |                                              |
     +------+-------------------+----------------------------------------------+
-    |      | "tif" or 3        | TIFF image format.                           |
+    |      | "tif" or 2 |br|   | TIFF image format.                           |
+    |      | (3 prior to       |                                              |
+    |      | VisIt_ 3.4)       |                                              |
     +------+-------------------+----------------------------------------------+
-    |      | "rawfloats" or 4  | File of 32 or 64 bit floating point values   |
-    |      |                   | in IEEE format.                              |
+    |      | "rawfloats" or 3  | File of 32 or 64 bit floating point values   |
+    |      | |br| (4 prior to  | in IEEE format.                              |
+    |      | VisIt_ 3.4)       |                                              |
     +------+-------------------+----------------------------------------------+
-    |      | "bov" or 5        | BOV (Brick Of Values) format, which consists |
-    |      |                   | of a text header |br| file describing a      |
-    |      |                   | rawfloats file.                              |
+    |      | "bov" or 4 |br|   | BOV (Brick Of Values) format, which consists |
+    |      | (5 prior to       | of a text header |br| file describing a      |
+    |      | VisIt_ 3.4)       | rawfloats file.                              |
     +------+-------------------+----------------------------------------------+
-    |      | "json" or 6       | Conduit JSON output.                         |
+    |      | "json" or 5 |br|  | Conduit JSON output.                         |
+    |      | (6 prior to       |                                              |
+    |      | VisIt_ 3.4)       |                                              |
     +------+-------------------+----------------------------------------------+
-    |      | "hdf5" or 7       | Conduit HDF5 output.                         |
+    |      | "hdf5" or 6 |br|  | Conduit HDF5 output.                         |
+    |      | (7 prior to       |                                              |
+    |      | VisIt_ 3.4)       |                                              |
     +------+-------------------+----------------------------------------------+
-    |      | "yaml" or 8       | Conduit YAML output.                         |
+    |      | "yaml" or 7 |br|  | Conduit YAML output.                         |
+    |      | (8 prior to       |                                              |
+    |      | VisIt_ 3.4)       |                                              |
     +------+-------------------+----------------------------------------------+
     | *output_dir*             | The output directory. The default is "."     |
     +------+-------------------+----------------------------------------------+
@@ -428,7 +440,34 @@ XRay Image
     |                          | the output file is ``outputXXXX.ext``,       |
     |                          | where ``XXXX`` is chosen                     |
     |                          | to be the |br| smallest integer not to       |
-    |                          | overwrite any existing files.                |
+    |                          | overwrite any existing files. As of VisIt_   |
+    |                          | 3.4, |br| it is recommended to use           |
+    |                          | *filename_scheme* in lieu of *family_files*. |
+    +------+-------------------+----------------------------------------------+
+    | *filename_scheme*        | The naming convention for output filenames.  |
+    |                          | This option is available |br| in VisIt_ 3.4, |
+    |                          | and is meant to replace the *family_files*   |
+    |                          | option. If both |br| are provided,           |    
+    |                          | *filename_scheme* will be used.              |
+    +------+-------------------+----------------------------------------------+
+    |      | "none" or 0       | The default. Output filenames will be of the |
+    |      |                   | form ``output.ext``, where |br|              |
+    |      |                   | ``ext`` is the file extension. If the        |
+    |      |                   | filename already exists, VisIt_ will |br|    |
+    |      |                   | overwrite it.                                |
+    +------+-------------------+----------------------------------------------+
+    |      | "family" or 1     | If on, VisIt_ will attempt to family output  |
+    |      |                   | files. Output filenames will be |br| of the  | 
+    |      |                   | form ``output.XXXX.ext``, where ``XXXX`` is  |
+    |      |                   | chosen to be the smallest |br| integer such  |
+    |      |                   | that the filename is unique.                 |
+    +------+-------------------+----------------------------------------------+
+    |      | "cycle" or 2      | VisIt_ will put cycle information in the     |
+    |      |                   | filename. Output filenames will be |br| of   |
+    |      |                   | the form ``output.cycle_XXXXXX.ext``, where  |
+    |      |                   | ``XXXXXX`` is the cycle number. |br| If      |
+    |      |                   | another file exists with this name, VisIt_   |
+    |      |                   | will overwrite it.                           |
     +------+-------------------+----------------------------------------------+
     | *image_size*             | The width and height of the image in pixels. |
     |                          | The default is 200 x 200.                    |
@@ -447,18 +486,18 @@ XRay Image
 
     When specifying "bov" output, 2 files are created for each variable.
     One contains the ``intensity`` and the other the ``path_length``.
-    The files are named ``outputXX.bof`` and ``outputXX.bov`` with ``XX`` being a sequence number.
+    The files are named ``output.XX.bof`` and ``output.XX.bov`` with ``XX`` being a sequence number.
     The ``intensity`` variables are first followed by the ``path_length`` variables in the sequence.
     For example, if the input array variables were composed of 2 scalar variables, the files would be named as follows:
 
-    * output00.bof
-    * output00.bov - ``intensity`` from the first variable of the array variable.
-    * output01.bof
-    * output01.bov - ``intensity`` from the second variable of the array variable.
-    * output02.bof
-    * output02.bov - ``path_length`` from the first variable of the array variable.
-    * output03.bof
-    * output03.bov - ``path_length`` from the second variable of the array variable.
+    * output.00.bof
+    * output.00.bov - ``intensity`` from the first variable of the array variable.
+    * output.01.bof
+    * output.01.bov - ``intensity`` from the second variable of the array variable.
+    * output.02.bof
+    * output.02.bov - ``path_length`` from the first variable of the array variable.
+    * output.03.bof
+    * output.03.bov - ``path_length`` from the second variable of the array variable.
 
     The query also takes arguments that specify the orientation of the camera
     in 3 dimensions. This can take 2 forms. The first is a simplified
@@ -777,3 +816,103 @@ always place the new Curve plot in a specific window, turn off the
 window number into the **Window#** text field. After setting these
 options, subsequent Curve plots created by querying over time will be
 added to the specified vis window.
+
+
+Python Queries
+~~~~~~~~~~~~~~~~~~~~
+
+Python Queries allow you to use a Python script to define a custom query.
+You can use the Python Query tab in the Query Window to create a Python query:
+
+.. _querywindowpython:
+
+.. figure:: images/querywindow_python.png
+
+   Python Query Editor
+
+
+In your query you can access and process Python wrapped versions of the VTK
+objects that represent your data.
+To demonstrate this, here is an example Python Query that computes the
+average of a zonal (or cell-centered) field:
+
+::
+  
+  # simple cell average query
+  class CellAvgQuery(SimplePythonQuery):
+      def __init__(self):
+          SimplePythonQuery.__init__(self)
+          self.name = "CellAvgQuery"
+          self.description = "Calculate the average cell value."
+      def pre_execute(self):
+          # init vars used to compute the average
+          self.total_ncells = 0
+          self.total_sum    = 0.0
+      def execute_chunk(self,ds_in,domain_id):
+          # sum over cell data array passed to query args
+          ncells = ds_in.GetNumberOfCells()
+          self.total_ncells += ncells
+          cell_data = ds_in.GetCellData().GetArray(self.input_var_names[0])
+          for i in range(ncells):
+              self.total_sum += cell_data.GetTuple1(i)
+      def post_execute(self):
+          # calculate average and set results
+          res_val = mpicom.sum(self.total_sum) / mpicom.sum(self.total_ncells)
+          res_txt = "The average value = " + self.float_format
+          res_txt = res_txt % res_val
+          self.set_result_text(res_txt)
+          self.set_result_value(res_val)
+  
+  py_filter = CellAvgQuery
+
+
+This example is from our `pyavt examples. <https://github.com/visit-dav/visit/blob/develop/src/visitpy/pyavt/examples/py_query.py>`_
+
+This example inherits from `SimplePythonQuery`. The base classes of VisIt_'s
+Python Filters are defined in `the  pyavt module. <https://github.com/visit-dav/visit/blob/develop/src/visitpy/pyavt/py_src/filters.py>`_
+
+You can select the variables passed to your Query using the Python Query
+variable list:
+
+.. _querywindowpythonvars:
+
+.. figure:: images/querywindow_python_vars.png
+
+   Python Query Variable list
+
+In the script, your class needs to implement four methods:
+
+Constructor : 
+   Called to initialize the Python Query Filter object. Use this to call
+   the base class constructor and provide a name and description of 
+   your custom query.
+
+Pre Execute : ``pre_execute(self)``
+   This method is called on all MPI tasks before any domains have been processed.
+   Use this to initialize any state needed before parallel execution. 
+   In this example we initialize variables used to hold the total field value sum
+   and the total number of cells.
+
+Execute Chunk : ``execute_chunk(self,ds_in,domain_id)``
+   This method is called to process each domain. When VisIt_ runs with MPI,
+   `execute_chunk()` will be called in parallel across MPI tasks. 
+   ``ds_in`` is a Python-wrapped VTK object and ``domain_id`` provides 
+   the domain id of ``ds_in``. 
+   In this example, for each domain we get the field value array and update
+   the aggregate sum and the total number of cells.
+
+Post Execute : ``post_execute(self)`` 
+   This method is called on all MPI tasks after all domains have been processed. 
+   Use this to finalize results after parallel execution. 
+   In this example, we use MPI to combine the local results across MPI tasks.
+
+The final aspect required is to bind your new Python Query Filter class to `py_filter`,
+this is the name VisIt_ uses to connect your Python script to the
+Python Filter Runtime in the engine.
+
+When you run your Python Query, results are presented like any other Query: Displayed in the Query window and can be accessed via VisIt_'s Query output CLI functions.
+
+
+
+
+

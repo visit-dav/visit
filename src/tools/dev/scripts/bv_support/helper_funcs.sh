@@ -1462,7 +1462,7 @@ function build_hostconf
     echo "##" >> $HOSTCONF
     echo "## Database reader plugin support libraries" >> $HOSTCONF
     echo "##" >> $HOSTCONF
-    echo "## The HDF4, HDF5 and NetCDF libraries must be first so that" >> $HOSTCONF
+    echo "## The HDF5 and NetCDF libraries must be first so that" >> $HOSTCONF
     echo "## their libdeps are defined for any plugins that need them." >> $HOSTCONF
     echo "##" >> $HOSTCONF
     echo "## For libraries with LIBDEP settings, order matters." >> $HOSTCONF

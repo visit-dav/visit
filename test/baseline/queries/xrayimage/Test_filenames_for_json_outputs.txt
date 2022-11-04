@@ -1,0 +1,9 @@
+The x ray image query results were written to the file VISIT_TOP_DIR/test/testdir_json/output.0021.root
+The x ray image query results were written to the file VISIT_TOP_DIR/test/testdir_json/output.0022.root
+The x ray image query results were written to the file VISIT_TOP_DIR/test/testdir_json/output.0023.root
+The x ray image query results were written to the file VISIT_TOP_DIR/test/testdir_json/output.0024.root
+The x ray image query results were written to the file VISIT_TOP_DIR/test/testdir_json/output.cycle_000048.root
+The x ray image query results were written to the file VISIT_TOP_DIR/test/testdir_json/output.cycle_000048.root
+The x ray image query results were written to the file VISIT_TOP_DIR/test/testdir_json/output.root
+The x ray image query results were written to the file VISIT_TOP_DIR/test/testdir_json/output.root
+['output.0021.root', 'output.0022.root', 'output.0023.root', 'output.0024.root', 'output.cycle_000048.root', 'output.root']
