@@ -20,6 +20,7 @@ The following top level directories exist in the visit repository.
 * `src <https://github.com/visit-dav/visit/tree/develop/src/>`_ - The VisIt_ source code. It includes the Read the Docs documentation and the regression test suite.
 * `test/baseline <https://github.com/visit-dav/visit/tree/develop/test/baseline/>`_ - The baseline results for the regression test suite.
 
+
 Setting Up Git LFS
 ------------------
 
@@ -74,10 +75,11 @@ To setup our hooks::
     cd visit
     ./scripts/git-hooks/install-hooks.sh 
 
+
 Creating a Branch
 -----------------
 
-Developement for VisIt_ is done off of two main branches, the ``develop`` branch and the current release candidate branch, which was ``3.2RC`` when this content was written. The ``develop`` branch is used for development that will go into the next major or minor release. Major releases are releases where the first digit of the release number is incremented, Minor releases are releases where the second digit of the release number is incremented. The release candidate branch is used for development that will go into the next patch release. Patch releases are releases where the third digit of the release number is incremented.
+Development for VisIt_ is done off of two main branches, the ``develop`` branch and the current release candidate branch, which was ``3.2RC`` when this content was written. The ``develop`` branch is used for development that will go into the next major or minor release. Major releases are releases where the first digit of the release number is incremented, Minor releases are releases where the second digit of the release number is incremented. The release candidate branch is used for development that will go into the next patch release. Patch releases are releases where the third digit of the release number is incremented.
 
 There is no convention on the names of a branch. One commonly used convention is ``task\Username\YYYY_MM_DD_Description`` where ``Username`` is your GitHub user name, ``YYYY`` is the current year, ``MM`` is the current month, ``DD`` is the current day, and ``Description`` is a short description of the task to be performed. Since branches only exist while you are doing the development, the name isn't critical, but it should be sufficiently descriptive so that someone can have some idea what the development on the branch is about.
 
@@ -92,6 +94,12 @@ To create a branch off of the current release candidate::
     git checkout 3.2RC
     git pull
     git checkout -b task/user/2021_05_07_bug_fix
+
+
+When you switch branches, you may also need to update submodules so they match your branch::
+
+    git submodule update 
+
 
 Doing Development
 -----------------
@@ -117,3 +125,25 @@ Once you have finished all your changes you can push the change to GitHub. To pu
     git push --set-upstream origin task/user/2021_05_07_bug_fix
 
 Once you have pushed your changes to GitHub, you can submit a :ref:`pull request <Creating a Pull Request>`.
+
+
+CMake Build System 
+-------------------
+
+VisIt's build system uses `BLT <https://github.com/llnl/blt/>`_ CMake helpers.
+BLT is included in VisIt's git repo as a git submodule.
+To obtain the submodule, use `git clone --recursive ` when cloning, or manually setup the submodule after cloning using:
+
+    git submodule init
+    git submodule update 
+
+When you switch branches, you may also need to update submodules so they match your branch::
+
+    git submodule update 
+
+Branch development with git submodules can lead to unintended submodule commits.
+To avoid this, we have an CI check that ensures the active submodule commits match
+a version explicitly listed in a `hashes.txt` file at the root of the git repo.
+
+
+
