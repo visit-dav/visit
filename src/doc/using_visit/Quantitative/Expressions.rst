@@ -1579,9 +1579,7 @@ Position-Based CMFE Function: ``pos_cmfe()`` : ``pos_cmfe(<Donor Variable>,<Targ
    the expression properly identifies the different states of the donor
    variable instead of always mapping a fixed state.
 
-   Examples...
-   
-::
+   Examples... ::
 
     # Case A: Donor variable, "pressure" in same database as mesh, "ucdmesh"
     # Note that due to a limitation in Expression parsing, the '[0]id:' is
