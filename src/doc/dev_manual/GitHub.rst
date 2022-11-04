@@ -63,11 +63,11 @@ You can access GitHub either through https or ssh. If you use https you will be 
 
 To clone the repository::
 
-    git clone https://github.com/visit-dav/visit.git
+    git clone --recursive https://github.com/visit-dav/visit.git
 
 or::
 
-    git clone ssh://git@github.com/visit-dav/visit.git
+    git clone  --recursive ssh://git@github.com/visit-dav/visit.git
 
 To setup our hooks::
 

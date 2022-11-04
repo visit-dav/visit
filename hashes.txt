@@ -1,1 +1,1 @@
-blt  branch='develop' commit='97ea54d892b4b1d56736830575c3db62e3d7674d-TEST FOR FAILURE'
+blt  branch='develop' commit='97ea54d892b4b1d56736830575c3db62e3d7674d'
