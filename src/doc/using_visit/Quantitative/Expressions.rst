@@ -2208,9 +2208,7 @@ for the result. If this is not the desired result, the
 :ref:`recenter() <Recenter_Expression_Function>` expression function should be
 used, where appropriate, to adjust centering of some of the
 terms in the expression.  Note that ordering of operations will probably be
-important. For example
-
-::
+important. For example ::
 
     node_var + recenter(zone_var)
     recenter(zone_var + node_var)
