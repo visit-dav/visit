@@ -19,16 +19,12 @@ Using session files
 
 VisIt_'s session files contain all of the information required to recreate plots that have been set up in previous interactive VisIt sessions. 
 Since session files contain all of the information about plots, etc., they are natural candidates to make scripting easier since they can be used to do the hard part of setting up the complex visualization, leaving the bulk of the script to animate through time or alter the plots in some way. 
-To use session files within a script, use the RestoreSession function.
+To use session files within a script, use the RestoreSession function.::
 
-::
-
-    # Import a session file from the current working directory. 
-    RestoreSesssion("my_visualization.session", 0) 
-    # Now that VisIt has restored the session, animate through time.
-    for state in range(TimeSliderGetNStates()): 
-      SetTimeSliderState(state) 
-      SaveWindow() 
+.. literalinclude:: ../../test/tests/quickrecipes/basics.rst
+   :language: Python
+   :start-after: # using session files {
+   :end-before: # using session files }
 
 Getting something on the screen
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
