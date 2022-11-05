@@ -21,7 +21,7 @@ VisIt_'s session files contain all of the information required to recreate plots
 Since session files contain all of the information about plots, etc., they are natural candidates to make scripting easier since they can be used to do the hard part of setting up the complex visualization, leaving the bulk of the script to animate through time or alter the plots in some way. 
 To use session files within a script, use the RestoreSession function.
 
-.. literalinclude:: ../../test/tests/quickrecipes/basics.rst
+.. literalinclude:: ../../test/tests/quickrecipes/basics.py
    :language: Python
    :start-after: # using session files {
    :end-before: # using session files }

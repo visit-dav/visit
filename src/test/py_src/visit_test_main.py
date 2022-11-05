@@ -1934,6 +1934,7 @@ def TestText(case_name, inText, baseText=None, numdifftol=None):
 def TestValueOp(case_name, actual, expected, rndprec=5, oper=operator.eq, dolog=True):
     CheckInteractive(case_name)
     result = False
+    is_numeric = False
     try:
         iterator = iter(expected) # excepts if not iterable
     except TypeError: # not iterable
@@ -1945,6 +1946,7 @@ def TestValueOp(case_name, actual, expected, rndprec=5, oper=operator.eq, dolog=
                 expected_str = '%s'%expected
             else:
                 result = oper(round(float(actual), rndprec),round(float(expected), rndprec))
+                is_numeric = True
                 actual_str = '%.*f'%(rndprec,round(float(actual),rndprec))
                 expected_str = '%.*f'%(rndprec,round(float(expected),rndprec))
         except:
@@ -1956,6 +1958,7 @@ def TestValueOp(case_name, actual, expected, rndprec=5, oper=operator.eq, dolog=
             rndact = [round(float(x),rndprec) for x in actual]
             rndexp = [round(float(x),rndprec) for x in expected]
             result = oper(rndact,rndexp)
+            is_numeric = True
             actual_str = ['%.*f'%(rndprec,round(float(x),rndprec)) for x in actual]
             expected_str = ['%.*f'%(rndprec,round(float(x),rndprec)) for x in expected]
         except:
@@ -1968,8 +1971,12 @@ def TestValueOp(case_name, actual, expected, rndprec=5, oper=operator.eq, dolog=
             TestEnv.results['numskip'] += 1
         if result == False and not skip:
             TestEnv.results['maxds'] = max(TestEnv.results['maxds'], 2)
-        LogValueTestResult(case_name,oper.__name__,result,
-            '%s .%s. %s (prec=%d)' % (actual_str,oper.__name__,expected_str,rndprec),skip)
+        if is_numeric:
+            LogValueTestResult(case_name,oper.__name__,result,
+                '%s .%s. %s (prec=%d)' % (actual_str,oper.__name__,expected_str,rndprec),skip)
+        else:
+            LogValueTestResult(case_name,oper.__name__,result,
+                '%s .%s. %s' % (actual_str,oper.__name__,expected_str),skip)
     return result
 
 # actual == expected
