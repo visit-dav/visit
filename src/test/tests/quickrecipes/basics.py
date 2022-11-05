@@ -6,15 +6,33 @@
 #  Mark C. Miller, Fri Aug 26 14:31:48 PDT 2022
 # ----------------------------------------------------------------------------
 
-def where_do_i_start():
+def using_session_files():
+ 
+  try:
+    # using session files {
+    # Import a session file from the current working directory. 
+    RestoreSession('/terris/visit/stuff/visit.session', 0) 
+    # Now that VisIt has restored the session, animate through time.
+    for state in range(TimeSliderGetNStates()): 
+      SetTimeSliderState(state) 
+      SaveWindow() 
+    # using session files }
+    TestValueEQ('using session files error',GetLastError(),'')
+    TestPOA('using session files exception')
+  except:
+    TestFOA('using session files exception', LINE())
+    pass
 
-    # where_do_i_start {
+def getting_something_on_the_screen():
+
+    # getting something on the screen {
+
     # Step 1: Open a database 
-    OpenDatabase("/path/to/some/visit/data/wave.visit") 
+    OpenDatabase('/terris/visit/stuff/wave.visit') 
 
     # Step 2: Add plots with default properties
-    AddPlot("Pseudocolor", "pressure") 
-    AddPlot("Mesh", "quadmesh") 
+    AddPlot('Pseudocolor', 'pressure') 
+    AddPlot('Mesh', 'quadmesh') 
 
     # Step 3: Draw the plots with default view
     DrawPlots() 
@@ -23,8 +41,33 @@ def where_do_i_start():
     for states in range(TimeSliderGetNStates()): 
       SetTimeSliderState(state) 
       SaveWindow() 
-    # where_do_i_start }
 
+    # getting something on the screen }
+
+def VisItQuickRecipesRestoreSession(f, vdirFlag=0):
+
+    #if db.startswith('/terris/visit/stuff/'):
+        return RealRestoreSession(tests_path('quickrecipes',f[20:]),vdirFlag)
+
+def VisItQuickRecipesOpenDatabase(db, ti=0, pname=''):
+
+    #if db.startswith('/terris/visit/stuff/'):
+        return RealOpenDatabase(tests_path('quickrecipes',db[20:]),ti,pname)
+
+# Replace OpenDatabase with our own to interpret the path strings
+RealOpenDatabase = OpenDatabase
+OpenDatabase = VisItQuickRecipesOpenDatabase
+
+# Replace RestoreSession with our own to interpret the path strings
+RealRestoreSession = RestoreSession
+RestoreSession = VisItQuickRecipesRestoreSession
+
+using_session_files()
+
+Exit()
+
+# BEGIN Commenting out most code {
+"""
 def save_window_attributes():
 
     # save_window_attributes {
@@ -32,7 +75,7 @@ def save_window_attributes():
     # Prepare to save a BMP file at 1024x768 resolution 
     s = SaveWindowAttributes() 
     s.format = s.BMP 
-    s.fileName = "mybmpfile" 
+    s.fileName = 'mybmpfile' 
     s.width, s.height = 1024,768 
     s.screenCapture = 0 
     SetSaveWindowAttributes(s) 
@@ -45,31 +88,24 @@ def open_database_variations():
     # open_database_variations {
 
     # Open a database at time state 0, the default
-    OpenDatabase("/usr/local/visit/data/allinone00.pdb") 
+    OpenDatabase('/usr/local/visit/data/allinone00.pdb') 
 
     # Open a database at time state 17 to pick up variables 
     # that exist only for time states 17 and later
-    OpenDatabase("/usr/local/visit/data/wave.visit", 17) 
+    OpenDatabase('/usr/local/visit/data/wave.visit', 17) 
 
     # Opening first file in series wave0000.silo, wave0010.silo, ... 
-    OpenDatabase("/usr/local/visit/data/wave0000.silo") 
+    OpenDatabase('/usr/local/visit/data/wave0000.silo') 
 
     # Opening a virtual database representing all wave*.silo files. 
-    OpenDatabase("/usr/local/visit/data/wave*.silo database") 
+    OpenDatabase('/usr/local/visit/data/wave*.silo database') 
 
     # Opening a file on a remote computer by giving a host name 
     # Also, open the database at a later time slice (17)
-    OpenDatabase("thunder:/usr/local/visit/data/wave.visit", 17)
+    OpenDatabase('thunder:/usr/local/visit/data/wave.visit', 17)
 
     # open_database_variations }
 
-
-    # Import a session file from the current working directory. 
-    RestoreSesssion("my_visualization.session", 0) 
-    # Now that VisIt has restored the session, animate through time.
-    for state in range(TimeSliderGetNStates()): 
-      SetTimeSliderState(state) 
-      SaveWindow() 
 
     # Save images of all timesteps and add each image filename to a list. 
     names = [] 
@@ -87,26 +123,26 @@ def open_compute_engine_variations():
 
     # Open a local, parallel compute engine before opening a database 
     # Use 4 processors on 2 nodes
-    OpenComputeEngine("localhost", ("-np", "4", "-nn", "2"))
-    OpenDatabase("/usr/local/visit/data/multi_ucd3d.silo") 
+    OpenComputeEngine('localhost', ('-np', '4', '-nn', '2'))
+    OpenDatabase('/usr/local/visit/data/multi_ucd3d.silo') 
 
-    # Use the "srun" job launcher, the "batch" partition, the "mybank" bank,
+    # Use the 'srun' job launcher, the 'batch' partition, the 'mybank' bank,
     # 72 processors on 2 nodes and a time limit of 1 hour
-    OpenComputeEngine("localhost",("-l", "srun",
-                                   "-p", "batch",
-                                   "-b", "mybank",
-                                   "-np", "72",
-                                   "-nn", "2",
-                                   "-t", "1:00:00"))
+    OpenComputeEngine('localhost',('-l', 'srun',
+                                   '-p', 'batch',
+                                   '-b', 'mybank',
+                                   '-np', '72',
+                                   '-nn', '2',
+                                   '-t', '1:00:00'))
 
-    # Set the user name to "user1" and use the third profile,
+    # Set the user name to 'user1' and use the third profile,
     # overriding a few of its properties
-    p = GetMachineProfile("quartz.llnl.gov")
-    p.userName="user1"
+    p = GetMachineProfile('quartz.llnl.gov')
+    p.userName='user1'
     p.activeProfile = 2
     p.GetLaunchProfiles(2).numProcessors = 72
     p.GetLaunchProfiles(2).numNodes = 2
-    p.GetLaunchProfiles(2).timeLimit = "00:30:00"
+    p.GetLaunchProfiles(2).timeLimit = '00:30:00'
     OpenComputeEngine(p)
 
     # open_compute_engine_variations }
@@ -117,22 +153,22 @@ def open_compute_engine_variations():
     print(PlotPlugins())
 
     # Create plots 
-    AddPlot("Pseudocolor", "pressure") 
-    AddPlot("Mesh", "quadmesh") 
+    AddPlot('Pseudocolor', 'pressure') 
+    AddPlot('Mesh', 'quadmesh') 
     # Draw the plots 
     DrawPlots() 
 
 ::
 
     # Plot material boundaries 
-    AddPlot("Boundary", "mat1") 
+    AddPlot('Boundary', 'mat1') 
     # Plot materials 
-    AddPlot("FilledBoundary", "mat1") 
+    AddPlot('FilledBoundary', 'mat1') 
 
 ::
 
     # Creating a Pseudocolor plot and setting min/max values. 
-    AddPlot("Pseudocolor", "pressure") 
+    AddPlot('Pseudocolor', 'pressure') 
     p = PseudocolorAttributes() 
     # Look in the object 
     print(p)
@@ -144,8 +180,8 @@ def open_compute_engine_variations():
 ::
 
     # Create more than 1 plot of the same type 
-    AddPlot("Pseudocolor", "pressure") 
-    AddPlot("Pseudocolor", "density") 
+    AddPlot('Pseudocolor', 'pressure') 
+    AddPlot('Pseudocolor', 'density') 
 
     # List the plots. The second plot should be active. 
     ListPlots() 
@@ -157,9 +193,9 @@ def open_compute_engine_variations():
     SetActivePlots(0) 
     HideActivePlots() 
 
-    # Set both plots' color table to "hot" 
+    # Set both plots' color table to 'hot' 
     p = PseudocolorAttributes() 
-    p.colorTableName = "hot" 
+    p.colorTableName = 'hot' 
     SetActivePlots((0,1)) 
     SetPlotOptions(p) 
 
@@ -181,7 +217,7 @@ def open_compute_engine_variations():
         drawThePlots = 1 
       if drawThePlots == 1: 
         if DrawPlots() == 0: 
-          print("VisIt could not draw plots for state: %d")% state 
+          print('VisIt could not draw plots for state: %d')% state 
         else: 
           drawThePlots = 0 
       SaveWindow() 
@@ -191,17 +227,17 @@ def open_compute_engine_variations():
     # Print available operators 
     print(OperatorPlugins())
     # Create a plot 
-    AddPlot("Pseudocolor") 
+    AddPlot('Pseudocolor') 
     # Add an Isovolume operator and a Slice operator 
-    AddOperator("Isovolume") 
-    AddOperator("Slice") 
+    AddOperator('Isovolume') 
+    AddOperator('Slice') 
     DrawPlots() 
 
 ::
 
-    OpenDatabase("/usr/local/visit/data/noise.silo") 
-    AddPlot("Pseudocolor", "hardyglobal") 
-    AddOperator("Slice") 
+    OpenDatabase('/usr/local/visit/data/noise.silo') 
+    AddPlot('Pseudocolor', 'hardyglobal') 
+    AddOperator('Slice') 
     s = SliceAttributes() 
     s.originType = s.Percent 
     s.project2d = 0 
@@ -220,16 +256,16 @@ def open_compute_engine_variations():
 ::
 
     # Creating a new expression 
-    OpenDatabase("/usr/local/visit/data/noise.silo") 
-    AddPlot("Pseudocolor", "hardyglobal") 
+    OpenDatabase('/usr/local/visit/data/noise.silo') 
+    AddPlot('Pseudocolor', 'hardyglobal') 
     DrawPlots() 
-    DefineScalarExpression("newvar", "sin(hardyglobal) + cos(shepardglobal") 
-    ChangeActivePlotsVar("newvar") 
+    DefineScalarExpression('newvar', 'sin(hardyglobal) + cos(shepardglobal') 
+    ChangeActivePlotsVar('newvar') 
 
 ::
 
-    OpenDatabase("/usr/local/visit/data/noise.silo") 
-    AddPlot("Pseudocolor", "hgslice") 
+    OpenDatabase('/usr/local/visit/data/noise.silo') 
+    AddPlot('Pseudocolor', 'hgslice') 
     DrawPlots() 
     s = [] 
     # Pick by a node id 
@@ -251,14 +287,14 @@ def open_compute_engine_variations():
 
     p0 = (-5,-3)
     p1 = ( 5, 8)
-    OpenDatabase("/usr/local/visit/data/noise.silo") 
-    AddPlot("Pseudocolor", "hgslice") 
+    OpenDatabase('/usr/local/visit/data/noise.silo') 
+    AddPlot('Pseudocolor', 'hgslice') 
     DrawPlots() 
     Lineout(p0, p1)
     # Specify 65 sample points 
     Lineout(p0, p1, 65)
-    # Do three variables ("default" is "hgslice")
-    Lineout(p0, p1, ("default", "var1", "var2"))
+    # Do three variables ('default' is 'hgslice')
+    Lineout(p0, p1, ('default', 'var1', 'var2'))
 
 ::
 
@@ -266,44 +302,44 @@ def open_compute_engine_variations():
     SetActiveWindow(2)
     # Get array of x,y pairs for first curve plot in window
     SetActivePlots(0)
-    hgslice_vals = GetPlotInformation()["Curve"]
+    hgslice_vals = GetPlotInformation()['Curve']
     # Get array of x,y pairs for second curve plot in window
     SetActivePlots(1)
-    var1_vals = GetPlotInformation()["Curve"]
+    var1_vals = GetPlotInformation()['Curve']
     # Get array of x,y pairs for third curve plot in window
     SetActivePlots(2)
-    var2_vals = GetPlotInformation()["Curve"]
+    var2_vals = GetPlotInformation()['Curve']
 
     # Write it as CSV data to a file
     for i in range(len(hgslice_vals) / 2):
         idx = i*2+1 # take only y-values in each array
-        print "%g,%g,%g" % (hgslice_vals[idx], var1_vals[idx], var2_vals[idx])
+        print '%g,%g,%g' % (hgslice_vals[idx], var1_vals[idx], var2_vals[idx])
 
 ::
 
-    OpenDatabase("/usr/local/visit/data/noise.silo") 
-    AddPlot("Pseudocolor", "hardyglobal") 
+    OpenDatabase('/usr/local/visit/data/noise.silo') 
+    AddPlot('Pseudocolor', 'hardyglobal') 
     DrawPlots() 
-    Query("NumNodes") 
-    print("The float value is: %g")% GetQueryOutputValue() 
-    Query("NumNodes") 
+    Query('NumNodes') 
+    print('The float value is: %g')% GetQueryOutputValue() 
+    Query('NumNodes') 
 
 ::
 
     # Define a helper function to get the id's of the MinMax query. 
     def GetMinMaxIds(): 
-      Query("MinMax") 
+      Query('MinMax') 
       import string 
-      s = string.split(GetQueryOutputString(), " ") 
+      s = string.split(GetQueryOutputString(), ' ') 
       retval = [] 
       nextGood = 0 
       idType = 0 
       for token in s: 
-        if token == "(zone" or token == "(cell": 
+        if token == '(zone' or token == '(cell': 
           idType = 1 
           nextGood = 1 
           continue 
-        elif token == "(node": 
+        elif token == '(node': 
           idType = 0 
           nextGood = 1 
           continue 
@@ -313,8 +349,8 @@ def open_compute_engine_variations():
       return retval
 
     # Set up a plot 
-    OpenDatabase("/usr/local/visit/data/noise.silo") 
-    AddPlot("Pseudocolor", "hgslice") 
+    OpenDatabase('/usr/local/visit/data/noise.silo') 
+    AddPlot('Pseudocolor', 'hgslice') 
     DrawPlots() 
 
     # Do picks on the ids that were returned by MinMax. 
@@ -328,8 +364,8 @@ def open_compute_engine_variations():
 
 ::
 
-    OpenDatabase("/usr/local/visit/data/multi_rect2d.silo") 
-    AddPlot("Pseudocolor", "d") 
+    OpenDatabase('/usr/local/visit/data/multi_rect2d.silo') 
+    AddPlot('Pseudocolor', 'd') 
     DrawPlots() 
     # Turning off all but the last domain 
     d = GetDomains() 
@@ -342,22 +378,22 @@ def open_compute_engine_variations():
 
 ::
 
-    OpenDatabase("/usr/local/visit/data/multi_rect2d.silo") 
-    AddPlot("FilledBoundary", "mat1") 
+    OpenDatabase('/usr/local/visit/data/multi_rect2d.silo') 
+    AddPlot('FilledBoundary', 'mat1') 
     DrawPlots() 
     # Print the materials are: 
     GetMaterials() 
     # Turn off material 2
-    TurnMaterialsOff("2") 
+    TurnMaterialsOff('2') 
 
 ::
 
-    OpenDatabase("/usr/local/visit/data/noise.silo") 
-    AddPlot("Pseudocolor", "hgslice") 
-    AddPlot("Mesh", "Mesh2D") 
-    AddPlot("Label", "hgslice") 
+    OpenDatabase('/usr/local/visit/data/noise.silo') 
+    AddPlot('Pseudocolor', 'hgslice') 
+    AddPlot('Mesh', 'Mesh2D') 
+    AddPlot('Label', 'hgslice') 
     DrawPlots() 
-    print("The current view is:", GetView2D())
+    print('The current view is:', GetView2D())
     # Get an initialized 2D view object. 
     v = GetView2D() 
     v.windowCoords = (-7.67964, -3.21856, 2.66766, 7.87724) 
@@ -365,12 +401,12 @@ def open_compute_engine_variations():
 
 ::
 
-    OpenDatabase("/usr/local/visit/data/noise.silo") 
-    AddPlot("Pseudocolor", "hardyglobal") 
-    AddPlot("Mesh", "Mesh") 
+    OpenDatabase('/usr/local/visit/data/noise.silo') 
+    AddPlot('Pseudocolor', 'hardyglobal') 
+    AddPlot('Mesh', 'Mesh') 
     DrawPlots() 
     v = GetView3D() 
-    print("The view is: ", v) 
+    print('The view is: ', v) 
     v.viewNormal = (-0.571619, 0.405393, 0.713378) 
     v.viewUp = (0.308049, 0.911853, -0.271346) 
     SetView3D(v)
@@ -378,8 +414,8 @@ def open_compute_engine_variations():
 ::
 
     # Do a pseudocolor plot of u. 
-    OpenDatabase("/usr/local/visit/data/globe.silo") 
-    AddPlot("Pseudocolor", "u") 
+    OpenDatabase('/usr/local/visit/data/globe.silo') 
+    AddPlot('Pseudocolor', 'u') 
     DrawPlots() 
         
     # Create the control points for the views. 
@@ -476,8 +512,8 @@ def open_compute_engine_variations():
 
     # Create a text object that we'll use to indicate that our 
     # visualization is unclassified. 
-    banner = CreateAnnotationObject("Text2D") 
-    banner.text = "Unclassified" 
+    banner = CreateAnnotationObject('Text2D') 
+    banner.text = 'Unclassified' 
     banner.position = (0.37, 0.95) 
     banner.fontBold = 1 
     # print the attributes that you can set in the banner object. 
@@ -486,7 +522,7 @@ def open_compute_engine_variations():
 ::
 
     # Add a time slider in the lower left corner 
-    slider = CreateAnnotationObject("TimeSlider") 
+    slider = CreateAnnotationObject('TimeSlider') 
     slider.height = 0.07 
     # Print the options that are available in the time slider object 
     print(slider)
@@ -494,8 +530,8 @@ def open_compute_engine_variations():
 ::
 
     # Incorporate LLNL logo image (llnl.jpeg) as an annotation 
-    image = CreateAnnotationObject("Image") 
-    image.image = "llnl.jpeg" 
+    image = CreateAnnotationObject('Image') 
+    image.image = 'llnl.jpeg' 
     image.position = (0.02, 0.02) 
     # Print the other image annotation options 
     print(image)
@@ -503,9 +539,9 @@ def open_compute_engine_variations():
 ::
 
     # Open a file and make a plot
-    OpenDatabase("/usr/gapps/visit/data/noise.silo")
-    AddPlot("Mesh", "Mesh")
-    AddPlot("Pseudocolor", "hardyglobal")
+    OpenDatabase('/usr/gapps/visit/data/noise.silo')
+    AddPlot('Mesh', 'Mesh')
+    AddPlot('Pseudocolor', 'hardyglobal')
     DrawPlots()
     # Get the legend annotation object for the Pseudocolor plot, the second
     # plot in the list (0-indexed).
@@ -527,7 +563,7 @@ def open_compute_engine_variations():
     legend.useForegroundForTextColor = 0
     legend.textColor = (255, 0, 0, 255)
     # number format
-    legend.numberFormat = "%1.4e"
+    legend.numberFormat = '%1.4e'
     # the font.
     legend.fontFamily = legend.Arial
     legend.fontBold = 1
@@ -542,10 +578,10 @@ def open_compute_engine_variations():
     legend.controlTicks=0
     legend.drawLabels = legend.Labels
     # suppliedLabels must be strings, only valid when controlTicks is 0
-    legend.suppliedLabels=("A", "B", "C", "D", "E")
+    legend.suppliedLabels=('A', 'B', 'C', 'D', 'E')
     # Give the legend a custom title
     legend.useCustomTitle=1
-    legend.customTitle="my custom title"
+    legend.customTitle='my custom title'
     # Print the legend object so you can see the other properties
     # that you can set in order to modify the legend.
     print(legend)
@@ -553,7 +589,7 @@ def open_compute_engine_variations():
 
 ::
 
-    hotCT = GetColorTable("hot")
+    hotCT = GetColorTable('hot')
     print(hotCT)
     # results of print
     GetControlPoints(0).colors = (0, 0, 255, 255)
@@ -569,3 +605,5 @@ def open_compute_engine_variations():
     smoothing = Linear  # NONE, Linear, CubicSpline
     equalSpacingFlag = 0
     discreteFlag = 0
+"""
+# END Commenting out most code }
