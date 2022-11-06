@@ -21,7 +21,7 @@ VisIt_'s session files contain all of the information required to recreate plots
 Since session files contain all of the information about plots, etc., they are natural candidates to make scripting easier since they can be used to do the hard part of setting up the complex visualization, leaving the bulk of the script to animate through time or alter the plots in some way. 
 To use session files within a script, use the RestoreSession function.
 
-.. literalinclude:: ../../test/tests/quickrecipes/basics.py
+.. literalinclude:: ../../test/tests/quickrecipes/how_to_start.py
    :language: Python
    :start-after: # using session files {
    :end-before: # using session files }
@@ -38,22 +38,10 @@ The AddPlot function takes a plot plugin name and the name of a variable from th
 Once you've added a plot, it is in the new state, which means that it has not yet been submitted to the compute engine for processing. 
 To make sure that the plot gets drawn, call the DrawPlots function.
 
-::
-
-    # Step 1: Open a database 
-    OpenDatabase("/usr/local/visit/data/wave.visit") 
-
-    # Step 2: Add plots 
-    AddPlot("Pseudocolor", "pressure") 
-    AddPlot("Mesh", "quadmesh") 
-
-    # Step 3: Draw the plots 
-    DrawPlots() 
-
-    # Step 4: Animate through time and save images 
-    for states in range(TimeSliderGetNStates()): 
-      SetTimeSliderState(state) 
-      SaveWindow() 
+.. literalinclude:: ../../test/tests/quickrecipes/how_to_start.py
+   :language: Python
+   :start-after: # getting something on the screen {
+   :end-before: # getting something on the screen }
 
 Handling Command line Arguments
 -------------------------------
