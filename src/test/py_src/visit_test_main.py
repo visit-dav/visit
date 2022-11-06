@@ -1976,7 +1976,7 @@ def TestValueOp(case_name, actual, expected, rndprec=5, oper=operator.eq, dolog=
                 '%s .%s. %s (prec=%d)' % (actual_str,oper.__name__,expected_str,rndprec),skip)
         else:
             LogValueTestResult(case_name,oper.__name__,result,
-                '%s .%s. %s' % (actual_str,oper.__name__,expected_str),skip)
+                '"%s" .%s. "%s"' % (actual_str,oper.__name__,expected_str),skip)
     return result
 
 # actual == expected
