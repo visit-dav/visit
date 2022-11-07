@@ -1,4 +1,12 @@
 #!/bin/bash
+#
+# Developers beware...if you are doing development on any of VisIt's test
+# harness python code or on data files being used in testing, you will 
+# need to adjust any paths here that point at
+#    @CMAKE_BINARY_DIR@
+# For example PYTHONPATH=@VISIT_SOURCE_DIR@/test is needed for it to
+# find those sources.
+#
 env PYTHONPATH=@CMAKE_BINARY_DIR@/lib/site-packages/ \
 @PYTHON_EXECUTABLE@ @CMAKE_CURRENT_SOURCE_DIR@/run_visit_test_suite.py \
    -d @CMAKE_BINARY_DIR@/testdata/ \
