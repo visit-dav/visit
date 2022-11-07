@@ -1935,36 +1935,55 @@ def TestValueOp(case_name, actual, expected, rndprec=5, oper=operator.eq, dolog=
     CheckInteractive(case_name)
     result = False
     is_numeric = False
+
+    # Check if both objects are iterable (e.g. we several we need to iterate over)
+    expected_iter = None
+    actual_iter = None
     try:
-        iterator = iter(expected) # excepts if not iterable
-    except TypeError: # not iterable
+        expected_iter = iter(expected) # excepts if not iterable
+        actual_iter = iter(actual) # excepts if not iterable
+    except TypeError: # at least one is not iterable
+        pass
+
+    if expected_iter and actual_iter: # both are iterable
+        if isinstance(actual, str) and isinstance(expected, str):
+            result = oper(actual,expected)
+            actual_str = actual
+            expected_str = expected
+        else:
+            try:
+                rndact = [round(float(x),rndprec) for x in actual]
+                rndexp = [round(float(x),rndprec) for x in expected]
+                result = oper(rndact,rndexp)
+                is_numeric = True
+                actual_str = str(actual)
+                expected_str = str(expected)
+            except:
+                # stract = [str(x) for x in actual]
+                # strexp = [str(x) for x in expected]
+                # result = oper(stract,strexp)
+                # actual_str = str(stract)
+                # expected_str = str(strexp)
+                actual_str = str(actual)
+                expected_str = str(expected)
+                result = oper(actual_str, expected_str)
+    else:
         try:
             if isinstance(actual, bool) and isinstance(expected, bool):
                 rndprec = 0
                 result = oper(actual, expected)
-                actual_str = '%s'%actual
-                expected_str = '%s'%expected
+                actual_str = str(actual)
+                expected_str = str(expected)
             else:
                 result = oper(round(float(actual), rndprec),round(float(expected), rndprec))
                 is_numeric = True
-                actual_str = '%.*f'%(rndprec,round(float(actual),rndprec))
-                expected_str = '%.*f'%(rndprec,round(float(expected),rndprec))
+                actual_str = str(actual)
+                expected_str = str(expected)
         except:
-            result = oper(str(actual), str(expected))
             actual_str = str(actual)
             expected_str = str(expected)
-    else: # iterable
-        try:
-            rndact = [round(float(x),rndprec) for x in actual]
-            rndexp = [round(float(x),rndprec) for x in expected]
-            result = oper(rndact,rndexp)
-            is_numeric = True
-            actual_str = ['%.*f'%(rndprec,round(float(x),rndprec)) for x in actual]
-            expected_str = ['%.*f'%(rndprec,round(float(x),rndprec)) for x in expected]
-        except:
-            result = oper(str(actual),str(expected))
-            actual_str = str(actual)
-            expected_str = str(expected)
+            result = oper(actual_str, expected_str)
+
     if dolog:
         skip = TestEnv.check_skip(case_name)
         if skip:
