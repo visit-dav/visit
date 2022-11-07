@@ -27,7 +27,7 @@ def using_session_files():
       TimeSliderSetState(state) 
       SaveWindow() 
     # using session files }
-    TestValueEQ('using session files no errors',GetLastError(),'')
+    TestValueEQ('using session files error message',GetLastError(),'')
     TestPOA('using session files no exceptions')
   except:
     TestFOA('using session files exception', LINE())
@@ -53,7 +53,7 @@ def getting_something_on_the_screen():
       TimeSliderSetState(state) 
       SaveWindow() 
     # getting something on the screen }
-    TestValueEQ('getting something on the screen no errors',GetLastError(),'')
+    TestValueEQ('getting something on the screen error message',GetLastError(),'')
     TestPOA('getting something on the screen no exceptions')
   except:
     TestFOA('getting something on the screen exception', LINE())
