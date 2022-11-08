@@ -145,7 +145,7 @@ In this case we are plotting the partitioning variable, so we do not have to lis
 
    The Export Database window.
 
-This will bring up the Export options for the Blueprint writer window.
+This will bring up the Export options for Blueprint writer window.
 
 8. Change the *Operation* to *Partition*.
 9. Change the *Partition  target number of domains* to ``2``.
