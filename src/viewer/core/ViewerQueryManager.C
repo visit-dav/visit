@@ -5271,7 +5271,8 @@ ViewerQueryManager::DoTimeQuery(ViewerWindow *origWin,
     if (resWin == NULL)
     {
         GetViewerMessaging()->Error(
-            TR("Please choose a different window method for the time query"));
+            TR("VisIt is unable to identify a window to plot the resulting curve.\n"
+               "Please adjust controls for how VisIt decides which window to use."));
         return;
     }
 
