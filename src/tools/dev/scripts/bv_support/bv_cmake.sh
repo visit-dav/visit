@@ -96,12 +96,12 @@ function bv_cmake_bin_cmake_dir
 
 function bv_cmake_info
 {
-    export CMAKE_URL=${CMAKE_URL:-"https://cmake.org/files/v3.18/"}
-    export CMAKE_VERSION=${CMAKE_VERSION:-"3.18.2"}
+    export CMAKE_URL=${CMAKE_URL:-"https://cmake.org/files/v3.24/"}
+    export CMAKE_VERSION=${CMAKE_VERSION:-"3.24.3"}
     export CMAKE_FILE=${CMAKE_FILE:-"cmake-${CMAKE_VERSION}.tar.gz"}
     export CMAKE_BUILD_DIR=${CMAKE_BUILD_DIR:-"cmake-${CMAKE_VERSION}"}
-    export CMAKE_MD5_CHECKSUM="7a882b3764f42981705286ac9daa29c2"
-    export CMAKE_SHA256_CHECKSUM="5d4e40fc775d3d828c72e5c45906b4d9b59003c9433ff1b36a1cb552bbd51d7e"
+    export CMAKE_MD5_CHECKSUM="226dd564164372f9f7d1e21e38e6e8c5"
+    export CMAKE_SHA256_CHECKSUM="b53aa10fa82bff84ccdb59065927b72d3bee49f4d86261249fc0984b3b367291"
 }
 
 function bv_cmake_print
@@ -424,11 +424,11 @@ function build_cmake
     info "Bootstrapping CMake . . ."
     cd $CMAKE_BUILD_DIR || error "Can't cd to CMake build dir."
     if [[ "$OPSYS" == "AIX" ]]; then
-        env CXX=xlC CC=xlc CXXFLAGS="" CFLAGS="" ./bootstrap --prefix="$VISITDIR/cmake/${CMAKE_VERSION}/$VISITARCH" -- -DCMAKE_USE_OPENSSL=OFF
+        env CXX=xlC CC=xlc CXXFLAGS="" CFLAGS="" ./bootstrap --prefix="$VISITDIR/cmake/${CMAKE_VERSION}/$VISITARCH"
     elif [[ "$OPSYS" == "Linux" && "$C_COMPILER" == "xlc" ]]; then
-        env CXX=xlC CC=xlc CXXFLAGS="" CFLAGS="" ./bootstrap --prefix="$VISITDIR/cmake/${CMAKE_VERSION}/$VISITARCH" -- -DCMAKE_USE_OPENSSL=OFF
+        env CXX=xlC CC=xlc CXXFLAGS="" CFLAGS="" ./bootstrap --prefix="$VISITDIR/cmake/${CMAKE_VERSION}/$VISITARCH"
     else
-        env CC=${C_COMPILER} CXX=${CXX_COMPILER} CXXFLAGS="" CFLAGS="" ./bootstrap --prefix="$VISITDIR/cmake/${CMAKE_VERSION}/$VISITARCH" -- -DCMAKE_USE_OPENSSL=OFF
+        env CC=${C_COMPILER} CXX=${CXX_COMPILER} CXXFLAGS="" CFLAGS="" ./bootstrap --prefix="$VISITDIR/cmake/${CMAKE_VERSION}/$VISITARCH"
     fi
     if [[ $? != 0 ]] ; then
         warn "Bootstrap for cmake failed, giving up."
