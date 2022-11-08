@@ -370,13 +370,14 @@ then
    module swap gcc/11.2.0 gcc/8.2.0
    export XTPE_LINK_TYPE=dynamic
    export CRAYPE_LINK_TYPE=dynamic
-   env CMAKE_C_COMPILER=/opt/cray/pe/craype/2.7.0/bin/cc \
-       CMAKE_CXX_COMPILER=/opt/cray/pe/craype/2.7.0/bin/CC \
-       PAR_COMPILER=/opt/cray/pe/craype/2.7.0/bin/cc \
-       PAR_COMPILER_CXX=/opt/cray/pe/craype/2.7.0/bin/CC \
-       PAR_INCLUDE=-I/opt/cray/pe/mpt/7.7.15/gni/mpich-gnu/8.2/include \
-       ./$build_visit_script --required --optional --mesagl --uintah \
-       --no-boxlib --parallel --qt510 --no-pyside --no-visit \
+   env C_COMPILER=/opt/cray/pe/craype/2.7.15/bin/cc \
+       CXX_COMPILER=/opt/cray/pe/craype/2.7.15/bin/CC \
+       PAR_COMPILER=/opt/cray/pe/craype/2.7.15/bin/cc \
+       PAR_COMPILER_CXX=/opt/cray/pe/craype/2.7.15/bin/CC \
+       PAR_INCLUDE=-I/opt/cray/pe/mpt/7.7.20/gni/mpich-gnu/8.2/include \
+       PAR_LIBS="-L/opt/cray/pe/mpt/7.7.20/gni/mpich-gnu/8.2/lib -Wl,-rpath=/opt/cray/pe/mpt/7.7.20/gni/mpich-gnu/8.2/lib -lmpich" \
+       ./$build_visit_script --required --optional --mesagl --parallel \
+       --no-adios --no-adios2 --no-pyside --qt510 --no-visit \
        --thirdparty-path /usr/projects/views/visit/thirdparty_shared/$version --makeflags -j16
    mv ${build_visit_script}_log ${build_visit_script}_log.trinity
 fi
