@@ -70,9 +70,8 @@ if(VISIT_PYTHON_DIR AND VISIT_ENABLE_MANUALS AND NOT VISIT_STATIC)
         ${VISIT_BINARY_DIR}/resources/help/en_US/manual -a)
 
     #
-    # Allow `make docs` to be an alais for `make manuals`
+    # Allow `make docs` to be an alias for `make manuals`
     #
-    add_custom_target(docs)
     add_dependencies(docs manuals)
 
 

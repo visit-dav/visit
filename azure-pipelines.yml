@@ -21,13 +21,13 @@ pr:
     include:
     - develop
 
-# add fast fail checks here
+# fast fail sanity checks
 stages:
-- stage: Quick
+- stage: Sanity
   jobs:
-  - job: Fast_Check
+  - job: BLT_Time_Travel_Check
     pool:
-      vmImage: 'ubuntu-18.04'
+      vmImage: 'ubuntu-latest'
     steps:
       - checkout: self
         clean: boolean
@@ -35,12 +35,12 @@ stages:
 
       - script: |
           #######################################
-          # run our quick check
+          # run our sanity check script
           #######################################
-          echo "OK"
-          # NOTE FOR AZURE:
-          # only return code of the command is checked!
-        displayName: 'Example Fast Check'
+          git fetch
+          python scripts/ci/check_blt_time_travel.py
+        displayName: 'BLT Time Travel Check'
+
 
 # main checks build using docker containers that
 # include tpls built with build_visit
@@ -48,7 +48,7 @@ stages:
   jobs:
   - job: Main_Build
     pool:
-      vmImage: 'ubuntu-18.04'
+      vmImage: 'ubuntu-latest'
     timeoutInMinutes: 0
     container: ${{ variables.container_tag }}
     variables:
