@@ -33,6 +33,10 @@ It will continue splitting the largest block and inserting the new blocks into t
 In the case of an unstructured mesh it will split the block in half.
 In the case of a structured mesh it will split it in half along the longest dimension based on the number of cells. 
 
+.. figure:: images/Partitioning-Diagram1.png
+
+   Examples of increasing the number of blocks
+
 Decreasing the number of blocks
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -45,6 +49,10 @@ By default, the points must match exactly to be merged.
 It is possible to set a merge tolerance that indicates how close two points need to be to be considered a match.
 In the case of a structured mesh it will try to maintain it as a structured mesh if possible.
 If it is not possible, it will convert them to an unstructured mesh and merge matching points as specified above.
+
+.. figure:: images/Partitioning-Diagram2.png
+
+   Examples of decreasing the number of blocks
 
 An example of using the built-in partitioning algorithm
 -------------------------------------------------------
