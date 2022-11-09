@@ -129,7 +129,7 @@ def steps_bv(opts,ctx):
 
 def steps_checkout(opts,ctx):
     git_working = pjoin(opts["build_dir"], "visit")
-    git_cmd = "clone"
+    git_cmd = "clone --recursive"
     if "depth" in opts["git"]:
         git_cmd += " --depth=%s" % opts["git"]["depth"]
     ctx.actions["src_checkout"] = git(git_url=visit_git_path(git_opts=opts["git"]),
