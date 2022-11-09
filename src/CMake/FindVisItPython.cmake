@@ -71,6 +71,9 @@
 #   Kathleen Biagas, Thu Mar 24, 2022
 #   Use CMake-style path for installs of python-include on Windows.
 #
+#   Cyrus Harrison, Fri Nov  4 14:35:16 PDT 2022
+#   More status messages.
+#
 #****************************************************************************/
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/ThirdPartyInstallLibrary.cmake)
@@ -88,7 +91,6 @@ INCLUDE(${VISIT_SOURCE_DIR}/CMake/ThirdPartyInstallLibrary.cmake)
 #
 
 MESSAGE(STATUS "Looking for Python")
-
 ###
 # CODE FROM CONDUIT TO FIND PYTHON INTERP AND LIBS
 ###
@@ -104,7 +106,11 @@ if(PYTHON_DIR AND NOT PYTHON_EXECUTABLE)
     elseif(WIN32)
         set(PYTHON_EXECUTABLE ${PYTHON_DIR}/python.exe)
     endif()
+    message(STATUS "Using PYTHON_EXECUTABLE from PYTHON_DIR:")
+    message(STATUS "PYTHON_DIR: ${PYTHON_DIR}")
+    message(STATUS "PYTHON_EXECUTABLE: ${PYTHON_EXECUTABLE}")
 endif()
+
 
 find_package(PythonInterp REQUIRED)
 if(PYTHONINTERP_FOUND)

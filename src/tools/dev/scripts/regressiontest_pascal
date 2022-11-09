@@ -257,7 +257,7 @@ rm -f buildlog installlog
 
 # Clone the repository if necessary.
 if test ! -e $testDir/$workingDir/visit; then
-    git clone ssh://git@github.com/visit-dav/visit.git >> buildlog 2>&1
+    git clone  --recursive ssh://git@github.com/visit-dav/visit.git >> buildlog 2>&1
 fi
 
 # Update the repository.
