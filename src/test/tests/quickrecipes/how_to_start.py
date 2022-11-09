@@ -4,17 +4,13 @@
 #  Test Case:  basics.py
 #
 #  Mark C. Miller, Fri Aug 26 14:31:48 PDT 2022
-#
-#    /home/juan/visit/xyz maps to tests_path('quickrecipes','xyz')
-#    ~juanita/silo/stuff/xyz maps to silo_data_path('xyz')
-#    /Users/amina/data/abc maps to data_path('abc')
 # ----------------------------------------------------------------------------
-
-def DeletePlotsAndCloseDatabase():
-  pl = GetPlotList()
-  DeleteAllPlots()
-  for p in range(pl.GetNumPlots()):
-      CloseDatabase(pl.GetPlots(p).GetDatabaseName())
+#def LoadUtils(fname):
+#    with open(fname, 'r') as f: 
+#        prog = compile(''.join(f.readlines()),'visit_load_utils.err','exec')
+#        exec(prog)
+#
+#LoadUtils(tests_path('quickrecipes','vqr_utils.py'))
 
 def using_session_files():
  
@@ -32,7 +28,7 @@ def using_session_files():
   except:
     TestFOA('using session files exception', LINE())
     pass
-    DeletePlotsAndCloseDatabase()
+  vqr_cleanup()
 
 def getting_something_on_the_screen():
 
@@ -58,43 +54,16 @@ def getting_something_on_the_screen():
   except:
     TestFOA('getting something on the screen exception', LINE())
     pass
-  DeletePlotsAndCloseDatabase()
+  vqr_cleanup()
 
 #
-# Map ordinary string paths used here which appear rendered docs
-# to the paths ordinarily used in VisIt testing...
+# Get some utils shared across many .py files. Exec'ing in this way
+# was only way I could find that would have the desired effect.
+# Importing by various means did not work.
 #
-#    /home/juan/visit/xyz maps to tests_path('quickrecipes','xyz')
-#    ~juanita/silo/stuff/xyz maps to silo_data_path('xyz')
-#    /Users/amina/data/abc maps to data_path('abc')
-#
-def vqr_path(p):
-    if p.startswith('/home/juan/visit/'):
-        return tests_path('quickrecipes',p[17:])
-    elif p.startswith('~juanita/silo/stuff/'):
-        return silo_data_path(p[20:])
-    elif p.startswith('/Users/amina/data/'):
-        return tests_path(p[18:])
-    else:
-        return p
-
-#
-# Map VisIt functions to so they use vqr_path to map paths
-# before invoking the real VisIt functions
-#
-def VisItQuickRecipesRestoreSession(f, vdirFlag=0):
-    return RealRestoreSession(vqr_path(f),vdirFlag)
-
-def VisItQuickRecipesOpenDatabase(db, ti=0, pname=''):
-    return RealOpenDatabase(vqr_path(db),ti,pname)
-
-# Replace OpenDatabase with our own to interpret the path strings
-RealOpenDatabase = OpenDatabase
-OpenDatabase = VisItQuickRecipesOpenDatabase
-
-# Replace RestoreSession with our own to interpret the path strings
-RealRestoreSession = RestoreSession
-RestoreSession = VisItQuickRecipesRestoreSession
+with open(tests_path('quickrecipes','vqr_utils.py'), 'r') as f: 
+    prog = compile(''.join(f.readlines()),'visit_load_utils.err','exec')
+    exec(prog)
 
 using_session_files()
 getting_something_on_the_screen()
