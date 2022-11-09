@@ -2642,6 +2642,9 @@ avtMiliFileFormat::AddMiliVariableToMetaData(avtDatabaseMetaData *avtMD,
 //
 //      Mark C. Miller, Fri Sep 16 11:26:22 PDT 2022
 //      Handle displacements on sand mesh too...they are same as main mesh.
+//
+//      Mark C. Miller, Tue Nov  8 18:11:00 PST 2022
+//      Ensure correct initial mesh coords are used for strain exprs.
 // ****************************************************************************
 
 void
@@ -2789,15 +2792,7 @@ avtMiliFileFormat::AddMiliDerivedVariables(avtDatabaseMetaData *md,
     std::string varPath;
     std::string varPathBase = "Derived/Shared/";
 
-    std::string initCoordsName = meshPath +
-        "Derived/Shared/strain/initial_strain_coords";
-    Expression initCoordsExpr;
-    initCoordsExpr.SetName(initCoordsName);
-    initCoordsExpr.SetDefinition("conn_cmfe(coord(<[0]i:" +
-        meshName + ">)," + meshName + ")");
-    initCoordsExpr.SetType(Expression::VectorMeshVar);
-    initCoordsExpr.SetHidden(true);
-    md->AddExpression(&initCoordsExpr);
+    std::string initCoordsName = meshPath + "Primal/node/init_mesh_coords"
 
     //
     // Relative volume.
