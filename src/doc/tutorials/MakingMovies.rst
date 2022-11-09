@@ -413,3 +413,22 @@ their resolution. ::
 Convert can also be used to do other types of image manipulations such
 as cropping a flipping images. To learn more about convert google
 *ImageMagick convert*.
+
+
+Higher quality encoding with ffmpeg
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+You can get higher quality encoding using *ffmpeg* instead of VisIt_'s built-in *mpeg2encode*.
+If VisIt_ finds *ffmpeg* in your search path it will use that instead of the built in encoder.
+
+You can obtain *ffmpeg* from the `ffmpeg download site <https://www.ffmpeg.org/download.html>`_.
+Scroll down a bit until you get to a section labeled *Get packages & executable files*.
+Click on the icon representing the OS you desire, this will change the text below the three logos.
+Choose and click one of the options and you will be taken to a page with downloads or package information.
+
+You may be able to install *ffmpeg* on Linux with the standard package manager for the flavor of Linux you are running.
+For example, to install on Ubuntu::
+
+    apt-get update
+    apt-get install -y ffmpeg
+
