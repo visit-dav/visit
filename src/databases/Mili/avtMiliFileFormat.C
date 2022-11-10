@@ -2798,7 +2798,7 @@ avtMiliFileFormat::AddMiliDerivedVariables(avtDatabaseMetaData *md,
     std::string varPath;
     std::string varPathBase = "Derived/Shared/";
 
-    std::string initCoordsName = meshPath + "Primal/node/init_mesh_coords"
+    std::string initCoordsName = meshPath + "Primal/node/init_mesh_coords";
 
     //
     // Relative volume.
