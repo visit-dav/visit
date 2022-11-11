@@ -703,11 +703,11 @@ XRay Image
     |                          | calculations.                                |
     +--------------------------+----------------------------------------------+
     | *viewAngle*              | The view angle, only used in the             |
-    |                          | calculations if perspective |br|             |
+    |                          | calculations if |br| perspective             |
     |                          | projection was enabled.                      |
     +--------------------------+----------------------------------------------+
     | *parallelScale*          | The parallel scale, or view height, that was |
-    |                          | used in the calculations.                    |
+    |                          | used in the |br| calculations.               |
     +--------------------------+----------------------------------------------+
     | *nearPlane*              | The near plane that was used in the          |
     |                          | calculations.                                |
