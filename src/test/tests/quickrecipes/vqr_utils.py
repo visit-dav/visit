@@ -16,18 +16,13 @@
 #    /Users/amina/data/abc maps to data_path('abc')
 #
 def vqr_path(p):
-    print("got here with", p)
     if p.startswith('/home/juan/visit/'):
-        print(p[17:])
         return tests_path('quickrecipes',p[17:])
     elif p.startswith('~juanita/silo/stuff/'):
-        print(p[20:])
         return silo_data_path(p[20:])
     elif p.startswith('/Users/amina/data/'):
-        print(p[18:])
         return tests_path(p[18:])
     else:
-        print("just returning p")
         return p
 
 #

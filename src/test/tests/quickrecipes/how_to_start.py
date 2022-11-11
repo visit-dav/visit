@@ -5,12 +5,17 @@
 #
 #  Mark C. Miller, Fri Aug 26 14:31:48 PDT 2022
 # ----------------------------------------------------------------------------
-#def LoadUtils(fname):
-#    with open(fname, 'r') as f: 
-#        prog = compile(''.join(f.readlines()),'visit_load_utils.err','exec')
-#        exec(prog)
+
 #
-#LoadUtils(tests_path('quickrecipes','vqr_utils.py'))
+# Get some utils shared across many .py files. Exec'ing in this way avoid
+# an import hell caused by the interdependency of functions used in
+# vqr_utils.py but nonetheless defined in other parts of VisIt's test harness.
+# This small block of code needs to be copied into any .py file being used
+# to demonstrate a quick recipe.
+#
+with open(tests_path('quickrecipes','vqr_utils.py'), 'r') as f: 
+    prog = compile(''.join(f.readlines()),'load_vqr_utils.err','exec')
+    exec(prog)
 
 def using_session_files():
  
@@ -55,15 +60,6 @@ def getting_something_on_the_screen():
     TestFOA('getting something on the screen exception', LINE())
     pass
   vqr_cleanup()
-
-#
-# Get some utils shared across many .py files. Exec'ing in this way
-# was only way I could find that would have the desired effect.
-# Importing by various means did not work.
-#
-with open(tests_path('quickrecipes','vqr_utils.py'), 'r') as f: 
-    prog = compile(''.join(f.readlines()),'visit_load_utils.err','exec')
-    exec(prog)
 
 using_session_files()
 getting_something_on_the_screen()
