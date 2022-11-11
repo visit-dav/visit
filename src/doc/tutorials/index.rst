@@ -27,6 +27,7 @@ Contents:
     MakingMovies
     MolecularDataFeatures
     PythonExpressions
+    Partitioning
     
 
 .. Indices and tables

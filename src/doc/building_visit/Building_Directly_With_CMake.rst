@@ -6,7 +6,7 @@ If a *config site file* is available for the platform you wish to build on, VisI
 
 .. code:: bash
 
-  git clone git@github.com:visit-dav/visit.git
+  git clone --recursive git@github.com:visit-dav/visit.git
   mkdir visit/build
   cd visit/build
 
