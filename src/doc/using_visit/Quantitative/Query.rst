@@ -692,7 +692,7 @@ XRay Image
     +--------------------------+----------------------------------------------+
     | *normal*                 | x, y, and z components represent the view    |
     |                          | normal vector that |br| was used in          |
-    |                          | the calculations.                                |
+    |                          | the calculations.                            |
     +--------------------------+----------------------------------------------+
     | *focus*                  | x, y, and z components represent the focal   |
     |                          | point that was used |br| in the              |
