@@ -699,7 +699,8 @@ XRay Image
     |                          | calculations.                                |    
     +--------------------------+----------------------------------------------+
     | *viewUp*                 | x, y, and z components represent the up      |
-    |                          | vector that was used |br| in calculations.   |
+    |                          | vector that was used |br| in the             |
+    |                          | calculations.                                |
     +--------------------------+----------------------------------------------+
     | *viewAngle*              | The view angle, only used in calculations    |
     |                          | if perspective |br|                          |
