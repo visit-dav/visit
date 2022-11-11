@@ -712,7 +712,8 @@ XRay Image
     | *nearPlane*              | The near plane that was used in the          |
     |                          | calculations.                                |
     +--------------------------+----------------------------------------------+
-    | *farPlane*               | The far plane that was used in calculations. |
+    | *farPlane*               | The far plane that was used in the           |
+    |                          | calculations.                                |
     +--------------------------+----------------------------------------------+
     | *imagePan*               | x and y components represent the image pan   |
     |                          | that was used in |br| the calculations.      |
