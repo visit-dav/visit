@@ -718,7 +718,7 @@ XRay Image
     |                          | that was used in |br| the calculations.      |
     +--------------------------+----------------------------------------------+
     | *imageZoom*              | The absolute image zoom factor that was used |
-    |                          | in calculations.                             |
+    |                          | in the calculations.                         |
     +--------------------------+----------------------------------------------+
     | *perspective*            | Flag indicating if parallel or perspective   |
     |                          | projection was used. |br| 0 indicates        |
