@@ -700,8 +700,8 @@ XRay Image
     | *viewUp*                 | x, y, and z components represent the up      |
     |                          | vector that was used |br| in calculations.   |
     +--------------------------+----------------------------------------------+
-    | *viewAngle*              | The view angle that was used in              |
-    |                          | calculations, only if |br| perspective       |
+    | *viewAngle*              | The view angle, only used in calculations    |
+    |                          | if perspective |br|                          |
     |                          | projection was enabled.                      |
     +--------------------------+----------------------------------------------+
     | *parallelScale*          | The parallel scale, or view height, that was |
