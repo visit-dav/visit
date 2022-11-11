@@ -695,7 +695,8 @@ XRay Image
     |                          | the calculations.                                |
     +--------------------------+----------------------------------------------+
     | *focus*                  | x, y, and z components represent the focal   |
-    |                          | point that was used |br| in calculations.    |
+    |                          | point that was used |br| in the              |
+    |                          | calculations.                                |    
     +--------------------------+----------------------------------------------+
     | *viewUp*                 | x, y, and z components represent the up      |
     |                          | vector that was used |br| in calculations.   |
