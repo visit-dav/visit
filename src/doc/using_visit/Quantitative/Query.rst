@@ -707,7 +707,7 @@ XRay Image
     |                          | projection was enabled.                      |
     +--------------------------+----------------------------------------------+
     | *parallelScale*          | The parallel scale, or view height, that was |
-    |                          | used in calculations.                        |
+    |                          | used in the calculations.                    |
     +--------------------------+----------------------------------------------+
     | *nearPlane*              | The near plane that was used in              |
     |                          | calculations.                                |
