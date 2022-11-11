@@ -709,7 +709,7 @@ XRay Image
     | *parallelScale*          | The parallel scale, or view height, that was |
     |                          | used in the calculations.                    |
     +--------------------------+----------------------------------------------+
-    | *nearPlane*              | The near plane that was used in              |
+    | *nearPlane*              | The near plane that was used in the          |
     |                          | calculations.                                |
     +--------------------------+----------------------------------------------+
     | *farPlane*               | The far plane that was used in calculations. |
