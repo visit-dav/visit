@@ -702,8 +702,8 @@ XRay Image
     |                          | vector that was used |br| in the             |
     |                          | calculations.                                |
     +--------------------------+----------------------------------------------+
-    | *viewAngle*              | The view angle, only used in calculations    |
-    |                          | if perspective |br|                          |
+    | *viewAngle*              | The view angle, only used in the             |
+    |                          | calculations if perspective |br|             |
     |                          | projection was enabled.                      |
     +--------------------------+----------------------------------------------+
     | *parallelScale*          | The parallel scale, or view height, that was |
