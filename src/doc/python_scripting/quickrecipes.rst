@@ -72,15 +72,11 @@ To set the options that VisIt uses to save files, you must create a SaveWindowAt
 Note that if you want to create images using a specific image resolution, the best way is to use the *-geometry* command line argument with VisIt_'s Command Line Interface and tell VisIt to use screen capture. 
 If you instead require your script to be capable of saving several different image sizes then you can turn off screen capture and set the image resolution in the SaveWindowAttributes object.
 
-::
-
-    # Save a BMP file at 1024x768 resolution 
-    s = SaveWindowAttributes() 
-    s.format = s.BMP 
-    s.fileName = "mybmpfile" 
-    s.width, s.height = 1024,768 
-    s.screenCapture = 0 
-    SetSaveWindowAttributes(s) 
+.. literalinclude:: ../../test/tests/quickrecipes/saving_images.py
+    :language: Python
+    :start-after: # setting output image characteristics {
+    :end-before: # setting output image characteristics }
+    :dedent: 4
 
 Saving an image
 ~~~~~~~~~~~~~~~
@@ -88,16 +84,11 @@ Saving an image
 Once you have set the SaveWindowAttributes to your liking, you can call the SaveWindow function to save an image. 
 The SaveWindow function returns the name of the image that is saved so you can use that for other purposes in your script.
 
-::
-
-    # Save images of all timesteps and add each image filename to a list. 
-    names = [] 
-    for state in range(TimeSliderGetNStates()): 
-      SetTimeSliderState(state) 
-      # Save the image 
-      n = SaveWindow() 
-      names = names + [n] 
-    print(names)
+.. literalinclude:: ../../test/tests/quickrecipes/saving_images.py
+    :language: Python
+    :start-after: # saving an image {
+    :end-before: # saving an image }
+    :dedent: 4
 
 Working with databases
 ----------------------
@@ -114,13 +105,14 @@ Opening a database
 Opening a database is a relatively simple operation - most complexities arise in how the database treats time. 
 If you only want to visualize a single time state or if your database format natively supports multiple timestates per file then opening a database requires just a single call to the OpenDatabase function.
 
-::
+.. literalinclude:: ../../test/tests/quickrecipes/working_with_dbs.py
+    :language: Python
+    :start-after: # opening a database {
+    :end-before: # opening a database }
+    :dedent: 4
 
-    # Open a database at time state 0 
-    OpenDatabase("/usr/local/visit/data/allinone00.pdb") 
-
-Opening a database at late time
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Opening a database at specific time
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Opening a database at a later timestate is done just the same as opening a database at time state zero except that you must specify the time state at which you want to open the database. 
 There are a number of reasons for opening a database at a later time state. 
@@ -128,10 +120,11 @@ The most common reason for doing so, as opposed to just changing time states lat
 This means that the list of variables found for the first time state that you open is used for all timestates. 
 If your database contains a variable at a later timestate that does not exist at earlier time states, you must open the database at a later time state to gain access to the transient variable.
 
-::
-
-    # Open a database at a later time state to pick up transient variables 
-    OpenDatabase("/usr/local/visit/data/wave.visit", 17) 
+.. literalinclude:: ../../test/tests/quickrecipes/working_with_dbs.py
+    :language: Python
+    :start-after: # opening a database at specific time {
+    :end-before: # opening a database at specific time }
+    :dedent: 4
 
 Opening a virtual database
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -142,13 +135,11 @@ The second method uses "virtual databases", which allow VisIt to exploit the fil
 In many cases, VisIt can scan a specified directory and determine which filenames look related. 
 Filenames with close matches are grouped as individual time states into a virtual database whose name is based on the more abstract pattern used to create the filenames.
 
-::
-
-    # Opening first file in series wave0000.silo, wave0010.silo, ... 
-    OpenDatabase("/usr/local/visit/data/wave0000.silo") 
-
-    # Opening a virtual database representing all wave*.silo files. 
-    OpenDatabase("/usr/local/visit/data/wave*.silo database") 
+.. literalinclude:: ../../test/tests/quickrecipes/working_with_dbs.py
+    :language: Python
+    :start-after: # opening a virtual database {
+    :end-before: # opening a virtual database }
+    :dedent: 4
 
 Opening a remote database
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -156,11 +147,11 @@ Opening a remote database
 VisIt supports running the client on a local computer while also allowing you to process data in parallel on a remote computer. 
 If you want to access databases on a remote computer using VisIt_'s Python Interface, the only difference to accessing a database on a local computer is that you must specify a host name as part of the database name.
 
-::
-
-    # Opening a file on a remote computer by giving a host name 
-    # Also, open the database to a later time slice (17)
-    OpenDatabase("thunder:/usr/local/visit/data/wave.visit", 17)
+.. literalinclude:: ../../test/tests/quickrecipes/working_with_dbs.py
+    :language: Python
+    :start-after: # opening a remote database {
+    :end-before: # opening a remote database }
+    :dedent: 4
 
 Opening a compute engine
 ------------------------

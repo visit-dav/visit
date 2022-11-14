@@ -16,12 +16,17 @@
 #    /Users/amina/data/abc maps to data_path('abc')
 #
 def vqr_path(p):
+
+    # pull off any hostname
+    if p.startswith('thunder:'):
+        p = p[8:]
+
     if p.startswith('/home/juan/visit/'):
         return tests_path('quickrecipes',p[17:])
     elif p.startswith('~juanita/silo/stuff/'):
         return silo_data_path(p[20:])
     elif p.startswith('/Users/amina/data/'):
-        return tests_path(p[18:])
+        return data_path(p[18:])
     else:
         return p
 
@@ -29,10 +34,9 @@ def vqr_path(p):
 # Utility to generalize cleanup after a block
 #
 def vqr_cleanup():
-  pl = GetPlotList()
   DeleteAllPlots()
-  for p in range(pl.GetNumPlots()):
-      CloseDatabase(pl.GetPlots(p).GetDatabaseName())
+  for db in GetGlobalAttributes().sources:
+      CloseDatabase(db)
 
 #
 # Map VisIt functions to so they use vqr_path to map paths
