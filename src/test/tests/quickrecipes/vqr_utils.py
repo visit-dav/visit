@@ -47,4 +47,3 @@ def vqr_OpenDatabase(db, ti=0, pname=''):
     return real_OpenDatabase(vqr_path(db),ti,pname)
 real_OpenDatabase = OpenDatabase
 OpenDatabase = vqr_OpenDatabase
-

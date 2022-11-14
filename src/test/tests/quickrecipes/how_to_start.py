@@ -7,15 +7,9 @@
 # ----------------------------------------------------------------------------
 
 #
-# Get some utils shared across many .py files. Exec'ing in this way avoid
-# an import hell caused by the interdependency of functions used in
-# vqr_utils.py but nonetheless defined in other parts of VisIt's test harness.
-# This small block of code needs to be copied into any .py file being used
-# to demonstrate a quick recipe.
+# Get some utils shared across many .py files used for quick recipes.
 #
-with open(tests_path('quickrecipes','vqr_utils.py'), 'r') as f: 
-    prog = compile(''.join(f.readlines()),'load_vqr_utils.err','exec')
-    exec(prog)
+Source(tests_path('quickrecipes','vqr_utils.py'))
 
 def using_session_files():
  
