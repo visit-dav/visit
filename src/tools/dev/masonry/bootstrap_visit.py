@@ -105,7 +105,7 @@ def steps_bv(opts,ctx):
     ctx.actions["create_third_party"]  =  shell(cmd=cmd_clean,
                                                 working_dir=thirdparty_dir,
                                                 description="create %s" % thirdparty_dir)
-    bv_args = " --console "
+    bv_args = ""
     if "make_flags" in opts["build_visit"]:
         bv_args    += " --makeflags '%s'" % opts["build_visit"]["make_flags"]
     elif "make_nthreads" in opts:
@@ -129,7 +129,7 @@ def steps_bv(opts,ctx):
 
 def steps_checkout(opts,ctx):
     git_working = pjoin(opts["build_dir"], "visit")
-    git_cmd = "clone"
+    git_cmd = "clone --recursive"
     if "depth" in opts["git"]:
         git_cmd += " --depth=%s" % opts["git"]["depth"]
     ctx.actions["src_checkout"] = git(git_url=visit_git_path(git_opts=opts["git"]),

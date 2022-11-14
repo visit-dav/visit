@@ -500,13 +500,13 @@
 #    distribution. The libstdc++ library depends on VISIT_CXX_LIBRARY
 #    being defined. This would typically be added to the config site file.
 #
-#    Kathleen Biagas, Thu Jun 16, 2022 
+#    Kathleen Biagas, Thu Jun 16, 2022
 #    Changed minimum cmake version to 3.15.
 #
-#    Kathleen Biagas, Fri July 1, 2022 
+#    Kathleen Biagas, Fri July 1, 2022
 #    For Windows package creation: added custom command to 7zip the install
 #    dir for use by installer creation script. Changed default install
-#    prefix to remove the space between 'VisIt' and '<verison>'. 
+#    prefix to remove the space between 'VisIt' and '<verison>'.
 #
 #    Eric Brugger, Tue Jul  5 09:10:18 PDT 2022
 #    Added support for the Blosc library.
@@ -514,7 +514,7 @@
 #    Eric Brugger, Thu Jul  7 13:07:51 PDT 2022
 #    Added other directories to look for libicui18n, libicudata and libicuuc.
 #
-#    Kathleen Biagas, Sat July 16, 2022 
+#    Kathleen Biagas, Sat July 16, 2022
 #    Prep for VTK 9: reorder calling of Find module so that libraries that
 #    VTK depends on are found first.
 #    Consolidated some python scripting logic.
@@ -526,9 +526,13 @@
 #    Cyrus Harrison, Fri Nov  4 13:38:24 PDT 2022
 #    Wire up BLT CMake Build System Helpers.
 #
+#    Kathleen Biagas, Mon Nov 7, 2022
+#    Update CMake minimum version to 3.23. Part of the CMake modernization
+#    effort.
+#
 #****************************************************************************
 
-cmake_minimum_required(VERSION 3.15 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.24 FATAL_ERROR)
 
 if(COMMAND cmake_policy)
     cmake_policy(SET CMP0033 OLD)
