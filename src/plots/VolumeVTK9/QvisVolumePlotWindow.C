@@ -272,7 +272,11 @@ QvisVolumePlotWindow::CreateWindowContents()
 {
     // Figure out the max width that we want to allow for some simple
     // line edit widgets.
-    int maxWidth = fontMetrics().horizontalAdvance("1.0000000000");
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 11, 0))
+    int maxWidth = fontMetrics().horizontalAdvance("0");
+#else
+    int maxWidth = fontMetrics().width("0");
+#endif
 
     // Create a tab widget so we can put the transfer functions on their
     // own tabs.
