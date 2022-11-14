@@ -1959,11 +1959,6 @@ def TestValueOp(case_name, actual, expected, rndprec=5, oper=operator.eq, dolog=
                 actual_str = str(actual)
                 expected_str = str(expected)
             except:
-                # stract = [str(x) for x in actual]
-                # strexp = [str(x) for x in expected]
-                # result = oper(stract,strexp)
-                # actual_str = str(stract)
-                # expected_str = str(strexp)
                 actual_str = str(actual)
                 expected_str = str(expected)
                 result = oper(actual_str, expected_str)
