@@ -2,6 +2,7 @@
 *.swp
 build_branch_*/
 /data/*_test_data/
+/src/CMakeUserPresets.json
 /src/test/current/
 /src/test/diff/
 /src/test/html/
