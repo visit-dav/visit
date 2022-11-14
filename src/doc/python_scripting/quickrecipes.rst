@@ -22,9 +22,10 @@ Since session files contain all of the information about plots, etc., they are n
 To use session files within a script, use the RestoreSession function.
 
 .. literalinclude:: ../../test/tests/quickrecipes/how_to_start.py
-   :language: Python
-   :start-after: # using session files {
-   :end-before: # using session files }
+    :language: Python
+    :start-after: # using session files {
+    :end-before: # using session files }
+    :dedent: 4
 
 Getting something on the screen
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -39,9 +40,10 @@ Once you've added a plot, it is in the new state, which means that it has not ye
 To make sure that the plot gets drawn, call the DrawPlots function.
 
 .. literalinclude:: ../../test/tests/quickrecipes/how_to_start.py
-   :language: Python
-   :start-after: # getting something on the screen {
-   :end-before: # getting something on the screen }
+    :language: Python
+    :start-after: # getting something on the screen {
+    :end-before: # getting something on the screen }
+    :dedent: 4
 
 Handling Command line Arguments
 -------------------------------
