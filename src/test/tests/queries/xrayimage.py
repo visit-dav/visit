@@ -36,6 +36,10 @@
 #    os.remove is gone.
 #    tmp/baddir is gone, replaced.
 #    These changes were made so the tests no longer crash on windows.
+# 
+#    Justin Privitera, Tue Nov 15 14:54:35 PST 2022
+#    Added new tests for additional blueprint output metadata as well as
+#    imaging plane topologies.
 #
 # ----------------------------------------------------------------------------
 
@@ -523,14 +527,6 @@ PseudocolorAtts = PseudocolorAttributes()
 PseudocolorAtts.invertColorTable = 1
 PseudocolorAtts.opacityType = PseudocolorAtts.FullyOpaque  # ColorTable, FullyOpaque, Constant, Ramp, VariableRange
 SetPlotOptions(PseudocolorAtts)
-
-# SetActivePlots(2)
-# PseudocolorAtts = PseudocolorAttributes()
-# PseudocolorAtts.colorTableName = "Oranges"
-# PseudocolorAtts.invertColorTable = 1
-# PseudocolorAtts.opacityType = PseudocolorAtts.Constant  # ColorTable, FullyOpaque, Constant, Ramp, VariableRange
-# PseudocolorAtts.opacity = 0.7
-# SetPlotOptions(PseudocolorAtts)
 
 View3DAtts = View3DAttributes()
 View3DAtts.viewNormal = (-0.519145, 0.199692, -0.831031)
