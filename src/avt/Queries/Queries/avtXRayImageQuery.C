@@ -984,6 +984,12 @@ avtXRayImageQuery::GetSecondaryVars(std::vector<std::string> &outVars)
 // 
 //    Justin Privitera, Thu Sep 29 17:35:07 PDT 2022
 //    Added warning message for bmp output in result message and to debug1.
+// 
+//    Justin Privitera, Tue Nov 15 11:44:01 PST 2022
+//    Various changes to the blueprint output:
+//     - Reorganized metadata into categories
+//     - Added new metadata outputs: query parameters and extra data
+//     - Added imaging plane topologies
 //
 // ****************************************************************************
 
@@ -1442,15 +1448,15 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
             double center[3], temp[3];
             Scale(temp, normal, nearPlane);
             Add(center, temp, focus);
-            WriteImagingPlane(data_out, "near_plane", nearWidth, nearHeight, center);
+            WriteBlueprintImagingPlane(data_out, "near_plane", nearWidth, nearHeight, center);
 
             // write view plane
-            WriteImagingPlane(data_out, "view_plane", viewWidth, viewHeight, focus);
+            WriteBlueprintImagingPlane(data_out, "view_plane", viewWidth, viewHeight, focus);
 
             // write far plane
             Scale(temp, normal, farPlane);
             Add(center, temp, focus);
-            WriteImagingPlane(data_out, "far_plane", farWidth, farHeight, center);
+            WriteBlueprintImagingPlane(data_out, "far_plane", farWidth, farHeight, center);
 
             // verify
             conduit::Node verify_info;
@@ -1927,10 +1933,10 @@ avtXRayImageQuery::WriteArrays(vtkDataSet **leaves,
 }
 
 // ****************************************************************************
-//  Method: avtXRayImageQuery::WriteImagingPlane
+//  Method: avtXRayImageQuery::WriteBlueprintImagingPlane
 //
 //  Purpose:
-//    TODO
+//    Calculates imaging plane coords and writes them to blueprint output.
 //
 //  Programmer: Justin Privitera
 //  Creation:   November 14, 2022
@@ -1938,11 +1944,11 @@ avtXRayImageQuery::WriteArrays(vtkDataSet **leaves,
 // ****************************************************************************
 
 void
-avtXRayImageQuery::WriteImagingPlane(conduit::Node &data_out,
-                                     const std::string plane_name,
-                                     const double width,
-                                     const double height,
-                                     const double center[3])
+avtXRayImageQuery::WriteBlueprintImagingPlane(conduit::Node &data_out,
+                                              const std::string plane_name,
+                                              const double width,
+                                              const double height,
+                                              const double center[3])
 {
     // set up imaging plane coords
     data_out["coordsets/" + plane_name + "_coords/type"] = "explicit";
@@ -1960,7 +1966,7 @@ avtXRayImageQuery::WriteImagingPlane(conduit::Node &data_out,
     // lower left corner, lower right corner, etc.
     double llc[3], lrc[3], ulc[3], urc[3];
     
-    // a couple containers for intermediate vector math results
+    // containers for intermediate vector math results
     double temp1[3], temp2[3], temp3[3];
 
     // calc llc
