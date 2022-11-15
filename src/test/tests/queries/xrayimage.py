@@ -329,13 +329,7 @@ def setup_bp_test():
     AddPlot("Pseudocolor", "d")
     DrawPlots()
 
-def test_bp_state(testname, conduit_db):
-    xrayout = conduit.Node()
-    conduit.relay.io.blueprint.load_mesh(xrayout, conduit_db)
-    
-    cycle = xrayout["domain_000000/state/cycle"]
-    TestValueEQ(testname + "_Cycle", cycle, 48)
-
+def test_bp_state_xray_view(testname, xrayout):
     normalx = xrayout["domain_000000/state/xray_view/normal/x"]
     normaly = xrayout["domain_000000/state/xray_view/normal/y"]
     normalz = xrayout["domain_000000/state/xray_view/normal/z"]
@@ -372,13 +366,73 @@ def test_bp_state(testname, conduit_db):
     
     perspective = xrayout["domain_000000/state/xray_view/perspective"]
     TestValueEQ(testname + "_Perspective", perspective, 0)
+
+    perspectiveStr = xrayout["domain_000000/state/xray_view/perspectiveStr"]
+    TestValueEQ(testname + "_PerspectiveStr", perspectiveStr, "parallel")
+
+def test_bp_state_xray_query(testname, xrayout):
+    divideEmisByAbsorb = xrayout["domain_000000/state/xray_query/divideEmisByAbsorb"]
+    TestValueEQ(testname + "_DivideEmisByAbsorb", divideEmisByAbsorb, 1)
     
-    spatial_coords_x = xrayout["domain_000000/state/xray_view/image_coords/x"]
-    spatial_coords_y = xrayout["domain_000000/state/xray_view/image_coords/y"]
+    divideEmisByAbsorbStr = xrayout["domain_000000/state/xray_query/divideEmisByAbsorbStr"]
+    TestValueEQ(testname + "_DivideEmisByAbsorbStr", divideEmisByAbsorbStr, "yes")
+    
+    numXPixels = xrayout["domain_000000/state/xray_query/numXPixels"]
+    TestValueEQ(testname + "_NumXPixels", numXPixels, 300)
+    
+    numYPixels = xrayout["domain_000000/state/xray_query/numYPixels"]
+    TestValueEQ(testname + "_NumYPixels", numYPixels, 200)
+    
+    numBins = xrayout["domain_000000/state/xray_query/numBins"]
+    TestValueEQ(testname + "_NumBins", numBins, 1)
+    
+    absVarName = xrayout["domain_000000/state/xray_query/absVarName"]
+    TestValueEQ(testname + "_AbsVarName", absVarName, "d")
+    
+    emisVarName = xrayout["domain_000000/state/xray_query/emisVarName"]
+    TestValueEQ(testname + "_EmisVarName", emisVarName, "p")
+
+def test_bp_state_xray_data(testname, xrayout):
+    spatial_coords_x = xrayout["domain_000000/state/xray_data/image_coords/x"]
+    spatial_coords_y = xrayout["domain_000000/state/xray_data/image_coords/y"]
     TestValueEQ(testname + "_SpatialExtents0", [spatial_coords_x[0], spatial_coords_y[0]], [0.0, 0.0])
     TestValueEQ(testname + "_SpatialExtents1", [spatial_coords_x[1], spatial_coords_y[1]], [0.05, 0.05])
     TestValueEQ(testname + "_SpatialExtents2", [spatial_coords_x[2], spatial_coords_y[2]], [0.1, 0.1])
     TestValueEQ(testname + "_SpatialExtents3", [spatial_coords_x[-1], spatial_coords_y[-1]], [15.0, 10.0])
+    
+    detectorWidth = xrayout["domain_000000/state/xray_data/detectorWidth"]
+    TestValueEQ(testname + "_DetectorWidth", detectorWidth, 15)
+
+    detectorHeight = xrayout["domain_000000/state/xray_data/detectorHeight"]
+    TestValueEQ(testname + "_DetectorHeight", detectorHeight, 10)
+    
+    intensityMax = xrayout["domain_000000/state/xray_data/intensityMax"]
+    TestValueEQ(testname + "_IntensityMax", intensityMax, 0.24153)
+    
+    intensityMin = xrayout["domain_000000/state/xray_data/intensityMin"]
+    TestValueEQ(testname + "_IntensityMin", intensityMin, 0)
+    
+    pathLengthMax = xrayout["domain_000000/state/xray_data/pathLengthMax"]
+    TestValueEQ(testname + "_PathLengthMax", pathLengthMax, 148.67099)
+    
+    pathLengthMin = xrayout["domain_000000/state/xray_data/pathLengthMin"]
+    TestValueEQ(testname + "_PathLengthMin", pathLengthMin, 0)
+
+def test_bp_state(testname, conduit_db):
+    xrayout = conduit.Node()
+    conduit.relay.io.blueprint.load_mesh(xrayout, conduit_db)
+
+    time = xrayout["domain_000000/state/time"]
+    TestValueEQ(testname + "_Time", time, 4.8)
+    
+    cycle = xrayout["domain_000000/state/cycle"]
+    TestValueEQ(testname + "_Cycle", cycle, 48)
+
+    test_bp_state_xray_view(testname, xrayout)
+    test_bp_state_xray_query(testname, xrayout)
+    test_bp_state_xray_data(testname, xrayout)
+    
+    
 
 #
 # hdf5
