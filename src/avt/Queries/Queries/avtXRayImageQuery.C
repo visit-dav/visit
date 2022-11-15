@@ -1353,28 +1353,38 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
             data_out["state/xray_view/imagePan/y"] = imagePan[1];
             data_out["state/xray_view/imageZoom"] = imageZoom;
             data_out["state/xray_view/perspective"] = perspective;
+            data_out["state/xray_view/perspectiveStr"] = perspective ? "perspective" : "parallel";
+            data_out["state/xray_view/divideEmisByAbsorb"] = divideEmisByAbsorb;
+            data_out["state/xray_view/divideEmisByAbsorbStr"] = divideEmisByAbsorb ? "yes" : "no";
             data_out["state/xray_view/numXPixels"] = nx;
             data_out["state/xray_view/numYPixels"] = ny;
             data_out["state/xray_view/numBins"] = numBins;
+            data_out["state/xray_view/absVarName"] = absVarName;
+            data_out["state/xray_view/emisVarName"] = emisVarName;
 
             // calculate spatial extent coords
             // (the physical extents of the image projected on the near plane)
 
-            const double viewHeight = parallelScale;
-            const double viewWidth = (static_cast<float>(imageSize[0]) / static_cast<float>(imageSize[1])) * viewHeight;
-            double nearHeight, nearWidth;
+            // the following calculations must be the same as the calculations in avtXRayFilter.C!
+            const double viewHeight{parallelScale};
+            const double viewWidth{(static_cast<float>(imageSize[0]) / static_cast<float>(imageSize[1])) * viewHeight};
+            double nearHeight, nearWidth, farHeight, farWidth;
             if (perspective)
             {
                 const double viewDist = parallelScale / tan ((viewAngle * 3.1415926535) / 360.);
                 const double nearDist = viewDist + nearPlane;
+                const double farDist = viewDist + farPlane;
                 const double nearDist_over_viewDist = nearDist / viewDist;
+                const double farDist_over_viewDist = farDist / viewDist;
                 nearHeight = (nearDist_over_viewDist * viewHeight) / imageZoom;
                 nearWidth = (nearDist_over_viewDist * viewWidth) / imageZoom;
+                farHeight = (farDist_over_viewDist * viewHeight) / imageZoom;
+                farWidth = (farDist_over_viewDist * viewWidth) / imageZoom;
             }
             else
             {
-                nearHeight = viewHeight / imageZoom;
-                nearWidth = viewWidth / imageZoom;
+                nearHeight = farHeight = viewHeight / imageZoom;
+                nearWidth = farWidth = viewWidth / imageZoom;
             }
 
             const double nearDx = (2. * nearWidth)  / imageSize[0];
@@ -1392,72 +1402,19 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
             data_out["state/xray_view/detectorWidth"] = 2. * nearWidth;
             data_out["state/xray_view/detectorHeight"] = 2. * nearHeight;
 
-            // VIEW PLANE
+            // write near plane
+            double center[3], temp[3];
+            Scale(temp, normal, nearPlane);
+            Add(center, temp, focus);
+            WriteImagingPlane(data_out, "near_plane", nearWidth, nearHeight, center);
 
-            // set up view plane coords
-            data_out["coordsets/view_plane_coords/type"] = "explicit";
-            data_out["coordsets/view_plane_coords/values/x"].set(conduit::DataType::float64(4));
-            data_out["coordsets/view_plane_coords/values/y"].set(conduit::DataType::float64(4));
-            data_out["coordsets/view_plane_coords/values/z"].set(conduit::DataType::float64(4));
-            double *xvals_view = data_out["coordsets/view_plane_coords/values/x"].value();
-            double *yvals_view = data_out["coordsets/view_plane_coords/values/y"].value();
-            double *zvals_view = data_out["coordsets/view_plane_coords/values/z"].value();
-            
-            // calculate left vector by crossing normal with up vector
-            double left[3];
-            Cross(left, viewUp, normal);
-            
-            // lower left corner, lower right corner, etc.
-            double llc[3], lrc[3], ulc[3], urc[3];
-            
-            // a couple containers for intermediate vector math results
-            double temp1[3], temp2[3], temp3[3];
+            // write view plane
+            WriteImagingPlane(data_out, "view_plane", viewWidth, viewHeight, focus);
 
-            // calc llc
-            Scale(temp1, viewUp, -1. * viewHeight);
-            Scale(temp2, left, viewWidth);
-            Add(temp3, temp1, temp2);
-            Add(llc, temp3, focus);
-            
-            // calc lrc
-            Scale(temp1, viewUp, -1. * viewHeight);
-            Scale(temp2, left, -1. * viewWidth);
-            Add(temp3, temp1, temp2);
-            Add(lrc, temp3, focus);            
-            
-            // calc ulc
-            Scale(temp1, viewUp, viewHeight);
-            Scale(temp2, left, viewWidth);
-            Add(temp3, temp1, temp2);
-            Add(ulc, temp3, focus);            
-            
-            // calc urc
-            Scale(temp1, viewUp, viewHeight);
-            Scale(temp2, left, -1. * viewWidth);
-            Add(temp3, temp1, temp2);
-            Add(urc, temp3, focus);
-            
-            // set x values          // set y values          // set z values
-            xvals_view[0] = llc[0];  yvals_view[0] = llc[1];  zvals_view[0] = llc[2];
-            xvals_view[1] = lrc[0];  yvals_view[1] = lrc[1];  zvals_view[1] = lrc[2];
-            xvals_view[2] = urc[0];  yvals_view[2] = urc[1];  zvals_view[2] = urc[2];
-            xvals_view[3] = ulc[0];  yvals_view[3] = ulc[1];  zvals_view[3] = ulc[2];
-
-            // set up view plane topo
-            data_out["topologies/view_plane_topo/type"] = "unstructured";
-            data_out["topologies/view_plane_topo/coordset"] = "view_plane_coords";
-            data_out["topologies/view_plane_topo/elements/shape"] = "quad";
-            data_out["topologies/view_plane_topo/elements/connectivity"].set(conduit::DataType::int32(4));
-            int *view_plane_conn = data_out["topologies/view_plane_topo/elements/connectivity"].value();
-            for (int i = 0; i < 4; i ++) { view_plane_conn[i] = i; }
-
-            // set up view plane trivial field
-            data_out["fields/view_plane_field/topology"] = "view_plane_topo";
-            data_out["fields/view_plane_field/association"] = "element";
-            data_out["fields/view_plane_field/volume_dependent"] = "false";
-            data_out["fields/view_plane_field/values"].set(conduit::DataType::float64(1));
-            conduit::float64 *view_plane_field_vals = data_out["fields/view_plane_field/values"].value();
-            view_plane_field_vals[0] = 0;
+            // write far plane
+            Scale(temp, normal, farPlane);
+            Add(center, temp, focus);
+            WriteImagingPlane(data_out, "far_plane", farWidth, farHeight, center);
 
             data_out.print();
 
@@ -1934,7 +1891,94 @@ avtXRayImageQuery::WriteArrays(vtkDataSet **leaves,
         }
     }
 }
+
+// ****************************************************************************
+//  Method: avtXRayImageQuery::WriteImagingPlane
+//
+//  Purpose:
+//    TODO
+//
+//  Programmer: Justin Privitera
+//  Creation:   November 14, 2022
+//
+// ****************************************************************************
+
+void
+avtXRayImageQuery::WriteImagingPlane(conduit::Node &data_out,
+                                     const std::string plane_name,
+                                     const double width,
+                                     const double height,
+                                     const double center[3])
+{
+    // set up imaging plane coords
+    data_out["coordsets/" + plane_name + "_coords/type"] = "explicit";
+    data_out["coordsets/" + plane_name + "_coords/values/x"].set(conduit::DataType::float64(4));
+    data_out["coordsets/" + plane_name + "_coords/values/y"].set(conduit::DataType::float64(4));
+    data_out["coordsets/" + plane_name + "_coords/values/z"].set(conduit::DataType::float64(4));
+    double *xvals = data_out["coordsets/" + plane_name + "_coords/values/x"].value();
+    double *yvals = data_out["coordsets/" + plane_name + "_coords/values/y"].value();
+    double *zvals = data_out["coordsets/" + plane_name + "_coords/values/z"].value();
+    
+    // calculate left vector by crossing normal with up vector
+    double left[3];
+    Cross(left, viewUp, normal);
+    
+    // lower left corner, lower right corner, etc.
+    double llc[3], lrc[3], ulc[3], urc[3];
+    
+    // a couple containers for intermediate vector math results
+    double temp1[3], temp2[3], temp3[3];
+
+    // calc llc
+    Scale(temp1, viewUp, -1. * height);
+    Scale(temp2, left, width);
+    Add(temp3, temp1, temp2);
+    Add(llc, temp3, center);
+    
+    // calc lrc
+    Scale(temp1, viewUp, -1. * height);
+    Scale(temp2, left, -1. * width);
+    Add(temp3, temp1, temp2);
+    Add(lrc, temp3, center);            
+    
+    // calc ulc
+    Scale(temp1, viewUp, height);
+    Scale(temp2, left, width);
+    Add(temp3, temp1, temp2);
+    Add(ulc, temp3, center);            
+    
+    // calc urc
+    Scale(temp1, viewUp, height);
+    Scale(temp2, left, -1. * width);
+    Add(temp3, temp1, temp2);
+    Add(urc, temp3, center);
+    
+    // set x values     // set y values     // set z values
+    xvals[0] = llc[0];  yvals[0] = llc[1];  zvals[0] = llc[2];
+    xvals[1] = lrc[0];  yvals[1] = lrc[1];  zvals[1] = lrc[2];
+    xvals[2] = urc[0];  yvals[2] = urc[1];  zvals[2] = urc[2];
+    xvals[3] = ulc[0];  yvals[3] = ulc[1];  zvals[3] = ulc[2];
+
+    // set up imaging plane topo
+    data_out["topologies/" + plane_name + "_topo/type"] = "unstructured";
+    data_out["topologies/" + plane_name + "_topo/coordset"] = plane_name + "_coords";
+    data_out["topologies/" + plane_name + "_topo/elements/shape"] = "quad";
+    const int num_corners{4};
+    data_out["topologies/" + plane_name + "_topo/elements/connectivity"].set(conduit::DataType::int32(num_corners));
+    int *conn = data_out["topologies/" + plane_name + "_topo/elements/connectivity"].value();
+    for (int i = 0; i < num_corners; i ++) { conn[i] = i; }
+
+    // set up imaging plane trivial field
+    data_out["fields/" + plane_name + "_field/topology"] = plane_name + "_topo";
+    data_out["fields/" + plane_name + "_field/association"] = "element";
+    data_out["fields/" + plane_name + "_field/volume_dependent"] = "false";
+    data_out["fields/" + plane_name + "_field/values"].set(conduit::DataType::float64(1));
+    conduit::float64 *field_vals = data_out["fields/" + plane_name + "_field/values"].value();
+    field_vals[0] = 0;
+}
+
 #endif
+
 // ****************************************************************************
 //  Method: avtXRayImageQuery::GetDefaultInputParams
 //

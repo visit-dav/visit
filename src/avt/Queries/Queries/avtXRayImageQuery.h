@@ -179,6 +179,11 @@ class QUERY_API avtXRayImageQuery : public avtDatasetQuery
                                           conduit::float64 *intensity_vals,
                                           conduit::float64 *depth_vals,
                                           int numBins);
+    void                      WriteImagingPlane(conduit::Node &data_out,
+                                                const std::string plane_name,
+                                                const double width,
+                                                const double height,
+                                                const double center[3]);
 #endif
     void                      ConvertOldImagePropertiesToNew();
     void                      CheckData(vtkDataSet **, const int);
