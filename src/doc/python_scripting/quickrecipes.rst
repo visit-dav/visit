@@ -163,12 +163,11 @@ If you want to design a script that must specify parallel options, etc in batch 
 To open a compute engine, use the OpenComputeEngine function. 
 You can pass the name of the host on which to run the compute engine and any arguments that must be used to launch the engine such as the number of processors.
 
-::
-
-    # Open a local, parallel compute engine before opening a database 
-    # Use 4 processors on 2 nodes
-    OpenComputeEngine("localhost", ("-np", "4", "-nn", "2"))
-    OpenDatabase("/usr/local/visit/data/multi_ucd3d.silo") 
+.. literalinclude:: ../../test/tests/quickrecipes/opening_compute_engine.py
+    :language: Python
+    :start-after: # opening a compute engine 1 {
+    :end-before: # opening a compute engine 1 }
+    :dedent: 4
 
 The options for starting the compute engine are the same as the ones used on the command line. 
 Here are the most common options for launching a compute engine.
@@ -187,16 +186,11 @@ Here are the most common options for launching a compute engine.
 The full list of parallel launch options can be obtained by typing ``visit --fullhelp``. 
 Here is a more complex example of launching a compute engine.
 
-::
-
-    # Use the "srun" job launcher, the "batch" partition, the "mybank" bank,
-    # 72 processors on 2 nodes and a time limit of 1 hour
-    OpenComputeEngine("localhost",("-l", "srun",
-                                   "-p", "batch",
-                                   "-b", "mybank",
-                                   "-np", "72",
-                                   "-nn", "2",
-                                   "-t", "1:00:00"))
+.. literalinclude:: ../../test/tests/quickrecipes/opening_compute_engine.py
+    :language: Python
+    :start-after: # opening a compute engine 2 {
+    :end-before: # opening a compute engine 2 }
+    :dedent: 4
 
 You can also launch a compute engine using one of the existing host profiles defined for your system. 
 In this particular case we know that the third profile is for the "parallel batch pbatch" profile. 

@@ -39,7 +39,7 @@ def vqr_cleanup():
       CloseDatabase(db)
 
 #
-# Map VisIt functions to so they use vqr_path to map paths
+# Map VisIt functions so they use vqr_path to map paths
 # before invoking the real VisIt functions
 #
 def vqr_RestoreSession(f, vdirFlag=0):
@@ -51,3 +51,56 @@ def vqr_OpenDatabase(db, ti=0, pname=''):
     return real_OpenDatabase(vqr_path(db),ti,pname)
 real_OpenDatabase = OpenDatabase
 OpenDatabase = vqr_OpenDatabase
+
+#
+# Adjust compute engine open hostname and args to
+# match whatever this host uses or default if no
+# profiles specified for this host
+#
+def vqr_OpenComputeEngine(hn, la):
+    lhn = GetLocalHostName()
+    lm = None 
+    if lhn in GetMachineProfileNames():
+        p = GetMachineProfile(lhn)
+        for i in range(p.GetNumLaunchProfiles()):
+            if 'arallel' in p.GetLaunchProfiles(i).profileName and \
+                p.GetLaunchProfiles(i).launchMethodSet:
+                    lm = p.GetLaunchProfiles(i).launchMethod
+                    break
+    newla = la
+    if '-np' in la:
+        next = ''
+        newla = []
+        for a in la:
+            if next == 'skip':
+                next = ''
+                continue
+            if a == '-l': # specify this host's launcher
+                if lm:
+                    newla += [a]
+                    newla += [lm]
+                    next = 'skip'
+                else:
+                    next = 'skip'
+                continue
+            if a == '-np': # keep cpu count small
+                newla += [a]
+                newla += ['8']
+                next = 'skip'
+                continue
+            if a == '-nn': # keep node count small
+                newla += [a]
+                newla += ['2']
+                next = 'skip'
+                continue
+            if a == '-p': # filter out partition
+                next = 'skip'
+                continue
+            if a == '-b': # filter out bank
+                next = 'skip'
+                continue
+            newla += [a]           
+        newla = tuple(newla)
+    return real_OpenComputeEngine(lhn,newla)
+real_OpenComputeEngine = OpenComputeEngine
+OpenComputeEngine = vqr_OpenComputeEngine
