@@ -17,6 +17,7 @@
 #       rzansel (LC, Linux, power9),
 #       jade (LC, Linux, x86_64),
 #       sierra (LC, Linux, power9)
+#       trinity (LANL, x86_64)
 #
 # Modifications:
 #
@@ -33,6 +34,7 @@ rztrona=false
 rzansel=false
 jade=false
 sierra=false
+trinity=false
 
 version=undefined
 build_visit_script=undefined
@@ -79,6 +81,10 @@ do
          sierra=true
          shift
          ;;
+      +trinity)
+         trinity=true
+         shift
+         ;;
       -v)
          version=$2
          shift 2
@@ -105,6 +111,7 @@ then
    echo "    rzansel (LC, Linux, power9),"
    echo "    jade (LC, Linux, x86_64),"
    echo "    sierra (LC, Linux, power9)"
+   echo "    trinity (LANL, Linux, x86_64)"
    exit
 fi
 
@@ -345,6 +352,37 @@ then
 fi
 
 #
+# Build on trinity
+#
+if [ $trinity = true ]
+then
+   echo "Building on trinity"
+   ran_build_visit=true
+   if [ -f ${build_visit_script}_log.trinity ]
+   then
+      mv ${build_visit_script}_log.trinity ${build_visit_script}_log
+   fi
+   if [ ! -d /usr/projects/views/visit/thirdparty_shared/$version ]
+   then
+      mkdir /usr/projects/views/visit/thirdparty_shared/$version
+   fi
+   module swap PrgEnv-intel/6.0.10 PrgEnv-gnu/6.0.10
+   module swap gcc/11.2.0 gcc/8.2.0
+   export XTPE_LINK_TYPE=dynamic
+   export CRAYPE_LINK_TYPE=dynamic
+   env C_COMPILER=/opt/cray/pe/craype/2.7.15/bin/cc \
+       CXX_COMPILER=/opt/cray/pe/craype/2.7.15/bin/CC \
+       PAR_COMPILER=/opt/cray/pe/craype/2.7.15/bin/cc \
+       PAR_COMPILER_CXX=/opt/cray/pe/craype/2.7.15/bin/CC \
+       PAR_INCLUDE=-I/opt/cray/pe/mpt/7.7.20/gni/mpich-gnu/8.2/include \
+       PAR_LIBS="-L/opt/cray/pe/mpt/7.7.20/gni/mpich-gnu/8.2/lib -Wl,-rpath=/opt/cray/pe/mpt/7.7.20/gni/mpich-gnu/8.2/lib -lmpich" \
+       ./$build_visit_script --required --optional --mesagl --parallel \
+       --no-adios --no-adios2 --no-mili --no-pyside --qt510 --no-visit \
+       --thirdparty-path /usr/projects/views/visit/thirdparty_shared/$version --makeflags -j16
+   mv ${build_visit_script}_log ${build_visit_script}_log.trinity
+fi
+
+#
 # Check that build_visit was run.
 #
 if [ $ran_build_visit = false ]
@@ -360,5 +398,6 @@ then
    echo "    rzansel (LC, Linux, power9),"
    echo "    jade (LC, Linux, x86_64),"
    echo "    sierra (LC, Linux, power9)"
+   echo "    trinity (LANL, Linux, x86_64)"
    exit
 fi

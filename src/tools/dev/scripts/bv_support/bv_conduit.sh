@@ -227,7 +227,7 @@ function build_conduit
     if [[ "$PAR_COMPILER" != "" ]] ; then
         cfg_opts="${cfg_opts} -DENABLE_MPI:BOOL=ON"
         cfg_opts="${cfg_opts} -DMPI_C_COMPILER:STRING=${PAR_COMPILER}"
-        cfg_opts="${cfg_opts} -DMPI_CXX_COMPILER:STRING=${PAR_COMPILER}"
+        cfg_opts="${cfg_opts} -DMPI_CXX_COMPILER:STRING=${PAR_COMPILER_CXX}"
     fi
     
     if [[ "$PAR_INCLUDE" != "" ]] ; then
