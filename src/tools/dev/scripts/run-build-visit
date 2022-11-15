@@ -377,7 +377,7 @@ then
        PAR_INCLUDE=-I/opt/cray/pe/mpt/7.7.20/gni/mpich-gnu/8.2/include \
        PAR_LIBS="-L/opt/cray/pe/mpt/7.7.20/gni/mpich-gnu/8.2/lib -Wl,-rpath=/opt/cray/pe/mpt/7.7.20/gni/mpich-gnu/8.2/lib -lmpich" \
        ./$build_visit_script --required --optional --mesagl --parallel \
-       --no-adios --no-adios2 --no-pyside --qt510 --no-visit \
+       --no-adios --no-adios2 --no-mili --no-pyside --qt510 --no-visit \
        --thirdparty-path /usr/projects/views/visit/thirdparty_shared/$version --makeflags -j16
    mv ${build_visit_script}_log ${build_visit_script}_log.trinity
 fi
