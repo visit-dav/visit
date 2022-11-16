@@ -36,6 +36,10 @@
 #    os.remove is gone.
 #    tmp/baddir is gone, replaced.
 #    These changes were made so the tests no longer crash on windows.
+# 
+#    Justin Privitera, Tue Nov 15 14:54:35 PST 2022
+#    Added new tests for additional blueprint output metadata as well as
+#    imaging plane topologies.
 #
 # ----------------------------------------------------------------------------
 
@@ -323,19 +327,16 @@ if not os.path.isdir(conduit_dir_json):
 conduit_dir_yaml = pjoin(outdir_set, "yaml")
 if not os.path.isdir(conduit_dir_yaml):
     os.mkdir(conduit_dir_yaml)
+conduit_dir_imaging_planes = pjoin(outdir_set, "imaging_planes")
+if not os.path.isdir(conduit_dir_imaging_planes):
+    os.mkdir(conduit_dir_imaging_planes)
 
 def setup_bp_test():
     OpenDatabase(silo_data_path("curv3d.silo"))
     AddPlot("Pseudocolor", "d")
     DrawPlots()
 
-def test_bp_state(testname, conduit_db):
-    xrayout = conduit.Node()
-    conduit.relay.io.blueprint.load_mesh(xrayout, conduit_db)
-    
-    cycle = xrayout["domain_000000/state/cycle"]
-    TestValueEQ(testname + "_Cycle", cycle, 48)
-
+def test_bp_state_xray_view(testname, xrayout):
     normalx = xrayout["domain_000000/state/xray_view/normal/x"]
     normaly = xrayout["domain_000000/state/xray_view/normal/y"]
     normalz = xrayout["domain_000000/state/xray_view/normal/z"]
@@ -372,17 +373,73 @@ def test_bp_state(testname, conduit_db):
     
     perspective = xrayout["domain_000000/state/xray_view/perspective"]
     TestValueEQ(testname + "_Perspective", perspective, 0)
+
+    perspectiveStr = xrayout["domain_000000/state/xray_view/perspectiveStr"]
+    TestValueEQ(testname + "_PerspectiveStr", perspectiveStr, "parallel")
+
+def test_bp_state_xray_query(testname, xrayout):
+    divideEmisByAbsorb = xrayout["domain_000000/state/xray_query/divideEmisByAbsorb"]
+    TestValueEQ(testname + "_DivideEmisByAbsorb", divideEmisByAbsorb, 1)
     
-    spatial_coords_x = xrayout["domain_000000/state/xray_view/image_coords/x"]
-    spatial_coords_y = xrayout["domain_000000/state/xray_view/image_coords/y"]
+    divideEmisByAbsorbStr = xrayout["domain_000000/state/xray_query/divideEmisByAbsorbStr"]
+    TestValueEQ(testname + "_DivideEmisByAbsorbStr", divideEmisByAbsorbStr, "yes")
+    
+    numXPixels = xrayout["domain_000000/state/xray_query/numXPixels"]
+    TestValueEQ(testname + "_NumXPixels", numXPixels, 300)
+    
+    numYPixels = xrayout["domain_000000/state/xray_query/numYPixels"]
+    TestValueEQ(testname + "_NumYPixels", numYPixels, 200)
+    
+    numBins = xrayout["domain_000000/state/xray_query/numBins"]
+    TestValueEQ(testname + "_NumBins", numBins, 1)
+    
+    absVarName = xrayout["domain_000000/state/xray_query/absVarName"]
+    TestValueEQ(testname + "_AbsVarName", absVarName, "d")
+    
+    emisVarName = xrayout["domain_000000/state/xray_query/emisVarName"]
+    TestValueEQ(testname + "_EmisVarName", emisVarName, "p")
+
+def test_bp_state_xray_data(testname, xrayout):
+    spatial_coords_x = xrayout["domain_000000/state/xray_data/image_coords/x"]
+    spatial_coords_y = xrayout["domain_000000/state/xray_data/image_coords/y"]
     TestValueEQ(testname + "_SpatialExtents0", [spatial_coords_x[0], spatial_coords_y[0]], [0.0, 0.0])
     TestValueEQ(testname + "_SpatialExtents1", [spatial_coords_x[1], spatial_coords_y[1]], [0.05, 0.05])
     TestValueEQ(testname + "_SpatialExtents2", [spatial_coords_x[2], spatial_coords_y[2]], [0.1, 0.1])
     TestValueEQ(testname + "_SpatialExtents3", [spatial_coords_x[-1], spatial_coords_y[-1]], [15.0, 10.0])
+    
+    detectorWidth = xrayout["domain_000000/state/xray_data/detectorWidth"]
+    TestValueEQ(testname + "_DetectorWidth", detectorWidth, 15)
 
-#
+    detectorHeight = xrayout["domain_000000/state/xray_data/detectorHeight"]
+    TestValueEQ(testname + "_DetectorHeight", detectorHeight, 10)
+    
+    intensityMax = xrayout["domain_000000/state/xray_data/intensityMax"]
+    TestValueEQ(testname + "_IntensityMax", intensityMax, 0.24153)
+    
+    intensityMin = xrayout["domain_000000/state/xray_data/intensityMin"]
+    TestValueEQ(testname + "_IntensityMin", intensityMin, 0)
+    
+    pathLengthMax = xrayout["domain_000000/state/xray_data/pathLengthMax"]
+    TestValueEQ(testname + "_PathLengthMax", pathLengthMax, 148.67099)
+    
+    pathLengthMin = xrayout["domain_000000/state/xray_data/pathLengthMin"]
+    TestValueEQ(testname + "_PathLengthMin", pathLengthMin, 0)
+
+def test_bp_state(testname, conduit_db):
+    xrayout = conduit.Node()
+    conduit.relay.io.blueprint.load_mesh(xrayout, conduit_db)
+
+    time = xrayout["domain_000000/state/time"]
+    TestValueEQ(testname + "_Time", time, 4.8)
+    
+    cycle = xrayout["domain_000000/state/cycle"]
+    TestValueEQ(testname + "_Cycle", cycle, 48)
+
+    test_bp_state_xray_view(testname, xrayout)
+    test_bp_state_xray_query(testname, xrayout)
+    test_bp_state_xray_data(testname, xrayout)
+
 # hdf5
-#
 
 setup_bp_test()
 
@@ -438,6 +495,53 @@ AddPlot("Pseudocolor", "mesh_image_topo/intensities")
 DrawPlots()
 Test("Blueprint_YAML_X_Ray_Output")
 DeleteAllPlots()
+CloseDatabase(conduit_db)
+
+# test imaging plane topos
+
+setup_bp_test()
+
+params = dict()
+params["image_size"] = (400, 300)
+params["output_dir"] = conduit_dir_imaging_planes
+params["output_type"] = "hdf5"
+params["focus"] = (0., 2.5, 10.)
+params["perspective"] = 1
+params["near_plane"] = -50.
+params["far_plane"] = 50.
+params["vars"] = ("d", "p")
+params["parallel_scale"] = 5.
+Query("XRay Image", params)
+
+conduit_db = pjoin(conduit_dir_imaging_planes, "output.cycle_000048.root")
+
+OpenDatabase(conduit_db)
+
+AddPlot("Pseudocolor", "mesh_far_plane_topo/far_plane_field", 1, 1)
+AddPlot("Pseudocolor", "mesh_view_plane_topo/view_plane_field", 1, 1)
+AddPlot("Pseudocolor", "mesh_near_plane_topo/near_plane_field", 1, 1)
+DrawPlots()
+
+SetActivePlots(4)
+PseudocolorAtts = PseudocolorAttributes()
+PseudocolorAtts.invertColorTable = 1
+PseudocolorAtts.opacityType = PseudocolorAtts.FullyOpaque  # ColorTable, FullyOpaque, Constant, Ramp, VariableRange
+SetPlotOptions(PseudocolorAtts)
+
+View3DAtts = View3DAttributes()
+View3DAtts.viewNormal = (-0.519145, 0.199692, -0.831031)
+View3DAtts.focus = (0, 2.5, 10)
+View3DAtts.viewUp = (-0.0954901, 0.952683, 0.288577)
+View3DAtts.viewAngle = 30
+View3DAtts.parallelScale = 58.6531
+View3DAtts.nearPlane = -117.306
+View3DAtts.farPlane = 117.306
+SetView3D(View3DAtts)
+
+Test("Blueprint_HDF5_Imaging_Planes")
+
+DeleteAllPlots()
+CloseDatabase(silo_data_path("curv3d.silo"))
 CloseDatabase(conduit_db)
 
 # 

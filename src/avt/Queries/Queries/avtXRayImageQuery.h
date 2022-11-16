@@ -85,6 +85,9 @@
 //    Justin Privitera, Tue Jun 14 10:21:03 PDT 2022
 //    Added conduit include here, added output dir field + setter, 
 //    added write arrays method for writing conduit blueprint output.
+// 
+//    Justin Privitera, Tue Nov 15 11:44:01 PST 2022
+//    Added WriteBlueprintImagingPlane function if conduit is defined
 //
 // ****************************************************************************
 
@@ -179,6 +182,11 @@ class QUERY_API avtXRayImageQuery : public avtDatasetQuery
                                           conduit::float64 *intensity_vals,
                                           conduit::float64 *depth_vals,
                                           int numBins);
+    void                      WriteBlueprintImagingPlane(conduit::Node &data_out,
+                                                         const std::string plane_name,
+                                                         const double width,
+                                                         const double height,
+                                                         const double center[3]);
 #endif
     void                      ConvertOldImagePropertiesToNew();
     void                      CheckData(vtkDataSet **, const int);
