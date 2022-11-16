@@ -191,14 +191,20 @@ QvisColorTableWindow::~QvisColorTableWindow()
 void
 QvisColorTableWindow::CreateWindowContents()
 {
+    // central->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
     // Create the widgets needed to set the default color tables.
     topLayout->setMargin(2);
+    topLayout->setSizeConstraint(QLayout::SetFixedSize);
     defaultGroup = new QGroupBox(central);
     defaultGroup->setTitle(tr("Default Color Table"));
+    QSizePolicy *sizePolicy = new QSizePolicy(QSizePolicy::Maximum, QSizePolicy::Maximum, QSizePolicy::GroupBox);
+    // defaultGroup->setSizePolicy(*sizePolicy);
     topLayout->addWidget(defaultGroup, 5);
     
     QVBoxLayout *innerDefaultTopLayout = new QVBoxLayout(defaultGroup);
+    // innerDefaultTopLayout->setSizeConstraint(QLayout::SetFixedSize);
     QGridLayout *innerDefaultLayout = new QGridLayout();
+    // innerDefaultLayout->setSizeConstraint(QLayout::SetFixedSize);
     innerDefaultTopLayout->addLayout(innerDefaultLayout);
     innerDefaultLayout->setColumnMinimumWidth(1, 10);
 
@@ -220,11 +226,14 @@ QvisColorTableWindow::CreateWindowContents()
     // management stuff.
     colorTableWidgetGroup = new QGroupBox(central);
     colorTableWidgetGroup->setTitle(tr("Manager"));
+    // colorTableWidgetGroup->setSizePolicy(*sizePolicy);
     topLayout->addWidget(colorTableWidgetGroup, 5);
     QVBoxLayout *innerColorTableLayout = new QVBoxLayout(colorTableWidgetGroup);
+    // innerColorTableLayout->setSizeConstraint(QLayout::SetFixedSize);
 
     // Create the color management widgets.
     mgLayout = new QGridLayout();
+    // mgLayout->setSizeConstraint(QLayout::SetFixedSize);
     innerColorTableLayout->addLayout(mgLayout);
 
     newButton = new QPushButton(tr("New"), colorTableWidgetGroup);
@@ -299,11 +308,14 @@ QvisColorTableWindow::CreateWindowContents()
     // Add the group box that will contain the color-related widgets.
     colorWidgetGroup = new QGroupBox(central);
     colorWidgetGroup->setTitle(tr("Editor"));
+    // colorWidgetGroup->setSizePolicy(*sizePolicy);
     topLayout->addWidget(colorWidgetGroup, 100);
     QVBoxLayout *innerColorLayout = new QVBoxLayout(colorWidgetGroup);
+    // innerColorLayout->setSizeConstraint(QLayout::SetFixedSize);
 
     // Create controls to set the number of colors in the color table.
     QGridLayout *colorInfoLayout = new QGridLayout();
+    // colorInfoLayout->setSizeConstraint(QLayout::SetFixedSize);
     innerColorLayout->addLayout(colorInfoLayout);
     colorNumColors = new QSpinBox(colorWidgetGroup);
     colorNumColors->setKeyboardTracking(false);
@@ -330,6 +342,7 @@ QvisColorTableWindow::CreateWindowContents()
 
     // Create the buttons that help manipulate the spectrum bar.
     QHBoxLayout *seLayout = new QHBoxLayout();
+    // seLayout->setSizeConstraint(QLayout::SetFixedSize);
     innerColorLayout->addLayout(seLayout);
 
     alignPointButton = new QPushButton(tr("Align"), colorWidgetGroup);
@@ -404,6 +417,7 @@ QvisColorTableWindow::CreateWindowContents()
 
     // Create the discrete color table sliders, text fields.
     QGridLayout *discreteLayout = new QGridLayout();
+    // seLayout->setSizeConstraint(QLayout::SetFixedSize);
     innerColorLayout->addLayout(discreteLayout);
     QString cnames[4];
     cnames[0] = tr("Red");
