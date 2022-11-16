@@ -534,9 +534,11 @@ XRay Image
     +------------------+------------------------------------------------------+
     | *normal*         | The view normal. The default is (0., 0., 1.).        |
     +------------------+------------------------------------------------------+
-    | *view_angle*     | The view angle. The default is 30.                   |
+    | *view_angle*     | The view angle. The default is 30. This is only used |
+    |                  | if perspective |br| projection is enabled.           |
     +------------------+------------------------------------------------------+
-    | *parallel_scale* | The parallel scale. The default is 0.5.              |
+    | *parallel_scale* | The parallel scale, or view height. The default is   |
+    |                  | 0.5.                                                 |
     +------------------+------------------------------------------------------+
     | *near_plane*     | The near clipping plane. The default is -0.5.        |
     +------------------+------------------------------------------------------+
@@ -680,6 +682,60 @@ XRay Image
 .. figure:: images/xray07.png
 
     The resulting x ray image
+
+    The Conduit output types (see the listed output types above for more information) come packaged with metadata in addition to Blueprint-conforming mesh data. 
+    Currently, this metadata is stored under the "state" Node in the resulting Conduit tree.
+    In addition to "time" and "cycle", x ray view parameters can be found under "state/xray_view".
+    This metadata represents the values that were used in x ray image query calculations, regardless of whether the simplified or complete view specification was used when calling the query.
+    The following is included:
+
+    +--------------------------+----------------------------------------------+
+    | *normal*                 | x, y, and z components represent the view    |
+    |                          | normal vector that |br| was used in          |
+    |                          | the calculations.                            |
+    +--------------------------+----------------------------------------------+
+    | *focus*                  | x, y, and z components represent the focal   |
+    |                          | point that was used |br| in the              |
+    |                          | calculations.                                |    
+    +--------------------------+----------------------------------------------+
+    | *viewUp*                 | x, y, and z components represent the up      |
+    |                          | vector that was used |br| in the             |
+    |                          | calculations.                                |
+    +--------------------------+----------------------------------------------+
+    | *viewAngle*              | The view angle, only used in the             |
+    |                          | calculations if |br| perspective             |
+    |                          | projection was enabled.                      |
+    +--------------------------+----------------------------------------------+
+    | *parallelScale*          | The parallel scale, or view height, that was |
+    |                          | used in the |br| calculations.               |
+    +--------------------------+----------------------------------------------+
+    | *nearPlane*              | The near plane that was used in the          |
+    |                          | calculations.                                |
+    +--------------------------+----------------------------------------------+
+    | *farPlane*               | The far plane that was used in the           |
+    |                          | calculations.                                |
+    +--------------------------+----------------------------------------------+
+    | *imagePan*               | x and y components represent the image pan   |
+    |                          | that was used in |br| the calculations.      |
+    +--------------------------+----------------------------------------------+
+    | *imageZoom*              | The absolute image zoom factor that was used |
+    |                          | in the calculations.                         |
+    +--------------------------+----------------------------------------------+
+    | *perspective*            | Flag indicating if parallel or perspective   |
+    |                          | projection was used. |br| 0 indicates        |
+    |                          | parallel projection and 1 indicates          |
+    |                          | perspective |br| projection.                 |
+    +--------------------------+----------------------------------------------+
+    | *image_coords*           | The image coordinates are a coordinate set   |
+    |                          | that represent the |br|                      |
+    |                          | world-space/physical coordinates of the      |
+    |                          | output image. These |br|                     |
+    |                          | spatial extents are given by x and y values  |
+    |                          | that range from 0 to |br|                    |
+    |                          | the number of pixels in the respective x and |
+    |                          | y dimensions times |br|                      |
+    |                          | the pixel size in those dimensions.          |
+    +--------------------------+----------------------------------------------+
 
 ZoneCenter
     The ZoneCenter query calculates the zone center for a certain cell in the

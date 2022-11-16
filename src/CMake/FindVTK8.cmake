@@ -119,6 +119,11 @@ FOREACH(module ${REQ_VTK_MODS})
 ENDFOREACH()
 
 
+# due to cmake policy 0126, created in cmake 3.21
+# if a var is already defined, calling set even with FORCE will not overwrite
+# the value so we unset it here to make it clear we want to replace the old
+# value with something new
+unset(VTK_LIBRARY_DIRS)
 
 SET(VTK_LIBRARY_DIRS ${VTK_INSTALL_PREFIX}/lib CACHE PATH "Path to vtk libraries" FORCE)
 MESSAGE(STATUS "  VTK_FOUND=${VTK_FOUND}")

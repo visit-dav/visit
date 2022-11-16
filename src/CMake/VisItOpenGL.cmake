@@ -5,10 +5,12 @@
 if(VISIT_MESAGL_DIR)
     # MesaGL, GLU, LLVM libs
     include(${VISIT_SOURCE_DIR}/CMake/FindMesaGL.cmake)
-    # OSMesa, LLVM libs
-    set(VISIT_OSMESA_DIR ${VISIT_MESAGL_DIR})
-    include(${VISIT_SOURCE_DIR}/CMake/FindOSMesa.cmake)
-    unset(VISIT_OSMESA_DIR)
+    if(VTK_VERSION VERSION_EQUAL "8.1.0")
+        # OSMesa, LLVM libs
+        set(VISIT_OSMESA_DIR ${VISIT_MESAGL_DIR})
+        include(${VISIT_SOURCE_DIR}/CMake/FindOSMesa.cmake)
+        unset(VISIT_OSMESA_DIR)
+    endif()
 elseif(VISIT_OSMESA_DIR)
     # OSMesa, LLVM libs
     include(${VISIT_SOURCE_DIR}/CMake/FindOSMesa.cmake)

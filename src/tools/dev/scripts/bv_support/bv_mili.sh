@@ -253,79 +253,74 @@ function apply_mili_221_cflags_patch
 {
     info "Applying Mili 22.1 CFLAGS patch."
     patch -p0 << \EOF
-diff -c mili-22.1/configure.orig mili-22.1/configure
-*** mili-22.1/configure.orig    2022-06-16 13:45:39.195734000 -0700
---- mili-22.1/configure         2022-06-16 13:46:49.898442000 -0700
-***************
-*** 4361,4382 ****
-
-      case $CC in
-        *icc)
-!         CC_FLAGS_DEBUG="-g $WORD_SIZE "
-!         CC_FLAGS_OPT="-O3 $WORD_SIZE "
-!         CC_FLAGS_LD_DEBUG="-g $WORD_SIZE"
-!         CC_FLAGS_LD_OPT="-O3 $WORD_SIZE"
-          ;;
-        *xlc)
-!         CC_FLAGS_DEBUG="-g $WORD_SIZE "
-!         CC_FLAGS_OPT="-O4 $WORD_SIZE "
-!         CC_FLAGS_LD_DEBUG="-g $WORD_SIZE"
-!         CC_FLAGS_LD_OPT="-O4"
-          ;;
-        *gcc)
-!         CC_FLAGS_DEBUG="-g $WORD_SIZE "
-!         CC_FLAGS_OPT="-O4 $WORD_SIZE "
-!         CC_FLAGS_LD_DEBUG="-g $WORD_SIZE"
-!         CC_FLAGS_LD_OPT="-O4 $WORD_SIZE"
-          ;;
-        *cc)
-          ;;
---- 4361,4382 ----
-
-      case $CC in
-        *icc)
-!         CC_FLAGS_DEBUG="$CFLAGS -g $WORD_SIZE "
-!         CC_FLAGS_OPT="$CFLAGS -O3 $WORD_SIZE "
-!         CC_FLAGS_LD_DEBUG="$CFLAGS -g $WORD_SIZE"
-!         CC_FLAGS_LD_OPT="$CFLAGS -O3 $WORD_SIZE"
-          ;;
-        *xlc)
-!         CC_FLAGS_DEBUG="$CFLAGS -g $WORD_SIZE "
-!         CC_FLAGS_OPT="$CFLAGS -O4 $WORD_SIZE "
-!         CC_FLAGS_LD_DEBUG="$CFLAGS -g $WORD_SIZE"
-!         CC_FLAGS_LD_OPT="$CFLAGS -O4"
-          ;;
-        *gcc)
-!         CC_FLAGS_DEBUG="$CFLAGS -g $WORD_SIZE "
-!         CC_FLAGS_OPT="$CFLAGS -O4 $WORD_SIZE "
-!         CC_FLAGS_LD_DEBUG="$CFLAGS -g $WORD_SIZE"
-!         CC_FLAGS_LD_OPT="$CFLAGS -O4 $WORD_SIZE"
-          ;;
-        *cc)
-          ;;
-***************
-*** 4395,4404 ****
-          FC_FLAGS_LD_OPT="-O3 $WORD_SIZE -WF,-DAIX"
-          ;;
-        *gfortran)
-!         CC_FLAGS_DEBUG="-g $WORD_SIZE "
-!         CC_FLAGS_OPT="-O3 $WORD_SIZE "
-!         CC_FLAGS_LD_DEBUG="-g $WORD_SIZE"
-!         CC_FLAGS_LD_OPT="-O3 $WORD_SIZE"
-          ;;
-        *cc)
-          ;;
---- 4395,4404 ----
-          FC_FLAGS_LD_OPT="-O3 $WORD_SIZE -WF,-DAIX"
-          ;;
-        *gfortran)
-!         FC_FLAGS_DEBUG="-g $WORD_SIZE "
-!         FC_FLAGS_OPT="-O3 $WORD_SIZE "
-!         FC_FLAGS_LD_DEBUG="-g $WORD_SIZE"
-!         FC_FLAGS_LD_OPT="-O3 $WORD_SIZE"
-          ;;
-        *cc)
-          ;;
+diff -u mili-22.1/configure.orig mili-22.1/configure
+--- mili-22.1/configure.orig    2022-06-01 15:21:14.000000000 -0700
++++ mili-22.1/configure         2022-11-04 09:17:02.890687000 -0700
+@@ -4361,24 +4361,28 @@
+ 
+     case $CC in
+       *icc)
+-        CC_FLAGS_DEBUG="-g $WORD_SIZE "
+-        CC_FLAGS_OPT="-O3 $WORD_SIZE "
+-        CC_FLAGS_LD_DEBUG="-g $WORD_SIZE"
+-        CC_FLAGS_LD_OPT="-O3 $WORD_SIZE"
++        CC_FLAGS_DEBUG="$CFLAGS -g $WORD_SIZE "
++        CC_FLAGS_OPT="$CFLAGS -O3 $WORD_SIZE "
++        CC_FLAGS_LD_DEBUG="$CFLAGS -g $WORD_SIZE"
++        CC_FLAGS_LD_OPT="$CFLAGS -O3 $WORD_SIZE"
+         ;;
+       *xlc)
+-        CC_FLAGS_DEBUG="-g $WORD_SIZE "
+-        CC_FLAGS_OPT="-O4 $WORD_SIZE "
+-        CC_FLAGS_LD_DEBUG="-g $WORD_SIZE"
+-        CC_FLAGS_LD_OPT="-O4"
++        CC_FLAGS_DEBUG="$CFLAGS -g $WORD_SIZE "
++        CC_FLAGS_OPT="$CFLAGS -O4 $WORD_SIZE "
++        CC_FLAGS_LD_DEBUG="$CFLAGS -g $WORD_SIZE"
++        CC_FLAGS_LD_OPT="$CFLAGS -O4"
+         ;;
+       *gcc)
+-        CC_FLAGS_DEBUG="-g $WORD_SIZE "
+-        CC_FLAGS_OPT="-O4 $WORD_SIZE "
+-        CC_FLAGS_LD_DEBUG="-g $WORD_SIZE"
+-        CC_FLAGS_LD_OPT="-O4 $WORD_SIZE"
+-        ;;
+-      *cc)
++        CC_FLAGS_DEBUG="$CFLAGS -g $WORD_SIZE "
++        CC_FLAGS_OPT="$CFLAGS -O4 $WORD_SIZE "
++        CC_FLAGS_LD_DEBUG="$CFLAGS -g $WORD_SIZE"
++        CC_FLAGS_LD_OPT="$CFLAGS -O4 $WORD_SIZE"
++        ;;
++      *)
++        CC_FLAGS_DEBUG="$CFLAGS -g $WORD_SIZE "
++        CC_FLAGS_OPT="$CFLAGS -O3 $WORD_SIZE "
++        CC_FLAGS_LD_DEBUG="$CFLAGS -g $WORD_SIZE"
++        CC_FLAGS_LD_OPT="$CFLAGS -O3 $WORD_SIZE"
+         ;;
+     esac
+     case $F77 in
+@@ -4395,12 +4399,16 @@
+         FC_FLAGS_LD_OPT="-O3 $WORD_SIZE -WF,-DAIX"
+         ;;
+       *gfortran)
+-        CC_FLAGS_DEBUG="-g $WORD_SIZE "
+-        CC_FLAGS_OPT="-O3 $WORD_SIZE "
+-        CC_FLAGS_LD_DEBUG="-g $WORD_SIZE"
+-        CC_FLAGS_LD_OPT="-O3 $WORD_SIZE"
++        FC_FLAGS_DEBUG="-g $WORD_SIZE "
++        FC_FLAGS_OPT="-O3 $WORD_SIZE "
++        FC_FLAGS_LD_DEBUG="-g $WORD_SIZE"
++        FC_FLAGS_LD_OPT="-O3 $WORD_SIZE"
+         ;;
+-      *cc)
++      *)
++        FC_FLAGS_DEBUG="-g $WORD_SIZE "
++        FC_FLAGS_OPT="-O3 $WORD_SIZE "
++        FC_FLAGS_LD_DEBUG="-g $WORD_SIZE"
++        FC_FLAGS_LD_OPT="-O3 $WORD_SIZE"
+         ;;
+     esac
+     SHELL="/bin/sh"
 EOF
     if [[ $? != 0 ]] ; then
         warn "Unable to apply CFLAGS patch to Mili 22.1"
