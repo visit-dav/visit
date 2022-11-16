@@ -158,7 +158,7 @@ class QUERY_API avtXRayImageQuery : public avtDatasetQuery
     double                    width, height;
     int                       nx, ny;
 
-    std::string               absVarName;  //e.g. "absorptivity"
+    std::string               absVarName;  //e.g. "absorbtivity"
     std::string               emisVarName; //e.g. "emissivity"
 
     int                       numPixels;
