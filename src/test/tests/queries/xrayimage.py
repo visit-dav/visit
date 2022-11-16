@@ -520,7 +520,7 @@ params["vars"] = ("d", "p")
 params["parallel_scale"] = 5.
 Query("XRay Image", params)
 
-conduit_db = pjoin(conduit_dir_imaging_planes, "output.cycle_000048.root")
+conduit_db = pjoin(conduit_dir_imaging_planes, "output.root")
 
 OpenDatabase(conduit_db)
 
