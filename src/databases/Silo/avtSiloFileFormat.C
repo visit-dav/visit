@@ -9189,8 +9189,6 @@ avtSiloFileFormat::GetQuadVar(DBfile *dbfile, const char *vname,
         int nz = qv->ndims == 3 ? qv->dims[2] : 1;
         if (qv->datatype == DB_DOUBLE)
             CopyAndReorderQuadVar((double *) var2, nx, ny, nz, var);
-        else if (qv->datatype == DB_LONG)
-            CopyAndReorderQuadVar((long *) var2, nx, ny, nz, var);
         else if (qv->datatype == DB_LONG_LONG)
             CopyAndReorderQuadVar((long long *) var2, nx, ny, nz, var);
         else if (qv->datatype == DB_LONG)
