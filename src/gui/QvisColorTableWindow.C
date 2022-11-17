@@ -197,7 +197,6 @@ QvisColorTableWindow::CreateWindowContents()
     topLayout->setMargin(2);
     defaultGroup = new QGroupBox(central);
     defaultGroup->setTitle(tr("Default Color Table"));
-    defaultGroup->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed);
     topLayout->addWidget(defaultGroup, 5);
     
     QVBoxLayout *innerDefaultTopLayout = new QVBoxLayout(defaultGroup);
@@ -223,7 +222,6 @@ QvisColorTableWindow::CreateWindowContents()
     // management stuff.
     colorTableWidgetGroup = new QGroupBox(central);
     colorTableWidgetGroup->setTitle(tr("Manager"));
-    colorTableWidgetGroup->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed);
     topLayout->addWidget(colorTableWidgetGroup, 5);
     QVBoxLayout *innerColorTableLayout = new QVBoxLayout(colorTableWidgetGroup);
 
