@@ -185,6 +185,9 @@ QvisColorTableWindow::~QvisColorTableWindow()
 //
 //   Justin Privitera, Thu Jul 14 16:57:42 PDT 2022
 //   Added searchbox gui element and hooked up signals and slots for searching.
+// 
+//   Justin Privitera, Thu Nov 17 12:28:10 PST 2022
+//   Resolved window resizing off the screen issue by limiting maximum height.
 //
 // ****************************************************************************
 
