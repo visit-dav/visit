@@ -735,6 +735,7 @@ XRay Image
 
     **Query parameters** can be found under "state/xray_query".
     This metadata represents the query-related values that were used in x ray image query calculations.
+    This data is available as of VisIt_ 3.3.2.
     The following is included:
 
     +--------------------------+----------------------------------------------+
@@ -765,6 +766,7 @@ XRay Image
     **Other Metadata** can be found under "state/xray_data".
     This metadata represents values that do not fit into either of the above two categories.
     Many are calculated constants, giving a broader view of the output data.
+    This data is available as of VisIt_ 3.3.2.
     The following is included:
 
     +--------------------------+----------------------------------------------+
