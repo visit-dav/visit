@@ -757,7 +757,7 @@ XRay Image
     |                          | in the output image.                         |
     +--------------------------+----------------------------------------------+
     | *absVarName*             | The name of the absorbtivity variable that   |
-    |                          | used in calculations.                        |
+    |                          | was used in calculations.                    |
     +--------------------------+----------------------------------------------+
     | *emisVarName*            | The name of the emissivity variable that     |
     |                          | used in calculations.                        |
