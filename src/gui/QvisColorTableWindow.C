@@ -343,35 +343,34 @@ QvisColorTableWindow::CreateWindowContents()
 
 
     // Create the buttons that help manipulate the spectrum bar.
-    QHBoxLayout *seLayout = new QHBoxLayout();
+    // QHBoxLayout *seLayout = new QHBoxLayout();
+    QGridLayout *seLayout = new QGridLayout();
     // seLayout->setSizeConstraint(QLayout::SetFixedSize);
     innerColorLayout->addLayout(seLayout);
 
     alignPointButton = new QPushButton(tr("Align"), colorWidgetGroup);
-    alignPointButton->setMaximumWidth(60);
+    // alignPointButton->setMaximumWidth(60);
     connect(alignPointButton, SIGNAL(clicked()),
             this, SLOT(alignControlPoints()));
-    // seLayout->addWidget(alignPointButton, 0, 0);
-    seLayout->addWidget(alignPointButton);
-    seLayout->addStretch(10);
+    seLayout->addWidget(alignPointButton, 0, 0, 1, 1);
+    // seLayout->addWidget(alignPointButton);
+    // seLayout->addStretch(10);
 
     smoothLabel = new QLabel(tr("Smoothing"), colorWidgetGroup);
-    // seLayout->addWidget(smoothLabel, 0, 1);
-    seLayout->addWidget(smoothLabel);
+    smoothLabel->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
+    seLayout->addWidget(smoothLabel, 0, 1, 1, 1);
     smoothingMethod = new QComboBox(colorWidgetGroup);
     smoothingMethod->addItem(tr("None"));
     smoothingMethod->addItem(tr("Linear"));
     smoothingMethod->addItem(tr("Cubic Spline"));
     connect(smoothingMethod, SIGNAL(activated(int)),
             this, SLOT(smoothingMethodChanged(int)));
-    // seLayout->addWidget(smoothingMethod, 0, 2);
-    seLayout->addWidget(smoothingMethod);
+    seLayout->addWidget(smoothingMethod, 0, 2, 1, 1);
 
     equalCheckBox = new QCheckBox(tr("Equal"), colorWidgetGroup);
     connect(equalCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(equalSpacingToggled(bool)));
-    // seLayout->addWidget(equalCheckBox, 0, 3);
-    seLayout->addWidget(equalCheckBox);
+    seLayout->addWidget(equalCheckBox, 0, 3, 1, 1);
 
     // Create the spectrum bar.
     spectrumBar = new QvisSpectrumBar(colorWidgetGroup);
@@ -419,13 +418,11 @@ QvisColorTableWindow::CreateWindowContents()
     showIndexHintsCheckBox->setChecked(false);
     connect(showIndexHintsCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(showIndexHintsToggled(bool)));
-    // innerColorLayout->addWidget(showIndexHintsCheckBox);
     colorInfoLayout->addWidget(showIndexHintsCheckBox, 1, 4, 1, 3);
 
 
     // Create the discrete color table sliders, text fields.
     QGridLayout *discreteLayout = new QGridLayout();
-    // discreteLayout->setSizeConstraint(QLayout::SetFixedSize);
     innerColorLayout->addLayout(discreteLayout);
     QString cnames[4];
     cnames[0] = tr("Red");
