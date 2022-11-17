@@ -188,6 +188,7 @@ QvisColorTableWindow::~QvisColorTableWindow()
 // 
 //   Justin Privitera, Thu Nov 17 12:28:10 PST 2022
 //   Resolved window resizing off the screen issue by limiting maximum height.
+//   Adjusted location of several buttons and labels to use less screen space.
 //
 // ****************************************************************************
 
