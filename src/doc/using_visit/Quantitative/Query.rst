@@ -740,7 +740,7 @@ XRay Image
 
     +--------------------------+----------------------------------------------+
     | *divideEmisByAbsorb*     | Flag indicating if emissivity was divided by |
-    |                          | absorbtivity in |br| calculations. More      |
+    |                          | absorbtivity in |br| the calculations. More  |
     |                          | details can be found above.                  |
     +--------------------------+----------------------------------------------+
     | *divideEmisByAbsorbStr*  | A String representation of the               |
