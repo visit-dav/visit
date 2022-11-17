@@ -683,10 +683,12 @@ XRay Image
 
     The resulting x ray image
 
-    The Conduit output types (see the listed output types above for more information) come packaged with metadata in addition to Blueprint-conforming mesh data. 
+    **Conduit output metadata:** The Conduit output types (see the listed output types above for more information) come packaged with metadata in addition to Blueprint-conforming mesh data. 
     Currently, this metadata is stored under the "state" Node in the resulting Conduit tree.
-    In addition to "time" and "cycle", x ray view parameters can be found under "state/xray_view".
-    This metadata represents the values that were used in x ray image query calculations, regardless of whether the simplified or complete view specification was used when calling the query.
+    In addition to "time" and "cycle", there are three categories of metadata: *view parameters*, *query parameters*, and *other metadata*.
+    
+    **View parameters** can be found under "state/xray_view".
+    This metadata represents the view-related values that were used in x ray image query calculations, regardless of whether the simplified or complete view specification was used when calling the query.
     The following is included:
 
     +--------------------------+----------------------------------------------+
@@ -726,6 +728,46 @@ XRay Image
     |                          | parallel projection and 1 indicates          |
     |                          | perspective |br| projection.                 |
     +--------------------------+----------------------------------------------+
+    | *perspectiveStr*         | A String representation of the perspective   |
+    |                          | parameter. See above |br| for more           |
+    |                          | information.                                 |
+    +--------------------------+----------------------------------------------+
+
+    **Query parameters** can be found under "state/xray_query".
+    This metadata represents the query-related values that were used in x ray image query calculations.
+    The following is included:
+
+    +--------------------------+----------------------------------------------+
+    | *divideEmisByAbsorb*     | Flag indicating if emissivity was divided by |
+    |                          | absorbtivity in |br| calculations. More      |
+    |                          | details can be found above.                  |
+    +--------------------------+----------------------------------------------+
+    | *divideEmisByAbsorbStr*  | A String representation of the               |
+    |                          | divideEmisByAbsorb parameter. |br| See above |
+    |                          | for more information.                        |
+    +--------------------------+----------------------------------------------+
+    | *numXPixels*             | The pixel extent in the X dimension in the   |
+    |                          | output image.                                |
+    +--------------------------+----------------------------------------------+
+    | *numYPixels*             | The pixel extent in the Y dimension in the   |
+    |                          | output image.                                |
+    +--------------------------+----------------------------------------------+
+    | *numBins*                | The number of bins (the Z dimension extent)  |
+    |                          | in the output image.                         |
+    +--------------------------+----------------------------------------------+
+    | *absVarName*             | The name of the absorbtivity variable that   |
+    |                          | used in calculations.                        |
+    +--------------------------+----------------------------------------------+
+    | *emisVarName*            | The name of the emissivity variable that     |
+    |                          | used in calculations.                        |
+    +--------------------------+----------------------------------------------+
+
+    **Other Metadata** can be found under "state/xray_data".
+    This metadata represents values that do not fit into either of the above two categories.
+    Many are calculated constants, giving a broader view of the output data.
+    The following is included:
+
+    +--------------------------+----------------------------------------------+
     | *image_coords*           | The image coordinates are a coordinate set   |
     |                          | that represent the |br|                      |
     |                          | world-space/physical coordinates of the      |
@@ -735,6 +777,24 @@ XRay Image
     |                          | the number of pixels in the respective x and |
     |                          | y dimensions times |br|                      |
     |                          | the pixel size in those dimensions.          |
+    +--------------------------+----------------------------------------------+
+    | *detectorWidth*          | The width of the simulated x ray detector    |
+    |                          | in physical space.                           |
+    +--------------------------+----------------------------------------------+
+    | *detectorHeight*         | The height of the simulated x ray detector   |
+    |                          | in physical space.                           |
+    +--------------------------+----------------------------------------------+
+    | *intensityMax*           | The maximum value of the calculated          |
+    |                          | intensities.                                 |
+    +--------------------------+----------------------------------------------+
+    | *intensityMin*           | The minimum value of the calculated          |
+    |                          | intensities.                                 |
+    +--------------------------+----------------------------------------------+
+    | *pathLengthMax*          | The maximum value of the calculated          |
+    |                          | path lengths.                                |
+    +--------------------------+----------------------------------------------+
+    | *pathLengthMin*          | The minimum value of the calculated          |
+    |                          | path lengths.                                |
     +--------------------------+----------------------------------------------+
 
 ZoneCenter
