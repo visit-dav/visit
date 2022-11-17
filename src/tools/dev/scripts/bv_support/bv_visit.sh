@@ -55,22 +55,22 @@ function bv_visit_ensure_built_or_ready
             info "GIT clone of visit ($GIT_ROOT_PATH) . . ."
             if [[ "$DO_REVISION" == "yes" && "$GITREVISION" != "" ]] ; then
                 # Get the specified revision.
-                git clone $GIT_ROOT_PATH
+                git clone --recursive $GIT_ROOT_PATH
                 cd visit
                 git checkout $GITREVISION
                 cd ..
             elif [[ "$TRUNK_BUILD" == "yes" ]] ; then
                 # Get the trunk version
-                git clone $GIT_ROOT_PATH
+                git clone --recursive $GIT_ROOT_PATH
             elif [[ "$RC_BUILD" == "yes" ]] ; then
                 # Get the RC version
-                git clone $GIT_ROOT_PATH
+                git clone --recursive $GIT_ROOT_PATH
                 cd visit
                 git checkout ${VISIT_VERSION:0:3}RC
                 cd ..
             elif [[ "$TAGGED_BUILD" == "yes" ]] ; then
                 # Get the tagged version
-                git clone $GIT_ROOT_PATH
+                git clone --recursive $GIT_ROOT_PATH
                 cd visit
                 git checkout v${VISIT_VERSION}
                 cd ..
