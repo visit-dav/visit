@@ -193,20 +193,14 @@ Here is a more complex example of launching a compute engine.
     :dedent: 4
 
 You can also launch a compute engine using one of the existing host profiles defined for your system. 
-In this particular case we know that the third profile is for the "parallel batch pbatch" profile. 
+In this particular case we know that the second profile is for the "parallel" profile. 
 If you didn't know this you could print "p" to get all the properties.
 
-::
-
-    # Set the user name to "user1" and use the third profile,
-    # overriding a few of its properties
-    p = GetMachineProfile("quartz.llnl.gov")
-    p.userName="user1"
-    p.activeProfile = 2
-    p.GetLaunchProfiles(2).numProcessors = 72
-    p.GetLaunchProfiles(2).numNodes = 2
-    p.GetLaunchProfiles(2).timeLimit = "00:30:00"
-    OpenComputeEngine(p)
+.. literalinclude:: ../../test/tests/quickrecipes/opening_compute_engine.py
+    :language: Python
+    :start-after: # opening a compute engine 3 {
+    :end-before: # opening a compute engine 3 }
+    :dedent: 4
 
 Working with plots
 ------------------

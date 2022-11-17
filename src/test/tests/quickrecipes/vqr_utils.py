@@ -44,11 +44,15 @@ def vqr_cleanup():
 #
 def vqr_RestoreSession(f, vdirFlag=0):
     return real_RestoreSession(vqr_path(f),vdirFlag)
+
+# Override RestoreSession
 real_RestoreSession = RestoreSession
 RestoreSession = vqr_RestoreSession
 
 def vqr_OpenDatabase(db, ti=0, pname=''):
     return real_OpenDatabase(vqr_path(db),ti,pname)
+
+# Override OpenDatabase
 real_OpenDatabase = OpenDatabase
 OpenDatabase = vqr_OpenDatabase
 
@@ -57,21 +61,30 @@ OpenDatabase = vqr_OpenDatabase
 # match whatever this host uses or default if no
 # profiles specified for this host
 #
-def vqr_OpenComputeEngine(hn, la):
+def vqr_OpenComputeEngine(arg1, arg2=()):
+
+    # just do it if we've got a mach. profile
+    if 'MachineProfile' in str(type(arg1)):
+        return real_OpenComputeEngine(arg1)
+
+    # Adjust host name
     lhn = GetLocalHostName()
-    lm = None 
-    if lhn in GetMachineProfileNames():
-        p = GetMachineProfile(lhn)
-        for i in range(p.GetNumLaunchProfiles()):
-            if 'arallel' in p.GetLaunchProfiles(i).profileName and \
-                p.GetLaunchProfiles(i).launchMethodSet:
-                    lm = p.GetLaunchProfiles(i).launchMethod
-                    break
-    newla = la
-    if '-np' in la:
+
+    # find launch method for first parallel launch
+    lm = "mpiexec"
+    p = GetMachineProfile(lhn)
+    for i in range(p.GetNumLaunchProfiles()):
+        if p.GetLaunchProfiles(i).parallel and \
+           p.GetLaunchProfiles(i).launchMethodSet:
+               lm = p.GetLaunchProfiles(i).launchMethod
+               break
+
+    # filter launch args
+    newla = arg2
+    if '-np' in arg2:
         next = ''
         newla = []
-        for a in la:
+        for a in arg2:
             if next == 'skip':
                 next = ''
                 continue
@@ -101,6 +114,17 @@ def vqr_OpenComputeEngine(hn, la):
                 continue
             newla += [a]           
         newla = tuple(newla)
+
+    # Call the real method
     return real_OpenComputeEngine(lhn,newla)
+
+# Override OpenComputeEngine
 real_OpenComputeEngine = OpenComputeEngine
 OpenComputeEngine = vqr_OpenComputeEngine
+
+def vqr_GetMachineProfile(name):
+    return real_GetMachineProfile(GetLocalHostName())
+
+# Override GetMachineProfile
+real_GetMachineProfile = GetMachineProfile
+GetMachineProfile = vqr_GetMachineProfile
