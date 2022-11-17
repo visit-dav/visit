@@ -191,14 +191,11 @@ QvisColorTableWindow::~QvisColorTableWindow()
 void
 QvisColorTableWindow::CreateWindowContents()
 {
-    central->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
     central->setMaximumHeight(800);
     // Create the widgets needed to set the default color tables.
     topLayout->setMargin(2);
-    // topLayout->setSizeConstraint(QLayout::SetFixedSize);
     defaultGroup = new QGroupBox(central);
     defaultGroup->setTitle(tr("Default Color Table"));
-    // QSizePolicy *sizePolicy = new QSizePolicy(QSizePolicy::Maximum, QSizePolicy::Maximum, QSizePolicy::GroupBox);
     defaultGroup->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed);
     topLayout->addWidget(defaultGroup, 5);
     
