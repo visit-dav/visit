@@ -760,7 +760,7 @@ XRay Image
     |                          | was used in calculations.                    |
     +--------------------------+----------------------------------------------+
     | *emisVarName*            | The name of the emissivity variable that     |
-    |                          | used in calculations.                        |
+    |                          | was used in calculations.                    |
     +--------------------------+----------------------------------------------+
 
     **Other Metadata** can be found under "state/xray_data".
