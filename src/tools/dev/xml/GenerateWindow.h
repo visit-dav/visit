@@ -122,6 +122,9 @@
 //    Kathleen Biagas, Thu Jun  9 16:22:37 PDT 2016
 //    For QSpinBox, turn off keyboardTracking.
 //
+//    Kathleen Biagas, Thu Nov 17, 2022
+//    Added boolArray and boolVector.
+//
 // ****************************************************************************
 
 class WindowGeneratorField : public virtual Field
@@ -427,6 +430,113 @@ class WindowGeneratorBool : public virtual Bool , public virtual WindowGenerator
         c << "    atts->Set"<<Name<<"(val);" << endl;
         if(!isEnabler)
             c << "    SetUpdate(false);" << endl;
+        c << "    Apply();" << endl;
+        c << "}" << endl;
+    }
+};
+
+//
+// ---------------------------------- BoolArray --------------------------------
+//
+class WindowGeneratorBoolArray : public virtual BoolArray , public virtual WindowGeneratorField
+{
+  public:
+    WindowGeneratorBoolArray(const QString &s, const QString &n, const QString &l)
+        : Field("boolArray",n,l), BoolArray(s,n,l), WindowGeneratorField("boolArray",n,l) { }
+    virtual void            writeHeaderCallback(QTextStream &h)
+    {
+        h << "    void "<<name<<"ProcessText();" << endl;
+    }
+    virtual void            writeHeaderData(QTextStream &h)
+    {
+        h << "    QLineEdit *"<<name<<";" << endl;
+    }
+    virtual void            writeSourceCreate(QTextStream &c)
+    {
+        writeSourceCreateLabel(c);
+        c << "    "<<name<<" = new QLineEdit(central);" << endl;
+        c << "    connect("<<name<<", SIGNAL(returnPressed())," << endl
+          << "            this, SLOT("<<name<<"ProcessText()));" << endl;
+        c << "    mainLayout->addWidget("<<name<<", "<<index<<",1);" << endl;
+    }
+    virtual bool            providesSourceGetCurrent() const { return true; }
+    virtual void            writeSourceGetCurrent(QTextStream &c)
+    {
+        c << "        bool val[" << length << "];" << endl;
+        c << "        if(LineEditGetBools("<<name<<", val, " << length << "))" << endl;
+        c << "            atts->Set"<<Name<<"(val);" << endl;
+        c << "        else" << endl;
+        c << "        {" << endl;
+        QString msgLabel = (label.length()>0) ? label : name;
+        c << "            ResettingError(tr(\""<<msgLabel<<"\")," << endl;
+        c << "                BoolsToQString(atts->Get"<<Name<<"(), "<<length<<"));" << endl;
+        c << "            atts->Set"<<Name<<"(atts->Get"<<Name<<"());" << endl;
+        c << "        }" << endl;
+    }
+    virtual void            writeSourceUpdateWindow(QTextStream &c)
+    {
+        c << "            "<<name<<"->setText(BoolsToQString(atts->Get"<<Name<<"(),"<<length<<"));" << endl;
+    }
+    virtual void            writeSourceCallback(QString &classname, QString &windowname, QTextStream &c, bool isEnabler)
+    {
+        c << "void" << endl;
+        c << windowname<<"::"<<name<<"ProcessText()" << endl;
+        c << "{" << endl;
+        c << "    GetCurrentValues("<<classname << "::ID_" << name<<");" << endl;
+        c << "    Apply();" << endl;
+        c << "}" << endl;
+    }
+};
+
+
+//
+// --------------------------------- BoolVector --------------------------------
+//
+class WindowGeneratorBoolVector : public virtual BoolVector , public virtual WindowGeneratorField
+{
+  public:
+    WindowGeneratorBoolVector(const QString &n, const QString &l)
+        : Field("boolVector",n,l), BoolVector(n,l), WindowGeneratorField("boolVector",n,l) { }
+    virtual void            writeHeaderCallback(QTextStream &h)
+    {
+        h << "    void "<<name<<"ProcessText();" << endl;
+    }
+    virtual void            writeHeaderData(QTextStream &h)
+    {
+        h << "    QLineEdit *"<<name<<";" << endl;
+    }
+    virtual void            writeSourceCreate(QTextStream &c)
+    {
+        writeSourceCreateLabel(c);
+        c << "    "<<name<<" = new QLineEdit(central);" << endl;
+        c << "    connect("<<name<<", SIGNAL(returnPressed())," << endl
+          << "            this, SLOT("<<name<<"ProcessText()));" << endl;
+        c << "    mainLayout->addWidget("<<name<<", "<<index<<",1);" << endl;
+    }
+    virtual bool            providesSourceGetCurrent() const { return true; }
+    virtual void            writeSourceGetCurrent(QTextStream &c)
+    {
+        c << "        boolVector val;" << endl;
+        c << "        if(LineEditGetBools("<<name<<", val))" << endl;
+        c << "            atts->Set"<<Name<<"(val);" << endl;
+        c << "        else" << endl;
+        c << "        {" << endl;
+        QString msgLabel = (label.length()>0) ? label : name;
+        c << "            ResettingError(tr(\""<<msgLabel<<"\")," << endl;
+        c << "                BoolsToQString(atts->Get"<<Name<<"()));" << endl;
+        c << "            atts->Set"<<Name<<"(atts->Get"<<Name<<"());" << endl;
+        c << "        }" << endl;
+    }
+    virtual void            writeSourceUpdateWindow(QTextStream &c)
+    {
+        c << "            "<<name<<"->setText(BoolsToQString(atts->Get"<<Name<<"()));" << endl;
+    }
+    virtual void            writeSourceCallback(QString &classname, QString &windowname, QTextStream &c, bool isEnabler)
+    {
+        c << "void" << endl;
+        c << windowname<<"::"<<name<<"ProcessText()" << endl;
+        c << "{" << endl;
+        c << "    GetCurrentValues("<<classname << "::ID_" << name<<");" << endl;
         c << "    Apply();" << endl;
         c << "}" << endl;
     }
@@ -1359,6 +1469,9 @@ class WindowGeneratorScaleMode : public virtual ScaleMode , public virtual Windo
 //    Kathleen Bonnell, Thu Mar 22 16:58:23 PDT 2007
 //    Added scalemode.
 //
+//    Kathleen Biagas, Tue Nov 15 12:39:09 PST 2022
+//    Added boolArray and boolVector.
+//
 // ----------------------------------------------------------------------------
 class WindowFieldFactory
 {
@@ -1375,6 +1488,8 @@ class WindowFieldFactory
         else if (type == "intArray")     f = new WindowGeneratorIntArray(length,name,label);
         else if (type == "intVector")    f = new WindowGeneratorIntVector(name,label);
         else if (type == "bool")         f = new WindowGeneratorBool(name,label);
+        else if (type == "boolArray")    f = new WindowGeneratorBoolArray(length,name,label);
+        else if (type == "boolVector")   f = new WindowGeneratorBoolVector(name,label);
         else if (type == "float")        f = new WindowGeneratorFloat(name,label);
         else if (type == "floatArray")   f = new WindowGeneratorFloatArray(length,name,label);
         else if (type == "floatVector")  f = new WindowGeneratorFloatVector(name,label);

@@ -40,14 +40,14 @@ QvisHelpWindow* GUIBase::helpWindow = NULL;
 // ****************************************************************************
 // Method: GUIBase::GUIBase
 //
-// Purpose: 
+// Purpose:
 //   Constructor for the GUIBase class.
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Sep 25 16:43:57 PST 2000
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 GUIBase::GUIBase()
@@ -58,14 +58,14 @@ GUIBase::GUIBase()
 // ****************************************************************************
 // Method: GUIBase::~GUIBase
 //
-// Purpose: 
+// Purpose:
 //   Destructor for the GUIBase class.
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Sep 25 16:43:57 PST 2000
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 GUIBase::~GUIBase()
@@ -76,7 +76,7 @@ GUIBase::~GUIBase()
 // ****************************************************************************
 // Method: SetViewerProxy
 //
-// Purpose: 
+// Purpose:
 //   Set the viewer proxy.
 //
 // Arguments:
@@ -91,7 +91,7 @@ GUIBase::~GUIBase()
 // Creation:   Tue Feb 13 09:29:47 PDT 2007
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -103,7 +103,7 @@ GUIBase::SetViewerProxy(ViewerProxy *p)
 // ****************************************************************************
 // Method: GUIBase::GetViewerProxy
 //
-// Purpose: 
+// Purpose:
 //   Get the ViewerProxy.
 //
 // Returns:    A pointer to the viewer proxy.
@@ -112,7 +112,7 @@ GUIBase::SetViewerProxy(ViewerProxy *p)
 // Creation:   Tue Feb 13 09:31:03 PDT 2007
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 ViewerProxy *
@@ -124,12 +124,12 @@ GUIBase::GetViewerProxy() const
 // ****************************************************************************
 // Method: GUIBase::GetViewerState
 //
-// Purpose: 
+// Purpose:
 //   Returns the ViewerState object.
 //
 // Returns:    The viewer proxy's ViewerState object.
 //
-// Note:       We provide this access method to make it less likely that 
+// Note:       We provide this access method to make it less likely that
 //             subclasses will access ViewerState directly through the proxy.
 //             This access pattern would make it easier to combine the gui
 //             and viewer.
@@ -138,7 +138,7 @@ GUIBase::GetViewerProxy() const
 // Creation:   Tue Feb 13 09:31:26 PDT 2007
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 ViewerState *
@@ -150,21 +150,21 @@ GUIBase::GetViewerState() const
 // ****************************************************************************
 // Method: GUIBase::GetViewerMethods
 //
-// Purpose: 
+// Purpose:
 //   Returns the GetViewerMethods object.
 //
 // Returns:    The viewer proxy's GetViewerMethods object.
 //
-// Note:       We provide this access method to make it less likely that 
+// Note:       We provide this access method to make it less likely that
 //             subclasses will access GetViewerMethods directly through the .
-//             proxy This access pattern would make it easier to combine the 
+//             proxy This access pattern would make it easier to combine the
 //             gui and viewer.
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue Feb 13 09:31:26 PDT 2007
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 ViewerMethods *
@@ -176,7 +176,7 @@ GUIBase::GetViewerMethods() const
 // ****************************************************************************
 // Method: GUIBase::Error
 //
-// Purpose: 
+// Purpose:
 //   This method writes an error message into the message state
 //   object. This causes the error message to be displayed.
 //
@@ -222,7 +222,7 @@ GUIBase::Error(const QString &msg)
 // ****************************************************************************
 // Method: GUIBase::Warning
 //
-// Purpose: 
+// Purpose:
 //   This method writes a warning message into the message state
 //   object. This causes the warning message to be displayed.
 //
@@ -268,7 +268,7 @@ GUIBase::Warning(const QString &msg)
 // ****************************************************************************
 // Method: GUIBase::Message
 //
-// Purpose: 
+// Purpose:
 //   This method writes a message into the message state
 //   object. This causes the message to be displayed.
 //
@@ -314,7 +314,7 @@ GUIBase::Message(const QString &msg)
 // ****************************************************************************
 // Method: GUIBase::Information
 //
-// Purpose: 
+// Purpose:
 //   This method writes an informative message into the message state
 //   object. This causes the message to be displayed.
 //
@@ -354,7 +354,7 @@ GUIBase::Information(const QString &msg)
 // ****************************************************************************
 // Method: GUIBase::Status
 //
-// Purpose: 
+// Purpose:
 //   Sends a status message to the main window that causes it to
 //   display the message in its statusbar.
 //
@@ -366,7 +366,7 @@ GUIBase::Information(const QString &msg)
 // Creation:   Sat Sep 16 14:27:56 PST 2000
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -383,7 +383,7 @@ GUIBase::Status(const QString &msg, int milliseconds)
 // ****************************************************************************
 // Method: GUIBase::ClearStatus
 //
-// Purpose: 
+// Purpose:
 //   Sends a status message to the main window that causes it to
 //   clear the message in its statusbar.
 //
@@ -391,7 +391,7 @@ GUIBase::Status(const QString &msg, int milliseconds)
 // Creation:   Sat Sep 16 14:29:00 PST 2000
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -406,14 +406,14 @@ GUIBase::ClearStatus()
 // ****************************************************************************
 // Method: GUIBase::AutoUpdate
 //
-// Purpose: 
+// Purpose:
 //   Returns a flag indicating whether or not autoupdate is on.
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Sep 25 15:04:32 PST 2000
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 bool
@@ -425,7 +425,7 @@ GUIBase::AutoUpdate() const
 // ****************************************************************************
 // Method: GUIBase::ConnectMessageAttr
 //
-// Purpose: 
+// Purpose:
 //   Sets the message object that is used to tell the message window
 //   that there is a message.
 //
@@ -437,7 +437,7 @@ GUIBase::AutoUpdate() const
 // Creation:   Wed Aug 30 18:17:48 PST 2000
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -449,14 +449,14 @@ GUIBase::ConnectMessageAttr(MessageAttributes *attr)
 // ****************************************************************************
 // Method: GUIBase::SetWaitCursor
 //
-// Purpose: 
+// Purpose:
 //   Sets the cursor to a wait cursor.
 //
 // Programmer: Brad Whitlock
 // Creation:   Wed Mar 13 14:21:34 PST 2002
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -468,14 +468,14 @@ GUIBase::SetWaitCursor()
 // ****************************************************************************
 // Method: GUIBase::RestoreCursor
 //
-// Purpose: 
+// Purpose:
 //   Restores the cursor to the last cursor used.
 //
 // Programmer: Brad Whitlock
 // Creation:   Wed Mar 13 14:21:34 PST 2002
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -487,7 +487,7 @@ GUIBase::RestoreCursor()
 // ****************************************************************************
 // Method: GUIBase::SetOpenDataFile
 //
-// Purpose: 
+// Purpose:
 //   Opens the specified data file using the file server.
 //
 // Arguments:
@@ -628,7 +628,7 @@ GUIBase::SetOpenDataFile(const QualifiedFilename &qf, int timeState,
 // ****************************************************************************
 // Method: GUIBase::GetStateForSource
 //
-// Purpose: 
+// Purpose:
 //   Returns the state for the specified source taking into account the
 //   active time slider and the correlations that exist.
 //
@@ -637,13 +637,13 @@ GUIBase::SetOpenDataFile(const QualifiedFilename &qf, int timeState,
 //
 // Returns:    The current state for the specified source.
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue Jan 27 21:16:59 PST 2004
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 int
@@ -662,7 +662,7 @@ GUIBase::GetStateForSource(const QualifiedFilename &source) const
         const std::string &activeTSName = tsNames[activeTS];
         DatabaseCorrelationList *cL = GetViewerState()->GetDatabaseCorrelationList();
         DatabaseCorrelation *correlation = cL->FindCorrelation(activeTSName);
- 
+
         //
         // We found a correlation for the active time slider.
         //
@@ -711,7 +711,7 @@ GUIBase::GetStateForSource(const QualifiedFilename &source) const
 // ****************************************************************************
 // Method: GUIBase::GetTimeSliderStateForDatabaseState
 //
-// Purpose: 
+// Purpose:
 //   Returns the first state in the current time slider where the database
 //   has a specific database index.
 //
@@ -722,7 +722,7 @@ GUIBase::GetStateForSource(const QualifiedFilename &source) const
 //
 // Returns:    The inverted correlation time state that we want.
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue Feb 3 18:52:44 PST 2004
@@ -746,7 +746,7 @@ GUIBase::GetTimeSliderStateForDatabaseState(const std::string &activeTSName,
         // can get the number of states in the correlation.
         DatabaseCorrelationList *cL = GetViewerState()->GetDatabaseCorrelationList();
         DatabaseCorrelation *correlation = cL->FindCorrelation(activeTSName);
- 
+
         //
         // We found a correlation for the active time slider.
         //
@@ -771,7 +771,7 @@ GUIBase::GetTimeSliderStateForDatabaseState(const std::string &activeTSName,
 // ****************************************************************************
 // Method: GUIBase::OpenActiveSourceInFileServer
 //
-// Purpose: 
+// Purpose:
 //   This method is called when the file in the file server does not match
 //   the active source. When that happens, we make the file server use the
 //   active source so existing code that relies on the file server for the
@@ -781,7 +781,7 @@ GUIBase::GetTimeSliderStateForDatabaseState(const std::string &activeTSName,
 // Creation:   Fri Jan 30 11:36:42 PDT 2004
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -824,16 +824,16 @@ GUIBase::OpenActiveSourceInFileServer()
 // ****************************************************************************
 // Method: GUIBase::ResettingError
 //
-// Purpose: 
+// Purpose:
 //   Issues a very common error message used when input values are not valid.
 //
 // Arguments:
 //   name : The name of the invalid property.
 //   val  : The last good value.
 //
-// Returns:    
+// Returns:
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Jun 19 10:34:41 PDT 2008
@@ -855,7 +855,7 @@ GUIBase::ResettingError(const QString &name, const QString &val)
 // ****************************************************************************
 // Method: GUIBase::DoublesToQString
 //
-// Purpose: 
+// Purpose:
 //   Converts an array of doubles to a string wherein each double is space
 //   delimited.
 //
@@ -865,7 +865,7 @@ GUIBase::ResettingError(const QString &name, const QString &val)
 //
 // Returns:    A QString representation of the doubles.
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Jun 19 10:35:31 PDT 2008
@@ -873,7 +873,7 @@ GUIBase::ResettingError(const QString &name, const QString &val)
 // Modifications:
 //    Kathleen Biagas, Wed Apr  8 08:22:33 PDT 2015
 //    Added precision argument for 'setNum' call.
-//   
+//
 // ****************************************************************************
 
 QString
@@ -892,7 +892,7 @@ GUIBase::DoublesToQString(const double *vals, int nvals, int precision)
 // ****************************************************************************
 // Method: GUIBase::DoublesToQString
 //
-// Purpose: 
+// Purpose:
 //   Converts a vector of doubles to a string wherein each double is space
 //   delimited.
 //
@@ -902,7 +902,7 @@ GUIBase::DoublesToQString(const double *vals, int nvals, int precision)
 //
 // Returns:    A QString representation of the doubles.
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Jun 19 10:35:31 PDT 2008
@@ -910,7 +910,7 @@ GUIBase::DoublesToQString(const double *vals, int nvals, int precision)
 // Modifications:
 //    Kathleen Biagas, Wed Apr  8 08:22:33 PDT 2015
 //    Added precision argument for 'setNum' call.
-//   
+//
 // ****************************************************************************
 
 QString
@@ -929,7 +929,7 @@ GUIBase::DoublesToQString(const doubleVector &vals, int precision)
 // ****************************************************************************
 // Method: GUIBase::DoubleToQString
 //
-// Purpose: 
+// Purpose:
 //   Converts a double to a string.
 //
 // Arguments:
@@ -946,7 +946,7 @@ GUIBase::DoublesToQString(const doubleVector &vals, int precision)
 // Modifications:
 //    Kathleen Biagas, Wed Apr  8 08:22:33 PDT 2015
 //    Added precision argument for 'setNum' call.
-//   
+//
 // ****************************************************************************
 
 QString
@@ -958,7 +958,7 @@ GUIBase::DoubleToQString(double val, int precision)
 // ****************************************************************************
 // Method: GUIBase::FloatsToQString
 //
-// Purpose: 
+// Purpose:
 //   Converts an array of floats to a string wherein each double is space
 //   delimited.
 //
@@ -968,7 +968,7 @@ GUIBase::DoubleToQString(double val, int precision)
 //
 // Returns:    A QString representation of the floats.
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Jun 19 10:35:31 PDT 2008
@@ -976,7 +976,7 @@ GUIBase::DoubleToQString(double val, int precision)
 // Modifications:
 //    Kathleen Biagas, Wed Apr  8 08:22:33 PDT 2015
 //    Added precision argument for 'setNum' call.
-//   
+//
 // ****************************************************************************
 
 QString
@@ -1008,7 +1008,7 @@ GUIBase::FloatsToQString(const floatVector &vals, int precision)
 // ****************************************************************************
 // Method: GUIBase::FloatToQString
 //
-// Purpose: 
+// Purpose:
 //   Converts a float to a string.
 //
 // Arguments:
@@ -1025,7 +1025,7 @@ GUIBase::FloatsToQString(const floatVector &vals, int precision)
 // Modifications:
 //    Kathleen Biagas, Wed Apr  8 08:22:33 PDT 2015
 //    Added precision argument for 'setNum' call.
-//   
+//
 // ****************************************************************************
 
 QString
@@ -1037,7 +1037,7 @@ GUIBase::FloatToQString(float val, int precision)
 // ****************************************************************************
 // Method: GUIBase::IntsToQString
 //
-// Purpose: 
+// Purpose:
 //   Converts an array of ints to a string wherein each double is space
 //   delimited.
 //
@@ -1047,13 +1047,13 @@ GUIBase::FloatToQString(float val, int precision)
 //
 // Returns:    A QString representation of the ints.
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Jun 19 10:35:31 PDT 2008
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 QString
@@ -1072,7 +1072,7 @@ GUIBase::IntsToQString(const int *vals, int nvals)
 // ****************************************************************************
 // Method: GUIBase::IntsToQString
 //
-// Purpose: 
+// Purpose:
 //   Converts a vector of ints to a string wherein each double is space
 //   delimited.
 //
@@ -1081,13 +1081,13 @@ GUIBase::IntsToQString(const int *vals, int nvals)
 //
 // Returns:    A QString representation of the ints.
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Jun 19 10:35:31 PDT 2008
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 QString
@@ -1106,7 +1106,7 @@ GUIBase::IntsToQString(const intVector &vals)
 // ****************************************************************************
 // Method: GUIBase::IntToQString
 //
-// Purpose: 
+// Purpose:
 //   Converts an int to a string.
 //
 // Arguments:
@@ -1121,7 +1121,7 @@ GUIBase::IntsToQString(const intVector &vals)
 // Creation:   Thu Jun 19 10:35:31 PDT 2008
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 QString
@@ -1131,9 +1131,78 @@ GUIBase::IntToQString(int val)
 }
 
 // ****************************************************************************
+// Method: GUIBase::BoolsToQString
+//
+// Purpose:
+//   Converts an array of bools to a string wherein each bool is space
+//   delimited.
+//
+// Arguments:
+//   vals : The values to convert to a string.
+//   nvals : The number of values to convert.
+//
+// Returns:    A QString representation of the bools.
+//
+// Note:
+//
+// Programmer: Kathleen Biagas
+// Creation:   Tue Nov 15, 2022
+//
+// Modifications:
+//
+// ****************************************************************************
+
+QString
+GUIBase::BoolsToQString(const bool *vals, int nvals)
+{
+    QString s;
+    for(int i = 0; i < nvals; ++i)
+    {
+        s += QString(vals[i]?'1':'0');
+        if(i < nvals-1)
+            s += " ";
+    }
+    return s;
+}
+
+// ****************************************************************************
+// Method: GUIBase::BoolsToQString
+//
+// Purpose:
+//   Converts a vector of bools to a string wherein each bool is space
+//   delimited.
+//
+// Arguments:
+//   vals : The values to convert to a string.
+//
+// Returns:    A QString representation of the bools.
+//
+// Note:
+//
+// Programmer: Kathleen Biagas
+// Creation:   Tue Nov 15, 2022
+//
+// Modifications:
+//
+// ****************************************************************************
+
+QString
+GUIBase::BoolsToQString(const boolVector &vals)
+{
+    QString s;
+    for(size_t i = 0; i < vals.size(); ++i)
+    {
+        s += QString(vals[i]?'1':'0');
+        if(i < vals.size()-1)
+            s += " ";
+    }
+    return s;
+}
+
+// ****************************************************************************
 // Method: GUIBase::LineEditGetDoubles
 //
-// Purpose: 
+// Purpose:
 //   Converts a line edit's text into an array of doubles.
 //
 // Arguments:
@@ -1143,13 +1212,13 @@ GUIBase::IntToQString(int val)
 //
 // Returns:    True if maxVals doubles were read; false otherwise.
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Jun 19 10:38:12 PDT 2008
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 bool
@@ -1161,7 +1230,7 @@ GUIBase::LineEditGetDoubles(QLineEdit *lineEdit, double *vals, int maxVals)
 // ****************************************************************************
 // Method: GUIBase::LineEditGetDoubles
 //
-// Purpose: 
+// Purpose:
 //   Converts a line edit's text into an array of doubles.
 //
 // Arguments:
@@ -1171,13 +1240,13 @@ GUIBase::LineEditGetDoubles(QLineEdit *lineEdit, double *vals, int maxVals)
 //
 // Returns:    True if maxVals doubles were read; false otherwise.
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Jun 19 10:38:12 PDT 2008
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 bool
@@ -1189,7 +1258,7 @@ GUIBase::LineEditGetDoubles(QLineEdit *lineEdit, doubleVector &vals, int maxVals
 // ****************************************************************************
 // Method: GUIBase::LineEditGetDouble
 //
-// Purpose: 
+// Purpose:
 //   Converts a line edit's text into a double.
 //
 // Arguments:
@@ -1198,13 +1267,13 @@ GUIBase::LineEditGetDoubles(QLineEdit *lineEdit, doubleVector &vals, int maxVals
 //
 // Returns:    True if a double was read; false otherwise.
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Jun 19 10:38:12 PDT 2008
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 bool
@@ -1218,7 +1287,7 @@ GUIBase::LineEditGetDouble(QLineEdit *lineEdit, double &val)
 // ****************************************************************************
 // Method: GUIBase::LineEditGetFloats
 //
-// Purpose: 
+// Purpose:
 //   Converts a line edit's text into an array of floats.
 //
 // Arguments:
@@ -1228,13 +1297,13 @@ GUIBase::LineEditGetDouble(QLineEdit *lineEdit, double &val)
 //
 // Returns:    True if maxVals floats were read; false otherwise.
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Jun 19 10:38:12 PDT 2008
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 bool
@@ -1252,7 +1321,7 @@ GUIBase::LineEditGetFloats(QLineEdit *lineEdit, floatVector &vals, int maxVals)
 // ****************************************************************************
 // Method: GUIBase::LineEditGetFloat
 //
-// Purpose: 
+// Purpose:
 //   Converts a line edit's text into a float.
 //
 // Arguments:
@@ -1261,13 +1330,13 @@ GUIBase::LineEditGetFloats(QLineEdit *lineEdit, floatVector &vals, int maxVals)
 //
 // Returns:    True if a float was read; false otherwise.
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Jun 19 10:38:12 PDT 2008
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 bool
@@ -1281,7 +1350,7 @@ GUIBase::LineEditGetFloat(QLineEdit *lineEdit, float &val)
 // ****************************************************************************
 // Method: GUIBase::LineEditGetInts
 //
-// Purpose: 
+// Purpose:
 //   Converts a line edit's text into an array of Ints.
 //
 // Arguments:
@@ -1291,13 +1360,13 @@ GUIBase::LineEditGetFloat(QLineEdit *lineEdit, float &val)
 //
 // Returns:    True if maxVals Ints were read; false otherwise.
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Jun 19 10:38:12 PDT 2008
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 bool
@@ -1309,7 +1378,7 @@ GUIBase::LineEditGetInts(QLineEdit *lineEdit, int *vals, int maxVals)
 // ****************************************************************************
 // Method: GUIBase::LineEditGetInts
 //
-// Purpose: 
+// Purpose:
 //   Converts a line edit's text into an array of Ints.
 //
 // Arguments:
@@ -1319,13 +1388,13 @@ GUIBase::LineEditGetInts(QLineEdit *lineEdit, int *vals, int maxVals)
 //
 // Returns:    True if maxVals Ints were read; false otherwise.
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Jun 19 10:38:12 PDT 2008
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 bool
@@ -1335,9 +1404,65 @@ GUIBase::LineEditGetInts(QLineEdit *lineEdit, intVector &vals, int maxVals)
 }
 
 // ****************************************************************************
+// Method: GUIBase::LineEditGetBools
+//
+// Purpose:
+//   Converts a line edit's text into an array of Bools.
+//
+// Arguments:
+//   lineEdit : The line edit widget whose text we want to extract.
+//   vals     : The destination array for the Bools.
+//   maxVals  : The size of the destination array.
+//
+// Returns:    True if maxVals Bools were read; false otherwise.
+//
+// Note:
+//
+// Programmer: Kathleen Biagas
+// Creation:   Tue Nov 15, 2022
+//
+// Modifications:
+//
+// ****************************************************************************
+
+bool
+GUIBase::LineEditGetBools(QLineEdit *lineEdit, bool *vals, int maxVals)
+{
+    return QStringToBools(lineEdit->displayText().trimmed(), vals, maxVals);
+}
+
+// ****************************************************************************
+// Method: GUIBase::LineEditGetBools
+//
+// Purpose:
+//   Converts a line edit's text into a vector of Bools.
+//
+// Arguments:
+//   lineEdit : The line edit widget whose text we want to extract.
+//   vals     : The destination vector for the Bools.
+//   maxVals  : The size of the destination array.
+//
+// Returns:    True if maxVals Bools were read; false otherwise.
+//
+// Note:
+//
+// Programmer: Kathleen Biagas
+// Creation:   Tue Nov 15, 2022
+//
+// Modifications:
+//
+// ****************************************************************************
+
+bool
+GUIBase::LineEditGetBools(QLineEdit *lineEdit, boolVector &vals, int maxVals)
+{
+    return QStringToBools(lineEdit->displayText().trimmed(), vals, maxVals);
+}
+
+// ****************************************************************************
 // Method: GUIBase::LineEditGetInt
 //
-// Purpose: 
+// Purpose:
 //   Converts a line edit's text into an int.
 //
 // Arguments:
@@ -1346,13 +1471,13 @@ GUIBase::LineEditGetInts(QLineEdit *lineEdit, intVector &vals, int maxVals)
 //
 // Returns:    True if a int was read; false otherwise.
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Jun 19 10:38:12 PDT 2008
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 bool
@@ -1366,7 +1491,7 @@ GUIBase::LineEditGetInt(QLineEdit *lineEdit, int &val)
 // ****************************************************************************
 // Method: GUIBase::QStringToDoubles
 //
-// Purpose: 
+// Purpose:
 //   Converts a QString into an array of doubles.
 //
 // Arguments:
@@ -1374,15 +1499,15 @@ GUIBase::LineEditGetInt(QLineEdit *lineEdit, int &val)
 //   vals    : The destination array for the doubles.
 //   maxVals : The number of values in the destination array.
 //
-// Returns:  True if maxVals doubles were created from the string. False otherwise.  
+// Returns:  True if maxVals doubles were created from the string. False otherwise.
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Jun 19 10:41:41 PDT 2008
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 bool
@@ -1410,7 +1535,7 @@ GUIBase::QStringToDoubles(const QString &str, double *vals, int maxVals)
 // ****************************************************************************
 // Method: GUIBase::QStringToDoubles
 //
-// Purpose: 
+// Purpose:
 //   Converts a QString into an array of doubles.
 //
 // Arguments:
@@ -1418,15 +1543,15 @@ GUIBase::QStringToDoubles(const QString &str, double *vals, int maxVals)
 //   vals    : The destination array for the doubles.
 //   maxVals : The number of values in the destination array.
 //
-// Returns:  True if maxVals doubles were created from the string. False otherwise.  
+// Returns:  True if maxVals doubles were created from the string. False otherwise.
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Jun 19 10:41:41 PDT 2008
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 bool
@@ -1454,7 +1579,7 @@ GUIBase::QStringToDoubles(const QString &str, doubleVector &vals, int maxVals)
 // ****************************************************************************
 // Method: GUIBase::QStringToFloats
 //
-// Purpose: 
+// Purpose:
 //   Converts a QString into an array of floats.
 //
 // Arguments:
@@ -1462,15 +1587,15 @@ GUIBase::QStringToDoubles(const QString &str, doubleVector &vals, int maxVals)
 //   vals    : The destination array for the floats.
 //   maxVals : The number of values in the destination array.
 //
-// Returns:  True if maxVals floats were created from the string. False otherwise.  
+// Returns:  True if maxVals floats were created from the string. False otherwise.
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Jun 19 10:41:41 PDT 2008
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 bool
@@ -1520,7 +1645,7 @@ GUIBase::QStringToFloats(const QString &str, floatVector &vals, int maxVals)
 // ****************************************************************************
 // Method: GUIBase::QStringToInts
 //
-// Purpose: 
+// Purpose:
 //   Converts a QString into an array of ints.
 //
 // Arguments:
@@ -1528,15 +1653,15 @@ GUIBase::QStringToFloats(const QString &str, floatVector &vals, int maxVals)
 //   vals    : The destination array for the ints.
 //   maxVals : The number of values in the destination array.
 //
-// Returns:  True if maxVals ints were created from the string. False otherwise.  
+// Returns:  True if maxVals ints were created from the string. False otherwise.
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Jun 19 10:41:41 PDT 2008
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 bool
@@ -1564,7 +1689,7 @@ GUIBase::QStringToInts(const QString &str, int *vals, int maxVals)
 // ****************************************************************************
 // Method: GUIBase::QStringToInts
 //
-// Purpose: 
+// Purpose:
 //   Converts a QString into a vector of ints.
 //
 // Arguments:
@@ -1572,15 +1697,15 @@ GUIBase::QStringToInts(const QString &str, int *vals, int maxVals)
 //   vals    : The destination array for the ints.
 //   maxVals : The number of values in the destination array.
 //
-// Returns:  True if maxVals ints were created from the string. False otherwise.  
+// Returns:  True if maxVals ints were created from the string. False otherwise.
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Jun 19 10:41:41 PDT 2008
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 bool
@@ -1606,9 +1731,110 @@ GUIBase::QStringToInts(const QString &str, intVector &vals, int maxVals)
 }
 
 // ****************************************************************************
+// Method: GUIBase::QStringToBools
+//
+// Purpose:
+//   Converts a QString into an array of bools.
+//
+// Arguments:
+//   str     : The string from which to extract the ints.
+//   vals    : The destination array for the bools.
+//   maxVals : The number of values in the destination array.
+//
+// Returns:  True if maxVals bools were created from the string. False otherwise.
+//
+// Note:
+//
+// Programmer: Kathleen Biagas
+// Creation:   Tue Nov 15, 2022
+//
+// Modifications:
+//
+// ****************************************************************************
+
+bool
+GBText2Bool(const QString &s, bool &okay)
+{
+    okay = true;
+    if (s.toLower() == "true" || s.toLower() == "t" || s.toLower() == "yes" || s.toInt() == 1)
+        return true;
+    else if (s.toLower() == "false" || s.toLower() == "f" || s.toLower() == "no" || s.toInt() == 0)
+        return false;
+
+    okay=false;
+    return false;
+}
+
+bool
+GUIBase::QStringToBools(const QString &str, bool *vals, int maxVals)
+{
+    bool retval = false;
+
+    if(!str.isEmpty())
+    {
+        bool okay = true;
+        QStringList s = str.split(" ", QString::SkipEmptyParts);
+        for(int i = 0; i < maxVals && okay; ++i)
+        {
+            if(i < s.size())
+                vals[i] = GBText2Bool(s[i], okay);
+            else
+                vals[i] = false;
+        }
+        retval = okay;
+    }
+
+    return retval;
+}
+
+// ****************************************************************************
+// Method: GUIBase::QStringToBools
+//
+// Purpose:
+//   Converts a QString into a vector of bools.
+//
+// Arguments:
+//   str     : The string from which to extract the bools.
+//   vals    : The destination array for the bools.
+//   maxVals : The number of values in the destination array.
+//
+// Returns:  True if maxVals bools were created from the string. False otherwise.
+//
+// Note:
+//
+// Programmer: Kathleen Biagas
+// Creation:   Tue Nov 15, 2022
+//
+// Modifications:
+//
+// ****************************************************************************
+
+bool
+GUIBase::QStringToBools(const QString &str, boolVector &vals, int maxVals)
+{
+    bool retval = false;
+
+    if(!str.isEmpty())
+    {
+        bool okay = true;
+        QStringList s = str.split(" ", QString::SkipEmptyParts);
+        for(int i = 0; i < s.size() && okay; ++i)
+        {
+            if(maxVals == -1 || i < maxVals)
+                vals.push_back(GBText2Bool(s[i], okay));
+            else
+                vals.push_back(0);
+        }
+        retval = okay;
+    }
+
+    return retval;
+}
+
+// ****************************************************************************
 // Method: GUIBase::GetPlotDescription
 //
-// Purpose: 
+// Purpose:
 //   Return a "nice" name for a plot from its plot name (e.g. Plot0000).
 //
 // Arguments:
@@ -1616,13 +1842,13 @@ GUIBase::QStringToInts(const QString &str, intVector &vals, int maxVals)
 //
 // Returns:    A nicer description than the plot name.
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Wed Jun  1 12:10:33 PDT 2011
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 QString

@@ -243,6 +243,9 @@ AttributeGroup::CopyAttributes(const AttributeGroup *atts)
 //    Kathleen Biagas, Wed Dec 21 07:48:44 PST 2016
 //    Added glyphtype.
 //
+//    Kathleen Biagas, Thu Nov 17 12:07:19 PST 2022
+//    Add FieldType_boolArray.
+//
 // ****************************************************************************
 
 void
@@ -275,6 +278,9 @@ AttributeGroup::InterpolateConst(const AttributeGroup *atts1,
             break;
           case FieldType_bool:
             ConstInterp<bool>::InterpScalar(addrOut,addr1,addr2,f);
+            break;
+          case FieldType_boolArray:
+            ConstInterp<bool>::InterpArray(addrOut,addr1,addr2,length, f);
             break;
           case FieldType_boolVector:
             ConstInterp<bool>::InterpVector(addrOut,addr1,addr2,f);
@@ -414,6 +420,9 @@ AttributeGroup::InterpolateConst(const AttributeGroup *atts1,
 //    Kathleen Biagas, Wed Dec 21 07:48:44 PST 2016
 //    Added glyphtype.
 //
+//    Kathleen Biagas, Thu Nov 17 12:07:19 PST 2022
+//    Add FieldType_boolArray.
+//
 // ****************************************************************************
 
 void
@@ -449,6 +458,9 @@ AttributeGroup::InterpolateLinear(const AttributeGroup *atts1,
             break;
           case FieldType_bool:
             ConstInterp<bool>::InterpScalar(addrOut,addr1,addr2,f);
+            break;
+          case FieldType_boolArray:
+            LinInterp<bool>::InterpArray(addrOut,addr1,addr2,length, f);
             break;
           case FieldType_boolVector:
             ConstInterp<bool>::InterpVector(addrOut,addr1,addr2,f);
@@ -578,6 +590,9 @@ AttributeGroup::InterpolateLinear(const AttributeGroup *atts1,
 //    Kathleen Biagas, Wed Dec 21 07:48:44 PST 2016
 //    Added glyphtype.
 //
+//    Kathleen Biagas, Thu Nov 17 12:07:19 PST 2022
+//    Add FieldType_boolArray.
+//
 // ****************************************************************************
 
 bool
@@ -615,6 +630,10 @@ AttributeGroup::EqualTo(const AttributeGroup *atts) const
             break;
           case FieldType_bool:
             if (!(EqualVal<bool>::EqualScalar(addr1,addr2)))
+               return false;
+            break;
+          case FieldType_boolArray:
+            if (!(EqualVal<bool>::EqualArray(addr1,addr2,length)))
                return false;
             break;
           case FieldType_boolVector:

@@ -555,6 +555,9 @@ XMLEditFields::UpdateWindowSingleItem()
 //    Kathleen Biagas, Wed Dec 21 07:52:13 PST 2016
 //    Added glyphtype.
 //
+//    Kathleen Biagas, Tue Nov 15 12:41:48 PST 2022
+//    Added boolArray and boolVector.
+//
 // ****************************************************************************
 void
 XMLEditFields::UpdateTypeList()
@@ -564,6 +567,8 @@ XMLEditFields::UpdateTypeList()
     type->addItem("intArray");
     type->addItem("intVector");
     type->addItem("bool");
+    type->addItem("boolArray");
+    type->addItem("boolVector");
     type->addItem("float");
     type->addItem("floatArray");
     type->addItem("floatVector");
