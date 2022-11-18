@@ -236,7 +236,7 @@ void
 QvisColorTableWindow::CreateWindowContents()
 {
     // Want more buttons in the window? Increase this value.
-    central->setMaximumHeight(800);
+    central->setMaximumHeight(830);
     // Create the widgets needed to set the default color tables.
     topLayout->setMargin(2);
     defaultGroup = new QGroupBox(central);
