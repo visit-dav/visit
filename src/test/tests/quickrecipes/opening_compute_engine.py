@@ -72,8 +72,8 @@ def opening_a_compute_engine3():
  
   try:
     # opening a compute engine 3 {
-    # Set the user name to "user1" and use the third profile,
-    # (indexed by 2 from zero) overriding a few of its properties
+    # Set the user name to "user1" and use the 2nd profile,
+    # (indexed by 1 from zero) overriding a few of its properties
     p = GetMachineProfile("quartz.llnl.gov")
     p.userName="user1"
     p.activeProfile = 1

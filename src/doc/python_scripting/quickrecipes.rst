@@ -220,16 +220,11 @@ The variable that you pass to the AddPlot function must be a valid variable for 
 New plots are not realized, meaning that they have not been submitted to the compute engine for processing. 
 If you want to force VisIt to process the new plot you must call the DrawPlots function.
 
-::
-
-    # Names of all available plot plugins 
-    print(PlotPlugins())
-
-    # Create plots 
-    AddPlot("Pseudocolor", "pressure") 
-    AddPlot("Mesh", "quadmesh") 
-    # Draw the plots 
-    DrawPlots() 
+.. literalinclude:: ../../test/tests/quickrecipes/working_with_plots.py
+    :language: Python
+    :start-after: # creating a plot {
+    :end-before: # creating a plot }
+    :dedent: 4
 
 Plotting materials
 ~~~~~~~~~~~~~~~~~~
@@ -237,12 +232,11 @@ Plotting materials
 Plotting materials is a common operation in VisIt. 
 The Boundary and FilledBoundary plots enable you to plot material boundaries and materials, respectively.
 
-::
-
-    # Plot material boundaries 
-    AddPlot("Boundary", "mat1") 
-    # Plot materials 
-    AddPlot("FilledBoundary", "mat1") 
+.. literalinclude:: ../../test/tests/quickrecipes/working_with_plots.py
+    :language: Python
+    :start-after: # plotting materials {
+    :end-before: # plotting materials }
+    :dedent: 4
 
 Setting plot attributes
 ~~~~~~~~~~~~~~~~~~~~~~~
@@ -256,17 +250,11 @@ For example, the attributes object creation function for the Pseudocolor plot wo
 To change the attributes for a plot, you create an attributes object using the appropriate function, set the properties in the returned object, and tell VisIt to use the new plot attributes by passing the object to the SetPlotOptions function. 
 Note that you should set a plot's attributes before calling the DrawPlots method to realize the plot since setting a plot's attributes can cause the compute engine to recalculate the plot.
 
-::
-
-    # Creating a Pseudocolor plot and setting min/max values. 
-    AddPlot("Pseudocolor", "pressure") 
-    p = PseudocolorAttributes() 
-    # Look in the object 
-    print(p)
-    # Set the min/max values 
-    p.min, p.minFlag = 0.0, 1 
-    p.max, p.maxFlag = 10.0, 1 
-    SetPlotOptions(p) 
+.. literalinclude:: ../../test/tests/quickrecipes/working_with_plots.py
+    :language: Python
+    :start-after: # setting plot attributes {
+    :end-before: # setting plot attributes }
+    :dedent: 4
 
 Working with multiple plots
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
