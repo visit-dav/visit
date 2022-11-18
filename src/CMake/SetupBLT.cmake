@@ -33,11 +33,22 @@ set(ENABLE_ALL_WARNINGS OFF CACHE BOOL "")
 ################################################################
 set(CMAKE_DISABLE_FIND_PACKAGE_PythonInterp ON)
 
-message(STATUS "Setting up BLT")
+
+################################################################
+# Turn off BLT testing until needed
+################################################################
+set(ENABLE_TESTS OFF CACHE BOOL "")
+
+
 ################################################################
 # init blt using BLT_SOURCE_DIR
 ################################################################
+
+message(STATUS "Setting up BLT")
 include(${BLT_SOURCE_DIR}/SetupBLT.cmake)
+
+# next message helps bracket messages sent by BLT.
+message(STATUS "Done setting up BLT")
 
 # allow us to find python again
 set(CMAKE_DISABLE_FIND_PACKAGE_PythonInterp OFF)
