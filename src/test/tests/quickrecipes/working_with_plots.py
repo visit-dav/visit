@@ -16,12 +16,18 @@ def creating_a_plot():
     # creating a plot {
     # Names of all available plot plugins as a python tuple
     x = PlotPlugins()
-    print(x)
+
     # print(x) will produce something like...
-    # ('Boundary', 'Contour', 'Curve', 'FilledBoundary', 'Histogram', 'Label', 'Mesh', 'Molecule', 'MultiCurve', 'ParallelCoordinates', 'Pseudocolor', 'Scatter', 'Spreadsheet', 'Subset', 'Tensor', 'Truecolor', 'Vector', 'Volume')
+    #     ('Boundary', 'Contour', 'Curve', 'FilledBoundary', 'Histogram',
+    #     'Label', 'Mesh', 'Molecule', 'MultiCurve', 'ParallelCoordinates',
+    #     'Pseudocolor', 'Scatter', 'Spreadsheet', 'Subset', 'Tensor',
+    #     'Truecolor', 'Vector', 'Volume')
+    print(x)
+
     # Create plots with AddPlot(<plot-plugin-name>,<database-variable-name>)
     AddPlot("Pseudocolor", "pressure")
     AddPlot("Mesh", "quadmesh")
+
     # Draw the plots
     DrawPlots()
     # creating a plot }
@@ -49,7 +55,7 @@ def plotting_materials():
     TestFOA('plotting materials exception', LINE())
     pass
   vqr_cleanup()
-  CloseDatabase(silo_data_path("wave.visit"))
+  CloseDatabase(silo_data_path("globe.silo"))
 
 def setting_plot_attributes():
  
@@ -59,9 +65,10 @@ def setting_plot_attributes():
     # Creating a Pseudocolor plot and setting min/max values.
     AddPlot("Pseudocolor", "pressure")
     p = PseudocolorAttributes()
-    # print the object to see names of members
-    print(p)
-    # this will produce output somewhat like...
+
+    # print p to find the names of members you want to change
+    #
+    # print(p) will produce output somewhat like...
     #     scaling = Linear  # Linear, Log, Skew
     #     skewFactor = 1
     #     limitsMode = OriginalData  # OriginalData, ActualData
@@ -74,6 +81,8 @@ def setting_plot_attributes():
     #     .
     #     .
     #     .
+    print(p)
+
     # Set the min/max values
     p.min, p.minFlag = 0.0, 1
     p.max, p.maxFlag = 10.0, 1
@@ -87,8 +96,63 @@ def setting_plot_attributes():
   vqr_cleanup()
   CloseDatabase(silo_data_path("wave.visit"))
 
+def working_with_multiple_plots():
+ 
+  OpenDatabase(silo_data_path("tire.silo"))
+  try:
+    # working with multiple plots {
+
+    # Create more than 1 plot of the same type
+    AddPlot("Pseudocolor", "pressure")
+    AddPlot("Pseudocolor", "temperature")
+
+    # List the plots. The second plot should be active.
+    ListPlots()
+
+    # The output from ListPlots() will look something like...
+    #     Plot[0]|id=5;type="Pseudocolor";database="localhost:/Users/miller86/visit/visit/data/silo_hdf5_test_data/tire.silo";
+    #         var=pressure;active=0;hidden=0;framerange=(0, 0);keyframes={0};database keyframes={0};operators={};
+    #         activeOperator=-1
+    #     Plot[1]|id=6;type="Pseudocolor";database="localhost:/Users/miller86/visit/visit/data/silo_hdf5_test_data/tire.silo";
+    #         var=temperature;active=1;hidden=0;framerange=(0, 0);keyframes={0};database keyframes={0};operators={};
+    #         activeOperator=-1
+    # Note that active=1 for Plot[1] meaning plot #1 is the active plot
+
+    # Draw the plots
+    DrawPlots()
+
+    # Hide the first plot
+    SetActivePlots(0) # makes plot 0 the active plot
+    HideActivePlots()
+
+    # Set both plots' color table to "hot"
+    p = PseudocolorAttributes()
+    p.colorTableName = "hot"
+    SetActivePlots((0,1)) # makes both plots active
+    SetPlotOptions(p)
+
+    # Show the first plot again.
+    SetActivePlots(0)
+    HideActivePlots()
+
+    # Delete the second plot
+    SetActivePlots(1)
+    DeleteActivePlots()
+    ListPlots()
+
+    # working with multiple plots }
+    TestValueEQ('working with multiple plots error message',GetLastError(),'')
+    TestPOA('working with multiple plots exceptions')
+  except:
+    TestFOA('working with multiple plots exception', LINE())
+    pass
+  vqr_cleanup()
+  CloseDatabase(silo_data_path("tire.silo"))
+
+
 creating_a_plot()
 plotting_materials()
 setting_plot_attributes()
+working_with_multiple_plots()
 
 Exit()
