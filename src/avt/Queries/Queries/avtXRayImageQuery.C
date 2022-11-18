@@ -123,6 +123,27 @@ inline bool multipleOutputFiles(int otype, int numBins)
         outputTypeIsRawfloatsOrBov(otype);
 }
 
+inline void Cross(double result[3], const double v1[3], const double v2[3])
+{
+    result[0] = (v1[1] * v2[2]) - (v1[2] * v2[1]);
+    result[1] = (v1[2] * v2[0]) - (v1[0] * v2[2]);
+    result[2] = (v1[0] * v2[1]) - (v1[1] * v2[0]);
+}
+
+inline void Add(double result[3], const double v1[3], const double v2[3])
+{
+    result[0] = v1[0] + v2[0];
+    result[1] = v1[1] + v2[1];
+    result[2] = v1[2] + v2[2];
+}
+
+inline void Scale(double result[3], const double v[3], const double s)
+{
+    result[0] = v[0] * s;
+    result[1] = v[1] * s;
+    result[2] = v[2] * s;
+}
+
 // ****************************************************************************
 //  Method: avtXRayImageQuery::avtXRayImageQuery
 //
@@ -1088,8 +1109,17 @@ avtXRayImageQuery::GetSecondaryVars(std::vector<std::string> &outVars)
 //     - Moved ifdef conduit guards to reflect desired behavior.
 //     - Cleaned up result message handling.
 // 
+//    Justin Privitera, Thu Sep 29 17:35:07 PDT 2022
+//    Added warning message for bmp output in result message and to debug1.
+// 
 //    Justin Privitera, Wed Oct 12 11:38:11 PDT 2022
 //    Removed bmp output type.
+// 
+//    Justin Privitera, Tue Nov 15 11:44:01 PST 2022
+//    Various changes to the blueprint output:
+//     - Reorganized metadata into categories
+//     - Added new metadata outputs: query parameters and extra data
+//     - Added imaging plane topologies
 //
 // ****************************************************************************
 
@@ -1375,7 +1405,7 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
             data_out["topologies/image_topo/type"] = "rectilinear";
 
             // set up fields
-            int numfieldvals = (x_coords_dim - 1) * (y_coords_dim - 1) * (z_coords_dim - 1);
+            const int numfieldvals{(x_coords_dim - 1) * (y_coords_dim - 1) * (z_coords_dim - 1)};
 
             data_out["fields/intensities/topology"] = "image_topo";
             data_out["fields/intensities/association"] = "element";
@@ -1389,7 +1419,7 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
             data_out["fields/path_length/values"].set(conduit::DataType::float64(numfieldvals));
             conduit::float64 *depth_vals = data_out["fields/path_length/values"].value();
 
-            const int datatype = leaves[0]->GetPointData()->GetArray("Intensity")->GetDataType();
+            const int datatype{leaves[0]->GetPointData()->GetArray("Intensity")->GetDataType()};
 
             if (datatype == VTK_FLOAT)
                 WriteArrays<float>(leaves, intensity_vals, depth_vals, numBins);
@@ -1413,8 +1443,13 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
             stride_ptr[2] = nx * ny;            
             data_out["fields/path_length/strides"].set(data_out["fields/intensities/strides"]);
 
+            // METADATA
+
+            // top level items
             data_out["state/time"] = GetInput()->GetInfo().GetAttributes().GetTime();
             data_out["state/cycle"] = cycle;
+
+            // view params "xray_view"
             data_out["state/xray_view/normal/x"] = normal[0];
             data_out["state/xray_view/normal/y"] = normal[1];
             data_out["state/xray_view/normal/z"] = normal[2];
@@ -1432,38 +1467,99 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
             data_out["state/xray_view/imagePan/y"] = imagePan[1];
             data_out["state/xray_view/imageZoom"] = imageZoom;
             data_out["state/xray_view/perspective"] = perspective;
+            data_out["state/xray_view/perspectiveStr"] = perspective ? "perspective" : "parallel";
+
+            // query params "xray_query"
+            data_out["state/xray_query/divideEmisByAbsorb"] = divideEmisByAbsorb;
+            data_out["state/xray_query/divideEmisByAbsorbStr"] = divideEmisByAbsorb ? "yes" : "no";
+            data_out["state/xray_query/numXPixels"] = nx;
+            data_out["state/xray_query/numYPixels"] = ny;
+            data_out["state/xray_query/numBins"] = numBins;
+            data_out["state/xray_query/absVarName"] = absVarName;
+            data_out["state/xray_query/emisVarName"] = emisVarName;
 
             // calculate spatial extent coords
             // (the physical extents of the image projected on the near plane)
 
-            const double viewHeight = parallelScale;
-            const double viewWidth = (static_cast<float>(imageSize[0]) / static_cast<float>(imageSize[1])) * viewHeight;
-            double nearHeight, nearWidth;
+            // the following calculations must be the same as the calculations in avtXRayFilter.C!
+            const double viewHeight{parallelScale};
+            const double viewWidth{(static_cast<float>(imageSize[0]) / static_cast<float>(imageSize[1])) * viewHeight};
+            double nearHeight, nearWidth, farHeight, farWidth;
             if (perspective)
             {
-                const double viewDist = parallelScale / tan ((viewAngle * 3.1415926535) / 360.);
-                const double nearDist = viewDist + nearPlane;
-                const double nearDist_over_viewDist = nearDist / viewDist;
+                const double viewDist{parallelScale / tan ((viewAngle * 3.1415926535) / 360.)};
+                const double nearDist{viewDist + nearPlane};
+                const double farDist{viewDist + farPlane};
+                const double nearDist_over_viewDist{nearDist / viewDist};
+                const double farDist_over_viewDist{farDist / viewDist};
                 nearHeight = (nearDist_over_viewDist * viewHeight) / imageZoom;
                 nearWidth = (nearDist_over_viewDist * viewWidth) / imageZoom;
+                farHeight = (farDist_over_viewDist * viewHeight) / imageZoom;
+                farWidth = (farDist_over_viewDist * viewWidth) / imageZoom;
             }
             else
             {
-                nearHeight = viewHeight / imageZoom;
-                nearWidth = viewWidth / imageZoom;
+                nearHeight = farHeight = viewHeight / imageZoom;
+                nearWidth = farWidth = viewWidth / imageZoom;
             }
 
-            const double nearDx = (2. * nearWidth)  / imageSize[0];
-            const double nearDy = (2. * nearHeight) / imageSize[1];
+            const double nearDx{(2. * nearWidth)  / imageSize[0]};
+            const double nearDy{(2. * nearHeight) / imageSize[1]};
+
+            // other metadata "xray_data"
 
             // set up spatial extents coords
-            data_out["state/xray_view/image_coords/x"].set(conduit::DataType::float32(x_coords_dim));
-            float *spatial_xvals = data_out["state/xray_view/image_coords/x"].value();
+            data_out["state/xray_data/image_coords/x"].set(conduit::DataType::float32(x_coords_dim));
+            float *spatial_xvals = data_out["state/xray_data/image_coords/x"].value();
             for (int i = 0; i < x_coords_dim; i ++) { spatial_xvals[i] = i * nearDx; }
 
-            data_out["state/xray_view/image_coords/y"].set(conduit::DataType::float32(y_coords_dim));
-            float *spatial_yvals = data_out["state/xray_view/image_coords/y"].value();
+            data_out["state/xray_data/image_coords/y"].set(conduit::DataType::float32(y_coords_dim));
+            float *spatial_yvals = data_out["state/xray_data/image_coords/y"].value();
             for (int i = 0; i < y_coords_dim; i ++) { spatial_yvals[i] = i * nearDy; }
+
+            data_out["state/xray_data/detectorWidth"] = 2. * nearWidth;
+            data_out["state/xray_data/detectorHeight"] = 2. * nearHeight;
+
+            if (numfieldvals > 0)
+            {
+                conduit::float64 int_max, int_min;
+                int_max = int_min = intensity_vals[0];
+                for (int i = 0; i < numfieldvals; i ++)
+                {
+                    if (int_max < intensity_vals[i])
+                        int_max = intensity_vals[i];
+                    if (int_min > intensity_vals[i])
+                        int_min = intensity_vals[i];
+                }
+                data_out["state/xray_data/intensityMax"] = int_max;
+                data_out["state/xray_data/intensityMin"] = int_min;
+
+                conduit::float64 pl_max, pl_min;
+                pl_max = pl_min = depth_vals[0];
+                for (int i = 0; i < numfieldvals; i ++)
+                {
+                    if (pl_max < depth_vals[i])
+                        pl_max = depth_vals[i];
+                    if (pl_min > depth_vals[i])
+                        pl_min = depth_vals[i];
+                }
+                data_out["state/xray_data/pathLengthMax"] = pl_max;
+                data_out["state/xray_data/pathLengthMin"] = pl_min;
+            }
+
+            // write near plane
+            double center[3], temp[3];
+            Scale(temp, normal, nearPlane);
+            Add(center, temp, focus);
+            WriteBlueprintImagingPlane(data_out, "near_plane", nearWidth, nearHeight, center);
+
+            // write view plane
+            WriteBlueprintImagingPlane(data_out, "view_plane", viewWidth, viewHeight, focus);
+
+            // write far plane
+            Scale(temp, normal, farPlane);
+            Add(center, temp, focus);
+            WriteBlueprintImagingPlane(data_out, "far_plane", farWidth, farHeight, center);
 
             // verify
             conduit::Node verify_info;
@@ -1924,7 +2020,94 @@ avtXRayImageQuery::WriteArrays(vtkDataSet **leaves,
         }
     }
 }
+
+// ****************************************************************************
+//  Method: avtXRayImageQuery::WriteBlueprintImagingPlane
+//
+//  Purpose:
+//    Calculates imaging plane coords and writes them to blueprint output.
+//
+//  Programmer: Justin Privitera
+//  Creation:   November 14, 2022
+//
+// ****************************************************************************
+
+void
+avtXRayImageQuery::WriteBlueprintImagingPlane(conduit::Node &data_out,
+                                              const std::string plane_name,
+                                              const double width,
+                                              const double height,
+                                              const double center[3])
+{
+    // set up imaging plane coords
+    data_out["coordsets/" + plane_name + "_coords/type"] = "explicit";
+    data_out["coordsets/" + plane_name + "_coords/values/x"].set(conduit::DataType::float64(4));
+    data_out["coordsets/" + plane_name + "_coords/values/y"].set(conduit::DataType::float64(4));
+    data_out["coordsets/" + plane_name + "_coords/values/z"].set(conduit::DataType::float64(4));
+    double *xvals = data_out["coordsets/" + plane_name + "_coords/values/x"].value();
+    double *yvals = data_out["coordsets/" + plane_name + "_coords/values/y"].value();
+    double *zvals = data_out["coordsets/" + plane_name + "_coords/values/z"].value();
+    
+    // calculate left vector by crossing normal with up vector
+    double left[3];
+    Cross(left, viewUp, normal);
+    
+    // lower left corner, lower right corner, etc.
+    double llc[3], lrc[3], ulc[3], urc[3];
+    
+    // containers for intermediate vector math results
+    double temp1[3], temp2[3], temp3[3];
+
+    // calc llc
+    Scale(temp1, viewUp, -1. * height);
+    Scale(temp2, left, width);
+    Add(temp3, temp1, temp2);
+    Add(llc, temp3, center);
+    
+    // calc lrc
+    Scale(temp1, viewUp, -1. * height);
+    Scale(temp2, left, -1. * width);
+    Add(temp3, temp1, temp2);
+    Add(lrc, temp3, center);            
+    
+    // calc ulc
+    Scale(temp1, viewUp, height);
+    Scale(temp2, left, width);
+    Add(temp3, temp1, temp2);
+    Add(ulc, temp3, center);            
+    
+    // calc urc
+    Scale(temp1, viewUp, height);
+    Scale(temp2, left, -1. * width);
+    Add(temp3, temp1, temp2);
+    Add(urc, temp3, center);
+    
+    // set x values     // set y values     // set z values
+    xvals[0] = llc[0];  yvals[0] = llc[1];  zvals[0] = llc[2];
+    xvals[1] = lrc[0];  yvals[1] = lrc[1];  zvals[1] = lrc[2];
+    xvals[2] = urc[0];  yvals[2] = urc[1];  zvals[2] = urc[2];
+    xvals[3] = ulc[0];  yvals[3] = ulc[1];  zvals[3] = ulc[2];
+
+    // set up imaging plane topo
+    data_out["topologies/" + plane_name + "_topo/type"] = "unstructured";
+    data_out["topologies/" + plane_name + "_topo/coordset"] = plane_name + "_coords";
+    data_out["topologies/" + plane_name + "_topo/elements/shape"] = "quad";
+    const int num_corners{4};
+    data_out["topologies/" + plane_name + "_topo/elements/connectivity"].set(conduit::DataType::int32(num_corners));
+    int *conn = data_out["topologies/" + plane_name + "_topo/elements/connectivity"].value();
+    for (int i = 0; i < num_corners; i ++) { conn[i] = i; }
+
+    // set up imaging plane trivial field
+    data_out["fields/" + plane_name + "_field/topology"] = plane_name + "_topo";
+    data_out["fields/" + plane_name + "_field/association"] = "element";
+    data_out["fields/" + plane_name + "_field/volume_dependent"] = "false";
+    data_out["fields/" + plane_name + "_field/values"].set(conduit::DataType::float64(1));
+    conduit::float64 *field_vals = data_out["fields/" + plane_name + "_field/values"].value();
+    field_vals[0] = 0;
+}
+
 #endif
+
 // ****************************************************************************
 //  Method: avtXRayImageQuery::GetDefaultInputParams
 //

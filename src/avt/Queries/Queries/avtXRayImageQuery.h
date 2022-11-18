@@ -90,6 +90,9 @@
 //    Replaced familyfiles with filenamescheme.
 //    Added boolean argument to `WriteImage` to control what info goes in the
 //    filename.
+// 
+//    Justin Privitera, Tue Nov 15 11:44:01 PST 2022
+//    Added WriteBlueprintImagingPlane function if conduit is defined
 //
 // ****************************************************************************
 
@@ -186,6 +189,11 @@ class QUERY_API avtXRayImageQuery : public avtDatasetQuery
                                           conduit::float64 *intensity_vals,
                                           conduit::float64 *depth_vals,
                                           int numBins);
+    void                      WriteBlueprintImagingPlane(conduit::Node &data_out,
+                                                         const std::string plane_name,
+                                                         const double width,
+                                                         const double height,
+                                                         const double center[3]);
 #endif
     void                      ConvertOldImagePropertiesToNew();
     void                      CheckData(vtkDataSet **, const int);
