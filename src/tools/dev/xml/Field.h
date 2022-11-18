@@ -82,6 +82,9 @@
 //    Kathleen Biagas, Tue Dec 20 16:04:19 PST 2016
 //    Added GlyphType.
 //
+//    Kathleen Biagas, Thu Nov 17, 2022
+//    Added boolArray and boolVector.
+//
 // ****************************************************************************
 
 
@@ -546,6 +549,99 @@ class Bool : public virtual Field
         return retval;
     }
 };
+
+//
+// --------------------------------- BoolArray ---------------------------------
+//
+class BoolArray : public virtual Field
+{
+  public:
+    bool *val;
+  public:
+    BoolArray(const QString &s, const QString &n, const QString &l) : Field("boolArray",n,l)
+    {
+        length = s.toInt();
+        val    = new bool[length];
+    }
+    virtual ~BoolArray()
+    {
+        if( val ) delete [] val;
+    }
+    virtual QString GetCPPName(bool, const QString &)
+    {
+        return "bool";
+    }
+    virtual void SetValue(const QString &s, int ix = 0)
+    {
+        val[ix] = Text2Bool(s);
+        valueSet = true;
+    }
+    virtual void Print(QTextStream &out)
+    {
+        Field::Print(out);
+        if (valueSet)
+        {
+            out << "            value: ";
+            for (int i=0; i<length; i++)
+                out << (val[i] ? "true" : "false") << "  ";
+            out << endl;
+        }
+    }
+    virtual std::vector<QString> GetValueAsText()
+    {
+        std::vector<QString> retval;
+        if (valueSet)
+            for (int i=0; i<length; i++)
+                retval.push_back(Bool2Text(val[i]));
+        return retval;
+    }
+};
+
+
+//
+// --------------------------------- BoolVector --------------------------------
+//
+class BoolVector : public virtual Field
+{
+  public:
+    std::vector<bool> val;
+  public:
+    BoolVector(const QString &n, const QString &l) : Field("boolVector",n,l) { }
+    virtual QString GetCPPName(bool, const QString &)
+    {
+        return "boolVector";
+    }
+    virtual void ClearValues()
+    {
+        val.clear();
+    }
+    virtual void SetValue(const QString &s, int = 0)
+    {
+        val.push_back(Text2Bool(s));
+        valueSet = true;
+    }
+    virtual void Print(QTextStream &out)
+    {
+        Field::Print(out);
+        if (valueSet)
+        {
+            out << "            value: ";
+            for (size_t i=0; i<val.size(); i++)
+                out << (val[i] ? "true" : "false") << "  ";
+            out << endl;
+        }
+    }
+    virtual std::vector<QString> GetValueAsText()
+    {
+        std::vector<QString> retval;
+        if (valueSet)
+            for (size_t i=0; i<val.size(); i++)
+                retval.push_back(Bool2Text(val[i]));
+        return retval;
+    }
+};
+
+
 
 
 //
@@ -1865,6 +1961,8 @@ class FieldFactory
         else if (type == "intArray")     f = new IntArray(length,name,label);
         else if (type == "intVector")    f = new IntVector(name,label);
         else if (type == "bool")         f = new Bool(name,label);
+        else if (type == "boolArray")    f = new BoolArray(length,name,label);
+        else if (type == "boolVector")   f = new BoolVector(name,label);
         else if (type == "float")        f = new Float(name,label);
         else if (type == "floatArray")   f = new FloatArray(length,name,label);
         else if (type == "floatVector")  f = new FloatVector(name,label);

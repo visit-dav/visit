@@ -89,6 +89,9 @@
 //    Kathleen Biagas, Tue Dec 20 16:04:19 PST 2016
 //    Added GlyphType.
 //
+//    Kathleen Biagas, Thu Nov 17, 2022
+//    Added boolArray and boolVector.
+//
 // ****************************************************************************
 
 class JavaGeneratorField : public virtual Field
@@ -451,6 +454,158 @@ class JavaGeneratorBool : public virtual Bool , public virtual JavaGeneratorFiel
     virtual void WriteToString(QTextStream &c, const QString &indent)
     {
         c << indent << "str = str + boolToString(\"" << name << "\", " << name << ", indent) + \"\\n\";" << endl;
+    }
+};
+
+//
+// -------------------------------- BoolArray --------------------------------
+//
+class JavaGeneratorBoolArray : public virtual BoolArray , public virtual JavaGeneratorField
+{
+  public:
+    JavaGeneratorBoolArray(const QString &s, const QString &n, const QString &l)
+        : Field("boolArray",n,l), BoolArray(s,n,l), JavaGeneratorField("boolArray",n,l) { }
+
+    virtual QString GetCPPName(bool, const QString &)
+    {
+        return "boolean[]";
+    }
+
+    virtual void WriteSourceSetDefault(QTextStream &c)
+    {
+        c << "    " << name << " = new boolean[" << length << "];" << endl;
+        if(valueSet)
+        {
+            for (int i = 0; i < length; ++i)
+                c << "        " << name << "["<<i<<"] = " << val[i] << ";" << endl;
+        }
+        else
+        {
+            c << "    " << "for (int i = 0; i < " << length << "; ++i)" << endl;
+            c << "        " << name << "[i] = 0;" << endl;
+        }
+    }
+
+    virtual void WriteSourceCopyCode(QTextStream &c)
+    {
+        c << "        " << name << " = new boolean[" << length << "];" << endl;
+
+        if (length < 4)
+        {
+           for(int i = 0; i < length; ++i)
+           {
+               c << "        " << name << "[" << i << "] = "
+                 << "obj." << name << "[" << i << "];" << endl;
+           }
+        }
+        else
+        {
+            c << "        for(i = 0; i < obj." << name << ".length; ++i)" << endl;
+            c << "            " << name << "[i] = obj." << name << "[i];" << endl;
+        }
+        c << endl;
+    }
+
+    virtual void WriteAuxiliarySetFunction(QTextStream &c, const QString &classname)
+    {
+        if(length < 6)
+        {
+            c << "    public void Set" << Name << "(";
+            for(int i = 0; i < length; ++i)
+            {
+                c << "boolean e" << i;
+                if(i < length-1)
+                    c << ", ";
+            }
+            c << ")" << endl;
+            c << "    {" << endl;
+            for(int j = 0; j < length; ++j)
+                c << "        " << name << "[" << j << "] = e" << j << ";"<< endl;
+            c << "        Select(" << OffsetPlus(classname) << index << ");" << endl;
+            c << "    }" << endl;
+            c << endl;
+        }
+    }
+
+    virtual void WriteSourceWriteAtts(QTextStream &c, const QString &indent)
+    {
+        c << indent << "    buf.WriteBoolArray(" << name << ");" << endl;
+    }
+
+    virtual bool WriteSourceReadAtts(QTextStream &c, const QString &indent)
+    {
+        c << indent << "Set" << Name << "(buf.ReadBoolArray());" << endl;
+        return true;
+    }
+    virtual void WriteToString(QTextStream &c, const QString &indent)
+    {
+        c << indent << "str = str + boolArrayToString(\"" << name << "\", " << name << ", indent) + \"\\n\";" << endl;
+    }
+};
+
+
+//
+// -------------------------------- BoolVector --------------------------------
+//
+class JavaGeneratorBoolVector : public virtual BoolVector , public virtual JavaGeneratorField
+{
+  public:
+    JavaGeneratorBoolVector(const QString &n, const QString &l)
+        : Field("boolVector",n,l), BoolVector(n,l), JavaGeneratorField("boolVector",n,l) { }
+
+    virtual void AddImports(UniqueStringList &sl)
+    {
+        sl.AddString("import java.lang.Boolean;\n");
+        sl.AddString("import java.util.Vector;\n");
+    }
+
+    virtual QString GetCPPName(bool, const QString &)
+    {
+        return "Vector";
+    }
+
+    virtual void WriteSourceAttribute(QTextStream &h, int w)
+    {
+        h << "    private " << GetCPPNameW(w) << " " << name << "; // vector of Boolean objects" << endl;
+    }
+
+    virtual void WriteSourceSetDefault(QTextStream &c)
+    {
+        c << "    " << name << " = new Vector();" << endl;
+        if(valueSet)
+        {
+            for (size_t i = 0; i < val.size(); ++i)
+                c << "        " << name << ".addElement(new Boolean(" << val[i] << "));" << endl;
+        }
+    }
+
+    virtual void WriteSourceCopyCode(QTextStream &c)
+    {
+        c << "        " << name << " = new Vector();" << endl;
+        c << "        for(i = 0; i < obj." << name << ".size(); ++i)" << endl;
+        c << "        {" << endl;
+        c << "            Boolean iv = (Boolean)obj." << name << ".elementAt(i);" << endl;
+        c << "            " << name << ".addElement(new Boolean(iv.booleanValue()));" << endl;
+        c << "        }" << endl;
+    }
+
+    virtual void WriteSourceWriteAtts(QTextStream &c, const QString &indent)
+    {
+        c << indent << "    buf.WriteBoolVector(" << name << ");" << endl;
+    }
+
+    virtual bool WriteSourceReadAtts(QTextStream &c, const QString &indent)
+    {
+        c << indent << "Set" << Name << "(buf.ReadBoolVector());" << endl;
+        return true;
+    }
+    virtual void WriteToString(QTextStream &c, const QString &indent)
+    {
+        c << indent << "str = str + boolVectorToString(\"" << name << "\", " << name << ", indent) + \"\\n\";" << endl;
+    }
+    virtual QString GetVectorStorageName() const
+    {
+        return "Boolean";
     }
 };
 
@@ -1730,6 +1885,8 @@ class JavaFieldFactory
         else if (type == "intArray")     f = new JavaGeneratorIntArray(length,name,label);
         else if (type == "intVector")    f = new JavaGeneratorIntVector(name,label);
         else if (type == "bool")         f = new JavaGeneratorBool(name,label);
+        else if (type == "boolArray")    f = new JavaGeneratorBoolArray(length,name,label);
+        else if (type == "boolVector")   f = new JavaGeneratorBoolVector(name,label);
         else if (type == "float")        f = new JavaGeneratorFloat(name,label);
         else if (type == "floatArray")   f = new JavaGeneratorFloatArray(length,name,label);
         else if (type == "floatVector")  f = new JavaGeneratorFloatVector(name,label);
