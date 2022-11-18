@@ -8,8 +8,8 @@
   "configurePresets": [
     {
       "name": "windows-visualstudio-default",
-      "displayName": "Default Windows Visual Studio Config",
-      "description": "Default Visual Studio setup",
+      "displayName": "Windows Visual Studio Default",
+      "description": "Sets Visual Studio generator, x64 architecture and host=x64 toolset.",
       "generator": "Visual Studio 15 2017",
       "architecture": "x64",
       "toolset": "host=x64"
