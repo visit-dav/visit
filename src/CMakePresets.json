@@ -1,0 +1,18 @@
+{
+  "version": 5,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 24,
+    "patch": 3
+  },
+  "configurePresets": [
+    {
+      "name": "windows-visualstudio-default",
+      "displayName": "Default Windows Visual Studio Config",
+      "description": "Default Visual Studio setup",
+      "generator": "Visual Studio 15 2017",
+      "architecture": "x64",
+      "toolset": "host=x64"
+    }
+  ]
+}
