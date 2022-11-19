@@ -138,6 +138,7 @@ do
         lang=$arg
         export LANG="$lang"
         export LANGUAGE="$lang"
+	export LC_NUMERIC="C"
         break
     fi
     if test "$arg" = "-lang"; then
