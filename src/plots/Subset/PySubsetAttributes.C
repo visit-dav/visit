@@ -1461,39 +1461,6 @@ PySubsetAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "pointSizePixels") == 0)
         return SubsetAttributes_GetPointSizePixels(self, NULL);
 
-#if VISIT_OBSOLETE_AT_VERSION(3,3,2)
-#error This code is obsolete in this version. Please remove it.
-#else
-    //
-    //  Removed in 3.0.0
-    //
-    // lineStyle and it's possible enumerations
-    if (strcmp(name, "lineStyle") == 0)
-    {
-        PyErr_WarnFormat(NULL, 3, "'%s' is obsolete. It is being ignored.", name);
-        return PyInt_FromLong(0L);
-    }
-    else if (strcmp(name, "SOLID") == 0)
-    {
-        PyErr_WarnFormat(NULL, 3, "'%s' is obsolete. It is being ignored.", name);
-        return PyInt_FromLong(0L);
-    }
-    else if (strcmp(name, "DASH") == 0)
-    {
-        PyErr_WarnFormat(NULL, 3, "'%s' is obsolete. It is being ignored.", name);
-        return PyInt_FromLong(0L);
-    }
-    else if (strcmp(name, "DOT") == 0)
-    {
-        PyErr_WarnFormat(NULL, 3, "'%s' is obsolete. It is being ignored.", name);
-        return PyInt_FromLong(0L);
-    }
-    else if (strcmp(name, "DOTDASH") == 0)
-    {
-        PyErr_WarnFormat(NULL, 3, "'%s' is obsolete. It is being ignored.", name);
-        return PyInt_FromLong(0L);
-    }
-#endif
 
     // Add a __dict__ answer so that dir() works
     if (!strcmp(name, "__dict__"))
@@ -1550,23 +1517,6 @@ PySubsetAttributes_setattr(PyObject *self, char *name, PyObject *args)
     else if(strcmp(name, "pointSizePixels") == 0)
         obj = SubsetAttributes_SetPointSizePixels(self, args);
 
-    // Try and handle legacy fields
-    if(obj == &NULL_PY_OBJ)
-    {
-#if VISIT_OBSOLETE_AT_VERSION(3,3,2)
-#error This code is obsolete in this version. Please remove it.
-#else
-        //
-        //  Removed in 3.0.0
-        //
-        if(strcmp(name, "lineStyle") == 0)
-        {
-            PyErr_WarnFormat(NULL, 3, "'%s' is obsolete. It is being ignored.", name);
-            Py_INCREF(Py_None);
-            obj = Py_None;
-        }
-#endif
-    }
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
