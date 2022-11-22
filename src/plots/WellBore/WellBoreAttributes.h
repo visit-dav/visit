@@ -171,7 +171,6 @@ public:
     void EnlargeMultiColor(int newSize);
     bool ColorIsChanged(int index) const;
     void MarkColorAsChanged(int index);
-    virtual void ProcessOldVersions(DataNode *parentNode, const char *configVersion);
     bool ChangesRequireRecalculation(const WellBoreAttributes &);
 
     // IDs that can be used to identify fields in case statements
