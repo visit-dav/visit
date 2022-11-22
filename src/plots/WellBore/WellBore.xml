@@ -92,8 +92,6 @@
       </Function>
       <Function name="MarkColorAsChanged" user="true" member="true">
       </Function>
-      <Function name="ProcessOldVersions" user="true" member="true">
-      </Function>
       <Function name="ChangesRequireRecalculation" user="true" member="true">
       </Function>
       <Function name="WellBoreViewerEnginePluginInfo::InitializeGlobalObjects" user="false" member="true">

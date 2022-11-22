@@ -107,8 +107,6 @@
       </Function>
       <Function name="CopyAttributes" user="false" member="true">
       </Function>
-      <Function name="ProcessOldVersions" user="true" member="true">
-      </Function>
       <Function name="HistogramViewerEnginePluginInfo::InitializePlotAtts" user="false" member="true">
       </Function>
       <Function name="HistogramViewerEnginePluginInfo::ReInitializePlotAtts" user="false" member="true">

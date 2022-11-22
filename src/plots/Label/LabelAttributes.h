@@ -180,7 +180,6 @@ public:
     // User-defined methods
     virtual bool ChangesRequireRecalculation(const LabelAttributes &) const;
     virtual bool VarChangeRequiresReset(void);
-    virtual void ProcessOldVersions(DataNode *parentNode, const char *configVersion);
 
     // IDs that can be used to identify fields in case statements
     enum {
