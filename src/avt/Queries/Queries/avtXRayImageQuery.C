@@ -1479,7 +1479,7 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
             }
             else
             {
-                data_out["state/xray_data/image_coords/z"] = "energy group bins not provided.";
+                data_out["state/xray_data/image_coords/z"] = "Energy group bins not provided.";
             }
 
             data_out["state/xray_data/detectorWidth"] = 2. * nearWidth;
