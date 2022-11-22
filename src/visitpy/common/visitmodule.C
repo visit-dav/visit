@@ -11893,6 +11893,10 @@ visit_GetQueryParameters(PyObject *self, PyObject *args)
 //   Now you can pass the output type directly to the xray image query as a
 //   string and it will handle which output type it should be internally.
 //   You can also send the output directory to the xray image query.
+// 
+//   Justin Privitera, Tue Nov 22 14:56:04 PST 2022
+//   Added another tuple (tuple2) to store double vector info.
+//   This one is used for the x ray image query to store energy group bins.
 //
 // ****************************************************************************
 

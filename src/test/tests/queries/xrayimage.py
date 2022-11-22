@@ -40,6 +40,12 @@
 #    Justin Privitera, Tue Nov 15 14:54:35 PST 2022
 #    Added new tests for additional blueprint output metadata as well as
 #    imaging plane topologies.
+# 
+#    Justin Privitera, Tue Nov 22 14:56:04 PST 2022
+#    Updated numbering on later tests.
+#    Reorganized blueprint tests so they use a function. That function also
+#    uses new and old query calls, doubling the number of blueprint tests.
+#    It also tests energy group bin output for hdf5.
 #
 # ----------------------------------------------------------------------------
 

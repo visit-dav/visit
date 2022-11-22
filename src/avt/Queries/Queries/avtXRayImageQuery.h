@@ -88,6 +88,9 @@
 // 
 //    Justin Privitera, Tue Nov 15 11:44:01 PST 2022
 //    Added WriteBlueprintImagingPlane function if conduit is defined
+// 
+//    Justin Privitera, Tue Nov 22 14:56:04 PST 2022
+//    Added energy group bin variables and a setter.
 //
 // ****************************************************************************
 
