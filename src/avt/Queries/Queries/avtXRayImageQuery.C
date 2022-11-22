@@ -326,6 +326,18 @@ avtXRayImageQuery::SetInputParams(const MapNode &params)
         SetEnergyGroupBins(v);
     }
 
+    // Are you ever going to have just one energy group bin? No.
+    // But this is here for helpful error messaging. It is possible
+    // to pass just one number in under energy_group_bins, so with
+    // this logic here VisIt will give users sensible error messages
+    // embedded within the blueprint metadata.
+    if (params.HasNumericEntry("energy_group_bins"))
+    {
+        doubleVector v;
+        v.push_back(params.GetEntry("energy_group_bins")->ToDouble());
+        SetEnergyGroupBins(v);
+    }
+
     if (params.HasNumericEntry("debug_ray"))
         SetDebugRay(params.GetEntry("debug_ray")->AsInt());
 
@@ -1450,9 +1462,20 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
 
             if (energyGroupBins)
             {
-                data_out["state/xray_data/image_coords/z"].set(conduit::DataType::float64(nEnergyGroupBins));
-                double *spatial_zvals = data_out["state/xray_data/image_coords/z"].value();
-                for (int i = 0; i < nEnergyGroupBins; i ++) { spatial_zvals[i] = energyGroupBins[i]; }
+                if (z_coords_dim == nEnergyGroupBins)
+                {
+                    data_out["state/xray_data/image_coords/z"].set(conduit::DataType::float64(nEnergyGroupBins));
+                    double *spatial_zvals = data_out["state/xray_data/image_coords/z"].value();
+                    for (int i = 0; i < nEnergyGroupBins; i ++) { spatial_zvals[i] = energyGroupBins[i]; }                    
+                }
+                else
+                {
+                    std::stringstream out;
+                    out << "Energy group bins size mismatch: provided " 
+                        << nEnergyGroupBins << " bins, but " 
+                        << z_coords_dim << " in query results.";
+                    data_out["state/xray_data/image_coords/z"] = out.str();
+                }
             }
             else
             {
