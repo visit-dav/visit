@@ -171,6 +171,8 @@ avtXRayImageQuery::avtXRayImageQuery():
     backgroundIntensity = 0.0;
     backgroundIntensities = NULL;
     nBackgroundIntensities = 0;
+    energyGroupBins = NULL;
+    nEnergyGroupBins = 0;
     debugRay = -1;
     familyFiles = false;
     outputType = PNG_OUT;
@@ -239,6 +241,8 @@ avtXRayImageQuery::~avtXRayImageQuery()
 {
     if (backgroundIntensities != NULL)
         delete [] backgroundIntensities;
+    if (energyGroupBins != NULL)
+        delete [] energyGroupBins;
 }
 
 // ****************************************************************************
@@ -313,6 +317,13 @@ avtXRayImageQuery::SetInputParams(const MapNode &params)
         doubleVector v;
         params.GetEntry("background_intensities")->ToDoubleVector(v);
         SetBackgroundIntensities(v);
+    }
+
+    if (params.HasNumericVectorEntry("energy_group_bins"))
+    {
+        doubleVector v;
+        params.GetEntry("energy_group_bins")->ToDoubleVector(v);
+        SetEnergyGroupBins(v);
     }
 
     if (params.HasNumericEntry("debug_ray"))
@@ -712,6 +723,29 @@ avtXRayImageQuery::SetBackgroundIntensities(const doubleVector &intensities)
     for (int i = 0; i < intensities.size(); i++)
         backgroundIntensities[i] = intensities[i];
     nBackgroundIntensities = intensities.size();
+}
+
+// ****************************************************************************
+//  Method: avtXRayImageQuery::SetEnergyGroupBins
+//
+//  Purpose:
+//    TODO
+//
+//  Programmer: Justin Privitera
+//  Creation:   November 18, 2022
+//
+// ****************************************************************************
+
+void
+avtXRayImageQuery::SetEnergyGroupBins(const doubleVector &bins)
+{
+    if (energyGroupBins != NULL)
+        delete [] energyGroupBins;
+
+    energyGroupBins = new double[bins.size()];
+    for (int i = 0; i < bins.size(); i++)
+        energyGroupBins[i] = bins[i];
+    nEnergyGroupBins = bins.size();
 }
 
 // ****************************************************************************
@@ -1413,6 +1447,17 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
             data_out["state/xray_data/image_coords/y"].set(conduit::DataType::float32(y_coords_dim));
             float *spatial_yvals = data_out["state/xray_data/image_coords/y"].value();
             for (int i = 0; i < y_coords_dim; i ++) { spatial_yvals[i] = i * nearDy; }
+
+            if (energyGroupBins)
+            {
+                data_out["state/xray_data/image_coords/z"].set(conduit::DataType::float64(nEnergyGroupBins));
+                double *spatial_zvals = data_out["state/xray_data/image_coords/z"].value();
+                for (int i = 0; i < nEnergyGroupBins; i ++) { spatial_zvals[i] = energyGroupBins[i]; }
+            }
+            else
+            {
+                data_out["state/xray_data/image_coords/z"] = "energy group bins not provided.";
+            }
 
             data_out["state/xray_data/detectorWidth"] = 2. * nearWidth;
             data_out["state/xray_data/detectorHeight"] = 2. * nearHeight;

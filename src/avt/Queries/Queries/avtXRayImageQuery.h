@@ -119,6 +119,8 @@ class QUERY_API avtXRayImageQuery : public avtDatasetQuery
     void                      SetBackgroundIntensity(const double &intensity);
     void                      SetBackgroundIntensities(
                                   const doubleVector &intensities);
+    void                      SetEnergyGroupBins(
+                                  const doubleVector &bins);
     void                      SetDebugRay(const int &ray);
     void                      SetOutputRayBounds(const bool &flag);
     void                      SetFamilyFiles(const bool &flag);
@@ -131,6 +133,8 @@ class QUERY_API avtXRayImageQuery : public avtDatasetQuery
     double                    backgroundIntensity;
     double                   *backgroundIntensities;
     int                       nBackgroundIntensities;
+    double                   *energyGroupBins;
+    int                       nEnergyGroupBins;
     int                       debugRay;
     bool                      outputRayBounds;
     bool                      familyFiles;
