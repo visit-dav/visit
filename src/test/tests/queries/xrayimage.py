@@ -451,38 +451,53 @@ def test_bp_state(testname, conduit_db, bin_state = NO_BINS):
     test_bp_state_xray_query(testname, xrayout)
     test_bp_state_xray_data(testname, xrayout, bin_state)
 
-def blueprint_test(output_type, outdir, testtextname, testname, hdf5 = False):
-    setup_bp_test()
-
-    # run query and test the output message
-    Query("XRay Image", output_type, outdir, 1, 0.0, 2.5, 10.0, 0, 0, 10., 10., 300, 200, ("d", "p"))
-    s = GetQueryOutputString()
-    TestText(testtextname, s)
-    DeleteAllPlots()
-    CloseDatabase(silo_data_path("curv3d.silo"))
-
-    # test opening the bp output and visualizing in visit
-    conduit_db = pjoin(outdir, "output.cycle_000048.root")
-    OpenDatabase(conduit_db)
-    AddPlot("Pseudocolor", "mesh_image_topo/intensities")
-    DrawPlots()
-    Test(testname)
-    DeleteAllPlots()
-    CloseDatabase(conduit_db)
-
-    if (hdf5):
-        test_bp_state(testname, conduit_db) # no bins
+def blueprint_test(output_type, outdir, testtextnumber, testname, hdf5 = False):
+    for i in range(0, 2):
         setup_bp_test()
-        Query("XRay Image", output_type, outdir, 1, 0.0, 2.5, 10.0, 0, 0, 10., 10., 300, 200, ("d", "p"), [1,2,3])
-        test_bp_state(testname, conduit_db, BIN_MISMATCH) # no bins
-        Query("XRay Image", output_type, outdir, 1, 0.0, 2.5, 10.0, 0, 0, 10., 10., 300, 200, ("d", "p"), [3.7, 4.2])
-        test_bp_state(testname, conduit_db, BINS) # no bins
+
+        # run query and test the output message
+        if (i == 0):
+            Query("XRay Image", output_type, outdir, 1, 0.0, 2.5, 10.0, 0, 0, 10., 10., 300, 200, ("d", "p"))
+        elif (i == 1):
+            params = dict() # GetQueryParameters("XRay Image")
+            params["output_type"] = output_type
+            params["output_dir"] = outdir
+            params["divide_emis_by_absorb"] = 1;
+            params["origin"] = (0.0, 2.5, 10.0);
+            params["theta"] = 0;
+            params["phi"] = 0;
+            params["width"] = 10.;
+            params["height"] = 10.;
+            params["image_size"] = (300, 200)
+            params["vars"] = ("d", "p")
+            Query("XRay Image", params)
+        s = GetQueryOutputString()
+        TestText("xrayimage" + str(testtextnumber + i), s)
         DeleteAllPlots()
         CloseDatabase(silo_data_path("curv3d.silo"))
 
-blueprint_test("hdf5", conduit_dir_hdf5, "xrayimage32", "Blueprint_HDF5_X_Ray_Output", True)
-blueprint_test("json", conduit_dir_json, "xrayimage33", "Blueprint_JSON_X_Ray_Output", False)
-blueprint_test("yaml", conduit_dir_yaml, "xrayimage34", "Blueprint_YAML_X_Ray_Output", False)
+        # test opening the bp output and visualizing in visit
+        conduit_db = pjoin(outdir, "output.cycle_000048.root")
+        OpenDatabase(conduit_db)
+        AddPlot("Pseudocolor", "mesh_image_topo/intensities")
+        DrawPlots()
+        Test(testname + str(i))
+        DeleteAllPlots()
+        CloseDatabase(conduit_db)
+
+    if (hdf5):
+        test_bp_state(testname + str(i), conduit_db) # no bins
+        setup_bp_test()
+        Query("XRay Image", output_type, outdir, 1, 0.0, 2.5, 10.0, 0, 0, 10., 10., 300, 200, ("d", "p"), [1,2,3])
+        test_bp_state(testname + str(i), conduit_db, BIN_MISMATCH) # no bins
+        Query("XRay Image", output_type, outdir, 1, 0.0, 2.5, 10.0, 0, 0, 10., 10., 300, 200, ("d", "p"), [3.7, 4.2])
+        test_bp_state(testname + str(i), conduit_db, BINS) # no bins
+        DeleteAllPlots()
+        CloseDatabase(silo_data_path("curv3d.silo"))
+
+blueprint_test("hdf5", conduit_dir_hdf5, 32, "Blueprint_HDF5_X_Ray_Output", True)
+blueprint_test("json", conduit_dir_json, 34, "Blueprint_JSON_X_Ray_Output", False)
+blueprint_test("yaml", conduit_dir_yaml, 36, "Blueprint_YAML_X_Ray_Output", False)
 
 # test imaging plane topos
 
@@ -545,7 +560,7 @@ setup_bp_test()
 
 Query("XRay Image", "hdf5", dir_dne, 1, 0.0, 2.5, 10.0, 0, 0, 10., 10., 300, 300, ("d", "p"))
 s = GetQueryOutputString()
-TestText("xrayimage35", s)
+TestText("xrayimage38", s)
 DeleteAllPlots()
 CloseDatabase(silo_data_path("curv3d.silo"))
 
@@ -567,7 +582,7 @@ if not platform.system() == "Windows":
     # strip out two lines that make the test machine dependent
     s = '\n'.join([line if line[:4] != "file" else '' for line in s.split('\n')])
     s = '\n'.join([line if line[:4] != "line" else '' for line in s.split('\n')])
-    TestText("xrayimage36", s)
+    TestText("xrayimage39", s)
     DeleteAllPlots()
     CloseDatabase(silo_data_path("curv3d.silo"))
 
