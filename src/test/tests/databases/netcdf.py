@@ -28,12 +28,15 @@
 #    Brad Whitlock, Thu Sep  9 11:03:30 PDT 2010
 #    I added tests for time-varying curves, FVCOM.
 #
-#    Kathleen Biagas, Fri Sep 21 10:12:15 MST 2012 
+#    Kathleen Biagas, Fri Sep 21 10:12:15 MST 2012
 #    Removed pjoin so that tests can run on Windows.
 #
 #    Kathleen Biagas, Wed Aug 28 09:04:00 MST 2019
 #    Turn off cycling of colors for all Curve plot tests.  Set the colors
 #    individually to match current baseline results.
+#
+#    Kathleen Biagas, Mon Nov 28, 2022
+#    Replace obsolete Label text attributes with new versions.
 #
 # ----------------------------------------------------------------------------
 RequiredDatabasePlugin("NETCDF")
@@ -87,7 +90,7 @@ def test0():
     SetView3D(v1)
     Test("netcdf_0_01")
 
-    # Plot the terrain by stripping away most of the air. 
+    # Plot the terrain by stripping away most of the air.
     SetActivePlots(1)
     DeleteActivePlots()
     AddOperator("IndexSelect")
@@ -172,7 +175,7 @@ def test1():
     SetOperatorOptions(t)
     L = LabelAttributes()
     L.restrictNumberOfLabels = 0
-    L.textHeight1 = 0.04
+    L.textFont1.scale = 6
     SetPlotOptions(L)
     DrawPlots()
     SetActivePlots(1)
@@ -334,7 +337,7 @@ def test3():
 
     TestSection("Basic NETCDF reader with zone-centered data")
     swa = SaveWindowAttributes()
-    swa.width = 1000 
+    swa.width = 1000
     swa.height = 1000
     swa.screenCapture = 0
     db = "netcdf_test_data/oase-mapdata.nc"

@@ -5,10 +5,12 @@
 #
 #  Tests:      libsim - connecting to simulation and retrieving data from it.
 #
-#  Programmer: Kathleen Biagas 
-#  Date:       June 6, 2014 
+#  Programmer: Kathleen Biagas
+#  Date:       June 6, 2014
 #
 #  Modifications:
+#    Kathleen Biagas, Mon Nov 28, 2022
+#    Replace obsolete Label text attributes with new versions.
 #
 # ----------------------------------------------------------------------------
 
@@ -29,12 +31,12 @@ if connected:
     AddPlot("Vector", "zonal_vector")
     VectorAtts = VectorAttributes()
     VectorAtts.scale = 0.5
-    VectorAtts.colorByMag = 0
+    VectorAtts.colorByMagnitude = 0
     VectorAtts.vectorColor = (255, 255, 255, 255)
     SetPlotOptions(VectorAtts)
     AddPlot("Label", "zonal_label")
     LabelAtts = LabelAttributes()
-    LabelAtts.textHeight1 = 0.04
+    LabelAtts.textFont1.scale = 6
     SetPlotOptions(LabelAtts)
     DrawPlots()
     Test("var02")
@@ -53,7 +55,7 @@ if connected:
     Test("var03")
 
 # Close down the simulation.
-if started:        
+if started:
     sim.endsim()
 
 Exit()
