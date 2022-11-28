@@ -29,6 +29,9 @@
 #    Kathleen Biagas, Mon Dec 19 15:45:38 PST 2016
 #    Use FilledBoundary plot for materials instead of Subset.
 #
+#    Kathleen Biagas, Mon Nov 28, 2022
+#    Replace obsolete Label text attributes with new versions.
+#
 # ----------------------------------------------------------------------------
 RequiredDatabasePlugin("PDB")
 
@@ -110,7 +113,7 @@ def TestWithDatabase(db, testName):
     DrawPlots();
     vec = VectorAttributes()
     vec.nVectors = 1200
-    vec.colorByMag = 0
+    vec.colorByMagnitude = 0
     SetPlotOptions(vec)
     v.windowCoords = (-9.51217, -0.289482, 0.983025, 10.6717)
     v.viewportCoords = (0.2, 0.95, 0.15, 0.95)
@@ -203,7 +206,7 @@ def TestMixvars(db):
     v = View2DAttributes()
     v.windowCoords = (-9.51866, 3.29394, 13.9258, 26.4126)
     v.viewportCoords = (0.2, 0.95, 0.15, 0.95)
-    v.fullFrameActivationMode = v.Off 
+    v.fullFrameActivationMode = v.Off
     SetView2D(v)
     Test("pdb_nomix")
 
