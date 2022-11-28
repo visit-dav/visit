@@ -46,6 +46,9 @@
 #    Reorganized blueprint tests so they use a function. That function also
 #    uses new and old query calls, doubling the number of blueprint tests.
 #    It also tests energy group bin output for hdf5.
+# 
+#    Justin Privitera, Mon Nov 28 15:38:25 PST 2022
+#    Renamed energy group bins to energy group bounds.
 #
 # ----------------------------------------------------------------------------
 

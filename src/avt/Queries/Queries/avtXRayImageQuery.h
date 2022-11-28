@@ -91,6 +91,9 @@
 // 
 //    Justin Privitera, Tue Nov 22 14:56:04 PST 2022
 //    Added energy group bin variables and a setter.
+// 
+//    Justin Privitera, Mon Nov 28 15:38:25 PST 2022
+//    Renamed energy group bins to energy group bounds.
 //
 // ****************************************************************************
 

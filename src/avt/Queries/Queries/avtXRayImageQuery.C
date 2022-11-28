@@ -163,6 +163,9 @@ inline void Scale(double result[3], const double v[3], const double s)
 // 
 //    Justin Privitera, Tue Nov 22 14:56:04 PST 2022
 //    Set default values for energy group bin variables.
+// 
+//    Justin Privitera, Mon Nov 28 15:38:25 PST 2022
+//    Renamed energy group bins to energy group bounds.
 //
 // ****************************************************************************
 
@@ -240,6 +243,9 @@ avtXRayImageQuery::avtXRayImageQuery():
 // 
 //    Justin Privitera, Tue Nov 22 14:56:04 PST 2022
 //    Make sure the energy group bins are deleted.
+// 
+//    Justin Privitera, Mon Nov 28 15:38:25 PST 2022
+//    Renamed energy group bins to energy group bounds.
 //
 // ****************************************************************************
 
@@ -299,6 +305,9 @@ avtXRayImageQuery::~avtXRayImageQuery()
 // 
 //    Justin Privitera, Tue Nov 22 14:56:04 PST 2022
 //    Logic for energy group bins.
+// 
+//    Justin Privitera, Mon Nov 28 15:38:25 PST 2022
+//    Renamed energy group bins to energy group bounds.
 //
 // ****************************************************************************
 
@@ -335,7 +344,7 @@ avtXRayImageQuery::SetInputParams(const MapNode &params)
         SetEnergyGroupBounds(v);
     }
 
-    // Are you ever going to have just one energy group bin? No.
+    // Are you ever going to have just one energy group bound? No.
     // But this is here for helpful error messaging. It is possible
     // to pass just one number in under energy_group_bounds, so with
     // this logic here VisIt will give users sensible error messages
@@ -754,6 +763,11 @@ avtXRayImageQuery::SetBackgroundIntensities(const doubleVector &intensities)
 //
 //  Programmer: Justin Privitera
 //  Creation:   November 18, 2022
+// 
+//  Modifications:
+//    Justin Privitera, Mon Nov 28 15:38:25 PST 2022
+//    Renamed energy group bins to energy group bounds. Changed the function 
+//    name.
 //
 // ****************************************************************************
 
@@ -1049,6 +1063,9 @@ avtXRayImageQuery::GetSecondaryVars(std::vector<std::string> &outVars)
 //    Justin Privitera, Tue Nov 22 14:56:04 PST 2022
 //    Added logic to output energy group bounds in blueprint output if they are
 //    provided; include an info message if not.
+// 
+//    Justin Privitera, Mon Nov 28 15:38:25 PST 2022
+//    Renamed energy group bins to energy group bounds.
 //
 // ****************************************************************************
 
