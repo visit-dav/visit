@@ -1344,12 +1344,15 @@ PyBoundaryAttributes_SetParent(PyObject *obj, PyObject *parent)
     obj2->parent = parent;
 }
 
+// ****************************************************************************
+//  Modifications:
+//    Kathleen Bonnell, Mon Dec  2 18:06:04 PST 2002
+//    Make defaultAtts point to the passed atts directly.
+//
+// ****************************************************************************
 void
 PyBoundaryAttributes_SetDefaults(const BoundaryAttributes *atts)
 {
-    if(defaultAtts)
-        delete defaultAtts;
-
-    defaultAtts = new BoundaryAttributes(*atts);
+    defaultAtts = const_cast<BoundaryAttributes*>(atts);
 }
 

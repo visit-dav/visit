@@ -30,7 +30,7 @@ BoundaryAttributes::VarChangeRequiresReset()
     return true;
 }
 
-
+Target: xml2python
 Function: PyBoundaryAttributes_SetDefaults
 Declaration: PyBoundaryAttributes_SetDefaults
 Definition:
