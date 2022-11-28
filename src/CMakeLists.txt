@@ -530,6 +530,9 @@
 #    Update CMake minimum version to 3.23. Part of the CMake modernization
 #    effort.
 #
+#    Kathleen Biagas, Mon Nov 7, 2022
+#    Move include checks, symbol checks, etc to SystemChecks.cmake.
+#
 #****************************************************************************
 
 cmake_minimum_required(VERSION 3.24 FATAL_ERROR)
@@ -739,12 +742,8 @@ PROJECT(VISIT)
 
 
 include(${VISIT_SOURCE_DIR}/CMake/CheckMinimumCompilerVersion.cmake)
-
-
-#-----------------------------------------------------------------------------
-# Set extended platlform defs.
-#-----------------------------------------------------------------------------
-INCLUDE(${VISIT_SOURCE_DIR}/CMake/SetUpPlatformDefs.cmake)
+include(${VISIT_SOURCE_DIR}/CMake/SystemChecks.cmake)
+include(${VISIT_SOURCE_DIR}/CMake/SetUpPlatformDefs.cmake)
 
 
 #-----------------------------------------------------------------------------
@@ -1216,32 +1215,6 @@ ELSE(VISIT_HEADERS_SKIP_INSTALL)
     )
 ENDIF(VISIT_HEADERS_SKIP_INSTALL)
 
-#-----------------------------------------------------------------------------
-# Detect packages here. We could probably write macros that we can include from
-# elsewhere for this.
-#-----------------------------------------------------------------------------
-INCLUDE(${CMAKE_ROOT}/Modules/CheckIncludeFiles.cmake)
-INCLUDE(${CMAKE_ROOT}/Modules/CMakeBackwardCompatibilityC.cmake)
-INCLUDE(${CMAKE_ROOT}/Modules/CMakeBackwardCompatibilityCXX.cmake)
-INCLUDE(${CMAKE_ROOT}/Modules/CheckTypeSize.cmake)
-INCLUDE(${CMAKE_ROOT}/Modules/CheckFunctionExists.cmake)
-INCLUDE(${CMAKE_ROOT}/Modules/CheckSymbolExists.cmake)
-
-IF(VISIT_USE_X)
-    INCLUDE(${CMAKE_ROOT}/Modules/FindX11.cmake)
-    IF(NOT X11_X11_LIB)
-        SET(VISIT_USE_X OFF)
-        SET(HAVE_LIBX11 0)
-    ELSE(NOT X11_X11_LIB)
-        SET(HAVE_LIBX11 1)
-    ENDIF(NOT X11_X11_LIB)
-ELSE(VISIT_USE_X)
-    SET(HAVE_LIBX11 0)
-    SET(CMAKE_X_LIBS "" CACHE INTERNAL "X11 libs.")
-    SET(CMAKE_X_CFLAGS "" CACHE INTERNAL "X11 extra flags.")
-    SET(CMAKE_HAS_X 0 CACHE INTERNAL "Is X11 around.")
-ENDIF(VISIT_USE_X)
-INCLUDE(${CMAKE_ROOT}/Modules/TestBigEndian.cmake)
 
 # Configure Nektar++ support.
 # Do it before the other libraries like boost because many can depend on it.
@@ -1265,25 +1238,6 @@ IF(VISIT_JAVA)
     INCLUDE(${CMAKE_ROOT}/Modules/FindJava.cmake)
     ENABLE_LANGUAGE(Java)
 ENDIF(VISIT_JAVA)
-
-CHECK_INCLUDE_FILES (fcntl.h     HAVE_FCNTL_H)
-CHECK_INCLUDE_FILES (inttypes.h  HAVE_INTTYPES_H)
-IF(NOT APPLE)
-    CHECK_INCLUDE_FILES (malloc.h    HAVE_MALLOC_H)
-ELSE(NOT APPLE)
-    CHECK_INCLUDE_FILES (malloc/malloc.h    HAVE_MALLOC_H)
-ENDIF(NOT APPLE)
-CHECK_INCLUDE_FILES (limits.h    HAVE_LIMITS_H)
-CHECK_INCLUDE_FILES (memory.h    HAVE_MEMORY_H)
-CHECK_INCLUDE_FILES (stdint.h    HAVE_STDINT_H)
-CHECK_INCLUDE_FILES (stdlib.h    HAVE_STDLIB_H)
-CHECK_INCLUDE_FILES (strings.h   HAVE_STRINGS_H)
-CHECK_INCLUDE_FILES (string.h    HAVE_STRING_H)
-CHECK_INCLUDE_FILES (sys/time.h  HAVE_SYS_TIME_H)
-CHECK_INCLUDE_FILES (sys/types.h HAVE_SYS_TYPES_H)
-CHECK_INCLUDE_FILES (sys/stat.h  HAVE_SYS_STAT_H)
-CHECK_INCLUDE_FILES (unistd.h    HAVE_UNISTD_H)
-CHECK_INCLUDE_FILES (stdbool.h   HAVE_STDBOOL_H)
 
 # These need to come before VTK/Qt because they depend on it.
 
@@ -1897,140 +1851,6 @@ ELSE(VISIT_STATIC)
         ENDIF(APPLE)
     ENDIF(WIN32)
 ENDIF(VISIT_STATIC)
-
-# Check for type sizes, endian
-CHECK_TYPE_SIZE(bool                 SIZEOF_BOOLEAN)            # ${CMAKE_SIZEOF_BOOLEAN})
-CHECK_TYPE_SIZE(char                 SIZEOF_CHAR)               # ${CMAKE_SIZEOF_CHAR})
-CHECK_TYPE_SIZE(double               SIZEOF_DOUBLE)             # ${CMAKE_SIZEOF_DOUBLE})
-CHECK_TYPE_SIZE(float                SIZEOF_FLOAT)              # ${CMAKE_SIZEOF_FLOAT})
-CHECK_TYPE_SIZE(int                  SIZEOF_INT)                # ${CMAKE_SIZEOF_INT})
-CHECK_TYPE_SIZE(long                 SIZEOF_LONG)               # ${CMAKE_SIZEOF_LONG})
-CHECK_TYPE_SIZE("long double"        SIZEOF_LONG_DOUBLE)        # ${CMAKE_SIZEOF_LONG_DOUBLE})
-CHECK_TYPE_SIZE("long float"         SIZEOF_LONG_FLOAT)         # ${CMAKE_SIZEOF_LONG_FLOAT})
-CHECK_TYPE_SIZE("long long"          SIZEOF_LONG_LONG)          # ${CMAKE_SIZEOF_LONG_LONG})
-CHECK_TYPE_SIZE(short                SIZEOF_SHORT)              # ${CMAKE_SIZEOF_SHORT})
-CHECK_TYPE_SIZE("unsigned char"      SIZEOF_UNSIGNED_CHAR)      # ${CMAKE_SIZEOF_UNSIGNED_CHAR})
-CHECK_TYPE_SIZE("unsigned int"       SIZEOF_UNSIGNED_INT)       # ${CMAKE_SIZEOF_UNSIGNED_INT})
-CHECK_TYPE_SIZE("size_t"             SIZEOF_SIZE_T)             # ${CMAKE_SIZEOF_SIZE_T})
-CHECK_TYPE_SIZE("unsigned long"      SIZEOF_UNSIGNED_LONG)      # ${CMAKE_SIZEOF_UNSIGNED_LONG})
-CHECK_TYPE_SIZE("unsigned long long" SIZEOF_UNSIGNED_LONG_LONG) # ${CMAKE_SIZEOF_UNSIGNED_LONG_LONG})
-CHECK_TYPE_SIZE("unsigned short"     SIZEOF_UNSIGNED_SHORT)     # ${CMAKE_SIZEOF_UNSIGNED_SHORT})
-CHECK_TYPE_SIZE(void*                SIZEOF_VOID_P)             # ${CMAKE_SIZEOF_VOID_P})
-SET(CMAKE_REQUIRED_DEFINITIONS -D_LARGEFILE64_SOURCE)
-CHECK_TYPE_SIZE("off64_t" SIZEOF_OFF64_T)
-TEST_BIG_ENDIAN(WORDS_BIGENDIAN)
-
-# Check for threads
-IF(WIN32)
-    SET(HAVE_THREADS  1)
-ELSE(WIN32)
-    SET(HAVE_THREADS  ${CMAKE_USE_PTHREADS})
-ENDIF(WIN32)
-
-# manually check for socklen_t as CHECK_SYMBOL_EXISTS
-# doesn't appear to work on linux (at least)
-IF (HAVE_SOCKLEN_T MATCHES "^HAVE_SOCKLEN_T$")
-    MESSAGE(STATUS "Check for socklen_t")
-    TRY_COMPILE(HAVE_SOCKLEN_T
-        ${CMAKE_CURRENT_BINARY_DIR}
-        ${VISIT_SOURCE_DIR}/CMake/TestSocklenT.c
-        OUTPUT_VARIABLE SLT
-    )
-    IF (HAVE_SOCKLEN_T)
-        SET(HAVE_SOCKLEN_T 1 CACHE INTERNAL "support for socklen_t")
-        MESSAGE(STATUS "Check for socklen_t - found")
-    ELSE(HAVE_SOCKLEN_T)
-        SET(HAVE_SOCKLEN_T 0 CACHE INTERNAL "support for socklen_t")
-        MESSAGE(STATUS "Check for socklen_t - not found")
-    ENDIF (HAVE_SOCKLEN_T)
-ENDIF ()
-
-# Check for setbuf being a public member in fstream. We could test via
-# TRY_COMPILE in CMake 2.6.2. I think this is only false on the Suns, which
-# we kind of stopped supporting anyway.
-SET(NO_SETBUF 1)
-
-# Check for PTY support
-IF(NOT WIN32)
-    SET(VISIT_USE_PTY 1)
-    INCLUDE(${VISIT_SOURCE_DIR}/CMake/TestPTY.cmake)
-ENDIF(NOT WIN32)
-
-FUNCTION(CHECK_ISFINITE_EXISTS VAR)
-  IF(${VAR} MATCHES "^${VAR}$")
-    MESSAGE(STATUS "Check for isfinite")
-    TRY_COMPILE(tmpVar
-            ${CMAKE_CURRENT_BINARY_DIR}
-            ${VISIT_SOURCE_DIR}/CMake/Testisfinite.cpp
-            CMAKE_FLAGS -DLINK_LIBRARIES:STRING=m
-            OUTPUT_VARIABLE outvar)
-    IF(tmpVar)
-        SET(${VAR} 1 CACHE INTERNAL "isfinite found")
-        MESSAGE(STATUS "Check for isfinite - found")
-    ELSE(tmpVar)
-        SET(${VAR} 0 CACHE INTERNAL "isfinite found")
-        MESSAGE(STATUS "Check for isfinite - not found")
-        IF (NOT WIN32)
-            MESSAGE(STATUS "Check for isfinite - ${outvar}")
-        ENDIF (NOT WIN32)
-    ENDIF(tmpVar)
-  ENDIF()
-ENDFUNCTION(CHECK_ISFINITE_EXISTS)
-
-FUNCTION(CHECK_STRTOF_PROTOTYPE VAR)
-  IF(${VAR} MATCHES "^${VAR}$")
-    MESSAGE(STATUS "Check for strtof prototype")
-    TRY_COMPILE(tmpVar
-            ${CMAKE_CURRENT_BINARY_DIR}
-            ${VISIT_SOURCE_DIR}/CMake/Teststrtofprototype.cpp
-            OUTPUT_VARIABLE outvar)
-    IF(tmpVar)
-        SET(${VAR} 1 CACHE INTERNAL "strtof prototype")
-        MESSAGE(STATUS "Check for strtof prototype - found")
-    ELSE(tmpVar)
-        SET(${VAR} 0 CACHE INTERNAL "strtof prototype")
-        MESSAGE(STATUS "Check for strtof prototype - not found")
-    ENDIF(tmpVar)
-  ENDIF()
-ENDFUNCTION(CHECK_STRTOF_PROTOTYPE)
-
-FUNCTION(CHECK_FTIME_PROTOTYPE VAR)
-  IF(${VAR} MATCHES "^${VAR}$")
-    MESSAGE(STATUS "Check for ftime prototype")
-    TRY_COMPILE(tmpVar
-            ${CMAKE_CURRENT_BINARY_DIR}
-            ${VISIT_SOURCE_DIR}/CMake/Testftimeprototype.cpp
-            OUTPUT_VARIABLE outvar)
-    IF(tmpVar)
-        SET(${VAR} 1 CACHE INTERNAL "ftime prototype")
-        MESSAGE(STATUS "Check for ftime prototype - found")
-    ELSE(tmpVar)
-        SET(${VAR} 0 CACHE INTERNAL "ftime prototype")
-        MESSAGE(STATUS "Check for ftime prototype - not found")
-    ENDIF(tmpVar)
-  ENDIF()
-ENDFUNCTION(CHECK_FTIME_PROTOTYPE)
-
-# Check for some functions
-CHECK_FUNCTION_EXISTS(memmove HAVE_MEMMOVE)
-CHECK_FUNCTION_EXISTS(div HAVE_DIV)
-CHECK_FUNCTION_EXISTS(setenv HAVE_SETENV)
-CHECK_FUNCTION_EXISTS(strtof HAVE_STRTOF)
-CHECK_FUNCTION_EXISTS(aligned_alloc HAVE_ALIGNED_ALLOC)
-CHECK_STRTOF_PROTOTYPE(HAVE_STRTOF_PROTOTYPE)
-CHECK_FTIME_PROTOTYPE(HAVE_FTIME_PROTOTYPE)
-CHECK_ISFINITE_EXISTS(HAVE_ISFINITE)
-
-# If we're not disabling the select() call then check for it.
-IF(NOT VISIT_DISABLE_SELECT)
-    IF(WIN32)
-        SET(HAVE_SELECT TRUE)
-    ELSE(WIN32)
-        CHECK_FUNCTION_EXISTS(select HAVE_SELECT)
-    ENDIF(WIN32)
-ENDIF(NOT VISIT_DISABLE_SELECT)
-
-
 
 # Set the rendering size limit to 16384 so that we are not unnecessarily
 # constraining the user. There is no way to set this properly since this
