@@ -12196,7 +12196,7 @@ visit_Query_deprecated(PyObject *self, PyObject *args)
     GetDoubleVectorFromPyObject(tuple2, vals);
 
     if (!vals.empty())
-        params["energy_group_bins"] = vals;
+        params["energy_group_bounds"] = vals;
 
     debug3 << mn << " sending query params: " << params.ToXML() << endl;
 
