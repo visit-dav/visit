@@ -160,6 +160,9 @@ inline void Scale(double result[3], const double v[3], const double s)
 //    Justin Privitera, Tue Jun 14 11:30:54 PDT 2022
 //    Changed default output type to use constant instead of magic number and
 //    added default outdir value.
+// 
+//    Justin Privitera, Tue Nov 22 14:56:04 PST 2022
+//    Set default values for energy group bin variables.
 //
 // ****************************************************************************
 
@@ -171,6 +174,8 @@ avtXRayImageQuery::avtXRayImageQuery():
     backgroundIntensity = 0.0;
     backgroundIntensities = NULL;
     nBackgroundIntensities = 0;
+    energyGroupBins = NULL;
+    nEnergyGroupBins = 0;
     debugRay = -1;
     familyFiles = false;
     outputType = PNG_OUT;
@@ -232,6 +237,9 @@ avtXRayImageQuery::avtXRayImageQuery():
 //    Eric Brugger,Thu Jan 15 13:32:48 PST 2015
 //    I added support for specifying background intensities on a per bin
 //    basis.
+// 
+//    Justin Privitera, Tue Nov 22 14:56:04 PST 2022
+//    Make sure the energy group bins are deleted.
 //
 // ****************************************************************************
 
@@ -239,6 +247,8 @@ avtXRayImageQuery::~avtXRayImageQuery()
 {
     if (backgroundIntensities != NULL)
         delete [] backgroundIntensities;
+    if (energyGroupBins != NULL)
+        delete [] energyGroupBins;
 }
 
 // ****************************************************************************
@@ -286,6 +296,9 @@ avtXRayImageQuery::~avtXRayImageQuery()
 // 
 //    Justin Privitera, Tue Jun 14 11:30:54 PDT 2022
 //    Handled sending the output directory through.
+// 
+//    Justin Privitera, Tue Nov 22 14:56:04 PST 2022
+//    Logic for energy group bins.
 //
 // ****************************************************************************
 
@@ -313,6 +326,25 @@ avtXRayImageQuery::SetInputParams(const MapNode &params)
         doubleVector v;
         params.GetEntry("background_intensities")->ToDoubleVector(v);
         SetBackgroundIntensities(v);
+    }
+
+    if (params.HasNumericVectorEntry("energy_group_bins"))
+    {
+        doubleVector v;
+        params.GetEntry("energy_group_bins")->ToDoubleVector(v);
+        SetEnergyGroupBins(v);
+    }
+
+    // Are you ever going to have just one energy group bin? No.
+    // But this is here for helpful error messaging. It is possible
+    // to pass just one number in under energy_group_bins, so with
+    // this logic here VisIt will give users sensible error messages
+    // embedded within the blueprint metadata.
+    if (params.HasNumericEntry("energy_group_bins"))
+    {
+        doubleVector v;
+        v.push_back(params.GetEntry("energy_group_bins")->ToDouble());
+        SetEnergyGroupBins(v);
     }
 
     if (params.HasNumericEntry("debug_ray"))
@@ -715,6 +747,29 @@ avtXRayImageQuery::SetBackgroundIntensities(const doubleVector &intensities)
 }
 
 // ****************************************************************************
+//  Method: avtXRayImageQuery::SetEnergyGroupBins
+//
+//  Purpose:
+//    Set the energy group bins.
+//
+//  Programmer: Justin Privitera
+//  Creation:   November 18, 2022
+//
+// ****************************************************************************
+
+void
+avtXRayImageQuery::SetEnergyGroupBins(const doubleVector &bins)
+{
+    if (energyGroupBins != NULL)
+        delete [] energyGroupBins;
+
+    energyGroupBins = new double[bins.size()];
+    for (int i = 0; i < bins.size(); i++)
+        energyGroupBins[i] = bins[i];
+    nEnergyGroupBins = bins.size();
+}
+
+// ****************************************************************************
 //  Method: avtXRayImageQuery::SetDebugRay
 //
 //  Purpose:
@@ -990,6 +1045,10 @@ avtXRayImageQuery::GetSecondaryVars(std::vector<std::string> &outVars)
 //     - Reorganized metadata into categories
 //     - Added new metadata outputs: query parameters and extra data
 //     - Added imaging plane topologies
+// 
+//    Justin Privitera, Tue Nov 22 14:56:04 PST 2022
+//    Added logic to output energy group bounds in blueprint output if they are
+//    provided; include an info message if not.
 //
 // ****************************************************************************
 
@@ -1413,6 +1472,29 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
             data_out["state/xray_data/image_coords/y"].set(conduit::DataType::float32(y_coords_dim));
             float *spatial_yvals = data_out["state/xray_data/image_coords/y"].value();
             for (int i = 0; i < y_coords_dim; i ++) { spatial_yvals[i] = i * nearDy; }
+
+            // include energy group bins in blueprint output if they are provided
+            if (energyGroupBins)
+            {
+                if (z_coords_dim == nEnergyGroupBins) // only pass them thru if it makes sense to do so
+                {
+                    data_out["state/xray_data/image_coords/z"].set(conduit::DataType::float64(nEnergyGroupBins));
+                    double *spatial_zvals = data_out["state/xray_data/image_coords/z"].value();
+                    for (int i = 0; i < nEnergyGroupBins; i ++) { spatial_zvals[i] = energyGroupBins[i]; }                    
+                }
+                else
+                {
+                    std::stringstream out;
+                    out << "Energy group bins size mismatch: provided " 
+                        << nEnergyGroupBins << " bins, but " 
+                        << z_coords_dim << " in query results.";
+                    data_out["state/xray_data/image_coords/z"] = out.str();
+                }
+            }
+            else
+            {
+                data_out["state/xray_data/image_coords/z"] = "Energy group bins not provided.";
+            }
 
             data_out["state/xray_data/detectorWidth"] = 2. * nearWidth;
             data_out["state/xray_data/detectorHeight"] = 2. * nearHeight;
