@@ -44,6 +44,12 @@
 #    Justin Privitera, Tue Nov 15 14:54:35 PST 2022
 #    Added new tests for additional blueprint output metadata as well as
 #    imaging plane topologies.
+# 
+#    Justin Privitera, Tue Nov 22 14:56:04 PST 2022
+#    Updated numbering on later tests.
+#    Reorganized blueprint tests so they use a function. That function also
+#    uses new and old query calls, doubling the number of blueprint tests.
+#    It also tests energy group bin output for hdf5.
 #
 #    Justin Privitera, Wed Oct 12 11:38:11 PDT 2022
 #    Changed output type for many tests since bmp output type is removed.
@@ -406,13 +412,25 @@ def test_bp_state_xray_query(testname, xrayout):
     emisVarName = xrayout["domain_000000/state/xray_query/emisVarName"]
     TestValueEQ(testname + "_EmisVarName", emisVarName, "p")
 
-def test_bp_state_xray_data(testname, xrayout):
+NO_BINS = 0
+BIN_MISMATCH = 1
+BINS = 2
+
+def test_bp_state_xray_data(testname, xrayout, bin_state = NO_BINS):
     spatial_coords_x = xrayout["domain_000000/state/xray_data/image_coords/x"]
     spatial_coords_y = xrayout["domain_000000/state/xray_data/image_coords/y"]
+    energy_group_bins = xrayout["domain_000000/state/xray_data/image_coords/z"]
     TestValueEQ(testname + "_SpatialExtents0", [spatial_coords_x[0], spatial_coords_y[0]], [0.0, 0.0])
     TestValueEQ(testname + "_SpatialExtents1", [spatial_coords_x[1], spatial_coords_y[1]], [0.05, 0.05])
     TestValueEQ(testname + "_SpatialExtents2", [spatial_coords_x[2], spatial_coords_y[2]], [0.1, 0.1])
     TestValueEQ(testname + "_SpatialExtents3", [spatial_coords_x[-1], spatial_coords_y[-1]], [15.0, 10.0])
+    if (bin_state == NO_BINS):
+        TestValueEQ(testname + "_EnergyGroupBins", energy_group_bins, "Energy group bins not provided.")
+    elif (bin_state == BIN_MISMATCH):
+        baseline_string = "Energy group bins size mismatch: provided 3 bins, but 2 in query results."
+        TestValueEQ(testname + "_EnergyGroupBins", energy_group_bins, baseline_string)
+    elif (bin_state == BINS):
+        TestValueEQ(testname + "_EnergyGroupBins", [energy_group_bins[0], energy_group_bins[1]], [3.7, 4.2])
     
     detectorWidth = xrayout["domain_000000/state/xray_data/detectorWidth"]
     TestValueEQ(testname + "_DetectorWidth", detectorWidth, 15)
@@ -432,7 +450,7 @@ def test_bp_state_xray_data(testname, xrayout):
     pathLengthMin = xrayout["domain_000000/state/xray_data/pathLengthMin"]
     TestValueEQ(testname + "_PathLengthMin", pathLengthMin, 0)
 
-def test_bp_state(testname, conduit_db):
+def test_bp_state(testname, conduit_db, bin_state = NO_BINS):
     xrayout = conduit.Node()
     conduit.relay.io.blueprint.load_mesh(xrayout, conduit_db)
 
@@ -444,65 +462,55 @@ def test_bp_state(testname, conduit_db):
 
     test_bp_state_xray_view(testname, xrayout)
     test_bp_state_xray_query(testname, xrayout)
-    test_bp_state_xray_data(testname, xrayout)
+    test_bp_state_xray_data(testname, xrayout, bin_state)
 
-# hdf5
+def blueprint_test(output_type, outdir, testtextnumber, testname, hdf5 = False):
+    for i in range(0, 2):
+        setup_bp_test()
 
-setup_bp_test()
+        # run query and test the output message
+        if (i == 0):
+            Query("XRay Image", output_type, outdir, 1, 0.0, 2.5, 10.0, 0, 0, 10., 10., 300, 200, ("d", "p"))
+        elif (i == 1):
+            params = dict() # GetQueryParameters("XRay Image")
+            params["output_type"] = output_type
+            params["output_dir"] = outdir
+            params["divide_emis_by_absorb"] = 1;
+            params["origin"] = (0.0, 2.5, 10.0);
+            params["theta"] = 0;
+            params["phi"] = 0;
+            params["width"] = 10.;
+            params["height"] = 10.;
+            params["image_size"] = (300, 200)
+            params["vars"] = ("d", "p")
+            Query("XRay Image", params)
+        s = GetQueryOutputString()
+        TestText("xrayimage" + str(testtextnumber + i), s)
+        DeleteAllPlots()
+        CloseDatabase(silo_data_path("curv3d.silo"))
 
-# run query and test the output message
-Query("XRay Image", "hdf5", conduit_dir_hdf5, 1, 0.0, 2.5, 10.0, 0, 0, 10., 10., 300, 200, ("d", "p"))
-s = GetQueryOutputString()
-TestText("xrayimage32", s)
-DeleteAllPlots()
-CloseDatabase(silo_data_path("curv3d.silo"))
+        # test opening the bp output and visualizing in visit
+        conduit_db = pjoin(outdir, "output.root")
+        OpenDatabase(conduit_db)
+        AddPlot("Pseudocolor", "mesh_image_topo/intensities")
+        DrawPlots()
+        Test(testname + str(i))
+        DeleteAllPlots()
+        CloseDatabase(conduit_db)
 
-# test opening the bp output and visualizing in visit
-conduit_db = pjoin(conduit_dir_hdf5, "output.root")
-OpenDatabase(conduit_db)
-AddPlot("Pseudocolor", "mesh_image_topo/intensities")
-DrawPlots()
-Test("Blueprint_HDF5_X_Ray_Output")
-DeleteAllPlots()
-CloseDatabase(conduit_db)
+    if (hdf5):
+        test_bp_state(testname + str(i), conduit_db) # no bins
+        setup_bp_test()
+        Query("XRay Image", output_type, outdir, 1, 0.0, 2.5, 10.0, 0, 0, 10., 10., 300, 200, ("d", "p"), [1,2,3])
+        test_bp_state(testname + str(i), conduit_db, BIN_MISMATCH) # no bins
+        Query("XRay Image", output_type, outdir, 1, 0.0, 2.5, 10.0, 0, 0, 10., 10., 300, 200, ("d", "p"), [3.7, 4.2])
+        test_bp_state(testname + str(i), conduit_db, BINS) # no bins
+        DeleteAllPlots()
+        CloseDatabase(silo_data_path("curv3d.silo"))
 
-test_bp_state("Blueprint_HDF5_X_Ray_Output", conduit_db)
-
-# json
-
-setup_bp_test()
-
-Query("XRay Image", "json", conduit_dir_json, 1, 0.0, 2.5, 10.0, 0, 0, 10., 10., 300, 200, ("d", "p"))
-s = GetQueryOutputString()
-TestText("xrayimage33", s)
-DeleteAllPlots()
-CloseDatabase(silo_data_path("curv3d.silo"))
-
-conduit_db = pjoin(conduit_dir_json, "output.root")
-OpenDatabase(conduit_db)
-AddPlot("Pseudocolor", "mesh_image_topo/intensities")
-DrawPlots()
-Test("Blueprint_JSON_X_Ray_Output")
-DeleteAllPlots()
-CloseDatabase(conduit_db)
-
-# yaml
-
-setup_bp_test()
-
-Query("XRay Image", "yaml", conduit_dir_yaml, 1, 0.0, 2.5, 10.0, 0, 0, 10., 10., 300, 200, ("d", "p"))
-s = GetQueryOutputString()
-TestText("xrayimage34", s)
-DeleteAllPlots()
-CloseDatabase(silo_data_path("curv3d.silo"))
-
-conduit_db = pjoin(conduit_dir_yaml, "output.root")
-OpenDatabase(conduit_db)
-AddPlot("Pseudocolor", "mesh_image_topo/intensities")
-DrawPlots()
-Test("Blueprint_YAML_X_Ray_Output")
-DeleteAllPlots()
-CloseDatabase(conduit_db)
+blueprint_test("hdf5", conduit_dir_hdf5, 32, "Blueprint_HDF5_X_Ray_Output", True)
+blueprint_test("json", conduit_dir_json, 34, "Blueprint_JSON_X_Ray_Output", False)
+blueprint_test("yaml", conduit_dir_yaml, 36, "Blueprint_YAML_X_Ray_Output", False)
 
 # test imaging plane topos
 
@@ -565,7 +573,7 @@ setup_bp_test()
 
 Query("XRay Image", "hdf5", dir_dne, 1, 0.0, 2.5, 10.0, 0, 0, 10., 10., 300, 300, ("d", "p"))
 s = GetQueryOutputString()
-TestText("xrayimage35", s)
+TestText("xrayimage38", s)
 DeleteAllPlots()
 CloseDatabase(silo_data_path("curv3d.silo"))
 
@@ -587,7 +595,7 @@ if not platform.system() == "Windows":
     # strip out two lines that make the test machine dependent
     s = '\n'.join([line if line[:4] != "file" else '' for line in s.split('\n')])
     s = '\n'.join([line if line[:4] != "line" else '' for line in s.split('\n')])
-    TestText("xrayimage36", s)
+    TestText("xrayimage39", s)
     DeleteAllPlots()
     CloseDatabase(silo_data_path("curv3d.silo"))
 

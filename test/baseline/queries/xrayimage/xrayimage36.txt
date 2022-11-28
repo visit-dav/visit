@@ -1,6 +1,1 @@
-engine_ser: Conduit Exception in X Ray Image Query Execute: 
-
-
-
-message: 
-HDF5 Error code-1 Error opening HDF5 file for writing: VISIT_TOP_DIR/test/testdir/baddir/output.root
+The x ray image query results were written to the file VISIT_TOP_DIR/test/testdir/yaml/output.root
