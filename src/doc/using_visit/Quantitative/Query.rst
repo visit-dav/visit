@@ -698,9 +698,9 @@ XRay Image
     The following is included:
 
     +--------------------------+----------------------------------------------+
-    | *divideEmisByAbsorb*     | Flag indicating if emissivity was divided by |
-    |                          | absorbtivity in |br| the calculations. More  |
-    |                          | details can be found above.                  |
+    | *divideEmisByAbsorb*     | A flag indicating if emissivity was divided  |
+    |                          | by absorbtivity |br| in the calculations.    |
+    |                          | More details can be found above.             |
     +--------------------------+----------------------------------------------+
     | *divideEmisByAbsorbStr*  | A String representation of the               |
     |                          | divideEmisByAbsorb parameter. |br| See above |
