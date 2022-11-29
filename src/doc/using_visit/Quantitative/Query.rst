@@ -625,8 +625,8 @@ XRay Image
     The following is included:
 
     +--------------------------+----------------------------------------------+
-    | *normal*                 | x, y, and z components represent the view    |
-    |                          | normal vector that |br| was used in          |
+    | *normal*                 | The x, y, and z components represent the     |
+    |                          | view normal vector |br| that was used in     |
     |                          | the calculations.                            |
     +--------------------------+----------------------------------------------+
     | *focus*                  | x, y, and z components represent the focal   |
