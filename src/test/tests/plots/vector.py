@@ -26,6 +26,9 @@
 #    Added call(s) to DrawPlots() b/c of changes to the default plot state 
 #    behavior when an operator is added.
 #
+#    Kathleen Biagas, Tue Nov 29 10:41:39 PST 2022
+#    Replace obsolte 'colorByMag' vector att with 'colorByMagnitude'.
+#
 # ----------------------------------------------------------------------------
 
 
@@ -95,7 +98,7 @@ SetPlotOptions(vector_atts)
 Test("vector_08")
 
 vector_atts.headOn = 1
-vector_atts.colorByMag = 0
+vector_atts.colorByMagnitude = 0
 vector_atts.vectorColor = (255, 0, 255, 255)
 SetPlotOptions(vector_atts)
 Test("vector_09")
@@ -104,7 +107,7 @@ Test("vector_09")
 #
 # Test zonal vectors.
 #
-vector_atts.colorByMag = 1
+vector_atts.colorByMagnitude = 1
 SetPlotOptions(vector_atts)
 ChangeActivePlotsVar("disp")
 Test("vector_10")
