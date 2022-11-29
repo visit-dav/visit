@@ -11926,6 +11926,9 @@ visit_GetQueryParameters(PyObject *self, PyObject *args)
 //   Justin Privitera, Tue Nov 22 14:56:04 PST 2022
 //   Added another tuple (tuple2) to store double vector info.
 //   This one is used for the x ray image query to store energy group bins.
+// 
+//    Justin Privitera, Mon Nov 28 15:38:25 PST 2022
+//    Renamed energy group bins to energy group bounds.
 //
 // ****************************************************************************
 
@@ -12225,7 +12228,7 @@ visit_Query_deprecated(PyObject *self, PyObject *args)
     GetDoubleVectorFromPyObject(tuple2, vals);
 
     if (!vals.empty())
-        params["energy_group_bins"] = vals;
+        params["energy_group_bounds"] = vals;
 
     debug3 << mn << " sending query params: " << params.ToXML() << endl;
 
