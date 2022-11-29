@@ -621,7 +621,7 @@ XRay Image
     In addition to "time" and "cycle", there are three categories of metadata: *view parameters*, *query parameters*, and *other metadata*.
     
     **View parameters** can be found under "state/xray_view".
-    This metadata represents the view-related values that were used in x ray image query calculations, regardless of whether the simplified or complete view specification was used when calling the query.
+    This metadata represents the view-related values that were used in the x ray image query calculations, regardless of whether the simplified or complete view specification was used when calling the query.
     The following is included:
 
     +--------------------------+----------------------------------------------+
