@@ -904,6 +904,90 @@ GetStringVectorFromPyObject(PyObject *obj, stringVector &vec)
 }
 
 // ****************************************************************************
+// Method: GetDoubleVectorFromPyObject
+//
+// Purpose:
+//   Populates a double vector from values in a PyObject.
+//
+// Arguments:
+//   obj : The PyObject that we're checking for strings.
+//   vec : The double vector that we're populating.
+//
+// Returns:    True if successful; false otherwise.
+//
+// Programmer: Justin Privitera
+// Creation:   11/21/22
+//
+// Modifications:
+//
+// ****************************************************************************
+
+bool
+GetDoubleVectorFromPyObject(PyObject *obj, doubleVector &vec)
+{
+    bool retval = true;
+
+    if(obj == 0)
+    {
+        retval = false;
+    }
+    else if(PyTuple_Check(obj))
+    {
+        // Extract arguments from the tuple.
+        for(int i = 0; i < PyTuple_Size(obj); ++i)
+        {
+            PyObject *item = PyTuple_GET_ITEM(obj, i);
+            if(PyFloat_Check(item))
+                vec.push_back(PyFloat_AS_DOUBLE(item));
+            else if(PyInt_Check(item))
+                vec.push_back(double(PyInt_AS_LONG(item)));
+            else if(PyLong_Check(item))
+                vec.push_back(double(PyLong_AsDouble(item)));
+            else
+            {
+                VisItErrorFunc("The tuple must contain all numbers.");
+                retval = false;
+                break;
+            }
+        }
+    }
+    else if(PyList_Check(obj))
+    {
+        // Extract arguments from the list.
+        for(int i = 0; i < PyList_Size(obj); ++i)
+        {
+            PyObject *item = PyList_GET_ITEM(obj, i);
+            if(PyFloat_Check(item))
+                vec.push_back(PyFloat_AS_DOUBLE(item));
+            else if(PyInt_Check(item))
+                vec.push_back(double(PyInt_AS_LONG(item)));
+            else if(PyLong_Check(item))
+                vec.push_back(double(PyLong_AsDouble(item)));
+            else
+            {
+                VisItErrorFunc("The list must contain all numbers.");
+                retval = false;
+                break;
+            }
+        }
+    }
+    else if(PyFloat_Check(obj))
+        vec.push_back(PyFloat_AS_DOUBLE(obj));
+    else if(PyInt_Check(obj))
+        vec.push_back(double(PyInt_AS_LONG(obj)));
+    else if(PyLong_Check(obj))
+        vec.push_back(double(PyLong_AsDouble(obj)));
+    else
+    {
+        retval = false;
+        VisItErrorFunc("The object could not be converted to a "
+                       "vector of doubles.");
+    }
+
+    return retval;
+}
+
+// ****************************************************************************
 // Method: GetDoubleArrayFromPyObject
 //
 // Purpose:
@@ -11838,6 +11922,13 @@ visit_GetQueryParameters(PyObject *self, PyObject *args)
 //   Now you can pass the output type directly to the xray image query as a
 //   string and it will handle which output type it should be internally.
 //   You can also send the output directory to the xray image query.
+// 
+//   Justin Privitera, Tue Nov 22 14:56:04 PST 2022
+//   Added another tuple (tuple2) to store double vector info.
+//   This one is used for the x ray image query to store energy group bins.
+// 
+//    Justin Privitera, Mon Nov 28 15:38:25 PST 2022
+//    Renamed energy group bins to energy group bounds.
 //
 // ****************************************************************************
 
@@ -11852,6 +11943,7 @@ visit_Query_deprecated(PyObject *self, PyObject *args)
     double darg;
     doubleVector darg1(3), darg2(2), darg3(2);
     PyObject *tuple = NULL;
+    PyObject *tuple2 = NULL;
 
     bool parse_success = false;
 
@@ -11883,16 +11975,16 @@ visit_Query_deprecated(PyObject *self, PyObject *args)
         char *outputDir = NULL;
         intVector ps(2);
         PyErr_Clear();
-        parse_success = PyArg_ParseTuple(args, "sssidddddddii|O", &queryName,
+        parse_success = PyArg_ParseTuple(args, "sssidddddddii|OO", &queryName,
                                          &imageType, &outputDir, &arg2,
                                          &(darg1[0]), &(darg1[1]), &(darg1[2]),
                                          &(darg2[0]), &(darg2[1]),
                                          &(darg3[0]), &(darg3[1]),
-                                         &(ps[0]), &(ps[1]), &tuple);
+                                         &(ps[0]), &(ps[1]), &tuple, &tuple2);
         if (parse_success)
         {
             debug3 << mn << "parsed " <<  queryName
-                   << " with 2nd attempt (sssidddddddii)" << endl;
+                   << " with 2nd attempt (sssidddddddii|OO)" << endl;
             params["output_type"] = imageType;
             params["output_dir"] = outputDir;
             params["divide_emis_by_absorb"] = arg2;
@@ -11908,16 +12000,16 @@ visit_Query_deprecated(PyObject *self, PyObject *args)
         else
         {
             PyErr_Clear();
-            parse_success = PyArg_ParseTuple(args, "sisidddddddii|O", &queryName,
+            parse_success = PyArg_ParseTuple(args, "sisidddddddii|OO", &queryName,
                                              &arg1, &outputDir, &arg2,
                                              &(darg1[0]), &(darg1[1]), &(darg1[2]),
                                              &(darg2[0]), &(darg2[1]),
                                              &(darg3[0]), &(darg3[1]),
-                                             &(ps[0]), &(ps[1]), &tuple);
+                                             &(ps[0]), &(ps[1]), &tuple, &tuple2);
             if (parse_success)
             {
                 debug3 << mn << "parsed " <<  queryName
-                       << " with 3rd attempt (sisidddddddii)" << endl;
+                       << " with 3rd attempt (sisidddddddii|OO)" << endl;
                 params["output_type"] = arg1;
                 params["output_dir"] = outputDir;
                 params["divide_emis_by_absorb"] = arg2;
@@ -12129,6 +12221,14 @@ visit_Query_deprecated(PyObject *self, PyObject *args)
     params["query_name"] = qname;
     if (!vars.empty())
         params["vars"] = vars;
+
+    // Check the tuple2 argument.
+    // It is used for the x ray image query.
+    doubleVector vals;
+    GetDoubleVectorFromPyObject(tuple2, vals);
+
+    if (!vals.empty())
+        params["energy_group_bounds"] = vals;
 
     debug3 << mn << " sending query params: " << params.ToXML() << endl;
 

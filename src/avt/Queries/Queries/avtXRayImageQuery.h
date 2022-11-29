@@ -93,6 +93,12 @@
 // 
 //    Justin Privitera, Tue Nov 15 11:44:01 PST 2022
 //    Added WriteBlueprintImagingPlane function if conduit is defined
+// 
+//    Justin Privitera, Tue Nov 22 14:56:04 PST 2022
+//    Added energy group bin variables and a setter.
+// 
+//    Justin Privitera, Mon Nov 28 15:38:25 PST 2022
+//    Renamed energy group bins to energy group bounds.
 //
 // ****************************************************************************
 
@@ -124,6 +130,8 @@ class QUERY_API avtXRayImageQuery : public avtDatasetQuery
     void                      SetBackgroundIntensity(const double &intensity);
     void                      SetBackgroundIntensities(
                                   const doubleVector &intensities);
+    void                      SetEnergyGroupBounds(
+                                  const doubleVector &bins);
     void                      SetDebugRay(const int &ray);
     void                      SetOutputRayBounds(const bool &flag);
     void                      SetFamilyFiles(const bool &flag);
@@ -138,6 +146,8 @@ class QUERY_API avtXRayImageQuery : public avtDatasetQuery
     double                    backgroundIntensity;
     double                   *backgroundIntensities;
     int                       nBackgroundIntensities;
+    double                   *energyGroupBounds;
+    int                       nEnergyGroupBounds;
     int                       debugRay;
     bool                      outputRayBounds;
     int                       filenameScheme;
