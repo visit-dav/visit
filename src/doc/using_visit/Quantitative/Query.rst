@@ -480,6 +480,11 @@ XRay Image
     |                          | VTK file. The default is off. |br| The name  |
     |                          | of the file is ``ray_bounds.vtk``.           |
     +------+-------------------+----------------------------------------------+
+    | *energy_group_bounds*    | The energy group bounds can be handed off to |
+    |                          | the query in a list or tuple. |br| The       |
+    |                          | values will appear in Blueprint output       |
+    |                          | metadata.                                    |
+    +------+-------------------+----------------------------------------------+
     
     When specifying "bov" or "rawfloats" output, the value can be either 32 or 64 bit floating point values.
     The number of bits is determined by the number of bits in the data being processed.
