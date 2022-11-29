@@ -3,10 +3,8 @@
 # details.  No copyright assignment is required to contribute to VisIt.
 
 #
-# Use the FMS_DIR hint from the config-site .cmake file 
+# Use the FMS_DIR hint from the config-site .cmake file
 #
-
-INCLUDE(${VISIT_SOURCE_DIR}/CMake/SetUpThirdParty.cmake)
 
 SET_UP_THIRD_PARTY(FMS LIBS fms)
 

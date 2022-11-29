@@ -27,8 +27,6 @@
 
 # Use the BOXLIB_DIR hint from the config-site .cmake file 
 
-INCLUDE(${VISIT_SOURCE_DIR}/CMake/SetUpThirdParty.cmake)
-
 IF (WIN32)
   SET_UP_THIRD_PARTY(BOXLIB LIBS BoxLib2D BoxLib3D)
 ELSE (WIN32)
@@ -51,5 +49,4 @@ IF(BOXLIB_FOUND)
   UNSET(tmp)
   UNSET(BOXLIB_LIB CACHE)
 ENDIF(BOXLIB_FOUND)
-
 

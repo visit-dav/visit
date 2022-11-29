@@ -9,10 +9,7 @@
 #
 #****************************************************************************/
 
-# Use the ADVIO_DIR hint from the config-site .cmake file 
-
-INCLUDE(${VISIT_SOURCE_DIR}/CMake/SetUpThirdParty.cmake)
+# Use the ADVIO_DIR hint from the config-site .cmake file
 
 SET_UP_THIRD_PARTY(ADVIO LIBS AdvDocIO AdvFileIO AdvBase)
-
 

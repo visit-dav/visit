@@ -15,6 +15,11 @@
 #
 #*****************************************************************************
 
+if(NOT EXISTS ${VISIT_OSPRAY_DIR})
+    message(STATUS "VISIT_OSPRAY_DIR is not specified or does not exits.  please check the value and re-run cmake. Otherwise ospray will not be used.")
+    return()
+endif()
+
 if(OSPRAY_VERSION VERSION_LESS_EQUAL "1.6.1")
   IF(VISIT_OSPRAY)
 
@@ -194,8 +199,6 @@ else() # ospray > 1.6.1
         # vtk's find for opsray needs this
         set(ospray_DIR ${VISIT_OSPRAY_DIR}/${LIB}/cmake/ospray-${OSPRAY_VERSION})
     endif()
-
-    include(${VISIT_SOURCE_DIR}/CMake/SetUpThirdParty.cmake)
 
     SET_UP_THIRD_PARTY(OSPRAY LIBS ${OSPRAY_LIBRARIES})
 

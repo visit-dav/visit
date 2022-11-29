@@ -26,7 +26,7 @@
 #
 #****************************************************************************/
 
-# Use the XDMF_DIR hint from the config-site .cmake file 
+# Use the XDMF_DIR hint from the config-site .cmake file
 #
 
 IF(VISIT_XDMF_LIBDEP)
@@ -36,8 +36,6 @@ IF(VISIT_XDMF_LIBDEP)
         RETURN()
     ENDIF()
 ENDIF()
-
-INCLUDE(${VISIT_SOURCE_DIR}/CMake/SetUpThirdParty.cmake)
 
 SET_UP_THIRD_PARTY(XDMF LIBS Xdmf)
 

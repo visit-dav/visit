@@ -533,6 +533,9 @@
 #    Kathleen Biagas, Mon Nov 7, 2022
 #    Move include checks, symbol checks, etc to SystemChecks.cmake.
 #
+#    Kathleen Biagas, Tue Nov 29, 2022
+#    Move FindXXX calls to SetUpThirdParty.cmake. Add include for that file.
+#
 #****************************************************************************
 
 cmake_minimum_required(VERSION 3.24 FATAL_ERROR)
@@ -679,42 +682,6 @@ IF (NOT WIN32)
   ENDIF("${VISIT_CONFIG_SITE_FILE_FOUND}" STREQUAL  "NOTFOUND")
 
 ENDIF (NOT WIN32)
-
-#-----------------------------------------------------------------------------
-# If the config-site file above has not set a VTK version set a
-# default VTK version of the minimum required.
-#-----------------------------------------------------------------------------
-IF(NOT VTK_VERSION)
-  IF(VISIT_VTK_VERSION)
-      IF(${VISIT_VTK_VERSION} VERSION_LESS ${VTK_MINIMUM_VERSION})
-          MESSAGE(FATAL_ERROR "VTK version must be at least ${VTK_MINIMUM_VERSION}")
-      ENDIF()
-      SETUP_APP_VERSION(VTK ${VISIT_VTK_VERSION})
-  ELSE()
-      MESSAGE(STATUS "VISIT_VTK_VERSION NOT FOUND assuming ${VTK_MINIMUM_VERSION}")
-      SETUP_APP_VERSION(VTK ${VTK_MINIMUM_VERSION})
-  ENDIF()
-ENDIF()
-
-
-#-----------------------------------------------------------------------------
-# If the config-site file above has not set a NEKTAR++ version set a
-# default NEKTAR++ version of the minimum required.
-#-----------------------------------------------------------------------------
-IF(EXISTS ${VISIT_NEKTAR++_DIR})
-  IF(NOT NEKTAR++_VERSION)
-    IF(VISIT_NEKTAR++_VERSION)
-      IF(${VISIT_NEKTAR++_VERSION} VERSION_LESS ${NEKTAR++_MINIMUM_VERSION})
-          MESSAGE(FATAL_ERROR "NEKTAR++ version must be at least ${NEKTAR++_MINIMUM_VERSION}")
-      ENDIF()
-      SETUP_APP_VERSION(NEKTAR++ ${VISIT_NEKTAR++_VERSION})
-    ELSE()
-      MESSAGE(STATUS "VISIT_NEKTAR++_VERSION NOT FOUND assuming ${NEKTAR++_MINIMUM_VERSION}")
-      SETUP_APP_VERSION(NEKTAR++ ${NEKTAR++_MINIMUM_VERSION})
-    ENDIF()
-  ENDIF()
-ENDIF()
-
 
 #-----------------------------------------------------------------------------
 # If not already set, we use a default build type of Release
@@ -1018,7 +985,7 @@ unset(v_list)
 #-----------------------------------------------------------------------------
 # Init BLT
 #-----------------------------------------------------------------------------
-# This also includes 
+# This also includes
 # VisIt's BLT defaults
 include(CMake/SetupBLT.cmake)
 
@@ -1216,51 +1183,8 @@ ELSE(VISIT_HEADERS_SKIP_INSTALL)
 ENDIF(VISIT_HEADERS_SKIP_INSTALL)
 
 
-# Configure Nektar++ support.
-# Do it before the other libraries like boost because many can depend on it.
-INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindNektar++.cmake)
+include(${VISIT_SOURCE_DIR}/CMake/SetUpThirdParty.cmake)
 
-INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindVisItDamaris.cmake)
-
-INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindVisItBoost.cmake)
-
-IF( (VISIT_PYTHON_SCRIPTING OR VISIT_PYTHON_FILTERS) AND NOT VISIT_DBIO_ONLY)
-    INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindVisItPython.cmake)
-    IF(NOT PYTHON_FOUND)
-        MESSAGE(FATAL_ERROR "Python support requested, but could not find Python "
-                            "(PYTHON_FOUND=FALSE) "
-                            "(VISIT_PYTHON_SCRIPTING=${VISIT_PYTHON_SCRIPTING} "
-                            " VISIT_PYTHON_FILTERS=${VISIT_PYTHON_FILTERS})")
-    ENDIF()
-ENDIF((VISIT_PYTHON_SCRIPTING OR VISIT_PYTHON_FILTERS) AND NOT VISIT_DBIO_ONLY)
-
-IF(VISIT_JAVA)
-    INCLUDE(${CMAKE_ROOT}/Modules/FindJava.cmake)
-    ENABLE_LANGUAGE(Java)
-ENDIF(VISIT_JAVA)
-
-# These need to come before VTK/Qt because they depend on it.
-
-# zlib
-INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindZlib.cmake)
-
-#ospray
-IF(EXISTS ${VISIT_OSPRAY_DIR})
-    include(${VISIT_SOURCE_DIR}/CMake/FindOSPRay.cmake)
-endif()
-
-# szip and jpeg
-INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindJPEG.cmake)
-INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindSzip.cmake)
-
-# Configure Qt and Qwt support.
-IF(NOT VISIT_DBIO_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_SERVER_COMPONENTS_ONLY)
-    INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindVisItQt.cmake)
-    INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindQwt.cmake)
-ENDIF(NOT VISIT_DBIO_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_SERVER_COMPONENTS_ONLY)
-
-# Configure VTK support.
-INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindVisItVTK.cmake)
 
 # Enable thread build of VisIt
 IF(VISIT_THREAD)
@@ -1331,109 +1255,11 @@ endif()
 
 
 
-# Configure PySide Support
-if(VTK_VERSION VERSION_EQUAL "8.1.0")
-  if(VISIT_PYTHON_SCRIPTING AND PYTHONLIBS_FOUND
-                          AND NOT VISIT_DBIO_ONLY
-                          AND NOT VISIT_ENGINE_ONLY
-                          AND NOT VISIT_SERVER_COMPONENTS_ONLY)
-    INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindPySide.cmake)
-  endif()
-endif()
-
-# Include Ice-T support if we can.
-IF(VISIT_PARALLEL)
-    INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindIceT.cmake)
-ENDIF(VISIT_PARALLEL)
-
 # dl and large file support.
 IF(CMAKE_HOST_UNIX)
   SET(DL_LIB dl)
   ADD_DEFINITIONS(-D_LARGEFILE64_SOURCE)
 ENDIF(CMAKE_HOST_UNIX)
-
-IF(NOT VISIT_BUILD_MINIMAL_PLUGINS OR VISIT_SELECTED_DATABASE_PLUGINS)
-    # Configure HDF5 support.
-    # Do it before the other libraries since many can depend on it.
-    INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindHDF5.cmake)
-
-    # Configure adios support.
-    INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindADIOS.cmake)
-
-    # Configure adios2 support.
-    INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindADIOS2.cmake)
-
-    # Configure advio support.
-    INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindADVIO.cmake)
-
-    # Configure blosc support.
-    INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindBlosc.cmake)
-
-    # Configure Boxlib support.
-    INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindBoxlib.cmake)
-
-    # Configure cfitsio support.
-    INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindCFITSIO.cmake)
-
-    # Configure CGNS support.
-    INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindCGNS.cmake)
-
-    # Configure Conduit support.
-    INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindConduit.cmake)
-
-    # Configure FMS support.
-    INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindFMS.cmake)
-
-    # Configure gdal support.
-    INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindGDAL.cmake)
-
-    # Configure h5part support.
-    INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindH5Part.cmake)
-
-    # Configure MOAB support.
-    INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindMOAB.cmake)
-
-    # Configure mfem support.
-    INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindMFEM.cmake)
-
-    # Configure Mili support.
-    INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindMili.cmake)
-
-    # Configure netcdf support.
-    INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindNetcdf.cmake)
-
-    # Configure OpenEXR support.
-    INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindOpenEXR.cmake)
-
-    # Configure Silo support.
-    INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindSilo.cmake)
-
-    # Configure Xdmf support.
-    INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindXdmf.cmake)
-
-    # Configure MDSplus support.
-    INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindMDSplus.cmake)
-
-    # Configure Uintah support.
-    INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindUintah.cmake)
-
-    # Configure PIDX support.
-    INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindPIDX.cmake)
-
-    # Configure VTKh support.
-    if(VTK_VERSION VERSION_EQUAL "8.1.0")
-        if(VISIT_VTKH_DIR)
-            INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindVTKh.cmake)
-        endif()
-    endif()
-
-    # Configure GFortran support.
-    INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindGFortran.cmake)
-ENDIF()
-
-IF (WIN32 AND VISIT_MAKE_NSIS_INSTALLER)
-    INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindNSIS.cmake)
-ENDIF (WIN32 AND VISIT_MAKE_NSIS_INSTALLER)
 
 IF(VISIT_STATIC)
     SET(BUILD_SHARED_LIBS 0)

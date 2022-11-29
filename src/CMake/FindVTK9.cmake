@@ -9,9 +9,7 @@
 #
 #****************************************************************************/
 
-include(${VISIT_SOURCE_DIR}/CMake/ThirdPartyInstallLibrary.cmake)
-
-# Use the VTK_DIR hint from the config-site .cmake file 
+# Use the VTK_DIR hint from the config-site .cmake file
 
 if(EXISTS ${VISIT_VTK_DIR}/lib/cmake/vtk-${VTK_MAJOR_VERSION}.${VTK_MINOR_VERSION}/VTKConfig.cmake)
     SET(VTK_DIR ${VISIT_VTK_DIR}/lib/cmake/vtk-${VTK_MAJOR_VERSION}.${VTK_MINOR_VERSION})
@@ -20,7 +18,7 @@ endif()
 message(STATUS "Checking for VTK in ${VTK_DIR}")
 
 # Set up our list of required and optional vtk modules
-set(REQ_VTK_MODS 
+set(REQ_VTK_MODS
         CommonCore
         CommonDataModel
         FiltersCore
@@ -120,18 +118,18 @@ else(VISIT_VTK_SKIP_INSTALL)
     # Base libs and their python wrappings
     foreach(VTKLIB ${VTK_AVAILABLE_COMPONENTS})
         SETUP_INSTALL("${VTKLIB}")
-    endforeach(VTKLIB)  
+    endforeach(VTKLIB)
 
     if(VISIT_HEADERS_SKIP_INSTALL)
         message(STATUS "Skipping vtk headers installation")
     else(VISIT_HEADERS_SKIP_INSTALL)
         install(DIRECTORY ${VTK_PREFIX_PATH}/include/vtk-${VTK_MAJOR_VERSION}.${VTK_MINOR_VERSION}
             DESTINATION ${VISIT_INSTALLED_VERSION_INCLUDE}/vtk
-            FILE_PERMISSIONS OWNER_WRITE OWNER_READ 
-                             GROUP_WRITE GROUP_READ 
+            FILE_PERMISSIONS OWNER_WRITE OWNER_READ
+                             GROUP_WRITE GROUP_READ
                              WORLD_READ
-            DIRECTORY_PERMISSIONS OWNER_WRITE OWNER_READ OWNER_EXECUTE 
-                                  GROUP_WRITE GROUP_READ GROUP_EXECUTE 
+            DIRECTORY_PERMISSIONS OWNER_WRITE OWNER_READ OWNER_EXECUTE
+                                  GROUP_WRITE GROUP_READ GROUP_EXECUTE
                                   WORLD_READ WORLD_EXECUTE
             PATTERN ".svn" EXCLUDE
         )
@@ -190,3 +188,4 @@ if(NOT ${VTK_FOUND})
     message(FATAL_ERROR "VTK is required to build VisIt.")
 endif(NOT ${VTK_FOUND})
 unset(VTK_DIR)
+

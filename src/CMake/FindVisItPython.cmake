@@ -63,7 +63,7 @@
 #   Python 3 Support.
 #
 #   Cyrus Harrison, Wed Aug 11 16:05:04 PDT 2021
-#   Robustify python lib detection logic 
+#   Robustify python lib detection logic
 #
 #   Cyrus Harrison, Wed Jan 19 10:06:17 PST 2022
 #   Install extra python front end scripts if they exist
@@ -75,8 +75,6 @@
 #   More status messages.
 #
 #****************************************************************************/
-
-INCLUDE(${VISIT_SOURCE_DIR}/CMake/ThirdPartyInstallLibrary.cmake)
 
 # - Find python libraries
 # This module finds if Python is installed and determines where the
@@ -114,26 +112,26 @@ endif()
 
 find_package(PythonInterp REQUIRED)
 if(PYTHONINTERP_FOUND)
-        
+
         MESSAGE(STATUS "PYTHON_EXECUTABLE ${PYTHON_EXECUTABLE}")
 
-        execute_process(COMMAND "${PYTHON_EXECUTABLE}" "-c" 
+        execute_process(COMMAND "${PYTHON_EXECUTABLE}" "-c"
                         "import sys;from distutils.sysconfig import get_config_var; sys.stdout.write(get_config_var('VERSION'))"
                         OUTPUT_VARIABLE PYTHON_CONFIG_VERSION
                         ERROR_VARIABLE  ERROR_FINDING_PYTHON_VERSION)
         MESSAGE(STATUS "PYTHON_CONFIG_VERSION ${PYTHON_CONFIG_VERSION}")
 
-        execute_process(COMMAND "${PYTHON_EXECUTABLE}" "-c" 
+        execute_process(COMMAND "${PYTHON_EXECUTABLE}" "-c"
                                 "import sys;from distutils.sysconfig import get_python_inc;sys.stdout.write(get_python_inc())"
                         OUTPUT_VARIABLE PYTHON_INCLUDE_DIR
                         ERROR_VARIABLE ERROR_FINDING_INCLUDES)
         MESSAGE(STATUS "PYTHON_INCLUDE_DIR ${PYTHON_INCLUDE_DIR}")
-        
+
         if(NOT EXISTS ${PYTHON_INCLUDE_DIR})
             MESSAGE(FATAL_ERROR "Reported PYTHON_INCLUDE_DIR ${PYTHON_INCLUDE_DIR} does not exist!")
         endif()
 
-        execute_process(COMMAND "${PYTHON_EXECUTABLE}" "-c" 
+        execute_process(COMMAND "${PYTHON_EXECUTABLE}" "-c"
                                 "import sys;from distutils.sysconfig import get_python_lib;sys.stdout.write(get_python_lib())"
                         OUTPUT_VARIABLE PYTHON_SITE_PACKAGES_DIR
                         ERROR_VARIABLE ERROR_FINDING_SITE_PACKAGES_DIR)
@@ -143,7 +141,6 @@ if(PYTHONINTERP_FOUND)
             MESSAGE(FATAL_ERROR "Reported PYTHON_SITE_PACKAGES_DIR ${PYTHON_SITE_PACKAGES_DIR} does not exist!")
         endif()
 
-        
         # check if we need "-undefined dynamic_lookup" by inspecting LDSHARED flags
         execute_process(COMMAND "${PYTHON_EXECUTABLE}" "-c"
                                 "import sys;import sysconfig;sys.stdout.write(sysconfig.get_config_var('LDSHARED'))"
@@ -176,22 +173,22 @@ if(PYTHONINTERP_FOUND)
             #  LIBDIR + LIBRARY
             #  LIBPL + LIBRARY
 
-            execute_process(COMMAND "${PYTHON_EXECUTABLE}" "-c" 
+            execute_process(COMMAND "${PYTHON_EXECUTABLE}" "-c"
                                     "import sys;from distutils.sysconfig import get_config_var; sys.stdout.write(get_config_var('LIBDIR'))"
                             OUTPUT_VARIABLE PYTHON_CONFIG_LIBDIR
                             ERROR_VARIABLE  ERROR_FINDING_PYTHON_LIBDIR)
 
-            execute_process(COMMAND "${PYTHON_EXECUTABLE}" "-c" 
+            execute_process(COMMAND "${PYTHON_EXECUTABLE}" "-c"
                                     "import sys;from distutils.sysconfig import get_config_var; sys.stdout.write(get_config_var('LIBPL'))"
                             OUTPUT_VARIABLE PYTHON_CONFIG_LIBPL
                             ERROR_VARIABLE  ERROR_FINDING_PYTHON_LIBPL)
 
-            execute_process(COMMAND "${PYTHON_EXECUTABLE}" "-c" 
+            execute_process(COMMAND "${PYTHON_EXECUTABLE}" "-c"
                                     "import sys;from distutils.sysconfig import get_config_var; sys.stdout.write(get_config_var('LDLIBRARY'))"
                             OUTPUT_VARIABLE PYTHON_CONFIG_LDLIBRARY
                             ERROR_VARIABLE  ERROR_FINDING_PYTHON_LDLIBRARY)
 
-            execute_process(COMMAND "${PYTHON_EXECUTABLE}" "-c" 
+            execute_process(COMMAND "${PYTHON_EXECUTABLE}" "-c"
                                     "import sys;from distutils.sysconfig import get_config_var; sys.stdout.write(get_config_var('LIBRARY'))"
                             OUTPUT_VARIABLE PYTHON_CONFIG_LIBRARY
                             ERROR_VARIABLE  ERROR_FINDING_PYTHON_LIBRARY)
@@ -246,7 +243,7 @@ if(PYTHONINTERP_FOUND)
                     endif()
                 endif()
             endif()
-        else() # windows 
+        else() # windows
             get_filename_component(PYTHON_ROOT_DIR ${PYTHON_EXECUTABLE} DIRECTORY)
             # Note: this assumes that two versions of python are not installed in the same dest dir
             set(_PYTHON_LIBRARY_TEST  "${PYTHON_ROOT_DIR}/libs/python${PYTHON_CONFIG_VERSION}.lib")
@@ -266,7 +263,7 @@ if(PYTHONINTERP_FOUND)
         if(NOT PYTHONLIBS_FOUND)
             MESSAGE(FATAL_ERROR "Failed to find Python Libraries using PYTHON_EXECUTABLE=${PYTHON_EXECUTABLE}")
         endif()
-        
+
 endif()
 
 
@@ -402,7 +399,6 @@ ELSE(NOT WIN32)
        MESSAGE(STATUS \"\${PY_DIST_UTILS_INSTALL_OUT}\")
        ")
 ENDIF(NOT WIN32)
-
 
 ENDFUNCTION(PYTHON_ADD_DISTUTILS_SETUP)
 
@@ -572,3 +568,4 @@ IF(PYTHONLIBS_FOUND AND NOT VISIT_PYTHON_SKIP_INSTALL)
         ENDIF (NOT WIN32)
     ENDIF((NOT ${PYTHON_DIR} STREQUAL "/usr"))
 ENDIF(PYTHONLIBS_FOUND AND NOT VISIT_PYTHON_SKIP_INSTALL)
+
