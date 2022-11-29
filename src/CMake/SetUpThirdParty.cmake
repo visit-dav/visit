@@ -38,10 +38,11 @@
 #
 #****************************************************************************/
 
-#[=[
- Functions for checking and installing TP libs
-#]=]
+# ==============================================
+# Functions for checking and installing TP libs
+# ==============================================
 
+# ==============================================
 #[=[
   Sets up cache variables for a third_party_package.
       x_INCLUDE_DIR
@@ -62,6 +63,7 @@
   Uses path specified by pkg_DIR as base path for the files
 
 #]=]
+# ==============================================
 
 function(SET_UP_THIRD_PARTY pkg)
     message(STATUS "Looking for ${pkg}")
@@ -313,27 +315,13 @@ function(SET_UP_THIRD_PARTY pkg)
 endfunction()
 
 
-#[=[
-  Finds the portion of the filename after the last '.'
-
-function(GET_FILENAME_SHORTEXT EXTOUT FNAME)
-  # we want the ext after the last "."
-  get_filename_component(tmp ${FNAME} EXT)
-  string(REPLACE "." ";" tmp ${tmp})
-  # get last element in the list
-  foreach(X ${tmp})
-    set(${EXTOUT} ".${X}" PARENT_SCOPE)
-  endforeach()
-endfunction()
-#]=]
-
 set(VISIT_TP_PERMS OWNER_READ OWNER_WRITE OWNER_EXECUTE
                    GROUP_READ GROUP_WRITE GROUP_EXECUTE
                    WORLD_READ WORLD_EXECUTE)
 
-#[=[
- Installs a library and any of its needed symlink variants.
-#]=]
+# ==============================================
+# Installs a library and any of its needed symlink variants.
+# ==============================================
 
 function(THIRD_PARTY_INSTALL_LIBRARY LIBFILE)
 
@@ -343,15 +331,10 @@ function(THIRD_PARTY_INSTALL_LIBRARY LIBFILE)
         endif()
 
         cmake_path(SET tmpLIBFILE ${LIBFILE})
-        #set(tmpLIBFILE ${LIBFILE})
         cmake_path(GET tmpLIBFILE EXTENSION LAST_ONLY LIBEXT)
-        #GET_FILENAME_SHORTEXT(LIBEXT ${tmpLIBFILE})
         file(REAL_PATH ${tmpLIBFILE} LIBREALPATH)
-        #GET_FILENAME_COMPONENT(LIBREALPATH ${tmpLIBFILE} REALPATH)
         cmake_path(GET LIBREALPATH PARENT_PATH curPATH)
-        #GET_FILENAME_COMPONENT(curPATH ${LIBREALPATH} PATH)
         cmake_path(GET LIBREALPATH FILENAME realNAME)
-        #GET_FILENAME_COMPONENT(realNAME ${LIBREALPATH} NAME)
         string(REPLACE ${LIBEXT} "" curNAMEWE ${realNAME})
         set(curNAME "${curPATH}/${curNAMEWE}")
         set(dllNAME "${curNAME}.dll")
@@ -368,9 +351,6 @@ function(THIRD_PARTY_INSTALL_LIBRARY LIBFILE)
                             ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/ThirdParty)
         else() # try 'bin' directory
             file(REAL_PATH "${curPATH}/../bin/${curNAMEWE}" dll_path)
-            #set(dll_path "${curPATH}/../bin/${curNAMEWE}")
-            #GET_FILENAME_COMPONENT(dll_path ${dll_path} ABSOLUTE)
-
             set(newdllNAME "${dll_path}.dll")
             if(EXISTS ${newdllNAME})
                 install(FILES ${newdllNAME}
@@ -396,11 +376,7 @@ function(THIRD_PARTY_INSTALL_LIBRARY LIBFILE)
   else(WIN32)
 
     cmake_path(SET tmpLIBFILE ${LIBFILE})
-    #SET(tmpLIBFILE ${LIBFILE})
-    # GET_FILENAME_COMPONENT(EXT) will not always give us what we want here,
-    # use new helper.
     cmake_path(GET tmpLIBFILE EXTENSION LAST_ONLY LIBEXT)
-    #GET_FILENAME_SHORTEXT(LIBEXT ${tmpLIBFILE})
     if(NOT ${LIBEXT} STREQUAL ".a")
         set(isSHAREDLIBRARY "YES")
     else()
@@ -409,21 +385,17 @@ function(THIRD_PARTY_INSTALL_LIBRARY LIBFILE)
 
     if(${isSHAREDLIBRARY} STREQUAL "YES")
         file(REAL_PATH ${tmpLIBFILE} LIBREALPATH)
-        #GET_FILENAME_COMPONENT(LIBREALPATH ${tmpLIBFILE} REALPATH)
-        ## MESSAGE("***tmpLIBFILE=${tmpLIBFILE}, LIBREALPATH=${LIBREALPATH}")
+        ## message("***tmpLIBFILE=${tmpLIBFILE}, LIBREALPATH=${LIBREALPATH}")
         if(NOT ${tmpLIBFILE} STREQUAL ${LIBREALPATH})
             # We need to install a library and its symlinks
             cmake_path(GET LIBREALPATH PARENT_PATH curPATH)
-            #GET_FILENAME_COMPONENT(curPATH ${LIBREALPATH} PATH)
             if((NOT ${curPATH} STREQUAL "/usr/lib") AND
                (NOT ${curPATH} MATCHES "^\\/opt\\/local\\/lib.*") AND
                (NOT ${curPATH} MATCHES "^\\/System\\/Library\\/Frameworks\\/.*") AND
                (NOT ${curPATH} MATCHES "^\\/Library\\/Frameworks\\/.*"))
                 # Extract proper base name by comparing the input lib path w/ the real path.
                 cmake_path(GET LIBREALPATH FILENAME realNAME)
-                #GET_FILENAME_COMPONENT(realNAME ${LIBREALPATH} NAME)
                 cmake_path(GET tmpLIBFILE FILENAME inptNAME)
-                #GET_FILENAME_COMPONENT(inptNAME ${tmpLIBFILE}  NAME)
                 string(REPLACE ${LIBEXT} "" inptNAME ${inptNAME})
                 string(REPLACE ${inptNAME} "" curEXT ${realNAME})
                 # We will have a "." at the end of the string, remove it
@@ -444,9 +416,9 @@ function(THIRD_PARTY_INSTALL_LIBRARY LIBFILE)
 
                 # Add the names that exist to the install.
                 foreach(curNAMEWithExt ${allNAMES})
-                    ## MESSAGE("** Checking ${curNAMEWithExt}")
+                    ## message("** Checking ${curNAMEWithExt}")
                     if(EXISTS ${curNAMEWithExt})
-                        ## MESSAGE("** Need to install ${curNAMEWithExt}")
+                        ## message("** Need to install ${curNAMEWithExt}")
                         if(IS_DIRECTORY ${curNAMEWithExt})
                             # It is a framework, install as a directory
                             install(DIRECTORY ${curNAMEWithExt}
@@ -465,7 +437,6 @@ function(THIRD_PARTY_INSTALL_LIBRARY LIBFILE)
             endif()
         else(NOT ${tmpLIBFILE} STREQUAL ${LIBREALPATH})
             cmake_path(GET LIBREALPATH PARENT_PATH curPATH)
-            #GET_FILENAME_COMPONENT(curPATH ${LIBREALPATH} PATH)
             if((NOT ${curPATH} STREQUAL "/usr/lib") AND
                (NOT ${curPATH} MATCHES "^\\/opt\\/local\\/lib.*") AND
                (NOT ${curPATH} MATCHES "^\\/System\\/Library\\/Frameworks\\/.*") AND
@@ -504,9 +475,9 @@ function(THIRD_PARTY_INSTALL_LIBRARY LIBFILE)
   endif(WIN32)
 endfunction(THIRD_PARTY_INSTALL_LIBRARY)
 
-#[=[
-  Installs a library's includes.
-#]=]
+# ==============================================
+#  Installs a library's includes.
+# ==============================================
 
 function(THIRD_PARTY_INSTALL_INCLUDE pkg incdir)
         if(VISIT_INSTALL_THIRD_PARTY AND NOT VISIT_HEADERS_SKIP_INSTALL)
@@ -528,9 +499,9 @@ function(THIRD_PARTY_INSTALL_INCLUDE pkg incdir)
         endif()
 endfunction(THIRD_PARTY_INSTALL_INCLUDE)
 
-#[=[
- Installs a library's executables.
-#]=]
+# ==============================================
+# Installs a library's executables.
+# ==============================================
 
 function(THIRD_PARTY_INSTALL_EXECUTABLE)
     foreach(exe ${ARGN})
@@ -543,9 +514,13 @@ function(THIRD_PARTY_INSTALL_EXECUTABLE)
     endforeach(exe ${ARGN})
 endfunction()
 
-#[=[
- Find calls for TP libs
-#]=]
+# ==============================================
+# Find TP libs
+# ==============================================
+
+if(NOT VISIT_DBIO_ONLY)
+  include(${VISIT_SOURCE_DIR}/CMake/VisItOpenGL.cmake)
+endif()
 
 include(${VISIT_SOURCE_DIR}/CMake/FindNektar++.cmake)
 

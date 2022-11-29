@@ -1156,11 +1156,6 @@ MACRO(VISIT_INSTALL_TARGETS)
     VISIT_INSTALL_TARGETS_RELATIVE("" ${ARGN})
 ENDMACRO(VISIT_INSTALL_TARGETS)
 
-# Configure OpenGL support.
-if(NOT VISIT_DBIO_ONLY)
-  include(${VISIT_SOURCE_DIR}/CMake/VisItOpenGL.cmake)
-endif()
-
 # Install the headers for directories that we need in order to build plugins
 IF(VISIT_HEADERS_SKIP_INSTALL)
     MESSAGE(STATUS "Skipping VisIt headers installation")
