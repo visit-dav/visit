@@ -1,1 +1,1 @@
-engine_ser: Directory VISIT_TOP_DIR/test/testdir/doesnotexist does not exist.
+The x ray image query results were written to the file VISIT_TOP_DIR/test/testdir/json/output.root
