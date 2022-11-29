@@ -633,8 +633,8 @@ XRay Image
     |                          | focal point that was |br| used in the        |
     |                          | calculations.                                |    
     +--------------------------+----------------------------------------------+
-    | *viewUp*                 | x, y, and z components represent the up      |
-    |                          | vector that was used |br| in the             |
+    | *viewUp*                 | The x, y, and z components represent the up  |
+    |                          | vector that was |br| used in the             |
     |                          | calculations.                                |
     +--------------------------+----------------------------------------------+
     | *viewAngle*              | The view angle, only used in the             |
