@@ -656,7 +656,7 @@ XRay Image
     | *imageZoom*              | The absolute image zoom factor that was used |
     |                          | in the calculations.                         |
     +--------------------------+----------------------------------------------+
-    | *perspective*            | Flag indicating if parallel or perspective   |
+    | *perspective*            | A flag indicating if parallel or perspective |
     |                          | projection was used. |br| 0 indicates        |
     |                          | parallel projection and 1 indicates          |
     |                          | perspective |br| projection.                 |
