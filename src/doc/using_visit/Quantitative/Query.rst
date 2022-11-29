@@ -378,7 +378,7 @@ XRay Image
     If neither of these is the case you will get a very boring all white image.
     A non-zero emissivity variable would correspond to an object emitting radiation and a non zero background intensity would correspond to constant backlit radiation, such as when x raying an object.
 
-    The query takes the following arguments:
+    **The query takes the following arguments:**
 
     +------+-------------------+----------------------------------------------+
     | *vars*                   | An array of the names of the absorbtivity    |
@@ -480,6 +480,11 @@ XRay Image
     |                          | VTK file. The default is off. |br| The name  |
     |                          | of the file is ``ray_bounds.vtk``.           |
     +------+-------------------+----------------------------------------------+
+    | *energy_group_bounds*    | The energy group bounds can be handed off to |
+    |                          | the query in a list or tuple. |br| The       |
+    |                          | values will appear in Blueprint output       |
+    |                          | metadata.                                    |
+    +------+-------------------+----------------------------------------------+
     
     When specifying "bov" or "rawfloats" output, the value can be either 32 or 64 bit floating point values.
     The number of bits is determined by the number of bits in the data being processed.
@@ -522,8 +527,8 @@ XRay Image
     | *up_vector*  | The up vector.                                           |
     +--------------+----------------------------------------------------------+
 
-    If any of the above properties are specified in the parameters it will use
-    the simplified version.
+    *If any of the above properties are specified in the parameters it will use
+    the simplified version.*
 
     The complete version consists of:
 
@@ -558,6 +563,238 @@ XRay Image
     |                  | projection. |br| 0 indicates parallel projection.    |
     |                  | 1 indicates perspective projection.                  |
     +------------------+------------------------------------------------------+
+
+    **Conduit Output:** The Conduit output types (see the listed output types above for more information) include additional metadata and topologies.
+    Here is a simplified representation of a Conduit tree that is output from the Query: ::
+
+      state: 
+        time: 4.8
+        cycle: 48
+        xray_view: 
+          ...
+        xray_query: 
+          ...
+        xray_data: 
+          ...
+        domain_id: 0
+      coordsets: 
+        image_coords: 
+          ...
+        near_plane_coords: 
+          ...
+        view_plane_coords: 
+          ...
+        far_plane_coords: 
+          ...
+      topologies: 
+        image_topo: 
+          ...
+        near_plane_topo: 
+          ...
+        view_plane_topo: 
+          ...
+        far_plane_topo: 
+          ...
+      fields: 
+        intensities: 
+          ...
+        path_length: 
+          ...
+        near_plane_field: 
+          ...
+        view_plane_field: 
+          ...
+        far_plane_field: 
+          ...
+
+    **Conduit output imaging plane topologies:** The Conduit output types (see the listed output types above for more information) come packaged with topologies for the imaging planes. 
+    In addition to the ray tracing results, you can visualize the near, view, and far planes in physical space alongside your simulation data.
+    These can be found under the *coordsets*, *topologies*, and *fields* branches.
+
+.. figure:: images/xray_imaging_planes.png
+
+    The imaging planes used by the X Ray Image Query visualized on top of the simulation data.
+    The near plane is in red, the view plane in transparent orange, and the far plane in blue.
+
+    **Conduit output metadata:** The Conduit output types (see the listed output types above for more information) come packaged with metadata in addition to Blueprint-conforming mesh data. 
+    Currently, this metadata is stored under the "state" Node in the resulting Conduit tree.
+    In addition to "time" and "cycle", there are three categories of metadata: *view parameters*, *query parameters*, and *other metadata*.
+    
+    **View parameters** can be found under "state/xray_view".
+    This metadata represents the view-related values that were used in the x ray image query calculations, regardless of whether the simplified or complete view specification was used when calling the query.
+    The following is included:
+
+    +--------------------------+----------------------------------------------+
+    | *normal*                 | The x, y, and z components represent the     |
+    |                          | view normal vector |br| that was used in     |
+    |                          | the calculations.                            |
+    +--------------------------+----------------------------------------------+
+    | *focus*                  | The x, y, and z components represent the     |
+    |                          | focal point that was |br| used in the        |
+    |                          | calculations.                                |    
+    +--------------------------+----------------------------------------------+
+    | *viewUp*                 | The x, y, and z components represent the up  |
+    |                          | vector that was |br| used in the             |
+    |                          | calculations.                                |
+    +--------------------------+----------------------------------------------+
+    | *viewAngle*              | The view angle, only used in the             |
+    |                          | calculations if |br| perspective             |
+    |                          | projection was enabled.                      |
+    +--------------------------+----------------------------------------------+
+    | *parallelScale*          | The parallel scale, or view height, that was |
+    |                          | used in the |br| calculations.               |
+    +--------------------------+----------------------------------------------+
+    | *nearPlane*              | The near plane that was used in the          |
+    |                          | calculations.                                |
+    +--------------------------+----------------------------------------------+
+    | *farPlane*               | The far plane that was used in the           |
+    |                          | calculations.                                |
+    +--------------------------+----------------------------------------------+
+    | *imagePan*               | The x and y components represent the image   |
+    |                          | pan that was used |br| in the calculations.  |
+    +--------------------------+----------------------------------------------+
+    | *imageZoom*              | The absolute image zoom factor that was used |
+    |                          | in the calculations.                         |
+    +--------------------------+----------------------------------------------+
+    | *perspective*            | A flag indicating if parallel or perspective |
+    |                          | projection was used. |br| 0 indicates        |
+    |                          | parallel projection and 1 indicates          |
+    |                          | perspective |br| projection.                 |
+    +--------------------------+----------------------------------------------+
+    | *perspectiveStr*         | A String representation of the perspective   |
+    |                          | parameter. See above |br| for more           |
+    |                          | information.                                 |
+    +--------------------------+----------------------------------------------+
+
+    An example: ::
+
+      xray_view: 
+        normal: 
+          x: 0.0
+          y: 0.0
+          z: 1.0
+        focus: 
+          x: 0.0
+          y: 2.5
+          z: 10.0
+        viewUp: 
+          x: 0.0
+          y: 1.0
+          z: 0.0
+        viewAngle: 30.0
+        parallelScale: 5.0
+        nearPlane: -50.0
+        farPlane: 50.0
+        imagePan: 
+          x: 0.0
+          y: 0.0
+        imageZoom: 1.0
+        perspective: 1
+        perspectiveStr: "perspective"
+
+    **Query parameters** can be found under "state/xray_query".
+    This metadata represents the query-related values that were used in the x ray image query calculations.
+    This data is available as of VisIt_ 3.3.2.
+    The following is included:
+
+    +--------------------------+----------------------------------------------+
+    | *divideEmisByAbsorb*     | A flag indicating if emissivity was divided  |
+    |                          | by absorbtivity |br| in the calculations.    |
+    |                          | More details can be found above.             |
+    +--------------------------+----------------------------------------------+
+    | *divideEmisByAbsorbStr*  | A String representation of the               |
+    |                          | divideEmisByAbsorb parameter. |br| See above |
+    |                          | for more information.                        |
+    +--------------------------+----------------------------------------------+
+    | *numXPixels*             | The pixel extent in the X dimension in the   |
+    |                          | output image.                                |
+    +--------------------------+----------------------------------------------+
+    | *numYPixels*             | The pixel extent in the Y dimension in the   |
+    |                          | output image.                                |
+    +--------------------------+----------------------------------------------+
+    | *numBins*                | The number of bins (the Z dimension extent)  |
+    |                          | in the output image.                         |
+    +--------------------------+----------------------------------------------+
+    | *absVarName*             | The name of the absorbtivity variable that   |
+    |                          | was used in the calculations.                |
+    +--------------------------+----------------------------------------------+
+    | *emisVarName*            | The name of the emissivity variable that     |
+    |                          | was used in the calculations.                |
+    +--------------------------+----------------------------------------------+
+
+    An example: ::
+
+      xray_query: 
+        divideEmisByAbsorb: 0
+        divideEmisByAbsorbStr: "no"
+        numXPixels: 400
+        numYPixels: 300
+        numBins: 1
+        absVarName: "d"
+        emisVarName: "p"
+
+    **Other Metadata** can be found under "state/xray_data".
+    This metadata represents values that do not fit into either of the above two categories.
+    Many are calculated constants, giving a broader view of the output data.
+    This data is available as of VisIt_ 3.3.2.
+    The following is included:
+
+    +--------------------------+----------------------------------------------+
+    | *image_coords/x* |br|    | The image coordinates are a coordinate set   |
+    | *image_coords/y*         | that represent the |br|                      |
+    |                          | world-space/physical coordinates of the      |
+    |                          | output image. These |br|                     |
+    |                          | spatial extents are given by x and y values  |
+    |                          | that range from 0 to |br|                    |
+    |                          | the number of pixels in the respective x and |
+    |                          | y dimensions times |br|                      |
+    |                          | the pixel size in those dimensions.          |
+    +--------------------------+----------------------------------------------+
+    | *image_coords/z*         | The z values of the image coordinates        |
+    |                          | represent the energy |br|                    |
+    |                          | group bounds that were provided via the      |
+    |                          | *energy_group_bounds* |br|                   |
+    |                          | argument. If they were not provided or there |
+    |                          | were too many or too |br|                    |
+    |                          | few values provided, there will be a string  |
+    |                          | of text in place of |br|                     |
+    |                          | the z values explaining why the values are   |
+    |                          | not present.                                 |
+    +--------------------------+----------------------------------------------+
+    | *detectorWidth*          | The width of the simulated x ray detector    |
+    |                          | in physical space.                           |
+    +--------------------------+----------------------------------------------+
+    | *detectorHeight*         | The height of the simulated x ray detector   |
+    |                          | in physical space.                           |
+    +--------------------------+----------------------------------------------+
+    | *intensityMax*           | The maximum value of the calculated          |
+    |                          | intensities.                                 |
+    +--------------------------+----------------------------------------------+
+    | *intensityMin*           | The minimum value of the calculated          |
+    |                          | intensities.                                 |
+    +--------------------------+----------------------------------------------+
+    | *pathLengthMax*          | The maximum value of the calculated          |
+    |                          | path lengths.                                |
+    +--------------------------+----------------------------------------------+
+    | *pathLengthMin*          | The minimum value of the calculated          |
+    |                          | path lengths.                                |
+    +--------------------------+----------------------------------------------+
+
+    An example: ::
+
+      xray_data: 
+        image_coords: 
+          x: [-0.0, -0.0559830665588379, -0.111966133117676, ..., -22.3372440338135, -22.3932266235352]
+          y: [-0.0, -0.0559830628335476, -0.111966125667095, ..., -16.7389354705811, -16.7949199676514]
+          z: [3.7, 4.2]
+        detectorWidth: -22.3932263237838
+        detectorHeight: -16.7949192423103
+        intensityMax: 0.491446971893311
+        intensityMin: 0.0
+        pathLengthMax: 120.815788269043
+        pathLengthMin: 0.0
+
+    **Examples:**
 
     Lets look at some examples, starting with some simulated x rays using
     curv2d.silo, which contains a 2D R-Z mesh. Here is a pseudocolor plot
@@ -682,122 +919,6 @@ XRay Image
 .. figure:: images/xray07.png
 
     The resulting x ray image
-
-    **Conduit output metadata:** The Conduit output types (see the listed output types above for more information) come packaged with metadata in addition to Blueprint-conforming mesh data. 
-    Currently, this metadata is stored under the "state" Node in the resulting Conduit tree.
-    In addition to "time" and "cycle", there are three categories of metadata: *view parameters*, *query parameters*, and *other metadata*.
-    
-    **View parameters** can be found under "state/xray_view".
-    This metadata represents the view-related values that were used in x ray image query calculations, regardless of whether the simplified or complete view specification was used when calling the query.
-    The following is included:
-
-    +--------------------------+----------------------------------------------+
-    | *normal*                 | x, y, and z components represent the view    |
-    |                          | normal vector that |br| was used in          |
-    |                          | the calculations.                            |
-    +--------------------------+----------------------------------------------+
-    | *focus*                  | x, y, and z components represent the focal   |
-    |                          | point that was used |br| in the              |
-    |                          | calculations.                                |    
-    +--------------------------+----------------------------------------------+
-    | *viewUp*                 | x, y, and z components represent the up      |
-    |                          | vector that was used |br| in the             |
-    |                          | calculations.                                |
-    +--------------------------+----------------------------------------------+
-    | *viewAngle*              | The view angle, only used in the             |
-    |                          | calculations if |br| perspective             |
-    |                          | projection was enabled.                      |
-    +--------------------------+----------------------------------------------+
-    | *parallelScale*          | The parallel scale, or view height, that was |
-    |                          | used in the |br| calculations.               |
-    +--------------------------+----------------------------------------------+
-    | *nearPlane*              | The near plane that was used in the          |
-    |                          | calculations.                                |
-    +--------------------------+----------------------------------------------+
-    | *farPlane*               | The far plane that was used in the           |
-    |                          | calculations.                                |
-    +--------------------------+----------------------------------------------+
-    | *imagePan*               | x and y components represent the image pan   |
-    |                          | that was used in |br| the calculations.      |
-    +--------------------------+----------------------------------------------+
-    | *imageZoom*              | The absolute image zoom factor that was used |
-    |                          | in the calculations.                         |
-    +--------------------------+----------------------------------------------+
-    | *perspective*            | Flag indicating if parallel or perspective   |
-    |                          | projection was used. |br| 0 indicates        |
-    |                          | parallel projection and 1 indicates          |
-    |                          | perspective |br| projection.                 |
-    +--------------------------+----------------------------------------------+
-    | *perspectiveStr*         | A String representation of the perspective   |
-    |                          | parameter. See above |br| for more           |
-    |                          | information.                                 |
-    +--------------------------+----------------------------------------------+
-
-    **Query parameters** can be found under "state/xray_query".
-    This metadata represents the query-related values that were used in the x ray image query calculations.
-    This data is available as of VisIt_ 3.3.2.
-    The following is included:
-
-    +--------------------------+----------------------------------------------+
-    | *divideEmisByAbsorb*     | Flag indicating if emissivity was divided by |
-    |                          | absorbtivity in |br| the calculations. More  |
-    |                          | details can be found above.                  |
-    +--------------------------+----------------------------------------------+
-    | *divideEmisByAbsorbStr*  | A String representation of the               |
-    |                          | divideEmisByAbsorb parameter. |br| See above |
-    |                          | for more information.                        |
-    +--------------------------+----------------------------------------------+
-    | *numXPixels*             | The pixel extent in the X dimension in the   |
-    |                          | output image.                                |
-    +--------------------------+----------------------------------------------+
-    | *numYPixels*             | The pixel extent in the Y dimension in the   |
-    |                          | output image.                                |
-    +--------------------------+----------------------------------------------+
-    | *numBins*                | The number of bins (the Z dimension extent)  |
-    |                          | in the output image.                         |
-    +--------------------------+----------------------------------------------+
-    | *absVarName*             | The name of the absorbtivity variable that   |
-    |                          | was used in calculations.                    |
-    +--------------------------+----------------------------------------------+
-    | *emisVarName*            | The name of the emissivity variable that     |
-    |                          | was used in calculations.                    |
-    +--------------------------+----------------------------------------------+
-
-    **Other Metadata** can be found under "state/xray_data".
-    This metadata represents values that do not fit into either of the above two categories.
-    Many are calculated constants, giving a broader view of the output data.
-    This data is available as of VisIt_ 3.3.2.
-    The following is included:
-
-    +--------------------------+----------------------------------------------+
-    | *image_coords*           | The image coordinates are a coordinate set   |
-    |                          | that represent the |br|                      |
-    |                          | world-space/physical coordinates of the      |
-    |                          | output image. These |br|                     |
-    |                          | spatial extents are given by x and y values  |
-    |                          | that range from 0 to |br|                    |
-    |                          | the number of pixels in the respective x and |
-    |                          | y dimensions times |br|                      |
-    |                          | the pixel size in those dimensions.          |
-    +--------------------------+----------------------------------------------+
-    | *detectorWidth*          | The width of the simulated x ray detector    |
-    |                          | in physical space.                           |
-    +--------------------------+----------------------------------------------+
-    | *detectorHeight*         | The height of the simulated x ray detector   |
-    |                          | in physical space.                           |
-    +--------------------------+----------------------------------------------+
-    | *intensityMax*           | The maximum value of the calculated          |
-    |                          | intensities.                                 |
-    +--------------------------+----------------------------------------------+
-    | *intensityMin*           | The minimum value of the calculated          |
-    |                          | intensities.                                 |
-    +--------------------------+----------------------------------------------+
-    | *pathLengthMax*          | The maximum value of the calculated          |
-    |                          | path lengths.                                |
-    +--------------------------+----------------------------------------------+
-    | *pathLengthMin*          | The minimum value of the calculated          |
-    |                          | path lengths.                                |
-    +--------------------------+----------------------------------------------+
 
 ZoneCenter
     The ZoneCenter query calculates the zone center for a certain cell in the
