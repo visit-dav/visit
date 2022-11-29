@@ -196,7 +196,11 @@ class QUERY_API avtXRayImageQuery : public avtDatasetQuery
                                                          const std::string plane_name,
                                                          const double width,
                                                          const double height,
-                                                         const double center[3]);
+                                                         const double center[3],
+                                                         double llc[3],
+                                                         double lrc[3],
+                                                         double ulc[3],
+                                                         double urc[3]);
 #endif
     void                      ConvertOldImagePropertiesToNew();
     void                      CheckData(vtkDataSet **, const int);
