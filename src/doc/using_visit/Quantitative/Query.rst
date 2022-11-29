@@ -650,8 +650,8 @@ XRay Image
     | *farPlane*               | The far plane that was used in the           |
     |                          | calculations.                                |
     +--------------------------+----------------------------------------------+
-    | *imagePan*               | x and y components represent the image pan   |
-    |                          | that was used in |br| the calculations.      |
+    | *imagePan*               | The x and y components represent the image   |
+    |                          | pan that was used |br| in the calculations.  |
     +--------------------------+----------------------------------------------+
     | *imageZoom*              | The absolute image zoom factor that was used |
     |                          | in the calculations.                         |
