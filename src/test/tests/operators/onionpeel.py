@@ -53,6 +53,9 @@
 #    Modified AMR test to include the default Subset plot, now that it
 #    is fixed.
 #
+#    Kathleen Biagas, Tue Nov 29 10:40:50 PST 2022
+#    Change use of obosolete text settings to new textFont settings.
+#
 # ----------------------------------------------------------------------------
 
 def TestBigSil():
@@ -450,10 +453,10 @@ def TestBigSilMesh():
     label.showCells = 1
     label.drawLabelsFacing = label.FrontAndBack
     label.labelDisplayFormat = label.Index
-    label.specifyTextColor1 = 1
-    label.textColor1 = (255, 0, 0, 0)
-    label.specifyTextColor2 = 1
-    label.textColor2 = (0, 0, 255, 0)
+    label.textFont1.useForegroundColor = 0
+    label.textFont1.color = (255, 0, 0, 0)
+    label.textFont2.useForegroundColor = 0
+    label.textFont2.color = (0, 0, 255, 0)
     label.depthTestMode = label.LABEL_DT_NEVER
     SetPlotOptions(label)
 
@@ -514,10 +517,10 @@ def TestAMR():
     label.showCells = 1
     label.drawLabelsFacing = label.FrontAndBack
     label.labelDisplayFormat = label.Index
-    label.specifyTextColor1 = 1
-    label.textColor1 = (255, 0, 0, 0)
-    label.specifyTextColor2 = 1
-    label.textColor2 = (0, 0, 255, 0)
+    label.textFont1.useForegroundColor = 0
+    label.textFont1.color = (255, 0, 0, 0)
+    label.textFont2.useForegroundColor = 0
+    label.textFont2.color = (0, 0, 255, 0)
     label.depthTestMode = label.LABEL_DT_NEVER
     SetPlotOptions(label)
 
@@ -602,10 +605,10 @@ def TestAMR():
     label.showCells = 1
     label.drawLabelsFacing = label.FrontAndBack
     label.labelDisplayFormat = label.Index
-    label.specifyTextColor1 = 1
-    label.textColor1 = (255, 0, 0, 0)
-    label.specifyTextColor2 = 1
-    label.textColor2 = (0, 0, 255, 0)
+    label.textFont1.useForegroundColor = 0
+    label.textFont1.color = (255, 0, 0, 0)
+    label.textFont2.useForegroundColor = 0
+    label.textFont2.color = (0, 0, 255, 0)
     label.depthTestMode = label.LABEL_DT_NEVER
     SetPlotOptions(label)
 
