@@ -50,6 +50,9 @@
 #    Reorganized blueprint tests so they use a function. That function also
 #    uses new and old query calls, doubling the number of blueprint tests.
 #    It also tests energy group bin output for hdf5.
+# 
+#    Justin Privitera, Mon Nov 28 15:38:25 PST 2022
+#    Renamed energy group bins to energy group bounds.
 #
 #    Justin Privitera, Wed Oct 12 11:38:11 PDT 2022
 #    Changed output type for many tests since bmp output type is removed.
@@ -412,25 +415,25 @@ def test_bp_state_xray_query(testname, xrayout):
     emisVarName = xrayout["domain_000000/state/xray_query/emisVarName"]
     TestValueEQ(testname + "_EmisVarName", emisVarName, "p")
 
-NO_BINS = 0
-BIN_MISMATCH = 1
-BINS = 2
+NO_ENERGY_GROUP_BOUNDS = 0
+ENERGY_GROUP_BOUNDS_MISMATCH = 1
+ENERGY_GROUP_BOUNDS = 2
 
-def test_bp_state_xray_data(testname, xrayout, bin_state = NO_BINS):
+def test_bp_state_xray_data(testname, xrayout, bin_state = NO_ENERGY_GROUP_BOUNDS):
     spatial_coords_x = xrayout["domain_000000/state/xray_data/image_coords/x"]
     spatial_coords_y = xrayout["domain_000000/state/xray_data/image_coords/y"]
-    energy_group_bins = xrayout["domain_000000/state/xray_data/image_coords/z"]
+    energy_group_bounds = xrayout["domain_000000/state/xray_data/image_coords/z"]
     TestValueEQ(testname + "_SpatialExtents0", [spatial_coords_x[0], spatial_coords_y[0]], [0.0, 0.0])
     TestValueEQ(testname + "_SpatialExtents1", [spatial_coords_x[1], spatial_coords_y[1]], [0.05, 0.05])
     TestValueEQ(testname + "_SpatialExtents2", [spatial_coords_x[2], spatial_coords_y[2]], [0.1, 0.1])
     TestValueEQ(testname + "_SpatialExtents3", [spatial_coords_x[-1], spatial_coords_y[-1]], [15.0, 10.0])
-    if (bin_state == NO_BINS):
-        TestValueEQ(testname + "_EnergyGroupBins", energy_group_bins, "Energy group bins not provided.")
-    elif (bin_state == BIN_MISMATCH):
-        baseline_string = "Energy group bins size mismatch: provided 3 bins, but 2 in query results."
-        TestValueEQ(testname + "_EnergyGroupBins", energy_group_bins, baseline_string)
-    elif (bin_state == BINS):
-        TestValueEQ(testname + "_EnergyGroupBins", [energy_group_bins[0], energy_group_bins[1]], [3.7, 4.2])
+    if (bin_state == NO_ENERGY_GROUP_BOUNDS):
+        TestValueEQ(testname + "_EnergyGroupBounds", energy_group_bounds, "Energy group bounds not provided.")
+    elif (bin_state == ENERGY_GROUP_BOUNDS_MISMATCH):
+        baseline_string = "Energy group bounds size mismatch: provided 3 bounds, but 2 in query results."
+        TestValueEQ(testname + "_EnergyGroupBounds", energy_group_bounds, baseline_string)
+    elif (bin_state == ENERGY_GROUP_BOUNDS):
+        TestValueEQ(testname + "_EnergyGroupBounds", [energy_group_bounds[0], energy_group_bounds[1]], [3.7, 4.2])
     
     detectorWidth = xrayout["domain_000000/state/xray_data/detectorWidth"]
     TestValueEQ(testname + "_DetectorWidth", detectorWidth, 15)
@@ -450,7 +453,7 @@ def test_bp_state_xray_data(testname, xrayout, bin_state = NO_BINS):
     pathLengthMin = xrayout["domain_000000/state/xray_data/pathLengthMin"]
     TestValueEQ(testname + "_PathLengthMin", pathLengthMin, 0)
 
-def test_bp_state(testname, conduit_db, bin_state = NO_BINS):
+def test_bp_state(testname, conduit_db, bin_state = NO_ENERGY_GROUP_BOUNDS):
     xrayout = conduit.Node()
     conduit.relay.io.blueprint.load_mesh(xrayout, conduit_db)
 
@@ -499,12 +502,12 @@ def blueprint_test(output_type, outdir, testtextnumber, testname, hdf5 = False):
         CloseDatabase(conduit_db)
 
     if (hdf5):
-        test_bp_state(testname + str(i), conduit_db) # no bins
+        test_bp_state(testname + str(i), conduit_db) # no bounds
         setup_bp_test()
         Query("XRay Image", output_type, outdir, 1, 0.0, 2.5, 10.0, 0, 0, 10., 10., 300, 200, ("d", "p"), [1,2,3])
-        test_bp_state(testname + str(i), conduit_db, BIN_MISMATCH) # no bins
+        test_bp_state(testname + str(i), conduit_db, ENERGY_GROUP_BOUNDS_MISMATCH) # bounds mismatch
         Query("XRay Image", output_type, outdir, 1, 0.0, 2.5, 10.0, 0, 0, 10., 10., 300, 200, ("d", "p"), [3.7, 4.2])
-        test_bp_state(testname + str(i), conduit_db, BINS) # no bins
+        test_bp_state(testname + str(i), conduit_db, ENERGY_GROUP_BOUNDS) # bounds
         DeleteAllPlots()
         CloseDatabase(silo_data_path("curv3d.silo"))
 
