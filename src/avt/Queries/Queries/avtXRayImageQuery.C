@@ -1513,11 +1513,8 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
                 data_out["state/xray_data/image_coords/z"] = "Energy group bounds not provided.";
             }
 
-            // If the near plane is too far back, it can cause the near width
-            // and height to be negative. However, the detector height and 
-            // width ought to be positive values, hence the absolute value.
-            data_out["state/xray_data/detectorWidth"] = fabs(2. * nearWidth);
-            data_out["state/xray_data/detectorHeight"] = fabs(2. * nearHeight);
+            data_out["state/xray_data/detectorWidth"] = 2. * nearWidth;
+            data_out["state/xray_data/detectorHeight"] = 2. * nearHeight;
 
             if (numfieldvals > 0)
             {
