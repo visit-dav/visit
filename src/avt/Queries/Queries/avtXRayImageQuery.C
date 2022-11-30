@@ -186,6 +186,13 @@ avtXRayImageQuery::avtXRayImageQuery():
     useSpecifiedUpVector = true;
     useOldView = true;
 
+    spatialUnits = "no units provided";
+    energyUnits = "no units provided";
+    absUnits = "no units provided";
+    emisUnits = "no units provided";
+    intensityUnits = "no units provided";
+    pathLengthUnits = "no units provided";
+
     //
     // The new view specification
     //
@@ -355,6 +362,21 @@ avtXRayImageQuery::SetInputParams(const MapNode &params)
         v.push_back(params.GetEntry("energy_group_bounds")->ToDouble());
         SetEnergyGroupBounds(v);
     }
+
+    std::map<std::string, std::string> unitsmap;
+    if (params.HasEntry("spatial_units"))
+        unitsmap["spatialUnits"] = params.GetEntry("spatial_units")->AsString();
+    if (params.HasEntry("energy_units"))
+        unitsmap["energyUnits"] = params.GetEntry("energy_units")->AsString();
+    if (params.HasEntry("abs_units"))
+        unitsmap["absUnits"] = params.GetEntry("abs_units")->AsString();
+    if (params.HasEntry("emis_units"))
+        unitsmap["emisUnits"] = params.GetEntry("emis_units")->AsString();
+    if (params.HasEntry("intensity_units"))
+        unitsmap["intensityUnits"] = params.GetEntry("intensity_units")->AsString();
+    if (params.HasEntry("path_length_units"))
+        unitsmap["pathLengthUnits"] = params.GetEntry("path_length_units")->AsString();
+    SetUnits(unitsmap);
 
     if (params.HasNumericEntry("debug_ray"))
         SetDebugRay(params.GetEntry("debug_ray")->AsInt());
@@ -781,6 +803,41 @@ avtXRayImageQuery::SetEnergyGroupBounds(const doubleVector &bins)
     for (int i = 0; i < bins.size(); i++)
         energyGroupBounds[i] = bins[i];
     nEnergyGroupBounds = bins.size();
+}
+
+// ****************************************************************************
+//  Method: avtXRayImageQuery::SetUnits
+//
+//  Purpose:
+//    Set all the unit variables. 
+// 
+//  Note:
+//    Doing them all in one function reduces code bloat with lots of setters, 
+//    and they'd all be very similar anyway.
+//
+//  Programmer: Justin Privitera
+//  Creation:   November 30, 2022
+//
+// ****************************************************************************
+
+void
+avtXRayImageQuery::SetUnits(const std::map<std::string, std::string> &unitsmap)
+{
+    if (! unitsmap.empty())
+    {
+        if (unitsmap.count("spatialUnits") > 0)
+            spatialUnits = unitsmap.at("spatialUnits");
+        if (unitsmap.count("energyUnits") > 0)
+            energyUnits = unitsmap.at("energyUnits");
+        if (unitsmap.count("absUnits") > 0)
+            absUnits = unitsmap.at("absUnits");
+        if (unitsmap.count("emisUnits") > 0)
+            emisUnits = unitsmap.at("emisUnits");
+        if (unitsmap.count("intensityUnits") > 0)
+            intensityUnits = unitsmap.at("intensityUnits");
+        if (unitsmap.count("pathLengthUnits") > 0)
+            pathLengthUnits = unitsmap.at("pathLengthUnits");
+    }
 }
 
 // ****************************************************************************
@@ -1364,10 +1421,9 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
             int *zvals = data_out["coordsets/image_coords/values/z"].value();
             for (int i = 0; i < z_coords_dim; i ++) { zvals[i] = i; }
 
-            // TODO get units piped through
-            // data_out["coordsets/image_coords/units/x"] = "cm";
-            // data_out["coordsets/image_coords/units/y"] = "cm";
-            // data_out["coordsets/image_coords/units/z"] = "kev";
+            data_out["coordsets/image_coords/units/x"] = spatialUnits;
+            data_out["coordsets/image_coords/units/y"] = spatialUnits;
+            data_out["coordsets/image_coords/units/z"] = energyUnits;
 
             data_out["coordsets/image_coords/labels/x"] = "width";
             data_out["coordsets/image_coords/labels/y"] = "height";
@@ -1382,12 +1438,14 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
 
             data_out["fields/intensities/topology"] = "image_topo";
             data_out["fields/intensities/association"] = "element";
+            data_out["fields/intensities/units"] = intensityUnits;
             // set to float64 regardless of vtk data types
             data_out["fields/intensities/values"].set(conduit::DataType::float64(numfieldvals));
             conduit::float64 *intensity_vals = data_out["fields/intensities/values"].value();
 
             data_out["fields/path_length/topology"] = "image_topo";
             data_out["fields/path_length/association"] = "element";
+            data_out["fields/path_length/units"] = pathLengthUnits;
             // set to float64 regardless of vtk data types
             data_out["fields/path_length/values"].set(conduit::DataType::float64(numfieldvals));
             conduit::float64 *depth_vals = data_out["fields/path_length/values"].value();
@@ -1450,6 +1508,8 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
             data_out["state/xray_query/numBins"] = numBins;
             data_out["state/xray_query/absVarName"] = absVarName;
             data_out["state/xray_query/emisVarName"] = emisVarName;
+            data_out["state/xray_query/absUnits"] = absUnits;
+            data_out["state/xray_query/emisUnits"] = emisUnits;
 
             // calculate spatial extent coords
             // (the physical extents of the image projected on the near plane)

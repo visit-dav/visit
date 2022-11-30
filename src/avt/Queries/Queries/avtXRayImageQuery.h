@@ -127,6 +127,7 @@ class QUERY_API avtXRayImageQuery : public avtDatasetQuery
                                   const doubleVector &intensities);
     void                      SetEnergyGroupBounds(
                                   const doubleVector &bins);
+    void                      SetUnits(const std::map<std::string, std::string> &unitsmap);
     void                      SetDebugRay(const int &ray);
     void                      SetOutputRayBounds(const bool &flag);
     void                      SetFamilyFiles(const bool &flag);
@@ -170,6 +171,14 @@ class QUERY_API avtXRayImageQuery : public avtDatasetQuery
 
     std::string               absVarName;  //e.g. "absorbtivity"
     std::string               emisVarName; //e.g. "emissivity"
+
+    // units, to be output in blueprint metadata
+    std::string               spatialUnits;
+    std::string               energyUnits;
+    std::string               absUnits;
+    std::string               emisUnits;
+    std::string               intensityUnits;
+    std::string               pathLengthUnits;
 
     int                       numPixels;
 
