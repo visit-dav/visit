@@ -542,7 +542,7 @@ Query("XRay Image", params)
 DeleteAllPlots()
 CloseDatabase(silo_data_path("curv3d.silo"))
 
-conduit_db = pjoin(conduit_dir_detector_dims, "output.cycle_000048.root")
+conduit_db = pjoin(conduit_dir_detector_dims, "output.root")
 xrayout = conduit.Node()
 conduit.relay.io.blueprint.load_mesh(xrayout, conduit_db)
 
