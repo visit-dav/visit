@@ -1196,6 +1196,10 @@ avtXRayImageQuery::GetSecondaryVars(std::vector<std::string> &outVars)
 // 
 //    Justin Privitera, Mon Nov 28 15:38:25 PST 2022
 //    Renamed energy group bins to energy group bounds.
+// 
+//    Justin Privitera, Wed Nov 30 10:41:17 PST 2022
+//    Absolute value is applied to detector height and width to ensure
+//    sensible values come out of the query.
 //
 // ****************************************************************************
 
@@ -1616,8 +1620,11 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
                 data_out["state/xray_data/image_coords/z"] = "Energy group bounds not provided.";
             }
 
-            data_out["state/xray_data/detectorWidth"] = 2. * nearWidth;
-            data_out["state/xray_data/detectorHeight"] = 2. * nearHeight;
+            // If the near plane is too far back, it can cause the near width
+            // and height to be negative. However, the detector height and 
+            // width ought to be positive values, hence the absolute value.
+            data_out["state/xray_data/detectorWidth"] = fabs(2. * nearWidth);
+            data_out["state/xray_data/detectorHeight"] = fabs(2. * nearHeight);
 
             if (numfieldvals > 0)
             {
