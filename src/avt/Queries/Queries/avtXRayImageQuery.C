@@ -191,6 +191,7 @@ avtXRayImageQuery::avtXRayImageQuery():
     absUnits = "no units provided";
     emisUnits = "no units provided";
     intensityUnits = "no units provided";
+    pathLengthUnits = "no info provided";
 
     //
     // The new view specification
@@ -373,6 +374,8 @@ avtXRayImageQuery::SetInputParams(const MapNode &params)
         unitsmap["emisUnits"] = params.GetEntry("emis_units")->AsString();
     if (params.HasEntry("intensity_units"))
         unitsmap["intensityUnits"] = params.GetEntry("intensity_units")->AsString();
+    if (params.HasEntry("path_length_units"))
+        unitsmap["pathLengthUnits"] = params.GetEntry("path_length_units")->AsString();
     SetUnits(unitsmap);
 
     if (params.HasNumericEntry("debug_ray"))
@@ -832,6 +835,8 @@ avtXRayImageQuery::SetUnits(const std::map<std::string, std::string> &unitsmap)
             emisUnits = unitsmap.at("emisUnits");
         if (unitsmap.count("intensityUnits") > 0)
             intensityUnits = unitsmap.at("intensityUnits");
+        if (unitsmap.count("pathLengthUnits") > 0)
+            pathLengthUnits = unitsmap.at("pathLengthUnits");
     }
 }
 
@@ -1440,6 +1445,7 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
 
             data_out["fields/path_length/topology"] = "image_topo";
             data_out["fields/path_length/association"] = "element";
+            data_out["fields/path_length/units"] = pathLengthUnits;
             // set to float64 regardless of vtk data types
             data_out["fields/path_length/values"].set(conduit::DataType::float64(numfieldvals));
             conduit::float64 *depth_vals = data_out["fields/path_length/values"].value();

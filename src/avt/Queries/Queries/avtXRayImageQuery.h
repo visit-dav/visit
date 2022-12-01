@@ -178,6 +178,7 @@ class QUERY_API avtXRayImageQuery : public avtDatasetQuery
     std::string               absUnits;
     std::string               emisUnits;
     std::string               intensityUnits;
+    std::string               pathLengthUnits;
 
     int                       numPixels;
 
