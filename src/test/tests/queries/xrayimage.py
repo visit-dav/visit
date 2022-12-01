@@ -49,6 +49,9 @@
 # 
 #    Justin Privitera, Mon Nov 28 15:38:25 PST 2022
 #    Renamed energy group bins to energy group bounds.
+# 
+#    Justin Privitera, Wed Nov 30 17:43:48 PST 2022
+#    Added tests for piping the units through the query.
 #
 # ----------------------------------------------------------------------------
 

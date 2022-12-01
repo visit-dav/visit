@@ -166,6 +166,9 @@ inline void Scale(double result[3], const double v[3], const double s)
 // 
 //    Justin Privitera, Mon Nov 28 15:38:25 PST 2022
 //    Renamed energy group bins to energy group bounds.
+// 
+//    Justin Privitera, Wed Nov 30 17:43:48 PST 2022
+//    Added default values for units.
 //
 // ****************************************************************************
 
@@ -315,6 +318,9 @@ avtXRayImageQuery::~avtXRayImageQuery()
 // 
 //    Justin Privitera, Mon Nov 28 15:38:25 PST 2022
 //    Renamed energy group bins to energy group bounds.
+// 
+//    Justin Privitera, Wed Nov 30 17:43:48 PST 2022
+//    Added logic to handle passing through the units.
 //
 // ****************************************************************************
 
@@ -1123,6 +1129,10 @@ avtXRayImageQuery::GetSecondaryVars(std::vector<std::string> &outVars)
 // 
 //    Justin Privitera, Mon Nov 28 15:38:25 PST 2022
 //    Renamed energy group bins to energy group bounds.
+// 
+//    Justin Privitera, Wed Nov 30 17:43:48 PST 2022
+//    The units are propagated to the output metadata for blueprint output 
+//    types.
 //
 // ****************************************************************************
 
