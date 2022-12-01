@@ -56,6 +56,9 @@
 # 
 #    Justin Privitera, Wed Nov 30 17:43:48 PST 2022
 #    Added tests for piping the units through the query.
+# 
+#    Justin Privitera, Thu Dec  1 15:29:48 PST 2022
+#    Tests for new location of units in blueprint output.
 #
 # ----------------------------------------------------------------------------
 

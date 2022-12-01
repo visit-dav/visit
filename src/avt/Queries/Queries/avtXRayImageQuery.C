@@ -1137,6 +1137,9 @@ avtXRayImageQuery::GetSecondaryVars(std::vector<std::string> &outVars)
 //    Justin Privitera, Wed Nov 30 17:43:48 PST 2022
 //    The units are propagated to the output metadata for blueprint output 
 //    types.
+// 
+//    Justin Privitera, Thu Dec  1 15:29:48 PST 2022
+//    Changed where units go in the blueprint output.
 //
 // ****************************************************************************
 
