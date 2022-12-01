@@ -2200,6 +2200,11 @@ avtXRayImageQuery::WriteBlueprintImagingPlane(conduit::Node &data_out,
 //
 //  Purpose:
 //    Retrieves default values for input variables. 
+// 
+//  Note:
+//    If someone uses this function to get the default parameters, modifies
+//    them, and runs the query, the query will default to using the simplified
+//    view specification even if the user only modified the new view params.
 //
 //  Programmer: Kathleen Biagas 
 //  Creation:   July 15, 2011
@@ -2214,6 +2219,9 @@ avtXRayImageQuery::WriteBlueprintImagingPlane(conduit::Node &data_out,
 //
 //    Eric Brugger, Thu May 21 12:15:59 PDT 2015
 //    I added support for debugging a ray.
+// 
+//    Justin Privitera, Thu Dec  1 11:39:12 PST 2022
+//    Added all missing default input parameters.
 //
 // ****************************************************************************
 
@@ -2225,20 +2233,57 @@ avtXRayImageQuery::GetDefaultInputParams(MapNode &params)
     v.push_back("emissivity");
     params["vars"] = v;
 
-    params["divide_emis_by_absorb"] = 0;
     params["background_intensity"] = 0.0;
-    params["debug_ray"] = -1;
+    params["background_intensities"] = 0.0;
+    params["divide_emis_by_absorb"] = 0;
     params["output_type"] = std::string("png");
+    params["output_dir"] = std::string(".");
+    params["family_files"] = 0;
+
+    intVector is;
+    is.push_back(200);
+    is.push_back(200);
+    params["image_size"] = is;
+
+    params["debug_ray"] = -1;
+    params["output_ray_bounds"] = 0;
+
+    doubleVector egb;
+    egb.push_back(0.0);
+    egb.push_back(1.0);
+    params["energy_group_bounds"] = egb;
+
+    params["spatial_units"] = std::string("spatial units");
+    params["energy_units"] = std::string("energy units");
+    params["abs_units"] = std::string("abs units");
+    params["emis_units"] = std::string("emis units");
+    params["intensity_units"] = std::string("intensity units");
+    params["path_length_units"] = std::string("path length info");
+
+    //
+    // The old view parameters.
+    //
+    params["width"] = 1.0;
+    params["height"] = 1.0;
+
+    doubleVector o;
+    o.push_back(0.0);
+    o.push_back(0.0);
+    o.push_back(0.0);
+    params["origin"] = o;
+
+    params["theta"] = 0.0;
+    params["phi"] = 0.0;
+
+    doubleVector uv;
+    uv.push_back(0.0);
+    uv.push_back(1.0);
+    uv.push_back(0.0);
+    params["up_vector"] = uv;
 
     //
     // The new view parameters.
     //
-    doubleVector n;
-    n.push_back(0.0);
-    n.push_back(0.0);
-    n.push_back(1.0);
-    params["normal"] = n;
-
     doubleVector f;
     f.push_back(0.0);
     f.push_back(0.0);
@@ -2250,6 +2295,12 @@ avtXRayImageQuery::GetDefaultInputParams(MapNode &params)
     vu.push_back(1.0);
     vu.push_back(0.0);
     params["view_up"] = vu;
+
+    doubleVector n;
+    n.push_back(0.0);
+    n.push_back(0.0);
+    n.push_back(1.0);
+    params["normal"] = n;
 
     params["view_angle"] = 30.;
     params["parallel_scale"] = 0.5;
@@ -2263,32 +2314,6 @@ avtXRayImageQuery::GetDefaultInputParams(MapNode &params)
 
     params["image_zoom"] = 1.;
     params["perspective"] = 1;
-
-    intVector is;
-    is.push_back(200);
-    is.push_back(200);
-    params["image_size"] = is;
-
-    //
-    // The old view parameters.
-    //
-    doubleVector o;
-    o.push_back(0.0);
-    o.push_back(0.0);
-    o.push_back(0.0);
-    params["origin"] = o;
-
-    doubleVector uv;
-    uv.push_back(0.0);
-    uv.push_back(1.0);
-    uv.push_back(0.0);
-    params["up_vector"] = uv;
-
-    params["theta"] = 0.0;
-    params["phi"] = 0.0;
-
-    params["width"] = 1.0;
-    params["height"] = 1.0;
 }
 
 // ****************************************************************************
