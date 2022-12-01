@@ -9,12 +9,10 @@
 #
 #****************************************************************************/
 
-# Use the SZIP_DIR hint from the config-site .cmake file 
-
-INCLUDE(${VISIT_SOURCE_DIR}/CMake/SetUpThirdParty.cmake)
+# Use the SZIP_DIR hint from the config-site .cmake file
 
 IF (WIN32)
-  IF(SZIP_LIB_NAME) 
+  IF(SZIP_LIB_NAME)
       SET_UP_THIRD_PARTY(SZIP LIBS ${SZIP_LIB_NAME})
   ELSE()
       SET_UP_THIRD_PARTY(SZIP LIBS szlibdll)

@@ -530,6 +530,12 @@
 #    Update CMake minimum version to 3.23. Part of the CMake modernization
 #    effort.
 #
+#    Kathleen Biagas, Mon Nov 7, 2022
+#    Move include checks, symbol checks, etc to SystemChecks.cmake.
+#
+#    Kathleen Biagas, Tue Nov 29, 2022
+#    Move FindXXX calls to SetUpThirdParty.cmake. Add include for that file.
+#
 #    Kathleen Biagas, Thu Dec 1, 2022
 #    Move CREATE_PLUGIN_DEPENDENCIES and VISIT_SELECTED_PLUGIN_ERROR into
 #    PluginMacros.cmake.
@@ -682,42 +688,6 @@ IF (NOT WIN32)
 ENDIF (NOT WIN32)
 
 #-----------------------------------------------------------------------------
-# If the config-site file above has not set a VTK version set a
-# default VTK version of the minimum required.
-#-----------------------------------------------------------------------------
-IF(NOT VTK_VERSION)
-  IF(VISIT_VTK_VERSION)
-      IF(${VISIT_VTK_VERSION} VERSION_LESS ${VTK_MINIMUM_VERSION})
-          MESSAGE(FATAL_ERROR "VTK version must be at least ${VTK_MINIMUM_VERSION}")
-      ENDIF()
-      SETUP_APP_VERSION(VTK ${VISIT_VTK_VERSION})
-  ELSE()
-      MESSAGE(STATUS "VISIT_VTK_VERSION NOT FOUND assuming ${VTK_MINIMUM_VERSION}")
-      SETUP_APP_VERSION(VTK ${VTK_MINIMUM_VERSION})
-  ENDIF()
-ENDIF()
-
-
-#-----------------------------------------------------------------------------
-# If the config-site file above has not set a NEKTAR++ version set a
-# default NEKTAR++ version of the minimum required.
-#-----------------------------------------------------------------------------
-IF(EXISTS ${VISIT_NEKTAR++_DIR})
-  IF(NOT NEKTAR++_VERSION)
-    IF(VISIT_NEKTAR++_VERSION)
-      IF(${VISIT_NEKTAR++_VERSION} VERSION_LESS ${NEKTAR++_MINIMUM_VERSION})
-          MESSAGE(FATAL_ERROR "NEKTAR++ version must be at least ${NEKTAR++_MINIMUM_VERSION}")
-      ENDIF()
-      SETUP_APP_VERSION(NEKTAR++ ${VISIT_NEKTAR++_VERSION})
-    ELSE()
-      MESSAGE(STATUS "VISIT_NEKTAR++_VERSION NOT FOUND assuming ${NEKTAR++_MINIMUM_VERSION}")
-      SETUP_APP_VERSION(NEKTAR++ ${NEKTAR++_MINIMUM_VERSION})
-    ENDIF()
-  ENDIF()
-ENDIF()
-
-
-#-----------------------------------------------------------------------------
 # If not already set, we use a default build type of Release
 #-----------------------------------------------------------------------------
 
@@ -743,12 +713,8 @@ PROJECT(VISIT)
 
 
 include(${VISIT_SOURCE_DIR}/CMake/CheckMinimumCompilerVersion.cmake)
-
-
-#-----------------------------------------------------------------------------
-# Set extended platlform defs.
-#-----------------------------------------------------------------------------
-INCLUDE(${VISIT_SOURCE_DIR}/CMake/SetUpPlatformDefs.cmake)
+include(${VISIT_SOURCE_DIR}/CMake/SystemChecks.cmake)
+include(${VISIT_SOURCE_DIR}/CMake/SetUpPlatformDefs.cmake)
 
 
 #-----------------------------------------------------------------------------
@@ -1023,7 +989,7 @@ unset(v_list)
 #-----------------------------------------------------------------------------
 # Init BLT
 #-----------------------------------------------------------------------------
-# This also includes 
+# This also includes
 # VisIt's BLT defaults
 include(CMake/SetupBLT.cmake)
 
@@ -1194,11 +1160,6 @@ MACRO(VISIT_INSTALL_TARGETS)
     VISIT_INSTALL_TARGETS_RELATIVE("" ${ARGN})
 ENDMACRO(VISIT_INSTALL_TARGETS)
 
-# Configure OpenGL support.
-if(NOT VISIT_DBIO_ONLY)
-  include(${VISIT_SOURCE_DIR}/CMake/VisItOpenGL.cmake)
-endif()
-
 # Install the headers for directories that we need in order to build plugins
 IF(VISIT_HEADERS_SKIP_INSTALL)
     MESSAGE(STATUS "Skipping VisIt headers installation")
@@ -1220,97 +1181,9 @@ ELSE(VISIT_HEADERS_SKIP_INSTALL)
     )
 ENDIF(VISIT_HEADERS_SKIP_INSTALL)
 
-#-----------------------------------------------------------------------------
-# Detect packages here. We could probably write macros that we can include from
-# elsewhere for this.
-#-----------------------------------------------------------------------------
-INCLUDE(${CMAKE_ROOT}/Modules/CheckIncludeFiles.cmake)
-INCLUDE(${CMAKE_ROOT}/Modules/CMakeBackwardCompatibilityC.cmake)
-INCLUDE(${CMAKE_ROOT}/Modules/CMakeBackwardCompatibilityCXX.cmake)
-INCLUDE(${CMAKE_ROOT}/Modules/CheckTypeSize.cmake)
-INCLUDE(${CMAKE_ROOT}/Modules/CheckFunctionExists.cmake)
-INCLUDE(${CMAKE_ROOT}/Modules/CheckSymbolExists.cmake)
 
-IF(VISIT_USE_X)
-    INCLUDE(${CMAKE_ROOT}/Modules/FindX11.cmake)
-    IF(NOT X11_X11_LIB)
-        SET(VISIT_USE_X OFF)
-        SET(HAVE_LIBX11 0)
-    ELSE(NOT X11_X11_LIB)
-        SET(HAVE_LIBX11 1)
-    ENDIF(NOT X11_X11_LIB)
-ELSE(VISIT_USE_X)
-    SET(HAVE_LIBX11 0)
-    SET(CMAKE_X_LIBS "" CACHE INTERNAL "X11 libs.")
-    SET(CMAKE_X_CFLAGS "" CACHE INTERNAL "X11 extra flags.")
-    SET(CMAKE_HAS_X 0 CACHE INTERNAL "Is X11 around.")
-ENDIF(VISIT_USE_X)
-INCLUDE(${CMAKE_ROOT}/Modules/TestBigEndian.cmake)
+include(${VISIT_SOURCE_DIR}/CMake/SetUpThirdParty.cmake)
 
-# Configure Nektar++ support.
-# Do it before the other libraries like boost because many can depend on it.
-INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindNektar++.cmake)
-
-INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindVisItDamaris.cmake)
-
-INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindVisItBoost.cmake)
-
-IF( (VISIT_PYTHON_SCRIPTING OR VISIT_PYTHON_FILTERS) AND NOT VISIT_DBIO_ONLY)
-    INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindVisItPython.cmake)
-    IF(NOT PYTHON_FOUND)
-        MESSAGE(FATAL_ERROR "Python support requested, but could not find Python "
-                            "(PYTHON_FOUND=FALSE) "
-                            "(VISIT_PYTHON_SCRIPTING=${VISIT_PYTHON_SCRIPTING} "
-                            " VISIT_PYTHON_FILTERS=${VISIT_PYTHON_FILTERS})")
-    ENDIF()
-ENDIF((VISIT_PYTHON_SCRIPTING OR VISIT_PYTHON_FILTERS) AND NOT VISIT_DBIO_ONLY)
-
-IF(VISIT_JAVA)
-    INCLUDE(${CMAKE_ROOT}/Modules/FindJava.cmake)
-    ENABLE_LANGUAGE(Java)
-ENDIF(VISIT_JAVA)
-
-CHECK_INCLUDE_FILES (fcntl.h     HAVE_FCNTL_H)
-CHECK_INCLUDE_FILES (inttypes.h  HAVE_INTTYPES_H)
-IF(NOT APPLE)
-    CHECK_INCLUDE_FILES (malloc.h    HAVE_MALLOC_H)
-ELSE(NOT APPLE)
-    CHECK_INCLUDE_FILES (malloc/malloc.h    HAVE_MALLOC_H)
-ENDIF(NOT APPLE)
-CHECK_INCLUDE_FILES (limits.h    HAVE_LIMITS_H)
-CHECK_INCLUDE_FILES (memory.h    HAVE_MEMORY_H)
-CHECK_INCLUDE_FILES (stdint.h    HAVE_STDINT_H)
-CHECK_INCLUDE_FILES (stdlib.h    HAVE_STDLIB_H)
-CHECK_INCLUDE_FILES (strings.h   HAVE_STRINGS_H)
-CHECK_INCLUDE_FILES (string.h    HAVE_STRING_H)
-CHECK_INCLUDE_FILES (sys/time.h  HAVE_SYS_TIME_H)
-CHECK_INCLUDE_FILES (sys/types.h HAVE_SYS_TYPES_H)
-CHECK_INCLUDE_FILES (sys/stat.h  HAVE_SYS_STAT_H)
-CHECK_INCLUDE_FILES (unistd.h    HAVE_UNISTD_H)
-CHECK_INCLUDE_FILES (stdbool.h   HAVE_STDBOOL_H)
-
-# These need to come before VTK/Qt because they depend on it.
-
-# zlib
-INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindZlib.cmake)
-
-#ospray
-IF(EXISTS ${VISIT_OSPRAY_DIR})
-    include(${VISIT_SOURCE_DIR}/CMake/FindOSPRay.cmake)
-endif()
-
-# szip and jpeg
-INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindJPEG.cmake)
-INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindSzip.cmake)
-
-# Configure Qt and Qwt support.
-IF(NOT VISIT_DBIO_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_SERVER_COMPONENTS_ONLY)
-    INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindVisItQt.cmake)
-    INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindQwt.cmake)
-ENDIF(NOT VISIT_DBIO_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_SERVER_COMPONENTS_ONLY)
-
-# Configure VTK support.
-INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindVisItVTK.cmake)
 
 # Enable thread build of VisIt
 IF(VISIT_THREAD)
@@ -1381,109 +1254,11 @@ endif()
 
 
 
-# Configure PySide Support
-if(VTK_VERSION VERSION_EQUAL "8.1.0")
-  if(VISIT_PYTHON_SCRIPTING AND PYTHONLIBS_FOUND
-                          AND NOT VISIT_DBIO_ONLY
-                          AND NOT VISIT_ENGINE_ONLY
-                          AND NOT VISIT_SERVER_COMPONENTS_ONLY)
-    INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindPySide.cmake)
-  endif()
-endif()
-
-# Include Ice-T support if we can.
-IF(VISIT_PARALLEL)
-    INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindIceT.cmake)
-ENDIF(VISIT_PARALLEL)
-
 # dl and large file support.
 IF(CMAKE_HOST_UNIX)
   SET(DL_LIB dl)
   ADD_DEFINITIONS(-D_LARGEFILE64_SOURCE)
 ENDIF(CMAKE_HOST_UNIX)
-
-IF(NOT VISIT_BUILD_MINIMAL_PLUGINS OR VISIT_SELECTED_DATABASE_PLUGINS)
-    # Configure HDF5 support.
-    # Do it before the other libraries since many can depend on it.
-    INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindHDF5.cmake)
-
-    # Configure adios support.
-    INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindADIOS.cmake)
-
-    # Configure adios2 support.
-    INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindADIOS2.cmake)
-
-    # Configure advio support.
-    INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindADVIO.cmake)
-
-    # Configure blosc support.
-    INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindBlosc.cmake)
-
-    # Configure Boxlib support.
-    INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindBoxlib.cmake)
-
-    # Configure cfitsio support.
-    INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindCFITSIO.cmake)
-
-    # Configure CGNS support.
-    INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindCGNS.cmake)
-
-    # Configure Conduit support.
-    INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindConduit.cmake)
-
-    # Configure FMS support.
-    INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindFMS.cmake)
-
-    # Configure gdal support.
-    INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindGDAL.cmake)
-
-    # Configure h5part support.
-    INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindH5Part.cmake)
-
-    # Configure MOAB support.
-    INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindMOAB.cmake)
-
-    # Configure mfem support.
-    INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindMFEM.cmake)
-
-    # Configure Mili support.
-    INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindMili.cmake)
-
-    # Configure netcdf support.
-    INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindNetcdf.cmake)
-
-    # Configure OpenEXR support.
-    INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindOpenEXR.cmake)
-
-    # Configure Silo support.
-    INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindSilo.cmake)
-
-    # Configure Xdmf support.
-    INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindXdmf.cmake)
-
-    # Configure MDSplus support.
-    INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindMDSplus.cmake)
-
-    # Configure Uintah support.
-    INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindUintah.cmake)
-
-    # Configure PIDX support.
-    INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindPIDX.cmake)
-
-    # Configure VTKh support.
-    if(VTK_VERSION VERSION_EQUAL "8.1.0")
-        if(VISIT_VTKH_DIR)
-            INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindVTKh.cmake)
-        endif()
-    endif()
-
-    # Configure GFortran support.
-    INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindGFortran.cmake)
-ENDIF()
-
-IF (WIN32 AND VISIT_MAKE_NSIS_INSTALLER)
-    INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindNSIS.cmake)
-ENDIF (WIN32 AND VISIT_MAKE_NSIS_INSTALLER)
 
 IF(VISIT_STATIC)
     SET(BUILD_SHARED_LIBS 0)
@@ -1901,140 +1676,6 @@ ELSE(VISIT_STATIC)
         ENDIF(APPLE)
     ENDIF(WIN32)
 ENDIF(VISIT_STATIC)
-
-# Check for type sizes, endian
-CHECK_TYPE_SIZE(bool                 SIZEOF_BOOLEAN)            # ${CMAKE_SIZEOF_BOOLEAN})
-CHECK_TYPE_SIZE(char                 SIZEOF_CHAR)               # ${CMAKE_SIZEOF_CHAR})
-CHECK_TYPE_SIZE(double               SIZEOF_DOUBLE)             # ${CMAKE_SIZEOF_DOUBLE})
-CHECK_TYPE_SIZE(float                SIZEOF_FLOAT)              # ${CMAKE_SIZEOF_FLOAT})
-CHECK_TYPE_SIZE(int                  SIZEOF_INT)                # ${CMAKE_SIZEOF_INT})
-CHECK_TYPE_SIZE(long                 SIZEOF_LONG)               # ${CMAKE_SIZEOF_LONG})
-CHECK_TYPE_SIZE("long double"        SIZEOF_LONG_DOUBLE)        # ${CMAKE_SIZEOF_LONG_DOUBLE})
-CHECK_TYPE_SIZE("long float"         SIZEOF_LONG_FLOAT)         # ${CMAKE_SIZEOF_LONG_FLOAT})
-CHECK_TYPE_SIZE("long long"          SIZEOF_LONG_LONG)          # ${CMAKE_SIZEOF_LONG_LONG})
-CHECK_TYPE_SIZE(short                SIZEOF_SHORT)              # ${CMAKE_SIZEOF_SHORT})
-CHECK_TYPE_SIZE("unsigned char"      SIZEOF_UNSIGNED_CHAR)      # ${CMAKE_SIZEOF_UNSIGNED_CHAR})
-CHECK_TYPE_SIZE("unsigned int"       SIZEOF_UNSIGNED_INT)       # ${CMAKE_SIZEOF_UNSIGNED_INT})
-CHECK_TYPE_SIZE("size_t"             SIZEOF_SIZE_T)             # ${CMAKE_SIZEOF_SIZE_T})
-CHECK_TYPE_SIZE("unsigned long"      SIZEOF_UNSIGNED_LONG)      # ${CMAKE_SIZEOF_UNSIGNED_LONG})
-CHECK_TYPE_SIZE("unsigned long long" SIZEOF_UNSIGNED_LONG_LONG) # ${CMAKE_SIZEOF_UNSIGNED_LONG_LONG})
-CHECK_TYPE_SIZE("unsigned short"     SIZEOF_UNSIGNED_SHORT)     # ${CMAKE_SIZEOF_UNSIGNED_SHORT})
-CHECK_TYPE_SIZE(void*                SIZEOF_VOID_P)             # ${CMAKE_SIZEOF_VOID_P})
-SET(CMAKE_REQUIRED_DEFINITIONS -D_LARGEFILE64_SOURCE)
-CHECK_TYPE_SIZE("off64_t" SIZEOF_OFF64_T)
-TEST_BIG_ENDIAN(WORDS_BIGENDIAN)
-
-# Check for threads
-IF(WIN32)
-    SET(HAVE_THREADS  1)
-ELSE(WIN32)
-    SET(HAVE_THREADS  ${CMAKE_USE_PTHREADS})
-ENDIF(WIN32)
-
-# manually check for socklen_t as CHECK_SYMBOL_EXISTS
-# doesn't appear to work on linux (at least)
-IF (HAVE_SOCKLEN_T MATCHES "^HAVE_SOCKLEN_T$")
-    MESSAGE(STATUS "Check for socklen_t")
-    TRY_COMPILE(HAVE_SOCKLEN_T
-        ${CMAKE_CURRENT_BINARY_DIR}
-        ${VISIT_SOURCE_DIR}/CMake/TestSocklenT.c
-        OUTPUT_VARIABLE SLT
-    )
-    IF (HAVE_SOCKLEN_T)
-        SET(HAVE_SOCKLEN_T 1 CACHE INTERNAL "support for socklen_t")
-        MESSAGE(STATUS "Check for socklen_t - found")
-    ELSE(HAVE_SOCKLEN_T)
-        SET(HAVE_SOCKLEN_T 0 CACHE INTERNAL "support for socklen_t")
-        MESSAGE(STATUS "Check for socklen_t - not found")
-    ENDIF (HAVE_SOCKLEN_T)
-ENDIF ()
-
-# Check for setbuf being a public member in fstream. We could test via
-# TRY_COMPILE in CMake 2.6.2. I think this is only false on the Suns, which
-# we kind of stopped supporting anyway.
-SET(NO_SETBUF 1)
-
-# Check for PTY support
-IF(NOT WIN32)
-    SET(VISIT_USE_PTY 1)
-    INCLUDE(${VISIT_SOURCE_DIR}/CMake/TestPTY.cmake)
-ENDIF(NOT WIN32)
-
-FUNCTION(CHECK_ISFINITE_EXISTS VAR)
-  IF(${VAR} MATCHES "^${VAR}$")
-    MESSAGE(STATUS "Check for isfinite")
-    TRY_COMPILE(tmpVar
-            ${CMAKE_CURRENT_BINARY_DIR}
-            ${VISIT_SOURCE_DIR}/CMake/Testisfinite.cpp
-            CMAKE_FLAGS -DLINK_LIBRARIES:STRING=m
-            OUTPUT_VARIABLE outvar)
-    IF(tmpVar)
-        SET(${VAR} 1 CACHE INTERNAL "isfinite found")
-        MESSAGE(STATUS "Check for isfinite - found")
-    ELSE(tmpVar)
-        SET(${VAR} 0 CACHE INTERNAL "isfinite found")
-        MESSAGE(STATUS "Check for isfinite - not found")
-        IF (NOT WIN32)
-            MESSAGE(STATUS "Check for isfinite - ${outvar}")
-        ENDIF (NOT WIN32)
-    ENDIF(tmpVar)
-  ENDIF()
-ENDFUNCTION(CHECK_ISFINITE_EXISTS)
-
-FUNCTION(CHECK_STRTOF_PROTOTYPE VAR)
-  IF(${VAR} MATCHES "^${VAR}$")
-    MESSAGE(STATUS "Check for strtof prototype")
-    TRY_COMPILE(tmpVar
-            ${CMAKE_CURRENT_BINARY_DIR}
-            ${VISIT_SOURCE_DIR}/CMake/Teststrtofprototype.cpp
-            OUTPUT_VARIABLE outvar)
-    IF(tmpVar)
-        SET(${VAR} 1 CACHE INTERNAL "strtof prototype")
-        MESSAGE(STATUS "Check for strtof prototype - found")
-    ELSE(tmpVar)
-        SET(${VAR} 0 CACHE INTERNAL "strtof prototype")
-        MESSAGE(STATUS "Check for strtof prototype - not found")
-    ENDIF(tmpVar)
-  ENDIF()
-ENDFUNCTION(CHECK_STRTOF_PROTOTYPE)
-
-FUNCTION(CHECK_FTIME_PROTOTYPE VAR)
-  IF(${VAR} MATCHES "^${VAR}$")
-    MESSAGE(STATUS "Check for ftime prototype")
-    TRY_COMPILE(tmpVar
-            ${CMAKE_CURRENT_BINARY_DIR}
-            ${VISIT_SOURCE_DIR}/CMake/Testftimeprototype.cpp
-            OUTPUT_VARIABLE outvar)
-    IF(tmpVar)
-        SET(${VAR} 1 CACHE INTERNAL "ftime prototype")
-        MESSAGE(STATUS "Check for ftime prototype - found")
-    ELSE(tmpVar)
-        SET(${VAR} 0 CACHE INTERNAL "ftime prototype")
-        MESSAGE(STATUS "Check for ftime prototype - not found")
-    ENDIF(tmpVar)
-  ENDIF()
-ENDFUNCTION(CHECK_FTIME_PROTOTYPE)
-
-# Check for some functions
-CHECK_FUNCTION_EXISTS(memmove HAVE_MEMMOVE)
-CHECK_FUNCTION_EXISTS(div HAVE_DIV)
-CHECK_FUNCTION_EXISTS(setenv HAVE_SETENV)
-CHECK_FUNCTION_EXISTS(strtof HAVE_STRTOF)
-CHECK_FUNCTION_EXISTS(aligned_alloc HAVE_ALIGNED_ALLOC)
-CHECK_STRTOF_PROTOTYPE(HAVE_STRTOF_PROTOTYPE)
-CHECK_FTIME_PROTOTYPE(HAVE_FTIME_PROTOTYPE)
-CHECK_ISFINITE_EXISTS(HAVE_ISFINITE)
-
-# If we're not disabling the select() call then check for it.
-IF(NOT VISIT_DISABLE_SELECT)
-    IF(WIN32)
-        SET(HAVE_SELECT TRUE)
-    ELSE(WIN32)
-        CHECK_FUNCTION_EXISTS(select HAVE_SELECT)
-    ENDIF(WIN32)
-ENDIF(NOT VISIT_DISABLE_SELECT)
-
-
 
 # Set the rendering size limit to 16384 so that we are not unnecessarily
 # constraining the user. There is no way to set this properly since this

@@ -12,9 +12,7 @@
 #
 #****************************************************************************/
 
-# Use the H5PART_DIR hint from the config-site .cmake file 
-
-INCLUDE(${VISIT_SOURCE_DIR}/CMake/SetUpThirdParty.cmake)
+# Use the H5PART_DIR hint from the config-site .cmake file
 
 SET_UP_THIRD_PARTY(NETCDF LIBS netcdf)
 

@@ -16,9 +16,7 @@
 #
 #****************************************************************************/
 
-# Use the GDAL_DIR hint from the config-site .cmake file 
-
-INCLUDE(${VISIT_SOURCE_DIR}/CMake/SetUpThirdParty.cmake)
+# Use the GDAL_DIR hint from the config-site .cmake file
 
 IF (WIN32)
     SET_UP_THIRD_PARTY(GDAL LIBS gdal_i)

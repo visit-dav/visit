@@ -9,9 +9,7 @@
 #
 #****************************************************************************/
 
-# Use the MDSPLUS_DIR hint from the config-site .cmake file 
-
-INCLUDE(${VISIT_SOURCE_DIR}/CMake/SetUpThirdParty.cmake)
+# Use the MDSPLUS_DIR hint from the config-site .cmake file
 
 IF (WIN32)
     SET_UP_THIRD_PARTY(MDSPLUS LIBS MdsLib)

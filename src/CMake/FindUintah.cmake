@@ -2,9 +2,8 @@
 # Project developers.  See the top-level LICENSE file for dates and other
 # details.  No copyright assignment is required to contribute to VisIt.
 
-# Use the UINTAH_DIR hint from the config-site .cmake file 
+# Use the UINTAH_DIR hint from the config-site .cmake file
 
-INCLUDE(${VISIT_SOURCE_DIR}/CMake/SetUpThirdParty.cmake)
 
 # Note UINTAH_INTERFACES_LIB is called in the reader using dlopen
 # so the true library name is need for the compiled operating system.
@@ -21,7 +20,7 @@ ELSE (${VISIT_USE_SYSTEM_UINTAH})
 ENDIF (${VISIT_USE_SYSTEM_UINTAH})
 
 
-SET(REQ_UINTAH_MODS 
+SET(REQ_UINTAH_MODS
   CCA_Components_DataArchiver
   CCA_Components_LoadBalancers
   CCA_Components_ProblemSpecification
@@ -60,3 +59,4 @@ GET_FILENAME_COMPONENT(UINTAH_INTERFACES_LIB ${UINTAH_INTERFACES_LIB} NAME)
 MESSAGE(STATUS "UINTAH_INTERFACES_LIB = ${UINTAH_INTERFACES_LIB}")
 
 UNSET(INCLUDE_TMP_DIR)
+

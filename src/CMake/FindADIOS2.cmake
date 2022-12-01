@@ -15,7 +15,7 @@
 #   Renamed the parallel library to adios2_mpi.
 #
 #   Kathleen Biagas, Tues Oct 1 09:33:47 MST 2013
-#   On Windows, only look for adios2 and taustubs. 
+#   On Windows, only look for adios2 and taustubs.
 #
 #   Justin Privitera, Wed Apr 27 17:46:52 PDT 2022
 #   Updated adios2 to 2.7.1 and added all the libraries it creates to the
@@ -24,8 +24,6 @@
 #****************************************************************************/
 
 # Use the ADIOS_DIR hint from the config-site .cmake file
-
-INCLUDE(${VISIT_SOURCE_DIR}/CMake/SetUpThirdParty.cmake)
 
 if(NOT WIN32)
     SET_UP_THIRD_PARTY(ADIOS2 LIBS
@@ -44,7 +42,8 @@ IF(VISIT_PARALLEL)
             adios2_c_mpi adios2_cxx11_mpi adios2_core_mpi)
     else()
         SET_UP_THIRD_PARTY(ADIOS2_PAR LIBS
-            adios2_c adios2_cxx11 adios2_core 
+            adios2_c adios2_cxx11 adios2_core
             adios2_c_mpi adios2_cxx11_mpi adios2_core_mpi)
     endif()
 endif()
+

@@ -15,9 +15,8 @@
 #
 #****************************************************************************/
 
-# Use the HDF5_DIR hint from the config-site .cmake file 
+# Use the HDF5_DIR hint from the config-site .cmake file
 
-INCLUDE(${VISIT_SOURCE_DIR}/CMake/SetUpThirdParty.cmake)
 
 OPTION(HDF5_LIBNAMES_AFFIX_DLL "Whether HDF5 library base names end with dll" ON)
 IF(WIN32)
