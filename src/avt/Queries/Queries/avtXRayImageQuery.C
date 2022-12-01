@@ -2328,6 +2328,7 @@ avtXRayImageQuery::GetDefaultInputParams(MapNode &params)
     params["output_type"] = std::string("png");
     params["output_dir"] = std::string(".");
     params["family_files"] = 0;
+    params["filename_scheme"] = 0;
 
     intVector is;
     is.push_back(200);
