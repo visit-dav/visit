@@ -1435,10 +1435,6 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
             int *zvals = data_out["coordsets/image_coords/values/z"].value();
             for (int i = 0; i < z_coords_dim; i ++) { zvals[i] = i; }
 
-            data_out["coordsets/image_coords/units/x"] = spatialUnits;
-            data_out["coordsets/image_coords/units/y"] = spatialUnits;
-            data_out["coordsets/image_coords/units/z"] = energyUnits;
-
             data_out["coordsets/image_coords/labels/x"] = "width";
             data_out["coordsets/image_coords/labels/y"] = "height";
             data_out["coordsets/image_coords/labels/z"] = "energy_group";
@@ -1586,6 +1582,14 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
             {
                 data_out["state/xray_data/image_coords/z"] = "Energy group bounds not provided.";
             }
+
+            data_out["state/xray_data/image_coords/units/x"] = spatialUnits;
+            data_out["state/xray_data/image_coords/units/y"] = spatialUnits;
+            data_out["state/xray_data/image_coords/units/z"] = energyUnits;
+
+            data_out["state/xray_data/image_coords/labels/x"] = "width";
+            data_out["state/xray_data/image_coords/labels/y"] = "height";
+            data_out["state/xray_data/image_coords/labels/z"] = "energy_group";
 
             // If the near plane is too far back, it can cause the near width
             // and height to be negative. However, the detector height and 
