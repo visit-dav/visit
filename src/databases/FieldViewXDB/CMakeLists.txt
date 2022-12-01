@@ -5,6 +5,19 @@
 # All other uses are strictly forbidden.
 #*****************************************************************************
 
+# Check for plugin extension
+if(VISIT_STATIC)
+    set(VISIT_PLUGIN_EXTENSION   ".a")
+else()
+    if(WIN32)
+        set(VISIT_PLUGIN_EXTENSION   ".dll")
+    elseif(APPLE)
+        set(VISIT_PLUGIN_EXTENSION   ".dylib")
+    else()
+        set(VISIT_PLUGIN_EXTENSION   ".so")
+    endif()
+endif()
+
 #
 # Install macro that makes sure that a binary library gets installed.
 #
