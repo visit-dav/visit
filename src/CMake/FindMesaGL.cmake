@@ -173,7 +173,7 @@ if (VISIT_MESAGL_DIR)
           CONFIGURATIONS "" None Debug Release RelWithDebInfo MinSizeRel)
 
   if(VISIT_INSTALL_THIRD_PARTY AND NOT VISIT_HEADERS_SKIP_INSTALL)
-      include(${VISIT_SOURCE_DIR}/CMake/ThirdPartyInstallLibrary.cmake)
       THIRD_PARTY_INSTALL_INCLUDE(mesagl ${VISIT_MESAGL_DIR}/include)
   endif()
 endif(VISIT_MESAGL_DIR)
+

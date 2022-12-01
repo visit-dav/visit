@@ -15,9 +15,7 @@
 #
 #****************************************************************************/
 
-# Use the CGNS_DIR hint from the config-site .cmake file 
-
-INCLUDE(${VISIT_SOURCE_DIR}/CMake/SetUpThirdParty.cmake)
+# Use the CGNS_DIR hint from the config-site .cmake file
 
 if(WIN32)
   SET_UP_THIRD_PARTY(CGNS LIBS cgnsdll)

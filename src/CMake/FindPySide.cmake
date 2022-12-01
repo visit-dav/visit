@@ -5,8 +5,8 @@
 #****************************************************************************
 # Modifications:
 #   Kathleen Biagas, Thu June 14 15:48:01 MST 2012
-#   Add support for pyside 1.1.1 on windows, which no longer has a separate 
-#   generatorrunner module.  For PYSIDE_ADD_MODULE function, change the 
+#   Add support for pyside 1.1.1 on windows, which no longer has a separate
+#   generatorrunner module.  For PYSIDE_ADD_MODULE function, change the
 #   target's output location on windows to the exe dir, explanation for this
 #   is within the code below.  Change gen_pathsep on windows to "\;".
 #
@@ -24,9 +24,9 @@
 #   Add support for Qt5, PySide2.
 #
 #   Kevin Griffin, Wed Jan 10 10:46:43 PST 2018
-#   Changes are for OSX and PySide2: Added the capability to optionally append 
-#   a 'v' to the Python version when creating the library names. Also 
-#   expanded the list of libraries for pyside and shiboken to include the 
+#   Changes are for OSX and PySide2: Added the capability to optionally append
+#   a 'v' to the Python version when creating the library names. Also
+#   expanded the list of libraries for pyside and shiboken to include the
 #   different naming schemes for the same library.
 #
 #   Kathleen Biagas, Tue Jun 30 13:22:03 PDT 2020
@@ -176,11 +176,10 @@ if(NOT PySide_FOUND)
         set(PYSIDE_IN_PYTHON false)
         # PySide not installed in python, it's a stand-alone, handle in usual manner
 
-        include(${VISIT_SOURCE_DIR}/CMake/SetUpThirdParty.cmake)
         # pyside's cmake find logic unsets PYTHON_FOUND, so save it now for restoration after
         set(vpy_found ${PYTHON_FOUND})
         if(VISIT_PYSIDE_DIR)
-            #  Find Shiboken 
+            #  Find Shiboken
             set(CMAKE_PREFIX_PATH ${VISIT_PYSIDE_DIR}/lib/cmake/Shiboken2-${PYSIDE_VERSION}.2)
 
             if(NOT Shiboken2}_FOUND)
@@ -203,7 +202,7 @@ if(NOT PySide_FOUND)
                 endif()
             endif()
 
-            #  Find PySide 
+            #  Find PySide
             set(CMAKE_PREFIX_PATH ${VISIT_PYSIDE_DIR}/lib/cmake/PySide2-${PYSIDE_VERSION}.2)
             if (NOT PySide2_FOUND)
                 find_package(PySide2 ${PYSIDE_VERSION})
@@ -329,7 +328,7 @@ function(PYSIDE_ADD_GENERATOR_TARGET
     if(VISIT_LLVM_DIR)
         # the generator needs to know where to find libclang, so ensure its
         # location is set in the LD_LIBRARY_PATH used by the process
-        set(use_ld ${VISIT_LLVM_DIR}/lib:$ENV{LD_LIBRARY_PATH}) 
+        set(use_ld ${VISIT_LLVM_DIR}/lib:$ENV{LD_LIBRARY_PATH})
         # also need LLVM_INSTALL_DIR set
         set(setenv_cmd ${CMAKE_COMMAND} -E env "LD_LIBRARY_PATH=${use_ld}" "LLVM_INSTALL_DIR=${VISIT_LLVM_DIR}")
     else()
@@ -391,7 +390,7 @@ function(PYSIDE_ADD_MODULE module_name
         set_target_properties(${module_name} PROPERTIES
             LIBRARY_OUTPUT_DIRECTORY ${VISIT_LIBRARY_DIR}/${dest_dir})
     else()
-        # set the appropriate suffix 
+        # set the appropriate suffix
         set_target_properties(${module_name} PROPERTIES SUFFIX ".pyd")
 
         # Since cmake will append $(Configuration) to output directories, we need

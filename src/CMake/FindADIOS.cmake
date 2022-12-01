@@ -15,16 +15,11 @@
 #
 #****************************************************************************/
 
-# Use the ADIOS_DIR hint from the config-site .cmake file 
-
-INCLUDE(${VISIT_SOURCE_DIR}/CMake/SetUpThirdParty.cmake)
+# Use the ADIOS_DIR hint from the config-site .cmake file
 
 if(VISIT_PARALLEL)
-	SET_UP_THIRD_PARTY(ADIOS LIBS adiosread adiosread_nompi)
+    SET_UP_THIRD_PARTY(ADIOS LIBS adiosread adiosread_nompi)
 else()
-	SET_UP_THIRD_PARTY(ADIOS LIBS adiosread_nompi)
+    SET_UP_THIRD_PARTY(ADIOS LIBS adiosread_nompi)
 endif()
-
-
-
 

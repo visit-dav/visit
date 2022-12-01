@@ -47,7 +47,6 @@ IF (DEFINED VISIT_VTKH_DIR)
                          "${VTKM_DIR}/include/vtkm-${VTKm_VERSION_MAJOR}.${VTKm_VERSION_MINOR}/vtkm/thirdparty/taotuple"
        CACHE STRING "VTKm include directories")
 
-   include(${VISIT_SOURCE_DIR}/CMake/ThirdPartyInstallLibrary.cmake)
    # use the vtkh and vtkm CMake properties to find locations and
    # all interface link dependencies
    function(get_lib_loc_and_install _lib)
@@ -95,3 +94,4 @@ IF (DEFINED VISIT_VTKH_DIR)
        THIRD_PARTY_INSTALL_INCLUDE(vtkm ${VTKM_DIR}/include)
    endif()
 ENDIF()
+
