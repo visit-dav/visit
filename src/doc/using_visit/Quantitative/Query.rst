@@ -737,6 +737,12 @@ XRay Image
     | *emisVarName*            | The name of the emissivity variable that     |
     |                          | was used in the calculations.                |
     +--------------------------+----------------------------------------------+
+    | *absUnits*               | The units of the absorbtivity variable that  |
+    |                          | was used in the calculations.                |
+    +--------------------------+----------------------------------------------+
+    | *emisUnits*              | The units of the emissivity variable that    |
+    |                          | was used in the calculations.                |
+    +--------------------------+----------------------------------------------+
 
     An example: ::
 
