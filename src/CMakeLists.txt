@@ -530,6 +530,10 @@
 #    Update CMake minimum version to 3.23. Part of the CMake modernization
 #    effort.
 #
+#    Kathleen Biagas, Thu Dec 1, 2022
+#    Remove VISIT_OUT_OF_SOURCE_BUILD var. Out-of-source builds
+#    are now required, and checked by BLT.
+#
 #****************************************************************************
 
 cmake_minimum_required(VERSION 3.24 FATAL_ERROR)
@@ -747,17 +751,9 @@ include(${VISIT_SOURCE_DIR}/CMake/CheckMinimumCompilerVersion.cmake)
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/SetUpPlatformDefs.cmake)
 
 
-#-----------------------------------------------------------------------------
-# Setup out of source build indicator.
-#-----------------------------------------------------------------------------
-IF("${CMAKE_SOURCE_DIR}" STREQUAL "${CMAKE_BINARY_DIR}")
-    SET(VISIT_OUT_OF_SOURCE_BUILD 0)
-ELSE("${CMAKE_SOURCE_DIR}" STREQUAL "${CMAKE_BINARY_DIR}")
-    SET(VISIT_OUT_OF_SOURCE_BUILD 1)
-    # Have to make this or an executable is made of this name.
-    # Suspect makemili_driver
-    file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/exe")
-ENDIF("${CMAKE_SOURCE_DIR}" STREQUAL "${CMAKE_BINARY_DIR}")
+# Have to make this or an executable is made of this name.
+# Suspect makemili_driver
+file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/exe")
 
 #-----------------------------------------------------------------------------
 # Windows needs values that are only set at this point, so now include
