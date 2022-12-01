@@ -166,6 +166,9 @@ inline void Scale(double result[3], const double v[3], const double s)
 // 
 //    Justin Privitera, Mon Nov 28 15:38:25 PST 2022
 //    Renamed energy group bins to energy group bounds.
+// 
+//    Justin Privitera, Wed Nov 30 17:43:48 PST 2022
+//    Added default values for units.
 //
 // ****************************************************************************
 
@@ -185,6 +188,13 @@ avtXRayImageQuery::avtXRayImageQuery():
     outputDir = ".";
     useSpecifiedUpVector = true;
     useOldView = true;
+
+    spatialUnits = "no units provided";
+    energyUnits = "no units provided";
+    absUnits = "no units provided";
+    emisUnits = "no units provided";
+    intensityUnits = "no units provided";
+    pathLengthUnits = "no info provided";
 
     //
     // The new view specification
@@ -308,6 +318,9 @@ avtXRayImageQuery::~avtXRayImageQuery()
 // 
 //    Justin Privitera, Mon Nov 28 15:38:25 PST 2022
 //    Renamed energy group bins to energy group bounds.
+// 
+//    Justin Privitera, Wed Nov 30 17:43:48 PST 2022
+//    Added logic to handle passing through the units.
 //
 // ****************************************************************************
 
@@ -355,6 +368,21 @@ avtXRayImageQuery::SetInputParams(const MapNode &params)
         v.push_back(params.GetEntry("energy_group_bounds")->ToDouble());
         SetEnergyGroupBounds(v);
     }
+
+    std::map<std::string, std::string> unitsmap;
+    if (params.HasEntry("spatial_units"))
+        unitsmap["spatialUnits"] = params.GetEntry("spatial_units")->AsString();
+    if (params.HasEntry("energy_units"))
+        unitsmap["energyUnits"] = params.GetEntry("energy_units")->AsString();
+    if (params.HasEntry("abs_units"))
+        unitsmap["absUnits"] = params.GetEntry("abs_units")->AsString();
+    if (params.HasEntry("emis_units"))
+        unitsmap["emisUnits"] = params.GetEntry("emis_units")->AsString();
+    if (params.HasEntry("intensity_units"))
+        unitsmap["intensityUnits"] = params.GetEntry("intensity_units")->AsString();
+    if (params.HasEntry("path_length_units"))
+        unitsmap["pathLengthUnits"] = params.GetEntry("path_length_units")->AsString();
+    SetUnits(unitsmap);
 
     if (params.HasNumericEntry("debug_ray"))
         SetDebugRay(params.GetEntry("debug_ray")->AsInt());
@@ -784,6 +812,41 @@ avtXRayImageQuery::SetEnergyGroupBounds(const doubleVector &bins)
 }
 
 // ****************************************************************************
+//  Method: avtXRayImageQuery::SetUnits
+//
+//  Purpose:
+//    Set all the unit variables. 
+// 
+//  Note:
+//    Doing them all in one function reduces code bloat with lots of setters, 
+//    and they'd all be very similar anyway.
+//
+//  Programmer: Justin Privitera
+//  Creation:   November 30, 2022
+//
+// ****************************************************************************
+
+void
+avtXRayImageQuery::SetUnits(const std::map<std::string, std::string> &unitsmap)
+{
+    if (! unitsmap.empty())
+    {
+        if (unitsmap.count("spatialUnits") > 0)
+            spatialUnits = unitsmap.at("spatialUnits");
+        if (unitsmap.count("energyUnits") > 0)
+            energyUnits = unitsmap.at("energyUnits");
+        if (unitsmap.count("absUnits") > 0)
+            absUnits = unitsmap.at("absUnits");
+        if (unitsmap.count("emisUnits") > 0)
+            emisUnits = unitsmap.at("emisUnits");
+        if (unitsmap.count("intensityUnits") > 0)
+            intensityUnits = unitsmap.at("intensityUnits");
+        if (unitsmap.count("pathLengthUnits") > 0)
+            pathLengthUnits = unitsmap.at("pathLengthUnits");
+    }
+}
+
+// ****************************************************************************
 //  Method: avtXRayImageQuery::SetDebugRay
 //
 //  Purpose:
@@ -1070,6 +1133,10 @@ avtXRayImageQuery::GetSecondaryVars(std::vector<std::string> &outVars)
 //    Justin Privitera, Wed Nov 30 10:41:17 PST 2022
 //    Absolute value is applied to detector height and width to ensure
 //    sensible values come out of the query.
+// 
+//    Justin Privitera, Wed Nov 30 17:43:48 PST 2022
+//    The units are propagated to the output metadata for blueprint output 
+//    types.
 //
 // ****************************************************************************
 
@@ -1368,10 +1435,9 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
             int *zvals = data_out["coordsets/image_coords/values/z"].value();
             for (int i = 0; i < z_coords_dim; i ++) { zvals[i] = i; }
 
-            // TODO get units piped through
-            // data_out["coordsets/image_coords/units/x"] = "cm";
-            // data_out["coordsets/image_coords/units/y"] = "cm";
-            // data_out["coordsets/image_coords/units/z"] = "kev";
+            data_out["coordsets/image_coords/units/x"] = spatialUnits;
+            data_out["coordsets/image_coords/units/y"] = spatialUnits;
+            data_out["coordsets/image_coords/units/z"] = energyUnits;
 
             data_out["coordsets/image_coords/labels/x"] = "width";
             data_out["coordsets/image_coords/labels/y"] = "height";
@@ -1386,12 +1452,14 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
 
             data_out["fields/intensities/topology"] = "image_topo";
             data_out["fields/intensities/association"] = "element";
+            data_out["fields/intensities/units"] = intensityUnits;
             // set to float64 regardless of vtk data types
             data_out["fields/intensities/values"].set(conduit::DataType::float64(numfieldvals));
             conduit::float64 *intensity_vals = data_out["fields/intensities/values"].value();
 
             data_out["fields/path_length/topology"] = "image_topo";
             data_out["fields/path_length/association"] = "element";
+            data_out["fields/path_length/units"] = pathLengthUnits;
             // set to float64 regardless of vtk data types
             data_out["fields/path_length/values"].set(conduit::DataType::float64(numfieldvals));
             conduit::float64 *depth_vals = data_out["fields/path_length/values"].value();
@@ -1454,6 +1522,8 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
             data_out["state/xray_query/numBins"] = numBins;
             data_out["state/xray_query/absVarName"] = absVarName;
             data_out["state/xray_query/emisVarName"] = emisVarName;
+            data_out["state/xray_query/absUnits"] = absUnits;
+            data_out["state/xray_query/emisUnits"] = emisUnits;
 
             // calculate spatial extent coords
             // (the physical extents of the image projected on the near plane)
@@ -2130,6 +2200,11 @@ avtXRayImageQuery::WriteBlueprintImagingPlane(conduit::Node &data_out,
 //
 //  Purpose:
 //    Retrieves default values for input variables. 
+// 
+//  Note:
+//    If someone uses this function to get the default parameters, modifies
+//    them, and runs the query, the query will default to using the simplified
+//    view specification even if the user only modified the new view params.
 //
 //  Programmer: Kathleen Biagas 
 //  Creation:   July 15, 2011
@@ -2144,6 +2219,9 @@ avtXRayImageQuery::WriteBlueprintImagingPlane(conduit::Node &data_out,
 //
 //    Eric Brugger, Thu May 21 12:15:59 PDT 2015
 //    I added support for debugging a ray.
+// 
+//    Justin Privitera, Thu Dec  1 11:39:12 PST 2022
+//    Added all missing default input parameters.
 //
 // ****************************************************************************
 
@@ -2155,20 +2233,57 @@ avtXRayImageQuery::GetDefaultInputParams(MapNode &params)
     v.push_back("emissivity");
     params["vars"] = v;
 
-    params["divide_emis_by_absorb"] = 0;
     params["background_intensity"] = 0.0;
-    params["debug_ray"] = -1;
+    params["background_intensities"] = 0.0;
+    params["divide_emis_by_absorb"] = 0;
     params["output_type"] = std::string("png");
+    params["output_dir"] = std::string(".");
+    params["family_files"] = 0;
+
+    intVector is;
+    is.push_back(200);
+    is.push_back(200);
+    params["image_size"] = is;
+
+    params["debug_ray"] = -1;
+    params["output_ray_bounds"] = 0;
+
+    doubleVector egb;
+    egb.push_back(0.0);
+    egb.push_back(1.0);
+    params["energy_group_bounds"] = egb;
+
+    params["spatial_units"] = std::string("spatial units");
+    params["energy_units"] = std::string("energy units");
+    params["abs_units"] = std::string("abs units");
+    params["emis_units"] = std::string("emis units");
+    params["intensity_units"] = std::string("intensity units");
+    params["path_length_units"] = std::string("path length info");
+
+    //
+    // The old view parameters.
+    //
+    params["width"] = 1.0;
+    params["height"] = 1.0;
+
+    doubleVector o;
+    o.push_back(0.0);
+    o.push_back(0.0);
+    o.push_back(0.0);
+    params["origin"] = o;
+
+    params["theta"] = 0.0;
+    params["phi"] = 0.0;
+
+    doubleVector uv;
+    uv.push_back(0.0);
+    uv.push_back(1.0);
+    uv.push_back(0.0);
+    params["up_vector"] = uv;
 
     //
     // The new view parameters.
     //
-    doubleVector n;
-    n.push_back(0.0);
-    n.push_back(0.0);
-    n.push_back(1.0);
-    params["normal"] = n;
-
     doubleVector f;
     f.push_back(0.0);
     f.push_back(0.0);
@@ -2180,6 +2295,12 @@ avtXRayImageQuery::GetDefaultInputParams(MapNode &params)
     vu.push_back(1.0);
     vu.push_back(0.0);
     params["view_up"] = vu;
+
+    doubleVector n;
+    n.push_back(0.0);
+    n.push_back(0.0);
+    n.push_back(1.0);
+    params["normal"] = n;
 
     params["view_angle"] = 30.;
     params["parallel_scale"] = 0.5;
@@ -2193,32 +2314,6 @@ avtXRayImageQuery::GetDefaultInputParams(MapNode &params)
 
     params["image_zoom"] = 1.;
     params["perspective"] = 1;
-
-    intVector is;
-    is.push_back(200);
-    is.push_back(200);
-    params["image_size"] = is;
-
-    //
-    // The old view parameters.
-    //
-    doubleVector o;
-    o.push_back(0.0);
-    o.push_back(0.0);
-    o.push_back(0.0);
-    params["origin"] = o;
-
-    doubleVector uv;
-    uv.push_back(0.0);
-    uv.push_back(1.0);
-    uv.push_back(0.0);
-    params["up_vector"] = uv;
-
-    params["theta"] = 0.0;
-    params["phi"] = 0.0;
-
-    params["width"] = 1.0;
-    params["height"] = 1.0;
 }
 
 // ****************************************************************************
