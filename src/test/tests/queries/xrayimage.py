@@ -53,6 +53,10 @@
 # 
 #    Justin Privitera, Mon Nov 28 15:38:25 PST 2022
 #    Renamed energy group bins to energy group bounds.
+# 
+#    Justin Privitera, Wed Nov 30 10:41:17 PST 2022
+#    Added tests for always positive detector height and width in blueprint
+#    metadata.
 #
 #    Justin Privitera, Wed Oct 12 11:38:11 PDT 2022
 #    Changed output type for many tests since bmp output type is removed.
@@ -346,6 +350,9 @@ if not os.path.isdir(conduit_dir_yaml):
 conduit_dir_imaging_planes = pjoin(outdir_set, "imaging_planes")
 if not os.path.isdir(conduit_dir_imaging_planes):
     os.mkdir(conduit_dir_imaging_planes)
+conduit_dir_detector_dims = pjoin(outdir_set, "detector_dims")
+if not os.path.isdir(conduit_dir_detector_dims):
+    os.mkdir(conduit_dir_detector_dims)
 
 def setup_bp_test():
     OpenDatabase(silo_data_path("curv3d.silo"))
@@ -514,6 +521,36 @@ def blueprint_test(output_type, outdir, testtextnumber, testname, hdf5 = False):
 blueprint_test("hdf5", conduit_dir_hdf5, 32, "Blueprint_HDF5_X_Ray_Output", True)
 blueprint_test("json", conduit_dir_json, 34, "Blueprint_JSON_X_Ray_Output", False)
 blueprint_test("yaml", conduit_dir_yaml, 36, "Blueprint_YAML_X_Ray_Output", False)
+
+# test detector height and width are always positive in blueprint output
+
+setup_bp_test()
+
+params = dict()
+params["image_size"] = (400, 300)
+params["output_type"] = "hdf5"
+params["output_dir"] = conduit_dir_detector_dims
+params["focus"] = (0., 2.5, 10.)
+params["perspective"] = 1
+params["near_plane"] = -50.
+params["far_plane"] = 50.
+params["vars"] = ("d", "p")
+params["energy_group_bounds"] = [3.7, 4.2];
+params["parallel_scale"] = 5.
+Query("XRay Image", params)
+
+DeleteAllPlots()
+CloseDatabase(silo_data_path("curv3d.silo"))
+
+conduit_db = pjoin(conduit_dir_detector_dims, "output.root")
+xrayout = conduit.Node()
+conduit.relay.io.blueprint.load_mesh(xrayout, conduit_db)
+
+detectorWidth = xrayout["domain_000000/state/xray_data/detectorWidth"]
+TestValueEQ("Blueprint_Positive_DetectorWidth", detectorWidth, 22.3932263237838)
+
+detectorHeight = xrayout["domain_000000/state/xray_data/detectorHeight"]
+TestValueEQ("Blueprint_Positive_DetectorHeight", detectorHeight, 16.7949192423103)
 
 # test imaging plane topos
 
