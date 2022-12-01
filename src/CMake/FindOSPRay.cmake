@@ -13,7 +13,15 @@
 #   Kathleen Biagas, Wed Aug 17, 2022
 #   Incorporate ARSanderson's OSPRay 2.8.0 work for VTK 9.
 #
+#   Kathleen Biagas, Tue Nov 29 12:29:40 PST 2022
+#   Use cmake_path instead of GET_FILENAME_SHORTEXT and get_filename_component.
+#
 #*****************************************************************************
+
+if(NOT EXISTS ${VISIT_OSPRAY_DIR})
+    message(STATUS "VISIT_OSPRAY_DIR is not specified or does not exits.  please check the value and re-run cmake. Otherwise ospray will not be used.")
+    return()
+endif()
 
 if(OSPRAY_VERSION VERSION_LESS_EQUAL "1.6.1")
   IF(VISIT_OSPRAY)
@@ -131,9 +139,9 @@ if(OSPRAY_VERSION VERSION_LESS_EQUAL "1.6.1")
               # library logic will correctly install both the full verison and
               # the .so symlink, so only the .so is needed to be sent to the
               # function.
-              get_filename_component(_tmp_name ${l} NAME)
-              get_filename_component(_tmp_path ${l} PATH)
-              GET_FILENAME_SHORTEXT(_tmp_ext ${_tmp_name})
+              cmake_path(SET _tmp_path ${l})
+              cmake_path(GET _tmp_path FILENAME _tmp_name)
+              cmake_path(GET _tmp_path EXTENSION LAST_ONLY _tmp_ext)
               string(REPLACE "${_tmp_ext}" "" _tmp_name ${_tmp_name})
               THIRD_PARTY_INSTALL_LIBRARY(${_tmp_path}/${_tmp_name})
               # tbb's .so isn't a symlink, so install full version too
@@ -194,8 +202,6 @@ else() # ospray > 1.6.1
         # vtk's find for opsray needs this
         set(ospray_DIR ${VISIT_OSPRAY_DIR}/${LIB}/cmake/ospray-${OSPRAY_VERSION})
     endif()
-
-    include(${VISIT_SOURCE_DIR}/CMake/SetUpThirdParty.cmake)
 
     SET_UP_THIRD_PARTY(OSPRAY LIBS ${OSPRAY_LIBRARIES})
 

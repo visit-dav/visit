@@ -15,7 +15,7 @@
 #    Silo version number.
 #
 #    Mark C. Miller, Tue Jul 20 10:09:44 PDT 2010
-#    Fixed query for Silo version number to use MAJ/MIN/PAT symbols in 
+#    Fixed query for Silo version number to use MAJ/MIN/PAT symbols in
 #    silo.h header file instead of Silo_version_... thingy. This allows
 #    it to correctly interpret '4.8-pre3' for example.
 #
@@ -40,10 +40,8 @@
 #
 #****************************************************************************/
 
-# Use the SILO_DIR hint from the config-site .cmake file 
+# Use the SILO_DIR hint from the config-site .cmake file
 #
-
-INCLUDE(${VISIT_SOURCE_DIR}/CMake/SetUpThirdParty.cmake)
 
 IF (WIN32)
   SET_UP_THIRD_PARTY(SILO LIBS silohdf5)
