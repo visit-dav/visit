@@ -485,6 +485,22 @@ XRay Image
     |                          | values will appear in Blueprint output       |
     |                          | metadata.                                    |
     +------+-------------------+----------------------------------------------+
+    | *spatial_units*          | The units of the simulation in the x and y   |
+    |                          | dimensions.                                  |
+    +------+-------------------+----------------------------------------------+
+    | *energy_units*           | The units of the simulation in the z         |
+    |                          | dimension.                                   |
+    +------+-------------------+----------------------------------------------+
+    | *abs_units*              | The units of the absorbtivity variable       |
+    |                          | passed to the query.                         |
+    +------+-------------------+----------------------------------------------+
+    | *emis_units*             | The units of the emissivity variable         |
+    |                          | passed to the query.                         |
+    +------+-------------------+----------------------------------------------+
+    | *intensity_units*        | The units of the intensity output.           |
+    +------+-------------------+----------------------------------------------+
+    | *path_length_units*      | Metadata describing the path length output.  |
+    +------+-------------------+----------------------------------------------+
     
     When specifying "bov" or "rawfloats" output, the value can be either 32 or 64 bit floating point values.
     The number of bits is determined by the number of bits in the data being processed.
@@ -719,6 +735,12 @@ XRay Image
     |                          | was used in the calculations.                |
     +--------------------------+----------------------------------------------+
     | *emisVarName*            | The name of the emissivity variable that     |
+    |                          | was used in the calculations.                |
+    +--------------------------+----------------------------------------------+
+    | *absUnits*               | The units of the absorbtivity variable that  |
+    |                          | was used in the calculations.                |
+    +--------------------------+----------------------------------------------+
+    | *emisUnits*              | The units of the emissivity variable that    |
     |                          | was used in the calculations.                |
     +--------------------------+----------------------------------------------+
 
