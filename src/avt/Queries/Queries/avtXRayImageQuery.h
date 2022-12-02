@@ -99,6 +99,9 @@
 // 
 //    Justin Privitera, Mon Nov 28 15:38:25 PST 2022
 //    Renamed energy group bins to energy group bounds.
+// 
+//    Justin Privitera, Wed Nov 30 17:43:48 PST 2022
+//    Adds variables for units and one setter for all of them.
 //
 // ****************************************************************************
 
@@ -132,6 +135,7 @@ class QUERY_API avtXRayImageQuery : public avtDatasetQuery
                                   const doubleVector &intensities);
     void                      SetEnergyGroupBounds(
                                   const doubleVector &bins);
+    void                      SetUnits(const std::map<std::string, std::string> &unitsmap);
     void                      SetDebugRay(const int &ray);
     void                      SetOutputRayBounds(const bool &flag);
     void                      SetFamilyFiles(const bool &flag);
@@ -177,6 +181,14 @@ class QUERY_API avtXRayImageQuery : public avtDatasetQuery
 
     std::string               absVarName;  //e.g. "absorbtivity"
     std::string               emisVarName; //e.g. "emissivity"
+
+    // units, to be output in blueprint metadata
+    std::string               spatialUnits;
+    std::string               energyUnits;
+    std::string               absUnits;
+    std::string               emisUnits;
+    std::string               intensityUnits;
+    std::string               pathLengthUnits;
 
     int                       numPixels;
 
