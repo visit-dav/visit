@@ -49,8 +49,8 @@ function(DETECT_MPI_SETTINGS COMP mlibs mflags mlflags mrpath)
         endforeach(MLIB ${MPI_LIBRARIES})
         list(REMOVE_DUPLICATES MPI_RPATH)
         set(${mrpath} "${MPI_RPATH}" CACHE STRING "Parallel rpath(s)")
+    endif()
 
-    endif(
 endfunction()
 
 
