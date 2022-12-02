@@ -10,6 +10,8 @@
 #
 #****************************************************************************
 
+include(${VISIT_SOURCE_DIR}/CMake/PluginMacros.cmake)
+
 IF(NOT WIN32)
     SET(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${VISIT_PLUGIN_DIR}/plots)
 ELSE(NOT WIN32)
