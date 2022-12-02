@@ -178,7 +178,7 @@
 //
 //    Kathleen Biagas, Tue Nov 29, 2022
 //    Remove inclusion of PluginMacros.cmake, now included in each 
-//    plugin root CMakeList.txt (plot/operators/databases)
+//    plugin category (plot/operators/databases) root CMakeLists.txt.
 //
 // ****************************************************************************
 
