@@ -3,7 +3,7 @@ A:  m_plot.mili  timestep 77
 mesh1 
 Point: <7.16649, 1.51223, -9.94804>
 Zone:  510
-Incident Nodes:  372  472  482  382  373  473  483  383  
+Incident Nodes:  371  471  481  381  372  472  482  382  
 Primal/brick/stress/sx:  <zonal> = 3567.2
 
 
@@ -23,7 +23,7 @@ C:  m_plot.mili  timestep 77
 mesh1 
 Point: <8, 8.55808, -7.11117>
 Zone:  535
-Incident Nodes:  503  603  613  513  504  604  614  514  
+Incident Nodes:  502  602  612  512  503  603  613  513  
 Primal/brick/stress/sx:  <zonal> = 282.835
 
 
