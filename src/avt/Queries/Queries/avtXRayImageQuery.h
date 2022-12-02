@@ -200,7 +200,8 @@ class QUERY_API avtXRayImageQuery : public avtDatasetQuery
                                                          double llc[3],
                                                          double lrc[3],
                                                          double ulc[3],
-                                                         double urc[3]);
+                                                         double urc[3],
+                                                         double left[3]);
 #endif
     void                      ConvertOldImagePropertiesToNew();
     void                      CheckData(vtkDataSet **, const int);

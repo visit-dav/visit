@@ -413,9 +413,9 @@ ENERGY_GROUP_BOUNDS_MISMATCH = 1
 ENERGY_GROUP_BOUNDS = 2
 
 def test_bp_state_xray_data(testname, xrayout, bin_state = NO_ENERGY_GROUP_BOUNDS):
-    spatial_coords_x = xrayout["domain_000000/state/xray_data/image_coords/x"]
-    spatial_coords_y = xrayout["domain_000000/state/xray_data/image_coords/y"]
-    energy_group_bounds = xrayout["domain_000000/state/xray_data/image_coords/z"]
+    spatial_coords_x = xrayout["domain_000000/state/xray_data/image_coords/values/x"]
+    spatial_coords_y = xrayout["domain_000000/state/xray_data/image_coords/values/y"]
+    energy_group_bounds = xrayout["domain_000000/state/xray_data/image_coords/values/z"]
     TestValueEQ(testname + "_SpatialExtents0", [spatial_coords_x[0], spatial_coords_y[0]], [0.0, 0.0])
     TestValueEQ(testname + "_SpatialExtents1", [spatial_coords_x[1], spatial_coords_y[1]], [0.05, 0.05])
     TestValueEQ(testname + "_SpatialExtents2", [spatial_coords_x[2], spatial_coords_y[2]], [0.1, 0.1])
