@@ -536,6 +536,10 @@
 #    Kathleen Biagas, Tue Nov 29, 2022
 #    Move FindXXX calls to SetUpThirdParty.cmake. Add include for that file.
 #
+#    Kathleen Biagas, Thu Dec 1, 2022
+#    Move CREATE_PLUGIN_DEPENDENCIES and VISIT_SELECTED_PLUGIN_ERROR into
+#    PluginMacros.cmake.
+#
 #****************************************************************************
 
 cmake_minimum_required(VERSION 3.24 FATAL_ERROR)
@@ -1855,19 +1859,6 @@ endif()
 
 set(AVT_REQUIRED_LIB_DIR "${__AVT_REQUIRED_LIB_DIR_LIST}" CACHE INTERNAL "Engine AVT Required I/O lib dirs")
 
-FUNCTION(CREATE_PLUGIN_DEPENDENCIES target comp type)
-    FOREACH(P ${ARGN})
-        # Like E + Pseudocolor + Plot_ser
-        SET(deptarget "${comp}${P}${type}")
-        SET(dependencies ${dependencies} ${deptarget})
-    ENDFOREACH(P)
-    # Construct a variable that contains the names of the dependencies so we
-    # can use that later when we link the target's main exe.
-    SET(cachevar "${target}_${comp}${type}")
-    SET(${cachevar} ${dependencies} CACHE INTERNAL "dependencies for ${target}")
-    #MESSAGE("${cachevar} = ${${cachevar}}")
-ENDFUNCTION(CREATE_PLUGIN_DEPENDENCIES)
-
 ADD_SUBDIRECTORY(third_party_builtin)
 ADD_SUBDIRECTORY(common)
 ADD_SUBDIRECTORY(visit_vtk)
@@ -1924,16 +1915,6 @@ FUNCTION(ADD_TARGET_LINK_FLAGS target)
     ADD_TARGET_XXX_FLAGS(${target} LINK_FLAGS ${ARGN})
 ENDFUNCTION(ADD_TARGET_LINK_FLAGS target)
 
-macro(VISIT_SELECTED_PLUGIN_ERROR type plist msg)
-  if(DEFINED VISIT_SELECTED_${type}_PLUGINS)
-    foreach(plug ${plist})
-      list(FIND VISIT_SELECTED_${type}_PLUGINS ${plug} foundPlug)
-      if(NOT foundPlug EQUAL -1)
-        message(FATAL_ERROR "Cannot build selected plugin (${plug}): ${msg}")
-      endif()
-    endforeach()
-  endif()
-endmacro()
 
 IF(NOT VISIT_DBIO_ONLY)
    ADD_SUBDIRECTORY(plots)
