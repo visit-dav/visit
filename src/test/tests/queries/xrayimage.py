@@ -56,6 +56,9 @@
 # 
 #    Justin Privitera, Wed Nov 30 17:43:48 PST 2022
 #    Added tests for piping the units through the query.
+# 
+#    Justin Privitera, Thu Dec  1 15:29:48 PST 2022
+#    Tests for new location of units in blueprint output.
 #
 # ----------------------------------------------------------------------------
 
@@ -435,7 +438,7 @@ NO_ENERGY_GROUP_BOUNDS = 0
 ENERGY_GROUP_BOUNDS_MISMATCH = 1
 ENERGY_GROUP_BOUNDS = 2
 
-def test_bp_state_xray_data(testname, xrayout, bin_state = NO_ENERGY_GROUP_BOUNDS):
+def test_bp_state_xray_data(testname, xrayout, bin_state = NO_ENERGY_GROUP_BOUNDS, units = UNITS_OFF):
     spatial_coords_x = xrayout["domain_000000/state/xray_data/image_coords/x"]
     spatial_coords_y = xrayout["domain_000000/state/xray_data/image_coords/y"]
     energy_group_bounds = xrayout["domain_000000/state/xray_data/image_coords/z"]
@@ -450,6 +453,26 @@ def test_bp_state_xray_data(testname, xrayout, bin_state = NO_ENERGY_GROUP_BOUND
         TestValueEQ(testname + "_data_EnergyGroupBounds", energy_group_bounds, baseline_string)
     elif (bin_state == ENERGY_GROUP_BOUNDS):
         TestValueEQ(testname + "_data_EnergyGroupBounds", [energy_group_bounds[0], energy_group_bounds[1]], [3.7, 4.2])
+
+    xunits = xrayout["domain_000000/state/xray_data/image_coords/units/x"]
+    yunits = xrayout["domain_000000/state/xray_data/image_coords/units/y"]
+    zunits = xrayout["domain_000000/state/xray_data/image_coords/units/z"]
+
+    if (units == UNITS_ON):
+        TestValueEQ(testname + "_data_XUnits", xunits, "cm")
+        TestValueEQ(testname + "_data_YUnits", yunits, "cm")
+        TestValueEQ(testname + "_data_ZUnits", zunits, "kev")
+    else:
+        TestValueEQ(testname + "_data_XUnits", xunits, "no units provided")
+        TestValueEQ(testname + "_data_YUnits", yunits, "no units provided")
+        TestValueEQ(testname + "_data_ZUnits", zunits, "no units provided")
+
+    xlabel = xrayout["domain_000000/state/xray_data/image_coords/labels/x"];
+    ylabel = xrayout["domain_000000/state/xray_data/image_coords/labels/y"];
+    zlabel = xrayout["domain_000000/state/xray_data/image_coords/labels/z"];
+    TestValueEQ(testname + "_data_XLabels", xlabel, "width")
+    TestValueEQ(testname + "_data_YLabels", ylabel, "height")
+    TestValueEQ(testname + "_data_ZLabels", zlabel, "energy_group")
     
     detectorWidth = xrayout["domain_000000/state/xray_data/detectorWidth"]
     TestValueEQ(testname + "_data_DetectorWidth", detectorWidth, 15)
@@ -481,27 +504,15 @@ def test_bp_state(testname, conduit_db, bin_state = NO_ENERGY_GROUP_BOUNDS, unit
 
     test_bp_state_xray_view(testname, xrayout)
     test_bp_state_xray_query(testname, xrayout, units)
-    test_bp_state_xray_data(testname, xrayout, bin_state)
-
-    xunits = xrayout["domain_000000/coordsets/image_coords/units/x"]
-    yunits = xrayout["domain_000000/coordsets/image_coords/units/y"]
-    zunits = xrayout["domain_000000/coordsets/image_coords/units/z"]
+    test_bp_state_xray_data(testname, xrayout, bin_state, units)
 
     intensityUnits = xrayout["domain_000000/fields/intensities/units"]
     pathLengthUnits = xrayout["domain_000000/fields/path_length/units"]
 
     if (units == UNITS_ON):
-        TestValueEQ(testname + "_XUnits", xunits, "cm")
-        TestValueEQ(testname + "_YUnits", yunits, "cm")
-        TestValueEQ(testname + "_ZUnits", zunits, "kev")
-        
         TestValueEQ(testname + "_IntensityUnits", intensityUnits, "intensity units")
         TestValueEQ(testname + "_PathLengthUnits", pathLengthUnits, "path length metadata")
     else:
-        TestValueEQ(testname + "_XUnits", xunits, "no units provided")
-        TestValueEQ(testname + "_YUnits", yunits, "no units provided")
-        TestValueEQ(testname + "_ZUnits", zunits, "no units provided")
-        
         TestValueEQ(testname + "_IntensityUnits", intensityUnits, "no units provided")
         TestValueEQ(testname + "_PathLengthUnits", pathLengthUnits, "no info provided")
 

@@ -1137,6 +1137,9 @@ avtXRayImageQuery::GetSecondaryVars(std::vector<std::string> &outVars)
 //    Justin Privitera, Wed Nov 30 17:43:48 PST 2022
 //    The units are propagated to the output metadata for blueprint output 
 //    types.
+// 
+//    Justin Privitera, Thu Dec  1 15:29:48 PST 2022
+//    Changed where units go in the blueprint output.
 //
 // ****************************************************************************
 
@@ -1435,10 +1438,6 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
             int *zvals = data_out["coordsets/image_coords/values/z"].value();
             for (int i = 0; i < z_coords_dim; i ++) { zvals[i] = i; }
 
-            data_out["coordsets/image_coords/units/x"] = spatialUnits;
-            data_out["coordsets/image_coords/units/y"] = spatialUnits;
-            data_out["coordsets/image_coords/units/z"] = energyUnits;
-
             data_out["coordsets/image_coords/labels/x"] = "width";
             data_out["coordsets/image_coords/labels/y"] = "height";
             data_out["coordsets/image_coords/labels/z"] = "energy_group";
@@ -1586,6 +1585,14 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
             {
                 data_out["state/xray_data/image_coords/z"] = "Energy group bounds not provided.";
             }
+
+            data_out["state/xray_data/image_coords/units/x"] = spatialUnits;
+            data_out["state/xray_data/image_coords/units/y"] = spatialUnits;
+            data_out["state/xray_data/image_coords/units/z"] = energyUnits;
+
+            data_out["state/xray_data/image_coords/labels/x"] = "width";
+            data_out["state/xray_data/image_coords/labels/y"] = "height";
+            data_out["state/xray_data/image_coords/labels/z"] = "energy_group";
 
             // If the near plane is too far back, it can cause the near width
             // and height to be negative. However, the detector height and 
