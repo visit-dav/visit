@@ -16,6 +16,9 @@
 #   Kathleen Biagas, Tue Nov 29 12:29:40 PST 2022
 #   Use cmake_path instead of GET_FILENAME_SHORTEXT and get_filename_component.
 #
+#   Kathleen Biagas, Fri Dec  2 20:16:38 PST 2022
+#   Use cmake_path to get PARENT_PATH when handling tbb and embree.
+#
 #*****************************************************************************
 
 if(NOT EXISTS ${VISIT_OSPRAY_DIR})
@@ -140,10 +143,11 @@ if(OSPRAY_VERSION VERSION_LESS_EQUAL "1.6.1")
               # the .so symlink, so only the .so is needed to be sent to the
               # function.
               cmake_path(SET _tmp_path ${l})
+              cmake_path(GET _tmp_path PARENT_PATH _par_path)
               cmake_path(GET _tmp_path FILENAME _tmp_name)
-              cmake_path(GET _tmp_path EXTENSION LAST_ONLY _tmp_ext)
+              cmake_path(GET _tmp_name EXTENSION LAST_ONLY _tmp_ext)
               string(REPLACE "${_tmp_ext}" "" _tmp_name ${_tmp_name})
-              THIRD_PARTY_INSTALL_LIBRARY(${_tmp_path}/${_tmp_name})
+              THIRD_PARTY_INSTALL_LIBRARY(${_par_path}/${_tmp_name})
               # tbb's .so isn't a symlink, so install full version too
               if("${_name_}" MATCHES "tbb")
                   THIRD_PARTY_INSTALL_LIBRARY(${l})
