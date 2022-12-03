@@ -1581,6 +1581,95 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
             WriteBlueprintImagingPlane(data_out, "far_plane", farWidth, farHeight, center, llc_far, lrc_far, ulc_far, urc_far, left);
 
             // set up ray coords
+            data_out["coordsets/ray_corners_coords/type"] = "explicit";
+            data_out["coordsets/ray_corners_coords/values/x"].set(conduit::DataType::float64(8));
+            data_out["coordsets/ray_corners_coords/values/y"].set(conduit::DataType::float64(8));
+            data_out["coordsets/ray_corners_coords/values/z"].set(conduit::DataType::float64(8));
+            double *xvals_ray = data_out["coordsets/ray_corners_coords/values/x"].value();
+            double *yvals_ray = data_out["coordsets/ray_corners_coords/values/y"].value();
+            double *zvals_ray = data_out["coordsets/ray_corners_coords/values/z"].value();
+                        
+            // set x values              // set y values              // set z values
+            xvals_ray[0] = llc_near[0];  yvals_ray[0] = llc_near[1];  zvals_ray[0] = llc_near[2];
+            xvals_ray[1] = lrc_near[0];  yvals_ray[1] = lrc_near[1];  zvals_ray[1] = lrc_near[2];
+            xvals_ray[2] = urc_near[0];  yvals_ray[2] = urc_near[1];  zvals_ray[2] = urc_near[2];
+            xvals_ray[3] = ulc_near[0];  yvals_ray[3] = ulc_near[1];  zvals_ray[3] = ulc_near[2];
+
+            xvals_ray[4] = llc_far[0];   yvals_ray[4] = llc_far[1];   zvals_ray[4] = llc_far[2];
+            xvals_ray[5] = lrc_far[0];   yvals_ray[5] = lrc_far[1];   zvals_ray[5] = lrc_far[2];
+            xvals_ray[6] = urc_far[0];   yvals_ray[6] = urc_far[1];   zvals_ray[6] = urc_far[2];
+            xvals_ray[7] = ulc_far[0];   yvals_ray[7] = ulc_far[1];   zvals_ray[7] = ulc_far[2];
+
+            // set up ray topo
+            data_out["topologies/ray_corners_topo/type"] = "unstructured";
+            data_out["topologies/ray_corners_topo/coordset"] = "ray_corners_coords";
+            data_out["topologies/ray_corners_topo/elements/shape"] = "line";
+            data_out["topologies/ray_corners_topo/elements/connectivity"].set(conduit::DataType::int32(8));
+            int *conn = data_out["topologies/ray_corners_topo/elements/connectivity"].value();
+            conn[0] = 0;
+            conn[1] = 4;
+            conn[2] = 1;
+            conn[3] = 5;
+            conn[4] = 2;
+            conn[5] = 6;
+            conn[6] = 3;
+            conn[7] = 7;
+
+            // set up ray trivial field
+            data_out["fields/ray_corners_field/topology"] = "ray_corners_topo";
+            data_out["fields/ray_corners_field/association"] = "element";
+            data_out["fields/ray_corners_field/volume_dependent"] = "false";
+            data_out["fields/ray_corners_field/values"].set(conduit::DataType::float64(4));
+            conduit::float64 *field_vals = data_out["fields/ray_corners_field/values"].value();
+            for (int i = 0; i < 4; i ++) { field_vals[i] = 0; }
+
+            /////////////////////ALL THE RAYS/////////////////////
+
+            // calculate points for rays on near plane and far plane
+
+            auto pixelCoordArray = new double[2][nx][ny][3];
+
+            double scaledunitleft[3], scaledunitup[3], lrc[3];
+
+            for (int i = 0; i < 2; i ++)
+            {
+                double dx, dy;
+                if (i == 0) // 1st iteration is for the near plane
+                {
+                    dx = detectorWidth / nx;
+                    dy = detectorHeight / ny;
+                    lrc = lrc_near;
+                }
+                else // 2nd iteration is for the far plane
+                {
+                    dx = farDetectorWidth / nx;
+                    dy = farDetectorHeight / ny;
+                    lrc = lrc_far;
+                }
+                Normalize(temp, left);
+                Scale(scaledunitleft, temp, dx);
+                Normalize(temp, viewUp);
+                Scale(scaledunitup, temp, dy);
+
+                for (int j = 0; j < nx; j ++)
+                {
+                    for (int k = 0; k < ny; k ++)
+                    {
+                        double temp1[3], temp2[3];
+                        Scale(temp1, scaledunitleft, 0.5 + j);
+                        Scale(temp2, scaledunitup, 0.5 + k);
+                        Add(temp, temp1, temp2);
+                        Add(pixelCoordArray[i][j][k], lrc, temp);
+                    } 
+                }
+            }
+
+            // next, unpack pixel coord array into blueprint
+
+            // TODO this is all copied from above and needs to be modified to use the 
+            // calculated points in pixelCoordArray.
+
+            // set up ray coords
             data_out["coordsets/ray_coords/type"] = "explicit";
             data_out["coordsets/ray_coords/values/x"].set(conduit::DataType::float64(8));
             data_out["coordsets/ray_coords/values/y"].set(conduit::DataType::float64(8));
@@ -1622,51 +1711,6 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
             data_out["fields/ray_field/values"].set(conduit::DataType::float64(4));
             conduit::float64 *field_vals = data_out["fields/ray_field/values"].value();
             for (int i = 0; i < 4; i ++) { field_vals[i] = 0; }
-
-            /////////////////////ALL THE RAYS/////////////////////
-
-            // calculate points for rays on near plane and far plane
-
-            auto pixelCoordArray = new double[2][nx][ny][3];
-
-            double scaledunitleft[3], scaledunitup[3], lrc[3];
-
-            for (int i = 0; i < 2; i ++)
-            {
-                double dx, dy;
-                if (i == 0) // 1st iteration is for the near plane
-                {
-                    dx = detectorWidth / nx;
-                    dy = detectorHeight / ny;
-                    lrc = lrc_near;
-                }
-                else // 2nd iteration is for the far plane
-                {
-                    dx = farDetectorWidth / nx;
-                    dy = farDetectorHeight / ny;
-                    lrc = lrc_far;
-                }
-                Normalize(temp, left);
-                Scale(scaledunitleft, temp, dx);
-                Normalize(temp, up);
-                Scale(scaledunitup, temp, dy);
-
-                for (int j = 0; j < nx; j ++)
-                {
-                    for (int k = 0; k < ny; k ++)
-                    {
-                        double temp1[3], temp2[3];
-                        Scale(temp1, scaledunitleft, 0.5 + j);
-                        Scale(temp2, scaledunitup, 0.5 + k);
-                        Add(temp, temp1, temp2);
-                        Add(pixelCoordArray[i][j][k], lrc, temp);
-                    } 
-                }
-            }
-
-            // next, unpack pixel coord array into blueprint
-
-
 
 
 
