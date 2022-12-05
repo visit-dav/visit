@@ -149,10 +149,37 @@ def working_with_multiple_plots():
   vqr_cleanup()
   CloseDatabase(silo_data_path("tire.silo"))
 
+def plots_in_the_error_state():
+ 
+  OpenDatabase(silo_data_path("wave.visit"),20)
+  AddPlot("Pseudocolor","pressure")
+  AddPlot("Pseudocolor","transient")
+  DrawPlots()
+  try:
+    # plots in the error state {
+
+    # Save an image and take care of plots that entered the error state.
+    drawThePlots = 0
+    for state in range(20,TimeSliderGetNStates(),10):
+      print("state = ", state)
+      s = TimeSliderSetState(state)
+      d = DrawPlots()
+      print("s,d = ", s, d)
+      SaveWindow()
+
+    # plots in the error state }
+    TestValueEQ('plots in the error state error message',GetLastError(),'')
+    TestPOA('plots in the error state exceptions')
+  except:
+    TestFOA('plots in the error state exception', LINE())
+    pass
+  vqr_cleanup()
+  CloseDatabase(silo_data_path("globe.silo"))
 
 creating_a_plot()
 plotting_materials()
 setting_plot_attributes()
 working_with_multiple_plots()
+plots_in_the_error_state()
 
 Exit()
