@@ -1,4 +1,4 @@
-#/Users/miller86/visit/third_party/3.3.0/cmake/3.18.2/darwin-x86_64/bin/cmake
+#/Users/miller86/visit/third_party/3.3.0/cmake/3.24.3/darwin-x86_64/bin/cmake
 ##
 ## ./build_visit_32rc_macos_fixes generated host.cmake
 ## created: Wed Jun  2 01:03:10 PDT 2021

@@ -165,6 +165,8 @@ def plots_in_the_error_state():
       s = TimeSliderSetState(state)
       d = DrawPlots()
       print("s,d = ", s, d)
+      if d != 1:
+          print("There was an error from DrawPlots()")
       SaveWindow()
 
     # plots in the error state }
