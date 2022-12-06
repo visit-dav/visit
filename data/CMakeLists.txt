@@ -148,11 +148,18 @@ SET(ARCHIVE_NAME {ANAME})
 SET(ARCHIVE_FILES {AFILES})
 
 #-----------------------------------------------------------------------------
-# Define convenience command/target to create an archive...optimized variant
+# Define convenience commands/targets to create an archive...optimized variant
 # using python tarfile module. This gives optimal compression (due to preset=9)
 # but might fail. If it does, it prints an error message informing user to
 # use `fbarchive` target instead
 #-----------------------------------------------------------------------------
+ADD_CUSTOM_COMMAND(
+    OUTPUT _archive3_create
+    COMMAND python3 -c \"import sys,tarfile\try:\  tf=tarfile.open\(sys.argv[1],'w:xz',preset=9\)\  [tf.add\(x\) for x in sys.argv[2:]]\except:\  print\('\\n\\n\\n***archive target failed, try archive target***\\n\\n\\n'\)\" ${CMAKE_CURRENT_SOURCE_DIR}/$${ARCHIVE_NAME} $${ARCHIVE_FILES}
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
+ADD_CUSTOM_TARGET(archive3 DEPENDS _archive3_create)
+
+# Try same with normal python
 ADD_CUSTOM_COMMAND(
     OUTPUT _archive_create
     COMMAND python -c \"import sys,tarfile\try:\  tf=tarfile.open\(sys.argv[1],'w:xz',preset=9\)\  [tf.add\(x\) for x in sys.argv[2:]]\except:\  print\('\\n\\n\\n***archive target failed, use fbarchive target***\\n\\n\\n'\)\" ${CMAKE_CURRENT_SOURCE_DIR}/$${ARCHIVE_NAME} $${ARCHIVE_FILES}
@@ -193,7 +200,10 @@ ADD_CUSTOM_TARGET(
     COMMAND ${CMAKE_COMMAND} -E echo ""
     COMMAND ${CMAKE_COMMAND} -E echo "               Conveninent make targets:"
     COMMAND ${CMAKE_COMMAND} -E echo ""
-    COMMAND ${CMAKE_COMMAND} -E echo "To create an optimally compressed archive..."
+    COMMAND ${CMAKE_COMMAND} -E echo "To create an optimally compressed archive (using python3)..."
+    COMMAND ${CMAKE_COMMAND} -E echo "  make ANAME=<arname> AFILES=\"dir1 dir2 file1...\" archive3"
+    COMMAND ${CMAKE_COMMAND} -E echo ""
+    COMMAND ${CMAKE_COMMAND} -E echo "To create an optimally compressed archive (using python)..."
     COMMAND ${CMAKE_COMMAND} -E echo "  make ANAME=<arname> AFILES=\"dir1 dir2 file1...\" archive"
     COMMAND ${CMAKE_COMMAND} -E echo ""
     COMMAND ${CMAKE_COMMAND} -E echo "To create a fallback archive if optimal compression fails..."
@@ -212,7 +222,7 @@ ADD_CUSTOM_TARGET(
     COMMAND ${CMAKE_COMMAND} -E echo "Examples..."
     COMMAND ${CMAKE_COMMAND} -E echo "  make ANAME=silo_hdf5_test_data.tar.xz expand"
     COMMAND ${CMAKE_COMMAND} -E echo "  make ANAME=silo_hdf5_test_data.tar.xz list"
-    COMMAND ${CMAKE_COMMAND} -E echo "  make ANAME=my_test_data.tar.xz AFILES=my_test_data archive"
+    COMMAND ${CMAKE_COMMAND} -E echo "  make ANAME=my_test_data.tar.xz AFILES=my_test_data archive3"
     COMMAND ${CMAKE_COMMAND} -E echo "  make ANAME=foo.tar.xz AFILES=\"dir1 file1 dir2\" archive"
     COMMAND ${CMAKE_COMMAND} -E echo "  make ANAME=foo.tar.xz AFILES=foo fbarchive"
     COMMAND ${CMAKE_COMMAND} -E echo ""
