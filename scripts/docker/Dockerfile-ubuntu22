@@ -60,9 +60,9 @@ WORKDIR /home/visit
 RUN mkdir third-party
 # Copy build_visit and the script to run it
 COPY build_visit3_3_1 /home/visit
-COPY run_build_visit_fedora31.sh /home/visit
+COPY run_build_visit_ubuntu22.sh /home/visit
 COPY build_visit_docker_cleanup.py /home/visit
 COPY build_test_visit.sh /home/visit
 COPY test_visit.py /home/visit
 # Build the third party libraries.
-RUN /bin/bash run_build_visit_fedora31.sh
+RUN /bin/bash run_build_visit_ubuntu22.sh

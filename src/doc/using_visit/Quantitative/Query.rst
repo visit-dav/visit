@@ -485,6 +485,22 @@ XRay Image
     |                          | values will appear in Blueprint output       |
     |                          | metadata.                                    |
     +------+-------------------+----------------------------------------------+
+    | *spatial_units*          | The units of the simulation in the x and y   |
+    |                          | dimensions.                                  |
+    +------+-------------------+----------------------------------------------+
+    | *energy_units*           | The units of the simulation in the z         |
+    |                          | dimension.                                   |
+    +------+-------------------+----------------------------------------------+
+    | *abs_units*              | The units of the absorbtivity variable       |
+    |                          | passed to the query.                         |
+    +------+-------------------+----------------------------------------------+
+    | *emis_units*             | The units of the emissivity variable         |
+    |                          | passed to the query.                         |
+    +------+-------------------+----------------------------------------------+
+    | *intensity_units*        | The units of the intensity output.           |
+    +------+-------------------+----------------------------------------------+
+    | *path_length_units*      | Metadata describing the path length output.  |
+    +------+-------------------+----------------------------------------------+
     
     When specifying "bov" or "rawfloats" output, the value can be either 32 or 64 bit floating point values.
     The number of bits is determined by the number of bits in the data being processed.
@@ -721,6 +737,12 @@ XRay Image
     | *emisVarName*            | The name of the emissivity variable that     |
     |                          | was used in the calculations.                |
     +--------------------------+----------------------------------------------+
+    | *absUnits*               | The units of the absorbtivity variable that  |
+    |                          | was used in the calculations.                |
+    +--------------------------+----------------------------------------------+
+    | *emisUnits*              | The units of the emissivity variable that    |
+    |                          | was used in the calculations.                |
+    +--------------------------+----------------------------------------------+
 
     An example: ::
 
@@ -732,6 +754,8 @@ XRay Image
         numBins: 1
         absVarName: "d"
         emisVarName: "p"
+        absUnits: "cm^2/g"
+        emisUnits: "GJ/cm^2/ster/ns/keV"
 
     **Other Metadata** can be found under "state/xray_data".
     This metadata represents values that do not fit into either of the above two categories.
@@ -740,9 +764,9 @@ XRay Image
     The following is included:
 
     +--------------------------+----------------------------------------------+
-    | *image_coords/x* |br|    | The image coordinates are a coordinate set   |
-    | *image_coords/y*         | that represent the |br|                      |
-    |                          | world-space/physical coordinates of the      |
+    | *image_coords/values/x*  | The image coordinates are a coordinate set   |
+    | |br|                     | that represent the |br|                      |
+    | *image_coords/values/y*  | world-space/physical coordinates of the      |
     |                          | output image. These |br|                     |
     |                          | spatial extents are given by x and y values  |
     |                          | that range from 0 to |br|                    |
@@ -750,7 +774,7 @@ XRay Image
     |                          | y dimensions times |br|                      |
     |                          | the pixel size in those dimensions.          |
     +--------------------------+----------------------------------------------+
-    | *image_coords/z*         | The z values of the image coordinates        |
+    | *image_coords/values/z*  | The z values of the image coordinates        |
     |                          | represent the energy |br|                    |
     |                          | group bounds that were provided via the      |
     |                          | *energy_group_bounds* |br|                   |
@@ -760,6 +784,11 @@ XRay Image
     |                          | of text in place of |br|                     |
     |                          | the z values explaining why the values are   |
     |                          | not present.                                 |
+    +--------------------------+----------------------------------------------+
+    | *image_coords/labels*    | Labels describing what the dimensions        |
+    |                          | represent.                                   |
+    +--------------------------+----------------------------------------------+
+    | *image_coords/units*     | Units for each of the dimensions.            |
     +--------------------------+----------------------------------------------+
     | *detectorWidth*          | The width of the simulated x ray detector    |
     |                          | in physical space.                           |
@@ -784,9 +813,18 @@ XRay Image
 
       xray_data: 
         image_coords: 
-          x: [-0.0, -0.0559830665588379, -0.111966133117676, ..., -22.3372440338135, -22.3932266235352]
-          y: [-0.0, -0.0559830628335476, -0.111966125667095, ..., -16.7389354705811, -16.7949199676514]
-          z: [3.7, 4.2]
+          values:
+            x: [-0.0, -0.0559830665588379, -0.111966133117676, ..., -22.3372440338135, -22.3932266235352]
+            y: [-0.0, -0.0559830628335476, -0.111966125667095, ..., -16.7389354705811, -16.7949199676514]
+            z: [3.7, 4.2]
+          units:
+            x: "cm"
+            y: "cm"
+            z: "kev"
+          labels:
+            x: "width"
+            y: "height"
+            z: "energy_group"
         detectorWidth: 22.3932263237838
         detectorHeight: 16.7949192423103
         intensityMax: 0.491446971893311

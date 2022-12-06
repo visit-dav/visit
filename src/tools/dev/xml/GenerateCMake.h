@@ -176,6 +176,10 @@
 //    with a VTK_VERSION check that specifies which should be used.
 //    Filter happens all the time now, not just when not using dev.
 //
+//    Kathleen Biagas, Tue Nov 29, 2022
+//    Remove inclusion of PluginMacros.cmake, now included in each 
+//    plugin category (plot/operators/databases) root CMakeLists.txt.
+//
 // ****************************************************************************
 
 class CMakeGeneratorPlugin : public Plugin
@@ -649,8 +653,6 @@ class CMakeGeneratorPlugin : public Plugin
         out << endl;
         if (using_dev)
         {
-            out << "INCLUDE(${VISIT_SOURCE_DIR}/CMake/PluginMacros.cmake)" <<endl;
-            out << endl;
             out << "ADD_" << type.toUpper() << "_CODE_GEN_TARGETS(" << name << ")" << endl;
             out << endl;
         }
@@ -925,8 +927,6 @@ class CMakeGeneratorPlugin : public Plugin
         out << endl;
         if (using_dev)
         {
-        out << "INCLUDE(${VISIT_SOURCE_DIR}/CMake/PluginMacros.cmake)" <<endl;
-        out << endl;
         out << "ADD_DATABASE_CODE_GEN_TARGETS(" << name ;
         if(skipInfoGen)
             out << " SKIP_INFO";
