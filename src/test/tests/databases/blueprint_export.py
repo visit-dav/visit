@@ -388,13 +388,13 @@ def basic_test_case(case_name, varname = "d"):
     OpenDatabase(silo_data_path(case_name))
     AddPlot("Pseudocolor",varname)
     DrawPlots()
-    Test(case_name + "_input")
+    Test("basic_" + case_name + "_input")
     # export default
     export_rfile_default = export_mesh_bp(case_name + "_default", varname)
     # export post isosurface
     AddOperator("Isosurface")
     DrawPlots()
-    Test(case_name + "_isosurface")
+    Test("basic_" + case_name + "_isosurface")
     export_rfile_isos = export_mesh_bp(case_name + "_isosurface", varname)
     DeleteAllPlots()
     CloseDatabase(silo_data_path(case_name))
@@ -403,7 +403,7 @@ def basic_test_case(case_name, varname = "d"):
     # bp var names are qualified by topo
     AddPlot("Pseudocolor","mesh_topo/" + varname)
     DrawPlots()
-    Test(case_name + "_default_exported")
+    Test("basic_" + case_name + "_default_exported")
     DeleteAllPlots()
     CloseDatabase(export_rfile_default)
 
@@ -411,7 +411,7 @@ def basic_test_case(case_name, varname = "d"):
     # bp var names are qualified by topo
     AddPlot("Pseudocolor", "mesh_topo/" + varname)
     DrawPlots()
-    Test(case_name + "_isosurface_exported")
+    Test("basic_" + case_name + "_isosurface_exported")
     DeleteAllPlots()
     CloseDatabase(export_rfile_isos)
 
