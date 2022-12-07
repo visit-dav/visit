@@ -1627,7 +1627,15 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
 
             // calculate points for rays on near plane and far plane
 
-            auto pixelCoordArray = new double[2][nx][ny][3];
+            // set up ray coords
+            const int num_points{nx * ny * 2};
+            data_out["coordsets/ray_coords/type"] = "explicit";
+            data_out["coordsets/ray_coords/values/x"].set(conduit::DataType::float64(num_points));
+            data_out["coordsets/ray_coords/values/y"].set(conduit::DataType::float64(num_points));
+            data_out["coordsets/ray_coords/values/z"].set(conduit::DataType::float64(num_points));
+            xvals_ray = data_out["coordsets/ray_coords/values/x"].value();
+            yvals_ray = data_out["coordsets/ray_coords/values/y"].value();
+            zvals_ray = data_out["coordsets/ray_coords/values/z"].value();
 
             double scaledunitleft[3], scaledunitup[3], lrc[3];
 
@@ -1638,13 +1646,13 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
                 {
                     dx = detectorWidth / nx;
                     dy = detectorHeight / ny;
-                    lrc = lrc_near;
+                    lrc[0] = lrc_near[0]; lrc[1] = lrc_near[1]; lrc[2] = lrc_near[2];
                 }
                 else // 2nd iteration is for the far plane
                 {
                     dx = farDetectorWidth / nx;
                     dy = farDetectorHeight / ny;
-                    lrc = lrc_far;
+                    lrc[0] = lrc_far[0]; lrc[1] = lrc_far[1]; lrc[2] = lrc_far[2];
                 }
                 Normalize(temp, left);
                 Scale(scaledunitleft, temp, dx);
@@ -1659,60 +1667,35 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
                         Scale(temp1, scaledunitleft, 0.5 + j);
                         Scale(temp2, scaledunitup, 0.5 + k);
                         Add(temp, temp1, temp2);
-                        Add(pixelCoordArray[i][j][k], lrc, temp);
+                        Add(temp1, lrc, temp); // temp1 has final info
+                        // 3d to 1d conversion
+                        const int index{i * nx * ny + j * ny + k};
+                        xvals_ray[index] = temp1[0];
+                        yvals_ray[index] = temp1[1];
+                        zvals_ray[index] = temp1[2];
                     } 
                 }
             }
-
-            // next, unpack pixel coord array into blueprint
-
-            // TODO this is all copied from above and needs to be modified to use the 
-            // calculated points in pixelCoordArray.
-
-            // set up ray coords
-            data_out["coordsets/ray_coords/type"] = "explicit";
-            data_out["coordsets/ray_coords/values/x"].set(conduit::DataType::float64(8));
-            data_out["coordsets/ray_coords/values/y"].set(conduit::DataType::float64(8));
-            data_out["coordsets/ray_coords/values/z"].set(conduit::DataType::float64(8));
-            double *xvals_ray = data_out["coordsets/ray_coords/values/x"].value();
-            double *yvals_ray = data_out["coordsets/ray_coords/values/y"].value();
-            double *zvals_ray = data_out["coordsets/ray_coords/values/z"].value();
-                        
-            // set x values              // set y values              // set z values
-            xvals_ray[0] = llc_near[0];  yvals_ray[0] = llc_near[1];  zvals_ray[0] = llc_near[2];
-            xvals_ray[1] = lrc_near[0];  yvals_ray[1] = lrc_near[1];  zvals_ray[1] = lrc_near[2];
-            xvals_ray[2] = urc_near[0];  yvals_ray[2] = urc_near[1];  zvals_ray[2] = urc_near[2];
-            xvals_ray[3] = ulc_near[0];  yvals_ray[3] = ulc_near[1];  zvals_ray[3] = ulc_near[2];
-
-            xvals_ray[4] = llc_far[0];   yvals_ray[4] = llc_far[1];   zvals_ray[4] = llc_far[2];
-            xvals_ray[5] = lrc_far[0];   yvals_ray[5] = lrc_far[1];   zvals_ray[5] = lrc_far[2];
-            xvals_ray[6] = urc_far[0];   yvals_ray[6] = urc_far[1];   zvals_ray[6] = urc_far[2];
-            xvals_ray[7] = ulc_far[0];   yvals_ray[7] = ulc_far[1];   zvals_ray[7] = ulc_far[2];
 
             // set up ray topo
             data_out["topologies/ray_topo/type"] = "unstructured";
             data_out["topologies/ray_topo/coordset"] = "ray_coords";
             data_out["topologies/ray_topo/elements/shape"] = "line";
-            data_out["topologies/ray_topo/elements/connectivity"].set(conduit::DataType::int32(8));
-            int *conn = data_out["topologies/ray_topo/elements/connectivity"].value();
-            conn[0] = 0;
-            conn[1] = 4;
-            conn[2] = 1;
-            conn[3] = 5;
-            conn[4] = 2;
-            conn[5] = 6;
-            conn[6] = 3;
-            conn[7] = 7;
+            data_out["topologies/ray_topo/elements/connectivity"].set(conduit::DataType::int32(num_points));
+            conn = data_out["topologies/ray_topo/elements/connectivity"].value();
+            for (int i = 0; i < nx * ny; i ++)
+            {
+                conn[i * 2] = i;
+                conn[i * 2 + 1] = i + nx * ny;
+            }
 
             // set up ray trivial field
             data_out["fields/ray_field/topology"] = "ray_topo";
             data_out["fields/ray_field/association"] = "element";
             data_out["fields/ray_field/volume_dependent"] = "false";
-            data_out["fields/ray_field/values"].set(conduit::DataType::float64(4));
-            conduit::float64 *field_vals = data_out["fields/ray_field/values"].value();
-            for (int i = 0; i < 4; i ++) { field_vals[i] = 0; }
-
-
+            data_out["fields/ray_field/values"].set(conduit::DataType::float64(nx * ny));
+            field_vals = data_out["fields/ray_field/values"].value();
+            for (int i = 0; i < nx * ny; i ++) { field_vals[i] = i; }
 
             /////////////////////ALL THE RAYS/////////////////////
 
