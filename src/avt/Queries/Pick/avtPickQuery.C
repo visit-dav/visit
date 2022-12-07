@@ -1089,6 +1089,9 @@ avtPickQuery::RetrieveVarInfo(vtkDataSet* ds, const int findElement,
 // 
 //    Kathleen Biagas and Justin Privitera, Fri Sep 16 17:15:07 PDT 2022
 //    Took into account node origin in incident nodes calculation.
+// 
+//    Justin Privitera, Fri Dec  2 10:45:40 PST 2022
+//    Undid the previous change. Turns out that was not the right approach.
 //
 // ****************************************************************************
 
@@ -1177,10 +1180,10 @@ avtPickQuery::RetrieveNodes(vtkDataSet *ds, int zone, bool needRealId)
                 if(!skipNode)
                 {
                     std::vector<int>::iterator it =
-                        std::find(nodes.begin(), nodes.end(), oNode+nodeOrigin);
+                        std::find(nodes.begin(), nodes.end(), oNode);
                     if (it == nodes.end())
                     {
-                        nodes.push_back(oNode+nodeOrigin);
+                        nodes.push_back(oNode);
                     }
                     else
                     {
@@ -1190,7 +1193,7 @@ avtPickQuery::RetrieveNodes(vtkDataSet *ds, int zone, bool needRealId)
             }
             else
             {
-                nodes.push_back(ptId + nodeOrigin);
+                nodes.push_back(ptId);
             }
             if (!skipNode)
             {
