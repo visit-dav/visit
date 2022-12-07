@@ -107,6 +107,16 @@ inline void Add(double result[3], const double v1[3], const double v2[3])
     result[2] = v1[2] + v2[2];
 }
 
+inline void Add3(double result[3], 
+                 const double v1[3], 
+                 const double v2[3], 
+                 const double v3[3])
+{
+    result[0] = v1[0] + v2[0] + v3[0];
+    result[1] = v1[1] + v2[1] + v3[1];
+    result[2] = v1[2] + v2[2] + v3[2];
+}
+
 inline void Scale(double result[3], const double v[3], const double s)
 {
     result[0] = v[0] * s;
@@ -1580,6 +1590,8 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
             Add(center, temp, focus);
             WriteBlueprintImagingPlane(data_out, "far_plane", farWidth, farHeight, center, llc_far, lrc_far, ulc_far, urc_far, left);
 
+            // RAY CORNERS
+
             // set up ray coords
             data_out["coordsets/ray_corners_coords/type"] = "explicit";
             data_out["coordsets/ray_corners_coords/values/x"].set(conduit::DataType::float64(8));
@@ -1623,12 +1635,13 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
             conduit::float64 *field_vals = data_out["fields/ray_corners_field/values"].value();
             for (int i = 0; i < 4; i ++) { field_vals[i] = 0; }
 
-            /////////////////////ALL THE RAYS/////////////////////
+            // ALL RAYS
 
             // calculate points for rays on near plane and far plane
 
             // set up ray coords
-            const int num_points{nx * ny * 2};
+            const int num_lines{nx * ny};
+            const int num_points{num_lines * 2};
             data_out["coordsets/ray_coords/type"] = "explicit";
             data_out["coordsets/ray_coords/values/x"].set(conduit::DataType::float64(num_points));
             data_out["coordsets/ray_coords/values/y"].set(conduit::DataType::float64(num_points));
@@ -1666,8 +1679,7 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
                         double temp1[3], temp2[3];
                         Scale(temp1, scaledunitleft, 0.5 + j);
                         Scale(temp2, scaledunitup, 0.5 + k);
-                        Add(temp, temp1, temp2);
-                        Add(temp1, lrc, temp); // temp1 has final info
+                        Add3(temp, lrc, temp1, temp2); // temp has final info
                         // 3d to 1d conversion
                         const int index{i * nx * ny + j * ny + k};
                         xvals_ray[index] = temp1[0];
@@ -1683,21 +1695,20 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
             data_out["topologies/ray_topo/elements/shape"] = "line";
             data_out["topologies/ray_topo/elements/connectivity"].set(conduit::DataType::int32(num_points));
             conn = data_out["topologies/ray_topo/elements/connectivity"].value();
-            for (int i = 0; i < nx * ny; i ++)
+            for (int i = 0; i < num_lines; i ++)
             {
+                // connect each point in the near plane to a point in the far plane
                 conn[i * 2] = i;
-                conn[i * 2 + 1] = i + nx * ny;
+                conn[i * 2 + 1] = i + num_lines;
             }
 
             // set up ray trivial field
             data_out["fields/ray_field/topology"] = "ray_topo";
             data_out["fields/ray_field/association"] = "element";
             data_out["fields/ray_field/volume_dependent"] = "false";
-            data_out["fields/ray_field/values"].set(conduit::DataType::float64(nx * ny));
+            data_out["fields/ray_field/values"].set(conduit::DataType::float64(num_lines));
             field_vals = data_out["fields/ray_field/values"].value();
-            for (int i = 0; i < nx * ny; i ++) { field_vals[i] = i; }
-
-            /////////////////////ALL THE RAYS/////////////////////
+            for (int i = 0; i < num_lines; i ++) { field_vals[i] = i; }
 
             // verify
             conduit::Node verify_info;
@@ -2209,31 +2220,27 @@ avtXRayImageQuery::WriteBlueprintImagingPlane(conduit::Node &data_out,
     Cross(left, viewUp, normal);
     
     // containers for intermediate vector math results
-    double temp1[3], temp2[3], temp3[3];
+    double temp1[3], temp2[3];
 
     // calc llc
     Scale(temp1, viewUp, -1. * height);
     Scale(temp2, left, width);
-    Add(temp3, temp1, temp2);
-    Add(llc, temp3, center);
+    Add3(llc, center, temp1, temp2);
     
     // calc lrc
     Scale(temp1, viewUp, -1. * height);
     Scale(temp2, left, -1. * width);
-    Add(temp3, temp1, temp2);
-    Add(lrc, temp3, center);            
+    Add3(lrc, center, temp1, temp2);
     
     // calc ulc
     Scale(temp1, viewUp, height);
     Scale(temp2, left, width);
-    Add(temp3, temp1, temp2);
-    Add(ulc, temp3, center);            
+    Add3(ulc, center, temp1, temp2);
     
     // calc urc
     Scale(temp1, viewUp, height);
     Scale(temp2, left, -1. * width);
-    Add(temp3, temp1, temp2);
-    Add(urc, temp3, center);
+    Add3(urc, center, temp1, temp2);
     
     // set x values     // set y values     // set z values
     xvals[0] = llc[0];  yvals[0] = llc[1];  zvals[0] = llc[2];
