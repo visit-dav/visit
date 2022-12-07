@@ -1044,6 +1044,7 @@ ENDIF(VISIT_FORTRAN)
 
 IF(VISIT_PARALLEL)
     include(${VISIT_SOURCE_DIR}/CMake/VisItParallel.cmake)
+    message(STATUS "PARALLEL version of VisIt")
 else()
     message(STATUS "Serial version of VisIt")
 endif()
