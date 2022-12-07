@@ -3658,8 +3658,8 @@ GetLastError
 
 return type : string
     GetLastError returns a string containing the last error message that VisIt
-    issued since being cleared. If int-clr arg, if present, is non-zero, once
-    the message is retrieved, it is also cleared.
+    issued since being cleared. If int-clr is present and is non-zero, once
+    the message is retrieved it is also cleared.
 
 
 **Description:**
