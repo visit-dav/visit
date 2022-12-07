@@ -54,19 +54,19 @@ Conditionals must be specified in the *.code* file with *Target* specified as *x
 These conditionals create these lines in the CMakeLists.txt:
 
 .. literalinclude:: ../../plots/Volume/CMakeLists.txt
-    :lines: 65-67
+    :lines: 63-65
 
 .. literalinclude:: ../../plots/Volume/CMakeLists.txt
-    :lines: 61-63
+    :lines: 59-61
 
 .. literalinclude:: ../../plots/Volume/CMakeLists.txt
-    :lines: 83-85
+    :lines: 81-84
 
 .. literalinclude:: ../../plots/Volume/CMakeLists.txt
-    :lines: 115-117
+    :lines: 113-115
 
 .. literalinclude:: ../../plots/Volume/CMakeLists.txt
-    :lines: 125-127
+    :lines: 123-125
 
 
 Info files
