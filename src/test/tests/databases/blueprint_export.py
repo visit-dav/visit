@@ -61,6 +61,17 @@ def set_view(case_name, view=None):
 def test_name(case, i):
     return case + "_" + str(i) + "_"
 
+# Export DB as bp data set
+def export_mesh_bp(case_name, varname):
+    export_name = case_name
+    e = ExportDBAttributes()
+    e.db_type = "Blueprint"
+    e.filename = export_name
+    e.variables = (varname,)
+    ExportDatabase(e)
+    time.sleep(1)
+    return export_name + ".cycle_000000.root"
+
 # Export DB as csv, return the folder name
 def create_csv_output(case_name):
     export_name = case_name
@@ -373,6 +384,45 @@ def partition_test_extra_options():
     DeleteAllPlots()
     CloseDatabase("multi_rect2d_override_target_1.cycle_000000.root")
 
+def basic_test_case(case_name, varname = "d"):
+    OpenDatabase(silo_data_path(case_name))
+    AddPlot("Pseudocolor",varname)
+    DrawPlots()
+    Test(case_name + "_input")
+    # export default
+    export_rfile_default = export_mesh_bp(case_name + "_default", varname)
+    # export post isosurface
+    AddOperator("Isosurface")
+    DrawPlots()
+    Test(case_name + "_isosurface")
+    export_rfile_isos = export_mesh_bp(case_name + "_isosurface", varname)
+    DeleteAllPlots()
+    CloseDatabase(silo_data_path(case_name))
+
+    OpenDatabase(export_rfile_default)
+    # bp var names are qualified by topo
+    AddPlot("Pseudocolor","mesh_topo/" + varname)
+    DrawPlots()
+    Test(case_name + "_default_exported")
+    DeleteAllPlots()
+    CloseDatabase(export_rfile_default)
+
+    OpenDatabase(export_rfile_isos)
+    # bp var names are qualified by topo
+    AddPlot("Pseudocolor", "mesh_topo/" + varname)
+    DrawPlots()
+    Test(case_name + "_isosurface_exported")
+    DeleteAllPlots()
+    CloseDatabase(export_rfile_isos)
+
+
+def test_basic():
+    basic_test_case("multi_rect3d.silo")
+    basic_test_case("multi_curv3d.silo")
+    basic_test_case("multi_curv2d.silo")
+    basic_test_case("multi_ucd3d.silo")
+    basic_test_case("multi_rect2d.silo")
+
 def test_flatten():
     TestSection("Blueprint flatten")
 
@@ -447,6 +497,7 @@ def test_partition():
     partition_test_extra_options()
 
 RequiredDatabasePlugin("Blueprint")
+test_basic()
 test_partition()
 test_flatten()
 Exit()
