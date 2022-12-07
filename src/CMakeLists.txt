@@ -549,6 +549,9 @@
 #    Move some visit-defined functions into VisItFunctions.cmake.
 #    Consolidated logic setting VISIT_3RDPARTY_VAR.
 #
+#    Kathleen Biagas, Wed Dec 7, 2022
+#    Moved OPTIONS into VisItOptions.cmake.
+#
 #****************************************************************************
 
 cmake_minimum_required(VERSION 3.24 FATAL_ERROR)
