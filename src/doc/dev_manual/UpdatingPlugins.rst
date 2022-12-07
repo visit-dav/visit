@@ -54,19 +54,19 @@ Conditionals must be specified in the *.code* file with *Target* specified as *x
 These conditionals create these lines in the CMakeLists.txt:
 
 .. literalinclude:: ../../plots/Volume/CMakeLists.txt
-    :lines: 65-67
+    :lines: 63-65
 
 .. literalinclude:: ../../plots/Volume/CMakeLists.txt
-    :lines: 61-63
+    :lines: 59-61
 
 .. literalinclude:: ../../plots/Volume/CMakeLists.txt
-    :lines: 83-85
+    :lines: 81-84
 
 .. literalinclude:: ../../plots/Volume/CMakeLists.txt
-    :lines: 115-117
+    :lines: 113-115
 
 .. literalinclude:: ../../plots/Volume/CMakeLists.txt
-    :lines: 125-127
+    :lines: 123-125
 
 
 Info files
@@ -100,15 +100,126 @@ The arguments for a renamed field: the old field name, the new field name, the v
 
 Here is an example from the WellBore plot, which had a field removed in version 3.0.0
 
-Here's code file for the cpp change:
+Here's code file for the cpp change::
 
-.. literalinclude:: ../../plots/WellBore/WellBoreAttributes.code
-    :lines: 265-312
+    Target: xml2atts
+    Function: ProcessOldVersions
+    Declaration: virtual void ProcessOldVersions(DataNode *parentNode, const char *configVersion);
+    Definition:
+    // ****************************************************************************
+    // Method: WellBoreAttributes::ProcessOldVersions
+    //
+    // Purpose:
+    //   This method allows handling of older config/session files that may
+    //   contain fields that are no longer present or have been modified/renamed.
+    //
+    // Programmer: Kathleen Biagas
+    // Creation:   April 4, 2018
+    //
+    // Modifications:
+    //
+    // ****************************************************************************
+    #include <visit-config.h>
+    #ifdef VIEWER
+    #include <avtCallback.h>
+    #endif
+    
+    void
+    WellBoreAttributes::ProcessOldVersions(DataNode *parentNode,
+                                    const char *configVersion)
+    {
+    #if VISIT_OBSOLETE_AT_VERSION(3,3,2)
+    #error This code is obsolete in this version. Please remove it.
+    #else
+        if(parentNode == 0)
+        return;
 
-Now for the python getattr and setattr methods:
+        DataNode *searchNode = parentNode->GetNode("WellBoreAttributes");
+        if(searchNode == 0)
+            return;
 
-.. literalinclude:: ../../plots/WellBore/WellBoreAttributes.code
-    :lines: 315-380 
+        if (VersionLessThan(configVersion, "3.0.0"))
+        {
+            if (searchNode->GetNode("wellLineStyle") != 0)
+            {
+    #ifdef VIEWER
+                avtCallback::IssueWarning(DeprecationMessage("wellLineStyle", "3.3.2"));
+    #endif
+                searchNode->RemoveNode("wellLineStyle");
+            }
+        }
+    #endif
+    }
+
+Now for the python getattr and setattr methods::
+
+    Target: xml2python
+    Code: PyWellBoreAttributes_getattr
+    Prefix:
+    Postfix:
+    #if VISIT_OBSOLETE_AT_VERSION(3,3,2)
+    #error This code is obsolete in this version. Please remove it.
+    #else
+        // Try and handle legacy fields
+
+        //
+        //  Removed in 3.0.0
+        //
+        // wellLineStyle and it's possible enumerations
+        bool wellLineStyleFound = false;
+        if (strcmp(name, "wellLineStyle") == 0)
+        {
+            wellLineStyleFound = true;
+        }
+        else if (strcmp(name, "SOLID") == 0)
+        {
+            wellLineStyleFound = true;
+        }
+        else if (strcmp(name, "DASH") == 0)
+        {
+            wellLineStyleFound = true;
+        }
+        else if (strcmp(name, "DOT") == 0)
+        {
+            wellLineStyleFound = true;
+        }
+        else if (strcmp(name, "DOTDASH") == 0)
+        {
+            wellLineStyleFound = true;
+        }
+
+        if (wellLineStyleFound)
+        {
+            PyErr_WarnEx(NULL,
+                "wellLineStyle is no longer a valid WellBore "
+                "attribute.\nIt's value is being ignored, please remove "
+                "it from your script.\n", 3);
+            return PyInt_FromLong(0L);
+        }
+    #endif
+    
+    
+    Code: PyWellBoreAttributes_setattr
+    Prefix:
+    Postfix:
+    #if VISIT_OBSOLETE_AT_VERSION(3,3,2)
+    #error This code is obsolete in this version. Please remove it.
+    #else
+        // Try and handle legacy fields
+        if(obj == &NULL_PY_OBJ)
+        {
+            //
+            //  Removed in 3.0.0
+            //
+            if(strcmp(name, "wellLineStyle") == 0)
+            {
+                PyErr_WarnEx(NULL, "'wellLineStyle' is obsolete. It is being ignored.", 3);
+                Py_INCREF(Py_None);
+                obj = Py_None;
+            }
+        }
+    #endif
+
 
 **Important**: Changes to fields in the Attributes are not allowed in patch releases, as it may cause incompatibility between client and server running different patches of the same major.minor release.
 
