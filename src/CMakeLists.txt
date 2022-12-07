@@ -739,81 +739,7 @@ SET(CXX_TEST_PATH ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
 #-----------------------------------------------------------------------------
 # configure options
 #-----------------------------------------------------------------------------
-OPTION(VISIT_PARALLEL "Build VisIt's parallel compute engine." OFF)
-OPTION(VISIT_SLIVR    "Build VisIt with support for the SLIVR volume rendering library." ON)
-OPTION(VISIT_OSPRAY   "Build VisIt with support for the OSPRay volume rendering library." OFF)
-OPTION(VISIT_STATIC   "Build VisIt statically." OFF)
-IF(VISIT_STATIC)
-    ADD_DEFINITIONS(-DVISIT_STATIC)
-ENDIF(VISIT_STATIC)
-OPTION(VISIT_OSX_USE_RPATH      "Use rpath instead of executable_path while installing" OFF)
-OPTION(VISIT_PYTHON_SCRIPTING      "Build VisIt with Python scripting support." ON)
-OPTION(VISIT_PYTHON_FILTERS        "Build VisIt with Python Engine Filter support." ON)
-OPTION(VISIT_DDT      "Build VisIt with support for the DDT debugger." OFF)
-IF(VISIT_DDT)
-  ADD_DEFINITIONS(-DHAVE_DDT)
-ENDIF(VISIT_DDT)
-
-OPTION(VISIT_BUILD_ALL_PLUGINS     "Build all of VisIt's plugins." OFF)
-OPTION(VISIT_BUILD_MINIMAL_PLUGINS "Build a minimal set of VisIt's plugins." OFF)
-OPTION(VISIT_JAVA "Build the VisIt Java client interface" OFF)
-OPTION(VISIT_PARADIS "Build the VisIt paraDIS client interface" ON)
-OPTION(VISIT_SERVER_COMPONENTS_ONLY "Build only vcl, mdserver, engine and their plugins" OFF)
-OPTION(VISIT_ENGINE_ONLY "Build only the compute engine and its plugins" OFF)
-OPTION(VISIT_DBIO_ONLY "Build only visitconvert and engine plugins" OFF)
-# If we're doing DBIO_ONLY then compile all sources with this flag so we don't
-# ever have to do things like include visit-config.h to get it.
-IF(VISIT_DBIO_ONLY)
-    ADD_DEFINITIONS(-DDBIO_ONLY)
-ENDIF(VISIT_DBIO_ONLY)
-OPTION(VISIT_DISABLE_SELECT "Disable use of the select() function" OFF)
-OPTION(VISIT_USE_NOSPIN_BCAST "Use VisIt's no-spin Bcast in parallel" ON)
-OPTION(VISIT_INSTALL_THIRD_PARTY "Install VisIt's 3rd party I/O libs and includes to permit plugin development" OFF)
-OPTION(VISIT_NOLINK_MPI_WITH_LIBRARIES "Do not link MPI with VisIt's parallel shared libraries; just with executables" OFF)
-OPTION(VISIT_CREATE_SOCKET_RELAY_EXECUTABLE "Create a separate executable that forwards VisIt's socket connection between engine and component launcher" ON)
-OPTION(VISIT_RPATH_RELATIVE_TO_EXECUTABLE_PATH "Install rpath relative to executable location using \$ORIGIN tag" OFF)
-OPTION(VISIT_FORTRAN "Enable compilation of Fortran example progams" OFF)
-
-OPTION(IGNORE_THIRD_PARTY_LIB_PROBLEMS "Ignore problems finding requested third party libraries")
-OPTION(VISIT_FORCE_SSH_TUNNELING "Force ssh tunnelling for sockets" OFF)
-OPTION(VISIT_CREATE_APPBUNDLE_PACKAGE "Create DMG file with Mac App bundle with make package" OFF)
-IF(WIN32)
-  OPTION(VISIT_MESA_REPLACE_OPENGL "Use mesa as a drop-in replacment for opengl when system opengl is insufficient." OFF)
-  OPTION(VISIT_MAKE_NSIS_INSTALLER "Create an installer package using NSIS" OFF)
-  OPTION(VISIT_WINDOWS_APPLICATION "Create Windows-style applications with no console" ON)
-  IF(VISIT_WINDOWS_APPLICATION)
-      SET(VISIT_APPLICATION_STYLE "WIN32")
-  ENDIF(VISIT_WINDOWS_APPLICATION)
-ENDIF(WIN32)
-
-OPTION(VISIT_CREATE_XMLTOOLS_GEN_TARGETS "Create cmake targets to run xmltools code gen targets" ON)
-OPTION(VISIT_INSTALL_AS_BETA "Install as beta (symlink beta instead of current to installed version)." OFF)
-OPTION(VISIT_MPICH_INSTALL "Install MPICH into VisIt binary distribution" OFF)
-IF(APPLE OR WIN32)
-    OPTION(VISIT_USE_X "Use X11" OFF)
-ELSE(APPLE OR WIN32)
-    OPTION(VISIT_USE_X "Use X11" ON)
-ENDIF(APPLE OR WIN32)
-
-OPTION(VISIT_THREAD "Build VisIt with thread support." OFF)
-
-# some options that when turned off reduce the build targets
-OPTION(VISIT_ENABLE_ANNOTATION_TOOLS "Enable generation of annotation tools (text2polys, time_annotation)" ON)
-OPTION(VISIT_ENABLE_DATAGEN "Enable generation of sample data files" ON)
-OPTION(VISIT_ENABLE_DATA_MANUAL_EXAMPLES "Build Getting Data Into VisIt examples" OFF)
-OPTION(VISIT_ENABLE_DIAGNOSTICS  "Enable building of diagnostices" ON)
-OPTION(VISIT_ENABLE_EXAMPLES  "Enable building of examples" ON)
-OPTION(VISIT_ENABLE_LIBSIM "Enable building of libsim." ON)
-OPTION(VISIT_ENABLE_MANUALS  "Enable building of manuals (requires python3)" ON)
-OPTION(VISIT_ENABLE_SILO_TOOLS "Enable building of silo tools (mrgtree2dot, add_visit_searchpath)" ON)
-OPTION(VISIT_ENABLE_UNIT_TESTS "Enable building of unit tests (like MRUCache_test, StringHelpers_test)" ON)
-OPTION(VISIT_ENABLE_XDB "Enable Intelligent Light XDB database plugin." OFF) # OFF for now
-
-SET(VISIT_INSTALL_PROFILES_TO_HOSTS "" CACHE STRING "Install specified host profiles (no action if empty)." )
-SET(VISIT_DEFAULT_SILO_DRIVER "PDB" CACHE STRING "Default driver for generating silo data. Valid values are PDB, HDF5 or empty. An empty value means driver can be specified via make on the command line." )
-
-# flag to turn on preprocessor errors related to obsolete code.
-OPTION(VISIT_REMOVE_OBSOLETE_CODE "Enable compiler errors for removal of oboslete code." OFF)
+include("${VISIT_SOURCE_DIR}/CMake/VisItOptions.cmake")
 
 # Set up placeholders for package vars: XXX_DIR
 foreach(pkg ADIOS ADIOS2 ADIOS2_PAR ADVIO BLOSC BOOST BOXLIB CFITSIO CGNS
@@ -1114,7 +1040,7 @@ IF(VISIT_FORTRAN)
 ENDIF(VISIT_FORTRAN)
 
 IF(VISIT_PARALLEL)
-    include(${VISIT_SOURCE_DIR}/VisItParallel.cmake)
+    include(${VISIT_SOURCE_DIR}/CMake/VisItParallel.cmake)
 else()
     message(STATUS "Serial version of VisIt")
 endif()
