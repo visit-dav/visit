@@ -3654,16 +3654,19 @@ GetLastError
 ::
 
   GetLastError() -> string
+  GetLastError(int-clr) -> string
 
 return type : string
     GetLastError returns a string containing the last error message that VisIt
-    issued.
+    issued since being cleared. If int-clr arg, if present, is non-zero, once
+    the message is retrieved, it is also cleared.
 
 
 **Description:**
 
     The GetLastError function returns a string containing the last error
-    message that VisIt issued.
+    message that VisIt issued since being cleared. If int-clr arg, if present,
+    is non-zero, once the message is retrieved, it is also cleared.
 
 
 **Example:**
@@ -3673,6 +3676,8 @@ return type : string
   #% visit -cli
   OpenDatabase("/this/database/does/not/exist")
   print("VisIt Error: %s" % GetLastError())
+  # Get last message into msg and then clear last error message to ""
+  msg = GetLastError(1)
 
 
 GetLight
