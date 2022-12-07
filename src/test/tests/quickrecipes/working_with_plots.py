@@ -151,22 +151,25 @@ def working_with_multiple_plots():
 
 def plots_in_the_error_state():
  
-  OpenDatabase(silo_data_path("wave.visit"),20)
-  AddPlot("Pseudocolor","pressure")
-  AddPlot("Pseudocolor","transient")
-  DrawPlots()
   try:
     # plots in the error state {
 
-    # Save an image and take care of plots that entered the error state.
-    drawThePlots = 0
+    # Open the database at state 20 and add plots for "pressure" and "transient".
+    # "transient" variable exists only in states 18...51.
+    OpenDatabase(silo_data_path("wave.visit"),20)
+    AddPlot("Pseudocolor","pressure")
+    AddPlot("Pseudocolor","transient")
+    DrawPlots()
+
+    # Start saving images from every 10th state starting at 20th state
+    # but take care to stop when we get an error.
     for state in range(20,TimeSliderGetNStates(),10):
       print("state = ", state)
-      s = TimeSliderSetState(state)
-      d = DrawPlots()
-      print("s,d = ", s, d)
-      if d != 1:
+      TimeSliderSetState(state)
+      if DrawPlots() == 0:
           print("There was an error from DrawPlots()")
+          pl = GetPlotList(), pl.GetPlots(i).stateType (a value of 3 is error state).
+          break
       SaveWindow()
 
     # plots in the error state }
