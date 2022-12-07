@@ -323,7 +323,7 @@ public:
 
     int GetSuppressLevel() const { return suppressLevel; };
     int ErrorFlag() const { return errorFlag; };
-    const std::string &GetLastError() const { return lastError; }
+    const std::string &GetLastError() const { return lastError; };
 
     virtual void Update(Subject *s)
     {
