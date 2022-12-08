@@ -211,4 +211,3 @@ else
     # Pass "-u" to python to turn off buffering
     exec python -u $frontendlauncherpy $0 ${1+"$@"}
 fi
-$0 = shift @ARGV;
