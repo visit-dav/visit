@@ -97,6 +97,10 @@
 // 
 //    Justin Privitera, Wed Nov 30 17:43:48 PST 2022
 //    Adds variables for units and one setter for all of them.
+// 
+//    Justin Privitera, Wed Dec  7 16:16:16 PST 2022
+//    Added 5 new args to WriteBlueprintImagingPlane that act as containers for
+//    various calculated vector values.
 //
 // ****************************************************************************
 

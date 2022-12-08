@@ -1160,6 +1160,14 @@ avtXRayImageQuery::GetSecondaryVars(std::vector<std::string> &outVars)
 // 
 //    Justin Privitera, Thu Dec  1 15:29:48 PST 2022
 //    Changed where units go in the blueprint output.
+// 
+//    Justin Privitera, Wed Dec  7 16:16:16 PST 2022
+//     - Calculated far plane projection width and height.
+//     - Made spatial extents a proper coordset living in the blueprint 
+//    metadata.
+//     - Pass corner coord containers to my imaging plane calculation methods
+//    so those values can be used to calculate the rays.
+//     - Added ray corners mesh and rays mesh.
 //
 // ****************************************************************************
 
@@ -2276,6 +2284,12 @@ avtXRayImageQuery::WriteArrays(vtkDataSet **leaves,
 //
 //  Programmer: Justin Privitera
 //  Creation:   November 14, 2022
+// 
+//  Modifications:
+//    Justin Privitera, Wed Dec  7 16:16:16 PST 2022
+//     - Added 5 new args that act as containers for various calculated vector 
+//    values.
+//     - Use the new Add3 inline function to reduce code lines. 
 //
 // ****************************************************************************
 
