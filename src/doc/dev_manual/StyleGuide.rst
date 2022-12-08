@@ -536,31 +536,15 @@ MyClass.C file contents: ::
     MyClass::MyClass() { }
     MyClass::~MyClass() { }
 
-Include snprintf.h
-~~~~~~~~~~~~~~~~~~
+Do not use 'sprintf'
+~~~~~~~~~~~~~~~~~~~~
 
 VisIt_ source code should not use *sprintf* into a static sized buffer
 due to the possibility of buffer overruns, which introduce memory
 problems and possible security threats. To combat this, the use of
 *sprintf* is deprecated and all new code should use *snprintf*, which
 behaves the same but also takes the size of the buffer as an argument
-so buffer overruns are not possible. The *snprintf* function is not
-supported in any of the Windows header files but there is a *\_snprintf*
-function. Since some platforms can use *snprintf* and Windows must use
-*\_snprintf*, there is an snprintf.h header file that defines an
-*SNPRINTF* macro which evaluates to the proper symbol based on the
-compiler being used. ::
-
-    // Don't do this
-    const char *s = "This is a very long message "
-    "intended to overrun the buffer.";
-    char buf[20];
-    sprintf(buf, "Message: %s", s);
-
-    // Do this instead
-    #include <snprintf.h>
-    SNPRINTF(buf, 20, "Message: %s", s);
-
+so buffer overruns are not possible.
 
 Do not use variables called near or far
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
