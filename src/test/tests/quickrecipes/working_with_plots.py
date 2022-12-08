@@ -161,14 +161,16 @@ def plots_in_the_error_state():
     AddPlot("Pseudocolor","transient")
     DrawPlots()
 
-    # Start saving images from every 10th state starting at 20th state
-    # but take care to stop when we get an error.
+    # Start saving images from every 10th state starting at state 20 
+    # but take care to clean up when we get an error.
     for state in range(20,TimeSliderGetNStates(),10):
-      print("state = ", state)
       TimeSliderSetState(state)
       if DrawPlots() == 0:
-          print("There was an error from DrawPlots()")
-          pl = GetPlotList(), pl.GetPlots(i).stateType (a value of 3 is error state).
+          print("DrawPlots() errored with \"", GetLastError(), "\"")
+          # Find plot(s) in error state (3)
+          pl = GetPlotList()
+          for i in range(pl.GetNumPlots()):
+              if pl.GetPlots(i).stateType == 3:
           break
       SaveWindow()
 
