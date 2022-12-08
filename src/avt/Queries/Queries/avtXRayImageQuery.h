@@ -97,6 +97,10 @@
 // 
 //    Justin Privitera, Wed Nov 30 17:43:48 PST 2022
 //    Adds variables for units and one setter for all of them.
+// 
+//    Justin Privitera, Wed Dec  7 16:16:16 PST 2022
+//    Added 5 new args to WriteBlueprintImagingPlane that act as containers for
+//    various calculated vector values.
 //
 // ****************************************************************************
 
@@ -208,7 +212,12 @@ class QUERY_API avtXRayImageQuery : public avtDatasetQuery
                                                          const std::string plane_name,
                                                          const double width,
                                                          const double height,
-                                                         const double center[3]);
+                                                         const double center[3],
+                                                         double llc[3],
+                                                         double lrc[3],
+                                                         double ulc[3],
+                                                         double urc[3],
+                                                         double left[3]);
 #endif
     void                      ConvertOldImagePropertiesToNew();
     void                      CheckData(vtkDataSet **, const int);
