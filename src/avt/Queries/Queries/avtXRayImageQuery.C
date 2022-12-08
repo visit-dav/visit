@@ -1682,9 +1682,9 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
                         Add3(temp, lrc, temp1, temp2); // temp has final info
                         // 3d to 1d conversion
                         const int index{i * nx * ny + j * ny + k};
-                        xvals_ray[index] = temp1[0];
-                        yvals_ray[index] = temp1[1];
-                        zvals_ray[index] = temp1[2];
+                        xvals_ray[index] = temp[0];
+                        yvals_ray[index] = temp[1];
+                        zvals_ray[index] = temp[2];
                     } 
                 }
             }
