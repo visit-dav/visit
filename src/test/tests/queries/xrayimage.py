@@ -49,6 +49,9 @@
 # 
 #    Justin Privitera, Mon Nov 28 15:38:25 PST 2022
 #    Renamed energy group bins to energy group bounds.
+# 
+#    Justin Privitera, Wed Dec  7 16:16:16 PST 2022
+#    Added tests for the blueprint ray output.
 #
 # ----------------------------------------------------------------------------
 
