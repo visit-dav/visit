@@ -30,7 +30,7 @@ class QvisHelpWindow;
 //   They all need a pointer to the viewer proxy too. This class is
 //   therefore a base class for all of those classes.
 //
-// Notes:      
+// Notes:
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Sep 25 16:40:18 PST 2000
@@ -81,6 +81,9 @@ class QvisHelpWindow;
 //   Kathleen Biagas, Thu Apr  9 11:48:50 PDT 2015
 //   Add precision argument to FloatsToQString and DoublesToQString.
 //
+//   Kathleen Biagas, Thu Nov 17, 2022
+//   Added QStringToBools, BoolsToQString, LineEditGetBools.
+//
 // ****************************************************************************
 
 class GUI_API GUIBase
@@ -91,7 +94,7 @@ public:
 
     // Functions to set information global to all of the window classes.
     void ConnectMessageAttr(MessageAttributes *attr);
-    
+
     // Helpers for converting between values and qstrings
     static QString FloatsToQString(const float *, int, int precision=7);
     static QString FloatsToQString(const floatVector &, int precision=7);
@@ -102,6 +105,8 @@ public:
     static QString IntsToQString(const int *, int);
     static QString IntsToQString(const intVector &);
     static QString IntToQString(int);
+    static QString BoolsToQString(const bool *, int);
+    static QString BoolsToQString(const boolVector &);
 
     static bool    QStringToFloats(const QString &str, float *vals, int maxVals);
     static bool    QStringToFloats(const QString &str, floatVector &vals, int maxVals=-1);
@@ -109,6 +114,8 @@ public:
     static bool    QStringToDoubles(const QString &str, doubleVector &vals, int maxVal=-1);
     static bool    QStringToInts(const QString &str, int *vals, int maxVals);
     static bool    QStringToInts(const QString &str, intVector &vals, int maxVal=-1);
+    static bool    QStringToBools(const QString &str, bool *vals, int maxVals);
+    static bool    QStringToBools(const QString &str, boolVector &vals, int maxVal=-1);
 
     static bool    LineEditGetDoubles(QLineEdit *lineEdit, double *vals, int maxVals);
     static bool    LineEditGetDoubles(QLineEdit *lineEdit, doubleVector &vals, int maxVals=-1);
@@ -116,6 +123,8 @@ public:
     static bool    LineEditGetFloats(QLineEdit *lineEdit, floatVector &vals, int maxVals=-1);
     static bool    LineEditGetInts(QLineEdit *lineEdit, int *vals, int maxVals);
     static bool    LineEditGetInts(QLineEdit *lineEdit, intVector &vals, int maxVals=-1);
+    static bool    LineEditGetBools(QLineEdit *lineEdit, bool *vals, int maxVals);
+    static bool    LineEditGetBools(QLineEdit *lineEdit, boolVector &vals, int maxVals=-1);
 
     static bool    LineEditGetDouble(QLineEdit *lineEdit, double &val);
     static bool    LineEditGetFloat(QLineEdit *lineEdit, float &val);

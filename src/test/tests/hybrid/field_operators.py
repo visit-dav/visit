@@ -39,6 +39,10 @@
 #
 #    Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
 #    Added ability to swtich between Silo's HDF5 and PDB data.
+#
+#    Kathleen Biagas, Mon Nov 28, 2022
+#    Remove obsolete 'colorByMag' vector att with 'colorByMagnitude'.
+#
 # ----------------------------------------------------------------------------
 
 
@@ -73,7 +77,7 @@ OpenDatabase(silo_data_path("rect2d.silo"))
 DefineVectorExpression("grad_d", "gradient(d)")
 AddPlot("Vector", "grad_d")
 v = VectorAttributes()
-v.colorByMag = 1
+v.colorByMagnitude = 1
 v.vectorOrigin = v.Middle
 SetPlotOptions(v)
 DrawPlots()
@@ -84,7 +88,7 @@ DeleteAllPlots()
 
 AddPlot("Vector", "grad_u")
 v = VectorAttributes()
-v.colorByMag = 1
+v.colorByMagnitude = 1
 v.vectorOrigin = v.Middle
 SetPlotOptions(v)
 DrawPlots()

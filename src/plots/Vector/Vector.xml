@@ -110,8 +110,6 @@
       <Field name="animationStep" label="Animation step" type="int">
         0
       </Field>
-      <Function name="ProcessOldVersions" user="true" member="true">
-      </Function>
       <Function name="ChangesRequireRecalculation" user="true" member="true">
       </Function>
       <Function name="GetAnimationScale" user="true" member="true">

@@ -16,6 +16,9 @@
 #    Brad Whitlock, Thu Mar 12 11:04:32 PDT 2009
 #    I restructured the test into functions.
 #
+#    Kathleen Biagas, Mon Nov 28, 2022
+#    Replace obsolete Label text attributes with new versions.
+#
 # ----------------------------------------------------------------------------
 
 def LabelTest(testname, var, zoomview):
@@ -28,12 +31,12 @@ def LabelTest(testname, var, zoomview):
     LabelAtts.drawLabelsFacing = LabelAtts.Front  # Front, Back, FrontAndBack
     LabelAtts.labelDisplayFormat = LabelAtts.Natural  # Natural, LogicalIndex, Index
     LabelAtts.numberOfLabels = 200
-    LabelAtts.specifyTextColor1 = 1
-    LabelAtts.textColor1 = (0, 255, 0, 255)
-    LabelAtts.textHeight1 = 0.03
-    LabelAtts.specifyTextColor2 = 0
-    LabelAtts.textColor2 = (0, 0, 255, 0)
-    LabelAtts.textHeight2 = 0.02
+    LabelAtts.textFont1.useForegroundColor = 0
+    LabelAtts.textFont1.color = (0, 255, 0, 255)
+    LabelAtts.textFont1.scale = 5
+    LabelAtts.textFont2.useForegroundColor = 1
+    LabelAtts.textFont2.color = (0, 0, 255, 0)
+    LabelAtts.textFont2.scale = 4
     LabelAtts.horizontalJustification = LabelAtts.HCenter  # HCenter, Left, Right
     LabelAtts.verticalJustification = LabelAtts.VCenter  # VCenter, Top, Bottom
     LabelAtts.depthTestMode = LabelAtts.LABEL_DT_AUTO  # LABEL_DT_AUTO, LABEL_DT_ALWAYS, LABEL_DT_NEVER
@@ -70,7 +73,6 @@ def AddMoleculePlot(db, var):
     MoleculeAtts.bondCylinderQuality = MoleculeAtts.Medium  # Low, Medium, High, Super
     MoleculeAtts.bondRadius = 0.12
     MoleculeAtts.bondLineWidth = 0
-    MoleculeAtts.bondLineStyle = 0
     MoleculeAtts.elementColorTable = "cpk_jmol"
     MoleculeAtts.residueTypeColorTable = "amino_shapely"
     MoleculeAtts.residueSequenceColorTable = "Default"

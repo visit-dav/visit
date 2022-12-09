@@ -1954,19 +1954,21 @@ resrad Function: ``resrad()`` : ``resrad(expr0)``
 .. _CrackWidth_Expression_Function:
 
 crack width Function: ``crack_width()`` : ``crack_width(crack_num, <crack1_dir>, <crack2_dir>, <crack3_dir>, <strain_tensor>, volume2(<mesh_name>))``
-    Calculates crack width using the following formula: ::
 
-     crackwidth = L * (1 - (exp(-delta))  
-     where: 
-        L = ZoneVol / (Area perpendicular to crack_dir)
+    Calculates crack width using the following formula::
+
+        crackwidth = L * (1 - (exp(-delta))
+        where:
+          L = ZoneVol / (Area perpendicular to crack_dir)
             find Area by slicing the cell by plane with origin == cell center
             and Normal == crack_dir.  Take area of that slice.
          
         delta =
-            T11 for crack dir1 = component 0 of strain_tensor 
+            T11 for crack dir1 = component 0 of strain_tensor
             T22 for crack dir2 = component 4 of strain_tensor
             T33 for crack dir3 = component 8 of strain_tensor
-   
+
+
 Time Iteration Expressions
 """"""""""""""""""""""""""
 

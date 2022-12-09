@@ -226,11 +226,17 @@ QvisColorTableWindow::~QvisColorTableWindow()
 //   Justin Privitera, Thu Aug 25 15:04:55 PDT 2022
 //   Added tag editor gui elements.
 //
+//   Justin Privitera, Thu Nov 17 12:28:10 PST 2022
+//   Resolved window resizing off the screen issue by limiting maximum height.
+//   Adjusted location of several buttons and labels to use less screen space.
+//
 // ****************************************************************************
 
 void
 QvisColorTableWindow::CreateWindowContents()
 {
+    // Want more buttons in the window? Increase this value.
+    central->setMaximumHeight(830);
     // Create the widgets needed to set the default color tables.
     topLayout->setMargin(2);
     defaultGroup = new QGroupBox(central);
@@ -296,7 +302,9 @@ QvisColorTableWindow::CreateWindowContents()
     mgLayout->addWidget(tagCombiningBehaviorChoice, 1, 2, 1, 4);
 
     nameListBox = new QTreeWidget(colorTableWidgetGroup);
+    // fixed name list box size
     nameListBox->setMinimumHeight(100);
+    nameListBox->setMaximumHeight(100);
     nameListBox->setColumnCount(1);
     // don't want the header
     nameListBox->header()->close();
@@ -314,7 +322,9 @@ QvisColorTableWindow::CreateWindowContents()
             this, SLOT(tagTableItemSelected(QTreeWidgetItem *, int)));
     tagTable->clear();
     tagTable->setSortingEnabled(true);
+    // fixed tag table size
     tagTable->setMinimumHeight(100);
+    tagTable->setMaximumHeight(100);
     tagTable->setMinimumWidth(250);
     tagTable->setColumnCount(2);
     mgLayout->addWidget(tagTable, 3, 0, 1, 3);
@@ -350,6 +360,8 @@ QvisColorTableWindow::CreateWindowContents()
     // Add the group box that will contain the color-related widgets.
     colorWidgetGroup = new QGroupBox(central);
     colorWidgetGroup->setTitle(tr("Editor"));
+    // Note: if new buttons are added to the editor, this value must be adjusted.
+    colorWidgetGroup->setMaximumHeight(350);
     topLayout->addWidget(colorWidgetGroup, 100);
     QVBoxLayout *innerColorLayout = new QVBoxLayout(colorWidgetGroup);
 
@@ -360,49 +372,50 @@ QvisColorTableWindow::CreateWindowContents()
     colorNumColors->setKeyboardTracking(false);
     colorNumColors->setRange(2,256);
     colorNumColors->setSingleStep(1);
+    colorNumColors->setMaximumWidth(75);
     connect(colorNumColors, SIGNAL(valueChanged(int)),
             this, SLOT(resizeColorTable(int)));
-    colorInfoLayout->addWidget(colorNumColors, 0, 1, 1, 2);
+    colorInfoLayout->addWidget(colorNumColors, 1, 3, 1, 1);
     colorInfoLayout->addWidget(new QLabel(tr("Number of colors"),
-                                          colorWidgetGroup), 0, 0);
+                                          colorWidgetGroup), 1, 0, 1, 3);
 
     // Create radio buttons to convert the color table between color table types.
-    colorInfoLayout->addWidget(new QLabel(tr("Color table type")), 1, 0);
+    colorInfoLayout->addWidget(new QLabel(tr("Color table type")), 0, 0, 1, 3);
     colorTableTypeGroup = new QButtonGroup(colorWidgetGroup);
     QRadioButton *rb = new QRadioButton(tr("Continuous"),colorWidgetGroup);
     colorTableTypeGroup->addButton(rb,0);
-    colorInfoLayout->addWidget(rb, 1, 1);
+    colorInfoLayout->addWidget(rb, 0, 3, 1, 2);
     rb = new QRadioButton(tr("Discrete"),colorWidgetGroup);
     colorTableTypeGroup->addButton(rb,1);
-    colorInfoLayout->addWidget(rb, 1, 2);
+    colorInfoLayout->addWidget(rb, 0, 5, 1, 2);
     connect(colorTableTypeGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(setColorTableType(int)));
 
 
     // Create the buttons that help manipulate the spectrum bar.
-    QHBoxLayout *seLayout = new QHBoxLayout();
+    QGridLayout *seLayout = new QGridLayout();
     innerColorLayout->addLayout(seLayout);
 
     alignPointButton = new QPushButton(tr("Align"), colorWidgetGroup);
     connect(alignPointButton, SIGNAL(clicked()),
             this, SLOT(alignControlPoints()));
-    seLayout->addWidget(alignPointButton);
-    seLayout->addStretch(10);
+    seLayout->addWidget(alignPointButton, 0, 0, 1, 1);
 
     smoothLabel = new QLabel(tr("Smoothing"), colorWidgetGroup);
-    seLayout->addWidget(smoothLabel);
+    smoothLabel->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
+    seLayout->addWidget(smoothLabel, 0, 1, 1, 1);
     smoothingMethod = new QComboBox(colorWidgetGroup);
     smoothingMethod->addItem(tr("None"));
     smoothingMethod->addItem(tr("Linear"));
     smoothingMethod->addItem(tr("Cubic Spline"));
     connect(smoothingMethod, SIGNAL(activated(int)),
             this, SLOT(smoothingMethodChanged(int)));
-    seLayout->addWidget(smoothingMethod);
+    seLayout->addWidget(smoothingMethod, 0, 2, 1, 1);
 
     equalCheckBox = new QCheckBox(tr("Equal"), colorWidgetGroup);
     connect(equalCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(equalSpacingToggled(bool)));
-    seLayout->addWidget(equalCheckBox);
+    seLayout->addWidget(equalCheckBox, 0, 3, 1, 1);
 
     // Create the spectrum bar.
     spectrumBar = new QvisSpectrumBar(colorWidgetGroup);
@@ -450,7 +463,7 @@ QvisColorTableWindow::CreateWindowContents()
     showIndexHintsCheckBox->setChecked(false);
     connect(showIndexHintsCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(showIndexHintsToggled(bool)));
-    innerColorLayout->addWidget(showIndexHintsCheckBox);
+    colorInfoLayout->addWidget(showIndexHintsCheckBox, 1, 4, 1, 3);
 
 
     // Create the discrete color table sliders, text fields.

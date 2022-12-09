@@ -14,13 +14,13 @@
 #   Added install_name_tool patch of of vtk python wrappers (if they exist)
 #
 #   Kathleen Bonnell,  Wed Mar 17 10:03:52 MST 2010
-#   Prevent '.svn' from being included when installing directories. 
+#   Prevent '.svn' from being included when installing directories.
 #   Change how python wrappers are handled on windows, due to different
 #   VTK directory structure.
 #
 #   Kathleen Bonnell,  Thu Dec 2 15:30:05 MST 2010
 #   Add .lib files for Install on Windows.
-# 
+#
 #   Tom Fogal, Fri Jan 28 13:35:29 MST 2011
 #   Account for new VTK installation structure.
 #
@@ -37,7 +37,7 @@
 #   Cyrus Harrison, Tue Sep 25 12:09:39 PDT 2012
 #   Added Geoviz libs
 #
-#   Kathleen Biagas, Thu Dec 6 10:26:54 PST 2012 
+#   Kathleen Biagas, Thu Dec 6 10:26:54 PST 2012
 #   Use VTK_LIBRARIES and others in determining what to install, rather than
 #   listing individually, which is prone to omissions.
 #
@@ -49,24 +49,22 @@
 #
 #   Kathleen Biagas, Thu May  2 10:11:44 PDT 2013
 #   Don't attempt the python wrappers if we don't have PYTHON_VERSION.
-# 
+#
 #   Kathleen Biagas, Fri May  3 17:00:03 MST 2013
 #   Ensure that the vtk install has all the libraries we require.
-# 
+#
 #   Alister Maguire, Thu Sep 14 14:26:07 PDT 2017
 #   Added vtkRenderingVolumeOpenGL2
 #
 #   Kathleen Biagas, Fri Jan  17 2020
 #   Install vtkTestOpenGLVersion.exe on Windows when needed.
-# 
-#   Kathleen Biagas, Sat July 17, 2022 
+#
+#   Kathleen Biagas, Sat July 17, 2022
 #   Renamed from FindVisItVTK.cmake.
-# 
+#
 #****************************************************************************/
 
-INCLUDE(${VISIT_SOURCE_DIR}/CMake/ThirdPartyInstallLibrary.cmake)
-
-# Use the VTK_DIR hint from the config-site .cmake file 
+# Use the VTK_DIR hint from the config-site .cmake file
 
 IF(EXISTS ${VISIT_VTK_DIR}/lib/cmake/vtk-${VTK_MAJOR_VERSION}.${VTK_MINOR_VERSION}/VTKConfig.cmake)
     SET(VTK_DIR ${VISIT_VTK_DIR}/lib/cmake/vtk-${VTK_MAJOR_VERSION}.${VTK_MINOR_VERSION})
@@ -75,7 +73,7 @@ ENDIF()
 MESSAGE(STATUS "Checking for VTK in ${VTK_DIR}")
 
 # Set up our list of required and optional vtk modules
-SET(REQ_VTK_MODS 
+SET(REQ_VTK_MODS
         vtkCommonCore
         vtkCommonDataModel
         vtkFiltersCore
@@ -105,7 +103,7 @@ ENDIF()
 # We don't list our required modules in the find_package call because it
 # does funny things with VTK_INCLUDES, and the OPTIONAL_COMPONENTS arg
 # causes an error if anything in the optional list is not found, would be better
-# if it issued a warning instead. Perhaps one day it will be fixed, and we can 
+# if it issued a warning instead. Perhaps one day it will be fixed, and we can
 # use this: find_package(VTK 6.0 REQUIRED ${REQ_VTK_MODS} OPTIONAL_COMPONENTS ${OPT_VTK_MODS} NO_MODULE PATHS ${VTK_DIR})
 
 set(Qt5_DIR ${VISIT_QT_DIR}/lib/cmake/Qt5)
@@ -170,20 +168,20 @@ ELSE(VISIT_VTK_SKIP_INSTALL)
             ENDIF(EXISTS ${LIBNAME})
         ENDIF(WIN32)
     ENDMACRO(SETUP_INSTALL vtklib)
-  
+
     # Base libs and their python wrappings
     FOREACH(VTKLIB ${VTK_LIBRARIES})
         SETUP_INSTALL("${VTKLIB}")
-    ENDFOREACH(VTKLIB)  
+    ENDFOREACH(VTKLIB)
 
     # Python
     IF(PYTHON_VERSION)
         # different naming convention.
-        # Remove '.' from python version for use in vtk python library naming. 
+        # Remove '.' from python version for use in vtk python library naming.
         STRING(REPLACE "." "" PYVER ${PYTHON_VERSION})
         FOREACH(VTKLIB ${VTK_LIBRARIES})
             SETUP_INSTALL("${VTKLIB}Python${PYVER}D")
-        ENDFOREACH(VTKLIB)  
+        ENDFOREACH(VTKLIB)
         SETUP_INSTALL(vtkWrappingPython${PYVER}Core)
     ENDIF(PYTHON_VERSION)
 
@@ -198,11 +196,11 @@ ELSE(VISIT_VTK_SKIP_INSTALL)
                 #MESSAGE("Install ${X} to ${VISIT_INSTALLED_VERSION_INCLUDE}/vtk")
                 INSTALL(DIRECTORY ${X}
                     DESTINATION ${VISIT_INSTALLED_VERSION_INCLUDE}/vtk
-                    FILE_PERMISSIONS OWNER_WRITE OWNER_READ 
-                                     GROUP_WRITE GROUP_READ 
+                    FILE_PERMISSIONS OWNER_WRITE OWNER_READ
+                                     GROUP_WRITE GROUP_READ
                                      WORLD_READ
-                    DIRECTORY_PERMISSIONS OWNER_WRITE OWNER_READ OWNER_EXECUTE 
-                                          GROUP_WRITE GROUP_READ GROUP_EXECUTE 
+                    DIRECTORY_PERMISSIONS OWNER_WRITE OWNER_READ OWNER_EXECUTE
+                                          GROUP_WRITE GROUP_READ GROUP_EXECUTE
                                           WORLD_READ WORLD_EXECUTE
                     PATTERN ".svn" EXCLUDE
                 )
@@ -263,3 +261,4 @@ endif()
 IF(NOT ${VTK_FOUND})
     MESSAGE(FATAL_ERROR "VTK is required to build VisIt.")
 ENDIF(NOT ${VTK_FOUND})
+

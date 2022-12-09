@@ -40,8 +40,6 @@
       </Function>
       <Function name="VarChangeRequiresReset" user="true" member="true">
       </Function>
-      <Function name="ProcessOldVersions" user="true" member="true">
-      </Function>
       <Function name="PyBoundaryAttributes_SetDefaults" user="false" member="true">
       </Function>
       <Function name="BoundaryViewerEnginePluginInfo::InitializePlotAtts" user="false" member="true">

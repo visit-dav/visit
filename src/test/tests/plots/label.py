@@ -2,7 +2,7 @@
 #  MODES: serial
 #  CLASSES: nightly
 #
-#  Test Case:  label.py 
+#  Test Case:  label.py
 #
 #  Tests:      Tests the label plot
 #
@@ -44,7 +44,10 @@
 #    behavior when an operator is added.
 #
 #    Alister Maguire, Mon Feb 26 10:22:04 PST 2018
-#    Added TestMixedVariables for testing datasets with mixed variables. 
+#    Added TestMixedVariables for testing datasets with mixed variables.
+#
+#    Kathleen Biagas, Mon Nov 28, 2022
+#    Replace obsolete Label text attributes with new versions.
 #
 # ----------------------------------------------------------------------------
 RequiredDatabasePlugin(("Boxlib2D", "SAMRAI", "VTK"))
@@ -53,8 +56,8 @@ RequiredDatabasePlugin(("Boxlib2D", "SAMRAI", "VTK"))
 # Create label attributes with somewhat larger text.
 def CreateLabelAttributes():
     L = LabelAttributes()
-    L.textHeight1 = 0.03
-    L.textHeight2 = 0.03
+    L.textFont1.scale = 5
+    L.textFont2.scale = 5
     return L
 
 def SaveTestImage(name):
@@ -78,21 +81,21 @@ def TestGeneralFeatures():
     v0 = View2DAttributes()
     v0.windowCoords = (-11.6154, 11.8294, -3.18886, 8.33075)
     v0.viewportCoords = (0.2, 0.95, 0.15, 0.95)
-    v0.fullFrameActivationMode = v0.Off 
+    v0.fullFrameActivationMode = v0.Off
     SetView2D(v0)
     SaveTestImage("label_0_01")
 
     v1 = View2DAttributes()
     v1.windowCoords = (-1.0815, 1.29556, 1.98696, 3.15493)
     v1.viewportCoords = (0.2, 0.95, 0.15, 0.95)
-    v1.fullFrameActivationMode = v1.Off 
+    v1.fullFrameActivationMode = v1.Off
     SetView2D(v1)
     SaveTestImage("label_0_02")
 
     v2 = View2DAttributes()
     v2.windowCoords = (1.78125, 3.00819, 0.209532, 0.812385)
     v2.viewportCoords = (0.2, 0.95, 0.15, 0.95)
-    v2.fullFrameActivationMode = v2.Off 
+    v2.fullFrameActivationMode = v2.Off
     AddPlot("Mesh", "curvmesh2d")
     DrawPlots()
     SetActivePlots(0)
@@ -113,42 +116,42 @@ def TestGeneralFeatures():
     # Try showing nodes and cells and alter their respective sizes
     L.showCells = 1
     L.showNodes = 1
-    L.textHeight1 = 0.04
-    L.textHeight2 = 0.03  
+    L.textFont1.scale = 6
+    L.textFont2.scale = 5
     SetPlotOptions(L)
     SaveTestImage("label_0_06")
 
     # Change the cell color.
-    L.textColor1 = (0,255,0,255)
-    L.specifyTextColor1 = 1
+    L.textFont1.color = (0,255,0,255)
+    L.textFont1.useForegroundColor = 0
     SetPlotOptions(L)
     SaveTestImage("label_0_07")
 
     # Change the node color
-    L.textColor2 = (100,10,255,255)
-    L.specifyTextColor2 = 1
+    L.textFont2.color = (100,10,255,255)
+    L.textFont2.useForegroundColor = 0
     SetPlotOptions(L)
     SaveTestImage("label_0_08")
-    L.textColor1 = (0,255,0,255)
-    L.textColor2 = (0,255,0,255)
+    L.textFont1.color = (0,255,0,255)
+    L.textFont2.color = (0,255,0,255)
 
     # Change the structured indices to regular indices
     L.showCells = 1
     L.labelDisplayFormat = L.Index
-    L.textHeight1 = 0.03
+    L.textFont1.scale = 5
     SetPlotOptions(L)
     SaveTestImage("label_0_09")
 
     # Make the text a little bigger
-    L.textHeight1 = 0.06
-    L.textHeight2 = 0.06
+    L.textFont1.scale = 8
+    L.textFont2.scale = 8
     L.showCells = 0
     SetPlotOptions(L)
     SaveTestImage("label_0_10")
 
     # Test different text alignments
-    L.textHeight1 = 0.04
-    L.textHeight2 = 0.04
+    L.textFont1.scale = 6
+    L.textFont2.scale = 6
     L.horizontalJustification = L.Left
     SetPlotOptions(L)
     SaveTestImage("label_0_11")
@@ -220,11 +223,11 @@ def TestCurvilinear2D():
     v0 = View2DAttributes()
     v0.windowCoords = (-0.632297, 0.483674, 3.38963, 4.57713)
     v0.viewportCoords = (0.2, 0.95, 0.15, 0.95)
-    v0.fullFrameActivationMode = v0.Off 
+    v0.fullFrameActivationMode = v0.Off
     SetView2D(v0)
     L = CreateLabelAttributes()
-    L.textHeight1 = 0.03
-    L.textHeight2 = 0.03
+    L.textFont1.scale = 5
+    L.textFont2.scale = 5
     SetPlotOptions(L)
     SaveTestImage("label_1_01")
 
@@ -268,11 +271,11 @@ def TestRectilinear2D():
     v0 = View2DAttributes()
     v0.windowCoords = (0.425121, 0.574879, 0.566829, 0.766505)
     v0.viewportCoords = (0.2, 0.95, 0.15, 0.95)
-    v0.fullFrameActivationMode = v0.Off 
+    v0.fullFrameActivationMode = v0.Off
     SetView2D(v0)
     L = CreateLabelAttributes()
-    L.textHeight1 = 0.03
-    L.textHeight2 = 0.03
+    L.textFont1.scale = 5
+    L.textFont2.scale = 5
     SetPlotOptions(L)
     SaveTestImage("label_2_00")
 
@@ -298,8 +301,8 @@ def TestRectilinear2D():
     AddPlot("Label", "quadmesh2d")
     DrawPlots()
     L.showNodes = 1
-    L.textHeight1 = 0.03
-    L.textHeight2 = 0.03
+    L.textFont1.scale = 5
+    L.textFont2.scale = 5
     SetPlotOptions(L)
     SaveTestImage("label_2_04")
 
@@ -321,19 +324,19 @@ def TestUnstructured2D():
     AddPlot("Label", "ucdmesh2d")
     L = CreateLabelAttributes()
     L.showNodes = 1
-    L.textHeight1 = 0.04
-    L.textHeight2 = 0.04
-    L.textColor1 = (255,0,0,255)
-    L.textColor2 = (255,0,0,255)
-    L.specifyTextColor1 = 1
-    L.specifyTextColor2 = 1
+    L.textFont1.scale = 6
+    L.textFont2.scale = 6
+    L.textFont1.color = (255,0,0,255)
+    L.textFont2.color = (255,0,0,255)
+    L.textFont1.useForegroundColor = 0
+    L.textFont2.useForegroundColor = 0
     L.restrictNumberOfLabels = 0
     SetPlotOptions(L)
     DrawPlots()
     v0 = View2DAttributes()
     v0.windowCoords = (-0.154956, 4.15496, -0.154956, 4.15496)
     v0.viewportCoords = (0.2, 0.95, 0.15, 0.95)
-    v0.fullFrameActivationMode = v0.Off 
+    v0.fullFrameActivationMode = v0.Off
     SetView2D(v0)
     SaveTestImage("label_3_00")
 
@@ -349,8 +352,8 @@ def TestUnstructured2D():
     ChangeActivePlotsVar("ucdmesh2d")
     AddPlot("FilledBoundary", "mat1")
     DrawPlots()
-    L.specifyTextColor1 = 0
-    L.specifyTextColor2 = 0
+    L.textFont1.useForegroundColor = 1
+    L.textFont2.useForegroundColor = 1
     SetPlotOptions(L)
     SetActivePlots((0,1,2))
     TurnMaterialsOff("2")
@@ -377,8 +380,8 @@ def TestSlice():
     SetOperatorOptions(s)
     # Make the labels a little bigger
     L = CreateLabelAttributes()
-    L.textHeight1 = 0.05
-    L.textHeight2 = 0.05
+    L.textFont1.scale = 7
+    L.textFont2.scale = 7
     L.depthTestMode = L.LABEL_DT_NEVER
     SetPlotOptions(L)
     DrawPlots()
@@ -444,13 +447,13 @@ def TestLabeledVTK():
     DrawPlots()
     SetActivePlots((1, 2))
     l = LabelAttributes()
-    l.textHeight1 = 0.06
-    l.textHeight2 = 0.06
+    l.textFont1.scale = 8
+    l.textFont2.scale = 8
     l.depthTestMode = l.LABEL_DT_NEVER
     SetPlotOptions(l)
 
     v = GetView3D()
-    v.viewNormal = (-0.826308, 0.365749, 0.428303) 
+    v.viewNormal = (-0.826308, 0.365749, 0.428303)
     v.focus = (0, 0, 0)
     v.viewUp = (0.262408, 0.92288, -0.28184)
     v.parallelScale = 1.55885
@@ -458,7 +461,7 @@ def TestLabeledVTK():
     v.farPlane  =  3.11769
     v.imageZoom = 0.941919
     SetView3D(v)
-    
+
     SaveTestImage("label_5_01")
     DeleteAllPlots()
 
@@ -471,7 +474,7 @@ def TestLabellingSubsets():
     AddPlot("Label", "blocks")
     l = LabelAttributes()
     l.restrictNumberOfLabels = 0
-    l.textHeight1 = 0.03
+    l.textFont1.scale = 5
     l.depthTestMode = l.LABEL_DT_NEVER
     SetPlotOptions(l)
     SetActivePlots((0,1,2))
@@ -520,7 +523,7 @@ def TestLabellingSubsets():
     AddPlot("Label", "patches")
     l = LabelAttributes()
     l.restrictNumberOfLabels = 0
-    l.textHeight1 = 0.027
+    l.textFont1.scale = 4.7
     SetPlotOptions(l)
     DrawPlots()
     v = View2DAttributes()
@@ -540,7 +543,7 @@ def TestLabellingSubsets():
     v.fullFrameAutoThreshold = 100
     SetView2D(v)
     SetActivePlots(2)
-    l.textHeight1 = 0.02
+    l.textFont1.scale = 4
     SetPlotOptions(l)
     SaveTestImage("label_6_04")
     DeleteAllPlots()
@@ -552,7 +555,7 @@ def TestLabellingSubsets():
     AddPlot("FilledBoundary", "mat1")
     AddPlot("Label", "mat1")
     l = LabelAttributes()
-    l.textHeight1 = 0.03
+    l.textFont1.scale = 5
     SetPlotOptions(l)
     SetActivePlots((0,1,2))
     AddOperator("Slice")
@@ -601,12 +604,12 @@ def TestLabellingTensors():
     # Now see how changing the text height affects binning
     ResetView()
     l = LabelAttributes()
-    l.textHeight1 = 0.01
+    l.textFont1.scale = 3
     SetActivePlots(2)
     SetPlotOptions(l)
     SaveTestImage("label_7_03")
 
-    l.textHeight1 = 0.04
+    l.textFont1.scale = 6
     SetPlotOptions(l)
     SaveTestImage("label_7_04")
 
@@ -712,7 +715,7 @@ def TestLabelling3D():
     L.showNodes = 1
     SetPlotOptions(L)
     SaveTestImage("label_8_05")
-    
+
     # Label a variable that would normally have labels that protrude into
     # the dataset
     ChangeActivePlotsVar("speed")
@@ -830,9 +833,9 @@ def TestSlicedVectors():
     AddPlot("Mesh", "quadmesh3d")
     AddPlot("Label", "vel")
     L = LabelAttributes()
-    L.textHeight1 = 0.04
-    L.textColor1 = (255,0,0,255)
-    L.specifyTextColor1 = 1
+    L.textFont1.scale = 6
+    L.textFont1.color = (255,0,0,255)
+    L.textFont1.useForegroundColor = 0
     SetPlotOptions(L)
     SetActivePlots((0,1))
     AddOperator("Slice")

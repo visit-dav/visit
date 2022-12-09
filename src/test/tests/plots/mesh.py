@@ -58,6 +58,9 @@
 #    Replace use of meshatts 'foregroundFlag', 'backgroundFlag' with
 #    'meshColorSource' and 'opaqueColorSource' respectively.
 #
+#    Kathleen Biagas, Mon Nov 28, 2022
+#    Remove obsolete mesh att 'lineStyle'.
+#
 # ----------------------------------------------------------------------------
 
 
@@ -78,10 +81,9 @@ def TestCurve():
 
     Test("mesh_curve_01")
 
-    #Change line style, line width and color
+    # Change color
     # and add a PC Plot.
     m = MeshAttributes()
-    m.lineStyle = 3
     m.opaqueColorSource = m.OpaqueCustom
     m.opaqueColor = (0, 122, 200, 255)
     SetPlotOptions(m)
@@ -90,7 +92,6 @@ def TestCurve():
     Test("mesh_curve_02")
 
     SetActivePlots(0)
-    m.lineStyle = 2
     SetPlotOptions(m)
     SetActivePlots(1)
     HideActivePlots()

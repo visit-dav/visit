@@ -132,7 +132,7 @@ CMake Build System
 
 VisIt's build system uses `BLT <https://github.com/llnl/blt/>`_ CMake helpers.
 BLT is included in VisIt's git repo as a git submodule.
-To obtain the submodule, use `git clone --recursive ` when cloning, or manually setup the submodule after cloning using::
+To obtain the submodule, use `git clone --recursive` when cloning, or manually setup the submodule after cloning using::
 
     git submodule init
     git submodule update

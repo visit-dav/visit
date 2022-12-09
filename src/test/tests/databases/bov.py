@@ -14,6 +14,9 @@
 #    Brad Whitlock, Thu May 4 14:02:29 PST 2006
 #    Added testing of INT and DOUBLE BOV files.
 #
+#    Kathleen Biagas, Mon Nov 28, 2022
+#    Replace obsolete Label text attributes with new versions.
+#
 # ----------------------------------------------------------------------------
 
 def SaveTestImage(name):
@@ -66,8 +69,8 @@ def TestBOVDivide(prefix, db, doSubset):
     AddPlot("Mesh", "mesh")
     AddPlot("Label", "myvar")
     L = LabelAttributes()
-    L.textHeight1 = 0.03
-    L.textHeight2 = 0.03
+    L.textFont1.scale = 5
+    L.textFont2.scale = 5
     SetPlotOptions(L)
     SetActivePlots((0,1,2))
     AddOperator("Slice")

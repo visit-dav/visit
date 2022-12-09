@@ -1325,45 +1325,6 @@ PyMultiCurveAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "legendFlag") == 0)
         return MultiCurveAttributes_GetLegendFlag(self, NULL);
 
-#if VISIT_OBSOLETE_AT_VERSION(3,3,2)
-#error This code is obsolete in this version. Please remove it.
-#else
-    // Try and handle legacy fields
-
-    //
-    // Removed in 3.0.0
-    //
-    // lineStyle and it's possible enumerations
-    bool lineStyleFound = false;
-    if (strcmp(name, "lineStyle") == 0)
-    {
-        lineStyleFound = true;
-    }
-    else if (strcmp(name, "SOLID") == 0)
-    {
-        lineStyleFound = true;
-    }
-    else if (strcmp(name, "DASH") == 0)
-    {
-        lineStyleFound = true;
-    }
-    else if (strcmp(name, "DOT") == 0)
-    {
-        lineStyleFound = true;
-    }
-    else if (strcmp(name, "DOTDASH") == 0)
-    {
-        lineStyleFound = true;
-    }
-    if (lineStyleFound)
-    {
-        PyErr_WarnEx(NULL,
-            "lineStyle is no longer a valid MultiCurve "
-            "attribute.\nIt's value is being ignored, please remove "
-            "it from your script.\n", 3);
-        return PyInt_FromLong(0L);
-    }
-#endif
 
     // Add a __dict__ answer so that dir() works
     if (!strcmp(name, "__dict__"))
@@ -1418,23 +1379,6 @@ PyMultiCurveAttributes_setattr(PyObject *self, char *name, PyObject *args)
     else if(strcmp(name, "legendFlag") == 0)
         obj = MultiCurveAttributes_SetLegendFlag(self, args);
 
-#if VISIT_OBSOLETE_AT_VERSION(3,3,2)
-#error This code is obsolete in this version. Please remove it.
-#else
-    // Try and handle legacy fields
-    if(obj == &NULL_PY_OBJ)
-    {
-        //
-        // Removed in 3.0.0
-        //
-        if(strcmp(name, "lineStyle") == 0)
-        {
-            PyErr_WarnEx(NULL, "'lineStyle is obsolete. It is being ignored.", 3);
-            Py_INCREF(Py_None);
-            obj = Py_None;
-        }
-    }
-#endif
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 

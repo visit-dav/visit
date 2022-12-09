@@ -115,8 +115,6 @@
       <Field name="scalarMax" label="Maximum value" type="float" enabler="maxFlag:true">
         1.000000
       </Field>
-      <Function name="ProcessOldVersions" user="true" member="true">
-      </Function>
       <Function name="ChangesRequireRecalculation" user="true" member="true">
       </Function>
       <Include file="source" quoted="false" target="xml2python">

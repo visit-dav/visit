@@ -6,8 +6,6 @@
 # Use the CONDUIT_DIR hint from the config-site .cmake file 
 #
 
-INCLUDE(${VISIT_SOURCE_DIR}/CMake/SetUpThirdParty.cmake)
-
 SET_UP_THIRD_PARTY(CONDUIT
     INCDIR include/conduit
     LIBS conduit conduit_relay conduit_blueprint)
@@ -28,7 +26,7 @@ if(EXISTS ${CONDUIT_DIR}/python-modules/conduit)
     message(STATUS "Found Conduit Python Wrappers - ${CONDUIT_DIR}/python-modules/conduit")
     install(DIRECTORY ${CONDUIT_DIR}/python-modules/conduit
             DESTINATION ${VISIT_INSTALLED_VERSION_LIB}/site-packages/
-            FILE_PERMISSIONS 
+            FILE_PERMISSIONS
                     OWNER_WRITE
                     OWNER_READ
                     GROUP_WRITE
@@ -48,3 +46,4 @@ endif()
 if(CONDUIT_FOUND)
     set(HAVE_CONDUIT TRUE CACHE BOOL "Have Conduit libraries")
 endif()
+

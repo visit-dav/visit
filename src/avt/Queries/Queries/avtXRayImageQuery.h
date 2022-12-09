@@ -90,6 +90,22 @@
 //    Replaced familyfiles with filenamescheme.
 //    Added boolean argument to `WriteImage` to control what info goes in the
 //    filename.
+// 
+//    Justin Privitera, Tue Nov 15 11:44:01 PST 2022
+//    Added WriteBlueprintImagingPlane function if conduit is defined
+// 
+//    Justin Privitera, Tue Nov 22 14:56:04 PST 2022
+//    Added energy group bin variables and a setter.
+// 
+//    Justin Privitera, Mon Nov 28 15:38:25 PST 2022
+//    Renamed energy group bins to energy group bounds.
+// 
+//    Justin Privitera, Wed Nov 30 17:43:48 PST 2022
+//    Adds variables for units and one setter for all of them.
+// 
+//    Justin Privitera, Wed Dec  7 16:16:16 PST 2022
+//    Added 5 new args to WriteBlueprintImagingPlane that act as containers for
+//    various calculated vector values.
 //
 // ****************************************************************************
 
@@ -121,6 +137,9 @@ class QUERY_API avtXRayImageQuery : public avtDatasetQuery
     void                      SetBackgroundIntensity(const double &intensity);
     void                      SetBackgroundIntensities(
                                   const doubleVector &intensities);
+    void                      SetEnergyGroupBounds(
+                                  const doubleVector &bins);
+    void                      SetUnits(const std::map<std::string, std::string> &unitsmap);
     void                      SetDebugRay(const int &ray);
     void                      SetOutputRayBounds(const bool &flag);
     void                      SetFamilyFiles(const bool &flag);
@@ -135,6 +154,8 @@ class QUERY_API avtXRayImageQuery : public avtDatasetQuery
     double                    backgroundIntensity;
     double                   *backgroundIntensities;
     int                       nBackgroundIntensities;
+    double                   *energyGroupBounds;
+    int                       nEnergyGroupBounds;
     int                       debugRay;
     bool                      outputRayBounds;
     int                       filenameScheme;
@@ -165,6 +186,14 @@ class QUERY_API avtXRayImageQuery : public avtDatasetQuery
     std::string               absVarName;  //e.g. "absorbtivity"
     std::string               emisVarName; //e.g. "emissivity"
 
+    // units, to be output in blueprint metadata
+    std::string               spatialUnits;
+    std::string               energyUnits;
+    std::string               absUnits;
+    std::string               emisUnits;
+    std::string               intensityUnits;
+    std::string               pathLengthUnits;
+
     int                       numPixels;
 
     virtual void              Execute(vtkDataSet *, const int);
@@ -186,6 +215,16 @@ class QUERY_API avtXRayImageQuery : public avtDatasetQuery
                                           conduit::float64 *intensity_vals,
                                           conduit::float64 *depth_vals,
                                           int numBins);
+    void                      WriteBlueprintImagingPlane(conduit::Node &data_out,
+                                                         const std::string plane_name,
+                                                         const double width,
+                                                         const double height,
+                                                         const double center[3],
+                                                         double llc[3],
+                                                         double lrc[3],
+                                                         double ulc[3],
+                                                         double urc[3],
+                                                         double left[3]);
 #endif
     void                      ConvertOldImagePropertiesToNew();
     void                      CheckData(vtkDataSet **, const int);

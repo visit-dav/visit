@@ -1757,61 +1757,6 @@ VectorAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
 // User-defined methods.
 ///////////////////////////////////////////////////////////////////////////////
 
-// ****************************************************************************
-// Method: VectorAttributes::ProcessOldVersions
-//
-// Purpose:
-//   This method allows handling of older config/session files that may
-//   contain fields that are no longer present or have been modified/renamed.
-//
-// Programmer: Kathleen Biagas
-// Creation:   April 4, 2018
-//
-// Modifications:
-//
-// ****************************************************************************
-#include <visit-config.h>
-#ifdef VIEWER
-#include <avtCallback.h>
-#endif
-
-void
-VectorAttributes::ProcessOldVersions(DataNode *parentNode,
-                                    const char *configVersion)
-{
-#if VISIT_OBSOLETE_AT_VERSION(3,3,2)
-#error This code is obsolete in this version. Please remove it.
-#else
-    if(parentNode == 0)
-        return;
-
-    DataNode *searchNode = parentNode->GetNode("VectorAttributes");
-    if(searchNode == 0)
-        return;
-
-    if (VersionLessThan(configVersion, "3.0.0"))
-    {
-        if (searchNode->GetNode("lineStyle") != 0)
-        {
-#ifdef VIEWER
-            avtCallback::IssueWarning(DeprecationMessage("lineStyle", "3.3.2"));
-#endif
-            searchNode->RemoveNode("lineStyle");
-        }
-    }
-
-    if (VersionLessThan(configVersion, "3.2.0"))
-    {
-        DataNode *k = 0;
-        if((k = searchNode->GetNode("colorByMag")) != 0)
-        {
-            searchNode->AddNode(new DataNode("colorByMagnitude", k->AsBool()));
-            searchNode->RemoveNode(k, true);
-        }
-    }
-#endif
-}
-
 bool
 VectorAttributes::ChangesRequireRecalculation(const VectorAttributes &obj)
 {
