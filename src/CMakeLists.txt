@@ -540,6 +540,18 @@
 #    Move CREATE_PLUGIN_DEPENDENCIES and VISIT_SELECTED_PLUGIN_ERROR into
 #    PluginMacros.cmake.
 #
+#    Kathleen Biagas, Thu Dec 1, 2022
+#    Remove VISIT_OUT_OF_SOURCE_BUILD var. Out-of-source builds
+#    are now required, and checked by BLT.
+#    Moved parallel settings/functions into VisItParallel.cmake.
+#
+#    Kathleen Biagas, Tue Dec 6, 2022
+#    Move some visit-defined functions into VisItFunctions.cmake.
+#    Consolidated logic setting VISIT_3RDPARTY_VAR.
+#
+#    Kathleen Biagas, Wed Dec 7, 2022
+#    Moved OPTIONS into VisItOptions.cmake.
+#
 #****************************************************************************
 
 cmake_minimum_required(VERSION 3.24 FATAL_ERROR)
@@ -620,52 +632,13 @@ ENDIF(NOT "$ENV{VISIT_HOSTNAME}" STREQUAL "")
 
 
 #-----------------------------------------------------------------------------
-# Helper function for setting build options via config-site file.
-# Supports optional argument pair: TYPE [CMAKE_TYPE], default type = PATH
-#-----------------------------------------------------------------------------
-FUNCTION(VISIT_OPTION_DEFAULT var)
-  SET(opt_ARGS "")
-  SET(opt_TYPE "PATH")
-  SET(opt_ARG_PREV "[unset]")
-  FOREACH(opt_ARG ${ARGN})
-    ## if arg is TYPE:
-    ##   we want to use the next value as the cmake var type
-    ## otherwise:
-    ##   we want to append the argument to the list of args used for "SET"
-    IF( ${opt_ARG_PREV} STREQUAL "TYPE")
-        SET(opt_TYPE ${opt_ARG})
-    ELSEIF(NOT ${opt_ARG} STREQUAL "TYPE")
-        LIST(APPEND opt_ARGS ${opt_ARG})
-    ENDIF(${opt_ARG_PREV} STREQUAL "TYPE")
-    SET(opt_ARG_PREV ${opt_ARG})
-  ENDFOREACH(opt_ARG in ${ARGN})
-  ##
-  SET(default_base "${var}_DEFAULT")
-  SET(default_base_val  "${${default_base}}")
-  IF(NOT "${default_base_val}" STREQUAL "${opt_ARGS}")
-      SET("${default_base}" "${opt_ARGS}" CACHE INTERNAL "${var} default value" FORCE)
-      SET(${var} "${opt_ARGS}" CACHE ${opt_TYPE} "${var} value" FORCE)
-  ENDIF(NOT "${default_base_val}" STREQUAL "${opt_ARGS}")
-ENDFUNCTION(VISIT_OPTION_DEFAULT var)
 
 SET(VTK_MINIMUM_VERSION "8.1.0" CACHE INTERNAL "minimum version of vtk that VisIt can use")
 
 SET(NEKTAR++_MINIMUM_VERSION "4.0.0" CACHE INTERNAL "minimum version of Nektar++ that VisIt can use")
 
-FUNCTION(SETUP_APP_VERSION name ver_ascii )
-  IF(${ver_ascii} VERSION_LESS ${${name}_MINIMUM_VERSION}})
-      MESSAGE(FATAL_ERROR "${name} version must be at least ${${name}_MINIMUM_VERSION}}")
-  ENDIF()
-  STRING( REGEX REPLACE "([0-9]+).[0-9]+.[0-9]+[.0-9]*.*" "\\1" ver_major ${ver_ascii} )
-  STRING( REGEX REPLACE "[0-9]+.([0-9]+).[0-9]+[.0-9]*.*" "\\1" ver_minor ${ver_ascii} )
-  STRING( REGEX REPLACE "[0-9]+.[0-9]+.([0-9]+)[.0-9]*.*" "\\1" ver_patch ${ver_ascii} )
-  SET(${name}_VERSION "${ver_ascii}"  CACHE INTERNAL "")
-  SET(${name}_MAJOR_VERSION "${ver_major}" CACHE INTERNAL "")
-  SET(${name}_MINOR_VERSION "${ver_minor}" CACHE INTERNAL "")
-  SET(${name}_PATCH_VERSION "${ver_patch}" CACHE INTERNAL "")
-  math( EXPR ver_hex "(${ver_major}<<16)|(${ver_minor}<<8)|(${ver_patch})")
-  SET(${name}_VERSION_HEX "${ver_hex}" CACHE INTERNAL "")
-ENDFUNCTION()
+# this needs to be included beofre the config-site file.
+include(${CMAKE_CURRENT_SOURCE_DIR}/CMake/VisItFunctions.cmake)
 
 #-----------------------------------------------------------------------------
 # Include this computer's config-site if one exists
@@ -717,17 +690,9 @@ include(${VISIT_SOURCE_DIR}/CMake/SystemChecks.cmake)
 include(${VISIT_SOURCE_DIR}/CMake/SetUpPlatformDefs.cmake)
 
 
-#-----------------------------------------------------------------------------
-# Setup out of source build indicator.
-#-----------------------------------------------------------------------------
-IF("${CMAKE_SOURCE_DIR}" STREQUAL "${CMAKE_BINARY_DIR}")
-    SET(VISIT_OUT_OF_SOURCE_BUILD 0)
-ELSE("${CMAKE_SOURCE_DIR}" STREQUAL "${CMAKE_BINARY_DIR}")
-    SET(VISIT_OUT_OF_SOURCE_BUILD 1)
-    # Have to make this or an executable is made of this name.
-    # Suspect makemili_driver
-    file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/exe")
-ENDIF("${CMAKE_SOURCE_DIR}" STREQUAL "${CMAKE_BINARY_DIR}")
+# Have to make this or an executable is made of this name.
+# Suspect makemili_driver
+file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/exe")
 
 #-----------------------------------------------------------------------------
 # Windows needs values that are only set at this point, so now include
@@ -777,191 +742,36 @@ SET(CXX_TEST_PATH ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
 #-----------------------------------------------------------------------------
 # configure options
 #-----------------------------------------------------------------------------
-OPTION(VISIT_PARALLEL "Build VisIt's parallel compute engine." OFF)
-OPTION(VISIT_SLIVR    "Build VisIt with support for the SLIVR volume rendering library." ON)
-OPTION(VISIT_OSPRAY   "Build VisIt with support for the OSPRay volume rendering library." OFF)
-OPTION(VISIT_STATIC   "Build VisIt statically." OFF)
-IF(VISIT_STATIC)
-    ADD_DEFINITIONS(-DVISIT_STATIC)
-ENDIF(VISIT_STATIC)
-OPTION(VISIT_OSX_USE_RPATH      "Use rpath instead of executable_path while installing" OFF)
-OPTION(VISIT_PYTHON_SCRIPTING      "Build VisIt with Python scripting support." ON)
-OPTION(VISIT_PYTHON_FILTERS        "Build VisIt with Python Engine Filter support." ON)
-OPTION(VISIT_DDT      "Build VisIt with support for the DDT debugger." OFF)
-IF(VISIT_DDT)
-  ADD_DEFINITIONS(-DHAVE_DDT)
-ENDIF(VISIT_DDT)
+include("${VISIT_SOURCE_DIR}/CMake/VisItOptions.cmake")
 
-OPTION(VISIT_BUILD_ALL_PLUGINS     "Build all of VisIt's plugins." OFF)
-OPTION(VISIT_BUILD_MINIMAL_PLUGINS "Build a minimal set of VisIt's plugins." OFF)
-OPTION(VISIT_JAVA "Build the VisIt Java client interface" OFF)
-OPTION(VISIT_PARADIS "Build the VisIt paraDIS client interface" ON)
-OPTION(VISIT_SERVER_COMPONENTS_ONLY "Build only vcl, mdserver, engine and their plugins" OFF)
-OPTION(VISIT_ENGINE_ONLY "Build only the compute engine and its plugins" OFF)
-OPTION(VISIT_DBIO_ONLY "Build only visitconvert and engine plugins" OFF)
-# If we're doing DBIO_ONLY then compile all sources with this flag so we don't
-# ever have to do things like include visit-config.h to get it.
-IF(VISIT_DBIO_ONLY)
-    ADD_DEFINITIONS(-DDBIO_ONLY)
-ENDIF(VISIT_DBIO_ONLY)
-OPTION(VISIT_DISABLE_SELECT "Disable use of the select() function" OFF)
-OPTION(VISIT_USE_NOSPIN_BCAST "Use VisIt's no-spin Bcast in parallel" ON)
-OPTION(VISIT_INSTALL_THIRD_PARTY "Install VisIt's 3rd party I/O libs and includes to permit plugin development" OFF)
-OPTION(VISIT_NOLINK_MPI_WITH_LIBRARIES "Do not link MPI with VisIt's parallel shared libraries; just with executables" OFF)
-OPTION(VISIT_CREATE_SOCKET_RELAY_EXECUTABLE "Create a separate executable that forwards VisIt's socket connection between engine and component launcher" ON)
-OPTION(VISIT_RPATH_RELATIVE_TO_EXECUTABLE_PATH "Install rpath relative to executable location using \$ORIGIN tag" OFF)
-OPTION(VISIT_FORTRAN "Enable compilation of Fortran example progams" OFF)
+# Set up placeholders for package vars: XXX_DIR
+foreach(pkg ADIOS ADIOS2 ADIOS2_PAR ADVIO BLOSC BOOST BOXLIB CFITSIO CGNS
+            CONDUIT DAMARIS EMBREE FMS GDAL GFORTRAN HDF5 HDF5_MPI H5PART ICET
+            ISPC JPEG LLVM MDSPLUS MFEM MILI MOAB MOAB_MPI NEKTAR++ NETCDF
+            OPENGL OPENEXR OSPRAY PIDX PYSIDE PYTHON QT QWT SILO SZIP TBB
+            UINTAH VTK VTKM XDMF XSD ZLIB)
+    VISIT_3RDPARTY_DIR(${pkg})
+endforeach()
 
-OPTION(IGNORE_THIRD_PARTY_LIB_PROBLEMS "Ignore problems finding requested third party libraries")
-OPTION(VISIT_FORCE_SSH_TUNNELING "Force ssh tunnelling for sockets" OFF)
-OPTION(VISIT_CREATE_APPBUNDLE_PACKAGE "Create DMG file with Mac App bundle with make package" OFF)
-IF(WIN32)
-  OPTION(VISIT_MESA_REPLACE_OPENGL "Use mesa as a drop-in replacment for opengl when system opengl is insufficient." OFF)
-  OPTION(VISIT_MAKE_NSIS_INSTALLER "Create an installer package using NSIS" OFF)
-  OPTION(VISIT_WINDOWS_APPLICATION "Create Windows-style applications with no console" ON)
-  IF(VISIT_WINDOWS_APPLICATION)
-      SET(VISIT_APPLICATION_STYLE "WIN32")
-  ENDIF(VISIT_WINDOWS_APPLICATION)
-ENDIF(WIN32)
+if(NOT WIN32)
+  VISIT_3RDPARTY_DIR(MESAGL)
+  VISIT_3RDPARTY_DIR(OSMESA)
+endif()
 
-OPTION(VISIT_CREATE_XMLTOOLS_GEN_TARGETS "Create cmake targets to run xmltools code gen targets" ON)
-OPTION(VISIT_INSTALL_AS_BETA "Install as beta (symlink beta instead of current to installed version)." OFF)
-OPTION(VISIT_MPICH_INSTALL "Install MPICH into VisIt binary distribution" OFF)
-IF(APPLE OR WIN32)
-    OPTION(VISIT_USE_X "Use X11" OFF)
-ELSE(APPLE OR WIN32)
-    OPTION(VISIT_USE_X "Use X11" ON)
-ENDIF(APPLE OR WIN32)
+# Set up placeholders for package vars: XXX_LIBDEP
+foreach(pkg CGNS CONDUIT FMS HDF5 HDF5_MPI H5PART MFEM NEKTAR++ NETCDF
+            SILO XDMF)
+    VISIT_3RDPARTY_LIBDEP(${pkg})
+endforeach()
 
-OPTION(VISIT_THREAD "Build VisIt with thread support." OFF)
 
-# some options that when turned off reduce the build targets
-OPTION(VISIT_ENABLE_ANNOTATION_TOOLS "Enable generation of annotation tools (text2polys, time_annotation)" ON)
-OPTION(VISIT_ENABLE_DATAGEN "Enable generation of sample data files" ON)
-OPTION(VISIT_ENABLE_DATA_MANUAL_EXAMPLES "Build Getting Data Into VisIt examples" OFF)
-OPTION(VISIT_ENABLE_DIAGNOSTICS  "Enable building of diagnostices" ON)
-OPTION(VISIT_ENABLE_EXAMPLES  "Enable building of examples" ON)
-OPTION(VISIT_ENABLE_LIBSIM "Enable building of libsim." ON)
-OPTION(VISIT_ENABLE_MANUALS  "Enable building of manuals (requires python3)" ON)
-OPTION(VISIT_ENABLE_SILO_TOOLS "Enable building of silo tools (mrgtree2dot, add_visit_searchpath)" ON)
-OPTION(VISIT_ENABLE_UNIT_TESTS "Enable building of unit tests (like MRUCache_test, StringHelpers_test)" ON)
-OPTION(VISIT_ENABLE_XDB "Enable Intelligent Light XDB database plugin." OFF) # OFF for now
+# Set up placeholders for package vars: XXX_INCDEP
+VISIT_3RDPARTY_INCDEP(MFEM)
 
-SET(VISIT_INSTALL_PROFILES_TO_HOSTS "" CACHE STRING "Install specified host profiles (no action if empty)." )
-SET(VISIT_DEFAULT_SILO_DRIVER "PDB" CACHE STRING "Default driver for generating silo data. Valid values are PDB, HDF5 or empty. An empty value means driver can be specified via make on the command line." )
-
-# flag to turn on preprocessor errors related to obsolete code.
-OPTION(VISIT_REMOVE_OBSOLETE_CODE "Enable compiler errors for removal of oboslete code." OFF)
-
-MACRO(VISIT_3RDPARTY_VAR libvar comment)
-    set(cache_type ${ARGN})
-    if(NOT cache_type)
-        set(cache_type "PATH")
-    endif()
-    IF(NOT DEFINED VISIT_${libvar})
-        # Create an empty entry for this path variable
-        SET(VISIT_${libvar} "" CACHE ${cache_type} "${comment}")
-    ELSE(NOT DEFINED VISIT_${libvar})
-        IF(DEFINED ${libvar})
-            # Ensure VISIT_FOO_DIR=FOO_DIR (override from CL)
-            SET(VISIT_${libvar} ${${libvar}} CACHE ${cache_type} "${comment}" FORCE)
-        ELSE(DEFINED ${libvar})
-            # Set FOO_DIR=VISIT_FOO_DIR (default from config-site file)
-            SET(${libvar} ${VISIT_${libvar}})
-        ENDIF(DEFINED ${libvar})
-    ENDIF(NOT DEFINED VISIT_${libvar})
-ENDMACRO(VISIT_3RDPARTY_VAR libvar comment)
-
-MACRO(VISIT_3RDPARTY_DEP libvar comment)
-    VISIT_3RDPARTY_VAR(${libvar} ${comment} "STRING")
-ENDMACRO(VISIT_3RDPARTY_DEP libvar comment)
-
-# Define options that let us pick our standard libraries: VTK,Mesa,Qt,Python
-# and so on.
-VISIT_3RDPARTY_VAR(VTK_DIR    "Path containing the VTK library's bin and lib")
-VISIT_3RDPARTY_VAR(QT_DIR     "Path containing the Qt library's bin and lib")
-VISIT_3RDPARTY_VAR(QWT_DIR    "Path containing the Qwt library's include and lib")
-VISIT_3RDPARTY_VAR(PYTHON_DIR "Path containing the Python library's include and lib")
-IF (NOT WIN32)
-  VISIT_3RDPARTY_VAR(MESAGL_DIR   "Path containing the Mesa GL library's include and lib")
-  VISIT_3RDPARTY_VAR(OSMESA_DIR   "Path containing the OSMesa library's include and lib")
-ENDIF (NOT WIN32)
-VISIT_3RDPARTY_VAR(ICET_DIR   "Path containing the Ice-T library's include and lib")
-
-# Libraries some third-parties are dependent upon
-VISIT_3RDPARTY_VAR(JPEG_DIR   "Path containing the jpeg library's include and lib")
-VISIT_3RDPARTY_VAR(SZIP_DIR   "Path containing the szip library's include and lib")
-
-# Define the options that let us pick I/O library installation locations. When
-# the library option is defined then we also define the variable name passed as
-# the 3rd argument. That variable is what is used in our various Find routines.
-#
-# Note: Define LIBDEP ONLY for libs a plugin is INdirectly dependent on (e.g.
-#       needs to link but not to compile). Use the plugin's .xml file for
-#       libs a plugin is DIRECTLY dependent on (e.g. needs to both compile
-#       and link).
-#
-# _MPI_ variables are needed *only* for TPLs that support *both* serial and mpi
-# parallel variants. Otherwise, the TPL is assumed to be either serial only or parallel
-# only and not require separate varibles for both serial and MPI parallel variants.
-#
-VISIT_3RDPARTY_VAR(ADIOS_DIR     "Path containing the ADIOS library's include and lib")
-VISIT_3RDPARTY_VAR(ADIOS2_DIR     "Path containing the ADIOS library's include and lib")
-VISIT_3RDPARTY_VAR(ADIOS2_PAR_DIR "Path containing the ADIOS MPI library's include and lib")
-VISIT_3RDPARTY_VAR(ADVIO_DIR     "Path containing the AdvIO library's include and lib")
-VISIT_3RDPARTY_VAR(BLOSC_DIR     "Path containing the Blosc library's include and lib")
-VISIT_3RDPARTY_VAR(BOOST_DIR     "Path containing the BOOST library's include and lib")
-VISIT_3RDPARTY_VAR(BOXLIB_DIR    "Path containing the Boxlib library's include and lib")
-VISIT_3RDPARTY_VAR(CFITSIO_DIR   "Path containing the CFITSIO library's include and lib")
-VISIT_3RDPARTY_VAR(CGNS_DIR      "Path containing the CGNS library's include and lib")
-VISIT_3RDPARTY_DEP(CGNS_LIBDEP   "CGNS library dependencies")
-VISIT_3RDPARTY_VAR(CONDUIT_DIR   "Path containing the Conduit library's include and lib")
-VISIT_3RDPARTY_DEP(CONDUIT_LIBDEP "Conduit library dependencies")
-VISIT_3RDPARTY_VAR(DAMARIS_DIR   "Path containing the Damaris library's include and lib")
-VISIT_3RDPARTY_VAR(FMS_DIR       "Path containing the FMS library's include and lib")
-VISIT_3RDPARTY_DEP(FMS_LIBDEP    "FMS library dependencies")
-VISIT_3RDPARTY_VAR(GDAL_DIR      "Path containing the GDAL library's include and lib")
-VISIT_3RDPARTY_VAR(GFORTRAN_DIR  "Path containing the GFortran library's include and lib")
-VISIT_3RDPARTY_VAR(HDF5_DIR      "Path containing the HDF5 library's include and lib")
-VISIT_3RDPARTY_DEP(HDF5_LIBDEP   "HDF5 library dependencies")
-VISIT_3RDPARTY_VAR(HDF5_MPI_DIR  "Path containing the parallel HDF5 library's include and lib")
-VISIT_3RDPARTY_DEP(HDF5_MPI_LIBDEP "HDF5 parallel library dependencies")
-VISIT_3RDPARTY_VAR(H5PART_DIR    "Path containing the H5Part library's include and lib")
-VISIT_3RDPARTY_DEP(H5PART_LIBDEP "H5Part library dependencies")
-VISIT_3RDPARTY_VAR(LLVM_DIR      "Path containing the LLVM library's include and lib")
-VISIT_3RDPARTY_VAR(MFEM_DIR      "Path containing the mfem library's include and lib")
-VISIT_3RDPARTY_DEP(MFEM_INCDEP   "MFEM include dependencies")
-VISIT_3RDPARTY_DEP(MFEM_LIBDEP   "MFEM library dependencies")
-VISIT_3RDPARTY_VAR(MILI_DIR      "Path containing the Mili library's include and lib")
-VISIT_3RDPARTY_VAR(NEKTAR++_DIR  "Path containing the Nektar++ library's include and lib")
-VISIT_3RDPARTY_DEP(NEKTAR++_LIBDEP "Nektar++ library dependencies")
-VISIT_3RDPARTY_VAR(OPENGL_DIR    "Path containing the OpenGL library's include and lib")
+# Set up placeholders misc pkg vars
 VISIT_3RDPARTY_VAR(OPENGL_LIBRARY "Path to OpenGL lib")
 VISIT_3RDPARTY_VAR(GLU_LIBRARY "Path to GLU lib")
-VISIT_3RDPARTY_VAR(OPENEXR_DIR   "Path containing the OpenEXR library's include and lib")
-VISIT_3RDPARTY_VAR(NETCDF_DIR    "Path containing the NETCDF library's include and lib")
-VISIT_3RDPARTY_DEP(NETCDF_LIBDEP "NETCDF library dependencies")
-VISIT_3RDPARTY_VAR(PYSIDE_DIR    "Path containing the PySide installation")
-VISIT_3RDPARTY_VAR(SILO_DIR      "Path containing the Silo library's include and lib")
-VISIT_3RDPARTY_DEP(SILO_LIBDEP   "Silo library dependencies")
-VISIT_3RDPARTY_VAR(UINTAH_DIR    "Path containing the Uintah library's include and lib")
-VISIT_3RDPARTY_VAR(PIDX_DIR      "Path containing the PIDX library's include and lib")
-VISIT_3RDPARTY_VAR(VTKM_DIR      "Path containing the VTKm library's include and lib")
-VISIT_3RDPARTY_VAR(XDMF_DIR      "Path containing the Xdmf library's include and lib")
-VISIT_3RDPARTY_DEP(XDMF_LIBDEP   "Xdmf library dependencies")
-VISIT_3RDPARTY_VAR(XERCESC_DIR   "Path containing the Xerces-C library's include and lib")
-VISIT_3RDPARTY_VAR(XSD_DIR       "Path containing the XSD library's include and lib")
-VISIT_3RDPARTY_VAR(MDSPLUS_DIR   "Path containing the MDSplus library's include and lib")
-VISIT_3RDPARTY_VAR(ZLIB_DIR      "Path containing the zlib library's include and lib")
-VISIT_3RDPARTY_VAR(MOAB_DIR      "Path containing the MOAB library's include and lib")
-VISIT_3RDPARTY_VAR(MOAB_MPI_DIR  "Path containing the parallel MOAB library's include and lib")
 
-VISIT_3RDPARTY_VAR(OSPRAY_DIR    "Path containing the OSPRay library's include and lib")
-VISIT_3RDPARTY_VAR(EMBREE_DIR    "Path containing the embree library's include and lib")
-VISIT_3RDPARTY_VAR(ISPC_DIR      "Path containing the ISPC library's include and lib")
-# Note by Qi
-# should we change TBB_ROOT to TBB_DIR ?
-VISIT_3RDPARTY_VAR(TBB_ROOT      "Path containing the TBB library's include and lib")
 
 #-----------------------------------------------------------------------------
 # Read the version
@@ -1124,42 +934,6 @@ IF(BUILD_CTEST_TESTING)
     SUBDIRS(${VISIT_TEST_DIR})
 ENDIF()
 
-MACRO(VISIT_INSTALL_TARGETS_RELATIVE dest_dir)
-    IF(VISIT_STATIC)
-        # Skip installation of static libraries when we build statically
-        FOREACH(T ${ARGN})
-            GET_TARGET_PROPERTY(pType ${T} TYPE)
-            IF(NOT ${pType} STREQUAL "STATIC_LIBRARY")
-                INSTALL(TARGETS ${T}
-                    RUNTIME DESTINATION ${VISIT_INSTALLED_VERSION_BIN}/${dest_dir}
-                    BUNDLE  DESTINATION ${VISIT_INSTALLED_VERSION_BIN}/${dest_dir}
-                    LIBRARY DESTINATION ${VISIT_INSTALLED_VERSION_LIB}/${dest_dir}
-                    ARCHIVE DESTINATION ${VISIT_INSTALLED_VERSION_ARCHIVES}/${dest_dir}
-                    PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
-                                GROUP_READ GROUP_WRITE GROUP_EXECUTE
-                                WORLD_READ             WORLD_EXECUTE
-                    CONFIGURATIONS "" None Debug Release RelWithDebInfo MinSizeRel
-                )
-            ENDIF(NOT ${pType} STREQUAL "STATIC_LIBRARY")
-        ENDFOREACH(T)
-    ELSE(VISIT_STATIC)
-        INSTALL(TARGETS ${ARGN}
-            RUNTIME DESTINATION ${VISIT_INSTALLED_VERSION_BIN}/${dest_dir}
-            BUNDLE  DESTINATION ${VISIT_INSTALLED_VERSION_BIN}/${dest_dir}
-            LIBRARY DESTINATION ${VISIT_INSTALLED_VERSION_LIB}/${dest_dir}
-            ARCHIVE DESTINATION ${VISIT_INSTALLED_VERSION_ARCHIVES}/${dest_dir}
-            PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
-                        GROUP_READ GROUP_WRITE GROUP_EXECUTE
-                        WORLD_READ             WORLD_EXECUTE
-            CONFIGURATIONS "" None Debug Release RelWithDebInfo MinSizeRel
-        )
-    ENDIF(VISIT_STATIC)
-ENDMACRO(VISIT_INSTALL_TARGETS_RELATIVE)
-
-MACRO(VISIT_INSTALL_TARGETS)
-    VISIT_INSTALL_TARGETS_RELATIVE("" ${ARGN})
-ENDMACRO(VISIT_INSTALL_TARGETS)
-
 # Install the headers for directories that we need in order to build plugins
 IF(VISIT_HEADERS_SKIP_INSTALL)
     MESSAGE(STATUS "Skipping VisIt headers installation")
@@ -1268,302 +1042,17 @@ IF(VISIT_FORTRAN)
     ENABLE_LANGUAGE(Fortran)
 ENDIF(VISIT_FORTRAN)
 
-FUNCTION(DETECT_MPI_SETTINGS COMP mlibs mflags mlflags mrpath)
-    # Unset any variables that may have been set before by FindMPI
-    UNSET(MPI_FOUND CACHE)
-    UNSET(MPI_INCLUDE_PATH CACHE)
-    UNSET(MPI_LIB CACHE)
-    UNSET(MPI_COMPILE_FLAGS CACHE)
-    UNSET(MPI_LIBRARIES CACHE)
-    UNSET(MPI_LIBRARY CACHE)
-    UNSET(MPI_EXTRA_LIBRARY CACHE)
-    UNSET(MPI_LINK_FLAGS CACHE)
-    UNSET(MPI_COMPILER CACHE)
-    UNSET(MPI_RPATH CACHE)
-
-    # Set the compiler and call FindMPI
-    SET(MPI_COMPILER ${COMP})
-    INCLUDE(${CMAKE_ROOT}/Modules/FindMPI.cmake)
-
-    # Return the values
-    IF(NOT MPI_FOUND)
-        MESSAGE(FATAL_ERROR  "Failed to setup MPI using compiler wrapper: ${COMP}")
-    ELSE(NOT MPI_FOUND)
-        # Take the MPI include path and split it into -I's
-        SET(MPI_INCLUDE_PATH_CONV "")
-        FOREACH(I ${MPI_INCLUDE_PATH})
-            SET(MPI_INCLUDE_PATH_CONV "${MPI_INCLUDE_PATH_CONV} -I${I}")
-        ENDFOREACH(I)
-
-        SET(${mlibs}   ${MPI_LIBRARIES} CACHE STRING "MPI libraries")
-        SET(${mflags}  "-DPARALLEL -DMPICH_IGNORE_CXX_SEEK ${MPI_INCLUDE_PATH_CONV} ${MPI_COMPILE_FLAGS}" CACHE STRING "Parallel compiler flags")
-        SET(${mlflags} "${MPI_LINK_FLAGS}" CACHE STRING "Parallel linker flags")
-
-        #
-        # Detect all mpi library paths, we need these to keep the RPATH intact
-        # for installs that link to MPI.
-        #
-        SET(MPI_RPATH "")
-        FOREACH(MLIB ${MPI_LIBRARIES})
-            GET_FILENAME_COMPONENT(MLIB_PATH ${MLIB} PATH)
-            # make sure it is not an implicit path - we need to skip these
-            LIST(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${MLIB_PATH}" pidx)
-            IF("${pidx}" EQUAL -1)
-                LIST(APPEND MPI_RPATH ${MLIB_PATH})
-            ENDIF()
-        ENDFOREACH(MLIB ${MPI_LIBRARIES})
-        LIST(REMOVE_DUPLICATES MPI_RPATH)
-        SET(${mrpath} "${MPI_RPATH}" CACHE STRING "Parallel rpath(s)")
-
-    ENDIF(NOT MPI_FOUND)
-ENDFUNCTION(DETECT_MPI_SETTINGS)
-
 IF(VISIT_PARALLEL)
-    IF(WIN32)
-        SET(VPFLAGS "PARALLEL MPICH_IGNORE_CXX_SEEK MPICH_SKIP_MPICXX OMPI_SKIP_MPICXX MPI_NO_CPPBIND")
-    ELSE(WIN32)
-        SET(VPFLAGS "-DPARALLEL -DMPICH_IGNORE_CXX_SEEK -DMPICH_SKIP_MPICXX -DOMPI_SKIP_MPICXX -DMPI_NO_CPPBIND")
-    ENDIF(WIN32)
-    IF(VISIT_MPI_COMPILER)
-        MESSAGE(STATUS "Setting up MPI using compiler wrapper")
-
-        # Detect the MPI settings that C++ wants
-        DETECT_MPI_SETTINGS(${VISIT_MPI_COMPILER}
-            VISIT_PARALLEL_LIBS
-            VISIT_PARALLEL_CFLAGS
-            VISIT_PARALLEL_LINKER_FLAGS
-            VISIT_PARALLEL_RPATH
-        )
-        SET(VISIT_PARALLEL_CXXFLAGS ${VISIT_PARALLEL_CFLAGS} CACHE STRING "Parallel CXXFLAGS")
-        SET(VISIT_PARALLEL_CFLAGS "${VPFLAGS} ${VISIT_PARALLEL_CFLAGS}")
-        SET(VISIT_PARALLEL_CXXFLAGS "${VPFLAGS} ${VISIT_PARALLEL_CXXFLAGS}")
-
-        # Detect the MPI settings that Fortran wants
-        IF(VISIT_FORTRAN AND VISIT_MPI_FORTRAN_COMPILER)
-            DETECT_MPI_SETTINGS(${VISIT_MPI_FORTRAN_COMPILER}
-                VISIT_PARALLEL_FORTRAN_LIBS
-                VISIT_PARALLEL_FORTRAN_FLAGS
-                VISIT_PARALLEL_FORTRAN_LINKER_FLAGS
-                VISIT_PARALLEL_RPATH
-            )
-            SET(VISIT_PARALLEL_FORTRAN_FLAGS "${VPFLAGS} ${VISIT_PARALLEL_FORTRAN_FLAGS}")
-        ENDIF(VISIT_FORTRAN AND VISIT_MPI_FORTRAN_COMPILER)
-
-    ELSE(VISIT_MPI_COMPILER)
-        IF(VISIT_MPI_LIBS OR VISIT_MPI_FORTRAN_LIBS)
-            MESSAGE(STATUS "Setting up MPI using user defined flags")
-            SET(VISIT_PARALLEL_LIBS          ${VISIT_MPI_LIBS}
-                CACHE STRING "MPI libraries")
-            SET(VISIT_PARALLEL_FORTRAN_LIBS  ${VISIT_MPI_FORTRAN_LIBS}
-                CACHE STRING "MPI libraries for Fortran")
-
-            IF(VISIT_MPI_C_FLAGS)
-                SET(VISIT_PARALLEL_CFLAGS  " ${VPFLAGS} ${VISIT_MPI_C_FLAGS}"
-                    CACHE STRING "Parallel CFLAGS")
-            ELSE(VISIT_MPI_C_FLAGS)
-                SET(VISIT_PARALLEL_CFLAGS  "${VPFLAGS}"
-                    CACHE STRING "Parallel CFLAGS")
-            ENDIF(VISIT_MPI_C_FLAGS)
-
-            IF(VISIT_MPI_CXX_FLAGS)
-                SET(VISIT_PARALLEL_CXXFLAGS "${VPFLAGS} ${VISIT_MPI_CXX_FLAGS}"
-                    CACHE STRING "Parallel CXXFLAGS")
-            ELSE(VISIT_MPI_CXX_FLAGS)
-                SET(VISIT_PARALLEL_CXXFLAGS  "${VPFLAGS}"
-                    CACHE STRING "Parallel CXXFLAGS")
-            ENDIF(VISIT_MPI_CXX_FLAGS)
-
-            IF(VISIT_MPI_FORTRAN_FLAGS)
-                SET(VISIT_PARALLEL_FORTRAN_FLAGS "${VPFLAGS} ${VISIT_MPI_FORTRAN_FLAGS}"
-                    CACHE STRING "Parallel Fortran flags")
-            ELSE(VISIT_MPI_FORTRAN_FLAGS)
-                SET(VISIT_PARALLEL_FORTRAN_FLAGS  "${VPFLAGS}"
-                    CACHE STRING "Parallel flags for Fortran")
-            ENDIF(VISIT_MPI_FORTRAN_FLAGS)
-
-            IF(VISIT_MPI_LD_FLAGS)
-                SET(VISIT_PARALLEL_LINKER_FLAGS "${VISIT_MPI_LD_FLAGS}"
-                    CACHE STRING "Parallel LDFLAGS")
-                SET(VISIT_PARALLEL_FORTRAN_LINKER_FLAGS "${VISIT_MPI_LD_FLAGS}"
-                    CACHE STRING "Parallel LDFLAGS")
-            ELSE(VISIT_MPI_LD_FLAGS)
-                SET(VISIT_PARALLEL_LINKER_FLAGS ""
-                    CACHE STRING "Parallel LDFLAGS")
-                SET(VISIT_PARALLEL_FORTRAN_LINKER_FLAGS ""
-                    CACHE STRING "Parallel LDFLAGS")
-            ENDIF(VISIT_MPI_LD_FLAGS)
-        ELSE(VISIT_MPI_LIBS OR VISIT_MPI_FORTRAN_LIBS)
-            IF(WIN32)
-              IF(NOT MPI_FOUND)
-                INCLUDE(${CMAKE_ROOT}/Modules/FindMPI.cmake)
-                IF(MPI_FOUND)
-                  STRING(REPLACE " " ";" VPFLAGS "${VPFLAGS}")
-                  SET(VISIT_PARALLEL_DEFS "${VPFLAGS}"
-                      CACHE STRING "parallel defines")
-                  SET(VISIT_PARALLEL_LIBS "${MPI_LIBRARY}"
-                      CACHE STRING "MPI libraries")
-                  SET(VISIT_PARALLEL_INCLUDE "${MPI_INCLUDE_PATH}"
-                      CACHE STRING "MPI include dir")
-                  IF(MPI_EXTRA_LIBRARY)
-                       LIST(APPEND VISIT_PARALLEL_LIBS "${MPI_EXTRA_LIBRARY}")
-                  ENDIF(MPI_EXTRA_LIBRARY)
-
-                  IF(MPI_COMPILE_FLAGS)
-                      SET(VISIT_PARALLEL_CFLAGS "${MPI_COMPILE_FLAGS}"
-                          CACHE STRING "Parallel CFLAGS")
-                      SET(VISIT_PARALLEL_CXXFLAGS "${MPI_COMPILE_FLAGS}"
-                          CACHE STRING "Parallel CXXFLAGS")
-                  ENDIF(MPI_COMPILE_FLAGS)
-                  IF(MPI_LINK_FLAGS)
-                      SET(VISIT_PARALLEL_LINKER_FLAGS "${MPI_LINK_FLAGS}"
-                          CACHE STRING "Parallel LDFLAGS")
-                  ENDIF(MPI_LINK_FLAGS)
-                  find_file(HAVE_HPC_SCHEDULER "Microsoft.Hpc.Scheduler.tlb")
-                ELSE(MPI_FOUND)
-                  MESSAGE(FATAL_ERROR "To build parallel VisIt, you must at a "
-                          "minimum define VISIT_MPI_COMPILER or VISIT_MPI_LIBS. "
-                          "You may also define VISIT_MPI_LD_FLAGS, "
-                          "VISIT_MPI_CXX_FLAGS." )
-                ENDIF(MPI_FOUND)
-              ENDIF(NOT MPI_FOUND)
-            ELSE(WIN32)
-                MESSAGE(FATAL_ERROR "To build parallel VisIt, you must at a "
-                        "minimum define VISIT_MPI_COMPILER or VISIT_MPI_LIBS. "
-                        "You may also define VISIT_MPI_LD_FLAGS, "
-                        "VISIT_MPI_CXX_FLAGS." )
-            ENDIF(WIN32)
-
-        ENDIF(VISIT_MPI_LIBS OR VISIT_MPI_FORTRAN_LIBS)
-        UNSET(VPFLAGS)
-    ENDIF(VISIT_MPI_COMPILER)
-
-    MESSAGE(STATUS "Parallel version of VisIt")
-    MESSAGE(STATUS "    VISIT_PARALLEL_CFLAGS = ${VISIT_PARALLEL_CFLAGS}")
-    MESSAGE(STATUS "    VISIT_PARALLEL_CXXFLAGS = ${VISIT_PARALLEL_CXXFLAGS}")
-    MESSAGE(STATUS "    VISIT_PARALLEL_LINKER_FLAGS = ${VISIT_PARALLEL_LINKER_FLAGS}")
-    MESSAGE(STATUS "    VISIT_PARALLEL_LIBS = ${VISIT_PARALLEL_LIBS}")
-    MESSAGE(STATUS "    VISIT_PARALLEL_RPATH = ${VISIT_PARALLEL_RPATH}")
-    MESSAGE(STATUS "    VISIT_PARALLEL_DEFS = ${VISIT_PARALLEL_DEFS}")
-    MESSAGE(STATUS "    VISIT_PARALLEL_INCLUDE = ${VISIT_PARALLEL_INCLUDE}")
-
-    IF(VISIT_FORTRAN AND VISIT_PARALLEL_FORTRAN_LIBS)
-        MESSAGE(STATUS "")
-        MESSAGE(STATUS "    VISIT_PARALLEL_FORTRAN_FLAGS = ${VISIT_PARALLEL_FORTRAN_FLAGS}")
-        MESSAGE(STATUS "    VISIT_PARALLEL_FORTRAN_LINKER_FLAGS = ${VISIT_PARALLEL_FORTRAN_LINKER_FLAGS}")
-        MESSAGE(STATUS "    VISIT_PARALLEL_FORTRAN_LIBS = ${VISIT_PARALLEL_FORTRAN_LIBS}")
-    ENDIF(VISIT_FORTRAN AND VISIT_PARALLEL_FORTRAN_LIBS)
-ELSE(VISIT_PARALLEL)
-    MESSAGE(STATUS "Serial version of VisIt")
-ENDIF(VISIT_PARALLEL)
-
-FUNCTION(ADD_PARALLEL_EXECUTABLE target)
-    ADD_EXECUTABLE(${target} ${ARGN})
-
-    IF(UNIX)
-      IF(VISIT_PARALLEL_CXXFLAGS)
-        SET(PAR_COMPILE_FLAGS "")
-        FOREACH(X ${VISIT_PARALLEL_CXXFLAGS})
-            SET(PAR_COMPILE_FLAGS "${PAR_COMPILE_FLAGS} ${X}")
-        ENDFOREACH(X)
-        SET_TARGET_PROPERTIES(${target} PROPERTIES
-            COMPILE_FLAGS ${PAR_COMPILE_FLAGS}
-        )
-
-        IF(VISIT_PARALLEL_LINKER_FLAGS)
-            SET(PAR_LINK_FLAGS "")
-            FOREACH(X ${VISIT_PARALLEL_LINKER_FLAGS})
-                SET(PAR_LINK_FLAGS "${PAR_LINK_FLAGS} ${X}")
-            ENDFOREACH(X)
-            SET_TARGET_PROPERTIES(${target} PROPERTIES
-                LINK_FLAGS ${PAR_LINK_FLAGS}
-            )
-        ENDIF(VISIT_PARALLEL_LINKER_FLAGS)
-
-        IF(VISIT_PARALLEL_RPATH)
-            SET(PAR_RPATHS "")
-            FOREACH(X ${CMAKE_INSTALL_RPATH})
-                SET(PAR_RPATHS "${PAR_RPATHS} ${X}")
-            ENDFOREACH(X)
-            FOREACH(X ${VISIT_PARALLEL_RPATH})
-                SET(PAR_RPATHS "${PAR_RPATHS} ${X}")
-            ENDFOREACH(X)
-            SET_TARGET_PROPERTIES(${target} PROPERTIES
-                INSTALL_RPATH ${PAR_RPATHS}
-            )
-        ENDIF(VISIT_PARALLEL_RPATH)
-      ENDIF(VISIT_PARALLEL_CXXFLAGS)
-    ELSE(UNIX)
-          ADD_TARGET_INCLUDE(${target} ${VISIT_PARALLEL_INCLUDE})
-          ADD_TARGET_DEFINITIONS(${target} ${VISIT_PARALLEL_DEFS})
-          TARGET_LINK_LIBRARIES(${target} ${VISIT_PARALLEL_LIBS})
-    ENDIF(UNIX)
-
-    # If we're on doing this "nolink mpi" option, we rely on the
-    # PARALLEL_TARGET_LINK_LIBRARIES function to actually link the
-    # target with MPI.
-    IF(NOT VISIT_NOLINK_MPI_WITH_LIBRARIES) # This is a new if test
-        TARGET_LINK_LIBRARIES(${target} ${VISIT_EXE_LINKER_FLAGS} ${VISIT_PARALLEL_LIBS})
-    ENDIF(NOT VISIT_NOLINK_MPI_WITH_LIBRARIES)
-ENDFUNCTION(ADD_PARALLEL_EXECUTABLE)
-
-FUNCTION(ADD_PARALLEL_FORTRAN_EXECUTABLE target)
-    ADD_EXECUTABLE(${target} ${ARGN})
-    IF(VISIT_PARALLEL_FORTRAN_FLAGS)
-        SET(PAR_COMPILE_FLAGS "")
-        FOREACH(X ${VISIT_PARALLEL_FORTRAN_FLAGS})
-            SET(PAR_COMPILE_FLAGS "${PAR_COMPILE_FLAGS} ${X}")
-        ENDFOREACH(X)
-        SET_TARGET_PROPERTIES(${target} PROPERTIES
-            COMPILE_FLAGS ${PAR_COMPILE_FLAGS}
-        )
-
-        IF(VISIT_PARALLEL_FORTRAN_LINKER_FLAGS)
-            SET(PAR_LINK_FLAGS "")
-            FOREACH (X ${VISIT_PARALLEL_FORTRAN_LINKER_FLAGS})
-                SET(PAR_LINK_FLAGS "${PAR_LINK_FLAGS} ${X}")
-            ENDFOREACH (X)
-            SET_TARGET_PROPERTIES(${target} PROPERTIES
-                LINK_FLAGS ${PAR_LINK_FLAGS}
-            )
-        IF(VISIT_PARALLEL_RPATH)
-            SET(PAR_RPATHS "")
-            FOREACH(X ${CMAKE_INSTALL_RPATH})
-                LIST(APPEND PAR_RPATHS ${X})
-            ENDFOREACH(X)
-            FOREACH(X ${VISIT_PARALLEL_RPATH})
-                LIST(APPEND PAR_RPATHS ${X})
-            ENDFOREACH(X)
-            SET_TARGET_PROPERTIES(${target} PROPERTIES
-                INSTALL_RPATH ${PAR_RPATHS}
-            )
-        ENDIF(VISIT_PARALLEL_RPATH)
-        ENDIF(VISIT_PARALLEL_FORTRAN_LINKER_FLAGS)
-        TARGET_LINK_LIBRARIES(${target} ${VISIT_EXE_LINKER_FLAGS} ${VISIT_PARALLEL_FORTRAN_LIBS})
-    ENDIF(VISIT_PARALLEL_FORTRAN_FLAGS)
-ENDFUNCTION(ADD_PARALLEL_FORTRAN_EXECUTABLE)
-
-FUNCTION(PARALLEL_EXECUTABLE_LINK_LIBRARIES target)
-    IF(VISIT_NOLINK_MPI_WITH_LIBRARIES)
-        TARGET_LINK_LIBRARIES(${target} ${ARGN} link_mpi_libs)
-    ELSE(VISIT_NOLINK_MPI_WITH_LIBRARIES)
-        IF(VISIT_STATIC)
-            TARGET_LINK_LIBRARIES(${target} ${ARGN} ${VISIT_PARALLEL_LIBS})
-        ELSE(VISIT_STATIC)
-            TARGET_LINK_LIBRARIES(${target} ${ARGN})
-        ENDIF(VISIT_STATIC)
-    ENDIF(VISIT_NOLINK_MPI_WITH_LIBRARIES)
-ENDFUNCTION(PARALLEL_EXECUTABLE_LINK_LIBRARIES)
+    include(${VISIT_SOURCE_DIR}/CMake/VisItParallel.cmake)
+    message(STATUS "PARALLEL version of VisIt")
+else()
+    message(STATUS "Serial version of VisIt")
+endif()
 
 SET(VISIT_INCLUDE_DIR ${VISIT_SOURCE_DIR}  CACHE INTERNAL "Path to VisIt's includes")
 
 # This include sets up vars that contains lists of include directories
 include(${VISIT_SOURCE_DIR}/CMake/VisItIncludeVars.cmake)
-
-# macros/defines needed by CMake/VisItMacros.cmake
-if (NOT DEFINED VISIT_REPLACE_DEBUG_FLAGS)
-  set(VISIT_REPLACE_DEBUG_FLAGS TRUE)
-endif ()
-
 
 # macros/defines needed by CMake/VisItMacros.cmake
 if (NOT DEFINED VISIT_REPLACE_DEBUG_FLAGS)

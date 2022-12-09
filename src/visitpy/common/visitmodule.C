@@ -312,6 +312,7 @@ public:
     void ClearError()
     {
         errorFlag = 0;
+        lastError = "";
     };
     int SetSuppressLevel(int newLevel)
     {
@@ -1808,17 +1809,24 @@ visit_GetDebugLevel(PyObject *self, PyObject *args)
 // Creation:   Fri Jul 26 12:15:57 PDT 2002
 //
 // Modifications:
+//   Mark C. Miller, Tue Dec  6 18:02:38 PST 2022
+//   Allow for option to clear the error after retrieving it.
 //
 // ****************************************************************************
 
 STATIC PyObject *
 visit_GetLastError(PyObject *self, PyObject *args)
 {
-    NO_ARGUMENTS();
-    const char *str = "";
-    if(messageObserver)
-        str = messageObserver->GetLastError().c_str();
-    return PyString_FromString(str);
+    int clear = 0;
+    std::string retval;
+    if (!PyArg_ParseTuple(args, "|i", &clear)) return NULL;
+    if (messageObserver)
+    {
+        retval = messageObserver->GetLastError();
+        if (clear != 0)
+            messageObserver->ClearError();
+    }
+    return PyString_FromString(retval.c_str());
 }
 
 // ****************************************************************************

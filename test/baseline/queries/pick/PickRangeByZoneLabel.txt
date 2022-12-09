@@ -4,10 +4,10 @@
       "OriginalZoneLabels": "shell 4",
       "filename": "d3samp6.plt.mili",
       "incident_nodes": [
-        54,
+        53,
+        12,
         13,
-        14,
-        55
+        54
       ],
       "pick_letter": "shell 4",
       "point": [
@@ -22,10 +22,10 @@
       "OriginalZoneLabels": "shell 4",
       "filename": "d3samp6.plt.mili",
       "incident_nodes": [
-        54,
+        53,
+        12,
         13,
-        14,
-        55
+        54
       ],
       "pick_letter": "shell 4",
       "point": [
@@ -40,10 +40,10 @@
       "OriginalZoneLabels": "shell 4",
       "filename": "d3samp6.plt.mili",
       "incident_nodes": [
-        54,
+        53,
+        12,
         13,
-        14,
-        55
+        54
       ],
       "pick_letter": "shell 4",
       "point": [
@@ -60,10 +60,10 @@
       "OriginalZoneLabels": "shell 5",
       "filename": "d3samp6.plt.mili",
       "incident_nodes": [
-        51,
+        50,
+        54,
         55,
-        56,
-        52
+        51
       ],
       "pick_letter": "shell 5",
       "point": [
@@ -78,10 +78,10 @@
       "OriginalZoneLabels": "shell 5",
       "filename": "d3samp6.plt.mili",
       "incident_nodes": [
-        51,
+        50,
+        54,
         55,
-        56,
-        52
+        51
       ],
       "pick_letter": "shell 5",
       "point": [
@@ -96,10 +96,10 @@
       "OriginalZoneLabels": "shell 5",
       "filename": "d3samp6.plt.mili",
       "incident_nodes": [
-        51,
+        50,
+        54,
         55,
-        56,
-        52
+        51
       ],
       "pick_letter": "shell 5",
       "point": [
@@ -116,10 +116,10 @@
       "OriginalZoneLabels": "shell 9",
       "filename": "d3samp6.plt.mili",
       "incident_nodes": [
-        13,
+        12,
+        57,
         58,
-        59,
-        14
+        13
       ],
       "pick_letter": "shell 9",
       "point": [
@@ -134,10 +134,10 @@
       "OriginalZoneLabels": "shell 9",
       "filename": "d3samp6.plt.mili",
       "incident_nodes": [
-        13,
+        12,
+        57,
         58,
-        59,
-        14
+        13
       ],
       "pick_letter": "shell 9",
       "point": [
@@ -152,10 +152,10 @@
       "OriginalZoneLabels": "shell 9",
       "filename": "d3samp6.plt.mili",
       "incident_nodes": [
-        13,
+        12,
+        57,
         58,
-        59,
-        14
+        13
       ],
       "pick_letter": "shell 9",
       "point": [

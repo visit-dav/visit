@@ -3,6 +3,6 @@ shell 9:  sslide14ball_l.plt.mili  timestep 0
 mesh1 
 Point: <1.24833, 1, 0.755>
 Zone:  15
-Incident Nodes:  48  49  52  51  
+Incident Nodes:  47  48  51  50  
 OriginalZoneLabels:  <zonal> = shell 9
 

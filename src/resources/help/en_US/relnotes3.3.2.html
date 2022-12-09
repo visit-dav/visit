@@ -29,6 +29,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Fixed bug in Mili plugin where Green Lagrange strain was using incorrect initial coordintes.</li> 
   <li>Fixed a rare issue with the color table window that caused it to resize horizontally larger than the screen, causing buttons to be off the screen.</li>
   <li>Fixed bug preventing files with extension ".h5m" from being grouped with smart grouping turned on.</li>
+  <li>Pick now correctly does not use node origin.</li>
 </ul>
 
 <a name="Enhancements"></a>
@@ -39,6 +40,9 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>For Blueprint output types from the X Ray Image Query, a host of new metadata has been added, as well as imaging plane topologies.</li>
   <li>In the X Ray Image Query, users may optionally pass energy group bounds to the query, which will appear as part of the metadata in the Blueprint output types.</li>
   <li>In the X Ray Image Query, users may optionally pass the units for various input and output values through the query. These units will be propagated in the Blueprint output metadata.</li>
+  <li>The <code>GetLastError()</code> CLI method now accepts an optional integer argument indicating whether to clear out the last error message after retrieving it.</li>
+  <li>Added support to export PolyData with a single cell type to the Blueprint Database plugin writer.</li>
+  <li>The X Ray Image Query now outputs Blueprint meshes representing the rays used in the raytrace if a Blueprint output type is selected.</li>
 </ul>
 
 <a name="Dev_changes"></a>
