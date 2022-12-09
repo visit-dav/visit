@@ -298,6 +298,13 @@ struct AttributesObject
 //   Brad Whitlock, Fri Jan 18 15:00:41 PST 2008
 //   Added Information printing.
 //
+//   Mark C. Miller, Thu Dec  8 18:00:26 PST 2022
+//   Changed ClearError to ClearErrorFlag. Added ClearErrorMessage. It is
+//   not clear why both the flag and message are not cleared together
+//   but they never were in ClearError prior to this change and this
+//   allows the behavior to remain the same except when CLI caller really
+//   wants the last message cleared.
+//
 class VisItMessageObserver : public Observer
 {
 public:
@@ -309,9 +316,12 @@ public:
 
     virtual ~VisItMessageObserver() { };
 
-    void ClearError()
+    void ClearErrorFlag()
     {
         errorFlag = 0;
+    };
+    void ClearErrorMessage()
+    {
         lastError = "";
     };
     int SetSuppressLevel(int newLevel)
@@ -1824,7 +1834,7 @@ visit_GetLastError(PyObject *self, PyObject *args)
     {
         retval = messageObserver->GetLastError();
         if (clear != 0)
-            messageObserver->ClearError();
+            messageObserver->ClearErrorMessage();
     }
     return PyString_FromString(retval.c_str());
 }
@@ -20439,7 +20449,7 @@ Synchronize()
     const char *terminationMsg = "VisIt's viewer has terminated abnormally!";
 
     // Clear any error flag in the message observer.
-    messageObserver->ClearError();
+    messageObserver->ClearErrorFlag();
 
     // Return if the thread initialization failed.
     // or if viewer is embedded
