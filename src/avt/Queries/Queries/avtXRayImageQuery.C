@@ -91,47 +91,6 @@ inline bool outputTypeIsBlueprint(int otype)
         otype == BLUEPRINT_YAML_OUT;
 }
 
-// inline vector math functions
-
-inline void Cross(double result[3], const double v1[3], const double v2[3])
-{
-    result[0] = (v1[1] * v2[2]) - (v1[2] * v2[1]);
-    result[1] = (v1[2] * v2[0]) - (v1[0] * v2[2]);
-    result[2] = (v1[0] * v2[1]) - (v1[1] * v2[0]);
-}
-
-inline void Add(double result[3], const double v1[3], const double v2[3])
-{
-    result[0] = v1[0] + v2[0];
-    result[1] = v1[1] + v2[1];
-    result[2] = v1[2] + v2[2];
-}
-
-inline void Add3(double result[3], 
-                 const double v1[3], 
-                 const double v2[3], 
-                 const double v3[3])
-{
-    result[0] = v1[0] + v2[0] + v3[0];
-    result[1] = v1[1] + v2[1] + v3[1];
-    result[2] = v1[2] + v2[2] + v3[2];
-}
-
-inline void Scale(double result[3], const double v[3], const double s)
-{
-    result[0] = v[0] * s;
-    result[1] = v[1] * s;
-    result[2] = v[2] * s;
-}
-
-inline void Normalize(double result[3], const double v[3])
-{
-    double mag = sqrt(v[0] * v[0] + v[1] * v[1] + v[2] * v[2]);
-    result[0] = v[0] / mag;
-    result[1] = v[1] / mag;
-    result[2] = v[2] / mag;
-}
-
 // ****************************************************************************
 //  Method: avtXRayImageQuery::avtXRayImageQuery
 //
@@ -1660,27 +1619,32 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
                 data_out["state/xray_data/pathLengthMin"] = pl_min;
             }
 
-            // lower left corner, lower right corner, etc.
-            double llc_near[3], lrc_near[3], ulc_near[3], urc_near[3];
-            double llc_far[3], lrc_far[3], ulc_far[3], urc_far[3];
-            // "left" vector in planes
-            double left[3];
+            // lower left corner, lower right corner, etc. - for near, image, and far planes
+            avtVector llc_near,  lrc_near,  ulc_near,  urc_near;
+            avtVector llc_image, lrc_image, ulc_image, urc_image;
+            avtVector llc_far,   lrc_far,   ulc_far,   urc_far;
+            // plane center
+            avtVector center;
             // we will use the values to compute the rays to output for visualization
 
+            // calculate left vector by crossing normal with up vector
+            avtVector left = viewUp.cross(normal);
+
             // write near plane
-            double center[3], temp[3];
-            Scale(temp, normal, nearPlane);
-            Add(center, temp, focus);
-            WriteBlueprintImagingPlane(data_out, "near_plane", nearWidth, nearHeight, center, llc_near, lrc_near, ulc_near, urc_near, left);
+            center = nearPlane * normal + focus;
+            CalculateCorners(nearWidth, nearHeight, center, left, llc_near, lrc_near, ulc_near, urc_near);
+            WriteBlueprintImagingPlane(data_out, "near_plane", llc_near, lrc_near, ulc_near, urc_near);
 
             // write view plane
             // we send the "far" points here because we do not care what is written to them
-            WriteBlueprintImagingPlane(data_out, "view_plane", viewWidth, viewHeight, focus, llc_far, lrc_far, ulc_far, urc_far, left);
+            // we also send the focus vector as the center
+            CalculateCorners(viewWidth, viewHeight, focus, left, llc_image, lrc_image, ulc_image, urc_image);
+            WriteBlueprintImagingPlane(data_out, "view_plane", llc_image, lrc_image, ulc_image, urc_image);
 
             // write far plane
-            Scale(temp, normal, farPlane);
-            Add(center, temp, focus);
-            WriteBlueprintImagingPlane(data_out, "far_plane", farWidth, farHeight, center, llc_far, lrc_far, ulc_far, urc_far, left);
+            center = farPlane * normal + focus;
+            CalculateCorners(farWidth, farHeight, center, left, llc_far, lrc_far, ulc_far, urc_far);
+            WriteBlueprintImagingPlane(data_out, "far_plane", llc_far, lrc_far, ulc_far, urc_far);
 
             // RAY CORNERS
 
@@ -1693,16 +1657,15 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
             double *yvals_ray = data_out["coordsets/ray_corners_coords/values/y"].value();
             double *zvals_ray = data_out["coordsets/ray_corners_coords/values/z"].value();
                         
-            // set x values              // set y values              // set z values
-            xvals_ray[0] = llc_near[0];  yvals_ray[0] = llc_near[1];  zvals_ray[0] = llc_near[2];
-            xvals_ray[1] = lrc_near[0];  yvals_ray[1] = lrc_near[1];  zvals_ray[1] = lrc_near[2];
-            xvals_ray[2] = urc_near[0];  yvals_ray[2] = urc_near[1];  zvals_ray[2] = urc_near[2];
-            xvals_ray[3] = ulc_near[0];  yvals_ray[3] = ulc_near[1];  zvals_ray[3] = ulc_near[2];
-
-            xvals_ray[4] = llc_far[0];   yvals_ray[4] = llc_far[1];   zvals_ray[4] = llc_far[2];
-            xvals_ray[5] = lrc_far[0];   yvals_ray[5] = lrc_far[1];   zvals_ray[5] = lrc_far[2];
-            xvals_ray[6] = urc_far[0];   yvals_ray[6] = urc_far[1];   zvals_ray[6] = urc_far[2];
-            xvals_ray[7] = ulc_far[0];   yvals_ray[7] = ulc_far[1];   zvals_ray[7] = ulc_far[2];
+            // set x values             // set y values             // set z values
+            xvals_ray[0] = llc_near.x;  yvals_ray[0] = llc_near.y;  zvals_ray[0] = llc_near.z;
+            xvals_ray[1] = llc_far.x;   yvals_ray[1] = llc_far.y;   zvals_ray[1] = llc_far.z;
+            xvals_ray[2] = lrc_near.x;  yvals_ray[2] = lrc_near.y;  zvals_ray[2] = lrc_near.z;
+            xvals_ray[3] = lrc_far.x;   yvals_ray[3] = lrc_far.y;   zvals_ray[3] = lrc_far.z;
+            xvals_ray[4] = urc_near.x;  yvals_ray[4] = urc_near.y;  zvals_ray[4] = urc_near.z;
+            xvals_ray[5] = urc_far.x;   yvals_ray[5] = urc_far.y;   zvals_ray[5] = urc_far.z;
+            xvals_ray[6] = ulc_near.x;  yvals_ray[6] = ulc_near.y;  zvals_ray[6] = ulc_near.z;
+            xvals_ray[7] = ulc_far.x;   yvals_ray[7] = ulc_far.y;   zvals_ray[7] = ulc_far.z;
 
             // set up ray topo
             data_out["topologies/ray_corners_topo/type"] = "unstructured";
@@ -1710,14 +1673,7 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
             data_out["topologies/ray_corners_topo/elements/shape"] = "line";
             data_out["topologies/ray_corners_topo/elements/connectivity"].set(conduit::DataType::int32(8));
             int *conn = data_out["topologies/ray_corners_topo/elements/connectivity"].value();
-            conn[0] = 0;
-            conn[1] = 4;
-            conn[2] = 1;
-            conn[3] = 5;
-            conn[4] = 2;
-            conn[5] = 6;
-            conn[6] = 3;
-            conn[7] = 7;
+            for (int i = 0; i < 8; i ++) { conn[i] = i; }
 
             // set up ray trivial field
             data_out["fields/ray_corners_field/topology"] = "ray_corners_topo";
@@ -1742,7 +1698,7 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
             yvals_ray = data_out["coordsets/ray_coords/values/y"].value();
             zvals_ray = data_out["coordsets/ray_coords/values/z"].value();
 
-            double scaledunitleft[3], scaledunitup[3], lrc[3];
+            avtVector scaledunitleft, scaledunitup, lrc;
 
             for (int i = 0; i < 2; i ++)
             {
@@ -1751,27 +1707,22 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
                 {
                     dx = detectorWidth / nx;
                     dy = detectorHeight / ny;
-                    lrc[0] = lrc_near[0]; lrc[1] = lrc_near[1]; lrc[2] = lrc_near[2];
+                    lrc = lrc_near;
                 }
                 else // 2nd iteration is for the far plane
                 {
                     dx = farDetectorWidth / nx;
                     dy = farDetectorHeight / ny;
-                    lrc[0] = lrc_far[0]; lrc[1] = lrc_far[1]; lrc[2] = lrc_far[2];
+                    lrc = lrc_far;
                 }
-                Normalize(temp, left);
-                Scale(scaledunitleft, temp, dx);
-                Normalize(temp, viewUp);
-                Scale(scaledunitup, temp, dy);
+                scaledunitleft = dx * left.normalized();
+                scaledunitup   = dy * viewUp.normalized();
 
                 for (int j = 0; j < nx; j ++)
                 {
                     for (int k = 0; k < ny; k ++)
                     {
-                        double temp1[3], temp2[3];
-                        Scale(temp1, scaledunitleft, 0.5 + j);
-                        Scale(temp2, scaledunitup, 0.5 + k);
-                        Add3(temp, lrc, temp1, temp2); // temp has final info
+                        avtVector temp = lrc + (0.5 + j) * scaledunitleft + (0.5 + k) * scaledunitup;
                         // 3d to 1d conversion
                         const int index{i * nx * ny + j * ny + k};
                         xvals_ray[index] = temp[0];
@@ -2296,14 +2247,10 @@ avtXRayImageQuery::WriteArrays(vtkDataSet **leaves,
 void
 avtXRayImageQuery::WriteBlueprintImagingPlane(conduit::Node &data_out,
                                               const std::string plane_name,
-                                              const double width,
-                                              const double height,
-                                              const double center[3],
-                                              double llc[3],
-                                              double lrc[3],
-                                              double ulc[3],
-                                              double urc[3],
-                                              double left[3])
+                                              const avtVector &llc,
+                                              const avtVector &lrc,
+                                              const avtVector &ulc,
+                                              const avtVector &urc)
 {
     // set up imaging plane coords
     data_out["coordsets/" + plane_name + "_coords/type"] = "explicit";
@@ -2314,37 +2261,11 @@ avtXRayImageQuery::WriteBlueprintImagingPlane(conduit::Node &data_out,
     double *yvals = data_out["coordsets/" + plane_name + "_coords/values/y"].value();
     double *zvals = data_out["coordsets/" + plane_name + "_coords/values/z"].value();
     
-    // calculate left vector by crossing normal with up vector
-    Cross(left, viewUp, normal);
-    
-    // containers for intermediate vector math results
-    double temp1[3], temp2[3];
-
-    // calc llc
-    Scale(temp1, viewUp, -1. * height);
-    Scale(temp2, left, width);
-    Add3(llc, center, temp1, temp2);
-    
-    // calc lrc
-    Scale(temp1, viewUp, -1. * height);
-    Scale(temp2, left, -1. * width);
-    Add3(lrc, center, temp1, temp2);
-    
-    // calc ulc
-    Scale(temp1, viewUp, height);
-    Scale(temp2, left, width);
-    Add3(ulc, center, temp1, temp2);
-    
-    // calc urc
-    Scale(temp1, viewUp, height);
-    Scale(temp2, left, -1. * width);
-    Add3(urc, center, temp1, temp2);
-    
-    // set x values     // set y values     // set z values
-    xvals[0] = llc[0];  yvals[0] = llc[1];  zvals[0] = llc[2];
-    xvals[1] = lrc[0];  yvals[1] = lrc[1];  zvals[1] = lrc[2];
-    xvals[2] = urc[0];  yvals[2] = urc[1];  zvals[2] = urc[2];
-    xvals[3] = ulc[0];  yvals[3] = ulc[1];  zvals[3] = ulc[2];
+    // set x values    // set y values    // set z values
+    xvals[0] = llc.x;  yvals[0] = llc.y;  zvals[0] = llc.z;
+    xvals[1] = lrc.x;  yvals[1] = lrc.y;  zvals[1] = lrc.z;
+    xvals[2] = urc.x;  yvals[2] = urc.y;  zvals[2] = urc.z;
+    xvals[3] = ulc.x;  yvals[3] = ulc.y;  zvals[3] = ulc.z;
 
     // set up imaging plane topo
     data_out["topologies/" + plane_name + "_topo/type"] = "unstructured";
@@ -2365,6 +2286,35 @@ avtXRayImageQuery::WriteBlueprintImagingPlane(conduit::Node &data_out,
 }
 
 #endif
+
+// ****************************************************************************
+//  Method: avtXRayImageQuery::CalculateCorners
+//
+//  Purpose:
+//    Calculate the corners of the imaging planes with given vectors and dims.
+//
+//  Programmer: Justin Privitera
+//  Creation:   December 09, 2022
+// 
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtXRayImageQuery::CalculateCorners(const double planeWidth,
+                                    const double planeHeight,
+                                    const avtVector &center,
+                                    const avtVector &left,
+                                    avtVector &llc,
+                                    avtVector &lrc,
+                                    avtVector &ulc,
+                                    avtVector &urc)
+{
+    llc = center + (-1. * planeHeight) * viewUp +     planeWidth     * left;
+    lrc = center + (-1. * planeHeight) * viewUp + (-1. * planeWidth) * left;
+    ulc = center +     planeHeight     * viewUp +     planeWidth     * left;
+    urc = center +     planeHeight     * viewUp + (-1. * planeWidth) * left;
+}
 
 // ****************************************************************************
 //  Method: avtXRayImageQuery::GetDefaultInputParams

@@ -12,6 +12,7 @@
 #include <query_exports.h>
 #include <avtDatasetQuery.h>
 #include <avtXRayFilter.h>
+#include <avtVector.h>
 
 #ifdef HAVE_CONDUIT
     #include <conduit.hpp>
@@ -158,9 +159,9 @@ class QUERY_API avtXRayImageQuery : public avtDatasetQuery
     bool                      useSpecifiedUpVector;
     bool                      useOldView;
     // The new view specification
-    double                    normal[3];
-    double                    focus[3];
-    double                    viewUp[3];
+    avtVector                 normal;
+    avtVector                 focus;
+    avtVector                 viewUp;
     double                    viewAngle;
     double                    parallelScale;
     double                    nearPlane;
@@ -170,8 +171,8 @@ class QUERY_API avtXRayImageQuery : public avtDatasetQuery
     bool                      perspective;
     int                       imageSize[2];
     // The old view specification
-    double                    origin[3];
-    double                    upVector[3];
+    avtVector                 origin;
+    avtVector                 upVector;
     double                    theta, phi;
     double                    width, height;
     int                       nx, ny;
@@ -210,15 +211,19 @@ class QUERY_API avtXRayImageQuery : public avtDatasetQuery
                                           int numBins);
     void                      WriteBlueprintImagingPlane(conduit::Node &data_out,
                                                          const std::string plane_name,
-                                                         const double width,
-                                                         const double height,
-                                                         const double center[3],
-                                                         double llc[3],
-                                                         double lrc[3],
-                                                         double ulc[3],
-                                                         double urc[3],
-                                                         double left[3]);
+                                                         const avtVector &llc,
+                                                         const avtVector &lrc,
+                                                         const avtVector &ulc,
+                                                         const avtVector &urc);
 #endif
+    void                      CalculateCorners(const double planeWidth,
+                                               const double planeHeight,
+                                               const avtVector &center,
+                                               const avtVector &left,
+                                               avtVector &llc,
+                                               avtVector &lrc,
+                                               avtVector &ulc,
+                                               avtVector &urc);
     void                      ConvertOldImagePropertiesToNew();
     void                      CheckData(vtkDataSet **, const int);
 };

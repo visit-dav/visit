@@ -491,8 +491,8 @@ avtXRayFilter::UpdateDataObjectInfo(void)
 // ****************************************************************************
 
 void
-avtXRayFilter::SetImageProperties(double *_normal, double *_focus, 
-    double *_viewUp, double _viewAngle, double _parallelScale,
+avtXRayFilter::SetImageProperties(avtVector _normal, avtVector _focus, 
+    avtVector _viewUp, double _viewAngle, double _parallelScale,
     double _nearPlane, double _farPlane, double *_imagePan,
     double _imageZoom, bool _perspective, int *_imageSize)
 {

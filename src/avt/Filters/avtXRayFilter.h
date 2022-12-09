@@ -96,17 +96,17 @@ class AVTFILTERS_API avtXRayFilter : public avtDatasetToDatasetFilter
                                        { absVarName = abs;
                                          emisVarName = emis; };
 
-    void                            SetImageProperties(double *_normal,
-                                                       double *_focus,
-                                                       double *_viewUp,
-                                                       double  _viewAngle,
-                                                       double  _parallelScale,
-                                                       double  _nearPlane,
-                                                       double  _farPlane,
-                                                       double *_imagePan,
-                                                       double  _imageZoom,
-                                                       bool    _perspective,
-                                                       int    *_imageSize);
+    void                            SetImageProperties(avtVector _normal,
+                                                       avtVector _focus,
+                                                       avtVector _viewUp,
+                                                       double    _viewAngle,
+                                                       double    _parallelScale,
+                                                       double    _nearPlane,
+                                                       double    _farPlane,
+                                                       double   *_imagePan,
+                                                       double    _imageZoom,
+                                                       bool      _perspective,
+                                                       int      *_imageSize);
     void                            SetDivideEmisByAbsorb(bool);
     void                            SetBackgroundIntensity(double);
     void                            SetBackgroundIntensities(double *, int);
