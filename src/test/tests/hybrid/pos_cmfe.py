@@ -73,8 +73,8 @@ TestText("pos_cmfe_05", t)
 # Now test error conditions.
 DefineScalarExpression("cmfe2", "pos_cmfe(pressure, quadmesh)")
 ChangeActivePlotsVar("cmfe2")
-t = GetLastError()
 DrawPlots()
+t = GetLastError()
 TestText("pos_cmfe_06", t)
 
 DefineScalarExpression("cmfe3", "pos_cmfe(<bad_file.silo:a_var>, curvmesh2d, 0.)")

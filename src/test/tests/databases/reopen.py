@@ -456,9 +456,8 @@ def test6():
     # Change to a time state that we deleted. This should put the plot
     # in the error state and we should get an error message.
     SetTimeSliderState(nStates - 2)
-    msg = GetLastError()
     Test("reopen_6_05")
-    TestText("reopen_6_06", msg)
+    TestText("reopen_6_06", GetLastError())
 
     # Do the same thing in window 2 so we can check leter if reopen
     # causes the time slider, etc to be corrected.
