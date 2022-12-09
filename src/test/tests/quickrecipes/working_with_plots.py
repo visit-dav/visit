@@ -167,11 +167,13 @@ def plots_in_the_error_state():
       TimeSliderSetState(state)
       if DrawPlots() == 0:
           print("DrawPlots() errored with \"", GetLastError(), "\"")
-          # Find plot(s) in error state (3)
+          # Find plot(s) in error state and remove them
           pl = GetPlotList()
           for i in range(pl.GetNumPlots()):
-              if pl.GetPlots(i).stateType == 3:
-          break
+              if pl.GetPlots(i).stateType == pl.GetPlots(i).Error:
+                  SetActivePlots((i,))
+                  DeleteActivePlots()
+          GetLastError(1)
       SaveWindow()
 
     # plots in the error state }
@@ -181,7 +183,7 @@ def plots_in_the_error_state():
     TestFOA('plots in the error state exception', LINE())
     pass
   vqr_cleanup()
-  CloseDatabase(silo_data_path("globe.silo"))
+  CloseDatabase(silo_data_path("wave.visit"))
 
 creating_a_plot()
 plotting_materials()

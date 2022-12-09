@@ -265,36 +265,11 @@ Changing which plots are active is useful when you want to delete or hide certai
 When you want to set which plots are active, use the SetActivePlots function. 
 If you want to list the plots that you've created, call the ListPlots function.
 
-::
-
-    # Create more than 1 plot of the same type 
-    AddPlot("Pseudocolor", "pressure") 
-    AddPlot("Pseudocolor", "density") 
-
-    # List the plots. The second plot should be active. 
-    ListPlots() 
-
-    # Draw the plots 
-    DrawPlots() 
-
-    # Hide the first plot 
-    SetActivePlots(0) 
-    HideActivePlots() 
-
-    # Set both plots' color table to "hot" 
-    p = PseudocolorAttributes() 
-    p.colorTableName = "hot" 
-    SetActivePlots((0,1)) 
-    SetPlotOptions(p) 
-
-    # Show the first plot again. 
-    SetActivePlots(0) 
-    HideActivePlots()
-
-    # Delete the second plot 
-    SetActivePlots(1) 
-    DeleteActivePlots() 
-    ListPlots() 
+.. literalinclude:: ../../test/tests/quickrecipes/working_with_plots.py
+    :language: Python
+    :start-after: working with multiple plots {
+    :end-before: working with multiple plots }
+    :dedent: 4
 
 Plots in the error state
 ~~~~~~~~~~~~~~~~~~~~~~~~
@@ -304,19 +279,11 @@ Once a plot is in the error state, it no longer is displayed in the visualizatio
 If you are generating a movie, plots entering the error state can be a serious problem because you most often want all of the plots that you have created to animate through time and not disappear in the middle of the animation. 
 You can add extra code to your script to prevent plots from disappearing (most of the time) due to error conditions by adding a call to the DrawPlots function.
 
-::
-
-    # Save an image and take care of plots that entered the error state. 
-    drawThePlots = 0 
-    for state in range(TimeSliderGetNStates()): 
-      if SetTimeSliderState(state) == 0: 
-        drawThePlots = 1 
-      if drawThePlots == 1: 
-        if DrawPlots() == 0: 
-          print("VisIt could not draw plots for state: %d")% state 
-        else: 
-          drawThePlots = 0 
-      SaveWindow() 
+.. literalinclude:: ../../test/tests/quickrecipes/working_with_plots.py
+    :language: Python
+    :start-after: # plots in the error state {
+    :end-before: # plots in the error state }
+    :dedent: 4
 
 Operators
 ---------
