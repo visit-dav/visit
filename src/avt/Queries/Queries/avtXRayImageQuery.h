@@ -211,19 +211,72 @@ class QUERY_API avtXRayImageQuery : public avtDatasetQuery
                                           int numBins);
     void                      WriteBlueprintImagingPlane(conduit::Node &data_out,
                                                          const std::string plane_name,
-                                                         const avtVector &llc,
-                                                         const avtVector &lrc,
-                                                         const avtVector &ulc,
-                                                         const avtVector &urc);
+                                                         const double planeWidth,
+                                                         const double planeHeight,
+                                                         const avtVector &center,
+                                                         const avtVector &left,
+                                                         avtVector &llc,
+                                                         avtVector &lrc,
+                                                         avtVector &ulc,
+                                                         avtVector &urc);
+    void                      WriteBlueprintMeshCoordsets(conduit::Node &data_out,
+                                                          const int x_coords_dim,
+                                                          const int y_coords_dim,
+                                                          const int z_coords_dim,
+                                                          const double detectorWidth, 
+                                                          const double detectorHeight);
+    void                      WriteBlueprintMeshTopologies(conduit::Node &data_out);
+    void                      WriteBlueprintMeshFields(conduit::Node &data_out, 
+                                                       const int numfieldvals,
+                                                       const int numBins,
+                                                       vtkDataSet **leaves,
+                                                       conduit::float64 *intensity_vals,
+                                                       conduit::float64 *depth_vals);
+    void                      WriteBlueprintMeshes(conduit::Node &data_out, 
+                                                   const double detectorWidth, 
+                                                   const double detectorHeight,
+                                                   const int numBins,
+                                                   vtkDataSet **leaves,
+                                                   int &numfieldvals,
+                                                   conduit::float64 *intensity_vals,
+                                                   conduit::float64 *depth_vals);
+    void                      WriteBlueprintXRayView(conduit::Node &data_out);
+    void                      WriteBlueprintXRayQuery(conduit::Node &data_out, 
+                                                      const int numBins);
+    void                      WriteBlueprintXRayData(conduit::Node &data_out, 
+                                                     const double detectorWidth, 
+                                                     const double detectorHeight,
+                                                     const int numfieldvals,
+                                                     const conduit::float64 *intensity_vals,
+                                                     const conduit::float64 *depth_vals); 
+    void                      WriteBlueprintMetadata(conduit::Node &data_out,
+                                                     const int cycle,
+                                                     const int numBins,
+                                                     const double detectorWidth, 
+                                                     const double detectorHeight,
+                                                     const int numfieldvals,
+                                                     const conduit::float64 *intensity_vals,
+                                                     const conduit::float64 *depth_vals);
+    void                      WriteBlueprintImagingMeshes(conduit::Node &data_out,
+                                                          const double nearWidth, 
+                                                          const double nearHeight, 
+                                                          const double viewWidth, 
+                                                          const double viewHeight, 
+                                                          const double farWidth, 
+                                                          const double farHeight,
+                                                          const double detectorWidth,
+                                                          const double detectorHeight,
+                                                          const double farDetectorWidth,
+                                                          const double farDetectorHeight);
+    void                      WriteBlueprintRaysMesh(conduit::Node &data_out,
+                                                     const double detectorWidth,
+                                                     const double detectorHeight,
+                                                     const avtVector &lrc_near,
+                                                     const double farDetectorWidth,
+                                                     const double farDetectorHeight,
+                                                     const avtVector &lrc_far,
+                                                     const avtVector &left);
 #endif
-    void                      CalculateCorners(const double planeWidth,
-                                               const double planeHeight,
-                                               const avtVector &center,
-                                               const avtVector &left,
-                                               avtVector &llc,
-                                               avtVector &lrc,
-                                               avtVector &ulc,
-                                               avtVector &urc);
     void                      ConvertOldImagePropertiesToNew();
     void                      CheckData(vtkDataSet **, const int);
 };
