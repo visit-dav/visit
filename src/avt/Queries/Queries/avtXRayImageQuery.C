@@ -1455,11 +1455,11 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
                 numfieldvals, intensity_vals, depth_vals);
             std::cout << "wrote metadata" << std::endl;
 
-            // includes imaging planes, ray corners, and rays
-            WriteBlueprintImagingMeshes(data_out,
-                nearWidth, nearHeight, viewWidth, viewHeight, farWidth, farHeight,
-                detectorWidth, detectorHeight, farDetectorWidth, farDetectorHeight);
-            std::cout << "wrote imaging stuff" << std::endl;
+            // // includes imaging planes, ray corners, and rays
+            // WriteBlueprintImagingMeshes(data_out,
+            //     nearWidth, nearHeight, viewWidth, viewHeight, farWidth, farHeight,
+            //     detectorWidth, detectorHeight, farDetectorWidth, farDetectorHeight);
+            // std::cout << "wrote imaging stuff" << std::endl;
 
             // verify
             conduit::Node verify_info;
@@ -2311,10 +2311,13 @@ avtXRayImageQuery::WriteBlueprintXRayData(conduit::Node &data_out,
     int_max = int_min = pl_max = pl_min = 0;
     if (numfieldvals > 0)
     {
+        std::cout << "\t\tif true" << std::endl;
         int_max = int_min = intensity_vals[0];
         pl_max = pl_min = depth_vals[0];
+        std::cout << "\t\tI did a read" << std::endl;
         for (int i = 0; i < numfieldvals; i ++)
         {
+            std::cout << "for loop!" << std::endl;
             if (int_max < intensity_vals[i])
                 int_max = intensity_vals[i];
             if (int_min > intensity_vals[i])
@@ -2412,9 +2415,9 @@ avtXRayImageQuery::WriteBlueprintMeshCoordsets(conduit::Node &data_out,
     data_out["coordsets/image_coords/labels/y"] = "height";
     data_out["coordsets/image_coords/labels/z"] = "energy_group";
 
-    data_out["coordsets/spatial_coords/units/x"] = "pixels";
-    data_out["coordsets/spatial_coords/units/y"] = "pixels";
-    data_out["coordsets/spatial_coords/units/z"] = "bins";
+    data_out["coordsets/image_coords/units/x"] = "pixels";
+    data_out["coordsets/image_coords/units/y"] = "pixels";
+    data_out["coordsets/image_coords/units/z"] = "bins";
 
     // calculate spatial extent coords
     // (the physical extents of the image projected on the near plane)
@@ -2423,6 +2426,7 @@ avtXRayImageQuery::WriteBlueprintMeshCoordsets(conduit::Node &data_out,
     const double nearDy{detectorHeight / imageSize[1]};
 
     // set up spatial extents coords
+    data_out["coordsets/spatial_coords/type"] = "rectilinear";
     data_out["coordsets/spatial_coords/values/x"].set(conduit::DataType::float32(x_coords_dim));
     float *spatial_xvals = data_out["coordsets/spatial_coords/values/x"].value();
     for (int i = 0; i < x_coords_dim; i ++) { spatial_xvals[i] = i * nearDx; }
