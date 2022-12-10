@@ -294,21 +294,17 @@ Operators can be linked one after the other to form chains of operators that can
 Adding operators
 ~~~~~~~~~~~~~~~~
 
+The list of available operators is returned by the ``OperatorPlugins()`` function. 
+Any of the names returned from ``OperatorPlugins()`` can be used to add an operator using the ``AddOperator()`` function. 
 Adding an operator is similar to adding a plot in that you call a function with the name of the operator to be added. 
-The list of available operators is returned by the OperatorPlugins function. 
-Any of the names returned in that plugin can be used to add an operator using the AddOperator function. 
-Operators are added to the active plots by default but you can also force VisIt to add them to all plots in the plot list.
+Operators are added *only* to the *active* plots by default but you can also force VisIt to add them to all plots in the plot list.
+You can also use the ``SetActivePlots()`` function to adjust the list of active plots before adding an operator to exercise finer grained control over which plots an operator is added to.
 
-::
-
-    # Print available operators 
-    print(OperatorPlugins())
-    # Create a plot 
-    AddPlot("Pseudocolor") 
-    # Add an Isovolume operator and a Slice operator 
-    AddOperator("Isovolume") 
-    AddOperator("Slice") 
-    DrawPlots() 
+.. literalinclude:: ../../test/tests/quickrecipes/operators.py
+    :language: Python
+    :start-after: # adding operators {
+    :end-before: # adding operators }
+    :dedent: 4
 
 Setting operator attributes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~

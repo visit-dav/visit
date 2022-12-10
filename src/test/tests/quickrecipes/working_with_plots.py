@@ -164,17 +164,22 @@ def plots_in_the_error_state():
     # Start saving images from every 10th state starting at state 20 
     # but take care to clean up when we get an error.
     for state in range(20,TimeSliderGetNStates(),10):
-      TimeSliderSetState(state)
-      if DrawPlots() == 0:
-          print("DrawPlots() errored with \"", GetLastError(), "\"")
-          # Find plot(s) in error state and remove them
-          pl = GetPlotList()
-          for i in range(pl.GetNumPlots()):
-              if pl.GetPlots(i).stateType == pl.GetPlots(i).Error:
-                  SetActivePlots((i,))
-                  DeleteActivePlots()
-          GetLastError(1)
-      SaveWindow()
+
+        TimeSliderSetState(state)
+
+        if DrawPlots() == 0:
+
+            # Find plot(s) in error state and remove them
+            pl = GetPlotList()
+            for i in range(pl.GetNumPlots()):
+                if pl.GetPlots(i).stateType == pl.GetPlots(i).Error:
+                    SetActivePlots((i,))
+                    DeleteActivePlots()
+
+            # Clear the last error message
+            GetLastError(1)
+
+        SaveWindow()
 
     # plots in the error state }
     TestValueEQ('plots in the error state error message',GetLastError(),'')
