@@ -316,25 +316,11 @@ Once you have created an operator attributes object, you can pass it to the SetO
 Note that setting the attributes for an operator nearly always causes the compute engine to recalculate the operator. 
 You can use the power of VisIt's Python Interface to create complex operator behavior such as in the following code example, which moves slice planes through a Pseudocolor plot.
 
-::
-
-    OpenDatabase("/usr/local/visit/data/noise.silo") 
-    AddPlot("Pseudocolor", "hardyglobal") 
-    AddOperator("Slice") 
-    s = SliceAttributes() 
-    s.originType = s.Percent 
-    s.project2d = 0 
-    SetOperatorOptions(s) 
-    DrawPlots() 
-
-    nSteps = 20 
-    for axis in (0,1,2): 
-      s.axisType = axis 
-      for step in range(nSteps): 
-        t = float(step) / float(nSteps - 1) 
-        s.originPercent = t * 100. 
-        SetOperatorOptions(s) 
-        SaveWindow()
+.. literalinclude:: ../../test/tests/quickrecipes/operators.py
+    :language: Python
+    :start-after: # setting operator attributes {
+    :end-before: # setting operator attributes }
+    :dedent: 4
 
 Quantitative operations
 -----------------------
