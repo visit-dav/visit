@@ -334,14 +334,11 @@ VisIt allows you to create derived variables using its powerful expressions lang
 You can plot or query variables created using expressions just as you would if they were read from a database. 
 VisIt_'s Python Interface allows you to create new scalar, vector, tensor variables using the DefineScalarExpression, DefineVectorExpression, and DefineTensorExpression functions.
 
-::
-
-    # Creating a new expression 
-    OpenDatabase("/usr/local/visit/data/noise.silo") 
-    AddPlot("Pseudocolor", "hardyglobal") 
-    DrawPlots() 
-    DefineScalarExpression("newvar", "sin(hardyglobal) + cos(shepardglobal") 
-    ChangeActivePlotsVar("newvar") 
+.. literalinclude:: ../../test/tests/quickrecipes/quantitative_operations.py
+    :language: Python
+    :start-after: # defining expressions {
+    :end-before: # defining expressions }
+    :dedent: 4
 
 Pick
 ~~~~
@@ -351,26 +348,11 @@ To that end, VisIt provides several pick functions.
 Once a pick function has been called, you can call the GetPickOutput function to get a string that contains the pick information. 
 The information in the string could be used for a multitude of uses such as building a test suite for a simulation code.
 
-::
-
-    OpenDatabase("/usr/local/visit/data/noise.silo") 
-    AddPlot("Pseudocolor", "hgslice") 
-    DrawPlots() 
-    s = [] 
-    # Pick by a node id 
-    PickbyNode(300) 
-    s = s + [GetPickOutput()] 
-    # Pick by a cell id 
-    PickByZone(250) 
-    s = s + [GetPickOutput()] 
-    # Pick on a cell using a 3d point 
-    Pick((-2., 2., 0.)) 
-    s = s + [GetPickOutput()] 
-    # Pick on the node closest to (-2,2,0) 
-    NodePick((-2,2,0)) 
-    s = s + [GetPickOutput()] 
-    # Print all pick results 
-    print(s)
+.. literalinclude:: ../../test/tests/quickrecipes/quantitative_operations.py
+    :language: Python
+    :start-after: # pick {
+    :end-before: # pick }
+    :dedent: 4
 
 Lineout
 ~~~~~~~
