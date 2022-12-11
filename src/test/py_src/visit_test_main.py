@@ -2021,17 +2021,22 @@ def TestValueGE(case_name, actual, expected, rndprec=5):
 def TestValueIN(case_name, bucket, expected, rndprec=5, eqoper=operator.eq):
     CheckInteractive(case_name)
     result = False
-    dontLog = False
     at = 0
-    try:
-        for x in bucket:
-            if TestValueOp(case_name, x, expected, rndprec, eqoper, dontLog):
+    if isinstance(bucket, str) and isinstance(expected, str):
+        result = expected in bucket
+        if result:
+            at = bucket.find(expected)
+    else:
+        dontLog = False
+        try:
+            for x in bucket:
+                if TestValueOp(case_name, x, expected, rndprec, eqoper, dontLog):
+                    result = True
+                    break
+                at = at + 1
+        except:
+            if TestValueOp(case_name, bucket, expected, rndprec, eqoper, dontLog):
                 result = True
-                break
-            at = at + 1
-    except:
-        if TestValueOp(case_name, bucket, expected, rndprec, eqoper, dontLog):
-            result = True
     skip = TestEnv.check_skip(case_name)
     if skip:
         TestEnv.results["numskip"] += 1
