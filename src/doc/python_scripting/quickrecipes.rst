@@ -380,14 +380,11 @@ Query
 
 VisIt can perform a number of different queries based on values calculated about plots or their originating database.
 
-::
-
-    OpenDatabase("/usr/local/visit/data/noise.silo") 
-    AddPlot("Pseudocolor", "hardyglobal") 
-    DrawPlots() 
-    Query("NumNodes") 
-    print("The float value is: %g")% GetQueryOutputValue() 
-    Query("NumNodes") 
+.. literalinclude:: ../../test/tests/quickrecipes/quantitative_operations.py
+    :language: Python
+    :start-after: # query {
+    :end-before: # query }
+    :dedent: 4
 
 Finding the min and the max
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -395,43 +392,11 @@ Finding the min and the max
 A common operation in debugging a simulation code is examining the min and max values. 
 Here is a pattern that allows you to print out the min and the max values and their locations in the database and also see them visually.
 
-::
-
-    # Define a helper function to get the id's of the MinMax query. 
-    def GetMinMaxIds(): 
-      Query("MinMax") 
-      import string 
-      s = string.split(GetQueryOutputString(), " ") 
-      retval = [] 
-      nextGood = 0 
-      idType = 0 
-      for token in s: 
-        if token == "(zone" or token == "(cell": 
-          idType = 1 
-          nextGood = 1 
-          continue 
-        elif token == "(node": 
-          idType = 0 
-          nextGood = 1 
-          continue 
-        if nextGood == 1: 
-           nextGood = 0 
-           retval = retval + [(idType, int(token))] 
-      return retval
-
-    # Set up a plot 
-    OpenDatabase("/usr/local/visit/data/noise.silo") 
-    AddPlot("Pseudocolor", "hgslice") 
-    DrawPlots() 
-
-    # Do picks on the ids that were returned by MinMax. 
-    for ids in GetMinMaxIds(): 
-      idType = ids[0] 
-      id = ids[1] 
-      if idType == 0: 
-        PickByNode(id) 
-      else: 
-        PickByZone(id) 
+.. literalinclude:: ../../test/tests/quickrecipes/quantitative_operations.py
+    :language: Python
+    :start-after: # finding the min and the max {
+    :end-before: # finding the min and the max }
+    :dedent: 4
 
 Subsetting
 ----------
