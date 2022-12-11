@@ -62,8 +62,63 @@ def pick():
     TestFOA('pick exception', LINE())
     pass
   vqr_cleanup()
+
+def lineout1():
+ 
+  try:
+    # lineout 1 {
+    p0 = (-5,-3, 0)
+    p1 = ( 5, 8, 0)
+    OpenDatabase("~juanita/silo/stuff/noise.silo")
+    AddPlot("Pseudocolor", "hardyglobal")
+    DrawPlots()
+    Lineout(p0, p1)
+    # Specify 65 sample points
+    Lineout(p0, p1, 65)
+    # Do three variables ("default" is "hardyglobal")
+    Lineout(p0, p1, ("default", "airVf", "radial"))
+    # lineout 1 }
+    TestValueEQ('lineout 1 error message',GetLastError(),'')
+    TestPOA('lineout 1 exceptions')
+  except:
+    TestFOA('lineout 1 exception', LINE())
+    pass
+  # No cleanup because next method uses results from this
+  # DeleteWindow()
+  # vqr_cleanup()
+
+def lineout2():
+ 
+  try:
+    # lineout 2 {
+    # Set active window to one containing Lineout curve plots (typically #2)
+    SetActiveWindow(2)
+    # Get array of x,y pairs for first curve plot in window
+    SetActivePlots(0)
+    hg_vals = GetPlotInformation()["Curve"]
+    # Get array of x,y pairs for second curve plot in window
+    SetActivePlots(1)
+    avf_vals = GetPlotInformation()["Curve"]
+    # Get array of x,y pairs for third curve plot in window
+    SetActivePlots(2)
+    rad_vals = GetPlotInformation()["Curve"]
+
+    # Write it as CSV data to a file
+    for i in range(int(len(hg_vals) / 2)):
+        idx = i*2+1 # take only y-values in each array
+        print("%g,%g,%g" % (hg_vals[idx], avf_vals[idx], rad_vals[idx]))
+    # lineout 2 }
+    TestValueEQ('lineout 2 error message',GetLastError(),'')
+    TestPOA('lineout 2 exceptions')
+  except:
+    TestFOA('lineout 2 exception', LINE())
+    pass
+  DeleteWindow()
+  vqr_cleanup()
  
 defining_expressions()
 pick()
+lineout1()
+lineout2()
 
 Exit()
