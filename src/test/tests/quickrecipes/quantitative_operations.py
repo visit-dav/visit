@@ -22,8 +22,8 @@ def defining_expressions():
     # defining expressions }
     TestValueEQ('defining expressions error message',GetLastError(),'')
     TestPOA('defining expressions exceptions')
-  except:
-    TestFOA('defining expressions exception', LINE())
+  except Exception as inst:
+    TestFOA('defining expressions exception "%s"'%str(inst), LINE())
     pass
   vqr_cleanup()
  
@@ -58,8 +58,8 @@ def pick():
     TestValueIN('pick string',s[3],'hgslice:  <nodal> = 4.043')
     TestValueEQ('pick error message',GetLastError(),'')
     TestPOA('pick exceptions')
-  except:
-    TestFOA('pick exception', LINE())
+  except Exception as inst:
+    TestFOA('pick exception "%s"'%str(inst), LINE())
     pass
   vqr_cleanup()
 
@@ -80,8 +80,8 @@ def lineout1():
     # lineout 1 }
     TestValueEQ('lineout 1 error message',GetLastError(),'')
     TestPOA('lineout 1 exceptions')
-  except:
-    TestFOA('lineout 1 exception', LINE())
+  except Exception as inst:
+    TestFOA('lineout 1 exception "%s"'%str(inst), LINE())
     pass
   # No cleanup because next method uses results from this
   # DeleteWindow()
@@ -110,15 +110,82 @@ def lineout2():
     # lineout 2 }
     TestValueEQ('lineout 2 error message',GetLastError(),'')
     TestPOA('lineout 2 exceptions')
-  except:
-    TestFOA('lineout 2 exception', LINE())
+  except Exception as inst:
+    TestFOA('lineout 2 exception "%s"'%str(inst), LINE())
     pass
   DeleteWindow()
+  vqr_cleanup()
+ 
+def query():
+ 
+  try:
+    # query {
+    OpenDatabase("~juanita/silo/stuff/noise.silo")
+    AddPlot("Pseudocolor", "hardyglobal")
+    DrawPlots()
+    Query("NumNodes")
+    print("The float value is: %g" % GetQueryOutputValue())
+    Query("NumNodes")
+    # query }
+    TestValueEQ('query error message',GetLastError(),'')
+    TestPOA('query exceptions')
+  except Exception as inst:
+    TestFOA('query exception "%s"'%str(inst), LINE())
+    pass
+  vqr_cleanup()
+
+def finding_the_min_and_max():
+ 
+  try:
+    # finding the min and max {
+    # Define a helper function to get node/zone id's from query string.
+    def GetMinMaxIds(qstr):
+        import string
+        s = qstr.split(' ')
+        retval = []
+        nextGood = 0
+        idType = 0
+        for token in s:
+            if token == "(zone" or token == "(cell":
+                idType = 1
+                nextGood = 1
+                continue
+            elif token == "(node":
+                idType = 0
+                nextGood = 1
+                continue
+            if nextGood == 1:
+                nextGood = 0
+                retval = retval + [(idType, int(token))]
+        return retval
+
+    # Set up a plot
+    OpenDatabase("~juanita/silo/stuff/noise.silo")
+    AddPlot("Pseudocolor", "hgslice")
+    DrawPlots()
+    Query("MinMax")
+
+    # Do picks on the ids that were returned by MinMax.
+    for ids in GetMinMaxIds(GetQueryOutputString()):
+        idType = ids[0]
+        id = ids[1]
+        if idType == 0:
+            PickByNode(id)
+        else:
+            PickByZone(id)
+    # finding the min and max }
+    TestValueEQ('finding the min and max error message',GetLastError(),'')
+    TestPOA('finding the min and max exceptions')
+  except Exception as inst:
+    TestFOA('finding the min and max exception "%s"'%str(inst), LINE())
+    pass
   vqr_cleanup()
  
 defining_expressions()
 pick()
 lineout1()
 lineout2()
+query()
+finding_the_min_and_max()
 
 Exit()

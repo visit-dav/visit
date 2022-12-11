@@ -365,7 +365,8 @@ VisIt allows you to extract data along a line, called a :ref:`lineout <Lineout>`
     :end-before: # lineout 1 }
     :dedent: 4
 
-The above steps produce the requested lineout(s), visually, as curve(s) in a (new) viewer window.
+The above steps produce the lineout(s), visually, as curve plot(s) in a new viewer window.
+Read more about how VisIt_ :ref:`determines which window <lineoutdestinationwindow>` it uses for these curve plot(s).
 What if you want to access the actual lineout data and/or save it to a file? 
 
 .. literalinclude:: ../../test/tests/quickrecipes/quantitative_operations.py
