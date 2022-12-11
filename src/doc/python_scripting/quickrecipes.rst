@@ -394,8 +394,8 @@ Here is a pattern that allows you to print out the min and the max values and th
 
 .. literalinclude:: ../../test/tests/quickrecipes/quantitative_operations.py
     :language: Python
-    :start-after: # finding the min and the max {
-    :end-before: # finding the min and the max }
+    :start-after: # finding the min and max {
+    :end-before: # finding the min and max }
     :dedent: 4
 
 Subsetting
