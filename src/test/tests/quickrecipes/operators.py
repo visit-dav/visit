@@ -43,7 +43,6 @@ def adding_operators():
     TestFOA('adding operators exception', LINE())
     pass
   vqr_cleanup()
-  CloseDatabase(silo_data_path("globe.silo"))
  
 def setting_operator_attributes():
  

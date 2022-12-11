@@ -37,7 +37,6 @@ def creating_a_plot():
     TestFOA('creating a plot exception', LINE())
     pass
   vqr_cleanup()
-  CloseDatabase(silo_data_path("wave.visit"))
 
 def plotting_materials():
  
@@ -55,7 +54,6 @@ def plotting_materials():
     TestFOA('plotting materials exception', LINE())
     pass
   vqr_cleanup()
-  CloseDatabase(silo_data_path("globe.silo"))
 
 def setting_plot_attributes():
  
@@ -94,7 +92,6 @@ def setting_plot_attributes():
     TestFOA('setting plot attributes exception', LINE())
     pass
   vqr_cleanup()
-  CloseDatabase(silo_data_path("wave.visit"))
 
 def working_with_multiple_plots():
  
@@ -188,7 +185,6 @@ def plots_in_the_error_state():
     TestFOA('plots in the error state exception', LINE())
     pass
   vqr_cleanup()
-  CloseDatabase(silo_data_path("wave.visit"))
 
 creating_a_plot()
 plotting_materials()
