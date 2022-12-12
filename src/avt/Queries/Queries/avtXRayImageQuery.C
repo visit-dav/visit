@@ -1999,7 +1999,18 @@ avtXRayImageQuery::WriteBlueprintImagingPlane(conduit::Node &data_out,
 }
 #endif
 // ****************************************************************************
-#ifdef HAVE_CONDUIT
+//  Function: WriteBlueprintRayCornersMesh
+//
+//  Purpose:
+//    This function writes a mesh representing the ray corners used in the 
+//    query to the blueprint output.
+//
+//  Programmer: Justin Privitera
+//  Creation:   December 09, 2022
+// 
+//  Modifications:
+//
+// ****************************************************************************#ifdef HAVE_CONDUIT
 void
 WriteBlueprintRayCornersMesh(conduit::Node &data_out,
                              const avtVector &llc_near,
@@ -2055,7 +2066,8 @@ WriteBlueprintRayCornersMesh(conduit::Node &data_out,
 //  Method: avtXRayImageQuery::WriteBlueprintRaysMesh
 //
 //  Purpose:
-//    TODO
+//    This function writes a mesh representing the rays used in the query
+//    to the blueprint output.
 //
 //  Programmer: Justin Privitera
 //  Creation:   December 09, 2022
@@ -2148,7 +2160,9 @@ avtXRayImageQuery::WriteBlueprintRaysMesh(conduit::Node &data_out,
 //  Method: avtXRayImageQuery::WriteBlueprintImagingMeshes
 //
 //  Purpose:
-//    TODO
+//    This function writes the various imaging meshes to the blueprint output.
+//    These meshes are specifically useful for visualizing where the x ray
+//    detector is looking and what it is looking at.
 //
 //  Programmer: Justin Privitera
 //  Creation:   December 09, 2022
@@ -2215,7 +2229,8 @@ avtXRayImageQuery::WriteBlueprintImagingMeshes(conduit::Node &data_out,
 //  Method: avtXRayImageQuery::WriteBlueprintXRayView
 //
 //  Purpose:
-//    TODO
+//    This function handles writing view-related information for the blueprint
+//    output metadata.
 //
 //  Programmer: Justin Privitera
 //  Creation:   December 09, 2022
@@ -2252,7 +2267,8 @@ avtXRayImageQuery::WriteBlueprintXRayView(conduit::Node &data_out)
 //  Method: avtXRayImageQuery::WriteBlueprintXRayQuery
 //
 //  Purpose:
-//    TODO
+//    This function handles writing query-related information for the blueprint
+//    output metadata.
 //
 //  Programmer: Justin Privitera
 //  Creation:   December 09, 2022
@@ -2281,7 +2297,8 @@ avtXRayImageQuery::WriteBlueprintXRayQuery(conduit::Node &data_out,
 //  Method: avtXRayImageQuery::WriteBlueprintXRayData
 //
 //  Purpose:
-//    TODO
+//    This function handles writing general data for the blueprint output 
+//    metadata.
 //
 //  Programmer: Justin Privitera
 //  Creation:   December 09, 2022
@@ -2335,7 +2352,7 @@ avtXRayImageQuery::WriteBlueprintXRayData(conduit::Node &data_out,
 //  Method: avtXRayImageQuery::WriteBlueprintMetadata
 //
 //  Purpose:
-//    TODO
+//    This function handles writing metadata for the blueprint output.
 //
 //  Programmer: Justin Privitera
 //  Creation:   December 09, 2022
@@ -2369,7 +2386,8 @@ avtXRayImageQuery::WriteBlueprintMetadata(conduit::Node &data_out,
 //  Method: avtXRayImageQuery::WriteBlueprintMeshCoordsets
 //
 //  Purpose:
-//    TODO
+//    This function writes a coordset in pixel space and a coordset in space
+//    for the blueprint output.
 //
 //  Programmer: Justin Privitera
 //  Creation:   December 09, 2022
@@ -2467,7 +2485,8 @@ avtXRayImageQuery::WriteBlueprintMeshCoordsets(conduit::Node &data_out,
 //  Method: avtXRayImageQuery::WriteBlueprintMeshTopologies
 //
 //  Purpose:
-//    TODO
+//    This function writes two topologies to the blueprint output, one for the 
+//    image coords and one for the spatial extents.
 //
 //  Programmer: Justin Privitera
 //  Creation:   December 09, 2022
@@ -2493,7 +2512,8 @@ avtXRayImageQuery::WriteBlueprintMeshTopologies(conduit::Node &data_out)
 //  Method: avtXRayImageQuery::WriteBlueprintMeshFields
 //
 //  Purpose:
-//    TODO
+//    This function writes intensity and path length fields to the blueprint 
+//    output twice, once for the image coords and once for the spatial extents.
 //
 //  Programmer: Justin Privitera
 //  Creation:   December 09, 2022
@@ -2568,7 +2588,9 @@ avtXRayImageQuery::WriteBlueprintMeshFields(conduit::Node &data_out,
 //  Method: avtXRayImageQuery::WriteBlueprintMeshes
 //
 //  Purpose:
-//    TODO
+//    This function crafts two blueprint meshes, one representing the output
+//    image in image space, and another representing it in physical space with
+//    energy group bounds.
 //
 //  Programmer: Justin Privitera
 //  Creation:   December 09, 2022
