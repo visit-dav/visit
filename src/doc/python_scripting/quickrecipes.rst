@@ -398,6 +398,9 @@ Here is a pattern that allows you to print out the min and the max values and th
     :end-before: # finding the min and max }
     :dedent: 4
 
+Note that the above example parses information from the query output *string* returned from ``GetQueryOutputString()``.
+In some cases, it will be more convenient to use ``GetQueryOutputValue()`` or ``GetQueryOutputObject()``.
+
 Subsetting
 ----------
 
@@ -410,34 +413,22 @@ Turning off domains
 
 VisIt_'s Python Interface provides the TurnDomainsOn and TurnDomainsOff functions to make it easy to turn domains on and off.
 
-::
-
-    OpenDatabase("/usr/local/visit/data/multi_rect2d.silo") 
-    AddPlot("Pseudocolor", "d") 
-    DrawPlots() 
-    # Turning off all but the last domain 
-    d = GetDomains() 
-    for dom in d[:-1]: 
-      TurnDomainsOff(dom) 
-    # Turn all domains off 
-    TurnDomainsOff() 
-    # Turn on domains 3,5,7 
-    TurnDomainsOn((d[3], d[5], d[7]))
+.. literalinclude:: ../../test/tests/quickrecipes/subsetting.py
+    :language: Python
+    :start-after: # turning off domains {
+    :end-before: # turning off domains }
+    :dedent: 4
 
 Turning off materials
 ~~~~~~~~~~~~~~~~~~~~~
 
 VisIt_'s Python Interface provides the TurnMaterialsOn and TurnMaterialsOff functions to make it easy to turn materials on and off.
 
-::
-
-    OpenDatabase("/usr/local/visit/data/multi_rect2d.silo") 
-    AddPlot("FilledBoundary", "mat1") 
-    DrawPlots() 
-    # Print the materials are: 
-    GetMaterials() 
-    # Turn off material 2
-    TurnMaterialsOff("2") 
+.. literalinclude:: ../../test/tests/quickrecipes/subsetting.py
+    :language: Python
+    :start-after: # turning off materials {
+    :end-before: # turning off materials }
+    :dedent: 4
 
 View
 ----
