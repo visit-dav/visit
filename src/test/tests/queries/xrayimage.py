@@ -570,8 +570,24 @@ def blueprint_test(output_type, outdir, testtextnumber, testname, hdf5 = False):
         OpenDatabase(conduit_db)
         AddPlot("Pseudocolor", "mesh_image_topo/intensities")
         DrawPlots()
-        Test(testname + str(i))
+        Test(testname + "_image_topo_intensities" + str(i))
         DeleteAllPlots()
+
+        AddPlot("Pseudocolor", "mesh_image_topo/path_length")
+        DrawPlots()
+        Test(testname + "_image_topo_path_length" + str(i))
+        DeleteAllPlots()
+
+        AddPlot("Pseudocolor", "mesh_spatial_topo/intensities_spatial")
+        DrawPlots()
+        Test(testname + "_spatial_topo_intensities" + str(i))
+        DeleteAllPlots()
+
+        AddPlot("Pseudocolor", "mesh_spatial_topo/path_length_spatial")
+        DrawPlots()
+        Test(testname + "_spatial_topo_path_length" + str(i))
+        DeleteAllPlots()
+
         CloseDatabase(conduit_db)
 
     if (hdf5):

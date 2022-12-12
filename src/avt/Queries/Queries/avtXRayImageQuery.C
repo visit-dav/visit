@@ -2023,7 +2023,8 @@ avtXRayImageQuery::WriteBlueprintImagingPlane(conduit::Node &data_out,
 // 
 //  Modifications:
 //
-// ****************************************************************************#ifdef HAVE_CONDUIT
+// ****************************************************************************
+#ifdef HAVE_CONDUIT
 void
 WriteBlueprintRayCornersMesh(conduit::Node &data_out,
                              const avtVector &llc_near,
