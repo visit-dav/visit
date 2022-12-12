@@ -39,8 +39,8 @@ def adding_operators():
     # adding operators }
     TestValueEQ('adding operators error message',GetLastError(),'')
     TestPOA('adding operators exceptions')
-  except:
-    TestFOA('adding operators exception', LINE())
+  except Exception as inst:
+    TestFOA('adding operators exception "%s"'%str(inst), LINE())
     pass
   vqr_cleanup()
  
@@ -68,8 +68,8 @@ def setting_operator_attributes():
     # setting operator attributes }
     TestValueEQ('setting operator attributes error message',GetLastError(),'')
     TestPOA('setting operator attributes exceptions')
-  except:
-    TestFOA('setting operator attributes exception', LINE())
+  except Exception as inst:
+    TestFOA('setting operator attributes exception "%s"'%str(inst), LINE())
     pass
   vqr_cleanup()
  

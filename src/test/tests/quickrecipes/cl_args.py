@@ -19,8 +19,8 @@ def handling_command_line_arguments():
     # handling command line arguments }
     TestValueEQ('handling command line arguments errors',GetLastError(),'')
     TestPOA('handling command line arguments no exceptions')
-  except:
-    TestFOA('handling command line arguments exception', LINE())
+  except Exception as inst:
+    TestFOA('handling command line argumentts exception "%s"'%str(inst), LINE())
     pass
   vqr_cleanup()
 

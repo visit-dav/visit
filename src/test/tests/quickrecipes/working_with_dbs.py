@@ -18,8 +18,8 @@ def opening_a_database():
     # opening a database }
     TestValueEQ('opening a database error message',GetLastError(),'')
     TestPOA('opening a database no exceptions')
-  except:
-    TestFOA('opening a database exception', LINE())
+  except Exception as inst:
+    TestFOA('opening a database exception "%s"'%str(inst), LINE())
     pass
   vqr_cleanup()
 
@@ -32,8 +32,8 @@ def opening_a_database_at_specific_time():
     # opening a database at specific time }
     TestValueEQ('opening a database at specific time error message',GetLastError(),'')
     TestPOA('opening a database at specific time no exceptions')
-  except:
-    TestFOA('opening a database at specific time exception', LINE())
+  except Exception as inst:
+    TestFOA('opening a database at specific time exception "%s"'%str(inst), LINE())
     pass
   vqr_cleanup()
 
@@ -49,8 +49,8 @@ def opening_a_virtual_database():
     # opening a virtual database }
     TestValueEQ('opening a virtual database error message',GetLastError(),'')
     TestPOA('opening a virtual database no exceptions')
-  except:
-    TestFOA('opening a virtual database exception', LINE())
+  except Exception as inst:
+    TestFOA('opening a virtual database exception "%s"'%str(inst), LINE())
     pass
   vqr_cleanup()
 
@@ -64,8 +64,8 @@ def opening_a_remote_database():
     # opening a remote database }
     TestValueEQ('opening a remote database error message',GetLastError(),'')
     TestPOA('opening a remote database no exceptions')
-  except:
-    TestFOA('opening a remote database exception', LINE())
+  except Exception as inst:
+    TestFOA('opening a remote database exception "%s"'%str(inst), LINE())
     pass
   vqr_cleanup()
 

@@ -22,8 +22,8 @@ def using_session_files():
     # using session files }
     TestValueEQ('using session files error message',GetLastError(),'')
     TestPOA('using session files no exceptions')
-  except:
-    TestFOA('using session files exception', LINE())
+  except Exception as inst:
+    TestFOA('using session files exception "%s"'%str(inst), LINE())
     pass
   vqr_cleanup()
 
@@ -48,8 +48,8 @@ def getting_something_on_the_screen():
     # getting something on the screen }
     TestValueEQ('getting something on the screen error message',GetLastError(),'')
     TestPOA('getting something on the screen no exceptions')
-  except:
-    TestFOA('getting something on the screen exception', LINE())
+  except Exception as inst:
+    TestFOA('getting something on the screen exception "%s"'%str(inst), LINE())
     pass
   vqr_cleanup()
 

@@ -20,8 +20,8 @@ def opening_a_compute_engine1():
     # opening a compute engine 1 }
     TestValueEQ('opening a compute engine 1 error message',GetLastError(),'')
     TestPOA('opening a compute engine 1 exceptions')
-  except:
-    TestFOA('opening a compute engine 1 exception', LINE())
+  except Exception as inst:
+    TestFOA('opening a compute engine 1 exception "%s"'%str(inst), LINE())
     pass
   vqr_cleanup()
   CloseComputeEngine()
@@ -38,8 +38,8 @@ def opening_a_compute_engine2():
     # opening a compute engine 2 }
     TestValueEQ('opening a compute 2 engine error message',GetLastError(),'')
     TestPOA('opening a compute engine 2 exceptions')
-  except:
-    TestFOA('opening a compute engine 2 exception', LINE())
+  except Exception as inst:
+    TestFOA('opening a compute engine 2 exception "%s"'%str(inst), LINE())
     pass
   CloseComputeEngine()
 
@@ -84,8 +84,8 @@ def opening_a_compute_engine3():
     # opening a compute engine 3 }
     TestValueEQ('opening a compute engine 3 error message',GetLastError(),'')
     TestPOA('opening a compute engine 3 exceptions')
-  except:
-    TestFOA('opening a compute engine 3 exception', LINE())
+  except Exception as inst:
+    TestFOA('opening a compute engine 3 exception "%s"'%str(inst), LINE())
     pass
   CloseComputeEngine()
 

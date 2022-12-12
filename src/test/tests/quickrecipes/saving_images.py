@@ -24,8 +24,8 @@ def setting_output_image_characteristics():
     # setting output image characteristics }
     TestValueEQ('setting output image characteristics error message',GetLastError(),'')
     TestPOA('setting output image characteristics no exceptions')
-  except:
-    TestFOA('setting output image characteristics exception', LINE())
+  except Exception as inst:
+    TestFOA('setting output image characteristics exception "%s"'%str(inst), LINE())
     pass
   vqr_cleanup()
 
@@ -44,8 +44,8 @@ def saving_an_image():
     # saving an image }
     TestValueEQ('saving an image error message',GetLastError(),'')
     TestPOA('saving an image no exceptions')
-  except:
-    TestFOA('saving an image exception', LINE())
+  except Exception as inst:
+    TestFOA('saving an image exception "%s"'%str(inst), LINE())
     pass
   vqr_cleanup()
 

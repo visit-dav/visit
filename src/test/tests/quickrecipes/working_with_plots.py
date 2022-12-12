@@ -33,8 +33,8 @@ def creating_a_plot():
     # creating a plot }
     TestValueEQ('creating a plot error message',GetLastError(),'')
     TestPOA('creating a plot exceptions')
-  except:
-    TestFOA('creating a plot exception', LINE())
+  except Exception as inst:
+    TestFOA('creating a plot exception "%s"'%str(inst), LINE())
     pass
   vqr_cleanup()
 
@@ -50,8 +50,8 @@ def plotting_materials():
     # plotting materials }
     TestValueEQ('plotting materials error message',GetLastError(),'')
     TestPOA('plotting materials exceptions')
-  except:
-    TestFOA('plotting materials exception', LINE())
+  except Exception as inst:
+    TestFOA('plotting materials exception "%s"'%str(inst), LINE())
     pass
   vqr_cleanup()
 
@@ -88,8 +88,8 @@ def setting_plot_attributes():
     # setting plot attributes }
     TestValueEQ('setting plot attributes message',GetLastError(),'')
     TestPOA('setting plot attributes exceptions')
-  except:
-    TestFOA('setting plot attributes exception', LINE())
+  except Exception as inst:
+    TestFOA('setting plot attributes exception "%s"'%str(inst), LINE())
     pass
   vqr_cleanup()
 
@@ -140,8 +140,8 @@ def working_with_multiple_plots():
     # working with multiple plots }
     TestValueEQ('working with multiple plots error message',GetLastError(),'')
     TestPOA('working with multiple plots exceptions')
-  except:
-    TestFOA('working with multiple plots exception', LINE())
+  except Exception as inst:
+    TestFOA('working with multiple plots exception "%s"'%str(inst), LINE())
     pass
   vqr_cleanup()
   CloseDatabase(silo_data_path("tire.silo"))
@@ -181,8 +181,8 @@ def plots_in_the_error_state():
     # plots in the error state }
     TestValueEQ('plots in the error state error message',GetLastError(),'')
     TestPOA('plots in the error state exceptions')
-  except:
-    TestFOA('plots in the error state exception', LINE())
+  except Exception as inst:
+    TestFOA('plots in the error state exception "%s"'%str(inst), LINE())
     pass
   vqr_cleanup()
 
