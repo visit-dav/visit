@@ -443,18 +443,11 @@ The 2D view consists of a rectangular window in 2D space and a 2D viewport in th
 The window in 2D space determines what parts of the visualization you will look at while the viewport determines where the images will appear in the visualization window. 
 It is not necessary to change the viewport most of the time.
 
-::
-
-    OpenDatabase("/usr/local/visit/data/noise.silo") 
-    AddPlot("Pseudocolor", "hgslice") 
-    AddPlot("Mesh", "Mesh2D") 
-    AddPlot("Label", "hgslice") 
-    DrawPlots() 
-    print("The current view is:", GetView2D())
-    # Get an initialized 2D view object. 
-    v = GetView2D() 
-    v.windowCoords = (-7.67964, -3.21856, 2.66766, 7.87724) 
-    SetView2D(v) 
+.. literalinclude:: ../../test/tests/quickrecipes/view.py
+    :language: Python
+    :start-after: # setting the 2d view {
+    :end-before: # setting the 2d view }
+    :dedent: 4
 
 Setting the 3D view
 ~~~~~~~~~~~~~~~~~~~
@@ -465,17 +458,11 @@ VisIt automatically computes a suitable view for 3D objects and it is best to in
 The best way to get new views to use in a script is to interactively create the plot and repeatedly call GetView3D() after you finish rotating the plots with the mouse. 
 You can paste the printed view information into your script and modify it slightly to create sophisticated view transitions.
 
-::
-
-    OpenDatabase("/usr/local/visit/data/noise.silo") 
-    AddPlot("Pseudocolor", "hardyglobal") 
-    AddPlot("Mesh", "Mesh") 
-    DrawPlots() 
-    v = GetView3D() 
-    print("The view is: ", v) 
-    v.viewNormal = (-0.571619, 0.405393, 0.713378) 
-    v.viewUp = (0.308049, 0.911853, -0.271346) 
-    SetView3D(v)
+.. literalinclude:: ../../test/tests/quickrecipes/view.py
+    :language: Python
+    :start-after: # setting the 3d view {
+    :end-before: # setting the 3d view }
+    :dedent: 4
 
 Flying around plots
 ~~~~~~~~~~~~~~~~~~~
