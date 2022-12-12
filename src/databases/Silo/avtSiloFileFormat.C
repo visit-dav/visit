@@ -5470,8 +5470,10 @@ avtSiloFileFormat::FindStandardConnectivity(DBfile *dbfile, int &ndomains,
         debug1 << "avtSiloFileFormat: using standard connectivity info" <<endl;
 
         // Look for absence of `Domain_0/BlockNum` along with the
-        // existence of `Domains_BlockNums` & `Domains_Extents`
+        // existence of `Domains_BlockNums` & `Domain_Extents`
         // to identify the rare "6th" silo decomp format.
+        //
+        // (yes, Domain_Extents is singular not plural form)
         //
         // This case is a blend of some of the arrays used for the mmadj and
         // "standard" format flavors.
@@ -5488,7 +5490,7 @@ avtSiloFileFormat::FindStandardConnectivity(DBfile *dbfile, int &ndomains,
         //
         if( !DBInqVarExists(dbfile,"Domain_0/BlockNum") &&
              DBInqVarExists(dbfile,"Domains_BlockNums") &&
-             DBInqVarExists(dbfile,"Domains_Extents") )
+             DBInqVarExists(dbfile,"Domain_Extents") )
         {
             debug1 << "avtSiloFileFormat: using the `6th` connectivity info "
                    << "format variant" <<endl;
@@ -5500,7 +5502,7 @@ avtSiloFileFormat::FindStandardConnectivity(DBfile *dbfile, int &ndomains,
 
             if(needConnectivityInfo)
             {
-                err |= DBReadVar(dbfile, "Domains_Extents", extents) != 0;
+                err |= DBReadVar(dbfile, "Domain_Extents", extents) != 0;
             }
 
             if (err)
@@ -5510,14 +5512,16 @@ avtSiloFileFormat::FindStandardConnectivity(DBfile *dbfile, int &ndomains,
                 return;
             }
 
-            // NOTE: The 6th format only appears during a full moon,
-            // and there will be no neighbors willing to connect.
-            for (int j = 0 ; j < ndomains ; j++)
+            if(needConnectivityInfo)
             {
-                nneighbors[j] = 0;
+                // NOTE: The 6th format only appears during a full moon,
+                // and there will be no neighbors willing to connect.
+                for (int j = 0 ; j < ndomains ; j++)
+                {
+                    nneighbors[j] = 0;
+                }
+                lneighbors = 0;
             }
-
-            lneighbors = 0;
         }
         else
         {
