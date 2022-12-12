@@ -1407,7 +1407,6 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
         else if (outputTypeIsBlueprint(outputType))
         {
 #ifdef HAVE_CONDUIT
-            std::cout << "we have conduit" << std::endl;
             // calculate constants for use in multiple functions
             // the following calculations must be the same as the calculations in avtXRayFilter.C!
             const double viewHeight{parallelScale};
@@ -1436,8 +1435,6 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
             const double farDetectorWidth{2. * farWidth};
             const double farDetectorHeight{2. * farHeight};
 
-            std::cout << "did calculations" << std::endl;
-
             // The following variables will be assigned values
             // when WriteBlueprintMeshes() is called.
             int numfieldvals;
@@ -1448,18 +1445,15 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
             WriteBlueprintMeshes(data_out, detectorWidth, detectorHeight, 
                 numBins, leaves, numfieldvals, intensity_vals, depth_vals);
 
-            std::cout << "wrote meshes" << std::endl;
             // all the metadata living under "state" is written in this function
             WriteBlueprintMetadata(data_out, cycle, numBins, 
                 detectorWidth, detectorHeight, 
                 numfieldvals, intensity_vals, depth_vals);
-            std::cout << "wrote metadata" << std::endl;
 
-            // // includes imaging planes, ray corners, and rays
-            // WriteBlueprintImagingMeshes(data_out,
-            //     nearWidth, nearHeight, viewWidth, viewHeight, farWidth, farHeight,
-            //     detectorWidth, detectorHeight, farDetectorWidth, farDetectorHeight);
-            // std::cout << "wrote imaging stuff" << std::endl;
+            // includes imaging planes, ray corners, and rays
+            WriteBlueprintImagingMeshes(data_out,
+                nearWidth, nearHeight, viewWidth, viewHeight, farWidth, farHeight,
+                detectorWidth, detectorHeight, farDetectorWidth, farDetectorHeight);
 
             // verify
             conduit::Node verify_info;
@@ -2298,26 +2292,21 @@ avtXRayImageQuery::WriteBlueprintXRayData(conduit::Node &data_out,
                                           const conduit::float64 *intensity_vals,
                                           const conduit::float64 *depth_vals)
 {
-    std::cout << "\t\tstart x ray data" << std::endl;
     // If the near plane is too far back, it can cause the near width
     // and height to be negative. However, the detector height and 
     // width ought to be positive values, hence the absolute value.
     data_out["state/xray_data/detectorWidth"] = fabs(detectorWidth);
     data_out["state/xray_data/detectorHeight"] = fabs(detectorHeight);
 
-    std::cout << "\t\twrote detector dims" << std::endl;
     // intensity and path length max and mins
     conduit::float64 int_max, int_min, pl_max, pl_min;
     int_max = int_min = pl_max = pl_min = 0;
     if (numfieldvals > 0)
     {
-        std::cout << "\t\tif true" << std::endl;
         int_max = int_min = intensity_vals[0];
         pl_max = pl_min = depth_vals[0];
-        std::cout << "\t\tI did a read" << std::endl;
         for (int i = 0; i < numfieldvals; i ++)
         {
-            std::cout << "for loop!" << std::endl;
             if (int_max < intensity_vals[i])
                 int_max = intensity_vals[i];
             if (int_min > intensity_vals[i])
@@ -2328,14 +2317,11 @@ avtXRayImageQuery::WriteBlueprintXRayData(conduit::Node &data_out,
                 pl_min = depth_vals[i];
         }
     }
-    std::cout << "\t\tcalculated mins and maxes" << std::endl;
 
     data_out["state/xray_data/intensityMax"] = int_max;
     data_out["state/xray_data/intensityMin"] = int_min;
     data_out["state/xray_data/pathLengthMax"] = pl_max;
     data_out["state/xray_data/pathLengthMin"] = pl_min;
-    std::cout << "\t\twrote the mins and maxes" << std::endl;
-
 }
 
 // ****************************************************************************
@@ -2361,19 +2347,14 @@ avtXRayImageQuery::WriteBlueprintMetadata(conduit::Node &data_out,
                                           const conduit::float64 *intensity_vals,
                                           const conduit::float64 *depth_vals)
 {
-    std::cout << "\tmetadata time" << std::endl;
     // top level items
     data_out["state/time"] = GetInput()->GetInfo().GetAttributes().GetTime();
     data_out["state/cycle"] = cycle;
-    std::cout << "\ttop level items" << std::endl;
 
     WriteBlueprintXRayView(data_out);
-    std::cout << "\tx ray view" << std::endl;
     WriteBlueprintXRayQuery(data_out, numBins);
-    std::cout << "\tx ray query" << std::endl;
     WriteBlueprintXRayData(data_out, detectorWidth, detectorHeight, 
                            numfieldvals, intensity_vals, depth_vals);
-    std::cout << "\tx ray data" << std::endl;
 }
 
 // ****************************************************************************
@@ -2450,12 +2431,18 @@ avtXRayImageQuery::WriteBlueprintMeshCoordsets(conduit::Node &data_out,
             out << "Energy group bounds size mismatch: provided " 
                 << nEnergyGroupBounds << " bounds, but " 
                 << z_coords_dim << " in query results.";
-            data_out["coordsets/spatial_coords/values/z"] = out.str();
+            data_out["coordsets/spatial_coords/info"] = out.str();
+            data_out["coordsets/spatial_coords/values/z"].set(conduit::DataType::int32(z_coords_dim));
+            int *zvals = data_out["coordsets/spatial_coords/values/z"].value();
+            for (int i = 0; i < z_coords_dim; i ++) { zvals[i] = i; }
         }
     }
     else
     {
-        data_out["coordsets/spatial_coords/values/z"] = "Energy group bounds not provided.";
+        data_out["coordsets/spatial_coords/info"] = "Energy group bounds not provided.";
+        data_out["coordsets/spatial_coords/values/z"].set(conduit::DataType::int32(z_coords_dim));
+        int *zvals = data_out["coordsets/spatial_coords/values/z"].value();
+        for (int i = 0; i < z_coords_dim; i ++) { zvals[i] = i; }
     }
 
     data_out["coordsets/spatial_coords/units/x"] = spatialUnits;
@@ -2510,8 +2497,8 @@ avtXRayImageQuery::WriteBlueprintMeshFields(conduit::Node &data_out,
                                             const int numfieldvals,
                                             const int numBins,
                                             vtkDataSet **leaves,
-                                            conduit::float64 *intensity_vals,
-                                            conduit::float64 *depth_vals)
+                                            conduit::float64 *&intensity_vals,
+                                            conduit::float64 *&depth_vals)
 {
     // intensities for image topo
     data_out["fields/intensities/topology"] = "image_topo";
@@ -2586,8 +2573,8 @@ avtXRayImageQuery::WriteBlueprintMeshes(conduit::Node &data_out,
                                         const int numBins,
                                         vtkDataSet **leaves,
                                         int &numfieldvals,
-                                        conduit::float64 *intensity_vals,
-                                        conduit::float64 *depth_vals)
+                                        conduit::float64 *&intensity_vals,
+                                        conduit::float64 *&depth_vals)
 {
     const int x_coords_dim = nx + 1;
     const int y_coords_dim = ny + 1;

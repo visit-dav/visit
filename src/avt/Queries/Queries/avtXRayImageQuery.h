@@ -230,16 +230,16 @@ class QUERY_API avtXRayImageQuery : public avtDatasetQuery
                                                        const int numfieldvals,
                                                        const int numBins,
                                                        vtkDataSet **leaves,
-                                                       conduit::float64 *intensity_vals,
-                                                       conduit::float64 *depth_vals);
+                                                       conduit::float64 *&intensity_vals,
+                                                       conduit::float64 *&depth_vals);
     void                      WriteBlueprintMeshes(conduit::Node &data_out, 
                                                    const double detectorWidth, 
                                                    const double detectorHeight,
                                                    const int numBins,
                                                    vtkDataSet **leaves,
                                                    int &numfieldvals,
-                                                   conduit::float64 *intensity_vals,
-                                                   conduit::float64 *depth_vals);
+                                                   conduit::float64 *&intensity_vals,
+                                                   conduit::float64 *&depth_vals);
     void                      WriteBlueprintXRayView(conduit::Node &data_out);
     void                      WriteBlueprintXRayQuery(conduit::Node &data_out, 
                                                       const int numBins);
