@@ -76,6 +76,9 @@
 //
 //    Eric Brugger, Thu Jun  4 15:56:25 PDT 2015
 //    I added an option to enable outputting the ray bounds to a vtk file.
+// 
+//    Justin Privitera, Mon Dec 12 13:28:55 PST 2022
+//    SetImageProperties now takes avtVectors for a few arguments.
 //
 // ****************************************************************************
 

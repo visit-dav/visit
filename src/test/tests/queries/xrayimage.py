@@ -62,6 +62,10 @@
 # 
 #    Justin Privitera, Wed Dec  7 16:16:16 PST 2022
 #    Added tests for the blueprint ray output.
+# 
+#    Justin Privitera, Mon Dec 12 13:28:55 PST 2022
+#    Reworked some of the blueprint output tests to reflect changes in 
+#    output metadata.
 #
 # ----------------------------------------------------------------------------
 
@@ -463,9 +467,11 @@ NO_ENERGY_GROUP_BOUNDS = 0
 ENERGY_GROUP_BOUNDS_MISMATCH = 1
 ENERGY_GROUP_BOUNDS = 2
 
-def test_bp_state(testname, conduit_db, bin_state = NO_ENERGY_GROUP_BOUNDS, units = UNITS_OFF):
+def test_bp_data(testname, conduit_db, bin_state = NO_ENERGY_GROUP_BOUNDS, units = UNITS_OFF):
     xrayout = conduit.Node()
     conduit.relay.io.blueprint.load_mesh(xrayout, conduit_db)
+
+    # test metadata
 
     time = xrayout["domain_000000/state/time"]
     TestValueEQ(testname + "_Time", time, 4.8)
@@ -476,6 +482,8 @@ def test_bp_state(testname, conduit_db, bin_state = NO_ENERGY_GROUP_BOUNDS, unit
     test_bp_state_xray_view(testname, xrayout)
     test_bp_state_xray_query(testname, xrayout, units)
     test_bp_state_xray_data(testname, xrayout)
+
+    # test data embedded within the meshes
 
     intensityUnits = xrayout["domain_000000/fields/intensities/units"]
     pathLengthUnits = xrayout["domain_000000/fields/path_length/units"]
@@ -550,7 +558,7 @@ def blueprint_test(output_type, outdir, testtextnumber, testname, hdf5 = False):
             params["abs_units"] = "abs units";
             params["emis_units"] = "emis units";
             params["intensity_units"] = "intensity units";
-            params["path_length_units"] = "path length metadata";
+            params["path_length_info"] = "path length metadata";
             Query("XRay Image", params)
         s = GetQueryOutputString()
         TestText("xrayimage" + str(testtextnumber + i), s)
@@ -568,12 +576,12 @@ def blueprint_test(output_type, outdir, testtextnumber, testname, hdf5 = False):
 
     if (hdf5):
         units = UNITS_OFF if i == 0 else UNITS_ON
-        test_bp_state(testname + str(i), conduit_db, bin_state=NO_ENERGY_GROUP_BOUNDS, units=units) # no bounds
+        test_bp_data(testname + str(i), conduit_db, bin_state=NO_ENERGY_GROUP_BOUNDS, units=units) # no bounds
         setup_bp_test()
         Query("XRay Image", output_type, outdir, 1, 0.0, 2.5, 10.0, 0, 0, 10., 10., 300, 200, ("d", "p"), [1,2,3])
-        test_bp_state(testname + str(i), conduit_db, bin_state=ENERGY_GROUP_BOUNDS_MISMATCH, units=UNITS_OFF) # bounds mismatch
+        test_bp_data(testname + str(i), conduit_db, bin_state=ENERGY_GROUP_BOUNDS_MISMATCH, units=UNITS_OFF) # bounds mismatch
         Query("XRay Image", output_type, outdir, 1, 0.0, 2.5, 10.0, 0, 0, 10., 10., 300, 200, ("d", "p"), [3.7, 4.2])
-        test_bp_state(testname + str(i), conduit_db, bin_state=ENERGY_GROUP_BOUNDS, units=UNITS_OFF) # bounds
+        test_bp_data(testname + str(i), conduit_db, bin_state=ENERGY_GROUP_BOUNDS, units=UNITS_OFF) # bounds
         DeleteAllPlots()
         CloseDatabase(silo_data_path("curv3d.silo"))
 

@@ -487,6 +487,10 @@ avtXRayFilter::UpdateDataObjectInfo(void)
 //    Eric Brugger, Wed Nov 19 15:48:18 PST 2014
 //    I modified the arguments so that they map one for one with the actual
 //    image properties stored in the class.
+// 
+//    Justin Privitera, Mon Dec 12 13:28:55 PST 2022
+//    Use avtVectors for some inputs since they come that way from 
+//    avtXRayImageQuery.
 //
 // ****************************************************************************
 

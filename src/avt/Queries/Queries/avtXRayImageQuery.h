@@ -102,6 +102,12 @@
 //    Justin Privitera, Wed Dec  7 16:16:16 PST 2022
 //    Added 5 new args to WriteBlueprintImagingPlane that act as containers for
 //    various calculated vector values.
+// 
+//    Justin Privitera, Mon Dec 12 13:28:55 PST 2022
+//     - Included avtVector.
+//     - Changed several vector values from double arrays to avtVectors.
+//     - Added a host of new blueprint-output-specific functions to simplify
+//    the blueprint output logic.
 //
 // ****************************************************************************
 

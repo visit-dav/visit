@@ -359,8 +359,8 @@ avtXRayImageQuery::SetInputParams(const MapNode &params)
         unitsmap["emisUnits"] = params.GetEntry("emis_units")->AsString();
     if (params.HasEntry("intensity_units"))
         unitsmap["intensityUnits"] = params.GetEntry("intensity_units")->AsString();
-    if (params.HasEntry("path_length_units"))
-        unitsmap["pathLengthUnits"] = params.GetEntry("path_length_units")->AsString();
+    if (params.HasEntry("path_length_info"))
+        unitsmap["pathLengthUnits"] = params.GetEntry("path_length_info")->AsString();
     SetUnits(unitsmap);
 
     if (params.HasNumericEntry("debug_ray"))
@@ -1928,6 +1928,7 @@ avtXRayImageQuery::WriteArrays(vtkDataSet **leaves,
         }
     }
 }
+#endif
 
 // ****************************************************************************
 //  Method: avtXRayImageQuery::WriteBlueprintImagingPlane
@@ -1945,7 +1946,7 @@ avtXRayImageQuery::WriteArrays(vtkDataSet **leaves,
 //     - Use the new Add3 inline function to reduce code lines. 
 //
 // ****************************************************************************
-
+#ifdef HAVE_CONDUIT
 void
 avtXRayImageQuery::WriteBlueprintImagingPlane(conduit::Node &data_out,
                                               const std::string plane_name,
@@ -1996,9 +1997,9 @@ avtXRayImageQuery::WriteBlueprintImagingPlane(conduit::Node &data_out,
     conduit::float64 *field_vals = data_out["fields/" + plane_name + "_field/values"].value();
     field_vals[0] = 0;
 }
-
+#endif
 // ****************************************************************************
-
+#ifdef HAVE_CONDUIT
 void
 WriteBlueprintRayCornersMesh(conduit::Node &data_out,
                              const avtVector &llc_near,
@@ -2048,6 +2049,7 @@ WriteBlueprintRayCornersMesh(conduit::Node &data_out,
     conduit::float64 *field_vals = data_out["fields/ray_corners_field/values"].value();
     for (int i = 0; i < num_corners; i ++) { field_vals[i] = 0; }
 }
+#endif
 
 // ****************************************************************************
 //  Method: avtXRayImageQuery::WriteBlueprintRaysMesh
@@ -2061,7 +2063,7 @@ WriteBlueprintRayCornersMesh(conduit::Node &data_out,
 //  Modifications:
 //
 // ****************************************************************************
-
+#ifdef HAVE_CONDUIT
 void
 avtXRayImageQuery::WriteBlueprintRaysMesh(conduit::Node &data_out,
                                           const double detectorWidth,
@@ -2140,6 +2142,7 @@ avtXRayImageQuery::WriteBlueprintRaysMesh(conduit::Node &data_out,
     conduit::float64 *field_vals = data_out["fields/ray_field/values"].value();
     for (int i = 0; i < num_lines; i ++) { field_vals[i] = i; }
 }
+#endif
 
 // ****************************************************************************
 //  Method: avtXRayImageQuery::WriteBlueprintImagingMeshes
@@ -2153,7 +2156,7 @@ avtXRayImageQuery::WriteBlueprintRaysMesh(conduit::Node &data_out,
 //  Modifications:
 //
 // ****************************************************************************
-
+#ifdef HAVE_CONDUIT
 void
 avtXRayImageQuery::WriteBlueprintImagingMeshes(conduit::Node &data_out,
                                                const double nearWidth, 
@@ -2206,6 +2209,7 @@ avtXRayImageQuery::WriteBlueprintImagingMeshes(conduit::Node &data_out,
         farDetectorWidth, farDetectorHeight, lrc_far,
         left);
 }
+#endif
 
 // ****************************************************************************
 //  Method: avtXRayImageQuery::WriteBlueprintXRayView
@@ -2219,7 +2223,7 @@ avtXRayImageQuery::WriteBlueprintImagingMeshes(conduit::Node &data_out,
 //  Modifications:
 //
 // ****************************************************************************
-
+#ifdef HAVE_CONDUIT
 void
 avtXRayImageQuery::WriteBlueprintXRayView(conduit::Node &data_out)
 {
@@ -2242,6 +2246,7 @@ avtXRayImageQuery::WriteBlueprintXRayView(conduit::Node &data_out)
     data_out["state/xray_view/perspective"] = perspective;
     data_out["state/xray_view/perspectiveStr"] = perspective ? "perspective" : "parallel";
 }
+#endif
 
 // ****************************************************************************
 //  Method: avtXRayImageQuery::WriteBlueprintXRayQuery
@@ -2255,7 +2260,7 @@ avtXRayImageQuery::WriteBlueprintXRayView(conduit::Node &data_out)
 //  Modifications:
 //
 // ****************************************************************************
-
+#ifdef HAVE_CONDUIT
 void
 avtXRayImageQuery::WriteBlueprintXRayQuery(conduit::Node &data_out, 
                                            const int numBins)
@@ -2270,6 +2275,7 @@ avtXRayImageQuery::WriteBlueprintXRayQuery(conduit::Node &data_out,
     data_out["state/xray_query/absUnits"] = absUnits;
     data_out["state/xray_query/emisUnits"] = emisUnits;
 }
+#endif
 
 // ****************************************************************************
 //  Method: avtXRayImageQuery::WriteBlueprintXRayData
@@ -2283,7 +2289,7 @@ avtXRayImageQuery::WriteBlueprintXRayQuery(conduit::Node &data_out,
 //  Modifications:
 //
 // ****************************************************************************
-
+#ifdef HAVE_CONDUIT
 void
 avtXRayImageQuery::WriteBlueprintXRayData(conduit::Node &data_out, 
                                           const double detectorWidth, 
@@ -2323,6 +2329,7 @@ avtXRayImageQuery::WriteBlueprintXRayData(conduit::Node &data_out,
     data_out["state/xray_data/pathLengthMax"] = pl_max;
     data_out["state/xray_data/pathLengthMin"] = pl_min;
 }
+#endif
 
 // ****************************************************************************
 //  Method: avtXRayImageQuery::WriteBlueprintMetadata
@@ -2336,7 +2343,7 @@ avtXRayImageQuery::WriteBlueprintXRayData(conduit::Node &data_out,
 //  Modifications:
 //
 // ****************************************************************************
-
+#ifdef HAVE_CONDUIT
 void
 avtXRayImageQuery::WriteBlueprintMetadata(conduit::Node &data_out,
                                           const int cycle,
@@ -2356,6 +2363,7 @@ avtXRayImageQuery::WriteBlueprintMetadata(conduit::Node &data_out,
     WriteBlueprintXRayData(data_out, detectorWidth, detectorHeight, 
                            numfieldvals, intensity_vals, depth_vals);
 }
+#endif
 
 // ****************************************************************************
 //  Method: avtXRayImageQuery::WriteBlueprintMeshCoordsets
@@ -2369,7 +2377,7 @@ avtXRayImageQuery::WriteBlueprintMetadata(conduit::Node &data_out,
 //  Modifications:
 //
 // ****************************************************************************
-
+#ifdef HAVE_CONDUIT
 void
 avtXRayImageQuery::WriteBlueprintMeshCoordsets(conduit::Node &data_out,
                                                const int x_coords_dim,
@@ -2453,6 +2461,7 @@ avtXRayImageQuery::WriteBlueprintMeshCoordsets(conduit::Node &data_out,
     data_out["coordsets/spatial_coords/labels/y"] = "height";
     data_out["coordsets/spatial_coords/labels/z"] = "energy_group";
 }
+#endif
 
 // ****************************************************************************
 //  Method: avtXRayImageQuery::WriteBlueprintMeshTopologies
@@ -2466,7 +2475,7 @@ avtXRayImageQuery::WriteBlueprintMeshCoordsets(conduit::Node &data_out,
 //  Modifications:
 //
 // ****************************************************************************
-
+#ifdef HAVE_CONDUIT
 void
 avtXRayImageQuery::WriteBlueprintMeshTopologies(conduit::Node &data_out)
 {
@@ -2478,6 +2487,7 @@ avtXRayImageQuery::WriteBlueprintMeshTopologies(conduit::Node &data_out)
     data_out["topologies/spatial_topo/coordset"] = "spatial_coords";
     data_out["topologies/spatial_topo/type"] = "rectilinear";
 }
+#endif
 
 // ****************************************************************************
 //  Method: avtXRayImageQuery::WriteBlueprintMeshFields
@@ -2491,7 +2501,7 @@ avtXRayImageQuery::WriteBlueprintMeshTopologies(conduit::Node &data_out)
 //  Modifications:
 //
 // ****************************************************************************
-
+#ifdef HAVE_CONDUIT
 void
 avtXRayImageQuery::WriteBlueprintMeshFields(conduit::Node &data_out, 
                                             const int numfieldvals,
@@ -2552,6 +2562,7 @@ avtXRayImageQuery::WriteBlueprintMeshFields(conduit::Node &data_out,
     // then modify the topo
     data_out["fields/path_length_spatial/topology"] = "spatial_topo";
 }
+#endif
 
 // ****************************************************************************
 //  Method: avtXRayImageQuery::WriteBlueprintMeshes
@@ -2565,7 +2576,7 @@ avtXRayImageQuery::WriteBlueprintMeshFields(conduit::Node &data_out,
 //  Modifications:
 //
 // ****************************************************************************
-
+#ifdef HAVE_CONDUIT
 void
 avtXRayImageQuery::WriteBlueprintMeshes(conduit::Node &data_out, 
                                         const double detectorWidth, 
@@ -2593,7 +2604,6 @@ avtXRayImageQuery::WriteBlueprintMeshes(conduit::Node &data_out,
     WriteBlueprintMeshFields(data_out, numfieldvals, numBins, 
         leaves, intensity_vals, depth_vals);
 }
-
 #endif
 
 // ****************************************************************************
@@ -2659,7 +2669,7 @@ avtXRayImageQuery::GetDefaultInputParams(MapNode &params)
     params["abs_units"] = std::string("abs units");
     params["emis_units"] = std::string("emis units");
     params["intensity_units"] = std::string("intensity units");
-    params["path_length_units"] = std::string("path length info");
+    params["path_length_info"] = std::string("path length info");
 
     //
     // The old view parameters.
