@@ -300,6 +300,9 @@ avtXRayImageQuery::~avtXRayImageQuery()
 // 
 //    Justin Privitera, Wed Nov 30 17:43:48 PST 2022
 //    Added logic to handle passing through the units.
+// 
+//    Justin Privitera, Mon Dec 12 13:28:55 PST 2022
+//    Changed path_length_units to path_length_info.
 //
 // ****************************************************************************
 
@@ -1127,6 +1130,10 @@ avtXRayImageQuery::GetSecondaryVars(std::vector<std::string> &outVars)
 //     - Pass corner coord containers to my imaging plane calculation methods
 //    so those values can be used to calculate the rays.
 //     - Added ray corners mesh and rays mesh.
+// 
+//    Justin Privitera, Mon Dec 12 13:28:55 PST 2022
+//    Major refactor of blueprint output logic. Most calculations are pushed
+//    down into helpers.
 //
 // ****************************************************************************
 
@@ -1944,6 +1951,12 @@ avtXRayImageQuery::WriteArrays(vtkDataSet **leaves,
 //     - Added 5 new args that act as containers for various calculated vector 
 //    values.
 //     - Use the new Add3 inline function to reduce code lines. 
+// 
+//    Justin Privitera, Mon Dec 12 13:28:55 PST 2022
+//     - Use avtVectors.
+//     - Changed order and names of arguments.
+//     - Some calculations were lifted out of the function.
+//     - Calculated values are sent back up the call stack.
 //
 // ****************************************************************************
 #ifdef HAVE_CONDUIT
@@ -2655,6 +2668,9 @@ avtXRayImageQuery::WriteBlueprintMeshes(conduit::Node &data_out,
 // 
 //    Justin Privitera, Thu Dec  1 11:39:12 PST 2022
 //    Added all missing default input parameters.
+// 
+//    Justin Privitera, Mon Dec 12 13:28:55 PST 2022
+//    Changed path_length_units to path_length_info.
 //
 // ****************************************************************************
 

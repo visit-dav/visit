@@ -108,6 +108,7 @@
 //     - Changed several vector values from double arrays to avtVectors.
 //     - Added a host of new blueprint-output-specific functions to simplify
 //    the blueprint output logic.
+//     - Deleted all the inline vector math functions.
 //
 // ****************************************************************************
 
