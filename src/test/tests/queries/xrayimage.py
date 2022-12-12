@@ -66,6 +66,7 @@
 #    Justin Privitera, Mon Dec 12 13:28:55 PST 2022
 #    Reworked some of the blueprint output tests to reflect changes in 
 #    output metadata.
+#    Added new tests for path length and spatial extent images.
 #
 # ----------------------------------------------------------------------------
 
