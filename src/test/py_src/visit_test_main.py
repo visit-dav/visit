@@ -1936,7 +1936,7 @@ def TestValueOp(case_name, actual, expected, rndprec=5, oper=operator.eq, dolog=
     result = False
     is_numeric = False
 
-    # Check if both objects are iterable (e.g. we several we need to iterate over)
+    # Check if both objects are iterable (e.g. several we need to iterate over)
     expected_iter = None
     actual_iter = None
     try:
