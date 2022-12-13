@@ -37,6 +37,7 @@ def vqr_cleanup():
   DeleteAllPlots()
   for db in GetGlobalAttributes().sources:
       CloseDatabase(db)
+  GetLastError(1) # clear out any error string
 
 #
 # Map VisIt functions so they use vqr_path to map paths
