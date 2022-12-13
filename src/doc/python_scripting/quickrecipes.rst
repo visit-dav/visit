@@ -593,7 +593,7 @@ Working with Color Tables
 Sometimes it is helpful to create a new color table or manipulate an existing user defined color table.
 Color tables consist of ``ControlPoints`` which specify color and position in the color spectrum as well as a few other standard options.
 
-Existing color tables can be retreived by name via ``GetColorTable`` as in: ::
+Existing color tables can be retreived by name via ``GetColorTable`` as in:
 
 .. literalinclude:: ../../test/tests/quickrecipes/colortables.py
     :language: Python
