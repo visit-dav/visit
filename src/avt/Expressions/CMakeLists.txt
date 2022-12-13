@@ -62,340 +62,75 @@
 #    Renamed Derivations/avtStrainTensorExpression to
 #    Derivations/avtStrainExpression
 #
-#****************************************************************************/
+#    Kathleen Biagas, Tue Dec 13, 2022
+#    Moved setting of sources to subdirs.
+#
+#*****************************************************************************
 
-SET(ABSTRACT_SOURCES
-Abstract/avtBinaryMathExpression.C
-Abstract/avtComparisonExpression.C
-Abstract/avtExpressionFilter.C
-Abstract/avtExpressionDataTreeIterator.C
-Abstract/avtMacroExpressionFilter.C
-Abstract/avtMultipleInputExpressionFilter.C
-Abstract/avtMultipleInputMathExpression.C
-Abstract/avtSingleInputExpressionFilter.C
-Abstract/avtUnaryMathExpression.C
-)
+add_library(avtexpressions_ser)
+if(VISIT_PARALLEL)
+    ADD_PARALLEL_LIBRARY(avtexpressions_par)
+endif()
 
-SET(CONDITIONAL_SOURCES
-Conditional/avtConditionalExpression.C
-Conditional/avtLogicalAndExpression.C
-Conditional/avtLogicalOrExpression.C
-Conditional/avtLogicalNegationExpression.C
-Conditional/avtTestEqualToExpression.C
-Conditional/avtTestGreaterThanExpression.C
-Conditional/avtTestGreaterThanOrEqualToExpression.C
-Conditional/avtTestLessThanExpression.C
-Conditional/avtTestLessThanOrEqualToExpression.C
-Conditional/avtTestNotEqualToExpression.C
-)
+add_subdirectory(Abstract)
+add_subdirectory(Conditional)
+add_subdirectory(CMFE)
+add_subdirectory(Derivations)
+add_subdirectory(General)
+add_subdirectory(ImageProcessing)
+add_subdirectory(Management)
+add_subdirectory(Math)
+add_subdirectory(MeshQuality)
+add_subdirectory(TimeIterators)
 
-SET(CMFE_SOURCES
-CMFE/avtCMFEExpression.C
-CMFE/avtConnCMFEExpression.C
-CMFE/avtCurveCMFEExpression.C
-CMFE/avtEvalPlaneExpression.C
-CMFE/avtEvalPointExpression.C
-CMFE/avtEvalTransformExpression.C
-CMFE/avtPosCMFEAlgorithm.C
-CMFE/avtPosCMFEExpression.C
-CMFE/avtSymmEvalExpression.C
-CMFE/avtSymmPlaneExpression.C
-CMFE/avtSymmPointExpression.C
-CMFE/avtSymmTransformExpression.C
-)
+include_directories(
+    ${VISIT_COMMON_INCLUDES}
+    ${VISIT_SOURCE_DIR}/avt/Math
+    ${VISIT_SOURCE_DIR}/avt/VisWindow/VisWindow
+    ${VISIT_SOURCE_DIR}/avt/DBAtts/MetaData
+    ${VISIT_SOURCE_DIR}/avt/DBAtts/SIL
+    ${VISIT_SOURCE_DIR}/avt/Database/Database
+    ${VISIT_SOURCE_DIR}/avt/DataBinning
+    ${VISIT_SOURCE_DIR}/avt/Filters
+    ${VISIT_SOURCE_DIR}/avt/MIR/Base
+    ${VISIT_SOURCE_DIR}/avt/MIR/Tet
+    ${VISIT_SOURCE_DIR}/avt/MIR/Zoo
+    ${VISIT_SOURCE_DIR}/avt/Pipeline/AbstractFilters
+    ${VISIT_SOURCE_DIR}/avt/Pipeline/Data
+    ${VISIT_SOURCE_DIR}/avt/Pipeline/Pipeline
+    ${VISIT_SOURCE_DIR}/avt/Pipeline/Sinks
+    ${VISIT_SOURCE_DIR}/avt/Pipeline/Sources
+    ${VISIT_SOURCE_DIR}/avt/Plotter
+    ${VISIT_SOURCE_DIR}/visit_vtk/full
+    ${VISIT_SOURCE_DIR}/visit_vtk/lightweight
+    ${VISIT_SOURCE_DIR}/vtkm
+    ${VISIT_SOURCE_DIR}/third_party_builtin/verdict
+    ${VTK_INCLUDE_DIRS}
+    ${VTKM_INCLUDE_DIR})
 
-SET(DERIVATIONS_SOURCES
-Derivations/avtCurvatureExpression.C
-Derivations/avtDisplacementExpression.C
-Derivations/avtEffectiveTensorExpression.C
-Derivations/avtLocalizedCompactnessExpression.C
-Derivations/avtPrincipalDeviatoricTensorExpression.C
-Derivations/avtPrincipalTensorExpression.C
-Derivations/avtRelativeVolumeExpression.C
-Derivations/avtStrainVolumetricExpression.C
-Derivations/avtStrainAlmansiExpression.C
-Derivations/avtStrainGreenLagrangeExpression.C
-Derivations/avtStrainInfinitesimalExpression.C
-Derivations/avtStrainRateExpression.C
-Derivations/avtStrainExpression.C
-Derivations/avtTensorMaximumShearExpression.C
-)
-
-SET(GENERAL_SOURCES
-General/avtApplyDataBinningExpression.C
-General/avtApplyEnumerationExpression.C
-General/avtApplyMapExpression.C
-General/avtArrayComponentwiseProductExpression.C
-General/avtArrayComponentwiseDivisionExpression.C
-General/avtArrayComposeExpression.C
-General/avtArrayComposeWithBinsExpression.C
-General/avtArrayDecomposeExpression.C
-General/avtArrayDecompose2DExpression.C
-General/avtArraySumExpression.C
-General/avtBinExpression.C
-General/avtColorComposeExpression.C
-General/avtConnComponentsExpression.C
-General/avtConstantFunctionExpression.C
-General/avtCoordinateExtremaExpression.C
-General/avtCrackWidthExpression.C
-General/avtCurlExpression.C
-General/avtCurveDomainExpression.C
-General/avtCurveExpression.C
-General/avtCurveIntegrateExpression.C
-General/avtCurveSwapXYExpression.C
-General/avtDataIdExpression.C
-General/avtDegreeExpression.C
-General/avtDistanceToBestFitLineExpression.C
-General/avtDivergenceExpression.C
-General/avtDominantMaterialExpression.C
-General/avtEdgeNormalExpression.C
-General/avtExpressionComponentMacro.C
-General/avtFindExternalExpression.C
-General/avtGeodesicVectorQuantizeExpression.C
-General/avtGhostZoneIdExpression.C
-General/avtGradientExpression.C
-General/avtHSVColorComposeExpression.C
-General/avtIsNaNExpression.C
-General/avtKeyAggregatorExpression.C
-General/avtLambda2Expression.C
-General/avtLaplacianExpression.C
-General/avtLocalThresholdExpression.C
-General/avtMIRvfExpression.C
-General/avtMagnitudeExpression.C
-General/avtMatErrorExpression.C
-General/avtMatvfExpression.C
-General/avtMergeTreeExpression.C
-General/avtMeshCoordinateExpression.C
-General/avtMinMaxExpression.C
-General/avtNMatsExpression.C
-General/avtNeighborEvaluatorExpression.C
-General/avtNormalizeExpression.C
-General/avtPerMaterialValueExpression.C
-General/avtPerformColorTableLookupExpression.C
-General/avtProcessorIdExpression.C
-General/avtThreadIdExpression.C
-General/avtQCriterionExpression.C
-General/avtRandomExpression.C
-General/avtRecenterExpression.C
-General/avtRectilinearLaplacianExpression.C
-General/avtRelativeDifferenceExpression.C
-General/avtResampleExpression.C
-General/avtResradExpression.C
-General/avtSpecMFExpression.C
-General/avtSurfaceNormalExpression.C
-General/avtTensorContractionExpression.C
-General/avtTransposeExpression.C
-General/avtVariableSkewExpression.C
-General/avtVectorComposeExpression.C
-General/avtVectorDecomposeExpression.C
-General/avtViscousStressExpression.C
-General/avtZoneCentersExpression.C
-General/avtZoneTypeLabelExpression.C
-General/avtZoneTypeRankExpression.C
-)
-
-IF(VISIT_PYTHON_FILTERS)
-    LIST(APPEND GENERAL_SOURCES General/avtPythonExpression.C)
-ENDIF(VISIT_PYTHON_FILTERS)
-
-SET(IMAGEPROCESSING_SOURCES
-ImageProcessing/avtAbelInversionExpression.C
-ImageProcessing/avtConservativeSmoothingExpression.C
-ImageProcessing/avtMeanFilterExpression.C
-ImageProcessing/avtMedianFilterExpression.C
-)
-
-SET(MANAGEMENT_SOURCES
-Management/avtConstantCreatorExpression.C
-Management/avtDeferExpressionBaseFilter.C
-Management/avtExecuteThenTimeLoopFilter.C
-Management/avtExpressionEvaluatorFilter.C
-Management/avtExprNode.C
-Management/avtExprNodeFactory.C
-Management/avtFunctionExpr_CreateConditionalFilters.C 
-Management/avtFunctionExpr_CreateMeshQualityFilters.C 
-Management/avtFunctionExpr_CreateCMFEFilters.C 
-Management/avtFunctionExpr_CreateTimeAndValueFilters.C 
-Management/avtFunctionExpr_CreateImageProcessingFilters.C 
-Management/avtFunctionExpr_CreateVectorMatrixFilters.C 
-Management/avtFunctionExpr_CreateMathFilters.C 
-Management/avtFunctionExpr_CreateMeshFilters.C 
-Management/avtFunctionExpr_CreateMaterialFilters.C 
-Management/avtTimeExpression.C 
-Management/ExprPipelineState.C
-)
-
-SET(MATH_SOURCES
-Math/avtAbsValExpression.C
-Math/avtArccosExpression.C
-Math/avtArcsinExpression.C
-Math/avtArctanExpression.C
-Math/avtArctan2Expression.C
-Math/avtBase10LogExpression.C
-Math/avtBase10LogWithMinExpression.C
-Math/avtBinaryAddExpression.C
-Math/avtBinaryAndExpression.C
-Math/avtBinaryDivideExpression.C
-Math/avtBinaryMultiplyExpression.C
-Math/avtBinaryPowerExpression.C
-Math/avtBinarySubtractExpression.C
-Math/avtCeilingExpression.C
-Math/avtCosExpression.C
-Math/avtCoshExpression.C
-Math/avtCylindricalCoordinatesExpression.C
-Math/avtCylindricalRadiusExpression.C
-Math/avtDegreeToRadianExpression.C
-Math/avtDeterminantExpression.C
-Math/avtEigenvalueExpression.C
-Math/avtEigenvectorExpression.C
-Math/avtExpExpression.C
-Math/avtFloorExpression.C
-Math/avtIdentityExpression.C
-Math/avtModuloExpression.C
-Math/avtInverseExpression.C
-Math/avtNaturalLogExpression.C
-Math/avtPolarCoordinatesExpression.C
-Math/avtRadianToDegreeExpression.C
-Math/avtRoundExpression.C
-Math/avtSinExpression.C
-Math/avtSinhExpression.C
-Math/avtSmartDivideExpression.C
-Math/avtSquareExpression.C
-Math/avtSquareRootExpression.C
-Math/avtTanExpression.C
-Math/avtTanhExpression.C
-Math/avtTraceExpression.C
-Math/avtUnaryMinusExpression.C
-Math/avtVectorCrossProductExpression.C
-)
-
-SET(MESHQUALITY_SOURCES
-MeshQuality/avtCornerAngle.C
-MeshQuality/avtEdgeLength.C
-MeshQuality/avtFacePlanarity.C
-MeshQuality/avtNeighborExpression.C
-MeshQuality/avtNodeDegreeExpression.C
-MeshQuality/avtRevolvedSurfaceArea.C
-MeshQuality/avtRevolvedVolume.C
-MeshQuality/avtSideVolume.C
-MeshQuality/avtVMetricArea.C
-MeshQuality/avtVMetricAspectGamma.C
-MeshQuality/avtVMetricAspectRatio.C
-MeshQuality/avtVMetricCondition.C
-MeshQuality/avtVMetricDiagonalRatio.C
-MeshQuality/avtVMetricDimension.C
-MeshQuality/avtVMetricJacobian.C
-MeshQuality/avtVMetricMaxDiagonal.C
-MeshQuality/avtVMetricMaximumAngle.C
-MeshQuality/avtVMetricMinDiagonal.C
-MeshQuality/avtVMetricMinimumAngle.C
-MeshQuality/avtVMetricOddy.C
-MeshQuality/avtVMetricRelativeSize.C
-MeshQuality/avtVMetricScaledJacobian.C
-MeshQuality/avtVMetricShape.C
-MeshQuality/avtVMetricShapeAndSize.C
-MeshQuality/avtVMetricShear.C
-MeshQuality/avtVMetricSkew.C
-MeshQuality/avtVMetricStretch.C
-MeshQuality/avtVMetricTaper.C
-MeshQuality/avtVMetricVolume.C
-MeshQuality/avtVMetricWarpage.C
-MeshQuality/avtVerdictExpression.C
-MeshQuality/avtMinCornerArea.C
-MeshQuality/avtMinSinCorner.C
-)
-
-SET(TIMEITERATORS_SOURCES
-TimeIterators/avtAverageOverTimeExpression.C
-TimeIterators/avtMaxOverTimeExpression.C
-TimeIterators/avtMinOverTimeExpression.C
-TimeIterators/avtSumOverTimeExpression.C
-TimeIterators/avtTimeIteratorDataTreeIteratorExpression.C
-TimeIterators/avtTimeIteratorExpression.C
-TimeIterators/avtValueAtExtremaExpression.C
-TimeIterators/avtWhenConditionIsTrueExpression.C
-)
-
-SET(AVTEXPRESSIONS_SOURCES
-${ABSTRACT_SOURCES}
-${CONDITIONAL_SOURCES}
-${CMFE_SOURCES}
-${DERIVATIONS_SOURCES}
-${GENERAL_SOURCES}
-${IMAGEPROCESSING_SOURCES}
-${MANAGEMENT_SOURCES}
-${MATH_SOURCES}
-${MESHQUALITY_SOURCES}
-${TIMEITERATORS_SOURCES}
-)
-
-INCLUDE_DIRECTORIES(
-${VISIT_COMMON_INCLUDES}
-${CMAKE_CURRENT_SOURCE_DIR}/Abstract
-${CMAKE_CURRENT_SOURCE_DIR}/CMFE
-${CMAKE_CURRENT_SOURCE_DIR}/Conditional
-${CMAKE_CURRENT_SOURCE_DIR}/Derivations
-${CMAKE_CURRENT_SOURCE_DIR}/General
-${CMAKE_CURRENT_SOURCE_DIR}/ImageProcessing
-${CMAKE_CURRENT_SOURCE_DIR}/Management
-${CMAKE_CURRENT_SOURCE_DIR}/Math
-${CMAKE_CURRENT_SOURCE_DIR}/MeshQuality
-${CMAKE_CURRENT_SOURCE_DIR}/TimeIterators
-${VISIT_SOURCE_DIR}/avt/Math
-${VISIT_SOURCE_DIR}/avt/VisWindow/VisWindow
-${VISIT_SOURCE_DIR}/avt/DBAtts/MetaData
-${VISIT_SOURCE_DIR}/avt/DBAtts/SIL
-${VISIT_SOURCE_DIR}/avt/Database/Database
-${VISIT_SOURCE_DIR}/avt/DataBinning
-${VISIT_SOURCE_DIR}/avt/Filters
-${VISIT_SOURCE_DIR}/avt/MIR/Base
-${VISIT_SOURCE_DIR}/avt/MIR/Tet
-${VISIT_SOURCE_DIR}/avt/MIR/Zoo
-${VISIT_SOURCE_DIR}/avt/Pipeline/AbstractFilters
-${VISIT_SOURCE_DIR}/avt/Pipeline/Data
-${VISIT_SOURCE_DIR}/avt/Pipeline/Pipeline
-${VISIT_SOURCE_DIR}/avt/Pipeline/Sinks
-${VISIT_SOURCE_DIR}/avt/Pipeline/Sources
-${VISIT_SOURCE_DIR}/avt/Plotter
-${VISIT_SOURCE_DIR}/visit_vtk/full
-${VISIT_SOURCE_DIR}/visit_vtk/lightweight
-${VISIT_SOURCE_DIR}/vtkm
-${VISIT_SOURCE_DIR}/third_party_builtin/verdict
-${VTK_INCLUDE_DIRS}
-${VTKM_INCLUDE_DIR}
-)
-
-IF(VISIT_PYTHON_FILTERS)
-    INCLUDE_DIRECTORIES(
+if(VISIT_PYTHON_FILTERS)
+    include_directories(
         ${PYTHON_INCLUDE_PATH}
         ${VISIT_SOURCE_DIR}/avt/PythonFilters
-        ${VISIT_SOURCE_DIR}/visitpy/common/
-    )
-ENDIF(VISIT_PYTHON_FILTERS)
-
-
-# Add link directories
-LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY})
-
-IF(VISIT_PYTHON_FILTERS)
-    LINK_DIRECTORIES(${PYTHON_LIBRARY_DIRS})
-ENDIF(VISIT_PYTHON_FILTERS)
-
+        ${VISIT_SOURCE_DIR}/visitpy/common/)
+endif()
 
 #********************************* SERIAL ************************************
-ADD_LIBRARY(avtexpressions_ser ${AVTEXPRESSIONS_SOURCES})
-TARGET_LINK_LIBRARIES(avtexpressions_ser visitcommon avtdbatts avtdatabase_ser avtdbin_ser avtplotter_ser avtfilters_ser avtpipeline_ser)
-IF(VISIT_PYTHON_FILTERS)
-    TARGET_LINK_LIBRARIES(avtexpressions_ser avtpythonfilters_ser)
-ENDIF(VISIT_PYTHON_FILTERS)
+target_link_libraries(avtexpressions_ser visitcommon avtdbatts avtdatabase_ser
+    avtdbin_ser avtplotter_ser avtfilters_ser avtpipeline_ser)
+if(VISIT_PYTHON_FILTERS)
+    target_link_libraries(avtexpressions_ser avtpythonfilters_ser)
+endif()
 VISIT_INSTALL_TARGETS(avtexpressions_ser)
 
 #********************************* PARALLEL **********************************
-IF(VISIT_PARALLEL)
-    ADD_PARALLEL_LIBRARY(avtexpressions_par ${AVTEXPRESSIONS_SOURCES})
-    TARGET_LINK_LIBRARIES(avtexpressions_par visitcommon avtdbatts avtdatabase_par avtdbin_par avtplotter_par avtfilters_par avtpipeline_par)
-    IF(VISIT_PYTHON_FILTERS)
-        TARGET_LINK_LIBRARIES(avtexpressions_par avtpythonfilters_par)
-    ENDIF(VISIT_PYTHON_FILTERS)
+if(VISIT_PARALLEL)
+    target_link_libraries(avtexpressions_par visitcommon avtdbatts
+        avtdatabase_par avtdbin_par avtplotter_par avtfilters_par
+        avtpipeline_par)
+    if(VISIT_PYTHON_FILTERS)
+        target_link_libraries(avtexpressions_par avtpythonfilters_par)
+    endif()
     VISIT_INSTALL_TARGETS(avtexpressions_par)
-ENDIF(VISIT_PARALLEL)
+endif()
+

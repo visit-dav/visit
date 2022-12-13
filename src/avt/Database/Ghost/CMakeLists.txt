@@ -7,7 +7,6 @@
 #
 #****************************************************************************
 
-
 set(GHOST_SOURCES
     avtDomainBoundaries.C
     avtGhostNodeGenerator.C
