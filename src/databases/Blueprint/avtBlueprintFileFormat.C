@@ -205,6 +205,10 @@ avtBlueprintFileFormat::FreeUpResources(void)
 //    Cyrus Harrison, Tue Mar 10 13:15:26 PDT 2020
 //    Support empty mesh case.
 //
+//    Cyrus Harrison, Tue Dec 13 12:17:17 PST 2022
+//    Refactor to pass mesh name to tree cache for part map style index
+//    support.
+//
 // ****************************************************************************
 void
 avtBlueprintFileFormat::ReadBlueprintMesh(int domain,
@@ -227,12 +231,6 @@ avtBlueprintFileFormat::ReadBlueprintMesh(int domain,
         EXCEPTION1(InvalidVariableException, mesh_name);
     }
 
-
-    string file_pattern = FileFunctions::Dirname(GetFilename())
-                          + string("/")
-                          + m_root_node["file_pattern"].as_string();
-    string tree_pattern = m_root_node["tree_pattern"].as_string();
-
     const Node &bp_index_mesh_node = m_root_node["blueprint_index"][mesh_name];
     const Node &bp_index_topo_node = bp_index_mesh_node["topologies"][topo_name];
 
@@ -247,6 +245,7 @@ avtBlueprintFileFormat::ReadBlueprintMesh(int domain,
     try
     {
         m_tree_cache->FetchBlueprintTree(domain,
+                                         mesh_name,
                                          coords_path,
                                          out["coordsets"][coordset_name]);
     }
@@ -268,6 +267,7 @@ avtBlueprintFileFormat::ReadBlueprintMesh(int domain,
     try
     {
         m_tree_cache->FetchBlueprintTree(domain,
+                                         mesh_name,
                                          topo_path,
                                          out["topologies"][topo_name]);
     }
@@ -325,6 +325,7 @@ avtBlueprintFileFormat::ReadBlueprintMesh(int domain,
 
             BP_PLUGIN_INFO("boundary topology path " << bnd_topo_path);
             m_tree_cache->FetchBlueprintTree(domain,
+                                             mesh_name,
                                              bnd_topo_path,
                                              out["topologies"][bndry_topo_name]);
         }
@@ -356,6 +357,7 @@ avtBlueprintFileFormat::ReadBlueprintMesh(int domain,
 
            BP_PLUGIN_INFO("grid function path " << gf_path);
            m_tree_cache->FetchBlueprintTree(domain,
+                                            mesh_name,
                                             gf_path,
                                             out["fields"][gf_name]);
         }
@@ -408,6 +410,7 @@ avtBlueprintFileFormat::ReadBlueprintMesh(int domain,
         {
             // load the data for the mesh att tree
             m_tree_cache->FetchBlueprintTree(domain,
+                                             mesh_name,
                                              mesh_att_path,
                                              out["fields/mesh_attribute"]);
         }
@@ -416,6 +419,7 @@ avtBlueprintFileFormat::ReadBlueprintMesh(int domain,
         {
             // load the data for the bndry att tree
             m_tree_cache->FetchBlueprintTree(domain,
+                                             mesh_name,
                                              bndry_att_path,
                                              out["fields/boundary_attribute"]);
         }
@@ -488,18 +492,12 @@ avtBlueprintFileFormat::ReadBlueprintField(int domain,
     BP_PLUGIN_INFO(bp_index_field.to_yaml());
 
     string topo_tag  = bp_index_field["topology"].as_string();
-
-    string file_pattern = FileFunctions::Dirname(GetFilename()) +
-                          string("/") +
-                          m_root_node["file_pattern"].as_string();
-
-    string tree_pattern = m_root_node["tree_pattern"].as_string();
     string data_path    = bp_index_field["path"].as_string();
-
 
     try
     {
         m_tree_cache->FetchBlueprintTree(domain,
+                                         mesh_name,
                                          data_path,
                                          out);
         BP_PLUGIN_INFO("done loading conduit data for " << abs_varname << " [domain "<< domain << "]" );
@@ -576,18 +574,13 @@ avtBlueprintFileFormat::ReadBlueprintMatset(int domain,
     BP_PLUGIN_INFO(bp_index_matset.to_yaml());
 
     string topo_tag  = bp_index_matset["topology"].as_string();
-
-    string file_pattern = FileFunctions::Dirname(GetFilename()) +
-                          string("/") +
-                          m_root_node["file_pattern"].as_string();
-
-    string tree_pattern = m_root_node["tree_pattern"].as_string();
     string data_path    = bp_index_matset["path"].as_string();
 
 
     try
     {
         m_tree_cache->FetchBlueprintTree(domain,
+                                         mesh_name,
                                          data_path,
                                          out);
 
@@ -1093,6 +1086,9 @@ AddBlueprintExpressionMetadata(avtDatabaseMetaData *md, string const &mesh_name,
 //    Cyrus Harrison, Mon Mar  9 15:15:55 PDT 2020
 //    Refactor how index info is read to reduce I/O.
 //
+//    Cyrus Harrison, Tue Dec 13 12:17:17 PST 2022
+//    Change index check to look for blueprint_index w/o fully reading it.
+//
 // ****************************************************************************
 void
 avtBlueprintFileFormat::ReadRootFile()
@@ -1130,29 +1126,34 @@ avtBlueprintFileFormat::ReadRootFile()
             {
                if(conduit::relay::io::is_hdf5_file(root_fname))
                {
-
                    // fast fail check for if this is a valid blueprint root file
-                   // (if this path doesn't exist, relay will throw an exception)
-
                    try
                    {
-                      Node n_read_check;
-                      relay::io::load(root_fname + ":file_pattern",
-                                      root_protocol,
-                                      n_read_check);
-                   }
-                   catch(conduit::Error &e)
-                   {
-                       error_msg = e.message();
-                       error = 1;
-                   }
-               }
-               else
-               {
-                  error_msg = root_fname + " is not a valid HDF5 file.\n" +
+                        relay::io::IOHandle root_hnd;
+                        Node open_opts;
+                        open_opts["mode"] = "r";
+                        root_hnd.open(root_fname, root_protocol, open_opts);
+                        if(  !root_hnd.is_open() || !root_hnd.has_path("blueprint_index"))
+                        {
+                            error_msg = "Root file: "
+                                        + root_fname 
+                                        + " does not contain `blueprint_index`.";
+                            error = 1;
+                        }
+                        root_hnd.close();
+                    }
+                    catch(conduit::Error &e)
+                    {
+                        error_msg = e.message();
+                        error = 1;
+                    }
+                }
+                else
+                {
+                    error_msg = root_fname + " is not a valid HDF5 file.\n" +
                               " Cannot open with 'hdf5' protocol.";
-                  error = 1;
-               }
+                    error = 1;
+                }
             }
         }
 
@@ -1192,12 +1193,6 @@ avtBlueprintFileFormat::ReadRootFile()
 #else
         ReadRootIndexItems(root_fname,root_protocol,m_root_node);
 #endif
-
-        if(!m_root_node.has_child("file_pattern"))
-        {
-            BP_PLUGIN_EXCEPTION1(InvalidFilesException,
-                                 "Root file missing 'file_pattern'");
-        }
 
         if(!m_root_node.has_child("blueprint_index"))
         {
@@ -1244,6 +1239,9 @@ avtBlueprintFileFormat::ReadRootFile()
 //   Cyrus Harrison, Fri Jul 16 15:39:57 PDT 2021
 //   Bugfix: When using relay::io::IOHandle, always open in read only mode
 //
+//   Cyrus Harrison, Tue Dec 13 12:04:01 PST 2022
+//   Remove special case for HDF5 and use relay::io::IOHandle for all cases
+//
 // ****************************************************************************
 void
 avtBlueprintFileFormat::ReadRootIndexItems(const std::string &root_fname,
@@ -1259,56 +1257,27 @@ avtBlueprintFileFormat::ReadRootIndexItems(const std::string &root_fname,
     index_names.append() = "number_of_files";
     index_names.append() = "protocol";
 
-    if(root_protocol == "hdf5")
+    // We don't want to return everything b/c the index meta data is
+    // broadcasted to all ranks and is also printed in debug 5 logs
+    // so we still filter what is pulled out here
+    relay::io::IOHandle root_hnd;
+    Node open_opts;
+    open_opts["mode"] = "r";
+    root_hnd.open(root_fname, root_protocol, open_opts);
+
+    // loop over all names and copy them to the output node
+    NodeConstIterator itr = index_names.children();
+    while(itr.has_next())
     {
-        // For the case where the data is also included in the root file,
-        // VisIt may have a read only hdf5 file handle open, trying
-        // to open with R/W will throw an error.
-        //
-        // we still want partial I/O, so we use the conduit interface
-        // that uses hdf5 handles directly
-        hid_t h5_id = relay::io::hdf5_open_file_for_read(root_fname);
-
-        // loop over all names and read them in
-        NodeConstIterator itr = index_names.children();
-        while(itr.has_next())
+        std::string curr_idx_name = itr.next().as_string();
+        if(root_hnd.has_path(curr_idx_name))
         {
-            std::string curr_idx_name = itr.next().as_string();
-            relay::io::hdf5_read(h5_id,
-                                 curr_idx_name,
-                                 root_info[curr_idx_name]);
+            root_hnd.read(curr_idx_name,
+                          root_info[curr_idx_name]);
         }
-
-        relay::io::hdf5_close_file(h5_id);
     }
-    else
-    {
-        //
-        // otherwise, for cases that don't support partial I/O will need
-        // to read everything relay::io::IOHandle supports this.
-        //
-        // We don't want to return everything b/c the index meta data is
-        // broadcasted to all ranks and is also printed in debug 5 logs
-        // so we still filter what is pulled out here
-        relay::io::IOHandle root_hnd;
-        Node open_opts;
-        open_opts["mode"] = "r";
-        root_hnd.open(root_fname, root_protocol, open_opts);
 
-        // loop over all names and copy them to the output node
-        NodeConstIterator itr = index_names.children();
-        while(itr.has_next())
-        {
-            std::string curr_idx_name = itr.next().as_string();
-            if(root_hnd.has_path(curr_idx_name))
-            {
-                root_hnd.read(curr_idx_name,
-                              root_info[curr_idx_name]);
-            }
-        }
-
-        root_hnd.close();
-    }
+    root_hnd.close();
 }
 
 // ****************************************************************************
@@ -1326,6 +1295,9 @@ avtBlueprintFileFormat::ReadRootIndexItems(const std::string &root_fname,
 //    Cyrus Harrison, Mon Mar  9 15:45:17 PDT 2020
 //    Use explicit map from registered mesh name to bp mesh and topo names.
 //
+//    Cyrus Harrison, Tue Dec 13 12:17:17 PST 2022
+//    Refactor to pass mesh name to tree cache for part map style index
+//    support.
 // ****************************************************************************
 
 void
@@ -1362,29 +1334,53 @@ avtBlueprintFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 
         BP_PLUGIN_INFO("Using protocol: " << m_protocol);
 
-
-        string file_pattern = m_root_node["file_pattern"].as_string();
-
-        // if file_pattern isn't an abs path, it needs to be relative to the
-        // the root file
-        if(file_pattern[0] !=  VISIT_SLASH_STRING[0])
-        {
-            string root_fname = GetFilename();
-            string root_dir = FileFunctions::Dirname(root_fname);
-            file_pattern  = root_dir + string(VISIT_SLASH_STRING) + file_pattern;
-        }
-
-        m_tree_cache->SetFilePattern(file_pattern);
-        m_tree_cache->SetTreePattern(m_root_node["tree_pattern"].as_string());
-        m_tree_cache->SetNumberOfFiles(m_root_node["number_of_files"].to_int());
-        m_tree_cache->SetNumberOfTrees(m_root_node["number_of_trees"].to_int());
         m_tree_cache->SetProtocol(m_protocol);
+
+        string root_fname = GetFilename();
+        string root_dir = FileFunctions::Dirname(root_fname);
+
+        m_tree_cache->SetRootDir(root_dir);
+
+        // simple / legacy index case
+        if(m_root_node.has_child("file_pattern"))
+        {
+
+            string file_pattern = m_root_node["file_pattern"].as_string();
+
+            // if file_pattern isn't an abs path, it needs to be relative to the
+            // the root file
+            if(file_pattern[0] !=  VISIT_SLASH_STRING[0])
+            {
+                file_pattern  = root_dir + string(VISIT_SLASH_STRING) + file_pattern;
+            }
+
+            m_tree_cache->SetFilePattern(file_pattern);
+            m_tree_cache->SetTreePattern(m_root_node["tree_pattern"].as_string());
+            m_tree_cache->SetNumberOfFiles(m_root_node["number_of_files"].to_int());
+            m_tree_cache->SetNumberOfTrees(m_root_node["number_of_trees"].to_int());
+        }
 
         NodeConstIterator itr = m_root_node["blueprint_index"].children();
 
         while (itr.has_next())
         {
             const Node &n = itr.next();
+            // check for per mesh part map case
+            if(n.has_path("state/partition_pattern"))
+            {
+                if(n.has_path("state/partition_map"))
+                {
+                    m_tree_cache->AddMeshParitionMap(itr.name(),
+                                                     n["state/partition_pattern"].as_string(),
+                                                     n["state/partition_map"]);
+                }
+                else // special case (single file)
+                {
+                    m_tree_cache->AddMeshParitionMap(itr.name(),
+                                                     n["state/partition_pattern"].as_string());
+                }
+            }
+
             AddBlueprintMeshAndFieldMetadata(metadata, itr.name(), n);
             AddBlueprintMaterialsMetadata(metadata, itr.name(), n);
         }
