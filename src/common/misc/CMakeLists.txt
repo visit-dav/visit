@@ -7,11 +7,6 @@
 #
 #****************************************************************************
 
-
-#-----------------------------------------------------------------------------
-# Create common/misc/ConfigureInfo.C
-#-----------------------------------------------------------------------------
-
 # Store some configure information into a C file (like version, GIT revision
 # and platform things that change).
 configure_file(ConfigureInfo.C.in

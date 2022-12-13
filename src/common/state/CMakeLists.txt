@@ -10,7 +10,6 @@
 #
 #****************************************************************************
 
-
 # Add XML Code Gen Targets
 
 # Note: These names are in alphabetical order
@@ -136,10 +135,7 @@ foreach(obj_name
                        ${CMAKE_CURRENT_SOURCE_DIR}/)
 endforeach()
 
-
-
-# Adding contents of this file as OBJECT that visitcommon can link with
-
+# Adding contents of this dir as SOURCES to visitcommon
 target_sources(visitcommon PRIVATE
     AnimationAttributes.C
     AnnotationAttributes.C
@@ -191,26 +187,27 @@ target_sources(visitcommon PRIVATE
     GlobalAttributes.C
     GlobalLineoutAttributes.C
     GlyphTypes.C
-    LaunchProfile.C
-    LaunchRPC.C
-    MachineProfile.C
     HostProfileList.C
     InteractorAttributes.C
     InternalResampleAttributes.C
+    JSONNode.C
     KeepAliveRPC.C
     KeyframeAttributes.C
+    LaunchProfile.C
+    LaunchRPC.C
     LightAttributes.C
     LightList.C
     Line.C
     LinearTransformAttributes.C
     LineGlyphAttributes.C
+    MachineProfile.C
     MapNode.C
     MaterialAttributes.C
     MeshManagementAttributes.C
     MessageAttributes.C
     MovieAttributes.C
-    NamespaceAttributes.C
     NameschemeAttributes.C
+    NamespaceAttributes.C
     Observer.C
     ObserverToCallback.C
     PickAttributes.C
@@ -268,8 +265,7 @@ target_sources(visitcommon PRIVATE
     WindowAttributes.C
     WindowInformation.C
     Xfer.C
-    XMLNode.C
-    JSONNode.C)
+    XMLNode.C)
 
 target_include_directories(visitcommon PUBLIC .)
 

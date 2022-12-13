@@ -19,7 +19,6 @@ target_sources(visitcommon PRIVATE
   RecursiveExpressionException.C)
 
 target_include_directories(visitcommon PUBLIC . )
-    
 
 if(VISIT_ENABLE_UNIT_TESTS AND NOT WIN32)
     add_executable(exprconfig ExprConfig.C)
