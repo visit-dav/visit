@@ -498,16 +498,11 @@ VisIt provides a few different styles of gradient background: radial, top to bot
 The gradient style is set using the *gradientBackgroundStyle* member of the AnnotationAttributes object. 
 The before and after results are shown in :numref:`Figure %s <annotations1>`.  
 
-::
-
-    # Set a blue/black, radial, gradient background. 
-    a = AnnotationAttributes() 
-    a.backgroundMode = a.Gradient 
-    a.gradientBackgroundStyle = a.Radial 
-    a.gradientColor1 = (0,0,255,255) # Blue 
-    a.gradientColor2 = (0,0,0,255) # Black 
-    SetAnnotationAttributes(a) 
-
+.. literalinclude:: ../../test/tests/quickrecipes/working_with_annotations.py
+    :language: Python
+    :start-after: # using gradient background colors {
+    :end-before: # using gradient background colors }
+    :dedent: 4
 
 .. _annotations1:
 
@@ -523,16 +518,11 @@ Adding a banner
 Banners are useful for providing titles for a visualization or for marking its content (see :numref:`Figure %s <annotations2>`).  
 To add an "Unclassified" banner to a visualization, use the following bit of Python code:
 
-::
-
-    # Create a text object that we'll use to indicate that our 
-    # visualization is unclassified. 
-    banner = CreateAnnotationObject("Text2D") 
-    banner.text = "Unclassified" 
-    banner.position = (0.37, 0.95) 
-    banner.fontBold = 1 
-    # print the attributes that you can set in the banner object. 
-    print(banner)
+.. literalinclude:: ../../test/tests/quickrecipes/working_with_annotations.py
+    :language: Python
+    :start-after: # adding a banner {
+    :end-before: # adding a banner }
+    :dedent: 4
 
 .. _annotations2:
 
@@ -549,13 +539,11 @@ Time sliders are important annotations for movies since they convey how much pro
 The time slider is also important for showing the simulation time as the animation progresses so users can get a sense of when in the simulation important events occur. 
 VisIt_'s time slider annotation object is shown in :numref:`Figure %s <annotations3>`.
 
-::
-
-    # Add a time slider in the lower left corner 
-    slider = CreateAnnotationObject("TimeSlider") 
-    slider.height = 0.07 
-    # Print the options that are available in the time slider object 
-    print(slider)
+.. literalinclude:: ../../test/tests/quickrecipes/working_with_annotations.py
+    :language: Python
+    :start-after: # adding a time slider {
+    :end-before: # adding a time slider }
+    :dedent: 4
 
 .. _annotations3:
 
@@ -572,16 +560,11 @@ Adding a logo to a visualization is an important part of project identification 
 If you have a logo image file stored in TIFF, JPEG, BMP, or PPM format then you can use it with VisIt as an image annotation (see :numref:`Figure %s <annotations4>`). 
 Note that this approach can also be used to insert images of graphs, plots, portraits, diagrams, or any other form of image data into a visualization.
 
-
-::
-
-    # Incorporate LLNL logo image (llnl.jpeg) as an annotation 
-    image = CreateAnnotationObject("Image") 
-    image.image = "llnl.jpeg" 
-    image.position = (0.02, 0.02) 
-    # Print the other image annotation options 
-    print(image)
-
+.. literalinclude:: ../../test/tests/quickrecipes/working_with_annotations.py
+    :language: Python
+    :start-after: # adding a logo {
+    :end-before: # adding a logo }
+    :dedent: 4
 
 .. _annotations4:
 
@@ -598,56 +581,11 @@ VisIt_'s plot legends can be customized.
 To obtain the proper annotation object, you must use the name of the plot, which is a unique name that identifies the plot. 
 Once you have the plot's name, you can obtain a reference to its legend annotation object and start setting properties to modify the legend. 
 
-::
-
-    # Open a file and make a plot
-    OpenDatabase("/usr/gapps/visit/data/noise.silo")
-    AddPlot("Mesh", "Mesh")
-    AddPlot("Pseudocolor", "hardyglobal")
-    DrawPlots()
-    # Get the legend annotation object for the Pseudocolor plot, the second
-    # plot in the list (0-indexed).
-    plotName = GetPlotList().GetPlots(1).plotName 
-    legend = GetAnnotationObject(plotName)
-    # See if we can scale the legend.
-    legend.xScale = 3.
-    legend.yScale = 3.
-    # the bounding box.
-    legend.drawBoundingBox = 1
-    legend.boundingBoxColor = (180,180,180,230)
-    # Make it horizontal
-    legend.orientation = legend.HorizontalBottom
-    # moving the legend
-    legend.managePosition = 0
-    legend.position = (0.7,0.15)
-    # text color
-    InvertBackgroundColor()
-    legend.useForegroundForTextColor = 0
-    legend.textColor = (255, 0, 0, 255)
-    # number format
-    legend.numberFormat = "%1.4e"
-    # the font.
-    legend.fontFamily = legend.Arial
-    legend.fontBold = 1
-    legend.fontItalic = 1
-    # turning off the labels.
-    legend.fontItalic = 0
-    legend.drawLabels = legends.None 
-    legend.drawMinMax = 0
-    # turning off the title.
-    legend.drawTitle = 0
-    # Use user-supplied labels, rather than numeric values.
-    legend.controlTicks=0
-    legend.drawLabels = legend.Labels
-    # suppliedLabels must be strings, only valid when controlTicks is 0
-    legend.suppliedLabels=("A", "B", "C", "D", "E")
-    # Give the legend a custom title
-    legend.useCustomTitle=1
-    legend.customTitle="my custom title"
-    # Print the legend object so you can see the other properties
-    # that you can set in order to modify the legend.
-    print(legend)
-
+.. literalinclude:: ../../test/tests/quickrecipes/working_with_annotations.py
+    :language: Python
+    :start-after: # modifying a legend {
+    :end-before: # modifying a legend }
+    :dedent: 4
 
 Working with Color Tables
 -------------------------
@@ -657,22 +595,11 @@ Color tables consist of ``ControlPoints`` which specify color and position in th
 
 Existing color tables can be retreived by name via ``GetColorTable`` as in: ::
 
-    hotCT = GetColorTable("hot")
-    print(hotCT)
-    # results of print
-    GetControlPoints(0).colors = (0, 0, 255, 255)
-    GetControlPoints(0).position = 0
-    GetControlPoints(1).colors = (0, 255, 255, 255)
-    GetControlPoints(1).position = 0.25
-    GetControlPoints(2).colors = (0, 255, 0, 255)
-    GetControlPoints(2).position = 0.5
-    GetControlPoints(3).colors = (255, 255, 0, 255)
-    GetControlPoints(3).position = 0.75
-    GetControlPoints(4).colors = (255, 0, 0, 255)
-    GetControlPoints(4).position = 1
-    smoothing = Linear  # NONE, Linear, CubicSpline
-    equalSpacingFlag = 0
-    discreteFlag = 0
+.. literalinclude:: ../../test/tests/quickrecipes/colortables.py
+    :language: Python
+    :start-after: # introspectingColorTable {
+    :end-before: # introspectingColorTable }
+    :dedent: 4
 
 The ``colors`` field of the ``ControlPoint`` represent the (Red,Green,Blue,Alpha) channels of the color and must be in the range (0, 255).
 The numbers indicate the contribution each channel makes to the overall color.
