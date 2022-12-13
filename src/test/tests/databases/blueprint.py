@@ -34,6 +34,7 @@ bp_mfem_test_dir = "blueprint_v0.3.1_mfem_test_data"
 bp_0_8_2_test_dir = "blueprint_v0.8.2_braid_examples_test_data"
 bp_poly_test_dir = "blueprint_v0.8.2_polytess_test_data"
 bp_devilray_mfem_test_dir = "blueprint_v0.8.3_devilray_mfem_test_data"
+bp_part_map_test_dir = "blueprint_v0.8.4_part_map_example"
 
 braid_2d_hdf5_root = data_path(pjoin(bp_test_dir,"braid_2d_examples.blueprint_root_hdf5"))
 braid_3d_hdf5_root = data_path(pjoin(bp_test_dir,"braid_3d_examples.blueprint_root_hdf5"))
@@ -75,6 +76,9 @@ venn_s_by_e_yaml_root  =  data_path(pjoin(bp_venn_test_dir,
 
 venn_s_by_m_yaml_root  =  data_path(pjoin(bp_venn_test_dir,
                                "venn_small_example_sparse_by_material_yaml.root"))
+
+bp_part_map_root = data_path(pjoin(bp_part_map_test_dir,
+                             "tout_custom_part_map_index_hdf5.root"))
 
 
 
@@ -550,5 +554,15 @@ TestSection("Polygonal 3D Example YAML Mesh Files, 0.8.2")
 OpenDatabase(poly_3d_yaml_root)
 test_poly("blueprint_poly_3d_yaml_0_8_2")
 CloseDatabase(poly_3d_yaml_root)
+
+
+TestSection("Blueprint with Partition Map Style Index, 0.8.4")
+OpenDatabase(bp_part_map_root)
+AddPlot("Subset","domains")
+DrawPlots()
+Test("bp_part_map_index_example")
+DeleteAllPlots()
+CloseDatabase(bp_part_map_root)
+
 
 Exit()
