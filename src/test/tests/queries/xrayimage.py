@@ -66,6 +66,11 @@
 # 
 #    Justin Privitera, Wed Dec  7 16:16:16 PST 2022
 #    Added tests for the blueprint ray output.
+# 
+#    Justin Privitera, Mon Dec 12 13:28:55 PST 2022
+#    Reworked some of the blueprint output tests to reflect changes in 
+#    output metadata.
+#    Added new tests for path length and spatial extent images.
 #
 #    Justin Privitera, Wed Oct 12 11:38:11 PDT 2022
 #    Changed output type for many tests since bmp output type is removed.
@@ -447,47 +452,7 @@ def test_bp_state_xray_query(testname, xrayout, units):
         TestValueEQ(testname + "_query_AbsUnits", absUnits, "no units provided")
         TestValueEQ(testname + "_query_EmisUnits", emisUnits, "no units provided")
 
-NO_ENERGY_GROUP_BOUNDS = 0
-ENERGY_GROUP_BOUNDS_MISMATCH = 1
-ENERGY_GROUP_BOUNDS = 2
-
-def test_bp_state_xray_data(testname, xrayout, bin_state = NO_ENERGY_GROUP_BOUNDS, units = UNITS_OFF):
-    spatial_coords_x = xrayout["domain_000000/state/xray_data/image_coords/values/x"]
-    spatial_coords_y = xrayout["domain_000000/state/xray_data/image_coords/values/y"]
-    energy_group_bounds = xrayout["domain_000000/state/xray_data/image_coords/values/z"]
-    TestValueEQ(testname + "_data_SpatialExtents0", [spatial_coords_x[0], spatial_coords_y[0]], [0.0, 0.0])
-    TestValueEQ(testname + "_data_SpatialExtents1", [spatial_coords_x[1], spatial_coords_y[1]], [0.05, 0.05])
-    TestValueEQ(testname + "_data_SpatialExtents2", [spatial_coords_x[2], spatial_coords_y[2]], [0.1, 0.1])
-    TestValueEQ(testname + "_data_SpatialExtents3", [spatial_coords_x[-1], spatial_coords_y[-1]], [15.0, 10.0])
-
-    if (bin_state == NO_ENERGY_GROUP_BOUNDS):
-        TestValueEQ(testname + "_data_EnergyGroupBounds", energy_group_bounds, "Energy group bounds not provided.")
-    elif (bin_state == ENERGY_GROUP_BOUNDS_MISMATCH):
-        baseline_string = "Energy group bounds size mismatch: provided 3 bounds, but 2 in query results."
-        TestValueEQ(testname + "_data_EnergyGroupBounds", energy_group_bounds, baseline_string)
-    elif (bin_state == ENERGY_GROUP_BOUNDS):
-        TestValueEQ(testname + "_data_EnergyGroupBounds", [energy_group_bounds[0], energy_group_bounds[1]], [3.7, 4.2])
-
-    xunits = xrayout["domain_000000/state/xray_data/image_coords/units/x"]
-    yunits = xrayout["domain_000000/state/xray_data/image_coords/units/y"]
-    zunits = xrayout["domain_000000/state/xray_data/image_coords/units/z"]
-
-    if (units == UNITS_ON):
-        TestValueEQ(testname + "_data_XUnits", xunits, "cm")
-        TestValueEQ(testname + "_data_YUnits", yunits, "cm")
-        TestValueEQ(testname + "_data_ZUnits", zunits, "kev")
-    else:
-        TestValueEQ(testname + "_data_XUnits", xunits, "no units provided")
-        TestValueEQ(testname + "_data_YUnits", yunits, "no units provided")
-        TestValueEQ(testname + "_data_ZUnits", zunits, "no units provided")
-
-    xlabel = xrayout["domain_000000/state/xray_data/image_coords/labels/x"];
-    ylabel = xrayout["domain_000000/state/xray_data/image_coords/labels/y"];
-    zlabel = xrayout["domain_000000/state/xray_data/image_coords/labels/z"];
-    TestValueEQ(testname + "_data_XLabels", xlabel, "width")
-    TestValueEQ(testname + "_data_YLabels", ylabel, "height")
-    TestValueEQ(testname + "_data_ZLabels", zlabel, "energy_group")
-    
+def test_bp_state_xray_data(testname, xrayout):
     detectorWidth = xrayout["domain_000000/state/xray_data/detectorWidth"]
     TestValueEQ(testname + "_data_DetectorWidth", detectorWidth, 15)
 
@@ -506,9 +471,15 @@ def test_bp_state_xray_data(testname, xrayout, bin_state = NO_ENERGY_GROUP_BOUND
     pathLengthMin = xrayout["domain_000000/state/xray_data/pathLengthMin"]
     TestValueEQ(testname + "_data_PathLengthMin", pathLengthMin, 0)
 
-def test_bp_state(testname, conduit_db, bin_state = NO_ENERGY_GROUP_BOUNDS, units = UNITS_OFF):
+NO_ENERGY_GROUP_BOUNDS = 0
+ENERGY_GROUP_BOUNDS_MISMATCH = 1
+ENERGY_GROUP_BOUNDS = 2
+
+def test_bp_data(testname, conduit_db, bin_state = NO_ENERGY_GROUP_BOUNDS, units = UNITS_OFF):
     xrayout = conduit.Node()
     conduit.relay.io.blueprint.load_mesh(xrayout, conduit_db)
+
+    # test metadata
 
     time = xrayout["domain_000000/state/time"]
     TestValueEQ(testname + "_Time", time, 4.8)
@@ -518,7 +489,9 @@ def test_bp_state(testname, conduit_db, bin_state = NO_ENERGY_GROUP_BOUNDS, unit
 
     test_bp_state_xray_view(testname, xrayout)
     test_bp_state_xray_query(testname, xrayout, units)
-    test_bp_state_xray_data(testname, xrayout, bin_state, units)
+    test_bp_state_xray_data(testname, xrayout)
+
+    # test data embedded within the meshes
 
     intensityUnits = xrayout["domain_000000/fields/intensities/units"]
     pathLengthUnits = xrayout["domain_000000/fields/path_length/units"]
@@ -529,6 +502,45 @@ def test_bp_state(testname, conduit_db, bin_state = NO_ENERGY_GROUP_BOUNDS, unit
     else:
         TestValueEQ(testname + "_IntensityUnits", intensityUnits, "no units provided")
         TestValueEQ(testname + "_PathLengthUnits", pathLengthUnits, "no info provided")
+
+    spatial_coords_x = xrayout["domain_000000/coordsets/spatial_coords/values/x"]
+    spatial_coords_y = xrayout["domain_000000/coordsets/spatial_coords/values/y"]
+    energy_group_bounds = xrayout["domain_000000/coordsets/spatial_coords/values/z"]
+    energy_group_info = xrayout["domain_000000/coordsets/spatial_coords/info"]
+    TestValueEQ(testname + "_data_SpatialExtents0", [spatial_coords_x[0], spatial_coords_y[0]], [0.0, 0.0])
+    TestValueEQ(testname + "_data_SpatialExtents1", [spatial_coords_x[1], spatial_coords_y[1]], [0.05, 0.05])
+    TestValueEQ(testname + "_data_SpatialExtents2", [spatial_coords_x[2], spatial_coords_y[2]], [0.1, 0.1])
+    TestValueEQ(testname + "_data_SpatialExtents3", [spatial_coords_x[-1], spatial_coords_y[-1]], [15.0, 10.0])
+
+    if (bin_state == NO_ENERGY_GROUP_BOUNDS):
+        TestValueEQ(testname + "_data_EnergyGroupInfo", energy_group_info, "Energy group bounds not provided.")
+        TestValueEQ(testname + "_data_EnergyGroupBounds", [energy_group_bounds[0], energy_group_bounds[1]], [0, 1])
+    elif (bin_state == ENERGY_GROUP_BOUNDS_MISMATCH):
+        baseline_string = "Energy group bounds size mismatch: provided 3 bounds, but 2 in query results."
+        TestValueEQ(testname + "_data_EnergyGroupInfo", energy_group_info, baseline_string)
+        TestValueEQ(testname + "_data_EnergyGroupBounds", [energy_group_bounds[0], energy_group_bounds[1]], [0, 1])
+    elif (bin_state == ENERGY_GROUP_BOUNDS):
+        TestValueEQ(testname + "_data_EnergyGroupBounds", [energy_group_bounds[0], energy_group_bounds[1]], [3.7, 4.2])
+
+    xunits = xrayout["domain_000000/coordsets/spatial_coords/units/x"]
+    yunits = xrayout["domain_000000/coordsets/spatial_coords/units/y"]
+    zunits = xrayout["domain_000000/coordsets/spatial_coords/units/z"]
+
+    if (units == UNITS_ON):
+        TestValueEQ(testname + "_data_XUnits", xunits, "cm")
+        TestValueEQ(testname + "_data_YUnits", yunits, "cm")
+        TestValueEQ(testname + "_data_ZUnits", zunits, "kev")
+    else:
+        TestValueEQ(testname + "_data_XUnits", xunits, "no units provided")
+        TestValueEQ(testname + "_data_YUnits", yunits, "no units provided")
+        TestValueEQ(testname + "_data_ZUnits", zunits, "no units provided")
+
+    xlabel = xrayout["domain_000000/coordsets/spatial_coords/labels/x"];
+    ylabel = xrayout["domain_000000/coordsets/spatial_coords/labels/y"];
+    zlabel = xrayout["domain_000000/coordsets/spatial_coords/labels/z"];
+    TestValueEQ(testname + "_data_XLabels", xlabel, "width")
+    TestValueEQ(testname + "_data_YLabels", ylabel, "height")
+    TestValueEQ(testname + "_data_ZLabels", zlabel, "energy_group")
 
 def blueprint_test(output_type, outdir, testtextnumber, testname, hdf5 = False):
     for i in range(0, 2):
@@ -554,7 +566,7 @@ def blueprint_test(output_type, outdir, testtextnumber, testname, hdf5 = False):
             params["abs_units"] = "abs units";
             params["emis_units"] = "emis units";
             params["intensity_units"] = "intensity units";
-            params["path_length_units"] = "path length metadata";
+            params["path_length_info"] = "path length metadata";
             Query("XRay Image", params)
         s = GetQueryOutputString()
         TestText("xrayimage" + str(testtextnumber + i), s)
@@ -566,24 +578,40 @@ def blueprint_test(output_type, outdir, testtextnumber, testname, hdf5 = False):
         OpenDatabase(conduit_db)
         AddPlot("Pseudocolor", "mesh_image_topo/intensities")
         DrawPlots()
-        Test(testname + str(i))
+        Test(testname + "_image_topo_intensities" + str(i))
         DeleteAllPlots()
+
+        AddPlot("Pseudocolor", "mesh_image_topo/path_length")
+        DrawPlots()
+        Test(testname + "_image_topo_path_length" + str(i))
+        DeleteAllPlots()
+
+        AddPlot("Pseudocolor", "mesh_spatial_topo/intensities_spatial")
+        DrawPlots()
+        Test(testname + "_spatial_topo_intensities" + str(i))
+        DeleteAllPlots()
+
+        AddPlot("Pseudocolor", "mesh_spatial_topo/path_length_spatial")
+        DrawPlots()
+        Test(testname + "_spatial_topo_path_length" + str(i))
+        DeleteAllPlots()
+
         CloseDatabase(conduit_db)
 
     if (hdf5):
         units = UNITS_OFF if i == 0 else UNITS_ON
-        test_bp_state(testname + str(i), conduit_db, NO_ENERGY_GROUP_BOUNDS, units) # no bounds
+        test_bp_data(testname + str(i), conduit_db, bin_state=NO_ENERGY_GROUP_BOUNDS, units=units) # no bounds
         setup_bp_test()
         Query("XRay Image", output_type, outdir, 1, 0.0, 2.5, 10.0, 0, 0, 10., 10., 300, 200, ("d", "p"), [1,2,3])
-        test_bp_state(testname + str(i), conduit_db, ENERGY_GROUP_BOUNDS_MISMATCH, UNITS_OFF) # bounds mismatch
+        test_bp_data(testname + str(i), conduit_db, bin_state=ENERGY_GROUP_BOUNDS_MISMATCH, units=UNITS_OFF) # bounds mismatch
         Query("XRay Image", output_type, outdir, 1, 0.0, 2.5, 10.0, 0, 0, 10., 10., 300, 200, ("d", "p"), [3.7, 4.2])
-        test_bp_state(testname + str(i), conduit_db, ENERGY_GROUP_BOUNDS, UNITS_OFF) # bounds
+        test_bp_data(testname + str(i), conduit_db, bin_state=ENERGY_GROUP_BOUNDS, units=UNITS_OFF) # bounds
         DeleteAllPlots()
         CloseDatabase(silo_data_path("curv3d.silo"))
 
-blueprint_test("hdf5", conduit_dir_hdf5, 32, "Blueprint_HDF5_X_Ray_Output", True)
-blueprint_test("json", conduit_dir_json, 34, "Blueprint_JSON_X_Ray_Output", False)
-blueprint_test("yaml", conduit_dir_yaml, 36, "Blueprint_YAML_X_Ray_Output", False)
+blueprint_test("hdf5", conduit_dir_hdf5, 32, "Blueprint_HDF5_X_Ray_Output", hdf5=True)
+blueprint_test("json", conduit_dir_json, 34, "Blueprint_JSON_X_Ray_Output", hdf5=False)
+blueprint_test("yaml", conduit_dir_yaml, 36, "Blueprint_YAML_X_Ray_Output", hdf5=False)
 
 # test detector height and width are always positive in blueprint output
 
