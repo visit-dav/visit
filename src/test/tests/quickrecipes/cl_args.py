@@ -7,7 +7,7 @@
 #
 # Get some utils shared across many .py files used for quick recipes.
 #
-Source(tests_path('quickrecipes','vqr_utils.py'))
+Source(tests_path('quickrecipes','vqr_utils.py.inc'))
 
 def handling_command_line_arguments():
  
