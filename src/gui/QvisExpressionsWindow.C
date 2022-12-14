@@ -272,6 +272,7 @@ const char *expr_trig[] = {
     "acos",
     "asin",
     "atan",
+    "atan2",
     "cos",
     "cosh",
     "deg2rad",
