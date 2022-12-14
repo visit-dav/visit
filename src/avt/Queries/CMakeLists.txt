@@ -33,7 +33,10 @@
 #    Link with 'rt' on Linux.
 #
 #    Kathleen Biagas, Tue Dec 13, 2022
-#    Moved setting of sources to subdirs.
+#    * Moved setting of sources to subdirs.
+#    * Changed use of 'link_directories' to 'target_link_directories' for
+#    CONDUIT_LIBRARY_DIR. 
+#    * Removed use of PYTHON_LIBRARY_DIRS, no longer defined.
 #
 #****************************************************************************
 
@@ -88,12 +91,8 @@ endif()
 if(CONDUIT_FOUND)
     # we will use conduit in queries
     include_directories(${CONDUIT_INCLUDE_DIR})
-    link_directories(${CONDUIT_LIBRARY_DIR})
 endif()
 
-if(VISIT_PYTHON_FILTERS)
-    link_directories(${PYTHON_LIBRARY_DIRS})
-endif()
 
 #********************************* SERIAL ************************************
 target_link_libraries(avtquery_ser visitcommon avtmath avtshapelets
@@ -110,6 +109,7 @@ endif()
 
 # optionally link conduit
 if(CONDUIT_FOUND)
+    target_link_directories(avtquery_ser PRIVATE ${CONDUIT_LIBRARY_DIR})
     target_link_libraries(avtquery_ser ${CONDUIT_LIB})
 endif()
 
@@ -130,6 +130,7 @@ if(VISIT_PARALLEL)
 
     # optionally link conduit
     if(CONDUIT_FOUND)
+        target_link_directories(avtquery_par PRIVATE ${CONDUIT_LIBRARY_DIR})
         target_link_libraries(avtquery_par ${CONDUIT_LIB} ${CONDUIT_MPI_LIB})
     endif()
 
