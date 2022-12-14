@@ -1142,6 +1142,8 @@ avtBlueprintTreeCache::GenerateFilePath(const std::string &mesh_name,
     // check for the partition map case
     if(m_part_maps.has_child(mesh_name)) 
     {
+        BP_PLUGIN_INFO( "GenerateFilePath using partition map for mesh: "
+                        << mesh_name);
         // split out file
         std::string tmp;
         utils::split_string(GeneratePartitionMapFullPath(m_part_maps[mesh_name],tree_id),
@@ -1190,6 +1192,8 @@ avtBlueprintTreeCache::GenerateTreePath(const std::string &mesh_name,
     // check for the partition map case
     if(m_part_maps.has_child(mesh_name)) 
     {
+        BP_PLUGIN_INFO( "GenerateTreePath using partition map for mesh: "
+                        << mesh_name);
         // split out sub path
         std::string tmp;
         utils::split_string(GeneratePartitionMapFullPath(m_part_maps[mesh_name],tree_id),

@@ -1368,6 +1368,9 @@ avtBlueprintFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
             // check for per mesh part map case
             if(n.has_path("state/partition_pattern"))
             {
+                BP_PLUGIN_INFO("Adding Blueprint Index Partition Map for "
+                               << itr.name());
+
                 if(n.has_path("state/partition_map"))
                 {
                     m_tree_cache->AddMeshParitionMap(itr.name(),
