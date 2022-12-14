@@ -55,6 +55,9 @@
 #   Kathleen Biagas, Thu Jun  4 16:30:37 PDT 2020
 #   Add avtVertexExtractor, avtLineGlyphFilter.C
 #
+#   Eric Brugger, Thu Dec  8 15:03:57 PST 2022
+#   I replaced vtkh with vtkm.
+#
 #****************************************************************************/
 
 SET(AVTFILTERS_SOURCES
@@ -193,6 +196,9 @@ IF(VISIT_OSPRAY)
         TARGET_LINK_LIBRARIES(avtfilters_ser ${ICET_FULLPATH_LIB})
     ENDIF()
 ENDIF() 
+if(HAVE_LIBVTKM)
+    target_link_libraries(avtfilters_ser vtkm_cont vtkm_filter_contour)
+endif()
 VISIT_INSTALL_TARGETS(avtfilters_ser)
 
 #********************************* PARALLEL **********************************
@@ -205,5 +211,8 @@ IF(VISIT_PARALLEL)
             TARGET_LINK_LIBRARIES(avtfilters_par ${ICET_FULLPATH_LIB})
         ENDIF()
     ENDIF()
+    if(HAVE_LIBVTKM)
+        target_link_libraries(avtfilters_par vtkm_cont vtkm_filter_contour)
+    endif()
     VISIT_INSTALL_TARGETS(avtfilters_par)
 ENDIF(VISIT_PARALLEL)

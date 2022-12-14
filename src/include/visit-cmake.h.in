@@ -56,8 +56,8 @@
 /* Define if you have the MFEM library. */
 #cmakedefine HAVE_LIBMFEM
 
-/* Define if you have the VTKh library. */
-#cmakedefine HAVE_LIBVTKH
+/* Define if you have the VTKm library. */
+#cmakedefine HAVE_LIBVTKM
 
 /* Define if you have the X11 library */
 #cmakedefine HAVE_LIBX11

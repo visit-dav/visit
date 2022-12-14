@@ -12,10 +12,10 @@
 #include <float.h>
 #include <vector>
 
-#ifdef HAVE_LIBVTKH
-#include <vtkh/vtkh.hpp>
-#include <vtkh/DataSet.hpp>
-#include <vtkh/filters/MarchingCubes.hpp>
+#ifdef HAVE_LIBVTKM
+#include <vtkmDataSet.h>
+#include <vtkm/cont/DataSet.h>
+#include <vtkm/filter/contour/Contour.h>
 #endif
 
 #include <vtkCellData.h>
@@ -954,18 +954,21 @@ avtContourFilter::ExecuteDataTree_VTK(avtDataRepresentation *in_dr)
 //    Eric Brugger, Wed Dec  9 09:12:27 PST 2020
 //    Updated to a newer VTKm.
 //
+//    Eric Brugger, Thu Dec  8 15:03:57 PST 2022
+//    I replaced VTKh with VTKm.
+//
 // ****************************************************************************
 
 avtDataTree_p
 avtContourFilter::ExecuteDataTree_VTKM(avtDataRepresentation *in_dr)
 {
-#ifndef HAVE_LIBVTKH
+#ifndef HAVE_LIBVTKM
     return NULL;
 #else
     //
     // Get the VTKM data set, the domain number, and the label.
     //
-    vtkh::DataSet *in_ds = in_dr->GetDataVTKm();
+    vtkmDataSet *in_ds = in_dr->GetDataVTKm();
     int domain = in_dr->GetDomain();
     std::string label = in_dr->GetLabel();
 
@@ -991,36 +994,27 @@ avtContourFilter::ExecuteDataTree_VTKM(avtDataRepresentation *in_dr)
     //
     avtDataRepresentation **output = new avtDataRepresentation*[isoValues.size()];
 
-    vtkh::MarchingCubes marcher;
+    vtkm::filter::contour::Contour contour;
 
-    marcher.SetInput(in_ds);
-    marcher.SetField(contourVar);
+    contour.SetActiveField(contourVar);
 
     for (int i = 0; i < isoValues.size(); i++)
     {
         double isoValue = isoValues[i];
 
-        marcher.SetIsoValues(&isoValue, 1);
-        marcher.Update();
+        contour.SetIsoValue(0, isoValue);
 
-        vtkh::DataSet *isoOut = marcher.GetOutput();
+        vtkm::cont::DataSet vtkm_ds = contour.Execute(in_ds->ds);
 
         //
         // Determine if the dataset is empty, and if so, set the output
         // to NULL.
         //
-        if (isoOut->GetNumberOfDomains() == 0)
+        vtkmDataSet *isoOut = NULL;
+        if(vtkm_ds.GetCellSet().GetNumberOfCells() > 0)
         {
-            delete isoOut;
-            isoOut = NULL;
-        }
-        vtkm::cont::DataSet vtkm_ds;
-        vtkm::Id vtkm_id;
-        isoOut->GetDomain(0, vtkm_ds, vtkm_id);
-        if(vtkm_ds.GetCellSet().GetNumberOfCells() == 0)
-        {
-            delete isoOut;
-            isoOut = NULL;
+            isoOut = new vtkmDataSet;
+            isoOut->ds = vtkm_ds;
         }
 
         //

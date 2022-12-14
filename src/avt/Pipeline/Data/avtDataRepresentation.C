@@ -10,11 +10,12 @@
 
 #include <visit-config.h>
 
-#ifdef HAVE_LIBVTKH
-#include <vtkh/DataSet.hpp>
-#include <vtkm/cont/UnknownArrayHandle.h>
+#ifdef HAVE_LIBVTKM
+#include <vtkmDataSet.h>
+#include <vtkm/cont/ArrayHandle.h>
 #include <vtkm/cont/ArrayHandleCompositeVector.h>
-#include <vtkh/utils/vtkm_array_utils.hpp>
+#include <vtkm/cont/DataSet.h>
+#include <vtkm/cont/UnknownArrayHandle.h>
 #endif
 
 #include <vtkCellData.h>
@@ -56,7 +57,7 @@ using std::vector;
 //
 bool            avtDataRepresentation::initializedNullDatasets = false;
 vtkDataSet     *avtDataRepresentation::nullVTKDataset          = NULL;
-vtkh::DataSet  *avtDataRepresentation::nullVTKmDataset         = NULL;
+vtkmDataSet    *avtDataRepresentation::nullVTKmDataset         = NULL;
 
 #include <vtkCellArray.h>
 #include <vtkCellData.h>
@@ -76,8 +77,15 @@ vtkh::DataSet  *avtDataRepresentation::nullVTKmDataset         = NULL;
 
 #include <set>
 
-#ifdef HAVE_LIBVTKH
-static vtkh::DataSet *
+#ifdef HAVE_LIBVTKM
+template<typename T>
+T *
+GetVTKmPointer(vtkm::cont::ArrayHandle<T> &handle)
+{
+  return handle.WritePortal().GetArray();
+}
+
+static vtkmDataSet *
 ConvertVTKToVTKm(vtkDataSet *data)
 {
     //
@@ -146,9 +154,9 @@ ConvertVTKToVTKm(vtkDataSet *data)
         yCoordsHandle.Allocate(dims[1]);
         zCoordsHandle.Allocate(dims[2]);
 
-        vtkm::Float32 *x = vtkh::GetVTKMPointer(xCoordsHandle);
-        vtkm::Float32 *y = vtkh::GetVTKMPointer(yCoordsHandle);
-        vtkm::Float32 *z = vtkh::GetVTKMPointer(zCoordsHandle);
+        vtkm::Float32 *x = GetVTKmPointer(xCoordsHandle);
+        vtkm::Float32 *y = GetVTKmPointer(yCoordsHandle);
+        vtkm::Float32 *z = GetVTKmPointer(zCoordsHandle);
 
         memcpy(x, xPts, sizeof(float) * dims[0]);
         memcpy(y, yPts, sizeof(float) * dims[1]);
@@ -364,7 +372,7 @@ ConvertVTKToVTKm(vtkDataSet *data)
 
                 ds.AddField(
                     vtkm::cont::Field(array->GetName(),
-                    vtkm::cont::Field::Association::POINTS, fieldArray));
+                    vtkm::cont::Field::Association::Points, fieldArray));
             }
             else if (array->GetDataType() == VTK_DOUBLE)
             {
@@ -380,7 +388,7 @@ ConvertVTKToVTKm(vtkDataSet *data)
 
                 ds.AddField(
                     vtkm::cont::Field(array->GetName(),
-                    vtkm::cont::Field::Association::POINTS, fieldArray));
+                    vtkm::cont::Field::Association::Points, fieldArray));
             }
         }
         else if (array->GetNumberOfComponents() == 3)
@@ -398,7 +406,7 @@ ConvertVTKToVTKm(vtkDataSet *data)
 
                 ds.AddField(
                     vtkm::cont::Field(array->GetName(),
-                    vtkm::cont::Field::Association::POINTS, fieldArray));
+                    vtkm::cont::Field::Association::Points, fieldArray));
             }
             else if (array->GetDataType() == VTK_DOUBLE)
             {
@@ -413,7 +421,7 @@ ConvertVTKToVTKm(vtkDataSet *data)
 
                 ds.AddField(
                     vtkm::cont::Field(array->GetName(),
-                    vtkm::cont::Field::Association::POINTS, fieldArray));
+                    vtkm::cont::Field::Association::Points, fieldArray));
             }
         }
     }
@@ -442,7 +450,7 @@ ConvertVTKToVTKm(vtkDataSet *data)
 
                 ds.AddField(
                     vtkm::cont::Field(array->GetName(),
-                    vtkm::cont::Field::Association::CELL_SET, fieldArray));
+                    vtkm::cont::Field::Association::Cells, fieldArray));
             }
             else if (array->GetDataType() == VTK_DOUBLE)
             {
@@ -458,7 +466,7 @@ ConvertVTKToVTKm(vtkDataSet *data)
 
                 ds.AddField(
                     vtkm::cont::Field(array->GetName(),
-                    vtkm::cont::Field::Association::CELL_SET, fieldArray));
+                    vtkm::cont::Field::Association::Cells, fieldArray));
             }
             else if (array->GetDataType() == VTK_UNSIGNED_CHAR)
             {
@@ -474,7 +482,7 @@ ConvertVTKToVTKm(vtkDataSet *data)
 
                 ds.AddField(
                     vtkm::cont::Field(array->GetName(),
-                    vtkm::cont::Field::Association::CELL_SET, fieldArray));
+                    vtkm::cont::Field::Association::Cells, fieldArray));
             }
         }
         else if (array->GetNumberOfComponents() == 2)
@@ -498,7 +506,7 @@ ConvertVTKToVTKm(vtkDataSet *data)
 
                 ds.AddField(
                     vtkm::cont::Field(array->GetName(),
-                    vtkm::cont::Field::Association::CELL_SET, fieldArray));
+                    vtkm::cont::Field::Association::Cells, fieldArray));
             }
             else if (array->GetDataType() == VTK_DOUBLE)
             {
@@ -513,14 +521,14 @@ ConvertVTKToVTKm(vtkDataSet *data)
 
                 ds.AddField(
                     vtkm::cont::Field(array->GetName(),
-                    vtkm::cont::Field::Association::CELL_SET, fieldArray));
+                    vtkm::cont::Field::Association::Cells, fieldArray));
             }
         }
     }
 
-    vtkh::DataSet *ret = new vtkh::DataSet;
+    vtkmDataSet *ret = new vtkmDataSet;
 
-    ret->AddDomain(ds, 0);
+    ret->ds = ds;
 
     return ret;
 }
@@ -545,17 +553,18 @@ ConvertVTKToVTKm(vtkDataSet *data)
 //    Eric Brugger, Wed Dec  9 09:12:27 PST 2020
 //    Updated to a newer VTKm.
 //
+//    Eric Brugger, Thu Dec  8 15:03:57 PST 2022
+//    I replaced vtkh with vtkm.
+//
 // ****************************************************************************
 
 static vtkPoints *
-vtkPointsFromVTKM(vtkh::DataSet *data)
+vtkPointsFromVTKM(vtkmDataSet *data)
 {
     vtkPoints *pts = NULL;
     try
     {
-        vtkm::cont::DataSet ds;
-        vtkm::Id id;
-        data->GetDomain(0, ds, id);
+        vtkm::cont::DataSet ds = data->ds;
 
         //
         // Get the coordinates.
@@ -585,9 +594,9 @@ vtkPointsFromVTKM(vtkh::DataSet *data)
             auto yPoints = vtkm::get<1>(points.GetArrayTuple());
             auto zPoints = vtkm::get<2>(points.GetArrayTuple());
 
-            vtkm::Float32 *xPtr = (vtkm::Float32*)vtkh::GetVTKMPointer(xPoints);
-            vtkm::Float32 *yPtr = (vtkm::Float32*)vtkh::GetVTKMPointer(yPoints);
-            vtkm::Float32 *zPtr = (vtkm::Float32*)vtkh::GetVTKMPointer(zPoints);
+            vtkm::Float32 *xPtr = (vtkm::Float32*)GetVTKmPointer(xPoints);
+            vtkm::Float32 *yPtr = (vtkm::Float32*)GetVTKmPointer(yPoints);
+            vtkm::Float32 *zPtr = (vtkm::Float32*)GetVTKmPointer(zPoints);
 
             vtkm::Id nPoints = xPoints.GetNumberOfValues();
 
@@ -603,7 +612,7 @@ vtkPointsFromVTKM(vtkh::DataSet *data)
             CoordsVec32 points;
             coordsHandle.AsArrayHandle(points);
 
-            vtkm::Float32 *pointsPtr = (vtkm::Float32*)vtkh::GetVTKMPointer(points);
+            vtkm::Float32 *pointsPtr = (vtkm::Float32*)GetVTKmPointer(points);
 
             vtkm::Id nPoints = points.GetNumberOfValues();
 
@@ -624,9 +633,9 @@ vtkPointsFromVTKM(vtkh::DataSet *data)
             auto yPoints = vtkm::get<1>(points.GetArrayTuple());
             auto zPoints = vtkm::get<2>(points.GetArrayTuple());
 
-            vtkm::Float64 *xPtr = (vtkm::Float64*)vtkh::GetVTKMPointer(xPoints);
-            vtkm::Float64 *yPtr = (vtkm::Float64*)vtkh::GetVTKMPointer(yPoints);
-            vtkm::Float64 *zPtr = (vtkm::Float64*)vtkh::GetVTKMPointer(zPoints);
+            vtkm::Float64 *xPtr = (vtkm::Float64*)GetVTKmPointer(xPoints);
+            vtkm::Float64 *yPtr = (vtkm::Float64*)GetVTKmPointer(yPoints);
+            vtkm::Float64 *zPtr = (vtkm::Float64*)GetVTKmPointer(zPoints);
 
             vtkm::Id nPoints = xPoints.GetNumberOfValues();
 
@@ -642,7 +651,7 @@ vtkPointsFromVTKM(vtkh::DataSet *data)
             CoordsVec64 points;
             coordsHandle.AsArrayHandle(points);
 
-            vtkm::Float64 *pointsPtr = (vtkm::Float64*)vtkh::GetVTKMPointer(points);
+            vtkm::Float64 *pointsPtr = (vtkm::Float64*)GetVTKmPointer(points);
 
             vtkm::Id nPoints = points.GetNumberOfValues();
 
@@ -682,22 +691,23 @@ vtkPointsFromVTKM(vtkh::DataSet *data)
 //    Eric Brugger, Wed Dec  9 09:12:27 PST 2020
 //    Updated to a newer VTKm.
 //
+//    Eric Brugger, Thu Dec  8 15:03:57 PST 2022
+//    I replaced vtkh with vtkm.
+//
 // ****************************************************************************
 
 static vtkDataSet *
-StructuredFromVTKM(vtkh::DataSet *data)
+StructuredFromVTKM(vtkmDataSet *data)
 {
     vtkDataSet *out_vtk_ds = NULL;
 
     try
     {
-        vtkm::cont::DataSet ds;
-        vtkm::Id id;
-        data->GetDomain(0, ds, id);
+        vtkm::cont::DataSet ds = data->ds;
 
         // Try and make a structured cell set from the VTKm dataset.
         vtkm::cont::CellSetStructured<3> cs;
-        ds.GetCellSet().CopyTo(cs);
+        ds.GetCellSet().AsCellSet(cs);
 
         // Determine the size of the cell set.
         const vtkm::Id3 vdims = cs.GetPointDimensions();
@@ -827,16 +837,11 @@ StructuredFromVTKM(vtkh::DataSet *data)
 }
 
 static vtkDataSet *
-ConvertVTKmToVTK(vtkh::DataSet *data)
+ConvertVTKmToVTK(vtkmDataSet *data)
 {
     vtkDataSet *ret = NULL;
 
-    if (data->GetNumberOfDomains() == 0)
-        return NULL;
-
-    vtkm::cont::DataSet vtkm_ds;
-    vtkm::Id vtkm_id;
-    data->GetDomain(0, vtkm_ds, vtkm_id);
+    vtkm::cont::DataSet vtkm_ds = data->ds;
 
     //
     // Use the dataset's cell set to turn the connectivity back into VTK.
@@ -857,7 +862,7 @@ ConvertVTKmToVTK(vtkh::DataSet *data)
             pts->Delete();
             ds = ugrid;
 
-            vtkm::cont::DynamicCellSet cs = vtkm_ds.GetCellSet();
+            vtkm::cont::UnknownCellSet cs = vtkm_ds.GetCellSet();
             vtkm::cont::CellSetExplicit<> cse;
             try
             {
@@ -937,7 +942,7 @@ ConvertVTKmToVTK(vtkh::DataSet *data)
         }
         else if(vtkm_ds.GetCellSet().IsSameType(vtkm::cont::CellSetSingleType<>()))
         {
-            vtkm::cont::DynamicCellSet cs = vtkm_ds.GetCellSet();
+            vtkm::cont::UnknownCellSet cs = vtkm_ds.GetCellSet();
             vtkm::cont::CellSetSingleType<> csst;
             try
             {
@@ -1030,7 +1035,7 @@ ConvertVTKmToVTK(vtkh::DataSet *data)
             //
             vtkDataSetAttributes *attr = ds->GetPointData();
             if (vtkm_ds.GetField(i).GetAssociation() ==
-                vtkm::cont::Field::Association::CELL_SET)
+                vtkm::cont::Field::Association::Cells)
                 attr = ds->GetCellData();
 
             auto field = vtkm_ds.GetField(i).GetData();
@@ -1273,14 +1278,17 @@ avtDataRepresentation::avtDataRepresentation(vtkDataSet *d, int dom, string s,
 //    Eric Brugger, Wed Sep 12 16:41:55 PDT 2018
 //    I replaced support for vtkm with vtkh.
 //
+//    Eric Brugger, Thu Dec  8 15:03:57 PST 2022
+//    I replaced vtkh with vtkm.
+//
 // ****************************************************************************
 
-avtDataRepresentation::avtDataRepresentation(vtkh::DataSet *d, int dom, string s,
+avtDataRepresentation::avtDataRepresentation(vtkmDataSet *d, int dom, string s,
                                              bool dontCopyData)
 {
     InitializeNullDatasets();
 
-#ifdef HAVE_LIBVTKH
+#ifdef HAVE_LIBVTKM
     asVTK        = NULL;
     asChar       = NULL;
     asCharLength = 0;
@@ -1302,7 +1310,7 @@ avtDataRepresentation::avtDataRepresentation(vtkh::DataSet *d, int dom, string s
        asVTKm = d;
     }
 #else
-    EXCEPTION1(StubReferencedException,"avtDataRepresentation::avtDataRepresentation(vtkh::DataSet *d)");
+    EXCEPTION1(StubReferencedException,"avtDataRepresentation::avtDataRepresentation(vtkmDataSet *d)");
 #endif
 }
 
@@ -1409,6 +1417,9 @@ avtDataRepresentation::avtDataRepresentation(char *d, int dl, int dom,
 //    Kathleen Biagas, Wed Jan 30 10:41:55 PST 2019
 //    Removed support for EAVL.
 //
+//    Eric Brugger, Thu Dec  8 15:03:57 PST 2022
+//    I replaced vtkh with vtkm.
+//
 // ****************************************************************************
 
 avtDataRepresentation::avtDataRepresentation(const avtDataRepresentation &rhs)
@@ -1418,7 +1429,7 @@ avtDataRepresentation::avtDataRepresentation(const avtDataRepresentation &rhs)
     asChar       = NULL;
     asCharLength = 0;
 
-#ifdef HAVE_LIBVTKH
+#ifdef HAVE_LIBVTKM
     if (rhs.asVTKm)
     {
         asVTKm = rhs.asVTKm;
@@ -1472,11 +1483,14 @@ avtDataRepresentation::avtDataRepresentation(const avtDataRepresentation &rhs)
 //    Kathleen Biagas, Wed Jan 30 10:41:55 PST 2019
 //    Removed support for EAVL.
 //
+//    Eric Brugger, Thu Dec  8 15:03:57 PST 2022
+//    I replaced vtkh with vtkm.
+//
 // ****************************************************************************
 
 avtDataRepresentation::~avtDataRepresentation()
 {
-#ifdef HAVE_LIBVTKH
+#ifdef HAVE_LIBVTKM
     if (asVTKm)
     {
         //delete asVTKm;
@@ -1547,6 +1561,9 @@ debug5 << "TODO: Not deleting asVTKm because some reference counting seems to be
 //    Kathleen Biagas, Wed Jan 30 10:41:55 PST 2019
 //    Removed support for EAVL.
 //
+//    Eric Brugger, Thu Dec  8 15:03:57 PST 2022
+//    I replaced vtkh with vtkm.
+//
 // ****************************************************************************
 
 avtDataRepresentation &
@@ -1555,7 +1572,7 @@ avtDataRepresentation::operator=(const avtDataRepresentation &rhs)
     if (&rhs == this)
         return *this;
 
-#ifdef HAVE_LIBVTKH
+#ifdef HAVE_LIBVTKM
     if (asVTKm)
     {
         delete asVTKm;
@@ -1576,7 +1593,7 @@ avtDataRepresentation::operator=(const avtDataRepresentation &rhs)
     asVTKm = NULL;
     asChar = NULL;
 
-#ifdef HAVE_LIBVTKH
+#ifdef HAVE_LIBVTKM
     if (rhs.asVTKm)
     {
         asVTKm = rhs.asVTKm;
@@ -1667,6 +1684,9 @@ avtDataRepresentation::Valid(void)
 //    Kathleen Biagas, Wed Jan 30 10:41:55 PST 2019
 //    Removed support for EAVL.
 //
+//    Eric Brugger, Thu Dec  8 15:03:57 PST 2022
+//    I replaced vtkh with vtkm.
+//
 // ****************************************************************************
 
 long long
@@ -1684,7 +1704,7 @@ avtDataRepresentation::GetNumberOfCells(int topoDim, bool polysOnly) const
    {
       long long numCells = 0;
 
-#ifdef HAVE_LIBVTKH
+#ifdef HAVE_LIBVTKM
       if (dataRepType == DATA_REP_TYPE_VTKM)
       {
           numCells = 0;
@@ -1832,6 +1852,9 @@ avtDataRepresentation::vtkToString(bool compress)
 //    Kathleen Biagas, Wed Jan 30 10:41:55 PST 2019
 //    Removed support for EAVL.
 //
+//    Eric Brugger, Thu Dec  8 15:03:57 PST 2022
+//    I replaced vtkh with vtkm.
+//
 // ****************************************************************************
 
 unsigned char *
@@ -1859,7 +1882,7 @@ avtDataRepresentation::GetDataString(int &length, DataSetType &dst, bool compres
                 dst = datasetType;
             }
         }
-#ifdef HAVE_LIBVTKH
+#ifdef HAVE_LIBVTKM
         else if (dataRepType == DATA_REP_TYPE_VTKM)
         {
             if (asVTKm == nullVTKmDataset)
@@ -1948,6 +1971,9 @@ avtDataRepresentation::GetDataString(int &length, DataSetType &dst, bool compres
 //    Kathleen Biagas, Wed Jan 30 10:41:55 PST 2019
 //    Removed support for EAVL.
 //
+//    Eric Brugger, Thu Dec  8 15:03:57 PST 2022
+//    I replaced vtkh with vtkm.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -1964,7 +1990,7 @@ avtDataRepresentation::GetDataVTK(void)
         }
         else
         {
-#ifdef HAVE_LIBVTKH
+#ifdef HAVE_LIBVTKM
             //try to convert from VTKm dataset
             if (asVTKm != NULL)
                 asVTK = VTKmToVTK(asVTKm);
@@ -2089,12 +2115,15 @@ avtDataRepresentation::GetDataVTK(void)
 //    Eric Brugger, Wed Sep 12 16:41:55 PDT 2018
 //    I replaced support for vtkm with vtkh.
 //
+//    Eric Brugger, Thu Dec  8 15:03:57 PST 2022
+//    I replaced vtkh with vtkm.
+//
 // ****************************************************************************
 
-vtkh::DataSet *
+vtkmDataSet *
 avtDataRepresentation::GetDataVTKm(void)
 {
-#ifndef HAVE_LIBVTKH
+#ifndef HAVE_LIBVTKM
     asVTKm = NULL;
 #else
 
@@ -2157,6 +2186,9 @@ avtDataRepresentation::GetDataVTKm(void)
 //    Kathleen Biagas, Wed Jan 30 10:41:55 PST 2019
 //    Removed support for EAVL.
 //
+//    Eric Brugger, Thu Dec  8 15:03:57 PST 2022
+//    I replaced vtkh with vtkm.
+//
 // ****************************************************************************
 
 void
@@ -2173,8 +2205,8 @@ avtDataRepresentation::InitializeNullDatasets(void)
     dummyPoints->Delete();
     nullVTKDataset = ugrid;
 
-#ifdef HAVE_LIBVTKH
-    nullVTKmDataset = new vtkh::DataSet();
+#ifdef HAVE_LIBVTKM
+    nullVTKmDataset = new vtkmDataSet();
 #endif
 
     initializedNullDatasets = true;
@@ -2205,6 +2237,9 @@ avtDataRepresentation::InitializeNullDatasets(void)
 //    Kathleen Biagas, Wed Jan 30 10:41:55 PST 2019
 //    Removed support for EAVL.
 //
+//    Eric Brugger, Thu Dec  8 15:03:57 PST 2022
+//    I replaced vtkh with vtkm.
+//
 // ****************************************************************************
 void
 avtDataRepresentation::DeleteNullDatasets(void)
@@ -2215,7 +2250,7 @@ avtDataRepresentation::DeleteNullDatasets(void)
         nullVTKDataset = NULL;
     }
 
-#ifdef HAVE_LIBVTKH
+#ifdef HAVE_LIBVTKM
     delete nullVTKmDataset;
     nullVTKmDataset = NULL;
 #endif
@@ -2743,7 +2778,7 @@ avtDataRepresentation::DebugDump(avtWebpage *webpage, const char *prefix)
 }
 
 
-#ifdef HAVE_LIBVTKH
+#ifdef HAVE_LIBVTKM
 // ****************************************************************************
 //  Method: avtDataRepresentation::VTKmToVTK
 //
@@ -2759,10 +2794,13 @@ avtDataRepresentation::DebugDump(avtWebpage *webpage, const char *prefix)
 //    Eric Brugger, Wed Sep 12 16:41:55 PDT 2018
 //    I replaced support for vtkm with vtkh.
 //
+//    Eric Brugger, Thu Dec  8 15:03:57 PST 2022
+//    I replaced vtkh with vtkm.
+//
 // ****************************************************************************
 
 vtkDataSet*
-avtDataRepresentation::VTKmToVTK(vtkh::DataSet *data)
+avtDataRepresentation::VTKmToVTK(vtkmDataSet *data)
 {
     debug5 << "converting dataset from VTKm to VTK...\n";
 
@@ -2789,7 +2827,7 @@ avtDataRepresentation::VTKmToVTK(vtkh::DataSet *data)
 //  Purpose:
 //      Convert between VTK and VTKm data representation.
 //
-//  Returns:      The data as a vtkh::DataSet.
+//  Returns:      The data as a vtkmDataSet.
 //
 //  Programmer: Eric Brugger
 //  Creation:   Thu Dec 10 11:49:40 PST 2015
@@ -2798,14 +2836,17 @@ avtDataRepresentation::VTKmToVTK(vtkh::DataSet *data)
 //    Eric Brugger, Wed Sep 12 16:41:55 PDT 2018
 //    I replaced support for vtkm with vtkh.
 //
+//    Eric Brugger, Thu Dec  8 15:03:57 PST 2022
+//    I replaced vtkh with vtkm.
+//
 // ****************************************************************************
 
-vtkh::DataSet*
+vtkmDataSet*
 avtDataRepresentation::VTKToVTKm(vtkDataSet *data)
 {
     debug5 << "converting dataset from VTK to VTKm...\n";
 
-    vtkh::DataSet *ret = NULL;
+    vtkmDataSet *ret = NULL;
     if (data)
     {
         int timerhandle = visitTimer->StartTimer();

@@ -62,6 +62,9 @@
 #    Renamed Derivations/avtStrainTensorExpression to
 #    Derivations/avtStrainExpression
 #
+#    Eric Brugger, Thu Dec  8 15:03:57 PST 2022
+#    I replaced vtkh with vtkm.
+#
 #****************************************************************************/
 
 SET(ABSTRACT_SOURCES
@@ -362,7 +365,6 @@ ${VISIT_SOURCE_DIR}/visit_vtk/lightweight
 ${VISIT_SOURCE_DIR}/vtkm
 ${VISIT_SOURCE_DIR}/third_party_builtin/verdict
 ${VTK_INCLUDE_DIRS}
-${VTKM_INCLUDE_DIR}
 )
 
 IF(VISIT_PYTHON_FILTERS)

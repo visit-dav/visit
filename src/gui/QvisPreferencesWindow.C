@@ -234,6 +234,8 @@ QvisPreferencesWindow::CreateWindowContents()
 // Creation:   November 8, 2019
 //
 // Modifications:
+//    Eric Brugger, Thu Dec  8 15:03:57 PST 2022
+//    I replaced vtkh with vtkm.
 //
 // ****************************************************************************
 
@@ -309,7 +311,7 @@ QvisPreferencesWindow::CreateGeneralTab(QWidget *gTab)
     precisionType->addButton(inc,2);
     precLayout->addWidget(inc);
 
-#if defined(HAVE_LIBVTKH)
+#if defined(HAVE_LIBVTKM)
     //
     // Create radio button controls to change the backend.
     //

@@ -42,6 +42,9 @@
 #   and CMake automagically pulls them in when compiling VisIt, even if not
 #   listed, but not when building the plugins.
 #
+#   Eric Brugger, Thu Dec  8 15:03:57 PST 2022
+#   I replaced vtkh with vtkm.
+#
 #****************************************************************************/
 
 SET(DATA_SOURCES
@@ -251,6 +254,9 @@ TARGET_LINK_LIBRARIES(avtpipeline_ser
 if(VTKH_FOUND)
     target_link_libraries(avtpipeline_ser vtkh)
 endif()
+if(HAVE_LIBVTKM)
+    target_link_libraries(avtpipeline_ser vtkm_cont vtkm_filter_contour)
+endif()
 
 VISIT_INSTALL_TARGETS(avtpipeline_ser)
 
@@ -266,6 +272,9 @@ IF(VISIT_PARALLEL)
                           ${ZLIB_LIBRARY})
     if(VTKH_FOUND)
         target_link_libraries(avtpipeline_par vtkh)
+    endif()
+    if(HAVE_LIBVTKM)
+        target_link_libraries(avtpipeline_par vtkm_cont vtkm_filter_contour)
     endif()
     VISIT_INSTALL_TARGETS(avtpipeline_par)
 ENDIF(VISIT_PARALLEL)

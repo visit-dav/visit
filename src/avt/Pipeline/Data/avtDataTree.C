@@ -623,6 +623,9 @@ avtDataTree::avtDataTree(int n, avtDataRepresentation *drep)
 //    Kathleen Biagas, Thu Jan 10 10:00:04 PST 2019
 //    Removed support for EAVL, added VTKh.
 //
+//    Eric Brugger, Thu Dec  8 15:03:57 PST 2022
+//    I replaced vtkh with vtkm.
+//
 // ****************************************************************************
 
 avtDataTree::avtDataTree(avtDataTree_p dt, bool dontCopyData)
@@ -661,7 +664,7 @@ avtDataTree::avtDataTree(avtDataTree_p dt, bool dontCopyData)
             }
             else
             {
-                dataRep  = new avtDataRepresentation((vtkh::DataSet *)NULL,
+                dataRep  = new avtDataRepresentation((vtkmDataSet *)NULL,
                                                      oldRep.GetDomain(),
                                                      oldRep.GetLabel(),
                                                      dontCopyData);
