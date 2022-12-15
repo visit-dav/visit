@@ -197,6 +197,58 @@ class avtZipWrapperFileFormat : public avtMTMDFileFormat
 
 };
 
+static void
+RemoveDirTree(char const *dirname)
+{
+    static int issuedWarnings = 0;
+
+    DIR *dirp = opendir(dirname);
+    if (!dirp)
+    {
+        if (issuedWarnings < 5)
+        {
+            debug5 << "Unable to descend into directory \"" << dirname << "\" to remove its contents." << endl;
+            cerr << "Unable to descend into directory \"" << dirname << "\" to remove its contents." << endl;
+            issuedWarnings++;
+        }
+        return;
+    }
+
+    // Remove contents of this directory.
+    struct dirent *dp;
+    while ((dp = readdir(dirp)))
+    {
+        if (!strcmp(dp->d_name, "."))
+            continue;
+        if (!strcmp(dp->d_name, ".."))
+            continue;
+        string tmp = string(dirname) + "/" + string(dp->d_name);
+
+        // try to unlink this entry.
+        if (unlink(tmp.c_str()) == 0)
+            continue;
+
+        // If the above unlink fails, its probably a dir we need to recruse on.
+        RemoveDirTree(tmp.c_str());
+    }
+    closedir(dirp);
+
+    // Now, remove the directory itself.
+    errno = 0;
+    if (rmdir(dirname) != 0)
+    {
+        if (issuedWarnings < 5)
+        {
+            int errnotmp = errno;
+            debug5 << "Unable to rmdir() \"" << dirname << "\"" << endl;
+            debug5 << "rmdir() reported errno=" << errnotmp << ", \"" << strerror(errnotmp) << "\"" << endl;
+            cerr << "Unable to rmdir() \"" << dirname << "\"" << endl;
+            cerr << "rmdir() reported errno=" << errnotmp << ", \"" << strerror(errnotmp) << "\"" << endl;
+            issuedWarnings++;
+        }
+    }
+}
+
 // ****************************************************************************
 //  Static Function: FreeUpCacheSlot
 //
@@ -222,65 +274,19 @@ static void FreeUpCacheSlot(void *item)
         {
             if (issuedWarnings < 5)
             {
+                int errnotmp = errno;
                 debug5 << "Unable to unlink() decompressed file \"" << filename << "\"" << endl;
-                debug5 << "unlink() reported errno=" << errno << " (\"" << strerror(errno) << "\")" << endl;
+                debug5 << "unlink() reported errno=" << errnotmp << ", \"" << strerror(errnotmp) << "\"" << endl;
                 cerr << "Unable to remove decompressed file \"" << filename << "\"" << endl;
-                cerr << "unlink() reported errno=" << errno << " (\"" << strerror(errno) << "\")" << endl;
+                cerr << "unlink() reported errno=" << errnotmp << ", \"" << strerror(errnotmp) << "\"" << endl;
                 issuedWarnings++;
             }
         }
     }
     else
     {
-        DIR *dirp = opendir(finfo->rmDirname.c_str());
-        if (!dirp)
-        {
-            if (issuedWarnings < 5)
-            {
-                debug5 << "Unable to descend into directory \"" << finfo->rmDirname << "\" to remove its contents." << endl;
-                cerr << "Unable to descend into directory \"" << finfo->rmDirname << "\" to remove its contents." << endl;
-                issuedWarnings++;
-                goto done;
-            }
-        }
-        dirent *dp;
-        while ((dp = readdir(dirp)))
-        {
-            errno = 0;
-            if (string(dp->d_name) == ".")
-                continue;
-            if (string(dp->d_name) == "..")
-                continue;
-            string tmp = finfo->rmDirname + "/" + string(dp->d_name);
-            if (unlink(tmp.c_str()) != 0 && errno != ENOENT)
-            {
-                if (issuedWarnings < 5)
-                {
-                    debug5 << "Unable to unlink() \"" << tmp << "\"" << endl;
-                    debug5 << "unlink() reported errno=" << errno << " (\"" << strerror(errno) << "\")" << endl;
-                    cerr << "Unable to unlink() \"" << tmp << "\"" << endl;
-                    cerr << "unlink() reported errno=" << errno << " (\"" << strerror(errno) << "\")" << endl;
-                    issuedWarnings++;
-                    goto done;
-                }
-            }
-        }
-        closedir(dirp);
-        errno = 0;
-        if (rmdir(finfo->rmDirname.c_str()) != 0)
-        {
-            if (issuedWarnings < 5)
-            {
-                debug5 << "Unable to rmdir() \"" << finfo->rmDirname << "\"" << endl;
-                debug5 << "rmdir() reported errno=" << errno << " (\"" << strerror(errno) << "\")" << endl;
-                cerr << "Unable to rmdir() \"" << finfo->rmDirname << "\"" << endl;
-                cerr << "rmdir() reported errno=" << errno << " (\"" << strerror(errno) << "\")" << endl;
-                issuedWarnings++;
-            }
-        }
+        RemoveDirTree(finfo->rmDirname.c_str());
     }
-
-done:
 
     delete finfo;
 }
