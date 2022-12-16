@@ -34,7 +34,7 @@ bp_mfem_test_dir = "blueprint_v0.3.1_mfem_test_data"
 bp_0_8_2_test_dir = "blueprint_v0.8.2_braid_examples_test_data"
 bp_poly_test_dir = "blueprint_v0.8.2_polytess_test_data"
 bp_devilray_mfem_test_dir = "blueprint_v0.8.3_devilray_mfem_test_data"
-bp_part_map_test_dir = "blueprint_v0.8.4_part_map_example"
+bp_part_map_test_dir = "blueprint_v0.8.4_part_map_examples"
 
 braid_2d_hdf5_root = data_path(pjoin(bp_test_dir,"braid_2d_examples.blueprint_root_hdf5"))
 braid_3d_hdf5_root = data_path(pjoin(bp_test_dir,"braid_3d_examples.blueprint_root_hdf5"))
@@ -80,6 +80,13 @@ venn_s_by_m_yaml_root  =  data_path(pjoin(bp_venn_test_dir,
 bp_part_map_root = data_path(pjoin(bp_part_map_test_dir,
                              "tout_custom_part_map_index_hdf5.root"))
 
+bp_part_map_single_file_root = data_path(pjoin(bp_part_map_test_dir,
+                                         "tout_single_file_part_map_index_hdf5.root"))
+
+bp_sprial_part_map_examples = []
+for i in range(-1,9):
+    bp_sprial_part_map_examples.append(data_path(pjoin(bp_part_map_test_dir,
+                                       "tout_relay_sprial_mesh_save_nfiles_{0}.cycle_000000.root".format(i))))
 
 
 braid_2d_meshes = ["points", "uniform", "rect", "struct", "tris","quads"]
@@ -563,6 +570,24 @@ DrawPlots()
 Test("bp_part_map_index_example")
 DeleteAllPlots()
 CloseDatabase(bp_part_map_root)
+# single file test case
+OpenDatabase(bp_part_map_single_file_root)
+AddPlot("Pseudocolor","mesh_mesh/braid")
+DrawPlots()
+Test("bp_part_map_index_single_file_example")
+DeleteAllPlots()
+CloseDatabase(bp_part_map_single_file_root)
+
+# other spiral test cases, which have both index styles
+for i, root_file in enumerate(bp_sprial_part_map_examples):
+    OpenDatabase(root_file)
+    AddPlot("Subset","domains")
+    DrawPlots()
+    # spiral cases are labeled -1 to 8
+    case_name = "bp_part_map_sprial_case_{0}".format(i-1)
+    Test(case_name)
+    DeleteAllPlots()
+    CloseDatabase(root_file)
 
 
 Exit()
