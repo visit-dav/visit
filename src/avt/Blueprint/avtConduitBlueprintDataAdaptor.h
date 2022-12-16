@@ -38,6 +38,9 @@ class vtkDataArray;
 //      Added all functions, mostly taken from the blueprint plugin data 
 //      adaptor.
 //
+//      Cyrus Harrison, Thu Dec 15 14:43:47 PST 2022
+//      Added topo arg to FieldToVTK.
+//
 // ****************************************************************************
 
 class AVTBLUEPRINT_API avtConduitBlueprintDataAdaptor
@@ -55,7 +58,12 @@ public:
         /// to vtk instances.
         static vtkDataSet*    MeshToVTK(int domain, 
                                         const conduit::Node &mesh);
-        static vtkDataArray*  FieldToVTK(const conduit::Node &field);
+
+        /// for structured grids, we may have fields that provide
+        /// optional offsets and strides relative to the topology,
+        /// so topology rides along to help with those cases
+        static vtkDataArray*  FieldToVTK(const conduit::Node &topo,
+                                         const conduit::Node &field);
     };
 
     class AVTBLUEPRINT_API VTKToBlueprint
