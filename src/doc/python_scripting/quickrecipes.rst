@@ -21,14 +21,11 @@ VisIt_'s session files contain all of the information required to recreate plots
 Since session files contain all of the information about plots, etc., they are natural candidates to make scripting easier since they can be used to do the hard part of setting up the complex visualization, leaving the bulk of the script to animate through time or alter the plots in some way. 
 To use session files within a script, use the RestoreSession function.
 
-::
-
-    # Import a session file from the current working directory. 
-    RestoreSesssion("my_visualization.session", 0) 
-    # Now that VisIt has restored the session, animate through time.
-    for state in range(TimeSliderGetNStates()): 
-      SetTimeSliderState(state) 
-      SaveWindow() 
+.. literalinclude:: ../../test/tests/quickrecipes/how_to_start.py
+    :language: Python
+    :start-after: # using session files {
+    :end-before: # using session files }
+    :dedent: 4
 
 Getting something on the screen
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -42,22 +39,11 @@ The AddPlot function takes a plot plugin name and the name of a variable from th
 Once you've added a plot, it is in the new state, which means that it has not yet been submitted to the compute engine for processing. 
 To make sure that the plot gets drawn, call the DrawPlots function.
 
-::
-
-    # Step 1: Open a database 
-    OpenDatabase("/usr/local/visit/data/wave.visit") 
-
-    # Step 2: Add plots 
-    AddPlot("Pseudocolor", "pressure") 
-    AddPlot("Mesh", "quadmesh") 
-
-    # Step 3: Draw the plots 
-    DrawPlots() 
-
-    # Step 4: Animate through time and save images 
-    for states in range(TimeSliderGetNStates()): 
-      SetTimeSliderState(state) 
-      SaveWindow() 
+.. literalinclude:: ../../test/tests/quickrecipes/how_to_start.py
+    :language: Python
+    :start-after: # getting something on the screen {
+    :end-before: # getting something on the screen }
+    :dedent: 4
 
 Handling Command line Arguments
 -------------------------------
@@ -86,15 +72,11 @@ To set the options that VisIt uses to save files, you must create a SaveWindowAt
 Note that if you want to create images using a specific image resolution, the best way is to use the *-geometry* command line argument with VisIt_'s Command Line Interface and tell VisIt to use screen capture. 
 If you instead require your script to be capable of saving several different image sizes then you can turn off screen capture and set the image resolution in the SaveWindowAttributes object.
 
-::
-
-    # Save a BMP file at 1024x768 resolution 
-    s = SaveWindowAttributes() 
-    s.format = s.BMP 
-    s.fileName = "mybmpfile" 
-    s.width, s.height = 1024,768 
-    s.screenCapture = 0 
-    SetSaveWindowAttributes(s) 
+.. literalinclude:: ../../test/tests/quickrecipes/saving_images.py
+    :language: Python
+    :start-after: # setting output image characteristics {
+    :end-before: # setting output image characteristics }
+    :dedent: 4
 
 Saving an image
 ~~~~~~~~~~~~~~~
@@ -102,16 +84,11 @@ Saving an image
 Once you have set the SaveWindowAttributes to your liking, you can call the SaveWindow function to save an image. 
 The SaveWindow function returns the name of the image that is saved so you can use that for other purposes in your script.
 
-::
-
-    # Save images of all timesteps and add each image filename to a list. 
-    names = [] 
-    for state in range(TimeSliderGetNStates()): 
-      SetTimeSliderState(state) 
-      # Save the image 
-      n = SaveWindow() 
-      names = names + [n] 
-    print(names)
+.. literalinclude:: ../../test/tests/quickrecipes/saving_images.py
+    :language: Python
+    :start-after: # saving an image {
+    :end-before: # saving an image }
+    :dedent: 4
 
 Working with databases
 ----------------------
@@ -128,13 +105,14 @@ Opening a database
 Opening a database is a relatively simple operation - most complexities arise in how the database treats time. 
 If you only want to visualize a single time state or if your database format natively supports multiple timestates per file then opening a database requires just a single call to the OpenDatabase function.
 
-::
+.. literalinclude:: ../../test/tests/quickrecipes/working_with_dbs.py
+    :language: Python
+    :start-after: # opening a database {
+    :end-before: # opening a database }
+    :dedent: 4
 
-    # Open a database at time state 0 
-    OpenDatabase("/usr/local/visit/data/allinone00.pdb") 
-
-Opening a database at late time
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Opening a database at specific time
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Opening a database at a later timestate is done just the same as opening a database at time state zero except that you must specify the time state at which you want to open the database. 
 There are a number of reasons for opening a database at a later time state. 
@@ -142,10 +120,11 @@ The most common reason for doing so, as opposed to just changing time states lat
 This means that the list of variables found for the first time state that you open is used for all timestates. 
 If your database contains a variable at a later timestate that does not exist at earlier time states, you must open the database at a later time state to gain access to the transient variable.
 
-::
-
-    # Open a database at a later time state to pick up transient variables 
-    OpenDatabase("/usr/local/visit/data/wave.visit", 17) 
+.. literalinclude:: ../../test/tests/quickrecipes/working_with_dbs.py
+    :language: Python
+    :start-after: # opening a database at specific time {
+    :end-before: # opening a database at specific time }
+    :dedent: 4
 
 Opening a virtual database
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -156,13 +135,11 @@ The second method uses "virtual databases", which allow VisIt to exploit the fil
 In many cases, VisIt can scan a specified directory and determine which filenames look related. 
 Filenames with close matches are grouped as individual time states into a virtual database whose name is based on the more abstract pattern used to create the filenames.
 
-::
-
-    # Opening first file in series wave0000.silo, wave0010.silo, ... 
-    OpenDatabase("/usr/local/visit/data/wave0000.silo") 
-
-    # Opening a virtual database representing all wave*.silo files. 
-    OpenDatabase("/usr/local/visit/data/wave*.silo database") 
+.. literalinclude:: ../../test/tests/quickrecipes/working_with_dbs.py
+    :language: Python
+    :start-after: # opening a virtual database {
+    :end-before: # opening a virtual database }
+    :dedent: 4
 
 Opening a remote database
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -170,11 +147,11 @@ Opening a remote database
 VisIt supports running the client on a local computer while also allowing you to process data in parallel on a remote computer. 
 If you want to access databases on a remote computer using VisIt_'s Python Interface, the only difference to accessing a database on a local computer is that you must specify a host name as part of the database name.
 
-::
-
-    # Opening a file on a remote computer by giving a host name 
-    # Also, open the database to a later time slice (17)
-    OpenDatabase("thunder:/usr/local/visit/data/wave.visit", 17)
+.. literalinclude:: ../../test/tests/quickrecipes/working_with_dbs.py
+    :language: Python
+    :start-after: # opening a remote database {
+    :end-before: # opening a remote database }
+    :dedent: 4
 
 Opening a compute engine
 ------------------------
@@ -186,12 +163,11 @@ If you want to design a script that must specify parallel options, etc in batch 
 To open a compute engine, use the OpenComputeEngine function. 
 You can pass the name of the host on which to run the compute engine and any arguments that must be used to launch the engine such as the number of processors.
 
-::
-
-    # Open a local, parallel compute engine before opening a database 
-    # Use 4 processors on 2 nodes
-    OpenComputeEngine("localhost", ("-np", "4", "-nn", "2"))
-    OpenDatabase("/usr/local/visit/data/multi_ucd3d.silo") 
+.. literalinclude:: ../../test/tests/quickrecipes/opening_compute_engine.py
+    :language: Python
+    :start-after: # opening a compute engine 1 {
+    :end-before: # opening a compute engine 1 }
+    :dedent: 4
 
 The options for starting the compute engine are the same as the ones used on the command line. 
 Here are the most common options for launching a compute engine.
@@ -210,32 +186,21 @@ Here are the most common options for launching a compute engine.
 The full list of parallel launch options can be obtained by typing ``visit --fullhelp``. 
 Here is a more complex example of launching a compute engine.
 
-::
-
-    # Use the "srun" job launcher, the "batch" partition, the "mybank" bank,
-    # 72 processors on 2 nodes and a time limit of 1 hour
-    OpenComputeEngine("localhost",("-l", "srun",
-                                   "-p", "batch",
-                                   "-b", "mybank",
-                                   "-np", "72",
-                                   "-nn", "2",
-                                   "-t", "1:00:00"))
+.. literalinclude:: ../../test/tests/quickrecipes/opening_compute_engine.py
+    :language: Python
+    :start-after: # opening a compute engine 2 {
+    :end-before: # opening a compute engine 2 }
+    :dedent: 4
 
 You can also launch a compute engine using one of the existing host profiles defined for your system. 
-In this particular case we know that the third profile is for the "parallel batch pbatch" profile. 
+In this particular case we know that the second profile is for the "parallel" profile. 
 If you didn't know this you could print "p" to get all the properties.
 
-::
-
-    # Set the user name to "user1" and use the third profile,
-    # overriding a few of its properties
-    p = GetMachineProfile("quartz.llnl.gov")
-    p.userName="user1"
-    p.activeProfile = 2
-    p.GetLaunchProfiles(2).numProcessors = 72
-    p.GetLaunchProfiles(2).numNodes = 2
-    p.GetLaunchProfiles(2).timeLimit = "00:30:00"
-    OpenComputeEngine(p)
+.. literalinclude:: ../../test/tests/quickrecipes/opening_compute_engine.py
+    :language: Python
+    :start-after: # opening a compute engine 3 {
+    :end-before: # opening a compute engine 3 }
+    :dedent: 4
 
 Working with plots
 ------------------
@@ -255,15 +220,11 @@ The variable that you pass to the AddPlot function must be a valid variable for 
 New plots are not realized, meaning that they have not been submitted to the compute engine for processing. 
 If you want to force VisIt to process the new plot you must call the DrawPlots function.
 
-::
-
-    # Names of all available plot plugins 
-    print(PlotPlugins())
-    # Create plots 
-    AddPlot("Pseudocolor", "pressure") 
-    AddPlot("Mesh", "quadmesh") 
-    # Draw the plots 
-    DrawPlots() 
+.. literalinclude:: ../../test/tests/quickrecipes/working_with_plots.py
+    :language: Python
+    :start-after: # creating a plot {
+    :end-before: # creating a plot }
+    :dedent: 4
 
 Plotting materials
 ~~~~~~~~~~~~~~~~~~
@@ -271,12 +232,11 @@ Plotting materials
 Plotting materials is a common operation in VisIt. 
 The Boundary and FilledBoundary plots enable you to plot material boundaries and materials, respectively.
 
-::
-
-    # Plot material boundaries 
-    AddPlot("Boundary", "mat1") 
-    # Plot materials 
-    AddPlot("FilledBoundary", "mat1") 
+.. literalinclude:: ../../test/tests/quickrecipes/working_with_plots.py
+    :language: Python
+    :start-after: # plotting materials {
+    :end-before: # plotting materials }
+    :dedent: 4
 
 Setting plot attributes
 ~~~~~~~~~~~~~~~~~~~~~~~
@@ -290,17 +250,11 @@ For example, the attributes object creation function for the Pseudocolor plot wo
 To change the attributes for a plot, you create an attributes object using the appropriate function, set the properties in the returned object, and tell VisIt to use the new plot attributes by passing the object to the SetPlotOptions function. 
 Note that you should set a plot's attributes before calling the DrawPlots method to realize the plot since setting a plot's attributes can cause the compute engine to recalculate the plot.
 
-::
-
-    # Creating a Pseudocolor plot and setting min/max values. 
-    AddPlot("Pseudocolor", "pressure") 
-    p = PseudocolorAttributes() 
-    # Look in the object 
-    print(p)
-    # Set the min/max values 
-    p.min, p.minFlag = 0.0, 1 
-    p.max, p.maxFlag = 10.0, 1 
-    SetPlotOptions(p) 
+.. literalinclude:: ../../test/tests/quickrecipes/working_with_plots.py
+    :language: Python
+    :start-after: # setting plot attributes {
+    :end-before: # setting plot attributes }
+    :dedent: 4
 
 Working with multiple plots
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -311,36 +265,11 @@ Changing which plots are active is useful when you want to delete or hide certai
 When you want to set which plots are active, use the SetActivePlots function. 
 If you want to list the plots that you've created, call the ListPlots function.
 
-::
-
-    # Create more than 1 plot of the same type 
-    AddPlot("Pseudocolor", "pressure") 
-    AddPlot("Pseudocolor", "density") 
-
-    # List the plots. The second plot should be active. 
-    ListPlots() 
-
-    # Draw the plots 
-    DrawPlots() 
-
-    # Hide the first plot 
-    SetActivePlots(0) 
-    HideActivePlots() 
-
-    # Set both plots' color table to "hot" 
-    p = PseudocolorAttributes() 
-    p.colorTableName = "hot" 
-    SetActivePlots((0,1)) 
-    SetPlotOptions(p) 
-
-    # Show the first plot again. 
-    SetActivePlots(0) 
-    HideActivePlots()
-
-    # Delete the second plot 
-    SetActivePlots(1) 
-    DeleteActivePlots() 
-    ListPlots() 
+.. literalinclude:: ../../test/tests/quickrecipes/working_with_plots.py
+    :language: Python
+    :start-after: working with multiple plots {
+    :end-before: working with multiple plots }
+    :dedent: 4
 
 Plots in the error state
 ~~~~~~~~~~~~~~~~~~~~~~~~
@@ -350,19 +279,11 @@ Once a plot is in the error state, it no longer is displayed in the visualizatio
 If you are generating a movie, plots entering the error state can be a serious problem because you most often want all of the plots that you have created to animate through time and not disappear in the middle of the animation. 
 You can add extra code to your script to prevent plots from disappearing (most of the time) due to error conditions by adding a call to the DrawPlots function.
 
-::
-
-    # Save an image and take care of plots that entered the error state. 
-    drawThePlots = 0 
-    for state in range(TimeSliderGetNStates()): 
-      if SetTimeSliderState(state) == 0: 
-        drawThePlots = 1 
-      if drawThePlots == 1: 
-        if DrawPlots() == 0: 
-          print("VisIt could not draw plots for state: %d")% state 
-        else: 
-          drawThePlots = 0 
-      SaveWindow() 
+.. literalinclude:: ../../test/tests/quickrecipes/working_with_plots.py
+    :language: Python
+    :start-after: # plots in the error state {
+    :end-before: # plots in the error state }
+    :dedent: 4
 
 Operators
 ---------
@@ -373,21 +294,17 @@ Operators can be linked one after the other to form chains of operators that can
 Adding operators
 ~~~~~~~~~~~~~~~~
 
+The list of available operators is returned by the ``OperatorPlugins()`` function. 
+Any of the names returned from ``OperatorPlugins()`` can be used to add an operator using the ``AddOperator()`` function. 
 Adding an operator is similar to adding a plot in that you call a function with the name of the operator to be added. 
-The list of available operators is returned by the OperatorPlugins function. 
-Any of the names returned in that plugin can be used to add an operator using the AddOperator function. 
-Operators are added to the active plots by default but you can also force VisIt to add them to all plots in the plot list.
+Operators are added *only* to the *active* plots by default but you can also force VisIt_ to add them to all plots in the plot list.
+You can also use the ``SetActivePlots()`` function to adjust the list of active plots before adding an operator to exercise finer grained control over which plots an operator is added to.
 
-::
-
-    # Print available operators 
-    print(OperatorPlugins())
-    # Create a plot 
-    AddPlot("Pseudocolor") 
-    # Add an Isovolume operator and a Slice operator 
-    AddOperator("Isovolume") 
-    AddOperator("Slice") 
-    DrawPlots() 
+.. literalinclude:: ../../test/tests/quickrecipes/operators.py
+    :language: Python
+    :start-after: # adding operators {
+    :end-before: # adding operators }
+    :dedent: 4
 
 Setting operator attributes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -399,25 +316,11 @@ Once you have created an operator attributes object, you can pass it to the SetO
 Note that setting the attributes for an operator nearly always causes the compute engine to recalculate the operator. 
 You can use the power of VisIt's Python Interface to create complex operator behavior such as in the following code example, which moves slice planes through a Pseudocolor plot.
 
-::
-
-    OpenDatabase("/usr/local/visit/data/noise.silo") 
-    AddPlot("Pseudocolor", "hardyglobal") 
-    AddOperator("Slice") 
-    s = SliceAttributes() 
-    s.originType = s.Percent 
-    s.project2d = 0 
-    SetOperatorOptions(s) 
-    DrawPlots() 
-
-    nSteps = 20 
-    for axis in (0,1,2): 
-      s.axisType = axis 
-      for step in range(nSteps): 
-        t = float(step) / float(nSteps - 1) 
-        s.originPercent = t * 100. 
-        SetOperatorOptions(s) 
-        SaveWindow()
+.. literalinclude:: ../../test/tests/quickrecipes/operators.py
+    :language: Python
+    :start-after: # setting operator attributes {
+    :end-before: # setting operator attributes }
+    :dedent: 4
 
 Quantitative operations
 -----------------------
@@ -431,14 +334,11 @@ VisIt allows you to create derived variables using its powerful expressions lang
 You can plot or query variables created using expressions just as you would if they were read from a database. 
 VisIt_'s Python Interface allows you to create new scalar, vector, tensor variables using the DefineScalarExpression, DefineVectorExpression, and DefineTensorExpression functions.
 
-::
-
-    # Creating a new expression 
-    OpenDatabase("/usr/local/visit/data/noise.silo") 
-    AddPlot("Pseudocolor", "hardyglobal") 
-    DrawPlots() 
-    DefineScalarExpression("newvar", "sin(hardyglobal) + cos(shepardglobal") 
-    ChangeActivePlotsVar("newvar") 
+.. literalinclude:: ../../test/tests/quickrecipes/quantitative_operations.py
+    :language: Python
+    :start-after: # defining expressions {
+    :end-before: # defining expressions }
+    :dedent: 4
 
 Pick
 ~~~~
@@ -448,80 +348,43 @@ To that end, VisIt provides several pick functions.
 Once a pick function has been called, you can call the GetPickOutput function to get a string that contains the pick information. 
 The information in the string could be used for a multitude of uses such as building a test suite for a simulation code.
 
-::
-
-    OpenDatabase("/usr/local/visit/data/noise.silo") 
-    AddPlot("Pseudocolor", "hgslice") 
-    DrawPlots() 
-    s = [] 
-    # Pick by a node id 
-    PickbyNode(300) 
-    s = s + [GetPickOutput()] 
-    # Pick by a cell id 
-    PickByZone(250) 
-    s = s + [GetPickOutput()] 
-    # Pick on a cell using a 3d point 
-    Pick((-2., 2., 0.)) 
-    s = s + [GetPickOutput()] 
-    # Pick on the node closest to (-2,2,0) 
-    NodePick((-2,2,0)) 
-    s = s + [GetPickOutput()] 
-    # Print all pick results 
-    print(s)
+.. literalinclude:: ../../test/tests/quickrecipes/quantitative_operations.py
+    :language: Python
+    :start-after: # pick {
+    :end-before: # pick }
+    :dedent: 4
 
 Lineout
 ~~~~~~~
 
 VisIt allows you to extract data along a line, called a :ref:`lineout <Lineout>`, and plot the data using a :ref:`Curve <Curve plot>` plot.
 
-::
+.. literalinclude:: ../../test/tests/quickrecipes/quantitative_operations.py
+    :language: Python
+    :start-after: # lineout 1 {
+    :end-before: # lineout 1 }
+    :dedent: 4
 
-    p0 = (-5,-3)
-    p1 = ( 5, 8)
-    OpenDatabase("/usr/local/visit/data/noise.silo") 
-    AddPlot("Pseudocolor", "hgslice") 
-    DrawPlots() 
-    Lineout(p0, p1)
-    # Specify 65 sample points 
-    Lineout(p0, p1, 65)
-    # Do three variables ("default" is "hgslice")
-    Lineout(p0, p1, ("default", "var1", "var2"))
-
-The above steps produce the requested lineout(s), visually, as curve(s) in a (new) viewer window.
+The above steps produce the lineout(s), visually, as curve plot(s) in a new viewer window.
+Read more about how VisIt_ :ref:`determines which window <lineoutdestinationwindow>` it uses for these curve plot(s).
 What if you want to access the actual lineout data and/or save it to a file? 
 
-::
-
-    # Set active window to one containing Lineout curve plots (typically #2)
-    SetActiveWindow(2)
-    # Get array of x,y pairs for first curve plot in window
-    SetActivePlots(0)
-    hgslice_vals = GetPlotInformation()["Curve"]
-    # Get array of x,y pairs for second curve plot in window
-    SetActivePlots(1)
-    var1_vals = GetPlotInformation()["Curve"]
-    # Get array of x,y pairs for third curve plot in window
-    SetActivePlots(2)
-    var2_vals = GetPlotInformation()["Curve"]
-
-    # Write it as CSV data to a file
-    for i in range(len(hgslice_vals) / 2):
-        idx = i*2+1 # take only y-values in each array
-        print "%g,%g,%g" % (hgslice_vals[idx], var1_vals[idx], var2_vals[idx])
+.. literalinclude:: ../../test/tests/quickrecipes/quantitative_operations.py
+    :language: Python
+    :start-after: # lineout 2 {
+    :end-before: # lineout 2 }
+    :dedent: 4
 
 Query
 ~~~~~
 
 VisIt can perform a number of different queries based on values calculated about plots or their originating database.
 
-::
-
-    OpenDatabase("/usr/local/visit/data/noise.silo") 
-    AddPlot("Pseudocolor", "hardyglobal") 
-    DrawPlots() 
-    Query("NumNodes") 
-    print("The float value is: %g")% GetQueryOutputValue() 
-    Query("NumNodes") 
+.. literalinclude:: ../../test/tests/quickrecipes/quantitative_operations.py
+    :language: Python
+    :start-after: # query {
+    :end-before: # query }
+    :dedent: 4
 
 Finding the min and the max
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -529,43 +392,14 @@ Finding the min and the max
 A common operation in debugging a simulation code is examining the min and max values. 
 Here is a pattern that allows you to print out the min and the max values and their locations in the database and also see them visually.
 
-::
+.. literalinclude:: ../../test/tests/quickrecipes/quantitative_operations.py
+    :language: Python
+    :start-after: # finding the min and max {
+    :end-before: # finding the min and max }
+    :dedent: 4
 
-    # Define a helper function to get the id's of the MinMax query. 
-    def GetMinMaxIds(): 
-      Query("MinMax") 
-      import string 
-      s = string.split(GetQueryOutputString(), " ") 
-      retval = [] 
-      nextGood = 0 
-      idType = 0 
-      for token in s: 
-        if token == "(zone" or token == "(cell": 
-          idType = 1 
-          nextGood = 1 
-          continue 
-        elif token == "(node": 
-          idType = 0 
-          nextGood = 1 
-          continue 
-        if nextGood == 1: 
-           nextGood = 0 
-           retval = retval + [(idType, int(token))] 
-      return retval
-
-    # Set up a plot 
-    OpenDatabase("/usr/local/visit/data/noise.silo") 
-    AddPlot("Pseudocolor", "hgslice") 
-    DrawPlots() 
-
-    # Do picks on the ids that were returned by MinMax. 
-    for ids in GetMinMaxIds(): 
-      idType = ids[0] 
-      id = ids[1] 
-      if idType == 0: 
-        PickByNode(id) 
-      else: 
-        PickByZone(id) 
+Note that the above example parses information from the query output *string* returned from ``GetQueryOutputString()``.
+In some cases, it will be more convenient to use ``GetQueryOutputValue()`` or ``GetQueryOutputObject()``.
 
 Subsetting
 ----------
@@ -579,34 +413,22 @@ Turning off domains
 
 VisIt_'s Python Interface provides the TurnDomainsOn and TurnDomainsOff functions to make it easy to turn domains on and off.
 
-::
-
-    OpenDatabase("/usr/local/visit/data/multi_rect2d.silo") 
-    AddPlot("Pseudocolor", "d") 
-    DrawPlots() 
-    # Turning off all but the last domain 
-    d = GetDomains() 
-    for dom in d[:-1]: 
-      TurnDomainsOff(dom) 
-    # Turn all domains off 
-    TurnDomainsOff() 
-    # Turn on domains 3,5,7 
-    TurnDomainsOn((d[3], d[5], d[7]))
+.. literalinclude:: ../../test/tests/quickrecipes/subsetting.py
+    :language: Python
+    :start-after: # turning off domains {
+    :end-before: # turning off domains }
+    :dedent: 4
 
 Turning off materials
 ~~~~~~~~~~~~~~~~~~~~~
 
 VisIt_'s Python Interface provides the TurnMaterialsOn and TurnMaterialsOff functions to make it easy to turn materials on and off.
 
-::
-
-    OpenDatabase("/usr/local/visit/data/multi_rect2d.silo") 
-    AddPlot("FilledBoundary", "mat1") 
-    DrawPlots() 
-    # Print the materials are: 
-    GetMaterials() 
-    # Turn off material 2
-    TurnMaterialsOff("2") 
+.. literalinclude:: ../../test/tests/quickrecipes/subsetting.py
+    :language: Python
+    :start-after: # turning off materials {
+    :end-before: # turning off materials }
+    :dedent: 4
 
 View
 ----
@@ -621,18 +443,11 @@ The 2D view consists of a rectangular window in 2D space and a 2D viewport in th
 The window in 2D space determines what parts of the visualization you will look at while the viewport determines where the images will appear in the visualization window. 
 It is not necessary to change the viewport most of the time.
 
-::
-
-    OpenDatabase("/usr/local/visit/data/noise.silo") 
-    AddPlot("Pseudocolor", "hgslice") 
-    AddPlot("Mesh", "Mesh2D") 
-    AddPlot("Label", "hgslice") 
-    DrawPlots() 
-    print("The current view is:", GetView2D())
-    # Get an initialized 2D view object. 
-    v = GetView2D() 
-    v.windowCoords = (-7.67964, -3.21856, 2.66766, 7.87724) 
-    SetView2D(v) 
+.. literalinclude:: ../../test/tests/quickrecipes/view.py
+    :language: Python
+    :start-after: # setting the 2d view {
+    :end-before: # setting the 2d view }
+    :dedent: 4
 
 Setting the 3D view
 ~~~~~~~~~~~~~~~~~~~
@@ -643,17 +458,11 @@ VisIt automatically computes a suitable view for 3D objects and it is best to in
 The best way to get new views to use in a script is to interactively create the plot and repeatedly call GetView3D() after you finish rotating the plots with the mouse. 
 You can paste the printed view information into your script and modify it slightly to create sophisticated view transitions.
 
-::
-
-    OpenDatabase("/usr/local/visit/data/noise.silo") 
-    AddPlot("Pseudocolor", "hardyglobal") 
-    AddPlot("Mesh", "Mesh") 
-    DrawPlots() 
-    v = GetView3D() 
-    print("The view is: ", v) 
-    v.viewNormal = (-0.571619, 0.405393, 0.713378) 
-    v.viewUp = (0.308049, 0.911853, -0.271346) 
-    SetView3D(v)
+.. literalinclude:: ../../test/tests/quickrecipes/view.py
+    :language: Python
+    :start-after: # setting the 3d view {
+    :end-before: # setting the 3d view }
+    :dedent: 4
 
 Flying around plots
 ~~~~~~~~~~~~~~~~~~~
@@ -668,91 +477,11 @@ Scripting smooth view changes using EvalCubicSpline is rather like keyframing in
 When the parameterized space is sampled with some number of samples, VisIt calculates the view for the specified parameter value and returns a smoothly interpolated view. 
 One benefit over keyframing, in this case, is that you can use cubic interpolation whereas VisIt_'s keyframing mode currently uses linear interpolation.
 
-::
-
-    # Do a pseudocolor plot of u. 
-    OpenDatabase("/usr/local/visit/data/globe.silo") 
-    AddPlot("Pseudocolor", "u") 
-    DrawPlots() 
-        
-    # Create the control points for the views. 
-    c0 = View3DAttributes() 
-    c0.viewNormal = (0, 0, 1) 
-    c0.focus = (0, 0, 0) 
-    c0.viewUp = (0, 1, 0) 
-    c0.viewAngle = 30 
-    c0.parallelScale = 17.3205 
-    c0.nearPlane = 17.3205 
-    c0.farPlane = 81.9615 
-    c0.perspective = 1 
-        
-    c1 = View3DAttributes() 
-    c1.viewNormal = (-0.499159, 0.475135, 0.724629) 
-    c1.focus = (0, 0, 0) 
-    c1.viewUp = (0.196284, 0.876524, -0.439521) 
-    c1.viewAngle = 30 
-    c1.parallelScale = 14.0932 
-    c1.nearPlane = 15.276 
-    c1.farPlane = 69.917 
-    c1.perspective = 1 
-        
-    c2 = View3DAttributes() 
-    c2.viewNormal = (-0.522881, 0.831168, -0.189092) 
-    c2.focus = (0, 0, 0) 
-    c2.viewUp = (0.783763, 0.556011, 0.27671) 
-    c2.viewAngle = 30 
-    c2.parallelScale = 11.3107 
-    c2.nearPlane = 14.8914 
-    c2.farPlane = 59.5324 
-    c2.perspective = 1 
-        
-    c3 = View3DAttributes()
-    c3.viewNormal = (-0.438771, 0.523661, -0.730246) 
-    c3.focus = (0, 0, 0) 
-    c3.viewUp = (-0.0199911, 0.80676, 0.590541) 
-    c3.viewAngle = 30 
-    c3.parallelScale = 8.28257 
-    c3.nearPlane = 3.5905 
-    c3.farPlane = 48.2315 
-    c3.perspective = 1 
-        
-    c4 = View3DAttributes() 
-    c4.viewNormal = (0.286142, -0.342802, -0.894768) 
-    c4.focus = (0, 0, 0) 
-    c4.viewUp = (-0.0382056, 0.928989, -0.36813) 
-    c4.viewAngle = 30 
-    c4.parallelScale = 10.4152 
-    c4.nearPlane = 1.5495 
-    c4.farPlane = 56.1905 
-    c4.perspective = 1 
-        
-    c5 = View3DAttributes() 
-    c5.viewNormal = (0.974296, -0.223599, -0.0274086) 
-    c5.focus = (0, 0, 0) 
-    c5.viewUp = (0.222245, 0.97394, -0.0452541) 
-    c5.viewAngle = 30 
-    c5.parallelScale = 1.1052 
-    c5.nearPlane = 24.1248 
-    c5.farPlane = 58.7658 
-    c5.perspective = 1 
-        
-    c6 = c0 
-        
-    # Create a tuple of camera values and x values. The x values 
-    # determine where in [0,1] the control points occur. 
-    cpts = (c0, c1, c2, c3, c4, c5, c6) 
-    x=[] 
-    for i in range(7): 
-      x = x + [float(i) / float(6.)] 
-        
-    # Animate the view using EvalCubicSpline. 
-    nsteps = 100 
-    for i in range(nsteps): 
-      t = float(i) / float(nsteps - 1) 
-      c = EvalCubicSpline(t, x, cpts) 
-      c.nearPlane = -34.461 
-      c.farPlane = 34.461 
-      SetView3D(c)
+.. literalinclude:: ../../test/tests/quickrecipes/view.py
+    :language: Python
+    :start-after: # flying around plots {
+    :end-before: # flying around plots }
+    :dedent: 4
 
 Working with annotations
 ------------------------
@@ -769,16 +498,11 @@ VisIt provides a few different styles of gradient background: radial, top to bot
 The gradient style is set using the *gradientBackgroundStyle* member of the AnnotationAttributes object. 
 The before and after results are shown in :numref:`Figure %s <annotations1>`.  
 
-::
-
-    # Set a blue/black, radial, gradient background. 
-    a = AnnotationAttributes() 
-    a.backgroundMode = a.Gradient 
-    a.gradientBackgroundStyle = a.Radial 
-    a.gradientColor1 = (0,0,255,255) # Blue 
-    a.gradientColor2 = (0,0,0,255) # Black 
-    SetAnnotationAttributes(a) 
-
+.. literalinclude:: ../../test/tests/quickrecipes/working_with_annotations.py
+    :language: Python
+    :start-after: # using gradient background colors {
+    :end-before: # using gradient background colors }
+    :dedent: 4
 
 .. _annotations1:
 
@@ -794,16 +518,11 @@ Adding a banner
 Banners are useful for providing titles for a visualization or for marking its content (see :numref:`Figure %s <annotations2>`).  
 To add an "Unclassified" banner to a visualization, use the following bit of Python code:
 
-::
-
-    # Create a text object that we'll use to indicate that our 
-    # visualization is unclassified. 
-    banner = CreateAnnotationObject("Text2D") 
-    banner.text = "Unclassified" 
-    banner.position = (0.37, 0.95) 
-    banner.fontBold = 1 
-    # print the attributes that you can set in the banner object. 
-    print(banner)
+.. literalinclude:: ../../test/tests/quickrecipes/working_with_annotations.py
+    :language: Python
+    :start-after: # adding a banner {
+    :end-before: # adding a banner }
+    :dedent: 4
 
 .. _annotations2:
 
@@ -820,13 +539,11 @@ Time sliders are important annotations for movies since they convey how much pro
 The time slider is also important for showing the simulation time as the animation progresses so users can get a sense of when in the simulation important events occur. 
 VisIt_'s time slider annotation object is shown in :numref:`Figure %s <annotations3>`.
 
-::
-
-    # Add a time slider in the lower left corner 
-    slider = CreateAnnotationObject("TimeSlider") 
-    slider.height = 0.07 
-    # Print the options that are available in the time slider object 
-    print(slider)
+.. literalinclude:: ../../test/tests/quickrecipes/working_with_annotations.py
+    :language: Python
+    :start-after: # adding a time slider {
+    :end-before: # adding a time slider }
+    :dedent: 4
 
 .. _annotations3:
 
@@ -843,16 +560,11 @@ Adding a logo to a visualization is an important part of project identification 
 If you have a logo image file stored in TIFF, JPEG, BMP, or PPM format then you can use it with VisIt as an image annotation (see :numref:`Figure %s <annotations4>`). 
 Note that this approach can also be used to insert images of graphs, plots, portraits, diagrams, or any other form of image data into a visualization.
 
-
-::
-
-    # Incorporate LLNL logo image (llnl.jpeg) as an annotation 
-    image = CreateAnnotationObject("Image") 
-    image.image = "llnl.jpeg" 
-    image.position = (0.02, 0.02) 
-    # Print the other image annotation options 
-    print(image)
-
+.. literalinclude:: ../../test/tests/quickrecipes/working_with_annotations.py
+    :language: Python
+    :start-after: # adding a logo {
+    :end-before: # adding a logo }
+    :dedent: 4
 
 .. _annotations4:
 
@@ -869,56 +581,11 @@ VisIt_'s plot legends can be customized.
 To obtain the proper annotation object, you must use the name of the plot, which is a unique name that identifies the plot. 
 Once you have the plot's name, you can obtain a reference to its legend annotation object and start setting properties to modify the legend. 
 
-::
-
-    # Open a file and make a plot
-    OpenDatabase("/usr/gapps/visit/data/noise.silo")
-    AddPlot("Mesh", "Mesh")
-    AddPlot("Pseudocolor", "hardyglobal")
-    DrawPlots()
-    # Get the legend annotation object for the Pseudocolor plot, the second
-    # plot in the list (0-indexed).
-    plotName = GetPlotList().GetPlots(1).plotName 
-    legend = GetAnnotationObject(plotName)
-    # See if we can scale the legend.
-    legend.xScale = 3.
-    legend.yScale = 3.
-    # the bounding box.
-    legend.drawBoundingBox = 1
-    legend.boundingBoxColor = (180,180,180,230)
-    # Make it horizontal
-    legend.orientation = legend.HorizontalBottom
-    # moving the legend
-    legend.managePosition = 0
-    legend.position = (0.7,0.15)
-    # text color
-    InvertBackgroundColor()
-    legend.useForegroundForTextColor = 0
-    legend.textColor = (255, 0, 0, 255)
-    # number format
-    legend.numberFormat = "%1.4e"
-    # the font.
-    legend.fontFamily = legend.Arial
-    legend.fontBold = 1
-    legend.fontItalic = 1
-    # turning off the labels.
-    legend.fontItalic = 0
-    legend.drawLabels = legends.None 
-    legend.drawMinMax = 0
-    # turning off the title.
-    legend.drawTitle = 0
-    # Use user-supplied labels, rather than numeric values.
-    legend.controlTicks=0
-    legend.drawLabels = legend.Labels
-    # suppliedLabels must be strings, only valid when controlTicks is 0
-    legend.suppliedLabels=("A", "B", "C", "D", "E")
-    # Give the legend a custom title
-    legend.useCustomTitle=1
-    legend.customTitle="my custom title"
-    # Print the legend object so you can see the other properties
-    # that you can set in order to modify the legend.
-    print(legend)
-
+.. literalinclude:: ../../test/tests/quickrecipes/working_with_annotations.py
+    :language: Python
+    :start-after: # modifying a legend {
+    :end-before: # modifying a legend }
+    :dedent: 4
 
 Working with Color Tables
 -------------------------
@@ -926,24 +593,13 @@ Working with Color Tables
 Sometimes it is helpful to create a new color table or manipulate an existing user defined color table.
 Color tables consist of ``ControlPoints`` which specify color and position in the color spectrum as well as a few other standard options.
 
-Existing color tables can be retreived by name via ``GetColorTable`` as in: ::
+Existing color tables can be retreived by name via ``GetColorTable`` as in:
 
-    hotCT = GetColorTable("hot")
-    print(hotCT)
-    # results of print
-    GetControlPoints(0).colors = (0, 0, 255, 255)
-    GetControlPoints(0).position = 0
-    GetControlPoints(1).colors = (0, 255, 255, 255)
-    GetControlPoints(1).position = 0.25
-    GetControlPoints(2).colors = (0, 255, 0, 255)
-    GetControlPoints(2).position = 0.5
-    GetControlPoints(3).colors = (255, 255, 0, 255)
-    GetControlPoints(3).position = 0.75
-    GetControlPoints(4).colors = (255, 0, 0, 255)
-    GetControlPoints(4).position = 1
-    smoothing = Linear  # NONE, Linear, CubicSpline
-    equalSpacingFlag = 0
-    discreteFlag = 0
+.. literalinclude:: ../../test/tests/quickrecipes/colortables.py
+    :language: Python
+    :start-after: # introspectingColorTable {
+    :end-before: # introspectingColorTable }
+    :dedent: 4
 
 The ``colors`` field of the ``ControlPoint`` represent the (Red,Green,Blue,Alpha) channels of the color and must be in the range (0, 255).
 The numbers indicate the contribution each channel makes to the overall color.
@@ -972,30 +628,35 @@ User-defined color tables can be modified by Adding or Removing ControlPoints, a
     :language: Python
     :start-after: # modifyTable1 {
     :end-before: # modifyTable1 }
+    :dedent: 4
 
 
 .. literalinclude:: ../../test/tests/quickrecipes/colortables.py
     :language: Python
     :start-after: # modifyTable2 {
     :end-before: # modifyTable2 }
+    :dedent: 4
 
 
 .. literalinclude:: ../../test/tests/quickrecipes/colortables.py
     :language: Python
     :start-after: # modifyTable3 {
     :end-before: # modifyTable3 }
+    :dedent: 4
 
 
 .. literalinclude:: ../../test/tests/quickrecipes/colortables.py
     :language: Python
     :start-after: # modifyTable4 {
     :end-before: # modifyTable4 }
+    :dedent: 4
 
 
 .. literalinclude:: ../../test/tests/quickrecipes/colortables.py
     :language: Python
     :start-after: # modifyTable5 {
     :end-before: # modifyTable5 }
+    :dedent: 4
 
 In the set of images below we can see how the plot changes as the color table it uses is modified: with original 'hot' color table; after removing control points; after changing colors; after using equal spacing and  after changing positions.
 
@@ -1026,6 +687,7 @@ The ``ColorControlPointList`` is then passed as an argument to ``AddColorTable``
     :language: Python
     :start-after: # continuous1 {
     :end-before: # continuous1 }
+    :dedent: 4
 
 .. figure::  https://media.githubusercontent.com/media/visit-dav/visit/develop/test/baseline/quickrecipes/colortables/rainbow_continuous.png 
 
@@ -1045,6 +707,7 @@ Here's an example of creating a discrete color table using named colors from the
     :language: Python
     :start-after: # discrete1 {
     :end-before: # discrete1 }
+    :dedent: 4
 
 .. figure::  https://media.githubusercontent.com/media/visit-dav/visit/develop/test/baseline/quickrecipes/colortables/discrete_using_vtk.png
 
@@ -1066,6 +729,7 @@ Here is an example using ``RemoveControlPoints``:
     :language: Python
     :start-after: # removeControlPoints {
     :end-before: # removeControlPoints }
+    :dedent: 4
 
 Here is an example using ``AddControlPoints``:
 
@@ -1073,6 +737,7 @@ Here is an example using ``AddControlPoints``:
     :language: Python
     :start-after: # addControlPoints {
     :end-before: # addControlPoints }
+    :dedent: 4
 
 Here is an example using ``SetNumControlPoints``:
 
@@ -1080,6 +745,7 @@ Here is an example using ``SetNumControlPoints``:
     :language: Python
     :start-after: # setNumControlPoints {
     :end-before: # setNumControlPoints }
+    :dedent: 4
 
 Here is an example using a named color table and ``SetColorControlPoints``:
 
@@ -1087,6 +753,7 @@ Here is an example using a named color table and ``SetColorControlPoints``:
     :language: Python
     :start-after: # setFromColorTable {
     :end-before: # setFromColorTable }
+    :dedent: 4
 
 Available color table names can be found via ``ColorTableNames()``.
 

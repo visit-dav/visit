@@ -10,6 +10,8 @@
 #    Justin Privitera, Wed Aug  3 19:46:13 PDT 2022
 #    Made changes to reflect the fact that built-in tables cannot be edited.
 #
+#    Mark C. Miller, Mon Dec 12 19:02:35 PST 2022
+#    Add introspecting block
 # ----------------------------------------------------------------------------
 
 
@@ -18,6 +20,27 @@
 
 # comments of the form '# sometext {' and '# sometext }' bracket the sections
 # that are 'literalinclude'd in quickrecipes.rst.
+
+def introspectingColorTable():
+
+    # introspectingColorTable {
+    hotCT = GetColorTable("hot")
+    print(hotCT)
+    # results of print
+    #    GetControlPoints(0).colors = (0, 0, 255, 255)
+    #    GetControlPoints(0).position = 0
+    #    GetControlPoints(1).colors = (0, 255, 255, 255)
+    #    GetControlPoints(1).position = 0.25
+    #    GetControlPoints(2).colors = (0, 255, 0, 255)
+    #    GetControlPoints(2).position = 0.5
+    #    GetControlPoints(3).colors = (255, 255, 0, 255)
+    #    GetControlPoints(3).position = 0.75
+    #    GetControlPoints(4).colors = (255, 0, 0, 255)
+    #    GetControlPoints(4).position = 1
+    #    smoothing = Linear  # NONE, Linear, CubicSpline
+    #    equalSpacingFlag = 0
+    #    discreteFlag = 0
+    # introspectingColorTable }
 
 def modifyExistingColorTable():
 
@@ -183,12 +206,11 @@ def createDiscreteUsingVTKNamedColors():
     RemoveColorTable("mylevels")
     DeleteAllPlots()
 
-
 def main():
+    introspectingColorTable()
     modifyExistingColorTable()
     createContinuous()
     createDiscreteUsingVTKNamedColors()
-
 
 main()
 Exit()

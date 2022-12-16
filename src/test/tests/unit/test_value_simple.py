@@ -50,6 +50,6 @@ TestValueIN("test_value_in_002",(17,18,19,20,21),35,2,EqMod5)
 TestSection("Objects")
 TestValueEQ("test_value_object_001",[1,'2',3],"[1, '2', 3]")
 TestValueLT("test_value_object_002","apple","carrot")
-TestValueLT("test_value_object_003",(1,1,0),(1,1,1))
+TestValueLT("test_value_object_003",(1,1,0.00000471),(1,1,0.00000501))
 
 Exit()

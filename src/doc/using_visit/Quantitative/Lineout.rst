@@ -451,6 +451,8 @@ will only apply to future lineouts, not lineouts already created.
 
    Lineout Options Window
 
+.. _lineoutdestinationwindow:
+
 Lineout destination window
 """"""""""""""""""""""""""
 
