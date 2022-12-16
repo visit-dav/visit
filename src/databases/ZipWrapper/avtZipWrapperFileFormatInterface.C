@@ -452,26 +452,32 @@ avtZipWrapperFileFormatInterface::Initialize(int procNum, int procCount,
            << " decompressed files " << (procCount > 1 ? "per-processor" : "")
            << " at any one time." << endl;
 
-    char procNumStr[32];
-    snprintf(procNumStr, sizeof(procNumStr), "_%04d", procNum);
-    tmpDir = tmpDir + VISIT_SLASH_STRING + "visitzw_" + userName + "_" +
-//             string(VisItInit::GetComponentName()) +
-             (procCount > 1 ? string(procNumStr) : "");
+    char pidStr[32];
+    snprintf(pidStr, sizeof(pidStr), "_%lu", (unsigned long)
+#ifdef WIN32
+        _getpid());
+#else
+        getpid());
+#endif
+    if (tmpDir.back() == string(VISIT_SLASH_STRING).back())
+        tmpDir.pop_back();
+    tmpDir = tmpDir + VISIT_SLASH_STRING + "visitzw_" + userName +
+               "_" + string(VisItInit::GetComponentName()) +
+               string(pidStr);
     debug5 << "ZipWrapper is using \"" << tmpDir << "\" as the temporary directory" << endl;
 
     // Make the temporary directory
     // (will have different name on mdserver and engine)
-    errno = 0;
 #ifdef WIN32
-    if(_mkdir(tmpDir.c_str()) != 0 && errno != EEXIST)
+    if(_mkdir(tmpDir.c_str()) != 0)
 #else
-    if (mkdir(tmpDir.c_str(), 0777) != 0 && errno != EEXIST)
+    if (mkdir(tmpDir.c_str(), 0777))
 #endif
-
     {
+        int errnotmp = errno;
         static char errMsg[1024];
         snprintf(errMsg, sizeof(errMsg), "mkdir failed with errno=%d (\"%s\")",
-            errno, strerror(errno));
+            errnotmp, strerror(errnotmp));
         EXCEPTION1(InvalidFilesException, errMsg);
     }
 
@@ -493,17 +499,20 @@ avtZipWrapperFileFormatInterface::Initialize(int procNum, int procCount,
 void
 avtZipWrapperFileFormatInterface::Finalize()
 {
-    errno = 0;
+    if (tmpDir == "")
+        return;
+
 #ifdef WIN32
-    if (_rmdir(tmpDir.c_str()) != 0 && errno != ENOENT)
+    if (_rmdir(tmpDir.c_str()) != 0)
 #else
-    if (rmdir(tmpDir.c_str()) != 0 && errno != ENOENT)
+    if (rmdir(tmpDir.c_str()) != 0)
 #endif
     {
+        int errnotmp = errno;
         debug5 << "Unable to remove temporary directory \"" << tmpDir << "\"" << endl;
-        debug5 << "rmdir() reported errno=" << errno << " (\"" << strerror(errno) << "\")" << endl;
+        debug5 << "rmdir() reported errno=" << errnotmp << " (\"" << strerror(errnotmp) << "\")" << endl;
         cerr << "Unable to remove temporary directory \"" << tmpDir << "\"" << endl;
-        cerr << "rmdir() reported errno=" << errno << " (\"" << strerror(errno) << "\")" << endl;
+        cerr << "rmdir() reported errno=" << errnotmp << " (\"" << strerror(errnotmp) << "\")" << endl;
     }
 }
 
@@ -649,6 +658,11 @@ avtZipWrapperFileFormatInterface::~avtZipWrapperFileFormatInterface()
     // we must explicitly call clear cache here to ensure items in it are
     // deleted *before* we enter Finalize
     decompressedFilesCache.clear();
+    if (tmpDir.size())
+    {
+        RemoveDirTree(tmpDir.c_str());
+        tmpDir = "";
+    }
 
     delete dummyFileFormat;
     delete dummyInterface;
@@ -910,19 +924,27 @@ printf("vext = \"%s\"\n", vext.c_str());
         EXCEPTION1(InvalidFilesException, "Decompression command exited abnormally");
     }
     // delete the .bat file
-    if (unlink(tmpcmd) != 0 && errno != ENOENT)
+    if (unlink(tmpcmd) != 0)
     {
+        int errnotmp = errno;
         debug5 << "Unable to unlink() bat file \"" << tmpcmd << "\"" << endl;
-        debug5 << "unlink() reported errno=" << errno << " (\"" << strerror(errno) << "\")" << endl;
+        debug5 << "unlink() reported errno=" << errnotmp << " (\"" << strerror(errnotmp) << "\")" << endl;
     }
 #else
     char tmpcmd[1024];
     snprintf(tmpcmd, sizeof(tmpcmd), "cd %s ; cp %s . ; touch %s.lck ; %s %s ; rm -f %s.lck",
         tmpDir.c_str(), compressedName.c_str(), dcname.c_str(), dcmd.c_str(), bname.c_str(), dcname.c_str());
     debug5 << "Using decompression command: \"" << tmpcmd << "\"" << endl;
-#ifdef MDSERVER
+
+    // check that we have a shell to run a system command
+    if (system(0) == 0)
+    {
+        EXCEPTION1(InvalidDBTypeException, "No shell for system() to decompress files.");
+    }
+
+    // Ok, run the decompression commands
     int ret = system(tmpcmd);
-    if (WIFEXITED(ret))
+    if (ret != -1 && ret != 127 && WIFEXITED(ret))
     {
         if (WEXITSTATUS(ret) != 0)
         {
@@ -936,7 +958,6 @@ printf("vext = \"%s\"\n", vext.c_str());
     {
         EXCEPTION1(InvalidFilesException, "Decompression command exited abnormally");
     }
-#endif
 #endif
 
     string newfname = tmpDir + VISIT_SLASH_STRING + dcname;
