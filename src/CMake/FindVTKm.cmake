@@ -49,8 +49,8 @@ IF (DEFINED VISIT_VTKM_DIR)
        CACHE STRING "VTKm include directories")
 
    include(${VISIT_SOURCE_DIR}/CMake/ThirdPartyInstallLibrary.cmake)
-   # use the vtkh and vtkm CMake properties to find locations and
-   # all interface link dependencies
+   # use the vtkm CMake properties to find locations and all interface
+   # link dependencies
    function(get_lib_loc_and_install _lib)
        get_target_property(ttype ${_lib} TYPE)
        if (ttype STREQUAL "INTERFACE_LIBRARY" OR ttype STREQUAL "STATIC_LIBRARY")

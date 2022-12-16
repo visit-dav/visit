@@ -251,9 +251,6 @@ TARGET_LINK_LIBRARIES(avtpipeline_ser
                       vtkCommonDataModel vtkCommonMath vtkCommonTransforms
                       vtkFiltersGeometry
                       ${ZLIB_LIBRARY})
-if(VTKH_FOUND)
-    target_link_libraries(avtpipeline_ser vtkh)
-endif()
 if(HAVE_LIBVTKM)
     target_link_libraries(avtpipeline_ser vtkm_cont vtkm_filter_contour)
 endif()
@@ -270,9 +267,6 @@ IF(VISIT_PARALLEL)
                           vtkCommonDataModel vtkCommonMath vtkCommonTransforms
                           vtkFiltersGeometry
                           ${ZLIB_LIBRARY})
-    if(VTKH_FOUND)
-        target_link_libraries(avtpipeline_par vtkh)
-    endif()
     if(HAVE_LIBVTKM)
         target_link_libraries(avtpipeline_par vtkm_cont vtkm_filter_contour)
     endif()

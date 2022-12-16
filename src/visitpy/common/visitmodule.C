@@ -2308,7 +2308,7 @@ visit_SetBackendType(PyObject *self, PyObject *args)
 
     int index = 0;
 #if defined(HAVE_LIBVTKM)
-    if(strcmp(name, "vtkm") == 0 || strcmp(name, "VTKM") == 0 || strcmp(name, "VTKm") == 0)
+    if(strcasecmp(name, "vtkm") == 0)
         index = 1;
 #endif
 
