@@ -1240,7 +1240,12 @@ avtBlueprintTreeCache::GeneratePartitionMapFullPath(const conduit::Node &mesh_pa
     }
     else  // part_pattern w/o any map == single file case.
     {
-        return mesh_part_info["pattern"].as_string();
+        std::string full_pattern = mesh_part_info["pattern"].as_string();
+        if(full_pattern[0] !=  VISIT_SLASH_STRING[0])
+        {
+            full_pattern  = m_root_dir + string(VISIT_SLASH_STRING) + full_pattern;
+        }
+        return full_pattern;
     }
 }
 
