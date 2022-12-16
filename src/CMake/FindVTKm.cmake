@@ -50,7 +50,9 @@ IF (DEFINED VISIT_VTKM_DIR)
 
    include(${VISIT_SOURCE_DIR}/CMake/ThirdPartyInstallLibrary.cmake)
    # use the vtkm CMake properties to find locations and all interface
-   # link dependencies
+   # link dependencies. This looks for shared libraries. We are currently
+   # building static libraries, so this is basically a noop, but if we
+   # ever change to shared libraries, this may be needed.
    function(get_lib_loc_and_install _lib)
        get_target_property(ttype ${_lib} TYPE)
        if (ttype STREQUAL "INTERFACE_LIBRARY" OR ttype STREQUAL "STATIC_LIBRARY")
