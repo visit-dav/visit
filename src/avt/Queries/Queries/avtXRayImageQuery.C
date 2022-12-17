@@ -2407,6 +2407,9 @@ avtXRayImageQuery::WriteBlueprintMetadata(conduit::Node &data_out,
 //  Creation:   December 09, 2022
 // 
 //  Modifications:
+//    Justin Privitera, Fri Dec 16 18:20:51 PST 2022
+//    Changed conduit output data types for spatial extents coords to be 
+//    consistent.
 //
 // ****************************************************************************
 #ifdef HAVE_CONDUIT
