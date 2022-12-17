@@ -664,7 +664,7 @@ avtDataTree::avtDataTree(avtDataTree_p dt, bool dontCopyData)
             }
             else
             {
-                dataRep  = new avtDataRepresentation((vtkmDataSet *)NULL,
+                dataRep  = new avtDataRepresentation((avtVtkmDataSet *)NULL,
                                                      oldRep.GetDomain(),
                                                      oldRep.GetLabel(),
                                                      dontCopyData);

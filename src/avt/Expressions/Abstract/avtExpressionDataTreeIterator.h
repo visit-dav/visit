@@ -18,7 +18,7 @@
 
 #include <string>
 
-class vtkmDataSet;
+class avtVtkmDataSet;
 
 // ****************************************************************************
 //  Class: avtExpressionDataTreeIterator
@@ -69,7 +69,7 @@ class EXPRESSION_API avtExpressionDataTreeIterator
     virtual vtkDataArray          *DeriveVariable(vtkDataSet *, int currentDomainsIndex) = 0;
 
     avtDataRepresentation *        ExecuteData_VTKm(avtDataRepresentation *in_dr);
-    virtual void                   DeriveVariableVTKm(vtkmDataSet *, 
+    virtual void                   DeriveVariableVTKm(avtVtkmDataSet *, 
                                                       int currentDomainsIndex,
                                                       const std::string &activeVar,
                                                       const std::string &outputVar);

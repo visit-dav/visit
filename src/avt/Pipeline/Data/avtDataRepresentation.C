@@ -11,7 +11,7 @@
 #include <visit-config.h>
 
 #ifdef HAVE_LIBVTKM
-#include <vtkmDataSet.h>
+#include <avtVtkmDataSet.h>
 #include <vtkm/cont/ArrayHandle.h>
 #include <vtkm/cont/ArrayHandleCompositeVector.h>
 #include <vtkm/cont/DataSet.h>
@@ -57,7 +57,7 @@ using std::vector;
 //
 bool            avtDataRepresentation::initializedNullDatasets = false;
 vtkDataSet     *avtDataRepresentation::nullVTKDataset          = NULL;
-vtkmDataSet    *avtDataRepresentation::nullVTKmDataset         = NULL;
+avtVtkmDataSet *avtDataRepresentation::nullVTKmDataset         = NULL;
 
 #include <vtkCellArray.h>
 #include <vtkCellData.h>
@@ -85,7 +85,7 @@ GetVTKmPointer(vtkm::cont::ArrayHandle<T> &handle)
   return handle.WritePortal().GetArray();
 }
 
-static vtkmDataSet *
+static avtVtkmDataSet *
 ConvertVTKToVTKm(vtkDataSet *data)
 {
     //
@@ -526,7 +526,7 @@ ConvertVTKToVTKm(vtkDataSet *data)
         }
     }
 
-    vtkmDataSet *ret = new vtkmDataSet;
+    avtVtkmDataSet *ret = new avtVtkmDataSet;
 
     ret->ds = ds;
 
@@ -559,7 +559,7 @@ ConvertVTKToVTKm(vtkDataSet *data)
 // ****************************************************************************
 
 static vtkPoints *
-vtkPointsFromVTKM(vtkmDataSet *data)
+vtkPointsFromVTKM(avtVtkmDataSet *data)
 {
     vtkPoints *pts = NULL;
     try
@@ -697,7 +697,7 @@ vtkPointsFromVTKM(vtkmDataSet *data)
 // ****************************************************************************
 
 static vtkDataSet *
-StructuredFromVTKM(vtkmDataSet *data)
+StructuredFromVTKM(avtVtkmDataSet *data)
 {
     vtkDataSet *out_vtk_ds = NULL;
 
@@ -837,7 +837,7 @@ StructuredFromVTKM(vtkmDataSet *data)
 }
 
 static vtkDataSet *
-ConvertVTKmToVTK(vtkmDataSet *data)
+ConvertVTKmToVTK(avtVtkmDataSet *data)
 {
     vtkDataSet *ret = NULL;
 
@@ -1283,8 +1283,8 @@ avtDataRepresentation::avtDataRepresentation(vtkDataSet *d, int dom, string s,
 //
 // ****************************************************************************
 
-avtDataRepresentation::avtDataRepresentation(vtkmDataSet *d, int dom, string s,
-                                             bool dontCopyData)
+avtDataRepresentation::avtDataRepresentation(avtVtkmDataSet *d, int dom,
+                                             string s, bool dontCopyData)
 {
     InitializeNullDatasets();
 
@@ -1310,7 +1310,7 @@ avtDataRepresentation::avtDataRepresentation(vtkmDataSet *d, int dom, string s,
        asVTKm = d;
     }
 #else
-    EXCEPTION1(StubReferencedException,"avtDataRepresentation::avtDataRepresentation(vtkmDataSet *d)");
+    EXCEPTION1(StubReferencedException,"avtDataRepresentation::avtDataRepresentation(avtVtkmDataSet *d)");
 #endif
 }
 
@@ -2120,7 +2120,7 @@ avtDataRepresentation::GetDataVTK(void)
 //
 // ****************************************************************************
 
-vtkmDataSet *
+avtVtkmDataSet *
 avtDataRepresentation::GetDataVTKm(void)
 {
 #ifndef HAVE_LIBVTKM
@@ -2206,7 +2206,7 @@ avtDataRepresentation::InitializeNullDatasets(void)
     nullVTKDataset = ugrid;
 
 #ifdef HAVE_LIBVTKM
-    nullVTKmDataset = new vtkmDataSet();
+    nullVTKmDataset = new avtVtkmDataSet();
 #endif
 
     initializedNullDatasets = true;
@@ -2800,7 +2800,7 @@ avtDataRepresentation::DebugDump(avtWebpage *webpage, const char *prefix)
 // ****************************************************************************
 
 vtkDataSet*
-avtDataRepresentation::VTKmToVTK(vtkmDataSet *data)
+avtDataRepresentation::VTKmToVTK(avtVtkmDataSet *data)
 {
     debug5 << "converting dataset from VTKm to VTK...\n";
 
@@ -2827,7 +2827,7 @@ avtDataRepresentation::VTKmToVTK(vtkmDataSet *data)
 //  Purpose:
 //      Convert between VTK and VTKm data representation.
 //
-//  Returns:      The data as a vtkmDataSet.
+//  Returns:      The data as a avtVtkmDataSet.
 //
 //  Programmer: Eric Brugger
 //  Creation:   Thu Dec 10 11:49:40 PST 2015
@@ -2841,12 +2841,12 @@ avtDataRepresentation::VTKmToVTK(vtkmDataSet *data)
 //
 // ****************************************************************************
 
-vtkmDataSet*
+avtVtkmDataSet*
 avtDataRepresentation::VTKToVTKm(vtkDataSet *data)
 {
     debug5 << "converting dataset from VTK to VTKm...\n";
 
-    vtkmDataSet *ret = NULL;
+    avtVtkmDataSet *ret = NULL;
     if (data)
     {
         int timerhandle = visitTimer->StartTimer();

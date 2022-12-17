@@ -13,7 +13,7 @@
 #include <vector>
 
 #ifdef HAVE_LIBVTKM
-#include <vtkmDataSet.h>
+#include <avtVtkmDataSet.h>
 #include <vtkm/cont/DataSet.h>
 #include <vtkm/filter/contour/Contour.h>
 #endif
@@ -968,7 +968,7 @@ avtContourFilter::ExecuteDataTree_VTKM(avtDataRepresentation *in_dr)
     //
     // Get the VTKM data set, the domain number, and the label.
     //
-    vtkmDataSet *in_ds = in_dr->GetDataVTKm();
+    avtVtkmDataSet *in_ds = in_dr->GetDataVTKm();
     int domain = in_dr->GetDomain();
     std::string label = in_dr->GetLabel();
 
@@ -1010,10 +1010,10 @@ avtContourFilter::ExecuteDataTree_VTKM(avtDataRepresentation *in_dr)
         // Determine if the dataset is empty, and if so, set the output
         // to NULL.
         //
-        vtkmDataSet *isoOut = NULL;
+        avtVtkmDataSet *isoOut = NULL;
         if(vtkm_ds.GetCellSet().GetNumberOfCells() > 0)
         {
-            isoOut = new vtkmDataSet;
+            isoOut = new avtVtkmDataSet;
             isoOut->ds = vtkm_ds;
         }
 

@@ -23,7 +23,7 @@
 #include <avtExprNode.h>
 
 #ifdef HAVE_LIBVTKM
-#include <vtkmDataSet.h>
+#include <avtVtkmDataSet.h>
 #endif
 
 #include <DebugStream.h>
@@ -331,7 +331,7 @@ avtExpressionDataTreeIterator::ExecuteData_VTK(avtDataRepresentation *in_dr)
 // Returns:    
 //
 // Note:       This is a little different from DeriveVariable in that we pass
-//             the vtkmDataSet and permit the expression DeriveVariableVTKm
+//             the avtVtkmDataSet and permit the expression DeriveVariableVTKm
 //             method to add the new field to the dataset directly.
 //
 // Programmer: Brad Whitlock
@@ -348,12 +348,12 @@ avtExpressionDataTreeIterator::ExecuteData_VTKm(avtDataRepresentation *in_dr)
     //
     // Get the VTK data set and domain number.
     //
-    vtkmDataSet *in_ds = in_dr->GetDataVTKm();
+    avtVtkmDataSet *in_ds = in_dr->GetDataVTKm();
     int domain = in_dr->GetDomain();
 
-    // Make a new vtkmDataSet and copy the VTKm part from the input to
+    // Make a new avtVtkmDataSet and copy the VTKm part from the input to
     // the output. Hopefully that is a shallow copy with some ref counting.
-    vtkmDataSet *out = new vtkmDataSet;
+    avtVtkmDataSet *out = new avtVtkmDataSet;
     out->ds = in_ds->ds;
     out->ds.PrintSummary(std::cout);
 
@@ -374,7 +374,7 @@ avtExpressionDataTreeIterator::ExecuteData_VTKm(avtDataRepresentation *in_dr)
 }
 
 void
-avtExpressionDataTreeIterator::DeriveVariableVTKm(vtkmDataSet *, 
+avtExpressionDataTreeIterator::DeriveVariableVTKm(avtVtkmDataSet *, 
     int currentDomainsIndex, const std::string &activeVar, const std::string &outputVar)
 {
     /* Dummy Implementation */

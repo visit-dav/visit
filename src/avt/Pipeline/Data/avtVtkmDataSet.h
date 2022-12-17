@@ -3,22 +3,22 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ************************************************************************* //
-//                            vtkmDataSet.h                                  //
+//                             avtVtkmDataSet.h                              //
 // ************************************************************************* //
 
-#ifndef VTKM_DATA_SET_H
-#define VTKM_DATA_SET_H
+#ifndef AVT_VTKM_DATA_SET_H
+#define AVT_VTKM_DATA_SET_H
 
 #include <visit-config.h>
 
 #ifdef HAVE_LIBVTKM
 #include <vtkm/cont/DataSet.h>
 
-class  vtkmDataSet
+class  avtVtkmDataSet
 {
   public:
-                  vtkmDataSet() {};
-    virtual      ~vtkmDataSet() {};
+                  avtVtkmDataSet() {};
+    virtual      ~avtVtkmDataSet() {};
 
     vtkm::cont::DataSet ds;
 };
