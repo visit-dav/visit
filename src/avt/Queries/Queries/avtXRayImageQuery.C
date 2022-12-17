@@ -2448,12 +2448,12 @@ avtXRayImageQuery::WriteBlueprintMeshCoordsets(conduit::Node &data_out,
 
     // set up spatial extents coords
     data_out["coordsets/spatial_coords/type"] = "rectilinear";
-    data_out["coordsets/spatial_coords/values/x"].set(conduit::DataType::float32(x_coords_dim));
-    float *spatial_xvals = data_out["coordsets/spatial_coords/values/x"].value();
+    data_out["coordsets/spatial_coords/values/x"].set(conduit::DataType::float64(x_coords_dim));
+    double *spatial_xvals = data_out["coordsets/spatial_coords/values/x"].value();
     for (int i = 0; i < x_coords_dim; i ++) { spatial_xvals[i] = i * nearDx; }
 
-    data_out["coordsets/spatial_coords/values/y"].set(conduit::DataType::float32(y_coords_dim));
-    float *spatial_yvals = data_out["coordsets/spatial_coords/values/y"].value();
+    data_out["coordsets/spatial_coords/values/y"].set(conduit::DataType::float64(y_coords_dim));
+    double *spatial_yvals = data_out["coordsets/spatial_coords/values/y"].value();
     for (int i = 0; i < y_coords_dim; i ++) { spatial_yvals[i] = i * nearDy; }
 
     // include energy group bins in blueprint output if they are provided
@@ -2472,16 +2472,16 @@ avtXRayImageQuery::WriteBlueprintMeshCoordsets(conduit::Node &data_out,
                 << nEnergyGroupBounds << " bounds, but " 
                 << z_coords_dim << " in query results.";
             data_out["coordsets/spatial_coords/info"] = out.str();
-            data_out["coordsets/spatial_coords/values/z"].set(conduit::DataType::int32(z_coords_dim));
-            int *zvals = data_out["coordsets/spatial_coords/values/z"].value();
+            data_out["coordsets/spatial_coords/values/z"].set(conduit::DataType::float64(z_coords_dim));
+            double *zvals = data_out["coordsets/spatial_coords/values/z"].value();
             for (int i = 0; i < z_coords_dim; i ++) { zvals[i] = i; }
         }
     }
     else
     {
         data_out["coordsets/spatial_coords/info"] = "Energy group bounds not provided.";
-        data_out["coordsets/spatial_coords/values/z"].set(conduit::DataType::int32(z_coords_dim));
-        int *zvals = data_out["coordsets/spatial_coords/values/z"].value();
+        data_out["coordsets/spatial_coords/values/z"].set(conduit::DataType::float64(z_coords_dim));
+        double *zvals = data_out["coordsets/spatial_coords/values/z"].value();
         for (int i = 0; i < z_coords_dim; i ++) { zvals[i] = i; }
     }
 
