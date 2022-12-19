@@ -517,8 +517,7 @@ class MakeMovie(object):
     #
     #   Eric Brugger, Mon Dec 19 13:06:50 PST 2022
     #   I added code to set the number of digits in the movie file names
-    #   based on the number needed rather than always four. Note that it
-    #   uses a minimum of four digits to maintain backawards compatability.
+    #   based on the number needed rather than always four.
     #
     ###########################################################################
 
@@ -2058,8 +2057,7 @@ class MakeMovie(object):
     #
     #   Eric Brugger, Mon Dec 19 13:06:50 PST 2022
     #   I added code to set the number of digits in the movie file names
-    #   based on the number needed rather than always four. Note that it
-    #   uses a minimum of four digits to maintain backawards compatability.
+    #   based on the number needed rather than always four.
     #
     ###########################################################################
     def IterateAndSaveFrames(self):
@@ -2140,7 +2138,8 @@ class MakeMovie(object):
     #
     # Purpose:    This method generates the movie format names.
     #             This code was extracted from GenerateFrames and then
-    #             modified to first set the digitFormat.
+    #             modified to set the digitFormat. Note that it generates
+    #             between four and seven digits.
     #
     # Programmer: Eric Brugger
     # Date:       Mon Dec 19 13:06:50 PST 2022
@@ -2151,6 +2150,9 @@ class MakeMovie(object):
 
     def GenerateFileNames(self):
 
+        # Calculate the number of frames in the movie. This may over estimate
+        # the total number in a few rare cases, but overestimating isn't an
+        # issue.
         nTotalFrames = (self.frameEnd - self.frameStart + 1) / self.frameStep
         if nTotalFrames > 999999:
             self.digitFormat = "%07d"
@@ -2273,8 +2275,7 @@ class MakeMovie(object):
     #
     #   Eric Brugger, Mon Dec 19 13:06:50 PST 2022
     #   I added code to set the number of digits in the movie file names
-    #   based on the number needed rather than always four. Note that it
-    #   uses a minimum of four digits to maintain backawards compatability.
+    #   based on the number needed rather than always four.
     #
     ###########################################################################
 
@@ -2613,8 +2614,7 @@ class MakeMovie(object):
     #
     #   Eric Brugger, Mon Dec 19 13:06:50 PST 2022
     #   I added code to set the number of digits in the movie file names
-    #   based on the number needed rather than always four. Note that it
-    #   uses a minimum of four digits to maintain backawards compatability.
+    #   based on the number needed rather than always four.
     #
     ###########################################################################
 
