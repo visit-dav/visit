@@ -88,6 +88,9 @@ for i in range(-1,9):
     bp_sprial_part_map_examples.append(data_path(pjoin(bp_part_map_test_dir,
                                        "tout_relay_sprial_mesh_save_nfiles_{0}.cycle_000000.root".format(i))))
 
+bp_sparse_topos_root = data_path(pjoin(bp_part_map_test_dir,
+                                        "tout_relay_bp_mesh_sparse_topos_hdf5.root"))
+
 
 braid_2d_meshes = ["points", "uniform", "rect", "struct", "tris","quads"]
 braid_3d_meshes = ["points", "uniform", "rect", "struct", "tets","hexs"]
@@ -577,6 +580,20 @@ DrawPlots()
 Test("bp_part_map_index_single_file_example")
 DeleteAllPlots()
 CloseDatabase(bp_part_map_single_file_root)
+# sparse topos case
+# single file test case
+OpenDatabase(bp_sparse_topos_root)
+AddPlot("Pseudocolor","mesh_topo/topo_field")
+AddPlot("Pseudocolor","mesh_pts_topo/pts_field")
+# change plot adds so we can see the points
+pc_atts = PseudocolorAttributes()
+pc_atts.pointSize = 1
+pc_atts.pointType = pc_atts.Sphere
+SetPlotOptions(pc_atts)
+DrawPlots()
+Test("bp_sparse_topos_example")
+DeleteAllPlots()
+CloseDatabase(bp_sparse_topos_root)
 
 # other spiral test cases, which have both index styles
 for i, root_file in enumerate(bp_sprial_part_map_examples):
