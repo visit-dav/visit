@@ -15,41 +15,34 @@ enhancements and bug-fixes that were added to this release.</p>
 <ul>
   <li><a href="#Bugs_fixed">Bug Fixes</a></li>
   <li><a href="#Enhancements">Enhancements</a></li>
-  <li><a href="#Dev_changes">Changes for VisIt developers</a></li>
 </ul>
 
 <a name="Bugs_fixed"></a>
 <p><b><font size="4">Bugs fixed in version 3.3.2</font></b></p>
 <ul>
-  <li>On macOS, VisIt launched by double-clicking the icon now allows users who give VisIt permission to browse files and folders in the Desktop, Documents, or Downloads folders. </li>
+  <li>Fixed a bug on macOS that prevented VisIt from browsing files and folders in the Desktop, Documents, or Downloads folders when launched by double-clicking the icon, even when the user gave VisIt permission to do so.</li>
   <li>Fixed a bug reading Mili material variables when the mesh had multiple domains.</li>
   <li>Fixed a bug causing the blueprint plugin to incorrectly assign a zonal association to mfem grid functions that were neither H1 nor L2.</li>
-  <li>Fixed a bug reading .visit file with more than 10,000 files and comments for each file.</li>
+  <li>Fixed a bug reading a ".visit" file with more than 10,000 files and comments for each file.</li>
   <li>Fixed a bug that caused the compute engine to crash when in scalable rendering mode. The specific bug involved saving non screen capture images, but the crash could occur whenever doing scalable rendering.</li>
-  <li>Fixed bug in Mili plugin where Green Lagrange strain was using incorrect initial coordintes.</li> 
-  <li>Fixed bug preventing files with extension ".h5m" from being grouped with smart grouping turned on.</li>
+  <li>Fixed a bug in the Mili reader where Green Lagrange strain was using incorrect initial coordintes.</li> 
+  <li>Fixed a bug preventing files with the extension ".h5m" from being grouped with smart grouping turned on.</li>
   <li>Fixed a rare issue with the color table window that caused it to resize horizontally larger than the screen, causing buttons to be off the screen.</li>
-  <li>Pick now correctly does not use node origin.</li>
+  <li>Fixed a bug with Pick where it incorrectly used the node origin.</li>
 </ul>
 
 <a name="Enhancements"></a>
 <p><b><font size="4">Enhancements in version 3.3.2</font></b></p>
 <ul>
   <li>In the X Ray Image Query, a warning was added for the BMP output type, saying it may not function properly. This output type will be removed in the next major release of VisIt.</li>
-  <li>For Blueprint output types from the X Ray Image Query, a host of new metadata has been added, as well as imaging plane topologies.</li>
+  <li>For Blueprint output types from the X Ray Image Query, a host of new metadata has been added, as well as the imaging plane topologies.</li>
   <li>In the X Ray Image Query, users may optionally pass energy group bounds to the query, which will appear as part of the metadata in the Blueprint output types.</li>
   <li>In the X Ray Image Query, users may optionally pass the units for various input and output values through the query. These units will be propagated in the Blueprint output metadata.</li>
-  <li>Added support to export PolyData with a single cell type to the Blueprint Database plugin writer.</li>
-  <li>The X Ray Image Query now outputs Blueprint meshes representing the rays used in the raytrace if a Blueprint output type is selected.</li>
+  <li>Added support to export PolyData with a single cell type to the Blueprint writer.</li>
+  <li>The X Ray Image Query now outputs Blueprint meshes representing the rays used in the raytrace if the Blueprint output type is selected.</li>
   <li>The Blueprint output from the X Ray Image Query previously included coordinates for the spatial extents of the output image. These coordinates have been promoted to a valid blueprint mesh.</li>
   <li>The Silo Database plugin was updated to support a rare decomposition format discovered in the wild.</li>
   <li>Enhanced the make movie script so that it sets the number of digits in the output file names based on the number needed rather than always using four. Note that it uses a minimum of four digits to maintain backwards compatibility and a maximum of seven digits on the assumption you will not create a movie longer than 92 hours.</li>
-</ul>
-
-<a name="Dev_changes"></a>
-<p><b><font size="4">Changes for VisIt developers in version 3.3.2</font></b></p>
-<ul>
-  <li>Feature 1.</li>
 </ul>
 
 <p>Click the following link to view the release notes for the previous version
