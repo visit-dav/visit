@@ -1323,7 +1323,6 @@ avtBlueprintTreeCache::Read(const std::string &file_path,
     {
         // TODO proper sub tree, or read and cache at higher lvl
         Node n_full;
-        //conduit::relay::io::load(GenerateFilePath(tree_id),m_protocol,n_full);
         conduit::relay::io::load(file_path,m_protocol,n_full);
         out = n_full[fetch_path];
     }
