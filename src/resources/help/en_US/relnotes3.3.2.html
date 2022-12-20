@@ -25,7 +25,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Fixed a bug causing the blueprint plugin to incorrectly assign a zonal association to mfem grid functions that were neither H1 nor L2.</li>
   <li>Fixed a bug reading a ".visit" file with more than 10,000 files and comments for each file.</li>
   <li>Fixed a bug that caused the compute engine to crash when in scalable rendering mode. The specific bug involved saving non screen capture images, but the crash could occur whenever doing scalable rendering.</li>
-  <li>Fixed a bug in the Mili reader where Green Lagrange strain was using incorrect initial coordinates.</li> 
+  <li>Fixed a bug in the Mili reader where the Green Lagrange strain was using incorrect initial coordinates.</li> 
   <li>Fixed a bug preventing files with the extension ".h5m" from being grouped with smart grouping turned on.</li>
   <li>Fixed a rare issue with the color table window that caused it to resize horizontally larger than the screen, causing buttons to be off the screen.</li>
   <li>Fixed a bug with Pick where it incorrectly used the node origin.</li>
@@ -43,10 +43,9 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Added support to export PolyData with a single cell type to the Blueprint writer.</li>
   <li>The X Ray Image Query now outputs Blueprint meshes representing the rays used in the raytrace if the Blueprint output type is selected.</li>
   <li>The Blueprint output from the X Ray Image Query previously included coordinates for the spatial extents of the output image. These coordinates have been promoted to a valid blueprint mesh.</li>
-  <li>Updated the Silo Database plugin to support a rare decomposition format discovered in the wild.</li>
-  <li>Added support for reading Blueprint data with blueprint_index per-mesh partition maps to the Blueprint Database plugin writer.</li>
-  <li>Extended support for reading sparsely populated Blueprint trees in the Blueprint Database plugin.</li>
-  <li>The Silo Database plugin was updated to support a rare decomposition format discovered in the wild.</li>
+  <li>Updated the Silo reader to support a rare decomposition format discovered in the wild.</li>
+  <li>Added support for reading Blueprint data with blueprint_index per-mesh partition maps to the Blueprint reader.</li>
+  <li>Extended support for reading sparsely populated Blueprint trees in the Blueprint reader.</li>
   <li>Enhanced the make movie script so that it sets the number of digits in the output file names based on the number needed rather than always using four. Note that it uses a minimum of four digits to maintain backwards compatibility and a maximum of seven digits on the assumption you will not create a movie longer than 92 hours.</li>
 </ul>
 
