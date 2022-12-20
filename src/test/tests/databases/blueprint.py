@@ -83,10 +83,10 @@ bp_part_map_root = data_path(pjoin(bp_part_map_test_dir,
 bp_part_map_single_file_root = data_path(pjoin(bp_part_map_test_dir,
                                          "tout_single_file_part_map_index_hdf5.root"))
 
-bp_sprial_part_map_examples = []
+bp_spiral_part_map_examples = []
 for i in range(-1,9):
-    bp_sprial_part_map_examples.append(data_path(pjoin(bp_part_map_test_dir,
-                                       "tout_relay_sprial_mesh_save_nfiles_{0}.cycle_000000.root".format(i))))
+    bp_spiral_part_map_examples.append(data_path(pjoin(bp_part_map_test_dir,
+                                       "tout_relay_spiral_mesh_save_nfiles_{0}.cycle_000000.root".format(i))))
 
 bp_sparse_topos_root = data_path(pjoin(bp_part_map_test_dir,
                                         "tout_relay_bp_mesh_sparse_topos_hdf5.root"))
@@ -596,12 +596,12 @@ DeleteAllPlots()
 CloseDatabase(bp_sparse_topos_root)
 
 # other spiral test cases, which have both index styles
-for i, root_file in enumerate(bp_sprial_part_map_examples):
+for i, root_file in enumerate(bp_spiral_part_map_examples):
     OpenDatabase(root_file)
     AddPlot("Subset","domains")
     DrawPlots()
     # spiral cases are labeled -1 to 8
-    case_name = "bp_part_map_sprial_case_{0}".format(i-1)
+    case_name = "bp_part_map_spiral_case_{0}".format(i-1)
     Test(case_name)
     DeleteAllPlots()
     CloseDatabase(root_file)
