@@ -259,6 +259,9 @@
 //    Eric Brugger, Wed Sep 21 14:40:08 PDT 2022
 //    Changed the date on the splash screen to September 2022.
 //
+//    Eric Brugger, Tue Dec 20 10:06:53 PST 2022
+//    Changed the date on the splash screen to December 2022.
+//
 // ****************************************************************************
 
 SplashScreen::SplashScreen(bool cyclePictures) : QFrame(0, Qt::SplashScreen)
@@ -379,7 +382,7 @@ SplashScreen::SplashScreen(bool cyclePictures) : QFrame(0, Qt::SplashScreen)
            << tr("October")
            << tr("November")
            << tr("December");
-    int currentMonth = 9;
+    int currentMonth = 12;
     lLayout->addWidget(new QLabel(versionText, this));
     lLayout->addWidget(new QLabel(months[currentMonth-1] + " 2022", this));
 
