@@ -1,0 +1,5 @@
+name: visit
+repo_url:  https://github.com/visit-dav/visit.git
+# This tells azemu to find current branch via a git cmd
+repo_branch: <CURRENT>
+default_container:  alpinedav/ascent-ci:ubuntu-18-devel
