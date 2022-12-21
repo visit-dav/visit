@@ -225,8 +225,8 @@ The query also takes arguments that specify the orientation of the camera in 3 d
 This can take 2 forms. 
 The first is a simplified specification that gives limited control over the camera and the second is a complete specification that matches the 3D image viewing parameters. 
 
-Simplified
-++++++++++
+Simplified Camera Specification
++++++++++++++++++++++++++++++++
 
 The simplified version consists of:
 
@@ -251,8 +251,8 @@ The simplified version consists of:
 
 During execution, the simplified camera specification parameters are converted to the complete ones.
 
-Complete
-++++++++
+Complete Camera Specification
++++++++++++++++++++++++++++++
 
 The complete version consists of:
 
@@ -299,7 +299,7 @@ TODO
 Conduit Output
 ~~~~~~~~~~~~~~
 
-The Conduit output types (see the listed output types above for more information) include additional metadata and topologies.
+The Conduit output types (see :ref:`Output Types` for more information) include additional metadata and topologies.
 
 Why Conduit Output?
 """""""""""""""""""
@@ -308,6 +308,8 @@ TODO
 
 Overview of Output
 """"""""""""""""""
+
+TODO this is wrong it is missing spatial extents and rays and ray corners
 
 Here is a simplified representation of a Conduit tree that is output from the Query: ::
 
@@ -361,11 +363,11 @@ TODO
 Metadata
 """"""""
 
-The Conduit output types (see the listed output types above for more information) come packaged with metadata in addition to Blueprint-conforming mesh data. 
+The Conduit output types (see :ref:`Output Types` for more information) come packaged with metadata in addition to Blueprint-conforming mesh data. 
 Currently, this metadata is stored under the "state" Node in the resulting Conduit tree.
-In addition to "time" and "cycle", there are three categories of metadata: *view parameters*, *query parameters*, and *other metadata*.
-
-TODO make note about domain_id
+There are three top-level items: "time", "cycle", and "domain_id".
+The fact that the domain id is present is a side effect of Conduit; all of the output data is single domain and this value has nothing to do with the query.
+In addition to the top level items, there are three categories of metadata: *view parameters*, *query parameters*, and *other metadata*.
 
 View Parameters
 +++++++++++++++
@@ -552,14 +554,14 @@ In that case, the following section may be of some use.
 Imaging Planes and Rays Meshes
 """"""""""""""""""""""""""""""
 
-The Conduit output types (see the listed output types above for more information) come packaged with topologies for the imaging planes. 
+The Conduit output types (see :ref:`Output Types` for more information) come packaged with topologies for the imaging planes. 
 In addition to the ray tracing results, you can visualize the near, view, and far planes in physical space alongside your simulation data.
 These can be found under the *coordsets*, *topologies*, and *fields* branches.
 
 .. figure:: images/xray_imaging_planes.png
 
-   The imaging planes used by the X Ray Image Query visualized on top of the simulation data.
-   The near plane is in red, the view plane in transparent orange, and the far plane in blue.
+The imaging planes used by the X Ray Image Query visualized on top of the simulation data.
+The near plane is in red, the view plane in transparent orange, and the far plane in blue.
 
 TODO
 
