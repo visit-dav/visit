@@ -528,6 +528,12 @@ Arc Tangent Function (``atan()``) : ``atan(expr0)``
     Creates a new expression which is everywhere the arc tangent of its
     argument. The returned value is in *radians*.
 
+.. _Arc_Tangent_2_Expression_Function:
+
+Arc Tangent 2 Function (``atan2()``) : ``atan2(expr0,expr1)``
+    Creates a new expression which is everywhere the arc tangent of its
+    arguments. The returned value is in *radians*.
+
 .. _Cosine_Expression_Function:
 
 Cosine Function (``cos()``) : ``cos(expr0)``
