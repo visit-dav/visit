@@ -24,7 +24,7 @@
 
 #define BP_PLUGIN_INFO(  msg  )                                     \
 {                                                                   \
-    debug5 << msg;                                                  \
+    debug5 << msg << std::endl;                                     \
 }                                                                   \
 
 #define BP_PLUGIN_WARNING(  msg  )                                  \
