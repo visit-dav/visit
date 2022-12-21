@@ -2080,8 +2080,13 @@ class MakeMovie(object):
 
         self.Debug(1, "*** frameStart=%d, frameEnd=%d" % (self.frameStart, self.frameEnd))
 
+        # Calculate the number of frames in the movie. This may over estimate
+        # the total number in a few rare cases, but overestimating isn't an
+        # issue.
+        nTotalFrames = (self.frameEnd - self.frameStart + 1) / self.frameStep
+
         # Generate the file names.
-        self.GenerateFileNames()
+        self.GenerateFileNames(nTotalFrames)
 
         # Save the old rendering mode.
         old_ra = GetRenderingAttributes()
@@ -2148,12 +2153,8 @@ class MakeMovie(object):
     #
     ###########################################################################
 
-    def GenerateFileNames(self):
+    def GenerateFileNames(self, nTotalFrames):
 
-        # Calculate the number of frames in the movie. This may over estimate
-        # the total number in a few rare cases, but overestimating isn't an
-        # issue.
-        nTotalFrames = (self.frameEnd - self.frameStart + 1) / self.frameStep
         if nTotalFrames > 999999:
             self.digitFormat = "%07d"
         elif nTotalFrames > 99999:
@@ -2315,6 +2316,11 @@ class MakeMovie(object):
             index = index + 1
 
         if(self.usesTemplateFile):
+            # Generate the file names. Pass 1 as the number of files so
+            # that the number of digits in the family index is four to
+            # match legacy behavior.
+            self.GenerateFileNames(1)
+
             # Determine the name of the movie template base class's file.
             prefix = ""
             if os.name == "nt":
@@ -2479,6 +2485,10 @@ class MakeMovie(object):
             globals()['classSaveWindowObj'] = self
             # Create a modified version of the user's script.
             name = self.CreateMangledSource(self.scriptFile)
+            # Generate the file names. Pass 1 as the number of files so
+            # that the number of digits in the family index is four to
+            # match legacy behavior.
+            self.GenerateFileNames(1)
             # Try executing the modified version of the user's script.
             Source(name)
             # Remove the modified script.
