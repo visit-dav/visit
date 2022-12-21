@@ -341,6 +341,8 @@ Connected Component Weighted Variable Sum
     result is a list of values, one for each component.
 
 XRay Image
+    See :ref:`XRayQuery`.
+    
     Generates a simulated radiograph by tracing rays through a volume using an absorbtivity and emissivity variable.
     The absorbtivity and emmisivity variables must be zone centered and can be either scalar variables or array variables.
     If using an array variable it will generate an image per array variable component.

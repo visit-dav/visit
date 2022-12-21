@@ -1,3 +1,5 @@
+.. _XRayQuery:
+
 X Ray Image Query
 -----------------
 
