@@ -47,10 +47,12 @@ A non-zero emissivity variable would correspond to an object emitting radiation 
 Query Arguments
 ~~~~~~~~~~~~~~~
 
-**The query takes the following arguments:**
+The query takes a few different kinds of arguments:
 
 Standard Arguments
 """"""""""""""""""
+
+TODO
 
 +--------------------------+----------------------------------------------+
 | *vars*                   | An array of the names of the absorbtivity    |
@@ -63,8 +65,6 @@ Standard Arguments
 |                          | array variables. The default is 0.           |
 +--------------------------+----------------------------------------------+
 | *divide_emis_by_absorb*  | Described above.                             |
-+--------------------------+----------------------------------------------+
-| *output_dir*             | The output directory. The default is "."     |
 +--------------------------+----------------------------------------------+
 | *image_size*             | The width and height of the image in pixels. |
 |                          | The default is 200 x 200.                    |
@@ -83,9 +83,13 @@ Standard Arguments
 |                          | metadata.                                    |
 +--------------------------+----------------------------------------------+
 
-Filenames
-+++++++++
+TODO note where these show up in blueprint output w/ link to section
 
+Output Filenames and Directories
+++++++++++++++++++++++++++++++++
+
++------+-------------------+----------------------------------------------+
+| *output_dir*             | The output directory. The default is "."     |
 +------+-------------------+----------------------------------------------+
 | *family_files*           | A flag indicating if the output files should |
 |                          | be familied. The default is |br| off. If it  |
@@ -126,6 +130,7 @@ Filenames
 |      |                   | will overwrite it.                           |
 +------+-------------------+----------------------------------------------+
 
+TODO note where these show up in blueprint output w/ link to section
 
 Output Types
 ++++++++++++
@@ -211,6 +216,7 @@ Units
 +--------------------------+----------------------------------------------+
 
 TODO where do these go? why are these here?
+TODO note where these show up in blueprint output w/ link to section(s)
 
 Camera Specification
 """"""""""""""""""""
@@ -243,17 +249,19 @@ The simplified version consists of:
 
 *If any of the above properties are specified in the parameters, the query will use the simplified version.*
 
+During execution, the simplified camera specification parameters are converted to the complete ones.
+
 Complete
 ++++++++
 
 The complete version consists of:
 
 +------------------+------------------------------------------------------+
+| *normal*         | The view normal. The default is (0., 0., 1.).        |
++------------------+------------------------------------------------------+
 | *focus*          | The focal point. The default is (0., 0., 0.).        |
 +------------------+------------------------------------------------------+
 | *view_up*        | The up vector. The default is (0., 1., 0.).          |
-+------------------+------------------------------------------------------+
-| *normal*         | The view normal. The default is (0., 0., 1.).        |
 +------------------+------------------------------------------------------+
 | *view_angle*     | The view angle. The default is 30. This is only used |
 |                  | if perspective |br| projection is enabled.           |
@@ -279,6 +287,9 @@ The complete version consists of:
 |                  | projection. |br| 0 indicates parallel projection.    |
 |                  | 1 indicates perspective projection.                  |
 +------------------+------------------------------------------------------+
+
+When a Conduit Blueprint output type is specified, these parameters will appear in the metadata.
+See :ref:`View Parameters` for more information.
 
 Calling the Query
 """""""""""""""""
@@ -356,8 +367,8 @@ In addition to "time" and "cycle", there are three categories of metadata: *view
 
 TODO make note about domain_id
 
-xray_view
-+++++++++
+View Parameters
++++++++++++++++
 
 View parameters can be found under "state/xray_view".
 This metadata represents the view-related values that were used in the x ray image query calculations, regardless of whether the simplified or complete view specification was used when calling the query.
@@ -431,8 +442,8 @@ An example: ::
     perspective: 1
     perspectiveStr: "perspective"
 
-xray_query
-++++++++++
+Query Parameters
+++++++++++++++++
 
 Query parameters can be found under "state/xray_query".
 This metadata represents the query-related values that were used in the x ray image query calculations.
@@ -483,12 +494,11 @@ An example: ::
     absUnits: "cm^2/g"
     emisUnits: "GJ/cm^2/ster/ns/keV"
 
-xray_data
-+++++++++
+Other Metadata
+++++++++++++++
 
-Other Metadata can be found under "state/xray_data".
-This metadata represents values that do not fit into either of the above two categories.
-Many are calculated constants, giving a broader view of the output data.
+Other metadata can be found under "state/xray_data".
+These values are calculated constants based on the input parameters and output data.
 This data is available as of VisIt_ 3.3.2.
 The following is included:
 
@@ -535,22 +545,28 @@ An example: ::
     pathLengthMax: 120.815788269043
     pathLengthMin: 0.0
 
+The minimum and maximum values that are included for the path length and intensity outputs are useful for quick troubleshooting or sanity checks that the output matches expectations. 
+If both maximums and minimums are zero, for example, the simulated detector may not be facing the right way.
+In that case, the following section may be of some use.
+
 Imaging Planes and Rays Meshes
 """"""""""""""""""""""""""""""
 
 The Conduit output types (see the listed output types above for more information) come packaged with topologies for the imaging planes. 
-    In addition to the ray tracing results, you can visualize the near, view, and far planes in physical space alongside your simulation data.
-    These can be found under the *coordsets*, *topologies*, and *fields* branches.
+In addition to the ray tracing results, you can visualize the near, view, and far planes in physical space alongside your simulation data.
+These can be found under the *coordsets*, *topologies*, and *fields* branches.
 
 .. figure:: images/xray_imaging_planes.png
 
-    The imaging planes used by the X Ray Image Query visualized on top of the simulation data.
-    The near plane is in red, the view plane in transparent orange, and the far plane in blue.
+   The imaging planes used by the X Ray Image Query visualized on top of the simulation data.
+   The near plane is in red, the view plane in transparent orange, and the far plane in blue.
 
 TODO
 
 Spatial Extents Mesh
 """"""""""""""""""""
+
+TODO this is all wrong
 
 +--------------------------+----------------------------------------------+
 | *image_coords/values/x*  | The image coordinates are a coordinate set   |
@@ -601,7 +617,7 @@ of the data.
 
 .. figure:: images/xray00.png
 
-The 2D R-Z data
+The 2D R-Z data.
 
 Now we'll show the Python code to generate a simulated x ray looking
 down the Z Axis and the resulting image. ::
@@ -616,7 +632,7 @@ down the Z Axis and the resulting image. ::
 
 .. figure:: images/xray01.png
 
-The resulting x ray image
+The resulting x ray image.
 
 Here is the Python code to generate the same image but looking at it
 from the side. ::
@@ -633,7 +649,7 @@ from the side. ::
 
 .. figure:: images/xray02.png
 
-The resulting x ray image
+The resulting x ray image.
 
 Here is the same Python code with the addition of an origin that
 moves the image down and to the right by 1. ::
@@ -651,7 +667,7 @@ moves the image down and to the right by 1. ::
 
 .. figure:: images/xray03.png
 
-The resulting x ray image
+The resulting x ray image.
 
 Now we'll switch to a 3D example using globe.silo. Globe.silo is an
 unstructured mesh consisting of tetrahedra, pyramids, prisms and hexahedra
@@ -660,7 +676,7 @@ the globe that form 2 cones.
 
 .. figure:: images/xray04.png
 
-The tetrahedra at the center of the globe
+The tetrahedra at the center of the globe.
 
 Here is the Python code for generating an x ray image from the same
 orientation. Note that we have defined some expressions so that the
@@ -685,13 +701,13 @@ x ray image shows some variation. ::
 
 .. figure:: images/xray05.png
 
-The resulting x ray image
+The resulting x ray image.
 
 Now we'll look at the pyramids in the center of the globe.
 
 .. figure:: images/xray06.png
 
-The pyramids at the center of the globe
+The pyramids at the center of the globe.
 
 Here is the Python code for generating an x ray image from the same
 orientation using the full view specification. The view specification
@@ -717,4 +733,4 @@ the default ones. This is necessary to use the full view specification. ::
 
 .. figure:: images/xray07.png
 
-The resulting x ray image
+The resulting x ray image.
