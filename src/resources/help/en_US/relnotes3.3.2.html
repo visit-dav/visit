@@ -46,7 +46,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Updated the Silo reader to support a rare decomposition format discovered in the wild.</li>
   <li>Added support for reading Blueprint data with blueprint_index per-mesh partition maps to the Blueprint reader.</li>
   <li>Extended support for reading sparsely populated Blueprint trees in the Blueprint reader.</li>
-  <li>Enhanced the make movie script so that it sets the number of digits in the output file names based on the number needed rather than always using four. Note that it uses a minimum of four digits to maintain backwards compatibility and a maximum of seven digits on the assumption you will not create a movie longer than 92 hours.</li>
+  <li>Enhanced the make movie script so that it sets the number of digits in the output file names based on the number needed rather than always using four when the number of frames in the movie is known ahead of time, which is when a session file or the current plot is used. Note that it uses a minimum of four digits to maintain backwards compatibility and a maximum of seven digits on the assumption you will not create a movie longer than 92 hours.</li>
 </ul>
 
 <p>Click the following link to view the release notes for the previous version
