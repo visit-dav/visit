@@ -328,7 +328,146 @@ TODO
 Imaging Planes and Rays Meshes
 """"""""""""""""""""""""""""""
 
+TODO
 
+Spatial Extents Mesh
+""""""""""""""""""""
 
+TODO
 
+Visualizing with VisIt
+""""""""""""""""""""""
 
+TODO
+
+Introspecting with Python
+"""""""""""""""""""""""""
+
+TODO
+
+Examples
+~~~~~~~~
+
+Lets look at some examples, starting with some simulated x rays using
+curv2d.silo, which contains a 2D R-Z mesh. Here is a pseudocolor plot
+of the data.
+
+.. figure:: images/xray00.png
+
+The 2D R-Z data
+
+Now we'll show the Python code to generate a simulated x ray looking
+down the Z Axis and the resulting image. ::
+
+  params = GetQueryParameters("XRay Image")
+  params['image_size'] = (300, 300)
+  params['divide_emis_by_absorb'] = 1
+  params['width'] = 10.
+  params['height'] = 10.
+  params['vars'] = ("d", "p")
+  Query("XRay Image", params)
+
+.. figure:: images/xray01.png
+
+The resulting x ray image
+
+Here is the Python code to generate the same image but looking at it
+from the side. ::
+
+  params = GetQueryParameters("XRay Image")
+  params['image_size'] = (300, 300)
+  params['divide_emis_by_absorb'] = 1
+  params['width'] = 10.
+  params['height'] = 10.
+  params['theta'] = 90.
+  params['phi'] = 0.
+  params['vars'] = ("d", "p")
+  Query("XRay Image", params)
+
+.. figure:: images/xray02.png
+
+The resulting x ray image
+
+Here is the same Python code with the addition of an origin that
+moves the image down and to the right by 1. ::
+
+  params = GetQueryParameters("XRay Image")
+  params['image_size'] = (300, 300)
+  params['divide_emis_by_absorb'] = 1
+  params['width'] = 10.
+  params['height'] = 10.
+  params['theta'] = 90.
+  params['phi'] = 0.
+  params['origin'] = (0., 1., 1.)
+  params['vars'] = ("d", "p")
+  Query("XRay Image", params)
+
+.. figure:: images/xray03.png
+
+The resulting x ray image
+
+Now we'll switch to a 3D example using globe.silo. Globe.silo is an
+unstructured mesh consisting of tetrahedra, pyramids, prisms and hexahedra
+forming a globe. Here is an image of the tetrahedra at the center of
+the globe that form 2 cones.
+
+.. figure:: images/xray04.png
+
+The tetrahedra at the center of the globe
+
+Here is the Python code for generating an x ray image from the same
+orientation. Note that we have defined some expressions so that the
+x ray image shows some variation. ::
+
+  DefineScalarExpression("u1", 'recenter(((u+10.)*0.01), "zonal")')
+  DefineScalarExpression("v1", 'recenter(((v+10.)*0.01*matvf(mat1,1)), "zonal")')
+  DefineScalarExpression("v2", 'recenter(((v+10.)*0.01*matvf(mat1,2)), "zonal")')
+  DefineScalarExpression("v3", 'recenter(((v+10.)*0.01*matvf(mat1,3)), "zonal")')
+  DefineScalarExpression("v4", 'recenter(((v+10.)*0.01*matvf(mat1,4)), "zonal")')
+  DefineScalarExpression("w1", 'recenter(((w+10.)*0.01), "zonal")')
+
+  params = GetQueryParameters("XRay Image")
+  params['image_size'] = (300, 300)
+  params['divide_emis_by_absorb'] = 1
+  params['width'] = 4.
+  params['height'] = 4.
+  params['theta'] = 90.
+  params['phi'] = 0.
+  params['vars'] = ("w1", "v1")
+  Query("XRay Image", params)
+
+.. figure:: images/xray05.png
+
+The resulting x ray image
+
+Now we'll look at the pyramids in the center of the globe.
+
+.. figure:: images/xray06.png
+
+The pyramids at the center of the globe
+
+Here is the Python code for generating an x ray image from the same
+orientation using the full view specification. The view specification
+was merely copied from the 3D tab on the View window. Note that we
+have created the dictionary from scratch, rather than starting with
+the default ones. This is necessary to use the full view specification. ::
+
+  params = dict(output_type="png")
+  params['image_size'] = (300, 300)
+  params['divide_emis_by_absorb'] = 1
+  params['focus'] = (0., 0., 0.)
+  params['view_up'] = (-0.0651, 0.775, 0.628)
+  params['normal'] = (-0.840, -0.383, 0.385)
+  params['view_angle'] = 30.
+  params['parallel_scale'] = 17.3205
+  params['near_plane'] = -34.641
+  params['far_plane'] = 34.641
+  params['image_pan'] = (0., 0.)
+  params['image_zoom'] = 8
+  params['perspective'] = 0
+  params['vars'] = ("w1", "v2")
+  Query("XRay Image", params)
+
+.. figure:: images/xray07.png
+
+The resulting x ray image
