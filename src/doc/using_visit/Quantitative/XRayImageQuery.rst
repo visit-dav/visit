@@ -1,11 +1,15 @@
 .. _XRayQuery:
 
+.. |br| raw:: html
+
+   <br>
+
 X Ray Image Query
 -----------------
 
 Generates a simulated radiograph by tracing rays through a volume using an absorbtivity and emissivity variable.
-The absorbtivity and emmisivity variables must be zone centered and can be either scalar variables or array variables.
-If using an array variable it will generate an image per array variable component.
+The absorbtivity and emissivity variables must be zone centered and can be either scalar variables or array variables.
+If using an array variable, the query will generate an image per array variable component.
 
 The query operates on 2D R-Z meshes and 3D meshes.
 In the case of 2D R-Z meshes, the mesh is revolved around the Z axis.
@@ -37,7 +41,7 @@ If the ``divide_emis_by_absorb`` is set, then the following integration is perfo
         :end-before: end absorbtivity-normalized integration
 
 When making a simulated radiograph the emissivity variable must contain non zero values or you will need to specify a background intensity using either *background_intensity* or *background_intensities*.
-If neither of these is the case you will get a very boring all white image.
+If neither of these is the case, you will get an all white image.
 A non-zero emissivity variable would correspond to an object emitting radiation and a non zero background intensity would correspond to constant backlit radiation, such as when x raying an object.
 
 Query Arguments
@@ -215,8 +219,8 @@ The query also takes arguments that specify the orientation of the camera in 3 d
 This can take 2 forms. 
 The first is a simplified specification that gives limited control over the camera and the second is a complete specification that matches the 3D image viewing parameters. 
 
-Simplfied
-+++++++++
+Simplified
+++++++++++
 
 The simplified version consists of:
 
@@ -286,52 +290,45 @@ Conduit Output
 
 TODO
 
-Even more stuff
-"""""""""""""""
+Why Conduit Output?
+"""""""""""""""""""
 
 TODO
 
-x ray stuff
-"""""""""""
+Overview of Output
+""""""""""""""""""
 
 TODO
 
-Steve's tips for successful x rays
-""""""""""""""""""""""""""""""""""
+Standard Mesh Output
+""""""""""""""""""""
 
 TODO
 
-A note from the author
-""""""""""""""""""""""
+Metadata
+""""""""
 
 TODO
 
-Cyrus's dreamland
-"""""""""""""""""
+xray_view
++++++++++
 
 TODO
 
-NIF is cool
-"""""""""""
+xray_query
+++++++++++
 
 TODO
 
-bibliography
-""""""""""""
+xray_data
++++++++++
 
 TODO
 
-Index
-"""""
+Imaging Planes and Rays Meshes
+""""""""""""""""""""""""""""""
 
-TODO
 
-further reading
-"""""""""""""""
 
-TODO
 
-visit stuff
-"""""""""""
 
-TODO
