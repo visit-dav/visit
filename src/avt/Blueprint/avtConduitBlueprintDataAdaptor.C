@@ -37,7 +37,7 @@ using namespace conduit;
 using namespace mfem;
 
 // ****************************************************************************
-//  Method: ConduitArrayToVTKDataArray
+//  Method: Initialize
 //
 //  Purpose: Initialize the conduit blueprint data adaptor.
 //
@@ -54,7 +54,7 @@ avtConduitBlueprintDataAdaptor::Initialize()
 }
 
 // ****************************************************************************
-//  Method: ConduitArrayToVTKDataArray
+//  Method: SetInfoWarningHandlers
 //
 //  Purpose: Set the info and warning handlers for conduit info and warnings.
 //
@@ -141,10 +141,17 @@ VTKCellTypeToElementShapeName(const int vtk_cell_type)
 //---------------------------------------------------------------------------//
 
 // ****************************************************************************
+//  Modifications:
+//
+//  Cyrus Harrison, Fri Dec 16 09:38:35 PST 2022
+//  Add support for optional indirection array.
+//
+// ****************************************************************************
 template<typename T> void
 Blueprint_MultiCompArray_To_VTKDataArray(const Node &n,
                                          int ncomps,
                                          int ntuples,
+                                         int *src_idxs,
                                          vtkDataArray *darray)
 {
     // vtk reqs us to set number of comps before number of tuples
@@ -164,7 +171,12 @@ Blueprint_MultiCompArray_To_VTKDataArray(const Node &n,
 
             for (vtkIdType i = 0; i < ntuples; i++)
             {
-                darray->SetComponent(i, c, (double) vals_array[i]);
+                int idx = i;
+                if(src_idxs!=nullptr)
+                {
+                    idx = src_idxs[i];
+                }
+                darray->SetComponent(i, c, (double) vals_array[idx]);
 
                 if(ncomps == 2)
                 {
@@ -179,7 +191,12 @@ Blueprint_MultiCompArray_To_VTKDataArray(const Node &n,
         conduit::DataArray<T> vals_array = n.value();
         for (vtkIdType i = 0; i < ntuples; i++)
         {
-            darray->SetComponent(i,0, (double) vals_array[i]);
+            int idx = i;
+            if(src_idxs!=nullptr)
+            {
+                idx = src_idxs[i];
+            }
+            darray->SetComponent(i,0, (double) vals_array[idx]);
         }
     }
 }
@@ -215,9 +232,14 @@ Blueprint_MultiCompArray_To_VTKDataArray(const Node &n,
 //    Justin Privitera, Mon Aug 22 17:15:06 PDT 2022
 //    Moved from blueprint plugin to conduit blueprint data adaptor.
 //
+//    Cyrus Harrison, Fri Dec 16 09:33:41 PST 2022
+//    Added support for an optional indirection array
+//
 // ****************************************************************************
 vtkDataArray *
-ConduitArrayToVTKDataArray(const conduit::Node &n)
+ConduitArrayToVTKDataArray(const conduit::Node &n,
+                           int src_idxs_length = 0,
+                           int *src_idxs = NULL)
 {
     AVT_CONDUIT_BP_INFO("Creating VTKDataArray from Node");
     vtkDataArray *retval = NULL;
@@ -251,9 +273,15 @@ ConduitArrayToVTKDataArray(const conduit::Node &n)
 
     // get the number of tuples
     ntuples = (int) vals_dtype.number_of_elements();
+    
+    if(src_idxs_length > 0)
+    {
+        ntuples = src_idxs_length;
+    }
 
     AVT_CONDUIT_BP_INFO("VTKDataArray num_tuples = " << ntuples << " "
                         << " num_comps = " << ncomps);
+
 
     if (vals_dtype.is_unsigned_char())
     {
@@ -261,6 +289,7 @@ ConduitArrayToVTKDataArray(const conduit::Node &n)
         Blueprint_MultiCompArray_To_VTKDataArray<CONDUIT_NATIVE_UNSIGNED_CHAR>(n,
                                                                                ncomps,
                                                                                ntuples,
+                                                                               src_idxs,
                                                                                retval);
     }
     else if (vals_dtype.is_unsigned_short())
@@ -269,6 +298,7 @@ ConduitArrayToVTKDataArray(const conduit::Node &n)
         Blueprint_MultiCompArray_To_VTKDataArray<CONDUIT_NATIVE_UNSIGNED_SHORT>(n,
                                                                                 ncomps,
                                                                                 ntuples,
+                                                                                src_idxs,
                                                                                 retval);
     }
     else if (vals_dtype.is_unsigned_int())
@@ -277,6 +307,7 @@ ConduitArrayToVTKDataArray(const conduit::Node &n)
         Blueprint_MultiCompArray_To_VTKDataArray<CONDUIT_NATIVE_UNSIGNED_INT>(n,
                                                                               ncomps,
                                                                               ntuples,
+                                                                              src_idxs,
                                                                               retval);
     }
     else if (vals_dtype.is_unsigned_long())
@@ -285,6 +316,7 @@ ConduitArrayToVTKDataArray(const conduit::Node &n)
         Blueprint_MultiCompArray_To_VTKDataArray<CONDUIT_NATIVE_UNSIGNED_LONG>(n,
                                                                                ncomps,
                                                                                ntuples,
+                                                                               src_idxs,
                                                                                retval);
     }
 #if CONDUIT_USE_LONG_LONG
@@ -294,6 +326,7 @@ ConduitArrayToVTKDataArray(const conduit::Node &n)
         Blueprint_MultiCompArray_To_VTKDataArray<CONDUIT_NATIVE_UNSIGNED_LONG_LONG>(n,
                                                                                     ncomps,
                                                                                     ntuples,
+                                                                                    src_idxs,
                                                                                     retval);
     }
 #endif
@@ -303,6 +336,7 @@ ConduitArrayToVTKDataArray(const conduit::Node &n)
         Blueprint_MultiCompArray_To_VTKDataArray<CONDUIT_NATIVE_CHAR>(n,
                                                                       ncomps,
                                                                       ntuples,
+                                                                      src_idxs,
                                                                       retval);
 
     }
@@ -312,6 +346,7 @@ ConduitArrayToVTKDataArray(const conduit::Node &n)
         Blueprint_MultiCompArray_To_VTKDataArray<CONDUIT_NATIVE_SHORT>(n,
                                                                        ncomps,
                                                                        ntuples,
+                                                                       src_idxs,
                                                                        retval);
     }
     else if (vals_dtype.is_int())
@@ -320,6 +355,7 @@ ConduitArrayToVTKDataArray(const conduit::Node &n)
         Blueprint_MultiCompArray_To_VTKDataArray<CONDUIT_NATIVE_INT>(n,
                                                                      ncomps,
                                                                      ntuples,
+                                                                     src_idxs,
                                                                      retval);
     }
     else if (vals_dtype.is_long())
@@ -328,6 +364,7 @@ ConduitArrayToVTKDataArray(const conduit::Node &n)
         Blueprint_MultiCompArray_To_VTKDataArray<CONDUIT_NATIVE_LONG>(n,
                                                                       ncomps,
                                                                       ntuples,
+                                                                      src_idxs,
                                                                       retval);
     }
 #if CONDUIT_USE_LONG_LONG
@@ -337,6 +374,7 @@ ConduitArrayToVTKDataArray(const conduit::Node &n)
         Blueprint_MultiCompArray_To_VTKDataArray<CONDUIT_NATIVE_LONG_LONG>(n,
                                                                               ncomps,
                                                                               ntuples,
+                                                                              src_idxs,
                                                                               retval);
     }
 #endif
@@ -346,6 +384,7 @@ ConduitArrayToVTKDataArray(const conduit::Node &n)
         Blueprint_MultiCompArray_To_VTKDataArray<CONDUIT_NATIVE_FLOAT>(n,
                                                                        ncomps,
                                                                        ntuples,
+                                                                       src_idxs,
                                                                        retval);
     }
     else if (vals_dtype.is_double())
@@ -354,6 +393,7 @@ ConduitArrayToVTKDataArray(const conduit::Node &n)
         Blueprint_MultiCompArray_To_VTKDataArray<CONDUIT_NATIVE_DOUBLE>(n,
                                                                         ncomps,
                                                                         ntuples,
+                                                                        src_idxs,
                                                                         retval);
     }
     else
@@ -365,18 +405,173 @@ ConduitArrayToVTKDataArray(const conduit::Node &n)
     return retval;
 }
 
+
+// ****************************************************************************
+int
+NDIndex(int i, int j, int k, int *offsets, int *strides)
+{
+    int res = (i + offsets[0]) * strides[0];
+    res += (j +offsets[1]) * strides[1];
+    res += (k +offsets[2]) * strides[2];
+    return res;
+}
+
+
+// ****************************************************************************
+void
+StructuredTopologyShape(const Node &n_topo, int *shape)
+{
+    if(n_topo.has_path("elements/dims/i"))
+    {
+        shape[0] = n_topo["elements/dims/i"].to_value();
+    }
+    else
+    {
+        shape[0] = 0;
+    }
+
+    if(n_topo.has_path("elements/dims/j"))
+    {
+        shape[1] = n_topo["elements/dims/j"].to_value();
+    }
+    else
+    {
+        shape[1] = 0;
+    }
+
+    if(n_topo.has_path("elements/dims/k"))
+    {
+        shape[2] = n_topo["elements/dims/k"].to_value();
+    }
+    else
+    {
+        shape[2] = 0;
+    }
+}
+
+// ****************************************************************************
+void
+StructuredTopologyOffsetsAndOffsets(const conduit::Node n_topo,
+                                    const int *shape,
+                                    int *offsets,
+                                    int *strides)
+{
+    if(n_topo.has_path("elements/dims/offsets"))
+    {
+        int_accessor off_vals = n_topo["elements/dims/offsets"].value();
+        for(int i=0;i<off_vals.dtype().number_of_elements();i++)
+        {
+            offsets[i] = off_vals[i];
+        }
+    }
+    // Note: default offsets values should be {0,0,0}
+
+    if(n_topo.has_path("elements/dims/strides"))
+    {
+        int_accessor stride_vals = n_topo["elements/dims/strides"].value();
+        for(int i=0;i<stride_vals.dtype().number_of_elements();i++)
+        {
+            strides[i] = stride_vals[i];
+        }
+    }
+    else // default strides
+    {
+        strides[0] = 1;
+        strides[1] = shape[0];
+        strides[2] = shape[1];
+    }
+}
+
+
+
 // ****************************************************************************
 vtkPoints *
-ExplicitCoordsToVTKPoints(const Node &n_coords)
+ExplicitCoordsToVTKPoints(const Node &n_coords, const Node &n_topo)
 {
+
     vtkPoints *points = vtkPoints::New();
+
+    // Identify cases for struct stride
+    // shape, offsets, strides
+    // points will be walked in i,j,k in logical order
+
+    bool ndstrided  = false;
+    int  ele_shape[3]   = {0,0,0};
+    int  ele_strides[3] = {0,0,0};
+    int  ele_offsets[3] = {0,0,0};
+
+    int  pts_shape[3]   = {0,0,0};
+    int  pts_strides[3] = {0,0,0};
+    int  pts_offsets[3] = {0,0,0};
+
+    if(n_topo.has_path("elements/dims/offsets") || 
+       n_topo.has_path("elements/dims/strides"))
+    {
+        AVT_CONDUIT_BP_INFO("ExplicitCoordsToVTKPoints:: structured strided case ");
+        // for this case, we need to apply 
+        // (i,j,k,shape,offsets,strides) --> index
+        // to extract the coords
+
+        ndstrided = true;
+
+        // NOTE: This finds the shape and striding details of the elements
+        // to construct for vtk, we need to convert this to shape and striding
+        // details of points
+        StructuredTopologyShape(n_topo,ele_shape);
+        StructuredTopologyOffsetsAndOffsets(n_topo,
+                                            ele_shape,
+                                            ele_offsets,
+                                            ele_strides);
+
+        // adj shape
+        pts_shape[0] = ele_shape[0]+1;
+        pts_shape[1] = ele_shape[1]+1;
+        pts_shape[2] = ele_shape[2]+1;
+
+        // NOTE: offsets don't need to be adjusted ??
+        pts_offsets[0] = ele_offsets[0];
+        pts_offsets[1] = ele_offsets[1];
+        pts_offsets[2] = ele_offsets[2];
+
+        // strides *do* need to be adjusted.
+        // this is tricky?
+        pts_strides[0] = ele_strides[0];
+        pts_strides[1] = ele_strides[1];
+        pts_strides[2] = ele_strides[2];
+
+        AVT_CONDUIT_BP_INFO("ExplicitCoordsToVTKPoints:: point shape: "
+                            << pts_shape[0] << " "
+                            << pts_shape[1] << " "
+                            << pts_shape[2] );
+
+        AVT_CONDUIT_BP_INFO("ExplicitCoordsToVTKPoints:: point offsets: "
+                            << pts_offsets[0] << " "
+                            << pts_offsets[1] << " "
+                            << pts_offsets[2] );
+
+        AVT_CONDUIT_BP_INFO("ExplicitCoordsToVTKPoints:: point strides: "
+                            << pts_strides[0] << " "
+                            << pts_strides[1] << " "
+                            << pts_strides[2] );
+    }
 
     const Node &n_vals = n_coords["values"];
 
-    // We always use doubles
+    int npts =0;
 
-    int npts = (int) n_vals["x"].dtype().number_of_elements();
+    if(ndstrided)
+    {
+        npts = pts_shape[0] * pts_shape[1] * pts_shape[2];
+    }
+    else
+    {
+        npts = (int) n_vals["x"].dtype().number_of_elements();
+    }
 
+    AVT_CONDUIT_BP_INFO("ExplicitCoordsToVTKPoints:: number of points ="  << npts );
+
+    // TODO: Simplify with double_accessor once
+    // conduit allows empty double_accessor construction.
     double_array x_vals;
     double_array y_vals;
     double_array z_vals;
@@ -434,12 +629,37 @@ ExplicitCoordsToVTKPoints(const Node &n_coords)
     //TODO: we could describe the VTK data array via
     // and push the conversion directly into its memory.
 
-    for (vtkIdType i = 0; i < npts; i++)
+    if(ndstrided) // strided case
     {
-        double x = x_vals[i];
-        double y = have_y ? y_vals[i] : 0;
-        double z = have_z ? z_vals[i] : 0;
-        points->SetPoint(i, x, y, z);
+        vtkIdType vtk_idx = 0;
+        for(int k=0; k < pts_shape[2]; k++)
+        {
+            for(int j=0; j < pts_shape[1]; j++)
+            {
+                for(int i=0; i < pts_shape[0]; i++)
+                {
+                    int bp_idx = NDIndex(i, j, k,
+                                         pts_offsets,
+                                         pts_strides);
+
+                    double x = x_vals[bp_idx];
+                    double y = have_y ? y_vals[bp_idx] : 0;
+                    double z = have_z ? z_vals[bp_idx] : 0;
+                    points->SetPoint(vtk_idx, x, y, z);
+                    vtk_idx++;
+                }
+            }
+        }
+    }
+    else // default, simplest case
+    {
+        for (vtkIdType i = 0; i < npts; i++)
+        {
+            double x = x_vals[i];
+            double y = have_y ? y_vals[i] : 0;
+            double z = have_z ? z_vals[i] : 0;
+            points->SetPoint(i, x, y, z);
+        }
     }
 
     return points;
@@ -692,7 +912,7 @@ StructuredTopologyToVTKStructuredGrid(const Node &n_coords,
     dims[2] = n_topo.has_path("elements/dims/k") ? n_topo["elements/dims/k"].to_int()+1 : 1;
     sgrid->SetDimensions(dims);
 
-    vtkPoints *points = ExplicitCoordsToVTKPoints(n_coords);
+    vtkPoints *points = ExplicitCoordsToVTKPoints(n_coords, n_topo);
     sgrid->SetPoints(points);
     points->Delete();
 
@@ -704,7 +924,7 @@ vtkDataSet *
 PointsTopologyToVTKUnstructuredGrid(const Node &n_coords,
                                     const Node &n_topo)
 {
-    vtkPoints *points = ExplicitCoordsToVTKPoints(n_coords);
+    vtkPoints *points = ExplicitCoordsToVTKPoints(n_coords,n_topo);
 
     vtkUnstructuredGrid *ugrid = vtkUnstructuredGrid::New();
     ugrid->SetPoints(points);
@@ -817,7 +1037,7 @@ UnstructuredTopologyToVTKUnstructuredGrid(int domain,
 
     // The coords could be changed in the call above, so this must happen
     // after the conditionals
-    vtkPoints *points = ExplicitCoordsToVTKPoints(*coords_ptr);
+    vtkPoints *points = ExplicitCoordsToVTKPoints(*coords_ptr,*topo_ptr);
 
     ugrid->SetPoints(points);
 
@@ -916,9 +1136,146 @@ avtConduitBlueprintDataAdaptor::BlueprintToVTK::MeshToVTK(int domain,
 // ****************************************************************************
 vtkDataArray *
 avtConduitBlueprintDataAdaptor::BlueprintToVTK::FieldToVTK(
-    const conduit::Node &field)
+        const conduit::Node &topo,
+        const conduit::Node &field)
 {
-    return ConduitArrayToVTKDataArray(field["values"]);
+    vtkDataArray * res = nullptr;
+    // Handle optional offsets and strides ()
+    if(field.has_path("offsets") || field.has_path("strides") )
+    {
+        AVT_CONDUIT_BP_INFO("FieldToVTK:: structured strided case: ");
+        
+        bool ele_assoc = false;
+
+        if ( field["association"].as_string() == "element")
+        {
+             ele_assoc = true;
+        }
+
+        int ele_shape[3] = {0,0,0};
+        int pts_shape[3] = {0,0,0};
+        // to walk the values in the correct order and
+        // flatten to vtk, we need the topology and points shapes
+        StructuredTopologyShape(topo,ele_shape);
+
+        pts_shape[0] = ele_shape[0]+1;
+        pts_shape[1] = ele_shape[1]+1;
+        pts_shape[2] = ele_shape[2]+1;
+
+        int strides[3] = {0,0,0};
+        int offsets[3] = {0,0,0};
+
+        if(field.has_path("offsets"))
+        {
+            int_accessor off_vals = field["offsets"].value();
+            for(int i=0;i<off_vals.dtype().number_of_elements();i++)
+            {
+                offsets[i] = off_vals[i];
+            }
+        }
+        // Note: default offsets values should be {0,0,0}
+
+        if(field.has_path("strides"))
+        {
+            int_accessor stride_vals = field["strides"].value();
+            for(int i=0;i<stride_vals.dtype().number_of_elements();i++)
+            {
+                strides[i] = stride_vals[i];
+            }
+        }
+        else // default strides
+        {
+            // we need to know if field is vertex or ele assoced
+            // to calc proper default strides
+            if(ele_assoc)
+            {
+                strides[0] = 1;
+                strides[1] = ele_shape[0];
+                strides[2] = ele_shape[1];
+            }
+            else
+            {
+                strides[0] = 1;
+                strides[1] = pts_shape[0];
+                strides[2] = pts_shape[1];
+            }
+        }
+        
+        int num_tuples = 0;
+        if(ele_assoc)
+        {
+            num_tuples = ele_shape[0];
+            if(ele_shape[1] > 0)
+            {
+                num_tuples *= ele_shape[1];
+            }
+            if(ele_shape[2] > 0)
+            {
+                num_tuples *= ele_shape[2];
+            }
+        }
+        else
+        {
+            num_tuples = pts_shape[0] * pts_shape[1] * pts_shape[2];
+        }
+
+
+        int *src_shape = NULL;
+        if(ele_assoc)
+        {
+            src_shape = ele_shape;
+        }
+        else
+        {
+            src_shape = pts_shape;
+        }
+
+        AVT_CONDUIT_BP_INFO("FieldToVTK:: number of tuples: "
+                            << num_tuples << std::endl);
+
+
+        // build indirection array, which will be used
+        // to walk the source (conduit data) and put into vtk
+        Node src_idxs;
+        src_idxs.set(DataType::c_int(num_tuples));
+        int *src_idxs_vals = src_idxs.value();
+        int idx =0;
+        
+        
+        AVT_CONDUIT_BP_INFO("FieldToVTK:: structured shape: "
+                            << src_shape[0] << " "
+                            << src_shape[1] << " "
+                            << src_shape[2] );
+
+        AVT_CONDUIT_BP_INFO("FieldToVTK:: structured offsets: "
+                            << offsets[0] << " "
+                            << offsets[1] << " "
+                            << offsets[2] );
+
+        AVT_CONDUIT_BP_INFO("FieldToVTK:: structured strides: "
+                            << strides[0] << " "
+                            << strides[1] << " "
+                            << strides[2] );
+
+        for(int k=0; k ==0 || k < src_shape[2]; k++)
+        {
+            for(int j=0; j==0 || j < src_shape[1]; j++)
+            {
+                for(int i=0; i < src_shape[0]; i++)
+                {
+                    src_idxs_vals[idx] = NDIndex(i,j,k,offsets,strides);
+                    idx++;
+                }
+            }
+        }
+
+        res = ConduitArrayToVTKDataArray(field["values"],num_tuples,src_idxs_vals);
+    }
+    else
+    {
+        res = ConduitArrayToVTKDataArray(field["values"]);
+    }
+    return res;
 }
 
 // ****************************************************************************

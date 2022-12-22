@@ -23,6 +23,9 @@
 #    Justin Privitera, Mon May 23 17:53:56 PDT 2022
 #    Added mfem lor tests.
 #
+#    Cyrus Harrison, Thu Dec 22 13:53:17 PST 2022
+#    Added bp part map and initial strided structured tests/ 
+#
 # ----------------------------------------------------------------------------
 RequiredDatabasePlugin("Blueprint")
 
@@ -35,6 +38,7 @@ bp_0_8_2_test_dir = "blueprint_v0.8.2_braid_examples_test_data"
 bp_poly_test_dir = "blueprint_v0.8.2_polytess_test_data"
 bp_devilray_mfem_test_dir = "blueprint_v0.8.3_devilray_mfem_test_data"
 bp_part_map_test_dir = "blueprint_v0.8.4_part_map_examples"
+bp_struct_strided_test_dir = "blueprint_v0.8.4_strided_structured_examples"
 
 braid_2d_hdf5_root = data_path(pjoin(bp_test_dir,"braid_2d_examples.blueprint_root_hdf5"))
 braid_3d_hdf5_root = data_path(pjoin(bp_test_dir,"braid_3d_examples.blueprint_root_hdf5"))
@@ -90,6 +94,14 @@ for i in range(-1,9):
 
 bp_sparse_topos_root = data_path(pjoin(bp_part_map_test_dir,
                                         "tout_relay_bp_mesh_sparse_topos_hdf5.root"))
+
+
+bp_struct_strided_2d_root = data_path(pjoin(bp_struct_strided_test_dir, 
+                                      "strided_structured_2d_hdf5.root"));
+
+
+bp_struct_strided_3d_root = data_path(pjoin(bp_struct_strided_test_dir, 
+                                      "strided_structured_3d_hdf5.root"));
 
 
 braid_2d_meshes = ["points", "uniform", "rect", "struct", "tris","quads"]
@@ -605,6 +617,56 @@ for i, root_file in enumerate(bp_spiral_part_map_examples):
     Test(case_name)
     DeleteAllPlots()
     CloseDatabase(root_file)
+
+
+TestSection("Blueprint Strided Structured, 0.8.4")
+# 2d
+OpenDatabase(bp_struct_strided_2d_root)
+# ele vals
+AddPlot("Pseudocolor", "mesh_mesh/ele_vals")
+AddPlot("Pseudocolor", "mesh_orig_pts/orig_ele_vals")
+pc_atts = PseudocolorAttributes()
+pc_atts.pointSize = 0.5
+pc_atts.pointType = pc_atts.Sphere
+SetPlotOptions(pc_atts)
+DrawPlots()
+Test("bp_strided_struct_2d_ele_vals")
+DeleteAllPlots()
+# vert vals
+AddPlot("Pseudocolor", "mesh_mesh/vert_vals")
+AddPlot("Pseudocolor", "mesh_orig_pts/orig_vert_vals")
+pc_atts = PseudocolorAttributes()
+pc_atts.pointSize = 0.5
+pc_atts.pointType = pc_atts.Sphere
+SetPlotOptions(pc_atts)
+DrawPlots()
+Test("bp_strided_struct_2d_vert_vals")
+DeleteAllPlots()
+CloseDatabase(bp_struct_strided_2d_root)
+
+# 2d
+OpenDatabase(bp_struct_strided_3d_root)
+# ele vals
+AddPlot("Pseudocolor", "mesh_mesh/ele_vals")
+AddPlot("Pseudocolor", "mesh_orig_pts/orig_ele_vals")
+pc_atts = PseudocolorAttributes()
+pc_atts.pointSize = 0.5
+pc_atts.pointType = pc_atts.Sphere
+SetPlotOptions(pc_atts)
+DrawPlots()
+Test("bp_strided_struct_3d_ele_vals")
+DeleteAllPlots()
+# vert vals
+AddPlot("Pseudocolor", "mesh_mesh/vert_vals")
+AddPlot("Pseudocolor", "mesh_orig_pts/orig_vert_vals")
+pc_atts = PseudocolorAttributes()
+pc_atts.pointSize = 0.5
+pc_atts.pointType = pc_atts.Sphere
+SetPlotOptions(pc_atts)
+DrawPlots()
+Test("bp_strided_struct_3d_vert_vals")
+DeleteAllPlots()
+CloseDatabase(bp_struct_strided_3d_root)
 
 
 Exit()

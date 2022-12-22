@@ -51,6 +51,8 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Extended support for reading sparsely populated Blueprint trees in the Blueprint Database plugin.</li>
   <li>The Silo Database plugin was updated to support a rare decomposition format discovered in the wild.</li>
   <li>Enhanced the make movie script so that it sets the number of digits in the output file names based on the number needed rather than always using four when the number of frames in the movie is known ahead of time, which is when a session file or the current plot is used. Note that it uses a minimum of four digits to maintain backwards compatibility and a maximum of seven digits on the assumption you will not create a movie longer than 92 hours.</li>
+  <li>Added initial support for reading Blueprint structured meshes with non-trivial strides to the Blueprint reader.</li>
+  
 </ul>
 
 <a name="Dev_changes"></a>
