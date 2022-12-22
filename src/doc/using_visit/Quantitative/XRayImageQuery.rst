@@ -304,12 +304,14 @@ The Conduit output types (see :ref:`Output Types` for more information) include 
 Why Conduit Output?
 """""""""""""""""""
 
+Conduit Blueprint output types were added to the X Ray Image Query to facilitate usability.
+Prior to this option, 
 TODO
 
 Overview of Output
 """"""""""""""""""
 
-TODO this is wrong it is missing spatial extents and rays and ray corners
+TODO this is wrong it is missing rays and ray corners
 
 Here is a simplified representation of a Conduit tree that is output from the Query: ::
 
@@ -326,6 +328,8 @@ Here is a simplified representation of a Conduit tree that is output from the Qu
   coordsets: 
     image_coords: 
       ...
+    spatial_coords: 
+      ...
     near_plane_coords: 
       ...
     view_plane_coords: 
@@ -334,6 +338,8 @@ Here is a simplified representation of a Conduit tree that is output from the Qu
       ...
   topologies: 
     image_topo: 
+      ...
+    spatial_topo:
       ...
     near_plane_topo: 
       ...
@@ -345,6 +351,10 @@ Here is a simplified representation of a Conduit tree that is output from the Qu
     intensities: 
       ...
     path_length: 
+      ...
+    intensities_spatial: 
+      ...
+    path_length_spatial: 
       ...
     near_plane_field: 
       ...
