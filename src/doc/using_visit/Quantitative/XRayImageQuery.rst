@@ -299,19 +299,33 @@ TODO
 Conduit Output
 ~~~~~~~~~~~~~~
 
-The Conduit output types (see :ref:`Output Types` for more information) include additional metadata and topologies.
+The Conduit output types (see :ref:`Output Types` for more information) provide advantages over the other output types and include additional metadata and topologies.
 
 Why Conduit Output?
 """""""""""""""""""
 
 Conduit Blueprint output types were added to the X Ray Image Query to facilitate usability.
-Prior to this option, 
-TODO
+Before Conduit Blueprint formats were available as output types, the X Ray Image Query would often produce large numbers of output files, particularly when using the bov or rawfloats output type, which was a popular choice because it provided the raw data.
+Alternatively, users could choose one of the image file output types to generate a picture or pictures.
+Conduit Blueprint provides the best of both worlds.
+Blueprint stores everything in one file.
+All of the raw data can be accessed via introspection with Python (see :ref:`Introspecting with Python` for more information).
+Additionally, it is simple to generate an image, as the Blueprint output can be read back in to VisIt and visualized.
+
+.. figure:: images/xraywhyconduit1.png
+
+The input mesh.
+
+.. figure:: images/xraywhyconduit2.png
+
+The resulting x ray image stored in Conduit Blueprint, visualized using VisIt.
+
+We have opted to enrich the Blueprint output (see :ref:`Basic Mesh Output`) with extensive metadata (see :ref:`Metadata`) as well as additional meshes (see :ref:`Imaging Planes and Rays Meshes` and :ref:`Spatial Extents Mesh`) to provide extra context and information to the user. 
+These additions should make it easier to troubleshoot unexpected results, make sense of the query output, and pass important information through the query.
+Blueprint makes it simple to put all of this information into one file, and just as simple to read that information back out and/or visualize.
 
 Overview of Output
 """"""""""""""""""
-
-TODO this is wrong it is missing rays and ray corners
 
 Here is a simplified representation of a Conduit tree that is output from the Query: ::
 
@@ -336,6 +350,10 @@ Here is a simplified representation of a Conduit tree that is output from the Qu
       ...
     far_plane_coords: 
       ...
+    ray_corners_coords: 
+      ...
+    ray_coords: 
+      ...
   topologies: 
     image_topo: 
       ...
@@ -346,6 +364,10 @@ Here is a simplified representation of a Conduit tree that is output from the Qu
     view_plane_topo: 
       ...
     far_plane_topo: 
+      ...
+    ray_corners_topo: 
+      ...
+    ray_topo: 
       ...
   fields: 
     intensities: 
@@ -362,11 +384,15 @@ Here is a simplified representation of a Conduit tree that is output from the Qu
       ...
     far_plane_field: 
       ...
+    ray_corners_field: 
+      ...
+    ray_field: 
+      ...
 
 TODO
 
-Standard Mesh Output
-""""""""""""""""""""
+Basic Mesh Output
+"""""""""""""""""
 
 TODO
 
