@@ -1818,7 +1818,8 @@ avtBlueprintFileFormat::GetVar(int domain, const char *abs_varname)
             }
 
             // low-order case, use vtk
-            res = avtConduitBlueprintDataAdaptor::BlueprintToVTK::FieldToVTK(*field_ptr);
+            res = avtConduitBlueprintDataAdaptor::BlueprintToVTK::FieldToVTK(n_topo,
+                                                                             *field_ptr);
         }
         // if we have a basis, this field is actually an mfem grid function
         else if(field_ptr->has_child("basis"))
