@@ -252,7 +252,7 @@ TARGET_LINK_LIBRARIES(avtpipeline_ser
                       vtkFiltersGeometry
                       ${ZLIB_LIBRARY})
 if(HAVE_LIBVTKM)
-    target_link_libraries(avtpipeline_ser vtkm_cont vtkm_filter_contour)
+    target_link_libraries(avtpipeline_ser vtkm_cont vtkm_filter_contour vtkm_filter_entity_extraction)
 endif()
 
 VISIT_INSTALL_TARGETS(avtpipeline_ser)
@@ -268,7 +268,7 @@ IF(VISIT_PARALLEL)
                           vtkFiltersGeometry
                           ${ZLIB_LIBRARY})
     if(HAVE_LIBVTKM)
-        target_link_libraries(avtpipeline_par vtkm_cont vtkm_filter_contour)
+        target_link_libraries(avtpipeline_par vtkm_cont vtkm_filter_contour vtkm_filter_entity_extraction)
     endif()
     VISIT_INSTALL_TARGETS(avtpipeline_par)
 ENDIF(VISIT_PARALLEL)

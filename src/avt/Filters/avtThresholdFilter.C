@@ -36,12 +36,10 @@
 #include <ImproperUseException.h>
 #include <NoDefaultVariableException.h>
 
-#ifdef HAVE_LIBVTKH
-#include <vtkm/filter/Threshold.h>
-#include <vtkh/vtkh.hpp>
-#include <vtkh/DataSet.hpp>
-#include <vtkh/filters/Threshold.hpp>
-#include <vtkm/filter/CleanGrid.h>
+#ifdef HAVE_LIBVTKM
+#include <avtVtkmDataSet.h>
+#include <vtkm/cont/DataSet.h>
+#include <vtkm/filter/entity_extraction/Threshold.h>
 
 #include <vtkm/io/writer/VTKDataSetWriter.h>
 #endif
@@ -543,20 +541,20 @@ avtThresholdFilter::ProcessOneChunk_VTK(avtDataRepresentation *in_dr, bool fromC
 //  Creation:   November 18, 2020
 //
 //  Modifications:
+//    Eric Brugger, Thu Dec  8 15:03:57 PST 2022
+//    I replaced VTKh with VTKm.
 //
 // ****************************************************************************
 
 avtDataRepresentation *
 avtThresholdFilter::ProcessOneChunk_VTKM(avtDataRepresentation *in_dr)
 {
-#ifndef HAVE_LIBVTKH
+#ifndef HAVE_LIBVTKM
     return NULL;
 #else
     int timerHandle = visitTimer->StartTimer();
 
-    vtkh::DataSet *in_ds = in_dr->GetDataVTKm();
-    if (!in_ds || in_ds->GetNumberOfDomains() != 1)
-        return NULL;
+    avtVtkmDataSet *in_ds = in_dr->GetDataVTKm();
 
     const stringVector curVariables    = atts.GetListedVarNames();
     const intVector    curZonePortions = atts.GetZonePortions();
@@ -567,10 +565,10 @@ avtThresholdFilter::ProcessOneChunk_VTKM(avtDataRepresentation *in_dr)
     const char *curVarName;
     char errMsg[1024];
 
-    vtkh::DataSet *out_ds = in_ds;
+    avtVtkmDataSet *out_ds = in_ds;
     for (size_t curVarNum = 0; curVarNum < curVariables.size(); curVarNum++)
     {
-        vtkh::Threshold thresher;
+        vtkm::filter::entity_extraction::Threshold thresher;
 
         std::map<std::string,int>::iterator iterFind;
         bool bypassThreshold = false;
@@ -590,8 +588,7 @@ avtThresholdFilter::ProcessOneChunk_VTKM(avtDataRepresentation *in_dr)
         if (bypassThreshold == false)
         {
             curVarName = curVariables[curVarNum].c_str();
-            thresher.SetInput(out_ds);
-            thresher.SetField(curVariables[curVarNum]);
+            thresher.SetActiveField(curVariables[curVarNum]);
             thresher.SetUpperThreshold(curUpperBounds[curVarNum]);
             thresher.SetLowerThreshold(curLowerBounds[curVarNum]);
 
@@ -603,8 +600,7 @@ avtThresholdFilter::ProcessOneChunk_VTKM(avtDataRepresentation *in_dr)
             {
                 thresher.SetAllInRange(true);
             }
-            thresher.Update();
-            out_ds = thresher.GetOutput();
+            out_ds->ds = thresher.Execute(in_ds->ds);
         }
     }
 
