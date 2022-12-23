@@ -310,7 +310,7 @@ Alternatively, users could choose one of the image file output types to generate
 Conduit Blueprint provides the best of both worlds.
 Blueprint stores everything in one file.
 All of the raw data can be accessed via introspection with Python (see :ref:`Introspecting with Python` for more information).
-Additionally, it is simple to generate an image, as the Blueprint output can be read back in to VisIt and visualized.
+Additionally, it is simple to generate an image, as the Blueprint output can be read back in to VisIt and visualized (see :ref:`Visualizing with VisIt`).
 
 .. figure:: images/xraywhyconduit1.png
 
@@ -318,7 +318,7 @@ The input mesh.
 
 .. figure:: images/xraywhyconduit2.png
 
-The resulting x ray image stored in Conduit Blueprint, visualized using VisIt.
+The resulting x ray image from Conduit Blueprint output, visualized by loading said output into VisIt.
 
 We have opted to enrich the Blueprint output (see :ref:`Basic Mesh Output`) with extensive metadata (see :ref:`Metadata`) as well as additional meshes (see :ref:`Imaging Planes and Rays Meshes` and :ref:`Spatial Extents Mesh`) to provide extra context and information to the user. 
 These additions should make it easier to troubleshoot unexpected results, make sense of the query output, and pass important information through the query.
@@ -326,6 +326,12 @@ Blueprint makes it simple to put all of this information into one file, and just
 
 Overview of Output
 """"""""""""""""""
+
+So what is actually in the Blueprint output?
+The Blueprint output provides multiple Blueprint meshes, which are in turn comprised of a coordinate set, a topology, and fields.
+These all live within a Conduit tree.
+
+TODO link to conduit blueprint docs and example
 
 Here is a simplified representation of a Conduit tree that is output from the Query: ::
 
@@ -393,6 +399,29 @@ TODO
 
 Basic Mesh Output
 """""""""""""""""
+
+The most important piece of the Blueprint output is the query results.
+We have taken the image data that comes out of the query and packaged it into a Blueprint mesh.
+The following is a trimmed down representation of the Conduit Blueprint output: ::
+
+  coordsets: 
+    image_coords: 
+      ...
+  topologies: 
+    image_topo: 
+      ...
+  fields: 
+    intensities: 
+      ...
+    path_length: 
+      ...
+
+TODO do I want to show a real example here? it would be more concrete
+
+In this example, we have kept only the pieces which correspond to the basic mesh output.
+This hierarchy is taken from that which was shown in the :ref:`Overview of Output` section.
+
+There is only one coordinate set, the ``image_coords``. 
 
 TODO
 
@@ -585,7 +614,7 @@ An example: ::
 
 The minimum and maximum values that are included for the path length and intensity outputs are useful for quick troubleshooting or sanity checks that the output matches expectations. 
 If both maximums and minimums are zero, for example, the simulated detector may not be facing the right way.
-In that case, the following section may be of some use.
+In that case, the :ref:`Imaging Planes and Rays Meshes` section may be of some use.
 
 Imaging Planes and Rays Meshes
 """"""""""""""""""""""""""""""
@@ -600,6 +629,11 @@ The imaging planes used by the X Ray Image Query visualized on top of the simula
 The near plane is in red, the view plane in transparent orange, and the far plane in blue.
 
 TODO
+
+Pitfalls
+++++++++
+
+TODO write about and show pictures for when the view plane is behind the view frustum and thus why the spatial extents mesh will be upside down
 
 Spatial Extents Mesh
 """"""""""""""""""""
