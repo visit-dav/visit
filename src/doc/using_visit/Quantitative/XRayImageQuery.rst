@@ -397,6 +397,8 @@ Here is a simplified representation of a Conduit tree that is output from the Qu
 
 TODO
 
+TODO to learn more about ajkfbdshbjsdugsd, read this section ajdbjfas - just link all the sections so it is easier to find stuff about the output
+
 Basic Mesh Output
 """""""""""""""""
 
@@ -787,14 +789,217 @@ In that case, the :ref:`Imaging Planes and Rays Meshes` section may be of some u
 Imaging Planes and Rays Meshes
 """"""""""""""""""""""""""""""
 
-The Conduit output types (see :ref:`Output Types` for more information) come packaged with topologies for the imaging planes. 
-In addition to the ray tracing results, you can visualize the near, view, and far planes in physical space alongside your simulation data.
-These can be found under the *coordsets*, *topologies*, and *fields* branches.
+One of our goals with the Conduit output types (see :ref:`Output Types` for more information) is to provide rich, easy to understand information about the query to facilitate usability.
+To that end, these outputs come packaged with meshes representing the imaging planes specified by the user when calling the query.
+Additionally, they also include meshes representing the rays that were used in the ray tracing.
+The following subsections discuss both of these in more detail.
+
+Imaging Planes
+++++++++++++++
+
+Users can visualize the near, view, and far planes in physical space alongside the meshes used in the ray trace.
 
 .. figure:: images/xray_imaging_planes.png
+TODO this picture is bad - use it in the pitfalls section instead (but visualize the ray corners to show the frustum)
 
 The imaging planes used by the X Ray Image Query visualized on top of the simulation data.
 The near plane is in red, the view plane in transparent orange, and the far plane in blue.
+
+This gives a sense of where the camera is looking, and is also useful for checking if parts of the mesh being ray traced are outside the near and far clipping planes.
+See the example below, which is taken from the example in :ref:`Overview of Output`, but this time with only the imaging plane meshes fully fleshed out: 
+
+::
+
+  state: 
+    time: 4.8
+    cycle: 48
+    xray_view: 
+      ...
+    xray_query: 
+      ...
+    xray_data: 
+      ...
+    domain_id: 0
+  coordsets: 
+    image_coords: 
+      ...
+    spatial_coords: 
+      ...
+    near_plane_coords: 
+      type: "explicit"
+      values: 
+        x: [-11.1966131618919, 11.1966131618919, 11.1966131618919, -11.1966131618919]
+        y: [10.8974596211551, 10.8974596211551, -5.89745962115514, -5.89745962115514]
+        z: [-40.0, -40.0, -40.0, -40.0]
+    view_plane_coords: 
+      type: "explicit"
+      values: 
+        x: [6.66666686534882, -6.66666686534882, -6.66666686534882, 6.66666686534882]
+        y: [-2.5, -2.5, 7.5, 7.5]
+        z: [10.0, 10.0, 10.0, 10.0]
+    far_plane_coords: 
+      type: "explicit"
+      values: 
+        x: [24.5299468925895, -24.5299468925895, -24.5299468925895, 24.5299468925895]
+        y: [-15.8974596211551, -15.8974596211551, 20.8974596211551, 20.8974596211551]
+        z: [60.0, 60.0, 60.0, 60.0]
+    ray_corners_coords: 
+      ...
+    ray_coords: 
+      ...
+  topologies: 
+    image_topo: 
+      ...
+    spatial_topo:
+      ...
+    near_plane_topo: 
+      type: "unstructured"
+      coordset: "near_plane_coords"
+      elements: 
+        shape: "quad"
+        connectivity: [0, 1, 2, 3]
+    view_plane_topo: 
+      type: "unstructured"
+      coordset: "view_plane_coords"
+      elements: 
+        shape: "quad"
+        connectivity: [0, 1, 2, 3]
+    far_plane_topo: 
+      type: "unstructured"
+      coordset: "far_plane_coords"
+      elements: 
+        shape: "quad"
+        connectivity: [0, 1, 2, 3]
+    ray_corners_topo: 
+      ...
+    ray_topo: 
+      ...
+  fields: 
+    intensities: 
+      ...
+    path_length: 
+      ...
+    intensities_spatial: 
+      ...
+    path_length_spatial: 
+      ...
+    near_plane_field: 
+      topology: "near_plane_topo"
+      association: "element"
+      volume_dependent: "false"
+      values: 0.0
+    view_plane_field: 
+      topology: "view_plane_topo"
+      association: "element"
+      volume_dependent: "false"
+      values: 0.0
+    far_plane_field: 
+      topology: "far_plane_topo"
+      association: "element"
+      volume_dependent: "false"
+      values: 0.0
+    ray_corners_field: 
+      ...
+    ray_field: 
+      ...
+
+Just like the :ref:`Basic Mesh Output`, each of the three meshes has three constituent pieces.
+For the sake of brevity, we will only discuss the view plane, but the following information also holds true for the near and far planes.
+First off is the ``view_plane_coords`` coordinate set, which, as may be expected, contains only four points, representing the four corners of the rectangle.
+Next is the ``view_plane_topo``, which tells Conduit to treat the four points in the ``view_plane_coords`` as a quad.
+Finally, we have the ``view_plane_field``, which has one value, "0.0". 
+This value doesn't mean anything; it is just used to tell Blueprint that the entire quad should be colored the same color.
+
+Rays Meshes
++++++++++++
+
+In addition to the imaging planes, TODO
+
+TODO
+
+::
+
+  state: 
+    time: 4.8
+    cycle: 48
+    xray_view: 
+      ...
+    xray_query: 
+      ...
+    xray_data: 
+      ...
+    domain_id: 0
+  coordsets: 
+    image_coords: 
+      ...
+    spatial_coords: 
+      ...
+    near_plane_coords: 
+      ...
+    view_plane_coords: 
+      ...
+    far_plane_coords: 
+      ...
+    ray_corners_coords: 
+      type: "explicit"
+      values: 
+        x: [-11.1966131618919, 24.5299468925895, 11.1966131618919, ..., -11.1966131618919, 24.5299468925895]
+        y: [10.8974596211551, -15.8974596211551, 10.8974596211551, ..., -5.89745962115514, 20.8974596211551]
+        z: [-40.0, 60.0, -40.0, ..., -40.0, 60.0]
+    ray_coords: 
+      type: "explicit"
+      values: 
+        x: [11.1686216289872, 11.1686216289872, 11.1686216289872, ..., 24.4686220253581, 24.4686220253581]
+        y: [10.8694680890846, 10.8134850249436, 10.7575019608025, ..., 20.7134850249436, 20.8361347557513]
+        z: [-40.0, -40.0, -40.0, ..., 60.0, 60.0]
+  topologies: 
+    image_topo: 
+      ...
+    spatial_topo:
+      ...
+    near_plane_topo: 
+      ...
+    view_plane_topo: 
+      ...
+    far_plane_topo: 
+      ...
+    ray_corners_topo: 
+      type: "unstructured"
+      coordset: "ray_corners_coords"
+      elements: 
+        shape: "line"
+        connectivity: [0, 1, 2, ..., 6, 7]
+    ray_topo: 
+      type: "unstructured"
+      coordset: "ray_coords"
+      elements: 
+        shape: "line"
+        connectivity: [0, 120000, 1, ..., 119999, 239999]
+  fields: 
+    intensities: 
+      ...
+    path_length: 
+      ...
+    intensities_spatial: 
+      ...
+    path_length_spatial: 
+      ...
+    near_plane_field: 
+      ...
+    view_plane_field: 
+      ...
+    far_plane_field: 
+      ...
+    ray_corners_field: 
+      topology: "ray_corners_topo"
+      association: "element"
+      volume_dependent: "false"
+      values: [0.0, 0.0, 0.0, 0.0]
+    ray_field: 
+      topology: "ray_topo"
+      association: "element"
+      volume_dependent: "false"
+      values: [0.0, 1.0, 2.0, ..., 119998.0, 119999.0]
 
 TODO
 
