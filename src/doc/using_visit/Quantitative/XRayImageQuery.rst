@@ -328,12 +328,15 @@ Overview of Output
 """"""""""""""""""
 
 So what is actually in the Blueprint output?
-The Blueprint output provides multiple Blueprint meshes, which are in turn comprised of a coordinate set, a topology, and fields.
-These all live within a Conduit tree.
+The Blueprint output provides multiple Blueprint meshes, which are each in turn comprised of a coordinate set, a topology, and fields.
+These all live within a Conduit tree, along with metadata.
+Using Conduit allows us to package everything in one place for ease of use.
 
 TODO link to conduit blueprint docs and example
 
-Here is a simplified representation of a Conduit tree that is output from the Query: ::
+Here is a simplified representation of a Conduit tree that is output from the Query: 
+
+::
 
   state: 
     time: 4.8
@@ -1012,6 +1015,89 @@ Spatial Extents Mesh
 """"""""""""""""""""
 
 TODO this is all wrong
+
+::
+
+  state: 
+    time: 4.8
+    cycle: 48
+    xray_view: 
+      ...
+    xray_query: 
+      ...
+    xray_data: 
+      ...
+    domain_id: 0
+  coordsets: 
+    image_coords: 
+      ...
+    spatial_coords: 
+      type: "rectilinear"
+      values: 
+        x: [-0.0, -0.0559830658094596, -0.111966131618919, ..., -22.3372432579744, -22.3932263237838]
+        y: [-0.0, -0.0559830641410342, -0.111966128282068, ..., -16.7389361781692, -16.7949192423103]
+        z: [3.7, 4.2]
+      units: 
+        x: "cm"
+        y: "cm"
+        z: "kev"
+      labels: 
+        x: "width"
+        y: "height"
+        z: "energy_group"
+    near_plane_coords: 
+      ...
+    view_plane_coords: 
+      ...
+    far_plane_coords: 
+      ...
+    ray_corners_coords: 
+      ...
+    ray_coords: 
+      ...
+  topologies: 
+    image_topo: 
+      ...
+    spatial_topo: 
+      coordset: "spatial_coords"
+      type: "rectilinear"
+    near_plane_topo: 
+      ...
+    view_plane_topo: 
+      ...
+    far_plane_topo: 
+      ...
+    ray_corners_topo: 
+      ...
+    ray_topo: 
+      ...
+  fields: 
+    intensities: 
+      ...
+    path_length: 
+      ...
+    intensities_spatial: 
+      topology: "spatial_topo"
+      association: "element"
+      units: "intensity units"
+      values: [0.281004697084427, 0.281836241483688, 0.282898783683777, ..., 0.0, 0.0]
+      strides: [1, 400, 120000]
+    path_length_spatial: 
+      topology: "spatial_topo"
+      association: "element"
+      units: "path length metadata"
+      values: [2.46405696868896, 2.45119333267212, 2.43822622299194, ..., 0.0, 0.0]
+      strides: [1, 400, 120000]
+    near_plane_field: 
+      ...
+    view_plane_field: 
+      ...
+    far_plane_field: 
+      ...
+    ray_corners_field: 
+      ...
+    ray_field: 
+      ...
 
 +--------------------------+----------------------------------------------+
 | *image_coords/values/x*  | The image coordinates are a coordinate set   |
