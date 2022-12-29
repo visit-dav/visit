@@ -400,39 +400,220 @@ TODO
 Basic Mesh Output
 """""""""""""""""
 
-The most important piece of the Blueprint output is the query results.
-We have taken the image data that comes out of the query and packaged it into a Blueprint mesh.
-The following is a trimmed down representation of the Conduit Blueprint output: ::
+The most important piece of the Blueprint output is the actual query result.
+We have taken the image data that comes out of the query and packaged it into a single Blueprint mesh.
 
+The following is the example from :ref:`Overview of Output`, but with the Blueprint mesh representing the query result fully fleshed out: 
+
+::
+
+  state: 
+    time: 4.8
+    cycle: 48
+    xray_view: 
+      ...
+    xray_query: 
+      ...
+    xray_data: 
+      ...
+    domain_id: 0
   coordsets: 
     image_coords: 
+      type: "rectilinear"
+      values: 
+        x: [0, 1, 2, ..., 399, 400]
+        y: [0, 1, 2, ..., 299, 300]
+        z: [0, 1]
+      labels: 
+        x: "width"
+        y: "height"
+        z: "energy_group"
+      units: 
+        x: "pixels"
+        y: "pixels"
+        z: "bins"
+    spatial_coords: 
+      ...
+    near_plane_coords: 
+      ...
+    view_plane_coords: 
+      ...
+    far_plane_coords: 
+      ...
+    ray_corners_coords: 
+      ...
+    ray_coords: 
       ...
   topologies: 
     image_topo: 
+      coordset: "image_coords"
+      type: "rectilinear"
+    spatial_topo: 
+      ...
+    near_plane_topo: 
+      ...
+    view_plane_topo: 
+      ...
+    far_plane_topo: 
+      ...
+    ray_corners_topo: 
+      ...
+    ray_topo: 
+      ...
+  fields: 
+    intensities: 
+      topology: "image_topo"
+      association: "element"
+      units: "intensity units"
+      values: [0.281004697084427, 0.281836241483688, 0.282898783683777, ..., 0.0, 0.0]
+      strides: [1, 400, 120000]
+    path_length: 
+      topology: "image_topo"
+      association: "element"
+      units: "path length metadata"
+      values: [2.46405696868896, 2.45119333267212, 2.43822622299194, ..., 0.0, 0.0]
+      strides: [1, 400, 120000]
+    intensities_spatial: 
+      ...
+    path_length_spatial: 
+      ...
+    near_plane_field: 
+      ...
+    view_plane_field: 
+      ...
+    far_plane_field: 
+      ...
+    ray_corners_field: 
+      ...
+    ray_field: 
+      ...
+
+TODO include real units for intensities and path length in the example
+
+The 3 constituent parts of the Blueprint mesh output are the coordinate set, ``image_coords``, the topology, ``image_topo``, and the fields, ``intensities`` and ``path_length``.
+
+The ``image_coords`` represent the x and y coordinates of the 2D image, and the z dimension represents the energy group bounds.
+In the case of multiple energy groups, previously, the query would have output multiple images, one for each pair of energy group bounds.
+In the Blueprint output, this is simplified, and rather than outputting multiple files, each containing one image, we have opted to "stack" the resulting images on top of one another.
+This is why the Blueprint output is a 3D mesh, so it can account for multiple energy groups, and place resulting images one on top of another.
+Also included in the ``image_coords`` are labels and units for disambiguation purposes.
+
+The ``image_topo`` exists to tell Blueprint that the ``image_coords`` can be viewed as a topology.
+
+The fields, ``intensities`` and ``path_length``, can be thought of as containers for the actual image data.
+Each also includes units.
+For path length, the "units" entry is just a way of including metadata or information about the path length, since path length is unitless.
+
+Metadata
+""""""""
+
+The Conduit output types (see :ref:`Output Types` for more information) come packaged with metadata in addition to Blueprint-conforming mesh data.
+The ability to send this metadata alongside the output mesh (and other data) is one of the advantages of using Conduit to for outputs from the query.
+We hope this metadata helps to make it clear exactly what the query is doing, what information it has available to it, and what the output might look like.
+
+Metadata is stored under the "state" Node in the resulting Conduit tree.
+See the example below, which is taken from the example in :ref:`Overview of Output`, but this time with only the metadata fully fleshed out: 
+
+::
+
+  state: 
+    time: 4.8
+    cycle: 48
+    xray_view: 
+      normal: 
+        x: 0.0
+        y: 0.0
+        z: 1.0
+      focus: 
+        x: 0.0
+        y: 2.5
+        z: 10.0
+      viewUp: 
+        x: 0.0
+        y: 1.0
+        z: 0.0
+      viewAngle: 30.0
+      parallelScale: 5.0
+      nearPlane: -50.0
+      farPlane: 50.0
+      imagePan: 
+        x: 0.0
+        y: 0.0
+      imageZoom: 1.0
+      perspective: 1
+      perspectiveStr: "perspective"
+    xray_query: 
+      divideEmisByAbsorb: 0
+      divideEmisByAbsorbStr: "no"
+      numXPixels: 400
+      numYPixels: 300
+      numBins: 1
+      absVarName: "d"
+      emisVarName: "p"
+      absUnits: "abs units"
+      emisUnits: "emis units"
+    xray_data: 
+      detectorWidth: 22.3932263237838
+      detectorHeight: 16.7949192423103
+      intensityMax: 0.491446971893311
+      intensityMin: 0.0
+      pathLengthMax: 120.815788269043
+      pathLengthMin: 0.0
+    domain_id: 0
+  coordsets: 
+    image_coords: 
+      ...
+    spatial_coords: 
+      ...
+    near_plane_coords: 
+      ...
+    view_plane_coords: 
+      ...
+    far_plane_coords: 
+      ...
+    ray_corners_coords: 
+      ...
+    ray_coords: 
+      ...
+  topologies: 
+    image_topo: 
+      ...
+    spatial_topo:
+      ...
+    near_plane_topo: 
+      ...
+    view_plane_topo: 
+      ...
+    far_plane_topo: 
+      ...
+    ray_corners_topo: 
+      ...
+    ray_topo: 
       ...
   fields: 
     intensities: 
       ...
     path_length: 
       ...
+    intensities_spatial: 
+      ...
+    path_length_spatial: 
+      ...
+    near_plane_field: 
+      ...
+    view_plane_field: 
+      ...
+    far_plane_field: 
+      ...
+    ray_corners_field: 
+      ...
+    ray_field: 
+      ...
 
-TODO do I want to show a real example here? it would be more concrete
-
-In this example, we have kept only the pieces which correspond to the basic mesh output.
-This hierarchy is taken from that which was shown in the :ref:`Overview of Output` section.
-
-There is only one coordinate set, the ``image_coords``. 
-
-TODO
-
-Metadata
-""""""""
-
-The Conduit output types (see :ref:`Output Types` for more information) come packaged with metadata in addition to Blueprint-conforming mesh data. 
-Currently, this metadata is stored under the "state" Node in the resulting Conduit tree.
 There are three top-level items: "time", "cycle", and "domain_id".
 The fact that the domain id is present is a side effect of Conduit; all of the output data is single domain and this value has nothing to do with the query.
 In addition to the top level items, there are three categories of metadata: *view parameters*, *query parameters*, and *other metadata*.
+The following subsections discuss each of these categories in more detail.
 
 View Parameters
 +++++++++++++++
@@ -592,19 +773,6 @@ The following is included:
 An example: ::
 
   xray_data: 
-    image_coords: 
-      values:
-        x: [-0.0, -0.0559830665588379, -0.111966133117676, ..., -22.3372440338135, -22.3932266235352]
-        y: [-0.0, -0.0559830628335476, -0.111966125667095, ..., -16.7389354705811, -16.7949199676514]
-        z: [3.7, 4.2]
-      units:
-        x: "cm"
-        y: "cm"
-        z: "kev"
-      labels:
-        x: "width"
-        y: "height"
-        z: "energy_group"
     detectorWidth: 22.3932263237838
     detectorHeight: 16.7949192423103
     intensityMax: 0.491446971893311
