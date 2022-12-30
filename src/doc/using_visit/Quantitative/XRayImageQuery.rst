@@ -509,7 +509,7 @@ The ``image_topo`` exists to tell Blueprint that the ``image_coords`` can be vie
 
 The fields, ``intensities`` and ``path_length``, can be thought of as containers for the actual image data.
 Each also includes units.
-For path length, the "units" entry is just a way of including metadata or information about the path length, since path length is unitless.
+For path length, the ``units`` entry is just a way of including metadata or information about the path length, since path length is unitless.
 
 Metadata
 """"""""
@@ -1037,10 +1037,10 @@ In the example below, the z dimension represents Kiloelectron Volts.
 
 Another way to think about the spatial extents mesh is if the basic mesh output was resized and then pasted on top of the near plane mesh (:ref:`Imaging Planes`), you would get the spatial extents mesh (ignoring the z dimension).
 The rationale for including this mesh is twofold: 
-# 1) It provides yet another view of the data.
+#. 1) It provides yet another view of the data.
 Perhaps seeing the output with spatial coordinates in x and y is more useful than seeing it with pixel coordinates.
 If parallel projection is used (:ref:`Complete Camera Specification`), the spatial view of the output is far more useful.
-# 2) This mesh acts as a container for various interesting pieces of data that users may want to pass through the query.
+#. 2) This mesh acts as a container for various interesting pieces of data that users may want to pass through the query.
 This is the destination for the ``spatial_units`` and ``energy_units`` (:ref:`Units`), which show up under ``coordsets/spatial_coords/units``.
 This is also where the energy group bounds (:ref:`Standard Arguments`) appear in the output, under ``coordsets/spatial_coords/values/z``.
 
