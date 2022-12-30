@@ -301,6 +301,8 @@ Conduit Output
 
 The Conduit output types (see :ref:`Output Types` for more information) provide advantages over the other output types and include additional metadata and topologies.
 
+TODO put a picture here
+
 Why Conduit Output?
 """""""""""""""""""
 
@@ -803,7 +805,6 @@ Imaging Planes
 Users can visualize the near, view, and far planes in physical space alongside the meshes used in the ray trace.
 
 .. figure:: images/xray_imaging_planes.png
-TODO this picture is bad - use it in the pitfalls section instead (but visualize the ray corners to show the frustum)
 
 The imaging planes used by the X Ray Image Query visualized on top of the simulation data.
 The near plane is in red, the view plane in transparent orange, and the far plane in blue.
@@ -1004,6 +1005,13 @@ TODO
       volume_dependent: "false"
       values: [0.0, 1.0, 2.0, ..., 119998.0, 119999.0]
 
+
+Corners
+
+.. figure:: images/xray_view_frustum.png
+
+the corners mesh
+
 TODO
 
 Pitfalls
@@ -1014,7 +1022,29 @@ TODO write about and show pictures for when the view plane is behind the view fr
 Spatial Extents Mesh
 """"""""""""""""""""
 
-TODO this is all wrong
+The final piece of the Blueprint Output is one last mesh, the spatial extents mesh.
+This mesh bears great similarity to that of the :ref:`Basic Mesh Output`.
+The :ref:`Basic Mesh Output` gives users a picture, in a sense, that was taken by the simulated x ray detector.
+That picture lives in image space, where the x and y dimensions are given in pixels, and the z dimension represents the number of energy group bins.
+
+The spatial extents mesh is that same picture that was taken by the simulated x ray detector, but living in physical space.
+Instead of the x and y dimensions representing pixels, the x and y dimensions here represent spatial values.
+In the example below, these dimensions are in centimeters.
+The x and y values run from 0 to the detector width and height values, respectively, that appear in the :ref:`Other Metadata` section of the Blueprint output.
+The z dimension represents actual energy group bins.
+These are values that were passed in via the query arguments (see :ref:`Standard Arguments` for more information).
+In the example below, the z dimension represents Kiloelectron Volts.
+
+Another way to think about the spatial extents mesh is if the basic mesh output was resized and then pasted on top of the near plane mesh (:ref:`Imaging Planes`), you would get the spatial extents mesh (ignoring the z dimension).
+The rationale for including this mesh is twofold: 
+# 1) It provides yet another view of the data.
+Perhaps seeing the output with spatial coordinates in x and y is more useful than seeing it with pixel coordinates.
+If parallel projection is used (:ref:`Complete Camera Specification`), the spatial view of the output is far more useful.
+# 2) This mesh acts as a container for various interesting pieces of data that users may want to pass through the query.
+This is the destination for the ``spatial_units`` and ``energy_units`` (:ref:`Units`), which show up under ``coordsets/spatial_coords/units``.
+This is also where the energy group bounds (:ref:`Standard Arguments`) appear in the output, under ``coordsets/spatial_coords/values/z``.
+
+The following is the example from :ref:`Overview of Output`, but with only the spatial extents mesh fully fleshed out: 
 
 ::
 
@@ -1098,6 +1128,19 @@ TODO this is all wrong
       ...
     ray_field: 
       ...
+
+As can be seen from the example, this view of the output is very similar to the :ref:`Basic Mesh Output`. 
+It has all the same components, a coordinate set ``spatial_coords``, a topology ``spatial_topo``, and fields ``intensities_spatial`` and ``path_length_spatial``.
+The topology and fields are exact duplicates of those found in the :ref:`Basic Mesh Output`.
+The impetus for including the spatial extents mesh was originally to include spatial coordinates as part of the metadata, but later on it was decided that the spatial coordinates should be promoted to be a proper Blueprint coordset.
+We then duplicated the existing topology and fields from the :ref:`Basic Mesh Output` so that the spatial extents coordset could be part of a valid Blueprint mesh, and could thus be visualized using VisIt.
+
+
+
+
+TODO errors
+
+TODO this is all wrong
 
 +--------------------------+----------------------------------------------+
 | *image_coords/values/x*  | The image coordinates are a coordinate set   |
