@@ -802,14 +802,14 @@ The following subsections discuss both of these in more detail.
 Imaging Planes
 ++++++++++++++
 
-Users can visualize the near, view, and far planes in physical space alongside the meshes used in the ray trace.
+Users can visualize the near, view, and far planes in physical space alongside the meshes used in the ray trace:
 
 .. figure:: images/xray_imaging_planes.png
 
 The imaging planes used by the X Ray Image Query visualized on top of the simulation data.
 The near plane is in red, the view plane in transparent orange, and the far plane in blue.
 
-This gives a sense of where the camera is looking, and is also useful for checking if parts of the mesh being ray traced are outside the near and far clipping planes.
+Including this in the output gives a sense of where the camera is looking, and is also useful for checking if parts of the mesh being ray traced are outside the near and far clipping planes.
 See the example below, which is taken from the example in :ref:`Overview of Output`, but this time with only the imaging plane meshes fully fleshed out: 
 
 ::
@@ -917,7 +917,71 @@ This value doesn't mean anything; it is just used to tell Blueprint that the ent
 Rays Meshes
 +++++++++++
 
-In addition to the imaging planes, TODO
+Having the imaging planes is helpful, but sometimes it can be more useful to have a sense of the view frustum itself.
+Users may desire a clearer picture of the simulated x ray detector: where it is in space, exactly what is it looking at, and what is it not seeing?
+Enter the rays meshes, or the meshes that contain the rays used to generate the output images/data.
+
+Why are there two?
+The first is the ray corners mesh.
+This is a Blueprint mesh containing four lines that pass through the corners of the :ref:`Imaging Planes`.
+Now the viewing frustum comes into view:
+
+.. figure:: images/xray_view_frustum.png
+
+A plot of 5 meshes: the actual mesh that the query used to generate results, the 3 imaging planes, and the ray corners mesh.
+
+The ray corners mesh is useful because no matter the chosen dimensions of the output image, the ray corners mesh always will only contain 4 lines.
+Therefore it is cheap to render in a tool like VisIt, and it gives a general sense of what is going on.
+But for those who wish to see all of the rays used in the ray trace, the following will be useful.
+
+The second rays mesh provided is the ray mesh, which provides all the rays used in the ray trace, represented as lines in Blueprint.
+
+.. figure:: images/xray_raysmesh_40x30.png
+
+There are 40x30 rays in this image, corresponding to an x ray image output of 40x30 pixels.
+
+Depending on the chosen dimensions of the output image, this mesh can contain thousands of lines.
+See the following image, which is the same query as the previous image, but this time with 400x300 pixels.
+
+.. figure:: images/xray_raysmesh_400x300.png
+
+This render is far less useful. Even the imaging planes have been swallowed up, and the input mesh is completely hidden.
+There are two solutions to this problem.
+The first solution is to temporarily run the query with less rays (i.e. lower the image dimensions) until the desired understanding of what the simulated x ray detector is looking at has been achieved, then switch back to the large number of pixels/rays.
+This can be done quickly, as the ray trace is the performance bottleneck for the x ray image query.
+Here are examples:
+
+.. figure:: images/xray_raysmesh_20x15.png
+
+There are 20x15 rays in this image, corresponding to an x ray image output of 20x15 pixels.
+
+.. figure:: images/xray_raysmesh_8x6.png
+
+There are 8x6 rays in this image, corresponding to an x ray image output of 8x6 pixels.
+
+These renders are less overwhelming, they can be generated quickly, and they get across a good amount of information.
+
+But there is another option that does not require losing information.
+That option is adjusting the opacity of the rays using VisIt.
+Here is a view of a different run of the query, this time with the simulated x ray detector to the side of the input mesh.
+
+.. figure:: images/xray_raysmesh_side_40x30.png
+
+Even with only 40x30 rays, it is already hard to see the input mesh underneath the rays.
+With VisIt, it is very easy to adjust the opacity of the rays and make them semitransparent.
+Here is the same view but with the opacity adjusted for greater visibility.
+
+.. figure:: images/xray_raysmesh_side_40x30_transparent.png
+
+Here is the same view but with 400x300 rays.
+
+.. figure:: images/xray_raysmesh_side_400x300.png
+
+And here is the same view with 400x300 rays but with the ray opacity lowered.
+
+.. figure:: images/xray_raysmesh_side_400x300_transparent.png
+
+TODO the colors mean nothing
 
 TODO
 
@@ -1006,11 +1070,6 @@ TODO
       values: [0.0, 1.0, 2.0, ..., 119998.0, 119999.0]
 
 
-Corners
-
-.. figure:: images/xray_view_frustum.png
-
-the corners mesh
 
 TODO
 
@@ -1043,6 +1102,7 @@ If parallel projection is used (:ref:`Complete Camera Specification`), the spati
 #. 2) This mesh acts as a container for various interesting pieces of data that users may want to pass through the query.
 This is the destination for the ``spatial_units`` and ``energy_units`` (:ref:`Units`), which show up under ``coordsets/spatial_coords/units``.
 This is also where the energy group bounds (:ref:`Standard Arguments`) appear in the output, under ``coordsets/spatial_coords/values/z``.
+If the energy group bounds were not provided by the user, or the provided bounds do not match the actual number of bins used in the ray trace, then there will be a message explaining what went wrong under ``coordsets/spatial_coords/info``, and the z values will go from 0 to n where n is the number of bins.
 
 The following is the example from :ref:`Overview of Output`, but with only the spatial extents mesh fully fleshed out: 
 
@@ -1134,43 +1194,6 @@ It has all the same components, a coordinate set ``spatial_coords``, a topology 
 The topology and fields are exact duplicates of those found in the :ref:`Basic Mesh Output`.
 The impetus for including the spatial extents mesh was originally to include spatial coordinates as part of the metadata, but later on it was decided that the spatial coordinates should be promoted to be a proper Blueprint coordset.
 We then duplicated the existing topology and fields from the :ref:`Basic Mesh Output` so that the spatial extents coordset could be part of a valid Blueprint mesh, and could thus be visualized using VisIt.
-
-
-
-
-TODO errors
-
-TODO this is all wrong
-
-+--------------------------+----------------------------------------------+
-| *image_coords/values/x*  | The image coordinates are a coordinate set   |
-| |br|                     | that represent the |br|                      |
-| *image_coords/values/y*  | world-space/physical coordinates of the      |
-|                          | output image. These |br|                     |
-|                          | spatial extents are given by x and y values  |
-|                          | that range from 0 to |br|                    |
-|                          | the number of pixels in the respective x and |
-|                          | y dimensions times |br|                      |
-|                          | the pixel size in those dimensions.          |
-+--------------------------+----------------------------------------------+
-| *image_coords/values/z*  | The z values of the image coordinates        |
-|                          | represent the energy |br|                    |
-|                          | group bounds that were provided via the      |
-|                          | *energy_group_bounds* |br|                   |
-|                          | argument. If they were not provided or there |
-|                          | were too many or too |br|                    |
-|                          | few values provided, there will be a string  |
-|                          | of text in place of |br|                     |
-|                          | the z values explaining why the values are   |
-|                          | not present.                                 |
-+--------------------------+----------------------------------------------+
-| *image_coords/labels*    | Labels describing what the dimensions        |
-|                          | represent.                                   |
-+--------------------------+----------------------------------------------+
-| *image_coords/units*     | Units for each of the dimensions.            |
-+--------------------------+----------------------------------------------+
-
-TODO
 
 Visualizing with VisIt
 """"""""""""""""""""""
