@@ -935,6 +935,7 @@ Therefore it is cheap to render in a tool like VisIt, and it gives a general sen
 But for those who wish to see all of the rays used in the ray trace, the following will be useful.
 
 The second rays mesh provided is the ray mesh, which provides all the rays used in the ray trace, represented as lines in Blueprint.
+A note of caution: depending on how many rays appear are used in the ray trace, this mesh could be expensive to render, hence the inclusion of the ray corners mesh.
 
 .. figure:: images/xray_raysmesh_40x30.png
 
@@ -981,9 +982,9 @@ And here is the same view with 400x300 rays but with the ray opacity lowered.
 
 .. figure:: images/xray_raysmesh_side_400x300_transparent.png
 
-TODO the colors mean nothing
+Hopefully it is clear at this point that there are multiple ways of looking at the rays that are used in the ray trace.
 
-TODO
+Now we will take a look at the final example taken from the example in :ref:`Overview of Output`, but this time with only the rays meshes fully fleshed out: 
 
 ::
 
@@ -1069,14 +1070,15 @@ TODO
       volume_dependent: "false"
       values: [0.0, 1.0, 2.0, ..., 119998.0, 119999.0]
 
+The Blueprint mesh setup may be familiar by now after reading the other sections, particularly :ref:`Basic Mesh Output`, so we will only mention here that for each ray mesh, there are the usual three components, a coordinate set, a topology, and a field.
+The topology tells Blueprint that the shapes in question are lines, which is how we represent the rays.
 
-
-TODO
-
-Pitfalls
-++++++++
-
-TODO write about and show pictures for when the view plane is behind the view frustum and thus why the spatial extents mesh will be upside down
+The final topic of note in this section ties in to the following questions: Why are the rays all different colors? What do the colors mean?
+The answer is that the colors mean nothing, and the color choices are entirely arbitrary.
+These colors come from the field values under ``fields/ray_field``, which run from 0 to *n*, where *n* is the number of rays.
+We found that if all the rays were the same color, the resulting render was much harder to visually parse.
+Of course, rendering the rays as one color is still an option.
+With VisIt, one need only draw a Mesh Plot of the ``mesh_ray_topo`` as opposed to a Pseudocolor Plot of the ``mesh_ray_topo/ray_field``.
 
 Spatial Extents Mesh
 """"""""""""""""""""
@@ -1102,7 +1104,7 @@ If parallel projection is used (:ref:`Complete Camera Specification`), the spati
 #. 2) This mesh acts as a container for various interesting pieces of data that users may want to pass through the query.
 This is the destination for the ``spatial_units`` and ``energy_units`` (:ref:`Units`), which show up under ``coordsets/spatial_coords/units``.
 This is also where the energy group bounds (:ref:`Standard Arguments`) appear in the output, under ``coordsets/spatial_coords/values/z``.
-If the energy group bounds were not provided by the user, or the provided bounds do not match the actual number of bins used in the ray trace, then there will be a message explaining what went wrong under ``coordsets/spatial_coords/info``, and the z values will go from 0 to n where n is the number of bins.
+If the energy group bounds were not provided by the user, or the provided bounds do not match the actual number of bins used in the ray trace, then there will be a message explaining what went wrong under ``coordsets/spatial_coords/info``, and the z values will go from 0 to *n* where *n* is the number of bins.
 
 The following is the example from :ref:`Overview of Output`, but with only the spatial extents mesh fully fleshed out: 
 
@@ -1194,6 +1196,13 @@ It has all the same components, a coordinate set ``spatial_coords``, a topology 
 The topology and fields are exact duplicates of those found in the :ref:`Basic Mesh Output`.
 The impetus for including the spatial extents mesh was originally to include spatial coordinates as part of the metadata, but later on it was decided that the spatial coordinates should be promoted to be a proper Blueprint coordset.
 We then duplicated the existing topology and fields from the :ref:`Basic Mesh Output` so that the spatial extents coordset could be part of a valid Blueprint mesh, and could thus be visualized using VisIt.
+
+Pitfalls
+""""""""
+
+Despite these features being added to the X Ray Image Query to facilitate usability, there are still cases where confusion can arise.
+
+TODO write about and show pictures for when the view plane is behind the view frustum and thus why the spatial extents mesh will be upside down
 
 Visualizing with VisIt
 """"""""""""""""""""""
