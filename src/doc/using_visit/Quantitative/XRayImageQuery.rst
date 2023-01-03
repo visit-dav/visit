@@ -1111,12 +1111,8 @@ In the example below, the z dimension represents Kiloelectron Volts.
 Another way to think about the spatial extents mesh is if the basic mesh output was resized and then pasted on top of the near plane mesh (:ref:`Imaging Planes`), you would get the spatial extents mesh (ignoring the z dimension).
 The rationale for including this mesh is twofold: 
 
-1. It provides yet another view of the data.
-Perhaps seeing the output with spatial coordinates in x and y is more useful than seeing it with pixel coordinates.
-If parallel projection is used (:ref:`Complete Camera Specification`), the spatial view of the output is far more useful.
-2. This mesh acts as a container for various interesting pieces of data that users may want to pass through the query.
-This is the destination for the ``spatial_units`` and ``energy_units`` (:ref:`Units`), which show up under ``coordsets/spatial_coords/units``.
-This is also where the energy group bounds (:ref:`Standard Arguments`) appear in the output, under ``coordsets/spatial_coords/values/z``.
+1. It provides yet another view of the data. Perhaps seeing the output with spatial coordinates in x and y is more useful than seeing it with pixel coordinates. If parallel projection is used (:ref:`Complete Camera Specification`), the spatial view of the output is far more useful.
+2. This mesh acts as a container for various interesting pieces of data that users may want to pass through the query. This is the destination for the ``spatial_units`` and ``energy_units`` (:ref:`Units`), which show up under ``coordsets/spatial_coords/units``. This is also where the energy group bounds (:ref:`Standard Arguments`) appear in the output, under ``coordsets/spatial_coords/values/z``.
 
 If the energy group bounds were not provided by the user, or the provided bounds do not match the actual number of bins used in the ray trace, then there will be a message explaining what went wrong under ``coordsets/spatial_coords/info``, and the z values will go from 0 to *n* where *n* is the number of bins.
 
@@ -1220,9 +1216,72 @@ Pitfalls
 """"""""
 
 Despite all of these features being added to the X Ray Image Query to facilitate usability, there are still cases where confusion can arise.
+Consider the following:
+
+.. figure:: images/xray_pitfall_sideview1.png
+
+   An input mesh, imaging planes, and ray corners, viewed from the side.
+
+If we adjust the query so that the near plane is further away (say maybe from -15 to -35), we will see this:
+
+.. figure:: images/xray_pitfall_sideview2.png
+
+   The same set of plots as before, except this time the near plane has been moved back.
+
+.. figure:: images/xray_pitfall_sideview3.png
+
+   Another view of this situation.
+
+The near plane has passed out of the view frustum. 
+This is because the view frustum is determined by the ``view_angle`` argument (see :ref:`Complete Camera Specification`).
+In this case, the query is using the default value of 30 degrees, and because the near plane is far enough back, it is outside the frustum.
+
+So what does this mean for the other query results?
+It means that while we'd expect our :ref:`Spatial Extents Mesh` to look like this:
+
+.. figure:: images/xray_pitfall_spatialextent2.png
+
+   The spatial extents mesh as we'd expect to see from running the query.
+
+It will actually look like this:
+
+.. figure:: images/xray_pitfall_spatialextent1.png
+
+   The upside-down spatial extents mesh that we actually get from running the query.
+
+Why is the mesh upside-down?
+The spatial extents mesh is upside-down because the simulated x ray detector is upside down.
+Previously, in the :ref:`Spatial Extents Mesh` section we described the spatial extents mesh as though we had taken the :ref:`Basic Mesh Output`, resized it, and pasted it on top of the near plane.
+That is exactly what is happening here.
+The spatial extents mesh is upside down because the near plane is upside down.
+
+Here are the same images as above, but this time, in each one, the upper right corner of each imaging plane is marked in green:
+
+.. figure:: images/xray_pitfall_sideview1_urc.png
+
+   An input mesh, imaging planes, and ray corners, viewed from the side.
+   Note the upper right corner of each imaging plane is marked in green.
+
+If we adjust the query so that the near plane is further away (say maybe from -15 to -35), we will see this:
+
+.. figure:: images/xray_pitfall_sideview2_urc.png
+
+   The same set of plots as before, except this time the near plane has been moved back.
+   Note the upper right corner of each imaging plane is marked in green.
+   For the near plane (red), the upper right corner is not where we would expect.
+
+.. figure:: images/xray_pitfall_sideview3_urc.png
+
+   Another view of this situation.
+   Note the upper right corner of each imaging plane is marked in green.
+   The upper right corner for the near plane (red) is on the bottom left because the near plane is reflected along the x and y axes.
+
+Following the ray corners, we see that the upper right corner for the near plane is actually on the bottom left, because the whole near plane has been reflected to accomodate the fact that it is behind the frustum.
 
 
 TODO write about and show pictures for when the view plane is behind the view frustum and thus why the spatial extents mesh will be upside down
+
+TODO why is my image blank
 
 Visualizing with VisIt
 """"""""""""""""""""""
