@@ -1088,7 +1088,7 @@ This mesh bears great similarity to that of the :ref:`Basic Mesh Output`.
 The :ref:`Basic Mesh Output` gives users a picture, in a sense, that was taken by the simulated x ray detector.
 That picture lives in image space, where the x and y dimensions are given in pixels, and the z dimension represents the number of energy group bins.
 
-The spatial extents mesh is that same picture that was taken by the simulated x ray detector, but living in physical space.
+The spatial extents mesh is the same picture that was taken by the simulated x ray detector, but living in physical space.
 Instead of the x and y dimensions representing pixels, the x and y dimensions here represent spatial values.
 In the example below, these dimensions are in centimeters.
 The x and y values run from 0 to the detector width and height values, respectively, that appear in the :ref:`Other Metadata` section of the Blueprint output.
@@ -1197,10 +1197,16 @@ The topology and fields are exact duplicates of those found in the :ref:`Basic M
 The impetus for including the spatial extents mesh was originally to include spatial coordinates as part of the metadata, but later on it was decided that the spatial coordinates should be promoted to be a proper Blueprint coordset.
 We then duplicated the existing topology and fields from the :ref:`Basic Mesh Output` so that the spatial extents coordset could be part of a valid Blueprint mesh, and could thus be visualized using VisIt.
 
+.. figure:: images/xray_spatial_extents_mesh.png
+
+The spatial extents mesh looks very similar to the basic mesh output.
+It is in 3D and the z dimension represents the energy group bounds, which in this example run from 2.7 to 5.2.
+
 Pitfalls
 """"""""
 
-Despite these features being added to the X Ray Image Query to facilitate usability, there are still cases where confusion can arise.
+Despite all of these features being added to the X Ray Image Query to facilitate usability, there are still cases where confusion can arise.
+
 
 TODO write about and show pictures for when the view plane is behind the view frustum and thus why the spatial extents mesh will be upside down
 
