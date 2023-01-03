@@ -316,11 +316,11 @@ Additionally, it is simple to generate an image, as the Blueprint output can be 
 
 .. figure:: images/xraywhyconduit1.png
 
-The input mesh.
+   The input mesh.
 
 .. figure:: images/xraywhyconduit2.png
 
-The resulting x ray image from Conduit Blueprint output, visualized by loading said output into VisIt.
+   The resulting x ray image from Conduit Blueprint output, visualized by loading said output into VisIt.
 
 We have opted to enrich the Blueprint output (see :ref:`Basic Mesh Output`) with extensive metadata (see :ref:`Metadata`) as well as additional meshes (see :ref:`Imaging Planes and Rays Meshes` and :ref:`Spatial Extents Mesh`) to provide extra context and information to the user. 
 These additions should make it easier to troubleshoot unexpected results, make sense of the query output, and pass important information through the query.
@@ -806,8 +806,8 @@ Users can visualize the near, view, and far planes in physical space alongside t
 
 .. figure:: images/xray_imaging_planes.png
 
-The imaging planes used by the X Ray Image Query visualized on top of the simulation data.
-The near plane is in red, the view plane in transparent orange, and the far plane in blue.
+   The imaging planes used by the X Ray Image Query visualized on top of the simulation data.
+   The near plane is in red, the view plane in transparent orange, and the far plane in blue.
 
 Including this in the output gives a sense of where the camera is looking, and is also useful for checking if parts of the mesh being ray traced are outside the near and far clipping planes.
 See the example below, which is taken from the example in :ref:`Overview of Output`, but this time with only the imaging plane meshes fully fleshed out: 
@@ -928,7 +928,7 @@ Now the viewing frustum comes into view:
 
 .. figure:: images/xray_view_frustum.png
 
-A plot of 5 meshes: the actual mesh that the query used to generate results, the 3 imaging planes, and the ray corners mesh.
+   A plot of 5 meshes: the actual mesh that the query used to generate results, the 3 imaging planes, and the ray corners mesh.
 
 The ray corners mesh is useful because no matter the chosen dimensions of the output image, the ray corners mesh always will only contain 4 lines.
 Therefore it is cheap to render in a tool like VisIt, and it gives a general sense of what is going on.
@@ -939,7 +939,7 @@ A note of caution: depending on how many rays appear are used in the ray trace, 
 
 .. figure:: images/xray_raysmesh_40x30.png
 
-There are 40x30 rays in this image, corresponding to an x ray image output of 40x30 pixels.
+   There are 40x30 rays in this image, corresponding to an x ray image output of 40x30 pixels.
 
 Depending on the chosen dimensions of the output image, this mesh can contain thousands of lines.
 See the following image, which is the same query as the previous image, but this time with 400x300 pixels.
@@ -954,11 +954,11 @@ Here are examples:
 
 .. figure:: images/xray_raysmesh_20x15.png
 
-There are 20x15 rays in this image, corresponding to an x ray image output of 20x15 pixels.
+   There are 20x15 rays in this image, corresponding to an x ray image output of 20x15 pixels.
 
 .. figure:: images/xray_raysmesh_8x6.png
 
-There are 8x6 rays in this image, corresponding to an x ray image output of 8x6 pixels.
+   There are 8x6 rays in this image, corresponding to an x ray image output of 8x6 pixels.
 
 These renders are less overwhelming, they can be generated quickly, and they get across a good amount of information.
 
@@ -1098,12 +1098,14 @@ In the example below, the z dimension represents Kiloelectron Volts.
 
 Another way to think about the spatial extents mesh is if the basic mesh output was resized and then pasted on top of the near plane mesh (:ref:`Imaging Planes`), you would get the spatial extents mesh (ignoring the z dimension).
 The rationale for including this mesh is twofold: 
+
 #. 1) It provides yet another view of the data.
 Perhaps seeing the output with spatial coordinates in x and y is more useful than seeing it with pixel coordinates.
 If parallel projection is used (:ref:`Complete Camera Specification`), the spatial view of the output is far more useful.
 #. 2) This mesh acts as a container for various interesting pieces of data that users may want to pass through the query.
 This is the destination for the ``spatial_units`` and ``energy_units`` (:ref:`Units`), which show up under ``coordsets/spatial_coords/units``.
 This is also where the energy group bounds (:ref:`Standard Arguments`) appear in the output, under ``coordsets/spatial_coords/values/z``.
+
 If the energy group bounds were not provided by the user, or the provided bounds do not match the actual number of bins used in the ray trace, then there will be a message explaining what went wrong under ``coordsets/spatial_coords/info``, and the z values will go from 0 to *n* where *n* is the number of bins.
 
 The following is the example from :ref:`Overview of Output`, but with only the spatial extents mesh fully fleshed out: 
@@ -1199,8 +1201,8 @@ We then duplicated the existing topology and fields from the :ref:`Basic Mesh Ou
 
 .. figure:: images/xray_spatial_extents_mesh.png
 
-The spatial extents mesh looks very similar to the basic mesh output.
-It is in 3D and the z dimension represents the energy group bounds, which in this example run from 2.7 to 5.2.
+   The spatial extents mesh looks very similar to the basic mesh output.
+   It is in 3D and the z dimension represents the energy group bounds, which in this example run from 2.7 to 5.2.
 
 Pitfalls
 """"""""
@@ -1229,7 +1231,7 @@ of the data.
 
 .. figure:: images/xray00.png
 
-The 2D R-Z data.
+   The 2D R-Z data.
 
 Now we'll show the Python code to generate a simulated x ray looking
 down the Z Axis and the resulting image. ::
@@ -1244,7 +1246,7 @@ down the Z Axis and the resulting image. ::
 
 .. figure:: images/xray01.png
 
-The resulting x ray image.
+   The resulting x ray image.
 
 Here is the Python code to generate the same image but looking at it
 from the side. ::
@@ -1261,7 +1263,7 @@ from the side. ::
 
 .. figure:: images/xray02.png
 
-The resulting x ray image.
+   The resulting x ray image.
 
 Here is the same Python code with the addition of an origin that
 moves the image down and to the right by 1. ::
@@ -1279,7 +1281,7 @@ moves the image down and to the right by 1. ::
 
 .. figure:: images/xray03.png
 
-The resulting x ray image.
+   The resulting x ray image.
 
 Now we'll switch to a 3D example using globe.silo. Globe.silo is an
 unstructured mesh consisting of tetrahedra, pyramids, prisms and hexahedra
@@ -1288,7 +1290,7 @@ the globe that form 2 cones.
 
 .. figure:: images/xray04.png
 
-The tetrahedra at the center of the globe.
+   The tetrahedra at the center of the globe.
 
 Here is the Python code for generating an x ray image from the same
 orientation. Note that we have defined some expressions so that the
@@ -1313,13 +1315,13 @@ x ray image shows some variation. ::
 
 .. figure:: images/xray05.png
 
-The resulting x ray image.
+   The resulting x ray image.
 
 Now we'll look at the pyramids in the center of the globe.
 
 .. figure:: images/xray06.png
 
-The pyramids at the center of the globe.
+   The pyramids at the center of the globe.
 
 Here is the Python code for generating an x ray image from the same
 orientation using the full view specification. The view specification
@@ -1345,4 +1347,4 @@ the default ones. This is necessary to use the full view specification. ::
 
 .. figure:: images/xray07.png
 
-The resulting x ray image.
+   The resulting x ray image.
