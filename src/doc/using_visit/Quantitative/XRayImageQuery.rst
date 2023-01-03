@@ -946,6 +946,8 @@ See the following image, which is the same query as the previous image, but this
 
 .. figure:: images/xray_raysmesh_400x300.png
 
+   There are 400x300 rays in this image, corresponding to an x ray image output of 40x30 pixels.
+
 This render is far less useful. Even the imaging planes have been swallowed up, and the input mesh is completely hidden.
 There are two solutions to this problem.
 The first solution is to temporarily run the query with less rays (i.e. lower the image dimensions) until the desired understanding of what the simulated x ray detector is looking at has been achieved, then switch back to the large number of pixels/rays.
@@ -968,19 +970,29 @@ Here is a view of a different run of the query, this time with the simulated x r
 
 .. figure:: images/xray_raysmesh_side_40x30.png
 
+   There are 40x30 rays in this image, corresponding to an x ray image output of 40x30 pixels. 
+   This is a view of a different run of the query from the images shown thus far.
+
 Even with only 40x30 rays, it is already hard to see the input mesh underneath the rays.
 With VisIt, it is very easy to adjust the opacity of the rays and make them semitransparent.
 Here is the same view but with the opacity adjusted for greater visibility.
 
 .. figure:: images/xray_raysmesh_side_40x30_transparent.png
 
+   The 40x30 rays have had their opacity lowered for greater visibility.
+
 Here is the same view but with 400x300 rays.
 
 .. figure:: images/xray_raysmesh_side_400x300.png
 
+   There are 400x300 rays in this image, corresponding to an x ray image output of 40x30 pixels.
+   The rays totally obscure the geometry.
+
 And here is the same view with 400x300 rays but with the ray opacity lowered.
 
 .. figure:: images/xray_raysmesh_side_400x300_transparent.png
+
+   The 400x300 rays have had their opacity lowered for greater visibility.
 
 Hopefully it is clear at this point that there are multiple ways of looking at the rays that are used in the ray trace.
 
@@ -1099,10 +1111,10 @@ In the example below, the z dimension represents Kiloelectron Volts.
 Another way to think about the spatial extents mesh is if the basic mesh output was resized and then pasted on top of the near plane mesh (:ref:`Imaging Planes`), you would get the spatial extents mesh (ignoring the z dimension).
 The rationale for including this mesh is twofold: 
 
-#. 1) It provides yet another view of the data.
+1. It provides yet another view of the data.
 Perhaps seeing the output with spatial coordinates in x and y is more useful than seeing it with pixel coordinates.
 If parallel projection is used (:ref:`Complete Camera Specification`), the spatial view of the output is far more useful.
-#. 2) This mesh acts as a container for various interesting pieces of data that users may want to pass through the query.
+2. This mesh acts as a container for various interesting pieces of data that users may want to pass through the query.
 This is the destination for the ``spatial_units`` and ``energy_units`` (:ref:`Units`), which show up under ``coordsets/spatial_coords/units``.
 This is also where the energy group bounds (:ref:`Standard Arguments`) appear in the output, under ``coordsets/spatial_coords/values/z``.
 
