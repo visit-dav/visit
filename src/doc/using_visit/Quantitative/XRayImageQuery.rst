@@ -326,6 +326,9 @@ We have opted to enrich the Blueprint output (see :ref:`Basic Mesh Output`) with
 These additions should make it easier to troubleshoot unexpected results, make sense of the query output, and pass important information through the query.
 Blueprint makes it simple to put all of this information into one file, and just as simple to read that information back out and/or visualize.
 
+One of the main reasons for adding the Conduit output was to make it far easier to troubleshot strange query results.
+See the :ref:`Troubleshooting` section to learn what kinds of questions the Conduit output can be used to answer.
+
 Overview of Output
 """"""""""""""""""
 
@@ -787,7 +790,7 @@ An example: ::
     pathLengthMax: 120.815788269043
     pathLengthMin: 0.0
 
-The minimum and maximum values that are included for the path length and intensity outputs are useful for quick troubleshooting or sanity checks that the output matches expectations. 
+The minimum and maximum values that are included for the path length and intensity outputs are useful for quick :ref:`Troubleshooting` or sanity checks that the output matches expectations. 
 If both maximums and minimums are zero, for example, the simulated detector may not be facing the right way.
 In that case, the :ref:`Imaging Planes and Rays Meshes` section may be of some use.
 
@@ -1216,6 +1219,7 @@ Pitfalls
 """"""""
 
 Despite all of these features being added to the X Ray Image Query to facilitate usability, there are still cases where confusion can arise.
+One such case is where the spatial extents mesh can appear to be upside down.
 Consider the following:
 
 .. figure:: images/xray_pitfall_sideview1.png
@@ -1239,13 +1243,13 @@ In this case, the query is using the default value of 30 degrees, and because th
 So what does this mean for the other query results?
 It means that while we'd expect our :ref:`Spatial Extents Mesh` to look like this:
 
-.. figure:: images/xray_pitfall_spatialextent2.png
+.. figure:: images/xray_pitfall_spatialextent1.png
 
    The spatial extents mesh as we'd expect to see from running the query.
 
 It will actually look like this:
 
-.. figure:: images/xray_pitfall_spatialextent1.png
+.. figure:: images/xray_pitfall_spatialextent2.png
 
    The upside-down spatial extents mesh that we actually get from running the query.
 
@@ -1274,19 +1278,100 @@ If we adjust the query so that the near plane is further away (say maybe from -1
 
    Another view of this situation.
    Note the upper right corner of each imaging plane is marked in green.
-   The upper right corner for the near plane (red) is on the bottom left because the near plane is reflected along the x and y axes.
+   The upper right corner for the near plane (red) is on the bottom left because the near plane is reflected across the x and y axes.
 
 Following the ray corners, we see that the upper right corner for the near plane is actually on the bottom left, because the whole near plane has been reflected to accomodate the fact that it is behind the frustum.
+This explains why the spatial extents mesh appears upside down; it is actually reflected across the x and y axes.
 
 
-TODO write about and show pictures for when the view plane is behind the view frustum and thus why the spatial extents mesh will be upside down
+Troubleshooting
+"""""""""""""""
 
-TODO why is my image blank
+TODO should this section be the final one or is this the right spot?
+
+Now that we have explored the Conduit Blueprint output in detail, we can use it to troubleshoot unexpected or strange query results.
+
+**1. Is my image blank?**
+
+This question can be answered without even examining the image (or in the case of the Blueprint output, a render of the :ref:`Basic Mesh Output`).
+It is as simple as checking if the minimum and maximum values for the intensities and path length are zero.
+See :ref:`Other Metadata` for more information.
+These values can be pulled out of the Conduit output with ease, using the following:
+
+::
+
+   import conduit
+   mesh = conduit.Node()
+
+   # In this case, "output.root" is the name of the Blueprint file
+   # that was output from the query.
+   conduit.relay.io.blueprint.load_mesh(mesh, "output.root")
+
+   # We extract the values from the node.
+   intensityMax = mesh["domain_000000/state/xray_data/intensityMax"]
+   intensityMin = mesh["domain_000000/state/xray_data/intensityMin"]
+   pathLengthMax = mesh["domain_000000/state/xray_data/pathLengthMax"]
+   pathLengthMin = mesh["domain_000000/state/xray_data/pathLengthMin"]
+
+   print("intensityMax = " + str(intensityMax))
+   print("intensityMin = " + str(intensityMin))
+   print("pathLengthMax = " + str(pathLengthMax))
+   print("pathLengthMin = " + str(pathLengthMin))
+
+Yielding:
+
+::
+
+   intensityMax = 0.49144697189331055
+   intensityMin = 0.0
+   pathLengthMax = 129.8570098876953
+   pathLengthMin = 0.0
+
+If the maximums were also equal to zero, then the image would be blank.
+Hence, it is possible to quickly programmatically check if the image is blank, without any need for taking the time to look at the image.
+
+**2. Why is my image blank? Is the camera facing the right way? Are the near and far clipping planes in good positions?**
+
+This line of questioning can be quickly answered by visualizing the :ref:`Imaging Planes and Rays Meshes`.
+
+::
+
+   # Make sure the mesh used in the query is already rendered.
+
+   # In this case, "output.root" is the name of the Blueprint file
+   # that was output from the query.
+   OpenDatabase("output.root")
+
+   # Add pseudoclor plots of each of the imaging planes.
+   AddPlot("Pseudocolor", "mesh_far_plane_topo/far_plane_field", 1, 1)
+   AddPlot("Pseudocolor", "mesh_view_plane_topo/view_plane_field", 1, 1)
+   AddPlot("Pseudocolor", "mesh_near_plane_topo/near_plane_field", 1, 1)
+
+   # Add a mesh plot of the ray corners.
+   AddPlot("Mesh", "mesh_ray_corners_topo", 1, 1)
+
+   DrawPlots()
+
+Running this code using VisIt should result in renders like those shown in :ref:`Imaging Planes and Rays Meshes`.
+To make the planes different colors, use VisIt's color table controls, or see :ref:`Visualizing with VisIt`.
+
+The simulated x ray detector is situated at the near plane, looking in the direction of the view plane, and seeing nothing after the far plane.
+Once the imaging planes and ray corners have been visualized, it is clear to see where the camera is looking, and if the near and far clipping planes are appropriately placed.
+
+**3. Where are the rays intersecting my geometry?**
+
+TODO
+
+See the :ref:`Rays Meshes` section for more information.
+
+TODO
 
 Visualizing with VisIt
 """"""""""""""""""""""
 
 TODO
+
+- making the planes different colors
 
 Introspecting with Python
 """""""""""""""""""""""""
