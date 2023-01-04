@@ -197,6 +197,10 @@ TODO write about the conduit output types a bit.
 Units
 +++++
 
+Units of various quantities can be passed through the query.
+None of these values are used in any calculations the query does to arrive at its output; all are optional.
+These units appear in the :ref:`Conduit Output` in a few different places.
+
 +--------------------------+----------------------------------------------+
 | *spatial_units*          | The units of the simulation in the x and y   |
 |                          | dimensions.                                  |
@@ -215,8 +219,9 @@ Units
 | *path_length_units*      | Metadata describing the path length output.  |
 +--------------------------+----------------------------------------------+
 
-TODO where do these go? why are these here?
-TODO note where these show up in blueprint output w/ link to section(s)
+The ``spatial_units`` and ``energy_units`` appear in the :ref:`Spatial Extents Mesh`.
+The ``abs_units`` and the ``emis_units`` appear in the :ref:`Query Parameters` section of the :ref:`Metadata`.
+The ``intensity_units`` and the ``path_length_units`` appear in the :ref:`Basic Mesh Output` under the fields.
 
 Camera Specification
 """"""""""""""""""""
@@ -326,7 +331,7 @@ We have opted to enrich the Blueprint output (see :ref:`Basic Mesh Output`) with
 These additions should make it easier to troubleshoot unexpected results, make sense of the query output, and pass important information through the query.
 Blueprint makes it simple to put all of this information into one file, and just as simple to read that information back out and/or visualize.
 
-One of the main reasons for adding the Conduit output was to make it far easier to troubleshot strange query results.
+One of the main reasons for adding the Conduit output was to make it far easier to troubleshoot strange query results.
 See the :ref:`Troubleshooting` section to learn what kinds of questions the Conduit output can be used to answer.
 
 Overview of Output
@@ -1342,7 +1347,7 @@ This line of questioning can be quickly answered by visualizing the :ref:`Imagin
    # that was output from the query.
    OpenDatabase("output.root")
 
-   # Add pseudoclor plots of each of the imaging planes.
+   # Add pseudocolor plots of each of the imaging planes.
    AddPlot("Pseudocolor", "mesh_far_plane_topo/far_plane_field", 1, 1)
    AddPlot("Pseudocolor", "mesh_view_plane_topo/view_plane_field", 1, 1)
    AddPlot("Pseudocolor", "mesh_near_plane_topo/near_plane_field", 1, 1)
@@ -1360,11 +1365,36 @@ Once the imaging planes and ray corners have been visualized, it is clear to see
 
 **3. Where are the rays intersecting my geometry?**
 
-TODO
+Answering this question is similarly simple.
+We will want to visualize the :ref:`Rays Meshes` on top of our input mesh.
 
-See the :ref:`Rays Meshes` section for more information.
+::
 
-TODO
+   # Make sure the mesh used in the query is already rendered.
+
+   # In this case, "output.root" is the name of the Blueprint file
+   # that was output from the query.
+   OpenDatabase("output.root")
+
+   # Add pseudocolor plots of each of the imaging planes.
+   # These help to add clarity to our final render.
+   AddPlot("Pseudocolor", "mesh_far_plane_topo/far_plane_field", 1, 1)
+   AddPlot("Pseudocolor", "mesh_view_plane_topo/view_plane_field", 1, 1)
+   AddPlot("Pseudocolor", "mesh_near_plane_topo/near_plane_field", 1, 1)
+
+   # Add a mesh plot of the rays.
+   AddPlot("Pseudocolor", "mesh_ray_topo/ray_field", 1, 1)
+
+   DrawPlots()
+
+Running this code using VisIt should result in renders like those shown in :ref:`Rays Meshes`.
+Use the tips and tricks shown in that section to gain greater clarity for answering this question.
+
+**4. What information is the query using to create the output?**
+
+TODO talk about getting the metadata out link to introspecting with python
+
+TODO other troubleshooting questions?
 
 Visualizing with VisIt
 """"""""""""""""""""""
@@ -1373,6 +1403,8 @@ TODO
 
 - making the planes different colors
 
+- visualizing every bit of the output
+
 Introspecting with Python
 """""""""""""""""""""""""
 
@@ -1380,6 +1412,8 @@ TODO
 
 Examples
 ~~~~~~~~
+
+TODO should this section be after the input args?
 
 Lets look at some examples, starting with some simulated x rays using
 curv2d.silo, which contains a 2D R-Z mesh. Here is a pseudocolor plot
