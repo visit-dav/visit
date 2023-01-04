@@ -7,7 +7,7 @@
 X Ray Image Query
 -----------------
 
-Generates a simulated radiograph by tracing rays through a volume using an absorbtivity and emissivity variable.
+The X Ray Image Query generates a simulated radiograph by tracing rays through a volume using an absorbtivity and emissivity variable.
 The absorbtivity and emissivity variables must be zone centered and can be either scalar variables or array variables.
 If using an array variable, the query will generate an image per array variable component.
 
@@ -27,6 +27,8 @@ The query performs the following integration as it traces the rays through the v
         :start-after: begin standard integration 
         :end-before: end standard integration
 
+In this code snippet, ``a`` represents the absorbtivity, and ``e`` represents the emissivity.
+
 If the ``divide_emis_by_absorb`` is set, then the following integration is performed.
 
 .. container:: collapsible
@@ -40,9 +42,10 @@ If the ``divide_emis_by_absorb`` is set, then the following integration is perfo
         :start-after: begin absorbtivity-normalized integration
         :end-before: end absorbtivity-normalized integration
 
-When making a simulated radiograph the emissivity variable must contain non zero values or you will need to specify a background intensity using either *background_intensity* or *background_intensities*.
+When making a simulated radiograph, either the emissivity variable must contain non zero values or a background intensity will need to be specified using either *background_intensity* or *background_intensities*.
+See :ref:`Standard Arguments` for more information.
 If neither of these is the case, you will get an all white image.
-A non-zero emissivity variable would correspond to an object emitting radiation and a non zero background intensity would correspond to constant backlit radiation, such as when x raying an object.
+A non-zero emissivity variable would correspond to an object emitting radiation and a non-zero background intensity would correspond to constant backlit radiation, such as when x raying an object.
 
 Query Arguments
 ~~~~~~~~~~~~~~~
@@ -52,7 +55,7 @@ The query takes a few different kinds of arguments:
 Standard Arguments
 """"""""""""""""""
 
-TODO
+The standard arguments have to do with the query execution, output, debugging, and passing through metadata.
 
 +--------------------------+----------------------------------------------+
 | *vars*                   | An array of the names of the absorbtivity    |
@@ -83,7 +86,11 @@ TODO
 |                          | metadata.                                    |
 +--------------------------+----------------------------------------------+
 
-TODO note where these show up in blueprint output w/ link to section
+If using the :ref:`Conduit Output`, many of these arguments will appear in the output in a few different places.
+The ``vars`` will show up as ``absVarName`` and ``emisVarName`` under the :ref:`Query Parameters` section of the :ref:`Metadata`.
+``divide_emis_by_absorb`` shows up under the :ref:`Query Parameters` section of the :ref:`Metadata`.
+``image_size`` shows up as ``numXPixels`` and ``numYPixels`` under the :ref:`Query Parameters` section of the :ref:`Metadata`.
+The ``energy_group_bounds`` appear under the ``spatial_coords`` in the :ref:`Spatial Extents Mesh`.
 
 Output Filenames and Directories
 ++++++++++++++++++++++++++++++++
@@ -129,8 +136,6 @@ Output Filenames and Directories
 |      |                   | another file exists with this name, VisIt_   |
 |      |                   | will overwrite it.                           |
 +------+-------------------+----------------------------------------------+
-
-TODO note where these show up in blueprint output w/ link to section
 
 Output Types
 ++++++++++++
