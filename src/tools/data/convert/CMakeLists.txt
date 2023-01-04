@@ -70,8 +70,8 @@ ${ICET_LIBRARY_DIR}
 )
 
 SET(VTK_EXTRA_LIBS
-vtkjpeg
-vtkpng
+${vtkjpeg_LIBRARIES}
+${vtkpng_LIBRARIES}
 ${VTK_FREETYPE_LIBRARIES}
 )
 

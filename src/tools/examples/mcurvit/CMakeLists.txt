@@ -72,9 +72,9 @@ ${VTK_INCLUDE_DIRS}
 )
 
 SET(VTK_EXTRA_LIBS
-vtktiff
-vtkjpeg
-vtkpng
+${vtktiff_LIBRARIES}
+${vtkjpeg_LIBRARIES}
+${vtkpng_LIBRARIES}
 ${VTK_FREETYPE_LIBRARIES}
 )
 
