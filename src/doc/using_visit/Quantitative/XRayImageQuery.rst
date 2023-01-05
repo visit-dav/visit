@@ -301,6 +301,11 @@ The complete version consists of:
 When a Conduit Blueprint output type is specified, these parameters will appear in the metadata.
 See :ref:`View Parameters` for more information.
 
+Calling the Query
+"""""""""""""""""
+
+TODO
+
 Examples
 ~~~~~~~~
 
@@ -427,6 +432,8 @@ the default ones. This is necessary to use the full view specification. ::
 .. figure:: images/xray07.png
 
    The resulting x ray image.
+
+TODO big blueprint example
 
 Conduit Output
 ~~~~~~~~~~~~~~
@@ -1049,13 +1056,13 @@ Rays Meshes
 +++++++++++
 
 Having the imaging planes is helpful, but sometimes it can be more useful to have a sense of the view frustum itself.
-Users may desire a clearer picture of the simulated x ray detector: where it is in space, exactly what is it looking at, and what is it not seeing?
+Users may desire a clearer picture of the simulated x ray detector: where is it in space, exactly what is it looking at, and what is it not seeing?
 Enter the rays meshes, or the meshes that contain the rays used to generate the output images/data.
 
 Why are there two?
 The first is the ray corners mesh.
 This is a Blueprint mesh containing four lines that pass through the corners of the :ref:`Imaging Planes`.
-Now the viewing frustum comes into view:
+Now the viewing frustum is visible:
 
 .. figure:: images/xray_view_frustum.png
 
@@ -1066,7 +1073,7 @@ Therefore it is cheap to render in a tool like VisIt, and it gives a general sen
 But for those who wish to see all of the rays used in the ray trace, the following will be useful.
 
 The second rays mesh provided is the ray mesh, which provides all the rays used in the ray trace, represented as lines in Blueprint.
-A note of caution: depending on how many rays appear are used in the ray trace, this mesh could be expensive to render, hence the inclusion of the ray corners mesh.
+A note of caution: depending on how many rays are used in the ray trace, this mesh could be expensive to render, hence the inclusion of the ray corners mesh.
 
 .. figure:: images/xray_raysmesh_40x30.png
 
@@ -1080,8 +1087,8 @@ See the following image, which is the same query as the previous image, but this
    There are 400x300 rays in this image, corresponding to an x ray image output of 40x30 pixels.
 
 This render is far less useful. Even the imaging planes have been swallowed up, and the input mesh is completely hidden.
-There are two solutions to this problem.
-The first solution is to temporarily run the query with less rays (i.e. lower the image dimensions) until the desired understanding of what the simulated x ray detector is looking at has been achieved, then switch back to the large number of pixels/rays.
+There are a couple quick solutions to this problem.
+**The first solution** is to temporarily run the query with less rays (i.e. lower the image dimensions) until the desired understanding of what the simulated x ray detector is looking at has been achieved, then switch back to the large number of pixels/rays.
 This can be done quickly, as the ray trace is the performance bottleneck for the x ray image query.
 Here are examples:
 
@@ -1094,9 +1101,9 @@ Here are examples:
    There are 8x6 rays in this image, corresponding to an x ray image output of 8x6 pixels.
 
 These renders are less overwhelming, they can be generated quickly, and they get across a good amount of information.
-
 But there is another option that does not require losing information.
-That option is adjusting the opacity of the rays using VisIt.
+
+**The second solution** is adjusting the opacity of the rays using VisIt.
 Here is a view of a different run of the query, this time with the simulated x ray detector to the side of the input mesh.
 
 .. figure:: images/xray_raysmesh_side_40x30.png
@@ -1411,11 +1418,70 @@ If we adjust the query so that the near plane is further away (say maybe from -1
 Following the ray corners, we see that the upper right corner for the near plane is actually on the bottom left, because the whole near plane has been reflected to accomodate the fact that it is behind the frustum.
 This explains why the spatial extents mesh appears upside down; it is actually reflected across the x and y axes.
 
+Visualizing with VisIt
+""""""""""""""""""""""
+
+One of the advantages of using one of the :ref:`Conduit Output` types is that it is easy to both look at the raw data and generate x ray images.
+This section will cover generating x ray images using VisIt as well as visualizing the other components of the :ref:`Conduit Output`.
+
+The ensuing Python code examples assume that the following has already been run:
+
+::
+
+   # The file containing the mesh I wish to ray trace
+   OpenDatabase("testdata/silo_hdf5_test_data/curv3d.silo")
+
+   # The query requires a plot to be visible
+   AddPlot("Pseudocolor", "d")
+   DrawPlots()
+
+   # The camera is looking straight on
+   params = dict()
+   params["image_size"] = (400, 300)
+   # One of the Blueprint output types
+   params["output_type"] = "hdf5"
+   params["focus"] = (0., 2.5, 10.)
+   params["perspective"] = 1
+   params["near_plane"] = -25.
+   params["far_plane"] = 25.
+   params["vars"] = ("d", "p")
+   params["energy_group_bounds"] = [3.7, 4.2]
+   params["parallel_scale"] = 10.
+   Query("XRay Image", params)
+
+   # Make sure we have a clean slate for ensuing visualizations.
+   DeleteAllPlots()
+
+   # Open the file that was output from the query.
+   # In this case it is called "output.root"
+   OpenDatabase("output.root")
+
+Once the query has been run, to visualize the :ref:`Basic Mesh Output`, follow these steps in Python:
+
+::
+
+   
+
+TODO
+- visualize the basic mesh output
+- change color table to x ray if you like
+
+- visualize the imaging planes
+- color them nicely
+
+- visualize the ray corners and rays
+- mess with opacity
+
+- visualize the spatial extents mesh
+
+Introspecting with Python
+"""""""""""""""""""""""""
+
+TODO
+
 
 Troubleshooting
 """""""""""""""
-
-TODO should this section be the final one or is this the right spot?
 
 Now that we have explored the Conduit Blueprint output in detail, we can use it to troubleshoot unexpected or strange query results.
 
@@ -1519,16 +1585,5 @@ TODO talk about getting the metadata out link to introspecting with python
 
 TODO other troubleshooting questions?
 
-Visualizing with VisIt
-""""""""""""""""""""""
-
-TODO
-
-- making the planes different colors
-
-- visualizing every bit of the output
-
-Introspecting with Python
-"""""""""""""""""""""""""
-
-TODO
+TODO somewhere I need to mention the pitfall of GetQueryParameters("XRay Image")
+TODO somewhere I need a big all the way through example of all the args and the output
