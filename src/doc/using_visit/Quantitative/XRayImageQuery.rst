@@ -197,7 +197,7 @@ For example, if the input array variables were composed of 2 scalar variables, t
 * output.03.bof
 * output.03.bov - ``path_length`` from the second variable of the array variable.
 
-The Conduit output types provide a plethora of extra features, to learn more see :ref:`Conduit Output`.
+The Conduit output types provide a plethora of extra features; to learn more see :ref:`Conduit Output`.
 
 Units
 +++++
@@ -449,7 +449,7 @@ Additionally, it is simple to generate an image, as the Blueprint output can be 
 
 .. figure:: images/xraywhyconduit2.png
 
-   The resulting x ray image from Conduit Blueprint output, visualized by plotting it with VisIt.
+   The resulting x ray image from Conduit Blueprint output, visualized by plotting with VisIt.
 
 We have opted to enrich the Blueprint output (see :ref:`Basic Mesh Output`) with extensive metadata (see :ref:`Metadata`) as well as additional meshes (see :ref:`Imaging Planes and Rays Meshes` and :ref:`Spatial Extents Mesh`) to provide extra context and information to the user. 
 These additions should make it easier to troubleshoot unexpected results, make sense of the query output, and pass important information through the query.
@@ -530,9 +530,10 @@ Here is a simplified representation of a Conduit tree that is output from the Qu
     ray_field: 
       ...
 
-TODO
-
-TODO to learn more about ajkfbdshbjsdugsd, read this section ajdbjfas - just link all the sections so it is easier to find stuff about the output
+There are multiple Blueprint meshes stored in this tree, as well as extensive metadata.
+Each piece of the Conduit output will be covered in more detail in ensuing parts of the documentation.
+To learn more about what lives under the ``state`` branch, see the :ref:`Metadata` section.
+To learn more about the coordinate sets, topologies, and fields, see the :ref:`Basic Mesh Output`, :ref:`Imaging Planes and Rays Meshes`, and :ref:`Spatial Extents Mesh` sections.
 
 Basic Mesh Output
 """""""""""""""""
@@ -540,7 +541,7 @@ Basic Mesh Output
 The most important piece of the Blueprint output is the actual query result.
 We have taken the image data that comes out of the query and packaged it into a single Blueprint mesh.
 
-The following is the example from :ref:`Overview of Output`, but with the Blueprint mesh representing the query result fully fleshed out: 
+The following is the example from :ref:`Overview of Output`, but with the Blueprint mesh representing the query result fully realized: 
 
 ::
 
@@ -625,13 +626,11 @@ The following is the example from :ref:`Overview of Output`, but with the Bluepr
     ray_field: 
       ...
 
-TODO include real units for intensities and path length in the example
-
 The 3 constituent parts of the Blueprint mesh output are the coordinate set, ``image_coords``, the topology, ``image_topo``, and the fields, ``intensities`` and ``path_length``.
 
 The ``image_coords`` represent the x and y coordinates of the 2D image, and the z dimension represents the energy group bounds.
 In the case of multiple energy groups, previously, the query would have output multiple images, one for each pair of energy group bounds.
-In the Blueprint output, this is simplified, and rather than outputting multiple files, each containing one image, we have opted to "stack" the resulting images on top of one another.
+In the Blueprint output, this is simplified; rather than outputting multiple files, each containing one image, we have opted to "stack" the resulting images on top of one another.
 This is why the Blueprint output is a 3D mesh, so it can account for multiple energy groups, and place resulting images one on top of another.
 Also included in the ``image_coords`` are labels and units for disambiguation purposes.
 
@@ -645,11 +644,11 @@ Metadata
 """"""""
 
 The Conduit output types (see :ref:`Output Types` for more information) come packaged with metadata in addition to Blueprint-conforming mesh data.
-The ability to send this metadata alongside the output mesh (and other data) is one of the advantages of using Conduit to for outputs from the query.
+The ability to send this metadata alongside the output mesh (and other data) is one of the advantages of using Conduit for outputs from the query.
 We hope this metadata helps to make it clear exactly what the query is doing, what information it has available to it, and what the output might look like.
 
 Metadata is stored under the "state" Node in the resulting Conduit tree.
-See the example below, which is taken from the example in :ref:`Overview of Output`, but this time with only the metadata fully fleshed out: 
+See the example below, which is taken from the example in :ref:`Overview of Output`, but this time with only the metadata fully realized: 
 
 ::
 
@@ -747,16 +746,18 @@ See the example below, which is taken from the example in :ref:`Overview of Outp
     ray_field: 
       ...
 
-There are three top-level items: "time", "cycle", and "domain_id".
-The fact that the domain id is present is a side effect of Conduit; all of the output data is single domain and this value has nothing to do with the query.
-In addition to the top level items, there are three categories of metadata: *view parameters*, *query parameters*, and *other metadata*.
+There are three top-level items: ``time``, ``cycle``, and ``domain_id``.
+The fact that the ``domain_id`` is present is a side effect of Conduit; all of the output data is single domain and this value has nothing to do with the query.
+In addition to the top level items, there are three categories of metadata: :ref:`View Parameters`, :ref:`Query Parameters`, and :ref:`Other Metadata`.
 The following subsections discuss each of these categories in more detail.
 
 View Parameters
 +++++++++++++++
 
 View parameters can be found under "state/xray_view".
-This metadata represents the view-related values that were used in the x ray image query calculations, regardless of whether the simplified or complete view specification was used when calling the query.
+This metadata represents the view-related values that were used in the x ray image query calculations.
+Remember from the section on :ref:`Camera Specification` options that if the :ref:`Simplified Camera Specification` is used, the parameters are converted to the :ref:`Complete Camera Specification` during execution.
+Hence the values output here correspond to those in the :ref:`Complete Camera Specification`, as these are the values that were actually used by the query when calculating results.
 The following is included:
 
 +--------------------------+----------------------------------------------+
@@ -940,7 +941,7 @@ Users can visualize the near, view, and far planes in physical space alongside t
    The near plane is in red, the view plane in transparent orange, and the far plane in blue.
 
 Including this in the output gives a sense of where the camera is looking, and is also useful for checking if parts of the mesh being ray traced are outside the near and far clipping planes.
-See the example below, which is taken from the example in :ref:`Overview of Output`, but this time with only the imaging plane meshes fully fleshed out: 
+See the example below, which is taken from the example in :ref:`Overview of Output`, but this time with only the imaging plane meshes fully realized: 
 
 ::
 
@@ -1126,7 +1127,7 @@ And here is the same view with 400x300 rays but with the ray opacity lowered.
 
 Hopefully it is clear at this point that there are multiple ways of looking at the rays that are used in the ray trace.
 
-Now we will take a look at the final example taken from the example in :ref:`Overview of Output`, but this time with only the rays meshes fully fleshed out: 
+Now we will take a look at the final example taken from the example in :ref:`Overview of Output`, but this time with only the rays meshes fully realized: 
 
 ::
 
@@ -1246,7 +1247,7 @@ The rationale for including this mesh is twofold:
 
 If the energy group bounds were not provided by the user, or the provided bounds do not match the actual number of bins used in the ray trace, then there will be a message explaining what went wrong under ``coordsets/spatial_coords/info``, and the z values will go from 0 to *n* where *n* is the number of bins.
 
-The following is the example from :ref:`Overview of Output`, but with only the spatial extents mesh fully fleshed out: 
+The following is the example from :ref:`Overview of Output`, but with only the spatial extents mesh fully realized: 
 
 ::
 
