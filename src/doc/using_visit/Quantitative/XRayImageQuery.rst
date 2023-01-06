@@ -35,7 +35,7 @@ If the ``divide_emis_by_absorb`` is set, then the following integration is perfo
 
     .. container:: header
 
-        **Show/Hide Code for** Absortivity-Normalized XRay Image Query 
+        **Show/Hide Code for** Absorbtivity-Normalized X Ray Image Query 
 
     .. literalinclude:: ../../../../src/avt/Filters/avtXRayFilter.C
         :language: C++
@@ -45,7 +45,7 @@ If the ``divide_emis_by_absorb`` is set, then the following integration is perfo
 When making a simulated radiograph, either the emissivity variable must contain non zero values or a background intensity will need to be specified using either *background_intensity* or *background_intensities*.
 See :ref:`Standard Arguments` for more information.
 If neither of these is the case, you will get an all white image.
-A non-zero emissivity variable would correspond to an object emitting radiation and a non-zero background intensity would correspond to constant backlit radiation, such as when x raying an object.
+A non-zero emissivity variable would correspond to an object emitting radiation and a non-zero background intensity would correspond to constant backlit radiation, such as when X-raying an object.
 
 Query Arguments
 ~~~~~~~~~~~~~~~
@@ -245,7 +245,7 @@ The simplified version consists of:
 +--------------+----------------------------------------------------------+
 | *height*     | The height of the image in physical space.               |
 +--------------+----------------------------------------------------------+
-| *origin*     | The point in 3D corrensponding to the center of the      |
+| *origin*     | The point in 3D corresponding to the center of the       |
 |              | image.                                                   |
 +--------------+----------------------------------------------------------+
 | *theta* |br| | The orientation angles. The default is 0. 0. and is      |
@@ -1734,7 +1734,7 @@ If we adjust the query so that the near plane is further away (say maybe from -1
    Note the upper right corner of each imaging plane is marked in green.
    The upper right corner for the near plane (red) is on the bottom left because the near plane is reflected across the x and y axes.
 
-Following the ray corners, we see that the upper right corner for the near plane is actually on the bottom left, because the whole near plane has been reflected to accomodate the fact that it is behind the frustum.
+Following the ray corners, we see that the upper right corner for the near plane is actually on the bottom left, because the whole near plane has been reflected to accommodate the fact that it is behind the frustum.
 This explains why the spatial extents mesh appears upside down; it is actually reflected across the x and y axes.
 
 Visualizing with VisIt
