@@ -1468,7 +1468,7 @@ The later Python code examples assume that the following has already been run:
    # In this case it is called "output.root"
    OpenDatabase("output.root")
 
-**1. Once the query has been run, to visualize the** :ref:`Basic Mesh Output`**, follow these steps in Python:**
+**1. Once the query has been run, to visualize the** :ref:`Basic Mesh Output`, **follow these steps in Python:**
 
 ::
 
@@ -1500,7 +1500,7 @@ To make the output look like an x ray image, it is simple to change the color ta
 
    TODO caption
 
-**2. Next we will cover visualizing the **:ref:`Imaging Planes`**.**
+**2. Next we will cover visualizing the** :ref:`Imaging Planes`.
 To simply render the imaging planes on top of your simulation data we will do the following:
 
 ::
@@ -1550,7 +1550,7 @@ To make them distinct colors like in all the examples throughout this documentat
 
    TODO caption
 
-**3. Next we will look at the **:ref:`Rays Meshes`**.**
+**3. Next we will look at the** :ref:`Rays Meshes`.
 For the sake of visual clarity, we will build on the imaging planes visualization from above.
 To visualize the ray corners, it is a simple matter of doing the following:
 
@@ -1601,7 +1601,7 @@ As discussed in the :ref:`Rays Meshes` section, this picture is not very helpful
 
 See the :ref:`Rays Meshes` section for more tips for making sense of the rays.
 
-**4. Finally, we will examine the **:ref:`Spatial Extents Mesh`**.**
+**4. Finally, we will examine the** :ref:`Spatial Extents Mesh`.
 This should be very similar to visualizing the :ref:`Basic Mesh Output`.
 
 ::
