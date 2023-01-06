@@ -1659,11 +1659,11 @@ avtMiliFileFormat::GetVar(int timestep,
     int nVals = 0;
     if (varMD->GetCentering() == AVT_NODECENT)
     {
-        int nVals = miliMetaData[meshId]->GetNumNodes(dom);
+        nVals = miliMetaData[meshId]->GetNumNodes(dom);
     }
     else
     {
-        int nVals = miliMetaData[meshId]->GetNumCells(dom);
+        nVals = miliMetaData[meshId]->GetNumCells(dom);
     }
 
     //
