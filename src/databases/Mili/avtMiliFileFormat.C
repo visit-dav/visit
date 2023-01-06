@@ -1606,6 +1606,12 @@ avtMiliFileFormat::GetVar(int timestep,
 //    They are only stored with domain 0, so the domain needs to be set to
 //    0 when reading a material variable.
 //
+//    Eric Brugger, Thu Jan  5 15:25:33 PST 2023
+//    I fixed a bug where variables that were only defined on a portion of
+//    the nodes weren't being placed on the correct nodes. This was handled
+//    properly for zonal variables. I fixed the bug by unifiying the handling
+//    of nodal and zonal variables.
+//
 // ****************************************************************************
 
 void
@@ -1650,116 +1656,107 @@ avtMiliFileFormat::GetVar(int timestep,
     snprintf(charName, 128, "%s", vShortName.c_str());
     char *namePtr = (char *) charName;
 
+    int nVals = 0;
     if (varMD->GetCentering() == AVT_NODECENT)
     {
-        int nNodes = miliMetaData[meshId]->GetNumNodes(dom);
+        int nVals = miliMetaData[meshId]->GetNumNodes(dom);
+    }
+    else
+    {
+        int nVals = miliMetaData[meshId]->GetNumCells(dom);
+    }
 
-        float *fArrPtr = (float *) fltArray->GetVoidPointer(0);
+    //
+    // We have two special cases to consider.
+    // Material variables:
+    //   We receive a single value for a given number of materials,
+    //   and we must apply each of those values to their respective
+    //   materials.
+    // Global variables:
+    //   We receive a single value that is applied to all cells.
+    //
+    // In the cases of regular and global variables we use the output
+    // array as the buffer. In the case of a material array we create
+    // a new buffer array.
+    //
+    int dBuffSize = 0;
+    float *dataBuffer = NULL;
+    bool isMatVar = varMD->IsMatVar();
+    bool isGlobal = varMD->IsGlobal();
 
-        ReadMiliResults(dbid[dom], timestep + 1, SRIds[0], 1,
-            &namePtr, vType, nNodes, fArrPtr);
+    if (isMatVar)
+    {
+        dBuffSize  = materials[domVar][meshId]->GetNMaterials();
+        dataBuffer = new float[dBuffSize];
+    }
+    else if (isGlobal)
+    {
+        dBuffSize  = 1;
+        dataBuffer = (float *) fltArray->GetVoidPointer(0);
+    }
+    else
+    {
+        dBuffSize  = nVals;
+        dataBuffer = (float *) fltArray->GetVoidPointer(0);
+    }
+
+    //
+    // Nans for empty space (rendered grey).
+    //
+    for (int i = 0 ; i < dBuffSize; i++)
+    {
+        dataBuffer[i] = std::numeric_limits<float>::quiet_NaN();
+    }
+
+    //
+    // Read the data into our buffer.
+    //
+    string className = varMD->GetClassShortName();
+    int start = miliMetaData[meshId]->
+        GetClassMDByShortName(className.c_str())->
+        GetConnectivityOffset(domVar);
+
+    ReadMiliVarToBuffer(namePtr, SRIds, SRInfo, start,
+        vType, 1, timestep + 1, domVar, dataBuffer);
+
+    if (isMatVar)
+    {
+        //
+        // This is a material variable. We need to distribute the
+        // values across the array by material ID.
+        //
+        const int *matList = materials[dom][meshId]->GetMatlist();
+
+        for (int i = 0; i < nVals; ++i)
+        {
+            fltArray->SetTuple1(i, dataBuffer[matList[i]]);
+        }
+    }
+    else if (isGlobal)
+    {
+        //
+        // This is a global var. Copy the first value to the rest of the
+        // array.
+        //
+        float gVal = dataBuffer[0];
+        for (int i = 1; i < nVals; ++i)
+        {
+            fltArray->SetTuple1(i, gVal);
+        }
     }
     else
     {
         //
-        // Cell centered variable.
+        // Nothing to do here. The values are already in the output array.
         //
-        int nCells = miliMetaData[meshId]->GetNumCells(dom);
+    }
 
-        float *dataBuffer = NULL;
-
-        //
-        // We have two special cases to consider.
-        // Material variables:
-        //   We receive a single value for a given number of materials,
-        //   and we must apply each of those values to their respective
-        //   materials.
-        // Global variables:
-        //   We receive a single value that is applied to all cells.
-        //
-        int dBuffSize = 0;
-        bool isMatVar = varMD->IsMatVar();
-        bool isGlobal = varMD->IsGlobal();
-
-        if (isMatVar)
-        {
-            dBuffSize  = materials[domVar][meshId]->GetNMaterials();
-            dataBuffer = new float[dBuffSize];
-        }
-        else if (isGlobal)
-        {
-            dBuffSize  = 1;
-            dataBuffer = new float[1];
-        }
-        else
-        {
-            dBuffSize  = nCells;
-            dataBuffer = new float[dBuffSize];
-        }
-
-        //
-        // Nans for empty space (redered grey).
-        //
-        for (int i = 0 ; i < dBuffSize; i++)
-        {
-            dataBuffer[i] = std::numeric_limits<float>::quiet_NaN();
-        }
-
-        //
-        // Read the data into our buffer.
-        //
-        string className = varMD->GetClassShortName();
-        int start = miliMetaData[meshId]->
-            GetClassMDByShortName(className.c_str())->
-            GetConnectivityOffset(domVar);
-
-        ReadMiliVarToBuffer(namePtr, SRIds, SRInfo, start,
-            vType, 1, timestep + 1, domVar, dataBuffer);
-
-        if (isMatVar)
-        {
-            //
-            // This is a material variable. We need to distribute the
-            // values across cells by material ID.
-            //
-            const int *matList = materials[dom][meshId]->GetMatlist();
-
-            for (int i = 0; i < nCells; ++i)
-            {
-                if (!visitIsNan(dataBuffer[matList[i]]))
-                {
-                    fltArray->SetTuple1(i, dataBuffer[matList[i]]);
-                }
-            }
-        }
-        else if (isGlobal)
-        {
-            //
-            // This is a global var. Just apply it to all cells.
-            //
-            for (int i = 0; i < nCells; ++i)
-            {
-                fltArray->SetTuple1(i, dataBuffer[0]);
-            }
-        }
-        else
-        {
-            //
-            // Nothing special here. Just copy the values over.
-            //
-            for (int i = 0; i < nCells; ++i)
-            {
-                if (!visitIsNan(dataBuffer[i]))
-                {
-                    fltArray->SetTuple1(i, dataBuffer[i]);
-                }
-            }
-        }
-
-        if (dataBuffer != NULL)
-        {
-            delete [] dataBuffer;
-        }
+    //
+    // If the data buffer isn't equal to the output buffer delete it.
+    //
+    if (dataBuffer != fltArray->GetVoidPointer(0))
+    {
+        delete [] dataBuffer;
     }
 }
 
