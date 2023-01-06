@@ -552,7 +552,7 @@ We have taken the image data that comes out of the query and packaged it into a 
 
 .. figure:: images/xray_visualize_image2.png
 
-   TODO caption
+   The basic mesh output visualized using VisIt.
 
 The following is the example from :ref:`Overview of Output`, but with the Blueprint mesh representing the query result fully realized: 
 
@@ -1257,7 +1257,7 @@ In the example below, the z dimension represents Kiloelectron Volts.
 
 .. figure:: images/xray_visualize_spatial2.png
 
-   TODO caption
+   The Spatial Extents Mesh visualized using VisIt.
 
 Another way to think about the spatial extents mesh is if the basic mesh output was resized and then pasted on top of the near plane mesh (:ref:`Imaging Planes`), you would get the spatial extents mesh (ignoring the z dimension).
 The rationale for including this mesh is twofold: 
@@ -1485,7 +1485,7 @@ The later Python code examples assume that the following has already been run:
 
 .. figure:: images/xray_visualize_image1.png
 
-   TODO caption
+   A visualization of the basic mesh output.
 
 To make the output look like an x ray image, it is simple to change the color table.
 
@@ -1498,7 +1498,7 @@ To make the output look like an x ray image, it is simple to change the color ta
 
 .. figure:: images/xray_visualize_image2.png
 
-   TODO caption
+   A visualization of the basic mesh output using the x ray color table.
 
 **2. Next we will cover visualizing the** :ref:`Imaging Planes`.
 To simply render the imaging planes on top of your simulation data we will do the following:
@@ -1522,7 +1522,7 @@ To simply render the imaging planes on top of your simulation data we will do th
 
 .. figure:: images/xray_visualize_imagingplanes1.png
 
-   TODO caption
+   A visualization of the input mesh along with the imaging planes.
 
 This will color the imaging planes all the same color.
 To make them distinct colors like in all the examples throughout this documentation, we can do the following:
@@ -1548,7 +1548,7 @@ To make them distinct colors like in all the examples throughout this documentat
 
 .. figure:: images/xray_visualize_imagingplanes2.png
 
-   TODO caption
+   A visualization of the input mesh along with the imaging planes, where they have had their colors adjusted.
 
 **3. Next we will look at the** :ref:`Rays Meshes`.
 For the sake of visual clarity, we will build on the imaging planes visualization from above.
@@ -1573,7 +1573,7 @@ To visualize the ray corners, it is a simple matter of doing the following:
 
 .. figure:: images/xray_visualize_ray_corners.png
 
-   TODO caption
+   A visualization of the input mesh, the imaging planes, and the ray corners.
 
 Now we will visualize all of the rays.
 
@@ -1584,7 +1584,7 @@ Now we will visualize all of the rays.
 
 .. figure:: images/xray_visualize_rays1.png
 
-   TODO caption
+   A visualization of the input mesh, the imaging planes, the ray corners, and the rays.
 
 As discussed in the :ref:`Rays Meshes` section, this picture is not very helpful, so we will reduce the opacity for greater visual clarity:
 
@@ -1597,7 +1597,7 @@ As discussed in the :ref:`Rays Meshes` section, this picture is not very helpful
 
 .. figure:: images/xray_visualize_rays2.png
 
-   TODO caption
+   A visualization of the input mesh, the imaging planes, the ray corners, and the rays, with their opacity adjusted.
 
 See the :ref:`Rays Meshes` section for more tips for making sense of the rays.
 
@@ -1619,7 +1619,7 @@ This should be very similar to visualizing the :ref:`Basic Mesh Output`.
 
 .. figure:: images/xray_visualize_spatial1.png
 
-   TODO caption
+   A visualization of the spatial extents mesh.
 
 To make the output look like an x ray image, it is simple to change the color table.
 
@@ -1632,7 +1632,7 @@ To make the output look like an x ray image, it is simple to change the color ta
 
 .. figure:: images/xray_visualize_spatial2.png
 
-   TODO caption
+   A visualization of the spatial extents mesh using the x ray color table.
 
 Introspecting with Python
 """""""""""""""""""""""""
