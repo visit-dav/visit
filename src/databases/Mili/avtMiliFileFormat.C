@@ -1645,7 +1645,6 @@ avtMiliFileFormat::GetVar(int timestep,
     }
 
     intVector SRIds    = varMD->GetSubrecIds(domVar);
-    int nSRs           = SRIds.size();
     int vType          = varMD->GetNumType();
     string vShortName  = varMD->GetShortName();
 
@@ -2213,7 +2212,7 @@ avtMiliFileFormat::GetElementSetVar(int timestep,
         // Element sets are specialized vectors such that each
         // element in the vector is a list of integration points.
         //
-        for (int j = 0; j < compIdxs.size(); ++j)
+        for (size_t j = 0; j < compIdxs.size(); ++j)
         {
             int idx = (i * dataSize) + (compIdxs[j] * compDims);
             idx += targetIP;
@@ -2288,7 +2287,7 @@ avtMiliFileFormat::ReadMiliVarToBuffer(char *varName,
     // Loop over the subrecords, and retrieve the variable
     // data from mili.
     //
-    for (int i = 0 ; i < SRIds.size(); i++)
+    for (size_t i = 0 ; i < SRIds.size(); i++)
     {
         int nTargetEl = 0;
         int nBlocks   = 0;
@@ -3056,7 +3055,7 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
                 // that are treated as distinct variables. We need to
                 // check for this and add them individually.
                 //
-                for (int j = 0; j < groupShared.size(); ++j)
+                for (size_t j = 0; j < groupShared.size(); ++j)
                 {
                     bool addVarNow = true;
                     SharedVariableInfo *sharedInfo = NULL;
@@ -3698,7 +3697,6 @@ avtMiliFileFormat::ExtractJsonClasses(rapidjson::Document &jDoc,
 
             string lName = "";
             int scID     = -1;
-            int elCount  = 0;
 
             if (val.HasMember("LongName"))
             {
@@ -4095,6 +4093,8 @@ avtMiliFileFormat::RetrieveZoneLabelInfo(const int meshId,
     }
     delete [] elemList;
     delete [] labelIds;
+
+    visitTimer->StopTimer(loadZoneLabels, "MILI: Loading zone labels");
 }
 
 
@@ -4127,7 +4127,6 @@ avtMiliFileFormat::RetrieveNodeLabelInfo(const int meshId,
                                          char *shortName,
                                          const int dom)
 {
-    int nLabeledNodes = 0;
     int nNodes        = miliMetaData[meshId]->GetNumNodes(dom);
     int numBlocks     = 0;
     int *blockRanges  = NULL;
