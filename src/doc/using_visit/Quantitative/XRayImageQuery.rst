@@ -1468,18 +1468,22 @@ The ensuing Python code examples assume that the following has already been run:
 
    DrawPlots()
 
-TODO picture here
+.. figure:: images/xray_visualize_image1.png
+
+   TODO caption
 
 To make the output look like an x ray image, it is simple to change the color table.
 
 ::
 
-   # Make sure the plot you want to change the color of is selected
+   # Make sure the plot you want to change the color of is active
    PseudocolorAtts = PseudocolorAttributes()
    PseudocolorAtts.colorTableName = "xray"
    SetPlotOptions(PseudocolorAtts)
 
-TODO picture here
+.. figure:: images/xray_visualize_image2.png
+
+   TODO caption
 
 **2. Next we will cover visualizing the :ref:`Imaging Planes`.**
 To simply render the imaging planes on top of your simulation data we will do the following:
@@ -1580,9 +1584,42 @@ As discussed in the :ref:`Rays Meshes` section, this picture is not very helpful
 
    TODO caption
 
-TODO
-- visualize the spatial extents mesh
-- link to this section from other sections
+See the :ref:`Rays Meshes` section for more tips for making sense of the rays.
+
+**4. Finally, we will examine the :ref:`Spatial Extents Mesh`.**
+This should be very similar to visualizing the :ref:`Basic Mesh Output`.
+
+::
+
+   # Make sure we have a clean slate for ensuing visualizations.
+   DeleteAllPlots()
+
+   # Add a pseudocolor plot of the intensities
+   AddPlot("Pseudocolor", "mesh_spatial_topo/intensities_spatial", 1, 1)
+   
+   # Alternatively add a plot of the path length instead
+   # AddPlot("Pseudocolor", "mesh_spatial_topo/path_length_spatial", 1, 1)
+
+   DrawPlots()
+
+.. figure:: images/xray_visualize_spatial1.png
+
+   TODO caption
+
+To make the output look like an x ray image, it is simple to change the color table.
+
+::
+
+   # Make sure the plot you want to change the color of is active
+   PseudocolorAtts = PseudocolorAttributes()
+   PseudocolorAtts.colorTableName = "xray"
+   SetPlotOptions(PseudocolorAtts)
+
+.. figure:: images/xray_visualize_spatial2.png
+
+   TODO caption
+
+TODO link to this section from other sections
 
 Introspecting with Python
 """""""""""""""""""""""""
