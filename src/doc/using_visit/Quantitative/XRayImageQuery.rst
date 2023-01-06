@@ -304,9 +304,55 @@ See :ref:`View Parameters` for more information.
 Calling the Query
 """""""""""""""""
 
-TODO
+There are a couple ways to call the X Ray Image Query, with their own nuances.
 
-TODO here I need to mention the pitfall of GetQueryParameters("XRay Image")
+The first is the old style argument passing:
+
+::
+
+   Query("XRay Image", 
+      output_type, 
+      output_dir, 
+      divide_emis_by_absorb, 
+      origin_x,
+      origin_y,
+      origin_z,
+      theta, 
+      phi, 
+      width, 
+      height, 
+      image_size_x, 
+      image_size_y, 
+      vars)
+
+   # An example
+   Query("XRay Image", "hdf5", ".", 1, 0.0, 2.5, 10.0, 0, 0, 10., 10., 400, 300, ("d", "p"))
+
+This way of calling the query makes use of the :ref:`Simplified Camera Specification`.
+
+It is recommended to instead use the standard way of calling the query, using a dictionary to store the arguments.
+Here is an example:
+
+::
+
+   params = dict()
+   params["image_size"] = (400, 300)
+   params["output_type"] = "hdf5"
+   params["focus"] = (0., 2.5, 10.)
+   params["perspective"] = 1
+   params["near_plane"] = -25.
+   params["far_plane"] = 25.
+   params["vars"] = ("d", "p")
+   params["parallel_scale"] = 10.
+   Query("XRay Image", params)
+
+Of course, one could use this to set up the parameters instead:
+
+::
+
+   params = GetQueryParameters("XRay Image")
+
+However, this will force the :ref:`Simplified Camera Specification` to be used, since it includes default arguments for *all* of the various arguments, and if *any* of the :ref:`Simplified Camera Specification` arguments are present, they will override those of the :ref:`Complete Camera Specification`.
 
 Examples
 ~~~~~~~~
@@ -445,11 +491,11 @@ The next example illustrates use of one of the :ref:`Conduit Output` types.
    AddPlot("Pseudocolor", "d")
    DrawPlots()
 
-.. figure:: xray_examples_bp1.png
+.. figure:: images/xray_examples_bp1.png
 
    Our input mesh.
 
-We call the query as usual, although there are a few extra arguments we can provide that are used for generated the Conduit output in particular.
+We call the query as usual, although there are a few extra arguments we can provide that are used for generating the Conduit output in particular.
 
 ::
 
@@ -487,7 +533,7 @@ To look at the raw data from the query, we run this code:
 
    print(xrayout["domain_000000"])
 
-This yields the following overview.
+This yields the following data overview.
 See :ref:`Introspecting with Python` for a deeper dive into viewing and extracting the raw data from the :ref:`Conduit Output`.
 
 ::
@@ -690,7 +736,7 @@ The :ref:`Visualizing with VisIt` section goes into more detail on this subject,
 
 Running this code yields the following image:
 
-.. figure:: xray_examples_bp2.png
+.. figure:: images/xray_examples_bp2.png
 
    The resulting x ray image, visualized using VisIt.
 
@@ -2204,6 +2250,4 @@ See the text on visualizing the rays and imaging planes in :ref:`Visualizing wit
 
 **4. What information is the query using to create the output?**
 
-TODO talk about getting the metadata out link to introspecting with python
-
-TODO other troubleshooting questions?
+See :ref:`Introspecting with Python` for information on how to extract and view the :ref:`Metadata`, which contains the information the query uses to create the output.
