@@ -8,7 +8,7 @@ X Ray Image Query
 -----------------
 
 The X Ray Image Query generates a simulated radiograph by tracing rays through a volume using an absorbtivity and emissivity variable.
-The absorbtivity and emissivity variables must be zone centered and can be either scalar variables or array variables.
+The absorbtivity and emissivity variables must be zone-centered and can be either scalar variables or array variables.
 If using an array variable, the query will generate an image per array variable component.
 
 The query operates on 2D R-Z meshes and 3D meshes.
@@ -42,7 +42,7 @@ If the ``divide_emis_by_absorb`` is set, then the following integration is perfo
         :start-after: begin absorbtivity-normalized integration
         :end-before: end absorbtivity-normalized integration
 
-When making a simulated radiograph, either the emissivity variable must contain non zero values or a background intensity will need to be specified using either *background_intensity* or *background_intensities*.
+When making a simulated radiograph, either the emissivity variable must contain non-zero values or a background intensity will need to be specified using either *background_intensity* or *background_intensities*.
 See :ref:`Standard Arguments` for more information.
 If neither of these is the case, you will get an all white image.
 A non-zero emissivity variable would correspond to an object emitting radiation and a non-zero background intensity would correspond to constant backlit radiation, such as when X-raying an object.
@@ -529,7 +529,7 @@ To look at the raw data from the query, we run this code:
    import conduit
    xrayout = conduit.Node()
 
-   conduit.relay.io.blueprint.load_mesh(xrayout, "output.cycle_000048.root")
+   conduit.relay.io.blueprint.load_mesh(xrayout, "output.root")
 
    print(xrayout["domain_000000"])
 
@@ -948,7 +948,7 @@ The 3 constituent parts of the Blueprint mesh output are the coordinate set, ``i
 The ``image_coords`` represent the x and y coordinates of the 2D image, and the z dimension represents the energy group bounds.
 In the case of multiple energy groups, previously, the query would have output multiple images, one for each pair of energy group bounds.
 In the Blueprint output, this is simplified; rather than outputting multiple files, each containing one image, we have opted to "stack" the resulting images on top of one another.
-This is why the Blueprint output is a 3D mesh, so it can account for multiple energy groups, and place resulting images one on top of another.
+This is why the Blueprint output is a 3D mesh; this way, it can account for multiple energy groups, and place resulting images one on top of another.
 Also included in the ``image_coords`` are labels and units for disambiguation purposes.
 
 The ``image_topo`` exists to tell Blueprint that the ``image_coords`` can be viewed as a topology.
@@ -966,7 +966,7 @@ The Conduit output types (see :ref:`Output Types` for more information) come pac
 The ability to send this metadata alongside the output mesh (and other data) is one of the advantages of using Conduit for outputs from the query.
 We hope this metadata helps to make it clear exactly what the query is doing, what information it has available to it, and what the output might look like.
 
-Metadata is stored under the "state" Node in the resulting Conduit tree.
+Metadata is stored under the ``state`` Node in the resulting Conduit tree.
 See the example below, which is taken from the example in :ref:`Overview of Output`, but this time with only the metadata fully realized: 
 
 ::
@@ -1248,7 +1248,7 @@ One of our goals with the Conduit output types (see :ref:`Output Types` for more
 To that end, these outputs come packaged with meshes representing the imaging planes specified by the user when calling the query.
 Additionally, they also include meshes representing the rays that were used in the ray tracing.
 The following subsections discuss both of these in more detail.
-To visualize these mesh with VisIt, see :ref:`Visualizing with VisIt`.
+To visualize these meshes with VisIt, see :ref:`Visualizing with VisIt`.
 
 Imaging Planes
 ++++++++++++++
@@ -1397,7 +1397,7 @@ See the following image, which is the same query as the previous image, but this
 
 .. figure:: images/xray_raysmesh_400x300.png
 
-   There are 400x300 rays in this image, corresponding to an x ray image output of 40x30 pixels.
+   There are 400x300 rays in this image, corresponding to an x ray image output of 400x300 pixels.
 
 This render is far less useful. Even the imaging planes have been swallowed up, and the input mesh is completely hidden.
 There are a couple quick solutions to this problem.
@@ -1533,7 +1533,7 @@ Now we will take a look at the final example taken from the example in :ref:`Ove
       volume_dependent: "false"
       values: [0.0, 1.0, 2.0, ..., 119998.0, 119999.0]
 
-The Blueprint mesh setup may be familiar by now after reading the other sections, particularly :ref:`Basic Mesh Output`, so we will only mention here that for each ray mesh, there are the usual three components, a coordinate set, a topology, and a field.
+The Blueprint mesh setup may be familiar by now after reading the other sections, particularly the :ref:`Basic Mesh Output` section, so we will only mention here that for each ray mesh, there are the usual three components, a coordinate set, a topology, and a field.
 The topology tells Blueprint that the shapes in question are lines, which is how we represent the rays.
 
 The final topic of note in this section ties in to the following questions: Why are the rays all different colors? What do the colors mean?
@@ -1547,6 +1547,11 @@ Spatial Extents Mesh
 """"""""""""""""""""
 
 The final piece of the Blueprint Output is one last mesh, the spatial extents mesh.
+
+.. figure:: images/xray_visualize_spatial2.png
+
+   The Spatial Extents Mesh visualized using VisIt.
+
 This mesh bears great similarity to that of the :ref:`Basic Mesh Output`.
 The :ref:`Basic Mesh Output` gives users a picture, in a sense, that was taken by the simulated x ray detector.
 That picture lives in image space, where the x and y dimensions are given in pixels, and the z dimension represents the number of energy group bins.
@@ -1557,11 +1562,7 @@ In the example below, these dimensions are in centimeters.
 The x and y values run from 0 to the detector width and height values, respectively, that appear in the :ref:`Other Metadata` section of the Blueprint output.
 The z dimension represents actual energy group bins.
 These are values that were passed in via the query arguments (see :ref:`Standard Arguments` for more information).
-In the example below, the z dimension represents Kiloelectron Volts.
-
-.. figure:: images/xray_visualize_spatial2.png
-
-   The Spatial Extents Mesh visualized using VisIt.
+In the Blueprint example below, the z dimension represents Kiloelectron Volts.
 
 Another way to think about the spatial extents mesh is if the basic mesh output was resized and then pasted on top of the near plane mesh (:ref:`Imaging Planes`), you would get the spatial extents mesh (ignoring the z dimension).
 The rationale for including this mesh is twofold: 
@@ -1754,6 +1755,7 @@ The later Python code examples assume that the following has already been run:
    AddPlot("Pseudocolor", "d")
    DrawPlots()
 
+   # Call the query
    params = dict()
    params["image_size"] = (400, 300)
    # One of the Blueprint output types
@@ -2143,7 +2145,7 @@ Because the :ref:`Spatial Extents Mesh` shares a lot in common with the :ref:`Ba
    energy_units = xrayout["domain_000000/coordsets/spatial_coords/units/z"]
 
 **5. Everything else.**
-All of the other data stored in the Conduit output can be accessed similarly.
+All of the other data stored in the Conduit output can be accessed in the same way.
 To get a general sense of what is stored in particular branches of the tree, it is a simple matter of running ``print(myconduitnode)`` to quickly get an overview.
 
 Troubleshooting
