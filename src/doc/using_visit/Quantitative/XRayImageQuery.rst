@@ -317,7 +317,7 @@ of the data.
 
    The 2D R-Z data.
 
-Now we'll show the Python code to generate a simulated x ray looking
+Now we will show the Python code to generate a simulated x ray looking
 down the Z Axis and the resulting image. ::
 
   params = GetQueryParameters("XRay Image")
@@ -367,7 +367,7 @@ moves the image down and to the right by 1. ::
 
    The resulting x ray image.
 
-Now we'll switch to a 3D example using globe.silo. Globe.silo is an
+Now we will switch to a 3D example using globe.silo. Globe.silo is an
 unstructured mesh consisting of tetrahedra, pyramids, prisms and hexahedra
 forming a globe. Here is an image of the tetrahedra at the center of
 the globe that form 2 cones.
@@ -401,7 +401,7 @@ x ray image shows some variation. ::
 
    The resulting x ray image.
 
-Now we'll look at the pyramids in the center of the globe.
+Now we will look at the pyramids in the center of the globe.
 
 .. figure:: images/xray06.png
 
@@ -1449,30 +1449,140 @@ The ensuing Python code examples assume that the following has already been run:
    params["parallel_scale"] = 10.
    Query("XRay Image", params)
 
-   # Make sure we have a clean slate for ensuing visualizations.
-   DeleteAllPlots()
-
    # Open the file that was output from the query.
    # In this case it is called "output.root"
    OpenDatabase("output.root")
 
-Once the query has been run, to visualize the :ref:`Basic Mesh Output`, follow these steps in Python:
+**1. Once the query has been run, to visualize the :ref:`Basic Mesh Output`, follow these steps in Python:**
 
 ::
 
+   # Make sure we have a clean slate for ensuing visualizations.
+   DeleteAllPlots()
+
+   # Add a pseudocolor plot of the intensities
+   AddPlot("Pseudocolor", "mesh_image_topo/intensities", 1, 1)
    
+   # Alternatively add a plot of the path length instead
+   # AddPlot("Pseudocolor", "mesh_image_topo/path_length", 1, 1)
+
+   DrawPlots()
+
+TODO picture here
+
+To make the output look like an x ray image, it is simple to change the color table.
+
+::
+
+   # Make sure the plot you want to change the color of is selected
+   PseudocolorAtts = PseudocolorAttributes()
+   PseudocolorAtts.colorTableName = "xray"
+   SetPlotOptions(PseudocolorAtts)
+
+TODO picture here
+
+**2. Next we will cover visualizing the :ref:`Imaging Planes`.**
+To simply render the imaging planes on top of your simulation data we will do the following:
+
+::
+
+   # Make sure we have a clean slate for ensuing visualizations.
+   DeleteAllPlots()
+
+   # First we wish to make sure that the input mesh is visible
+   ActivateDatabase("testdata/silo_hdf5_test_data/curv3d.silo")
+   AddPlot("Pseudocolor", "d", 1, 1)
+   DrawPlots()
+
+   # Then we want to go back to the output file and visualize the imaging planes
+   ActivateDatabase("output.root")
+   AddPlot("Pseudocolor", "mesh_near_plane_topo/near_plane_field", 1, 1)
+   AddPlot("Pseudocolor", "mesh_view_plane_topo/view_plane_field", 1, 1)
+   AddPlot("Pseudocolor", "mesh_far_plane_topo/far_plane_field", 1, 1)
+   DrawPlots()
+
+.. figure:: images/xray_visualize_imagingplanes1.png
+
+   TODO caption
+
+This will color the imaging planes all the same color.
+To make them distinct colors like in all the examples throughout this documentation, we can do the following:
+
+::
+
+   # Make the plot of the near plane active
+   SetActivePlots(1)
+   PseudocolorAtts = PseudocolorAttributes()
+   # We invert the color table so that it is a different color from the far plane
+   PseudocolorAtts.invertColorTable = 1
+   SetPlotOptions(PseudocolorAtts)
+
+   # Make the plot of the view plane active
+   SetActivePlots(2)
+   PseudocolorAtts = PseudocolorAttributes()
+   PseudocolorAtts.colorTableName = "Oranges"
+   PseudocolorAtts.invertColorTable = 1
+   PseudocolorAtts.opacityType = PseudocolorAtts.Constant  # ColorTable, FullyOpaque, Constant, Ramp, VariableRange
+   # We lower the opacity so that the view plane does not obstruct our view of anything.
+   PseudocolorAtts.opacity = 0.7
+   SetPlotOptions(PseudocolorAtts)
+
+.. figure:: images/xray_visualize_imagingplanes2.png
+
+   TODO caption
+
+**3. Next we will look at the :ref:`Rays Meshes`.**
+For the sake of visual clarity, we will build on the imaging planes visualization from above.
+To visualize the ray corners, it is a simple matter of doing the following:
+
+::
+
+   # This plots the ray corners mesh
+   AddPlot("Mesh", "mesh_ray_corners_topo", 1, 1)
+
+   # Alternatively, we could plot the dummy field that is included, but 
+   # plotting just the mesh will make sure the plot is in black, which
+   # looks better with the colors we are using to paint the imaging planes.
+   # AddPlot("Pseudocolor", "mesh_ray_corners_topo/ray_corners_field", 1, 1)
+
+   DrawPlots()
+
+   # The next few lines of code make the rays appear thicker for visual clarity.
+   MeshAtts = MeshAttributes()
+   MeshAtts.lineWidth = 1
+   SetPlotOptions(MeshAtts)
+
+.. figure:: images/xray_visualize_ray_corners.png
+
+   TODO caption
+
+Now we will visualize all of the rays.
+
+::
+
+   AddPlot("Pseudocolor", "mesh_ray_topo/ray_field", 1, 1)
+   DrawPlots()
+
+.. figure:: images/xray_visualize_rays1.png
+
+   TODO caption
+
+As discussed in the :ref:`Rays Meshes` section, this picture is not very helpful, so we will reduce the opacity for greater visual clarity:
+
+::
+
+   PseudocolorAtts = PseudocolorAttributes()
+   PseudocolorAtts.opacityType = PseudocolorAtts.Constant  # ColorTable, FullyOpaque, Constant, Ramp, VariableRange
+   PseudocolorAtts.opacity = 0.5
+   SetPlotOptions(PseudocolorAtts)
+
+.. figure:: images/xray_visualize_rays2.png
+
+   TODO caption
 
 TODO
-- visualize the basic mesh output
-- change color table to x ray if you like
-
-- visualize the imaging planes
-- color them nicely
-
-- visualize the ray corners and rays
-- mess with opacity
-
 - visualize the spatial extents mesh
+- link to this section from other sections
 
 Introspecting with Python
 """""""""""""""""""""""""
