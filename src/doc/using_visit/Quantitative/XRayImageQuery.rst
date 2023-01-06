@@ -435,7 +435,264 @@ the default ones. This is necessary to use the full view specification. ::
 
    The resulting x ray image.
 
-TODO big blueprint example
+The next example illustrates use of one of the :ref:`Conduit Output` types.
+
+::
+
+   # A test file
+   OpenDatabase("testdata/silo_hdf5_test_data/curv3d.silo")
+
+   AddPlot("Pseudocolor", "d")
+   DrawPlots()
+
+.. figure:: xray_examples_bp1.png
+
+   Our input mesh.
+
+We call the query as usual, although there are a few extra arguments we can provide that are used for generated the Conduit output in particular.
+
+::
+
+   params = dict()
+   params["image_size"] = (400, 300)
+   params["output_type"] = "hdf5"
+   params["focus"] = (0., 2.5, 10.)
+   params["perspective"] = 1
+   params["near_plane"] = -25.
+   params["far_plane"] = 25.
+   params["vars"] = ("d", "p")
+   params["parallel_scale"] = 10.
+
+   # ENERGY GROUP BOUNDS
+   params["energy_group_bounds"] = [2.7, 6.2]
+
+   # UNITS
+   params["spatial_units"] = "cm"
+   params["energy_units"] = "kev"
+   params["abs_units"] = "cm^2/g"
+   params["emis_units"] = "GJ/cm^2/ster/ns/keV"
+   params["intensity_units"] = "intensity units"
+   params["path_length_info"] = "transmission"
+   
+   Query("XRay Image", params)
+
+To look at the raw data from the query, we run this code:
+
+::
+
+   import conduit
+   xrayout = conduit.Node()
+
+   conduit.relay.io.blueprint.load_mesh(xrayout, "output.cycle_000048.root")
+
+   print(xrayout["domain_000000"])
+
+This yields the following overview.
+See :ref:`Introspecting with Python` for a deeper dive into viewing and extracting the raw data from the :ref:`Conduit Output`.
+
+::
+
+   state: 
+     time: 4.8
+     cycle: 48
+     xray_view: 
+       normal: 
+         x: 0.0
+         y: 0.0
+         z: 1.0
+       focus: 
+         x: 0.0
+         y: 2.5
+         z: 10.0
+       viewUp: 
+         x: 0.0
+         y: 1.0
+         z: 0.0
+       viewAngle: 30.0
+       ... ( skipped 4 children )
+       imageZoom: 1.0
+       perspective: 1
+       perspectiveStr: "perspective"
+     xray_query: 
+       divideEmisByAbsorb: 0
+       divideEmisByAbsorbStr: "no"
+       numXPixels: 400
+       numYPixels: 300
+       ... ( skipped 2 children )
+       emisVarName: "p"
+       absUnits: "abs units"
+       emisUnits: "emis units"
+     xray_data: 
+       detectorWidth: 8.80338743415454
+       detectorHeight: 6.60254037884486
+       intensityMax: 0.491446971893311
+       intensityMin: 0.0
+       pathLengthMax: 129.857009887695
+       pathLengthMin: 0.0
+     domain_id: 0
+   coordsets: 
+     image_coords: 
+       type: "rectilinear"
+       values: 
+         x: [0, 1, 2, ..., 399, 400]
+         y: [0, 1, 2, ..., 299, 300]
+         z: [0, 1]
+       labels: 
+         x: "width"
+         y: "height"
+         z: "energy_group"
+       units: 
+         x: "pixels"
+         y: "pixels"
+         z: "bins"
+     spatial_coords: 
+       type: "rectilinear"
+       values: 
+         x: [0.0, 0.0220084685853863, 0.0440169371707727, ..., 8.78137896556915, 8.80338743415454]
+         y: [0.0, 0.0220084679294829, 0.0440169358589658, ..., 6.58053191091538, 6.60254037884486]
+         z: [2.7, 6.2]
+       units: 
+         x: "cm"
+         y: "cm"
+         z: "kev"
+       labels: 
+         x: "width"
+         y: "height"
+         z: "energy_group"
+     near_plane_coords: 
+       type: "explicit"
+       values: 
+         x: [4.40169371707727, -4.40169371707727, -4.40169371707727, 4.40169371707727]
+         y: [-0.801270189422432, -0.801270189422432, 5.80127018942243, 5.80127018942243]
+         z: [-15.0, -15.0, -15.0, -15.0]
+     view_plane_coords: 
+       type: "explicit"
+       values: 
+         x: [13.3333337306976, -13.3333337306976, -13.3333337306976, 13.3333337306976]
+         y: [-7.5, -7.5, 12.5, 12.5]
+         z: [10.0, 10.0, 10.0, 10.0]
+     far_plane_coords: 
+       type: "explicit"
+       values: 
+         x: [22.264973744318, -22.264973744318, -22.264973744318, 22.264973744318]
+         y: [-14.1987298105776, -14.1987298105776, 19.1987298105776, 19.1987298105776]
+         z: [35.0, 35.0, 35.0, 35.0]
+     ray_corners_coords: 
+       type: "explicit"
+       values: 
+         x: [4.40169371707727, 22.264973744318, -4.40169371707727, ..., 4.40169371707727, 22.264973744318]
+         y: [-0.801270189422432, -14.1987298105776, -0.801270189422432, ..., 5.80127018942243, 19.1987298105776]
+         z: [-15.0, 35.0, -15.0, ..., -15.0, 35.0]
+     ray_coords: 
+       type: "explicit"
+       values: 
+         x: [-4.39068948278457, -4.39068948278457, -4.39068948278457, ..., 22.2093113099572, 22.2093113099572]
+         y: [-0.790265955457691, -0.768257487528208, -0.746249019598725, ..., 19.0317425124718, 19.1430673778756]
+         z: [-15.0, -15.0, -15.0, ..., 35.0, 35.0]
+   topologies: 
+     image_topo: 
+       coordset: "image_coords"
+       type: "rectilinear"
+     spatial_topo: 
+       coordset: "spatial_coords"
+       type: "rectilinear"
+     near_plane_topo: 
+       type: "unstructured"
+       coordset: "near_plane_coords"
+       elements: 
+         shape: "quad"
+         connectivity: [0, 1, 2, 3]
+     view_plane_topo: 
+       type: "unstructured"
+       coordset: "view_plane_coords"
+       elements: 
+         shape: "quad"
+         connectivity: [0, 1, 2, 3]
+     far_plane_topo: 
+       type: "unstructured"
+       coordset: "far_plane_coords"
+       elements: 
+         shape: "quad"
+         connectivity: [0, 1, 2, 3]
+     ray_corners_topo: 
+       type: "unstructured"
+       coordset: "ray_corners_coords"
+       elements: 
+         shape: "line"
+         connectivity: [0, 1, 2, ..., 6, 7]
+     ray_topo: 
+       type: "unstructured"
+       coordset: "ray_coords"
+       elements: 
+         shape: "line"
+         connectivity: [0, 120000, 1, ..., 119999, 239999]
+   fields: 
+     intensities: 
+       topology: "image_topo"
+       association: "element"
+       units: "intensity units"
+       values: [0.0, 0.0, 0.0, ..., 0.0, 0.0]
+       strides: [1, 400, 120000]
+     path_length: 
+       topology: "image_topo"
+       association: "element"
+       units: "path length metadata"
+       values: [0.0, 0.0, 0.0, ..., 0.0, 0.0]
+       strides: [1, 400, 120000]
+     intensities_spatial: 
+       topology: "spatial_topo"
+       association: "element"
+       units: "intensity units"
+       values: [0.0, 0.0, 0.0, ..., 0.0, 0.0]
+       strides: [1, 400, 120000]
+     path_length_spatial: 
+       topology: "spatial_topo"
+       association: "element"
+       units: "path length metadata"
+       values: [0.0, 0.0, 0.0, ..., 0.0, 0.0]
+       strides: [1, 400, 120000]
+     ... ( skipped 2 children )
+     far_plane_field: 
+       topology: "far_plane_topo"
+       association: "element"
+       volume_dependent: "false"
+       values: 0.0
+     ray_corners_field: 
+       topology: "ray_corners_topo"
+       association: "element"
+       volume_dependent: "false"
+       values: [0.0, 0.0, 0.0, 0.0]
+     ray_field: 
+       topology: "ray_topo"
+       association: "element"
+       volume_dependent: "false"
+       values: [0.0, 1.0, 2.0, ..., 119998.0, 119999.0]
+
+The next thing we may want to do is to visualize an x ray image using VisIt_.
+The :ref:`Visualizing with VisIt` section goes into more detail on this subject, so for now we will only visualize the :ref:`Basic Mesh Output`.
+
+::
+
+   # Have VisIt open the Conduit output from the query
+   OpenDatabase("output.root")
+   
+   # Give ourselves a clean slate for ensuing visualizations
+   DeleteAllPlots()
+
+   # Add a pseudocolor plot of the intensities
+   AddPlot("Pseudocolor", "mesh_image_topo/intensities", 1, 1)
+   DrawPlots()
+
+   # Change the color table to be xray
+   PseudocolorAtts = PseudocolorAttributes()
+   PseudocolorAtts.colorTableName = "xray"
+   SetPlotOptions(PseudocolorAtts)
+
+Running this code yields the following image:
+
+.. figure:: xray_examples_bp2.png
+
+   The resulting x ray image, visualized using VisIt.
 
 Conduit Output
 ~~~~~~~~~~~~~~
@@ -450,7 +707,7 @@ Conduit `Blueprint <https://llnl-conduit.readthedocs.io/en/latest/blueprint.html
 Before Conduit Blueprint formats were available as output types, the X Ray Image Query would often produce large numbers of output files, particularly when using the bov or rawfloats output type, which was a popular choice because it provided the raw data.
 Alternatively, users could choose one of the image file output types to generate a picture or pictures.
 Conduit Blueprint provides the best of both worlds.
-Everything is stored in one file, and all of the raw data can be accessed via introspection with Python (see :ref:`Introspecting with Python` for more information).
+Everything is stored in one file, and all of the raw data can be accessed via :ref:`Introspecting with Python`.
 Additionally, it is simple to generate an image, as the Blueprint output can be read back in to VisIt and visualized (see :ref:`Visualizing with VisIt`).
 
 .. figure:: images/xraywhyconduit1.png
@@ -702,8 +959,8 @@ See the example below, which is taken from the example in :ref:`Overview of Outp
       numBins: 1
       absVarName: "d"
       emisVarName: "p"
-      absUnits: "abs units"
-      emisUnits: "emis units"
+      absUnits: "cm^2/g"
+      emisUnits: "GJ/cm^2/ster/ns/keV"
     xray_data: 
       detectorWidth: 22.3932263237838
       detectorHeight: 16.7949192423103
@@ -1886,6 +2143,7 @@ Yielding:
 
 If the maximums were also equal to zero, then the image would be blank.
 Hence, it is possible to quickly programmatically check if the image is blank, without any need for taking the time to look at the image.
+See :ref:`Introspecting with Python` for more information about extracting data from the query output.
 
 **2. Why is my image blank? Is the camera facing the right way? Are the near and far clipping planes in good positions?**
 
@@ -1914,6 +2172,7 @@ To make the planes different colors, use VisIt's color table controls, or see :r
 
 The simulated x ray detector is situated at the near plane, looking in the direction of the view plane, and seeing nothing after the far plane.
 Once the imaging planes and ray corners have been visualized, it is clear to see where the camera is looking, and if the near and far clipping planes are appropriately placed.
+See the text on visualizing the rays and imaging planes in :ref:`Visualizing with VisIt`.
 
 **3. Where are the rays intersecting my geometry?**
 
@@ -1941,11 +2200,10 @@ We will want to visualize the :ref:`Rays Meshes` on top of our input mesh.
 
 Running this code using VisIt should result in renders like those shown in :ref:`Rays Meshes`.
 Use the tips and tricks shown in that section to gain greater clarity for answering this question.
+See the text on visualizing the rays and imaging planes in :ref:`Visualizing with VisIt`.
 
 **4. What information is the query using to create the output?**
 
 TODO talk about getting the metadata out link to introspecting with python
 
 TODO other troubleshooting questions?
-
-TODO somewhere I need a big all the way through example of all the args and the output
