@@ -441,6 +441,7 @@ Conduit Output
 ~~~~~~~~~~~~~~
 
 The `Conduit <https://llnl-conduit.readthedocs.io/en/latest/>`_ output types (see :ref:`Output Types` for more information) provide advantages over the other output types and include additional metadata and topologies.
+These output types were added in VisIt_ 3.3.0, and many of the features discussed here have been added since then.
 
 Why Conduit Output?
 """""""""""""""""""
@@ -1637,8 +1638,210 @@ To make the output look like an x ray image, it is simple to change the color ta
 Introspecting with Python
 """""""""""""""""""""""""
 
-TODO
+We have covered visualizing every component of the :ref:`Conduit Output` in the :ref:`Visualizing with VisIt` section; now we will demonstrate how to access the raw data using Python.
 
+**1. Getting a general overview of the output.**
+See :ref:`Overview of Output` for a visual of what the resulting Conduit tree looks like.
+First, we will get everything set up.
+
+::
+
+   # make sure we import conduit
+   import conduit
+
+   # this node will be the destination for our output
+   xrayout = conduit.Node()
+
+   # actually perform the load
+   conduit.relay.io.blueprint.load_mesh(xrayout, "output.root")
+
+Now we are ready to begin extracting data.
+To produce a Conduit tree like that of the example in :ref:`Overview of Output`, Conduit provides some simple tools:
+
+::
+
+   # To print a condensed overview of the output
+   print(xrayout["domain_000000"])
+
+   # This will print the entirety of the output...
+   # including every coordinate and field value,
+   # so use with caution.
+   print(xrayout["domain_000000"].to_yaml())
+
+This simple features can be used not just on the root of the Conduit tree, but everywhere.
+We will see these used repeatedly in ensuing examples.
+
+**2. Accessing the** :ref:`Basic Mesh Output` **data**.
+To get a sense of what the :ref:`Basic Mesh Output` looks like, we can run the following:
+
+::
+
+   print("image_coords")
+   print(xrayout["domain_000000/coordsets/image_coords"])
+
+   print("image_topo")
+   print(xrayout["domain_000000/topologies/image_topo"])
+
+   print("intensities")
+   print(xrayout["domain_000000/fields/intensities"])
+   print("path_length")
+   print(xrayout["domain_000000/fields/path_length"])
+
+This produces...
+
+::
+
+   image_coords
+
+   type: "rectilinear"
+   values: 
+     x: [0, 1, 2, ..., 399, 400]
+     y: [0, 1, 2, ..., 299, 300]
+     z: [0, 1]
+   labels: 
+     x: "width"
+     y: "height"
+     z: "energy_group"
+   units: 
+     x: "pixels"
+     y: "pixels"
+     z: "bins"
+
+   image_topo
+
+   coordset: "image_coords"
+   type: "rectilinear"
+
+   intensities
+
+   topology: "image_topo"
+   association: "element"
+   units: "intensity units"
+   values: [0.0, 0.0, 0.0, ..., 0.0, 0.0]
+   strides: [1, 400, 120000]
+
+   path_length
+
+   topology: "image_topo"
+   association: "element"
+   units: "path length metadata"
+   values: [0.0, 0.0, 0.0, ..., 0.0, 0.0]
+   strides: [1, 400, 120000]
+
+Note that the long arrays are condensed for the sake of readability.
+If we wanted to see the entirety of the arrays, we could run ``print(myconduitnode.to_yaml())`` instead of ``print(myconduitnode)``.
+
+To actually extract the :ref:`Basic Mesh Output` data and not just see it, we can run the following:
+
+::
+
+   # Extract the actual x values, label, and units
+   xvals = xrayout["domain_000000/coordsets/image_coords/values/x"]
+   xlabel = xrayout["domain_000000/coordsets/image_coords/labels/x"]
+   xunits = xrayout["domain_000000/coordsets/image_coords/units/x"]
+   # Extracting the same for y and z is similar
+
+   # Extract units and values for the intensity output
+   intensity_units = xrayout["domain_000000/fields/intensities/units"]
+   intensity_values = xrayout["domain_000000/fields/intensities/values"]
+   # Extracting the same for path_length is similar
+
+These variables can be printed, manipulated, iterated over, etc.
+
+**3. Accessing the** :ref:`Metadata`.
+Again, to get an overview of the metadata, it is simple to print the ``state`` branch:
+
+::
+
+   # get an overview of the metadata
+   print(xrayout["domain_000000/state"])
+
+   # see all the metadata
+   print(xrayout["domain_000000/state"].to_yaml())
+
+The following code extracts each of the values.
+First is top level :ref:`Metadata`:
+
+::
+
+   time = xrayout["domain_000000/state/time"]
+   cycle = xrayout["domain_000000/state/cycle"]
+
+Next up is :ref:`View Parameters`:
+
+::
+
+   normalx = xrayout["domain_000000/state/xray_view/normal/x"]
+   normaly = xrayout["domain_000000/state/xray_view/normal/y"]
+   normalz = xrayout["domain_000000/state/xray_view/normal/z"]
+
+   focusx = xrayout["domain_000000/state/xray_view/focus/x"]
+   focusy = xrayout["domain_000000/state/xray_view/focus/y"]
+   focusz = xrayout["domain_000000/state/xray_view/focus/z"]
+
+   viewUpx = xrayout["domain_000000/state/xray_view/viewUp/x"]
+   viewUpy = xrayout["domain_000000/state/xray_view/viewUp/y"]
+   viewUpz = xrayout["domain_000000/state/xray_view/viewUp/z"]
+
+   viewAngle = xrayout["domain_000000/state/xray_view/viewAngle"]
+   parallelScale = xrayout["domain_000000/state/xray_view/parallelScale"]
+   nearPlane = xrayout["domain_000000/state/xray_view/nearPlane"]
+   farPlane = xrayout["domain_000000/state/xray_view/farPlane"]
+
+   imagePanx = xrayout["domain_000000/state/xray_view/imagePan/x"]
+   imagePany = xrayout["domain_000000/state/xray_view/imagePan/y"]
+
+   imageZoom = xrayout["domain_000000/state/xray_view/imageZoom"]
+   perspective = xrayout["domain_000000/state/xray_view/perspective"]
+   perspectiveStr = xrayout["domain_000000/state/xray_view/perspectiveStr"]
+
+Then :ref:`Query Parameters`:
+
+::
+
+   divideEmisByAbsorb = xrayout["domain_000000/state/xray_query/divideEmisByAbsorb"]
+   divideEmisByAbsorbStr = xrayout["domain_000000/state/xray_query/divideEmisByAbsorbStr"]
+   numXPixels = xrayout["domain_000000/state/xray_query/numXPixels"]
+   numYPixels = xrayout["domain_000000/state/xray_query/numYPixels"]
+   numBins = xrayout["domain_000000/state/xray_query/numBins"]
+   absVarName = xrayout["domain_000000/state/xray_query/absVarName"]
+   emisVarName = xrayout["domain_000000/state/xray_query/emisVarName"]
+   absUnits = xrayout["domain_000000/state/xray_query/absUnits"]
+   emisUnits = xrayout["domain_000000/state/xray_query/emisUnits"]
+
+And finally, :ref:`Other Metadata`:
+
+::
+
+   detectorWidth = xrayout["domain_000000/state/xray_data/detectorWidth"]
+   detectorHeight = xrayout["domain_000000/state/xray_data/detectorHeight"]
+   intensityMax = xrayout["domain_000000/state/xray_data/intensityMax"]
+   intensityMin = xrayout["domain_000000/state/xray_data/intensityMin"]
+   pathLengthMax = xrayout["domain_000000/state/xray_data/pathLengthMax"]
+   pathLengthMin = xrayout["domain_000000/state/xray_data/pathLengthMin"]
+
+**4. Accessing the** :ref:`Spatial Extents Mesh` **data.**
+Because the :ref:`Spatial Extents Mesh` shares a lot in common with the :ref:`Basic Mesh Output`, we will only cover here how to extract some of the unique values.
+
+::
+
+   # Extract the actual x, y, and z values
+   spatial_xvals = xrayout["domain_000000/coordsets/spatial_coords/values/x"]
+   spatial_yvals = xrayout["domain_000000/coordsets/spatial_coords/values/y"]
+   energy_group_bounds = xrayout["domain_000000/coordsets/spatial_coords/values/z"]
+
+   # Extract the x label
+   spatial_xlabel = xrayout["domain_000000/coordsets/spatial_coords/labels/x"]
+   # Extracting the same for y and z is similar
+
+   # Extract the spatial and energy units
+   spatial_xunits = xrayout["domain_000000/coordsets/spatial_coords/units/x"]
+   spatial_yunits = xrayout["domain_000000/coordsets/spatial_coords/units/y"]
+   energy_units = xrayout["domain_000000/coordsets/spatial_coords/units/z"]
+
+**5. Everything else.**
+All of the other data stored in the Conduit output can be accessed similarly.
+To get a general sense of what is stored in particular branches of the tree, it is a simple matter of running ``print(myconduitnode)`` to quickly get an overview.
 
 Troubleshooting
 """""""""""""""
