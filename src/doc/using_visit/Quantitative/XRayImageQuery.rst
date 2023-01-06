@@ -306,6 +306,8 @@ Calling the Query
 
 TODO
 
+TODO here I need to mention the pitfall of GetQueryParameters("XRay Image")
+
 Examples
 ~~~~~~~~
 
@@ -548,6 +550,10 @@ Basic Mesh Output
 The most important piece of the Blueprint output is the actual query result.
 We have taken the image data that comes out of the query and packaged it into a single Blueprint mesh.
 
+.. figure:: images/xray_visualize_image2.png
+
+   TODO caption
+
 The following is the example from :ref:`Overview of Output`, but with the Blueprint mesh representing the query result fully realized: 
 
 ::
@@ -646,6 +652,8 @@ The ``image_topo`` exists to tell Blueprint that the ``image_coords`` can be vie
 The fields, ``intensities`` and ``path_length``, can be thought of as containers for the actual image data.
 Each also includes units.
 For path length, the ``units`` entry is just a way of including metadata or information about the path length, since path length is unitless.
+
+To visualize this mesh with VisIt, see :ref:`Visualizing with VisIt`.
 
 Metadata
 """"""""
@@ -936,6 +944,7 @@ One of our goals with the Conduit output types (see :ref:`Output Types` for more
 To that end, these outputs come packaged with meshes representing the imaging planes specified by the user when calling the query.
 Additionally, they also include meshes representing the rays that were used in the ray tracing.
 The following subsections discuss both of these in more detail.
+To visualize these mesh with VisIt, see :ref:`Visualizing with VisIt`.
 
 Imaging Planes
 ++++++++++++++
@@ -1246,6 +1255,10 @@ The z dimension represents actual energy group bins.
 These are values that were passed in via the query arguments (see :ref:`Standard Arguments` for more information).
 In the example below, the z dimension represents Kiloelectron Volts.
 
+.. figure:: images/xray_visualize_spatial2.png
+
+   TODO caption
+
 Another way to think about the spatial extents mesh is if the basic mesh output was resized and then pasted on top of the near plane mesh (:ref:`Imaging Planes`), you would get the spatial extents mesh (ignoring the z dimension).
 The rationale for including this mesh is twofold: 
 
@@ -1350,6 +1363,8 @@ We then duplicated the existing topology and fields from the :ref:`Basic Mesh Ou
    The spatial extents mesh looks very similar to the basic mesh output.
    It is in 3D and the z dimension represents the energy group bounds, which in this example run from 2.7 to 5.2.
 
+To visualize this mesh with VisIt, see :ref:`Visualizing with VisIt`.
+
 Pitfalls
 """"""""
 
@@ -1424,7 +1439,7 @@ Visualizing with VisIt
 One of the advantages of using one of the :ref:`Conduit Output` types is that it is easy to both look at the raw data and generate x ray images.
 This section will cover generating x ray images using VisIt as well as visualizing the other components of the :ref:`Conduit Output`.
 
-The ensuing Python code examples assume that the following has already been run:
+The later Python code examples assume that the following has already been run:
 
 ::
 
@@ -1435,7 +1450,6 @@ The ensuing Python code examples assume that the following has already been run:
    AddPlot("Pseudocolor", "d")
    DrawPlots()
 
-   # The camera is looking straight on
    params = dict()
    params["image_size"] = (400, 300)
    # One of the Blueprint output types
@@ -1445,7 +1459,8 @@ The ensuing Python code examples assume that the following has already been run:
    params["near_plane"] = -25.
    params["far_plane"] = 25.
    params["vars"] = ("d", "p")
-   params["energy_group_bounds"] = [3.7, 4.2]
+   # Dummy values to demonstrate functionality
+   params["energy_group_bounds"] = [2.7, 6.2]
    params["parallel_scale"] = 10.
    Query("XRay Image", params)
 
@@ -1453,7 +1468,7 @@ The ensuing Python code examples assume that the following has already been run:
    # In this case it is called "output.root"
    OpenDatabase("output.root")
 
-**1. Once the query has been run, to visualize the :ref:`Basic Mesh Output`, follow these steps in Python:**
+**1. Once the query has been run, to visualize the** :ref:`Basic Mesh Output`**, follow these steps in Python:**
 
 ::
 
@@ -1485,7 +1500,7 @@ To make the output look like an x ray image, it is simple to change the color ta
 
    TODO caption
 
-**2. Next we will cover visualizing the :ref:`Imaging Planes`.**
+**2. Next we will cover visualizing the **:ref:`Imaging Planes`**.**
 To simply render the imaging planes on top of your simulation data we will do the following:
 
 ::
@@ -1535,7 +1550,7 @@ To make them distinct colors like in all the examples throughout this documentat
 
    TODO caption
 
-**3. Next we will look at the :ref:`Rays Meshes`.**
+**3. Next we will look at the **:ref:`Rays Meshes`**.**
 For the sake of visual clarity, we will build on the imaging planes visualization from above.
 To visualize the ray corners, it is a simple matter of doing the following:
 
@@ -1586,7 +1601,7 @@ As discussed in the :ref:`Rays Meshes` section, this picture is not very helpful
 
 See the :ref:`Rays Meshes` section for more tips for making sense of the rays.
 
-**4. Finally, we will examine the :ref:`Spatial Extents Mesh`.**
+**4. Finally, we will examine the **:ref:`Spatial Extents Mesh`**.**
 This should be very similar to visualizing the :ref:`Basic Mesh Output`.
 
 ::
@@ -1618,8 +1633,6 @@ To make the output look like an x ray image, it is simple to change the color ta
 .. figure:: images/xray_visualize_spatial2.png
 
    TODO caption
-
-TODO link to this section from other sections
 
 Introspecting with Python
 """""""""""""""""""""""""
@@ -1732,5 +1745,4 @@ TODO talk about getting the metadata out link to introspecting with python
 
 TODO other troubleshooting questions?
 
-TODO somewhere I need to mention the pitfall of GetQueryParameters("XRay Image")
 TODO somewhere I need a big all the way through example of all the args and the output
