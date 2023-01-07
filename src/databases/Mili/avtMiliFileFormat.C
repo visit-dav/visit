@@ -1674,10 +1674,6 @@ avtMiliFileFormat::GetVar(int timestep,
     // Global variables:
     //   We receive a single value that is applied to all cells.
     //
-    // In the cases of regular and global variables we use the output
-    // array as the buffer. In the case of a material array we create
-    // a new buffer array.
-    //
     int dBuffSize = 0;
     float *dataBuffer = NULL;
     bool isMatVar = varMD->IsMatVar();
@@ -1691,12 +1687,12 @@ avtMiliFileFormat::GetVar(int timestep,
     else if (isGlobal)
     {
         dBuffSize  = 1;
-        dataBuffer = (float *) fltArray->GetVoidPointer(0);
+        dataBuffer = new float[dBuffSize];
     }
     else
     {
         dBuffSize  = nVals;
-        dataBuffer = (float *) fltArray->GetVoidPointer(0);
+        dataBuffer = new float[dBuffSize];
     }
 
     //
@@ -1728,32 +1724,37 @@ avtMiliFileFormat::GetVar(int timestep,
 
         for (int i = 0; i < nVals; ++i)
         {
-            fltArray->SetTuple1(i, dataBuffer[matList[i]]);
+            if (!visitIsNan(dataBuffer[matList[i]]))
+            {
+                fltArray->SetTuple1(i, dataBuffer[matList[i]]);
+            }
         }
     }
     else if (isGlobal)
     {
         //
-        // This is a global var. Copy the first value to the rest of the
-        // array.
+        // This is a global var. Just apply it to all cells.
         //
-        float gVal = dataBuffer[0];
         for (int i = 1; i < nVals; ++i)
         {
-            fltArray->SetTuple1(i, gVal);
+            fltArray->SetTuple1(i, dataBuffer[0]);
         }
     }
     else
     {
         //
-        // Nothing to do here. The values are already in the output array.
+        // Nothing special here. Just copy the values over.
         //
+        for (int i = 0; i < nVals; ++i)
+        {
+            if (!visitIsNan(dataBuffer[i]))
+            {
+                fltArray->SetTuple1(i, dataBuffer[i]);
+            }
+        }
     }
 
-    //
-    // If the data buffer isn't equal to the output buffer delete it.
-    //
-    if (dataBuffer != fltArray->GetVoidPointer(0))
+    if (dataBuffer != NULL)
     {
         delete [] dataBuffer;
     }
