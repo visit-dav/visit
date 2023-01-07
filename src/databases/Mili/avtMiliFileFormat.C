@@ -1609,7 +1609,7 @@ avtMiliFileFormat::GetVar(int timestep,
 //    Eric Brugger, Thu Jan  5 15:25:33 PST 2023
 //    I fixed a bug where variables that were only defined on a portion of
 //    the nodes weren't being placed on the correct nodes. This was handled
-//    properly for zonal variables. I fixed the bug by unifiying the handling
+//    properly for zonal variables. I fixed the bug by unifying the handling
 //    of nodal and zonal variables.
 //
 // ****************************************************************************
