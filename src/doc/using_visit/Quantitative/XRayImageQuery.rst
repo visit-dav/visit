@@ -7,9 +7,7 @@
 X Ray Image Query
 -----------------
 
-.. contents::
-
-   :local:
+.. contents:: :local:
 
 The X Ray Image Query generates a simulated radiograph by tracing rays through a volume using an absorbtivity and emissivity variable.
 The absorbtivity and emissivity variables must be zone-centered and can be either scalar variables or array variables.
