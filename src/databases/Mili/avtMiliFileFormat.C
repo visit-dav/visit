@@ -2318,16 +2318,8 @@ avtMiliFileFormat::ReadMiliVarToBuffer(char *varName,
         }
         else if (nBlocks > 1)
         {
-            int totalBlocksSize = 0;
-            for (int b = 0; b < nBlocks; ++b)
-            {
-                int curStart = blockRanges[b * 2];
-                int stop     = blockRanges[b * 2 + 1];
-                totalBlocksSize += stop - curStart + 1;
-            }
-
-            float *MBBuffer = new float[totalBlocksSize * varSize];
-            int resultSize = totalBlocksSize * varSize;
+            int resultSize = nTargetEl * varSize;
+            float *MBBuffer = new float[resultSize];
 
             ReadMiliResults(dbid[dom], ts, SRId,
                 1, &varName, vType, resultSize, MBBuffer);
