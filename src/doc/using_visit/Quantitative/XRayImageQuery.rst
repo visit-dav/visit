@@ -7,6 +7,10 @@
 X Ray Image Query
 -----------------
 
+.. contents::
+
+   :local:
+
 The X Ray Image Query generates a simulated radiograph by tracing rays through a volume using an absorbtivity and emissivity variable.
 The absorbtivity and emissivity variables must be zone-centered and can be either scalar variables or array variables.
 If using an array variable, the query will generate an image per array variable component.
@@ -726,7 +730,7 @@ The :ref:`Visualizing with VisIt` section goes into more detail on this subject,
    DeleteAllPlots()
 
    # Add a pseudocolor plot of the intensities
-   AddPlot("Pseudocolor", "mesh_image_topo/intensities", 1, 1)
+   AddPlot("Pseudocolor", "mesh_image_topo/intensities")
    DrawPlots()
 
    # Change the color table to be xray
@@ -965,6 +969,7 @@ Metadata
 The Conduit output types (see :ref:`Output Types` for more information) come packaged with metadata in addition to Blueprint-conforming mesh data.
 The ability to send this metadata alongside the output mesh (and other data) is one of the advantages of using Conduit for outputs from the query.
 We hope this metadata helps to make it clear exactly what the query is doing, what information it has available to it, and what the output might look like.
+To extract the metadata from the Blueprint output, see :ref:`Introspecting with Python`.
 
 Metadata is stored under the ``state`` Node in the resulting Conduit tree.
 See the example below, which is taken from the example in :ref:`Overview of Output`, but this time with only the metadata fully realized: 
@@ -1147,6 +1152,8 @@ An example: ::
     perspective: 1
     perspectiveStr: "perspective"
 
+To extract this metadata from the Blueprint output, see :ref:`Introspecting with Python`.
+
 Query Parameters
 ++++++++++++++++
 
@@ -1199,6 +1206,8 @@ An example: ::
     absUnits: "cm^2/g"
     emisUnits: "GJ/cm^2/ster/ns/keV"
 
+To extract this metadata from the Blueprint output, see :ref:`Introspecting with Python`.
+
 Other Metadata
 ++++++++++++++
 
@@ -1240,6 +1249,8 @@ An example: ::
 The minimum and maximum values that are included for the path length and intensity outputs are useful for quick :ref:`Troubleshooting` or sanity checks that the output matches expectations. 
 If both maximums and minimums are zero, for example, the simulated detector may not be facing the right way.
 In that case, the :ref:`Imaging Planes and Rays Meshes` section may be of some use.
+
+To extract this metadata from the Blueprint output, see :ref:`Introspecting with Python`.
 
 Imaging Planes and Rays Meshes
 """"""""""""""""""""""""""""""
@@ -1668,7 +1679,7 @@ We then duplicated the existing topology and fields from the :ref:`Basic Mesh Ou
    The spatial extents mesh looks very similar to the basic mesh output.
    It is in 3D and the z dimension represents the energy group bounds, which in this example run from 2.7 to 5.2.
 
-To visualize this mesh with VisIt, see :ref:`Visualizing with VisIt`.
+To visualize this mesh with VisIt, see :ref:`Visualizing with VisIt`. To extract the spatial extents data from the Blueprint output, see :ref:`Introspecting with Python`.
 
 Pitfalls
 """"""""
@@ -1782,10 +1793,10 @@ The later Python code examples assume that the following has already been run:
    DeleteAllPlots()
 
    # Add a pseudocolor plot of the intensities
-   AddPlot("Pseudocolor", "mesh_image_topo/intensities", 1, 1)
+   AddPlot("Pseudocolor", "mesh_image_topo/intensities")
    
    # Alternatively add a plot of the path length instead
-   # AddPlot("Pseudocolor", "mesh_image_topo/path_length", 1, 1)
+   # AddPlot("Pseudocolor", "mesh_image_topo/path_length")
 
    DrawPlots()
 
@@ -1816,14 +1827,14 @@ To simply render the imaging planes on top of your simulation data we will do th
 
    # First we wish to make sure that the input mesh is visible
    ActivateDatabase("testdata/silo_hdf5_test_data/curv3d.silo")
-   AddPlot("Pseudocolor", "d", 1, 1)
+   AddPlot("Pseudocolor", "d")
    DrawPlots()
 
    # Then we want to go back to the output file and visualize the imaging planes
    ActivateDatabase("output.root")
-   AddPlot("Pseudocolor", "mesh_near_plane_topo/near_plane_field", 1, 1)
-   AddPlot("Pseudocolor", "mesh_view_plane_topo/view_plane_field", 1, 1)
-   AddPlot("Pseudocolor", "mesh_far_plane_topo/far_plane_field", 1, 1)
+   AddPlot("Pseudocolor", "mesh_near_plane_topo/near_plane_field")
+   AddPlot("Pseudocolor", "mesh_view_plane_topo/view_plane_field")
+   AddPlot("Pseudocolor", "mesh_far_plane_topo/far_plane_field")
    DrawPlots()
 
 .. figure:: images/xray_visualize_imagingplanes1.png
@@ -1863,12 +1874,12 @@ To visualize the ray corners, it is a simple matter of doing the following:
 ::
 
    # This plots the ray corners mesh
-   AddPlot("Mesh", "mesh_ray_corners_topo", 1, 1)
+   AddPlot("Mesh", "mesh_ray_corners_topo")
 
    # Alternatively, we could plot the dummy field that is included, but 
    # plotting just the mesh will make sure the plot is in black, which
    # looks better with the colors we are using to paint the imaging planes.
-   # AddPlot("Pseudocolor", "mesh_ray_corners_topo/ray_corners_field", 1, 1)
+   # AddPlot("Pseudocolor", "mesh_ray_corners_topo/ray_corners_field")
 
    DrawPlots()
 
@@ -1885,7 +1896,7 @@ Now we will visualize all of the rays.
 
 ::
 
-   AddPlot("Pseudocolor", "mesh_ray_topo/ray_field", 1, 1)
+   AddPlot("Pseudocolor", "mesh_ray_topo/ray_field")
    DrawPlots()
 
 .. figure:: images/xray_visualize_rays1.png
@@ -1916,10 +1927,10 @@ This should be very similar to visualizing the :ref:`Basic Mesh Output`.
    DeleteAllPlots()
 
    # Add a pseudocolor plot of the intensities
-   AddPlot("Pseudocolor", "mesh_spatial_topo/intensities_spatial", 1, 1)
+   AddPlot("Pseudocolor", "mesh_spatial_topo/intensities_spatial")
    
    # Alternatively add a plot of the path length instead
-   # AddPlot("Pseudocolor", "mesh_spatial_topo/path_length_spatial", 1, 1)
+   # AddPlot("Pseudocolor", "mesh_spatial_topo/path_length_spatial")
 
    DrawPlots()
 
@@ -2206,12 +2217,12 @@ This line of questioning can be quickly answered by visualizing the :ref:`Imagin
    OpenDatabase("output.root")
 
    # Add pseudocolor plots of each of the imaging planes.
-   AddPlot("Pseudocolor", "mesh_far_plane_topo/far_plane_field", 1, 1)
-   AddPlot("Pseudocolor", "mesh_view_plane_topo/view_plane_field", 1, 1)
-   AddPlot("Pseudocolor", "mesh_near_plane_topo/near_plane_field", 1, 1)
+   AddPlot("Pseudocolor", "mesh_far_plane_topo/far_plane_field")
+   AddPlot("Pseudocolor", "mesh_view_plane_topo/view_plane_field")
+   AddPlot("Pseudocolor", "mesh_near_plane_topo/near_plane_field")
 
    # Add a mesh plot of the ray corners.
-   AddPlot("Mesh", "mesh_ray_corners_topo", 1, 1)
+   AddPlot("Mesh", "mesh_ray_corners_topo")
 
    DrawPlots()
 
@@ -2237,12 +2248,12 @@ We will want to visualize the :ref:`Rays Meshes` on top of our input mesh.
 
    # Add pseudocolor plots of each of the imaging planes.
    # These help to add clarity to our final render.
-   AddPlot("Pseudocolor", "mesh_far_plane_topo/far_plane_field", 1, 1)
-   AddPlot("Pseudocolor", "mesh_view_plane_topo/view_plane_field", 1, 1)
-   AddPlot("Pseudocolor", "mesh_near_plane_topo/near_plane_field", 1, 1)
+   AddPlot("Pseudocolor", "mesh_far_plane_topo/far_plane_field")
+   AddPlot("Pseudocolor", "mesh_view_plane_topo/view_plane_field")
+   AddPlot("Pseudocolor", "mesh_near_plane_topo/near_plane_field")
 
    # Add a mesh plot of the rays.
-   AddPlot("Pseudocolor", "mesh_ray_topo/ray_field", 1, 1)
+   AddPlot("Pseudocolor", "mesh_ray_topo/ray_field")
 
    DrawPlots()
 
