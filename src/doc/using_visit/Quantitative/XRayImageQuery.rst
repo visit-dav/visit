@@ -2227,6 +2227,10 @@ This line of questioning can be quickly answered by visualizing the :ref:`Imagin
 Running this code using VisIt should result in renders like those shown in :ref:`Imaging Planes and Rays Meshes`.
 To make the planes different colors, use VisIt's color table controls, or see :ref:`Visualizing with VisIt`.
 
+.. figure:: images/xray_troubleshooting_2.png
+
+   An example of what could be going wrong. The simulated detector is not looking in the right direction.
+
 The simulated x ray detector is situated at the near plane, looking in the direction of the view plane, and seeing nothing after the far plane.
 Once the imaging planes and ray corners have been visualized, it is clear to see where the camera is looking, and if the near and far clipping planes are appropriately placed.
 See the text on visualizing the rays and imaging planes in :ref:`Visualizing with VisIt`.
@@ -2258,6 +2262,10 @@ We will want to visualize the :ref:`Rays Meshes` on top of our input mesh.
 Running this code using VisIt should result in renders like those shown in :ref:`Rays Meshes`.
 Use the tips and tricks shown in that section to gain greater clarity for answering this question.
 See the text on visualizing the rays and imaging planes in :ref:`Visualizing with VisIt`.
+
+.. figure:: images/xray_visualize_rays2.png
+
+   An example render made using the above code.
 
 **4. What information is the query using to create the output?**
 
