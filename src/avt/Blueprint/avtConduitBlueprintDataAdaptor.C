@@ -504,8 +504,15 @@ ExplicitCoordsToVTKPoints(const Node &n_coords, const Node &n_topo)
     int  pts_strides[3] = {0,0,0};
     int  pts_offsets[3] = {0,0,0};
 
-    if(n_topo.has_path("elements/dims/offsets") || 
-       n_topo.has_path("elements/dims/strides"))
+    //
+    // only support offsets, strides for "structured" topos
+    //
+    // NOTE: we could also support this uniform or rectilinear
+    // but we need more / different logic to detect the logical
+    // point dims from the coordset
+    if( n_topo["type"].as_string() == "structured" &&
+        ( n_topo.has_path("elements/dims/offsets") ||
+          n_topo.has_path("elements/dims/strides") ) )
     {
         AVT_CONDUIT_BP_INFO("ExplicitCoordsToVTKPoints:: structured strided case ");
         // for this case, we need to apply 
@@ -1141,7 +1148,15 @@ avtConduitBlueprintDataAdaptor::BlueprintToVTK::FieldToVTK(
 {
     vtkDataArray * res = nullptr;
     // Handle optional offsets and strides ()
-    if(field.has_path("offsets") || field.has_path("strides") )
+    //
+    // only support offsets, strides for fields on  "structured" topos
+    //
+    // NOTE: we could also support this uniform or rectilinear
+    // but we need more / different logic to detect the logical
+    // point dims from the coordset
+    //
+    if( topo["type"].as_string() == "structured" && 
+        (field.has_path("offsets") || field.has_path("strides")) )
     {
         AVT_CONDUIT_BP_INFO("FieldToVTK:: structured strided case: ");
         
