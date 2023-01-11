@@ -641,3 +641,26 @@ Example: ::
     // this will compile
     int *myarray2 = new int[nPoints];
 
+CMake Conventions
+-----------------
+
+Starting with VisIt_ version 3.4, new more modern CMake conventions will be adopted, and `BLT <https://llnl-blt.readthedocs.io/en/develop/index.html>`_ will be used whenever feasible.
+
+Handling subdirectories
+~~~~~~~~~~~~~~~~~~~~~~~
+
+Each subdirectory should have its own CMakeLists.txt which either creates a new target or adds sources to a target defined in a parent directory's CMakeLists.txt.
+If a given target has source files spread out across multiple subdirectories, the `add_library` or `add_executable` calls should be in the CMakeLists.txt of the topmost directory, along with the `add_subdirectory` and any common `target_include_directories` or `target_link_libraries` calls.
+The subdirectory will add its sources to the parent's target via `target_sources`.
+
+
+Here's an example from src/avt/DBAtts and src/avt/DBAtts/SIL:
+
+.. literalinclude:: ../../avt/DBAtts/CMakeLists.txt
+    :language: CMake
+    :start-at: add_library(avtdbatts)
+
+.. literalinclude:: ../../avt/DBAtts/SIL/CMakeLists.txt
+    :language: CMake
+    :start-at: target_sources(avtdbatts PRIVATE
+
