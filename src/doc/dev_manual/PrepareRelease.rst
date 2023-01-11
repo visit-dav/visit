@@ -11,6 +11,14 @@ Minor releases are the next most common type of release and may occur
 once or twice a year. Major releases happen very infrequently, with as much
 as 10 years passing between major releases.
 
+Updating copyright notice dates
+-------------------------------
+
+At the beginning of every calendar year, the copyright notice needs to be updated.
+There are only a handful of files that still contain copyright dates, including "/src/LICENSE".
+There is a script called "update_copyright" in "/src/tools/dev/scripts" that can be used but may need updating if copyright dates were added to any new file types.
+This should be kept to a minimum.
+
 Preparing for a Patch Release
 -----------------------------
 
