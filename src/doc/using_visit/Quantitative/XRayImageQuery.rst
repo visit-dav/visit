@@ -19,10 +19,6 @@ If the object is hot enough, it emits xrays and the self-emission is of interest
 
 The query tracks rays through a grid of zone-centered opacities (absorbtivities) and emissivities. 
 The absorbtivity and emissivity variables must be zone-centered and can be either scalar variables (special case) or array variables.
-.. 
-   The opacity and emissivity in each zone is a function of radiation energy and rays are tracked for all (requested?) energies. 
-.. 
-   Soon! But not yet. Once we allow users to specify which energy bounds they want to request, this will be true... see https://github.com/visit-dav/visit/issues/17791
 The opacity and emissivity in each zone is a function of radiation energy and rays are tracked for all energies. 
 The rays are regularly spaced in the image plane and the query generates an image per radiation energy. 
 
