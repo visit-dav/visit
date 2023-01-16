@@ -10062,11 +10062,17 @@ GetNamesHelper(PyObject *self, PyObject *args, stringVector &names)
 {
     PyObject *tuple;
     char *str;
+    int i;
     bool retval = false;
 
     if(PyArg_ParseTuple(args, "s", &str))
     {
         names.push_back(str);
+        retval = true;
+    }
+    else if(PyArg_ParseTuple(args, "i", &i))
+    {
+        names.push_back(std::to_string(i));
         retval = true;
     }
     else if(PyArg_ParseTuple(args, "O", &tuple))
@@ -10082,6 +10088,11 @@ GetNamesHelper(PyObject *self, PyObject *args, stringVector &names)
                     char *str_val = PyString_AsString(item);
                     names.push_back(std::string(str_val));
                     PyString_AsString_Cleanup(str_val);
+                }
+                else if(PyInt_Check(item))
+                {
+                    int int_val = PyInt_AsLong(item);
+                    names.push_back(std::to_string(int_val));
                 }
                 else
                     names.push_back("invalid");
