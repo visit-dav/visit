@@ -10095,7 +10095,7 @@ GetNamesHelper(PyObject *self, PyObject *args, stringVector &names)
                     names.push_back(std::to_string(int_val));
                 }
                 else
-                    names.push_back("invalid");
+                    names.push_back("entry at index " + std::to_string(i));
             }
             retval = true;
             PyErr_Clear();
