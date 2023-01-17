@@ -10074,6 +10074,7 @@ GetNamesHelper(PyObject *self, PyObject *args, stringVector &names)
     {
         names.push_back(std::to_string(i));
         retval = true;
+        PyErr_Clear();
     }
     else if(PyArg_ParseTuple(args, "O", &tuple))
     {
