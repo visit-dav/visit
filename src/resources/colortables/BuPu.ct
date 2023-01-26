@@ -38,6 +38,6 @@
             <Field name="colors" type="unsignedCharArray" length="4">77 0 75 255 </Field>
             <Field name="position" type="float">1.000000</Field>
         </Object>
-        <Field name="tags" type="stringVector">"Standard" "Continuous" </Field>
+        <Field name="tags" type="stringVector">"Default" "Continuous" </Field>
     </Object>
 </Object>

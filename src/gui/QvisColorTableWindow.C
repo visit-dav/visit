@@ -867,6 +867,10 @@ QvisColorTableWindow::AddToTagTable(std::string currtag)
 //    Refactor allows for much cleaner interface for working with tag data.
 //    No need to collect indices of tags anymore due to refactor.
 //    Calculate refcount for each tag on the very first iteration through.
+// 
+//   Justin Privitera, Thu Jan 26 11:39:29 PST 2023
+//   Changed "Standard" tag to "Default" and made "User Defined" turned on by
+//   default.
 //
 // ****************************************************************************
 
@@ -876,8 +880,8 @@ QvisColorTableWindow::AddGlobalTag(std::string currtag, bool first_time)
     // if the given tag is NOT in the global tag list
     if (tagList.find(currtag) == tagList.end())
     {
-        // make the "Standard" tag active the very first time the tags are enabled
-        tagList[currtag].active = currtag == "Standard" && first_time;
+        // make the "Default" tag active the very first time the tags are enabled
+        tagList[currtag].active = (currtag == "Default" || currtag == "User Defined") && first_time;
         AddToTagTable(currtag);
     }
     else
@@ -929,7 +933,7 @@ QvisColorTableWindow::AddGlobalTag(std::string currtag, bool first_time)
 void
 QvisColorTableWindow::UpdateTags()
 {
-    // We want the 'Standard' tag to be checked the very first time tag
+    // We want the 'Default' tag to be checked the very first time tag
     // filtering is enabled, hence the inclusion of `first_time`.
     static bool first_time = true;
     if (tagFilterToggle->isChecked() || first_time)
