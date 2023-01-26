@@ -594,6 +594,9 @@ void avtColorTables::ModifyColor(char unsigned const *inrgb, double mult,
 //   Justin Privitera, Thu Jun 16 18:01:49 PDT 2022
 //   Added tagging and removed categories.
 // 
+//   Justin Privitera, Thu Jan 26 11:39:29 PST 2023
+//   Changed "Standard" tag to "Default".
+// 
 // ****************************************************************************
 
 avtColorTables::avtColorTables()

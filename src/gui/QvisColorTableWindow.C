@@ -867,6 +867,10 @@ QvisColorTableWindow::AddToTagTable(std::string currtag)
 //    Refactor allows for much cleaner interface for working with tag data.
 //    No need to collect indices of tags anymore due to refactor.
 //    Calculate refcount for each tag on the very first iteration through.
+// 
+//   Justin Privitera, Thu Jan 26 11:39:29 PST 2023
+//   Changed "Standard" tag to "Default" and made "User Defined" turned on by
+//   default.
 //
 // ****************************************************************************
 
