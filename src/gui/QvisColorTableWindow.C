@@ -877,7 +877,7 @@ QvisColorTableWindow::AddGlobalTag(std::string currtag, bool first_time)
     if (tagList.find(currtag) == tagList.end())
     {
         // make the "Default" tag active the very first time the tags are enabled
-        tagList[currtag].active = currtag == "Default" && first_time;
+        tagList[currtag].active = (currtag == "Default" || currtag == "User Defined") && first_time;
         AddToTagTable(currtag);
     }
     else
