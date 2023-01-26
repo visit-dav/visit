@@ -891,7 +891,7 @@ This behavior is represented by the type ``CLI_return_t`` in an attempt to disti
     +--------------------------------------------------+-----------------------------+
     | defaultPalette.discreteFlag                      | 1                           |
     +--------------------------------------------------+-----------------------------+
-    | defaultPalette.tagNames                          |  ("Standard",               |
+    | defaultPalette.tagNames                          |  ("Default",                |
     |                                                  |  "Discrete")                |
     +--------------------------------------------------+-----------------------------+
     | changedColors                                    | ()                          |
@@ -2554,7 +2554,7 @@ This behavior is represented by the type ``CLI_return_t`` in an attempt to disti
     +--------------------------------------------------+-----------------------------+
     | defaultPalette.discreteFlag                      | 1                           |
     +--------------------------------------------------+-----------------------------+
-    | defaultPalette.tagNames                          |  ("Standard",               |
+    | defaultPalette.tagNames                          |  ("Default",                |
     |                                                  |  "Discrete")                |
     +--------------------------------------------------+-----------------------------+
     | changedColors                                    | ()                          |

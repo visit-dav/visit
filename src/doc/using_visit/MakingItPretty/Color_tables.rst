@@ -403,7 +403,7 @@ The `Viridis <https://cran.r-project.org/web/packages/viridis/vignettes/intro-to
 * **Perceptually uniform:** meaning that values close to each other have similar-appearing colors and values far away from each other have more different-appearing colors, consistently across the range of values.
 * **Robust to colorblindness:** so that the above properties hold true for people with common forms of colorblindness, as well as in grey scale printing.
 
-These color tables all have the ``Color Blind Safe`` and ``Viridis`` tags.
+These color tables all have the ``Color Blind Safe``, ``Viridis``, and ``Default`` tags.
 
 The Crameri color tables
 """"""""""""""""""""""""
@@ -424,7 +424,7 @@ The Crameri color tables define five broad classes of color tables...
 
   * This is just a `jumbling <https://www.fabiocrameri.ch/categorical-colour-maps/>`_ of the associated *sequential* color table to maximize perceptual differentiation between *neighboring* data values.
 
-In addition, *discrete* versions consisting of 10, 25, 50 and 100 colors from their associated *main* color table are defined.
+In addition, *discrete* versions consisting of 10 colors from their associated *main* color table are defined.
 
 These color tables all have the ``Color Blind Safe`` and ``Crameri`` tags and are named ``<name>-<class>-<count>`` where ``<name>`` is the specific color table in the Crameri set of color tables, ``<class>`` is one of the five classes defined above and ``<count>`` is defined only for discrete color tables and indicates the number of colors in the table.
 
@@ -460,7 +460,7 @@ To view the full list of color tables once more, users can disable filtering by 
 Specific Behavior
 """""""""""""""""
 
-By default, the first time tag filtering is enabled, only the ``Standard`` tag is selected. 
+By default, the first time tag filtering is enabled, only the ``Default`` tag is selected. 
 All other times tag filtering is enabled, it will retain the tag selection from when it was disabled.
 
 When a new color table is created, it will inherit the tags from the color table it is based on. 
@@ -477,7 +477,7 @@ Default Tags
 
 The following is a list of all the tags that appear in VisIt_'s current set of color tables.
 
-* Standard
+* Default
 * Color Blind Safe
 * Crameri
 * Viridis
