@@ -86,6 +86,10 @@
 #include <avtConduitBlueprintDataAdaptor.h>
 #endif
 
+#ifdef HAVE_LIBVTKM
+#include <vtkm/cont/Initialize.h>
+#endif
+
 #include <visit-config.h>
 #if defined(HAVE_OSMESA) || defined(HAVE_EGL)
 #  include <vtkOffScreenRenderingFactory.h>
@@ -790,6 +794,9 @@ Engine::InitializeCompute()
     int setupTimer = visitTimer->StartTimer();
     InitVTK::Initialize();
     InitVTKRendering::Initialize();
+#ifdef HAVE_LIBVTKM
+    vtkm::cont::Initialize();
+#endif
 #ifdef HAVE_CONDUIT
     avtConduitBlueprintDataAdaptor::Initialize();
 #endif
