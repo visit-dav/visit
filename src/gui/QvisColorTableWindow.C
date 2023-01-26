@@ -876,8 +876,8 @@ QvisColorTableWindow::AddGlobalTag(std::string currtag, bool first_time)
     // if the given tag is NOT in the global tag list
     if (tagList.find(currtag) == tagList.end())
     {
-        // make the "Standard" tag active the very first time the tags are enabled
-        tagList[currtag].active = currtag == "Standard" && first_time;
+        // make the "Default" tag active the very first time the tags are enabled
+        tagList[currtag].active = currtag == "Default" && first_time;
         AddToTagTable(currtag);
     }
     else
@@ -929,7 +929,7 @@ QvisColorTableWindow::AddGlobalTag(std::string currtag, bool first_time)
 void
 QvisColorTableWindow::UpdateTags()
 {
-    // We want the 'Standard' tag to be checked the very first time tag
+    // We want the 'Default' tag to be checked the very first time tag
     // filtering is enabled, hence the inclusion of `first_time`.
     static bool first_time = true;
     if (tagFilterToggle->isChecked() || first_time)

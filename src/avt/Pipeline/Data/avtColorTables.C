@@ -643,7 +643,7 @@ avtColorTables::avtColorTables()
         ccpl.SetSmoothing(ColorControlPointList::SmoothingMethod(predef_ct_smooth[i]));
         ccpl.SetEqualSpacingFlag(predef_ct_equal[i] == 1);
         ccpl.SetDiscreteFlag(predef_ct_discrete[i] == 1);
-        ccpl.AddTag("Standard");
+        ccpl.AddTag("Default");
         if (predef_ct_discrete[i] == 1)
             ccpl.AddTag("Discrete");
         else
