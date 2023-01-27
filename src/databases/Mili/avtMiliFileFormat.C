@@ -1606,6 +1606,12 @@ avtMiliFileFormat::GetVar(int timestep,
 //    They are only stored with domain 0, so the domain needs to be set to
 //    0 when reading a material variable.
 //
+//    Eric Brugger, Thu Jan  5 15:25:33 PST 2023
+//    I fixed a bug where variables that were only defined on a portion of
+//    the nodes weren't being placed on the correct nodes. This was handled
+//    properly for zonal variables. I fixed the bug by unifying the handling
+//    of nodal and zonal variables.
+//
 // ****************************************************************************
 
 void
@@ -1639,7 +1645,6 @@ avtMiliFileFormat::GetVar(int timestep,
     }
 
     intVector SRIds    = varMD->GetSubrecIds(domVar);
-    int nSRs           = SRIds.size();
     int vType          = varMD->GetNumType();
     string vShortName  = varMD->GetShortName();
 
@@ -1650,116 +1655,108 @@ avtMiliFileFormat::GetVar(int timestep,
     snprintf(charName, 128, "%s", vShortName.c_str());
     char *namePtr = (char *) charName;
 
+    int nVals = 0;
     if (varMD->GetCentering() == AVT_NODECENT)
     {
-        int nNodes = miliMetaData[meshId]->GetNumNodes(dom);
+        nVals = miliMetaData[meshId]->GetNumNodes(dom);
+    }
+    else
+    {
+        nVals = miliMetaData[meshId]->GetNumCells(dom);
+    }
 
-        float *fArrPtr = (float *) fltArray->GetVoidPointer(0);
+    //
+    // We have two special cases to consider.
+    // Material variables:
+    //   We receive a single value for a given number of materials,
+    //   and we must apply each of those values to their respective
+    //   materials.
+    // Global variables:
+    //   We receive a single value that is applied to all cells.
+    //
+    int dBuffSize = 0;
+    float *dataBuffer = NULL;
+    bool isMatVar = varMD->IsMatVar();
+    bool isGlobal = varMD->IsGlobal();
 
-        ReadMiliResults(dbid[dom], timestep + 1, SRIds[0], 1,
-            &namePtr, vType, nNodes, fArrPtr);
+    if (isMatVar)
+    {
+        dBuffSize  = materials[domVar][meshId]->GetNMaterials();
+        dataBuffer = new float[dBuffSize];
+    }
+    else if (isGlobal)
+    {
+        dBuffSize  = 1;
+        dataBuffer = new float[dBuffSize];
+    }
+    else
+    {
+        dBuffSize  = nVals;
+        dataBuffer = new float[dBuffSize];
+    }
+
+    //
+    // Nans for empty space (rendered grey).
+    //
+    for (int i = 0 ; i < dBuffSize; i++)
+    {
+        dataBuffer[i] = std::numeric_limits<float>::quiet_NaN();
+    }
+
+    //
+    // Read the data into our buffer.
+    //
+    string className = varMD->GetClassShortName();
+    int start = miliMetaData[meshId]->
+        GetClassMDByShortName(className.c_str())->
+        GetConnectivityOffset(domVar);
+
+    ReadMiliVarToBuffer(namePtr, SRIds, SRInfo, start,
+        vType, 1, timestep + 1, domVar, dataBuffer);
+
+    if (isMatVar)
+    {
+        //
+        // This is a material variable. We need to distribute the
+        // values across the array by material ID.
+        //
+        const int *matList = materials[dom][meshId]->GetMatlist();
+
+        for (int i = 0; i < nVals; ++i)
+        {
+            if (!visitIsNan(dataBuffer[matList[i]]))
+            {
+                fltArray->SetTuple1(i, dataBuffer[matList[i]]);
+            }
+        }
+    }
+    else if (isGlobal)
+    {
+        //
+        // This is a global var. Just apply it to all cells.
+        //
+        for (int i = 1; i < nVals; ++i)
+        {
+            fltArray->SetTuple1(i, dataBuffer[0]);
+        }
     }
     else
     {
         //
-        // Cell centered variable.
+        // Nothing special here. Just copy the values over.
         //
-        int nCells = miliMetaData[meshId]->GetNumCells(dom);
-
-        float *dataBuffer = NULL;
-
-        //
-        // We have two special cases to consider.
-        // Material variables:
-        //   We receive a single value for a given number of materials,
-        //   and we must apply each of those values to their respective
-        //   materials.
-        // Global variables:
-        //   We receive a single value that is applied to all cells.
-        //
-        int dBuffSize = 0;
-        bool isMatVar = varMD->IsMatVar();
-        bool isGlobal = varMD->IsGlobal();
-
-        if (isMatVar)
+        for (int i = 0; i < nVals; ++i)
         {
-            dBuffSize  = materials[domVar][meshId]->GetNMaterials();
-            dataBuffer = new float[dBuffSize];
-        }
-        else if (isGlobal)
-        {
-            dBuffSize  = 1;
-            dataBuffer = new float[1];
-        }
-        else
-        {
-            dBuffSize  = nCells;
-            dataBuffer = new float[dBuffSize];
-        }
-
-        //
-        // Nans for empty space (redered grey).
-        //
-        for (int i = 0 ; i < dBuffSize; i++)
-        {
-            dataBuffer[i] = std::numeric_limits<float>::quiet_NaN();
-        }
-
-        //
-        // Read the data into our buffer.
-        //
-        string className = varMD->GetClassShortName();
-        int start = miliMetaData[meshId]->
-            GetClassMDByShortName(className.c_str())->
-            GetConnectivityOffset(domVar);
-
-        ReadMiliVarToBuffer(namePtr, SRIds, SRInfo, start,
-            vType, 1, timestep + 1, domVar, dataBuffer);
-
-        if (isMatVar)
-        {
-            //
-            // This is a material variable. We need to distribute the
-            // values across cells by material ID.
-            //
-            const int *matList = materials[dom][meshId]->GetMatlist();
-
-            for (int i = 0; i < nCells; ++i)
+            if (!visitIsNan(dataBuffer[i]))
             {
-                if (!visitIsNan(dataBuffer[matList[i]]))
-                {
-                    fltArray->SetTuple1(i, dataBuffer[matList[i]]);
-                }
+                fltArray->SetTuple1(i, dataBuffer[i]);
             }
         }
-        else if (isGlobal)
-        {
-            //
-            // This is a global var. Just apply it to all cells.
-            //
-            for (int i = 0; i < nCells; ++i)
-            {
-                fltArray->SetTuple1(i, dataBuffer[0]);
-            }
-        }
-        else
-        {
-            //
-            // Nothing special here. Just copy the values over.
-            //
-            for (int i = 0; i < nCells; ++i)
-            {
-                if (!visitIsNan(dataBuffer[i]))
-                {
-                    fltArray->SetTuple1(i, dataBuffer[i]);
-                }
-            }
-        }
+    }
 
-        if (dataBuffer != NULL)
-        {
-            delete [] dataBuffer;
-        }
+    if (dataBuffer != NULL)
+    {
+        delete [] dataBuffer;
     }
 }
 
@@ -2216,7 +2213,7 @@ avtMiliFileFormat::GetElementSetVar(int timestep,
         // Element sets are specialized vectors such that each
         // element in the vector is a list of integration points.
         //
-        for (int j = 0; j < compIdxs.size(); ++j)
+        for (size_t j = 0; j < compIdxs.size(); ++j)
         {
             int idx = (i * dataSize) + (compIdxs[j] * compDims);
             idx += targetIP;
@@ -2291,7 +2288,7 @@ avtMiliFileFormat::ReadMiliVarToBuffer(char *varName,
     // Loop over the subrecords, and retrieve the variable
     // data from mili.
     //
-    for (int i = 0 ; i < SRIds.size(); i++)
+    for (size_t i = 0 ; i < SRIds.size(); i++)
     {
         int nTargetEl = 0;
         int nBlocks   = 0;
@@ -2321,16 +2318,8 @@ avtMiliFileFormat::ReadMiliVarToBuffer(char *varName,
         }
         else if (nBlocks > 1)
         {
-            int totalBlocksSize = 0;
-            for (int b = 0; b < nBlocks; ++b)
-            {
-                int curStart = blockRanges[b * 2];
-                int stop     = blockRanges[b * 2 + 1];
-                totalBlocksSize += stop - curStart + 1;
-            }
-
-            float *MBBuffer = new float[totalBlocksSize * varSize];
-            int resultSize = totalBlocksSize * varSize;
+            int resultSize = nTargetEl * varSize;
+            float *MBBuffer = new float[resultSize];
 
             ReadMiliResults(dbid[dom], ts, SRId,
                 1, &varName, vType, resultSize, MBBuffer);
@@ -3059,7 +3048,7 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
                 // that are treated as distinct variables. We need to
                 // check for this and add them individually.
                 //
-                for (int j = 0; j < groupShared.size(); ++j)
+                for (size_t j = 0; j < groupShared.size(); ++j)
                 {
                     bool addVarNow = true;
                     SharedVariableInfo *sharedInfo = NULL;
@@ -3701,7 +3690,6 @@ avtMiliFileFormat::ExtractJsonClasses(rapidjson::Document &jDoc,
 
             string lName = "";
             int scID     = -1;
-            int elCount  = 0;
 
             if (val.HasMember("LongName"))
             {
@@ -4098,6 +4086,8 @@ avtMiliFileFormat::RetrieveZoneLabelInfo(const int meshId,
     }
     delete [] elemList;
     delete [] labelIds;
+
+    visitTimer->StopTimer(loadZoneLabels, "MILI: Loading zone labels");
 }
 
 
@@ -4130,7 +4120,6 @@ avtMiliFileFormat::RetrieveNodeLabelInfo(const int meshId,
                                          char *shortName,
                                          const int dom)
 {
-    int nLabeledNodes = 0;
     int nNodes        = miliMetaData[meshId]->GetNumNodes(dom);
     int numBlocks     = 0;
     int *blockRanges  = NULL;

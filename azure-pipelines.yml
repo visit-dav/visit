@@ -96,6 +96,8 @@ stages:
            git lfs pull --include blueprint_v0.7.0_venn_test_data.tar.xz
            git lfs pull --include blueprint_v0.8.2_braid_examples_test_data.tar.xz
            git lfs pull --include blueprint_v0.8.2_polytess_test_data.tar.xz
+           git lfs pull --include blueprint_v0.8.4_part_map_examples.tar.xz
+           git lfs pull --include blueprint_v0.8.4_strided_structured_examples.tar.gz
            cd ../
            git lfs pull  --include test/baseline/databases/silo
            git lfs pull  --include test/baseline/databases/blueprint
@@ -110,6 +112,8 @@ stages:
            tar xvf ../../data/blueprint_v0.7.0_venn_test_data.tar.xz
            tar xvf ../../data/blueprint_v0.8.2_braid_examples_test_data.tar.xz
            tar xvf ../../data/blueprint_v0.8.2_polytess_test_data.tar.xz
+           tar xvf ../../data/blueprint_v0.8.4_part_map_examples.tar.xz
+           tar xvf ../../data/blueprint_v0.8.4_strided_structured_examples.tar.gz
 
         displayName: 'Prep Test Data'
 

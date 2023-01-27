@@ -46,7 +46,7 @@
 #10. bv_<module>_is_installed check if the module is properly installed
 #11. bv_<module>_is_enabled and finally check if it is enabled
 
-export VISIT_VERSION=${VISIT_VERSION:-"3.3.1"}
+export VISIT_VERSION=${VISIT_VERSION:-"3.3.2"}
 
 ####
 # Trunk:
