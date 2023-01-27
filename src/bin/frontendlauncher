@@ -39,6 +39,10 @@
 #   version string to use "expr" instead of the bash built-in "[[ ]]", which
 #   doesn't work with bourne shell.
 #
+#   Cyrus Harrison, Fri Jan 27 09:12:15 PST 2023
+#   Added logic to use system `python3` if `python` is not available.
+#   (Installed use finds and calls our python, this helps with developer use)
+#
 ###############################################################################
 
 # Determine VisIt architecture
@@ -208,7 +212,14 @@ if test -n "$visitpython"; then
     exec "$visitpython" -u $frontendlauncherpy $0 ${1+"$@"}
 else
     #echo "System python $frontendlauncherpy $0 ${1+"$@"}"
-
-    # Pass "-u" to python to turn off buffering
-    exec python -u $frontendlauncherpy $0 ${1+"$@"}
+    # check if system python is called `python`,
+    # if not we assume it is called `python3`, since that is the way of the world
+    type python >/dev/null 2>&1
+    testValue=$?
+    if [ $testValue -ne 0 ]; then
+        exec python3 -u $frontendlauncherpy $0 ${1+"$@"}
+    else
+        # Pass "-u" to python to turn off buffering
+        exec python -u $frontendlauncherpy $0 ${1+"$@"}
+    fi
 fi
