@@ -95,6 +95,7 @@ ConvertVTKToVTKm(vtkDataSet *data)
 
     if (data->GetDataObjectType() == VTK_RECTILINEAR_GRID)
     {
+        cerr << "Creating a rectilinear grid." << endl;
         //
         // Get VTK data.
         //
@@ -176,6 +177,7 @@ ConvertVTKToVTKm(vtkDataSet *data)
     }
     else if (data->GetDataObjectType() == VTK_STRUCTURED_GRID)
     {
+        cerr << "Creating a structured grid." << endl;
         //
         // Get VTK data.
         //
@@ -237,6 +239,7 @@ ConvertVTKToVTKm(vtkDataSet *data)
     }
     else if (data->GetDataObjectType() == VTK_UNSTRUCTURED_GRID)
     {
+        cerr << "Creating an unstructured grid." << endl;
         //
         // Get VTK data.
         //
@@ -347,6 +350,13 @@ ConvertVTKToVTKm(vtkDataSet *data)
                 vtkm::cont::CoordinateSystem("coordinates", coordinates));
         }
     }
+    else
+    {
+        //
+        // We didn't handle the conversion case. Throw an exception.
+        //
+        EXCEPTION0(InvalidConversionException);
+    }
 
     //
     // Add the nodal fields.
@@ -354,12 +364,16 @@ ConvertVTKToVTKm(vtkDataSet *data)
     int nArrays = data->GetPointData()->GetNumberOfArrays();
     for (int i = 0; i < nArrays; ++i)
     {
+        cerr << "Adding a nodal field." << endl;
         vtkDataArray *array = data->GetPointData()->GetArray(i);
+        cerr << "Fieldname=" << array->GetName() << endl;
 
         if (array->GetNumberOfComponents() == 1)
         {
+            cerr << "Num components = 1." << endl;
             if (array->GetDataType() == VTK_FLOAT)
             {
+                cerr << "Data type is float." << endl;
                 vtkIdType nVals = array->GetNumberOfTuples();
                 float *vals =
                     vtkFloatArray::SafeDownCast(array)->GetPointer(0);
@@ -376,6 +390,7 @@ ConvertVTKToVTKm(vtkDataSet *data)
             }
             else if (array->GetDataType() == VTK_DOUBLE)
             {
+                cerr << "Data type is double." << endl;
                 vtkIdType nVals = array->GetNumberOfTuples();
                 double *vals =
                     vtkDoubleArray::SafeDownCast(array)->GetPointer(0);
@@ -393,8 +408,10 @@ ConvertVTKToVTKm(vtkDataSet *data)
         }
         else if (array->GetNumberOfComponents() == 3)
         {
+            cerr << "Num components = 3." << endl;
             if (array->GetDataType() == VTK_FLOAT)
             {
+                cerr << "Data type is float." << endl;
                 vtkIdType nVals = array->GetNumberOfTuples();
                 vtkm::Vec<vtkm::Float32,3> *vals =
                     reinterpret_cast<vtkm::Vec<vtkm::Float32,3> *>(array->GetVoidPointer(0));
@@ -410,6 +427,7 @@ ConvertVTKToVTKm(vtkDataSet *data)
             }
             else if (array->GetDataType() == VTK_DOUBLE)
             {
+                cerr << "Data type is double." << endl;
                 vtkIdType nVals = array->GetNumberOfTuples();
                 vtkm::Vec<vtkm::Float64,3> *vals =
                     reinterpret_cast<vtkm::Vec<vtkm::Float64,3> *>(array->GetVoidPointer(0));
@@ -432,12 +450,16 @@ ConvertVTKToVTKm(vtkDataSet *data)
     nArrays = data->GetCellData()->GetNumberOfArrays();
     for (int i = 0; i < nArrays; ++i)
     {
+        cerr << "Adding a zonal field." << endl;
         vtkDataArray *array = data->GetCellData()->GetArray(i);
+        cerr << "Fieldname=" << array->GetName() << endl;
 
         if (array->GetNumberOfComponents() == 1)
         {
+            cerr << "Num components = 1." << endl;
             if (array->GetDataType() == VTK_FLOAT)
             {
+                cerr << "Data type is float." << endl;
                 vtkIdType nVals = array->GetNumberOfTuples();
                 float *vals =
                     vtkFloatArray::SafeDownCast(array)->GetPointer(0);
@@ -454,6 +476,7 @@ ConvertVTKToVTKm(vtkDataSet *data)
             }
             else if (array->GetDataType() == VTK_DOUBLE)
             {
+                cerr << "Data type is double." << endl;
                 vtkIdType nVals = array->GetNumberOfTuples();
                 double *vals =
                     vtkDoubleArray::SafeDownCast(array)->GetPointer(0);
@@ -470,6 +493,7 @@ ConvertVTKToVTKm(vtkDataSet *data)
             }
             else if (array->GetDataType() == VTK_UNSIGNED_CHAR)
             {
+                cerr << "Data type is unsigned char." << endl;
                 vtkIdType nVals = array->GetNumberOfTuples();
                 unsigned char *vals =
                     vtkUnsignedCharArray::SafeDownCast(array)->GetPointer(0);
@@ -487,14 +511,18 @@ ConvertVTKToVTKm(vtkDataSet *data)
         }
         else if (array->GetNumberOfComponents() == 2)
         {
+            cerr << "Num components = 2." << endl;
             if (array->GetDataType() == VTK_UNSIGNED_INT)
             {
+                cerr << "Data type is unsigned int." << endl;
             }
         }
         else if (array->GetNumberOfComponents() == 3)
         {
+            cerr << "Num components = 3." << endl;
             if (array->GetDataType() == VTK_FLOAT)
             {
+                cerr << "Data type is float." << endl;
                 vtkIdType nVals = array->GetNumberOfTuples();
                 vtkm::Vec<vtkm::Float32,3> *vals =
                     reinterpret_cast<vtkm::Vec<vtkm::Float32,3> *>(array->GetVoidPointer(0));
@@ -510,6 +538,7 @@ ConvertVTKToVTKm(vtkDataSet *data)
             }
             else if (array->GetDataType() == VTK_DOUBLE)
             {
+                cerr << "Data type is double." << endl;
                 vtkIdType nVals = array->GetNumberOfTuples();
                 vtkm::Vec<vtkm::Float64,3> *vals =
                     reinterpret_cast<vtkm::Vec<vtkm::Float64,3> *>(array->GetVoidPointer(0));
@@ -844,6 +873,12 @@ ConvertVTKmToVTK(avtVtkmDataSet *data)
     vtkm::cont::DataSet vtkm_ds = data->ds;
 
     //
+    // If we don't have any cells return NULL.
+    //
+    if (vtkm_ds.GetCellSet().GetNumberOfCells() == 0)
+        return NULL;
+
+    //
     // Use the dataset's cell set to turn the connectivity back into VTK.
     //
     int t0 = visitTimer->StartTimer();
@@ -852,10 +887,12 @@ ConvertVTKmToVTK(avtVtkmDataSet *data)
     {
         if(vtkm_ds.GetCellSet().IsSameType(vtkm::cont::CellSetStructured<3>()))
         {
+            cerr << "Creating a structured grid." << endl;
             ds = StructuredFromVTKM(data);
         }
         else if(vtkm_ds.GetCellSet().IsSameType(vtkm::cont::CellSetExplicit<>()))
         {
+            cerr << "Creating a mixed type unstructured grid." << endl;
             vtkPoints *pts = vtkPointsFromVTKM(data);
             vtkUnstructuredGrid *ugrid = vtkUnstructuredGrid::New();
             ugrid->SetPoints(pts);
@@ -942,6 +979,7 @@ ConvertVTKmToVTK(avtVtkmDataSet *data)
         }
         else if(vtkm_ds.GetCellSet().IsSameType(vtkm::cont::CellSetSingleType<>()))
         {
+            cerr << "Creating a single type unstructured grid." << endl;
             vtkm::cont::UnknownCellSet cs = vtkm_ds.GetCellSet();
             vtkm::cont::CellSetSingleType<> csst;
             try
@@ -1042,6 +1080,7 @@ ConvertVTKmToVTK(avtVtkmDataSet *data)
 
             if (field.IsType<ScalarUInt8>())
             {
+                cerr << "Adding a uint8 field." << endl;
                 ScalarUInt8 fieldArray;
                 field.AsArrayHandle(fieldArray);
 
@@ -1061,6 +1100,7 @@ ConvertVTKmToVTK(avtVtkmDataSet *data)
             }
             else if (field.IsType<Scalar32>())
             {
+                cerr << "Adding a scalar32 field." << endl;
                 Scalar32 fieldArray;
                 field.AsArrayHandle(fieldArray);
 
@@ -1079,6 +1119,7 @@ ConvertVTKmToVTK(avtVtkmDataSet *data)
             }
             else if (field.IsType<Scalar64>())
             {
+                cerr << "Adding a scalar64 field." << endl;
                 Scalar64 fieldArray;
                 field.AsArrayHandle(fieldArray);
 
@@ -1097,6 +1138,7 @@ ConvertVTKmToVTK(avtVtkmDataSet *data)
             }
             else if (field.IsType<Vector32>())
             {
+                cerr << "Adding a vector32 field." << endl;
                 Vector32 fieldArray;
                 field.AsArrayHandle(fieldArray);
 
@@ -1117,6 +1159,7 @@ ConvertVTKmToVTK(avtVtkmDataSet *data)
             }
             else if (field.IsType<Vector64>())
             {
+                cerr << "Adding a vector64 field." << endl;
                 Vector64 fieldArray;
                 field.AsArrayHandle(fieldArray);
 
@@ -1135,8 +1178,21 @@ ConvertVTKmToVTK(avtVtkmDataSet *data)
                 attr->CopyFieldOn(fieldName);
                 outArray->Delete();
             }
+            else
+            {
+                cerr << "Unhandled field." << endl;
+            }
         }
         visitTimer->StopTimer(t1, "Converting fields from VTKm to VTK.");
+    }
+
+    //
+    // If the dataset is NULL, we didn't handle the conversion case.
+    // Throw an exception.
+    //
+    if (ds == NULL)
+    {
+        EXCEPTION0(InvalidConversionException);
     }
 
     ret = ds;
@@ -2810,10 +2866,6 @@ avtDataRepresentation::VTKmToVTK(avtVtkmDataSet *data)
         int timerhandle = visitTimer->StartTimer();
 
         ret = ConvertVTKmToVTK(data);
-        if (ret == NULL)
-        {
-            EXCEPTION0(InvalidConversionException);
-        }
 
         visitTimer->StopTimer(timerhandle, "avtDataRepresentation::VTKmToVTK");
     }
@@ -2852,10 +2904,6 @@ avtDataRepresentation::VTKToVTKm(vtkDataSet *data)
         int timerhandle = visitTimer->StartTimer();
 
         ret = ConvertVTKToVTKm(data);
-        if (ret == NULL)
-        {
-            EXCEPTION0(InvalidConversionException);
-        }
 
         visitTimer->StopTimer(timerhandle, "avtDataRepresentation::VTKToVTKm");
     }
