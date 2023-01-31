@@ -95,7 +95,6 @@ ConvertVTKToVTKm(vtkDataSet *data)
 
     if (data->GetDataObjectType() == VTK_RECTILINEAR_GRID)
     {
-        cerr << "Creating a rectilinear grid." << endl;
         //
         // Get VTK data.
         //
@@ -103,9 +102,6 @@ ConvertVTKToVTKm(vtkDataSet *data)
         vtkDataArray *xCoords = rgrid->GetXCoordinates();
         vtkDataArray *yCoords = rgrid->GetYCoordinates();
         vtkDataArray *zCoords = rgrid->GetZCoordinates();
-        float *xPts = static_cast<float*>(xCoords->GetVoidPointer(0));
-        float *yPts = static_cast<float*>(yCoords->GetVoidPointer(0));
-        float *zPts = static_cast<float*>(zCoords->GetVoidPointer(0));
 
         int dims[3];
         rgrid->GetDimensions(dims);
@@ -147,44 +143,88 @@ ConvertVTKToVTKm(vtkDataSet *data)
         }
 
         // Add the coordinate system.
-        vtkm::cont::ArrayHandle<vtkm::Float32> xCoordsHandle;
-        vtkm::cont::ArrayHandle<vtkm::Float32> yCoordsHandle;
-        vtkm::cont::ArrayHandle<vtkm::Float32> zCoordsHandle;
+        if (xCoords->GetDataType() == VTK_FLOAT)
+        {
+            float *xPts = static_cast<float*>(xCoords->GetVoidPointer(0));
+            float *yPts = static_cast<float*>(yCoords->GetVoidPointer(0));
+            float *zPts = static_cast<float*>(zCoords->GetVoidPointer(0));
 
-        xCoordsHandle.Allocate(dims[0]);
-        yCoordsHandle.Allocate(dims[1]);
-        zCoordsHandle.Allocate(dims[2]);
+            vtkm::cont::ArrayHandle<vtkm::Float32> xCoordsHandle;
+            vtkm::cont::ArrayHandle<vtkm::Float32> yCoordsHandle;
+            vtkm::cont::ArrayHandle<vtkm::Float32> zCoordsHandle;
 
-        vtkm::Float32 *x = GetVTKmPointer(xCoordsHandle);
-        vtkm::Float32 *y = GetVTKmPointer(yCoordsHandle);
-        vtkm::Float32 *z = GetVTKmPointer(zCoordsHandle);
+            xCoordsHandle.Allocate(dims[0]);
+            yCoordsHandle.Allocate(dims[1]);
+            zCoordsHandle.Allocate(dims[2]);
 
-        memcpy(x, xPts, sizeof(float) * dims[0]);
-        memcpy(y, yPts, sizeof(float) * dims[1]);
-        memcpy(z, zPts, sizeof(float) * dims[2]);
+            vtkm::Float32 *x = GetVTKmPointer(xCoordsHandle);
+            vtkm::Float32 *y = GetVTKmPointer(yCoordsHandle);
+            vtkm::Float32 *z = GetVTKmPointer(zCoordsHandle);
 
-        vtkm::cont::ArrayHandleCartesianProduct<
-            vtkm::cont::ArrayHandle<vtkm::Float32>,
-            vtkm::cont::ArrayHandle<vtkm::Float32>,
-            vtkm::cont::ArrayHandle<vtkm::Float32> > coords;
+            memcpy(x, xPts, sizeof(float) * dims[0]);
+            memcpy(y, yPts, sizeof(float) * dims[1]);
+            memcpy(z, zPts, sizeof(float) * dims[2]);
 
-        coords = vtkm::cont::make_ArrayHandleCartesianProduct(xCoordsHandle,
-                                                              yCoordsHandle,
-                                                              zCoordsHandle);
+            vtkm::cont::ArrayHandleCartesianProduct<
+                vtkm::cont::ArrayHandle<vtkm::Float32>,
+                vtkm::cont::ArrayHandle<vtkm::Float32>,
+                vtkm::cont::ArrayHandle<vtkm::Float32> > coords;
 
-        ds.AddCoordinateSystem(
-            vtkm::cont::CoordinateSystem("coordinates", coords));
+            coords = vtkm::cont::make_ArrayHandleCartesianProduct(
+                xCoordsHandle, yCoordsHandle, zCoordsHandle);
+
+            ds.AddCoordinateSystem(
+                vtkm::cont::CoordinateSystem("coordinates", coords));
+        }
+        else if (xCoords->GetDataType() == VTK_DOUBLE)
+        {
+            double *xPts = static_cast<double*>(xCoords->GetVoidPointer(0));
+            double *yPts = static_cast<double*>(yCoords->GetVoidPointer(0));
+            double *zPts = static_cast<double*>(zCoords->GetVoidPointer(0));
+
+            vtkm::cont::ArrayHandle<vtkm::Float64> xCoordsHandle;
+            vtkm::cont::ArrayHandle<vtkm::Float64> yCoordsHandle;
+            vtkm::cont::ArrayHandle<vtkm::Float64> zCoordsHandle;
+
+            xCoordsHandle.Allocate(dims[0]);
+            yCoordsHandle.Allocate(dims[1]);
+            zCoordsHandle.Allocate(dims[2]);
+
+            vtkm::Float64 *x = GetVTKmPointer(xCoordsHandle);
+            vtkm::Float64 *y = GetVTKmPointer(yCoordsHandle);
+            vtkm::Float64 *z = GetVTKmPointer(zCoordsHandle);
+
+            memcpy(x, xPts, sizeof(double) * dims[0]);
+            memcpy(y, yPts, sizeof(double) * dims[1]);
+            memcpy(z, zPts, sizeof(double) * dims[2]);
+
+            vtkm::cont::ArrayHandleCartesianProduct<
+                vtkm::cont::ArrayHandle<vtkm::Float64>,
+                vtkm::cont::ArrayHandle<vtkm::Float64>,
+                vtkm::cont::ArrayHandle<vtkm::Float64> > coords;
+
+            coords = vtkm::cont::make_ArrayHandleCartesianProduct(
+                xCoordsHandle, yCoordsHandle, zCoordsHandle);
+
+            ds.AddCoordinateSystem(
+                vtkm::cont::CoordinateSystem("coordinates", coords));
+        }
+        else
+        {
+            //
+            // We didn't handle the conversion case. Throw an exception.
+            //
+            EXCEPTION0(InvalidConversionException);
+        }
     }
     else if (data->GetDataObjectType() == VTK_STRUCTURED_GRID)
     {
-        cerr << "Creating a structured grid." << endl;
         //
         // Get VTK data.
         //
         vtkStructuredGrid *sgrid = (vtkStructuredGrid *) data;
         vtkIdType nPoints = sgrid->GetNumberOfPoints();
         vtkPoints *points = sgrid->GetPoints();
-        float *pts = static_cast<float*>(points->GetVoidPointer(0));
 
         int dims[3];
         sgrid->GetDimensions(dims);
@@ -225,21 +265,48 @@ ConvertVTKToVTKm(vtkDataSet *data)
         }
 
         // Add the coordinate system.
-        vtkm::cont::ArrayHandle<vtkm::Vec<vtkm::Float32,3> > coordinates;
-        coordinates.Allocate(nPoints);
-
-        for (vtkm::Id i = 0; i < nPoints; ++i)
+        if (points->GetDataType() == VTK_FLOAT)
         {
-            vtkm::Vec<vtkm::Float32,3> point(pts[i*3], pts[i*3+1], pts[i*3+2]);
-            coordinates.WritePortal().Set(i, point);
-        }
+            float *pts = static_cast<float*>(points->GetVoidPointer(0));
 
-        ds.AddCoordinateSystem(
-            vtkm::cont::CoordinateSystem("coordinates", coordinates));
+            vtkm::cont::ArrayHandle<vtkm::Vec<vtkm::Float32,3> > coordinates;
+            coordinates.Allocate(nPoints);
+
+            for (vtkm::Id i = 0; i < nPoints; ++i)
+            {
+                vtkm::Vec<vtkm::Float32,3> point(pts[i*3], pts[i*3+1], pts[i*3+2]);
+                coordinates.WritePortal().Set(i, point);
+            }
+
+            ds.AddCoordinateSystem(
+                vtkm::cont::CoordinateSystem("coordinates", coordinates));
+        }
+        else if (points->GetDataType() == VTK_DOUBLE)
+        {
+            double *pts = static_cast<double*>(points->GetVoidPointer(0));
+
+            vtkm::cont::ArrayHandle<vtkm::Vec<vtkm::Float64,3> > coordinates;
+            coordinates.Allocate(nPoints);
+
+            for (vtkm::Id i = 0; i < nPoints; ++i)
+            {
+                vtkm::Vec<vtkm::Float64,3> point(pts[i*3], pts[i*3+1], pts[i*3+2]);
+                coordinates.WritePortal().Set(i, point);
+            }
+
+            ds.AddCoordinateSystem(
+                vtkm::cont::CoordinateSystem("coordinates", coordinates));
+        }
+        else
+        {
+            //
+            // We didn't handle the conversion case. Throw an exception.
+            //
+            EXCEPTION0(InvalidConversionException);
+        }
     }
     else if (data->GetDataObjectType() == VTK_UNSTRUCTURED_GRID)
     {
-        cerr << "Creating an unstructured grid." << endl;
         //
         // Get VTK data.
         //
@@ -334,7 +401,7 @@ ConvertVTKToVTKm(vtkDataSet *data)
             ds.AddCoordinateSystem(
                 vtkm::cont::CoordinateSystem("coordinates", coordinates));
         }
-        else
+        else if (points->GetDataType() == VTK_DOUBLE)
         {
             double *pts = static_cast<double*>(points->GetVoidPointer(0));
             vtkm::cont::ArrayHandle<vtkm::Vec<vtkm::Float64,3> > coordinates;
@@ -348,6 +415,13 @@ ConvertVTKToVTKm(vtkDataSet *data)
 
             ds.AddCoordinateSystem(
                 vtkm::cont::CoordinateSystem("coordinates", coordinates));
+        }
+        else
+        {
+            //
+            // We didn't handle the conversion case. Throw an exception.
+            //
+            EXCEPTION0(InvalidConversionException);
         }
     }
     else
@@ -364,16 +438,12 @@ ConvertVTKToVTKm(vtkDataSet *data)
     int nArrays = data->GetPointData()->GetNumberOfArrays();
     for (int i = 0; i < nArrays; ++i)
     {
-        cerr << "Adding a nodal field." << endl;
         vtkDataArray *array = data->GetPointData()->GetArray(i);
-        cerr << "Fieldname=" << array->GetName() << endl;
 
         if (array->GetNumberOfComponents() == 1)
         {
-            cerr << "Num components = 1." << endl;
             if (array->GetDataType() == VTK_FLOAT)
             {
-                cerr << "Data type is float." << endl;
                 vtkIdType nVals = array->GetNumberOfTuples();
                 float *vals =
                     vtkFloatArray::SafeDownCast(array)->GetPointer(0);
@@ -390,7 +460,6 @@ ConvertVTKToVTKm(vtkDataSet *data)
             }
             else if (array->GetDataType() == VTK_DOUBLE)
             {
-                cerr << "Data type is double." << endl;
                 vtkIdType nVals = array->GetNumberOfTuples();
                 double *vals =
                     vtkDoubleArray::SafeDownCast(array)->GetPointer(0);
@@ -405,13 +474,18 @@ ConvertVTKToVTKm(vtkDataSet *data)
                     vtkm::cont::Field(array->GetName(),
                     vtkm::cont::Field::Association::Points, fieldArray));
             }
+            else
+            {
+                //
+                // We didn't handle the conversion case. Throw an exception.
+                //
+                EXCEPTION0(InvalidConversionException);
+            }
         }
         else if (array->GetNumberOfComponents() == 3)
         {
-            cerr << "Num components = 3." << endl;
             if (array->GetDataType() == VTK_FLOAT)
             {
-                cerr << "Data type is float." << endl;
                 vtkIdType nVals = array->GetNumberOfTuples();
                 vtkm::Vec<vtkm::Float32,3> *vals =
                     reinterpret_cast<vtkm::Vec<vtkm::Float32,3> *>(array->GetVoidPointer(0));
@@ -427,7 +501,6 @@ ConvertVTKToVTKm(vtkDataSet *data)
             }
             else if (array->GetDataType() == VTK_DOUBLE)
             {
-                cerr << "Data type is double." << endl;
                 vtkIdType nVals = array->GetNumberOfTuples();
                 vtkm::Vec<vtkm::Float64,3> *vals =
                     reinterpret_cast<vtkm::Vec<vtkm::Float64,3> *>(array->GetVoidPointer(0));
@@ -441,6 +514,20 @@ ConvertVTKToVTKm(vtkDataSet *data)
                     vtkm::cont::Field(array->GetName(),
                     vtkm::cont::Field::Association::Points, fieldArray));
             }
+            else
+            {
+                //
+                // We didn't handle the conversion case. Throw an exception.
+                //
+                EXCEPTION0(InvalidConversionException);
+            }
+        }
+        else
+        {
+            //
+            // We didn't handle the conversion case. Throw an exception.
+            //
+            EXCEPTION0(InvalidConversionException);
         }
     }
 
@@ -450,16 +537,12 @@ ConvertVTKToVTKm(vtkDataSet *data)
     nArrays = data->GetCellData()->GetNumberOfArrays();
     for (int i = 0; i < nArrays; ++i)
     {
-        cerr << "Adding a zonal field." << endl;
         vtkDataArray *array = data->GetCellData()->GetArray(i);
-        cerr << "Fieldname=" << array->GetName() << endl;
 
         if (array->GetNumberOfComponents() == 1)
         {
-            cerr << "Num components = 1." << endl;
             if (array->GetDataType() == VTK_FLOAT)
             {
-                cerr << "Data type is float." << endl;
                 vtkIdType nVals = array->GetNumberOfTuples();
                 float *vals =
                     vtkFloatArray::SafeDownCast(array)->GetPointer(0);
@@ -476,7 +559,6 @@ ConvertVTKToVTKm(vtkDataSet *data)
             }
             else if (array->GetDataType() == VTK_DOUBLE)
             {
-                cerr << "Data type is double." << endl;
                 vtkIdType nVals = array->GetNumberOfTuples();
                 double *vals =
                     vtkDoubleArray::SafeDownCast(array)->GetPointer(0);
@@ -493,7 +575,6 @@ ConvertVTKToVTKm(vtkDataSet *data)
             }
             else if (array->GetDataType() == VTK_UNSIGNED_CHAR)
             {
-                cerr << "Data type is unsigned char." << endl;
                 vtkIdType nVals = array->GetNumberOfTuples();
                 unsigned char *vals =
                     vtkUnsignedCharArray::SafeDownCast(array)->GetPointer(0);
@@ -508,21 +589,28 @@ ConvertVTKToVTKm(vtkDataSet *data)
                     vtkm::cont::Field(array->GetName(),
                     vtkm::cont::Field::Association::Cells, fieldArray));
             }
+            else
+            {
+                //
+                // We didn't handle the conversion case. Throw an exception.
+                //
+                EXCEPTION0(InvalidConversionException);
+            }
         }
         else if (array->GetNumberOfComponents() == 2)
         {
-            cerr << "Num components = 2." << endl;
             if (array->GetDataType() == VTK_UNSIGNED_INT)
             {
-                cerr << "Data type is unsigned int." << endl;
+                //
+                // We didn't handle the conversion case. Throw an exception.
+                //
+                EXCEPTION0(InvalidConversionException);
             }
         }
         else if (array->GetNumberOfComponents() == 3)
         {
-            cerr << "Num components = 3." << endl;
             if (array->GetDataType() == VTK_FLOAT)
             {
-                cerr << "Data type is float." << endl;
                 vtkIdType nVals = array->GetNumberOfTuples();
                 vtkm::Vec<vtkm::Float32,3> *vals =
                     reinterpret_cast<vtkm::Vec<vtkm::Float32,3> *>(array->GetVoidPointer(0));
@@ -538,7 +626,6 @@ ConvertVTKToVTKm(vtkDataSet *data)
             }
             else if (array->GetDataType() == VTK_DOUBLE)
             {
-                cerr << "Data type is double." << endl;
                 vtkIdType nVals = array->GetNumberOfTuples();
                 vtkm::Vec<vtkm::Float64,3> *vals =
                     reinterpret_cast<vtkm::Vec<vtkm::Float64,3> *>(array->GetVoidPointer(0));
@@ -552,6 +639,20 @@ ConvertVTKToVTKm(vtkDataSet *data)
                     vtkm::cont::Field(array->GetName(),
                     vtkm::cont::Field::Association::Cells, fieldArray));
             }
+            else
+            {
+                //
+                // We didn't handle the conversion case. Throw an exception.
+                //
+                EXCEPTION0(InvalidConversionException);
+            }
+        }
+        else
+        {
+            //
+            // We didn't handle the conversion case. Throw an exception.
+            //
+            EXCEPTION0(InvalidConversionException);
         }
     }
 
@@ -691,6 +792,13 @@ vtkPointsFromVTKM(avtVtkmDataSet *data)
                 pts->SetPoint((vtkIdType)i,
                     pointsPtr[i*3], pointsPtr[i*3+1], pointsPtr[i*3+2]);
             }
+        }
+        else
+        {
+            //
+            // We didn't handle the conversion case. Throw an exception.
+            //
+            EXCEPTION0(InvalidConversionException);
         }
     }
     catch(...)
@@ -887,12 +995,10 @@ ConvertVTKmToVTK(avtVtkmDataSet *data)
     {
         if(vtkm_ds.GetCellSet().IsSameType(vtkm::cont::CellSetStructured<3>()))
         {
-            cerr << "Creating a structured grid." << endl;
             ds = StructuredFromVTKM(data);
         }
         else if(vtkm_ds.GetCellSet().IsSameType(vtkm::cont::CellSetExplicit<>()))
         {
-            cerr << "Creating a mixed type unstructured grid." << endl;
             vtkPoints *pts = vtkPointsFromVTKM(data);
             vtkUnstructuredGrid *ugrid = vtkUnstructuredGrid::New();
             ugrid->SetPoints(pts);
@@ -979,7 +1085,6 @@ ConvertVTKmToVTK(avtVtkmDataSet *data)
         }
         else if(vtkm_ds.GetCellSet().IsSameType(vtkm::cont::CellSetSingleType<>()))
         {
-            cerr << "Creating a single type unstructured grid." << endl;
             vtkm::cont::UnknownCellSet cs = vtkm_ds.GetCellSet();
             vtkm::cont::CellSetSingleType<> csst;
             try
@@ -1080,7 +1185,6 @@ ConvertVTKmToVTK(avtVtkmDataSet *data)
 
             if (field.IsType<ScalarUInt8>())
             {
-                cerr << "Adding a uint8 field." << endl;
                 ScalarUInt8 fieldArray;
                 field.AsArrayHandle(fieldArray);
 
@@ -1100,7 +1204,6 @@ ConvertVTKmToVTK(avtVtkmDataSet *data)
             }
             else if (field.IsType<Scalar32>())
             {
-                cerr << "Adding a scalar32 field." << endl;
                 Scalar32 fieldArray;
                 field.AsArrayHandle(fieldArray);
 
@@ -1119,7 +1222,6 @@ ConvertVTKmToVTK(avtVtkmDataSet *data)
             }
             else if (field.IsType<Scalar64>())
             {
-                cerr << "Adding a scalar64 field." << endl;
                 Scalar64 fieldArray;
                 field.AsArrayHandle(fieldArray);
 
@@ -1138,7 +1240,6 @@ ConvertVTKmToVTK(avtVtkmDataSet *data)
             }
             else if (field.IsType<Vector32>())
             {
-                cerr << "Adding a vector32 field." << endl;
                 Vector32 fieldArray;
                 field.AsArrayHandle(fieldArray);
 
@@ -1159,7 +1260,6 @@ ConvertVTKmToVTK(avtVtkmDataSet *data)
             }
             else if (field.IsType<Vector64>())
             {
-                cerr << "Adding a vector64 field." << endl;
                 Vector64 fieldArray;
                 field.AsArrayHandle(fieldArray);
 
@@ -1180,7 +1280,10 @@ ConvertVTKmToVTK(avtVtkmDataSet *data)
             }
             else
             {
-                cerr << "Unhandled field." << endl;
+                //
+                // We didn't handle the conversion case. Throw an exception.
+                //
+                EXCEPTION0(InvalidConversionException);
             }
         }
         visitTimer->StopTimer(t1, "Converting fields from VTKm to VTK.");
