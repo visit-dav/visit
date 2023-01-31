@@ -552,6 +552,9 @@
 #    Kathleen Biagas, Wed Dec 7, 2022
 #    Moved OPTIONS into VisItOptions.cmake.
 #
+#    Kathleen Biagas, Tue Jan 31, 2023
+#    Moved Windows installation, resources code into VisItWindowsFunctions.
+#
 #****************************************************************************
 
 cmake_minimum_required(VERSION 3.24 FATAL_ERROR)
@@ -1108,35 +1111,10 @@ endif()
 #-----------------------------------------------------------------------------
 # Set up resource files for Windows applications.
 #-----------------------------------------------------------------------------
-IF (WIN32)
-    IF(EXISTS ${VISIT_WINDOWS_DIR}/distribution/resources/visit.rc)
-        SET(RESOURCEDIR distribution/resources)
-    ELSEIF(EXISTS ${VISIT_WINDOWS_DIR}/visitresources/visit.rc)
-        SET(RESOURCEDIR visitresources)
-    ELSE()
-        MESSAGE(FATAL_ERROR "Cannot find visit.rc in either ${VISIT_WINDOWS_DIR}/distribution/resources or ${VISIT_WINDOWS_DIR}/visitresources")
-    ENDIF()
-
-    SET(VISIT_VISIT_RESOURCE_FILE      ${VISIT_WINDOWS_DIR}/${RESOURCEDIR}/visit.rc)
-    SET(VISIT_GUI_RESOURCE_FILE        ${VISIT_WINDOWS_DIR}/${RESOURCEDIR}/gui.rc)
-    SET(VISIT_VIEWER_RESOURCE_FILE     ${VISIT_WINDOWS_DIR}/${RESOURCEDIR}/viewer.rc)
-    SET(VISIT_MDSERVER_RESOURCE_FILE   ${VISIT_WINDOWS_DIR}/${RESOURCEDIR}/mdserver.rc)
-    SET(VISIT_ENGINE_SER_RESOURCE_FILE ${VISIT_WINDOWS_DIR}/${RESOURCEDIR}/engine_ser.rc)
-    SET(VISIT_ENGINE_PAR_RESOURCE_FILE ${VISIT_WINDOWS_DIR}/${RESOURCEDIR}/engine_par.rc)
-    SET(VISIT_VCL_RESOURCE_FILE        ${VISIT_WINDOWS_DIR}/${RESOURCEDIR}/vcl.rc)
-    SET(VISIT_CLI_RESOURCE_FILE        ${VISIT_WINDOWS_DIR}/${RESOURCEDIR}/cli.rc)
-    MESSAGE(STATUS "VISIT_VISIT_RESOURCE_FILE = ${VISIT_VISIT_RESOURCE_FILE}")
-
-    #-------------------------------------------------------------------
-    # Create versionvars.rc to include version info into resource files.
-    #-------------------------------------------------------------------
-    STRING(REPLACE "b" "" filteredver1 "${VISIT_VERSION}")
-    STRING(REPLACE "." "," filteredver2 "${filteredver1}")
-    SET(VER_FILEVERSION "${filteredver2},0")
-    SET(VER_PRODUCTVERSION "${filteredver2},0")
-    CONFIGURE_FILE(${VISIT_WINDOWS_DIR}/distribution/resources/versionvars.rc.in
-                   ${VISIT_BINARY_DIR}/include/versionvars.rc @ONLY IMMEDIATE)
-ENDIF (WIN32)
+if(WIN32)
+    include(CMake/VisItWindowsFunctions.cmake)
+    visit_setup_windows_resources()
+endif()
 
 #-----------------------------------------------------------------------------
 # Create visit-config.h
@@ -1503,83 +1481,7 @@ IF (NOT WIN32)
     ENDIF(APPLE AND VISIT_CREATE_APPBUNDLE_PACKAGE)
     INCLUDE(CPack)
 ELSE () # on windows
-    IF(VISIT_MAKE_NSIS_INSTALLER)
-      IF(${MAKENSIS_FOUND})
-        set(CMAKE_INSTALL_SYSTEM_RUNTIME_DESTINATION ".")
-        include("InstallRequiredSystemLibraries")
-        # create a custom target that will run our nsis scripts.
-        # Make sure it won't run unless specifically called.
-        #
-        FILE(TO_NATIVE_PATH ${VISIT_SOURCE_DIR} VSD_NATIVE)
-        FILE(TO_NATIVE_PATH ${VISIT_WINDOWS_DIR} VWD_NATIVE)
-        FILE(TO_NATIVE_PATH ${CMAKE_INSTALL_PREFIX} CIP_NATIVE)
-        FILE(TO_NATIVE_PATH ${CMAKE_CURRENT_BINARY_DIR} CBD_NATIVE)
-        if(CODESIGN_HASH)
-           set(codesign "/DCODESIGN_HASH=${CODESIGN_HASH}")
-        endif()
-        ADD_CUSTOM_COMMAND(OUTPUT visit${VISIT_VERSION}.exe
-            COMMAND "${VISIT_WINDOWS_DIR}/MSVC2017/p7zip/18.05/7z.exe" a -t7z -m0=lzma2 -mx9  visit${VISIT_VERSION}.7z VisIt${VISIT_VERSION}
-            COMMAND ${MAKENSIS}
-                    /DVISIT_SOURCE_DIR=${VSD_NATIVE}
-                    /DVISIT_WINDOWS_DIR=${VWD_NATIVE}
-                    /DINSTALL_PREFIX=${CIP_NATIVE}
-                    /DBIN_DIR=${CBD_NATIVE}
-                    ${VISIT_WINDOWS_DIR}/distribution/installation/CreateDBSections.nsi
-            COMMAND ${MAKENSIS}
-                    ${codesign}
-                    /DVisItVersion=${VISIT_VERSION}
-                    /DCOMPILER=${VISIT_MSVC_VERSION}
-                    /DVISIT_SOURCE_DIR=${VSD_NATIVE}
-                    /DVISIT_WINDOWS_DIR=${VWD_NATIVE}
-                    /DINSTALL_PREFIX=${CIP_NATIVE}
-                    /DBIN_DIR=${CBD_NATIVE}
-                    /DMPI_VERSION=${VISIT_MSMPI_VERSION}
-                    ${VISIT_WINDOWS_DIR}/distribution/installation/binaryinstallation.nsi
-            DEPENDS ${VISIT_WINDOWS_DIR}/distribution/installation/CreateDBSections.nsi
-                    ${VISIT_WINDOWS_DIR}/distribution/installation/binaryinstallation.nsi
-        )
-        ADD_CUSTOM_TARGET(_PACKAGE ALL DEPENDS visit${VISIT_VERSION}.exe)
-        if(NOT CODESIGN_HASH)
-          # not building a signed release
-          # make INSTALL be a prereq for _PACKAGE.
-          ADD_CUSTOM_COMMAND(TARGET _PACKAGE PRE_BUILD
-              COMMAND ${CMAKE_COMMAND} -DBUILD_TYPE=${CMAKE_CFG_INTDIR} -P cmake_install.cmake)
-        endif()
-        SET_TARGET_PROPERTIES(_PACKAGE PROPERTIES
-                              EXCLUDE_FROM_DEFAULT_BUILD 1
-                              EXCLUDE_FROM_ALL 1 )
-
-        if(DEFINED ARCHIVER_EXE)
-            get_filename_component(VDEP ${VWD_NATIVE} PATH)
-            file(TO_NATIVE_PATH ${VDEP} VDEP_NATIVE)
-            set(zipname visit_windowsdev_${VISIT_VERSION}.zip)
-
-            file(TO_NATIVE_PATH ${ARCHIVER_EXE} ARCHIVER_NATIVE)
-            add_custom_command(OUTPUT ${CBD_NATIVE}/${zipname}
-                COMMAND cd ${VDEP_NATIVE}
-                COMMAND "${ARCHIVER_NATIVE}" a -m0=LZMA -mx=9
-                    ${CBD_NATIVE}/${zipname}
-                    windowsbuild/distribution
-                    windowsbuild/MSVC2017
-                    windowsbuild/thirdparty-projects
-                COMMAND cd ${CBD_NATIVE}
-                WORKING_DIRECTORY ${DEP_NATIVE})
-            add_custom_target(_WINDEV_PACKAGE ALL DEPENDS ${CBD_NATIVE}/${zipname})
-            set_target_properties(_WINDEV_PACKAGE PROPERTIES
-                              EXCLUDE_FROM_DEFAULT_BUILD 1
-                              EXCLUDE_FROM_ALL 1)
-            unset(VDEP)
-            unset(VDEP_NATIVE)
-            unset(zipname)
-        endif()
-        UNSET(VSD_NATIVE)
-        UNSET(VWD_NATIVE)
-        UNSET(CIP_NATIVE)
-        UNSET(CBD_NATIVE)
-      ELSE(${MAKENSIS_FOUND})
-        MESSAGE(FATAL_ERROR "NSIS installer package requested, but 'makensis' could not be found.")
-      ENDIF(${MAKENSIS_FOUND})
-    ENDIF(VISIT_MAKE_NSIS_INSTALLER)
+    visit_create_windows_installer()
 ENDIF (NOT WIN32)
 
 #CMake add subdirectory forces this action to go last
