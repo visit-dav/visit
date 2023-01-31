@@ -1466,6 +1466,8 @@ GetVisItEnvironment(stringVector &env, bool addPluginVars, bool &usingdev,
             qpath+=string("\\qtssh.exe");
             sprintf(tmp, "VISITSSH=%s", qpath.c_str());
             env.push_back(tmp);
+            sprintf(tmp, "VISITSSHARGS=-no-antispoof");
+            env.push_back(tmp);
             if (!errmsg.empty())
             {
                 errmsg += "Using VisIt's qtssh.";
