@@ -16,6 +16,7 @@
 #include <avtVtkmDataSet.h>
 #include <vtkm/cont/DataSet.h>
 #include <vtkm/filter/contour/Contour.h>
+#include <vtkm/filter/field_conversion/PointAverage.h>
 #endif
 
 #include <vtkCellData.h>
@@ -987,7 +988,23 @@ avtContourFilter::ExecuteDataTree_VTKM(avtDataRepresentation *in_dr)
         return NULL;
     }
 
+    vtkm::cont::DataSet dataset = in_ds->ds;
+
     int timerHandle = visitTimer->StartTimer();
+
+    //
+    // Recenter the field to the nodes if necessary.
+    //
+    bool isCellAssoc = dataset.GetField(contourVar).GetAssociation() ==
+                vtkm::cont::Field::Association::Cells;
+
+    if (isCellAssoc)
+    {
+        cerr << "Recentering fields." << endl;
+        vtkm::filter::field_conversion::PointAverage avg;
+        avg.SetActiveField(contourVar);
+        dataset = avg.Execute(dataset);
+    }
 
     //
     // Execute once per isovalue.
@@ -1004,7 +1021,7 @@ avtContourFilter::ExecuteDataTree_VTKM(avtDataRepresentation *in_dr)
 
         contour.SetIsoValue(0, isoValue);
 
-        vtkm::cont::DataSet vtkm_ds = contour.Execute(in_ds->ds);
+        vtkm::cont::DataSet vtkm_ds = contour.Execute(dataset);
 
         //
         // Determine if the dataset is empty, and if so, set the output
