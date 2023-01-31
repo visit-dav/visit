@@ -555,6 +555,7 @@
 #    Kathleen Biagas, Tue Jan 31, 2023
 #    Moved Windows installation, resources code into VisItWindowsFunctions.
 #    Moved MPICH install and linux system libs install to VisItFunctions.
+#    Remove ADD_TARGET_XXX_FLAGS and COMPILE, LINK, not used.
 #
 #****************************************************************************
 
@@ -1268,31 +1269,6 @@ IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO
     # if java is not enabled
     ADD_SUBDIRECTORY(java)
 ENDIF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
-
-
-MACRO(ADD_TARGET_XXX_FLAGS target XXX)
-    GET_TARGET_PROPERTY(currentFlags ${target} ${XXX})
-    IF(NOT ${currentFlags} MATCHES NOTFOUND)
-        FOREACH(flag ${currentFlags})
-            SET(allFlags "${allFlags} ${flag}")
-        ENDFOREACH(flag)
-    ENDIF(NOT ${currentFlags} MATCHES NOTFOUND)
-    FOREACH(flag ${ARGN})
-        SET(allFlags "${allFlags} ${flag}")
-    ENDFOREACH(flag)
-    SET_TARGET_PROPERTIES(${target} PROPERTIES
-        ${XXX} "${allFlags}"
-    )
-ENDMACRO(ADD_TARGET_XXX_FLAGS)
-
-FUNCTION(ADD_TARGET_COMPILE_FLAGS target)
-    ADD_TARGET_XXX_FLAGS(${target} COMPILE_FLAGS ${ARGN})
-ENDFUNCTION(ADD_TARGET_COMPILE_FLAGS target)
-
-FUNCTION(ADD_TARGET_LINK_FLAGS target)
-    ADD_TARGET_XXX_FLAGS(${target} LINK_FLAGS ${ARGN})
-ENDFUNCTION(ADD_TARGET_LINK_FLAGS target)
-
 
 IF(NOT VISIT_DBIO_ONLY)
    ADD_SUBDIRECTORY(plots)
