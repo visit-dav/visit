@@ -36,7 +36,7 @@ else()
         adios2_c adios2_cxx11 adios2_core adios2_taustubs)
 endif()
 
-IF(VISIT_PARALLEL)
+if(VISIT_PARALLEL)
     if(NOT WIN32)
         SET_UP_THIRD_PARTY(ADIOS2_PAR LIBS
             adios2_c_mpi adios2_cxx11_mpi adios2_core_mpi)
