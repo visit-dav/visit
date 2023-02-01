@@ -63,7 +63,7 @@ if(WIN32)
                     ${VISIT_EXECUTABLE_DIR}/resources
             COMMAND ${CMAKE_COMMAND} -E copy_directory
                     ${CMAKE_CURRENT_SOURCE_DIR}/usage
-                    ${VISIT_EXECUTABLE_DIR}/resources
+                    ${VISIT_EXECUTABLE_DIR}/resources)
     visit_add_to_util_builds(copy_resources)
 else()
 
