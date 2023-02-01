@@ -74,6 +74,10 @@
 #   Cyrus Harrison, Fri Nov  4 14:35:16 PDT 2022
 #   More status messages.
 #
+#   Kathleen Biagas, Wed Jan 18, 2023
+#   Fix a few uses of paths on Windows, now that VISIT_INSTALLED_VERSION_XXX
+#   are relative paths. 
+#
 #****************************************************************************/
 
 # - Find python libraries
@@ -88,7 +92,7 @@
 #  PYTHON_VERSION       = version number of found python
 #
 
-MESSAGE(STATUS "Looking for Python")
+message(STATUS "Looking for Python")
 ###
 # CODE FROM CONDUIT TO FIND PYTHON INTERP AND LIBS
 ###
@@ -112,157 +116,156 @@ endif()
 
 find_package(PythonInterp REQUIRED)
 if(PYTHONINTERP_FOUND)
+    message(STATUS "PYTHON_EXECUTABLE ${PYTHON_EXECUTABLE}")
 
-        MESSAGE(STATUS "PYTHON_EXECUTABLE ${PYTHON_EXECUTABLE}")
+    execute_process(COMMAND "${PYTHON_EXECUTABLE}" "-c"
+                    "import sys;from distutils.sysconfig import get_config_var; sys.stdout.write(get_config_var('VERSION'))"
+                    OUTPUT_VARIABLE PYTHON_CONFIG_VERSION
+                    ERROR_VARIABLE  ERROR_FINDING_PYTHON_VERSION)
+    message(STATUS "PYTHON_CONFIG_VERSION ${PYTHON_CONFIG_VERSION}")
+
+    execute_process(COMMAND "${PYTHON_EXECUTABLE}" "-c"
+                            "import sys;from distutils.sysconfig import get_python_inc;sys.stdout.write(get_python_inc())"
+                    OUTPUT_VARIABLE PYTHON_INCLUDE_DIR
+                    ERROR_VARIABLE ERROR_FINDING_INCLUDES)
+    message(STATUS "PYTHON_INCLUDE_DIR ${PYTHON_INCLUDE_DIR}")
+
+    if(NOT EXISTS ${PYTHON_INCLUDE_DIR})
+        message(FATAL_ERROR "Reported PYTHON_INCLUDE_DIR ${PYTHON_INCLUDE_DIR} does not exist!")
+    endif()
+
+    execute_process(COMMAND "${PYTHON_EXECUTABLE}" "-c"
+                            "import sys;from distutils.sysconfig import get_python_lib;sys.stdout.write(get_python_lib())"
+                    OUTPUT_VARIABLE PYTHON_SITE_PACKAGES_DIR
+                    ERROR_VARIABLE ERROR_FINDING_SITE_PACKAGES_DIR)
+    message(STATUS "PYTHON_SITE_PACKAGES_DIR ${PYTHON_SITE_PACKAGES_DIR}")
+
+    if(NOT EXISTS ${PYTHON_SITE_PACKAGES_DIR})
+        message(FATAL_ERROR "Reported PYTHON_SITE_PACKAGES_DIR ${PYTHON_SITE_PACKAGES_DIR} does not exist!")
+    endif()
+
+    # check if we need "-undefined dynamic_lookup" by inspecting LDSHARED flags
+    execute_process(COMMAND "${PYTHON_EXECUTABLE}" "-c"
+                            "import sys;import sysconfig;sys.stdout.write(sysconfig.get_config_var('LDSHARED'))"
+                    OUTPUT_VARIABLE PYTHON_LDSHARED_FLAGS
+                    ERROR_VARIABLE ERROR_FINDING_PYTHON_LDSHARED_FLAGS)
+
+    message(STATUS "PYTHON_LDSHARED_FLAGS ${PYTHON_LDSHARED_FLAGS}")
+
+    if(PYTHON_LDSHARED_FLAGS MATCHES "-undefined dynamic_lookup")
+        message(STATUS "PYTHON_USE_UNDEFINED_DYNAMIC_LOOKUP_FLAG is ON")
+        set(PYTHON_USE_UNDEFINED_DYNAMIC_LOOKUP_FLAG ON)
+    else()
+        message(STATUS "PYTHON_USE_UNDEFINED_DYNAMIC_LOOKUP_FLAG is OFF")
+        set(PYTHON_USE_UNDEFINED_DYNAMIC_LOOKUP_FLAG OFF)
+    endif()
+
+    # our goal is to find the specific python lib, based on info
+    # we extract from distutils.sysconfig from the python executable
+    #
+    # check for python libs differs for windows python installs
+    if(NOT WIN32)
+        # we may build a shared python module against a static python
+        # check for both shared and static libs cases
+
+        # combos to try:
+        # shared:
+        #  LIBDIR + LDLIBRARY
+        #  LIBPL + LDLIBRARY
+        # static:
+        #  LIBDIR + LIBRARY
+        #  LIBPL + LIBRARY
 
         execute_process(COMMAND "${PYTHON_EXECUTABLE}" "-c"
-                        "import sys;from distutils.sysconfig import get_config_var; sys.stdout.write(get_config_var('VERSION'))"
-                        OUTPUT_VARIABLE PYTHON_CONFIG_VERSION
-                        ERROR_VARIABLE  ERROR_FINDING_PYTHON_VERSION)
-        MESSAGE(STATUS "PYTHON_CONFIG_VERSION ${PYTHON_CONFIG_VERSION}")
+                                "import sys;from distutils.sysconfig import get_config_var; sys.stdout.write(get_config_var('LIBDIR'))"
+                        OUTPUT_VARIABLE PYTHON_CONFIG_LIBDIR
+                        ERROR_VARIABLE  ERROR_FINDING_PYTHON_LIBDIR)
 
         execute_process(COMMAND "${PYTHON_EXECUTABLE}" "-c"
-                                "import sys;from distutils.sysconfig import get_python_inc;sys.stdout.write(get_python_inc())"
-                        OUTPUT_VARIABLE PYTHON_INCLUDE_DIR
-                        ERROR_VARIABLE ERROR_FINDING_INCLUDES)
-        MESSAGE(STATUS "PYTHON_INCLUDE_DIR ${PYTHON_INCLUDE_DIR}")
-
-        if(NOT EXISTS ${PYTHON_INCLUDE_DIR})
-            MESSAGE(FATAL_ERROR "Reported PYTHON_INCLUDE_DIR ${PYTHON_INCLUDE_DIR} does not exist!")
-        endif()
-
-        execute_process(COMMAND "${PYTHON_EXECUTABLE}" "-c"
-                                "import sys;from distutils.sysconfig import get_python_lib;sys.stdout.write(get_python_lib())"
-                        OUTPUT_VARIABLE PYTHON_SITE_PACKAGES_DIR
-                        ERROR_VARIABLE ERROR_FINDING_SITE_PACKAGES_DIR)
-        MESSAGE(STATUS "PYTHON_SITE_PACKAGES_DIR ${PYTHON_SITE_PACKAGES_DIR}")
-
-        if(NOT EXISTS ${PYTHON_SITE_PACKAGES_DIR})
-            MESSAGE(FATAL_ERROR "Reported PYTHON_SITE_PACKAGES_DIR ${PYTHON_SITE_PACKAGES_DIR} does not exist!")
-        endif()
-
-        # check if we need "-undefined dynamic_lookup" by inspecting LDSHARED flags
-        execute_process(COMMAND "${PYTHON_EXECUTABLE}" "-c"
-                                "import sys;import sysconfig;sys.stdout.write(sysconfig.get_config_var('LDSHARED'))"
-                        OUTPUT_VARIABLE PYTHON_LDSHARED_FLAGS
-                        ERROR_VARIABLE ERROR_FINDING_PYTHON_LDSHARED_FLAGS)
-
-        MESSAGE(STATUS "PYTHON_LDSHARED_FLAGS ${PYTHON_LDSHARED_FLAGS}")
-
-        if(PYTHON_LDSHARED_FLAGS MATCHES "-undefined dynamic_lookup")
-             MESSAGE(STATUS "PYTHON_USE_UNDEFINED_DYNAMIC_LOOKUP_FLAG is ON")
-            set(PYTHON_USE_UNDEFINED_DYNAMIC_LOOKUP_FLAG ON)
-        else()
-             MESSAGE(STATUS "PYTHON_USE_UNDEFINED_DYNAMIC_LOOKUP_FLAG is OFF")
-            set(PYTHON_USE_UNDEFINED_DYNAMIC_LOOKUP_FLAG OFF)
-        endif()
-
-        # our goal is to find the specific python lib, based on info
-        # we extract from distutils.sysconfig from the python executable
-        #
-        # check for python libs differs for windows python installs
-        if(NOT WIN32)
-            # we may build a shared python module against a static python
-            # check for both shared and static libs cases
-
-            # combos to try:
-            # shared:
-            #  LIBDIR + LDLIBRARY
-            #  LIBPL + LDLIBRARY
-            # static:
-            #  LIBDIR + LIBRARY
-            #  LIBPL + LIBRARY
-
-            execute_process(COMMAND "${PYTHON_EXECUTABLE}" "-c"
-                                    "import sys;from distutils.sysconfig import get_config_var; sys.stdout.write(get_config_var('LIBDIR'))"
-                            OUTPUT_VARIABLE PYTHON_CONFIG_LIBDIR
-                            ERROR_VARIABLE  ERROR_FINDING_PYTHON_LIBDIR)
-
-            execute_process(COMMAND "${PYTHON_EXECUTABLE}" "-c"
-                                    "import sys;from distutils.sysconfig import get_config_var; sys.stdout.write(get_config_var('LIBPL'))"
-                            OUTPUT_VARIABLE PYTHON_CONFIG_LIBPL
+                                "import sys;from distutils.sysconfig import get_config_var; sys.stdout.write(get_config_var('LIBPL'))"
+                        OUTPUT_VARIABLE PYTHON_CONFIG_LIBPL
                             ERROR_VARIABLE  ERROR_FINDING_PYTHON_LIBPL)
 
-            execute_process(COMMAND "${PYTHON_EXECUTABLE}" "-c"
-                                    "import sys;from distutils.sysconfig import get_config_var; sys.stdout.write(get_config_var('LDLIBRARY'))"
-                            OUTPUT_VARIABLE PYTHON_CONFIG_LDLIBRARY
-                            ERROR_VARIABLE  ERROR_FINDING_PYTHON_LDLIBRARY)
+        execute_process(COMMAND "${PYTHON_EXECUTABLE}" "-c"
+                                "import sys;from distutils.sysconfig import get_config_var; sys.stdout.write(get_config_var('LDLIBRARY'))"
+                        OUTPUT_VARIABLE PYTHON_CONFIG_LDLIBRARY
+                        ERROR_VARIABLE  ERROR_FINDING_PYTHON_LDLIBRARY)
 
-            execute_process(COMMAND "${PYTHON_EXECUTABLE}" "-c"
-                                    "import sys;from distutils.sysconfig import get_config_var; sys.stdout.write(get_config_var('LIBRARY'))"
-                            OUTPUT_VARIABLE PYTHON_CONFIG_LIBRARY
-                            ERROR_VARIABLE  ERROR_FINDING_PYTHON_LIBRARY)
+        execute_process(COMMAND "${PYTHON_EXECUTABLE}" "-c"
+                                "import sys;from distutils.sysconfig import get_config_var; sys.stdout.write(get_config_var('LIBRARY'))"
+                        OUTPUT_VARIABLE PYTHON_CONFIG_LIBRARY
+                        ERROR_VARIABLE  ERROR_FINDING_PYTHON_LIBRARY)
 
-            message(STATUS "PYTHON_CONFIG_LIBDIR:     ${PYTHON_CONFIG_LIBDIR}")
-            message(STATUS "PYTHON_CONFIG_LIBPL:      ${PYTHON_CONFIG_LIBPL}")
-            message(STATUS "PYTHON_CONFIG_LDLIBRARY:  ${PYTHON_CONFIG_LDLIBRARY}")
-            message(STATUS "PYTHON_CONFIG_LIBRARY:    ${PYTHON_CONFIG_LIBRARY}")
+        message(STATUS "PYTHON_CONFIG_LIBDIR:     ${PYTHON_CONFIG_LIBDIR}")
+        message(STATUS "PYTHON_CONFIG_LIBPL:      ${PYTHON_CONFIG_LIBPL}")
+        message(STATUS "PYTHON_CONFIG_LDLIBRARY:  ${PYTHON_CONFIG_LDLIBRARY}")
+        message(STATUS "PYTHON_CONFIG_LIBRARY:    ${PYTHON_CONFIG_LIBRARY}")
 
-            set(PYTHON_LIBRARY "")
-            # look for shared libs first
-            # shared libdir + ldlibrary
-            if(NOT EXISTS ${PYTHON_LIBRARY})
-                if(IS_DIRECTORY ${PYTHON_CONFIG_LIBDIR})
-                    set(_PYTHON_LIBRARY_TEST  "${PYTHON_CONFIG_LIBDIR}/${PYTHON_CONFIG_LDLIBRARY}")
-                    message(STATUS "Checking for python library at: ${_PYTHON_LIBRARY_TEST}")
-                    if(EXISTS ${_PYTHON_LIBRARY_TEST})
-                        set(PYTHON_LIBRARY ${_PYTHON_LIBRARY_TEST})
-                    endif()
-                endif()
-            endif()
-
-            # shared libpl + ldlibrary
-            if(NOT EXISTS ${PYTHON_LIBRARY})
-                if(IS_DIRECTORY ${PYTHON_CONFIG_LIBPL})
-                    set(_PYTHON_LIBRARY_TEST  "${PYTHON_CONFIG_LIBPL}/${PYTHON_CONFIG_LDLIBRARY}")
-                    message(STATUS "Checking for python library at: ${_PYTHON_LIBRARY_TEST}")
-                    if(EXISTS ${_PYTHON_LIBRARY_TEST})
-                        set(PYTHON_LIBRARY ${_PYTHON_LIBRARY_TEST})
-                    endif()
-                endif()
-            endif()
-
-            # static: libdir + library
-            if(NOT EXISTS ${PYTHON_LIBRARY})
-                if(IS_DIRECTORY ${PYTHON_CONFIG_LIBDIR})
-                    set(_PYTHON_LIBRARY_TEST  "${PYTHON_CONFIG_LIBDIR}/${PYTHON_CONFIG_LIBRARY}")
-                    message(STATUS "Checking for python library at: ${_PYTHON_LIBRARY_TEST}")
-                    if(EXISTS ${_PYTHON_LIBRARY_TEST})
-                        set(PYTHON_LIBRARY ${_PYTHON_LIBRARY_TEST})
-                    endif()
-                endif()
-            endif()
-
-            # static: libpl + library
-            if(NOT EXISTS ${PYTHON_LIBRARY})
-                if(IS_DIRECTORY ${PYTHON_CONFIG_LIBPL})
-                    set(_PYTHON_LIBRARY_TEST  "${PYTHON_CONFIG_LIBPL}/${PYTHON_CONFIG_LIBRARY}")
-                    message(STATUS "Checking for python library at: ${_PYTHON_LIBRARY_TEST}")
-                    if(EXISTS ${_PYTHON_LIBRARY_TEST})
-                        set(PYTHON_LIBRARY ${_PYTHON_LIBRARY_TEST})
-                    endif()
-                endif()
-            endif()
-        else() # windows
-            get_filename_component(PYTHON_ROOT_DIR ${PYTHON_EXECUTABLE} DIRECTORY)
-            # Note: this assumes that two versions of python are not installed in the same dest dir
-            set(_PYTHON_LIBRARY_TEST  "${PYTHON_ROOT_DIR}/libs/python${PYTHON_CONFIG_VERSION}.lib")
-            message(STATUS "Checking for python library at: ${_PYTHON_LIBRARY_TEST}")
-            if(EXISTS ${_PYTHON_LIBRARY_TEST})
-                set(PYTHON_LIBRARY ${_PYTHON_LIBRARY_TEST})
-            endif()
-        endif()
-
+        set(PYTHON_LIBRARY "")
+        # look for shared libs first
+        # shared libdir + ldlibrary
         if(NOT EXISTS ${PYTHON_LIBRARY})
-            MESSAGE(FATAL_ERROR "Failed to find main library using PYTHON_EXECUTABLE=${PYTHON_EXECUTABLE}")
+            if(IS_DIRECTORY ${PYTHON_CONFIG_LIBDIR})
+                set(_PYTHON_LIBRARY_TEST  "${PYTHON_CONFIG_LIBDIR}/${PYTHON_CONFIG_LDLIBRARY}")
+                message(STATUS "Checking for python library at: ${_PYTHON_LIBRARY_TEST}")
+                if(EXISTS ${_PYTHON_LIBRARY_TEST})
+                    set(PYTHON_LIBRARY ${_PYTHON_LIBRARY_TEST})
+                endif()
+            endif()
         endif()
 
-        MESSAGE(STATUS "{PythonLibs from PythonInterp} using: PYTHON_LIBRARY=${PYTHON_LIBRARY}")
-        find_package(PythonLibs)
-
-        if(NOT PYTHONLIBS_FOUND)
-            MESSAGE(FATAL_ERROR "Failed to find Python Libraries using PYTHON_EXECUTABLE=${PYTHON_EXECUTABLE}")
+        # shared libpl + ldlibrary
+        if(NOT EXISTS ${PYTHON_LIBRARY})
+            if(IS_DIRECTORY ${PYTHON_CONFIG_LIBPL})
+                set(_PYTHON_LIBRARY_TEST  "${PYTHON_CONFIG_LIBPL}/${PYTHON_CONFIG_LDLIBRARY}")
+                message(STATUS "Checking for python library at: ${_PYTHON_LIBRARY_TEST}")
+                if(EXISTS ${_PYTHON_LIBRARY_TEST})
+                    set(PYTHON_LIBRARY ${_PYTHON_LIBRARY_TEST})
+                endif()
+            endif()
         endif()
+
+        # static: libdir + library
+        if(NOT EXISTS ${PYTHON_LIBRARY})
+            if(IS_DIRECTORY ${PYTHON_CONFIG_LIBDIR})
+                set(_PYTHON_LIBRARY_TEST  "${PYTHON_CONFIG_LIBDIR}/${PYTHON_CONFIG_LIBRARY}")
+                message(STATUS "Checking for python library at: ${_PYTHON_LIBRARY_TEST}")
+                if(EXISTS ${_PYTHON_LIBRARY_TEST})
+                    set(PYTHON_LIBRARY ${_PYTHON_LIBRARY_TEST})
+                endif()
+            endif()
+        endif()
+
+        # static: libpl + library
+        if(NOT EXISTS ${PYTHON_LIBRARY})
+            if(IS_DIRECTORY ${PYTHON_CONFIG_LIBPL})
+                set(_PYTHON_LIBRARY_TEST  "${PYTHON_CONFIG_LIBPL}/${PYTHON_CONFIG_LIBRARY}")
+                message(STATUS "Checking for python library at: ${_PYTHON_LIBRARY_TEST}")
+                if(EXISTS ${_PYTHON_LIBRARY_TEST})
+                    set(PYTHON_LIBRARY ${_PYTHON_LIBRARY_TEST})
+                endif()
+            endif()
+        endif()
+    else() # windows
+        get_filename_component(PYTHON_ROOT_DIR ${PYTHON_EXECUTABLE} DIRECTORY)
+        # Note: this assumes that two versions of python are not installed in the same dest dir
+        set(_PYTHON_LIBRARY_TEST  "${PYTHON_ROOT_DIR}/libs/python${PYTHON_CONFIG_VERSION}.lib")
+        message(STATUS "Checking for python library at: ${_PYTHON_LIBRARY_TEST}")
+        if(EXISTS ${_PYTHON_LIBRARY_TEST})
+            set(PYTHON_LIBRARY ${_PYTHON_LIBRARY_TEST})
+        endif()
+    endif()
+
+    if(NOT EXISTS ${PYTHON_LIBRARY})
+        message(FATAL_ERROR "Failed to find main library using PYTHON_EXECUTABLE=${PYTHON_EXECUTABLE}")
+    endif()
+
+    message(STATUS "{PythonLibs from PythonInterp} using: PYTHON_LIBRARY=${PYTHON_LIBRARY}")
+    find_package(PythonLibs)
+
+    if(NOT PYTHONLIBS_FOUND)
+        message(FATAL_ERROR "Failed to find Python Libraries using PYTHON_EXECUTABLE=${PYTHON_EXECUTABLE}")
+    endif()
 
 endif()
 
@@ -270,7 +273,7 @@ endif()
 find_package_handle_standard_args(Python  DEFAULT_MSG
                                   PYTHON_LIBRARY PYTHON_INCLUDE_DIR)
 
-INCLUDE(FindPackageHandleStandardArgs)
+include(FindPackageHandleStandardArgs)
 FIND_PACKAGE_HANDLE_STANDARD_ARGS(PYTHONLIBS DEFAULT_MSG PYTHON_LIBRARIES PYTHON_INCLUDE_PATH)
 
 message(STATUS "PYTHONLIBS_FOUND = ${PYTHONLIBS_FOUND}")
@@ -289,11 +292,11 @@ set(PYTHON_VERSION "${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}")
 
 message(STATUS "PYTHON_VERSION = ${PYTHON_VERSION}")
 
-IF(PYTHONLIBS_FOUND)
-    SET(PYTHON_FOUND TRUE)
-ELSE()
-    SET(PYTHON_FOUND FALSE)
-ENDIF()
+if(PYTHONLIBS_FOUND)
+    set(PYTHON_FOUND TRUE)
+else()
+    set(PYTHON_FOUND FALSE)
+endif()
 
 message(STATUS "PYTHON_LIBRARIES = ${PYTHON_LIBRARIES}")
 
@@ -301,32 +304,30 @@ message(STATUS "PYTHON_LIBRARIES = ${PYTHON_LIBRARIES}")
 # PYTHON_WRITE_MODULES_HEADER(<filename>) writes a header file you can include
 # in your sources to initialize the static python modules
 
-GET_PROPERTY(_TARGET_SUPPORTS_SHARED_LIBS
-  GLOBAL PROPERTY TARGET_SUPPORTS_SHARED_LIBS)
+get_property(_TARGET_SUPPORTS_SHARED_LIBS
+    GLOBAL PROPERTY TARGET_SUPPORTS_SHARED_LIBS)
 
-FUNCTION(PYTHON_ADD_MODULE _NAME )
-  OPTION(PYTHON_ENABLE_MODULE_${_NAME} "Add module ${_NAME}" TRUE)
-  OPTION(PYTHON_MODULE_${_NAME}_BUILD_SHARED "Add module ${_NAME} shared" ${_TARGET_SUPPORTS_SHARED_LIBS})
+function(PYTHON_ADD_MODULE _NAME )
+    option(PYTHON_ENABLE_MODULE_${_NAME} "Add module ${_NAME}" TRUE)
+    option(PYTHON_MODULE_${_NAME}_BUILD_SHARED "Add module ${_NAME} shared" ${_TARGET_SUPPORTS_SHARED_LIBS})
 
-  IF(PYTHON_ENABLE_MODULE_${_NAME})
-    IF(PYTHON_MODULE_${_NAME}_BUILD_SHARED)
-      SET(PY_MODULE_TYPE MODULE)
-    ELSE(PYTHON_MODULE_${_NAME}_BUILD_SHARED)
-      SET(PY_MODULE_TYPE STATIC)
-      SET_PROPERTY(GLOBAL  APPEND  PROPERTY  PY_STATIC_MODULES_LIST ${_NAME})
-    ENDIF(PYTHON_MODULE_${_NAME}_BUILD_SHARED)
+    if(PYTHON_ENABLE_MODULE_${_NAME})
+        if(PYTHON_MODULE_${_NAME}_BUILD_SHARED)
+            set(PY_MODULE_TYPE MODULE)
+        else()
+          set(PY_MODULE_TYPE STATIC)
+          set_property(GLOBAL APPEND PROPERTY PY_STATIC_MODULES_LIST ${_NAME})
+        endif()
 
-    SET_PROPERTY(GLOBAL  APPEND  PROPERTY  PY_MODULES_LIST ${_NAME})
-    ADD_LIBRARY(${_NAME} ${PY_MODULE_TYPE} ${ARGN})
-    SET_TARGET_PROPERTIES(${_NAME} PROPERTIES PREFIX "")
-    IF (WIN32)
-        SET_TARGET_PROPERTIES(${_NAME} PROPERTIES SUFFIX ".pyd")
-    ENDIF(WIN32)
-
-    TARGET_LINK_LIBRARIES(${_NAME} ${PYTHON_LIBRARIES})
-
-  ENDIF(PYTHON_ENABLE_MODULE_${_NAME})
-ENDFUNCTION(PYTHON_ADD_MODULE)
+        set_property(GLOBAL APPEND PROPERTY PY_MODULES_LIST ${_NAME})
+        add_library(${_NAME} ${PY_MODULE_TYPE} ${ARGN})
+        set_target_properties(${_NAME} PROPERTIES PREFIX "")
+        if(WIN32)
+            set_target_properties(${_NAME} PROPERTIES SUFFIX ".pyd")
+        endif()
+        target_link_libraries(${_NAME} ${PYTHON_LIBRARIES})
+    endif()
+endfunction()
 
 
 #
@@ -334,47 +335,46 @@ ENDFUNCTION(PYTHON_ADD_MODULE)
 # and installs a python module.
 #
 
-FUNCTION(PYTHON_ADD_DISTUTILS_SETUP target_name dest_dir setup_file)
-MESSAGE(STATUS "Configuring python distutils setup: ${target_name}")
-IF(NOT WIN32)
-    add_custom_command(OUTPUT  ${CMAKE_CURRENT_BINARY_DIR}/build
-            COMMAND ${PYTHON_EXECUTABLE} ${setup_file} -v
-            build
-            --build-base=${CMAKE_CURRENT_BINARY_DIR}/build
-            install
-            --install-purelib=${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/${dest_dir}
-            DEPENDS  ${setup_file} ${ARGN}
-            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+function(PYTHON_ADD_DISTUTILS_SETUP target_name dest_dir setup_file)
+    message(STATUS "Configuring python distutils setup: ${target_name}")
+    if(NOT WIN32)
+        add_custom_command(OUTPUT  ${CMAKE_CURRENT_BINARY_DIR}/build
+                COMMAND ${PYTHON_EXECUTABLE} ${setup_file} -v
+                build
+                --build-base=${CMAKE_CURRENT_BINARY_DIR}/build
+                install
+                --install-purelib=${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/${dest_dir}
+                DEPENDS  ${setup_file} ${ARGN}
+                WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 
-    add_custom_target(${target_name} ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/build)
-    # Also use distutils for the install ...
-    #
-    # The following if uses the CMAKE_INSTALL_PREFIX directly if it
-    # is an absolute path, otherwise it prepends the VISIT_BINARY_DIR
-    # to it. Also note that adding STATUS to the message call causes
-    # the message to not get output.
-    INSTALL(CODE
-        "
-        if(\"\${CMAKE_INSTALL_PREFIX}\" MATCHES \"^/.*\")
-           set(PREFIX_DIR_ABSOLUTE \"\${CMAKE_INSTALL_PREFIX}\")
-        else()
-           get_filename_component(PREFIX_DIR_ABSOLUTE \"${CMAKE_INSTALL_PREFIX}\" ABSOLUTE BASE_DIR \"${VISIT_BINARY_DIR}\")
-        endif()
-        execute_process(WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-            COMMAND ${PYTHON_EXECUTABLE} ${setup_file} -v
-                build   --build-base=${CMAKE_CURRENT_BINARY_DIR}/build_install
-                install --install-purelib=\${PREFIX_DIR_ABSOLUTE}/${VISIT_INSTALLED_VERSION_LIB}/${dest_dir}
-            OUTPUT_VARIABLE PY_DIST_UTILS_INSTALL_OUT)
-        message(\"\${PY_DIST_UTILS_INSTALL_OUT}\")
-        ")
-ELSE(NOT WIN32)
+        add_custom_target(${target_name} ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/build)
+        # Also use distutils for the install ...
+        #
+        # The following if uses the CMAKE_INSTALL_PREFIX directly if it
+        # is an absolute path, otherwise it prepends the VISIT_BINARY_DIR
+        # to it. Also note that adding STATUS to the message call causes
+        # the message to not get output.
+        install(CODE
+            "
+            if(\"\${CMAKE_INSTALL_PREFIX}\" MATCHES \"^/.*\")
+               set(PREFIX_DIR_ABSOLUTE \"\${CMAKE_INSTALL_PREFIX}\")
+            else()
+               get_filename_component(PREFIX_DIR_ABSOLUTE \"${CMAKE_INSTALL_PREFIX}\" ABSOLUTE BASE_DIR \"${VISIT_BINARY_DIR}\")
+            endif()
+            execute_process(WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+                COMMAND ${PYTHON_EXECUTABLE} ${setup_file} -v
+                    build   --build-base=${CMAKE_CURRENT_BINARY_DIR}/build_install
+                    install --install-purelib=\${PREFIX_DIR_ABSOLUTE}/${VISIT_INSTALLED_VERSION_LIB}/${dest_dir}
+                OUTPUT_VARIABLE PY_DIST_UTILS_INSTALL_OUT)
+            message(\"\${PY_DIST_UTILS_INSTALL_OUT}\")
+            ")
+    else()
+        file(TO_NATIVE_PATH ${VISIT_LIBRARY_DIR} VLD_NATIVE)
+        string(REPLACE "\\" "\\\\" VLD_ESC_PATH "${VLD_NATIVE}")
+        file(TO_NATIVE_PATH ${CMAKE_CURRENT_BINARY_DIR} CCBD_NATIVE)
+        string(REPLACE "\\" "\\\\" CCBD_ESC_PATH "${CCBD_NATIVE}")
 
-    FILE(TO_NATIVE_PATH ${VISIT_LIBRARY_DIR} VLD_NATIVE)
-    STRING(REPLACE "\\" "\\\\" VLD_ESC_PATH "${VLD_NATIVE}")
-    FILE(TO_NATIVE_PATH ${CMAKE_CURRENT_BINARY_DIR} CCBD_NATIVE)
-    STRING(REPLACE "\\" "\\\\" CCBD_ESC_PATH "${CCBD_NATIVE}")
-
-    add_custom_target(${target_name} ALL
+        add_custom_target(${target_name} ALL
             COMMAND ${PYTHON_EXECUTABLE} ${setup_file} -v
             build
             --build-base=${CMAKE_CURRENT_BINARY_DIR}/build
@@ -382,54 +382,50 @@ ELSE(NOT WIN32)
             --install-purelib=${VLD_NATIVE}/${dest_dir}
             DEPENDS  ${setup_file} ${ARGN}
             WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
-    set_target_properties(${target_name} PROPERTIES FOLDER visit_py_setup)
-    visit_add_to_util_builds(${target_name})
+        set_target_properties(${target_name} PROPERTIES FOLDER visit_py_setup)
+        visit_add_to_util_builds(${target_name})
 
-    # also use distutils for the install ...
-    FILE(TO_NATIVE_PATH ${VISIT_INSTALLED_VERSION_LIB} VIVL_NATIVE)
-    STRING(REPLACE "\\" "\\\\" VIVL_ESC_PATH "${VIVL_NATIVE}")
-    INSTALL(CODE
-       "
-       EXECUTE_PROCESS(WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-           COMMAND ${PYTHON_EXECUTABLE} ${setup_file} -v
-           build   \"--build-base=${CCBD_ESC_PATH}\\\\build_install\"
-           install \"--install-purelib=${VIVL_ESC_PATH}\\\\${dest_dir}\")
-       MESSAGE(STATUS \"\${PY_DIST_UTILS_INSTALL_OUT}\")
-       ")
-ENDIF(NOT WIN32)
+        # also use distutils for the install ...
+        file(TO_NATIVE_PATH ${CMAKE_INSTALL_PREFIX}/lib VIVL_NATIVE)
+        string(REPLACE "\\" "\\\\" VIVL_ESC_PATH "${VIVL_NATIVE}")
+        install(CODE
+           "
+           EXECUTE_PROCESS(WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+               COMMAND ${PYTHON_EXECUTABLE} ${setup_file} -v
+               build   \"--build-base=${CCBD_ESC_PATH}\\\\build_install\"
+               install \"--install-purelib=${VIVL_ESC_PATH}\\\\${dest_dir}\")
+           message(STATUS \"\${PY_DIST_UTILS_INSTALL_OUT}\")
+           ")
+    endif()
+endfunction()
 
-ENDFUNCTION(PYTHON_ADD_DISTUTILS_SETUP)
-
-FUNCTION(PYTHON_ADD_HYBRID_MODULE target_name dest_dir setup_file py_sources)
-    MESSAGE(STATUS "Configuring hybrid python module: ${target_name}")
+function(PYTHON_ADD_HYBRID_MODULE target_name dest_dir setup_file py_sources)
+    message(STATUS "Configuring hybrid python module: ${target_name}")
     PYTHON_ADD_DISTUTILS_SETUP("${target_name}_py_setup"
                                ${dest_dir}
                                ${setup_file}
                                ${py_sources})
     PYTHON_ADD_MODULE(${target_name} ${ARGN})
     if(NOT WIN32)
-        SET_TARGET_PROPERTIES(${target_name} PROPERTIES
-                                             LIBRARY_OUTPUT_DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/${dest_dir}/${target_name}/)
+        set_target_properties(${target_name} PROPERTIES
+            LIBRARY_OUTPUT_DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/${dest_dir}/${target_name}/)
     else()
-        foreach(cfg ${CMAKE_CONFIGURATION_TYPES})
-            string(TOUPPER ${cfg} UCFG)
-            set_target_properties(${target_name} PROPERTIES
-                 LIBRARY_OUTPUT_DIRECTORY_${UCFG} "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/${cfg}/${dest_dir}/${target_name}/")
-        endforeach()
+        set_target_properties(${target_name} PROPERTIES
+            LIBRARY_OUTPUT_DIRECTORY "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/$<CONFIG>/${dest_dir}/${target_name}/")
     endif()
-    ADD_DEPENDENCIES(${target_name} "${target_name}_py_setup")
+    add_dependencies(${target_name} "${target_name}_py_setup")
     VISIT_INSTALL_TARGETS_RELATIVE(${dest_dir}/${target_name} ${target_name})
 
-ENDFUNCTION(PYTHON_ADD_HYBRID_MODULE)
+endfunction()
 
 
 # Deal with install targets
-IF(VISIT_PYTHON_SKIP_INSTALL)
-    MESSAGE(STATUS "Python installation will be skipped")
-ENDIF(VISIT_PYTHON_SKIP_INSTALL)
+if(VISIT_PYTHON_SKIP_INSTALL)
+    message(STATUS "Python installation will be skipped")
+endif()
 
-IF(PYTHONLIBS_FOUND AND NOT VISIT_PYTHON_SKIP_INSTALL)
-    MESSAGE(STATUS "We will install Python along with VisIt")
+if(PYTHONLIBS_FOUND AND NOT VISIT_PYTHON_SKIP_INSTALL)
+    message(STATUS "We will install Python along with VisIt")
     # Install libpython
     # split the list so that dll's are found correctly on Windows
     foreach(pylib ${PYTHON_LIBRARIES})
@@ -437,10 +433,10 @@ IF(PYTHONLIBS_FOUND AND NOT VISIT_PYTHON_SKIP_INSTALL)
     endforeach()
 
     # Only install Python support files if we are not using the system Python
-    IF((NOT ${PYTHON_DIR} STREQUAL "/usr"))
+    if((NOT ${PYTHON_DIR} STREQUAL "/usr"))
         # Install the python executable
-        STRING(SUBSTRING ${PYTHON_VERSION} 0 1 PYX)
-        STRING(SUBSTRING ${PYTHON_VERSION} 0 3 PYX_X)
+        string(SUBSTRING ${PYTHON_VERSION} 0 1 PYX)
+        string(SUBSTRING ${PYTHON_VERSION} 0 3 PYX_X)
         THIRD_PARTY_INSTALL_EXECUTABLE(${PYTHON_DIR}/bin/python ${PYTHON_DIR}/bin/python${PYX} ${PYTHON_DIR}/bin/python${PYX_X})
         # note: these can be symlinks to python3.Zm-config
         THIRD_PARTY_INSTALL_EXECUTABLE(${PYTHON_DIR}/bin/python${PYX}-config ${PYTHON_DIR}/bin/python${PYX_X}-config)
@@ -455,115 +451,76 @@ IF(PYTHONLIBS_FOUND AND NOT VISIT_PYTHON_SKIP_INSTALL)
                        ${PYTHON_DIR}/bin/2to3-${PYX_X}   #2to3-3.Z
                        )
 
-       foreach(_py_extra ${_py_extras})
-           if(EXISTS ${_py_extra})
-               THIRD_PARTY_INSTALL_EXECUTABLE(${_py_extra})
-           endif()
-       endforeach()
+        foreach(_py_extra ${_py_extras})
+            if(EXISTS ${_py_extra})
+                THIRD_PARTY_INSTALL_EXECUTABLE(${_py_extra})
+            endif()
+        endforeach()
 
+        set(filePerms OWNER_READ OWNER_WRITE GROUP_READ GROUP_WRITE WORLD_READ)
+        set(dirPerms  OWNER_READ OWNER_WRITE OWNER_EXECUTE
+                      GROUP_READ GROUP_WRITE GROUP_EXECUTE
+                      WORLD_READ WORLD_EXECUTE)
         # Install the python modules
         # Exclude lib-tk files for now because the permissions are bad on davinci. BJW 12/17/2009
         # Exclude visit module files.
-        IF(EXISTS ${PYTHON_DIR}/lib/python${PYTHON_VERSION})
-            INSTALL(DIRECTORY ${PYTHON_DIR}/lib/python${PYTHON_VERSION}
+        if(EXISTS ${PYTHON_DIR}/lib/python${PYTHON_VERSION})
+            install(DIRECTORY ${PYTHON_DIR}/lib/python${PYTHON_VERSION}
                 DESTINATION ${VISIT_INSTALLED_VERSION_LIB}/python/lib
-                FILE_PERMISSIONS OWNER_READ OWNER_WRITE
-                                 GROUP_READ GROUP_WRITE
-                                 WORLD_READ
-                DIRECTORY_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
-                                      GROUP_READ GROUP_WRITE GROUP_EXECUTE
-                                      WORLD_READ WORLD_EXECUTE
+                FILE_PERMISSIONS ${filePerms}
+                DIRECTORY_PERMISSIONS ${dirPerms}
                 PATTERN "lib-tk" EXCLUDE
                 PATTERN "visit.*" EXCLUDE
                 PATTERN "visitmodule.*" EXCLUDE
                 PATTERN "visit_writer.*" EXCLUDE
                 PATTERN "PySide" EXCLUDE
-                PATTERN "Python-2.6-py2.6.egg-info" EXCLUDE
-            )
-        ENDIF(EXISTS ${PYTHON_DIR}/lib/python${PYTHON_VERSION})
+                PATTERN "Python-2.6-py2.6.egg-info" EXCLUDE)
+        endif()
 
         # Install the Python headers
-        IF (NOT WIN32)
-            IF(VISIT_HEADERS_SKIP_INSTALL)
-                MESSAGE(STATUS "Skipping python headers installation")
-            ELSE(VISIT_HEADERS_SKIP_INSTALL)
-                INSTALL(DIRECTORY ${PYTHON_INCLUDE_PATH}
-                    DESTINATION ${VISIT_INSTALLED_VERSION_INCLUDE}/python/include
-                    FILE_PERMISSIONS OWNER_READ OWNER_WRITE
-                                     GROUP_READ GROUP_WRITE
-                                     WORLD_READ
-                    DIRECTORY_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
-                                          GROUP_READ GROUP_WRITE GROUP_EXECUTE
-                                          WORLD_READ             WORLD_EXECUTE
-                    PATTERN ".svn" EXCLUDE
-                    )
-            ENDIF(VISIT_HEADERS_SKIP_INSTALL)
-            #
-            # CDH:
-            # We also need to install the headers into lib/python dir
-            # if we want to be able to install python modules into a visit
-            # install.
-            #
-            INSTALL(DIRECTORY ${PYTHON_INCLUDE_PATH}
-              DESTINATION ${VISIT_INSTALLED_VERSION_LIB}/python/include
-              FILE_PERMISSIONS OWNER_READ OWNER_WRITE
-                               GROUP_READ GROUP_WRITE
-                               WORLD_READ
-              DIRECTORY_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
-                                    GROUP_READ GROUP_WRITE GROUP_EXECUTE
-                                    WORLD_READ             WORLD_EXECUTE
-              PATTERN ".svn" EXCLUDE
-            )
-        ELSE (NOT WIN32)
-            # CDH
-            # The WIN32 & NOT WIN32 cases seem almost the same here?
-            # The only diff I can see is the "*.h" glob is used?
-            #
-            IF(VISIT_HEADERS_SKIP_INSTALL)
-                MESSAGE(STATUS "Skipping python headers installation")
-            ELSE(VISIT_HEADERS_SKIP_INSTALL)
-            file(TO_CMAKE_PATH "${PYTHON_INCLUDE_PATH}" PyPth)
-            INSTALL(DIRECTORY ${PyPth}/
-                DESTINATION ${VISIT_INSTALLED_VERSION_INCLUDE}/python
-                FILE_PERMISSIONS OWNER_READ OWNER_WRITE
-                                 GROUP_READ GROUP_WRITE
-                                 WORLD_READ
-                DIRECTORY_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
-                                      GROUP_READ GROUP_WRITE GROUP_EXECUTE
-                                      WORLD_READ             WORLD_EXECUTE
-                FILES_MATCHING PATTERN "*.h"
-                PATTERN ".svn" EXCLUDE
-            )
-            ENDIF(VISIT_HEADERS_SKIP_INSTALL)
-            #
-            # CDH:
-            # We also need to install the headers into lib/python dir
-            # if we want to be able to install python modules into a visit
-            # install.
-            #
-            INSTALL(DIRECTORY ${PyPth}/
-                DESTINATION ${VISIT_INSTALLED_VERSION_LIB}/python/include
-                FILE_PERMISSIONS OWNER_READ OWNER_WRITE
-                                 GROUP_READ GROUP_WRITE
-                                 WORLD_READ
-                DIRECTORY_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
-                                      GROUP_READ GROUP_WRITE GROUP_EXECUTE
-                                      WORLD_READ             WORLD_EXECUTE
-                FILES_MATCHING PATTERN "*.h"
-                PATTERN ".svn" EXCLUDE
-            )
-            INSTALL(DIRECTORY ${VISIT_PYTHON_DIR}/lib
+        if(VISIT_HEADERS_SKIP_INSTALL)
+            message(STATUS "Skipping python headers installation")
+        else()
+            # KSB
+            #  WIN32  PYTHON_INCLUDE_PATH is
+            #    'path-to-python/include'
+            #  Non-WIN32 PYTHON_INCLUDE_PATH is: 
+            #    'path-to-python/include/python<vermaj>.<vermin>m'
+            #  So Non-WIN32 needs extra 'include' appended to DESTINATION
+                
+            set(pyIncDest ${VISIT_INSTALLED_VERSION_INCLUDE}/python)
+            if(NOT WIN32)
+                string(APPEND pyIncDest "/include")
+            endif()
+            install(DIRECTORY ${PYTHON_INCLUDE_PATH}
+                DESTINATION ${pyIncDest}
+                FILE_PERMISSIONS ${filePerms}
+                DIRECTORY_PERMISSIONS ${dirPerms})
+        endif()
+        #
+        # CDH:
+        # We also need to install the headers into lib/python dir
+        # if we want to be able to install python modules into a visit
+        # install.
+        #
+        set(pyIncDest ${VISIT_INSTALLED_VERSION_LIB}/python)
+        if(NOT WIN32)
+            string(APPEND pyIncDest "/include")
+        endif()
+        install(DIRECTORY ${PYTHON_INCLUDE_PATH}
+            DESTINATION ${pyIncDest}
+            FILE_PERMISSIONS ${filePerms}
+            DIRECTORY_PERMISSIONS ${dirPerms})
+
+        if(WIN32)
+            # install the import libraries
+            install(DIRECTORY ${VISIT_PYTHON_DIR}/lib
                 DESTINATION ${VISIT_INSTALLED_VERSION_LIB}/python
-                FILE_PERMISSIONS OWNER_READ OWNER_WRITE
-                                 GROUP_READ GROUP_WRITE
-                                 WORLD_READ
-                DIRECTORY_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
-                                      GROUP_READ GROUP_WRITE GROUP_EXECUTE
-                                      WORLD_READ             WORLD_EXECUTE
-                PATTERN ".svn"   EXCLUDE
-            )
-            unset(PyPth)
-        ENDIF (NOT WIN32)
-    ENDIF((NOT ${PYTHON_DIR} STREQUAL "/usr"))
-ENDIF(PYTHONLIBS_FOUND AND NOT VISIT_PYTHON_SKIP_INSTALL)
+                FILE_PERMISSIONS ${filePerms}
+                DIRECTORY_PERMISSIONS ${dirPerms})
+        endif()
+        unset(filePerms)
+        unset(dirPerms)
+    endif()
+endif()
 

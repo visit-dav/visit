@@ -835,54 +835,54 @@ include(CMake/SetupBLT.cmake)
 # Set up some installation related value and macros (needs version).
 #-----------------------------------------------------------------------------
 
-IF(WIN32)
+if(WIN32)
     # override cmake's default of %Program Files% for CMAKE_INSTALL_PREFIX
     # if it wasn't specified via command line,
-    IF(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-      IF( NOT APPENDED_VISIT_VERSION_TO_INSTALL_PATH)
-        SET(CMAKE_INSTALL_PREFIX "${VISIT_BINARY_DIR}/VisIt${VISIT_VERSION}"
+    if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+      if(NOT APPENDED_VISIT_VERSION_TO_INSTALL_PATH)
+        set(CMAKE_INSTALL_PREFIX "${VISIT_BINARY_DIR}/VisIt${VISIT_VERSION}"
             CACHE PATH "Install path prefix, prepended onto install directories" FORCE)
-        SET(APPENDED_VISIT_VERSION_TO_INSTALL_PATH TRUE CACHE INTERNAL "")
-      ENDIF( NOT APPENDED_VISIT_VERSION_TO_INSTALL_PATH)
-    ENDIF(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+        set(APPENDED_VISIT_VERSION_TO_INSTALL_PATH TRUE CACHE INTERNAL "")
+      endif()
+    endif()
 
     # set up directories
-    SET(VISIT_INSTALLED_VERSION ${CMAKE_INSTALL_PREFIX}
+    set(VISIT_INSTALLED_VERSION .
         CACHE PATH "VisIt install directory" FORCE)
-    SET(VISIT_INSTALLED_VERSION_BIN ${CMAKE_INSTALL_PREFIX}
+    set(VISIT_INSTALLED_VERSION_BIN .
         CACHE PATH "VisIt bin install directory" FORCE)
-    SET(VISIT_INSTALLED_VERSION_LIB ${CMAKE_INSTALL_PREFIX}/lib
+    set(VISIT_INSTALLED_VERSION_LIB lib
         CACHE PATH "VisIt lib install directory" FORCE)
-    SET(VISIT_INSTALLED_VERSION_INCLUDE ${CMAKE_INSTALL_PREFIX}/include
+    set(VISIT_INSTALLED_VERSION_INCLUDE include
         CACHE PATH "VisIt include install directory" FORCE)
-    SET(VISIT_INSTALLED_VERSION_PLUGINS ${CMAKE_INSTALL_PREFIX}
+    set(VISIT_INSTALLED_VERSION_PLUGINS .
         CACHE PATH "VisIt plugins install directory" FORCE)
-    SET(VISIT_INSTALLED_VERSION_ARCHIVES ${CMAKE_INSTALL_PREFIX}/lib
+    set(VISIT_INSTALLED_VERSION_ARCHIVES lib
         CACHE PATH "3rd party I/O archives install directory" FORCE)
-    SET(VISIT_INSTALLED_VERSION_RESOURCES ${CMAKE_INSTALL_PREFIX}/resources
+    set(VISIT_INSTALLED_VERSION_RESOURCES resources
         CACHE PATH "VisIt resources install directory" FORCE)
-ELSE(WIN32)
-    INCLUDE(${VISIT_SOURCE_DIR}/CMake/DetermineVisItArchitecture.cmake)
+else()
+    include(${VISIT_SOURCE_DIR}/CMake/DetermineVisItArchitecture.cmake)
     DETERMINE_VISIT_ARCHITECTURE(VISIT_INSTALL_PLATFORM)
-    SET(VISIT_INSTALLED_VERSION ${VISIT_VERSION}/${VISIT_INSTALL_PLATFORM}
+    set(VISIT_INSTALLED_VERSION ${VISIT_VERSION}/${VISIT_INSTALL_PLATFORM}
         CACHE PATH "VisIt install directory" FORCE)
-    SET(VISIT_INSTALLED_VERSION_BIN ${VISIT_INSTALLED_VERSION}/bin
+    set(VISIT_INSTALLED_VERSION_BIN ${VISIT_INSTALLED_VERSION}/bin
         CACHE PATH "VisIt bin install directory" FORCE)
-    SET(VISIT_INSTALLED_VERSION_LIB ${VISIT_INSTALLED_VERSION}/lib
+    set(VISIT_INSTALLED_VERSION_LIB ${VISIT_INSTALLED_VERSION}/lib
         CACHE PATH "VisIt lib install directory" FORCE)
-    SET(VISIT_INSTALLED_VERSION_INCLUDE ${VISIT_INSTALLED_VERSION}/include
+    set(VISIT_INSTALLED_VERSION_INCLUDE ${VISIT_INSTALLED_VERSION}/include
         CACHE PATH "VisIt include install directory" FORCE)
-    SET(VISIT_INSTALLED_VERSION_PLUGINS ${VISIT_INSTALLED_VERSION}/plugins
+    set(VISIT_INSTALLED_VERSION_PLUGINS ${VISIT_INSTALLED_VERSION}/plugins
         CACHE PATH "VisIt plugins install directory" FORCE)
-    SET(VISIT_INSTALLED_VERSION_ARCHIVES ${VISIT_INSTALLED_VERSION}/archives
+    set(VISIT_INSTALLED_VERSION_ARCHIVES ${VISIT_INSTALLED_VERSION}/archives
         CACHE PATH "3rd party I/O archives install directory" FORCE)
-    SET(VISIT_INSTALLED_VERSION_RESOURCES ${VISIT_INSTALLED_VERSION}/resources
+    set(VISIT_INSTALLED_VERSION_RESOURCES ${VISIT_INSTALLED_VERSION}/resources
         CACHE PATH "VisIt resources install directory" FORCE)
 
-    IF(VISIT_RPATH_RELATIVE_TO_EXECUTABLE_PATH)
-        SET(CMAKE_INSTALL_RPATH "$ORIGIN/../lib")
-        SET(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
-    ENDIF(VISIT_RPATH_RELATIVE_TO_EXECUTABLE_PATH)
+    if(VISIT_RPATH_RELATIVE_TO_EXECUTABLE_PATH)
+        set(CMAKE_INSTALL_RPATH "$ORIGIN/../lib")
+        set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
+    endif()
     #
     # Note that the last line in the EXECUTE_PROCESS command below should
     # have a "\" before the ${CMAKE_INSTALL_PREFIX} to be truely correct.
@@ -898,31 +898,30 @@ ELSE(WIN32)
     # have a bunch of files with paths greater than 100 character so this
     # fails in our case.
     #
-    IF(VISIT_INSTALL_AS_BETA)
-        INSTALL(CODE "
-          MESSAGE(\"Symlinking beta to ${VISIT_VERSION}\")
+    if(VISIT_INSTALL_AS_BETA)
+        install(CODE "
+          message(\"Symlinking beta to ${VISIT_VERSION}\")
           EXECUTE_PROCESS(WORKING_DIRECTORY \${CMAKE_INSTALL_PREFIX}
             COMMAND \${CMAKE_COMMAND} -E create_symlink
             \"${VISIT_VERSION}\"
             \"${CMAKE_INSTALL_PREFIX}/beta\")
         ")
-    ELSE(VISIT_INSTALL_AS_BETA)
-        INSTALL(CODE "
-          MESSAGE(\"Symlinking current to ${VISIT_VERSION}\")
+    else()
+        install(CODE "
+          message(\"Symlinking current to ${VISIT_VERSION}\")
           EXECUTE_PROCESS(WORKING_DIRECTORY \${CMAKE_INSTALL_PREFIX}
             COMMAND \${CMAKE_COMMAND} -E create_symlink
             \"${VISIT_VERSION}\"
             \"${CMAKE_INSTALL_PREFIX}/current\")
         ")
-    ENDIF(VISIT_INSTALL_AS_BETA)
-ENDIF(WIN32)
-MARK_AS_ADVANCED(
-VISIT_INSTALLED_VERSION_BIN
-VISIT_INSTALLED_VERSION_LIB
-VISIT_INSTALLED_VERSION_PLUGINS
-VISIT_INSTALLED_VERSION_ARCHIVES
-VISIT_INSTALLED_VERSION_INCLUDE
-)
+    endif()
+endif()
+
+mark_as_advanced(VISIT_INSTALLED_VERSION_BIN
+                 VISIT_INSTALLED_VERSION_LIB
+                 VISIT_INSTALLED_VERSION_PLUGINS
+                 VISIT_INSTALLED_VERSION_ARCHIVES
+                 VISIT_INSTALLED_VERSION_INCLUDE)
 
 # experimental!!
 # ctest/cdash testing support
@@ -1200,9 +1199,6 @@ IF(NOT WIN32)
     SET(VISIT_PLUGIN_DIR  ${VISIT_BINARY_DIR}/plugins CACHE INTERNAL "Path to VisIt's plugins")
 ELSE(NOT WIN32)
     SET(VISIT_PLUGIN_DIR  ${VISIT_EXECUTABLE_DIR} CACHE INTERNAL "Path to VisIt's plugins")
-    if(VISIT_NO_ALLBUILD)
-        add_custom_target(visit_special_builds ALL)
-    endif()
 ENDIF(NOT WIN32)
 
 #-----------------------------------------------------------------------------
