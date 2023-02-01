@@ -159,6 +159,27 @@
 //    Removed hard-coded database preprocessor defines. Now specified by
 //    WIN32DEFINES in .xml file and parsed like other DEFINES.
 //
+//    Kathleen Biagas, Tue April 27, 2022
+//    Add SKIP_INFO to ADD_DATABASE_CODE_GEN_TARGETS when skipInfoGen set in
+//    the plugin's .xml file.  Allows plugins with custom info code to not have
+//    their targets added to code gen targets.
+//
+//    Kathleen Biagas, Tue May 3, 2022
+//    Consolidate Plot and Operator code into one method.
+//    Consolidate engine target creation into one method.
+//    Add support for component-specific CXXFLAGS, LDFLAGS and DEFINES.
+//
+//    Kathleen Biagas, Wed Aug 3, 2022
+//    Modify FilterVTKLibs to add support for VTK9's new library naming
+//    convention. Filter now creates separate vtk8 and vtk9 versions of the
+//    libs for each component.  Both are written to the CMakeLists.txt file
+//    with a VTK_VERSION check that specifies which should be used.
+//    Filter happens all the time now, not just when not using dev.
+//
+//    Kathleen Biagas, Tue Nov 29, 2022
+//    Remove inclusion of PluginMacros.cmake, now included in each 
+//    plugin category (plot/operators/databases) root CMakeLists.txt.
+//
 // ****************************************************************************
 
 class CMakeGeneratorPlugin : public Plugin
@@ -246,20 +267,42 @@ class CMakeGeneratorPlugin : public Plugin
     }
 
     void
-    FilterVTKLibs(std::vector<QString> &libs)
+    FilterVTKLibs(std::vector<QString> &libs,
+                  std::vector<QString> &libs8,
+                  std::vector<QString> &libs9)
     {
         QString vtkversion = QString("-%1.%2").arg(VTK_MAJ).arg(VTK_MIN);
+        std::vector<QString> libs_sans_vtk;
         for(size_t i = 0; i < libs.size(); ++i)
         {
             if(libs[i].startsWith("vtk"))
-                libs[i].append(vtkversion);
+            {
+                QString tmp(libs[i]);
+                if (!using_dev)
+                    // append the vtk version for VTK-8
+                    tmp.append(vtkversion);
+                libs8.push_back(tmp);
+
+                // convert to VTK:: form for VTK-9
+                QString tmp2(libs[i]);
+                if (tmp2 == "vtksys")
+                    tmp2.prepend("VTK::");
+                else
+                    tmp2.replace(0,3,"VTK::");
+                libs9.push_back(tmp2);
+            }
+            else
+            {
+                libs_sans_vtk.push_back(libs[i]);
+            }
         }
+        libs = libs_sans_vtk;
     }
 
     QString
     VisItIncludeDir() const
     {
-        return using_dev ? "${VISIT_INCLUDE_DIR}" : "${VISIT_INCLUDE_DIR}/visit";
+        return "${VISIT_INCLUDE_DIR}";
     }
 
     QString
@@ -286,6 +329,75 @@ class CMakeGeneratorPlugin : public Plugin
         return retval;
     }
 #endif
+
+    QString
+    IncludesToString(const std::vector<QString> &vec, bool withNewline=false, bool atBeg=false) const
+    {
+        QString s;
+        QString sep;
+        if(withNewline)
+            sep="\n";
+        else
+            sep=" ";
+
+        for(size_t i = 0; i < vec.size(); ++i)
+        {
+            if(atBeg)
+                s += sep;
+            if(vec[i].startsWith("${"))
+                s += (ConvertToProperVisItIncludeDir(vec[i]));
+            else if(vec[i].startsWith("$("))
+                s += (ConvertToProperVisItIncludeDir(ConvertDollarParenthesis(vec[i])));
+            else if(vec[i].startsWith("-I"))
+                s += (ConvertToProperVisItIncludeDir(vec[i].right(vec[i].size()-2)));
+            else
+                s += (ConvertToProperVisItIncludeDir(vec[i]));
+            if(!atBeg)
+                s += sep;
+        }
+        return s;
+    }
+
+    void
+    CMakeWrite_TargetIncludes(QTextStream &out,
+                              const char *indent,
+                              const char *comp,
+                              const char *suffix,
+                              const std::vector<QString> &inc)
+    {
+        QString ptype = type;
+        ptype[0] = type[0].toUpper();
+        out << indent << "TARGET_INCLUDE_DIRECTORIES(" << comp << name;
+        out << ptype << suffix << " PRIVATE";
+        out << IncludesToString(inc, false, true);
+        out << ")" << endl;
+    }
+
+    void
+    CMakeWrite_TargetLinkDirs(QTextStream &out,
+                              const char *indent,
+                              const char *comp,
+                              const char *suffix,
+                              const std::vector<QString> &ld)
+    {
+        QString ptype = type;
+        ptype[0] = type[0].toUpper();
+        out << indent << "TARGET_LINK_DIRECTORIES(" << comp << name;
+        out << ptype << suffix << " PRIVATE " << ToString(ld)<< ")" << endl;
+    }
+
+    void
+    CMakeWrite_TargetDefines(QTextStream &out,
+                              const char *indent,
+                              const char *comp,
+                              const char *suffix,
+                              const std::vector<QString> &def)
+    {
+        QString ptype = type;
+        ptype[0] = type[0].toUpper();
+        out << indent << "TARGET_COMPILE_DEFINITIONS(" << comp << name;
+        out << ptype << suffix << " PRIVATE " << ToString(def)<< ")" << endl;
+    }
 
     bool
     GetCondition(const QString &c, QStringList &cond, QStringList &val) const
@@ -332,7 +444,7 @@ class CMakeGeneratorPlugin : public Plugin
         }
     }
 
-    void WriteCMake_ConditionalTargetLinks(QTextStream &out, const QString &target, const char *libType, const char *plugType, const char *indent)
+    void WriteCMake_ConditionalTargetLinks(QTextStream &out, const QString &target, const char *libType, const QString &plugType, const char *indent)
     {
         QString c(libType);
         c += "LinkLibraries:";
@@ -390,7 +502,7 @@ class CMakeGeneratorPlugin : public Plugin
         }
     }
 
-    void WriteCMake_PlotOperator_Includes(QTextStream &out, bool isOperator)
+    void WriteCMake_PlotOperator_Includes(QTextStream &out)
     {
         // take any ${} from the CXXFLAGS to mean a variable that contains
         // include directories.
@@ -405,64 +517,15 @@ class CMakeGeneratorPlugin : public Plugin
                  extraIncludes.push_back(ConvertToProperVisItIncludeDir(cxxflags[i].right(cxxflags[i].size()-2)));
         }
 
-        out << endl
-            << "IF(VISIT_PYTHON_SCRIPTING)" << endl;
-        out << "    SET(PYINCLUDES ${PYTHON_INCLUDE_PATH} "
-                << VisItIncludeDir() << "/visitpy/common "
-                << VisItIncludeDir() << "/visitpy/visitpy)" << endl;
-        out << "ENDIF(VISIT_PYTHON_SCRIPTING)" << endl << endl;
+        out << endl;
 
         // Includes
         out << "INCLUDE_DIRECTORIES(" << endl;
         out << "${CMAKE_CURRENT_SOURCE_DIR}" << endl;
-        out << "${VISIT_COMMON_INCLUDES}" << endl;
-        out << VisItIncludeDir() << "/avt/DBAtts/MetaData" << endl;
-        out << VisItIncludeDir() << "/avt/DBAtts/SIL" << endl;
-        out << VisItIncludeDir() << "/avt/Database/Database" << endl;
-        if(isOperator)
-        {
-            out << VisItIncludeDir() << "/avt/Expressions/Abstract" << endl;
-            out << VisItIncludeDir() << "/avt/Expressions/CMFE" << endl;
-            out << VisItIncludeDir() << "/avt/Expressions/Conditional" << endl;
-            out << VisItIncludeDir() << "/avt/Expressions/Derivations" << endl;
-            out << VisItIncludeDir() << "/avt/Expressions/General" << endl;
-            out << VisItIncludeDir() << "/avt/Expressions/ImageProcessing" << endl;
-            out << VisItIncludeDir() << "/avt/Expressions/Management" << endl;
-            out << VisItIncludeDir() << "/avt/Expressions/Math" << endl;
-            out << VisItIncludeDir() << "/avt/Expressions/MeshQuality" << endl;
-            out << VisItIncludeDir() << "/avt/Expressions/TimeIterators" << endl;
-        }
-        out << VisItIncludeDir() << "/avt/FileWriter" << endl;
-        out << VisItIncludeDir() << "/avt/Filters" << endl;
-        out << VisItIncludeDir() << "/avt/IVP" << endl;
-        out << VisItIncludeDir() << "/avt/Math" << endl;
-        out << VisItIncludeDir() << "/avt/Pipeline/AbstractFilters" << endl;
-        out << VisItIncludeDir() << "/avt/Pipeline/Data" << endl;
-        out << VisItIncludeDir() << "/avt/Pipeline/Pipeline" << endl;
-        out << VisItIncludeDir() << "/avt/Pipeline/Sinks" << endl;
-        out << VisItIncludeDir() << "/avt/Pipeline/Sources" << endl;
-        out << VisItIncludeDir() << "/avt/Plotter" << endl;
-        out << VisItIncludeDir() << "/avt/QtVisWindow" << endl;
-        out << VisItIncludeDir() << "/avt/View" << endl;
-        out << VisItIncludeDir() << "/avt/VisWindow/Colleagues" << endl;
-        out << VisItIncludeDir() << "/avt/VisWindow/Interactors" << endl;
-        out << VisItIncludeDir() << "/avt/VisWindow/Proxies" << endl;
-        out << VisItIncludeDir() << "/avt/VisWindow/Tools" << endl;
-        out << VisItIncludeDir() << "/avt/VisWindow/VisWindow" << endl;
-        out << VisItIncludeDir() << "/gui" << endl;
-        if(isOperator)
-        {
-            out << VisItIncludeDir() << "/mdserver/proxy" << endl;
-            out << VisItIncludeDir() << "/mdserver/rpc" << endl;
-        }
-        out << VisItIncludeDir() << "/viewer/core" << endl;
-        out << VisItIncludeDir() << "/viewer/main" << endl;
-        out << VisItIncludeDir() << "/viewer/main/ui" << endl;
-        out << VisItIncludeDir() << "/viewer/proxy" << endl;
-        out << VisItIncludeDir() << "/viewer/rpc" << endl;
-        out << VisItIncludeDir() << "/winutil" << endl;
-        out << VisItIncludeDir() << "/visit_vtk/full" << endl;
-        out << VisItIncludeDir() << "/visit_vtk/lightweight" << endl;
+        if(type == "operator")
+            out << "${VISIT_OPERATOR_INCLUDES}" << endl;
+        else
+            out << "${VISIT_PLOT_INCLUDES}" << endl;
         if(!using_dev)
         {
             out << "${QT_INCLUDE_DIR}" << endl;
@@ -470,11 +533,98 @@ class CMakeGeneratorPlugin : public Plugin
             out << "${QT_QTGUI_INCLUDE_DIR}" << endl;
             out << "${QT_QTWIDGETS_INCLUDE_DIR}" << endl;
         }
-        out << "${VTK_INCLUDE_DIRS}" << endl;
-        out << "${PYINCLUDES}" << endl;
         if(extraIncludes.size() > 0)
             out << ToString(extraIncludes, true);
         out << ")" << endl;
+        out << endl;
+    }
+
+    void CMakeAdd_EngineTargets(QTextStream &out)
+    {
+        QString ptype = type;
+        ptype[0] = type[0].toUpper();
+        out << "ADD_LIBRARY(E"<<name<<ptype << "_ser ${LIBE_SOURCES}";
+        if (customwefiles)
+            out << " ${LIBE_WIN32_SOURCES}";
+        out << ")" << endl;
+        if(!edefsSer.empty())
+        {
+            CMakeWrite_TargetDefines(out, "", "E", "_ser", edefsSer);
+        }
+        if(!ecxxflagsSer.empty())
+        {
+            CMakeWrite_TargetIncludes(out, "", "E", "_ser", ecxxflagsSer);
+        }
+        if(!ecxxflagsSer.empty())
+        {
+            CMakeWrite_TargetLinkDirs(out, "", "E", "_ser", eldflagsSer);
+        }
+        if (!vtk8_elibsSer.empty())
+        {
+            out << "\nif(VTK_VERSION VERSION_EQUAL \"8.1.0\")" << endl;
+            out << "    set(vtk_elibsSer " << ToString(vtk8_elibsSer) << ")" << endl;
+            out << "else()" << endl;
+            out << "    set(vtk_elibsSer " << ToString(vtk9_elibsSer) << ")" << endl;
+            out << "endif()\n" << endl;
+        }
+        out << "TARGET_LINK_LIBRARIES(E"<<name<<ptype<<"_ser visitcommon avtpipeline_ser";
+        if(type == "plot")
+            out << " avtplotter_ser ";
+        else if (type == "operator")
+            out << " avtexpressions_ser avtfilters_ser ";
+        else
+            out << " avtdatabase_ser ";
+        out << ToString(libs) << ToString(elibsSer);
+        if (!vtk8_libs.empty())
+            out << "${vtk_libs} ";
+        if (!vtk8_elibsSer.empty())
+            out << "${vtk_elibsSer} ";
+        out << ")" << endl;
+        WriteCMake_ConditionalTargetLinks(out, name, "E", (ptype+"_ser"), "");
+        if (type != "operator" || hasEngineSpecificCode)
+            out << "ADD_TARGET_DEFINITIONS(E"<<name<<ptype<<"_ser ENGINE)" << endl;
+        out << "SET(INSTALLTARGETS ${INSTALLTARGETS} E"<<name<<ptype<<"_ser)" << endl;
+        out << endl;
+        out << "IF(VISIT_PARALLEL)" << endl;
+        out << "    ADD_PARALLEL_LIBRARY(E"<<name<<ptype<<"_par ${LIBE_SOURCES})" << endl;
+        if(!edefsPar.empty())
+        {
+            CMakeWrite_TargetDefines(out, "    ", "E", "_par", edefsPar);
+        }
+        if(!ecxxflagsPar.empty())
+        {
+            CMakeWrite_TargetIncludes(out, "    ", "E", "_par", ecxxflagsPar);
+        }
+        if(!eldflagsPar.empty())
+        {
+            CMakeWrite_TargetLinkDirs(out, "    ", "E", "_par", eldflagsPar);
+        }
+        if (!vtk8_elibsPar.empty())
+        {
+            out << "\n    if(VTK_VERSION VERSION_EQUAL \"8.1.0\")" << endl;
+            out << "        set(vtk_elibsPar " << ToString(vtk8_elibsPar) << ")" << endl;
+            out << "    else()" << endl;
+            out << "        set(vtk_elibsPar " << ToString(vtk9_elibsPar) << ")" << endl;
+            out << "    endif()\n" << endl;
+        }
+        out << "    TARGET_LINK_LIBRARIES(E"<<name<<ptype<<"_par visitcommon avtpipeline_par";
+        if(type == "plot")
+            out << " avtplotter_par ";
+        else if (type == "operator")
+            out << " avtexpressions_par avtfilters_par ";
+        else
+            out << " avtdatabase_par ";
+        out << ToString(libs) << ToString(elibsPar);
+        if (!vtk8_libs.empty())
+            out << "${vtk_libs} ";
+        if (!vtk8_elibsPar.empty())
+            out << "${vtk_elibsPar} ";
+        out << ")" << endl;
+        WriteCMake_ConditionalTargetLinks(out, name, "E", (ptype+"_par"), "    ");
+        if (type != "operator" || hasEngineSpecificCode)
+            out << "    ADD_TARGET_DEFINITIONS(E"<<name<<ptype<<"_par ENGINE)" << endl;
+        out << "    SET(INSTALLTARGETS ${INSTALLTARGETS} E"<<name<<ptype<<"_par)" << endl;
+        out << "ENDIF(VISIT_PARALLEL)" << endl;
         out << endl;
     }
 
@@ -493,20 +643,18 @@ class CMakeGeneratorPlugin : public Plugin
         return false;
     }
 
-    void WriteCMake_Plot(QTextStream &out,
+    void WriteCMake_PlotOperator(QTextStream &out,
                          const QString &guilibname,
                          const QString &viewerlibname)
     {
         bool useFortran = false;
 
-        out << "PROJECT(" << name<< "_plot)" << endl;
+        out << "PROJECT(" << name<< "_" << type << ")" << endl;
         out << endl;
         if (using_dev)
         {
-        out << "INCLUDE(${VISIT_SOURCE_DIR}/CMake/PluginMacros.cmake)" <<endl;
-        out << endl;
-        out << "ADD_PLOT_CODE_GEN_TARGETS(" << name << ")" << endl;
-        out << endl;
+            out << "ADD_" << type.toUpper() << "_CODE_GEN_TARGETS(" << name << ")" << endl;
+            out << endl;
         }
         out << "SET(COMMON_SOURCES" << endl;
         out << name << "PluginInfo.C" << endl;
@@ -523,7 +671,11 @@ class CMakeGeneratorPlugin : public Plugin
         // libG sources
         out << "SET(LIBG_SOURCES" << endl;
         out << name << "GUIPluginInfo.C" << endl;
-        out << "Qvis" << name << "PlotWindow.C" << endl;
+        out << "Qvis" << name;
+        if (type == "plot")
+            out << "PlotWindow.C" << endl;
+        else
+            out << "Window.C" << endl;
         out << "${COMMON_SOURCES}" << endl;
         if (customgfiles)
         {
@@ -536,7 +688,11 @@ class CMakeGeneratorPlugin : public Plugin
                 out << defaultgfiles[i] << endl;
         out << ")" << endl;
         out << "SET(LIBG_MOC_SOURCES" << endl;
-        out << "Qvis" << name << "PlotWindow.h" << endl;
+        out << "Qvis" << name;
+        if (type == "plot")
+            out << "PlotWindow.h" << endl;
+        else
+            out << "Window.h" << endl;
         if (customwfiles)
             for (size_t i=0; i<wfiles.size(); i++)
                 out << wfiles[i] << endl;
@@ -548,7 +704,8 @@ class CMakeGeneratorPlugin : public Plugin
         out << "SET(LIBV_SOURCES" << endl;
         out << name<<"ViewerEnginePluginInfo.C" << endl;
         out << name<<"ViewerPluginInfo.C" << endl;
-        out << "avt"<<name<<"Plot.C" << endl;
+        if(type == "plot")
+            out << "avt"<<name<<"Plot.C" << endl;
         if (customvfiles)
         {
             useFortran |= CustomFilesUseFortran(vfiles);
@@ -574,7 +731,8 @@ class CMakeGeneratorPlugin : public Plugin
         out << "SET(LIBE_SOURCES" << endl;
         out << name<<"ViewerEnginePluginInfo.C" << endl;
         out << name<<"EnginePluginInfo.C" << endl;
-        out << "avt"<<name<<"Plot.C" << endl;
+        if (type == "plot")
+            out << "avt"<<name<<"Plot.C" << endl;
         if (customefiles)
         {
             useFortran |= CustomFilesUseFortran(efiles);
@@ -594,7 +752,7 @@ class CMakeGeneratorPlugin : public Plugin
             out << "ENABLE_LANGUAGE(Fortran)" << endl;
         }
 
-        WriteCMake_PlotOperator_Includes(out, false);
+        WriteCMake_PlotOperator_Includes(out);
         WriteCMake_ConditionalIncludes(out);
 
         // Pass other CXXFLAGS
@@ -621,6 +779,15 @@ class CMakeGeneratorPlugin : public Plugin
 
         WriteCMake_ConditionalDefinitions(out);
 
+        if (!vtk8_libs.empty())
+        {
+            out << "if(VTK_VERSION VERSION_EQUAL \"8.1.0\")" << endl;
+            out << "    set(vtk_libs " << ToString(vtk8_libs) << ")" << endl;
+            out << "else()" << endl;
+            out << "    set(vtk_libs " << ToString(vtk9_libs) << ")" << endl;
+            out << "endif()\n" << endl;
+        }
+
         std::vector<QString> linkDirs;
         linkDirs.push_back("${VISIT_LIBRARY_DIR}");
         if (!using_dev)
@@ -638,30 +805,60 @@ class CMakeGeneratorPlugin : public Plugin
 
         out << "LINK_DIRECTORIES(" << ToString(linkDirs) << ")" << endl;
         out << endl;
-        out << "ADD_LIBRARY(I"<<name<<"Plot ${LIBI_SOURCES})" << endl;
-        out << "TARGET_LINK_LIBRARIES(I"<<name<<"Plot visitcommon)" << endl;
-        WriteCMake_ConditionalTargetLinks(out, name, "I", "Plot", "");
-        out << "SET(INSTALLTARGETS I"<<name<<"Plot)" << endl;
+        QString ptype;
+        if (type == "plot")
+            ptype = "Plot";
+        else
+            ptype = "Operator";
+        out << "ADD_LIBRARY(I"<<name<<ptype<<" ${LIBI_SOURCES})" << endl;
+        out << "TARGET_LINK_LIBRARIES(I"<<name<<ptype<<" visitcommon)" << endl;
+        WriteCMake_ConditionalTargetLinks(out, name, "I", ptype, "");
+        out << "SET(INSTALLTARGETS I"<<name<<ptype<<")" << endl;
         out << endl;
 
         out << "IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)" << endl;
-        out << "    QT_WRAP_CPP(G" << name << "Plot LIBG_SOURCES ${LIBG_MOC_SOURCES})" << endl;
-        out << "    ADD_LIBRARY(G"<<name<<"Plot ${LIBG_SOURCES})" << endl;
-        out << "    TARGET_LINK_LIBRARIES(G" << name << "Plot visitcommon "
-            << guilibname << " " << ToString(libs) << ToString(glibs)
-            << ")" << endl;
-        WriteCMake_ConditionalTargetLinks(out, name, "G", "Plot", "    ");
+        out << "    QT_WRAP_CPP(G" << name << ptype << " LIBG_SOURCES ${LIBG_MOC_SOURCES})" << endl;
+        if (!vtk8_glibs.empty())
+        {
+            out << "    if(VTK_VERSION VERSION_EQUAL \"8.1.0\")" << endl;
+            out << "        set(vtk_glibs " << ToString(vtk8_glibs) << ")" << endl;
+			out << "    else()" << endl;
+            out << "        set(vtk_glibs " << ToString(vtk9_glibs) << ")" << endl;
+            out << "    endif()" << endl;
+        }
+        out << "    ADD_LIBRARY(G"<<name<<ptype<<" ${LIBG_SOURCES})" << endl;
+        out << "    TARGET_LINK_LIBRARIES(G" << name << ptype <<" visitcommon "
+            << guilibname << " " << ToString(libs) << ToString(glibs);
+        if (!vtk8_libs.empty())
+            out << "${vtk_libs} ";
+        if (!vtk8_glibs.empty())
+            out << "${vtk_glibs} ";
+        out << ")" << endl;
+        WriteCMake_ConditionalTargetLinks(out, name, "G", ptype, "    ");
         out << endl;
 
         if (customvwfiles)
-            out << "    QT_WRAP_CPP(V" << name << "Plot LIBV_SOURCES ${LIBV_MOC_SOURCES})" << endl;
-        out << "    ADD_LIBRARY(V"<<name<<"Plot ${LIBV_SOURCES})" << endl;
-        out << "    TARGET_LINK_LIBRARIES(V" << name << "Plot visitcommon "
-            << viewerlibname << " " << ToString(libs) << ToString(vlibs)
-            << ")" << endl;
-        WriteCMake_ConditionalTargetLinks(out, name, "V", "Plot", "    ");
+            out << "    QT_WRAP_CPP(V" << name << ptype << " LIBV_SOURCES ${LIBV_MOC_SOURCES})" << endl;
+        if (!vtk8_vlibs.empty())
+        {
+            out << "    if(VTK_VERSION VERSION_EQUAL \"8.1.0\")" << endl;
+            out << "        set(vtk_vlibs " << ToString(vtk8_vlibs) << ")" << endl;
+            out << "    else()" << endl;
+            out << "        set(vtk_vlibs " << ToString(vtk9_vlibs) << ")" << endl;
+            out << "    endif()" << endl;
+        }
+        out << "    ADD_LIBRARY(V"<<name<<ptype<<" ${LIBV_SOURCES})" << endl;
+        out << "    ADD_TARGET_DEFINITIONS(V"<<name<<ptype<<" VIEWER)" << endl;
+        out << "    TARGET_LINK_LIBRARIES(V" << name << ptype << " visitcommon "
+            << viewerlibname << " " << ToString(libs) << ToString(vlibs);
+        if (!vtk8_libs.empty())
+            out << "${vtk_libs} ";
+        if (!vtk8_vlibs.empty())
+            out << "${vtk_vlibs} ";
+        out << ")" << endl;
+        WriteCMake_ConditionalTargetLinks(out, name, "V", ptype, "    ");
         out << endl;
-        out << "    SET(INSTALLTARGETS ${INSTALLTARGETS} G"<<name<<"Plot V"<<name<<"Plot)" << endl;
+        out << "    SET(INSTALLTARGETS ${INSTALLTARGETS} G"<<name<<ptype<<" V"<<name<<ptype<<")" << endl;
         out << endl;
         // libS sources
         out << "    IF(VISIT_PYTHON_SCRIPTING)" << endl;
@@ -677,21 +874,21 @@ class CMakeGeneratorPlugin : public Plugin
         out << "            ${COMMON_SOURCES}" << endl;
         out << "        )" << endl;
         WriteCMake_ConditionalSources(out, "S", "        ");
-        out << "        ADD_LIBRARY(S"<<name<<"Plot ${LIBS_SOURCES})" << endl;
+        out << "        ADD_LIBRARY(S"<<name<<ptype<<" ${LIBS_SOURCES})" << endl;
         out << "        IF(WIN32)" << endl;
         out << "            # This prevents python from #defining snprintf as _snprintf" << endl;
-        out << "            SET_TARGET_PROPERTIES(S"<<name<<"Plot PROPERTIES COMPILE_DEFINITIONS HAVE_SNPRINTF)" << endl;
+        out << "            SET_TARGET_PROPERTIES(S"<<name<<ptype<<" PROPERTIES COMPILE_DEFINITIONS HAVE_SNPRINTF)" << endl;
         out << "        ENDIF()" << endl;
-        out << "        TARGET_LINK_LIBRARIES(S" << name
-            << "Plot visitcommon visitpy ${PYTHON_LIBRARY})" << endl;
-        WriteCMake_ConditionalTargetLinks(out, name, "S", "Plot", "        ");
+        out << "        TARGET_LINK_LIBRARIES(S" << name << ptype
+            << " visitcommon visitpy ${PYTHON_LIBRARY})" << endl;
+        WriteCMake_ConditionalTargetLinks(out, name, "S", ptype, "        ");
         out << "        SET(INSTALLTARGETS ${INSTALLTARGETS} S" << name
-            << "Plot)" << endl;
+            << ptype << ")" << endl;
         out << "    ENDIF(VISIT_PYTHON_SCRIPTING)" << endl;
         out << endl;
         // Java sources
         out << "    IF(VISIT_JAVA)" << endl;
-        out << "        FILE(COPY " << atts->name<<".java " << "DESTINATION ${JavaClient_BINARY_DIR}/src/plots)" << endl;
+        out << "        FILE(COPY " << atts->name<<".java DESTINATION ${JavaClient_BINARY_DIR}/src/" << type << "s)" << endl;
         out << "        ADD_CUSTOM_TARGET(Java"<<name<<" ALL ${Java_JAVAC_EXECUTABLE} ${VISIT_Java_FLAGS} -d ${JavaClient_BINARY_DIR} -classpath ${JavaClient_BINARY_DIR} -sourcepath ${JavaClient_BINARY_DIR} ";
         if(customjfiles)
         {
@@ -706,264 +903,20 @@ class CMakeGeneratorPlugin : public Plugin
         out << "ENDIF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)" << endl;
         out << endl;
 
-        out << "ADD_LIBRARY(E"<<name<<"Plot_ser ${LIBE_SOURCES})" << endl;
-        out << "TARGET_LINK_LIBRARIES(E"<<name<<"Plot_ser visitcommon avtplotter_ser avtpipeline_ser " << ToString(libs) << ToString(elibsSer) << ")" << endl;
-        WriteCMake_ConditionalTargetLinks(out, name, "E", "Plot_ser", "");
-        out << "SET(INSTALLTARGETS ${INSTALLTARGETS} E"<<name<<"Plot_ser)" << endl;
-        out << "ADD_TARGET_DEFINITIONS(E"<<name<<"Plot_ser ENGINE)" << endl;
-        out << endl;
-        out << "IF(VISIT_PARALLEL)" << endl;
-        out << "    ADD_PARALLEL_LIBRARY(E"<<name<<"Plot_par ${LIBE_SOURCES})" << endl;
-        out << "    TARGET_LINK_LIBRARIES(E"<<name<<"Plot_par visitcommon avtplotter_par avtpipeline_par " << ToString(libs) << ToString(elibsPar) << ")" << endl;
-        WriteCMake_ConditionalTargetLinks(out, name, "E", "Plot_par", "    ");
-        out << "    SET(INSTALLTARGETS ${INSTALLTARGETS} E"<<name<<"Plot_par)" << endl;
-        out << "    ADD_TARGET_DEFINITIONS(E"<<name<<"Plot_par ENGINE)" << endl;
-        out << "ENDIF(VISIT_PARALLEL)" << endl;
-        out << endl;
-        out << "VISIT_INSTALL_PLOT_PLUGINS(${INSTALLTARGETS})" << endl;
-        out << "VISIT_PLUGIN_TARGET_RTOD(plots ${INSTALLTARGETS})" << endl;
+        CMakeAdd_EngineTargets(out);
+
+        out << "VISIT_INSTALL_" << type.toUpper() << "_PLUGINS(${INSTALLTARGETS})" << endl;
+        out << "VISIT_PLUGIN_TARGET_RTOD(" << type << "s ${INSTALLTARGETS})" << endl;
         if (using_dev)
-          out << "VISIT_PLUGIN_TARGET_FOLDER(plots " << name
+          out << "VISIT_PLUGIN_TARGET_FOLDER(" << type << "s " << name
               << " ${INSTALLTARGETS})" << endl;
         out << endl;
 #ifdef _WIN32
         if (!using_dev)
         {
           out << "MESSAGE(STATUS \"Plugin will be installed to: ${VISIT_PLUGIN_DIR}\")" << endl;
-
         }
 #endif
-    }
-
-    void WriteCMake_Operator(QTextStream &out,
-                             const QString guilibname,
-                             const QString viewerlibname)
-    {
-        bool useFortran = false;
-
-        out << "PROJECT(" << name<< "_operator)" << endl;
-        out << endl;
-        if (using_dev)
-        {
-        out << "INCLUDE(${VISIT_SOURCE_DIR}/CMake/PluginMacros.cmake)" <<endl;
-        out << endl;
-        out << "ADD_OPERATOR_CODE_GEN_TARGETS(" << name << ")" << endl;
-        out << endl;
-        }
-        out << "SET(COMMON_SOURCES" << endl;
-        out << name << "PluginInfo.C" << endl;
-        out << name << "CommonPluginInfo.C" << endl;
-        out << atts->name << ".C" << endl;
-        out << ")" << endl;
-        out << endl;
-        out << "SET(LIBI_SOURCES" << endl;
-        out << name << "PluginInfo.C" << endl;
-        out << ")" << endl;
-        out << endl;
-        WriteCMake_ConditionalSources(out, "I", "");
-
-        // libG sources
-        out << "SET(LIBG_SOURCES" << endl;
-        out << name << "GUIPluginInfo.C" << endl;
-        out << "Qvis" << name << "Window.C" << endl;
-        out << "${COMMON_SOURCES}" << endl;
-        if (customgfiles)
-        {
-            useFortran |= CustomFilesUseFortran(gfiles);
-            for (size_t i=0; i<gfiles.size(); i++)
-                out << gfiles[i] << endl;
-        }
-        else
-            for (size_t i=0; i<defaultgfiles.size(); i++)
-                out << defaultgfiles[i] << endl;
-        out << ")" << endl;
-        WriteCMake_ConditionalSources(out, "G", "");
-        out << "SET(LIBG_MOC_SOURCES" << endl;
-        out << "Qvis" << name << "Window.h" << endl;
-        if (customwfiles)
-            for (size_t i=0; i<wfiles.size(); i++)
-                out << wfiles[i] << endl;
-        out << ")" << endl;
-        out << endl;
-
-        // libV sources
-        out << "SET(LIBV_SOURCES" << endl;
-        out << name<<"ViewerEnginePluginInfo.C" << endl;
-        out << name<<"ViewerPluginInfo.C" << endl;
-        if (customvfiles)
-        {
-            useFortran |= CustomFilesUseFortran(vfiles);
-            for (size_t i=0; i<vfiles.size(); i++)
-                out << vfiles[i] << endl;
-        }
-        else
-            for (size_t i=0; i<defaultvfiles.size(); i++)
-                out << defaultvfiles[i] << endl;
-        out << "${COMMON_SOURCES}" << endl;
-        out << ")" << endl;
-        WriteCMake_ConditionalSources(out, "V", "");
-        if (customvwfiles)
-        {
-            out << "SET(LIBV_MOC_SOURCES" << endl;
-            for (size_t i=0; i<vwfiles.size(); i++)
-                out << vwfiles[i] << endl;
-            out << ")" << endl;
-        }
-        out << endl;
-
-        // libE sources
-        out << "SET(LIBE_SOURCES" << endl;
-        out << name<<"ViewerEnginePluginInfo.C" << endl;
-        out << name<<"EnginePluginInfo.C" << endl;
-        if (customefiles)
-        {
-            useFortran |= CustomFilesUseFortran(efiles);
-            for (size_t i=0; i<efiles.size(); i++)
-                out << efiles[i] << endl;
-        }
-        else
-            for (size_t i=0; i<defaultefiles.size(); i++)
-                out << defaultefiles[i] << endl;
-        out << "${COMMON_SOURCES}" << endl;
-        out << ")" << endl;
-        out << endl;
-        WriteCMake_ConditionalSources(out, "E", "");
-
-        if(useFortran)
-        {
-            out << "ENABLE_LANGUAGE(Fortran)" << endl;
-        }
-
-        WriteCMake_PlotOperator_Includes(out, true);
-        WriteCMake_ConditionalIncludes(out);
-
-        bool added_defs = false;
-        // Pass other CXXFLAGS
-        for (size_t i=0; i<cxxflags.size(); i++)
-        {
-            if(!cxxflags[i].startsWith("${") &&
-               !cxxflags[i].startsWith("$(") &&
-               !cxxflags[i].startsWith("-I"))
-            {
-                 out << "ADD_DEFINITIONS(" << cxxflags[i] << ")" << endl;
-                 added_defs = true;
-            }
-        }
-
-        // Pass Defines
-        for (size_t i=0; i<defs.size(); i++)
-        {
-            out << "ADD_DEFINITIONS(" << defs[i] << ")" << endl;
-            added_defs = true;
-        }
-        if (added_defs)
-            out << endl;
-
-        WriteCMake_ConditionalDefinitions(out);
-
-        // Extract extra link directories from LDFLAGS if they have ${},$(),-L
-        std::vector<QString> linkDirs;
-        linkDirs.push_back("${VISIT_LIBRARY_DIR}");
-        if (!using_dev)
-        {
-            linkDirs.push_back("${VISIT_ARCHIVE_DIR}");
-        }
-        for (size_t i=0; i<ldflags.size(); i++)
-        {
-            if(ldflags[i].startsWith("${") || ldflags[i].startsWith("$("))
-                 linkDirs.push_back(ldflags[i]);
-            else if(ldflags[i].startsWith("-L"))
-                 linkDirs.push_back(ldflags[i].right(ldflags[i].size()-2));
-        }
-
-        out << "LINK_DIRECTORIES(" << ToString(linkDirs) << ")" << endl;
-        out << endl;
-        out << "ADD_LIBRARY(I"<<name<<"Operator ${LIBI_SOURCES})" << endl;
-        out << "TARGET_LINK_LIBRARIES(I"<<name<<"Operator visitcommon)" << endl;
-        WriteCMake_ConditionalTargetLinks(out, name, "I", "Operator", "");
-        out << "SET(INSTALLTARGETS I"<<name<<"Operator)" << endl;
-        out << endl;
-
-        out << "IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)" << endl;
-        out << "    QT_WRAP_CPP(G"<<name<<"Operator LIBG_SOURCES ${LIBG_MOC_SOURCES})" << endl;
-        out << "    ADD_LIBRARY(G"<<name<<"Operator ${LIBG_SOURCES})" << endl;
-        out << "    TARGET_LINK_LIBRARIES(G" << name << "Operator visitcommon "
-            << guilibname << " " << ToString(libs) << ToString(glibs)
-            << ")" << endl;
-        WriteCMake_ConditionalTargetLinks(out, name, "G", "Operator", "    ");
-        out << endl;
-        if (customvwfiles)
-            out << "    QT_WRAP_CPP(V"<<name<<"Operator LIBV_SOURCES ${LIBV_MOC_SOURCES})" << endl;
-        out << "    ADD_LIBRARY(V"<<name<<"Operator ${LIBV_SOURCES})" << endl;
-        out << "    TARGET_LINK_LIBRARIES(V" << name << "Operator visitcommon "
-            << viewerlibname << " " << ToString(libs) << ToString(vlibs)
-            << ")" << endl;
-        WriteCMake_ConditionalTargetLinks(out, name, "V", "Operator", "    ");
-        out << "    SET(INSTALLTARGETS ${INSTALLTARGETS} G"<<name<<"Operator V"<<name<<"Operator)" << endl;
-        out << endl;
-        // libS sources
-        out << "    IF(VISIT_PYTHON_SCRIPTING)" << endl;
-        out << "        SET(LIBS_SOURCES" << endl;
-        out << "            " << name<<"ScriptingPluginInfo.C" << endl;
-        out << "            Py"<<atts->name<<".C" << endl;
-        if (customsfiles)
-            for (size_t i=0; i<sfiles.size(); i++)
-                out << "            " << sfiles[i] << endl;
-        else
-            for (size_t i=0; i<defaultsfiles.size(); i++)
-                out << "            " << defaultsfiles[i] << endl;
-        out << "            ${COMMON_SOURCES}" << endl;
-        out << "        )" << endl;
-        WriteCMake_ConditionalSources(out, "S", "        ");
-        out << "        ADD_LIBRARY(S"<<name<<"Operator ${LIBS_SOURCES})" << endl;
-        out << "        IF(WIN32)" << endl;
-        out << "            # This prevents python from #defining snprintf as _snprintf" << endl;
-        out << "            SET_TARGET_PROPERTIES(S"<<name<<"Operator PROPERTIES COMPILE_DEFINITIONS HAVE_SNPRINTF)" << endl;
-        out << "        ENDIF()" << endl;
-        out << "        TARGET_LINK_LIBRARIES(S"<<name<<"Operator visitcommon visitpy ${PYTHON_LIBRARY})" << endl;
-        WriteCMake_ConditionalTargetLinks(out, name, "S", "Operator", "        ");
-        out << "        SET(INSTALLTARGETS ${INSTALLTARGETS} S"<<name<<"Operator)" << endl;
-        out << "    ENDIF(VISIT_PYTHON_SCRIPTING)" << endl;
-        out << endl;
-        // Java sources
-        out << "    IF(VISIT_JAVA)" << endl;
-        out << "        FILE(COPY " << atts->name<<".java DESTINATION ${JavaClient_BINARY_DIR}/src/operators)" << endl;
-        out << "        ADD_CUSTOM_TARGET(Java"<<name<<" ALL ${Java_JAVAC_EXECUTABLE} ${VISIT_Java_FLAGS} -d ${JavaClient_BINARY_DIR} -classpath ${JavaClient_BINARY_DIR} -sourcepath ${JavaClient_BINARY_DIR} ";
-        if(customjfiles)
-        {
-            for(size_t i = 0; i < jfiles.size(); ++i)
-                out << jfiles[i] << " ";
-        }
-        out << atts->name<<".java" << endl;
-        out << "            DEPENDS JavaClient" << endl;
-        out << "            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})" << endl;
-        out << "    ENDIF(VISIT_JAVA)" << endl;
-
-        out << "ENDIF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)" << endl;
-        out << endl;
-
-        out << "ADD_LIBRARY(E"<<name<<"Operator_ser ${LIBE_SOURCES})" << endl;
-        out << "TARGET_LINK_LIBRARIES(E"<<name<<"Operator_ser visitcommon avtexpressions_ser avtfilters_ser avtpipeline_ser " << ToString(libs) << ToString(elibsSer) << ")" << endl;
-        WriteCMake_ConditionalTargetLinks(out, name, "E", "Operator_ser", "");
-        out << "SET(INSTALLTARGETS ${INSTALLTARGETS} E"<<name<<"Operator_ser)" << endl;
-        if (hasEngineSpecificCode)
-            out << "ADD_TARGET_DEFINITIONS(E"<<name<<"Operator_ser ENGINE)" << endl;
-        out << endl;
-        out << "IF(VISIT_PARALLEL)" << endl;
-        out << "    ADD_PARALLEL_LIBRARY(E"<<name<<"Operator_par ${LIBE_SOURCES})" << endl;
-        out << "    TARGET_LINK_LIBRARIES(E"<<name<<"Operator_par visitcommon avtexpressions_par avtfilters_par avtpipeline_par " << ToString(libs) << ToString(elibsPar) << ")" << endl;
-        WriteCMake_ConditionalTargetLinks(out, name, "E", "Operator_par", "    ");
-        out << "    SET(INSTALLTARGETS ${INSTALLTARGETS} E"<<name<<"Operator_par)" << endl;
-        if (hasEngineSpecificCode)
-            out << "    ADD_TARGET_DEFINITIONS(E"<<name<<"Operator_par ENGINE)" << endl;
-        out << "ENDIF(VISIT_PARALLEL)" << endl;
-        out << endl;
-        out << "VISIT_INSTALL_OPERATOR_PLUGINS(${INSTALLTARGETS})" << endl;
-        out << "VISIT_PLUGIN_TARGET_RTOD(operators ${INSTALLTARGETS})" << endl;
-        if (using_dev)
-          out << "VISIT_PLUGIN_TARGET_FOLDER(operators " << name
-              << " ${INSTALLTARGETS})" << endl;
-        out << endl;
     }
 
     void WriteCMake_Database(QTextStream &out)
@@ -974,9 +927,10 @@ class CMakeGeneratorPlugin : public Plugin
         out << endl;
         if (using_dev)
         {
-        out << "INCLUDE(${VISIT_SOURCE_DIR}/CMake/PluginMacros.cmake)" <<endl;
-        out << endl;
-        out << "ADD_DATABASE_CODE_GEN_TARGETS(" << name << ")" << endl;
+        out << "ADD_DATABASE_CODE_GEN_TARGETS(" << name ;
+        if(skipInfoGen)
+            out << " SKIP_INFO";
+        out << ")" << endl;
         out << endl;
         }
         out << "SET(COMMON_SOURCES" << endl;
@@ -1080,27 +1034,7 @@ class CMakeGeneratorPlugin : public Plugin
         out << "${CMAKE_CURRENT_SOURCE_DIR}" << endl;
         if(extraIncludes.size() > 0)
             out << ToString(extraIncludes, true) ;
-        out << "${VISIT_COMMON_INCLUDES}" << endl;
-        out << VisItIncludeDir() << "/avt/DBAtts/MetaData" << endl;
-        out << VisItIncludeDir() << "/avt/DBAtts/SIL" << endl;
-        out << VisItIncludeDir() << "/avt/Database/Database" << endl;
-        out << VisItIncludeDir() << "/avt/Database/Formats" << endl;
-        out << VisItIncludeDir() << "/avt/Database/Ghost" << endl;
-        out << VisItIncludeDir() << "/avt/FileWriter" << endl;
-        out << VisItIncludeDir() << "/avt/Filters" << endl;
-        out << VisItIncludeDir() << "/avt/MIR/Base" << endl;
-        out << VisItIncludeDir() << "/avt/MIR/Tet" << endl;
-        out << VisItIncludeDir() << "/avt/MIR/Zoo" << endl;
-        out << VisItIncludeDir() << "/avt/Math" << endl;
-        out << VisItIncludeDir() << "/avt/Pipeline/AbstractFilters" << endl;
-        out << VisItIncludeDir() << "/avt/Pipeline/Data" << endl;
-        out << VisItIncludeDir() << "/avt/Pipeline/Pipeline" << endl;
-        out << VisItIncludeDir() << "/avt/Pipeline/Sinks" << endl;
-        out << VisItIncludeDir() << "/avt/Pipeline/Sources" << endl;
-        out << VisItIncludeDir() << "/avt/VisWindow/VisWindow" << endl;
-        out << VisItIncludeDir() << "/visit_vtk/full" << endl;
-        out << VisItIncludeDir() << "/visit_vtk/lightweight" << endl;
-        out << "${VTK_INCLUDE_DIRS}" << endl;
+        out << "${VISIT_DATABASE_INCLUDES}" << endl;
         out << ")" << endl;
         out << endl;
 
@@ -1137,6 +1071,15 @@ class CMakeGeneratorPlugin : public Plugin
 
         WriteCMake_ConditionalDefinitions(out);
 
+        if (!vtk8_libs.empty())
+        {
+            out << "if(VTK_VERSION VERSION_EQUAL \"8.1.0\")" << endl;
+            out << "    set(vtk_libs " << ToString(vtk8_libs) << ")" << endl;
+            out << "else()" << endl;
+            out << "    set(vtk_libs " << ToString(vtk9_libs) << ")" << endl;
+            out << "endif()\n" << endl;
+        }
+
         if(useFortran)
         {
             out << "ENABLE_LANGUAGE(Fortran)" << endl;
@@ -1168,7 +1111,32 @@ class CMakeGeneratorPlugin : public Plugin
             if (customwmfiles)
                 out << "     ${LIBM_WIN32_SOURCES}";
             out << ")" << endl;
-            out << "    TARGET_LINK_LIBRARIES(M"<<name<<"Database visitcommon avtdbatts avtdatabase_ser " << ToString(libs) << ToString(mlibs) << ")" << endl;
+            if(!mdefs.empty())
+            {
+                CMakeWrite_TargetDefines(out, "    ", "M", "", mdefs);
+            }
+            if(!mcxxflags.empty())
+            {
+                CMakeWrite_TargetIncludes(out, "    ", "M", "", mcxxflags);
+            }
+            if(!mldflags.empty())
+            {
+                CMakeWrite_TargetLinkDirs(out, "    ", "M", "", mldflags);
+            }
+            if (!vtk8_mlibs.empty())
+            {
+                out << "    if(VTK_VERSION VERSION_EQUAL \"8.1.0\")" << endl;
+                out << "        set(vtk_mlibs " << ToString(vtk8_mlibs) << ")" << endl;
+                out << "    else()" << endl;
+                out << "        set(vtk_mlibs " << ToString(vtk9_mlibs) << ")" << endl;
+                out << "    endif()\n" << endl;
+            }
+            out << "    TARGET_LINK_LIBRARIES(M"<<name<<"Database visitcommon avtdbatts avtdatabase_ser " << ToString(libs) << ToString(mlibs);
+            if (!vtk8_libs.empty())
+                out << "${vtk_libs} ";
+            if (!vtk8_mlibs.empty())
+                out << "${vtk_mlibs} ";
+            out << ")" << endl;
             WriteCMake_ConditionalTargetLinks(out, name, "M", "Database", "    ");
             out << "    ADD_TARGET_DEFINITIONS(M"<<name<<"Database MDSERVER)" << endl;
             out << "    SET(INSTALLTARGETS ${INSTALLTARGETS} M"<<name<<"Database)" << endl;
@@ -1177,23 +1145,7 @@ class CMakeGeneratorPlugin : public Plugin
         }
         if(!noEnginePlugin)
         {
-            out << "ADD_LIBRARY(E"<<name<<"Database_ser ${LIBE_SOURCES}";
-            if (customwefiles)
-                out << " ${LIBE_WIN32_SOURCES}";
-            out << ")" << endl;
-            out << "TARGET_LINK_LIBRARIES(E"<<name<<"Database_ser visitcommon avtdatabase_ser avtpipeline_ser " << ToString(libs) << ToString(elibsSer) << ")" << endl;
-            WriteCMake_ConditionalTargetLinks(out, name, "E", "Database_ser", "");
-            out << "ADD_TARGET_DEFINITIONS(E"<<name<<"Database_ser ENGINE)" << endl;
-            out << "SET(INSTALLTARGETS ${INSTALLTARGETS} E"<<name<<"Database_ser)" << endl;
-            out << endl;
-            out << "IF(VISIT_PARALLEL)" << endl;
-            out << "    ADD_PARALLEL_LIBRARY(E"<<name<<"Database_par ${LIBE_SOURCES})" << endl;
-            out << "    TARGET_LINK_LIBRARIES(E"<<name<<"Database_par visitcommon avtdatabase_par avtpipeline_par " << ToString(libs) << ToString(elibsPar) << ")" << endl;
-            WriteCMake_ConditionalTargetLinks(out, name, "E", "Database_par", "    ");
-            out << "    ADD_TARGET_DEFINITIONS(E"<<name<<"Database_par ENGINE)" << endl;
-            out << "    SET(INSTALLTARGETS ${INSTALLTARGETS} E"<<name<<"Database_par)" << endl;
-            out << "ENDIF(VISIT_PARALLEL)" << endl;
-            out << endl;
+            CMakeAdd_EngineTargets(out);
         }
         out << "VISIT_INSTALL_DATABASE_PLUGINS(${INSTALLTARGETS})" << endl;
         out << "VISIT_PLUGIN_TARGET_RTOD(databases ${INSTALLTARGETS})" << endl;
@@ -1240,16 +1192,17 @@ class CMakeGeneratorPlugin : public Plugin
         qvisitplugdirpub = ToCMakePath(qvisitplugdirpub);
         qvisitplugdirpri = ToCMakePath(qvisitplugdirpri);
 #endif
+        FilterVTKLibs(libs,    vtk8_libs,     vtk9_libs);
+        FilterVTKLibs(mlibs,   vtk8_mlibs,    vtk9_mlibs);
+        FilterVTKLibs(glibs,   vtk8_glibs,    vtk9_glibs);
+        FilterVTKLibs(vlibs,   vtk8_vlibs,    vtk9_vlibs);
+        FilterVTKLibs(elibsSer,vtk8_elibsSer,vtk9_elibsSer);
+        FilterVTKLibs(elibsPar,vtk8_elibsPar,vtk9_elibsPar);
+
         // If we're not using a development version then we need to always
         // include something in the generated output.
         if(!using_dev)
         {
-            FilterVTKLibs(libs);
-            FilterVTKLibs(glibs);
-            FilterVTKLibs(vlibs);
-            FilterVTKLibs(elibsSer);
-            FilterVTKLibs(elibsPar);
-
             out << "CMAKE_MINIMUM_REQUIRED(VERSION 3.8 FATAL_ERROR)" << endl;
             if(installpublic)
             {
@@ -1296,15 +1249,24 @@ class CMakeGeneratorPlugin : public Plugin
             viewerlibname = "viewerlib";
         }
 #endif
-        if(type == "plot")
-            WriteCMake_Plot(out, guilibname, viewerlibname);
-        else if(type == "operator")
-            WriteCMake_Operator(out, guilibname, viewerlibname);
-        else if(type == "database")
+        if(type == "database")
             WriteCMake_Database(out);
+        else
+            WriteCMake_PlotOperator(out, guilibname, viewerlibname);
 
         WriteCMake_AdditionalCode(out);
     }
+
+private:
+    // couldn't think of a way to support both VTK8 and VTK9 via codegen
+    // without also requiring re-generation when switching between 8 and 9.
+    // so creating extra storage for them here.
+    std::vector<QString> vtk8_libs,     vtk9_libs;
+    std::vector<QString> vtk8_glibs,    vtk9_glibs;
+    std::vector<QString> vtk8_mlibs,    vtk9_mlibs;
+    std::vector<QString> vtk8_vlibs,    vtk9_vlibs;
+    std::vector<QString> vtk8_elibsSer, vtk9_elibsSer;
+    std::vector<QString> vtk8_elibsPar, vtk9_elibsPar;
 };
 
 

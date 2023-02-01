@@ -146,6 +146,13 @@ inline char toupper(char c)
 //    Cyrus Harrison, Wed Jun  3 09:51:31 PDT 2020
 //    Update code gen to support both Python 2 and 3.
 //
+//    Kathleen Biagas, Wed May 25, 2022
+//    Added 'forLogging' arg to _ToString method so that AttVector's can call
+//    'SetNum' (if available) when being logged.
+//
+//    Kathleen Biagas, Thu Nov 17, 2022
+//    Added boolArray and boolVector.
+//
 // ****************************************************************************
 
 // ----------------------------------------------------------------------------
@@ -349,7 +356,7 @@ class PythonGeneratorField : public virtual Field
 //    * cType is the type of the destination member of the Attribute object.
 //    * pyType is the type returned from Python interpreter.
 //    * pyFunc is the Python function call to obtain the pyType value.
-//    * ckVal (usually just 'val') a value to check cval for conversion error 
+//    * ckVal (usually just 'val') a value to check cval for conversion error
 //
 #define WRITE_SET_METHOD_BODY_FOR_SCALAR_NUMBER(cType, pyType, pyFunc) \
         c << "    PyObject *packaged_args = 0;" << Endl; \
@@ -755,6 +762,112 @@ class AttsGeneratorBool : public virtual Bool , public virtual PythonGeneratorFi
         c << "    else" << Endl;
         c << "        snprintf(tmpStr, 1000, \"%s" << name << " = 0\\n\", prefix);" << Endl;
         c << "    str += tmpStr;" << Endl;
+    }
+};
+
+//
+// -------------------------------- BoolArray --------------------------------
+//
+class AttsGeneratorBoolArray : public virtual BoolArray , public virtual PythonGeneratorField
+{
+  public:
+    AttsGeneratorBoolArray(const QString &s, const QString &n, const QString &l)
+        : Field("boolArray",n,l), BoolArray(s,n,l), PythonGeneratorField("boolArray",n,l) { }
+    virtual void WriteSetMethodBody(QTextStream &c, const QString &className)
+    {
+        WRITE_SET_METHOD_BODY_FOR_ARRAY_OF_NUMBERS(bool, long, PyLong_AsLong)
+    }
+
+    virtual void WriteGetMethodBody(QTextStream &c, const QString &className)
+    {
+        c << "    // Allocate a tuple the with enough entries to hold the " << name << "." << Endl;
+        c << "    PyObject *retval = PyTuple_New(" << length << ");" << Endl;
+        c << "    const bool *" << name << " = obj->data->";
+        if(accessType == Field::AccessPublic)
+            c << name << ";" << Endl;
+        else
+            c << MethodNameGet() << "();" << Endl;
+        c << "    for(int i = 0; i < " << length << "; ++i)" << Endl;
+        c << "        PyTuple_SET_ITEM(retval, i, PyInt_FromLong(" << name << "[i]?1L:0L));" << Endl;
+    }
+
+    virtual void StringRepresentation(QTextStream &c, const QString &classname)
+    {
+        c << "    {   const bool *" << name << " = atts->";
+        if(accessType == Field::AccessPublic)
+            c << name;
+        else
+            c << MethodNameGet() << "()";
+        c << ";" << Endl;
+        c << "        snprintf(tmpStr, 1000, \"%s" << name << " = (\", prefix);" << Endl;
+        c << "        str += tmpStr;" << Endl;
+        c << "        for(int i = 0; i < " << length << "; ++i)" << Endl;
+        c << "        {" << Endl;
+        c << "            snprintf(tmpStr, 1000, \"%d\", (" << name << "[i]?1L:0L));" << Endl;
+        c << "            str += tmpStr;" << Endl;
+        c << "            if(i < " << length - 1 << ")" << Endl;
+        c << "            {" << Endl;
+        c << "                snprintf(tmpStr, 1000, \", \");" << Endl;
+        c << "                str += tmpStr;" << Endl;
+        c << "            }" << Endl;
+        c << "        }" << Endl;
+        c << "        snprintf(tmpStr, 1000, \")\\n\");" << Endl;
+        c << "        str += tmpStr;" << Endl;
+        c << "    }" << Endl;
+    }
+
+};
+
+
+//
+// -------------------------------- BoolVector --------------------------------
+//
+class AttsGeneratorBoolVector : public virtual BoolVector , public virtual PythonGeneratorField
+{
+  public:
+    AttsGeneratorBoolVector(const QString &n, const QString &l)
+        : Field("boolVector",n,l), BoolVector(n,l), PythonGeneratorField("boolVector",n,l) { }
+    virtual void WriteSetMethodBody(QTextStream &c, const QString &className)
+    {
+        WRITE_SET_METHOD_BODY_FOR_VECTOR_OF_NUMBERS(bool, long, PyLong_AsLong)
+    }
+
+    virtual void WriteGetMethodBody(QTextStream &c, const QString &className)
+    {
+        c << "    // Allocate a tuple the with enough entries to hold the " << name << "." << Endl;
+        c << "    const boolVector &" << name << " = obj->data->";
+        if(accessType == Field::AccessPublic)
+            c << name << ";" << Endl;
+        else
+            c << MethodNameGet() << "();" << Endl;
+        c << "    PyObject *retval = PyTuple_New(" << name << ".size());" << Endl;
+        c << "    for(size_t i = 0; i < "<<name<<".size(); ++i)" << Endl;
+        c << "        PyTuple_SET_ITEM(retval, i, PyInt_FromLong(" << name << "[i]?1L:0L));" << Endl;
+    }
+
+    virtual void StringRepresentation(QTextStream &c, const QString &classname)
+    {
+        c << "    {   const boolVector &" << name << " = atts->";
+        if(accessType == Field::AccessPublic)
+            c << name;
+        else
+            c << MethodNameGet() << "()";
+        c << ";" << Endl;
+        c << "        snprintf(tmpStr, 1000, \"%s" << name << " = (\", prefix);" << Endl;
+        c << "        str += tmpStr;" << Endl;
+        c << "        for(size_t i = 0; i < " << name << ".size(); ++i)" << Endl;
+        c << "        {" << Endl;
+        c << "            snprintf(tmpStr, 1000, \"%d\", (" << name << "[i]?1:0));" << Endl;
+        c << "            str += tmpStr;" << Endl;
+        c << "            if(i < " << name << ".size() - 1)" << Endl;
+        c << "            {" << Endl;
+        c << "                snprintf(tmpStr, 1000, \", \");" << Endl;
+        c << "                str += tmpStr;" << Endl;
+        c << "            }" << Endl;
+        c << "        }" << Endl;
+        c << "        snprintf(tmpStr, 1000, \")\\n\");" << Endl;
+        c << "        str += tmpStr;" << Endl;
+        c << "    }" << Endl;
     }
 };
 
@@ -1882,7 +1995,7 @@ class AttsGeneratorAtt : public virtual Att , public virtual PythonGeneratorFiel
                 c << "&atts->" << name;
             else
                 c << "&atts->" << MethodNameGet() << "()";
-            c << ", objPrefix.c_str());" << Endl;
+            c << ", objPrefix.c_str(), forLogging);" << Endl;
             c << "    }" << Endl;
         }
     }
@@ -2068,6 +2181,17 @@ class AttsGeneratorAttVector : public virtual AttVector , public virtual PythonG
     {
         c << "    { // new scope" << Endl;
         c << "        int index = 0;" << Endl;
+        if(codeFile && codeFile->HasFunction(QString("SetNum")+Name))
+        {
+            c << "        if (forLogging)" << Endl;
+            c << "        {" << Endl;
+            c << "            // this is needed in case the current Num" << Name << " is greater" << Endl;
+            c << "            // than the default set up by the containing class." << Endl;
+            c << "            snprintf(tmpStr, 1000, \"SetNum" << Name << "(%d)\\n\"," << Endl;
+            c << "                atts->GetNum" << Name << "());" << Endl;
+            c << "            str += (prefix + std::string(tmpStr));" << Endl;
+            c << "        }" << Endl;
+        }
         c << "        // Create string representation of " << name << " from atts." << Endl;
         if(accessType == Field::AccessPublic)
             c << "        for(AttributeGroupVector::const_iterator pos = atts->" << name << ".begin(); pos != atts->" << name << ".end(); ++pos, ++index)" << Endl;
@@ -2077,7 +2201,7 @@ class AttsGeneratorAttVector : public virtual AttVector , public virtual PythonG
         c << "            const " << attType << " *current" << " = (const " << attType << " *)(*pos);" << Endl;
         c << "            snprintf(tmpStr, 1000, \"Get" << Name << "(%d).\", index);" << Endl;
         c << "            std::string objPrefix(prefix + std::string(tmpStr));" << Endl;
-        c << "            str += Py" << attType << "_ToString(current, objPrefix.c_str());" << Endl;
+        c << "            str += Py" << attType << "_ToString(current, objPrefix.c_str(), forLogging);" << Endl;
         c << "        }" << Endl;
         c << "        if(index == 0)" << Endl;
         c << "            str += \"#" << name << " does not contain any " << attType << " objects.\\n\";" << Endl;
@@ -2192,7 +2316,7 @@ class PythonGeneratorEnum : public virtual Enum , public virtual PythonGenerator
 
         for(size_t i = 0; i < enumType->values.size(); ++i)
         {
-            // None is a special case, we can't have atts.None in py3, its 
+            // None is a special case, we can't have atts.None in py3, its
             // a syntax error, instead show as NONE
             QString val_string = enumType->values[i];
             if(val_string == "None")
@@ -2232,7 +2356,7 @@ class PythonGeneratorEnum : public virtual Enum , public virtual PythonGenerator
             c << classname << "::" << enumType->values[i];
             c << "));" << Endl;
             // add extra case for NONE:
-            // None is a special case, we can't have atts.None in py3, its 
+            // None is a special case, we can't have atts.None in py3, its
             // a syntax error, instead show as NONE
             QString val_string = enumType->values[i];
             if(val_string == "None")
@@ -2668,6 +2792,9 @@ class AttsGeneratorGlyphType : public virtual GlyphType , public virtual PythonG
 //    Kathleen Bonnell, Thu Mar 22 16:58:23 PDT 2007
 //    Added scalemode.
 //
+//    Kathleen Biagas, Tue Nov 15 12:40:01 PST 2022
+//    Added boolArray and boolVector.
+//
 // ----------------------------------------------------------------------------
 class PythonFieldFactory
 {
@@ -2684,6 +2811,8 @@ class PythonFieldFactory
         else if (type == "intArray")     f = new AttsGeneratorIntArray(length,name,label);
         else if (type == "intVector")    f = new AttsGeneratorIntVector(name,label);
         else if (type == "bool")         f = new AttsGeneratorBool(name,label);
+        else if (type == "boolArray")    f = new AttsGeneratorBoolArray(length,name,label);
+        else if (type == "boolVector")   f = new AttsGeneratorBoolVector(name,label);
         else if (type == "float")        f = new AttsGeneratorFloat(name,label);
         else if (type == "floatArray")   f = new AttsGeneratorFloatArray(length,name,label);
         else if (type == "floatVector")  f = new AttsGeneratorFloatVector(name,label);
@@ -2827,7 +2956,7 @@ class PythonGeneratorAttribute : public GeneratorBase
         h << "void "<<api<<"          Py"<<name<<"_SetParent(PyObject *obj, PyObject *parent);" << Endl;
         h << "void "<<api<<"          Py"<<name<<"_SetDefaults(const "<<name<<" *atts);" << Endl;
         h << "std::string "<<api<<"   Py"<<name<<"_GetLogString();" << Endl;
-        h << "std::string "<<api<<"   Py"<<name<<"_ToString(const " << name << " *, const char *);" << Endl;
+        h << "std::string "<<api<<"   Py"<<name<<"_ToString(const " << name << " *, const char *, const bool=false);" << Endl;
         h << api << "PyObject * "<<"    Py"<<name<<"_getattr(PyObject *self, char *name);" << Endl;
         h << "int "<<api<<"           Py"<<name<<"_setattr(PyObject *self, char *name, PyObject *args);" << Endl;
         h << api << "extern PyMethodDef Py"<<name<<"_methods["<<name.toUpper()<<"_NMETH];" << Endl;
@@ -3113,10 +3242,10 @@ class PythonGeneratorAttribute : public GeneratorBase
         c << "    if (obj == &NULL_PY_OBJ)" << Endl;
         c << "    {" << Endl;
         c << "        obj = NULL;" << Endl;
-        c << "        PyErr_Format(PyExc_NameError, \"name '\%s' is not defined\", name);" << Endl;
+        c << "        PyErr_Format(PyExc_NameError, \"name '%s' is not defined\", name);" << Endl;
         c << "    }" << Endl;
         c << "    else if (obj == NULL && !PyErr_Occurred())" << Endl;
-        c << "        PyErr_Format(PyExc_RuntimeError, \"unknown problem with '\%s'\", name);" << Endl;
+        c << "        PyErr_Format(PyExc_RuntimeError, \"unknown problem with '%s'\", name);" << Endl;
         c << Endl;
         c << "    return (obj != NULL) ? 0 : -1;" << Endl;
         c << "}" << Endl;
@@ -3139,7 +3268,7 @@ class PythonGeneratorAttribute : public GeneratorBase
         c << "    "<<name<<"Object *obj = ("<<name<<"Object *)v;" << Endl;
         if(HasCode(mName, 0))
             PrintCode(c, mName, 0);
-        c << "    fprintf(fp, \"%s\", Py" << name << "_ToString(obj->data, \"\").c_str());" << Endl;
+        c << "    fprintf(fp, \"%s\", Py" << name << "_ToString(obj->data, \"\",false).c_str());" << Endl;
         if(HasCode(mName, 1))
             PrintCode(c, mName, 1);
         c << "    return 0;" << Endl;
@@ -3158,7 +3287,7 @@ class PythonGeneratorAttribute : public GeneratorBase
         }
 
         c << "std::string" << Endl;
-        c << mName << "(const "<<name<<" *atts, const char *prefix)" << Endl;
+        c << mName << "(const "<<name<<" *atts, const char *prefix, const bool forLogging)" << Endl;
         c << "{" << Endl;
         c << "    std::string str;" << Endl;
         if (!fields.empty())
@@ -3166,7 +3295,7 @@ class PythonGeneratorAttribute : public GeneratorBase
         c << Endl;
         if (custombase)
         {
-            c << "    str = Py"<<baseClass<<"_ToString(atts, prefix);" << Endl;
+            c << "    str = Py"<<baseClass<<"_ToString(atts, prefix, forLogging);" << Endl;
             c << Endl;
         }
         if(HasCode(mName, 0))
@@ -3196,7 +3325,7 @@ class PythonGeneratorAttribute : public GeneratorBase
         c << mName << "(PyObject *v)" << Endl;
         c << "{" << Endl;
         c << "    "<<name<<"Object *obj = ("<<name<<"Object *)v;" << Endl;
-        c << "    return PyString_FromString(Py" << name << "_ToString(obj->data,\"\").c_str());" << Endl;
+        c << "    return PyString_FromString(Py" << name << "_ToString(obj->data,\"\", false).c_str());" << Endl;
         c << "}" << endl << Endl;
     }
 
@@ -3246,7 +3375,7 @@ class PythonGeneratorAttribute : public GeneratorBase
         c << "#endif" << Endl;
         c << Endl;
 
-        // add helpful comments about where VISIT_PY_TYPE_OBJ is defd and 
+        // add helpful comments about where VISIT_PY_TYPE_OBJ is defd and
         // how to use it
         c << "//" << Endl
           << "// Python Type Struct Def Macro from Py2and3Support.h" << Endl
@@ -3372,7 +3501,7 @@ class PythonGeneratorAttribute : public GeneratorBase
             c << "{" << Endl;
             c << "    std::string s(\"" << shortName << " = " << name << "()\\n\");" << Endl;
             c << "    if(currentAtts != 0)" << Endl;
-            c << "        s += Py" << name << "_ToString(currentAtts, \"" << shortName << ".\");" << Endl;
+            c << "        s += Py" << name << "_ToString(currentAtts, \"" << shortName << ".\", true);" << Endl;
             c << "    return s;" << Endl;
             c << "}" << Endl;
         }
@@ -3394,7 +3523,7 @@ class PythonGeneratorAttribute : public GeneratorBase
             c << "    if(cb != 0)" << Endl;
             c << "    {" << Endl;
             c << "        std::string s(\"" << shortName << " = " << name << "()\\n\");" << Endl;
-            c << "        s += Py" << name << "_ToString(currentAtts, \"" << shortName << ".\");" << Endl;
+            c << "        s += Py" << name << "_ToString(currentAtts, \"" << shortName << ".\", true);" << Endl;
             c << "        cb(s);" << Endl;
             c << "    }" << Endl;
             if(HasCode(CallLogRoutine, 1))

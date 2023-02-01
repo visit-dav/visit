@@ -26,6 +26,10 @@ class VisWindowInteractorProxy;
 //  Programmer: Eric Brugger
 //  Creation:   December 27, 2004
 //
+//  Modifications:
+//    Kathleen Biagas, Wed Mar 16, 2022
+//    Added OnMouseWheelForward, OnMouseWheelbackward.
+//
 // ****************************************************************************
 
 class VISWINDOW_API Dolly3D: public VisitInteractor
@@ -39,6 +43,9 @@ class VISWINDOW_API Dolly3D: public VisitInteractor
     virtual void        EndLeftButtonAction();
     virtual void        StartMiddleButtonAction();
     virtual void        EndMiddleButtonAction();
+
+    void                OnMouseWheelForward();
+    void                OnMouseWheelBackward();
 
   protected:
     bool                ctrlOrShiftPushed;

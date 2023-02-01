@@ -132,7 +132,24 @@ close_streams()
 //    I made it print the name of the signal to the debug log so we have
 //    an idea of whether or not VisIt quit due to handling a signal.
 //
+//    Mark C. Miller, Fri Oct  7 16:12:22 PDT 2022
+//    Macroize case statements to avoid misspelled signal ids and reduce
+//    code duplication.
 // ****************************************************************************
+
+#if !defined(_WIN32)
+#define SIG_CASE(Sig) \
+    case Sig: \
+          debug1 << "signalhandler_core: " << #Sig << "! (" << strsignal(Sig) << ")" << endl; \
+          close_streams(); abort(); \
+          break
+#else
+#define SIG_CASE(Sig) \
+    case Sig: \
+          debug1 << "signalhandler_core: " << #Sig << "!" << endl; \
+          close_streams(); abort(); \
+          break
+#endif
 
 static void
 signalhandler_core(int sig)
@@ -145,39 +162,15 @@ signalhandler_core(int sig)
 
     switch (sig)
     {
-      case SIGILL:
-          debug1 << "signalhandler_core: SIG!" << endl;
-          close_streams(); abort(); // HOOKS_IGNORE
-          break;
-      case SIGABRT:
-          debug1 << "signalhandler_core: SIGBRT!" << endl;
-          close_streams(); abort(); // HOOKS_IGNORE
-          break;
-      case SIGFPE:
-          debug1 << "signalhandler_core: SIGFPE!" << endl;
-          close_streams(); abort(); // HOOKS_IGNORE
-          break;
-      case SIGSEGV:
-          debug1 << "signalhandler_core: SIGSEGV!" << endl;
-          close_streams(); abort(); // HOOKS_IGNORE
-          break;
+      SIG_CASE(SIGILL);
+      SIG_CASE(SIGABRT);
+      SIG_CASE(SIGFPE);
+      SIG_CASE(SIGSEGV);
 #if !defined(_WIN32)
-      case SIGBUS:
-          debug1 << "signalhandler_core: SIGBUS!" << endl;
-          close_streams(); abort(); // HOOKS_IGNORE
-          break;
-      case SIGQUIT:
-          debug1 << "signalhandler_core: SIGQUIT!" << endl;
-          close_streams(); abort(); // HOOKS_IGNORE
-          break;
-      case SIGTRAP:
-          debug1 << "signalhandler_core: SIGTRAP!" << endl;
-          close_streams(); abort(); // HOOKS_IGNORE
-          break;
-      case SIGSYS:
-          debug1 << "signalhandler_core: SIGSYS!" << endl;
-          close_streams(); abort(); // HOOKS_IGNORE
-          break;
+      SIG_CASE(SIGBUS);
+      SIG_CASE(SIGQUIT);
+      SIG_CASE(SIGTRAP);
+      SIG_CASE(SIGSYS);
 #endif
     }
 }

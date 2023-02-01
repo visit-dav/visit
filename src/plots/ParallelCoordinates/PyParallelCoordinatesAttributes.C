@@ -38,7 +38,7 @@ struct ParallelCoordinatesAttributesObject
 //
 static PyObject *NewParallelCoordinatesAttributes(int);
 std::string
-PyParallelCoordinatesAttributes_ToString(const ParallelCoordinatesAttributes *atts, const char *prefix)
+PyParallelCoordinatesAttributes_ToString(const ParallelCoordinatesAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -1326,7 +1326,7 @@ static int
 ParallelCoordinatesAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     ParallelCoordinatesAttributesObject *obj = (ParallelCoordinatesAttributesObject *)v;
-    fprintf(fp, "%s", PyParallelCoordinatesAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyParallelCoordinatesAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -1334,7 +1334,7 @@ PyObject *
 ParallelCoordinatesAttributes_str(PyObject *v)
 {
     ParallelCoordinatesAttributesObject *obj = (ParallelCoordinatesAttributesObject *)v;
-    return PyString_FromString(PyParallelCoordinatesAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyParallelCoordinatesAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -1486,7 +1486,7 @@ PyParallelCoordinatesAttributes_GetLogString()
 {
     std::string s("ParallelCoordinatesAtts = ParallelCoordinatesAttributes()\n");
     if(currentAtts != 0)
-        s += PyParallelCoordinatesAttributes_ToString(currentAtts, "ParallelCoordinatesAtts.");
+        s += PyParallelCoordinatesAttributes_ToString(currentAtts, "ParallelCoordinatesAtts.", true);
     return s;
 }
 
@@ -1499,7 +1499,7 @@ PyParallelCoordinatesAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("ParallelCoordinatesAtts = ParallelCoordinatesAttributes()\n");
-        s += PyParallelCoordinatesAttributes_ToString(currentAtts, "ParallelCoordinatesAtts.");
+        s += PyParallelCoordinatesAttributes_ToString(currentAtts, "ParallelCoordinatesAtts.", true);
         cb(s);
     }
 }

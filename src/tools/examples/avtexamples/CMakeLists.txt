@@ -64,6 +64,7 @@ ${VTK_INCLUDE_DIRS}
 )
 
 LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY}
+${AVT_REQUIRED_LIB_DIR}
 ${ALL_THIRDPARTY_IO_LIBRARY_DIR}
 ${ICET_LIBRARY_DIR}
 )
@@ -220,16 +221,19 @@ ADD_EXECUTABLE(qvtkopenglExample ${QVTKOPENGLEXAMPLE_SOURCES})
 VISIT_INSTALL_TARGETS(qvtkopenglExample)
 VISIT_EXAMPLES_ADD_FOLDER(qvtkopenglExample qvtkopenglExample)
 
+if(VTK_VERSION VERSION_EQUAL "8.1.0")
+  set(vtklibs vtkCommonColor vtkFiltersSources vtkInteractionStyle vtkRenderingOpenGL2)
+else()
+  set(vtklibs VTK::CommonColor VTK::FiltersSources VTK::InteractionStyle VTK::RenderingOpenGL2)
+endif()
+
 TARGET_LINK_LIBRARIES(qvtkopenglExample
 vtkqt
 ${QT_QTGUI_LIBRARY}
 ${QT_QTOPENGL_LIBRARY}
 ${QT_QTNETWORK_LIBRARY}
 ${QT_QTCORE_LIBRARY}
-vtkCommonColor
-vtkFiltersSources
-vtkInteractionStyle
-vtkRenderingOpenGL2
+${vtklibs}
 ${OPENGL_LIBRARIES}
 ${ZLIB_LIBRARY}
 )
@@ -248,15 +252,19 @@ ADD_EXECUTABLE(qtvtkExample ${QTVTKEXAMPLE_SOURCES})
 VISIT_INSTALL_TARGETS(qtvtkExample)
 VISIT_EXAMPLES_ADD_FOLDER(qtvtkExample qtvtkExample)
 
+if(VTK_VERSION VERSION_EQUAL "8.1.0")
+  set(vtklibs vtkCommonColor vtkFiltersSources vtkInteractionStyle)
+else()
+  set(vtklibs VTK::CommonColor VTK::FiltersSources VTK::InteractionStyle VTK::RenderingVolumeOpenGL2)
+endif()
+
 TARGET_LINK_LIBRARIES(qtvtkExample
 vtkqt
 ${QT_QTGUI_LIBRARY}
 ${QT_QTOPENGL_LIBRARY}
 ${QT_QTNETWORK_LIBRARY}
 ${QT_QTCORE_LIBRARY}
-vtkCommonColor
-vtkFiltersSources
-vtkInteractionStyle
+${vtklibs}
 ${OPENGL_LIBRARIES}
 ${ZLIB_LIBRARY}
 )
@@ -269,6 +277,11 @@ ADD_EXECUTABLE(qtviswinExample ${QTVISWINEXAMPLE_SOURCES})
 VISIT_INSTALL_TARGETS(qtviswinExample)
 VISIT_EXAMPLES_ADD_FOLDER(qtviswinExample qtviswinExample)
 
+if(VTK_VERSION VERSION_EQUAL "8.1.0")
+  set(vtkqtlib vtkGUISupportQt)
+else()
+  set(vtkqtlib VTK::GUISupportQt)
+endif()
 TARGET_LINK_LIBRARIES(qtviswinExample
 visitcommon
 avtdbatts
@@ -284,5 +297,5 @@ ${QT_QTGUI_LIBRARY}
 ${QT_QTOPENGL_LIBRARY}
 ${QT_QTNETWORK_LIBRARY}
 ${QT_QTCORE_LIBRARY}
-vtkGUISupportQt
+${vtkqtlib}
 )

@@ -478,6 +478,25 @@ void writemesh_curv2d(DBfile *db, MixInfo *mixinfo) {
                 DB_FLOAT, DB_NONCOLLINEAR, NULL);
 
 
+  // Create a 3D version of the same thing on the y=x+z plane
+  {
+      int dims3d[3] = {dims[0], 1, dims[1]};
+      float f12[1000];
+      float *coord3d[3] = {f1, f12, f2};
+      char *coordnames3d[3] = {"f1","f1+f2","f2"};
+
+      c=0;
+      for (x=0;x<mesh.nx;x++) {
+        for (y=0;y<mesh.ny;y++) {
+          f12[c]=f1[c]+f2[c]; // y = x + z
+          c++;
+        }
+      }
+      
+      DBPutQuadmesh(db, "Mesh_3d", coordnames3d, coord3d, dims3d, 3, 
+                    DB_FLOAT, DB_NONCOLLINEAR, NULL);
+  }
+
   /* do Node vars */
 
   cnvar = (char *)        new char[nnodes]; 
@@ -504,6 +523,7 @@ void writemesh_curv2d(DBfile *db, MixInfo *mixinfo) {
   }
 
   DBPutQuadvar1(db, "u", "Mesh", f1, dims, 2, NULL, 0, DB_FLOAT, DB_NODECENT, NULL);
+  DBPutQuadvar1(db, "u3d", "Mesh_3d", f1, dims, 2, NULL, 0, DB_FLOAT, DB_NODECENT, NULL);
   DBPutQuadvar1(db, "v", "Mesh", f2, dims, 2, NULL, 0, DB_FLOAT, DB_NODECENT, NULL);
   DBPutQuadvar1(db, "cnvar", "Mesh", (float*)cnvar, dims, 2, NULL, 0, DB_CHAR, DB_NODECENT, NULL);
   DBPutQuadvar1(db, "snvar", "Mesh", (float*)snvar, dims, 2, NULL, 0, DB_SHORT, DB_NODECENT, NULL);
@@ -549,6 +569,7 @@ void writemesh_curv2d(DBfile *db, MixInfo *mixinfo) {
   }
 
   DBPutQuadvar1(db, "p", "Mesh", f1, dims, 2, NULL, 0, DB_FLOAT, DB_ZONECENT, NULL);
+  DBPutQuadvar1(db, "p3d", "Mesh_3d", f1, dims, 2, NULL, 0, DB_FLOAT, DB_ZONECENT, NULL);
   DBPutQuadvar1(db, "d", "Mesh", f2, dims, 2, NULL, 0, DB_FLOAT, DB_ZONECENT, NULL);
   DBPutQuadvar1(db, "czvar", "Mesh", (float*)czvar, dims, 2, NULL, 0, DB_CHAR, DB_ZONECENT, NULL);
   DBPutQuadvar1(db, "szvar", "Mesh", (float*)szvar, dims, 2, NULL, 0, DB_SHORT, DB_ZONECENT, NULL);
@@ -646,6 +667,22 @@ void writemesh_ucd2d(DBfile *db, MixInfo *mixinfo) {
 
   DBPutZonelist(db,"Mesh_zonelist",nzones,2,nl,lnodelist,0,shapesize,shapecnt,1);
   DBPutUcdmesh (db,"Mesh",2,NULL,coord,nnodes,nzones,"Mesh_zonelist",NULL,DB_FLOAT,NULL);
+
+  // Create a 3D version of the same thing on the y=x+z plane
+  {
+      float f12[1000];
+      float *coord3d[3] = {f1, f12, f2};
+
+      c=0;
+      for (x=0;x<mesh.nx;x++) {
+        for (y=0;y<mesh.ny;y++) {
+          f12[c]=f1[c]+f2[c]; // y = x + z
+          c++;
+        }
+      }
+      DBPutUcdmesh (db,"Mesh_3d",3,NULL,coord3d,nnodes,nzones,"Mesh_zonelist",NULL,DB_FLOAT,NULL);
+  }
+
 
   /* do Node vars */
 
@@ -849,6 +886,10 @@ writematspec(DBfile *db)
                   mix_next, mix_mat, mix_zone, mix_vf, mixc, DBMIXTYPE,
                   optlist);
 
+    int dims2[3] = {dims[0], 1, dims[1]};
+    DBPutMaterial(db, "Material_3d", "Mesh_3d", nmat, matnos, matlist, dims2, 3,
+                  mix_next, mix_mat, mix_zone, mix_vf, mixc, DBMIXTYPE, optlist);
+
     /* Okay! Now for the species! */
 
     c = 0;
@@ -918,6 +959,8 @@ writematspec(DBfile *db)
     DBPutMatspecies(db, "Species", "Material", nmat, nspec, speclist, dims, 2,
                     mfc, specmf, mixspeclist, mixc, DBMIXTYPE, NULL);
 
+    DBPutMatspecies(db, "Species_3d", "Material_3d", nmat, nspec, speclist, dims2, 3,
+                    mfc, specmf, mixspeclist, mixc, DBMIXTYPE, NULL);
 
     mixinfo = (MixInfo*) malloc(sizeof(MixInfo));    
     for (size_t i = 0; i < sizeof(matlist)/sizeof(matlist[0]); i++)

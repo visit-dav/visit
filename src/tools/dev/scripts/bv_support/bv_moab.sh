@@ -26,12 +26,12 @@ function bv_moab_depends_on
 
 function bv_moab_info
 {
-    export MOAB_VERSION=${MOAB_VERSION:-"4.9.2-RC0"}
+    export MOAB_VERSION=${MOAB_VERSION:-"5.4.0"}
     export MOAB_FILE=${MOAB_FILE:-"moab-${MOAB_VERSION}.tar.gz"}
     export MOAB_URL=${MOAB_URL:-"ftp://ftp.mcs.anl.gov/pub/fathom"}
-    export MOAB_BUILD_DIR=${MOAB_BUILD_DIR:-"moab-4.9.2"}
-    export MOAB_MD5_CHECKSUM="8581acec855308b34144c66e1163ad8e"
-    export MOAB_SHA256_CHECKSUM="216e34f07717714fcc0675f211a2ddbd5063530a753467b8c13d5ba69535c7f4"
+    export MOAB_BUILD_DIR=${MOAB_BUILD_DIR:-"moab-5.4.0"}
+    export MOAB_MD5_CHECKSUM="b3857a791130569701b8fca788c2ed7c"
+    export MOAB_SHA256_CHECKSUM="a30d2a1911fbf214ae0175b0856e0475c0077dc51ea5914c850d631155a72952"
 }
 
 function bv_moab_print
@@ -79,13 +79,6 @@ function bv_moab_ensure
             DO_MOAB="no"
             error "Unable to build moab.  ${MOAB_FILE} not found."
         fi
-    fi
-}
-
-function bv_moab_dry_run
-{
-    if [[ "$DO_MOAB" == "yes" ]] ; then
-        echo "Dry run option not set for moab."
     fi
 }
 

@@ -36,7 +36,7 @@ struct PickVarInfoObject
 //
 static PyObject *NewPickVarInfo(int);
 std::string
-PyPickVarInfo_ToString(const PickVarInfo *atts, const char *prefix)
+PyPickVarInfo_ToString(const PickVarInfo *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -1184,7 +1184,7 @@ static int
 PickVarInfo_print(PyObject *v, FILE *fp, int flags)
 {
     PickVarInfoObject *obj = (PickVarInfoObject *)v;
-    fprintf(fp, "%s", PyPickVarInfo_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyPickVarInfo_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -1192,7 +1192,7 @@ PyObject *
 PickVarInfo_str(PyObject *v)
 {
     PickVarInfoObject *obj = (PickVarInfoObject *)v;
-    return PyString_FromString(PyPickVarInfo_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyPickVarInfo_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -1344,7 +1344,7 @@ PyPickVarInfo_GetLogString()
 {
     std::string s("PickVarInfo = PickVarInfo()\n");
     if(currentAtts != 0)
-        s += PyPickVarInfo_ToString(currentAtts, "PickVarInfo.");
+        s += PyPickVarInfo_ToString(currentAtts, "PickVarInfo.", true);
     return s;
 }
 
@@ -1357,7 +1357,7 @@ PyPickVarInfo_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("PickVarInfo = PickVarInfo()\n");
-        s += PyPickVarInfo_ToString(currentAtts, "PickVarInfo.");
+        s += PyPickVarInfo_ToString(currentAtts, "PickVarInfo.", true);
         cb(s);
     }
 }

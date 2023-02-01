@@ -82,6 +82,10 @@
 #include <avtStructuredDomainBoundaries.h>
 #include <avtExecutionManager.h>
 
+#ifdef HAVE_CONDUIT
+#include <avtConduitBlueprintDataAdaptor.h>
+#endif
+
 #include <visit-config.h>
 #if defined(HAVE_OSMESA) || defined(HAVE_EGL)
 #  include <vtkOffScreenRenderingFactory.h>
@@ -130,7 +134,7 @@ const int INTERRUPT_MESSAGE_TAG = GetUniqueStaticMessageTag();
       }
   }
 
- 
+
   std::string
   GetNextArg(int argc, char **argv, int start, int &nargs)
   {
@@ -514,7 +518,7 @@ Engine::~Engine()
 //    Include the # of processors we're running on in the timing message.
 //
 //    Brad Whitlock, Thu Apr  9 13:40:32 PDT 2009
-//    I moved the xfer set input connection code for non-UI procs to 
+//    I moved the xfer set input connection code for non-UI procs to
 //    ConnectToViewer where the UI proc sets its xfer input connection.
 //
 //    Tom Fogal, Sun Jun 28 12:48:33 MDT 2009
@@ -595,7 +599,7 @@ Engine::Initialize(int *argc, char **argv[], bool sigs)
     //
     // Set a different new handler for the engine
     //
-#if !defined(_WIN32) 
+#if !defined(_WIN32)
     std::set_new_handler(Engine::NewHandler);
 #endif
 
@@ -649,7 +653,7 @@ Engine::Initialize(int *argc, char **argv[], bool sigs)
 //    around.
 //
 //    Hank Childs, Tue Dec  2 10:04:37 PST 2008
-//    Remove unmatched StartTimer call.  (The resulting timing can't be 
+//    Remove unmatched StartTimer call.  (The resulting timing can't be
 //    dumped anyways.)
 //
 // ****************************************************************************
@@ -668,7 +672,7 @@ Engine::Finalize(void)
 // ****************************************************************************
 // Method: Engine::EnableSimulationPlugins
 //
-// Purpose: 
+// Purpose:
 //   Allow the engine to use simulation plugins in addition to engine plugins.
 //
 // Note:       This method needs to be called before SetUpViewerInterface.
@@ -677,7 +681,7 @@ Engine::Finalize(void)
 // Creation:   Thu Apr 23 12:08:27 PDT 2009
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -692,7 +696,7 @@ Engine::EnableSimulationPlugins()
 // ****************************************************************************
 // Class: PAR_PluginBroadcaster
 //
-// Purpose: 
+// Purpose:
 //   This object helps the plugin managers broadcast information about libI
 //   plugins to other processors. This can save 1000's of processors reading
 //   ~200 libI files at the same time.
@@ -704,15 +708,15 @@ Engine::EnableSimulationPlugins()
 //   libfiles : The names of the plugin files.
 //   enabled  : Whether the plugins are enabled
 //
-// Returns:    
+// Returns:
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Wed Jun 17 13:16:20 PDT 2009
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 class PAR_PluginBroadcaster : public PluginBroadcaster
@@ -746,14 +750,14 @@ public:
 // ****************************************************************************
 // Method: Engine::InitializeCompute
 //
-// Purpose: 
+// Purpose:
 //   Initializing the compute parts of the engine.
 //
 // Arguments:
 //
-// Returns:    
+// Returns:
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Sep 28 09:54:32 PDT 2012
@@ -767,6 +771,9 @@ public:
 //
 //   Alok Hota, Tue Feb 23 19:10:32 PST 2016
 //   Add support for OSPRay.
+// 
+//   Justin Privitera, Wed Aug 24 11:08:51 PDT 2022
+//   Call `avtConduitBlueprintDataAdaptor::Initialize();`.
 //
 // ****************************************************************************
 
@@ -783,6 +790,9 @@ Engine::InitializeCompute()
     int setupTimer = visitTimer->StartTimer();
     InitVTK::Initialize();
     InitVTKRendering::Initialize();
+#ifdef HAVE_CONDUIT
+    avtConduitBlueprintDataAdaptor::Initialize();
+#endif
     if (avtCallback::GetSoftwareRendering())
     {
         // Install factory for  VisIt's OffScreen Render Window overrides
@@ -855,7 +865,7 @@ Engine::InitializeCompute()
         netmgr->GetOperatorPluginManager()->SetPluginDir(pluginDir.c_str());
         netmgr->GetDatabasePluginManager()->SetPluginDir(pluginDir.c_str());
     }
-    PluginManager::PluginCategory pCat = simulationPluginsEnabled ? 
+    PluginManager::PluginCategory pCat = simulationPluginsEnabled ?
         PluginManager::Simulation : PluginManager::Engine;
 #ifdef PARALLEL
 #ifdef VISIT_STATIC
@@ -866,20 +876,20 @@ Engine::InitializeCompute()
     bool readInfo = PAR_UIProcess();
     PAR_PluginBroadcaster broadcaster;
     int pluginInit = visitTimer->StartTimer();
-    netmgr->GetPlotPluginManager()->Initialize(pCat, true, NULL, 
-                                               readInfo, 
+    netmgr->GetPlotPluginManager()->Initialize(pCat, true, NULL,
+                                               readInfo,
                                                &broadcaster);
     visitTimer->StopTimer(pluginInit, "Loading plot plugin info");
 
     pluginInit = visitTimer->StartTimer();
-    netmgr->GetOperatorPluginManager()->Initialize(pCat, true, NULL, 
-                                               readInfo, 
+    netmgr->GetOperatorPluginManager()->Initialize(pCat, true, NULL,
+                                               readInfo,
                                                &broadcaster);
     visitTimer->StopTimer(pluginInit, "Loading operator plugin info");
 
     pluginInit = visitTimer->StartTimer();
-    netmgr->GetDatabasePluginManager()->Initialize(pCat, true, NULL, 
-                                               readInfo, 
+    netmgr->GetDatabasePluginManager()->Initialize(pCat, true, NULL,
+                                               readInfo,
                                                &broadcaster);
     visitTimer->StopTimer(pluginInit, "Loading database plugin info");
 #endif
@@ -887,7 +897,7 @@ Engine::InitializeCompute()
     netmgr->GetPlotPluginManager()->Initialize(pCat, false);
     netmgr->GetOperatorPluginManager()->Initialize(pCat, false);
     netmgr->GetDatabasePluginManager()->Initialize(pCat, false);
-#endif    
+#endif
     //
     // Load plugins
     //
@@ -987,7 +997,7 @@ Engine::CreatePluginManagers()
 //    Brad Whitlock, Fri Mar 12 11:20:58 PDT 2004
 //    I added keepAliveRPC.
 //
-//    Kathleen Bonnell, Wed Mar 31 16:53:03 PST 2004 
+//    Kathleen Bonnell, Wed Mar 31 16:53:03 PST 2004
 //    Added cloneNetworkRPC.
 //
 //    Jeremy Meredith, Wed Aug 25 10:09:14 PDT 2004
@@ -1000,7 +1010,7 @@ Engine::CreatePluginManagers()
 //    Added StartQueryRPC.
 //
 //    Mark C. Miller, Tue Mar  8 17:59:40 PST 2005
-//    Added procInfoRPC 
+//    Added procInfoRPC
 //
 //    Jeremy Meredith, Mon Apr  4 15:58:48 PDT 2005
 //    Added simulationCommandRPC.
@@ -1069,9 +1079,9 @@ Engine::CreatePluginManagers()
 //    Differentiate between simulation and engine plugins.
 //
 //    Brad Whitlock, Wed Jun 17 13:23:58 PDT 2009
-//    I passed an instance of PAR_PluginBroadcaster to the plugin managers 
+//    I passed an instance of PAR_PluginBroadcaster to the plugin managers
 //    so they could skip reading libI plugins for most processors in parallel.
-//    Rank 0 reads the libI plugins and then shares their information with 
+//    Rank 0 reads the libI plugins and then shares their information with
 //    other processors over MPI. I also added timing information for loading
 //    plugins in parallel.
 //
@@ -1185,7 +1195,7 @@ Engine::SetUpViewerInterface(int *argc, char **argv[])
     rpcExecutors.push_back(new EngineRPCExecutor<SetRemoveDuplicateNodesRPC>(&enginestate->GetSetRemoveDuplicateNodesRPC()));
     rpcExecutors.push_back(new EngineRPCExecutor<EnginePropertiesRPC>(&enginestate->GetEnginePropertiesRPC()));
     rpcExecutors.push_back(new EngineRPCExecutor<LaunchRPC>(&enginestate->GetLaunchRPC()));
-  
+
     // Hook up the expression list as an observed object.
     Parser *p = new ExprParser(new avtExprNodeFactory());
     ParsingExprList *l = new ParsingExprList(p);
@@ -1280,7 +1290,7 @@ Engine::GetInputSocket()
 // ****************************************************************************
 // Method: Engine::ExtractViewerArguments
 //
-// Purpose: 
+// Purpose:
 //   This method takes a first peek at the engine's command line and extracts
 //   any useful arguments into viewerArgs. If the arguments are meant only
 //   for the viewer then they get removed from the command line before the
@@ -1290,16 +1300,16 @@ Engine::GetInputSocket()
 // Arguments:
 //   argc : Pointer to the number of command line arguments.
 //   argv : Pointer to the command line arguments array.
-// 
-// Returns:    
 //
-// Note:       
+// Returns:
+//
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Apr  9 14:09:24 PDT 2009
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1358,7 +1368,7 @@ Engine::ExtractViewerArguments(int *argc, char **argv[])
 // ****************************************************************************
 // Method: Engine::ReverseLaunchViewer
 //
-// Purpose: 
+// Purpose:
 //   This function scans the command line arguments for -reverse_launch and if
 //   it is found then the engine launches the viewer.
 //
@@ -1368,7 +1378,7 @@ Engine::ExtractViewerArguments(int *argc, char **argv[])
 //
 // Returns:    True if we reverse launched the viewer; false otherwise.
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Apr  9 11:59:57 PDT 2009
@@ -1376,7 +1386,7 @@ Engine::ExtractViewerArguments(int *argc, char **argv[])
 // Modifications:
 //    Jeremy Meredith, Thu Feb 18 15:25:27 EST 2010
 //    Split HostProfile int MachineProfile and LaunchProfile.
-//   
+//
 //    Eric Brugger, Mon May  2 17:00:41 PDT 2011
 //    I added the ability to use a gateway machine when connecting to a
 //    remote host.
@@ -1395,7 +1405,7 @@ Engine::ReverseLaunchViewer(int *argc, char **argv[])
     (void)argc;
     (void)argv;
 
-    // If we're reverse launching and we're the UI process then we can 
+    // If we're reverse launching and we're the UI process then we can
     // launch the viewer.
     viewer = new ViewerRemoteProcess(GetVisItLauncher());
 #ifdef PARALLEL
@@ -1437,7 +1447,7 @@ Engine::ReverseLaunchViewer(int *argc, char **argv[])
 // ****************************************************************************
 // Function: ConnectViewer
 //
-// Purpose: 
+// Purpose:
 //   Connects to the viewer.
 //
 // Arguments:
@@ -1532,7 +1542,7 @@ Engine::ConnectViewer(int *argc, char **argv[])
 //   the serial event loop and its xfer object broadcasts the viewer's control
 //   data to the xfer objects on the other processors.
 //
-// Notes:      
+// Notes:
 //   The MPI_BCast call for the UI process happens in the MPIXfer
 //   object's process method. This was done so broadcasts are done
 //   only when there are complete messages. This avoids LOTS of
@@ -1545,7 +1555,7 @@ Engine::ConnectViewer(int *argc, char **argv[])
 // Modifications:
 //    Jeremy Meredith, Thu Sep 21 22:42:19 PDT 2000
 //    Added an extern for the appropriate socket to read from.
-//    Note that this is a small hack.   
+//    Note that this is a small hack.
 //
 //    Brad Whitlock, Thu Mar 15 14:32:33 PST 2001
 //    Rewrote it so the master process uses the new & improved serial
@@ -1570,8 +1580,8 @@ Engine::ConnectViewer(int *argc, char **argv[])
 //    but I needed a separate PAR_ProcessInput method that used the same
 //    buffer connection.
 //
-//    Kathleen Bonnell, Mon May  9 13:27:18 PDT 200 
-//    Changed the timeout to 10 minutes. 
+//    Kathleen Bonnell, Mon May  9 13:27:18 PDT 200
+//    Changed the timeout to 10 minutes.
 //
 //    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
 //    Changed MPI_COMM_WORLD to VISIT_MPI_COMM
@@ -1591,8 +1601,8 @@ Engine::ConnectViewer(int *argc, char **argv[])
 //
 //    Brad Whitlock, Fri Jun 19 09:05:31 PDT 2009
 //    I rewrote the code for receiving the command to other processors.
-//    Instead of receiving 1..N 1K size messages per command, with N being 
-//    more common, we now receive 1 size message and then we receive the 
+//    Instead of receiving 1..N 1K size messages per command, with N being
+//    more common, we now receive 1 size message and then we receive the
 //    entire command at once.
 //
 // ****************************************************************************
@@ -1658,7 +1668,7 @@ Engine::PAR_EventLoop()
 
             // We have work to do, so reset the alarm.
             idleTimeoutEnabled = false;
-            if (DebugStream::Level5()) 
+            if (DebugStream::Level5())
             {
                 debug5 << "Resetting execution timeout to " << executionTimeoutMins << " minutes." << endl;
             }
@@ -1703,7 +1713,7 @@ Engine::PAR_EventLoop()
 
 void
 Engine::PAR_ProcessInput()
-{    
+{
     if (PAR_UIProcess())
     {
         ProcessInput();
@@ -1764,8 +1774,8 @@ Engine::PAR_ProcessInput()
 //    Jeremy Meredith, Thu Jul 10 11:37:48 PDT 2003
 //    Made the engine an object.
 //
-//    Kathleen Bonnell, Mon May  9 13:27:18 PDT 200 
-//    Changed the timeout to 10 minutes. 
+//    Kathleen Bonnell, Mon May  9 13:27:18 PDT 200
+//    Changed the timeout to 10 minutes.
 //
 //    Sean Ahern, Wed Dec 12 12:04:15 EST 2007
 //    Made a distinction between the execution and the idle timeouts.
@@ -1785,14 +1795,14 @@ Engine::EventLoop()
 
     // The application's main loop
     while(xfer->GetInputConnection() != NULL &&
-          !quitRPC->GetQuit() && 
+          !quitRPC->GetQuit() &&
           noFatalExceptions)
     {
         // Reset the timeout alarm
         overrideTimeoutEnabled = false;
 
         idleTimeoutEnabled = true;
-        if (DebugStream::Level5()) 
+        if (DebugStream::Level5())
         {
             debug5 << "Resetting idle timeout to " << idleTimeoutMins << " minutes." << endl;
         }
@@ -1810,7 +1820,7 @@ Engine::EventLoop()
             {
                 // We've got some work to do.  Reset the alarm.
                 idleTimeoutEnabled = false;
-                if (DebugStream::Level5()) 
+                if (DebugStream::Level5())
                 {
                      debug5 << "Resetting execution timeout to " << executionTimeoutMins << " minutes." << endl;
                 }
@@ -1820,7 +1830,7 @@ Engine::EventLoop()
                 ProcessInput();
 
                 idleTimeoutEnabled = true;
-                if (DebugStream::Level5()) 
+                if (DebugStream::Level5())
                 {
                     debug5 << "Resetting idle timeout to " << idleTimeoutMins << " minutes." << endl;
                 }
@@ -1849,7 +1859,7 @@ Engine::EventLoop()
 //    input. After doing that, the xfer object is called upon to process its
 //    input.
 //
-//  Notes:      
+//  Notes:
 //
 //  Programmer: Brad Whitlock
 //  Creation:   Thu Mar 15 14:08:30 PST 2001
@@ -1865,8 +1875,8 @@ Engine::EventLoop()
 
 void
 Engine::ProcessInput()
-{    
-    // Try reading from the viewer.  
+{
+    // Try reading from the viewer.
     int amountRead = xfer->GetInputConnection()->Fill();
 
     // If we got input, process it. Otherwise, start counting errors.
@@ -1901,7 +1911,7 @@ Engine::ProcessInput()
 //
 //    Jeremy Meredith, Thu Jul 10 11:37:48 PDT 2003
 //    Made the engine an object.
-// 
+//
 //    Mark C. Miller, Thu Mar  4 12:07:04 PST 2004
 //    Told NetworkManager to dump rendered images
 //
@@ -1924,7 +1934,7 @@ Engine::ProcessInput()
 //    Made more fault tolerant to errors in specifying arg to -timeout option
 //
 //    Mark C. Miller, Wed Aug  2 19:58:44 PDT 2006
-//    Allowed '-timings' with an 's' too 
+//    Allowed '-timings' with an 's' too
 //
 //    Mark C. Miller, Wed Aug  9 19:40:30 PDT 2006
 //    Added "-stereo" option to support stereo in SR mode
@@ -1940,7 +1950,7 @@ Engine::ProcessInput()
 //    Added -info-dump option
 //
 //    Mark C. Miller, Thu Jun 14 10:26:37 PDT 2007
-//    Added CL argument to specify cycle number regular expression 
+//    Added CL argument to specify cycle number regular expression
 //
 //    Cyrus Harrison, Sat Aug 11 19:58:55 PDT 2007
 //    Added -vtk-debug option
@@ -1948,8 +1958,8 @@ Engine::ProcessInput()
 //    Dave Pugmire, Mon Dec 10 15:57:32 EST 2007
 //    Added -plugindir option
 //
-//    Kathleen Bonnell, Wed Jan  2 08:15:07 PST 2008 
-//    Fix -plugindir for Windows platform. 
+//    Kathleen Bonnell, Wed Jan  2 08:15:07 PST 2008
+//    Fix -plugindir for Windows platform.
 //
 //    Eric Brugger, Mon Jan  7 11:51:12 PST 2008
 //    Made to use putenv instead of setenv if on Windows or HAVE_SETENV is
@@ -1960,7 +1970,7 @@ Engine::ProcessInput()
 //    the individual plugin managers.
 //
 //    Cyrus Harrison, Wed Feb 13 11:06:03 PST 2008
-//    Change -dump and -info dump to set new avtDebugDumpOptions object. 
+//    Change -dump and -info dump to set new avtDebugDumpOptions object.
 //
 //    Hank Childs, Thu Feb 14 15:27:13 PST 2008
 //    Added -lb-stream.
@@ -2033,6 +2043,9 @@ Engine::ProcessInput()
 //    significant bottleneck. More info leading to this decision can
 //    be found here: https://github.com/visit-dav/visit/issues/5074
 //
+//    Kathleen Biagas, Wed Aug 17, 2022
+//    Incorporate ARSanderson's OSPRAY 2.8.0 work for VTK 9.
+//
 // ****************************************************************************
 
 void
@@ -2059,7 +2072,7 @@ Engine::ProcessCommandLine(int argc, char **argv)
             if(!StringHelpers::str_to_u_numeric<size_t>(argv[i+1],
                                                         &this->nDisplays))
             {
-                if (DebugStream::Level1()) 
+                if (DebugStream::Level1())
                 {
                     debug1 << "Could not parse '-n-gpus-per-node' argument "
                        << "'" << argv[i+1] << "'. "
@@ -2098,7 +2111,7 @@ Engine::ProcessCommandLine(int argc, char **argv)
                     timingsAllowed = false;
                 }
             }
- 
+
         }
         else if (strcmp(argv[i], "-withhold-timing-output") == 0)
             visitTimer->WithholdOutput(true);
@@ -2119,7 +2132,7 @@ Engine::ProcessCommandLine(int argc, char **argv)
                     {
                         if (!PAR_Rank())
                             cerr << "-timeout option will soon be deprecated. Use -idle-timeout or -exec-timeout." << endl;
-                        if (DebugStream::Level1()) 
+                        if (DebugStream::Level1())
                         {
                             debug1 << "-timeout option will soon be deprecated. Use -idle-timeout or -exec-timeout." << endl;
                         }
@@ -2134,7 +2147,7 @@ Engine::ProcessCommandLine(int argc, char **argv)
                 {
                     if (!PAR_Rank())
                         cerr << "\"" << argv[i] << "\" option ignored due to bad argument." << endl;
-                    if (DebugStream::Level1()) 
+                    if (DebugStream::Level1())
                     {
                         debug1 << "\"" << argv[i] << "\" option ignored due to bad argument." << endl;
                     }
@@ -2145,7 +2158,7 @@ Engine::ProcessCommandLine(int argc, char **argv)
             {
                 if (!PAR_Rank())
                     cerr << "\"" << argv[i] << "\" option ignored due to missing argument." << endl;
-                if (DebugStream::Level1()) 
+                if (DebugStream::Level1())
                 {
                     debug1 << "\"" << argv[i] << "\" option ignored due to missing argument." << endl;
                 }
@@ -2201,7 +2214,7 @@ Engine::ProcessCommandLine(int argc, char **argv)
         else if (strcmp(argv[i], "-dump") == 0)
         {
             avtDebugDumpOptions::EnableDump();
-            
+
             // check for optional -dump output directory
             if( i+1 < argc && argv[i+1][0] !='-')
             {
@@ -2220,7 +2233,7 @@ Engine::ProcessCommandLine(int argc, char **argv)
         {
             avtDebugDumpOptions::EnableDump();
             avtDebugDumpOptions::DisableDatasetDump();
-            
+
             // check for optional -dump output directory
             if( i+1 < argc && argv[i+1][0] !='-')
             {
@@ -2273,7 +2286,7 @@ Engine::ProcessCommandLine(int argc, char **argv)
         {
             pluginDir = argv[i+1];
             ++i;
-        } 
+        }
         else if (strcmp(argv[i], "-visithome") == 0 && (i+1) <argc )
         {
             Environment::set("VISITHOME", argv[i+1]);
@@ -2290,7 +2303,7 @@ Engine::ProcessCommandLine(int argc, char **argv)
             }
             else
             {
-              if (DebugStream::Level1()) 
+              if (DebugStream::Level1())
               {
                   debug1 << "Ignoring IceT request: currently incompatible with "
                             "parallel HW acceleration.\n";
@@ -2321,9 +2334,14 @@ Engine::ProcessCommandLine(int argc, char **argv)
 #ifdef VISIT_OSPRAY
         else if (strcmp(argv[i], "-ospray") == 0)
         {
-            std::cout << "Engine found OSPRay flag" << std::endl;
             debug5 << "Engine found OSPRay flag" << endl;
             avtCallback::SetOSPRayMode(true);
+        }
+#elif defined(HAVE_OSPRAY)
+        else if (strcmp(argv[i], "-ospray") == 0)
+        {
+            debug5 << "Engine found OSPRay flag" << endl;
+            avtCallback::SetUseOSPRay(true);
         }
 #endif
     }
@@ -2371,7 +2389,7 @@ Engine::AlarmHandler(int signal)
     Engine *e = Engine::GetEngine();
     if (!e->alarmEnabled)
         return;
-    
+
     if (e->overrideTimeoutEnabled == true)
     {
         cerr << PAR_Rank() << ": ENGINE exited due to an inactivity timeout of "
@@ -2407,7 +2425,7 @@ Engine::AlarmHandler(int signal)
 //
 //  Purpose: Issue warning message when memory has run out
 //
-//  Programmer: Mark C. Miller 
+//  Programmer: Mark C. Miller
 //  Creation:   Tue Jun 29 17:34:19 PDT 2004
 //
 //  Modifications:
@@ -2456,7 +2474,7 @@ Engine::WriteByteStreamToSocket(avtDataObjectString &do_str)
     int totalSize = do_str.GetTotalLength();
     int writeData = visitTimer->StartTimer();
     int nStrings = do_str.GetNStrings();
-    if (DebugStream::Level5()) 
+    if (DebugStream::Level5())
     {
         debug5 << "sending " << totalSize << " bytes to the viewer " << nStrings
                << " from strings." << endl;
@@ -2501,7 +2519,7 @@ Engine::WriteByteStreamToSocket(avtDataObjectString &do_str)
                 buff_cur += size;
             }
         }
-        
+
         // We have no more strings, so just write what we have.
         if ((i == (nStrings-1)) && (buff_cur > 0))
         {
@@ -2511,13 +2529,13 @@ Engine::WriteByteStreamToSocket(avtDataObjectString &do_str)
         }
     }
 
-    if (DebugStream::Level5()) 
+    if (DebugStream::Level5())
     {
         debug5 << "Number of actual direct writes = " << strings_written << endl;
     }
 
     char info[124];
-    snprintf(info, 124, "Writing %d bytes to socket", totalSize);     
+    snprintf(info, 124, "Writing %d bytes to socket", totalSize);
     visitTimer->StopTimer(writeData, info);
 }
 
@@ -2530,7 +2548,7 @@ Engine::WriteByteStreamToSocket(avtDataObjectString &do_str)
 //      Merges it into this processor's data object.
 //
 //  Programmer: Mark C. Miller (borrowed from avtDataObjectInformation)
-//  Creation:   June 25, 2009 
+//  Creation:   June 25, 2009
 //
 //  Modifications:
 //
@@ -2672,7 +2690,7 @@ ParallelMergeClonedWriterOutputs(avtDataObject_p dob,
         groupSize <<= 1;
         ntree++;
     }
-    
+
     // walk up the communication tree, swapping and merging data
     int n = 1;
     groupSize = 1;
@@ -2703,7 +2721,7 @@ ParallelMergeClonedWriterOutputs(avtDataObject_p dob,
             int percent = (int) (100. * float(n)/float(ntree));
             (*statusCB)(percent, "Synchronizing", statusCBData);
         }
- 
+
         n++;
         groupSize <<= 1;
     }
@@ -2716,7 +2734,7 @@ ParallelMergeClonedWriterOutputs(avtDataObject_p dob,
 // Purpose:
 //   Gathers vtkDataSets into a data object string to send to the viewer.
 //
-// Notes:      
+// Notes:
 //
 // Programmer: Jeremy Meredith
 // Creation:   September 5, 2000
@@ -2766,7 +2784,7 @@ ParallelMergeClonedWriterOutputs(avtDataObject_p dob,
 //    Jeremy Meredith, Tue Aug 14 14:45:12 PDT 2001
 //    Made the final progress update occur before the SendReply because
 //    SendStatus is for reporting *incomplete* progress.  If it got sent
-//    too soon, it overwrote the complete status in the viewer and 
+//    too soon, it overwrote the complete status in the viewer and
 //    the viewer never realized it was done.  Thus, it hung.
 //
 //    Hank Childs, Sun Sep 16 14:55:48 PDT 2001
@@ -2804,9 +2822,9 @@ ParallelMergeClonedWriterOutputs(avtDataObject_p dob,
 //    Detect if there was a failure in the pipeline and send a message to
 //    the viewer if so.
 //
-//    Kathleen Bonnell, Thu Jun 12 10:57:11 PDT 2003 
-//    Split timing code to time Serialization separately from write. 
-//    
+//    Kathleen Bonnell, Thu Jun 12 10:57:11 PDT 2003
+//    Split timing code to time Serialization separately from write.
+//
 //    Jeremy Meredith, Thu Jul 10 11:37:48 PDT 2003
 //    Made the engine an object.
 //
@@ -2858,7 +2876,7 @@ ParallelMergeClonedWriterOutputs(avtDataObject_p dob,
 //    account possible INT_MAX values in the sumands; a tree-based swap
 //    and merge algorithm to merge the data objects. An alternative to the
 //    tree-based approach is a gatherv to the root. However, a problem with
-//    the gatherv approach is that it cannot concurrently perform merges 
+//    the gatherv approach is that it cannot concurrently perform merges
 //    with communication. So, after the gatherv completes, the root proc
 //    winds up with COMM_SIZE strings that it still needs to a) convert
 //    back to data objects and b) merge together. Care was taken to ensure
@@ -2909,14 +2927,14 @@ ParallelMergeClonedWriterOutputs(avtDataObject_p dob,
 //    multiplied by cell count multiplier twice.
 //
 //    Cyrus Harrison, Wed May 24 11:04:49 PDT 2017
-//    Fixed a bug in Engine::GatherData() where the number of global cells 
+//    Fixed a bug in Engine::GatherData() where the number of global cells
 //    returned from a network was incorrect when SR is triggered. This broke
-//    SR triggering logic for subsequent plots. For example: in one instance, 
-//    b/c the various tasks have different global cell counts for the 
-//    networks, (including some with 0), when the next plot was drawn the 
-//    tasks would make different SR decisions -- some thinking SR had not been 
+//    SR triggering logic for subsequent plots. For example: in one instance,
+//    b/c the various tasks have different global cell counts for the
+//    networks, (including some with 0), when the next plot was drawn the
+//    tasks would make different SR decisions -- some thinking SR had not been
 //    triggered, some thinking it had -- which lead to a cascade mistmatched
-//    MPI calls. 
+//    MPI calls.
 //
 //    Eric Brugger, Mon May  6 12:17:21 PDT 2019
 //    I converted several integers to long longs to avoid arithmetic overflow
@@ -2927,9 +2945,9 @@ ParallelMergeClonedWriterOutputs(avtDataObject_p dob,
 bool
 Engine::GatherData(avtDataObjectWriter_p &writer,
     bool  useCompression,
-    bool  respondWithNull, 
-    int   scalableThreshold, 
-    int   currentTotalGlobalCellCount, 
+    bool  respondWithNull,
+    int   scalableThreshold,
+    int   currentTotalGlobalCellCount,
     float cellCountMultiplier,
     void (*statusCB)(int,const char*,void*),
     void  *statusCBData,
@@ -2965,7 +2983,7 @@ Engine::GatherData(avtDataObjectWriter_p &writer,
     // to receive the dummied-up data tree from each processor, regardless of
     // whether or not the scalable threshold has been exceeded. So, we capture
     // that fact in the 'sendDataAnyway' bool. Likewise, when scalableThreshold
-    // is -1, it means also to send the data anyway. 
+    // is -1, it means also to send the data anyway.
     //
     bool sendDataAnyway = respondWithNull || scalableThreshold==-1;
     bool thresholdExceeded = false;
@@ -2992,12 +3010,12 @@ Engine::GatherData(avtDataObjectWriter_p &writer,
         // output
         if (currentTotalGlobalCellCount == INT_MAX ||
             currentCellCount == INT_MAX ||
-            (currentTotalGlobalCellCount + currentCellCount 
+            (currentTotalGlobalCellCount + currentCellCount
                   > scalableThreshold))
         {
             debug5 << "exceeded scalable threshold of " << scalableThreshold
                    << endl;
-            thresholdExceeded = true; 
+            thresholdExceeded = true;
         }
 
         if (writer->MustMergeParallelStreams())
@@ -3069,7 +3087,7 @@ Engine::GatherData(avtDataObjectWriter_p &writer,
             if (thresholdExceeded && !sendDataAnyway)
             {
                 // dummy a null data object message to send to viewer
-                if (DebugStream::Level2()) 
+                if (DebugStream::Level2())
                 {
                     debug2 << "Sending back null dataset message.\n";
                 }
@@ -3083,7 +3101,7 @@ Engine::GatherData(avtDataObjectWriter_p &writer,
             networkwriter->SetUseCompression(useCompression);
             networkwriter->SetInput(ui_dob);
 
-            avtDataObjectString do_str;    
+            avtDataObjectString do_str;
             networkwriter->Write(do_str);
 
             if(statusCB != NULL)
@@ -3097,7 +3115,7 @@ Engine::GatherData(avtDataObjectWriter_p &writer,
         }
         else
         {
-            if (DebugStream::Level1()) 
+            if (DebugStream::Level1())
             {
                 debug1 << "Sending error: " << v.GetErrorMessage() << std::endl;
             }
@@ -3234,14 +3252,14 @@ Engine::GatherData(avtDataObjectWriter_p &writer,
 // ****************************************************************************
 // Method: Engine::SendKeepAliveReply
 //
-// Purpose: 
+// Purpose:
 //   Sends a small string to the client over the engine's data socket.
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Mar 12 11:32:25 PDT 2004
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -3354,7 +3372,7 @@ Engine::EngineAbortCallbackParallel(void *data, bool informSlaves)
 
     bool abort = xfer->ReadPendingMessages();
 
-#ifdef PARALLEL 
+#ifdef PARALLEL
     // If needed, tell the non-ui processes to abort as well
     if (abort && informSlaves)
         xfer->SendInterruption(INTERRUPT_MESSAGE_TAG);
@@ -3435,7 +3453,7 @@ Engine::EngineAbortCallback(void *data)
 //    a ton of stages, then we should allow for some stages to not be reported.
 //
 //    Hank Childs, Thu Jan 31 16:58:34 PST 2008
-//    Make sure all percentage completes are correct. 
+//    Make sure all percentage completes are correct.
 //
 //    Hank Childs, Fri Feb  1 09:03:22 PST 2008
 //    Avoid a divide by zero.
@@ -3464,7 +3482,7 @@ Engine::EngineUpdateProgressCallback(void *data, const char *type, const char *d
             // Starting the new stage
             rpc->SendStatus(0,
                             rpc->GetCurStageNum(),
-                            desc ? desc : type,  
+                            desc ? desc : type,
                             rpc->GetMaxStageNum());
         }
         else
@@ -3544,7 +3562,7 @@ Engine::EngineInitializeProgressCallback(void *data, int nStages)
     }
     else
     {
-        if (DebugStream::Level1()) 
+        if (DebugStream::Level1())
         {
             debug1 << "ERROR: EngineInitializeProgressCallback called "
                    << "with nStages == 0" << endl;
@@ -3599,7 +3617,7 @@ Engine::EngineWarningCallback(void *data, const char *msg)
 // ****************************************************************************
 // Function: ResetTimeout
 //
-// Purpose: 
+// Purpose:
 //   Resets the engine timeout.
 //
 // Arguments:
@@ -3620,7 +3638,7 @@ Engine::ResetTimeout(int timeout)
     alarmEnabled = (timeout > 0);
 #if !defined(_WIN32)
     alarm(timeout);
-#endif    
+#endif
 }
 
 // ****************************************************************************
@@ -3658,7 +3676,7 @@ Engine::PopulateSimulationMetaData(const std::string &db,
     format   = fmt;
 
     // Get the database
-    ref_ptr<avtDatabase> database = 
+    ref_ptr<avtDatabase> database =
                  netmgr->GetDBFromCache(filename,0,format.c_str())->GetDB();
 
     // Get the metadata
@@ -3727,7 +3745,7 @@ Engine::SimulationTimeStepChanged()
         return;
 
     // Get the database
-    ref_ptr<avtDatabase> database = 
+    ref_ptr<avtDatabase> database =
                  netmgr->GetDBFromCache(filename,0,format.c_str())->GetDB();
 
     // Clear the old metadata and problem-sized data
@@ -3744,7 +3762,7 @@ Engine::SimulationTimeStepChanged()
 // ****************************************************************************
 // Method: Engine::SimulationInitiateCommand
 //
-// Purpose: 
+// Purpose:
 //   Tells the viewer to initiate a command.
 //
 // Arguments:
@@ -3787,7 +3805,7 @@ Engine::SimulationInitiateCommand(const std::string &command)
 // ****************************************************************************
 // Method: Engine::Message
 //
-// Purpose: 
+// Purpose:
 //   This method lets the engine send a message back to the viewer.
 //
 // Arguments:
@@ -3797,7 +3815,7 @@ Engine::SimulationInitiateCommand(const std::string &command)
 // Creation:   Thu Feb 26 13:59:47 PST 2009
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -3809,7 +3827,7 @@ Engine::Message(const std::string &msg)
 // ****************************************************************************
 // Method: Engine::Error
 //
-// Purpose: 
+// Purpose:
 //   This method lets the engine send an error message back to the viewer.
 //
 // Arguments:
@@ -3819,7 +3837,7 @@ Engine::Message(const std::string &msg)
 // Creation:   Thu Feb 26 13:59:47 PST 2009
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -3906,15 +3924,15 @@ Engine::ExecuteSimulationCommand(const std::string &command,
 //
 //  Purpose: Gets unix process attributes
 //
-//  Programmer:  Mark C. Miller 
-//  Creation:    March 8, 2005 
+//  Programmer:  Mark C. Miller
+//  Creation:    March 8, 2005
 //
 //  Modifications:
 //    Brad Whitlock, Tue May 10 15:52:16 PST 2005
 //    Fixed for win32.
 //
 //    Mark C. Miller, Wed Aug  2 19:58:44 PDT 2006
-//    Removed extraneous cerr statement 
+//    Removed extraneous cerr statement
 //
 //    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
 //    Changed MPI_COMM_WORLD to VISIT_MPI_COMM
@@ -3933,8 +3951,8 @@ Engine::ExecuteSimulationCommand(const std::string &command,
 ProcessAttributes *
 Engine::GetProcessAttributes()
 {
-    // Only allocate procAtts once.  
-    if (procAtts == NULL) 
+    // Only allocate procAtts once.
+    if (procAtts == NULL)
     {
         procAtts = new ProcessAttributes;
     }
@@ -3949,7 +3967,7 @@ Engine::GetProcessAttributes()
         stringVector hosts;
         doubleVector times;
         double myTime = TOA_THIS_LINE;
-  
+
 #if defined(_WIN32)
         int myPid = _getpid();
         int myPpid = -1;
@@ -3961,7 +3979,7 @@ Engine::GetProcessAttributes()
 #ifdef PARALLEL
         char myHost[2*MPI_MAX_PROCESSOR_NAME];
         int strLen;
-        MPI_Get_processor_name(myHost, &strLen); 
+        MPI_Get_processor_name(myHost, &strLen);
 
         bool isParallel = true;
 
@@ -4006,7 +4024,7 @@ Engine::GetProcessAttributes()
                 ppids.push_back(allPpids[i]);
                 hosts.push_back(&allHosts[i*sizeof(myHost)]);
                 memusage.push_back(allMemusage[i]);
-                times.push_back(allTimes[i]);    
+                times.push_back(allTimes[i]);
             }
 
             delete [] allPids;
@@ -4050,20 +4068,20 @@ Engine::GetProcessAttributes()
 // ****************************************************************************
 // Method: Engine::GetEngineProperties
 //
-// Purpose: 
+// Purpose:
 //   Return engine properties.
 //
 // Arguments:
 //
-// Returns:    
+// Returns:
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Oct 10 12:01:23 PDT 2011
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 EngineProperties
@@ -4215,7 +4233,7 @@ Engine::SetupDisplay()
     }
     else
     {
-        if (DebugStream::Level1()) 
+        if (DebugStream::Level1())
         {
             debug1 << "Display initialization failed.  Rendering in this state "
                    << "has undefined results ..." << std::endl;
@@ -4227,12 +4245,12 @@ Engine::SetupDisplay()
 //  Function: ResetEngineTimeout
 //
 //  Purpose:
-//      A static function that calls ResetTimeout.  This is meant to be a 
+//      A static function that calls ResetTimeout.  This is meant to be a
 //      callback for libraries.
 //
 //  Programmer: Hank Childs
 //  Creation:   September 5, 2006
-//  
+//
 //  Sean Ahern, Wed Dec 12 12:08:38 EST 2007
 //  Added a message to say what timeout is being affected.
 //
@@ -4245,7 +4263,7 @@ ResetEngineTimeout(void *p, int secs)
     e->SetOverrideTimeout(secs*60);
     if (e->IsIdleTimeoutEnabled() == false)
     {
-        if (DebugStream::Level5()) 
+        if (DebugStream::Level5())
         {
             debug5 << "ResetEngineTimeout: Overriding timeout to " << secs << " seconds." << endl;
         }
@@ -4264,21 +4282,21 @@ ResetEngineTimeout(void *p, int secs)
 // ****************************************************************************
 // Method: Engine::LaunchProcess
 //
-// Purpose: 
+// Purpose:
 //   Launch a process on rank 0.
 //
 // Arguments:
 //   args : The program arguments.
 //
-// Returns:    
+// Returns:
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue Nov 29 11:37:35 PST 2011
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void

@@ -109,3 +109,67 @@ AttributeSubject::TypeName() const
     return "AttributeSubject";
 }
 
+
+// ****************************************************************************
+// Method: AttributeSubject::DeprecationMessage
+//
+// Purpose:
+//   Constructs a deprecation message from the field and version.
+//
+// Arguments:
+//   oldField   The field being deprecated.
+//   version    The version the field will no longer be supported.
+//
+// Returns:    The deprecation message.
+//
+// Programmer: Kathleen Biagas
+// Creation:   April 26, 2022
+//
+// Modifications:
+//
+// ****************************************************************************
+
+std::string
+AttributeSubject::DeprecationMessage(const std::string &oldField,
+                                     const std::string &version) const
+{
+    return TypeName() + std::string("::") + oldField +
+           std::string(" is deprecated and will be removed in version ") +
+           version +
+           std::string(". Please update your session and/or config files.");
+}
+
+
+// ****************************************************************************
+// Method: AttributeSubject::DeprecationMessage
+//
+// Purpose:
+//   Constructs a deprecation message from the field and version.
+//
+// Arguments:
+//   oldField   The field being deprecated.
+//   newField   The new field that replaces the old.
+//   version    The version the field will no longer be supported.
+//
+// Returns:    The deprection message.
+//
+// Programmer: Kathleen Biagas
+// Creation:   April 26, 2022
+//
+// Modifications:
+//
+// ****************************************************************************
+
+std::string
+AttributeSubject::DeprecationMessage(const std::string &oldField,
+                                     const std::string &newField,
+                                     const std::string &version) const
+{
+    return TypeName() + std::string("::") + oldField +
+           std::string(" is deprecated and will be removed in version ") +
+           version +
+           std::string(". Please use ")  + newField +
+           std::string(" instead.") +
+           std::string(" Please update your session and/or config files.");
+}
+

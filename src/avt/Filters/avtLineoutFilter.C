@@ -22,6 +22,7 @@
 #include <vtkPolyData.h>
 #include <vtkRectilinearGrid.h>
 #include <vtkStreamingDemandDrivenPipeline.h>
+#include <vtkUnsignedCharArray.h>
 #include <vtkUnsignedIntArray.h>
 #include <vtkVisItUtility.h>
 

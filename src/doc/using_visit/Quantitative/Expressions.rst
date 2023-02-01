@@ -137,6 +137,8 @@ for any other expressions that use the deleted expression. If a plot uses
 an expression with unresolved references, VisIt_ will not be able to generate
 it until the user resolves the reference.
 
+.. _Expression_grammar:
+
 Expression grammar
 ~~~~~~~~~~~~~~~~~~
 
@@ -526,6 +528,12 @@ Arc Tangent Function (``atan()``) : ``atan(expr0)``
     Creates a new expression which is everywhere the arc tangent of its
     argument. The returned value is in *radians*.
 
+.. _Arc_Tangent_2_Expression_Function:
+
+Arc Tangent 2 Function (``atan2()``) : ``atan2(expr0,expr1)``
+    Creates a new expression which is everywhere the arc tangent of its
+    arguments. The returned value is in *radians*.
+
 .. _Cosine_Expression_Function:
 
 Cosine Function (``cos()``) : ``cos(expr0)``
@@ -582,20 +590,14 @@ Vector and Color Expressions
 .. _Vector_Compose_Expression_Operator:
 
 Vector Compose Operator (``{}``) : ``{expr0, expr1, ... , exprN-1}``
-    Curly braces, *{}* are used to create a new expression of higher tensor rank
-    from 2 or more expression of lower tensor rank.  A common use is to compose 
-    several tensor rank 0 expressions (e.g. scalar expressions) into a tensor
-    rank 1 expression (e.g. a vector expression). The component expressions,
-    ``expr0``, ``expr1``, etc.  must all be the same tensor rank and expression
-    type. For example, they must all be rank 0 (e.g. *scalar* expressions) or
-    they must all be rank 1 (e.g. *vector*) expressions of the same number of
-    components. If they are all scalars, the result is a tensor of rank 1 (e.g.
-    a vector). If they are all vectors, the result is a tensor of rank 2 (e.g.
-    a tensor). The vector compose operator is also used to compose array
-    expressions.
-
-    For example, the expression ``{u, v, w}`` takes three scalar mesh variables
-    named ``u``, ``v`` and ``w`` and creates a vector mesh variable.
+    Curly braces, ``{}``, are used to create a vector from scalars or a tensor from vectors.
+    A common use is to compose 3 scalar expressions to form a vector expression as in ``{a, b, c}``.
+    For 2D data, the 3rd component must still be provided and must be zero as in ``{a,b,0}``.
+    The component expressions, ``expr0``, ``expr1``, etc.  must all be the same type (e.g. scalar, vector) and must all be the same centering.
+    Scalars compose into (row) vectors and (row) vectors compose into tensors, row-by-row.
+    
+    If constant values (e.g. ``1`` or ``0``) are needed in composing a vector expression, then use the expression functions designed to create constant expressions such as ``nodal_constant(<mesh>,value)`` (for node-centered constant expressions) or ``zonal_constant(<mesh>,value)`` (for zone-centered consntant expressions).
+    Using the constant values themselves (e.g. ``0`` or ``1``) directly in the compose operator does not always work as expected depending on VisIt_'s ability to infer the intended *mesh* and/or *centering*.
     
 .. _Vector_Component_Expression_Operator:
 
@@ -706,6 +708,11 @@ IJ_Gradient Function: ``ij_gradient()`` :  ``ij_gradient(expr0)``
 IJK_Gradient Function: ``ijk_gradient()`` :  ``ijk_gradient(expr0)``
     No description available.
 
+.. _Laplacian_Expression_Function:
+
+Laplacian Function: ``laplacian()`` : ``laplacian(expr0)``
+    No description available.
+
 .. _Surface_Normal_Expression_Function:
 
 Surface Normal Function: ``surface_normal()`` :  ``surface_normal(expr0)``
@@ -744,6 +751,18 @@ Cell Edge Normal Function: ``cell_edge_normal()`` :  ``cell_edge_normal(expr0)``
 
 Tensor Expressions
 """"""""""""""""""
+
+Tensor expressions can be constructed either by direct *composition* (e.g. using the compose operator, ``{}``) or by using a tensor expression function.
+
+When *composing* tensors with the compose operator, ``{}``, 9 scalar (e.g. ``{{xx,xy,xz},{yx,yy,yz},{zx,zy,zz}}`` or 3 vector expressions (e.g. ``{r1,r2,r3}`` are typically used.
+However, tensors can be composed from combinations of these as well (e.g. ``{r1,{a,b,c},r3}``).
+Note that in the preceding example expressions, the compose operator is used in a nested manner twice.
+The inner instances compose sets of scalars into row vectors and the outer instance composes the row vectors into the final tensor.
+Tensor expressions in 2D still require 9 scalar components but those in the 3rd row and column must be all zeros.
+Symmetric tensor expressions also still require 9 scalar components but must also exhibit symmetry.
+
+If constant values (e.g. ``1`` or ``0``) are needed in composing a tensor expression, then use the expression functions designed to create constant expressions such as ``nodal_constant(<mesh>,value)`` (for node-centered constant expressions) or ``zonal_constant(<mesh>,value)`` (for zone-centered consntant expressions).
+Using the constant values themselves (e.g. ``0`` or ``1``) directly in the compose operator does not always work as expected depending on VisIt_'s ability to infer the intended *mesh* and/or *centering*.
 
 Often, using the tensor expression functions described here necessitates a detailed understanding of the actual numerical calculations VisIt_ uses in evaluating the expressions.
 Therefore, in many cases here, we provide collapsible sections that can be expanded to show the actual C++ source code VisIt_ is compiled with to compute a given tensor expression.
@@ -1035,14 +1054,12 @@ Material Error Function: ``materror()`` : ``materror(<Mat>,[Const,Const...])``
     as an integer. If multiple materials are to be selected from the 
     *material variable*, enclose them in square brackets as a list.
 
-    Examples...
+    Examples... ::
 
-::
-
-    materror(materials, 1)
-    materror(materials, [1,3])
-    materror(materials, "copper")
-    materror(materials, ["copper", "steel"])
+     materror(materials, 1)
+     materror(materials, [1,3])
+     materror(materials, "copper")
+     materror(materials, ["copper", "steel"])
 
 .. _Matvf_Expression_Function:
 
@@ -1053,14 +1070,12 @@ Material Volume Fractions Function: ``matvf()`` : ``matvf(<Mat>,[Const,Const,...
     the ``Const`` argument(s) identify one or more materials within the
     *material variable*. 
     
-    Examples...
+    Examples... ::
 
-::
-
-    matvf(materials, 1)
-    matvf(materials, [1,3])
-    matvf(materials, "copper")
-    matvf(materials, ["copper", "steel"])
+     matvf(materials, 1)
+     matvf(materials, [1,3])
+     matvf(materials, "copper")
+     matvf(materials, ["copper", "steel"])
 
 .. _NMats_Expression_Function:
 
@@ -1078,13 +1093,11 @@ Specmf Function: ``specmf()`` : ``specmf(<Spec>,<MConst>,[Const,Const,...])``
     The ``<Const>`` argument(s) identify which species within the
     *species variable* to select.
 
-    Examples:
+    Examples: ::
 
-::
-
-    specmf(species, 1, 1)
-    specmf(species, "copper", 1)
-    specmf(species, "copper", [1,3])
+     specmf(species, 1, 1)
+     specmf(species, "copper", 1)
+     specmf(species, "copper", [1,3])
 
 .. _Value_For_Material_Expression_Function:
 
@@ -1187,6 +1200,20 @@ Global Nodeid Function: ``global_nodeid()`` : ``global_nodeid(expr0)``
     node/vertex/point is the *global* index of a node, as specified by
     the data producer.
 
+.. _Ghost_Zoneid_Expression_Function:
+
+Ghost Zoneid Function: ``ghost_zoneid()`` : ``ghost_zoneid(<Mesh>)``
+    Returns the ghost zone id of each zone in the mesh. The ghost zone id could be any combination of the following: ::
+
+     DUPLICATED_ZONE_INTERNAL_TO_PROBLEM = 0,
+     ENHANCED_CONNECTIVITY_ZONE = 1,
+     REDUCED_CONNECTIVITY_ZONE = 2,
+     REFINED_ZONE_IN_AMR_GRID = 3,
+     ZONE_EXTERIOR_TO_PROBLEM = 4,
+     ZONE_NOT_APPLICABLE_TO_PROBLEM = 5
+
+    where each flag represents a bit shift by the specified number of bits. So if a zone is not a ghost zone, the value returned would be 0, while if it was a ``DUPLICATED_ZONE_INTERNAL_TO_PROBLEM`` and a ``REFINED_ZONE_IN_AMR_GRID``, the value returned would be 1001 in binary, or 9 in decimal.
+
 .. _Volume_Function:
 
 Volume Function: ``volume()`` : ``volume(<Mesh>)``
@@ -1246,12 +1273,12 @@ Neighbor Function: ``neighbor()`` : ``neighbor(<Mesh>)``
 .. _Node_Degree_Function:
 
 Node Degree Function: ``node_degree()`` : ``node_degree(<Mesh>)``
-    See the Verdict Manual
+    Return a *node* centered, integer valued variable which indicates the *number* of mesh zones/cells that share each node.
 
 .. _Degree_Expression_Function:
 
-degree Function: ``degree()`` : ``degree(expr0)``
-    No description available.
+Degree Function: ``degree()`` : ``degree(expr0)``
+    Return a *node* centered, integer valued variable which indicates the *number* of mesh edges incident to each node.
 
 .. _Aspect_Function:
 
@@ -1436,11 +1463,11 @@ CMFE function and its friend, the connectivity-based CMFE function,
 needed when working with variables from *different* meshes in the *same*
 expression. *CMFE* is an abbreviation for *cross-mesh field evaluation*.
 
-The syntax for specifying CMFE expressions can be complicated. Therefore, the
-GUI supports a *wizard* to help create them. See the
-:ref:`Data-Level Comparisons Wizard <DataLevelComparisonsWizard>` for more
-information. Here, we describe the details of creating CMFE expressions
-manually.
+The syntax for specifying CMFE expressions can be complicated.
+Therefore, the GUI supports a *wizard* to help create them.
+See the :ref:`Data-Level Comparisons Wizard <DataLevelComparisonsWizard>` for more information.
+It sometimes makes sense to use the wizard to create an *initial* CMFE expression and then modify it manually, often to adjust the state indexing.
+Here, we describe the details of creating CMFE expressions manually.
 
 All of the comparison expressions involve the concepts of a *donor variable*
 and a *target mesh*. The donor variable (e.g. *pressure*) is the variable to
@@ -1552,9 +1579,7 @@ Position-Based CMFE Function: ``pos_cmfe()`` : ``pos_cmfe(<Donor Variable>,<Targ
    the expression properly identifies the different states of the donor
    variable instead of always mapping a fixed state.
 
-   Examples...
-   
-::
+   Examples... ::
 
     # Case A: Donor variable, "pressure" in same database as mesh, "ucdmesh"
     # Note that due to a limitation in Expression parsing, the '[0]id:' is
@@ -1917,11 +1942,6 @@ agrad Function: ``agrad()`` : ``agrad(expr0)``
 key aggregate Function: ``key_aggregate()`` : ``key_aggregate(expr0)``
     No description available.
 
-.. _Laplacian_Expression_Function:
-
-Laplacian Function: ``laplacian()`` : ``laplacian(expr0)``
-    No description available.
-
 .. _Rectilinear_Laplacian_Expression_Function:
 
 rectilinear Laplacian Function: ``rectilinear_laplacian()`` : ``rectilinear_laplacian(expr0)``
@@ -1936,6 +1956,24 @@ conn components Function: ``conn_components()`` : ``conn_components(expr0)``
 
 resrad Function: ``resrad()`` : ``resrad(expr0)``
     No description available.
+
+.. _CrackWidth_Expression_Function:
+
+crack width Function: ``crack_width()`` : ``crack_width(crack_num, <crack1_dir>, <crack2_dir>, <crack3_dir>, <strain_tensor>, volume2(<mesh_name>))``
+
+    Calculates crack width using the following formula::
+
+        crackwidth = L * (1 - (exp(-delta))
+        where:
+          L = ZoneVol / (Area perpendicular to crack_dir)
+            find Area by slicing the cell by plane with origin == cell center
+            and Normal == crack_dir.  Take area of that slice.
+         
+        delta =
+            T11 for crack dir1 = component 0 of strain_tensor
+            T22 for crack dir2 = component 4 of strain_tensor
+            T33 for crack dir3 = component 8 of strain_tensor
+
 
 Time Iteration Expressions
 """"""""""""""""""""""""""
@@ -2142,10 +2180,7 @@ smallest neighbor Function: ``smallest_neighbor()`` : ``smallest_neighbor(expr0)
 neighbor average Function: ``neighbor_average()`` : ``neighbor_average(expr0)``
     No description available.
 
-.. _Displacement_Expression_Function:
-
-Displacement Function: ``displacement()`` : ``displacement(expr0)``
-    No description available.
+.. _Expression_Compatibility_Gotchas:
 
 Expression Compatibility Gotchas
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -2181,9 +2216,7 @@ for the result. If this is not the desired result, the
 :ref:`recenter() <Recenter_Expression_Function>` expression function should be
 used, where appropriate, to adjust centering of some of the
 terms in the expression.  Note that ordering of operations will probably be
-important. For example
-
-::
+important. For example ::
 
     node_var + recenter(zone_var)
     recenter(zone_var + node_var)
@@ -2215,6 +2248,15 @@ elsewhere.
 Just as for centering, we have two options when dealing with variables from
 two different meshes. Each of which involves *mapping* one of the variables
 onto the other variable's mesh using one of the CMFE expression functions.
+
+Deferring expression evaluation
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Expressions are generally evaluated before any operators are applied to the data.
+In cases where an expression involves the *output* of an operator, or the operator behaves in such a way as to change the outcome of an expression,  then it is necessary to *defer*  evaluation of such an expression until *after* operators have been applied.
+The :ref:`DeferExpression operator` is designed for this purpose.
+It will cause expressions in its list to be evaluated at the time of it's own execution in the pipeline.
+
 
 Automatic expressions
 ~~~~~~~~~~~~~~~~~~~~~

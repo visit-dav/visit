@@ -36,7 +36,7 @@ struct TruecolorAttributesObject
 //
 static PyObject *NewTruecolorAttributes(int);
 std::string
-PyTruecolorAttributes_ToString(const TruecolorAttributes *atts, const char *prefix)
+PyTruecolorAttributes_ToString(const TruecolorAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -258,7 +258,7 @@ static int
 TruecolorAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     TruecolorAttributesObject *obj = (TruecolorAttributesObject *)v;
-    fprintf(fp, "%s", PyTruecolorAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyTruecolorAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -266,7 +266,7 @@ PyObject *
 TruecolorAttributes_str(PyObject *v)
 {
     TruecolorAttributesObject *obj = (TruecolorAttributesObject *)v;
-    return PyString_FromString(PyTruecolorAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyTruecolorAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -418,7 +418,7 @@ PyTruecolorAttributes_GetLogString()
 {
     std::string s("TruecolorAtts = TruecolorAttributes()\n");
     if(currentAtts != 0)
-        s += PyTruecolorAttributes_ToString(currentAtts, "TruecolorAtts.");
+        s += PyTruecolorAttributes_ToString(currentAtts, "TruecolorAtts.", true);
     return s;
 }
 
@@ -431,7 +431,7 @@ PyTruecolorAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("TruecolorAtts = TruecolorAttributes()\n");
-        s += PyTruecolorAttributes_ToString(currentAtts, "TruecolorAtts.");
+        s += PyTruecolorAttributes_ToString(currentAtts, "TruecolorAtts.", true);
         cb(s);
     }
 }

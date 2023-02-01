@@ -15,6 +15,11 @@
 #   Kathleen Biagas, Tue Jan 21 10:46:31 PST 2020
 #   Set VTKm_INCLUDE_DIRS.
 #
+#   Eric Brugger, Thu 21 Jul 2022 06:39:36 PM EDT
+#   Modified the logic to install the shared VTK-h libraries in the case
+#   where VTK-h was built with RELWITHDEBINFO, which is the case when spack
+#   builds VTK-h. Modified the logic to not install static libraries.
+#
 #****************************************************************************/
 
 IF (DEFINED VISIT_VTKH_DIR)
@@ -42,17 +47,19 @@ IF (DEFINED VISIT_VTKH_DIR)
                          "${VTKM_DIR}/include/vtkm-${VTKm_VERSION_MAJOR}.${VTKm_VERSION_MINOR}/vtkm/thirdparty/taotuple"
        CACHE STRING "VTKm include directories")
 
-   include(${VISIT_SOURCE_DIR}/CMake/ThirdPartyInstallLibrary.cmake)
    # use the vtkh and vtkm CMake properties to find locations and
    # all interface link dependencies
    function(get_lib_loc_and_install _lib)
        get_target_property(ttype ${_lib} TYPE)
-       if (ttype STREQUAL "INTERFACE_LIBRARY")
+       if (ttype STREQUAL "INTERFACE_LIBRARY" OR ttype STREQUAL "STATIC_LIBRARY")
            return()
        endif()
        get_target_property(i_loc ${_lib} IMPORTED_LOCATION)
        if (NOT i_loc)
          get_target_property(i_loc ${_lib} IMPORTED_LOCATION_RELEASE)
+       endif()
+       if (NOT i_loc)
+         get_target_property(i_loc ${_lib} IMPORTED_LOCATION_RELWITHDEBINFO)
        endif()
        if(i_loc)
            THIRD_PARTY_INSTALL_LIBRARY(${i_loc})
@@ -87,3 +94,4 @@ IF (DEFINED VISIT_VTKH_DIR)
        THIRD_PARTY_INSTALL_INCLUDE(vtkm ${VTKM_DIR}/include)
    endif()
 ENDIF()
+

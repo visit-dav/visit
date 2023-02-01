@@ -36,12 +36,12 @@ struct avtCurveMetaDataObject
 //
 static PyObject *NewavtCurveMetaData(int);
 std::string
-PyavtCurveMetaData_ToString(const avtCurveMetaData *atts, const char *prefix)
+PyavtCurveMetaData_ToString(const avtCurveMetaData *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
 
-    str = PyavtVarMetaData_ToString(atts, prefix);
+    str = PyavtVarMetaData_ToString(atts, prefix, forLogging);
 
     snprintf(tmpStr, 1000, "%sxUnits = \"%s\"\n", prefix, atts->xUnits.c_str());
     str += tmpStr;
@@ -645,7 +645,7 @@ static int
 avtCurveMetaData_print(PyObject *v, FILE *fp, int flags)
 {
     avtCurveMetaDataObject *obj = (avtCurveMetaDataObject *)v;
-    fprintf(fp, "%s", PyavtCurveMetaData_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyavtCurveMetaData_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -653,7 +653,7 @@ PyObject *
 avtCurveMetaData_str(PyObject *v)
 {
     avtCurveMetaDataObject *obj = (avtCurveMetaDataObject *)v;
-    return PyString_FromString(PyavtCurveMetaData_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyavtCurveMetaData_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -805,7 +805,7 @@ PyavtCurveMetaData_GetLogString()
 {
     std::string s("avtCurveMetaData = avtCurveMetaData()\n");
     if(currentAtts != 0)
-        s += PyavtCurveMetaData_ToString(currentAtts, "avtCurveMetaData.");
+        s += PyavtCurveMetaData_ToString(currentAtts, "avtCurveMetaData.", true);
     return s;
 }
 
@@ -818,7 +818,7 @@ PyavtCurveMetaData_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("avtCurveMetaData = avtCurveMetaData()\n");
-        s += PyavtCurveMetaData_ToString(currentAtts, "avtCurveMetaData.");
+        s += PyavtCurveMetaData_ToString(currentAtts, "avtCurveMetaData.", true);
         cb(s);
     }
 }

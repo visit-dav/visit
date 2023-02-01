@@ -3964,9 +3964,8 @@ avtDatabaseMetaData::GetSEGWarningString() const
         "except to override this behavior and suffer any GUI performance issues.\n"
         "Unfortunately, if you are running in client-server mode, you will have to\n"
         "take action to set this enviornment variable on both the server and client\n"
-        "machines. This will only be necessary in VisIt version 2.12.3. An entirely\n"
-        "different mechanism for controlling this behavior will be introduced in 2.13.",
-         GetTotalVarCount(), GetSEGEnvVarName());
+        "machines.",
+        GetTotalVarCount(), GetSEGEnvVarName());
     return msg;
 }
 

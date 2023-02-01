@@ -12,20 +12,18 @@
 #
 #****************************************************************************/
 
-# Use the H5PART_DIR hint from the config-site .cmake file 
+# Use the H5PART_DIR hint from the config-site .cmake file
 
-INCLUDE(${VISIT_SOURCE_DIR}/CMake/SetUpThirdParty.cmake)
-
-SET_UP_THIRD_PARTY(NETCDF lib include netcdf)
+SET_UP_THIRD_PARTY(NETCDF LIBS netcdf)
 
 if (WIN32)
     if (MSVC_VERSION LESS "1910")
       set(NETCDF_CXX_DIR ${NETCDF_DIR})
-      SET_UP_THIRD_PARTY(NETCDF_CXX lib include netcdf_c++)
+      SET_UP_THIRD_PARTY(NETCDF_CXX LIBS netcdf_c++)
     endif()
     set(NETCDF_WIN32_DEFINES "DLL_NETCDF")
 else()
     set(NETCDF_CXX_DIR ${NETCDF_DIR})
-    SET_UP_THIRD_PARTY(NETCDF_CXX lib include netcdf_c++)
+    SET_UP_THIRD_PARTY(NETCDF_CXX LIBS netcdf_c++)
 endif()
 

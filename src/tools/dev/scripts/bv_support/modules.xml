@@ -3,7 +3,6 @@
         <!-- required libraries -->
         <required>
             <lib name="cmake"/> <!-- cmake is here -->
-            <lib name="openssl"/>
             <lib name="python"/>
             <lib name="vtk"/> <!-- <lib name="vtk" reqdeps="cmake vtk" optdeps="qt mesagl"/> -->
             <lib name="qt"/>
@@ -16,6 +15,7 @@
             <lib name="adios"/>
             <lib name="adios2"/>
             <lib name="advio"/>
+            <lib name="blosc"/>
             <lib name="boost"/>
             <lib name="boxlib"/>
             <lib name="cfitsio"/>
@@ -26,7 +26,6 @@
             <lib name="gdal"/>
             <lib name="glu"/>
             <lib name="h5part"/>
-            <lib name="hdf4"/>
             <lib name="hdf5"/>
             <lib name="icet"/>
             <lib name="ispc"/>
@@ -42,7 +41,6 @@
             <lib name="openexr"/>
             <lib name="osmesa"/>
             <lib name="ospray"/>
-            <lib name="p7zip"/>
             <lib name="pidx"/>
             <lib name="pyside"/>
             <lib name="silo"/>
@@ -58,7 +56,6 @@
         <!-- thirdparty flag -->
         <group name="required" comment="All required libraries" enabled="yes">
             <lib name="cmake"/> <!-- cmake is here -->
-            <lib name="openssl"/>
             <lib name="python"/>
             <lib name="vtk"/> <!-- <lib name="vtk" reqdeps="cmake vtk" optdeps="qt mesagl"/> -->
             <lib name="qt"/>
@@ -70,6 +67,7 @@
             <lib name="adios"/>
             <lib name="adios2"/>
             <lib name="advio"/>
+            <lib name="blosc"/>
             <lib name="boost"/>
             <lib name="boxlib"/>
             <lib name="cfitsio"/>
@@ -80,7 +78,6 @@
             <lib name="gdal"/>
             <lib name="glu"/>
             <lib name="h5part"/>
-            <lib name="hdf4"/>
             <lib name="hdf5"/>
             <lib name="icet"/>
             <lib name="ispc"/>
@@ -91,7 +88,6 @@
             <lib name="netcdf"/>
             <lib name="openexr"/>
             <lib name="ospray"/>
-            <lib name="p7zip"/>
             <lib name="pidx"/>
             <lib name="pyside"/>
             <lib name="silo"/>
@@ -104,7 +100,6 @@
 
         <group name="no-thirdparty" comment="Do not build required 3rd party libraries" enabled="no">
             <lib name="no-cmake"/>
-            <lib name="no-openssl"/>
             <lib name="no-python"/>
             <lib name="no-qt" />
             <lib name="no-qwt" />
@@ -181,7 +176,6 @@
         # Releasibility of these libs is not yet understood
         -->
         <group name="advanced" comment="Must be manually downloaded" enabled="no">
-            <lib name="hdf4"/>
 <!--        <lib name="mdsplus"/>    Removed for now by Allen Sanderson-->
             <lib name="mili"/>
         </group>
@@ -234,7 +228,6 @@
         <group name="optional" comment="All optional libraries" enabled="no">
             <lib name="boost"/>
             <lib name="hdf5"/>
-            <lib name="openssl"/>
             <lib name="netcdf"/>
             <lib name="mpich"/>
             <lib name="szip"/>

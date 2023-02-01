@@ -36,7 +36,7 @@ struct SelectionPropertiesObject
 //
 static PyObject *NewSelectionProperties(int);
 std::string
-PySelectionProperties_ToString(const SelectionProperties *atts, const char *prefix)
+PySelectionProperties_ToString(const SelectionProperties *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -1566,7 +1566,7 @@ static int
 SelectionProperties_print(PyObject *v, FILE *fp, int flags)
 {
     SelectionPropertiesObject *obj = (SelectionPropertiesObject *)v;
-    fprintf(fp, "%s", PySelectionProperties_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PySelectionProperties_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -1574,7 +1574,7 @@ PyObject *
 SelectionProperties_str(PyObject *v)
 {
     SelectionPropertiesObject *obj = (SelectionPropertiesObject *)v;
-    return PyString_FromString(PySelectionProperties_ToString(obj->data,"").c_str());
+    return PyString_FromString(PySelectionProperties_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -1726,7 +1726,7 @@ PySelectionProperties_GetLogString()
 {
     std::string s("SelectionProperties = SelectionProperties()\n");
     if(currentAtts != 0)
-        s += PySelectionProperties_ToString(currentAtts, "SelectionProperties.");
+        s += PySelectionProperties_ToString(currentAtts, "SelectionProperties.", true);
     return s;
 }
 
@@ -1739,7 +1739,7 @@ PySelectionProperties_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("SelectionProperties = SelectionProperties()\n");
-        s += PySelectionProperties_ToString(currentAtts, "SelectionProperties.");
+        s += PySelectionProperties_ToString(currentAtts, "SelectionProperties.", true);
         cb(s);
     }
 }

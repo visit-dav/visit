@@ -4,12 +4,12 @@
 #  Test Case:  volumePlot.py
 #
 #  Tests:      mesh      - 3D rectilinear, one domain
-#              plots     - volume 
+#              plots     - volume
 #              operators - none
-#              selection - no 
+#              selection - no
 #
-#  Programmer: Kathleen Bonnell 
-#  Date:       March 4, 2005 
+#  Programmer: Kathleen Bonnell
+#  Date:       March 4, 2005
 #
 #  Modifications:
 #    Kathleen Bonnell, Fri Oct 14 10:12:06 PDT 2005
@@ -34,18 +34,27 @@
 #    Add test case for sampling types.
 #
 #    Alister Maguire, Tue Feb  5 14:17:13 PST 2019
-#    Updated the aspect test to use a larger multiplier and no shading for 
+#    Updated the aspect test to use a larger multiplier and no shading for
 #    better visibility. Updated the scaling test to not use shading (again
-#    for better visibility).  
+#    for better visibility).
 #
 #    Alister Maguire, Mon Mar 25 11:19:54 PDT 2019
-#    Added an opacity test that changes the opacity variable. 
+#    Added an opacity test that changes the opacity variable.
 #
 #    Alister Maguire, Wed Jun  5 11:01:31 PDT 2019
-#    Added opacity attenuation test. 
+#    Added opacity attenuation test.
 #
 #    Alister Maguire, Fri Mar 20 15:36:37 PDT 2020
 #    Added gradient lighting reduction test.
+#
+#    Kathleen Biagas, Wed May 25, 2022
+#    Added test for command-recorded volume atts.
+#
+#    Kathleen Biagas, Fri June 3, 2022
+#    Renamed TestVolumeColorControlPoints to volume_colors, use new
+#    TestAutoName funcationality. Modified TestVolumeSampling to set the
+#    ColorControlPoints directly from the retrieved color table rather than
+#    calling AddControlPoints (it is now a quick recipe).
 #
 # ----------------------------------------------------------------------------
 
@@ -138,7 +147,7 @@ def TestVolumeOpacity():
 
     # setting opacity via individual index and value
     for i in range(150):
-        volAtts.SetFreeformOpacity(i, 0) 
+        volAtts.SetFreeformOpacity(i, 0)
 
     SetPlotOptions(volAtts)
     Test("volumeOpacity_02")
@@ -168,7 +177,7 @@ def TestVolumeOpacity():
     Test("volumeOpacity_04")
 
     #
-    # Make sure we can change out opacity variable. 
+    # Make sure we can change out opacity variable.
     #
     DeleteAllPlots()
     OpenDatabase(silo_data_path("globe.silo"))
@@ -189,7 +198,7 @@ def TestOpacityAttenuation():
     ResetView()
 
     #
-    # First, test the ray caster without reduced attenuation. 
+    # First, test the ray caster without reduced attenuation.
     #
     AddPlot("Volume", "hardyglobal")
     volAtts = VolumeAttributes()
@@ -201,7 +210,7 @@ def TestOpacityAttenuation():
     Test("opacityAttenuation_01")
 
     #
-    # Now reduce attenutation. 
+    # Now reduce attenutation.
     #
     volAtts = VolumeAttributes()
     volAtts.lightingFlag = 0
@@ -238,7 +247,10 @@ def TestVolumeAspect():
     DeleteAllPlots()
     SetPlotOptions(orig_atts)
 
-def TestVolumeColorControlPoints():
+def volume_colors():
+    """Volume Plot color control points"""
+    # the next comment and similar below bracket code to be 'literalincluded' in quickrecipes.rst
+    # removeControlPoints {
     OpenDatabase(silo_data_path("noise.silo"))
 
     AddPlot("Volume", "hardyglobal")
@@ -256,7 +268,43 @@ def TestVolumeColorControlPoints():
     SetPlotOptions(v)
     DrawPlots()
     ResetView()
-    Test("volumeColors_01")
+    # removeControlPoints }
+    TestAutoName()
+
+    # addControlPoints {
+    # there are a default of 5 control points, add 3 more and change
+    # positions of original  so everything is evenly spaced
+    v = VolumeAttributes()
+    v.colorControlPoints.GetControlPoints(0).position = 0
+    v.colorControlPoints.GetControlPoints(1).position = 0.142857
+    v.colorControlPoints.GetControlPoints(2).position = 0.285714
+    v.colorControlPoints.GetControlPoints(3).position = 0.428571
+    v.colorControlPoints.GetControlPoints(4).position = 0.571429
+    tmp = ColorControlPoint()
+    tmp.colors = (255,255,0,255)
+    tmp.position = 0.714286
+    v.GetColorControlPoints().AddControlPoints(tmp)
+    tmp.colors = (0,255,0,255)
+    tmp.position = 0.857143
+    v.GetColorControlPoints().AddControlPoints(tmp)
+    tmp.colors = (0,255,255,255)
+    tmp.position = 1
+    v.GetColorControlPoints().AddControlPoints(tmp)
+    SetPlotOptions(v)
+    # addControlPoints }
+    TestAutoName()
+
+    # setNumControlPoints {
+    v = VolumeAttributes()
+    # there are a default of 5, this resizes to 6
+    v.colorControlPoints.SetNumControlPoints(6)
+    v.colorControlPoints.GetControlPoints(4).position = 0.92
+    # GetControlPoints(5) will cause a segfault without the call to SetNumControlPoints
+    v.colorControlPoints.GetControlPoints(5).position = 1
+    v.colorControlPoints.GetControlPoints(5).colors = (128,0,128,255)
+    SetPlotOptions(v)
+    # setNumControlPoints }
+    TestAutoName()
 
     # Start over with the colors.
     v.GetColorControlPoints().ClearControlPoints()
@@ -278,7 +326,7 @@ def TestVolumeColorControlPoints():
         tmp.position = float(i) / float(npts-1)
         v.GetColorControlPoints().AddControlPoints(tmp)
     SetPlotOptions(v)
-    Test("volumeColors_02")
+    TestAutoName()
     DeleteAllPlots()
 
 def TestVolumeGaussianControlPoints():
@@ -319,6 +367,7 @@ def TestVolumeGaussianControlPoints():
     DeleteAllPlots()
 
 def TestVolumeSampling():
+    # setFromColorTable {
     OpenDatabase(silo_data_path("noise.silo"))
     AddPlot("Volume", "hardyglobal")
     v = VolumeAttributes()
@@ -326,10 +375,9 @@ def TestVolumeSampling():
     v.rendererType = v.RayCasting
     v.sampling = v.KernelBased
     ct = GetColorTable("hot_desaturated")
-    v.GetColorControlPoints().ClearControlPoints()
-    for i in range(ct.GetNumControlPoints()):
-        v.GetColorControlPoints().AddControlPoints(ct.GetControlPoints(i))
+    v.SetColorControlPoints(ct)
     SetPlotOptions(v)
+    # setFromColorTable }
 
     view = GetView3D()
     view.viewNormal = (-1, 0, 0)
@@ -399,17 +447,212 @@ def TestGradientLightingReduction():
     DeleteAllPlots()
     CloseDatabase(silo_data_path("globe.silo"))
 
-#FIXME: For some reason, if you render using the ray caster, 
+def TestCommandRecording():
+    OpenDatabase(silo_data_path("globe.silo"))
+    AddPlot("Volume", "u")
+    DrawPlots()
+    view3D = GetView3D()
+    view3D.viewNormal = (0.0173089, 0.999712, 0.0165968)
+    view3D.viewUp = (0.230674, 0.0121587, -0.972955)
+    SetView3D(view3D)
+
+    # Setting up of Volume plot atts from command recording
+    VolumeAtts = VolumeAttributes()
+    VolumeAtts.osprayShadowsEnabledFlag = 0
+    VolumeAtts.osprayUseGridAcceleratorFlag = 0
+    VolumeAtts.osprayPreIntegrationFlag = 0
+    VolumeAtts.ospraySingleShadeFlag = 0
+    VolumeAtts.osprayOneSidedLightingFlag = 0
+    VolumeAtts.osprayAoTransparencyEnabledFlag = 0
+    VolumeAtts.ospraySpp = 1
+    VolumeAtts.osprayAoSamples = 0
+    VolumeAtts.osprayAoDistance = 100000
+    VolumeAtts.osprayMinContribution = 0.001
+    VolumeAtts.legendFlag = 1
+    VolumeAtts.lightingFlag = 1
+    VolumeAtts.colorControlPoints.SetNumControlPoints(14)
+    VolumeAtts.colorControlPoints.GetControlPoints(0).colors = (0, 0, 255, 255)
+    VolumeAtts.colorControlPoints.GetControlPoints(0).position = 0
+    VolumeAtts.colorControlPoints.GetControlPoints(1).colors = (0, 255, 255, 255)
+    VolumeAtts.colorControlPoints.GetControlPoints(1).position = 0.0769231
+    VolumeAtts.colorControlPoints.GetControlPoints(2).colors = (0, 255, 0, 255)
+    VolumeAtts.colorControlPoints.GetControlPoints(2).position = 0.153846
+    VolumeAtts.colorControlPoints.GetControlPoints(3).colors = (255, 255, 0, 255)
+    VolumeAtts.colorControlPoints.GetControlPoints(3).position = 0.230769
+    VolumeAtts.colorControlPoints.GetControlPoints(4).colors = (255, 255, 0, 255)
+    VolumeAtts.colorControlPoints.GetControlPoints(4).position = 0.307692
+    VolumeAtts.colorControlPoints.GetControlPoints(5).colors = (0, 255, 0, 255)
+    VolumeAtts.colorControlPoints.GetControlPoints(5).position = 0.384615
+    VolumeAtts.colorControlPoints.GetControlPoints(6).colors = (0, 255, 255, 255)
+    VolumeAtts.colorControlPoints.GetControlPoints(6).position = 0.461538
+    VolumeAtts.colorControlPoints.GetControlPoints(7).colors = (0, 0, 255, 255)
+    VolumeAtts.colorControlPoints.GetControlPoints(7).position = 0.538462
+    VolumeAtts.colorControlPoints.GetControlPoints(8).colors = (255, 0, 255, 255)
+    VolumeAtts.colorControlPoints.GetControlPoints(8).position = 0.615385
+    VolumeAtts.colorControlPoints.GetControlPoints(9).colors = (0, 0, 0, 255)
+    VolumeAtts.colorControlPoints.GetControlPoints(9).position = 0.692308
+    VolumeAtts.colorControlPoints.GetControlPoints(10).colors = (255, 255, 255, 255)
+    VolumeAtts.colorControlPoints.GetControlPoints(10).position = 0.769231
+    VolumeAtts.colorControlPoints.GetControlPoints(11).colors = (255, 0, 0, 255)
+    VolumeAtts.colorControlPoints.GetControlPoints(11).position = 0.846154
+    VolumeAtts.colorControlPoints.GetControlPoints(12).colors = (255, 255, 0, 255)
+    VolumeAtts.colorControlPoints.GetControlPoints(12).position = 0.923077
+    VolumeAtts.colorControlPoints.GetControlPoints(13).colors = (255, 0, 0, 255)
+    VolumeAtts.colorControlPoints.GetControlPoints(13).position = 1
+    VolumeAtts.colorControlPoints.smoothing = VolumeAtts.colorControlPoints.Linear
+    VolumeAtts.colorControlPoints.equalSpacingFlag = 0
+    VolumeAtts.colorControlPoints.discreteFlag = 0
+    VolumeAtts.colorControlPoints.categoryName = ""
+    VolumeAtts.opacityAttenuation = 1
+    VolumeAtts.opacityMode = VolumeAtts.GaussianMode
+    VolumeAtts.opacityControlPoints.SetNumControlPoints(20)
+    VolumeAtts.opacityControlPoints.GetControlPoints(0).x = 0.025
+    VolumeAtts.opacityControlPoints.GetControlPoints(0).height = 0.5
+    VolumeAtts.opacityControlPoints.GetControlPoints(0).width = 0.025
+    VolumeAtts.opacityControlPoints.GetControlPoints(0).xBias = 0
+    VolumeAtts.opacityControlPoints.GetControlPoints(0).yBias = 0
+    VolumeAtts.opacityControlPoints.GetControlPoints(1).x = 0.075
+    VolumeAtts.opacityControlPoints.GetControlPoints(1).height = 0.5
+    VolumeAtts.opacityControlPoints.GetControlPoints(1).width = 0.025
+    VolumeAtts.opacityControlPoints.GetControlPoints(1).xBias = 0
+    VolumeAtts.opacityControlPoints.GetControlPoints(1).yBias = 0
+    VolumeAtts.opacityControlPoints.GetControlPoints(2).x = 0.125
+    VolumeAtts.opacityControlPoints.GetControlPoints(2).height = 0.5
+    VolumeAtts.opacityControlPoints.GetControlPoints(2).width = 0.025
+    VolumeAtts.opacityControlPoints.GetControlPoints(2).xBias = 0
+    VolumeAtts.opacityControlPoints.GetControlPoints(2).yBias = 0
+    VolumeAtts.opacityControlPoints.GetControlPoints(3).x = 0.175
+    VolumeAtts.opacityControlPoints.GetControlPoints(3).height = 0.5
+    VolumeAtts.opacityControlPoints.GetControlPoints(3).width = 0.025
+    VolumeAtts.opacityControlPoints.GetControlPoints(3).xBias = 0
+    VolumeAtts.opacityControlPoints.GetControlPoints(3).yBias = 0
+    VolumeAtts.opacityControlPoints.GetControlPoints(4).x = 0.225
+    VolumeAtts.opacityControlPoints.GetControlPoints(4).height = 0.5
+    VolumeAtts.opacityControlPoints.GetControlPoints(4).width = 0.025
+    VolumeAtts.opacityControlPoints.GetControlPoints(4).xBias = 0
+    VolumeAtts.opacityControlPoints.GetControlPoints(4).yBias = 0
+    VolumeAtts.opacityControlPoints.GetControlPoints(5).x = 0.275
+    VolumeAtts.opacityControlPoints.GetControlPoints(5).height = 0.5
+    VolumeAtts.opacityControlPoints.GetControlPoints(5).width = 0.025
+    VolumeAtts.opacityControlPoints.GetControlPoints(5).xBias = 0
+    VolumeAtts.opacityControlPoints.GetControlPoints(5).yBias = 0
+    VolumeAtts.opacityControlPoints.GetControlPoints(6).x = 0.325
+    VolumeAtts.opacityControlPoints.GetControlPoints(6).height = 0.5
+    VolumeAtts.opacityControlPoints.GetControlPoints(6).width = 0.025
+    VolumeAtts.opacityControlPoints.GetControlPoints(6).xBias = 0
+    VolumeAtts.opacityControlPoints.GetControlPoints(6).yBias = 0
+    VolumeAtts.opacityControlPoints.GetControlPoints(7).x = 0.375
+    VolumeAtts.opacityControlPoints.GetControlPoints(7).height = 0.5
+    VolumeAtts.opacityControlPoints.GetControlPoints(7).width = 0.025
+    VolumeAtts.opacityControlPoints.GetControlPoints(7).xBias = 0
+    VolumeAtts.opacityControlPoints.GetControlPoints(7).yBias = 0
+    VolumeAtts.opacityControlPoints.GetControlPoints(8).x = 0.425
+    VolumeAtts.opacityControlPoints.GetControlPoints(8).height = 0.5
+    VolumeAtts.opacityControlPoints.GetControlPoints(8).width = 0.025
+    VolumeAtts.opacityControlPoints.GetControlPoints(8).xBias = 0
+    VolumeAtts.opacityControlPoints.GetControlPoints(8).yBias = 0
+    VolumeAtts.opacityControlPoints.GetControlPoints(9).x = 0.475
+    VolumeAtts.opacityControlPoints.GetControlPoints(9).height = 0.5
+    VolumeAtts.opacityControlPoints.GetControlPoints(9).width = 0.025
+    VolumeAtts.opacityControlPoints.GetControlPoints(9).xBias = 0
+    VolumeAtts.opacityControlPoints.GetControlPoints(9).yBias = 0
+    VolumeAtts.opacityControlPoints.GetControlPoints(10).x = 0.525
+    VolumeAtts.opacityControlPoints.GetControlPoints(10).height = 0.5
+    VolumeAtts.opacityControlPoints.GetControlPoints(10).width = 0.025
+    VolumeAtts.opacityControlPoints.GetControlPoints(10).xBias = 0
+    VolumeAtts.opacityControlPoints.GetControlPoints(10).yBias = 0
+    VolumeAtts.opacityControlPoints.GetControlPoints(11).x = 0.575
+    VolumeAtts.opacityControlPoints.GetControlPoints(11).height = 0.5
+    VolumeAtts.opacityControlPoints.GetControlPoints(11).width = 0.025
+    VolumeAtts.opacityControlPoints.GetControlPoints(11).xBias = 0
+    VolumeAtts.opacityControlPoints.GetControlPoints(11).yBias = 0
+    VolumeAtts.opacityControlPoints.GetControlPoints(12).x = 0.625
+    VolumeAtts.opacityControlPoints.GetControlPoints(12).height = 0.5
+    VolumeAtts.opacityControlPoints.GetControlPoints(12).width = 0.025
+    VolumeAtts.opacityControlPoints.GetControlPoints(12).xBias = 0
+    VolumeAtts.opacityControlPoints.GetControlPoints(12).yBias = 0
+    VolumeAtts.opacityControlPoints.GetControlPoints(13).x = 0.675
+    VolumeAtts.opacityControlPoints.GetControlPoints(13).height = 0.5
+    VolumeAtts.opacityControlPoints.GetControlPoints(13).width = 0.025
+    VolumeAtts.opacityControlPoints.GetControlPoints(13).xBias = 0
+    VolumeAtts.opacityControlPoints.GetControlPoints(13).yBias = 0
+    VolumeAtts.opacityControlPoints.GetControlPoints(14).x = 0.725
+    VolumeAtts.opacityControlPoints.GetControlPoints(14).height = 0.5
+    VolumeAtts.opacityControlPoints.GetControlPoints(14).width = 0.025
+    VolumeAtts.opacityControlPoints.GetControlPoints(14).xBias = 0
+    VolumeAtts.opacityControlPoints.GetControlPoints(14).yBias = 0
+    VolumeAtts.opacityControlPoints.GetControlPoints(15).x = 0.775
+    VolumeAtts.opacityControlPoints.GetControlPoints(15).height = 0.5
+    VolumeAtts.opacityControlPoints.GetControlPoints(15).width = 0.025
+    VolumeAtts.opacityControlPoints.GetControlPoints(15).xBias = 0
+    VolumeAtts.opacityControlPoints.GetControlPoints(15).yBias = 0
+    VolumeAtts.opacityControlPoints.GetControlPoints(16).x = 0.825
+    VolumeAtts.opacityControlPoints.GetControlPoints(16).height = 0.5
+    VolumeAtts.opacityControlPoints.GetControlPoints(16).width = 0.025
+    VolumeAtts.opacityControlPoints.GetControlPoints(16).xBias = 0
+    VolumeAtts.opacityControlPoints.GetControlPoints(16).yBias = 0
+    VolumeAtts.opacityControlPoints.GetControlPoints(17).x = 0.875
+    VolumeAtts.opacityControlPoints.GetControlPoints(17).height = 0.5
+    VolumeAtts.opacityControlPoints.GetControlPoints(17).width = 0.025
+    VolumeAtts.opacityControlPoints.GetControlPoints(17).xBias = 0
+    VolumeAtts.opacityControlPoints.GetControlPoints(17).yBias = 0
+    VolumeAtts.opacityControlPoints.GetControlPoints(18).x = 0.925
+    VolumeAtts.opacityControlPoints.GetControlPoints(18).height = 0.5
+    VolumeAtts.opacityControlPoints.GetControlPoints(18).width = 0.025
+    VolumeAtts.opacityControlPoints.GetControlPoints(18).xBias = 0
+    VolumeAtts.opacityControlPoints.GetControlPoints(18).yBias = 0
+    VolumeAtts.opacityControlPoints.GetControlPoints(19).x = 0.975
+    VolumeAtts.opacityControlPoints.GetControlPoints(19).height = 0.5
+    VolumeAtts.opacityControlPoints.GetControlPoints(19).width = 0.025
+    VolumeAtts.opacityControlPoints.GetControlPoints(19).xBias = 0
+    VolumeAtts.opacityControlPoints.GetControlPoints(19).yBias = 0
+    VolumeAtts.resampleFlag = 1
+    VolumeAtts.resampleTarget = 1000000
+    VolumeAtts.opacityVariable = "default"
+    VolumeAtts.compactVariable = "default"
+    VolumeAtts.freeformOpacity = (0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147, 148, 149, 150, 151, 152, 153, 154, 155, 156, 157, 158, 159, 160, 161, 162, 163, 164, 165, 166, 167, 168, 169, 170, 171, 172, 173, 174, 175, 176, 177, 178, 179, 180, 181, 182, 183, 184, 185, 186, 187, 188, 189, 190, 191, 192, 193, 194, 195, 196, 197, 198, 199, 200, 201, 202, 203, 204, 205, 206, 207, 208, 209, 210, 211, 212, 213, 214, 215, 216, 217, 218, 219, 220, 221, 222, 223, 224, 225, 226, 227, 228, 229, 230, 231, 232, 233, 234, 235, 236, 237, 238, 239, 240, 241, 242, 243, 244, 245, 246, 247, 248, 249, 250, 251, 252, 253, 254, 255)
+    VolumeAtts.useColorVarMin = 0
+    VolumeAtts.colorVarMin = 0
+    VolumeAtts.useColorVarMax = 0
+    VolumeAtts.colorVarMax = 0
+    VolumeAtts.useOpacityVarMin = 0
+    VolumeAtts.opacityVarMin = 0
+    VolumeAtts.useOpacityVarMax = 0
+    VolumeAtts.opacityVarMax = 0
+    VolumeAtts.smoothData = 0
+    VolumeAtts.samplesPerRay = 500
+    VolumeAtts.rendererType = VolumeAtts.Default
+    VolumeAtts.gradientType = VolumeAtts.SobelOperator
+    VolumeAtts.scaling = VolumeAtts.Linear
+    VolumeAtts.skewFactor = 1
+    VolumeAtts.limitsMode = VolumeAtts.OriginalData
+    VolumeAtts.sampling = VolumeAtts.Rasterization
+    VolumeAtts.rendererSamples = 3
+    VolumeAtts.lowGradientLightingReduction = VolumeAtts.Lower
+    VolumeAtts.lowGradientLightingClampFlag = 0
+    VolumeAtts.lowGradientLightingClampValue = 1
+    VolumeAtts.materialProperties = (0.4, 0.75, 0, 15)
+    SetPlotOptions(VolumeAtts)
+
+    Test("vol_commandRecorded")
+    ResetView()
+
+    DeleteAllPlots()
+    CloseDatabase(silo_data_path("globe.silo"))
+
+
+#FIXME: For some reason, if you render using the ray caster,
 #       attempting to render using the default renderer afterwards
 #       will result in a blank test result. I have not been able
-#       to reproduce this outside of the test suite. I created 
-#       issue #3608 to track this. 
+#       to reproduce this outside of the test suite. I created
+#       issue #3608 to track this.
 
 InitAnnotationsLegendOn()
-TestVolumeColorControlPoints()
+volume_colors()
 TestVolumeGaussianControlPoints()
 TestVolumeAspect()
 TestVolumeOpacity()
+TestCommandRecording()
 InitAnnotations()
 TestVolumeScaling()
 TestVolumeSampling()

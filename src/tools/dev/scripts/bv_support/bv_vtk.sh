@@ -48,6 +48,8 @@ function bv_vtk_depends_on
 
     if [[ "$DO_MESAGL" == "yes" ]]; then
         depends_on="${depends_on} mesagl glu"
+    elif [[ "$DO_OSMESA" == "yes" ]]; then
+        depends_on="${depends_on} osmesa"
     fi
 
     if [[ "$DO_OSPRAY" == "yes" ]]; then
@@ -76,15 +78,23 @@ function bv_vtk_force
 
 function bv_vtk_info
 {
-    export VTK_FILE=${VTK_FILE:-"VTK-8.1.0.tar.gz"}
-    export VTK_VERSION=${VTK_VERSION:-"8.1.0"}
-    export VTK_SHORT_VERSION=${VTK_SHORT_VERSION:-"8.1"}
+    if [[ "$DO_VTK9" == "yes" ]] ; then
+        export VTK_FILE=${VTK_FILE:-"VTK-9.1.0.tar.gz"}
+        export VTK_VERSION=${VTK_VERSION:-"9.1.0"}
+        export VTK_SHORT_VERSION=${VTK_SHORT_VERSION:-"9.1"}
+        #export VTK_MD5_CHECKSUM="fa61cd36491d89a17edab18522bdda49"
+        #export VTK_SHA256_CHECKSUM="6e269f07b64fb13774f5925161fb4e1f379f4e6a0131c8408c555f6b58ef3cb7"
+    else
+        export VTK_FILE=${VTK_FILE:-"VTK-8.1.0.tar.gz"}
+        export VTK_VERSION=${VTK_VERSION:-"8.1.0"}
+        export VTK_SHORT_VERSION=${VTK_SHORT_VERSION:-"8.1"}
+        export VTK_MD5_CHECKSUM="4fa5eadbc8723ba0b8d203f05376d932"
+        export VTK_SHA256_CHECKSUM="6e269f07b64fb13774f5925161fb4e1f379f4e6a0131c8408c555f6b58ef3cb7"
+    fi
     export VTK_COMPATIBILITY_VERSION=${VTK_SHORT_VERSION}
     export VTK_URL=${VTK_URL:-"http://www.vtk.org/files/release/${VTK_SHORT_VERSION}"}
-    export VTK_BUILD_DIR=${VTK_BUILD_DIR:-"VTK-8.1.0"}
+    export VTK_BUILD_DIR=${VTK_BUILD_DIR:-"VTK-${VTK_VERSION}"}
     export VTK_INSTALL_DIR=${VTK_INSTALL_DIR:-"vtk"}
-    export VTK_MD5_CHECKSUM="4fa5eadbc8723ba0b8d203f05376d932"
-    export VTK_SHA256_CHECKSUM="6e269f07b64fb13774f5925161fb4e1f379f4e6a0131c8408c555f6b58ef3cb7"
 }
 
 function bv_vtk_print
@@ -97,6 +107,7 @@ function bv_vtk_print
 function bv_vtk_print_usage
 {
     printf "%-20s %s\n" "--vtk" "Build VTK"
+    printf "%-20s %s [%s]\n" "--vtk9" "Build VTK9 (must also use --vtk)" "$DO_VTK9"
     printf "%-20s %s [%s]\n" "--system-vtk" "Use the system installed VTK"
     printf "%-20s %s [%s]\n" "--alt-vtk-dir" "Use VTK from an alternative directory"
 }
@@ -134,17 +145,522 @@ function bv_vtk_ensure
     fi
 }
 
-function bv_vtk_dry_run
-{
-    if [[ "$DO_VTK" == "yes" ]] ; then
-        echo "Dry run option not set for vtk"
-    fi
-}
-
 # *************************************************************************** #
 #                            Function 6, build_vtk                            #
 # *************************************************************************** #
-function apply_vtkxopenglrenderwindow_patch
+
+function apply_vtk9_vtkopenfoamreader_header_patch
+{
+  # patch vtk's OpenFOAMReader to provide more meta data information
+  # useful for VisIt's plugin.
+
+   patch -p0 << \EOF
+*** IO/Geometry/vtkOpenFOAMReader.h.orig        Mon Apr 19 13:46:49 2021
+--- IO/Geometry/vtkOpenFOAMReader.h     Mon Apr 19 13:50:25 2021
+***************
+*** 50,55 ****
+--- 50,60 ----
+  #include "vtkIOGeometryModule.h" // For export macro
+  #include "vtkMultiBlockDataSetAlgorithm.h"
+
++ //added by LLNL
++ #include <map>
++ #include <vector>
++ //end added by LLNL
++
+  class vtkCollection;
+  class vtkCharArray;
+  class vtkDataArraySelection;
+***************
+*** 350,355 ****
+--- 355,382 ----
+
+    friend class vtkOpenFOAMReaderPrivate;
+
++   // Added by LLNL
++   vtkStdString GetCellArrayClassName(const char *name);
++   vtkStdString GetPointArrayClassName(const char *name);
++   vtkStdString GetLagrangianArrayClassName(const char *name);
++
++   int GetNumberOfCellZones()
++     { return static_cast<int>(this->CellZones.size()); }
++   int GetNumberOfFaceZones()
++     { return static_cast<int>(this->FaceZones.size()); }
++   int GetNumberOfPointZones()
++     { return static_cast<int>(this->PointZones.size()); }
++
++   vtkStdString GetCellZoneName(int);
++   vtkStdString GetFaceZoneName(int);
++   vtkStdString GetPointZoneName(int);
++
++   int GetCellArrayExists(const char *name);
++   int GetPointArrayExists(const char *name);
++   int GetLagrangianArrayExists(const char *name);
++
++   // end Added by LLNL
++
+  protected:
+    // refresh flag
+    bool Refresh;
+***************
+*** 425,430 ****
+--- 452,467 ----
+    // index of the active reader
+    int CurrentReaderIndex;
+
++   // added by LLNL
++   std::vector<vtkStdString> CellZones;
++   std::vector<vtkStdString> FaceZones;
++   std::vector<vtkStdString> PointZones;
++
++   std::map<vtkStdString, vtkStdString> CellArrayClassName;
++   std::map<vtkStdString, vtkStdString> PointArrayClassName;
++   std::map<vtkStdString, vtkStdString> LagrangianArrayClassName;
++   // end added by LLNL
++
+    vtkOpenFOAMReader();
+    ~vtkOpenFOAMReader() override;
+    int RequestInformation(vtkInformation*, vtkInformationVector**, vtkInformationVector*) override;
+
+EOF
+
+    if [[ $? != 0 ]] ; then
+      warn "vtk patch for vtkOpenFOAMReader.h failed."
+      return 1
+    fi
+    return 0;
+}
+
+function apply_vtk9_vtkopenfoamreader_source_patch
+{
+  # patch vtk's OpenFOAMReader to provide more meta data information
+  # useful for VisIt's plugin.
+
+   patch -p0 << \EOF
+*** IO/Geometry/vtkOpenFOAMReader.cxx   Thu Apr  8 05:26:53 2021
+--- IO/Geometry/vtkOpenFOAMReader.cxx   Tue Apr 20 16:35:35 2021
+***************
+*** 5058,5063 ****
+--- 5058,5077 ----
+      if (io.Open(tempPath + "/" + fieldFile)) // file exists and readable
+      {
+        this->AddFieldName(fieldFile, io.GetClassName(), isLagrangian);
++       // added by LLNL
++       if(isLagrangian)
++       {
++         this->Parent->LagrangianArrayClassName[io.GetObjectName()] = io.GetClassName();
++       }
++       else
++       {
++         if(io.GetClassName().substr(0,3) == "vol")
++           this->Parent->CellArrayClassName[io.GetObjectName()] = io.GetClassName();
++         else
++           this->Parent->PointArrayClassName[io.GetObjectName()] = io.GetClassName();
++       }
++       // end added by LLNL
++
+        io.Close();
+      }
+    }
+***************
+*** 5326,5331 ****
+--- 5340,5389 ----
+      }
+    }
+
++   // added by LLNL
++   if (this->Parent->GetReadZones())
++   {
++     auto dictPtr(this->GatherBlocks("pointZones", true));
++     if (dictPtr != nullptr)
++     {
++       this->Parent->PointZones.clear();
++       vtkFoamDict &pointZoneDict = *dictPtr;
++       int nPointZones = static_cast<int>(pointZoneDict.size());
++
++       for (int i = 0; i < nPointZones; i++)
++       {
++         this->Parent->PointZones.push_back(pointZoneDict[i]->GetKeyword().c_str());
++       }
++     }
++
++     dictPtr= this->GatherBlocks("faceZones", true);
++     if (dictPtr!= NULL)
++     {
++       this->Parent->FaceZones.clear();
++       vtkFoamDict &faceZoneDict = *dictPtr;
++       int nFaceZones = static_cast<int>(faceZoneDict.size());
++
++       for (int i = 0; i < nFaceZones; i++)
++       {
++         this->Parent->FaceZones.push_back(faceZoneDict[i]->GetKeyword().c_str());
++       }
++     }
++
++     dictPtr= this->GatherBlocks("cellZones", true);
++     if (dictPtr!= NULL)
++     {
++       this->Parent->CellZones.clear();
++       vtkFoamDict &cellZoneDict = *dictPtr;
++       int nCellZones = static_cast<int>(cellZoneDict.size());
++
++       for (int i = 0; i < nCellZones; i++)
++       {
++         this->Parent->CellZones.push_back(cellZoneDict[i]->GetKeyword().c_str());
++       }
++     }
++   }
++   // end added by LLNL
++
+    // Add scalars and vectors to metadata
+    vtkStdString timePath(this->CurrentTimePath());
+    // do not do "RemoveAllArrays()" to accumulate array selections
+***************
+*** 9990,9992 ****
+--- 10048,10166 ----
+      (static_cast<double>(this->Parent->CurrentReaderIndex) + amount) /
+      static_cast<double>(this->Parent->NumberOfReaders));
+  }
++
++ // added by LLNL
++
++ //-----------------------------------------------------------------------------
++ vtkStdString vtkOpenFOAMReader::GetCellArrayClassName(const char *name)
++ {
++   vtkStdString ret;
++   if (name == NULL || name[0] == '\0')
++   {
++         return ret;
++   }
++   std::map<vtkStdString, vtkStdString>::const_iterator itr =
++     this->CellArrayClassName.find(vtkStdString(name));
++   if (itr != this->CellArrayClassName.end())
++   {
++     return itr->second;
++   }
++   else
++   {
++     return ret;
++   }
++ }
++
++ //-----------------------------------------------------------------------------
++ vtkStdString vtkOpenFOAMReader::GetPointArrayClassName(const char *name)
++ {
++   vtkStdString ret;
++   if (name == NULL || name[0] == '\0')
++   {
++         return ret;
++   }
++   std::map<vtkStdString, vtkStdString>::const_iterator itr =
++     this->PointArrayClassName.find(vtkStdString(name));
++   if (itr != this->PointArrayClassName.end())
++   {
++     return itr->second;
++   }
++   else
++   {
++     return ret;
++   }
++ }
++
++ //-----------------------------------------------------------------------------
++ vtkStdString vtkOpenFOAMReader::GetLagrangianArrayClassName(const char *name)
++ {
++   vtkStdString ret;
++   if (name == NULL || name[0] == '\0')
++   {
++         return ret;
++   }
++   std::map<vtkStdString, vtkStdString>::const_iterator itr =
++     this->LagrangianArrayClassName.find(vtkStdString(name));
++   if (itr != this->LagrangianArrayClassName.end())
++   {
++     return itr->second;
++   }
++   else
++   {
++     return ret;
++   }
++ }
++
++ //-----------------------------------------------------------------------------
++ int vtkOpenFOAMReader::GetCellArrayExists(const char *name)
++ {
++   return this->CellDataArraySelection->ArrayExists(name);
++ }
++
++ //-----------------------------------------------------------------------------
++ int vtkOpenFOAMReader::GetPointArrayExists(const char *name)
++ {
++   return this->PointDataArraySelection->ArrayExists(name);
++ }
++
++ //-----------------------------------------------------------------------------
++ int vtkOpenFOAMReader::GetLagrangianArrayExists(const char *name)
++ {
++   return this->LagrangianDataArraySelection->ArrayExists(name);
++ }
++
++ //-----------------------------------------------------------------------------
++ vtkStdString vtkOpenFOAMReader::GetCellZoneName(const int index)
++ {
++   vtkStdString ret;
++   if (index >= 0 && index < this->GetNumberOfCellZones())
++   {
++     ret = this->CellZones[index];
++   }
++   return ret;
++ }
++
++ //-----------------------------------------------------------------------------
++ vtkStdString vtkOpenFOAMReader::GetFaceZoneName(const int index)
++ {
++   vtkStdString ret;
++   if (index >= 0 && index < this->GetNumberOfFaceZones())
++   {
++     ret = this->FaceZones[index];
++   }
++   return ret;
++ }
++
++ //-----------------------------------------------------------------------------
++ vtkStdString vtkOpenFOAMReader::GetPointZoneName(const int index)
++ {
++   vtkStdString ret;
++   if (index >= 0 && index < this->GetNumberOfPointZones())
++   {
++     ret = this->PointZones[index];
++   }
++   return ret;
++ }
++
++ // end added by LLNL
++
+
+EOF
+
+    if [[ $? != 0 ]] ; then
+      warn "vtk patch for vtkOpenFOAMReader.cxx failed."
+      return 1
+    fi
+    return 0;
+}
+
+function apply_vtk9_vtkopenfoamreader_patch
+{
+    apply_vtk9_vtkopenfoamreader_header_patch
+    if [[ $? != 0 ]] ; then
+        return 1
+    fi
+    apply_vtk9_vtkopenfoamreader_source_patch
+    if [[ $? != 0 ]] ; then
+        return 1
+    fi
+}
+
+function apply_vtk9_vtkospray_patches
+{
+    count_patches=3
+    # patch vtkOSPRay files:
+
+    # 1) expose vtkViewNodeFactory via vtkOSPRayPass.h
+    current_patch=1
+    patch -p0 << \EOF
+*** Rendering/RayTracing/vtkOSPRayPass_orig.h   2021-04-29 17:14:23.000000000 -0600
+--- Rendering/RayTracing/vtkOSPRayPass.h        2021-04-29 17:16:08.000000000 -0600
+*************** class vtkOverlayPass;
+*** 50,55 ****
+--- 50,56 ----
+  class vtkRenderPassCollection;
+  class vtkSequencePass;
+  class vtkVolumetricPass;
++ class vtkViewNodeFactory;
+
+  class VTKRENDERINGRAYTRACING_EXPORT vtkOSPRayPass : public vtkRenderPass
+  {
+*************** public:
+*** 76,81 ****
+--- 77,87 ----
+     */
+    virtual void RenderInternal(const vtkRenderState* s);
+
++   /**
++    * Called by VisIt
++    */
++   virtual vtkViewNodeFactory* GetViewNodeFactory();
++
+    ///@{
+    /**
+     * Wrapper around ospray's init and shutdown that protect
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "vtk patch ${current_patch}/${count_patches} for vtkOSPRayPass.h failed."
+        return 1
+    fi
+
+    # 2) expose vtkViewNodeFactory via vtkOSPRayPass.cxx
+    ((current_patch++))
+    patch -p0 << \EOF
+*** Rendering/RayTracing/vtkOSPRayPass_orig.cxx 2021-04-29 17:17:02.000000000 -0600
+--- Rendering/RayTracing/vtkOSPRayPass.cxx      2021-04-29 17:19:10.000000000 -0600
+*************** void vtkOSPRayPass::RenderInternal(const
+*** 430,435 ****
+--- 430,441 ----
+  }
+
+  //------------------------------------------------------------------------------
++ vtkViewNodeFactory* vtkOSPRayPass::GetViewNodeFactory()
++ {
++   return this->Internal->Factory;
++ }
++
++ //------------------------------------------------------------------------------
+  bool vtkOSPRayPass::IsSupported()
+  {
+    static bool detected = false;
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "vtk patch ${current_patch}/${count_patches} for vtkOSPRayPass.cxx failed."
+        return 1
+    fi
+
+    # 3) Set the samples in the VolumeMapper
+    ((current_patch++))
+    patch -p0 << \EOF
+*** Rendering/RayTracing/vtkOSPRayVolumeMapper_orig.cxx 2021-05-03 09:40:09.000000000 -0600
+--- Rendering/RayTracing/vtkOSPRayVolumeMapper.cxx      2021-05-03 09:41:03.000000000 -0600
+*************** void vtkOSPRayVolumeMapper::Render(vtkRe
+*** 72,77 ****
+--- 72,81 ----
+    {
+      this->Init();
+    }
++   vtkOSPRayRendererNode::SetSamplesPerPixel(
++     vtkOSPRayRendererNode::GetSamplesPerPixel(ren), this->InternalRenderer);
++   vtkOSPRayRendererNode::SetAmbientSamples(
++     vtkOSPRayRendererNode::GetAmbientSamples(ren), this->InternalRenderer);
+    this->InternalRenderer->SetRenderWindow(ren->GetRenderWindow());
+    this->InternalRenderer->SetActiveCamera(ren->GetActiveCamera());
+    this->InternalRenderer->SetBackground(ren->GetBackground());
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "vtk patch $current_patch/$count_patches for vtkOSPRayVolumeMapper.cxx failed."
+        return 1
+    fi
+}
+
+function apply_vtk9_libxmlversionheader_patch
+{
+  # patch vtk's libxml CMakeLists.txt so that xmlversion header is installed.
+   patch -p0 << \EOF
+*** ThirdParty/libxml2/vtklibxml2/CMakeLists.txt.orig	Wed Jan 12 11:24:42 2022
+--- ThirdParty/libxml2/vtklibxml2/CMakeLists.txt	Wed Jan 12 11:25:57 2022
+***************
+*** 771,779 ****
+  endif ()
+  
+  configure_file(include/libxml/xmlversion.h.in include/libxml/xmlversion.h)
+! if (FALSE) # XXX(kitware): mask installation rules
+! install(FILES ${CMAKE_CURRENT_BINARY_DIR}/libxml/xmlversion.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/libxml2/libxml COMPONENT development)
+! endif ()
+  
+  if(MSVC)
+  	configure_file(include/libxml/xmlwin32version.h.in libxml/xmlwin32version.h)
+--- 771,779 ----
+  endif ()
+  
+  configure_file(include/libxml/xmlversion.h.in include/libxml/xmlversion.h)
+! #if (FALSE) # XXX(kitware): mask installation rules
+! install(FILES ${CMAKE_CURRENT_BINARY_DIR}/include/libxml/xmlversion.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/vtk-9.1/vtklibxml2/include/libxml)
+! #endif ()
+  
+  if(MSVC)
+  	configure_file(include/libxml/xmlwin32version.h.in libxml/xmlwin32version.h)
+
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "vtk patch for xml_version.h installation failed."
+        return 1
+    fi
+}
+
+function apply_vtk9_vtkRectilinearGridReader_patch
+{
+  # patch vtkRectilinearGridReader.cxx, per this issue:
+  # https://gitlab.kitware.com/vtk/vtk/-/issues/18447
+   patch -p0 << \EOF
+*** IO/Legacy/vtkRectilinearGridReader.cxx.orig	Thu Jan 27 10:55:12 2022
+--- IO/Legacy/vtkRectilinearGridReader.cxx	Thu Jan 27 11:01:04 2022
+***************
+*** 95,101 ****
+          break;
+        }
+  
+!       if (!strncmp(this->LowerCase(line), "dimensions", 10) && !dimsRead)
+        {
+          int dim[3];
+          if (!(this->Read(dim) && this->Read(dim + 1) && this->Read(dim + 2)))
+--- 95,108 ----
+          break;
+        }
+  
+!       // Have to read field data because it may be binary.
+!       if (!strncmp(this->LowerCase(line), "field", 5))
+!       {
+!         vtkFieldData* fd = this->ReadFieldData();
+!         fd->Delete();
+!       }
+! 
+!       else if (!strncmp(this->LowerCase(line), "dimensions", 10) && !dimsRead)
+        {
+          int dim[3];
+          if (!(this->Read(dim) && this->Read(dim + 1) && this->Read(dim + 2)))
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "vtk patch for vtkRectilinearGridReader.cxx failed."
+        return 1
+    fi
+}
+
+function apply_vtk9_vtkCutter_patch
+{
+  # patch vtkCutter to remove use of vtk3DLinearPlaneCutter, because it 'promotes'
+  # all cell and point data to float/double arrays. See VTK issue:
+  # https://gitlab.kitware.com/vtk/vtk/-/issues/18450
+   patch -p0 << \EOF
+*** Filters/Core/vtkCutter.cxx.orig	Mon Jan 31 09:05:34 2022
+--- Filters/Core/vtkCutter.cxx	Mon Jan 31 11:09:02 2022
+***************
+*** 381,386 ****
+--- 381,389 ----
+      // See if the input can be fully processed by the fast vtk3DLinearGridPlaneCutter.
+      // This algorithm can provide a substantial speed improvement over the more general
+      // algorithm for vtkUnstructuredGrids.
++ 
++ // Don't want to use 3DlinearGridPlaneCutter, it 'promotes' all cell and point data to float arrays
++ #if 0
+      if (this->GetGenerateTriangles() && this->GetCutFunction() &&
+        this->GetCutFunction()->IsA("vtkPlane") && this->GetNumberOfContours() == 1 &&
+        this->GetGenerateCutScalars() == 0 &&
+***************
+*** 417,422 ****
+--- 420,426 ----
+  
+        return retval;
+      }
++ #endif
+  
+      vtkDebugMacro(<< "Executing Unstructured Grid Cutter");
+      this->UnstructuredGridCutter(input, output);
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "vtk patch for vtkCutter.cxx failed."
+        return 1
+    fi
+}
+
+function apply_vtk8_vtkxopenglrenderwindow_patch
 {
   # patch vtk's vtkXOpenRenderWindow to fix segv when deleting windows in
   # offscreen mode.
@@ -192,7 +708,7 @@ EOF
 
 }
 
-function apply_vtkopenglspheremapper_h_patch
+function apply_vtk8_vtkopenglspheremapper_h_patch
 {
   # patch vtk's vtkOpenGLSphereMapper.h to fix bug evidenced when
   # points are double precision
@@ -224,7 +740,7 @@ EOF
     return 0;
 }
 
-function apply_vtkopenglspheremapper_patch
+function apply_vtk8_vtkopenglspheremapper_patch
 {
   # patch vtk's vtkOpenGLSphereMapper to fix bug that ignores opacity when
   # specifying single color for the sphere imposters, and another bug
@@ -522,7 +1038,7 @@ EOF
     return 0;
 }
 
-function apply_vtkdatawriter_patch
+function apply_vtk8_vtkdatawriter_patch
 {
   # patch vtk's vtkDataWriter to fix bug when writing binary vtkBitArray,
   # and non-AOS data arrays (as used with LibSim).
@@ -945,7 +1461,7 @@ EOF
     return 0;
 }
 
-function apply_vtkospray_patches
+function apply_vtk8_vtkospray_patches
 {
 	count_patches=4
     # patch vtkOSPRay files:
@@ -1222,7 +1738,7 @@ EOF
     fi
 }
 
-function apply_vtkospraypolydatamappernode_patch
+function apply_vtk8_vtkospraypolydatamappernode_patch
 {
     # patch vtk's vtkOSPRayPolyDataMapperNode to handle vtkDataSets in
     # addition to vtkPolyData.
@@ -1334,7 +1850,7 @@ EOF
 }
 
 
-function apply_vtkospray_linking_patch
+function apply_vtk8_vtkospray_linking_patch
 {
     # fix from kevin griffin
     # patch to vtk linking issue noticed on macOS
@@ -1364,7 +1880,7 @@ EOF
     return 0;
 }
 
-function apply_vtk_python3_python_args_patch
+function apply_vtk8_python3_python_args_patch
 {
     # in python 3.7.5:
     #  PyUnicode_AsUTF8 returns a const char *, which you cannot assign
@@ -1401,7 +1917,7 @@ EOF
     return 0;
 }
 
-function apply_vtk_compilerversioncheck_patch
+function apply_vtk8_compilerversioncheck_patch
 {
     # Need to fix the REGEX so that version strings with 2digit major are matched correctly.
     patch -p0 << \EOF
@@ -1436,57 +1952,139 @@ EOF
     return 0;
 }
 
+function apply_vtk_osmesa_render_patch
+{
+    # Apply a patch where the OSMesaMakeCurrent could sometimes pass the
+    # wrong window size for the buffer.
+    patch -p0 << \EOF
+diff -u Rendering/OpenGL2/vtkOSOpenGLRenderWindow.cxx.orig Rendering/OpenGL2/vtkOSOpenGLRenderWindow.cxx
+--- Rendering/OpenGL2/vtkOSOpenGLRenderWindow.cxx.orig  2022-10-31 14:53:21.228362000 -0700
++++ Rendering/OpenGL2/vtkOSOpenGLRenderWindow.cxx       2022-10-31 14:55:24.072140000 -0700
+@@ -201,7 +201,6 @@
+       this->Internal->OffScreenContextId = OSMesaCreateContext(GL_RGBA, nullptr);
+     }
+   }
+-  this->MakeCurrent();
+ 
+   this->Mapped = 0;
+   this->Size[0] = width;
+@@ -330,8 +329,8 @@
+ {
+   if ((this->Size[0] != width)||(this->Size[1] != height))
+   {
+-    this->Superclass::SetSize(width, height);
+     this->ResizeOffScreenWindow(width, height);
++    this->Superclass::SetSize(width, height);
+     this->Modified();
+   }
+ }
+EOF
+
+    if [[ $? != 0 ]] ; then
+      warn "vtk patch for compiler version check failed."
+      return 1
+    fi
+
+    return 0;
+}
+
 
 function apply_vtk_patch
 {
-    apply_vtkdatawriter_patch
-    if [[ $? != 0 ]] ; then
-       return 1
+
+    if [[ "$DO_VTK9" == "yes" ]] ; then
+        # vtk8 version needs to be reworked for 9.1.0
+        #apply_vtk9_vtkopenfoamreader_patch
+        #if [[ $? != 0 ]] ; then
+        #    return 1
+        #fi
+
+        # vtk8 version needs to be reworked for 9.1.0
+        #apply_vtk9_vtkopenglspheremapper_h_patch
+        #if [[ $? != 0 ]] ; then
+        #    return 1
+        #fi
+
+        # vtk8 version needs to be reworked for 9.1.0
+        #apply_vtk9_vtkopenglspheremapper_patch
+        #if [[ $? != 0 ]] ; then
+        #    return 1
+        #fi
+
+        apply_vtk9_vtkospray_patches
+        if [[ $? != 0 ]] ; then
+            return 1
+        fi
+
+        apply_vtk9_libxmlversionheader_patch
+        if [[ $? != 0 ]] ; then
+            return 1
+        fi
+
+        apply_vtk9_vtkRectilinearGridReader_patch
+        if [[ $? != 0 ]] ; then
+            return 1
+        fi
+
+        apply_vtk9_vtkCutter_patch
+        if [[ $? != 0 ]] ; then
+            return 1
+        fi
+
+    else
+        apply_vtk8_vtkdatawriter_patch
+        if [[ $? != 0 ]] ; then
+           return 1
+        fi
+
+        apply_vtk8_vtkopenglspheremapper_h_patch
+        if [[ $? != 0 ]] ; then
+            return 1
+        fi
+
+        apply_vtk8_vtkopenglspheremapper_patch
+        if [[ $? != 0 ]] ; then
+            return 1
+        fi
+
+        apply_vtk8_vtkxopenglrenderwindow_patch
+        if [[ $? != 0 ]] ; then
+            return 1
+        fi
+
+        # Note: don't guard ospray patches by if ospray is selected 
+        # b/c subsequent calls to build_visit won't get a chance to patch
+        # given the if test logic used above
+        apply_vtk8_vtkospraypolydatamappernode_patch
+        if [[ $? != 0 ]] ; then
+            return 1
+        fi
+
+        apply_vtk8_vtkospray_patches
+        if [[ $? != 0 ]] ; then
+            return 1
+        fi
+
+        apply_vtk8_vtkospray_linking_patch
+        if [[ $? != 0 ]] ; then
+            return 1
+        fi
+
+        apply_vtk8_python3_python_args_patch
+        if [[ $? != 0 ]] ; then
+            return 1
+        fi
+
+        apply_vtk8_compilerversioncheck_patch
+        if [[ $? != 0 ]] ; then
+            return 1
+        fi
     fi
 
-    apply_vtkopenglspheremapper_h_patch
+    apply_vtk_osmesa_render_patch
     if [[ $? != 0 ]] ; then
         return 1
     fi
-
-    apply_vtkopenglspheremapper_patch
-    if [[ $? != 0 ]] ; then
-        return 1
-    fi
-
-    apply_vtkxopenglrenderwindow_patch
-    if [[ $? != 0 ]] ; then
-        return 1
-    fi
-
-    # Note: don't guard ospray patches by if ospray is selected 
-    # b/c subsequent calls to build_visit won't get a chance to patch
-    # given the if test logic used above
-    apply_vtkospraypolydatamappernode_patch
-    if [[ $? != 0 ]] ; then
-        return 1
-    fi
-
-    apply_vtkospray_patches
-    if [[ $? != 0 ]] ; then
-        return 1
-    fi
-
-    apply_vtkospray_linking_patch
-    if [[ $? != 0 ]] ; then
-        return 1
-    fi
-
-    apply_vtk_python3_python_args_patch
-    if [[ $? != 0 ]] ; then
-        return 1
-    fi
-
-    apply_vtk_compilerversioncheck_patch
-    if [[ $? != 0 ]] ; then
-        return 1
-    fi
-
     return 0
 }
 
@@ -1539,8 +2137,8 @@ function build_vtk
     #
     info "Configuring VTK . . ."
 
-    # Make a build directory for an out-of-source build.. Change the
-    # VISIT_BUILD_DIR variable to represent the out-of-source build directory.
+    # Make a build directory for an out-of-source build. Change the
+    # VTK_BUILD_DIR variable to represent the out-of-source build directory.
     VTK_SRC_DIR=$VTK_BUILD_DIR
     VTK_BUILD_DIR="${VTK_SRC_DIR}-build"
     if [[ ! -d $VTK_BUILD_DIR ]] ; then
@@ -1599,8 +2197,6 @@ function build_vtk
     fi
     vopts="${vopts} -DVTK_DEBUG_LEAKS:BOOL=${vtk_debug_leaks}"
     vopts="${vopts} -DVTK_LEGACY_REMOVE:BOOL=true"
-    vopts="${vopts} -DBUILD_TESTING:BOOL=false"
-    vopts="${vopts} -DBUILD_DOCUMENTATION:BOOL=false"
     vopts="${vopts} -DCMAKE_C_COMPILER:STRING=${C_COMPILER}"
     vopts="${vopts} -DCMAKE_CXX_COMPILER:STRING=${CXX_COMPILER}"
     vopts="${vopts} -DCMAKE_C_FLAGS:STRING=\"${C_OPT_FLAGS}\""
@@ -1608,7 +2204,17 @@ function build_vtk
     vopts="${vopts} -DCMAKE_EXE_LINKER_FLAGS:STRING=${lf}"
     vopts="${vopts} -DCMAKE_MODULE_LINKER_FLAGS:STRING=${lf}"
     vopts="${vopts} -DCMAKE_SHARED_LINKER_FLAGS:STRING=${lf}"
-    vopts="${vopts} -DVTK_REPORT_OPENGL_ERRORS:BOOL=true"
+    if [[ "$DO_VTK9" == "yes" ]] ; then
+        vopts="${vopts} -DVTK_BUILD_TESTING:BOOL=false"
+        vopts="${vopts} -DVTK_BUILD_DOCUMENTATION:BOOL=false"
+        # setting this to true causes errors when building debug versions of
+        # visit, so set it to false
+        vopts="${vopts} -DVTK_REPORT_OPENGL_ERRORS:BOOL=false"
+    else
+        vopts="${vopts} -DBUILD_TESTING:BOOL=false"
+        vopts="${vopts} -DBUILD_DOCUMENTATION:BOOL=false"
+        vopts="${vopts} -DVTK_REPORT_OPENGL_ERRORS:BOOL=true"
+    fi
     if test "${OPSYS}" = "Darwin" ; then
         vopts="${vopts} -DVTK_USE_COCOA:BOOL=ON"
         vopts="${vopts} -DCMAKE_INSTALL_NAME_DIR:PATH=${vtk_inst_path}/lib"
@@ -1635,43 +2241,79 @@ function build_vtk
 
     # allow VisIt to override any of vtk's classes
     vopts="${vopts} -DVTK_ALL_NEW_OBJECT_FACTORY:BOOL=true"
+    if [[ "$DO_VTK9" == "yes" ]] ; then
+        # disable downloads (also disables testing)
+        vopts="${vopts} -DVTK_FORBID_DOWNLOADS:BOOL=true"
 
-    # Turn off module groups
-    vopts="${vopts} -DVTK_Group_Imaging:BOOL=false"
-    vopts="${vopts} -DVTK_Group_MPI:BOOL=false"
-    vopts="${vopts} -DVTK_Group_Qt:BOOL=false"
-    vopts="${vopts} -DVTK_Group_Rendering:BOOL=false"
-    vopts="${vopts} -DVTK_Group_StandAlone:BOOL=false"
-    vopts="${vopts} -DVTK_Group_Tk:BOOL=false"
-    vopts="${vopts} -DVTK_Group_Views:BOOL=false"
-    vopts="${vopts} -DVTK_Group_Web:BOOL=false"
+        # Turn off module groups
+        vopts="${vopts} -DVTK_GROUP_ENABLE_Imaging:STRING=DONT_WANT"
+        vopts="${vopts} -DVTK_GROUP_ENABLE_MPI:STRING=DONT_WANT"
+        vopts="${vopts} -DVTK_GROUP_ENABLE_Qt:STRING=DONT_WANT"
+        vopts="${vopts} -DVTK_GROUP_ENABLE_Rendering:STRING=DONT_WANT"
+        vopts="${vopts} -DVTK_GROUP_ENABLE_StandAlone:STRING=DONT_WANT"
+        vopts="${vopts} -DVTK_GROUP_ENABLE_Views:STRING=DONT_WANT"
+        vopts="${vopts} -DVTK_GROUP_ENABLE_Web:STRING=DONT_WANT"
 
-    # Turn on individual modules. dependent modules are turned on automatically
-    vopts="${vopts} -DModule_vtkCommonCore:BOOL=true"
-    vopts="${vopts} -DModule_vtkFiltersFlowPaths:BOOL=true"
-    vopts="${vopts} -DModule_vtkFiltersHybrid:BOOL=true"
-    vopts="${vopts} -DModule_vtkFiltersModeling:BOOL=true"
-    vopts="${vopts} -DModule_vtkGeovisCore:BOOL=true"
-    vopts="${vopts} -DModule_vtkIOEnSight:BOOL=true"
-    vopts="${vopts} -DModule_vtkIOGeometry:BOOL=true"
-    vopts="${vopts} -DModule_vtkIOLegacy:BOOL=true"
-    vopts="${vopts} -DModule_vtkIOPLY:BOOL=true"
-    vopts="${vopts} -DModule_vtkIOXML:BOOL=true"
-    vopts="${vopts} -DModule_vtkInteractionStyle:BOOL=true"
-    vopts="${vopts} -DModule_vtkRenderingAnnotation:BOOL=true"
-    vopts="${vopts} -DModule_vtkRenderingFreeType:BOOL=true"
-    vopts="${vopts} -DModule_vtkRenderingOpenGL2:BOOL=true"
-    vopts="${vopts} -DModule_vtklibxml2:BOOL=true"
+        # Turn on individual modules. dependent modules are turned on automatically
+        vopts="${vopts} -DVTK_MODULE_ENABLE_VTK_CommonCore:STRING=YES"
+        vopts="${vopts} -DVTK_MODULE_ENABLE_VTK_FiltersFlowPaths:STRING=YES"
+        vopts="${vopts} -DVTK_MODULE_ENABLE_VTK_FiltersHybrid:STRING=YES"
+        vopts="${vopts} -DVTK_MODULE_ENABLE_VTK_FiltersModeling:STRING=YES"
+        vopts="${vopts} -DVTK_MODULE_ENABLE_VTK_GeovisCore:STRING=YES"
+        vopts="${vopts} -DVTK_MODULE_ENABLE_VTK_IOEnSight:STRING=YES"
+        vopts="${vopts} -DVTK_MODULE_ENABLE_VTK_IOGeometry:STRING=YES"
+        vopts="${vopts} -DVTK_MODULE_ENABLE_VTK_IOLegacy:STRING=YES"
+        vopts="${vopts} -DVTK_MODULE_ENABLE_VTK_IOPLY:STRING=YES"
+        vopts="${vopts} -DVTK_MODULE_ENABLE_VTK_IOXML:STRING=YES"
+        vopts="${vopts} -DVTK_MODULE_ENABLE_VTK_InteractionStyle:STRING=YES"
+        vopts="${vopts} -DVTK_MODULE_ENABLE_VTK_RenderingAnnotation:STRING=YES"
+        vopts="${vopts} -DVTK_MODULE_ENABLE_VTK_RenderingFreeType:STRING=YES"
+        vopts="${vopts} -DVTK_MODULE_ENABLE_VTK_RenderingOpenGL2:STRING=YES"
+        vopts="${vopts} -DVTK_MODULE_ENABLE_VTK_RenderingVolumeOpenGL2:STRING=YES"
+        vopts="${vopts} -DVTK_MODULE_ENABLE_VTK_libxml2:STRING=YES"
+    else
+        # Turn off module groups
+        vopts="${vopts} -DVTK_Group_Imaging:BOOL=false"
+        vopts="${vopts} -DVTK_Group_MPI:BOOL=false"
+        vopts="${vopts} -DVTK_Group_Qt:BOOL=false"
+        vopts="${vopts} -DVTK_Group_Rendering:BOOL=false"
+        vopts="${vopts} -DVTK_Group_StandAlone:BOOL=false"
+        vopts="${vopts} -DVTK_Group_Tk:BOOL=false"
+        vopts="${vopts} -DVTK_Group_Views:BOOL=false"
+        vopts="${vopts} -DVTK_Group_Web:BOOL=false"
+
+        # Turn on individual modules. dependent modules are turned on automatically
+        vopts="${vopts} -DModule_vtkCommonCore:BOOL=true"
+        vopts="${vopts} -DModule_vtkFiltersFlowPaths:BOOL=true"
+        vopts="${vopts} -DModule_vtkFiltersHybrid:BOOL=true"
+        vopts="${vopts} -DModule_vtkFiltersModeling:BOOL=true"
+        vopts="${vopts} -DModule_vtkGeovisCore:BOOL=true"
+        vopts="${vopts} -DModule_vtkIOEnSight:BOOL=true"
+        vopts="${vopts} -DModule_vtkIOGeometry:BOOL=true"
+        vopts="${vopts} -DModule_vtkIOLegacy:BOOL=true"
+        vopts="${vopts} -DModule_vtkIOPLY:BOOL=true"
+        vopts="${vopts} -DModule_vtkIOXML:BOOL=true"
+        vopts="${vopts} -DModule_vtkInteractionStyle:BOOL=true"
+        vopts="${vopts} -DModule_vtkRenderingAnnotation:BOOL=true"
+        vopts="${vopts} -DModule_vtkRenderingFreeType:BOOL=true"
+        vopts="${vopts} -DModule_vtkRenderingOpenGL2:BOOL=true"
+        vopts="${vopts} -DModule_vtklibxml2:BOOL=true"
+    fi
 
     # Tell VTK where to locate qmake if we're building graphical support. We
     # do not add graphical support for server-only builds.
     if [[ "$DO_DBIO_ONLY" != "yes" ]]; then
         if [[ "$DO_ENGINE_ONLY" != "yes" ]]; then
             if [[ "$DO_SERVER_COMPONENTS_ONLY" != "yes" ]]; then
-                vopts="${vopts} -DModule_vtkGUISupportQtOpenGL:BOOL=true"
-                vopts="${vopts} -DQT_QMAKE_EXECUTABLE:FILEPATH=${QT_BIN_DIR}/qmake"
-                vopts="${vopts} -DVTK_QT_VERSION=5"
-                vopts="${vopts} -DCMAKE_PREFIX_PATH=${QT_INSTALL_DIR}/lib/cmake"
+                if [[ "$DO_VTK9" == "yes" ]]; then
+                    vopts="${vopts} -DVTK_MODULE_ENABLE_VTK_GUISupportQt:BOOL:STRING=YES"
+                    vopts="${vopts} -DQt5_DIR:FILEPATH=${QT_INSTALL_DIR}/lib/cmake/Qt5"
+                else
+                    vopts="${vopts} -DModule_vtkGUISupportQtOpenGL:BOOL=true"
+                    vopts="${vopts} -DQT_QMAKE_EXECUTABLE:FILEPATH=${QT_BIN_DIR}/qmake"
+                    vopts="${vopts} -DVTK_QT_VERSION=5"
+                    vopts="${vopts} -DCMAKE_PREFIX_PATH=${QT_INSTALL_DIR}/lib/cmake"
+                fi
             fi
         fi
     fi
@@ -1685,44 +2327,101 @@ function build_vtk
             pylib="${PYTHON_LIBRARY}"
 
             vopts="${vopts} -DVTK_WRAP_PYTHON:BOOL=true"
-            vopts="${vopts} -DPYTHON_EXECUTABLE:FILEPATH=${py}"
-            vopts="${vopts} -DPYTHON_EXTRA_LIBS:STRING=${VTK_PY_LIBS}"
-            vopts="${vopts} -DPYTHON_INCLUDE_DIR:PATH=${pyinc}"
-            vopts="${vopts} -DPYTHON_LIBRARY:FILEPATH=${pylib}"
-            if [[ "$DO_PYTHON2" == "no" ]]; then
-              vopts="${vopts} -DVTK_PYTHON_VERSION:STRING=3"
+            if [[ "$DO_VTK9" == "yes" ]]; then
+                vopts="${vopts} -DVTK_PYTHON_VERSION:STRING=3"
+                vopts="${vopts} -DPython3_EXECUTABLE:FILEPATH=${py}"
+                vopts="${vopts} -DPython3_EXTRA_LIBS:STRING=${VTK_PY_LIBS}"
+                vopts="${vopts} -DPython3_INCLUDE_DIR:PATH=${pyinc}"
+                vopts="${vopts} -DPython3_LIBRARY:FILEPATH=${pylib}"
+            else
+                vopts="${vopts} -DPYTHON_EXECUTABLE:FILEPATH=${py}"
+                vopts="${vopts} -DPYTHON_EXTRA_LIBS:STRING=\"${VTK_PY_LIBS}\""
+                vopts="${vopts} -DPYTHON_INCLUDE_DIR:PATH=${pyinc}"
+                vopts="${vopts} -DPYTHON_LIBRARY:FILEPATH=${pylib}"
+                if [[ "$DO_PYTHON2" == "no" ]]; then
+                  vopts="${vopts} -DVTK_PYTHON_VERSION:STRING=3"
+                fi
+                #            vopts="${vopts} -DPYTHON_UTIL_LIBRARY:FILEPATH="
             fi
-            #            vopts="${vopts} -DPYTHON_UTIL_LIBRARY:FILEPATH="
         else
             warn "Forgetting python filters because we are doing a static build."
         fi
     fi
 
     # Use Mesa as GL?
-    if [[ "$DO_MESAGL" == "yes" ]] ; then
-        vopts="${vopts} -DVTK_OPENGL_HAS_OSMESA:BOOL=ON"
-        vopts="${vopts} -DOPENGL_INCLUDE_DIR:PATH=${MESAGL_INCLUDE_DIR}"
-        vopts="${vopts} -DOPENGL_gl_LIBRARY:PATH=\"${MESAGL_OPENGL_LIB};${LLVM_LIB}\""
-        vopts="${vopts} -DOPENGL_glu_LIBRARY:PATH=${MESAGL_GLU_LIB}"
-        vopts="${vopts} -DOSMESA_LIBRARY:FILEPATH=\"${MESAGL_OSMESA_LIB};${LLVM_LIB}\""
-        vopts="${vopts} -DOSMESA_INCLUDE_DIR:PATH=${MESAGL_INCLUDE_DIR}"
+    if [[ "$DO_VTK9" == "yes" ]] ; then
+        if [[ "$DO_MESAGL" == "yes" ]] ; then
+            vopts="${vopts} -DOPENGL_INCLUDE_DIR:PATH=${MESAGL_INCLUDE_DIR}"
+            vopts="${vopts} -DOPENGL_gl_LIBRARY:STRING=${MESAGL_OPENGL_LIB}"
+            vopts="${vopts} -DOPENGL_opengl_LIBRARY:STRING="
+            vopts="${vopts} -DOPENGL_glu_LIBRARY:FILEPATH=${MESAGL_GLU_LIB}"
+            # for now, until Mesa can be updated to a version that supports GLVND, set LEGACY preference
+            vopts="${vopts} -DOpenGL_GL_PREFERENCE:STRING=LEGACY"
+            # Cannot build onscreen and offscreen this way anymore
+            #vopts="${vopts} -DVTK_OPENGL_HAS_OSMESA:BOOL=ON"
+            #vopts="${vopts} -DOSMESA_LIBRARY:STRING=${MESAGL_OSMESA_LIB}"
+            #vopts="${vopts} -DOSMESA_INCLUDE_DIR:PATH=${MESAGL_INCLUDE_DIR}"
 
-        if [[ "$DO_STATIC_BUILD" == "yes" ]] ; then
-            if [[ "$DO_SERVER_COMPONENTS_ONLY" == "yes" || "$DO_ENGINE_ONLY" == "yes" ]] ; then
-                vopts="${vopts} -DVTK_USE_X:BOOL=OFF"
+            if [[ "$DO_STATIC_BUILD" == "yes" ]] ; then
+                if [[ "$DO_SERVER_COMPONENTS_ONLY" == "yes" || "$DO_ENGINE_ONLY" == "yes" ]] ; then
+                    vopts="${vopts} -DVTK_OPENGL_HAS_OSMESA:BOOL=ON"
+                    vopts="${vopts} -DOSMESA_LIBRARY:STRING=${MESAGL_OSMESA_LIB}"
+                    vopts="${vopts} -DOSMESA_INCLUDE_DIR:PATH=${MESAGL_INCLUDE_DIR}"
+                    vopts="${vopts} -DVTK_USE_X:BOOL=OFF"
+                fi
+            fi
+        elif [[ "$DO_OSMESA" == "yes" ]] ; then
+            vopts="${vopts} -DOPENGL_INCLUDE_DIR:PATH="
+            vopts="${vopts} -DOPENGL_gl_LIBRARY:STRING="
+            vopts="${vopts} -DOPENGL_opengl_LIBRARY:STRING="
+            vopts="${vopts} -DOPENGL_glu_LIBRARY:FILEPATH="
+            vopts="${vopts} -DVTK_OPENGL_HAS_OSMESA:BOOL=ON"
+            vopts="${vopts} -DOSMESA_LIBRARY:STRING=\"${OSMESA_LIB}\""
+            vopts="${vopts} -DOSMESA_INCLUDE_DIR:PATH=${OSMESA_INCLUDE_DIR}"
+            vopts="${vopts} -DVTK_USE_X:BOOL=OFF"
+        fi
+    else
+        if [[ "$DO_MESAGL" == "yes" ]] ; then
+            vopts="${vopts} -DVTK_OPENGL_HAS_OSMESA:BOOL=ON"
+            vopts="${vopts} -DOPENGL_INCLUDE_DIR:PATH=${MESAGL_INCLUDE_DIR}"
+            vopts="${vopts} -DOPENGL_gl_LIBRARY:PATH=\"${MESAGL_OPENGL_LIB};${LLVM_LIB}\""
+            vopts="${vopts} -DOPENGL_glu_LIBRARY:PATH=${MESAGL_GLU_LIB}"
+            vopts="${vopts} -DOSMESA_LIBRARY:FILEPATH=\"${MESAGL_OSMESA_LIB};${LLVM_LIB}\""
+            vopts="${vopts} -DOSMESA_INCLUDE_DIR:PATH=${MESAGL_INCLUDE_DIR}"
+
+            if [[ "$DO_STATIC_BUILD" == "yes" ]] ; then
+                if [[ "$DO_SERVER_COMPONENTS_ONLY" == "yes" || "$DO_ENGINE_ONLY" == "yes" ]] ; then
+                    vopts="${vopts} -DVTK_USE_X:BOOL=OFF"
+                fi
             fi
         fi
     fi
 
     # Use OSPRay?
     if [[ "$DO_OSPRAY" == "yes" ]] ; then
-        vopts="${vopts} -DModule_vtkRenderingOSPRay:BOOL=ON"
-        vopts="${vopts} -DOSPRAY_INSTALL_DIR=${OSPRAY_INSTALL_DIR}"
-        vopts="${vopts} -Dembree_DIR=${EMBREE_INSTALL_DIR}"
+        if [[ "$DO_VTK9" == "yes" ]] ; then
+            vopts="${vopts} -DVTK_MODULE_ENABLE_VTK_RenderingRayTracing:STRING=YES"
+            if [[ -d ${OSPRAY_INSTALL_DIR}/ospray/lib ]] ; then
+                vopts="${vopts} -Dospray_DIR=${OSPRAY_INSTALL_DIR}/ospray/lib/cmake/ospray-${OSPRAY_VERSION}"
+            elif [[ -d ${OSPRAY_INSTALL_DIR}/ospray/lib64 ]] ; then
+                vopts="${vopts} -Dospray_DIR=${OSPRAY_INSTALL_DIR}/ospray/lib64/cmake/ospray-${OSPRAY_VERSION}"
+            else
+                warn "Disabling ospray because its lib dir couldn't be found"
+                vopts="${vopts} -DVTK_MODULE_ENABLE_VTK_RenderingRayTracing:STRING=NO"
+            fi
+        else
+            vopts="${vopts} -DModule_vtkRenderingOSPRay:BOOL=ON"
+            vopts="${vopts} -DOSPRAY_INSTALL_DIR=${OSPRAY_INSTALL_DIR}"
+            vopts="${vopts} -Dembree_DIR=${EMBREE_INSTALL_DIR}"
+        fi
     fi
 
     # zlib support, use the one we build
-    vopts="${vopts} -DVTK_USE_SYSTEM_ZLIB:BOOL=ON"
+    if [[ "$DO_VTK9" == "yes" ]] ; then
+        vopts="${vopts} -DVTK_MODULE_USE_EXTERNAL_VTK_zlib:BOOL=ON"
+    else
+        vopts="${vopts} -DVTK_USE_SYSTEM_ZLIB:BOOL=ON"
+    fi
     vopts="${vopts} -DZLIB_INCLUDE_DIR:PATH=${ZLIB_INCLUDE_DIR}"
     if [[ "$VISIT_BUILD_MODE" == "Release" ]] ; then
         vopts="${vopts} -DZLIB_LIBRARY_RELEASE:FILEPATH=${ZLIB_LIBRARY}"
@@ -1741,6 +2440,9 @@ function build_vtk
     # script that we invoke with bash which calls cmake with all of the properly
     # arguments. We are now using this strategy for all platforms.
     #
+    if [[ "$DO_MESAGL" == "yes" || "$DO_OSMESA" == "yes" ]] ; then
+        export LD_LIBRARY_PATH="${LLVM_LIB_DIR}:$LD_LIBRARY_PATH"
+    fi
 
     if test -e bv_run_cmake.sh ; then
         rm -f bv_run_cmake.sh

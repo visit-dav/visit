@@ -1,54 +1,3 @@
-Target: xml2python
-Code: PyHistogramAttributes_getattr
-Prefix:
-Postfix:
-    // Try and handle legacy fields
-
-    // lineStyle and it's possible enumerations
-    bool lineStyleFound = false;
-    if (strcmp(name, "lineStyle") == 0)
-    {
-        lineStyleFound = true;
-    }
-    else if (strcmp(name, "SOLID") == 0)
-    {
-        lineStyleFound = true;
-    }
-    else if (strcmp(name, "DASH") == 0)
-    {
-        lineStyleFound = true;
-    }
-    else if (strcmp(name, "DOT") == 0)
-    {
-        lineStyleFound = true;
-    }
-    else if (strcmp(name, "DOTDASH") == 0)
-    {
-        lineStyleFound = true;
-    }
-    if (lineStyleFound)
-    {
-        PyErr_WarnEx(NULL,
-            "lineStyle is no longer a valid Histogram "
-            "attribute.\nIt's value is being ignored, please remove "
-            "it from your script.\n", 3);
-        return PyInt_FromLong(0L);
-    }
-
-Code: PyHistogramAttributes_setattr
-Prefix:
-Postfix:
-    // Try and handle legacy fields
-    if(obj == &NULL_PY_OBJ)
-    {
-        if(strcmp(name, "lineStyle") == 0)
-        {
-            PyErr_WarnEx(NULL, "'lineStyle' is obsolete. It is being ignored.", 3);
-            Py_INCREF(Py_None);
-            obj = Py_None;
-        }
-    }
-
 Target: xml2atts
 Function: ChangesRequireRecalculation
 Declaration: bool ChangesRequireRecalculation(const HistogramAttributes &) const;
@@ -126,41 +75,6 @@ HistogramAttributes::CopyAttributes(const AttributeGroup *atts)
     }
 
     return retval;
-}
-
-Function: ProcessOldVersions
-Declaration: virtual void ProcessOldVersions(DataNode *parentNode, const char *configVersion);
-Definition:
-// ****************************************************************************
-// Method: HistogramAttributes::ProcessOldVersions
-//
-// Purpose:
-//   This method allows handling of older config/session files that may
-//   contain fields that are no longer present or have been modified/renamed.
-//
-// Programmer: Kathleen Biagas
-// Creation:   April 4, 2018
-//
-// Modifications:
-//
-// ****************************************************************************
-
-void
-HistogramAttributes::ProcessOldVersions(DataNode *parentNode,
-                                    const char *configVersion)
-{
-    if(parentNode == 0)
-        return;
-
-    DataNode *searchNode = parentNode->GetNode("HistogramAttributes");
-    if(searchNode == 0)
-        return;
-
-    if (VersionLessThan(configVersion, "3.0.0"))
-    {
-        if (searchNode->GetNode("lineStyle") != 0)
-            searchNode->RemoveNode("lineStyle");
-    }
 }
 
 Target: xml2info

@@ -30,6 +30,10 @@
 //  Programmer:  Jeremy Meredith
 //  Creation:    September 25, 2001
 //
+//  Modifications:
+//    Kathleen Biagas, Wed Apr 6, 2022
+//    Fix QT_VERSION test to use Qt's QT_VERSION_CHECK.
+//
 // ****************************************************************************
 class QNarrowLineEdit : public QLineEdit
 {
@@ -46,8 +50,12 @@ class QNarrowLineEdit : public QLineEdit
     {
         QSize size = QLineEdit::sizeHint();
         QFontMetrics fm(font());
-        int w = fm.horizontalAdvance('x') * 4; // 4 characters
-        size.setWidth(w);
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 11, 0))
+        int w = fm.horizontalAdvance("x");
+#else
+        int w = fm.width("x");
+#endif
+        size.setWidth(w * 4); // 4 characters
         return size;
     }
 };
@@ -547,6 +555,9 @@ XMLEditFields::UpdateWindowSingleItem()
 //    Kathleen Biagas, Wed Dec 21 07:52:13 PST 2016
 //    Added glyphtype.
 //
+//    Kathleen Biagas, Tue Nov 15 12:41:48 PST 2022
+//    Added boolArray and boolVector.
+//
 // ****************************************************************************
 void
 XMLEditFields::UpdateTypeList()
@@ -556,6 +567,8 @@ XMLEditFields::UpdateTypeList()
     type->addItem("intArray");
     type->addItem("intVector");
     type->addItem("bool");
+    type->addItem("boolArray");
+    type->addItem("boolVector");
     type->addItem("float");
     type->addItem("floatArray");
     type->addItem("floatVector");

@@ -266,6 +266,9 @@ QvisVolumePlotWindow::~QvisVolumePlotWindow()
 //   I moved the transfer function radio button creation to here and I 
 //   reorganized the code so we can create 1D/2D transfer function pages.
 //
+//   Kathleen Biagas, Wed Apr 6, 2022
+//   Fix QT_VERSION test to use Qt's QT_VERSION_CHECK.
+//
 // ****************************************************************************
 
 void
@@ -273,7 +276,11 @@ QvisVolumePlotWindow::CreateWindowContents()
 {
     // Figure out the max width that we want to allow for some simple
     // line edit widgets.
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 11, 0))
     int maxWidth = fontMetrics().horizontalAdvance("1.0000000000");
+#else
+    int maxWidth = fontMetrics().width("1.0000000000");
+#endif
 
     // Create a tab widget so we can put the transfer functions on their
     // own tabs.
@@ -2513,45 +2520,6 @@ QvisVolumePlotWindow::Apply(bool ignore)
     }
     else
         volumeAtts->Notify();
-}
-
-// ****************************************************************************
-// Method: QvisVolumePlotWindow::ProcessOldVersions
-//
-// Purpose: 
-//   Massage the data node before we use it to SetFromNode.
-//
-// Arguments:
-//   parentNode : The node that contains the window's node.
-//   configVersion : The version of the config file.
-//
-// Returns:    
-//
-// Note:       We're using this method to remove the width and height values
-//             from old config files so the windows don't get resized to the
-//             old tall values.
-//
-// Programmer: Brad Whitlock
-// Creation:   Fri Aug 27 16:31:43 PDT 2010
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-QvisVolumePlotWindow::ProcessOldVersions(DataNode *parentNode, const char *configVersion)
-{
-    DataNode *winNode = parentNode->GetNode(windowTitle().toStdString());
-    if(winNode != 0)
-    {
-        if(VersionGreaterThan("2.1.0", configVersion))
-        {
-            // If configVersion < 2.1.0 then remove the width and height since the
-            // window has changed a lot.
-            winNode->RemoveNode("width", true);
-            winNode->RemoveNode("height", true);
-        }
-    }
 }
 
 //

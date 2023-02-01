@@ -23,7 +23,7 @@ VISITPY_API PyObject *     PyViewerRPC_Wrap(const ViewerRPC *attr);
 void VISITPY_API           PyViewerRPC_SetParent(PyObject *obj, PyObject *parent);
 void VISITPY_API           PyViewerRPC_SetDefaults(const ViewerRPC *atts);
 std::string VISITPY_API    PyViewerRPC_GetLogString();
-std::string VISITPY_API    PyViewerRPC_ToString(const ViewerRPC *, const char *);
+std::string VISITPY_API    PyViewerRPC_ToString(const ViewerRPC *, const char *, const bool=false);
 VISITPY_API PyObject *     PyViewerRPC_getattr(PyObject *self, char *name);
 int VISITPY_API            PyViewerRPC_setattr(PyObject *self, char *name, PyObject *args);
 VISITPY_API extern PyMethodDef PyViewerRPC_methods[VIEWERRPC_NMETH];

@@ -8,6 +8,8 @@
 
 #include <avtTransparencyActor.h>
 
+#include <visit-config.h> // For LIB_VERSION_LE
+
 #include <float.h>
 #include <cstring>
 #include <limits>
@@ -35,6 +37,7 @@
 #include <vtkParallelImageSpaceRedistributor.h>
 #include <vtkTransform.h>
 #include <vtkTransformFilter.h>
+#include <vtkUnsignedCharArray.h>
 #include <vtkVisItPolyDataNormals.h>
 
 #include <ColorAttribute.h>
@@ -1996,7 +1999,11 @@ avtTransparencyActor::PrepareDataset(size_t input, size_t subinput)
             //
             prepDS->Allocate(pd);
             vtkIdType ncells = pd->GetNumberOfCells();
+#if LIB_VERSION_LE(VTK,8,1,0)
             vtkIdType  *cellPts = NULL;
+#else
+            const vtkIdType  *cellPts = NULL;
+#endif
             vtkIdType   myCellPts[100];
             vtkIdType   npts = 0;
             vector<vtkIdType> ptIds;

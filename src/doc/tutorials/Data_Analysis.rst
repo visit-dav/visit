@@ -14,7 +14,8 @@ Queries
 What are queries
 ~~~~~~~~~~~~~~~~
 
-Queries are the mechanism to do data analysis, to pull out a number or curve that describes the data set.
+Queries are a mechanism for performing data analysis. 
+Example use cases include querying for a number or curve that helps to describe the data set.
 
 Experiment with queries
 ~~~~~~~~~~~~~~~~~~~~~~~
@@ -32,10 +33,10 @@ Variable-related
 Variable related queries provide information about variables.
 
 1. Change the *Display* in the Query window to be *Variable-related*.
-2. Go back to the *GUI*, delete any plots, open up "example.silo", create a Pseudocolor plot of *temp* and click *Draw*.
+2. Go back to the *GUI*, delete any plots, open up "example.silo", create a Pseudocolor plot of *temp*, and click *Draw*.
 3. Highlight *MinMax* and click *Query*.
 
-  * The result will be displayed in the *Query results*. It will tell you the minimum, maximum and their locations.
+  * The result will be displayed in the *Query results*. You will see the minimum and maximum values for the variable used by the highlighted plot in the Plot list and their logical and physical coordinates.
 
 4. Apply the Slice operator to your plot.
 5. Do another *MinMax* query.
@@ -49,7 +50,7 @@ Variable related queries provide information about variables.
 
 1. Now highlight *Variable Sum* and click *Query*.
 
-  * This will sum up all of the values in the data set.
+  * This will sum up the variable values for all cells using the plot highlighted in the Plot list.
 
 2. Now highlight *Weighted Variable Sum* and click *Query*.
 
@@ -67,6 +68,9 @@ Variable related queries provide information about variables.
 
 2. Change the start point to "-5 -5 0" and the end point to "5 5 0".
 3. Click *Query*.
+
+  * The Lineout query samples data values along a line, producing a 1D dataset from datasets of greater dimension. It creates a new instance of the highlighted plot in the Plot list and copies the plot to another vis window.
+
 4. This is a way to get exact lineouts.
 5. You can also take 3D lineouts this way.
 
@@ -85,7 +89,7 @@ Variable related queries provide information about variables.
 
   * This will provide information about the node or zone in the specied domain.
 
-You can also perform a query using the global element id by selecting *Pick using global elememnt Id*. This only works if the file contains global element id information, which this file does not.
+You can also perform a query using the global element id by selecting *Pick using global element Id*. This only works if the file contains global element id information, which this file does not.
 
 Mesh-related
 """"""""""""
@@ -194,7 +198,8 @@ Changing global options
 Built-in queries
 ----------------
 
-:ref:`built-in_queries`
+VisIt_ provides a wide variety of built-in queries.
+See explanations of these here: :ref:`built-in_queries`
 
 Expressions
 -----------

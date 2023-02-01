@@ -189,7 +189,11 @@ function error
              "the VisIt project via https://visit-help.llnl.gov. You may "\
              "need to compress the ${LOG_FILE} using a program like gzip "\
              "so it will fit within the size limits for attachments."
-        info "Log file full path: " `pwd`/${LOG_FILE}
+        if [[ -n "$START_DIR" ]]; then
+            info "Log file full path: " ${START_DIR}/${LOG_FILE}
+        else
+            info "Log file full path: " $(pwd)/${LOG_FILE}
+        fi
     fi
     exit 1
 }
@@ -270,7 +274,6 @@ function verify_required_module_exists
     declare -F "bv_${reqlib}_depends_on" &>/dev/null || errorFunc "${reqlib} depends_on not found"
     declare -F "bv_${reqlib}_print" &>/dev/null || errorFunc "${reqlib} print not found"
     declare -F "bv_${reqlib}_print_usage" &>/dev/null || errorFunc "${reqlib} print_usage not found"
-    declare -F "bv_${reqlib}_dry_run" &>/dev/null || errorFunc "${reqlib} dry_run not found"
     declare -F "bv_${reqlib}_is_installed" &>/dev/null || errorFunc "${reqlib} is_installed not found"
     declare -F "bv_${reqlib}_is_enabled" &>/dev/null || errorFunc "${reqlib} is_enabled not found"
 }
@@ -289,7 +292,6 @@ function verify_optional_module_exists
     declare -F "bv_${optlib}_print" &>/dev/null || errorFunc "${optlib} print not found"
     declare -F "bv_${optlib}_print_usage" &>/dev/null || errorFunc "${optlib} print_usage not found"
     declare -F "bv_${optlib}_host_profile" &>/dev/null || errorFunc "${optlib} host_profile not found"
-    declare -F "bv_${optlib}_dry_run" &>/dev/null || errorFunc "${optlib} dry_run not found"
     declare -F "bv_${optlib}_is_installed" &>/dev/null || errorFunc "${optlib} is_installed not found"
     declare -F "bv_${optlib}_is_enabled" &>/dev/null || errorFunc "${optlib} is_enabled not found"
 }
@@ -1460,7 +1462,7 @@ function build_hostconf
     echo "##" >> $HOSTCONF
     echo "## Database reader plugin support libraries" >> $HOSTCONF
     echo "##" >> $HOSTCONF
-    echo "## The HDF4, HDF5 and NetCDF libraries must be first so that" >> $HOSTCONF
+    echo "## The HDF5 and NetCDF libraries must be first so that" >> $HOSTCONF
     echo "## their libdeps are defined for any plugins that need them." >> $HOSTCONF
     echo "##" >> $HOSTCONF
     echo "## For libraries with LIBDEP settings, order matters." >> $HOSTCONF
@@ -1656,7 +1658,6 @@ function usage
     printf "\n"
 
     printf "%-20s %s [%s]\n" "--bv-debug"   "Enable debugging for this script" "no"
-    printf "%-20s %s [%s]\n" "--dry-run"  "Dry run of the presented options" "no"
     printf "%-20s %s [%s]\n" "--download-only" "Only download the specified packages" "no"
     printf "%-20s %s [%s]\n" "--engine-only" "Only build the compute engine." "$DO_ENGINE_ONLY"
     printf "%-20s %s [%s]\n" "-h, --help" "Display this help message." "no"

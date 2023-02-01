@@ -70,9 +70,9 @@ function check_minimum_compiler_version()
    if [[ "$CXX_COMPILER" == "g++" ]] ; then
         VERSION=$(get_version_digits g++)
         echo "g++ version $VERSION"
-        testvercomp $VERSION 6.0 '<'
+        testvercomp $VERSION 7.3 '<'
         if [[ $? == 0 ]] ; then
-            echo "Need g++ version >= 6.0"
+            echo "Need g++ version >= 7.3"
             exit 1
         fi
     elif [[ "$OPSYS" == "Darwin"  &&  "$CXX_COMPILER" == "clang++" ]] ; then 
@@ -542,7 +542,7 @@ function initialize_build_visit()
     ANY_ERRORS="no"
 
     #initialize VisIt
-    bv_visit_initialize
+    bv_visit_initialize "$@"
 
     #
     # OPTIONS
@@ -596,6 +596,8 @@ function initialize_build_visit()
     export CREATE_RPM="no"
     export DO_CONTEXT_CHECK="yes"
     export VISIT_INSTALL_NETWORK=""
+    export DO_QT510="no"
+    export DO_VTK9="no"
     DOWNLOAD_ONLY="no"
 
 
@@ -625,6 +627,20 @@ function initialize_build_visit()
     fi
 
 
+    #
+    # Check the command line arguments for any arguments that need to be
+    # handled before calling the bv_XXX_info methods. This would mainly
+    # be arguments that affect the version of a package being built.
+    #
+    for arg in "$@" ; do
+        case $arg in
+            --qt510) DO_QT510="yes";;
+        esac
+        case $arg in
+            --vtk9) DO_VTK9="yes";;
+        esac
+    done
+
     #get visit information..
     bv_visit_info
 
@@ -651,7 +667,6 @@ function initialize_build_visit()
 
     WRITE_UNIFIED_FILE=""
     VISIT_INSTALLATION_BUILD_DIR=""
-    VISIT_DRY_RUN="no"
     DO_SUPER_BUILD="no"
     DO_MANGLED_LIBRARIES="no"
 }
@@ -1178,7 +1193,6 @@ function run_build_visit()
             --installation-build-dir) next_arg="installation-build-dir";;
             --write-unified-file) next_arg="write-unified-file";;
             --parallel-build) DO_SUPER_BUILD="yes";;
-            --dry-run) VISIT_DRY_RUN="yes";;
             --arch) next_arg="arch";;
             --build-mode) next_arg="build-mode";;
             --cflag) next_arg="append-cflags";;
@@ -1225,7 +1239,12 @@ function run_build_visit()
             --thirdparty-path) next_arg="thirdparty-path";;
             --version) next_arg="version";;
             --xdb) DO_XDB="yes";;
-            --console) ;;
+            # "--qt510" is actually handled elsewhere, but it is also here
+            # to prevent it triggering an "Urecognized option" error.
+            --qt510) ;;
+            # "--vtk9" is actually handled elsewhere, but it is also here
+            # to prevent it triggering an "Urecognized option" error.
+            --vtk9) ;;
             --skip-opengl-context-check) DO_CONTEXT_CHECK="no";;
             *)
                 echo "Unrecognized option '${arg}'."
@@ -1240,7 +1259,7 @@ function run_build_visit()
     fi
 
     if [[ "$ANY_ERRORS" == "yes" ]] ; then
-        echo "command line arguments are used incorrectly. unrecognized options..."
+        echo "command line arguments are used incorrectly. see above..."
         exit 1
     fi
 
@@ -1360,26 +1379,6 @@ function run_build_visit()
     #TODO: handle them seperately
     info "enabling any dependent libraries"
     enable_dependent_libraries
-
-    # At this point we are after the command line and the visual selection
-    # dry run, don't execute anything just run the enabled stuff..
-    # happens before any downloads have taken place..
-    if [[ $VISIT_DRY_RUN == "yes" ]]; then
-        for (( bv_i=0; bv_i<${#reqlibs[*]}; ++bv_i ))
-        do
-            initializeFunc="bv_${reqlibs[$bv_i]}_dry_run"
-            $initializeFunc
-        done
-
-        for (( bv_i=0; bv_i<${#optlibs[*]}; ++bv_i ))
-        do
-            initializeFunc="bv_${optlibs[$bv_i]}_dry_run"
-            $initializeFunc
-        done
-
-        bv_visit_dry_run
-        exit 0
-    fi
 
     START_DIR="$PWD"
 

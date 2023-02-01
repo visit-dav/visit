@@ -19,7 +19,7 @@ We are going to focus on the legacy files, since they are a little bit simpler.
 
 The remainder of this VTK documentation consistes of a description of the file format, a simple example, and then more complex examples of the different mesh types.
 
-The official VTK file format descriptions can be found `here <https://kitware.github.io/vtk-examples/site/VTKFileFormats/>`_.
+The official VTK file format descriptions can be found at the `VTK website <https://kitware.github.io/vtk-examples/site/VTKFileFormats/>`_.
 
 .. warning::
 
@@ -30,6 +30,27 @@ The official VTK file format descriptions can be found `here <https://kitware.gi
     For VisIt_ to read VTK files, the files *must have* the correct VTK extensions.
 
 .. _data_into_visit_vtk_structure:
+
+The visit_writer source and header files
+----------------------------------------
+
+The ``visit_writer.c`` and ``visit_writer.h`` files contain C source code with simple functions that write VTK files that can easily be added to your existing C or C++ data generating code without introducing any external dependencies.
+The library can write either text or binary files.
+The library can output point, unstructured, rectilinear, regular and curvilinear meshes.
+
+The `header <https:github.com/visit-dav/visit/blob/develop/src/tools/data/writer/visit_writer.h>`_ and `source <https:github.com/visit-dav/visit/blob/develop/src/tools/data/writer/visit_writer.c>`_ files can be found in the VisIt_ repository on GitHub.
+
+Binary files
+------------
+
+Binary files contain binary coordinates and fields.
+This is any data where a length and data type are specified.
+The binary data follows immediately after the newline character of the previous ASCII keyword and parameter sequence.
+Binary data must be written in *big endian* format.
+If you are on a *little endian* system, you will need to byte swap the data before writing it.
+X86 and ARM processors store data in *little endian* format, so you will need to byte swap the data in that case.
+If you want to write your code independent of the *endianness*, you can write code to detect it and do the byte swapping if appropriate.
+The ``visit_writer`` mentioned above contains code to detect the *endianness* and do byte swapping if necessary.
 
 The basic structure of a VTK file
 ---------------------------------
@@ -453,27 +474,27 @@ A VTK file with extra meta data is shown here.
 The following lines represent the mesh name associated with this file.
 
 .. literalinclude:: data_examples/extra_metadata.vtk
-   :lines: 6-7
+   :lines: 8-9
 
 The following lines represent cycle associated with this file.
 
 .. literalinclude:: data_examples/extra_metadata.vtk
-   :lines: 8-9
+   :lines: 10-11
 
 The following lines represent the time associated with this file.
 
 .. literalinclude:: data_examples/extra_metadata.vtk
-   :lines: 10-11
+   :lines: 12-13
 
 The following lines represent the expressions associated with this file.
 
 .. literalinclude:: data_examples/extra_metadata.vtk
-   :lines: 12-14
+   :lines: 14-16
 
 The following lines represent the ghost zones associated with this file.
 
 .. literalinclude:: data_examples/extra_metadata.vtk
-   :lines: 31-35
+   :lines: 33-37
 
 .. _data_into_visit_vtk_struct_points:
 

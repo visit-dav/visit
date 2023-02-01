@@ -23,7 +23,7 @@ VISITPY_API PyObject *     PyExportDBAttributes_Wrap(const ExportDBAttributes *a
 void VISITPY_API           PyExportDBAttributes_SetParent(PyObject *obj, PyObject *parent);
 void VISITPY_API           PyExportDBAttributes_SetDefaults(const ExportDBAttributes *atts);
 std::string VISITPY_API    PyExportDBAttributes_GetLogString();
-std::string VISITPY_API    PyExportDBAttributes_ToString(const ExportDBAttributes *, const char *);
+std::string VISITPY_API    PyExportDBAttributes_ToString(const ExportDBAttributes *, const char *, const bool=false);
 VISITPY_API PyObject *     PyExportDBAttributes_getattr(PyObject *self, char *name);
 int VISITPY_API            PyExportDBAttributes_setattr(PyObject *self, char *name, PyObject *args);
 VISITPY_API extern PyMethodDef PyExportDBAttributes_methods[EXPORTDBATTRIBUTES_NMETH];

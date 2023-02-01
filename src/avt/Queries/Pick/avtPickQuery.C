@@ -1086,6 +1086,12 @@ avtPickQuery::RetrieveVarInfo(vtkDataSet* ds, const int findElement,
 //    Use all cells corresponding to original when looking for incident nodes,
 //    but only when original zones weren't preserved and we have the original
 //    cells array.  Also, don't include 'added' nodes (original node id -1).
+// 
+//    Kathleen Biagas and Justin Privitera, Fri Sep 16 17:15:07 PDT 2022
+//    Took into account node origin in incident nodes calculation.
+// 
+//    Justin Privitera, Fri Dec  2 10:45:40 PST 2022
+//    Undid the previous change. Turns out that was not the right approach.
 //
 // ****************************************************************************
 

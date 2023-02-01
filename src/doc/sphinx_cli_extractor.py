@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
 ############################################################################################
@@ -213,11 +213,11 @@ class Table(object):
                 if j > 0:
                     left_over = max_lengths[j] - len(item) - 1
                     inner_pre = ""
-    	            table += "%s| %s%s" % (inner_pre, item, " " * (left_over))
+                    table += "%s| %s%s" % (inner_pre, item, " " * (left_over))
                 else:
                     left_over = max_lengths[j] - len(item) - 5
                     inner_pre = preclude 
-      	            table += "%s| **%s**%s" % (inner_pre, item, " " * (left_over))
+                    table += "%s| **%s**%s" % (inner_pre, item, " " * (left_over))
             table +=  "|\n"
             start += 1
     
@@ -336,7 +336,7 @@ class AttributesTable(Table):
 
         output      = "**%s**: *%sAttributes()*\n" % (self.attribute, self.attribute)
         output     += '-' * char_count
-        output     += "\n|\n\n%s\n" % (self.build_sphinx_table(title=True))
+        output     += "\n\n%s\n" % (self.build_sphinx_table(title=True))
 
         return output
 
@@ -460,7 +460,7 @@ def attributes_to_sphinx(atts):
                 print("\nERROR: MISSING CASE!", file=sys.stderr)
                 print("LINE: " + str(line) + "\n", file=sys.stderr)
     
-        attributes_doc += "\n|\n\n%s\n|\n" % (str(table))
+        attributes_doc += "%s\n" % (str(table))
 
     return attributes_doc
 
@@ -515,7 +515,9 @@ if __name__ == '__main__':
     
     visit.AddArgument("-nowin")
     visit.AddArgument("-noconfig")
-    visit.Launch()
+    visit.LaunchNowin()
+    import visit
+
     print("**\n**  Running VisIt", eval('visit.Version()'), "\n**", file=sys.stderr)
     
     for func in dir(visit):
@@ -545,7 +547,7 @@ if __name__ == '__main__':
     attrlist.sort()
     event_names = visit.GetCallbackNames()
     
-    template = "\n\n%s|\n|\n%s"
+    template = "%s%s"
 
     atts_doc    = attributes_to_sphinx(attrlist)
     atts_doc    = template % (atts_preamble, atts_doc)

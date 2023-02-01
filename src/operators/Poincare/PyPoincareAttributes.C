@@ -37,7 +37,7 @@ struct PoincareAttributesObject
 //
 static PyObject *NewPoincareAttributes(int);
 std::string
-PyPoincareAttributes_ToString(const PoincareAttributes *atts, const char *prefix)
+PyPoincareAttributes_ToString(const PoincareAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -6129,7 +6129,7 @@ static int
 PoincareAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     PoincareAttributesObject *obj = (PoincareAttributesObject *)v;
-    fprintf(fp, "%s", PyPoincareAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyPoincareAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -6137,7 +6137,7 @@ PyObject *
 PoincareAttributes_str(PyObject *v)
 {
     PoincareAttributesObject *obj = (PoincareAttributesObject *)v;
-    return PyString_FromString(PyPoincareAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyPoincareAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -6289,7 +6289,7 @@ PyPoincareAttributes_GetLogString()
 {
     std::string s("PoincareAtts = PoincareAttributes()\n");
     if(currentAtts != 0)
-        s += PyPoincareAttributes_ToString(currentAtts, "PoincareAtts.");
+        s += PyPoincareAttributes_ToString(currentAtts, "PoincareAtts.", true);
     return s;
 }
 
@@ -6302,7 +6302,7 @@ PyPoincareAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("PoincareAtts = PoincareAttributes()\n");
-        s += PyPoincareAttributes_ToString(currentAtts, "PoincareAtts.");
+        s += PyPoincareAttributes_ToString(currentAtts, "PoincareAtts.", true);
         cb(s);
     }
 }

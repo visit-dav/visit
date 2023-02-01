@@ -22,7 +22,7 @@ PyObject *     PyReplicateAttributes_Wrap(const ReplicateAttributes *attr);
 void           PyReplicateAttributes_SetParent(PyObject *obj, PyObject *parent);
 void           PyReplicateAttributes_SetDefaults(const ReplicateAttributes *atts);
 std::string    PyReplicateAttributes_GetLogString();
-std::string    PyReplicateAttributes_ToString(const ReplicateAttributes *, const char *);
+std::string    PyReplicateAttributes_ToString(const ReplicateAttributes *, const char *, const bool=false);
 PyObject *     PyReplicateAttributes_getattr(PyObject *self, char *name);
 int            PyReplicateAttributes_setattr(PyObject *self, char *name, PyObject *args);
 extern PyMethodDef PyReplicateAttributes_methods[REPLICATEATTRIBUTES_NMETH];

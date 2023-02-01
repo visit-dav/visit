@@ -12,7 +12,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define COLORTABLEATTRIBUTES_NMETH 15
+#define COLORTABLEATTRIBUTES_NMETH 19
 void VISITPY_API           PyColorTableAttributes_StartUp(ColorTableAttributes *subj, void *data);
 void VISITPY_API           PyColorTableAttributes_CloseDown();
 VISITPY_API PyMethodDef *  PyColorTableAttributes_GetMethodTable(int *nMethods);
@@ -23,7 +23,7 @@ VISITPY_API PyObject *     PyColorTableAttributes_Wrap(const ColorTableAttribute
 void VISITPY_API           PyColorTableAttributes_SetParent(PyObject *obj, PyObject *parent);
 void VISITPY_API           PyColorTableAttributes_SetDefaults(const ColorTableAttributes *atts);
 std::string VISITPY_API    PyColorTableAttributes_GetLogString();
-std::string VISITPY_API    PyColorTableAttributes_ToString(const ColorTableAttributes *, const char *);
+std::string VISITPY_API    PyColorTableAttributes_ToString(const ColorTableAttributes *, const char *, const bool=false);
 VISITPY_API PyObject *     PyColorTableAttributes_getattr(PyObject *self, char *name);
 int VISITPY_API            PyColorTableAttributes_setattr(PyObject *self, char *name, PyObject *args);
 VISITPY_API extern PyMethodDef PyColorTableAttributes_methods[COLORTABLEATTRIBUTES_NMETH];

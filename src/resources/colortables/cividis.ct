@@ -1026,6 +1026,6 @@
             <Field name="colors" type="unsignedCharArray" length="4">255 235 70 255</Field>
             <Field name="position" type="float">1.000000</Field>
         </Object>
-    <Field name="category" type="string">CvdFriendlyViridis</Field>
+    <Field name="tags" type="stringVector">"Color Blind Safe" "Viridis" "Default" "Continuous" </Field>
     </Object>
 </Object>

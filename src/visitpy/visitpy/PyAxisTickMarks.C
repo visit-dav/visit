@@ -36,7 +36,7 @@ struct AxisTickMarksObject
 //
 static PyObject *NewAxisTickMarks(int);
 std::string
-PyAxisTickMarks_ToString(const AxisTickMarks *atts, const char *prefix)
+PyAxisTickMarks_ToString(const AxisTickMarks *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -462,7 +462,7 @@ static int
 AxisTickMarks_print(PyObject *v, FILE *fp, int flags)
 {
     AxisTickMarksObject *obj = (AxisTickMarksObject *)v;
-    fprintf(fp, "%s", PyAxisTickMarks_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyAxisTickMarks_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -470,7 +470,7 @@ PyObject *
 AxisTickMarks_str(PyObject *v)
 {
     AxisTickMarksObject *obj = (AxisTickMarksObject *)v;
-    return PyString_FromString(PyAxisTickMarks_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyAxisTickMarks_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -622,7 +622,7 @@ PyAxisTickMarks_GetLogString()
 {
     std::string s("AxisTickMarks = AxisTickMarks()\n");
     if(currentAtts != 0)
-        s += PyAxisTickMarks_ToString(currentAtts, "AxisTickMarks.");
+        s += PyAxisTickMarks_ToString(currentAtts, "AxisTickMarks.", true);
     return s;
 }
 
@@ -635,7 +635,7 @@ PyAxisTickMarks_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("AxisTickMarks = AxisTickMarks()\n");
-        s += PyAxisTickMarks_ToString(currentAtts, "AxisTickMarks.");
+        s += PyAxisTickMarks_ToString(currentAtts, "AxisTickMarks.", true);
         cb(s);
     }
 }

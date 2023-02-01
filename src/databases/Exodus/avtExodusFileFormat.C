@@ -14,7 +14,6 @@
 #include <vtkCellType.h>
 #include <vtkCharArray.h>
 #include <vtkCompositeDataIterator.h>
-#include <vtkConfigure.h>
 #include <vtkDataObject.h>
 #include <vtkDoubleArray.h>
 #include <vtkDataArray.h>
@@ -72,7 +71,7 @@ using namespace ExodusDBOptions;
 
 static int VisItNCErr;
 static map<string, int> messageCounts;
-#define supressMessage "further warnings regarding this error will be supressed"
+#define suppressMessage "further warnings regarding this error will be suppressed"
 #define CheckNCError2(ERR, FN, THELINE, THEFILE)                                                \
     if (ERR != NC_NOERR)                                                                        \
     {                                                                                           \
@@ -90,8 +89,8 @@ static map<string, int> messageCounts;
         }                                                                                       \
         else if (messageCounts[msg] == 6)                                                       \
         {                                                                                       \
-            if (!avtCallback::IssueWarning(supressMessage))                                     \
-                cerr << supressMessage << endl;                                                 \
+            if (!avtCallback::IssueWarning(suppressMessage))                                     \
+                cerr << suppressMessage << endl;                                                 \
         }                                                                                       \
     }                                                                                           \
     else                                                                                        \
@@ -3158,7 +3157,7 @@ ConvertGlobalElementIdsToInt(vtkDataArray *da)
 static vtkDataArray *
 EnsureGlobalElementIdsAreInt(vtkDataArray *da)
 {
-#if VISIT_VERSION_GE(3,3,0)
+#if VISIT_VERSION_GE(3,4,0)
 #error EITHER FIX GLOBAL ELEMENT ID BASED GHOST-ZONE COMM OR UPDATE THIS VERSION TRIGGER
 #endif
 

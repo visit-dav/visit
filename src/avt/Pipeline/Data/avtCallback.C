@@ -30,14 +30,14 @@ bool                          avtCallback::nowinMode = false;
 bool                          avtCallback::nowinInteractionMode = false;
 bool                          avtCallback::swRendering = false;
 bool                          avtCallback::safeMode = false;
-#ifdef VISIT_OSPRAY
+#if defined(VISIT_OSPRAY) || defined(HAVE_OSPRAY)
 bool                          avtCallback::useOSPRay = false;
 #endif
 
 GlobalAttributes::BackendType avtCallback::backendType = GlobalAttributes::VTK;
 
 GetDatabaseCallback           avtCallback::getDatabaseCallback = NULL;
-void                         *avtCallback::getDatabaseCallbackArgs = NULL; 
+void                         *avtCallback::getDatabaseCallbackArgs = NULL;
 
 bool                          avtCallback::haveRenderingException = false;
 std::string                   avtCallback::renderingExceptionMessage;
@@ -100,10 +100,16 @@ avtCallback::IssueWarning(const char *msg)
     }
     else
     {
-        debug1 << "Would like to have issued warning \"" << msg 
+        debug1 << "Would like to have issued warning \"" << msg
                << "\", but no callback was registered." << endl;
         return false;
     }
+}
+
+bool
+avtCallback::IssueWarning(const std::string &msg)
+{
+    return IssueWarning(msg.c_str());
 }
 
 
@@ -168,7 +174,7 @@ avtCallback::ResetTimeout(int secs)
 void
 avtCallback::SetBackendType(GlobalAttributes::BackendType type)
 {
-    backendType = type; 
+    backendType = type;
 }
 
 
@@ -183,7 +189,7 @@ avtCallback::SetBackendType(GlobalAttributes::BackendType type)
 // ****************************************************************************
 
 GlobalAttributes::BackendType
-avtCallback::GetBackendType() 
+avtCallback::GetBackendType()
 {
     return backendType;
 }
@@ -273,7 +279,7 @@ avtCallback::SetCurrentLightList(const LightList &l)
 // ****************************************************************************
 
 void
-avtCallback::RegisterGetDatabaseCallback(GetDatabaseCallback gdc, 
+avtCallback::RegisterGetDatabaseCallback(GetDatabaseCallback gdc,
                                          void *gdcArgs)
 {
     getDatabaseCallback     = gdc;

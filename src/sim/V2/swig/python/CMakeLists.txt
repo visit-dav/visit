@@ -24,6 +24,9 @@
 #  Cyrus Harrison, Tue Jun 30 16:23:15 PDT 2020
 #  Use updated Find NumPy.
 #
+#  Kathleen Biagas, Wed Nov 30, 2022
+#  Remove test for VISIT_OUT_OF_SOURCE_BUILD as out-of-source is required.
+#
 #****************************************************************************
 
 INCLUDE_DIRECTORIES(
@@ -66,8 +69,7 @@ INSTALL(FILES simV2.py
     )
 
 #Copy simV2.py for use during dev work
-IF(VISIT_OUT_OF_SOURCE_BUILD)
-    EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E copy 
-        ${CMAKE_CURRENT_SOURCE_DIR}/simV2.py
-        ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/simV2.py)
-ENDIF(VISIT_OUT_OF_SOURCE_BUILD)
+EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E copy 
+    ${CMAKE_CURRENT_SOURCE_DIR}/simV2.py
+    ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/simV2.py)
+

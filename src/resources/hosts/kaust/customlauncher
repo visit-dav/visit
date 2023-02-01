@@ -1,0 +1,329 @@
+###############################################################################
+# Class: JobSubmitter_srun_KAUST_Shaheen
+#
+# Purpose:    Custom "sbatch/srun" job submitter for shaheen
+#
+# Programmer: James Kress
+# Date:       Sun Apr 17 2:48:36 PDT 2022
+#
+# Modifications
+#
+###############################################################################
+
+class JobSubmitter_srun_KAUST_Shaheen(JobSubmitter):
+    def __init__(self, launcher):
+        super(JobSubmitter_srun_KAUST_Shaheen, self).__init__(launcher)
+
+    def CreateFilename(self):
+        tdate = time.asctime()[11:19]
+        tuser = self.launcher.username()
+        return os.path.join("/scratch/%s/" %(tuser), "visit.kaust.%s" % (tdate))
+        
+    def TFileLoadModules(self, tfile):
+        tfile.write("module unload PrgEnv-cray/6.0.10\n")
+        tfile.write("module load PrgEnv-gnu\n")
+        tfile.write("module swap gcc/11.2.0 gcc/9.3.0\n")
+        print("creating tfile!", tfile)
+
+
+    def Executable(self):
+        return ["sbatch"]
+
+    def HandledHardwareArguments(self):
+        return 1
+
+    def TFileSetup(self, tfile):
+        tfile.write("cd /ibex/scratch/%s\n" % self.launcher.username())
+        tfile.write("ulimit -c 0\n")
+       # tfile.write("export PMI_MMAP_SYNC_WAIT_TIME=300\n")
+        tfile.write("module list\n")
+        tfile.write("# Submitted on host %s\n" % self.launcher.hostname())
+        for v in ("LIBPATH", "LD_LIBRARY_PATH", "VISITHOME", "VISITARCHHOME", "VISITPLUGINDIR"):
+            tfile.write('echo "%s=$%s"\n' % (v,v))
+
+    def Writable(self, d):
+        return self.launcher.writepermission(d)
+
+    def HandleCWDPermissions(self):
+        args = []
+        if not self.Writable(os.path.abspath(os.curdir)):
+            msg = """
+The directory you started VisIt in does not have write permission.
+Using /dev/null for the batch job standard error and standard
+output streams.
+"""
+            self.launcher.warning(msg)
+            args = args + ["-e", "/dev/null", "-o", "/dev/null"]
+        return args
+
+    def AddEnvironment(self):
+        env = "--export="
+        env = env + "HOME=" + GETENV("HOME")
+        env = env + ",LIBPATH=" + GETENV("LIBPATH")
+        env = env + ",LD_LIBRARY_PATH=" + GETENV("LD_LIBRARY_PATH")
+        env = env + ",VISITHOME=" + GETENV("VISITHOME")
+        env = env + ",VISITARCHHOME=" + GETENV("VISITARCHHOME")
+        env = env + ",VISITPLUGINDIR=" + GETENV("VISITPLUGINDIR")
+        return [env]
+
+
+    def srun(self):
+        return ["srun"]
+
+    def srun_args(self, args):
+        mpicmd = self.srun()
+        mpicmd = mpicmd + ["--export=ALL"]
+        if self.parallel.sublaunchargs != None:
+            mpicmd = mpicmd + self.parallel.sublaunchargs
+        if self.parallel.np != None:
+            mpicmd = mpicmd + ["--ntasks=%s" % self.parallel.np]
+        if self.parallel.nn != None:
+            mpicmd = mpicmd + ["--ntasks-per-node=%s" % self.PPN()]
+        mpicmd = mpicmd + self.VisItExecutable() + args
+        print("args given: ", args)
+        return mpicmd
+
+    def CreateCommand(self, args, debugger):
+        parcmd = self.Executable()
+        parcmd = parcmd + self.HandleCWDPermissions()
+  #      parcmd = parcmd + self.AddEnvironment()
+        if self.parallel.launchargs != None:
+            parcmd = parcmd + self.parallel.launchargs
+        if self.parallel.partition != None:
+            parcmd = parcmd + ["--partition=%s" % self.parallel.partition]
+        if self.parallel.bank != None:
+            parcmd = parcmd + ["--account=%s" % self.parallel.bank]
+        if self.parallel.time != None:
+            parcmd = parcmd + ["--time=%s" % self.parallel.time]
+        if self.parallel.np != None:
+            parcmd = parcmd + ["--ntasks=%s" % self.parallel.np]
+        if self.parallel.nn != None:
+            parcmd = parcmd + ["--nodes=%s" % self.parallel.nn]
+            parcmd = parcmd + ["--tasks-per-node=%s" % self.PPN()]
+        if self.parallel.name != None:
+            parcmd = parcmd + ["--job-name=%s" % self.parallel.name]
+
+        sbatch,sublauncher = self.LauncherAndSubLauncher()
+        if sublauncher == "srun":
+            mpicmd = self.srun_args(args)
+        else:
+            mpicmd = self.VisItExecutable() + args
+
+        mpicmd = debugger.CreateCommand(mpicmd)
+
+        # Create the tfile
+        tfilename = self.CreateFilename()
+        try:
+            tfile = open(tfilename, "wt")
+            tfile.write("#!/bin/sh\n")
+            #tfile.write("#SBATCH -account=k1033\n")
+            #tfile.write("#SBATCH -nodes=1\n")
+            #tfile.write("#SBATCH -time=00:10:00\n")
+
+            self.TFileLoadModules(tfile)
+            self.TFileSetup(tfile)
+
+            if self.parallel.hw_precmd != None:
+                tfile.write(self.parallel.hw_precmd + "\n")
+            if self.parallel.sublaunchprecmd != None:
+                tfile.write(" ".join(self.parallel.sublaunchprecmd) + "\n")
+            tfile.write(" ".join(mpicmd) + "\n")
+            if self.parallel.sublaunchpostcmd != None:
+                tfile.write(" ".join(self.parallel.sublaunchpostcmd) + "\n")
+            if self.parallel.hw_postcmd != None:
+                tfile.write(self.parallel.hw_postcmd + "\n")
+
+            tfile.close()
+            os.chmod(tfilename, 0o775)
+        except (OSError, IOError):
+            exit("Could not create script file to launch %s job." % self.parallel.launcher, 0)
+
+        # The parallel command is the tfile script we just made.
+        parcmd = parcmd + [tfilename]
+        print("Running: ", parcmd)
+        return parcmd
+
+
+###############################################################################
+# Class: JobSubmitter_srun_KAUST_Ibex
+#
+# Purpose:    Custom "sbatch/srun" job submitter for ibex
+#
+# Programmer: James Kress
+# Date:       Sun Apr 17 2:48:36 PDT 2022
+#
+# Modifications
+#
+###############################################################################
+
+class JobSubmitter_srun_KAUST_Ibex(JobSubmitter):
+    def __init__(self, launcher):
+        super(JobSubmitter_srun_KAUST_Ibex, self).__init__(launcher)
+
+    def CreateFilename(self):
+        tdate = time.asctime()[11:19]
+        tuser = self.launcher.username()
+        return os.path.join("/ibex/scratch/%s/" %(tuser), "visit.kaust.%s" % (tdate))
+
+    def Executable(self):
+        return ["/opt/slurm/cluster/ibex/install/bin/sbatch"]
+
+    def HandledHardwareArguments(self):
+        return 1
+
+    def TFileSetup(self, tfile):
+        tfile.write("cd /ibex/scratch/%s\n" % self.launcher.username())
+        tfile.write("ulimit -c 0\n")
+        tfile.write("# Submitted on host %s\n" % self.launcher.hostname())
+        for v in ("LIBPATH", "LD_LIBRARY_PATH", "VISITHOME", "VISITARCHHOME", "VISITPLUGINDIR"):
+            tfile.write('echo "%s=$%s"\n' % (v,v))
+
+    def Writable(self, d):
+        return self.launcher.writepermission(d)
+
+    def HandleCWDPermissions(self):
+        args = []
+        if not self.Writable(os.path.abspath(os.curdir)):
+            msg = """
+The directory you started VisIt in does not have write permission.
+Using /dev/null for the batch job standard error and standard
+output streams.
+"""
+            self.launcher.warning(msg)
+            args = args + ["-e", "/dev/null", "-o", "/dev/null"]
+        return args
+
+    def AddEnvironment(self):
+        env = "--export="
+        env = env + "HOME=" + GETENV("HOME")
+        env = env + ",LIBPATH=" + GETENV("LIBPATH")
+        env = env + ",LD_LIBRARY_PATH=" + GETENV("LD_LIBRARY_PATH")
+        env = env + ",VISITHOME=" + GETENV("VISITHOME")
+        env = env + ",VISITARCHHOME=" + GETENV("VISITARCHHOME")
+        env = env + ",VISITPLUGINDIR=" + GETENV("VISITPLUGINDIR")
+        return [env]
+
+
+    def srun(self):
+        return ["srun"]
+
+    def srun_args(self, args):
+        mpicmd = self.srun()
+        mpicmd = mpicmd + ["--export=ALL"]
+        if self.parallel.sublaunchargs != None:
+            mpicmd = mpicmd + self.parallel.sublaunchargs
+        if self.parallel.np != None:
+            mpicmd = mpicmd + ["--ntasks=%s" % self.parallel.np]
+        if self.parallel.nn != None:
+            mpicmd = mpicmd + ["--ntasks-per-node=%s" % self.PPN()]
+        mpicmd = mpicmd + self.VisItExecutable() + args
+        print("args given: ", args)
+        return mpicmd
+
+    def CreateCommand(self, args, debugger):
+        parcmd = self.Executable()
+        parcmd = parcmd + self.HandleCWDPermissions()
+        parcmd = parcmd + self.AddEnvironment()
+        if self.parallel.launchargs != None:
+            parcmd = parcmd + self.parallel.launchargs
+        if self.parallel.partition != None:
+            parcmd = parcmd + ["--partition=%s" % self.parallel.partition]
+        if self.parallel.bank != None:
+            parcmd = parcmd + ["--account=%s" % self.parallel.bank]
+        if self.parallel.time != None:
+            parcmd = parcmd + ["--time=%s" % self.parallel.time]
+        if self.parallel.np != None:
+            parcmd = parcmd + ["--ntasks=%s" % self.parallel.np]
+        if self.parallel.nn != None:
+            parcmd = parcmd + ["--nodes=%s" % self.parallel.nn]
+            parcmd = parcmd + ["--tasks-per-node=%s" % self.PPN()]
+        if self.parallel.name != None:
+            parcmd = parcmd + ["--job-name=%s" % self.parallel.name]
+
+        sbatch,sublauncher = self.LauncherAndSubLauncher()
+        if sublauncher == "srun":
+            mpicmd = self.srun_args(args)
+        else:
+            mpicmd = self.VisItExecutable() + args
+
+        mpicmd = debugger.CreateCommand(mpicmd)
+
+        # Create the tfile
+        tfilename = self.CreateFilename()
+        try:
+            tfile = open(tfilename, "wt")
+            tfile.write("#!/bin/sh\n")
+            self.TFileSetup(tfile)
+
+            if self.parallel.hw_precmd != None:
+                tfile.write(self.parallel.hw_precmd + "\n")
+            if self.parallel.sublaunchprecmd != None:
+                tfile.write(" ".join(self.parallel.sublaunchprecmd) + "\n")
+            tfile.write(" ".join(mpicmd) + "\n")
+            if self.parallel.sublaunchpostcmd != None:
+                tfile.write(" ".join(self.parallel.sublaunchpostcmd) + "\n")
+            if self.parallel.hw_postcmd != None:
+                tfile.write(self.parallel.hw_postcmd + "\n")
+
+            tfile.close()
+            os.chmod(tfilename, 0o775)
+        except (OSError, IOError):
+            exit("Could not create script file to launch %s job." % self.parallel.launcher, 0)
+
+        # The parallel command is the tfile script we just made.
+        parcmd = parcmd + [tfilename]
+        print("Running: ", parcmd)
+        return parcmd
+
+###############################################################################
+# Class: KAUSTLauncher
+#
+# Purpose:    Custom launcher for KAUST
+#
+# Programmer: James Kress
+# Date:       Sun Apr 17 2:48:36 PDT 2022
+#
+# Modifications:
+#
+###############################################################################
+
+class KAUSTLauncher(MainLauncher):
+    def __init__(self):
+        super(KAUSTLauncher, self).__init__()
+        self.ibex = -1
+        self.shaheen = -1
+
+    def IsRunningOnIbex(self):
+        if self.ibex == -1:
+           self.ibex = 0
+           if self.parallelArgs.parallel and \
+              self.domainname() == "ibex.kaust.edu.sa":
+              self.ibex = 1
+           #print("Running on Ibex?: ", self.ibex)
+        return self.ibex
+
+    def IsRunningOnShaheen(self):
+        if self.shaheen == -1:
+           self.shaheen = 0
+           if self.parallelArgs.parallel and \
+              self.sectorname().startswith("cdl") and \
+              self.domainname() == "hpc.kaust.edu.sa":
+              self.shaheen = 1
+           #print("Running on Shaheen?: ", self.ibex)
+        return self.shaheen
+
+    #
+    # Override the JobSubmitterFactory method so the custom job submitter can
+    # be returned.
+    #
+    def JobSubmitterFactory(self, launch):
+        #print("JobSubmitterFactory kaust: ", launch, self.sectorname(), self.domainname())
+        if self.IsRunningOnIbex():
+            return JobSubmitter_srun_KAUST_Ibex(self)
+        elif self.IsRunningOnShaheen():
+            return JobSubmitter_srun_KAUST_Shaheen(self)
+        return super(KAUSTLauncher, self).JobSubmitterFactory(launch)
+
+# Launcher creation function
+def createlauncher():
+    return KAUSTLauncher()

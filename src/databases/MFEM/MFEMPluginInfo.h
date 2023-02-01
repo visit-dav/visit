@@ -26,6 +26,8 @@ class avtDatabaseWriter;
 //  Creation:   omitted
 //
 //  Modifications:
+//    Justin Privitera, Tue Oct 18 09:53:50 PDT 2022
+//    Added GetReadOptions and GetWriteOptions functions.
 //
 // ****************************************************************************
 
@@ -48,6 +50,8 @@ class MFEMCommonPluginInfo : public virtual CommonDatabasePluginInfo, public vir
     virtual DatabaseType              GetDatabaseType();
     virtual avtDatabase              *SetupDatabase(const char * const *list,
                                                     int nList, int nBlock);
+    virtual DBOptionsAttributes      *GetReadOptions() const;
+    virtual DBOptionsAttributes      *GetWriteOptions() const;
 };
 
 class MFEMMDServerPluginInfo : public virtual MDServerDatabasePluginInfo, public virtual MFEMCommonPluginInfo

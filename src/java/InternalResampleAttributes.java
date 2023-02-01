@@ -22,7 +22,7 @@ package llnl.visit;
 
 public class InternalResampleAttributes extends AttributeSubject
 {
-    private static int InternalResampleAttributes_numAdditionalAtts = 18;
+    private static int InternalResampleAttributes_numAdditionalAtts = 19;
 
     public InternalResampleAttributes()
     {
@@ -46,6 +46,7 @@ public class InternalResampleAttributes extends AttributeSubject
         arbitratorLessThan = false;
         arbitratorVarName = new String("default");
         distributedResample = false;
+        perRankResample = false;
     }
 
     public InternalResampleAttributes(int nMoreFields)
@@ -70,6 +71,7 @@ public class InternalResampleAttributes extends AttributeSubject
         arbitratorLessThan = false;
         arbitratorVarName = new String("default");
         distributedResample = false;
+        perRankResample = false;
     }
 
     public InternalResampleAttributes(InternalResampleAttributes obj)
@@ -94,6 +96,7 @@ public class InternalResampleAttributes extends AttributeSubject
         arbitratorLessThan = obj.arbitratorLessThan;
         arbitratorVarName = new String(obj.arbitratorVarName);
         distributedResample = obj.distributedResample;
+        perRankResample = obj.perRankResample;
 
         SelectAll();
     }
@@ -128,7 +131,8 @@ public class InternalResampleAttributes extends AttributeSubject
                 (useArbitrator == obj.useArbitrator) &&
                 (arbitratorLessThan == obj.arbitratorLessThan) &&
                 (arbitratorVarName.equals(obj.arbitratorVarName)) &&
-                (distributedResample == obj.distributedResample));
+                (distributedResample == obj.distributedResample) &&
+                (perRankResample == obj.perRankResample));
     }
 
     // Property setting methods
@@ -240,6 +244,12 @@ public class InternalResampleAttributes extends AttributeSubject
         Select(17);
     }
 
+    public void SetPerRankResample(boolean perRankResample_)
+    {
+        perRankResample = perRankResample_;
+        Select(18);
+    }
+
     // Property getting methods
     public boolean GetUseTargetVal() { return useTargetVal; }
     public int     GetTargetVal() { return targetVal; }
@@ -259,6 +269,7 @@ public class InternalResampleAttributes extends AttributeSubject
     public boolean GetArbitratorLessThan() { return arbitratorLessThan; }
     public String  GetArbitratorVarName() { return arbitratorVarName; }
     public boolean GetDistributedResample() { return distributedResample; }
+    public boolean GetPerRankResample() { return perRankResample; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
@@ -299,6 +310,8 @@ public class InternalResampleAttributes extends AttributeSubject
             buf.WriteString(arbitratorVarName);
         if(WriteSelect(17, buf))
             buf.WriteBool(distributedResample);
+        if(WriteSelect(18, buf))
+            buf.WriteBool(perRankResample);
     }
 
     public void ReadAtts(int index, CommunicationBuffer buf)
@@ -359,6 +372,9 @@ public class InternalResampleAttributes extends AttributeSubject
         case 17:
             SetDistributedResample(buf.ReadBool());
             break;
+        case 18:
+            SetPerRankResample(buf.ReadBool());
+            break;
         }
     }
 
@@ -383,6 +399,7 @@ public class InternalResampleAttributes extends AttributeSubject
         str = str + boolToString("arbitratorLessThan", arbitratorLessThan, indent) + "\n";
         str = str + stringToString("arbitratorVarName", arbitratorVarName, indent) + "\n";
         str = str + boolToString("distributedResample", distributedResample, indent) + "\n";
+        str = str + boolToString("perRankResample", perRankResample, indent) + "\n";
         return str;
     }
 
@@ -406,5 +423,6 @@ public class InternalResampleAttributes extends AttributeSubject
     private boolean arbitratorLessThan;
     private String  arbitratorVarName;
     private boolean distributedResample;
+    private boolean perRankResample;
 }
 

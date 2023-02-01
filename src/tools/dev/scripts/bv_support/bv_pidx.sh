@@ -103,13 +103,6 @@ function bv_pidx_ensure
     fi
 }
 
-function bv_pidx_dry_run
-{
-    if [[ "$DO_PIDX" == "yes" ]] ; then
-        echo "Dry run option not set for pidx."
-    fi
-}
-
 function apply_pidx_patch
 {
     #    if [[ "${PIDX_VERSION}" == 4.0.0 ]] ; then

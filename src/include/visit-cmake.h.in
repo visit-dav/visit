@@ -13,9 +13,6 @@
 /* Define if you have the gdal library. */
 #cmakedefine HAVE_LIBGDAL
 
-/* Define if you have hdf4. */
-#cmakedefine HAVE_LIBHDF4
-
 /* Define if you have hdf5. */
 #cmakedefine HAVE_LIBHDF5
 
@@ -73,6 +70,10 @@
 
 /* Define if you have the EGL */
 #cmakedefine HAVE_EGL
+
+/* Define if you have Conduit. */
+#cmakedefine HAVE_CONDUIT
+
 
 /*******************************************************************************
  * Header file checks
@@ -327,10 +328,24 @@ logic here to cause compilation failure if this logic seems to be failing.
 #define VISIT_PLUGIN_VERSION(NAME, EXPORTMACRO) EXPORTMACRO const char *NAME##VisItPluginVersion = VISIT_VERSION;
 #endif
 
-/* App version check macro. Must check against the hex value.
-   Usage: #if (APP_VERSION_CHECK(4, 4, 0) <= APP_VERSION_HEX )
-*/
-#define VISIT_APP_VERSION_CHECK(major, minor, patch) ((major<<16)|(minor<<8)|(patch))
+// Macro to create a hex version of a passed in libary version
+// where A == version-major, B == version-minor, C == version-patch
+// The hex calculation is the same as used in SETUP_APP_VERSION.
+#define LIB_VERSION_HEX(A,B,C) (((A)<<16)|((B)<<8)|(C))
+
+// Macros for testing if library version is less-than-or-equal,
+// or greater-than-or-equal to passed in version
+//
+// Pre-condition: NAME_VERSION_HEX must be defined
+//                This can be accomplished by using SETUP_APP_VERSION
+//                and adding NAME_VERSION_HEX to compile-time definitions.
+//
+// Example1 : test if UINTAH version <= 2.0.0 
+//                #if LIB_VERSION_LE(UINTAH, 2,0,0)
+// Example2 : test if VTK version >= 9.1.0
+//                #if LIB_VERSION_GE(VTK, 9.1.0)
+#define LIB_VERSION_LE(NAME, A,B,C) (NAME##_VERSION_HEX <= LIB_VERSION_HEX(A,B,C))
+#define LIB_VERSION_GE(NAME, A,B,C) (NAME##_VERSION_HEX >= LIB_VERSION_HEX(A,B,C))
 
 /* Define to 1 if your processor stores words with the most significant byte
    first (like Motorola and SPARC, unlike Intel and VAX). */
@@ -384,4 +399,15 @@ logic here to cause compilation failure if this logic seems to be failing.
 
 #define DEBUG_MEMORY_LEAKS
 */
+
+// Turn on compile errors for obsolete code. 
+#cmakedefine VISIT_REMOVE_OBSOLETE_CODE
+
+// Wrappers for obosolete code
+#ifdef VISIT_REMOVE_OBSOLETE_CODE
+  #define VISIT_OBSOLETE_AT_VERSION(A,B,C) VISIT_VERSION_GE(A,B,C)
+#else
+  #define VISIT_OBSOLETE_AT_VERSION(A,B,C) 0
+#endif
+
 

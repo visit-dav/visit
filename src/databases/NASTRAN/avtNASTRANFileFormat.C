@@ -193,6 +193,9 @@ avtNASTRANFileFormat::ActivateTimestep()
 //
 //    Mark C. Miller, Wed Jul 14 16:27:03 PDT 2021
 //    Output `t` variable in any error messages instead of `s` input arg
+// 
+//    Justin Privitera, Tue Jul  5 14:40:55 PDT 2022
+//    Changed 'supressed' to 'suppressed'.
 // ****************************************************************************
 static double GetVal(const char *s)
 {
@@ -238,10 +241,10 @@ static double GetVal(const char *s)
             }
             if (nwarnings == 5)
             {
-                if (!avtCallback::IssueWarning("Further warnings will be supressed."))
+                if (!avtCallback::IssueWarning("Further warnings will be suppressed."))
                 {
-                    cerr << "Further warnings will be supressed." << endl;
-                    debug5 << "Further warnings will be supressed." << endl;
+                    cerr << "Further warnings will be suppressed." << endl;
+                    debug5 << "Further warnings will be suppressed." << endl;
                 }
             }
         }

@@ -106,13 +106,6 @@ function bv_tbb_ensure
     fi
 }
 
-function bv_tbb_dry_run
-{
-    if [[ "$DO_TBB" == "yes" ]] ; then
-        echo "Dry run option not set for TBB."
-    fi
-}
-
 # ***************************************************************************
 # build_tbb
 #

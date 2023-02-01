@@ -8,7 +8,11 @@
 
 #include <avtDatasetVerifier.h>
 
+#include <visit-config.h> // For LIB_VERSION_GE, LIB_VERSION_LE
 #include <vtkCellArray.h>
+#if LIB_VERSION_GE(VTK, 9,1,0)
+#include <vtkCellArrayIterator.h>
+#endif
 #include <vtkCellData.h>
 #include <vtkDataSet.h>
 #include <vtkFloatArray.h>
@@ -83,7 +87,7 @@ avtDatasetVerifier::~avtDatasetVerifier()
 // ****************************************************************************
 
 void
-avtDatasetVerifier::VerifyDatasets(int nlist, vtkDataSet **list, 
+avtDatasetVerifier::VerifyDatasets(int nlist, vtkDataSet **list,
                                    std::vector<int> &domains)
 {
     for (int i = 0 ; i < nlist ; i++)
@@ -123,15 +127,15 @@ avtDatasetVerifier::VerifyDatasets(int nlist, vtkDataSet **list,
 //
 //    Kathleen Bonnell, Fri Nov 12 08:22:29 PST 2004
 //    Changed args being sent to CorrectVarMismatch, so that the method can
-//    handle more var types. 
+//    handle more var types.
 //
-//    Kathleen Bonnell, Tue Feb  1 10:36:59 PST 2005 
-//    Convert non-float Points to float.  Convert unsigned char data to float. 
+//    Kathleen Bonnell, Tue Feb  1 10:36:59 PST 2005
+//    Convert non-float Points to float.  Convert unsigned char data to float.
 //
 //    Hank Childs, Tue Jul  5 16:22:56 PDT 2005
 //    Add variable names to warning message ['6368].
 //
-//    Kathleen Bonnell, Mon Nov 13 17:32:26 PST 2006 
+//    Kathleen Bonnell, Mon Nov 13 17:32:26 PST 2006
 //    Regrab 'pt_var' or 'cell_var' after call to CorrectVarMismatch, as this
 //    method invalidates the pointers.
 //
@@ -159,7 +163,7 @@ avtDatasetVerifier::VerifyDataset(vtkDataSet *ds, int dom)
         int nscalars = pt_var->GetNumberOfTuples();
         if (nscalars != nPts)
         {
-            CorrectVarMismatch(pt_var, ds->GetPointData(), nPts); 
+            CorrectVarMismatch(pt_var, ds->GetPointData(), nPts);
             // CorrectVarMismatch invalidates pt_var pointer. Grab it again.
             pt_var = ds->GetPointData()->GetArray(i);
             IssueVarMismatchWarning(nscalars, nPts,true,dom,pt_var->GetName());
@@ -198,7 +202,7 @@ avtDatasetVerifier::VerifyDataset(vtkDataSet *ds, int dom)
                 }
             }
             if (issueWarning)
-                IssueVarMismatchWarning(nscalars, nCells, false, dom, 
+                IssueVarMismatchWarning(nscalars, nCells, false, dom,
                                         cell_var->GetName());
         }
     }
@@ -281,16 +285,16 @@ avtDatasetVerifier::VerifyDataset(vtkDataSet *ds, int dom)
         {
             vtkPolyData *pd = (vtkPolyData *) ds;
             CheckArray(dom, pd->GetPoints()->GetData(), "Coordinates");
-            CheckConnectivity(dom, pd->GetNumberOfPoints(), pd->GetVerts(), 
+            CheckConnectivity(dom, pd->GetNumberOfPoints(), pd->GetVerts(),
                               "Vertex Cells");
-            CheckConnectivity(dom, pd->GetNumberOfPoints(), pd->GetLines(), 
+            CheckConnectivity(dom, pd->GetNumberOfPoints(), pd->GetLines(),
                               "Line Cells");
-            CheckConnectivity(dom, pd->GetNumberOfPoints(), pd->GetPolys(), 
+            CheckConnectivity(dom, pd->GetNumberOfPoints(), pd->GetPolys(),
                               "Polygon Cells");
-            CheckConnectivity(dom, pd->GetNumberOfPoints(), pd->GetStrips(), 
+            CheckConnectivity(dom, pd->GetNumberOfPoints(), pd->GetStrips(),
                               "Triangle Strip Cells");
         }
-         
+
         for (int i = 0 ; i < 2 ; i++)
         {
             vtkDataSetAttributes *atts = NULL;
@@ -372,12 +376,18 @@ avtDatasetVerifier::CheckArray(int dom, vtkDataArray *arr, const char *name)
 //  Programmer: Hank Childs
 //  Creation:   January 1, 2011
 //
+//  Modifications:
+//    Kathleen Biagas, Thu Aug 11, 2022
+//    Support VTK9: Use vtkCellArrayIterator.
+//
 // ****************************************************************************
 
 void
-avtDatasetVerifier::CheckConnectivity(int dom, int nTotalPts, vtkCellArray *arr, 
+avtDatasetVerifier::CheckConnectivity(int dom, int nTotalPts,
+                                      vtkCellArray *arr,
                                       const char *name)
 {
+#if LIB_VERSION_LE(VTK, 8,1,0)
     int numEntries = arr->GetNumberOfConnectivityEntries();
     vtkIdType *start_ptr = arr->GetPointer();
     vtkIdType *ptr       = start_ptr;
@@ -414,6 +424,45 @@ avtDatasetVerifier::CheckConnectivity(int dom, int nTotalPts, vtkCellArray *arr,
             ptr++;
         }
     }
+#else
+    if (!arr->IsValid())
+    {
+        char msg[1024];
+        sprintf(msg, "In domain %d, connectivity data is in an invalid state. "
+                 "Unrecoverable error.", dom);
+        avtCallback::IssueWarning(msg);
+        return;
+    }
+
+    auto cellIter = vtk::TakeSmartPointer(arr->NewIterator());
+    for (cellIter->GoToFirstCell(); !cellIter->IsDoneWithTraversal(); cellIter->GoToNextCell())
+    {
+        vtkIdList *ptIds = cellIter->GetCurrentCell();
+        vtkIdType npts = ptIds->GetNumberOfIds();
+        bool replaceCell = false;
+        for (vtkIdType j = 0 ; j < npts ; j++)
+        {
+            if (ptIds->GetId(j) < 0 || ptIds->GetId(j) >= nTotalPts)
+            {
+                replaceCell = true;
+                if (!issuedSafeModeWarning)
+                {
+                    char msg[1024];
+                    sprintf(msg, "In domain %d, your connectivity array (%s) "
+                                 "has a bad value. Cell %lld references point %lld "
+                                 "and the maximum value is %d.  Note that "
+                                 "only the first error encountered is reported.",
+                            dom, name, cellIter->GetCurrentCellId(), ptIds->GetId(j), nTotalPts);
+                    avtCallback::IssueWarning(msg);
+                    issuedSafeModeWarning = true;
+                }
+                ptIds->SetId(j, 0);
+            }
+        }
+        if(replaceCell)
+            cellIter->ReplaceCurrentCell(ptIds);
+    }
+#endif
 }
 
 
@@ -495,17 +544,17 @@ avtDatasetVerifier::IssueVarMismatchWarning(int nVars, int nUnits,bool isPoint,
 //    Hank Childs, Tue Mar 19 17:41:51 PST 2002
 //    Pass on the name of the variable.
 //
-//    Kathleen Bonnell, Thu Mar 21 10:59:44 PST 2002 
-//    vtkScalars has been deprecated in VTK 4.0, use vtkDataArray and 
+//    Kathleen Bonnell, Thu Mar 21 10:59:44 PST 2002
+//    vtkScalars has been deprecated in VTK 4.0, use vtkDataArray and
 //    vtkFloatArray instead.
 //
 //    Kathleen Bonnell, Fri Nov 12 08:22:29 PST 2004
 //    Changed args.  Reworked method to handle more than just Scalar vars.
 //
-//    Kathleen Bonnell, Mon Nov 13 17:32:26 PST 2006 
+//    Kathleen Bonnell, Mon Nov 13 17:32:26 PST 2006
 //    Removed tests for 'isActiveAttribute'.  Always use 'AddArray' instead
 //    of 'SetScalars' etc, because 'AddArray' overwrites the array in-place
-//    preserving the order of the arrays in vtkDataSetAttributes, whereas 
+//    preserving the order of the arrays in vtkDataSetAttributes, whereas
 //    'SetScalars' and the like DOES NOT.  This is important due to the
 //    fact that this method is called from within a for-loop that is looping
 //    over all the arrays in 'atts' by index number.  Want to preserve the
@@ -543,9 +592,9 @@ avtDatasetVerifier::CorrectVarMismatch(vtkDataArray *var,
     {
         defaultTuple = new float[nComponents];
         for (i = 0; i < nComponents; i++)
-            defaultTuple[i] = 0.f; 
-    } 
-                 
+            defaultTuple[i] = 0.f;
+    }
+
     int   origNum = var->GetNumberOfTuples();
     for (i = 0 ; i < destNum ; i++)
     {
@@ -557,7 +606,7 @@ avtDatasetVerifier::CorrectVarMismatch(vtkDataArray *var,
         {
             newVar->SetTuple1(i, 0.f);
         }
-        else 
+        else
         {
             newVar->SetTuple(i, defaultTuple);
         }
@@ -573,7 +622,7 @@ avtDatasetVerifier::CorrectVarMismatch(vtkDataArray *var,
 
     if (nComponents > 1)
     {
-        delete [] defaultTuple; 
+        delete [] defaultTuple;
     }
     newVar->Delete();
 }

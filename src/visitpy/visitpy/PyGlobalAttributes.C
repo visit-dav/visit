@@ -36,7 +36,7 @@ struct GlobalAttributesObject
 //
 static PyObject *NewGlobalAttributes(int);
 std::string
-PyGlobalAttributes_ToString(const GlobalAttributes *atts, const char *prefix)
+PyGlobalAttributes_ToString(const GlobalAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -2197,7 +2197,7 @@ static int
 GlobalAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     GlobalAttributesObject *obj = (GlobalAttributesObject *)v;
-    fprintf(fp, "%s", PyGlobalAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyGlobalAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -2205,7 +2205,7 @@ PyObject *
 GlobalAttributes_str(PyObject *v)
 {
     GlobalAttributesObject *obj = (GlobalAttributesObject *)v;
-    return PyString_FromString(PyGlobalAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyGlobalAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -2357,7 +2357,7 @@ PyGlobalAttributes_GetLogString()
 {
     std::string s("GlobalAtts = GlobalAttributes()\n");
     if(currentAtts != 0)
-        s += PyGlobalAttributes_ToString(currentAtts, "GlobalAtts.");
+        s += PyGlobalAttributes_ToString(currentAtts, "GlobalAtts.", true);
     return s;
 }
 
@@ -2370,7 +2370,7 @@ PyGlobalAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("GlobalAtts = GlobalAttributes()\n");
-        s += PyGlobalAttributes_ToString(currentAtts, "GlobalAtts.");
+        s += PyGlobalAttributes_ToString(currentAtts, "GlobalAtts.", true);
         cb(s);
     }
 }

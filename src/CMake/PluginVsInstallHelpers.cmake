@@ -14,6 +14,13 @@
 #   Added logic for retrieving and filtering VTKm includes that come from
 #   interface libraries.
 #
+#   Cyrus Harrison, Thu May 19 11:42:31 PDT 2022
+#   Add PYTHON_FOUND guard for python path related logic to avoid
+#   error with empty path passed to get_filename_component
+#
+#   Kathleen Biagas, Wed Jun  8 2023
+#   Install VisItIncludeVars.cmake.
+#
 #******************************************************************************
 
 
@@ -41,6 +48,13 @@ install(FILES ${VISIT_SOURCE_DIR}/CMake/CheckMinimumCompilerVersion.cmake
                     WORLD_READ
         )
 
+install(FILES ${VISIT_SOURCE_DIR}/CMake/VisItIncludeVars.cmake
+        DESTINATION ${VISIT_INSTALLED_VERSION_INCLUDE}
+        PERMISSIONS OWNER_READ OWNER_WRITE
+                    GROUP_READ GROUP_WRITE
+                    WORLD_READ
+        )
+
 # extract just the filename from these TP libs that specify full path
 set(check_libs SILO XDMF OPENEXR)
 foreach(cl ${check_libs})
@@ -61,7 +75,7 @@ endif()
 
 if(VISIT_MESAGL_DIR)
     string(REPLACE "${VISIT_MESAGL_DIR}/include"
-                   "\${VISIT_INCLUDE_DIR}/mesgal/include"
+                   "\${VISIT_ROOT_INCLUDE_DIR}/mesgal/include"
                    OPENGL_INCLUDE_DIR
                    "${OPENGL_INCLUDE_DIR}")
     string(REPLACE "${VISIT_MESAGL_DIR}/lib"
@@ -84,14 +98,6 @@ if(VISIT_MESAGL_DIR)
                    "\${VISIT_LIBRARY_DIR}/mesagl"
                    OPENGL_LIBRARIES
                    "${OPENGL_LIBRARIES}")
-    string(REPLACE "${VISIT_MESAGL_DIR}/lib"
-                   "\${VISIT_LIBRARY_DIR}/mesagl"
-                   TESSELLATION_LIBRARY
-                   "${TESSELLATION_LIBRARY}")
-    string(REPLACE "${VISIT_LLVM_DIR}/lib"
-                   "\${VISIT_LIBRARY_DIR}/mesagl"
-                   TESSELLATION_LIBRARY
-                   "${TESSELLATION_LIBRARY}")
 endif()
 
 if(VTKH_FOUND)
@@ -169,8 +175,8 @@ if(VTKH_FOUND)
     # the install include location for vtkm
     set(temp_VTKm_INCLUDE_DIRS ${VTKm_INCLUDE_DIRS})
     list(APPEND temp_VTKm_INCLUDE_DIRS ${ii_inc_dep})
-    string(REPLACE "${VTKM_DIR}/include" "\${VISIT_INCLUDE_DIR}/vtkm/include"
-                    filtered_VTKm_INCLUDE_DIRS 
+    string(REPLACE "${VTKM_DIR}/include" "\${VISIT_ROOT_INCLUDE_DIR}/vtkm/include"
+                    filtered_VTKm_INCLUDE_DIRS
                     "${temp_VTKm_INCLUDE_DIRS}")
     unset(temp_VTKm_INCLUDE_DIRS)
 endif()
@@ -245,35 +251,35 @@ if(VISIT_MPICH_INSTALL)
     string(REPLACE "${VISIT_MPICH_DIR}/lib" "\${VISIT_LIBRARY_DIR}"
                     f0_VISIT_PARALLEL_CXXFLAGS
                     "${VISIT_PARALLEL_CXXFLAGS}")
-    string(REPLACE "${VISIT_MPICH_DIR}/include" "\${VISIT_INCLUDE_DIR}/mpich/include"
+    string(REPLACE "${VISIT_MPICH_DIR}/include" "\${VISIT_ROOT_INCLUDE_DIR}/mpich/include"
                     filtered_VISIT_PARALLEL_CXXFLAGS
                     "${f0_VISIT_PARALLEL_CXXFLAGS}")
 
     string(REPLACE "${VISIT_MPICH_DIR}/lib" "\${VISIT_LIBRARY_DIR}"
                     f0_VISIT_PARALLEL_LINKER_FLAGS
                     "${VISIT_PARALLEL_LINKER_FLAGS}")
-    string(REPLACE "${VISIT_MPICH_DIR}/include" "\${VISIT_INCLUDE_DIR}/mpich/include"
+    string(REPLACE "${VISIT_MPICH_DIR}/include" "\${VISIT_ROOT_INCLUDE_DIR}/mpich/include"
                     filtered_VISIT_PARALLEL_LINKER_FLAGS
                     "${f0_VISIT_PARALLEL_LINKER_FLAGS}")
 
     string(REPLACE "${VISIT_MPICH_DIR}/lib" "\${VISIT_LIBRARY_DIR}"
                     f0_VISIT_PARALLEL_LIBS
                     "${VISIT_PARALLEL_LIBS}")
-    string(REPLACE "${VISIT_MPICH_DIR}/include" "\${VISIT_INCLUDE_DIR}/mpich/include"
+    string(REPLACE "${VISIT_MPICH_DIR}/include" "\${VISIT_ROOT_INCLUDE_DIR}/mpich/include"
                     filtered_VISIT_PARALLEL_LIBS
                     "${f0_VISIT_PARALLEL_LIBS}")
 
     string(REPLACE "${VISIT_MPICH_DIR}/lib" "\${VISIT_LIBRARY_DIR}"
                     f0_VISIT_PARALLEL_INCLUDE
                     "${VISIT_PARALLEL_INCLUDE}")
-    string(REPLACE "${VISIT_MPICH_DIR}/include" "\${VISIT_INCLUDE_DIR}/mpich/include"
+    string(REPLACE "${VISIT_MPICH_DIR}/include" "\${VISIT_ROOT_INCLUDE_DIR}/mpich/include"
                     filtered_VISIT_PARALLEL_INCLUDE
                     "${f0_VISIT_PARALLEL_INCLUDE}")
 
     string(REPLACE "${VISIT_MPICH_DIR}/lib" "\${VISIT_LIBRARY_DIR}"
                     f0_VISIT_PARALLEL_DEFS
                     "${VISIT_PARALLEL_DEFS}")
-    string(REPLACE "${VISIT_MPICH_DIR}/include" "\${VISIT_INCLUDE_DIR}/mpich/include"
+    string(REPLACE "${VISIT_MPICH_DIR}/include" "\${VISIT_ROOT_INCLUDE_DIR}/mpich/include"
                     filtered_VISIT_PARALLEL_DEFS
                     "${f0_VISIT_PARALLEL_DEFS}")
 else(VISIT_MPICH_INSTALL)
@@ -286,11 +292,15 @@ endif(VISIT_MPICH_INSTALL)
 
 # Fix some third-party include paths that are different on windows than unix.
 if(UNIX)
-   # python3's include dir has an 'm' after the version. For ease of 
+   # python3's include dir has an 'm' after the version. For ease of
    # use with future versions, and to save having to figure this out again
    # get and use the last part of the PYTHON_INCLUDE_DIR
-   get_filename_component(py_inc_base ${PYTHON_INCLUDE_DIR} NAME)
-   set(python_include_relative_path "/python/include/${py_inc_base}")
+   if(PYTHON_FOUND)
+       get_filename_component(py_inc_base ${PYTHON_INCLUDE_DIR} NAME)
+       set(python_include_relative_path "/python/include/${py_inc_base}")
+   else()
+       set(python_include_relative_path "")
+   endif()
    set(exodusii_include_relative_path "/exodusii/inc")
    set(vtk_include_relative_path "/vtk/vtk-${VTK_MAJOR_VERSION}.${VTK_MINOR_VERSION}")
 else(UNIX)
@@ -328,7 +338,7 @@ configure_file(${VISIT_SOURCE_DIR}/CMake/FilterDependencies.cmake.in
               @ONLY)
 install(SCRIPT "${VISIT_BINARY_DIR}/include/FilterDependencies.cmake")
 
-install(FILES 
+install(FILES
         ${VISIT_BINARY_DIR}/include/VisItLibraryDependencies.cmake
         DESTINATION ${VISIT_INSTALLED_VERSION_INCLUDE}
         PERMISSIONS OWNER_READ OWNER_WRITE

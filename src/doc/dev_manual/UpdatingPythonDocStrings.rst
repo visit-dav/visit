@@ -17,13 +17,18 @@ Steps to update the Python scripting manual
 #. Modify ``python_scripting/functions.rst``.
 #. Run ``functions_to_plain_py.py`` to generate ``PY_RST_FUNCTIONS_TO_PYTHON.py``.
 #. Run ``2to3 -p PY_RST_FUNCTIONS_TO_PYTHON.py`` to check for Python syntax errors and Python 3 compatibly.
+
+   * **NOTE:** ``PY_RST_FUNCTIONS_TO_PYTHON.py`` is just a temporary file to test steps 2 and 3 here.
+     It could be named anything and is not part of the repository.
+   * **NOTE:** ``2to3`` will run to completion and issue a number of messages.
+     A zero return code indicates all is well.
+
 #. Run ``functions_to_method_doc.py`` to regenerate ``MethodDoc.C``.
 #. Build and run the VisIt_ scripting interface and assure yourself ``help(<your-new-func-doc>)`` produces the desired output.
-
 #. Run the ``sphinx_cli_extractor.py`` tool producing new ``attributes.rst`` and ``events.rst`` files.
    To do so, you may need to use a combination of the ``PATH`` and ``PYTHONPATH`` environment variables to tell the ``sphinx_cli_extractor.py`` script where to find the VisIt_ module, ``visit`` in VisIt_'s ``site-packages`` and where to find the Python installation that that module is expecting to run with.
    In addition, you may need to use the ``PYTHONHOME`` environment variable to tell VisIt_'s ``visit`` module where to find standard Python libraries.
-   For example, to use an installed version of VisIt_ on my OSX machine, the command would look like...
+   For example, to use an installed version of VisIt_ on my macOS machine, the command would look like...
 
    .. code-block:: shell
 
@@ -37,9 +42,8 @@ Steps to update the Python scripting manual
 
    .. code-block:: shell
 
-     env PATH=../../build/third_party/python/2.7.14/i386-apple-darwin17_clang/bin:../../build/visit/build/bin:$PATH \
-     PYTHONPATH=../../build/visit/build/lib/site-packages/ \
-     ./sphinx_cli_extractor.py 
+     env PATH=/Users/miller86/visit/third_party/3.2.0/python/3.7.7/i386-apple-darwin18_clang/bin:/Users/miller86/visit/visit/build/bin:$PATH \
+     PYTHONPATH=../../build/lib/site-packages python3 ./sphinx_cli_extractor.py
 
    The whole process only takes a few seconds.
 

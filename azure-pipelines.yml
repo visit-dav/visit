@@ -12,7 +12,7 @@
 # TO USE A NEW CONTAINER, UPDATE TAG NAME HERE AS PART OF YOUR PR!
 #####
 variables:
-  container_tag: visitdav/visit-ci-develop:2022-02-10-sha5a28f8
+  container_tag: visitdav/visit-ci-develop:2022-11-08-sha70303e
 
 # only build merge target pr to develop
 trigger: none
@@ -21,13 +21,13 @@ pr:
     include:
     - develop
 
-# add fast fail checks here
+# fast fail sanity checks
 stages:
-- stage: Quick
+- stage: Sanity
   jobs:
-  - job: Fast_Check
+  - job: BLT_Time_Travel_Check
     pool:
-      vmImage: 'ubuntu-18.04'
+      vmImage: 'ubuntu-latest'
     steps:
       - checkout: self
         clean: boolean
@@ -35,12 +35,12 @@ stages:
 
       - script: |
           #######################################
-          # run our quick check
+          # run our sanity check script
           #######################################
-          echo "OK"
-          # NOTE FOR AZURE:
-          # only return code of the command is checked!
-        displayName: 'Example Fast Check'
+          git fetch
+          python scripts/ci/check_blt_time_travel.py
+        displayName: 'BLT Time Travel Check'
+
 
 # main checks build using docker containers that
 # include tpls built with build_visit
@@ -48,7 +48,7 @@ stages:
   jobs:
   - job: Main_Build
     pool:
-      vmImage: 'ubuntu-18.04'
+      vmImage: 'ubuntu-latest'
     timeoutInMinutes: 0
     container: ${{ variables.container_tag }}
     variables:
@@ -86,28 +86,34 @@ stages:
            # fetch subset of test data (silo + blueprint)
            #################################
            cd data
-           git lfs pull --include silo_amr_test_data.7z
-           git lfs pull --include silo_ghost_test_data.7z
-           git lfs pull --include silo_hdf5_test_data.7z
-           git lfs pull --include silo_pdb_test_data.7z
-           git lfs pull --include silo_sph_test_data.7z
-           git lfs pull --include blueprint_v0.3.1_test_data.7z
-           git lfs pull --include blueprint_v0.3.1_mfem_test_data.7z
-           git lfs pull --include blueprint_v0.7.0_venn_test_data.7z
+           git lfs pull --include silo_amr_test_data.tar.xz
+           git lfs pull --include silo_ghost_test_data.tar.xz
+           git lfs pull --include silo_hdf5_test_data.tar.xz
+           git lfs pull --include silo_pdb_test_data.tar.xz
+           git lfs pull --include silo_sph_test_data.tar.xz
+           git lfs pull --include blueprint_v0.3.1_test_data.tar.xz
+           git lfs pull --include blueprint_v0.3.1_mfem_test_data.tar.xz
+           git lfs pull --include blueprint_v0.7.0_venn_test_data.tar.xz
+           git lfs pull --include blueprint_v0.8.2_braid_examples_test_data.tar.xz
+           git lfs pull --include blueprint_v0.8.2_polytess_test_data.tar.xz
+           git lfs pull --include blueprint_v0.8.4_part_map_examples.tar.xz
+           git lfs pull --include blueprint_v0.8.4_strided_structured_examples.tar.xz
            cd ../
            git lfs pull  --include test/baseline/databases/silo
            git lfs pull  --include test/baseline/databases/blueprint
            cd build/testdata/
-           export P7ZIP_BIN_DIR=`ls -d ${TPLS_PATH}/p7zip/*/ci/bin/`
-           export PATH=$PATH:$P7ZIP_BIN_DIR
-           7za x -y ../../data/silo_amr_test_data.7z
-           7za x -y ../../data/silo_ghost_test_data.7z
-           7za x -y ../../data/silo_hdf5_test_data.7z
-           7za x -y ../../data/silo_pdb_test_data.7z
-           7za x -y ../../data/silo_sph_test_data.7z
-           7za x -y ../../data/blueprint_v0.3.1_test_data.7z
-           7za x -y ../../data/blueprint_v0.3.1_mfem_test_data.7z
-           7za x -y ../../data/blueprint_v0.7.0_venn_test_data.7z
+           tar xvf ../../data/silo_amr_test_data.tar.xz
+           tar xvf ../../data/silo_ghost_test_data.tar.xz
+           tar xvf ../../data/silo_hdf5_test_data.tar.xz
+           tar xvf ../../data/silo_pdb_test_data.tar.xz
+           tar xvf ../../data/silo_sph_test_data.tar.xz
+           tar xvf ../../data/blueprint_v0.3.1_test_data.tar.xz
+           tar xvf ../../data/blueprint_v0.3.1_mfem_test_data.tar.xz
+           tar xvf ../../data/blueprint_v0.7.0_venn_test_data.tar.xz
+           tar xvf ../../data/blueprint_v0.8.2_braid_examples_test_data.tar.xz
+           tar xvf ../../data/blueprint_v0.8.2_polytess_test_data.tar.xz
+           tar xvf ../../data/blueprint_v0.8.4_part_map_examples.tar.xz
+           tar xvf ../../data/blueprint_v0.8.4_strided_structured_examples.tar.xz
 
         displayName: 'Prep Test Data'
 
@@ -127,6 +133,7 @@ stages:
            # run test suite on silo + blueprint tests
            export TESTS=../../src/test/tests/databases/silo.py
            export TESTS="${TESTS} ../../src/test/tests/databases/blueprint.py"
+           export TESTS="${TESTS} ../../src/test/tests/databases/blueprint_export.py"
            export TESTS="${TESTS} ../../src/test/tests/hybrid/ddf.py"
            # also run a few of our unit tests
            export TESTS="${TESTS} ../../src/test/tests/unit/assert_simple.py"

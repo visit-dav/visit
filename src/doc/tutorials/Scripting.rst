@@ -18,7 +18,7 @@ There are several ways to use the *CLI*:
 1) Launch VisIt_ in a batch mode and run scripts.
 
   * Linux: ``/path/to/visit/bin/visit -nowin -cli -s <script.py>``
-  * OSX: ``/path/to/VisIt.app/Contents/Resources/bin/visit -nowin -cli -s <script.py>``
+  * macOS: ``/path/to/VisIt.app/Contents/Resources/bin/visit -nowin -cli -s <script.py>``
 
 2) Launch VisIt_ so that a visualization window is visible and interactively issue *CLI* commands.
 3) Use both the standard *GUI* and *CLI* simultaneously.
@@ -250,23 +250,7 @@ Here are some tips to help you quickly learn how to use VisIt_'s *CLI*:
     theta = 0
     phi = 0
 
-Tips for searching for help
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-VisIt_'s *CLI* provides a large set of functions. To can limit the scope of your
-search using a helper functions. One such helper is the *lsearch()* function
-in the visit_utils module: ::
-
-    from visit_utils.common import lsearch
-    lsearch(dir(),"Material")
-
-*lsearch()* returns a python list of strings with the names that match the
-given pattern. Here is another example that prints each of the result strings
-on a separate line. ::
-
-    from visit_utils.common import lsearch
-    for value in lsearch(dir(),"Material"):
-        print value
+See :ref:`the section on apropos <finding_stuff_from_python>`, ``help`` and ``lsearch`` for more information on finding stuff in VisIt_'s *CLI*.
 
 Advanced features
 -----------------

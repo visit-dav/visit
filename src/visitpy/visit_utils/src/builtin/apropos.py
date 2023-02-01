@@ -12,14 +12,34 @@ except:
 # result if it would be useful.
 #
 def visit_help(thing):
-    try:
-        python_help(thing)
-    except:
-        pass
-    apresult = apropos(thing,0,True)
-    if apresult:
-        sys.stdout.write("NOTE: The following VisIt functions and objects also mention '%s'...\n"%str(thing))
-        sys.stdout.write("%s\n"%apresult)
+    if type(thing) == str:
+        apresult = apropos(thing,0,True)
+        if apresult:
+            sys.stdout.write("NOTE: The following VisIt functions and objects also mention '%s'...\n"%str(thing))
+            sys.stdout.write("%s\n"%apresult)
+    else:
+        try:
+            python_help(thing)
+        except:
+            pass
+        try:
+            if hasattr(thing, "__name__"):
+                thingstr = thing.__name__
+            else:
+                thingstr = str(thing)
+        except:
+            thingstr = str(thing)
+        try:
+            dirthing = [x in dir(thing) and not (x.startswith('__') and x.endswith('__'))]
+            if dirthing:
+                sys.stdout.write("'%s' defines the following methods...\n"%thingstr)
+                sys.stdout.write("%s\n"%dirthing)
+        except:
+            pass
+        apresult = apropos(thingstr,0,True)
+        if apresult:
+            sys.stdout.write("NOTE: The following VisIt functions and objects also mention '%s'...\n"%thingstr)
+            sys.stdout.write("%s\n"%apresult)
 
 #
 # Re-define python's main help method
@@ -36,25 +56,63 @@ help = visit_help
 def apropos(key, truncate=30, called_from_help=False):
     result = set()
 
+    #
+    # We want to search attrs only on objects we can safely *instance*
+    # and dir() here
+    #
+    dirableObjectNamesContain = ['Attribute', 'SILRestriction']
+
+    #
+    # We wanna search for a string
+    #
     if not isinstance(key, str):
         key = str(key)
 
+    #
+    # Loop over everything known to the visit module
+    #
     for v in dir(visit):
+
+        #
+        # First, match the name of the CLI method
+        #
         if re.search(key, v, re.IGNORECASE):
             result.add(v)
             continue
-        meth = getattr(visit, v) 
-        if 'Attributes' in v:
-            try:
-                if re.search(key, str(meth()), re.IGNORECASE):
-                    result.add(v)
-                    continue
-            except:
-                pass
-        if hasattr(meth,'__doc__'): 
-             if meth.__doc__ is not None:
-                 if re.search(key, meth.__doc__, re.IGNORECASE):
+
+        #
+        # Get the actual method from its name
+        #
+        try:
+            thing = getattr(visit, v) 
+        except:
+            continue
+
+        #
+        # If a docstring is defined for th method, search it
+        #
+        if hasattr(thing,'__doc__'): 
+             if thing.__doc__ is not None:
+                 if re.search(key, thing.__doc__, re.IGNORECASE):
                      result.add(v)
+                     continue
+
+        #
+        # If the method, when called, instantiates a dirable object,
+        # search the methods it defines too.
+        #
+        for donc in dirableObjectNamesContain:
+            if donc in v:
+                try:
+                    for member in dir(thing()):
+                        # ignore what appear to be builtin members
+                        if member.startswith('__') and member.endswith('__'):
+                            continue
+                        if re.search(key, member, re.IGNORECASE):
+                            result.add(v)
+                            break
+                except:
+                    pass
 
     if not result and not called_from_help:
         sys.stdout.write("Nothing found in VisIt for '%s'\n"%key)

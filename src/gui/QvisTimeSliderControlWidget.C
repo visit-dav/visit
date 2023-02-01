@@ -70,6 +70,7 @@ QvisTimeSliderControlWidget::QvisTimeSliderControlWidget(QWidget *parent) :
     tsLayout->setMargin(0);
     topLayout->addLayout(tsLayout);
     activeTimeSlider = new QComboBox(this);
+    activeTimeSlider->setSizeAdjustPolicy(QComboBox::AdjustToMinimumContentsLengthWithIcon);
     connect(activeTimeSlider, SIGNAL(activated(int)),
             this, SLOT(changeActiveTimeSlider(int)));
     activeTimeSliderLabel = new QLabel(tr("Active time slider"), this);
@@ -673,6 +674,8 @@ QvisTimeSliderControlWidget::UpdateTimeFieldText(int timeState)
 // Creation:
 //
 // Modifications:
+//    Kathleen Biagas, Wed Apr 6, 2022
+//    Fix QT_VERSION test to use Qt's QT_VERSION_CHECK.
 //
 // ****************************************************************************
 
@@ -680,7 +683,11 @@ void
 QvisTimeSliderControlWidget::SetTimeFieldText(const QString &text)
 {
     int w  = timeField->width();
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 11, 0))
     int nw = timeField->fontMetrics().horizontalAdvance("  " + text);
+#else
+    int nw = timeField->fontMetrics().width("  " + text);
+#endif
     if(w < nw)
         timeField->setMinimumWidth(nw);
     timeField->setText(text);

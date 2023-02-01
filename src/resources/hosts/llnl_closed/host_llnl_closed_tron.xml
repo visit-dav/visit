@@ -38,7 +38,7 @@
         <Field name="timeLimitSet" type="bool">true</Field>
         <Field name="timeLimit" type="string">30:00</Field>
         <Field name="launchMethodSet" type="bool">true</Field>
-        <Field name="launchMethod" type="string">msub/srun</Field>
+        <Field name="launchMethod" type="string">sbatch/srun</Field>
         <Field name="forceStatic" type="bool">true</Field>
         <Field name="forceDynamic" type="bool">false</Field>
         <Field name="active" type="bool">false</Field>
@@ -58,7 +58,7 @@
         <Field name="timeLimitSet" type="bool">true</Field>
         <Field name="timeLimit" type="string">30:00</Field>
         <Field name="launchMethodSet" type="bool">true</Field>
-        <Field name="launchMethod" type="string">msub/srun</Field>
+        <Field name="launchMethod" type="string">sbatch/srun</Field>
         <Field name="forceStatic" type="bool">true</Field>
         <Field name="forceDynamic" type="bool">false</Field>
         <Field name="active" type="bool">false</Field>
@@ -66,7 +66,7 @@
         <Field name="parallel" type="bool">true</Field>
     </Object>
     <Object name="LaunchProfile">
-        <Field name="profileName" type="string">parallel mxterm</Field>
+        <Field name="profileName" type="string">parallel sxterm</Field>
         <Field name="timeout" type="int">480</Field>
         <Field name="numProcessors" type="int">32</Field>
         <Field name="numNodesSet" type="bool">false</Field>

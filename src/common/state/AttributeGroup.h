@@ -86,6 +86,9 @@ class DataNode;
 //    Kathleen Biagas, Wed Dec 21 07:47:58 PST 2016
 //    Added glyphtype field.
 //
+//    Kathleen Biagas, Thu Nov 17 12:06:45 PST 2022
+//    Added FieldType_boolArray.
+//
 // ****************************************************************************
 
 class STATE_API AttributeGroup
@@ -94,6 +97,7 @@ public:
     enum FieldType {
         FieldType_unknown,
         FieldType_bool,
+        FieldType_boolArray,
         FieldType_boolVector,
         FieldType_char,
         FieldType_charArray,

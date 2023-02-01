@@ -176,6 +176,7 @@ ${VISIT_SOURCE_DIR}/winutil
 ${VTK_INCLUDE_DIRS}
 )
 
+
 if(HAVE_OSMESA OR HAVE_EGL)
     include_directories(${VISIT_SOURCE_DIR}/visit_vtk/offscreen)
 endif()
@@ -205,6 +206,12 @@ IF(VISIT_STATIC)
     )
 ENDIF(VISIT_STATIC)
 
+if(VTK_VERSION VERSION_EQUAL "8.1.0)")
+    set(vtkqtlib vtkGUISupportQt)
+else()
+    set(vtkqtlib VTK::GUISupportQt)
+endif()
+
 TARGET_LINK_LIBRARIES(viewer 
 viewerrpc
 viewercore_ser
@@ -227,7 +234,7 @@ avtqtviswindow
 winutil
 ${VIEWER_QT_LIBS}
 ${CMAKE_THREAD_LIBS}
-vtkGUISupportQt
+${vtkqtlib}
 )
 
 if(HAVE_OSMESA OR HAVE_EGL)
@@ -253,7 +260,7 @@ ELSE(NOT APPLE)
     SET(MACOSX_BUNDLE_LONG_VERSION_STRING  "VisIt version ${VISIT_VERSION}")
     SET(MACOSX_BUNDLE_SHORT_VERSION_STRING "VisIt ${VISIT_VERSION}")
     SET(MACOSX_BUNDLE_BUNDLE_VERSION       ${VISIT_VERSION})
-    SET(MACOSX_BUNDLE_COPYRIGHT            "Copyright (c) 2000 - 2021, Lawrence Livermore National Security, LLC")
+    SET(MACOSX_BUNDLE_COPYRIGHT            "Copyright (c) 2000 - 2023, Lawrence Livermore National Security, LLC")
     
     IF(VISIT_STATIC)
         MAC_NIB_INSTALL(viewer)
@@ -261,15 +268,20 @@ ELSE(NOT APPLE)
 ENDIF(NOT APPLE)
 
 SET_TARGET_PROPERTIES(viewer_exe PROPERTIES OUTPUT_NAME viewer)
+
+if(VTK_VERSION VERSION_EQUAL "8.1.0")
+    set(vtk_img_libs vtkpng vtkjpeg)
+else()
+    set(vtk_img_libs VTK::png VTK::jpeg)
+endif()
+
 TARGET_LINK_LIBRARIES(viewer_exe
     ${viewer_exe_IOperator}
     ${viewer_exe_VOperator}
     ${viewer_exe_IPlot}
     ${viewer_exe_VPlot}
     viewer
-    vtkpng
-    vtkjpeg
-    ${VTK_FREETYPE_LIBRARIES}
+    ${vtk_img_libs}
 )
 
 # If we're building statically then the viewer can't be linked until the plugin

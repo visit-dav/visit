@@ -6,6 +6,7 @@
 #include <ObserverToCallback.h>
 #include <stdio.h>
 #include <Py2and3Support.h>
+#include <visit-config.h>
 #include <ColorAttribute.h>
 #include <PyColorAttributeList.h>
 
@@ -38,7 +39,7 @@ struct BoundaryAttributesObject
 //
 static PyObject *NewBoundaryAttributes(int);
 std::string
-PyBoundaryAttributes_ToString(const BoundaryAttributes *atts, const char *prefix)
+PyBoundaryAttributes_ToString(const BoundaryAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -1035,136 +1036,6 @@ PyBoundaryAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "smoothingLevel") == 0)
         return BoundaryAttributes_GetSmoothingLevel(self, NULL);
 
-    // Try and handle legacy fields
-
-#define DEPRECATED_MESSAGE(type) \
-    PyErr_WarnFormat(NULL, 3, "%s is no longer a valid Boundary attribute.\n" \
-                    "It's value is being ignored, " \
-                    "please remove it from your script.\n", type);
-
-    // boundaryType and it's possible enumerations
-    bool boundaryTypeFound = false;
-    if (strcmp(name, "boundaryType") == 0)
-    {
-        boundaryTypeFound = true;
-    }
-    else if (strcmp(name, "Domain") == 0)
-    {
-        boundaryTypeFound = true;
-    }
-    else if (strcmp(name, "Group") == 0)
-    {
-        boundaryTypeFound = true;
-    }
-    else if (strcmp(name, "Material") == 0)
-    {
-        boundaryTypeFound = true;
-    }
-    else if (strcmp(name, "Unknown") == 0)
-    {
-        boundaryTypeFound = true;
-    }
-    if (boundaryTypeFound)
-    {
-        DEPRECATED_MESSAGE("boundaryType");
-        return PyInt_FromLong(0L);
-    }
-    // pointType and it's possible enumerations
-    bool pointTypeFound = false;
-    if (strcmp(name, "pointType") == 0)
-    {
-        pointTypeFound = true;
-    }
-    else if (strcmp(name, "Box") == 0)
-    {
-        pointTypeFound = true;
-    }
-    else if (strcmp(name, "Axis") == 0)
-    {
-        pointTypeFound = true;
-    }
-    else if (strcmp(name, "Icosahedron") == 0)
-    {
-        pointTypeFound = true;
-    }
-    else if (strcmp(name, "Octahedron") == 0)
-    {
-        pointTypeFound = true;
-    }
-    else if (strcmp(name, "Tetrahedron") == 0)
-    {
-        pointTypeFound = true;
-    }
-    else if (strcmp(name, "SphereGeometry") == 0)
-    {
-        pointTypeFound = true;
-    }
-    else if (strcmp(name, "Point") == 0)
-    {
-        pointTypeFound = true;
-    }
-    else if (strcmp(name, "Sphere") == 0)
-    {
-        pointTypeFound = true;
-    }
-    if (pointTypeFound)
-    {
-        DEPRECATED_MESSAGE("pointType");
-        return PyInt_FromLong(0L);
-    }
-    if (strcmp(name, "pointSize") == 0)
-    {
-        DEPRECATED_MESSAGE("pointSize");
-        return PyInt_FromLong(0L);
-    }
-    else if (strcmp(name, "pointSizePixels") == 0)
-    {
-        DEPRECATED_MESSAGE("pointSizePixels");
-        return PyInt_FromLong(0L);
-    }
-    else if (strcmp(name, "pointSizeVarEnabled") == 0)
-    {
-        DEPRECATED_MESSAGE("pointSizeVarEnabled");
-        return PyInt_FromLong(0L);
-    }
-    else if (strcmp(name, "pointSizeVar") == 0)
-    {
-        DEPRECATED_MESSAGE("pointSizeVar");
-        return PyInt_FromLong(0L);
-    }
-    else if (strcmp(name, "filledFlag") == 0)
-    {
-        DEPRECATED_MESSAGE("filledFlag");
-        return PyInt_FromLong(0L);
-    }
-
-    // lineStyle and it's possible enumerations
-    bool lineStyleFound = false;
-    if (strcmp(name, "lineStyle") == 0)
-    {
-        lineStyleFound = true;
-    }
-    else if (strcmp(name, "SOLID") == 0)
-    {
-        lineStyleFound = true;
-    }
-    else if (strcmp(name, "DASH") == 0)
-    {
-        lineStyleFound = true;
-    }
-    else if (strcmp(name, "DOT") == 0)
-    {
-        lineStyleFound = true;
-    }
-    else if (strcmp(name, "DOTDASH") == 0)
-    {
-        lineStyleFound = true;
-    }
-    if (lineStyleFound)
-    {
-        DEPRECATED_MESSAGE("lineStyle");
-        return PyInt_FromLong(0L);
-    }
 
     // Add a __dict__ answer so that dir() works
     if (!strcmp(name, "__dict__"))
@@ -1209,58 +1080,6 @@ PyBoundaryAttributes_setattr(PyObject *self, char *name, PyObject *args)
     else if(strcmp(name, "smoothingLevel") == 0)
         obj = BoundaryAttributes_SetSmoothingLevel(self, args);
 
-    // Try and handle legacy fields
-    if(obj == &NULL_PY_OBJ)
-    {
-        if(strcmp(name, "filledFlag") == 0)
-        {
-            PyErr_WarnFormat(NULL, 3, "'%s' is obsolute. It is being ignored", name);
-            Py_INCREF(Py_None);
-            obj = Py_None;
-        }
-        else if(strcmp(name, "boundaryType") == 0)
-        {
-            PyErr_WarnFormat(NULL, 3, "'%s' is obsolute. It is being ignored", name);
-            Py_INCREF(Py_None);
-            obj = Py_None;
-        }
-        else if(strcmp(name, "pointType") == 0)
-        {
-            PyErr_WarnFormat(NULL, 3, "'%s' is obsolute. It is being ignored", name);
-            Py_INCREF(Py_None);
-            obj = Py_None;
-        }
-        else if(strcmp(name, "pointSize") == 0)
-        {
-            PyErr_WarnFormat(NULL, 3, "'%s' is obsolute. It is being ignored", name);
-            Py_INCREF(Py_None);
-            obj = Py_None;
-        }
-        else if(strcmp(name, "pointSizePixels") == 0)
-        {
-            PyErr_WarnFormat(NULL, 3, "'%s' is obsolute. It is being ignored", name);
-            Py_INCREF(Py_None);
-            obj = Py_None;
-        }
-        else if(strcmp(name, "pointSizeVarEnabled") == 0)
-        {
-            PyErr_WarnFormat(NULL, 3, "'%s' is obsolute. It is being ignored", name);
-            Py_INCREF(Py_None);
-            obj = Py_None;
-        }
-        else if(strcmp(name, "pointSizeVar") == 0)
-        {
-            PyErr_WarnFormat(NULL, 3, "'%s' is obsolute. It is being ignored", name);
-            Py_INCREF(Py_None);
-            obj = Py_None;
-        }
-        else if(strcmp(name, "lineStyle") == 0)
-        {
-            PyErr_WarnFormat(NULL, 3, "'%s' is obsolute. It is being ignored", name);
-            Py_INCREF(Py_None);
-            obj = Py_None;
-        }
-    }
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
@@ -1279,7 +1098,7 @@ static int
 BoundaryAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     BoundaryAttributesObject *obj = (BoundaryAttributesObject *)v;
-    fprintf(fp, "%s", PyBoundaryAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyBoundaryAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -1287,7 +1106,7 @@ PyObject *
 BoundaryAttributes_str(PyObject *v)
 {
     BoundaryAttributesObject *obj = (BoundaryAttributesObject *)v;
-    return PyString_FromString(PyBoundaryAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyBoundaryAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -1439,7 +1258,7 @@ PyBoundaryAttributes_GetLogString()
 {
     std::string s("BoundaryAtts = BoundaryAttributes()\n");
     if(currentAtts != 0)
-        s += PyBoundaryAttributes_ToString(currentAtts, "BoundaryAtts.");
+        s += PyBoundaryAttributes_ToString(currentAtts, "BoundaryAtts.", true);
     return s;
 }
 
@@ -1452,7 +1271,7 @@ PyBoundaryAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("BoundaryAtts = BoundaryAttributes()\n");
-        s += PyBoundaryAttributes_ToString(currentAtts, "BoundaryAtts.");
+        s += PyBoundaryAttributes_ToString(currentAtts, "BoundaryAtts.", true);
         cb(s);
     }
 }

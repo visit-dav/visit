@@ -22,7 +22,7 @@ PyObject *     PyDualMeshAttributes_Wrap(const DualMeshAttributes *attr);
 void           PyDualMeshAttributes_SetParent(PyObject *obj, PyObject *parent);
 void           PyDualMeshAttributes_SetDefaults(const DualMeshAttributes *atts);
 std::string    PyDualMeshAttributes_GetLogString();
-std::string    PyDualMeshAttributes_ToString(const DualMeshAttributes *, const char *);
+std::string    PyDualMeshAttributes_ToString(const DualMeshAttributes *, const char *, const bool=false);
 PyObject *     PyDualMeshAttributes_getattr(PyObject *self, char *name);
 int            PyDualMeshAttributes_setattr(PyObject *self, char *name, PyObject *args);
 extern PyMethodDef PyDualMeshAttributes_methods[DUALMESHATTRIBUTES_NMETH];

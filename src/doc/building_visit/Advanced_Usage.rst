@@ -116,7 +116,7 @@ Compiler (Run-Time) Compatability : Pre-installed libraries are not built with a
     The compiler (run-time) used for pre-installed libraries may not be compatable with the compiler (run-time) VisIt_ requires.
 
 There are likely other subtle compatability issues that can arise which we have neglected to mention here.
-A fully featured build of VisIt_ can involve 35+ libraries, many of which may come pre-installed (Qt, VTK, Python, HDF5, netCDF, OpenSSL, OpenGL, MPI to name a few) on any particular platform.
+A fully featured build of VisIt_ can involve 35+ libraries, many of which may come pre-installed (Qt, VTK, Python, HDF5, netCDF, OpenGL, MPI to name a few) on any particular platform.
 Bottom line, the number of ways pre-installed libraries can be built such that they will cause VisIt_ to either fail to build or fail to run properly are almost boundless.
 For this reason, we discourage users from attempting to build VisIt_ using pre-installed libraries and warn users that in all likelihood we will not have sufficient resources to help address any resulting issues that may arise.
 
@@ -178,3 +178,14 @@ the packages intact. You can go into the directory of the package that
 failed and correct the issue and finish building and installing the package.
 You can then execute the ``build_visit`` command again to have it continue
 the build.
+
+Why can't I use the Qt, Python, VTK, Mesa/GL, etc. that came on my system?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+As much as we might like to believe it, large, complex libraries like Qt, Python and VTK are rarely 100% compatible between newer or older versions.
+Furthermore, for large libraries like these, there are often many, many different installation options for a given platform.
+It is highly unlikely that a given installation of VTK for example, is not only of a version compatibile with a given release of VisIt_ but also configured and installed on your system in exactly the way VisIt_ needs it.
+In addition, VisIt_ gets developed and thoroughly tested on specific versions and configurations of various libraries meaning that when users encounter issues in other configurations, we are not always able to reproduce them.
+In some cases, VisIt_ developers have had to work-around a bug in a library or, worse, had to patch the actual library itself to address an issue that might be specific to just one platform.
+Together, these issues result in a situation where VisIt_ often must be compiled with precisely the libraries it is released on and rarely, if ever, can take advantage of an installation that came as part of the system VisIt_ is being built on.
+Lastly, it becomes almost impossible to duplicate and diagnose issues reported by users when users are running VisIt_ in configurations substantially different from that which is being developed and routinely tested.

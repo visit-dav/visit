@@ -38,7 +38,7 @@ struct SelectionListObject
 //
 static PyObject *NewSelectionList(int);
 std::string
-PySelectionList_ToString(const SelectionList *atts, const char *prefix)
+PySelectionList_ToString(const SelectionList *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -56,7 +56,7 @@ PySelectionList_ToString(const SelectionList *atts, const char *prefix)
             const SelectionProperties *current = (const SelectionProperties *)(*pos);
             snprintf(tmpStr, 1000, "GetSelections(%d).", index);
             std::string objPrefix(prefix + std::string(tmpStr));
-            str += PySelectionProperties_ToString(current, objPrefix.c_str());
+            str += PySelectionProperties_ToString(current, objPrefix.c_str(), forLogging);
         }
         if(index == 0)
             str += "#selections does not contain any SelectionProperties objects.\n";
@@ -69,7 +69,7 @@ PySelectionList_ToString(const SelectionList *atts, const char *prefix)
             const SelectionSummary *current = (const SelectionSummary *)(*pos);
             snprintf(tmpStr, 1000, "GetSelectionSummary(%d).", index);
             std::string objPrefix(prefix + std::string(tmpStr));
-            str += PySelectionSummary_ToString(current, objPrefix.c_str());
+            str += PySelectionSummary_ToString(current, objPrefix.c_str(), forLogging);
         }
         if(index == 0)
             str += "#selectionSummary does not contain any SelectionSummary objects.\n";
@@ -434,7 +434,7 @@ static int
 SelectionList_print(PyObject *v, FILE *fp, int flags)
 {
     SelectionListObject *obj = (SelectionListObject *)v;
-    fprintf(fp, "%s", PySelectionList_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PySelectionList_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -442,7 +442,7 @@ PyObject *
 SelectionList_str(PyObject *v)
 {
     SelectionListObject *obj = (SelectionListObject *)v;
-    return PyString_FromString(PySelectionList_ToString(obj->data,"").c_str());
+    return PyString_FromString(PySelectionList_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -594,7 +594,7 @@ PySelectionList_GetLogString()
 {
     std::string s("SelectionList = SelectionList()\n");
     if(currentAtts != 0)
-        s += PySelectionList_ToString(currentAtts, "SelectionList.");
+        s += PySelectionList_ToString(currentAtts, "SelectionList.", true);
     return s;
 }
 
@@ -607,7 +607,7 @@ PySelectionList_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("SelectionList = SelectionList()\n");
-        s += PySelectionList_ToString(currentAtts, "SelectionList.");
+        s += PySelectionList_ToString(currentAtts, "SelectionList.", true);
         cb(s);
     }
 }

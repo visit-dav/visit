@@ -26,6 +26,8 @@ Contents:
     RemoteUsage
     MakingMovies
     MolecularDataFeatures
+    PythonExpressions
+    Partitioning
     
 
 .. Indices and tables

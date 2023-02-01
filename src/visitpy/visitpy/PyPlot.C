@@ -36,7 +36,7 @@ struct PlotObject
 //
 static PyObject *NewPlot(int);
 std::string
-PyPlot_ToString(const Plot *atts, const char *prefix)
+PyPlot_ToString(const Plot *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -1729,7 +1729,7 @@ static int
 Plot_print(PyObject *v, FILE *fp, int flags)
 {
     PlotObject *obj = (PlotObject *)v;
-    fprintf(fp, "%s", PyPlot_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyPlot_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -1737,7 +1737,7 @@ PyObject *
 Plot_str(PyObject *v)
 {
     PlotObject *obj = (PlotObject *)v;
-    return PyString_FromString(PyPlot_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyPlot_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -1889,7 +1889,7 @@ PyPlot_GetLogString()
 {
     std::string s("Plot = Plot()\n");
     if(currentAtts != 0)
-        s += PyPlot_ToString(currentAtts, "Plot.");
+        s += PyPlot_ToString(currentAtts, "Plot.", true);
     return s;
 }
 
@@ -1902,7 +1902,7 @@ PyPlot_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("Plot = Plot()\n");
-        s += PyPlot_ToString(currentAtts, "Plot.");
+        s += PyPlot_ToString(currentAtts, "Plot.", true);
         cb(s);
     }
 }

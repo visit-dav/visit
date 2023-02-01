@@ -35,7 +35,7 @@ struct SPHResampleAttributesObject
 //
 static PyObject *NewSPHResampleAttributes(int);
 std::string
-PySPHResampleAttributes_ToString(const SPHResampleAttributes *atts, const char *prefix)
+PySPHResampleAttributes_ToString(const SPHResampleAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -915,7 +915,7 @@ static int
 SPHResampleAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     SPHResampleAttributesObject *obj = (SPHResampleAttributesObject *)v;
-    fprintf(fp, "%s", PySPHResampleAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PySPHResampleAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -923,7 +923,7 @@ PyObject *
 SPHResampleAttributes_str(PyObject *v)
 {
     SPHResampleAttributesObject *obj = (SPHResampleAttributesObject *)v;
-    return PyString_FromString(PySPHResampleAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PySPHResampleAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -1075,7 +1075,7 @@ PySPHResampleAttributes_GetLogString()
 {
     std::string s("SPHResampleAtts = SPHResampleAttributes()\n");
     if(currentAtts != 0)
-        s += PySPHResampleAttributes_ToString(currentAtts, "SPHResampleAtts.");
+        s += PySPHResampleAttributes_ToString(currentAtts, "SPHResampleAtts.", true);
     return s;
 }
 
@@ -1088,7 +1088,7 @@ PySPHResampleAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("SPHResampleAtts = SPHResampleAttributes()\n");
-        s += PySPHResampleAttributes_ToString(currentAtts, "SPHResampleAtts.");
+        s += PySPHResampleAttributes_ToString(currentAtts, "SPHResampleAtts.", true);
         cb(s);
     }
 }

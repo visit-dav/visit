@@ -103,13 +103,6 @@ function bv_silo_ensure
     fi
 }
 
-function bv_silo_dry_run
-{
-    if [[ "$DO_SILO" == "yes" ]] ; then
-        echo "Dry run option not set for silo."
-    fi
-}
-
 function apply_silo_4102_fpzip_patch
 {
     info "Patching silo for fpzip DOMAIN and RANGE symbols"

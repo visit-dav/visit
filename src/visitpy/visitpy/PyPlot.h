@@ -23,7 +23,7 @@ VISITPY_API PyObject *     PyPlot_Wrap(const Plot *attr);
 void VISITPY_API           PyPlot_SetParent(PyObject *obj, PyObject *parent);
 void VISITPY_API           PyPlot_SetDefaults(const Plot *atts);
 std::string VISITPY_API    PyPlot_GetLogString();
-std::string VISITPY_API    PyPlot_ToString(const Plot *, const char *);
+std::string VISITPY_API    PyPlot_ToString(const Plot *, const char *, const bool=false);
 VISITPY_API PyObject *     PyPlot_getattr(PyObject *self, char *name);
 int VISITPY_API            PyPlot_setattr(PyObject *self, char *name, PyObject *args);
 VISITPY_API extern PyMethodDef PyPlot_methods[PLOT_NMETH];

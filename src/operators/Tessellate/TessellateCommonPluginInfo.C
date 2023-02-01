@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: TessellateCommonPluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <TessellatePluginInfo.h>
 #include <TessellateAttributes.h>
@@ -43,7 +43,7 @@ TessellateCommonPluginInfo::AllocAttributes()
 //
 // ****************************************************************************
 
-void 
+void
 TessellateCommonPluginInfo::CopyAttributes(AttributeSubject *to,
     AttributeSubject *from)
 {

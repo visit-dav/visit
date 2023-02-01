@@ -11,8 +11,8 @@ import llnl.visit.ColorControlPointList;
 import java.lang.Byte;
 import java.util.Vector;
 import llnl.visit.ColorAttribute;
-import llnl.visit.ColorAttributeList;
 import java.lang.Double;
+import llnl.visit.ColorAttributeList;
 
 // ****************************************************************************
 // Class: ContourAttributes
@@ -58,11 +58,11 @@ public class ContourAttributes extends AttributeSubject implements Plugin
         legendFlag = true;
         lineWidth = 0;
         singleColor = new ColorAttribute(255, 0, 0);
-        multiColor = new ColorAttributeList();
+        contourMethod = SELECT_BY_LEVEL;
         contourNLevels = 10;
         contourValue = new Vector();
         contourPercent = new Vector();
-        contourMethod = SELECT_BY_LEVEL;
+        multiColor = new ColorAttributeList();
         minFlag = false;
         maxFlag = false;
         min = 0;
@@ -83,11 +83,11 @@ public class ContourAttributes extends AttributeSubject implements Plugin
         legendFlag = true;
         lineWidth = 0;
         singleColor = new ColorAttribute(255, 0, 0);
-        multiColor = new ColorAttributeList();
+        contourMethod = SELECT_BY_LEVEL;
         contourNLevels = 10;
         contourValue = new Vector();
         contourPercent = new Vector();
-        contourMethod = SELECT_BY_LEVEL;
+        multiColor = new ColorAttributeList();
         minFlag = false;
         maxFlag = false;
         min = 0;
@@ -116,7 +116,7 @@ public class ContourAttributes extends AttributeSubject implements Plugin
         legendFlag = obj.legendFlag;
         lineWidth = obj.lineWidth;
         singleColor = new ColorAttribute(obj.singleColor);
-        multiColor = new ColorAttributeList(obj.multiColor);
+        contourMethod = obj.contourMethod;
         contourNLevels = obj.contourNLevels;
         contourValue = new Vector(obj.contourValue.size());
         for(i = 0; i < obj.contourValue.size(); ++i)
@@ -132,7 +132,7 @@ public class ContourAttributes extends AttributeSubject implements Plugin
             contourPercent.addElement(new Double(dv.doubleValue()));
         }
 
-        contourMethod = obj.contourMethod;
+        multiColor = new ColorAttributeList(obj.multiColor);
         minFlag = obj.minFlag;
         maxFlag = obj.maxFlag;
         min = obj.min;
@@ -184,11 +184,11 @@ public class ContourAttributes extends AttributeSubject implements Plugin
                 (legendFlag == obj.legendFlag) &&
                 (lineWidth == obj.lineWidth) &&
                 (singleColor == obj.singleColor) &&
-                (multiColor.equals(obj.multiColor)) &&
+                (contourMethod == obj.contourMethod) &&
                 (contourNLevels == obj.contourNLevels) &&
                 contourValue_equal &&
                 contourPercent_equal &&
-                (contourMethod == obj.contourMethod) &&
+                (multiColor.equals(obj.multiColor)) &&
                 (minFlag == obj.minFlag) &&
                 (maxFlag == obj.maxFlag) &&
                 (min == obj.min) &&
@@ -249,9 +249,9 @@ public class ContourAttributes extends AttributeSubject implements Plugin
         Select(7);
     }
 
-    public void SetMultiColor(ColorAttributeList multiColor_)
+    public void SetContourMethod(int contourMethod_)
     {
-        multiColor = multiColor_;
+        contourMethod = contourMethod_;
         Select(8);
     }
 
@@ -273,9 +273,9 @@ public class ContourAttributes extends AttributeSubject implements Plugin
         Select(11);
     }
 
-    public void SetContourMethod(int contourMethod_)
+    public void SetMultiColor(ColorAttributeList multiColor_)
     {
-        contourMethod = contourMethod_;
+        multiColor = multiColor_;
         Select(12);
     }
 
@@ -324,11 +324,11 @@ public class ContourAttributes extends AttributeSubject implements Plugin
     public boolean               GetLegendFlag() { return legendFlag; }
     public int                   GetLineWidth() { return lineWidth; }
     public ColorAttribute        GetSingleColor() { return singleColor; }
-    public ColorAttributeList    GetMultiColor() { return multiColor; }
+    public int                   GetContourMethod() { return contourMethod; }
     public int                   GetContourNLevels() { return contourNLevels; }
     public Vector                GetContourValue() { return contourValue; }
     public Vector                GetContourPercent() { return contourPercent; }
-    public int                   GetContourMethod() { return contourMethod; }
+    public ColorAttributeList    GetMultiColor() { return multiColor; }
     public boolean               GetMinFlag() { return minFlag; }
     public boolean               GetMaxFlag() { return maxFlag; }
     public double                GetMin() { return min; }
@@ -356,7 +356,7 @@ public class ContourAttributes extends AttributeSubject implements Plugin
         if(WriteSelect(7, buf))
             singleColor.Write(buf);
         if(WriteSelect(8, buf))
-            multiColor.Write(buf);
+            buf.WriteInt(contourMethod);
         if(WriteSelect(9, buf))
             buf.WriteInt(contourNLevels);
         if(WriteSelect(10, buf))
@@ -364,7 +364,7 @@ public class ContourAttributes extends AttributeSubject implements Plugin
         if(WriteSelect(11, buf))
             buf.WriteDoubleVector(contourPercent);
         if(WriteSelect(12, buf))
-            buf.WriteInt(contourMethod);
+            multiColor.Write(buf);
         if(WriteSelect(13, buf))
             buf.WriteBool(minFlag);
         if(WriteSelect(14, buf))
@@ -410,8 +410,7 @@ public class ContourAttributes extends AttributeSubject implements Plugin
             Select(7);
             break;
         case 8:
-            multiColor.Read(buf);
-            Select(8);
+            SetContourMethod(buf.ReadInt());
             break;
         case 9:
             SetContourNLevels(buf.ReadInt());
@@ -423,7 +422,8 @@ public class ContourAttributes extends AttributeSubject implements Plugin
             SetContourPercent(buf.ReadDoubleVector());
             break;
         case 12:
-            SetContourMethod(buf.ReadInt());
+            multiColor.Read(buf);
+            Select(12);
             break;
         case 13:
             SetMinFlag(buf.ReadBool());
@@ -464,10 +464,6 @@ public class ContourAttributes extends AttributeSubject implements Plugin
         str = str + boolToString("legendFlag", legendFlag, indent) + "\n";
         str = str + intToString("lineWidth", lineWidth, indent) + "\n";
         str = str + indent + "singleColor = {" + singleColor.Red() + ", " + singleColor.Green() + ", " + singleColor.Blue() + ", " + singleColor.Alpha() + "}\n";
-        str = str + indent + "multiColor = {\n" + multiColor.toString(indent + "    ") + indent + "}\n";
-        str = str + intToString("contourNLevels", contourNLevels, indent) + "\n";
-        str = str + doubleVectorToString("contourValue", contourValue, indent) + "\n";
-        str = str + doubleVectorToString("contourPercent", contourPercent, indent) + "\n";
         str = str + indent + "contourMethod = ";
         if(contourMethod == SELECT_BY_LEVEL)
             str = str + "SELECT_BY_LEVEL";
@@ -476,6 +472,10 @@ public class ContourAttributes extends AttributeSubject implements Plugin
         if(contourMethod == SELECT_BY_PERCENT)
             str = str + "SELECT_BY_PERCENT";
         str = str + "\n";
+        str = str + intToString("contourNLevels", contourNLevels, indent) + "\n";
+        str = str + doubleVectorToString("contourValue", contourValue, indent) + "\n";
+        str = str + doubleVectorToString("contourPercent", contourPercent, indent) + "\n";
+        str = str + indent + "multiColor = {\n" + multiColor.toString(indent + "    ") + indent + "}\n";
         str = str + boolToString("minFlag", minFlag, indent) + "\n";
         str = str + boolToString("maxFlag", maxFlag, indent) + "\n";
         str = str + doubleToString("min", min, indent) + "\n";
@@ -500,11 +500,11 @@ public class ContourAttributes extends AttributeSubject implements Plugin
     private boolean               legendFlag;
     private int                   lineWidth;
     private ColorAttribute        singleColor;
-    private ColorAttributeList    multiColor;
+    private int                   contourMethod;
     private int                   contourNLevels;
     private Vector                contourValue; // vector of Double objects
     private Vector                contourPercent; // vector of Double objects
-    private int                   contourMethod;
+    private ColorAttributeList    multiColor;
     private boolean               minFlag;
     private boolean               maxFlag;
     private double                min;

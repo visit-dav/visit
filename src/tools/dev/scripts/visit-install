@@ -500,7 +500,7 @@ done
 
 if [ "$#" != "3" ]; then
    echo "Usage: visit-install [-c anl | arl | asu | awe | chombo | clemson | cscs |"
-   echo "                         eth_zurich | llnl_open | llnl_open_rz |"
+   echo "                         eth_zurich | kaust | llnl_open | llnl_open_rz |"
    echo "                         llnl_open_cz | llnl_closed | lrz | lsu | ncar |"
    echo "                         nersc | nics | ohio | ornl | princeton | "
    echo "                         sandia | umich | utah]"
@@ -684,6 +684,14 @@ if [ "$test" = "true" ]; then
        echo "failed"
        exit 1
     fi
+    echo "Testing kaust configuration..."
+    rm -rf $dir
+    $0 -c kaust $version $platform $dir > /dev/null 2>&1
+    files=`ls $dir/$version/.visit/hosts/host_kaust*` 
+    if [ "$files" == "" ]; then
+       echo "failed"
+       exit 1
+    fi
     echo "Testing llnl_open_rz configuration..."
     rm -rf $dir
     $0 -c llnl_open_rz $version $platform $dir > /dev/null 2>&1
@@ -815,23 +823,24 @@ while [ "$config" = "prompt" ]; do
    echo "   6)  AWE network"
    echo "   7)  Clemson University network"
    echo "   8)  ETH Zurich network"
-   echo "   9)  LLNL open network"
-   echo "   10) LLNL closed network"
-   echo "   11) Leibniz Supercomputing Centre network"
-   echo "   12) Lousiana State University network"
-   echo "   13) NCAR network"
-   echo "   14) NERSC network"
-   echo "   15) NICS at University of Tennessee at Knoxville"
-   echo "   16) Ohio Supercomputer Center (OSC) network"
-   echo "   17) ORNL network"
-   echo "   18) Princeton network"
-   echo "   19) Sandia network"
-   echo "   20) Sandia closed network"
-   echo "   21) Swiss National Supercomputing Center (CSCS) network"
-   echo "   22) U of Michigan Advanced Research Computing (ARC-TS) network"
-   echo "   23) U of Utah Center for High Performance Computing (CHPC) network"
+   echo "   9)  KAUST network"
+   echo "   10) LLNL open network"
+   echo "   11) LLNL closed network"
+   echo "   12) Leibniz Supercomputing Centre network"
+   echo "   13) Lousiana State University network"
+   echo "   14) NCAR network"
+   echo "   15) NERSC network"
+   echo "   16) NICS at University of Tennessee at Knoxville"
+   echo "   17) Ohio Supercomputer Center (OSC) network"
+   echo "   18) ORNL network"
+   echo "   19) Princeton network"
+   echo "   20) Sandia network"
+   echo "   21) Sandia closed network"
+   echo "   22) Swiss National Supercomputing Center (CSCS) network"
+   echo "   23) U of Michigan Advanced Research Computing (ARC-TS) network"
+   echo "   24) U of Utah Center for High Performance Computing (CHPC) network"
    echo ""
-   echo "Enter (1-23):"
+   echo "Enter (1-24):"
 
    read config
    case "$config" in
@@ -860,45 +869,48 @@ while [ "$config" = "prompt" ]; do
          config=eth_zurich
          ;;
       9)
-         config=llnl_open
+         config=kaust
          ;;
       10)
-         config=llnl_closed
+         config=llnl_open
          ;;
       11)
-         config=lrz
+         config=llnl_closed
          ;;
       12)
-         config=lsu
+         config=lrz
          ;;
       13)
-         config=ncar
+         config=lsu
          ;;
       14)
-         config=nersc
+         config=ncar
          ;;
       15)
-         config=nics
+         config=nersc
          ;;
       16)
-         config=ohio
+         config=nics
          ;;
       17)
-         config=ornl
+         config=ohio
          ;;
       18)
-         config=princeton
+         config=ornl
          ;;
       19)
+         config=princeton
+         ;;
+      20)
          config=sandia
          ;;
-      21)
+      22)
          config=cscs
          ;;
-      22)
+      23)
          config=umich
          ;;
-      23)
+      24)
          config=utah
          ;;
       *)
@@ -923,6 +935,8 @@ case "$config" in
    clemson)
       ;;
    eth_zurich)
+      ;;
+   kaust)
       ;;
    llnl_open)
       ;;
@@ -958,7 +972,7 @@ case "$config" in
       ;;
    *)
       echo "Illegal configuration option, choices are none, chombo, anl,"
-      echo "arl, asu, awe, clemson, cscs, eth_zurich, llnl_open, llnl_open_rz,"
+      echo "arl, asu, awe, clemson, cscs, eth_zurich, kaust, llnl_open, llnl_open_rz,"
       echo "llnl_open_cz, llnl_closed, lrz, lsu, ncar, nersc, nics, ohio, ornl,"
       echo "princeton, sandia, umich, utah"
       exit 4
@@ -1090,6 +1104,9 @@ elif [ "$config" = "clemson" ]; then
 elif [ "$config" = "cscs" ]; then
    cp "$dir"/$version+/$platformDir/resources/hosts/$config/*.xml               "$dir"/$version+/.visit/hosts/
 elif [ "$config" = "eth_zurich" ]; then
+   cp "$dir"/$version+/$platformDir/resources/hosts/$config/customlauncher      "$dir"/$version+/bin/
+elif [ "$config" = "kaust" ]; then
+   cp "$dir"/$version+/$platformDir/resources/hosts/$config/*.xml               "$dir"/$version+/.visit/hosts/
    cp "$dir"/$version+/$platformDir/resources/hosts/$config/customlauncher      "$dir"/$version+/bin/
 elif [ "$config" = "llnl_open" ]; then
    # Install both cz hosts and rz hosts. We're most likely in a client

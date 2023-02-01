@@ -36,7 +36,7 @@ struct ElevateAttributesObject
 //
 static PyObject *NewElevateAttributes(int);
 std::string
-PyElevateAttributes_ToString(const ElevateAttributes *atts, const char *prefix)
+PyElevateAttributes_ToString(const ElevateAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -883,7 +883,7 @@ static int
 ElevateAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     ElevateAttributesObject *obj = (ElevateAttributesObject *)v;
-    fprintf(fp, "%s", PyElevateAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyElevateAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -891,7 +891,7 @@ PyObject *
 ElevateAttributes_str(PyObject *v)
 {
     ElevateAttributesObject *obj = (ElevateAttributesObject *)v;
-    return PyString_FromString(PyElevateAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyElevateAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -1043,7 +1043,7 @@ PyElevateAttributes_GetLogString()
 {
     std::string s("ElevateAtts = ElevateAttributes()\n");
     if(currentAtts != 0)
-        s += PyElevateAttributes_ToString(currentAtts, "ElevateAtts.");
+        s += PyElevateAttributes_ToString(currentAtts, "ElevateAtts.", true);
     return s;
 }
 
@@ -1056,7 +1056,7 @@ PyElevateAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("ElevateAtts = ElevateAttributes()\n");
-        s += PyElevateAttributes_ToString(currentAtts, "ElevateAtts.");
+        s += PyElevateAttributes_ToString(currentAtts, "ElevateAtts.", true);
         cb(s);
     }
 }

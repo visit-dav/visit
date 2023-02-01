@@ -586,7 +586,7 @@ avtFileFormat::AddArrayVarToMetaData(avtDatabaseMetaData *md, string name,
     for (int i = 0 ; i < ncomps ; i++)
     {
         char name[16];
-        snprintf(name, 16, "comp%02d", i);
+        snprintf(name, sizeof(name), "comp%02d", i);
         st->compNames[i] = name;
     }
     st->meshName = mesh;
@@ -627,7 +627,7 @@ avtFileFormat::AddMaterialToMetaData(avtDatabaseMetaData *md, string name,
     {
         for (int i = 0; i < nmats; i++)
         {
-            char num[8];
+            char num[12];
             snprintf(num, sizeof(num), "%d", i);
             matnames.push_back(num);
         }
@@ -671,7 +671,7 @@ avtFileFormat::AddMaterialToMetaData(avtDatabaseMetaData *md, string name,
     {
         for (int i = 0; i < nmats; i++)
         {
-            char num[8];
+            char num[12];
             snprintf(num, sizeof(num), "%d", i);
             matnames.push_back(num);
         }

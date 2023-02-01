@@ -36,12 +36,12 @@ struct avtTensorMetaDataObject
 //
 static PyObject *NewavtTensorMetaData(int);
 std::string
-PyavtTensorMetaData_ToString(const avtTensorMetaData *atts, const char *prefix)
+PyavtTensorMetaData_ToString(const avtTensorMetaData *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
 
-    str = PyavtVarMetaData_ToString(atts, prefix);
+    str = PyavtVarMetaData_ToString(atts, prefix, forLogging);
 
     snprintf(tmpStr, 1000, "%sdim = %d\n", prefix, atts->dim);
     str += tmpStr;
@@ -221,7 +221,7 @@ static int
 avtTensorMetaData_print(PyObject *v, FILE *fp, int flags)
 {
     avtTensorMetaDataObject *obj = (avtTensorMetaDataObject *)v;
-    fprintf(fp, "%s", PyavtTensorMetaData_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyavtTensorMetaData_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -229,7 +229,7 @@ PyObject *
 avtTensorMetaData_str(PyObject *v)
 {
     avtTensorMetaDataObject *obj = (avtTensorMetaDataObject *)v;
-    return PyString_FromString(PyavtTensorMetaData_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyavtTensorMetaData_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -381,7 +381,7 @@ PyavtTensorMetaData_GetLogString()
 {
     std::string s("avtTensorMetaData = avtTensorMetaData()\n");
     if(currentAtts != 0)
-        s += PyavtTensorMetaData_ToString(currentAtts, "avtTensorMetaData.");
+        s += PyavtTensorMetaData_ToString(currentAtts, "avtTensorMetaData.", true);
     return s;
 }
 
@@ -394,7 +394,7 @@ PyavtTensorMetaData_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("avtTensorMetaData = avtTensorMetaData()\n");
-        s += PyavtTensorMetaData_ToString(currentAtts, "avtTensorMetaData.");
+        s += PyavtTensorMetaData_ToString(currentAtts, "avtTensorMetaData.", true);
         cb(s);
     }
 }

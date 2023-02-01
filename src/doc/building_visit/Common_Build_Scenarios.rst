@@ -147,7 +147,7 @@ to enable building the Uintah reader.
     --cmake --python --vtk --qt --qwt \
     --adios --adios2 --advio --boost --cfitsio --cgns --conduit \
     --gdal --glu --h5part --hdf5 --icet --llvm --mfem \
-    --mili --moab --mxml --netcdf --openssl --p7zip \
+    --mili --moab --mxml --netcdf \
     --silo --szip --vtkm --vtkh --xdmf --zlib \
     --mesagl --uintah --parallel \
     --thirdparty-path /usr/workspace/wsa/visit/visit/thirdparty_shared/3.0.1/blueos \
@@ -349,7 +349,7 @@ to enable building the Uintah reader.
        --system-cmake --python --vtk --qt --qwt \
        --adios --adios2 --advio --boost --cfitsio --cgns --conduit \
        --gdal --glu --h5part --hdf5 --icet --llvm --mfem \
-       --mili --moab --mxml --netcdf --openssl --p7zip \
+       --mili --moab --mxml --netcdf \
        --silo --szip --xdmf --zlib \
        --mesagl --uintah --parallel \
        --thirdparty-path /autofs/nccs-svm1_home1/brugger1/visit/thirdparty_shared/3.0.1 \

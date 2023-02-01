@@ -129,6 +129,9 @@ ExportDBAction::GetActivePlotNetworkIds(ViewerPlotList *plist, intVector &networ
 //   ExportDatabases has new signature with return atts.
 //   Add location of export to message returned to user.
 //
+//   Cyrus Harrison, Mon Jun 13 12:08:19 PDT 2022
+//   Fix how path is display when dirname is empty.
+//
 // ****************************************************************************
 
 void
@@ -208,11 +211,17 @@ ExportDBAction::Execute()
                                 host = "";
                             else
                                 host += ":";
+                            std::string path = exportAtts.GetDirname();
+                            // don't add '/' if dir name is empty,
+                            // b/c it will make it look like we wrote
+                            // to the root file system
+                            if(!path.empty())
+                              path += "/";
                             GetViewerMessaging()->Message(
-                                TR("Exported database time state %1 to %2%3/%4").
+                                TR("Exported database time state %1 to %2%3%4").
                                 arg(i).
                                 arg(host).
-                                arg(exportAtts.GetDirname()).
+                                arg(path).
                                 arg(exportAtts.GetFilename()));
                         }
                         else
@@ -252,10 +261,16 @@ ExportDBAction::Execute()
                 host = "";
             else
                 host += ":";
+            std::string path = exportAtts.GetDirname();
+            // don't add '/' if dir name is empty,
+            // b/c it will make it look like we wrote
+            // to the root file system
+            if(!path.empty())
+              path += "/";
             GetViewerMessaging()->Message(
-                TR("Exported database to %1%2/%3").
+                TR("Exported database to %1%2%3").
                 arg(host).
-                arg(exportAtts.GetDirname()).
+                arg(path).
                 arg(exportAtts.GetFilename()));
         }
         else

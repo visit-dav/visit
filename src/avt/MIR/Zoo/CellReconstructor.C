@@ -32,16 +32,17 @@
 //    Hank Childs, Fri Jun  9 15:05:25 PDT 2006
 //    Reorder initializers to match declaration order in class definition.
 //
+//    Kathleen Biagas, Thu Aug 11 2022
+//    Removed MIRConnectivity from constructor as it isn't used.
+//
 // ****************************************************************************
 CellReconstructor::CellReconstructor(vtkDataSet *d,
                                      avtMaterial *m,
                                      ResampledMat &r,
                                      int np, int nc,
                                      bool matsSharePoints,
-                                     MIRConnectivity &mc,
                                      ZooMIR &z)
-    : mesh(d), mat(m), rm(r), nPoints(np), nCells(nc),
-      conn(mc), mir(z),
+    : mesh(d), mat(m), rm(r), nPoints(np), nCells(nc), mir(z),
       nMaterials(mat->GetNMaterials()),
       allMaterialsSharePoints(matsSharePoints),
       edges(nPoints/2),
@@ -287,7 +288,7 @@ CellReconstructor::CreateOutputShape(TempCell &old,
                 cell.ids[p] = edge->GetPointId();
 
                 // We need to update edge points shared between cells to match the current cell
-                
+
                 ZooMIR::ReconstructedCoord &newCoord =
                                  mir.coordsList[edge->GetPointId() - nPoints];
                 if (newCoord.origzone != cellid)
@@ -370,7 +371,7 @@ CellReconstructor::CreateOutputShape(TempCell &old,
                 edge->SetPointId(newid);
                 mir.coordsList.push_back(newCoord);
             }
-                                        
+
             // Doesn't matter whether or not we use the old or new VFs;
             // they should should match at the intersection.  Just use
             // the new ones arbitrarily.
@@ -439,10 +440,10 @@ CellReconstructor::CalculateVolumeOrAreaHelper(int type, double coords[][3])
     {
       case VTK_TRIANGLE:
           return v_tri_area(3, coords);
-        
+
       case VTK_QUAD:
         return v_quad_area(4, coords);
-        
+
       case VTK_PIXEL:
         Swap3(coords, 2, 3);
         return v_quad_area(4, coords);
@@ -472,7 +473,7 @@ CellReconstructor::CalculateVolumeOrAreaHelper(int type, double coords[][3])
         }
         return vol;
         }
-        
+
       // The verdict metric for pyramid I have yet to figure out how to work.
       // However, it does the same thing that we do here: Divide the pyramid
       // into two tetrahedrons.
@@ -480,7 +481,7 @@ CellReconstructor::CalculateVolumeOrAreaHelper(int type, double coords[][3])
         {
         double one[4][3];
         double two[4][3];
-            
+
         Copy3(coords,one[0], 0);
         Copy3(coords,one[1], 1);
         Copy3(coords,one[2], 2);

@@ -279,3 +279,45 @@ Dolly3D::DisableSpinMode(void)
         shouldSpin = false;
     }
 }
+
+
+// ****************************************************************************
+//  Method: Dolly3D::OnMouseWheelForward
+//
+//  Purpose:
+//    Handles the mouse wheel turned forward.
+//
+//  Programmer: Kathleen Biagas
+//  Creation:   March 16, 2022
+//
+// ****************************************************************************
+
+void
+Dolly3D::OnMouseWheelForward()
+{
+    StartZoom();
+    DollyCameraTowardFocus3D(MotionFactor * 0.2 * this->MouseWheelMotionFactor);
+    EndZoom();
+    IssueViewCallback(true);
+}
+
+
+// ****************************************************************************
+//  Method: Dolly3D::OnMouseWheelBackward
+//
+//  Purpose:
+//    Handles the mouse wheel turned backward.
+//
+//  Programmer: Kathleen Biagas
+//  Creation:   March 16, 2022
+//
+// ****************************************************************************
+
+void
+Dolly3D::OnMouseWheelBackward()
+{
+    StartZoom();
+    DollyCameraTowardFocus3D(MotionFactor * -0.2 * this->MouseWheelMotionFactor);
+    EndZoom();
+    IssueViewCallback(true);
+}

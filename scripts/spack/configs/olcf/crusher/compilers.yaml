@@ -1,0 +1,163 @@
+compilers:
+- compiler:
+    spec: aocc@3.0.0
+    paths:
+      cc: cc
+      cxx: CC
+      f77: ftn
+      fc: ftn
+    flags:
+      cflags: -Wno-unused-command-line-argument -mllvm -eliminate-similar-expr=false
+      cxxflags: -Wno-unused-command-line-argument -mllvm -eliminate-similar-expr=false
+      fflags: -Wno-unused-command-line-argument -mllvm -eliminate-similar-expr=false
+    operating_system: sles15
+    target: any
+    modules:
+    - PrgEnv-aocc
+    - aocc/3.0.0
+    environment: {}
+    extra_rpaths: []
+- compiler:
+    spec: aocc@3.1.0
+    paths:
+      cc: cc
+      cxx: CC
+      f77: ftn
+      fc: ftn
+    flags:
+      cflags: null
+      cxxflags: null
+      fflags: null
+    operating_system: sles15
+    target: any
+    modules:
+    - PrgEnv-aocc
+    - aocc/3.1.0
+    environment: {}
+    extra_rpaths: []
+- compiler:
+    spec: aocc@3.0.0
+    paths:
+      cc: cc
+      cxx: CC
+      f77: ftn
+      fc: ftn
+    flags:
+      cflags: -Wno-unused-command-line-argument -mllvm -eliminate-similar-expr=false
+      cxxflags: -Wno-unused-command-line-argument -mllvm -eliminate-similar-expr=false
+      fflags: -Wno-unused-command-line-argument -mllvm -eliminate-similar-expr=false
+    operating_system: sles15
+    target: any
+    modules:
+    - PrgEnv-aocc
+    - aocc/3.0.0
+    environment: {}
+    extra_rpaths: []
+- compiler:
+    spec: aocc@3.1.0
+    paths:
+      cc: cc
+      cxx: CC
+      f77: ftn
+      fc: ftn
+    flags:
+      cflags: null
+      cxxflags: null
+      fflags: null
+    operating_system: sles15
+    target: any
+    modules:
+    - PrgEnv-aocc
+    - aocc/3.1.0
+    environment: {}
+    extra_rpaths: []
+- compiler:
+    spec: cce@12.0.1
+    paths:
+      cc: cc
+      cxx: CC
+      f77: ftn
+      fc: ftn
+    flags: {}
+    operating_system: sles15
+    target: any
+    modules:
+    - PrgEnv-cray
+    - cce/12.0.1
+    environment: {}
+    extra_rpaths: []
+- compiler:
+    spec: cce@12.0.2
+    paths:
+      cc: cc
+      cxx: CC
+      f77: ftn
+      fc: ftn
+    flags: {}
+    operating_system: sles15
+    target: any
+    modules:
+    - PrgEnv-cray
+    - cce/12.0.2
+    environment: {}
+    extra_rpaths: []
+- compiler:
+    spec: cce@12.0.3
+    paths:
+      cc: cc
+      cxx: CC
+      f77: ftn
+      fc: ftn
+    flags: {}
+    operating_system: sles15
+    target: any
+    modules:
+    - PrgEnv-cray
+    - cce/12.0.3
+    environment: {}
+    extra_rpaths: []
+- compiler:
+    spec: gcc@9.3.0
+    paths:
+      cc: cc
+      cxx: CC
+      f77: ftn
+      fc: ftn
+    flags: {}
+    operating_system: sles15
+    target: any
+    modules:
+    - PrgEnv-gnu
+    - gcc/9.3.0
+    environment: {}
+    extra_rpaths: []
+- compiler:
+    spec: gcc@10.3.0
+    paths:
+      cc: cc
+      cxx: CC
+      f77: ftn
+      fc: ftn
+    flags: {}
+    operating_system: sles15
+    target: any
+    modules:
+    - PrgEnv-gnu
+    - gcc/10.3.0
+    environment: {}
+    extra_rpaths: []
+- compiler:
+    spec: gcc@11.2.0
+    paths:
+      cc: cc
+      cxx: CC
+      f77: ftn
+      fc: ftn
+    flags: {}
+    operating_system: sles15
+    target: any
+    modules:
+    - PrgEnv-gnu
+    - gcc/11.2.0
+    environment: {}
+    extra_rpaths: [/opt/cray/libfabric/1.11.0.4.75/lib64]

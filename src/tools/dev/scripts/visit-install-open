@@ -128,6 +128,14 @@
 #   Eric Brugger, Mon Jan 13 15:34:55 PST 2020
 #   I removed rzuseq and vulcan.
 #
+#   Eric Brugger, Wed Jun  8 10:42:23 PDT 2022
+#   I added logic to the quartz and rztrona installs to copy libraries
+#   needed to run on toss4 systems.
+#
+#   Eric Brugger, Tue Jun 14 11:55:03 PDT 2022
+#   I removed the logic on the quartz and rztrona installs that copies
+#   the libraries needed by Qt, since those now get included by default.
+#
 #-----------------------------------------------------------------------
 
 test=no
@@ -276,11 +284,6 @@ rm -f kickit
 cat <<EOF > kickit
 #!/bin/sh
 ./visit-install -private -c llnl_open -g visit -b wbronze -gw -l $ver linux-x86_64-rhel7 /usr/gapps/visit > installlog 2>&1
-cp /usr/gapps/gcc/gcc-9.1/lib64/libstdc++.so.6.0.26 /usr/gapps/visit/$ver+/linux-x86_64/lib
-ln -s libstdc++.so.6.0.26 /usr/gapps/visit/$ver+/linux-x86_64/lib/libstdc++.so
-ln -s libstdc++.so.6.0.26 /usr/gapps/visit/$ver+/linux-x86_64/lib/libstdc++.so.6
-chgrp visit /usr/gapps/visit/$ver+/linux-x86_64/lib/libstdc++.so.6.0.26
-chmod 664 /usr/gapps/visit/$ver+/linux-x86_64/lib/libstdc++.so.6.0.26
 rm -f resultlog
 echo "        install of visit on kickit"          > resultlog 2>&1
 echo "       ----------------------------"         >> resultlog 2>&1
@@ -306,7 +309,7 @@ then
       cp visit$ver2.linux-x86_64-rhel7.tar.gz ~/visit$ver2.linux-x86_64-rhel7.tar.gz
       cp visit-install ~
       cp kickit ~/kickit_install
-      echo "cd;chmod 750 kickit_install;./kickit_install" | bash &
+      ssh kickit "chmod 750 kickit_install;./kickit_install"
    fi
 fi
 
@@ -317,6 +320,15 @@ rm -f quartz
 cat <<EOF > quartz
 #!/bin/sh
 ./visit-install -private -c llnl_open_cz -g visit -b wbronze -gw -l $ver linux-x86_64-quartz /usr/gapps/visit > installlog 2>&1
+# Copy libraries needed for fortran for toss4 systems.
+cd /usr/tce/packages/gcc/gcc-7.1.0/lib64
+cp libgfortran.so.4.0.0 /usr/gapps/visit/$ver+/linux-x86_64/lib
+cd /usr/gapps/visit/$ver+/linux-x86_64/lib
+chgrp visit libgfortran.so.4.0.0
+chmod g+rwX,o+rX libgfortran.so.4.0.0
+ln -s libgfortran.so.4.0.0 libgfortran.so
+ln -s libgfortran.so.4.0.0 libgfortran.so.4
+cd
 rm -f resultlog
 echo ""                                              > resultlog 2>&1
 echo "        install of visit on quartz"            >> resultlog 2>&1
@@ -391,6 +403,15 @@ rm -f rztrona
 cat <<EOF > rztrona
 #!/bin/sh
 ./visit-install -private -c llnl_open_rz -g visit -b wbronze -gw -l $ver linux-rztrona /usr/gapps/visit > installlog 2>&1
+# Copy libraries needed for fortran for toss4 systems.
+cd /usr/tce/packages/gcc/gcc-7.1.0/lib64
+cp libgfortran.so.4.0.0 /usr/gapps/visit/$ver+/linux-x86_64/lib
+cd /usr/gapps/visit/$ver+/linux-x86_64/lib
+chgrp visit libgfortran.so.4.0.0
+chmod g+rwX,o+rX libgfortran.so.4.0.0
+ln -s libgfortran.so.4.0.0 libgfortran.so
+ln -s libgfortran.so.4.0.0 libgfortran.so.4
+cd
 rm -f resultlog
 echo "        install of visit on rztrona"          > resultlog 2>&1
 echo "       -----------------------------"         >> resultlog 2>&1

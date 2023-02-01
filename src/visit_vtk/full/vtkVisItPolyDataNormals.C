@@ -4,10 +4,15 @@
 
 #include "vtkVisItPolyDataNormals.h"
 
+#include <visit-config.h> // for LIB_VERSION_GE/LIB_VERSION_LE
 #include <vtkCellArray.h>
+#if LIB_VERSION_GE(VTK, 9,1,0)
+#include <vtkCellArrayIterator.h>
+#endif
 #include <vtkCellData.h>
 #include <vtkDoubleArray.h>
 #include <vtkFloatArray.h>
+#include <vtkIdList.h>
 #include <vtkInformation.h>
 #include <vtkInformationVector.h>
 #include <vtkMath.h>
@@ -131,7 +136,7 @@ vtkVisItPolyDataNormals::RequestData(vtkInformation *vtkNotUsed(request),
 //    Hank Childs, Fri Jul 30 09:00:51 PDT 2004
 //    Copy along cell data from verts and lines as well.
 //
-//    Kathleen Bonnell, Fri Feb 24 09:43:20 PST 2006 
+//    Kathleen Bonnell, Fri Feb 24 09:43:20 PST 2006
 //    Avoid divide-by-zero errors.
 //
 //    Kathleen Bonnell, Wed Mar 29 10:52:43 PST 2006
@@ -146,6 +151,9 @@ vtkVisItPolyDataNormals::RequestData(vtkInformation *vtkNotUsed(request),
 //
 //    Alister Maguire, Wed Apr  1 14:49:06 PDT 2020
 //    Restructured to handle triangle strips.
+//
+//    Kathleen Biagas, Thu Aug 11, 2022
+//    Support VTK: use vktCellArrayIterator.
 //
 // ****************************************************************************
 void
@@ -210,9 +218,14 @@ vtkVisItPolyDataNormals::ExecutePointWithoutSplitting(
     // At this point, all triangle strips have been decomposed into
     // polys, so this is all we need to worry about.
     //
+#if LIB_VERSION_LE(VTK, 8,1,0)
     vtkIdType *outPolyPtr = outPolys->GetPointer();
     int nPolys = outPolys->GetNumberOfCells();
     for (int i = 0 ; i < nPolys ; i++)
+#else
+    auto iter = vtk::TakeSmartPointer(outPolys->NewIterator());
+    for (iter->GoToFirstCell(); !iter->IsDoneWithTraversal(); iter->GoToNextCell())
+#endif
     {
         //
         // Technically, we can use the first three vertices only,
@@ -222,20 +235,31 @@ vtkVisItPolyDataNormals::ExecutePointWithoutSplitting(
         // over/underflow.  If so, we need to switch to double precision
         // math and avoid using the VTK code.
         //
-        int nPts = *outPolyPtr++;
         double normal[3];
+#if LIB_VERSION_LE(VTK, 8,1,0)
+        int nPts = *outPolyPtr++;
         vtkPolygon::ComputeNormal(inPts, nPts, outPolyPtr, normal);
-
+#else
+        vtkIdType nPts;
+        const vtkIdType *cell = nullptr;
+        iter->GetCurrentCell(nPts, cell);
+        vtkPolygon::ComputeNormal(inPts, nPts, cell, normal);
+#endif
         for (int j = 0 ; j < nPts ; j++)
         {
+#if LIB_VERSION_LE(VTK, 8,1,0)
             int p = outPolyPtr[j];
+#else
+            int p = cell[j];
+#endif
             dnormals[p*3+0] += normal[0];
             dnormals[p*3+1] += normal[1];
             dnormals[p*3+2] += normal[2];
         }
-
+#if LIB_VERSION_LE(VTK, 8,1,0)
         // Increment our connectivity pointer
         outPolyPtr += nPts;
+#endif
     }
 
     // Renormalize the normals; they've only been accumulated so far,
@@ -306,7 +330,7 @@ struct NormalEntry
 //
 //  Programmer:  Jeremy Meredith
 //  Creation:    August 13, 2003
-//  
+//
 //  Modifications:
 //      Sean Ahern, Mon Mar  5 14:47:42 EST 2007
 //      Removed fixed length on normal lists.
@@ -398,7 +422,7 @@ protected:
 
 
 // ****************************************************************************
-//  Method: vtkVisItPolyDataNormals::ExecutePointWithSplitting 
+//  Method: vtkVisItPolyDataNormals::ExecutePointWithSplitting
 //
 //  Purpose:
 //    Create normals at the points, and duplicate nodes along
@@ -413,7 +437,7 @@ protected:
 //  Modifications:
 //    Kathleen Bonnell, Fri Aug 22 16:48:20 PDT 2003
 //    Pass along Verts and Lines.  Added test for ne->oldId < 0 when
-//    adding original points and normals. 
+//    adding original points and normals.
 //
 //    Hank Childs, Fri Jan 30 09:35:46 PST 2004
 //    Use pointer arithmetic to avoid VTK calls.
@@ -424,10 +448,10 @@ protected:
 //    Hank Childs, Fri Jul 30 09:00:51 PDT 2004
 //    Account for cell data in verts and lines.
 //
-//    Kathleen Bonnell, Tue Nov 16 10:29:25 PST 2004 
-//    Make nOtherCells be the count of verts and lines (not polys and lines). 
+//    Kathleen Bonnell, Tue Nov 16 10:29:25 PST 2004
+//    Make nOtherCells be the count of verts and lines (not polys and lines).
 //
-//    Kathleen Bonnell, Fri Feb 24 09:43:20 PST 2006 
+//    Kathleen Bonnell, Fri Feb 24 09:43:20 PST 2006
 //    Avoid divide-by-zero errors.
 //
 //    Hank Childs, Thu Jun  5 15:00:05 PDT 2008
@@ -435,6 +459,9 @@ protected:
 //
 //    Alister Maguire, Wed Apr  1 14:49:06 PDT 2020
 //    Restructured to handle triangle strips.
+//
+//    Kathleen Biagas, Thu Aug 11, 2022
+//    Support VTK: use vktCellArrayIterator.
 //
 // ****************************************************************************
 void
@@ -480,9 +507,20 @@ vtkVisItPolyDataNormals::ExecutePointWithSplitting(vtkPolyData *input,
     // polys, so this is all we need to worry about.
     //
     vtkIdType nPts = 0;
+#if LIB_VERSION_LE(VTK, 8,1,0)
     vtkIdType *pts = NULL;
     for (outPolys->InitTraversal(); outPolys->GetNextCell(nPts, pts);)
     {
+#else
+    vtkIdList *currentCellPts = nullptr;
+    auto iter = vtk::TakeSmartPointer(outPolys->NewIterator());
+    for (iter->GoToFirstCell(); !iter->IsDoneWithTraversal(); iter->GoToNextCell())
+    {
+        bool replaceCurrentCell = false;
+        currentCellPts = iter->GetCurrentCell();
+        nPts = currentCellPts->GetNumberOfIds();
+        vtkIdType *pts = currentCellPts->GetPointer(0);
+#endif
         //
         // Technically, we can always use only the first three vertices, but
         // it is not a big hit to do the quads better, and it accomodates for
@@ -503,9 +541,9 @@ vtkVisItPolyDataNormals::ExecutePointWithSplitting(vtkPolyData *input,
             // Accumulate the normals calculated from every adjacent edge pair.
             inPts->GetPoint(pts[0],p1);
             inPts->GetPoint(pts[1],p2);
-            
+
             double ax, ay, az, bx, by, bz;
-            for (int j = 0 ; j < nPts ; j++) 
+            for (vtkIdType j = 0 ; j < nPts ; j++)
             {
                 p0[0] = p1[0]; p0[1] = p1[1]; p0[2] = p1[2];
                 p1[0] = p2[0]; p1[1] = p2[1]; p1[2] = p2[2];
@@ -537,9 +575,9 @@ vtkVisItPolyDataNormals::ExecutePointWithSplitting(vtkPolyData *input,
         // Loop over all points of the cell, deciding if we need
         // to split it or can merge with an old one.  Use the feature
         // angle set before execution.
-        for (int j = 0 ; j < nPts ; j++)
+        for (vtkIdType j = 0 ; j < nPts ; j++)
         {
-            int p = pts[j];
+            vtkIdType p = pts[j];
             bool found = false;
             NormalEntry *ne = &normalList.normals[p];
             while (ne->oldId >= 0 && ne != NULL)
@@ -554,6 +592,9 @@ vtkVisItPolyDataNormals::ExecutePointWithSplitting(vtkPolyData *input,
 
                 ne      = ne->next;
                 pts[j] = ne->newId;
+#if LIB_VERSION_GE(VTK, 9,1,0)
+                replaceCurrentCell = true;
+#endif
             }
 
             if (ne->oldId < 0) // first cell adjacent to this point in space
@@ -612,8 +653,15 @@ vtkVisItPolyDataNormals::ExecutePointWithSplitting(vtkPolyData *input,
                 ne->nn[2] = nnormal[2];
 
                 newPointIndex++;
+#if LIB_VERSION_GE(VTK, 9,1,0)
+                replaceCurrentCell = true;
+#endif
             }
         }
+#if LIB_VERSION_GE(VTK, 9,1,0)
+        if(replaceCurrentCell)
+            iter->ReplaceCurrentCell(currentCellPts);
+#endif
     }
 
     // Create the output points array
@@ -642,7 +690,7 @@ vtkVisItPolyDataNormals::ExecutePointWithSplitting(vtkPolyData *input,
             newNormalPtr[3*i+1] = 0;
             newNormalPtr[3*i+2] = 1;
         }
-        else 
+        else
         {
             outPts->SetPoint(i, inPts->GetPoint(ne->oldId));
             outPD->CopyData(inPD, ne->oldId, i);
@@ -707,6 +755,9 @@ vtkVisItPolyDataNormals::ExecutePointWithSplitting(vtkPolyData *input,
 //    Alister Maguire, Wed Apr  1 13:39:03 PDT 2020
 //    Restructured to properly handle triangle strips.
 //
+//    Kathleen Biagas, Thu Aug 11, 2022
+//    Support VTK: use vktCellArrayIterator.
+//
 // ****************************************************************************
 void
 vtkVisItPolyDataNormals::ExecuteCell(vtkPolyData *input, vtkPolyData *output)
@@ -769,9 +820,17 @@ vtkVisItPolyDataNormals::ExecuteCell(vtkPolyData *input, vtkPolyData *output)
     //
     vtkPoints *inPts = input->GetPoints();
     vtkIdType nPts   = 0;
+#if LIB_VERSION_LE(VTK, 8,1,0)
     vtkIdType *pts   = NULL;
     for (outPolys->InitTraversal(); outPolys->GetNextCell(nPts, pts);)
     {
+#else
+    const vtkIdType *pts = nullptr;
+    auto iter = vtk::TakeSmartPointer(outPolys->NewIterator());
+    for (iter->GoToFirstCell(); !iter->IsDoneWithTraversal(); iter->GoToNextCell())
+    {
+        iter->GetCurrentCell(nPts, pts);
+#endif
         double p0[3], p1[3], p2[3];
         double normal[3] = {0, 0, 0};
         if (nPts == 3)
@@ -786,9 +845,9 @@ vtkVisItPolyDataNormals::ExecuteCell(vtkPolyData *input, vtkPolyData *output)
             // Accumulate the normals calculated from every adjacent edge pair.
             inPts->GetPoint(pts[0],p1);
             inPts->GetPoint(pts[1],p2);
-            
+
             double ax, ay, az, bx, by, bz;
-            for (int j = 0 ; j < nPts ; j++) 
+            for (int j = 0 ; j < nPts ; j++)
             {
                 p0[0] = p1[0]; p0[1] = p1[1]; p0[2] = p1[2];
                 p1[0] = p2[0]; p1[1] = p2[1]; p1[2] = p2[2];
@@ -848,6 +907,8 @@ vtkVisItPolyDataNormals::ExecuteCell(vtkPolyData *input, vtkPolyData *output)
 //  Creation:    Wed Apr  1 13:39:03 PDT 2020
 //
 //  Modifications:
+//    Kathleen Biagas, Thu Aug 11, 2022
+//    Support VTK: use vktCellArrayIterator.
 //
 // ****************************************************************************
 
@@ -858,7 +919,6 @@ vtkVisItPolyDataNormals::TransferCellData(vtkPolyData *input, vtkPolyData *outpu
     // Gather the data arrays we'll need for later.
     //
     vtkCellArray *inPolys  = input->GetPolys();
-    vtkIdType *polysPtr    = inPolys->GetPointer();
     int nPolys             = inPolys->GetNumberOfCells();
 
     vtkCellArray *inStrips = input->GetStrips();
@@ -914,7 +974,11 @@ vtkVisItPolyDataNormals::TransferCellData(vtkPolyData *input, vtkPolyData *outpu
         }
 
         vtkIdType nTriPts    = 0;
+#if LIB_VERSION_LE(VTK, 8,1,0)
         vtkIdType *triPts    = NULL;
+#else
+        const vtkIdType *triPts    = NULL;
+#endif
         vtkIdType inCellIdx  = nNonStripCells;
         vtkIdType outCellIdx = nNonStripCells;
 
@@ -922,9 +986,17 @@ vtkVisItPolyDataNormals::TransferCellData(vtkPolyData *input, vtkPolyData *outpu
         // Decompose our triangle strips, append the resulting trianlges
         // to outPolys, and copy over the cell data.
         //
+#if LIB_VERSION_LE(VTK, 8,1,0)
         for (inStrips->InitTraversal(); inStrips->GetNextCell(nTriPts, triPts);
              inCellIdx++)
         {
+#else
+        auto stripIter = vtk::TakeSmartPointer(inStrips->NewIterator());
+        for (stripIter->GoToFirstCell(); !stripIter->IsDoneWithTraversal(); stripIter->GoToNextCell(),
+             inCellIdx++)
+        {
+            stripIter->GetCurrentCell(nTriPts, triPts);
+#endif
             vtkTriangleStrip::DecomposeStrip(nTriPts, triPts, outPolys);
 
             for (vtkIdType i = 0; i < nTriPts - 2; ++i)

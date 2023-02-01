@@ -42,211 +42,57 @@
 #   and CMake automagically pulls them in when compiling VisIt, even if not
 #   listed, but not when building the plugins.
 #
-#****************************************************************************/
+#  Kathleen Biagas, Tue Dec 13, 2022
+#  Moved setting of sources to subdirs.
+#
+#****************************************************************************
 
-SET(DATA_SOURCES
-Data/avtAverageValueRF.C
-Data/avtCallback.C
-Data/avtCellList.C
-Data/avtColorTables.C
-Data/avtCommonDataFunctions.C
-Data/avtCompositeRF.C
-Data/avtDataAttributes.C
-Data/avtDataObject.C
-Data/avtDataObjectInformation.C
-Data/avtDataRangeSelection.C
-Data/avtDataRepresentation.C
-Data/avtDataTree.C
-Data/avtDataValidity.C
-Data/avtDataset.C
-Data/avtDatasetExaminer.C
-Data/avtDatasetVerifier.C
-Data/avtDistancePixelizer.C
-Data/avtDistanceToValueRF.C
-Data/avtDynamicAttribute.C
-Data/avtExtents.C
-Data/avtExtractor.C
-Data/avtFacelist.C
-Data/avtFlatLighting.C
-Data/avtHexahedronExtractor.C
-Data/avtHexahedron20Extractor.C
-Data/avtHexahedron27Extractor.C
-Data/avtHistogramSpecification.C
-Data/avtIdentifierSelection.C
-Data/avtImage.C
-Data/avtImagePartition.C
-Data/avtImageRepresentation.C
-Data/avtIntegrationRF.C
-Data/avtIntervalTree.C
-Data/avtIsolevelsSelection.C
-Data/avtLightingModel.C
-Data/avtLogicalSelection.C
-Data/avtMIPRangeRF.C
-Data/avtMaterial.C
-Data/avtMaximumIntensityProjectionRF.C
-Data/avtMetaData.C
-Data/avtMixedVariable.C
-Data/avtMultiresSelection.C
-Data/avtNullData.C
-Data/avtOpacityMap.C
-Data/avtOpacityMapSamplePointArbitrator.C
-Data/avtPhong.C
-Data/avtPixelizer.C
-Data/avtPlaneSelection.C
-Data/avtPointExtractor.C
-Data/avtPointSelection.C
-Data/avtPyramidExtractor.C
-Data/avtRangeMaxTable.C
-Data/avtRay.C
-Data/avtRayFunction.C
-Data/avtRelativeValueSamplePointArbitrator.C
-Data/avtResampleSelection.C
-Data/avtResolutionSelection.C
-Data/avtSamplePointArbitrator.C
-Data/avtSamplePoints.C
-Data/avtSpatialBoxSelection.C
-Data/avtSpecies.C
-Data/avtTetrahedronExtractor.C
-Data/avtVariablePixelizer.C
-Data/avtVolume.C
-Data/avtWedgeExtractor.C
-)
+add_library(avtpipeline_ser)
 
-SET(PIPELINE_SOURCES
-Pipeline/avtContract.C
-Pipeline/avtDataObjectReader.C
-Pipeline/avtDataObjectString.C
-Pipeline/avtDataObjectWriter.C
-Pipeline/avtDataRequest.C
-Pipeline/avtDataSetReader.C
-Pipeline/avtDataSetWriter.C
-Pipeline/avtDebugDumpOptions.C
-Pipeline/avtImageReader.C
-Pipeline/avtImageTiler.C
-Pipeline/avtImageWriter.C
-Pipeline/avtMemory.C
-Pipeline/avtMultiWindowSaver.C
-Pipeline/avtNamedSelection.C
-Pipeline/avtNamedSelectionExtension.C
-Pipeline/avtNamedSelectionManager.C
-Pipeline/avtNullDataReader.C
-Pipeline/avtNullDataWriter.C
-Pipeline/avtParallel.C
-Pipeline/avtParallelContext.C
-Pipeline/avtWebpage.C
-Pipeline/avtExecutionManager.C
-Pipeline/ThreadPool.C
-)
+if(VISIT_PARALLEL)
+    ADD_PARALLEL_LIBRARY(avtpipeline_par)
+endif()
 
-SET(ABSTRACTFILTERS_SOURCES
-AbstractFilters/avtCompactTreeFilter.C
-AbstractFilters/avtDataObjectToDatasetFilter.C
-AbstractFilters/avtDataObjectToImageFilter.C
-AbstractFilters/avtDataObjectToSamplePointsFilter.C
-AbstractFilters/avtDataTreeIterator.C
-AbstractFilters/avtDatasetToDataObjectFilter.C
-AbstractFilters/avtDatasetToDatasetFilter.C
-AbstractFilters/avtDatasetToImageFilter.C
-AbstractFilters/avtDatasetToSamplePointsFilter.C
-AbstractFilters/avtFacadeFilter.C
-AbstractFilters/avtFilter.C
-AbstractFilters/avtImageToDataObjectFilter.C
-AbstractFilters/avtImageToImageFilter.C
-AbstractFilters/avtMultiResolutionPartitionStrategy.C
-AbstractFilters/avtMultipleInputToDataObjectFilter.C
-AbstractFilters/avtMultipleInputToDatasetFilter.C
-AbstractFilters/avtPluginDatasetToDatasetFilter.C
-AbstractFilters/avtPluginDataTreeIterator.C
-AbstractFilters/avtPluginStructuredChunkDataTreeIterator.C
-AbstractFilters/avtSIMODataTreeIterator.C
-AbstractFilters/avtSamplePointsToDataObjectFilter.C
-AbstractFilters/avtSamplePointsToDatasetFilter.C
-AbstractFilters/avtSamplePointsToImageFilter.C
-AbstractFilters/avtSamplePointsToSamplePointsFilter.C
-AbstractFilters/avtSingleFilterFacade.C
-AbstractFilters/avtStructuredChunkDataTreeIterator.C
-AbstractFilters/avtStructuredMeshChunker.C
-AbstractFilters/avtStructuredMeshPartitionStrategy.C
-AbstractFilters/avtSweepPlanePartitionStrategy.C
-)
+add_subdirectory(AbstractFilters)
+add_subdirectory(Data)
+add_subdirectory(Pipeline)
+add_subdirectory(Sinks)
+add_subdirectory(Sources)
 
-SET(SINKS_SOURCES
-Sinks/avtDataObjectSink.C
-Sinks/avtDatabaseWriter.C
-Sinks/avtDatasetSink.C
-Sinks/avtImageSink.C
-Sinks/avtMultipleInputSink.C
-Sinks/avtNullDataSink.C
-Sinks/avtSamplePointsSink.C
-Sinks/avtTerminatingDatasetSink.C
-Sinks/avtTerminatingImageSink.C
-Sinks/avtTerminatingNullDataSink.C
-Sinks/avtTerminatingSink.C
-)
 
-SET(SOURCES_SOURCES
-Sources/avtDataObjectSource.C
-Sources/avtDatasetSource.C
-Sources/avtImageSource.C
-Sources/avtInlinePipelineSource.C
-Sources/avtNullDataSource.C
-Sources/avtOriginatingDatasetSource.C
-Sources/avtOriginatingImageSource.C
-Sources/avtOriginatingNullDataSource.C
-Sources/avtOriginatingSource.C
-Sources/avtQueryableSource.C
-Sources/avtSamplePointsSource.C
-Sources/avtSourceFromAVTDataset.C
-Sources/avtSourceFromDataset.C
-Sources/avtSourceFromImage.C
-Sources/avtSourceFromNullData.C
-)
+include_directories(
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${VISIT_COMMON_INCLUDES}
+    ${VISIT_SOURCE_DIR}/avt/DBAtts/MetaData
+    ${VISIT_SOURCE_DIR}/avt/DBAtts/SIL
+    ${VISIT_SOURCE_DIR}/avt/Database/Database
+    ${VISIT_SOURCE_DIR}/avt/Database/Ghost
+    ${VISIT_SOURCE_DIR}/avt/Math
+    ${VISIT_SOURCE_DIR}/avt/VisWindow/VisWindow
+    ${VISIT_SOURCE_DIR}/visit_vtk/full
+    ${VISIT_SOURCE_DIR}/visit_vtk/lightweight
+    ${VTKh_INCLUDE_DIRS}
+    ${VTKm_INCLUDE_DIRS}
+    ${VTK_INCLUDE_DIRS}
+    ${ZLIB_INCLUDE_DIR})
 
-SET(ALL_SOURCES
-${DATA_SOURCES}
-${PIPELINE_SOURCES}
-${ABSTRACTFILTERS_SOURCES}
-${SINKS_SOURCES}
-${SOURCES_SOURCES}
-)
-
-INCLUDE_DIRECTORIES(
-${CMAKE_CURRENT_SOURCE_DIR}
-${VISIT_COMMON_INCLUDES}
-${VISIT_SOURCE_DIR}/avt/DBAtts/MetaData
-${VISIT_SOURCE_DIR}/avt/DBAtts/SIL
-${VISIT_SOURCE_DIR}/avt/Database/Database
-${VISIT_SOURCE_DIR}/avt/Database/Ghost
-${VISIT_SOURCE_DIR}/avt/Math
-${VISIT_SOURCE_DIR}/avt/VisWindow/VisWindow
-${VISIT_SOURCE_DIR}/avt/Pipeline/AbstractFilters
-${VISIT_SOURCE_DIR}/avt/Pipeline/Data
-${VISIT_SOURCE_DIR}/avt/Pipeline/Pipeline
-${VISIT_SOURCE_DIR}/avt/Pipeline/Sinks
-${VISIT_SOURCE_DIR}/avt/Pipeline/Sources
-${VISIT_SOURCE_DIR}/visit_vtk/full
-${VISIT_SOURCE_DIR}/visit_vtk/lightweight
-${VTKh_INCLUDE_DIRS}
-${VTKm_INCLUDE_DIRS}
-${VTK_INCLUDE_DIRS}
-${ZLIB_INCLUDE_DIR}
-)
-
-# Add link directories
-LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY})
+if(VTK_VERSION VERSION_EQUAL "8.1.0")
+    set(vtklibs vtkCommonCore vtkCommonDataModel vtkCommonMath
+                vtkCommonTransforms vtkFiltersGeometry)
+else()
+    set(vtklibs VTK::CommonCore VTK::CommonDataModel VTK::CommonMath
+                VTK::CommonTransforms VTK::FiltersGeometry)
+endif()
 
 # Unless we're doing a VISIT_DBIO_ONLY build then we need avtmath
-IF(NOT VISIT_DBIO_ONLY)
-    SET(AVTMATH avtmath)
-ENDIF(NOT VISIT_DBIO_ONLY)
+if(NOT VISIT_DBIO_ONLY)
+    set(AVTMATH avtmath)
+endif()
 
 #********************************* SERIAL ************************************
-ADD_LIBRARY(avtpipeline_ser ${ALL_SOURCES})
-TARGET_LINK_LIBRARIES(avtpipeline_ser
+target_link_libraries(avtpipeline_ser
                       visitcommon ${AVTMATH} avtdbatts
-                      visit_vtk lightweight_visit_vtk vtkCommonCore
-                      vtkCommonDataModel vtkCommonMath vtkCommonTransforms
-                      vtkFiltersGeometry
+                      visit_vtk lightweight_visit_vtk ${vtklibs}
                       ${ZLIB_LIBRARY})
 if(VTKH_FOUND)
     target_link_libraries(avtpipeline_ser vtkh)
@@ -255,17 +101,14 @@ endif()
 VISIT_INSTALL_TARGETS(avtpipeline_ser)
 
 #********************************* PARALLEL **********************************
-IF(VISIT_PARALLEL)
-    ADD_PARALLEL_LIBRARY(avtpipeline_par ${ALL_SOURCES})
-
-    TARGET_LINK_LIBRARIES(avtpipeline_par
+if(VISIT_PARALLEL)
+    target_link_libraries(avtpipeline_par
                           visitcommon ${AVTMATH} avtdbatts
-                          visit_vtk lightweight_visit_vtk vtkCommonCore
-                          vtkCommonDataModel vtkCommonMath vtkCommonTransforms
-                          vtkFiltersGeometry
+                          visit_vtk lightweight_visit_vtk ${vtklibs}
                           ${ZLIB_LIBRARY})
     if(VTKH_FOUND)
         target_link_libraries(avtpipeline_par vtkh)
     endif()
     VISIT_INSTALL_TARGETS(avtpipeline_par)
-ENDIF(VISIT_PARALLEL)
+endif()
+

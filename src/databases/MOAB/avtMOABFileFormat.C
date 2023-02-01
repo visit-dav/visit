@@ -65,6 +65,8 @@ avtMOABFileFormat::avtMOABFileFormat(const char *filename, const DBOptionsAttrib
     : avtSTMDFileFormat(&filename, 1), readOptions(readOpts), fileLoaded(false), file_descriptor(NULL), pcomm(NULL)
 {
     // INITIALIZE DATA MEMBERS
+
+	debug1<< " constructor called, file " << filename << "\n";
     fileName = filename;
     mbCore = new moab::Core();
 }
@@ -84,14 +86,28 @@ avtMOABFileFormat::avtMOABFileFormat(const char *filename, const DBOptionsAttrib
 //
 // ****************************************************************************
 
+avtMOABFileFormat::~avtMOABFileFormat() {
+    debug1 << " avtMOABFileFormat::~avtMOABFileFormat \n";
+    FreeUpResources();
+}
 void
-avtMOABFileFormat::FreeUpResources(void)
-{
-    free  (file_descriptor);
+avtMOABFileFormat::FreeUpResources(void) {
+    debug1 << " avtMOABFileFormat::FreeUpResources: freeing file descriptor\n";
+    if (file_descriptor) {
+        free(file_descriptor);
+        file_descriptor = NULL;
+    }
 #ifdef PARALLEL
-    delete pcomm;
+	if (pcomm)
+	{
+		delete pcomm;
+		pcomm = NULL;
+	}
 #endif
-    delete mbCore;
+    if (mbCore) {
+        delete mbCore;
+        mbCore = NULL;
+    }
 }
 
 void
@@ -114,6 +130,7 @@ avtMOABFileFormat::gatherMhdfInformation()
             debug1 << "opened file " << fileName << "\n";
         }
         file_descriptor = mhdf_getFileSummary( file, H5T_NATIVE_ULONG, &status, 1);
+        debug1 << " avtMOABFileFormat::gatherMhdfInformation file_descriptor address: " << (void*) file_descriptor << "\n";
         if (mhdf_isError( &status )) {
             debug1 << "fail to get summary\n";
         }
@@ -122,6 +139,7 @@ avtMOABFileFormat::gatherMhdfInformation()
             debug1 << "got summary\n";
         }
         size = file_descriptor->total_size;
+        debug1 << "file descriptor size =" << size << "\n";
         file_descriptor->offset = (unsigned char*)file_descriptor;
         mhdf_closeFile( file, &status );
     }
@@ -147,13 +165,29 @@ avtMOABFileFormat::gatherMhdfInformation()
     long num_nodes = file_descriptor->nodes.count;
     int number_node_tags = file_descriptor->nodes.num_dense_tags;
 
-    debug5 << "Nodes: " << num_nodes << " dense tags: " <<  number_node_tags << "\n";
+    debug1 << "Nodes: " << num_nodes << " dense tags: " <<  number_node_tags << "\n";
     for (int i=0; i< number_node_tags; i++)
     {
-        const char * tag_name = file_descriptor->tags[file_descriptor->nodes.dense_tag_indices[i]].name;
-        debug5 << "   tag "<< i << " "  << tag_name <<"\n";
-        nodeTags.push_back(string(tag_name));
+        MHDF_TagDesc & tagStr = file_descriptor->tags[file_descriptor->nodes.dense_tag_indices[i]];
+        const char * tag_name = tagStr.name;
+
+        int sizeTag = tagStr.size;
+        debug1 << "   tag "<< i << " "  << tag_name << " size:" << sizeTag << "\n";
+        struct tagBasic  tag1;
+        tag1.nameTag=string(tag_name);
+        tag1.size=sizeTag;
+        if (tagStr.default_value && ( sizeTag == 1 ) &&
+                ( (tagStr.type == mhdf_INTEGER) || (tagStr.type == mhdf_FLOAT )) )
+        {
+            tag1.defValue = tagStr.default_value;
+            tag1.type = tagStr.type;
+        }
+
+        debug1 << "  node     tag "<< i << " "  << tag_name <<" size:" << sizeTag << "\n";
+        nodeTags.push_back(tag1);
     }
+
+    debug1 << "Cells descriptors " << file_descriptor->num_elem_desc <<  "\n";
 
     for (int i=0; i< file_descriptor->num_elem_desc; i++)
     {
@@ -161,13 +195,26 @@ avtMOABFileFormat::gatherMhdfInformation()
 
         MHDF_EntDesc & edesc = file_descriptor->elems[i].desc;
         int number_elem_tags = edesc.num_dense_tags;
-        debug5 << "   elem type  "<< i << " "  << etype << " num dense tags: "
+        debug2 << "   elem type  "<< i << " "  << etype << " num dense tags: "
             << number_elem_tags <<"\n";
         for (int j=0; j<number_elem_tags; j++)
         {
-            const char * tag_name = file_descriptor->tags[edesc.dense_tag_indices[j]].name;
-            debug5 << "     tag "<< j << " "  << tag_name <<"\n";
-            elemTags.insert(string(tag_name));
+            MHDF_TagDesc & tagStr = file_descriptor->tags[edesc.dense_tag_indices[j]];
+            const char * tag_name = tagStr.name;
+            int sizeTag = tagStr.size;
+            struct tagBasic  tag1;
+
+            tag1.nameTag=string(tag_name);
+            tag1.size=sizeTag;
+            if (tagStr.default_value && ( sizeTag == 1 ) &&
+                            ( (tagStr.type == mhdf_INTEGER) || (tagStr.type == mhdf_FLOAT )) )
+            {
+                tag1.defValue = tagStr.default_value;
+                tag1.type = tagStr.type;
+            }
+
+            debug2 << " elem   tag "<< j << " "  << tag_name <<" size:" << sizeTag << "\n";
+            elemTags.insert(tag1);
         }
     }
 
@@ -186,7 +233,7 @@ avtMOABFileFormat::gatherMhdfInformation()
         EXCEPTION1(InvalidVariableException, "too few parts in PARALLEL_PARTITION ");
         debug1 << " can't load in parallel, too few parts in partition \n";
     }
-    //free  (file_descriptor);
+
     return;
 }
 
@@ -250,17 +297,66 @@ avtMOABFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         if (md != NULL)
             md->Add(mesh);
 
-        for (std::set<std::string>::iterator setIter = elemTags.begin(); setIter!=elemTags.end(); setIter++)
+        for (std::set<struct tagBasic>::iterator setIter = elemTags.begin(); setIter!=elemTags.end(); setIter++)
         {
             string nameDisplay("ELEM_");
-            nameDisplay += *setIter;
-            AddScalarVarToMetaData(md, nameDisplay.c_str(), meshname, AVT_ZONECENT);
+            struct tagBasic tag = *setIter;
+            nameDisplay += tag.nameTag;
+            if (tag.size == 1)
+            {
+                avtScalarMetaData *smd = new avtScalarMetaData;
+                smd->name = nameDisplay.c_str();
+                smd->meshName = meshname;
+                smd->centering = AVT_ZONECENT;
+                double defValDouble = 0;
+                if (tag.defValue && tag.type == 1) // integer
+                {
+                    defValDouble = *((int*)(tag.defValue));
+                }
+                if (tag.defValue && tag.type == 2) // double
+                {
+                    defValDouble = *((double*)(tag.defValue));
+                }
+                double values[2] = {defValDouble, defValDouble};
+                smd->SetMissingData(values);
+                smd->SetMissingDataType(avtScalarMetaData::MissingData_Value);
+                md->Add(smd);
+            }
+            else if (tag.size == 2 || tag.size == 3)
+              AddVectorVarToMetaData(md, nameDisplay.c_str(), meshname, AVT_ZONECENT, tag.size);
+            else
+              AddArrayVarToMetaData(md, nameDisplay.c_str(), tag.size, meshname, AVT_ZONECENT);
         }
         for (int i=0; i<nodeTags.size(); i++)
         {
             string nameDisplay("NODE_");
-            nameDisplay +=nodeTags[i];
-            AddScalarVarToMetaData(md, nameDisplay.c_str(), meshname, AVT_NODECENT);
+            struct tagBasic tag = nodeTags[i];
+            nameDisplay +=tag.nameTag;
+            if (tag.size == 1)
+            {
+                avtScalarMetaData *smd = new avtScalarMetaData;
+                smd->name = nameDisplay.c_str();
+                smd->meshName = meshname;
+                smd->centering = AVT_NODECENT;
+                double defValDouble = 0;
+                if (tag.defValue && tag.type == 1) // integer
+                {
+                    defValDouble = *((int*)(tag.defValue));
+                }
+                if (tag.defValue && tag.type == 2) // double
+                {
+                    defValDouble = *((double*)(tag.defValue));
+                }
+                double values[2] = {defValDouble, defValDouble};
+                smd->SetMissingData(values);
+                smd->SetMissingDataType(avtScalarMetaData::MissingData_Value);
+                md->Add(smd);
+            }
+              // AddScalarVarToMetaData(md, nameDisplay.c_str(), meshname, AVT_NODECENT);
+            else if (tag.size == 2 || tag.size == 3)
+              AddVectorVarToMetaData(md, nameDisplay.c_str(), meshname, AVT_NODECENT, tag.size);
+            else
+              AddArrayVarToMetaData(md, nameDisplay.c_str(), tag.size, meshname, AVT_NODECENT);
         }
 
         //  So, here, we handle the parallel partition
@@ -510,7 +606,6 @@ avtMOABFileFormat::GetMesh(int domain, const char *meshname)
 {
 
   debug1 << "avtMOABFileFormat::GetMesh domain: " << domain << " meshname :" << meshname  << " rank:" << rank << "\n";
-  debug5 << "avtMOABFileFormat::GetMesh domain: " << domain << " meshname :" << meshname  << " rank:" << rank << "\n";
   try
     {
         moab::ErrorCode merr;
@@ -544,7 +639,7 @@ avtMOABFileFormat::GetMesh(int domain, const char *meshname)
         //
         // Create the unstructured mesh
         //
-        vtkUnstructuredGrid *ugrid = vtkUnstructuredGrid::New(); 
+        vtkUnstructuredGrid *ugrid = vtkUnstructuredGrid::New();
 
         {
             // Get the list of vertices
@@ -566,7 +661,7 @@ avtMOABFileFormat::GetMesh(int domain, const char *meshname)
                 pts[i] = static_cast<float> (coords[i]);
             }
             coords.clear();
-            
+
             ugrid->SetPoints(points);
             points->Delete();
         }
@@ -733,6 +828,7 @@ avtMOABFileFormat::GetVar(int domain, const char *varname)
         bool nodeTag = (strncmp("NODE_", varname, 5 )==0);
         bool elemTag = (strncmp("ELEM_", varname, 5 )==0);
 
+        debug1 << "avtMOABFileFormat::GetVar varname: " << varname << " is elem tag? : " << elemTag << "\n";
         string tagName;
         if (nodeTag)
         {
@@ -762,6 +858,7 @@ avtMOABFileFormat::GetVar(int domain, const char *varname)
             ents = subtract(ents, vts);
         }
 
+
         moab::Tag tag;
         merr = mbCore->tag_get_handle(tagName.c_str(),  tag);MBVIS_CHK_ERR(merr);
 
@@ -773,7 +870,7 @@ avtMOABFileFormat::GetVar(int domain, const char *varname)
         merr = mbCore->tag_get_length(tag, tag_size);
 
         int nents = (int) ents.size();
-        debug1 << "avtMOABFileFormat::GetVar num entities " << nents << "\n";
+        debug1 << "avtMOABFileFormat::GetVar num entities " << nents << "type: " << tag_type << " size:" << tag_size << "\n";
         if (moab::MB_TYPE_INTEGER == tag_type)
         {
             vtkIntArray *ia = vtkIntArray::New();
@@ -800,7 +897,7 @@ avtMOABFileFormat::GetVar(int domain, const char *varname)
         if (moab::MB_TYPE_DOUBLE == tag_type)
         {
             vtkFloatArray *fa = vtkFloatArray::New();
-            fa->SetNumberOfComponents(tag_size); // should be 1...
+            fa->SetNumberOfComponents(tag_size); // should be 1
             fa->SetNumberOfTuples(nents);
 
             // use tag iterate to access direct memory
@@ -809,14 +906,22 @@ avtMOABFileFormat::GetVar(int domain, const char *varname)
             int count =0;
             int indexInFA = 0;
 
+            debug1 << "avtMOABFileFormat::GetVar num entities " << nents << "type: " << tag_type << " size:" << tag_size << "\n";
             while (iter != ents.end())
             {
-                merr = mbCore->tag_iterate(tag, iter, ents.end(), count, data); MBVIS_CHK_ERR(merr);
-                double * ptrTag=(double*)data;
-                for (int i=0; i<count; i++, ++iter, indexInFA++, ptrTag++)
+              debug2 << "avtMOABFileFormat::GetVar at iter: " << mbCore->id_from_handle(*iter) << " type: " << mbCore->type_from_handle(*iter)<< "\n";
+              merr = mbCore->tag_iterate(tag, iter, ents.end(), count, data); MBVIS_CHK_ERR(merr);
+              debug2 << "avtMOABFileFormat::GetVar count: " <<count<< "\n";
+              double * ptrTag=(double*)data;
+              for (int i=0; i<count; i++, iter++)
+              {
+                debug5 << "avtMOABFileFormat::GetVar i: " <<i << " indexInFA:" << indexInFA<< "*ptrTag " <<(*ptrTag) <<  "\n";
+                for (int j=0; j<tag_size; j++, indexInFA++, ptrTag++) // really, it should be only one component
                 {
-                    fa->SetValue(indexInFA, (float) (*ptrTag) );
+                  fa->SetValue(indexInFA, (float) (*ptrTag) );
+
                 }
+              }
             }
             result = fa;
         }
@@ -1242,5 +1347,122 @@ avtMOABFileFormat::GetGeometrySetsVar()
 vtkDataArray *
 avtMOABFileFormat::GetVectorVar(int domain, const char *varname)
 {
-    return 0;
+  if (!fileLoaded)
+    EXCEPTION1(InvalidVariableException, varname);
+
+  try {
+
+    string meshName = metadata->MeshForVar(varname);
+    const avtMeshMetaData *mmd = metadata->GetMesh(meshName);
+    debug1 << "avtMOABFileFormat::GetVectorVar varname: " << varname << " meshname:"
+        << meshName << "\n";
+    // node or element dense tags?
+
+    bool nodeTag = (strncmp("NODE_", varname, 5) == 0);
+    bool elemTag = (strncmp("ELEM_", varname, 5) == 0);
+
+    debug1 << "avtMOABFileFormat::GetVectorVar varname: " << varname
+        << " is elem tag? : " << elemTag << "\n";
+    string tagName;
+    if (nodeTag) {
+      tagName = string(varname + 5);
+    } else if (elemTag) {
+      tagName = string(varname + 5);
+    }
+
+    debug1 << "moab tag name:" << tagName << "\n";
+    vtkDataArray * result = 0;
+
+    moab::Range ents;
+    moab::ErrorCode merr;
+    if (nodeTag) {
+      merr = mbCore->get_entities_by_type(0, moab::MBVERTEX, ents);
+      MBVIS_CHK_ERR(merr);
+    } else if (elemTag) {
+      merr = mbCore->get_entities_by_handle(0, ents, false);
+      MBVIS_CHK_ERR(merr);
+      // remove the vertices and the entity sets
+      moab::Range vts = ents.subset_by_type(moab::MBVERTEX);
+      ents = subtract(ents, vts);
+      vts = ents.subset_by_type(moab::MBENTITYSET);
+      ents = subtract(ents, vts); // maybe we should have some dimensions (edges, faces, regions)?
+    }
+
+    moab::Tag tag;
+    merr = mbCore->tag_get_handle(tagName.c_str(), tag);
+    MBVIS_CHK_ERR(merr);
+
+    // moab tag data type
+    moab::DataType tag_type;
+    merr = mbCore->tag_get_data_type(tag, tag_type);
+    MBVIS_CHK_ERR(merr);
+
+    int tag_size;
+    merr = mbCore->tag_get_length(tag, tag_size);
+
+    int nents = (int) ents.size();
+    debug1 << "avtMOABFileFormat::GetVectorVar num entities " << nents << "type: "
+        << tag_type << " size:" << tag_size << "\n";
+    if (moab::MB_TYPE_INTEGER == tag_type) {
+      vtkIntArray *ia = vtkIntArray::New();
+      ia->SetNumberOfComponents(tag_size); // should be > 1
+      ia->SetNumberOfTuples(nents);
+
+      // use tag iterate to access direct memory
+      moab::Range::iterator iter = ents.begin();
+      void * data = NULL; //used for stored area
+      int count = 0;
+      int indexInIA = 0;
+
+      while (iter != ents.end()) {
+        merr = mbCore->tag_iterate(tag, iter, ents.end(), count, data);
+        MBVIS_CHK_ERR(merr);
+        int * ptrTag = (int*) data;
+        for (int i = 0; i < count; i++, iter++)
+          for (int j = 0; j < tag_size; j++, indexInIA++, ptrTag++) {
+            ia->SetValue(indexInIA, (float) (*ptrTag));
+          }
+      }
+      result = ia;
+    }
+    if (moab::MB_TYPE_DOUBLE == tag_type) {
+      vtkFloatArray *fa = vtkFloatArray::New();
+      fa->SetNumberOfComponents(tag_size); // could be more than 1 !!
+      fa->SetNumberOfTuples(nents);
+
+      // use tag iterate to access direct memory
+      moab::Range::iterator iter = ents.begin();
+      void * data = NULL; //used for stored area
+      int count = 0;
+      int indexInFA = 0;
+
+      debug1 << "avtMOABFileFormat::GetVectorVar num entities " << nents << "type: "
+          << tag_type << " size:" << tag_size << "\n";
+      while (iter != ents.end()) {
+        debug2 << "avtMOABFileFormat::GetVectorVar at iter: "
+            << mbCore->id_from_handle(*iter) << " type: "
+            << mbCore->type_from_handle(*iter) << "\n";
+        merr = mbCore->tag_iterate(tag, iter, ents.end(), count, data);
+        MBVIS_CHK_ERR(merr);
+        debug2 << "avtMOABFileFormat::GetVectorVar count: " << count << "\n";
+        double * ptrTag = (double*) data;
+        for (int i = 0; i < count; i++, iter++) {
+          debug5 << "avtMOABFileFormat::GetVectorVar i: " << i << " indexInFA:"
+              << indexInFA << "*ptrTag " << (*ptrTag) << "\n";
+          for (int j = 0; j < tag_size; j++, indexInFA++, ptrTag++) {
+            fa->SetValue(indexInFA, (float) (*ptrTag));
+
+          }
+        }
+      }
+      result = fa;
+    }
+    return result;
+  } catch (moab::ErrorCode errCode) {
+    std::string errInfo;
+    mbCore->get_last_error(errInfo);
+    if (!avtCallback::IssueWarning(errInfo.c_str()))
+      std::cerr << errInfo << std::endl;
+  }
+  return 0;
 }

@@ -75,13 +75,6 @@ function bv_h5part_ensure
     fi
 }
 
-function bv_h5part_dry_run
-{
-    if [[ "$DO_H5PART" == "yes" ]] ; then
-        echo "Dry run option not set for h5part."
-    fi
-}
-
 function apply_h5part_1_6_6_patch
 {
     info "Patching H5Part"

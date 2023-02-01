@@ -36,12 +36,12 @@ struct avtArrayMetaDataObject
 //
 static PyObject *NewavtArrayMetaData(int);
 std::string
-PyavtArrayMetaData_ToString(const avtArrayMetaData *atts, const char *prefix)
+PyavtArrayMetaData_ToString(const avtArrayMetaData *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
 
-    str = PyavtVarMetaData_ToString(atts, prefix);
+    str = PyavtVarMetaData_ToString(atts, prefix, forLogging);
 
     snprintf(tmpStr, 1000, "%snVars = %d\n", prefix, atts->nVars);
     str += tmpStr;
@@ -312,7 +312,7 @@ static int
 avtArrayMetaData_print(PyObject *v, FILE *fp, int flags)
 {
     avtArrayMetaDataObject *obj = (avtArrayMetaDataObject *)v;
-    fprintf(fp, "%s", PyavtArrayMetaData_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyavtArrayMetaData_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -320,7 +320,7 @@ PyObject *
 avtArrayMetaData_str(PyObject *v)
 {
     avtArrayMetaDataObject *obj = (avtArrayMetaDataObject *)v;
-    return PyString_FromString(PyavtArrayMetaData_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyavtArrayMetaData_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -472,7 +472,7 @@ PyavtArrayMetaData_GetLogString()
 {
     std::string s("avtArrayMetaData = avtArrayMetaData()\n");
     if(currentAtts != 0)
-        s += PyavtArrayMetaData_ToString(currentAtts, "avtArrayMetaData.");
+        s += PyavtArrayMetaData_ToString(currentAtts, "avtArrayMetaData.", true);
     return s;
 }
 
@@ -485,7 +485,7 @@ PyavtArrayMetaData_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("avtArrayMetaData = avtArrayMetaData()\n");
-        s += PyavtArrayMetaData_ToString(currentAtts, "avtArrayMetaData.");
+        s += PyavtArrayMetaData_ToString(currentAtts, "avtArrayMetaData.", true);
         cb(s);
     }
 }

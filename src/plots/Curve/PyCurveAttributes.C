@@ -6,6 +6,7 @@
 #include <ObserverToCallback.h>
 #include <stdio.h>
 #include <Py2and3Support.h>
+#include <visit-config.h>
 #include <ColorAttribute.h>
 #include <ColorAttribute.h>
 #include <ColorAttribute.h>
@@ -41,7 +42,7 @@ struct CurveAttributesObject
 //
 static PyObject *NewCurveAttributes(int);
 std::string
-PyCurveAttributes_ToString(const CurveAttributes *atts, const char *prefix)
+PyCurveAttributes_ToString(const CurveAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -2163,56 +2164,6 @@ PyCurveAttributes_getattr(PyObject *self, char *name)
         return PyInt_FromLong(long(CurveAttributes::Degrees));
 
 
-    // Try and handle legacy fields in CurveAttributes
-    if(strcmp(name, "cycleColors") == 0)
-    {
-        CurveAttributesObject *curveObj = (CurveAttributesObject *)self;
-        bool cycleColors = curveObj->data->GetCurveColorSource() == CurveAttributes::Custom;
-        return PyInt_FromLong(cycleColors?1L:0L);
-    }
-    // Try and handle legacy fields in CurveAttributes
-    if(strcmp(name, "color") == 0)
-    {
-        return CurveAttributes_GetCurveColor(self, NULL);
-    }
-    if(strcmp(name, "RenderAsLines") == 0)
-    {
-        return PyInt_FromLong(0L);
-    }
-    if(strcmp(name, "RenderAsPoints") == 0)
-    {
-        return PyInt_FromLong(1L);
-    }
-    // lineStyle and it's possible enumerations
-    bool lineStyleFound = false;
-    if (strcmp(name, "lineStyle") == 0)
-    {
-        lineStyleFound = true;
-    }
-    else if (strcmp(name, "SOLID") == 0)
-    {
-        lineStyleFound = true;
-    }
-    else if (strcmp(name, "DASH") == 0)
-    {
-        lineStyleFound = true;
-    }
-    else if (strcmp(name, "DOT") == 0)
-    {
-        lineStyleFound = true;
-    }
-    else if (strcmp(name, "DOTDASH") == 0)
-    {
-        lineStyleFound = true;
-    }
-    if (lineStyleFound)
-    {
-        PyErr_WarnEx(NULL,
-            "lineStyle is no longer a valid Curve "
-            "attribute.\nIt's value is being ignored, please remove "
-            "it from your script.\n", 3);
-        return PyInt_FromLong(0L);
-    }
 
     // Add a __dict__ answer so that dir() works
     if (!strcmp(name, "__dict__"))
@@ -2289,55 +2240,6 @@ PyCurveAttributes_setattr(PyObject *self, char *name, PyObject *args)
     else if(strcmp(name, "angleUnits") == 0)
         obj = CurveAttributes_SetAngleUnits(self, args);
 
-   // Try and handle legacy fields in CurveAttributes
-    if(obj == &NULL_PY_OBJ)
-    {
-        CurveAttributesObject *CurveObj = (CurveAttributesObject *)self;
-        if(strcmp(name, "color") == 0)
-            obj = CurveAttributes_SetCurveColor(self, args);
-        if(strcmp(name, "cycleColors") == 0)
-        {
-            int ival = -1;
-            PyErr_WarnEx(NULL, "'cycleColors' is obsolete. Use 'curveColor' set to 'Cycle'", 3);
-            ival = (int) PyLong_AsLong(args);
-            if (ival != -1)
-            {
-                if (ival == 0)
-                    CurveObj->data->SetCurveColorSource(CurveAttributes::Custom);
-                else
-                    CurveObj->data->SetCurveColorSource(CurveAttributes::Cycle);
-            }
-            Py_INCREF(Py_None);
-            obj = Py_None;
-        }
-        if(strcmp(name, "renderMode") == 0)
-        {
-            int ival = -1;
-            PyErr_WarnEx(NULL, "'renderMode' is obsolete. Use 'showLines' or 'showPoints'", 3);
-            ival = (int) PyLong_AsLong(args);
-            if (ival != -1)
-            {
-                if (ival == 0)
-                {
-                    CurveObj->data->SetShowLines(true);
-                    CurveObj->data->SetShowPoints(false);
-                }
-                else
-                {
-                    CurveObj->data->SetShowLines(false);
-                    CurveObj->data->SetShowPoints(true);
-                }
-            }
-            Py_INCREF(Py_None);
-            obj = Py_None;
-        }
-        if(strcmp(name, "lineStyle") == 0)
-        {
-            PyErr_WarnEx(NULL, "'lineStyle' is obsolete. It is being ignored.", 3);
-            Py_INCREF(Py_None);
-            obj = Py_None;
-        }
-    }
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
@@ -2356,7 +2258,7 @@ static int
 CurveAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     CurveAttributesObject *obj = (CurveAttributesObject *)v;
-    fprintf(fp, "%s", PyCurveAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyCurveAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -2364,7 +2266,7 @@ PyObject *
 CurveAttributes_str(PyObject *v)
 {
     CurveAttributesObject *obj = (CurveAttributesObject *)v;
-    return PyString_FromString(PyCurveAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyCurveAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -2516,7 +2418,7 @@ PyCurveAttributes_GetLogString()
 {
     std::string s("CurveAtts = CurveAttributes()\n");
     if(currentAtts != 0)
-        s += PyCurveAttributes_ToString(currentAtts, "CurveAtts.");
+        s += PyCurveAttributes_ToString(currentAtts, "CurveAtts.", true);
     return s;
 }
 
@@ -2529,7 +2431,7 @@ PyCurveAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("CurveAtts = CurveAttributes()\n");
-        s += PyCurveAttributes_ToString(currentAtts, "CurveAtts.");
+        s += PyCurveAttributes_ToString(currentAtts, "CurveAtts.", true);
         cb(s);
     }
 }

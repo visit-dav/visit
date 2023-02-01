@@ -35,6 +35,10 @@
 #   Cyrus Harrison, Fri Feb 25 14:49:03 PST 2022
 #   Add a `docs` cmake target that is an alais for `manuals`
 #
+#   Kathleen Biagas, Thu Mar 24, 2022
+#   Use 'manuals.vcxproj' for building manuals during an install on Windows
+#   with MSVC.
+#
 #****************************************************************************
 
 if(VISIT_PYTHON_DIR AND VISIT_ENABLE_MANUALS AND NOT VISIT_STATIC)
@@ -66,9 +70,8 @@ if(VISIT_PYTHON_DIR AND VISIT_ENABLE_MANUALS AND NOT VISIT_STATIC)
         ${VISIT_BINARY_DIR}/resources/help/en_US/manual -a)
 
     #
-    # Allow `make docs` to be an alais for `make manuals`
+    # Allow `make docs` to be an alias for `make manuals`
     #
-    add_custom_target(docs)
     add_dependencies(docs manuals)
 
 
@@ -77,7 +80,11 @@ if(VISIT_PYTHON_DIR AND VISIT_ENABLE_MANUALS AND NOT VISIT_STATIC)
     # target built, it will be built during the install process.
     ######
 
-    install(CODE "execute_process(COMMAND ${CMAKE_BUILD_TOOL} manuals WORKING_DIRECTORY \"${CMAKE_CURRENT_BINARY_DIR}\")")
+    if(MSVC)
+        install(CODE "execute_process(COMMAND \"${CMAKE_BUILD_TOOL}\" manuals.vcxproj WORKING_DIRECTORY \"${CMAKE_CURRENT_BINARY_DIR}\")")
+    else()
+        install(CODE "execute_process(COMMAND \"${CMAKE_BUILD_TOOL}\" manuals WORKING_DIRECTORY \"${CMAKE_CURRENT_BINARY_DIR}\")")
+    endif()
 
     # Add command to ensure the manuals are installed to the correct location
     install(DIRECTORY ${VISIT_BINARY_DIR}/resources/help/en_US/manual

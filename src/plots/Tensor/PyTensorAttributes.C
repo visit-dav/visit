@@ -37,7 +37,7 @@ struct TensorAttributesObject
 //
 static PyObject *NewTensorAttributes(int);
 std::string
-PyTensorAttributes_ToString(const TensorAttributes *atts, const char *prefix)
+PyTensorAttributes_ToString(const TensorAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -1494,7 +1494,7 @@ static int
 TensorAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     TensorAttributesObject *obj = (TensorAttributesObject *)v;
-    fprintf(fp, "%s", PyTensorAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyTensorAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -1502,7 +1502,7 @@ PyObject *
 TensorAttributes_str(PyObject *v)
 {
     TensorAttributesObject *obj = (TensorAttributesObject *)v;
-    return PyString_FromString(PyTensorAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyTensorAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -1654,7 +1654,7 @@ PyTensorAttributes_GetLogString()
 {
     std::string s("TensorAtts = TensorAttributes()\n");
     if(currentAtts != 0)
-        s += PyTensorAttributes_ToString(currentAtts, "TensorAtts.");
+        s += PyTensorAttributes_ToString(currentAtts, "TensorAtts.", true);
     return s;
 }
 
@@ -1667,7 +1667,7 @@ PyTensorAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("TensorAtts = TensorAttributes()\n");
-        s += PyTensorAttributes_ToString(currentAtts, "TensorAtts.");
+        s += PyTensorAttributes_ToString(currentAtts, "TensorAtts.", true);
         cb(s);
     }
 }

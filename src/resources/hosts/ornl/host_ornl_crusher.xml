@@ -1,0 +1,49 @@
+<?xml version="1.0"?>
+<Object name="MachineProfile">
+    <Field name="host" type="string">crusher.olcf.ornl.gov</Field>
+    <Field name="hostAliases" type="string">login#.olcf.ornl.gov login##.olcf.ornl.gov login# login##</Field>
+    <Field name="hostNickname" type="string">ORNL Crusher</Field>
+    <Field name="directory" type="string">/autofs/nccs-svm1_home1/brugger1/spack-visit-crusher/spack/opt/spack/cray-sles15-zen3/gcc-11.2.0/visit-3.3.0-mruuviyryfp54rnga7hrq7cgmygby7zd</Field>
+    <Field name="clientHostDetermination" type="string">ParsedFromSSHCLIENT</Field>
+    <Field name="tunnelSSH" type="bool">true</Field>
+    <Object name="LaunchProfile">
+        <Field name="profileName" type="string">serial</Field>
+        <Field name="timeout" type="int">480</Field>
+        <Field name="numProcessors" type="int">1</Field>
+        <Field name="numNodesSet" type="bool">false</Field>
+        <Field name="numNodes" type="int">0</Field>
+        <Field name="partitionSet" type="bool">false</Field>
+        <Field name="partition" type="string"></Field>
+        <Field name="bankSet" type="bool">false</Field>
+        <Field name="bank" type="string"></Field>
+        <Field name="timeLimitSet" type="bool">false</Field>
+        <Field name="timeLimit" type="string"></Field>
+        <Field name="launchMethodSet" type="bool">false</Field>
+        <Field name="launchMethod" type="string"></Field>
+        <Field name="forceStatic" type="bool">true</Field>
+        <Field name="forceDynamic" type="bool">false</Field>
+        <Field name="arguments" type="stringVector"></Field>
+        <Field name="parallel" type="bool">false</Field>
+    </Object>
+    <Object name="LaunchProfile">
+        <Field name="profileName" type="string">parallel batch</Field>
+        <Field name="timeout" type="int">480</Field>
+        <Field name="numProcessors" type="int">32</Field>
+        <Field name="numNodesSet" type="bool">true</Field>
+        <Field name="numNodes" type="int">1</Field>
+        <Field name="partitionSet" type="bool">true</Field>
+        <Field name="partition" type="string">batch</Field>
+        <Field name="bankSet" type="bool">true</Field>
+        <Field name="bank" type="string">CSC340</Field>
+        <Field name="timeLimitSet" type="bool">true</Field>
+        <Field name="timeLimit" type="string">30:00</Field>
+        <Field name="launchMethodSet" type="bool">true</Field>
+        <Field name="launchMethod" type="string">sbatch/srun</Field>
+        <Field name="forceStatic" type="bool">true</Field>
+        <Field name="forceDynamic" type="bool">false</Field>
+        <Field name="active" type="bool">false</Field>
+        <Field name="arguments" type="stringVector"></Field>
+        <Field name="parallel" type="bool">true</Field>
+    </Object>
+    <Field name="activeProfile" type="int">0</Field>
+</Object>

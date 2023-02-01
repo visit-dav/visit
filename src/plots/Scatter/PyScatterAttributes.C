@@ -38,7 +38,7 @@ struct ScatterAttributesObject
 //
 static PyObject *NewScatterAttributes(int);
 std::string
-PyScatterAttributes_ToString(const ScatterAttributes *atts, const char *prefix)
+PyScatterAttributes_ToString(const ScatterAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -3159,21 +3159,6 @@ PyScatterAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "legendFlag") == 0)
         return ScatterAttributes_GetLegendFlag(self, NULL);
 
-    // try to handle old attributes
-    if(strcmp(name, "foregroundFlag") == 0)
-    {
-        PyErr_WarnEx(NULL, "'foregroundFlag' is obsolete. Will try to accomodate.", 3);
-        if( ScatterAttributes_GetColorType(self, NULL) == PyInt_FromLong(0) )
-        {
-            PyObject *retval = PyInt_FromLong(1);
-            return retval;
-        }
-        else //if( ScatterAttributes_GetColorType(self, NULL) == PyInt_FromLong(1) )
-        {
-            PyObject *retval = PyInt_FromLong(0);
-            return retval;
-        }
-    }
 
     // Add a __dict__ answer so that dir() works
     if (!strcmp(name, "__dict__"))
@@ -3278,44 +3263,8 @@ PyScatterAttributes_setattr(PyObject *self, char *name, PyObject *args)
     else if(strcmp(name, "legendFlag") == 0)
         obj = ScatterAttributes_SetLegendFlag(self, args);
 
-
-    // try to handle old attributes
-    if(strcmp(name, "foregroundFlag") == 0)
-    {
-        PyObject *new_args = NULL;
-
-        PyErr_WarnEx(NULL, "'foregroundFlag' is obsolete. Will try to accomodate.", 3);
-
-        // from the tuple get the foreground value
-        int ival = -1;
-        ival = (int) PyLong_AsLong(args);
-        if (ival == -1 && PyErr_Occurred())
-              new_args = Py_BuildValue("(i)", 0);
-
-        // foreground is false so single color and color type is 1
-        else if( ival == 0 )
-        {
-            new_args = Py_BuildValue("(i)", 1);
-        }
-        // foreground is true so foreground color and color type is 0
-        else if( ival == 1 )
-        {
-            new_args = Py_BuildValue("(i)", 0);
-        }
-
-        if (new_args)
-        {
-            obj = ScatterAttributes_SetColorType(self, new_args);
-
-            Py_DECREF(new_args);
-        }
-    }
-
     // If the user changes one of the roles and one of the roles is
     // "Color" then assume that they want to use the color table.
-
-    // The above maintains backwards compatibility. Below allows new
-    // foreward new capibility.
 
     // If they do not want to use the color table and want to use
     // either the foreground or a single color they must set it after
@@ -3362,7 +3311,7 @@ static int
 ScatterAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     ScatterAttributesObject *obj = (ScatterAttributesObject *)v;
-    fprintf(fp, "%s", PyScatterAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyScatterAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -3370,7 +3319,7 @@ PyObject *
 ScatterAttributes_str(PyObject *v)
 {
     ScatterAttributesObject *obj = (ScatterAttributesObject *)v;
-    return PyString_FromString(PyScatterAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyScatterAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -3522,7 +3471,7 @@ PyScatterAttributes_GetLogString()
 {
     std::string s("ScatterAtts = ScatterAttributes()\n");
     if(currentAtts != 0)
-        s += PyScatterAttributes_ToString(currentAtts, "ScatterAtts.");
+        s += PyScatterAttributes_ToString(currentAtts, "ScatterAtts.", true);
     return s;
 }
 
@@ -3535,7 +3484,7 @@ PyScatterAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("ScatterAtts = ScatterAttributes()\n");
-        s += PyScatterAttributes_ToString(currentAtts, "ScatterAtts.");
+        s += PyScatterAttributes_ToString(currentAtts, "ScatterAtts.", true);
         cb(s);
     }
 }

@@ -37,7 +37,7 @@ struct LightAttributesObject
 //
 static PyObject *NewLightAttributes(int);
 std::string
-PyLightAttributes_ToString(const LightAttributes *atts, const char *prefix)
+PyLightAttributes_ToString(const LightAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -545,7 +545,7 @@ static int
 LightAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     LightAttributesObject *obj = (LightAttributesObject *)v;
-    fprintf(fp, "%s", PyLightAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyLightAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -553,7 +553,7 @@ PyObject *
 LightAttributes_str(PyObject *v)
 {
     LightAttributesObject *obj = (LightAttributesObject *)v;
-    return PyString_FromString(PyLightAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyLightAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -705,7 +705,7 @@ PyLightAttributes_GetLogString()
 {
     std::string s("LightAtts = LightAttributes()\n");
     if(currentAtts != 0)
-        s += PyLightAttributes_ToString(currentAtts, "LightAtts.");
+        s += PyLightAttributes_ToString(currentAtts, "LightAtts.", true);
     return s;
 }
 
@@ -718,7 +718,7 @@ PyLightAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("LightAtts = LightAttributes()\n");
-        s += PyLightAttributes_ToString(currentAtts, "LightAtts.");
+        s += PyLightAttributes_ToString(currentAtts, "LightAtts.", true);
         cb(s);
     }
 }

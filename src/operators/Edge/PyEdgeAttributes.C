@@ -36,7 +36,7 @@ struct EdgeAttributesObject
 //
 static PyObject *NewEdgeAttributes(int);
 std::string
-PyEdgeAttributes_ToString(const EdgeAttributes *atts, const char *prefix)
+PyEdgeAttributes_ToString(const EdgeAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -190,7 +190,7 @@ static int
 EdgeAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     EdgeAttributesObject *obj = (EdgeAttributesObject *)v;
-    fprintf(fp, "%s", PyEdgeAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyEdgeAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -198,7 +198,7 @@ PyObject *
 EdgeAttributes_str(PyObject *v)
 {
     EdgeAttributesObject *obj = (EdgeAttributesObject *)v;
-    return PyString_FromString(PyEdgeAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyEdgeAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -350,7 +350,7 @@ PyEdgeAttributes_GetLogString()
 {
     std::string s("EdgeAtts = EdgeAttributes()\n");
     if(currentAtts != 0)
-        s += PyEdgeAttributes_ToString(currentAtts, "EdgeAtts.");
+        s += PyEdgeAttributes_ToString(currentAtts, "EdgeAtts.", true);
     return s;
 }
 
@@ -363,7 +363,7 @@ PyEdgeAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("EdgeAtts = EdgeAttributes()\n");
-        s += PyEdgeAttributes_ToString(currentAtts, "EdgeAtts.");
+        s += PyEdgeAttributes_ToString(currentAtts, "EdgeAtts.", true);
         cb(s);
     }
 }

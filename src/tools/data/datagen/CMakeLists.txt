@@ -72,6 +72,13 @@
 #   Add VISIT_DEFAULT_SILO_DRIVER cmake arg, which if blank will allow
 #   driver to be specified at make time.
 #
+#   Mark C. Miller, Wed Mar 23 21:12:34 PDT 2022
+#   Elim use of 7z in favor of vanilla tar
+#
+#   Kathleen Biagas, Fri Mar 25 11:41:48 PDT 2022
+#   Test the size of visit_dist_data.tar.xz to ensure its the real one
+#   and not the lfs'd version. Otherwise untar will fail.
+#
 #****************************************************************************
 
 MESSAGE(STATUS "Configuring VisIt Data Generation Targets")
@@ -150,12 +157,12 @@ ENDFUNCTION(BUILD_DATA_TARGET_IMPL target_name)
 FUNCTION(BUILD_VISIT_DIST_DATA)
     FILE(MAKE_DIRECTORY visit_dist_data)
 if(WIN32)
-    file(GLOB vdd_files "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFGINT_DIR}/*.{silo,pdb}")
+    file(GLOB vdd_files "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFGINT_DIR}/*.{silo,pdb}" CONFIGURE_DEPENDS)
     FILE(COPY ${vdd_files} DESTINATION visit_dist_data )
 else()
     FILE(COPY dummy DESTINATION visit_dist_data FILES_MATCHING PATTERN "*.{silo,pdb}")
 endif()
-    SET(DIST_TAR_CMD "${TAR_CMD} ${TAR_ARGS} visit_dist_data.tar.gz visit_dist_data")
+    SET(DIST_TAR_CMD "${TAR_CMD} ${TAR_ARGS} visit_dist_data.tar.xz visit_dist_data")
     EXECUTE_PROCESS(COMMAND ${DIST_TAR_CMD} WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
 ENDFUNCTION(BUILD_VISIT_DIST_DATA)
 
@@ -282,10 +289,15 @@ ENDFOREACH(BASIC_TARGET ${BASIC_TARGETS_PAR})
 # Build all VTK Targets
 #-----------------------------------------------------------------------------
 FOREACH(VTK_TARGET ${VTK_TARGETS})
-    BUILD_DATA_TARGET(${VTK_TARGET}
-        INCLUDE_DIRS ${VTK_INCLUDE_DIRS}
-        LIB_DIRS ${VTK_LIBRARY_DIRS}
-        LIBS vtkIOLegacy)
+    if(VTK_VERSION VERSION_EQUAL "8.1.0")
+        BUILD_DATA_TARGET(${VTK_TARGET}
+            INCLUDE_DIRS ${VTK_INCLUDE_DIRS}
+            LIB_DIRS ${VTK_LIBRARY_DIRS}
+            LIBS vtkIOLegacy)
+    else()
+        BUILD_DATA_TARGET(${VTK_TARGET}
+            LIBS VTK::IOLegacy)
+    endif()
 ENDFOREACH(VTK_TARGET ${VTK_TARGETS})
 
 #-----------------------------------------------------------------------------
@@ -339,33 +351,20 @@ ENDIF(SILO_FOUND)
 #
 #  Kathleen Biagas, Wed Oct  2 14:19:36 PDT 2013
 #  Added PROGRAM6432 env var to search as I discovered that 32-bit cmake
-#  running on 64-bit Windows 8 reports 'Program Files (x86)' for 
+#  running on 64-bit Windows 8 reports 'Program Files (x86)' for
 #  'ENV${PROGRAMFILES}'.
 #
 #-----------------------------------------------------------------------------
-IF(VISIT_USE_7ZIP)
-   SET(PF1 "PROGRAMFILES")
-   SET(PF2 "PROGRAMFILES(X86)")
-   FIND_PROGRAM(SEVEN_ZIP_EXE 7z "${VISIT_SEVEN_ZIP_DIR}" 
-                                 "$ENV{${PF1}}/7-Zip" 
-                                 "$ENV{${PF2}}/7-Zip")
-   UNSET(PF2)
-   UNSET(PF1)
-   IF("${SEVEN_ZIP_EXE}" STREQUAL "SEVEN_ZIP_EXE-NOTFOUND")
-       MESSAGE(WARNING "7-Zip not found, .tar.gz data files will not be extracted.")
-   ENDIF()
-ELSE(VISIT_USE_7ZIP)
-    FIND_PROGRAM(TAR_EXE tar)
-    IF(NOT "${TAR_EXE}" STREQUAL "TAR_EXE-NOTFOUND")
-        SET(TAR_CMD ${TAR_EXE})
-        SET(UNTAR_ARGS "-xzvf")
-        SET(TAR_ARGS "-czvf")
-    ELSE()
-        SET(TAR_CMD ${CMAKE_COMMAND})
-        SET(UNTAR_ARGS "-E tar -xzvf")
-        SET(TAR_ARGS "-E tar -czvf")
-    ENDIF()
-ENDIF(VISIT_USE_7ZIP)
+FIND_PROGRAM(TAR_EXE tar)
+IF(TAR_EXE AND NOT WIN32)
+    SET(TAR_CMD ${TAR_EXE})
+    SET(UNTAR_ARGS "xvf")
+    SET(TAR_ARGS "cvfJ")
+ELSE()
+    SET(TAR_CMD ${CMAKE_COMMAND})
+    SET(UNTAR_ARGS "-E tar xvf")
+    SET(TAR_ARGS "-E tar cvfJ")
+ENDIF()
 
 #-----------------------------------------------------------------------------
 # CMake variable names for make variables used in convenience targets below.
@@ -386,18 +385,22 @@ endif()
 # Add install command for contents of "data"
 #-----------------------------------------------------------------------------
 
-IF(EXISTS ${VISIT_SOURCE_DIR}/../data/visit_dist_data.tar.gz)
-    IF(VISIT_USE_7ZIP AND NOT "${SEVEN_ZIP_EXE}" STREQUAL "SEVEN_ZIP_EXE-NOTFOUND")
-        SET (DIST_UNTAR_CMD1 "\"${SEVEN_ZIP_EXE}\" x -y \"${VISIT_SOURCE_DIR}/../data/visit_dist_data.tar.gz\"")
-        SET (DIST_UNTAR_CMD2 "\"${SEVEN_ZIP_EXE}\" x -y visit_dist_data.tar")
-        SET (DIST_UNTAR_CMD3 "del /F visit_dist_data.tar")
-        INSTALL(CODE "execute_process(COMMAND ${DIST_UNTAR_CMD1} WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} )")
-        INSTALL(CODE "execute_process(COMMAND ${DIST_UNTAR_CMD2} WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} )")
-        INSTALL(CODE "execute_process(COMMAND ${DIST_UNTAR_CMD3} WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} )")
-    ELSE()
-        SET(DIST_UNTAR_CMD "${TAR_CMD} ${UNTAR_ARGS} ${VISIT_SOURCE_DIR}/../data/visit_dist_data.tar.gz")
-        INSTALL(CODE "execute_process(COMMAND ${DIST_UNTAR_CMD} WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} )")
-    ENDIF()
+set(USE_VISIT_DIST_DATA_TARBALL false)
+
+if(EXISTS ${VISIT_SOURCE_DIR}/../data/visit_dist_data.tar.xz)
+    # Need to test the size of visit_dist_data, because untar will fail if
+    # its the lfs'd version of the file and not the real one. This happens
+    # with build_visit,  because lfs content isn't pulled.
+
+    file(SIZE ${VISIT_SOURCE_DIR}/../data/visit_dist_data.tar.xz VDD_SIZE)
+    if(VDD_SIZE GREATER 200) # lfs'd files are generally ~130 bytes.
+        set(USE_VISIT_DIST_DATA_TARBALL true)
+    endif()
+endif()
+
+IF(USE_VISIT_DIST_DATA_TARBALL)
+    SET(DIST_UNTAR_CMD "${TAR_CMD} ${UNTAR_ARGS} ${VISIT_SOURCE_DIR}/../data/visit_dist_data.tar.xz")
+    INSTALL(CODE "execute_process(COMMAND ${DIST_UNTAR_CMD} WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} )")
     INSTALL(
         DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/visit_dist_data/
         DESTINATION data
@@ -505,22 +508,22 @@ ELSE()
         INSTALL(FILES ${install_files} DESTINATION data
            PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ GROUP_WRITE WORLD_READ)
 
-        # Create a target to build visit_dist_data.tar.gz
+        # Create a target to build visit_dist_data.tar.xz
         FILE(GENERATE OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/build_visit_dist_data.cmake CONTENT "
             FILE(MAKE_DIRECTORY visit_dist_data)
             FILE(COPY ${all_example_output} DESTINATION visit_dist_data)
-            EXECUTE_PROCESS(COMMAND ${TAR_CMD} ${TAR_ARGS} visit_dist_data.tar.gz visit_dist_data
+            EXECUTE_PROCESS(COMMAND ${TAR_CMD} ${TAR_ARGS} visit_dist_data.tar.xz visit_dist_data
                 WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})")
-        ADD_CUSTOM_COMMAND(OUTPUT visit_dist_data.tar.gz
+        ADD_CUSTOM_COMMAND(OUTPUT visit_dist_data.tar.xz
                            COMMAND ${CMAKE_COMMAND} -P build_visit_dist_data.cmake
                            DEPENDS "${all_example_output}"
                            WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-                           COMMENT "Generating visit_dist_data.tar.gz")
-        ADD_CUSTOM_TARGET(visit_dist_data DEPENDS visit_dist_data.tar.gz)
+                           COMMENT "Generating visit_dist_data.tar.xz")
+        ADD_CUSTOM_TARGET(visit_dist_data DEPENDS visit_dist_data.tar.xz)
         VISIT_DATA_ADD_FOLDER(datagen visit_dist_data)
 
     ELSE(SILO_FOUND)
-        MESSAGE(STATUS "Data files not included since visit_dist_data.tar.gz")
+        MESSAGE(STATUS "Data files not included since visit_dist_data.tar.xz")
         MESSAGE(STATUS "is missing and VisIt is not being built with Silo")
         MESSAGE(STATUS "support.")
     ENDIF(SILO_FOUND)

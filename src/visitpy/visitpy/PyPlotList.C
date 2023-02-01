@@ -37,7 +37,7 @@ struct PlotListObject
 //
 static PyObject *NewPlotList(int);
 std::string
-PyPlotList_ToString(const PlotList *atts, const char *prefix)
+PyPlotList_ToString(const PlotList *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -50,7 +50,7 @@ PyPlotList_ToString(const PlotList *atts, const char *prefix)
             const Plot *current = (const Plot *)(*pos);
             snprintf(tmpStr, 1000, "GetPlots(%d).", index);
             std::string objPrefix(prefix + std::string(tmpStr));
-            str += PyPlot_ToString(current, objPrefix.c_str());
+            str += PyPlot_ToString(current, objPrefix.c_str(), forLogging);
         }
         if(index == 0)
             str += "#plots does not contain any Plot objects.\n";
@@ -241,7 +241,7 @@ static int
 PlotList_print(PyObject *v, FILE *fp, int flags)
 {
     PlotListObject *obj = (PlotListObject *)v;
-    fprintf(fp, "%s", PyPlotList_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyPlotList_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -249,7 +249,7 @@ PyObject *
 PlotList_str(PyObject *v)
 {
     PlotListObject *obj = (PlotListObject *)v;
-    return PyString_FromString(PyPlotList_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyPlotList_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -401,7 +401,7 @@ PyPlotList_GetLogString()
 {
     std::string s("PlotList = PlotList()\n");
     if(currentAtts != 0)
-        s += PyPlotList_ToString(currentAtts, "PlotList.");
+        s += PyPlotList_ToString(currentAtts, "PlotList.", true);
     return s;
 }
 
@@ -414,7 +414,7 @@ PyPlotList_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("PlotList = PlotList()\n");
-        s += PyPlotList_ToString(currentAtts, "PlotList.");
+        s += PyPlotList_ToString(currentAtts, "PlotList.", true);
         cb(s);
     }
 }

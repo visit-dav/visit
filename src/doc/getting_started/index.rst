@@ -1,5 +1,5 @@
-VisIt_ Getting Started
-======================
+Getting Started
+===============
 
 .. toctree::
     :maxdepth: 1
@@ -7,7 +7,6 @@ VisIt_ Getting Started
 
     Installing_VisIt
     Startup_Options
-    
 
 .. Indices and tables
 .. ==================

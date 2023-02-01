@@ -127,7 +127,8 @@ Delete points after
     so this cleaning will remove all duplicate points leaving the first
     temporal value).
 
-.. warning:
+.. warning::
+
     Cleanup will always be called if the user displays integral curves using
     tubes or ribbon regardless of the settings here because they cannot contain
     duplicate points.

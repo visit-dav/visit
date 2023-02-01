@@ -68,13 +68,6 @@ function bv_gdal_ensure
     fi
 }
 
-function bv_gdal_dry_run
-{
-    if [[ "$DO_GDAL" == "yes" ]] ; then
-        echo "Dry run option not set for gdal."
-    fi
-}
-
 # *************************************************************************** #
 #                         Function 8.6, build_gdal                            #
 # *************************************************************************** #

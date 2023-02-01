@@ -162,7 +162,7 @@ avtPickByNodeQuery::Execute(vtkDataSet *ds, const int dom)
             pickAtts.SetElementNumber(-1);
             pickAtts.SetErrorMessage("Pick could not be performed because a node "
                                      "label was specified for Pick but the mesh "
-                                     "does not contain zone label information.");
+                                     "does not contain node label information.");
             pickAtts.SetError(true);
             return;
         }

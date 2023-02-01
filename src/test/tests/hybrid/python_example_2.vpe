@@ -1,0 +1,61 @@
+# ----------------------------------------------------------------------------
+# Example VisIt Python Expression
+#
+#                    ***WARNING***WARNING***WARNING***
+#
+# This script is referenced in the documentation. You may need to update
+# src/doc/tutorials/PythonExpressions.rst if you modify this file.
+#
+#                    ***WARNING***WARNING***WARNING***
+#
+# Multiplies a scalar variable by the sum of the lengths of the edges.
+#
+#  Programmer: Eric Brugger
+#  Date:       Tue Apr  5 10:42:07 PDT 2022
+#
+# ----------------------------------------------------------------------------
+
+from math import sqrt
+class MyExpression(SimplePythonExpression):
+    def __init__(self):
+        SimplePythonExpression.__init__(self)
+        self.name = "PythonExpression"
+        self.description = "Multiply the variable by sum of cell edge lengths in 2D"
+        self.output_is_point_var  = False
+        self.output_dimension = 1
+    def modify_contract(self,contract):
+        pass
+    def derive_variable(self,ds_in,domain_id):
+        # ds_in is the input data set
+        # Get the data array for the variable
+        cell_vals = ds_in.GetCellData().GetArray(self.input_var_names[0])
+        # Get the number of values in the variable
+        ncells = ds_in.GetNumberOfCells()
+        # Create a scalar float array with ncells values for the result
+        res = vtk.vtkFloatArray()
+        res.SetNumberOfComponents(1)
+        res.SetNumberOfTuples(ncells)
+        for i in range(ncells):
+            # Get the i'th cell
+            cell = ds_in.GetCell(i)
+            # Get the number of edges in the cell
+            nedges = cell.GetNumberOfEdges()
+            # Sum up the lengths of the edges
+            sum = 0.
+            for j in range(nedges):
+                # Get the j'th edge
+                edge = cell.GetEdge(j)
+                # Calculate the edge length from the end points
+                pt1 = ds_in.GetPoint(edge.GetPointId(0))
+                pt2 = ds_in.GetPoint(edge.GetPointId(1))
+                len = sqrt((pt2[0] - pt1[0]) * (pt2[0] - pt1[0]) +
+                           (pt2[1] - pt1[1]) * (pt2[1] - pt1[1]) +
+                           (pt2[2] - pt1[2]) * (pt2[2] - pt1[2]))
+                sum = sum + len
+            # Multiply the sum by the i'th value of the variable
+            sum *= cell_vals.GetTuple1(i)
+            # Store the value in the i'th value in the result
+            res.SetTuple1(i, sum)
+        return res
+
+py_filter = MyExpression

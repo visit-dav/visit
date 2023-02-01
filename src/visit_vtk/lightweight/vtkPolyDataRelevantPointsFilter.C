@@ -3,8 +3,11 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 #include "vtkPolyDataRelevantPointsFilter.h"
-
+#include <visit-config.h> // For LIB_VERSION_LE
 #include <vtkCellArray.h>
+#if LIB_VERSION_GE(VTK, 9,1,0)
+#include <vtkCellArrayIterator.h>
+#endif
 #include <vtkCellData.h>
 #include <vtkInformation.h>
 #include <vtkInformationVector.h>
@@ -14,7 +17,7 @@
 
 //-----------------------------------------------------------------------------
 // Modifications:
-//   Kathleen Bonnell, Wed Mar  6 15:14:29 PST 2002 
+//   Kathleen Bonnell, Wed Mar  6 15:14:29 PST 2002
 //   Replace 'New' method with Macro to match VTK 4.0 API.
 //-----------------------------------------------------------------------------
 
@@ -47,6 +50,9 @@ vtkStandardNewMacro(vtkPolyDataRelevantPointsFilter);
 //    Brad Whitlock, Thu Jul 23 16:01:46 PDT 2015
 //    Support for non-standard memory layout.
 //
+//    Kathleen Biagas, Thu Aug 11, 2022
+//    Support VTK9, use vtkCellArrayIterator.
+//
 // ****************************************************************************
 
 int vtkPolyDataRelevantPointsFilter::RequestData(
@@ -69,7 +75,7 @@ int vtkPolyDataRelevantPointsFilter::RequestData(
   vtkPoints *inPts     = input->GetPoints();
   vtkIdType numPts     = input->GetNumberOfPoints();
   vtkIdType numCells   = input->GetNumberOfCells();
-  
+
   //
   // Sanity checks
   //
@@ -82,7 +88,7 @@ int vtkPolyDataRelevantPointsFilter::RequestData(
       vtkErrorMacro(<<"No data to Operate On!");
       return 1;
   }
- 
+
   //
   // The cells will be largely unaffected, so pass them straight through.
   //
@@ -90,14 +96,14 @@ int vtkPolyDataRelevantPointsFilter::RequestData(
   vtkCellData  *inputCD  = input->GetCellData();
   vtkCellData  *outputCD = output->GetCellData();
   outputCD->PassData(inputCD);
-  
+
   //
   // First set up some of the constructs that will be used to create a mapping
   // between the old point indices and the new point indices.
   //
-  int numNewPts = 0;
-  int *oldToNew = new int[numPts];
-  int *newToOld = new int[numPts];
+  vtkIdType numNewPts = 0;
+  vtkIdType *oldToNew = new vtkIdType[numPts];
+  vtkIdType *newToOld = new vtkIdType[numPts];
   for (vtkIdType i = 0; i < numPts; i++)
     {
     oldToNew[i] = -1;
@@ -115,6 +121,7 @@ int vtkPolyDataRelevantPointsFilter::RequestData(
   //
   for (int i = 0 ; i < 4 ; i++)
     {
+#if LIB_VERSION_LE(VTK, 8,1,0)
     vtkIdType ncells = arrays[i]->GetNumberOfCells();
     vtkIdType *ptr = arrays[i]->GetPointer();
     for (vtkIdType j = 0 ; j < ncells ; j++)
@@ -127,6 +134,20 @@ int vtkPolyDataRelevantPointsFilter::RequestData(
           {
           newToOld[numNewPts] = oldPt;
           oldToNew[oldPt] = numNewPts;
+#else
+    auto iter = vtk::TakeSmartPointer(arrays[i]->NewIterator());
+    for (iter->GoToFirstCell(); !iter->IsDoneWithTraversal(); iter->GoToNextCell())
+      {
+      vtkIdType npts=0;
+      const vtkIdType *ptr=nullptr;
+      iter->GetCurrentCell(npts, ptr);
+      for (vtkIdType k = 0 ; k < npts ; k++)
+        {
+        if (oldToNew[ptr[k]] == -1)
+          {
+          newToOld[numNewPts] = ptr[k];
+          oldToNew[ptr[k]] = numNewPts;
+#endif
           numNewPts++;
           }
         }
@@ -203,10 +224,14 @@ int vtkPolyDataRelevantPointsFilter::RequestData(
   //
   int nIdStoreSize = 1024;
   vtkIdType *pts = new vtkIdType[nIdStoreSize];
-  vtkIdType *oldPts = NULL;
+#if LIB_VERSION_LE(VTK, 8,1,0)
+  vtkIdType *oldPts = nullptr;
+#else
+  const vtkIdType *oldPts = nullptr;
+#endif
   vtkIdType nids = 0;
   input->BuildCells();
-  for (vtkIdType i = 0; i < numCells; i++) 
+  for (vtkIdType i = 0; i < numCells; i++)
     {
     input->GetCellPoints(i, nids, oldPts);
     if(nids > nIdStoreSize)
@@ -230,7 +255,7 @@ int vtkPolyDataRelevantPointsFilter::RequestData(
 }
 
 //-----------------------------------------------------------------------------
-void vtkPolyDataRelevantPointsFilter::PrintSelf(ostream& os, vtkIndent indent) 
+void vtkPolyDataRelevantPointsFilter::PrintSelf(ostream& os, vtkIndent indent)
 {
   this->Superclass::PrintSelf(os,indent);
 }

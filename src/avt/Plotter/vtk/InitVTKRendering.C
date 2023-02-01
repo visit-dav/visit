@@ -4,7 +4,6 @@
 
 #include <InitVTKRendering.h>
 
-#include <vtkToolkits.h>
 #include <vtkVisItDataSetMapper.h>
 #include <vtkOpenGLPointMapper.h>
 

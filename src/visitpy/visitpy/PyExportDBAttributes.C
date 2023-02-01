@@ -51,7 +51,7 @@ static PyObject *NewExportDBAttributes(int);
 //
 // ****************************************************************************
 std::string
-PyExportDBAttributes_ToString(const ExportDBAttributes *atts, const char *prefix)
+PyExportDBAttributes_ToString(const ExportDBAttributes *atts, const char *prefix, const bool /* forLogging */)
 {
     std::string str;
     char tmpStr[1000];
@@ -95,8 +95,7 @@ PyExportDBAttributes_ToString(const ExportDBAttributes *atts, const char *prefix
     snprintf(tmpStr, 1000, "%sgroupSize = %d\n", prefix, atts->GetGroupSize());
     str += tmpStr;
 
-    std::string db_opts_dict_str = PyDBOptionsAttributes_CreateDictionaryStringFromDBOptions(atts->GetOpts(),
-                                                                                     false);
+    std::string db_opts_dict_str = PyDBOptionsAttributes_CreateDictionaryStringFromDBOptions(atts->GetOpts(), false);
     if((!db_opts_dict_str.empty()) && // make sure its not an empty string
        (db_opts_dict_str.find("{}") != 0) ) // and not an empty dict
     {
@@ -770,7 +769,7 @@ static int
 ExportDBAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     ExportDBAttributesObject *obj = (ExportDBAttributesObject *)v;
-    fprintf(fp, "%s", PyExportDBAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyExportDBAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -778,7 +777,7 @@ PyObject *
 ExportDBAttributes_str(PyObject *v)
 {
     ExportDBAttributesObject *obj = (ExportDBAttributesObject *)v;
-    return PyString_FromString(PyExportDBAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyExportDBAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -930,7 +929,7 @@ PyExportDBAttributes_GetLogString()
 {
     std::string s("ExportDBAtts = ExportDBAttributes()\n");
     if(currentAtts != 0)
-        s += PyExportDBAttributes_ToString(currentAtts, "ExportDBAtts.");
+        s += PyExportDBAttributes_ToString(currentAtts, "ExportDBAtts.", true);
     return s;
 }
 
@@ -943,7 +942,7 @@ PyExportDBAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("ExportDBAtts = ExportDBAttributes()\n");
-        s += PyExportDBAttributes_ToString(currentAtts, "ExportDBAtts.");
+        s += PyExportDBAttributes_ToString(currentAtts, "ExportDBAtts.", true);
         cb(s);
     }
 }

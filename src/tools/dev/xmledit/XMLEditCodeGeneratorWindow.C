@@ -30,6 +30,9 @@
 //    Cyrus Harrison, Thu May 15 16:00:46 PDT 2008
 //    First pass at porting to Qt 4.4.0
 //
+//    Kathleen Biagas, Wed Apr 6, 2022
+//    Fix QT_VERSION test to use Qt's QT_VERSION_CHECK.
+//
 // ****************************************************************************
 
 XMLEditCodeGeneratorWindow::XMLEditCodeGeneratorWindow(QWidget *parent)
@@ -49,7 +52,11 @@ XMLEditCodeGeneratorWindow::XMLEditCodeGeneratorWindow(QWidget *parent)
 
     outputText = new QTextEdit(central);
     outputText->setWordWrapMode(QTextOption::NoWrap);
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 11, 0))
     outputText->setMinimumWidth(fontMetrics().horizontalAdvance("X") * 70);
+#else
+    outputText->setMinimumWidth(fontMetrics().width("X") * 70);
+#endif
     outputText->setMinimumHeight(fontMetrics().lineSpacing() * 25);
     topLayout->addWidget(outputText, 10);
 

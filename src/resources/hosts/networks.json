@@ -107,6 +107,20 @@
       ]
     },
     {
+      "network": "kaust",
+      "files": [
+        {
+          "name": "customlauncher"
+        },
+        {
+          "name": "host_kaust_ibex.xml"
+        },
+        {
+          "name": "host_kaust_shaheen.xml"
+        }
+      ]
+    },
+    {
       "network": "lanl",
       "files": [
         {
@@ -271,6 +285,17 @@
       ]
     },
     {
+      "network": "nci",
+      "files": [
+        {
+          "name": "customlauncher"
+        },
+        {
+          "name": "host_gadi.xml"
+        }
+      ]
+    },
+    {
       "network": "ncsa",
       "files": [
         {
@@ -328,6 +353,9 @@
         },
         {
           "name": "host_ornl_andes.xml"
+        },
+        {
+          "name": "host_ornl_crusher.xml"
         },
         {
           "name": "host_ornl_spock.xml"

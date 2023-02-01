@@ -3,14 +3,14 @@
 #
 #  Test Case:  arbpoly.py
 #
-#  Tests:      mesh      - a ucd mesh with arbitrary polyhedral zones 
+#  Tests:      mesh      - a ucd mesh with arbitrary polyhedral zones
 #              plots     - pc, contour, mat subset, mesh
 #              operators - OnionPeel
 #              selection - material
 #
 #  Defect ID:  none
 #
-#  Programmer: Mark C. Miller 
+#  Programmer: Mark C. Miller
 #  Date:       October 24, 2004
 #
 #  Modifications
@@ -25,6 +25,9 @@
 #
 #    Kathleen Biagas, Wed Sep 10 14:15:44 PDT 2014
 #    Added tests for OnionPeel'd arb poly, and a single-zone arb-poly set.
+#
+#    Kathleen Biagas, Wed Feb 16 09:15:45 PST 2022
+#    Replace use of meshatts 'backgroundFlag' with opaqueColorSource.
 #
 # ----------------------------------------------------------------------------
 
@@ -74,7 +77,7 @@ DrawPlots()
 ma = MeshAttributes()
 ma.opaqueColor = (0, 200, 200, 255)
 ma.opaqueMode = ma.On
-ma.backgroundFlag = 0
+ma.opaqueColorSource = ma.OpaqueCustom
 SetPlotOptions(ma)
 ResetView()
 Test("arbpoly_04")

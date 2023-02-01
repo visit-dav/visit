@@ -23,7 +23,7 @@ VISITPY_API PyObject *     PySaveWindowAttributes_Wrap(const SaveWindowAttribute
 void VISITPY_API           PySaveWindowAttributes_SetParent(PyObject *obj, PyObject *parent);
 void VISITPY_API           PySaveWindowAttributes_SetDefaults(const SaveWindowAttributes *atts);
 std::string VISITPY_API    PySaveWindowAttributes_GetLogString();
-std::string VISITPY_API    PySaveWindowAttributes_ToString(const SaveWindowAttributes *, const char *);
+std::string VISITPY_API    PySaveWindowAttributes_ToString(const SaveWindowAttributes *, const char *, const bool=false);
 VISITPY_API PyObject *     PySaveWindowAttributes_getattr(PyObject *self, char *name);
 int VISITPY_API            PySaveWindowAttributes_setattr(PyObject *self, char *name, PyObject *args);
 VISITPY_API extern PyMethodDef PySaveWindowAttributes_methods[SAVEWINDOWATTRIBUTES_NMETH];

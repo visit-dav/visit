@@ -8,17 +8,21 @@
 
 #include <avtXRayFilter.h>
 
+#include <visit-config.h> // For LIB_VERSION_LE
 #include <stdlib.h>
 
 #ifdef PARALLEL
 #include <mpi.h>
-#endif 
+#endif
 
 #include <algorithm>
 
 #include <vtkAppendPolyData.h>
 #include <vtkCell.h>
 #include <vtkCellArray.h>
+#if LIB_VERSION_GE(VTK,9,1,0)
+#include <vtkCellArrayIterator.h>
+#endif
 #include <vtkCellData.h>
 #include <vtkCharArray.h>
 #include <vtkDataSet.h>
@@ -101,7 +105,7 @@ using std::vector;
 }
 
 static int IntersectLineWithRevolvedSegment(const double *line_pt,
-                                            const double *, const double *, 
+                                            const double *, const double *,
                                             const double *, double *);
 
 
@@ -126,7 +130,7 @@ inline void Cross(double result[3], const double v1[3], const double v2[3])
 //  Method: VisIt_XRay_MPI_Alltoallv + VisIt_XRay_MPI_Gatherv
 //
 //  Purpose:
-//    Wrappers for Alltoallv and Gatherv that we can use safely in 
+//    Wrappers for Alltoallv and Gatherv that we can use safely in
 //    avtXRayFilter's templated double vs float calling scenarios.
 //
 //  Programmer: Cyrus Harrison + Matt Larsen
@@ -137,7 +141,7 @@ inline void Cross(double result[3], const double v1[3], const double v2[3])
 // ****************************************************************************
 
 //-----------------------------
-// Templated MPI_Alltoallv 
+// Templated MPI_Alltoallv
 //-----------------------------
 // method def
 template <typename T>
@@ -258,7 +262,7 @@ static bool IntersectLineWithTri(const double v0[3], const double v1[3],
     double Q[3];
     Cross(Q, T, E_01);
     double beta = Dot(direction, Q) * inv_det;
-    if (beta < 0.0) return false; 
+    if (beta < 0.0) return false;
 
     if ((alpha + beta) > 1.0)
     {
@@ -293,7 +297,7 @@ static bool IntersectLineWithTri(const double v0[3], const double v1[3],
     //
 
     t = Dot(E_02, Q) * inv_det;
-    if (t < 0.0) return false; 
+    if (t < 0.0) return false;
 
     return true;
 }
@@ -448,7 +452,7 @@ avtXRayFilter::~avtXRayFilter()
 //    Eric Brugger, Fri Aug 27 11:15:48 PDT 2010
 //    I removed the requirement that a 2d spatial mesh must be an RZ mesh,
 //    and had it assume that it was.
-//  
+//
 // ****************************************************************************
 
 void
@@ -487,12 +491,16 @@ avtXRayFilter::UpdateDataObjectInfo(void)
 //    Eric Brugger, Wed Nov 19 15:48:18 PST 2014
 //    I modified the arguments so that they map one for one with the actual
 //    image properties stored in the class.
+// 
+//    Justin Privitera, Mon Dec 12 13:28:55 PST 2022
+//    Use avtVectors for some inputs since they come that way from 
+//    avtXRayImageQuery.
 //
 // ****************************************************************************
 
 void
-avtXRayFilter::SetImageProperties(double *_normal, double *_focus, 
-    double *_viewUp, double _viewAngle, double _parallelScale,
+avtXRayFilter::SetImageProperties(avtVector _normal, avtVector _focus, 
+    avtVector _viewUp, double _viewAngle, double _parallelScale,
     double _nearPlane, double _farPlane, double *_imagePan,
     double _imageZoom, bool _perspective, int *_imageSize)
 {
@@ -876,7 +884,7 @@ avtXRayFilter::Execute(void)
     // Free the memory from the GetAllLeaves function call.
     delete [] dataSets;
 }
-   
+
 
 // ****************************************************************************
 //  Method:  avtXRayFilter::ImageStripExecute
@@ -944,7 +952,7 @@ avtXRayFilter::ImageStripExecute(int nDataSets, vtkDataSet **dataSets)
         nComponentsPerCellArray = dataSets[0]->GetCellData()->
             GetArray(absVarName.c_str())->GetNumberOfComponents();
     }
-  
+
     int nPts;
     int *outLineIds;
     double *outDists;
@@ -1074,7 +1082,7 @@ avtXRayFilter::PostExecute(void)
 //  Modifications:
 //    Eric Brugger, Mon Jul 12 13:37:46 PDT 2010
 //    I added more timing calls to get finer grained timing information.
-//  
+//
 //    Eric Brugger, Fri Jul 16 15:42:20 PDT 2010
 //    I modified the filter to handle the case where some of the processors
 //    didn't have any data sets when executing in parallel.
@@ -1101,6 +1109,9 @@ avtXRayFilter::PostExecute(void)
 //
 //    Gunther H. Weber, Wed Jan 23 15:18:27 PST 2013
 //    Add skipping ghost cells for rectilinear and structured grids.
+//
+//    Kathleen Biagas, Thu Aug 11 2022
+//    Support VTK9: use vtkCellArrayIterator.
 //
 // ****************************************************************************
 
@@ -1400,7 +1411,7 @@ avtXRayFilter::CartesianExecute(vtkDataSet *ds, int &nLinesPerDataset,
                 ids[6] = idx + 1 + nx;
                 ids[7] = idx + nx;
 
-                avtXRayFilter_GetCellPointsMacro(8); 
+                avtXRayFilter_GetCellPointsMacro(8);
 
                 double t;
                 int nInter = 0;
@@ -1435,12 +1446,17 @@ avtXRayFilter::CartesianExecute(vtkDataSet *ds, int &nLinesPerDataset,
         vtkPoints *points = ugrid->GetPoints();
 
         vtkUnsignedCharArray *cellTypes = ugrid->GetCellTypesArray();
-        vtkIdTypeArray *cellLocations = ugrid->GetCellLocationsArray();
-        vtkCellArray *cells = ugrid->GetCells();
-
-        vtkIdType *nl = cells->GetPointer();
         unsigned char *ct = cellTypes->GetPointer(0);
+
+#if LIB_VERSION_LE(VTK,8,1,0)
+        vtkIdTypeArray *cellLocations = ugrid->GetCellLocationsArray();
         vtkIdType *cl = cellLocations->GetPointer(0);
+
+        vtkCellArray *cells = ugrid->GetCells();
+        vtkIdType *nl = cells->GetPointer();
+#else
+        auto cells = vtk::TakeSmartPointer(ugrid->GetCells()->NewIterator());
+#endif
 
         for (i = 0 ; i < linesForThisPass ; i++)
         {
@@ -1480,10 +1496,14 @@ avtXRayFilter::CartesianExecute(vtkDataSet *ds, int &nLinesPerDataset,
                 int nInter = 0;
                 double inter[100];
 
+#if LIB_VERSION_LE(VTK,8,1,0)
                 vtkIdType *ids = &(nl[cl[iCell]+1]);
+#else
+                vtkIdType *ids = cells->GetCellAtId(iCell)->GetPointer(0);
+#endif
                 if (ct[iCell] == VTK_HEXAHEDRON)
                 {
-                    avtXRayFilter_GetCellPointsMacro(8); 
+                    avtXRayFilter_GetCellPointsMacro(8);
 
                     if (IntersectLineWithQuad(p0, p1, p2, p3, pt1, dir, t))
                         inter[nInter++] = t;
@@ -1500,7 +1520,7 @@ avtXRayFilter::CartesianExecute(vtkDataSet *ds, int &nLinesPerDataset,
                 }
                 else if (ct[iCell] == VTK_WEDGE)
                 {
-                    avtXRayFilter_GetCellPointsMacro(6); 
+                    avtXRayFilter_GetCellPointsMacro(6);
 
                     if (IntersectLineWithTri(p0, p1, p2, pt1, dir, t))
                         inter[nInter++] = t;
@@ -1515,7 +1535,7 @@ avtXRayFilter::CartesianExecute(vtkDataSet *ds, int &nLinesPerDataset,
                 }
                 else if (ct[iCell] == VTK_PYRAMID)
                 {
-                    avtXRayFilter_GetCellPointsMacro(5); 
+                    avtXRayFilter_GetCellPointsMacro(5);
 
                     if (IntersectLineWithQuad(p0, p1, p2, p3, pt1, dir, t))
                         inter[nInter++] = t;
@@ -1530,7 +1550,7 @@ avtXRayFilter::CartesianExecute(vtkDataSet *ds, int &nLinesPerDataset,
                 }
                 else if (ct[iCell] == VTK_TETRA)
                 {
-                    avtXRayFilter_GetCellPointsMacro(4); 
+                    avtXRayFilter_GetCellPointsMacro(4);
 
                     if (IntersectLineWithTri(p0, p1, p2, pt1, dir, t))
                         inter[nInter++] = t;
@@ -1651,7 +1671,7 @@ avtXRayFilter::CartesianExecute(vtkDataSet *ds, int &nLinesPerDataset,
                         double pcoords[3];
                         double t;
                         int subId;
-                        if (face->IntersectWithLine(pt1, pt2, 1e-10, t, x, pcoords, 
+                        if (face->IntersectWithLine(pt1, pt2, 1e-10, t, x, pcoords,
                                                     subId))
                             inter[nInter++] = t;
                     }
@@ -1666,7 +1686,7 @@ avtXRayFilter::CartesianExecute(vtkDataSet *ds, int &nLinesPerDataset,
                         double pcoords[3];
                         double t;
                         int subId;
-                        if (edge->IntersectWithLine(pt1, pt2, 1e-10, t, x, pcoords, 
+                        if (edge->IntersectWithLine(pt1, pt2, 1e-10, t, x, pcoords,
                                                     subId))
                             inter[nInter++] = t;
                     }
@@ -1703,7 +1723,7 @@ avtXRayFilter::CartesianExecute(vtkDataSet *ds, int &nLinesPerDataset,
                     // every time it occurs, it is because we have a *very*
                     // small cell.  The queries that use this filter need to
                     // call "CleanPolyData" on it anyway, so cells this small
-                    // will be "cleaned out".  So, rather than throwing an 
+                    // will be "cleaned out".  So, rather than throwing an
                     // exception, we can just continue.
                     continue;
                 }
@@ -1724,7 +1744,7 @@ avtXRayFilter::CartesianExecute(vtkDataSet *ds, int &nLinesPerDataset,
     dataArrays[0] = da1;
     dataArrays[1] = da2;
     cellData = new T*[2];
-    
+
     for (int i = 0; i < 2; i++)
     {
         vtkDataArray *da=dataArrays[i];
@@ -1773,7 +1793,7 @@ avtXRayFilter::CartesianExecute(vtkDataSet *ds, int &nLinesPerDataset,
 //  Modifications:
 //    Eric Brugger, Wed Aug 18 14:58:47 PDT 2010
 //    I corrected a bug copying the cell data.
-//  
+//
 //    Eric Brugger, Tue Dec 28 14:22:48 PST 2010
 //    I modified the filter to return a set of images instead of a collection
 //    of line segments representing the intersections of a collection of lines
@@ -1783,7 +1803,7 @@ avtXRayFilter::CartesianExecute(vtkDataSet *ds, int &nLinesPerDataset,
 //    Templatized this method, for double-precision support.
 //
 //    Matt Larsen, Mon June  21 08:03:32 PDT 2021
-//    Log the total number of degenerate intersections 
+//    Log the total number of degenerate intersections
 //
 // ****************************************************************************
 
@@ -1814,7 +1834,7 @@ avtXRayFilter::CylindricalExecute(vtkDataSet *ds, int &nLinesPerDataset,
     //
     // Loop over the lines.
     //
-    int total_errors = 0; 
+    int total_errors = 0;
     vector<int> cells_matched;
     for (i = 0 ; i < linesForThisPass ; i++)
     {
@@ -1896,12 +1916,12 @@ avtXRayFilter::CylindricalExecute(vtkDataSet *ds, int &nLinesPerDataset,
                 // every time it occurs, it is because we have a *very*
                 // small cell.  The queries that use this filter need to
                 // call "CleanPolyData" on it anyway, so cells this small
-                // will be "cleaned out".  So, rather than throwing an 
+                // will be "cleaned out".  So, rather than throwing an
                 // exception, we can just continue.
                 continue;
             }
         }
-          
+
     }
 
     debug1 << "[XRayFilter] total errors: " << total_errors << std::endl;
@@ -1984,7 +2004,7 @@ AssignToProc(int val, int linesPerProc)
 //
 // ****************************************************************************
 template <typename T>
-void 
+void
 avtXRayFilter::RedistributeLines(int nLeaves, int *nLinesPerDataset,
     vector<double> *dists, vector<int> *line_ids,
     int nComponentsPerCellArray, T ***cellData,
@@ -2020,7 +2040,7 @@ avtXRayFilter::RedistributeLines(int nLeaves, int *nLinesPerDataset,
     T **sendCellData = new T*[2];
     for (int i = 0; i < 2; i++)
         sendCellData[i] = new T[nComponentsPerCellArray*nLinesSend];
-    
+
     //
     // Fill the send buffers.
     //
@@ -2167,13 +2187,13 @@ avtXRayFilter::RedistributeLines(int nLeaves, int *nLinesPerDataset,
         //
         // Exchange the cell data.
         //
-        
+
         //
         // Note: this helper is defined at the top of this file
-        // it allows us to call the proper template double vs float 
-        // variants of this function and avoid MPI type matching 
+        // it allows us to call the proper template double vs float
+        // variants of this function and avoid MPI type matching
         // warnings.
-        // 
+        //
         VisIt_XRay_MPI_Alltoallv(sendCellData[i], sendCounts, sendOffsets,
                                  outCellData[i], recvCounts, recvOffsets,
                                  VISIT_MPI_COMM);
@@ -2270,6 +2290,9 @@ avtXRayFilter::RedistributeLines(int nLeaves, int *nLinesPerDataset,
 //  Modifications:
 //    Eric Brugger, Thu Jun  4 15:58:10 PDT 2015
 //    I added an option to enable outputting the ray bounds to a vtk file.
+// 
+//    Justin Privitera, Thu Sep  8 16:29:06 PDT 2022
+//    Fixed a bug causing the viewWidth to be calculated incorrectly.
 //
 // ****************************************************************************
 
@@ -2293,7 +2316,7 @@ avtXRayFilter::CalculateLines(void)
     double nearWidth, viewWidth, farWidth;
 
     viewHeight = parallelScale;
-    viewWidth  = (imageSize[1] / imageSize[0]) * viewHeight;
+    viewWidth  = (static_cast<float>(imageSize[0]) / static_cast<float>(imageSize[1])) * viewHeight;
     if (perspective)
     {
         double viewDist = parallelScale / tan ((viewAngle * 3.1415926535) / 360.);
@@ -2441,7 +2464,7 @@ avtXRayFilter::CheckDataSets(int nDataSets, vtkDataSet **dataSets)
 {
     int numBins;
     cellDataType = -1;
-    
+
     for (int i = 0; i < nDataSets; i++)
     {
         vtkDataArray *abs  = dataSets[i]->GetCellData()->GetArray(absVarName.c_str());
@@ -2459,7 +2482,7 @@ avtXRayFilter::CheckDataSets(int nDataSets, vtkDataSet **dataSets)
             }
             else
                 snprintf(msg,256, "Variable %s not found.", absVarName.c_str());
-            
+
             EXCEPTION1(VisItException, msg);
         }
         if (emis == NULL)
@@ -2506,7 +2529,7 @@ avtXRayFilter::CheckDataSets(int nDataSets, vtkDataSet **dataSets)
                                        "be float data.");
         }
         if (abs->GetDataType() == VTK_DOUBLE ||
-            emis->GetDataType() == VTK_DOUBLE) 
+            emis->GetDataType() == VTK_DOUBLE)
             cellDataType = VTK_DOUBLE;
         else
             cellDataType = VTK_FLOAT;
@@ -2739,21 +2762,25 @@ avtXRayFilter::IntegrateLines(int pixelOffset, int nPts, int *lineId,
 
         if (divideEmisByAbsorb)
         {
+            // begin absorbtivity-normalized integration
             for (int j = 0 ; j < numBins ; j++)
             {
                 double tmp = exp(-a[j] * segLength);
                 intensityBins[j] = intensityBins[j] * tmp + (e[j] / a[j]) * (1.0 - tmp);
                 pathBins[j] = pathBins[j] + a[j] * segLength;
             }
+            // end absorbtivity-normalized integration
         }
         else
         {
+            // begin standard integration
             for (int j = 0 ; j < numBins ; j++)
             {
                 double tmp = exp(-a[j] * segLength);
                 intensityBins[j] = intensityBins[j] * tmp + e[j] * (1.0 - tmp);
                 pathBins[j] = pathBins[j] + a[j] * segLength;
             }
+            // end standard integration
         }
     }
 
@@ -2904,10 +2931,10 @@ avtXRayFilter::CollectFragments(int root, int nFragments, int *fragmentSizes,
 
     //
     // Note: this helper is defined at the top of this file
-    // it allows us to call the proper template double vs float 
-    // variants of this function and avoid MPI type matching 
+    // it allows us to call the proper template double vs float
+    // variants of this function and avoid MPI type matching
     // warnings.
-    // 
+    //
     VisIt_XRay_MPI_Gatherv(sendBuf, sendCount,
                            recvBuf, recvCounts, displs,
                            root, VISIT_MPI_COMM);
@@ -2984,7 +3011,7 @@ avtXRayFilter::CollectFragments(int root, int nFragments, int *fragmentSizes,
 //    line_dir   The direction of the line (Cartesian)
 //    seg_1      One endpoint of the segment (Cylindrical)
 //    seg_2      The other endpoint of the segment (Cylindrical)
-//    inter      The intersections found.  Output value.  They are 
+//    inter      The intersections found.  Output value.  They are
 //                 represented distances along line_dir from line_pt.
 //
 //  Returns:       The number of intersections
@@ -2997,7 +3024,7 @@ avtXRayFilter::CollectFragments(int root, int nFragments, int *fragmentSizes,
 //    I had the routine return instead of throwing an exception if the
 //    segment had a negative R value.  Throwing an exception caused a
 //    crash in parallel.
-//    
+//
 //    Matt Larsen, Thurs May 3rd 09:00:01 PDT 2018
 //    I fixed two issues. One, if the coordinates of a mesh were nearly
 //    vertical or horizontal, floating point error resulted in misses
@@ -3009,18 +3036,18 @@ avtXRayFilter::CollectFragments(int root, int nFragments, int *fragmentSizes,
 //
 //    Matt Larsen, Mon May 7th, 15:33:01 PDT 2018
 //    Altering previous fix to work via a tolerance
-//  
+//
 //    Matt Larsen, Mon June 21st, 8:00:01 PDT 2021
-//    Further relaxing tolerence based on a use case where 
+//    Further relaxing tolerence based on a use case where
 //    nodes are slightly perturbed from nearly uniform positions.
-//    This fixes the case where the error was astronomical at the 
+//    This fixes the case where the error was astronomical at the
 //    beginning of a simulation
-//  
+//
 // ****************************************************************************
 
 int
 IntersectLineWithRevolvedSegment(const double *line_pt,
-                                 const double *line_dir, const double *seg_p1, 
+                                 const double *line_dir, const double *seg_p1,
                                  const double *seg_p2, double *inter)
 {
     //
@@ -3063,7 +3090,7 @@ IntersectLineWithRevolvedSegment(const double *line_pt,
         {
             if (seg_p1[0] != line_pt[2])
                 return 0;
-            
+
             // Solving for inequalities is tough.  In this case, we will
             // solve for equalities.  Solve for R = Rmax and R = Rmin.
             // At^2 + Bt + C = 0
@@ -3158,7 +3185,7 @@ IntersectLineWithRevolvedSegment(const double *line_pt,
         // with our line.  If they coincided, they would have the same r and
         // z values.  Since the line is in 3D, having the same r values
         // means having the same sqrt(x^2+y^2) values.
-        // 
+        //
         // Then, for the line:
         // x = Px + t*Dx
         // y = Py + t*Dy
@@ -3171,7 +3198,7 @@ IntersectLineWithRevolvedSegment(const double *line_pt,
         // Introducing K for m*Pz+b (to simplify algebra)
         // sqrt(x^2+y^2) = K + t*m*Dz
         // Substituting for x and y and squaring gives:
-        // (Px^2 + Py^2) + (2*Px*Dx + 2*Py*Dy)t + (Dx^2 + Dy^2)t^2 
+        // (Px^2 + Py^2) + (2*Px*Dx + 2*Py*Dy)t + (Dx^2 + Dy^2)t^2
         //    = K^2 + (2*K*m*Dz)*t + m^2*Dz^2*t^2
         // Combining like terms gives:
         //  At^2 + Bt + C = 0
@@ -3197,9 +3224,9 @@ IntersectLineWithRevolvedSegment(const double *line_pt,
 
         double Zmin = (seg_p1[0] < seg_p2[0] ? seg_p1[0] : seg_p2[0]);
         double Zmax = (seg_p1[0] > seg_p2[0] ? seg_p1[0] : seg_p2[0]);
-        
+
         int nInter = 0;
-        
+
         double Z1 = line_pt[2] + soln1*line_dir[2];
         double Z2 = line_pt[2] + soln2*line_dir[2];
 
@@ -3248,7 +3275,7 @@ avtXRayFilter::MergeFragments(int iBin, vtkDataArray **fragments,
     {
         outputArray = vtkFloatArray::New();
         outputArray->SetNumberOfTuples(imageSize[0]*imageSize[1]);
-        MergeFragments_Impl<avtDirectAccessor<float> >(iBin, numBins, 
+        MergeFragments_Impl<avtDirectAccessor<float> >(iBin, numBins,
             nImageFragments, imageFragmentSizes, fragments, outputArray);
     }
     else // if (cellDataType == VTK_DOUBLE)
@@ -3278,6 +3305,9 @@ avtXRayFilter::MergeFragments(int iBin, vtkDataArray **fragments,
 //    Eric Brugger, Thu May 21 12:21:25 PDT 2015
 //    I enhanced the routine to support structured as well as unstructured
 //    grids.
+//
+//    Kathleen Biagas, Thu Aug 11 2022
+//    Support VTK9: use vtkCellArrayIterator.
 //
 // ****************************************************************************
 
@@ -3311,7 +3341,7 @@ avtXRayFilter::DumpRayHexIntersections(int iProc, int iDataset,
     for (size_t i = 0; i < line_id.size(); i++)
         if (line_id[i] == strip_id)
             nCells++;
-    
+
     if (nCells <= 0)
         return;
 
@@ -3391,10 +3421,14 @@ avtXRayFilter::DumpRayHexIntersections(int iProc, int iDataset,
         vtkPoints *points = ugrid->GetPoints();
 
         vtkIdTypeArray *cellLocations = ugrid->GetCellLocationsArray();
+#if LIB_VERSION_LE(VTK,8,1,0)
         vtkCellArray *cells = ugrid->GetCells();
 
         vtkIdType *nl = cells->GetPointer();
         vtkIdType *cl = cellLocations->GetPointer(0);
+#else
+        auto cells = vtk::TakeSmartPointer(ugrid->GetCells()->NewIterator());
+#endif
 
         double p0[3], p1[3], p2[3], p3[3], p4[3], p5[3], p6[3], p7[3];
         for (size_t i = 0; i < cells_matched.size(); i++)
@@ -3402,7 +3436,11 @@ avtXRayFilter::DumpRayHexIntersections(int iProc, int iDataset,
             if (line_id[i] == strip_id)
             {
                 int iCell = cells_matched[i];
+#if LIB_VERSION_LE(VTK,8,1,0)
                 vtkIdType *ids = &(nl[cl[iCell]+1]);
+#else
+                vtkIdType *ids = cells->GetCellAtId(iCell)->GetPointer(0);
+#endif
                 avtXRayFilter_GetCellPointsMacro(8);
                 fprintf(f, "%g %g %g\n", p0[0], p0[1], p0[2]);
                 fprintf(f, "%g %g %g\n", p1[0], p1[1], p1[2]);

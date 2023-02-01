@@ -23,7 +23,7 @@ VISITPY_API PyObject *     PyAxes3D_Wrap(const Axes3D *attr);
 void VISITPY_API           PyAxes3D_SetParent(PyObject *obj, PyObject *parent);
 void VISITPY_API           PyAxes3D_SetDefaults(const Axes3D *atts);
 std::string VISITPY_API    PyAxes3D_GetLogString();
-std::string VISITPY_API    PyAxes3D_ToString(const Axes3D *, const char *);
+std::string VISITPY_API    PyAxes3D_ToString(const Axes3D *, const char *, const bool=false);
 VISITPY_API PyObject *     PyAxes3D_getattr(PyObject *self, char *name);
 int VISITPY_API            PyAxes3D_setattr(PyObject *self, char *name, PyObject *args);
 VISITPY_API extern PyMethodDef PyAxes3D_methods[AXES3D_NMETH];

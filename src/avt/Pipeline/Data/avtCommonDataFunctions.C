@@ -456,6 +456,9 @@ CGetNumberOfOriginalZones(avtDataRepresentation &data, void *arg, bool &)
 //    Kathleen Biagas, Fri Aug 28 07:46:40 PDT 2020
 //    Use vtkGeometryFilter, which handles higher-order elements.
 //
+//    Kathleen Biagas, Wed Apr 13 16:25:44 PDT 2022
+//    Don't use vtkGeometryFilter if input has no cells.
+//
 // ****************************************************************************
 
 void
@@ -467,14 +470,46 @@ CConvertUnstructuredGridToPolyData(avtDataRepresentation &data, void *dataAndKey
     }
 
     vtkDataSet *ds = data.GetDataVTK();
-    if (ds->GetDataObjectType() == VTK_UNSTRUCTURED_GRID)
+    if (ds->GetDataObjectType() == VTK_UNSTRUCTURED_GRID &&
+        ds->GetNumberOfCells() > 0)
     {
+#if LIB_VERSION_GE(VTK,9,1,0)
+        // KSB 7-20-22 look for singleton PointData arrays (constant-expressions).
+        // With VTK-9.1, vtkGeometryFilter will convert these single-tuple PD arrays
+        // into nPoints-tuples PD arrays (via CopyAllocate and CopyData vs old
+        // behavior of PassData for PointData).
+        // Easiest fix at the moment seems to be to remove the singletons before using
+        // vtkGeometryFilter and replace them aftewards.
+
+        std::vector<vtkDataArray*> singletons;
+        vtkPointData *pd = ds->GetPointData();
+        vtkIdType nPts = ds->GetNumberOfPoints();
+        if (nPts > 1)
+        {
+            for (int i = 0; i < pd->GetNumberOfArrays(); ++i)
+            {
+                vtkDataArray *array = pd->GetArray(i);
+                if (array->GetNumberOfTuples() == 1)
+                {
+                    // ensure the array isn't deleted when removed from pd
+                    array->Register(NULL);
+                    singletons.push_back(array);
+                    pd->RemoveArray(i);
+                }
+            }
+        }
+#endif
         vtkNew<vtkGeometryFilter> geoFilter;
         geoFilter->SetInputData(ds);
         geoFilter->Update();
         vtkPolyData *out_pd = geoFilter->GetOutput();
         out_pd->Register(NULL);
-        
+
+#if LIB_VERSION_GE(VTK,9,1,0)
+        for(size_t i = 0; i < singletons.size(); ++i)
+            out_pd->GetPointData()->AddArray(singletons[i]); 
+
+#endif
         avtDataRepresentation new_data(out_pd, data.GetDomain(), data.GetLabel());
         data = new_data;
     }
@@ -3726,3 +3761,168 @@ CCalculateHistogram(avtDataRepresentation &data, void *args, bool &errOccurred)
     }
 }
 
+
+// ****************************************************************************
+//  Method: CGetTopologicalDimension
+//
+//  Purpose:
+//      Calculates topological dimension.
+//
+//  Arguments:
+//    data      The data from which to calculate topological dimension.
+//    info      Contains the reported topo dim and a place to store the
+//              actual topo dim.
+//    success   Indicates success or failure of this operation.
+//
+//  Notes:
+//      This method is designed to be used as the function parameter of
+//      avtDataTree::Iterate.
+//
+//  Programmer: Kathleen Biagas
+//  Creation:   April 5, 2022
+//
+//  Modifications:
+//
+//    Mark C. Miller, Tue Jun 14 11:36:07 PDT 2022
+//    Add logic for structured grids embedded in higher spatial dimensions.
+// ****************************************************************************
+
+void 
+CGetTopologicalDim(avtDataRepresentation &data, void *info, bool &success)
+{
+    // for mixed topology data, this will report the largest
+    if (data.Valid())
+    {
+        typedef struct {const int *repDim; int *dim;} tmpstruct;
+        const int *reportedDim = ((tmpstruct*)info)->repDim;
+        int *newDim = ((tmpstruct*)info)->dim;
+
+        vtkDataSet *ds = data.GetDataVTK();
+
+        if (ds->GetDataObjectType() == VTK_UNSTRUCTURED_GRID)
+        {
+            int localDim = -1;
+            vtkUnstructuredGrid *ug = vtkUnstructuredGrid::SafeDownCast(ds);
+            if (ug->GetNumberOfPoints() > 0)
+            {
+                if (ug->GetNumberOfCells() == 0)
+                {
+                    // assume point mesh
+                    localDim = 0;
+                }
+                else
+                {
+                    vtkCell *cell = ug->GetCell(0);
+                    localDim = cell->GetCellDimension();
+                    // 3 is max, so stop if we reach it
+                    for(vtkIdType i = 1; i < ug->GetNumberOfCells() && localDim < 3; ++i)
+                    {
+                        cell = ug->GetCell(i);
+                        if(cell->GetCellDimension() > localDim)
+                            localDim = cell->GetCellDimension();
+                    }
+                }
+                if(success)
+                {
+                    // merge previous results
+                    if(localDim > *newDim)
+                        *newDim = localDim;
+                }
+                else
+                {
+                    *newDim = localDim;
+                }
+                success = true;
+            }
+            else
+            {
+                success |= false;
+            }
+        }
+        else if (ds->GetDataObjectType() == VTK_STRUCTURED_GRID)
+        {
+            int localDim = -1;
+            vtkStructuredGrid *sg = vtkStructuredGrid::SafeDownCast(ds);
+            int *dims = sg->GetDimensions();
+            if (dims[0] > 1 && dims[1] > 1 && dims[2] > 1)
+            {
+                localDim = 3; // All 3 dims > 1 node thick
+            }
+            else if ((dims[0] == 1 && dims[1] > 1 && dims[2] > 1) ||
+                     (dims[1] == 1 && dims[0] > 1 && dims[2] > 1) ||
+                     (dims[2] == 1 && dims[0] > 1 && dims[1] > 1))
+            {
+                localDim = 2; // One dim is just 1 node thick
+            }
+            else if ((dims[0] == 1 && dims[1] == 1 && dims[2] > 1) ||
+                     (dims[0] == 1 && dims[2] == 1 && dims[1] > 1) ||
+                     (dims[1] == 1 && dims[2] == 1 && dims[0] > 1))
+            {
+                localDim = 1; // Two dims are just one node thick
+            }
+            else
+            {
+                success |= false;
+            }
+            if(localDim != -1)
+            {
+                if(success)
+                {
+                    // merge previous results
+                    if(localDim > *newDim)
+                        *newDim = localDim;
+                }
+                else
+                {
+                    *newDim = localDim;
+                }
+                success = true;
+            }
+        }
+        else if (ds->GetDataObjectType() == VTK_POLY_DATA)
+        {
+            vtkPolyData *pd = vtkPolyData::SafeDownCast(ds);
+            int localDim = -1;
+            if(pd->GetNumberOfPolys() > 0 || pd->GetNumberOfStrips() > 0)
+            {
+                localDim = 2;
+            }
+            else if(pd->GetNumberOfLines() > 0)
+            {
+                localDim = 1;
+            }
+            else if(pd->GetNumberOfVerts() > 0)
+            {
+                localDim = 0;
+            }
+            else
+            {
+                success |= false;
+            }
+            if(localDim != -1)
+            {
+                if(success)
+                {
+                    // merge previous results
+                    if(localDim > *newDim)
+                        *newDim = localDim;
+                }
+                else
+                {
+                    *newDim = localDim;
+                }
+                success = true;
+            }
+        }
+        else
+        {
+            // assume reported dim is correct
+            success = true;
+            *newDim = *reportedDim;
+        }
+    }
+    else
+    {
+        success = false;
+    }
+}

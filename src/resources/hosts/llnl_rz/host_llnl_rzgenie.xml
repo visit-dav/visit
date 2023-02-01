@@ -45,7 +45,7 @@
         <Field name="parallel" type="bool">true</Field>
     </Object>
     <Object name="LaunchProfile">
-        <Field name="profileName" type="string">parallel mxterm</Field>
+        <Field name="profileName" type="string">parallel sxterm</Field>
         <Field name="timeout" type="int">480</Field>
         <Field name="numProcessors" type="int">36</Field>
         <Field name="numNodesSet" type="bool">false</Field>

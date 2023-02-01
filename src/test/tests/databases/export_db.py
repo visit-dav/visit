@@ -505,7 +505,7 @@ def test_bov():
     ExportDatabase(e, opts)
     time.sleep(1)
     TestValueEQ("test_bov_uncompressed.bov exists", os.path.isfile("test_bov_uncompressed.bov"), True)
-    TestValueEQ("test_bov_uncompressed exists", os.path.isfile("test_bov_uncompressed"), True)
+    TestValueEQ("test_bov_uncompressed.bof exists", os.path.isfile("test_bov_uncompressed.bof"), True)
     ReplaceDatabase("test_bov_uncompressed.bov")
     Test("export_db_5_01")
 
@@ -517,15 +517,11 @@ def test_bov():
     ExportDatabase(e, opts)
     time.sleep(1)
     TestValueEQ("test_bov_gzip.bov exists", os.path.isfile("test_bov_gzip.bov"), True)
-    TestValueEQ("test_bov_gzip.gz exists", os.path.isfile("test_bov_gzip.gz"), True)
-    with gzip.open("test_bov_gzip.gz", "rb") as f_in:
-        with open("test_bov_gzip", "wb") as f_out:
-            shutil.copyfileobj(f_in, f_out);
+    TestValueEQ("test_bov_gzip.bof.gz exists", os.path.isfile("test_bov_gzip.bof.gz"), True)
     ReplaceDatabase("test_bov_gzip.bov")
     Test("export_db_5_02")
 
     DeleteAllPlots()
-
 
 def test_vtk_tetrahedralize():
     dbs_noext = ["ucd3d", "specmix_ucd"]

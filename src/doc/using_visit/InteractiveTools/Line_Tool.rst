@@ -46,9 +46,8 @@ example of the line tool in 3D is shown in :numref:`Figure %s <line2>`.
 
    Line tool in 3D
 
-The line tool can be used to set the attributes for certain VisIt_ operators
-such as VisIt_'s :ref:`Lineout operator <Lineout operator>`. If a plot has a Lineout operator 
-applied to it, the line tool is initialized with that operator's endpoints 
-when it is first enabled. As the line tool is repositioned and reoriented, the 
-line tool's line endpoints are given to the Lineout operator and and Curve plots
-that are fed by the Lineout operator are recalculated.
+The line tool can be used to set the attributes for certain VisIt_ operators such as VisIt_'s :ref:`Lineout operator <Lineout operator>`.
+If a plot has a Lineout operator applied to it, and the Lineout operator's *interactive* option is turned on (see Lineout's :ref:`LineoutInteractivemode` for more details), the line tool is initialized with that operator's endpoints when it is first enabled.
+(*Note:  Due to a current bug, the tool must be activated, deactivated, then activated a second time in order to be properly initialized with the Lineout's endpoint values.*)
+As the line tool is repositioned and reoriented, the line tool's line endpoints are given to the Lineout operator and the Curve plots that are fed by the Lineout operator are recalculated.
+

@@ -23,6 +23,9 @@
 #    Added call(s) to DrawPlots() b/c of changes to the default plot state
 #    behavior when an operator is added.
 #
+#    Kathleen Biagas, Mon Nov 28, 2022
+#    Replace obsolete Label text attributes with new versions.
+#
 # ----------------------------------------------------------------------------
 
 
@@ -79,7 +82,7 @@ SetOperatorOptions(IndexSelectAtts)
 
 AddPlot("Label", "charge")
 LabelAtts = LabelAttributes()
-LabelAtts.textHeight1 = 0.05
+LabelAtts.textFont1.scale = 7
 LabelAtts.restrictNumberOfLabels = 0
 SetPlotOptions(LabelAtts)
 DrawPlots()

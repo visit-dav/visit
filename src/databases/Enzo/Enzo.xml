@@ -4,19 +4,13 @@
       *.hierarchy
       *.boundary
     </FilePatterns>
-    <CXXFLAGS> 
-        ${HDF4_INCLUDE_DIR}
-        ${HDF5_INCLUDE_DIR} 
+    <CXXFLAGS>
+        ${HDF5_INCLUDE_DIR}
     </CXXFLAGS>
-    <LDFLAGS> 
-        ${HDF4_LIBRARY_DIR}
-        ${HDF5_LIBRARY_DIR} 
+    <LDFLAGS>
+        ${HDF5_LIBRARY_DIR}
     </LDFLAGS>
-    <LIBS>     
-        ${HDF4_LIB}  
-        ${HDF5_LIB}  
+    <LIBS>
+        ${HDF5_LIB}
     </LIBS>
-    <WIN32DEFINES>
-      ${HDF4_WIN32_DEFINES}
-    </WIN32DEFINES>
   </Plugin>

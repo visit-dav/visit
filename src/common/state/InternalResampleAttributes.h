@@ -73,6 +73,7 @@ public:
     void SetArbitratorLessThan(bool arbitratorLessThan_);
     void SetArbitratorVarName(const std::string &arbitratorVarName_);
     void SetDistributedResample(bool distributedResample_);
+    void SetPerRankResample(bool perRankResample_);
 
     // Property getting methods
     bool              GetUseTargetVal() const;
@@ -94,6 +95,7 @@ public:
     const std::string &GetArbitratorVarName() const;
           std::string &GetArbitratorVarName();
     bool              GetDistributedResample() const;
+    bool              GetPerRankResample() const;
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -127,6 +129,7 @@ public:
         ID_arbitratorLessThan,
         ID_arbitratorVarName,
         ID_distributedResample,
+        ID_perRankResample,
         ID__LAST
     };
 
@@ -149,11 +152,12 @@ private:
     bool        arbitratorLessThan;
     std::string arbitratorVarName;
     bool        distributedResample;
+    bool        perRankResample;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define INTERNALRESAMPLEATTRIBUTES_TMFS "biiiibfbddddddbbsb"
+#define INTERNALRESAMPLEATTRIBUTES_TMFS "biiiibfbddddddbbsbb"
 
 #endif

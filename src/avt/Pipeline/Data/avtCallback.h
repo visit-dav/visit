@@ -10,12 +10,16 @@
 #define AVT_CALLBACK_H
 #include <pipeline_exports.h>
 
-
 #include <string>
 
 #include <avtDataObject.h>
 #include <avtDatabase.h>
+
 #include <GlobalAttributes.h>
+#include <WindowAttributes.h>
+#include <LightList.h>
+
+#include <string>
 
 class    AttributeSubject;
 
@@ -24,10 +28,6 @@ typedef   void  (*WarningCallback)(void *, const char *);
 typedef   ref_ptr<avtDatabase> (*GetDatabaseCallback)(void *,
                                        const std::string &, int, const char *);
 typedef   void  (*ResetTimeoutCallback)(void *, int);
-
-
-#include <WindowAttributes.h>
-#include <LightList.h>
 
 
 // ****************************************************************************
@@ -77,6 +77,11 @@ typedef   void  (*ResetTimeoutCallback)(void *, int);
 //    Alok Hota, Tue Feb 23 19:10:32 PST 2016
 //    Add support for OSPRay.
 //
+//    Kathleen Biagas, Wed Aug 17, 2022
+//    Incorporate ARSanderson's OSPRAY 2.8.0 work for VTK 9:
+//    HAVE_OSPRAY is defined instead of VISIT_OSPRAY.
+//    Add Set/GetUseOSPRay.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtCallback
@@ -85,6 +90,7 @@ class PIPELINE_API avtCallback
     static void                  RegisterWarningCallback(WarningCallback,
                                                          void *);
     static bool                  IssueWarning(const char *);
+    static bool                  IssueWarning(const std::string &);
 
     static void                  SetCurrentWindowAtts(const WindowAttributes&);
     static const WindowAttributes &
@@ -105,13 +111,19 @@ class PIPELINE_API avtCallback
                                      { return nowinInteractionMode; }
 
     static void                  SetSoftwareRendering(bool b)
-                                     { swRendering = b; };
+                                     { swRendering = b; }
     static bool                  GetSoftwareRendering(void)
-                                     { return swRendering; };
+                                     { return swRendering; }
+
 #ifdef VISIT_OSPRAY
     static void                  SetOSPRayMode(bool b)
                                      { useOSPRay = b; }
     static bool                  UseOSPRay(void)
+                                     { return useOSPRay; }
+#elif defined(HAVE_OSPRAY)
+    static void                  SetUseOSPRay(bool b)
+                                     { useOSPRay = b; }
+    static bool                  GetUseOSPRay(void)
                                      { return useOSPRay; }
 #endif
     static void                  RegisterGetDatabaseCallback(
@@ -120,26 +132,26 @@ class PIPELINE_API avtCallback
                                              const char *);
 
     static void                  ClearRenderingExceptions(void)
-                                       { haveRenderingException = false; };
+                                       { haveRenderingException = false; }
     static void                  SetRenderingException(const std::string &s)
                                        { haveRenderingException = true;
-                                         renderingExceptionMessage = s; };
+                                         renderingExceptionMessage = s; }
     static std::string           GetRenderingException(void)
                                        { return (haveRenderingException
-                                         ? renderingExceptionMessage : ""); };
- 
+                                         ? renderingExceptionMessage : ""); }
+
     static void                  RegisterResetTimeoutCallback(
                                            ResetTimeoutCallback, void *);
     static void                  ResetTimeout(int);
 
-    static void                  EnableSafeMode(void) { safeMode = true; };
-    static bool                  GetSafeMode(void) { return safeMode; };
+    static void                  EnableSafeMode(void) { safeMode = true; }
+    static bool                  GetSafeMode(void) { return safeMode; }
 
     // This method is used to pass a string to database readers.
-    static std::string           GetAuxSessionKey(void) 
-                                                  { return auxSessionKey; };
+    static std::string           GetAuxSessionKey(void)
+                                                  { return auxSessionKey; }
     static void                  SetAuxSessionKey(const std::string &k)
-                                                  { auxSessionKey = k; };
+                                                  { auxSessionKey = k; }
 
     static void                  SetBackendType(GlobalAttributes::BackendType type);
     static GlobalAttributes::BackendType GetBackendType();
@@ -154,7 +166,8 @@ class PIPELINE_API avtCallback
     static bool                  nowinMode;
     static bool                  nowinInteractionMode;
     static bool                  swRendering;
-#ifdef VISIT_OSPRAY
+
+#if defined(VISIT_OSPRAY) || defined(HAVE_OSPRAY)
     static bool                  useOSPRay;
 #endif
     static bool                  safeMode;

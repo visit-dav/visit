@@ -1504,6 +1504,38 @@ class CudaMemcheck(Debugger):
         return launcherargs + self.Executable() + visitargs
 
 ###############################################################################
+# Class: NsightSystems
+#
+# Purpose: Launch a VisIt component under Nsight Systems. Anaylzes component
+#          performance system-wide.
+#
+# Programmer: Kevin Griffin
+# Date:       Fri Sep  9 13:56:16 PDT 2022
+#
+# Modifications:
+#
+###############################################################################
+
+class NsightSystems(Debugger):
+    def __init__(self, launcher):
+        super(NsightSystems, self).__init__(launcher)
+
+    def Executable(self):
+        return ["nsys"]
+
+    def CreateCommand(self, args):
+        launcherargs, visitargs = self.SeparateArguments(args)
+        nsysargs = self.DebuggerArguments()
+
+        if len(nsysargs) == 0:
+            nsysargs = ["profile", "--stats=true", "--gpu-metrics-device=all"]
+
+        if len(launcherargs) > 0:
+            return launcherargs + self.Executable() + nsysargs + visitargs
+        else:
+            return self.Executable() + nsysargs + visitargs
+
+###############################################################################
 # Class: ValgrindDebugger
 #
 # Purpose:    Launch a VisIt component under valgrind.
@@ -3249,6 +3281,9 @@ VisIt does not recognize your terminal application so it will ignore the -newcon
     #   Kevin Griffin, Mon Mar 21 16:34:52 PDT 2016 
     #   Added cuda-memcheck.
     #
+    #   Kevin Griffin, Fri Sep  9 13:56:16 PDT 2022
+    #   Added nsys.
+    #
     ############################################################################
     def Debuggers(self):
         return ["gdb",
@@ -3263,7 +3298,8 @@ VisIt does not recognize your terminal application so it will ignore the -newcon
                 "nvprof",
                 "cuda-memcheck",
                 "vtune",
-                "instruments"]
+                "instruments",
+                "nsys"]
 
     ############################################################################
     # Method: DebuggerFactory
@@ -3288,6 +3324,9 @@ VisIt does not recognize your terminal application so it will ignore the -newcon
     #
     #   Kevin Griffin Mon Mar 21 16:34:52 PDT 2016
     #   Added cuda-memcheck.
+    #
+    #   Kevin Griffin, Fri Sep  9 13:56:16 PDT 2022
+    #   Added nsys.
     #
     ############################################################################
 
@@ -3318,6 +3357,8 @@ VisIt does not recognize your terminal application so it will ignore the -newcon
             return VTuneProfiler(self)
         elif debugger == "instruments":
             return InstrumentsProfiler(self)
+        elif debugger == "nsys":
+            return NsightSystems(self)
         # Return a debugger that does not do anything.
         return Debugger(self)
 

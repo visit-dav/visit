@@ -9,9 +9,7 @@
 #
 #****************************************************************************/
 
-# Use the CFITSIO_DIR hint from the config-site .cmake file 
+# Use the CFITSIO_DIR hint from the config-site .cmake file
 
-INCLUDE(${VISIT_SOURCE_DIR}/CMake/SetUpThirdParty.cmake)
-
-SET_UP_THIRD_PARTY(CFITSIO lib include cfitsio)
+SET_UP_THIRD_PARTY(CFITSIO LIBS cfitsio)
 

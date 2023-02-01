@@ -11,6 +11,14 @@ Minor releases are the next most common type of release and may occur
 once or twice a year. Major releases happen very infrequently, with as much
 as 10 years passing between major releases.
 
+Updating copyright notice dates
+-------------------------------
+
+At the beginning of every calendar year, the copyright notice needs to be updated.
+There are only a handful of files that still contain copyright dates, including "/src/LICENSE".
+There is a script called "update_copyright" in "/src/tools/dev/scripts" that can be used but may need updating if copyright dates were added to any new file types.
+This should be kept to a minimum.
+
 Preparing for a Patch Release
 -----------------------------
 
@@ -20,6 +28,9 @@ updating a few files. These consist of ::
     VERSION
     INSTALL_NOTES
     gui/Splashscreen.C
+
+A ticket should be created and assigned so that the release can be tested for any obsolete code that should be removed.
+Testing for obsolete code involves configuring with the CMake var **VISIT_REMOVE_OBSOLETE_CODE** turned on, then compiling and looking for compile errors of the form:  *This code is obsolete in this version. Please remove it.*
 
 Preparing for a Minor Release
 -----------------------------
@@ -211,7 +222,7 @@ Additional macOS Checks
 5. Verify OSpray is installed (look at the 'Advanced' tab under Options->Rendering...).
 6. Verify that the xmledit tool works from the bundle (/Application/VisIt.app/Contents/Resources/bin/xmledit).
 7. Verify that the DMG has been signed with a Developer ID and works properly.
-8. Try descending into ``Downloads`` and ``Documents`` from an instance launched from the Terminal.
+8. Try descending into ``Downloads``, ``Documents`` and ``Desktop`` from an instance launched by double-clicking the icon and from an instance launched from the Terminal command line.
 
 Preparing for a Major Release
 -----------------------------

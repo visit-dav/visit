@@ -73,11 +73,6 @@ function bv_zlib_ensure
     fi
 }
 
-function bv_zlib_dry_run
-{
-    echo "Dry run option not set for zlib."
-}
-
 # *************************************************************************** #
 #                            Function 8, build_zlib
 #

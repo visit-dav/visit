@@ -36,7 +36,7 @@ struct SurfCompPrepAttributesObject
 //
 static PyObject *NewSurfCompPrepAttributes(int);
 std::string
-PySurfCompPrepAttributes_ToString(const SurfCompPrepAttributes *atts, const char *prefix)
+PySurfCompPrepAttributes_ToString(const SurfCompPrepAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -1541,7 +1541,7 @@ static int
 SurfCompPrepAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     SurfCompPrepAttributesObject *obj = (SurfCompPrepAttributesObject *)v;
-    fprintf(fp, "%s", PySurfCompPrepAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PySurfCompPrepAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -1549,7 +1549,7 @@ PyObject *
 SurfCompPrepAttributes_str(PyObject *v)
 {
     SurfCompPrepAttributesObject *obj = (SurfCompPrepAttributesObject *)v;
-    return PyString_FromString(PySurfCompPrepAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PySurfCompPrepAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -1701,7 +1701,7 @@ PySurfCompPrepAttributes_GetLogString()
 {
     std::string s("SurfCompPrepAtts = SurfCompPrepAttributes()\n");
     if(currentAtts != 0)
-        s += PySurfCompPrepAttributes_ToString(currentAtts, "SurfCompPrepAtts.");
+        s += PySurfCompPrepAttributes_ToString(currentAtts, "SurfCompPrepAtts.", true);
     return s;
 }
 
@@ -1714,7 +1714,7 @@ PySurfCompPrepAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("SurfCompPrepAtts = SurfCompPrepAttributes()\n");
-        s += PySurfCompPrepAttributes_ToString(currentAtts, "SurfCompPrepAtts.");
+        s += PySurfCompPrepAttributes_ToString(currentAtts, "SurfCompPrepAtts.", true);
         cb(s);
     }
 }

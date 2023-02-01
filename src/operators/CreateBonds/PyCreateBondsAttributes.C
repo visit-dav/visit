@@ -36,7 +36,7 @@ struct CreateBondsAttributesObject
 //
 static PyObject *NewCreateBondsAttributes(int);
 std::string
-PyCreateBondsAttributes_ToString(const CreateBondsAttributes *atts, const char *prefix)
+PyCreateBondsAttributes_ToString(const CreateBondsAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -1294,7 +1294,7 @@ static int
 CreateBondsAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     CreateBondsAttributesObject *obj = (CreateBondsAttributesObject *)v;
-    fprintf(fp, "%s", PyCreateBondsAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyCreateBondsAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -1302,7 +1302,7 @@ PyObject *
 CreateBondsAttributes_str(PyObject *v)
 {
     CreateBondsAttributesObject *obj = (CreateBondsAttributesObject *)v;
-    return PyString_FromString(PyCreateBondsAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyCreateBondsAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -1454,7 +1454,7 @@ PyCreateBondsAttributes_GetLogString()
 {
     std::string s("CreateBondsAtts = CreateBondsAttributes()\n");
     if(currentAtts != 0)
-        s += PyCreateBondsAttributes_ToString(currentAtts, "CreateBondsAtts.");
+        s += PyCreateBondsAttributes_ToString(currentAtts, "CreateBondsAtts.", true);
     return s;
 }
 
@@ -1467,7 +1467,7 @@ PyCreateBondsAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("CreateBondsAtts = CreateBondsAttributes()\n");
-        s += PyCreateBondsAttributes_ToString(currentAtts, "CreateBondsAtts.");
+        s += PyCreateBondsAttributes_ToString(currentAtts, "CreateBondsAtts.", true);
         cb(s);
     }
 }

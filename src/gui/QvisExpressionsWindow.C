@@ -167,6 +167,17 @@
 //    Chris Laganella, Fri Feb  4 19:18:01 EST 2022
 //    Added logical_nodeid, logial_zoneid, node_domain, zone_domain,
 //    and zone_centers under the Mesh menu
+// 
+//    Justin Privitera, Fri 04 Mar 2022 02:03:33 PM PST
+//    Moved curl, divergence, gradient exprs, and laplacian
+//    from misc. submenu to vector submenu.
+// 
+//    Justin Privitera, Wed Mar 30 12:50:59 PDT 2022
+//    Added "ghost_zoneid" expression under mesh submenu.
+//
+//    Kathleen Biagas, Wed Jun 15 2022
+//    Added crack_width to misc submenu.
+//
 // ****************************************************************************
 
 struct ExprNameList
@@ -261,6 +272,7 @@ const char *expr_trig[] = {
     "acos",
     "asin",
     "atan",
+    "atan2",
     "cos",
     "cosh",
     "deg2rad",
@@ -277,8 +289,14 @@ const char *expr_vector[] = {
     "color4",
     "colorlookup",
     "cross",
+    "curl",
+    "divergence",
     "dot",
+    "gradient",
     "hsvcolor",
+    "ij_gradient",
+    "ijk_gradient",
+    "Laplacian",
     "magnitude",
     "normalize",
     NULL
@@ -325,6 +343,7 @@ const char *expr_mesh[] = {
     "cylindrical_theta",
     "external_cell",
     "external_node",
+    "ghost_zoneid",
     "global_nodeid",
     "global_zoneid",
     "logical_nodeid",
@@ -352,20 +371,15 @@ const char *expr_misc[] = {
     "bin",
     "cell_constant",
     "conn_components",
-    "curl",
+    "crack_width",
     "curve_domain",
     "curve_integrate",
     "curve_swapxy",
     "cycle",
-    "divergence",
     "enumerate",
     "gauss_curvature",
-    "gradient",
-    "ij_gradient",
-    "ijk_gradient",
     "isnan",
     "lambda2",
-    "Laplacian",
     "map",
     "mean_curvature",
     "nodal_constant",
@@ -1652,12 +1666,14 @@ QvisExpressionsWindow::UpdateStandardExpressionEditor(const QString &expr_def)
 //    Removed angle brackets from constantvalue field 
 //    in all 4 constant functions.
 //
+//    Kathleen Biagas, Wed Jun 15 2022
+//    Added crack_width.
+//
 // ****************************************************************************
 
 QString
 QvisExpressionsWindow::ExpandFunction(const QString &func_name)
 {
-
     QString res;
     bool doParens = (func_name.length() >= 2);
 
@@ -1846,6 +1862,11 @@ QvisExpressionsWindow::ExpandFunction(const QString &func_name)
     else if (func_name == "divide")
     {
         res += QString("(<val_numerator>, <val_denominator>, [<div_by_zero_value>, <tolerance>])");
+        doParens = false;
+    }
+    else if (func_name == "crack_width")
+    {
+        res += QString("(crack_number, <crack1_dir>, <crack2_dir>, <crack3_dir>, <strain_tensor>, volume2(<mesh_name>))");
         doParens = false;
     }
 

@@ -36,7 +36,7 @@ struct ContextAttributesObject
 //
 static PyObject *NewContextAttributes(int);
 std::string
-PyContextAttributes_ToString(const ContextAttributes *atts, const char *prefix)
+PyContextAttributes_ToString(const ContextAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -584,7 +584,7 @@ static int
 ContextAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     ContextAttributesObject *obj = (ContextAttributesObject *)v;
-    fprintf(fp, "%s", PyContextAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyContextAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -592,7 +592,7 @@ PyObject *
 ContextAttributes_str(PyObject *v)
 {
     ContextAttributesObject *obj = (ContextAttributesObject *)v;
-    return PyString_FromString(PyContextAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyContextAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -744,7 +744,7 @@ PyContextAttributes_GetLogString()
 {
     std::string s("ContextAtts = ContextAttributes()\n");
     if(currentAtts != 0)
-        s += PyContextAttributes_ToString(currentAtts, "ContextAtts.");
+        s += PyContextAttributes_ToString(currentAtts, "ContextAtts.", true);
     return s;
 }
 
@@ -757,7 +757,7 @@ PyContextAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("ContextAtts = ContextAttributes()\n");
-        s += PyContextAttributes_ToString(currentAtts, "ContextAtts.");
+        s += PyContextAttributes_ToString(currentAtts, "ContextAtts.", true);
         cb(s);
     }
 }

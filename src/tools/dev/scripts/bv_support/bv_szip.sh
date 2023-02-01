@@ -66,13 +66,6 @@ function bv_szip_ensure
     fi
 }
 
-function bv_szip_dry_run
-{
-    if [[ "$DO_SZIP" == "yes" ]] ; then
-        echo "Dry run option not set for szip."
-    fi
-}
-
 # *************************************************************************** #
 #                          Function 8.0, build_szip                           #
 # *************************************************************************** #

@@ -79,13 +79,6 @@ function bv_pyqt_ensure
     info "nothing to ensure for PyQt"
 }
 
-function bv_pyqt_dry_run
-{
-    if [[ "$DO_PYQT" == "yes" ]] ; then
-        echo "Dry run option not set for PyQt."
-    fi
-}
-
 # ***************************************************************************
 #                         Function 8.22, build_PYQT
 #

@@ -237,6 +237,9 @@
 #    Alister Maguire, Fri Jul 16 07:27:44 PDT 2021
 #    Added a test for Picking an expression variable.
 #
+#    Kathleen Biagas, Wed Feb 16 09:15:45 PST 2022
+#    Replace use of meshatts 'foregroundFlag' with meshColorSource.
+#
 # ----------------------------------------------------------------------------
 from __future__ import print_function
 
@@ -733,7 +736,7 @@ def PickFilledBoundary():
     AddPlot("Mesh", "mesh1")
     m = MeshAttributes()
     m.meshColor = (255, 255, 0, 255)
-    m.foregroundFlag = 0
+    m.meshColorSource = m.MeshCustom
     m.lineWidth = 2
     SetPlotOptions(m)
     AddOperator("OnionPeel", 0)
@@ -1945,7 +1948,7 @@ def PickPointMeshes():
     AddPlot("Mesh", "mesh1")
     m = MeshAttributes()
     m.meshColor = (255, 0, 255, 255)
-    m.foregroundFlag = 0
+    m.meshColorSource = m.MeshCustom
     m.pointSize = 0.05
     m.pointType = m.Box
     SetPlotOptions(m)

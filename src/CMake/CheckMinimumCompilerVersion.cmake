@@ -10,10 +10,10 @@
 
 
 #-----------------------------------------------------------------------------
-# Minimum compiler version check: GCC >= 6.0
+# Minimum compiler version check: GCC >= 7.3
 if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND
-    CMAKE_CXX_COMPILER_VERSION VERSION_LESS 6.0)
-  message(FATAL_ERROR "GCC 6.0 or later is required.")
+    CMAKE_CXX_COMPILER_VERSION VERSION_LESS 7.3)
+  message(FATAL_ERROR "GCC 7.3 or later is required.")
 endif ()
 
 #-----------------------------------------------------------------------------

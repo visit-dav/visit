@@ -129,13 +129,16 @@ any of those operations, add a second Transform operator to your plots.
   Supported coordinate systems
 
 
-Linear transforms 
-"""""""""""""""""
+Linear (Affine) transforms 
+""""""""""""""""""""""""""
 
-Linear transforms can be specified via a 4x4 matrix as shown in 
-:numref:`Figure %s<transformwindow3>`.  Vectors will be transformed by default,
-uncheck the **transform vectors** checkbox if this is not desired.  The inverse 
-transform can be applied by selecting **Invert linear transform**.
+Linear, or Affine, transforms can be specified via a 4x4 matrix as shown in :numref:`Figure %s<transformwindow3>`.
+This represents a class of operations often used for coordinate system transformations known as `spatial transformation matrices <http://www.massmind.org/Techref/method/math/spatial-transformations.htm>`_.
+Why is the matrix 4x4 instead of 3x3?
+Typically, the 4th row of the matrix is left unchanged but the 4th column permits the inclusion of *translation* in the same linear matrix operator used to support other things like rotation and scaling.
+
+Vectors will be transformed by default, uncheck the **transform vectors** checkbox if this is not desired.
+The inverse transform can be applied by selecting **Invert linear transform**.
 
 .. _transformwindow3:
 

@@ -85,13 +85,6 @@ function bv_openexr_ensure
     fi
 }
 
-function bv_openexr_dry_run
-{
-    if [[ "$DO_OPENEXR" == "yes" ]] ; then
-        echo "Dry run option not set for OpenEXR."
-    fi
-}
-
 # ***************************************************************************
 # build_ilmbase
 #

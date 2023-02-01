@@ -9,13 +9,11 @@
 #
 #****************************************************************************/
 
-# Use the H5PART_DIR hint from the config-site .cmake file 
-
-INCLUDE(${VISIT_SOURCE_DIR}/CMake/SetUpThirdParty.cmake)
+# Use the H5PART_DIR hint from the config-site .cmake file
 
 IF (WIN32)
-  SET_UP_THIRD_PARTY(H5PART lib include h5partdll)
+  SET_UP_THIRD_PARTY(H5PART LIBS h5partdll)
 ELSE (WIN32)
-  SET_UP_THIRD_PARTY(H5PART lib include H5Part)
+  SET_UP_THIRD_PARTY(H5PART LIBS H5Part)
 ENDIF (WIN32)
 

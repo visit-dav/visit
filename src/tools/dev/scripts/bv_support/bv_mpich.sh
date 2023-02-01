@@ -75,13 +75,6 @@ function bv_mpich_ensure
     fi
 }
 
-function bv_mpich_dry_run
-{
-    if [[ "$DO_MPICH" == "yes" ]] ; then
-        echo "Dry run option not set for mpich."
-    fi
-}
-
 # *************************************************************************** #
 #                            Function 8, build_mpich
 #

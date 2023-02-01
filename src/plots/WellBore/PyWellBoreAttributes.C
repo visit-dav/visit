@@ -6,6 +6,7 @@
 #include <ObserverToCallback.h>
 #include <stdio.h>
 #include <Py2and3Support.h>
+#include <visit-config.h>
 #include <PyColorControlPointList.h>
 #include <ColorAttribute.h>
 #include <PyColorAttributeList.h>
@@ -39,7 +40,7 @@ struct WellBoreAttributesObject
 //
 static PyObject *NewWellBoreAttributes(int);
 std::string
-PyWellBoreAttributes_ToString(const WellBoreAttributes *atts, const char *prefix)
+PyWellBoreAttributes_ToString(const WellBoreAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -47,7 +48,7 @@ PyWellBoreAttributes_ToString(const WellBoreAttributes *atts, const char *prefix
     { // new scope
         std::string objPrefix(prefix);
         objPrefix += "defaultPalette.";
-        str += PyColorControlPointList_ToString(&atts->GetDefaultPalette(), objPrefix.c_str());
+        str += PyColorControlPointList_ToString(&atts->GetDefaultPalette(), objPrefix.c_str(), forLogging);
     }
     {   const unsignedCharVector &changedColors = atts->GetChangedColors();
         snprintf(tmpStr, 1000, "%schangedColors = (", prefix);
@@ -1634,39 +1635,6 @@ PyWellBoreAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "wellNames") == 0)
         return WellBoreAttributes_GetWellNames(self, NULL);
 
-    // Try and handle legacy fields
-
-    // wellLineStyle and it's possible enumerations
-    bool wellLineStyleFound = false;
-    if (strcmp(name, "wellLineStyle") == 0)
-    {
-        wellLineStyleFound = true;
-    }
-    else if (strcmp(name, "SOLID") == 0)
-    {
-        wellLineStyleFound = true;
-    }
-    else if (strcmp(name, "DASH") == 0)
-    {
-        wellLineStyleFound = true;
-    }
-    else if (strcmp(name, "DOT") == 0)
-    {
-        wellLineStyleFound = true;
-    }
-    else if (strcmp(name, "DOTDASH") == 0)
-    {
-        wellLineStyleFound = true;
-    }
-
-    if (wellLineStyleFound)
-    {
-        PyErr_WarnEx(NULL,
-            "wellLineStyle is no longer a valid WellBore "
-            "attribute.\nIt's value is being ignored, please remove "
-            "it from your script.\n", 3);
-        return PyInt_FromLong(0L);
-    }
 
     // Add a __dict__ answer so that dir() works
     if (!strcmp(name, "__dict__"))
@@ -1725,16 +1693,6 @@ PyWellBoreAttributes_setattr(PyObject *self, char *name, PyObject *args)
     else if(strcmp(name, "wellNames") == 0)
         obj = WellBoreAttributes_SetWellNames(self, args);
 
-    // Try and handle legacy fields
-    if(obj == &NULL_PY_OBJ)
-    {
-        if(strcmp(name, "wellLineStyle") == 0)
-        {
-            PyErr_WarnEx(NULL, "'wellLineStyle' is obsolete. It is being ignored.", 3);
-            Py_INCREF(Py_None);
-            obj = Py_None;
-        }
-    }
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
@@ -1753,7 +1711,7 @@ static int
 WellBoreAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     WellBoreAttributesObject *obj = (WellBoreAttributesObject *)v;
-    fprintf(fp, "%s", PyWellBoreAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyWellBoreAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -1761,7 +1719,7 @@ PyObject *
 WellBoreAttributes_str(PyObject *v)
 {
     WellBoreAttributesObject *obj = (WellBoreAttributesObject *)v;
-    return PyString_FromString(PyWellBoreAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyWellBoreAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -1913,7 +1871,7 @@ PyWellBoreAttributes_GetLogString()
 {
     std::string s("WellBoreAtts = WellBoreAttributes()\n");
     if(currentAtts != 0)
-        s += PyWellBoreAttributes_ToString(currentAtts, "WellBoreAtts.");
+        s += PyWellBoreAttributes_ToString(currentAtts, "WellBoreAtts.", true);
     return s;
 }
 
@@ -1926,7 +1884,7 @@ PyWellBoreAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("WellBoreAtts = WellBoreAttributes()\n");
-        s += PyWellBoreAttributes_ToString(currentAtts, "WellBoreAtts.");
+        s += PyWellBoreAttributes_ToString(currentAtts, "WellBoreAtts.", true);
         cb(s);
     }
 }

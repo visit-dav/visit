@@ -34,7 +34,9 @@
 #include <vtkSphere.h>
 #include <vtkThreshold.h>
 #include <vtkTransform.h>
+#include <vtkUnsignedCharArray.h>
 #include <vtkUnstructuredGrid.h>
+
 #include <vtkVisItClipper.h>
 #include <vtkVisItSplitter.h>
 
@@ -523,8 +525,6 @@ vtkCSGGrid::GetMaxCellSize()
 double *
 vtkCSGGrid::GetPoint(vtkIdType ptId)
 {
-  vtkErrorMacro("For a vtkCSGGrid, GetPoint() means GetBoundary()");
-  vtkErrorMacro("Use GetBoundary() to avoid this message");
   int dummy, n;
   double *p = 0;
   this->GetBoundary(ptId, &dummy, &n, &p);

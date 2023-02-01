@@ -105,13 +105,6 @@ function bv_glu_ensure
     fi
 }
 
-function bv_glu_dry_run
-{
-    if [[ "$DO_GLU" == "yes" ]] ; then
-        echo "Dry run option not set for glu."
-    fi
-}
-
 function apply_glu_ppc64le_config_patch
 {
   # patch glu's config.guess to allow it to recognize ppc64le

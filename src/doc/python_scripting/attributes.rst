@@ -1,28 +1,26 @@
 Attribute Reference
 ===================
 
-This chapter shows all the attributes that can be set to control the
-behavior of VisIt. The attributes themselves are not documented, but
-their names are usually quite explanatory. When a member of an attribute
-can take values from a given list of options, the default option is printed
-first in italic followed by a comma separated list of the other available
-options.
+This chapter is an alphabetical listing of all the VisIt_ python *attribute* objects used to control VisIt_'s behavior.
+By and large, VisIt's python attribute objects resemble C++ classes with constructors, public members and setter/getter methods.
 
-The listing is ordered in alphabetical ordering of the name of the
-attribute set. For each set the function that will provide you with
-these attributes is printed in italic.
+For example, for the attribute object controlling the **Coordinate Swap** operator, the function ``CoordSwapAttributes()`` serves as the constructor (or *instantiator*).
+The object it creates has members, ``newCoord1``, ``newCoord2``, and ``newCoord3`` each of which is an enumeration type that can take one of the three values, ``Coord1``, ``Coord2``, ``Coord3``.
+In addition, it has setter/getter methods, ``SetNewCoord1()``, ``GetNewCoord1()`` and so forth.
 
-Many of the **Plot** and **Operator** attribute methods accept an optional
-``1`` argument to indicate whether or not to return the *default* or
-*current* attributes. For example, ``CurveAttributes()`` returns the default
-attributes for a **Curve** plot where as ``CurveAttributes(1)`` returns the
-attributes of either the currently active **Curve** plot or the *first*
-**Curve** plot in the plot list regardless of whether it is selected or
-hidden.
+For each attribute object, the constructor function is given in italics followed by a table of the object's member names.
+The members themselves are not documented here, but in most cases their names are self explanatory.
+The setter/getter *methods* are not documented here either.
+When a member can take values only from a given list of options (e.g. an *enumeration*), the default option is printed first in italic followed by a comma separated list of the other available options.
 
-Many functions return an integer where 1 means success and 0 means failure.
-This behavior is represented by the type CLI_return_t in an attempt to
-distinguish it from functions that may utilize the full range of integers.
+From within the running CLI, printing an attribute object with Python's ``print()`` method will list the members whereas diring an attribute object with Python's ``dir()`` method will list the setter/getter methods.
+For more information on finding things and getting help from within the running CLI, be sure to read :ref:`the section on apropos <finding_stuff_from_python>`.
+
+Many of the **Plot** and **Operator** attribute methods accept an optional ``1`` argument to indicate whether or not to return the *default* (``0``) or *current* (``1``) attributes.
+For example, ``CurveAttributes()`` returns the default attributes for a **Curve** plot whereas ``CurveAttributes(1)`` returns the attributes of either the currently active **Curve** plot or the *first* **Curve** plot in the plot list regardless of whether it is selected or hidden.
+
+Many functions return an integer where ``1`` means success and ``0`` means failure.
+This behavior is represented by the type ``CLI_return_t`` in an attempt to distinguish it from functions that may utilize the full range of integers.
 
 **AMRStitchCell**: *AMRStitchCellAttributes()*
 ----------------------------------------------
@@ -678,7 +676,7 @@ distinguish it from functions that may utilize the full range of integers.
     +----------------------------------+----------------------------+
     | planeInverse                     | 0                          |
     +----------------------------------+----------------------------+
-    | planeToolControlledClipPlane     |  **Plane1**, None,         |
+    | planeToolControlledClipPlane     |  **Plane1**, NONE,         |
     |                                  |  Plane2, Plane3            |
     +----------------------------------+----------------------------+
     | center                           | (0, 0, 0)                  |
@@ -686,6 +684,8 @@ distinguish it from functions that may utilize the full range of integers.
     | radius                           | 1                          |
     +----------------------------------+----------------------------+
     | sphereInverse                    | 0                          |
+    +----------------------------------+----------------------------+
+    | crinkleClip                      | 0                          |
     +----------------------------------+----------------------------+
 
 **Cone**: *ConeAttributes()*
@@ -884,14 +884,15 @@ distinguish it from functions that may utilize the full range of integers.
     +--------------------------------------------------+-----------------------------+
     | defaultPalette.GetControlPoints(29).position     | 1                           |
     +--------------------------------------------------+-----------------------------+
-    | defaultPalette.smoothing                         |  **None**, Linear,          |
+    | defaultPalette.smoothing                         |  **NONE**, Linear,          |
     |                                                  |  CubicSpline                |
     +--------------------------------------------------+-----------------------------+
     | defaultPalette.equalSpacingFlag                  | 1                           |
     +--------------------------------------------------+-----------------------------+
     | defaultPalette.discreteFlag                      | 1                           |
     +--------------------------------------------------+-----------------------------+
-    | defaultPalette.categoryName                      | "Standard"                  |
+    | defaultPalette.tagNames                          |  ("Default",                |
+    |                                                  |  "Discrete")                |
     +--------------------------------------------------+-----------------------------+
     | changedColors                                    | ()                          |
     +--------------------------------------------------+-----------------------------+
@@ -908,6 +909,15 @@ distinguish it from functions that may utilize the full range of integers.
     | lineWidth                                        | 0                           |
     +--------------------------------------------------+-----------------------------+
     | singleColor                                      | (255, 0, 0, 255)            |
+    +--------------------------------------------------+-----------------------------+
+    | contourMethod                                    |  **Level**, Value,          |
+    |                                                  |  Percent                    |
+    +--------------------------------------------------+-----------------------------+
+    | contourNLevels                                   | 10                          |
+    +--------------------------------------------------+-----------------------------+
+    | contourValue                                     | ()                          |
+    +--------------------------------------------------+-----------------------------+
+    | contourPercent                                   | ()                          |
     +--------------------------------------------------+-----------------------------+
     |                                                  |  *SetMultiColor(0,*         |
     |                                                  |  *(255, 0, 0, 255))*        |
@@ -938,15 +948,6 @@ distinguish it from functions that may utilize the full range of integers.
     +--------------------------------------------------+-----------------------------+
     |                                                  |  *SetMultiColor(9,*         |
     |                                                  |  *(255, 68, 68, 255))*      |
-    +--------------------------------------------------+-----------------------------+
-    | contourNLevels                                   | 10                          |
-    +--------------------------------------------------+-----------------------------+
-    | contourValue                                     | ()                          |
-    +--------------------------------------------------+-----------------------------+
-    | contourPercent                                   | ()                          |
-    +--------------------------------------------------+-----------------------------+
-    | contourMethod                                    |  **Level**, Value,          |
-    |                                                  |  Percent                    |
     +--------------------------------------------------+-----------------------------+
     | minFlag                                          | 0                           |
     +--------------------------------------------------+-----------------------------+
@@ -1302,10 +1303,6 @@ distinguish it from functions that may utilize the full range of integers.
     +----------------------+----------------------------+
     | groupSize            | 48                         |
     +----------------------+----------------------------+
-    | opts.types           | ()                         |
-    +----------------------+----------------------------+
-    | opts.help            | ""                         |
-    +----------------------+----------------------------+
 
 **ExternalSurface**: *ExternalSurfaceAttributes()*
 --------------------------------------------------
@@ -1636,13 +1633,15 @@ distinguish it from functions that may utilize the full range of integers.
     | sampleDensity2                         | 2                           |
     +----------------------------------------+-----------------------------+
     | dataValue                              |  **TimeAbsolute**,          |
-    |                                        |  Solid, SeedPointID,        |
-    |                                        |  Speed, Vorticity,          |
-    |                                        |  ArcLength,                 |
+    |                                        |  Solid, Random,             |
+    |                                        |  SeedPointID, Speed,        |
+    |                                        |  Vorticity, ArcLength,      |
     |                                        |  TimeRelative,              |
     |                                        |  AverageDistanceFromSeed,   |
     |                                        |  CorrelationDistance,       |
-    |                                        |  Difference, Variable       |
+    |                                        |  ClosedCurve,               |
+    |                                        |  Difference, Variable,      |
+    |                                        |  VariableAtSeed             |
     +----------------------------------------+-----------------------------+
     | dataVariable                           | ""                          |
     +----------------------------------------+-----------------------------+
@@ -1871,7 +1870,7 @@ distinguish it from functions that may utilize the full range of integers.
     | integrationDirection                  |  **Forward**,              |
     |                                       |  Backward, Both            |
     +---------------------------------------+----------------------------+
-    | auxiliaryGrid                         |  **None**, TwoDim,         |
+    | auxiliaryGrid                         |  **NONE**, TwoDim,         |
     |                                       |  ThreeDim                  |
     +---------------------------------------+----------------------------+
     | auxiliaryGridSpacing                  | 0.0001                     |
@@ -2311,10 +2310,12 @@ distinguish it from functions that may utilize the full range of integers.
     | meshColor               | (0, 0, 0, 255)             |
     +-------------------------+----------------------------+
     | meshColorSource         |  **Foreground**,           |
-    |                         |  MeshCustom                |
+    |                         |  MeshCustom,               |
+    |                         |  MeshRandom                |
     +-------------------------+----------------------------+
     | opaqueColorSource       |  **Background**,           |
-    |                         |  OpaqueCustom              |
+    |                         |  OpaqueCustom,             |
+    |                         |  OpaqueRandom              |
     +-------------------------+----------------------------+
     | opaqueMode              | **Auto**, On, Off          |
     +-------------------------+----------------------------+
@@ -2322,7 +2323,7 @@ distinguish it from functions that may utilize the full range of integers.
     +-------------------------+----------------------------+
     | opaqueColor             | (255, 255, 255, 255)       |
     +-------------------------+----------------------------+
-    | smoothingLevel          | **None**, Fast, High       |
+    | smoothingLevel          | **NONE**, Fast, High       |
     +-------------------------+----------------------------+
     | pointSizeVarEnabled     | 0                          |
     +-------------------------+----------------------------+
@@ -2546,14 +2547,15 @@ distinguish it from functions that may utilize the full range of integers.
     +--------------------------------------------------+-----------------------------+
     | defaultPalette.GetControlPoints(29).position     | 1                           |
     +--------------------------------------------------+-----------------------------+
-    | defaultPalette.smoothing                         |  **None**, Linear,          |
+    | defaultPalette.smoothing                         |  **NONE**, Linear,          |
     |                                                  |  CubicSpline                |
     +--------------------------------------------------+-----------------------------+
     | defaultPalette.equalSpacingFlag                  | 1                           |
     +--------------------------------------------------+-----------------------------+
     | defaultPalette.discreteFlag                      | 1                           |
     +--------------------------------------------------+-----------------------------+
-    | defaultPalette.categoryName                      | "Standard"                  |
+    | defaultPalette.tagNames                          |  ("Default",                |
+    |                                                  |  "Discrete")                |
     +--------------------------------------------------+-----------------------------+
     | changedColors                                    | ()                          |
     +--------------------------------------------------+-----------------------------+
@@ -2609,6 +2611,18 @@ distinguish it from functions that may utilize the full range of integers.
     +--------------------------------------------------+-----------------------------+
     |                                                  |  *SetMultiColor(15,*        |
     |                                                  |  *(255, 170, 99, 255))*     |
+    +--------------------------------------------------+-----------------------------+
+    |                                                  |  *SetMultiColor(16,*        |
+    |                                                  |  *(170, 79, 255, 255))*     |
+    +--------------------------------------------------+-----------------------------+
+    |                                                  |  *SetMultiColor(17,*        |
+    |                                                  |  *(150, 0, 0, 255))*        |
+    +--------------------------------------------------+-----------------------------+
+    |                                                  |  *SetMultiColor(18, (0,*    |
+    |                                                  |  *150, 0, 255))*            |
+    +--------------------------------------------------+-----------------------------+
+    |                                                  |  *SetMultiColor(19, (0,*    |
+    |                                                  |  *0, 150, 255))*            |
     +--------------------------------------------------+-----------------------------+
     | lineWidth                                        | 0                           |
     +--------------------------------------------------+-----------------------------+
@@ -2820,7 +2834,7 @@ distinguish it from functions that may utilize the full range of integers.
     +---------------------------------------+-----------------------------+
     | absTolBBox                            | 1e-06                       |
     +---------------------------------------+-----------------------------+
-    | analysis                              | **Normal**, None            |
+    | analysis                              | **Normal**, NONE            |
     +---------------------------------------+-----------------------------+
     | maximumToroidalWinding                | 0                           |
     +---------------------------------------+-----------------------------+
@@ -2995,7 +3009,7 @@ distinguish it from functions that may utilize the full range of integers.
     |                           |  ZRCylindrical             |
     +---------------------------+----------------------------+
     | vectorTransformMethod     |  **AsDirection**,          |
-    |                           |  None, AsPoint,            |
+    |                           |  NONE, AsPoint,            |
     |                           |  AsDisplacement            |
     +---------------------------+----------------------------+
 
@@ -3031,7 +3045,7 @@ distinguish it from functions that may utilize the full range of integers.
     | centering                    |  **Natural**, Nodal,       |
     |                              |  Zonal                     |
     +------------------------------+----------------------------+
-    | colorTableName               | "hot"                      |
+    | colorTableName               | "Default"                  |
     +------------------------------+----------------------------+
     | invertColorTable             | 0                          |
     +------------------------------+----------------------------+
@@ -3085,10 +3099,10 @@ distinguish it from functions that may utilize the full range of integers.
     +------------------------------+----------------------------+
     | tubeRadiusVarRatio           | 10                         |
     +------------------------------+----------------------------+
-    | tailStyle                    |  **None**, Spheres,        |
+    | tailStyle                    |  **NONE**, Spheres,        |
     |                              |  Cones                     |
     +------------------------------+----------------------------+
-    | headStyle                    |  **None**, Spheres,        |
+    | headStyle                    |  **NONE**, Spheres,        |
     |                              |  Cones                     |
     +------------------------------+----------------------------+
     | endPointRadiusSizeType       |  **FractionOfBBox**,       |
@@ -3456,7 +3470,7 @@ distinguish it from functions that may utilize the full range of integers.
     +--------------------------------------+----------------------------+
     | stereo                               | 0                          |
     +--------------------------------------+----------------------------+
-    | compression                          |  **None**, PackBits,       |
+    | compression                          |  **NONE**, PackBits,       |
     |                                      |  Jpeg, Deflate, LZW        |
     +--------------------------------------+----------------------------+
     | forceMerge                           | 0                          |
@@ -3645,7 +3659,7 @@ distinguish it from functions that may utilize the full range of integers.
     | var1Role             |  **Coordinate0**,            |
     |                      |  Coordinate1,                |
     |                      |  Coordinate2, Color,         |
-    |                      |  None                        |
+    |                      |  NONE                        |
     +----------------------+------------------------------+
     | var1MinFlag          | 0                            |
     +----------------------+------------------------------+
@@ -3662,7 +3676,7 @@ distinguish it from functions that may utilize the full range of integers.
     | var2Role             |  **Coordinate1**,            |
     |                      |  Coordinate0,                |
     |                      |  Coordinate2, Color,         |
-    |                      |  None                        |
+    |                      |  NONE                        |
     +----------------------+------------------------------+
     | var2                 | "default"                    |
     +----------------------+------------------------------+
@@ -3678,7 +3692,7 @@ distinguish it from functions that may utilize the full range of integers.
     +----------------------+------------------------------+
     | var2SkewFactor       | 1                            |
     +----------------------+------------------------------+
-    | var3Role             |  **None**,                   |
+    | var3Role             |  **NONE**,                   |
     |                      |  Coordinate0,                |
     |                      |  Coordinate1,                |
     |                      |  Coordinate2, Color          |
@@ -3697,7 +3711,7 @@ distinguish it from functions that may utilize the full range of integers.
     +----------------------+------------------------------+
     | var3SkewFactor       | 1                            |
     +----------------------+------------------------------+
-    | var4Role             |  **None**,                   |
+    | var4Role             |  **NONE**,                   |
     |                      |  Coordinate0,                |
     |                      |  Coordinate1,                |
     |                      |  Coordinate2, Color          |
@@ -3853,19 +3867,6 @@ distinguish it from functions that may utilize the full range of integers.
     | pastPickLetters            | ()                             |
     +----------------------------+--------------------------------+
 
-**Stagger**: *StaggerAttributes()*
-----------------------------------
-
-    +---------------+----------------------------+
-    | **Attribute** | **Default**/Allowed Values |
-    +---------------+----------------------------+
-    | offsetX       | 0                          |
-    +---------------+----------------------------+
-    | offsetY       | 0                          |
-    +---------------+----------------------------+
-    | offsetZ       | 0                          |
-    +---------------+----------------------------+
-
 **StatisticalTrends**: *StatisticalTrendsAttributes()*
 ------------------------------------------------------
 
@@ -3970,31 +3971,62 @@ distinguish it from functions that may utilize the full range of integers.
 **Tensor**: *TensorAttributes()*
 --------------------------------
 
-    +------------------------+----------------------------+
-    | **Attribute**          | **Default**/Allowed Values |
-    +------------------------+----------------------------+
-    | useStride              | 0                          |
-    +------------------------+----------------------------+
-    | stride                 | 1                          |
-    +------------------------+----------------------------+
-    | nTensors               | 400                        |
-    +------------------------+----------------------------+
-    | scale                  | 0.25                       |
-    +------------------------+----------------------------+
-    | scaleByMagnitude       | 1                          |
-    +------------------------+----------------------------+
-    | autoScale              | 1                          |
-    +------------------------+----------------------------+
-    | colorByEigenvalues     | 1                          |
-    +------------------------+----------------------------+
-    | useLegend              | 1                          |
-    +------------------------+----------------------------+
-    | tensorColor            | (0, 0, 0, 255)             |
-    +------------------------+----------------------------+
-    | colorTableName         | "Default"                  |
-    +------------------------+----------------------------+
-    | invertColorTable       | 0                          |
-    +------------------------+----------------------------+
+    +------------------------+------------------------------+
+    | **Attribute**          | **Default**/Allowed Values   |
+    +------------------------+------------------------------+
+    | glyphLocation          |  **AdaptsToMeshResolution**, |
+    |                        |  UniformInSpace              |
+    +------------------------+------------------------------+
+    | useStride              | 0                            |
+    +------------------------+------------------------------+
+    | nTensors               | 400                          |
+    +------------------------+------------------------------+
+    | stride                 | 1                            |
+    +------------------------+------------------------------+
+    | origOnly               | 1                            |
+    +------------------------+------------------------------+
+    | limitsMode             |  **OriginalData**,           |
+    |                        |  CurrentPlot                 |
+    +------------------------+------------------------------+
+    | minFlag                | 0                            |
+    +------------------------+------------------------------+
+    | min                    | 0                            |
+    +------------------------+------------------------------+
+    | maxFlag                | 0                            |
+    +------------------------+------------------------------+
+    | max                    | 1                            |
+    +------------------------+------------------------------+
+    | colorByEigenValues     | 1                            |
+    +------------------------+------------------------------+
+    | colorTableName         | "Default"                    |
+    +------------------------+------------------------------+
+    | invertColorTable       | 0                            |
+    +------------------------+------------------------------+
+    | tensorColor            | (0, 0, 0, 255)               |
+    +------------------------+------------------------------+
+    | useLegend              | 1                            |
+    +------------------------+------------------------------+
+    | scale                  | 0.25                         |
+    +------------------------+------------------------------+
+    | scaleByMagnitude       | 1                            |
+    +------------------------+------------------------------+
+    | autoScale              | 1                            |
+    +------------------------+------------------------------+
+    | animationStep          | 0                            |
+    +------------------------+------------------------------+
+
+**Tessellate**: *TessellateAttributes()*
+----------------------------------------
+
+    +--------------------+----------------------------+
+    | **Attribute**      | **Default**/Allowed Values |
+    +--------------------+----------------------------+
+    | chordError         | 0.035                      |
+    +--------------------+----------------------------+
+    | fieldCriterion     | 0.035                      |
+    +--------------------+----------------------------+
+    | mergePoints        | 1                          |
+    +--------------------+----------------------------+
 
 **ThreeSlice**: *ThreeSliceAttributes()*
 ----------------------------------------
@@ -4118,7 +4150,7 @@ distinguish it from functions that may utilize the full range of integers.
     | invertLinearTransform     | 0                          |
     +---------------------------+----------------------------+
     | vectorTransformMethod     |  **AsDirection**,          |
-    |                           |  None, AsPoint,            |
+    |                           |  NONE, AsPoint,            |
     |                           |  AsDisplacement            |
     +---------------------------+----------------------------+
     | transformVectors          | 1                          |
@@ -4183,11 +4215,32 @@ distinguish it from functions that may utilize the full range of integers.
     +----------------------+------------------------------+
     | useStride            | 0                            |
     +----------------------+------------------------------+
-    | stride               | 1                            |
-    +----------------------+------------------------------+
     | nVectors             | 400                          |
     +----------------------+------------------------------+
-    | lineWidth            | 0                            |
+    | stride               | 1                            |
+    +----------------------+------------------------------+
+    | origOnly             | 1                            |
+    +----------------------+------------------------------+
+    | limitsMode           |  **OriginalData**,           |
+    |                      |  CurrentPlot                 |
+    +----------------------+------------------------------+
+    | minFlag              | 0                            |
+    +----------------------+------------------------------+
+    | min                  | 0                            |
+    +----------------------+------------------------------+
+    | maxFlag              | 0                            |
+    +----------------------+------------------------------+
+    | max                  | 1                            |
+    +----------------------+------------------------------+
+    | colorByMagnitude     | 1                            |
+    +----------------------+------------------------------+
+    | colorTableName       | "Default"                    |
+    +----------------------+------------------------------+
+    | invertColorTable     | 0                            |
+    +----------------------+------------------------------+
+    | vectorColor          | (0, 0, 0, 255)               |
+    +----------------------+------------------------------+
+    | useLegend            | 1                            |
     +----------------------+------------------------------+
     | scale                | 0.25                         |
     +----------------------+------------------------------+
@@ -4195,42 +4248,21 @@ distinguish it from functions that may utilize the full range of integers.
     +----------------------+------------------------------+
     | autoScale            | 1                            |
     +----------------------+------------------------------+
-    | headSize             | 0.25                         |
+    | glyphType            | **Arrow**, Ellipsoid         |
     +----------------------+------------------------------+
     | headOn               | 1                            |
     +----------------------+------------------------------+
-    | colorByMag           | 1                            |
-    +----------------------+------------------------------+
-    | useLegend            | 1                            |
-    +----------------------+------------------------------+
-    | vectorColor          | (0, 0, 0, 255)               |
-    +----------------------+------------------------------+
-    | colorTableName       | "Default"                    |
-    +----------------------+------------------------------+
-    | invertColorTable     | 0                            |
-    +----------------------+------------------------------+
-    | vectorOrigin         | **Tail**, Head, Middle       |
-    +----------------------+------------------------------+
-    | minFlag              | 0                            |
-    +----------------------+------------------------------+
-    | maxFlag              | 0                            |
-    +----------------------+------------------------------+
-    | limitsMode           |  **OriginalData**,           |
-    |                      |  CurrentPlot                 |
-    +----------------------+------------------------------+
-    | min                  | 0                            |
-    +----------------------+------------------------------+
-    | max                  | 1                            |
+    | headSize             | 0.25                         |
     +----------------------+------------------------------+
     | lineStem             | **Line**, Cylinder           |
     +----------------------+------------------------------+
-    | geometryQuality      | **Fast**, High               |
+    | lineWidth            | 0                            |
     +----------------------+------------------------------+
     | stemWidth            | 0.08                         |
     +----------------------+------------------------------+
-    | origOnly             | 1                            |
+    | vectorOrigin         | **Tail**, Head, Middle       |
     +----------------------+------------------------------+
-    | glyphType            | **Arrow**, Ellipsoid         |
+    | geometryQuality      | **Fast**, High               |
     +----------------------+------------------------------+
     | animationStep        | 0                            |
     +----------------------+------------------------------+
@@ -4412,14 +4444,14 @@ distinguish it from functions that may utilize the full range of integers.
     +-----------------------------------------------------+------------------------------+
     | colorControlPoints.GetControlPoints(4).position     | 1                            |
     +-----------------------------------------------------+------------------------------+
-    | colorControlPoints.smoothing                        |  **Linear**, None,           |
+    | colorControlPoints.smoothing                        |  **Linear**, NONE,           |
     |                                                     |  CubicSpline                 |
     +-----------------------------------------------------+------------------------------+
     | colorControlPoints.equalSpacingFlag                 | 0                            |
     +-----------------------------------------------------+------------------------------+
     | colorControlPoints.discreteFlag                     | 0                            |
     +-----------------------------------------------------+------------------------------+
-    | colorControlPoints.categoryName                     | ""                           |
+    | colorControlPoints.tagNames                         | ()                           |
     +-----------------------------------------------------+------------------------------+
     | opacityAttenuation                                  | 1                            |
     +-----------------------------------------------------+------------------------------+
@@ -4541,3 +4573,4 @@ distinguish it from functions that may utilize the full range of integers.
     +-----------------------------------------------------+------------------------------+
     | materialProperties                                  | (0.4, 0.75, 0, 15)           |
     +-----------------------------------------------------+------------------------------+
+

@@ -22,7 +22,7 @@ PyObject *     PyReflectAttributes_Wrap(const ReflectAttributes *attr);
 void           PyReflectAttributes_SetParent(PyObject *obj, PyObject *parent);
 void           PyReflectAttributes_SetDefaults(const ReflectAttributes *atts);
 std::string    PyReflectAttributes_GetLogString();
-std::string    PyReflectAttributes_ToString(const ReflectAttributes *, const char *);
+std::string    PyReflectAttributes_ToString(const ReflectAttributes *, const char *, const bool=false);
 PyObject *     PyReflectAttributes_getattr(PyObject *self, char *name);
 int            PyReflectAttributes_setattr(PyObject *self, char *name, PyObject *args);
 extern PyMethodDef PyReflectAttributes_methods[REFLECTATTRIBUTES_NMETH];

@@ -173,14 +173,13 @@ In the description you can simply say that you are merging from the
 release candidate into develop rather than providing all the normal pull
 request information. If you are resolving an issue, you will want to
 mention that, since the automatic closing of issues only happens when
-you merge into develop.
+you merge into ``develop``.
 
 .. figure:: images/RCDevelop-GitHubStep4.png
 
    The pull request with the abbreviated description.
 
-Now you go through the normal pull request process. Once you have merged
-your changes into develop you can delete the branch at GitHub and locally. ::
+Once you have merged your changes into develop you can delete the branch at GitHub and locally. ::
 
     git remote prune origin
     git remote update
@@ -197,3 +196,20 @@ Lastly, sometimes changes worth including in the release candidate nonetheless g
 When this happens, we need to `backport <https://en.wikipedia.org/wiki/Backporting>`_ the changes to the release candidate.
 A procedure similar to what is described above can be followed except the roles of ``develop`` and release candidate branches are reversed.
 In addition, once the changes are backported to the release candidate, go back to the PR for ``develop`` (it will probably be in a closed state but that is fine) and add a comment there indicating that the changes were also *backported* to the release candidate and include the commit.
+
+Re-review of PRs for merging already reviewed and merged work to a different branch
+-----------------------------------------------------------------------------------
+
+As described above, there are typically two *active* branches where work may be going on in VisIt_; the currently active release candidate branch and ``develop``.
+The common case is for developers to do work on the release candidate and then apply the same work to ``develop`` using the format-patch or cherry-pick workflows.
+As noted in the section just above, sometimes the reverse happens and the work is originally done on ``develop`` and then *backported* to the release candidate.
+
+In either case, the question arises, is a second review of a pull-request of the same work to another branch required?
+The short answer is no.
+Work that was done and originally reviewed as a pull request to the release candidate does not require a second review in the pull request and merge to ``develop``.
+This is true even when backporting from ``develop`` to the release candidate.
+
+However, there are cases where the release candidate and ``develop`` branches have diverged significantly enough that re-review of the work might be needed.
+A good indicator of this need is if *conflicts* are encountered when using the format-patch or cherry-pick workflows to merge the changes to a different branch.
+When that happens, the developer should give some thought as to whether the changes necessary to resolve the conflicts are significant enough that re-review may be required.
+This is entirely up to the developer doing the work though other developers who may be watching are also free to make a request to re-review the pull request to the different branch.

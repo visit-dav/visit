@@ -22,7 +22,7 @@ PyObject *     PyContourAttributes_Wrap(const ContourAttributes *attr);
 void           PyContourAttributes_SetParent(PyObject *obj, PyObject *parent);
 void           PyContourAttributes_SetDefaults(const ContourAttributes *atts);
 std::string    PyContourAttributes_GetLogString();
-std::string    PyContourAttributes_ToString(const ContourAttributes *, const char *);
+std::string    PyContourAttributes_ToString(const ContourAttributes *, const char *, const bool=false);
 PyObject *     PyContourAttributes_getattr(PyObject *self, char *name);
 int            PyContourAttributes_setattr(PyObject *self, char *name, PyObject *args);
 extern PyMethodDef PyContourAttributes_methods[CONTOURATTRIBUTES_NMETH];

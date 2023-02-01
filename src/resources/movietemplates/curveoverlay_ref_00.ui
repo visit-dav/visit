@@ -28,7 +28,7 @@
     </sizepolicy>
    </property>
    <property name="title" >
-    <string>Upper 2D plot</string>
+    <string>Upper plot</string>
    </property>
    <widget class="QWidget" name="gridLayoutWidget_8" >
     <property name="geometry" >
@@ -50,7 +50,7 @@
      <item row="3" column="1" >
       <widget class="QLabel" name="label_20" >
        <property name="text" >
-        <string>2D Variable</string>
+        <string>Variable</string>
        </property>
       </widget>
      </item>
@@ -115,7 +115,7 @@
     </sizepolicy>
    </property>
    <property name="title" >
-    <string>Lower 2D plot</string>
+    <string>Lower plot</string>
    </property>
    <widget class="QWidget" name="gridLayoutWidget_9" >
     <property name="geometry" >
@@ -137,7 +137,7 @@
      <item row="3" column="1" >
       <widget class="QLabel" name="label_23" >
        <property name="text" >
-        <string>2D Variable</string>
+        <string>Variable</string>
        </property>
       </widget>
      </item>

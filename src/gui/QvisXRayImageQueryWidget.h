@@ -38,6 +38,12 @@ class MapNode;
 //
 //   Eric Brugger, Thu Jun  4 17:23:58 PDT 2015
 //   I added an option to enable outputting the ray bounds to a vtk file.
+// 
+//   Justin Privitera, Tue Jun 14 10:21:03 PDT 2022
+//   Added outdir line edit.
+// 
+//   Justin Privitera, Tue Sep 27 10:52:59 PDT 2022
+//   Replaced family files with filename scheme.
 //
 // ****************************************************************************
 
@@ -57,6 +63,7 @@ private:
     bool             GetIntValues(int whichWidget, int *pt);
 
     QComboBox       *imageFormat;
+    QLineEdit       *outDir;
     QCheckBox       *divideFlag;
     QLineEdit       *backgroundIntensities;
     QLineEdit       *normal;
@@ -69,7 +76,7 @@ private:
     QLineEdit       *imagePan;
     QLineEdit       *imageZoom;
     QCheckBox       *perspective;
-    QCheckBox       *family;
+    QComboBox       *filenameScheme;
     QCheckBox       *outputRayBounds;
     QLineEdit       *imageSize;
 };

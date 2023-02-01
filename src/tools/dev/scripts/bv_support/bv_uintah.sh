@@ -113,13 +113,6 @@ function bv_uintah_ensure
     fi
 }
 
-function bv_uintah_dry_run
-{
-    if [[ "$DO_UINTAH" == "yes" ]] ; then
-        echo "Dry run option not set for uintah."
-    fi
-}
-
 function apply_uintah_long64_patch
 {
     patch -p0 << \EOF

@@ -36,7 +36,7 @@ struct SurfaceNormalAttributesObject
 //
 static PyObject *NewSurfaceNormalAttributes(int);
 std::string
-PySurfaceNormalAttributes_ToString(const SurfaceNormalAttributes *atts, const char *prefix)
+PySurfaceNormalAttributes_ToString(const SurfaceNormalAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -211,7 +211,7 @@ static int
 SurfaceNormalAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     SurfaceNormalAttributesObject *obj = (SurfaceNormalAttributesObject *)v;
-    fprintf(fp, "%s", PySurfaceNormalAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PySurfaceNormalAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -219,7 +219,7 @@ PyObject *
 SurfaceNormalAttributes_str(PyObject *v)
 {
     SurfaceNormalAttributesObject *obj = (SurfaceNormalAttributesObject *)v;
-    return PyString_FromString(PySurfaceNormalAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PySurfaceNormalAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -371,7 +371,7 @@ PySurfaceNormalAttributes_GetLogString()
 {
     std::string s("SurfaceNormalAtts = SurfaceNormalAttributes()\n");
     if(currentAtts != 0)
-        s += PySurfaceNormalAttributes_ToString(currentAtts, "SurfaceNormalAtts.");
+        s += PySurfaceNormalAttributes_ToString(currentAtts, "SurfaceNormalAtts.", true);
     return s;
 }
 
@@ -384,7 +384,7 @@ PySurfaceNormalAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("SurfaceNormalAtts = SurfaceNormalAttributes()\n");
-        s += PySurfaceNormalAttributes_ToString(currentAtts, "SurfaceNormalAtts.");
+        s += PySurfaceNormalAttributes_ToString(currentAtts, "SurfaceNormalAtts.", true);
         cb(s);
     }
 }

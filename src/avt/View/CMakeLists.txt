@@ -24,10 +24,16 @@ ${VISIT_COMMON_INCLUDES}
 ${VTK_INCLUDE_DIRS}
 )
 
+if(VTK_VERSION VERSION_EQUAL "8.1.0")
+    set(vtklibs vtkRenderingOpenGL2 vtkRenderingFreeType vtkInteractionStyle)
+else()
+    set(vtklibs VTK::RenderingOpenGL2 VTK::RenderingFreeType VTK::InteractionStyle)
+endif()
+
 # Add link directories
 LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY} )
 
 ADD_LIBRARY(avtview ${AVTVIEW_SOURCES})
-TARGET_LINK_LIBRARIES(avtview visitcommon vtkRenderingOpenGL2 vtkRenderingFreeType vtkInteractionStyle)
+TARGET_LINK_LIBRARIES(avtview visitcommon ${vtklibs})
 
 VISIT_INSTALL_TARGETS(avtview)

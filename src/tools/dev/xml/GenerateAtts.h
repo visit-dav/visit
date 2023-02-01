@@ -182,6 +182,9 @@
 //    Kathleen Biagas, Tue Dec 20 16:04:19 PST 2016
 //    Added GlyphType.
 //
+//    Kathleen Biagas, Thu Nov 17, 2022
+//    Added boolArray and boolVector.
+//
 // ****************************************************************************
 
 // ----------------------------------------------------------------------------
@@ -559,6 +562,55 @@ class AttsGeneratorBool : public virtual Bool , public virtual AttsGeneratorFiel
     virtual void WriteSourceSetDefault(QTextStream &c)
     {
         c << "    " << name << " = " << (val ? "true" : "false") << ";" << Endl;
+    }
+};
+
+//
+// -------------------------------- BoolArray --------------------------------
+//
+class AttsGeneratorBoolArray : public virtual BoolArray , public virtual AttsGeneratorField
+{
+  public:
+    AttsGeneratorBoolArray(const QString &s, const QString &n, const QString &l)
+        : Field("boolArray",n,l), BoolArray(s,n,l), AttsGeneratorField("boolArray",n,l) { }
+    virtual bool CanHaveConst() { return true; }
+    virtual QString GetAttributeGroupID()
+    {
+        return "B";
+    }
+    virtual QString DataNodeConversion()
+    {
+        return "AsBoolArray";
+    }
+    virtual void WriteSourceSetDefault(QTextStream &c)
+    {
+        for (int i=0; i<length; i++)
+            c << "    " << name << "["<<i<<"] = " << (val[i] ? "true" : " false") << ";" << Endl;
+    }
+};
+
+
+//
+// -------------------------------- BoolVector --------------------------------
+//
+class AttsGeneratorBoolVector : public virtual BoolVector , public virtual AttsGeneratorField
+{
+  public:
+    AttsGeneratorBoolVector(const QString &n, const QString &l)
+        : Field("boolVector",n,l), BoolVector(n,l), AttsGeneratorField("boolVector",n,l) { }
+    virtual bool CanHaveConst() { return true; }
+    virtual QString GetAttributeGroupID()
+    {
+        return "b*";
+    }
+    virtual QString DataNodeConversion()
+    {
+        return "AsBoolVector";
+    }
+    virtual void WriteSourceSetDefault(QTextStream &c)
+    {
+        for (size_t i=0; i < val.size(); i++)
+            c << "    " << name << ".push_back(" << (val[i] ? "true": "false") << ");" << Endl;
     }
 };
 
@@ -1589,6 +1641,9 @@ class AttsGeneratorGlyphType : public virtual GlyphType , public virtual AttsGen
 //    Kathleen Bonnell, Tue Mar  1 11:02:37 PST 2011
 //    Added MapNode.
 //
+//    Kathleen Biagas, Tue Nov 15 12:39:31 PST 2022
+//    Added boolArray and boolVector.
+//
 // ----------------------------------------------------------------------------
 class AttsFieldFactory
 {
@@ -1605,6 +1660,8 @@ class AttsFieldFactory
         else if (type == "intArray")     f = new AttsGeneratorIntArray(length,name,label);
         else if (type == "intVector")    f = new AttsGeneratorIntVector(name,label);
         else if (type == "bool")         f = new AttsGeneratorBool(name,label);
+        else if (type == "boolArray")    f = new AttsGeneratorBoolArray(length,name,label);
+        else if (type == "boolVector")   f = new AttsGeneratorBoolVector(name,label);
         else if (type == "float")        f = new AttsGeneratorFloat(name,label);
         else if (type == "floatArray")   f = new AttsGeneratorFloatArray(length,name,label);
         else if (type == "floatVector")  f = new AttsGeneratorFloatVector(name,label);

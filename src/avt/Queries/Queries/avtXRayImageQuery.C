@@ -4,7 +4,6 @@
 
 #include <avtXRayImageQuery.h>
 
-#include <vtkBMPWriter.h>
 #include <vtkImageData.h>
 #include <vtkJPEGWriter.h>
 #include <vtkPointData.h>
@@ -34,6 +33,95 @@
 #include <vector>
 
 int avtXRayImageQuery::iFileFamily = 0;
+
+const int NUMFAMILYFILES = 9999;
+
+// 
+// Filename Scheme information and handling
+// 
+
+// To add new filename schemes, these are the changes to make:
+//    1) increment `NUM_FILENAME_SCHEMES` by however many filename schemes you are planning to add
+//    2) add new entries to the `filename_schemes` array
+//    3) add new constants for your filename schemes (make sure in the same order as in `filename_schemes`)
+//    4) add new cases where necessary (probably just in `avtXRayImageQuery::Execute` baseName setup)
+//    5) add them to `src/gui/QvisXRayImageQueryWidget.C` in the constructor.
+
+// a constant for how many valid filename schemes there are
+const int NUM_FILENAME_SCHEMES = 3;
+
+// member filenameScheme indexes this array.
+const char *filename_schemes[NUM_FILENAME_SCHEMES] = {"none", "family", "cycle"};
+
+// constants for each of the filename schemes
+const int NONE = 0;
+const int FAMILYFILES = 1;
+const int CYCLEFILES = 2;
+
+// a filename type is valid if it is an int in [0,3)
+inline bool filenameSchemeValid(int ftype)
+{
+    return ftype >= 0 && ftype < 3;
+}
+
+//
+// Output Type information and handling
+//
+
+// To add new output types, these are the changes to make:
+//    1) increment `NUM_OUTPUT_TYPES` by however many output types you are planning to add
+//    2) add new entries to the `file_protocols` and `file_extensions` arrays
+//    3) add new constants for your output types (make sure in the same order as in `file_protocols`)
+//    4) optional: add new inline functions to check for your output type or types; see below for examples
+//    5) add new cases where necessary (probably just in `avtXRayImageQuery::Execute`)
+//    6) add them to `src/gui/QvisXRayImageQueryWidget.C` in the constructor.
+
+// a constant for how many valid output types there are
+const int NUM_OUTPUT_TYPES = 8;
+
+// member `outputType` indexes these arrays
+const char *file_protocols[NUM_OUTPUT_TYPES] = {"jpeg", "png", "tif", "bof", "bov", 
+    /*conduit blueprint output types */ "json", "hdf5", "yaml"}; // removed conduit_bin and conduit_json
+const char *file_extensions[NUM_OUTPUT_TYPES] = {"jpg", "png", "tif", "bof", "bov", 
+    /*conduit blueprint output types */ "root", "root", "root"};
+
+// constants for each of the output types
+const int JPEG_OUT = 0;
+const int PNG_OUT = 1;
+const int TIF_OUT = 2;
+const int RAWFLOATS_OUT = 3;
+const int BOV_OUT = 4;
+const int BLUEPRINT_JSON_OUT = 5;
+const int BLUEPRINT_HDF5_OUT = 6;
+const int BLUEPRINT_YAML_OUT = 7;
+
+// an output type is valid if it is an int in [0,NUM_OUTPUT_TYPES)
+inline bool outputTypeValid(int otype)
+{
+    return otype >= 0 && otype < NUM_OUTPUT_TYPES;
+}
+
+inline bool outputTypeIsJpegPngOrTif(int otype)
+{
+    return otype == JPEG_OUT || otype == PNG_OUT || otype == TIF_OUT;
+}
+
+inline bool outputTypeIsRawfloatsOrBov(int otype)
+{
+    return otype == RAWFLOATS_OUT || otype == BOV_OUT;
+}
+
+inline bool outputTypeIsBlueprint(int otype)
+{
+    return otype == BLUEPRINT_HDF5_OUT || otype == BLUEPRINT_JSON_OUT || 
+        otype == BLUEPRINT_YAML_OUT;
+}
+
+inline bool multipleOutputFiles(int otype, int numBins)
+{
+    return (outputTypeIsJpegPngOrTif(otype) && numBins > 1) || 
+        outputTypeIsRawfloatsOrBov(otype);
+}
 
 // ****************************************************************************
 //  Method: avtXRayImageQuery::avtXRayImageQuery
@@ -79,6 +167,22 @@ int avtXRayImageQuery::iFileFamily = 0;
 //
 //    Eric Brugger, Wed May 27 14:37:36 PDT 2015
 //    I added an option to family output files.
+// 
+//    Justin Privitera, Tue Jun 14 11:30:54 PDT 2022
+//    Changed default output type to use constant instead of magic number and
+//    added default outdir value.
+// 
+//    Justin Privitera, Tue Sep 27 10:52:59 PDT 2022
+//    Replaced familyfiles with filenamescheme.
+//
+//    Justin Privitera, Tue Nov 22 14:56:04 PST 2022
+//    Set default values for energy group bin variables.
+// 
+//    Justin Privitera, Mon Nov 28 15:38:25 PST 2022
+//    Renamed energy group bins to energy group bounds.
+// 
+//    Justin Privitera, Wed Nov 30 17:43:48 PST 2022
+//    Added default values for units.
 //
 // ****************************************************************************
 
@@ -90,11 +194,21 @@ avtXRayImageQuery::avtXRayImageQuery():
     backgroundIntensity = 0.0;
     backgroundIntensities = NULL;
     nBackgroundIntensities = 0;
+    energyGroupBounds = NULL;
+    nEnergyGroupBounds = 0;
     debugRay = -1;
-    familyFiles = false;
-    outputType = 2; // png
+    filenameScheme = NONE;
+    outputType = PNG_OUT;
+    outputDir = ".";
     useSpecifiedUpVector = true;
     useOldView = true;
+
+    spatialUnits = "no units provided";
+    energyUnits = "no units provided";
+    absUnits = "no units provided";
+    emisUnits = "no units provided";
+    intensityUnits = "no units provided";
+    pathLengthUnits = "no info provided";
 
     //
     // The new view specification
@@ -150,6 +264,12 @@ avtXRayImageQuery::avtXRayImageQuery():
 //    Eric Brugger,Thu Jan 15 13:32:48 PST 2015
 //    I added support for specifying background intensities on a per bin
 //    basis.
+// 
+//    Justin Privitera, Tue Nov 22 14:56:04 PST 2022
+//    Make sure the energy group bins are deleted.
+// 
+//    Justin Privitera, Mon Nov 28 15:38:25 PST 2022
+//    Renamed energy group bins to energy group bounds.
 //
 // ****************************************************************************
 
@@ -157,6 +277,8 @@ avtXRayImageQuery::~avtXRayImageQuery()
 {
     if (backgroundIntensities != NULL)
         delete [] backgroundIntensities;
+    if (energyGroupBounds != NULL)
+        delete [] energyGroupBounds;
 }
 
 // ****************************************************************************
@@ -201,6 +323,25 @@ avtXRayImageQuery::~avtXRayImageQuery()
 //
 //    Eric Brugger, Thu Jun  4 16:11:47 PDT 2015
 //    I added an option to enable outputting the ray bounds to a vtk file.
+// 
+//    Justin Privitera, Tue Jun 14 11:30:54 PDT 2022
+//    Handled sending the output directory through.
+// 
+//    Justin Privitera, Tue Sep 27 10:52:59 PDT 2022
+//    Added filename scheme option. Only call family files option if
+//    filename scheme is not present.
+//
+//    Justin Privitera, Tue Nov 22 14:56:04 PST 2022
+//    Logic for energy group bins.
+// 
+//    Justin Privitera, Mon Nov 28 15:38:25 PST 2022
+//    Renamed energy group bins to energy group bounds.
+// 
+//    Justin Privitera, Wed Nov 30 17:43:48 PST 2022
+//    Added logic to handle passing through the units.
+// 
+//    Justin Privitera, Mon Dec 12 13:28:55 PST 2022
+//    Changed path_length_units to path_length_info.
 //
 // ****************************************************************************
 
@@ -230,14 +371,58 @@ avtXRayImageQuery::SetInputParams(const MapNode &params)
         SetBackgroundIntensities(v);
     }
 
+    if (params.HasNumericVectorEntry("energy_group_bounds"))
+    {
+        doubleVector v;
+        params.GetEntry("energy_group_bounds")->ToDoubleVector(v);
+        SetEnergyGroupBounds(v);
+    }
+
+    // Are you ever going to have just one energy group bound? No.
+    // But this is here for helpful error messaging. It is possible
+    // to pass just one number in under energy_group_bounds, so with
+    // this logic here VisIt will give users sensible error messages
+    // embedded within the blueprint metadata.
+    if (params.HasNumericEntry("energy_group_bounds"))
+    {
+        doubleVector v;
+        v.push_back(params.GetEntry("energy_group_bounds")->ToDouble());
+        SetEnergyGroupBounds(v);
+    }
+
+    std::map<std::string, std::string> unitsmap;
+    if (params.HasEntry("spatial_units"))
+        unitsmap["spatialUnits"] = params.GetEntry("spatial_units")->AsString();
+    if (params.HasEntry("energy_units"))
+        unitsmap["energyUnits"] = params.GetEntry("energy_units")->AsString();
+    if (params.HasEntry("abs_units"))
+        unitsmap["absUnits"] = params.GetEntry("abs_units")->AsString();
+    if (params.HasEntry("emis_units"))
+        unitsmap["emisUnits"] = params.GetEntry("emis_units")->AsString();
+    if (params.HasEntry("intensity_units"))
+        unitsmap["intensityUnits"] = params.GetEntry("intensity_units")->AsString();
+    if (params.HasEntry("path_length_info"))
+        unitsmap["pathLengthUnits"] = params.GetEntry("path_length_info")->AsString();
+    SetUnits(unitsmap);
+
     if (params.HasNumericEntry("debug_ray"))
         SetDebugRay(params.GetEntry("debug_ray")->AsInt());
 
     if (params.HasNumericEntry("output_ray_bounds"))
         SetOutputRayBounds(params.GetEntry("output_ray_bounds")->ToBool());
 
-    if (params.HasNumericEntry("family_files"))
-        SetFamilyFiles(params.GetEntry("family_files")->ToBool());
+    if (params.HasEntry("filename_scheme"))
+    {
+        if (params.GetEntry("filename_scheme")->TypeName() == "int")
+            SetFilenameScheme(params.GetEntry("filename_scheme")->AsInt());
+        else if (params.GetEntry("filename_scheme")->TypeName() == "string")
+            SetFilenameScheme(params.GetEntry("filename_scheme")->AsString());
+    }
+    else
+    {
+        if (params.HasNumericEntry("family_files"))
+            SetFamilyFiles(params.GetEntry("family_files")->ToBool());
+    }
 
     if (params.HasEntry("output_type"))
     {
@@ -246,6 +431,9 @@ avtXRayImageQuery::SetInputParams(const MapNode &params)
         else if (params.GetEntry("output_type")->TypeName() == "string")
             SetOutputType(params.GetEntry("output_type")->AsString());
     }
+
+    if (params.HasEntry("output_dir"))
+        SetOutputDir(params.GetEntry("output_dir")->AsString());
 
     // this is not a normal parameter, it is set by the cli when the query
     // is called with the deprecated argument parsing.
@@ -627,6 +815,69 @@ avtXRayImageQuery::SetBackgroundIntensities(const doubleVector &intensities)
 }
 
 // ****************************************************************************
+//  Method: avtXRayImageQuery::SetEnergyGroupBounds
+//
+//  Purpose:
+//    Set the energy group bins.
+//
+//  Programmer: Justin Privitera
+//  Creation:   November 18, 2022
+// 
+//  Modifications:
+//    Justin Privitera, Mon Nov 28 15:38:25 PST 2022
+//    Renamed energy group bins to energy group bounds. Changed the function 
+//    name.
+//
+// ****************************************************************************
+
+void
+avtXRayImageQuery::SetEnergyGroupBounds(const doubleVector &bins)
+{
+    if (energyGroupBounds != NULL)
+        delete [] energyGroupBounds;
+
+    energyGroupBounds = new double[bins.size()];
+    for (int i = 0; i < bins.size(); i++)
+        energyGroupBounds[i] = bins[i];
+    nEnergyGroupBounds = bins.size();
+}
+
+// ****************************************************************************
+//  Method: avtXRayImageQuery::SetUnits
+//
+//  Purpose:
+//    Set all the unit variables. 
+// 
+//  Note:
+//    Doing them all in one function reduces code bloat with lots of setters, 
+//    and they'd all be very similar anyway.
+//
+//  Programmer: Justin Privitera
+//  Creation:   November 30, 2022
+//
+// ****************************************************************************
+
+void
+avtXRayImageQuery::SetUnits(const std::map<std::string, std::string> &unitsmap)
+{
+    if (! unitsmap.empty())
+    {
+        if (unitsmap.count("spatialUnits") > 0)
+            spatialUnits = unitsmap.at("spatialUnits");
+        if (unitsmap.count("energyUnits") > 0)
+            energyUnits = unitsmap.at("energyUnits");
+        if (unitsmap.count("absUnits") > 0)
+            absUnits = unitsmap.at("absUnits");
+        if (unitsmap.count("emisUnits") > 0)
+            emisUnits = unitsmap.at("emisUnits");
+        if (unitsmap.count("intensityUnits") > 0)
+            intensityUnits = unitsmap.at("intensityUnits");
+        if (unitsmap.count("pathLengthUnits") > 0)
+            pathLengthUnits = unitsmap.at("pathLengthUnits");
+    }
+}
+
+// ****************************************************************************
 //  Method: avtXRayImageQuery::SetDebugRay
 //
 //  Purpose:
@@ -664,17 +915,79 @@ avtXRayImageQuery::SetOutputRayBounds(const bool &flag)
 //  Method: avtXRayImageQuery::SetFamilyFiles
 //
 //  Purpose:
-//    Set the family files flag.
+//    Set the filename scheme.
 //
 //  Programmer: Eric Brugger
 //  Creation:   May 27, 2015
 //
+//  Modifications:
+//     Justin Privitera, Thu Sep 22 16:46:46 PDT 2022
+//     Instead of setting the familyfiles flag, now it sets the filename scheme
+//     appropriately.
 // ****************************************************************************
 
 void
 avtXRayImageQuery::SetFamilyFiles(const bool &flag)
 {
-    familyFiles = flag;
+    filenameScheme = flag ? FAMILYFILES : NONE;
+}
+
+// ****************************************************************************
+//  Method: avtXRayImageQuery::SetFilenameScheme
+//
+//  Purpose:
+//    Set the filename scheme.
+//
+//  Programmer: Justin Privitera
+//  Creation:   Tue Sep 27 10:52:59 PDT 2022
+// 
+//  Modifications:
+// 
+// ****************************************************************************
+
+void
+avtXRayImageQuery::SetFilenameScheme(int type)
+{
+    if (filenameSchemeValid(filenameScheme))
+        filenameScheme = type;
+    else
+    {
+        std::ostringstream err_oss;
+        err_oss << "Filename scheme " << type << " is invalid.\n";
+        EXCEPTION1(VisItException, err_oss.str());
+    }
+}
+
+// ****************************************************************************
+//  Method: avtXRayImageQuery::SetFilenameScheme
+//
+//  Purpose:
+//    Set the filename scheme.
+//
+//  Programmer: Justin Privitera
+//  Creation:   Tue Sep 27 10:52:59 PDT 2022
+//
+//  Modifications:
+// 
+// ****************************************************************************
+
+void
+avtXRayImageQuery::SetFilenameScheme(const std::string &type)
+{
+    int i = 0;
+    while (i < NUM_FILENAME_SCHEMES)
+    {
+        // the output type indexes the file extensions array
+        if (type == filename_schemes[i])
+        {
+            filenameScheme = i;
+            return;
+        }
+        i ++;
+    }
+    std::ostringstream err_oss;
+    err_oss << "Filename scheme " << type << " is invalid.\n";
+    EXCEPTION1(VisItException, err_oss.str());
 }
 
 // ****************************************************************************
@@ -685,13 +998,27 @@ avtXRayImageQuery::SetFamilyFiles(const bool &flag)
 //
 //  Programmer: Eric Brugger
 //  Creation:   June 30, 2010
-//
+// 
+//  Modifications:
+//    Justin Privitera, Tue Jun 14 11:30:54 PDT 2022
+//    Validity check for output type and error message if it is invalid.
+// 
+//    Justin Privitera, Wed Jul 20 13:54:06 PDT 2022
+//    Use ostringstreams for error messages.
+// 
 // ****************************************************************************
 
 void
 avtXRayImageQuery::SetOutputType(int type)
 {
-    outputType = type;
+    if (outputTypeValid(outputType))
+        outputType = type;
+    else
+    {
+        std::ostringstream err_oss;
+        err_oss << "Output type " << type << " is invalid.\n";
+        EXCEPTION1(VisItException, err_oss.str());
+    }
 }
 
 // ****************************************************************************
@@ -706,24 +1033,53 @@ avtXRayImageQuery::SetOutputType(int type)
 //  Modifications:
 //    Eric Brugger, Mon May 14 10:35:27 PDT 2012
 //    I added the bov output type.
-//
+// 
+//    Justin Privitera, Tue Jun 14 11:30:54 PDT 2022
+//    Output type upgrade across the entire file. Magic numbers for output
+//    types are gone, replaced with new constants. Output type indexes the 
+//    new file protocols array.
+// 
+//    Justin Privitera, Wed Jul 20 13:54:06 PDT 2022
+//    Use ostringstream for error messages.
+// 
 // ****************************************************************************
 
 void
 avtXRayImageQuery::SetOutputType(const std::string &type)
 {
-    if      (type == "bmp")
-        outputType = 0;
-    else if (type == "jpeg")
-        outputType = 1;
-    else if (type == "png")
-        outputType = 2;
-    else if (type == "tif")
-        outputType = 3;
-    else if (type == "rawfloats")
-        outputType = 4;
-    else if (type == "bov")
-        outputType = 5;
+    int i = 0;
+    while (i < NUM_OUTPUT_TYPES)
+    {
+        // the output type indexes the file extensions array
+        if (type == file_protocols[i])
+        {
+            outputType = i;
+            return;
+        }
+        i ++;
+    }
+    std::ostringstream err_oss;
+    err_oss << "Output type " << type << " is invalid.\n";
+    EXCEPTION1(VisItException, err_oss.str());
+}
+
+// ****************************************************************************
+//  Method: avtXRayImageQuery::SetOutputDir
+//
+//  Purpose:
+//    Set the output directory.
+//
+//  Programmer: Justin Privitera 
+//  Creation:   Wed Jun  1 12:30:46 PDT 2022
+//
+//  Modifications:
+// 
+// ****************************************************************************
+
+void
+avtXRayImageQuery::SetOutputDir(const std::string &dir)
+{
+    outputDir = dir;
 }
 
 // ****************************************************************************
@@ -829,12 +1185,120 @@ avtXRayImageQuery::GetSecondaryVars(std::vector<std::string> &outVars)
 //    I corrected a bug where the type specified in the bov file was
 //    incorrectly set to float for the intensities in the case of double
 //    and integer output.
+// 
+//    Justin Privitera, Tue Jun 14 11:30:54 PDT 2022
+//     - Output type upgrade across the entire file. Magic numbers for output
+//    types are gone, replaced with new constants. There are now functions
+//    used to test output type validity and if output type falls into a 
+//    specific category. There are also arrays that the output type indexes
+//    into that contain file protocols and file extensions.
+//     - Added output directory to query.
+//     - Conduit checks if the output directory is valid.
+//     - baseName and fileName have become stringstreams. New strings have 
+//    been made to store results from baseName formatting, and are used 
+//    extensively.
+//    Blueprint output has been added, with 4 output types.
+//    The output messages has been reorganized and refactored.
+// 
+//    Justin Privitera, Wed Jul 20 13:54:06 PDT 2022
+//    Use stringstreams for output messages, use ostringstreams for error
+//    messages, and set result messages for error cases.
+// 
+//    Justin Privitera, Thu Sep  8 16:29:06 PDT 2022
+//    Added spatial extents meta data to blueprint outputs.
+// 
+//    Justin Privitera, Tue Sep 27 10:52:59 PDT 2022
+//     - Added check to see if the filename scheme is one of the valid options.
+//     - Reworked the file naming system.
+//     - Moved calculation of numbins to earlier so that info can be used when
+//    deciding on the file naming scheme.
+//     - Determined whether or not bmp, jpeg, png, and tif outputs should 
+//    write bin info in the filename or exclude it.
+//     - Combined rawfloats and bov logic into one block with some 
+//    conditionals.
+//     - Removed all the filenaming logic that was specific to blueprint.
+//     - Passed options node to conduit save_mesh call.
+//     - Removed unused code.
+//     - Updated output messages to reflect new filenaming schemes.
+//     - Moved ifdef conduit guards to reflect desired behavior.
+//     - Cleaned up result message handling.
+// 
+//    Justin Privitera, Thu Sep 29 17:35:07 PDT 2022
+//    Added warning message for bmp output in result message and to debug1.
+// 
+//    Justin Privitera, Wed Oct 12 11:38:11 PDT 2022
+//    Removed bmp output type.
+// 
+//    Justin Privitera, Tue Nov 15 11:44:01 PST 2022
+//    Various changes to the blueprint output:
+//     - Reorganized metadata into categories
+//     - Added new metadata outputs: query parameters and extra data
+//     - Added imaging plane topologies
+// 
+//    Justin Privitera, Tue Nov 22 14:56:04 PST 2022
+//    Added logic to output energy group bounds in blueprint output if they are
+//    provided; include an info message if not.
+// 
+//    Justin Privitera, Mon Nov 28 15:38:25 PST 2022
+//    Renamed energy group bins to energy group bounds.
+// 
+//    Justin Privitera, Wed Nov 30 10:41:17 PST 2022
+//    Absolute value is applied to detector height and width to ensure
+//    sensible values come out of the query.
+// 
+//    Justin Privitera, Wed Nov 30 17:43:48 PST 2022
+//    The units are propagated to the output metadata for blueprint output 
+//    types.
+// 
+//    Justin Privitera, Thu Dec  1 15:29:48 PST 2022
+//    Changed where units go in the blueprint output.
+// 
+//    Justin Privitera, Wed Dec  7 16:16:16 PST 2022
+//     - Calculated far plane projection width and height.
+//     - Made spatial extents a proper coordset living in the blueprint 
+//    metadata.
+//     - Pass corner coord containers to my imaging plane calculation methods
+//    so those values can be used to calculate the rays.
+//     - Added ray corners mesh and rays mesh.
+// 
+//    Justin Privitera, Mon Dec 12 13:28:55 PST 2022
+//    Major refactor of blueprint output logic. Most calculations are pushed
+//    down into helpers.
 //
 // ****************************************************************************
 
 void
 avtXRayImageQuery::Execute(avtDataTree_p tree)
 {
+    // check validity of output type before proceeding
+    if (!outputTypeValid(outputType))
+    {
+        std::ostringstream err_oss;
+        err_oss << "Output type " << outputType << " is invalid.\n";
+        SetResultMessage(err_oss.str());
+        EXCEPTION1(VisItException, err_oss.str());
+    }
+    // check validity of output type before proceeding
+    if (!filenameSchemeValid(filenameScheme))
+    {
+        std::ostringstream err_oss;
+        err_oss << "Filename type " << filenameScheme << " is invalid.\n";
+        SetResultMessage(err_oss.str());
+        EXCEPTION1(VisItException, err_oss.str());
+    }
+    // It would be nice to have something that could check the validity of the 
+    // output directory without needing conduit.
+#ifdef HAVE_CONDUIT
+    // check if output directory exists before proceeding
+    if (!conduit::utils::is_directory(outputDir))
+    {
+        std::ostringstream err_oss;
+        err_oss << "Directory " << outputDir << " does not exist.\n";
+        SetResultMessage(err_oss.str());
+        EXCEPTION1(VisItException, err_oss.str());
+    }
+#endif
+
     avtDataset_p input = GetTypedInput();
     
     int nsets = 0;
@@ -925,175 +1389,291 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
             delete [] leaves;
             delete filt;
 
+            SetResultMessage("There must be at least one bin.");
             EXCEPTION1(VisItException, "There must be at least one bin.");
         }
+
+        int numBins = numLeaves / 2;
 
         //
         // Create the file base name.
         //
-        const char *exts[6] = {"bmp", "jpeg", "png", "tif", "bof", "bov"};
-        char baseName[512];
-        bool keepTrying = true;
-        while (keepTrying)
+        std::stringstream baseName;
+        const int cycle = GetInput()->GetInfo().GetAttributes().GetCycle();
+        if (filenameScheme == FAMILYFILES)
         {
-            keepTrying = false;
-            if (familyFiles)
+            bool keepTrying{true};
+            while (keepTrying)
             {
+                keepTrying = false;
                 //
                 // Create the file base name and increment the family number.
                 //
-                snprintf(baseName, 512, "output%04d.", iFileFamily);
-                if (iFileFamily < 9999) iFileFamily++;
+                baseName.clear();
+                baseName.str(std::string());
+                baseName << "output" << "." << std::setfill('0') << std::setw(4) << iFileFamily;
+                if (iFileFamily < NUMFAMILYFILES) iFileFamily ++;
 
                 //
                 // Check if the first file created with the file base name
                 // exists. If it does and we aren't at the maximum, try
                 // the next file base name in the sequence.
                 //
-                char fileName[512];
-                snprintf(fileName, 512, "%s00.%s", baseName, exts[outputType]);
+                std::stringstream fileName;
+                if (outputDir != ".")
+                    fileName << outputDir.c_str() << "/" << baseName.str();
+                if (multipleOutputFiles(outputType, numBins))
+                    fileName << ".00." << file_extensions[outputType];
+                else
+                    fileName << "." << file_extensions[outputType];
 
-                ifstream ifile(fileName);
-                if (!ifile.fail() && iFileFamily < 9999)
-                {
+                ifstream ifile(fileName.str());
+                if (!ifile.fail() && iFileFamily < NUMFAMILYFILES)
                     keepTrying = true;
-                }
-            }
-            else
-            {
-                snprintf(baseName, 512, "output");
             }
         }
+        else if (filenameScheme == CYCLEFILES)
+            baseName << "output.cycle_" << std::setfill('0') << std::setw(6) << cycle;
+        else
+            baseName << "output";
+
+        // does NOT contain the file extension
+        std::string out_filename_w_path{(outputDir == "." ? "" : outputDir + "/") + baseName.str()};
 
         //
         // Write out the intensity and path length. The path length is only
         // put out when the output format is bof or bov.
         //
-        int numBins = numLeaves / 2;
-
         vtkDataArray *intensity;
         vtkDataArray *pathLength;
-        if (outputType >= 0 && outputType <=3)
+#ifdef HAVE_CONDUIT
+        conduit::Node data_out;
+#endif
+        if (outputTypeIsJpegPngOrTif(outputType))
         {
+            const bool write_bin_info_to_filename{numBins > 1};
             for (int i = 0; i < numBins; i++)
             {
-                intensity= leaves[i]->GetPointData()->GetArray("Intensity");
+                intensity = leaves[i]->GetPointData()->GetArray("Intensity");
                 if (intensity->GetDataType() == VTK_FLOAT)
-                    WriteImage(baseName, i, numPixels,
-                        (float*) intensity->GetVoidPointer(0));
+                    WriteImage(out_filename_w_path.c_str(), i, numPixels,
+                        (float*) intensity->GetVoidPointer(0), 
+                        write_bin_info_to_filename);
                 else if (intensity->GetDataType() == VTK_DOUBLE)
-                    WriteImage(baseName, i, numPixels,
-                        (double*) intensity->GetVoidPointer(0));
+                    WriteImage(out_filename_w_path.c_str(), i, numPixels,
+                        (double*) intensity->GetVoidPointer(0), 
+                        write_bin_info_to_filename);
                 else if (intensity->GetDataType() == VTK_INT)
-                    WriteImage(baseName, i, numPixels,
-                        (int*) intensity->GetVoidPointer(0));
+                    WriteImage(out_filename_w_path.c_str(), i, numPixels,
+                        (int*) intensity->GetVoidPointer(0), 
+                        write_bin_info_to_filename);
             }
         }
-        else if (outputType == 4)
+        else if (outputTypeIsRawfloatsOrBov(outputType))
         {
+            const bool bovOut{outputType == BOV_OUT};
             for (int i = 0; i < numBins; i++)
             {
                 intensity = leaves[i]->GetPointData()->GetArray("Intensity");
                 pathLength = leaves[numBins+i]->GetPointData()->GetArray("PathLength");
                 if (intensity->GetDataType() == VTK_FLOAT)
                 {
-                    WriteFloats(baseName, i, numPixels,
+                    WriteFloats(out_filename_w_path.c_str(), i, numPixels,
                         (float*)intensity->GetVoidPointer(0));
-                    WriteFloats(baseName, numBins+i, numPixels,
+                    if (bovOut)
+                        WriteBOVHeader(out_filename_w_path.c_str(), "intensity", i, nx, ny, "FLOAT");
+                    WriteFloats(out_filename_w_path.c_str(), numBins+i, numPixels,
                         (float*)pathLength->GetVoidPointer(0));
+                    if (bovOut)
+                        WriteBOVHeader(out_filename_w_path.c_str(), "path_length", numBins+i,
+                            nx, ny, "FLOAT");
                 }
                 else if (intensity->GetDataType() == VTK_DOUBLE)
                 {
-                    WriteFloats(baseName, i, numPixels,
+                    WriteFloats(out_filename_w_path.c_str(), i, numPixels,
                         (double*)intensity->GetVoidPointer(0));
-                    WriteFloats(baseName, numBins+i, numPixels,
+                    if (bovOut)
+                        WriteBOVHeader(out_filename_w_path.c_str(), "intensity", i, nx, ny, "DOUBLE");
+                    WriteFloats(out_filename_w_path.c_str(), numBins+i, numPixels,
                         (double*)pathLength->GetVoidPointer(0));
+                    if (bovOut)
+                        WriteBOVHeader(out_filename_w_path.c_str(), "path_length", numBins+i,
+                            nx, ny, "DOUBLE");
                 }
                 else if (intensity->GetDataType() == VTK_INT)
                 {
-                    WriteFloats(baseName, i, numPixels,
+                    WriteFloats(out_filename_w_path.c_str(), i, numPixels,
                         (int*)intensity->GetVoidPointer(0));
-                    WriteFloats(baseName, numBins+i, numPixels,
+                    if (bovOut)
+                        WriteBOVHeader(out_filename_w_path.c_str(), "intensity", i, nx, ny, "INT");
+                    WriteFloats(out_filename_w_path.c_str(), numBins+i, numPixels,
                         (int*)pathLength->GetVoidPointer(0));
+                    if (bovOut)
+                        WriteBOVHeader(out_filename_w_path.c_str(), "path_length", numBins+i,
+                            nx, ny, "INT");
                 }
             }
         }
-        else if (outputType == 5)
+        else if (outputTypeIsBlueprint(outputType))
         {
-            for (int i = 0; i < numBins; i++)
+#ifdef HAVE_CONDUIT
+            // calculate constants for use in multiple functions
+            // the following calculations must be the same as the calculations in avtXRayFilter.C!
+            const double viewHeight{parallelScale};
+            const double viewWidth{(static_cast<float>(imageSize[0]) / static_cast<float>(imageSize[1])) * viewHeight};
+            double nearHeight, nearWidth, farHeight, farWidth;
+            if (perspective)
             {
-                intensity = leaves[i]->GetPointData()->GetArray("Intensity");
-                pathLength = leaves[numBins+i]->GetPointData()->GetArray("PathLength");
-                if (intensity->GetDataType() == VTK_FLOAT)
-                {
-                    WriteFloats(baseName, i, numPixels,
-                        (float*)intensity->GetVoidPointer(0));
-                    WriteBOVHeader(baseName, "intensity", i, nx, ny, "FLOAT");
-                    WriteFloats(baseName, numBins+i, numPixels,
-                        (float*)pathLength->GetVoidPointer(0));
-                    WriteBOVHeader(baseName, "path_length", numBins+i,
-                        nx, ny, "FLOAT");
-                }
-                else if (intensity->GetDataType() == VTK_DOUBLE)
-                {
-                    WriteFloats(baseName, i, numPixels,
-                        (double*)intensity->GetVoidPointer(0));
-                    WriteBOVHeader(baseName, "intensity", i, nx, ny, "DOUBLE");
-                    WriteFloats(baseName, numBins+i, numPixels,
-                        (double*)pathLength->GetVoidPointer(0));
-                    WriteBOVHeader(baseName, "path_length", numBins+i,
-                        nx, ny, "DOUBLE");
-                }
-                else if (intensity->GetDataType() == VTK_INT)
-                {
-                    WriteFloats(baseName, i, numPixels,
-                        (int*)intensity->GetVoidPointer(0));
-                    WriteBOVHeader(baseName, "intensity", i, nx, ny, "INT");
-                    WriteFloats(baseName, numBins+i, numPixels,
-                        (int*)pathLength->GetVoidPointer(0));
-                    WriteBOVHeader(baseName, "path_length", numBins+i,
-                        nx, ny, "INT");
-                }
+                const double viewDist{parallelScale / tan ((viewAngle * 3.1415926535) / 360.)};
+                const double nearDist{viewDist + nearPlane};
+                const double farDist{viewDist + farPlane};
+                const double nearDist_over_viewDist{nearDist / viewDist};
+                const double farDist_over_viewDist{farDist / viewDist};
+                nearHeight = (nearDist_over_viewDist * viewHeight) / imageZoom;
+                nearWidth = (nearDist_over_viewDist * viewWidth) / imageZoom;
+                farHeight = (farDist_over_viewDist * viewHeight) / imageZoom;
+                farWidth = (farDist_over_viewDist * viewWidth) / imageZoom;
             }
+            else
+            {
+                nearHeight = farHeight = viewHeight / imageZoom;
+                nearWidth = farWidth = viewWidth / imageZoom;
+            }
+
+            const double detectorWidth{2. * nearWidth}; // near
+            const double detectorHeight{2. * nearHeight}; // near
+            const double farDetectorWidth{2. * farWidth};
+            const double farDetectorHeight{2. * farHeight};
+
+            // The following variables will be assigned values
+            // when WriteBlueprintMeshes() is called.
+            int numfieldvals;
+            conduit::float64 *intensity_vals;
+            conduit::float64 *depth_vals;
+
+            // this includes the image mesh and the spatial mesh
+            WriteBlueprintMeshes(data_out, detectorWidth, detectorHeight, 
+                numBins, leaves, numfieldvals, intensity_vals, depth_vals);
+
+            // all the metadata living under "state" is written in this function
+            WriteBlueprintMetadata(data_out, cycle, numBins, 
+                detectorWidth, detectorHeight, 
+                numfieldvals, intensity_vals, depth_vals);
+
+            // includes imaging planes, ray corners, and rays
+            WriteBlueprintImagingMeshes(data_out,
+                nearWidth, nearHeight, viewWidth, viewHeight, farWidth, farHeight,
+                detectorWidth, detectorHeight, farDetectorWidth, farDetectorHeight);
+
+            // verify
+            conduit::Node verify_info;
+            if(!conduit::blueprint::mesh::verify(data_out, verify_info))
+            {
+                verify_info.print();
+                SetResultMessage("Blueprint mesh verification failed!");
+                EXCEPTION1(VisItException, "Blueprint mesh verification failed!");
+            }
+
+            try
+            {
+                conduit::Node opts;
+                opts["suffix"] = "none";
+                // save out
+                conduit::relay::io::blueprint::save_mesh(data_out,
+                                                         out_filename_w_path.c_str(),
+                                                         file_protocols[outputType],
+                                                         opts);
+            }
+            catch (conduit::Error &e)
+            {
+                std::ostringstream err_oss;
+                err_oss << "Conduit Exception in X Ray Image Query "
+                        << "Execute: " << endl
+                        << e.message();
+                SetResultMessage(err_oss.str());
+                EXCEPTION1(VisItException, err_oss.str());
+            }
+#else
+            // this is safe because at the beginning of the function we check that the output type is valid
+            std::ostringstream err_oss;
+            err_oss << "Visit was not installed with conduit, "
+                        << "which is needed for output type "
+                        << file_protocols[outputType]
+                        << "." << std::endl;
+            SetResultMessage(err_oss.str());
+            EXCEPTION1(VisItException, err_oss.str());
+#endif
         }
+        else
+        {
+            // this is safe because at the beginning of the function we check that the output type is valid
+            std::ostringstream err_oss;
+            err_oss << "No logic implemented for output type "
+                        << file_protocols[outputType]
+                        << "." << std::endl;
+            SetResultMessage(err_oss.str());
+            EXCEPTION1(VisItException, err_oss.str());
+        }
+
 
         //
         // Output the result message.
         //
-        if (outputType >=0 && outputType <= 5)
+        if (outputTypeValid(outputType))
         {
-            std::string msg = "";
-            char buf[512];
-    
-            if (numBins == 1 && outputType < 4)
-            {
-                snprintf(buf, 512, "The x ray image query results were "
-                         "written to the file %s00.%s\n", baseName,
-                         exts[outputType]);
-            }
-            else
-                if (outputType < 4)
-                {
-                    snprintf(buf, 512, "The x ray image query results were "
-                        "written to the files %s00.%s - %s%02d.%s\n",
-                        baseName, exts[outputType], baseName, numBins - 1,
-                        exts[outputType]);
-                }
-                else
-                {
-                    snprintf(buf, 512, "The x ray image query results were "
-                        "written to the files %s00.%s - %s%02d.%s\n",
-                        baseName, exts[outputType], baseName, 2*numBins - 1,
-                        exts[outputType]);
-                }
-            msg += buf;
+            std::stringstream buf;
 
-            SetResultMessage(msg);
+            if (outputTypeIsJpegPngOrTif(outputType))
+            {
+                if (numBins == 1)
+                    buf << "The x ray image query results were "
+                        << "written to the file "
+                        << out_filename_w_path << "."
+                        << file_extensions[outputType] << "\n";
+                else
+                    buf << "The x ray image query results were "
+                        << "written to the files "
+                        << out_filename_w_path << ".00."
+                        << file_extensions[outputType]
+                        << " - " << out_filename_w_path << "."
+                        << std::setfill('0') << std::setw(2)
+                        << numBins - 1 << "."
+                        << file_extensions[outputType] << "\n";
+            }
+            else if (outputTypeIsRawfloatsOrBov(outputType))
+                buf << "The x ray image query results were "
+                    << "written to the files "
+                    << out_filename_w_path << ".00."
+                    << file_extensions[outputType]
+                    << " - " << out_filename_w_path << "."
+                    << std::setfill('0') << std::setw(2)
+                    << 2*numBins - 1 << "."
+                    << file_extensions[outputType] << "\n";
+#ifdef HAVE_CONDUIT
+            else if (outputTypeIsBlueprint(outputType))
+            {
+                buf << "The x ray image query results were "
+                    << "written to the file "
+                    << out_filename_w_path << "."
+                    << file_extensions[outputType] << "\n";
+            }
+#endif
+            else
+            {
+                // this is safe because at the beginning of the function we check that the output type is valid
+                std::ostringstream err_oss;
+                err_oss << "No output message implemented for output type "
+                            << file_protocols[outputType] << "." << std::endl;
+                SetResultMessage(err_oss.str());
+                EXCEPTION1(VisItException, err_oss.str());
+
+            }
+            SetResultMessage(buf.str());
         }
         else
         {
             SetResultMessage("No x ray image query results were written "
-                             "because the output type was invalid\n");
+                             "because the output type was invalid.\n");
         }
 
         // Free the memory from the GetAllLeaves function call.
@@ -1121,6 +1701,9 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
 //  Modifications:
 //    Kevin Griffin, Tue Sep 27 16:52:14 PDT 2016
 //    Ensured that all nodes throw an exception when at least one node does.
+// 
+//    Justin Privitera, Wed Jul 20 13:54:06 PDT 2022
+//    Use ostringstreams for error messages.
 //
 // ****************************************************************************
 void
@@ -1129,7 +1712,7 @@ avtXRayImageQuery::CheckData(vtkDataSet **dataSets,  const int nsets)
     int foundError = 0;     // 0=false, 1=true
     bool isArgException = false;
     bool isAbs = false;
-    char msg[256];
+    std::ostringstream msg;
     
     for (int i = 0; i < nsets; i++)
     {
@@ -1140,10 +1723,8 @@ avtXRayImageQuery::CheckData(vtkDataSet **dataSets,  const int nsets)
         {
             if (dataSets[i]->GetPointData()->GetArray(absVarName.c_str()) != NULL)
             {
-                snprintf(msg,256, "Variable %s is node-centered, but "
-                         "it must be zone-centered for this query.",
-                         absVarName.c_str());
-                
+                msg << "Variable " << absVarName << " is node-centered, but "
+                    << "it must be zone-centered for this query.\n";
                 foundError = 1;
                 isAbs = true;
                 break;
@@ -1161,10 +1742,8 @@ avtXRayImageQuery::CheckData(vtkDataSet **dataSets,  const int nsets)
             if (dataSets[i]->GetPointData()->GetArray(emisVarName.c_str())
                 != NULL)
             {
-                snprintf(msg,256, "Variable %s is node-centered, but "
-                         "it must be zone-centered for this query.",
-                         emisVarName.c_str());
-                
+                msg << "Variable " << emisVarName << " is node-centered, but "
+                    << "it must be zone-centered for this query.\n";
                 foundError = 1;
                 break;
             }
@@ -1186,15 +1765,18 @@ avtXRayImageQuery::CheckData(vtkDataSet **dataSets,  const int nsets)
         {
             if(isArgException)
             {
+                SetResultMessage(isAbs ? absVarName : emisVarName);
                 EXCEPTION1(QueryArgumentException, isAbs ? absVarName.c_str() : emisVarName.c_str());
             }
             else
             {
-                EXCEPTION1(ImproperUseException, msg);
+                SetResultMessage(msg.str());
+                EXCEPTION1(ImproperUseException, msg.str());
             }
         }
         else
         {
+            SetResultMessage("Exception encountered on another node");
             EXCEPTION1(VisItException, "Exception encountered on another node");
         }
     }
@@ -1203,8 +1785,10 @@ avtXRayImageQuery::CheckData(vtkDataSet **dataSets,  const int nsets)
     int maxNsets = UnifyMaximumValue(nsets);
     if(maxNsets <= 0)
     {
-        snprintf(msg, 256, "Variables %s and %s resulted in no data being selected.", absVarName.c_str(), emisVarName.c_str());
-        EXCEPTION1(VisItException, msg);
+        msg << "Variables " << absVarName << " and " << emisVarName 
+            << " resulted in no data being selected.\n";
+        SetResultMessage(msg.str());
+        EXCEPTION1(VisItException, msg.str());
     }
 }
 
@@ -1224,13 +1808,27 @@ avtXRayImageQuery::CheckData(vtkDataSet **dataSets,  const int nsets)
 //
 //    Eric Brugger, Wed May 27 14:37:36 PDT 2015
 //    I added an option to family output files.
+// 
+//    Justin Privitera, Tue Jun 14 11:30:54 PDT 2022
+//    Changed magic numbers to their new constants.
+// 
+//    Justin Privitera, Wed Jul 20 13:54:06 PDT 2022
+//    Use stringstreams. Fixes issue with long baseName being written
+//    to fixed length buffers.
+// 
+//    Justin Privitera, Tue Sep 27 10:52:59 PDT 2022
+//    Added new arg to control if bin info is written to filenames. It is only
+//    written if necessary.
+// 
+//    Justin Privitera, Wed Oct 12 11:38:11 PDT 2022
+//    Removed bmp output type.
 //
 // ****************************************************************************
 
 template <typename T>
 void
 avtXRayImageQuery::WriteImage(const char *baseName, int iImage, int nPixels,
-    T *fbuf)
+    T *fbuf, bool write_bin_info_to_filename)
 {
     //
     // Determine the range of the data excluding values less than zero.
@@ -1268,42 +1866,35 @@ avtXRayImageQuery::WriteImage(const char *baseName, int iImage, int nPixels,
         ipixel++;
     }
 
-    if (outputType == 0)
-    {
-        vtkImageWriter *writer = vtkBMPWriter::New();
-        char fileName[24];
-        sprintf(fileName, "%s%02d.bmp", baseName, iImage);
-        writer->SetFileName(fileName);
-        writer->SetInputData(image);
-        writer->Write();
-        writer->Delete();
-    }
-    else if (outputType == 1)
+    std::stringstream fileName;
+    if (write_bin_info_to_filename)
+        fileName << baseName << "." << std::setfill('0') << std::setw(2) << iImage;
+    else
+        fileName << baseName;
+
+    if (outputType == JPEG_OUT)
     {
         vtkImageWriter *writer = vtkJPEGWriter::New();
-        char fileName[24];
-        sprintf(fileName, "%s%02d.jpg", baseName, iImage);
-        writer->SetFileName(fileName);
+        fileName << ".jpg";
+        writer->SetFileName(fileName.str().c_str());
         writer->SetInputData(image);
         writer->Write();
         writer->Delete();
     }
-    else if (outputType == 2)
+    else if (outputType == PNG_OUT)
     {
         vtkImageWriter *writer = vtkPNGWriter::New();
-        char fileName[24];
-        sprintf(fileName, "%s%02d.png", baseName, iImage);
-        writer->SetFileName(fileName);
+        fileName << ".png";
+        writer->SetFileName(fileName.str().c_str());
         writer->SetInputData(image);
         writer->Write();
         writer->Delete();
     }
-    else if (outputType == 3)
+    else if (outputType == TIF_OUT)
     {
         vtkImageWriter *writer = vtkTIFFWriter::New();
-        char fileName[24];
-        sprintf(fileName, "%s%02d.tif", baseName, iImage);
-        writer->SetFileName(fileName);
+        fileName << ".tif";
+        writer->SetFileName(fileName.str().c_str());
         writer->SetInputData(image);
         writer->Write();
         writer->Delete();
@@ -1326,6 +1917,12 @@ avtXRayImageQuery::WriteImage(const char *baseName, int iImage, int nPixels,
 //
 //    Eric Brugger, Wed May 27 14:37:36 PDT 2015
 //    I added an option to family output files.
+// 
+//    Justin Privitera, Wed Jul 20 13:54:06 PDT 2022
+//    Use stringstreams.
+// 
+//    Justin Privitera, Tue Sep 27 10:52:59 PDT 2022
+//    Extra dot added for filenames.
 //
 // ****************************************************************************
 
@@ -1334,9 +1931,9 @@ void
 avtXRayImageQuery::WriteFloats(const char *baseName, int iImage, int nPixels,
     T *fbuf)
 {
-    char fileName[512];
-    sprintf(fileName, "%s%02d.bof", baseName, iImage);
-    FILE *file = fopen(fileName, "w");
+    std::stringstream fileName;
+    fileName << baseName << "." << std::setfill('0') << std::setw(2) << iImage << ".bof";
+    FILE *file = fopen(fileName.str().c_str(), "w");
     fwrite(fbuf, sizeof(T), nPixels, file);
     fclose(file);
 }
@@ -1357,6 +1954,12 @@ avtXRayImageQuery::WriteFloats(const char *baseName, int iImage, int nPixels,
 //
 //    Eric Brugger, Wed May 27 14:37:36 PDT 2015
 //    I added an option to family output files.
+// 
+//    Justin Privitera, Wed Jul 20 13:54:06 PDT 2022
+//    Use stringstreams.
+// 
+//    Justin Privitera, Tue Sep 27 10:52:59 PDT 2022
+//    Extra dot added for filenames.
 //
 // ****************************************************************************
 
@@ -1364,9 +1967,9 @@ void
 avtXRayImageQuery::WriteBOVHeader(const char *baseName, const char *varName,
     int iBin, int nx, int ny, const char *type)
 {
-    char fileName[24];
-    sprintf(fileName, "%s%02d.bov", baseName, iBin);
-    FILE *file = fopen(fileName, "w");
+    std::stringstream fileName;
+    fileName << baseName << "." << std::setfill('0') << std::setw(2) << iBin << ".bov";
+    FILE *file = fopen(fileName.str().c_str(), "w");
     fprintf(file, "TIME: 0\n");
     fprintf(file, "DATA_FILE: %s%02d.bof\n", baseName, iBin);
     fprintf(file, "DATA_SIZE: %d %d 1\n", nx, ny);
@@ -1385,10 +1988,762 @@ avtXRayImageQuery::WriteBOVHeader(const char *baseName, const char *varName,
 }
 
 // ****************************************************************************
+//  Method: avtXRayImageQuery::WriteArrays
+//
+//  Purpose:
+//    Write image to specified conduit arrays.
+//
+//  Programmer: Justin Privitera
+//  Creation:   Sat Jun 11 17:59:32 PDT 2022
+//
+//  Modifications:
+//
+// ****************************************************************************
+#ifdef HAVE_CONDUIT
+template <typename T>
+void
+avtXRayImageQuery::WriteArrays(vtkDataSet **leaves, 
+                               conduit::float64 *intensity_vals,
+                               conduit::float64 *depth_vals,
+                               int numBins)
+{
+    vtkDataArray *intensity;
+    vtkDataArray *pathLength;
+    int field_index = 0;
+    for (int i = 0; i < numBins; i ++)
+    {
+        intensity = leaves[i]->GetPointData()->GetArray("Intensity");
+        pathLength = leaves[numBins + i]->GetPointData()->GetArray("PathLength");
+        T *intensity_ptr = (T *) intensity->GetVoidPointer(0);
+        T *path_length_ptr = (T *) pathLength->GetVoidPointer(0);
+        for (int j = 0; j < numPixels; j ++)
+        {
+            intensity_vals[field_index] = intensity_ptr[j];
+            depth_vals[field_index] = path_length_ptr[j];
+            field_index ++;
+        }
+    }
+}
+#endif
+
+// ****************************************************************************
+//  Method: avtXRayImageQuery::WriteBlueprintImagingPlane
+//
+//  Purpose:
+//    Calculates imaging plane coords and writes them to blueprint output.
+//
+//  Programmer: Justin Privitera
+//  Creation:   November 14, 2022
+// 
+//  Modifications:
+//    Justin Privitera, Wed Dec  7 16:16:16 PST 2022
+//     - Added 5 new args that act as containers for various calculated vector 
+//    values.
+//     - Use the new Add3 inline function to reduce code lines. 
+// 
+//    Justin Privitera, Mon Dec 12 13:28:55 PST 2022
+//     - Use avtVectors.
+//     - Changed order and names of arguments.
+//     - Some calculations were lifted out of the function.
+//     - Calculated values are sent back up the call stack.
+//
+// ****************************************************************************
+#ifdef HAVE_CONDUIT
+void
+avtXRayImageQuery::WriteBlueprintImagingPlane(conduit::Node &data_out,
+                                              const std::string plane_name,
+                                              const double planeWidth,
+                                              const double planeHeight,
+                                              const avtVector &center,
+                                              const avtVector &left,
+                                              avtVector &llc,
+                                              avtVector &lrc,
+                                              avtVector &ulc,
+                                              avtVector &urc)
+{
+    // set up imaging plane coords
+    data_out["coordsets/" + plane_name + "_coords/type"] = "explicit";
+    data_out["coordsets/" + plane_name + "_coords/values/x"].set(conduit::DataType::float64(4));
+    data_out["coordsets/" + plane_name + "_coords/values/y"].set(conduit::DataType::float64(4));
+    data_out["coordsets/" + plane_name + "_coords/values/z"].set(conduit::DataType::float64(4));
+    double *xvals = data_out["coordsets/" + plane_name + "_coords/values/x"].value();
+    double *yvals = data_out["coordsets/" + plane_name + "_coords/values/y"].value();
+    double *zvals = data_out["coordsets/" + plane_name + "_coords/values/z"].value();
+
+    // set these values and send back up the callstack for use elsewhere
+    llc = center + (-1. * planeHeight) * viewUp +     planeWidth     * left;
+    lrc = center + (-1. * planeHeight) * viewUp + (-1. * planeWidth) * left;
+    ulc = center +     planeHeight     * viewUp +     planeWidth     * left;
+    urc = center +     planeHeight     * viewUp + (-1. * planeWidth) * left;
+    
+    // set x values    // set y values    // set z values
+    xvals[0] = llc.x;  yvals[0] = llc.y;  zvals[0] = llc.z;
+    xvals[1] = lrc.x;  yvals[1] = lrc.y;  zvals[1] = lrc.z;
+    xvals[2] = urc.x;  yvals[2] = urc.y;  zvals[2] = urc.z;
+    xvals[3] = ulc.x;  yvals[3] = ulc.y;  zvals[3] = ulc.z;
+
+    // set up imaging plane topo
+    data_out["topologies/" + plane_name + "_topo/type"] = "unstructured";
+    data_out["topologies/" + plane_name + "_topo/coordset"] = plane_name + "_coords";
+    data_out["topologies/" + plane_name + "_topo/elements/shape"] = "quad";
+    const int num_corners{4};
+    data_out["topologies/" + plane_name + "_topo/elements/connectivity"].set(conduit::DataType::int32(num_corners));
+    int *conn = data_out["topologies/" + plane_name + "_topo/elements/connectivity"].value();
+    for (int i = 0; i < num_corners; i ++) { conn[i] = i; }
+
+    // set up imaging plane trivial field
+    data_out["fields/" + plane_name + "_field/topology"] = plane_name + "_topo";
+    data_out["fields/" + plane_name + "_field/association"] = "element";
+    data_out["fields/" + plane_name + "_field/volume_dependent"] = "false";
+    data_out["fields/" + plane_name + "_field/values"].set(conduit::DataType::float64(1));
+    conduit::float64 *field_vals = data_out["fields/" + plane_name + "_field/values"].value();
+    field_vals[0] = 0;
+}
+#endif
+// ****************************************************************************
+//  Function: WriteBlueprintRayCornersMesh
+//
+//  Purpose:
+//    This function writes a mesh representing the ray corners used in the 
+//    query to the blueprint output.
+//
+//  Programmer: Justin Privitera
+//  Creation:   December 09, 2022
+// 
+//  Modifications:
+//
+// ****************************************************************************
+#ifdef HAVE_CONDUIT
+void
+WriteBlueprintRayCornersMesh(conduit::Node &data_out,
+                             const avtVector &llc_near,
+                             const avtVector &llc_far,
+                             const avtVector &lrc_near,
+                             const avtVector &lrc_far,
+                             const avtVector &urc_near,
+                             const avtVector &urc_far,
+                             const avtVector &ulc_near,
+                             const avtVector &ulc_far)
+{
+    const int num_corners{4};
+    const int num_points{8};
+
+    // set up ray coords
+    data_out["coordsets/ray_corners_coords/type"] = "explicit";
+    data_out["coordsets/ray_corners_coords/values/x"].set(conduit::DataType::float64(num_points));
+    data_out["coordsets/ray_corners_coords/values/y"].set(conduit::DataType::float64(num_points));
+    data_out["coordsets/ray_corners_coords/values/z"].set(conduit::DataType::float64(num_points));
+    double *xvals_ray = data_out["coordsets/ray_corners_coords/values/x"].value();
+    double *yvals_ray = data_out["coordsets/ray_corners_coords/values/y"].value();
+    double *zvals_ray = data_out["coordsets/ray_corners_coords/values/z"].value();
+                
+    // set x values             // set y values             // set z values
+    xvals_ray[0] = llc_near.x;  yvals_ray[0] = llc_near.y;  zvals_ray[0] = llc_near.z;
+    xvals_ray[1] = llc_far.x;   yvals_ray[1] = llc_far.y;   zvals_ray[1] = llc_far.z;
+    xvals_ray[2] = lrc_near.x;  yvals_ray[2] = lrc_near.y;  zvals_ray[2] = lrc_near.z;
+    xvals_ray[3] = lrc_far.x;   yvals_ray[3] = lrc_far.y;   zvals_ray[3] = lrc_far.z;
+    xvals_ray[4] = urc_near.x;  yvals_ray[4] = urc_near.y;  zvals_ray[4] = urc_near.z;
+    xvals_ray[5] = urc_far.x;   yvals_ray[5] = urc_far.y;   zvals_ray[5] = urc_far.z;
+    xvals_ray[6] = ulc_near.x;  yvals_ray[6] = ulc_near.y;  zvals_ray[6] = ulc_near.z;
+    xvals_ray[7] = ulc_far.x;   yvals_ray[7] = ulc_far.y;   zvals_ray[7] = ulc_far.z;
+
+    // set up ray topo
+    data_out["topologies/ray_corners_topo/type"] = "unstructured";
+    data_out["topologies/ray_corners_topo/coordset"] = "ray_corners_coords";
+    data_out["topologies/ray_corners_topo/elements/shape"] = "line";
+    data_out["topologies/ray_corners_topo/elements/connectivity"].set(conduit::DataType::int32(num_points));
+    int *conn = data_out["topologies/ray_corners_topo/elements/connectivity"].value();
+    for (int i = 0; i < num_points; i ++) { conn[i] = i; }
+
+    // set up ray trivial field
+    data_out["fields/ray_corners_field/topology"] = "ray_corners_topo";
+    data_out["fields/ray_corners_field/association"] = "element";
+    data_out["fields/ray_corners_field/volume_dependent"] = "false";
+    data_out["fields/ray_corners_field/values"].set(conduit::DataType::float64(num_corners));
+    conduit::float64 *field_vals = data_out["fields/ray_corners_field/values"].value();
+    for (int i = 0; i < num_corners; i ++) { field_vals[i] = 0; }
+}
+#endif
+
+// ****************************************************************************
+//  Method: avtXRayImageQuery::WriteBlueprintRaysMesh
+//
+//  Purpose:
+//    This function writes a mesh representing the rays used in the query
+//    to the blueprint output.
+//
+//  Programmer: Justin Privitera
+//  Creation:   December 09, 2022
+// 
+//  Modifications:
+//
+// ****************************************************************************
+#ifdef HAVE_CONDUIT
+void
+avtXRayImageQuery::WriteBlueprintRaysMesh(conduit::Node &data_out,
+                                          const double detectorWidth,
+                                          const double detectorHeight,
+                                          const avtVector &lrc_near,
+                                          const double farDetectorWidth,
+                                          const double farDetectorHeight,
+                                          const avtVector &lrc_far,
+                                          const avtVector &left)
+{
+    // calculate points for rays on near plane and far plane
+
+    // set up ray coords
+    const int num_lines{nx * ny};
+    const int num_points{num_lines * 2};
+    data_out["coordsets/ray_coords/type"] = "explicit";
+    data_out["coordsets/ray_coords/values/x"].set(conduit::DataType::float64(num_points));
+    data_out["coordsets/ray_coords/values/y"].set(conduit::DataType::float64(num_points));
+    data_out["coordsets/ray_coords/values/z"].set(conduit::DataType::float64(num_points));
+    double *xvals_ray = data_out["coordsets/ray_coords/values/x"].value();
+    double *yvals_ray = data_out["coordsets/ray_coords/values/y"].value();
+    double *zvals_ray = data_out["coordsets/ray_coords/values/z"].value();
+
+    avtVector scaledunitleft, scaledunitup, lrc;
+
+    for (int i = 0; i < 2; i ++)
+    {
+        double dx, dy;
+        if (i == 0) // 1st iteration is for the near plane
+        {
+            dx = detectorWidth / nx;
+            dy = detectorHeight / ny;
+            lrc = lrc_near;
+        }
+        else // 2nd iteration is for the far plane
+        {
+            dx = farDetectorWidth / nx;
+            dy = farDetectorHeight / ny;
+            lrc = lrc_far;
+        }
+        scaledunitleft = dx * left.normalized();
+        scaledunitup   = dy * viewUp.normalized();
+
+        for (int j = 0; j < nx; j ++)
+        {
+            for (int k = 0; k < ny; k ++)
+            {
+                avtVector temp = lrc + (0.5 + j) * scaledunitleft + (0.5 + k) * scaledunitup;
+                // 3d to 1d conversion
+                const int index{i * nx * ny + j * ny + k};
+                xvals_ray[index] = temp[0];
+                yvals_ray[index] = temp[1];
+                zvals_ray[index] = temp[2];
+            } 
+        }
+    }
+
+    // set up ray topo
+    data_out["topologies/ray_topo/type"] = "unstructured";
+    data_out["topologies/ray_topo/coordset"] = "ray_coords";
+    data_out["topologies/ray_topo/elements/shape"] = "line";
+    data_out["topologies/ray_topo/elements/connectivity"].set(conduit::DataType::int32(num_points));
+    int *conn = data_out["topologies/ray_topo/elements/connectivity"].value();
+    for (int i = 0; i < num_lines; i ++)
+    {
+        // connect each point in the near plane to a point in the far plane
+        conn[i * 2] = i;
+        conn[i * 2 + 1] = i + num_lines;
+    }
+
+    // set up ray trivial field
+    data_out["fields/ray_field/topology"] = "ray_topo";
+    data_out["fields/ray_field/association"] = "element";
+    data_out["fields/ray_field/volume_dependent"] = "false";
+    data_out["fields/ray_field/values"].set(conduit::DataType::float64(num_lines));
+    conduit::float64 *field_vals = data_out["fields/ray_field/values"].value();
+    for (int i = 0; i < num_lines; i ++) { field_vals[i] = i; }
+}
+#endif
+
+// ****************************************************************************
+//  Method: avtXRayImageQuery::WriteBlueprintImagingMeshes
+//
+//  Purpose:
+//    This function writes the various imaging meshes to the blueprint output.
+//    These meshes are specifically useful for visualizing where the x ray
+//    detector is looking and what it is looking at.
+//
+//  Programmer: Justin Privitera
+//  Creation:   December 09, 2022
+// 
+//  Modifications:
+//
+// ****************************************************************************
+#ifdef HAVE_CONDUIT
+void
+avtXRayImageQuery::WriteBlueprintImagingMeshes(conduit::Node &data_out,
+                                               const double nearWidth, 
+                                               const double nearHeight, 
+                                               const double viewWidth, 
+                                               const double viewHeight, 
+                                               const double farWidth, 
+                                               const double farHeight,
+                                               const double detectorWidth,
+                                               const double detectorHeight,
+                                               const double farDetectorWidth,
+                                               const double farDetectorHeight)
+{
+    // lower left corner, lower right corner, etc. - for near, image, and far planes
+    avtVector llc_near,  lrc_near,  ulc_near,  urc_near;
+    avtVector llc_image, lrc_image, ulc_image, urc_image;
+    avtVector llc_far,   lrc_far,   ulc_far,   urc_far;
+    // plane center
+    avtVector center;
+    // we will use the values to compute the rays to output for visualization
+
+    // calculate left vector by crossing normal with up vector
+    avtVector left = viewUp.cross(normal);
+
+    // write the imaging planes
+
+    // write near plane
+    center = nearPlane * normal + focus;
+    WriteBlueprintImagingPlane(data_out, "near_plane", nearWidth, nearHeight, 
+        center, left, llc_near, lrc_near, ulc_near, urc_near);
+
+    // write view plane
+    // we also send the focus vector as the center
+    WriteBlueprintImagingPlane(data_out, "view_plane", viewWidth, viewHeight, 
+        focus, left, llc_image, lrc_image, ulc_image, urc_image);
+
+    // write far plane
+    center = farPlane * normal + focus;
+    WriteBlueprintImagingPlane(data_out, "far_plane", farWidth, farHeight, 
+        center, left, llc_far, lrc_far, ulc_far, urc_far);
+
+    // write the ray meshes
+
+    WriteBlueprintRayCornersMesh(data_out,
+        llc_near, llc_far, lrc_near, lrc_far,
+        urc_near, urc_far, ulc_near, ulc_far);
+
+    WriteBlueprintRaysMesh(data_out,
+        detectorWidth, detectorHeight, lrc_near,
+        farDetectorWidth, farDetectorHeight, lrc_far,
+        left);
+}
+#endif
+
+// ****************************************************************************
+//  Method: avtXRayImageQuery::WriteBlueprintXRayView
+//
+//  Purpose:
+//    This function handles writing view-related information for the blueprint
+//    output metadata.
+//
+//  Programmer: Justin Privitera
+//  Creation:   December 09, 2022
+// 
+//  Modifications:
+//
+// ****************************************************************************
+#ifdef HAVE_CONDUIT
+void
+avtXRayImageQuery::WriteBlueprintXRayView(conduit::Node &data_out)
+{
+    data_out["state/xray_view/normal/x"] = normal[0];
+    data_out["state/xray_view/normal/y"] = normal[1];
+    data_out["state/xray_view/normal/z"] = normal[2];
+    data_out["state/xray_view/focus/x"] = focus[0];
+    data_out["state/xray_view/focus/y"] = focus[1];
+    data_out["state/xray_view/focus/z"] = focus[2];
+    data_out["state/xray_view/viewUp/x"] = viewUp[0];
+    data_out["state/xray_view/viewUp/y"] = viewUp[1];
+    data_out["state/xray_view/viewUp/z"] = viewUp[2];
+    data_out["state/xray_view/viewAngle"] = viewAngle;
+    data_out["state/xray_view/parallelScale"] = parallelScale;
+    data_out["state/xray_view/nearPlane"] = nearPlane;
+    data_out["state/xray_view/farPlane"] = farPlane;
+    data_out["state/xray_view/imagePan/x"] = imagePan[0];
+    data_out["state/xray_view/imagePan/y"] = imagePan[1];
+    data_out["state/xray_view/imageZoom"] = imageZoom;
+    data_out["state/xray_view/perspective"] = perspective;
+    data_out["state/xray_view/perspectiveStr"] = perspective ? "perspective" : "parallel";
+}
+#endif
+
+// ****************************************************************************
+//  Method: avtXRayImageQuery::WriteBlueprintXRayQuery
+//
+//  Purpose:
+//    This function handles writing query-related information for the blueprint
+//    output metadata.
+//
+//  Programmer: Justin Privitera
+//  Creation:   December 09, 2022
+// 
+//  Modifications:
+//
+// ****************************************************************************
+#ifdef HAVE_CONDUIT
+void
+avtXRayImageQuery::WriteBlueprintXRayQuery(conduit::Node &data_out, 
+                                           const int numBins)
+{
+    data_out["state/xray_query/divideEmisByAbsorb"] = divideEmisByAbsorb;
+    data_out["state/xray_query/divideEmisByAbsorbStr"] = divideEmisByAbsorb ? "yes" : "no";
+    data_out["state/xray_query/numXPixels"] = nx;
+    data_out["state/xray_query/numYPixels"] = ny;
+    data_out["state/xray_query/numBins"] = numBins;
+    data_out["state/xray_query/absVarName"] = absVarName;
+    data_out["state/xray_query/emisVarName"] = emisVarName;
+    data_out["state/xray_query/absUnits"] = absUnits;
+    data_out["state/xray_query/emisUnits"] = emisUnits;
+}
+#endif
+
+// ****************************************************************************
+//  Method: avtXRayImageQuery::WriteBlueprintXRayData
+//
+//  Purpose:
+//    This function handles writing general data for the blueprint output 
+//    metadata.
+//
+//  Programmer: Justin Privitera
+//  Creation:   December 09, 2022
+// 
+//  Modifications:
+//    Justin Privitera, Fri Dec 16 18:20:51 PST 2022
+//    Changed conduit output data types for spatial extents coords to be 
+//    consistent.
+//
+// ****************************************************************************
+#ifdef HAVE_CONDUIT
+void
+avtXRayImageQuery::WriteBlueprintXRayData(conduit::Node &data_out, 
+                                          const double detectorWidth, 
+                                          const double detectorHeight,
+                                          const int numfieldvals,
+                                          const conduit::float64 *intensity_vals,
+                                          const conduit::float64 *depth_vals)
+{
+    // If the near plane is too far back, it can cause the near width
+    // and height to be negative. However, the detector height and 
+    // width ought to be positive values, hence the absolute value.
+    data_out["state/xray_data/detectorWidth"] = fabs(detectorWidth);
+    data_out["state/xray_data/detectorHeight"] = fabs(detectorHeight);
+
+    // intensity and path length max and mins
+    conduit::float64 int_max, int_min, pl_max, pl_min;
+    int_max = int_min = pl_max = pl_min = 0;
+    if (numfieldvals > 0)
+    {
+        int_max = int_min = intensity_vals[0];
+        pl_max = pl_min = depth_vals[0];
+        for (int i = 0; i < numfieldvals; i ++)
+        {
+            if (int_max < intensity_vals[i])
+                int_max = intensity_vals[i];
+            if (int_min > intensity_vals[i])
+                int_min = intensity_vals[i];
+            if (pl_max < depth_vals[i])
+                pl_max = depth_vals[i];
+            if (pl_min > depth_vals[i])
+                pl_min = depth_vals[i];
+        }
+    }
+
+    data_out["state/xray_data/intensityMax"] = int_max;
+    data_out["state/xray_data/intensityMin"] = int_min;
+    data_out["state/xray_data/pathLengthMax"] = pl_max;
+    data_out["state/xray_data/pathLengthMin"] = pl_min;
+}
+#endif
+
+// ****************************************************************************
+//  Method: avtXRayImageQuery::WriteBlueprintMetadata
+//
+//  Purpose:
+//    This function handles writing metadata for the blueprint output.
+//
+//  Programmer: Justin Privitera
+//  Creation:   December 09, 2022
+// 
+//  Modifications:
+//
+// ****************************************************************************
+#ifdef HAVE_CONDUIT
+void
+avtXRayImageQuery::WriteBlueprintMetadata(conduit::Node &data_out,
+                                          const int cycle,
+                                          const int numBins,
+                                          const double detectorWidth, 
+                                          const double detectorHeight,
+                                          const int numfieldvals,
+                                          const conduit::float64 *intensity_vals,
+                                          const conduit::float64 *depth_vals)
+{
+    // top level items
+    data_out["state/time"] = GetInput()->GetInfo().GetAttributes().GetTime();
+    data_out["state/cycle"] = cycle;
+
+    WriteBlueprintXRayView(data_out);
+    WriteBlueprintXRayQuery(data_out, numBins);
+    WriteBlueprintXRayData(data_out, detectorWidth, detectorHeight, 
+                           numfieldvals, intensity_vals, depth_vals);
+}
+#endif
+
+// ****************************************************************************
+//  Method: avtXRayImageQuery::WriteBlueprintMeshCoordsets
+//
+//  Purpose:
+//    This function writes a coordset in pixel space and a coordset in space
+//    for the blueprint output.
+//
+//  Programmer: Justin Privitera
+//  Creation:   December 09, 2022
+// 
+//  Modifications:
+//
+// ****************************************************************************
+#ifdef HAVE_CONDUIT
+void
+avtXRayImageQuery::WriteBlueprintMeshCoordsets(conduit::Node &data_out,
+                                               const int x_coords_dim,
+                                               const int y_coords_dim,
+                                               const int z_coords_dim,
+                                               const double detectorWidth, 
+                                               const double detectorHeight)
+{
+    // set up coords
+    data_out["coordsets/image_coords/type"] = "rectilinear";
+    data_out["coordsets/image_coords/values/x"].set(conduit::DataType::int32(x_coords_dim));
+    int *xvals = data_out["coordsets/image_coords/values/x"].value();
+    for (int i = 0; i < x_coords_dim; i ++) { xvals[i] = i; }
+
+    data_out["coordsets/image_coords/values/y"].set(conduit::DataType::int32(y_coords_dim));
+    int *yvals = data_out["coordsets/image_coords/values/y"].value();
+    for (int i = 0; i < y_coords_dim; i ++) { yvals[i] = i; }
+
+    data_out["coordsets/image_coords/values/z"].set(conduit::DataType::int32(z_coords_dim));
+    int *zvals = data_out["coordsets/image_coords/values/z"].value();
+    for (int i = 0; i < z_coords_dim; i ++) { zvals[i] = i; }
+
+    data_out["coordsets/image_coords/labels/x"] = "width";
+    data_out["coordsets/image_coords/labels/y"] = "height";
+    data_out["coordsets/image_coords/labels/z"] = "energy_group";
+
+    data_out["coordsets/image_coords/units/x"] = "pixels";
+    data_out["coordsets/image_coords/units/y"] = "pixels";
+    data_out["coordsets/image_coords/units/z"] = "bins";
+
+    // calculate spatial extent coords
+    // (the physical extents of the image projected on the near plane)
+
+    const double nearDx{detectorWidth  / imageSize[0]};
+    const double nearDy{detectorHeight / imageSize[1]};
+
+    // set up spatial extents coords
+    data_out["coordsets/spatial_coords/type"] = "rectilinear";
+    data_out["coordsets/spatial_coords/values/x"].set(conduit::DataType::float64(x_coords_dim));
+    double *spatial_xvals = data_out["coordsets/spatial_coords/values/x"].value();
+    for (int i = 0; i < x_coords_dim; i ++) { spatial_xvals[i] = i * nearDx; }
+
+    data_out["coordsets/spatial_coords/values/y"].set(conduit::DataType::float64(y_coords_dim));
+    double *spatial_yvals = data_out["coordsets/spatial_coords/values/y"].value();
+    for (int i = 0; i < y_coords_dim; i ++) { spatial_yvals[i] = i * nearDy; }
+
+    // include energy group bins in blueprint output if they are provided
+    if (energyGroupBounds)
+    {
+        if (z_coords_dim == nEnergyGroupBounds) // only pass them thru if it makes sense to do so
+        {
+            data_out["coordsets/spatial_coords/values/z"].set(conduit::DataType::float64(nEnergyGroupBounds));
+            double *spatial_zvals = data_out["coordsets/spatial_coords/values/z"].value();
+            for (int i = 0; i < nEnergyGroupBounds; i ++) { spatial_zvals[i] = energyGroupBounds[i]; }                    
+        }
+        else
+        {
+            std::stringstream out;
+            out << "Energy group bounds size mismatch: provided " 
+                << nEnergyGroupBounds << " bounds, but " 
+                << z_coords_dim << " in query results.";
+            data_out["coordsets/spatial_coords/info"] = out.str();
+            data_out["coordsets/spatial_coords/values/z"].set(conduit::DataType::float64(z_coords_dim));
+            double *zvals = data_out["coordsets/spatial_coords/values/z"].value();
+            for (int i = 0; i < z_coords_dim; i ++) { zvals[i] = i; }
+        }
+    }
+    else
+    {
+        data_out["coordsets/spatial_coords/info"] = "Energy group bounds not provided.";
+        data_out["coordsets/spatial_coords/values/z"].set(conduit::DataType::float64(z_coords_dim));
+        double *zvals = data_out["coordsets/spatial_coords/values/z"].value();
+        for (int i = 0; i < z_coords_dim; i ++) { zvals[i] = i; }
+    }
+
+    data_out["coordsets/spatial_coords/units/x"] = spatialUnits;
+    data_out["coordsets/spatial_coords/units/y"] = spatialUnits;
+    data_out["coordsets/spatial_coords/units/z"] = energyUnits;
+
+    data_out["coordsets/spatial_coords/labels/x"] = "width";
+    data_out["coordsets/spatial_coords/labels/y"] = "height";
+    data_out["coordsets/spatial_coords/labels/z"] = "energy_group";
+}
+#endif
+
+// ****************************************************************************
+//  Method: avtXRayImageQuery::WriteBlueprintMeshTopologies
+//
+//  Purpose:
+//    This function writes two topologies to the blueprint output, one for the 
+//    image coords and one for the spatial extents.
+//
+//  Programmer: Justin Privitera
+//  Creation:   December 09, 2022
+// 
+//  Modifications:
+//
+// ****************************************************************************
+#ifdef HAVE_CONDUIT
+void
+avtXRayImageQuery::WriteBlueprintMeshTopologies(conduit::Node &data_out)
+{
+    // set up image topology
+    data_out["topologies/image_topo/coordset"] = "image_coords";
+    data_out["topologies/image_topo/type"] = "rectilinear";
+
+    // set up spatial extents topology
+    data_out["topologies/spatial_topo/coordset"] = "spatial_coords";
+    data_out["topologies/spatial_topo/type"] = "rectilinear";
+}
+#endif
+
+// ****************************************************************************
+//  Method: avtXRayImageQuery::WriteBlueprintMeshFields
+//
+//  Purpose:
+//    This function writes intensity and path length fields to the blueprint 
+//    output twice, once for the image coords and once for the spatial extents.
+//
+//  Programmer: Justin Privitera
+//  Creation:   December 09, 2022
+// 
+//  Modifications:
+//
+// ****************************************************************************
+#ifdef HAVE_CONDUIT
+void
+avtXRayImageQuery::WriteBlueprintMeshFields(conduit::Node &data_out, 
+                                            const int numfieldvals,
+                                            const int numBins,
+                                            vtkDataSet **leaves,
+                                            conduit::float64 *&intensity_vals,
+                                            conduit::float64 *&depth_vals)
+{
+    // intensities for image topo
+    data_out["fields/intensities/topology"] = "image_topo";
+    data_out["fields/intensities/association"] = "element";
+    data_out["fields/intensities/units"] = intensityUnits;
+    // set to float64 regardless of vtk data types
+    data_out["fields/intensities/values"].set(conduit::DataType::float64(numfieldvals));
+    intensity_vals = data_out["fields/intensities/values"].value();
+
+    // path length for image topo
+    data_out["fields/path_length/topology"] = "image_topo";
+    data_out["fields/path_length/association"] = "element";
+    data_out["fields/path_length/units"] = pathLengthUnits;
+    // set to float64 regardless of vtk data types
+    data_out["fields/path_length/values"].set(conduit::DataType::float64(numfieldvals));
+    depth_vals = data_out["fields/path_length/values"].value();
+
+    // write actual field values
+    const int datatype{leaves[0]->GetPointData()->GetArray("Intensity")->GetDataType()};
+    if (datatype == VTK_FLOAT)
+        WriteArrays<float>(leaves, intensity_vals, depth_vals, numBins);
+    else if (datatype == VTK_DOUBLE)
+        WriteArrays<double>(leaves, intensity_vals, depth_vals, numBins);
+    else if (datatype == VTK_INT)
+        WriteArrays<int>(leaves, intensity_vals, depth_vals, numBins);
+    else
+    {
+        std::ostringstream err_oss;
+        err_oss << "VTKDataType " << datatype << " is not supported.\n";
+        SetResultMessage(err_oss.str());
+        EXCEPTION1(VisItException, err_oss.str());
+    }
+
+    // set strides for image topo fields
+    data_out["fields/intensities/strides"].set(conduit::DataType::int64(3));
+    conduit::int64 *stride_ptr = data_out["fields/intensities/strides"].value();
+    stride_ptr[0] = 1;
+    stride_ptr[1] = nx;
+    stride_ptr[2] = nx * ny;            
+    data_out["fields/path_length/strides"].set(data_out["fields/intensities/strides"]);
+
+    // intensities for spatial topo
+    // simply copy over the existing intensities data
+    data_out["fields/intensities_spatial"].set(data_out["fields/intensities/"]);
+    // then modify the topo
+    data_out["fields/intensities_spatial/topology"] = "spatial_topo";
+
+    // path length for spatial topo
+    // simply copy over the existing path length data
+    data_out["fields/path_length_spatial"].set(data_out["fields/path_length/"]);
+    // then modify the topo
+    data_out["fields/path_length_spatial/topology"] = "spatial_topo";
+}
+#endif
+
+// ****************************************************************************
+//  Method: avtXRayImageQuery::WriteBlueprintMeshes
+//
+//  Purpose:
+//    This function crafts two blueprint meshes, one representing the output
+//    image in image space, and another representing it in physical space with
+//    energy group bounds.
+//
+//  Programmer: Justin Privitera
+//  Creation:   December 09, 2022
+// 
+//  Modifications:
+//
+// ****************************************************************************
+#ifdef HAVE_CONDUIT
+void
+avtXRayImageQuery::WriteBlueprintMeshes(conduit::Node &data_out, 
+                                        const double detectorWidth, 
+                                        const double detectorHeight,
+                                        const int numBins,
+                                        vtkDataSet **leaves,
+                                        int &numfieldvals,
+                                        conduit::float64 *&intensity_vals,
+                                        conduit::float64 *&depth_vals)
+{
+    const int x_coords_dim = nx + 1;
+    const int y_coords_dim = ny + 1;
+    const int z_coords_dim = numBins + 1;
+    
+    // this value is needed elsewhere so we send it back up the call chain
+    numfieldvals = (x_coords_dim - 1) * (y_coords_dim - 1) * (z_coords_dim - 1);
+
+    // We write one coordset for the image and one for the spatial extents
+    WriteBlueprintMeshCoordsets(data_out, 
+        x_coords_dim, y_coords_dim, z_coords_dim,
+        detectorWidth, detectorHeight);
+    
+    // Then we duplicate the topologies and fields for both coordsets
+    WriteBlueprintMeshTopologies(data_out);    
+    WriteBlueprintMeshFields(data_out, numfieldvals, numBins, 
+        leaves, intensity_vals, depth_vals);
+}
+#endif
+
+// ****************************************************************************
 //  Method: avtXRayImageQuery::GetDefaultInputParams
 //
 //  Purpose:
 //    Retrieves default values for input variables. 
+// 
+//  Note:
+//    If someone uses this function to get the default parameters, modifies
+//    them, and runs the query, the query will default to using the simplified
+//    view specification even if the user only modified the new view params.
 //
 //  Programmer: Kathleen Biagas 
 //  Creation:   July 15, 2011
@@ -1403,6 +2758,12 @@ avtXRayImageQuery::WriteBOVHeader(const char *baseName, const char *varName,
 //
 //    Eric Brugger, Thu May 21 12:15:59 PDT 2015
 //    I added support for debugging a ray.
+// 
+//    Justin Privitera, Thu Dec  1 11:39:12 PST 2022
+//    Added all missing default input parameters.
+// 
+//    Justin Privitera, Mon Dec 12 13:28:55 PST 2022
+//    Changed path_length_units to path_length_info.
 //
 // ****************************************************************************
 
@@ -1414,20 +2775,58 @@ avtXRayImageQuery::GetDefaultInputParams(MapNode &params)
     v.push_back("emissivity");
     params["vars"] = v;
 
-    params["divide_emis_by_absorb"] = 0;
     params["background_intensity"] = 0.0;
-    params["debug_ray"] = -1;
+    params["background_intensities"] = 0.0;
+    params["divide_emis_by_absorb"] = 0;
     params["output_type"] = std::string("png");
+    params["output_dir"] = std::string(".");
+    params["family_files"] = 0;
+    params["filename_scheme"] = 0;
+
+    intVector is;
+    is.push_back(200);
+    is.push_back(200);
+    params["image_size"] = is;
+
+    params["debug_ray"] = -1;
+    params["output_ray_bounds"] = 0;
+
+    doubleVector egb;
+    egb.push_back(0.0);
+    egb.push_back(1.0);
+    params["energy_group_bounds"] = egb;
+
+    params["spatial_units"] = std::string("spatial units");
+    params["energy_units"] = std::string("energy units");
+    params["abs_units"] = std::string("abs units");
+    params["emis_units"] = std::string("emis units");
+    params["intensity_units"] = std::string("intensity units");
+    params["path_length_info"] = std::string("path length info");
+
+    //
+    // The old view parameters.
+    //
+    params["width"] = 1.0;
+    params["height"] = 1.0;
+
+    doubleVector o;
+    o.push_back(0.0);
+    o.push_back(0.0);
+    o.push_back(0.0);
+    params["origin"] = o;
+
+    params["theta"] = 0.0;
+    params["phi"] = 0.0;
+
+    doubleVector uv;
+    uv.push_back(0.0);
+    uv.push_back(1.0);
+    uv.push_back(0.0);
+    params["up_vector"] = uv;
 
     //
     // The new view parameters.
     //
-    doubleVector n;
-    n.push_back(0.0);
-    n.push_back(0.0);
-    n.push_back(1.0);
-    params["normal"] = n;
-
     doubleVector f;
     f.push_back(0.0);
     f.push_back(0.0);
@@ -1439,6 +2838,12 @@ avtXRayImageQuery::GetDefaultInputParams(MapNode &params)
     vu.push_back(1.0);
     vu.push_back(0.0);
     params["view_up"] = vu;
+
+    doubleVector n;
+    n.push_back(0.0);
+    n.push_back(0.0);
+    n.push_back(1.0);
+    params["normal"] = n;
 
     params["view_angle"] = 30.;
     params["parallel_scale"] = 0.5;
@@ -1452,32 +2857,6 @@ avtXRayImageQuery::GetDefaultInputParams(MapNode &params)
 
     params["image_zoom"] = 1.;
     params["perspective"] = 1;
-
-    intVector is;
-    is.push_back(200);
-    is.push_back(200);
-    params["image_size"] = is;
-
-    //
-    // The old view parameters.
-    //
-    doubleVector o;
-    o.push_back(0.0);
-    o.push_back(0.0);
-    o.push_back(0.0);
-    params["origin"] = o;
-
-    doubleVector uv;
-    uv.push_back(0.0);
-    uv.push_back(1.0);
-    uv.push_back(0.0);
-    params["up_vector"] = uv;
-
-    params["theta"] = 0.0;
-    params["phi"] = 0.0;
-
-    params["width"] = 1.0;
-    params["height"] = 1.0;
 }
 
 // ****************************************************************************

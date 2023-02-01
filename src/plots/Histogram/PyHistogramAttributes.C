@@ -6,6 +6,7 @@
 #include <ObserverToCallback.h>
 #include <stdio.h>
 #include <Py2and3Support.h>
+#include <visit-config.h>
 #include <ColorAttribute.h>
 
 // ****************************************************************************
@@ -37,7 +38,7 @@ struct HistogramAttributesObject
 //
 static PyObject *NewHistogramAttributes(int);
 std::string
-PyHistogramAttributes_ToString(const HistogramAttributes *atts, const char *prefix)
+PyHistogramAttributes_ToString(const HistogramAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -1521,38 +1522,6 @@ PyHistogramAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "computeAsCDF") == 0)
         return HistogramAttributes_GetComputeAsCDF(self, NULL);
 
-    // Try and handle legacy fields
-
-    // lineStyle and it's possible enumerations
-    bool lineStyleFound = false;
-    if (strcmp(name, "lineStyle") == 0)
-    {
-        lineStyleFound = true;
-    }
-    else if (strcmp(name, "SOLID") == 0)
-    {
-        lineStyleFound = true;
-    }
-    else if (strcmp(name, "DASH") == 0)
-    {
-        lineStyleFound = true;
-    }
-    else if (strcmp(name, "DOT") == 0)
-    {
-        lineStyleFound = true;
-    }
-    else if (strcmp(name, "DOTDASH") == 0)
-    {
-        lineStyleFound = true;
-    }
-    if (lineStyleFound)
-    {
-        PyErr_WarnEx(NULL,
-            "lineStyle is no longer a valid Histogram "
-            "attribute.\nIt's value is being ignored, please remove "
-            "it from your script.\n", 3);
-        return PyInt_FromLong(0L);
-    }
 
     // Add a __dict__ answer so that dir() works
     if (!strcmp(name, "__dict__"))
@@ -1613,16 +1582,6 @@ PyHistogramAttributes_setattr(PyObject *self, char *name, PyObject *args)
     else if(strcmp(name, "computeAsCDF") == 0)
         obj = HistogramAttributes_SetComputeAsCDF(self, args);
 
-    // Try and handle legacy fields
-    if(obj == &NULL_PY_OBJ)
-    {
-        if(strcmp(name, "lineStyle") == 0)
-        {
-            PyErr_WarnEx(NULL, "'lineStyle' is obsolete. It is being ignored.", 3);
-            Py_INCREF(Py_None);
-            obj = Py_None;
-        }
-    }
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
@@ -1641,7 +1600,7 @@ static int
 HistogramAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     HistogramAttributesObject *obj = (HistogramAttributesObject *)v;
-    fprintf(fp, "%s", PyHistogramAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyHistogramAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -1649,7 +1608,7 @@ PyObject *
 HistogramAttributes_str(PyObject *v)
 {
     HistogramAttributesObject *obj = (HistogramAttributesObject *)v;
-    return PyString_FromString(PyHistogramAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyHistogramAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -1801,7 +1760,7 @@ PyHistogramAttributes_GetLogString()
 {
     std::string s("HistogramAtts = HistogramAttributes()\n");
     if(currentAtts != 0)
-        s += PyHistogramAttributes_ToString(currentAtts, "HistogramAtts.");
+        s += PyHistogramAttributes_ToString(currentAtts, "HistogramAtts.", true);
     return s;
 }
 
@@ -1814,7 +1773,7 @@ PyHistogramAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("HistogramAtts = HistogramAttributes()\n");
-        s += PyHistogramAttributes_ToString(currentAtts, "HistogramAtts.");
+        s += PyHistogramAttributes_ToString(currentAtts, "HistogramAtts.", true);
         cb(s);
     }
 }

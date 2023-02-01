@@ -34,6 +34,22 @@
 using     std::string;
 using     std::vector;
 
+string
+TrimLeadingandTrailingWhitespace(string str)
+{
+    size_t start = str.find_first_not_of(" \t");
+    size_t end = str.find_last_not_of(" \t");
+    size_t range = end - start + 1;
+    if (start == string::npos || range <= 1)
+    {
+        static size_t cnt = 0;
+        char tmp[16];
+        snprintf(tmp, sizeof(tmp), "unknown_%zu", cnt ++);
+        return tmp;
+    }
+    return str.substr(start, range);
+}
+
 // ****************************************************************************
 //  Method: avtPlainTextFileFormat constructor
 //
@@ -457,6 +473,12 @@ avtPlainTextFileFormat::GetVectorVar(const char *varname)
 //
 //    Mark C. Miller, Tue Dec  1 13:06:57 PST 2020
 //    Switched to double precision for rows of data
+// 
+//    Justin Privitera, Fri Apr  1 11:18:38 PDT 2022
+//    Added TrimLeadingandTrailingWhitespace function
+//    to remove whitespace from variable names
+//    as they are read.
+// 
 // ****************************************************************************
 
 void
@@ -513,7 +535,8 @@ avtPlainTextFileFormat::ReadFile()
                 *end = '\0';
                 if (firstRowIsHeader && firstRow)
                 {
-                    variableNames.push_back(start);
+                    variableNames.push_back(
+                        TrimLeadingandTrailingWhitespace(start));
                 }
                 else
                 {
@@ -549,7 +572,8 @@ avtPlainTextFileFormat::ReadFile()
                 {
                     if (firstRowIsHeader && firstRow)
                     {
-                        variableNames.push_back(start);
+                        variableNames.push_back(
+                            TrimLeadingandTrailingWhitespace(start));
                     }
                     else
                     {

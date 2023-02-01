@@ -36,7 +36,7 @@ struct ToroidalPoloidalProjectionObject
 //
 static PyObject *NewToroidalPoloidalProjection(int);
 std::string
-PyToroidalPoloidalProjection_ToString(const ToroidalPoloidalProjection *atts, const char *prefix)
+PyToroidalPoloidalProjection_ToString(const ToroidalPoloidalProjection *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -519,7 +519,7 @@ static int
 ToroidalPoloidalProjection_print(PyObject *v, FILE *fp, int flags)
 {
     ToroidalPoloidalProjectionObject *obj = (ToroidalPoloidalProjectionObject *)v;
-    fprintf(fp, "%s", PyToroidalPoloidalProjection_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyToroidalPoloidalProjection_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -527,7 +527,7 @@ PyObject *
 ToroidalPoloidalProjection_str(PyObject *v)
 {
     ToroidalPoloidalProjectionObject *obj = (ToroidalPoloidalProjectionObject *)v;
-    return PyString_FromString(PyToroidalPoloidalProjection_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyToroidalPoloidalProjection_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -679,7 +679,7 @@ PyToroidalPoloidalProjection_GetLogString()
 {
     std::string s("ToroidalPoloidalProjection = ToroidalPoloidalProjection()\n");
     if(currentAtts != 0)
-        s += PyToroidalPoloidalProjection_ToString(currentAtts, "ToroidalPoloidalProjection.");
+        s += PyToroidalPoloidalProjection_ToString(currentAtts, "ToroidalPoloidalProjection.", true);
     return s;
 }
 
@@ -692,7 +692,7 @@ PyToroidalPoloidalProjection_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("ToroidalPoloidalProjection = ToroidalPoloidalProjection()\n");
-        s += PyToroidalPoloidalProjection_ToString(currentAtts, "ToroidalPoloidalProjection.");
+        s += PyToroidalPoloidalProjection_ToString(currentAtts, "ToroidalPoloidalProjection.", true);
         cb(s);
     }
 }

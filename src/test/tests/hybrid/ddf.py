@@ -16,45 +16,48 @@
 #    Cyrus Harrison, Tue Feb 23 12:40:36 PST 2021
 #    Added spatial collapse with ghost zones test.
 #
+#    Kathleen Biagas, Thu Feb 17 07:38:01 PST 2022
+#    Replace old ConstructDDFAttributes attribute names for new:
+#    ddfName -> name, ranges -> binBoundaries, numSamples -> numBins,
+#    statisticalOperator -> reductionOperator,
+#    codomainName -> varForReductionOperator.
+#
 # ----------------------------------------------------------------------------
 
 
-
 OpenDatabase(silo_data_path("curv2d.silo"))
-
-
 
 AddPlot("Pseudocolor", "d")
 DrawPlots()
 
 t = ConstructDDFAttributes()
-t.ddfName = "ddf1"
+t.name = "ddf1"
 t.varnames = ("u")
-t.ranges = (-1, 1)
-t.numSamples = (4)
-t.codomainName = "u"
-t.statisticalOperator = t.Average
+t.binBoundaries = (-1, 1)
+t.numBins = (4)
+t.varForReductionOperator = "u"
+t.reductionOperator = t.Average
 ConstructDDF(t)
 
 DefineScalarExpression("e1", "u - apply_ddf(curvmesh2d, ddf1)")
 ChangeActivePlotsVar("e1")
 Test("ddf_01")
 
-t.ddfName = "ddf2"
-t.statisticalOperator = t.Maximum
-t.codomainName = "v"
+t.name = "ddf2"
+t.reductionOperator = t.Maximum
+t.varForReductionOperator = "v"
 t.varnames = ("v")
 ConstructDDF(t)
 DefineScalarExpression("e2", "v - apply_ddf(curvmesh2d, ddf2)")
 ChangeActivePlotsVar("e2")
 Test("ddf_02")
 
-t.ddfName = "ddf3"
+t.name = "ddf3"
 t.varnames = ("u", "v")
-t.ranges = (-1, 1, -1, 1)
-t.numSamples = (25, 25)
-t.codomainName = "u"
-t.statisticalOperator = t.Minimum
+t.binBoundaries = (-1, 1, -1, 1)
+t.numBins = (25, 25)
+t.varForReductionOperator = "u"
+t.reductionOperator = t.Minimum
 ConstructDDF(t)
 
 DefineScalarExpression("e3", "u - apply_ddf(curvmesh2d, ddf3)")
@@ -63,12 +66,12 @@ Test("ddf_03")
 
 
 ChangeActivePlotsVar("u")
-t.ddfName = "ddf4"
+t.name = "ddf4"
 t.varnames = ("u", "v")
-t.ranges = (-1, 1, -1, 1)
-t.numSamples = (25, 25)
-t.codomainName = "u"
-t.statisticalOperator = t.RMS
+t.binBoundaries = (-1, 1, -1, 1)
+t.numBins = (25, 25)
+t.varForReductionOperator = "u"
+t.reductionOperator = t.RMS
 ConstructDDF(t)
 
 DefineScalarExpression("e4", "apply_ddf(curvmesh2d, ddf4)")
@@ -82,7 +85,7 @@ Test("ddf_04")
 
 def ddf(atts,var_name,ddf_op):
     # ddf helper used in the wild to normalize var
-    # and file names 
+    # and file names
     ddf_op_map = {"avg": atts.Average,
                   "min": atts.Minimum,
                   "max": atts.Maximum,
@@ -92,13 +95,13 @@ def ddf(atts,var_name,ddf_op):
                   "count":  atts.Count,
                   "rms": atts.RMS,
                   "pdf": atts.PDF}
-    atts.statisticalOperator = ddf_op_map[ddf_op]
+    atts.reductionOperator = ddf_op_map[ddf_op]
     visit.ConstructDDF(atts)
-    ndims = len(atts.numSamples)
+    ndims = len(atts.numBins)
     ddf_oname = "%s_%s_%dd" % (var_name,ddf_op,ndims)
-    if len(atts.numSamples) == 1:
-        src_fname = "%s.ultra" % atts.ddfName
-        des_fname = "%s.ult" % (atts.ddfName)
+    if len(atts.numBins) == 1:
+        src_fname = "%s.ultra" % atts.name
+        des_fname = "%s.ult" % (atts.name)
         os.rename(src_fname,des_fname)
         lines = open(des_fname).readlines()
         f     = open(des_fname, "w")
@@ -107,7 +110,7 @@ def ddf(atts,var_name,ddf_op):
             f.write(l)
         f.close()
     else:
-        src_fname = "%s.vtk" % atts.ddfName
+        src_fname = "%s.vtk" % atts.name
         des_fname = src_fname
         orig_vtk_var = "SCALARS %s float" % var_name
         ddf_vtk_var  = "SCALARS %s float" % ddf_oname
@@ -135,19 +138,19 @@ def ddf_collapse_test():
     DefineScalarExpression("mesh_z_zonal","recenter(coord(mesh)[2])")
     AddPlot("Pseudocolor","dist")
     DrawPlots()
-    atts                 = visit.ConstructDDFAttributes()
-    atts.ddfName         = "ddf_dist_1d"
-    atts.codomainName    = "dist"
-    atts.varnames   = ("mesh_x_zonal",)
-    atts.ranges     = (0,1)
-    atts.numSamples = (21,)
+    atts = visit.ConstructDDFAttributes()
+    atts.name = "ddf_dist_1d"
+    atts.varForReductionOperator = "dist"
+    atts.varnames = ("mesh_x_zonal",)
+    atts.binBoundaries = (0,1)
+    atts.numBins = (21,)
     ddf(atts,"dist","sum")
-    atts                 = visit.ConstructDDFAttributes()
-    atts.ddfName         = "ddf_dist_2d"
-    atts.codomainName    = "dist"
-    atts.varnames   = ("mesh_x_zonal", "mesh_y_zonal")
-    atts.ranges     = (0,1, 0,1)
-    atts.numSamples = (21,21)
+    atts = visit.ConstructDDFAttributes()
+    atts.name = "ddf_dist_2d"
+    atts.varForReductionOperator = "dist"
+    atts.varnames = ("mesh_x_zonal", "mesh_y_zonal")
+    atts.binBoundaries = (0,1, 0,1)
+    atts.numBins = (21,21)
     ddf(atts,"dist","sum")
     # plot 1d result
     DeleteAllPlots()

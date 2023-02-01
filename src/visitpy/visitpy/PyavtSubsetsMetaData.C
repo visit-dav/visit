@@ -37,12 +37,12 @@ struct avtSubsetsMetaDataObject
 //
 static PyObject *NewavtSubsetsMetaData(int);
 std::string
-PyavtSubsetsMetaData_ToString(const avtSubsetsMetaData *atts, const char *prefix)
+PyavtSubsetsMetaData_ToString(const avtSubsetsMetaData *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
 
-    str = PyavtVarMetaData_ToString(atts, prefix);
+    str = PyavtVarMetaData_ToString(atts, prefix, forLogging);
 
     snprintf(tmpStr, 1000, "%scatName = \"%s\"\n", prefix, atts->GetCatName().c_str());
     str += tmpStr;
@@ -51,7 +51,7 @@ PyavtSubsetsMetaData_ToString(const avtSubsetsMetaData *atts, const char *prefix
     { // new scope
         std::string objPrefix(prefix);
         objPrefix += "nameScheme.";
-        str += PyNameschemeAttributes_ToString(&atts->GetNameScheme(), objPrefix.c_str());
+        str += PyNameschemeAttributes_ToString(&atts->GetNameScheme(), objPrefix.c_str(), forLogging);
     }
     {   const stringVector &colorScheme = atts->colorScheme;
         snprintf(tmpStr, 1000, "%scolorScheme = (", prefix);
@@ -1063,7 +1063,7 @@ static int
 avtSubsetsMetaData_print(PyObject *v, FILE *fp, int flags)
 {
     avtSubsetsMetaDataObject *obj = (avtSubsetsMetaDataObject *)v;
-    fprintf(fp, "%s", PyavtSubsetsMetaData_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyavtSubsetsMetaData_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -1071,7 +1071,7 @@ PyObject *
 avtSubsetsMetaData_str(PyObject *v)
 {
     avtSubsetsMetaDataObject *obj = (avtSubsetsMetaDataObject *)v;
-    return PyString_FromString(PyavtSubsetsMetaData_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyavtSubsetsMetaData_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -1223,7 +1223,7 @@ PyavtSubsetsMetaData_GetLogString()
 {
     std::string s("avtSubsetsMetaData = avtSubsetsMetaData()\n");
     if(currentAtts != 0)
-        s += PyavtSubsetsMetaData_ToString(currentAtts, "avtSubsetsMetaData.");
+        s += PyavtSubsetsMetaData_ToString(currentAtts, "avtSubsetsMetaData.", true);
     return s;
 }
 
@@ -1236,7 +1236,7 @@ PyavtSubsetsMetaData_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("avtSubsetsMetaData = avtSubsetsMetaData()\n");
-        s += PyavtSubsetsMetaData_ToString(currentAtts, "avtSubsetsMetaData.");
+        s += PyavtSubsetsMetaData_ToString(currentAtts, "avtSubsetsMetaData.", true);
         cb(s);
     }
 }

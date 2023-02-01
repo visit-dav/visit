@@ -341,6 +341,8 @@ avtVariableMapper::SetMappersMinMax(void)
         GetRange(mmin, mmax);
     }
 
+    if (mmax < mmin)
+        mmin = mmax = 0.;
     for (int i = 0 ; i < nMappers ; i++)
     {
         if (mappers[i] != NULL)

@@ -1,1 +1,1 @@
-The x ray image query results were written to the file output00.png
+The x ray image query results were written to the file output.png

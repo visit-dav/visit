@@ -141,7 +141,7 @@ class PythonQuery(PythonFilter):
         pass
     def post_execute(self):
         """
-        Called after streamining execute of all chunks.
+        Called after streaming execute of all chunks.
         To return results use:
           self.set_result_text()
           self.set_result_value()

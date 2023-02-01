@@ -36,7 +36,7 @@ struct LCSAttributesObject
 //
 static PyObject *NewLCSAttributes(int);
 std::string
-PyLCSAttributes_ToString(const LCSAttributes *atts, const char *prefix)
+PyLCSAttributes_ToString(const LCSAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -4482,7 +4482,7 @@ static int
 LCSAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     LCSAttributesObject *obj = (LCSAttributesObject *)v;
-    fprintf(fp, "%s", PyLCSAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyLCSAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -4490,7 +4490,7 @@ PyObject *
 LCSAttributes_str(PyObject *v)
 {
     LCSAttributesObject *obj = (LCSAttributesObject *)v;
-    return PyString_FromString(PyLCSAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyLCSAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -4642,7 +4642,7 @@ PyLCSAttributes_GetLogString()
 {
     std::string s("LCSAtts = LCSAttributes()\n");
     if(currentAtts != 0)
-        s += PyLCSAttributes_ToString(currentAtts, "LCSAtts.");
+        s += PyLCSAttributes_ToString(currentAtts, "LCSAtts.", true);
     return s;
 }
 
@@ -4655,7 +4655,7 @@ PyLCSAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("LCSAtts = LCSAttributes()\n");
-        s += PyLCSAttributes_ToString(currentAtts, "LCSAtts.");
+        s += PyLCSAttributes_ToString(currentAtts, "LCSAtts.", true);
         cb(s);
     }
 }

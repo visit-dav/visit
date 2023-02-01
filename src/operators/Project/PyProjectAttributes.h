@@ -22,7 +22,7 @@ PyObject *     PyProjectAttributes_Wrap(const ProjectAttributes *attr);
 void           PyProjectAttributes_SetParent(PyObject *obj, PyObject *parent);
 void           PyProjectAttributes_SetDefaults(const ProjectAttributes *atts);
 std::string    PyProjectAttributes_GetLogString();
-std::string    PyProjectAttributes_ToString(const ProjectAttributes *, const char *);
+std::string    PyProjectAttributes_ToString(const ProjectAttributes *, const char *, const bool=false);
 PyObject *     PyProjectAttributes_getattr(PyObject *self, char *name);
 int            PyProjectAttributes_setattr(PyObject *self, char *name, PyObject *args);
 extern PyMethodDef PyProjectAttributes_methods[PROJECTATTRIBUTES_NMETH];

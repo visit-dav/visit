@@ -493,17 +493,79 @@ object's lower left corner.
 The size of the text is set using the **Height** spin box. The height is the
 fraction of the visualization window height.
 
-To set the text that a text annotation object displays, type a new string
-into the **Text** text field. You can make the text annotation object display
-any characters that you type in but you can also use the $time wildcard
-string to make the text annotation object display the time for the current
-time state of the active database. A text string of the form: Time=$time
-will display Time=10 in the visualization window when the active database's
-time is 10. Whatever text you enter for the text annotation object is used
-to identify the text annotation object in the **Annotation objects** list.
+To set the text that a text annotation object displays, type a new string into the **Text** text field.
+You can make the text annotation object display any characters that you type in.
+Whatever text you enter for the text annotation object is used to identify the text annotation object in the **Annotation objects** list.
+In addition to the usual text properties, text annotation objects can also include a shadow.
 
-In addition to the usual text properties, text annotation objects can also
-include a shadow.
+Database values in text annotations
+"""""""""""""""""""""""""""""""""""
+
+A variety of values from a database can be displayed in text annotations.
+These are introduced with a leading ``$`` character followed by the database value's name.
+An optional ``%`` character following the value's name introduces a `printf-style formatting string <https://en.wikipedia.org/wiki/Printf_format_string>`__ which can be used to control the value's printed format.
+
+.. warning::
+
+   Presently, the ``$`` values that are displayed are taken always from the *first* plot in the plot list.
+   If the plot list is changed such that the first plot that was in effect at the time the annotation was created, the rendered text for the annotation may change.
+
+The list of values currently supported along with their default formats are 
+
+    +--------------------+----------+-------------------------------------+
+    |   **Value name**   | **Fmt**  |       **Meaning**                   |
+    +--------------------+----------+-------------------------------------+
+    | time               |    %g    |  time value                         |
+    +--------------------+----------+-------------------------------------+
+    | cycle              |    %d    |  cycle number                       |
+    +--------------------+----------+-------------------------------------+
+    | index              |    %d    |  state number starting from zero    |
+    +--------------------+----------+-------------------------------------+
+    | numstates          |    %d    |  total number of states in database |
+    +--------------------+----------+-------------------------------------+
+    | dbcomment          |    %s    |  database comment                   |
+    +--------------------+----------+-------------------------------------+
+    | lod                |    %z    |  levels of detail                   |
+    +--------------------+----------+-------------------------------------+
+    | vardim             |    %d    |  variable dimension                 |
+    +--------------------+----------+-------------------------------------+
+    | numvar             |    %d    |  number of variables                |
+    +--------------------+----------+-------------------------------------+
+    | topdim             |    %d    |  topological dim. of assoc. mesh    |
+    +--------------------+----------+-------------------------------------+
+    | spatialdim         |    %d    |  spatial dim. of assoc. mesh        |
+    +--------------------+----------+-------------------------------------+
+    | varname            |    %s    |  variable name                      |
+    +--------------------+----------+-------------------------------------+
+    | varunits           |    %s    |  variable units                     |
+    +--------------------+----------+-------------------------------------+
+    | meshname           |    %s    |  name of mesh assoc. w/variable     |
+    +--------------------+----------+-------------------------------------+
+    | filename           |    %s    |  name of database file              |
+    +--------------------+----------+-------------------------------------+
+    | fulldbname         |    %s    |  full path name of database file    |
+    +--------------------+----------+-------------------------------------+
+    | xunits             |    %s    |  x units                            |
+    +--------------------+----------+-------------------------------------+
+    | yunits             |    %s    |  y units                            |
+    +--------------------+----------+-------------------------------------+
+    | zunits             |    %s    |  z units                            |
+    +--------------------+----------+-------------------------------------+
+    | xlabel             |    %s    |  x axis label                       |
+    +--------------------+----------+-------------------------------------+
+    | ylabel             |    %s    |  y axis label                       |
+    +--------------------+----------+-------------------------------------+
+    | zlabel             |    %s    |  z axis label                       |
+    +--------------------+----------+-------------------------------------+
+
+For example, to create a text annoation which displays ``State index = XXX`` where ``XXX`` is the number for the index, set the annotation string to ``State index = $index``.
+To display the current cycle number always with 6 digits and leading zeros when necessary, use the string ``$cycle%06d`` where the optional ``%`` followed by a printf-style format string is specified.
+To display the first 3 characters of the variable name, use the string ``$varname%.3s``.
+
+The ``$dbcomment`` is often useful because it allows any arbitrary text defined in the database for the current state to be used.
+In particular, if the *state space* of a given database is rather complicated involving, for example, not only iterations of the main PDE solve loop but also mesh adaptivity iterations, material advection iterations, etc, the database comment is a way to capture all relevant iteration identifiers.
+
+Multiple database values can appear in a text annotation string and the same value can also appear multiple times.
 
 3D text annotation objects
 """"""""""""""""""""""""""
@@ -767,17 +829,16 @@ their size, and optional transparency color.
   
    An Example of a visualization with two overlaid image annotations
 
-The first step in incorporating an image annotation into a visualization
-is to choose the file that contains the image that will serve as the
-annotation. To choose an image file for the image annotation, type in
-the full path and filename to the file that you want to use into the
-**Image source** text field. You can also use the file browser to locate
-the image file if you click on the "..." button to the right of the
-**Image source** text field in the **Image annotation interface**, shown
-in :numref:`Figure %s <fig-MakingItPretty-AnnotationObjectImage>`. Note
-that since image annotations are incorporated into a visualization inside
-of VisIt_'s viewer component, the image file must be located on the same
-computer that runs the viewer.
+The first step in incorporating an image annotation into a visualization is to choose the file that contains the image that will serve as the annotation.
+To choose an image file for the image annotation, type in the full path and filename to the file that you want to use into the **Image source** text field.
+You can also use the file browser to locate the image file if you click on the "..." button to the right of the **Image source** text field in the **Image annotation interface**, shown in :numref:`Figure %s <fig-MakingItPretty-AnnotationObjectImage>`.
+
+.. warning::
+
+   Currently, there is a limitation in the use of image annotations while operating in client/server mode.
+   The *path* used must be the *same* on both the local (client) and remote (server) machines.
+   Often, the only way to achieve this may be to have the image file in ``/tmp`` or ``/var/tmp``.
+   For parallel engines, this may necessitate a complicated set of manual steps to a) wait for the parallel job to start, b) identify the node running MPI rank 0 (the only MPI rank where annotations are processed) and c) copy the file to the ``/tmp`` directory on that node assuming access controls will even allow that.
 
 .. _fig-MakingItPretty-AnnotationObjectImage:
 

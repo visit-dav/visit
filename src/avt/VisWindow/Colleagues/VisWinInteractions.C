@@ -47,7 +47,7 @@
 // ****************************************************************************
 
 VisWinInteractions::VisWinInteractions(VisWindowColleagueProxy &c,
-                                       VisWindowInteractorProxy &i) 
+                                       VisWindowInteractorProxy &i)
     : VisWinColleague(c)
 {
     mode = NAVIGATE;
@@ -69,7 +69,7 @@ VisWinInteractions::VisWinInteractions(VisWindowColleagueProxy &c,
 //
 //  Modifications:
 //    Hank Childs, Wed Aug 15 15:05:18 PDT 2001
-//    Use VTK's memory management system rather than blindly deleting 
+//    Use VTK's memory management system rather than blindly deleting
 //    interactor styles.
 //
 //    Brad Whitlock, Mon Oct 1 09:16:19 PDT 2001
@@ -104,8 +104,8 @@ VisWinInteractions::~VisWinInteractions()
 //    Hank Childs, Tue Sep 18 10:41:30 PDT 2001
 //    Added cases to switch statement to fix compiler warning.
 //
-//    Kathleen Bonnell, Wed May  8 14:06:50 PDT 2002  
-//    Added support for curve mode. 
+//    Kathleen Bonnell, Wed May  8 14:06:50 PDT 2002
+//    Added support for curve mode.
 //
 //    Jeremy Meredith, Mon Jan 28 17:59:07 EST 2008
 //    Added axis array mode.
@@ -175,14 +175,14 @@ VisWinInteractions::SetInteractionMode(INTERACTION_MODE m)
 // ****************************************************************************
 // Method: VisWinInteractions::GetInteractionMode
 //
-// Purpose: 
+// Purpose:
 //   Returns the current interaction mode.
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue Nov 7 16:12:21 PST 2000
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 INTERACTION_MODE
@@ -252,7 +252,7 @@ VisWinInteractions::Start3DMode(void)
 //  Purpose:
 //      Sets the appropriate interactor for Curve mode.
 //
-//  Programmer: Kathleen Bonnell 
+//  Programmer: Kathleen Bonnell
 //  Creation:   May 8, 2002
 //
 // ****************************************************************************
@@ -348,7 +348,7 @@ VisWinInteractions::Stop2DMode()
 //    Brad Whitlock, Mon Oct 1 09:25:34 PDT 2001
 //    I moved all of the behavior into the hot point interactor.
 //
-//    Kathleen Bonnell, Thu Nov 21 09:04:22 PST 2002 
+//    Kathleen Bonnell, Thu Nov 21 09:04:22 PST 2002
 //    Fixed type ( ->Stop2DMode).
 //
 // ****************************************************************************
@@ -369,7 +369,7 @@ VisWinInteractions::Stop3DMode(void)
 //  Purpose:
 //      Stops the Curve interactions.
 //
-//  Programmer: Kathleen Bonnell 
+//  Programmer: Kathleen Bonnell
 //  Creation:   May 8, 2002
 //
 // ****************************************************************************
@@ -471,7 +471,7 @@ VisWinInteractions::SetBoundingBoxMode(int val)
     }
     else
     {
-        // The continuous tool update mode does 
+        // The continuous tool update mode does
         // work when bounding box mode is off.
         if (toolUpdateMode == UPDATE_ONRELEASE)
             toolUpdateMode = UPDATE_CONTINUOUS;
@@ -624,8 +624,8 @@ VisWinInteractions::NoPlots(void)
 //  Creation:   August 15, 2001
 //
 //  Modifications:
-//    Kathleen Bonnell, Thu May 16 08:54:34 PDT 2002  
-//    Lineout not valid for 3D, so test and set mode to Navigate if necessary. 
+//    Kathleen Bonnell, Thu May 16 08:54:34 PDT 2002
+//    Lineout not valid for 3D, so test and set mode to Navigate if necessary.
 //
 //    Jeremy Meredith, Thu Jan 31 14:41:50 EST 2008
 //    Added new AxisArray window mode; no lineout support for it.
@@ -656,7 +656,7 @@ VisWinInteractions::HasPlots(void)
         {
             SetInteractionMode(mode);
         }
-        else 
+        else
         {
             SetInteractionMode(NAVIGATE);
         }
@@ -734,3 +734,22 @@ VisWinInteractions::GetEnableInteractionModeChanges() const
 {
     return enableInteractionModeChanges;
 }
+
+
+// ****************************************************************************
+//  Method: VisWinInteractions::SetOsprayRendering
+//
+//  Purpose:
+//      Lets interactors know whether ospray rendering is enabled or not.
+//
+//  Programmer: Kathleen Biagas
+//  Creation:   Wed Aug 17, 2022
+//
+// ****************************************************************************
+void
+VisWinInteractions::SetOsprayRendering(bool enabled)
+{
+    if(hotPointInteractor)
+        hotPointInteractor->SetOsprayRendering(enabled);
+}
+

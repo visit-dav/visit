@@ -36,7 +36,7 @@ struct avtMatSpeciesMetaDataObject
 //
 static PyObject *NewavtMatSpeciesMetaData(int);
 std::string
-PyavtMatSpeciesMetaData_ToString(const avtMatSpeciesMetaData *atts, const char *prefix)
+PyavtMatSpeciesMetaData_ToString(const avtMatSpeciesMetaData *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -349,7 +349,7 @@ static int
 avtMatSpeciesMetaData_print(PyObject *v, FILE *fp, int flags)
 {
     avtMatSpeciesMetaDataObject *obj = (avtMatSpeciesMetaDataObject *)v;
-    fprintf(fp, "%s", PyavtMatSpeciesMetaData_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyavtMatSpeciesMetaData_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -357,7 +357,7 @@ PyObject *
 avtMatSpeciesMetaData_str(PyObject *v)
 {
     avtMatSpeciesMetaDataObject *obj = (avtMatSpeciesMetaDataObject *)v;
-    return PyString_FromString(PyavtMatSpeciesMetaData_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyavtMatSpeciesMetaData_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -509,7 +509,7 @@ PyavtMatSpeciesMetaData_GetLogString()
 {
     std::string s("avtMatSpeciesMetaData = avtMatSpeciesMetaData()\n");
     if(currentAtts != 0)
-        s += PyavtMatSpeciesMetaData_ToString(currentAtts, "avtMatSpeciesMetaData.");
+        s += PyavtMatSpeciesMetaData_ToString(currentAtts, "avtMatSpeciesMetaData.", true);
     return s;
 }
 
@@ -522,7 +522,7 @@ PyavtMatSpeciesMetaData_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("avtMatSpeciesMetaData = avtMatSpeciesMetaData()\n");
-        s += PyavtMatSpeciesMetaData_ToString(currentAtts, "avtMatSpeciesMetaData.");
+        s += PyavtMatSpeciesMetaData_ToString(currentAtts, "avtMatSpeciesMetaData.", true);
         cb(s);
     }
 }

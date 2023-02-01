@@ -6,8 +6,10 @@
 
 # -- Path setup --------------------------------------------------------------
 
+# Attempt add_css_file only if the version of Sphinx actually supports it
 def setup(app):
-    app.add_css_file('custom.css')
+    if hasattr(app, 'add_css_file'):
+        app.add_css_file('custom.css')
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -33,8 +35,10 @@ release = '3.2.2'
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-extensions = ['sphinx.ext.mathjax']
+extensions = ['sphinx.ext.mathjax', 'sphinx.ext.autosectionlabel']
 
+# Force installation of any special stuff in the RTD virtual machine instance
+# needed to support any custom extensions.
 if os.environ.get('READTHEDOCS'):
     from subprocess import call
     call(['pip', 'install', 'sphinx-notfound-page'])
@@ -59,6 +63,7 @@ pygments_style = 'sphinx'
 
 # If true, keep warnings as "system message" paragraphs in the built documents.
 #keep_warnings = False
+suppress_warnings = ['image.nonlocal_uri']
 
 # If true, `todo` and `todoList` produce output, else they produce nothing.
 todo_include_todos = False
@@ -67,9 +72,13 @@ numfig = True
 
 # Best place to put a substitution for 'VisIt'
 # Authors should use either VisIt_ or VisIt_'s
+# fs*nix = fully supported, ps*nix = partially supported
 rst_epilog = """
 .. _VisIt: https://visit.llnl.gov
 .. _Silo: https://silo.llnl.gov
+.. |*nix| replace:: Centos, Debian, Fedora, Redhat, TOSS, Ubuntu
+.. |fs*nix| replace:: Redhat, TOSS, Ubuntu
+.. |ps*nix| replace:: Centos, Debian, Fedora
 """
 
 # Add any paths that contain templates here, relative to this directory.

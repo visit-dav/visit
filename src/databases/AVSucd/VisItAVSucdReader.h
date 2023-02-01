@@ -179,7 +179,7 @@ protected:
   int NumberOfFields;
   int NlistNodes;
 
-  ifstream *FileStream;
+  std::ifstream *FileStream;
 
   int ByteOrder;
   int GetLabel(char *string, int number, char *label);

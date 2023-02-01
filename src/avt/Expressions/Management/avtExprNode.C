@@ -33,6 +33,7 @@
 #include <avtConnComponentsExpression.h>
 #include <avtConstantCreatorExpression.h>
 #include <avtConstantFunctionExpression.h>
+#include <avtCrackWidthExpression.h>
 #include <avtCurvatureExpression.h>
 #include <avtCurveDomainExpression.h>
 #include <avtCurveExpression.h>
@@ -480,6 +481,9 @@ avtVectorExpr::CreateFilters(ExprPipelineState *state)
 //    Changed MinMax expression creation so that they construct with doMin
 //    as a construction parameter.
 //
+//    Kathleen Biagas, Wed June 15, 2022
+//    Added crack_width.
+//
 // ****************************************************************************
 
 avtExpressionFilter *
@@ -545,6 +549,8 @@ avtFunctionExpr::CreateFilters(string functionName)
         return new avtMergeTreeExpression(false);
     if (functionName == "local_threshold")
         return new avtLocalThresholdExpression();
+    if (functionName == "crack_width")
+        return new avtCrackWidthExpression();
     if (functionName == "python" || functionName == "py")
 #ifdef VISIT_PYTHON_FILTERS
         return new avtPythonExpression();

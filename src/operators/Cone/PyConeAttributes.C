@@ -36,7 +36,7 @@ struct ConeAttributesObject
 //
 static PyObject *NewConeAttributes(int);
 std::string
-PyConeAttributes_ToString(const ConeAttributes *atts, const char *prefix)
+PyConeAttributes_ToString(const ConeAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -728,7 +728,7 @@ static int
 ConeAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     ConeAttributesObject *obj = (ConeAttributesObject *)v;
-    fprintf(fp, "%s", PyConeAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyConeAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -736,7 +736,7 @@ PyObject *
 ConeAttributes_str(PyObject *v)
 {
     ConeAttributesObject *obj = (ConeAttributesObject *)v;
-    return PyString_FromString(PyConeAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyConeAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -888,7 +888,7 @@ PyConeAttributes_GetLogString()
 {
     std::string s("ConeAtts = ConeAttributes()\n");
     if(currentAtts != 0)
-        s += PyConeAttributes_ToString(currentAtts, "ConeAtts.");
+        s += PyConeAttributes_ToString(currentAtts, "ConeAtts.", true);
     return s;
 }
 
@@ -901,7 +901,7 @@ PyConeAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("ConeAtts = ConeAttributes()\n");
-        s += PyConeAttributes_ToString(currentAtts, "ConeAtts.");
+        s += PyConeAttributes_ToString(currentAtts, "ConeAtts.", true);
         cb(s);
     }
 }

@@ -37,7 +37,7 @@ struct AxisTitlesObject
 //
 static PyObject *NewAxisTitles(int);
 std::string
-PyAxisTitles_ToString(const AxisTitles *atts, const char *prefix)
+PyAxisTitles_ToString(const AxisTitles *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -50,7 +50,7 @@ PyAxisTitles_ToString(const AxisTitles *atts, const char *prefix)
     { // new scope
         std::string objPrefix(prefix);
         objPrefix += "font.";
-        str += PyFontAttributes_ToString(&atts->GetFont(), objPrefix.c_str());
+        str += PyFontAttributes_ToString(&atts->GetFont(), objPrefix.c_str(), forLogging);
     }
     if(atts->GetUserTitle())
         snprintf(tmpStr, 1000, "%suserTitle = 1\n", prefix);
@@ -491,7 +491,7 @@ static int
 AxisTitles_print(PyObject *v, FILE *fp, int flags)
 {
     AxisTitlesObject *obj = (AxisTitlesObject *)v;
-    fprintf(fp, "%s", PyAxisTitles_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyAxisTitles_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -499,7 +499,7 @@ PyObject *
 AxisTitles_str(PyObject *v)
 {
     AxisTitlesObject *obj = (AxisTitlesObject *)v;
-    return PyString_FromString(PyAxisTitles_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyAxisTitles_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -651,7 +651,7 @@ PyAxisTitles_GetLogString()
 {
     std::string s("AxisTitles = AxisTitles()\n");
     if(currentAtts != 0)
-        s += PyAxisTitles_ToString(currentAtts, "AxisTitles.");
+        s += PyAxisTitles_ToString(currentAtts, "AxisTitles.", true);
     return s;
 }
 
@@ -664,7 +664,7 @@ PyAxisTitles_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("AxisTitles = AxisTitles()\n");
-        s += PyAxisTitles_ToString(currentAtts, "AxisTitles.");
+        s += PyAxisTitles_ToString(currentAtts, "AxisTitles.", true);
         cb(s);
     }
 }

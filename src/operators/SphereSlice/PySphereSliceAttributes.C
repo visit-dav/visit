@@ -36,7 +36,7 @@ struct SphereSliceAttributesObject
 //
 static PyObject *NewSphereSliceAttributes(int);
 std::string
-PySphereSliceAttributes_ToString(const SphereSliceAttributes *atts, const char *prefix)
+PySphereSliceAttributes_ToString(const SphereSliceAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -288,7 +288,7 @@ static int
 SphereSliceAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     SphereSliceAttributesObject *obj = (SphereSliceAttributesObject *)v;
-    fprintf(fp, "%s", PySphereSliceAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PySphereSliceAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -296,7 +296,7 @@ PyObject *
 SphereSliceAttributes_str(PyObject *v)
 {
     SphereSliceAttributesObject *obj = (SphereSliceAttributesObject *)v;
-    return PyString_FromString(PySphereSliceAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PySphereSliceAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -448,7 +448,7 @@ PySphereSliceAttributes_GetLogString()
 {
     std::string s("SphereSliceAtts = SphereSliceAttributes()\n");
     if(currentAtts != 0)
-        s += PySphereSliceAttributes_ToString(currentAtts, "SphereSliceAtts.");
+        s += PySphereSliceAttributes_ToString(currentAtts, "SphereSliceAtts.", true);
     return s;
 }
 
@@ -461,7 +461,7 @@ PySphereSliceAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("SphereSliceAtts = SphereSliceAttributes()\n");
-        s += PySphereSliceAttributes_ToString(currentAtts, "SphereSliceAtts.");
+        s += PySphereSliceAttributes_ToString(currentAtts, "SphereSliceAtts.", true);
         cb(s);
     }
 }

@@ -3584,7 +3584,7 @@ ViewerMethods::ResetPickAttributes()
 
 
 // ****************************************************************************
-// Method: ViewerMethods::SetActiveContinuousColorTable
+// Method: ViewerMethods::SetDefaultContinuousColorTable
 //
 // Purpose: 
 //   Sets the active continuous color table. This is the color table that
@@ -3597,16 +3597,19 @@ ViewerMethods::ResetPickAttributes()
 // Creation:   Wed Jun 13 16:55:21 PST 2001
 //
 // Modifications:
+//   Justin Privitera, Wed May 18 11:25:46 PDT 2022
+//   Changed *active* to *default* for everything related to color tables.
+//   In this case I changed the function name.
 //   
 // ****************************************************************************
 
 void
-ViewerMethods::SetActiveContinuousColorTable(const std::string &colorTableName)
+ViewerMethods::SetDefaultContinuousColorTable(const std::string &colorTableName)
 {
     // If it's a valid color table name, make it active.
     if(state->GetColorTableAttributes()->GetColorTableIndex(colorTableName) != -1)
     {
-        state->GetColorTableAttributes()->SetActiveContinuous(colorTableName);
+        state->GetColorTableAttributes()->SetDefaultContinuous(colorTableName);
         state->GetColorTableAttributes()->Notify();
 
         // Update the color table. This has the effect of making all plots
@@ -3617,7 +3620,7 @@ ViewerMethods::SetActiveContinuousColorTable(const std::string &colorTableName)
 }
 
 // ****************************************************************************
-// Method: ViewerMethods::SetActiveDiscreteColorTable
+// Method: ViewerMethods::SetDefaultDiscreteColorTable
 //
 // Purpose: 
 //   Sets the active discrete color table. This is the color table that
@@ -3630,16 +3633,19 @@ ViewerMethods::SetActiveContinuousColorTable(const std::string &colorTableName)
 // Creation:   Wed Jun 13 16:55:21 PST 2001
 //
 // Modifications:
+//   Justin Privitera, Wed May 18 11:25:46 PDT 2022
+//   Changed *active* to *default* for everything related to color tables.
+//   In this case I changed the function name.
 //   
 // ****************************************************************************
 
 void
-ViewerMethods::SetActiveDiscreteColorTable(const std::string &colorTableName)
+ViewerMethods::SetDefaultDiscreteColorTable(const std::string &colorTableName)
 {
     // If it's a valid color table name, make it active.
     if(state->GetColorTableAttributes()->GetColorTableIndex(colorTableName) != -1)
     {
-        state->GetColorTableAttributes()->SetActiveDiscrete(colorTableName);
+        state->GetColorTableAttributes()->SetDefaultDiscrete(colorTableName);
         state->GetColorTableAttributes()->Notify();
     }
 }

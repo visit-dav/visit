@@ -40,6 +40,7 @@ void InternalResampleAttributes::Init()
     arbitratorLessThan = false;
     arbitratorVarName = "default";
     distributedResample = false;
+    perRankResample = false;
 
     InternalResampleAttributes::SelectAll();
 }
@@ -79,6 +80,7 @@ void InternalResampleAttributes::Copy(const InternalResampleAttributes &obj)
     arbitratorLessThan = obj.arbitratorLessThan;
     arbitratorVarName = obj.arbitratorVarName;
     distributedResample = obj.distributedResample;
+    perRankResample = obj.perRankResample;
 
     InternalResampleAttributes::SelectAll();
 }
@@ -253,7 +255,8 @@ InternalResampleAttributes::operator == (const InternalResampleAttributes &obj) 
             (useArbitrator == obj.useArbitrator) &&
             (arbitratorLessThan == obj.arbitratorLessThan) &&
             (arbitratorVarName == obj.arbitratorVarName) &&
-            (distributedResample == obj.distributedResample));
+            (distributedResample == obj.distributedResample) &&
+            (perRankResample == obj.perRankResample));
 }
 
 // ****************************************************************************
@@ -415,6 +418,7 @@ InternalResampleAttributes::SelectAll()
     Select(ID_arbitratorLessThan,  (void *)&arbitratorLessThan);
     Select(ID_arbitratorVarName,   (void *)&arbitratorVarName);
     Select(ID_distributedResample, (void *)&distributedResample);
+    Select(ID_perRankResample,     (void *)&perRankResample);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -555,6 +559,12 @@ InternalResampleAttributes::CreateNode(DataNode *parentNode, bool completeSave, 
         node->AddNode(new DataNode("distributedResample", distributedResample));
     }
 
+    if(completeSave || !FieldsEqual(ID_perRankResample, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("perRankResample", perRankResample));
+    }
+
 
     // Add the node to the parent node.
     if(addToParent || forceAdd)
@@ -627,6 +637,8 @@ InternalResampleAttributes::SetFromNode(DataNode *parentNode)
         SetArbitratorVarName(node->AsString());
     if((node = searchNode->GetNode("distributedResample")) != 0)
         SetDistributedResample(node->AsBool());
+    if((node = searchNode->GetNode("perRankResample")) != 0)
+        SetPerRankResample(node->AsBool());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -759,6 +771,13 @@ InternalResampleAttributes::SetDistributedResample(bool distributedResample_)
     Select(ID_distributedResample, (void *)&distributedResample);
 }
 
+void
+InternalResampleAttributes::SetPerRankResample(bool perRankResample_)
+{
+    perRankResample = perRankResample_;
+    Select(ID_perRankResample, (void *)&perRankResample);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Get property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -877,6 +896,12 @@ InternalResampleAttributes::GetDistributedResample() const
     return distributedResample;
 }
 
+bool
+InternalResampleAttributes::GetPerRankResample() const
+{
+    return perRankResample;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Select property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -929,6 +954,7 @@ InternalResampleAttributes::GetFieldName(int index) const
     case ID_arbitratorLessThan:  return "arbitratorLessThan";
     case ID_arbitratorVarName:   return "arbitratorVarName";
     case ID_distributedResample: return "distributedResample";
+    case ID_perRankResample:     return "perRankResample";
     default:  return "invalid index";
     }
 }
@@ -971,6 +997,7 @@ InternalResampleAttributes::GetFieldType(int index) const
     case ID_arbitratorLessThan:  return FieldType_bool;
     case ID_arbitratorVarName:   return FieldType_string;
     case ID_distributedResample: return FieldType_bool;
+    case ID_perRankResample:     return FieldType_bool;
     default:  return FieldType_unknown;
     }
 }
@@ -1013,6 +1040,7 @@ InternalResampleAttributes::GetFieldTypeName(int index) const
     case ID_arbitratorLessThan:  return "bool";
     case ID_arbitratorVarName:   return "string";
     case ID_distributedResample: return "bool";
+    case ID_perRankResample:     return "bool";
     default:  return "invalid index";
     }
 }
@@ -1127,6 +1155,11 @@ InternalResampleAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) c
     case ID_distributedResample:
         {  // new scope
         retval = (distributedResample == obj.distributedResample);
+        }
+        break;
+    case ID_perRankResample:
+        {  // new scope
+        retval = (perRankResample == obj.perRankResample);
         }
         break;
     default: retval = false;

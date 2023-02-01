@@ -36,7 +36,7 @@ struct BoundaryOpAttributesObject
 //
 static PyObject *NewBoundaryOpAttributes(int);
 std::string
-PyBoundaryOpAttributes_ToString(const BoundaryOpAttributes *atts, const char *prefix)
+PyBoundaryOpAttributes_ToString(const BoundaryOpAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -187,7 +187,7 @@ static int
 BoundaryOpAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     BoundaryOpAttributesObject *obj = (BoundaryOpAttributesObject *)v;
-    fprintf(fp, "%s", PyBoundaryOpAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyBoundaryOpAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -195,7 +195,7 @@ PyObject *
 BoundaryOpAttributes_str(PyObject *v)
 {
     BoundaryOpAttributesObject *obj = (BoundaryOpAttributesObject *)v;
-    return PyString_FromString(PyBoundaryOpAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyBoundaryOpAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -347,7 +347,7 @@ PyBoundaryOpAttributes_GetLogString()
 {
     std::string s("BoundaryOpAtts = BoundaryOpAttributes()\n");
     if(currentAtts != 0)
-        s += PyBoundaryOpAttributes_ToString(currentAtts, "BoundaryOpAtts.");
+        s += PyBoundaryOpAttributes_ToString(currentAtts, "BoundaryOpAtts.", true);
     return s;
 }
 
@@ -360,7 +360,7 @@ PyBoundaryOpAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("BoundaryOpAtts = BoundaryOpAttributes()\n");
-        s += PyBoundaryOpAttributes_ToString(currentAtts, "BoundaryOpAtts.");
+        s += PyBoundaryOpAttributes_ToString(currentAtts, "BoundaryOpAtts.", true);
         cb(s);
     }
 }

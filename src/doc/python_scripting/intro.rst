@@ -1,8 +1,8 @@
 Introduction to Python Scripting
 ================================
 
-Starting VisIt_
----------------
+Starting VisIt_'s Python Interface
+----------------------------------
 
 You can invoke VisIt_'s Python scripting interface from the command line by typing:
 
@@ -11,15 +11,17 @@ You can invoke VisIt_'s Python scripting interface from the command line by typi
     visit -cli 
 
 VisIt_ provides a separate Python module if you instead wish to include VisIt functions in an existing Python script.
-In that case, you must first import the VisIt_ module into Python and then call the Launch() function to make VisIt_ launch and dynamically load the rest of the VisIt_ functions into the Python namespace.
-VisIt_ adopts this somewhat unusual approach to module loading since the lightweight "visit" front-end module can be installed as one of your Python's site packages yet still dynamically load the real control functions from different versions of VisIt_ selected by the user.
+In that case, you must first import the VisIt_ module into Python and then call the ``Launch()`` function to make VisIt_ launch and dynamically load the rest of the VisIt_ functions into the Python namespace.
+VisIt_ adopts this somewhat unusual approach to module loading since the lightweight front-end module, named ``visit``, can be installed as one of your Python's site packages yet still dynamically load the real control functions from different versions of VisIt_ selected by the user.
 
-If you do not install the visit.so module as a Python site package, you can tell the Python interpreter where it is located by appending a new path to the sys.path variable. Be sure to substitute the correct path to visit.so on your system.
-
-::
+If you do not install the ``visit`` module as a Python site package, you can tell the Python interpreter where it is located either by appending a new path to the ``sys.path`` variable as in ::
 
     import sys
     sys.path.append("/path/to/visit/<version>/<architecture>/lib/site-packages")
+
+or by setting the ``PYTHONPATH`` environment variable as in ::
+
+    env PYTHONPATH=/path/to/visit/<version>/<architecture>/lib/site-packages ./myscript.py
 
 Here is how to import all functions into the global Python namespace:
 
@@ -43,7 +45,8 @@ To avoid confusion, you should use:
 ::
 
     import visit
-    visit.AddArgument("-v <version>") # example: "-v 3.2"
+    visit.AddArgument("-v")
+    visit.AddArgument("<version>") # for example: "3.2.0"
     visit.Launch()
     import visit
 
@@ -105,6 +108,27 @@ The best long term path is to port your Python 2 style scripts to Python 3.
 Python 3 installs provide a utility called ``2to3`` that you can use to help automate porting, see https://docs.python.org/3/library/2to3.htm for more details.
 
 If you need help porting your trusty (or favorite) VisIt script, please reach out to the VisIt_ team.
+
+Mixing and Matching Python Extension Modules
+--------------------------------------------
+
+.. danger:: Mixing and matching independently compiled Python extension modules can result in subtle and hard to diagnose failures.
+
+Care must be taken when combining a variety of Python modules especially if any are `extension modules <https://docs.python.org/3/glossary.html#term-extension-module>`_ and not *pure python*.
+A pure python module is one that is written *entirely* in Python and is highly portable.
+Most python modules involve a combination of compiled C/C++/Fortran code wrapped with a small amount of Python.
+These are less portable.
+When these kinds of modules are used, a number of additional factors impact their ability to be combined in a single Python script.
+These include 
+
+    * The Python library (header files) used to compile the module.
+    * The compiler used to compile the module.
+    * The compiler used to compile the Python interpreter where the modules are being combined.
+
+It is a best practice to ensure that all modules being combined are compiled with the same compiler and the same Python library.
+However, each team supporting installations of a given Python module on a given platform makes their own decisions regarding these choices.
+Consequently, when using combinations of Python modules installed by others, its very easy to encounter situations where the installations are incompatible and fail in subtle and hard to diagnose ways.
+Worse, things may work for the most part and only intermittently produce invalid results with no warning.
 
 Getting started
 ---------------

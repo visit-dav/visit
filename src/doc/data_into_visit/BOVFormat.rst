@@ -4,7 +4,7 @@ The BOV file format
 ===================
 
 The BOV (Brick Of Values) format is a binary format used to represent a single variable defined on a regular mesh.
-The BOV file consists of two files, a small text file describing a file with the binary data.
+The BOV file consists of two files, a file with the binary data, and a small text file describing it.
 
 .. _data_into_visit_bov_structure:
 
@@ -34,6 +34,9 @@ Here is an example of specifying the size of your grid.
 
 .. literalinclude:: data_examples/density.bov
    :lines: 9-9
+
+The `i` component varies the fastest, then `j`, then `k`. 
+This means that if `BRICK_SIZE` is `2. 2. 2.`, the first float in the data file corresponds to `[0,0,0]`, the second to `[1,0,0]`, the third to `[0,1,0]`, the fourth to `[1,1,0]`, the fifth to `[0,0,1]`, and so on.
 
 BYTE_OFFSET
 ~~~~~~~~~~~

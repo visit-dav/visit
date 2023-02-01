@@ -36,7 +36,7 @@ struct ClipAttributesObject
 //
 static PyObject *NewClipAttributes(int);
 std::string
-PyClipAttributes_ToString(const ClipAttributes *atts, const char *prefix)
+PyClipAttributes_ToString(const ClipAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -1612,7 +1612,7 @@ static int
 ClipAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     ClipAttributesObject *obj = (ClipAttributesObject *)v;
-    fprintf(fp, "%s", PyClipAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyClipAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -1620,7 +1620,7 @@ PyObject *
 ClipAttributes_str(PyObject *v)
 {
     ClipAttributesObject *obj = (ClipAttributesObject *)v;
-    return PyString_FromString(PyClipAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyClipAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -1772,7 +1772,7 @@ PyClipAttributes_GetLogString()
 {
     std::string s("ClipAtts = ClipAttributes()\n");
     if(currentAtts != 0)
-        s += PyClipAttributes_ToString(currentAtts, "ClipAtts.");
+        s += PyClipAttributes_ToString(currentAtts, "ClipAtts.", true);
     return s;
 }
 
@@ -1785,7 +1785,7 @@ PyClipAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("ClipAtts = ClipAttributes()\n");
-        s += PyClipAttributes_ToString(currentAtts, "ClipAtts.");
+        s += PyClipAttributes_ToString(currentAtts, "ClipAtts.", true);
         cb(s);
     }
 }

@@ -71,12 +71,11 @@ ${VISIT_SOURCE_DIR}/vtkqt
 ${VTK_INCLUDE_DIRS}
 )
 
-SET(VTK_EXTRA_LIBS
-vtktiff
-vtkjpeg
-vtkpng
-${VTK_FREETYPE_LIBRARIES}
-)
+if(VTK_VERSION VERSION_EQUAL "8.1.0")
+    set(VTK_EXTRA_LIBS vtktiff vtkjpeg vtkpng)
+else()
+    set(VTK_EXTRA_LIBS VTK::tiff VTK::jpeg VTK::png)
+endif()
 
 LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY})
 
@@ -93,7 +92,7 @@ IF(APPLE)
     SET(MACOSX_BUNDLE_LONG_VERSION_STRING  "MCurveIt version ${VISIT_VERSION}")
     SET(MACOSX_BUNDLE_SHORT_VERSION_STRING "MCurveIt ${VISIT_VERSION}")
     SET(MACOSX_BUNDLE_BUNDLE_VERSION       ${VISIT_VERSION})
-    SET(MACOSX_BUNDLE_COPYRIGHT            "Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC")
+    SET(MACOSX_BUNDLE_COPYRIGHT            "Copyright (c) 2000 - 2023, Lawrence Livermore National Security, LLC")
 ELSE(APPLE)
     ADD_EXECUTABLE(mcurvit ${VISIT_APPLICATION_STYLE} ${MCURVIT_SOURCES} ${STATIC_SOURCES})
 ENDIF(APPLE)

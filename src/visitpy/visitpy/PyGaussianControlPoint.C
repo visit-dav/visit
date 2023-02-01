@@ -36,7 +36,7 @@ struct GaussianControlPointObject
 //
 static PyObject *NewGaussianControlPoint(int);
 std::string
-PyGaussianControlPoint_ToString(const GaussianControlPoint *atts, const char *prefix)
+PyGaussianControlPoint_ToString(const GaussianControlPoint *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -459,7 +459,7 @@ static int
 GaussianControlPoint_print(PyObject *v, FILE *fp, int flags)
 {
     GaussianControlPointObject *obj = (GaussianControlPointObject *)v;
-    fprintf(fp, "%s", PyGaussianControlPoint_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyGaussianControlPoint_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -467,7 +467,7 @@ PyObject *
 GaussianControlPoint_str(PyObject *v)
 {
     GaussianControlPointObject *obj = (GaussianControlPointObject *)v;
-    return PyString_FromString(PyGaussianControlPoint_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyGaussianControlPoint_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -619,7 +619,7 @@ PyGaussianControlPoint_GetLogString()
 {
     std::string s("GaussianControlPoint = GaussianControlPoint()\n");
     if(currentAtts != 0)
-        s += PyGaussianControlPoint_ToString(currentAtts, "GaussianControlPoint.");
+        s += PyGaussianControlPoint_ToString(currentAtts, "GaussianControlPoint.", true);
     return s;
 }
 
@@ -632,7 +632,7 @@ PyGaussianControlPoint_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("GaussianControlPoint = GaussianControlPoint()\n");
-        s += PyGaussianControlPoint_ToString(currentAtts, "GaussianControlPoint.");
+        s += PyGaussianControlPoint_ToString(currentAtts, "GaussianControlPoint.", true);
         cb(s);
     }
 }

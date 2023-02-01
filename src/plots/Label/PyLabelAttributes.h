@@ -22,7 +22,7 @@ PyObject *     PyLabelAttributes_Wrap(const LabelAttributes *attr);
 void           PyLabelAttributes_SetParent(PyObject *obj, PyObject *parent);
 void           PyLabelAttributes_SetDefaults(const LabelAttributes *atts);
 std::string    PyLabelAttributes_GetLogString();
-std::string    PyLabelAttributes_ToString(const LabelAttributes *, const char *);
+std::string    PyLabelAttributes_ToString(const LabelAttributes *, const char *, const bool=false);
 PyObject *     PyLabelAttributes_getattr(PyObject *self, char *name);
 int            PyLabelAttributes_setattr(PyObject *self, char *name, PyObject *args);
 extern PyMethodDef PyLabelAttributes_methods[LABELATTRIBUTES_NMETH];

@@ -133,7 +133,7 @@ CloseDatabase(silo_data_path("tire.silo"))
 OpenDatabase(silo_data_path("specmix_ucd.silo"))
 
 AddPlot("Mesh", "Mesh")
-AddPlot("Pseudocolor", "mesh_quality/min_corner_area")
+AddPlot("Pseudocolor", "mesh_quality/Mesh/min_corner_area")
 pc = PseudocolorAttributes()
 pc.invertColorTable = 1
 SetPlotOptions(pc)
@@ -143,7 +143,7 @@ Test("mesh_quality_06")
 DeleteAllPlots()
 
 AddPlot("Mesh", "Mesh")
-AddPlot("Pseudocolor", "mesh_quality/min_sin_corner")
+AddPlot("Pseudocolor", "mesh_quality/Mesh/min_sin_corner")
 pc = PseudocolorAttributes()
 pc.invertColorTable = 1
 SetPlotOptions(pc)

@@ -36,7 +36,7 @@ struct CoordSwapAttributesObject
 //
 static PyObject *NewCoordSwapAttributes(int);
 std::string
-PyCoordSwapAttributes_ToString(const CoordSwapAttributes *atts, const char *prefix)
+PyCoordSwapAttributes_ToString(const CoordSwapAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -416,7 +416,7 @@ static int
 CoordSwapAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     CoordSwapAttributesObject *obj = (CoordSwapAttributesObject *)v;
-    fprintf(fp, "%s", PyCoordSwapAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyCoordSwapAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -424,7 +424,7 @@ PyObject *
 CoordSwapAttributes_str(PyObject *v)
 {
     CoordSwapAttributesObject *obj = (CoordSwapAttributesObject *)v;
-    return PyString_FromString(PyCoordSwapAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyCoordSwapAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -576,7 +576,7 @@ PyCoordSwapAttributes_GetLogString()
 {
     std::string s("CoordSwapAtts = CoordSwapAttributes()\n");
     if(currentAtts != 0)
-        s += PyCoordSwapAttributes_ToString(currentAtts, "CoordSwapAtts.");
+        s += PyCoordSwapAttributes_ToString(currentAtts, "CoordSwapAtts.", true);
     return s;
 }
 
@@ -589,7 +589,7 @@ PyCoordSwapAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("CoordSwapAtts = CoordSwapAttributes()\n");
-        s += PyCoordSwapAttributes_ToString(currentAtts, "CoordSwapAtts.");
+        s += PyCoordSwapAttributes_ToString(currentAtts, "CoordSwapAtts.", true);
         cb(s);
     }
 }

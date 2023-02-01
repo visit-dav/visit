@@ -36,7 +36,7 @@ struct ThresholdOpAttributesObject
 //
 static PyObject *NewThresholdOpAttributes(int);
 std::string
-PyThresholdOpAttributes_ToString(const ThresholdOpAttributes *atts, const char *prefix)
+PyThresholdOpAttributes_ToString(const ThresholdOpAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -859,7 +859,7 @@ static int
 ThresholdOpAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     ThresholdOpAttributesObject *obj = (ThresholdOpAttributesObject *)v;
-    fprintf(fp, "%s", PyThresholdOpAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyThresholdOpAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -867,7 +867,7 @@ PyObject *
 ThresholdOpAttributes_str(PyObject *v)
 {
     ThresholdOpAttributesObject *obj = (ThresholdOpAttributesObject *)v;
-    return PyString_FromString(PyThresholdOpAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyThresholdOpAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -1019,7 +1019,7 @@ PyThresholdOpAttributes_GetLogString()
 {
     std::string s("ThresholdOpAtts = ThresholdOpAttributes()\n");
     if(currentAtts != 0)
-        s += PyThresholdOpAttributes_ToString(currentAtts, "ThresholdOpAtts.");
+        s += PyThresholdOpAttributes_ToString(currentAtts, "ThresholdOpAtts.", true);
     return s;
 }
 
@@ -1032,7 +1032,7 @@ PyThresholdOpAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("ThresholdOpAtts = ThresholdOpAttributes()\n");
-        s += PyThresholdOpAttributes_ToString(currentAtts, "ThresholdOpAtts.");
+        s += PyThresholdOpAttributes_ToString(currentAtts, "ThresholdOpAtts.", true);
         cb(s);
     }
 }

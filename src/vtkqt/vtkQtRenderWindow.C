@@ -2,11 +2,21 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
+#include <visit-config.h> // For LIB_VERSION_LE
+
+#if LIB_VERSION_LE(VTK, 8,1,0)
 #include "vtkOpenGL.h"
+#else
+#include <vtk_glew.h>
+#endif
 
 #include <vtkQtRenderWindow.h>
 
+#if LIB_VERSION_LE(VTK, 8,1,0)
 #include "QVTKOpenGLWidget.h"
+#else
+#include <QVTKOpenGLNativeWidget.h>
+#endif
 
 #include <vtkGenericOpenGLRenderWindow.h>
 #include <QVTKInteractor.h>
@@ -21,8 +31,10 @@
 #include <GL/glx.h>
 #endif
 
+#if LIB_VERSION_LE(VTK, 8,1,0)
 #include <vtkAutoInit.h>
 VTK_MODULE_INIT(vtkRenderingOpenGL2);
+#endif
 
 
 #ifdef Q_OS_MAC
@@ -91,6 +103,7 @@ public:
         // alpha channel (at least for OS X). However, not asking for
         // the channel seems to be benign. In addition, the 2D view
         // bounds and picking are off.
+#if LIB_VERSION_LE(VTK, 8,1,0)
         gl = new QVTKOpenGLWidget(w);
         if (!gl->GetRenderWindow())
         {
@@ -100,16 +113,31 @@ public:
         }
         gl->GetRenderWindow()->AlphaBitPlanesOn();
         gl->GetRenderWindow()->SetStereoRender( stereo );
-        gl->GetRenderWindow()->AlphaBitPlanesOn();
-        gl->GetRenderWindow()->SetStereoRender( stereo );
+#else
+        // VTK seems to recommend using NativeWidget, so give it a try, but we
+        // may need to use QVTKOpenGLStereoWidget which is the old
+        // QVTKOpenGLWidget renamed
+        gl = new QVTKOpenGLNativeWidget(w);
+        if (!gl->renderWindow())
+        {
+            vtkGenericOpenGLRenderWindow *renWin = vtkGenericOpenGLRenderWindow::New();
+            gl->setRenderWindow(renWin);
+            renWin->Delete();
+        }
+        gl->renderWindow()->AlphaBitPlanesOn();
+        gl->renderWindow()->SetStereoRender( stereo );
+#endif
     }
 
     virtual ~vtkQtRenderWindowPrivate()
     {
     }
-
+#if LIB_VERSION_LE(VTK, 8,1,0)
     QVTKOpenGLWidget     *gl;
-    
+#else
+    QVTKOpenGLNativeWidget     *gl;
+#endif
+
     void          (*resizeEventCallback)(void *);
     void           *resizeEventData;
     void          (*closeEventCallback)(void *);
@@ -178,7 +206,11 @@ vtkQtRenderWindow::Delete()
 vtkRenderWindow *
 vtkQtRenderWindow::GetRenderWindow()
 {
+#if LIB_VERSION_LE(VTK, 8,1,0)
     return d->gl->GetRenderWindow();
+#else
+    return d->gl->renderWindow();
+#endif
 }
 
     // Description:
@@ -186,7 +218,11 @@ vtkQtRenderWindow::GetRenderWindow()
 vtkRenderWindowInteractor * 
 vtkQtRenderWindow::GetInteractor()
 {
+#if LIB_VERSION_LE(VTK, 8,1,0)
     return d->gl->GetInteractor();
+#else
+    return d->gl->interactor();
+#endif
 }
 
 QWidget *

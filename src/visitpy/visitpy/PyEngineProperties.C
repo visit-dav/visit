@@ -36,7 +36,7 @@ struct EnginePropertiesObject
 //
 static PyObject *NewEngineProperties(int);
 std::string
-PyEngineProperties_ToString(const EngineProperties *atts, const char *prefix)
+PyEngineProperties_ToString(const EngineProperties *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -451,7 +451,7 @@ static int
 EngineProperties_print(PyObject *v, FILE *fp, int flags)
 {
     EnginePropertiesObject *obj = (EnginePropertiesObject *)v;
-    fprintf(fp, "%s", PyEngineProperties_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyEngineProperties_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -459,7 +459,7 @@ PyObject *
 EngineProperties_str(PyObject *v)
 {
     EnginePropertiesObject *obj = (EnginePropertiesObject *)v;
-    return PyString_FromString(PyEngineProperties_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyEngineProperties_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -611,7 +611,7 @@ PyEngineProperties_GetLogString()
 {
     std::string s("EngineProperties = EngineProperties()\n");
     if(currentAtts != 0)
-        s += PyEngineProperties_ToString(currentAtts, "EngineProperties.");
+        s += PyEngineProperties_ToString(currentAtts, "EngineProperties.", true);
     return s;
 }
 
@@ -624,7 +624,7 @@ PyEngineProperties_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("EngineProperties = EngineProperties()\n");
-        s += PyEngineProperties_ToString(currentAtts, "EngineProperties.");
+        s += PyEngineProperties_ToString(currentAtts, "EngineProperties.", true);
         cb(s);
     }
 }

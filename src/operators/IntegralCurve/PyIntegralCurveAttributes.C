@@ -36,7 +36,7 @@ struct IntegralCurveAttributesObject
 //
 static PyObject *NewIntegralCurveAttributes(int);
 std::string
-PyIntegralCurveAttributes_ToString(const IntegralCurveAttributes *atts, const char *prefix)
+PyIntegralCurveAttributes_ToString(const IntegralCurveAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -5884,7 +5884,7 @@ static int
 IntegralCurveAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)v;
-    fprintf(fp, "%s", PyIntegralCurveAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyIntegralCurveAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -5892,7 +5892,7 @@ PyObject *
 IntegralCurveAttributes_str(PyObject *v)
 {
     IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)v;
-    return PyString_FromString(PyIntegralCurveAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyIntegralCurveAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -6044,7 +6044,7 @@ PyIntegralCurveAttributes_GetLogString()
 {
     std::string s("IntegralCurveAtts = IntegralCurveAttributes()\n");
     if(currentAtts != 0)
-        s += PyIntegralCurveAttributes_ToString(currentAtts, "IntegralCurveAtts.");
+        s += PyIntegralCurveAttributes_ToString(currentAtts, "IntegralCurveAtts.", true);
     return s;
 }
 
@@ -6057,7 +6057,7 @@ PyIntegralCurveAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("IntegralCurveAtts = IntegralCurveAttributes()\n");
-        s += PyIntegralCurveAttributes_ToString(currentAtts, "IntegralCurveAtts.");
+        s += PyIntegralCurveAttributes_ToString(currentAtts, "IntegralCurveAtts.", true);
         cb(s);
     }
 }

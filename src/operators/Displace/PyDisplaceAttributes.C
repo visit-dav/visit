@@ -36,7 +36,7 @@ struct DisplaceAttributesObject
 //
 static PyObject *NewDisplaceAttributes(int);
 std::string
-PyDisplaceAttributes_ToString(const DisplaceAttributes *atts, const char *prefix)
+PyDisplaceAttributes_ToString(const DisplaceAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -244,7 +244,7 @@ static int
 DisplaceAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     DisplaceAttributesObject *obj = (DisplaceAttributesObject *)v;
-    fprintf(fp, "%s", PyDisplaceAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyDisplaceAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -252,7 +252,7 @@ PyObject *
 DisplaceAttributes_str(PyObject *v)
 {
     DisplaceAttributesObject *obj = (DisplaceAttributesObject *)v;
-    return PyString_FromString(PyDisplaceAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyDisplaceAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -404,7 +404,7 @@ PyDisplaceAttributes_GetLogString()
 {
     std::string s("DisplaceAtts = DisplaceAttributes()\n");
     if(currentAtts != 0)
-        s += PyDisplaceAttributes_ToString(currentAtts, "DisplaceAtts.");
+        s += PyDisplaceAttributes_ToString(currentAtts, "DisplaceAtts.", true);
     return s;
 }
 
@@ -417,7 +417,7 @@ PyDisplaceAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("DisplaceAtts = DisplaceAttributes()\n");
-        s += PyDisplaceAttributes_ToString(currentAtts, "DisplaceAtts.");
+        s += PyDisplaceAttributes_ToString(currentAtts, "DisplaceAtts.", true);
         cb(s);
     }
 }

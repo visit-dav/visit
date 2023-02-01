@@ -74,6 +74,14 @@
 #   Eric Brugger, Mon Jan 13 15:24:51 PST 2020
 #   I removed shark.
 #
+#   Eric Brugger, Wed Jun  8 15:19:01 PDT 2022
+#   I added logic to the jade install to copy libraries needed to run
+#   on toss4 systems.
+#
+#   Eric Brugger, Tue Jun 14 11:57:11 PDT 2022
+#   I removed the logic on the jade install that copies the libraries
+#   needed by Qt, since those now get included by default.
+#
 #-----------------------------------------------------------------------
 
 test=no
@@ -209,6 +217,15 @@ rm -f jade
 cat <<EOF > jade
 #!/bin/sh
 ./visit-install -private -c llnl_closed -g visit -b wbronze -gw -l $ver linux-x86_64-jade /usr/gapps/visit > installlog 2>&1
+# Copy libraries needed for fortran for toss4 systems.
+cd /usr/tce/packages/gcc/gcc-7.1.0/lib64
+cp libgfortran.so.4.0.0 /usr/gapps/visit/$ver+/linux-x86_64/lib
+cd /usr/gapps/visit/$ver+/linux-x86_64/lib
+chgrp visit libgfortran.so.4.0.0
+chmod g+rwX,o+rX libgfortran.so.4.0.0
+ln -s libgfortran.so.4.0.0 libgfortran.so
+ln -s libgfortran.so.4.0.0 libgfortran.so.4
+cd
 rm -f resultlog
 echo ""                                              > resultlog 2>&1
 echo "        install of visit on jade"              >> resultlog 2>&1
