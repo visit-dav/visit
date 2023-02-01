@@ -383,9 +383,7 @@ ELSE(NOT WIN32)
             DEPENDS  ${setup_file} ${ARGN}
             WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
     set_target_properties(${target_name} PROPERTIES FOLDER visit_py_setup)
-    if(VISIT_NO_ALLBUILD)
-        add_dependencies(visit_special_builds ${target_name})
-    endif()
+    visit_add_to_util_builds(${target_name})
 
     # also use distutils for the install ...
     FILE(TO_NATIVE_PATH ${VISIT_INSTALLED_VERSION_LIB} VIVL_NATIVE)
