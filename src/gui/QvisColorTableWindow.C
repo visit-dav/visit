@@ -1303,6 +1303,7 @@ QvisColorTableWindow::UpdateNames()
         {
             item = nameListBox->topLevelItem(0);
             currentColorTable = item->text(0);
+            UpdateEditor();
         }
         // If the currentColorTable IS in the box...
         else
@@ -3261,6 +3262,7 @@ QvisColorTableWindow::exportColorTable()
 void
 QvisColorTableWindow::tagsSelectAll()
 {
+    tagTable->blockSignals(true);
     // If all the tags are already enabled
     if (std::all_of(tagList.begin(), tagList.end(), 
         [](std::pair<std::string, TagInfo> const tagListEntry)
@@ -3283,6 +3285,7 @@ QvisColorTableWindow::tagsSelectAll()
             tagListEntry.second.tagTableItem->setCheckState(0, Qt::Checked);
         }
     }
+    tagTable->blockSignals(false);
     UpdateNames();
     colorAtts->SetChangesMade(true);
     ctObserver.SetUpdate(true);
