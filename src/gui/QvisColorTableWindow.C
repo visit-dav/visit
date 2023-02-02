@@ -261,11 +261,13 @@ QvisColorTableWindow::CreateWindowContents()
     defaultDiscreteLabel = new QLabel(tr("Discrete"), defaultGroup);
     innerDefaultLayout->addWidget(defaultDiscreteLabel, 1, 0);
 
+    QHBoxLayout *horizontalLayout = new QHBoxLayout();
+
     // Create the widget group that contains all of the color table
     // management stuff.
     colorTableWidgetGroup = new QGroupBox(central);
     colorTableWidgetGroup->setTitle(tr("Manager"));
-    topLayout->addWidget(colorTableWidgetGroup, 5);
+    horizontalLayout->addWidget(colorTableWidgetGroup, 5);
     QVBoxLayout *innerColorTableLayout = new QVBoxLayout(colorTableWidgetGroup);
 
     // Create the color management widgets.
@@ -360,7 +362,7 @@ QvisColorTableWindow::CreateWindowContents()
     colorWidgetGroup->setTitle(tr("Editor"));
     // Note: if new buttons are added to the editor, this value must be adjusted.
     colorWidgetGroup->setMaximumHeight(350);
-    topLayout->addWidget(colorWidgetGroup, 100);
+    horizontalLayout->addWidget(colorWidgetGroup, 100);
     QVBoxLayout *innerColorLayout = new QVBoxLayout(colorWidgetGroup);
 
     // Create controls to set the number of colors in the color table.
@@ -532,6 +534,8 @@ QvisColorTableWindow::CreateWindowContents()
     colorSelect = new QvisColorSelectionWidget(NULL,Qt::Popup);
     connect(colorSelect, SIGNAL(selectedColor(const QColor &)),
             this, SLOT(selectedColor(const QColor &)));
+
+    topLayout->addLayout(horizontalLayout);
 }
 
 // ****************************************************************************
