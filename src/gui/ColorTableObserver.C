@@ -87,7 +87,6 @@ ColorTableObserver::Update(Subject *)
     // have to update the widget.
     if(colorAtts->IsSelected(ColorTableAttributes::ID_names) ||
        colorAtts->IsSelected(ColorTableAttributes::ID_colorTables) ||
-       colorAtts->IsSelected(ColorTableAttributes::ID_taggingFlag) ||
        colorAtts->GetChangesMade())
     {
         // reset

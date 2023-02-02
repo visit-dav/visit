@@ -187,7 +187,7 @@ private slots:
     void highlightColorTable(QTreeWidgetItem *, QTreeWidgetItem*);
     void tagTableItemSelected(QTreeWidgetItem *, int);
     void showIndexHintsToggled(bool val);
-    void taggingToggled(bool val);
+    void tagsSelectAll();
     void tagCombiningChanged(int index);
     void searchingToggled(bool checked);
     void searchEdited(const QString &newSearchTerm);
@@ -199,14 +199,12 @@ private slots:
     void removeTagFromColorTable(const std::string ctName, 
                                  const std::string tagName,
                                  ColorControlPointList* ccpl);
-    void updateNameBoxPosition(bool tagsOn);
 private:
     ColorTableAttributes     *colorAtts;
     int                      colorCycle;
     QString                  currentColorTable;
     int                      popupMode;
     bool                     sliding;
-    bool                     tagsVisible;
     bool                     tagsMatchAny;
     bool                     searchingOn;
     QString                  searchTerm;
@@ -239,7 +237,7 @@ private:
     QPushButton              *deleteButton;
     QPushButton              *exportButton;
 
-    QCheckBox                *tagFilterToggle;
+    QPushButton              *tagsSelectAllButton;
     QComboBox                *tagCombiningBehaviorChoice;
 
     QTreeWidget              *tagTable;
