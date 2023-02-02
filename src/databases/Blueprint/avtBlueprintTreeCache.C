@@ -359,9 +359,9 @@ avtBlueprintTreeCache::IO::LoadBlueprintTree(avtBlueprintTreeCache &tree_cache,
         // capture errors to allow sparsely populated trees to be read
         // e.g. a coordset, topology, or field that only exists 
         // on a subset of trees
+        int t_tree_read = visitTimer->StartTimer();
         try
         {
-            int t_tree_read = visitTimer->StartTimer();
             tree_cache.Read(file_path,fetch_path,out);
             visitTimer->StopTimer(t_tree_read, "tree read");
         }
