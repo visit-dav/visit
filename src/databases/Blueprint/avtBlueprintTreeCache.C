@@ -353,9 +353,9 @@ avtBlueprintTreeCache::IO::LoadBlueprintTree(avtBlueprintTreeCache &tree_cache,
     {
         std::string fetch_path = tree_root + tree_path;
         BP_PLUGIN_INFO("tree cache read " 
-                        << "[domain " << tree_id << "] "
-                        << file_path << ":"
-                        << fetch_path);
+                       << "[domain " << tree_id << "] "
+                       << file_path << ":"
+                       << fetch_path);
         // capture errors to allow sparsely populated trees to be read
         // e.g. a coordset, topology, or field that only exists 
         // on a subset of trees
@@ -367,6 +367,8 @@ avtBlueprintTreeCache::IO::LoadBlueprintTree(avtBlueprintTreeCache &tree_cache,
         }
         catch(const conduit::Error &e)
         {
+            visitTimer->StopTimer(t_tree_read, "tree read");
+            visitTimer->StopTimer(t_load_bp_tree, "IO::LoadBlueprintTree");
             BP_PLUGIN_EXCEPTION1(InvalidVariableException,
                                  "Failed to read tree path: "
                                  << "domain "
@@ -412,7 +414,9 @@ avtBlueprintTreeCache::IO::LoadBlueprintTree(avtBlueprintTreeCache &tree_cache,
             }
             else
             {
-                BP_PLUGIN_EXCEPTION1( InvalidVariableException, 
+                visitTimer->StopTimer(t_sidre_meta_read, "fetch sidre meta data from hdf5");
+                visitTimer->StopTimer(t_load_bp_tree, "IO::LoadBlueprintTree");
+                BP_PLUGIN_EXCEPTION1(InvalidVariableException, 
                                      "Failed to read tree path: " 
                                      << file_path << ":"
                                      << tree_path
@@ -447,8 +451,9 @@ avtBlueprintTreeCache::IO::LoadBlueprintTree(avtBlueprintTreeCache &tree_cache,
     }
     else
     {
-         BP_PLUGIN_EXCEPTION1( InvalidVariableException,
-                               "unknown protocol" << protocol);
+        visitTimer->StopTimer(t_load_bp_tree, "IO::LoadBlueprintTree");
+        BP_PLUGIN_EXCEPTION1(InvalidVariableException,
+                             "unknown protocol" << protocol);
     }
 
     visitTimer->StopTimer(t_load_bp_tree, "IO::LoadBlueprintTree");

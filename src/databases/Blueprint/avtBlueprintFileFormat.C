@@ -1404,6 +1404,7 @@ avtBlueprintFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         err_oss <<  "Conduit Exception in Blueprint Plugin "
                     << "Populate Database MetaData: " << endl
                     << e.message();
+        visitTimer->StopTimer(t_pop_md,"PopulateDatabaseMetaData");
         EXCEPTION1(InvalidFilesException, err_oss.str());
     }
 
