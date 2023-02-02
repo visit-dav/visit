@@ -235,7 +235,7 @@ void
 QvisColorTableWindow::CreateWindowContents()
 {
     // Want more buttons in the window? Increase this value.
-    central->setMaximumHeight(930);
+    central->setMaximumHeight(830);
     // Create the widgets needed to set the default color tables.
     topLayout->setMargin(2);
     defaultGroup = new QGroupBox(central);
@@ -261,13 +261,11 @@ QvisColorTableWindow::CreateWindowContents()
     defaultDiscreteLabel = new QLabel(tr("Discrete"), defaultGroup);
     innerDefaultLayout->addWidget(defaultDiscreteLabel, 1, 0);
 
-    QHBoxLayout *horizontalLayout = new QHBoxLayout();
-
     // Create the widget group that contains all of the color table
     // management stuff.
     colorTableWidgetGroup = new QGroupBox(central);
     colorTableWidgetGroup->setTitle(tr("Manager"));
-    horizontalLayout->addWidget(colorTableWidgetGroup, 5);
+    topLayout->addWidget(colorTableWidgetGroup, 5);
     QVBoxLayout *innerColorTableLayout = new QVBoxLayout(colorTableWidgetGroup);
 
     // Create the color management widgets.
@@ -303,8 +301,8 @@ QvisColorTableWindow::CreateWindowContents()
 
     nameListBox = new QTreeWidget(colorTableWidgetGroup);
     // fixed name list box size
-    nameListBox->setMinimumHeight(200);
-    nameListBox->setMaximumHeight(200);
+    nameListBox->setMinimumHeight(100);
+    nameListBox->setMaximumHeight(100);
     nameListBox->setColumnCount(1);
     // don't want the header
     nameListBox->header()->close();
@@ -323,8 +321,8 @@ QvisColorTableWindow::CreateWindowContents()
     tagTable->clear();
     tagTable->setSortingEnabled(true);
     // fixed tag table size
-    tagTable->setMinimumHeight(200);
-    tagTable->setMaximumHeight(200);
+    tagTable->setMinimumHeight(100);
+    tagTable->setMaximumHeight(100);
     tagTable->setMinimumWidth(250);
     tagTable->setColumnCount(2);
     mgLayout->addWidget(tagTable, 3, 0, 1, 3);
@@ -362,7 +360,7 @@ QvisColorTableWindow::CreateWindowContents()
     colorWidgetGroup->setTitle(tr("Editor"));
     // Note: if new buttons are added to the editor, this value must be adjusted.
     colorWidgetGroup->setMaximumHeight(350);
-    horizontalLayout->addWidget(colorWidgetGroup, 100);
+    topLayout->addWidget(colorWidgetGroup, 100);
     QVBoxLayout *innerColorLayout = new QVBoxLayout(colorWidgetGroup);
 
     // Create controls to set the number of colors in the color table.
@@ -534,8 +532,6 @@ QvisColorTableWindow::CreateWindowContents()
     colorSelect = new QvisColorSelectionWidget(NULL,Qt::Popup);
     connect(colorSelect, SIGNAL(selectedColor(const QColor &)),
             this, SLOT(selectedColor(const QColor &)));
-
-    topLayout->addLayout(horizontalLayout);
 }
 
 // ****************************************************************************
