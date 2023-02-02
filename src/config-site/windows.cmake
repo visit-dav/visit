@@ -1,19 +1,15 @@
 
-if(NOT MSVC_VERSION OR MSVC_VERSION LESS 1910 OR NOT CMAKE_CL_64)
-    message(FATAL_ERROR "You have chosen a compiler version not currently supported by this config-site file.  You will need to specify \"Visual Studio 15 2017 Win64\" as your generator or create a new config-site file pointing to the locations of third party libraries on your system.")
-endif()
-
 set(VISIT_MSVC_VERSION "MSVC2017")
 
 message(STATUS "Prebuilt library directory name: ${VISIT_MSVC_VERSION}")
 
 if(NOT DEFINED VISIT_WINDOWS_DIR)
     # this works for development builds
-    if(EXISTS ${VISIT_SOURCE_DIR}/../../visit-deps/windowsbuild)
-        set(VISIT_WINDOWS_DIR ${VISIT_SOURCE_DIR}/../../visit-deps/windowsbuild)
+    if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/../../visit-deps/windowsbuild)
+        set(VISIT_WINDOWS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../visit-deps/windowsbuild)
     # this works for our released source distros
-    elseif(EXISTS ${VISIT_SOURCE_DIR}/../windowsbuild)
-        set(VISIT_WINDOWS_DIR ${VISIT_SOURCE_DIR}/../windowsbuild)
+    elseif(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/../windowsbuild)
+        set(VISIT_WINDOWS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../windowsbuild)
     else()
         message(FATAL_ERROR "Please set VISIT_WINDOWS_DIR to location of 'windowsbuild' files")
     endif()
@@ -276,7 +272,6 @@ endif()
 ##
 SETUP_APP_VERSION(ADIOS2 2.7.1)
 VISIT_OPTION_DEFAULT(VISIT_ADIOS2_DIR ${VISITHOME}/adios2/${ADIOS2_VERSION})
-## (configured w/ mpi compiler wrapper)
 if(VISIT_PARALLEL)
   VISIT_OPTION_DEFAULT(VISIT_ADIOS2_PAR_DIR ${VISITHOME}/adios2/${ADIOS2_VERSION})
 endif()

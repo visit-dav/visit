@@ -649,23 +649,27 @@ SET(NEKTAR++_MINIMUM_VERSION "4.0.0" CACHE INTERNAL "minimum version of Nektar++
 include(${CMAKE_CURRENT_SOURCE_DIR}/CMake/VisItFunctions.cmake)
 
 #-----------------------------------------------------------------------------
-# Include this computer's config-site if one exists
+# Set VISIT_CONFIG_SITE_FILE and include it if it exists
 #-----------------------------------------------------------------------------
-if (NOT WIN32)
-    if(VISIT_CONFIG_SITE)
-        set(VISIT_CONFIG_SITE_FILE ${VISIT_CONFIG_SITE})
-    else()
-        set(VISIT_CONFIG_SITE_FILE "config-site/${HOSTNAME}.cmake")
+if(VISIT_CONFIG_SITE)
+    set(VISIT_CONFIG_SITE_FILE ${VISIT_CONFIG_SITE})
+else()
+    set(VISIT_CONFIG_SITE_FILE "${CMAKE_CURRENT_SOURCE_DIR}/config-site/${HOSTNAME}.cmake")
+    if(WIN32)
+        if(NOT EXISTS ${VISIT_CONFIG_SITE_FILE})
+            set(VISIT_CONFIG_SITE_FILE "${CMAKE_CURRENT_SOURCE_DIR}/config-site/windows.cmake")
+        endif()
     endif()
-
-    if(EXISTS ${VISIT_CONFIG_SITE_FILE})
-        message(STATUS "Including config-site file '${VISIT_CONFIG_SITE_FILE}'")
-        include(${VISIT_CONFIG_SITE_FILE})
-    else()
-        message(STATUS "The config-site file (${VISIT_CONFIG_SITE_FILE}) does not exist")
-    endif()
-    unset(VISIT_CONFIG_SITE_FILE)
 endif()
+
+if(EXISTS ${VISIT_CONFIG_SITE_FILE})
+    message(STATUS "Including config-site file '${VISIT_CONFIG_SITE_FILE}'")
+    include(${VISIT_CONFIG_SITE_FILE})
+else()
+    message(STATUS "The config-site file (${VISIT_CONFIG_SITE_FILE}) does not exist")
+endif()
+
+unset(VISIT_CONFIG_SITE_FILE)
 
 #-----------------------------------------------------------------------------
 # If not already set, we use a default build type of Release
@@ -700,51 +704,6 @@ include(${VISIT_SOURCE_DIR}/CMake/SetUpPlatformDefs.cmake)
 # Have to make this or an executable is made of this name.
 # Suspect makemili_driver
 file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/exe")
-
-#-----------------------------------------------------------------------------
-# Windows needs values that are only set at this point, so now include
-# the windows config-site cmake file.
-#-----------------------------------------------------------------------------
-if(WIN32)
-    if(VISIT_CONFIG_SITE)
-        set(VISIT_CONFIG_SITE_FILE ${VISIT_CONFIG_SITE})
-    elseif(EXISTS ${VISIT_SOURCE_DIR}/config-site/${HOSTNAME}.cmake)
-        set(VISIT_CONFIG_SITE_FILE "${VISIT_SOURCE_DIR}/config-site/${HOSTNAME}.cmake")
-    else()
-        set(VISIT_CONFIG_SITE_FILE "${VISIT_SOURCE_DIR}/config-site/windows.cmake")
-    endif()
-
-    if(EXISTS ${VISIT_CONFIG_SITE_FILE})
-        message(STATUS "Including config-site file '${VISIT_CONFIG_SITE_FILE}'")
-        include(${VISIT_CONFIG_SITE_FILE})
-    else()
-        message(STATUS "The config-site file (${VISIT_CONFIG_SITE_FILE}) does not exist")
-    endif()
-    unset(VISIT_CONFIG_SITE_FILE)
-
-    # other things needed by windows
-    set(CMAKE_SKIP_RPATH ON CACHE INTERNAL "VisIt builds with rpath set." FORCE)
-    if(NOT VISIT_WINDOWS_DIR)
-        message(FATAL_ERROR "VISIT_WINDOWS_DIR is not defined.")
-    endif()
-    if(NOT EXISTS ${VISIT_WINDOWS_DIR})
-        message(FATAL_ERROR "${VISIT_WINDOWS_DIR} does not exist.")
-    endif()
-
-    if(VISIT_NO_ALLBUILD)
-        # Create a custom target for things like copying files.
-        # Only needed if the CMake auto-generated ALL_BUILD project
-        # isn't created.
-        add_custom_target(visit_util_builds ALL)
-    endif()
-    # Function to add dependencies to visit_util_builds
-    function(visit_add_to_util_builds tgt)
-        if(VISIT_NO_ALLBUILD)
-            add_dependencies(visit_util_builds ${tgt})
-            set_target_properties(${tgt} PROPERTIES FOLDER util_builds)
-        endif()
-    endfunction()
-endif()
 
 #-----------------------------------------------------------------------------
 # Output directories.
@@ -982,6 +941,32 @@ ELSE(VISIT_HEADERS_SKIP_INSTALL)
     )
 ENDIF(VISIT_HEADERS_SKIP_INSTALL)
 
+#-----------------------------------------------------------------------------
+# Misc other things needed by windows
+#-----------------------------------------------------------------------------
+if(WIN32)
+    include(CMake/VisItWindowsFunctions.cmake)
+
+    set(CMAKE_SKIP_RPATH ON CACHE INTERNAL "VisIt builds with rpath set." FORCE)
+
+    # VISIT_WINDOWS_DIR needed elsewhere, ensure it is defined and the location exists
+    if(NOT VISIT_WINDOWS_DIR)
+        message(FATAL_ERROR "VISIT_WINDOWS_DIR is not defined.")
+    endif()
+    if(NOT EXISTS ${VISIT_WINDOWS_DIR})
+        message(FATAL_ERROR "${VISIT_WINDOWS_DIR} does not exist.")
+    endif()
+
+    if(VISIT_NO_ALLBUILD)
+        # Create a custom target for things like copying files.
+        # Only needed if the CMake auto-generated ALL_BUILD project
+        # isn't created.
+        add_custom_target(visit_util_builds ALL)
+    endif()
+
+    visit_setup_windows_resources()
+endif()
+
 
 include(${VISIT_SOURCE_DIR}/CMake/SetUpThirdParty.cmake)
 
@@ -1132,13 +1117,6 @@ else (EXISTS ${VISIT_SOURCE_DIR}/../.git)
     endif (EXISTS ${VISIT_SOURCE_DIR}/GIT_VERSION)
 endif()
 
-#-----------------------------------------------------------------------------
-# Set up resource files for Windows applications.
-#-----------------------------------------------------------------------------
-if(WIN32)
-    include(CMake/VisItWindowsFunctions.cmake)
-    visit_setup_windows_resources()
-endif()
 
 #-----------------------------------------------------------------------------
 # Create visit-config.h

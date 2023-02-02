@@ -123,3 +123,11 @@ function(visit_setup_windows_resources)
                    ${VISIT_BINARY_DIR}/include/versionvars.rc @ONLY IMMEDIATE)
 endfunction()
 
+# Function to add dependencies to visit_util_builds
+function(visit_add_to_util_builds tgt)
+    if(VISIT_NO_ALLBUILD)
+        add_dependencies(visit_util_builds ${tgt})
+        set_target_properties(${tgt} PROPERTIES FOLDER util_builds)
+    endif()
+endfunction()
+
