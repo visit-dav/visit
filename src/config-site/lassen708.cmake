@@ -1,14 +1,14 @@
-#/usr/workspace/wsa/visit/visit/thirdparty_shared/3.3.0/blueos/cmake/3.18.2/linux-ppc64le_gcc-7.3/bin/cmake
+#/usr/workspace/wsa/visit/visit/thirdparty_shared/3.3.2/blueos/cmake/3.18.2/linux-ppc64le_gcc-7.3/bin/cmake
 ##
-## ./build_visit3_3_0 generated host.cmake
-## created: Wed Jun  1 12:01:33 PDT 2022
-## system: Linux lassen709 4.14.0-115.35.1.3chaos.ch6a.ppc64le #1 SMP Wed Jul 21 17:12:16 PDT 2021 ppc64le ppc64le ppc64le GNU/Linux
+## ./build_visit3_3_2 generated host.cmake
+## created: Fri Feb  3 18:23:47 PST 2023
+## system: Linux lassen708 4.14.0-115.35.1.3chaos.ch6a.ppc64le #1 SMP Wed Jul 21 17:12:16 PDT 2021 ppc64le ppc64le ppc64le GNU/Linux
 ## by: brugger
 
 ##
 ## Setup VISITHOME & VISITARCH variables.
 ##
-SET(VISITHOME /usr/workspace/wsa/visit/visit/thirdparty_shared/3.3.0/blueos)
+SET(VISITHOME /usr/workspace/wsa/visit/visit/thirdparty_shared/3.3.2/blueos)
 SET(VISITARCH linux-ppc64le_gcc-7.3)
 VISIT_OPTION_DEFAULT(VISIT_SLIVR TRUE TYPE BOOL)
 
