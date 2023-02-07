@@ -786,6 +786,10 @@ EOF
 
 function apply_qt_darwin_arm64_patches
 {
+#
+# Info about the objc_msgSendSuper_stret patch in qcocoahelpers.h can be found here...
+# http://www.sealiesoftware.com/blog/archive/2008/10/30/objc_explain_objc_msgSend_stret.html
+#
     info "Patching qt 5.14.2 for macOS arm64"
     patch -p0 <<EOF
 diff -r -c qtbase/mkspecs/common/macx.conf qtbase/mkspecs/common/macx.conf.patched
