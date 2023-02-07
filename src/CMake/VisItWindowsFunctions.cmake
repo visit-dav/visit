@@ -131,3 +131,25 @@ function(visit_add_to_util_builds tgt)
     endif()
 endfunction()
 
+function(visit_setup_windows)
+
+   set(CMAKE_SKIP_RPATH ON CACHE INTERNAL "VisIt builds with rpath set." FORCE)
+
+    # VISIT_WINDOWS_DIR needed elsewhere, ensure it is defined and the location exists
+    if(NOT VISIT_WINDOWS_DIR)
+        message(FATAL_ERROR "VISIT_WINDOWS_DIR is not defined.")
+    endif()
+    if(NOT EXISTS ${VISIT_WINDOWS_DIR})
+        message(FATAL_ERROR "${VISIT_WINDOWS_DIR} does not exist.")
+    endif()
+
+    if(VISIT_NO_ALLBUILD)
+        # Create a custom target for things like copying files.
+        # Only needed if the CMake auto-generated ALL_BUILD project
+        # isn't created.
+        add_custom_target(visit_util_builds ALL)
+    endif()
+
+    visit_setup_windows_resources()
+
+endfunction()

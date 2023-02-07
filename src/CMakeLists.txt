@@ -585,65 +585,65 @@ endif()
 # the user for configuration.
 # Recipe taken from http://stackoverflow.com/questions/10205986/how-to-capture-cmake-command-line-arguments
 #
-# Note: The entrires will live on CMakeCache.txt, so re-configuring with
+# Note: The entries will live in CMakeCache.txt, so re-configuring with
 # a command line that doesn't include an option won't remove it. You need
 # to remove the CMakeCache.txt file, or override the value via the command line.
 #
 #
-GET_CMAKE_PROPERTY(CACHE_VARS CACHE_VARIABLES)
-FOREACH(CACHE_VAR ${CACHE_VARS})
-  GET_PROPERTY(CACHE_VAR_HELPSTRING CACHE ${CACHE_VAR} PROPERTY HELPSTRING)
-  IF(CACHE_VAR_HELPSTRING STREQUAL "No help, variable specified on the command line.")
-    GET_PROPERTY(CACHE_VAR_TYPE CACHE ${CACHE_VAR} PROPERTY TYPE)
-    IF(CACHE_VAR_TYPE STREQUAL "UNINITIALIZED")
-      SET(CACHE_VAR_TYPE)
-    ELSE(CACHE_VAR_TYPE STREQUAL "UNINITIALIZED")
-      SET(CACHE_VAR_TYPE :${CACHE_VAR_TYPE})
-    ENDIF()
-    SET(CMAKE_INVOKE_ARGS "${CMAKE_INVOKE_ARGS} -D${CACHE_VAR}${CACHE_VAR_TYPE}=\"${${CACHE_VAR}}\"")
-  ENDIF()
-ENDFOREACH(CACHE_VAR ${CACHE_VARS})
+get_cmake_property(CACHE_VARS CACHE_VARIABLES)
+foreach(CACHE_VAR ${CACHE_VARS})
+    get_property(CACHE_VAR_HELPSTRING CACHE ${CACHE_VAR} PROPERTY HELPSTRING)
+    if(CACHE_VAR_HELPSTRING STREQUAL "No help, variable specified on the command line.")
+        get_property(CACHE_VAR_TYPE CACHE ${CACHE_VAR} PROPERTY TYPE)
+        if(CACHE_VAR_TYPE STREQUAL "UNINITIALIZED")
+            set(CACHE_VAR_TYPE)
+        else()
+            set(CACHE_VAR_TYPE :${CACHE_VAR_TYPE})
+        endif()
+        set(CMAKE_INVOKE_ARGS "${CMAKE_INVOKE_ARGS} -D${CACHE_VAR}${CACHE_VAR_TYPE}=\"${${CACHE_VAR}}\"")
+    endif()
+endforeach()
 # Record the full command line invocation.
-SET(CMAKE_INVOKE "${CMAKE_COMMAND} ${CMAKE_INVOKE_ARGS} ${CMAKE_CURRENT_SOURCE_DIR}" CACHE STRING "Command used to invoke cmake" FORCE)
+set(CMAKE_INVOKE "${CMAKE_COMMAND} ${CMAKE_INVOKE_ARGS} ${CMAKE_CURRENT_SOURCE_DIR}" CACHE STRING "Command used to invoke cmake" FORCE)
 # Create a simple shell script that allows us to reinvoke cmake with the captured command line.
-IF (NOT WIN32)
-    FILE(WRITE ${CMAKE_BINARY_DIR}/recmake_visit.sh "#!/bin/sh\n"
+if(NOT WIN32)
+    file(WRITE ${CMAKE_BINARY_DIR}/recmake_visit.sh "#!/bin/sh\n"
                                                      "rm -f CMakeCache.txt\n"
                                                      "${CMAKE_INVOKE}\n")
-ENDIF (NOT WIN32)
+endif()
 
 
 # Tell the CMake makefile generator to not have rules depend on
 # themselves.  This causes extra rebuilds when the include path
 # changes from turning a kit on or off.
-SET(CMAKE_SKIP_RULE_DEPENDENCY 1)
+set(CMAKE_SKIP_RULE_DEPENDENCY 1)
 
 # for now...
-SET(BUILD_SHARED_LIBS 1)
+set(BUILD_SHARED_LIBS 1)
 
 # this turns on the FOLDER property for generators that may make use of it, like Visual Studio
 # should have no effect for generators that do not use.
-SET_PROPERTY(GLOBAL PROPERTY USE_FOLDERS ON)
+set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 #-----------------------------------------------------------------------------
 # Get this computer's hostname using cmake's cross platform helper function.
 #----------------------------------------------------------------------------
 
-SITE_NAME(HOSTNAME)
+site_name(HOSTNAME)
 
 # Use NERSC_HOST environment variable to determine if we are running on Franklin
 # or Hopper. If so, use that hostname instead of the result of SITE_NAME which is
 # only the name of the login node we are running on.
-IF(NOT "$ENV{VISIT_HOSTNAME}" STREQUAL "")
-    SET(HOSTNAME "$ENV{VISIT_HOSTNAME}")
-ENDIF(NOT "$ENV{VISIT_HOSTNAME}" STREQUAL "")
+if(NOT "$ENV{VISIT_HOSTNAME}" STREQUAL "")
+    set(HOSTNAME "$ENV{VISIT_HOSTNAME}")
+endif()
 
 
 #-----------------------------------------------------------------------------
 
-SET(VTK_MINIMUM_VERSION "8.1.0" CACHE INTERNAL "minimum version of vtk that VisIt can use")
+set(VTK_MINIMUM_VERSION "8.1.0" CACHE INTERNAL "minimum version of vtk that VisIt can use")
 
-SET(NEKTAR++_MINIMUM_VERSION "4.0.0" CACHE INTERNAL "minimum version of Nektar++ that VisIt can use")
+set(NEKTAR++_MINIMUM_VERSION "4.0.0" CACHE INTERNAL "minimum version of Nektar++ that VisIt can use")
 
 # this needs to be included beofre the config-site file.
 include(${CMAKE_CURRENT_SOURCE_DIR}/CMake/VisItFunctions.cmake)
@@ -675,17 +675,17 @@ unset(VISIT_CONFIG_SITE_FILE)
 # If not already set, we use a default build type of Release
 #-----------------------------------------------------------------------------
 
-IF (NOT CMAKE_BUILD_TYPE)
-  SET(CMAKE_BUILD_TYPE "Release" CACHE STRING "Choose the type of build,
-options are: Debug Release RelWithDebInfo MinSizeRel.")
-ENDIF()
+if(NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Choose the type of build,
+        options are: Debug Release RelWithDebInfo MinSizeRel.")
+endif()
 
 #-----------------------------------------------------------------------------
 # Set compiler from config-site
 #-----------------------------------------------------------------------------
-SET(CMAKE_C_COMPILER ${VISIT_C_COMPILER})
-SET(CMAKE_CXX_COMPILER ${VISIT_CXX_COMPILER})
-SET(CMAKE_Fortran_COMPILER ${VISIT_FORTRAN_COMPILER})
+set(CMAKE_C_COMPILER ${VISIT_C_COMPILER})
+set(CMAKE_CXX_COMPILER ${VISIT_CXX_COMPILER})
+set(CMAKE_Fortran_COMPILER ${VISIT_FORTRAN_COMPILER})
 
 
 #-----------------------------------------------------------------------------
@@ -693,7 +693,7 @@ SET(CMAKE_Fortran_COMPILER ${VISIT_FORTRAN_COMPILER})
 #                this lets us set up defaults in the config-site.
 #-----------------------------------------------------------------------------
 
-PROJECT(VISIT)
+project(VISIT)
 
 
 include(${VISIT_SOURCE_DIR}/CMake/CheckMinimumCompilerVersion.cmake)
@@ -709,22 +709,22 @@ file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/exe")
 # Output directories.
 #-----------------------------------------------------------------------------
 
-IF(NOT CMAKE_LIBRARY_OUTPUT_DIRECTORY)
-  SET(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${VISIT_BINARY_DIR}/lib CACHE INTERNAL "Single output directory for building all libraries.")
-ENDIF(NOT CMAKE_LIBRARY_OUTPUT_DIRECTORY)
+if(NOT CMAKE_LIBRARY_OUTPUT_DIRECTORY)
+    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${VISIT_BINARY_DIR}/lib CACHE INTERNAL "Single output directory for building all libraries.")
+endif()
 
-IF(NOT CMAKE_ARCHIVE_OUTPUT_DIRECTORY)
-  SET(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${VISIT_BINARY_DIR}/lib CACHE INTERNAL "Single output directory for building all libraries.")
-ENDIF(NOT CMAKE_ARCHIVE_OUTPUT_DIRECTORY)
+if(NOT CMAKE_ARCHIVE_OUTPUT_DIRECTORY)
+    set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${VISIT_BINARY_DIR}/lib CACHE INTERNAL "Single output directory for building all libraries.")
+endif()
 
-IF (NOT CMAKE_RUNTIME_OUTPUT_DIRECTORY)
-      SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${VISIT_BINARY_DIR}/exe CACHE INTERNAL "Single output directory for building all executables.")
-ENDIF(NOT CMAKE_RUNTIME_OUTPUT_DIRECTORY)
+if(NOT CMAKE_RUNTIME_OUTPUT_DIRECTORY)
+    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${VISIT_BINARY_DIR}/exe CACHE INTERNAL "Single output directory for building all executables.")
+endif()
 
 
-SET(VISIT_LIBRARY_DIR ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/${CMAKE_CFG_INTDIR})
-SET(VISIT_EXECUTABLE_DIR ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CMAKE_CFG_INTDIR})
-SET(CXX_TEST_PATH ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
+set(VISIT_LIBRARY_DIR ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/${CMAKE_CFG_INTDIR})
+set(VISIT_EXECUTABLE_DIR ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CMAKE_CFG_INTDIR})
+set(CXX_TEST_PATH ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
 
 #-----------------------------------------------------------------------------
 # configure options
@@ -741,8 +741,8 @@ foreach(pkg ADIOS ADIOS2 ADIOS2_PAR ADVIO BLOSC BOOST BOXLIB CFITSIO CGNS
 endforeach()
 
 if(NOT WIN32)
-  VISIT_3RDPARTY_DIR(MESAGL)
-  VISIT_3RDPARTY_DIR(OSMESA)
+    VISIT_3RDPARTY_DIR(MESAGL)
+    VISIT_3RDPARTY_DIR(OSMESA)
 endif()
 
 # Set up placeholders for package vars: XXX_LIBDEP
@@ -763,12 +763,12 @@ VISIT_3RDPARTY_VAR(GLU_LIBRARY "Path to GLU lib")
 #-----------------------------------------------------------------------------
 # Read the version
 #-----------------------------------------------------------------------------
-FILE(STRINGS VERSION VERSION)
-IF(NOT VERSION)
-    MESSAGE(FATAL_ERROR
+file(STRINGS VERSION VERSION)
+if(NOT VERSION)
+    message(FATAL_ERROR
         "File \"VERSION\" with ascii string of VisIt version does not exist")
-ENDIF(NOT VERSION)
-SET(VISIT_VERSION ${VERSION})
+endif()
+set(VISIT_VERSION ${VERSION})
 
 # Want to split VISIT_VERSION into major,minor and patch vars.
 # Could use SETUP_APP_VERSION, but it sets the vars as CACHE (needed for TP).
@@ -884,11 +884,11 @@ mark_as_advanced(VISIT_INSTALLED_VERSION_BIN
 
 # experimental!!
 # ctest/cdash testing support
-SET(BUILD_CTEST_TESTING OFF CACHE BOOL "Enable ctest hooks into VisIt's regression suite")
-IF(BUILD_CTEST_TESTING)
+set(BUILD_CTEST_TESTING OFF CACHE BOOL "Enable ctest hooks into VisIt's regression suite")
+if(BUILD_CTEST_TESTING)
     # enable native cmake testing
-    INCLUDE(CTest)
-    CONFIGURE_FILE(
+    include(CTest)
+    configure_file(
         "${CMAKE_CURRENT_SOURCE_DIR}/CTestCustom.cmake.in"
         "${CMAKE_CURRENT_BINARY_DIR}/CTestCustom.cmake"
         @ONLY)
@@ -898,33 +898,33 @@ IF(BUILD_CTEST_TESTING)
     # * test data is generated from a set of programs
     #   that need to be built, also not in the source tree,
     #   but configured by this cmake lists file
-    SET(VISIT_TEST_DIR "${VISIT_SOURCE_DIR}/test"
+    set(VISIT_TEST_DIR "${VISIT_SOURCE_DIR}/test"
         CACHE PATH "Path to VisIt's regression suite")
-    SET(VISIT_BASELINE_DIR "${VISIT_SOURCE_DIR}/../test/baseline"
+    set(VISIT_BASELINE_DIR "${VISIT_SOURCE_DIR}/../test/baseline"
         CACHE PATH "Path to baseline images used by VisIt's regression suite")
-    SET(VISIT_DATA_DIR "${CMAKE_BINARY_DIR}/data"
+    set(VISIT_DATA_DIR "${CMAKE_BINARY_DIR}/data"
         CACHE PATH "Path to data used by VisIt's regression suite")
     # make it obvous if we do not have any of these, as
     # this will likely be a source of confusion for the
     # uninitiated
-    IF ((NOT EXISTS ${VISIT_TEST_DIR}) OR (NOT EXISTS ${VISIT_BASELINE_DIR})
-       OR ((NOT EXISTS ${VISIT_DATA_DIR}) AND (NOT EXISTS "${VISIT_SOURCE_DIR}/data")))
-        MESSAGE(FATAL_ERROR
+    if((NOT EXISTS ${VISIT_TEST_DIR}) OR (NOT EXISTS ${VISIT_BASELINE_DIR}) OR
+      ((NOT EXISTS ${VISIT_DATA_DIR}) AND (NOT EXISTS "${VISIT_SOURCE_DIR}/data")))
+        message(FATAL_ERROR
            "CTest based testing requires a checkout of trunk/test and trunk/data")
-    ENDIF()
+    endif()
     # add a phony target to be sure that data for tests is
     # generated/updated during the build
-    ADD_CUSTOM_TARGET(testing ALL)
-    ADD_DEPENDENCIES(testing testdata)
+    add_custom_target(testing ALL)
+    add_dependencies(testing testdata)
     # configure tests
-    SUBDIRS(${VISIT_TEST_DIR})
-ENDIF()
+    subdirs(${VISIT_TEST_DIR})
+endif()
 
 # Install the headers for directories that we need in order to build plugins
-IF(VISIT_HEADERS_SKIP_INSTALL)
-    MESSAGE(STATUS "Skipping VisIt headers installation")
-ELSE(VISIT_HEADERS_SKIP_INSTALL)
-    INSTALL(DIRECTORY avt common engine gui launcher mdserver third_party_builtin tools/writer viewer visit_vtk visitpy vtkqt winutil
+if(VISIT_HEADERS_SKIP_INSTALL)
+    message(STATUS "Skipping VisIt headers installation")
+else()
+    install(DIRECTORY avt common engine gui launcher mdserver third_party_builtin tools/writer viewer visit_vtk visitpy vtkqt winutil
         DESTINATION ${VISIT_INSTALLED_VERSION_INCLUDE}/visit
         FILE_PERMISSIONS OWNER_READ OWNER_WRITE
                          GROUP_READ GROUP_WRITE
@@ -939,7 +939,7 @@ ELSE(VISIT_HEADERS_SKIP_INSTALL)
         PATTERN "CMakeFiles" EXCLUDE
         PATTERN "icons" EXCLUDE
     )
-ENDIF(VISIT_HEADERS_SKIP_INSTALL)
+endif()
 
 #-----------------------------------------------------------------------------
 # Misc other things needed by windows
@@ -947,24 +947,7 @@ ENDIF(VISIT_HEADERS_SKIP_INSTALL)
 if(WIN32)
     include(CMake/VisItWindowsFunctions.cmake)
 
-    set(CMAKE_SKIP_RPATH ON CACHE INTERNAL "VisIt builds with rpath set." FORCE)
-
-    # VISIT_WINDOWS_DIR needed elsewhere, ensure it is defined and the location exists
-    if(NOT VISIT_WINDOWS_DIR)
-        message(FATAL_ERROR "VISIT_WINDOWS_DIR is not defined.")
-    endif()
-    if(NOT EXISTS ${VISIT_WINDOWS_DIR})
-        message(FATAL_ERROR "${VISIT_WINDOWS_DIR} does not exist.")
-    endif()
-
-    if(VISIT_NO_ALLBUILD)
-        # Create a custom target for things like copying files.
-        # Only needed if the CMake auto-generated ALL_BUILD project
-        # isn't created.
-        add_custom_target(visit_util_builds ALL)
-    endif()
-
-    visit_setup_windows_resources()
+    visit_setup_windows()
 endif()
 
 
@@ -972,20 +955,18 @@ include(${VISIT_SOURCE_DIR}/CMake/SetUpThirdParty.cmake)
 
 
 # Enable thread build of VisIt
-IF(VISIT_THREAD)
-    ADD_DEFINITIONS(-DVISIT_ATOMIC_USE_GCC_ATOMIC)
-    ADD_DEFINITIONS(-DVISIT_THREADS)
+if(VISIT_THREAD)
+    add_definitions(-DVISIT_ATOMIC_USE_GCC_ATOMIC)
+    add_definitions(-DVISIT_THREADS)
 
-    IF(APPLE)
-        ADD_DEFINITIONS(-DTURN_OFF_THREAD_SET_AFFINITY)
-    ENDIF(APPLE)
+    if(APPLE)
+        add_definitions(-DTURN_OFF_THREAD_SET_AFFINITY)
+    endif()
 
-    MESSAGE(STATUS "Threading for VisIt: ON")
-ELSE(VISIT_THREAD)
-    MESSAGE(STATUS "Threading for VisIt: OFF")
-ENDIF(VISIT_THREAD)
-
-
+    message(STATUS "Threading for VisIt: ON")
+else()
+    message(STATUS "Threading for VisIt: OFF")
+endif()
 
 
 #-----------------------------------------------------------------------------
@@ -1009,80 +990,78 @@ if(VISIT_PYTHON_SCRIPTING)
         message(STATUS ${msg})
     endif()
     unset(msg)
-endif(VISIT_PYTHON_SCRIPTING)
+endif()
 
 # Disable Python filters if we don't have Python.
 if(VISIT_PYTHON_FILTERS)
-  set(msg "Python Engine Filters disabled because")
-  if ( NOT PYTHONLIBS_FOUND)
-    set(VISIT_PYTHON_FILTERS OFF)
-    set(msg "${msg} Python was not found.")
-  elseif (VISIT_STATIC)
-    set(VISIT_PYTHON_FILTERS OFF)
-    set(msg "${msg} a static build of VisIt was selected.")
-  elseif (NOT VTK_PYTHON_WRAPPERS_FOUND)
-    set(VISIT_PYTHON_FILTERS OFF)
-    set(msg "${msg} VTK python wrappers are not installed.")
-  elseif (VISIT_NOLINK_MPI_WITH_LIBRARIES)
-    # Disable python filters if 'VISIT_NOLINK_MPI_WITH_LIBRARIES' is true.
-    # The mpicom python module (a shared lib) must be linked to mpi.
-    set(VISIT_PYTHON_FILTERS OFF)
-    set(msg "${msg} VISIT_NOLINK_MPI_WITH_LIBRARIES was selected.")
-  elseif (VISIT_DBIO_ONLY)
-    set(VISIT_PYTHON_FILTERS OFF)
-    set(msg "${msg} VISIT_DBIO_ONLY was selected.")
-  endif()
-  if (NOT VISIT_PYTHON_FILTERS)
-      message(STATUS ${msg})
-  endif()
-  unset(msg)
+    set(msg "Python Engine Filters disabled because")
+    if( NOT PYTHONLIBS_FOUND)
+        set(VISIT_PYTHON_FILTERS OFF)
+        set(msg "${msg} Python was not found.")
+    elseif(VISIT_STATIC)
+        set(VISIT_PYTHON_FILTERS OFF)
+        set(msg "${msg} a static build of VisIt was selected.")
+    elseif(NOT VTK_PYTHON_WRAPPERS_FOUND)
+        set(VISIT_PYTHON_FILTERS OFF)
+        set(msg "${msg} VTK python wrappers are not installed.")
+    elseif(VISIT_NOLINK_MPI_WITH_LIBRARIES)
+        # Disable python filters if 'VISIT_NOLINK_MPI_WITH_LIBRARIES' is true.
+        # The mpicom python module (a shared lib) must be linked to mpi.
+        set(VISIT_PYTHON_FILTERS OFF)
+        set(msg "${msg} VISIT_NOLINK_MPI_WITH_LIBRARIES was selected.")
+    elseif(VISIT_DBIO_ONLY)
+        set(VISIT_PYTHON_FILTERS OFF)
+        set(msg "${msg} VISIT_DBIO_ONLY was selected.")
+    endif()
+    if(NOT VISIT_PYTHON_FILTERS)
+        message(STATUS ${msg})
+    endif()
+    unset(msg)
 endif()
 
-
-
 # dl and large file support.
-IF(CMAKE_HOST_UNIX)
-  SET(DL_LIB dl)
-  ADD_DEFINITIONS(-D_LARGEFILE64_SOURCE)
-ENDIF(CMAKE_HOST_UNIX)
+if(CMAKE_HOST_UNIX)
+    set(DL_LIB dl)
+    add_definitions(-D_LARGEFILE64_SOURCE)
+endif()
 
-IF(VISIT_STATIC)
-    SET(BUILD_SHARED_LIBS 0)
-ENDIF(VISIT_STATIC)
+if(VISIT_STATIC)
+    set(BUILD_SHARED_LIBS 0)
+endif()
 
-IF(VISIT_FORTRAN)
-    ENABLE_LANGUAGE(Fortran)
-ENDIF(VISIT_FORTRAN)
+if(VISIT_FORTRAN)
+    enable_language(Fortran)
+endif()
 
-IF(VISIT_PARALLEL)
+if(VISIT_PARALLEL)
     include(${VISIT_SOURCE_DIR}/CMake/VisItParallel.cmake)
     message(STATUS "PARALLEL version of VisIt")
 else()
     message(STATUS "Serial version of VisIt")
 endif()
 
-SET(VISIT_INCLUDE_DIR ${VISIT_SOURCE_DIR}  CACHE INTERNAL "Path to VisIt's includes")
+set(VISIT_INCLUDE_DIR ${VISIT_SOURCE_DIR}  CACHE INTERNAL "Path to VisIt's includes")
 
 # This include sets up vars that contains lists of include directories
 include(${VISIT_SOURCE_DIR}/CMake/VisItIncludeVars.cmake)
 
 # macros/defines needed by CMake/VisItMacros.cmake
-if (NOT DEFINED VISIT_REPLACE_DEBUG_FLAGS)
-  set(VISIT_REPLACE_DEBUG_FLAGS TRUE)
-endif ()
+if(NOT DEFINED VISIT_REPLACE_DEBUG_FLAGS)
+    set(VISIT_REPLACE_DEBUG_FLAGS TRUE)
+endif()
 
 # macros/defines also needed by PluginVsInstall.cmake.in
-INCLUDE(${VISIT_SOURCE_DIR}/CMake/VisItMacros.cmake)
+include(${VISIT_SOURCE_DIR}/CMake/VisItMacros.cmake)
 
 # Mac-specific function
-FUNCTION(MAC_NIB_INSTALL exename)
-    IF(VISIT_STATIC AND APPLE)
-        FOREACH(x classes.nib info.nib keyedobjects.nib)
-            FILE(COPY ${VISIT_SOURCE_DIR}/include/qt_menu.nib/${x}
+function(MAC_NIB_INSTALL exename)
+    if(VISIT_STATIC AND APPLE)
+        foreach(x classes.nib info.nib keyedobjects.nib)
+            file(COPY ${VISIT_SOURCE_DIR}/include/qt_menu.nib/${x}
                  DESTINATION ${VISIT_EXECUTABLE_DIR}/${exename}.app/Contents/Resources/qt_menu.nib/)
-        ENDFOREACH(x)
-    ENDIF(VISIT_STATIC AND APPLE)
-ENDFUNCTION(MAC_NIB_INSTALL)
+        endforeach()
+    endif()
+endfunction()
 
 #-----------------------------------------------------------------------------
 # Read the GIT version
@@ -1111,10 +1090,8 @@ if (EXISTS ${VISIT_SOURCE_DIR}/../.git)
         unset(found_it)
         unset(git_rev)
     endif()
-else (EXISTS ${VISIT_SOURCE_DIR}/../.git)
-    if (EXISTS ${VISIT_SOURCE_DIR}/GIT_VERSION)
-        file(STRINGS ${VISIT_SOURCE_DIR}/GIT_VERSION VISIT_GIT_VERSION)
-    endif (EXISTS ${VISIT_SOURCE_DIR}/GIT_VERSION)
+elseif(EXISTS ${VISIT_SOURCE_DIR}/GIT_VERSION)
+    file(STRINGS ${VISIT_SOURCE_DIR}/GIT_VERSION VISIT_GIT_VERSION)
 endif()
 
 
@@ -1123,41 +1100,44 @@ endif()
 #-----------------------------------------------------------------------------
 
 # Set the slash characters based on the platform
-IF(WIN32)
-    SET(VISIT_SLASH_CHAR   "'\\\\'")
-    SET(VISIT_SLASH_STRING "\"\\\\\"")
-ELSE(WIN32)
-    SET(VISIT_SLASH_CHAR   "'/'")
-    SET(VISIT_SLASH_STRING "\"/\"")
-ENDIF(WIN32)
+if(WIN32)
+    set(VISIT_SLASH_CHAR   "'\\\\'")
+    set(VISIT_SLASH_STRING "\"\\\\\"")
+else()
+    set(VISIT_SLASH_CHAR   "'/'")
+    set(VISIT_SLASH_STRING "\"/\"")
+endif()
 
 # Check for plugin extension
-IF(VISIT_STATIC)
-    SET(VISIT_PLUGIN_EXTENSION   ".a")
-ELSE(VISIT_STATIC)
-    IF(WIN32)
+# Used by PluginManager.C
+if(VISIT_STATIC)
+    if(WIN32)
+        SET(VISIT_PLUGIN_EXTENSION   ".a")
+    else()
+        SET(VISIT_PLUGIN_EXTENSION   ".lib")
+    endif()
+else()
+    if(WIN32)
         SET(VISIT_PLUGIN_EXTENSION   ".dll")
-    ELSE(WIN32)
-        IF(APPLE)
-            SET(VISIT_PLUGIN_EXTENSION   ".dylib")
-        ELSE(APPLE)
-            SET(VISIT_PLUGIN_EXTENSION   ".so")
-        ENDIF(APPLE)
-    ENDIF(WIN32)
-ENDIF(VISIT_STATIC)
+    elseif(APPLE)
+        SET(VISIT_PLUGIN_EXTENSION   ".dylib")
+    else()
+        SET(VISIT_PLUGIN_EXTENSION   ".so")
+    endif()
+endif()
 
 # Set the rendering size limit to 16384 so that we are not unnecessarily
 # constraining the user. There is no way to set this properly since this
 # is used in the viewer and the limit really comes from the engine, which
 # may have a different size if running client/server. This setting should
 # be removed and a runtime check should be added to the engine.
-MESSAGE(STATUS "Setting VISIT_RENDERING_SIZE_LIMIT to 16384")
-SET(VISIT_RENDERING_SIZE_LIMIT 16384 CACHE INTERNAL "rendering size limit")
+message(STATUS "Setting VISIT_RENDERING_SIZE_LIMIT to 16384")
+set(VISIT_RENDERING_SIZE_LIMIT 16384 CACHE INTERNAL "rendering size limit")
 
-CONFIGURE_FILE(${VISIT_SOURCE_DIR}/include/visit-cmake.h.in
+configure_file(${VISIT_SOURCE_DIR}/include/visit-cmake.h.in
                ${VISIT_BINARY_DIR}/include/visit-config.h @ONLY IMMEDIATE)
 
-CONFIGURE_FILE(${VISIT_SOURCE_DIR}/include/visit-python-cmake.h.in
+configure_file(${VISIT_SOURCE_DIR}/include/visit-python-cmake.h.in
                ${VISIT_BINARY_DIR}/include/visit-python-config.h @ONLY IMMEDIATE)
 
 
@@ -1167,17 +1147,17 @@ CONFIGURE_FILE(${VISIT_SOURCE_DIR}/include/visit-python-cmake.h.in
 
 # Store some configure information into a C file (like version, SVN version
 # and platform things that change).
-CONFIGURE_FILE(${VISIT_SOURCE_DIR}/common/misc/ConfigureInfo.C.in
+configure_file(${VISIT_SOURCE_DIR}/common/misc/ConfigureInfo.C.in
                ${VISIT_BINARY_DIR}/common/misc/ConfigureInfo.C @ONLY IMMEDIATE)
 
 
 # The normal plugin case. We redefine these when we build against an installed
 # version of VisIt
-IF(NOT WIN32)
-    SET(VISIT_PLUGIN_DIR  ${VISIT_BINARY_DIR}/plugins CACHE INTERNAL "Path to VisIt's plugins")
-ELSE(NOT WIN32)
-    SET(VISIT_PLUGIN_DIR  ${VISIT_EXECUTABLE_DIR} CACHE INTERNAL "Path to VisIt's plugins")
-ENDIF(NOT WIN32)
+if(NOT WIN32)
+    set(VISIT_PLUGIN_DIR  ${VISIT_BINARY_DIR}/plugins CACHE INTERNAL "Path to VisIt's plugins")
+else()
+    set(VISIT_PLUGIN_DIR  ${VISIT_EXECUTABLE_DIR} CACHE INTERNAL "Path to VisIt's plugins")
+endif()
 
 #-----------------------------------------------------------------------------
 # If we're installing MPICH into our VisIt distribution then let's do that by
@@ -1196,10 +1176,10 @@ endif()
 # setting them beforehand can upset some of CMake's own find routines. Use
 # quotes to unite the strings or CMake will create a list.
 #-----------------------------------------------------------------------------
-SET(CMAKE_VERBOSE_MAKEFILE ${VISIT_VERBOSE_MAKEFILE})
-SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${VISIT_C_FLAGS}")
-SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${VISIT_CXX_FLAGS}")
-SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${VISIT_EXE_LINKER_FLAGS}")
+set(CMAKE_VERBOSE_MAKEFILE ${VISIT_VERBOSE_MAKEFILE})
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${VISIT_C_FLAGS}")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${VISIT_CXX_FLAGS}")
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${VISIT_EXE_LINKER_FLAGS}")
 
 #-----------------------------------------------------------------------------
 # Top-level subdirectories
@@ -1235,70 +1215,71 @@ endif()
 
 set(AVT_REQUIRED_LIB_DIR "${__AVT_REQUIRED_LIB_DIR_LIST}" CACHE INTERNAL "Engine AVT Required I/O lib dirs")
 
-ADD_SUBDIRECTORY(third_party_builtin)
-ADD_SUBDIRECTORY(common)
-ADD_SUBDIRECTORY(visit_vtk)
-ADD_SUBDIRECTORY(avt)
+add_subdirectory(third_party_builtin)
+add_subdirectory(common)
+add_subdirectory(visit_vtk)
+add_subdirectory(avt)
 
-IF(NOT VISIT_DBIO_ONLY)
+if(NOT VISIT_DBIO_ONLY)
     if(VISIT_ENABLE_LIBSIM)
-      ADD_SUBDIRECTORY(sim)
+      add_subdirectory(sim)
     endif()
-    ADD_SUBDIRECTORY(viewer)   # sim depends on viewercore
-    ADD_SUBDIRECTORY(engine)   # sim depends on engine
+    add_subdirectory(viewer)   # sim depends on viewercore
+    add_subdirectory(engine)   # sim depends on engine
 
-    IF(NOT VISIT_ENGINE_ONLY)
-        ADD_SUBDIRECTORY(launcher)
-        ADD_SUBDIRECTORY(mdserver)
-    ENDIF(NOT VISIT_ENGINE_ONLY)
-ENDIF(NOT VISIT_DBIO_ONLY)
+    if(NOT VISIT_ENGINE_ONLY)
+        add_subdirectory(launcher)
+        add_subdirectory(mdserver)
+    endif()
+endif()
 
-IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
-    ADD_SUBDIRECTORY(vtkqt)
-    ADD_SUBDIRECTORY(winutil)
-    ADD_SUBDIRECTORY(gui)
-    IF(VISIT_PYTHON_SCRIPTING AND PYTHONLIBS_FOUND)
-        IF(NOT VISIT_STATIC)
-            ADD_SUBDIRECTORY(visitpy)
-        ENDIF(NOT VISIT_STATIC)
-    ENDIF(VISIT_PYTHON_SCRIPTING AND PYTHONLIBS_FOUND)
+if(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
+    add_subdirectory(vtkqt)
+    add_subdirectory(winutil)
+    add_subdirectory(gui)
+    if(VISIT_PYTHON_SCRIPTING AND PYTHONLIBS_FOUND)
+        if(NOT VISIT_STATIC)
+            add_subdirectory(visitpy)
+        endif()
+    endif()
     # always add java subdir, so code gen targets can be active even
     # if java is not enabled
-    ADD_SUBDIRECTORY(java)
-ENDIF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
+    add_subdirectory(java)
+endif()
 
-IF(NOT VISIT_DBIO_ONLY)
-   ADD_SUBDIRECTORY(plots)
-   ADD_SUBDIRECTORY(operators)
-ENDIF(NOT VISIT_DBIO_ONLY)
-ADD_SUBDIRECTORY(databases)
+if(NOT VISIT_DBIO_ONLY)
+   add_subdirectory(plots)
+   add_subdirectory(operators)
+endif()
+
+add_subdirectory(databases)
 
 # Must come after plugins in case we're doing a static build
-ADD_SUBDIRECTORY(tools)
+add_subdirectory(tools)
 
 # Now that plugins have been added, do the mains last if we're creating static
 # binaries. This is needed to link the plugins into the exe.
-IF(VISIT_STATIC)
-    ADD_SUBDIRECTORY(engine/main)
-    ADD_SUBDIRECTORY(sim/V2/static)
+if(VISIT_STATIC)
+    add_subdirectory(engine/main)
+    add_subdirectory(sim/V2/static)
 
-    IF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
-        ADD_SUBDIRECTORY(mdserver/main)
-    ENDIF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
+    if(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
+        add_subdirectory(mdserver/main)
+    endif()
 
-    IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
-        ADD_SUBDIRECTORY(gui/main)
-        ADD_SUBDIRECTORY(viewer/main)
-        IF(VISIT_PYTHON_SCRIPTING AND PYTHONLIBS_FOUND)
-            ADD_SUBDIRECTORY(visitpy)
-        ENDIF(VISIT_PYTHON_SCRIPTING AND PYTHONLIBS_FOUND)
-    ENDIF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
-ENDIF(VISIT_STATIC)
+    if(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
+        add_subdirectory(gui/main)
+        add_subdirectory(viewer/main)
+        if(VISIT_PYTHON_SCRIPTING AND PYTHONLIBS_FOUND)
+            add_subdirectory(visitpy)
+        endif()
+    endif()
+endif()
 
-ADD_SUBDIRECTORY(bin)
-ADD_SUBDIRECTORY(lib)
-ADD_SUBDIRECTORY(include)
-ADD_SUBDIRECTORY(resources)
+add_subdirectory(bin)
+add_subdirectory(lib)
+add_subdirectory(include)
+add_subdirectory(resources)
 
 #-----------------------------------------------------------------------------
 # Add the "data" directory on WINDOWS if it exists
@@ -1330,67 +1311,68 @@ add_subdirectory(doc)
 #          packages up a VisIt distribution.
 #-----------------------------------------------------------------------------
 
-CONFIGURE_FILE(${VISIT_SOURCE_DIR}/tools/dev/scripts/Info.plist.in
+configure_file(${VISIT_SOURCE_DIR}/tools/dev/scripts/Info.plist.in
                ${VISIT_BINARY_DIR}/tools/dev/scripts/Info.plist @ONLY IMMEDIATE)
 
-# temporarily turn this off on windows
-IF (NOT WIN32)
-    IF (APPLE AND VISIT_CREATE_APPBUNDLE_PACKAGE)
-        SET (CPACK_GENERATOR "Bundle")
+if(NOT WIN32)
+    if (APPLE AND VISIT_CREATE_APPBUNDLE_PACKAGE)
+        set(CPACK_GENERATOR "Bundle")
 
-        SET (CPACK_PACKAGE_FILE_NAME "VisIt-${VISIT_VERSION}")
-        SET (CPACK_BUNDLE_NAME "VisIt")
-        SET (CPACK_BUNDLE_ICON "${VISIT_SOURCE_DIR}/common/icons/VisItIcon.icns")
-        SET (CPACK_BUNDLE_PLIST "${VISIT_BINARY_DIR}/tools/dev/scripts/Info.plist")
-        SET (CPACK_BUNDLE_STARTUP_COMMAND "${VISIT_BINARY_DIR}/exe/visit_macos_launcher")
-    ELSE(APPLE AND VISIT_CREATE_APPBUNDLE_PACKAGE)
-        SET(CPACK_GENERATOR "TGZ")
+        set(CPACK_PACKAGE_FILE_NAME "VisIt-${VISIT_VERSION}")
+        set(CPACK_BUNDLE_NAME "VisIt")
+        set(CPACK_BUNDLE_ICON "${VISIT_SOURCE_DIR}/common/icons/VisItIcon.icns")
+        set(CPACK_BUNDLE_PLIST "${VISIT_BINARY_DIR}/tools/dev/scripts/Info.plist")
+        set(CPACK_BUNDLE_STARTUP_COMMAND "${VISIT_BINARY_DIR}/exe/visit_macos_launcher")
+    else()
+        set(CPACK_GENERATOR "TGZ")
 
-        SET(CPACK_PACKAGE_NAME "visit")
-        SET(CPACK_PACKAGE_DESCRIPTION_SUMMARY "VisIt ${VISIT_VERSION} is a parallel visualization and data analysis tool")
-        SET(CPACK_PACKAGE_VENDOR "LLNS")
-        SET(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/resources/help/en_US/copyright.html")
+        set(CPACK_PACKAGE_NAME "visit")
+        set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "VisIt ${VISIT_VERSION} is a parallel visualization and data analysis tool")
+        set(CPACK_PACKAGE_VENDOR "LLNS")
+        set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/resources/help/en_US/copyright.html")
 
         # We should probably parse ${VISIT_VERSION} into its component parts instead.
-        SET(CPACK_PACKAGE_VERSION_MAJOR ${VISIT_VERSION_MAJOR})
-        SET(CPACK_PACKAGE_VERSION_MINOR ${VISIT_VERSION_MINOR})
-        SET(CPACK_PACKAGE_VERSION_PATCH ${VISIT_VERSION_PATCH})
+        set(CPACK_PACKAGE_VERSION_MAJOR ${VISIT_VERSION_MAJOR})
+        set(CPACK_PACKAGE_VERSION_MINOR ${VISIT_VERSION_MINOR})
+        set(CPACK_PACKAGE_VERSION_PATCH ${VISIT_VERSION_PATCH})
 
-        SET(UL_VERSION "${VISIT_VERSION_MAJOR}_${VISIT_VERSION_MINOR}_${VISIT_VERSION_PATCH}")
-        SET(CPACK_PACKAGE_FILE_NAME "visit${UL_VERSION}.${VISIT_INSTALL_PLATFORM}")
+        set(UL_VERSION "${VISIT_VERSION_MAJOR}_${VISIT_VERSION_MINOR}_${VISIT_VERSION_PATCH}")
+        set(CPACK_PACKAGE_FILE_NAME "visit${UL_VERSION}.${VISIT_INSTALL_PLATFORM}")
 
-        IF(NOT APPLE)
-            SET(CPACK_STRIP_FILES TRUE)
-        ENDIF(NOT APPLE)
-    ENDIF(APPLE AND VISIT_CREATE_APPBUNDLE_PACKAGE)
-    INCLUDE(CPack)
-ELSE () # on windows
+        if(NOT APPLE)
+            set(CPACK_STRIP_FILES TRUE)
+        endif()
+    endif()
+    include(CPack)
+
+else() # on windows
     visit_create_windows_installer()
-ENDIF (NOT WIN32)
+endif()
 
 #CMake add subdirectory forces this action to go last
 #todo: find way for this function to execute as last
 #step of make install process
-#ADD_CUSTOM_TARGET(osxfixup ALL
+#add_custom_target(osxfixup ALL
 #     COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_SOURCE_DIR}/osxfixup/osxfixup.py \$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/${VISIT_INSTALLED_VERSION} @executable_path/.. 3)
-#ADD_DEPENDENCIES(osxfixup install)
+#add_dependencies(osxfixup install)
 
 #todo: replace add_subdirectory with the lines above
-SET(FIXUP_OSX TRUE CACHE BOOL "Whether to fix up osx.")
-IF (APPLE AND FIXUP_OSX)
-    ADD_SUBDIRECTORY(osxfixup)
-ENDIF ()
+set(FIXUP_OSX TRUE CACHE BOOL "Whether to fix up osx.")
+if(APPLE AND FIXUP_OSX)
+    add_subdirectory(osxfixup)
+endif()
 
 if(WIN32 AND VISIT_CREATE_XMLTOOLS_GEN_TARGETS)
     message("\nCreation of code gen targets has been turned on. If you don't want the xmltools to be run during the buid, build using the ALL_BUILD project.")
 endif()
 
-IF (NOT WIN32)
-    MESSAGE(STATUS "\n\nUse recmake_visit.sh or search for `CMAKE_INVOKE' in CMakeCache.txt to re-run CMake with the same arguments\n\n")
-ELSE (NOT WIN32)
-    MESSAGE(STATUS "\n\nSearch for `CMAKE_INVOKE' in CMakeCache.txt to re-run CMake with the same arguments\n\n")
-ENDIF (NOT WIN32)
+if(WIN32)
+    message(STATUS "\n\nSearch for `CMAKE_INVOKE' in CMakeCache.txt to re-run CMake with the same arguments\n\n")
+else()
+    message(STATUS "\n\nUse recmake_visit.sh or search for `CMAKE_INVOKE' in CMakeCache.txt to re-run CMake with the same arguments\n\n")
+endif()
 
 if(VISIT_INSTALL_THIRD_PARTY)
     include(${VISIT_SOURCE_DIR}/CMake/PluginVsInstallHelpers.cmake)
 endif()
+
