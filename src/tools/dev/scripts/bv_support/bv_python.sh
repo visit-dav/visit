@@ -241,15 +241,27 @@ function bv_python_info
         export PYTHON_MD5_CHECKSUM="cee2e4b33ad3750da77b2e85f2f8b724"
         export PYTHON_SHA256_CHECKSUM="304c9b202ea6fbd0a4a8e0ad3733715fbd4749f2204a9173a58ec53c32ea73e8"
     else
-        export PYTHON_URL="https://www.python.org/ftp/python/3.7.7"
-        export PYTHON_FILE_SUFFIX="tgz"
-        export PYTHON_VERSION="3.7.7"
-        # TODO: May need logic for "m" suffix
-        export PYTHON_COMPATIBILITY_VERSION="3.7m"
-        export PYTHON_FILE="Python-$PYTHON_VERSION.$PYTHON_FILE_SUFFIX"
-        export PYTHON_BUILD_DIR="Python-$PYTHON_VERSION"
-        export PYTHON_MD5_CHECKSUM="d348d978a5387512fbc7d7d52dd3a5ef"
-        export PYTHON_SHA256_CHECKSUM="8c8be91cd2648a1a0c251f04ea0bb4c2a5570feb9c45eaaa2241c785585b475a"
+        if [[ "$OPSYS" == Darwin ]] && [[ "$(uname -m)" == "arm64" ]] ; then
+            export PYTHON_URL="https://www.python.org/ftp/python/3.9.6"           
+            export PYTHON_FILE_SUFFIX="tgz"
+            export PYTHON_VERSION="3.9.6"
+            # TODO: May need logic for "m" suffix
+            export PYTHON_COMPATIBILITY_VERSION="3.9"
+            export PYTHON_FILE="Python-$PYTHON_VERSION.$PYTHON_FILE_SUFFIX"
+            export PYTHON_BUILD_DIR="Python-$PYTHON_VERSION"
+            export PYTHON_MD5_CHECKSUM="ecc29a7688f86e550d29dba2ee66cf80"
+            export PYTHON_SHA256_CHECKSUM="397920af33efc5b97f2e0b57e91923512ef89fc5b3c1d21dbfc8c4828ce0108a"
+        else
+            export PYTHON_URL="https://www.python.org/ftp/python/3.7.7"
+            export PYTHON_FILE_SUFFIX="tgz"
+            export PYTHON_VERSION="3.7.7"
+            # TODO: May need logic for "m" suffix
+            export PYTHON_COMPATIBILITY_VERSION="3.7m"
+            export PYTHON_FILE="Python-$PYTHON_VERSION.$PYTHON_FILE_SUFFIX"
+            export PYTHON_BUILD_DIR="Python-$PYTHON_VERSION"
+            export PYTHON_MD5_CHECKSUM="d348d978a5387512fbc7d7d52dd3a5ef"
+            export PYTHON_SHA256_CHECKSUM="8c8be91cd2648a1a0c251f04ea0bb4c2a5570feb9c45eaaa2241c785585b475a"
+        fi
     fi
 
     if [[ "$DO_PYTHON2" == "yes" ]] ; then
@@ -302,11 +314,19 @@ function bv_python_info
         export SETUPTOOLS_MD5_CHECKSUM="9b23df90e1510c7353a5cf07873dcd22"
         export SETUPTOOLS_SHA256_CHECKSUM="e1a2850bb7ad820e4dd3643a6c597bea97a35de2909e9bf0afa3f337836b5ea3"
     else
-        export SETUPTOOLS_URL=""
-        export SETUPTOOLS_FILE="setuptools-44.0.0.zip"
-        export SETUPTOOLS_BUILD_DIR="setuptools-44.0.0"
-        export SETUPTOOLS_MD5_CHECKSUM="32b6cdce670ce462086d246bea181e9d"
-        export SETUPTOOLS_SHA256_CHECKSUM="e5baf7723e5bb8382fc146e33032b241efc63314211a3a120aaa55d62d2bb008"
+        if [[ "$OPSYS" == Darwin ]] && [[ "$(uname -m)" == "arm64" ]] ; then
+            export SETUPTOOLS_URL=""
+            export SETUPTOOLS_FILE="setuptools-67.1.0.tar.gz"
+            export SETUPTOOLS_BUILD_DIR="setuptools-67.1.0"
+            export SETUPTOOLS_MD5_CHECKSUM="3500aa251bdb337c7c9b64a1c30b5702"
+            export SETUPTOOLS_SHA256_CHECKSUM="e261cdf010c11a41cb5cb5f1bf3338a7433832029f559a6a7614bd42a967c300"
+        else
+            export SETUPTOOLS_URL=""
+            export SETUPTOOLS_FILE="setuptools-44.0.0.zip"
+            export SETUPTOOLS_BUILD_DIR="setuptools-44.0.0"
+            export SETUPTOOLS_MD5_CHECKSUM="32b6cdce670ce462086d246bea181e9d"
+            export SETUPTOOLS_SHA256_CHECKSUM="e5baf7723e5bb8382fc146e33032b241efc63314211a3a120aaa55d62d2bb008"
+        fi
     fi
 
     if [[ "$DO_PYTHON2" == "yes" ]] ; then
@@ -1156,6 +1176,47 @@ function build_mpi4py
     return 0
 }
 
+function apply_numpy_arm64_patch
+{
+    info "Patching numpy: remove -faltivec for arm64"
+    patch -f -p0 << \EOF
+diff -c numpy-1.16.6/numpy/distutils/system_info.py numpy-1.16.6.patched/numpy/distutils/system_info.py
+*** numpy-1.16.6/numpy/distutils/system_info.py	2019-12-27 17:24:44.000000000 -0800
+--- numpy-1.16.6.patched/numpy/distutils/system_info.py	2023-02-06 18:39:49.000000000 -0800
+***************
+*** 1922,1929 ****
+                      'accelerate' in libraries):
+                  if intel:
+                      args.extend(['-msse3'])
+-                 else:
+-                     args.extend(['-faltivec'])
+                  args.extend([
+                      '-I/System/Library/Frameworks/vecLib.framework/Headers'])
+                  link_args.extend(['-Wl,-framework', '-Wl,Accelerate'])
+--- 1922,1927 ----
+***************
+*** 1932,1939 ****
+                        'veclib' in libraries):
+                  if intel:
+                      args.extend(['-msse3'])
+-                 else:
+-                     args.extend(['-faltivec'])
+                  args.extend([
+                      '-I/System/Library/Frameworks/vecLib.framework/Headers'])
+                  link_args.extend(['-Wl,-framework', '-Wl,vecLib'])
+--- 1930,1935 ----
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "Patching numpy to remove -faltivec for arm64 failed."
+        return 1
+    fi
+
+    return 0
+
+
+
+}
+
 # *************************************************************************** #
 #                                  build_numpy                                #
 # *************************************************************************** #
@@ -1211,6 +1272,9 @@ function build_numpy
         if test $? -ne 0 ; then
             warn "Could not extract ${NUMPY_FILE}"
             return 1
+        fi
+        if [[ "$OPSYS" == Darwin ]] && [[ "$(uname -m)" == "arm64" ]] ; then
+            apply_numpy_arm64_patch
         fi
     fi
 
@@ -1834,6 +1898,7 @@ function build_sphinx
             if [[ -z "$(file $f | grep -i 'ascii text')" ]]; then
                 continue # Process only scripts
             fi
+            info "Fixing shebang in $f in sphinx installation..."
             # -i '' means do in-place...don't create backups
             # 1s means do substitution only on line 1
             # @ choosen as sep char for s sed cmd to not collide w/slashes
