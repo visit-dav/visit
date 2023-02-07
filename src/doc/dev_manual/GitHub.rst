@@ -70,6 +70,12 @@ or::
 
     git clone  --recursive ssh://git@github.com/visit-dav/visit.git
 
+If for some reason the ``--recursive`` flag was overlooked when the repository was originally cloned, this can be easily remedied by::
+
+    cd visit
+    git submodule init
+    git submodule update
+
 To setup our hooks::
 
     cd visit
