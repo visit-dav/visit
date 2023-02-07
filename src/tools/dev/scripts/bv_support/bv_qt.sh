@@ -310,6 +310,12 @@ function apply_qt_patch
                     return 1
                 fi
             fi
+            if [[ "$(uname -m)" == "arm64" ]]; then
+                apply_qt_darwin_arm64_patches
+                if [[ $? != 0 ]] ; then
+                    return 1
+                fi
+            fi
         fi
     fi
     return 0
@@ -776,6 +782,119 @@ EOF
     fi
 
     return 0
+}
+
+function apply_qt_darwin_arm64_patches
+{
+    info "Patching qt 5.14.2 for macOS arm64"
+    patch -p0 <<EOF
+diff -r -c qtbase/mkspecs/common/macx.conf qtbase/mkspecs/common/macx.conf.patched
+*** qtbase/mkspecs/common/macx.conf	2020-03-27 02:49:31.000000000 -0700
+--- qtbase/mkspecs/common/macx.conf.patched	2023-02-06 21:15:06.000000000 -0800
+***************
+*** 6,12 ****
+  QMAKE_MAC_SDK           = macosx
+  
+  QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.13
+! QMAKE_APPLE_DEVICE_ARCHS = x86_64
+  
+  # Should be 10.15, but as long as the CI builds with
+  # older SDKs we have to keep this.
+--- 6,13 ----
+  QMAKE_MAC_SDK           = macosx
+  
+  QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.13
+! #QMAKE_APPLE_DEVICE_ARCHS = x86_64
+! QMAKE_APPLE_DEVICE_ARCHS = arm64
+  
+  # Should be 10.15, but as long as the CI builds with
+  # older SDKs we have to keep this.
+diff -r -c qtbase/src/plugins/platforms/cocoa/qcocoahelpers.h qtbase/src/plugins/platforms/cocoa/qcocoahelpers.h.patched
+*** qtbase/src/plugins/platforms/cocoa/qcocoahelpers.h	2020-03-27 02:49:31.000000000 -0700
+--- qtbase/src/plugins/platforms/cocoa/qcocoahelpers.h.patched	2023-02-06 21:15:07.000000000 -0800
+***************
+*** 190,198 ****
+  
+  // -------------------------------------------------------------------------
+  
+! #if !defined(Q_PROCESSOR_X86_64)
+! #error "32-bit builds are not supported"
+! #endif
+  
+  class QMacVersion
+  {
+--- 190,198 ----
+  
+  // -------------------------------------------------------------------------
+  
+! // #if !defined(Q_PROCESSOR_X86_64)
+! // #error "32-bit builds are not supported"
+! // #endif
+  
+  class QMacVersion
+  {
+***************
+*** 300,306 ****
+          "The given return type does not use stret on this platform");
+  
+      typedef void (*SuperStretFn)(ReturnType *, objc_super *, SEL, Args...);
+!     SuperStretFn superStretFn = reinterpret_cast<SuperStretFn>(objc_msgSendSuper_stret);
+  
+      objc_super sup = { receiver, [receiver superclass] };
+      ReturnType ret;
+--- 300,307 ----
+          "The given return type does not use stret on this platform");
+  
+      typedef void (*SuperStretFn)(ReturnType *, objc_super *, SEL, Args...);
+!     //SuperStretFn superStretFn = reinterpret_cast<SuperStretFn>(objc_msgSendSuper_stret);
+!     SuperStretFn superStretFn = reinterpret_cast<SuperStretFn>(objc_msgSendSuper);
+  
+      objc_super sup = { receiver, [receiver superclass] };
+      ReturnType ret;
+diff -r -c qtbase/src/plugins/platforms/cocoa/qcocoahelpers.mm qtbase/src/plugins/platforms/cocoa/qcocoahelpers.mm.patched
+*** qtbase/src/plugins/platforms/cocoa/qcocoahelpers.mm	2020-03-27 02:49:31.000000000 -0700
+--- qtbase/src/plugins/platforms/cocoa/qcocoahelpers.mm.patched	2023-02-06 21:15:07.000000000 -0800
+***************
+*** 372,380 ****
+  
+  // -------------------------------------------------------------------------
+  
+! #if !defined(Q_PROCESSOR_X86_64)
+! #error "32-bit builds are not supported"
+! #endif
+  
+  QOperatingSystemVersion QMacVersion::buildSDK(VersionTarget target)
+  {
+--- 372,380 ----
+  
+  // -------------------------------------------------------------------------
+  
+! // #if !defined(Q_PROCESSOR_X86_64)
+! // #error "32-bit builds are not supported"
+! // #endif
+  
+  QOperatingSystemVersion QMacVersion::buildSDK(VersionTarget target)
+  {
+diff -r -c qtbase/src/plugins/platforms/cocoa/qiosurfacegraphicsbuffer.h qtbase/src/plugins/platforms/cocoa/qiosurfacegraphicsbuffer.h.patched
+*** qtbase/src/plugins/platforms/cocoa/qiosurfacegraphicsbuffer.h	2020-03-27 02:49:31.000000000 -0700
+--- qtbase/src/plugins/platforms/cocoa/qiosurfacegraphicsbuffer.h.patched	2023-02-06 21:15:07.000000000 -0800
+***************
+*** 40,45 ****
+--- 40,46 ----
+  #ifndef QIOSURFACEGRAPHICSBUFFER_H
+  #define QIOSURFACEGRAPHICSBUFFER_H
+  
++ #include <CoreGraphics/CGColorSpace.h>
+  #include <qpa/qplatformgraphicsbuffer.h>
+  #include <private/qcore_mac_p.h>
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "Patching qt 5.14.2 for macOS arm64 failed."
+        return 1
+    fi
+
+    return 0
+
 }
 
 function build_qt
