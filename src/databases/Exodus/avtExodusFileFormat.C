@@ -1645,7 +1645,7 @@ avtExodusFileFormat::GetTimesteps(int *ntimes, vector<double> *times)
             double *atimes = &(times->operator[](0));
             float *vals = new float[len];
             VisItNCErr = nc_get_var_float(ncExIIId, timesVarId, vals);
-            CheckNCError(nc_inq_dimid);
+            CheckNCError(nc_get_var_float);
             for (size_t i = 0; i < len; i++)
                 atimes[i] = vals[i];
             delete [] vals;
@@ -1653,7 +1653,7 @@ avtExodusFileFormat::GetTimesteps(int *ntimes, vector<double> *times)
         else if (vtype == NC_DOUBLE)
         {
             VisItNCErr = nc_get_var_double(ncExIIId, timesVarId, &(times->operator[](0)));
-            CheckNCError(nc_inq_dimid);
+            CheckNCError(nc_get_var_double);
         }
         else
         {
