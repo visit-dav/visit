@@ -1465,6 +1465,230 @@ EOF
     return 0;
 }
 
+function apply_vtk_darwin_arm64_patches
+{
+    info "Patching vtk for darwin arm64"
+diff -c -r Wrapping/PythonCore/PyVTKMethodDescriptor.cxx Wrapping/PythonCore/PyVTKMethodDescriptor.cxx.patched
+*** Wrapping/PythonCore/PyVTKMethodDescriptor.cxx	2017-12-22 08:33:25.000000000 -0800
+--- Wrapping/PythonCore/PyVTKMethodDescriptor.cxx.patched	2023-02-07 10:11:31.000000000 -0800
+***************
+*** 186,192 ****
+    sizeof(PyMethodDescrObject),           // tp_basicsize
+    0,                                     // tp_itemsize
+    PyVTKMethodDescriptor_Delete,          // tp_dealloc
+!   nullptr,                               // tp_print
+    nullptr,                               // tp_getattr
+    nullptr,                               // tp_setattr
+    nullptr,                               // tp_compare
+--- 186,192 ----
+    sizeof(PyMethodDescrObject),           // tp_basicsize
+    0,                                     // tp_itemsize
+    PyVTKMethodDescriptor_Delete,          // tp_dealloc
+!   0,                               // tp_print
+    nullptr,                               // tp_getattr
+    nullptr,                               // tp_setattr
+    nullptr,                               // tp_compare
+diff -c -r Wrapping/PythonCore/PyVTKNamespace.cxx Wrapping/PythonCore/PyVTKNamespace.cxx.patched
+*** Wrapping/PythonCore/PyVTKNamespace.cxx	2017-12-22 08:33:25.000000000 -0800
+--- Wrapping/PythonCore/PyVTKNamespace.cxx.patched	2023-02-07 10:11:31.000000000 -0800
+***************
+*** 49,55 ****
+    0,                                     // tp_basicsize
+    0,                                     // tp_itemsize
+    PyVTKNamespace_Delete,                 // tp_dealloc
+!   nullptr,                               // tp_print
+    nullptr,                               // tp_getattr
+    nullptr,                               // tp_setattr
+    nullptr,                               // tp_compare
+--- 49,55 ----
+    0,                                     // tp_basicsize
+    0,                                     // tp_itemsize
+    PyVTKNamespace_Delete,                 // tp_dealloc
+!   0,                               // tp_print
+    nullptr,                               // tp_getattr
+    nullptr,                               // tp_setattr
+    nullptr,                               // tp_compare
+diff -c -r Wrapping/PythonCore/PyVTKReference.cxx Wrapping/PythonCore/PyVTKReference.cxx.patched
+*** Wrapping/PythonCore/PyVTKReference.cxx	2017-12-22 08:33:25.000000000 -0800
+--- Wrapping/PythonCore/PyVTKReference.cxx.patched	2023-02-07 10:11:31.000000000 -0800
+***************
+*** 1010,1016 ****
+    sizeof(PyVTKReference),                // tp_basicsize
+    0,                                     // tp_itemsize
+    PyVTKReference_Delete,                 // tp_dealloc
+!   nullptr,                               // tp_print
+    nullptr,                               // tp_getattr
+    nullptr,                               // tp_setattr
+    nullptr,                               // tp_compare
+--- 1010,1016 ----
+    sizeof(PyVTKReference),                // tp_basicsize
+    0,                                     // tp_itemsize
+    PyVTKReference_Delete,                 // tp_dealloc
+!   0,                               // tp_print
+    nullptr,                               // tp_getattr
+    nullptr,                               // tp_setattr
+    nullptr,                               // tp_compare
+***************
+*** 1067,1073 ****
+    sizeof(PyVTKReference),                // tp_basicsize
+    0,                                     // tp_itemsize
+    PyVTKReference_Delete,                 // tp_dealloc
+!   nullptr,                               // tp_print
+    nullptr,                               // tp_getattr
+    nullptr,                               // tp_setattr
+    nullptr,                               // tp_compare
+--- 1067,1073 ----
+    sizeof(PyVTKReference),                // tp_basicsize
+    0,                                     // tp_itemsize
+    PyVTKReference_Delete,                 // tp_dealloc
+!   0,                               // tp_print
+    nullptr,                               // tp_getattr
+    nullptr,                               // tp_setattr
+    nullptr,                               // tp_compare
+***************
+*** 1124,1130 ****
+    sizeof(PyVTKReference),                // tp_basicsize
+    0,                                     // tp_itemsize
+    PyVTKReference_Delete,                 // tp_dealloc
+!   nullptr,                               // tp_print
+    nullptr,                               // tp_getattr
+    nullptr,                               // tp_setattr
+    nullptr,                               // tp_compare
+--- 1124,1130 ----
+    sizeof(PyVTKReference),                // tp_basicsize
+    0,                                     // tp_itemsize
+    PyVTKReference_Delete,                 // tp_dealloc
+!   0,                               // tp_print
+    nullptr,                               // tp_getattr
+    nullptr,                               // tp_setattr
+    nullptr,                               // tp_compare
+***************
+*** 1181,1187 ****
+    sizeof(PyVTKReference),                // tp_basicsize
+    0,                                     // tp_itemsize
+    PyVTKReference_Delete,                 // tp_dealloc
+!   nullptr,                               // tp_print
+    nullptr,                               // tp_getattr
+    nullptr,                               // tp_setattr
+    nullptr,                               // tp_compare
+--- 1181,1187 ----
+    sizeof(PyVTKReference),                // tp_basicsize
+    0,                                     // tp_itemsize
+    PyVTKReference_Delete,                 // tp_dealloc
+!   0,                               // tp_print
+    nullptr,                               // tp_getattr
+    nullptr,                               // tp_setattr
+    nullptr,                               // tp_compare
+diff -c -r Wrapping/PythonCore/PyVTKTemplate.cxx Wrapping/PythonCore/PyVTKTemplate.cxx.patched
+*** Wrapping/PythonCore/PyVTKTemplate.cxx	2017-12-22 08:33:25.000000000 -0800
+--- Wrapping/PythonCore/PyVTKTemplate.cxx.patched	2023-02-07 10:11:31.000000000 -0800
+***************
+*** 268,274 ****
+    0,                                     // tp_basicsize
+    0,                                     // tp_itemsize
+    nullptr,                               // tp_dealloc
+!   nullptr,                               // tp_print
+    nullptr,                               // tp_getattr
+    nullptr,                               // tp_setattr
+    nullptr,                               // tp_compare
+--- 268,274 ----
+    0,                                     // tp_basicsize
+    0,                                     // tp_itemsize
+    nullptr,                               // tp_dealloc
+!   0,                               // tp_print
+    nullptr,                               // tp_getattr
+    nullptr,                               // tp_setattr
+    nullptr,                               // tp_compare
+diff -c -r Wrapping/PythonCore/vtkPythonArgs.cxx Wrapping/PythonCore/vtkPythonArgs.cxx.patched
+*** Wrapping/PythonCore/vtkPythonArgs.cxx	2017-12-22 08:33:25.000000000 -0800
+--- Wrapping/PythonCore/vtkPythonArgs.cxx.patched	2023-02-07 10:11:31.000000000 -0800
+***************
+*** 102,108 ****
+    else if (PyUnicode_Check(o))
+    {
+  #if PY_VERSION_HEX >= 0x03030000
+!     a = PyUnicode_AsUTF8(o);
+      return true;
+  #else
+      PyObject *s = _PyUnicode_AsDefaultEncodedString(o, nullptr);
+--- 102,108 ----
+    else if (PyUnicode_Check(o))
+    {
+  #if PY_VERSION_HEX >= 0x03030000
+!     a = (char*)PyUnicode_AsUTF8(o);
+      return true;
+  #else
+      PyObject *s = _PyUnicode_AsDefaultEncodedString(o, nullptr);
+diff -c -r Wrapping/Tools/vtkWrapPythonClass.c Wrapping/Tools/vtkWrapPythonClass.c.patched
+*** Wrapping/Tools/vtkWrapPythonClass.c	2017-12-22 08:33:25.000000000 -0800
+--- Wrapping/Tools/vtkWrapPythonClass.c.patched	2023-02-07 10:11:31.000000000 -0800
+***************
+*** 527,533 ****
+      "  sizeof(PyVTKObject), // tp_basicsize\n"
+      "  0, // tp_itemsize\n"
+      "  PyVTKObject_Delete, // tp_dealloc\n"
+!     "  nullptr, // tp_print\n"
+      "  nullptr, // tp_getattr\n"
+      "  nullptr, // tp_setattr\n"
+      "  nullptr, // tp_compare\n"
+--- 527,533 ----
+      "  sizeof(PyVTKObject), // tp_basicsize\n"
+      "  0, // tp_itemsize\n"
+      "  PyVTKObject_Delete, // tp_dealloc\n"
+!     "  0, // tp_print\n"
+      "  nullptr, // tp_getattr\n"
+      "  nullptr, // tp_setattr\n"
+      "  nullptr, // tp_compare\n"
+diff -c -r Wrapping/Tools/vtkWrapPythonEnum.c Wrapping/Tools/vtkWrapPythonEnum.c.patched
+*** Wrapping/Tools/vtkWrapPythonEnum.c	2017-12-22 08:33:25.000000000 -0800
+--- Wrapping/Tools/vtkWrapPythonEnum.c.patched	2023-02-07 10:11:31.000000000 -0800
+***************
+*** 145,151 ****
+      "  sizeof(PyIntObject), // tp_basicsize\n"
+      "  0, // tp_itemsize\n"
+      "  nullptr, // tp_dealloc\n"
+!     "  nullptr, // tp_print\n"
+      "  nullptr, // tp_getattr\n"
+      "  nullptr, // tp_setattr\n"
+      "  nullptr, // tp_compare\n"
+--- 145,151 ----
+      "  sizeof(PyIntObject), // tp_basicsize\n"
+      "  0, // tp_itemsize\n"
+      "  nullptr, // tp_dealloc\n"
+!     "  0, // tp_print\n"
+      "  nullptr, // tp_getattr\n"
+      "  nullptr, // tp_setattr\n"
+      "  nullptr, // tp_compare\n"
+diff -c -r Wrapping/Tools/vtkWrapPythonType.c Wrapping/Tools/vtkWrapPythonType.c.patched
+*** Wrapping/Tools/vtkWrapPythonType.c	2017-12-22 08:33:25.000000000 -0800
+--- Wrapping/Tools/vtkWrapPythonType.c.patched	2023-02-07 10:11:31.000000000 -0800
+***************
+*** 709,715 ****
+      "  sizeof(PyVTKSpecialObject), // tp_basicsize\n"
+      "  0, // tp_itemsize\n"
+      "  Py%s_Delete, // tp_dealloc\n"
+!     "  nullptr, // tp_print\n"
+      "  nullptr, // tp_getattr\n"
+      "  nullptr, // tp_setattr\n"
+      "  nullptr, // tp_compare\n"
+--- 709,715 ----
+      "  sizeof(PyVTKSpecialObject), // tp_basicsize\n"
+      "  0, // tp_itemsize\n"
+      "  Py%s_Delete, // tp_dealloc\n"
+!     "  0, // tp_print\n"
+      "  nullptr, // tp_getattr\n"
+      "  nullptr, // tp_setattr\n"
+      "  nullptr, // tp_compare\n"
+EOF
+
+    if [[ $? != 0 ]] ; then
+      warn "Patching vtk for darwin arm64 failed."
+      return 1
+    fi
+
+    return 0;
+}
+
 
 function apply_vtk_patch
 {
@@ -1519,6 +1743,13 @@ function apply_vtk_patch
     apply_vtk_osmesa_render_patch
     if [[ $? != 0 ]] ; then
         return 1
+    fi
+
+    if [[ "$OPSYS" == Darwin ]] && [[ "$(uname -m)" == "arm64" ]] ; then
+        apply_vtk_darwin_arm64_patches
+        if [[ $? != 0 ]] ; then
+            return 1
+        fi
     fi
     return 0
 }
