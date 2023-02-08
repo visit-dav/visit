@@ -52,7 +52,13 @@ There are several arguments that are common to all the examples:
     Tells the example application that it will be connecting to a development version of VisIt_.
     This is important because an installed version of VisIt_ is structured slightly differently than a build.
 
-All of the examples are available from the ``src/java`` directory.
+All of the examples are available from the the top (``.``) directory of the untarred ``jvisit<version>.tar.gz``.
+
+Java Classes Documentation
+--------------------------
+
+There is a ``docs`` subdirectory from the untarred ``jvisit<version>.tar.gz`` with a bunch of ``.html`` files.
+If you point a web browser at ``index.html`` there, you can find a lot of documentation on the various Java classes available and used in various of these examples.
 
 .. toctree::
    :maxdepth: 1
