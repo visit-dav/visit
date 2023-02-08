@@ -12,7 +12,7 @@ function(visit_create_windows_installer)
         include(${VISIT_SOURCE_DIR}/CMake/FindNSIS.cmake)
 
         if(${MAKENSIS_FOUND})
-            set(CMAKE_INSTALL_SYSTEM_RUNTIME_DESTINATION ".")
+            set(CMAKE_INSTALL_SYSTEM_RUNTIME_DESTINATION ${VISIT_INSTALLED_VERSION_BIN})
             include("InstallRequiredSystemLibraries")
             # create a custom target that will run our nsis scripts.
             # Make sure it won't run unless specifically called.
