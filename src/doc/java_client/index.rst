@@ -205,7 +205,7 @@ Determining which variables can be plotted
 
 This program shows how to open a file and determine which plots can be used with the data from the file.
 
-Each plot in VisIt_ responds to a certain set of variable types (scalar,vector, and so on).
+Each plot in VisIt_ responds to a certain set of variable types (scalar, vector, and so on).
 When you open a file, you get a list of variables in the metadata object.
 You must match up the variable types supported by a plot and the variables from the metadata in order to determine which plots can accept which variables from the database.
 This example program demonstrates a method for doing this comparison.
