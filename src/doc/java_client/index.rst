@@ -76,7 +76,8 @@ Assuming the current working directory is the directory where ``jvisit<version>.
 
    All arguments *before* the name of the Java program to run are arguments to ``java``.
 
-   All arguments *after* the name of the Java program to run are arguments to the program.
+   All arguments *after* the name of the Java program to run are arguments to the program, or to VisIt_.
+   Any arguments not consumed by the Java program are forwarded to VisIt_.
 
    In client/server scenarios, if the above command line does not work or if the viewer seems to stall when connecting to the remote computer, try adding the ``-nopty`` argument to make VisIt_ prompt for passwords in the console from which Java was run.
    This should rarely be necessary.
