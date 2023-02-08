@@ -118,7 +118,7 @@ Once the changed object has been sent back to VisIt_'s viewer, you call a method
 Performing queries
 ~~~~~~~~~~~~~~~~~~
 
-This example program shows how to use some of VisIt's query capabilities to perform picks and lineouts.
+This example program shows how to use some of VisIt_'s query capabilities to perform picks and lineouts.
 
 .. container:: collapsible
 
