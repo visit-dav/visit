@@ -12,7 +12,7 @@ Disclaimers:
     VisIt_'s separate viewer window will be activated and controlled from your application.
     VisIt_ will not be able to plot data from your Java application without going through the file system.
 
-The Java client for a particular version of VisIt is available as separate tarball on our `downloads page <https://visit-dav.github.io/visit-website/releases-as-tables>`_.
+The Java client for a particular version of VisIt_ is available as separate tarball on our `downloads page <https://visit-dav.github.io/visit-website/releases-as-tables>`_.
 Look for ``jvisit<version>.tar.gz``, e.g. ``jvisit3.3.0.tar.gz``.
 Simply untar to the directory of your choosing to use it.
 Note that the tarball untars its contents to ``.`` and not its own directory.
