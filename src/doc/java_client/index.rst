@@ -176,7 +176,7 @@ Also, more profiles could be added to the host profile list before sending it to
     .. literalinclude:: ../../java/MakeHostProfile.java
        :language: Java
 
-Opening the visIt GUI from Java
+Opening the VisIt_ GUI from Java
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 This program shows how to start the VisIt_ **GUI** from within your Java application.
