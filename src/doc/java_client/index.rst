@@ -15,6 +15,8 @@ Disclaimers:
 The Java client for a particular version of VisIt is available as separate tarball on our `downloads page <https://visit-dav.github.io/visit-website/releases-as-tables>`_.
 Look for ``jvisit<version>.tar.gz``, e.g. ``jvisit3.3.0.tar.gz``.
 Simply untar to the directory of your choosing to use it.
+Note that the tarball untars its contents to ``.`` and not its own directory.
+Its best to make a directory (e.g. ``mkdir visit_java``), copy the tarball into that directory and untar it there.
 
 
 Building from source
@@ -43,8 +45,8 @@ There are several arguments that are common to all the examples:
     path to VisIt_'s bin directory, eg, ``/usr/local/visit/3.3.0/bin``
 
 `-datapath`: 
-    path to VisIt_'s silo example data (used by many of the examples)
-    eg: ``/usr/local/visit/3.3.0/data``
+    path to directory holding VisIt_'s silo example data (used by many of the examples)
+    eg: ``/usr/local/visit/3.3.0/data/``. **Note**: the trailing slash is **required**.
 
 `-dv`: 
     Tells the example application that it will be connecting to a development version of VisIt_.
