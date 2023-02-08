@@ -48,8 +48,7 @@ There are several arguments that are common to all the examples:
     eg: ``/usr/local/visit/3.3.0/data/``. **Note**: the trailing slash is **required**.
 
 ``-dv``: 
-    Tells the example application that it will be connecting to a development version of VisIt_.
-    This is important because an installed version of VisIt_ is structured slightly differently than a build.
+    A shorthand for ``-path ../bin``.
 
 ``-nopty``:
     Is forwarded to VisIt_ launcher to make VisIt_ prompt for passwords in the console/terminal from which Java was run.
@@ -72,10 +71,13 @@ Assuming the current working directory is the directory where ``jvisit<version>.
     java -cp .:visit.jar Example -stay -path /path/to/visit/bin -datapath /path/to/silo/data/dir/
 
 .. note:: The Java program to run, here ``Example``, does not include the ``.class`` extension when it is specified on the command line to ``java``.
+
    The trailing slash for the ``-datapath`` argument is required.
-   From within a development build of VisIt_, the ``-path`` option and its argument may be replaced with ``-dv``.
+
    All arguments *before* the name of the Java program to run are arguments to ``java``.
+
    All arguments *after* the name of the Java program to run are arguments to the program.
+
    In client/server scenarios, if the above command line does not work or if the viewer seems to stall when connecting to the remote computer, try adding the ``-nopty`` argument to make VisIt_ prompt for passwords in the console from which Java was run.
    This should rarely be necessary.
 
