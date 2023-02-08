@@ -211,7 +211,7 @@ You must match up the variable types supported by a plot and the variables from 
 This example program demonstrates a method for doing this comparison.
 
 .. note:: The Java implementation does not offer a ``GetVariableTypes`` method in the plugin interface as it should.
-   This is an oversight that may be corrected in a future version of VisIt.
+   This is an oversight that may be corrected in a future version of VisIt_.
    In the meantime, this program's ``GetVariableTypes`` method can be used to fulfill the same purpose.
 
 .. container:: collapsible
