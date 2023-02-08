@@ -50,7 +50,7 @@ There are several arguments that are common to all the examples:
     Tells the example application that it will be connecting to a development version of VisIt_.
     This is important because an installed version of VisIt_ is structured slightly differently than a build.
 
-All of the examples are available from the ``src/java`` directory.
+All of the examples are available from the top (``.``) directory of the untarred `jvisit<version>.tar.gz`.
 
 .. toctree::
    :maxdepth: 1
