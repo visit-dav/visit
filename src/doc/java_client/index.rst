@@ -60,7 +60,7 @@ Java Classes Documentation
 --------------------------
 
 There is a ``docs`` subdirectory from the untarred ``jvisit<version>.tar.gz`` with a bunch of ``.html`` files.
-If you point a web browser at ``index.html`` there, you can find a lot of documentation on the various Java classes available and used in various of these examples.
+If you point a web browser at ``index.html`` there, you can find a lot of documentation on the various Java classes available and used in these examples.
 
 Running the Examples
 --------------------
