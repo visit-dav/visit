@@ -84,10 +84,10 @@ Assuming the current working directory is the directory where ``jvisit<version>.
 Basic example
 ~~~~~~~~~~~~~
 
-This program defines the *RunViewer* class, which serves as the base class for some of the other example Java programs.
-The *RunViewer* program does much of its initialization of the ViewerProxy, the main class for controlling VisIt_'s viewer, in its *run()* method.
-The actual VisIt_-related work, however, is defined in the *work()* method and is overridden in subclasses to perform different VisIt_ functionality.
-This program's *work()* method opens the VisIt_ globe.silo database, sets some annotation properties, and makes a Pseudocolor plot and a Mesh plot.
+This program defines the ``RunViewer`` class, which serves as the base class for some of the other example Java programs.
+The ``RunViewer`` program does much of its initialization of the ViewerProxy, the main class for controlling VisIt_'s viewer, in its ``run()`` method.
+The actual VisIt_-related work, however, is defined in the ``work()`` method and is overridden in subclasses to perform different VisIt_ functionality.
+This program's ``work()`` method opens the VisIt_ globe.silo database, sets some annotation properties, and makes a Pseudocolor plot and a Mesh plot.
 After the plots are drawn, the program changes the plot variables a couple of times and saves out images for each of the plotted variables. 
 
 .. container:: collapsible
