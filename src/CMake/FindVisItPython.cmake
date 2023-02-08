@@ -386,7 +386,7 @@ function(PYTHON_ADD_DISTUTILS_SETUP target_name dest_dir setup_file)
         visit_add_to_util_builds(${target_name})
 
         # also use distutils for the install ...
-        file(TO_NATIVE_PATH ${CMAKE_INSTALL_PREFIX}/lib VIVL_NATIVE)
+        file(TO_NATIVE_PATH ${CMAKE_INSTALL_PREFIX}/${VISIT_INSTALLED_VERSION_LIB} VIVL_NATIVE)
         string(REPLACE "\\" "\\\\" VIVL_ESC_PATH "${VIVL_NATIVE}")
         install(CODE
            "

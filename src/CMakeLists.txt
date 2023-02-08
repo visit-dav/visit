@@ -798,28 +798,17 @@ if(WIN32)
     # override cmake's default of %Program Files% for CMAKE_INSTALL_PREFIX
     # if it wasn't specified via command line,
     if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-      if(NOT APPENDED_VISIT_VERSION_TO_INSTALL_PATH)
-        set(CMAKE_INSTALL_PREFIX "${VISIT_BINARY_DIR}/VisIt${VISIT_VERSION}"
+        set(CMAKE_INSTALL_PREFIX "${VISIT_BINARY_DIR}"
             CACHE PATH "Install path prefix, prepended onto install directories" FORCE)
-        set(APPENDED_VISIT_VERSION_TO_INSTALL_PATH TRUE CACHE INTERNAL "")
-      endif()
     endif()
-
-    # set up directories
-    set(VISIT_INSTALLED_VERSION .
+    set(VISIT_INSTALLED_VERSION VisIt${VISIT_VERSION}
         CACHE PATH "VisIt install directory" FORCE)
-    set(VISIT_INSTALLED_VERSION_BIN .
+    set(VISIT_INSTALLED_VERSION_BIN ${VISIT_INSTALLED_VERSION}
         CACHE PATH "VisIt bin install directory" FORCE)
-    set(VISIT_INSTALLED_VERSION_LIB lib
-        CACHE PATH "VisIt lib install directory" FORCE)
-    set(VISIT_INSTALLED_VERSION_INCLUDE include
-        CACHE PATH "VisIt include install directory" FORCE)
-    set(VISIT_INSTALLED_VERSION_PLUGINS .
+    set(VISIT_INSTALLED_VERSION_PLUGINS ${VISIT_INSTALLED_VERSION}
         CACHE PATH "VisIt plugins install directory" FORCE)
-    set(VISIT_INSTALLED_VERSION_ARCHIVES lib
+    set(VISIT_INSTALLED_VERSION_ARCHIVES ${VISIT_INSTALLED_VERSION}/lib
         CACHE PATH "3rd party I/O archives install directory" FORCE)
-    set(VISIT_INSTALLED_VERSION_RESOURCES resources
-        CACHE PATH "VisIt resources install directory" FORCE)
 else()
     include(${VISIT_SOURCE_DIR}/CMake/DetermineVisItArchitecture.cmake)
     DETERMINE_VISIT_ARCHITECTURE(VISIT_INSTALL_PLATFORM)
@@ -827,17 +816,27 @@ else()
         CACHE PATH "VisIt install directory" FORCE)
     set(VISIT_INSTALLED_VERSION_BIN ${VISIT_INSTALLED_VERSION}/bin
         CACHE PATH "VisIt bin install directory" FORCE)
-    set(VISIT_INSTALLED_VERSION_LIB ${VISIT_INSTALLED_VERSION}/lib
-        CACHE PATH "VisIt lib install directory" FORCE)
-    set(VISIT_INSTALLED_VERSION_INCLUDE ${VISIT_INSTALLED_VERSION}/include
-        CACHE PATH "VisIt include install directory" FORCE)
     set(VISIT_INSTALLED_VERSION_PLUGINS ${VISIT_INSTALLED_VERSION}/plugins
         CACHE PATH "VisIt plugins install directory" FORCE)
     set(VISIT_INSTALLED_VERSION_ARCHIVES ${VISIT_INSTALLED_VERSION}/archives
         CACHE PATH "3rd party I/O archives install directory" FORCE)
-    set(VISIT_INSTALLED_VERSION_RESOURCES ${VISIT_INSTALLED_VERSION}/resources
-        CACHE PATH "VisIt resources install directory" FORCE)
+endif()
 
+# locations in common on all platforms
+set(VISIT_INSTALLED_VERSION_LIB ${VISIT_INSTALLED_VERSION}/lib
+    CACHE PATH "VisIt lib install directory" FORCE)
+set(VISIT_INSTALLED_VERSION_INCLUDE ${VISIT_INSTALLED_VERSION}/include
+    CACHE PATH "VisIt include install directory" FORCE)
+set(VISIT_INSTALLED_VERSION_RESOURCES ${VISIT_INSTALLED_VERSION}/resources
+    CACHE PATH "VisIt resources install directory" FORCE)
+
+mark_as_advanced(VISIT_INSTALLED_VERSION_BIN
+                 VISIT_INSTALLED_VERSION_LIB
+                 VISIT_INSTALLED_VERSION_PLUGINS
+                 VISIT_INSTALLED_VERSION_ARCHIVES
+                 VISIT_INSTALLED_VERSION_INCLUDE)
+
+if(NOT WIN32)
     if(VISIT_RPATH_RELATIVE_TO_EXECUTABLE_PATH)
         set(CMAKE_INSTALL_RPATH "$ORIGIN/../lib")
         set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
@@ -876,49 +875,6 @@ else()
     endif()
 endif()
 
-mark_as_advanced(VISIT_INSTALLED_VERSION_BIN
-                 VISIT_INSTALLED_VERSION_LIB
-                 VISIT_INSTALLED_VERSION_PLUGINS
-                 VISIT_INSTALLED_VERSION_ARCHIVES
-                 VISIT_INSTALLED_VERSION_INCLUDE)
-
-# experimental!!
-# ctest/cdash testing support
-set(BUILD_CTEST_TESTING OFF CACHE BOOL "Enable ctest hooks into VisIt's regression suite")
-if(BUILD_CTEST_TESTING)
-    # enable native cmake testing
-    include(CTest)
-    configure_file(
-        "${CMAKE_CURRENT_SOURCE_DIR}/CTestCustom.cmake.in"
-        "${CMAKE_CURRENT_BINARY_DIR}/CTestCustom.cmake"
-        @ONLY)
-    # notes:
-    # * visit test sources aren't in the source tree
-    # * and baseline images are currently with test sources
-    # * test data is generated from a set of programs
-    #   that need to be built, also not in the source tree,
-    #   but configured by this cmake lists file
-    set(VISIT_TEST_DIR "${VISIT_SOURCE_DIR}/test"
-        CACHE PATH "Path to VisIt's regression suite")
-    set(VISIT_BASELINE_DIR "${VISIT_SOURCE_DIR}/../test/baseline"
-        CACHE PATH "Path to baseline images used by VisIt's regression suite")
-    set(VISIT_DATA_DIR "${CMAKE_BINARY_DIR}/data"
-        CACHE PATH "Path to data used by VisIt's regression suite")
-    # make it obvous if we do not have any of these, as
-    # this will likely be a source of confusion for the
-    # uninitiated
-    if((NOT EXISTS ${VISIT_TEST_DIR}) OR (NOT EXISTS ${VISIT_BASELINE_DIR}) OR
-      ((NOT EXISTS ${VISIT_DATA_DIR}) AND (NOT EXISTS "${VISIT_SOURCE_DIR}/data")))
-        message(FATAL_ERROR
-           "CTest based testing requires a checkout of trunk/test and trunk/data")
-    endif()
-    # add a phony target to be sure that data for tests is
-    # generated/updated during the build
-    add_custom_target(testing ALL)
-    add_dependencies(testing testdata)
-    # configure tests
-    subdirs(${VISIT_TEST_DIR})
-endif()
 
 # Install the headers for directories that we need in order to build plugins
 if(VISIT_HEADERS_SKIP_INSTALL)
@@ -1301,7 +1257,7 @@ endif()
 # while it's evaluated. if the new testing were ever made permanent then
 # this code would be removed.
 if(NOT VISIT_ENGINE_ONLY AND NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT BUILD_CTEST_TESTING)
-      add_subdirectory(test)
+    add_subdirectory(test)
 endif()
 
 add_subdirectory(doc)
