@@ -104,7 +104,7 @@ Controlling lighting
 
 This example program is based on the ``RunViewer`` example program and it shows how to modify lighting in VisIt_.
 The basic procedure is to obtain a handle to the state object that you want to modify, in this case, ``LightList`` and then modify the state object and call its Notify() method to send the changed object back to VisIt_'s viewer.
-Once the changed object has been sent back to VisIt_'s viewer, you call a method from ViewerMethods that tells VisIt to apply the sent object to its internal state. 
+Once the changed object has been sent back to VisIt_'s viewer, you call a method from ViewerMethods that tells VisIt_ to apply the sent object to its internal state. 
 
 .. container:: collapsible
 
