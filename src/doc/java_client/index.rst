@@ -188,7 +188,7 @@ The important part of this code is the call to the ``OpenClient()`` method.
 The ``OpenClient`` method takes 3 arguments: ``clientName``, ``clientProgram``, ``clientArgs``.
 The ``clientName`` is the internal name that will be used to identify the client inside of VisIt_.
 You can pass any name that you want for this.
-The ``clientProgram`` argment is a string that identifies the executable for your program.
+The ``clientProgram`` argument is a string that identifies the executable for your program.
 The ``clientArgs`` argument lets you pass command line arguments to your program when it is started.
 When you call ``OpenClient()``, the VisIt_ viewer will attempt to launch the specified VisIt_ client and then the client will be attached to VisIt_ and can control the VisIt_ viewer.
 Any number of VisIt_ clients can be connected to the VisIt_ viewer.
@@ -207,13 +207,13 @@ Determining which variables can be plotted
 
 This program shows how to open a file and determine which plots can be used with the data from the file.
 
-Each plot in VisIt_ responds to a certain set of variable types (scalar,vector, and so on).
+Each plot in VisIt_ responds to a certain set of variable types (scalar, vector, and so on).
 When you open a file, you get a list of variables in the metadata object.
 You must match up the variable types supported by a plot and the variables from the metadata in order to determine which plots can accept which variables from the database.
 This example program demonstrates a method for doing this comparison.
 
 .. note:: The Java implementation does not offer a ``GetVariableTypes`` method in the plugin interface as it should.
-   This is an oversight that may be corrected in a future version of VisIt.
+   This is an oversight that may be corrected in a future version of VisIt_.
    In the meantime, this program's ``GetVariableTypes`` method can be used to fulfill the same purpose.
 
 .. container:: collapsible
