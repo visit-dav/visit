@@ -186,7 +186,7 @@ The important part of this code is the call to the ``OpenClient()`` method.
 The ``OpenClient`` method takes 3 arguments: ``clientName``, ``clientProgram``, ``clientArgs``.
 The ``clientName`` is the internal name that will be used to identify the client inside of VisIt_.
 You can pass any name that you want for this.
-The ``clientProgram`` argment is a string that identifies the executable for your program.
+The ``clientProgram`` argument is a string that identifies the executable for your program.
 The ``clientArgs`` argument lets you pass command line arguments to your program when it is started.
 When you call ``OpenClient()``, the VisIt_ viewer will attempt to launch the specified VisIt_ client and then the client will be attached to VisIt_ and can control the VisIt_ viewer.
 Any number of VisIt_ clients can be connected to the VisIt_ viewer.
