@@ -341,7 +341,7 @@ Connected Component Weighted Variable Sum
     result is a list of values, one for each component.
 
 XRay Image
-    See :ref:`XRayQuery`.
+    See :ref:`XRayQuery <XRayQuery>`.
 
 ZoneCenter
     The ZoneCenter query calculates the zone center for a certain cell in the
