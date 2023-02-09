@@ -419,6 +419,8 @@ chgrp visit libgfortran.so.4.0.0
 chmod g+rwX,o+rX libgfortran.so.4.0.0
 ln -s libgfortran.so.4.0.0 libgfortran.so
 ln -s libgfortran.so.4.0.0 libgfortran.so.4
+chgrp visit libdarshan.so
+chmod g+rwX,o+rX libdarshan.so
 cd
 rm -f resultlog
 echo "        install of visit on rztrona"          > resultlog 2>&1
