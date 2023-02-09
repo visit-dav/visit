@@ -329,11 +329,15 @@ cat <<EOF > quartz
 # Copy libraries needed for fortran for toss4 systems.
 cd /usr/tce/packages/gcc/gcc-7.1.0/lib64
 cp libgfortran.so.4.0.0 /usr/gapps/visit/$ver+/linux-x86_64/lib
+cd /usr/tce/packages/darshan/darshan-3.2.1/runtime/mvapich2-2.3/lib
+cp libdarshan.so /usr/gapps/visit/$ver+/linux-x86_64/lib
 cd /usr/gapps/visit/$ver+/linux-x86_64/lib
 chgrp visit libgfortran.so.4.0.0
 chmod g+rwX,o+rX libgfortran.so.4.0.0
 ln -s libgfortran.so.4.0.0 libgfortran.so
 ln -s libgfortran.so.4.0.0 libgfortran.so.4
+chgrp visit libdarshan.so
+chmod g+rwX,o+rX libdarshan.so
 cd
 rm -f resultlog
 echo ""                                              > resultlog 2>&1
