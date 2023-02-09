@@ -557,6 +557,33 @@ The list of values currently supported along with their default formats are
     +--------------------+----------+-------------------------------------+
     | zlabel             |    %s    |  z axis label                       |
     +--------------------+----------+-------------------------------------+
+    | itafile1           |    %d    |  ints from ~/.visit/itafile1.txt    |
+    |                    |          |  one line per timestep.             |
+    +--------------------+----------+-------------------------------------+
+    | itafile2           |    %d    |  ints from ~/.visit/itafile2.txt    |
+    |                    |          |  one line per timestep.             |
+    +--------------------+----------+-------------------------------------+
+    | itafile3           |    %d    |  ints from ~/.visit/itafile3.txt    |
+    |                    |          |  one line per timestep.             |
+    +--------------------+----------+-------------------------------------+
+    | ftafile1           |    %g    |  floats from ~/.visit/ftafile1.txt  |
+    |                    |          |  one line per timestep.             |
+    +--------------------+----------+-------------------------------------+
+    | ftafile2           |    %g    |  floats from ~/.visit/ftafile2.txt  |
+    |                    |          |  one line per timestep.             |
+    +--------------------+----------+-------------------------------------+
+    | ftafile3           |    %g    |  floats from ~/.visit/ftafile3.txt  |
+    |                    |          |  one line per timestep.             |
+    +--------------------+----------+-------------------------------------+
+    | stafile1           |    %s    |  strings from ~/.visit/stafile1.txt |
+    |                    |          |  one line per timestep.             |
+    +--------------------+----------+-------------------------------------+
+    | stafile2           |    %s    |  strings from ~/.visit/stafile2.txt |
+    |                    |          |  one line per timestep.             |
+    +--------------------+----------+-------------------------------------+
+    | stafile3           |    %s    |  strings from ~/.visit/stafile3.txt |
+    |                    |          |  one line per timestep.             |
+    +--------------------+----------+-------------------------------------+
 
 For example, to create a text annoation which displays ``State index = XXX`` where ``XXX`` is the number for the index, set the annotation string to ``State index = $index``.
 To display the current cycle number always with 6 digits and leading zeros when necessary, use the string ``$cycle%06d`` where the optional ``%`` followed by a printf-style format string is specified.

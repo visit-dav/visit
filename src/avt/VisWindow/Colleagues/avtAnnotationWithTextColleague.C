@@ -2,16 +2,36 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-#include <avtAnnotationWithTextColleague.h>
-#include <avtDataAttributes.h>
+// Specific (local) to general (global) include file order pattern.
+// Alphabetical within each scope.
+// https://stackoverflow.com/questions/2762568/c-c-include-header-file-order
+
+// Includes for this component
 #include <VisWindow.h>
 #include <VisWindowColleagueProxy.h>
 
-#include <AnnotationObject.h>
+// Includes for parent component
+#include <avtAnnotationWithTextColleague.h>
+#include <avtDataAttributes.h>
 
+// Includes generally for VisIt 
+#include <AnnotationObject.h>
+#include <Environment.h>
+
+// Includes for 3rd party
 #include <vtkRenderer.h>
 #include <vtkVisItTextActor.h>
 #include <vtkTextProperty.h>
+
+// Includes for standard library
+#include <cerrno>
+#include <fstream>
+#include <climits>
+#include <cstdlib>
+#include <cstring>
+
+// Includes for system
+// None
 
 std::unique_ptr<avtDataAttributes> avtAnnotationWithTextColleague::initialDataAttributes = std::unique_ptr<avtDataAttributes>(new avtDataAttributes);
 
@@ -103,10 +123,85 @@ hasKeyMatch(char const *fmtStr, int idx)
     for (int ki = 0; ki < nkeys; ki++)
     {
         char const *key = keysAndFmts[ki].key;
-        if (!strncmp(&fmtStr[idx], key, strlen(key)))
+        if (!std::strncmp(&fmtStr[idx], key, strlen(key)))
             return ki;
     }
     return -1;
+}
+
+// ****************************************************************************
+// Function: GetStrFromTAFile 
+//
+// Open and read specified text annotation file (e.g. itafile1.txt,
+// ftafile2.txt or stafile3.txt) up to specified line.
+//
+// Mark C. Miller, Thu Feb  9 11:29:30 PST 2023
+//
+// ****************************************************************************
+
+static char const*
+GetStrFromTAFile(char type, int ifile, int line)
+{
+    // Resolve ~/.visit directory
+    const std::string dotVisItDir = std::string(Environment::get("HOME")) + "/.visit";
+
+    // Resolve text annotation file name
+    const std::string tafile = dotVisItDir + "/" + type + "tafile" + (char) (48+ifile) + ".txt";
+
+    // Open file
+    static char retval[256];
+    std::ifstream tastrm(tafile);
+
+    for (int i = -1; i < line && tastrm.good(); i++)
+        tastrm.getline(retval, 255);
+
+    if (!tastrm.good())
+        std::strcpy(retval, "$tafile error");
+
+    return retval;
+}
+
+// ****************************************************************************
+// Function: GetIntFromTAFile 
+//
+// Integer version of GetStrFromTAFile.
+//
+// Mark C. Miller, Thu Feb  9 11:29:30 PST 2023
+//
+// ****************************************************************************
+
+static int
+GetIntFromTAFile(int ifile, int line)
+{
+    char sval[256];
+    std::strcpy(sval, GetStrFromTAFile('i', ifile, line));
+    long lval = std::strtol(sval, 0, 10);
+    if (errno != 0)
+    {
+        if (lval >= INT_MAX) return INT_MAX;
+        return -INT_MAX;
+    }
+    return (int) lval;
+}
+
+// ****************************************************************************
+// Function: GetFltFromTAFile 
+//
+// Float version of GetStrFromTAFile.
+//
+// Mark C. Miller, Thu Feb  9 11:29:30 PST 2023
+//
+// ****************************************************************************
+
+static double
+GetFltFromTAFile(int ifile, int line)
+{
+    char sval[256], *p;
+    std::strcpy(sval, GetStrFromTAFile('f', ifile, line));
+    double rval = std::strtod(sval, &p);
+    if (errno != 0 || (rval == 0 && p == sval))
+        rval = NAN;
+    return rval;
 }
 
 // ****************************************************************************
@@ -127,9 +222,9 @@ hasKeyMatch(char const *fmtStr, int idx)
             keyfmt_t x = {#NAME, #FMT};                \
             keysAndFmts.push_back(x);                  \
         }                                              \
-        else if (!strncmp(key, #NAME, sizeof(#NAME)))  \
+        else if (!std::strncmp(key, #NAME, sizeof(#NAME)))  \
         {                                              \
-            snprintf(rv, rvsize, fmt, cda->GETTER);    \
+            snprintf(rv, rvsize, fmt, GETTER);         \
             return;                                    \
         }                                              \
    } while (false) 
@@ -143,7 +238,7 @@ hasKeyMatch(char const *fmtStr, int idx)
 // goal is to enable any developer to add new keys EASILY by simply adding
 // an instance of TEXT_MACRO. This leads to a somewhat bizarre coding though.
 //
-// The first function is performed only once at startup.
+// The first function, initialization, is performed only once at startup.
 //
 // Mark C. Miller, Thu Jun 23 09:37:47 PDT 2022
 // ****************************************************************************
@@ -156,27 +251,36 @@ processMacro(char *rv, size_t rvsize=0, char const *key=0, char const *fmt=0,
 
     if (initialized && rv==0) return;
 
-    TEXT_MACRO(time, %g, GetTime());
-    TEXT_MACRO(cycle, %d, GetCycle());
-    TEXT_MACRO(index, %d, GetTimeIndex());
-    TEXT_MACRO(numstates, %d, GetNumStates());
-    TEXT_MACRO(dbcomment, %s, GetCommentInDB().c_str());
-    TEXT_MACRO(lod, %z, GetLevelsOfDetail());
-    TEXT_MACRO(vardim, %d, GetVariableDimension());
-    TEXT_MACRO(numvar, %d, GetNumberOfVariables());
-    TEXT_MACRO(topodim, %d, GetTopologicalDimension());
-    TEXT_MACRO(spatialdim, %d, GetSpatialDimension());
-    TEXT_MACRO(varname, %s, GetVariableName().c_str());
-    TEXT_MACRO(varunits, %s, GetVariableUnits().c_str());
-    TEXT_MACRO(meshname, %s, GetMeshname().c_str());
-    TEXT_MACRO(filename, %s, GetFilename().c_str());
-    TEXT_MACRO(fulldbname, %s, GetFullDBName().c_str());
-    TEXT_MACRO(xunits, %s, GetXUnits().c_str());
-    TEXT_MACRO(yunits, %s, GetYUnits().c_str());
-    TEXT_MACRO(zunits, %s, GetZUnits().c_str());
-    TEXT_MACRO(xlabel, %s, GetXLabel().c_str());
-    TEXT_MACRO(ylabel, %s, GetYLabel().c_str());
-    TEXT_MACRO(zlabel, %s, GetZLabel().c_str());
+    TEXT_MACRO(time, %g, cda->GetTime());
+    TEXT_MACRO(cycle, %d, cda->GetCycle());
+    TEXT_MACRO(index, %d, cda->GetTimeIndex());
+    TEXT_MACRO(numstates, %d, cda->GetNumStates());
+    TEXT_MACRO(dbcomment, %s, cda->GetCommentInDB().c_str());
+    TEXT_MACRO(lod, %z, cda->GetLevelsOfDetail());
+    TEXT_MACRO(vardim, %d, cda->GetVariableDimension());
+    TEXT_MACRO(numvar, %d, cda->GetNumberOfVariables());
+    TEXT_MACRO(topodim, %d, cda->GetTopologicalDimension());
+    TEXT_MACRO(spatialdim, %d, cda->GetSpatialDimension());
+    TEXT_MACRO(varname, %s, cda->GetVariableName().c_str());
+    TEXT_MACRO(varunits, %s, cda->GetVariableUnits().c_str());
+    TEXT_MACRO(meshname, %s, cda->GetMeshname().c_str());
+    TEXT_MACRO(filename, %s, cda->GetFilename().c_str());
+    TEXT_MACRO(fulldbname, %s, cda->GetFullDBName().c_str());
+    TEXT_MACRO(xunits, %s, cda->GetXUnits().c_str());
+    TEXT_MACRO(yunits, %s, cda->GetYUnits().c_str());
+    TEXT_MACRO(zunits, %s, cda->GetZUnits().c_str());
+    TEXT_MACRO(xlabel, %s, cda->GetXLabel().c_str());
+    TEXT_MACRO(ylabel, %s, cda->GetYLabel().c_str());
+    TEXT_MACRO(zlabel, %s, cda->GetZLabel().c_str());
+    TEXT_MACRO(itafile1, %d, GetIntFromTAFile(1, cda->GetTimeIndex()));
+    TEXT_MACRO(itafile2, %d, GetIntFromTAFile(2, cda->GetTimeIndex()));
+    TEXT_MACRO(itafile3, %d, GetIntFromTAFile(3, cda->GetTimeIndex()));
+    TEXT_MACRO(ftafile1, %g, GetFltFromTAFile(1, cda->GetTimeIndex()));
+    TEXT_MACRO(ftafile2, %g, GetFltFromTAFile(2, cda->GetTimeIndex()));
+    TEXT_MACRO(ftafile3, %g, GetFltFromTAFile(3, cda->GetTimeIndex()));
+    TEXT_MACRO(stafile1, %s, GetStrFromTAFile('s', 1, cda->GetTimeIndex()));
+    TEXT_MACRO(stafile2, %s, GetStrFromTAFile('s', 2, cda->GetTimeIndex()));
+    TEXT_MACRO(stafile3, %s, GetStrFromTAFile('s', 3, cda->GetTimeIndex()));
 
     initialized = true;
 }
@@ -203,14 +307,14 @@ avtDataAttributes const *cda)
                     0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 
     // Use default printf format or whatever was specified in the string
-    int klen = strlen(key);
+    int klen = std::strlen(key);
     if (idx + klen < (inlen-1) && fmtStr[idx+klen] == '%' && fmtStr[idx+klen+1] != '%')
     {
-        strncpy(fmt, &fmtStr[idx+klen], strcspn(&fmtStr[idx+klen], "$"));
+        std::strncpy(fmt, &fmtStr[idx+klen], strcspn(&fmtStr[idx+klen], "$"));
     }
     else
     {
-        strcpy(fmt, defaultFmt); // (e.g. fmt = "%g")
+        std::strcpy(fmt, defaultFmt); // (e.g. fmt = "%g")
     }
 
     processMacro(retval, sizeof(retval), key, fmt, cda);
@@ -256,7 +360,7 @@ avtAnnotationWithTextColleague::CreateAnnotationString(const char *formatString)
 
     processMacro(0); // initialize keysAndFmts;
 
-    int inlen = (int) strlen(formatString);
+    int inlen = (int) std::strlen(formatString);
     for (int i = 0; i < inlen; i++)
     {
         if (formatString[i] == '$')
@@ -267,7 +371,7 @@ avtAnnotationWithTextColleague::CreateAnnotationString(const char *formatString)
             {
                 i++; // move to next char after '$'                
                 rv += getKeyString(formatString, inlen, i, keyMatch, currentDataAttributes);
-                i += (int) strlen(keysAndFmts[keyMatch].key); // skip over key
+                i += (int) std::strlen(keysAndFmts[keyMatch].key); // skip over key
                 if (formatString[i] == '%')
                 {
                     while (i < inlen && formatString[i] != '$')
@@ -289,5 +393,5 @@ avtAnnotationWithTextColleague::CreateAnnotationString(const char *formatString)
         }
     } 
 
-    return strdup(rv.c_str()); // caller must free
+    return ::strdup(rv.c_str()); // caller must free, std:: doesn't have strdup
 }
