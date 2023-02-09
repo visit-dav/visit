@@ -1589,6 +1589,25 @@ avtExodusFileFormat::GetNTimesteps(void)
     return ntimes;
 }
 
+// ****************************************************************************
+//  Method: avtExodusFileFormat::GetTimesteps
+//
+//  Purpose:
+//      Get the times for each timestep.
+//
+//  Arguments:
+//      ntimes A place to put the number of times numbers.
+//      times  A place to put the times numbers.
+//
+//  Programmer: Mark C. Miller, Fri Dec 19 11:05:11 PST 2014
+//
+//  Modifications:
+//      Eric Brugger, Tue Feb  7 11:45:02 PST 2023
+//      I modified the routine to handle the case where "time_whole" array
+//      had zero length.
+//
+// ****************************************************************************
+//
 void
 avtExodusFileFormat::GetTimesteps(int *ntimes, vector<double> *times)
 {
@@ -1622,15 +1641,24 @@ avtExodusFileFormat::GetTimesteps(int *ntimes, vector<double> *times)
         EXCEPTION2(UnexpectedValueException, vndims, 1);
     }
 
-    // Compute length of times array
+    // Get the length of the times array
     size_t len = 1;
-    for (int i = 0; i < vndims; i++)
+    VisItNCErr = nc_inq_dim(ncExIIId, vdimids[0], 0, &len);
+    CheckNCError(nc_inq_dim);
+
+    // Handle the case where the times variable has zero length.
+    if (len == 0)
     {
-        size_t dlen;
-        VisItNCErr = nc_inq_dim(ncExIIId, vdimids[i], 0, &dlen);
-        CheckNCError(nc_inq_dim);
-        if (dlen == 0) dlen = 1;
-        len *= dlen;
+        if (ntimes)
+        {
+            *ntimes = 1;
+        }
+        if (times)
+        {
+            times->resize(1);
+            times->operator[](0) = 0.0;
+        }
+        return;
     }
 
     if (len > (size_t) INT_MAX) len = (size_t) INT_MAX;
