@@ -136,6 +136,12 @@
 #   I removed the logic on the quartz and rztrona installs that copies
 #   the libraries needed by Qt, since those now get included by default.
 #
+#   Eric Brugger, Thu Feb  9 09:53:52 PST 2023
+#   I modified the rztrona and rzansel installs to install versions
+#   built on quartz and lassen. I modified the rztrona install to
+#   copy the darshan library into the VisIt lib directory so that it
+#   would run on toss4.
+#
 #-----------------------------------------------------------------------
 
 test=no
@@ -323,11 +329,15 @@ cat <<EOF > quartz
 # Copy libraries needed for fortran for toss4 systems.
 cd /usr/tce/packages/gcc/gcc-7.1.0/lib64
 cp libgfortran.so.4.0.0 /usr/gapps/visit/$ver+/linux-x86_64/lib
+cd /usr/tce/packages/darshan/darshan-3.2.1/runtime/mvapich2-2.3/lib
+cp libdarshan.so /usr/gapps/visit/$ver+/linux-x86_64/lib
 cd /usr/gapps/visit/$ver+/linux-x86_64/lib
 chgrp visit libgfortran.so.4.0.0
 chmod g+rwX,o+rX libgfortran.so.4.0.0
 ln -s libgfortran.so.4.0.0 libgfortran.so
 ln -s libgfortran.so.4.0.0 libgfortran.so.4
+chgrp visit libdarshan.so
+chmod g+rwX,o+rX libdarshan.so
 cd
 rm -f resultlog
 echo ""                                              > resultlog 2>&1
@@ -402,15 +412,19 @@ fi
 rm -f rztrona
 cat <<EOF > rztrona
 #!/bin/sh
-./visit-install -private -c llnl_open_rz -g visit -b wbronze -gw -l $ver linux-rztrona /usr/gapps/visit > installlog 2>&1
+./visit-install -private -c llnl_open_rz -g visit -b wbronze -gw -l $ver linux-x86_64-quartz /usr/gapps/visit > installlog 2>&1
 # Copy libraries needed for fortran for toss4 systems.
 cd /usr/tce/packages/gcc/gcc-7.1.0/lib64
 cp libgfortran.so.4.0.0 /usr/gapps/visit/$ver+/linux-x86_64/lib
+cd /usr/tce/packages/darshan/darshan-3.2.1/runtime/mvapich2-2.3/lib
+cp libdarshan.so /usr/gapps/visit/$ver+/linux-x86_64/lib
 cd /usr/gapps/visit/$ver+/linux-x86_64/lib
 chgrp visit libgfortran.so.4.0.0
 chmod g+rwX,o+rX libgfortran.so.4.0.0
 ln -s libgfortran.so.4.0.0 libgfortran.so
 ln -s libgfortran.so.4.0.0 libgfortran.so.4
+chgrp visit libdarshan.so
+chmod g+rwX,o+rX libdarshan.so
 cd
 rm -f resultlog
 echo "        install of visit on rztrona"          > resultlog 2>&1
@@ -433,8 +447,7 @@ if [ $rztrona = true ]
 then
    if [ $test = no ]
    then
-      scp rztrona5:/usr/tmp/$user/rztrona/visitbuild/visit$ver2.linux-x86_64.tar.gz visit$ver2.linux-rztrona.tar.gz
-      scp visit$ver2.linux-rztrona.tar.gz rztrona:
+      scp visit$ver2.linux-x86_64-quartz.tar.gz rztrona:
       scp visit-install rztrona:
       scp rztrona rztrona:rztrona_install
       ssh rztrona "chmod 750 rztrona_install;./rztrona_install"
@@ -447,7 +460,7 @@ fi
 rm -f rzansel
 cat <<EOF > rzansel
 #!/bin/sh
-./visit-install -private -c llnl_open_rz -g visit -b wbronze -gw -l $ver linux-rzansel /usr/gapps/visit > installlog 2>&1
+./visit-install -private -c llnl_open_rz -g visit -b wbronze -gw -l $ver linux-intel-lassen /usr/gapps/visit > installlog 2>&1
 rm -f resultlog
 echo "        install of visit on rzansel"          > resultlog 2>&1
 echo "       -----------------------------"         >> resultlog 2>&1
@@ -469,8 +482,7 @@ if [ $rzansel = true ]
 then
    if [ $test = no ]
    then
-      scp rzansel61:/usr/tmp/$user/rzansel/visitbuild/visit$ver2.linux-intel.tar.gz visit$ver2.linux-rzansel.tar.gz
-      scp visit$ver2.linux-rzansel.tar.gz rzansel:
+      scp visit$ver2.linux-intel-lassen.tar.gz rzansel:
       scp visit-install rzansel:
       scp rzansel rzansel:rzansel_install
       ssh rzansel "chmod 750 rzansel_install;./rzansel_install"
