@@ -178,7 +178,7 @@ Also, more profiles could be added to the host profile list before sending it to
        :language: Java
 
 Opening the VisIt_ GUI from Java
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 This program shows how to start the VisIt_ **GUI** from within your Java application.
 By altering the arguments passed to the ``OpenClient()`` method, you could launch other VisIt_ clients too.
