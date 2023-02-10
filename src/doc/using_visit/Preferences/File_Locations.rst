@@ -20,6 +20,8 @@ of these files depends on a few different factors including
    * Whether VisIt_ is running in
      :ref:`client/server mode <Client-Server Mode>`.
 
+.. _vuser_home:
+
 The Platform and the User's *Home* Directory
 """"""""""""""""""""""""""""""""""""""""""""
 Typically, on UNIX and macOS systems, prescribed configuration files
