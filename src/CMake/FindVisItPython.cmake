@@ -163,7 +163,7 @@ if(PYTHONINTERP_FOUND)
     # our goal is to find the specific python lib, based on info
     # we extract from distutils.sysconfig from the python executable
     #
-    # check for python libs differs for windows python installs
+    # check if python libs differs for windows python installs
     if(NOT WIN32)
         # we may build a shared python module against a static python
         # check for both shared and static libs cases
