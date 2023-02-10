@@ -498,19 +498,19 @@ You can make the text annotation object display any characters that you type in.
 Whatever text you enter for the text annotation object is used to identify the text annotation object in the **Annotation objects** list.
 In addition to the usual text properties, text annotation objects can also include a shadow.
 
-Database values in text annotations
-"""""""""""""""""""""""""""""""""""
+Named database values in text annotations
+"""""""""""""""""""""""""""""""""""""""""
 
-A variety of values from a database can be displayed in text annotations.
-These are introduced with a leading ``$`` character followed by the database value's name.
+A variety of named database values can be displayed in text annotations.
+These are introduced with a leading ``$`` character followed by the value's name.
 An optional ``%`` character following the value's name introduces a `printf-style formatting string <https://en.wikipedia.org/wiki/Printf_format_string>`__ which can be used to control the value's printed format.
 
 .. warning::
 
-   Presently, the ``$`` values that are displayed are taken always from the *first* plot in the plot list.
-   If the plot list is changed such that the first plot that was in effect at the time the annotation was created, the rendered text for the annotation may change.
+   Presently, the ``$`` values that are displayed are taken always from database associated with the *first* plot in the plot list.
+   If the plot list is changed such that the database associated with the *first* plot that was in effect at the time the annotation was created is changed, the rendered text for named database value annotations may change.
 
-The list of values currently supported along with their default formats are 
+The list of named values currently supported along with their *default* formats are 
 
     +--------------------+----------+-------------------------------------+
     |   **Value name**   | **Fmt**  |       **Meaning**                   |
@@ -557,6 +557,15 @@ The list of values currently supported along with their default formats are
     +--------------------+----------+-------------------------------------+
     | zlabel             |    %s    |  z axis label                       |
     +--------------------+----------+-------------------------------------+
+
+In addition, the following ``$<T>tafile<I>`` named values permit arbitrary text annotation content to be taken from a ``txt`` file in :ref:`vuser_home` instead a database.
+In this named value, ``<T>`` is either ``s`` (for files of string values), ``i`` (for files of integer values) or ``f`` (for files of floating point values) and ``<I>`` is either ``1``, ``2`` or ``3`` to provide 3 separate options for storing files of values used for different annotation purposes.
+Each line of such a file cooresponds to a time step in a time series.
+A common use case for ``$<T>tafile<I>`` named values is for animations to display the numerical values from a query over time and have those values update as the time step being displayed changes.
+
+    +--------------------+----------+-------------------------------------+
+    |   **Value name**   | **Fmt**  |       **Meaning**                   |
+    +--------------------+----------+-------------------------------------+
     | itafile1           |    %d    |  ints from ~/.visit/itafile1.txt    |
     |                    |          |  one line per timestep.             |
     +--------------------+----------+-------------------------------------+
@@ -585,14 +594,15 @@ The list of values currently supported along with their default formats are
     |                    |          |  one line per timestep.             |
     +--------------------+----------+-------------------------------------+
 
+Multiple named values can appear in a text annotation string and the same named value can also appear multiple times.
+
 For example, to create a text annoation which displays ``State index = XXX`` where ``XXX`` is the number for the index, set the annotation string to ``State index = $index``.
 To display the current cycle number always with 6 digits and leading zeros when necessary, use the string ``$cycle%06d`` where the optional ``%`` followed by a printf-style format string is specified.
 To display the first 3 characters of the variable name, use the string ``$varname%.3s``.
 
-The ``$dbcomment`` is often useful because it allows any arbitrary text defined in the database for the current state to be used.
-In particular, if the *state space* of a given database is rather complicated involving, for example, not only iterations of the main PDE solve loop but also mesh adaptivity iterations, material advection iterations, etc, the database comment is a way to capture all relevant iteration identifiers.
-
-Multiple database values can appear in a text annotation string and the same value can also appear multiple times.
+The ``$dbcomment`` and ``$<T>tafile<I>`` named values are useful for complicated cases because they allow arbitrary text defined in the database comment or an external file to be used.
+For example, the *state space* of a given database could be rather complicated involving not only iterations of the main PDE solve loop but also mesh adaptivity iterations, material advection iterations, etc.
+In this case, if the data producer created appropriate content in the database comment, the ``$dbcomment`` named value is a way to render all relevant iteration identifiers as a text annotation.
 
 3D text annotation objects
 """"""""""""""""""""""""""
