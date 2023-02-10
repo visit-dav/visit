@@ -147,7 +147,7 @@ GetStrFromTAFile(char type, int ifile, int line)
     static char retval[256]; // whatever is returned is copied immediately
 
     // Resolve possible directories 
-    const std::string dotVisItDir = std::string(Environment::get("HOME")) + "/.visit";
+    const std::string dotVisItDir = InstallationFunctions::GetUserVisItDirectory();
 #ifdef _WIN32
        const std::string envTmpDir = std::string(Environment::get("TMP"));
 #else
