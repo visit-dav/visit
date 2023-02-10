@@ -18,6 +18,7 @@
 #include <AnnotationObject.h>
 #include <Environment.h>
 #include <FileFunctions.h>
+#include <InstallationFunctions.h>
 
 // Includes for 3rd party
 #include <vtkRenderer.h>
@@ -147,14 +148,12 @@ GetStrFromTAFile(char type, int ifile, int line)
     static char retval[256]; // whatever is returned is copied immediately
 
     // Resolve possible directories 
-    const std::string dotVisItDir = InstallationFunctions::GetUserVisItDirectory();
+    const std::string dotVisItDir = GetUserVisItDirectory();
 #ifdef _WIN32
-       const std::string envTmpDir = std::string(Environment::get("TMP"));
+    const std::string envTmpDir = std::string(Environment::get("TMP"));
 #else
-        const std::string envTmpDir = std::string(Environment::get("TMPDIR")) + "/" +
+    const std::string envTmpDir = std::string(Environment::get("TMPDIR")) + "/" +
                                   std::string(Environment::get("USER"));
-#endif
-#ifndef _WIN32
     const std::string varTmpDir = "/var/tmp/" + std::string(Environment::get("USER"));
 #endif
 
