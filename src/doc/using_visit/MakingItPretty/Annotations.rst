@@ -558,41 +558,48 @@ The list of named values currently supported along with their *default* formats 
     | zlabel             |    %s    |  z axis label                       |
     +--------------------+----------+-------------------------------------+
 
-In addition, the following ``$<T>tafile<I>`` named values permit arbitrary text annotation content to be taken from a ``txt`` file in :ref:`vuser_home` instead a database.
+In addition, the following ``$<T>tafile<I>`` named values permit arbitrary text annotation content to be taken from a ``txt`` file.
+
+in :ref:`vuser_home` instead a database.
 In this named value, ``<T>`` is either ``s`` (for files of string values), ``i`` (for files of integer values) or ``f`` (for files of floating point values) and ``<I>`` is either ``1``, ``2`` or ``3`` to provide 3 separate options for storing files of values used for different annotation purposes.
+The associated file is named ``$<T>tafile<I>.txt`` and is first looked for :ref:`vuser_home`, then in ``/$TMPDIR/$USER`` and finally in ``/var/tmp/$USER``.
 Each line of such a file cooresponds to a time step in a time series.
 A common use case for ``$<T>tafile<I>`` named values is for animations to display the numerical values from a query over time and have those values update as the time step being displayed changes.
 
     +--------------------+----------+-------------------------------------+
     |   **Value name**   | **Fmt**  |       **Meaning**                   |
     +--------------------+----------+-------------------------------------+
-    | itafile1           |    %d    |  ints from ~/.visit/itafile1.txt    |
+    | itafile1           |    %d    |  ints from itafile1.txt             |
     |                    |          |  one line per timestep.             |
     +--------------------+----------+-------------------------------------+
-    | itafile2           |    %d    |  ints from ~/.visit/itafile2.txt    |
+    | itafile2           |    %d    |  ints from itafile2.txt             |
     |                    |          |  one line per timestep.             |
     +--------------------+----------+-------------------------------------+
-    | itafile3           |    %d    |  ints from ~/.visit/itafile3.txt    |
+    | itafile3           |    %d    |  ints from itafile3.txt             |
     |                    |          |  one line per timestep.             |
     +--------------------+----------+-------------------------------------+
-    | ftafile1           |    %g    |  floats from ~/.visit/ftafile1.txt  |
+    | ftafile1           |    %g    |  floats from ftafile1.txt           |
     |                    |          |  one line per timestep.             |
     +--------------------+----------+-------------------------------------+
-    | ftafile2           |    %g    |  floats from ~/.visit/ftafile2.txt  |
+    | ftafile2           |    %g    |  floats from ftafile2.txt           |
     |                    |          |  one line per timestep.             |
     +--------------------+----------+-------------------------------------+
-    | ftafile3           |    %g    |  floats from ~/.visit/ftafile3.txt  |
+    | ftafile3           |    %g    |  floats from ftafile3.txt           |
     |                    |          |  one line per timestep.             |
     +--------------------+----------+-------------------------------------+
-    | stafile1           |    %s    |  strings from ~/.visit/stafile1.txt |
+    | stafile1           |    %s    |  strings from stafile1.txt          |
     |                    |          |  one line per timestep.             |
     +--------------------+----------+-------------------------------------+
-    | stafile2           |    %s    |  strings from ~/.visit/stafile2.txt |
+    | stafile2           |    %s    |  strings from stafile2.txt          |
     |                    |          |  one line per timestep.             |
     +--------------------+----------+-------------------------------------+
-    | stafile3           |    %s    |  strings from ~/.visit/stafile3.txt |
+    | stafile3           |    %s    |  strings from stafile3.txt          |
     |                    |          |  one line per timestep.             |
     +--------------------+----------+-------------------------------------+
+
+.. warning::
+
+   Only the first 255 characters on each line of a ``$<T>tafile<I>`` annotation are used.
 
 Multiple named values can appear in a text annotation string and the same named value can also appear multiple times.
 

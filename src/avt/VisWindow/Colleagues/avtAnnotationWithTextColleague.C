@@ -17,6 +17,7 @@
 // Includes generally for VisIt 
 #include <AnnotationObject.h>
 #include <Environment.h>
+#include <FileFunctions.h>
 
 // Includes for 3rd party
 #include <vtkRenderer.h>
@@ -133,7 +134,8 @@ hasKeyMatch(char const *fmtStr, int idx)
 // Function: GetStrFromTAFile 
 //
 // Open and read specified text annotation file (e.g. itafile1.txt,
-// ftafile2.txt or stafile3.txt) up to specified line.
+// ftafile2.txt or stafile3.txt) up to specified line. First try in ~/.visit,
+// then in $TMPDIR/$USER and finally in /var/tmp/$USER.
 //
 // Mark C. Miller, Thu Feb  9 11:29:30 PST 2023
 //
@@ -142,15 +144,28 @@ hasKeyMatch(char const *fmtStr, int idx)
 static char const*
 GetStrFromTAFile(char type, int ifile, int line)
 {
-    // Resolve ~/.visit directory
+    static char retval[256]; // whatever is returned is copied immediately
+
+    // Resolve possible directories 
     const std::string dotVisItDir = std::string(Environment::get("HOME")) + "/.visit";
+    const std::string envTmpDir = std::string(Environment::get("TMPDIR")) + "/" +
+                                  std::string(Environment::get("USER"));
+    const std::string varTmpDir = "/var/tmp/" + std::string(Environment::get("USER"));
 
     // Resolve text annotation file name
-    const std::string tafile = dotVisItDir + "/" + type + "tafile" + (char) (48+ifile) + ".txt";
+    const std::string dotVisItFile = dotVisItDir + "/" + type + "tafile" + (char) (48+ifile) + ".txt";
+    const std::string envTmpFile = envTmpDir + "/" + type + "tafile" + (char) (48+ifile) + ".txt";
+    const std::string varTmpFile = varTmpDir + "/" + type + "tafile" + (char) (48+ifile) + ".txt";
 
-    // Open file
-    static char retval[256];
-    std::ifstream tastrm(tafile);
+    // Check for file in priority order
+    FileFunctions::VisItStat_t vstat;
+    std::ifstream tastrm;
+    if (FileFunctions::VisItStat(dotVisItFile, &vstat) == 0) 
+        tastrm.open(dotVisItFile);
+    else if (FileFunctions::VisItStat(envTmpFile, &vstat) == 0) 
+        tastrm.open(envTmpFile);
+    else if (FileFunctions::VisItStat(varTmpFile, &vstat) == 0) 
+        tastrm.open(varTmpFile);
 
     for (int i = -1; i < line && tastrm.good(); i++)
         tastrm.getline(retval, 255);
@@ -175,8 +190,9 @@ GetIntFromTAFile(int ifile, int line)
 {
     char sval[256];
     std::strcpy(sval, GetStrFromTAFile('i', ifile, line));
+    errno = 0;
     long lval = std::strtol(sval, 0, 10);
-    if (errno != 0)
+    if (lval == 0 && errno != 0)
     {
         if (lval >= INT_MAX) return INT_MAX;
         return -INT_MAX;
@@ -198,6 +214,7 @@ GetFltFromTAFile(int ifile, int line)
 {
     char sval[256], *p;
     std::strcpy(sval, GetStrFromTAFile('f', ifile, line));
+    errno = 0;
     double rval = std::strtod(sval, &p);
     if (errno != 0 || (rval == 0 && p == sval))
         rval = NAN;
