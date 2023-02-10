@@ -150,7 +150,9 @@ GetStrFromTAFile(char type, int ifile, int line)
     const std::string dotVisItDir = std::string(Environment::get("HOME")) + "/.visit";
     const std::string envTmpDir = std::string(Environment::get("TMPDIR")) + "/" +
                                   std::string(Environment::get("USER"));
+#ifndef _WIN32
     const std::string varTmpDir = "/var/tmp/" + std::string(Environment::get("USER"));
+#endif
 
     // Resolve text annotation file name
     const std::string dotVisItFile = dotVisItDir + "/" + type + "tafile" + (char) (48+ifile) + ".txt";
