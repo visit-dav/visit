@@ -148,8 +148,12 @@ GetStrFromTAFile(char type, int ifile, int line)
 
     // Resolve possible directories 
     const std::string dotVisItDir = std::string(Environment::get("HOME")) + "/.visit";
-    const std::string envTmpDir = std::string(Environment::get("TMPDIR")) + "/" +
+#ifdef _WIN32
+       const std::string envTmpDir = std::string(Environment::get("TMP"));
+#else
+        const std::string envTmpDir = std::string(Environment::get("TMPDIR")) + "/" +
                                   std::string(Environment::get("USER"));
+#endif
 #ifndef _WIN32
     const std::string varTmpDir = "/var/tmp/" + std::string(Environment::get("USER"));
 #endif
