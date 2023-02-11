@@ -7,7 +7,7 @@ A color table is a set of colors that is used by certain plots to color
 variables. Color tables can be immensely important for understanding
 visualizations since changes in color can highlight interesting features.
 VisIt_ has several built-in color tables that can be used in visualizations.
-VisIt_ also provides a **Color table window** for designing custom color tables.
+VisIt_ also provides a **Color table Window** for designing custom color tables.
 
 Color tables come in two types: continuous and discrete.
 Their definitions are dependent upon our notion of a color control point, which is defined as a point in one dimensional space (also between 0 and 1) that has color information (i.e. RGBA values).
@@ -432,20 +432,22 @@ Filtering With Tags
 ~~~~~~~~~~~~~~~~~~~
 
 To aid with choosing a color table, VisIt_ has a color table tagging scheme built into the Color Table Manager. 
-Users can select the tag filtering checkbox, which will cause the window to expand to appear as it does in the image below:
+Prior to VisIt_ 3.4, users had to select the tag filtering check box. 
+In VisIt_ 3.4, tagging is always turned on.
+The manager portion of the color table window is pictured below.
 
-.. _fig-MakingItPretty-ColorTableTags:
+.. _fig-MakingItPretty-ColorTables:
 
-.. figure:: images/MakingItPretty-ColorTableTags.png
+.. figure:: images/MakingItPretty-ColorTables.png
 
-   The color table window with tag filtering enabled.
+   The color table window manager is where tag filtering comes into play.
 
 How it works
 """"""""""""
 
 Each color table has a number of tags associated with it. 
 These are visible in the **Tags** Bar underneath the color table name.
-When tag filtering is enabled, users can select tags from the tag list to see only color tables that have those tags.
+Users can select tags from the tag list to see only color tables that have those tags.
 So, for example, checking the box for the ``Viridis`` tag will cause the color table name box to show only color tables that have the ``Viridis`` tag.
 However, this does not just affect the color table name box.
 All buttons allowing you to choose color tables will now only show color tables that match the current tag filtering selection.
@@ -455,20 +457,21 @@ Users can also control how tags are combined: the dropdown button above the list
 For example, if you select only the ``Color Blind Safe`` and ``Continuous`` tags and have the dropdown set so color tables match ANY of the selected tags, then all color tables that have either the ``Color Blind Safe`` tag or the ``Continuous`` tag will appear. 
 However, if you set the dropdown so color tables match ALL of the selected tags, then only color tables that have both the ``Color Blind Safe`` tag and the ``Continuous`` tag will appear. 
 
-To view the full list of color tables once more, users can disable filtering by tagging, or select all the tags while the drop down is set so color tables match ANY of the selected tags.
+To view the full list of color tables, users can use the **Select All Tags** Button while the drop down is set so color tables match ANY of the selected tags.
+Clicking this button while all tags are selected will disable all tags.
 
 Specific Behavior
 """""""""""""""""
 
-By default, the first time tag filtering is enabled, only the ``Default`` tag is selected. 
-All other times tag filtering is enabled, it will retain the tag selection from when it was disabled.
+By default, only the ``Default`` and ``User Defined`` tags are selected (If there are no user defined color tables, the ``User Defined`` tag will not appear in the list). 
+The Color Table Manager will retain the tag filtering selection even if the window is closed and reopened.
 
 When a new color table is created, it will inherit the tags from the color table it is based on. 
 In addition, it will get the ``User Defined`` tag associated with it. 
 The same is true of color tables found in the user's .visit directory. 
 When loaded into VisIt_, they will automatically be assigned the ``User Defined`` tag if they do not have it already.
 
-If VisIt_ reads a color table file that does not have any tags, that color table will be assigned the ``No Tags`` tag.
+If VisIt_ encounters a color table that does not have any tags, that color table will be assigned the ``No Tags`` tag.
 
 Exporting a color table will export its tags, so they are accessible the next time you use your color table in VisIt_.
 
@@ -509,7 +512,7 @@ Adding a new tag to a color table will immediately add it to the list of tags fo
 
 Prior to VisIt_ 3.4, editing tags in the GUI was not supported. 
 To edit a color table's tags, users must directly edit the color table's ``.ct`` file. 
-If there are tags defined for that color table, they will appear in a field called ``tags``. 
+If there are tags defined for that color table, they will appear in a field (usually near the end of the file) called ``tags``. 
 Tags can be added to the list as desired. 
 VisIt_ generates its tag list from the color table files it reads, so creating a new tag is as easy as writing the name of the tag in a color table file in the tags field.
 
