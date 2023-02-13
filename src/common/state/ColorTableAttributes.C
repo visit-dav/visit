@@ -471,6 +471,9 @@ ColorTableAttributes::CreateSubAttributeGroup(int)
 // 
 //   Justin Privitera, Wed Jul 27 12:16:06 PDT 2022
 //   Removed logic that saved info about individual color tables.
+// 
+//   Justin Privitera, Mon Feb 13 14:32:02 PST 2023
+//   Removed logic to save the tagging flag, as it no longer exists.
 //
 // ****************************************************************************
 
@@ -519,6 +522,9 @@ ColorTableAttributes::CreateNode(DataNode *parentNode, bool, bool)
 // 
 //   Justin Privitera, Wed Jul 27 12:16:06 PDT 2022
 //   Removed logic that read info about individual color tables.
+// 
+//   Justin Privitera, Mon Feb 13 14:32:02 PST 2023
+//   Removed logic to extract the tagging flag, as it no longer exists.
 //
 // ****************************************************************************
 

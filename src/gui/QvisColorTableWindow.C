@@ -109,6 +109,9 @@ public:
 // 
 //   Justin Privitera, Thu Aug 25 15:04:55 PDT 2022
 //   TagEdit added.
+// 
+//   Justin Privitera, Mon Feb 13 14:32:02 PST 2023
+//   Removed `tagsVisible`.
 //
 // ****************************************************************************
 
@@ -228,6 +231,11 @@ QvisColorTableWindow::~QvisColorTableWindow()
 //   Justin Privitera, Thu Nov 17 12:28:10 PST 2022
 //   Resolved window resizing off the screen issue by limiting maximum height.
 //   Adjusted location of several buttons and labels to use less screen space.
+// 
+//   Justin Privitera, Mon Feb 13 14:32:02 PST 2023
+//   Moved namelistbox to what was its position when tagging was enabled.
+//   Removed tagFilterToggle.
+//   Added tagsSelectAllButton in its place.
 //
 // ****************************************************************************
 
@@ -650,6 +658,9 @@ QvisColorTableWindow::UnstringifyAndMergeTagChanges(stringVector changes)
 // 
 //   Cyrus Harrison, Fri Sep 16 14:28:51 PDT 2022
 //   Avoid emplace_back due to evil nature of std::vector<bool>
+// 
+//   Justin Privitera, Mon Feb 13 14:32:02 PST 2023
+//   `tagsVisible` is gone so it is no longer written to nodes.
 //
 // ****************************************************************************
 
@@ -706,6 +717,9 @@ QvisColorTableWindow::CreateNode(DataNode *parentNode)
 // 
 //   Justin Privitera, Wed Sep 21 16:51:24 PDT 2022
 //   Error on size mismatch of tagnames and active tags vectors and recovery.
+// 
+//   Justin Privitera, Mon Feb 13 14:32:02 PST 2023
+//   `tagsVisible` is gone so it is no longer read from nodes.
 //
 // ****************************************************************************
 
@@ -797,6 +811,9 @@ QvisColorTableWindow::SetFromNode(DataNode *parentNode, const int *borders)
 //   Justin Privitera, Wed Aug  3 19:46:13 PDT 2022
 //   The tag label and tag line edit are now always visible so they do not
 //   need to have their visibility set in this function.
+// 
+//   Justin Privitera, Mon Feb 13 14:32:02 PST 2023
+//   The tagging flag is gone, so all the logic associated with it is gone.
 //
 // ****************************************************************************
 
@@ -1031,7 +1048,8 @@ QvisColorTableWindow::AddGlobalTag(std::string currtag, bool first_time)
     if (tagList.find(currtag) == tagList.end())
     {
         // make the "Default" and "User Defined" tags active by default
-        tagList[currtag].active = (currtag == "Default" || currtag == "User Defined") && first_time;
+        tagList[currtag].active = 
+            (currtag == "Default" || currtag == "User Defined") && first_time;
         AddToTagTable(currtag);
     }
     else
@@ -1056,7 +1074,6 @@ QvisColorTableWindow::AddGlobalTag(std::string currtag, bool first_time)
         // this function was called with this tag means there is another
         // reference to it, so we should update the numrefs. Hence why
         // we do NOT update the numrefs in `AddToTagTable()`.
-
 }
 
 // ****************************************************************************
@@ -1086,6 +1103,10 @@ QvisColorTableWindow::AddGlobalTag(std::string currtag, bool first_time)
 // 
 //     Justin Privitera, Thu Sep 29 15:22:38 PDT 2022
 //     Replaced braces w/ equals to avoid init list behavior.
+// 
+//    Justin Privitera, Mon Feb 13 14:32:02 PST 2023
+//    Tagging is always enabled, so any code relating to making it optional
+//    has been removed.
 //
 // ****************************************************************************
 
@@ -1195,6 +1216,12 @@ QvisColorTableWindow::UpdateTags()
 //   Justin Privitera, Fri Sep  2 16:46:21 PDT 2022
 //   Rework for accessing tag information b/c of refactor.
 //   Ensure current CT name is one of the existing names.
+// 
+//   Justin Privitera, Mon Feb 13 14:32:02 PST 2023
+//    - Call UpdateEditor to make sure the editor reflects the change in
+//   selected color table.
+//    - Tagging is no longer optional, so all code relating to providing it
+//   as a choice has been stripped out.
 //
 // ****************************************************************************
 
@@ -3242,7 +3269,7 @@ QvisColorTableWindow::exportColorTable()
 //
 // Modifications:
 //    Justin Privitera, Wed Feb  1 15:15:39 PST 2023
-//    Deleted the function.
+//    Deleted the function, as tagging is now always enabled.
 //
 // ****************************************************************************
 
@@ -3551,5 +3578,5 @@ QvisColorTableWindow::addRemoveTag()
 //
 // Modifications:
 //   Justin Privitera, Wed Feb  1 15:15:39 PST 2023
-//   Deleted the function.
+//   Deleted the function, as the name box no longer needs to move.
 // ****************************************************************************

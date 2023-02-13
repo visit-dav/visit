@@ -123,6 +123,11 @@ class TagInfo;
 //   Justin Privitera, Thu Sep 22 10:50:46 PDT 2022
 //   Moved TagInfo class implementation to the .C file.
 // 
+//   Justin Privitera, Mon Feb 13 14:32:02 PST 2023
+//   Removed taggingToggled and added tagsSelectAll.
+//   Removed tagFilterToggle and added tagsSelectAllButton.
+//   Removed tagsVisible.
+// 
 // ****************************************************************************
 
 class GUI_API QvisColorTableWindow : public QvisPostableWindowObserver

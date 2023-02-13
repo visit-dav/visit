@@ -69,6 +69,9 @@ ColorTableObserver::~ColorTableObserver()
 //   Justin Privitera, Thu Jun 16 18:01:49 PDT 2022
 //   Removed categories, added tags, and new `active` array that says if color
 //   should be visible in the button.
+// 
+//   Justin Privitera, Mon Feb 13 14:32:02 PST 2023
+//   Removed check for tagging flag, as it no longer exists.
 //
 // ****************************************************************************
 
