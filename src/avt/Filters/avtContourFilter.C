@@ -524,7 +524,6 @@ avtContourFilter::ExecuteDataTree(avtDataRepresentation *in_dr)
         vtkDataSet *in_ds = in_dr->GetDataVTK();
         char *var = (activeVariable != NULL ? activeVariable
                                             : pipelineVariable);
-        vtkDataArray *pointData = in_ds->GetPointData()->GetArray(var);
 
         //
         // If we have a rectilinear grid that isn't 3d, don't use VTKm.
