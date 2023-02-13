@@ -43,7 +43,7 @@ Color Table Window
 
    The color table window
 
-You can open VisIt_'s **Color table window**, shown in :numref:`Figure %s <fig-MakingItPretty-ColorTables>`, by selecting **Color table** from the **Main Window**'s **Controls** menu, or by pressing ``ctrl``+``t``.
+You can open VisIt_'s **Color table window**, shown in :numref:`Figure %s <fig-MakingItPretty-ColorTables>`, by selecting **Color table** from the **Main Window**'s **Controls** menu, or by pressing ``ctrl`` + ``t``.
 The **Color table window** is vertically separated into three areas: The top area allows you to set the default color tables. 
 The middle area, or the manager portion of the window, allows you to create, delete, and export new color tables, as well as organize all the available color tables.
 See :ref:`Filtering With Tags` for more information. 
@@ -435,9 +435,9 @@ Prior to VisIt_ 3.4, users had to select the tag filtering check box to enable t
 In VisIt_ 3.4, tagging is always enabled.
 The manager portion of the color table window is pictured below.
 
-.. _fig-MakingItPretty-ColorTables:
+.. _fig-MakingItPretty-ColorTableTags:
 
-.. figure:: images/MakingItPretty-ColorTables.png
+.. figure:: images/MakingItPretty-ColorTableTags.png
 
    The color table window manager is where tag filtering comes into play.
 
@@ -453,8 +453,8 @@ All buttons allowing you to choose color tables will now only show color tables 
 An exception to this is the default continuous and default discrete color table buttons, which will further restrict the set of chooseable color tables to continuous and discrete color tables respectively.
 
 Users can also control how tags are combined: the dropdown button above the list of color table names gives users the option to have color tables match ALL of the selected tags or ANY of the selected tags.
-For example, if only the ``Color Blind Safe`` and ``Continuous`` tags are selected and the dropdown is set so color tables match ANY of the selected tags, then all color tables that *have either* the ``Color Blind Safe`` tag or the ``Continuous`` tag will appear. 
-However, if you set the dropdown so color tables match ALL of the selected tags, then only color tables that *have both* the ``Color Blind Safe`` tag and the ``Continuous`` tag will appear. 
+For example, if only the ``Color Blind Safe`` and ``Continuous`` tags are selected and the dropdown is set so color tables match ANY of the selected tags, then all color tables that have *either* the ``Color Blind Safe`` tag or the ``Continuous`` tag will appear. 
+However, if you set the dropdown so color tables match ALL of the selected tags, then only color tables that have *both* the ``Color Blind Safe`` tag and the ``Continuous`` tag will appear. 
 
 To view the full list of color tables, users can use the **Select All Tags** Button while the drop down is set so color tables match ANY of the selected tags.
 Clicking this button while all tags are selected will deselect all tags.
