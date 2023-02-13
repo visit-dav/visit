@@ -79,9 +79,13 @@
 #   Test the size of visit_dist_data.tar.xz to ensure its the real one
 #   and not the lfs'd version. Otherwise untar will fail.
 #
+#   Kathleen Biagas, Tue Jan 31, 2023
+#   Clean up logic, modernize cmake usage, fix issues with some targets
+#   on Windows.
+#
 #****************************************************************************
 
-MESSAGE(STATUS "Configuring VisIt Data Generation Targets")
+message(STATUS "Configuring VisIt Data Generation Targets")
 
 #-----------------------------------------------------------------------------
 # BUILD_DATA_TARGET cmake function
@@ -104,75 +108,75 @@ MESSAGE(STATUS "Configuring VisIt Data Generation Targets")
 #  Otherwise: ${target_name}.C is used.
 #
 #-----------------------------------------------------------------------------
-FUNCTION(BUILD_DATA_TARGET_IMPL target_name do_parallel)
-    SET(target_SOURCES "")
-    SET(target_INCLUDE_DIRS "")
-    SET(target_LIB_DIRS "")
-    SET(target_LIBS "")
-    SET(target_DEFS "")
+function(BUILD_DATA_TARGET_IMPL target_name do_parallel)
+    set(target_SOURCES "")
+    set(target_INCLUDE_DIRS "")
+    set(target_LIB_DIRS "")
+    set(target_LIBS "")
+    set(target_DEFS "")
 
     # cmake gymnastics to implement optional argument sections:
-    FOREACH(ARG ${ARGN})
-        IF(${ARG} STREQUAL "INCLUDE_DIRS" OR
+    foreach(ARG ${ARGN})
+        if(${ARG} STREQUAL "INCLUDE_DIRS" OR
            ${ARG} STREQUAL "LIB_DIRS" OR
            ${ARG} STREQUAL "LIBS" OR
            ${ARG} STREQUAL "DEFS")
             #switch var name to extend
-            SET(ARG_VAR target_${ARG})
-        ELSE()
+            set(ARG_VAR target_${ARG})
+        else()
             # add current arg into current varname
-            SET("${ARG_VAR}" ${${ARG_VAR}} ${ARG})
-        ENDIF()
-    ENDFOREACH(ARG ${ARGN})
-
-    INCLUDE_DIRECTORIES(${target_INCLUDE_DIRS})
-    LINK_DIRECTORIES(${target_LIB_DIRS})
+            set("${ARG_VAR}" ${${ARG_VAR}} ${ARG})
+        endif()
+    endforeach()
 
     # Automatically setup target_SOURCES if not set
-    IF(DEFINED ${target_name}_SOURCES)
-        SET(target_SOURCES "${${target_name}_SOURCES}")
-    ELSE()
-        SET(target_SOURCES ${target_name}.C)
-    ENDIF()
+    if(DEFINED ${target_name}_SOURCES)
+        set(target_SOURCES "${${target_name}_SOURCES}")
+    else()
+        set(target_SOURCES ${target_name}.C)
+    endif()
 
-    SET(tname ${target_name})
-    IF("${do_parallel}" STREQUAL "ON")
-        IF(VISIT_PARALLEL)
-            SET(tname "${target_name}_par")
+    set(tname ${target_name})
+    if("${do_parallel}" STREQUAL "ON")
+        if(VISIT_PARALLEL)
+            set(tname "${target_name}_par")
             ADD_PARALLEL_EXECUTABLE(${tname} ${target_SOURCES})
-        ENDIF()
-    ELSE()
-        ADD_EXECUTABLE(${tname} ${target_SOURCES})
-    ENDIF()
+        endif()
+    else()
+        add_executable(${tname} ${target_SOURCES})
+    endif()
+    target_include_directories(${tname} PRIVATE ${target_INCLUDE_DIRS})
+    target_link_directories(${tname} PRIVATE ${target_LIB_DIRS})
     VISIT_DATA_ADD_FOLDER(datagen ${tname})
 
-    ADD_DEFINITIONS(${target_DEFS})
-    TARGET_LINK_LIBRARIES(${tname} ${target_LIBS})
-    SET_TARGET_PROPERTIES(${tname}
-                           PROPERTIES
-                        RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
-                          )
-ENDFUNCTION(BUILD_DATA_TARGET_IMPL target_name)
+    target_compile_definitions(${tname} PRIVATE ${target_DEFS})
+    target_link_libraries(${tname} PRIVATE ${target_LIBS})
+    set_target_properties(${tname} PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}")
+endfunction()
 
-FUNCTION(BUILD_VISIT_DIST_DATA)
-    FILE(MAKE_DIRECTORY visit_dist_data)
-if(WIN32)
-    file(GLOB vdd_files "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFGINT_DIR}/*.{silo,pdb}" CONFIGURE_DEPENDS)
-    FILE(COPY ${vdd_files} DESTINATION visit_dist_data )
-else()
-    FILE(COPY dummy DESTINATION visit_dist_data FILES_MATCHING PATTERN "*.{silo,pdb}")
-endif()
-    SET(DIST_TAR_CMD "${TAR_CMD} ${TAR_ARGS} visit_dist_data.tar.xz visit_dist_data")
-    EXECUTE_PROCESS(COMMAND ${DIST_TAR_CMD} WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
-ENDFUNCTION(BUILD_VISIT_DIST_DATA)
+function(BUILD_VISIT_DIST_DATA)
+    file(MAKE_DIRECTORY visit_dist_data)
+    if(WIN32)
+        file(GLOB vdd_files "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFGINT_DIR}/*.{silo,pdb}" CONFIGURE_DEPENDS)
+        file(COPY ${vdd_files} DESTINATION visit_dist_data )
+    else()
+        file(COPY dummy
+             DESTINATION visit_dist_data
+             FILES_MATCHING PATTERN "*.{silo,pdb}")
+    endif()
+    set(DIST_TAR_CMD "${TAR_CMD} ${TAR_ARGS} visit_dist_data.tar.xz visit_dist_data")
+    execute_process(COMMAND ${DIST_TAR_CMD}
+                    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
+endfunction()
 
-FUNCTION(BUILD_DATA_TARGET target_name)
+function(BUILD_DATA_TARGET target_name)
     BUILD_DATA_TARGET_IMPL(${target_name} "OFF" ${ARGN})
-ENDFUNCTION(BUILD_DATA_TARGET target_name)
+endfunction()
 
-FUNCTION(BUILD_PARALLEL_DATA_TARGET target_name)
+function(BUILD_PARALLEL_DATA_TARGET target_name)
     BUILD_DATA_TARGET_IMPL(${target_name} "ON" ${ARGN})
-ENDFUNCTION(BUILD_PARALLEL_DATA_TARGET target_name)
+endfunction()
 
 #-----------------------------------------------------------------------------
 # Data Generation Program Targets
@@ -181,114 +185,29 @@ ENDFUNCTION(BUILD_PARALLEL_DATA_TARGET target_name)
 #-----------------------------------------------------------------------------
 
 #-----------------------------------------------------------------------------
-# Basic Data Gen Programs
-#-----------------------------------------------------------------------------
-SET(BASIC_TARGETS
-bov
-curve_builder
-distribution_curves
-mandelbulb
-xdmf_binary
-)
-
-SET(BASIC_TARGETS_PAR
-mandelbulb
-)
-
-#-----------------------------------------------------------------------------
-# VTK Gen Programs
-#-----------------------------------------------------------------------------
-SET(VTK_TARGETS degen_meshes)
-
-#-----------------------------------------------------------------------------
-# HDF5 Data Gen Programs
-#-----------------------------------------------------------------------------
-SET(HDF5_TARGETS unic xdmf xdmf2d)
-
-#-----------------------------------------------------------------------------
-# PDB Data Gen Programs
-#-----------------------------------------------------------------------------
-SET(PDB_TARGETS
-correlationtest
-pdbdatabase
-streak
-)
-
-#-----------------------------------------------------------------------------
-#  Setup {TARGET}_SOURCES for targets with multiple source files.
-#-----------------------------------------------------------------------------
-SET(correlationtest_SOURCES correlationtest.C pdbdatabase_link.C)
-SET(pdbdatabase_SOURCES pdbdatabase.C pdbdatabase_link.C)
-SET(streak_SOURCES streak.C pdbdatabase_link.C)
-
-#-----------------------------------------------------------------------------
-# Silo Data Gen Programs
-#-----------------------------------------------------------------------------
-SET(SILO_TARGETS
-arbpoly
-bigsil
-bounce
-big_quads
-csg
-emptydomains
-fullframe
-galaxy
-ghost
-global_node
-globe
-largefile
-lineout_test
-lowfrac
-mat_3x3_3across
-mat_3x3x3_3across
-meshorigin
-mmadj_rect_2d
-multi_test
-multidir
-noise
-noise2d
-non_conforming
-one_quad
-quad_disk
-sid97
-specmix
-specmix_double
-testall
-thinplane
-tire
-wave
-)
-
-#-----------------------------------------------------------------------------
-#  Setup {TARGET}_SOURCES for targets with multiple source files.
-#-----------------------------------------------------------------------------
-SET(noise_SOURCES noise.C QuadMesh.C)
-SET(multidir_SOURCES multidir.C QuadMesh.C)
-
-
-#-----------------------------------------------------------------------------
 # Build all Basic Targets
 #-----------------------------------------------------------------------------
-FOREACH(BASIC_TARGET ${BASIC_TARGETS})
-   BUILD_DATA_TARGET(${BASIC_TARGET}
-                     INCLUDE_DIRS
-                     ${CMAKE_CURRENT_SOURCE_DIR}
-                     ${VISIT_BINARY_DIR}/include
-                     ${VISIT_SOURCE_DIR}/include)
-ENDFOREACH(BASIC_TARGET ${BASIC_TARGETS})
+foreach(BASIC_TARGET bov curve_builder distribution_curves mandelbulb
+                     xdmf_binary)
+     BUILD_DATA_TARGET(${BASIC_TARGET}
+         INCLUDE_DIRS
+         ${CMAKE_CURRENT_SOURCE_DIR}
+         ${VISIT_BINARY_DIR}/include
+         ${VISIT_SOURCE_DIR}/include)
+endforeach()
 
-FOREACH(BASIC_TARGET ${BASIC_TARGETS_PAR})
-   BUILD_PARALLEL_DATA_TARGET(${BASIC_TARGET}
-                     INCLUDE_DIRS
-                     ${CMAKE_CURRENT_SOURCE_DIR}
-                     ${VISIT_BINARY_DIR}/include
-                     ${VISIT_SOURCE_DIR}/include)
-ENDFOREACH(BASIC_TARGET ${BASIC_TARGETS_PAR})
+foreach(BASIC_TARGET mandelbulb)
+     BUILD_PARALLEL_DATA_TARGET(${BASIC_TARGET}
+         INCLUDE_DIRS
+         ${CMAKE_CURRENT_SOURCE_DIR}
+         ${VISIT_BINARY_DIR}/include
+         ${VISIT_SOURCE_DIR}/include)
+endforeach()
 
 #-----------------------------------------------------------------------------
 # Build all VTK Targets
 #-----------------------------------------------------------------------------
-FOREACH(VTK_TARGET ${VTK_TARGETS})
+foreach(VTK_TARGET degen_meshes)
     if(VTK_VERSION VERSION_EQUAL "8.1.0")
         BUILD_DATA_TARGET(${VTK_TARGET}
             INCLUDE_DIRS ${VTK_INCLUDE_DIRS}
@@ -298,44 +217,64 @@ FOREACH(VTK_TARGET ${VTK_TARGETS})
         BUILD_DATA_TARGET(${VTK_TARGET}
             LIBS VTK::IOLegacy)
     endif()
-ENDFOREACH(VTK_TARGET ${VTK_TARGETS})
+endforeach()
 
 #-----------------------------------------------------------------------------
 # If we have HDF5 build all HDF5 Data Gen Target Programs
 #-----------------------------------------------------------------------------
-IF(HDF5_FOUND)
-    FOREACH(HDF5_TARGET ${HDF5_TARGETS})
+if(HDF5_FOUND)
+    foreach(HDF5_TARGET unic xdmf xdmf2d)
         BUILD_DATA_TARGET(${HDF5_TARGET}
             INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR} ${HDF5_INCLUDE_DIR}
             LIB_DIRS ${HDF5_LIBRARY_DIR}
             LIBS ${HDF5_LIB})
-    ENDFOREACH()
-ENDIF(HDF5_FOUND)
+    endforeach()
+endif()
 
 #-----------------------------------------------------------------------------
 # If we have Silo build all Silo & PDB Data Gen Programs
 #-----------------------------------------------------------------------------
-IF(SILO_FOUND)
+if(SILO_FOUND)
+    #-------------------------------------------------------------------------
+    #  Setup {TARGET}_SOURCES for targets with multiple source files.
+    #-------------------------------------------------------------------------
+    set(correlationtest_SOURCES correlationtest.C pdbdatabase_link.C)
+    set(pdbdatabase_SOURCES pdbdatabase.C pdbdatabase_link.C)
+    set(streak_SOURCES streak.C pdbdatabase_link.C)
     # Build PDB Targets (The required pdb symbols live in Silo's libs.)
-    FOREACH(PDB_TARGET ${PDB_TARGETS})
+    foreach(PDB_TARGET correlationtest pdbdatabase streak)
         BUILD_DATA_TARGET(${PDB_TARGET}
             INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}
-                ${VISIT_BINARY_DIR}/include ${VISIT_SOURCE_DIR}/include
+                         ${VISIT_BINARY_DIR}/include
+                         ${VISIT_SOURCE_DIR}/include
+                         ${VISIT_SOURCE_DIR}/common/utility
+                         ${SILO_INCLUDE_DIR}
             LIB_DIRS ${PDB_LIBRARY_DIR}
             LIBS ${PDB_LIB})
-    ENDFOREACH()
+    endforeach()
+    #-------------------------------------------------------------------------
+    #  Setup {TARGET}_SOURCES for targets with multiple source files.
+    #-------------------------------------------------------------------------
+    set(noise_SOURCES noise.C QuadMesh.C)
+    set(multidir_SOURCES multidir.C QuadMesh.C)
     # Build Silo Targets
-    FOREACH (SILO_TARGET ${SILO_TARGETS})
+    foreach (SILO_TARGET arbpoly bigsil bounce big_quads csg emptydomains
+                         fullframe galaxy ghost global_node globe largefile
+                         lineout_test lowfrac mat_3x3_3across mat_3x3x3_3across
+                         meshorigin mmadj_rect_2d multi_test multidir noise
+                         noise2d non_conforming one_quad quad_disk sid97
+                         specmix specmix_double testall thinplane tire wave)
         BUILD_DATA_TARGET(${SILO_TARGET}
-            INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR} ${SILO_INCLUDE_DIR}
-                ${VISIT_SOURCE_DIR}/common/utility
+            INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}
+                         ${SILO_INCLUDE_DIR}
+                         ${VISIT_SOURCE_DIR}/common/utility
             LIB_DIRS ${SILO_LIBRARY_DIR}
             LIBS ${SILO_LIB})
-    ENDFOREACH()
+    endforeach()
     if(WIN32)
       set_target_properties(multi_test PROPERTIES LINK_FLAGS "/STACK:8000000")
     endif()
-ENDIF(SILO_FOUND)
+endif()
 
 #-----------------------------------------------------------------------------
 # Setup the Data Generation Target.
@@ -355,16 +294,16 @@ ENDIF(SILO_FOUND)
 #  'ENV${PROGRAMFILES}'.
 #
 #-----------------------------------------------------------------------------
-FIND_PROGRAM(TAR_EXE tar)
-IF(TAR_EXE AND NOT WIN32)
-    SET(TAR_CMD ${TAR_EXE})
-    SET(UNTAR_ARGS "xvf")
-    SET(TAR_ARGS "cvfJ")
-ELSE()
-    SET(TAR_CMD ${CMAKE_COMMAND})
-    SET(UNTAR_ARGS "-E tar xvf")
-    SET(TAR_ARGS "-E tar cvfJ")
-ENDIF()
+find_program(TAR_EXE tar)
+if(TAR_EXE AND NOT WIN32)
+    set(TAR_CMD ${TAR_EXE})
+    set(UNTAR_ARGS "xvf")
+    set(TAR_ARGS "cvfJ")
+else()
+    set(TAR_CMD ${CMAKE_COMMAND})
+    set(UNTAR_ARGS "-E tar xvf")
+    set(TAR_ARGS "-E tar cvfJ")
+endif()
 
 #-----------------------------------------------------------------------------
 # CMake variable names for make variables used in convenience targets below.
@@ -398,47 +337,25 @@ if(EXISTS ${VISIT_SOURCE_DIR}/../data/visit_dist_data.tar.xz)
     endif()
 endif()
 
-IF(USE_VISIT_DIST_DATA_TARBALL)
-    SET(DIST_UNTAR_CMD "${TAR_CMD} ${UNTAR_ARGS} ${VISIT_SOURCE_DIR}/../data/visit_dist_data.tar.xz")
-    INSTALL(CODE "execute_process(COMMAND ${DIST_UNTAR_CMD} WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} )")
-    INSTALL(
-        DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/visit_dist_data/
+if(USE_VISIT_DIST_DATA_TARBALL)
+    set(DIST_UNTAR_CMD "${TAR_CMD} ${UNTAR_ARGS} ${VISIT_SOURCE_DIR}/../data/visit_dist_data.tar.xz")
+    install(CODE "execute_process(COMMAND ${DIST_UNTAR_CMD} WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} )")
+    install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/visit_dist_data/
         DESTINATION data
         DIRECTORY_PERMISSIONS
             OWNER_READ OWNER_WRITE OWNER_EXECUTE
             GROUP_READ GROUP_WRITE GROUP_EXECUTE
             WORLD_READ WORLD_EXECUTE)
 
-ELSE()
-
-    IF(SILO_FOUND)
-        SET(EXE_EXT "")
-        SET(DATA_OUT_DIR ${CMAKE_CURRENT_BINARY_DIR})
-        SET(CMDS "")
+else()
+    if(SILO_FOUND)
+        set(DATA_OUT_DIR ${CMAKE_CURRENT_BINARY_DIR})
+        set(CMDS "")
         if(WIN32)
-            set(EXE_EXT ".exe")
-            set(DATA_OUT_DIR ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR})
-            foreach(SD ${SILO_LIBRARY_DIR})
-              foreach(SL ${SILO_LIB})
-                get_filename_component(SL ${SL} NAME)
-                if(EXISTS ${SD}/${SL})
-                  get_filename_component(SL_WE ${SL} NAME_WE)
-                  set(dllName "${SD}/${SL_WE}.dll")
-                  if(NOT EXISTS ${dllName})
-                      set(dllName "${SD}/../bin/${SL_WE}.dll")
-                  endif()
-                  if(EXISTS ${dllName})
-                    foreach(CFG ${CMAKE_CONFIGURATION_TYPES})
-                      file(COPY        ${dllName}
-                           DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/${CFG})
-                    endforeach()
-                  endif()
-                endif()
-              endforeach()
-            endforeach()
+            set(DATA_OUT_DIR ${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>)
         endif()
 
-        SET(testall_output  curv2d.silo
+        set(testall_output  curv2d.silo
                             curv2d_colmajor.silo
                             curv3d.silo
                             curv3d_colmajor.silo
@@ -449,84 +366,101 @@ ELSE()
                             ucd3d.silo
                             ucd_lines2d.silo
                             ucd_lines3d.silo)
-        ADD_CUSTOM_COMMAND(OUTPUT  ${testall_output}
+        add_custom_command(OUTPUT  ${testall_output}
                            COMMAND "$<TARGET_FILE:testall>" ${SDA}
                            DEPENDS testall
                            WORKING_DIRECTORY ${DATA_OUT_DIR}
                            COMMENT "Running testall")
-        SET(globe_output globe.silo globe_mat0.silo globe_matcolors.silo)
-        ADD_CUSTOM_COMMAND(OUTPUT  ${globe_output}
+        set(globe_output globe.silo globe_mat0.silo globe_matcolors.silo)
+        add_custom_command(OUTPUT  ${globe_output}
                            COMMAND "$<TARGET_FILE:globe>" ${SDA}
                            DEPENDS globe
                            WORKING_DIRECTORY ${DATA_OUT_DIR}
                            COMMENT "Running globe")
-        SET(correlationtest_output dbA00.pdb dbB00.pdb dbC00.pdb)
-        ADD_CUSTOM_COMMAND(OUTPUT  ${correlationtest_output}
+        set(correlationtest_output dbA00.pdb dbB00.pdb dbC00.pdb)
+        add_custom_command(OUTPUT  ${correlationtest_output}
                            COMMAND "$<TARGET_FILE:correlationtest>" ${SDA}
                            DEPENDS correlationtest
                            WORKING_DIRECTORY ${DATA_OUT_DIR}
                            COMMENT "Running correlationtest")
-        SET(multi_test_output  multi_curv2d.silo
+        set(multi_test_output  multi_curv2d.silo
                                multi_curv3d.silo
                                multi_point2d.silo
                                multi_rect2d.silo
                                multi_rect3d.silo
                                multi_ucd3d.silo)
-        ADD_CUSTOM_COMMAND(OUTPUT  ${multi_test_output}
+        add_custom_command(OUTPUT  ${multi_test_output}
                            COMMAND "$<TARGET_FILE:multi_test>" -noCycles -noTimeInvariantMultimesh ${SDA}
                            DEPENDS multi_test
                            WORKING_DIRECTORY ${DATA_OUT_DIR}
                            COMMENT "Running multi_test")
-        ADD_CUSTOM_COMMAND(OUTPUT  noise.silo
+        add_custom_command(OUTPUT  noise.silo
                            COMMAND "$<TARGET_FILE:noise>" ${SDA}
                            DEPENDS noise
                            WORKING_DIRECTORY ${DATA_OUT_DIR}
                            COMMENT "Running noise")
-        ADD_CUSTOM_COMMAND(OUTPUT  tire.silo
+        add_custom_command(OUTPUT  tire.silo
                            COMMAND "$<TARGET_FILE:tire>" ${SDA}
                            DEPENDS tire
                            WORKING_DIRECTORY ${DATA_OUT_DIR}
                            COMMENT "Running tire")
-        SET(all_example_output
+        set(all_example_output
             noise.silo tire.silo
             ${testall_output}
             ${globe_output}
             ${correlationtest_output}
             ${multi_test_output})
-        ADD_CUSTOM_TARGET(create_data_examples ALL DEPENDS ${all_example_output})
-        VISIT_DATA_ADD_FOLDER(datagen create_data_examples)
+        add_custom_target(create_data_examples ALL DEPENDS ${all_example_output})
+        if(WIN32)
+            # copy silo and dependencies so that the data generators will run
+            foreach(SD ${SILO_LIBRARY_DIR})
+                foreach(SL ${SILO_LIB})
+                    get_filename_component(SL ${SL} NAME)
+                    if(EXISTS ${SD}/${SL})
+                        get_filename_component(SL_WE ${SL} NAME_WE)
+                        set(dllName "${SD}/${SL_WE}.dll")
+                        if(NOT EXISTS ${dllName})
+                            set(dllName "${SD}/../bin/${SL_WE}.dll")
+                            file(REAL_PATH ${dllName} dllName)
+                        endif()
+                        if(EXISTS ${dllName})
+                            list(APPEND SILO_LIBS ${dllName})
+                        endif()
+                    endif()
+                endforeach()
+            endforeach()
+            add_custom_command(TARGET create_data_examples PRE_BUILD
+                COMMAND ${CMAKE_COMMAND} -E copy
+                ${SILO_LIBS} ${DATA_OUT_DIR})
+        endif()
 
         # Create data install target
         if(NOT WIN32)
-            STRING(REGEX REPLACE "([a-zA-Z0-9_\\.+]+)(;|$)" "${DATA_OUT_DIR}/\\1\\2" install_files "${all_example_output}")
+            string(REGEX REPLACE "([a-zA-Z0-9_\\.+]+)(;|$)" "${DATA_OUT_DIR}/\\1\\2" install_files "${all_example_output}")
         else()
-            if(VISIT_NO_ALLBUILD)
-                add_dependencies(visit_special_builds create_data_examples)
-            endif()
-            STRING(REGEX REPLACE "([a-zA-Z0-9_\\.+]+)(;|$)" "${CMAKE_CURRENT_BINARY_DIR}/\${CMAKE_INSTALL_CONFIG_NAME}/\\1\\2" install_files "${all_example_output}")
+            string(REGEX REPLACE "([a-zA-Z0-9_\\.+]+)(;|$)" "${CMAKE_CURRENT_BINARY_DIR}/\${CMAKE_INSTALL_CONFIG_NAME}/\\1\\2" install_files "${all_example_output}")
+            visit_add_to_util_builds(create_data_examples)
         endif()
-        INSTALL(FILES ${install_files} DESTINATION data
+        install(FILES ${install_files} DESTINATION data
            PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ GROUP_WRITE WORLD_READ)
 
         # Create a target to build visit_dist_data.tar.xz
-        FILE(GENERATE OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/build_visit_dist_data.cmake CONTENT "
-            FILE(MAKE_DIRECTORY visit_dist_data)
-            FILE(COPY ${all_example_output} DESTINATION visit_dist_data)
-            EXECUTE_PROCESS(COMMAND ${TAR_CMD} ${TAR_ARGS} visit_dist_data.tar.xz visit_dist_data
+        file(GENERATE OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/build_visit_dist_data.cmake CONTENT "
+            file(MAKE_DIRECTORY visit_dist_data)
+            file(COPY ${all_example_output} DESTINATION visit_dist_data)
+            execute_process(COMMAND ${TAR_CMD} ${TAR_ARGS} visit_dist_data.tar.xz visit_dist_data
                 WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})")
-        ADD_CUSTOM_COMMAND(OUTPUT visit_dist_data.tar.xz
+        add_custom_command(OUTPUT visit_dist_data.tar.xz
                            COMMAND ${CMAKE_COMMAND} -P build_visit_dist_data.cmake
                            DEPENDS "${all_example_output}"
                            WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
                            COMMENT "Generating visit_dist_data.tar.xz")
-        ADD_CUSTOM_TARGET(visit_dist_data DEPENDS visit_dist_data.tar.xz)
+        add_custom_target(visit_dist_data DEPENDS visit_dist_data.tar.xz)
         VISIT_DATA_ADD_FOLDER(datagen visit_dist_data)
 
-    ELSE(SILO_FOUND)
-        MESSAGE(STATUS "Data files not included since visit_dist_data.tar.xz")
-        MESSAGE(STATUS "is missing and VisIt is not being built with Silo")
-        MESSAGE(STATUS "support.")
-    ENDIF(SILO_FOUND)
-ENDIF()
-
+    else()
+        message(STATUS "Data files not included since visit_dist_data.tar.xz is missing")
+        message(STATUS "and VisIt is not being built with Silo support.")
+    endif()
+endif()
 

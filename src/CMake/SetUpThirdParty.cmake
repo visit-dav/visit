@@ -36,6 +36,9 @@
 #   Moved all FindXXX calls out of root CMakeLists.txt into this file.
 #   Use cmake_path functions instead of get_filename_component.
 #
+#   Kathleen Biagas, Tue Jan 31, 2023
+#   Moved FindNSIS into VisItWindowsFunctions.cmake.
+#
 #****************************************************************************/
 
 # ==============================================
@@ -624,10 +627,6 @@ if(NOT VISIT_BUILD_MINIMAL_PLUGINS OR VISIT_SELECTED_DATABASE_PLUGINS)
     endif()
 
     include(${VISIT_SOURCE_DIR}/CMake/FindGFortran.cmake)
-endif()
-
-if (WIN32 AND VISIT_MAKE_NSIS_INSTALLER)
-    include(${VISIT_SOURCE_DIR}/CMake/FindNSIS.cmake)
 endif()
 
 unset(VISIT_TP_PERMS)

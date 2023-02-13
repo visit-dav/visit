@@ -46,6 +46,9 @@
 #    Kathleen Biagas, Thu Jun 25 14:13:46 PDT 2020
 #    Check if Pyside installed in python before adding to lib/site-packages.
 #
+#    Kathleen Biagas, Tue Jan 31, 2023
+#    visit_special_builds renamed to visit_util_builds.
+#
 #----------------------------------------------------------------------------
 
 IF(VISIT_PYTHON_DIR)
@@ -65,9 +68,7 @@ IF(VISIT_PYTHON_DIR)
             ${VISIT_PYTHON_DIR}/Lib
             ${VISIT_LIBRARY_DIR}/python/Lib
         COMMENT "Copying ${VISIT_PYTHON_DIR}/Lib/ ${VISIT_LIBRARY_DIR}/python/Lib")
-    if(VISIT_NO_ALLBUILD)
-        add_dependencies(visit_special_builds python_lib)
-    endif()
+    visit_add_to_util_builds(python_lib)
   ENDIF (NOT WIN32)
 ENDIF()
 
@@ -123,9 +124,7 @@ IF(VISIT_PYTHON_FILTERS)
                     ${VISIT_LIBRARY_DIR}/site-packages/vtk
             COMMENT "Copying ${VTK_PY_WRAPPERS_DIR}/site-packages to ${VISIT_LIBRARY_DIR}/site-packages/vtk"
         )
-        if(VISIT_NO_ALLBUILD)
-            add_dependencies(visit_special_builds vtk_python_modules)
-        endif()
+        visit_add_to_util_builds(vtk_python_modules)
     ENDIF (NOT WIN32)
   else()
       add_custom_target(vtk_python_modules ALL
@@ -193,9 +192,7 @@ if(VISIT_PYTHON_SCRIPTING AND CONDUIT_DIR)
                     ${VISIT_LIBRARY_DIR}/site-packages/conduit
             COMMENT "Copying ${CONDUIT_PY_MODULE} to ${VISIT_LIBRARY_DIR}/site-packages/conduit"
         )
-        if(VISIT_NO_ALLBUILD)
-            add_dependencies(visit_special_builds conduit_python_module)
-        endif()
+        visit_add_to_util_builds(conduit_python_module)
     endif()
 endif()
 

@@ -37,6 +37,9 @@
 #   Eric Brugger, Tue Feb 26 12:55:26 PST 2019
 #   Add logic to install libOSMesa in lib directory.
 #
+#   Kathleen Biagas, Tue Jan 31, 2023
+#   Remove check for OSMESA_SIZE, it is no longer used.
+#
 #****************************************************************************/
 
 # Use the OSMESA_DIR hint from the config-site .cmake file
@@ -75,16 +78,13 @@ if (VISIT_OSMESA_DIR)
         set(OSMESA_LIBRARIES ${OSMESA_LIBRARY} CACHE STRING "OSMesa libraries")
         set(OSMESA_INCLUDE_DIR ${VISIT_OSMESA_DIR}/include)
 
-        # for LD_LIB_PATH swap to work, libOSMesa needs to be 
+        # for LD_LIB_PATH swap to work, libOSMesa needs to be
         # called libGL.so.1
         execute_process(COMMAND ${CMAKE_COMMAND} -E copy
                                 ${OSMESA_LIBRARY}
                                 ${VISIT_BINARY_DIR}/lib/osmesa/libGL.so.1)
 
     else()
-        message(STATUS "OSMesa not found, OSMESA_SIZE_LIMIT defaulting to 4096")
-        set(HAVE_OSMESA_SIZE 0 CACHE INTERNAL "support for osmesa_size")
-        set(OSMESA_SIZE_LIMIT 4096)
         return()
     endif()
 
@@ -144,40 +144,6 @@ if (VISIT_OSMESA_DIR)
     if (CMAKE_THREAD_LIBS)
         list(APPEND MY_LIBS ${CMAKE_THREAD_LIBS})
     endif()
-    set(MSG "Check for OSMesa size limit")
-    message(STATUS ${MSG})
-    set(TRY_RUN_DIR ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_FILES_DIRECTORY}/CMakeTmp)
-    try_run(TRY_RUN_RESULT HAVE_OSMESA_SIZE
-      ${TRY_RUN_DIR}
-      ${VISIT_SOURCE_DIR}/CMake/FindOSMesaSize.C
-      CMAKE_FLAGS "-DINCLUDE_DIRECTORIES:STRING=${OSMESA_INCLUDE_DIR}"
-                  "-DLINK_DIRECTORIES:STRING=${OSMESA_LIBRARY_DIR}"
-                  "-DLINK_LIBRARIES:STRING=${MY_LIBS}"
-      OUTPUT_VARIABLE OUTPUT
-    )
-    unset(MY_LIBS)
-
-    if (HAVE_OSMESA_SIZE)
-        if("${TRY_RUN_RESULT}" MATCHES "FAILED_TO_RUN")
-            message(STATUS "${MSG} - failed to run, defaulting to 4096")
-            set(OSMESA_SIZE_LIMIT 4096)
-        else ()
-            if(EXISTS ${CMAKE_BINARY_DIR}/junk.txt)
-                file(STRINGS "${CMAKE_BINARY_DIR}/junk.txt" OSMESA_SIZE_LIMIT)
-                file(REMOVE "${CMAKE_BINARY_DIR}/junk.txt")
-                message(STATUS "${MSG} - found (${OSMESA_SIZE_LIMIT})")
-                set(HAVE_OSMESA_SIZE 1 CACHE INTERNAL "support for osmesa_size")
-            else()
-                message(STATUS "${MSG} - could not find junk.txt")
-            endif()
-        endif()
-    else()
-        message(STATUS "${MSG} - not found, defaulting to 4096")
-        set(HAVE_OSMESA_SIZE 0 CACHE INTERNAL "support for osmesa_size")
-        set(OSMESA_SIZE_LIMIT 4096)
-    endif()
-    # end Check for OSMesa size limit --- IS THIS STILL NECESSARY?
-
 
     if (VISIT_LLVM_DIR)
         find_library(LLVM_LIBRARY LLVM
@@ -204,7 +170,7 @@ if (VISIT_OSMESA_DIR)
             list(APPEND OSMESA_LIBRARIES ${LLVM_LIBRARY})
             set(OSMESA_LIBRARIES ${OSMESA_LIBRARIES} CACHE STRING "OSMesa libraries" FORCE)
         endif()
-    endif(VISIT_LLVM_DIR)
+    endif()
 
     message(STATUS "OSMESA_LIBRARIES: ${OSMESA_LIBRARIES}")
 
@@ -228,5 +194,5 @@ if (VISIT_OSMESA_DIR)
                              WORLD_READ             WORLD_EXECUTE
             CONFIGURATIONS "" None Debug Release RelWithDebInfo MinSizeRel)
 
-endif(VISIT_OSMESA_DIR) 
+endif()
 
