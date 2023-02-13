@@ -7,7 +7,7 @@ A color table is a set of colors that is used by certain plots to color
 variables. Color tables can be immensely important for understanding
 visualizations since changes in color can highlight interesting features.
 VisIt_ has several built-in color tables that can be used in visualizations.
-VisIt_ also provides a **Color table Window** for organizing and designing color tables.
+VisIt_ also provides a **Color Table Window** for organizing and designing color tables.
 
 Color tables come in two types: continuous and discrete.
 Their definitions are dependent upon our notion of a color control point, which is defined as a point in one dimensional space (also between 0 and 1) that has color information (i.e. RGBA values).
