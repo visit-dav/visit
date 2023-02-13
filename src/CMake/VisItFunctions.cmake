@@ -3,6 +3,13 @@
 # details.  No copyright assignment is required to contribute to VisIt.
 
 
+# ------------------------------------------------------------------------
+#  Modifications:
+#    Kathleen Biagas, Tue Jan 31, 2023
+#    Add visit_install_system_libs and visit_install_mpich functions.
+#
+# ------------------------------------------------------------------------
+
 function(VISIT_INSTALL_TARGETS_RELATIVE dest_dir)
     if(VISIT_STATIC)
         # Skip installation of static libraries when we build statically
@@ -119,4 +126,90 @@ function(SETUP_APP_VERSION name ver_ascii )
     set(${name}_VERSION_HEX "${ver_hex}" CACHE INTERNAL "")
 endfunction()
 
+
+function(visit_install_system_libs)
+    #-------------------------------------------------------------------------
+    # Install the system libraries required by Qt to the lib directory.
+    # The versions of these libraries change frequently, so including
+    # them means VisIt may continue to run even if the OS is upgraded.
+    # "/lib64" is for rhel7 and fedora31, "/usr/lib/x86_64-linux-gnu"
+    # is for ubuntu 18, debian 10 and debian 11, "/lib/x86_64-linux-gnu"
+    # is for ubuntu 20.
+    #-------------------------------------------------------------------------
+    if(EXISTS "/lib64/libicui18n.so")
+        file(GLOB libicui18n_libs "/lib64/libicui18n.so*")
+        file(GLOB libicudata_libs "/lib64/libicudata.so*")
+        file(GLOB libicuuc_libs "/lib64/libicuuc.so*")
+        set(icu_libs "")
+        list(APPEND icu_libs ${libicui18n_libs})
+        list(APPEND icu_libs ${libicudata_libs})
+        list(APPEND icu_libs ${libicuuc_libs})
+        install(FILES ${icu_libs}
+                DESTINATION ${VISIT_INSTALLED_VERSION_LIB}
+                PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
+                            GROUP_READ GROUP_WRITE GROUP_EXECUTE
+                            WORLD_READ             WORLD_EXECUTE)
+    elseif(EXISTS "/lib/x86_64-linux-gnu/libicui18n.so")
+        file(GLOB libicui18n_libs "/lib/x86_64-linux-gnu/libicui18n.so*")
+        file(GLOB libicudata_libs "/lib/x86_64-linux-gnu/libicudata.so*")
+        file(GLOB libicuuc_libs "/lib/x86_64-linux-gnu/libicuuc.so*")
+        set(icu_libs "")
+        list(APPEND icu_libs ${libicui18n_libs})
+        list(APPEND icu_libs ${libicudata_libs})
+        list(APPEND icu_libs ${libicuuc_libs})
+        install(FILES ${icu_libs}
+                DESTINATION ${VISIT_INSTALLED_VERSION_LIB}
+                PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
+                            GROUP_READ GROUP_WRITE GROUP_EXECUTE
+                            WORLD_READ             WORLD_EXECUTE)
+    elseif(EXISTS "/usr/lib/x86_64-linux-gnu/libicui18n.so")
+        file(GLOB libicui18n_libs "/usr/lib/x86_64-linux-gnu/libicui18n.so*")
+        file(GLOB libicudata_libs "/usr/lib/x86_64-linux-gnu/libicudata.so*")
+        file(GLOB libicuuc_libs "/usr/lib/x86_64-linux-gnu/libicuuc.so*")
+        set(icu_libs "")
+        list(APPEND icu_libs ${libicui18n_libs})
+        list(APPEND icu_libs ${libicudata_libs})
+        list(APPEND icu_libs ${libicuuc_libs})
+        install(FILES ${icu_libs}
+                DESTINATION ${VISIT_INSTALLED_VERSION_LIB}
+                PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
+                            GROUP_READ GROUP_WRITE GROUP_EXECUTE
+                            WORLD_READ             WORLD_EXECUTE)
+    endif()
+
+    #-------------------------------------------------------------------------
+    # If the g++ standard library is specified, then install it in the lib
+    # directory. This is typically needed if using a non-standard version
+    # of the g++ compiler.
+    #-------------------------------------------------------------------------
+    if(VISIT_CXX_LIBRARY)
+        file(GLOB libstdcxx_libs "${VISIT_CXX_LIBRARY}*")
+        install(FILES ${libstdcxx_libs}
+                DESTINATION ${VISIT_INSTALLED_VERSION_LIB}
+                PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
+                            GROUP_READ GROUP_WRITE GROUP_EXECUTE
+                            WORLD_READ             WORLD_EXECUTE)
+    endif()
+endfunction()
+
+
+function(visit_install_mpich)
+    set(vfp OWNER_READ OWNER_WRITE GROUP_READ GROUP_WRITE WORLD_READ)
+    set(vdp ${vfp} OWNER_EXECUTE GROUP_EXECUTE WORLD_EXECUTE)
+
+    install(DIRECTORY ${VISIT_MPICH_DIR}/include
+            DESTINATION ${VISIT_INSTALLED_VERSION_INCLUDE}/mpich
+            FILE_PERMISSIONS ${vfp}
+            DIRECTORY_PERMISSIONS ${vdp})
+
+    install(DIRECTORY ${VISIT_MPICH_DIR}/bin
+            DESTINATION ${VISIT_INSTALLED_VERSION}
+            FILE_PERMISSIONS ${vfp}
+            DIRECTORY_PERMISSIONS ${vdp})
+
+    install(DIRECTORY ${VISIT_MPICH_DIR}/lib
+            DESTINATION ${VISIT_INSTALLED_VERSION}
+            FILE_PERMISSIONS ${vfp}
+            DIRECTORY_PERMISSIONS ${vdp})
+endfunction()
 

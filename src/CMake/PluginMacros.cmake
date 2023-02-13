@@ -32,6 +32,10 @@
 #   Moved VISIT_SELECTED_PLUGIN_ERROR and CREATE_PLUGIN_DEPENDENCIES from
 #   root CMakeLists.txt.
 #
+#   Kathleen Biagas, Tue Jan 31, 2023
+#   Clean up plugin install target on Windows, only need RUNTIME DESTINATION.
+#   MSVC_IDE and non-ide should install the same.
+#
 #****************************************************************************/
 
 
@@ -50,27 +54,9 @@ macro(VISIT_INSTALL_PLUGINS type)
                 PERMISSIONS ${VPERM}
             )
         else()
-            # ${BUILD_TYPE} refers to the configuration option chosen (Release,
-            # Debug, etc). It is a var that will be given a value during compile
-            # not configure, so the dollar sign must be escaped in the string
-            # below.  Then during install, ${BUILD_TYPE} will be expanded.
-            foreach(target ${ARGN})
-                if(MSVC_IDE)
-                  set(filename "${VISIT_BINARY_DIR}/exe/\${BUILD_TYPE}/${type}/${target}.dll")
-                  install(FILES ${filename}
-                    DESTINATION ${VISIT_INSTALLED_VERSION_PLUGINS}/${type}
-                    COMPONENT RUNTIME
-                    PERMISSIONS ${VPERM}
-                  )
-                else()  # For no IDE, installed straight into exe
-                  set(filename "${VISIT_BINARY_DIR}/exe/${type}/${target}.dll")
-                  install(FILES ${filename}
-                    DESTINATION ${VISIT_INSTALLED_VERSION_PLUGINS}/${type}
-                    COMPONENT RUNTIME
-                    PERMISSIONS ${VPERM}
-                  )
-                endif()
-            endforeach()
+            install(TARGETS ${ARGN}
+                RUNTIME DESTINATION ${VISIT_INSTALLED_VERSION_PLUGINS}/${type}
+                PERMISSIONS ${VPERM})
         endif()
     endif()
     unset(VPERM)
@@ -219,14 +205,14 @@ endfunction()
 
 
 macro(VISIT_SELECTED_PLUGIN_ERROR type plist msg)
-  if(DEFINED VISIT_SELECTED_${type}_PLUGINS)
-    foreach(plug ${plist})
-      list(FIND VISIT_SELECTED_${type}_PLUGINS ${plug} foundPlug)
-      if(NOT foundPlug EQUAL -1)
-        message(FATAL_ERROR "Cannot build selected plugin (${plug}): ${msg}")
-      endif()
-    endforeach()
-  endif()
+    if(DEFINED VISIT_SELECTED_${type}_PLUGINS)
+        foreach(plug ${plist})
+            list(FIND VISIT_SELECTED_${type}_PLUGINS ${plug} foundPlug)
+            if(NOT foundPlug EQUAL -1)
+                message(FATAL_ERROR "Cannot build selected plugin (${plug}): ${msg}")
+            endif()
+        endforeach()
+    endif()
 endmacro()
 
 

@@ -18,8 +18,11 @@
 #   Add PYTHON_FOUND guard for python path related logic to avoid
 #   error with empty path passed to get_filename_component
 #
-#   Kathleen Biagas, Wed Jun  8 2023
+#   Kathleen Biagas, Wed Jun  8 2022
 #   Install VisItIncludeVars.cmake.
+#
+#   Kathleen Biagas, Tue Jan 31, 2023 
+#   Change python_include_relative_path (add 'include' at end) for Windows.
 #
 #******************************************************************************
 
@@ -304,7 +307,7 @@ if(UNIX)
    set(exodusii_include_relative_path "/exodusii/inc")
    set(vtk_include_relative_path "/vtk/vtk-${VTK_MAJOR_VERSION}.${VTK_MINOR_VERSION}")
 else(UNIX)
-   set(python_include_relative_path "/python")
+   set(python_include_relative_path "/python/include")
    set(exodusii_include_relative_path "/exodusii/include")
    set(vtk_include_relative_path "/vtk/vtk-${VTK_MAJOR_VERSION}.${VTK_MINOR_VERSION}")
 endif(UNIX)

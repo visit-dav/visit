@@ -7,7 +7,7 @@
 #   This directory may later contain additional subdirectories that provide
 #   useful content. For example, we could have a "logos" directory that contains
 #   VisIt project logos or commonly used Lab logos. We could have some VTK
-#   datasets such as globes, etc. 
+#   datasets such as globes, etc.
 #
 # Modifications:
 #   Brad Whitlock, Thu Sep  6 11:50:09 PDT 2012
@@ -22,46 +22,70 @@
 #   Kathleen Biagas, Mon Oct 23 17:07:52 MST 2017
 #   Change how Resources dir is handled for build on Windows.
 #
+#   Kathleen Biagas, Tue Jan 31, 2023
+#   Use custom target with custom commands to copy resources on Windows.
+#
 #*****************************************************************************
 
 # Do a little extra in the hosts directory.
-ADD_SUBDIRECTORY(hosts)
+add_subdirectory(hosts)
 
 # Directories that we want installed wholesale to the "resources" directory.
-SET(RESOURCE_DIRECTORIES colortables help hosts images movietemplates translations usage clients)
+set(RESOURCE_DIRECTORIES colortables help hosts images movietemplates translations usage clients)
 
 # Copy the resources directory into the out of source build
-FOREACH(ITEM ${RESOURCE_DIRECTORIES})
-    GET_FILENAME_COMPONENT(ITM_RP ${CMAKE_CURRENT_SOURCE_DIR}/${ITEM}
+
+if(WIN32)
+    # create a custom target, with custom commands to copy the directories.
+    add_custom_target(copy_resources ALL
+            COMMAND ${CMAKE_COMMAND} -E copy_directory
+                    ${CMAKE_CURRENT_SOURCE_DIR}/clients
+                    ${VISIT_EXECUTABLE_DIR}/resources
+            COMMAND ${CMAKE_COMMAND} -E copy_directory
+                    ${CMAKE_CURRENT_SOURCE_DIR}/colortables
+                    ${VISIT_EXECUTABLE_DIR}/resources
+            COMMAND ${CMAKE_COMMAND} -E copy_directory
+                    ${CMAKE_CURRENT_SOURCE_DIR}/help
+                    ${VISIT_EXECUTABLE_DIR}/resources
+            COMMAND ${CMAKE_COMMAND} -E copy_directory
+                    ${CMAKE_CURRENT_SOURCE_DIR}/hosts
+                    ${VISIT_EXECUTABLE_DIR}/resources
+            COMMAND ${CMAKE_COMMAND} -E rm -f
+                    ${VISIT_EXECUTABLE_DIR}/resources/hosts/CMakeLists.txt
+            COMMAND ${CMAKE_COMMAND} -E copy_directory
+                    ${CMAKE_CURRENT_SOURCE_DIR}/images
+                    ${VISIT_EXECUTABLE_DIR}/resources
+            COMMAND ${CMAKE_COMMAND} -E copy_directory
+                    ${CMAKE_CURRENT_SOURCE_DIR}/movietemplates
+                    ${VISIT_EXECUTABLE_DIR}/resources
+            COMMAND ${CMAKE_COMMAND} -E copy_directory
+                    ${CMAKE_CURRENT_SOURCE_DIR}/translations
+                    ${VISIT_EXECUTABLE_DIR}/resources
+            COMMAND ${CMAKE_COMMAND} -E copy_directory
+                    ${CMAKE_CURRENT_SOURCE_DIR}/usage
+                    ${VISIT_EXECUTABLE_DIR}/resources)
+    visit_add_to_util_builds(copy_resources)
+else()
+
+    foreach(ITEM ${RESOURCE_DIRECTORIES})
+        get_filename_component(ITM_RP ${CMAKE_CURRENT_SOURCE_DIR}/${ITEM}
                            REALPATH)
 
-    if(NOT WIN32)
-        FILE(COPY ${ITM_RP}
+        file(COPY ${ITM_RP}
              DESTINATION ${CMAKE_CURRENT_BINARY_DIR}
-             PATTERN ".svn" EXCLUDE
              PATTERN "CMakeLists.txt" EXCLUDE)
-    else()
-        foreach(CFG Release Debug RelWithDebInfo MinSizeRel)
-            file(COPY ${ITM_RP}
-                 DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CFG}/resources
-                 FILE_PERMISSIONS OWNER_READ OWNER_WRITE
-                                  GROUP_READ GROUP_WRITE
-                                  WORLD_READ
-                 PATTERN ".svn" EXCLUDE
-                 PATTERN "CMakeLists.txt" EXCLUDE)
-        endforeach()
-    endif()
-ENDFOREACH(ITEM)
+    endforeach()
+endif()
 
-# Install these directories in their entirety to the installed "resources" 
+# Install these directories in their entirety to the installed "resources"
 # directory.
-INSTALL(DIRECTORY ${RESOURCE_DIRECTORIES}
+install(DIRECTORY ${RESOURCE_DIRECTORIES}
     DESTINATION ${VISIT_INSTALLED_VERSION_RESOURCES}
-    FILE_PERMISSIONS OWNER_READ OWNER_WRITE 
-                     GROUP_READ GROUP_WRITE 
+    FILE_PERMISSIONS OWNER_READ OWNER_WRITE
+                     GROUP_READ GROUP_WRITE
                      WORLD_READ
-    DIRECTORY_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE 
-                          GROUP_READ GROUP_WRITE GROUP_EXECUTE 
+    DIRECTORY_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
+                          GROUP_READ GROUP_WRITE GROUP_EXECUTE
                           WORLD_READ             WORLD_EXECUTE
     PATTERN ".svn" EXCLUDE
     PATTERN "CMakeLists.txt" EXCLUDE
