@@ -160,7 +160,9 @@ GetStrFromTAFile(char type, int ifile, int line)
     // Resolve text annotation file name
     const std::string dotVisItFile = dotVisItDir + "/" + type + "tafile" + (char) (48+ifile) + ".txt";
     const std::string envTmpFile = envTmpDir + "/" + type + "tafile" + (char) (48+ifile) + ".txt";
+#ifndef _WIN32
     const std::string varTmpFile = varTmpDir + "/" + type + "tafile" + (char) (48+ifile) + ".txt";
+#endif
 
     // Check for file in priority order
     FileFunctions::VisItStat_t vstat;
@@ -169,8 +171,10 @@ GetStrFromTAFile(char type, int ifile, int line)
         tastrm.open(dotVisItFile);
     else if (FileFunctions::VisItStat(envTmpFile, &vstat) == 0) 
         tastrm.open(envTmpFile);
+#ifndef _WIN32
     else if (FileFunctions::VisItStat(varTmpFile, &vstat) == 0) 
         tastrm.open(varTmpFile);
+#endif
 
     for (int i = -1; i < line && tastrm.good(); i++)
         tastrm.getline(retval, 255);
