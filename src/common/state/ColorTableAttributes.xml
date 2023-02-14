@@ -12,9 +12,6 @@
     <Field name="defaultDiscrete" label="defaultDiscrete" type="string">
       levels
     </Field>
-    <Field name="taggingFlag" label="taggingFlag" type="bool">
-      false
-    </Field>
     <Field name="changesMade" label="changesMade" type="bool">
       false
     </Field>
@@ -43,8 +40,6 @@
     <Function name="SetActiveElement" user="true" member="true">
     </Function>
     <Function name="GetActiveElement" user="true" member="true">
-    </Function>
-    <Function name="SetAllActive" user="true" member="true">
     </Function>
     <Function name="ProcessOldVersions" user="true" member="true">
     </Function>

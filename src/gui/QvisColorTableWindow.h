@@ -123,6 +123,11 @@ class TagInfo;
 //   Justin Privitera, Thu Sep 22 10:50:46 PDT 2022
 //   Moved TagInfo class implementation to the .C file.
 // 
+//   Justin Privitera, Mon Feb 13 14:32:02 PST 2023
+//   Removed taggingToggled and added tagsSelectAll.
+//   Removed tagFilterToggle and added tagsSelectAllButton.
+//   Removed tagsVisible.
+// 
 // ****************************************************************************
 
 class GUI_API QvisColorTableWindow : public QvisPostableWindowObserver
@@ -187,7 +192,7 @@ private slots:
     void highlightColorTable(QTreeWidgetItem *, QTreeWidgetItem*);
     void tagTableItemSelected(QTreeWidgetItem *, int);
     void showIndexHintsToggled(bool val);
-    void taggingToggled(bool val);
+    void tagsSelectAll();
     void tagCombiningChanged(int index);
     void searchingToggled(bool checked);
     void searchEdited(const QString &newSearchTerm);
@@ -199,14 +204,12 @@ private slots:
     void removeTagFromColorTable(const std::string ctName, 
                                  const std::string tagName,
                                  ColorControlPointList* ccpl);
-    void updateNameBoxPosition(bool tagsOn);
 private:
     ColorTableAttributes     *colorAtts;
     int                      colorCycle;
     QString                  currentColorTable;
     int                      popupMode;
     bool                     sliding;
-    bool                     tagsVisible;
     bool                     tagsMatchAny;
     bool                     searchingOn;
     QString                  searchTerm;
@@ -239,7 +242,7 @@ private:
     QPushButton              *deleteButton;
     QPushButton              *exportButton;
 
-    QCheckBox                *tagFilterToggle;
+    QPushButton              *tagsSelectAllButton;
     QComboBox                *tagCombiningBehaviorChoice;
 
     QTreeWidget              *tagTable;

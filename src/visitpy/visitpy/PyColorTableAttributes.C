@@ -91,11 +91,6 @@ PyColorTableAttributes_ToString(const ColorTableAttributes *atts, const char *pr
     str += tmpStr;
     snprintf(tmpStr, 1000, "%sdefaultDiscrete = \"%s\"\n", prefix, atts->GetDefaultDiscrete().c_str());
     str += tmpStr;
-    if(atts->GetTaggingFlag())
-        snprintf(tmpStr, 1000, "%staggingFlag = 1\n", prefix);
-    else
-        snprintf(tmpStr, 1000, "%staggingFlag = 0\n", prefix);
-    str += tmpStr;
     if(atts->GetChangesMade())
         snprintf(tmpStr, 1000, "%schangesMade = 1\n", prefix);
     else
@@ -458,66 +453,6 @@ ColorTableAttributes_GetDefaultDiscrete(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
-ColorTableAttributes_SetTaggingFlag(PyObject *self, PyObject *args)
-{
-    ColorTableAttributesObject *obj = (ColorTableAttributesObject *)self;
-
-    PyObject *packaged_args = 0;
-
-    // Handle args packaged into a tuple of size one
-    // if we think the unpackaged args matches our needs
-    if (PySequence_Check(args) && PySequence_Size(args) == 1)
-    {
-        packaged_args = PySequence_GetItem(args, 0);
-        if (PyNumber_Check(packaged_args))
-            args = packaged_args;
-    }
-
-    if (PySequence_Check(args))
-    {
-        Py_XDECREF(packaged_args);
-        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
-    }
-
-    if (!PyNumber_Check(args))
-    {
-        Py_XDECREF(packaged_args);
-        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
-    }
-
-    long val = PyLong_AsLong(args);
-    bool cval = bool(val);
-
-    if (val == -1 && PyErr_Occurred())
-    {
-        Py_XDECREF(packaged_args);
-        PyErr_Clear();
-        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
-    }
-    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
-    {
-        Py_XDECREF(packaged_args);
-        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
-    }
-
-    Py_XDECREF(packaged_args);
-
-    // Set the taggingFlag in the object.
-    obj->data->SetTaggingFlag(cval);
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-ColorTableAttributes_GetTaggingFlag(PyObject *self, PyObject *args)
-{
-    ColorTableAttributesObject *obj = (ColorTableAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(obj->data->GetTaggingFlag()?1L:0L);
-    return retval;
-}
-
-/*static*/ PyObject *
 ColorTableAttributes_SetChangesMade(PyObject *self, PyObject *args)
 {
     ColorTableAttributesObject *obj = (ColorTableAttributesObject *)self;
@@ -594,8 +529,6 @@ PyMethodDef PyColorTableAttributes_methods[COLORTABLEATTRIBUTES_NMETH] = {
     {"GetDefaultContinuous", ColorTableAttributes_GetDefaultContinuous, METH_VARARGS},
     {"SetDefaultDiscrete", ColorTableAttributes_SetDefaultDiscrete, METH_VARARGS},
     {"GetDefaultDiscrete", ColorTableAttributes_GetDefaultDiscrete, METH_VARARGS},
-    {"SetTaggingFlag", ColorTableAttributes_SetTaggingFlag, METH_VARARGS},
-    {"GetTaggingFlag", ColorTableAttributes_GetTaggingFlag, METH_VARARGS},
     {"SetChangesMade", ColorTableAttributes_SetChangesMade, METH_VARARGS},
     {"GetChangesMade", ColorTableAttributes_GetChangesMade, METH_VARARGS},
     {NULL, NULL}
@@ -630,8 +563,6 @@ PyColorTableAttributes_getattr(PyObject *self, char *name)
         return ColorTableAttributes_GetDefaultContinuous(self, NULL);
     if(strcmp(name, "defaultDiscrete") == 0)
         return ColorTableAttributes_GetDefaultDiscrete(self, NULL);
-    if(strcmp(name, "taggingFlag") == 0)
-        return ColorTableAttributes_GetTaggingFlag(self, NULL);
     if(strcmp(name, "changesMade") == 0)
         return ColorTableAttributes_GetChangesMade(self, NULL);
 
@@ -654,6 +585,23 @@ PyColorTableAttributes_getattr(PyObject *self, char *name)
         ColorTableAttributesObject *ColorTableObj = (ColorTableAttributesObject *)self;
         std::string defaultDiscrete = ColorTableObj->data->GetDefaultDiscrete();
         return PyString_FromString(defaultDiscrete.c_str());
+    }
+#endif
+#if VISIT_OBSOLETE_AT_VERSION(3,6,0)
+#error This code is obsolete in this version. Please remove it.
+#else
+    // Try and handle legacy fields in ColorTableAttributes
+
+    //
+    // Removed in 3.4.0
+    //
+    if(strcmp(name, "taggingFlag") == 0)
+    {
+        PyErr_WarnEx(NULL,
+                    "taggingFlag is no longer a valid Color Table "
+                    "attribute.\nIt's value is being ignored, please remove "
+                    "it from your script.\n", 3);
+        return PyInt_FromLong(0L);
     }
 #endif
 
@@ -686,8 +634,6 @@ PyColorTableAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = ColorTableAttributes_SetDefaultContinuous(self, args);
     else if(strcmp(name, "defaultDiscrete") == 0)
         obj = ColorTableAttributes_SetDefaultDiscrete(self, args);
-    else if(strcmp(name, "taggingFlag") == 0)
-        obj = ColorTableAttributes_SetTaggingFlag(self, args);
     else if(strcmp(name, "changesMade") == 0)
         obj = ColorTableAttributes_SetChangesMade(self, args);
 
@@ -715,6 +661,23 @@ PyColorTableAttributes_setattr(PyObject *self, char *name, PyObject *args)
             const std::string defaultDisc = PyString_AsString(args);
             PyErr_WarnEx(NULL, "'activeDiscrete' is obsolete. Use 'defaultDiscrete'.", 3);
             ColorTableObj->data->SetDefaultDiscrete(defaultDisc);
+            Py_INCREF(Py_None);
+            obj = Py_None;
+        }
+    }
+#endif
+#if VISIT_OBSOLETE_AT_VERSION(3,6,0)
+#error This code is obsolete in this version. Please remove it.
+#else
+   // Try and handle legacy fields in ColorTableAttributes
+    if(obj == &NULL_PY_OBJ)
+    {
+        //
+        // Removed in 3.4.0
+        //
+        if(strcmp(name, "taggingFlag") == 0)
+        {
+            PyErr_WarnEx(NULL, "'taggingFlag' is obsolete. Tags are always enabled now.", 3);
             Py_INCREF(Py_None);
             obj = Py_None;
         }
