@@ -2359,6 +2359,8 @@ avtXRayImageQuery::WriteBlueprintXRayData(conduit::Node &data_out,
     data_out["state/xray_data/intensityMin"] = int_min;
     data_out["state/xray_data/pathLengthMax"] = pl_max;
     data_out["state/xray_data/pathLengthMin"] = pl_min;
+
+    data_out["state/xray_data/imageTopoOrderOfDomainVariables"] = "xyz";
 }
 #endif
 

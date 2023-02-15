@@ -445,6 +445,9 @@ def test_bp_state_xray_query(testname, xrayout, units):
         TestValueEQ(testname + "_query_AbsUnits", absUnits, "no units provided")
         TestValueEQ(testname + "_query_EmisUnits", emisUnits, "no units provided")
 
+    imageTopoOrderOfDomainVariables = xrayout["domain_000000/state/xray_query/imageTopoOrderOfDomainVariables"]
+    TestValueEQ(testname + "_query_ImageTopoOrderOfDomainVariables", imageTopoOrderOfDomainVariables, "p")
+
 def test_bp_state_xray_data(testname, xrayout):
     detectorWidth = xrayout["domain_000000/state/xray_data/detectorWidth"]
     TestValueEQ(testname + "_data_DetectorWidth", detectorWidth, 15)
