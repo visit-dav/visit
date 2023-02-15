@@ -140,6 +140,11 @@ hasKeyMatch(char const *fmtStr, int idx)
 //
 // Mark C. Miller, Thu Feb  9 11:29:30 PST 2023
 //
+// Modifications:
+//
+//    Mark C. Miller, Wed Feb 15 12:52:38 PST 2023
+//    Support tafiles which a peer to the database.
+//
 // ****************************************************************************
 
 static char const*
