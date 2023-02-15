@@ -2250,6 +2250,8 @@ avtXRayImageQuery::WriteBlueprintImagingMeshes(conduit::Node &data_out,
 //  Creation:   December 09, 2022
 // 
 //  Modifications:
+//    Justin Privitera, Tue Feb 14 17:02:43 PST 2023
+//    Change all metadata to use pot_hole_case instead of camelCase.
 //
 // ****************************************************************************
 #ifdef HAVE_CONDUIT
@@ -2288,6 +2290,8 @@ avtXRayImageQuery::WriteBlueprintXRayView(conduit::Node &data_out)
 //  Creation:   December 09, 2022
 // 
 //  Modifications:
+//    Justin Privitera, Tue Feb 14 17:02:43 PST 2023
+//    Change all metadata to use pot_hole_case instead of camelCase.
 //
 // ****************************************************************************
 #ifdef HAVE_CONDUIT
@@ -2318,6 +2322,9 @@ avtXRayImageQuery::WriteBlueprintXRayQuery(conduit::Node &data_out,
 //  Creation:   December 09, 2022
 // 
 //  Modifications:
+//    Justin Privitera, Tue Feb 14 17:02:43 PST 2023
+//    Add image_topo_order_of_domain_variables to xray_data metadata.
+//    Change all metadata to use pot_hole_case instead of camelCase.
 //
 // ****************************************************************************
 #ifdef HAVE_CONDUIT

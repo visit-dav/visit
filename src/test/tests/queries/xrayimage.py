@@ -67,6 +67,10 @@
 #    Reworked some of the blueprint output tests to reflect changes in 
 #    output metadata.
 #    Added new tests for path length and spatial extent images.
+# 
+#    Justin Privitera, Tue Feb 14 17:02:43 PST 2023
+#    Change all metadata to use pot_hole_case instead of camelCase.
+#    Add test for image_topo_order_of_domain_variables.
 #
 # ----------------------------------------------------------------------------
 
