@@ -633,11 +633,11 @@ conduit_db = pjoin(conduit_dir_detector_dims, "output.cycle_000048.root")
 xrayout = conduit.Node()
 conduit.relay.io.blueprint.load_mesh(xrayout, conduit_db)
 
-detectorWidth = xrayout["domain_000000/state/xray_data/detectorWidth"]
-TestValueEQ("Blueprint_Positive_DetectorWidth", detectorWidth, 22.3932263237838)
+detector_width = xrayout["domain_000000/state/xray_data/detector_width"]
+TestValueEQ("Blueprint_Positive_Detector_width", detector_width, 22.3932263237838)
 
-detectorHeight = xrayout["domain_000000/state/xray_data/detectorHeight"]
-TestValueEQ("Blueprint_Positive_DetectorHeight", detectorHeight, 16.7949192423103)
+detector_height = xrayout["domain_000000/state/xray_data/detector_height"]
+TestValueEQ("Blueprint_Positive_Detector_height", detector_height, 16.7949192423103)
 
 # test imaging plane topos and ray output
 
