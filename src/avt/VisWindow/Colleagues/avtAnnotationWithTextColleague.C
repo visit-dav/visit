@@ -168,7 +168,7 @@ GetStrFromTAFile(char type, int ifile, avtDataAttributes const *cda)
     // Resolve text annotation file name
     const std::string tstr = std::string(1,type);
     const std::string istr = std::string(1,(char) (48+ifile));
-    const std::string theFile = "/" + tstr + "tafile" + istr + ".txt";
+    const std::string theFile = VISIT_SLASH_STRING + tstr + "tafile" + istr + ".txt";
     const std::string dbFile = dbDir + theFile;
     const std::string dotVisItFile = dotVisItDir + theFile;
     const std::string envTmpFile = envTmpDir + theFile;
