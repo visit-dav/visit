@@ -143,11 +143,14 @@ hasKeyMatch(char const *fmtStr, int idx)
 // ****************************************************************************
 
 static char const*
-GetStrFromTAFile(char type, int ifile, int line)
+GetStrFromTAFile(char type, int ifile, avtDataAttributes const *cda)
 {
     static char retval[256]; // whatever is returned is copied immediately
 
+    int line = cda->GetTimeIndex();
+
     // Resolve possible directories 
+    const std::string dbDir = FileFunctions::Dirname(cda->GetFullDBName());
     const std::string dotVisItDir = GetUserVisItDirectory();
 #ifdef _WIN32
     const std::string envTmpDir = std::string(Environment::get("TMP"));
@@ -158,23 +161,29 @@ GetStrFromTAFile(char type, int ifile, int line)
 #endif
 
     // Resolve text annotation file name
-    const std::string dotVisItFile = dotVisItDir + "/" + type + "tafile" + (char) (48+ifile) + ".txt";
-    const std::string envTmpFile = envTmpDir + "/" + type + "tafile" + (char) (48+ifile) + ".txt";
+    const std::string tstr = std::string(1,type);
+    const std::string istr = std::string(1,(char) (48+ifile));
+    const std::string theFile = "/" + tstr + "tafile" + istr + ".txt";
+    const std::string dbFile = dbDir + theFile;
+    const std::string dotVisItFile = dotVisItDir + theFile;
+    const std::string envTmpFile = envTmpDir + theFile;
 #ifndef _WIN32
-    const std::string varTmpFile = varTmpDir + "/" + type + "tafile" + (char) (48+ifile) + ".txt";
+    const std::string varTmpFile = varTmpDir + theFile;
 #endif
 
     // Check for file in priority order
     FileFunctions::VisItStat_t vstat;
     std::ifstream tastrm;
-    if (FileFunctions::VisItStat(dotVisItFile, &vstat) == 0) 
-        tastrm.open(dotVisItFile);
+    if (FileFunctions::VisItStat(dbFile, &vstat) == 0) 
+        tastrm.open(dbFile);
     else if (FileFunctions::VisItStat(envTmpFile, &vstat) == 0) 
         tastrm.open(envTmpFile);
 #ifndef _WIN32
     else if (FileFunctions::VisItStat(varTmpFile, &vstat) == 0) 
         tastrm.open(varTmpFile);
 #endif
+    else if (FileFunctions::VisItStat(dotVisItFile, &vstat) == 0) 
+        tastrm.open(dotVisItFile);
 
     for (int i = -1; i < line && tastrm.good(); i++)
         tastrm.getline(retval, 255);
@@ -195,10 +204,10 @@ GetStrFromTAFile(char type, int ifile, int line)
 // ****************************************************************************
 
 static int
-GetIntFromTAFile(int ifile, int line)
+GetIntFromTAFile(int ifile, avtDataAttributes const *cda)
 {
     char sval[256];
-    std::strcpy(sval, GetStrFromTAFile('i', ifile, line));
+    std::strcpy(sval, GetStrFromTAFile('i', ifile, cda));
     errno = 0;
     long lval = std::strtol(sval, 0, 10);
     if (lval == 0 && errno != 0)
@@ -219,10 +228,10 @@ GetIntFromTAFile(int ifile, int line)
 // ****************************************************************************
 
 static double
-GetFltFromTAFile(int ifile, int line)
+GetFltFromTAFile(int ifile, avtDataAttributes const *cda)
 {
     char sval[256], *p;
-    std::strcpy(sval, GetStrFromTAFile('f', ifile, line));
+    std::strcpy(sval, GetStrFromTAFile('f', ifile, cda));
     errno = 0;
     double rval = std::strtod(sval, &p);
     if (errno != 0 || (rval == 0 && p == sval))
@@ -298,15 +307,15 @@ processMacro(char *rv, size_t rvsize=0, char const *key=0, char const *fmt=0,
     TEXT_MACRO(xlabel, %s, cda->GetXLabel().c_str());
     TEXT_MACRO(ylabel, %s, cda->GetYLabel().c_str());
     TEXT_MACRO(zlabel, %s, cda->GetZLabel().c_str());
-    TEXT_MACRO(itafile1, %d, GetIntFromTAFile(1, cda->GetTimeIndex()));
-    TEXT_MACRO(itafile2, %d, GetIntFromTAFile(2, cda->GetTimeIndex()));
-    TEXT_MACRO(itafile3, %d, GetIntFromTAFile(3, cda->GetTimeIndex()));
-    TEXT_MACRO(ftafile1, %g, GetFltFromTAFile(1, cda->GetTimeIndex()));
-    TEXT_MACRO(ftafile2, %g, GetFltFromTAFile(2, cda->GetTimeIndex()));
-    TEXT_MACRO(ftafile3, %g, GetFltFromTAFile(3, cda->GetTimeIndex()));
-    TEXT_MACRO(stafile1, %s, GetStrFromTAFile('s', 1, cda->GetTimeIndex()));
-    TEXT_MACRO(stafile2, %s, GetStrFromTAFile('s', 2, cda->GetTimeIndex()));
-    TEXT_MACRO(stafile3, %s, GetStrFromTAFile('s', 3, cda->GetTimeIndex()));
+    TEXT_MACRO(itafile1, %d, GetIntFromTAFile(1, cda));
+    TEXT_MACRO(itafile2, %d, GetIntFromTAFile(2, cda));
+    TEXT_MACRO(itafile3, %d, GetIntFromTAFile(3, cda));
+    TEXT_MACRO(ftafile1, %g, GetFltFromTAFile(1, cda));
+    TEXT_MACRO(ftafile2, %g, GetFltFromTAFile(2, cda));
+    TEXT_MACRO(ftafile3, %g, GetFltFromTAFile(3, cda));
+    TEXT_MACRO(stafile1, %s, GetStrFromTAFile('s', 1, cda));
+    TEXT_MACRO(stafile2, %s, GetStrFromTAFile('s', 2, cda));
+    TEXT_MACRO(stafile3, %s, GetStrFromTAFile('s', 3, cda));
 
     initialized = true;
 }
