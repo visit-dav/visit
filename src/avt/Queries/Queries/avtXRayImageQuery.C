@@ -2339,6 +2339,8 @@ avtXRayImageQuery::WriteBlueprintImagingMeshes(conduit::Node &data_out,
 //  Creation:   December 09, 2022
 // 
 //  Modifications:
+//    Justin Privitera, Tue Feb 14 17:02:43 PST 2023
+//    Change all metadata to use pot_hole_case instead of camelCase.
 //
 // ****************************************************************************
 #ifdef HAVE_CONDUIT
@@ -2351,18 +2353,18 @@ avtXRayImageQuery::WriteBlueprintXRayView(conduit::Node &data_out)
     data_out["state/xray_view/focus/x"] = focus[0];
     data_out["state/xray_view/focus/y"] = focus[1];
     data_out["state/xray_view/focus/z"] = focus[2];
-    data_out["state/xray_view/viewUp/x"] = viewUp[0];
-    data_out["state/xray_view/viewUp/y"] = viewUp[1];
-    data_out["state/xray_view/viewUp/z"] = viewUp[2];
-    data_out["state/xray_view/viewAngle"] = viewAngle;
-    data_out["state/xray_view/parallelScale"] = parallelScale;
-    data_out["state/xray_view/nearPlane"] = nearPlane;
-    data_out["state/xray_view/farPlane"] = farPlane;
-    data_out["state/xray_view/imagePan/x"] = imagePan[0];
-    data_out["state/xray_view/imagePan/y"] = imagePan[1];
-    data_out["state/xray_view/imageZoom"] = imageZoom;
+    data_out["state/xray_view/view_up/x"] = viewUp[0];
+    data_out["state/xray_view/view_up/y"] = viewUp[1];
+    data_out["state/xray_view/view_up/z"] = viewUp[2];
+    data_out["state/xray_view/view_angle"] = viewAngle;
+    data_out["state/xray_view/parallel_scale"] = parallelScale;
+    data_out["state/xray_view/near_plane"] = nearPlane;
+    data_out["state/xray_view/far_plane"] = farPlane;
+    data_out["state/xray_view/image_pan/x"] = imagePan[0];
+    data_out["state/xray_view/image_pan/y"] = imagePan[1];
+    data_out["state/xray_view/image_zoom"] = imageZoom;
     data_out["state/xray_view/perspective"] = perspective;
-    data_out["state/xray_view/perspectiveStr"] = perspective ? "perspective" : "parallel";
+    data_out["state/xray_view/perspective_str"] = perspective ? "perspective" : "parallel";
 }
 #endif
 
@@ -2377,6 +2379,8 @@ avtXRayImageQuery::WriteBlueprintXRayView(conduit::Node &data_out)
 //  Creation:   December 09, 2022
 // 
 //  Modifications:
+//    Justin Privitera, Tue Feb 14 17:02:43 PST 2023
+//    Change all metadata to use pot_hole_case instead of camelCase.
 //
 // ****************************************************************************
 #ifdef HAVE_CONDUIT
@@ -2384,15 +2388,15 @@ void
 avtXRayImageQuery::WriteBlueprintXRayQuery(conduit::Node &data_out, 
                                            const int numBins)
 {
-    data_out["state/xray_query/divideEmisByAbsorb"] = divideEmisByAbsorb;
-    data_out["state/xray_query/divideEmisByAbsorbStr"] = divideEmisByAbsorb ? "yes" : "no";
-    data_out["state/xray_query/numXPixels"] = nx;
-    data_out["state/xray_query/numYPixels"] = ny;
-    data_out["state/xray_query/numBins"] = numBins;
-    data_out["state/xray_query/absVarName"] = absVarName;
-    data_out["state/xray_query/emisVarName"] = emisVarName;
-    data_out["state/xray_query/absUnits"] = absUnits;
-    data_out["state/xray_query/emisUnits"] = emisUnits;
+    data_out["state/xray_query/divide_emis_by_absorb"] = divideEmisByAbsorb;
+    data_out["state/xray_query/divide_emis_by_absorb_str"] = divideEmisByAbsorb ? "yes" : "no";
+    data_out["state/xray_query/num_x_pixels"] = nx;
+    data_out["state/xray_query/num_y_pixels"] = ny;
+    data_out["state/xray_query/num_bins"] = numBins;
+    data_out["state/xray_query/abs_var_name"] = absVarName;
+    data_out["state/xray_query/emis_var_name"] = emisVarName;
+    data_out["state/xray_query/abs_units"] = absUnits;
+    data_out["state/xray_query/emis_units"] = emisUnits;
 }
 #endif
 
@@ -2410,6 +2414,10 @@ avtXRayImageQuery::WriteBlueprintXRayQuery(conduit::Node &data_out,
 //    Justin Privitera, Fri Dec 16 18:20:51 PST 2022
 //    Changed conduit output data types for spatial extents coords to be 
 //    consistent.
+// 
+//    Justin Privitera, Tue Feb 14 17:02:43 PST 2023
+//    Add image_topo_order_of_domain_variables to xray_data metadata.
+//    Change all metadata to use pot_hole_case instead of camelCase.
 //
 // ****************************************************************************
 #ifdef HAVE_CONDUIT
@@ -2424,8 +2432,8 @@ avtXRayImageQuery::WriteBlueprintXRayData(conduit::Node &data_out,
     // If the near plane is too far back, it can cause the near width
     // and height to be negative. However, the detector height and 
     // width ought to be positive values, hence the absolute value.
-    data_out["state/xray_data/detectorWidth"] = fabs(detectorWidth);
-    data_out["state/xray_data/detectorHeight"] = fabs(detectorHeight);
+    data_out["state/xray_data/detector_width"] = fabs(detectorWidth);
+    data_out["state/xray_data/detector_height"] = fabs(detectorHeight);
 
     // intensity and path length max and mins
     conduit::float64 int_max, int_min, pl_max, pl_min;
@@ -2447,10 +2455,12 @@ avtXRayImageQuery::WriteBlueprintXRayData(conduit::Node &data_out,
         }
     }
 
-    data_out["state/xray_data/intensityMax"] = int_max;
-    data_out["state/xray_data/intensityMin"] = int_min;
-    data_out["state/xray_data/pathLengthMax"] = pl_max;
-    data_out["state/xray_data/pathLengthMin"] = pl_min;
+    data_out["state/xray_data/intensity_max"] = int_max;
+    data_out["state/xray_data/intensity_min"] = int_min;
+    data_out["state/xray_data/path_length_max"] = pl_max;
+    data_out["state/xray_data/path_length_min"] = pl_min;
+
+    data_out["state/xray_data/image_topo_order_of_domain_variables"] = "xyz";
 }
 #endif
 
