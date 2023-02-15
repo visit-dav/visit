@@ -559,7 +559,7 @@ The list of named values currently supported along with their *default* formats 
     +--------------------+----------+-------------------------------------+
 
 In addition, the following ``$<T>tafile<I>`` named values permit arbitrary text annotation content to be taken from a ``txt`` file with name of the form ``<T>tafile<I>.txt`` where ``<T>`` is either ``s`` (for files of string values), ``i`` (for files of integer values) or ``f`` (for files of floating point values) and ``<I>`` is either ``1``, ``2`` or ``3`` to provide 3 separate options for storing files of values used for different annotation purposes.
-Each line of such a file cooresponds to a time step in a time series.
+Each line of such a file corresponds to a time step in a time series.
 If a ``$$<T>tafile<I>`` named annotation is used, VisIt_ will search for the associated file first in the same directory containing the database, then in the directory ``/$TMPDIR/$USER`` or (``/var/tmp/$USER``) and finally in :ref:`vuser_home`.
 
 A common use case for ``$<T>tafile<I>`` named values is for animations to display the numerical values from a query over time and have those values update as the time step being displayed changes.
