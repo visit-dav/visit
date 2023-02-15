@@ -24,6 +24,23 @@ Postfix:
         return PyString_FromString(defaultDiscrete.c_str());
     }
 #endif
+#if VISIT_OBSOLETE_AT_VERSION(3,6,0)
+#error This code is obsolete in this version. Please remove it.
+#else
+    // Try and handle legacy fields in ColorTableAttributes
+
+    //
+    // Removed in 3.4.0
+    //
+    if(strcmp(name, "taggingFlag") == 0)
+    {
+        PyErr_WarnEx(NULL,
+                    "taggingFlag is no longer a valid Color Table "
+                    "attribute.\nIt's value is being ignored, please remove "
+                    "it from your script.\n", 3);
+        return PyInt_FromLong(0L);
+    }
+#endif
 
 Code: PyColorTableAttributes_setattr
 Prefix:
@@ -53,6 +70,23 @@ Postfix:
             const std::string defaultDisc = PyString_AsString(args);
             PyErr_WarnEx(NULL, "'activeDiscrete' is obsolete. Use 'defaultDiscrete'.", 3);
             ColorTableObj->data->SetDefaultDiscrete(defaultDisc);
+            Py_INCREF(Py_None);
+            obj = Py_None;
+        }
+    }
+#endif
+#if VISIT_OBSOLETE_AT_VERSION(3,6,0)
+#error This code is obsolete in this version. Please remove it.
+#else
+   // Try and handle legacy fields in ColorTableAttributes
+    if(obj == &NULL_PY_OBJ)
+    {
+        //
+        // Removed in 3.4.0
+        //
+        if(strcmp(name, "taggingFlag") == 0)
+        {
+            PyErr_WarnEx(NULL, "'taggingFlag' is obsolete. Tags are always enabled now.", 3);
             Py_INCREF(Py_None);
             obj = Py_None;
         }
@@ -641,6 +675,9 @@ Definition:
 // 
 //   Justin Privitera, Wed Jul 27 12:16:06 PDT 2022
 //   Removed logic that saved info about individual color tables.
+// 
+//   Justin Privitera, Mon Feb 13 14:32:02 PST 2023
+//   Removed logic to save the tagging flag, as it no longer exists.
 //
 // ****************************************************************************
 
@@ -654,7 +691,6 @@ ColorTableAttributes::CreateNode(DataNode *parentNode, bool, bool)
     DataNode *node = new DataNode("ColorTableAttributes");
     node->AddNode(new DataNode("defaultContinuous", defaultContinuous));
     node->AddNode(new DataNode("defaultDiscrete", defaultDiscrete));
-    node->AddNode(new DataNode("taggingFlag", taggingFlag));
 
     // Add the node to the parent node.
     parentNode->AddNode(node);
@@ -694,6 +730,9 @@ Definition:
 // 
 //   Justin Privitera, Wed Jul 27 12:16:06 PDT 2022
 //   Removed logic that read info about individual color tables.
+// 
+//   Justin Privitera, Mon Feb 13 14:32:02 PST 2023
+//   Removed logic to extract the tagging flag, as it no longer exists.
 //
 // ****************************************************************************
 
@@ -713,9 +752,6 @@ ColorTableAttributes::SetFromNode(DataNode *parentNode)
 
     if((node = searchNode->GetNode("defaultDiscrete")) != 0)
         SetDefaultDiscrete(node->AsString());
-
-    if((node = searchNode->GetNode("taggingFlag")) != 0)
-        SetTaggingFlag(node->AsBool());
 
     // For older version compatibility...
     if((node = searchNode->GetNode("defaultColorTable")) != 0)
@@ -780,31 +816,6 @@ ColorTableAttributes::GetActiveElement(int index)
         return active[index];
 }
 
-Function: SetAllActive
-Declaration: void SetAllActive();
-Definition:
-// ****************************************************************************
-// Method: ColorTableAttributes::SetAllActive
-//
-// Purpose:
-//   Sets all tags to active.
-//
-// Programmer: Justin Privitera
-// Creation:   Wed Jun  8 11:59:44 PDT 2022
-//
-// Modifications:
-//
-// ****************************************************************************
-
-void
-ColorTableAttributes::SetAllActive()
-{
-    for (int i = 0; i < active.size(); i ++)
-    {
-        active[i] = true;
-    }
-}
-
 Target: xml2atts
 Function: ProcessOldVersions
 Declaration: virtual void ProcessOldVersions(DataNode *parentNode, const char *configVersion);
@@ -820,6 +831,8 @@ Definition:
 // Creation:   May 26 2022
 //
 // Modifications:
+//   Justin Privitera, Wed Feb  1 14:43:55 PST 2023
+//   Add logic for `taggingFlag`, removed in 3.4.
 //
 // ****************************************************************************
 #include <visit-config.h>
@@ -859,6 +872,29 @@ ColorTableAttributes::ProcessOldVersions(DataNode *parentNode,
 #endif
             searchNode->AddNode(new DataNode("defaultDiscrete", k->AsString()));
             searchNode->RemoveNode(k);
+        }
+    }
+#endif
+
+#if VISIT_OBSOLETE_AT_VERSION(3,6,0)
+#error This code is obsolete in this version. Please remove it.
+#else
+    if(parentNode == 0)
+        return;
+
+    DataNode *searchNode2 = parentNode->GetNode("ColorTableAttributes");
+    if(searchNode2 == 0)
+        return;
+
+    if (VersionLessThan(configVersion, "3.4.0"))
+    {
+        DataNode *k = 0;
+        if ((k = searchNode2->GetNode("taggingFlag")) != 0)
+        {
+#ifdef VIEWER
+            avtCallback::IssueWarning(DeprecationMessage("taggingFlag", "3.6.0"));
+#endif
+            searchNode2->RemoveNode(k);
         }
     }
 #endif

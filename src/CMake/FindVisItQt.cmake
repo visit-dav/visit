@@ -14,7 +14,7 @@
 #
 #   Kevin Griffin, Wed May 17 13:23:24 PDT 2017
 #   Installed the platform plugins directory in the gui.app and viewer.app
-#   directories containing the gui and viewer executeables for OSX. Also 
+#   directories containing the gui and viewer executeables for OSX. Also
 #   added missing frameworks, archives, and includes.
 #
 #   Eric Brugger, Thu Oct  5 15:11:39 PDT 2017
@@ -30,11 +30,14 @@
 #   Add UiTools to qt_libs_install.
 #
 #   Kevin Griffin, Mon Aug 26 12:15:21 PDT 2019
-#   Installed the plugins/platforms and plugins/styles directories in the 
+#   Installed the plugins/platforms and plugins/styles directories in the
 #   xmledit.app and mcurvit.app directories.
 #
 #   Kathleen Biagas, Wed Jan 22 14:46:17 MST 2020
 #   Add ssl dlls to install for Windows.
+#
+#   Kathleen Biagas, Tue Jan 31, 2023
+#   Change how qtplugin files are copied on Windows.
 #
 #*****************************************************************************
 
@@ -111,7 +114,7 @@ set(QT_QTGUI_LIBRARY ${Qt5Gui_LIBRARIES}
                      ${Qt5Widgets_LIBRARIES}
                      ${Qt5PrintSupport_LIBRARIES}
                      # Qt's GUI lib Depends on OpenGL ...
-                     ${OPENGL_LIBRARIES}) 
+                     ${OPENGL_LIBRARIES})
 
 set(QT_QTNETWORK_LIBRARY ${Qt5Network_LIBRARIES})
 set(QT_QTXML_LIBRARY ${Qt5Xml_LIBRARIES})
@@ -217,29 +220,29 @@ if(NOT VISIT_QT_SKIP_INSTALL)
               DESTINATION ${VISIT_INSTALLED_VERSION_BIN}/qtplugins)
 
       # We also need the platforms, print support and qt.conf in the build dir.
-      file(COPY ${VISIT_QT_DIR}/plugins/platforms
-           DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/ThirdParty/qtplugins
-           FILE_PERMISSIONS OWNER_READ OWNER_WRITE
-                            GROUP_READ GROUP_WRITE
-                            WORLD_READ
-      )
-      file(COPY ${VISIT_QT_DIR}/plugins/printsupport
-           DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/ThirdParty/qtplugins
-           FILE_PERMISSIONS OWNER_READ OWNER_WRITE
-                            GROUP_READ GROUP_WRITE
-                            WORLD_READ
-      )
-      foreach(CFG ${CMAKE_CONFIGURATION_TYPES})
-          file(WRITE ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CFG}/qt.conf
+      file(WRITE ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/qt.conf
                "[Paths]\nPlugins=../ThirdParty/qtplugins\n")
-      endforeach()
+
+      add_custom_target(copy_qt_plugins ALL
+          COMMAND ${CMAKE_COMMAND} -E copy_if_different
+              ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/qt.conf
+              ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<CONFIG>/qt.conf
+          COMMAND ${CMAKE_COMMAND} -E copy_directory
+              ${VISIT_QT_DIR}/plugins/platforms
+              ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/ThirdParty/qtplugins/platforms
+          COMMAND ${CMAKE_COMMAND} -E copy_directory
+              ${VISIT_QT_DIR}/plugins/printsupport
+              ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/ThirdParty/qtplugins/printsupport)
+
+       visit_add_to_util_builds(copy_qt_plugins)
+
   elseif(APPLE)
       install(DIRECTORY ${VISIT_QT_DIR}/plugins/platforms
               DESTINATION ${VISIT_INSTALLED_VERSION_BIN}/gui.app/Contents/MacOS)
 
       install(DIRECTORY ${VISIT_QT_DIR}/plugins/platforms
               DESTINATION ${VISIT_INSTALLED_VERSION_BIN}/viewer.app/Contents/MacOS)
-      
+
       install(DIRECTORY ${VISIT_QT_DIR}/plugins/platforms
               DESTINATION ${VISIT_INSTALLED_VERSION_BIN}/xmledit.app/Contents/MacOS)
 

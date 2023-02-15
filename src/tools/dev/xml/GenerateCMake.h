@@ -906,7 +906,7 @@ class CMakeGeneratorPlugin : public Plugin
         CMakeAdd_EngineTargets(out);
 
         out << "VISIT_INSTALL_" << type.toUpper() << "_PLUGINS(${INSTALLTARGETS})" << endl;
-        out << "VISIT_PLUGIN_TARGET_RTOD(" << type << "s ${INSTALLTARGETS})" << endl;
+        out << "VISIT_PLUGIN_TARGET_OUTPUT_DIR(" << type << "s ${INSTALLTARGETS})" << endl;
         if (using_dev)
           out << "VISIT_PLUGIN_TARGET_FOLDER(" << type << "s " << name
               << " ${INSTALLTARGETS})" << endl;
@@ -1148,7 +1148,7 @@ class CMakeGeneratorPlugin : public Plugin
             CMakeAdd_EngineTargets(out);
         }
         out << "VISIT_INSTALL_DATABASE_PLUGINS(${INSTALLTARGETS})" << endl;
-        out << "VISIT_PLUGIN_TARGET_RTOD(databases ${INSTALLTARGETS})" << endl;
+        out << "VISIT_PLUGIN_TARGET_OUTPUT_DIR(databases ${INSTALLTARGETS})" << endl;
         if (using_dev)
           out << "VISIT_PLUGIN_TARGET_FOLDER(databases " << name
               << " ${INSTALLTARGETS})" << endl;

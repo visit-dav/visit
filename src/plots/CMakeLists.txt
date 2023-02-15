@@ -8,15 +8,13 @@
 #    Prefer VISIT_SELECTED_PLOT_PLUGINS if defined.  Test for existence of
 #    subdir before adding it.
 #
+#    Kathleen Biagas, Mon Jan 30, 2023
+#    Moved setting of RUNTIME_OUTPUT_DIRECTORY and LIBRARY_OUTPUT_DIRECTORY
+#    to macro VISIT_PLUGIN_TARGET_OUTPUT_DIR.
+#
 #****************************************************************************
 
 include(${VISIT_SOURCE_DIR}/CMake/PluginMacros.cmake)
-
-IF(NOT WIN32)
-    SET(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${VISIT_PLUGIN_DIR}/plots)
-ELSE(NOT WIN32)
-    SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${VISIT_PLUGIN_DIR}/plots)
-ENDIF(NOT WIN32)
 
 SET(REQUIRED_PLOT_PLUGINS
 Boundary

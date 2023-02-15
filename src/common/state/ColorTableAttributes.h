@@ -64,7 +64,6 @@ public:
     void SetActive(const intVector &active_);
     void SetDefaultContinuous(const std::string &defaultContinuous_);
     void SetDefaultDiscrete(const std::string &defaultDiscrete_);
-    void SetTaggingFlag(bool taggingFlag_);
     void SetChangesMade(bool changesMade_);
 
     // Property getting methods
@@ -78,7 +77,6 @@ public:
           std::string  &GetDefaultContinuous();
     const std::string  &GetDefaultDiscrete() const;
           std::string  &GetDefaultDiscrete();
-    bool               GetTaggingFlag() const;
     bool               GetChangesMade() const;
 
     // Persistence methods
@@ -113,7 +111,6 @@ public:
     void RemoveColorTable(int index);
     void SetActiveElement(int index, bool val);
     bool GetActiveElement(int index);
-    void SetAllActive();
     virtual void ProcessOldVersions(DataNode *parentNode, const char *configVersion);
 
     // IDs that can be used to identify fields in case statements
@@ -123,7 +120,6 @@ public:
         ID_colorTables,
         ID_defaultContinuous,
         ID_defaultDiscrete,
-        ID_taggingFlag,
         ID_changesMade,
         ID__LAST
     };
@@ -136,13 +132,12 @@ private:
     AttributeGroupVector colorTables;
     std::string          defaultContinuous;
     std::string          defaultDiscrete;
-    bool                 taggingFlag;
     bool                 changesMade;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define COLORTABLEATTRIBUTES_TMFS "s*i*a*ssbb"
+#define COLORTABLEATTRIBUTES_TMFS "s*i*a*ssb"
 
 #endif

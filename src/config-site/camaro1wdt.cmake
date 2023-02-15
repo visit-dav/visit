@@ -1,6 +1,6 @@
 # a windows 10 system
 
-include(${VISIT_SOURCE_DIR}/config-site/windows.cmake)
+include(config-site/windows.cmake)
 
 # disable some warnings
 # 4244 conversion double to float etc

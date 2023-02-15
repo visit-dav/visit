@@ -27,7 +27,6 @@ void ColorTableAttributes::Init()
 {
     defaultContinuous = "hot";
     defaultDiscrete = "levels";
-    taggingFlag = false;
     changesMade = false;
 
     ColorTableAttributes::SelectAll();
@@ -71,7 +70,6 @@ void ColorTableAttributes::Copy(const ColorTableAttributes &obj)
 
     defaultContinuous = obj.defaultContinuous;
     defaultDiscrete = obj.defaultDiscrete;
-    taggingFlag = obj.taggingFlag;
     changesMade = obj.changesMade;
 
     ColorTableAttributes::SelectAll();
@@ -248,7 +246,6 @@ ColorTableAttributes::operator == (const ColorTableAttributes &obj) const
             colorTables_equal &&
             (defaultContinuous == obj.defaultContinuous) &&
             (defaultDiscrete == obj.defaultDiscrete) &&
-            (taggingFlag == obj.taggingFlag) &&
             (changesMade == obj.changesMade));
 }
 
@@ -398,7 +395,6 @@ ColorTableAttributes::SelectAll()
     Select(ID_colorTables,       (void *)&colorTables);
     Select(ID_defaultContinuous, (void *)&defaultContinuous);
     Select(ID_defaultDiscrete,   (void *)&defaultDiscrete);
-    Select(ID_taggingFlag,       (void *)&taggingFlag);
     Select(ID_changesMade,       (void *)&changesMade);
 }
 
@@ -475,6 +471,9 @@ ColorTableAttributes::CreateSubAttributeGroup(int)
 // 
 //   Justin Privitera, Wed Jul 27 12:16:06 PDT 2022
 //   Removed logic that saved info about individual color tables.
+// 
+//   Justin Privitera, Mon Feb 13 14:32:02 PST 2023
+//   Removed logic to save the tagging flag, as it no longer exists.
 //
 // ****************************************************************************
 
@@ -488,7 +487,6 @@ ColorTableAttributes::CreateNode(DataNode *parentNode, bool, bool)
     DataNode *node = new DataNode("ColorTableAttributes");
     node->AddNode(new DataNode("defaultContinuous", defaultContinuous));
     node->AddNode(new DataNode("defaultDiscrete", defaultDiscrete));
-    node->AddNode(new DataNode("taggingFlag", taggingFlag));
 
     // Add the node to the parent node.
     parentNode->AddNode(node);
@@ -524,6 +522,9 @@ ColorTableAttributes::CreateNode(DataNode *parentNode, bool, bool)
 // 
 //   Justin Privitera, Wed Jul 27 12:16:06 PDT 2022
 //   Removed logic that read info about individual color tables.
+// 
+//   Justin Privitera, Mon Feb 13 14:32:02 PST 2023
+//   Removed logic to extract the tagging flag, as it no longer exists.
 //
 // ****************************************************************************
 
@@ -543,9 +544,6 @@ ColorTableAttributes::SetFromNode(DataNode *parentNode)
 
     if((node = searchNode->GetNode("defaultDiscrete")) != 0)
         SetDefaultDiscrete(node->AsString());
-
-    if((node = searchNode->GetNode("taggingFlag")) != 0)
-        SetTaggingFlag(node->AsBool());
 
     // For older version compatibility...
     if((node = searchNode->GetNode("defaultColorTable")) != 0)
@@ -624,13 +622,6 @@ ColorTableAttributes::SetDefaultDiscrete(const std::string &defaultDiscrete_)
 }
 
 void
-ColorTableAttributes::SetTaggingFlag(bool taggingFlag_)
-{
-    taggingFlag = taggingFlag_;
-    Select(ID_taggingFlag, (void *)&taggingFlag);
-}
-
-void
 ColorTableAttributes::SetChangesMade(bool changesMade_)
 {
     changesMade = changesMade_;
@@ -699,12 +690,6 @@ std::string &
 ColorTableAttributes::GetDefaultDiscrete()
 {
     return defaultDiscrete;
-}
-
-bool
-ColorTableAttributes::GetTaggingFlag() const
-{
-    return taggingFlag;
 }
 
 bool
@@ -973,7 +958,6 @@ ColorTableAttributes::GetFieldName(int index) const
     case ID_colorTables:       return "colorTables";
     case ID_defaultContinuous: return "defaultContinuous";
     case ID_defaultDiscrete:   return "defaultDiscrete";
-    case ID_taggingFlag:       return "taggingFlag";
     case ID_changesMade:       return "changesMade";
     default:  return "invalid index";
     }
@@ -1004,7 +988,6 @@ ColorTableAttributes::GetFieldType(int index) const
     case ID_colorTables:       return FieldType_attVector;
     case ID_defaultContinuous: return FieldType_string;
     case ID_defaultDiscrete:   return FieldType_string;
-    case ID_taggingFlag:       return FieldType_bool;
     case ID_changesMade:       return FieldType_bool;
     default:  return FieldType_unknown;
     }
@@ -1035,7 +1018,6 @@ ColorTableAttributes::GetFieldTypeName(int index) const
     case ID_colorTables:       return "attVector";
     case ID_defaultContinuous: return "string";
     case ID_defaultDiscrete:   return "string";
-    case ID_taggingFlag:       return "bool";
     case ID_changesMade:       return "bool";
     default:  return "invalid index";
     }
@@ -1095,11 +1077,6 @@ ColorTableAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_defaultDiscrete:
         {  // new scope
         retval = (defaultDiscrete == obj.defaultDiscrete);
-        }
-        break;
-    case ID_taggingFlag:
-        {  // new scope
-        retval = (taggingFlag == obj.taggingFlag);
         }
         break;
     case ID_changesMade:
@@ -1492,28 +1469,6 @@ ColorTableAttributes::GetActiveElement(int index)
 }
 
 // ****************************************************************************
-// Method: ColorTableAttributes::SetAllActive
-//
-// Purpose:
-//   Sets all tags to active.
-//
-// Programmer: Justin Privitera
-// Creation:   Wed Jun  8 11:59:44 PDT 2022
-//
-// Modifications:
-//
-// ****************************************************************************
-
-void
-ColorTableAttributes::SetAllActive()
-{
-    for (int i = 0; i < active.size(); i ++)
-    {
-        active[i] = true;
-    }
-}
-
-// ****************************************************************************
 // Method: ColorTableAttributes::ProcessOldVersions
 //
 // Purpose:
@@ -1524,6 +1479,8 @@ ColorTableAttributes::SetAllActive()
 // Creation:   May 26 2022
 //
 // Modifications:
+//   Justin Privitera, Wed Feb  1 14:43:55 PST 2023
+//   Add logic for `taggingFlag`, removed in 3.4.
 //
 // ****************************************************************************
 #include <visit-config.h>
@@ -1563,6 +1520,29 @@ ColorTableAttributes::ProcessOldVersions(DataNode *parentNode,
 #endif
             searchNode->AddNode(new DataNode("defaultDiscrete", k->AsString()));
             searchNode->RemoveNode(k);
+        }
+    }
+#endif
+
+#if VISIT_OBSOLETE_AT_VERSION(3,6,0)
+#error This code is obsolete in this version. Please remove it.
+#else
+    if(parentNode == 0)
+        return;
+
+    DataNode *searchNode2 = parentNode->GetNode("ColorTableAttributes");
+    if(searchNode2 == 0)
+        return;
+
+    if (VersionLessThan(configVersion, "3.4.0"))
+    {
+        DataNode *k = 0;
+        if ((k = searchNode2->GetNode("taggingFlag")) != 0)
+        {
+#ifdef VIEWER
+            avtCallback::IssueWarning(DeprecationMessage("taggingFlag", "3.6.0"));
+#endif
+            searchNode2->RemoveNode(k);
         }
     }
 #endif

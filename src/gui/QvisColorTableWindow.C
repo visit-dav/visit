@@ -109,6 +109,9 @@ public:
 // 
 //   Justin Privitera, Thu Aug 25 15:04:55 PDT 2022
 //   TagEdit added.
+// 
+//   Justin Privitera, Mon Feb 13 14:32:02 PST 2023
+//   Removed `tagsVisible`.
 //
 // ****************************************************************************
 
@@ -124,7 +127,6 @@ QvisColorTableWindow::QvisColorTableWindow(
     sliding = false;
     colorSelect = 0;
     colorTableTypeGroup = 0;
-    tagsVisible = false;
     tagsMatchAny = true;
     searchingOn = false;
     searchTerm = QString("");
@@ -229,6 +231,11 @@ QvisColorTableWindow::~QvisColorTableWindow()
 //   Justin Privitera, Thu Nov 17 12:28:10 PST 2022
 //   Resolved window resizing off the screen issue by limiting maximum height.
 //   Adjusted location of several buttons and labels to use less screen space.
+// 
+//   Justin Privitera, Mon Feb 13 14:32:02 PST 2023
+//   Moved namelistbox to what was its position when tagging was enabled.
+//   Removed tagFilterToggle.
+//   Added tagsSelectAllButton in its place.
 //
 // ****************************************************************************
 
@@ -285,10 +292,9 @@ QvisColorTableWindow::CreateWindowContents()
     connect(exportButton, SIGNAL(clicked()), this, SLOT(exportColorTable()));
     mgLayout->addWidget(exportButton, 0, 4, 1, 2);
 
-    tagFilterToggle = new QCheckBox(tr("Filter tables by Tag"), colorTableWidgetGroup);
-    connect(tagFilterToggle, SIGNAL(toggled(bool)),
-            this, SLOT(taggingToggled(bool)));
-    mgLayout->addWidget(tagFilterToggle, 1, 0, 1, 6);
+    tagsSelectAllButton = new QPushButton(tr("Select All Tags"), colorTableWidgetGroup);
+    connect(tagsSelectAllButton, SIGNAL(clicked()), this, SLOT(tagsSelectAll()));
+    mgLayout->addWidget(tagsSelectAllButton, 1, 0, 1, 2);
 
     tagCombiningBehaviorChoice = new QComboBox(colorTableWidgetGroup);
     tagCombiningBehaviorChoice->addItem(tr("Colortables must match any selected tag"));
@@ -310,7 +316,7 @@ QvisColorTableWindow::CreateWindowContents()
     nameListBox->header()->close();
     connect(nameListBox, SIGNAL(currentItemChanged(QTreeWidgetItem *, QTreeWidgetItem*)),
             this, SLOT(highlightColorTable(QTreeWidgetItem *, QTreeWidgetItem*)));
-    mgLayout->addWidget(nameListBox, 3, 0, 1, 6);
+    mgLayout->addWidget(nameListBox, 3, 3, 1, 3);
 
     tagTable = new QTreeWidget(colorTableWidgetGroup);
     QStringList headers;
@@ -652,6 +658,9 @@ QvisColorTableWindow::UnstringifyAndMergeTagChanges(stringVector changes)
 // 
 //   Cyrus Harrison, Fri Sep 16 14:28:51 PDT 2022
 //   Avoid emplace_back due to evil nature of std::vector<bool>
+// 
+//   Justin Privitera, Mon Feb 13 14:32:02 PST 2023
+//   `tagsVisible` is gone so it is no longer written to nodes.
 //
 // ****************************************************************************
 
@@ -679,7 +688,6 @@ QvisColorTableWindow::CreateNode(DataNode *parentNode)
         }
         node->AddNode(new DataNode("tagList", tagNames));
         node->AddNode(new DataNode("activeTags", activeTags));
-        node->AddNode(new DataNode("tagsVisible", tagsVisible));
         node->AddNode(new DataNode("tagsMatchAny", tagsMatchAny));
         node->AddNode(new DataNode("tagChanges", StringifyTagChanges()));
     }
@@ -709,6 +717,9 @@ QvisColorTableWindow::CreateNode(DataNode *parentNode)
 // 
 //   Justin Privitera, Wed Sep 21 16:51:24 PDT 2022
 //   Error on size mismatch of tagnames and active tags vectors and recovery.
+// 
+//   Justin Privitera, Mon Feb 13 14:32:02 PST 2023
+//   `tagsVisible` is gone so it is no longer read from nodes.
 //
 // ****************************************************************************
 
@@ -743,8 +754,6 @@ QvisColorTableWindow::SetFromNode(DataNode *parentNode, const int *borders)
                 tagList[tagNames[i]].active = false;
         }
     }
-    if((node = winNode->GetNode("tagsVisible")) != 0)
-        tagsVisible = node->AsBool();
     if((node = winNode->GetNode("tagsMatchAny")) != 0)
         tagsMatchAny = node->AsBool();
     if((node = winNode->GetNode("tagChanges")) != 0)
@@ -802,6 +811,9 @@ QvisColorTableWindow::SetFromNode(DataNode *parentNode, const int *borders)
 //   Justin Privitera, Wed Aug  3 19:46:13 PDT 2022
 //   The tag label and tag line edit are now always visible so they do not
 //   need to have their visibility set in this function.
+// 
+//   Justin Privitera, Mon Feb 13 14:32:02 PST 2023
+//   The tagging flag is gone, so all the logic associated with it is gone.
 //
 // ****************************************************************************
 
@@ -874,16 +886,6 @@ QvisColorTableWindow::UpdateWindow(bool doAll)
             defaultDiscrete->blockSignals(true);
             defaultDiscrete->setColorTable(colorAtts->GetDefaultDiscrete().c_str());
             defaultDiscrete->blockSignals(false);
-            break;
-        case ColorTableAttributes::ID_taggingFlag:
-            tagFilterToggle->blockSignals(true);
-            tagFilterToggle->setChecked(colorAtts->GetTaggingFlag());
-            tagsVisible = colorAtts->GetTaggingFlag();
-            tagTable->setVisible(tagsVisible);
-            updateNameBoxPosition(tagsVisible);
-            tagCombiningBehaviorChoice->setVisible(tagsVisible);
-            tagFilterToggle->blockSignals(false);
-            updateNames = true;
             break;
         }
     }
@@ -1045,8 +1047,9 @@ QvisColorTableWindow::AddGlobalTag(std::string currtag, bool first_time)
     // if the given tag is NOT in the global tag list
     if (tagList.find(currtag) == tagList.end())
     {
-        // make the "Default" tag active the very first time the tags are enabled
-        tagList[currtag].active = (currtag == "Default" || currtag == "User Defined") && first_time;
+        // make the "Default" and "User Defined" tags active by default
+        tagList[currtag].active = 
+            (currtag == "Default" || currtag == "User Defined") && first_time;
         AddToTagTable(currtag);
     }
     else
@@ -1071,7 +1074,6 @@ QvisColorTableWindow::AddGlobalTag(std::string currtag, bool first_time)
         // this function was called with this tag means there is another
         // reference to it, so we should update the numrefs. Hence why
         // we do NOT update the numrefs in `AddToTagTable()`.
-
 }
 
 // ****************************************************************************
@@ -1101,70 +1103,75 @@ QvisColorTableWindow::AddGlobalTag(std::string currtag, bool first_time)
 // 
 //     Justin Privitera, Thu Sep 29 15:22:38 PDT 2022
 //     Replaced braces w/ equals to avoid init list behavior.
+// 
+//    Justin Privitera, Mon Feb 13 14:32:02 PST 2023
+//    Tagging is always enabled, so any code relating to making it optional
+//    has been removed.
 //
 // ****************************************************************************
 
 void
 QvisColorTableWindow::UpdateTags()
 {
-    // We want the 'Default' tag to be checked the very first time tag
-    // filtering is enabled, hence the inclusion of `first_time`.
+    // We want the 'Default' and 'User Defined' tags to be checked the very first time a user
+    // opens the color table window, hence the inclusion of `first_time`.
     static bool first_time = true;
-    if (tagFilterToggle->isChecked() || first_time)
+    // populate tags list
+    // iterate thru each color table
+    for (int i = 0; i < colorAtts->GetNumColorTables(); i ++)
     {
-        // populate tags list
-        // iterate thru each color table
-        for (int i = 0; i < colorAtts->GetNumColorTables(); i ++)
+        // only try to add tags if the ccpl thinks it has new info
+        if (colorAtts->GetColorTables(i).GetTagChangesMade())
         {
-            // only try to add tags if the ccpl thinks it has new info
-            if (colorAtts->GetColorTables(i).GetTagChangesMade())
+            // if this table doesn't have tags, then add the no-tags tag
+            if (colorAtts->GetColorTables(i).GetNumTags() == 0)
             {
-                // if this table doesn't have tags, then add the no-tags tag
-                if (colorAtts->GetColorTables(i).GetNumTags() == 0)
-                {
-                    colorAtts->GetColorTables(i).AddTag("No Tags");
-                    if (! first_time)
-                        tagList["No Tags"].numrefs ++;
-                }
-
-                // iterate thru each tag in the given color table
-                for (int j = 0; j < colorAtts->GetColorTables(i).GetNumTags(); j ++)
-                {
-                    // add the tag if it is not already in the global tag list
-                    AddGlobalTag(colorAtts->GetColorTables(i).GetTag(j), first_time);
-                }
-                // tell the ccpl that we have taken note of all of its tag changes
-                colorAtts->GetColorTables(i).SetTagChangesMade(false);
+                colorAtts->GetColorTables(i).AddTag("No Tags");
+                // Every time I add a tag, I need to update the refcount.
+                // However, if this is the `first_time`, no tags have any refcount,
+                // until they go through `AddGlobalTag`, so we shouldn't update
+                // the refcount here.
+                if (! first_time)
+                    tagList["No Tags"].numrefs ++;
             }
-        }
-        first_time = false;
 
-        // Purge tagList/tagTable entries that have 0 refcount.
-        for (auto itr = tagList.begin(); itr != tagList.end();)
-        {
-            if (itr->second.numrefs <= 0)
+            // iterate thru each tag in the given color table
+            for (int j = 0; j < colorAtts->GetColorTables(i).GetNumTags(); j ++)
             {
-                // if this tag list item has an associated tag table entry
-                if (QTreeWidgetItem *tagTableItem = itr->second.tagTableItem)
-                {
-                    auto index = tagTable->indexOfTopLevelItem(tagTableItem);
-                    // For some reason, the item is not in the tag table. This 
-                    // should not be possible, but if it does happen, we can 
-                    // recover.
-                    if (index != -1)
-                    {
-                        tagTable->takeTopLevelItem(index);
-                        delete tagTableItem;
-                    }
-                }
-                // else - there is no tag table entry to delete so we can continue
-                itr = tagList.erase(itr);
+                // add the tag if it is not already in the global tag list
+                AddGlobalTag(colorAtts->GetColorTables(i).GetTag(j), first_time);
             }
-            else
-                itr ++;
+            // tell the ccpl that we have taken note of all of its tag changes
+            colorAtts->GetColorTables(i).SetTagChangesMade(false);
         }
-        tagTable->sortByColumn(1, Qt::AscendingOrder);
     }
+    first_time = false;
+
+    // Purge tagList/tagTable entries that have 0 refcount.
+    for (auto itr = tagList.begin(); itr != tagList.end();)
+    {
+        if (itr->second.numrefs <= 0)
+        {
+            // if this tag list item has an associated tag table entry
+            if (QTreeWidgetItem *tagTableItem = itr->second.tagTableItem)
+            {
+                auto index = tagTable->indexOfTopLevelItem(tagTableItem);
+                // For some reason, the item is not in the tag table. This 
+                // should not be possible, but if it does happen, we can 
+                // recover.
+                if (index != -1)
+                {
+                    tagTable->takeTopLevelItem(index);
+                    delete tagTableItem;
+                }
+            }
+            // else - there is no tag table entry to delete so we can continue
+            itr = tagList.erase(itr);
+        }
+        else
+            itr ++;
+    }
+    tagTable->sortByColumn(1, Qt::AscendingOrder);
 }
 
 // ****************************************************************************
@@ -1209,6 +1216,12 @@ QvisColorTableWindow::UpdateTags()
 //   Justin Privitera, Fri Sep  2 16:46:21 PDT 2022
 //   Rework for accessing tag information b/c of refactor.
 //   Ensure current CT name is one of the existing names.
+// 
+//   Justin Privitera, Mon Feb 13 14:32:02 PST 2023
+//    - Call UpdateEditor to make sure the editor reflects the change in
+//   selected color table.
+//    - Tagging is no longer optional, so all code relating to providing it
+//   as a choice has been stripped out.
 //
 // ****************************************************************************
 
@@ -1220,58 +1233,60 @@ QvisColorTableWindow::UpdateNames()
     defaultDiscrete->blockSignals(true);
     defaultContinuous->blockSignals(true);
 
+    // 
+    // Populate tag list
+    // 
     UpdateTags();
+
+    // 
+    // Populate Color Table Name List
+    // 
 
     // Clear out the existing names.
     nameListBox->clear();
     nameListBox->setRootIsDecorated(false);
-
-    // if tagging is not enabled
-    if(! tagFilterToggle->isChecked())
-        colorAtts->SetAllActive(); // set all color tables to active
-    else // tagging is enabled
+    
+    // for each color table
+    for (int i = 0; i < colorAtts->GetNumColorTables(); i ++)
     {
-        for (int i = 0; i < colorAtts->GetNumColorTables(); i ++)
+        bool tagFound = false;
+        // go thru global tags
+        for (const auto& mapitem : tagList)
         {
-            bool tagFound = false;
-            // go thru global tags
-            for (const auto& mapitem : tagList)
+            // if the global tag is active
+            if (mapitem.second.active)
             {
-                // if the global tag is active
-                if (mapitem.second.active)
+                tagFound = false;
+                // go thru local tags
+                for (int k = 0; k < colorAtts->GetColorTables(i).GetNumTags(); k ++)
                 {
-                    tagFound = false;
-                    // go thru local tags
-                    for (int k = 0; k < colorAtts->GetColorTables(i).GetNumTags(); k ++)
+                    // if the current global tag is the same as our local tag
+                    if (mapitem.first == colorAtts->GetColorTables(i).GetTag(k))
                     {
-                        // if the current global tag is the same as our local tag
-                        if (mapitem.first == colorAtts->GetColorTables(i).GetTag(k))
-                        {
-                            tagFound = true;
-                            break;
-                        }
-                    }
-                    if (tagFound == tagsMatchAny)
-                    // If both are true, that means...
-                    // 1) tagsMatchAny is true so we only need one tag from 
-                    //    the global tag list to be present in the local tag
-                    //    list, AND
-                    // 2) tagFound is true, so there is no need to keep 
-                    //    searching for a tag that is in both the local and
-                    //    global tag lists. Thus we can end iteration early.
-                    // If both are false, that means...
-                    // 1) tagsMatchAny is false so we need every tag from the
-                    //    global tag list to be present in the local tag list, AND
-                    // 2) tagFound is false, so there exists a global tag that
-                    //    is not in the local tag list, hence we can give up 
-                    //    early because we know that this color table does not
-                    //    have every tag in the global tag list.
+                        tagFound = true;
                         break;
+                    }
                 }
+                if (tagFound == tagsMatchAny)
+                // If both are true, that means...
+                // 1) tagsMatchAny is true so we only need one tag from 
+                //    the global tag list to be present in the local tag
+                //    list, AND
+                // 2) tagFound is true, so there is no need to keep 
+                //    searching for a tag that is in both the local and
+                //    global tag lists. Thus we can end iteration early.
+                // If both are false, that means...
+                // 1) tagsMatchAny is false so we need every tag from the
+                //    global tag list to be present in the local tag list, AND
+                // 2) tagFound is false, so there exists a global tag that
+                //    is not in the local tag list, hence we can give up 
+                //    early because we know that this color table does not
+                //    have every tag in the global tag list.
+                    break;
             }
-            // we mark the color table as active or inactive
-            colorAtts->SetActiveElement(i, tagFound);
         }
+        // we mark the color table as active or inactive
+        colorAtts->SetActiveElement(i, tagFound);
     }
 
     // actually populate the name list box
@@ -1315,6 +1330,7 @@ QvisColorTableWindow::UpdateNames()
         {
             item = nameListBox->topLevelItem(0);
             currentColorTable = item->text(0);
+            UpdateEditor();
         }
         // If the currentColorTable IS in the box...
         else
@@ -3252,17 +3268,56 @@ QvisColorTableWindow::exportColorTable()
 // Creation:   Fri Jun  3 15:06:17 PDT 2022
 //
 // Modifications:
+//    Justin Privitera, Wed Feb  1 15:15:39 PST 2023
+//    Deleted the function, as tagging is now always enabled.
 //
 // ****************************************************************************
 
+// ****************************************************************************
+// Method: QvisColorTableWindow::tagsSelectAll
+//
+// Purpose:
+//   This is a Qt slot function that controls selecting and deselecting all the
+//   tags.
+//
+// Programmer: Justin Privitera
+// Creation:   Wed Feb  1 16:11:28 PST 2023
+//
+// Modifications:
+//
+// ****************************************************************************
 void
-QvisColorTableWindow::taggingToggled(bool val)
+QvisColorTableWindow::tagsSelectAll()
 {
-    colorAtts->SetTaggingFlag(val);
+    tagTable->blockSignals(true);
+    // If all the tags are already enabled
+    if (std::all_of(tagList.begin(), tagList.end(), 
+        [](std::pair<std::string, TagInfo> const tagListEntry)
+        { return tagListEntry.second.active; }))
+    {
+        // then we want to disable all of them
+        for (auto &tagListEntry : tagList)
+        {
+            tagListEntry.second.active = false;
+            tagListEntry.second.tagTableItem->setCheckState(0, Qt::Unchecked);
+        }
+        
+    }
+    else
+    {
+        // otherwise, we want to enable all of them
+        for (auto &tagListEntry : tagList)
+        {
+            tagListEntry.second.active = true;
+            tagListEntry.second.tagTableItem->setCheckState(0, Qt::Checked);
+        }
+    }
+    tagTable->blockSignals(false);
+    UpdateNames();
     colorAtts->SetChangesMade(true);
+    ctObserver.SetUpdate(true);
     Apply(true);
 }
-
 
 // ****************************************************************************
 // Method: QvisColorTableWindow::tagCombiningChanged
@@ -3522,17 +3577,6 @@ QvisColorTableWindow::addRemoveTag()
 // Creation:   Thu Jun 16 12:52:17 PDT 2022
 //
 // Modifications:
-//
+//   Justin Privitera, Wed Feb  1 15:15:39 PST 2023
+//   Deleted the function, as the name box no longer needs to move.
 // ****************************************************************************
-
-void 
-QvisColorTableWindow::updateNameBoxPosition(bool tagsOn)
-{
-    nameListBox->blockSignals(true);
-    mgLayout->removeWidget(nameListBox);
-    if (tagsOn)
-        mgLayout->addWidget(nameListBox, 3, 3, 1, 3);
-    else
-        mgLayout->addWidget(nameListBox, 3, 0, 1, 6);
-    nameListBox->blockSignals(false);
-}
