@@ -67,6 +67,10 @@
 #    Reworked some of the blueprint output tests to reflect changes in 
 #    output metadata.
 #    Added new tests for path length and spatial extent images.
+# 
+#    Justin Privitera, Tue Feb 14 17:02:43 PST 2023
+#    Change all metadata to use pot_hole_case instead of camelCase.
+#    Add test for image_topo_order_of_domain_variables.
 #
 # ----------------------------------------------------------------------------
 
@@ -373,96 +377,99 @@ def test_bp_state_xray_view(testname, xrayout):
     normalx = xrayout["domain_000000/state/xray_view/normal/x"]
     normaly = xrayout["domain_000000/state/xray_view/normal/y"]
     normalz = xrayout["domain_000000/state/xray_view/normal/z"]
-    TestValueEQ(testname + "_view_Normal", [normalx, normaly, normalz], [0,0,1])
+    TestValueEQ(testname + "_view_normal", [normalx, normaly, normalz], [0,0,1])
     
     focusx = xrayout["domain_000000/state/xray_view/focus/x"]
     focusy = xrayout["domain_000000/state/xray_view/focus/y"]
     focusz = xrayout["domain_000000/state/xray_view/focus/z"]
-    TestValueEQ(testname + "_view_Focus", [focusx, focusy, focusz], [0,2.5,10])
+    TestValueEQ(testname + "_view_focus", [focusx, focusy, focusz], [0,2.5,10])
     
-    viewUpx = xrayout["domain_000000/state/xray_view/viewUp/x"]
-    viewUpy = xrayout["domain_000000/state/xray_view/viewUp/y"]
-    viewUpz = xrayout["domain_000000/state/xray_view/viewUp/z"]
-    TestValueEQ(testname + "_view_ViewUp", [viewUpx, viewUpy, viewUpz], [0,1,0])
+    view_upx = xrayout["domain_000000/state/xray_view/view_up/x"]
+    view_upy = xrayout["domain_000000/state/xray_view/view_up/y"]
+    view_upz = xrayout["domain_000000/state/xray_view/view_up/z"]
+    TestValueEQ(testname + "_view_view_up", [view_upx, view_upy, view_upz], [0,1,0])
     
-    viewAngle = xrayout["domain_000000/state/xray_view/viewAngle"]
-    TestValueEQ(testname + "_view_ViewAngle", viewAngle, 30)
+    view_angle = xrayout["domain_000000/state/xray_view/view_angle"]
+    TestValueEQ(testname + "_view_view_angle", view_angle, 30)
     
-    parallelScale = xrayout["domain_000000/state/xray_view/parallelScale"]
-    TestValueEQ(testname + "_view_ParallelScale", parallelScale, 5)
+    parallel_scale = xrayout["domain_000000/state/xray_view/parallel_scale"]
+    TestValueEQ(testname + "_view_parallel_scale", parallel_scale, 5)
     
-    nearPlane = xrayout["domain_000000/state/xray_view/nearPlane"]
-    TestValueEQ(testname + "_view_NearPlane", nearPlane, -100)
+    near_plane = xrayout["domain_000000/state/xray_view/near_plane"]
+    TestValueEQ(testname + "_view_near_plane", near_plane, -100)
     
-    farPlane = xrayout["domain_000000/state/xray_view/farPlane"]
-    TestValueEQ(testname + "_view_FarPlane", farPlane, 100)
+    far_plane = xrayout["domain_000000/state/xray_view/far_plane"]
+    TestValueEQ(testname + "_view_far_plane", far_plane, 100)
     
-    imagePanx = xrayout["domain_000000/state/xray_view/imagePan/x"]
-    imagePany = xrayout["domain_000000/state/xray_view/imagePan/y"]
-    TestValueEQ(testname + "_view_ImagePan", [imagePanx, imagePany], [0,0])
+    image_panx = xrayout["domain_000000/state/xray_view/image_pan/x"]
+    image_pany = xrayout["domain_000000/state/xray_view/image_pan/y"]
+    TestValueEQ(testname + "_view_image_pan", [image_panx, image_pany], [0,0])
     
-    imageZoom = xrayout["domain_000000/state/xray_view/imageZoom"]
-    TestValueEQ(testname + "_view_ImageZoom", imageZoom, 1)
+    image_zoom = xrayout["domain_000000/state/xray_view/image_zoom"]
+    TestValueEQ(testname + "_view_image_zoom", image_zoom, 1)
     
     perspective = xrayout["domain_000000/state/xray_view/perspective"]
-    TestValueEQ(testname + "_view_Perspective", perspective, 0)
+    TestValueEQ(testname + "_view_perspective", perspective, 0)
 
-    perspectiveStr = xrayout["domain_000000/state/xray_view/perspectiveStr"]
-    TestValueEQ(testname + "_view_PerspectiveStr", perspectiveStr, "parallel")
+    perspective_str = xrayout["domain_000000/state/xray_view/perspective_str"]
+    TestValueEQ(testname + "_view_perspective_str", perspective_str, "parallel")
 
 UNITS_OFF = 0
 UNITS_ON = 1
 
 def test_bp_state_xray_query(testname, xrayout, units):
-    divideEmisByAbsorb = xrayout["domain_000000/state/xray_query/divideEmisByAbsorb"]
-    TestValueEQ(testname + "_query_DivideEmisByAbsorb", divideEmisByAbsorb, 1)
+    divide_emis_by_absorb = xrayout["domain_000000/state/xray_query/divide_emis_by_absorb"]
+    TestValueEQ(testname + "_query_divide_emis_by_absorb", divide_emis_by_absorb, 1)
     
-    divideEmisByAbsorbStr = xrayout["domain_000000/state/xray_query/divideEmisByAbsorbStr"]
-    TestValueEQ(testname + "_query_DivideEmisByAbsorbStr", divideEmisByAbsorbStr, "yes")
+    divide_emis_by_absorb_str = xrayout["domain_000000/state/xray_query/divide_emis_by_absorb_str"]
+    TestValueEQ(testname + "_query_divide_emis_by_absorb_str", divide_emis_by_absorb_str, "yes")
     
-    numXPixels = xrayout["domain_000000/state/xray_query/numXPixels"]
-    TestValueEQ(testname + "_query_NumXPixels", numXPixels, 300)
+    num_x_pixels = xrayout["domain_000000/state/xray_query/num_x_pixels"]
+    TestValueEQ(testname + "_query_num_x_pixels", num_x_pixels, 300)
     
-    numYPixels = xrayout["domain_000000/state/xray_query/numYPixels"]
-    TestValueEQ(testname + "_query_NumYPixels", numYPixels, 200)
+    num_y_pixels = xrayout["domain_000000/state/xray_query/num_y_pixels"]
+    TestValueEQ(testname + "_query_num_y_pixels", num_y_pixels, 200)
     
-    numBins = xrayout["domain_000000/state/xray_query/numBins"]
-    TestValueEQ(testname + "_query_NumBins", numBins, 1)
+    num_bins = xrayout["domain_000000/state/xray_query/num_bins"]
+    TestValueEQ(testname + "_query_num_bins", num_bins, 1)
     
-    absVarName = xrayout["domain_000000/state/xray_query/absVarName"]
-    TestValueEQ(testname + "_query_AbsVarName", absVarName, "d")
+    abs_var_name = xrayout["domain_000000/state/xray_query/abs_var_name"]
+    TestValueEQ(testname + "_query_abs_var_name", abs_var_name, "d")
     
-    emisVarName = xrayout["domain_000000/state/xray_query/emisVarName"]
-    TestValueEQ(testname + "_query_EmisVarName", emisVarName, "p")
+    emis_var_name = xrayout["domain_000000/state/xray_query/emis_var_name"]
+    TestValueEQ(testname + "_query_emis_var_name", emis_var_name, "p")
 
-    absUnits = xrayout["domain_000000/state/xray_query/absUnits"]
-    emisUnits = xrayout["domain_000000/state/xray_query/emisUnits"]
+    abs_units = xrayout["domain_000000/state/xray_query/abs_units"]
+    emis_units = xrayout["domain_000000/state/xray_query/emis_units"]
 
     if (units == UNITS_ON):
-        TestValueEQ(testname + "_query_AbsUnits", absUnits, "abs units")
-        TestValueEQ(testname + "_query_EmisUnits", emisUnits, "emis units")
+        TestValueEQ(testname + "_query_abs_units", abs_units, "abs units")
+        TestValueEQ(testname + "_query_emis_units", emis_units, "emis units")
     else:
-        TestValueEQ(testname + "_query_AbsUnits", absUnits, "no units provided")
-        TestValueEQ(testname + "_query_EmisUnits", emisUnits, "no units provided")
+        TestValueEQ(testname + "_query_abs_units", abs_units, "no units provided")
+        TestValueEQ(testname + "_query_emis_units", emis_units, "no units provided")
 
 def test_bp_state_xray_data(testname, xrayout):
-    detectorWidth = xrayout["domain_000000/state/xray_data/detectorWidth"]
-    TestValueEQ(testname + "_data_DetectorWidth", detectorWidth, 15)
+    detector_width = xrayout["domain_000000/state/xray_data/detector_width"]
+    TestValueEQ(testname + "_data_detector_width", detector_width, 15)
 
-    detectorHeight = xrayout["domain_000000/state/xray_data/detectorHeight"]
-    TestValueEQ(testname + "_data_DetectorHeight", detectorHeight, 10)
+    detector_height = xrayout["domain_000000/state/xray_data/detector_height"]
+    TestValueEQ(testname + "_data_detector_height", detector_height, 10)
     
-    intensityMax = xrayout["domain_000000/state/xray_data/intensityMax"]
-    TestValueEQ(testname + "_data_IntensityMax", intensityMax, 0.24153)
+    intensity_max = xrayout["domain_000000/state/xray_data/intensity_max"]
+    TestValueEQ(testname + "_data_intensity_max", intensity_max, 0.24153)
     
-    intensityMin = xrayout["domain_000000/state/xray_data/intensityMin"]
-    TestValueEQ(testname + "_data_IntensityMin", intensityMin, 0)
+    intensity_min = xrayout["domain_000000/state/xray_data/intensity_min"]
+    TestValueEQ(testname + "_data_intensity_min", intensity_min, 0)
     
-    pathLengthMax = xrayout["domain_000000/state/xray_data/pathLengthMax"]
-    TestValueEQ(testname + "_data_PathLengthMax", pathLengthMax, 148.67099)
+    path_length_max = xrayout["domain_000000/state/xray_data/path_length_max"]
+    TestValueEQ(testname + "_data_path_length_max", path_length_max, 148.67099)
     
-    pathLengthMin = xrayout["domain_000000/state/xray_data/pathLengthMin"]
-    TestValueEQ(testname + "_data_PathLengthMin", pathLengthMin, 0)
+    path_length_min = xrayout["domain_000000/state/xray_data/path_length_min"]
+    TestValueEQ(testname + "_data_path_length_min", path_length_min, 0)
+
+    image_topo_order_of_domain_variables = xrayout["domain_000000/state/xray_data/image_topo_order_of_domain_variables"]
+    TestValueEQ(testname + "_data_image_topo_order_of_domain_variables", image_topo_order_of_domain_variables, "xyz")
 
 NO_ENERGY_GROUP_BOUNDS = 0
 ENERGY_GROUP_BOUNDS_MISMATCH = 1
@@ -630,11 +637,11 @@ conduit_db = pjoin(conduit_dir_detector_dims, "output.cycle_000048.root")
 xrayout = conduit.Node()
 conduit.relay.io.blueprint.load_mesh(xrayout, conduit_db)
 
-detectorWidth = xrayout["domain_000000/state/xray_data/detectorWidth"]
-TestValueEQ("Blueprint_Positive_DetectorWidth", detectorWidth, 22.3932263237838)
+detector_width = xrayout["domain_000000/state/xray_data/detector_width"]
+TestValueEQ("Blueprint_Positive_Detector_width", detector_width, 22.3932263237838)
 
-detectorHeight = xrayout["domain_000000/state/xray_data/detectorHeight"]
-TestValueEQ("Blueprint_Positive_DetectorHeight", detectorHeight, 16.7949192423103)
+detector_height = xrayout["domain_000000/state/xray_data/detector_height"]
+TestValueEQ("Blueprint_Positive_Detector_height", detector_height, 16.7949192423103)
 
 # test imaging plane topos and ray output
 
