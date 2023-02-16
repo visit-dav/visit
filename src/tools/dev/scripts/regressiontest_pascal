@@ -113,6 +113,10 @@
 #   current directory when running the tests needs to start with /usr/WS1
 #   for the launcher test to work properly.
 #
+#   Eric Brugger, Wed Feb 15 16:29:23 PST 2023
+#   I corrected the path to the pascal config site file to take into account
+#   that we were now doing out of source builds.
+#
 
 # Determine the users name and e-mail address.
 #
@@ -337,7 +341,7 @@ if test "$serial" = "true" ; then
 fi
 if test "$branch" = "trunk" ; then
     $cmakeCmd \
-        -DVISIT_CONFIG_SITE=config-site/pascal83.cmake \
+        -DVISIT_CONFIG_SITE=../src/config-site/pascal83.cmake \
         -DCMAKE_BUILD_TYPE=Release \
         -DVISIT_BUILD_ALL_PLUGINS=1 \
         -DVISIT_ENABLE_DATA_MANUAL_EXAMPLES:BOOL=ON \
@@ -348,7 +352,7 @@ if test "$branch" = "trunk" ; then
         ../src >> ../../buildlog 2>&1
 else
     $cmakeCmd \
-        -DVISIT_CONFIG_SITE=config-site/pascal83.cmake \
+        -DVISIT_CONFIG_SITE=../src/config-site/pascal83.cmake \
         -DCMAKE_BUILD_TYPE=Release \
         -DVISIT_BUILD_ALL_PLUGINS=1 \
         -DVISIT_ENABLE_DATA_MANUAL_EXAMPLES:BOOL=ON \
