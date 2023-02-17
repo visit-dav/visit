@@ -142,6 +142,9 @@
 #   copy the darshan library into the VisIt lib directory so that it
 #   would run on toss4.
 #
+#   Eric Brugger, Fri Feb 17 09:36:29 PST 2023
+#   I added poodle.
+#
 #-----------------------------------------------------------------------
 
 test=no
@@ -184,6 +187,7 @@ esac
 #
 kickit=true
 quartz=true
+poodle=true
 lassen=true
 rztrona=true
 rzansel=true
@@ -202,6 +206,7 @@ do
       -none)
          kickit=false
          quartz=false
+         poodle=false
          lassen=false
          rztrona=false
          rzansel=false
@@ -221,6 +226,14 @@ do
          ;;
       +quartz)
          quartz=true
+         shift
+         ;;
+      -poodle)
+         poodle=false
+         shift
+         ;;
+      +poodle)
+         poodle=true
          shift
          ;;
       -lassen)
@@ -366,6 +379,44 @@ then
       scp visit-install quartz:
       scp quartz quartz:quartz_install
       ssh quartz "chmod 750 quartz_install;./quartz_install"
+   fi
+fi
+
+#
+# Install on poodle.
+#
+rm -f poodle
+cat <<EOF > poodle
+#!/bin/sh
+./visit-install -private -c llnl_open_cz -g visit -b wbronze -gw -l $ver linux-x86_64-poodle /usr/gapps/visit > installlog 2>&1
+mv /usr/gapps/visit/$ver+/linux-x86_64 /usr/gapps/visit/$ver+/linux-x86_64-toss4
+rm -f resultlog
+echo ""                                              > resultlog 2>&1
+echo "        install of visit on poodle"            >> resultlog 2>&1
+echo "       ----------------------------"           >> resultlog 2>&1
+echo ""                                              >> resultlog 2>&1
+df -k /usr/gapps/visit                               >> resultlog 2>&1
+echo ""                                              >> resultlog 2>&1
+ls -l /usr/gapps/visit/$ver+/linux-x86_64-toss4/bin  >> resultlog 2>&1
+echo ""                                              >> resultlog 2>&1
+echo "number of database plugins = "\`ls /usr/gapps/visit/$ver+/linux-x86_64-toss4/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
+echo "number of operator plugins = "\`ls /usr/gapps/visit/$ver+/linux-x86_64-toss4/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
+echo "number of plot plugins = "\`ls /usr/gapps/visit/$ver+/linux-x86_64-toss4/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
+echo ""                                              >> resultlog 2>&1
+echo "The database plugins:"                         >> resultlog 2>&1
+ls /usr/gapps/visit/$ver+/linux-x86_64-toss4/plugins/databases/libI* | sed "s/\/usr\/gapps\/visit\/$ver+\/linux-x86_64-toss4\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+mv resultlog resultlog.poodle
+EOF
+
+if [ $poodle = true ]
+then
+   if [ $test = no ]
+   then
+      scp poodle:/usr/tmp/$user/poodle/visitbuild/visit$ver2.linux-x86_64.tar.gz visit$ver2.linux-x86_64-poodle
+      scp visit$ver2.linux-x86_64-poodle.tar.gz poodle:
+      scp visit-install poodle:
+      scp poodle poodle:poodle_install
+      ssh poodle "chmod 750 poodle_install;./poodle_install"
    fi
 fi
 
