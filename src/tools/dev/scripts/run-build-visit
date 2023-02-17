@@ -11,7 +11,8 @@
 #    Valid machine names:
 #       kickit_mesagl (B-Div, Linux, x86_64, mesagl),
 #       kickit_opengl (B-Div, Linux, x86_64, opengl),
-#       quartz (LC, Linux, x86_64),
+#       quartz (LC, Linux, x86_64, toss3),
+#       poodle (LC, Linux, x86_64, toss4),
 #       lassen (LC, Linux, power9),
 #       rztrona (LC, Linux, x86_64),
 #       rzansel (LC, Linux, power9),
@@ -20,6 +21,8 @@
 #       trinity (LANL, x86_64)
 #
 # Modifications:
+#    Eric Brugger, Fri Feb 17 09:36:29 PST 2023
+#    Added support for building on poodle.
 #
 #-----------------------------------------------------------------------
 
@@ -29,6 +32,7 @@
 kickit_mesagl=false
 kickit_opengl=false
 quartz=false
+poodle=false
 lassen=false
 rztrona=false
 rzansel=false
@@ -59,6 +63,10 @@ do
          ;;
       +quartz)
          quartz=true
+         shift
+         ;;
+      +poodle)
+         poodle=true
          shift
          ;;
       +lassen)
@@ -105,7 +113,8 @@ then
    echo "Valid machine names:"
    echo "    kickit_mesagl (B-Div, Linux, x86_64, mesagl),"
    echo "    kickit_opengl (B-Div, Linux, x86_64, opengl),"
-   echo "    quartz (LC, Linux, x86_64),"
+   echo "    quartz (LC, Linux, x86_64, toss3),"
+   echo "    poodle (LC, Linux, x86_64, toss4),"
    echo "    lassen (LC, Linux, power9),"
    echo "    rztrona (LC, Linux, x86_64),"
    echo "    rzansel (LC, Linux, power9),"
@@ -205,6 +214,32 @@ then
        PAR_INCLUDE=-I/usr/tce/packages/mvapich2/mvapich2-2.3-gcc-7.3.0/include \
        ./$build_visit_script --required --optional --mesagl --uintah --parallel --qt510 --no-pyside --no-visit --thirdparty-path /usr/workspace/wsa/visit/visit/thirdparty_shared/$version/toss3 --makeflags -j16
    mv ${build_visit_script}_log ${build_visit_script}_log.quartz
+fi
+
+#
+# Build on poodle.
+#
+if [ $poodle = true ]
+then
+   echo "Building on poodle"
+   ran_build_visit=true
+   if [ -f ${build_visit_script}_log.poodle ]
+   then
+      mv ${build_visit_script}_log.poodle ${build_visit_script}_log
+   fi
+   if [ ! -d /usr/workspace/wsa/visit/visit/thirdparty_shared/$version ]
+   then
+      mkdir /usr/workspace/wsa/visit/visit/thirdparty_shared/$version
+   fi
+   if [ ! -d /usr/workspace/wsa/visit/visit/thirdparty_shared/$version/toss4 ]
+   then
+      mkdir /usr/workspace/wsa/visit/visit/thirdparty_shared/$version/toss4
+   fi
+   env PAR_COMPILER=/usr/tce/packages/mvapich2/mvapich2-2.3.6-gcc-10.3.1/bin/mpicc \
+       PAR_COMPILER_CXX=/usr/tce/packages/mvapich2/mvapich2-2.3.6-gcc-10.3.1/bin/mpicxx \
+       PAR_INCLUDE=-I/usr/tce/packages/mvapich2/mvapich2-2.3.6-gcc-10.3.1/include \
+       ./$build_visit_script --required --optional --mesagl --uintah --parallel --qt510 --no-pyside --no-visit --thirdparty-path /usr/workspace/wsa/visit/visit/thirdparty_shared/$version/toss4 --makeflags -j16
+   mv ${build_visit_script}_log ${build_visit_script}_log.poodle
 fi
 
 #
