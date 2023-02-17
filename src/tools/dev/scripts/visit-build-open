@@ -472,8 +472,8 @@ then
    if [ $test = no ]
    then
       echo "Building on quartz"
-      scp quartz quartz386:quartz_buildit
-      scp $dist.tar.gz quartz386:quartz_$dist.tar.gz
+      scp quartz quartz:quartz_buildit
+      scp $dist.tar.gz quartz:quartz_$dist.tar.gz
       ssh quartz386 "chmod 750 quartz_buildit;./quartz_buildit" &
    fi
 fi
@@ -524,8 +524,8 @@ then
    if [ $test = no ]
    then
       echo "Building on poodle"
-      scp poodle poodle18:poodle_buildit
-      scp $dist.tar.gz poodle18:poodle_$dist.tar.gz
+      scp poodle poodle:poodle_buildit
+      scp $dist.tar.gz poodle:poodle_$dist.tar.gz
       ssh poodle18 "chmod 750 poodle_buildit;./poodle_buildit" &
    fi
 fi
