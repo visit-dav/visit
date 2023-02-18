@@ -412,7 +412,7 @@ if [ $poodle = true ]
 then
    if [ $test = no ]
    then
-      scp poodle18:/usr/tmp/$user/poodle/visitbuild/visit$ver2.linux-x86_64.tar.gz visit$ver2.linux-x86_64-poodle
+      scp poodle18:/usr/tmp/$user/poodle/visitbuild/visit$ver2.linux-x86_64.tar.gz visit$ver2.linux-x86_64-poodle.tar.gz
       scp visit$ver2.linux-x86_64-poodle.tar.gz poodle:
       scp visit-install poodle:
       scp poodle poodle:poodle_install
