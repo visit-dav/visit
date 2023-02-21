@@ -306,13 +306,14 @@ class LLNLLauncher(MainLauncher):
         UNSETENV("LD_PRELOAD")
 
         #
-        # Set the visitarch to linux-x86_64-toss4 on toss4. I'm using
-        # "uname -r" to get the kernel version and if it starts with a
-        # "4" it is toss4.
+        # Set the visitarch to linux-x86_64-toss4 if the kernel version
+        # starts with "4" and processor type is "x86_64".
         #
         kernel = subprocess.run(['uname', '-r'], stdout=subprocess.PIPE)
-        if kernel.stdout.decode('utf-8')[:1] == "4":
-           self.visitarch = "linux-x86_64-toss4"
+        proc = subprocess.run(['uname', '-p'], stdout=subprocess.PIPE)
+        if proc.stdout.decode('utf-8')[:6] == "x86_64" and \
+           kernel.stdout.decode('utf-8')[:1] == "4":
+            self.visitarch = "linux-x86_64-toss4"
 
     #
     # Override the JobSubmitterFactory method so the custom job submitter can
