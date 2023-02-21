@@ -25,6 +25,9 @@
 #   Kathleen Biagas, Tue Jan 31, 2023
 #   Use custom target with custom commands to copy resources on Windows.
 #
+#   Kathleen Biagas, Tue Feb 21, 2023
+#   Fix destination of copied resources folders on Windows.
+#
 #*****************************************************************************
 
 # Do a little extra in the hosts directory.
@@ -40,30 +43,30 @@ if(WIN32)
     add_custom_target(copy_resources ALL
             COMMAND ${CMAKE_COMMAND} -E copy_directory
                     ${CMAKE_CURRENT_SOURCE_DIR}/clients
-                    ${VISIT_EXECUTABLE_DIR}/resources
+                    ${VISIT_EXECUTABLE_DIR}/resources/clients
             COMMAND ${CMAKE_COMMAND} -E copy_directory
                     ${CMAKE_CURRENT_SOURCE_DIR}/colortables
-                    ${VISIT_EXECUTABLE_DIR}/resources
+                    ${VISIT_EXECUTABLE_DIR}/resources/colortables
             COMMAND ${CMAKE_COMMAND} -E copy_directory
                     ${CMAKE_CURRENT_SOURCE_DIR}/help
-                    ${VISIT_EXECUTABLE_DIR}/resources
+                    ${VISIT_EXECUTABLE_DIR}/resources/help
             COMMAND ${CMAKE_COMMAND} -E copy_directory
                     ${CMAKE_CURRENT_SOURCE_DIR}/hosts
-                    ${VISIT_EXECUTABLE_DIR}/resources
+                    ${VISIT_EXECUTABLE_DIR}/resources/hosts
             COMMAND ${CMAKE_COMMAND} -E rm -f
                     ${VISIT_EXECUTABLE_DIR}/resources/hosts/CMakeLists.txt
             COMMAND ${CMAKE_COMMAND} -E copy_directory
                     ${CMAKE_CURRENT_SOURCE_DIR}/images
-                    ${VISIT_EXECUTABLE_DIR}/resources
+                    ${VISIT_EXECUTABLE_DIR}/resources/images
             COMMAND ${CMAKE_COMMAND} -E copy_directory
                     ${CMAKE_CURRENT_SOURCE_DIR}/movietemplates
-                    ${VISIT_EXECUTABLE_DIR}/resources
+                    ${VISIT_EXECUTABLE_DIR}/resources/movietemplates
             COMMAND ${CMAKE_COMMAND} -E copy_directory
                     ${CMAKE_CURRENT_SOURCE_DIR}/translations
-                    ${VISIT_EXECUTABLE_DIR}/resources
+                    ${VISIT_EXECUTABLE_DIR}/resources/translations
             COMMAND ${CMAKE_COMMAND} -E copy_directory
                     ${CMAKE_CURRENT_SOURCE_DIR}/usage
-                    ${VISIT_EXECUTABLE_DIR}/resources)
+                    ${VISIT_EXECUTABLE_DIR}/resources/usage)
     visit_add_to_util_builds(copy_resources)
 else()
 
