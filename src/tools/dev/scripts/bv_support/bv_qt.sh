@@ -273,6 +273,17 @@ function apply_qt_patch
                 fi
             fi
         fi
+
+        #
+        # If python doesn't exist, substitute python2 for python.
+        #
+        python -c "print(1)"
+        if [[ $? != 0 ]] ; then
+            info "Patching qt 5.10.1 for python to python2"
+            cd qtdeclarative
+            find . -type f -exec sed -i "s/python/python2/g" {} \;
+            cd ..
+        fi
     elif [[ ${QT_VERSION} == 5.14.2 ]] ; then
         apply_qt_5142_numeric_limits_patch
         if [[ $? != 0 ]] ; then

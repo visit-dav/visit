@@ -142,6 +142,9 @@
 #   copy the darshan library into the VisIt lib directory so that it
 #   would run on toss4.
 #
+#   Eric Brugger, Fri Feb 17 09:36:29 PST 2023
+#   I added poodle and rzalastor.
+#
 #-----------------------------------------------------------------------
 
 test=no
@@ -184,8 +187,10 @@ esac
 #
 kickit=true
 quartz=true
+poodle=true
 lassen=true
 rztrona=true
+rzalastor=true
 rzansel=true
 cooley=false
 
@@ -202,8 +207,10 @@ do
       -none)
          kickit=false
          quartz=false
+         poodle=false
          lassen=false
          rztrona=false
+         rzalastor=false
          rzansel=false
          shift
          ;;
@@ -223,6 +230,14 @@ do
          quartz=true
          shift
          ;;
+      -poodle)
+         poodle=false
+         shift
+         ;;
+      +poodle)
+         poodle=true
+         shift
+         ;;
       -lassen)
          lassen=false
          shift
@@ -237,6 +252,14 @@ do
          ;;
       +rztrona)
          rztrona=true
+         shift
+         ;;
+      -rzalastor)
+         rzalastor=false
+         shift
+         ;;
+      +rzalastor)
+         rzalastor=true
          shift
          ;;
       -rzansel)
@@ -304,6 +327,8 @@ echo "number of plot plugins = "\`ls /usr/gapps/visit/$ver+/linux-x86_64/plugins
 echo ""                                            >> resultlog 2>&1
 echo "The database plugins:"                       >> resultlog 2>&1
 ls /usr/gapps/visit/$ver+/linux-x86_64/plugins/databases/libI* | sed "s/\/usr\/gapps\/visit\/$ver+\/linux-x86_64\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+rm -f resultlog.kickit
+mv resultlog resultlog.kickit
 EOF
 
 if [ $kickit = true ]
@@ -354,6 +379,7 @@ echo "number of plot plugins = "\`ls /usr/gapps/visit/$ver+/linux-x86_64/plugins
 echo ""                                              >> resultlog 2>&1
 echo "The database plugins:"                         >> resultlog 2>&1
 ls /usr/gapps/visit/$ver+/linux-x86_64/plugins/databases/libI* | sed "s/\/usr\/gapps\/visit\/$ver+\/linux-x86_64\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+rm -f resultlog.quartz
 mv resultlog resultlog.quartz
 EOF
 
@@ -366,6 +392,45 @@ then
       scp visit-install quartz:
       scp quartz quartz:quartz_install
       ssh quartz "chmod 750 quartz_install;./quartz_install"
+   fi
+fi
+
+#
+# Install on poodle.
+#
+rm -f poodle
+cat <<EOF > poodle
+#!/bin/sh
+./visit-install -private -c llnl_open_cz -g visit -b wbronze -gw -l $ver linux-x86_64-poodle /usr/gapps/visit > installlog 2>&1
+mv /usr/gapps/visit/$ver+/linux-x86_64 /usr/gapps/visit/$ver+/linux-x86_64-toss4
+rm -f resultlog
+echo ""                                              > resultlog 2>&1
+echo "        install of visit on poodle"            >> resultlog 2>&1
+echo "       ----------------------------"           >> resultlog 2>&1
+echo ""                                              >> resultlog 2>&1
+df -k /usr/gapps/visit                               >> resultlog 2>&1
+echo ""                                              >> resultlog 2>&1
+ls -l /usr/gapps/visit/$ver+/linux-x86_64-toss4/bin  >> resultlog 2>&1
+echo ""                                              >> resultlog 2>&1
+echo "number of database plugins = "\`ls /usr/gapps/visit/$ver+/linux-x86_64-toss4/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
+echo "number of operator plugins = "\`ls /usr/gapps/visit/$ver+/linux-x86_64-toss4/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
+echo "number of plot plugins = "\`ls /usr/gapps/visit/$ver+/linux-x86_64-toss4/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
+echo ""                                              >> resultlog 2>&1
+echo "The database plugins:"                         >> resultlog 2>&1
+ls /usr/gapps/visit/$ver+/linux-x86_64-toss4/plugins/databases/libI* | sed "s/\/usr\/gapps\/visit\/$ver+\/linux-x86_64-toss4\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+rm -f resultlog.poodle
+mv resultlog resultlog.poodle
+EOF
+
+if [ $poodle = true ]
+then
+   if [ $test = no ]
+   then
+      scp poodle18:/usr/tmp/$user/poodle/visitbuild/visit$ver2.linux-x86_64.tar.gz visit$ver2.linux-x86_64-poodle.tar.gz
+      scp visit$ver2.linux-x86_64-poodle.tar.gz poodle:
+      scp visit-install poodle:
+      scp poodle poodle:poodle_install
+      ssh poodle "chmod 750 poodle_install;./poodle_install"
    fi
 fi
 
@@ -391,6 +456,7 @@ echo "number of plot plugins = "\`ls /usr/gapps/visit/$ver+/linux-intel/plugins/
 echo ""                                              >> resultlog 2>&1
 echo "The database plugins:"                         >> resultlog 2>&1
 ls /usr/gapps/visit/$ver+/linux-intel/plugins/databases/libI* | sed "s/\/usr\/gapps\/visit\/$ver+\/linux-intel\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+rm -f resultlog.lassen
 mv resultlog resultlog.lassen
 EOF
 
@@ -440,7 +506,9 @@ echo "number of plot plugins = "\`ls /usr/gapps/visit/$ver+/linux-x86_64/plugins
 echo ""                                             >> resultlog 2>&1
 echo "The database plugins:"                        >> resultlog 2>&1
 ls /usr/gapps/visit/$ver+/linux-x86_64/plugins/databases/libI* | sed "s/\/usr\/gapps\/visit\/$ver+\/linux-x86_64\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
-mail -s "VisIt install ($ver): rztrona" $emailName < resultlog
+rm -f resultlog.rztrona
+mv resultlog resultlog.rztrona
+mail -s "VisIt install ($ver): rztrona" $emailName < resultlog.rztrona
 EOF
 
 if [ $rztrona = true ]
@@ -451,6 +519,44 @@ then
       scp visit-install rztrona:
       scp rztrona rztrona:rztrona_install
       ssh rztrona "chmod 750 rztrona_install;./rztrona_install"
+   fi
+fi
+
+#
+# Install on rzalastor
+#
+rm -f rzalastor
+cat <<EOF > rzalastor
+#!/bin/sh
+./visit-install -private -c llnl_open_rz -g visit -b wbronze -gw -l $ver linux-x86_64-poodle /usr/gapps/visit > installlog 2>&1
+mv /usr/gapps/visit/$ver+/linux-x86_64 /usr/gapps/visit/$ver+/linux-x86_64-toss4
+rm -f resultlog
+echo "        install of visit on rzalastor"        > resultlog 2>&1
+echo "       -------------------------------"       >> resultlog 2>&1
+echo ""                                             >> resultlog 2>&1
+df -k /usr/gapps/visit                              >> resultlog 2>&1
+echo ""                                             >> resultlog 2>&1
+ls -l /usr/gapps/visit/$ver+/linux-x86_64-toss4/bin >> resultlog 2>&1
+echo ""                                             >> resultlog 2>&1
+echo "number of database plugins = "\`ls /usr/gapps/visit/$ver+/linux-x86_64-toss4/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
+echo "number of operator plugins = "\`ls /usr/gapps/visit/$ver+/linux-x86_64-toss4/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
+echo "number of plot plugins = "\`ls /usr/gapps/visit/$ver+/linux-x86_64-toss4/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
+echo ""                                             >> resultlog 2>&1
+echo "The database plugins:"                        >> resultlog 2>&1
+ls /usr/gapps/visit/$ver+/linux-x86_64-toss4/plugins/databases/libI* | sed "s/\/usr\/gapps\/visit\/$ver+\/linux-x86_64-toss4\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+rm -f resultlog.rzalastor
+mv resultlog resultlog.rzalastor
+mail -s "VisIt install ($ver): rzalastor" $emailName < resultlog.rzalastor
+EOF
+
+if [ $rzalastor = true ]
+then
+   if [ $test = no ]
+   then
+      scp visit$ver2.linux-x86_64-poodle.tar.gz rzalastor:
+      scp visit-install rzalastor:
+      scp rzalastor rzalastor:rzalastor_install
+      ssh rzalastor "chmod 750 rzalastor_install;./rzalastor_install"
    fi
 fi
 
@@ -475,7 +581,9 @@ echo "number of plot plugins = "\`ls /usr/gapps/visit/$ver+/linux-intel/plugins/
 echo ""                                             >> resultlog 2>&1
 echo "The database plugins:"                        >> resultlog 2>&1
 ls /usr/gapps/visit/$ver+/linux-intel/plugins/databases/libI* | sed "s/\/usr\/gapps\/visit\/$ver+\/linux-intel\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
-mail -s "VisIt install ($ver): rzansel" $emailName < resultlog
+rm -f resultlog.rzansel
+mv resultlog resultlog.rzansel
+mail -s "VisIt install ($ver): rzansel" $emailName < resultlog.rzansel
 EOF
 
 if [ $rzansel = true ]
@@ -510,7 +618,9 @@ echo "number of plot plugins = "\`ls /soft/visualization/visit/$ver+/linux-x86_6
 echo ""                                                 >> resultlog 2>&1
 echo "The database plugins:"                            >> resultlog 2>&1
 ls /soft/visualization/visit/$ver+/linux-x86_64/plugins/databases/libI* | sed "s/soft\/visualization\/visit\/$ver+\/linux-x86_64\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
-mail -s "VisIt install ($ver): cooley" $emailName < resultlog
+rm -f resultlog.cooley
+mv resultlog resultlog.cooley
+mail -s "VisIt install ($ver): cooley" $emailName < resultlog.cooley
 EOF
 
 if [ $cooley = true ]
@@ -528,5 +638,5 @@ fi
 #
 if [ $test = no ]
 then
-   rm -f kickit quartz lassen rztrona rzansel cooley
+   rm -f kickit quartz poodle lassen rztrona rzalastor rzansel cooley
 fi
