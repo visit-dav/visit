@@ -566,7 +566,7 @@ To look at the raw data from the query, we run this code:
    print(xrayout["domain_000000"])
 
 This yields the following data overview.
-See :ref:`Introspecting with Python` for a deeper dive into viewing and extracting the raw data from the :ref:`Conduit_Output`.
+See :ref:`Introspecting_with_Python` for a deeper dive into viewing and extracting the raw data from the :ref:`Conduit_Output`.
 
 ::
 
@@ -747,7 +747,7 @@ See :ref:`Introspecting with Python` for a deeper dive into viewing and extracti
        values: [0.0, 1.0, 2.0, ..., 119998.0, 119999.0]
 
 The next thing we may want to do is to visualize an x ray image using VisIt_.
-The :ref:`Visualizing with VisIt` section goes into more detail on this subject, so for now we will only visualize the :ref:`Basic_Mesh_Output`.
+The :ref:`Visualizing_with_VisIt` section goes into more detail on this subject, so for now we will only visualize the :ref:`Basic_Mesh_Output`.
 
 ::
 
@@ -787,8 +787,8 @@ Conduit `Blueprint <https://llnl-conduit.readthedocs.io/en/latest/blueprint.html
 Before Conduit Blueprint formats were available as output types, the X Ray Image Query would often produce large numbers of output files, particularly when using the bov or rawfloats output type, which was a popular choice because it provided the raw data.
 Alternatively, users could choose one of the image file output types to generate a picture or pictures.
 Conduit Blueprint provides the best of both worlds.
-Everything is stored in one file, and all of the raw data can be accessed via :ref:`Introspecting with Python`.
-Additionally, it is simple to generate an image, as the Blueprint output can be read back in to VisIt and visualized (see :ref:`Visualizing with VisIt`).
+Everything is stored in one file, and all of the raw data can be accessed via :ref:`Introspecting_with_Python`.
+Additionally, it is simple to generate an image, as the Blueprint output can be read back in to VisIt and visualized (see :ref:`Visualizing_with_VisIt`).
 
 .. figure:: images/xraywhyconduit1.png
 
@@ -803,7 +803,7 @@ These additions should make it easier to troubleshoot unexpected results, make s
 Blueprint makes it simple to put all of this information into one file, and just as simple to read that information back out and/or visualize.
 
 One of the main reasons for adding the Conduit output was to make it far easier to troubleshoot strange query results.
-See the :ref:`Troubleshooting` section to learn what kinds of questions the Conduit output can be used to answer.
+See the :ref:`XRay_Troubleshooting` section to learn what kinds of questions the Conduit output can be used to answer.
 
 .. _Overview_of_Output:
 
@@ -995,7 +995,7 @@ The fields, ``intensities`` and ``path_length``, can be thought of as containers
 Each also includes units.
 For path length, the ``units`` entry is just a way of including metadata or information about the path length, since path length is unitless.
 
-To visualize this mesh with VisIt, see :ref:`Visualizing with VisIt`.
+To visualize this mesh with VisIt, see :ref:`Visualizing_with_VisIt`.
 
 .. _XRay_Metadata:
 
@@ -1005,7 +1005,7 @@ Metadata
 The Conduit output types (see :ref:`Output_Types` for more information) come packaged with metadata in addition to Blueprint-conforming mesh data.
 The ability to send this metadata alongside the output mesh (and other data) is one of the advantages of using Conduit for outputs from the query.
 We hope this metadata helps to make it clear exactly what the query is doing, what information it has available to it, and what the output might look like.
-To extract the metadata from the Blueprint output, see :ref:`Introspecting with Python`.
+To extract the metadata from the Blueprint output, see :ref:`Introspecting_with_Python`.
 
 Metadata is stored under the ``state`` Node in the resulting Conduit tree.
 See the example below, which is taken from the example in :ref:`Overview_of_Output`, but this time with only the metadata fully realized: 
@@ -1190,7 +1190,7 @@ An example: ::
     perspective: 1
     perspectiveStr: "perspective"
 
-To extract this metadata from the Blueprint output, see :ref:`Introspecting with Python`.
+To extract this metadata from the Blueprint output, see :ref:`Introspecting_with_Python`.
 
 .. _Query_Parameters:
 
@@ -1246,7 +1246,7 @@ An example: ::
     absUnits: "cm^2/g"
     emisUnits: "GJ/cm^2/ster/ns/keV"
 
-To extract this metadata from the Blueprint output, see :ref:`Introspecting with Python`.
+To extract this metadata from the Blueprint output, see :ref:`Introspecting_with_Python`.
 
 .. _Other_Metadata:
 
@@ -1288,11 +1288,11 @@ An example: ::
     pathLengthMax: 120.815788269043
     pathLengthMin: 0.0
 
-The minimum and maximum values that are included for the path length and intensity outputs are useful for quick :ref:`Troubleshooting` or sanity checks that the output matches expectations. 
+The minimum and maximum values that are included for the path length and intensity outputs are useful for quick :ref:`XRay_Troubleshooting` or sanity checks that the output matches expectations. 
 If both maximums and minimums are zero, for example, the simulated detector may not be facing the right way.
 In that case, the :ref:`Imaging_Planes_and_Rays_Meshes` section may be of some use.
 
-To extract this metadata from the Blueprint output, see :ref:`Introspecting with Python`.
+To extract this metadata from the Blueprint output, see :ref:`Introspecting_with_Python`.
 
 .. _Imaging_Planes_and_Rays_Meshes:
 
@@ -1303,7 +1303,7 @@ One of our goals with the Conduit output types (see :ref:`Output_Types` for more
 To that end, these outputs come packaged with meshes representing the imaging planes specified by the user when calling the query.
 Additionally, they also include meshes representing the rays that were used in the ray tracing.
 The following subsections discuss both of these in more detail.
-To visualize these meshes with VisIt, see :ref:`Visualizing with VisIt`.
+To visualize these meshes with VisIt, see :ref:`Visualizing_with_VisIt`.
 
 .. _Imaging_Planes:
 
@@ -1729,7 +1729,7 @@ We then duplicated the existing topology and fields from the :ref:`Basic_Mesh_Ou
    The spatial extents mesh looks very similar to the basic mesh output.
    It is in 3D and the z dimension represents the energy group bounds, which in this example run from 2.7 to 5.2.
 
-To visualize this mesh with VisIt, see :ref:`Visualizing with VisIt`. To extract the spatial extents data from the Blueprint output, see :ref:`Introspecting with Python`.
+To visualize this mesh with VisIt, see :ref:`Visualizing_with_VisIt`. To extract the spatial extents data from the Blueprint output, see :ref:`Introspecting_with_Python`.
 
 Pitfalls
 """"""""
@@ -2003,10 +2003,12 @@ To make the output look like an x ray image, it is simple to change the color ta
 
    A visualization of the spatial extents mesh using the x ray color table.
 
+.. _Introspecting_with_Python:
+
 Introspecting with Python
 """""""""""""""""""""""""
 
-We have covered visualizing every component of the :ref:`Conduit_Output` in the :ref:`Visualizing with VisIt` section; now we will demonstrate how to access the raw data using Python.
+We have covered visualizing every component of the :ref:`Conduit_Output` in the :ref:`Visualizing_with_VisIt` section; now we will demonstrate how to access the raw data using Python.
 
 **1. Getting a general overview of the output.**
 See :ref:`Overview_of_Output` for a visual of what the resulting Conduit tree looks like.
@@ -2211,6 +2213,8 @@ Because the :ref:`Spatial_Extents_Mesh` shares a lot in common with the :ref:`Ba
 All of the other data stored in the Conduit output can be accessed in the same way.
 To get a general sense of what is stored in particular branches of the tree, it is a simple matter of running ``print(myconduitnode)`` to quickly get an overview.
 
+.. _XRay_Troubleshooting:
+
 Troubleshooting
 """""""""""""""
 
@@ -2254,7 +2258,7 @@ Yielding:
 
 If the maximums were also equal to zero, then the image would be blank.
 Hence, it is possible to quickly programmatically check if the image is blank, without any need for taking the time to look at the image.
-See :ref:`Introspecting with Python` for more information about extracting data from the query output.
+See :ref:`Introspecting_with_Python` for more information about extracting data from the query output.
 
 **2. Why is my image blank? Is the camera facing the right way? Are the near and far clipping planes in good positions?**
 
@@ -2279,7 +2283,7 @@ This line of questioning can be quickly answered by visualizing the :ref:`Imagin
    DrawPlots()
 
 Running this code using VisIt should result in renders like those shown in :ref:`Imaging_Planes_and_Rays_Meshes`.
-To make the planes different colors, use VisIt's color table controls, or see :ref:`Visualizing with VisIt`.
+To make the planes different colors, use VisIt's color table controls, or see :ref:`Visualizing_with_VisIt`.
 
 .. figure:: images/xray_troubleshooting_2.png
 
@@ -2287,7 +2291,7 @@ To make the planes different colors, use VisIt's color table controls, or see :r
 
 The simulated x ray detector is situated at the near plane, looking in the direction of the view plane, and seeing nothing after the far plane.
 Once the imaging planes and ray corners have been visualized, it is clear to see where the camera is looking, and if the near and far clipping planes are appropriately placed.
-See the text on visualizing the rays and imaging planes in :ref:`Visualizing with VisIt`.
+See the text on visualizing the rays and imaging planes in :ref:`Visualizing_with_VisIt`.
 
 **3. Where are the rays intersecting my geometry?**
 
@@ -2315,7 +2319,7 @@ We will want to visualize the :ref:`Rays_Meshes` on top of our input mesh.
 
 Running this code using VisIt should result in renders like those shown in :ref:`Rays_Meshes`.
 Use the tips and tricks shown in that section to gain greater clarity for answering this question.
-See the text on visualizing the rays and imaging planes in :ref:`Visualizing with VisIt`.
+See the text on visualizing the rays and imaging planes in :ref:`Visualizing_with_VisIt`.
 
 .. figure:: images/xray_visualize_rays2.png
 
@@ -2323,4 +2327,4 @@ See the text on visualizing the rays and imaging planes in :ref:`Visualizing wit
 
 **4. What information is the query using to create the output?**
 
-See :ref:`Introspecting with Python` for information on how to extract and view the :ref:`XRay_Metadata`, which contains the information the query uses to create the output.
+See :ref:`Introspecting_with_Python` for information on how to extract and view the :ref:`XRay_Metadata`, which contains the information the query uses to create the output.
