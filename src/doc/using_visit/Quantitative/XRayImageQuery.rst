@@ -1280,7 +1280,7 @@ The following is included:
 |                                        | path lengths.                                |
 +----------------------------------------+----------------------------------------------+
 | *image_topo_order_of_domain_variables* | The intensities and path length field data   |
-|                                        | can be indexed as 3D arrays, |br|            |
+|                                        | can be indexed as 3D |br|                    |arrays, |br|            |
 |                                        | even though they are stored in flattened 1D  |
 |                                        | arrays. The 3D striding |br|                 |
 |                                        | calculation can be fully determined using    |
