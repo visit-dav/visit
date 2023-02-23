@@ -607,6 +607,7 @@ See :ref:`Introspecting_with_Python` for a deeper dive into viewing and extracti
        intensity_min: 0.0
        path_length_max: 129.857009887695
        path_length_min: 0.0
+       image_topo_order_of_domain_variables: "xyz"
      domain_id: 0
    coordsets: 
      image_coords: 
@@ -1055,6 +1056,7 @@ See the example below, which is taken from the example in :ref:`Overview_of_Outp
       intensity_min: 0.0
       path_length_max: 120.815788269043
       path_length_min: 0.0
+      image_topo_order_of_domain_variables: "xyz"
     domain_id: 0
   coordsets: 
     image_coords: 
@@ -1277,22 +1279,27 @@ The following is included:
 | *path_length_min*                      | The minimum value of the calculated          |
 |                                        | path lengths.                                |
 +----------------------------------------+----------------------------------------------+
-| *image_topo_order_of_domain_variables* | The image data stored in the fields          |
-|                                        | (intensities and path length) |br|           |
-|                                        | is flattened into a 1D array, even though it |
-|                                        | describes 3D data. Blueprint |br|            |
-|                                        | will order the values so that the order in   |
-|                                        | which the dimensions vary is |br|            |
-|                                        | the same as the order that they appear in    |
-|                                        | the coordinate set associated |br|           |
-|                                        | with the topology associated with the field. |
-|                                        | In this case, that order is x, |br|          |
-|                                        | then y, then z. This metadata value records  |
-|                                        | that fact for convenience, and |br|          |
-|                                        | is hardcoded to be "xyz", meaning that x     |
-|                                        | varies the fastest, then y, then |br|        |
-|                                        | z. Another way to see this information is to |
-|                                        | examine the strides of the fields.           |
+| *image_topo_order_of_domain_variables* | The intensities and path length field data   |
+|                                        | can be indexed as 3D arrays, |br|            |
+|                                        | even though they are stored in flattened 1D  |
+|                                        | arrays. The 3D striding |br|                 |
+|                                        | calculation can be fully determined using    |
+|                                        | the shape of the coordinate |br|             |
+|                                        | set the fields are associated with and an    |
+|                                        | optional field-specific stride |br|          |
+|                                        | array. The default case fast varies the      |
+|                                        | first coordinate (x), then the |br|          |
+|                                        | second (y), and finally the third (z). The   |
+|                                        | optional field-specific stride |br|          |
+|                                        | info enables arbitrary striding patterns. We |
+|                                        | provide striding info for these |br|         |
+|                                        | fields, however the X Ray Image Query always |
+|                                        | writes data using the ``xyz`` |br|           |
+|                                        | (fast to slow) default strides.              |
+|                                        | ``image_topo_order_of_domain_variables``     |
+|                                        | provides |br|                                |
+|                                        | this information as a string, hardcoded to   |
+|                                        | be "xyz", that reflects this.                |
 +----------------------------------------+----------------------------------------------+
 
 An example: ::
@@ -1304,6 +1311,7 @@ An example: ::
     intensity_min: 0.0
     path_length_max: 120.815788269043
     path_length_min: 0.0
+    image_topo_order_of_domain_variables: "xyz"
 
 The minimum and maximum values that are included for the path length and intensity outputs are useful for quick :ref:`XRay_Troubleshooting` or sanity checks that the output matches expectations. 
 If both maximums and minimums are zero, for example, the simulated detector may not be facing the right way.
@@ -2206,6 +2214,7 @@ And finally, :ref:`Other_Metadata`:
    intensity_min = xrayout["domain_000000/state/xray_data/intensity_min"]
    path_length_max = xrayout["domain_000000/state/xray_data/path_length_max"]
    path_length_min = xrayout["domain_000000/state/xray_data/path_length_min"]
+   image_topo_order_of_domain_variables = xrayout["domain_000000/state/xray_data/image_topo_order_of_domain_variables"]
 
 **4. Accessing the** :ref:`Spatial_Extents_Mesh` **data.**
 Because the :ref:`Spatial_Extents_Mesh` shares a lot in common with the :ref:`Basic_Mesh_Output`, we will only cover here how to extract some of the unique values.
