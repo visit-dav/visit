@@ -1258,25 +1258,42 @@ These values are calculated constants based on the input parameters and output d
 This data is available as of VisIt_ 3.3.2.
 The following is included:
 
-+--------------------------+----------------------------------------------+
-| *detector_width*         | The width of the simulated x ray detector    |
-|                          | in physical space.                           |
-+--------------------------+----------------------------------------------+
-| *detector_height*        | The height of the simulated x ray detector   |
-|                          | in physical space.                           |
-+--------------------------+----------------------------------------------+
-| *intensity_max*          | The maximum value of the calculated          |
-|                          | intensities.                                 |
-+--------------------------+----------------------------------------------+
-| *intensity_min*          | The minimum value of the calculated          |
-|                          | intensities.                                 |
-+--------------------------+----------------------------------------------+
-| *path_length_max*        | The maximum value of the calculated          |
-|                          | path lengths.                                |
-+--------------------------+----------------------------------------------+
-| *path_length_min*        | The minimum value of the calculated          |
-|                          | path lengths.                                |
-+--------------------------+----------------------------------------------+
++----------------------------------------+----------------------------------------------+
+| *detector_width*                       | The width of the simulated x ray detector    |
+|                                        | in physical space.                           |
++----------------------------------------+----------------------------------------------+
+| *detector_height*                      | The height of the simulated x ray detector   |
+|                                        | in physical space.                           |
++----------------------------------------+----------------------------------------------+
+| *intensity_max*                        | The maximum value of the calculated          |
+|                                        | intensities.                                 |
++----------------------------------------+----------------------------------------------+
+| *intensity_min*                        | The minimum value of the calculated          |
+|                                        | intensities.                                 |
++----------------------------------------+----------------------------------------------+
+| *path_length_max*                      | The maximum value of the calculated          |
+|                                        | path lengths.                                |
++----------------------------------------+----------------------------------------------+
+| *path_length_min*                      | The minimum value of the calculated          |
+|                                        | path lengths.                                |
++----------------------------------------+----------------------------------------------+
+| *image_topo_order_of_domain_variables* | The image data stored in the fields          |
+|                                        | (intensities and path length) |br|           |
+|                                        | is flattened into a 1D array, even though it |
+|                                        | describes 3D data. Blueprint |br|            |
+|                                        | will order the values so that the order in   |
+|                                        | which the dimensions vary is |br|            |
+|                                        | the same as the order that they appear in    |
+|                                        | the coordinate set associated |br|           |
+|                                        | with the topology associated with the field. |
+|                                        | In this case, that order is x, |br|          |
+|                                        | then y, then z. This metadata value records  |
+|                                        | that fact for convenience, and |br|          |
+|                                        | is hardcoded to be "xyz", meaning that x     |
+|                                        | varies the fastest, then y, then |br|        |
+|                                        | z. Another way to see this information is to |
+|                                        | examine the strides of the fields.           |
++----------------------------------------+----------------------------------------------+
 
 An example: ::
 
