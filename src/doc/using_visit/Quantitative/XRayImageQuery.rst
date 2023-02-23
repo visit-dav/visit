@@ -1280,26 +1280,29 @@ The following is included:
 |                                        | path lengths.                                |
 +----------------------------------------+----------------------------------------------+
 | *image_topo_order_of_domain_variables* | The intensities and path length field data   |
-|                                        | can be indexed as 3D |br|                    |arrays, |br|            |
-|                                        | even though they are stored in flattened 1D  |
-|                                        | arrays. The 3D striding |br|                 |
-|                                        | calculation can be fully determined using    |
-|                                        | the shape of the coordinate |br|             |
-|                                        | set the fields are associated with and an    |
-|                                        | optional field-specific stride |br|          |
-|                                        | array. The default case fast varies the      |
-|                                        | first coordinate (x), then the |br|          |
-|                                        | second (y), and finally the third (z). The   |
-|                                        | optional field-specific stride |br|          |
-|                                        | info enables arbitrary striding patterns. We |
-|                                        | provide striding info for these |br|         |
-|                                        | fields, however the X Ray Image Query always |
-|                                        | writes data using the ``xyz`` |br|           |
-|                                        | (fast to slow) default strides.              |
+|                                        | can be indexed as 3D |br|                    |
+|                                        | arrays, even though they are stored in       |
+|                                        | flattened 1D arrays. |br|                    |
+|                                        | The 3D striding calculation can be fully     |
+|                                        | determined using the |br|                    |
+|                                        | shape of the coordinate set the fields are   |
+|                                        | associated with and |br|                     |
+|                                        | an optional field-specific stride array. The |
+|                                        | default case fast |br|                       |
+|                                        | varies the first coordinate (x), then the    |
+|                                        | second (y), and |br|                         |
+|                                        | finally the third (z). The optional          |
+|                                        | field-specific stride info |br|              |
+|                                        | enables arbitrary striding patterns. We      |
+|                                        | provide striding |br|                        |
+|                                        | info for these fields, however the X Ray     |
+|                                        | Image Query always |br|                      |
+|                                        | writes data using the ``xyz`` (fast to slow) |
+|                                        | default strides. |br|                        |
 |                                        | ``image_topo_order_of_domain_variables``     |
-|                                        | provides |br|                                |
-|                                        | this information as a string, hardcoded to   |
-|                                        | be "xyz", that reflects this.                |
+|                                        | provides this information |br|               |
+|                                        | as a string, hardcoded to be "xyz", that     |
+|                                        | reflects this.                               |
 +----------------------------------------+----------------------------------------------+
 
 An example: ::
