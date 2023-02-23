@@ -109,9 +109,9 @@ The standard arguments have to do with the query execution, output, debugging, a
 +--------------------------+----------------------------------------------+
 
 If using the :ref:`Conduit_Output`, many of these arguments will appear in the output in a few different places.
-The ``vars`` will show up as ``absVarName`` and ``emisVarName`` under the :ref:`Query_Parameters` section of the :ref:`XRay_Metadata`.
+The ``vars`` will show up as ``abs_var_name`` and ``emis_var_name`` under the :ref:`Query_Parameters` section of the :ref:`XRay_Metadata`.
 ``divide_emis_by_absorb`` shows up under the :ref:`Query_Parameters` section of the :ref:`XRay_Metadata`.
-``image_size`` shows up as ``numXPixels`` and ``numYPixels`` under the :ref:`Query_Parameters` section of the :ref:`XRay_Metadata`.
+``image_size`` shows up as ``num_x_pixels`` and ``num_y_pixels`` under the :ref:`Query_Parameters` section of the :ref:`XRay_Metadata`.
 The ``energy_group_bounds`` appear under the ``spatial_coords`` in the :ref:`Spatial_Extents_Mesh`.
 
 Output Filenames and Directories
@@ -582,31 +582,31 @@ See :ref:`Introspecting_with_Python` for a deeper dive into viewing and extracti
          x: 0.0
          y: 2.5
          z: 10.0
-       viewUp: 
+       view_up: 
          x: 0.0
          y: 1.0
          z: 0.0
-       viewAngle: 30.0
+       view_angle: 30.0
        ... ( skipped 4 children )
-       imageZoom: 1.0
+       image_zoom: 1.0
        perspective: 1
-       perspectiveStr: "perspective"
+       perspective_str: "perspective"
      xray_query: 
-       divideEmisByAbsorb: 0
-       divideEmisByAbsorbStr: "no"
-       numXPixels: 400
-       numYPixels: 300
+       divide_emis_by_absorb: 0
+       divide_emis_by_absorb_str: "no"
+       num_x_pixels: 400
+       num_y_pixels: 300
        ... ( skipped 2 children )
-       emisVarName: "p"
-       absUnits: "abs units"
-       emisUnits: "emis units"
+       emis_var_name: "p"
+       abs_units: "abs units"
+       emis_units: "emis units"
      xray_data: 
-       detectorWidth: 8.80338743415454
-       detectorHeight: 6.60254037884486
-       intensityMax: 0.491446971893311
-       intensityMin: 0.0
-       pathLengthMax: 129.857009887695
-       pathLengthMin: 0.0
+       detector_width: 8.80338743415454
+       detector_height: 6.60254037884486
+       intensity_max: 0.491446971893311
+       intensity_min: 0.0
+       path_length_max: 129.857009887695
+       path_length_min: 0.0
      domain_id: 0
    coordsets: 
      image_coords: 
@@ -1024,37 +1024,37 @@ See the example below, which is taken from the example in :ref:`Overview_of_Outp
         x: 0.0
         y: 2.5
         z: 10.0
-      viewUp: 
+      view_up: 
         x: 0.0
         y: 1.0
         z: 0.0
-      viewAngle: 30.0
-      parallelScale: 5.0
-      nearPlane: -50.0
-      farPlane: 50.0
-      imagePan: 
+      view_angle: 30.0
+      parallel_scale: 5.0
+      near_plane: -50.0
+      far_plane: 50.0
+      image_pan: 
         x: 0.0
         y: 0.0
-      imageZoom: 1.0
+      image_zoom: 1.0
       perspective: 1
-      perspectiveStr: "perspective"
+      perspective_str: "perspective"
     xray_query: 
-      divideEmisByAbsorb: 0
-      divideEmisByAbsorbStr: "no"
-      numXPixels: 400
-      numYPixels: 300
-      numBins: 1
-      absVarName: "d"
-      emisVarName: "p"
-      absUnits: "cm^2/g"
-      emisUnits: "GJ/cm^2/ster/ns/keV"
+      divide_emis_by_absorb: 0
+      divide_emis_by_absorb_str: "no"
+      num_x_pixels: 400
+      num_y_pixels: 300
+      num_bins: 1
+      abs_var_name: "d"
+      emis_var_name: "p"
+      abs_units: "cm^2/g"
+      emis_units: "GJ/cm^2/ster/ns/keV"
     xray_data: 
-      detectorWidth: 22.3932263237838
-      detectorHeight: 16.7949192423103
-      intensityMax: 0.491446971893311
-      intensityMin: 0.0
-      pathLengthMax: 120.815788269043
-      pathLengthMin: 0.0
+      detector_width: 22.3932263237838
+      detector_height: 16.7949192423103
+      intensity_max: 0.491446971893311
+      intensity_min: 0.0
+      path_length_max: 120.815788269043
+      path_length_min: 0.0
     domain_id: 0
   coordsets: 
     image_coords: 
@@ -1131,27 +1131,27 @@ The following is included:
 |                          | focal point that was |br| used in the        |
 |                          | calculations.                                |    
 +--------------------------+----------------------------------------------+
-| *viewUp*                 | The x, y, and z components represent the up  |
+| *view_up*                | The x, y, and z components represent the up  |
 |                          | vector that was |br| used in the             |
 |                          | calculations.                                |
 +--------------------------+----------------------------------------------+
-| *viewAngle*              | The view angle, only used in the             |
+| *view_angle*             | The view angle, only used in the             |
 |                          | calculations if |br| perspective             |
 |                          | projection was enabled.                      |
 +--------------------------+----------------------------------------------+
-| *parallelScale*          | The parallel scale, or view height, that was |
+| *parallel_scale*         | The parallel scale, or view height, that was |
 |                          | used in the |br| calculations.               |
 +--------------------------+----------------------------------------------+
-| *nearPlane*              | The near plane that was used in the          |
+| *near_plane*             | The near plane that was used in the          |
 |                          | calculations.                                |
 +--------------------------+----------------------------------------------+
-| *farPlane*               | The far plane that was used in the           |
+| *far_plane*              | The far plane that was used in the           |
 |                          | calculations.                                |
 +--------------------------+----------------------------------------------+
-| *imagePan*               | The x and y components represent the image   |
+| *image_pan*              | The x and y components represent the image   |
 |                          | pan that was used |br| in the calculations.  |
 +--------------------------+----------------------------------------------+
-| *imageZoom*              | The absolute image zoom factor that was used |
+| *image_zoom*             | The absolute image zoom factor that was used |
 |                          | in the calculations.                         |
 +--------------------------+----------------------------------------------+
 | *perspective*            | A flag indicating if parallel or perspective |
@@ -1159,7 +1159,7 @@ The following is included:
 |                          | parallel projection and 1 indicates          |
 |                          | perspective |br| projection.                 |
 +--------------------------+----------------------------------------------+
-| *perspectiveStr*         | A String representation of the perspective   |
+| *perspective_str*        | A String representation of the perspective   |
 |                          | parameter. See above |br| for more           |
 |                          | information.                                 |
 +--------------------------+----------------------------------------------+
@@ -1175,20 +1175,20 @@ An example: ::
       x: 0.0
       y: 2.5
       z: 10.0
-    viewUp: 
+    view_up: 
       x: 0.0
       y: 1.0
       z: 0.0
-    viewAngle: 30.0
-    parallelScale: 5.0
-    nearPlane: -50.0
-    farPlane: 50.0
-    imagePan: 
+    view_angle: 30.0
+    parallel_scale: 5.0
+    near_plane: -50.0
+    far_plane: 50.0
+    image_pan: 
       x: 0.0
       y: 0.0
-    imageZoom: 1.0
+    image_zoom: 1.0
     perspective: 1
-    perspectiveStr: "perspective"
+    perspective_str: "perspective"
 
 To extract this metadata from the Blueprint output, see :ref:`Introspecting_with_Python`.
 
@@ -1202,49 +1202,49 @@ This metadata represents the query-related values that were used in the x ray im
 This data is available as of VisIt_ 3.3.2.
 The following is included:
 
-+--------------------------+----------------------------------------------+
-| *divideEmisByAbsorb*     | A flag indicating if emissivity was divided  |
-|                          | by absorbtivity |br| in the calculations.    |
-|                          | More details can be found above.             |
-+--------------------------+----------------------------------------------+
-| *divideEmisByAbsorbStr*  | A String representation of the               |
-|                          | divideEmisByAbsorb parameter. |br| See above |
-|                          | for more information.                        |
-+--------------------------+----------------------------------------------+
-| *numXPixels*             | The pixel extent in the X dimension in the   |
-|                          | output image.                                |
-+--------------------------+----------------------------------------------+
-| *numYPixels*             | The pixel extent in the Y dimension in the   |
-|                          | output image.                                |
-+--------------------------+----------------------------------------------+
-| *numBins*                | The number of bins (the Z dimension extent)  |
-|                          | in the output image.                         |
-+--------------------------+----------------------------------------------+
-| *absVarName*             | The name of the absorbtivity variable that   |
-|                          | was used in the calculations.                |
-+--------------------------+----------------------------------------------+
-| *emisVarName*            | The name of the emissivity variable that     |
-|                          | was used in the calculations.                |
-+--------------------------+----------------------------------------------+
-| *absUnits*               | The units of the absorbtivity variable that  |
-|                          | was used in the calculations.                |
-+--------------------------+----------------------------------------------+
-| *emisUnits*              | The units of the emissivity variable that    |
-|                          | was used in the calculations.                |
-+--------------------------+----------------------------------------------+
++-----------------------------+----------------------------------------------+
+| *divide_emis_by_absorb*     | A flag indicating if emissivity was divided  |
+|                             | by absorbtivity |br| in the calculations.    |
+|                             | More details can be found above.             |
++-----------------------------+----------------------------------------------+
+| *divide_emis_by_absorb_str* | A String representation of the               |
+|                             | divide_emis_by_absorb parameter. |br| See    |
+|                             | above for more information.                  |
++-----------------------------+----------------------------------------------+
+| *num_x_pixels*              | The pixel extent in the X dimension in the   |
+|                             | output image.                                |
++-----------------------------+----------------------------------------------+
+| *num_y_pixels*              | The pixel extent in the Y dimension in the   |
+|                             | output image.                                |
++-----------------------------+----------------------------------------------+
+| *num_bins*                  | The number of bins (the Z dimension extent)  |
+|                             | in the output image.                         |
++-----------------------------+----------------------------------------------+
+| *abs_var_name*              | The name of the absorbtivity variable that   |
+|                             | was used in the calculations.                |
++-----------------------------+----------------------------------------------+
+| *emis_var_name*             | The name of the emissivity variable that     |
+|                             | was used in the calculations.                |
++-----------------------------+----------------------------------------------+
+| *abs_units*                 | The units of the absorbtivity variable that  |
+|                             | was used in the calculations.                |
++-----------------------------+----------------------------------------------+
+| *emis_units*                | The units of the emissivity variable that    |
+|                             | was used in the calculations.                |
++-----------------------------+----------------------------------------------+
 
 An example: ::
 
   xray_query: 
-    divideEmisByAbsorb: 0
-    divideEmisByAbsorbStr: "no"
-    numXPixels: 400
-    numYPixels: 300
-    numBins: 1
-    absVarName: "d"
-    emisVarName: "p"
-    absUnits: "cm^2/g"
-    emisUnits: "GJ/cm^2/ster/ns/keV"
+    divide_emis_by_absorb: 0
+    divide_emis_by_absorb_str: "no"
+    num_x_pixels: 400
+    num_y_pixels: 300
+    num_bins: 1
+    abs_var_name: "d"
+    emis_var_name: "p"
+    abs_units: "cm^2/g"
+    emis_units: "GJ/cm^2/ster/ns/keV"
 
 To extract this metadata from the Blueprint output, see :ref:`Introspecting_with_Python`.
 
@@ -1259,34 +1259,34 @@ This data is available as of VisIt_ 3.3.2.
 The following is included:
 
 +--------------------------+----------------------------------------------+
-| *detectorWidth*          | The width of the simulated x ray detector    |
+| *detector_width*         | The width of the simulated x ray detector    |
 |                          | in physical space.                           |
 +--------------------------+----------------------------------------------+
-| *detectorHeight*         | The height of the simulated x ray detector   |
+| *detector_height*        | The height of the simulated x ray detector   |
 |                          | in physical space.                           |
 +--------------------------+----------------------------------------------+
-| *intensityMax*           | The maximum value of the calculated          |
+| *intensity_max*          | The maximum value of the calculated          |
 |                          | intensities.                                 |
 +--------------------------+----------------------------------------------+
-| *intensityMin*           | The minimum value of the calculated          |
+| *intensity_min*          | The minimum value of the calculated          |
 |                          | intensities.                                 |
 +--------------------------+----------------------------------------------+
-| *pathLengthMax*          | The maximum value of the calculated          |
+| *path_length_max*        | The maximum value of the calculated          |
 |                          | path lengths.                                |
 +--------------------------+----------------------------------------------+
-| *pathLengthMin*          | The minimum value of the calculated          |
+| *path_length_min*        | The minimum value of the calculated          |
 |                          | path lengths.                                |
 +--------------------------+----------------------------------------------+
 
 An example: ::
 
   xray_data: 
-    detectorWidth: 22.3932263237838
-    detectorHeight: 16.7949192423103
-    intensityMax: 0.491446971893311
-    intensityMin: 0.0
-    pathLengthMax: 120.815788269043
-    pathLengthMin: 0.0
+    detector_width: 22.3932263237838
+    detector_height: 16.7949192423103
+    intensity_max: 0.491446971893311
+    intensity_min: 0.0
+    path_length_max: 120.815788269043
+    path_length_min: 0.0
 
 The minimum and maximum values that are included for the path length and intensity outputs are useful for quick :ref:`XRay_Troubleshooting` or sanity checks that the output matches expectations. 
 If both maximums and minimums are zero, for example, the simulated detector may not be facing the right way.
@@ -2149,46 +2149,46 @@ Next up is :ref:`View_Parameters`:
    focusy = xrayout["domain_000000/state/xray_view/focus/y"]
    focusz = xrayout["domain_000000/state/xray_view/focus/z"]
 
-   viewUpx = xrayout["domain_000000/state/xray_view/viewUp/x"]
-   viewUpy = xrayout["domain_000000/state/xray_view/viewUp/y"]
-   viewUpz = xrayout["domain_000000/state/xray_view/viewUp/z"]
+   view_upx = xrayout["domain_000000/state/xray_view/view_up/x"]
+   view_upy = xrayout["domain_000000/state/xray_view/view_up/y"]
+   view_upz = xrayout["domain_000000/state/xray_view/view_up/z"]
 
-   viewAngle = xrayout["domain_000000/state/xray_view/viewAngle"]
-   parallelScale = xrayout["domain_000000/state/xray_view/parallelScale"]
-   nearPlane = xrayout["domain_000000/state/xray_view/nearPlane"]
-   farPlane = xrayout["domain_000000/state/xray_view/farPlane"]
+   view_angle = xrayout["domain_000000/state/xray_view/view_angle"]
+   parallel_scale = xrayout["domain_000000/state/xray_view/parallel_scale"]
+   near_plane = xrayout["domain_000000/state/xray_view/near_plane"]
+   far_plane = xrayout["domain_000000/state/xray_view/far_plane"]
 
-   imagePanx = xrayout["domain_000000/state/xray_view/imagePan/x"]
-   imagePany = xrayout["domain_000000/state/xray_view/imagePan/y"]
+   image_panx = xrayout["domain_000000/state/xray_view/image_pan/x"]
+   image_pany = xrayout["domain_000000/state/xray_view/image_pan/y"]
 
-   imageZoom = xrayout["domain_000000/state/xray_view/imageZoom"]
+   image_zoom = xrayout["domain_000000/state/xray_view/image_zoom"]
    perspective = xrayout["domain_000000/state/xray_view/perspective"]
-   perspectiveStr = xrayout["domain_000000/state/xray_view/perspectiveStr"]
+   perspective_str = xrayout["domain_000000/state/xray_view/perspective_str"]
 
 Then :ref:`Query_Parameters`:
 
 ::
 
-   divideEmisByAbsorb = xrayout["domain_000000/state/xray_query/divideEmisByAbsorb"]
-   divideEmisByAbsorbStr = xrayout["domain_000000/state/xray_query/divideEmisByAbsorbStr"]
-   numXPixels = xrayout["domain_000000/state/xray_query/numXPixels"]
-   numYPixels = xrayout["domain_000000/state/xray_query/numYPixels"]
-   numBins = xrayout["domain_000000/state/xray_query/numBins"]
-   absVarName = xrayout["domain_000000/state/xray_query/absVarName"]
-   emisVarName = xrayout["domain_000000/state/xray_query/emisVarName"]
-   absUnits = xrayout["domain_000000/state/xray_query/absUnits"]
-   emisUnits = xrayout["domain_000000/state/xray_query/emisUnits"]
+   divide_emis_by_absorb = xrayout["domain_000000/state/xray_query/divide_emis_by_absorb"]
+   divide_emis_by_absorb_str = xrayout["domain_000000/state/xray_query/divide_emis_by_absorb_str"]
+   num_x_pixels = xrayout["domain_000000/state/xray_query/num_x_pixels"]
+   num_y_pixels = xrayout["domain_000000/state/xray_query/num_y_pixels"]
+   num_bins = xrayout["domain_000000/state/xray_query/num_bins"]
+   abs_var_name = xrayout["domain_000000/state/xray_query/abs_var_name"]
+   emis_var_name = xrayout["domain_000000/state/xray_query/emis_var_name"]
+   abs_units = xrayout["domain_000000/state/xray_query/abs_units"]
+   emis_units = xrayout["domain_000000/state/xray_query/emis_units"]
 
 And finally, :ref:`Other_Metadata`:
 
 ::
 
-   detectorWidth = xrayout["domain_000000/state/xray_data/detectorWidth"]
-   detectorHeight = xrayout["domain_000000/state/xray_data/detectorHeight"]
-   intensityMax = xrayout["domain_000000/state/xray_data/intensityMax"]
-   intensityMin = xrayout["domain_000000/state/xray_data/intensityMin"]
-   pathLengthMax = xrayout["domain_000000/state/xray_data/pathLengthMax"]
-   pathLengthMin = xrayout["domain_000000/state/xray_data/pathLengthMin"]
+   detector_width = xrayout["domain_000000/state/xray_data/detector_width"]
+   detector_height = xrayout["domain_000000/state/xray_data/detector_height"]
+   intensity_max = xrayout["domain_000000/state/xray_data/intensity_max"]
+   intensity_min = xrayout["domain_000000/state/xray_data/intensity_min"]
+   path_length_max = xrayout["domain_000000/state/xray_data/path_length_max"]
+   path_length_min = xrayout["domain_000000/state/xray_data/path_length_min"]
 
 **4. Accessing the** :ref:`Spatial_Extents_Mesh` **data.**
 Because the :ref:`Spatial_Extents_Mesh` shares a lot in common with the :ref:`Basic_Mesh_Output`, we will only cover here how to extract some of the unique values.
@@ -2237,24 +2237,24 @@ These values can be pulled out of the Conduit output with ease, using the follow
    conduit.relay.io.blueprint.load_mesh(mesh, "output.root")
 
    # We extract the values from the node.
-   intensityMax = mesh["domain_000000/state/xray_data/intensityMax"]
-   intensityMin = mesh["domain_000000/state/xray_data/intensityMin"]
-   pathLengthMax = mesh["domain_000000/state/xray_data/pathLengthMax"]
-   pathLengthMin = mesh["domain_000000/state/xray_data/pathLengthMin"]
+   intensity_max = mesh["domain_000000/state/xray_data/intensity_max"]
+   intensity_min = mesh["domain_000000/state/xray_data/intensity_min"]
+   path_length_max = mesh["domain_000000/state/xray_data/path_length_max"]
+   path_length_min = mesh["domain_000000/state/xray_data/path_length_min"]
 
-   print("intensityMax = " + str(intensityMax))
-   print("intensityMin = " + str(intensityMin))
-   print("pathLengthMax = " + str(pathLengthMax))
-   print("pathLengthMin = " + str(pathLengthMin))
+   print("intensity_max = " + str(intensity_max))
+   print("intensity_min = " + str(intensity_min))
+   print("path_length_max = " + str(path_length_max))
+   print("path_length_min = " + str(path_length_min))
 
 Yielding:
 
 ::
 
-   intensityMax = 0.49144697189331055
-   intensityMin = 0.0
-   pathLengthMax = 129.8570098876953
-   pathLengthMin = 0.0
+   intensity_max = 0.49144697189331055
+   intensity_min = 0.0
+   path_length_max = 129.8570098876953
+   path_length_min = 0.0
 
 If the maximums were also equal to zero, then the image would be blank.
 Hence, it is possible to quickly programmatically check if the image is blank, without any need for taking the time to look at the image.
