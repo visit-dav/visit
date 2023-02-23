@@ -999,7 +999,6 @@ avtContourFilter::ExecuteDataTree_VTKM(avtDataRepresentation *in_dr)
 
     if (isCellAssoc)
     {
-        cerr << "Recentering fields." << endl;
         vtkm::filter::field_conversion::PointAverage avg;
         avg.SetActiveField(contourVar);
         dataset = avg.Execute(dataset);
