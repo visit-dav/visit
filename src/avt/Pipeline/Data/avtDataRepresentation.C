@@ -482,6 +482,24 @@ ConvertVTKToVTKm(vtkDataSet *data)
                 EXCEPTION0(InvalidConversionException);
             }
         }
+        else if (array->GetNumberOfComponents() == 2)
+        {
+            if (array->GetDataType() == VTK_INT)
+            {
+                vtkIdType nVals = array->GetNumberOfTuples();
+                vtkm::Vec<vtkm::Int32,2> *vals =
+                    reinterpret_cast<vtkm::Vec<vtkm::Int32,2> *>(array->GetVoidPointer(0));
+
+                // Wrap the vector data as an array handle.
+                // This is good as long as the VTK object is around. Is it safe?
+                vtkm::cont::ArrayHandle<vtkm::Vec<vtkm::Int32,2> > fieldArray =
+                    vtkm::cont::make_ArrayHandle(vals, nVals, vtkm::CopyFlag::On);
+
+                ds.AddField(
+                    vtkm::cont::Field(array->GetName(),
+                    vtkm::cont::Field::Association::Points, fieldArray));
+            }
+        }
         else if (array->GetNumberOfComponents() == 3)
         {
             if (array->GetDataType() == VTK_FLOAT)
@@ -601,10 +619,18 @@ ConvertVTKToVTKm(vtkDataSet *data)
         {
             if (array->GetDataType() == VTK_UNSIGNED_INT)
             {
-                //
-                // We didn't handle the conversion case. Throw an exception.
-                //
-                EXCEPTION0(InvalidConversionException);
+                vtkIdType nVals = array->GetNumberOfTuples();
+                vtkm::Vec<vtkm::UInt32,2> *vals =
+                    reinterpret_cast<vtkm::Vec<vtkm::UInt32,2> *>(array->GetVoidPointer(0));
+
+                // Wrap the vector data as an array handle.
+                // This is good as long as the VTK object is around. Is it safe?
+                vtkm::cont::ArrayHandle<vtkm::Vec<vtkm::UInt32,2> > fieldArray =
+                    vtkm::cont::make_ArrayHandle(vals, nVals, vtkm::CopyFlag::On);
+
+                ds.AddField(
+                    vtkm::cont::Field(array->GetName(),
+                    vtkm::cont::Field::Association::Cells, fieldArray));
             }
         }
         else if (array->GetNumberOfComponents() == 3)
@@ -1153,10 +1179,13 @@ ConvertVTKmToVTK(avtVtkmDataSet *data)
     if (ds != NULL)
     {
         using ScalarUInt8 = vtkm::cont::ArrayHandle<vtkm::UInt8>;
-        using Scalar32 = vtkm::cont::ArrayHandle<vtkm::Float32>;
-        using Scalar64 = vtkm::cont::ArrayHandle<vtkm::Float64>;
-        using Vector32 = vtkm::cont::ArrayHandle<vtkm::Vec<vtkm::Float32,3> >;
-        using Vector64 = vtkm::cont::ArrayHandle<vtkm::Vec<vtkm::Float64,3> >;
+        using ScalarFloat32 = vtkm::cont::ArrayHandle<vtkm::Float32>;
+        using ScalarFloat64 = vtkm::cont::ArrayHandle<vtkm::Float64>;
+        using Vector2Int32  = vtkm::cont::ArrayHandle<vtkm::Vec<vtkm::Int32,2> >;
+        using Vector2UInt32 = vtkm::cont::ArrayHandle<vtkm::Vec<vtkm::UInt32,2> >;
+        using Vector2Float64 = vtkm::cont::ArrayHandle<vtkm::Vec<vtkm::Float64,2> >;
+        using Vector3Float32 = vtkm::cont::ArrayHandle<vtkm::Vec<vtkm::Float32,3> >;
+        using Vector3Float64 = vtkm::cont::ArrayHandle<vtkm::Vec<vtkm::Float64,3> >;
 
         int t1 = visitTimer->StartTimer();
         int nFields = vtkm_ds.GetNumberOfFields();
@@ -1169,7 +1198,7 @@ ConvertVTKmToVTK(avtVtkmDataSet *data)
             // in vtkm worklets, so if the name matches one of the known
             // internally generated fields, skip it.
             //
-            if (strcmp(fieldName, "slice_field") == 0)
+            if (strcmp(fieldName, "sliceScalars") == 0)
                 continue;
 
             //
@@ -1183,6 +1212,14 @@ ConvertVTKmToVTK(avtVtkmDataSet *data)
 
             auto field = vtkm_ds.GetField(i).GetData();
 
+            //
+            // If avtOriginalNodeNumbers is a double then it has been
+            // interpolated and is nonsense, so skip it.
+            //
+            if (strcmp(fieldName, "avtOriginalNodeNumbers") == 0 &&
+                field.IsType<Vector2Float64>())
+                continue;
+                
             if (field.IsType<ScalarUInt8>())
             {
                 ScalarUInt8 fieldArray;
@@ -1202,9 +1239,9 @@ ConvertVTKmToVTK(avtVtkmDataSet *data)
                 attr->CopyFieldOn(fieldName);
                 outArray->Delete();
             }
-            else if (field.IsType<Scalar32>())
+            else if (field.IsType<ScalarFloat32>())
             {
-                Scalar32 fieldArray;
+                ScalarFloat32 fieldArray;
                 field.AsArrayHandle(fieldArray);
 
                 vtkm::Id nValues = fieldArray.GetNumberOfValues();
@@ -1220,9 +1257,9 @@ ConvertVTKmToVTK(avtVtkmDataSet *data)
                 attr->CopyFieldOn(fieldName);
                 outArray->Delete();
             }
-            else if (field.IsType<Scalar64>())
+            else if (field.IsType<ScalarFloat64>())
             {
-                Scalar64 fieldArray;
+                ScalarFloat64 fieldArray;
                 field.AsArrayHandle(fieldArray);
 
                 vtkm::Id nValues = fieldArray.GetNumberOfValues();
@@ -1238,9 +1275,49 @@ ConvertVTKmToVTK(avtVtkmDataSet *data)
                 attr->CopyFieldOn(fieldName);
                 outArray->Delete();
             }
-            else if (field.IsType<Vector32>())
+            else if (field.IsType<Vector2Int32>())
             {
-                Vector32 fieldArray;
+                Vector2Int32 fieldArray;
+                field.AsArrayHandle(fieldArray);
+
+                vtkm::Id nValues = fieldArray.GetNumberOfValues();
+
+                vtkIntArray *outArray = vtkIntArray::New();
+                outArray->SetName(fieldName);
+                outArray->SetNumberOfComponents(2);
+                outArray->SetNumberOfTuples(nValues);
+
+                memcpy(outArray->GetVoidPointer(0),
+                    fieldArray.WritePortal().GetArray(),
+                    2*sizeof(int)*nValues);
+                attr->AddArray(outArray);
+                attr->SetActiveScalars(fieldName);
+                attr->CopyFieldOn(fieldName);
+                outArray->Delete();
+            }
+            else if (field.IsType<Vector2UInt32>())
+            {
+                Vector2UInt32 fieldArray;
+                field.AsArrayHandle(fieldArray);
+
+                vtkm::Id nValues = fieldArray.GetNumberOfValues();
+
+                vtkUnsignedIntArray *outArray = vtkUnsignedIntArray::New();
+                outArray->SetName(fieldName);
+                outArray->SetNumberOfComponents(2);
+                outArray->SetNumberOfTuples(nValues);
+
+                memcpy(outArray->GetVoidPointer(0),
+                    fieldArray.WritePortal().GetArray(),
+                    2*sizeof(unsigned int)*nValues);
+                attr->AddArray(outArray);
+                attr->SetActiveScalars(fieldName);
+                attr->CopyFieldOn(fieldName);
+                outArray->Delete();
+            }
+            else if (field.IsType<Vector3Float32>())
+            {
+                Vector3Float32 fieldArray;
                 field.AsArrayHandle(fieldArray);
 
                 vtkm::Id nValues = fieldArray.GetNumberOfValues();
@@ -1258,9 +1335,9 @@ ConvertVTKmToVTK(avtVtkmDataSet *data)
                 attr->CopyFieldOn(fieldName);
                 outArray->Delete();
             }
-            else if (field.IsType<Vector64>())
+            else if (field.IsType<Vector3Float64>())
             {
-                Vector64 fieldArray;
+                Vector3Float64 fieldArray;
                 field.AsArrayHandle(fieldArray);
 
                 vtkm::Id nValues = fieldArray.GetNumberOfValues();
