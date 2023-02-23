@@ -10,10 +10,12 @@
 
 #include <float.h>
 
-#ifdef HAVE_LIBVTKH
-#include <vtkh/vtkh.hpp>
-#include <vtkh/DataSet.hpp>
-#include <vtkh/filters/Slice.hpp>
+#ifdef HAVE_LIBVTKM
+#include <avtVtkmDataSet.h>
+#include <vtkm/ImplicitFunction.h>
+#include <vtkm/cont/DataSet.h>
+#include <vtkm/filter/contour/Slice.h>
+#include <vtkm/filter/field_conversion/PointAverage.h>
 #endif
 
 #include <vtkCell.h>
@@ -1313,48 +1315,64 @@ avtSliceFilter::ExecuteData_VTK(avtDataRepresentation *in_dr)
 //  Creation:   Mon Sep 17 14:13:41 PDT 2018
 //
 //  Modifications:
+//    Eric Brugger, Mon Feb 13 15:51:02 PST 2023
+//    I replaced VTKh with VTKm.
 //
 // ****************************************************************************
 
 avtDataRepresentation *
 avtSliceFilter::ExecuteData_VTKM(avtDataRepresentation *in_dr)
 {
-#ifndef HAVE_LIBVTKH
+#ifndef HAVE_LIBVTKM
     return NULL;
 #else
     //
     // Get the VTKM data set.
     //
-    vtkh::DataSet *in_ds = in_dr->GetDataVTKm();
+    avtVtkmDataSet *in_ds = in_dr->GetDataVTKm();
 
     if (!in_ds)
     {
         return NULL;
     }
 
+    vtkm::cont::DataSet dataset = in_ds->ds;
+
     int timerHandle = visitTimer->StartTimer();
 
-    vtkh::Slice slicer;
+    //
+    // Execute the slice filter.
+    //
+    vtkm::filter::contour::Slice slicer;
 
-    slicer.SetInput(in_ds);
     vtkm::Vec<vtkm::Float32,3> origin((float)cachedOrigin[0],
                                       (float)cachedOrigin[1],
                                       (float)cachedOrigin[2]);
     vtkm::Vec<vtkm::Float32,3> normal((float)cachedNormal[0],
                                       (float)cachedNormal[1],
                                       (float)cachedNormal[2]);
-    slicer.AddPlane(origin, normal);
-    slicer.Update();
+    vtkm::Plane plane(origin, normal);
+    slicer.SetImplicitFunction(plane);
+    dataset = slicer.Execute(dataset);
 
-    vtkh::DataSet *out_ds = slicer.GetOutput();
+    //
+    // Determine if the dataset is empty, and if so, set the output
+    // to NULL.
+    //
+    avtVtkmDataSet *sliceOut = NULL;
+    if(dataset.GetCellSet().GetNumberOfCells() > 0)
+    {
+        sliceOut = new avtVtkmDataSet;
+        sliceOut->ds = dataset;
+    }
+
+    //
+    // Create the output data representation
+    //
+    avtDataRepresentation *out_dr = new avtDataRepresentation(sliceOut,
+        in_dr->GetDomain(), in_dr->GetLabel());
 
     visitTimer->StopTimer(timerHandle, "avtSliceFilter::ExecuteData_VTKM");
-
-    if (out_ds == NULL)
-        return NULL;
-
-    avtDataRepresentation *out_dr = new avtDataRepresentation(out_ds,
-        in_dr->GetDomain(), in_dr->GetLabel());
 
     return out_dr;
 #endif
