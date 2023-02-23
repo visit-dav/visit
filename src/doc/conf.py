@@ -35,7 +35,7 @@ release = '3.2.2'
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-extensions = ['sphinx.ext.mathjax', 'sphinx.ext.autosectionlabel']
+extensions = ['sphinx.ext.mathjax']
 
 # Force installation of any special stuff in the RTD virtual machine instance
 # needed to support any custom extensions.

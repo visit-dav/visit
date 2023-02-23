@@ -221,6 +221,9 @@ class JobSubmitter_bsub_LLNL(JobSubmitter):
 #   Added logic to set the LD_LIBRARY_PATH appropriately for MPI on toss3
 #   and toss4 x86_64 systems.
 #
+#   Eric Brugger, Fri Feb 17 14:33:43 PST 2023
+#   Added logic to set the visitarch appropriately on toss4 x86_64 systems.
+#
 ###############################################################################
 
 class LLNLLauncher(MainLauncher):
@@ -301,6 +304,16 @@ class LLNLLauncher(MainLauncher):
 
         # Unset LD_PRELOAD
         UNSETENV("LD_PRELOAD")
+
+        #
+        # Set the visitarch to linux-x86_64-toss4 if the kernel version
+        # starts with "4" and processor type is "x86_64".
+        #
+        kernel = subprocess.run(['uname', '-r'], stdout=subprocess.PIPE)
+        proc = subprocess.run(['uname', '-p'], stdout=subprocess.PIPE)
+        if proc.stdout.decode('utf-8')[:6] == "x86_64" and \
+           kernel.stdout.decode('utf-8')[:1] == "4":
+            self.visitarch = "linux-x86_64-toss4"
 
     #
     # Override the JobSubmitterFactory method so the custom job submitter can
