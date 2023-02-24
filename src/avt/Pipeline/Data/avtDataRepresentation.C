@@ -1113,11 +1113,11 @@ ConvertVTKmToVTK(avtVtkmDataSet *data)
     vtkDataSet *ds = NULL;
     if(vtkm_ds.GetCellSet().GetNumberOfCells() > 0)
     {
-        if(vtkm_ds.GetCellSet().IsSameType(vtkm::cont::CellSetStructured<3>()))
+        if(vtkm_ds.GetCellSet().CanConvert<vtkm::cont::CellSetStructured<3>>())
         {
             ds = StructuredFromVTKM(data);
         }
-        else if(vtkm_ds.GetCellSet().IsSameType(vtkm::cont::CellSetExplicit<>()))
+        else if(vtkm_ds.GetCellSet().CanConvert<vtkm::cont::CellSetExplicit<>>())
         {
             vtkPoints *pts = vtkPointsFromVTKM(data);
             vtkUnstructuredGrid *ugrid = vtkUnstructuredGrid::New();
@@ -1129,7 +1129,7 @@ ConvertVTKmToVTK(avtVtkmDataSet *data)
             vtkm::cont::CellSetExplicit<> cse;
             try
             {
-                cs.CopyTo(cse);
+                cs.AsCellSet(cse);
                 for(vtkm::Id cellid = 0; cellid < cse.GetNumberOfCells(); ++cellid)
                 {
                     vtkm::Id npts = cse.GetNumberOfPointsInCell(cellid);
@@ -1203,13 +1203,13 @@ ConvertVTKmToVTK(avtVtkmDataSet *data)
                 debug2 << "Caught bad type from cse cast." << endl;
             }
         }
-        else if(vtkm_ds.GetCellSet().IsSameType(vtkm::cont::CellSetSingleType<>()))
+        else if(vtkm_ds.GetCellSet().CanConvert<vtkm::cont::CellSetSingleType<>>())
         {
             vtkm::cont::UnknownCellSet cs = vtkm_ds.GetCellSet();
             vtkm::cont::CellSetSingleType<> csst;
             try
             {
-                cs.CopyTo(csst);
+                cs.AsCellSet(csst);
                 if(csst.GetCellShape(0) == vtkm::CELL_SHAPE_TRIANGLE)
                 {
                     vtkPoints *pts = vtkPointsFromVTKM(data);
