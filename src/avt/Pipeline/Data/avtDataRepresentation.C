@@ -474,6 +474,22 @@ ConvertVTKToVTKm(vtkDataSet *data)
                     vtkm::cont::Field(array->GetName(),
                     vtkm::cont::Field::Association::Points, fieldArray));
             }
+            else if (array->GetDataType() == VTK_UNSIGNED_CHAR)
+            {
+                vtkIdType nVals = array->GetNumberOfTuples();
+                unsigned char *vals =
+                    vtkUnsignedCharArray::SafeDownCast(array)->GetPointer(0);
+
+                vtkm::cont::ArrayHandle<vtkm::UInt8> fieldArray;
+                fieldArray.Allocate(nVals);
+
+                for (vtkm::Id j = 0; j < nVals; ++j)
+                    fieldArray.WritePortal().Set(j, vals[j]);
+
+                ds.AddField(
+                    vtkm::cont::Field(array->GetName(),
+                    vtkm::cont::Field::Association::Points, fieldArray));
+            }
             else
             {
                 //
