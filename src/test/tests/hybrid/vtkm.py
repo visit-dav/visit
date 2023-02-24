@@ -508,26 +508,13 @@ DeleteAllPlots()
 AddPlot("Pseudocolor", "d")
 AddOperator("Isovolume")
 atts = IsovolumeAttributes()
-atts.lbound = 0.8
-atts.ubound = 0.9
-atts.variable = "u"
-SetOperatorOptions(atts)
-DrawPlots()
-
-Test("vtkm_ucd3d_09")
-
-DeleteAllPlots()
-
-AddPlot("Pseudocolor", "u")
-AddOperator("Isovolume")
-atts = IsovolumeAttributes()
-atts.lbound = 0.8
-atts.ubound = 0.9
+atts.lbound = 2.5
+atts.ubound = 4.0
 atts.variable = "default"
 SetOperatorOptions(atts)
 DrawPlots()
 
-Test("vtkm_ucd3d_10")
+Test("vtkm_ucd3d_09")
 
 #
 # Test 3d unstructured with zoo elements.
