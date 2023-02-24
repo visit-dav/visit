@@ -735,6 +735,16 @@ vtkPointsFromVTKM(avtVtkmDataSet *data)
             vtkm::cont::ArrayHandle<vtkm::Float64>,
             vtkm::cont::ArrayHandle<vtkm::Float64>>;
 
+        using CoordsCart32 = vtkm::cont::ArrayHandleCartesianProduct<
+            vtkm::cont::ArrayHandle<vtkm::Float32>,
+            vtkm::cont::ArrayHandle<vtkm::Float32>,
+            vtkm::cont::ArrayHandle<vtkm::Float32>>;
+
+        using CoordsCart64 = vtkm::cont::ArrayHandleCartesianProduct<
+            vtkm::cont::ArrayHandle<vtkm::Float64>,
+            vtkm::cont::ArrayHandle<vtkm::Float64>,
+            vtkm::cont::ArrayHandle<vtkm::Float64>>;
+
         using CoordsVec32 = vtkm::cont::ArrayHandle<vtkm::Vec<vtkm::Float32,3>>;
         using CoordsVec64 = vtkm::cont::ArrayHandle<vtkm::Vec<vtkm::Float64,3>>;
 
@@ -761,6 +771,40 @@ vtkPointsFromVTKM(avtVtkmDataSet *data)
             for (vtkm::Id i = 0; i < nPoints; ++i)
             {
                 pts->SetPoint((vtkIdType)i, xPtr[i], yPtr[i], zPtr[i]);
+            }
+        }
+        else if (coordsHandle.IsType<CoordsCart32>())
+        {
+            CoordsCart32 points;
+            coordsHandle.AsArrayHandle(points);
+
+            auto xPoints = points.GetFirstArray();
+            auto yPoints = points.GetSecondArray();
+            auto zPoints = points.GetThirdArray();
+
+            vtkm::Float32 *xPtr = (vtkm::Float32*)GetVTKmPointer(xPoints);
+            vtkm::Float32 *yPtr = (vtkm::Float32*)GetVTKmPointer(yPoints);
+            vtkm::Float32 *zPtr = (vtkm::Float32*)GetVTKmPointer(zPoints);
+
+            vtkm::Id nXPoints = xPoints.GetNumberOfValues();
+            vtkm::Id nYPoints = yPoints.GetNumberOfValues();
+            vtkm::Id nZPoints = zPoints.GetNumberOfValues();
+
+            vtkm::Id nPoints = nXPoints * nYPoints * nZPoints;
+
+            pts = vtkPoints::New();
+            pts->SetNumberOfPoints(nXPoints * nYPoints * nZPoints);
+            vtkm::Id ndx = 0;
+            for (vtkm::Id i = 0; i < nXPoints; ++i)
+            {
+                for (vtkm::Id j = 0; j < nYPoints; ++j)
+                {
+                    for (vtkm::Id k = 0; k < nZPoints; ++k)
+                    {
+                        pts->SetPoint((vtkIdType)ndx, xPtr[i], yPtr[j], zPtr[k]);
+                        ndx++;
+                    }
+                }
             }
         }
         else if (coordsHandle.IsType<CoordsVec32>())
@@ -800,6 +844,40 @@ vtkPointsFromVTKM(avtVtkmDataSet *data)
             for (vtkm::Id i = 0; i < nPoints; ++i)
             {
                 pts->SetPoint((vtkIdType)i, xPtr[i], yPtr[i], zPtr[i]);
+            }
+        }
+        else if (coordsHandle.IsType<CoordsCart64>())
+        {
+            CoordsCart64 points;
+            coordsHandle.AsArrayHandle(points);
+
+            auto xPoints = points.GetFirstArray();
+            auto yPoints = points.GetSecondArray();
+            auto zPoints = points.GetThirdArray();
+
+            vtkm::Float64 *xPtr = (vtkm::Float64*)GetVTKmPointer(xPoints);
+            vtkm::Float64 *yPtr = (vtkm::Float64*)GetVTKmPointer(yPoints);
+            vtkm::Float64 *zPtr = (vtkm::Float64*)GetVTKmPointer(zPoints);
+
+            vtkm::Id nXPoints = xPoints.GetNumberOfValues();
+            vtkm::Id nYPoints = yPoints.GetNumberOfValues();
+            vtkm::Id nZPoints = zPoints.GetNumberOfValues();
+
+            vtkm::Id nPoints = nXPoints * nYPoints * nZPoints;
+
+            pts = vtkPoints::New();
+            pts->SetNumberOfPoints(nXPoints * nYPoints * nZPoints);
+            vtkm::Id ndx = 0;
+            for (vtkm::Id i = 0; i < nXPoints; ++i)
+            {
+                for (vtkm::Id j = 0; j < nYPoints; ++j)
+                {
+                    for (vtkm::Id k = 0; k < nZPoints; ++k)
+                    {
+                        pts->SetPoint((vtkIdType)ndx, xPtr[i], yPtr[j], zPtr[k]);
+                        ndx++;
+                    }
+                }
             }
         }
         else if (coordsHandle.IsType<CoordsVec64>())
