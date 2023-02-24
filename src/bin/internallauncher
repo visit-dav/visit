@@ -1652,7 +1652,7 @@ class StraceDebugger(Debugger):
 # Purpose:    Launch a VisIt component under rocprof.
 #
 # Programmer: Eric Brugger
-# Date:       Wed 11 Jan 2023 10:37:32 AM EST
+# Date:       Fri Feb 24 14:57:15 PST 2023
 #
 # Modifications:
 #
@@ -3312,7 +3312,7 @@ VisIt does not recognize your terminal application so it will ignore the -newcon
     #   Kevin Griffin, Fri Sep  9 13:56:16 PDT 2022
     #   Added nsys.
     #
-    #   Eric Brugger, Wed 11 Jan 2023 10:37:32 AM EST
+    #   Eric Brugger, Fri Feb 24 14:57:15 PST 2023
     #   Added rocprof.
     #
     ############################################################################
@@ -3360,7 +3360,7 @@ VisIt does not recognize your terminal application so it will ignore the -newcon
     #   Kevin Griffin, Fri Sep  9 13:56:16 PDT 2022
     #   Added nsys.
     #
-    #   Eric Brugger, Wed 11 Jan 2023 10:37:32 AM EST
+    #   Eric Brugger, Fri Feb 24 14:57:15 PST 2023
     #   Added rocprof.
     #
     ############################################################################

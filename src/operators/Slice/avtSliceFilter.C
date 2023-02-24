@@ -1315,7 +1315,7 @@ avtSliceFilter::ExecuteData_VTK(avtDataRepresentation *in_dr)
 //  Creation:   Mon Sep 17 14:13:41 PDT 2018
 //
 //  Modifications:
-//    Eric Brugger, Mon Feb 13 15:51:02 PST 2023
+//    Eric Brugger, Fri Feb 24 14:57:15 PST 2023
 //    I replaced VTKh with VTKm.
 //
 // ****************************************************************************

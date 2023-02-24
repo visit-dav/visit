@@ -37,7 +37,7 @@ class     vtkDataArray;
 //    Hank Childs, Mon Jan 14 17:58:58 PST 2008
 //    Allow constants to be created as singletons.
 //
-//    Eric Brugger, Thu Dec  8 15:03:57 PST 2022
+//    Eric Brugger, Fri Feb 24 14:57:15 PST 2023
 //    I removed the DeriveVariableVTKm method since vtkmExpressions is
 //    no longer supported.
 //

@@ -7,6 +7,10 @@
 #   Kathleen Biagas, Thu Sep 27 11:35:34 PDT 2018
 #   Change PYTHON_LIBRARIES to PYTHON_LIBRARY for consistency throughout visit.
 #
+#   Eric Brugger, Fri Feb 24 14:57:15 PST 2023
+#   Replaced vtktiff with vtktiff_LIBRARIES, vtkjpeg with vtkjpeg_LIBRARIES,
+#   and vtkpng with vtkpng_LIBRARIES.
+#
 #****************************************************************************
 
 INCLUDE_DIRECTORIES(

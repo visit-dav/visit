@@ -338,6 +338,8 @@ avtExpressionDataTreeIterator::ExecuteData_VTK(avtDataRepresentation *in_dr)
 // Creation:   Thu Mar  9 17:19:29 PST 2017
 //
 // Modifications:
+//   Eric Brugger, Fri Feb 24 14:57:15 PST 2023
+//   I replaced vtkh with vtkm.
 //
 // ****************************************************************************
 

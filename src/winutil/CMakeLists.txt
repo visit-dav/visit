@@ -13,6 +13,9 @@
 #   Kathleen Biagas, Mon Mar 14 13:51:16 PDT 2016
 #   With QT 5 on linux, link with Qt's X11Extras library.
 #
+#   Eric Brugger, Fri Feb 24 14:57:15 PST 2023
+#   Link with X11 library when linking with X11Extras library.
+#
 #****************************************************************************
 
 SET(WINUTIL_SOURCES

@@ -20,7 +20,7 @@
 #   where VTK-h was built with RELWITHDEBINFO, which is the case when spack
 #   builds VTK-h. Modified the logic to not install static libraries.
 #
-#   Eric Brugger, Thu Dec  8 15:03:57 PST 2022
+#   Eric Brugger, Fri Feb 24 14:57:15 PST 2023
 #   Renamed to FindVTKm.cmake and modified to find vtkm.
 #
 #****************************************************************************/

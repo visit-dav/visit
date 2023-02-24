@@ -725,7 +725,7 @@ ConvertVTKToVTKm(vtkDataSet *data)
 //    Eric Brugger, Wed Dec  9 09:12:27 PST 2020
 //    Updated to a newer VTKm.
 //
-//    Eric Brugger, Thu Dec  8 15:03:57 PST 2022
+//    Eric Brugger, Fri Feb 24 14:57:15 PST 2023
 //    I replaced vtkh with vtkm.
 //
 // ****************************************************************************
@@ -948,7 +948,7 @@ vtkPointsFromVTKM(avtVtkmDataSet *data)
 //    Eric Brugger, Wed Dec  9 09:12:27 PST 2020
 //    Updated to a newer VTKm.
 //
-//    Eric Brugger, Thu Dec  8 15:03:57 PST 2022
+//    Eric Brugger, Fri Feb 24 14:57:15 PST 2023
 //    I replaced vtkh with vtkm.
 //
 // ****************************************************************************
@@ -1608,7 +1608,7 @@ avtDataRepresentation::avtDataRepresentation(vtkDataSet *d, int dom, string s,
 //    Eric Brugger, Wed Sep 12 16:41:55 PDT 2018
 //    I replaced support for vtkm with vtkh.
 //
-//    Eric Brugger, Thu Dec  8 15:03:57 PST 2022
+//    Eric Brugger, Fri Feb 24 14:57:15 PST 2023
 //    I replaced vtkh with vtkm.
 //
 // ****************************************************************************
@@ -1747,7 +1747,7 @@ avtDataRepresentation::avtDataRepresentation(char *d, int dl, int dom,
 //    Kathleen Biagas, Wed Jan 30 10:41:55 PST 2019
 //    Removed support for EAVL.
 //
-//    Eric Brugger, Thu Dec  8 15:03:57 PST 2022
+//    Eric Brugger, Fri Feb 24 14:57:15 PST 2023
 //    I replaced vtkh with vtkm.
 //
 // ****************************************************************************
@@ -1813,7 +1813,7 @@ avtDataRepresentation::avtDataRepresentation(const avtDataRepresentation &rhs)
 //    Kathleen Biagas, Wed Jan 30 10:41:55 PST 2019
 //    Removed support for EAVL.
 //
-//    Eric Brugger, Thu Dec  8 15:03:57 PST 2022
+//    Eric Brugger, Fri Feb 24 14:57:15 PST 2023
 //    I replaced vtkh with vtkm.
 //
 // ****************************************************************************
@@ -1891,7 +1891,7 @@ debug5 << "TODO: Not deleting asVTKm because some reference counting seems to be
 //    Kathleen Biagas, Wed Jan 30 10:41:55 PST 2019
 //    Removed support for EAVL.
 //
-//    Eric Brugger, Thu Dec  8 15:03:57 PST 2022
+//    Eric Brugger, Fri Feb 24 14:57:15 PST 2023
 //    I replaced vtkh with vtkm.
 //
 // ****************************************************************************
@@ -2014,7 +2014,7 @@ avtDataRepresentation::Valid(void)
 //    Kathleen Biagas, Wed Jan 30 10:41:55 PST 2019
 //    Removed support for EAVL.
 //
-//    Eric Brugger, Thu Dec  8 15:03:57 PST 2022
+//    Eric Brugger, Fri Feb 24 14:57:15 PST 2023
 //    I replaced vtkh with vtkm.
 //
 // ****************************************************************************
@@ -2182,7 +2182,7 @@ avtDataRepresentation::vtkToString(bool compress)
 //    Kathleen Biagas, Wed Jan 30 10:41:55 PST 2019
 //    Removed support for EAVL.
 //
-//    Eric Brugger, Thu Dec  8 15:03:57 PST 2022
+//    Eric Brugger, Fri Feb 24 14:57:15 PST 2023
 //    I replaced vtkh with vtkm.
 //
 // ****************************************************************************
@@ -2301,7 +2301,7 @@ avtDataRepresentation::GetDataString(int &length, DataSetType &dst, bool compres
 //    Kathleen Biagas, Wed Jan 30 10:41:55 PST 2019
 //    Removed support for EAVL.
 //
-//    Eric Brugger, Thu Dec  8 15:03:57 PST 2022
+//    Eric Brugger, Fri Feb 24 14:57:15 PST 2023
 //    I replaced vtkh with vtkm.
 //
 // ****************************************************************************
@@ -2445,7 +2445,7 @@ avtDataRepresentation::GetDataVTK(void)
 //    Eric Brugger, Wed Sep 12 16:41:55 PDT 2018
 //    I replaced support for vtkm with vtkh.
 //
-//    Eric Brugger, Thu Dec  8 15:03:57 PST 2022
+//    Eric Brugger, Fri Feb 24 14:57:15 PST 2023
 //    I replaced vtkh with vtkm.
 //
 // ****************************************************************************
@@ -2516,7 +2516,7 @@ avtDataRepresentation::GetDataVTKm(void)
 //    Kathleen Biagas, Wed Jan 30 10:41:55 PST 2019
 //    Removed support for EAVL.
 //
-//    Eric Brugger, Thu Dec  8 15:03:57 PST 2022
+//    Eric Brugger, Fri Feb 24 14:57:15 PST 2023
 //    I replaced vtkh with vtkm.
 //
 // ****************************************************************************
@@ -2567,7 +2567,7 @@ avtDataRepresentation::InitializeNullDatasets(void)
 //    Kathleen Biagas, Wed Jan 30 10:41:55 PST 2019
 //    Removed support for EAVL.
 //
-//    Eric Brugger, Thu Dec  8 15:03:57 PST 2022
+//    Eric Brugger, Fri Feb 24 14:57:15 PST 2023
 //    I replaced vtkh with vtkm.
 //
 // ****************************************************************************
@@ -3124,7 +3124,7 @@ avtDataRepresentation::DebugDump(avtWebpage *webpage, const char *prefix)
 //    Eric Brugger, Wed Sep 12 16:41:55 PDT 2018
 //    I replaced support for vtkm with vtkh.
 //
-//    Eric Brugger, Thu Dec  8 15:03:57 PST 2022
+//    Eric Brugger, Fri Feb 24 14:57:15 PST 2023
 //    I replaced vtkh with vtkm.
 //
 // ****************************************************************************
@@ -3162,7 +3162,7 @@ avtDataRepresentation::VTKmToVTK(avtVtkmDataSet *data)
 //    Eric Brugger, Wed Sep 12 16:41:55 PDT 2018
 //    I replaced support for vtkm with vtkh.
 //
-//    Eric Brugger, Thu Dec  8 15:03:57 PST 2022
+//    Eric Brugger, Fri Feb 24 14:57:15 PST 2023
 //    I replaced vtkh with vtkm.
 //
 // ****************************************************************************

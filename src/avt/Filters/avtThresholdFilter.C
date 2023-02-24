@@ -40,8 +40,6 @@
 #include <avtVtkmDataSet.h>
 #include <vtkm/cont/DataSet.h>
 #include <vtkm/filter/entity_extraction/Threshold.h>
-
-#include <vtkm/io/writer/VTKDataSetWriter.h>
 #endif
 
 
@@ -541,7 +539,7 @@ avtThresholdFilter::ProcessOneChunk_VTK(avtDataRepresentation *in_dr, bool fromC
 //  Creation:   November 18, 2020
 //
 //  Modifications:
-//    Eric Brugger, Thu Dec  8 15:03:57 PST 2022
+//    Eric Brugger, Fri Feb 24 14:57:15 PST 2023
 //    I replaced VTKh with VTKm.
 //
 // ****************************************************************************

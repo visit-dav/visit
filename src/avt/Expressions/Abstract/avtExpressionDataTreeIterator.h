@@ -52,6 +52,9 @@ class avtVtkmDataSet;
 //    Added volumeDependent array that tracks if a generated expression is
 //    volume-dependent.
 //
+//    Eric Brugger, Fri Feb 24 14:57:15 PST 2023
+//    I replaced vtkh with vtkm.
+//
 // ****************************************************************************
 
 class EXPRESSION_API avtExpressionDataTreeIterator 
