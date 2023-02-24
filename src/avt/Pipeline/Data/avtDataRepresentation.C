@@ -795,11 +795,11 @@ vtkPointsFromVTKM(avtVtkmDataSet *data)
             pts = vtkPoints::New();
             pts->SetNumberOfPoints(nXPoints * nYPoints * nZPoints);
             vtkm::Id ndx = 0;
-            for (vtkm::Id i = 0; i < nXPoints; ++i)
+            for (vtkm::Id k = 0; k < nZPoints; ++k)
             {
                 for (vtkm::Id j = 0; j < nYPoints; ++j)
                 {
-                    for (vtkm::Id k = 0; k < nZPoints; ++k)
+                    for (vtkm::Id i = 0; i < nXPoints; ++i)
                     {
                         pts->SetPoint((vtkIdType)ndx, xPtr[i], yPtr[j], zPtr[k]);
                         ndx++;
@@ -868,11 +868,11 @@ vtkPointsFromVTKM(avtVtkmDataSet *data)
             pts = vtkPoints::New();
             pts->SetNumberOfPoints(nXPoints * nYPoints * nZPoints);
             vtkm::Id ndx = 0;
-            for (vtkm::Id i = 0; i < nXPoints; ++i)
+            for (vtkm::Id k = 0; k < nZPoints; ++k)
             {
                 for (vtkm::Id j = 0; j < nYPoints; ++j)
                 {
-                    for (vtkm::Id k = 0; k < nZPoints; ++k)
+                    for (vtkm::Id i = 0; i < nXPoints; ++i)
                     {
                         pts->SetPoint((vtkIdType)ndx, xPtr[i], yPtr[j], zPtr[k]);
                         ndx++;
