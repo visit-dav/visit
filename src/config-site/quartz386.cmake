@@ -1,14 +1,14 @@
-#/usr/workspace/wsa/visit/visit/thirdparty_shared/3.3.0/toss3/cmake/3.18.2/linux-x86_64_gcc-7.3/bin/cmake
+#/usr/workspace/wsa/visit/visit/thirdparty_shared/3.3.2/toss3/cmake/3.18.2/linux-x86_64_gcc-7.3/bin/cmake
 ##
-## ./build_visit3_3_0 generated host.cmake
-## created: Tue May 31 14:34:31 PDT 2022
-## system: Linux quartz770 3.10.0-1160.62.1.1chaos.ch6.x86_64 #1 SMP Wed Apr 6 12:39:56 PDT 2022 x86_64 x86_64 x86_64 GNU/Linux
+## ./build_visit3_3_2 generated host.cmake
+## created: Fri Feb  3 16:02:10 PST 2023
+## system: Linux quartz188 3.10.0-1160.76.1.1chaos.ch6.x86_64 #1 SMP Tue Aug 9 16:18:25 PDT 2022 x86_64 x86_64 x86_64 GNU/Linux
 ## by: brugger
 
 ##
 ## Setup VISITHOME & VISITARCH variables.
 ##
-SET(VISITHOME /usr/workspace/wsa/visit/visit/thirdparty_shared/3.3.0/toss3)
+SET(VISITHOME /usr/workspace/wsa/visit/visit/thirdparty_shared/3.3.2/toss3)
 SET(VISITARCH linux-x86_64_gcc-7.3)
 VISIT_OPTION_DEFAULT(VISIT_SLIVR TRUE TYPE BOOL)
 

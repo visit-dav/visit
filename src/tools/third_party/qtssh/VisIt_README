@@ -1,0 +1,29 @@
+
+Notes related to the upgrade of putty to 0.78.
+They changed their build system significantly, with no easy mechanism for only building plink.
+So, the CMake build system was modified to only build plink.
+A few source files needed modification in order for the build to work correctly in the context of VisIt's build.
+
+To keep track of changes made to putty source and build file, the orignal files were copied and given a '.original' extension.
+This was done in the hopes of making the next putty upgrade a bit simpler.
+A quick comparison of the non '.original' file with the '.original' will reveal the changes needed by VisIt.
+
+With this upgrade, it was decided to drop VisIt's support for unix-qtssh as no longer needed, so no attempt was made to modify that path through puttys files.
+
+
+// Files that were modified for VisIt use:
+
+CMakeLists.txt
+defs.h
+cmake/setup.cmake
+crypto/CMakeLists.txt
+ssh/CMakeLists.txt
+ssh/userauth2-client.c
+utils/buildinfo.c
+windows/CMakeLists.txt
+windows/qtsshmain.c  /* added, derived from windows/plink.c */
+
+qtssh.h and qtssh.cpp are VisIt files and not part of the putty distro.
+
+Files/directories part of the putty distro that aren't used by VisIt were removed.
+
