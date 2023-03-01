@@ -357,7 +357,6 @@ avtExpressionDataTreeIterator::ExecuteData_VTKm(avtDataRepresentation *in_dr)
     // the output. Hopefully that is a shallow copy with some ref counting.
     avtVtkmDataSet *out = new avtVtkmDataSet;
     out->ds = in_ds->ds;
-    out->ds.PrintSummary(std::cout);
 
     // We need to compute the field so let the derived class compute 
     // the field and add it to the output dataset.
