@@ -2379,3 +2379,89 @@ See the text on visualizing the rays and imaging planes in :ref:`Visualizing_wit
 **4. What information is the query using to create the output?**
 
 See :ref:`Introspecting_with_Python` for information on how to extract and view the :ref:`XRay_Metadata`, which contains the information the query uses to create the output.
+
+**5. The fields in the Conduit Output are 1D. How can I reshape them to be 3D?**
+
+The following code examples will take resultant data (the intensity values, in this case) from the X Ray Image Query and reshape it to be 3D.
+
+::
+
+   import conduit
+   
+   def fetch_coordset_dims(data):
+       cset_vals = data.fetch_existing("coordsets/image_coords/values")
+       # fetch rectilinear coordset dims
+       nx = cset_vals.fetch_existing("x").dtype().number_of_elements()
+       ny = cset_vals.fetch_existing("y").dtype().number_of_elements()
+       nz = cset_vals.fetch_existing("z").dtype().number_of_elements()
+       # # if you would like to see the labels for these axes, this is 
+       # # how you can access them:
+       # cset_lbls = data.fetch_existing("coordsets/image_coords/labels")
+       # print(cset_lbls.fetch_existing("x"))
+       # print(cset_lbls.fetch_existing("y"))
+       # print(cset_lbls.fetch_existing("z"))
+       return nx, ny, nz
+   
+   def fetch_topology_dims(data):
+       # rectilinear topology have one less element in each 
+       # logical dim than the coordset
+       cnx, cny, cnz = fetch_coordset_dims(data)
+       return cnx - 1, cny - 1, cnz - 1
+   
+   def fetch_reshaped_field_values(data, field_name):
+       nx, ny, nz = fetch_topology_dims(data)
+       vals = data.fetch_existing("fields/" + field_name + "/values").value()
+       return vals.reshape(nx, ny, nz)
+
+We know that we should reshape in this order because x varies the fastest, then y, and then z.
+To verify this, we can examine the ``image_topo_order_of_domain_variables`` metadata (more information on that here: :ref:`_Other_Metadata`) which records in which order the axes vary.
+For the X Ray Image Query, this will always be x, then y, then z, so ``xrayout["domain_000000/state/xray_data/image_topo_order_of_domain_variables"] == "xyz"`` always.
+
+Now that we have set everything up, let's call the functions we created:
+
+::
+
+   # read xray blueprint output
+   n = conduit.Node()
+
+   # the output file is in this case called "output.root"
+   conduit.relay.io.blueprint.load_mesh(n, "output.root")
+   
+   # the node with our data is domain 0 -- or the first child
+   data = n[0] # the same could be done with data = 'n["domain_000000"]'
+
+   # the same could be done for "path_length"
+   intensity_vals = fetch_reshaped_field_values(data, "intensities")
+   
+   print("1D intensities")
+   print(data["fields/intensities/values"])
+
+   print("3D intensity shape")
+   print(intensity_vals.shape)
+
+   print("3D intensities")
+   print(intensity_vals)
+
+This produces the following:
+
+::
+   1D intensities
+   [0.         0.         0.         0.         0.         0.20180537
+    0.20180535 0.         0.         0.         0.         0.
+    0.         0.         0.         0.         0.         0.20180537
+    0.20180535 0.         0.         0.         0.         0.        ]
+
+   3D intensity shape
+   (2, 3, 4)
+
+   3D intensities
+   [[[0.         0.         0.         0.        ]
+     [0.         0.20180537 0.20180535 0.        ]
+     [0.         0.         0.         0.        ]]
+
+    [[0.         0.         0.         0.        ]
+     [0.         0.20180537 0.20180535 0.        ]
+     [0.         0.         0.         0.        ]]]
+
+The number of values is so small because I picked an image size of 4x3 pixels to demonstrate this.
+
