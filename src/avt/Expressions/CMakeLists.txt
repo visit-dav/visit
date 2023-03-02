@@ -63,7 +63,8 @@
 #    Derivations/avtStrainExpression
 #
 #    Eric Brugger, Fri Feb 24 14:57:15 PST 2023
-#    I replaced vtkh with vtkm.
+#    I removed the reference to the vtkm include directories since I
+#    removed all the code that depended on them.
 #
 #****************************************************************************/
 
