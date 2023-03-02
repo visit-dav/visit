@@ -7,6 +7,10 @@
 #   Kathleen Biagas, Thu Sep 27 11:35:34 PDT 2018
 #   Change PYTHON_LIBRARIES to PYTHON_LIBRARY for consistency throughout visit.
 #
+#   Eric Brugger, Fri Feb 24 14:57:15 PST 2023
+#   Replaced vtktiff with vtktiff_LIBRARIES, vtkjpeg with vtkjpeg_LIBRARIES,
+#   and vtkpng with vtkpng_LIBRARIES.
+#
 #****************************************************************************
 
 INCLUDE_DIRECTORIES(
@@ -36,11 +40,11 @@ ENDIF(VISIT_STATIC)
 
 LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY})
 
-if(VTK_VERSION VERSION_EQUAL "8.1.0")
-    set(VTK_EXTRA_LIBS vtktiff vtkjpeg vtkpng)
-else()
-    set(VTK_EXTRA_LIBS VTK::tiff VTK::jpeg VTK::png)
-endif()
+SET(VTK_EXTRA_LIBS
+${vtktiff_LIBRARIES}
+${vtkjpeg_LIBRARIES}
+${vtkpng_LIBRARIES}
+)
 
 ADD_EXECUTABLE(usedataserver usedataserver.cpp VisItDataServer.cpp ${STATIC_SOURCES})
 TARGET_LINK_LIBRARIES(usedataserver 

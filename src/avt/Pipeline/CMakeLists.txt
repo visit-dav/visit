@@ -42,10 +42,13 @@
 #   and CMake automagically pulls them in when compiling VisIt, even if not
 #   listed, but not when building the plugins.
 #
-#  Kathleen Biagas, Tue Dec 13, 2022
-#  Moved setting of sources to subdirs.
+#   Kathleen Biagas, Tue Dec 13, 2022
+#   Moved setting of sources to subdirs.
 #
-#****************************************************************************
+#   Eric Brugger, Fri Feb 24 14:57:15 PST 2023
+#   I replaced vtkh with vtkm.
+#
+#****************************************************************************/
 
 add_library(avtpipeline_ser)
 
@@ -94,8 +97,11 @@ target_link_libraries(avtpipeline_ser
                       visitcommon ${AVTMATH} avtdbatts
                       visit_vtk lightweight_visit_vtk ${vtklibs}
                       ${ZLIB_LIBRARY})
-if(VTKH_FOUND)
-    target_link_libraries(avtpipeline_ser vtkh)
+if(HAVE_LIBVTKM)
+    target_link_libraries(avtpipeline_ser vtkm_cont vtkm_filter_contour vtkm_filter_entity_extraction)
+    if(VTKm_ENABLE_KOKKOS)
+        target_link_libraries(avtpipeline_ser amdhip64)
+    endif()
 endif()
 
 VISIT_INSTALL_TARGETS(avtpipeline_ser)
@@ -106,8 +112,11 @@ if(VISIT_PARALLEL)
                           visitcommon ${AVTMATH} avtdbatts
                           visit_vtk lightweight_visit_vtk ${vtklibs}
                           ${ZLIB_LIBRARY})
-    if(VTKH_FOUND)
-        target_link_libraries(avtpipeline_par vtkh)
+    if(HAVE_LIBVTKM)
+        target_link_libraries(avtpipeline_ser vtkm_cont vtkm_filter_contour vtkm_filter_entity_extraction)
+        if(VTKm_ENABLE_KOKKOS)
+            target_link_libraries(avtpipeline_ser amdhip64)
+        endif()
     endif()
     VISIT_INSTALL_TARGETS(avtpipeline_par)
 endif()

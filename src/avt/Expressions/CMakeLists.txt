@@ -65,7 +65,11 @@
 #    Kathleen Biagas, Tue Dec 13, 2022
 #    Moved setting of sources to subdirs.
 #
-#*****************************************************************************
+#    Eric Brugger, Fri Feb 24 14:57:15 PST 2023
+#    I removed the reference to the vtkm include directories since I
+#    removed all the code that depended on them.
+#
+#****************************************************************************/
 
 add_library(avtexpressions_ser)
 if(VISIT_PARALLEL)
@@ -105,8 +109,7 @@ include_directories(
     ${VISIT_SOURCE_DIR}/visit_vtk/lightweight
     ${VISIT_SOURCE_DIR}/vtkm
     ${VISIT_SOURCE_DIR}/third_party_builtin/verdict
-    ${VTK_INCLUDE_DIRS}
-    ${VTKM_INCLUDE_DIR})
+    ${VTK_INCLUDE_DIRS})
 
 if(VISIT_PYTHON_FILTERS)
     include_directories(
