@@ -2291,6 +2291,10 @@ visit_SetTryHarderCyclesTimes(PyObject *self, PyObject *args)
 // Programmer: Brad Whitlock
 // Creation:   Wed Jan 17 11:04:01 PST 2018
 //
+//  Modifications:
+//    Eric Brugger, Fri Feb 24 14:57:15 PST 2023
+//    I replaced vtkh with vtkm.
+//
 // ****************************************************************************
 
 STATIC PyObject *
@@ -2303,8 +2307,8 @@ visit_SetBackendType(PyObject *self, PyObject *args)
         return NULL;
 
     int index = 0;
-#if defined(HAVE_LIBVTKH)
-    if(strcmp(name, "vtkm") == 0 || strcmp(name, "VTKM") == 0 || strcmp(name, "VTKm") == 0)
+#if defined(HAVE_LIBVTKM)
+    if(strcasecmp(name, "vtkm") == 0)
         index = 1;
 #endif
 
