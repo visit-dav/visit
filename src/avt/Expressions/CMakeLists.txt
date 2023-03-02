@@ -69,7 +69,7 @@
 #    I removed the reference to the vtkm include directories since I
 #    removed all the code that depended on them.
 #
-#****************************************************************************/
+#*****************************************************************************
 
 add_library(avtexpressions_ser)
 if(VISIT_PARALLEL)
