@@ -560,9 +560,6 @@
 #    Rename Windows visit_special_builds to visit_util_builds, add function
 #    for easier use of this uber-target.
 #
-#    Eric Brugger, Fri Feb 24 14:57:15 PST 2023
-#    I replaced vtkh with vtkm.
-#
 #****************************************************************************
 
 cmake_minimum_required(VERSION 3.24 FATAL_ERROR)
