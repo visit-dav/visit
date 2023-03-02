@@ -92,7 +92,7 @@ class avtMOABFileFormat : public avtSTMDFileFormat
     vtkDataArray*          GetDirichletSetsVar();
     vtkDataArray*          GetGeometrySetsVar();
     moab::Core*            mbCore;
-    const char*            fileName;
+    char*                  fileName;
     const DBOptionsAttributes *  readOptions;
     bool                   fileLoaded;
     struct mhdf_FileDesc *       file_descriptor;
