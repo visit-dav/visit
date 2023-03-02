@@ -2414,7 +2414,7 @@ The following code examples will take resultant data (the intensity values, in t
        return vals.reshape(nx, ny, nz)
 
 We know that we should reshape in this order because x varies the fastest, then y, and then z.
-To verify this, we can examine the ``image_topo_order_of_domain_variables`` metadata (more information on that here: :ref:`_Other_Metadata`) which records in which order the axes vary.
+To verify this, we can examine the ``image_topo_order_of_domain_variables`` metadata (more information on that here: :ref:`Other_Metadata`) which records in which order the axes vary.
 For the X Ray Image Query, this will always be x, then y, then z, so ``xrayout["domain_000000/state/xray_data/image_topo_order_of_domain_variables"] == "xyz"`` always.
 
 Now that we have set everything up, let's call the functions we created:
