@@ -2445,6 +2445,7 @@ Now that we have set everything up, let's call the functions we created:
 This produces the following:
 
 ::
+
    1D intensities
    [0.         0.         0.         0.         0.         0.20180537
     0.20180535 0.         0.         0.         0.         0.
