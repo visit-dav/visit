@@ -43,9 +43,6 @@
 #    Justin Privitera, Wed Aug 24 11:08:51 PDT 2022
 #    Added logic to be aware of avtBP lib.
 #
-#    Eric Brugger, Fri Feb 24 14:57:15 PST 2023
-#    Replace vtkjpeg with vtkjpeg_LIBRARIES and vtkpng with vtkpng_LIBRARIES.
-#
 #****************************************************************************
 
 set(LIBENGINE_SOURCES
