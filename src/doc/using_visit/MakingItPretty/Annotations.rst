@@ -558,12 +558,10 @@ The list of named values currently supported along with their *default* formats 
     | zlabel             |    %s    |  z axis label                       |
     +--------------------+----------+-------------------------------------+
 
-In addition, the following ``$<T>tafile<I>`` named values permit arbitrary text annotation content to be taken from a ``txt`` file.
+In addition, the following ``$<T>tafile<I>`` named values permit arbitrary text annotation content to be taken from a ``txt`` file with name of the form ``<T>tafile<I>.txt`` where ``<T>`` is either ``s`` (for files of string values), ``i`` (for files of integer values) or ``f`` (for files of floating point values) and ``<I>`` is either ``1``, ``2`` or ``3`` to provide 3 separate options for storing files of values used for different annotation purposes.
+Each line of such a file corresponds to a time step in a time series.
+If a ``$$<T>tafile<I>`` named annotation is used, VisIt_ will search for the associated file first in the same directory containing the database, then in the directory ``/$TMPDIR/$USER`` or (``/var/tmp/$USER``) and finally in :ref:`vuser_home`.
 
-in :ref:`vuser_home` instead a database.
-In this named value, ``<T>`` is either ``s`` (for files of string values), ``i`` (for files of integer values) or ``f`` (for files of floating point values) and ``<I>`` is either ``1``, ``2`` or ``3`` to provide 3 separate options for storing files of values used for different annotation purposes.
-The associated file is named ``$<T>tafile<I>.txt`` and is first looked for :ref:`vuser_home`, then in ``/$TMPDIR/$USER`` and finally in ``/var/tmp/$USER``.
-Each line of such a file cooresponds to a time step in a time series.
 A common use case for ``$<T>tafile<I>`` named values is for animations to display the numerical values from a query over time and have those values update as the time step being displayed changes.
 
     +--------------------+----------+-------------------------------------+
@@ -609,7 +607,7 @@ To display the first 3 characters of the variable name, use the string ``$varnam
 
 The ``$dbcomment`` and ``$<T>tafile<I>`` named values are useful for complicated cases because they allow arbitrary text defined in the database comment or an external file to be used.
 For example, the *state space* of a given database could be rather complicated involving not only iterations of the main PDE solve loop but also mesh adaptivity iterations, material advection iterations, etc.
-In this case, if the data producer created appropriate content in the database comment, the ``$dbcomment`` named value is a way to render all relevant iteration identifiers as a text annotation.
+In this case, if the data producer created appropriate content in the database comment or in a text file, the ``$dbcomment`` or ``$<T>tafile<X>`` named value is a way to render all relevant iteration identifiers as a text annotation.
 
 3D text annotation objects
 """"""""""""""""""""""""""

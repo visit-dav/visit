@@ -58,7 +58,7 @@ If the ``divide_emis_by_absorb`` is set, then the following integration is perfo
         :start-after: begin absorbtivity-normalized integration
         :end-before: end absorbtivity-normalized integration
 
-When the goal of the query is to generate a radiograph, the user supplies a background intensity (using either *background_intensity* or *background_intensities*; see :ref:`Standard Arguments`) and sets the emissivity arrays to zero. 
+When the goal of the query is to generate a radiograph, the user supplies a background intensity (using either *background_intensity* or *background_intensities*; see :ref:`Standard_Arguments`) and sets the emissivity arrays to zero. 
 The self-emission image produced by the query is then a radiograph. 
 
 When the goal of the query is to generate a self-emission image, the emissivities should be non-zero and a background intensity should not be supplied.
@@ -71,6 +71,8 @@ Query Arguments
 ~~~~~~~~~~~~~~~
 
 The query takes a few different kinds of arguments:
+
+.. _Standard_Arguments:
 
 Standard Arguments
 """"""""""""""""""
@@ -106,11 +108,11 @@ The standard arguments have to do with the query execution, output, debugging, a
 |                          | metadata.                                    |
 +--------------------------+----------------------------------------------+
 
-If using the :ref:`Conduit Output`, many of these arguments will appear in the output in a few different places.
-The ``vars`` will show up as ``absVarName`` and ``emisVarName`` under the :ref:`Query Parameters` section of the :ref:`Metadata`.
-``divide_emis_by_absorb`` shows up under the :ref:`Query Parameters` section of the :ref:`Metadata`.
-``image_size`` shows up as ``numXPixels`` and ``numYPixels`` under the :ref:`Query Parameters` section of the :ref:`Metadata`.
-The ``energy_group_bounds`` appear under the ``spatial_coords`` in the :ref:`Spatial Extents Mesh`.
+If using the :ref:`Conduit_Output`, many of these arguments will appear in the output in a few different places.
+The ``vars`` will show up as ``abs_var_name`` and ``emis_var_name`` under the :ref:`Query_Parameters` section of the :ref:`XRay_Metadata`.
+``divide_emis_by_absorb`` shows up under the :ref:`Query_Parameters` section of the :ref:`XRay_Metadata`.
+``image_size`` shows up as ``num_x_pixels`` and ``num_y_pixels`` under the :ref:`Query_Parameters` section of the :ref:`XRay_Metadata`.
+The ``energy_group_bounds`` appear under the ``spatial_coords`` in the :ref:`Spatial_Extents_Mesh`.
 
 Output Filenames and Directories
 ++++++++++++++++++++++++++++++++
@@ -156,6 +158,8 @@ Output Filenames and Directories
 |      |                   | another file exists with this name, VisIt_   |
 |      |                   | will overwrite it.                           |
 +------+-------------------+----------------------------------------------+
+
+.. _Output_Types:
 
 Output Types
 ++++++++++++
@@ -217,14 +221,16 @@ For example, if the input array variables were composed of 2 scalar variables, t
 * output.03.bof
 * output.03.bov - ``path_length`` from the second variable of the array variable.
 
-The Conduit output types provide a plethora of extra features; to learn more see :ref:`Conduit Output`.
+The Conduit output types provide a plethora of extra features; to learn more see :ref:`Conduit_Output`.
+
+.. _XRay_Units:
 
 Units
 +++++
 
 Units of various quantities can be passed through the query.
 None of these values are used in any calculations the query does to arrive at its output; all are optional.
-These units appear in the :ref:`Conduit Output` in a few different places.
+These units appear in the :ref:`Conduit_Output` in a few different places.
 
 +--------------------------+----------------------------------------------+
 | *spatial_units*          | The units of the simulation in the x and y   |
@@ -244,9 +250,11 @@ These units appear in the :ref:`Conduit Output` in a few different places.
 | *path_length_units*      | Metadata describing the path length output.  |
 +--------------------------+----------------------------------------------+
 
-The ``spatial_units`` and ``energy_units`` appear in the :ref:`Spatial Extents Mesh`.
-The ``abs_units`` and the ``emis_units`` appear in the :ref:`Query Parameters` section of the :ref:`Metadata`.
-The ``intensity_units`` and the ``path_length_units`` appear in the :ref:`Basic Mesh Output` under the fields.
+The ``spatial_units`` and ``energy_units`` appear in the :ref:`Spatial_Extents_Mesh`.
+The ``abs_units`` and the ``emis_units`` appear in the :ref:`Query_Parameters` section of the :ref:`XRay_Metadata`.
+The ``intensity_units`` and the ``path_length_units`` appear in the :ref:`Basic_Mesh_Output` under the fields.
+
+.. _Camera_Specification:
 
 Camera Specification
 """"""""""""""""""""
@@ -254,6 +262,8 @@ Camera Specification
 The query also takes arguments that specify the orientation of the camera in 3 dimensions. 
 This can take 2 forms. 
 The first is a simplified specification that gives limited control over the camera and the second is a complete specification that matches the 3D image viewing parameters. 
+
+.. _Simplified_Camera_Specification:
 
 Simplified Camera Specification
 +++++++++++++++++++++++++++++++
@@ -280,6 +290,8 @@ The simplified version consists of:
 *If any of the above properties are specified in the parameters, the query will use the simplified version.*
 
 During execution, the simplified camera specification parameters are converted to the complete ones.
+
+.. _Complete_Camera_Specification:
 
 Complete Camera Specification
 +++++++++++++++++++++++++++++
@@ -319,7 +331,7 @@ The complete version consists of:
 +------------------+------------------------------------------------------+
 
 When a Conduit Blueprint output type is specified, these parameters will appear in the metadata.
-See :ref:`View Parameters` for more information.
+See :ref:`View_Parameters` for more information.
 
 Calling the Query
 """""""""""""""""
@@ -348,7 +360,7 @@ The first is the old style argument passing:
    # An example
    Query("XRay Image", "hdf5", ".", 1, 0.0, 2.5, 10.0, 0, 0, 10., 10., 400, 300, ("d", "p"))
 
-This way of calling the query makes use of the :ref:`Simplified Camera Specification`.
+This way of calling the query makes use of the :ref:`Simplified_Camera_Specification`.
 
 It is recommended to instead use the standard way of calling the query, using a dictionary to store the arguments.
 Here is an example:
@@ -372,7 +384,7 @@ Of course, one could use this to set up the parameters instead:
 
    params = GetQueryParameters("XRay Image")
 
-However, this will force the :ref:`Simplified Camera Specification` to be used, since it includes default arguments for *all* of the various arguments, and if *any* of the :ref:`Simplified Camera Specification` arguments are present, they will override those of the :ref:`Complete Camera Specification`.
+However, this will force the :ref:`Simplified_Camera_Specification` to be used, since it includes default arguments for *all* of the various arguments, and if *any* of the :ref:`Simplified_Camera_Specification` arguments are present, they will override those of the :ref:`Complete_Camera_Specification`.
 
 Examples
 ~~~~~~~~
@@ -501,7 +513,7 @@ the default ones. This is necessary to use the full view specification. ::
 
    The resulting x ray image.
 
-The next example illustrates use of one of the :ref:`Conduit Output` types.
+The next example illustrates use of one of the :ref:`Conduit_Output` types.
 
 ::
 
@@ -554,7 +566,7 @@ To look at the raw data from the query, we run this code:
    print(xrayout["domain_000000"])
 
 This yields the following data overview.
-See :ref:`Introspecting with Python` for a deeper dive into viewing and extracting the raw data from the :ref:`Conduit Output`.
+See :ref:`Introspecting_with_Python` for a deeper dive into viewing and extracting the raw data from the :ref:`Conduit_Output`.
 
 ::
 
@@ -570,31 +582,32 @@ See :ref:`Introspecting with Python` for a deeper dive into viewing and extracti
          x: 0.0
          y: 2.5
          z: 10.0
-       viewUp: 
+       view_up: 
          x: 0.0
          y: 1.0
          z: 0.0
-       viewAngle: 30.0
+       view_angle: 30.0
        ... ( skipped 4 children )
-       imageZoom: 1.0
+       image_zoom: 1.0
        perspective: 1
-       perspectiveStr: "perspective"
+       perspective_str: "perspective"
      xray_query: 
-       divideEmisByAbsorb: 0
-       divideEmisByAbsorbStr: "no"
-       numXPixels: 400
-       numYPixels: 300
+       divide_emis_by_absorb: 0
+       divide_emis_by_absorb_str: "no"
+       num_x_pixels: 400
+       num_y_pixels: 300
        ... ( skipped 2 children )
-       emisVarName: "p"
-       absUnits: "abs units"
-       emisUnits: "emis units"
+       emis_var_name: "p"
+       abs_units: "abs units"
+       emis_units: "emis units"
      xray_data: 
-       detectorWidth: 8.80338743415454
-       detectorHeight: 6.60254037884486
-       intensityMax: 0.491446971893311
-       intensityMin: 0.0
-       pathLengthMax: 129.857009887695
-       pathLengthMin: 0.0
+       detector_width: 8.80338743415454
+       detector_height: 6.60254037884486
+       intensity_max: 0.491446971893311
+       intensity_min: 0.0
+       path_length_max: 129.857009887695
+       path_length_min: 0.0
+       image_topo_order_of_domain_variables: "xyz"
      domain_id: 0
    coordsets: 
      image_coords: 
@@ -735,7 +748,7 @@ See :ref:`Introspecting with Python` for a deeper dive into viewing and extracti
        values: [0.0, 1.0, 2.0, ..., 119998.0, 119999.0]
 
 The next thing we may want to do is to visualize an x ray image using VisIt_.
-The :ref:`Visualizing with VisIt` section goes into more detail on this subject, so for now we will only visualize the :ref:`Basic Mesh Output`.
+The :ref:`Visualizing_with_VisIt` section goes into more detail on this subject, so for now we will only visualize the :ref:`Basic_Mesh_Output`.
 
 ::
 
@@ -760,10 +773,12 @@ Running this code yields the following image:
 
    The resulting x ray image, visualized using VisIt.
 
+.. _Conduit_Output:
+
 Conduit Output
 ~~~~~~~~~~~~~~
 
-The `Conduit <https://llnl-conduit.readthedocs.io/en/latest/>`_ output types (see :ref:`Output Types` for more information) provide advantages over the other output types and include additional metadata and topologies.
+The `Conduit <https://llnl-conduit.readthedocs.io/en/latest/>`_ output types (see :ref:`Output_Types` for more information) provide advantages over the other output types and include additional metadata and topologies.
 These output types were added in VisIt_ 3.3.0, and many of the features discussed here have been added since then.
 
 Why Conduit Output?
@@ -773,8 +788,8 @@ Conduit `Blueprint <https://llnl-conduit.readthedocs.io/en/latest/blueprint.html
 Before Conduit Blueprint formats were available as output types, the X Ray Image Query would often produce large numbers of output files, particularly when using the bov or rawfloats output type, which was a popular choice because it provided the raw data.
 Alternatively, users could choose one of the image file output types to generate a picture or pictures.
 Conduit Blueprint provides the best of both worlds.
-Everything is stored in one file, and all of the raw data can be accessed via :ref:`Introspecting with Python`.
-Additionally, it is simple to generate an image, as the Blueprint output can be read back in to VisIt and visualized (see :ref:`Visualizing with VisIt`).
+Everything is stored in one file, and all of the raw data can be accessed via :ref:`Introspecting_with_Python`.
+Additionally, it is simple to generate an image, as the Blueprint output can be read back in to VisIt and visualized (see :ref:`Visualizing_with_VisIt`).
 
 .. figure:: images/xraywhyconduit1.png
 
@@ -784,12 +799,14 @@ Additionally, it is simple to generate an image, as the Blueprint output can be 
 
    The resulting x ray image from Conduit Blueprint output, visualized by plotting with VisIt.
 
-We have opted to enrich the Blueprint output (see :ref:`Basic Mesh Output`) with extensive metadata (see :ref:`Metadata`) as well as additional meshes (see :ref:`Imaging Planes and Rays Meshes` and :ref:`Spatial Extents Mesh`) to provide extra context and information to the user. 
+We have opted to enrich the Blueprint output (see :ref:`Basic_Mesh_Output`) with extensive metadata (see :ref:`XRay_Metadata`) as well as additional meshes (see :ref:`Imaging_Planes_and_Rays_Meshes` and :ref:`Spatial_Extents_Mesh`) to provide extra context and information to the user. 
 These additions should make it easier to troubleshoot unexpected results, make sense of the query output, and pass important information through the query.
 Blueprint makes it simple to put all of this information into one file, and just as simple to read that information back out and/or visualize.
 
 One of the main reasons for adding the Conduit output was to make it far easier to troubleshoot strange query results.
-See the :ref:`Troubleshooting` section to learn what kinds of questions the Conduit output can be used to answer.
+See the :ref:`XRay_Troubleshooting` section to learn what kinds of questions the Conduit output can be used to answer.
+
+.. _Overview_of_Output:
 
 Overview of Output
 """"""""""""""""""
@@ -865,8 +882,10 @@ Here is a simplified representation of a Conduit tree that is output from the Qu
 
 There are multiple Blueprint meshes stored in this tree, as well as extensive metadata.
 Each piece of the Conduit output will be covered in more detail in ensuing parts of the documentation.
-To learn more about what lives under the ``state`` branch, see the :ref:`Metadata` section.
-To learn more about the coordinate sets, topologies, and fields, see the :ref:`Basic Mesh Output`, :ref:`Imaging Planes and Rays Meshes`, and :ref:`Spatial Extents Mesh` sections.
+To learn more about what lives under the ``state`` branch, see the :ref:`XRay_Metadata` section.
+To learn more about the coordinate sets, topologies, and fields, see the :ref:`Basic_Mesh_Output`, :ref:`Imaging_Planes_and_Rays_Meshes`, and :ref:`Spatial_Extents_Mesh` sections.
+
+.. _Basic_Mesh_Output:
 
 Basic Mesh Output
 """""""""""""""""
@@ -878,7 +897,7 @@ We have taken the image data that comes out of the query and packaged it into a 
 
    The basic mesh output visualized using VisIt.
 
-The following is the example from :ref:`Overview of Output`, but with the Blueprint mesh representing the query result fully realized: 
+The following is the example from :ref:`Overview_of_Output`, but with the Blueprint mesh representing the query result fully realized: 
 
 ::
 
@@ -977,18 +996,20 @@ The fields, ``intensities`` and ``path_length``, can be thought of as containers
 Each also includes units.
 For path length, the ``units`` entry is just a way of including metadata or information about the path length, since path length is unitless.
 
-To visualize this mesh with VisIt, see :ref:`Visualizing with VisIt`.
+To visualize this mesh with VisIt, see :ref:`Visualizing_with_VisIt`.
+
+.. _XRay_Metadata:
 
 Metadata
 """"""""
 
-The Conduit output types (see :ref:`Output Types` for more information) come packaged with metadata in addition to Blueprint-conforming mesh data.
+The Conduit output types (see :ref:`Output_Types` for more information) come packaged with metadata in addition to Blueprint-conforming mesh data.
 The ability to send this metadata alongside the output mesh (and other data) is one of the advantages of using Conduit for outputs from the query.
 We hope this metadata helps to make it clear exactly what the query is doing, what information it has available to it, and what the output might look like.
-To extract the metadata from the Blueprint output, see :ref:`Introspecting with Python`.
+To extract the metadata from the Blueprint output, see :ref:`Introspecting_with_Python`.
 
 Metadata is stored under the ``state`` Node in the resulting Conduit tree.
-See the example below, which is taken from the example in :ref:`Overview of Output`, but this time with only the metadata fully realized: 
+See the example below, which is taken from the example in :ref:`Overview_of_Output`, but this time with only the metadata fully realized: 
 
 ::
 
@@ -1004,37 +1025,38 @@ See the example below, which is taken from the example in :ref:`Overview of Outp
         x: 0.0
         y: 2.5
         z: 10.0
-      viewUp: 
+      view_up: 
         x: 0.0
         y: 1.0
         z: 0.0
-      viewAngle: 30.0
-      parallelScale: 5.0
-      nearPlane: -50.0
-      farPlane: 50.0
-      imagePan: 
+      view_angle: 30.0
+      parallel_scale: 5.0
+      near_plane: -50.0
+      far_plane: 50.0
+      image_pan: 
         x: 0.0
         y: 0.0
-      imageZoom: 1.0
+      image_zoom: 1.0
       perspective: 1
-      perspectiveStr: "perspective"
+      perspective_str: "perspective"
     xray_query: 
-      divideEmisByAbsorb: 0
-      divideEmisByAbsorbStr: "no"
-      numXPixels: 400
-      numYPixels: 300
-      numBins: 1
-      absVarName: "d"
-      emisVarName: "p"
-      absUnits: "cm^2/g"
-      emisUnits: "GJ/cm^2/ster/ns/keV"
+      divide_emis_by_absorb: 0
+      divide_emis_by_absorb_str: "no"
+      num_x_pixels: 400
+      num_y_pixels: 300
+      num_bins: 1
+      abs_var_name: "d"
+      emis_var_name: "p"
+      abs_units: "cm^2/g"
+      emis_units: "GJ/cm^2/ster/ns/keV"
     xray_data: 
-      detectorWidth: 22.3932263237838
-      detectorHeight: 16.7949192423103
-      intensityMax: 0.491446971893311
-      intensityMin: 0.0
-      pathLengthMax: 120.815788269043
-      pathLengthMin: 0.0
+      detector_width: 22.3932263237838
+      detector_height: 16.7949192423103
+      intensity_max: 0.491446971893311
+      intensity_min: 0.0
+      path_length_max: 120.815788269043
+      path_length_min: 0.0
+      image_topo_order_of_domain_variables: "xyz"
     domain_id: 0
   coordsets: 
     image_coords: 
@@ -1088,16 +1110,18 @@ See the example below, which is taken from the example in :ref:`Overview of Outp
 
 There are three top-level items: ``time``, ``cycle``, and ``domain_id``.
 The fact that the ``domain_id`` is present is a side effect of Conduit; all of the output data is single domain and this value has nothing to do with the query.
-In addition to the top level items, there are three categories of metadata: :ref:`View Parameters`, :ref:`Query Parameters`, and :ref:`Other Metadata`.
+In addition to the top level items, there are three categories of metadata: :ref:`View_Parameters`, :ref:`Query_Parameters`, and :ref:`Other_Metadata`.
 The following subsections discuss each of these categories in more detail.
+
+.. _View_Parameters:
 
 View Parameters
 +++++++++++++++
 
 View parameters can be found under "state/xray_view".
 This metadata represents the view-related values that were used in the x ray image query calculations.
-Remember from the section on :ref:`Camera Specification` options that if the :ref:`Simplified Camera Specification` is used, the parameters are converted to the :ref:`Complete Camera Specification` during execution.
-Hence the values output here correspond to those in the :ref:`Complete Camera Specification`, as these are the values that were actually used by the query when calculating results.
+Remember from the section on :ref:`Camera_Specification` options that if the :ref:`Simplified_Camera_Specification` is used, the parameters are converted to the :ref:`Complete_Camera_Specification` during execution.
+Hence the values output here correspond to those in the :ref:`Complete_Camera_Specification`, as these are the values that were actually used by the query when calculating results.
 The following is included:
 
 +--------------------------+----------------------------------------------+
@@ -1109,27 +1133,27 @@ The following is included:
 |                          | focal point that was |br| used in the        |
 |                          | calculations.                                |    
 +--------------------------+----------------------------------------------+
-| *viewUp*                 | The x, y, and z components represent the up  |
+| *view_up*                | The x, y, and z components represent the up  |
 |                          | vector that was |br| used in the             |
 |                          | calculations.                                |
 +--------------------------+----------------------------------------------+
-| *viewAngle*              | The view angle, only used in the             |
+| *view_angle*             | The view angle, only used in the             |
 |                          | calculations if |br| perspective             |
 |                          | projection was enabled.                      |
 +--------------------------+----------------------------------------------+
-| *parallelScale*          | The parallel scale, or view height, that was |
+| *parallel_scale*         | The parallel scale, or view height, that was |
 |                          | used in the |br| calculations.               |
 +--------------------------+----------------------------------------------+
-| *nearPlane*              | The near plane that was used in the          |
+| *near_plane*             | The near plane that was used in the          |
 |                          | calculations.                                |
 +--------------------------+----------------------------------------------+
-| *farPlane*               | The far plane that was used in the           |
+| *far_plane*              | The far plane that was used in the           |
 |                          | calculations.                                |
 +--------------------------+----------------------------------------------+
-| *imagePan*               | The x and y components represent the image   |
+| *image_pan*              | The x and y components represent the image   |
 |                          | pan that was used |br| in the calculations.  |
 +--------------------------+----------------------------------------------+
-| *imageZoom*              | The absolute image zoom factor that was used |
+| *image_zoom*             | The absolute image zoom factor that was used |
 |                          | in the calculations.                         |
 +--------------------------+----------------------------------------------+
 | *perspective*            | A flag indicating if parallel or perspective |
@@ -1137,7 +1161,7 @@ The following is included:
 |                          | parallel projection and 1 indicates          |
 |                          | perspective |br| projection.                 |
 +--------------------------+----------------------------------------------+
-| *perspectiveStr*         | A String representation of the perspective   |
+| *perspective_str*        | A String representation of the perspective   |
 |                          | parameter. See above |br| for more           |
 |                          | information.                                 |
 +--------------------------+----------------------------------------------+
@@ -1153,22 +1177,24 @@ An example: ::
       x: 0.0
       y: 2.5
       z: 10.0
-    viewUp: 
+    view_up: 
       x: 0.0
       y: 1.0
       z: 0.0
-    viewAngle: 30.0
-    parallelScale: 5.0
-    nearPlane: -50.0
-    farPlane: 50.0
-    imagePan: 
+    view_angle: 30.0
+    parallel_scale: 5.0
+    near_plane: -50.0
+    far_plane: 50.0
+    image_pan: 
       x: 0.0
       y: 0.0
-    imageZoom: 1.0
+    image_zoom: 1.0
     perspective: 1
-    perspectiveStr: "perspective"
+    perspective_str: "perspective"
 
-To extract this metadata from the Blueprint output, see :ref:`Introspecting with Python`.
+To extract this metadata from the Blueprint output, see :ref:`Introspecting_with_Python`.
+
+.. _Query_Parameters:
 
 Query Parameters
 ++++++++++++++++
@@ -1178,51 +1204,53 @@ This metadata represents the query-related values that were used in the x ray im
 This data is available as of VisIt_ 3.3.2.
 The following is included:
 
-+--------------------------+----------------------------------------------+
-| *divideEmisByAbsorb*     | A flag indicating if emissivity was divided  |
-|                          | by absorbtivity |br| in the calculations.    |
-|                          | More details can be found above.             |
-+--------------------------+----------------------------------------------+
-| *divideEmisByAbsorbStr*  | A String representation of the               |
-|                          | divideEmisByAbsorb parameter. |br| See above |
-|                          | for more information.                        |
-+--------------------------+----------------------------------------------+
-| *numXPixels*             | The pixel extent in the X dimension in the   |
-|                          | output image.                                |
-+--------------------------+----------------------------------------------+
-| *numYPixels*             | The pixel extent in the Y dimension in the   |
-|                          | output image.                                |
-+--------------------------+----------------------------------------------+
-| *numBins*                | The number of bins (the Z dimension extent)  |
-|                          | in the output image.                         |
-+--------------------------+----------------------------------------------+
-| *absVarName*             | The name of the absorbtivity variable that   |
-|                          | was used in the calculations.                |
-+--------------------------+----------------------------------------------+
-| *emisVarName*            | The name of the emissivity variable that     |
-|                          | was used in the calculations.                |
-+--------------------------+----------------------------------------------+
-| *absUnits*               | The units of the absorbtivity variable that  |
-|                          | was used in the calculations.                |
-+--------------------------+----------------------------------------------+
-| *emisUnits*              | The units of the emissivity variable that    |
-|                          | was used in the calculations.                |
-+--------------------------+----------------------------------------------+
++-----------------------------+----------------------------------------------+
+| *divide_emis_by_absorb*     | A flag indicating if emissivity was divided  |
+|                             | by absorbtivity |br| in the calculations.    |
+|                             | More details can be found above.             |
++-----------------------------+----------------------------------------------+
+| *divide_emis_by_absorb_str* | A String representation of the               |
+|                             | divide_emis_by_absorb parameter. |br| See    |
+|                             | above for more information.                  |
++-----------------------------+----------------------------------------------+
+| *num_x_pixels*              | The pixel extent in the X dimension in the   |
+|                             | output image.                                |
++-----------------------------+----------------------------------------------+
+| *num_y_pixels*              | The pixel extent in the Y dimension in the   |
+|                             | output image.                                |
++-----------------------------+----------------------------------------------+
+| *num_bins*                  | The number of bins (the Z dimension extent)  |
+|                             | in the output image.                         |
++-----------------------------+----------------------------------------------+
+| *abs_var_name*              | The name of the absorbtivity variable that   |
+|                             | was used in the calculations.                |
++-----------------------------+----------------------------------------------+
+| *emis_var_name*             | The name of the emissivity variable that     |
+|                             | was used in the calculations.                |
++-----------------------------+----------------------------------------------+
+| *abs_units*                 | The units of the absorbtivity variable that  |
+|                             | was used in the calculations.                |
++-----------------------------+----------------------------------------------+
+| *emis_units*                | The units of the emissivity variable that    |
+|                             | was used in the calculations.                |
++-----------------------------+----------------------------------------------+
 
 An example: ::
 
   xray_query: 
-    divideEmisByAbsorb: 0
-    divideEmisByAbsorbStr: "no"
-    numXPixels: 400
-    numYPixels: 300
-    numBins: 1
-    absVarName: "d"
-    emisVarName: "p"
-    absUnits: "cm^2/g"
-    emisUnits: "GJ/cm^2/ster/ns/keV"
+    divide_emis_by_absorb: 0
+    divide_emis_by_absorb_str: "no"
+    num_x_pixels: 400
+    num_y_pixels: 300
+    num_bins: 1
+    abs_var_name: "d"
+    emis_var_name: "p"
+    abs_units: "cm^2/g"
+    emis_units: "GJ/cm^2/ster/ns/keV"
 
-To extract this metadata from the Blueprint output, see :ref:`Introspecting with Python`.
+To extract this metadata from the Blueprint output, see :ref:`Introspecting_with_Python`.
+
+.. _Other_Metadata:
 
 Other Metadata
 ++++++++++++++
@@ -1232,50 +1260,80 @@ These values are calculated constants based on the input parameters and output d
 This data is available as of VisIt_ 3.3.2.
 The following is included:
 
-+--------------------------+----------------------------------------------+
-| *detectorWidth*          | The width of the simulated x ray detector    |
-|                          | in physical space.                           |
-+--------------------------+----------------------------------------------+
-| *detectorHeight*         | The height of the simulated x ray detector   |
-|                          | in physical space.                           |
-+--------------------------+----------------------------------------------+
-| *intensityMax*           | The maximum value of the calculated          |
-|                          | intensities.                                 |
-+--------------------------+----------------------------------------------+
-| *intensityMin*           | The minimum value of the calculated          |
-|                          | intensities.                                 |
-+--------------------------+----------------------------------------------+
-| *pathLengthMax*          | The maximum value of the calculated          |
-|                          | path lengths.                                |
-+--------------------------+----------------------------------------------+
-| *pathLengthMin*          | The minimum value of the calculated          |
-|                          | path lengths.                                |
-+--------------------------+----------------------------------------------+
++----------------------------------------+----------------------------------------------+
+| *detector_width*                       | The width of the simulated x ray detector    |
+|                                        | in physical space.                           |
++----------------------------------------+----------------------------------------------+
+| *detector_height*                      | The height of the simulated x ray detector   |
+|                                        | in physical space.                           |
++----------------------------------------+----------------------------------------------+
+| *intensity_max*                        | The maximum value of the calculated          |
+|                                        | intensities.                                 |
++----------------------------------------+----------------------------------------------+
+| *intensity_min*                        | The minimum value of the calculated          |
+|                                        | intensities.                                 |
++----------------------------------------+----------------------------------------------+
+| *path_length_max*                      | The maximum value of the calculated          |
+|                                        | path lengths.                                |
++----------------------------------------+----------------------------------------------+
+| *path_length_min*                      | The minimum value of the calculated          |
+|                                        | path lengths.                                |
++----------------------------------------+----------------------------------------------+
+| *image_topo_order_of_domain_variables* | The intensities and path length field data   |
+|                                        | can be indexed as 3D |br|                    |
+|                                        | arrays, even though they are stored in       |
+|                                        | flattened 1D arrays. |br|                    |
+|                                        | The 3D striding calculation can be fully     |
+|                                        | determined using the |br|                    |
+|                                        | shape of the coordinate set the fields are   |
+|                                        | associated with and |br|                     |
+|                                        | an optional field-specific stride array. The |
+|                                        | default case fast |br|                       |
+|                                        | varies the first coordinate (x), then the    |
+|                                        | second (y), and |br|                         |
+|                                        | finally the third (z). The optional          |
+|                                        | field-specific stride info |br|              |
+|                                        | enables arbitrary striding patterns. We      |
+|                                        | provide striding |br|                        |
+|                                        | info for these fields, however the X Ray     |
+|                                        | Image Query always |br|                      |
+|                                        | writes data using the ``xyz`` (fast to slow) |
+|                                        | default strides. |br|                        |
+|                                        | ``image_topo_order_of_domain_variables``     |
+|                                        | provides this information |br|               |
+|                                        | as a string, hardcoded to be "xyz", that     |
+|                                        | reflects this.                               |
++----------------------------------------+----------------------------------------------+
 
 An example: ::
 
   xray_data: 
-    detectorWidth: 22.3932263237838
-    detectorHeight: 16.7949192423103
-    intensityMax: 0.491446971893311
-    intensityMin: 0.0
-    pathLengthMax: 120.815788269043
-    pathLengthMin: 0.0
+    detector_width: 22.3932263237838
+    detector_height: 16.7949192423103
+    intensity_max: 0.491446971893311
+    intensity_min: 0.0
+    path_length_max: 120.815788269043
+    path_length_min: 0.0
+    image_topo_order_of_domain_variables: "xyz"
 
-The minimum and maximum values that are included for the path length and intensity outputs are useful for quick :ref:`Troubleshooting` or sanity checks that the output matches expectations. 
+The minimum and maximum values that are included for the path length and intensity outputs are useful for quick :ref:`XRay_Troubleshooting` or sanity checks that the output matches expectations. 
 If both maximums and minimums are zero, for example, the simulated detector may not be facing the right way.
-In that case, the :ref:`Imaging Planes and Rays Meshes` section may be of some use.
+In that case, the :ref:`Imaging_Planes_and_Rays_Meshes` section may be of some use.
 
-To extract this metadata from the Blueprint output, see :ref:`Introspecting with Python`.
+To extract this metadata from the Blueprint output, see :ref:`Introspecting_with_Python`.
+
+.. _Imaging_Planes_and_Rays_Meshes:
 
 Imaging Planes and Rays Meshes
 """"""""""""""""""""""""""""""
 
-One of our goals with the Conduit output types (see :ref:`Output Types` for more information) is to provide rich, easy to understand information about the query to facilitate usability.
+One of our goals with the Conduit output types (see :ref:`Output_Types` for more information) is to provide rich, easy to understand information about the query to facilitate usability.
 To that end, these outputs come packaged with meshes representing the imaging planes specified by the user when calling the query.
 Additionally, they also include meshes representing the rays that were used in the ray tracing.
 The following subsections discuss both of these in more detail.
-To visualize these meshes with VisIt, see :ref:`Visualizing with VisIt`.
+To visualize these meshes with VisIt, see :ref:`Visualizing_with_VisIt`.
+
+.. _Imaging_Planes:
 
 Imaging Planes
 ++++++++++++++
@@ -1288,7 +1346,7 @@ Users can visualize the near, view, and far planes in physical space alongside t
    The near plane is in red, the view plane in transparent orange, and the far plane in blue.
 
 Including this in the output gives a sense of where the camera is looking, and is also useful for checking if parts of the mesh being ray traced are outside the near and far clipping planes.
-See the example below, which is taken from the example in :ref:`Overview of Output`, but this time with only the imaging plane meshes fully realized: 
+See the example below, which is taken from the example in :ref:`Overview_of_Output`, but this time with only the imaging plane meshes fully realized: 
 
 ::
 
@@ -1385,12 +1443,14 @@ See the example below, which is taken from the example in :ref:`Overview of Outp
     ray_field: 
       ...
 
-Just like the :ref:`Basic Mesh Output`, each of the three meshes has three constituent pieces.
+Just like the :ref:`Basic_Mesh_Output`, each of the three meshes has three constituent pieces.
 For the sake of brevity, we will only discuss the view plane, but the following information also holds true for the near and far planes.
 First off is the ``view_plane_coords`` coordinate set, which, as may be expected, contains only four points, representing the four corners of the rectangle.
 Next is the ``view_plane_topo``, which tells Conduit to treat the four points in the ``view_plane_coords`` as a quad.
 Finally, we have the ``view_plane_field``, which has one value, "0.0". 
 This value doesn't mean anything; it is just used to tell Blueprint that the entire quad should be colored the same color.
+
+.. _Rays_Meshes:
 
 Rays Meshes
 +++++++++++
@@ -1401,7 +1461,7 @@ Enter the rays meshes, or the meshes that contain the rays used to generate the 
 
 Why are there two?
 The first is the ray corners mesh.
-This is a Blueprint mesh containing four lines that pass through the corners of the :ref:`Imaging Planes`.
+This is a Blueprint mesh containing four lines that pass through the corners of the :ref:`Imaging_Planes`.
 Now the viewing frustum is visible:
 
 .. figure:: images/xray_view_frustum.png
@@ -1474,7 +1534,7 @@ And here is the same view with 400x300 rays but with the ray opacity lowered.
 
 Hopefully it is clear at this point that there are multiple ways of looking at the rays that are used in the ray trace.
 
-Now we will take a look at the final example taken from the example in :ref:`Overview of Output`, but this time with only the rays meshes fully realized: 
+Now we will take a look at the final example taken from the example in :ref:`Overview_of_Output`, but this time with only the rays meshes fully realized: 
 
 ::
 
@@ -1560,7 +1620,7 @@ Now we will take a look at the final example taken from the example in :ref:`Ove
       volume_dependent: "false"
       values: [0.0, 1.0, 2.0, ..., 119998.0, 119999.0]
 
-The Blueprint mesh setup may be familiar by now after reading the other sections, particularly the :ref:`Basic Mesh Output` section, so we will only mention here that for each ray mesh, there are the usual three components, a coordinate set, a topology, and a field.
+The Blueprint mesh setup may be familiar by now after reading the other sections, particularly the :ref:`Basic_Mesh_Output` section, so we will only mention here that for each ray mesh, there are the usual three components, a coordinate set, a topology, and a field.
 The topology tells Blueprint that the shapes in question are lines, which is how we represent the rays.
 
 The final topic of note in this section ties in to the following questions: Why are the rays all different colors? What do the colors mean?
@@ -1569,6 +1629,8 @@ These colors come from the field values under ``fields/ray_field``, which run fr
 We found that if all the rays were the same color, the resulting render was much harder to visually parse.
 Of course, rendering the rays as one color is still an option.
 With VisIt, one need only draw a Mesh Plot of the ``mesh_ray_topo`` as opposed to a Pseudocolor Plot of the ``mesh_ray_topo/ray_field``.
+
+.. _Spatial_Extents_Mesh:
 
 Spatial Extents Mesh
 """"""""""""""""""""
@@ -1579,27 +1641,27 @@ The final piece of the Blueprint Output is one last mesh, the spatial extents me
 
    The Spatial Extents Mesh visualized using VisIt.
 
-This mesh bears great similarity to that of the :ref:`Basic Mesh Output`.
-The :ref:`Basic Mesh Output` gives users a picture, in a sense, that was taken by the simulated x ray detector.
+This mesh bears great similarity to that of the :ref:`Basic_Mesh_Output`.
+The :ref:`Basic_Mesh_Output` gives users a picture, in a sense, that was taken by the simulated x ray detector.
 That picture lives in image space, where the x and y dimensions are given in pixels, and the z dimension represents the number of energy group bins.
 
 The spatial extents mesh is the same picture that was taken by the simulated x ray detector, but living in physical space.
 Instead of the x and y dimensions representing pixels, the x and y dimensions here represent spatial values.
 In the example below, these dimensions are in centimeters.
-The x and y values run from 0 to the detector width and height values, respectively, that appear in the :ref:`Other Metadata` section of the Blueprint output.
+The x and y values run from 0 to the detector width and height values, respectively, that appear in the :ref:`Other_Metadata` section of the Blueprint output.
 The z dimension represents actual energy group bins.
-These are values that were passed in via the query arguments (see :ref:`Standard Arguments` for more information).
+These are values that were passed in via the query arguments (see :ref:`Standard_Arguments` for more information).
 In the Blueprint example below, the z dimension represents Kiloelectron Volts.
 
-Another way to think about the spatial extents mesh is if the basic mesh output was resized and then pasted on top of the near plane mesh (:ref:`Imaging Planes`), you would get the spatial extents mesh (ignoring the z dimension).
+Another way to think about the spatial extents mesh is if the basic mesh output was resized and then pasted on top of the near plane mesh (:ref:`Imaging_Planes`), you would get the spatial extents mesh (ignoring the z dimension).
 The rationale for including this mesh is twofold: 
 
-1. It provides yet another view of the data. Perhaps seeing the output with spatial coordinates in x and y is more useful than seeing it with pixel coordinates. If parallel projection is used (:ref:`Complete Camera Specification`), the spatial view of the output is far more useful.
-2. This mesh acts as a container for various interesting pieces of data that users may want to pass through the query. This is the destination for the ``spatial_units`` and ``energy_units`` (:ref:`Units`), which show up under ``coordsets/spatial_coords/units``. This is also where the energy group bounds (:ref:`Standard Arguments`) appear in the output, under ``coordsets/spatial_coords/values/z``.
+1. It provides yet another view of the data. Perhaps seeing the output with spatial coordinates in x and y is more useful than seeing it with pixel coordinates. If parallel projection is used (:ref:`Complete_Camera_Specification`), the spatial view of the output is far more useful.
+2. This mesh acts as a container for various interesting pieces of data that users may want to pass through the query. This is the destination for the ``spatial_units`` and ``energy_units`` (:ref:`XRay_Units`), which show up under ``coordsets/spatial_coords/units``. This is also where the energy group bounds (:ref:`Standard_Arguments`) appear in the output, under ``coordsets/spatial_coords/values/z``.
 
 If the energy group bounds were not provided by the user, or the provided bounds do not match the actual number of bins used in the ray trace, then there will be a message explaining what went wrong under ``coordsets/spatial_coords/info``, and the z values will go from 0 to *n* where *n* is the number of bins.
 
-The following is the example from :ref:`Overview of Output`, but with only the spatial extents mesh fully realized: 
+The following is the example from :ref:`Overview_of_Output`, but with only the spatial extents mesh fully realized: 
 
 ::
 
@@ -1684,18 +1746,18 @@ The following is the example from :ref:`Overview of Output`, but with only the s
     ray_field: 
       ...
 
-As can be seen from the example, this view of the output is very similar to the :ref:`Basic Mesh Output`. 
+As can be seen from the example, this view of the output is very similar to the :ref:`Basic_Mesh_Output`. 
 It has all the same components, a coordinate set ``spatial_coords``, a topology ``spatial_topo``, and fields ``intensities_spatial`` and ``path_length_spatial``.
-The topology and fields are exact duplicates of those found in the :ref:`Basic Mesh Output`.
+The topology and fields are exact duplicates of those found in the :ref:`Basic_Mesh_Output`.
 The impetus for including the spatial extents mesh was originally to include spatial coordinates as part of the metadata, but later on it was decided that the spatial coordinates should be promoted to be a proper Blueprint coordset.
-We then duplicated the existing topology and fields from the :ref:`Basic Mesh Output` so that the spatial extents coordset could be part of a valid Blueprint mesh, and could thus be visualized using VisIt.
+We then duplicated the existing topology and fields from the :ref:`Basic_Mesh_Output` so that the spatial extents coordset could be part of a valid Blueprint mesh, and could thus be visualized using VisIt.
 
 .. figure:: images/xray_spatial_extents_mesh.png
 
    The spatial extents mesh looks very similar to the basic mesh output.
    It is in 3D and the z dimension represents the energy group bounds, which in this example run from 2.7 to 5.2.
 
-To visualize this mesh with VisIt, see :ref:`Visualizing with VisIt`. To extract the spatial extents data from the Blueprint output, see :ref:`Introspecting with Python`.
+To visualize this mesh with VisIt, see :ref:`Visualizing_with_VisIt`. To extract the spatial extents data from the Blueprint output, see :ref:`Introspecting_with_Python`.
 
 Pitfalls
 """"""""
@@ -1719,11 +1781,11 @@ If we adjust the query so that the near plane is further away (say maybe from -1
    Another view of this situation.
 
 The near plane has passed out of the view frustum. 
-This is because the view frustum is determined by the ``view_angle`` argument (see :ref:`Complete Camera Specification`).
+This is because the view frustum is determined by the ``view_angle`` argument (see :ref:`Complete_Camera_Specification`).
 In this case, the query is using the default value of 30 degrees, and because the near plane is far enough back, it is outside the frustum.
 
 So what does this mean for the other query results?
-It means that while we'd expect our :ref:`Spatial Extents Mesh` to look like this:
+It means that while we'd expect our :ref:`Spatial_Extents_Mesh` to look like this:
 
 .. figure:: images/xray_pitfall_spatialextent1.png
 
@@ -1737,7 +1799,7 @@ It will actually look like this:
 
 Why is the mesh upside-down?
 The spatial extents mesh is upside-down because the simulated x ray detector is upside down.
-Previously, in the :ref:`Spatial Extents Mesh` section we described the spatial extents mesh as though we had taken the :ref:`Basic Mesh Output`, resized it, and pasted it on top of the near plane.
+Previously, in the :ref:`Spatial_Extents_Mesh` section we described the spatial extents mesh as though we had taken the :ref:`Basic_Mesh_Output`, resized it, and pasted it on top of the near plane.
 That is exactly what is happening here.
 The spatial extents mesh is upside down because the near plane is upside down.
 
@@ -1765,11 +1827,13 @@ If we adjust the query so that the near plane is further away (say maybe from -1
 Following the ray corners, we see that the upper right corner for the near plane is actually on the bottom left, because the whole near plane has been reflected to accommodate the fact that it is behind the frustum.
 This explains why the spatial extents mesh appears upside down; it is actually reflected across the x and y axes.
 
+.. _Visualizing_with_VisIt:
+
 Visualizing with VisIt
 """"""""""""""""""""""
 
-One of the advantages of using one of the :ref:`Conduit Output` types is that it is easy to both look at the raw data and generate x ray images.
-This section will cover generating x ray images using VisIt as well as visualizing the other components of the :ref:`Conduit Output`.
+One of the advantages of using one of the :ref:`Conduit_Output` types is that it is easy to both look at the raw data and generate x ray images.
+This section will cover generating x ray images using VisIt as well as visualizing the other components of the :ref:`Conduit_Output`.
 
 The later Python code examples assume that the following has already been run:
 
@@ -1801,7 +1865,7 @@ The later Python code examples assume that the following has already been run:
    # In this case it is called "output.root"
    OpenDatabase("output.root")
 
-**1. Once the query has been run, to visualize the** :ref:`Basic Mesh Output`, **follow these steps in Python:**
+**1. Once the query has been run, to visualize the** :ref:`Basic_Mesh_Output`, **follow these steps in Python:**
 
 ::
 
@@ -1833,7 +1897,7 @@ To make the output look like an x ray image, it is simple to change the color ta
 
    A visualization of the basic mesh output using the x ray color table.
 
-**2. Next we will cover visualizing the** :ref:`Imaging Planes`.
+**2. Next we will cover visualizing the** :ref:`Imaging_Planes`.
 To simply render the imaging planes on top of your simulation data we will do the following:
 
 ::
@@ -1883,7 +1947,7 @@ To make them distinct colors like in all the examples throughout this documentat
 
    A visualization of the input mesh along with the imaging planes, where they have had their colors adjusted.
 
-**3. Next we will look at the** :ref:`Rays Meshes`.
+**3. Next we will look at the** :ref:`Rays_Meshes`.
 For the sake of visual clarity, we will build on the imaging planes visualization from above.
 To visualize the ray corners, it is a simple matter of doing the following:
 
@@ -1919,7 +1983,7 @@ Now we will visualize all of the rays.
 
    A visualization of the input mesh, the imaging planes, the ray corners, and the rays.
 
-As discussed in the :ref:`Rays Meshes` section, this picture is not very helpful, so we will reduce the opacity for greater visual clarity:
+As discussed in the :ref:`Rays_Meshes` section, this picture is not very helpful, so we will reduce the opacity for greater visual clarity:
 
 ::
 
@@ -1932,10 +1996,10 @@ As discussed in the :ref:`Rays Meshes` section, this picture is not very helpful
 
    A visualization of the input mesh, the imaging planes, the ray corners, and the rays, with their opacity adjusted.
 
-See the :ref:`Rays Meshes` section for more tips for making sense of the rays.
+See the :ref:`Rays_Meshes` section for more tips for making sense of the rays.
 
-**4. Finally, we will examine the** :ref:`Spatial Extents Mesh`.
-This should be very similar to visualizing the :ref:`Basic Mesh Output`.
+**4. Finally, we will examine the** :ref:`Spatial_Extents_Mesh`.
+This should be very similar to visualizing the :ref:`Basic_Mesh_Output`.
 
 ::
 
@@ -1967,13 +2031,15 @@ To make the output look like an x ray image, it is simple to change the color ta
 
    A visualization of the spatial extents mesh using the x ray color table.
 
+.. _Introspecting_with_Python:
+
 Introspecting with Python
 """""""""""""""""""""""""
 
-We have covered visualizing every component of the :ref:`Conduit Output` in the :ref:`Visualizing with VisIt` section; now we will demonstrate how to access the raw data using Python.
+We have covered visualizing every component of the :ref:`Conduit_Output` in the :ref:`Visualizing_with_VisIt` section; now we will demonstrate how to access the raw data using Python.
 
 **1. Getting a general overview of the output.**
-See :ref:`Overview of Output` for a visual of what the resulting Conduit tree looks like.
+See :ref:`Overview_of_Output` for a visual of what the resulting Conduit tree looks like.
 First, we will get everything set up.
 
 ::
@@ -1988,7 +2054,7 @@ First, we will get everything set up.
    conduit.relay.io.blueprint.load_mesh(xrayout, "output.root")
 
 Now we are ready to begin extracting data.
-To produce a Conduit tree like that of the example in :ref:`Overview of Output`, Conduit provides some simple tools:
+To produce a Conduit tree like that of the example in :ref:`Overview_of_Output`, Conduit provides some simple tools:
 
 ::
 
@@ -2003,8 +2069,8 @@ To produce a Conduit tree like that of the example in :ref:`Overview of Output`,
 This simple features can be used not just on the root of the Conduit tree, but everywhere.
 We will see these used repeatedly in ensuing examples.
 
-**2. Accessing the** :ref:`Basic Mesh Output` **data**.
-To get a sense of what the :ref:`Basic Mesh Output` looks like, we can run the following:
+**2. Accessing the** :ref:`Basic_Mesh_Output` **data**.
+To get a sense of what the :ref:`Basic_Mesh_Output` looks like, we can run the following:
 
 ::
 
@@ -2063,7 +2129,7 @@ This produces...
 Note that the long arrays are condensed for the sake of readability.
 If we wanted to see the entirety of the arrays, we could run ``print(myconduitnode.to_yaml())`` instead of ``print(myconduitnode)``.
 
-To actually extract the :ref:`Basic Mesh Output` data and not just see it, we can run the following:
+To actually extract the :ref:`Basic_Mesh_Output` data and not just see it, we can run the following:
 
 ::
 
@@ -2080,7 +2146,7 @@ To actually extract the :ref:`Basic Mesh Output` data and not just see it, we ca
 
 These variables can be printed, manipulated, iterated over, etc.
 
-**3. Accessing the** :ref:`Metadata`.
+**3. Accessing the** :ref:`XRay_Metadata`.
 Again, to get an overview of the metadata, it is simple to print the ``state`` branch:
 
 ::
@@ -2092,14 +2158,14 @@ Again, to get an overview of the metadata, it is simple to print the ``state`` b
    print(xrayout["domain_000000/state"].to_yaml())
 
 The following code extracts each of the values.
-First is top level :ref:`Metadata`:
+First is top level :ref:`XRay_Metadata`:
 
 ::
 
    time = xrayout["domain_000000/state/time"]
    cycle = xrayout["domain_000000/state/cycle"]
 
-Next up is :ref:`View Parameters`:
+Next up is :ref:`View_Parameters`:
 
 ::
 
@@ -2111,49 +2177,50 @@ Next up is :ref:`View Parameters`:
    focusy = xrayout["domain_000000/state/xray_view/focus/y"]
    focusz = xrayout["domain_000000/state/xray_view/focus/z"]
 
-   viewUpx = xrayout["domain_000000/state/xray_view/viewUp/x"]
-   viewUpy = xrayout["domain_000000/state/xray_view/viewUp/y"]
-   viewUpz = xrayout["domain_000000/state/xray_view/viewUp/z"]
+   view_upx = xrayout["domain_000000/state/xray_view/view_up/x"]
+   view_upy = xrayout["domain_000000/state/xray_view/view_up/y"]
+   view_upz = xrayout["domain_000000/state/xray_view/view_up/z"]
 
-   viewAngle = xrayout["domain_000000/state/xray_view/viewAngle"]
-   parallelScale = xrayout["domain_000000/state/xray_view/parallelScale"]
-   nearPlane = xrayout["domain_000000/state/xray_view/nearPlane"]
-   farPlane = xrayout["domain_000000/state/xray_view/farPlane"]
+   view_angle = xrayout["domain_000000/state/xray_view/view_angle"]
+   parallel_scale = xrayout["domain_000000/state/xray_view/parallel_scale"]
+   near_plane = xrayout["domain_000000/state/xray_view/near_plane"]
+   far_plane = xrayout["domain_000000/state/xray_view/far_plane"]
 
-   imagePanx = xrayout["domain_000000/state/xray_view/imagePan/x"]
-   imagePany = xrayout["domain_000000/state/xray_view/imagePan/y"]
+   image_panx = xrayout["domain_000000/state/xray_view/image_pan/x"]
+   image_pany = xrayout["domain_000000/state/xray_view/image_pan/y"]
 
-   imageZoom = xrayout["domain_000000/state/xray_view/imageZoom"]
+   image_zoom = xrayout["domain_000000/state/xray_view/image_zoom"]
    perspective = xrayout["domain_000000/state/xray_view/perspective"]
-   perspectiveStr = xrayout["domain_000000/state/xray_view/perspectiveStr"]
+   perspective_str = xrayout["domain_000000/state/xray_view/perspective_str"]
 
-Then :ref:`Query Parameters`:
-
-::
-
-   divideEmisByAbsorb = xrayout["domain_000000/state/xray_query/divideEmisByAbsorb"]
-   divideEmisByAbsorbStr = xrayout["domain_000000/state/xray_query/divideEmisByAbsorbStr"]
-   numXPixels = xrayout["domain_000000/state/xray_query/numXPixels"]
-   numYPixels = xrayout["domain_000000/state/xray_query/numYPixels"]
-   numBins = xrayout["domain_000000/state/xray_query/numBins"]
-   absVarName = xrayout["domain_000000/state/xray_query/absVarName"]
-   emisVarName = xrayout["domain_000000/state/xray_query/emisVarName"]
-   absUnits = xrayout["domain_000000/state/xray_query/absUnits"]
-   emisUnits = xrayout["domain_000000/state/xray_query/emisUnits"]
-
-And finally, :ref:`Other Metadata`:
+Then :ref:`Query_Parameters`:
 
 ::
 
-   detectorWidth = xrayout["domain_000000/state/xray_data/detectorWidth"]
-   detectorHeight = xrayout["domain_000000/state/xray_data/detectorHeight"]
-   intensityMax = xrayout["domain_000000/state/xray_data/intensityMax"]
-   intensityMin = xrayout["domain_000000/state/xray_data/intensityMin"]
-   pathLengthMax = xrayout["domain_000000/state/xray_data/pathLengthMax"]
-   pathLengthMin = xrayout["domain_000000/state/xray_data/pathLengthMin"]
+   divide_emis_by_absorb = xrayout["domain_000000/state/xray_query/divide_emis_by_absorb"]
+   divide_emis_by_absorb_str = xrayout["domain_000000/state/xray_query/divide_emis_by_absorb_str"]
+   num_x_pixels = xrayout["domain_000000/state/xray_query/num_x_pixels"]
+   num_y_pixels = xrayout["domain_000000/state/xray_query/num_y_pixels"]
+   num_bins = xrayout["domain_000000/state/xray_query/num_bins"]
+   abs_var_name = xrayout["domain_000000/state/xray_query/abs_var_name"]
+   emis_var_name = xrayout["domain_000000/state/xray_query/emis_var_name"]
+   abs_units = xrayout["domain_000000/state/xray_query/abs_units"]
+   emis_units = xrayout["domain_000000/state/xray_query/emis_units"]
 
-**4. Accessing the** :ref:`Spatial Extents Mesh` **data.**
-Because the :ref:`Spatial Extents Mesh` shares a lot in common with the :ref:`Basic Mesh Output`, we will only cover here how to extract some of the unique values.
+And finally, :ref:`Other_Metadata`:
+
+::
+
+   detector_width = xrayout["domain_000000/state/xray_data/detector_width"]
+   detector_height = xrayout["domain_000000/state/xray_data/detector_height"]
+   intensity_max = xrayout["domain_000000/state/xray_data/intensity_max"]
+   intensity_min = xrayout["domain_000000/state/xray_data/intensity_min"]
+   path_length_max = xrayout["domain_000000/state/xray_data/path_length_max"]
+   path_length_min = xrayout["domain_000000/state/xray_data/path_length_min"]
+   image_topo_order_of_domain_variables = xrayout["domain_000000/state/xray_data/image_topo_order_of_domain_variables"]
+
+**4. Accessing the** :ref:`Spatial_Extents_Mesh` **data.**
+Because the :ref:`Spatial_Extents_Mesh` shares a lot in common with the :ref:`Basic_Mesh_Output`, we will only cover here how to extract some of the unique values.
 
 ::
 
@@ -2175,6 +2242,8 @@ Because the :ref:`Spatial Extents Mesh` shares a lot in common with the :ref:`Ba
 All of the other data stored in the Conduit output can be accessed in the same way.
 To get a general sense of what is stored in particular branches of the tree, it is a simple matter of running ``print(myconduitnode)`` to quickly get an overview.
 
+.. _XRay_Troubleshooting:
+
 Troubleshooting
 """""""""""""""
 
@@ -2182,9 +2251,9 @@ Now that we have explored the Conduit Blueprint output in detail, we can use it 
 
 **1. Is my image blank?**
 
-This question can be answered without even examining the image (or in the case of the Blueprint output, a render of the :ref:`Basic Mesh Output`).
+This question can be answered without even examining the image (or in the case of the Blueprint output, a render of the :ref:`Basic_Mesh_Output`).
 It is as simple as checking if the minimum and maximum values for the intensities and path length are zero.
-See :ref:`Other Metadata` for more information.
+See :ref:`Other_Metadata` for more information.
 These values can be pulled out of the Conduit output with ease, using the following:
 
 ::
@@ -2197,32 +2266,32 @@ These values can be pulled out of the Conduit output with ease, using the follow
    conduit.relay.io.blueprint.load_mesh(mesh, "output.root")
 
    # We extract the values from the node.
-   intensityMax = mesh["domain_000000/state/xray_data/intensityMax"]
-   intensityMin = mesh["domain_000000/state/xray_data/intensityMin"]
-   pathLengthMax = mesh["domain_000000/state/xray_data/pathLengthMax"]
-   pathLengthMin = mesh["domain_000000/state/xray_data/pathLengthMin"]
+   intensity_max = mesh["domain_000000/state/xray_data/intensity_max"]
+   intensity_min = mesh["domain_000000/state/xray_data/intensity_min"]
+   path_length_max = mesh["domain_000000/state/xray_data/path_length_max"]
+   path_length_min = mesh["domain_000000/state/xray_data/path_length_min"]
 
-   print("intensityMax = " + str(intensityMax))
-   print("intensityMin = " + str(intensityMin))
-   print("pathLengthMax = " + str(pathLengthMax))
-   print("pathLengthMin = " + str(pathLengthMin))
+   print("intensity_max = " + str(intensity_max))
+   print("intensity_min = " + str(intensity_min))
+   print("path_length_max = " + str(path_length_max))
+   print("path_length_min = " + str(path_length_min))
 
 Yielding:
 
 ::
 
-   intensityMax = 0.49144697189331055
-   intensityMin = 0.0
-   pathLengthMax = 129.8570098876953
-   pathLengthMin = 0.0
+   intensity_max = 0.49144697189331055
+   intensity_min = 0.0
+   path_length_max = 129.8570098876953
+   path_length_min = 0.0
 
 If the maximums were also equal to zero, then the image would be blank.
 Hence, it is possible to quickly programmatically check if the image is blank, without any need for taking the time to look at the image.
-See :ref:`Introspecting with Python` for more information about extracting data from the query output.
+See :ref:`Introspecting_with_Python` for more information about extracting data from the query output.
 
 **2. Why is my image blank? Is the camera facing the right way? Are the near and far clipping planes in good positions?**
 
-This line of questioning can be quickly answered by visualizing the :ref:`Imaging Planes and Rays Meshes`.
+This line of questioning can be quickly answered by visualizing the :ref:`Imaging_Planes_and_Rays_Meshes`.
 
 ::
 
@@ -2242,8 +2311,8 @@ This line of questioning can be quickly answered by visualizing the :ref:`Imagin
 
    DrawPlots()
 
-Running this code using VisIt should result in renders like those shown in :ref:`Imaging Planes and Rays Meshes`.
-To make the planes different colors, use VisIt's color table controls, or see :ref:`Visualizing with VisIt`.
+Running this code using VisIt should result in renders like those shown in :ref:`Imaging_Planes_and_Rays_Meshes`.
+To make the planes different colors, use VisIt's color table controls, or see :ref:`Visualizing_with_VisIt`.
 
 .. figure:: images/xray_troubleshooting_2.png
 
@@ -2251,12 +2320,12 @@ To make the planes different colors, use VisIt's color table controls, or see :r
 
 The simulated x ray detector is situated at the near plane, looking in the direction of the view plane, and seeing nothing after the far plane.
 Once the imaging planes and ray corners have been visualized, it is clear to see where the camera is looking, and if the near and far clipping planes are appropriately placed.
-See the text on visualizing the rays and imaging planes in :ref:`Visualizing with VisIt`.
+See the text on visualizing the rays and imaging planes in :ref:`Visualizing_with_VisIt`.
 
 **3. Where are the rays intersecting my geometry?**
 
 Answering this question is similarly simple.
-We will want to visualize the :ref:`Rays Meshes` on top of our input mesh.
+We will want to visualize the :ref:`Rays_Meshes` on top of our input mesh.
 
 ::
 
@@ -2277,9 +2346,9 @@ We will want to visualize the :ref:`Rays Meshes` on top of our input mesh.
 
    DrawPlots()
 
-Running this code using VisIt should result in renders like those shown in :ref:`Rays Meshes`.
+Running this code using VisIt should result in renders like those shown in :ref:`Rays_Meshes`.
 Use the tips and tricks shown in that section to gain greater clarity for answering this question.
-See the text on visualizing the rays and imaging planes in :ref:`Visualizing with VisIt`.
+See the text on visualizing the rays and imaging planes in :ref:`Visualizing_with_VisIt`.
 
 .. figure:: images/xray_visualize_rays2.png
 
@@ -2287,4 +2356,4 @@ See the text on visualizing the rays and imaging planes in :ref:`Visualizing wit
 
 **4. What information is the query using to create the output?**
 
-See :ref:`Introspecting with Python` for information on how to extract and view the :ref:`Metadata`, which contains the information the query uses to create the output.
+See :ref:`Introspecting_with_Python` for information on how to extract and view the :ref:`XRay_Metadata`, which contains the information the query uses to create the output.

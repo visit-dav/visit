@@ -46,7 +46,7 @@ Color Table Window
 You can open VisIt_'s **Color table window**, shown in :numref:`Figure %s <fig-MakingItPretty-ColorTables>`, by selecting **Color table** from the **Main Window**'s **Controls** menu, or by pressing ``ctrl`` + ``t``.
 The **Color table window** is vertically separated into three areas: The top area allows you to set the default color tables. 
 The middle area, or the manager portion of the window, allows you to create, delete, and export new color tables, as well as organize all the available color tables.
-See :ref:`Filtering With Tags` for more information. 
+See :ref:`Filtering_With_Tags` for more information. 
 The bottom area, or editor
 portion of the window, allows you to edit color tables by adding,
 removing, moving, or changing the color of color control points. A
@@ -66,7 +66,7 @@ select a new color table name from the **Continuous** menu in the
 **Default color table** area. To select a new default discrete color
 table, select a new color table name from the **Discrete** menu in the
 **Default color table** area.
-If you would like to see more or less color table options for both the **Continuous** and **Discrete** buttons, see :ref:`Filtering With Tags` for instructions on filtering which color tables are available to be used.
+If you would like to see more or less color table options for both the **Continuous** and **Discrete** buttons, see :ref:`Filtering_With_Tags` for instructions on filtering which color tables are available to be used.
 
 Creating a new color table
 """"""""""""""""""""""""""
@@ -426,6 +426,8 @@ The Crameri color tables define five broad classes of color tables...
 In addition, *discrete* versions consisting of 10 colors from their associated *main* color table are defined.
 
 These color tables all have the ``Color Blind Safe`` and ``Crameri`` tags and are named ``<name>-<class>-<count>`` where ``<name>`` is the specific color table in the Crameri set of color tables, ``<class>`` is one of the five classes defined above and ``<count>`` is defined only for discrete color tables and indicates the number of colors in the table.
+
+.. _Filtering_With_Tags:
 
 Filtering With Tags
 ~~~~~~~~~~~~~~~~~~~

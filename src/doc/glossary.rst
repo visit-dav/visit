@@ -76,3 +76,4 @@ Glossary
        an entire zone) interpolation scheme used to define a field variable on
        a mesh. VTK tends to use the *cell* terminology whereas VisIt_ tends to
        use the *zone* terminology.
+
