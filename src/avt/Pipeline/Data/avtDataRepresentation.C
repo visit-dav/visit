@@ -3132,7 +3132,7 @@ avtDataRepresentation::DebugDump(avtWebpage *webpage, const char *prefix)
 vtkDataSet*
 avtDataRepresentation::VTKmToVTK(avtVtkmDataSet *data)
 {
-    debug5 << "converting dataset from VTKm to VTK...\n";
+    debug1 << "converting dataset from VTKm to VTK...\n";
 
     vtkDataSet *ret = NULL;
     if (data)
@@ -3170,7 +3170,7 @@ avtDataRepresentation::VTKmToVTK(avtVtkmDataSet *data)
 avtVtkmDataSet*
 avtDataRepresentation::VTKToVTKm(vtkDataSet *data)
 {
-    debug5 << "converting dataset from VTK to VTKm...\n";
+    debug1 << "converting dataset from VTK to VTKm...\n";
 
     avtVtkmDataSet *ret = NULL;
     if (data)
