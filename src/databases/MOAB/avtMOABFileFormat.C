@@ -67,7 +67,7 @@ avtMOABFileFormat::avtMOABFileFormat(const char *filename, const DBOptionsAttrib
     // INITIALIZE DATA MEMBERS
 
 	debug1<< " constructor called, file " << filename << "\n";
-    fileName = filename;
+    fileName = strdup(filename);
     mbCore = new moab::Core();
 }
 
@@ -96,6 +96,11 @@ avtMOABFileFormat::FreeUpResources(void) {
     if (file_descriptor) {
         free(file_descriptor);
         file_descriptor = NULL;
+    }
+    if (fileName != NULL)
+    {
+        free(fileName);
+        fileName = NULL;
     }
 #ifdef PARALLEL
 	if (pcomm)
