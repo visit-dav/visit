@@ -104,6 +104,11 @@ if not os.environ.get('READTHEDOCS'):
         version
     except:
         version = "local_build"
+else:
+    try:
+        version
+    except:
+        version = "rtd_build"
 
 htmlhelp_basename = 'VisItUserManualdoc'
 
