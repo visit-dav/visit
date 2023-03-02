@@ -2061,13 +2061,34 @@ To produce a Conduit tree like that of the example in :ref:`Overview_of_Output`,
    # To print a condensed overview of the output
    print(xrayout["domain_000000"])
 
-   # This will print the entirety of the output...
+   # This is the same as
+   # print(xrayout["domain_000000"].to_summary_string())
+
+   # These will only print subsets of children, and for each child
+   # only a subset of leaf array values so as to not overwhelm the screen.
+
+   # The following will print the entirety of the output...
    # including every coordinate and field value,
    # so use with caution.
    print(xrayout["domain_000000"].to_yaml())
 
-This simple features can be used not just on the root of the Conduit tree, but everywhere.
+These simple features can be used not just on the root of the Conduit tree, but everywhere.
 We will see these used repeatedly in ensuing examples.
+
+One other useful tool for interrogating a Conduit tree is the ``childnames()`` function.
+We can use ``xrayout.childnames()`` to see the names of all the top-level children as a list.
+In this case, calling ``xrayout.childnames()`` would produce ``['state', 'coordsets', 'topologies', 'fields']``.
+We can call ``childnames()`` on any of the children of ``xrayout`` (``xrayout["state"].childnames()``, for example) to further investigate the layers of the tree.
+
+Additionally, it is possible to iterate through the children of a Conduit node using this:
+
+::
+
+   for child in xrayout.children():
+      print(child.name(), child.node())
+
+Children are not always named.
+A node can behave like a python dictionary or a python list; for the latter, index access is possible.
 
 **2. Accessing the** :ref:`Basic_Mesh_Output` **data**.
 To get a sense of what the :ref:`Basic_Mesh_Output` looks like, we can run the following:
