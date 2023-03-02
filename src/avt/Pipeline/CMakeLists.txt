@@ -74,7 +74,6 @@ include_directories(
     ${VISIT_SOURCE_DIR}/avt/VisWindow/VisWindow
     ${VISIT_SOURCE_DIR}/visit_vtk/full
     ${VISIT_SOURCE_DIR}/visit_vtk/lightweight
-    ${VTKh_INCLUDE_DIRS}
     ${VTKm_INCLUDE_DIRS}
     ${VTK_INCLUDE_DIRS}
     ${ZLIB_INCLUDE_DIR})
