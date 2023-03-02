@@ -104,8 +104,8 @@ The standard arguments have to do with the query execution, output, debugging, a
 +--------------------------+----------------------------------------------+
 | *energy_group_bounds*    | The energy group bounds can be handed off to |
 |                          | the query in a list or tuple. |br| The       |
-|                          | values will appear in Spatial Extents mesh   |
-|                          | in the Blueprint output.                     |
+|                          | values will appear in the Spatial Extents    |
+|                          | Mesh in the Blueprint output.                |
 +--------------------------+----------------------------------------------+
 
 If using the :ref:`Conduit_Output`, many of these arguments will appear in the output in a few different places.
