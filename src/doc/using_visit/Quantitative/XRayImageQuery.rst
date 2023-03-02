@@ -2087,7 +2087,8 @@ Additionally, it is possible to iterate through the children of a Conduit node u
    for child in xrayout.children():
       print(child.name(), child.node())
 
-Children are not always named.
+In general, children are not always named.
+For our purposes with the X Ray Image Query, they always will be.
 A node can behave like a python dictionary or a python list; for the latter, index access is possible.
 
 **2. Accessing the** :ref:`Basic_Mesh_Output` **data**.
