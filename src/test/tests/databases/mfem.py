@@ -27,7 +27,7 @@ for f in input_meshs:
     base = os.path.splitext(os.path.basename(f))[0]
     DeleteAllPlots()
     OpenDatabase(f)
-    AddPlot("Pseudocolor","element_coloring")
+    AddPlot("Pseudocolor","main_element_coloring")
     #pc_atts = PseudocolorAttributes()
     #pc_atts.colorTableName = "PuBuGn"
     #SetPlotOptions(pc_atts)
@@ -64,7 +64,7 @@ for f in ex02_results:
     base = os.path.splitext(os.path.basename(f))[0]
     DeleteAllPlots()
     OpenDatabase(f)
-    AddPlot("Pseudocolor","element_attribute")
+    AddPlot("Pseudocolor","main_element_attribute")
     #AddPlot("Mesh","main")
     DrawPlots()
     Test("ex02_element_attribute_%s" % (base))
@@ -89,5 +89,22 @@ DrawPlots()
 Test("mfem_expressions_3")
 DeleteAllPlots()
 CloseDatabase(data_path("mfem_test_data/ex02-beam-tet.mfem_root"))
+
+
+TestSection("Input Mesh Boundary Topology")
+for f in input_meshs:
+    base = os.path.splitext(os.path.basename(f))[0]
+    DeleteAllPlots()
+    OpenDatabase(f)
+    AddPlot("Pseudocolor","main_boundary_attribute")
+    AddPlot("Mesh","main_boundary")
+    mesh_atts = MeshAttributes()
+    mesh_atts.lineWidth = 2
+    SetPlotOptions(mesh_atts)
+    DrawPlots()
+    Test("input_mesh_%s_boundary_topo_%04d" % (base,mres))
+    DeleteAllPlots()
+    CloseDatabase(f)
+
 
 Exit()

@@ -1366,3 +1366,25 @@ StringHelpers::ParseRange(const string range, std::vector<int> &list)
     return parseError;
 }
 
+
+// ****************************************************************************
+//  Method:  StringHelpers::ends_with
+//
+//  Purpose:
+//   Checks if string ends with another string
+//
+//
+//
+//  Programmer:  Cyrus Harrison
+//  Creation:    Thu Mar  2 09:24:16 PST 2023
+//
+//  Modifications:
+//
+// ****************************************************************************
+bool
+StringHelpers::ends_with(const std::string &var, const std::string &test)
+{
+    return std::equal(test.rbegin(),
+                      test.rend(), var.rbegin());
+}
+
