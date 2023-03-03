@@ -1,4 +1,4 @@
-#/usr/workspace/wsa/visit/visit/thirdparty_shared/3.3.2/toss3/cmake/3.18.2/linux-x86_64_gcc-7.3/bin/cmake
+#/usr/workspace/wsa/visit/visit/thirdparty_shared/3.3.2/toss3/cmake/3.24.3/linux-x86_64_gcc-7.3/bin/cmake
 ##
 ## ./build_visit3_3_2 generated host.cmake
 ## created: Fri Feb  3 16:02:10 PST 2023
@@ -18,7 +18,7 @@ VISIT_OPTION_DEFAULT(VISIT_C_COMPILER /usr/tce/packages/gcc/gcc-7.3.0/bin/gcc TY
 VISIT_OPTION_DEFAULT(VISIT_CXX_COMPILER /usr/tce/packages/gcc/gcc-7.3.0/bin/g++ TYPE FILEPATH)
 VISIT_OPTION_DEFAULT(VISIT_FORTRAN_COMPILER no TYPE FILEPATH)
 VISIT_OPTION_DEFAULT(VISIT_C_FLAGS " -m64 -fPIC -fvisibility=hidden" TYPE STRING)
-VISIT_OPTION_DEFAULT(VISIT_CXX_FLAGS "-std=c++11  -m64 -fPIC -fvisibility=hidden" TYPE STRING)
+VISIT_OPTION_DEFAULT(VISIT_CXX_FLAGS " -m64 -fPIC -fvisibility=hidden" TYPE STRING)
 
 ##
 ## Parallel Build Setup.
