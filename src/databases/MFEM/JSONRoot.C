@@ -9,15 +9,56 @@
 
 #include <fstream>
 #include "rapidjson/document.h"
-
+#include "rapidjson/error/en.h"
 
 #include "JSONRoot.h"
 
 #include <StringHelpers.h>
 #include <FileFunctions.h>
 
+#include <InvalidFilesException.h>
+
+#include "mfem.hpp"
+#include <visit_gzstream.h>
+
 #include <iostream>
 using namespace std;
+
+// helper that creates human readable error messages from
+// json parsing errors
+namespace detail
+{
+
+//---------------------------------------------------------------------------//
+void  RapidJSONParseErrorDetails(const std::string &json,
+                                 const rapidjson::Document &document,
+                                 std::ostream &os)
+{
+    // provide message with line + char from rapidjson parse error offset 
+    int doc_offset = document.GetErrorOffset();
+    std::string json_curr = json.substr(0,doc_offset);
+
+    int  doc_line   = 0;
+    int  doc_char   = 0;
+
+    std::vector<std::string> lines = StringHelpers::split(json_curr,'\n');
+
+    if(lines.size() > 0)
+    {
+        doc_line = lines.size()-1;
+        // char is the len of the last line
+        doc_char = lines[lines.size()-1].size();
+    }
+
+    os << " parse error message:\n"
+       << GetParseError_En(document.GetParseError()) << "\n"
+       << " offset: "    << doc_offset << "\n"
+       << " line: "      << doc_line << "\n"
+       << " character: " << doc_char << "\n"
+       << " json:\n"     << json << "\n"; 
+}
+
+}; // end detail
 
 
 // ****************************************************************************
@@ -78,7 +119,7 @@ JSONRootPath::Expand(int domain) const
     if(path_pattern != std::string::npos)
     {
         char buff[64];
-        snprintf(buff,64,"%05d",domain);    
+        snprintf(buff,64,"%05d",domain);
         return StringHelpers::Replace(path,
                                       "%05d",
                                       std::string(buff));
@@ -461,10 +502,24 @@ JSONRoot::JSONRoot()
 //  Programmer:  Cyrus Harrison
 //  Creation:    Thu Jun 12 16:02:35 PDT 2014
 //
+//  Modifications:
+//   Cyrus Harrison, Fri Mar  3 10:50:30 PST 2023
+//   Refactor to support direct reads of mfem mesh files.
+//
 // **************************************************************************** 
-JSONRoot::JSONRoot(const std::string &json_root)
+JSONRoot::JSONRoot(const std::string &json_root_file)
 {
-    ParseJSON(json_root);
+    if(StringHelpers::ends_with(json_root_file,std::string(".mesh")))
+    {
+        std::string root_file = FileFunctions::Absname(".",json_root_file);
+        std::string root_dir =  FileFunctions::Dirname(root_file);
+        std::string root_json = GenerateMocRootJSON(json_root_file);
+        ParseJSONString(root_json,root_dir);
+    }
+    else  // main case
+    {
+        ParseJSONFile(json_root_file);
+    }
 }
 
 // ****************************************************************************
@@ -572,9 +627,66 @@ JSONRoot::NumberOfDataSets() const
 
 
 // ****************************************************************************
-//  Method: JSONRoot::ParseJSON
+//  Method: JSONRoot::ResolveAbsolutePath
+//
+//  Purpose: Helper for abs path logicl.
+//
+//
+//  Programmer:  Cyrus Harrison
+//  Creation:    Wed Sep 24 10:47:00 PDT 2014
+//
+// **************************************************************************** 
+std::string      
+JSONRoot::ResolveAbsolutePath(const std::string &root_dir,
+                              const std::string &file_path)
+{
+    return FileFunctions::Absname(root_dir,file_path);
+}
+
+
+// ****************************************************************************
+//  Method: JSONRoot::ParseJSONFile
+//
+//  Purpose: Parses a JSON file into this JSONRoot object.
+//    (Refactored from previous JSONRoot::ParseJSON method)
+//
+//  Programmer:  Cyrus Harrison
+//  Creation:    Thu Jun 12 16:02:35 PDT 2014
+//
+//  Modifications:
+//   Cyrus Harrison, Wed Sep 24 10:47:00 PDT 2014
+//   Handle abs path logic.
+//
+//   Mark C. Miller, Tue Sep 20 18:07:42 PDT 2016
+//   Add support for expressions
+//
+//   Cyrus Harrison, Fri Mar  3 10:50:30 PST 2023
+//   Refactor to split parsing json string and reading from file
+//
+// **************************************************************************** 
+void 
+JSONRoot::ParseJSONFile(const std::string &json_root_file)
+{
+
+    std::string root_file = FileFunctions::Absname(".",json_root_file);
+    std::string root_dir =  FileFunctions::Dirname(root_file);
+
+    // open root file and read its contents
+    ifstream iroot;
+    iroot.open(root_file.c_str());
+    // TODO: Check for file open
+    std::string json((std::istreambuf_iterator<char>(iroot)), 
+                      std::istreambuf_iterator<char>());
+
+    ParseJSONString(json, root_dir);
+}
+
+
+// ****************************************************************************
+//  Method: JSONRoot::ParseJSONString
 //
 //  Purpose: Parses a JSON string into this JSONRoot object. 
+//    (Refactored from previous JSONRoot::ParseJSON method)
 //
 //
 //  Programmer:  Cyrus Harrison
@@ -586,28 +698,26 @@ JSONRoot::NumberOfDataSets() const
 //
 //   Mark C. Miller, Tue Sep 20 18:07:42 PDT 2016
 //   Add support for expressions
+//
+//   Cyrus Harrison, Fri Mar  3 10:50:30 PST 2023
+//   Refactor to split parsing json string and reading from file
+//
 // **************************************************************************** 
 void 
-JSONRoot::ParseJSON(const std::string &json_root)
+JSONRoot::ParseJSONString(const std::string &json,
+                          const std::string &root_dir)
 {
     // clear existing structure
     dsets.clear();
-
-    std::string root_file = FileFunctions::Absname(".",json_root);
-    std::string root_dir =  FileFunctions::Dirname(root_file);
-
-    // open root file and read its contents
-    ifstream iroot;
-    iroot.open(root_file.c_str());
-    std::string json((std::istreambuf_iterator<char>(iroot)), 
-                      std::istreambuf_iterator<char>());
 
     // parse with rapidjson
     rapidjson::Document document;
     if(document.Parse<0>(json.c_str()).HasParseError())
     {
-        // TODO: Throw VisIt Exception
-        cout << "ERROR PARSING JSON DATA" <<endl;
+        ostringstream msg;
+        msg << "Failed to parse MFEM JSON Root: " << json;
+        detail::RapidJSONParseErrorDetails(json,document,msg);
+        EXCEPTION1(InvalidFilesException, msg.str());
     }
 
     if(document.IsObject())
@@ -695,21 +805,54 @@ JSONRoot::ParseJSON(const std::string &json_root)
 }
 
 // ****************************************************************************
-//  Method: JSONRoot::ResolveAbsolutePath
+//  Method: JSONRoot::GenerateMocRootJSON
 //
-//  Purpose: Helper for abs path logicl.
+//  Purpose: Creates a moc json to describe a lone mfem mesh file
 //
 //
 //  Programmer:  Cyrus Harrison
-//  Creation:    Wed Sep 24 10:47:00 PDT 2014
+//  Creation:    Fri Mar  3 10:50:30 PST 2023
+//
+//  Modifications:
 //
 // **************************************************************************** 
-std::string      
-JSONRoot::ResolveAbsolutePath(const std::string &root_dir,
-                              const std::string &file_path)
+std::string  
+JSONRoot::GenerateMocRootJSON(const std::string &mfem_mesh_file)
 {
-    return FileFunctions::Absname(root_dir,file_path);
+    // we need to read the mesh file to understand the spatial_dim and topo dim.
+    visit_ifstream imesh(mfem_mesh_file.c_str());
+    if(imesh().fail())
+    {
+        //failed to open mesh file
+        ostringstream msg;
+        msg << "Failed to open MFEM mesh: " << mfem_mesh_file;
+        EXCEPTION1(InvalidFilesException, msg.str());
+    }
+
+    mfem::Mesh mesh(imesh(), 1, 0, false);
+
+    int spatial_dim = mesh.SpaceDimension();
+    int topo_dim = mesh.Dimension();
+
+    std::ostringstream moc_json;
+
+    moc_json << "{" << std::endl
+             << "\"dsets\":{" << std::endl
+             << "   \"main\":{" << std::endl
+             << "       \"domains\": 1" << "," << std::endl 
+             << "       \"mesh\": { \"path\": \"" << mfem_mesh_file << "\"," <<  std::endl
+             << "                   \"tags\": { \"spatial_dim\":" 
+                                             << "\"" << spatial_dim  << "\" ,"
+                                             << "\"topo_dim\":" 
+                                             << "\"" << topo_dim  << "\" ,"
+                                             << "\"max_lods\": \"25\" }}"  << std::endl
+            << "                  }" << std::endl
+            << "             }" << std::endl
+            << "}" << std::endl;
+
+    return moc_json.str();
 }
+
 
 // ****************************************************************************
 //  Method: JSONRoot::ToJson

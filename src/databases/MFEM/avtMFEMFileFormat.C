@@ -278,6 +278,9 @@ avtMFEMFileFormat::FetchDataFromCatFile(string const &cat_path, string const &ob
 //   Brad Whitlock, Wed Sep  2 17:30:22 PDT 2020
 //   Set the containsOriginalCells flag.
 //
+//   Cyrus Harrison, Fri Mar  3 10:45:12 PST 2023
+//   Add support for directly reading mfem mesh files.
+//
 // ****************************************************************************
 void
 avtMFEMFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
@@ -288,6 +291,7 @@ avtMFEMFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     std::string root_file(GetFilename());
 
     JSONRoot root_md(root_file);
+
     vector<string>dset_names;
     root_md.DataSets(dset_names);
 
