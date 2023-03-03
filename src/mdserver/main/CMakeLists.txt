@@ -120,7 +120,9 @@ TARGET_LINK_LIBRARIES(mdserver
     lightweight_visit_vtk
     visit_verdict
     ${vtklibs}
-    ${vtk_img_libs}
+    ${vtktiff_LIBRARIES}
+    ${vtkpng_LIBRARIES}
+    ${vtkjpeg_LIBRARIES}
     ${ZLIB_LIBRARY}
     ${CMAKE_THREAD_LIBS}
     ${DL_LIB}
