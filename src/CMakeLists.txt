@@ -514,6 +514,9 @@
 #    Eric Brugger, Thu Jul  7 13:07:51 PDT 2022
 #    Added other directories to look for libicui18n, libicudata and libicuuc.
 #
+#    Eric Brugger, Fri Feb 24 14:57:15 PST 2023
+#    I replaced vtkh with vtkm.
+#
 #****************************************************************************
 
 cmake_minimum_required(VERSION 3.15 FATAL_ERROR)
@@ -1440,9 +1443,9 @@ IF(NOT VISIT_BUILD_MINIMAL_PLUGINS OR VISIT_SELECTED_DATABASE_PLUGINS)
     # Configure PIDX support.
     INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindPIDX.cmake)
 
-    # Configure VTKh support.
-    if(VISIT_VTKH_DIR)
-        INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindVTKh.cmake)
+    # Configure VTKm support.
+    if(VISIT_VTKM_DIR)
+        INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindVTKm.cmake)
     endif()
 
     # Configure GFortran support.

@@ -20,6 +20,9 @@
 #  Kevin Griffin, Mon Oct 19 09:43:37 PDT 2020
 #  Updated the bundle name, icon file name, identifier and copyright
 #
+#  Eric Brugger, Fri Feb 24 14:57:15 PST 2023
+#  Replaced vtkpng with vtkpng_LIBRARIES and vtkjpeg with vtkjpeg_LIBRARIES.
+#
 #****************************************************************************
 
 IF(VISIT_PARALLEL AND WIN32 AND HAVE_HPC_SCHEDULER)
@@ -267,8 +270,8 @@ TARGET_LINK_LIBRARIES(viewer_exe
     ${viewer_exe_IPlot}
     ${viewer_exe_VPlot}
     viewer
-    vtkpng
-    vtkjpeg
+    ${vtkpng_LIBRARIES}
+    ${vtkjpeg_LIBRARIES}
     ${VTK_FREETYPE_LIBRARIES}
 )
 
