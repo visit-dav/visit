@@ -2594,6 +2594,18 @@ avtXRayImageQuery::WriteBlueprintMeshCoordsets(conduit::Node &data_out,
     data_out["coordsets/spatial_coords/labels/x"] = "width";
     data_out["coordsets/spatial_coords/labels/y"] = "height";
     data_out["coordsets/spatial_coords/labels/z"] = "energy_group";
+
+    // set up spatial energy reduced coords
+    data_out["coordsets/spatial_energy_reduced_coords/type"] = "rectilinear";
+    // copy over the x and y coords from the spatial_coords
+    data_out["coordsets/spatial_energy_reduced_coords/values/x"].set(data_out["coordsets/spatial_coords/values/x"]);
+    data_out["coordsets/spatial_energy_reduced_coords/values/y"].set(data_out["coordsets/spatial_coords/values/y"]);
+
+    data_out["coordsets/spatial_energy_reduced_coords/labels/x"] = "width";
+    data_out["coordsets/spatial_energy_reduced_coords/labels/y"] = "height";
+
+    data_out["coordsets/spatial_energy_reduced_coords/units/x"] = spatialUnits;
+    data_out["coordsets/spatial_energy_reduced_coords/units/y"] = spatialUnits;
 }
 #endif
 
@@ -2621,6 +2633,10 @@ avtXRayImageQuery::WriteBlueprintMeshTopologies(conduit::Node &data_out)
     // set up spatial extents topology
     data_out["topologies/spatial_topo/coordset"] = "spatial_coords";
     data_out["topologies/spatial_topo/type"] = "rectilinear";
+
+    // set up spatial energy reduced topology
+    data_out["topologies/spatial_energy_reduced_topo/coordset"] = "spatial_energy_reduced_coords";
+    data_out["topologies/spatial_energy_reduced_topo/type"] = "rectilinear";
 }
 #endif
 
@@ -2697,6 +2713,29 @@ avtXRayImageQuery::WriteBlueprintMeshFields(conduit::Node &data_out,
     data_out["fields/path_length_spatial"].set(data_out["fields/path_length/"]);
     // then modify the topo
     data_out["fields/path_length_spatial/topology"] = "spatial_topo";
+
+    // set up spatial energy reduced fields
+    // intensities
+    data_out["fields/spatial_energy_reduced_intensities/topology"] = "spatial_energy_reduced_topo";
+    data_out["fields/spatial_energy_reduced_intensities/association"] = "element";
+    data_out["fields/spatial_energy_reduced_intensities/units"] = intensityUnits + " * " + energyUnits; // TODO Q? is this right?
+    // set to float64 regardless of vtk data types
+    data_out["fields/spatial_energy_reduced_intensities/values"].set(conduit::DataType::float64(nx * ny));
+    ser_intensity_vals = data_out["fields/spatial_energy_reduced_intensities/values"].value();
+
+    // path length for image topo
+    // path_length
+    data_out["fields/spatial_energy_reduced_path_length/topology"] = "image_topo";
+    data_out["fields/spatial_energy_reduced_path_length/association"] = "element";
+    data_out["fields/spatial_energy_reduced_path_length/units"] = pathLengthUnits; // TODO Q? what goes here? these aren't units
+    // set to float64 regardless of vtk data types
+    data_out["fields/spatial_energy_reduced_path_length/values"].set(conduit::DataType::float64(nx * ny));
+    ser_depth_vals = data_out["fields/spatial_energy_reduced_path_length/values"].value();
+
+    // TODO left off here
+    // here we do the sum reduction
+
+
 }
 #endif
 
