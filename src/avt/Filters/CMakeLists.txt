@@ -55,6 +55,9 @@
 #   Kathleen Biagas, Thu Jun  4 16:30:37 PDT 2020
 #   Add avtVertexExtractor, avtLineGlyphFilter.C
 #
+#   Eric Brugger, Fri Feb 24 14:57:15 PST 2023
+#   I replaced vtkh with vtkm.
+#
 #****************************************************************************/
 
 SET(AVTFILTERS_SOURCES
@@ -172,7 +175,6 @@ ${VISIT_SOURCE_DIR}/avt/VisWindow/Proxies
 ${VISIT_SOURCE_DIR}/avt/VisWindow/Tools
 ${VISIT_SOURCE_DIR}/avt/VisWindow/VisWindow
 ${VISIT_SOURCE_DIR}/engine/main
-${VTKh_INCLUDE_DIRS}
 ${VTKm_INCLUDE_DIRS}
 ${VTK_INCLUDE_DIRS}
 )
@@ -198,6 +200,12 @@ IF(VTK_VERSION VERSION_EQUAL "8.1.0" AND VISIT_OSPRAY)
         TARGET_LINK_LIBRARIES(avtfilters_ser ${ICET_FULLPATH_LIB})
     ENDIF()
 ENDIF() 
+if(HAVE_LIBVTKM)
+    target_link_libraries(avtfilters_ser vtkm_cont vtkm_filter_contour vtkm_filter_entity_extraction vtkm_filter_field_conversion pthread)
+    if(VTKm_ENABLE_KOKKOS)
+        target_link_libraries(avtfilters_ser amdhip64)
+    endif()
+endif()
 VISIT_INSTALL_TARGETS(avtfilters_ser)
 
 #********************************* PARALLEL **********************************
@@ -210,5 +218,11 @@ IF(VISIT_PARALLEL)
             TARGET_LINK_LIBRARIES(avtfilters_par ${ICET_FULLPATH_LIB})
         ENDIF()
     ENDIF()
+    if(HAVE_LIBVTKM)
+        target_link_libraries(avtfilters_par vtkm_cont vtkm_filter_contour vtkm_filter_entity_extraction vtkm_filter_field_conversion pthread)
+        if(VTKm_ENABLE_KOKKOS)
+            target_link_libraries(avtfilters_par amdhip64)
+        endif()
+    endif()
     VISIT_INSTALL_TARGETS(avtfilters_par)
 ENDIF(VISIT_PARALLEL)

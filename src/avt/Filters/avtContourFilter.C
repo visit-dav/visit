@@ -12,10 +12,11 @@
 #include <float.h>
 #include <vector>
 
-#ifdef HAVE_LIBVTKH
-#include <vtkh/vtkh.hpp>
-#include <vtkh/DataSet.hpp>
-#include <vtkh/filters/MarchingCubes.hpp>
+#ifdef HAVE_LIBVTKM
+#include <avtVtkmDataSet.h>
+#include <vtkm/cont/DataSet.h>
+#include <vtkm/filter/contour/Contour.h>
+#include <vtkm/filter/field_conversion/PointAverage.h>
 #endif
 
 #include <vtkCellData.h>
@@ -524,7 +525,6 @@ avtContourFilter::ExecuteDataTree(avtDataRepresentation *in_dr)
         vtkDataSet *in_ds = in_dr->GetDataVTK();
         char *var = (activeVariable != NULL ? activeVariable
                                             : pipelineVariable);
-        vtkDataArray *pointData = in_ds->GetPointData()->GetArray(var);
 
         //
         // If we have a rectilinear grid that isn't 3d, don't use VTKm.
@@ -955,18 +955,21 @@ avtContourFilter::ExecuteDataTree_VTK(avtDataRepresentation *in_dr)
 //    Eric Brugger, Wed Dec  9 09:12:27 PST 2020
 //    Updated to a newer VTKm.
 //
+//    Eric Brugger, Fri Feb 24 14:57:15 PST 2023
+//    I replaced VTKh with VTKm.
+//
 // ****************************************************************************
 
 avtDataTree_p
 avtContourFilter::ExecuteDataTree_VTKM(avtDataRepresentation *in_dr)
 {
-#ifndef HAVE_LIBVTKH
+#ifndef HAVE_LIBVTKM
     return NULL;
 #else
     //
     // Get the VTKM data set, the domain number, and the label.
     //
-    vtkh::DataSet *in_ds = in_dr->GetDataVTKm();
+    avtVtkmDataSet *in_ds = in_dr->GetDataVTKm();
     int domain = in_dr->GetDomain();
     std::string label = in_dr->GetLabel();
 
@@ -985,43 +988,49 @@ avtContourFilter::ExecuteDataTree_VTKM(avtDataRepresentation *in_dr)
         return NULL;
     }
 
+    vtkm::cont::DataSet dataset = in_ds->ds;
+
     int timerHandle = visitTimer->StartTimer();
+
+    //
+    // Recenter the field to the nodes if necessary.
+    //
+    bool isCellAssoc = dataset.GetField(contourVar).GetAssociation() ==
+                vtkm::cont::Field::Association::Cells;
+
+    if (isCellAssoc)
+    {
+        vtkm::filter::field_conversion::PointAverage avg;
+        avg.SetActiveField(contourVar);
+        dataset = avg.Execute(dataset);
+    }
 
     //
     // Execute once per isovalue.
     //
     avtDataRepresentation **output = new avtDataRepresentation*[isoValues.size()];
 
-    vtkh::MarchingCubes marcher;
+    vtkm::filter::contour::Contour contour;
 
-    marcher.SetInput(in_ds);
-    marcher.SetField(contourVar);
+    contour.SetActiveField(contourVar);
 
     for (int i = 0; i < isoValues.size(); i++)
     {
         double isoValue = isoValues[i];
 
-        marcher.SetIsoValues(&isoValue, 1);
-        marcher.Update();
+        contour.SetIsoValue(0, isoValue);
 
-        vtkh::DataSet *isoOut = marcher.GetOutput();
+        vtkm::cont::DataSet vtkm_ds = contour.Execute(dataset);
 
         //
         // Determine if the dataset is empty, and if so, set the output
         // to NULL.
         //
-        if (isoOut->GetNumberOfDomains() == 0)
+        avtVtkmDataSet *isoOut = NULL;
+        if(vtkm_ds.GetCellSet().GetNumberOfCells() > 0)
         {
-            delete isoOut;
-            isoOut = NULL;
-        }
-        vtkm::cont::DataSet vtkm_ds;
-        vtkm::Id vtkm_id;
-        isoOut->GetDomain(0, vtkm_ds, vtkm_id);
-        if(vtkm_ds.GetCellSet().GetNumberOfCells() == 0)
-        {
-            delete isoOut;
-            isoOut = NULL;
+            isoOut = new avtVtkmDataSet;
+            isoOut->ds = vtkm_ds;
         }
 
         //

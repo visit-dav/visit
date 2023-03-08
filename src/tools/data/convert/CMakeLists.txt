@@ -22,6 +22,9 @@
 #   Kathleen Bonnell, Wed Jan 05 10:25:13 PST 2010
 #   Add FOLDER property.
 #
+#   Eric Brugger, Fri Feb 24 14:57:15 PST 2023
+#   Replaced vtkjpeg with vtkjpeg_LIBRARIES and vtkpng with vtkpng_LIBRARIES.
+#
 #****************************************************************************
 
 INCLUDE_DIRECTORIES(
@@ -69,11 +72,10 @@ ${ALL_THIRDPARTY_IO_LIBRARY_DIR}
 ${ICET_LIBRARY_DIR}
 )
 
-if(VTK_VERSION VERSION_EQUAL "8.1.0")
-    set(VTK_EXTRA_LIBS vtkjpeg vtkpng)
-else()
-    set(VTK_EXTRA_LIBS VTK::jpeg VTK::png)
-endif()
+SET(VTK_EXTRA_LIBS
+${vtkjpeg_LIBRARIES}
+${vtkpng_LIBRARIES}
+)
 
 IF(VISIT_STATIC)
     SET(CONVERT_STATIC_SOURCES ConvertStaticSymbolLocator.C)
