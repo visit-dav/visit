@@ -38,6 +38,9 @@ class vtkDataArray;
 //    Justin Privitera, Tue Aug 23 14:52:34 PDT 2022
 //    Added all functions, mostly taken from the blueprint plugin data adaptor.
 //
+//    Cyrus Harrison, Thu Mar  2 09:36:49 PST 2023
+//    Added boundary mesh relater helpers
+//
 // ****************************************************************************
 
 class AVTMFEM_API avtMFEMDataAdaptor
@@ -53,6 +56,8 @@ public:
                                            int domain,
                                            int lod,
                                            bool new_refine);
+
+      static vtkDataSet   *BoundaryMeshToVTK(mfem::Mesh *mesh);
 
       static vtkDataArray *LegacyRefineGridFunctionToVTK(mfem::Mesh *mesh,
                                                          mfem::GridFunction *gf,
@@ -73,6 +78,8 @@ public:
 
       static vtkDataArray *RefineElementAttributeToVTK(mfem::Mesh *mesh,
                                                        int lod);
+
+      static vtkDataArray *BoundaryAttributeToVTK(mfem::Mesh *mesh);
 
 };
 
