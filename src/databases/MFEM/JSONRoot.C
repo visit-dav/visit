@@ -688,7 +688,6 @@ JSONRoot::ParseJSONFile(const std::string &json_root_file)
 //  Purpose: Parses a JSON string into this JSONRoot object. 
 //    (Refactored from previous JSONRoot::ParseJSON method)
 //
-//
 //  Programmer:  Cyrus Harrison
 //  Creation:    Thu Jun 12 16:02:35 PDT 2014
 //

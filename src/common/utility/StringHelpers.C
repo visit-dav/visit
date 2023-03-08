@@ -1373,8 +1373,6 @@ StringHelpers::ParseRange(const string range, std::vector<int> &list)
 //  Purpose:
 //   Checks if string ends with another string
 //
-//
-//
 //  Programmer:  Cyrus Harrison
 //  Creation:    Thu Mar  2 09:24:16 PST 2023
 //
