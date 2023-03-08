@@ -545,6 +545,7 @@ avtMFEMDataAdaptor::BoundaryMeshToVTK(mfem::Mesh *mesh)
     // but are not valid, in that case we will need to
     // use the nodes gf to find the right spatial position
     //
+    // Need future work to address this.
     // See related hints (but not the exact recipe we need):
     // https://github.com/mfem/mfem/issues/861
     //-------------------------------------------------------//

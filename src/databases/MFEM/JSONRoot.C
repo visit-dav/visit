@@ -674,7 +674,14 @@ JSONRoot::ParseJSONFile(const std::string &json_root_file)
     // open root file and read its contents
     ifstream iroot;
     iroot.open(root_file.c_str());
-    // TODO: Check for file open
+
+    if(!iroot.is_open())
+    {
+        ostringstream msg;
+        msg << "Failed to open file: " << json_root_file;
+        EXCEPTION1(InvalidFilesException, msg.str());
+    }
+
     std::string json((std::istreambuf_iterator<char>(iroot)), 
                       std::istreambuf_iterator<char>());
 
