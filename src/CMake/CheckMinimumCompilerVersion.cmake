@@ -45,8 +45,12 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "Intel" AND
   message(FATAL_ERROR "Intel C++ (ICC) 14.0 or later is required.")
 endif ()
 
-set(CMAKE_CXX_STANDARD 11)
+#-----------------------------------------------------------------------------
+# VTKm requires C++14. Turning off extensions for maximum compatability.
+set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
+set(CMAKE_CXX_EXTENSIONS OFF)
 
+set(BLT_CXX_STD "c++14" CACHE STRING "")
 

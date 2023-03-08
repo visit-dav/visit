@@ -20,20 +20,20 @@
 #   where VTK-h was built with RELWITHDEBINFO, which is the case when spack
 #   builds VTK-h. Modified the logic to not install static libraries.
 #
+#   Eric Brugger, Fri Feb 24 14:57:15 PST 2023
+#   Renamed to FindVTKm.cmake and modified to find vtkm.
+#
 #****************************************************************************/
 
-IF (DEFINED VISIT_VTKH_DIR)
-   INCLUDE(${VISIT_VTKH_DIR}/lib/VTKhConfig.cmake)
-
-   SET("VTKH_FOUND" true CACHE BOOL "VTKH library found" FORCE)
-   SET("HAVE_LIBVTKH" true CACHE BOOL "Have VTKH library" FORCE)
-
-   MESSAGE(STATUS "  VTKh_INCLUDE_DIRS = ${VTKh_INCLUDE_DIRS}")
-   MESSAGE(STATUS "  VTKh_VERSION_MAJOR = ${VTKh_VERSION_MAJOR}")
-   MESSAGE(STATUS "  VTKh_VERSION_MINOR = ${VTKh_VERSION_MINOR}")
-   MESSAGE(STATUS "  VTKh_VERSION_PATCH = ${VTKh_VERSION_PATCH}")
-   MESSAGE(STATUS "  VTKh_VERSION_FULL = ${VTKh_VERSION_FULL}")
-   MESSAGE(STATUS "  VTKh_VERSION = ${VTKh_VERSION}")
+IF (DEFINED VISIT_VTKM_DIR)
+   file(GLOB VTKm_DIR "${VISIT_VTKM_DIR}/lib/cmake/vtkm-*")
+   if(NOT VTKm_DIR)
+      message(FATAL_ERROR "Failed to find VTKm at VTKM_DIR=${VTKM_DIR}/lib/cmake/vtk-*")
+   endif()
+   include(${VTKm_DIR}/VTKmConfig.cmake)
+   find_package(VTKm REQUIRED QUIET)
+   set(VTKM_FOUND true CACHE BOOL "VTKM library found" FORCE)
+   set("HAVE_LIBVTKM" true CACHE BOOL "Have VTKM library" FORCE)
 
    MESSAGE(STATUS "  VTKM_DIR = ${VTKM_DIR}")
    MESSAGE(STATUS "  VTKM_FOUND = ${VTKM_FOUND}")
@@ -44,11 +44,14 @@ IF (DEFINED VISIT_VTKH_DIR)
    MESSAGE(STATUS "  VTKm_VERSION = ${VTKm_VERSION}")
 
    set(VTKm_INCLUDE_DIRS "${VTKM_DIR}/include/vtkm-${VTKm_VERSION_MAJOR}.${VTKm_VERSION_MINOR}"
-                         "${VTKM_DIR}/include/vtkm-${VTKm_VERSION_MAJOR}.${VTKm_VERSION_MINOR}/vtkm/thirdparty/taotuple"
+                         "${VTKM_DIR}/include/vtkm-${VTKm_VERSION_MAJOR}.${VTKm_VERSION_MINOR}/vtkm/thirdparty/diy/vtkmdiy/include"
+                         "${VTKM_DIR}/include/vtkm-${VTKm_VERSION_MAJOR}.${VTKm_VERSION_MINOR}/vtkm/thirdparty/lcl/vtkmlcl"
        CACHE STRING "VTKm include directories")
 
-   # use the vtkh and vtkm CMake properties to find locations and
-   # all interface link dependencies
+   # use the vtkm CMake properties to find locations and all interface
+   # link dependencies. This looks for shared libraries. We are currently
+   # building static libraries, so this is basically a noop, but if we
+   # ever change to shared libraries, this may be needed.
    function(get_lib_loc_and_install _lib)
        get_target_property(ttype ${_lib} TYPE)
        if (ttype STREQUAL "INTERFACE_LIBRARY" OR ttype STREQUAL "STATIC_LIBRARY")
@@ -66,19 +69,17 @@ IF (DEFINED VISIT_VTKH_DIR)
        endif()
    endfunction()
 
-   get_target_property(VTKH_INT_LL vtkh INTERFACE_LINK_LIBRARIES)
+   get_target_property(VTKM_INT_LL vtkm_filter INTERFACE_LINK_LIBRARIES)
    set(addl_ll)
-   foreach(vtkhll ${VTKH_INT_LL})
-       get_lib_loc_and_install(${vtkhll})
-       get_target_property(VTKH_LL_DEP ${vtkhll} INTERFACE_LINK_LIBRARIES)
-       if(VTKH_LL_DEP)
-           foreach(ll_dep ${VTKH_LL_DEP})
-               string(SUBSTRING "${ll_dep}" 0 4 ll_dep_prefix)
-               # only process libraries that start with vtkh or vtkm
-               if ("${ll_dep_prefix}" STREQUAL "vtkh" OR
-                   "${ll_dep_prefix}" STREQUAL "vtkm")
+   foreach(vtkmll ${VTKM_INT_LL})
+       get_lib_loc_and_install(${vtkmll})
+       get_target_property(VTKM_LL_DEP ${vtkmll} INTERFACE_LINK_LIBRARIES)
+       if(VTKM_LL_DEP)
+           foreach(ll_dep ${VTKM_LL_DEP})
+               # only process libraries that start with vtkm
+               if ("${ll_dep_prefix}" STREQUAL "vtkm")
                    # don't process duplicates
-                   if (NOT ${ll_dep} IN_LIST VTKH_INT_LL AND
+                   if (NOT ${ll_dep} IN_LIST VTKM_INT_LL AND
                        NOT ${ll_dep} IN_LIST addl_ll)
                        get_lib_loc_and_install(${ll_dep})
                        list(APPEND addl_ll ${ll_dep})
@@ -90,7 +91,6 @@ IF (DEFINED VISIT_VTKH_DIR)
    unset(addl_ll)
 
    if(VISIT_INSTALL_THIRD_PARTY AND NOT VISIT_HEADERS_SKIP_INSTALL)
-       THIRD_PARTY_INSTALL_INCLUDE(vtkh ${VISIT_VTKH_DIR}/include)
        THIRD_PARTY_INSTALL_INCLUDE(vtkm ${VTKM_DIR}/include)
    endif()
 ENDIF()

@@ -1298,6 +1298,11 @@ avtBlueprintFileFormat::ReadRootIndexItems(const std::string &root_fname,
 //    Cyrus Harrison, Tue Dec 13 12:17:17 PST 2022
 //    Refactor to pass mesh name to tree cache for part map style index
 //    support.
+//
+//    Eric Brugger, Fri Feb 24 14:57:15 PST 2023
+//    Added a stop timer to a catch block to avoid the case of not calling
+//    stop timer when an exception occurs.
+//
 // ****************************************************************************
 
 void
@@ -1404,6 +1409,7 @@ avtBlueprintFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         err_oss <<  "Conduit Exception in Blueprint Plugin "
                     << "Populate Database MetaData: " << endl
                     << e.message();
+        visitTimer->StopTimer(t_pop_md,"PopulateDatabaseMetaData");
         EXCEPTION1(InvalidFilesException, err_oss.str());
     }
 
