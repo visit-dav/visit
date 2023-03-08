@@ -22,6 +22,9 @@
 #   Kathleen Bonnell, Wed Jan 05 10:25:13 PST 2010
 #   Add FOLDER property.
 #
+#   Eric Brugger, Fri Feb 24 14:57:15 PST 2023
+#   Replaced vtkjpeg with vtkjpeg_LIBRARIES and vtkpng with vtkpng_LIBRARIES.
+#
 #****************************************************************************
 
 INCLUDE_DIRECTORIES(
@@ -70,8 +73,8 @@ ${ICET_LIBRARY_DIR}
 )
 
 SET(VTK_EXTRA_LIBS
-vtkjpeg
-vtkpng
+${vtkjpeg_LIBRARIES}
+${vtkpng_LIBRARIES}
 ${VTK_FREETYPE_LIBRARIES}
 )
 

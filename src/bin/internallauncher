@@ -1647,6 +1647,34 @@ class StraceDebugger(Debugger):
         return launcherargs + strace + visitargs
 
 ###############################################################################
+# Class: RocprofDebugger
+#
+# Purpose:    Launch a VisIt component under rocprof.
+#
+# Programmer: Eric Brugger
+# Date:       Fri Feb 24 14:57:15 PST 2023
+#
+# Modifications:
+#
+###############################################################################
+
+class RocprofDebugger(Debugger):
+    def __init__(self, launcher):
+        super(RocprofDebugger, self).__init__(launcher)
+
+    def Executable(self):
+        return ["echo"]
+
+    def CreateCommand(self, args):
+        rocprof = self.Executable()
+        if len(self.debug.debuggerArgs) > 1:
+            rocprof = rocprof + self.DebuggerArguments()
+        else:
+            rocprof = rocprof + ["rocprof", "--hip-trace", "-o", "hiptraceout.csv"]
+        launcherargs, visitargs = self.SeparateArguments(args)
+        return launcherargs + rocprof + visitargs
+
+###############################################################################
 # Class: ApitraceDebugger
 #
 # Purpose:    Launch a VisIt component under apitrace.
@@ -3284,6 +3312,9 @@ VisIt does not recognize your terminal application so it will ignore the -newcon
     #   Kevin Griffin, Fri Sep  9 13:56:16 PDT 2022
     #   Added nsys.
     #
+    #   Eric Brugger, Fri Feb 24 14:57:15 PST 2023
+    #   Added rocprof.
+    #
     ############################################################################
     def Debuggers(self):
         return ["gdb",
@@ -3299,7 +3330,8 @@ VisIt does not recognize your terminal application so it will ignore the -newcon
                 "cuda-memcheck",
                 "vtune",
                 "instruments",
-                "nsys"]
+                "nsys",
+                "rocprof"]
 
     ############################################################################
     # Method: DebuggerFactory
@@ -3327,6 +3359,9 @@ VisIt does not recognize your terminal application so it will ignore the -newcon
     #
     #   Kevin Griffin, Fri Sep  9 13:56:16 PDT 2022
     #   Added nsys.
+    #
+    #   Eric Brugger, Fri Feb 24 14:57:15 PST 2023
+    #   Added rocprof.
     #
     ############################################################################
 
@@ -3359,6 +3394,8 @@ VisIt does not recognize your terminal application so it will ignore the -newcon
             return InstrumentsProfiler(self)
         elif debugger == "nsys":
             return NsightSystems(self)
+        elif debugger == "rocprof":
+            return RocprofDebugger(self)
         # Return a debugger that does not do anything.
         return Debugger(self)
 

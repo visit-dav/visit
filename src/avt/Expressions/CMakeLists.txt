@@ -62,6 +62,10 @@
 #    Renamed Derivations/avtStrainTensorExpression to
 #    Derivations/avtStrainExpression
 #
+#    Eric Brugger, Fri Feb 24 14:57:15 PST 2023
+#    I removed the reference to the vtkm include directories since I
+#    removed all the code that depended on them.
+#
 #****************************************************************************/
 
 SET(ABSTRACT_SOURCES
@@ -362,7 +366,6 @@ ${VISIT_SOURCE_DIR}/visit_vtk/lightweight
 ${VISIT_SOURCE_DIR}/vtkm
 ${VISIT_SOURCE_DIR}/third_party_builtin/verdict
 ${VTK_INCLUDE_DIRS}
-${VTKM_INCLUDE_DIR}
 )
 
 IF(VISIT_PYTHON_FILTERS)
