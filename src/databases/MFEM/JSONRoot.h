@@ -110,23 +110,23 @@ class JSONRootDataSet
         virtual        ~JSONRootDataSet();
         
         int             NumberOfDomains() const;
-        void            SetNumberOfDomains(int ndomains);    
+        void            SetNumberOfDomains(int ndomains);
         
         int             Cycle() const;
         void            SetCycle(int value);
-        bool            HasCycle() const;        
+        bool            HasCycle() const;
 
         double          Time() const;
         void            SetTime(double value);
-        bool            HasTime() const;        
+        bool            HasTime() const;
         
         JSONRootPath   &CatPath() {return catpath;};
 
-        JSONRootEntry  &Mesh();          
+        JSONRootEntry  &Mesh();
         
        
         void            Fields(std::vector<std::string> &field_names) const;
-        JSONRootEntry  &Field(const std::string &field_name); 
+        JSONRootEntry  &Field(const std::string &field_name);
 
     private:
         // TODO: uint64 ...
@@ -162,7 +162,8 @@ class JSONRoot
 public:
 
                      JSONRoot();
-                     JSONRoot(const std::string &json_root);
+                     JSONRoot(const std::string &json_root_file);
+
     virtual         ~JSONRoot();
     
     void             DataSets(std::vector<std::string> &dset_names) const;
@@ -176,7 +177,11 @@ public:
     void             ToJson(std::ostringstream &oss);
 
   private:
-    void             ParseJSON(const std::string &json_root);
+    void             ParseJSONFile(const std::string &json_root_file);
+    void             ParseJSONString(const std::string &json_string,
+                                     const std::string &root_dir);
+    std::string      GenerateMocRootJSON(const std::string &json_root_file);
+
     std::string      ResolveAbsolutePath(const std::string &root_dir,const std::string &file_path);
     
     std::map<std::string,JSONRootDataSet> dsets;

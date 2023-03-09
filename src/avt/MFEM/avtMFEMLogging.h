@@ -23,7 +23,7 @@
 
 #define AVT_MFEM_INFO(  msg  )                                      \
 {                                                                   \
-    debug5 << msg;                                                  \
+    debug5 << msg << std::endl;                                     \
 }                                                                   \
 
 #define AVT_MFEM_EXCEPTION1(  etype , msg )                         \
