@@ -124,6 +124,92 @@ avtMapper::SetUpDrawable()
 
 
 // ****************************************************************************
+//  Method: avtMapper::GetVarRange
+//
+//  Purpose:
+//      Gets the range of the variable. (Artificial limits ignored).
+//
+//  Arguments:
+//      rmin          The minimum in the range.
+//      rmax          The maximum in the range.
+//
+//  Returns:    True if the extents were found, false otherwise.
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   April 2, 2001 
+//
+//  Modifications:
+//
+//    Hank Childs, Sat Apr  7 21:18:53 PDT 2001
+//    Use GetDataRange to account for missing data.
+//
+//    Hank Childs, Fri Apr 20 14:00:26 PDT 2001
+//    Use base class method because GetDataRange was removed.
+//
+//    Kathleen Bonnell, Tue Jun 11 17:13:17 PDT 2002  
+//    Ensure rmax is set if mappers == null (rmin was being set twice). 
+//
+//    Hank Childs, Thu Oct 10 08:25:18 PDT 2002
+//    Added a return value.
+//
+// ****************************************************************************
+
+bool
+avtMapper::GetVarRange(double &rmin, double &rmax)
+{
+    if (mappers == NULL)
+    {
+        //
+        // We have been asked for the range before the input has been set.
+        //
+        rmin = 0.;
+        rmax = 1.;
+        return false;
+    }
+
+    bool rv = avtMapper::GetRange(rmin, rmax);
+    return rv;
+}
+
+
+// ****************************************************************************
+//  Method: avtMapper::GetCurrentVarRange
+//
+//  Purpose:
+//      Gets the current range of the variable. (Artificial limits ignored).
+//
+//  Arguments:
+//      rmin          The minimum in the range.
+//      rmax          The maximum in the range.
+//
+//  Returns:    True if the extents were found, false otherwise.
+//
+//  Programmer: Eric Brugger
+//  Creation:   March 8, 2023
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+bool
+avtMapper::GetCurrentVarRange(double &rmin, double &rmax)
+{
+    if (mappers == NULL)
+    {
+        //
+        // We have been asked for the range before the input has been set.
+        //
+        rmin = 0.;
+        rmax = 1.;
+        return false;
+    }
+
+    bool rv = avtMapper::GetCurrentRange(rmin, rmax);
+    return rv;
+}
+
+
+// ****************************************************************************
 //  Method: avtMapper::ClearSelf
 //
 //  Purpose:
