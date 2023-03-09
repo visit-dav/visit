@@ -2699,7 +2699,7 @@ avtXRayImageQuery::WriteBlueprintMeshFields(conduit::Node &data_out,
     conduit::int64 *stride_ptr = data_out["fields/intensities/strides"].value();
     stride_ptr[0] = 1;
     stride_ptr[1] = nx;
-    stride_ptr[2] = nx * ny;            
+    stride_ptr[2] = nx * ny;
     data_out["fields/path_length/strides"].set(data_out["fields/intensities/strides"]);
 
     // intensities for spatial topo
@@ -2721,21 +2721,47 @@ avtXRayImageQuery::WriteBlueprintMeshFields(conduit::Node &data_out,
     data_out["fields/spatial_energy_reduced_intensities/units"] = intensityUnits + " * " + energyUnits; // TODO Q? is this right?
     // set to float64 regardless of vtk data types
     data_out["fields/spatial_energy_reduced_intensities/values"].set(conduit::DataType::float64(nx * ny));
-    ser_intensity_vals = data_out["fields/spatial_energy_reduced_intensities/values"].value();
+    conduit::float64 *ser_intensity_vals = data_out["fields/spatial_energy_reduced_intensities/values"].value();
 
-    // path length for image topo
     // path_length
     data_out["fields/spatial_energy_reduced_path_length/topology"] = "image_topo";
     data_out["fields/spatial_energy_reduced_path_length/association"] = "element";
     data_out["fields/spatial_energy_reduced_path_length/units"] = pathLengthUnits; // TODO Q? what goes here? these aren't units
     // set to float64 regardless of vtk data types
     data_out["fields/spatial_energy_reduced_path_length/values"].set(conduit::DataType::float64(nx * ny));
-    ser_depth_vals = data_out["fields/spatial_energy_reduced_path_length/values"].value();
+    conduit::float64 *ser_depth_vals = data_out["fields/spatial_energy_reduced_path_length/values"].value();
 
-    // TODO left off here
-    // here we do the sum reduction
+    // sum reduction
+    // nx is the number of x ELEMENTS, same for ny
+    for (int i = 0; i < nx; i ++)
+    {
+        for (int j = 0; j < ny; j ++)
+        {
+            double int_sum, pl_sum;
+            int_sum = pl_sum = 0;
+            for (int k = 0; k < numBins; k ++)
+            {
+                double intensity_val = intensity_vals[i + j * nx + k * nx * ny];
+                double path_length_val = depth_vals[i + j * nx + k * nx * ny];
+                double bin_width;
+                if (nEnergyGroupBounds == numBins + 1)
+                    bin_width = energyGroupBounds[k + 1] - energyGroupBounds[k];
+                else
+                    bin_width = 1;
+                int_sum += intensity_val * bin_width;
+                pl_sum += path_length_val * bin_width;
+            }
+            ser_intensity_vals[i + j * nx] = int_sum;
+            ser_depth_vals[i + j * nx] = pl_sum;
+        }
+    }
 
-
+    // set strides for spatial energy reduced fields
+    data_out["fields/spatial_energy_reduced_intensities/strides"].set(conduit::DataType::int64(3));
+    conduit::int64 *ser_stride_ptr = data_out["fields/spatial_energy_reduced_intensities/strides"].value();
+    ser_stride_ptr[0] = 1;
+    ser_stride_ptr[1] = nx;
+    data_out["fields/spatial_energy_reduced_path_length/strides"].set(data_out["fields/spatial_energy_reduced_intensities/strides"]);
 }
 #endif
 
