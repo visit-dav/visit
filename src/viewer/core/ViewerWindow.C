@@ -6163,7 +6163,12 @@ ViewerWindow::ChooseCenterOfRotation(double sx, double sy)
 // Creation:   Wed Aug  8 15:06:17 PDT 2018
 //
 // Modifications:
-//
+//   Eric Brugger, Wed Mar  8 10:26:17 PST 2023
+//   Set the imagePan to zero so that plot is centered on the pick point
+//   even if the image is panned. Added a call to UpdateViewAtts so that
+//   the view attributes displayed in the GUI are updated as well as
+//   handling locked views. 
+//   
 // ****************************************************************************
 
 void
@@ -6174,8 +6179,12 @@ ViewerWindow::SwivelFocus3D(double x, double y, double z)
     view.focus[0] = x;
     view.focus[1] = y;
     view.focus[2] = z;
+    view.imagePan[0] = 0.;
+    view.imagePan[1] = 0.;
 
     SetView3D(view);
+
+    ViewerWindowManager::Instance()->UpdateViewAtts(windowId, false, false, true, false);
 }
 
 // ****************************************************************************
