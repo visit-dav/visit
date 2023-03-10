@@ -138,7 +138,8 @@
 #   8 hours. Running the tests with 2 processors reduced the typical time
 #   to complete the tests to 5 1/2 hours, so 8 hours should be plenty. I
 #   also changed the directory to copy the results to the "old_results"
-#   directory outside the repo, which should speed up git operations.
+#   directory outside the repo, which should speed up git operations. I
+#   changed a python reference to python3.
 #
 
 # Determine the users name and e-mail address.
@@ -521,7 +522,7 @@ if test "$post" = "true" ; then
 
     # Copy the results to the dashboard checkout on quartz. 
     cd src/test
-    python ../tools/dev/scripts/visit-copy-test-results.py
+    python3 ../tools/dev/scripts/visit-copy-test-results.py
     cd ../..
 
     # Update the main index.html.
