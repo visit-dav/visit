@@ -133,6 +133,13 @@
 #   instead of toss3. This included switching from msub to sbatch, using
 #   a toss4 config site file, and using a toss4 cmake.
 #
+#   Eric Brugger, Fri Mar 10 07:09:59 PST 2023
+#   I reduced the alloted time for the test suite to run from 10 hours to
+#   8 hours. Running the tests with 2 processors reduced the typical time
+#   to complete the tests to 5 1/2 hours, so 8 hours should be plenty. I
+#   also changed the directory to copy the results to the "old_results"
+#   directory outside the repo, which should speed up git operations.
+#
 
 # Determine the users name and e-mail address.
 #
@@ -532,7 +539,7 @@ if test "$post" = "true" ; then
     
     # Move the new results to old_results.
     cd src/test
-    mv \$newResults old_results
+    mv \$newResults ../../../old_results
     cd ../..
 
     # Send out an e-mail notifying the users of the test suite status.
@@ -579,7 +586,7 @@ chmod 750 postit_${testHost}
 if test "$testHost" = "pascal" ; then
     subTag=`date +%Y-%m-%d-%H:%M`
     ./checkout_pascal $subTag
-    sbatch --partition=pvis --account=wbronze --time=10:00:00 --ntasks=36 --nodes=1 --tasks-per-node=36 -o pascal_testit_$subTag.out ./runit_pascal $subTag
-    sleep 36000
+    sbatch --partition=pvis --account=wbronze --time=8:00:00 --ntasks=36 --nodes=1 --tasks-per-node=36 -o pascal_testit_$subTag.out ./runit_pascal $subTag
+    sleep 28800
     ./postit_pascal $subTag
 fi
