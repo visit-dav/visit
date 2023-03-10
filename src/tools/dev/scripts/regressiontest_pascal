@@ -117,6 +117,22 @@
 #   I corrected the path to the pascal config site file to take into account
 #   that we were now doing out of source builds.
 #
+#   Eric Brugger, Thu Mar  9 13:10:16 PST 2023
+#   I changed the script to run the test scripts directly in the current
+#   directory without scp'ing the scripts to the test machine and running
+#   the scripts on the test machine through ssh. This looses some generality
+#   in that the tests need to be run on the same machine as the script
+#   but avoids some potential authentication issues with scp and ssh. We
+#   currently run the script and the tests on the same machine so this
+#   isn't an issue.
+#
+#   I removed references to nersc, since we no longer involve any nersc
+#   systems in our testing. 
+#
+#   I updated the script to take into account that pascal is now toss4
+#   instead of toss3. This included switching from msub to sbatch, using
+#   a toss4 config site file, and using a toss4 cmake.
+#
 
 # Determine the users name and e-mail address.
 #
@@ -125,47 +141,36 @@ user=`whoami`
 #
 # Set the user e-mail address.
 #
-userNersc=unknown
 userEmail=unknown
 case $user in
     bonnell)
-        userNersc=bonnell
         userEmail=biagas2@llnl.gov
         ;;
     kbonnell)
-        userNersc=bonnell
         userEmail=biagas2@llnl.gov
         ;;
     brugger)
-        userNersc=brugger
         userEmail=brugger1@llnl.gov
         ;;
     cyrush)
-        userNersc=cyrush
         userEmail=cyrush@llnl.gov
         ;;
     hrchilds)
-        userNersc=hrchilds
         userEmail=hank@uoregon.edu
         ;;
     mcmiller)
-        userNersc=miller86
         userEmail=miller86@llnl.gov
         ;;
     miller)
-        userNersc=miller86
         userEmail=miller86@llnl.gov
         ;;
     miller86)
-        userNersc=miller86
         userEmail=miller86@llnl.gov
         ;;
     harrison37)
-        userNersc=cyrush
         userEmail=cyrush@llnl.gov
         ;;
     cyrush)
-        userNersc=cyrush
         userEmail=cyrush@llnl.gov
         ;;
 esac
@@ -186,7 +191,6 @@ serial="false"
 testHost="pascal"
 testDir="/usr/WS1/visit"
 post="true"
-nerscHost="cori.nersc.gov"
 
 for abc
 do
@@ -228,10 +232,10 @@ done
 
 if test "$branch" = "trunk" ; then
     workingDir="test_trunk"
-    cmakeCmd="/usr/WS1/visit/visit/thirdparty_shared/3.3.0/toss3/cmake/3.24.3/linux-x86_64_gcc-7.3/bin/cmake"
+    cmakeCmd="/usr/WS1/visit/visit/thirdparty_shared/3.3.2/toss4/cmake/3.24.3/linux-x86_64_gcc-10.3/bin/cmake"
 else
     workingDir="test_branch"
-    cmakeCmd="/usr/gapps/visit/thirdparty_shared/3.2.0/cmake/3.14.7/linux-x86_64_gcc-6.1/bin/cmake"
+    cmakeCmd="/usr/WS1/visit/visit/thirdparty_shared/3.3.2/toss4/cmake/3.24.3/linux-x86_64_gcc-10.3/bin/cmake"
 fi
 
 #
@@ -329,19 +333,19 @@ export LD_LIBRARY_PATH=/usr/tce/packages/cuda/cuda-8.0/lib64:\$LD_LIBRARY_PATH
 # pluginVsInstall tests won't use the right compiler
 
 if test "$branch" = "trunk" ; then
-  export CC=/usr/tce/packages/gcc/gcc-7.3.0/bin/gcc
-  export CXX=/usr/tce/packages/gcc/gcc-7.3.0/bin/g++
+  export CC=/usr/tce/packages/gcc/gcc-10.3.1/bin/gcc
+  export CXX=/usr/tce/packages/gcc/gcc-10.3.1/bin/g++
 else
-  export CC=/usr/tce/packages/gcc/gcc-6.1.0/bin/gcc
-  export CXX=/usr/tce/packages/gcc/gcc-6.1.0/bin/g++
+  export CC=/usr/tce/packages/gcc/gcc-10.3.1/bin/gcc
+  export CXX=/usr/tce/packages/gcc/gcc-10.3.1/bin/g++
 fi
 
 if test "$serial" = "true" ; then
-    sed -i "s/VISIT_PARALLEL ON/VISIT_PARALLEL OFF/" config-site/pascal83.cmake
+    sed -i "s/VISIT_PARALLEL ON/VISIT_PARALLEL OFF/" config-site/poodle18.cmake
 fi
 if test "$branch" = "trunk" ; then
     $cmakeCmd \
-        -DVISIT_CONFIG_SITE=../src/config-site/pascal83.cmake \
+        -DVISIT_CONFIG_SITE=../src/config-site/poodle18.cmake \
         -DCMAKE_BUILD_TYPE=Release \
         -DVISIT_BUILD_ALL_PLUGINS=1 \
         -DVISIT_ENABLE_DATA_MANUAL_EXAMPLES:BOOL=ON \
@@ -352,7 +356,7 @@ if test "$branch" = "trunk" ; then
         ../src >> ../../buildlog 2>&1
 else
     $cmakeCmd \
-        -DVISIT_CONFIG_SITE=../src/config-site/pascal83.cmake \
+        -DVISIT_CONFIG_SITE=../src/config-site/poodle18.cmake \
         -DCMAKE_BUILD_TYPE=Release \
         -DVISIT_BUILD_ALL_PLUGINS=1 \
         -DVISIT_ENABLE_DATA_MANUAL_EXAMPLES:BOOL=ON \
@@ -573,12 +577,9 @@ chmod 750 postit_${testHost}
 
 # Run the test suite.
 if test "$testHost" = "pascal" ; then
-    scp checkout_pascal pascal:
-    scp runit_pascal pascal:
-    scp postit_pascal pascal:
     subTag=`date +%Y-%m-%d-%H:%M`
-    ssh pascal "./checkout_pascal $subTag"
-    ssh pascal "msub -l nodes=1:ppn=16 -l gres=ignore -l walltime=10:00:00 -o pascal_testit_$subTag.out -q pvis -A wbronze -z ./runit_pascal $subTag"
+    ./checkout_pascal $subTag
+    sbatch --partition=pvis --account=wbronze --time=10:00:00 --ntasks=36 --nodes=1 --tasks-per-node=36 -o pascal_testit_$subTag.out ./runit_pascal $subTag
     sleep 36000
-    ssh pascal "./postit_pascal $subTag"
+    ./postit_pascal $subTag
 fi
