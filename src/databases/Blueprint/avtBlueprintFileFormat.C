@@ -740,6 +740,12 @@ avtBlueprintFileFormat::AddBlueprintMeshAndFieldMetadata(avtDatabaseMetaData *md
                                                    nblocks,
                                                    0, 0, 0,
                                                    ndims, ndims, mt);
+
+        if(is_mfem_mesh)
+        {
+            mmd->containsOriginalCells = true;
+        }
+
         mmd->LODs = 20;
         md->Add(mmd);
 
