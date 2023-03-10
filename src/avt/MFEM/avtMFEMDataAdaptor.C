@@ -360,6 +360,10 @@ avtMFEMDataAdaptor::LowOrderMeshToVTK(mfem::Mesh *mesh)
 //    Justin Privitera, Tue Oct 18 09:53:50 PDT 2022
 //    Added guards to prevent segfault.
 //
+//    Cyrus Harrison, Fri Mar 10 11:58:33 PST 2023
+//    Add original cell ids, so mesh plots render outlines of the
+//    high order elements.
+//
 // ****************************************************************************
 vtkDataSet *
 avtMFEMDataAdaptor::RefineMeshToVTK(mfem::Mesh *mesh,
@@ -402,7 +406,53 @@ avtMFEMDataAdaptor::RefineMeshToVTK(mfem::Mesh *mesh,
     // refine the mesh
     mfem::Mesh lo_mesh = mfem::Mesh::MakeRefined(*mesh, lod, mfem::BasisType::GaussLobatto);
 
-    return LowOrderMeshToVTK(&lo_mesh);
+    vtkDataSet *res_ds = LowOrderMeshToVTK(&lo_mesh);
+
+    /// ----------------
+    // add original cell ids, which associate our refined elements with the
+    // original mfem elements.
+    /// ----------------
+    // NOTE:
+    //  This counting pattern follows the implementation of
+    // mfem::Mesh::MakeRefined. If its implementation changes significantly,
+    // we will have to adapt this logic as well.
+    /// ----------------
+
+    int orig_nelems = mesh->GetNE();
+
+    GeometryRefiner refiner;
+    refiner.SetType(BasisType::GetQuadrature1D(mfem::BasisType::GaussLobatto));
+
+    int lor_nelems = lo_mesh.GetNE();
+
+    vtkUnsignedIntArray *orig_cell_ids = vtkUnsignedIntArray::New();
+    orig_cell_ids->SetName("avtOriginalCellNumbers");
+    orig_cell_ids->SetNumberOfComponents(2);
+    orig_cell_ids->SetNumberOfTuples(lor_nelems);
+
+    unsigned int *orig_cell_ids_ptr = orig_cell_ids->GetPointer(0);
+
+    int orig_cell_ids_idx=0;
+    // assoc refined elements with orig element
+    for (int el = 0; el < orig_nelems; el++)
+    {
+       Geometry::Type geom = mesh->GetElementGeometry(el);
+
+       int nvert = Geometry::NumVerts[geom];
+       RefinedGeometry &RG = *refiner.Refine(geom, lod);
+
+       for (int j = 0; j < RG.RefGeoms.Size()/nvert; j++)
+       {
+           orig_cell_ids_ptr[orig_cell_ids_idx] = static_cast<unsigned int>(domain);
+           orig_cell_ids_ptr[orig_cell_ids_idx+1] = static_cast<unsigned int>(el);
+           orig_cell_ids_idx+=2;
+       }
+    }
+
+    res_ds->GetCellData()->AddArray(orig_cell_ids);
+    orig_cell_ids->Delete();
+
+    return res_ds;
 }
 
 
