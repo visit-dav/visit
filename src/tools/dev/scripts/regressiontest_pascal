@@ -477,8 +477,10 @@ fi
 
 cd $testDir/$workingDir/visit/src/test
 
+# if we don't have a test results directory, exit with failure now
 if test ! -d "\$dateTag"; then
     echo "\$dateTag doesn't exist."
+    src/tools/dev/scripts/visit-notify-test-failure -host $testHost
     exit
 fi
 
