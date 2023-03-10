@@ -2718,7 +2718,6 @@ avtXRayImageQuery::WriteBlueprintMeshFields(conduit::Node &data_out,
     // intensities
     data_out["fields/spatial_energy_reduced_intensities/topology"] = "spatial_energy_reduced_topo";
     data_out["fields/spatial_energy_reduced_intensities/association"] = "element";
-    data_out["fields/spatial_energy_reduced_intensities/units"] = intensityUnits + " * " + energyUnits; // TODO Q? is this right?
     // set to float64 regardless of vtk data types
     data_out["fields/spatial_energy_reduced_intensities/values"].set(conduit::DataType::float64(nx * ny));
     conduit::float64 *ser_intensity_vals = data_out["fields/spatial_energy_reduced_intensities/values"].value();
@@ -2726,7 +2725,6 @@ avtXRayImageQuery::WriteBlueprintMeshFields(conduit::Node &data_out,
     // path_length
     data_out["fields/spatial_energy_reduced_path_length/topology"] = "spatial_energy_reduced_topo";
     data_out["fields/spatial_energy_reduced_path_length/association"] = "element";
-    data_out["fields/spatial_energy_reduced_path_length/units"] = pathLengthUnits; // TODO Q? what goes here? these aren't units
     // set to float64 regardless of vtk data types
     data_out["fields/spatial_energy_reduced_path_length/values"].set(conduit::DataType::float64(nx * ny));
     conduit::float64 *ser_depth_vals = data_out["fields/spatial_energy_reduced_path_length/values"].value();
