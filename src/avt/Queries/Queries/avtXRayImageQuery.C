@@ -2724,7 +2724,7 @@ avtXRayImageQuery::WriteBlueprintMeshFields(conduit::Node &data_out,
     conduit::float64 *ser_intensity_vals = data_out["fields/spatial_energy_reduced_intensities/values"].value();
 
     // path_length
-    data_out["fields/spatial_energy_reduced_path_length/topology"] = "image_topo";
+    data_out["fields/spatial_energy_reduced_path_length/topology"] = "spatial_energy_reduced_topo";
     data_out["fields/spatial_energy_reduced_path_length/association"] = "element";
     data_out["fields/spatial_energy_reduced_path_length/units"] = pathLengthUnits; // TODO Q? what goes here? these aren't units
     // set to float64 regardless of vtk data types
