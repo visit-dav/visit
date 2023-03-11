@@ -1685,7 +1685,11 @@ The final pieces of the Conduit Output are two more meshes, the spatial extents 
 
    The Spatial Extents Mesh visualized using VisIt.
 
-The spatial extents mesh bears great similarity to that of the :ref:`Basic_Mesh_Output`.
+.. figure:: images/xray_visualize_spatial3.png
+
+   The Spatial Energy Reduced Mesh visualized using VisIt.
+
+The first of these two is the Spatial Extents Mesh, which bears great similarity to that of the :ref:`Basic_Mesh_Output`.
 The :ref:`Basic_Mesh_Output` gives users a picture, in a sense, that was taken by the simulated x ray detector.
 That picture lives in image space, where the x and y dimensions are given in pixels, and the z dimension represents the number of energy group bins.
 
@@ -1704,6 +1708,9 @@ The rationale for including this mesh is twofold:
 2. This mesh acts as a container for various interesting pieces of data that users may want to pass through the query. This is the destination for the ``spatial_units`` and ``energy_units`` (:ref:`XRay_Units`), which show up under ``coordsets/spatial_coords/units``. This is also where the energy group bounds (:ref:`Standard_Arguments`) appear in the output, under ``coordsets/spatial_coords/values/z``.
 
 If the energy group bounds were not provided by the user, or the provided bounds do not match the actual number of bins used in the ray trace, then there will be a message explaining what went wrong under ``coordsets/spatial_coords/info``, and the z values will go from 0 to *n* where *n* is the number of bins.
+
+The other mesh that is included, the Spatial Energy Reduced Mesh, is a simplification of the Spatial Extents Mesh.
+We collapse the information in the Spatial Extents Mesh into 2D by taking, for each x and y element (or pixel), the field value (either intensities or path lengths) to be the sum of the field values along the z axis scaled by the corresponding energy bin widths, if they are provided by the user.
 
 The following is the example from :ref:`Overview_of_Output`, but with only the spatial extents meshes fully realized: 
 
@@ -1815,6 +1822,8 @@ The following is the example from :ref:`Overview_of_Output`, but with only the s
 As can be seen from the example, this view of the output is very similar to the :ref:`Basic_Mesh_Output`. 
 It has all the same components, a coordinate set ``spatial_coords``, a topology ``spatial_topo``, and fields ``intensities_spatial`` and ``path_length_spatial``.
 The topology and fields are exact duplicates of those found in the :ref:`Basic_Mesh_Output`.
+The Spatial Energy Reduced Mesh is similar, but notable in the sense that it is missing the z dimension.
+
 The impetus for including the spatial extents mesh was originally to include spatial coordinates as part of the metadata, but later on it was decided that the spatial coordinates should be promoted to be a proper Blueprint coordset.
 We then duplicated the existing topology and fields from the :ref:`Basic_Mesh_Output` so that the spatial extents coordset could be part of a valid Blueprint mesh, and could thus be visualized using VisIt.
 
