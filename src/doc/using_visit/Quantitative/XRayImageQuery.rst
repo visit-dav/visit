@@ -112,7 +112,7 @@ If using the :ref:`Conduit_Output`, many of these arguments will appear in the o
 The ``vars`` will show up as ``abs_var_name`` and ``emis_var_name`` under the :ref:`Query_Parameters` section of the :ref:`XRay_Metadata`.
 ``divide_emis_by_absorb`` shows up under the :ref:`Query_Parameters` section of the :ref:`XRay_Metadata`.
 ``image_size`` shows up as ``num_x_pixels`` and ``num_y_pixels`` under the :ref:`Query_Parameters` section of the :ref:`XRay_Metadata`.
-The ``energy_group_bounds`` appear under the ``spatial_coords`` in the :ref:`Spatial_Extents_Mesh`.
+The ``energy_group_bounds`` appear under the ``spatial_coords`` in the :ref:`Spatial_Extents_Meshes`.
 
 Output Filenames and Directories
 ++++++++++++++++++++++++++++++++
@@ -250,7 +250,7 @@ These units appear in the :ref:`Conduit_Output` in a few different places.
 | *path_length_units*      | Metadata describing the path length output.  |
 +--------------------------+----------------------------------------------+
 
-The ``spatial_units`` and ``energy_units`` appear in the :ref:`Spatial_Extents_Mesh`.
+The ``spatial_units`` and ``energy_units`` appear in the :ref:`Spatial_Extents_Meshes`.
 The ``abs_units`` and the ``emis_units`` appear in the :ref:`Query_Parameters` section of the :ref:`XRay_Metadata`.
 The ``intensity_units`` and the ``path_length_units`` appear in the :ref:`Basic_Mesh_Output` under the fields.
 
@@ -638,18 +638,24 @@ See :ref:`Introspecting_with_Python` for a deeper dive into viewing and extracti
          x: "width"
          y: "height"
          z: "energy_group"
+     spatial_energy_reduced_coords: 
+       type: "rectilinear"
+       values: 
+         x: [0.0, 0.0220084685853863, 0.0440169371707727, ..., 8.78137896556915, 8.80338743415454]
+         y: [0.0, 0.0220084679294829, 0.0440169358589658, ..., 6.58053191091538, 6.60254037884486]
+       labels: 
+         x: "width"
+         y: "height"
+       units: 
+         x: "cm"
+         y: "cm"
      near_plane_coords: 
        type: "explicit"
        values: 
          x: [4.40169371707727, -4.40169371707727, -4.40169371707727, 4.40169371707727]
          y: [-0.801270189422432, -0.801270189422432, 5.80127018942243, 5.80127018942243]
          z: [-15.0, -15.0, -15.0, -15.0]
-     view_plane_coords: 
-       type: "explicit"
-       values: 
-         x: [13.3333337306976, -13.3333337306976, -13.3333337306976, 13.3333337306976]
-         y: [-7.5, -7.5, 12.5, 12.5]
-         z: [10.0, 10.0, 10.0, 10.0]
+     ... ( skipped 1 child )
      far_plane_coords: 
        type: "explicit"
        values: 
@@ -675,18 +681,16 @@ See :ref:`Introspecting_with_Python` for a deeper dive into viewing and extracti
      spatial_topo: 
        coordset: "spatial_coords"
        type: "rectilinear"
+     spatial_energy_reduced_topo: 
+       coordset: "spatial_energy_reduced_coords"
+       type: "rectilinear"
      near_plane_topo: 
        type: "unstructured"
        coordset: "near_plane_coords"
        elements: 
          shape: "quad"
          connectivity: [0, 1, 2, 3]
-     view_plane_topo: 
-       type: "unstructured"
-       coordset: "view_plane_coords"
-       elements: 
-         shape: "quad"
-         connectivity: [0, 1, 2, 3]
+     ... ( skipped 1 child )
      far_plane_topo: 
        type: "unstructured"
        coordset: "far_plane_coords"
@@ -730,7 +734,7 @@ See :ref:`Introspecting_with_Python` for a deeper dive into viewing and extracti
        units: "path length metadata"
        values: [0.0, 0.0, 0.0, ..., 0.0, 0.0]
        strides: [1, 400, 120000]
-     ... ( skipped 2 children )
+     ... ( skipped 4 children )
      far_plane_field: 
        topology: "far_plane_topo"
        association: "element"
@@ -799,7 +803,7 @@ Additionally, it is simple to generate an image, as the Blueprint output can be 
 
    The resulting x ray image from Conduit Blueprint output, visualized by plotting with VisIt.
 
-We have opted to enrich the Blueprint output (see :ref:`Basic_Mesh_Output`) with extensive metadata (see :ref:`XRay_Metadata`) as well as additional meshes (see :ref:`Imaging_Planes_and_Rays_Meshes` and :ref:`Spatial_Extents_Mesh`) to provide extra context and information to the user. 
+We have opted to enrich the Blueprint output (see :ref:`Basic_Mesh_Output`) with extensive metadata (see :ref:`XRay_Metadata`) as well as additional meshes (see :ref:`Imaging_Planes_and_Rays_Meshes` and :ref:`Spatial_Extents_Meshes`) to provide extra context and information to the user. 
 These additions should make it easier to troubleshoot unexpected results, make sense of the query output, and pass important information through the query.
 Blueprint makes it simple to put all of this information into one file, and just as simple to read that information back out and/or visualize.
 
@@ -835,6 +839,8 @@ Here is a simplified representation of a Conduit tree that is output from the Qu
       ...
     spatial_coords: 
       ...
+    spatial_energy_reduced_coords: 
+      ...
     near_plane_coords: 
       ...
     view_plane_coords: 
@@ -849,6 +855,8 @@ Here is a simplified representation of a Conduit tree that is output from the Qu
     image_topo: 
       ...
     spatial_topo:
+      ...
+    spatial_energy_reduced_topo: 
       ...
     near_plane_topo: 
       ...
@@ -869,6 +877,10 @@ Here is a simplified representation of a Conduit tree that is output from the Qu
       ...
     path_length_spatial: 
       ...
+    spatial_energy_reduced_intensities: 
+      ...
+    spatial_energy_reduced_path_length: 
+      ...
     near_plane_field: 
       ...
     view_plane_field: 
@@ -883,7 +895,7 @@ Here is a simplified representation of a Conduit tree that is output from the Qu
 There are multiple Blueprint meshes stored in this tree, as well as extensive metadata.
 Each piece of the Conduit output will be covered in more detail in ensuing parts of the documentation.
 To learn more about what lives under the ``state`` branch, see the :ref:`XRay_Metadata` section.
-To learn more about the coordinate sets, topologies, and fields, see the :ref:`Basic_Mesh_Output`, :ref:`Imaging_Planes_and_Rays_Meshes`, and :ref:`Spatial_Extents_Mesh` sections.
+To learn more about the coordinate sets, topologies, and fields, see the :ref:`Basic_Mesh_Output`, :ref:`Imaging_Planes_and_Rays_Meshes`, and :ref:`Spatial_Extents_Meshes` sections.
 
 .. _Basic_Mesh_Output:
 
@@ -928,6 +940,8 @@ The following is the example from :ref:`Overview_of_Output`, but with the Bluepr
         z: "bins"
     spatial_coords: 
       ...
+    spatial_energy_reduced_coords: 
+      ...
     near_plane_coords: 
       ...
     view_plane_coords: 
@@ -943,6 +957,8 @@ The following is the example from :ref:`Overview_of_Output`, but with the Bluepr
       coordset: "image_coords"
       type: "rectilinear"
     spatial_topo: 
+      ...
+    spatial_energy_reduced_topo: 
       ...
     near_plane_topo: 
       ...
@@ -970,6 +986,10 @@ The following is the example from :ref:`Overview_of_Output`, but with the Bluepr
     intensities_spatial: 
       ...
     path_length_spatial: 
+      ...
+    spatial_energy_reduced_intensities: 
+      ...
+    spatial_energy_reduced_path_length: 
       ...
     near_plane_field: 
       ...
@@ -1063,6 +1083,8 @@ See the example below, which is taken from the example in :ref:`Overview_of_Outp
       ...
     spatial_coords: 
       ...
+    spatial_energy_reduced_coords: 
+      ...
     near_plane_coords: 
       ...
     view_plane_coords: 
@@ -1076,7 +1098,9 @@ See the example below, which is taken from the example in :ref:`Overview_of_Outp
   topologies: 
     image_topo: 
       ...
-    spatial_topo:
+    spatial_topo: 
+      ...
+    spatial_energy_reduced_topo: 
       ...
     near_plane_topo: 
       ...
@@ -1096,6 +1120,10 @@ See the example below, which is taken from the example in :ref:`Overview_of_Outp
     intensities_spatial: 
       ...
     path_length_spatial: 
+      ...
+    spatial_energy_reduced_intensities: 
+      ...
+    spatial_energy_reduced_path_length: 
       ...
     near_plane_field: 
       ...
@@ -1365,6 +1393,8 @@ See the example below, which is taken from the example in :ref:`Overview_of_Outp
       ...
     spatial_coords: 
       ...
+    spatial_energy_reduced_coords: 
+      ...
     near_plane_coords: 
       type: "explicit"
       values: 
@@ -1390,7 +1420,9 @@ See the example below, which is taken from the example in :ref:`Overview_of_Outp
   topologies: 
     image_topo: 
       ...
-    spatial_topo:
+    spatial_topo: 
+      ...
+    spatial_energy_reduced_topo: 
       ...
     near_plane_topo: 
       type: "unstructured"
@@ -1422,6 +1454,10 @@ See the example below, which is taken from the example in :ref:`Overview_of_Outp
     intensities_spatial: 
       ...
     path_length_spatial: 
+      ...
+    spatial_energy_reduced_intensities: 
+      ...
+    spatial_energy_reduced_path_length: 
       ...
     near_plane_field: 
       topology: "near_plane_topo"
@@ -1534,7 +1570,7 @@ And here is the same view with 400x300 rays but with the ray opacity lowered.
 
 Hopefully it is clear at this point that there are multiple ways of looking at the rays that are used in the ray trace.
 
-Now we will take a look at the final example taken from the example in :ref:`Overview_of_Output`, but this time with only the rays meshes fully realized: 
+Now we will take a look at another example inspired by the example in :ref:`Overview_of_Output`, but this time with only the rays meshes fully realized: 
 
 ::
 
@@ -1552,6 +1588,8 @@ Now we will take a look at the final example taken from the example in :ref:`Ove
     image_coords: 
       ...
     spatial_coords: 
+      ...
+    spatial_energy_reduced_coords: 
       ...
     near_plane_coords: 
       ...
@@ -1574,7 +1612,9 @@ Now we will take a look at the final example taken from the example in :ref:`Ove
   topologies: 
     image_topo: 
       ...
-    spatial_topo:
+    spatial_topo: 
+      ...
+    spatial_energy_reduced_topo: 
       ...
     near_plane_topo: 
       ...
@@ -1603,6 +1643,10 @@ Now we will take a look at the final example taken from the example in :ref:`Ove
       ...
     path_length_spatial: 
       ...
+    spatial_energy_reduced_intensities: 
+      ...
+    spatial_energy_reduced_path_length: 
+      ...
     near_plane_field: 
       ...
     view_plane_field: 
@@ -1630,18 +1674,18 @@ We found that if all the rays were the same color, the resulting render was much
 Of course, rendering the rays as one color is still an option.
 With VisIt, one need only draw a Mesh Plot of the ``mesh_ray_topo`` as opposed to a Pseudocolor Plot of the ``mesh_ray_topo/ray_field``.
 
-.. _Spatial_Extents_Mesh:
+.. _Spatial_Extents_Meshes:
 
-Spatial Extents Mesh
-""""""""""""""""""""
+Spatial Extents Meshes
+""""""""""""""""""""""
 
-The final piece of the Blueprint Output is one last mesh, the spatial extents mesh.
+The final pieces of the Conduit Output is two more meshes, the spatial extents mesh and the spatial energy reduced mesh.
 
 .. figure:: images/xray_visualize_spatial2.png
 
    The Spatial Extents Mesh visualized using VisIt.
 
-This mesh bears great similarity to that of the :ref:`Basic_Mesh_Output`.
+The spatial extents mesh bears great similarity to that of the :ref:`Basic_Mesh_Output`.
 The :ref:`Basic_Mesh_Output` gives users a picture, in a sense, that was taken by the simulated x ray detector.
 That picture lives in image space, where the x and y dimensions are given in pixels, and the z dimension represents the number of energy group bins.
 
@@ -1661,7 +1705,7 @@ The rationale for including this mesh is twofold:
 
 If the energy group bounds were not provided by the user, or the provided bounds do not match the actual number of bins used in the ray trace, then there will be a message explaining what went wrong under ``coordsets/spatial_coords/info``, and the z values will go from 0 to *n* where *n* is the number of bins.
 
-The following is the example from :ref:`Overview_of_Output`, but with only the spatial extents mesh fully realized: 
+The following is the example from :ref:`Overview_of_Output`, but with only the spatial extents meshes fully realized: 
 
 ::
 
@@ -1785,7 +1829,7 @@ This is because the view frustum is determined by the ``view_angle`` argument (s
 In this case, the query is using the default value of 30 degrees, and because the near plane is far enough back, it is outside the frustum.
 
 So what does this mean for the other query results?
-It means that while we'd expect our :ref:`Spatial_Extents_Mesh` to look like this:
+It means that while we'd expect our :ref:`Spatial_Extents_Meshes` to look like this:
 
 .. figure:: images/xray_pitfall_spatialextent1.png
 
@@ -1799,7 +1843,7 @@ It will actually look like this:
 
 Why is the mesh upside-down?
 The spatial extents mesh is upside-down because the simulated x ray detector is upside down.
-Previously, in the :ref:`Spatial_Extents_Mesh` section we described the spatial extents mesh as though we had taken the :ref:`Basic_Mesh_Output`, resized it, and pasted it on top of the near plane.
+Previously, in the :ref:`Spatial_Extents_Meshes` section we described the spatial extents mesh as though we had taken the :ref:`Basic_Mesh_Output`, resized it, and pasted it on top of the near plane.
 That is exactly what is happening here.
 The spatial extents mesh is upside down because the near plane is upside down.
 
@@ -1998,7 +2042,7 @@ As discussed in the :ref:`Rays_Meshes` section, this picture is not very helpful
 
 See the :ref:`Rays_Meshes` section for more tips for making sense of the rays.
 
-**4. Finally, we will examine the** :ref:`Spatial_Extents_Mesh`.
+**4. Finally, we will examine the** :ref:`Spatial_Extents_Meshes`.
 This should be very similar to visualizing the :ref:`Basic_Mesh_Output`.
 
 ::
@@ -2241,8 +2285,8 @@ And finally, :ref:`Other_Metadata`:
    path_length_min = xrayout["domain_000000/state/xray_data/path_length_min"]
    image_topo_order_of_domain_variables = xrayout["domain_000000/state/xray_data/image_topo_order_of_domain_variables"]
 
-**4. Accessing the** :ref:`Spatial_Extents_Mesh` **data.**
-Because the :ref:`Spatial_Extents_Mesh` shares a lot in common with the :ref:`Basic_Mesh_Output`, we will only cover here how to extract some of the unique values.
+**4. Accessing the** :ref:`Spatial_Extents_Meshes` **data.**
+Because the :ref:`Spatial_Extents_Meshes` shares a lot in common with the :ref:`Basic_Mesh_Output`, we will only cover here how to extract some of the unique values.
 
 ::
 
