@@ -78,6 +78,9 @@
 #
 #    Justin Privitera, Wed Oct 12 11:38:11 PDT 2022
 #    Changed output type for many tests since bmp output type is removed.
+# 
+#    Justin Privitera, Fri Mar 10 19:06:49 PST 2023
+#    Added tests for new spatial energy reduced topo and fields.
 #
 # ----------------------------------------------------------------------------
 

@@ -2509,6 +2509,8 @@ avtXRayImageQuery::WriteBlueprintMetadata(conduit::Node &data_out,
 //  Creation:   December 09, 2022
 // 
 //  Modifications:
+//    Justin Privitera, Fri Mar 10 19:06:49 PST 2023
+//    Added spatial energy reduced coordset.
 //
 // ****************************************************************************
 #ifdef HAVE_CONDUIT
@@ -2620,6 +2622,8 @@ avtXRayImageQuery::WriteBlueprintMeshCoordsets(conduit::Node &data_out,
 //  Creation:   December 09, 2022
 // 
 //  Modifications:
+//    Justin Privitera, Fri Mar 10 19:06:49 PST 2023
+//    Added spatial energy reduced topo.
 //
 // ****************************************************************************
 #ifdef HAVE_CONDUIT
@@ -2651,6 +2655,8 @@ avtXRayImageQuery::WriteBlueprintMeshTopologies(conduit::Node &data_out)
 //  Creation:   December 09, 2022
 // 
 //  Modifications:
+//    Justin Privitera, Fri Mar 10 19:06:49 PST 2023
+//    Added spatial energy reduced fields and calculations for them.
 //
 // ****************************************************************************
 #ifdef HAVE_CONDUIT
