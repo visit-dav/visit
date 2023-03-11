@@ -141,6 +141,11 @@
 #   directory outside the repo, which should speed up git operations. I
 #   changed a python reference to python3.
 #
+#   Eric Brugger, Fri Mar 10 14:32:00 PST 2023
+#   I renamed the "linux-x86_64" directory in the visit install to
+#   "linux-x86_64-toss4" so that the launcher script would find the
+#   installation on toss4.
+#
 
 # Determine the users name and e-mail address.
 #
@@ -419,6 +424,7 @@ cd ../
 version=\`cat $testDir/$workingDir/visit/src/VERSION\`
 
 ../src/tools/dev/scripts/visit-install -c llnl_open \$version linux-x86_64 ./_install >> ../../installlog 2>&1
+mv _install/\$version/linux-x86_64 _install/\$version/linux-x86_64-toss4 >> ../../installlog 2>&1
 
 if test "$debug" = "true" ; then
     echo "Install completed at: \`date\`" | mail -s "Install completed" $userEmail
