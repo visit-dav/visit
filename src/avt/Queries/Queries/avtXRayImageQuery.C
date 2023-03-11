@@ -2601,11 +2601,11 @@ avtXRayImageQuery::WriteBlueprintMeshCoordsets(conduit::Node &data_out,
     data_out["coordsets/spatial_energy_reduced_coords/values/x"].set(data_out["coordsets/spatial_coords/values/x"]);
     data_out["coordsets/spatial_energy_reduced_coords/values/y"].set(data_out["coordsets/spatial_coords/values/y"]);
 
-    data_out["coordsets/spatial_energy_reduced_coords/labels/x"] = "width";
-    data_out["coordsets/spatial_energy_reduced_coords/labels/y"] = "height";
+    data_out["coordsets/spatial_energy_reduced_coords/units/x"].set(data_out["coordsets/spatial_coords/units/x"]);
+    data_out["coordsets/spatial_energy_reduced_coords/units/y"].set(data_out["coordsets/spatial_coords/units/y"]);
 
-    data_out["coordsets/spatial_energy_reduced_coords/units/x"] = spatialUnits;
-    data_out["coordsets/spatial_energy_reduced_coords/units/y"] = spatialUnits;
+    data_out["coordsets/spatial_energy_reduced_coords/labels/x"].set(data_out["coordsets/spatial_coords/labels/x"]);
+    data_out["coordsets/spatial_energy_reduced_coords/labels/y"].set(data_out["coordsets/spatial_coords/labels/y"]);
 }
 #endif
 

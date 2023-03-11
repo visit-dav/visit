@@ -1736,6 +1736,17 @@ The following is the example from :ref:`Overview_of_Output`, but with only the s
         x: "width"
         y: "height"
         z: "energy_group"
+    spatial_energy_reduced_coords: 
+      type: "rectilinear"
+      values: 
+        x: [-0.0, -0.0559830658094596, -0.111966131618919, ..., -22.3372432579744, -22.3932263237838]
+        y: [-0.0, -0.0559830641410342, -0.111966128282068, ..., -16.7389361781692, -16.7949192423103]
+      units: 
+        x: "cm"
+        y: "cm"
+      labels: 
+        x: "width"
+        y: "height"
     near_plane_coords: 
       ...
     view_plane_coords: 
@@ -1751,6 +1762,9 @@ The following is the example from :ref:`Overview_of_Output`, but with only the s
       ...
     spatial_topo: 
       coordset: "spatial_coords"
+      type: "rectilinear"
+    spatial_energy_reduced_topo: 
+      coordset: "spatial_energy_reduced_coords"
       type: "rectilinear"
     near_plane_topo: 
       ...
@@ -1779,6 +1793,14 @@ The following is the example from :ref:`Overview_of_Output`, but with only the s
       units: "path length metadata"
       values: [2.46405696868896, 2.45119333267212, 2.43822622299194, ..., 0.0, 0.0]
       strides: [1, 400, 120000]
+    spatial_energy_reduced_intensities: 
+      topology: "spatial_energy_reduced_topo"
+      association: "element"
+      values: [0.70251174271, 0.7045906037, 0.7072469592, ..., 0.0, 0.0]
+    spatial_energy_reduced_path_length: 
+      topology: "spatial_energy_reduced_topo"
+      association: "element"
+      values: [6.16014242172, 6.12798333168, 6.09556555748, ..., 0.0, 0.0]
     near_plane_field: 
       ...
     view_plane_field: 
@@ -1829,7 +1851,7 @@ This is because the view frustum is determined by the ``view_angle`` argument (s
 In this case, the query is using the default value of 30 degrees, and because the near plane is far enough back, it is outside the frustum.
 
 So what does this mean for the other query results?
-It means that while we'd expect our :ref:`Spatial_Extents_Meshes` to look like this:
+It means that while we'd expect our Spatial Extents Mesh (:ref:`Spatial_Extents_Meshes`) to look like this:
 
 .. figure:: images/xray_pitfall_spatialextent1.png
 
