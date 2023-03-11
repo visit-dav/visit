@@ -1679,7 +1679,7 @@ With VisIt, one need only draw a Mesh Plot of the ``mesh_ray_topo`` as opposed t
 Spatial Extents Meshes
 """"""""""""""""""""""
 
-The final pieces of the Conduit Output is two more meshes, the spatial extents mesh and the spatial energy reduced mesh.
+The final pieces of the Conduit Output are two more meshes, the spatial extents mesh and the spatial energy reduced mesh.
 
 .. figure:: images/xray_visualize_spatial2.png
 
@@ -2097,6 +2097,30 @@ To make the output look like an x ray image, it is simple to change the color ta
 
    A visualization of the spatial extents mesh using the x ray color table.
 
+::
+
+   # Make sure we have a clean slate for ensuing visualizations.
+   DeleteAllPlots()
+
+   # Add a pseudocolor plot of the intensities
+   AddPlot("Pseudocolor", "mesh_spatial_energy_reduced_topo/spatial_energy_reduced_intensities")
+   
+   # Alternatively add a plot of the path length instead
+   # AddPlot("Pseudocolor", "mesh_spatial_energy_reduced_topo/spatial_energy_reduced_intensities")
+
+   DrawPlots()
+
+   # Change to x ray color table
+
+   # Make sure the plot you want to change the color of is active
+   PseudocolorAtts = PseudocolorAttributes()
+   PseudocolorAtts.colorTableName = "xray"
+   SetPlotOptions(PseudocolorAtts)
+
+.. figure:: images/xray_visualize_spatial3.png
+
+   A visualization of the spatial energy reduced mesh using the x ray color table.
+
 .. _Introspecting_with_Python:
 
 Introspecting with Python
@@ -2308,7 +2332,7 @@ And finally, :ref:`Other_Metadata`:
    image_topo_order_of_domain_variables = xrayout["domain_000000/state/xray_data/image_topo_order_of_domain_variables"]
 
 **4. Accessing the** :ref:`Spatial_Extents_Meshes` **data.**
-Because the :ref:`Spatial_Extents_Meshes` shares a lot in common with the :ref:`Basic_Mesh_Output`, we will only cover here how to extract some of the unique values.
+Because the :ref:`Spatial_Extents_Meshes` share a lot in common with the :ref:`Basic_Mesh_Output`, we will only cover here how to extract some of the unique values.
 
 ::
 
@@ -2404,7 +2428,7 @@ To make the planes different colors, use VisIt's color table controls, or see :r
 
 .. figure:: images/xray_troubleshooting_2.png
 
-   An example of what could be going wrong. The simulated detector is not looking in the right direction.
+   An example of what could be going wrong. The simulated detector is not positioned correctly.
 
 The simulated x ray detector is situated at the near plane, looking in the direction of the view plane, and seeing nothing after the far plane.
 Once the imaging planes and ray corners have been visualized, it is clear to see where the camera is looking, and if the near and far clipping planes are appropriately placed.
