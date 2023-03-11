@@ -2716,18 +2716,18 @@ avtXRayImageQuery::WriteBlueprintMeshFields(conduit::Node &data_out,
 
     // set up spatial energy reduced fields
     // intensities
-    data_out["fields/spatial_energy_reduced_intensities/topology"] = "spatial_energy_reduced_topo";
-    data_out["fields/spatial_energy_reduced_intensities/association"] = "element";
+    data_out["fields/intensities_spatial_energy_reduced/topology"] = "spatial_energy_reduced_topo";
+    data_out["fields/intensities_spatial_energy_reduced/association"] = "element";
     // set to float64 regardless of vtk data types
-    data_out["fields/spatial_energy_reduced_intensities/values"].set(conduit::DataType::float64(nx * ny));
-    conduit::float64 *ser_intensity_vals = data_out["fields/spatial_energy_reduced_intensities/values"].value();
+    data_out["fields/intensities_spatial_energy_reduced/values"].set(conduit::DataType::float64(nx * ny));
+    conduit::float64 *ser_intensity_vals = data_out["fields/intensities_spatial_energy_reduced/values"].value();
 
     // path_length
-    data_out["fields/spatial_energy_reduced_path_length/topology"] = "spatial_energy_reduced_topo";
-    data_out["fields/spatial_energy_reduced_path_length/association"] = "element";
+    data_out["fields/path_length_spatial_energy_reduced/topology"] = "spatial_energy_reduced_topo";
+    data_out["fields/path_length_spatial_energy_reduced/association"] = "element";
     // set to float64 regardless of vtk data types
-    data_out["fields/spatial_energy_reduced_path_length/values"].set(conduit::DataType::float64(nx * ny));
-    conduit::float64 *ser_depth_vals = data_out["fields/spatial_energy_reduced_path_length/values"].value();
+    data_out["fields/path_length_spatial_energy_reduced/values"].set(conduit::DataType::float64(nx * ny));
+    conduit::float64 *ser_depth_vals = data_out["fields/path_length_spatial_energy_reduced/values"].value();
 
     // sum reduction
     // nx is the number of x ELEMENTS, same for ny
@@ -2755,11 +2755,11 @@ avtXRayImageQuery::WriteBlueprintMeshFields(conduit::Node &data_out,
     }
 
     // set strides for spatial energy reduced fields
-    data_out["fields/spatial_energy_reduced_intensities/strides"].set(conduit::DataType::int64(3));
-    conduit::int64 *ser_stride_ptr = data_out["fields/spatial_energy_reduced_intensities/strides"].value();
+    data_out["fields/intensities_spatial_energy_reduced/strides"].set(conduit::DataType::int64(3));
+    conduit::int64 *ser_stride_ptr = data_out["fields/intensities_spatial_energy_reduced/strides"].value();
     ser_stride_ptr[0] = 1;
     ser_stride_ptr[1] = nx;
-    data_out["fields/spatial_energy_reduced_path_length/strides"].set(data_out["fields/spatial_energy_reduced_intensities/strides"]);
+    data_out["fields/path_length_spatial_energy_reduced/strides"].set(data_out["fields/intensities_spatial_energy_reduced/strides"]);
 }
 #endif
 

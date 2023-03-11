@@ -877,9 +877,9 @@ Here is a simplified representation of a Conduit tree that is output from the Qu
       ...
     path_length_spatial: 
       ...
-    spatial_energy_reduced_intensities: 
+    intensities_spatial_energy_reduced: 
       ...
-    spatial_energy_reduced_path_length: 
+    path_length_spatial_energy_reduced: 
       ...
     near_plane_field: 
       ...
@@ -987,9 +987,9 @@ The following is the example from :ref:`Overview_of_Output`, but with the Bluepr
       ...
     path_length_spatial: 
       ...
-    spatial_energy_reduced_intensities: 
+    intensities_spatial_energy_reduced: 
       ...
-    spatial_energy_reduced_path_length: 
+    path_length_spatial_energy_reduced: 
       ...
     near_plane_field: 
       ...
@@ -1121,9 +1121,9 @@ See the example below, which is taken from the example in :ref:`Overview_of_Outp
       ...
     path_length_spatial: 
       ...
-    spatial_energy_reduced_intensities: 
+    intensities_spatial_energy_reduced: 
       ...
-    spatial_energy_reduced_path_length: 
+    path_length_spatial_energy_reduced: 
       ...
     near_plane_field: 
       ...
@@ -1455,9 +1455,9 @@ See the example below, which is taken from the example in :ref:`Overview_of_Outp
       ...
     path_length_spatial: 
       ...
-    spatial_energy_reduced_intensities: 
+    intensities_spatial_energy_reduced: 
       ...
-    spatial_energy_reduced_path_length: 
+    path_length_spatial_energy_reduced: 
       ...
     near_plane_field: 
       topology: "near_plane_topo"
@@ -1643,9 +1643,9 @@ Now we will take a look at another example inspired by the example in :ref:`Over
       ...
     path_length_spatial: 
       ...
-    spatial_energy_reduced_intensities: 
+    intensities_spatial_energy_reduced: 
       ...
-    spatial_energy_reduced_path_length: 
+    path_length_spatial_energy_reduced: 
       ...
     near_plane_field: 
       ...
@@ -1800,11 +1800,11 @@ The following is the example from :ref:`Overview_of_Output`, but with only the s
       units: "path length metadata"
       values: [2.46405696868896, 2.45119333267212, 2.43822622299194, ..., 0.0, 0.0]
       strides: [1, 400, 120000]
-    spatial_energy_reduced_intensities: 
+    intensities_spatial_energy_reduced: 
       topology: "spatial_energy_reduced_topo"
       association: "element"
       values: [0.70251174271, 0.7045906037, 0.7072469592, ..., 0.0, 0.0]
-    spatial_energy_reduced_path_length: 
+    path_length_spatial_energy_reduced: 
       topology: "spatial_energy_reduced_topo"
       association: "element"
       values: [6.16014242172, 6.12798333168, 6.09556555748, ..., 0.0, 0.0]
@@ -2112,10 +2112,10 @@ To make the output look like an x ray image, it is simple to change the color ta
    DeleteAllPlots()
 
    # Add a pseudocolor plot of the intensities
-   AddPlot("Pseudocolor", "mesh_spatial_energy_reduced_topo/spatial_energy_reduced_intensities")
+   AddPlot("Pseudocolor", "mesh_spatial_energy_reduced_topo/intensities_spatial_energy_reduced")
    
    # Alternatively add a plot of the path length instead
-   # AddPlot("Pseudocolor", "mesh_spatial_energy_reduced_topo/spatial_energy_reduced_intensities")
+   # AddPlot("Pseudocolor", "mesh_spatial_energy_reduced_topo/intensities_spatial_energy_reduced")
 
    DrawPlots()
 
