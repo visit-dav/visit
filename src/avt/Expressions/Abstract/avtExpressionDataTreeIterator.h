@@ -18,7 +18,7 @@
 
 #include <string>
 
-class vtkmDataSet;
+class avtVtkmDataSet;
 
 // ****************************************************************************
 //  Class: avtExpressionDataTreeIterator
@@ -52,6 +52,9 @@ class vtkmDataSet;
 //    Added volumeDependent array that tracks if a generated expression is
 //    volume-dependent.
 //
+//    Eric Brugger, Fri Feb 24 14:57:15 PST 2023
+//    I replaced vtkh with vtkm.
+//
 // ****************************************************************************
 
 class EXPRESSION_API avtExpressionDataTreeIterator 
@@ -69,7 +72,7 @@ class EXPRESSION_API avtExpressionDataTreeIterator
     virtual vtkDataArray          *DeriveVariable(vtkDataSet *, int currentDomainsIndex) = 0;
 
     avtDataRepresentation *        ExecuteData_VTKm(avtDataRepresentation *in_dr);
-    virtual void                   DeriveVariableVTKm(vtkmDataSet *, 
+    virtual void                   DeriveVariableVTKm(avtVtkmDataSet *, 
                                                       int currentDomainsIndex,
                                                       const std::string &activeVar,
                                                       const std::string &outputVar);

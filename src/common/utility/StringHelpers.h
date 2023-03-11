@@ -75,6 +75,8 @@ namespace StringHelpers
     void UTILITY_API rtrim(std::string &var);
     void UTILITY_API ltrim(std::string &var);
     void UTILITY_API  trim(std::string &var);
+    // name aligns with C++20 std::string::ends_with
+    bool UTILITY_API ends_with(const std::string &var, const std::string &test);
 
     std::string UTILITY_API Replace(const std::string &source,
                                     const std::string &before,

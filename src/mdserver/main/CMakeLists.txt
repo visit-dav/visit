@@ -31,6 +31,10 @@
 #   Justin Privitera, Wed Aug 24 11:08:51 PDT 2022
 #   Added logic to make mdserver aware of avtBP lib.
 #
+#   Eric Brugger, Fri Feb 24 14:57:15 PST 2023
+#   Replaced vtktiff with vtktiff_LIBRARIES, vtkpng with vtkpng_LIBRARIES,
+#   and vtkjpeg with vtkjpeg_LIBRARIES.
+#
 #****************************************************************************
 
 SET(MDSERVER_SOURCES
@@ -116,6 +120,9 @@ TARGET_LINK_LIBRARIES(mdserver
     lightweight_visit_vtk
     visit_verdict
     ${vtklibs}
+    ${vtktiff_LIBRARIES}
+    ${vtkpng_LIBRARIES}
+    ${vtkjpeg_LIBRARIES}
     ${ZLIB_LIBRARY}
     ${CMAKE_THREAD_LIBS}
     ${DL_LIB}

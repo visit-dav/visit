@@ -43,6 +43,9 @@
 #    Justin Privitera, Wed Aug 24 11:08:51 PDT 2022
 #    Added logic to be aware of avtBP lib.
 #
+#    Eric Brugger, Fri Feb 24 14:57:15 PST 2023
+#    Replace vtkjpeg with vtkjpeg_LIBRARIES and vtkpng with vtkpng_LIBRARIES.
+#
 #****************************************************************************
 
 set(LIBENGINE_SOURCES
@@ -176,12 +179,6 @@ if(WIN32 AND MSVC)
     set_target_properties(engine_ser_exe PROPERTIES LINK_FLAGS "/STACK:4000000")
 endif()
 
-if (VTK_VERSION VERSION_EQUAL "8.1.0")
-    set(vtk_img_libs vtkjpeg vtkpng)
-else()
-    set(vtk_img_libs VTK::jpeg VTK::png)
-endif()
-
 target_link_libraries(engine_ser_exe
     ${VISIT_EXE_LINKER_FLAGS}
     ${engine_ser_exe_IDatabase}
@@ -192,7 +189,8 @@ target_link_libraries(engine_ser_exe
     ${engine_ser_exe_EPlot_ser}
     engine_ser
     visit_verdict
-    ${vtk_img_libs}
+    ${vtkjpeg_LIBRARIES}
+    ${vtkpng_LIBRARIES}
     ${ALL_THIRDPARTY_IO_LIB}
     ${CMAKE_THREAD_LIBS}
     ${ZLIB_LIBRARY}
@@ -303,7 +301,8 @@ if(VISIT_PARALLEL)
         ${engine_par_exe_EPlot_par}
         engine_par
         visit_verdict
-        ${vtk_img_libs}
+        ${vtkjpeg_LIBRARIES}
+        ${vtkpng_LIBRARIES}
         ${ALL_THIRDPARTY_IO_LIB}
         ${ICET_STATIC_LIB}
         ${CMAKE_THREAD_LIBS}

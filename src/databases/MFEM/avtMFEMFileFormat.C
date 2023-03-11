@@ -19,6 +19,7 @@
 #include <DebugStream.h>
 #include <Expression.h>
 #include <FileFunctions.h>
+#include <StringHelpers.h>
 
 #include <InvalidFilesException.h>
 #include <InvalidVariableException.h>
@@ -32,8 +33,6 @@
 
 #include <JSONRoot.h>
 
-// Controls whether to create original cell numbers.
-#define CREATE_ORIGINAL_CELL_NUMBERS
 
 #ifdef _WIN32
 #define strncasecmp _strnicmp
@@ -51,6 +50,7 @@ using     std::ostringstream;
 using     std::vector;
 
 using namespace mfem;
+
 
 // ****************************************************************************
 //  Method: avtMFEMFileFormat constructor
@@ -290,6 +290,9 @@ avtMFEMFileFormat::FetchDataFromCatFile(string const &cat_path, string const &ob
 //   Brad Whitlock, Wed Sep  2 17:30:22 PDT 2020
 //   Set the containsOriginalCells flag.
 //
+//   Cyrus Harrison, Fri Mar  3 10:45:12 PST 2023
+//   Add support for directly reading mfem mesh files.
+//
 // ****************************************************************************
 void
 avtMFEMFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
@@ -300,6 +303,7 @@ avtMFEMFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     std::string root_file(GetFilename());
 
     JSONRoot root_md(root_file);
+
     vector<string>dset_names;
     root_md.DataSets(dset_names);
 
@@ -326,22 +330,22 @@ avtMFEMFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
                           spatial_dim, topo_dim);
 
         md->GetMeshes(i).LODs = atoi(dset.Mesh().Tag("max_lods").c_str());
-#ifdef CREATE_ORIGINAL_CELL_NUMBERS
         // Indicate that we're providing original cells.
         md->GetMeshes(i).containsOriginalCells = true;
-#endif
         // Add builtin mfem fields related to the mesh:
 
+        std::string var_ecoloring = dset_names[i] + "_element_coloring";
+        std::string var_eattib = dset_names[i] + "_element_attribute";
+
         AddScalarVarToMetaData(md,
-                               "element_coloring",
+                               var_ecoloring.c_str(),
                                dset_names[i].c_str(),
                                AVT_ZONECENT);
         AddScalarVarToMetaData(md,
-                               "element_attribute",
+                               var_eattib.c_str(),
                                dset_names[i].c_str(),
                                AVT_ZONECENT);
-    
-    
+
         /// add mesh variables
         vector<string>field_names;
         dset.Fields(field_names);
@@ -404,6 +408,26 @@ avtMFEMFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
                 }
             }
         }
+
+        //
+        // Add the meta-data object for the current mesh boundary topo
+        //
+        std::string bndy_name =  dset_names[i] + "_boundary";
+        // boundary topo dim will be one less than main mesh
+        AddMeshToMetaData(md,
+                          bndy_name.c_str(),
+                          AVT_UNSTRUCTURED_MESH,
+                          extents,
+                          nblocks,
+                          block_origin,
+                          spatial_dim, topo_dim - 1 );
+
+        std::string var_battrib = dset_names[i] + "_boundary_attribute";
+        AddScalarVarToMetaData(md,
+                               var_battrib.c_str(),
+                               bndy_name.c_str(),
+                               AVT_ZONECENT);
+
     }
 
     vector<string>expr_names;
@@ -529,24 +553,49 @@ avtMFEMFileFormat::GetTime()
 //  Creation:   Fri May 23 15:16:20 PST 2014
 // 
 //  Modifications:
-//     Justin Privitera, Wed Aug 24 11:08:51 PDT 2022
-//     Take advantage of new avtMFEM lib.
+//    Justin Privitera, Wed Aug 24 11:08:51 PDT 2022
+//    Take advantage of new avtMFEM lib.
 // 
 //    Justin Privitera, Wed Aug 24 11:08:51 PDT 2022
 //    `m_new_refine` is passed to `RefineMeshToVTK` so it can choose 
 //    the appropriate MFEM LOR scheme.
+//
+//    Cyrus Harrison, Thu Mar  2 08:45:54 PST 2023
+//    Add support for boundary mesh
 //
 // ****************************************************************************
 vtkDataSet *
 avtMFEMFileFormat::GetMesh(int domain, const char *meshname)
 {
     // get base mesh
-    Mesh *mesh = FetchMesh(string(meshname),domain);
-    vtkDataSet *res_ds = avtMFEMDataAdaptor::RefineMeshToVTK(mesh, 
-                                                             domain, 
-                                                             selectedLOD+1, 
-                                                             m_new_refine);
+    std::string mesh_name(meshname);
+
+    // check for fetch of boundary mesh
+    std::string bndry_suffix = "_boundary";
+    bool bndry_mesh = StringHelpers::ends_with(mesh_name,bndry_suffix);
+    if(bndry_mesh)
+    {
+        // boundary is part of the main mfem mesh object
+        // fetch w/o boundary suffix
+        mesh_name = mesh_name.substr(0, mesh_name.size() - bndry_suffix.size());
+    }
+
+    Mesh *mesh = FetchMesh(mesh_name,domain);
+
+    vtkDataSet *res_ds = NULL;
+    if(bndry_mesh)
+    {
+        res_ds = avtMFEMDataAdaptor::BoundaryMeshToVTK(mesh);
+    }
+    else
+    {
+        res_ds = avtMFEMDataAdaptor::RefineMeshToVTK(mesh,
+                                                     domain,
+                                                     selectedLOD+1,
+                                                     m_new_refine);
+    }
     delete mesh;
+
     return res_ds;
 }
 
@@ -627,6 +676,7 @@ avtMFEMFileFormat::GetVectorVar(int domain, const char *varname)
 //
 //   Mark C. Miller, Mon Dec 11 15:49:34 PST 2017
 //   Add support for mfem_cat file
+//
 // ****************************************************************************
 Mesh *
 avtMFEMFileFormat::FetchMesh(const std::string &mesh_name,int domain)
@@ -725,6 +775,9 @@ avtMFEMFileFormat::FetchMesh(const std::string &mesh_name,int domain)
 //    `m_new_refine` is passed to `RefineGridFunctionToVTK` so it can choose 
 //    the appropriate MFEM LOR scheme.
 //
+//    Cyrus Harrison, Thu Mar  2 08:45:54 PST 2023
+//    Add support for boundary mesh + boundary atts field
+//
 // ****************************************************************************
 vtkDataArray *
 avtMFEMFileFormat::GetRefinedVar(const std::string &var_name,
@@ -758,19 +811,35 @@ avtMFEMFileFormat::GetRefinedVar(const std::string &var_name,
 
     vtkDataArray *rv;
 
+    std::string bndry_suffix = "_boundary";
+    bool bndry_mesh = StringHelpers::ends_with(mesh_name,bndry_suffix);
+
+    if(bndry_mesh)
+    {
+        // boundary is part of the main mfem mesh object
+        // fetch w/o boundary suffix
+        mesh_name = mesh_name.substr(0, mesh_name.size() - bndry_suffix.size());
+    }
+
     // get base mesh
     Mesh *mesh = FetchMesh(mesh_name,domain);
 
     // check for special vars
-    if(var_name == "element_coloring")
+    if(StringHelpers::ends_with(var_name,"element_coloring"))
     {
         rv = avtMFEMDataAdaptor::RefineElementColoringToVTK(mesh, domain, lod);
         delete mesh;
         return rv;
     }
-    else if(var_name == "element_attribute") // handle with materials in the future?
+    else if(StringHelpers::ends_with(var_name,"element_attribute")) // handle with materials in the future?
     {
         rv = avtMFEMDataAdaptor::RefineElementAttributeToVTK(mesh, lod);
+        delete mesh;
+        return rv;
+    }
+    else if(StringHelpers::ends_with(var_name,"boundary_attribute"))
+    {
+        rv = avtMFEMDataAdaptor::BoundaryAttributeToVTK(mesh);
         delete mesh;
         return rv;
     }

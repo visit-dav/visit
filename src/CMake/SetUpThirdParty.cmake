@@ -39,6 +39,9 @@
 #   Kathleen Biagas, Tue Jan 31, 2023
 #   Moved FindNSIS into VisItWindowsFunctions.cmake.
 #
+#   Eric Brugger, Fri Feb 24 14:57:15 PST 2023
+#   I replaced vtkh with vtkm.
+#
 #****************************************************************************/
 
 # ==============================================
@@ -623,7 +626,7 @@ if(NOT VISIT_BUILD_MINIMAL_PLUGINS OR VISIT_SELECTED_DATABASE_PLUGINS)
     include(${VISIT_SOURCE_DIR}/CMake/FindPIDX.cmake)
 
     if(VTK_VERSION VERSION_EQUAL "8.1.0")
-        include(${VISIT_SOURCE_DIR}/CMake/FindVTKh.cmake)
+        include(${VISIT_SOURCE_DIR}/CMake/FindVTKm.cmake)
     endif()
 
     include(${VISIT_SOURCE_DIR}/CMake/FindGFortran.cmake)

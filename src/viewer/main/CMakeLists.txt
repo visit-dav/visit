@@ -20,6 +20,9 @@
 #  Kevin Griffin, Mon Oct 19 09:43:37 PDT 2020
 #  Updated the bundle name, icon file name, identifier and copyright
 #
+#  Eric Brugger, Fri Feb 24 14:57:15 PST 2023
+#  Replaced vtkpng with vtkpng_LIBRARIES and vtkjpeg with vtkjpeg_LIBRARIES.
+#
 #****************************************************************************
 
 IF(VISIT_PARALLEL AND WIN32 AND HAVE_HPC_SCHEDULER)
@@ -269,19 +272,14 @@ ENDIF(NOT APPLE)
 
 SET_TARGET_PROPERTIES(viewer_exe PROPERTIES OUTPUT_NAME viewer)
 
-if(VTK_VERSION VERSION_EQUAL "8.1.0")
-    set(vtk_img_libs vtkpng vtkjpeg)
-else()
-    set(vtk_img_libs VTK::png VTK::jpeg)
-endif()
-
 TARGET_LINK_LIBRARIES(viewer_exe
     ${viewer_exe_IOperator}
     ${viewer_exe_VOperator}
     ${viewer_exe_IPlot}
     ${viewer_exe_VPlot}
     viewer
-    ${vtk_img_libs}
+    ${vtkpng_LIBRARIES}
+    ${vtkjpeg_LIBRARIES}
 )
 
 # If we're building statically then the viewer can't be linked until the plugin

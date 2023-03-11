@@ -8,7 +8,7 @@
 #                          3D unstructured, single domain
 #                          3D unstructured, multi domain
 #              plots     - Contour, Pseudocolor
-#              operators - Isosurface, Slice, Threshold
+#              operators - Isosurface, Isovolume, Slice, Threshold
 #
 #  Programmer: Eric Brugger
 #  Date:       Wed Sep 19 12:18:14 PDT 2018
@@ -16,6 +16,9 @@
 #  Modifications:
 #    James Kress, Tue Oct  5 14:00:28 PST 2021
 #    Adding additional threshold tests.
+#
+#    Eric Brugger, Fri Feb 24 14:57:15 PST 2023
+#    Added additional tests.
 #
 # ----------------------------------------------------------------------------
 
@@ -163,6 +166,31 @@ DrawPlots()
 
 Test("vtkm_rect3d_08")
 
+DeleteAllPlots()
+
+AddPlot("Pseudocolor", "d")
+AddOperator("Isovolume")
+IsovolumeAtts = IsovolumeAttributes()
+IsovolumeAtts.lbound = -0.2
+IsovolumeAtts.ubound = 0.39
+IsovolumeAtts.variable = "u"
+SetOperatorOptions(IsovolumeAtts)
+DrawPlots()
+
+Test("vtkm_rect3d_09")
+
+DeleteAllPlots()
+
+AddPlot("Pseudocolor", "u")
+AddOperator("Isovolume")
+IsovolumeAtts = IsovolumeAttributes()
+IsovolumeAtts.lbound = -0.2
+IsovolumeAtts.ubound = 0.39
+IsovolumeAtts.variable = "default"
+SetOperatorOptions(IsovolumeAtts)
+DrawPlots()
+
+Test("vtkm_rect3d_10")
 
 #
 # Test a 2d curvilinear mesh.
@@ -308,6 +336,32 @@ DrawPlots()
 
 Test("vtkm_curv3d_08")
 
+DeleteAllPlots()
+
+AddPlot("Pseudocolor", "d")
+AddOperator("Isovolume")
+IsovolumeAtts = IsovolumeAttributes()
+IsovolumeAtts.lbound = -0.5
+IsovolumeAtts.ubound = 0.5
+IsovolumeAtts.variable = "u"
+SetOperatorOptions(IsovolumeAtts)
+DrawPlots()
+
+Test("vtkm_curv3d_09")
+
+DeleteAllPlots()
+
+AddPlot("Pseudocolor", "u")
+AddOperator("Isovolume")
+IsovolumeAtts = IsovolumeAttributes()
+IsovolumeAtts.lbound = -0.5
+IsovolumeAtts.ubound = 0.5
+IsovolumeAtts.variable = "default"
+SetOperatorOptions(IsovolumeAtts)
+DrawPlots()
+
+Test("vtkm_curv3d_10")
+
 #
 # Test a 2d unstructured mesh.
 #
@@ -413,6 +467,45 @@ DrawPlots()
 
 Test("vtkm_ucd3d_05")
 
+DeleteAllPlots()
+
+AddPlot("Pseudocolor", "d")
+AddOperator("Threshold")
+ThresholdAtts = ThresholdAttributes()
+ThresholdAtts.zonePortions = (0)
+ThresholdAtts.lowerBounds = (2.5)
+ThresholdAtts.upperBounds = (4.0)
+SetOperatorOptions(ThresholdAtts)
+DrawPlots()
+
+Test("vtkm_ucd3d_06")
+
+DeleteAllPlots()
+
+AddPlot("Pseudocolor", "u")
+AddOperator("Threshold")
+ThresholdAtts = ThresholdAttributes()
+ThresholdAtts.zonePortions = (1)
+ThresholdAtts.lowerBounds = (0.8)
+ThresholdAtts.upperBounds = (0.95)
+SetOperatorOptions(ThresholdAtts)
+DrawPlots()
+
+Test("vtkm_ucd3d_07")
+
+DeleteAllPlots()
+
+AddPlot("Pseudocolor", "u")
+AddOperator("Threshold")
+ThresholdAtts = ThresholdAttributes()
+ThresholdAtts.zonePortions = (0)
+ThresholdAtts.lowerBounds = (0.8)
+ThresholdAtts.upperBounds = (0.95)
+SetOperatorOptions(ThresholdAtts)
+DrawPlots()
+
+Test("vtkm_ucd3d_08")
+
 #
 # Test 3d unstructured with zoo elements.
 #
@@ -499,6 +592,71 @@ DrawPlots()
 
 Test("vtkm_globe_06")
 
+DeleteAllPlots()
+
+AddPlot("Pseudocolor", "dx")
+AddOperator("Threshold")
+ThresholdAtts = ThresholdAttributes()
+ThresholdAtts.zonePortions = (0)
+ThresholdAtts.lowerBounds = (-2.0)
+ThresholdAtts.upperBounds = (2.0)
+SetOperatorOptions(ThresholdAtts)
+DrawPlots()
+
+Test("vtkm_globe_07")
+
+DeleteAllPlots()
+
+AddPlot("Pseudocolor", "u")
+AddOperator("Threshold")
+ThresholdAtts = ThresholdAttributes()
+ThresholdAtts.zonePortions = (1)
+ThresholdAtts.lowerBounds = (-5.0)
+ThresholdAtts.upperBounds = (5.0)
+SetOperatorOptions(ThresholdAtts)
+DrawPlots()
+
+Test("vtkm_globe_08")
+
+DeleteAllPlots()
+
+AddPlot("Pseudocolor", "u")
+AddOperator("Threshold")
+ThresholdAtts = ThresholdAttributes()
+ThresholdAtts.zonePortions = (0)
+ThresholdAtts.lowerBounds = (-5.0)
+ThresholdAtts.upperBounds = (5.0)
+SetOperatorOptions(ThresholdAtts)
+DrawPlots()
+
+Test("vtkm_globe_09")
+
+DeleteAllPlots()
+
+AddPlot("Pseudocolor", "dx")
+AddOperator("Isovolume")
+atts = IsovolumeAttributes()
+atts.lbound = -5.0
+atts.ubound = 5.0
+atts.variable = "u"
+SetOperatorOptions(atts)
+DrawPlots()
+
+Test("vtkm_globe_10")
+
+DeleteAllPlots()
+
+AddPlot("Pseudocolor", "u")
+AddOperator("Isovolume")
+atts = IsovolumeAttributes()
+atts.lbound = -5.0
+atts.ubound = 5.0
+atts.variable = "default"
+SetOperatorOptions(atts)
+DrawPlots()
+
+Test("vtkm_globe_11")
+
 #
 # Test a multi-domain unstructured mesh.
 #
@@ -577,5 +735,44 @@ SetOperatorOptions(atts)
 DrawPlots()
 
 Test("vtkm_multi_ucd3d_05")
+
+DeleteAllPlots()
+
+AddPlot("Pseudocolor", "d")
+AddOperator("Threshold")
+ThresholdAtts = ThresholdAttributes()
+ThresholdAtts.zonePortions = (0)
+ThresholdAtts.lowerBounds = (2.5)
+ThresholdAtts.upperBounds = (4.0)
+SetOperatorOptions(ThresholdAtts)
+DrawPlots()
+
+Test("vtkm_multi_ucd3d_06")
+
+DeleteAllPlots()
+
+AddPlot("Pseudocolor", "u")
+AddOperator("Threshold")
+ThresholdAtts = ThresholdAttributes()
+ThresholdAtts.zonePortions = (1)
+ThresholdAtts.lowerBounds = (0.995)
+ThresholdAtts.upperBounds = (0.9985)
+SetOperatorOptions(ThresholdAtts)
+DrawPlots()
+
+Test("vtkm_multi_ucd3d_07")
+
+DeleteAllPlots()
+
+AddPlot("Pseudocolor", "u")
+AddOperator("Threshold")
+ThresholdAtts = ThresholdAttributes()
+ThresholdAtts.zonePortions = (0)
+ThresholdAtts.lowerBounds = (0.995)
+ThresholdAtts.upperBounds = (0.9985)
+SetOperatorOptions(ThresholdAtts)
+DrawPlots()
+
+Test("vtkm_multi_ucd3d_08")
 
 Exit()

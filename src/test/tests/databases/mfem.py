@@ -29,6 +29,7 @@ mfem_roots  = glob.glob(data_path("mfem_test_data/*.mfem_root"))
 input_meshs  = [ f for f in mfem_roots if f.count("ex0") == 0]
 ex01_results = [ f for f in mfem_roots if f.count("ex01") == 1]
 ex02_results = [ f for f in mfem_roots if f.count("ex02") == 1]
+mfem_mesh_files = glob.glob(data_path("mfem_test_data/*.mesh"))
 
 def set_test_view():
     v = View3DAttributes()
@@ -56,7 +57,7 @@ for f in input_meshs:
     base = os.path.splitext(os.path.basename(f))[0]
     DeleteAllPlots()
     OpenDatabase(f)
-    AddPlot("Pseudocolor","element_coloring")
+    AddPlot("Pseudocolor","main_element_coloring")
     #pc_atts = PseudocolorAttributes()
     #pc_atts.colorTableName = "PuBuGn"
     #SetPlotOptions(pc_atts)
@@ -71,6 +72,7 @@ for f in input_meshs:
         mc_atts  = MultiresControlAttributes()
         mc_atts.resolution = mres
         SetOperatorOptions(mc_atts)
+        ResetView()
         DrawPlots()
         Test("input_mesh_%s_mres_%04d" % (base,mres))
     DeleteAllPlots()
@@ -83,6 +85,7 @@ for f in ex01_results:
     OpenDatabase(f)
     AddPlot("Pseudocolor","gf")
     #AddPlot("Mesh","main")
+    ResetView()
     DrawPlots()
     Test("ex01_%s" % (base))
     DeleteAllPlots()
@@ -93,8 +96,9 @@ for f in ex02_results:
     base = os.path.splitext(os.path.basename(f))[0]
     DeleteAllPlots()
     OpenDatabase(f)
-    AddPlot("Pseudocolor","element_attribute")
+    AddPlot("Pseudocolor","main_element_attribute")
     #AddPlot("Mesh","main")
+    ResetView()
     DrawPlots()
     Test("ex02_element_attribute_%s" % (base))
     ChangeActivePlotsVar("gf_magnitude");
@@ -106,6 +110,7 @@ for f in ex02_results:
 TestSection("MFEM Expressions")
 OpenDatabase(data_path("mfem_test_data/ex02-beam-tet.mfem_root"))
 AddPlot("Pseudocolor","mag-gf")
+ResetView()
 DrawPlots()
 Test("mfem_expressions_1")
 DeleteAllPlots()
@@ -118,6 +123,34 @@ DrawPlots()
 Test("mfem_expressions_3")
 DeleteAllPlots()
 CloseDatabase(data_path("mfem_test_data/ex02-beam-tet.mfem_root"))
+
+TestSection("Input Mesh Boundary Topology")
+for f in input_meshs:
+    base = os.path.splitext(os.path.basename(f))[0]
+    DeleteAllPlots()
+    OpenDatabase(f)
+    AddPlot("Pseudocolor","main_boundary_attribute")
+    AddPlot("Mesh","main_boundary")
+    mesh_atts = MeshAttributes()
+    mesh_atts.lineWidth = 2
+    SetPlotOptions(mesh_atts)
+    ResetView()
+    DrawPlots()
+    Test("input_mesh_%s_boundary_topo" % (base))
+    DeleteAllPlots()
+    CloseDatabase(f)
+
+TestSection("Direct Mesh Open")
+for f in mfem_mesh_files:
+    base = os.path.splitext(os.path.basename(f))[0]
+    DeleteAllPlots()
+    OpenDatabase(f)
+    AddPlot("Pseudocolor","main_element_coloring")
+    ResetView()
+    DrawPlots()
+    Test("direct_open_mesh_file_%s" % (base))
+    DeleteAllPlots()
+    CloseDatabase(f)
 
 # reset default
 readOptions = GetDefaultFileOpenOptions("MFEM")

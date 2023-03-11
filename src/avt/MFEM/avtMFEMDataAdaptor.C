@@ -360,6 +360,10 @@ avtMFEMDataAdaptor::LowOrderMeshToVTK(mfem::Mesh *mesh)
 //    Justin Privitera, Tue Oct 18 09:53:50 PDT 2022
 //    Added guards to prevent segfault.
 //
+//    Cyrus Harrison, Fri Mar 10 11:58:33 PST 2023
+//    Add original cell ids, so mesh plots render outlines of the
+//    high order elements.
+//
 // ****************************************************************************
 vtkDataSet *
 avtMFEMDataAdaptor::RefineMeshToVTK(mfem::Mesh *mesh,
@@ -402,8 +406,253 @@ avtMFEMDataAdaptor::RefineMeshToVTK(mfem::Mesh *mesh,
     // refine the mesh
     mfem::Mesh lo_mesh = mfem::Mesh::MakeRefined(*mesh, lod, mfem::BasisType::GaussLobatto);
 
-    return LowOrderMeshToVTK(&lo_mesh);
+    vtkDataSet *res_ds = LowOrderMeshToVTK(&lo_mesh);
+
+    /// ----------------
+    // add original cell ids, which associate our refined elements with the
+    // original mfem elements.
+    /// ----------------
+    // NOTE:
+    //  This counting pattern follows the implementation of
+    // mfem::Mesh::MakeRefined. If its implementation changes significantly,
+    // we will have to adapt this logic as well.
+    /// ----------------
+
+    int orig_nelems = mesh->GetNE();
+
+    GeometryRefiner refiner;
+    refiner.SetType(BasisType::GetQuadrature1D(mfem::BasisType::GaussLobatto));
+
+    int lor_nelems = lo_mesh.GetNE();
+
+    vtkUnsignedIntArray *orig_cell_ids = vtkUnsignedIntArray::New();
+    orig_cell_ids->SetName("avtOriginalCellNumbers");
+    orig_cell_ids->SetNumberOfComponents(2);
+    orig_cell_ids->SetNumberOfTuples(lor_nelems);
+
+    unsigned int *orig_cell_ids_ptr = orig_cell_ids->GetPointer(0);
+
+    int orig_cell_ids_idx=0;
+    // assoc refined elements with orig element
+    for (int el = 0; el < orig_nelems; el++)
+    {
+       Geometry::Type geom = mesh->GetElementGeometry(el);
+
+       int nvert = Geometry::NumVerts[geom];
+       RefinedGeometry &RG = *refiner.Refine(geom, lod);
+
+       for (int j = 0; j < RG.RefGeoms.Size()/nvert; j++)
+       {
+           orig_cell_ids_ptr[orig_cell_ids_idx] = static_cast<unsigned int>(domain);
+           orig_cell_ids_ptr[orig_cell_ids_idx+1] = static_cast<unsigned int>(el);
+           orig_cell_ids_idx+=2;
+       }
+    }
+
+    res_ds->GetCellData()->AddArray(orig_cell_ids);
+    orig_cell_ids->Delete();
+
+    return res_ds;
 }
+
+
+// ****************************************************************************
+//  Method: BoundaryMeshToVTK
+//
+//  Purpose:
+//    Constructs a vtkUnstructuredGrid that represents an mfem boundary mesh.
+//
+//  Arguments:
+//    mesh:        MFEM mesh
+//
+//  Programmer: Cyrus Harrison
+//  Creation:   Thu Mar  2 09:36:49 PST 2023
+//
+// ****************************************************************************
+vtkDataSet *
+avtMFEMDataAdaptor::BoundaryMeshToVTK(mfem::Mesh *mesh)
+{
+    AVT_MFEM_INFO("Creating Boundary MFEM Mesh");
+
+    // guard vs if we have boundary elements
+    if (!mesh->HasBoundaryElements())
+    {
+       return NULL;
+    }
+
+    // FIRST: walk the boundary verts to find those used
+    // and create a map from main mesh vert idxs to
+    // to a compact set of verts used only for the boundary
+    int num_mesh_vertices   = mesh->GetNV();
+    // boundary is embedded in same space as main mesh
+    int bndry_sdim          = mesh->SpaceDimension();
+    int num_bndry_ele       = mesh->GetNBE();
+    int bndry_geom          = mesh->GetBdrElement(0)->GetType();
+    mfem::Element::Type bndry_ele_type = static_cast<mfem::Element::Type>(
+        mesh->GetBdrElement(0)->GetType());
+    int bndry_idxs_per_ele  = Geometry::NumVerts[bndry_geom];
+    int num_bndry_conn_idxs = num_bndry_ele * bndry_idxs_per_ele;
+
+    AVT_MFEM_INFO("Number of Mesh Vertices  = " << num_mesh_vertices);
+    AVT_MFEM_INFO("Number of Boundary Elements  = " << num_bndry_ele);
+
+    int *mesh_verts_used_by_bndry = new int[num_mesh_vertices];
+    int *mesh_to_bndry_verts_map  = new int[num_mesh_vertices];
+
+    // init mesh_verts_used_by_bndry
+    for (int i=0; i < num_mesh_vertices; i++)
+    {
+        mesh_verts_used_by_bndry[i] = 0;
+        mesh_to_bndry_verts_map[i] = -1;
+    }
+
+    // walk to tag mesh_verts_used_by_bndry
+    for (int i=0; i < num_bndry_ele; i++)
+    {
+        const Element *bndry_ele = mesh->GetBdrElement(i);
+        const int *bndry_ele_verts = bndry_ele->GetVertices();
+
+        for(int j=0;j< bndry_idxs_per_ele;j++)
+        {
+            mesh_verts_used_by_bndry[bndry_ele_verts[j]] = 1;
+        }
+    }
+
+    // count # of boundary verts
+    int num_boundary_verts = 0;
+    for (int i=0; i < num_mesh_vertices; i++)
+    {
+        num_boundary_verts += mesh_verts_used_by_bndry[i];
+    }
+
+    AVT_MFEM_INFO("Number of Boundary Vertices  = " << num_boundary_verts);
+
+    // gen bndry_to_mesh_verts_map and mesh_to_bndry_verts_map
+    int *bndry_to_mesh_verts_map = new int[num_boundary_verts];
+
+    for (int i=0; i < num_boundary_verts; i++)
+    {
+        bndry_to_mesh_verts_map[i] = -1;
+    }
+
+    int bndry_idx = 0;
+    for (int i=0; i < num_mesh_vertices; i++)
+    {
+        if(mesh_verts_used_by_bndry[i] == 1)
+        {
+            bndry_to_mesh_verts_map[bndry_idx] = i;
+            mesh_to_bndry_verts_map[i] = bndry_idx;
+            bndry_idx+=1;
+        }
+    }
+
+    // // if you want to debug these maps
+    // std::cout << " mesh_verts_used_by_bndry = " << std::endl;
+    // for (int i=0; i < num_mesh_vertices; i++)
+    // {
+    //     std::cout << mesh_verts_used_by_bndry[i] << " ";
+    // }
+    // std::cout << endl;
+    //
+    // std::cout << " mesh_to_bndry_verts_map = " << std::endl;
+    // for (int i=0; i < num_mesh_vertices; i++)
+    // {
+    //     std::cout << mesh_to_bndry_verts_map[i] << " ";
+    // }
+    // std::cout << endl;
+    //
+    // std::cout << " bndry_to_mesh_verts_map = "<< std::endl;
+    // for (int i=0; i < num_boundary_verts; i++)
+    // {
+    //     std::cout << bndry_to_mesh_verts_map[i] << " ";
+    // }
+    // std::cout << endl;
+
+    // done with this bookkeeping array
+    delete [] mesh_verts_used_by_bndry;
+
+    ////////////////////////////////////////////
+    // Setup bndry points
+    ////////////////////////////////////////////
+
+    vtkPoints *points = vtkPoints::New();
+    points->SetDataTypeToDouble();
+    points->SetNumberOfPoints(num_boundary_verts);
+
+    GridFunction *mesh_gf = mesh->GetNodes();
+
+    if(mesh_gf == NULL)
+    {
+        AVT_MFEM_INFO("Mesh does not have Nodes Grid Function ");
+    }
+    else
+    {
+        AVT_MFEM_INFO("Mesh does have Nodes Grid Function ");
+    }
+
+    //-------------------------------------------------------//
+    // TODO/NOTE: There may be cases where the vertices exist
+    // but are not valid, in that case we will need to
+    // use the nodes gf to find the right spatial position
+    //
+    // Need future work to address this.
+    // See related hints (but not the exact recipe we need):
+    // https://github.com/mfem/mfem/issues/861
+    //-------------------------------------------------------//
+
+    // extract the verts used in the boundary
+    for (int i=0; i < num_boundary_verts; i++)
+    {
+        int vert_id = bndry_to_mesh_verts_map[i];
+        // look up the vert from the mesh to bndry vert map
+        double *coords_ptr = mesh->GetVertex(vert_id);
+        double x = coords_ptr[0];
+        double y = bndry_sdim >= 2 ? coords_ptr[1] : 0;
+        double z = bndry_sdim >= 3 ? coords_ptr[2] : 0;
+        points->SetPoint(i, x, y, z);
+    }
+
+    ////////////////////////////////////////////
+    // Setup bndry topo
+    ////////////////////////////////////////////
+    std::string bndry_shape = ElementTypeToShapeName(bndry_ele_type);
+    int bndry_ctype = ElementShapeNameToVTKCellType(bndry_shape);
+    int bndry_csize = VTKCellTypeSize(bndry_ctype);
+
+    vtkIdTypeArray *ida = vtkIdTypeArray::New();
+    ida->SetNumberOfTuples(num_bndry_ele * (bndry_csize + 1));
+
+    for (int i=0; i < num_bndry_ele; i++)
+    {
+        const Element *bndry_ele = mesh->GetBdrElement(i);
+        const int *bndry_ele_verts = bndry_ele->GetVertices();
+        ida->SetComponent((bndry_csize + 1) * i, 0, bndry_csize);
+        for(int j=0;j< bndry_idxs_per_ele;j++)
+        {
+            // bndry mesh idx are in terms of the main set of verts
+            // map main mesh vert idx to bndry vert idx
+            int bndry_vert_idx = mesh_to_bndry_verts_map[bndry_ele_verts[j]];
+            ida->SetComponent((bndry_csize + 1) * i + j + 1, 0, bndry_vert_idx);
+        }
+    }
+
+    // finish setup of vtk objects
+    vtkUnstructuredGrid *ugrid = vtkUnstructuredGrid::New();
+    ugrid->SetPoints(points);
+    points->Delete();
+    vtkCellArray *ca = vtkCellArray::New();
+    ca->SetCells(num_bndry_ele, ida);
+    ida->Delete();
+    ugrid->SetCells(bndry_ctype, ca);
+    ca->Delete();
+
+    // clean up bookkeeping arrays
+    delete [] bndry_to_mesh_verts_map;
+    delete [] mesh_to_bndry_verts_map;
+
+    return ugrid;
+}
+
 
 // ****************************************************************************
 //  Method: LegacyRefineGridFunctionToVTK
@@ -875,3 +1124,46 @@ avtMFEMDataAdaptor::RefineElementAttributeToVTK(mfem::Mesh *mesh,
    }
    return rv;
 }
+
+
+// ****************************************************************************
+//  Method: BoundaryAttributeToVTK
+//
+//  Purpose:
+//   Constructs a vtkDataArray that contains the "attribute" value
+//   for a mfem mesh boundary.
+//
+//  Arguments:
+//   mesh:      MFEM mesh object
+//
+//  Programmer: Cyrus Harrison
+//  Creation:   Thu Mar  2 09:42:34 PST 2023
+//
+//  Modifications:
+//
+// ****************************************************************************
+vtkDataArray *
+avtMFEMDataAdaptor::BoundaryAttributeToVTK(mfem::Mesh *mesh)
+{
+    AVT_MFEM_INFO("Creating MFEM Boundary Attribute")
+
+    // guard vs if we have boundary elements
+    if (!mesh->HasBoundaryElements())
+    {
+       return NULL;
+    }
+
+    int num_bndry_ele = mesh->GetNBE();
+
+    vtkFloatArray *rv = vtkFloatArray::New();
+    rv->SetNumberOfComponents(1);
+    rv->SetNumberOfTuples(num_bndry_ele);
+
+    for (int i = 0; i < num_bndry_ele; i++)
+    {
+        rv->SetTuple1(i,mesh->GetBdrAttribute(i));
+    }
+
+    return rv;
+}
+

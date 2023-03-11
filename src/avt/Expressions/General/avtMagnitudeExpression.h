@@ -37,6 +37,10 @@ class     vtkDataArray;
 //    Hank Childs, Mon Jan 14 17:58:58 PST 2008
 //    Allow constants to be created as singletons.
 //
+//    Eric Brugger, Fri Feb 24 14:57:15 PST 2023
+//    I removed the DeriveVariableVTKm method since vtkmExpressions is
+//    no longer supported.
+//
 // ****************************************************************************
 
 class EXPRESSION_API avtMagnitudeExpression : public avtSingleInputExpressionFilter
@@ -50,10 +54,6 @@ class EXPRESSION_API avtMagnitudeExpression : public avtSingleInputExpressionFil
                               {return "Calculating Magnitude of Each Vector";};
   protected:
     virtual vtkDataArray     *DeriveVariable(vtkDataSet *, int currentDomainsIndex);
-    virtual void              DeriveVariableVTKm(vtkmDataSet *in_ds,
-                                                 int currentDomainsIndex,
-                                                 const std::string &activeVar, 
-                                                 const std::string &outputVar);
 
     virtual int               GetVariableDimension(void) { return 1; };
     virtual bool              CanHandleSingletonConstants(void) {return true;};
