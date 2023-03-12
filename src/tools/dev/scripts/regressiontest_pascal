@@ -146,6 +146,10 @@
 #   "linux-x86_64-toss4" so that the launcher script would find the
 #   installation on toss4.
 #
+#   Eric Brugger, Sun Mar 12 16:40:54 PDT 2023
+#   Install git lfs before updating the repository. Added more logging
+#   to the git repository update.
+#
 
 # Determine the users name and e-mail address.
 #
@@ -281,12 +285,24 @@ if test ! -e $testDir/$workingDir/visit; then
     git clone  --recursive ssh://git@github.com/visit-dav/visit.git >> buildlog 2>&1
 fi
 
-# Update the repository.
+# Enter the repository.
 cd visit
+
+# Install git lfs.
+git lfs install --force --skip-smudge >> ../buildlog2>&1
+
+# Update the repository.
+hostname >> ../buildlog 2>&1
+git --version >> ../buildlog 2>&1
+echo "rm -f .git/index.lock" >> ../buildlog 2>&1
 rm -f .git/index.lock >> ../buildlog 2>&1
+echo "git checkout develop" >> ../buildlog 2>&1
 git checkout develop >> ../buildlog 2>&1
+echo "git pull" >> ../buildlog 2>&1
 git pull >> ../buildlog 2>&1
+echo "git lfs pull" >> ../buildlog 2>&1
 git lfs pull >> ../buildlog 2>&1
+echo "Repository updated" >> ../buildlog 2>&1
 
 if test "$branch" = "trunk" ; then
     if test "$revision" = "latest" ; then
