@@ -1466,7 +1466,8 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
             conduit::Node verify_info;
             if(!conduit::blueprint::mesh::verify(data_out, verify_info))
             {
-                std::cout << verify_info.to_yaml() << std::endl;
+                debug1 << "Blueprint Output failed to verify:\n"
+                       << verify_info.to_yaml();
                 SetResultMessage("Blueprint mesh verification failed!");
                 EXCEPTION1(VisItException, "Blueprint mesh verification failed!");
             }
