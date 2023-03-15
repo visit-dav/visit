@@ -1466,7 +1466,7 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
             conduit::Node verify_info;
             if(!conduit::blueprint::mesh::verify(data_out, verify_info))
             {
-                verify_info.print();
+                std::cout << verify_info.to_yaml() << std::endl;
                 SetResultMessage("Blueprint mesh verification failed!");
                 EXCEPTION1(VisItException, "Blueprint mesh verification failed!");
             }
@@ -2526,9 +2526,9 @@ avtXRayImageQuery::WriteBlueprintMeshCoordsets(conduit::Node &coordsets,
     // set up spectra coords
     conduit::Node &spectra_coords = coordsets["spectra_coords"];
     spectra_coords["type"] = "rectilinear";
-    spectra_coords["values/z"].set(spectra_coords["values/z"]);
-    spectra_coords["units/z"].set(spatial_coords["units/z"]);
-    spectra_coords["labels/z"].set(spatial_coords["labels/z"]);
+    spectra_coords["values/x"].set(spatial_coords["values/z"]);
+    spectra_coords["units/x"].set(spatial_coords["units/z"]);
+    spectra_coords["labels/x"].set(spatial_coords["labels/z"]);
     if (spatial_coords.has_child("info"))
         spectra_coords["info"].set(spatial_coords["info"]);
 }
