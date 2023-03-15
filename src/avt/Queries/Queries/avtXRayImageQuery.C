@@ -2426,7 +2426,7 @@ avtXRayImageQuery::WriteBlueprintMetadata(conduit::Node &data_out,
 // ****************************************************************************
 #ifdef HAVE_CONDUIT
 void
-avtXRayImageQuery::WriteBlueprintMeshCoordsets(conduit::Node &data_out,
+avtXRayImageQuery::WriteBlueprintMeshCoordsets(conduit::Node &coordsets,
                                                const int x_coords_dim,
                                                const int y_coords_dim,
                                                const int z_coords_dim,
@@ -2434,26 +2434,27 @@ avtXRayImageQuery::WriteBlueprintMeshCoordsets(conduit::Node &data_out,
                                                const double detectorHeight)
 {
     // set up coords
-    data_out["coordsets/image_coords/type"] = "rectilinear";
-    data_out["coordsets/image_coords/values/x"].set(conduit::DataType::int32(x_coords_dim));
-    int *xvals = data_out["coordsets/image_coords/values/x"].value();
+    conduit::Node &image_coords = coordsets["image_coords"];
+    image_coords["type"] = "rectilinear";
+    image_coords["values/x"].set(conduit::DataType::int32(x_coords_dim));
+    int *xvals = image_coords["values/x"].value();
     for (int i = 0; i < x_coords_dim; i ++) { xvals[i] = i; }
 
-    data_out["coordsets/image_coords/values/y"].set(conduit::DataType::int32(y_coords_dim));
-    int *yvals = data_out["coordsets/image_coords/values/y"].value();
+    image_coords["values/y"].set(conduit::DataType::int32(y_coords_dim));
+    int *yvals = image_coords["values/y"].value();
     for (int i = 0; i < y_coords_dim; i ++) { yvals[i] = i; }
 
-    data_out["coordsets/image_coords/values/z"].set(conduit::DataType::int32(z_coords_dim));
-    int *zvals = data_out["coordsets/image_coords/values/z"].value();
+    image_coords["values/z"].set(conduit::DataType::int32(z_coords_dim));
+    int *zvals = image_coords["values/z"].value();
     for (int i = 0; i < z_coords_dim; i ++) { zvals[i] = i; }
 
-    data_out["coordsets/image_coords/labels/x"] = "width";
-    data_out["coordsets/image_coords/labels/y"] = "height";
-    data_out["coordsets/image_coords/labels/z"] = "energy_group";
+    image_coords["labels/x"] = "width";
+    image_coords["labels/y"] = "height";
+    image_coords["labels/z"] = "energy_group";
 
-    data_out["coordsets/image_coords/units/x"] = "pixels";
-    data_out["coordsets/image_coords/units/y"] = "pixels";
-    data_out["coordsets/image_coords/units/z"] = "bins";
+    image_coords["units/x"] = "pixels";
+    image_coords["units/y"] = "pixels";
+    image_coords["units/z"] = "bins";
 
     // calculate spatial extent coords
     // (the physical extents of the image projected on the near plane)
@@ -2462,13 +2463,14 @@ avtXRayImageQuery::WriteBlueprintMeshCoordsets(conduit::Node &data_out,
     const double nearDy{detectorHeight / imageSize[1]};
 
     // set up spatial extents coords
-    data_out["coordsets/spatial_coords/type"] = "rectilinear";
-    data_out["coordsets/spatial_coords/values/x"].set(conduit::DataType::float64(x_coords_dim));
-    double *spatial_xvals = data_out["coordsets/spatial_coords/values/x"].value();
+    conduit::Node &spatial_coords = coordsets["spatial_coords"];
+    spatial_coords["type"] = "rectilinear";
+    spatial_coords["values/x"].set(conduit::DataType::float64(x_coords_dim));
+    double *spatial_xvals = spatial_coords["values/x"].value();
     for (int i = 0; i < x_coords_dim; i ++) { spatial_xvals[i] = i * nearDx; }
 
-    data_out["coordsets/spatial_coords/values/y"].set(conduit::DataType::float64(y_coords_dim));
-    double *spatial_yvals = data_out["coordsets/spatial_coords/values/y"].value();
+    spatial_coords["values/y"].set(conduit::DataType::float64(y_coords_dim));
+    double *spatial_yvals = spatial_coords["values/y"].value();
     for (int i = 0; i < y_coords_dim; i ++) { spatial_yvals[i] = i * nearDy; }
 
     // include energy group bins in blueprint output if they are provided
@@ -2476,8 +2478,8 @@ avtXRayImageQuery::WriteBlueprintMeshCoordsets(conduit::Node &data_out,
     {
         if (z_coords_dim == nEnergyGroupBounds) // only pass them thru if it makes sense to do so
         {
-            data_out["coordsets/spatial_coords/values/z"].set(conduit::DataType::float64(nEnergyGroupBounds));
-            double *spatial_zvals = data_out["coordsets/spatial_coords/values/z"].value();
+            spatial_coords["values/z"].set(conduit::DataType::float64(nEnergyGroupBounds));
+            double *spatial_zvals = spatial_coords["values/z"].value();
             for (int i = 0; i < nEnergyGroupBounds; i ++) { spatial_zvals[i] = energyGroupBounds[i]; }                    
         }
         else
@@ -2486,39 +2488,40 @@ avtXRayImageQuery::WriteBlueprintMeshCoordsets(conduit::Node &data_out,
             out << "Energy group bounds size mismatch: provided " 
                 << nEnergyGroupBounds << " bounds, but " 
                 << z_coords_dim << " in query results.";
-            data_out["coordsets/spatial_coords/info"] = out.str();
-            data_out["coordsets/spatial_coords/values/z"].set(conduit::DataType::float64(z_coords_dim));
-            double *zvals = data_out["coordsets/spatial_coords/values/z"].value();
+            spatial_coords["info"] = out.str();
+            spatial_coords["values/z"].set(conduit::DataType::float64(z_coords_dim));
+            double *zvals = spatial_coords["values/z"].value();
             for (int i = 0; i < z_coords_dim; i ++) { zvals[i] = i; }
         }
     }
     else
     {
-        data_out["coordsets/spatial_coords/info"] = "Energy group bounds not provided.";
-        data_out["coordsets/spatial_coords/values/z"].set(conduit::DataType::float64(z_coords_dim));
-        double *zvals = data_out["coordsets/spatial_coords/values/z"].value();
+        spatial_coords["info"] = "Energy group bounds not provided.";
+        spatial_coords["values/z"].set(conduit::DataType::float64(z_coords_dim));
+        double *zvals = spatial_coords["values/z"].value();
         for (int i = 0; i < z_coords_dim; i ++) { zvals[i] = i; }
     }
 
-    data_out["coordsets/spatial_coords/units/x"] = spatialUnits;
-    data_out["coordsets/spatial_coords/units/y"] = spatialUnits;
-    data_out["coordsets/spatial_coords/units/z"] = energyUnits;
+    spatial_coords["units/x"] = spatialUnits;
+    spatial_coords["units/y"] = spatialUnits;
+    spatial_coords["units/z"] = energyUnits;
 
-    data_out["coordsets/spatial_coords/labels/x"] = "width";
-    data_out["coordsets/spatial_coords/labels/y"] = "height";
-    data_out["coordsets/spatial_coords/labels/z"] = "energy_group";
+    spatial_coords["labels/x"] = "width";
+    spatial_coords["labels/y"] = "height";
+    spatial_coords["labels/z"] = "energy_group";
 
     // set up spatial energy reduced coords
-    data_out["coordsets/spatial_energy_reduced_coords/type"] = "rectilinear";
+    conduit::Node &spatial_energy_reduced_coords = coordsets["spatial_energy_reduced_coords"];
+    spatial_energy_reduced_coords["type"] = "rectilinear";
     // copy over the x and y coords from the spatial_coords
-    data_out["coordsets/spatial_energy_reduced_coords/values/x"].set(data_out["coordsets/spatial_coords/values/x"]);
-    data_out["coordsets/spatial_energy_reduced_coords/values/y"].set(data_out["coordsets/spatial_coords/values/y"]);
+    spatial_energy_reduced_coords["values/x"].set(spatial_coords["values/x"]);
+    spatial_energy_reduced_coords["values/y"].set(spatial_coords["values/y"]);
 
-    data_out["coordsets/spatial_energy_reduced_coords/units/x"].set(data_out["coordsets/spatial_coords/units/x"]);
-    data_out["coordsets/spatial_energy_reduced_coords/units/y"].set(data_out["coordsets/spatial_coords/units/y"]);
+    spatial_energy_reduced_coords["units/x"].set(spatial_coords["units/x"]);
+    spatial_energy_reduced_coords["units/y"].set(spatial_coords["units/y"]);
 
-    data_out["coordsets/spatial_energy_reduced_coords/labels/x"].set(data_out["coordsets/spatial_coords/labels/x"]);
-    data_out["coordsets/spatial_energy_reduced_coords/labels/y"].set(data_out["coordsets/spatial_coords/labels/y"]);
+    spatial_energy_reduced_coords["labels/x"].set(spatial_coords["labels/x"]);
+    spatial_energy_reduced_coords["labels/y"].set(spatial_coords["labels/y"]);
 }
 #endif
 
@@ -2539,19 +2542,19 @@ avtXRayImageQuery::WriteBlueprintMeshCoordsets(conduit::Node &data_out,
 // ****************************************************************************
 #ifdef HAVE_CONDUIT
 void
-avtXRayImageQuery::WriteBlueprintMeshTopologies(conduit::Node &data_out)
+avtXRayImageQuery::WriteBlueprintMeshTopologies(conduit::Node &topologies)
 {
     // set up image topology
-    data_out["topologies/image_topo/coordset"] = "image_coords";
-    data_out["topologies/image_topo/type"] = "rectilinear";
+    topologies["image_topo/coordset"] = "image_coords";
+    topologies["image_topo/type"] = "rectilinear";
 
     // set up spatial extents topology
-    data_out["topologies/spatial_topo/coordset"] = "spatial_coords";
-    data_out["topologies/spatial_topo/type"] = "rectilinear";
+    topologies["spatial_topo/coordset"] = "spatial_coords";
+    topologies["spatial_topo/type"] = "rectilinear";
 
     // set up spatial energy reduced topology
-    data_out["topologies/spatial_energy_reduced_topo/coordset"] = "spatial_energy_reduced_coords";
-    data_out["topologies/spatial_energy_reduced_topo/type"] = "rectilinear";
+    topologies["spatial_energy_reduced_topo/coordset"] = "spatial_energy_reduced_coords";
+    topologies["spatial_energy_reduced_topo/type"] = "rectilinear";
 }
 #endif
 
@@ -2572,7 +2575,7 @@ avtXRayImageQuery::WriteBlueprintMeshTopologies(conduit::Node &data_out)
 // ****************************************************************************
 #ifdef HAVE_CONDUIT
 void
-avtXRayImageQuery::WriteBlueprintMeshFields(conduit::Node &data_out, 
+avtXRayImageQuery::WriteBlueprintMeshFields(conduit::Node &fields, 
                                             const int numfieldvals,
                                             const int numBins,
                                             vtkDataSet **leaves,
@@ -2580,20 +2583,22 @@ avtXRayImageQuery::WriteBlueprintMeshFields(conduit::Node &data_out,
                                             conduit::float64 *&depth_vals)
 {
     // intensities for image topo
-    data_out["fields/intensities/topology"] = "image_topo";
-    data_out["fields/intensities/association"] = "element";
-    data_out["fields/intensities/units"] = intensityUnits;
+    conduit::Node &intensities = fields["intensities"];
+    intensities["topology"] = "image_topo";
+    intensities["association"] = "element";
+    intensities["units"] = intensityUnits;
     // set to float64 regardless of vtk data types
-    data_out["fields/intensities/values"].set(conduit::DataType::float64(numfieldvals));
-    intensity_vals = data_out["fields/intensities/values"].value();
+    intensities["values"].set(conduit::DataType::float64(numfieldvals));
+    intensity_vals = intensities["values"].value();
 
     // path length for image topo
-    data_out["fields/path_length/topology"] = "image_topo";
-    data_out["fields/path_length/association"] = "element";
-    data_out["fields/path_length/units"] = pathLengthUnits;
+    conduit::Node &path_length = fields["path_length"];
+    path_length["topology"] = "image_topo";
+    path_length["association"] = "element";
+    path_length["units"] = pathLengthUnits;
     // set to float64 regardless of vtk data types
-    data_out["fields/path_length/values"].set(conduit::DataType::float64(numfieldvals));
-    depth_vals = data_out["fields/path_length/values"].value();
+    path_length["values"].set(conduit::DataType::float64(numfieldvals));
+    depth_vals = path_length["values"].value();
 
     // write actual field values
     const int datatype{leaves[0]->GetPointData()->GetArray("Intensity")->GetDataType()};
@@ -2612,39 +2617,43 @@ avtXRayImageQuery::WriteBlueprintMeshFields(conduit::Node &data_out,
     }
 
     // set strides for image topo fields
-    data_out["fields/intensities/strides"].set(conduit::DataType::int64(3));
-    conduit::int64 *stride_ptr = data_out["fields/intensities/strides"].value();
+    intensities["strides"].set(conduit::DataType::int64(3));
+    conduit::int64 *stride_ptr = intensities["strides"].value();
     stride_ptr[0] = 1;
     stride_ptr[1] = nx;
     stride_ptr[2] = nx * ny;
-    data_out["fields/path_length/strides"].set(data_out["fields/intensities/strides"]);
+    path_length["strides"].set(intensities["strides"]);
 
     // intensities for spatial topo
+    conduit::Node &intensities_spatial = fields["intensities_spatial"];
     // simply copy over the existing intensities data
-    data_out["fields/intensities_spatial"].set(data_out["fields/intensities/"]);
+    intensities_spatial.set(intensities);
     // then modify the topo
-    data_out["fields/intensities_spatial/topology"] = "spatial_topo";
+    intensities_spatial["topology"] = "spatial_topo";
 
     // path length for spatial topo
+    conduit::Node &path_length_spatial = fields["path_length_spatial"];
     // simply copy over the existing path length data
-    data_out["fields/path_length_spatial"].set(data_out["fields/path_length/"]);
+    path_length_spatial.set(path_length);
     // then modify the topo
-    data_out["fields/path_length_spatial/topology"] = "spatial_topo";
+    path_length_spatial["topology"] = "spatial_topo";
 
     // set up spatial energy reduced fields
     // intensities
-    data_out["fields/intensities_spatial_energy_reduced/topology"] = "spatial_energy_reduced_topo";
-    data_out["fields/intensities_spatial_energy_reduced/association"] = "element";
+    conduit::Node &intensities_spatial_energy_reduced = fields["intensities_spatial_energy_reduced"];
+    intensities_spatial_energy_reduced["topology"] = "spatial_energy_reduced_topo";
+    intensities_spatial_energy_reduced["association"] = "element";
     // set to float64 regardless of vtk data types
-    data_out["fields/intensities_spatial_energy_reduced/values"].set(conduit::DataType::float64(nx * ny));
-    conduit::float64 *ser_intensity_vals = data_out["fields/intensities_spatial_energy_reduced/values"].value();
+    intensities_spatial_energy_reduced["values"].set(conduit::DataType::float64(nx * ny));
+    conduit::float64 *ser_intensity_vals = intensities_spatial_energy_reduced["values"].value();
 
     // path_length
-    data_out["fields/path_length_spatial_energy_reduced/topology"] = "spatial_energy_reduced_topo";
-    data_out["fields/path_length_spatial_energy_reduced/association"] = "element";
+    conduit::Node &path_length_spatial_energy_reduced = fields["path_length_spatial_energy_reduced"];
+    path_length_spatial_energy_reduced["topology"] = "spatial_energy_reduced_topo";
+    path_length_spatial_energy_reduced["association"] = "element";
     // set to float64 regardless of vtk data types
-    data_out["fields/path_length_spatial_energy_reduced/values"].set(conduit::DataType::float64(nx * ny));
-    conduit::float64 *ser_depth_vals = data_out["fields/path_length_spatial_energy_reduced/values"].value();
+    path_length_spatial_energy_reduced["values"].set(conduit::DataType::float64(nx * ny));
+    conduit::float64 *ser_depth_vals = path_length_spatial_energy_reduced["values"].value();
 
     // sum reduction
     // nx is the number of x ELEMENTS, same for ny
@@ -2672,11 +2681,11 @@ avtXRayImageQuery::WriteBlueprintMeshFields(conduit::Node &data_out,
     }
 
     // set strides for spatial energy reduced fields
-    data_out["fields/intensities_spatial_energy_reduced/strides"].set(conduit::DataType::int64(3));
-    conduit::int64 *ser_stride_ptr = data_out["fields/intensities_spatial_energy_reduced/strides"].value();
+    intensities_spatial_energy_reduced["strides"].set(conduit::DataType::int64(3));
+    conduit::int64 *ser_stride_ptr = intensities_spatial_energy_reduced["strides"].value();
     ser_stride_ptr[0] = 1;
     ser_stride_ptr[1] = nx;
-    data_out["fields/path_length_spatial_energy_reduced/strides"].set(data_out["fields/intensities_spatial_energy_reduced/strides"]);
+    path_length_spatial_energy_reduced["strides"].set(intensities_spatial_energy_reduced["strides"]);
 }
 #endif
 
@@ -2713,13 +2722,13 @@ avtXRayImageQuery::WriteBlueprintMeshes(conduit::Node &data_out,
     numfieldvals = (x_coords_dim - 1) * (y_coords_dim - 1) * (z_coords_dim - 1);
 
     // We write one coordset for the image and one for the spatial extents
-    WriteBlueprintMeshCoordsets(data_out, 
+    WriteBlueprintMeshCoordsets(data_out["coordsets"], 
         x_coords_dim, y_coords_dim, z_coords_dim,
         detectorWidth, detectorHeight);
     
     // Then we duplicate the topologies and fields for both coordsets
-    WriteBlueprintMeshTopologies(data_out);    
-    WriteBlueprintMeshFields(data_out, numfieldvals, numBins, 
+    WriteBlueprintMeshTopologies(data_out["topologies"]);    
+    WriteBlueprintMeshFields(data_out["fields"], numfieldvals, numBins, 
         leaves, intensity_vals, depth_vals);
 }
 #endif

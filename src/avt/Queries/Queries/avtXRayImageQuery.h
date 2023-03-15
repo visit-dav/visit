@@ -226,14 +226,14 @@ class QUERY_API avtXRayImageQuery : public avtDatasetQuery
                                                          avtVector &lrc,
                                                          avtVector &ulc,
                                                          avtVector &urc);
-    void                      WriteBlueprintMeshCoordsets(conduit::Node &data_out,
+    void                      WriteBlueprintMeshCoordsets(conduit::Node &coordsets,
                                                           const int x_coords_dim,
                                                           const int y_coords_dim,
                                                           const int z_coords_dim,
                                                           const double detectorWidth, 
                                                           const double detectorHeight);
-    void                      WriteBlueprintMeshTopologies(conduit::Node &data_out);
-    void                      WriteBlueprintMeshFields(conduit::Node &data_out, 
+    void                      WriteBlueprintMeshTopologies(conduit::Node &topologies);
+    void                      WriteBlueprintMeshFields(conduit::Node &fields, 
                                                        const int numfieldvals,
                                                        const int numBins,
                                                        vtkDataSet **leaves,
