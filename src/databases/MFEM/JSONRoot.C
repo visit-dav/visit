@@ -912,11 +912,10 @@ JSONRoot::ToJson(ostringstream &oss)
     // loop over data sets
     for(int i=0;i<(int)dset_names.size();i++)
     {
-        std::string mesh_path = StringHelpers::EscapeSpecialChars(dset.Mesh().Path().Expand());
-
         // domain and mesh data
         oss << "   \"" << dset_names[i] << "\":{\n";
         JSONRootDataSet &dset =  DataSet(dset_names[i]);
+        std::string mesh_path = StringHelpers::EscapeSpecialChars(dset.Mesh().Path().Expand());
         oss << "     \"domains\": " << dset.NumberOfDomains() <<",\n";
         oss << "     \"mesh\": {\"path\": \"" << mesh_path << "\"},\n";
         oss << "     \"fields\": {\n";
