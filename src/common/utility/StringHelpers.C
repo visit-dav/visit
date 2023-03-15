@@ -1441,7 +1441,6 @@ StringHelpers::EscapeSpecialChars(const std::string &input)
         }
 
         return res;
-    }
 }
 
 // ****************************************************************************
