@@ -2419,6 +2419,9 @@ avtXRayImageQuery::WriteBlueprintMetadata(conduit::Node &data_out,
 //    Justin Privitera, Fri Dec 16 18:20:51 PST 2022
 //    Changed conduit output data types for spatial extents coords to be 
 //    consistent.
+// 
+//    Justin Privitera, Fri Mar 10 19:06:49 PST 2023
+//    Added spatial energy reduced coordset.
 //
 // ****************************************************************************
 #ifdef HAVE_CONDUIT
@@ -2504,6 +2507,18 @@ avtXRayImageQuery::WriteBlueprintMeshCoordsets(conduit::Node &data_out,
     data_out["coordsets/spatial_coords/labels/x"] = "width";
     data_out["coordsets/spatial_coords/labels/y"] = "height";
     data_out["coordsets/spatial_coords/labels/z"] = "energy_group";
+
+    // set up spatial energy reduced coords
+    data_out["coordsets/spatial_energy_reduced_coords/type"] = "rectilinear";
+    // copy over the x and y coords from the spatial_coords
+    data_out["coordsets/spatial_energy_reduced_coords/values/x"].set(data_out["coordsets/spatial_coords/values/x"]);
+    data_out["coordsets/spatial_energy_reduced_coords/values/y"].set(data_out["coordsets/spatial_coords/values/y"]);
+
+    data_out["coordsets/spatial_energy_reduced_coords/units/x"].set(data_out["coordsets/spatial_coords/units/x"]);
+    data_out["coordsets/spatial_energy_reduced_coords/units/y"].set(data_out["coordsets/spatial_coords/units/y"]);
+
+    data_out["coordsets/spatial_energy_reduced_coords/labels/x"].set(data_out["coordsets/spatial_coords/labels/x"]);
+    data_out["coordsets/spatial_energy_reduced_coords/labels/y"].set(data_out["coordsets/spatial_coords/labels/y"]);
 }
 #endif
 
@@ -2518,6 +2533,8 @@ avtXRayImageQuery::WriteBlueprintMeshCoordsets(conduit::Node &data_out,
 //  Creation:   December 09, 2022
 // 
 //  Modifications:
+//    Justin Privitera, Fri Mar 10 19:06:49 PST 2023
+//    Added spatial energy reduced topo.
 //
 // ****************************************************************************
 #ifdef HAVE_CONDUIT
@@ -2531,6 +2548,10 @@ avtXRayImageQuery::WriteBlueprintMeshTopologies(conduit::Node &data_out)
     // set up spatial extents topology
     data_out["topologies/spatial_topo/coordset"] = "spatial_coords";
     data_out["topologies/spatial_topo/type"] = "rectilinear";
+
+    // set up spatial energy reduced topology
+    data_out["topologies/spatial_energy_reduced_topo/coordset"] = "spatial_energy_reduced_coords";
+    data_out["topologies/spatial_energy_reduced_topo/type"] = "rectilinear";
 }
 #endif
 
@@ -2545,6 +2566,8 @@ avtXRayImageQuery::WriteBlueprintMeshTopologies(conduit::Node &data_out)
 //  Creation:   December 09, 2022
 // 
 //  Modifications:
+//    Justin Privitera, Fri Mar 10 19:06:49 PST 2023
+//    Added spatial energy reduced fields and calculations for them.
 //
 // ****************************************************************************
 #ifdef HAVE_CONDUIT
@@ -2593,7 +2616,7 @@ avtXRayImageQuery::WriteBlueprintMeshFields(conduit::Node &data_out,
     conduit::int64 *stride_ptr = data_out["fields/intensities/strides"].value();
     stride_ptr[0] = 1;
     stride_ptr[1] = nx;
-    stride_ptr[2] = nx * ny;            
+    stride_ptr[2] = nx * ny;
     data_out["fields/path_length/strides"].set(data_out["fields/intensities/strides"]);
 
     // intensities for spatial topo
@@ -2607,6 +2630,53 @@ avtXRayImageQuery::WriteBlueprintMeshFields(conduit::Node &data_out,
     data_out["fields/path_length_spatial"].set(data_out["fields/path_length/"]);
     // then modify the topo
     data_out["fields/path_length_spatial/topology"] = "spatial_topo";
+
+    // set up spatial energy reduced fields
+    // intensities
+    data_out["fields/intensities_spatial_energy_reduced/topology"] = "spatial_energy_reduced_topo";
+    data_out["fields/intensities_spatial_energy_reduced/association"] = "element";
+    // set to float64 regardless of vtk data types
+    data_out["fields/intensities_spatial_energy_reduced/values"].set(conduit::DataType::float64(nx * ny));
+    conduit::float64 *ser_intensity_vals = data_out["fields/intensities_spatial_energy_reduced/values"].value();
+
+    // path_length
+    data_out["fields/path_length_spatial_energy_reduced/topology"] = "spatial_energy_reduced_topo";
+    data_out["fields/path_length_spatial_energy_reduced/association"] = "element";
+    // set to float64 regardless of vtk data types
+    data_out["fields/path_length_spatial_energy_reduced/values"].set(conduit::DataType::float64(nx * ny));
+    conduit::float64 *ser_depth_vals = data_out["fields/path_length_spatial_energy_reduced/values"].value();
+
+    // sum reduction
+    // nx is the number of x ELEMENTS, same for ny
+    for (int i = 0; i < nx; i ++)
+    {
+        for (int j = 0; j < ny; j ++)
+        {
+            double int_sum, pl_sum;
+            int_sum = pl_sum = 0;
+            for (int k = 0; k < numBins; k ++)
+            {
+                double intensity_val = intensity_vals[i + j * nx + k * nx * ny];
+                double path_length_val = depth_vals[i + j * nx + k * nx * ny];
+                double bin_width;
+                if (nEnergyGroupBounds == numBins + 1)
+                    bin_width = energyGroupBounds[k + 1] - energyGroupBounds[k];
+                else
+                    bin_width = 1;
+                int_sum += intensity_val * bin_width;
+                pl_sum += path_length_val * bin_width;
+            }
+            ser_intensity_vals[i + j * nx] = int_sum;
+            ser_depth_vals[i + j * nx] = pl_sum;
+        }
+    }
+
+    // set strides for spatial energy reduced fields
+    data_out["fields/intensities_spatial_energy_reduced/strides"].set(conduit::DataType::int64(3));
+    conduit::int64 *ser_stride_ptr = data_out["fields/intensities_spatial_energy_reduced/strides"].value();
+    ser_stride_ptr[0] = 1;
+    ser_stride_ptr[1] = nx;
+    data_out["fields/path_length_spatial_energy_reduced/strides"].set(data_out["fields/intensities_spatial_energy_reduced/strides"]);
 }
 #endif
 

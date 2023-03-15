@@ -72,6 +72,9 @@
 #    Change all metadata to use pot_hole_case instead of camelCase.
 #    Add test for image_topo_order_of_domain_variables.
 #
+#    Justin Privitera, Fri Mar 10 19:06:49 PST 2023
+#    Added tests for new spatial energy reduced topo and fields.
+#
 # ----------------------------------------------------------------------------
 
 import os
@@ -542,6 +545,11 @@ def test_bp_data(testname, conduit_db, bin_state = NO_ENERGY_GROUP_BOUNDS, units
     TestValueEQ(testname + "_data_YLabels", ylabel, "height")
     TestValueEQ(testname + "_data_ZLabels", zlabel, "energy_group")
 
+    xlabel = xrayout["domain_000000/coordsets/spatial_energy_reduced_coords/labels/x"];
+    ylabel = xrayout["domain_000000/coordsets/spatial_energy_reduced_coords/labels/y"];
+    TestValueEQ(testname + "_data_ser_XLabels", xlabel, "width")
+    TestValueEQ(testname + "_data_ser_YLabels", ylabel, "height")
+
 def blueprint_test(output_type, outdir, testtextnumber, testname, hdf5 = False):
     for i in range(0, 2):
         setup_bp_test()
@@ -594,6 +602,16 @@ def blueprint_test(output_type, outdir, testtextnumber, testname, hdf5 = False):
         AddPlot("Pseudocolor", "mesh_spatial_topo/path_length_spatial")
         DrawPlots()
         Test(testname + "_spatial_topo_path_length" + str(i))
+        DeleteAllPlots()
+
+        AddPlot("Pseudocolor", "mesh_spatial_energy_reduced_topo/intensities_spatial_energy_reduced")
+        DrawPlots()
+        Test(testname + "_spatial_energy_reduced_topo_intensities" + str(i))
+        DeleteAllPlots()
+
+        AddPlot("Pseudocolor", "mesh_spatial_energy_reduced_topo/path_length_spatial_energy_reduced")
+        DrawPlots()
+        Test(testname + "_spatial_energy_reduced_topo_path_length" + str(i))
         DeleteAllPlots()
 
         CloseDatabase(conduit_db)
