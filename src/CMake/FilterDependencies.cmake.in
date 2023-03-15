@@ -20,6 +20,9 @@
 #    Fixed the Qt and qwt frameworks path for OSX and the syntax error produced from
 #    filtering the right parenthesis in certain cases.
 #
+#    Kathleen Biagas, Fri March 10, 2023
+#    Filter out vtkm_* libraries as they are static.
+#
 #****************************************************************************/
 cmake_policy(SET CMP0011 NEW)
 cmake_policy(SET CMP0057 NEW)
@@ -126,6 +129,7 @@ function(FILTER_VISIT_LIB_DEPENDENCIES filename)
         # The line is tokenized to make filtering easier (albeit slower).
         #   * Replace vtk<lib> with vtk<lib>-<vtk_small_version>
         #   * Replace Qt5::<lib> with Qt5<lib>
+        #   * Remove vtkm_*
         #   * Remove quotes surrounding 'xxx_LIB_DEPENDS'
         set(skip_next_token FALSE)
         foreach(token ${line})
@@ -191,6 +195,9 @@ function(FILTER_VISIT_LIB_DEPENDENCIES filename)
               set(skip_next_token TRUE) 
               continue()
             elseif(${token} MATCHES "icet")
+              # Static libs, not necessary to be listed as a dependency here
+              continue()
+            elseif(${token} MATCHES "vtkm_")
               # Static libs, not necessary to be listed as a dependency here
               continue()
             elseif(${token} MATCHES "OSMesa")

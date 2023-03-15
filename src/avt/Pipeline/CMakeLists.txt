@@ -45,6 +45,9 @@
 #   Eric Brugger, Fri Feb 24 14:57:15 PST 2023
 #   I replaced vtkh with vtkm.
 #
+#   Cyrus Harrison, Thu Mar  9 11:30:26 PST 2023
+#   Fixed typo in vtk-m link for avtpipeline_par
+#
 #****************************************************************************/
 
 SET(DATA_SOURCES
@@ -271,9 +274,9 @@ IF(VISIT_PARALLEL)
                           vtkFiltersGeometry
                           ${ZLIB_LIBRARY})
     if(HAVE_LIBVTKM)
-        target_link_libraries(avtpipeline_ser vtkm_cont vtkm_filter_contour vtkm_filter_entity_extraction)
+        target_link_libraries(avtpipeline_par vtkm_cont vtkm_filter_contour vtkm_filter_entity_extraction)
         if(VTKm_ENABLE_KOKKOS)
-            target_link_libraries(avtpipeline_ser amdhip64)
+            target_link_libraries(avtpipeline_par amdhip64)
         endif()
     endif()
     VISIT_INSTALL_TARGETS(avtpipeline_par)

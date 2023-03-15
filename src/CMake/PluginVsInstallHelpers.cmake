@@ -18,8 +18,11 @@
 #   Add PYTHON_FOUND guard for python path related logic to avoid
 #   error with empty path passed to get_filename_component
 #
-#   Kathleen Biagas, Wed Jun  8 2023
+#   Kathleen Biagas, Wed Jun  8 2022
 #   Install VisItIncludeVars.cmake.
+#
+#   Kathleen Biagas, Fri Mar 10, 2023
+#   Replaced VTKh logic with VTKm.
 #
 #******************************************************************************
 
@@ -100,7 +103,7 @@ if(VISIT_MESAGL_DIR)
                    "${OPENGL_LIBRARIES}")
 endif()
 
-if(VTKH_FOUND)
+if(VTKM_FOUND)
     # VTKm_INCLUDE_DIRS isn't enough for use with our PluginVsInstall stucture,
     # because there are some includes related to vtkm interface libraries
     # that get automagically added by CMake when the vtkh library is used as a
@@ -120,8 +123,7 @@ if(VTKH_FOUND)
                 if(TARGET ${ll_dep})
                     string(SUBSTRING "${ll_dep}" 0 4 ll_dep_prefix)
                     # only process libraries that start with vtkh or vtkm
-                    if ("${ll_dep_prefix}" STREQUAL "vtkh" OR
-                        "${ll_dep_prefix}" STREQUAL "vtkm")
+                    if ("${ll_dep_prefix}" STREQUAL "vtkm")
                         list(FIND ${deplist} ${ll_dep} havetarg)
                         if(${havetarg} EQUAL -1)
                             list(APPEND ${deplist} ${ll_dep})
@@ -156,17 +158,17 @@ if(VTKH_FOUND)
         endif()
     endmacro()
 
-    # find the link dependencies for vtkh
-    list(APPEND vtkh_deps vtkh)
-    get_lib_dep(vtkh vtkh_deps)
+    # find the link dependencies for vtkm
+    list(APPEND vtkm_deps vtkm_filter)
+    get_lib_dep(vtkm_filter vtkm_deps)
 
-    # find the interface includes for all vtkh link dependencies
+    # find the interface includes for all vtkm link dependencies
     set(ii_inc_dep "")
-    foreach(vtkhll ${vtkh_deps})
-        string(SUBSTRING "${vtkhll}" 0 4 ll_dep_prefix)
+    foreach(vtkmll ${vtkm_deps})
+        string(SUBSTRING "${vtkmll}" 0 4 ll_dep_prefix)
         # only process libraries that start with vtkm
         if("${ll_dep_prefix}" STREQUAL "vtkm")
-           get_inc_dep(${vtkhll} ii_inc_dep)
+           get_inc_dep(${vtkmll} ii_inc_dep)
         endif()
     endforeach()
 
@@ -304,7 +306,7 @@ if(UNIX)
    set(exodusii_include_relative_path "/exodusii/inc")
    set(vtk_include_relative_path "/vtk/vtk-${VTK_MAJOR_VERSION}.${VTK_MINOR_VERSION}")
 else(UNIX)
-   set(python_include_relative_path "/python")
+   set(python_include_relative_path "/python/include")
    set(exodusii_include_relative_path "/exodusii/include")
    set(vtk_include_relative_path "/vtk/vtk-${VTK_MAJOR_VERSION}.${VTK_MINOR_VERSION}")
 endif(UNIX)
