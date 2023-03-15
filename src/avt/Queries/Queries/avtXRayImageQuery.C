@@ -2522,6 +2522,15 @@ avtXRayImageQuery::WriteBlueprintMeshCoordsets(conduit::Node &coordsets,
 
     spatial_energy_reduced_coords["labels/x"].set(spatial_coords["labels/x"]);
     spatial_energy_reduced_coords["labels/y"].set(spatial_coords["labels/y"]);
+
+    // set up spectra coords
+    conduit::Node &spectra_coords = coordsets["spectra_coords"];
+    spectra_coords["type"] = "rectilinear";
+    spectra_coords["values/z"].set(spectra_coords["values/z"]);
+    spectra_coords["units/z"].set(spatial_coords["units/z"]);
+    spectra_coords["labels/z"].set(spatial_coords["labels/z"]);
+    if (spatial_coords.has_child("info"))
+        spectra_coords["info"].set(spatial_coords["info"]);
 }
 #endif
 
@@ -2555,6 +2564,10 @@ avtXRayImageQuery::WriteBlueprintMeshTopologies(conduit::Node &topologies)
     // set up spatial energy reduced topology
     topologies["spatial_energy_reduced_topo/coordset"] = "spatial_energy_reduced_coords";
     topologies["spatial_energy_reduced_topo/type"] = "rectilinear";
+
+    // set up spectra topology
+    topologies["spectra_topo/coordset"] = "spectra_coords";
+    topologies["spectra_topo/type"] = "rectilinear";
 }
 #endif
 
@@ -2582,6 +2595,10 @@ avtXRayImageQuery::WriteBlueprintMeshFields(conduit::Node &fields,
                                             conduit::float64 *&intensity_vals,
                                             conduit::float64 *&depth_vals)
 {
+    // 
+    // set up fields for image topo
+    // 
+
     // intensities for image topo
     conduit::Node &intensities = fields["intensities"];
     intensities["topology"] = "image_topo";
@@ -2624,21 +2641,28 @@ avtXRayImageQuery::WriteBlueprintMeshFields(conduit::Node &fields,
     stride_ptr[2] = nx * ny;
     path_length["strides"].set(intensities["strides"]);
 
-    // intensities for spatial topo
+    // 
+    // set up fields for spatial topo
+    // 
+
+    // intensities
     conduit::Node &intensities_spatial = fields["intensities_spatial"];
     // simply copy over the existing intensities data
     intensities_spatial.set(intensities);
     // then modify the topo
     intensities_spatial["topology"] = "spatial_topo";
 
-    // path length for spatial topo
+    // path length
     conduit::Node &path_length_spatial = fields["path_length_spatial"];
     // simply copy over the existing path length data
     path_length_spatial.set(path_length);
     // then modify the topo
     path_length_spatial["topology"] = "spatial_topo";
 
-    // set up spatial energy reduced fields
+    // 
+    // set up fields for spatial energy reduced topo
+    // 
+
     // intensities
     conduit::Node &intensities_spatial_energy_reduced = fields["intensities_spatial_energy_reduced"];
     intensities_spatial_energy_reduced["topology"] = "spatial_energy_reduced_topo";
@@ -2686,6 +2710,52 @@ avtXRayImageQuery::WriteBlueprintMeshFields(conduit::Node &fields,
     ser_stride_ptr[0] = 1;
     ser_stride_ptr[1] = nx;
     path_length_spatial_energy_reduced["strides"].set(intensities_spatial_energy_reduced["strides"]);
+
+    // 
+    // set up fields for spectra topo
+    // 
+
+    // intensities
+    conduit::Node &intensities_spectra = fields["intensities_spectra"];
+    intensities_spectra["topology"] = "spectra_topo";
+    intensities_spectra["association"] = "element";
+    // set to float64 regardless of vtk data types
+    intensities_spectra["values"].set(conduit::DataType::float64(numBins));
+    conduit::float64 *spec_intensity_vals = intensities_spectra["values"].value();
+
+    // path_length
+    conduit::Node &path_length_spectra = fields["path_length_spectra"];
+    path_length_spectra["topology"] = "spectra_topo";
+    path_length_spectra["association"] = "element";
+    // set to float64 regardless of vtk data types
+    path_length_spectra["values"].set(conduit::DataType::float64(numBins));
+    conduit::float64 *spec_depth_vals = path_length_spectra["values"].value();
+
+    // calculate pixel area from the coordset
+    const conduit::Node &spatial_coords = (*(fields.parent()))["coordsets/spatial_coords"];
+    const double *spatial_xvals = spatial_coords["values/x"].value();
+    const double *spatial_yvals = spatial_coords["values/y"].value();
+    // we take the 1st element because it is 1 pixel width (or height) from the origin
+    const double spatial_pixel_area = spatial_xvals[1] * spatial_yvals[1];
+
+    // sum reduction
+    for (int k = 0; k < numBins; k ++)
+    {
+        double int_sum, pl_sum;
+        int_sum = pl_sum = 0;
+        for (int i = 0; i < nx; i ++)
+        {
+            for (int j = 0; j < ny; j ++)
+            {
+                double intensity_val = intensity_vals[i + j * nx + k * nx * ny];
+                double path_length_val = depth_vals[i + j * nx + k * nx * ny];
+                int_sum += intensity_val * spatial_pixel_area;
+                pl_sum += path_length_val * spatial_pixel_area;
+            }
+        }
+        spec_intensity_vals[k] = int_sum;
+        spec_depth_vals[k] = pl_sum;
+    }
 }
 #endif
 
