@@ -2,7 +2,6 @@
  {"mode":"serial","tests":[
                     {"category":"databases","file":"diff.py"},
                     {"category":"databases","file":"exodus.py","cases":["exodus_13a","exodus_13b"]},
-                    {"category":"databases","file":"ffp.py", "cases":["ffp_03"]},
                     {"category":"databases","file":"silo.py","cases":["silo_curvilinear_3d_surface_3"]},
                     {"category":"hybrid","file":"clonecopy.py"},
                     {"category":"hybrid","file":"ddf_vs_dbinning.py"},
@@ -37,7 +36,6 @@
  {"mode":"parallel","tests":[
                     {"category":"databases","file":"diff.py"},
                     {"category":"databases","file":"exodus.py","cases":["exodus_13a","exodus_13b"]},
-                    {"category":"databases","file":"ffp.py", "cases":["ffp_03"]},
                     {"category":"databases","file":"pixie.py","cases":["pixie_04"]},
                     {"category":"databases","file":"silo.py","cases":["silo_curvilinear_3d_surface_3"]},
                     {"category":"databases","file":"zipwrapper.py"},
@@ -81,7 +79,6 @@
  {"mode":"scalable,parallel,icet","tests":[
                     {"category":"databases","file":"diff.py"},
                     {"category":"databases","file":"exodus.py","cases":["exodus_13a","exodus_13b"]},
-                    {"category":"databases","file":"ffp.py", "cases":["ffp_03"]},
                     {"category":"databases","file":"pixie.py","cases":["pixie_04"]},
                     {"category":"databases","file":"silo.py","cases":["silo_curvilinear_3d_surface_3"]},
                     {"category":"databases","file":"zipwrapper.py"},
