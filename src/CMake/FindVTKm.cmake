@@ -23,9 +23,15 @@
 #   Eric Brugger, Fri Feb 24 14:57:15 PST 2023
 #   Renamed to FindVTKm.cmake and modified to find vtkm.
 #
+#   Kathleen Biagas, Wed Mar 15, 2023
+#   Changed 'if(DEFINED VISIT_VTKM_DIR)' to 'if(VISIT_VTKM_DIR)' since
+#   the var is always defined, but may be empty. The new test will return
+#   return true only if the var is not empty. This fixes the case where
+#   VISIT_VTKM_DIR hasn't been set by config-site file.
+# 
 #****************************************************************************/
 
-IF (DEFINED VISIT_VTKM_DIR)
+IF (VISIT_VTKM_DIR)
    file(GLOB VTKm_DIR "${VISIT_VTKM_DIR}/lib/cmake/vtkm-*")
    if(NOT VTKm_DIR)
       message(FATAL_ERROR "Failed to find VTKm at VTKM_DIR=${VTKM_DIR}/lib/cmake/vtk-*")

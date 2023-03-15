@@ -25,6 +25,7 @@
 #ifdef THREADS
 #if defined(_WIN32)
 #include <windows.h>
+#define strcasecmp stricmp
 #else
 #include <pthread.h>
 #endif
