@@ -927,7 +927,7 @@ JSONRoot::ToJson(ostringstream &oss)
         {
 
             JSONRootEntry &field = dset.Field(field_names[j]);
-            std::string field_path = StringHelpers::EscapeSpecialChars(field.Path().Expand())
+            std::string field_path = StringHelpers::EscapeSpecialChars(field.Path().Expand());
             oss << "        \"" << field_names[j] << " \": {";
             oss << "\"path\": \"" << field_path << "\", \"tags\":{";
             vector<string>tag_names;
