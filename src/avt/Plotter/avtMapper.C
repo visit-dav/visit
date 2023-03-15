@@ -167,7 +167,7 @@ avtMapper::GetVarRange(double &rmin, double &rmax)
         return false;
     }
 
-    bool rv = avtMapper::GetRange(rmin, rmax);
+    bool rv = avtMapperBase::GetRange(rmin, rmax);
     return rv;
 }
 
@@ -204,7 +204,7 @@ avtMapper::GetCurrentVarRange(double &rmin, double &rmax)
         return false;
     }
 
-    bool rv = avtMapper::GetCurrentRange(rmin, rmax);
+    bool rv = avtMapperBase::GetCurrentRange(rmin, rmax);
     return rv;
 }
 
