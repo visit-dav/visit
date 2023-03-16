@@ -1147,7 +1147,7 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
     if (!outputTypeValid(outputType))
     {
         std::ostringstream err_oss;
-        err_oss << "Output type " << outputType << " is invalid.\n";
+        err_oss << "ERROR: Output type " << outputType << " is invalid.\n";
         SetResultMessage(err_oss.str());
         EXCEPTION1(VisItException, err_oss.str());
     }
@@ -1158,7 +1158,7 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
     if (!conduit::utils::is_directory(outputDir))
     {
         std::ostringstream err_oss;
-        err_oss << "Directory " << outputDir << " does not exist.\n";
+        err_oss << "ERROR: Directory " << outputDir << " does not exist.\n";
         SetResultMessage(err_oss.str());
         EXCEPTION1(VisItException, err_oss.str());
     }
@@ -1177,7 +1177,7 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
     //
     if (numPixels <= 0)
     {
-        SetResultMessage("VisIt is unable to execute this query because "
+        SetResultMessage("ERROR: VisIt is unable to execute this query because "
                          "the number of pixels specified is less than or "
                          "equal to zero.");
         return;
@@ -1194,7 +1194,7 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
         UnifyMinMax(extents, 6);
         if (extents[2] < 0.)
         {
-            SetResultMessage("VisIt is unable to execute this query "
+            SetResultMessage("ERROR: VisIt is unable to execute this query "
                              "because it has encountered an RZ mesh with "
                              "negative R values.");
             return;
@@ -1254,7 +1254,7 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
             delete [] leaves;
             delete filt;
 
-            SetResultMessage("There must be at least one bin.");
+            SetResultMessage("ERROR: There must be at least one bin.");
             EXCEPTION1(VisItException, "There must be at least one bin.");
         }
 
@@ -1471,7 +1471,7 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
             {
                 debug1 << "Blueprint Output failed to verify:\n"
                        << verify_info.to_yaml();
-                SetResultMessage("Blueprint mesh verification failed!");
+                SetResultMessage("ERROR: Blueprint mesh verification failed!");
                 EXCEPTION1(VisItException, "Blueprint mesh verification failed!");
             }
 
@@ -1497,7 +1497,7 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
             catch (conduit::Error &e)
             {
                 std::ostringstream err_oss;
-                err_oss <<  "Conduit Exception in X Ray Image Query "
+                err_oss <<  "ERROR: Conduit Exception in X Ray Image Query "
                             << "Execute: " << endl
                             << e.message();
                 SetResultMessage(err_oss.str());
@@ -1508,7 +1508,7 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
             char errmsg[256];
             // this is safe because at the beginning of the function we check that the output type is valid
             std::ostringstream err_oss;
-            err_oss << "Visit was not installed with conduit, "
+            err_oss << "ERROR: Visit was not installed with conduit, "
                         << "which is needed for output type "
                         << file_protocols[outputType]
                         << "." << std::endl;
@@ -1520,7 +1520,7 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
         {
             // this is safe because at the beginning of the function we check that the output type is valid
             std::ostringstream err_oss;
-            err_oss << "No logic implemented for output type "
+            err_oss << "ERROR: No logic implemented for output type "
                         << file_protocols[outputType]
                         << "." << std::endl;
             SetResultMessage(err_oss.str());
@@ -1531,71 +1531,66 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
         //
         // Output the result message.
         //
-        if (outputTypeValid(outputType))
-        {
-            std::string msg = "";
-            std::stringstream buf;
 
-            if (outputTypeIsBmpJpegPngOrTif(outputType))
-            {
-                if (outputType == BMP_OUT)
-                    buf << "WARNING: The X Ray Image Query results may not be "
-                        << "written when using the bmp output type. Use at "
-                        << "your own risk. The bmp output type will be "
-                        << "removed in VisIt 3.4.\n";
-                if (numBins == 1)
-                    buf << "The x ray image query results were "
-                        << "written to the file "
-                        << out_filename_w_path << "00."
-                        << file_extensions[outputType] << "\n";
-                else
-                    buf << "The x ray image query results were "
-                        << "written to the files "
-                        << out_filename_w_path << "00."
-                        << file_extensions[outputType]
-                        << " - " << out_filename_w_path
-                        << std::setfill('0') << std::setw(2)
-                        << numBins - 1 << "."
-                        << file_extensions[outputType] << "\n";
-            }
-            else if (outputTypeIsRawfloatsOrBov(outputType))
+        // the output type is valid; we verified at the beginning of the function
+
+        std::string msg = "";
+        std::stringstream buf;
+
+        if (outputTypeIsBmpJpegPngOrTif(outputType))
+        {
+            if (outputType == BMP_OUT)
+                buf << "WARNING: The X Ray Image Query results may not be "
+                    << "written when using the bmp output type. Use at "
+                    << "your own risk. The bmp output type will be "
+                    << "removed in VisIt 3.4.\n";
+            if (numBins == 1)
+                buf << "The x ray image query results were "
+                    << "written to the file "
+                    << out_filename_w_path << "00."
+                    << file_extensions[outputType] << "\n";
+            else
                 buf << "The x ray image query results were "
                     << "written to the files "
                     << out_filename_w_path << "00."
                     << file_extensions[outputType]
                     << " - " << out_filename_w_path
                     << std::setfill('0') << std::setw(2)
-                    << 2*numBins - 1 << "."
+                    << numBins - 1 << "."
                     << file_extensions[outputType] << "\n";
-            else if (outputTypeIsBlueprint(outputType))
-            {
-#ifdef HAVE_CONDUIT
-                buf << "The x ray image query results were "
-                    << "written to the file "
-                    << out_filename_w_path << "."
-                    << file_extensions[outputType] << "\n";
-#endif
-            }
-            else
-            {
-                // this is safe because at the beginning of the function we check that the output type is valid
-                std::ostringstream err_oss;
-                err_oss << "No output message implemented for output type "
-                            << file_protocols[outputType] << "." << std::endl;
-                SetResultMessage(err_oss.str());
-                EXCEPTION1(VisItException, err_oss.str());
-
-            }
-
-            msg += buf.str();
-
-            SetResultMessage(msg);
         }
+        else if (outputTypeIsRawfloatsOrBov(outputType))
+            buf << "The x ray image query results were "
+                << "written to the files "
+                << out_filename_w_path << "00."
+                << file_extensions[outputType]
+                << " - " << out_filename_w_path
+                << std::setfill('0') << std::setw(2)
+                << 2*numBins - 1 << "."
+                << file_extensions[outputType] << "\n";
+#ifdef HAVE_CONDUIT
+        else if (outputTypeIsBlueprint(outputType))
+        {
+            buf << "The x ray image query results were "
+                << "written to the file "
+                << out_filename_w_path << "."
+                << file_extensions[outputType] << "\n";
+        }
+#endif
         else
         {
-            SetResultMessage("No x ray image query results were written "
-                             "because the output type was invalid.\n");
+            // this is safe because at the beginning of the function we check that the output type is valid
+            std::ostringstream err_oss;
+            err_oss << "ERROR: No output message implemented for output type "
+                        << file_protocols[outputType] << "." << std::endl;
+            SetResultMessage(err_oss.str());
+            EXCEPTION1(VisItException, err_oss.str());
+
         }
+
+        msg += buf.str();
+
+        SetResultMessage(msg);
 
         // Free the memory from the GetAllLeaves function call.
         delete [] leaves;
@@ -1686,18 +1681,18 @@ avtXRayImageQuery::CheckData(vtkDataSet **dataSets,  const int nsets)
         {
             if(isArgException)
             {
-                SetResultMessage(isAbs ? absVarName : emisVarName);
+                SetResultMessage("ERROR: " + (isAbs ? absVarName : emisVarName));
                 EXCEPTION1(QueryArgumentException, isAbs ? absVarName.c_str() : emisVarName.c_str());
             }
             else
             {
-                SetResultMessage(msg.str());
+                SetResultMessage("ERROR: " + msg.str());
                 EXCEPTION1(ImproperUseException, msg.str());
             }
         }
         else
         {
-            SetResultMessage("Exception encountered on another node");
+            SetResultMessage("ERROR: Exception encountered on another node");
             EXCEPTION1(VisItException, "Exception encountered on another node");
         }
     }
@@ -1706,7 +1701,7 @@ avtXRayImageQuery::CheckData(vtkDataSet **dataSets,  const int nsets)
     int maxNsets = UnifyMaximumValue(nsets);
     if(maxNsets <= 0)
     {
-        msg << "Variables " << absVarName << " and " << emisVarName 
+        msg << "ERROR: Variables " << absVarName << " and " << emisVarName 
             << " resulted in no data being selected.\n";
         SetResultMessage(msg.str());
         EXCEPTION1(VisItException, msg.str());
@@ -2644,7 +2639,7 @@ avtXRayImageQuery::WriteBlueprintMeshFields(conduit::Node &fields,
     else
     {
         std::ostringstream err_oss;
-        err_oss << "VTKDataType " << datatype << " is not supported.\n";
+        err_oss << "ERROR: VTKDataType " << datatype << " is not supported.\n";
         SetResultMessage(err_oss.str());
         EXCEPTION1(VisItException, err_oss.str());
     }
