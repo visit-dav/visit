@@ -265,6 +265,9 @@ rm -f checkout_${testHost}
 cat <<EOF > checkout_${testHost}
 #!/bin/sh
 
+# So the script uses the correct git.
+export PATH=/usr/tce/bin:$PATH
+
 dateTag=\$1
 
 # Update the repository.
@@ -341,6 +344,9 @@ chmod 750 checkout_${testHost}
 rm -f runit_${testHost}
 cat <<EOF > runit_${testHost}
 #!/bin/sh
+
+# So the script uses the correct git.
+export PATH=/usr/tce/bin:$PATH
 
 dateTag=\$1
 
@@ -494,6 +500,9 @@ chmod 750 runit_${testHost}
 rm -f postit_${testHost}
 cat <<EOF > postit_${testHost}
 #!/bin/sh
+
+# So the script uses the correct git.
+export PATH=/usr/tce/bin:$PATH
 
 if test "\$#" -ne 1; then
     echo "Usage: \$0 date_tag"
