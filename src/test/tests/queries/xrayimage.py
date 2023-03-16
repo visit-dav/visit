@@ -550,6 +550,9 @@ def test_bp_data(testname, conduit_db, bin_state = NO_ENERGY_GROUP_BOUNDS, units
     TestValueEQ(testname + "_data_ser_XLabels", xlabel, "width")
     TestValueEQ(testname + "_data_ser_YLabels", ylabel, "height")
 
+    xlabel = xrayout["domain_000000/coordsets/spectra_coords/labels/x"];
+    TestValueEQ(testname + "_data_spectra_XLabels", xlabel, "energy_group")
+
 def blueprint_test(output_type, outdir, testtextnumber, testname, hdf5 = False):
     for i in range(0, 2):
         setup_bp_test()
@@ -612,6 +615,16 @@ def blueprint_test(output_type, outdir, testtextnumber, testname, hdf5 = False):
         AddPlot("Pseudocolor", "mesh_spatial_energy_reduced_topo/path_length_spatial_energy_reduced")
         DrawPlots()
         Test(testname + "_spatial_energy_reduced_topo_path_length" + str(i))
+        DeleteAllPlots()
+
+        AddPlot("Pseudocolor", "spectra_topo/intensities_spectra")
+        DrawPlots()
+        Test(testname + "_spectra_topo_intensities" + str(i))
+        DeleteAllPlots()
+
+        AddPlot("Pseudocolor", "spectra_topo/path_length_spectra")
+        DrawPlots()
+        Test(testname + "_spectra_topo_path_length" + str(i))
         DeleteAllPlots()
 
         CloseDatabase(conduit_db)
