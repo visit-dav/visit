@@ -1137,6 +1137,7 @@ avtXRayImageQuery::GetSecondaryVars(std::vector<std::string> &outVars)
 //
 //    Justin Privitera, Wed Mar 15 17:51:13 PDT 2023
 //    Have blueprint verify failures go to debug1 instead of to console.
+//    Consistent error messaging + cleaner error handling.
 // 
 // ****************************************************************************
 
@@ -1620,6 +1621,9 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
 // 
 //    Justin Privitera, Wed Jul 20 13:54:06 PDT 2022
 //    Use ostringstreams for error messages.
+// 
+//    Justin Privitera, Thu Mar 16 14:47:46 PDT 2023
+//    Consistent error messaging.
 //
 // ****************************************************************************
 void
@@ -2595,6 +2599,7 @@ avtXRayImageQuery::WriteBlueprintMeshTopologies(conduit::Node &topologies)
 //    Justin Privitera, Wed Mar 15 17:51:13 PDT 2023
 //    Leverage conduit's features to make the code more legible.
 //    Added spectra fields and calculations for them.
+//    Consistent error messaging.
 //
 // ****************************************************************************
 #ifdef HAVE_CONDUIT
