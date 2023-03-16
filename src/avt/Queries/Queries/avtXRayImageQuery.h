@@ -109,6 +109,9 @@
 //     - Added a host of new blueprint-output-specific functions to simplify
 //    the blueprint output logic.
 //     - Deleted all the inline vector math functions.
+// 
+//    Justin Privitera, Wed Mar 15 17:51:13 PDT 2023
+//    Changed naming of some of the arguments to blueprint-related functions.
 //
 // ****************************************************************************
 

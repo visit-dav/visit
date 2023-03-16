@@ -1135,6 +1135,9 @@ avtXRayImageQuery::GetSecondaryVars(std::vector<std::string> &outVars)
 //    Major refactor of blueprint output logic. Most calculations are pushed
 //    down into helpers.
 //
+//    Justin Privitera, Wed Mar 15 17:51:13 PDT 2023
+//    Have blueprint verify failures go to debug1 instead of to console.
+// 
 // ****************************************************************************
 
 void
@@ -2423,6 +2426,10 @@ avtXRayImageQuery::WriteBlueprintMetadata(conduit::Node &data_out,
 // 
 //    Justin Privitera, Fri Mar 10 19:06:49 PST 2023
 //    Added spatial energy reduced coordset.
+// 
+//    Justin Privitera, Wed Mar 15 17:51:13 PDT 2023
+//    Leverage conduit's features to make the code more legible.
+//    Added spectra coordset.
 //
 // ****************************************************************************
 #ifdef HAVE_CONDUIT
@@ -2548,6 +2555,10 @@ avtXRayImageQuery::WriteBlueprintMeshCoordsets(conduit::Node &coordsets,
 //  Modifications:
 //    Justin Privitera, Fri Mar 10 19:06:49 PST 2023
 //    Added spatial energy reduced topo.
+// 
+//    Justin Privitera, Wed Mar 15 17:51:13 PDT 2023
+//    Leverage conduit's features to make the code more legible.
+//    Added spectra topo.
 //
 // ****************************************************************************
 #ifdef HAVE_CONDUIT
@@ -2585,6 +2596,10 @@ avtXRayImageQuery::WriteBlueprintMeshTopologies(conduit::Node &topologies)
 //  Modifications:
 //    Justin Privitera, Fri Mar 10 19:06:49 PST 2023
 //    Added spatial energy reduced fields and calculations for them.
+// 
+//    Justin Privitera, Wed Mar 15 17:51:13 PDT 2023
+//    Leverage conduit's features to make the code more legible.
+//    Added spectra fields and calculations for them.
 //
 // ****************************************************************************
 #ifdef HAVE_CONDUIT
@@ -2772,6 +2787,9 @@ avtXRayImageQuery::WriteBlueprintMeshFields(conduit::Node &fields,
 //  Creation:   December 09, 2022
 // 
 //  Modifications:
+//    Justin Privitera, Wed Mar 15 17:51:13 PDT 2023
+//    Now send the smaller pieces of the conduit node to each writer function
+//    instead of the whole thing.
 //
 // ****************************************************************************
 #ifdef HAVE_CONDUIT

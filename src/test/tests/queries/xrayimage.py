@@ -74,6 +74,9 @@
 #
 #    Justin Privitera, Fri Mar 10 19:06:49 PST 2023
 #    Added tests for new spatial energy reduced topo and fields.
+# 
+#    Justin Privitera, Wed Mar 15 17:51:13 PDT 2023
+#    Added tests for new spectra topo and fields.
 #
 # ----------------------------------------------------------------------------
 
