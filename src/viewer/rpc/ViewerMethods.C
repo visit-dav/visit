@@ -8,6 +8,10 @@
 #include <ColorTableAttributes.h>
 #include <SelectionList.h>
 
+#if defined(__APPLE__)
+#include <unistd.h> // for sleep
+#endif
+
 
 // ****************************************************************************
 // Method: ViewerMethods::ViewerMethods
@@ -2294,6 +2298,7 @@ ViewerMethods::SetPlotFollowsTime(bool val)
 void
 ViewerMethods::DrawPlots(bool drawAllPlots)
 {
+
     //
     // Set the rpc type and arguments.
     //
@@ -2304,6 +2309,18 @@ ViewerMethods::DrawPlots(bool drawAllPlots)
     // Issue the RPC.
     //
     state->GetViewerRPC()->Notify();
+
+    // Stop gap to avert blank viewer windows (#18090)
+#if defined(__APPLE__)
+    static bool first = true;
+    if (first)
+    {
+        first = false;
+        ResizeWindow(1,-5,-5); // -5 is magic number to trigger special logic
+        sleep(1);
+        ResizeWindow(1,-5,-5); // -5 is magic number to trigger special logic
+    }
+#endif
 }
 
 // ****************************************************************************
