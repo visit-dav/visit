@@ -914,12 +914,33 @@ FileFunctions::Normalize(const std::string &path, const std::string &pathSep)
 //    Kathleen Biagas, Thu Jan 29 15:53:12 MST 2015
 //    Some tweaks on windows to hanlde cwd_context of '.'.
 //
+//    Cyrus Harrison, Thu Mar 16 10:07:17 PDT 2023
+//    Fix for windows case where path could be appended itself.
+//
 // ****************************************************************************
 
 const char *
 FileFunctions::Absname(const char *cwd_context, const char *path, 
     const char *pathSep)
 {
+    // if we already have an abs path, return it!
+#ifdef _WIN32
+    // if non null,
+    // use  windows api check for relative path to determine
+    // if we have abs path
+    if(path && !PathIsRelative(path))
+    {
+        return path;
+    }
+#else
+    // if non-null and starts with `/`
+    // we already have an abs on *nix systems
+    if(path && path[0] == '/')
+    {
+        return path;
+    }
+#endif
+
     // Clear our temporary array for handling char * return values.
     StaticStringBuf[0] = '\0';
 
