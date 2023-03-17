@@ -1341,36 +1341,6 @@ ViewerWindowManager::MoveAndResizeWindow(int windowIndex, int x, int y,
 void
 ViewerWindowManager::ResizeWindow(int windowIndex, int w, int h)
 {
-#if defined(__APPLE__)
-    static size_t count = 0;
-    if (windowIndex == 0 && w == -5 && h == -5)
-    {
-        static int origx, origy;
-        static int origlo = GetWindowLayout();
-        if (count == 0)
-        {
-#if 0
-            windows[0]->GetSize(origx, origy);
-            windows[0]->SetSize(origx, origy-5); // shrink in Y a bit
-            UpdateWindowInformation(WINDOWINFO_WINDOWSIZE, 0);
-#else
-            SetWindowLayout(2);
-#endif
-        }
-        else if (count == 1)
-        {
-#if 0
-            windows[0]->SetSize(origx, origy);
-            UpdateWindowInformation(WINDOWINFO_WINDOWSIZE, 0);
-#else
-            SetWindowLayout(origlo);
-#endif
-        }
-        count++;
-        return;
-    }
-#endif
-
     if(windowIndex < 0 || windowIndex >= maxWindows)
     {
         ViewerText msg(TR("Invalid window index (windowIndex = %1)").
@@ -4527,6 +4497,21 @@ ViewerWindowManager::UpdateColorTable(const std::string &ctName)
 void
 ViewerWindowManager::SetWindowLayout(const int windowLayout)
 {
+
+#if defined(__APPLE__)
+    static size_t count = 0;
+    if (windowLayout == -5)
+    {
+        static int origlo = layout;
+        if (count == 0)
+            SetWindowLayout(2);
+        else if (count == 1)
+            SetWindowLayout(origlo);
+        count++;
+        return;
+    }
+#endif
+
     //
     // Determine if it is a valid layout and use the index in the valid
     // layout array to set the layoutIndex.

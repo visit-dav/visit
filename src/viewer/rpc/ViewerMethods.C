@@ -2316,9 +2316,9 @@ ViewerMethods::DrawPlots(bool drawAllPlots)
     if (first)
     {
         first = false;
-        ResizeWindow(1,-5,-5); // -5 is magic number to trigger special logic
+        SetWindowLayout(-5); // -5 is magic number to trigger special logic
         sleep(1);
-        ResizeWindow(1,-5,-5); // -5 is magic number to trigger special logic
+        SetWindowLayout(-5); // -5 is magic number to trigger special logic
     }
 #endif
 }
