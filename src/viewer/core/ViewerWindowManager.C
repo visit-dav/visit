@@ -4489,12 +4489,21 @@ ViewerWindowManager::UpdateColorTable(const std::string &ctName)
 //    Brad Whitlock, Wed Apr 30 09:58:46 PDT 2008
 //    Added tr().
 //
+//    Mark C. Miller, Fri Mar 17 15:14:30 PDT 2023
+//    Add APPLE-specific logic to address blank viewer windows (#18090)
 // ****************************************************************************
 
 void
 ViewerWindowManager::SetWindowLayout(const int windowLayout)
 {
 
+    // Stop gap to avert blank viewer windows (#18090)
+    // There is associated logic in rpc/ViewerMethods::DrawPlots which will
+    // trigger this logic twice upon **FIRST** draw. This causes window to
+    // repaint and not be blank. Attempts to use SetWindowSize() also fixed
+    // the blank window issue but due to internal inconsistency in what
+    // VisIt thinks the window size actually is failed to return the window
+    // to its original size.
 #if defined(__APPLE__)
     static size_t count = 0;
     if (windowLayout == -5 && count < 2)
