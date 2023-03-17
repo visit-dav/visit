@@ -9,6 +9,8 @@
 #ifndef AVT_BLUEPRINT_FILE_FORMAT_H
 #define AVT_BLUEPRINT_FILE_FORMAT_H
 
+#include <set>
+
 // NOTE: This is from avtblueprint lib
 #include "avtConduitBlueprintDataAdaptor.h"
 // NOTE: This is from avtmfem lib
@@ -139,6 +141,8 @@ class avtBlueprintFileFormat : public avtSTMDFileFormat
     conduit::Node          m_matset_info;
 
     std::map<std::string,bool> m_mfem_mesh_map;
+
+    std::set<std::string>  m_curve_names;
 
     bool                   m_new_refine;
 

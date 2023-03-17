@@ -87,7 +87,14 @@ avtBlueprintFileFormat::FetchMeshAndTopoNames(const std::string &name_name_full,
                                               std::string &mesh_name,
                                               std::string &topo_name)
 {
+    std::cout << "=======================" << std::endl;
+    std::cout << name_name_full << std::endl;
+
     string mesh_base = FileFunctions::Basename(name_name_full);
+    std::cout << mesh_base << std::endl;
+
+    std::cout << "=======================" << std::endl;
+
 
     if(!m_mesh_and_topo_info.has_child(mesh_base))
     {
@@ -217,6 +224,9 @@ avtBlueprintFileFormat::ReadBlueprintMesh(int domain,
 {
     BP_PLUGIN_INFO("ReadBlueprintMesh: " << abs_meshname
                     << " [domain " << domain << "]");
+
+std::cout << "ReadBlueprintMesh: " << abs_meshname << std::endl;
+
     string mesh_name;
     string topo_name;
     FetchMeshAndTopoNames(std::string(abs_meshname),
@@ -457,6 +467,13 @@ avtBlueprintFileFormat::ReadBlueprintField(int domain,
     // replace colons, etc
     abs_varname_str = sanitize_var_name(abs_varname_str);
     string abs_meshname = metadata->MeshForVar(abs_varname_str);
+
+    if (m_curve_names.find(abs_meshname) != m_curve_names.end())
+    {
+        // This means that abs_meshname is of the form:
+        // "mesh_name/field_name", so we need to separate it
+        abs_meshname = abs_meshname.substr(0, abs_meshname.find('/'));
+    }
 
     BP_PLUGIN_INFO("field " << abs_varname << " is defined on mesh " << abs_meshname);
 
@@ -838,7 +855,15 @@ avtBlueprintFileFormat::AddBlueprintMeshAndFieldMetadata(avtDatabaseMetaData *md
                 }
             }
 
-            if (ncomps == 1)
+            // special 1D case
+            if (ndims == 1)
+            {
+                m_curve_names.insert(varname_wmesh);
+                avtCurveMetaData *curve = new avtCurveMetaData;
+                curve->name = varname_wmesh;
+                md->Add(curve);
+            }
+            else if (ncomps == 1)
                 md->Add(new avtScalarMetaData(varname_wmesh, var_mesh_name, cent));
             else if (ndims == 2 && ncomps == 2)
                 md->Add(new avtVectorMetaData(varname_wmesh, var_mesh_name, cent, ncomps));
@@ -1320,6 +1345,8 @@ avtBlueprintFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 
     // clear any mfem mesh mappings
     m_mfem_mesh_map.clear();
+    // clear any 1D curve names
+    m_curve_names.clear();
     // clear full mesh to bp mesh and topo name map
     m_mesh_and_topo_info.reset();
     // clear full matset to info map
@@ -1560,6 +1587,16 @@ avtBlueprintFileFormat::GetMesh(int domain, const char *abs_meshname)
         // read mesh data into conduit tree
         Node data;
         string abs_meshname_str(abs_meshname);
+        string abs_1d_curve_field_name{""};
+
+        bool curve_1d = m_curve_names.find(abs_meshname_str) != m_curve_names.end();
+        if (curve_1d)
+        {
+            // This means that abs_meshname is of the form:
+            // "mesh_name/field_name", so we need to separate it
+            abs_meshname_str = abs_meshname_str.substr(0, abs_meshname_str.find('/'));
+            string abs_1d_curve_field_name = FileFunctions::Basename(abs_meshname);
+        }
 
         // reads a single mesh into a blueprint conforming output
         ReadBlueprintMesh(domain, abs_meshname_str, data);
@@ -1598,12 +1635,19 @@ avtBlueprintFileFormat::GetMesh(int domain, const char *abs_meshname)
         string mesh_name;
         string topo_name;
 
-        FetchMeshAndTopoNames(std::string(abs_meshname),
+        FetchMeshAndTopoNames(abs_meshname_str,
                               mesh_name,
                               topo_name);
 
         BP_PLUGIN_INFO("mesh name: " << mesh_name);
         BP_PLUGIN_INFO("topo name: " << topo_name);
+
+        data.print();
+
+        conduit::Node &n_coords = data["coordsets"][0];
+        int ndims = n_coords["values"].number_of_children();
+
+        std::cout << ndims << std::endl;
 
         // check for the mfem case
         if( m_mfem_mesh_map[topo_name] )
@@ -1618,6 +1662,59 @@ avtBlueprintFileFormat::GetMesh(int domain, const char *abs_meshname)
 
             // cleanup the mfem mesh
             delete mesh;
+        }
+        else if (ndims == 1)
+        {
+            BP_PLUGIN_INFO("mesh  " << topo_name << " is a 1D curve");
+
+            Node field_1d;
+            ReadBlueprintField(domain, abs_meshname, field_1d);
+
+            const int num_field_vals = field_1d["values"].dtype().number_of_elements();
+
+            // probably need templating?
+            points_1d = ;
+            field_vals = ;
+
+            if (field_1d.has_child("association") &&
+                field_1d["association"].as_string() == "element")
+            {
+                // element assoc case - stair step the vals
+                res = vtkVisItUtility::Create1DRGrid(num_field_vals * 2, VTK_DOUBLE);
+                vtkDoubleArray *vals = vtkDoubleArray::New();
+                vals->SetNumberOfComponents(1);
+                vals->SetNumberOfTuples(num_field_vals * 2);
+                vals->SetName("curve");
+                res->GetPointData()->SetScalars(vals);
+                vals->Delete();
+                vtkDoubleArray *xs = vtkDoubleArray::SafeDownCast(res->GetXCoordinates());
+                vtkDoubleArray *ys = vtkDoubleArray::SafeDownCast(res->GetYCoordinates());
+                for (int i = 0; i < num_field_vals; i ++)
+                {
+                    xs->SetValue(i * 2, points_1d[i]);
+                    ys->SetValue(i * 2, field_vals[i]);
+                    xs->SetValue(i * 2 + 1, points_1d[i + 1]);
+                    ys->SetValue(i * 2 + 1, field_vals[i]);
+                }
+            }
+            else
+            {
+                // vertex assoc case - normal
+                res = vtkVisItUtility::Create1DRGrid(num_field_vals, VTK_DOUBLE);
+                vtkDoubleArray *vals = vtkDoubleArray::New();
+                vals->SetNumberOfComponents(1);
+                vals->SetNumberOfTuples(num_field_vals);
+                vals->SetName("curve");
+                res->GetPointData()->SetScalars(vals);
+                vals->Delete();
+                vtkDoubleArray *xs = vtkDoubleArray::SafeDownCast(res->GetXCoordinates());
+                vtkDoubleArray *ys = vtkDoubleArray::SafeDownCast(res->GetYCoordinates());
+                for (int i = 0; i < num_field_vals; i ++)
+                {
+                    xs->SetValue(i, points_1d[i]);
+                    ys->SetValue(i, field_vals[i]);
+                }
+            }
         }
         else
         {
