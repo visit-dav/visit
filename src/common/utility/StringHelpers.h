@@ -70,8 +70,10 @@ namespace StringHelpers
     std::string UTILITY_API cdr(const std::string, const char separator);
     void UTILITY_API append(std::vector<std::string> &,
                             std::vector<std::string>);
-    std::vector<std::string> UTILITY_API split(const std::string,
+
+    std::vector<std::string> UTILITY_API split(const std::string &input,
                                                const char separator);
+
     void UTILITY_API rtrim(std::string &var);
     void UTILITY_API ltrim(std::string &var);
     void UTILITY_API  trim(std::string &var);
@@ -91,7 +93,10 @@ namespace StringHelpers
     std::string UTILITY_API UpperCase(const std::string &src);
 
     bool UTILITY_API StringToInt(const std::string &, int &);
-    bool UTILITY_API ParseRange(const std::string , std::vector<int> &);
+    bool UTILITY_API ParseRange(const std::string &, std::vector<int> &);
+
+    std::string UTILITY_API  EscapeSpecialChars(const std::string &str);
+
 // ****************************************************************************
 //  Function: str_to_u_numeric
 //

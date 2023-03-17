@@ -41,6 +41,9 @@ void  RapidJSONParseErrorDetails(const std::string &json,
     int  doc_line   = 0;
     int  doc_char   = 0;
 
+    // remove any `\r` that may linger so we can split on `\n`
+    json_curr = StringHelpers::Replace(json_curr,"\r","");
+
     std::vector<std::string> lines = StringHelpers::split(json_curr,'\n');
 
     if(lines.size() > 0)
@@ -50,12 +53,12 @@ void  RapidJSONParseErrorDetails(const std::string &json,
         doc_char = lines[lines.size()-1].size();
     }
 
-    os << " parse error message:\n"
-       << GetParseError_En(document.GetParseError()) << "\n"
-       << " offset: "    << doc_offset << "\n"
-       << " line: "      << doc_line << "\n"
-       << " character: " << doc_char << "\n"
-       << " json:\n"     << json << "\n"; 
+    os << " parse error message: " << std::endl
+       << GetParseError_En(document.GetParseError()) << std::endl
+       << " offset: "    << doc_offset << std::endl
+       << " line: "      << doc_line << std::endl
+       << " character: " << doc_char << std::endl
+       << " json:\n"     << json << std::endl; 
 }
 
 }; // end detail
@@ -820,6 +823,9 @@ JSONRoot::ParseJSONString(const std::string &json,
 //  Creation:    Fri Mar  3 10:50:30 PST 2023
 //
 //  Modifications:
+//    Cyrus Harrison, Wed Mar 15 12:25:13 PDT 2023
+//    Escape file system paths to avoid issues with JSON parsing
+//    vs windows paths.
 //
 // **************************************************************************** 
 std::string  
@@ -841,12 +847,14 @@ JSONRoot::GenerateMocRootJSON(const std::string &mfem_mesh_file)
     int topo_dim = mesh.Dimension();
 
     std::ostringstream moc_json;
+    
+    std::string mfem_mesh_file_escaped = StringHelpers::EscapeSpecialChars(mfem_mesh_file);
 
     moc_json << "{" << std::endl
              << "\"dsets\":{" << std::endl
              << "   \"main\":{" << std::endl
              << "       \"domains\": 1" << "," << std::endl 
-             << "       \"mesh\": { \"path\": \"" << mfem_mesh_file << "\"," <<  std::endl
+             << "       \"mesh\": { \"path\": \"" << mfem_mesh_file_escaped << "\"," <<  std::endl
              << "                   \"tags\": { \"spatial_dim\":" 
                                              << "\"" << spatial_dim  << "\" ,"
                                              << "\"topo_dim\":" 
@@ -889,6 +897,11 @@ JSONRoot::ToJson()
 //  Modifications
 //    Mark C. Miller, Tue Sep 20 18:07:42 PDT 2016
 //    Add support for expressions
+//
+//    Cyrus Harrison, Wed Mar 15 12:25:13 PDT 2023
+//    Escape file system paths to avoid issues with JSON parsing
+//    vs windows paths.
+//
 // **************************************************************************** 
 void
 JSONRoot::ToJson(ostringstream &oss) 
@@ -902,17 +915,20 @@ JSONRoot::ToJson(ostringstream &oss)
         // domain and mesh data
         oss << "   \"" << dset_names[i] << "\":{\n";
         JSONRootDataSet &dset =  DataSet(dset_names[i]);
+        std::string mesh_path = StringHelpers::EscapeSpecialChars(dset.Mesh().Path().Expand());
         oss << "     \"domains\": " << dset.NumberOfDomains() <<",\n";
-        oss << "     \"mesh\": {\"path\": \"" << dset.Mesh().Path().Expand() << "\"},\n";
+        oss << "     \"mesh\": {\"path\": \"" << mesh_path << "\"},\n";
         oss << "     \"fields\": {\n";
         // loop over fields
         vector<string>field_names;
         dset.Fields(field_names);
         for(int j=0;j<(int)field_names.size();j++)
         {
+
             JSONRootEntry &field = dset.Field(field_names[j]);
-                oss << "        \"" << field_names[j] << " \": {";
-                oss << "\"path\": \"" << field.Path().Expand() << "\", \"tags\":{";
+            std::string field_path = StringHelpers::EscapeSpecialChars(field.Path().Expand());
+            oss << "        \"" << field_names[j] << " \": {";
+            oss << "\"path\": \"" << field_path << "\", \"tags\":{";
             vector<string>tag_names;
             field.Tags(tag_names);
             for(int k=0;k<(int)tag_names.size();k++)

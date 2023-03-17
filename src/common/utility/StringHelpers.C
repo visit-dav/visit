@@ -916,7 +916,7 @@ StringHelpers::append(std::vector<std::string> &argv,
 //
 // ****************************************************************************
 std::vector<std::string>
-StringHelpers::split(const std::string input, const char separator)
+StringHelpers::split(const std::string &input, const char separator)
 {
     std::istringstream iss(input);
     std::string cur;
@@ -1292,7 +1292,7 @@ StringHelpers::StringToInt(const string &input, int &output)
 //
 // ****************************************************************************
 bool
-StringHelpers::ParseRange(const string range, std::vector<int> &list)
+StringHelpers::ParseRange(const string &range, std::vector<int> &list)
 {
     std::vector<std::string> rangeTokens = StringHelpers::split(range, ',');
 
@@ -1366,6 +1366,82 @@ StringHelpers::ParseRange(const string range, std::vector<int> &list)
     return parseError;
 }
 
+// ****************************************************************************
+//  Method:  StringHelpers::EscapeString
+//
+//  Purpose:
+//   Escapes any special chars in a string. Need when you want to
+//   prepare a string that can later be parsed by JSON.
+//
+//  Logic from:
+//   conduit::utils::escape_special_chars in:
+//  https://github.com/LLNL/conduit/blob/develop/src/libs/conduit/conduit_utils.cpp
+//
+//
+//  Programmer:  Cyrus Harrison
+//  Creation:    Wed Mar 15 10:28:03 PDT 2023
+//
+//  Modifications:
+//
+// ****************************************************************************
+std::string
+StringHelpers::EscapeSpecialChars(const std::string &input)
+{
+        std::string res;
+        for(size_t i = 0; i < input.size(); ++i)
+        {
+            char val = input[i];
+            // supported special chars
+            switch(val)
+            {
+                // quotes and slashes
+                case '\"':
+                case '\\':
+                {
+                    res += '\\';
+                    res += val;
+                    break;
+                }
+                // newline
+                case '\n':
+                {
+                    res += "\\n";
+                    break;
+                }
+                // tab
+                case '\t':
+                {
+                    res += "\\t";
+                    break;
+                }
+                // backspace
+                case '\b':
+                {
+                    res += "\\b";
+                    break;
+                }
+                // formfeed
+                case '\f':
+                {
+                    res += "\\f";
+                    break;
+                }
+                // carriage return
+                case '\r':
+                {
+                    res += "\\r";
+                    break;
+                }
+
+                default:
+                {
+                    res += val;
+                }
+            }
+        }
+
+        return res;
+}
 
 // ****************************************************************************
 //  Method:  StringHelpers::ends_with
