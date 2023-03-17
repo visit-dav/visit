@@ -8,11 +8,6 @@
 #include <ColorTableAttributes.h>
 #include <SelectionList.h>
 
-#if defined(__APPLE__)
-#include <unistd.h> // for sleep
-#endif
-
-
 // ****************************************************************************
 // Method: ViewerMethods::ViewerMethods
 //
@@ -2317,7 +2312,6 @@ ViewerMethods::DrawPlots(bool drawAllPlots)
     {
         first = false;
         SetWindowLayout(-5); // -5 is magic number to trigger special logic
-        sleep(1);
         SetWindowLayout(-5); // -5 is magic number to trigger special logic
     }
 #endif
