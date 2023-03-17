@@ -4497,7 +4497,7 @@ ViewerWindowManager::SetWindowLayout(const int windowLayout)
 
 #if defined(__APPLE__)
     static size_t count = 0;
-    if (windowLayout == -5)
+    if (windowLayout == -5 && count < 2)
     {
         static int origlo = layout;
         if (count == 0)
