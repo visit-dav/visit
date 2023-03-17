@@ -90,9 +90,6 @@
 #if !defined(_WIN32)
 #include <signal.h> // for signal
 #endif
-#if defined(__APPLE__)
-#include <unistd.h> // for sleep
-#endif
 
 using std::string;
 
