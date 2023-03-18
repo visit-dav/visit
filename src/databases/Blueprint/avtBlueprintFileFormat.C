@@ -1665,66 +1665,40 @@ avtBlueprintFileFormat::GetMesh(int domain, const char *abs_meshname)
             Node field_1d;
             ReadBlueprintField(domain, abs_meshname, field_1d);
 
-            const int num_field_vals = field_1d["values"].dtype().number_of_elements();
+            bool elem_assoc = field_1d.has_child("association") && 
+                field_1d["association"].as_string() == "element";
 
-            if (field_1d.has_child("association") &&
-                field_1d["association"].as_string() == "element")
+            int num_field_vals = field_1d["values"].dtype().number_of_elements();
+            if (elem_assoc)
+                num_field_vals *= 2;
+
+            vtkRectilinearGrid *rgrid = vtkVisItUtility::Create1DRGrid(num_field_vals, VTK_DOUBLE);
+            vtkDoubleArray *vals = vtkDoubleArray::New();
+            vals->SetNumberOfComponents(1);
+            vals->SetNumberOfTuples(num_field_vals);
+            vals->SetName("curve"); // TODO ?
+            rgrid->GetPointData()->SetScalars(vals);
+            vals->Delete();
+
+            vtkDataArray *xs = rgrid->GetXCoordinates();
+            vtkDataArray *ys = rgrid->GetYCoordinates();
+
+            if (elem_assoc)
             {
                 // element assoc case - stair step the vals
-                vtkRectilinearGrid *rgrid = vtkVisItUtility::Create1DRGrid(num_field_vals * 2, VTK_DOUBLE);
-                vtkDoubleArray *vals = vtkDoubleArray::New();
-                vals->SetNumberOfComponents(1);
-                vals->SetNumberOfTuples(num_field_vals * 2);
-                vals->SetName("curve");
-                rgrid->GetPointData()->SetScalars(vals);
-                vals->Delete();
-
-                vtkDataArray *xs = rgrid->GetXCoordinates();
-                vtkDataArray *ys = rgrid->GetYCoordinates();
-
                 xs = avtConduitBlueprintDataAdaptor::ConduitArrayToStairStepVTKDataArray(
                     n_coords["values"][0], true);
                 ys = avtConduitBlueprintDataAdaptor::ConduitArrayToStairStepVTKDataArray(
                     field_1d["values"], false);
-
-                // vtkDoubleArray *xs = vtkDoubleArray::SafeDownCast(rgrid->GetXCoordinates());
-                // vtkDoubleArray *ys = vtkDoubleArray::SafeDownCast(rgrid->GetYCoordinates());
-                // for (int i = 0; i < num_field_vals; i ++)
-                // {
-                //     xs->SetValue(i * 2, points_1d[i]);
-                //     ys->SetValue(i * 2, field_vals[i]);
-                //     xs->SetValue(i * 2 + 1, points_1d[i + 1]);
-                //     ys->SetValue(i * 2 + 1, field_vals[i]);
-                // }
-
-                res = rgrid;
             }
             else
             {
                 // vertex assoc case - normal
-                vtkRectilinearGrid *rgrid = vtkVisItUtility::Create1DRGrid(num_field_vals, VTK_DOUBLE);
-                vtkDoubleArray *vals = vtkDoubleArray::New();
-                vals->SetNumberOfComponents(1);
-                vals->SetNumberOfTuples(num_field_vals);
-                vals->SetName("curve");
-                rgrid->GetPointData()->SetScalars(vals);
-                vals->Delete();
-
-                vtkDataArray *xs = rgrid->GetXCoordinates();
-                vtkDataArray *ys = rgrid->GetYCoordinates();
                 xs = avtConduitBlueprintDataAdaptor::ConduitArrayToVTKDataArray(n_coords["values"][0]);
                 ys = avtConduitBlueprintDataAdaptor::ConduitArrayToVTKDataArray(field_1d["values"]);
-
-                // vtkDoubleArray *xs = vtkDoubleArray::SafeDownCast(rgrid->GetXCoordinates());
-                // vtkDoubleArray *ys = vtkDoubleArray::SafeDownCast(rgrid->GetYCoordinates());
-                // for (int i = 0; i < num_field_vals; i ++)
-                // {
-                //     xs->SetValue(i, points_1d[i]);
-                //     ys->SetValue(i, field_vals[i]);
-                // }
-
-                res = rgrid;
             }
+
+            res = rgrid;
         }
         else
         {
