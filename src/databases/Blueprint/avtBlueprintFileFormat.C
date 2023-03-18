@@ -95,14 +95,7 @@ avtBlueprintFileFormat::FetchMeshAndTopoNames(const std::string &name_name_full,
                                               std::string &mesh_name,
                                               std::string &topo_name)
 {
-    std::cout << "=======================" << std::endl;
-    std::cout << name_name_full << std::endl;
-
     string mesh_base = FileFunctions::Basename(name_name_full);
-    std::cout << mesh_base << std::endl;
-
-    std::cout << "=======================" << std::endl;
-
 
     if(!m_mesh_and_topo_info.has_child(mesh_base))
     {
@@ -232,8 +225,6 @@ avtBlueprintFileFormat::ReadBlueprintMesh(int domain,
 {
     BP_PLUGIN_INFO("ReadBlueprintMesh: " << abs_meshname
                     << " [domain " << domain << "]");
-
-std::cout << "ReadBlueprintMesh: " << abs_meshname << std::endl;
 
     string mesh_name;
     string topo_name;
@@ -1650,12 +1641,8 @@ avtBlueprintFileFormat::GetMesh(int domain, const char *abs_meshname)
         BP_PLUGIN_INFO("mesh name: " << mesh_name);
         BP_PLUGIN_INFO("topo name: " << topo_name);
 
-        data.print();
-
         conduit::Node &n_coords = data["coordsets"][0];
         int ndims = n_coords["values"].number_of_children();
-
-        std::cout << ndims << std::endl;
 
         // check for the mfem case
         if( m_mfem_mesh_map[topo_name] )
@@ -1696,7 +1683,7 @@ avtBlueprintFileFormat::GetMesh(int domain, const char *abs_meshname)
                 vtkDataArray *ys = rgrid->GetYCoordinates();
 
                 xs = avtConduitBlueprintDataAdaptor::ConduitArrayToStairStepVTKDataArray(
-                    n_coords["values"], true);
+                    n_coords["values"][0], true);
                 ys = avtConduitBlueprintDataAdaptor::ConduitArrayToStairStepVTKDataArray(
                     field_1d["values"], false);
 
@@ -1725,7 +1712,7 @@ avtBlueprintFileFormat::GetMesh(int domain, const char *abs_meshname)
 
                 vtkDataArray *xs = rgrid->GetXCoordinates();
                 vtkDataArray *ys = rgrid->GetYCoordinates();
-                xs = avtConduitBlueprintDataAdaptor::ConduitArrayToVTKDataArray(n_coords["values"]);
+                xs = avtConduitBlueprintDataAdaptor::ConduitArrayToVTKDataArray(n_coords["values"][0]);
                 ys = avtConduitBlueprintDataAdaptor::ConduitArrayToVTKDataArray(field_1d["values"]);
 
                 // vtkDoubleArray *xs = vtkDoubleArray::SafeDownCast(rgrid->GetXCoordinates());
