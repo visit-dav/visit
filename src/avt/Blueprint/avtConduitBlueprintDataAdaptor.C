@@ -262,7 +262,16 @@ avtConduitBlueprintDataAdaptor::ConduitArrayToStairStepVTKDataArray(
     DataType vals_dtype  = n.dtype();
 
     // get the number of tuples
-    ntuples = (int) vals_dtype.number_of_elements() * 2;
+    if (doing_x)
+    {
+        // num pts minus 1 times 2
+        ntuples = ((int) vals_dtype.number_of_elements() - 1) * 2;
+    }
+    else
+    {
+        // 2 pts for each elem
+        ntuples = (int) vals_dtype.number_of_elements() * 2;
+    }
     
     AVT_CONDUIT_BP_INFO("VTKDataArray num_tuples = " << ntuples << " "
                         << " num_comps = " << ncomps);
