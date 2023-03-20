@@ -788,6 +788,7 @@ UniformCoordsToVTKRectilinearGrid(const Node &n_coords)
 {
     vtkRectilinearGrid *rectgrid = vtkRectilinearGrid::New();
 
+    AVT_CONDUIT_BP_INFO("UniformCoordsToVTKRectilinearGrid");
     AVT_CONDUIT_BP_INFO(n_coords.to_yaml());
 
     int nx[3];
@@ -924,6 +925,8 @@ UniformCoordsToVTKRectilinearGrid(const Node &n_coords)
 vtkDataSet *
 RectilinearCoordsToVTKRectilinearGrid(const Node &n_coords)
 {
+    AVT_CONDUIT_BP_INFO("RectilinearCoordsToVTKRectilinearGrid");
+    
     vtkRectilinearGrid *rectgrid = vtkRectilinearGrid::New();
 
     const Node &n_coords_values  = n_coords["values"];
@@ -933,6 +936,8 @@ RectilinearCoordsToVTKRectilinearGrid(const Node &n_coords)
     std::string coord_sys_type = conduit::blueprint::mesh::utils::coordset::coordsys(n_coords);
 
     vtkDataArray *coords[3] = {0,0,0};
+
+    AVT_CONDUIT_BP_INFO("coord system type: " << coord_sys_type);
 
     if(coord_sys_type == "cylindrical")
     {
@@ -949,14 +954,17 @@ RectilinearCoordsToVTKRectilinearGrid(const Node &n_coords)
     else // cartesian
     {
         dims[0] = n_coords_values["x"].dtype().number_of_elements();
+        
         if (n_coords_values.has_child("y"))
             dims[1] = n_coords_values["y"].dtype().number_of_elements();
+        
         if (n_coords_values.has_child("z"))
             dims[2] = n_coords_values["z"].dtype().number_of_elements();
+
         rectgrid->SetDimensions(dims);
 
-        vtkDataArray *coords[3] = {0,0,0};
         coords[0] = ConduitArrayToVTKDataArray(n_coords_values["x"]);
+        
         if (n_coords_values.has_child("y"))
             coords[1] = ConduitArrayToVTKDataArray(n_coords_values["y"]);
         else
@@ -965,6 +973,7 @@ RectilinearCoordsToVTKRectilinearGrid(const Node &n_coords)
             coords[1]->SetNumberOfTuples(1);
             coords[1]->SetComponent(0,0,0);
         }
+        
         if (n_coords_values.has_child("z"))
             coords[2] = ConduitArrayToVTKDataArray(n_coords_values["z"]);
         else

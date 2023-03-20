@@ -40,6 +40,8 @@ bp_devilray_mfem_test_dir = "blueprint_v0.8.3_devilray_mfem_test_data"
 bp_part_map_test_dir = "blueprint_v0.8.4_part_map_examples"
 bp_struct_strided_test_dir = "blueprint_v0.8.4_strided_structured_examples"
 
+bp_rz_test_dir = "blueprint_v0.8.6_rz_examples"
+
 braid_2d_hdf5_root = data_path(pjoin(bp_test_dir,"braid_2d_examples.blueprint_root_hdf5"))
 braid_3d_hdf5_root = data_path(pjoin(bp_test_dir,"braid_3d_examples.blueprint_root_hdf5"))
 
@@ -102,6 +104,12 @@ bp_struct_strided_2d_root = data_path(pjoin(bp_struct_strided_test_dir,
 
 bp_struct_strided_3d_root = data_path(pjoin(bp_struct_strided_test_dir, 
                                       "strided_structured_3d_hdf5.root"));
+
+bp_rz_examples = []
+bp_rz_examples.append(data_path(pjoin(bp_rz_test_dir,"blueprint_rz_cyl_rectilinear.root")))
+bp_rz_examples.append(data_path(pjoin(bp_rz_test_dir,"blueprint_rz_cyl_uniform.root")))
+bp_rz_examples.append(data_path(pjoin(bp_rz_test_dir,"blueprint_rz_cyl_structured.root")))
+bp_rz_examples.append(data_path(pjoin(bp_rz_test_dir,"blueprint_rz_cyl_unstructured.root")))
 
 
 braid_2d_meshes = ["points", "uniform", "rect", "struct", "tris","quads"]
@@ -441,6 +449,24 @@ def test_venn(tag_name, venn_db_file):
 
     CloseDatabase(venn_db_file)
 
+def test_rz_example(tag_name, rz_db_file):
+    OpenDatabase(rz_db_file)
+    AddPlot("Pseudocolor", "mesh_topo/cyl")
+    AddPlot("Mesh", "mesh_topo")
+    DrawPlots()
+    ResetView()
+    Test(tag_name + "_plot_2D")
+    DeleteAllPlots()
+    # now revolve
+    AddPlot("Pseudocolor", "mesh_topo/cyl")
+    AddOperator("Revolve")
+    DrawPlots()
+    ResetView()
+    Test(tag_name + "_plot_revolved_to_3D")
+    DeleteAllPlots()
+    CloseDatabase(rz_db_file)
+
+
 def test_paren_vars():
     TestSection("Variables With Parens")
 
@@ -456,6 +482,8 @@ def test_paren_vars():
     DeleteAllPlots()
     ResetView()
     CloseDatabase(uniform_root)
+
+
 
 
 TestSection("2D Example JSON Mesh Files")
@@ -668,5 +696,9 @@ Test("bp_strided_struct_3d_vert_vals")
 DeleteAllPlots()
 CloseDatabase(bp_struct_strided_3d_root)
 
+TestSection("Blueprint RZ Examples, 0.8.6")
+for db in bp_rz_examples:
+    tag_name = os.path.basename(os.path.split(db)[1])
+    test_rz_example(tag_name,db)
 
 Exit()
