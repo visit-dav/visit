@@ -12,7 +12,7 @@
 # TO USE A NEW CONTAINER, UPDATE TAG NAME HERE AS PART OF YOUR PR!
 #####
 variables:
-  container_tag: visitdav/visit-ci-develop:2022-05-19-sha135d90
+  container_tag: visitdav/visit-ci-develop:2023-03-07-sha24859d
 
 # only build merge target pr to develop
 trigger: none
@@ -97,7 +97,8 @@ stages:
            git lfs pull --include blueprint_v0.8.2_braid_examples_test_data.tar.xz
            git lfs pull --include blueprint_v0.8.2_polytess_test_data.tar.xz
            git lfs pull --include blueprint_v0.8.4_part_map_examples.tar.xz
-           git lfs pull --include blueprint_v0.8.4_strided_structured_examples.tar.gz
+           git lfs pull --include blueprint_v0.8.4_strided_structured_examples.tar.xz
+           git lfs pull --include blueprint_v0.8.6_rz_examples.tar.xz
            cd ../
            git lfs pull  --include test/baseline/databases/silo
            git lfs pull  --include test/baseline/databases/blueprint
@@ -114,6 +115,7 @@ stages:
            tar xvf ../../data/blueprint_v0.8.2_polytess_test_data.tar.xz
            tar xvf ../../data/blueprint_v0.8.4_part_map_examples.tar.xz
            tar xvf ../../data/blueprint_v0.8.4_strided_structured_examples.tar.gz
+           tar xvf ../../data/blueprint_v0.8.6_rz_examples.tar.xz
 
         displayName: 'Prep Test Data'
 

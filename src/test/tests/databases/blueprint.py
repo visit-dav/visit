@@ -26,6 +26,9 @@
 #    Cyrus Harrison, Thu Dec 22 13:53:17 PST 2022
 #    Added bp part map and initial strided structured tests/ 
 #
+#    Cyrus Harrison, Mon, Mar 20, 2023  3:34:04 PM 
+#    Added rz test examples
+#
 # ----------------------------------------------------------------------------
 RequiredDatabasePlugin("Blueprint")
 
@@ -39,7 +42,6 @@ bp_poly_test_dir = "blueprint_v0.8.2_polytess_test_data"
 bp_devilray_mfem_test_dir = "blueprint_v0.8.3_devilray_mfem_test_data"
 bp_part_map_test_dir = "blueprint_v0.8.4_part_map_examples"
 bp_struct_strided_test_dir = "blueprint_v0.8.4_strided_structured_examples"
-
 bp_rz_test_dir = "blueprint_v0.8.6_rz_examples"
 
 braid_2d_hdf5_root = data_path(pjoin(bp_test_dir,"braid_2d_examples.blueprint_root_hdf5"))
@@ -457,6 +459,7 @@ def test_rz_example(tag_name, rz_db_file):
     ResetView()
     Test(tag_name + "_plot_2D")
     DeleteAllPlots()
+    ResetView()
     # now revolve
     AddPlot("Pseudocolor", "mesh_topo/cyl")
     AddOperator("Revolve")
@@ -464,6 +467,7 @@ def test_rz_example(tag_name, rz_db_file):
     ResetView()
     Test(tag_name + "_plot_revolved_to_3D")
     DeleteAllPlots()
+    ResetView()
     CloseDatabase(rz_db_file)
 
 
