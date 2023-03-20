@@ -488,8 +488,6 @@ def test_paren_vars():
     CloseDatabase(uniform_root)
 
 
-
-
 TestSection("2D Example JSON Mesh Files")
 OpenDatabase(braid_2d_json_root)
 for mesh_name in braid_2d_meshes:
