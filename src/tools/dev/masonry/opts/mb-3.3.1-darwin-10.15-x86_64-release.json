@@ -15,7 +15,6 @@
  "build_visit":  { "cmake_ver": "3.18.2",
                    "args":"--no-thirdparty",
                    "libs":["cmake",
-                       "vtkh",
                        "vtkm",
                        "ispc",
                        "embree",
