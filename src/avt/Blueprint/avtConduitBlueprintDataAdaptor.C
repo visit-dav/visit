@@ -154,15 +154,20 @@ Blueprint_Array_To_StairStep_VTKDataArray(const Node &n,
 
     conduit::DataArray<T> vals_array = n.value();
     // iter over data values
+    std::cout << (doing_x ? "x vals" : "y vals") << std::endl;
     for (vtkIdType i = 0; i < ntuples / 2; i ++)
     {
         if (doing_x)
         {
+            std::cout << vals_array[i] << std::endl;
+            std::cout << vals_array[i + 1] << std::endl;
             darray->SetComponent(i * 2, 0, (double) vals_array[i]);
             darray->SetComponent(i * 2 + 1, 0, (double) vals_array[i + 1]);
         }
         else // doing_y
         {
+            std::cout << vals_array[i] << std::endl;
+            std::cout << vals_array[i] << std::endl;
             darray->SetComponent(i * 2, 0, (double) vals_array[i]);
             darray->SetComponent(i * 2 + 1, 0, (double) vals_array[i]);
         }

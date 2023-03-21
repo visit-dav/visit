@@ -860,6 +860,8 @@ avtBlueprintFileFormat::AddBlueprintMeshAndFieldMetadata(avtDatabaseMetaData *md
                 m_curve_names.insert(varname_wmesh);
                 avtCurveMetaData *curve = new avtCurveMetaData;
                 curve->name = varname_wmesh;
+                curve->hasSpatialExtents = false;
+                curve->hasDataExtents = false;
                 md->Add(curve);
             }
             else if (ncomps == 1)
@@ -1676,27 +1678,36 @@ avtBlueprintFileFormat::GetMesh(int domain, const char *abs_meshname)
             vtkDoubleArray *vals = vtkDoubleArray::New();
             vals->SetNumberOfComponents(1);
             vals->SetNumberOfTuples(num_field_vals);
-            vals->SetName("curve"); // TODO ?
+            vals->SetName("curve");
             rgrid->GetPointData()->SetScalars(vals);
-            vals->Delete();
 
             vtkDataArray *xs = rgrid->GetXCoordinates();
-            vtkDataArray *ys = rgrid->GetYCoordinates();
+
+            double_accessor x_vals = n_coords["values"][0].value();
+            double_accessor y_vals = field_1d["values"].value();
 
             if (elem_assoc)
             {
-                // element assoc case - stair step the vals
-                xs = avtConduitBlueprintDataAdaptor::ConduitArrayToStairStepVTKDataArray(
-                    n_coords["values"][0], true);
-                ys = avtConduitBlueprintDataAdaptor::ConduitArrayToStairStepVTKDataArray(
-                    field_1d["values"], false);
+                for (vtkIdType i = 0; i < num_field_vals / 2; i ++)
+                {
+                    xs->SetComponent(i * 2, 0, (double) x_vals[i]);
+                    xs->SetComponent(i * 2 + 1, 0, (double) x_vals[i + 1]);
+                    vals->SetComponent(i * 2, 0, (double) y_vals[i]);
+                    vals->SetComponent(i * 2 + 1, 0, (double) y_vals[i]);
+
+                }
             }
             else
             {
-                // vertex assoc case - normal
-                xs = avtConduitBlueprintDataAdaptor::ConduitArrayToVTKDataArray(n_coords["values"][0]);
-                ys = avtConduitBlueprintDataAdaptor::ConduitArrayToVTKDataArray(field_1d["values"]);
+                for (vtkIdType i = 0; i < num_field_vals; i ++)
+                {
+                    xs->SetComponent(i, 0, (double) x_vals[i]);
+                    vals->SetComponent(i, 0, (double) y_vals[i]);
+
+                }
             }
+
+            vals->Delete();
 
             res = rgrid;
         }
