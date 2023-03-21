@@ -141,40 +141,6 @@ VTKCellTypeToElementShapeName(const int vtk_cell_type)
 //---------------------------------------------------------------------------//
 
 // ****************************************************************************
-template<typename T> void
-Blueprint_Array_To_StairStep_VTKDataArray(const Node &n,
-                                          int ntuples,
-                                          bool doing_x,
-                                          vtkDataArray *darray)
-{
-    darray->SetNumberOfComponents(1);
-    // vtk reqs us to set number of comps before number of tuples
-    // set number of tuples
-    darray->SetNumberOfTuples(ntuples);
-
-    conduit::DataArray<T> vals_array = n.value();
-    // iter over data values
-    std::cout << (doing_x ? "x vals" : "y vals") << std::endl;
-    for (vtkIdType i = 0; i < ntuples / 2; i ++)
-    {
-        if (doing_x)
-        {
-            std::cout << vals_array[i] << std::endl;
-            std::cout << vals_array[i + 1] << std::endl;
-            darray->SetComponent(i * 2, 0, (double) vals_array[i]);
-            darray->SetComponent(i * 2 + 1, 0, (double) vals_array[i + 1]);
-        }
-        else // doing_y
-        {
-            std::cout << vals_array[i] << std::endl;
-            std::cout << vals_array[i] << std::endl;
-            darray->SetComponent(i * 2, 0, (double) vals_array[i]);
-            darray->SetComponent(i * 2 + 1, 0, (double) vals_array[i]);
-        }
-    }
-}
-
-// ****************************************************************************
 //  Modifications:
 //
 //  Cyrus Harrison, Fri Dec 16 09:38:35 PST 2022
@@ -236,161 +202,16 @@ Blueprint_MultiCompArray_To_VTKDataArray(const Node &n,
 }
 
 // ****************************************************************************
-//  Method: ConduitArrayToStairStepVTKDataArray
-//
-//  Purpose:
-//   Constructs a vtkDataArray from a Conduit 1d array. Stairstepped.
-//
-//  Arguments:
-//   n:    Blueprint Field Values Node
-//   doing_x: are we doing the x vals or the y vals?
-//
-//  Programmer: Justin Privitera
-//  Creation:   Fri Mar 17 17:14:22 PDT 2023
-//
-//  Modifications:
-//
 // ****************************************************************************
-vtkDataArray *
-avtConduitBlueprintDataAdaptor::ConduitArrayToStairStepVTKDataArray(
-    const conduit::Node &n,
-    bool doing_x)
-{
-    AVT_CONDUIT_BP_INFO("Creating VTKDataArray from Node");
-    vtkDataArray *retval = NULL;
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+//                               BLUEPRINT --> VTK
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+// ****************************************************************************
+// ****************************************************************************
 
-
-    int nchildren = n.number_of_children();
-    int ntuples = 0;
-    int ncomps = 1;
-
-    DataType vals_dtype  = n.dtype();
-
-    // get the number of tuples
-    if (doing_x)
-    {
-        // num pts minus 1 times 2
-        ntuples = ((int) vals_dtype.number_of_elements() - 1) * 2;
-    }
-    else
-    {
-        // 2 pts for each elem
-        ntuples = (int) vals_dtype.number_of_elements() * 2;
-    }
-    
-    AVT_CONDUIT_BP_INFO("VTKDataArray num_tuples = " << ntuples << " "
-                        << " num_comps = " << ncomps);
-
-
-    if (vals_dtype.is_unsigned_char())
-    {
-        retval = vtkUnsignedCharArray::New();
-        Blueprint_Array_To_StairStep_VTKDataArray<CONDUIT_NATIVE_UNSIGNED_CHAR>(n,
-                                                                                ntuples,
-                                                                                doing_x,
-                                                                                retval);
-    }
-    else if (vals_dtype.is_unsigned_short())
-    {
-        retval = vtkUnsignedShortArray::New();
-        Blueprint_Array_To_StairStep_VTKDataArray<CONDUIT_NATIVE_UNSIGNED_SHORT>(n,
-                                                                                 ntuples,
-                                                                                 doing_x,
-                                                                                 retval);
-    }
-    else if (vals_dtype.is_unsigned_int())
-    {
-        retval = vtkUnsignedIntArray::New();
-        Blueprint_Array_To_StairStep_VTKDataArray<CONDUIT_NATIVE_UNSIGNED_INT>(n,
-                                                                               ntuples,
-                                                                               doing_x,
-                                                                               retval);
-    }
-    else if (vals_dtype.is_unsigned_long())
-    {
-        retval = vtkUnsignedLongArray::New();
-        Blueprint_Array_To_StairStep_VTKDataArray<CONDUIT_NATIVE_UNSIGNED_LONG>(n,
-                                                                                ntuples,
-                                                                                doing_x,
-                                                                                retval);
-    }
-#if CONDUIT_USE_LONG_LONG
-    else if (vals_dtype.id() == CONDUIT_NATIVE_UNSIGNED_LONG_LONG_ID)
-    {
-        retval = vtkUnsignedLongLongArray::New();
-        Blueprint_Array_To_StairStep_VTKDataArray<CONDUIT_NATIVE_UNSIGNED_LONG_LONG>(n,
-                                                                                     ntuples,
-                                                                                     doing_x,
-                                                                                     retval);
-    }
-#endif
-    else if (vals_dtype.is_char())
-    {
-        retval = vtkCharArray::New();
-        Blueprint_Array_To_StairStep_VTKDataArray<CONDUIT_NATIVE_CHAR>(n,
-                                                                       ntuples,
-                                                                       doing_x,
-                                                                       retval);
-
-    }
-    else if (vals_dtype.is_short())
-    {
-        retval = vtkShortArray::New();
-        Blueprint_Array_To_StairStep_VTKDataArray<CONDUIT_NATIVE_SHORT>(n,
-                                                                        ntuples,
-                                                                        doing_x,
-                                                                        retval);
-    }
-    else if (vals_dtype.is_int())
-    {
-        retval = vtkIntArray::New();
-        Blueprint_Array_To_StairStep_VTKDataArray<CONDUIT_NATIVE_INT>(n,
-                                                                      ntuples,
-                                                                      doing_x,
-                                                                      retval);
-    }
-    else if (vals_dtype.is_long())
-    {
-        retval = vtkLongArray::New();
-        Blueprint_Array_To_StairStep_VTKDataArray<CONDUIT_NATIVE_LONG>(n,
-                                                                       ntuples,
-                                                                       doing_x,
-                                                                       retval);
-    }
-#if CONDUIT_USE_LONG_LONG
-    else if (vals_dtype.id() == CONDUIT_NATIVE_LONG_LONG_ID)
-    {
-        retval = vtkLongLongArray::New();
-        Blueprint_Array_To_StairStep_VTKDataArray<CONDUIT_NATIVE_LONG_LONG>(n,
-                                                                            ntuples,
-                                                                            doing_x,
-                                                                            retval);
-    }
-#endif
-    else if (vals_dtype.is_float())
-    {
-        retval = vtkFloatArray::New();
-        Blueprint_Array_To_StairStep_VTKDataArray<CONDUIT_NATIVE_FLOAT>(n,
-                                                                        ntuples,
-                                                                        doing_x,
-                                                                        retval);
-    }
-    else if (vals_dtype.is_double())
-    {
-        retval = vtkDoubleArray::New();
-        Blueprint_Array_To_StairStep_VTKDataArray<CONDUIT_NATIVE_DOUBLE>(n,
-                                                                         ntuples,
-                                                                         doing_x,
-                                                                         retval);
-    }
-    else
-    {
-        AVT_CONDUIT_BP_EXCEPTION1(InvalidVariableException,
-                                  "Conduit Array to Stair Step VTK Data Array"
-                                  "unsupported data type: " << n.dtype().name());
-    }
-    return retval;
-}
+// ****************************************************************************
+//                             Helper functions
+// ****************************************************************************
 
 // ****************************************************************************
 //  Method: ConduitArrayToVTKDataArray
@@ -416,10 +237,9 @@ avtConduitBlueprintDataAdaptor::ConduitArrayToStairStepVTKDataArray(
 //
 // ****************************************************************************
 vtkDataArray *
-avtConduitBlueprintDataAdaptor::ConduitArrayToVTKDataArray(
-    const conduit::Node &n,
-    int src_idxs_length,
-    int *src_idxs)
+ConduitArrayToVTKDataArray(const conduit::Node &n,
+                           int src_idxs_length = 0,
+                           int *src_idxs = NULL)
 {
     AVT_CONDUIT_BP_INFO("Creating VTKDataArray from Node");
     vtkDataArray *retval = NULL;
@@ -584,18 +404,6 @@ avtConduitBlueprintDataAdaptor::ConduitArrayToVTKDataArray(
     }
     return retval;
 }
-
-// ****************************************************************************
-// ****************************************************************************
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-//                               BLUEPRINT --> VTK
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-// ****************************************************************************
-// ****************************************************************************
-
-// ****************************************************************************
-//                             Helper functions
-// ****************************************************************************
 
 
 // ****************************************************************************
@@ -1069,9 +877,9 @@ RectilinearCoordsToVTKRectilinearGrid(const Node &n_coords)
     rectgrid->SetDimensions(dims);
 
     vtkDataArray *coords[3] = {0,0,0};
-    coords[0] = avtConduitBlueprintDataAdaptor::ConduitArrayToVTKDataArray(n_coords_values["x"]);
+    coords[0] = ConduitArrayToVTKDataArray(n_coords_values["x"]);
     if (n_coords_values.has_child("y"))
-        coords[1] = avtConduitBlueprintDataAdaptor::ConduitArrayToVTKDataArray(n_coords_values["y"]);
+        coords[1] = ConduitArrayToVTKDataArray(n_coords_values["y"]);
     else
     {
         coords[1] = coords[0]->NewInstance();
@@ -1079,7 +887,7 @@ RectilinearCoordsToVTKRectilinearGrid(const Node &n_coords)
         coords[1]->SetComponent(0,0,0);
     }
     if (n_coords_values.has_child("z"))
-        coords[2] = avtConduitBlueprintDataAdaptor::ConduitArrayToVTKDataArray(n_coords_values["z"]);
+        coords[2] = ConduitArrayToVTKDataArray(n_coords_values["z"]);
     else
     {
         coords[2] = coords[0]->NewInstance();

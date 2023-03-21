@@ -51,13 +51,6 @@ public:
     // set warning and info handlers to redirect conduit warnings and info
     static void SetInfoWarningHandlers();
 
-    static vtkDataArray * ConduitArrayToVTKDataArray(const conduit::Node &n,
-                                                     int src_idxs_length = 0,
-                                                     int *src_idxs = NULL);
-
-    static vtkDataArray * ConduitArrayToStairStepVTKDataArray(const conduit::Node &n,
-                                                              bool doing_x);
-
     class AVTBLUEPRINT_API BlueprintToVTK
     {
     public:
