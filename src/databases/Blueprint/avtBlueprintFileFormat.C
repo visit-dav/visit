@@ -860,8 +860,6 @@ avtBlueprintFileFormat::AddBlueprintMeshAndFieldMetadata(avtDatabaseMetaData *md
                 m_curve_names.insert(varname_wmesh);
                 avtCurveMetaData *curve = new avtCurveMetaData;
                 curve->name = varname_wmesh;
-                curve->hasSpatialExtents = false;
-                curve->hasDataExtents = false;
                 md->Add(curve);
             }
             else if (ncomps == 1)
@@ -1694,7 +1692,6 @@ avtBlueprintFileFormat::GetMesh(int domain, const char *abs_meshname)
                     xs->SetComponent(i * 2 + 1, 0, (double) x_vals[i + 1]);
                     vals->SetComponent(i * 2, 0, (double) y_vals[i]);
                     vals->SetComponent(i * 2 + 1, 0, (double) y_vals[i]);
-
                 }
             }
             else
@@ -1703,7 +1700,6 @@ avtBlueprintFileFormat::GetMesh(int domain, const char *abs_meshname)
                 {
                     xs->SetComponent(i, 0, (double) x_vals[i]);
                     vals->SetComponent(i, 0, (double) y_vals[i]);
-
                 }
             }
 
