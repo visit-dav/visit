@@ -141,6 +141,18 @@
 #   directory outside the repo, which should speed up git operations. I
 #   changed a python reference to python3.
 #
+#   Eric Brugger, Fri Mar 10 14:32:00 PST 2023
+#   I renamed the "linux-x86_64" directory in the visit install to
+#   "linux-x86_64-toss4" so that the launcher script would find the
+#   installation on toss4.
+#
+#   Eric Brugger, Sun Mar 12 16:40:54 PDT 2023
+#   Install git lfs before updating the repository. Added more logging
+#   to the git repository update.
+#
+#   Eric Brugger, Wed Mar 15 13:41:38 PDT 2023
+#   Update the location of where libstripack is copied from.
+#
 
 # Determine the users name and e-mail address.
 #
@@ -253,6 +265,9 @@ rm -f checkout_${testHost}
 cat <<EOF > checkout_${testHost}
 #!/bin/sh
 
+# So the script uses the correct git.
+export PATH=/usr/tce/bin:$PATH
+
 dateTag=\$1
 
 # Update the repository.
@@ -276,12 +291,24 @@ if test ! -e $testDir/$workingDir/visit; then
     git clone  --recursive ssh://git@github.com/visit-dav/visit.git >> buildlog 2>&1
 fi
 
-# Update the repository.
+# Enter the repository.
 cd visit
+
+# Install git lfs.
+git lfs install --force --skip-smudge >> ../buildlog2>&1
+
+# Update the repository.
+hostname >> ../buildlog 2>&1
+git --version >> ../buildlog 2>&1
+echo "rm -f .git/index.lock" >> ../buildlog 2>&1
 rm -f .git/index.lock >> ../buildlog 2>&1
+echo "git checkout develop" >> ../buildlog 2>&1
 git checkout develop >> ../buildlog 2>&1
+echo "git pull" >> ../buildlog 2>&1
 git pull >> ../buildlog 2>&1
+echo "git lfs pull" >> ../buildlog 2>&1
 git lfs pull >> ../buildlog 2>&1
+echo "Repository updated" >> ../buildlog 2>&1
 
 if test "$branch" = "trunk" ; then
     if test "$revision" = "latest" ; then
@@ -317,6 +344,9 @@ chmod 750 checkout_${testHost}
 rm -f runit_${testHost}
 cat <<EOF > runit_${testHost}
 #!/bin/sh
+
+# So the script uses the correct git.
+export PATH=/usr/tce/bin:$PATH
 
 dateTag=\$1
 
@@ -390,7 +420,7 @@ cat ../make.err >> ../../buildlog
 echo "Source build completed at: \`date\`"
 
 # Copy stripack lib for ffp plugin tests
-cp /usr/workspace/visit/miller86/stripack/libstripack.so ./lib/.
+cp /usr/workspace/wsa/visit/visit/thirdparty_shared/3.3.2/toss4/stripack/libstripack.so ./lib/.
 
 # Update the test baselines
 cd ../test
@@ -419,6 +449,7 @@ cd ../
 version=\`cat $testDir/$workingDir/visit/src/VERSION\`
 
 ../src/tools/dev/scripts/visit-install -c llnl_open \$version linux-x86_64 ./_install >> ../../installlog 2>&1
+mv _install/\$version/linux-x86_64 _install/\$version/linux-x86_64-toss4 >> ../../installlog 2>&1
 
 if test "$debug" = "true" ; then
     echo "Install completed at: \`date\`" | mail -s "Install completed" $userEmail
@@ -469,6 +500,9 @@ chmod 750 runit_${testHost}
 rm -f postit_${testHost}
 cat <<EOF > postit_${testHost}
 #!/bin/sh
+
+# So the script uses the correct git.
+export PATH=/usr/tce/bin:$PATH
 
 if test "\$#" -ne 1; then
     echo "Usage: \$0 date_tag"

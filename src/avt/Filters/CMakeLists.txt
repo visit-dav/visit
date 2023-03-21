@@ -58,6 +58,9 @@
 #   Eric Brugger, Fri Feb 24 14:57:15 PST 2023
 #   I replaced vtkh with vtkm.
 #
+#   Kathleen Biagas, Wed Mar 15, 2023 
+#   Only link with pthread if not on Windows.
+#
 #****************************************************************************/
 
 SET(AVTFILTERS_SOURCES
@@ -201,7 +204,10 @@ IF(VTK_VERSION VERSION_EQUAL "8.1.0" AND VISIT_OSPRAY)
     ENDIF()
 ENDIF() 
 if(HAVE_LIBVTKM)
-    target_link_libraries(avtfilters_ser vtkm_cont vtkm_filter_contour vtkm_filter_entity_extraction vtkm_filter_field_conversion pthread)
+    target_link_libraries(avtfilters_ser vtkm_cont vtkm_filter_contour vtkm_filter_entity_extraction vtkm_filter_field_conversion)
+    if(NOT WIN32)
+        target_link_libraries(avtfilters_ser pthread)
+    endif()
     if(VTKm_ENABLE_KOKKOS)
         target_link_libraries(avtfilters_ser amdhip64)
     endif()
@@ -219,7 +225,10 @@ IF(VISIT_PARALLEL)
         ENDIF()
     ENDIF()
     if(HAVE_LIBVTKM)
-        target_link_libraries(avtfilters_par vtkm_cont vtkm_filter_contour vtkm_filter_entity_extraction vtkm_filter_field_conversion pthread)
+        target_link_libraries(avtfilters_par vtkm_cont vtkm_filter_contour vtkm_filter_entity_extraction vtkm_filter_field_conversion)
+        if(NOT WIN32)
+            target_link_libraries(avtfilters_par pthread)
+        endif()
         if(VTKm_ENABLE_KOKKOS)
             target_link_libraries(avtfilters_par amdhip64)
         endif()
