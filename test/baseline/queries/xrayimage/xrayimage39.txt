@@ -1,4 +1,4 @@
-engine_ser: Conduit Exception in X Ray Image Query Execute: 
+engine_ser: ERROR: Conduit Exception in X Ray Image Query Execute: 
 
 
 

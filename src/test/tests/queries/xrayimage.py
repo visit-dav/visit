@@ -620,12 +620,12 @@ def blueprint_test(output_type, outdir, testtextnumber, testname, hdf5 = False):
         Test(testname + "_spatial_energy_reduced_topo_path_length" + str(i))
         DeleteAllPlots()
 
-        AddPlot("Curve", "spectra_topo/intensities_spectra")
+        AddPlot("Curve", "mesh_spectra_topo/intensities_spectra")
         DrawPlots()
         Test(testname + "_spectra_topo_intensities" + str(i))
         DeleteAllPlots()
 
-        AddPlot("Curve", "spectra_topo/path_length_spectra")
+        AddPlot("Curve", "mesh_spectra_topo/path_length_spectra")
         DrawPlots()
         Test(testname + "_spectra_topo_path_length" + str(i))
         DeleteAllPlots()
