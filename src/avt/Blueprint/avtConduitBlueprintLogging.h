@@ -24,12 +24,12 @@
 
 #define AVT_CONDUIT_BP_INFO(  msg  )                                \
 {                                                                   \
-    debug5 << msg;                                                  \
+    debug5 << msg << std::endl;                                     \
 }                                                                   \
 
 #define AVT_CONDUIT_BP_WARNING(  msg  )                             \
 {                                                                   \
-    debug5 << "[blueprint warning] " << msg;                        \
+    debug5 << "[blueprint warning] " << msg << std::endl;           \
 }                                                                   \
 
 #define AVT_CONDUIT_BP_EXCEPTION1(  etype , msg )                   \
