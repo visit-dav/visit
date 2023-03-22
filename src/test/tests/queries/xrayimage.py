@@ -112,8 +112,8 @@ TestText("xrayimage01", s)
 #
 # Test a multi block structured grid with an array variable.
 #
-DefineScalarExpression("d1", 'recenter(d, "zonal")')
-DefineScalarExpression("p1", 'recenter(p, "zonal")')
+DefineScalarExpression("d1", 'd')
+DefineScalarExpression("p1", 'p')
 
 DefineArrayExpression("da", "array_compose(d1,d1)")
 DefineArrayExpression("pa", "array_compose(p1,p1)")
@@ -376,8 +376,29 @@ if not os.path.isdir(conduit_dir_detector_dims):
 
 def setup_bp_test():
     OpenDatabase(silo_data_path("curv3d.silo"))
+    DefineScalarExpression("d1", 'd')
+    DefineScalarExpression("p1", 'p')
+    DefineScalarExpression("d2", 'd1 * 6')
+    DefineScalarExpression("p2", 'p1 * 6')
+    DefineScalarExpression("d3", 'd1 * 3')
+    DefineScalarExpression("p3", 'p1 * 3')
+    DefineArrayExpression("darr", "array_compose(d1,d2,d3)")
+    DefineArrayExpression("parr", "array_compose(p1,p2,d3)")
     AddPlot("Pseudocolor", "d")
     DrawPlots()
+
+def teardown_bp_test(lite = False):
+    DeleteAllPlots()
+    if not lite:
+        DeleteExpression("d1")
+        DeleteExpression("p1")
+        DeleteExpression("d2")
+        DeleteExpression("p2")
+        DeleteExpression("d3")
+        DeleteExpression("p3")
+        DeleteExpression("darr")
+        DeleteExpression("parr")
+    CloseDatabase(silo_data_path("curv3d.silo"))
 
 def test_bp_state_xray_view(testname, xrayout):
     normalx = xrayout["domain_000000/state/xray_view/normal/x"]
@@ -556,78 +577,180 @@ def test_bp_data(testname, conduit_db, bin_state = NO_ENERGY_GROUP_BOUNDS, units
     xlabel = xrayout["domain_000000/coordsets/spectra_coords/labels/x"];
     TestValueEQ(testname + "_data_spectra_XLabels", xlabel, "energy_group")
 
+def calc_midpoints(arr):
+    midpts = []
+    for i in range(0, len(arr) - 1):
+        midpts.append((arr[i] + arr[i + 1]) / 2)
+    return midpts
+
+def z_slice(zval, mesh_name):
+    AddOperator("Slice", 1)
+    SetActivePlots(0)
+    SliceAtts = SliceAttributes()
+    SliceAtts.originType = SliceAtts.Point  # Point, Intercept, Percent, Zone, Node
+    SliceAtts.originPoint = (0, 0, zval)
+    SliceAtts.axisType = SliceAtts.ZAxis  # XAxis, YAxis, ZAxis, Arbitrary, ThetaPhi
+    SliceAtts.project2d = 1
+    SliceAtts.interactive = 1
+    SliceAtts.meshName = mesh_name
+    SetOperatorOptions(SliceAtts, 0, 1)
+
 def blueprint_test(output_type, outdir, testtextnumber, testname, hdf5 = False):
     for i in range(0, 2):
         setup_bp_test()
 
-        # run query and test the output message
+        # common place for args
+        divide_emis_by_absorb = 1
+        origin = (0.0, 2.5, 10.0)
+        theta = 0
+        phi = 0
+        width = 10
+        height = 10
+        image_size = (300, 200)
+
+        energy_group_bounds      = [0, 2, 6, 8]
+        fake_energy_group_bounds = [0, 1, 2, 3]
+
+        energy_group_midpts      = calc_midpoints(energy_group_bounds)
+        fake_energy_group_midpts = calc_midpoints(fake_energy_group_bounds)
+
+        calltype = "legacy" if i == 0 else "modern"
+
+        # run query
         if (i == 0):
-            Query("XRay Image", output_type, outdir, 1, 0.0, 2.5, 10.0, 0, 0, 10., 10., 300, 200, ("d", "p"))
+            # test legacy call
+            Query("XRay Image", \
+                output_type, \
+                outdir, \
+                divide_emis_by_absorb, \
+                origin[0], \
+                origin[1], \
+                origin[2], \
+                theta, \
+                phi, \
+                width, \
+                height, \
+                image_size[0], \
+                image_size[1], \
+                ("darr", "parr"), \
+                energy_group_bounds)
         elif (i == 1):
-            params = dict() # GetQueryParameters("XRay Image")
+            # test modern call
+            params = dict()
             params["output_type"] = output_type
             params["output_dir"] = outdir
-            params["divide_emis_by_absorb"] = 1;
-            params["origin"] = (0.0, 2.5, 10.0);
-            params["theta"] = 0;
-            params["phi"] = 0;
-            params["width"] = 10.;
-            params["height"] = 10.;
-            params["image_size"] = (300, 200)
-            params["vars"] = ("d", "p")
-            params["spatial_units"] = "cm";
-            params["energy_units"] = "kev";
-            params["abs_units"] = "abs units";
-            params["emis_units"] = "emis units";
-            params["intensity_units"] = "intensity units";
-            params["path_length_info"] = "path length metadata";
+            params["divide_emis_by_absorb"] = divide_emis_by_absorb
+            params["origin"] = origin
+            params["theta"] = theta
+            params["phi"] = phi
+            params["width"] = width
+            params["height"] = height
+            params["image_size"] = image_size
+            params["vars"] = ("darr", "parr")
+            params["energy_group_bounds"] = [0.0, 2.0, 6.0, 8.0]
+            params["spatial_units"] = "cm"
+            params["energy_units"] = "kev"
+            params["abs_units"] = "abs units"
+            params["emis_units"] = "emis units"
+            params["intensity_units"] = "intensity units"
+            params["path_length_info"] = "path length metadata"
             Query("XRay Image", params)
+
+        # test output message
         s = GetQueryOutputString()
         TestText("xrayimage" + str(testtextnumber + i), s)
-        DeleteAllPlots()
-        CloseDatabase(silo_data_path("curv3d.silo"))
+        teardown_bp_test()
 
         # test opening the bp output and visualizing in visit
         conduit_db = pjoin(outdir, "output.cycle_000048.root")
         OpenDatabase(conduit_db)
+
+        # 
+        # image topo
+        # 
+
         AddPlot("Pseudocolor", "mesh_image_topo/intensities")
         DrawPlots()
-        Test(testname + "_image_topo_intensities" + str(i))
+        Test(testname + "_image_topo_intensities_" + calltype)
         DeleteAllPlots()
+
+        # test some slices
+        for j in range(0, len(fake_energy_group_midpts)):
+            AddPlot("Pseudocolor", "mesh_image_topo/intensities")
+            z_slice(fake_energy_group_midpts[j], "mesh_image_topo")
+            DrawPlots()
+            Test(testname + "_image_topo_intensities_" + calltype + "_slice" + str(j))
+            DeleteAllPlots()
 
         AddPlot("Pseudocolor", "mesh_image_topo/path_length")
         DrawPlots()
-        Test(testname + "_image_topo_path_length" + str(i))
+        Test(testname + "_image_topo_path_length_" + calltype)
         DeleteAllPlots()
+
+        # test some slices
+        for j in range(0, len(fake_energy_group_midpts)):
+            AddPlot("Pseudocolor", "mesh_image_topo/path_length")
+            z_slice(fake_energy_group_midpts[j], "mesh_image_topo")
+            DrawPlots()
+            Test(testname + "_image_topo_path_length_" + calltype + "_slice" + str(j))
+            DeleteAllPlots()
+
+        # 
+        # spatial topo
+        # 
 
         AddPlot("Pseudocolor", "mesh_spatial_topo/intensities_spatial")
         DrawPlots()
-        Test(testname + "_spatial_topo_intensities" + str(i))
+        Test(testname + "_spatial_topo_intensities_" + calltype)
         DeleteAllPlots()
+
+        # test some slices
+        for j in range(0, len(energy_group_midpts)):
+            AddPlot("Pseudocolor", "mesh_spatial_topo/intensities_spatial")
+            z_slice(energy_group_midpts[j], "mesh_spatial_topo")
+            DrawPlots()
+            Test(testname + "_spatial_topo_intensities_" + calltype + "_slice" + str(j))
+            DeleteAllPlots()
 
         AddPlot("Pseudocolor", "mesh_spatial_topo/path_length_spatial")
         DrawPlots()
-        Test(testname + "_spatial_topo_path_length" + str(i))
+        Test(testname + "_spatial_topo_path_length_" + calltype)
         DeleteAllPlots()
+
+        # test some slices
+        for j in range(0, len(energy_group_midpts)):
+            AddPlot("Pseudocolor", "mesh_spatial_topo/path_length_spatial")
+            z_slice(energy_group_midpts[j], "mesh_spatial_topo")
+            DrawPlots()
+            Test(testname + "_spatial_topo_path_length_" + calltype + "_slice" + str(j))
+            DeleteAllPlots()
+
+        # 
+        # spatial energy reduced topo
+        # 
 
         AddPlot("Pseudocolor", "mesh_spatial_energy_reduced_topo/intensities_spatial_energy_reduced")
         DrawPlots()
-        Test(testname + "_spatial_energy_reduced_topo_intensities" + str(i))
+        Test(testname + "_spatial_energy_reduced_topo_intensities_" + calltype)
         DeleteAllPlots()
 
         AddPlot("Pseudocolor", "mesh_spatial_energy_reduced_topo/path_length_spatial_energy_reduced")
         DrawPlots()
-        Test(testname + "_spatial_energy_reduced_topo_path_length" + str(i))
+        Test(testname + "_spatial_energy_reduced_topo_path_length_" + calltype)
         DeleteAllPlots()
+
+        # 
+        # spectra topo
+        # 
 
         AddPlot("Curve", "mesh_spectra_topo/intensities_spectra")
         DrawPlots()
-        Test(testname + "_spectra_topo_intensities" + str(i))
+        Test(testname + "_spectra_topo_intensities_" + calltype)
         DeleteAllPlots()
 
         AddPlot("Curve", "mesh_spectra_topo/path_length_spectra")
         DrawPlots()
-        Test(testname + "_spectra_topo_path_length" + str(i))
+        Test(testname + "_spectra_topo_path_length_" + calltype)
         DeleteAllPlots()
 
         CloseDatabase(conduit_db)
@@ -640,8 +763,7 @@ def blueprint_test(output_type, outdir, testtextnumber, testname, hdf5 = False):
         test_bp_data(testname + str(i), conduit_db, bin_state=ENERGY_GROUP_BOUNDS_MISMATCH, units=UNITS_OFF) # bounds mismatch
         Query("XRay Image", output_type, outdir, 1, 0.0, 2.5, 10.0, 0, 0, 10., 10., 300, 200, ("d", "p"), [3.7, 4.2])
         test_bp_data(testname + str(i), conduit_db, bin_state=ENERGY_GROUP_BOUNDS, units=UNITS_OFF) # bounds
-        DeleteAllPlots()
-        CloseDatabase(silo_data_path("curv3d.silo"))
+        teardown_bp_test()
 
 blueprint_test("hdf5", conduit_dir_hdf5, 32, "Blueprint_HDF5_X_Ray_Output", hdf5=True)
 blueprint_test("json", conduit_dir_json, 34, "Blueprint_JSON_X_Ray_Output", hdf5=False)
@@ -664,8 +786,7 @@ params["energy_group_bounds"] = [3.7, 4.2];
 params["parallel_scale"] = 5.
 Query("XRay Image", params)
 
-DeleteAllPlots()
-CloseDatabase(silo_data_path("curv3d.silo"))
+teardown_bp_test()
 
 conduit_db = pjoin(conduit_dir_detector_dims, "output.cycle_000048.root")
 xrayout = conduit.Node()
@@ -725,8 +846,7 @@ def test_imaging_planes_and_rays():
 
         Test("Blueprint_HDF5_Imaging_Planes" + str(i))
 
-        DeleteAllPlots()
-        CloseDatabase(silo_data_path("curv3d.silo"))
+        teardown_bp_test()
         CloseDatabase(conduit_db)
 
 test_imaging_planes_and_rays()
@@ -746,8 +866,8 @@ setup_bp_test()
 Query("XRay Image", "hdf5", dir_dne, 1, 0.0, 2.5, 10.0, 0, 0, 10., 10., 300, 300, ("d", "p"))
 s = GetQueryOutputString()
 TestText("xrayimage38", s)
-DeleteAllPlots()
-CloseDatabase(silo_data_path("curv3d.silo"))
+
+teardown_bp_test(True)
 
 # os.chmod does not work on windows
 if not platform.system() == "Windows":
@@ -768,8 +888,7 @@ if not platform.system() == "Windows":
     s = '\n'.join([line if line[:4] != "file" else '' for line in s.split('\n')])
     s = '\n'.join([line if line[:4] != "line" else '' for line in s.split('\n')])
     TestText("xrayimage39", s)
-    DeleteAllPlots()
-    CloseDatabase(silo_data_path("curv3d.silo"))
+    teardown_bp_test(True)
 
 #
 # Test that we get decent error messages for common cases
