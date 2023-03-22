@@ -64,6 +64,10 @@ public:
         /// so topology rides along to help with those cases
         static vtkDataArray*  FieldToVTK(const conduit::Node &topo,
                                          const conduit::Node &field);
+
+        /// support 1D meshes
+        static vtkDataSet*    Curve1DToVTK(const conduit::Node &coords,
+                                           const conduit::Node &field);
     };
 
     class AVTBLUEPRINT_API VTKToBlueprint

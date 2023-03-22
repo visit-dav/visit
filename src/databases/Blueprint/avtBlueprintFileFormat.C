@@ -1678,48 +1678,7 @@ avtBlueprintFileFormat::GetMesh(int domain, const char *abs_meshname)
 
             Node field_1d;
             ReadBlueprintField(domain, abs_meshname, field_1d);
-
-            bool elem_assoc = field_1d.has_child("association") && 
-                field_1d["association"].as_string() == "element";
-
-            int num_field_vals = field_1d["values"].dtype().number_of_elements();
-            if (elem_assoc)
-                num_field_vals *= 2;
-
-            vtkRectilinearGrid *rgrid = vtkVisItUtility::Create1DRGrid(num_field_vals, VTK_DOUBLE);
-            vtkDoubleArray *vals = vtkDoubleArray::New();
-            vals->SetNumberOfComponents(1);
-            vals->SetNumberOfTuples(num_field_vals);
-            vals->SetName("curve");
-            rgrid->GetPointData()->SetScalars(vals);
-
-            vtkDataArray *xs = rgrid->GetXCoordinates();
-
-            double_accessor x_vals = n_coords["values"][0].value();
-            double_accessor y_vals = field_1d["values"].value();
-
-            if (elem_assoc)
-            {
-                for (vtkIdType i = 0; i < num_field_vals / 2; i ++)
-                {
-                    xs->SetComponent(i * 2, 0, (double) x_vals[i]);
-                    xs->SetComponent(i * 2 + 1, 0, (double) x_vals[i + 1]);
-                    vals->SetComponent(i * 2, 0, (double) y_vals[i]);
-                    vals->SetComponent(i * 2 + 1, 0, (double) y_vals[i]);
-                }
-            }
-            else
-            {
-                for (vtkIdType i = 0; i < num_field_vals; i ++)
-                {
-                    xs->SetComponent(i, 0, (double) x_vals[i]);
-                    vals->SetComponent(i, 0, (double) y_vals[i]);
-                }
-            }
-
-            vals->Delete();
-
-            res = rgrid;
+            res = avtConduitBlueprintDataAdaptor::BlueprintToVTK::Curve1DToVTK(n_coords, field_1d);
         }
         else
         {

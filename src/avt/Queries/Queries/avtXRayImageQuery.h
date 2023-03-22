@@ -111,7 +111,7 @@
 //     - Deleted all the inline vector math functions.
 // 
 //    Justin Privitera, Wed Mar 15 17:51:13 PDT 2023
-//    Changed naming of some of the arguments to blueprint-related functions.
+//    Changed names of some of the arguments to blueprint-related functions.
 //
 // ****************************************************************************
 
