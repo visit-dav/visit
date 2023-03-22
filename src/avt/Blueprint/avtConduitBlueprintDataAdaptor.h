@@ -40,6 +40,9 @@ class vtkDataArray;
 //
 //      Cyrus Harrison, Thu Dec 15 14:43:47 PST 2022
 //      Added topo arg to FieldToVTK.
+// 
+//      Justin Privitera, Wed Mar 22 16:09:52 PDT 2023
+//      Added Curve1DToVTK to handle the 1d curve case.
 //
 // ****************************************************************************
 
