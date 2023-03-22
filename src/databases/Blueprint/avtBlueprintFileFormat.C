@@ -745,12 +745,15 @@ avtBlueprintFileFormat::AddBlueprintMeshAndFieldMetadata(avtDatabaseMetaData *md
         const Node &n_coordsets = n_mesh_info["coordsets"];
         const Node &n_coords = n_coordsets[coordset_name];
 
+        std::string coord_sys_type = n_coords["coord_system/type"].as_string();
+
         int ndims = n_coords["coord_system/axes"].number_of_children();
         topo_dims[topo_name] = ndims;
 
         BP_PLUGIN_INFO("coordinate system: "
-                       << n_coords["coord_system"].to_yaml()
-                       << " (ndims=" << ndims << ")");
+                        << n_coords["coord_system"].to_yaml()
+                        << " (type=" << coord_sys_type
+                        << " ndims=" << ndims << ")");
 
         avtMeshMetaData *mmd = new avtMeshMetaData(mesh_topo_name,
                                                    nblocks,
@@ -760,6 +763,17 @@ avtBlueprintFileFormat::AddBlueprintMeshAndFieldMetadata(avtDatabaseMetaData *md
         if(is_mfem_mesh)
         {
             mmd->containsOriginalCells = true;
+        }
+
+        if(coord_sys_type == "cylindrical")
+        {
+            mmd->meshCoordType = AVT_RZ;
+            mmd->xLabel = "Z-Axis";
+            mmd->yLabel = "R-Axis";
+        }
+        else
+        {
+            mmd->meshCoordType = AVT_XY;
         }
 
         mmd->LODs = 20;
