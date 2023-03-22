@@ -406,7 +406,7 @@ public:
     bool RemoveOperator(const int operatorIndex);
     void RemoveLastOperator();
     void RemoveAllOperators();
-     void SetOperatorAttsFromClient(const int type,
+    void SetOperatorAttsFromClient(const int type,
                                    const bool activePlot,
                                    const bool applyToAll);
     int  GetNOperators() const;
