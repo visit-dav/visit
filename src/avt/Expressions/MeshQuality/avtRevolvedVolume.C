@@ -142,14 +142,15 @@ avtRevolvedVolume::GetZoneVolume(vtkCell *cell)
 {
     int cellType = cell->GetCellType();
     if (cellType != VTK_TRIANGLE && cellType != VTK_QUAD && 
-        cellType != VTK_PIXEL && cellType != VTK_POLYGON)
+        cellType != VTK_PIXEL && cellType != VTK_POLYGON &&
+        cellType != VTK_LINE)
     {
         if (!haveIssuedWarning)
         {
            char msg[1024];
            sprintf(msg, "The revolved_volume expression supports meshes composed of"
-                        " only triangles, quads (including VTK_PIXEL), and polygons."
-                        " %d is an unsupported cell type.",
+                        " only triangles, quads (or \"pixels\"), and polygons or"
+                        " curves composed of lines. %d is an unsupported cell type.",
                          cellType);
            avtCallback::IssueWarning(msg);
         }
@@ -177,16 +178,39 @@ avtRevolvedVolume::GetZoneVolume(vtkCell *cell)
 
         rv = GetTriangleVolume(x, y);
     }
-    else if (cellType == VTK_QUAD)
+    else if (cellType == VTK_QUAD || cellType == VTK_PIXEL || cellType == VTK_LINE)
     {
+
         double p0[3];
         double p1[3];
         double p2[3];
         double p3[3];
         pts->GetPoint(0, p0);
         pts->GetPoint(1, p1);
-        pts->GetPoint(2, p2);
-        pts->GetPoint(3, p3);
+
+        // Bulk of code below written for VTK_QUAD. For PIXEL and LINE, we simply
+        // re-organize input points slightly.
+        if (cellType == VTK_QUAD)
+        {
+            pts->GetPoint(2, p2);
+            pts->GetPoint(3, p3);
+        }
+        else if (cellType == VTK_PIXEL)
+        {
+            // VTK_PIXEL's 2nd and 3rd points are reversed from VTK_QUAD
+            pts->GetPoint(3, p2);
+            pts->GetPoint(2, p3);
+        }
+        else // line case
+        {
+            // Just project first two points onto the axis of revolution.
+            p2 = p0;
+            p3 = p1;
+            if (revolveAboutX)
+                p2[0] = p3[0] = 0.0;
+            else
+                p2[1] = p3[1] = 0.0;
+        }
 
         double  x[3], y[3];
         double  volume1, volume2;
@@ -201,42 +225,6 @@ avtRevolvedVolume::GetZoneVolume(vtkCell *cell)
         y[1] = p1[1];
         x[2] = p2[0];
         y[2] = p2[1];
-        volume1 = GetTriangleVolume(x, y);
- 
-        x[0] = p0[0];
-        y[0] = p0[1];
-        x[1] = p3[0];
-        y[1] = p3[1];
-        x[2] = p2[0];
-        y[2] = p2[1];
-        volume2 = GetTriangleVolume(x, y);
-     
-        rv = (volume1 + volume2);
-    }
-    else if (cellType == VTK_PIXEL)
-    {
-        double p0[3];
-        double p1[3];
-        double p2[3];
-        double p3[3];
-        pts->GetPoint(0, p0);
-        pts->GetPoint(1, p1);
-        pts->GetPoint(2, p2);
-        pts->GetPoint(3, p3);
-
-        double  x[3], y[3];
-        double  volume1, volume2;
-     
-        //
-        // Split into two triangles (P0, P1, and P3), and (P0, P2, and P3) and
-        // find their volumes.
-        //
-        x[0] = p0[0];
-        y[0] = p0[1];
-        x[1] = p3[0];
-        y[1] = p3[1];
-        x[2] = p1[0];
-        y[2] = p1[1];
         volume1 = GetTriangleVolume(x, y);
  
         x[0] = p0[0];
