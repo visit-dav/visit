@@ -133,6 +133,8 @@ avtRevolvedVolume::DeriveVariable(vtkDataSet *in_ds, int currentDomainsIndex)
 //    Hank Childs, Thu Jul 24 13:07:06 PDT 2008
 //    Add support for polygons.
 //
+//    Mark C. Miller, Tue Mar 21 14:20:44 PDT 2023
+//    Ensure error message for unsupported types accurately reflects req'mts.
 // ****************************************************************************
  
 double
@@ -145,8 +147,9 @@ avtRevolvedVolume::GetZoneVolume(vtkCell *cell)
         if (!haveIssuedWarning)
         {
            char msg[1024];
-           sprintf(msg, "The revolved volume is only support for triangles and"
-                        " quadrilaterals.  %d is an invalid cell type.",
+           sprintf(msg, "The revolved_volume expression supports meshes composed of"
+                        " only triangles, quads (including VTK_PIXEL), and polygons."
+                        " %d is an unsupported cell type.",
                          cellType);
            avtCallback::IssueWarning(msg);
         }
@@ -577,7 +580,7 @@ avtRevolvedVolume::RevolveLineSegment(double x[2], double y[2], double *slope)
     x_intercept = -b / m;
  
     //
-    // We are now going to calculate the cone that contains are volume and
+    // We are now going to calculate the cone that contains our volume and
     // the tip of the cone that needs to be cropped off to give the volume.
     // Note that we have been very careful to construct right circular cones,
     // which have volume PI*r^2*h/3.
