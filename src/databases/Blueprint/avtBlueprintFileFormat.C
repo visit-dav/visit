@@ -225,7 +225,6 @@ avtBlueprintFileFormat::ReadBlueprintMesh(int domain,
 {
     BP_PLUGIN_INFO("ReadBlueprintMesh: " << abs_meshname
                     << " [domain " << domain << "]");
-
     string mesh_name;
     string topo_name;
     FetchMeshAndTopoNames(std::string(abs_meshname),
@@ -452,6 +451,9 @@ avtBlueprintFileFormat::ReadBlueprintMesh(int domain,
 //
 //    Cyrus Harrison, Wed Mar 11 10:42:22 PDT 2020
 //    Allow empty domains.
+// 
+//    Justin Privitera, Wed Mar 22 16:09:52 PDT 2023
+//    Handle the 1D curve case.
 //
 // ****************************************************************************
 
@@ -634,6 +636,9 @@ avtBlueprintFileFormat::ReadBlueprintMatset(int domain,
 //    Justin Privitera, Wed Oct 19 15:03:26 PDT 2022
 //    Added logic to determine nodal vs zonal association for mfem grid 
 //    functions.
+// 
+//    Justin Privitera, Wed Mar 22 16:09:52 PDT 2023
+//    Handle 1D curve case.
 //
 // ****************************************************************************
 void
@@ -1346,6 +1351,9 @@ avtBlueprintFileFormat::ReadRootIndexItems(const std::string &root_fname,
 //    Eric Brugger, Fri Feb 24 14:57:15 PST 2023
 //    Added a stop timer to a catch block to avoid the case of not calling
 //    stop timer when an exception occurs.
+// 
+//    Justin Privitera, Wed Mar 22 16:09:52 PDT 2023
+//    Bookkeeping for 1D curves.
 //
 // ****************************************************************************
 
@@ -1587,6 +1595,9 @@ avtBlueprintFileFormat::GetTime()
 // 
 //     Justin Privitera, Wed Aug 24 11:08:51 PDT 2022
 //     Encased in try-catch block.
+// 
+//    Justin Privitera, Wed Mar 22 16:09:52 PDT 2023
+//    Added support for 1D curves.
 //
 // ****************************************************************************
 vtkDataSet *

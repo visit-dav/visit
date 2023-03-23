@@ -77,6 +77,18 @@
 # 
 #    Justin Privitera, Wed Mar 15 17:51:13 PDT 2023
 #    Added tests for new spectra topo and fields.
+# 
+#    Justin Privitera, Wed Mar 22 16:09:52 PDT 2023
+#     - Added logic for setting up and tearing down blueprint output type 
+#    tests.
+#     - Added new query choices for blueprint output that can be passed down 
+#    into the various blueprint tests.
+#     - Created a new class for storing these query options and passing them 
+#    around.
+#     - Added a new function for making slices of plots to test specific 
+#    energy group bins.
+#     - More consistent query args for blueprint tests
+#     - Added slice tests for specific energy group bins.
 #
 # ----------------------------------------------------------------------------
 
