@@ -33,6 +33,7 @@
 #include <vtkRectilinearGrid.h>
 #include <vtkStructuredGrid.h>
 #include <vtkPolyData.h>
+#include <vtkVisItUtility.h>
 
 using namespace conduit;
 using namespace mfem;
@@ -1380,6 +1381,55 @@ avtConduitBlueprintDataAdaptor::BlueprintToVTK::FieldToVTK(
         res = ConduitArrayToVTKDataArray(field["values"]);
     }
     return res;
+}
+
+// ****************************************************************************
+vtkDataSet *
+avtConduitBlueprintDataAdaptor::BlueprintToVTK::Curve1DToVTK(
+        const conduit::Node &coords,
+        const conduit::Node &field)
+{
+    bool elem_assoc = field.has_child("association") && 
+        field["association"].as_string() == "element";
+
+    int num_field_vals = field["values"].dtype().number_of_elements();
+    if (elem_assoc)
+        num_field_vals *= 2;
+
+    vtkRectilinearGrid *rgrid = vtkVisItUtility::Create1DRGrid(num_field_vals, VTK_DOUBLE);
+    vtkDoubleArray *vals = vtkDoubleArray::New();
+    vals->SetNumberOfComponents(1);
+    vals->SetNumberOfTuples(num_field_vals);
+    vals->SetName("curve");
+    rgrid->GetPointData()->SetScalars(vals);
+
+    vtkDataArray *xs = rgrid->GetXCoordinates();
+
+    double_accessor x_vals = coords["values"][0].value();
+    double_accessor y_vals = field["values"].value();
+
+    if (elem_assoc)
+    {
+        for (vtkIdType i = 0; i < num_field_vals / 2; i ++)
+        {
+            xs->SetComponent(i * 2, 0, (double) x_vals[i]);
+            xs->SetComponent(i * 2 + 1, 0, (double) x_vals[i + 1]);
+            vals->SetComponent(i * 2, 0, (double) y_vals[i]);
+            vals->SetComponent(i * 2 + 1, 0, (double) y_vals[i]);
+        }
+    }
+    else
+    {
+        for (vtkIdType i = 0; i < num_field_vals; i ++)
+        {
+            xs->SetComponent(i, 0, (double) x_vals[i]);
+            vals->SetComponent(i, 0, (double) y_vals[i]);
+        }
+    }
+
+    vals->Delete();
+
+    return rgrid;
 }
 
 // ****************************************************************************

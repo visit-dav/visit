@@ -43,6 +43,7 @@ bp_devilray_mfem_test_dir = "blueprint_v0.8.3_devilray_mfem_test_data"
 bp_part_map_test_dir = "blueprint_v0.8.4_part_map_examples"
 bp_struct_strided_test_dir = "blueprint_v0.8.4_strided_structured_examples"
 bp_rz_test_dir = "blueprint_v0.8.6_rz_examples"
+bp_1d_curve_test_dir = "blueprint_v0.8.6_1d_curve_examples"
 
 braid_2d_hdf5_root = data_path(pjoin(bp_test_dir,"braid_2d_examples.blueprint_root_hdf5"))
 braid_3d_hdf5_root = data_path(pjoin(bp_test_dir,"braid_3d_examples.blueprint_root_hdf5"))
@@ -113,6 +114,7 @@ bp_rz_examples.append(data_path(pjoin(bp_rz_test_dir,"blueprint_rz_cyl_uniform.r
 bp_rz_examples.append(data_path(pjoin(bp_rz_test_dir,"blueprint_rz_cyl_structured.root")))
 bp_rz_examples.append(data_path(pjoin(bp_rz_test_dir,"blueprint_rz_cyl_unstructured.root")))
 
+bp_1d_curve_examples = [data_path(pjoin(bp_1d_curve_test_dir,"curves_1d.root"))]
 
 braid_2d_meshes = ["points", "uniform", "rect", "struct", "tris","quads"]
 braid_3d_meshes = ["points", "uniform", "rect", "struct", "tets","hexs"]
@@ -702,5 +704,17 @@ TestSection("Blueprint RZ Examples, 0.8.6")
 for db in bp_rz_examples:
     tag_name = os.path.basename(os.path.split(db)[1])
     test_rz_example(tag_name,db)
+
+TestSection("Blueprint 1D Curve Examples, 0.8.6")
+for db in bp_1d_curve_examples:
+    OpenDatabase(db)
+    AddPlot("Curve", "mesh_topo/field_v")
+    DrawPlots()
+    Test("blueprint_1d_curve_vertex_assoc")
+    DeleteAllPlots()
+    AddPlot("Curve", "mesh_topo/field_e")
+    DrawPlots()
+    Test("blueprint_1d_curve_element_assoc")
+    DeleteAllPlots()
 
 Exit()
