@@ -421,6 +421,7 @@ public:
     //
     void SetRange(const int i0, const int i1);
     void UpdateCacheSize(bool kfMode, bool clearActors, int newsize=-1);
+    void CheckCache(const int f0, const int f1, const bool force);
     bool IsInRange() const;
     avtActor_p &GetActor() const;
     avtDataObjectReader_p &GetReader() const;
@@ -519,7 +520,6 @@ protected:
     bool MoveOperator(const int operatorIndex, bool promote);
     void SetActor(const avtActor_p actor);
     void ClearActors(const int f0, const int f1);
-    void CheckCache(const int f0, const int f1, const bool force);
     void ResizeCache(int size);
 
     avtDataObjectReader_p GetDataObjectReader();
