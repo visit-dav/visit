@@ -18,7 +18,6 @@ set(AVTBLUEPRINT_SOURCES
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}
                     ${VISIT_COMMON_INCLUDES}
                     ${VISIT_SOURCE_DIR}/visit_vtk/full
-                    ${VISIT_SOURCE_DIR}/visit_vtk/lightweight
                     ${VTK_INCLUDE_DIRS}
                     ${CONDUIT_INCLUDE_DIR}
                     ${MFEM_INCLUDE_DIR}
