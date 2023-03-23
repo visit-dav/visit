@@ -30,6 +30,14 @@
 #include "UnexpectedValueException.h"
 
 //-----------------------------------------------------------------------------
+// vtk includes
+//-----------------------------------------------------------------------------
+#include <vtkDoubleArray.h>
+#include <vtkPointData.h>
+#include <vtkRectilinearGrid.h>
+#include <vtkVisItUtility.h>
+
+//-----------------------------------------------------------------------------
 // std lib includes
 //-----------------------------------------------------------------------------
 #include <string>
@@ -443,6 +451,9 @@ avtBlueprintFileFormat::ReadBlueprintMesh(int domain,
 //
 //    Cyrus Harrison, Wed Mar 11 10:42:22 PDT 2020
 //    Allow empty domains.
+// 
+//    Justin Privitera, Wed Mar 22 16:09:52 PDT 2023
+//    Handle the 1D curve case.
 //
 // ****************************************************************************
 
@@ -457,6 +468,13 @@ avtBlueprintFileFormat::ReadBlueprintField(int domain,
     // replace colons, etc
     abs_varname_str = sanitize_var_name(abs_varname_str);
     string abs_meshname = metadata->MeshForVar(abs_varname_str);
+
+    if (m_curve_names.find(abs_meshname) != m_curve_names.end())
+    {
+        // This means that abs_meshname is of the form:
+        // "mesh_name/field_name", so we need to separate it
+        abs_meshname = abs_meshname.substr(0, abs_meshname.find('/'));
+    }
 
     BP_PLUGIN_INFO("field " << abs_varname << " is defined on mesh " << abs_meshname);
 
@@ -618,6 +636,9 @@ avtBlueprintFileFormat::ReadBlueprintMatset(int domain,
 //    Justin Privitera, Wed Oct 19 15:03:26 PDT 2022
 //    Added logic to determine nodal vs zonal association for mfem grid 
 //    functions.
+// 
+//    Justin Privitera, Wed Mar 22 16:09:52 PDT 2023
+//    Handle 1D curve case.
 //
 // ****************************************************************************
 void
@@ -852,7 +873,15 @@ avtBlueprintFileFormat::AddBlueprintMeshAndFieldMetadata(avtDatabaseMetaData *md
                 }
             }
 
-            if (ncomps == 1)
+            // special 1D case
+            if (ndims == 1)
+            {
+                m_curve_names.insert(varname_wmesh);
+                avtCurveMetaData *curve = new avtCurveMetaData;
+                curve->name = varname_wmesh;
+                md->Add(curve);
+            }
+            else if (ncomps == 1)
                 md->Add(new avtScalarMetaData(varname_wmesh, var_mesh_name, cent));
             else if (ndims == 2 && ncomps == 2)
                 md->Add(new avtVectorMetaData(varname_wmesh, var_mesh_name, cent, ncomps));
@@ -1322,6 +1351,9 @@ avtBlueprintFileFormat::ReadRootIndexItems(const std::string &root_fname,
 //    Eric Brugger, Fri Feb 24 14:57:15 PST 2023
 //    Added a stop timer to a catch block to avoid the case of not calling
 //    stop timer when an exception occurs.
+// 
+//    Justin Privitera, Wed Mar 22 16:09:52 PDT 2023
+//    Bookkeeping for 1D curves.
 //
 // ****************************************************************************
 
@@ -1334,6 +1366,8 @@ avtBlueprintFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 
     // clear any mfem mesh mappings
     m_mfem_mesh_map.clear();
+    // clear any 1D curve names
+    m_curve_names.clear();
     // clear full mesh to bp mesh and topo name map
     m_mesh_and_topo_info.reset();
     // clear full matset to info map
@@ -1561,6 +1595,9 @@ avtBlueprintFileFormat::GetTime()
 // 
 //     Justin Privitera, Wed Aug 24 11:08:51 PDT 2022
 //     Encased in try-catch block.
+// 
+//    Justin Privitera, Wed Mar 22 16:09:52 PDT 2023
+//    Added support for 1D curves.
 //
 // ****************************************************************************
 vtkDataSet *
@@ -1574,6 +1611,16 @@ avtBlueprintFileFormat::GetMesh(int domain, const char *abs_meshname)
         // read mesh data into conduit tree
         Node data;
         string abs_meshname_str(abs_meshname);
+        string abs_1d_curve_field_name{""};
+
+        bool curve_1d = m_curve_names.find(abs_meshname_str) != m_curve_names.end();
+        if (curve_1d)
+        {
+            // This means that abs_meshname is of the form:
+            // "mesh_name/field_name", so we need to separate it
+            abs_meshname_str = abs_meshname_str.substr(0, abs_meshname_str.find('/'));
+            string abs_1d_curve_field_name = FileFunctions::Basename(abs_meshname);
+        }
 
         // reads a single mesh into a blueprint conforming output
         ReadBlueprintMesh(domain, abs_meshname_str, data);
@@ -1612,12 +1659,15 @@ avtBlueprintFileFormat::GetMesh(int domain, const char *abs_meshname)
         string mesh_name;
         string topo_name;
 
-        FetchMeshAndTopoNames(std::string(abs_meshname),
+        FetchMeshAndTopoNames(abs_meshname_str,
                               mesh_name,
                               topo_name);
 
         BP_PLUGIN_INFO("mesh name: " << mesh_name);
         BP_PLUGIN_INFO("topo name: " << topo_name);
+
+        conduit::Node &n_coords = data["coordsets"][0];
+        int ndims = n_coords["values"].number_of_children();
 
         // check for the mfem case
         if( m_mfem_mesh_map[topo_name] )
@@ -1632,6 +1682,14 @@ avtBlueprintFileFormat::GetMesh(int domain, const char *abs_meshname)
 
             // cleanup the mfem mesh
             delete mesh;
+        }
+        else if (ndims == 1)
+        {
+            BP_PLUGIN_INFO("mesh  " << topo_name << " is a 1D curve");
+
+            Node field_1d;
+            ReadBlueprintField(domain, abs_meshname, field_1d);
+            res = avtConduitBlueprintDataAdaptor::BlueprintToVTK::Curve1DToVTK(n_coords, field_1d);
         }
         else
         {

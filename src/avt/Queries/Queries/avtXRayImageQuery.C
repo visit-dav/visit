@@ -1135,6 +1135,10 @@ avtXRayImageQuery::GetSecondaryVars(std::vector<std::string> &outVars)
 //    Major refactor of blueprint output logic. Most calculations are pushed
 //    down into helpers.
 //
+//    Justin Privitera, Wed Mar 15 17:51:13 PDT 2023
+//    Have blueprint verify failures go to debug1 instead of to console.
+//    Consistent error messaging + cleaner error handling.
+// 
 // ****************************************************************************
 
 void
@@ -1144,7 +1148,7 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
     if (!outputTypeValid(outputType))
     {
         std::ostringstream err_oss;
-        err_oss << "Output type " << outputType << " is invalid.\n";
+        err_oss << "ERROR: Output type " << outputType << " is invalid.\n";
         SetResultMessage(err_oss.str());
         EXCEPTION1(VisItException, err_oss.str());
     }
@@ -1155,7 +1159,7 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
     if (!conduit::utils::is_directory(outputDir))
     {
         std::ostringstream err_oss;
-        err_oss << "Directory " << outputDir << " does not exist.\n";
+        err_oss << "ERROR: Directory " << outputDir << " does not exist.\n";
         SetResultMessage(err_oss.str());
         EXCEPTION1(VisItException, err_oss.str());
     }
@@ -1174,7 +1178,7 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
     //
     if (numPixels <= 0)
     {
-        SetResultMessage("VisIt is unable to execute this query because "
+        SetResultMessage("ERROR: VisIt is unable to execute this query because "
                          "the number of pixels specified is less than or "
                          "equal to zero.");
         return;
@@ -1191,7 +1195,7 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
         UnifyMinMax(extents, 6);
         if (extents[2] < 0.)
         {
-            SetResultMessage("VisIt is unable to execute this query "
+            SetResultMessage("ERROR: VisIt is unable to execute this query "
                              "because it has encountered an RZ mesh with "
                              "negative R values.");
             return;
@@ -1251,7 +1255,7 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
             delete [] leaves;
             delete filt;
 
-            SetResultMessage("There must be at least one bin.");
+            SetResultMessage("ERROR: There must be at least one bin.");
             EXCEPTION1(VisItException, "There must be at least one bin.");
         }
 
@@ -1466,8 +1470,9 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
             conduit::Node verify_info;
             if(!conduit::blueprint::mesh::verify(data_out, verify_info))
             {
-                verify_info.print();
-                SetResultMessage("Blueprint mesh verification failed!");
+                debug1 << "Blueprint Output failed to verify:\n"
+                       << verify_info.to_yaml();
+                SetResultMessage("ERROR: Blueprint mesh verification failed!");
                 EXCEPTION1(VisItException, "Blueprint mesh verification failed!");
             }
 
@@ -1493,7 +1498,7 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
             catch (conduit::Error &e)
             {
                 std::ostringstream err_oss;
-                err_oss <<  "Conduit Exception in X Ray Image Query "
+                err_oss <<  "ERROR: Conduit Exception in X Ray Image Query "
                             << "Execute: " << endl
                             << e.message();
                 SetResultMessage(err_oss.str());
@@ -1504,7 +1509,7 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
             char errmsg[256];
             // this is safe because at the beginning of the function we check that the output type is valid
             std::ostringstream err_oss;
-            err_oss << "Visit was not installed with conduit, "
+            err_oss << "ERROR: Visit was not installed with conduit, "
                         << "which is needed for output type "
                         << file_protocols[outputType]
                         << "." << std::endl;
@@ -1516,7 +1521,7 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
         {
             // this is safe because at the beginning of the function we check that the output type is valid
             std::ostringstream err_oss;
-            err_oss << "No logic implemented for output type "
+            err_oss << "ERROR: No logic implemented for output type "
                         << file_protocols[outputType]
                         << "." << std::endl;
             SetResultMessage(err_oss.str());
@@ -1527,71 +1532,66 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
         //
         // Output the result message.
         //
-        if (outputTypeValid(outputType))
-        {
-            std::string msg = "";
-            std::stringstream buf;
 
-            if (outputTypeIsBmpJpegPngOrTif(outputType))
-            {
-                if (outputType == BMP_OUT)
-                    buf << "WARNING: The X Ray Image Query results may not be "
-                        << "written when using the bmp output type. Use at "
-                        << "your own risk. The bmp output type will be "
-                        << "removed in VisIt 3.4.\n";
-                if (numBins == 1)
-                    buf << "The x ray image query results were "
-                        << "written to the file "
-                        << out_filename_w_path << "00."
-                        << file_extensions[outputType] << "\n";
-                else
-                    buf << "The x ray image query results were "
-                        << "written to the files "
-                        << out_filename_w_path << "00."
-                        << file_extensions[outputType]
-                        << " - " << out_filename_w_path
-                        << std::setfill('0') << std::setw(2)
-                        << numBins - 1 << "."
-                        << file_extensions[outputType] << "\n";
-            }
-            else if (outputTypeIsRawfloatsOrBov(outputType))
+        // the output type is valid; we verified at the beginning of the function
+
+        std::string msg = "";
+        std::stringstream buf;
+
+        if (outputTypeIsBmpJpegPngOrTif(outputType))
+        {
+            if (outputType == BMP_OUT)
+                buf << "WARNING: The X Ray Image Query results may not be "
+                    << "written when using the bmp output type. Use at "
+                    << "your own risk. The bmp output type will be "
+                    << "removed in VisIt 3.4.\n";
+            if (numBins == 1)
+                buf << "The x ray image query results were "
+                    << "written to the file "
+                    << out_filename_w_path << "00."
+                    << file_extensions[outputType] << "\n";
+            else
                 buf << "The x ray image query results were "
                     << "written to the files "
                     << out_filename_w_path << "00."
                     << file_extensions[outputType]
                     << " - " << out_filename_w_path
                     << std::setfill('0') << std::setw(2)
-                    << 2*numBins - 1 << "."
+                    << numBins - 1 << "."
                     << file_extensions[outputType] << "\n";
-            else if (outputTypeIsBlueprint(outputType))
-            {
-#ifdef HAVE_CONDUIT
-                buf << "The x ray image query results were "
-                    << "written to the file "
-                    << out_filename_w_path << "."
-                    << file_extensions[outputType] << "\n";
-#endif
-            }
-            else
-            {
-                // this is safe because at the beginning of the function we check that the output type is valid
-                std::ostringstream err_oss;
-                err_oss << "No output message implemented for output type "
-                            << file_protocols[outputType] << "." << std::endl;
-                SetResultMessage(err_oss.str());
-                EXCEPTION1(VisItException, err_oss.str());
-
-            }
-
-            msg += buf.str();
-
-            SetResultMessage(msg);
         }
+        else if (outputTypeIsRawfloatsOrBov(outputType))
+            buf << "The x ray image query results were "
+                << "written to the files "
+                << out_filename_w_path << "00."
+                << file_extensions[outputType]
+                << " - " << out_filename_w_path
+                << std::setfill('0') << std::setw(2)
+                << 2*numBins - 1 << "."
+                << file_extensions[outputType] << "\n";
+#ifdef HAVE_CONDUIT
+        else if (outputTypeIsBlueprint(outputType))
+        {
+            buf << "The x ray image query results were "
+                << "written to the file "
+                << out_filename_w_path << "."
+                << file_extensions[outputType] << "\n";
+        }
+#endif
         else
         {
-            SetResultMessage("No x ray image query results were written "
-                             "because the output type was invalid.\n");
+            // this is safe because at the beginning of the function we check that the output type is valid
+            std::ostringstream err_oss;
+            err_oss << "ERROR: No output message implemented for output type "
+                        << file_protocols[outputType] << "." << std::endl;
+            SetResultMessage(err_oss.str());
+            EXCEPTION1(VisItException, err_oss.str());
+
         }
+
+        msg += buf.str();
+
+        SetResultMessage(msg);
 
         // Free the memory from the GetAllLeaves function call.
         delete [] leaves;
@@ -1621,6 +1621,9 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
 // 
 //    Justin Privitera, Wed Jul 20 13:54:06 PDT 2022
 //    Use ostringstreams for error messages.
+// 
+//    Justin Privitera, Thu Mar 16 14:47:46 PDT 2023
+//    Consistent error messaging.
 //
 // ****************************************************************************
 void
@@ -1682,18 +1685,18 @@ avtXRayImageQuery::CheckData(vtkDataSet **dataSets,  const int nsets)
         {
             if(isArgException)
             {
-                SetResultMessage(isAbs ? absVarName : emisVarName);
+                SetResultMessage("ERROR: " + (isAbs ? absVarName : emisVarName));
                 EXCEPTION1(QueryArgumentException, isAbs ? absVarName.c_str() : emisVarName.c_str());
             }
             else
             {
-                SetResultMessage(msg.str());
+                SetResultMessage("ERROR: " + msg.str());
                 EXCEPTION1(ImproperUseException, msg.str());
             }
         }
         else
         {
-            SetResultMessage("Exception encountered on another node");
+            SetResultMessage("ERROR: Exception encountered on another node");
             EXCEPTION1(VisItException, "Exception encountered on another node");
         }
     }
@@ -1702,7 +1705,7 @@ avtXRayImageQuery::CheckData(vtkDataSet **dataSets,  const int nsets)
     int maxNsets = UnifyMaximumValue(nsets);
     if(maxNsets <= 0)
     {
-        msg << "Variables " << absVarName << " and " << emisVarName 
+        msg << "ERROR: Variables " << absVarName << " and " << emisVarName 
             << " resulted in no data being selected.\n";
         SetResultMessage(msg.str());
         EXCEPTION1(VisItException, msg.str());
@@ -2422,11 +2425,15 @@ avtXRayImageQuery::WriteBlueprintMetadata(conduit::Node &data_out,
 // 
 //    Justin Privitera, Fri Mar 10 19:06:49 PST 2023
 //    Added spatial energy reduced coordset.
+// 
+//    Justin Privitera, Wed Mar 15 17:51:13 PDT 2023
+//    Leverage conduit's features to make the code more legible.
+//    Added spectra coordset.
 //
 // ****************************************************************************
 #ifdef HAVE_CONDUIT
 void
-avtXRayImageQuery::WriteBlueprintMeshCoordsets(conduit::Node &data_out,
+avtXRayImageQuery::WriteBlueprintMeshCoordsets(conduit::Node &coordsets,
                                                const int x_coords_dim,
                                                const int y_coords_dim,
                                                const int z_coords_dim,
@@ -2434,26 +2441,27 @@ avtXRayImageQuery::WriteBlueprintMeshCoordsets(conduit::Node &data_out,
                                                const double detectorHeight)
 {
     // set up coords
-    data_out["coordsets/image_coords/type"] = "rectilinear";
-    data_out["coordsets/image_coords/values/x"].set(conduit::DataType::int32(x_coords_dim));
-    int *xvals = data_out["coordsets/image_coords/values/x"].value();
+    conduit::Node &image_coords = coordsets["image_coords"];
+    image_coords["type"] = "rectilinear";
+    image_coords["values/x"].set(conduit::DataType::int32(x_coords_dim));
+    int *xvals = image_coords["values/x"].value();
     for (int i = 0; i < x_coords_dim; i ++) { xvals[i] = i; }
 
-    data_out["coordsets/image_coords/values/y"].set(conduit::DataType::int32(y_coords_dim));
-    int *yvals = data_out["coordsets/image_coords/values/y"].value();
+    image_coords["values/y"].set(conduit::DataType::int32(y_coords_dim));
+    int *yvals = image_coords["values/y"].value();
     for (int i = 0; i < y_coords_dim; i ++) { yvals[i] = i; }
 
-    data_out["coordsets/image_coords/values/z"].set(conduit::DataType::int32(z_coords_dim));
-    int *zvals = data_out["coordsets/image_coords/values/z"].value();
+    image_coords["values/z"].set(conduit::DataType::int32(z_coords_dim));
+    int *zvals = image_coords["values/z"].value();
     for (int i = 0; i < z_coords_dim; i ++) { zvals[i] = i; }
 
-    data_out["coordsets/image_coords/labels/x"] = "width";
-    data_out["coordsets/image_coords/labels/y"] = "height";
-    data_out["coordsets/image_coords/labels/z"] = "energy_group";
+    image_coords["labels/x"] = "width";
+    image_coords["labels/y"] = "height";
+    image_coords["labels/z"] = "energy_group";
 
-    data_out["coordsets/image_coords/units/x"] = "pixels";
-    data_out["coordsets/image_coords/units/y"] = "pixels";
-    data_out["coordsets/image_coords/units/z"] = "bins";
+    image_coords["units/x"] = "pixels";
+    image_coords["units/y"] = "pixels";
+    image_coords["units/z"] = "bins";
 
     // calculate spatial extent coords
     // (the physical extents of the image projected on the near plane)
@@ -2462,13 +2470,14 @@ avtXRayImageQuery::WriteBlueprintMeshCoordsets(conduit::Node &data_out,
     const double nearDy{detectorHeight / imageSize[1]};
 
     // set up spatial extents coords
-    data_out["coordsets/spatial_coords/type"] = "rectilinear";
-    data_out["coordsets/spatial_coords/values/x"].set(conduit::DataType::float64(x_coords_dim));
-    double *spatial_xvals = data_out["coordsets/spatial_coords/values/x"].value();
+    conduit::Node &spatial_coords = coordsets["spatial_coords"];
+    spatial_coords["type"] = "rectilinear";
+    spatial_coords["values/x"].set(conduit::DataType::float64(x_coords_dim));
+    double *spatial_xvals = spatial_coords["values/x"].value();
     for (int i = 0; i < x_coords_dim; i ++) { spatial_xvals[i] = i * nearDx; }
 
-    data_out["coordsets/spatial_coords/values/y"].set(conduit::DataType::float64(y_coords_dim));
-    double *spatial_yvals = data_out["coordsets/spatial_coords/values/y"].value();
+    spatial_coords["values/y"].set(conduit::DataType::float64(y_coords_dim));
+    double *spatial_yvals = spatial_coords["values/y"].value();
     for (int i = 0; i < y_coords_dim; i ++) { spatial_yvals[i] = i * nearDy; }
 
     // include energy group bins in blueprint output if they are provided
@@ -2476,8 +2485,8 @@ avtXRayImageQuery::WriteBlueprintMeshCoordsets(conduit::Node &data_out,
     {
         if (z_coords_dim == nEnergyGroupBounds) // only pass them thru if it makes sense to do so
         {
-            data_out["coordsets/spatial_coords/values/z"].set(conduit::DataType::float64(nEnergyGroupBounds));
-            double *spatial_zvals = data_out["coordsets/spatial_coords/values/z"].value();
+            spatial_coords["values/z"].set(conduit::DataType::float64(nEnergyGroupBounds));
+            double *spatial_zvals = spatial_coords["values/z"].value();
             for (int i = 0; i < nEnergyGroupBounds; i ++) { spatial_zvals[i] = energyGroupBounds[i]; }                    
         }
         else
@@ -2486,39 +2495,49 @@ avtXRayImageQuery::WriteBlueprintMeshCoordsets(conduit::Node &data_out,
             out << "Energy group bounds size mismatch: provided " 
                 << nEnergyGroupBounds << " bounds, but " 
                 << z_coords_dim << " in query results.";
-            data_out["coordsets/spatial_coords/info"] = out.str();
-            data_out["coordsets/spatial_coords/values/z"].set(conduit::DataType::float64(z_coords_dim));
-            double *zvals = data_out["coordsets/spatial_coords/values/z"].value();
+            spatial_coords["info"] = out.str();
+            spatial_coords["values/z"].set(conduit::DataType::float64(z_coords_dim));
+            double *zvals = spatial_coords["values/z"].value();
             for (int i = 0; i < z_coords_dim; i ++) { zvals[i] = i; }
         }
     }
     else
     {
-        data_out["coordsets/spatial_coords/info"] = "Energy group bounds not provided.";
-        data_out["coordsets/spatial_coords/values/z"].set(conduit::DataType::float64(z_coords_dim));
-        double *zvals = data_out["coordsets/spatial_coords/values/z"].value();
+        spatial_coords["info"] = "Energy group bounds not provided.";
+        spatial_coords["values/z"].set(conduit::DataType::float64(z_coords_dim));
+        double *zvals = spatial_coords["values/z"].value();
         for (int i = 0; i < z_coords_dim; i ++) { zvals[i] = i; }
     }
 
-    data_out["coordsets/spatial_coords/units/x"] = spatialUnits;
-    data_out["coordsets/spatial_coords/units/y"] = spatialUnits;
-    data_out["coordsets/spatial_coords/units/z"] = energyUnits;
+    spatial_coords["units/x"] = spatialUnits;
+    spatial_coords["units/y"] = spatialUnits;
+    spatial_coords["units/z"] = energyUnits;
 
-    data_out["coordsets/spatial_coords/labels/x"] = "width";
-    data_out["coordsets/spatial_coords/labels/y"] = "height";
-    data_out["coordsets/spatial_coords/labels/z"] = "energy_group";
+    spatial_coords["labels/x"] = "width";
+    spatial_coords["labels/y"] = "height";
+    spatial_coords["labels/z"] = "energy_group";
 
     // set up spatial energy reduced coords
-    data_out["coordsets/spatial_energy_reduced_coords/type"] = "rectilinear";
+    conduit::Node &spatial_energy_reduced_coords = coordsets["spatial_energy_reduced_coords"];
+    spatial_energy_reduced_coords["type"] = "rectilinear";
     // copy over the x and y coords from the spatial_coords
-    data_out["coordsets/spatial_energy_reduced_coords/values/x"].set(data_out["coordsets/spatial_coords/values/x"]);
-    data_out["coordsets/spatial_energy_reduced_coords/values/y"].set(data_out["coordsets/spatial_coords/values/y"]);
+    spatial_energy_reduced_coords["values/x"].set(spatial_coords["values/x"]);
+    spatial_energy_reduced_coords["values/y"].set(spatial_coords["values/y"]);
 
-    data_out["coordsets/spatial_energy_reduced_coords/units/x"].set(data_out["coordsets/spatial_coords/units/x"]);
-    data_out["coordsets/spatial_energy_reduced_coords/units/y"].set(data_out["coordsets/spatial_coords/units/y"]);
+    spatial_energy_reduced_coords["units/x"].set(spatial_coords["units/x"]);
+    spatial_energy_reduced_coords["units/y"].set(spatial_coords["units/y"]);
 
-    data_out["coordsets/spatial_energy_reduced_coords/labels/x"].set(data_out["coordsets/spatial_coords/labels/x"]);
-    data_out["coordsets/spatial_energy_reduced_coords/labels/y"].set(data_out["coordsets/spatial_coords/labels/y"]);
+    spatial_energy_reduced_coords["labels/x"].set(spatial_coords["labels/x"]);
+    spatial_energy_reduced_coords["labels/y"].set(spatial_coords["labels/y"]);
+
+    // set up spectra coords
+    conduit::Node &spectra_coords = coordsets["spectra_coords"];
+    spectra_coords["type"] = "rectilinear";
+    spectra_coords["values/x"].set(spatial_coords["values/z"]);
+    spectra_coords["units/x"].set(spatial_coords["units/z"]);
+    spectra_coords["labels/x"].set(spatial_coords["labels/z"]);
+    if (spatial_coords.has_child("info"))
+        spectra_coords["info"].set(spatial_coords["info"]);
 }
 #endif
 
@@ -2535,23 +2554,31 @@ avtXRayImageQuery::WriteBlueprintMeshCoordsets(conduit::Node &data_out,
 //  Modifications:
 //    Justin Privitera, Fri Mar 10 19:06:49 PST 2023
 //    Added spatial energy reduced topo.
+// 
+//    Justin Privitera, Wed Mar 15 17:51:13 PDT 2023
+//    Leverage conduit's features to make the code more legible.
+//    Added spectra topo.
 //
 // ****************************************************************************
 #ifdef HAVE_CONDUIT
 void
-avtXRayImageQuery::WriteBlueprintMeshTopologies(conduit::Node &data_out)
+avtXRayImageQuery::WriteBlueprintMeshTopologies(conduit::Node &topologies)
 {
     // set up image topology
-    data_out["topologies/image_topo/coordset"] = "image_coords";
-    data_out["topologies/image_topo/type"] = "rectilinear";
+    topologies["image_topo/coordset"] = "image_coords";
+    topologies["image_topo/type"] = "rectilinear";
 
     // set up spatial extents topology
-    data_out["topologies/spatial_topo/coordset"] = "spatial_coords";
-    data_out["topologies/spatial_topo/type"] = "rectilinear";
+    topologies["spatial_topo/coordset"] = "spatial_coords";
+    topologies["spatial_topo/type"] = "rectilinear";
 
     // set up spatial energy reduced topology
-    data_out["topologies/spatial_energy_reduced_topo/coordset"] = "spatial_energy_reduced_coords";
-    data_out["topologies/spatial_energy_reduced_topo/type"] = "rectilinear";
+    topologies["spatial_energy_reduced_topo/coordset"] = "spatial_energy_reduced_coords";
+    topologies["spatial_energy_reduced_topo/type"] = "rectilinear";
+
+    // set up spectra topology
+    topologies["spectra_topo/coordset"] = "spectra_coords";
+    topologies["spectra_topo/type"] = "rectilinear";
 }
 #endif
 
@@ -2568,32 +2595,43 @@ avtXRayImageQuery::WriteBlueprintMeshTopologies(conduit::Node &data_out)
 //  Modifications:
 //    Justin Privitera, Fri Mar 10 19:06:49 PST 2023
 //    Added spatial energy reduced fields and calculations for them.
+// 
+//    Justin Privitera, Wed Mar 15 17:51:13 PDT 2023
+//    Leverage conduit's features to make the code more legible.
+//    Added spectra fields and calculations for them.
+//    Consistent error messaging.
 //
 // ****************************************************************************
 #ifdef HAVE_CONDUIT
 void
-avtXRayImageQuery::WriteBlueprintMeshFields(conduit::Node &data_out, 
+avtXRayImageQuery::WriteBlueprintMeshFields(conduit::Node &fields, 
                                             const int numfieldvals,
                                             const int numBins,
                                             vtkDataSet **leaves,
                                             conduit::float64 *&intensity_vals,
                                             conduit::float64 *&depth_vals)
 {
+    // 
+    // set up fields for image topo
+    // 
+
     // intensities for image topo
-    data_out["fields/intensities/topology"] = "image_topo";
-    data_out["fields/intensities/association"] = "element";
-    data_out["fields/intensities/units"] = intensityUnits;
+    conduit::Node &intensities = fields["intensities"];
+    intensities["topology"] = "image_topo";
+    intensities["association"] = "element";
+    intensities["units"] = intensityUnits;
     // set to float64 regardless of vtk data types
-    data_out["fields/intensities/values"].set(conduit::DataType::float64(numfieldvals));
-    intensity_vals = data_out["fields/intensities/values"].value();
+    intensities["values"].set(conduit::DataType::float64(numfieldvals));
+    intensity_vals = intensities["values"].value();
 
     // path length for image topo
-    data_out["fields/path_length/topology"] = "image_topo";
-    data_out["fields/path_length/association"] = "element";
-    data_out["fields/path_length/units"] = pathLengthUnits;
+    conduit::Node &path_length = fields["path_length"];
+    path_length["topology"] = "image_topo";
+    path_length["association"] = "element";
+    path_length["units"] = pathLengthUnits;
     // set to float64 regardless of vtk data types
-    data_out["fields/path_length/values"].set(conduit::DataType::float64(numfieldvals));
-    depth_vals = data_out["fields/path_length/values"].value();
+    path_length["values"].set(conduit::DataType::float64(numfieldvals));
+    depth_vals = path_length["values"].value();
 
     // write actual field values
     const int datatype{leaves[0]->GetPointData()->GetArray("Intensity")->GetDataType()};
@@ -2606,45 +2644,56 @@ avtXRayImageQuery::WriteBlueprintMeshFields(conduit::Node &data_out,
     else
     {
         std::ostringstream err_oss;
-        err_oss << "VTKDataType " << datatype << " is not supported.\n";
+        err_oss << "ERROR: VTKDataType " << datatype << " is not supported.\n";
         SetResultMessage(err_oss.str());
         EXCEPTION1(VisItException, err_oss.str());
     }
 
     // set strides for image topo fields
-    data_out["fields/intensities/strides"].set(conduit::DataType::int64(3));
-    conduit::int64 *stride_ptr = data_out["fields/intensities/strides"].value();
+    intensities["strides"].set(conduit::DataType::int64(3));
+    conduit::int64 *stride_ptr = intensities["strides"].value();
     stride_ptr[0] = 1;
     stride_ptr[1] = nx;
     stride_ptr[2] = nx * ny;
-    data_out["fields/path_length/strides"].set(data_out["fields/intensities/strides"]);
+    path_length["strides"].set(intensities["strides"]);
 
-    // intensities for spatial topo
-    // simply copy over the existing intensities data
-    data_out["fields/intensities_spatial"].set(data_out["fields/intensities/"]);
-    // then modify the topo
-    data_out["fields/intensities_spatial/topology"] = "spatial_topo";
+    // 
+    // set up fields for spatial topo
+    // 
 
-    // path length for spatial topo
-    // simply copy over the existing path length data
-    data_out["fields/path_length_spatial"].set(data_out["fields/path_length/"]);
-    // then modify the topo
-    data_out["fields/path_length_spatial/topology"] = "spatial_topo";
-
-    // set up spatial energy reduced fields
     // intensities
-    data_out["fields/intensities_spatial_energy_reduced/topology"] = "spatial_energy_reduced_topo";
-    data_out["fields/intensities_spatial_energy_reduced/association"] = "element";
+    conduit::Node &intensities_spatial = fields["intensities_spatial"];
+    // simply copy over the existing intensities data
+    intensities_spatial.set(intensities);
+    // then modify the topo
+    intensities_spatial["topology"] = "spatial_topo";
+
+    // path length
+    conduit::Node &path_length_spatial = fields["path_length_spatial"];
+    // simply copy over the existing path length data
+    path_length_spatial.set(path_length);
+    // then modify the topo
+    path_length_spatial["topology"] = "spatial_topo";
+
+    // 
+    // set up fields for spatial energy reduced topo
+    // 
+
+    // intensities
+    conduit::Node &intensities_spatial_energy_reduced = fields["intensities_spatial_energy_reduced"];
+    intensities_spatial_energy_reduced["topology"] = "spatial_energy_reduced_topo";
+    intensities_spatial_energy_reduced["association"] = "element";
     // set to float64 regardless of vtk data types
-    data_out["fields/intensities_spatial_energy_reduced/values"].set(conduit::DataType::float64(nx * ny));
-    conduit::float64 *ser_intensity_vals = data_out["fields/intensities_spatial_energy_reduced/values"].value();
+    intensities_spatial_energy_reduced["values"].set(conduit::DataType::float64(nx * ny));
+    conduit::float64 *ser_intensity_vals = intensities_spatial_energy_reduced["values"].value();
 
     // path_length
-    data_out["fields/path_length_spatial_energy_reduced/topology"] = "spatial_energy_reduced_topo";
-    data_out["fields/path_length_spatial_energy_reduced/association"] = "element";
+    conduit::Node &path_length_spatial_energy_reduced = fields["path_length_spatial_energy_reduced"];
+    path_length_spatial_energy_reduced["topology"] = "spatial_energy_reduced_topo";
+    path_length_spatial_energy_reduced["association"] = "element";
     // set to float64 regardless of vtk data types
-    data_out["fields/path_length_spatial_energy_reduced/values"].set(conduit::DataType::float64(nx * ny));
-    conduit::float64 *ser_depth_vals = data_out["fields/path_length_spatial_energy_reduced/values"].value();
+    path_length_spatial_energy_reduced["values"].set(conduit::DataType::float64(nx * ny));
+    conduit::float64 *ser_depth_vals = path_length_spatial_energy_reduced["values"].value();
 
     // sum reduction
     // nx is the number of x ELEMENTS, same for ny
@@ -2672,11 +2721,57 @@ avtXRayImageQuery::WriteBlueprintMeshFields(conduit::Node &data_out,
     }
 
     // set strides for spatial energy reduced fields
-    data_out["fields/intensities_spatial_energy_reduced/strides"].set(conduit::DataType::int64(3));
-    conduit::int64 *ser_stride_ptr = data_out["fields/intensities_spatial_energy_reduced/strides"].value();
+    intensities_spatial_energy_reduced["strides"].set(conduit::DataType::int64(3));
+    conduit::int64 *ser_stride_ptr = intensities_spatial_energy_reduced["strides"].value();
     ser_stride_ptr[0] = 1;
     ser_stride_ptr[1] = nx;
-    data_out["fields/path_length_spatial_energy_reduced/strides"].set(data_out["fields/intensities_spatial_energy_reduced/strides"]);
+    path_length_spatial_energy_reduced["strides"].set(intensities_spatial_energy_reduced["strides"]);
+
+    // 
+    // set up fields for spectra topo
+    // 
+
+    // intensities
+    conduit::Node &intensities_spectra = fields["intensities_spectra"];
+    intensities_spectra["topology"] = "spectra_topo";
+    intensities_spectra["association"] = "element";
+    // set to float64 regardless of vtk data types
+    intensities_spectra["values"].set(conduit::DataType::float64(numBins));
+    conduit::float64 *spec_intensity_vals = intensities_spectra["values"].value();
+
+    // path_length
+    conduit::Node &path_length_spectra = fields["path_length_spectra"];
+    path_length_spectra["topology"] = "spectra_topo";
+    path_length_spectra["association"] = "element";
+    // set to float64 regardless of vtk data types
+    path_length_spectra["values"].set(conduit::DataType::float64(numBins));
+    conduit::float64 *spec_depth_vals = path_length_spectra["values"].value();
+
+    // calculate pixel area from the coordset
+    const conduit::Node &spatial_coords = (*(fields.parent()))["coordsets/spatial_coords"];
+    const double *spatial_xvals = spatial_coords["values/x"].value();
+    const double *spatial_yvals = spatial_coords["values/y"].value();
+    // we take the 1st element because it is 1 pixel width (or height) from the origin
+    const double spatial_pixel_area = spatial_xvals[1] * spatial_yvals[1];
+
+    // sum reduction
+    for (int k = 0; k < numBins; k ++)
+    {
+        double int_sum, pl_sum;
+        int_sum = pl_sum = 0;
+        for (int i = 0; i < nx; i ++)
+        {
+            for (int j = 0; j < ny; j ++)
+            {
+                double intensity_val = intensity_vals[i + j * nx + k * nx * ny];
+                double path_length_val = depth_vals[i + j * nx + k * nx * ny];
+                int_sum += intensity_val * spatial_pixel_area;
+                pl_sum += path_length_val * spatial_pixel_area;
+            }
+        }
+        spec_intensity_vals[k] = int_sum;
+        spec_depth_vals[k] = pl_sum;
+    }
 }
 #endif
 
@@ -2692,6 +2787,9 @@ avtXRayImageQuery::WriteBlueprintMeshFields(conduit::Node &data_out,
 //  Creation:   December 09, 2022
 // 
 //  Modifications:
+//    Justin Privitera, Wed Mar 15 17:51:13 PDT 2023
+//    Now send the smaller pieces of the conduit node to each writer function
+//    instead of the whole thing.
 //
 // ****************************************************************************
 #ifdef HAVE_CONDUIT
@@ -2713,13 +2811,13 @@ avtXRayImageQuery::WriteBlueprintMeshes(conduit::Node &data_out,
     numfieldvals = (x_coords_dim - 1) * (y_coords_dim - 1) * (z_coords_dim - 1);
 
     // We write one coordset for the image and one for the spatial extents
-    WriteBlueprintMeshCoordsets(data_out, 
+    WriteBlueprintMeshCoordsets(data_out["coordsets"], 
         x_coords_dim, y_coords_dim, z_coords_dim,
         detectorWidth, detectorHeight);
     
     // Then we duplicate the topologies and fields for both coordsets
-    WriteBlueprintMeshTopologies(data_out);    
-    WriteBlueprintMeshFields(data_out, numfieldvals, numBins, 
+    WriteBlueprintMeshTopologies(data_out["topologies"]);    
+    WriteBlueprintMeshFields(data_out["fields"], numfieldvals, numBins, 
         leaves, intensity_vals, depth_vals);
 }
 #endif

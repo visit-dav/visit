@@ -109,6 +109,9 @@
 //     - Added a host of new blueprint-output-specific functions to simplify
 //    the blueprint output logic.
 //     - Deleted all the inline vector math functions.
+// 
+//    Justin Privitera, Wed Mar 15 17:51:13 PDT 2023
+//    Changed names of some of the arguments to blueprint-related functions.
 //
 // ****************************************************************************
 
@@ -226,14 +229,14 @@ class QUERY_API avtXRayImageQuery : public avtDatasetQuery
                                                          avtVector &lrc,
                                                          avtVector &ulc,
                                                          avtVector &urc);
-    void                      WriteBlueprintMeshCoordsets(conduit::Node &data_out,
+    void                      WriteBlueprintMeshCoordsets(conduit::Node &coordsets,
                                                           const int x_coords_dim,
                                                           const int y_coords_dim,
                                                           const int z_coords_dim,
                                                           const double detectorWidth, 
                                                           const double detectorHeight);
-    void                      WriteBlueprintMeshTopologies(conduit::Node &data_out);
-    void                      WriteBlueprintMeshFields(conduit::Node &data_out, 
+    void                      WriteBlueprintMeshTopologies(conduit::Node &topologies);
+    void                      WriteBlueprintMeshFields(conduit::Node &fields, 
                                                        const int numfieldvals,
                                                        const int numBins,
                                                        vtkDataSet **leaves,
