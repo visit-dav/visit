@@ -1624,7 +1624,6 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
         //
         // Output the result message.
         //
-<<<<<<< HEAD
 
         // the output type is valid; we verified at the beginning of the function
         std::stringstream buf;
