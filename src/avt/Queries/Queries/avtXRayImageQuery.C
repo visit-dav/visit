@@ -1652,7 +1652,7 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
                 << file_extensions[outputType]
                 << " - " << out_filename_w_path << "."
                 << std::setfill('0') << std::setw(2)
-                << numBins - 1 << "."
+                << 2 * numBins - 1 << "."
                 << file_extensions[outputType] << "\n";
 #ifdef HAVE_CONDUIT
         else if (outputTypeIsBlueprint(outputType))
