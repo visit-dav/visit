@@ -328,7 +328,7 @@ def test_mfem_lor_mesh(tag_name, example_name, protocol, devilray = False, numbe
     SetPlotOptions(SubsetAtts)
     set_test_view(tag_name)
     DrawPlots()
-    Test(tag_name + "_" +  example_name + "_" + protocol + "_legacy_lor")
+    Test(tag_name + "_" +  example_name + ("_" + protocol if not devilray else "") + "_legacy_lor")
     DeleteAllPlots()
     ResetView()
     CloseDatabase(dbfile)
