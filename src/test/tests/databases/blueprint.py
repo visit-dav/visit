@@ -163,18 +163,18 @@ def devilray_mfem_test_file(name, number):
 def set_3d_view():
     v = View3DAttributes()
     v.viewNormal = (-0.510614, 0.302695, 0.804767)
-    v.focus = (0, 0, 0)
+    v.focus = (0.5, 0.5, 0.5)
     v.viewUp = (-0.0150532, 0.932691, -0.360361)
     v.viewAngle = 30
-    v.parallelScale = 17.3205
-    v.nearPlane = -34.641
-    v.farPlane = 34.641
+    v.parallelScale = 0.866025
+    v.nearPlane = -1.73205
+    v.farPlane = 1.73205
     v.imagePan = (0, 0)
     v.imageZoom = 1
     v.perspective = 1
     v.eyeAngle = 2
     v.centerOfRotationSet = 0
-    v.centerOfRotation = (0, 0, 0)
+    v.centerOfRotation = (0.5, 0.5, 0.5)
     v.axis3DScaleFlag = 0
     v.axis3DScales = (1, 1, 1)
     v.shear = (0, 0, 1)
@@ -308,7 +308,7 @@ def test_mfem_lor_mesh(tag_name, example_name, protocol, devilray = False, numbe
     SetPlotOptions(SubsetAtts)
     set_test_view(tag_name)
     DrawPlots()
-    Test(tag_name + "_" +  example_name + "_" + protocol + "_lor")
+    Test(tag_name + "_" +  example_name + ("_" + protocol if not devilray else "") + "_lor")
     DeleteAllPlots()
     ResetView()
     CloseDatabase(dbfile)
@@ -365,8 +365,8 @@ def test_mfem_lor_field(tag_name, name, number, pseudocolor_fields, vector_field
         MultiresControlAtts = MultiresControlAttributes()
         MultiresControlAtts.resolution = 3
         SetOperatorOptions(MultiresControlAtts, 0, 1)
-        DrawPlots()
         set_test_view(tag_name)
+        DrawPlots()
         Test(tag_name + "_" + name + "_vector_" + field + "_lor")
         DeleteAllPlots()
         ResetView()
