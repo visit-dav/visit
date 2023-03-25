@@ -28,6 +28,13 @@
 #
 #    Cyrus Harrison, Mon, Mar 20, 2023  3:34:04 PM 
 #    Added rz test examples
+# 
+#    Justin Privitera, Wed Mar 22 16:09:52 PDT 2023
+#    Added 1d curve test examples.
+# 
+#    Justin Privitera, Fri Mar 24 17:47:26 PDT 2023
+#    Fixed view issue for mfem lor vector field tests.
+#    Fixed an issue where test names had two consecutive underscores.
 #
 # ----------------------------------------------------------------------------
 RequiredDatabasePlugin("Blueprint")
