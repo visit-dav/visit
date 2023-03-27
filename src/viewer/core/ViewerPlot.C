@@ -5866,6 +5866,9 @@ ViewerPlot::SessionContainsErrors(DataNode *parentNode)
 //   Brad Whitlock, Tue Oct 20 11:59:21 PDT 2009
 //   I made it set the plot description.
 //
+//   Eric Brugger, Wed Mar 22 16:23:12 PDT 2023
+//   Add operator keyframing.
+//
 // ****************************************************************************
 
 void
@@ -5888,12 +5891,25 @@ ViewerPlot::InitializePlot(Plot &plot) const
     plot.SetEmbeddedPlotId(embeddedPlotId);
 
     // Set the keyframe indices.
-    int j, nIndices;
+    int i, j, nIndices;
     const int *indices = plotAtts->GetIndices(nIndices);
     intVector ivec;
     for (j = 0; j < nIndices; j++)
         ivec.push_back(indices[j]);
     plot.SetKeyframes(ivec);
+
+    // Set the operator keyframe indices.
+    ivec.clear();
+    intVector ivec2;
+    for (i = 0; i < nOperators; i++)
+    {
+        indices = operators[i]->GetKeyframeIndices(nIndices);
+        ivec.push_back(nIndices);
+        for (j = 0; j < nIndices; j++)
+            ivec2.push_back(indices[j]);
+    }
+    plot.SetNumKeyframesPerOperator(ivec);
+    plot.SetOperatorKeyframes(ivec2);
 
     // Set the database keyframe indices.
     ivec.clear();
