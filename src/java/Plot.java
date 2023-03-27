@@ -24,7 +24,7 @@ import java.util.Vector;
 
 public class Plot extends AttributeSubject
 {
-    private static int Plot_numAdditionalAtts = 22;
+    private static int Plot_numAdditionalAtts = 24;
 
     // Enum values
     public final static int STATETYPE_NEWLYCREATED = 0;
@@ -53,6 +53,8 @@ public class Plot extends AttributeSubject
         beginFrame = -999;
         endFrame = 999;
         keyframes = new Vector();
+        numKeyframesPerOperator = new Vector();
+        operatorKeyframes = new Vector();
         databaseKeyframes = new Vector();
         isFromSimulation = false;
         followsTime = true;
@@ -81,6 +83,8 @@ public class Plot extends AttributeSubject
         beginFrame = -999;
         endFrame = 999;
         keyframes = new Vector();
+        numKeyframesPerOperator = new Vector();
+        operatorKeyframes = new Vector();
         databaseKeyframes = new Vector();
         isFromSimulation = false;
         followsTime = true;
@@ -123,6 +127,18 @@ public class Plot extends AttributeSubject
         {
             Integer iv = (Integer)obj.keyframes.elementAt(i);
             keyframes.addElement(new Integer(iv.intValue()));
+        }
+        numKeyframesPerOperator = new Vector();
+        for(i = 0; i < obj.numKeyframesPerOperator.size(); ++i)
+        {
+            Integer iv = (Integer)obj.numKeyframesPerOperator.elementAt(i);
+            numKeyframesPerOperator.addElement(new Integer(iv.intValue()));
+        }
+        operatorKeyframes = new Vector();
+        for(i = 0; i < obj.operatorKeyframes.size(); ++i)
+        {
+            Integer iv = (Integer)obj.operatorKeyframes.elementAt(i);
+            operatorKeyframes.addElement(new Integer(iv.intValue()));
         }
         databaseKeyframes = new Vector();
         for(i = 0; i < obj.databaseKeyframes.size(); ++i)
@@ -180,6 +196,24 @@ public class Plot extends AttributeSubject
             Integer keyframes2 = (Integer)obj.keyframes.elementAt(i);
             keyframes_equal = keyframes1.equals(keyframes2);
         }
+        // Compare the elements in the numKeyframesPerOperator vector.
+        boolean numKeyframesPerOperator_equal = (obj.numKeyframesPerOperator.size() == numKeyframesPerOperator.size());
+        for(i = 0; (i < numKeyframesPerOperator.size()) && numKeyframesPerOperator_equal; ++i)
+        {
+            // Make references to Integer from Object.
+            Integer numKeyframesPerOperator1 = (Integer)numKeyframesPerOperator.elementAt(i);
+            Integer numKeyframesPerOperator2 = (Integer)obj.numKeyframesPerOperator.elementAt(i);
+            numKeyframesPerOperator_equal = numKeyframesPerOperator1.equals(numKeyframesPerOperator2);
+        }
+        // Compare the elements in the operatorKeyframes vector.
+        boolean operatorKeyframes_equal = (obj.operatorKeyframes.size() == operatorKeyframes.size());
+        for(i = 0; (i < operatorKeyframes.size()) && operatorKeyframes_equal; ++i)
+        {
+            // Make references to Integer from Object.
+            Integer operatorKeyframes1 = (Integer)operatorKeyframes.elementAt(i);
+            Integer operatorKeyframes2 = (Integer)obj.operatorKeyframes.elementAt(i);
+            operatorKeyframes_equal = operatorKeyframes1.equals(operatorKeyframes2);
+        }
         // Compare the elements in the databaseKeyframes vector.
         boolean databaseKeyframes_equal = (obj.databaseKeyframes.size() == databaseKeyframes.size());
         for(i = 0; (i < databaseKeyframes.size()) && databaseKeyframes_equal; ++i)
@@ -206,6 +240,8 @@ public class Plot extends AttributeSubject
                 (beginFrame == obj.beginFrame) &&
                 (endFrame == obj.endFrame) &&
                 keyframes_equal &&
+                numKeyframesPerOperator_equal &&
+                operatorKeyframes_equal &&
                 databaseKeyframes_equal &&
                 (isFromSimulation == obj.isFromSimulation) &&
                 (followsTime == obj.followsTime) &&
@@ -311,40 +347,52 @@ public class Plot extends AttributeSubject
         Select(15);
     }
 
+    public void SetNumKeyframesPerOperator(Vector numKeyframesPerOperator_)
+    {
+        numKeyframesPerOperator = numKeyframesPerOperator_;
+        Select(16);
+    }
+
+    public void SetOperatorKeyframes(Vector operatorKeyframes_)
+    {
+        operatorKeyframes = operatorKeyframes_;
+        Select(17);
+    }
+
     public void SetDatabaseKeyframes(Vector databaseKeyframes_)
     {
         databaseKeyframes = databaseKeyframes_;
-        Select(16);
+        Select(18);
     }
 
     public void SetIsFromSimulation(boolean isFromSimulation_)
     {
         isFromSimulation = isFromSimulation_;
-        Select(17);
+        Select(19);
     }
 
     public void SetFollowsTime(boolean followsTime_)
     {
         followsTime = followsTime_;
-        Select(18);
+        Select(20);
     }
 
     public void SetDescription(String description_)
     {
         description = description_;
-        Select(19);
+        Select(21);
     }
 
     public void SetSelection(String selection_)
     {
         selection = selection_;
-        Select(20);
+        Select(22);
     }
 
     public void SetAnimatingFlag(boolean animatingFlag_)
     {
         animatingFlag = animatingFlag_;
-        Select(21);
+        Select(23);
     }
 
     // Property getting methods
@@ -364,6 +412,8 @@ public class Plot extends AttributeSubject
     public int     GetBeginFrame() { return beginFrame; }
     public int     GetEndFrame() { return endFrame; }
     public Vector  GetKeyframes() { return keyframes; }
+    public Vector  GetNumKeyframesPerOperator() { return numKeyframesPerOperator; }
+    public Vector  GetOperatorKeyframes() { return operatorKeyframes; }
     public Vector  GetDatabaseKeyframes() { return databaseKeyframes; }
     public boolean GetIsFromSimulation() { return isFromSimulation; }
     public boolean GetFollowsTime() { return followsTime; }
@@ -407,16 +457,20 @@ public class Plot extends AttributeSubject
         if(WriteSelect(15, buf))
             buf.WriteIntVector(keyframes);
         if(WriteSelect(16, buf))
-            buf.WriteIntVector(databaseKeyframes);
+            buf.WriteIntVector(numKeyframesPerOperator);
         if(WriteSelect(17, buf))
-            buf.WriteBool(isFromSimulation);
+            buf.WriteIntVector(operatorKeyframes);
         if(WriteSelect(18, buf))
-            buf.WriteBool(followsTime);
+            buf.WriteIntVector(databaseKeyframes);
         if(WriteSelect(19, buf))
-            buf.WriteString(description);
+            buf.WriteBool(isFromSimulation);
         if(WriteSelect(20, buf))
-            buf.WriteString(selection);
+            buf.WriteBool(followsTime);
         if(WriteSelect(21, buf))
+            buf.WriteString(description);
+        if(WriteSelect(22, buf))
+            buf.WriteString(selection);
+        if(WriteSelect(23, buf))
             buf.WriteBool(animatingFlag);
     }
 
@@ -473,21 +527,27 @@ public class Plot extends AttributeSubject
             SetKeyframes(buf.ReadIntVector());
             break;
         case 16:
-            SetDatabaseKeyframes(buf.ReadIntVector());
+            SetNumKeyframesPerOperator(buf.ReadIntVector());
             break;
         case 17:
-            SetIsFromSimulation(buf.ReadBool());
+            SetOperatorKeyframes(buf.ReadIntVector());
             break;
         case 18:
-            SetFollowsTime(buf.ReadBool());
+            SetDatabaseKeyframes(buf.ReadIntVector());
             break;
         case 19:
-            SetDescription(buf.ReadString());
+            SetIsFromSimulation(buf.ReadBool());
             break;
         case 20:
-            SetSelection(buf.ReadString());
+            SetFollowsTime(buf.ReadBool());
             break;
         case 21:
+            SetDescription(buf.ReadString());
+            break;
+        case 22:
+            SetSelection(buf.ReadString());
+            break;
+        case 23:
             SetAnimatingFlag(buf.ReadBool());
             break;
         }
@@ -521,6 +581,8 @@ public class Plot extends AttributeSubject
         str = str + intToString("beginFrame", beginFrame, indent) + "\n";
         str = str + intToString("endFrame", endFrame, indent) + "\n";
         str = str + intVectorToString("keyframes", keyframes, indent) + "\n";
+        str = str + intVectorToString("numKeyframesPerOperator", numKeyframesPerOperator, indent) + "\n";
+        str = str + intVectorToString("operatorKeyframes", operatorKeyframes, indent) + "\n";
         str = str + intVectorToString("databaseKeyframes", databaseKeyframes, indent) + "\n";
         str = str + boolToString("isFromSimulation", isFromSimulation, indent) + "\n";
         str = str + boolToString("followsTime", followsTime, indent) + "\n";
@@ -548,6 +610,8 @@ public class Plot extends AttributeSubject
     private int     beginFrame;
     private int     endFrame;
     private Vector  keyframes; // vector of Integer objects
+    private Vector  numKeyframesPerOperator; // vector of Integer objects
+    private Vector  operatorKeyframes; // vector of Integer objects
     private Vector  databaseKeyframes; // vector of Integer objects
     private boolean isFromSimulation;
     private boolean followsTime;
