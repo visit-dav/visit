@@ -2134,20 +2134,22 @@ frame : integer
 ::
 
   #% visit -cli
-  OpenDatabase("/usr/gapps/visit/data/wave.visit")
+  OpenDatabase("/usr/gapps/visit/data/noise.silo")
   k = GetKeyframeAttributes()
-  k.enabled,k.nFrames,k.nFramesWasUserSet = 1,20,1
+  k.enabled,k.nFrames,k.nFramesWasUserSet = 1,11,1
   SetKeyframeAttributes(k)
-  AddPlot("Pseudocolor", "pressure")
+  AddPlot("Pseudocolor", "hardyglobal")
   AddOperator("Slice")
   # Set up operator keyframes so the Slice operators percent will change
   # over time.
   s0 = SliceAttributes()
+  s0.originType = s0.Percent
   s0.originPercent = 0
   s1 = SliceAttributes()
+  s1.originType = s1.Percent
   s1.originPercent = 100
   SetOperatorOptions(s0)
-  SetTimeSliderState(19)
+  SetTimeSliderState(10)
   SetOperatorOptions(s1)
   SetTimeSliderState(0)
   DrawPlots()
@@ -2155,9 +2157,9 @@ frame : integer
   # Iterate over all animation frames and wrap around to the first one.
   for i in list(range(TimeSliderGetNStates())) + [0]:
       SetTimeSliderState(i)
-  # Delete the operator keyframe at frame 19 so the slice won't
+  # Delete the operator keyframe at frame 10 so the slice won't
   # change anymore.
-  DeleteOperatorKeyframe(0, 0, 19)
+  DeleteOperatorKeyframe(0, 0, 10)
   ListPlots()
   SetTimeSliderState(10)
 
@@ -5694,20 +5696,22 @@ newFrame : integer
 ::
 
   #% visit -cli
-  OpenDatabase("/usr/gapps/visit/data/wave.visit")
+  OpenDatabase("/usr/gapps/visit/data/noise.silo")
   k = GetKeyframeAttributes()
-  k.enabled,k.nFrames,k.nFramesWasUserSet = 1,20,1
+  k.enabled,k.nFrames,k.nFramesWasUserSet = 1,11,1
   SetKeyframeAttributes(k)
-  AddPlot("Pseudocolor", "pressure")
+  AddPlot("Pseudocolor", "hardyglobal")
   AddOperator("Slice")
   # Set up operator keyframes so the Slice operators percent will change
   # over time.
   s0 = SliceAttributes()
+  s0.originType = s0.Percent
   s0.originPercent = 0
   s1 = SliceAttributes()
+  s0.originType = s1.Percent
   s1.originPercent = 100
   SetOperatorOptions(s0)
-  SetTimeSliderState(19)
+  SetTimeSliderState(10)
   SetOperatorOptions(s1)
   SetTimeSliderState(0)
   DrawPlots()
@@ -5715,10 +5719,10 @@ newFrame : integer
   # Iterate over all animation frames and wrap around to the first one.
   for i in list(range(TimeSliderGetNStates())) + [0]:
       SetTimeSliderState(i)
-  # Move the operator keyframe at frame 19 to frame 10
-  MoveOperatorKeyframe(0, 0, 19, 10)
+  # Move the operator keyframe at frame 10 to frame 5
+  MoveOperatorKeyframe(0, 0, 10, 5)
   ListPlots()
-  SetTimeSliderState(10)
+  SetTimeSliderState(5)
 
 MovePlotDatabaseKeyframe
 ------------------------
