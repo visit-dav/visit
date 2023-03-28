@@ -5749,15 +5749,19 @@ ViewerWindowManager::UpdateAnnotationObjectList(bool delay)
 //    Made it use the plot list and I made it set the number of keyframes
 //    into the plot list.
 //
+//    Eric Brugger, Wed Mar 22 16:23:12 PDT 2023
+//    Swap the order of setting the number of keyframes and the keyframe mode
+//    to fix a bug setting the keyframe attributes from the cli.
+//
 // ****************************************************************************
 
 void
 ViewerWindowManager::SetKeyframeAttsFromClient()
 {
-    windows[activeWindow]->GetPlotList()->SetKeyframeMode(
-        GetViewerState()->GetKeyframeAttributes()->GetEnabled());
     windows[activeWindow]->GetPlotList()->SetNKeyframes(
         GetViewerState()->GetKeyframeAttributes()->GetNFrames());
+    windows[activeWindow]->GetPlotList()->SetKeyframeMode(
+        GetViewerState()->GetKeyframeAttributes()->GetEnabled());
 }
 
 // ****************************************************************************
