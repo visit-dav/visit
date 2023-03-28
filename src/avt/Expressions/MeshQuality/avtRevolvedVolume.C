@@ -12,7 +12,10 @@
 #include <vtkCell.h>
 #include <vtkDataArray.h>
 #include <vtkDataSet.h>
+#include <vtkLine.h>
+#include <vtkPointData.h>
 #include <vtkPoints.h>
+#include <vtkRectilinearGrid.h>
 
 #include <avtCallback.h>
 
@@ -66,7 +69,7 @@ avtRevolvedVolume::PreExecute(void)
     avtSingleInputExpressionFilter::PreExecute();
 
     avtDataAttributes &atts = GetInput()->GetInfo().GetAttributes();
-    if (atts.GetSpatialDimension() != 2)
+    if (atts.GetSpatialDimension() > 2)
     {
         EXCEPTION2(InvalidDimensionsException, "Revolved volume",
                                                "2-dimensional");
@@ -97,6 +100,43 @@ avtRevolvedVolume::DeriveVariable(vtkDataSet *in_ds, int currentDomainsIndex)
     vtkDataArray *arr = CreateArrayFromMesh(in_ds);
     vtkIdType ncells = in_ds->GetNumberOfCells();
     arr->SetNumberOfTuples(ncells);
+
+    bool haveProcessedAsCurve = false;
+    if (in_ds->GetDataObjectType() == VTK_RECTILINEAR_GRID)
+    {
+        vtkRectilinearGrid *rg = (vtkRectilinearGrid *) in_ds;
+        int dims[3];
+        rg->GetDimensions(dims);
+        if (dims[1] <= 1 && dims[2] <= 1)
+        {
+            vtkDataArray *X = rg->GetXCoordinates();
+            vtkDataArray *Y = rg->GetPointData()->GetScalars();
+            for (vtkIdType i = 0 ; i < ncells ; i++)
+            {
+                double p0[3],p1[3];
+                p0[0] = X->GetTuple1(i);
+                p1[0] = X->GetTuple1(i+1);
+                p0[1] = Y->GetTuple1(i);
+                p1[1] = Y->GetTuple1(i+1);
+                p0[2] = 0;
+                p1[2] = 0;
+
+                vtkPoints *pts = vtkPoints::New();
+                pts->InsertNextPoint(p0);
+                pts->InsertNextPoint(p1);
+
+                vtkCell *cell = vtkLine::New();
+                cell->Initialize(2,pts);
+
+                double vol = GetZoneVolume(cell);
+                arr->SetTuple1(i, vol);
+            }
+            haveProcessedAsCurve = true;
+        }
+    }
+
+    if (haveProcessedAsCurve)
+        return arr;
 
     for (vtkIdType i = 0 ; i < ncells ; i++)
     {
@@ -203,14 +243,22 @@ avtRevolvedVolume::GetZoneVolume(vtkCell *cell)
         }
         else // line case
         {
+
+printf("Handling lines\n");
+
             // Just project first two points onto the axis of revolution.
-            p2 = p0;
-            p3 = p1;
+            p2[0] = p1[0]; p2[1] = p1[1]; p2[2] = p1[2];
+            p3[0] = p0[0]; p3[1] = p0[1]; p3[2] = p0[2];
             if (revolveAboutX)
-                p2[0] = p3[0] = 0.0;
-            else
                 p2[1] = p3[1] = 0.0;
+            else
+                p2[0] = p3[0] = 0.0;
         }
+
+printf("p0 = %g, %g, %g\n", p0[0], p0[1], p0[2]);
+printf("p1 = %g, %g, %g\n", p1[0], p1[1], p1[2]);
+printf("p2 = %g, %g, %g\n", p2[0], p2[1], p2[2]);
+printf("p3 = %g, %g, %g\n", p3[0], p3[1], p3[2]);
 
         double  x[3], y[3];
         double  volume1, volume2;
@@ -235,6 +283,8 @@ avtRevolvedVolume::GetZoneVolume(vtkCell *cell)
         y[2] = p2[1];
         volume2 = GetTriangleVolume(x, y);
      
+printf("rv = %g + %g\n", volume1, volume2);
+
         rv = (volume1 + volume2);
     }
     else if (cellType == VTK_POLYGON)
