@@ -4514,8 +4514,9 @@ ViewerWindowManager::SetWindowLayout(const int windowLayout)
     if (windowLayout == -5 && count < 2)
     {
         static int origlo = layout;
+        static int tmplo = layout==2?1:2;
         if (count == 0)
-            SetWindowLayout(2);
+            SetWindowLayout(tmplo);
         else if (count == 1)
             SetWindowLayout(origlo);
         count++;
