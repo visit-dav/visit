@@ -155,6 +155,9 @@ class ViewerState;
 //   Justin Privitera, Wed May 18 11:25:46 PDT 2022
 //   Changed *active* to *default* for everything related to color tables.
 //
+//   Eric Brugger, Wed Mar 22 16:23:12 PDT 2023
+//   Added operator keyframing.
+//
 // ****************************************************************************
 
 class VIEWER_RPC_API ViewerMethods
@@ -252,6 +255,9 @@ public:
     void SetPlotFrameRange(int plotId, int frame0, int frame1);
     void DeletePlotKeyframe(int plotId, int frame);
     void MovePlotKeyframe(int plotId, int oldFrame, int newFrame);
+    void DeleteOperatorKeyframe(int plotId, int operatorId, int frame);
+    void MoveOperatorKeyframe(int plotId, int operatorId,
+                              int oldFrame, int newFrame);
     void SetPlotDatabaseState(int plotId, int frame, int state);
     void DeletePlotDatabaseKeyframe(int plotId, int frame);
     void MovePlotDatabaseKeyframe(int plotId, int oldFrame, int newFrame);

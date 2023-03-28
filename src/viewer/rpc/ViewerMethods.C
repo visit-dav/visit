@@ -2106,6 +2106,73 @@ ViewerMethods::MovePlotKeyframe(int plotId, int oldFrame, int newFrame)
 }
 
 // ****************************************************************************
+//  Method: ViewerMethods::DeleteOperatorKeyframe
+//
+//  Purpose:
+//    Delete the keyframe for the specified operator.
+//
+//  Arguments:
+//    plotId     The id of the plot.
+//    operatorId The id of the operator.
+//    frame      The keyframe to delete.
+//
+//  Programmer: Eric Brugger
+//  Creation:   Wed Mar 22 16:23:12 PDT 2023
+//
+// ****************************************************************************
+void
+ViewerMethods::DeleteOperatorKeyframe(int plotId, int operatorId, int frame)
+{
+    //
+    // Set the rpc type and arguments.
+    //
+    state->GetViewerRPC()->SetRPCType(ViewerRPC::DeleteOperatorKeyframeRPC);
+    state->GetViewerRPC()->SetIntArg1(plotId);
+    state->GetViewerRPC()->SetIntArg2(operatorId);
+    state->GetViewerRPC()->SetIntArg3(frame);
+
+    //
+    // Issue the RPC.
+    //
+    state->GetViewerRPC()->Notify();
+}
+
+// ****************************************************************************
+//  Method: ViewerMethods::MoveOperatorKeyframe
+//
+//  Purpose:
+//    Move the the position of a keyframe for the specified operator.
+//
+//  Arguments:
+//    plotId     The id of the plot.
+//    operatorId The id of the operator.
+//    oldFrame   The old location of the keyframe.
+//    newFrame   The new location of the keyframe.
+//
+//  Programmer: Eric Brugger
+//  Creation:   Wed Mar 22 16:23:12 PDT 2023
+//
+// ****************************************************************************
+void
+ViewerMethods::MoveOperatorKeyframe(int plotId, int operatorId,
+    int oldFrame, int newFrame)
+{
+    //
+    // Set the rpc type and arguments.
+    //
+    state->GetViewerRPC()->SetRPCType(ViewerRPC::MoveOperatorKeyframeRPC);
+    state->GetViewerRPC()->SetIntArg1(plotId);
+    state->GetViewerRPC()->SetIntArg2(operatorId);
+    state->GetViewerRPC()->SetIntArg3(oldFrame);
+    state->GetViewerRPC()->SetIntArg4(newFrame);
+
+    //
+    // Issue the RPC.
+    //
+    state->GetViewerRPC()->Notify();
+}
+
+// ****************************************************************************
 //  Method: ViewerMethods::SetPlotDatabaseState
 //
 //  Purpose:

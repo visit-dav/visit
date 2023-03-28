@@ -31,6 +31,8 @@ class RowInfo; // for internal use only
 // Creation:   Mon Nov 10 11:54:43 PST 2008
 //
 // Modifications:
+//   Eric Brugger, Wed Mar 22 16:23:12 PDT 2023
+//   Added operator keyframing.
 //   
 // ****************************************************************************
 
@@ -72,7 +74,8 @@ public:
         StateDelegate,
         PlotDelegate,
         PlotAttsDelegate,
-        PlotStateDelegate
+        PlotStateDelegate,
+        PlotOperatorDelegate
     };
 
     static const char *KF_TIME_SLIDER;

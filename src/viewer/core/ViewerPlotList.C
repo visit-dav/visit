@@ -2788,6 +2788,118 @@ ViewerPlotList::MovePlotKeyframe(int plotId, int oldFrame, int newFrame)
 }
  
 // ****************************************************************************
+//  Method: ViewerPlotList::DeleteOperatorKeyframe
+//
+//  Purpose:
+//    Delete the keyframe from the specified operator.
+//
+//  Arguments:
+//    plotId     : The id of the plot.
+//    operatorId : The id of the operator.
+//    frame      : The keyframe to delete.
+//
+//  Programmer: Eric Brugger
+//  Creation:   Wed Mar 22 16:23:12 PDT 2023
+//
+// ****************************************************************************
+
+void
+ViewerPlotList::DeleteOperatorKeyframe(int plotId, int operatorId, int frame)
+{
+    //
+    // Check that the plot id is within range.
+    //
+    if (plotId < 0 || plotId >= nPlots)
+    {
+        debug1 << "The plot identifier is out of range." << endl;
+        return;
+    }
+
+    //
+    // Check that the operator id is within range.
+    //
+    if (operatorId < 0 || operatorId >= plots[plotId].plot->GetNOperators())
+    {
+        debug1 << "The operator identifier is out of range." << endl;
+        return;
+    }
+
+    //
+    // Delete the keyframe from the specified operator.
+    //
+    plots[plotId].plot->GetOperator(operatorId)->DeleteKeyframe(frame);
+
+    //
+    // Update the client attributes.
+    //
+    UpdatePlotList();
+    UpdatePlotAtts(false);
+    UpdateSILRestrictionAtts();
+
+    //
+    // Update the frame.
+    //
+    UpdateFrame();
+}
+ 
+// ****************************************************************************
+//  Method: ViewerPlotList::MoveOperatorKeyframe
+//
+//  Purpose:
+//    Move the position of a keyframe for the specified operator.
+//
+//  Arguments:
+//    plotId     : The id of the plot.
+//    operatorId : The id of the operator.
+//    oldFrame   : The old location of the keyframe.
+//    newFrame   : The new location of the keyframe.
+//
+//  Programmer: Eric Brugger
+//  Creation:   Wed Mar 22 16:23:12 PDT 2023
+//
+// ****************************************************************************
+
+void
+ViewerPlotList::MoveOperatorKeyframe(int plotId, int operatorId,
+    int oldFrame, int newFrame)
+{
+    //
+    // Check that the plot id is within range.
+    //
+    if (plotId < 0 || plotId >= nPlots)
+    {
+        debug1 << "The plot identifier is out of range." << endl;
+        return;
+    }
+
+    //
+    // Check that the operator id is within range.
+    //
+    if (operatorId < 0 || operatorId >= plots[plotId].plot->GetNOperators())
+    {
+        debug1 << "The operator identifier is out of range." << endl;
+        return;
+    }
+
+    //
+    // Move the keyframe for the specified operator.
+    //
+    plots[plotId].plot->GetOperator(operatorId)->MoveKeyframe(oldFrame, newFrame);
+
+    //
+    // Update the client attributes.
+    //
+    UpdatePlotList();
+    UpdatePlotAtts(false);
+    UpdateSILRestrictionAtts();
+
+    //
+    // Update the frame.
+    //
+    UpdateFrame();
+}
+ 
+// ****************************************************************************
 //  Method: ViewerPlotList::SetPlotDatabaseState
 //
 //  Purpose:

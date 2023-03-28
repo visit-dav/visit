@@ -139,6 +139,9 @@ class VIEWERCORE_API ViewerOperator : public ViewerBase
     void SetKeyframeMode(const bool keyframeMode_);
     void SetCacheIndex(const int cacheIndex_);
     void UpdateCacheSize(const int cacheSize_);
+    const int *GetKeyframeIndices(int &nIndices) const;
+    void DeleteKeyframe(const int index);
+    void MoveKeyframe(const int oldIndex, const int newIndex);
 
   protected:
     ViewerPlot                   *plot;

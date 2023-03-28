@@ -2094,6 +2094,74 @@ return type : CLI_return_t
   CreateNamedSelection("els_above_y")
 
 
+DeleteOperatorKeyframe
+----------------------
+
+**Synopsis:**
+
+::
+
+  DeleteOperatorKeyframe(plotIndex, operatorIndex, frame)
+
+
+plotIndex : integer
+    A zero-based integer value corresponding to a plot's index in the plot
+    list.
+
+operatorIndex : integer
+    A zero-based integer value corresponding to an operators's index in the plot.
+
+frame : integer
+    A zero-based integer value corresponding to a plot keyframe at a
+    particular animation frame.
+
+
+**Description:**
+
+    The DeleteOperatorKeyframe function removes an operator keyframe from a
+    specific operator and plot. An operator keyframe is the set of operator
+    attributes at a specified frame. Operator keyframes are used to determine
+    what operator attributes will be used at a given animation frame when
+    VisIt's keyframing mode is enabled. The plotIndex argument is a zero-based
+    integer that is used to identify a plot in the plot list. The operatorIndex
+    is a zero-based integer that is used to identify an operator of a plot.
+    The frame argument is a zero-based integer that is used to identify the
+    frame at which a keyframe is to be removed.
+
+
+**Example:**
+
+::
+
+  #% visit -cli
+  OpenDatabase("/usr/gapps/visit/data/wave.visit")
+  k = GetKeyframeAttributes()
+  k.enabled,k.nFrames,k.nFramesWasUserSet = 1,20,1
+  SetKeyframeAttributes(k)
+  AddPlot("Pseudocolor", "pressure")
+  AddOperator("Slice")
+  # Set up operator keyframes so the Slice operators percent will change
+  # over time.
+  s0 = SliceAttributes()
+  s0.originPercent = 0
+  s1 = SliceAttributes()
+  s1.originPercent = 100
+  SetOperatorOptions(s0)
+  SetTimeSliderState(19)
+  SetOperatorOptions(s1)
+  SetTimeSliderState(0)
+  DrawPlots()
+  ListPlots()
+  # Iterate over all animation frames and wrap around to the first one.
+  for i in list(range(TimeSliderGetNStates())) + [0]:
+      SetTimeSliderState(i)
+  # Delete the operator keyframe at frame 19 so the slice won't
+  # change anymore.
+  DeleteOperatorKeyframe(0, 0, 19)
+  ListPlots()
+  SetTimeSliderState(10)
+
+
 DeletePlotDatabaseKeyframe
 --------------------------
 
@@ -5591,6 +5659,67 @@ return type : CLI_return_t
   MoveAndResizeWindow(1, 100, 100, 300, 600)
 
 
+MoveOperatorKeyframe
+----------------
+
+**Synopsis:**
+
+::
+
+  MoveOperatorKeyframe(plotIndex, operatorIndex, oldFrame, newFrame)
+
+
+plotIndex : integer
+    An integer representing the index of the plot in the plot list.
+
+operatorIndex : integer
+    An integer representing the index of the operator in the plot.
+
+oldFrame : integer
+    An integer that is the old animation frame where the keyframe is located.
+
+newFrame : integer
+    An integer that is the new animation frame where the keyframe will be moved.
+
+
+**Description:**
+
+    MoveOperatorKeyframe moves a keyframe for an operator to a new animation
+    frame, which changes the operator attributes that are used for each
+    animation frame when VisIt is in keyframing mode.
+
+
+**Example:**
+
+::
+
+  #% visit -cli
+  OpenDatabase("/usr/gapps/visit/data/wave.visit")
+  k = GetKeyframeAttributes()
+  k.enabled,k.nFrames,k.nFramesWasUserSet = 1,20,1
+  SetKeyframeAttributes(k)
+  AddPlot("Pseudocolor", "pressure")
+  AddOperator("Slice")
+  # Set up operator keyframes so the Slice operators percent will change
+  # over time.
+  s0 = SliceAttributes()
+  s0.originPercent = 0
+  s1 = SliceAttributes()
+  s1.originPercent = 100
+  SetOperatorOptions(s0)
+  SetTimeSliderState(19)
+  SetOperatorOptions(s1)
+  SetTimeSliderState(0)
+  DrawPlots()
+  ListPlots()
+  # Iterate over all animation frames and wrap around to the first one.
+  for i in list(range(TimeSliderGetNStates())) + [0]:
+      SetTimeSliderState(i)
+  # Move the operator keyframe at frame 19 to frame 10
+  MoveOperatorKeyframe(0, 0, 19, 10)
+  ListPlots()
+  SetTimeSliderState(10)
+
 MovePlotDatabaseKeyframe
 ------------------------
 
@@ -5647,11 +5776,11 @@ MovePlotKeyframe
 
 ::
 
-  MovePlotKeyframe(index, oldFrame, newFrame)
+  MovePlotKeyframe(plotIndex, oldFrame, newFrame)
 
 
-index : integer
-    An integer representing the index of the plof in the plot list.
+plotIndex : integer
+    An integer representing the index of the plot in the plot list.
 
 oldFrame : integer
     An integer that is the old animation frame where the keyframe is located.

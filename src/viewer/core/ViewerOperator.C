@@ -11,6 +11,7 @@
 #include <AttributeSubject.h>
 #include <AttributeSubjectMap.h>
 #include <DataNode.h>
+#include <DebugStream.h>
 #include <OperatorPluginInfo.h>
 #include <OperatorPluginManager.h>
 #include <ViewerEngineManagerInterface.h>
@@ -760,4 +761,116 @@ ViewerOperator::UpdateCacheSize(const int cacheSize_)
         operatorAtts->ClearAtts();
         operatorAtts->SetAtts(0, curOperatorAtts);
     }
+}
+
+// ****************************************************************************
+// Method: ViewerOperator::GetKeyframeIndices
+//
+// Purpose: 
+//   Returns a pointer to the operator keyframe indices as well as the
+//   number of indices.
+//
+// Arguments:
+//
+// Programmer: Eric Brugger
+// Creation:   Wed Mar 22 16:23:12 PDT 2023
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+const int *
+ViewerOperator::GetKeyframeIndices(int &nIndices) const
+{
+    return operatorAtts->GetIndices(nIndices);
+}
+
+// ****************************************************************************
+// Method: ViewerOperator::DeleteKeyframe
+//
+// Purpose: 
+//   Deletes the keyframe located at cacheIndex.
+//
+// Arguments:
+//   index     The index at which to delete the keyframe.
+//
+//
+// Programmer: Eric Brugger
+// Creation:   Wed Mar 22 16:23:12 PDT 2023
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerOperator::DeleteKeyframe(const int index)
+{
+    //
+    // Check that the index is within range.
+    //
+    if ((index < 0) || (index >= cacheSize))
+    {
+        debug1 << "DeleteKeyframe: The frame is out of range. index=" << index
+               << ", indices=[0," << cacheSize-1 << "]" << endl;
+        return;
+    }
+
+    //
+    // Delete the keyframe at the specified frame.  DeleteAtts
+    // returns the range of plots that were invalidated.  The
+    // maximum value is clamped to cacheSize since DeleteAtts may
+    // return INT_MAX to indicate the end of the plot.
+    //
+    int i0, i1;
+    if (!operatorAtts->DeleteAtts(index, i0, i1))
+        return;
+
+    i1 = (i1 < cacheSize) ? i1 : (cacheSize - 1);
+    plot->CheckCache(i0, i1, false);
+}
+
+// ****************************************************************************
+// Method: ViewerOperator::MoveKeyframe
+//
+// Purpose: 
+//   Moves the keyframe located at oldIndex to newIndex.
+//
+// Arguments:
+//   oldFrame  The old location of the keyframe.
+//   newFrame  The new location of the keyframe.
+//
+// Programmer: Eric Brugger
+// Creation:   Wed Mar 22 16:23:12 PDT 2023
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerOperator::MoveKeyframe(const int oldIndex, const int newIndex)
+{
+    //
+    // Check that the frames are within range.
+    //
+    if ((oldIndex < 0) || (oldIndex >= cacheSize) ||
+        (newIndex < 0) || (newIndex >= cacheSize))
+    {
+        debug1 << "MoveKeyframe: The index is out of range. "
+               << "newIndex=" << newIndex
+               << ", indices=[0," << cacheSize-1 << "]" << endl;
+        return;
+    }
+
+    //
+    // Move the keyframe at oldFrame to newFrame.  MoveAtts
+    // returns the range of plots that were invalidated.  The
+    // maximum value is clamped to cache since MoveAtts may return
+    // INT_MAX to indicate the end of the plot.
+    //
+    int i0, i1;
+    if (!operatorAtts->MoveAtts(oldIndex, newIndex, i0, i1))
+        return;
+
+    i1 = (i1 < cacheSize) ? i1 : (cacheSize - 1);
+    plot->CheckCache(i0, i1, false);
 }

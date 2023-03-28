@@ -304,6 +304,8 @@ KeyframeDataModel::GetPlotsForDatabase(const QString &db) const
 // Creation:   Mon Nov 10 15:37:20 PST 2008
 //
 // Modifications:
+//   Eric Brugger, Wed Mar 22 16:23:12 PDT 2023
+//   Added operator keyframing.
 //   
 // ****************************************************************************
 
@@ -335,10 +337,14 @@ KeyframeDataModel::RebuildRowInfo()
             plotName += current.GetPlotVar().c_str();
             plotName += QString(")");
 
+            stringVector operators = current.GetOperatorNames();
+
             rowInfo << new PlotRowInfo(plotName, dbRow, plotsForDatabase[p],
                                        PlotIcon(current.GetPlotType()));
             rowInfo << new RowInfo(tr("State"), plotRow, PlotStateDelegate, plotsForDatabase[p]);
             rowInfo << new RowInfo(tr("Attributes"), plotRow, PlotAttsDelegate, plotsForDatabase[p]);
+            for(int o = 0; o < operators.size(); ++o)
+                rowInfo << new RowInfo(tr(operators[o].c_str()), plotRow, PlotOperatorDelegate, plotsForDatabase[p]*1000+o);
         }
     }
 }
@@ -548,6 +554,8 @@ KeyframeDataModel::currentIndex() const
 // Creation:   Mon Nov 10 15:41:20 PST 2008
 //
 // Modifications:
+//   Eric Brugger, Wed Mar 22 16:23:12 PDT 2023
+//   Added operator keyframing.
 //   
 // ****************************************************************************
 
@@ -605,6 +613,23 @@ KeyframeDataModel::data(const QModelIndex &index, int role) const
                         const intVector &kf = plotList->GetPlots(s.id).GetKeyframes();
                         for(size_t i = 0; i < kf.size(); ++i)
                             s.idToIndex[kf[i]] = kf[i];
+                        retval = QVariant::fromValue(s);
+                    }
+                }
+                else if(rowInfo[id]->delegateType() == PlotOperatorDelegate)
+                {
+                    int plotIndex = s.id / 1000;
+                    int operatorIndex = s.id % 1000;
+                    if(plotIndex >= 0 && plotIndex < plotList->GetNumPlots())
+                    {
+                        const Plot &plot = plotList->GetPlots(plotIndex);
+                        int nKeyframes = plot.GetNumKeyframesPerOperator()[operatorIndex];
+                        int keyframeOffset = 0;
+                        for (int i = 0; i < operatorIndex; ++i)
+                            keyframeOffset += plot.GetNumKeyframesPerOperator()[i];
+                        const intVector &kf = plot.GetOperatorKeyframes();
+                        for(int i = 0; i < nKeyframes; ++i)
+                            s.idToIndex[kf[keyframeOffset+i]] = kf[keyframeOffset+i];
                         retval = QVariant::fromValue(s);
                     }
                 }
@@ -674,6 +699,8 @@ KeyframeDataModel::data(const QModelIndex &index, int role) const
 // Creation:   Mon Nov 10 15:42:14 PST 2008
 //
 // Modifications:
+//   Eric Brugger, Wed Mar 22 16:23:12 PDT 2023
+//   Added operator keyframing.
 //   
 // ****************************************************************************
 
@@ -718,6 +745,20 @@ KeyframeDataModel::setData(const QModelIndex &index, const QVariant &value, int 
                     GetViewerMethods()->DeletePlotKeyframe(s.id, it.key());
                 else if(it.key() != it.value())
                     GetViewerMethods()->MovePlotKeyframe(s.id, it.key(), it.value());
+            }
+            retval = true;
+        }
+        else if(rowInfo[id]->delegateType() == PlotOperatorDelegate)
+        {
+            for(QMap<int,int>::const_iterator it = s.idToIndex.begin();
+                it != s.idToIndex.end(); ++it)
+            {
+                int plotId = s.id / 1000;
+                int operatorId = s.id % 1000;
+                if(it.value() == -1)
+                    GetViewerMethods()->DeleteOperatorKeyframe(s.id, it.key());
+                else if(it.key() != it.value())
+                    GetViewerMethods()->MoveOperatorKeyframe(s.id, it.key(), it.value());
             }
             retval = true;
         }
