@@ -756,9 +756,9 @@ KeyframeDataModel::setData(const QModelIndex &index, const QVariant &value, int 
                 int plotId = s.id / 1000;
                 int operatorId = s.id % 1000;
                 if(it.value() == -1)
-                    GetViewerMethods()->DeleteOperatorKeyframe(s.id, it.key());
+                    GetViewerMethods()->DeleteOperatorKeyframe(plotId, operatorId, it.key());
                 else if(it.key() != it.value())
-                    GetViewerMethods()->MoveOperatorKeyframe(s.id, it.key(), it.value());
+                    GetViewerMethods()->MoveOperatorKeyframe(plotId, operatorId, it.key(), it.value());
             }
             retval = true;
         }
