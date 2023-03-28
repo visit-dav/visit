@@ -402,6 +402,15 @@ avtCurveConstructorFilter::CreateSingleOutput(avtDataTree_p inTree)
             inXC  = ((vtkRectilinearGrid*)ds[(*it).second])->GetXCoordinates();
             inVal = ((vtkRectilinearGrid*)ds[(*it).second])->GetPointData()->
                     GetScalars();
+
+            // If inVal is null, we've probably got curve object and "values" are
+            // in the Y coordinates.
+            if (inVal == 0)
+            {
+                ((vtkRectilinearGrid*)ds[(*it).second])->PrintSelf(std::cerr,vtkIndent(0));
+                inVal  = ((vtkRectilinearGrid*)ds[(*it).second])->GetYCoordinates();
+            }
+
             nPoints = inXC->GetNumberOfTuples();
             for (vtkIdType i = 0; i < nPoints; i++, index++)
             {
