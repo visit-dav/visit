@@ -12,7 +12,6 @@
 #include <sys/types.h>
 #include <time.h>
 #include "Field.h"
-#include <QRegExp>
 
 #define GENERATOR_NAME "xml2python"
 
@@ -152,6 +151,9 @@ inline char toupper(char c)
 //
 //    Kathleen Biagas, Thu Nov 17, 2022
 //    Added boolArray and boolVector.
+//
+//   Kathleen Biagas, Wed Mar 29 08:10:38 PDT 2023
+//   Replaced QRegExp in QSring::replace with QString.
 //
 // ****************************************************************************
 
@@ -3489,7 +3491,7 @@ class PythonGeneratorAttribute : public GeneratorBase
     void WriteCallLogRoutineMethod(QTextStream &c)
     {
         QString shortName(name);
-        shortName.replace(QRegExp("Attributes"), "Atts");
+        shortName.replace(QString("Attributes"), QString("Atts"));
 
         QString GetLogString(QString("Py") + name + "_GetLogString");
         if(HasFunction(GetLogString))
