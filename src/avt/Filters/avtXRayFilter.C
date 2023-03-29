@@ -2281,7 +2281,7 @@ avtXRayFilter::RedistributeLines(int nLeaves, int *nLinesPerDataset,
 //  Method: avtXRayFilter::CalculateImagingPlaneDims
 //
 //  Purpose:
-//    Given several constants, calcualted the dimensions of the imaging planes.
+//    Given several constants, calculate the dimensions of the imaging planes.
 //    This method is static so it can be used elsewhere.
 //
 //  Programmer: Justin Privitera
