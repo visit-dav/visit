@@ -1272,6 +1272,7 @@ avtXRayImageQuery::GetSecondaryVars(std::vector<std::string> &outVars)
 //    Justin Privitera, Wed Mar 29 13:19:53 PDT 2023
 //    Leverage avtXRayFilter::CalculateImagingPlaneDims so that calculations
 //    are not duplicated here as well.
+//    Send "state" node to metadata write call for conduit blueprint output.
 // 
 // ****************************************************************************
 
@@ -2037,6 +2038,9 @@ avtXRayImageQuery::WriteArrays(vtkDataSet **leaves,
 //     - Changed order and names of arguments.
 //     - Some calculations were lifted out of the function.
 //     - Calculated values are sent back up the call stack.
+// 
+//    Justin Privitera, Wed Mar 29 13:48:51 PDT 2023
+//    Leverage conduit's features to make the code more legible.
 //
 // ****************************************************************************
 #ifdef HAVE_CONDUIT
@@ -2105,6 +2109,8 @@ avtXRayImageQuery::WriteBlueprintImagingPlane(conduit::Node &data_out,
 //  Creation:   December 09, 2022
 // 
 //  Modifications:
+//    Justin Privitera, Wed Mar 29 13:48:51 PDT 2023
+//    Leverage conduit's features to make the code more legible.
 //
 // ****************************************************************************
 #ifdef HAVE_CONDUIT
@@ -2173,6 +2179,8 @@ WriteBlueprintRayCornersMesh(conduit::Node &data_out,
 //  Creation:   December 09, 2022
 // 
 //  Modifications:
+//    Justin Privitera, Wed Mar 29 13:48:51 PDT 2023
+//    Leverage conduit's features to make the code more legible.
 //
 // ****************************************************************************
 #ifdef HAVE_CONDUIT
@@ -2341,6 +2349,9 @@ avtXRayImageQuery::WriteBlueprintImagingMeshes(conduit::Node &data_out,
 //  Modifications:
 //    Justin Privitera, Tue Feb 14 17:02:43 PST 2023
 //    Change all metadata to use pot_hole_case instead of camelCase.
+// 
+//    Justin Privitera, Wed Mar 29 13:48:51 PDT 2023
+//    Leverage conduit's features to make the code more legible.
 //
 // ****************************************************************************
 #ifdef HAVE_CONDUIT
@@ -2382,6 +2393,9 @@ avtXRayImageQuery::WriteBlueprintXRayView(conduit::Node &xray_view)
 //    Justin Privitera, Tue Feb 14 17:02:43 PST 2023
 //    Change all metadata to use pot_hole_case instead of camelCase.
 //
+//    Justin Privitera, Wed Mar 29 13:48:51 PDT 2023
+//    Leverage conduit's features to make the code more legible.
+//
 // ****************************************************************************
 #ifdef HAVE_CONDUIT
 void
@@ -2418,6 +2432,9 @@ avtXRayImageQuery::WriteBlueprintXRayQuery(conduit::Node &xray_query,
 //    Justin Privitera, Tue Feb 14 17:02:43 PST 2023
 //    Add image_topo_order_of_domain_variables to xray_data metadata.
 //    Change all metadata to use pot_hole_case instead of camelCase.
+// 
+//    Justin Privitera, Wed Mar 29 13:48:51 PDT 2023
+//    Leverage conduit's features to make the code more legible.
 //
 // ****************************************************************************
 #ifdef HAVE_CONDUIT
@@ -2474,6 +2491,8 @@ avtXRayImageQuery::WriteBlueprintXRayData(conduit::Node &xray_data,
 //  Creation:   December 09, 2022
 // 
 //  Modifications:
+//    Justin Privitera, Wed Mar 29 13:48:51 PDT 2023
+//    Leverage conduit's features to make the code more legible.
 //
 // ****************************************************************************
 #ifdef HAVE_CONDUIT

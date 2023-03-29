@@ -79,6 +79,9 @@
 // 
 //    Justin Privitera, Mon Dec 12 13:28:55 PST 2022
 //    SetImageProperties now takes avtVectors for a few arguments.
+// 
+//    Justin Privitera, Wed Mar 29 13:48:51 PDT 2023
+//    Added CalculateImagingPlaneDims().
 //
 // ****************************************************************************
 

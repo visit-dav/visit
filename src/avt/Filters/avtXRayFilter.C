@@ -2345,7 +2345,7 @@ avtXRayFilter::CalculateImagingPlaneDims(const double &parallelScale,
 //    Fixed a bug causing the viewWidth to be calculated incorrectly.
 // 
 //    Justin Privitera, Wed Mar 29 13:19:53 PDT 2023
-//    Moved calcualtions to CalculateImagingPlaneDims().
+//    Moved some calculations to CalculateImagingPlaneDims().
 //
 // ****************************************************************************
 
