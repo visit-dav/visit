@@ -13,7 +13,8 @@
 #include <QLabel>
 #include <QLayout>
 #include <QPushButton>
-#include <QRegExp>
+#include <QRegularExpression>
+#include <QRegularExpressionMatch>
 #include <QTabWidget>
 #include <QTextEdit>
 #include <QTextStream>
@@ -493,6 +494,9 @@ QvisCommandWindow::RCFileName() const
 //   Brad Whitlock, Wed Aug 18 10:57:20 PDT 2010
 //   Set maxUserMacro.
 //
+//   Kathleen Biagas, Wed Mar 29 08:10:38 PDT 2023
+//   Replaced QRegExp (which has been deprecated) with QRegularExpression.
+//
 // ****************************************************************************
 
 void
@@ -522,7 +526,7 @@ QvisCommandWindow::LoadScripts()
     QFile file(RCFileName());
     if(file.open(QIODevice::ReadOnly))
     {
-        QRegExp rx("^def user_macro_([0-9]{1,})");
+        QRegularExpression rx("^def user_macro_([0-9]{1,})");
         QTextStream stream(&file);
         QString lines;
         while(!stream.atEnd())
@@ -532,9 +536,10 @@ QvisCommandWindow::LoadScripts()
             lines += "\n";
 
             // See if the string contains the regex. If so, get the number.
-            if(s.contains(rx))
+            QRegularExpressionMatch regexMatch;
+            if(s.contains(rx, &regexMatch))
             {
-                QStringList list(rx.capturedTexts());
+                QStringList list(regexMatch.capturedTexts());
                 if(list.size() == 2)
                 {
                     bool ok = false;

@@ -3,6 +3,9 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 #include <QtGui>
+#include <QRegularExpression>
+#include <QRegularExpressionMatch>
+#include <QRegularExpressionMatchIterator>
 
 #include "QvisPythonSyntaxHighlighter.h"
 
@@ -16,6 +19,8 @@
 // Creation:   Mon Feb  8 14:57:29 PST 2010
 //
 // Modifications:
+//   Kathleen Biagas, Wed Mar 29 08:10:38 PDT 2023
+//   Replaced QRegExp (which has been deprecated) with QRegularExpression.
 //
 // ***************************************************************************
 QvisPythonSyntaxHighlighter::QvisPythonSyntaxHighlighter
@@ -30,7 +35,7 @@ QvisPythonSyntaxHighlighter::QvisPythonSyntaxHighlighter
         rule.format = formats[name];
         foreach(const QString &pat,patterns[name])
         {
-            rule.pattern = QRegExp(pat);
+            rule.pattern = QRegularExpression(pat);
             rules.append(rule);
         }
     }
@@ -46,6 +51,8 @@ QvisPythonSyntaxHighlighter::QvisPythonSyntaxHighlighter
 // Creation:   Mon Feb  8 14:57:29 PST 2010
 //
 // Modifications:
+//   Kathleen Biagas, Wed Mar 29 08:10:38 PDT 2023
+//   Replaced QRegExp (which has been deprecated) with QRegularExpression.
 //
 // ***************************************************************************
 
@@ -105,8 +112,8 @@ QvisPythonSyntaxHighlighter::setupRules()
     order << "keyword" << "import" << "self" << "string"
            << "const" << "comment";
     
-    tripleSingleQuote = QRegExp("'''");       
-    tripleDoubleQuote = QRegExp("\"\"\"");
+    tripleSingleQuote = QRegularExpression("'''");       
+    tripleDoubleQuote = QRegularExpression("\"\"\"");
 }
 
 // ***************************************************************************
@@ -119,21 +126,24 @@ QvisPythonSyntaxHighlighter::setupRules()
 // Creation:   Mon Feb  8 14:57:29 PST 2010
 //
 // Modifications:
+//   Kathleen Biagas, Wed Mar 29 08:10:38 PDT 2023
+//   Replaced QRegExp (which has been deprecated) with QRegularExpression.
 //
 // ***************************************************************************
 
 void
 QvisPythonSyntaxHighlighter::highlightBlock(const QString &text)
 {
-    foreach (const HighlightingRule &rule, rules)
+    foreach(const HighlightingRule &rule, rules)
     {
-        QRegExp expression(rule.pattern);
-        int index = expression.indexIn(text);
-        while (index >= 0)
+        QRegularExpression regex(rule.pattern.pattern());
+        QRegularExpressionMatchIterator iter = regex.globalMatch(text);
+        while (iter.hasNext())
         {
-            int lenth = expression.matchedLength();
-            setFormat(index, lenth, rule.format);
-            index = expression.indexIn(text, index + lenth);
+            QRegularExpressionMatch match = iter.next();
+            int length = match.capturedLength();
+            int index  = match.capturedStart();
+            setFormat(index, length, rule.format);
         }
     }
     
@@ -176,21 +186,24 @@ QvisPythonSyntaxHighlighter::highlightBlock(const QString &text)
 // Creation:   Mon Feb  8 14:57:29 PST 2010
 //
 // Modifications:
+//   Kathleen Biagas, Wed Mar 29 08:10:38 PDT 2023
+//   Replaced QRegExp (which has been deprecated) with QRegularExpression.
 //
 // ***************************************************************************
 
 bool 
-QvisPythonSyntaxHighlighter::checkOpen(const QRegExp &regx,
+QvisPythonSyntaxHighlighter::checkOpen(const QRegularExpression &regx,
                                        const QString &text,
                                        bool open)
 {
     int len =  0;
     int start_idx = 0;
-
-    int index = regx.indexIn(text);
-    while (index >= 0)
+    QRegularExpressionMatchIterator iter = regx.globalMatch(text);
+    while (iter.hasNext())
     {
-        len = regx.matchedLength();
+        QRegularExpressionMatch match = iter.next();
+        len = match.capturedLength();
+        int index = match.capturedStart();
         if(!open)
         {
             start_idx = index;
@@ -203,8 +216,6 @@ QvisPythonSyntaxHighlighter::checkOpen(const QRegExp &regx,
             open = false;
             start_idx = 0;
         }
-
-        index = regx.indexIn(text, index + len);
     }
     
     // if the entire line is open, apply fmt
