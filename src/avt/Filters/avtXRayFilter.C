@@ -2277,6 +2277,56 @@ avtXRayFilter::RedistributeLines(int nLeaves, int *nLinesPerDataset,
 #endif
 }
 
+// ****************************************************************************
+//  Method: avtXRayFilter::CalculateImagingPlaneDims
+//
+//  Purpose:
+//    Given several constants, calculate the dimensions of the imaging planes.
+//    This method is static so it can be used elsewhere.
+//
+//  Programmer: Justin Privitera
+//  Creation:   March 29 2023
+//
+//  Modifications:
+//
+// ****************************************************************************
+void
+avtXRayFilter::CalculateImagingPlaneDims(const double &parallelScale,
+                                         const int (&imageSize)[2],
+                                         const bool &perspective,
+                                         const double &viewAngle,
+                                         const double &nearPlane,
+                                         const double &farPlane,
+                                         const double &imageZoom,
+                                         double &nearHeight,
+                                         double &nearWidth,
+                                         double &viewHeight,
+                                         double &viewWidth,
+                                         double &farHeight,
+                                         double &farWidth)
+{
+    viewHeight = parallelScale;
+    viewWidth = (static_cast<float>(imageSize[0]) / static_cast<float>(imageSize[1])) * viewHeight;
+    if (perspective)
+    {
+        const double viewDist{parallelScale / tan ((viewAngle * 3.1415926535) / 360.)};
+        const double nearDist{viewDist + nearPlane};
+        const double farDist{viewDist + farPlane};
+        const double nearDist_over_viewDist{nearDist / viewDist};
+        const double farDist_over_viewDist{farDist / viewDist};
+
+        nearHeight = (nearDist_over_viewDist * viewHeight) / imageZoom;
+        nearWidth = (nearDist_over_viewDist * viewWidth) / imageZoom;
+        farHeight = (farDist_over_viewDist * viewHeight) / imageZoom;
+        farWidth = (farDist_over_viewDist * viewWidth) / imageZoom;
+    }
+    else
+    {
+        nearHeight = farHeight = viewHeight / imageZoom;
+        nearWidth = farWidth = viewWidth / imageZoom;
+    }
+}
+
 
 // ****************************************************************************
 //  Method: avtXRayFilter::CalculateLines
@@ -2293,6 +2343,9 @@ avtXRayFilter::RedistributeLines(int nLeaves, int *nLinesPerDataset,
 // 
 //    Justin Privitera, Thu Sep  8 16:29:06 PDT 2022
 //    Fixed a bug causing the viewWidth to be calculated incorrectly.
+// 
+//    Justin Privitera, Wed Mar 29 13:19:53 PDT 2023
+//    Moved some calculations to CalculateImagingPlaneDims().
 //
 // ****************************************************************************
 
@@ -2312,35 +2365,13 @@ avtXRayFilter::CalculateLines(void)
     // Calculate the width and height in the near plane, view plane and
     // far plane.
     //
-    double nearHeight, viewHeight, farHeight;
-    double nearWidth, viewWidth, farWidth;
-
-    viewHeight = parallelScale;
-    viewWidth  = (static_cast<float>(imageSize[0]) / static_cast<float>(imageSize[1])) * viewHeight;
-    if (perspective)
-    {
-        double viewDist = parallelScale / tan ((viewAngle * 3.1415926535) / 360.);
-        double nearDist = viewDist + nearPlane;
-        double farDist  = viewDist + farPlane;
-
-        nearHeight = (nearDist * viewHeight) / viewDist;
-        nearWidth  = (nearDist * viewWidth) / viewDist;
-        farHeight  = (farDist * viewHeight) / viewDist;
-        farWidth   = (farDist * viewWidth) / viewDist;
-    }
-    else
-    {
-        nearHeight = viewHeight;
-        nearWidth  = viewWidth;
-        farHeight  = viewHeight;
-        farWidth   = viewWidth;
-    }
-
-    // Adjust for the image zoom.
-    nearHeight = nearHeight / imageZoom;
-    nearWidth  = nearWidth  / imageZoom;
-    farHeight  = farHeight  / imageZoom;
-    farWidth   = farWidth   / imageZoom;
+    double nearHeight, viewHeight, farHeight, nearWidth, viewWidth, farWidth;
+    CalculateImagingPlaneDims(parallelScale, imageSize, 
+                              perspective, viewAngle,
+                              nearPlane, farPlane, imageZoom,
+                              nearHeight, nearWidth,
+                              viewHeight, viewWidth,
+                              farHeight, farWidth);
 
     // Calculate the center of the image in the near and far planes.
     double nearOrigin[3], farOrigin[3];
