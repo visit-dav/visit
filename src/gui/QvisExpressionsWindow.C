@@ -21,6 +21,9 @@
 #include <QTextEdit>
 #include <QMenu>
 #include <QPushButton>
+#include <QRegularExpression>
+#include <QRegularExpressionMatch>
+#include <QRegularExpressionMatchIterator>
 #include <QSplitter>
 
 #include <QNarrowLineEdit.h>
@@ -1513,6 +1516,9 @@ QvisExpressionsWindow::UpdatePythonExpression()
 //    Cyrus Harrison,Thu Apr  8 12:40:22 PDT 2010
 //    Resolved issue w/ incorrectly flagging non python expressions.
 //
+//    Kathleen Biagas, Wed Mar 29 08:10:38 PDT 2023
+//    Replaced QRegExp (which has been deprecated) with QRegularExpression.
+//
 // ****************************************************************************
 bool
 QvisExpressionsWindow::ParsePythonExpression(const QString &expr_def,
@@ -1542,13 +1548,13 @@ QvisExpressionsWindow::ParsePythonExpression(const QString &expr_def,
     // look for instances of <ws>* , <ws>* " [anything] " <ws>* )
     // all instances of " within the python expression should be escaped.
 
-    QRegExp regx("(\\s*\\,\\s*\\\")(.+)(\\\"\\s*\\))");
-    int match_pos = 0;
-    while((match_pos = regx.indexIn(edef, match_pos)) != -1)
+    QRegularExpression regx("(\\s*\\,\\s*\\\")(.+)(\\\"\\s*\\))");
+    QRegularExpressionMatchIterator iter = regx.globalMatch(edef);
+    while(iter.hasNext())
     {
-        args_stop_idx = regx.pos(1);
-        res_script    = regx.cap(2);
-        match_pos    += regx.matchedLength();
+        QRegularExpressionMatch match = iter.next();
+        args_stop_idx = match.capturedStart(1);
+        res_script    = match.captured(2);
     }
 
     if(args_stop_idx == -1)
