@@ -115,6 +115,19 @@ class AVTFILTERS_API avtXRayFilter : public avtDatasetToDatasetFilter
     void                            SetBackgroundIntensities(double *, int);
     void                            SetDebugRay(int);
     void                            SetOutputRayBounds(bool);
+    static void                     CalculateImagingPlaneDims(const double &parallelScale,
+                                                              const int (&imageSize)[2],
+                                                              const bool &perspective,
+                                                              const double &viewAngle,
+                                                              const double &nearPlane,
+                                                              const double &farPlane,
+                                                              const double &imageZoom,
+                                                              double &nearHeight,
+                                                              double &nearWidth,
+                                                              double &viewHeight,
+                                                              double &viewWidth,
+                                                              double &farHeight,
+                                                              double &farWidth);
 
   protected:
     std::string                     absVarName;

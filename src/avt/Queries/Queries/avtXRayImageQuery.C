@@ -1269,6 +1269,10 @@ avtXRayImageQuery::GetSecondaryVars(std::vector<std::string> &outVars)
 //    Have blueprint verify failures go to debug1 instead of to console.
 //    Consistent error messaging + cleaner error handling.
 // 
+//    Justin Privitera, Wed Mar 29 13:19:53 PDT 2023
+//    Leverage avtXRayFilter::CalculateImagingPlaneDims so that calculations
+//    are not duplicated here as well.
+// 
 // ****************************************************************************
 
 void
@@ -1522,27 +1526,13 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
         {
 #ifdef HAVE_CONDUIT
             // calculate constants for use in multiple functions
-            // the following calculations must be the same as the calculations in avtXRayFilter.C!
-            const double viewHeight{parallelScale};
-            const double viewWidth{(static_cast<float>(imageSize[0]) / static_cast<float>(imageSize[1])) * viewHeight};
-            double nearHeight, nearWidth, farHeight, farWidth;
-            if (perspective)
-            {
-                const double viewDist{parallelScale / tan ((viewAngle * 3.1415926535) / 360.)};
-                const double nearDist{viewDist + nearPlane};
-                const double farDist{viewDist + farPlane};
-                const double nearDist_over_viewDist{nearDist / viewDist};
-                const double farDist_over_viewDist{farDist / viewDist};
-                nearHeight = (nearDist_over_viewDist * viewHeight) / imageZoom;
-                nearWidth = (nearDist_over_viewDist * viewWidth) / imageZoom;
-                farHeight = (farDist_over_viewDist * viewHeight) / imageZoom;
-                farWidth = (farDist_over_viewDist * viewWidth) / imageZoom;
-            }
-            else
-            {
-                nearHeight = farHeight = viewHeight / imageZoom;
-                nearWidth = farWidth = viewWidth / imageZoom;
-            }
+            double nearHeight, nearWidth, viewHeight, viewWidth, farHeight, farWidth;
+            avtXRayFilter::CalculateImagingPlaneDims(parallelScale, imageSize, 
+                                                     perspective, viewAngle,
+                                                     nearPlane, farPlane, imageZoom,
+                                                     nearHeight, nearWidth,
+                                                     viewHeight, viewWidth,
+                                                     farHeight, farWidth);
 
             const double detectorWidth{2. * nearWidth}; // near
             const double detectorHeight{2. * nearHeight}; // near
@@ -1560,7 +1550,7 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
                 numBins, leaves, numfieldvals, intensity_vals, depth_vals);
 
             // all the metadata living under "state" is written in this function
-            WriteBlueprintMetadata(data_out, cycle, numBins, 
+            WriteBlueprintMetadata(data_out["state"], cycle, numBins, 
                 detectorWidth, detectorHeight, 
                 numfieldvals, intensity_vals, depth_vals);
 
@@ -2063,13 +2053,14 @@ avtXRayImageQuery::WriteBlueprintImagingPlane(conduit::Node &data_out,
                                               avtVector &urc)
 {
     // set up imaging plane coords
-    data_out["coordsets/" + plane_name + "_coords/type"] = "explicit";
-    data_out["coordsets/" + plane_name + "_coords/values/x"].set(conduit::DataType::float64(4));
-    data_out["coordsets/" + plane_name + "_coords/values/y"].set(conduit::DataType::float64(4));
-    data_out["coordsets/" + plane_name + "_coords/values/z"].set(conduit::DataType::float64(4));
-    double *xvals = data_out["coordsets/" + plane_name + "_coords/values/x"].value();
-    double *yvals = data_out["coordsets/" + plane_name + "_coords/values/y"].value();
-    double *zvals = data_out["coordsets/" + plane_name + "_coords/values/z"].value();
+    conduit::Node &plane_coords = data_out["coordsets"][plane_name + "_coords"];
+    plane_coords["type"] = "explicit";
+    plane_coords["values/x"].set(conduit::DataType::float64(4));
+    plane_coords["values/y"].set(conduit::DataType::float64(4));
+    plane_coords["values/z"].set(conduit::DataType::float64(4));
+    double *xvals = plane_coords["values/x"].value();
+    double *yvals = plane_coords["values/y"].value();
+    double *zvals = plane_coords["values/z"].value();
 
     // set these values and send back up the callstack for use elsewhere
     llc = center + (-1. * planeHeight) * viewUp +     planeWidth     * left;
@@ -2084,20 +2075,22 @@ avtXRayImageQuery::WriteBlueprintImagingPlane(conduit::Node &data_out,
     xvals[3] = ulc.x;  yvals[3] = ulc.y;  zvals[3] = ulc.z;
 
     // set up imaging plane topo
-    data_out["topologies/" + plane_name + "_topo/type"] = "unstructured";
-    data_out["topologies/" + plane_name + "_topo/coordset"] = plane_name + "_coords";
-    data_out["topologies/" + plane_name + "_topo/elements/shape"] = "quad";
+    conduit::Node &plane_topo = data_out["topologies"][plane_name + "_topo"];
+    plane_topo["type"] = "unstructured";
+    plane_topo["coordset"] = plane_name + "_coords";
+    plane_topo["elements/shape"] = "quad";
     const int num_corners{4};
-    data_out["topologies/" + plane_name + "_topo/elements/connectivity"].set(conduit::DataType::int32(num_corners));
-    int *conn = data_out["topologies/" + plane_name + "_topo/elements/connectivity"].value();
+    plane_topo["elements/connectivity"].set(conduit::DataType::int32(num_corners));
+    int *conn = plane_topo["elements/connectivity"].value();
     for (int i = 0; i < num_corners; i ++) { conn[i] = i; }
 
     // set up imaging plane trivial field
-    data_out["fields/" + plane_name + "_field/topology"] = plane_name + "_topo";
-    data_out["fields/" + plane_name + "_field/association"] = "element";
-    data_out["fields/" + plane_name + "_field/volume_dependent"] = "false";
-    data_out["fields/" + plane_name + "_field/values"].set(conduit::DataType::float64(1));
-    conduit::float64 *field_vals = data_out["fields/" + plane_name + "_field/values"].value();
+    conduit::Node &plane_field = data_out["fields"][plane_name + "_field"];
+    plane_field["topology"] = plane_name + "_topo";
+    plane_field["association"] = "element";
+    plane_field["volume_dependent"] = "false";
+    plane_field["values"].set(conduit::DataType::float64(1));
+    conduit::float64 *field_vals = plane_field["values"].value();
     field_vals[0] = 0;
 }
 #endif
@@ -2130,13 +2123,14 @@ WriteBlueprintRayCornersMesh(conduit::Node &data_out,
     const int num_points{8};
 
     // set up ray coords
-    data_out["coordsets/ray_corners_coords/type"] = "explicit";
-    data_out["coordsets/ray_corners_coords/values/x"].set(conduit::DataType::float64(num_points));
-    data_out["coordsets/ray_corners_coords/values/y"].set(conduit::DataType::float64(num_points));
-    data_out["coordsets/ray_corners_coords/values/z"].set(conduit::DataType::float64(num_points));
-    double *xvals_ray = data_out["coordsets/ray_corners_coords/values/x"].value();
-    double *yvals_ray = data_out["coordsets/ray_corners_coords/values/y"].value();
-    double *zvals_ray = data_out["coordsets/ray_corners_coords/values/z"].value();
+    conduit::Node &ray_corners_coords = data_out["coordsets"]["ray_corners_coords"];
+    ray_corners_coords["type"] = "explicit";
+    ray_corners_coords["values/x"].set(conduit::DataType::float64(num_points));
+    ray_corners_coords["values/y"].set(conduit::DataType::float64(num_points));
+    ray_corners_coords["values/z"].set(conduit::DataType::float64(num_points));
+    double *xvals_ray = ray_corners_coords["values/x"].value();
+    double *yvals_ray = ray_corners_coords["values/y"].value();
+    double *zvals_ray = ray_corners_coords["values/z"].value();
                 
     // set x values             // set y values             // set z values
     xvals_ray[0] = llc_near.x;  yvals_ray[0] = llc_near.y;  zvals_ray[0] = llc_near.z;
@@ -2149,19 +2143,21 @@ WriteBlueprintRayCornersMesh(conduit::Node &data_out,
     xvals_ray[7] = ulc_far.x;   yvals_ray[7] = ulc_far.y;   zvals_ray[7] = ulc_far.z;
 
     // set up ray topo
-    data_out["topologies/ray_corners_topo/type"] = "unstructured";
-    data_out["topologies/ray_corners_topo/coordset"] = "ray_corners_coords";
-    data_out["topologies/ray_corners_topo/elements/shape"] = "line";
-    data_out["topologies/ray_corners_topo/elements/connectivity"].set(conduit::DataType::int32(num_points));
-    int *conn = data_out["topologies/ray_corners_topo/elements/connectivity"].value();
+    conduit::Node &ray_corners_topo = data_out["topologies"]["ray_corners_topo"];
+    ray_corners_topo["type"] = "unstructured";
+    ray_corners_topo["coordset"] = "ray_corners_coords";
+    ray_corners_topo["elements/shape"] = "line";
+    ray_corners_topo["elements/connectivity"].set(conduit::DataType::int32(num_points));
+    int *conn = ray_corners_topo["elements/connectivity"].value();
     for (int i = 0; i < num_points; i ++) { conn[i] = i; }
 
     // set up ray trivial field
-    data_out["fields/ray_corners_field/topology"] = "ray_corners_topo";
-    data_out["fields/ray_corners_field/association"] = "element";
-    data_out["fields/ray_corners_field/volume_dependent"] = "false";
-    data_out["fields/ray_corners_field/values"].set(conduit::DataType::float64(num_corners));
-    conduit::float64 *field_vals = data_out["fields/ray_corners_field/values"].value();
+    conduit::Node &ray_corners_field = data_out["fields"]["ray_corners_field"];
+    ray_corners_field["topology"] = "ray_corners_topo";
+    ray_corners_field["association"] = "element";
+    ray_corners_field["volume_dependent"] = "false";
+    ray_corners_field["values"].set(conduit::DataType::float64(num_corners));
+    conduit::float64 *field_vals = ray_corners_field["values"].value();
     for (int i = 0; i < num_corners; i ++) { field_vals[i] = 0; }
 }
 #endif
@@ -2195,13 +2191,14 @@ avtXRayImageQuery::WriteBlueprintRaysMesh(conduit::Node &data_out,
     // set up ray coords
     const int num_lines{nx * ny};
     const int num_points{num_lines * 2};
-    data_out["coordsets/ray_coords/type"] = "explicit";
-    data_out["coordsets/ray_coords/values/x"].set(conduit::DataType::float64(num_points));
-    data_out["coordsets/ray_coords/values/y"].set(conduit::DataType::float64(num_points));
-    data_out["coordsets/ray_coords/values/z"].set(conduit::DataType::float64(num_points));
-    double *xvals_ray = data_out["coordsets/ray_coords/values/x"].value();
-    double *yvals_ray = data_out["coordsets/ray_coords/values/y"].value();
-    double *zvals_ray = data_out["coordsets/ray_coords/values/z"].value();
+    conduit::Node &ray_coords = data_out["coordsets"]["ray_coords"];
+    ray_coords["type"] = "explicit";
+    ray_coords["values/x"].set(conduit::DataType::float64(num_points));
+    ray_coords["values/y"].set(conduit::DataType::float64(num_points));
+    ray_coords["values/z"].set(conduit::DataType::float64(num_points));
+    double *xvals_ray = ray_coords["values/x"].value();
+    double *yvals_ray = ray_coords["values/y"].value();
+    double *zvals_ray = ray_coords["values/z"].value();
 
     avtVector scaledunitleft, scaledunitup, lrc;
 
@@ -2238,11 +2235,12 @@ avtXRayImageQuery::WriteBlueprintRaysMesh(conduit::Node &data_out,
     }
 
     // set up ray topo
-    data_out["topologies/ray_topo/type"] = "unstructured";
-    data_out["topologies/ray_topo/coordset"] = "ray_coords";
-    data_out["topologies/ray_topo/elements/shape"] = "line";
-    data_out["topologies/ray_topo/elements/connectivity"].set(conduit::DataType::int32(num_points));
-    int *conn = data_out["topologies/ray_topo/elements/connectivity"].value();
+    conduit::Node &ray_topo = data_out["topologies"]["ray_topo"];
+    ray_topo["type"] = "unstructured";
+    ray_topo["coordset"] = "ray_coords";
+    ray_topo["elements/shape"] = "line";
+    ray_topo["elements/connectivity"].set(conduit::DataType::int32(num_points));
+    int *conn = ray_topo["elements/connectivity"].value();
     for (int i = 0; i < num_lines; i ++)
     {
         // connect each point in the near plane to a point in the far plane
@@ -2251,11 +2249,12 @@ avtXRayImageQuery::WriteBlueprintRaysMesh(conduit::Node &data_out,
     }
 
     // set up ray trivial field
-    data_out["fields/ray_field/topology"] = "ray_topo";
-    data_out["fields/ray_field/association"] = "element";
-    data_out["fields/ray_field/volume_dependent"] = "false";
-    data_out["fields/ray_field/values"].set(conduit::DataType::float64(num_lines));
-    conduit::float64 *field_vals = data_out["fields/ray_field/values"].value();
+    conduit::Node &ray_field = data_out["fields"]["ray_field"];
+    ray_field["topology"] = "ray_topo";
+    ray_field["association"] = "element";
+    ray_field["volume_dependent"] = "false";
+    ray_field["values"].set(conduit::DataType::float64(num_lines));
+    conduit::float64 *field_vals = ray_field["values"].value();
     for (int i = 0; i < num_lines; i ++) { field_vals[i] = i; }
 }
 #endif
@@ -2346,26 +2345,26 @@ avtXRayImageQuery::WriteBlueprintImagingMeshes(conduit::Node &data_out,
 // ****************************************************************************
 #ifdef HAVE_CONDUIT
 void
-avtXRayImageQuery::WriteBlueprintXRayView(conduit::Node &data_out)
+avtXRayImageQuery::WriteBlueprintXRayView(conduit::Node &xray_view)
 {
-    data_out["state/xray_view/normal/x"] = normal[0];
-    data_out["state/xray_view/normal/y"] = normal[1];
-    data_out["state/xray_view/normal/z"] = normal[2];
-    data_out["state/xray_view/focus/x"] = focus[0];
-    data_out["state/xray_view/focus/y"] = focus[1];
-    data_out["state/xray_view/focus/z"] = focus[2];
-    data_out["state/xray_view/view_up/x"] = viewUp[0];
-    data_out["state/xray_view/view_up/y"] = viewUp[1];
-    data_out["state/xray_view/view_up/z"] = viewUp[2];
-    data_out["state/xray_view/view_angle"] = viewAngle;
-    data_out["state/xray_view/parallel_scale"] = parallelScale;
-    data_out["state/xray_view/near_plane"] = nearPlane;
-    data_out["state/xray_view/far_plane"] = farPlane;
-    data_out["state/xray_view/image_pan/x"] = imagePan[0];
-    data_out["state/xray_view/image_pan/y"] = imagePan[1];
-    data_out["state/xray_view/image_zoom"] = imageZoom;
-    data_out["state/xray_view/perspective"] = perspective;
-    data_out["state/xray_view/perspective_str"] = perspective ? "perspective" : "parallel";
+    xray_view["normal/x"] = normal[0];
+    xray_view["normal/y"] = normal[1];
+    xray_view["normal/z"] = normal[2];
+    xray_view["focus/x"] = focus[0];
+    xray_view["focus/y"] = focus[1];
+    xray_view["focus/z"] = focus[2];
+    xray_view["view_up/x"] = viewUp[0];
+    xray_view["view_up/y"] = viewUp[1];
+    xray_view["view_up/z"] = viewUp[2];
+    xray_view["view_angle"] = viewAngle;
+    xray_view["parallel_scale"] = parallelScale;
+    xray_view["near_plane"] = nearPlane;
+    xray_view["far_plane"] = farPlane;
+    xray_view["image_pan/x"] = imagePan[0];
+    xray_view["image_pan/y"] = imagePan[1];
+    xray_view["image_zoom"] = imageZoom;
+    xray_view["perspective"] = perspective;
+    xray_view["perspective_str"] = perspective ? "perspective" : "parallel";
 }
 #endif
 
@@ -2386,18 +2385,18 @@ avtXRayImageQuery::WriteBlueprintXRayView(conduit::Node &data_out)
 // ****************************************************************************
 #ifdef HAVE_CONDUIT
 void
-avtXRayImageQuery::WriteBlueprintXRayQuery(conduit::Node &data_out, 
+avtXRayImageQuery::WriteBlueprintXRayQuery(conduit::Node &xray_query, 
                                            const int numBins)
 {
-    data_out["state/xray_query/divide_emis_by_absorb"] = divideEmisByAbsorb;
-    data_out["state/xray_query/divide_emis_by_absorb_str"] = divideEmisByAbsorb ? "yes" : "no";
-    data_out["state/xray_query/num_x_pixels"] = nx;
-    data_out["state/xray_query/num_y_pixels"] = ny;
-    data_out["state/xray_query/num_bins"] = numBins;
-    data_out["state/xray_query/abs_var_name"] = absVarName;
-    data_out["state/xray_query/emis_var_name"] = emisVarName;
-    data_out["state/xray_query/abs_units"] = absUnits;
-    data_out["state/xray_query/emis_units"] = emisUnits;
+    xray_query["divide_emis_by_absorb"] = divideEmisByAbsorb;
+    xray_query["divide_emis_by_absorb_str"] = divideEmisByAbsorb ? "yes" : "no";
+    xray_query["num_x_pixels"] = nx;
+    xray_query["num_y_pixels"] = ny;
+    xray_query["num_bins"] = numBins;
+    xray_query["abs_var_name"] = absVarName;
+    xray_query["emis_var_name"] = emisVarName;
+    xray_query["abs_units"] = absUnits;
+    xray_query["emis_units"] = emisUnits;
 }
 #endif
 
@@ -2423,7 +2422,7 @@ avtXRayImageQuery::WriteBlueprintXRayQuery(conduit::Node &data_out,
 // ****************************************************************************
 #ifdef HAVE_CONDUIT
 void
-avtXRayImageQuery::WriteBlueprintXRayData(conduit::Node &data_out, 
+avtXRayImageQuery::WriteBlueprintXRayData(conduit::Node &xray_data, 
                                           const double detectorWidth, 
                                           const double detectorHeight,
                                           const int numfieldvals,
@@ -2433,8 +2432,8 @@ avtXRayImageQuery::WriteBlueprintXRayData(conduit::Node &data_out,
     // If the near plane is too far back, it can cause the near width
     // and height to be negative. However, the detector height and 
     // width ought to be positive values, hence the absolute value.
-    data_out["state/xray_data/detector_width"] = fabs(detectorWidth);
-    data_out["state/xray_data/detector_height"] = fabs(detectorHeight);
+    xray_data["detector_width"] = fabs(detectorWidth);
+    xray_data["detector_height"] = fabs(detectorHeight);
 
     // intensity and path length max and mins
     conduit::float64 int_max, int_min, pl_max, pl_min;
@@ -2456,12 +2455,12 @@ avtXRayImageQuery::WriteBlueprintXRayData(conduit::Node &data_out,
         }
     }
 
-    data_out["state/xray_data/intensity_max"] = int_max;
-    data_out["state/xray_data/intensity_min"] = int_min;
-    data_out["state/xray_data/path_length_max"] = pl_max;
-    data_out["state/xray_data/path_length_min"] = pl_min;
+    xray_data["intensity_max"] = int_max;
+    xray_data["intensity_min"] = int_min;
+    xray_data["path_length_max"] = pl_max;
+    xray_data["path_length_min"] = pl_min;
 
-    data_out["state/xray_data/image_topo_order_of_domain_variables"] = "xyz";
+    xray_data["image_topo_order_of_domain_variables"] = "xyz";
 }
 #endif
 
@@ -2479,7 +2478,7 @@ avtXRayImageQuery::WriteBlueprintXRayData(conduit::Node &data_out,
 // ****************************************************************************
 #ifdef HAVE_CONDUIT
 void
-avtXRayImageQuery::WriteBlueprintMetadata(conduit::Node &data_out,
+avtXRayImageQuery::WriteBlueprintMetadata(conduit::Node &metadata,
                                           const int cycle,
                                           const int numBins,
                                           const double detectorWidth, 
@@ -2489,12 +2488,12 @@ avtXRayImageQuery::WriteBlueprintMetadata(conduit::Node &data_out,
                                           const conduit::float64 *depth_vals)
 {
     // top level items
-    data_out["state/time"] = GetInput()->GetInfo().GetAttributes().GetTime();
-    data_out["state/cycle"] = cycle;
+    metadata["time"] = GetInput()->GetInfo().GetAttributes().GetTime();
+    metadata["cycle"] = cycle;
 
-    WriteBlueprintXRayView(data_out);
-    WriteBlueprintXRayQuery(data_out, numBins);
-    WriteBlueprintXRayData(data_out, detectorWidth, detectorHeight, 
+    WriteBlueprintXRayView(metadata["xray_view"]);
+    WriteBlueprintXRayQuery(metadata["xray_query"], numBins);
+    WriteBlueprintXRayData(metadata["xray_data"], detectorWidth, detectorHeight, 
                            numfieldvals, intensity_vals, depth_vals);
 }
 #endif
