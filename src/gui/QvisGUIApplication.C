@@ -18,6 +18,7 @@
 #include <QPrinter>
 #include <QPrinterInfo>
 #include <QProcess>
+#include <QRegularExpression>
 #include <QSocketNotifier>
 #include <QStatusBar>
 #include <QStyle>
@@ -8913,6 +8914,8 @@ QvisGUIApplication::GetCrashFilePIDs(const QFileInfoList &fileList, intVector &o
 // Creation:   Mon Mar 12 14:18:57 PDT 2018
 //
 // Modifications:
+//   Kathleen Biagas, Wed Mar 29 08:10:38 PDT 2023
+//   Replaced QRegExp (which has been deprecated) with QRegularExpression.
 //
 // ****************************************************************************
 
@@ -8928,7 +8931,7 @@ QvisGUIApplication::GetSystemPIDs(std::vector<int> &outPIDs)
     while(fgets(buf, 2048, f) != NULL)
     {
         QString pidStr(buf);
-        QStringList tokens = pidStr.split(QRegExp("\\s+"), QString::SkipEmptyParts); // whitespace character
+        QStringList tokens = pidStr.split(QRegularExpression("\\s+"), QString::SkipEmptyParts); // whitespace character
 
         int pid = tokens[0].toInt(&ok, 10);
 
