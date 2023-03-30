@@ -18,9 +18,6 @@ SpreadsheetGUIPluginInfo.C
 QvisSpreadsheetPlotWindow.C
 ${COMMON_SOURCES}
 )
-SET(LIBG_MOC_SOURCES
-QvisSpreadsheetPlotWindow.h
-)
 
 SET(LIBV_SOURCES
 SpreadsheetViewerEnginePluginInfo.C
@@ -69,13 +66,13 @@ TARGET_LINK_LIBRARIES(ISpreadsheetPlot visitcommon)
 SET(INSTALLTARGETS ISpreadsheetPlot)
 
 IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
-    QT_WRAP_CPP(GSpreadsheetPlot LIBG_SOURCES ${LIBG_MOC_SOURCES})
     ADD_LIBRARY(GSpreadsheetPlot ${LIBG_SOURCES})
+    set_target_properties(GSpreadsheetPlot PROPERTIES AUTOMOC ON)
     TARGET_LINK_LIBRARIES(GSpreadsheetPlot visitcommon gui )
 
-    QT_WRAP_CPP(VSpreadsheetPlot LIBV_SOURCES ${LIBV_MOC_SOURCES})
     ADD_LIBRARY(VSpreadsheetPlot ${LIBV_SOURCES})
     ADD_TARGET_DEFINITIONS(VSpreadsheetPlot VIEWER)
+    set_target_properties(VSpreadsheetPlot PROPERTIES AUTOMOC ON)
     TARGET_LINK_LIBRARIES(VSpreadsheetPlot visitcommon viewer )
 
     SET(INSTALLTARGETS ${INSTALLTARGETS} GSpreadsheetPlot VSpreadsheetPlot)

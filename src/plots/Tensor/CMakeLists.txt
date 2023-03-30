@@ -18,9 +18,6 @@ TensorGUIPluginInfo.C
 QvisTensorPlotWindow.C
 ${COMMON_SOURCES}
 )
-SET(LIBG_MOC_SOURCES
-QvisTensorPlotWindow.h
-)
 
 SET(LIBV_SOURCES
 TensorViewerEnginePluginInfo.C
@@ -51,8 +48,8 @@ TARGET_LINK_LIBRARIES(ITensorPlot visitcommon)
 SET(INSTALLTARGETS ITensorPlot)
 
 IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
-    QT_WRAP_CPP(GTensorPlot LIBG_SOURCES ${LIBG_MOC_SOURCES})
     ADD_LIBRARY(GTensorPlot ${LIBG_SOURCES})
+    set_target_properties(GTensorPlot PROPERTIES AUTOMOC ON)
     TARGET_LINK_LIBRARIES(GTensorPlot visitcommon gui )
 
     ADD_LIBRARY(VTensorPlot ${LIBV_SOURCES})

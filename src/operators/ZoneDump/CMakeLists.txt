@@ -18,9 +18,6 @@ ZoneDumpGUIPluginInfo.C
 QvisZoneDumpWindow.C
 ${COMMON_SOURCES}
 )
-SET(LIBG_MOC_SOURCES
-QvisZoneDumpWindow.h
-)
 
 SET(LIBV_SOURCES
 ZoneDumpViewerEnginePluginInfo.C
@@ -48,8 +45,8 @@ TARGET_LINK_LIBRARIES(IZoneDumpOperator visitcommon)
 SET(INSTALLTARGETS IZoneDumpOperator)
 
 IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
-    QT_WRAP_CPP(GZoneDumpOperator LIBG_SOURCES ${LIBG_MOC_SOURCES})
     ADD_LIBRARY(GZoneDumpOperator ${LIBG_SOURCES})
+    set_target_properties(GZoneDumpOperator PROPERTIES AUTOMOC ON)
     TARGET_LINK_LIBRARIES(GZoneDumpOperator visitcommon gui )
 
     ADD_LIBRARY(VZoneDumpOperator ${LIBV_SOURCES})

@@ -18,9 +18,6 @@ BoxGUIPluginInfo.C
 QvisBoxWindow.C
 ${COMMON_SOURCES}
 )
-SET(LIBG_MOC_SOURCES
-QvisBoxWindow.h
-)
 
 SET(LIBV_SOURCES
 BoxViewerEnginePluginInfo.C
@@ -48,8 +45,8 @@ TARGET_LINK_LIBRARIES(IBoxOperator visitcommon)
 SET(INSTALLTARGETS IBoxOperator)
 
 IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
-    QT_WRAP_CPP(GBoxOperator LIBG_SOURCES ${LIBG_MOC_SOURCES})
     ADD_LIBRARY(GBoxOperator ${LIBG_SOURCES})
+    set_target_properties(GBoxOperator PROPERTIES AUTOMOC ON)
     TARGET_LINK_LIBRARIES(GBoxOperator visitcommon gui )
 
     ADD_LIBRARY(VBoxOperator ${LIBV_SOURCES})

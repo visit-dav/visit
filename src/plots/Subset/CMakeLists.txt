@@ -18,9 +18,6 @@ SubsetGUIPluginInfo.C
 QvisSubsetPlotWindow.C
 ${COMMON_SOURCES}
 )
-SET(LIBG_MOC_SOURCES
-QvisSubsetPlotWindow.h
-)
 
 SET(LIBV_SOURCES
 SubsetViewerEnginePluginInfo.C
@@ -54,8 +51,8 @@ TARGET_LINK_LIBRARIES(ISubsetPlot visitcommon)
 SET(INSTALLTARGETS ISubsetPlot)
 
 IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
-    QT_WRAP_CPP(GSubsetPlot LIBG_SOURCES ${LIBG_MOC_SOURCES})
     ADD_LIBRARY(GSubsetPlot ${LIBG_SOURCES})
+    set_target_properties(GSubsetPlot PROPERTIES AUTOMOC ON)
     TARGET_LINK_LIBRARIES(GSubsetPlot visitcommon gui )
 
     ADD_LIBRARY(VSubsetPlot ${LIBV_SOURCES})

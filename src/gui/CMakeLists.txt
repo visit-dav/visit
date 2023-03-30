@@ -35,6 +35,9 @@
 #   Eric Brugger, Thu Aug  5 11:21:21 PDT 2021
 #   Removed support for SeedMe.
 #
+#   Kathleen Biagas, Thu Mar 30, 2023
+#   Use AUTOMOC target property instead of QT_WRAP_CPP macro.
+#
 #****************************************************************************
 
 SET(GUILIB_SOURCES
@@ -202,146 +205,6 @@ WidgetDataNode.C
 mini3D.C
 )
 
-# The subset of the sources that have Q_OBJECT in their header.
-SET(GUILIB_MOC_SOURCES
-QvisAbstractOpacityBar.h
-QvisAnimationSlider.h
-QvisAnimationWindow.h
-QvisAnnotationObjectInterface.h
-QvisAnnotationWindow.h
-QvisAppearanceWindow.h
-QvisApplication.h
-QvisAxisAttributesWidget.h
-QvisCinemaWizard.h
-QvisColorButton.h
-QvisColorGridWidget.h
-QvisColorSelectionWidget.h
-QvisColorTableWindow.h
-QvisCommandWindow.h
-QvisDBOptionsDialog.h
-QvisDBOptionsHelpWindow.h
-QvisDatabaseCorrelationListWindow.h
-QvisDatabaseCorrelationWindow.h
-QvisDelayedWindow.h
-QvisDelayedWindowObserver.h
-QvisDelayedWindowSimpleObserver.h
-QvisDialogLineEdit.h
-QvisDownloader.h
-QvisMeshManagementWindow.h
-QvisElementButton.h
-QvisElementSelectionWidget.h
-QvisEngineWindow.h
-QvisExportDBWindow.h
-QvisExpressionsWindow.h
-QvisFileInformationWindow.h
-QvisFilePanel.h
-QvisFileSelectionWindow.h
-QvisFileOpenWindow.h
-QvisFileWindowBase.h
-QvisFontAttributesWidget.h
-QvisGaussianOpacityBar.h
-QvisGlobalLineoutWindow.h
-QvisGridWidget.h
-QvisGUIApplication.h
-QvisHelpWindow.h
-QvisHistogram.h
-QvisHistogramLimits.h
-QvisHohlraumFluxQueryWidget.h
-QvisHostProfileWindow.h
-QvisImageAnnotationInterface.h
-QvisInteractorWindow.h
-QvisInterpreter.h
-QvisLightingWidget.h
-QvisLightingWindow.h
-QvisLineoutQueryWidget.h
-QvisLineWidthWidget.h
-QvisMacroWindow.h
-QvisMainWindow.h
-QvisMaterialWindow.h
-QvisMessageWindow.h
-QvisMovieProgressDialog.h
-QvisNotepadArea.h
-QvisOperatorWindow.h
-QvisOpacitySlider.h
-QvisOutputWindow.h
-QvisPeriodicTableWidget.h
-QvisPickQueryWidget.h
-QvisPickWindow.h
-QvisPlotListBox.h
-QvisPluginManagerAttributesDataModel.h
-QvisPointControl.h
-QvisPlotManagerWidget.h
-QvisPluginWindow.h
-#QvisPostableMainWindow.h #nothing to moc
-QvisPostableWindow.h
-QvisPostableWindowObserver.h
-QvisPostableWindowSimpleObserver.h
-QvisPreferencesWindow.h
-QvisPythonFilterEditor.h
-QvisPythonSyntaxHighlighter.h
-QvisQueryOverTimeWindow.h
-QvisQueryWindow.h
-QvisRecentPathRemovalWindow.h
-QvisRenderingWindow.h
-QvisSaveWindow.h
-QvisScreenPositionEdit.h
-QvisScreenPositioner.h
-QvisScribbleOpacityBar.h
-QvisSelectionsDialog.h
-QvisSelectionsWindow.h
-QvisSessionFileDatabaseLoader.h
-QvisSessionSourceChanger.h
-QvisSessionSourceChangerDialog.h
-QvisSourceManagerWidget.h
-QvisSpectrumBar.h
-QvisTurnDownButton.h
-QvisVCRControl.h
-QvisViewWindow.h
-QvisWindowBase.h
-QvisWizard.h
-SplashScreen.h
-QvisSimulationWindow.h
-QvisStripChartMgr.h
-QvisStripChart.h
-QvisStripChartTabWidget.h
-SimCommandSlots.h
-QvisSimulationMessageWindow.h
-QvisSimulationCommandWindow.h
-QvisFileOpenDialog.h
-QvisCMFEWizard.h
-QvisCollapsibleFrame.h
-QvisColorManagerWidget.h
-QvisColorSwatchListWidget.h
-QvisSILSetSelector.h
-QvisSubsetWindow.h
-QvisSubsetPanelWidget.h
-QvisTimeQueryOptionsWidget.h
-QvisTimeSliderInterface.h
-QvisLegendAttributesInterface.h
-QvisLine2DInterface.h
-QvisLine3DInterface.h
-QvisText3DInterface.h
-QvisText2DInterface.h
-QvisTimeSliderControlWidget.h
-QvisVariableListLimiter.h
-QvisVisItUpdate.h
-QvisSequenceButton.h
-QvisCompositeTransition.h
-QvisSequenceTransition.h
-QvisPredefinedViewports.h
-QvisSaveMovieWizard.h
-QvisSetupHostProfilesAndConfigWindow.h
-QvisSequenceView.h
-QvisSequenceMappingModel.h
-QvisKeyframeWindow.h
-QvisKeyframeWidget.h
-QvisKeyframePlotRangeWidget.h
-QvisViewportWidget.h
-QvisXRayImageQueryWidget.h
-)
-
-QT_WRAP_CPP(gui GUILIB_SOURCES ${GUILIB_MOC_SOURCES})
-
 IF (NOT WIN32)
     # This keeps comm's exceptions visible when using -fvisibility=hidden
     ADD_DEFINITIONS(-DCOMM_EXPORTS)
@@ -385,6 +248,8 @@ ENDIF(VISIT_STATIC)
 
 #***************************** The gui library *******************************
 ADD_LIBRARY(gui ${GUILIB_SOURCES})
+
+set_target_properties(gui PROPERTIES AUTOMOC ON)
 
 IF (WIN32)
     SET_TARGET_PROPERTIES(gui PROPERTIES OUTPUT_NAME guilib)

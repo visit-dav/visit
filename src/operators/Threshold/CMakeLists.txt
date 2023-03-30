@@ -18,9 +18,6 @@ ThresholdGUIPluginInfo.C
 QvisThresholdWindow.C
 ${COMMON_SOURCES}
 )
-SET(LIBG_MOC_SOURCES
-QvisThresholdWindow.h
-)
 
 SET(LIBV_SOURCES
 ThresholdViewerEnginePluginInfo.C
@@ -48,8 +45,8 @@ TARGET_LINK_LIBRARIES(IThresholdOperator visitcommon)
 SET(INSTALLTARGETS IThresholdOperator)
 
 IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
-    QT_WRAP_CPP(GThresholdOperator LIBG_SOURCES ${LIBG_MOC_SOURCES})
     ADD_LIBRARY(GThresholdOperator ${LIBG_SOURCES})
+    set_target_properties(GThresholdOperator PROPERTIES AUTOMOC ON)
     TARGET_LINK_LIBRARIES(GThresholdOperator visitcommon gui )
 
     ADD_LIBRARY(VThresholdOperator ${LIBV_SOURCES})

@@ -18,9 +18,6 @@ VolumeGUIPluginInfo.C
 QvisVolumePlotWindow.C
 ${COMMON_SOURCES}
 )
-SET(LIBG_MOC_SOURCES
-QvisVolumePlotWindow.h
-)
 
 SET(LIBV_SOURCES
 VolumeViewerEnginePluginInfo.C
@@ -71,13 +68,18 @@ TARGET_LINK_LIBRARIES(IVolumePlot visitcommon)
 SET(INSTALLTARGETS IVolumePlot)
 
 IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
-    QT_WRAP_CPP(GVolumePlot LIBG_SOURCES ${LIBG_MOC_SOURCES})
     ADD_LIBRARY(GVolumePlot ${LIBG_SOURCES})
+    set_target_properties(GVolumePlot PROPERTIES AUTOMOC ON)
     TARGET_LINK_LIBRARIES(GVolumePlot visitcommon gui )
 
+    if(VTK_VERSION VERSION_EQUAL "8.1.0")
+        set(vtk_vlibs vtkRenderingVolume vtkRenderingVolumeOpenGL2 )
+    else()
+        set(vtk_vlibs VTK::RenderingVolume VTK::RenderingVolumeOpenGL2 )
+    endif()
     ADD_LIBRARY(VVolumePlot ${LIBV_SOURCES})
     ADD_TARGET_DEFINITIONS(VVolumePlot VIEWER)
-    TARGET_LINK_LIBRARIES(VVolumePlot visitcommon viewer vtkRenderingVolume vtkRenderingVolumeOpenGL2 )
+    TARGET_LINK_LIBRARIES(VVolumePlot visitcommon viewer ${vtk_vlibs} )
     if(VISIT_OSPRAY)
         target_link_libraries(VVolumePlot ${OSPRAY_LIBRARIES})
     endif()
@@ -109,7 +111,14 @@ IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO
 ENDIF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
 
 ADD_LIBRARY(EVolumePlot_ser ${LIBE_SOURCES})
-TARGET_LINK_LIBRARIES(EVolumePlot_ser visitcommon avtpipeline_ser avtplotter_ser avtexpressions_ser vtkRenderingVolume vtkRenderingVolumeOpenGL2 )
+
+if(VTK_VERSION VERSION_EQUAL "8.1.0")
+    set(vtk_elibsSer vtkRenderingVolume vtkRenderingVolumeOpenGL2 )
+else()
+    set(vtk_elibsSer VTK::RenderingVolume VTK::RenderingVolumeOpenGL2 )
+endif()
+
+TARGET_LINK_LIBRARIES(EVolumePlot_ser visitcommon avtpipeline_ser avtplotter_ser avtexpressions_ser ${vtk_elibsSer} )
 if(VISIT_OSPRAY)
     target_link_libraries(EVolumePlot_ser ${OSPRAY_LIBRARIES})
 endif()
@@ -119,7 +128,14 @@ SET(INSTALLTARGETS ${INSTALLTARGETS} EVolumePlot_ser)
 
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(EVolumePlot_par ${LIBE_SOURCES})
-    TARGET_LINK_LIBRARIES(EVolumePlot_par visitcommon avtpipeline_par avtplotter_par avtexpressions_par vtkRenderingVolume vtkRenderingVolumeOpenGL2 )
+
+    if(VTK_VERSION VERSION_EQUAL "8.1.0")
+        set(vtk_elibsPar vtkRenderingVolume vtkRenderingVolumeOpenGL2 )
+    else()
+        set(vtk_elibsPar VTK::RenderingVolume VTK::RenderingVolumeOpenGL2 )
+    endif()
+
+    TARGET_LINK_LIBRARIES(EVolumePlot_par visitcommon avtpipeline_par avtplotter_par avtexpressions_par ${vtk_elibsPar} )
     if(VISIT_OSPRAY)
         target_link_libraries(EVolumePlot_par ${OSPRAY_LIBRARIES})
     endif()
