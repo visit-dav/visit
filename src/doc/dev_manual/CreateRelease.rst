@@ -4,54 +4,95 @@ Creating a Release
 Overview
 --------
 
-When we put out a new release we should tag the repository and create a
-release. We will describe creating a release by way of example using the
-steps used to create the 3.0.1 release.
+When we put out a new release we create create three artifacts.
 
-Tagging the release
--------------------
+1) A source code tar file that includes a build_visit script that references the tagged release.
+2) A build_visit script that references the tagged release and includes the checksum for the source code tar file.
+3) The tag on the release candidate branch.
 
-To create a release you will first create a tag using git commands. You
-should get the short SHA for the release that can be found on the splash
-screen of any of the binaries built from the source tar file. The Linux
-distributions are all built with the source tar file. The Windows
-distribution is typically not. To bring up the splash screen go to
-*Help->About*.
+Creating the release
+--------------------
 
-.. figure:: images/Release-SplashScreen.png
+We will describe creating a release by way of example using the steps used to create the 3.3.3 release.
 
-   The splash screen with the short SHA.
+Commit a change that references the tagged release, which in our case is 3.3.3. ::
 
-Now you can issue the git commands to create the tag and push it to GitHub. ::
+    git checkout 3.3RC
+    git pull
+    git checkout -b task/brugger1/2023_03_30_build_visit
+    vi src/tools/dev/scripts/build_visit
+    git add src/tools/dev/scripts/build_visit
+    git commit -m "Temporarily set release in build_visit to v3.3.3."
+    git push --set-upstream origin task/brugger1/2023_03_30_build_visit
+    git branch -D task/brugger1/2023_03_30_build_visit
+
+At this point you are ready to tag the release. ::
+
+    git checkout 3.3RC
+    git pull
+    git tag v3.3.3
+    git push origin v3.3.3
+
+Now you are ready to create the distribution tar file. ::
+
+    src/tools/dev/scripts/visit-dist visit3.3.3
+
+Now you are ready to create the unified build_visit script. ::
+
+    src/tools/dev/scripts/build_visit --write-unified-file build_visit3_3_3
+
+Now we revert the build_visit script on the 3.3 RC to point at the 3.3RC. ::
+
+    git checkout -b task/brugger1/2023_03_30_build_visit_v2
+    vi src/tools/dev/scripts/build_visit
+    git add src/tools/dev/scripts/build_visit
+    git commit -m "Restore the release in build_visit to 3.3RC."
+    git push --set-upstream origin task/brugger1/2023_03_30_build_visit_v2
+    git checkout 3.3RC
+    git branch -D task/brugger1/2023_03_30_build_visit_v2
+
+Now we create the tag and push it to GitHub. ::
 
     git checkout 3.0RC
-    git checkout 2f38385
-    git tag v3.0.1
-    git push origin v3.0.1
+    git tag v3.3.3
+    git push origin v3.3.3
 
-If you go to GitHub and go to the *Releases* tab you will see the newly
-created tag. Now you are ready to create the release. Click on
-*Draft a new release* to bring up the form to create a new release. 
+Creating the release at GitHub
+------------------------------
+
+If you go to GitHub and go to the *Releases* tab you can create the new release.
+Click on *Draft a new release* to bring up the form to create a new release. 
 
 .. figure:: images/Release-GitHubStep1.png
 
-   Creating a new release.
+   Drafting the new release.
 
-Now you can enter information about the release. Set the *Tag version* to
-``v3.0.1``, the *Release title* to ``v3.0.1`` and copy and paste the
-description from the 3.0.0 release into the description, changing the link
-to the release notes appropriately. At this point you can go to the bottom
-of the window and click on *Publish release*.
+Now you can choose the tag for the release.
+Click on *Choose a tag* and select the ``v3.3.3`` tag.
 
 .. figure:: images/Release-GitHubStep2.png
 
-   Entering information about the release.
+   Choosing the tag.
 
-Your newly created release will now appear.
+Now you can describe the release.
+Enter ``v3.3.3`` into the title and add the description as shown below.
 
 .. figure:: images/Release-GitHubStep3.png
 
+   Describing the release.
+
+At this point you can go to the bottom of the window and click on *Publish release*.
+
+Your newly created release will now appear.
+
+.. figure:: images/Release-GitHubStep4.png
+
    The newly created release.
+
+Now you can edit the release and add the unified build_visit script and the source code tar file.
+You should only *Save* the release and not publish the release.
+If you publish the release, a notification will go out to everyone watching the VisIt_ repository and it will show up as the latest release on the releases tab.
+You should wait until you have most, if not all, the assets before publishing the release.
 
 Updating the Spack ``package.py`` file
 --------------------------------------
