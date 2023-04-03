@@ -51,12 +51,6 @@ Now we revert the build_visit script on the 3.3 RC to point at the 3.3RC. ::
     git checkout 3.3RC
     git branch -D task/brugger1/2023_03_30_build_visit_v2
 
-Now we create the tag and push it to GitHub. ::
-
-    git checkout 3.0RC
-    git tag v3.3.3
-    git push origin v3.3.3
-
 Creating the release at GitHub
 ------------------------------
 
