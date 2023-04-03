@@ -18,9 +18,6 @@ TruecolorGUIPluginInfo.C
 QvisTruecolorPlotWindow.C
 ${COMMON_SOURCES}
 )
-SET(LIBG_MOC_SOURCES
-QvisTruecolorPlotWindow.h
-)
 
 SET(LIBV_SOURCES
 TruecolorViewerEnginePluginInfo.C
@@ -51,8 +48,8 @@ TARGET_LINK_LIBRARIES(ITruecolorPlot visitcommon)
 SET(INSTALLTARGETS ITruecolorPlot)
 
 IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
-    QT_WRAP_CPP(GTruecolorPlot LIBG_SOURCES ${LIBG_MOC_SOURCES})
     ADD_LIBRARY(GTruecolorPlot ${LIBG_SOURCES})
+    set_target_properties(GTruecolorPlot PROPERTIES AUTOMOC ON)
     TARGET_LINK_LIBRARIES(GTruecolorPlot visitcommon gui )
 
     ADD_LIBRARY(VTruecolorPlot ${LIBV_SOURCES})

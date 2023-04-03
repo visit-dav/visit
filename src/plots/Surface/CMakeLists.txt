@@ -18,9 +18,6 @@ SurfaceGUIPluginInfo.C
 QvisSurfacePlotWindow.C
 ${COMMON_SOURCES}
 )
-SET(LIBG_MOC_SOURCES
-QvisSurfacePlotWindow.h
-)
 
 SET(LIBV_SOURCES
 SurfaceViewerEnginePluginInfo.C
@@ -51,8 +48,8 @@ TARGET_LINK_LIBRARIES(ISurfacePlot visitcommon)
 SET(INSTALLTARGETS ISurfacePlot)
 
 IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
-    QT_WRAP_CPP(GSurfacePlot LIBG_SOURCES ${LIBG_MOC_SOURCES})
     ADD_LIBRARY(GSurfacePlot ${LIBG_SOURCES})
+    set_target_properties(GSurfacePlot PROPERTIES AUTOMOC ON)
     TARGET_LINK_LIBRARIES(GSurfacePlot visitcommon gui )
 
     ADD_LIBRARY(VSurfacePlot ${LIBV_SOURCES})

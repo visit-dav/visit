@@ -18,9 +18,6 @@ DisplaceGUIPluginInfo.C
 QvisDisplaceWindow.C
 ${COMMON_SOURCES}
 )
-SET(LIBG_MOC_SOURCES
-QvisDisplaceWindow.h
-)
 
 SET(LIBV_SOURCES
 DisplaceViewerEnginePluginInfo.C
@@ -48,8 +45,8 @@ TARGET_LINK_LIBRARIES(IDisplaceOperator visitcommon)
 SET(INSTALLTARGETS IDisplaceOperator)
 
 IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
-    QT_WRAP_CPP(GDisplaceOperator LIBG_SOURCES ${LIBG_MOC_SOURCES})
     ADD_LIBRARY(GDisplaceOperator ${LIBG_SOURCES})
+    set_target_properties(GDisplaceOperator PROPERTIES AUTOMOC ON)
     TARGET_LINK_LIBRARIES(GDisplaceOperator visitcommon gui )
 
     ADD_LIBRARY(VDisplaceOperator ${LIBV_SOURCES})

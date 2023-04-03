@@ -18,9 +18,6 @@ DecimateGUIPluginInfo.C
 QvisDecimateWindow.C
 ${COMMON_SOURCES}
 )
-SET(LIBG_MOC_SOURCES
-QvisDecimateWindow.h
-)
 
 SET(LIBV_SOURCES
 DecimateViewerEnginePluginInfo.C
@@ -48,8 +45,8 @@ TARGET_LINK_LIBRARIES(IDecimateOperator visitcommon)
 SET(INSTALLTARGETS IDecimateOperator)
 
 IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
-    QT_WRAP_CPP(GDecimateOperator LIBG_SOURCES ${LIBG_MOC_SOURCES})
     ADD_LIBRARY(GDecimateOperator ${LIBG_SOURCES})
+    set_target_properties(GDecimateOperator PROPERTIES AUTOMOC ON)
     TARGET_LINK_LIBRARIES(GDecimateOperator visitcommon gui )
 
     ADD_LIBRARY(VDecimateOperator ${LIBV_SOURCES})

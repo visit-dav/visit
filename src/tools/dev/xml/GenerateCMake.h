@@ -180,6 +180,9 @@
 //    Remove inclusion of PluginMacros.cmake, now included in each 
 //    plugin category (plot/operators/databases) root CMakeLists.txt.
 //
+//    Kathleen Biagas, Thu Mar 30, 2023
+//    Use AUTOMOC target property instead of QT_WRAP_CPP macro.
+//
 // ****************************************************************************
 
 class CMakeGeneratorPlugin : public Plugin
@@ -687,16 +690,6 @@ class CMakeGeneratorPlugin : public Plugin
             for (size_t i=0; i<defaultgfiles.size(); i++)
                 out << defaultgfiles[i] << endl;
         out << ")" << endl;
-        out << "SET(LIBG_MOC_SOURCES" << endl;
-        out << "Qvis" << name;
-        if (type == "plot")
-            out << "PlotWindow.h" << endl;
-        else
-            out << "Window.h" << endl;
-        if (customwfiles)
-            for (size_t i=0; i<wfiles.size(); i++)
-                out << wfiles[i] << endl;
-        out << ")" << endl;
         out << endl;
         WriteCMake_ConditionalSources(out, "G", "");
 
@@ -817,7 +810,6 @@ class CMakeGeneratorPlugin : public Plugin
         out << endl;
 
         out << "IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)" << endl;
-        out << "    QT_WRAP_CPP(G" << name << ptype << " LIBG_SOURCES ${LIBG_MOC_SOURCES})" << endl;
         if (!vtk8_glibs.empty())
         {
             out << "    if(VTK_VERSION VERSION_EQUAL \"8.1.0\")" << endl;
@@ -827,6 +819,7 @@ class CMakeGeneratorPlugin : public Plugin
             out << "    endif()" << endl;
         }
         out << "    ADD_LIBRARY(G"<<name<<ptype<<" ${LIBG_SOURCES})" << endl;
+        out << "    set_target_properties(G"<<name<<ptype<<" PROPERTIES AUTOMOC ON)" << endl;
         out << "    TARGET_LINK_LIBRARIES(G" << name << ptype <<" visitcommon "
             << guilibname << " " << ToString(libs) << ToString(glibs);
         if (!vtk8_libs.empty())
@@ -837,8 +830,6 @@ class CMakeGeneratorPlugin : public Plugin
         WriteCMake_ConditionalTargetLinks(out, name, "G", ptype, "    ");
         out << endl;
 
-        if (customvwfiles)
-            out << "    QT_WRAP_CPP(V" << name << ptype << " LIBV_SOURCES ${LIBV_MOC_SOURCES})" << endl;
         if (!vtk8_vlibs.empty())
         {
             out << "    if(VTK_VERSION VERSION_EQUAL \"8.1.0\")" << endl;
@@ -849,6 +840,10 @@ class CMakeGeneratorPlugin : public Plugin
         }
         out << "    ADD_LIBRARY(V"<<name<<ptype<<" ${LIBV_SOURCES})" << endl;
         out << "    ADD_TARGET_DEFINITIONS(V"<<name<<ptype<<" VIEWER)" << endl;
+        if (customvwfiles)
+        {
+            out << "    set_target_properties(V" << name << ptype << " PROPERTIES AUTOMOC ON)" << endl;
+        }
         out << "    TARGET_LINK_LIBRARIES(V" << name << ptype << " visitcommon "
             << viewerlibname << " " << ToString(libs) << ToString(vlibs);
         if (!vtk8_libs.empty())

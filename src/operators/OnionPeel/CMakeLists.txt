@@ -18,9 +18,6 @@ OnionPeelGUIPluginInfo.C
 QvisOnionPeelWindow.C
 ${COMMON_SOURCES}
 )
-SET(LIBG_MOC_SOURCES
-QvisOnionPeelWindow.h
-)
 
 SET(LIBV_SOURCES
 OnionPeelViewerEnginePluginInfo.C
@@ -48,8 +45,8 @@ TARGET_LINK_LIBRARIES(IOnionPeelOperator visitcommon)
 SET(INSTALLTARGETS IOnionPeelOperator)
 
 IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
-    QT_WRAP_CPP(GOnionPeelOperator LIBG_SOURCES ${LIBG_MOC_SOURCES})
     ADD_LIBRARY(GOnionPeelOperator ${LIBG_SOURCES})
+    set_target_properties(GOnionPeelOperator PROPERTIES AUTOMOC ON)
     TARGET_LINK_LIBRARIES(GOnionPeelOperator visitcommon gui )
 
     ADD_LIBRARY(VOnionPeelOperator ${LIBV_SOURCES})

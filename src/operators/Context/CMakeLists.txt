@@ -18,9 +18,6 @@ ContextGUIPluginInfo.C
 QvisContextWindow.C
 ${COMMON_SOURCES}
 )
-SET(LIBG_MOC_SOURCES
-QvisContextWindow.h
-)
 
 SET(LIBV_SOURCES
 ContextViewerEnginePluginInfo.C
@@ -48,8 +45,8 @@ TARGET_LINK_LIBRARIES(IContextOperator visitcommon)
 SET(INSTALLTARGETS IContextOperator)
 
 IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
-    QT_WRAP_CPP(GContextOperator LIBG_SOURCES ${LIBG_MOC_SOURCES})
     ADD_LIBRARY(GContextOperator ${LIBG_SOURCES})
+    set_target_properties(GContextOperator PROPERTIES AUTOMOC ON)
     TARGET_LINK_LIBRARIES(GContextOperator visitcommon gui )
 
     ADD_LIBRARY(VContextOperator ${LIBV_SOURCES})

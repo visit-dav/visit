@@ -18,9 +18,6 @@ EllipsoidSliceGUIPluginInfo.C
 QvisEllipsoidSliceWindow.C
 ${COMMON_SOURCES}
 )
-SET(LIBG_MOC_SOURCES
-QvisEllipsoidSliceWindow.h
-)
 
 SET(LIBV_SOURCES
 EllipsoidSliceViewerEnginePluginInfo.C
@@ -48,8 +45,8 @@ TARGET_LINK_LIBRARIES(IEllipsoidSliceOperator visitcommon)
 SET(INSTALLTARGETS IEllipsoidSliceOperator)
 
 IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
-    QT_WRAP_CPP(GEllipsoidSliceOperator LIBG_SOURCES ${LIBG_MOC_SOURCES})
     ADD_LIBRARY(GEllipsoidSliceOperator ${LIBG_SOURCES})
+    set_target_properties(GEllipsoidSliceOperator PROPERTIES AUTOMOC ON)
     TARGET_LINK_LIBRARIES(GEllipsoidSliceOperator visitcommon gui )
 
     ADD_LIBRARY(VEllipsoidSliceOperator ${LIBV_SOURCES})

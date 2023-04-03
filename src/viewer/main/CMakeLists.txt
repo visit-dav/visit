@@ -23,6 +23,9 @@
 #  Eric Brugger, Fri Feb 24 14:57:15 PST 2023
 #  Replaced vtkpng with vtkpng_LIBRARIES and vtkjpeg with vtkjpeg_LIBRARIES.
 #
+#  Kathleen Biagas, Thu Mar 30, 2023
+#  Use AUTOMOC target property instead of QT_WRAP_CPP macro.
+#
 #****************************************************************************
 
 IF(VISIT_PARALLEL AND WIN32 AND HAVE_HPC_SCHEDULER)
@@ -40,11 +43,6 @@ ddt/DDTManager.C
 ddt/DDTSession.C
 ddt/DDTActions.C
 ddt/DDTActionsUI.C
-)
-
-SET(VIEWER_DDT_MOC
-ddt/DDTManager.h
-ddt/DDTSession.h
 )
 ENDIF(VISIT_DDT)
 
@@ -76,19 +74,6 @@ ui/VisItPasswordWindow.C
 ui/WindowActionsUI.C
 )
 
-SET(VIEWER_UI_MOC
-ui/PlotAndOperatorActionsUI.h
-ui/ViewerActionUI.h
-ui/ViewerActionUIMultiple.h
-ui/ViewerActionUISingle.h
-ui/ViewerConnectionPrinterUI.h
-ui/ViewerConnectionProgressDialog.h
-ui/ViewerHostProfileSelectorWithWin.h
-ui/ViewerPasswordWindow.h
-ui/VisItChangeUsernameWindow.h
-ui/VisItPasswordWindow.h
-)
-
 SET(VIEWERLIB_SOURCES
 ${VIEWER_UI}
 ${VIEWER_DDT}
@@ -117,22 +102,6 @@ ${VIEWERLIB_WIN32_SOURCES}
 IF(VISIT_STATIC)
     SET(VIEWER_STATIC_SOURCES ViewerStaticSymbolLocator.C)
 ENDIF(VISIT_STATIC)
-
-SET(VIEWERLIB_MOC_SOURCES
-${VIEWER_UI_MOC}
-${VIEWER_DDT_MOC}
-SharedDaemon.h
-ViewerBaseUI.h
-ViewerClientConnection.h
-ViewerCommandFromSimObserver.h
-ViewerMetaDataObserver.h
-ViewerObserverToSignal.h
-ViewerSILAttsObserver.h
-ViewerStateBuffered.h
-ViewerSubject.h
-WebSocketConnection.h
-)
-QT_WRAP_CPP(viewer VIEWERLIB_SOURCES ${VIEWERLIB_MOC_SOURCES})
 
 IF (NOT WIN32)
     # This keeps comm's exceptions visible when using -fvisibility=hidden
@@ -189,6 +158,9 @@ LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY})
 
 #*************************** The viewer library ******************************
 ADD_LIBRARY(viewer ${VIEWERLIB_SOURCES})
+
+set_target_properties(viewer PROPERTIES AUTOMOC ON)
+
 IF (WIN32)
     SET_TARGET_PROPERTIES(viewer PROPERTIES OUTPUT_NAME viewerlib)
 ENDIF (WIN32)

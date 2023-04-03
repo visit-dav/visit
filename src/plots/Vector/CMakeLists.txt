@@ -18,9 +18,6 @@ VectorGUIPluginInfo.C
 QvisVectorPlotWindow.C
 ${COMMON_SOURCES}
 )
-SET(LIBG_MOC_SOURCES
-QvisVectorPlotWindow.h
-)
 
 SET(LIBV_SOURCES
 VectorViewerEnginePluginInfo.C
@@ -51,8 +48,8 @@ TARGET_LINK_LIBRARIES(IVectorPlot visitcommon)
 SET(INSTALLTARGETS IVectorPlot)
 
 IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
-    QT_WRAP_CPP(GVectorPlot LIBG_SOURCES ${LIBG_MOC_SOURCES})
     ADD_LIBRARY(GVectorPlot ${LIBG_SOURCES})
+    set_target_properties(GVectorPlot PROPERTIES AUTOMOC ON)
     TARGET_LINK_LIBRARIES(GVectorPlot visitcommon gui )
 
     ADD_LIBRARY(VVectorPlot ${LIBV_SOURCES})
