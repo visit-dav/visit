@@ -92,7 +92,7 @@ QvisTruecolorPlotWindow::CreateWindowContents()
     topLayout->addWidget(colorGroup);
 
     QGridLayout *colorLayout = new QGridLayout(colorGroup);
-    colorLayout->setMargin(5);
+    colorLayout->setContentsMargins(5,5,5,5);
     colorLayout->setSpacing(10);
  
     opacityLabel = new QLabel(tr("Opacity"), central);
@@ -112,7 +112,7 @@ QvisTruecolorPlotWindow::CreateWindowContents()
     topLayout->addWidget(miscGroup);
 
     QGridLayout *miscLayout = new QGridLayout(miscGroup);
-    miscLayout->setMargin(5);
+    miscLayout->setContentsMargins(5,5,5,5);
     miscLayout->setSpacing(10);
  
     // Create the lighting toggle

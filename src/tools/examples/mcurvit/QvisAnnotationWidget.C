@@ -182,7 +182,7 @@ void
 QvisAnnotationWidget::CreateWindow()
 {
     QVBoxLayout *pageAnnotLayout = new QVBoxLayout(this);
-    pageAnnotLayout->setMargin(5);
+    pageAnnotLayout->setContentsMargins(5,5,5,5);
     pageAnnotLayout->setSpacing(10);
 
     // Create the title group

@@ -57,7 +57,7 @@ QvisSILSetSelector::QvisSILSetSelector(QWidget *parent,
 
     QGridLayout *mainLayout = new QGridLayout(this);
     mainLayout->setSpacing(5);
-    mainLayout->setMargin(0);
+    mainLayout->setContentsMargins(0,0,0,0);
 
     //
     // Category

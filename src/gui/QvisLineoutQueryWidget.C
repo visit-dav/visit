@@ -41,7 +41,7 @@ QvisLineoutQueryWidget::QvisLineoutQueryWidget(QWidget *parent,
     // Main layout for this widget
     // 
     QVBoxLayout *topLayout = new QVBoxLayout(this);
-    topLayout->setMargin(0);
+    topLayout->setContentsMargins(0,0,0,0);
     topLayout->setSpacing(10);
   
     // 

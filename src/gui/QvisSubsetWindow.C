@@ -196,7 +196,7 @@ QvisSubsetWindow::CreateWindowContents()
     QWidget *selParent = new QWidget(central);
     topLayout->addWidget(selParent);
     QHBoxLayout *sLayout = new QHBoxLayout(selParent);
-    sLayout->setMargin(0);
+    sLayout->setContentsMargins(0,0,0,0);
     selectionLabel = new QLabel(tr("Applied selection"), selParent);
     selections = new QComboBox(selParent);
     connect(selections, SIGNAL(activated(const QString &)),

@@ -84,7 +84,7 @@ QvisAMRStitchCellWindow::CreateWindowContents()
     CreateCellsOfType = new QWidget(central);
     CreateCellsOfTypeButtonGroup= new QButtonGroup(CreateCellsOfType);
     QHBoxLayout *CreateCellsOfTypeLayout = new QHBoxLayout(CreateCellsOfType);
-    CreateCellsOfTypeLayout->setMargin(0);
+    CreateCellsOfTypeLayout->setContentsMargins(0,0,0,0);
     CreateCellsOfTypeLayout->setSpacing(10);
     QRadioButton *CreateCellsOfTypeCreateTypeDualGridAndStitchCells = new QRadioButton(tr("DualGridAndStitchCells"), CreateCellsOfType);
     CreateCellsOfTypeButtonGroup->addButton(CreateCellsOfTypeCreateTypeDualGridAndStitchCells,0);

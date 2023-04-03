@@ -179,7 +179,7 @@ XMLEditFields::XMLEditFields(QWidget *p)
     variableNameGroup->setTitle(tr("Accepted variable types"));
 
     QHBoxLayout *innerVarNameLayout = new QHBoxLayout(variableNameGroup);
-    innerVarNameLayout->setMargin(10);
+    innerVarNameLayout->setContentsMargins(10,10,10,10);
     QGridLayout *vnLayout = new QGridLayout();
     vnLayout->setSpacing(5);
     varNameButtons = new QButtonGroup(this);

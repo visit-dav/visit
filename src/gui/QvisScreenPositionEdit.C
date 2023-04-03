@@ -42,7 +42,7 @@ QvisScreenPositionEdit::QvisScreenPositionEdit(QWidget *parent) :
     QWidget(parent)
 {
     QHBoxLayout *hLayout = new QHBoxLayout(this);
-    hLayout->setMargin(0);
+    hLayout->setContentsMargins(0,0,0,0);
     hLayout->setSpacing(0);
     lineEdit = new QLineEdit(this);
     connect(lineEdit, SIGNAL(editingFinished()),

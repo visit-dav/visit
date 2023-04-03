@@ -141,7 +141,7 @@ void
 QvisPoincareWindow::CreateIntegrationTab(QWidget *pageIntegration)
 {
     QGridLayout *mainLayout = new QGridLayout(pageIntegration);
-    mainLayout->setMargin(5);
+    mainLayout->setContentsMargins(5,5,5,5);
     mainLayout->setSpacing(10);
 
     // Create the source group box.
@@ -150,7 +150,7 @@ QvisPoincareWindow::CreateIntegrationTab(QWidget *pageIntegration)
     mainLayout->addWidget(sourceGroup, 0, 0);
 //    mainLayout->setStretchFactor(sourceGroup, 100);
     QGridLayout *sourceLayout = new QGridLayout(sourceGroup);
-    sourceLayout->setMargin(5);
+    sourceLayout->setContentsMargins(5,5,5,5);
     sourceLayout->setSpacing(10);
 
     sourceLayout->addWidget(new QLabel(tr("Source type"), sourceGroup), 0, 0);
@@ -225,7 +225,7 @@ QvisPoincareWindow::CreateIntegrationTab(QWidget *pageIntegration)
     mainLayout->addWidget(fieldGroup, 3, 0, 1, 1);
 //    mainLayout->setStretchFactor(fieldGroup, 100);
     QGridLayout *fieldLayout = new QGridLayout(fieldGroup);
-    fieldLayout->setMargin(5);
+    fieldLayout->setContentsMargins(5,5,5,5);
     fieldLayout->setSpacing(10);
 
 
@@ -272,7 +272,7 @@ QvisPoincareWindow::CreateIntegrationTab(QWidget *pageIntegration)
     mainLayout->addWidget(integrationGroup, 6, 0, 4, 2);
 //    mainLayout->setStretchFactor(integrationGroup, 100);
     QGridLayout *integrationLayout = new QGridLayout(integrationGroup);
-    integrationLayout->setMargin(5);
+    integrationLayout->setContentsMargins(5,5,5,5);
     integrationLayout->setSpacing(10);
 
 
@@ -310,7 +310,7 @@ QvisPoincareWindow::CreateIntegrationTab(QWidget *pageIntegration)
     toleranceGroup->setTitle(tr("Tolerances: max error for step < max(abstol, reltol*velocity_i) for each component i"));
     integrationLayout->addWidget(toleranceGroup, 4, 0, 2, 3);
     QGridLayout *toleranceLayout = new QGridLayout(toleranceGroup);
-    toleranceLayout->setMargin(5);
+    toleranceLayout->setContentsMargins(5,5,5,5);
     toleranceLayout->setSpacing(10);
 
     // Create the relative tolerance text field.
@@ -340,7 +340,7 @@ QvisPoincareWindow::CreateIntegrationTab(QWidget *pageIntegration)
 //     mainLayout->addWidget(coordinateGroup, 2, 0);
 
 //     QGridLayout *coordinateLayout = new QGridLayout(coordinateGroup);
-//     coordinateLayout->setMargin(5);
+//     coordinateLayout->setContentsMargins(5,5,5,5);
 //     coordinateLayout->setSpacing(10);
 
 //     coordinateButtonGroup = new QButtonGroup(coordinateGroup);
@@ -362,7 +362,7 @@ QvisPoincareWindow::CreateIntegrationTab(QWidget *pageIntegration)
 //    mainLayout->setStretchFactor(puncturesGroup, 100);
 
     QGridLayout *puncturesLayout = new QGridLayout(puncturesGroup);
-    puncturesLayout->setMargin(5);
+    puncturesLayout->setContentsMargins(5,5,5,5);
     puncturesLayout->setSpacing(10);
 
 
@@ -370,7 +370,7 @@ QvisPoincareWindow::CreateIntegrationTab(QWidget *pageIntegration)
     puncturesMinMaxGroup->setTitle(tr(""));
     puncturesLayout->addWidget(puncturesMinMaxGroup, 0, 0);
     QGridLayout *puncturesMinMaxLayout = new QGridLayout(puncturesMinMaxGroup);
-    puncturesMinMaxLayout->setMargin(5);
+    puncturesMinMaxLayout->setContentsMargins(5,5,5,5);
     puncturesMinMaxLayout->setSpacing(10);
 
     minPuncturesLabel = new QLabel(tr("Minimum"), puncturesGroup);
@@ -398,7 +398,7 @@ QvisPoincareWindow::CreateIntegrationTab(QWidget *pageIntegration)
     puncturePlotGroup->setTitle(tr(""));
     puncturesLayout->addWidget(puncturePlotGroup, 2, 0);
     QGridLayout *puncturePlotLayout = new QGridLayout(puncturePlotGroup);
-    puncturePlotLayout->setMargin(5);
+    puncturePlotLayout->setContentsMargins(5,5,5,5);
     puncturePlotLayout->setSpacing(10);
 
     puncturePlotTypeLabel = new QLabel(tr("Puncture plot type"), central);
@@ -406,7 +406,7 @@ QvisPoincareWindow::CreateIntegrationTab(QWidget *pageIntegration)
     puncturePlotType = new QWidget(central);
     puncturePlotTypeButtonGroup= new QButtonGroup(puncturePlotType);
     QHBoxLayout *puncturePlotTypeLayout = new QHBoxLayout(puncturePlotType);
-    puncturePlotTypeLayout->setMargin(0);
+    puncturePlotTypeLayout->setContentsMargins(0,0,0,0);
     puncturePlotTypeLayout->setSpacing(10);
     QRadioButton *puncturePlotTypeTypePoloidal =
       new QRadioButton(tr("Single"), puncturePlotType);
@@ -449,7 +449,7 @@ puncturePlotLayout->addWidget(maxStepsLabel, 2, 0, 1, 2);
     puncturePlaneGroup->setTitle(tr(""));
     puncturesLayout->addWidget(puncturePlaneGroup, 4, 0);
     QGridLayout *puncturePlaneLayout = new QGridLayout(puncturePlaneGroup);
-    puncturePlaneLayout->setMargin(5);
+    puncturePlaneLayout->setContentsMargins(5,5,5,5);
     puncturePlaneLayout->setSpacing(10);
 
     puncturePlaneLabel = new QLabel(tr("Puncture Plane"), central);
@@ -458,7 +458,7 @@ puncturePlotLayout->addWidget(maxStepsLabel, 2, 0, 1, 2);
     puncturePlaneButtonGroup= new QButtonGroup(puncturePlane);
 
     QHBoxLayout *puncturePlaneTypeLayout = new QHBoxLayout(puncturePlane);
-    puncturePlaneTypeLayout->setMargin(0);
+    puncturePlaneTypeLayout->setContentsMargins(0,0,0,0);
     puncturePlaneTypeLayout->setSpacing(10);
     QRadioButton *puncturePlaneTypePoloidal =
       new QRadioButton(tr("Poloidal"), puncturePlane);
@@ -490,7 +490,7 @@ void
 QvisPoincareWindow::CreateAnalysisTab(QWidget *pageAnalysis)
 {
     QGridLayout *mainLayout = new QGridLayout(pageAnalysis);
-    mainLayout->setMargin(5);
+    mainLayout->setContentsMargins(5,5,5,5);
     mainLayout->setSpacing(10);
 
     analysisLabel = new QLabel(tr("Analysis type"), central);
@@ -498,7 +498,7 @@ QvisPoincareWindow::CreateAnalysisTab(QWidget *pageAnalysis)
     analysis = new QWidget(central);
     analysisButtonGroup= new QButtonGroup(analysis);
     QHBoxLayout *analysisTypeLayout = new QHBoxLayout(analysis);
-    analysisTypeLayout->setMargin(0);
+    analysisTypeLayout->setContentsMargins(0,0,0,0);
     analysisTypeLayout->setSpacing(10);
     QRadioButton *analysisTypeNone =
       new QRadioButton(tr("None - Punctures only"), analysis);
@@ -519,7 +519,7 @@ QvisPoincareWindow::CreateAnalysisTab(QWidget *pageAnalysis)
     mainLayout->addWidget(analysisGroup, 1, 0, 3, 3, Qt::AlignTop);
 
     QGridLayout *analysisLayout = new QGridLayout(analysisGroup);
-    analysisLayout->setMargin(5);
+    analysisLayout->setContentsMargins(5,5,5,5);
     analysisLayout->setSpacing(10);
 
     maximumToroidalWindingLabel =
@@ -578,7 +578,7 @@ QvisPoincareWindow::CreateAnalysisTab(QWidget *pageAnalysis)
     mainLayout->addWidget(rationalSurfaceGroup, 4, 0, 1, 3, Qt::AlignTop);
 
     QGridLayout *rationalSurfaceLayout = new QGridLayout(rationalSurfaceGroup);
-    rationalSurfaceLayout->setMargin(5);
+    rationalSurfaceLayout->setContentsMargins(5,5,5,5);
     rationalSurfaceLayout->setSpacing(10);
 
     showRationalSurfaces = new QCheckBox(tr("Detect Rational Surfaces"), rationalSurfaceGroup);
@@ -602,7 +602,7 @@ QvisPoincareWindow::CreateAnalysisTab(QWidget *pageAnalysis)
     mainLayout->addWidget(criticalPointGroup, 5, 0, 1, 3, Qt::AlignTop);
 
     QGridLayout *criticalPointLayout = new QGridLayout(criticalPointGroup);
-    criticalPointLayout->setMargin(5);
+    criticalPointLayout->setContentsMargins(5,5,5,5);
     criticalPointLayout->setSpacing(10);
 
     showOPoints = new QCheckBox(tr("Detect O Points"), criticalPointGroup);
@@ -627,7 +627,7 @@ QvisPoincareWindow::CreateAnalysisTab(QWidget *pageAnalysis)
     mainLayout->addWidget(OLineAnalysisGroup, 6, 0, 2, 3, Qt::AlignTop);
 
     QGridLayout *OLineAnalysisLayout = new QGridLayout(OLineAnalysisGroup);
-    OLineAnalysisLayout->setMargin(5);
+    OLineAnalysisLayout->setContentsMargins(5,5,5,5);
     OLineAnalysisLayout->setSpacing(10);
 
     performOLineAnalysis = new QCheckBox(tr("Perform O-Line analysis"),
@@ -665,7 +665,7 @@ QvisPoincareWindow::CreateAnalysisTab(QWidget *pageAnalysis)
     mainLayout->addWidget(analysisOptionsGroup, 9, 0, 1, 3, Qt::AlignTop);
 
     QGridLayout *analysisOptionsLayout = new QGridLayout(analysisOptionsGroup);
-    analysisOptionsLayout->setMargin(5);
+    analysisOptionsLayout->setContentsMargins(5,5,5,5);
     analysisOptionsLayout->setSpacing(10);
 
     showChaotic =
@@ -713,7 +713,7 @@ void
 QvisPoincareWindow::CreateAppearanceTab(QWidget *pageAppearance)
 {
     QGridLayout *mainLayout = new QGridLayout(pageAppearance);
-    mainLayout->setMargin(5);
+    mainLayout->setContentsMargins(5,5,5,5);
     mainLayout->setSpacing(10);
 
     // Create the data group box.
@@ -722,7 +722,7 @@ QvisPoincareWindow::CreateAppearanceTab(QWidget *pageAppearance)
     mainLayout->addWidget(dataGroup, 0, 0);
 
     QGridLayout *dataLayout = new QGridLayout(dataGroup);
-    dataLayout->setMargin(5);
+    dataLayout->setContentsMargins(5,5,5,5);
     dataLayout->setSpacing(10);
     dataLayout->setColumnStretch(2, 10);
 
@@ -757,7 +757,7 @@ QvisPoincareWindow::CreateAppearanceTab(QWidget *pageAppearance)
     mainLayout->addWidget(displayGroup, 1, 0);
 
     QGridLayout *displayLayout = new QGridLayout(displayGroup);
-    displayLayout->setMargin(5);
+    displayLayout->setContentsMargins(5,5,5,5);
     displayLayout->setSpacing(10);
 
     meshTypeLabel = new QLabel(tr("Mesh type:"), displayGroup);
@@ -803,7 +803,7 @@ QvisPoincareWindow::CreateAppearanceTab(QWidget *pageAppearance)
     mainLayout->addWidget(overlapsGroup, 3, 0);
 
     QGridLayout *overlapsLayout = new QGridLayout(overlapsGroup);
-    overlapsLayout->setMargin(5);
+    overlapsLayout->setContentsMargins(5,5,5,5);
     overlapsLayout->setSpacing(10);
 
     overlapsLabel = new QLabel(tr("Overlaping curve sections"), central);
@@ -811,7 +811,7 @@ QvisPoincareWindow::CreateAppearanceTab(QWidget *pageAppearance)
     overlaps = new QWidget(central);
     overlapsButtonGroup= new QButtonGroup(overlaps);
     QHBoxLayout *overlapTypeLayout = new QHBoxLayout(overlaps);
-    overlapTypeLayout->setMargin(0);
+    overlapTypeLayout->setContentsMargins(0,0,0,0);
     overlapTypeLayout->setSpacing(10);
     QRadioButton *overlapTypeRaw =
       new QRadioButton(tr("Raw"), overlaps);
@@ -920,7 +920,7 @@ void
 QvisPoincareWindow::CreateAdvancedTab(QWidget *pageAdvanced)
 {
     QGridLayout *mainLayout = new QGridLayout(pageAdvanced);
-    mainLayout->setMargin(5);
+    mainLayout->setContentsMargins(5,5,5,5);
     mainLayout->setSpacing(5);
 
     QGroupBox *algoGrp = new QGroupBox(pageAdvanced);

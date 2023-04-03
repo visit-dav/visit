@@ -63,11 +63,11 @@ QvisTimeSliderControlWidget::QvisTimeSliderControlWidget(QWidget *parent) :
     // Create the top layout that will contain the widgets.
     QVBoxLayout *topLayout = new QVBoxLayout(this);
     topLayout->setSpacing(5);
-    topLayout->setMargin(5);
+    topLayout->setContentsMargins(5,5,5,5);
 
     // Create the active time slider.
     QHBoxLayout *tsLayout = new QHBoxLayout(0);
-    tsLayout->setMargin(0);
+    tsLayout->setContentsMargins(0,0,0,0);
     topLayout->addLayout(tsLayout);
     activeTimeSlider = new QComboBox(this);
     activeTimeSlider->setSizeAdjustPolicy(QComboBox::AdjustToMinimumContentsLengthWithIcon);
@@ -81,7 +81,7 @@ QvisTimeSliderControlWidget::QvisTimeSliderControlWidget(QWidget *parent) :
 
     // Create the animation position slider bar
     QHBoxLayout *animationLayout = new QHBoxLayout(0);
-    animationLayout->setMargin(0);
+    animationLayout->setContentsMargins(0,0,0,0);
     topLayout->addLayout(animationLayout);
     topLayout->setStretchFactor(animationLayout, 10);
     animationPosition = new QvisAnimationSlider(Qt::Horizontal, this);

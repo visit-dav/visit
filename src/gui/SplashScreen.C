@@ -286,7 +286,7 @@ SplashScreen::SplashScreen(bool cyclePictures) : QFrame(0, Qt::SplashScreen)
 
     topLayout = new QVBoxLayout(this);
     topLayout->setSpacing(5);
-    topLayout->setMargin(5);
+    topLayout->setContentsMargins(5,5,5,5);
 
     // Create a timer to switch pictures
     timer = new QTimer(this);

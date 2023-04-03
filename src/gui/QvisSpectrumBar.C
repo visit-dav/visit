@@ -13,6 +13,7 @@
 #include <QStyle>
 #include <QStyleOption>
 #include <QTimer>
+#include <QTransform>
 
 // Some constants for paging modes.
 #define NO_PAGING      -1
@@ -1296,7 +1297,7 @@ QvisSpectrumBar::drawArrow(QPainter &p, bool down, int x, int y, int w, int h,
     QVector<QPoint> bTop;       // top shadow.
     QVector<QPoint> bBot;       // bottom shadow.
     QVector<QPoint> bLeft;      // left shadow.
-    QMatrix  matrix;           // xform matrix
+    QTransform  transform;      // xform matrix
     bool vertical = orientation == HorizontalTop ||
                     orientation == HorizontalBottom;
     bool horizontal = !vertical;
@@ -1370,16 +1371,16 @@ QvisSpectrumBar::drawArrow(QPainter &p, bool down, int x, int y, int w, int h,
 
     if(orientation == HorizontalBottom || orientation == VerticalRight)
     {
-        matrix.translate(x, y);
+        transform.translate(x, y);
         if(vertical)
         {
-            matrix.translate(0, h - 1);
-            matrix.rotate(-90);
+            transform.translate(0, h - 1);
+            transform.rotate(-90);
         }
         else
         {
-            matrix.translate(w - 1, h - 1);
-            matrix.rotate(180);
+            transform.translate(w - 1, h - 1);
+            transform.rotate(180);
         }
 
         if(down)
@@ -1389,11 +1390,11 @@ QvisSpectrumBar::drawArrow(QPainter &p, bool down, int x, int y, int w, int h,
     }
     else
     {
-        matrix.translate(x, y);
+        transform.translate(x, y);
         if(vertical)
         {
-            matrix.translate(w-1, 0);
-            matrix.rotate(90);
+            transform.translate(w-1, 0);
+            transform.rotate(90);
         }
         if(down)
             colspec = horizontal ? 0x2443 : 0x2434;
@@ -1415,13 +1416,13 @@ QvisSpectrumBar::drawArrow(QPainter &p, bool down, int x, int y, int w, int h,
 
     QPen     savePen   = p.pen();     // save current pen
     QBrush   saveBrush = p.brush();   // save current brush
-    QMatrix wxm = p.worldMatrix();
+    QTransform wxm = p.worldTransform(); // save current transform
     QPen     pen(Qt::NoPen);
     QBrush   brush(pal.base());
 
     p.setPen(pen);
     p.setBrush(brush);
-    p.setWorldMatrix(matrix, true);   // set transformation matrix
+    p.setWorldTransform(transform, true);   // set transformation matrix
     p.drawPolygon(bFill);             // fill arrow
     p.setBrush(Qt::NoBrush);          // don't fill
 
@@ -1432,7 +1433,7 @@ QvisSpectrumBar::drawArrow(QPainter &p, bool down, int x, int y, int w, int h,
     p.setPen(CBOT);
     p.drawLines(bBot);
 
-    p.setWorldMatrix(wxm);
+    p.setWorldTransform(wxm);            // restore transform
     p.setBrush(saveBrush);            // restore brush
     p.setPen(savePen);                // restore pen
 

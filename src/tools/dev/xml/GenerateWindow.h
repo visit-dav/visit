@@ -1351,7 +1351,7 @@ class WindowGeneratorEnum : public virtual Enum , public virtual WindowGenerator
         c << "    "<<name<<" = new QWidget(central);" << endl;
         c << "    "<<name<<"ButtonGroup= new QButtonGroup("<<name<<");" << endl;
         c << "    QHBoxLayout *"<<name<<"Layout = new QHBoxLayout("<<name<<");" << endl;
-        c << "    "<<name<<"Layout->setMargin(0);" << endl;
+        c << "    "<<name<<"Layout->setContentsMargins(0,0,0,0);" << endl;
         c << "    "<<name<<"Layout->setSpacing(10);" << endl;
 
         for (size_t i=0; i<enumType->values.size(); i++)
@@ -1417,7 +1417,7 @@ class WindowGeneratorScaleMode : public virtual ScaleMode , public virtual Windo
         c << "    QWidget *"<<name<<" = new QWidget(central);"<<endl;
         c << "    "<<name<<"ButtonGroup = new QButtonGroup("<<name<<");" << endl;
         c << "    QHBoxLayout *"<<name<<"Layout = new QHBoxLayout("<<name<<");" << endl;
-        c << "    "<<name<<"Layout->setMargin(0);" << endl;
+        c << "    "<<name<<"Layout->setContentsMargins(0,0,0,0);" << endl;
         c << "    "<<name<<"Layout->setSpacing(10);" << endl;
 
         c << "    QRadioButton *"<<name<<"ScaleModeLinear"

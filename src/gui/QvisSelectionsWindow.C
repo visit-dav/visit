@@ -175,7 +175,7 @@ QvisSelectionsWindow::CreateWindowContents()
     QGroupBox *f1 = new QGroupBox(tr("Selections"), central);
     mainSplitter->addWidget(f1);
     QGridLayout *listLayout = new QGridLayout(f1);
-    listLayout->setMargin(5);
+    listLayout->setContentsMargins(5,5,5,5);
 
     selectionListBox = new QListWidget(f1);
     connect(selectionListBox, SIGNAL(itemSelectionChanged()),
@@ -242,7 +242,7 @@ QvisSelectionsWindow::CreatePropertiesTab(QWidget *parent)
     //
     QWidget *f2 = new QWidget(parent);
     QGridLayout *definitionLayout = new QGridLayout(f2);
-    definitionLayout->setMargin(5);
+    definitionLayout->setContentsMargins(5,5,5,5);
 
     int row = 0;
     QLabel *plotNameEditLabel = new QLabel(tr("Selection source"), f2);
@@ -344,7 +344,7 @@ QvisSelectionsWindow::CreateCQRangeControls(QWidget *parent)
 {
     QWidget *central = new QWidget(parent);
     QGridLayout *lLayout = new QGridLayout(central);
-    lLayout->setMargin(5);
+    lLayout->setContentsMargins(5,5,5,5);
 
     // Add the variable button
     QLabel *addVar = new QLabel(tr("Add variable"), central);
@@ -415,7 +415,7 @@ QvisSelectionsWindow::CreateTimeControls(QWidget *parent)
     QGroupBox *central = new QGroupBox(parent);
     central->setTitle(tr("Query over time"));
     QGridLayout *gLayout = new QGridLayout(central);
-    gLayout->setMargin(5);
+    gLayout->setContentsMargins(5,5,5,5);
 
     // Time controls
     gLayout->addWidget(new QLabel(tr("Start"), central), 0, 0);
@@ -465,12 +465,12 @@ QvisSelectionsWindow::CreateCQHistogramControls(QWidget *parent)
 {
     QWidget *central = new QWidget(parent);
     QVBoxLayout *vLayout = new QVBoxLayout(central);
-    vLayout->setMargin(5);
+    vLayout->setContentsMargins(5,5,5,5);
 
     QWidget *titleParent = new QWidget(central);
     vLayout->addWidget(titleParent);
     QHBoxLayout *thLayout = new QHBoxLayout(titleParent);
-    thLayout->setMargin(0);
+    thLayout->setContentsMargins(0,0,0,0);
 
     QLabel *histLabel = new QLabel(tr("Histogram"), titleParent);
     thLayout->addWidget(histLabel);
@@ -492,7 +492,7 @@ QvisSelectionsWindow::CreateCQHistogramControls(QWidget *parent)
     vLayout->addWidget(axisParent);
 
     QHBoxLayout *thAxisLayout = new QHBoxLayout(axisParent);
-    thAxisLayout->setMargin(0);
+    thAxisLayout->setContentsMargins(0,0,0,0);
 
     cqHistogramMinAxisLabel = new QLabel(tr("Bin 0 (0)"), titleParent);
     thAxisLayout->addWidget(cqHistogramMinAxisLabel);
@@ -510,7 +510,7 @@ QvisSelectionsWindow::CreateCQHistogramControls(QWidget *parent)
     QGroupBox *axisGroup = new QGroupBox(tr("Axis"), central);
     vLayout->addWidget(axisGroup);
     QGridLayout *aLayout = new QGridLayout(axisGroup);
-    aLayout->setMargin(5);
+    aLayout->setContentsMargins(5,5,5,5);
 
     aLayout->addWidget(new QLabel(tr("Display axis type"), axisGroup), 0,0);
 
@@ -559,7 +559,7 @@ QvisSelectionsWindow::CreateCQHistogramControls(QWidget *parent)
     QGroupBox *summationGroup = new QGroupBox(tr("Summation"), central);
     vLayout->addWidget(summationGroup);
     QGridLayout *sLayout = new QGridLayout(summationGroup);
-    sLayout->setMargin(5);
+    sLayout->setContentsMargins(5,5,5,5);
 
     sLayout->addWidget(new QLabel(tr("Type"), central), 0, 0);
     cqSummation = new QComboBox(summationGroup);
@@ -615,7 +615,7 @@ QvisSelectionsWindow::CreateStatisticsTab(QWidget *parent)
 {
     QWidget *central = new QWidget(parent);
     QGridLayout *gLayout = new QGridLayout(central);
-    gLayout->setMargin(5);
+    gLayout->setContentsMargins(5,5,5,5);
 
     statVars = new QTableWidget(central);
     statVars->verticalHeader()->hide();

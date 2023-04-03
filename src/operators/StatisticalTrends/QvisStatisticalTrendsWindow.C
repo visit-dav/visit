@@ -87,7 +87,7 @@ QvisStatisticalTrendsWindow::CreateWindowContents()
     topLayout->addWidget(timeGroup);
 
     QGridLayout *timeLayout = new QGridLayout(timeGroup);
-    timeLayout->setMargin(5);
+    timeLayout->setContentsMargins(5,5,5,5);
     timeLayout->setSpacing(10);
 
     // Start
@@ -96,7 +96,7 @@ QvisStatisticalTrendsWindow::CreateWindowContents()
     startTrendType = new QWidget(central);
     startTrendTypeButtonGroup= new QButtonGroup(startTrendType);
     QHBoxLayout *startTrendTypeLayout = new QHBoxLayout(startTrendType);
-    startTrendTypeLayout->setMargin(0);
+    startTrendTypeLayout->setContentsMargins(0,0,0,0);
     startTrendTypeLayout->setSpacing(10);
 
     QRadioButton *startTrendTypeTrendTypeEnumAbsolute = new QRadioButton(tr("Absolute"), startTrendType);
@@ -122,7 +122,7 @@ QvisStatisticalTrendsWindow::CreateWindowContents()
     stopTrendType = new QWidget(central);
     stopTrendTypeButtonGroup= new QButtonGroup(stopTrendType);
     QHBoxLayout *stopTrendTypeLayout = new QHBoxLayout(stopTrendType);
-    stopTrendTypeLayout->setMargin(0);
+    stopTrendTypeLayout->setContentsMargins(0,0,0,0);
     stopTrendTypeLayout->setSpacing(10);
     QRadioButton *stopTrendTypeTrendTypeEnumAbsolute = new QRadioButton(tr("Absolute"), stopTrendType);
     stopTrendTypeButtonGroup->addButton(stopTrendTypeTrendTypeEnumAbsolute, 0);
@@ -156,7 +156,7 @@ QvisStatisticalTrendsWindow::CreateWindowContents()
     topLayout->addWidget(statisticGroup);
 
     QGridLayout *statisticLayout = new QGridLayout(statisticGroup);
-    statisticLayout->setMargin(5);
+    statisticLayout->setContentsMargins(5,5,5,5);
     statisticLayout->setSpacing(10);
 
 
@@ -198,7 +198,7 @@ QvisStatisticalTrendsWindow::CreateWindowContents()
     topLayout->addWidget(trendAxisGroup);
 
     QGridLayout *trendAxisLayout = new QGridLayout(trendAxisGroup);
-    trendAxisLayout->setMargin(5);
+    trendAxisLayout->setContentsMargins(5,5,5,5);
     trendAxisLayout->setSpacing(10);
 
     trendAxisButtonGroup= new QButtonGroup(central);

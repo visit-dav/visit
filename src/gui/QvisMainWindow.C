@@ -769,7 +769,7 @@ QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
 
         QWidget *central = new QWidget(this);
         QVBoxLayout *layout = new QVBoxLayout(central);
-        layout->setMargin(5);
+        layout->setContentsMargins(5,5,5,5);
         setCentralWidget(central);
 
         layout->addWidget(CreateGlobalArea(central));
@@ -1026,7 +1026,7 @@ QvisMainWindow::CreateMainContents(QSplitter *parent)
 
     QWidget *mainControls = new QWidget(parent);
     QVBoxLayout *layout = new QVBoxLayout(mainControls);
-    layout->setMargin(0);
+    layout->setContentsMargins(0,0,0,0);
 
     sourceManager = new QvisSourceManagerWidget(mainControls);
     sourceManager->ConnectPlotList(GetViewerState()->GetPlotList());
@@ -1083,7 +1083,7 @@ QvisMainWindow::CreateMainContents(QvisPostableMainWindow *win)
 
     splitter = new QSplitter(win->ContentsWidget());
     splitter->setOrientation(Qt::Vertical);
-    win->ContentsLayout()->setMargin(3);
+    win->ContentsLayout()->setContentsMargins(3,3,3,3);
     win->ContentsLayout()->addWidget(splitter);
     CreateMainContents(splitter);
 }
@@ -1141,7 +1141,7 @@ QvisMainWindow::CreateGlobalArea(QWidget *par)
 {
     QGroupBox *globalArea = new QGroupBox(tr("Global"), par);
     QHBoxLayout *globalLayout = new QHBoxLayout(globalArea);
-    globalLayout->setMargin(5);
+    globalLayout->setContentsMargins(5,5,5,5);
 
     activeWindowComboBox = new QComboBox(globalArea);
     connect(activeWindowComboBox, SIGNAL(activated(int)),

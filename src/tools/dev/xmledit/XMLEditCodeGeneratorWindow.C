@@ -48,7 +48,7 @@ XMLEditCodeGeneratorWindow::XMLEditCodeGeneratorWindow(QWidget *parent)
 
     QVBoxLayout *topLayout = new QVBoxLayout(central);
     topLayout->setSpacing(10);
-    topLayout->setMargin(10);
+    topLayout->setContentsMargins(10,10,10,10);
 
     outputText = new QTextEdit(central);
     outputText->setWordWrapMode(QTextOption::NoWrap);

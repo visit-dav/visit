@@ -49,7 +49,7 @@ QvisSimulationCommandWindow::CreateWindowContents()
     QWidget *h = new QWidget(commandGroupBox);
     vLayout->addWidget(h);
     QHBoxLayout *hLayout = new QHBoxLayout(h);
-    hLayout->setMargin(0);
+    hLayout->setContentsMargins(0,0,0,0);
     activateCustomGUI = new QPushButton(tr("Activate Custom UI . . ."), h);
     connect(activateCustomGUI, SIGNAL(clicked()),
             this, SIGNAL(showCustomUIWindow()));
@@ -70,12 +70,12 @@ QvisSimulationCommandWindow::CreateWindowContents()
     sa->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
 
     QVBoxLayout *vb = new QVBoxLayout(commandButtonParent);
-    vb->setMargin(0);
+    vb->setContentsMargins(0,0,0,0);
     commandGroup = new QButtonGroup(commandButtonParent);
     commandButtonLayout = new QGridLayout(0);
     vb->addLayout(commandButtonLayout);
     vb->addStretch(10);
-    commandButtonLayout->setMargin(0);
+    commandButtonLayout->setContentsMargins(0,0,0,0);
     connect(commandGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(handleCommandButton(int)));
     bool added = false;

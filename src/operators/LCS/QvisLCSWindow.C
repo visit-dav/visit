@@ -133,7 +133,7 @@ void
 QvisLCSWindow::CreateIntegrationTab(QWidget *pageIntegration)
 {
     QGridLayout *mainLayout = new QGridLayout(pageIntegration);
-    mainLayout->setMargin(5);
+    mainLayout->setContentsMargins(5,5,5,5);
     mainLayout->setSpacing(10);
 
     // Create the source group box.
@@ -142,7 +142,7 @@ QvisLCSWindow::CreateIntegrationTab(QWidget *pageIntegration)
     mainLayout->addWidget(sourceGroup, 0, 0, 5, 2);
 //    mainLayout->setStretchFactor(sourceGroup, 100);
     QGridLayout *sourceLayout = new QGridLayout(sourceGroup);
-    sourceLayout->setMargin(5);
+    sourceLayout->setContentsMargins(5,5,5,5);
     sourceLayout->setSpacing(10);
 
     // Create the source type combo box.
@@ -159,7 +159,7 @@ QvisLCSWindow::CreateIntegrationTab(QWidget *pageIntegration)
     sourceLayout->addWidget(geometryGroup, 1, 0, 4, 3);
 
     QGridLayout *geometryLayout = new QGridLayout(geometryGroup);
-    geometryLayout->setMargin(5);
+    geometryLayout->setContentsMargins(5,5,5,5);
     geometryLayout->setSpacing(10);
     geometryLayout->setRowStretch(5,10);
 
@@ -224,7 +224,7 @@ QvisLCSWindow::CreateIntegrationTab(QWidget *pageIntegration)
     sourceLayout->addWidget(auxiliaryGridGroup, 5, 0, 1, 4);
 
     QGridLayout *auxiliaryGridLayout = new QGridLayout(auxiliaryGridGroup);
-    auxiliaryGridLayout->setMargin(5);
+    auxiliaryGridLayout->setContentsMargins(5,5,5,5);
     auxiliaryGridLayout->setSpacing(10);
 
     // Auxiliary grid label and combo box
@@ -253,7 +253,7 @@ QvisLCSWindow::CreateIntegrationTab(QWidget *pageIntegration)
     mainLayout->addWidget(fieldGroup, 6, 0, 1, 1);
 //    mainLayout->setStretchFactor(fieldGroup, 100);
     QGridLayout *fieldLayout = new QGridLayout(fieldGroup);
-    fieldLayout->setMargin(5);
+    fieldLayout->setContentsMargins(5,5,5,5);
     fieldLayout->setSpacing(10);
 
 
@@ -298,7 +298,7 @@ QvisLCSWindow::CreateIntegrationTab(QWidget *pageIntegration)
     mainLayout->addWidget(integrationGroup, 7, 0, 4, 2);
 //    mainLayout->setStretchFactor(integrationGroup, 100);
     QGridLayout *integrationLayout = new QGridLayout(integrationGroup);
-    integrationLayout->setMargin(5);
+    integrationLayout->setContentsMargins(5,5,5,5);
     integrationLayout->setSpacing(10);
 
 
@@ -347,7 +347,7 @@ QvisLCSWindow::CreateIntegrationTab(QWidget *pageIntegration)
     toleranceGroup->setTitle(tr("Tolerances: max error for step < max(abstol, reltol*velocity_i) for each component i"));
     integrationLayout->addWidget(toleranceGroup, 4, 0, 2, 3);
     QGridLayout *toleranceLayout = new QGridLayout(toleranceGroup);
-    toleranceLayout->setMargin(5);
+    toleranceLayout->setContentsMargins(5,5,5,5);
     toleranceLayout->setSpacing(10);
 
     // Create the relative tolerance text field.
@@ -388,7 +388,7 @@ void
 QvisLCSWindow::CreateLCSTab(QWidget *pageLCS)
 {
     QGridLayout *mainLayout = new QGridLayout(pageLCS);
-    mainLayout->setMargin(5);
+    mainLayout->setContentsMargins(5,5,5,5);
     mainLayout->setSpacing(10);
 
     // Create the termination group box.
@@ -397,7 +397,7 @@ QvisLCSWindow::CreateLCSTab(QWidget *pageLCS)
     mainLayout->addWidget(terminationGroup, 0, 0, 2, 2);
 //    mainLayout->setStretchFactor(terminationGroup, 100);
     QGridLayout *terminationLayout = new QGridLayout(terminationGroup);
-    terminationLayout->setMargin(5);
+    terminationLayout->setContentsMargins(5,5,5,5);
     terminationLayout->setSpacing(10);
 
     // For FTLE or FLLE base the termintion on the time or distance,
@@ -603,7 +603,7 @@ void
 QvisLCSWindow::CreateAppearanceTab(QWidget *pageAppearance)
 {
     QGridLayout *mainLayout = new QGridLayout(pageAppearance);
-    mainLayout->setMargin(5);
+    mainLayout->setContentsMargins(5,5,5,5);
     mainLayout->setSpacing(10);
 
     // Streamlines/Pathline Group.
@@ -705,7 +705,7 @@ void
 QvisLCSWindow::CreateAdvancedTab(QWidget *pageAdvanced)
 {
     QGridLayout *mainLayout = new QGridLayout(pageAdvanced);
-    mainLayout->setMargin(5);
+    mainLayout->setContentsMargins(5,5,5,5);
     mainLayout->setSpacing(5);
 
     QGroupBox *algoGrp = new QGroupBox(pageAdvanced);

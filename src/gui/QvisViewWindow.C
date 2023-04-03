@@ -213,7 +213,7 @@ QvisViewWindow::CreateWindowContents()
     pageCurve = new QWidget(central);
     QVBoxLayout *pageCurveLayout = new QVBoxLayout(pageCurve);
     pageCurveLayout->setSpacing(5);
-    pageCurveLayout->setMargin(10);
+    pageCurveLayout->setContentsMargins(10,10,10,10);
     tabs->addTab(pageCurve, tr("Curve view"));
 
     QGridLayout *layoutCurve = new QGridLayout(0);
@@ -275,7 +275,7 @@ QvisViewWindow::CreateWindowContents()
     page2D = new QWidget(central);
     QVBoxLayout *page2DLayout = new QVBoxLayout(page2D);
     page2DLayout->setSpacing(5);
-    page2DLayout->setMargin(10);
+    page2DLayout->setContentsMargins(10,10,10,10);
     tabs->addTab(page2D, tr("2D view"));
 
     QGridLayout *layout2D = new QGridLayout(0);
@@ -344,7 +344,7 @@ QvisViewWindow::CreateWindowContents()
     page3D = new QWidget(central);
     QVBoxLayout *page3DLayout = new QVBoxLayout(page3D);
     page3DLayout->setSpacing(5);
-    page3DLayout->setMargin(10);
+    page3DLayout->setContentsMargins(10,10,10,10);
     tabs->addTab(page3D, tr("3D view"));
 
     QGridLayout *layout3D = new QGridLayout(0);
@@ -499,7 +499,7 @@ QvisViewWindow::CreateWindowContents()
     pageAxisArray = new QWidget(central);
     QVBoxLayout *pageAxisArrayLayout = new QVBoxLayout(pageAxisArray);
     pageAxisArrayLayout->setSpacing(5);
-    pageAxisArrayLayout->setMargin(10);
+    pageAxisArrayLayout->setContentsMargins(10,10,10,10);
     tabs->addTab(pageAxisArray, tr("AxisArray view"));
 
     QGridLayout *layoutAxisArray = new QGridLayout(0);
@@ -537,7 +537,7 @@ QvisViewWindow::CreateWindowContents()
     pageAdvanced = new QWidget(central);
     QVBoxLayout *pageAdvancedLayout = new QVBoxLayout(pageAdvanced);
     pageAdvancedLayout->setSpacing(5);
-    pageAdvancedLayout->setMargin(10);
+    pageAdvancedLayout->setContentsMargins(10,10,10,10);
     tabs->addTab(pageAdvanced, tr("Advanced"));
 
     QGridLayout *advLayout = new QGridLayout(0);

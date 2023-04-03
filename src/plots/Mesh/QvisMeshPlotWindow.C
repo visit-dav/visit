@@ -142,7 +142,7 @@ QvisMeshPlotWindow::CreateWindowContents()
     topLayout->addWidget(zoneGroup);
 
     QGridLayout *zoneLayout = new QGridLayout(zoneGroup);
-    zoneLayout->setMargin(5);
+    zoneLayout->setContentsMargins(5,5,5,5);
     zoneLayout->setSpacing(10);
  
     // Create the showInternal toggle
@@ -159,7 +159,7 @@ QvisMeshPlotWindow::CreateWindowContents()
     topLayout->addWidget(colorGroup);
 
     QGridLayout *colorLayout = new QGridLayout(colorGroup);
-    colorLayout->setMargin(5);
+    colorLayout->setContentsMargins(5,5,5,5);
     colorLayout->setSpacing(10); 
     
     // Create the radio buttons for mesh color source
@@ -222,7 +222,7 @@ QvisMeshPlotWindow::CreateWindowContents()
             SLOT(opaqueModeChanged(int)));
 
     QHBoxLayout *opaqueModeLayout = new QHBoxLayout();
-    opaqueModeLayout->setMargin(0);
+    opaqueModeLayout->setContentsMargins(0,0,0,0);
     opaqueModeLayout->setSpacing(10);
    
     rb = new QRadioButton(tr("Auto"), central);
@@ -263,7 +263,7 @@ QvisMeshPlotWindow::CreateWindowContents()
     topLayout->addWidget(styleGroup);
 
     QGridLayout *styleLayout = new QGridLayout(styleGroup);
-    styleLayout->setMargin(5);
+    styleLayout->setContentsMargins(5,5,5,5);
     styleLayout->setSpacing(10);
  
     // Create the point control
@@ -297,7 +297,7 @@ QvisMeshPlotWindow::CreateWindowContents()
     topLayout->addWidget(smoothingGroup);
 
     QGridLayout *smoothingLayout = new QGridLayout(smoothingGroup);
-    smoothingLayout->setMargin(5);
+    smoothingLayout->setContentsMargins(5,5,5,5);
     smoothingLayout->setSpacing(10);
     
     smoothingLayout->addWidget(new QLabel(tr("Smoothing"), central), 0,0);
@@ -326,7 +326,7 @@ QvisMeshPlotWindow::CreateWindowContents()
     topLayout->addWidget(miscGroup);
 
     QGridLayout *miscLayout = new QGridLayout(miscGroup);
-    miscLayout->setMargin(5);
+    miscLayout->setContentsMargins(5,5,5,5);
     miscLayout->setSpacing(10);
  
     // Create the legend toggle
