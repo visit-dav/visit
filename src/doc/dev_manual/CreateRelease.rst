@@ -99,7 +99,7 @@ Creating the release notes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The website contains a copy of the release notes.
-The release notes in the VisIt_ repository is writtin in raw html and the website is writtin in Markdown.
+The release notes in the VisIt_ repository is written in raw html and the website is written in Markdown.
 The release notes are located in ``pages/releases``.
 Copy one of the release notes files that is closest to the type of release you are making, either a patch release or a minor release, as a starting point.
 Remove or update any version specific content from the new release notes file.
@@ -112,11 +112,10 @@ Updating the release table
 The website contains a page with a series of tables, one for each minor release series with links to the assets for the releases.
 The tables are located in ``pages/releases-as-tables.md``.
 If you are releasing a new minor release series you will need to add a new table.
-If you are releasing a new patch release you will need to add a column on the left of the table.
+If you are releasing a new patch release you will need to add a column on the left side of the table.
 The most recent release is added as the first column in the table.
 In each case you will should use an existing table as an example to use for adding the new release.
 Each release also has a series of shortcuts for each of the release assets.
-You will also need to create those as well.
 You can copy an existing series of shortcuts and update them for the current release.
 If you don't have all of the release assets added to the release you should use *Coming soon!* as a substitute for the link.
 If you don't do this, people will follow the broken links and report it to you.
@@ -133,7 +132,7 @@ Patch releases list the number of bug fixes and ennncements along with a teaser 
 Minor relases also contain a teaser followed by the two or three major enhancements in the release.
 Three major enhancements is prefereable to two and sometimes you will need to aggregate multiple enhancements into a major enhancement.
 Use the existing posts as examples.
-You should only commit the new blog once the release has been published.
+You should only commit the new blog post once the release has been published.
 
 Updating the Spack ``package.py`` file
 --------------------------------------
