@@ -34,6 +34,8 @@ At this point you are ready to tag the release. ::
     git tag v3.3.3
     git push origin v3.3.3
 
+Creating first two release assets: source tarball and build_visit script
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Now you are ready to create the distribution tar file. ::
 
     src/tools/dev/scripts/visit-dist visit3.3.3
