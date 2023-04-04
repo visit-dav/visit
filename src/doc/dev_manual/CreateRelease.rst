@@ -4,7 +4,7 @@ Creating a Release
 Overview
 --------
 
-When we put out a new release we create create two initial assets and tag the release candidate branch.
+When we put out a new release we create two initial assets and tag the release candidate branch.
 
 1) A source code tar file that includes a ``build_visit`` script that references the tagged release.
 2) A unified ``build_visit`` script that references the tagged release and includes the checksum for the source code tar file.
