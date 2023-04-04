@@ -128,7 +128,7 @@ We create a new blog entry for each release.
 The blog entries are located in ``_posts``.
 Copy one of the existing blog posts for a release that is closest to the type of release you are making, either a patch release or a minor release, as a starting point.
 Remove or update any version specific content from the new blog post.
-Patch releases list the number of bug fixes and ennncements along with a teaser of an intersting enhancement.
+Patch releases list the number of bug fixes and enhancements along with a teaser of an interesting enhancement.
 Minor relases also contain a teaser followed by the two or three major enhancements in the release.
 Three major enhancements is prefereable to two and sometimes you will need to aggregate multiple enhancements into a major enhancement.
 Use the existing posts as examples.
