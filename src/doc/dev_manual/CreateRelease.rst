@@ -15,7 +15,7 @@ Creating the release
 We will describe creating a release by way of example using the steps used to create the 3.3.3 release.
 
 Tagging the release
-~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~
 Commit a change that references the tagged release, which in our case is 3.3.3. ::
 
     git checkout 3.3RC
@@ -35,7 +35,8 @@ At this point you are ready to tag the release. ::
     git push origin v3.3.3
 
 Creating first two release assets: source tarball and build_visit script
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 Now you are ready to create the distribution tar file. ::
 
     src/tools/dev/scripts/visit-dist visit3.3.3
@@ -55,7 +56,7 @@ Now we revert the ``build_visit`` script on the 3.3RC branch to point at the 3.3
     git branch -D task/brugger1/2023_03_30_build_visit_v2
 
 Creating the release assets page at GitHub
--------------------------------------------
+------------------------------------------
 
 Now we are ready to create a new release assets page at GitHub.
 If you go to GitHub and go to the *Releases* tab you can create the new release.
