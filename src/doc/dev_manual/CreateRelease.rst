@@ -14,6 +14,8 @@ Creating the release
 
 We will describe creating a release by way of example using the steps used to create the 3.3.3 release.
 
+Tagging the release
+~~~~~~~~~~~~~~~
 Commit a change that references the tagged release, which in our case is 3.3.3. ::
 
     git checkout 3.3RC
