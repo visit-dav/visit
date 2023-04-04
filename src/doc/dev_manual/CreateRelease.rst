@@ -57,7 +57,7 @@ Now we revert the ``build_visit`` script on the 3.3RC branch to point at the 3.3
 Creating the release assets page at GitHub
 -------------------------------------------
 
-Now we are ready to create a new release at GitHub.
+Now we are ready to create a new release assets page at GitHub.
 If you go to GitHub and go to the *Releases* tab you can create the new release.
 Click on *Draft a new release* to bring up the form to create a new release. 
 
