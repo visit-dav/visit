@@ -73,6 +73,7 @@ Click on *Choose a tag* and select the ``v3.3.3`` tag.
    Choosing the tag.
 
 Now you can describe the release.
+Occasionally, we update the description of a release after the release is completed to deal with minor changes post-release.
 Enter ``v3.3.3`` for the title and add the description as shown below.
 
 .. figure:: images/Release-GitHubStep3.png
