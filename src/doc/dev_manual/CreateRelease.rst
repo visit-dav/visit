@@ -4,11 +4,10 @@ Creating a Release
 Overview
 --------
 
-When we put out a new release we create create three artifacts.
+When we put out a new release we create create two initial assets and tag the release candidate branch.
 
 1) A source code tar file that includes a build_visit script that references the tagged release.
-2) A build_visit script that references the tagged release and includes the checksum for the source code tar file.
-3) The tag on the release candidate branch.
+2) A unified build_visit script that references the tagged release and includes the checksum for the source code tar file.
 
 Creating the release
 --------------------
@@ -41,7 +40,7 @@ Now you are ready to create the unified build_visit script. ::
 
     src/tools/dev/scripts/build_visit --write-unified-file build_visit3_3_3
 
-Now we revert the build_visit script on the 3.3 RC to point at the 3.3RC. ::
+Now we revert the build_visit script on the 3.3RC branch to point at the 3.3RC. ::
 
     git checkout -b task/brugger1/2023_03_30_build_visit_v2
     vi src/tools/dev/scripts/build_visit
@@ -54,6 +53,7 @@ Now we revert the build_visit script on the 3.3 RC to point at the 3.3RC. ::
 Creating the release at GitHub
 ------------------------------
 
+Now we are ready to create a new release at GitHub.
 If you go to GitHub and go to the *Releases* tab you can create the new release.
 Click on *Draft a new release* to bring up the form to create a new release. 
 
@@ -69,7 +69,7 @@ Click on *Choose a tag* and select the ``v3.3.3`` tag.
    Choosing the tag.
 
 Now you can describe the release.
-Enter ``v3.3.3`` into the title and add the description as shown below.
+Enter ``v3.3.3`` for the title and add the description as shown below.
 
 .. figure:: images/Release-GitHubStep3.png
 
@@ -92,7 +92,7 @@ Updating the VisIt_ website
 ---------------------------
 
 Once you have created the release you will need to update the VisIt_ website.
-It is a repository peer to the VisIt_ source code repository.
+It is in the repository ``visit-dav/visit-website``.
 Changes are typically made to the VisIt_ website repository directly on the master branch.
 
 Creating the release notes
@@ -118,6 +118,9 @@ In each case you will should use an existing table as an example to use for addi
 Each release also has a series of shortcuts for each of the release assets.
 You will also need to create those as well.
 You can copy an existing series of shortcuts and update them for the current release.
+If you don't have all of the release assets added to the release you should use *Coming soon!* as a substitute for the link.
+If you don't do this, people will follow the broken links and report it to you.
+You should only commit the changes once the release has been published so that the links actually point to something.
 
 Creating a blog entry for the new release
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -130,6 +133,7 @@ Patch releases list the number of bug fixes and ennncements along with a teaser 
 Minor relases also contain a teaser followed by the two or three major enhancements in the release.
 Three major enhancements is prefereable to two and sometimes you will need to aggregate multiple enhancements into a major enhancement.
 Use the existing posts as examples.
+You should only commit the new blog once the release has been published.
 
 Updating the Spack ``package.py`` file
 --------------------------------------
