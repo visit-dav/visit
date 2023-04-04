@@ -121,7 +121,7 @@ The tables are located in ``pages/releases-as-tables.md``.
 If you are releasing a new minor release series you will need to add a new table.
 If you are releasing a new patch release you will need to add a column on the left side of the table.
 The most recent release is added as the first column in the table.
-In each case you will should use an existing table as an example to use for adding the new release.
+In each case you should use an existing table as an example for adding the new release.
 Each release also has a series of shortcuts for each of the release assets.
 You can copy an existing series of shortcuts and update them for the current release.
 If you don't have all of the release assets added to the release you should use *Coming soon!* as a substitute for the link.
