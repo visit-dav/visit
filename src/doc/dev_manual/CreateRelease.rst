@@ -6,8 +6,8 @@ Overview
 
 When we put out a new release we create create two initial assets and tag the release candidate branch.
 
-1) A source code tar file that includes a build_visit script that references the tagged release.
-2) A unified build_visit script that references the tagged release and includes the checksum for the source code tar file.
+1) A source code tar file that includes a ``build_visit`` script that references the tagged release.
+2) A unified ``build_visit`` script that references the tagged release and includes the checksum for the source code tar file.
 
 Creating the release
 --------------------
@@ -36,11 +36,11 @@ Now you are ready to create the distribution tar file. ::
 
     src/tools/dev/scripts/visit-dist visit3.3.3
 
-Now you are ready to create the unified build_visit script. ::
+Now you are ready to create the unified ``build_visit`` script. ::
 
     src/tools/dev/scripts/build_visit --write-unified-file build_visit3_3_3
 
-Now we revert the build_visit script on the 3.3RC branch to point at the 3.3RC. ::
+Now we revert the ``build_visit`` script on the 3.3RC branch to point at the 3.3RC. ::
 
     git checkout -b task/brugger1/2023_03_30_build_visit_v2
     vi src/tools/dev/scripts/build_visit
@@ -83,7 +83,7 @@ Your newly created release will now appear.
 
    The newly created release.
 
-Now you can edit the release and add the unified build_visit script and the source code tar file.
+Now you can edit the release and add the unified ``build_visit`` script and the source code tar file.
 You should only *Save* the release and not publish the release.
 If you publish the release, a notification will go out to everyone watching the VisIt_ repository and it will show up as the latest release on the releases tab.
 You should wait until you have most, if not all, the assets before publishing the release.
