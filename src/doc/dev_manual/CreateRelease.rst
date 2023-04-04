@@ -54,8 +54,8 @@ Now we revert the ``build_visit`` script on the 3.3RC branch to point at the 3.3
     git checkout 3.3RC
     git branch -D task/brugger1/2023_03_30_build_visit_v2
 
-Creating the release at GitHub
-------------------------------
+Creating the release assets page at GitHub
+-------------------------------------------
 
 Now we are ready to create a new release at GitHub.
 If you go to GitHub and go to the *Releases* tab you can create the new release.
