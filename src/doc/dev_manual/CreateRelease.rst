@@ -86,7 +86,7 @@ Your newly created release will now appear.
 Now you can edit the release and add the unified ``build_visit`` script and the source code tar file.
 You should only *Save* the release and not publish the release.
 If you publish the release, a notification will go out to everyone watching the VisIt_ repository and it will show up as the latest release on the releases tab.
-You should wait until you have most, if not all, the assets before publishing the release.
+You should wait until you have most, if not all, of the assets before publishing the release.
 
 Updating the VisIt_ website
 ---------------------------
