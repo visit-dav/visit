@@ -5,16 +5,17 @@
 #include <SplashScreen.h>
 #include <QApplication>
 #include <QDate>
+#include <QDateTime>
 #include <QFont>
 #include <QLabel>
 #include <QLayout>
-#include <QPushButton>
-#include <QDateTime>
-#include <QTimer>
-#include <QProgressBar>
 #include <QPainter>
 #include <QPixmap>
-#include <QDesktopWidget>
+#include <QProgressBar>
+#include <QPushButton>
+#include <QRect>
+#include <QScreen>
+#include <QTimer>
 #include <InstallationFunctions.h>
 #include <ConfigureInfo.h>
 
@@ -489,6 +490,8 @@ SplashScreen::CreateAboutButtons()
 // Creation:   Wed Jun 18 17:52:11 PST 2003
 //
 // Modifications:
+//   Kathleen Biagas, Wed Apr  5 13:04:35 PDT 2023
+//   Replace obosolete desktop() with primaryScreen().
 //
 // ****************************************************************************
 
@@ -496,8 +499,8 @@ void
 SplashScreen::show()
 {
     // Figure out where to put the window
-    int     W = qApp->desktop()->width();
-    int     H = qApp->desktop()->height();
+    int     W = qApp->primaryScreen()->geometry().width();
+    int     H = qApp->primaryScreen()->geometry().height();
     move((W - pictures[0].width()) / 2, (H - pictures[0].height()) / 2);
 
     // Show the window

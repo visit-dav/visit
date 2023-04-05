@@ -8,11 +8,12 @@
 #include <QvisTurnDownButton.h>
 
 #include <QApplication>
-#include <QDesktopWidget>
 #include <QLayout>
 #include <QLineEdit>
 #include <QPainter>
 #include <QPushButton>
+#include <QRect>
+#include <QScreen>
 #include <QStyle>
 #include <QTimer>
 
@@ -252,6 +253,8 @@ QvisScreenPositionEdit::newScreenPosition(double x, double y)
 // Creation:   Tue Dec 2 13:55:18 PST 2003
 //
 // Modifications:
+//   Kathleen Biagas, Wed Apr  5 13:04:35 PDT 2023
+//   Replace obosolete desktop() with primaryScreen().
 //
 // ****************************************************************************
 
@@ -270,9 +273,9 @@ QvisScreenPositionEdit::popup()
     // Fix the X dimension.
     if(menuX < 0)
         menuX = 0;
-    else if(menuX + menuW > QApplication::desktop()->width())
+    else if(menuX + menuW > QApplication::primaryScreen()->geometry().width())
     {
-        int extrapixels = QApplication::desktop()->width() - menuX - menuW;
+        int extrapixels = QApplication::primaryScreen()->geometry().width() - menuX - menuW;
         menuX -= (extrapixels + 5);
     }
 
