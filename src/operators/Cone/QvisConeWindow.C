@@ -109,7 +109,7 @@ QvisConeWindow::CreateWindowContents()
     QWidget *representationWidget = new QWidget(central);
     representation = new QButtonGroup(representationWidget);
     QHBoxLayout *representationLayout = new QHBoxLayout(representationWidget);
-    representationLayout->setMargin(0);
+    representationLayout->setContentsMargins(0,0,0,0);
     representationLayout->setSpacing(10);
     QRadioButton *representationRepresentationThreeD = new QRadioButton(tr("In 3D"), representationWidget);
     representation->addButton(representationRepresentationThreeD,0);

@@ -696,7 +696,7 @@ QvisExpressionsWindow::CreateStandardEditor()
     stdEditorWidget = new QWidget();
 
     QGridLayout *layout = new QGridLayout(stdEditorWidget);
-    layout->setMargin(5);
+    layout->setContentsMargins(5,5,5,5);
     int row = 0;
 
     stdDefinitionEditLabel = new QLabel(tr("Definition"), stdEditorWidget);
@@ -760,7 +760,7 @@ QvisExpressionsWindow::CreatePythonFilterEditor()
     pyEditorWidget = new QWidget();
 
     QGridLayout *layout = new QGridLayout(pyEditorWidget);
-    layout->setMargin(5);
+    layout->setContentsMargins(5,5,5,5);
     int row = 0;
 
     pyArgsEditLabel = new QLabel(tr("Arguments"), pyEditorWidget);

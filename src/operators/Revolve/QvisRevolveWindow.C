@@ -89,7 +89,7 @@ QvisRevolveWindow::CreateWindowContents()
     QWidget *meshTypeWidget = new QWidget(central);
     meshType = new QButtonGroup(meshTypeWidget);
     QHBoxLayout *meshTypeLayout = new QHBoxLayout(meshTypeWidget);
-    meshTypeLayout->setMargin(0);
+    meshTypeLayout->setContentsMargins(0,0,0,0);
     meshTypeLayout->setSpacing(10);
     QRadioButton *meshTypeMeshTypeAuto = new QRadioButton(tr("Auto"), meshTypeWidget);
     meshType->addButton(meshTypeMeshTypeAuto,0);

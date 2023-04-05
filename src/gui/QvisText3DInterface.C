@@ -156,7 +156,7 @@ QvisText3DInterface::QvisText3DInterface(QWidget *parent) :
             this, SLOT(rotateYChanged(int)));
     QLabel *rotateYLabel = new QLabel(tr("Rotate Y"), this);
     QGridLayout *rLayout = new QGridLayout(0);
-    rLayout->setMargin(0);
+    rLayout->setContentsMargins(0,0,0,0);
     cLayout->addLayout(rLayout, row, 0, 1, 3);
     rLayout->addWidget(rotateYLabel, 0, 0);
     rLayout->addWidget(rotateXLabel, 0, 1);

@@ -78,7 +78,7 @@ QvisLegendAttributesInterface::QvisLegendAttributesInterface(QWidget *parent) :
     // Position tab
     QWidget *position = new QWidget(tabs);
     QVBoxLayout *vLayout = new QVBoxLayout(position);
-    vLayout->setMargin(10);
+    vLayout->setContentsMargins(10,10,10,10);
     QGridLayout *pLayout = new QGridLayout(0);
     vLayout->addLayout(pLayout);
     vLayout->addStretch(100);
@@ -224,7 +224,7 @@ QvisLegendAttributesInterface::QvisLegendAttributesInterface(QWidget *parent) :
     // Tick marks tab
     QWidget *appearance = new QWidget(tabs);
     QVBoxLayout *vLayout2 = new QVBoxLayout(appearance);
-    vLayout2->setMargin(10);
+    vLayout2->setContentsMargins(10,10,10,10);
     QGridLayout *aLayout = new QGridLayout(0);
     vLayout2->addLayout(aLayout);
     vLayout2->addStretch(100);

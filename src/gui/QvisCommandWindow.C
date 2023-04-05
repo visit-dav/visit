@@ -156,7 +156,7 @@ QvisCommandWindow::CreateWindowContents()
     topLayout->addWidget(macroBox);
 
     QVBoxLayout *innerMacroLayout = new QVBoxLayout(macroBox);
-    innerMacroLayout->setMargin(10);
+    innerMacroLayout->setContentsMargins(10,10,10,10);
     innerMacroLayout->addSpacing(15);
     QHBoxLayout *macroLayout = new QHBoxLayout();
     innerMacroLayout->addLayout(macroLayout);
@@ -235,7 +235,7 @@ QvisCommandWindow::CreateWindowContents()
     {
         QWidget *widget = new QWidget(central);
         QVBoxLayout *vlayout = new QVBoxLayout(widget);
-        vlayout->setMargin(10);
+        vlayout->setContentsMargins(10,10,10,10);
         vlayout->setSpacing(5);
         editors[i]  = new QTextEdit(widget);
         editors[i]->setReadOnly(false);
@@ -279,7 +279,7 @@ QvisCommandWindow::CreateWindowContents()
     // Create the Macros tab.
     macroTab = new QWidget(central);
     QVBoxLayout *macro_tab_vlayout = new QVBoxLayout(macroTab);
-    macro_tab_vlayout->setMargin(10);
+    macro_tab_vlayout->setContentsMargins(10,10,10,10);
     macro_tab_vlayout->setSpacing(5);
     macroEdit = new QTextEdit(macroTab);
     macroEdit->setWordWrapMode(QTextOption::NoWrap);

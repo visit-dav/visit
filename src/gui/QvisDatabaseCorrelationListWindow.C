@@ -103,7 +103,7 @@ QvisDatabaseCorrelationListWindow::CreateWindowContents()
 
     // Create the correlation list management widgets.
     QVBoxLayout *innerCorrelationTopLayout = new QVBoxLayout(correlationGroup);
-    innerCorrelationTopLayout->setMargin(10);
+    innerCorrelationTopLayout->setContentsMargins(10,10,10,10);
     innerCorrelationTopLayout->addSpacing(15);
     QHBoxLayout *hLayout = new QHBoxLayout();
     innerCorrelationTopLayout->addLayout(hLayout);
@@ -143,7 +143,7 @@ QvisDatabaseCorrelationListWindow::CreateWindowContents()
     topLayout->addWidget(automaticCorrelationGroup, 5);
 
     QVBoxLayout *innerACTopLayout = new QVBoxLayout(automaticCorrelationGroup);
-    //innerACTopLayout->setMargin(10);
+    //innerACTopLayout->setContentsMargins(10,10,10,10);
     //innerACTopLayout->addSpacing(15);
     QGridLayout *adcLayout = new QGridLayout();
     innerACTopLayout->addLayout(adcLayout);

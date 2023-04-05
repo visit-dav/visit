@@ -138,7 +138,7 @@ QvisSpreadsheetPlotWindow::CreateWindowContents()
     normal = new QButtonGroup(0);
     QWidget *normalWidget = new QWidget(central);
     QHBoxLayout *normalLayout = new QHBoxLayout(normalWidget);
-    normalLayout->setMargin(0);
+    normalLayout->setContentsMargins(0,0,0,0);
     normalLayout->setSpacing(10);
     QRadioButton *normalNormalAxisX = new QRadioButton(tr("X"), normalWidget);
     normal->addButton(normalNormalAxisX, 0);

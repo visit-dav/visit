@@ -86,7 +86,7 @@ QvisDualMeshWindow::CreateWindowContents()
     QWidget *modeWidget = new QWidget(central);
     mode = new QButtonGroup(modeWidget);
     QHBoxLayout *modeLayout = new QHBoxLayout(modeWidget);
-    modeLayout->setMargin(0);
+    modeLayout->setContentsMargins(0,0,0,0);
     modeLayout->setSpacing(10);
     QRadioButton *modeConversionModeAuto = new QRadioButton(tr("Auto"), modeWidget);
     mode->addButton(modeConversionModeAuto,0);

@@ -7,10 +7,10 @@
 #include <QDesktopWidget>
 #include <QLabel>
 #include <QLayout>
-#include <QMatrix>
 #include <QPushButton>
 #include <QRadioButton>
 #include <QTimer>
+#include <QTransform>
 
 // Icons
 #include <leftdesk.xpm>
@@ -54,7 +54,7 @@ ViewerConnectionProgressDialog::ViewerConnectionProgressDialog() :
 
     // Add the widgets...
     QVBoxLayout *topLayout = new QVBoxLayout(this);
-    topLayout->setMargin(10);
+    topLayout->setContentsMargins(10,10,10,10);
     topLayout->setSpacing(10);
 
     QHBoxLayout *iconLayout = new QHBoxLayout;
@@ -68,7 +68,7 @@ ViewerConnectionProgressDialog::ViewerConnectionProgressDialog() :
     // Create some radio buttons to display the progress.
     QHBoxLayout *dotLayout = new QHBoxLayout;
     iconLayout->addLayout(dotLayout);
-    dotLayout->setMargin(0);
+    dotLayout->setContentsMargins(0,0,0,0);
     dotLayout->setSpacing(5);
     for(int i = 0; i < 6; ++i)
     {
@@ -206,9 +206,9 @@ ViewerConnectionProgressDialog::SetParallel(bool p)
         else
         {
             QPixmap left(leftdesk_xpm);
-            QMatrix m;
-            m.scale(-1., 1.);
-            right = left.transformed(m);
+            QTransform t;
+            t.scale(-1., 1.);
+            right = left.transformed(t);
         }
         rightComputer->setPixmap(right);
     }

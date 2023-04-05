@@ -43,7 +43,7 @@ QvisHistogramLimits::QvisHistogramLimits(QWidget *parent) :
     setTitle(" ");
 
     QGridLayout *gLayout = new QGridLayout(this);
-    gLayout->setMargin(5);
+    gLayout->setContentsMargins(5,5,5,5);
     gLayout->setSpacing(5);
 
     QLabel *minLabel = new QLabel(tr("Minimum"), this);
