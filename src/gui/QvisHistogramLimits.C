@@ -23,7 +23,7 @@
 // ****************************************************************************
 // Method: QvisHistogramLimits::QvisHistogramLimits
 //
-// Purpose: 
+// Purpose:
 //   Constructor
 //
 // Arguments:
@@ -33,7 +33,7 @@
 // Creation:   Tue Dec 28 16:00:40 PST 2010
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 QvisHistogramLimits::QvisHistogramLimits(QWidget *parent) :
@@ -78,14 +78,14 @@ QvisHistogramLimits::QvisHistogramLimits(QWidget *parent) :
 // ****************************************************************************
 // Method: QvisHistogramLimits::~QvisHistogramLimits
 //
-// Purpose: 
+// Purpose:
 //   Destructor
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue Dec 28 16:00:40 PST 2010
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 QvisHistogramLimits::~QvisHistogramLimits()
@@ -95,7 +95,7 @@ QvisHistogramLimits::~QvisHistogramLimits()
 // ****************************************************************************
 // Method: QvisHistogramLimits::setHistogram
 //
-// Purpose: 
+// Purpose:
 //   Set the histogram that we'll display.
 //
 // Arguments:
@@ -106,7 +106,7 @@ QvisHistogramLimits::~QvisHistogramLimits()
 // Creation:   Tue Dec 28 16:00:40 PST 2010
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -119,7 +119,7 @@ QvisHistogramLimits::setHistogram(const float *hist, int nhist)
 // ****************************************************************************
 // Method: QvisHistogramLimits::getTotalRange
 //
-// Purpose: 
+// Purpose:
 //   Return the total range used in the histogram.
 //
 // Arguments:
@@ -131,7 +131,7 @@ QvisHistogramLimits::setHistogram(const float *hist, int nhist)
 // Creation:   Tue Dec 28 16:00:40 PST 2010
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -143,20 +143,20 @@ QvisHistogramLimits::getTotalRange(bool &valid, float &r0, float &r1) const
 // ****************************************************************************
 // Method: QvisHistogramLimits::GetRangeText
 //
-// Purpose: 
+// Purpose:
 //   Get the range text.
 //
 // Arguments:
 //
-// Returns:    
+// Returns:
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Wed Oct 26 17:08:25 PDT 2011
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -168,14 +168,14 @@ QvisHistogramLimits::GetRangeText(float r0, float r1, QString &r0Text, QString &
         r0Text = QString().setNum(r0);
     if(r1 >= (MAX_VALUE - EPSILON))
         r1Text = tr("max").toLower();
-    else 
+    else
         r1Text = QString().setNum(r1);
 }
 
 // ****************************************************************************
 // Method: QvisHistogramLimits::setTotalRange
 //
-// Purpose: 
+// Purpose:
 //   Set the total range used in the histogram.
 //
 // Arguments:
@@ -205,14 +205,14 @@ QvisHistogramLimits::setTotalRange(float r0, float r1)
 // ****************************************************************************
 // Method: QvisHistogramLimits::invalidateTotalRange
 //
-// Purpose: 
+// Purpose:
 //   Invalidate the total range used in the histogram.
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue Dec 28 16:00:40 PST 2010
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -226,7 +226,7 @@ QvisHistogramLimits::invalidateTotalRange()
 // ****************************************************************************
 // Method: QvisHistogramLimits::getSelectedRange
 //
-// Purpose: 
+// Purpose:
 //   Return the selected range used in the histogram.
 //
 // Arguments:
@@ -243,7 +243,7 @@ QvisHistogramLimits::invalidateTotalRange()
 // ****************************************************************************
 
 void
-QvisHistogramLimits::getSelectedRange(float &r0, float &r1) 
+QvisHistogramLimits::getSelectedRange(float &r0, float &r1)
 {
     // Make sure the values are up to date with the text fields.
     blockSignals(true);
@@ -257,7 +257,7 @@ QvisHistogramLimits::getSelectedRange(float &r0, float &r1)
 // ****************************************************************************
 // Method: QvisHistogramLimits::setSelectedRange
 //
-// Purpose: 
+// Purpose:
 //   Set the selected range used in the histogram.
 //
 // Arguments:
@@ -288,7 +288,7 @@ QvisHistogramLimits::setSelectedRange(float r0, float r1)
 // ****************************************************************************
 // Method: QvisHistogramLimits::setVariable
 //
-// Purpose: 
+// Purpose:
 //   Set the name of the variable used in the histogram.
 //
 // Arguments:
@@ -298,7 +298,7 @@ QvisHistogramLimits::setSelectedRange(float r0, float r1)
 // Creation:   Tue Dec 28 16:00:40 PST 2010
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -310,14 +310,14 @@ QvisHistogramLimits::setVariable(const QString &var)
 // ****************************************************************************
 // Method: QvisHistogramLimits::getVariable
 //
-// Purpose: 
+// Purpose:
 //   Return the variable name.
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue Dec 28 16:00:40 PST 2010
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 QString
@@ -329,7 +329,7 @@ QvisHistogramLimits::getVariable() const
 // ****************************************************************************
 // Method: QvisHistogramLimits::setCloseEnabled
 //
-// Purpose: 
+// Purpose:
 //   Set whether the close button is enabled.
 //
 // Arguments:
@@ -339,7 +339,7 @@ QvisHistogramLimits::getVariable() const
 // Creation:   Tue Dec 28 16:00:40 PST 2010
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -352,14 +352,14 @@ QvisHistogramLimits::setCloseEnabled(bool val)
 // ****************************************************************************
 // Method: QvisHistogramLimits::getCloseEnabled
 //
-// Purpose: 
+// Purpose:
 //   Return whether the close button is enabled.
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue Dec 28 16:00:40 PST 2010
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 bool
@@ -371,8 +371,8 @@ QvisHistogramLimits::getCloseEnabled() const
 // ****************************************************************************
 // Method: QvisHistogramLimits::paintEvent
 //
-// Purpose: 
-//   Draw a "close" button over the frame so we can click on it to issue a 
+// Purpose:
+//   Draw a "close" button over the frame so we can click on it to issue a
 //   closeClicked signal.
 //
 // Arguments:
@@ -382,7 +382,9 @@ QvisHistogramLimits::getCloseEnabled() const
 // Creation:   Tue Dec 28 16:00:40 PST 2010
 //
 // Modifications:
-//   
+//   Kathleen Biagas, Wed Apr  5 15:11:57 PDT 2023
+//   Replace obsolete QPalette::Background with QPalette::Window.
+//
 // ****************************************************************************
 
 void
@@ -401,7 +403,7 @@ QvisHistogramLimits::paintEvent(QPaintEvent *pe)
         hitRect = QRect(width() - size.width() - 5, 0,
                         size.width(), size.height());
 
-        p.fillRect(hitRect, palette().brush(QPalette::Background));
+        p.fillRect(hitRect, palette().brush(QPalette::Window));
         del.paint(&p, hitRect, Qt::AlignCenter,
                   QIcon::Active, isEnabled() ? QIcon::On : QIcon::Off);
     }
@@ -410,7 +412,7 @@ QvisHistogramLimits::paintEvent(QPaintEvent *pe)
 // ****************************************************************************
 // Method: QvisHistogramLimits::mousePressEvent
 //
-// Purpose: 
+// Purpose:
 //   We override this method so we can see if we clicked on the close button
 //   that this class provides.
 //
@@ -421,7 +423,7 @@ QvisHistogramLimits::paintEvent(QPaintEvent *pe)
 // Creation:   Tue Dec 28 16:00:40 PST 2010
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -440,7 +442,7 @@ QvisHistogramLimits::mousePressEvent(QMouseEvent *e)
 // ****************************************************************************
 // Method: QvisHistogramLimits::updateSelectedText
 //
-// Purpose: 
+// Purpose:
 //   This Qt slot function updates the selected range line edits.
 //
 // Programmer: Brad Whitlock
@@ -467,8 +469,8 @@ QvisHistogramLimits::updateSelectedText()
 // ****************************************************************************
 // Method: QvisHistogramLimits::minChanged
 //
-// Purpose: 
-//   This Qt slot function gets called when the min gets changed via the 
+// Purpose:
+//   This Qt slot function gets called when the min gets changed via the
 //   min line edit.
 //
 // Programmer: Brad Whitlock
@@ -516,8 +518,8 @@ QvisHistogramLimits::minChanged()
 // ****************************************************************************
 // Method: QvisHistogramLimits::maxChanged
 //
-// Purpose: 
-//   This Qt slot function gets called when the max gets changed via the 
+// Purpose:
+//   This Qt slot function gets called when the max gets changed via the
 //   max line edit.
 //
 // Programmer: Brad Whitlock
@@ -565,7 +567,7 @@ QvisHistogramLimits::maxChanged()
 // ****************************************************************************
 // Method: QvisHistogramLimits::rangeChanged
 //
-// Purpose: 
+// Purpose:
 //   This Qt slot gets called when we adjust the ranges using the histogram
 //   control.
 //

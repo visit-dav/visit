@@ -5,7 +5,6 @@
 #include <QApplication>
 #include <QCheckBox>
 #include <QComboBox>
-#include <QDesktopWidget>
 #include <QEvent>
 #include <QLabel>
 #include <QLayout>
