@@ -1829,7 +1829,7 @@ The Spatial Energy Reduced Mesh is similar, but notable in the sense that it is 
 The impetus for including the spatial extents mesh was originally to include spatial coordinates as part of the metadata, but later on it was decided that the spatial coordinates should be promoted to be a proper Blueprint coordset.
 We then duplicated the existing topology and fields from the :ref:`Basic_Mesh_Output` so that the spatial extents coordset could be part of a valid Blueprint mesh, and could thus be visualized using VisIt.
 
-.. figure:: images/XRay_Query_spatial_intensities_xray_side.png
+.. figure:: images/XRay_Query_spatial_energy_reduced_intensities_side.png
 
    The spatial extents mesh looks very similar to the basic mesh output.
    It is in 3D and the z dimension represents the energy group bounds, which in this example run from 2.7 to 5.2.
