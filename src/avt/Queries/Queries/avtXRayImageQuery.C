@@ -197,6 +197,7 @@ avtXRayImageQuery::avtXRayImageQuery():
     energyGroupBounds = NULL;
     nEnergyGroupBounds = 0;
     debugRay = -1;
+    outputRayBounds = false;
     filenameScheme = NONE;
     outputType = PNG_OUT;
     outputDir = ".";
@@ -2963,6 +2964,8 @@ avtXRayImageQuery::WriteBlueprintMeshes(conduit::Node &data_out,
 void
 avtXRayImageQuery::GetDefaultInputParams(MapNode &params)
 {
+    // TODO make this function and the constructor use the same default values
+
     stringVector v;
     v.push_back("absorbtivity");
     v.push_back("emissivity");
