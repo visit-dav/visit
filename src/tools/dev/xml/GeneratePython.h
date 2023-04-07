@@ -2399,13 +2399,13 @@ class AttsGeneratorMapNode : public virtual MapNode , public virtual PythonGener
     virtual void WriteSetMethodBody(QTextStream &c, const QString &className)
     {
         // squelch a warning, then call base class method, as this isn't implemented yet
-        c << "    (void) obj;" << endl;
+        c << "    (void) obj;" << Endl;
         PythonGeneratorField::WriteSetMethodBody(c, className);
     }
     virtual void WriteGetMethodBody(QTextStream &c, const QString &className)
     {
         // squelch a warning, then call base class method, as this isn't implemented yet
-        c << "    (void) obj;" << endl;
+        c << "    (void) obj;" << Endl;
         PythonGeneratorField::WriteGetMethodBody(c, className);
     }
 };
@@ -3310,7 +3310,7 @@ class PythonGeneratorAttribute : public GeneratorBase
         if(HasCode(mName, 1))
             PrintCode(c, mName, 1);
         c << "    return str;" << Endl;
-        c << "}" << endl << Endl;
+        c << "}" << Endl << Endl;
     }
 
     void WriteStringRepresentationFunction(QTextStream &c)
@@ -3328,7 +3328,7 @@ class PythonGeneratorAttribute : public GeneratorBase
         c << "{" << Endl;
         c << "    "<<name<<"Object *obj = ("<<name<<"Object *)v;" << Endl;
         c << "    return PyString_FromString(Py" << name << "_ToString(obj->data,\"\", false).c_str());" << Endl;
-        c << "}" << endl << Endl;
+        c << "}" << Endl << Endl;
     }
 
     void WriteTypeFunctions(QTextStream &c)
