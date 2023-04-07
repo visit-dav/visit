@@ -7,12 +7,13 @@ data_file = path_to_data_file + "testdata/silo_hdf5_test_data/curv3d.silo"
 
 shouldisave = True
 
-IMAGE_VIEW = 0
-SPATIAL_VIEW = 1
-SIM_VIEW = 2
-ALT_SIM_VIEW = 3
-SIDE_VIEW = 4
-ALT_SIDE_VIEW = 5
+IMAGE_VIEW       = 0
+SPATIAL_VIEW     = 1
+ALT_SPATIAL_VIEW = 2
+SIM_VIEW         = 3
+ALT_SIM_VIEW     = 4
+SIDE_VIEW        = 5
+ALT_SIDE_VIEW    = 6
 
 image_num = 0
 
@@ -43,12 +44,21 @@ def set_view(view):
 		View3DAtts.windowValid = 1
 	elif view == SPATIAL_VIEW:
 		View3DAtts.viewNormal = (0.616352, 0.284876, 0.734136)
-		View3DAtts.focus = (4.5, 3.3, 1.5)
+		View3DAtts.focus = (4.5, 3.3, 2)
 		View3DAtts.viewUp = (0.202105, 0.95827, 0.202169)
 		View3DAtts.parallelScale = 5.7
 		View3DAtts.nearPlane = -11
 		View3DAtts.farPlane = 11
-		View3DAtts.centerOfRotation = (4.5, 3.3, 1.5)
+		View3DAtts.centerOfRotation = (4.5, 3.3, 2)
+		View3DAtts.windowValid = 1
+	elif view == ALT_SPATIAL_VIEW:
+		View3DAtts.viewNormal = (0.616352, 0.284876, 0.734136)
+		View3DAtts.focus = (8, 6, 2)
+		View3DAtts.viewUp = (0.202105, 0.95827, 0.202169)
+		View3DAtts.parallelScale = 10
+		View3DAtts.nearPlane = -20
+		View3DAtts.farPlane = 20
+		View3DAtts.centerOfRotation = (8, 6, 2)
 		View3DAtts.windowValid = 1
 	elif view == SIM_VIEW:
 		View3DAtts.viewNormal = (-0.616352, 0.284876, -0.734136)
@@ -197,11 +207,14 @@ def change_to_xray():
 	SetPlotOptions(PseudocolorAtts)
 
 # whichone is either "intensities" or "path_length"
-def visualize_spatial_topo(whichone):
+def visualize_spatial_topo(whichone, direction):
+	view = SPATIAL_VIEW
+	if direction == "side":
+		view = ALT_SPATIAL_VIEW
 	ResetView()
 	AddPlot("Pseudocolor", "mesh_spatial_topo/" + whichone + "_spatial")
 	DrawPlots()
-	set_view(SPATIAL_VIEW)
+	set_view(view)
 
 def visualize_spatial_energy_reduced_topo(whichone):
 	ResetView()
@@ -252,12 +265,12 @@ def image_topos(direction):
 	DeleteAllPlots() # Make sure we have a clean slate for ensuing visualizations.
 	
 	# spatial topo fields
-	visualize_spatial_topo("intensities")
+	visualize_spatial_topo("intensities", direction)
 	save_image("spatial_intensities_" + direction)
 	change_to_xray()
 	save_image("spatial_intensities_xray_" + direction)
 	DeleteAllPlots() # Make sure we have a clean slate for ensuing visualizations.
-	visualize_spatial_topo("path_length")
+	visualize_spatial_topo("path_length", direction)
 	save_image("spatial_path_length_" + direction)
 	change_to_xray()
 	save_image("spatial_path_length_xray_" + direction)
