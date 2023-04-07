@@ -109,6 +109,11 @@ def turn_off_annotations():
 	AnnotationAtts.databaseInfoFlag = 0
 	SetAnnotationAttributes(AnnotationAtts)
 
+def turn_on_2d_annotations():
+	AnnotationAtts = GetAnnotationAttributes()
+	AnnotationAtts.axes2D.visible = 1
+	SetAnnotationAttributes(AnnotationAtts)
+
 def visualize_imaging_planes():
 	AddPlot("Pseudocolor", "mesh_near_plane_topo/near_plane_field")
 	AddPlot("Pseudocolor", "mesh_view_plane_topo/view_plane_field")
@@ -231,6 +236,8 @@ def visualize_spectra_curves(whichone):
 	DrawPlots()
 
 def bonus_topos(direction):
+	turn_on_2d_annotations() # we want these plots to have axes and labels
+
 	# spatial energy reduced
 	visualize_spatial_energy_reduced_topo("intensities")
 	save_image("spatial_energy_reduced_intensities_" + direction)
@@ -250,6 +257,8 @@ def bonus_topos(direction):
 	visualize_spectra_curves("path_length")
 	save_image("spectra_path_length_" + direction)
 	DeleteAllPlots() # Make sure we have a clean slate for ensuing visualizations.
+
+	turn_off_annotations()
 
 def image_topos(direction):
 	# image topo fields

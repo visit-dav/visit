@@ -2108,7 +2108,7 @@ To make the output look like an x ray image, it is simple to change the color ta
    PseudocolorAtts.colorTableName = "xray"
    SetPlotOptions(PseudocolorAtts)
 
-.. figure:: images/XRay_Query_spatial_energy_reduced_intensities_xray_front.png
+.. figure:: images/XRay_Query_spatial_intensities_xray_front.png
 
    A visualization of the spatial extents mesh using the x ray color table.
 
