@@ -37,7 +37,7 @@ class GUI_API QvisGridWidget : public QWidget
 {
     Q_OBJECT
 public:
-    QvisGridWidget(QWidget *parent = 0, Qt::WindowFlags f = 0);
+    QvisGridWidget(QWidget *parent = 0, Qt::WindowFlags f = Qt::Widget);
     virtual ~QvisGridWidget();
     virtual QSize sizeHint () const;
     virtual QSize minimumSize() const;
