@@ -29,7 +29,7 @@ class GUI_API QvisScreenPositioner : public QWidget
 {
     Q_OBJECT
 public:
-    QvisScreenPositioner(QWidget *parent = 0, Qt::WindowFlags = 0);
+    QvisScreenPositioner(QWidget *parent = 0, Qt::WindowFlags = Qt::Widget);
     virtual ~QvisScreenPositioner();
     virtual QSize sizeHint () const;
     virtual QSize minimumSize() const;

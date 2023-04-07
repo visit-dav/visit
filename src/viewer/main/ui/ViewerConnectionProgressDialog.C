@@ -4,11 +4,12 @@
 
 #include <ViewerConnectionProgressDialog.h>
 #include <QApplication>
-#include <QDesktopWidget>
 #include <QLabel>
 #include <QLayout>
 #include <QPushButton>
 #include <QRadioButton>
+#include <QRect>
+#include <QScreen>
 #include <QTimer>
 #include <QTransform>
 
@@ -324,6 +325,9 @@ ViewerConnectionProgressDialog::hide()
 //   Brad Whitlock, Fri May 23 11:33:00 PDT 2008
 //   Make the window active.
 //
+//   Kathleen Biagas, Wed Apr  5 13:04:35 PDT 2023
+//   Replace obosolete desktop() with primaryScreen().
+//
 // ****************************************************************************
 
 void
@@ -335,8 +339,8 @@ ViewerConnectionProgressDialog::timedShow()
         raise();
         
         // Move the window a little above center.
-        int w = qApp->desktop()->width();
-        int h = qApp->desktop()->height();
+        int w = qApp->primaryScreen()->geometry().width();
+        int h = qApp->primaryScreen()->geometry().height();
         int x = (w - width()) / 2;
         int y = (h - height()) / 2 - (height() * 6 / 5);
         move(x, y);

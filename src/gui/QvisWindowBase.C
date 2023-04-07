@@ -6,7 +6,8 @@
 #include <DataNode.h>
 #include <vectortypes.h>
 #include <QApplication>
-#include <QDesktopWidget>
+#include <QRect>
+#include <QScreen>
 
 #include <cstdlib>
 
@@ -278,14 +279,16 @@ QvisWindowBase::SetFromNode(DataNode *parentNode, const int *borders)
 // Creation:   Wed Sep 10 09:27:07 PDT 2003
 //
 // Modifications:
+//   Kathleen Biagas, Wed Apr  5 13:04:35 PDT 2023
+//   Replace obosolete desktop() with primaryScreen().
 //   
 // ****************************************************************************
 
 void
 QvisWindowBase::FitToScreen(int &x, int &y, int &w, int &h)
 {
-    const int screenW = qApp->desktop()->width();
-    const int screenH = qApp->desktop()->height();
+    const int screenW = qApp->primaryScreen()->geometry().width();
+    const int screenH = qApp->primaryScreen()->geometry().height();
 
     if(x + w > screenW)
     {

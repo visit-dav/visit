@@ -37,7 +37,7 @@ class GUI_API QvisPeriodicTableWidget : public QvisGridWidget
 {
     Q_OBJECT
 public:
-    QvisPeriodicTableWidget(QWidget *parent = 0, Qt::WindowFlags f = 0);
+    QvisPeriodicTableWidget(QWidget *parent = 0, Qt::WindowFlags f = Qt::Widget);
     virtual ~QvisPeriodicTableWidget();
 
     void setSelectedElement(int e);

@@ -633,6 +633,9 @@ GUI_LogQtMessages(QtMsgType type, const QMessageLogContext &context, const QStri
 //   Eric Brugger, Thu Aug  5 11:21:21 PDT 2021
 //   Removed support for SeedMe.
 //
+//   Kathleen Biagas, Wed Apr  5 12:46:04 PDT 2023
+//   Remove commented out section around obsolete function setColorSpec.
+//
 // ****************************************************************************
 
 QvisGUIApplication::QvisGUIApplication(int &argc, char **argv, ViewerProxy *proxy) :
@@ -643,17 +646,6 @@ QvisGUIApplication::QvisGUIApplication(int &argc, char **argv, ViewerProxy *prox
 {
     completeInit = visitTimer->StartTimer();
     int total = visitTimer->StartTimer();
-
-#if 0
-    // NOTE: On Ubuntu 9.10/64bit calling setColorSpec with a compositing
-    // window manager causes Qt windows to be semi-transparent and they are
-    // not drawn correctly unless shown over a black background. I'm for either
-    // getting rid of this code (since most displays are better than 256 colors
-    // now) or coming up with clever conditions for conditional compilation.
-
-    // Tell Qt that we want lots of colors.
-    QApplication::setColorSpec(QApplication::ManyColor);
-#endif
 
     // NULL out some window pointers.
     mainWin = 0;

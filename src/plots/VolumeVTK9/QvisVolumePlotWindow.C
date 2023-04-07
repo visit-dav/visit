@@ -5,17 +5,18 @@
 #include <visit-config.h>
 #include <QvisVolumePlotWindow.h>
 #include <QApplication>
-#include <QComboBox>
-#include <QDesktopWidget>
-#include <QLayout>
-#include <QPushButton>
-#include <QCheckBox>
 #include <QButtonGroup>
-#include <QRadioButton>
-#include <QLabel>
-#include <QGroupBox>
-#include <QLineEdit>
+#include <QCheckBox>
+#include <QComboBox>
 #include <QDoubleSpinBox>
+#include <QGroupBox>
+#include <QLabel>
+#include <QLayout>
+#include <QLineEdit>
+#include <QPushButton>
+#include <QRadioButton>
+#include <QRect>
+#include <QScreen>
 #include <QSpinBox>
 #include <QTabWidget>
 
@@ -3018,6 +3019,9 @@ QvisVolumePlotWindow::controlPointMoved(int, float)
 //   Brad Whitlock, Fri Jul 18 15:39:07 PDT 2008
 //   Added argument.
 //
+//   Kathleen Biagas, Wed Apr  5 13:04:35 PDT 2023
+//   Replace obosolete desktop() with primaryScreen().
+//
 // ****************************************************************************
 
 void
@@ -3037,14 +3041,14 @@ QvisVolumePlotWindow::popupColorSelect(int index, const QPoint &p)
     // Fix the X dimension.
     if(menuX < 0)
         menuX = 0;
-    else if(menuX + menuW > QApplication::desktop()->width())
+    else if(menuX + menuW > QApplication::primaryScreen()->geometry().width())
         menuX -= (menuW + 5);
 
     // Fix the Y dimension.
     if(menuY < 0)
         menuY = 0;
-    else if(menuY + menuH > QApplication::desktop()->height())
-        menuY -= ((menuY + menuH) - QApplication::desktop()->height());
+    else if(menuY + menuH > QApplication::primaryScreen()->geometry().height())
+        menuY -= ((menuY + menuH) - QApplication::primaryScreen()->geometry().height());
 
     // Show the popup menu.
     colorSelect->move(menuX, menuY);

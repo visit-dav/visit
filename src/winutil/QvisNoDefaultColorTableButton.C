@@ -6,10 +6,11 @@
 #include <QAction>
 #include <QActionGroup>
 #include <QApplication>
-#include <QDesktopWidget>
 #include <QMenu>
 #include <QPainter>
 #include <QPixmap>
+#include <QRect>
+#include <QScreen>
 #include <DebugStream.h>
 
 #include <ColorTableAttributes.h>
@@ -324,6 +325,9 @@ QvisNoDefaultColorTableButton::getButtonType() const
 //    Justin Privitera, Wed Jul 13 15:19:47 PDT 2022
 //    Index into all the vars since they are now arrays.
 //   
+//    Kathleen Biagas, Wed Apr  5 13:04:35 PDT 2023
+//    Replace obosolete desktop() with primaryScreen().
+//
 // ****************************************************************************
 
 void
@@ -357,14 +361,14 @@ QvisNoDefaultColorTableButton::popupPressed()
         // Fix the X dimension.
         if(menuX < 0)
            menuX = 0;
-        else if(menuX + menuW > QApplication::desktop()->width())
+        else if(menuX + menuW > QApplication::primaryScreen()->geometry().width())
            menuX -= (menuW + 5);
 
         // Fix the Y dimension.
         if(menuY < 0)
            menuY = 0;
-        else if(menuY + menuH > QApplication::desktop()->height())
-           menuY -= ((menuY + menuH) - QApplication::desktop()->height());
+        else if(menuY + menuH > QApplication::primaryScreen()->geometry().height())
+           menuY -= ((menuY + menuH) - QApplication::primaryScreen()->geometry().height());
 
         // Show the popup menu.
         colorTableMenu[buttonType]->exec(QPoint(menuX, menuY));

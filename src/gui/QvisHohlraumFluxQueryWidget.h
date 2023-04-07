@@ -31,7 +31,7 @@ class GUI_API QvisHohlraumFluxQueryWidget : public QWidget
 {
     Q_OBJECT
 public:
-    QvisHohlraumFluxQueryWidget(QWidget *parent = 0, Qt::WindowFlags f = 0);
+    QvisHohlraumFluxQueryWidget(QWidget *parent = 0, Qt::WindowFlags f = Qt::Widget);
     virtual ~QvisHohlraumFluxQueryWidget();
 
     bool GetQueryParameters(MapNode &params);
