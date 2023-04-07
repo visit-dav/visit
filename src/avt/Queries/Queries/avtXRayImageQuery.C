@@ -2964,8 +2964,6 @@ avtXRayImageQuery::WriteBlueprintMeshes(conduit::Node &data_out,
 void
 avtXRayImageQuery::GetDefaultInputParams(MapNode &params)
 {
-    // TODO make this function and the constructor use the same default values
-
     stringVector v;
     v.push_back("absorbtivity");
     v.push_back("emissivity");
