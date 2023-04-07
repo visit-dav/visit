@@ -1,9 +1,20 @@
+# Author: Justin Privitera
+# Date:   04/07/2023
+# 
+# Purpose: 
+#    This script generates images for the X Ray Image Query documentation.
+#    At the time of writing (04/07/23) it does not yet generate all the images
+#    that appear in the docs. It also creates extra pictures that are not used.
+# 
+#    To run, simply run the script with VisIt. Modify the `path_to_data_file`
+#    as needed.
+
 import conduit
 import os
 import sys
 
-path_to_data_file = "../" # CHANGE ME
-data_file = path_to_data_file + "testdata/silo_hdf5_test_data/curv3d.silo"
+path_to_data_file = "testdata/silo_hdf5_test_data/" # CHANGE ME
+data_file = path_to_data_file + "curv3d.silo"
 
 shouldisave = True
 
@@ -98,7 +109,6 @@ def set_view(view):
 	SetView3D(View3DAtts)
 
 def turn_off_annotations():
-	# Logging for SetAnnotationObjectOptions is not implemented yet.
 	AnnotationAtts = AnnotationAttributes()
 	AnnotationAtts.axes2D.visible = 0
 	AnnotationAtts.axes3D.visible = 0
@@ -235,6 +245,7 @@ def visualize_spectra_curves(whichone):
 	SetPlotOptions(CurveAtts)
 	DrawPlots()
 
+# these are the 2d plots, spatial energy reduced and spectra curves
 def bonus_topos(direction):
 	turn_on_2d_annotations() # we want these plots to have axes and labels
 
@@ -420,6 +431,7 @@ def run_imaging_planes_and_rays(res, file, direction):
 def main():
 	setup()
 	turn_off_annotations()
+
 	call_query(image_size = (400, 300))
 	out_400x300 = "output.0000.root"
 	
@@ -455,7 +467,7 @@ def main():
 	bonus_topos(direction = "side")
 	CloseDatabase(out_side_400x300)
 	
-	# generate input mesh images for all views
+	# generate input mesh images for a few views
 	ActivateDatabase(data_file)
 	AddPlot("Pseudocolor", "d")
 	DrawPlots()
@@ -470,12 +482,12 @@ def main():
 
 	# generate imaging planes and rays images for multiple resolutions for FRONT view
 	run_imaging_planes_and_rays(res = "400x300", file = out_400x300, direction = "front")
-	run_imaging_planes_and_rays(res = "40x30", file = out_40x30, direction = "front")
-	run_imaging_planes_and_rays(res = "20x15", file = out_20x15, direction = "front")
-	run_imaging_planes_and_rays(res = "8x6", file = out_8x6, direction = "front")
+	run_imaging_planes_and_rays(res = "40x30",   file = out_40x30,   direction = "front")
+	run_imaging_planes_and_rays(res = "20x15",   file = out_20x15,   direction = "front")
+	run_imaging_planes_and_rays(res = "8x6",     file = out_8x6,     direction = "front")
 
 	# generate imaging planes and rays images for multiple resolutions for SIDE view
 	run_imaging_planes_and_rays(res = "400x300", file = out_side_400x300, direction = "side")
-	run_imaging_planes_and_rays(res = "40x30", file = out_side_40x30, direction = "side")
+	run_imaging_planes_and_rays(res = "40x30",   file = out_side_40x30,   direction = "side")
 
 main()
