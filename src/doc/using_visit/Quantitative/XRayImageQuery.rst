@@ -1832,7 +1832,7 @@ We then duplicated the existing topology and fields from the :ref:`Basic_Mesh_Ou
 .. figure:: images/XRay_Query_spatial_intensities_side.png
 
    The spatial extents mesh looks very similar to the basic mesh output.
-   It is in 3D and the z dimension represents the energy group bounds, which in this example run from 2.7 to 5.2.
+   It is in 3D and the z dimension represents the energy group bounds, which in this example run from 0 to 12.
 
 To visualize this mesh with VisIt, see :ref:`Visualizing_with_VisIt`. To extract the spatial extents data from the Blueprint output, see :ref:`Introspecting_with_Python`.
 
