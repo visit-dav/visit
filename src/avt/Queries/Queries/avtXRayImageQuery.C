@@ -183,6 +183,9 @@ inline bool multipleOutputFiles(int otype, int numBins)
 // 
 //    Justin Privitera, Wed Nov 30 17:43:48 PST 2022
 //    Added default values for units.
+// 
+//    Justin Privitera, Fri Apr  7 16:39:30 PDT 2023
+//    outputRayBounds is now included in the constructor.
 //
 // ****************************************************************************
 
