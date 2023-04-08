@@ -912,7 +912,7 @@ QvisOpacitySlider::mousePressEvent(QMouseEvent *e)
         clickOffset = (int)(e->pos().x() - sliderPos);
 //    emit sliderPressed();
     }
-    else if(e->button() == Qt::MidButton)
+    else if(e->button() == Qt::MiddleButton)
     {
         int pos = e->pos().x();
         moveSlider(pos - sliderLength() / 2);
@@ -1005,7 +1005,7 @@ QvisOpacitySlider::wheelEvent(QWheelEvent * e)
         offset_owner = this;
         offset = 0;
     }
-    offset += -e->delta()*qMax(pageStep(),singleStep())/120;
+    offset += -e->angleDelta().y()*qMax(pageStep(),singleStep())/120;
     if(qAbs(offset)<1)
         return;
     setValue( value() + int(offset) );
