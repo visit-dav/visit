@@ -623,6 +623,9 @@ QvisOpacitySlider::imageWidth() const
 //   Brad Whitlock, Thu Jun  5 14:29:03 PDT 2008
 //   Qt 4.
 //
+//   Kathleen Biagas, Tue Apr 11, 2023
+//   Replace obsolete QString::sprintf with QString::arg.
+//
 // ****************************************************************************
 
 void
@@ -632,7 +635,7 @@ QvisOpacitySlider::paintValueText(QPainter *p, const QPalette &cg, int x,
     // Create the text that we have to display.
     int v = (state == Dragging) ? (valueFromPosition(sliderPos)) : value();
     float t = float(v - minimum()) / float(maximum() - minimum());
-    QString txt; txt.sprintf("%d%%", int(t * 100.f));
+    QString txt("%1\%").arg(int(t * 100.f));
 
     // Figure out the y offset.
     int dy = h - fontMetrics().height();
