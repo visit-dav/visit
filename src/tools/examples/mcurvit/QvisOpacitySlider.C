@@ -635,7 +635,7 @@ QvisOpacitySlider::paintValueText(QPainter *p, const QPalette &cg, int x,
     // Create the text that we have to display.
     int v = (state == Dragging) ? (valueFromPosition(sliderPos)) : value();
     float t = float(v - minimum()) / float(maximum() - minimum());
-    QString txt("%1\%").arg(int(t * 100.f));
+    QString txt = QString("%1%").arg(int(t * 100.f));
 
     // Figure out the y offset.
     int dy = h - fontMetrics().height();
