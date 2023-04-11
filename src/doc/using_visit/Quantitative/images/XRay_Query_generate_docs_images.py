@@ -13,7 +13,7 @@ import conduit
 import os
 import sys
 
-path_to_data_file = "testdata/silo_hdf5_test_data/" # CHANGE ME
+path_to_data_file = "../testdata/silo_hdf5_test_data/" # CHANGE ME
 data_file = path_to_data_file + "curv3d.silo"
 
 shouldisave = True
@@ -124,6 +124,18 @@ def turn_on_2d_annotations():
 	AnnotationAtts.axes2D.visible = 1
 	SetAnnotationAttributes(AnnotationAtts)
 
+def change_to_xray():
+	# Make sure the plot you want to change the color of is active
+	PseudocolorAtts = PseudocolorAttributes()
+	PseudocolorAtts.colorTableName = "xray"
+	SetPlotOptions(PseudocolorAtts)
+
+def change_to_spectral_inverted():
+	PseudocolorAtts = PseudocolorAttributes()
+	PseudocolorAtts.colorTableName = "Spectral"
+	PseudocolorAtts.invertColorTable = 1
+	SetPlotOptions(PseudocolorAtts)
+
 def visualize_imaging_planes():
 	AddPlot("Pseudocolor", "mesh_near_plane_topo/near_plane_field")
 	AddPlot("Pseudocolor", "mesh_view_plane_topo/view_plane_field")
@@ -153,9 +165,12 @@ def color_imaging_planes():
 def visualize_ray_field():
 	AddPlot("Pseudocolor", "mesh_ray_topo/ray_field")
 	DrawPlots()
+	change_to_spectral_inverted()
 
-def adjust_opacity():
+def adjust_opacity_and_keep_spectral_inverted():
 	PseudocolorAtts = PseudocolorAttributes()
+	PseudocolorAtts.colorTableName = "Spectral"
+	PseudocolorAtts.invertColorTable = 1
 	PseudocolorAtts.opacityType = PseudocolorAtts.Constant  # ColorTable, FullyOpaque, Constant, Ramp, VariableRange
 	PseudocolorAtts.opacity = 0.5
 	SetPlotOptions(PseudocolorAtts)
@@ -198,7 +213,7 @@ def imaging_planes_and_rays(res, direction):
 	HideActivePlots()
 
 	SetActivePlots(5)
-	adjust_opacity()
+	adjust_opacity_and_keep_spectral_inverted()
 	save_image("imaging_planes_and_transparent_rays_" + res + "_" + direction)
 
 	# show ray corners
@@ -214,12 +229,7 @@ def visualize_image_topo(whichone):
 	AddPlot("Pseudocolor", "mesh_image_topo/" + whichone)
 	DrawPlots()
 	set_view(IMAGE_VIEW)
-
-def change_to_xray():
-	# Make sure the plot you want to change the color of is active
-	PseudocolorAtts = PseudocolorAttributes()
-	PseudocolorAtts.colorTableName = "xray"
-	SetPlotOptions(PseudocolorAtts)
+	change_to_spectral_inverted()
 
 # whichone is either "intensities" or "path_length"
 def visualize_spatial_topo(whichone, direction):
@@ -230,11 +240,13 @@ def visualize_spatial_topo(whichone, direction):
 	AddPlot("Pseudocolor", "mesh_spatial_topo/" + whichone + "_spatial")
 	DrawPlots()
 	set_view(view)
+	change_to_spectral_inverted()
 
 def visualize_spatial_energy_reduced_topo(whichone):
 	ResetView()
 	AddPlot("Pseudocolor", "mesh_spatial_energy_reduced_topo/" + whichone + "_spatial_energy_reduced")
 	DrawPlots()
+	change_to_spectral_inverted()
 
 def visualize_spectra_curves(whichone):
 	ResetView()
@@ -421,6 +433,7 @@ def run_imaging_planes_and_rays(res, file, direction):
 	ActivateDatabase(data_file)
 	AddPlot("Pseudocolor", "d")
 	DrawPlots()
+	change_to_spectral_inverted()
 	# Then we want to go back to the output file and visualize the imaging planes
 	OpenDatabase(file) # low-res data
 	imaging_planes_and_rays(res, direction)
@@ -471,6 +484,7 @@ def main():
 	ActivateDatabase(data_file)
 	AddPlot("Pseudocolor", "d")
 	DrawPlots()
+	change_to_spectral_inverted()
 	save_image("input_mesh_front")
 	set_view(SIDE_VIEW)
 	save_image("input_mesh_side")
