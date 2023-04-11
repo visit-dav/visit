@@ -531,7 +531,7 @@ avtRevolvedVolume::GetTriangleVolume2(double x[3], double y[3])
 //    Renamed some vars for clarity.
 //
 //    Mark C. Miller, Tue Apr 11 09:24:54 PDT 2023
-//    Reduce numerical sensitivity for line segments nearly paralle to axis
+//    Reduce numerical sensitivity for line segments nearly parallel to axis
 //    of revolution.
 // ****************************************************************************
  
@@ -559,12 +559,11 @@ avtRevolvedVolume::RevolveLineSegment(double x[2], double y[2], double *slope)
         }
         return 0.;
     }
-    // using if (y[0]==y[1]) here means lines nearly parallel to axis
-    // don't get handled here and instead we try to compute an x-intercept
-    // for them. Those are really ill-conditioned 2x2 matrix and we get
-    // bad results. So, instead we treat all nearly equal values as
-    // parallel to axis.
-    if (abs(y[0]-y[1]) < 1e-6)
+    // Treat all lines which are almost parallel to axis as indeed
+    // parallel and defining a volume of cylinder. This is numerically
+    // better for lines almost parallel to axis because computing
+    // intercept is ill-conditioned in these cases.
+    if (abs(y[1]-y[0]) < (1e-6)*abs(x[1]-x[0]))
     {
 #if defined(_WIN32) && !defined(M_PI)
 #define M_PI 3.14159265358979323846
