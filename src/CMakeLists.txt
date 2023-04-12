@@ -2346,7 +2346,7 @@ IF (NOT WIN32)
         SET (CPACK_BUNDLE_PLIST "${VISIT_BINARY_DIR}/tools/dev/scripts/Info.plist")
         SET (CPACK_BUNDLE_STARTUP_COMMAND "${VISIT_BINARY_DIR}/exe/visit_macos_launcher")
     ELSE(APPLE AND VISIT_CREATE_APPBUNDLE_PACKAGE)
-        SET(CPACK_GENERATOR "TGZ")
+        SET(CPACK_GENERATOR "TXZ")
 
         SET(CPACK_PACKAGE_NAME "visit")
         SET(CPACK_PACKAGE_DESCRIPTION_SUMMARY "VisIt ${VISIT_VERSION} is a parallel visualization and data analysis tool")
