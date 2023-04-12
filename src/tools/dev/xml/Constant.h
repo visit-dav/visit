@@ -41,7 +41,7 @@ class Constant
     void Print(QTextStream &out, const QString &generatorName = QString())
     {
         if(generatorName.isEmpty() || generatorName == target)
-            out << "        Constant: (" << target << ") " << decl << endl;
+            out << "        Constant: (" << target << ") " << decl << Endl;
     }
 };
 

@@ -688,12 +688,11 @@ QWsSocket::initializeWebSocket(const QString &request, QString &response)
     // Extract mandatory data
 
     // Version
-    QString version;
+    int version =0;
     regExp.setPattern(regExpVersionStr);
     if(request.contains(regExp, &regexMatch))
     {
         QString versionStr = regexMatch.captured(1);
-        int version = 0;
         if ( ! versionStr.isEmpty() )
             version = versionStr.toInt();
     }

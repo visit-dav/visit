@@ -99,11 +99,11 @@ PrintWindowAction::Execute()
     printer.setDocName(GetViewerState()->GetPrinterAttributes()->GetDocumentName().c_str());
     debug1 << "\tdocName=" << GetViewerState()->GetPrinterAttributes()->GetDocumentName() << endl;
 
-    printer.setNumCopies(GetViewerState()->GetPrinterAttributes()->GetNumCopies());
+    printer.setCopyCount(GetViewerState()->GetPrinterAttributes()->GetNumCopies());
     debug1 << "\tnumCopies=" << GetViewerState()->GetPrinterAttributes()->GetNumCopies() << endl;
 
-    printer.setOrientation(GetViewerState()->GetPrinterAttributes()->GetPortrait() ? QPrinter::Portrait :
-        QPrinter::Landscape);
+    printer.setPageOrientation(GetViewerState()->GetPrinterAttributes()->GetPortrait() ? QPageLayout::Portrait :
+        QPageLayout::Landscape);
     debug1 << "\torientation="
            << (GetViewerState()->GetPrinterAttributes()->GetPortrait()?"portrait":"landscape") << endl;
 
@@ -128,7 +128,7 @@ PrintWindowAction::Execute()
         printer.setOutputFileName(QString());
         debug1 << "\toutputFilename=(empty)" << endl;
     }
-    printer.setPaperSize((QPrinter::PageSize)GetViewerState()->GetPrinterAttributes()->GetPageSize());
+    printer.setPageSize((QPagedPaintDevice::PageSize)GetViewerState()->GetPrinterAttributes()->GetPageSize());
     debug1 << "\tpaperSize=" << GetViewerState()->GetPrinterAttributes()->GetPageSize() << endl;
 
     //

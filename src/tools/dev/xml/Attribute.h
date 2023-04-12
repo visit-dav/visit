@@ -99,7 +99,7 @@ class Attribute : public AttributeBase
     virtual void Print(QTextStream &out) const
     {
         size_t i;
-        out << "    Attribute: " << name << " (" << purpose << ")" << endl;
+        out << "    Attribute: " << name << " (" << purpose << ")" << Endl;
         for (i=0; i<fields.size(); i++)
             fields[i]->Print(out);
         for (i=0; i<includes.size(); i++)
@@ -271,25 +271,25 @@ class Attribute : public AttributeBase
             Code *c = codes[i];
             if(currentTarget != c->target)
             {
-                out << "Target: " << c->target << endl;
+                out << "Target: " << c->target << Endl;
                 currentTarget = c->target;
             }
-            out << "Code: " << c->name << endl;
-            out << "Prefix:" << endl;
+            out << "Code: " << c->name << Endl;
+            out << "Prefix:" << Endl;
             if (! c->prefix.isEmpty())
             {
                 out << c->prefix;
                 if (c->prefix.right(1) != "\n")
-                    out << endl;
+                    out << Endl;
             }
-            out << "Postfix:" << endl;
+            out << "Postfix:" << Endl;
             if (! c->postfix.isEmpty())
             {
                 out << c->postfix;
                 if (c->postfix.right(1) != "\n")
-                    out << endl;
+                    out << Endl;
             }
-            out << endl;
+            out << Endl;
         }
 
         for (i=0; i<fields.size(); i++)
@@ -304,15 +304,15 @@ class Attribute : public AttributeBase
                 {
                     if(currentTarget != it->first)
                     {
-                        out << "Target: " << it->first << endl;
+                        out << "Target: " << it->first << Endl;
                         currentTarget = it->first;
                     }
 
-                    out << "Initialization: " << f->name << endl;
-                    out << initcode << endl;
+                    out << "Initialization: " << f->name << Endl;
+                    out << initcode << Endl;
                 }
                 if (!(initcode.isEmpty()) && !(initcode.right(1) == "\n"))
-                    out << endl;
+                    out << Endl;
             }
         }
 
@@ -321,13 +321,13 @@ class Attribute : public AttributeBase
             Constant *c = constants[i];
             if(currentTarget != c->target)
             {
-                out << "Target: " << c->target << endl;
+                out << "Target: " << c->target << Endl;
                 currentTarget = c->target;
             }
-            out << "Constant: " << c->name << endl;
-            out << "Declaration: " << c->decl << endl;
-            out << "Definition: " << c->def << endl;
-            out << endl;
+            out << "Constant: " << c->name << Endl;
+            out << "Declaration: " << c->decl << Endl;
+            out << "Definition: " << c->def << Endl;
+            out << Endl;
         }
 
         for (i=0; i<functions.size(); i++)
@@ -335,14 +335,14 @@ class Attribute : public AttributeBase
             Function *f = functions[i];
             if(currentTarget != f->target)
             {
-                out << "Target: " << f->target << endl;
+                out << "Target: " << f->target << Endl;
                 currentTarget = f->target;
             }
-            out << "Function: " << f->name << endl;
-            out << "Declaration: " << f->decl << endl;
-            out << "Definition:" << endl << f->def << endl;
+            out << "Function: " << f->name << Endl;
+            out << "Declaration: " << f->decl << Endl;
+            out << "Definition:" << Endl << f->def << Endl;
             if (!(f->def.isEmpty()) && !(f->def.right(1) == "\n"))
-                out << endl;
+                out << Endl;
         }
 
         f->close();
