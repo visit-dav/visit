@@ -151,7 +151,7 @@ def steps_untar(opts,ctx):
     ctx.actions["src_copy_tar"] = shell(cmd="cp %s ." % opts["tarball"],
                                       description="copy source tar",
                                       working_dir=build_dir)
-    ctx.actions["src_untar"] = shell(cmd="tar -xzvf %s" % tar_base,
+    ctx.actions["src_untar"] = shell(cmd="tar -xvf %s" % tar_base,
                                       description="untar source",
                                       working_dir=build_dir)
 
