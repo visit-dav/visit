@@ -106,7 +106,7 @@ function build_mpich
     #
     mpich_opts="--enable-shared"
     if [[ "$OPSYS" == "Darwin" ]]; then
-        mpich_opts="${mpich_opts} --enable-two-level-namespace --enable-threads=single"
+        mpich_opts="${mpich_opts} --enable-two-level-namespace --enable-threads=single --enable-libxml2=no"
     fi
 
     #

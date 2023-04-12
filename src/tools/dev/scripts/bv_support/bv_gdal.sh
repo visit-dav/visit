@@ -167,8 +167,8 @@ function build_gdal
     fi
     set -x
     ./configure CXX="$CXX_COMPILER" CC="$C_COMPILER" $EXTRA_FLAGS \
-                CFLAGS="$CFLAGS $C_OPT_FLAGS -DH5_USE_16_API" \
-                CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS -DH5_USE_16_API" \
+                CFLAGS="$CFLAGS $C_OPT_FLAGS -DH5_USE_16_API -Wno-error=implicit-function-declaration" \
+                CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS -DH5_USE_16_API -Wno-error=implicit-function-declaration" \
                 --prefix="$VISITDIR/gdal/$GDAL_VERSION/$VISITARCH" \
                 --with-libtiff=internal --with-gif=internal \
                 --with-png=internal --with-jpeg=internal \

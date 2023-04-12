@@ -489,6 +489,35 @@ EOF
     return 0;
 }
 
+function apply_hdf5_resize_configs_are_equal_patch
+{
+    info "Patching hdf5 1.8.14 for isatty"
+    patch -p0 << EOF
+*** test/cache_common.h.orig	2014-10-13 04:33:37.000000000 -0700
+--- test/cache_common.h	2023-04-11 20:25:27.000000000 -0700
+*************** void check_and_validate_cache_size(hid_t
+*** 697,702 ****
+--- 697,707 ----
+                                     int32_t * cur_num_entries_ptr,
+                                     hbool_t dump_data);
+  
++ hbool_t
++ resize_configs_are_equal(const H5C_auto_size_ctl_t *a,
++     const H5C_auto_size_ctl_t *b,
++     hbool_t compare_init);
++ 
+  void validate_mdc_config(hid_t file_id,
+                           H5AC_cache_config_t * ext_config_ptr,
+                           hbool_t compare_init,
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "HDF5 1.8.14 resize_configs_are_equal patch."
+        return 1
+    fi
+
+    return 0;
+}
+
 function apply_hdf5_patch
 {
     # Apply a patch for static if we build statically.
@@ -500,6 +529,11 @@ function apply_hdf5_patch
     fi
 
     apply_hdf5_1814_isatty_patch
+    if [[ $? != 0 ]]; then
+        return 1
+    fi
+
+    apply_hdf5_resize_configs_are_equal_patch
     if [[ $? != 0 ]]; then
         return 1
     fi
@@ -606,6 +640,7 @@ function build_hdf5
 
         cf_build_parallel=""
         cf_par_suffix=""
+        cf_extra_cflags=""
         if [[ "$bt" == "serial" ]]; then
             cf_build_parallel="--disable-parallel"
             cf_c_compiler="$C_COMPILER"
@@ -618,6 +653,9 @@ function build_hdf5
             cf_build_parallel="--enable-parallel"
             cf_par_suffix="_mpi"
             cf_c_compiler="$PAR_COMPILER"
+            if [[ "$OPSYS" == "Darwin" ]]; then
+                cf_extra_cflags="-Wno-error=implicit-function-declaration"
+            fi
         fi
 
         # In order to ensure $cf_fortranargs is expanded to build the arguments to
@@ -625,7 +663,7 @@ function build_hdf5
         info "Invoking command to configure $bt HDF5"
         set -x
         sh -c "../configure CC=\"$cf_c_compiler\" \
-            CFLAGS=\"$CFLAGS $C_OPT_FLAGS\" $cf_fortranargs \
+            CFLAGS=\"$CFLAGS $C_OPT_FLAGS ${cf_extra_cflags}\" $cf_fortranargs \
             --prefix=\"$VISITDIR/hdf5${cf_par_suffix}/$HDF5_VERSION/$VISITARCH\" \
             ${cf_szip} ${cf_zlib} ${cf_build_type} ${cf_build_thread} \
             ${cf_build_parallel} ${extra_ac_flags} $build_mode"
@@ -661,8 +699,8 @@ function build_hdf5
         fi
 
         if [[ "$DO_GROUP" == "yes" ]] ; then
-            chmod -R ug+w,a+rX "$VISITDIR/hdf5"
-            chgrp -R ${GROUP} "$VISITDIR/hdf5"
+            chmod -R ug+w,a+rX "$VISITDIR/hdf5*"
+            chgrp -R ${GROUP} "$VISITDIR/hdf5*"
         fi
 
         popd

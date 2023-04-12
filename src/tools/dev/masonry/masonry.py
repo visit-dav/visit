@@ -412,7 +412,9 @@ class NotarizeAction(Action):
                 print("[removing existing temporary dmg file: {0}]".format(temp_dmg))
                 os.remove(temp_dmg)
 
-            cmd = "hdiutil create -srcFolder %s -o %s" % (src_folder, temp_dmg)
+            # ULMO format (xz) is 1/2 the size of default format (UDZO which is zlib level 1)
+            #cmd = "hdiutil create -srcFolder %s -o %s" % (src_folder, temp_dmg)
+            cmd = "hdiutil create -format ULMO -srcFolder %s -o %s" % (src_folder, temp_dmg)
 
             ##########################################################################
             # NOTE (cyrush) 2021-05-27
