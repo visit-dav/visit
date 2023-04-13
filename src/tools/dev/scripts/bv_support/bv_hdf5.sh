@@ -511,7 +511,7 @@ function apply_hdf5_resize_configs_are_equal_patch
                            hbool_t compare_init,
 EOF
     if [[ $? != 0 ]] ; then
-        warn "HDF5 1.8.14 resize_configs_are_equal patch."
+        warn "HDF5 1.8.14 resize_configs_are_equal patch failed."
         return 1
     fi
 
