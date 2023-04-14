@@ -267,6 +267,35 @@ EOF
     return 1
 }
 
+function apply_netcdf_strlcat_patch
+{
+    info "Patching netcdf for strlcat"
+    patch -p0 << \EOF
+*** ncgen3/genlib.h.orig	2023-04-14 11:00:05.000000000 -0700
+--- ncgen3/genlib.h	2023-04-07 17:04:37.000000000 -0700
+*************** extern void nc_fill ( nc_type  type, siz
+*** 81,89 ****
+--- 81,91 ----
+  extern void clearout(void);
+  
+  /* In case we are missing strlcat */
++ #if 0
+  #ifndef HAVE_STRLCAT
+  extern size_t strlcat(char *dst, const char *src, size_t siz);
+  #endif
++ #endif
+  
+  #ifdef __cplusplus
+  }
+EOF
+
+    if [[ $? != 0 ]] ; then
+      warn "netcdt patch for strlcat failed."
+      return 1
+    fi
+    return 0;
+}
+
 function apply_netcdf_patch
 {
     apply_netcdf_patch_for_exodusii
@@ -288,6 +317,13 @@ function apply_netcdf_patch
                 info "Applying macOS 10.13 and up patch . . ."
                 apply_netcdf_411_macOS_patch
             fi
+        fi
+    fi
+    
+    if [[ "$OPSYS" == "Darwin" ]] ; then
+        apply_netcdf_strlcat_patch
+        if [[ $? != 0 ]] ; then
+           return 1
         fi
     fi
 
@@ -365,6 +401,9 @@ function build_netcdf
     fi
     ZLIBARGS="--with-zlib=$VISITDIR/zlib/$ZLIB_VERSION/$VISITARCH"
 
+    # probably always best to do this now with newer compilers
+    CFLAGS="$CFLAGS -Wno-error=implicit-function-declaration"
+
     set -x
     ./configure CXX="$CXX_COMPILER" CC="$C_COMPILER" \
                 CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
@@ -373,9 +412,16 @@ function build_netcdf
                 --prefix="$VISITDIR/netcdf/$NETCDF_VERSION/$VISITARCH"
     set +x
 
+
     if [[ $? != 0 ]] ; then
         warn "NetCDF configure failed.  Giving up"
         return 1
+    fi
+
+    # there is an include file on newer macOS #include <version> which case-clashes
+    # with any file living in a dir that is -I included on the compilation line
+    if [[ "$OPSYS" == "Darwin" ]]; then
+        mv -f VERSION VERSION.orig
     fi
 
     #

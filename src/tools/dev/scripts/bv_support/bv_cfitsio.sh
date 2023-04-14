@@ -65,6 +65,42 @@ function bv_cfitsio_ensure
         fi
     fi
 }
+
+function apply_cfitsio_groupc_patch
+{
+    info "Patching cfitsio 3006 for missing header in group.c"
+    patch -p0 << \EOF
+--- group.c.orig	2023-04-14 10:47:28.000000000 -0700
++++ group.c	2023-04-07 11:11:49.000000000 -0700
+@@ -19,6 +19,7 @@
+ #include <stdio.h>
+ #include <string.h>
+ #include <stdlib.h>
++#include <unistd.h>  /* needed for getcwd prototype on unix machines */
+ 
+ #if defined(WIN32) || defined(__WIN32__)
+ #include <direct.h>   /* defines the getcwd function on Windows PCs */
+EOF
+
+    if [[ $? != 0 ]] ; then
+      warn "cfitsio patch for missing header in group.c failed."
+      return 1
+    fi
+    return 0;
+
+}
+
+function apply_cfitsio_patch
+{
+    if [[ "$OPSYS" == "Darwin" ]]; then
+        apply_cfitsio_groupc_patch
+        if [[ $? != 0 ]] ; then
+           return 1 
+        fi
+    fi
+    return 0
+}
+
 # *************************************************************************** #
 #                         Function 8.9, build_cfitsio                         #
 # *************************************************************************** #
@@ -81,10 +117,23 @@ function build_cfitsio
         return 1
     fi
 
-    #
-    info "Configuring CFITSIO . . ."
     cd $CFITSIO_BUILD_DIR || error "Can't cd to cfits IO build dir."
 
+    # Patch cfitsio
+    apply_cfitsio_patch
+    if [[ $? != 0 ]] ; then
+        if [[ $untarred_cfitsio == 1 ]] ; then
+            warn "Giving up on cfitsio build because the patch failed."
+            return 1
+        else
+            warn "Patch failed, but continuing.  I believe that this script\n" \
+                 "tried to apply a patch to an existing directory that had\n" \
+                 "already been patched ... that is, the patch is\n" \
+                 "failing harmlessly on a second application."
+        fi
+    fi
+
+    info "Configuring CFITSIO . . ."
     set -x
     env CXX="$CXX_COMPILER" CC="$C_COMPILER" \
         CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
