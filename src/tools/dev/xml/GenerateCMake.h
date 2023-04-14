@@ -373,7 +373,7 @@ class CMakeGeneratorPlugin : public Plugin
         out << indent << "TARGET_INCLUDE_DIRECTORIES(" << comp << name;
         out << ptype << suffix << " PRIVATE";
         out << IncludesToString(inc, false, true);
-        out << ")" << endl;
+        out << ")" << Endl;
     }
 
     void
@@ -386,7 +386,7 @@ class CMakeGeneratorPlugin : public Plugin
         QString ptype = type;
         ptype[0] = type[0].toUpper();
         out << indent << "TARGET_LINK_DIRECTORIES(" << comp << name;
-        out << ptype << suffix << " PRIVATE " << ToString(ld)<< ")" << endl;
+        out << ptype << suffix << " PRIVATE " << ToString(ld)<< ")" << Endl;
     }
 
     void
@@ -399,7 +399,7 @@ class CMakeGeneratorPlugin : public Plugin
         QString ptype = type;
         ptype[0] = type[0].toUpper();
         out << indent << "TARGET_COMPILE_DEFINITIONS(" << comp << name;
-        out << ptype << suffix << " PRIVATE " << ToString(def)<< ")" << endl;
+        out << ptype << suffix << " PRIVATE " << ToString(def)<< ")" << Endl;
     }
 
     bool
@@ -420,12 +420,12 @@ class CMakeGeneratorPlugin : public Plugin
         {
            for (int i = 0; i < conditions.size(); ++i)
            {
-                out << "if(" << conditions[i] << ")" << endl;
+                out << "if(" << conditions[i] << ")" << Endl;
                 out << "    include_directories(";
                 out << incs[i];
-                out << ")" << endl;
-                out << "endif()" << endl;
-                out << endl;
+                out << ")" << Endl;
+                out << "endif()" << Endl;
+                out << Endl;
             }
         }
     }
@@ -437,12 +437,12 @@ class CMakeGeneratorPlugin : public Plugin
         {
             for (int i = 0; i < conditions.size(); ++i)
             {
-                out << "if(" << conditions[i] << ")" << endl;
+                out << "if(" << conditions[i] << ")" << Endl;
                 out << "    add_definitions(";
                 out << defs[i];
-                out << ")" << endl;
-                out << "endif()" << endl;
-                out << endl;
+                out << ")" << Endl;
+                out << "endif()" << Endl;
+                out << Endl;
             }
         }
     }
@@ -456,10 +456,10 @@ class CMakeGeneratorPlugin : public Plugin
         {
             for (int i = 0; i < conditions.size(); ++i)
             {
-                out << indent << "if(" << conditions[i] << ")" << endl;
-                out << indent << "    target_link_libraries(" << libType << target << plugType << " " << links[i] << ")" << endl;
-                out << indent << "endif()" << endl;
-                out << endl;
+                out << indent << "if(" << conditions[i] << ")" << Endl;
+                out << indent << "    target_link_libraries(" << libType << target << plugType << " " << links[i] << ")" << Endl;
+                out << indent << "endif()" << Endl;
+                out << Endl;
             }
         }
     }
@@ -473,10 +473,10 @@ class CMakeGeneratorPlugin : public Plugin
         {
             for (int i = 0; i < conditions.size(); ++i)
             {
-                out << indent << "if(" << conditions[i] << ")" << endl;
-                out << indent << "    set(LIB" << libType << "_SOURCES ${LIB" << libType << "_SOURCES} " << srcs[i] << ")" << endl;
-                out << indent << "endif()" << endl;
-                out << endl;
+                out << indent << "if(" << conditions[i] << ")" << Endl;
+                out << indent << "    set(LIB" << libType << "_SOURCES ${LIB" << libType << "_SOURCES} " << srcs[i] << ")" << Endl;
+                out << indent << "endif()" << Endl;
+                out << Endl;
             }
         }
     }
@@ -494,11 +494,11 @@ class CMakeGeneratorPlugin : public Plugin
                 {
                     if (!first[i].isEmpty())
                     {
-                        out << first[i] << endl;
+                        out << first[i] << Endl;
                     }
                     if (!second[i].isEmpty())
                     {
-                        out << second[i] << endl;
+                        out << second[i] << Endl;
                     }
                 }
             }
@@ -520,26 +520,26 @@ class CMakeGeneratorPlugin : public Plugin
                  extraIncludes.push_back(ConvertToProperVisItIncludeDir(cxxflags[i].right(cxxflags[i].size()-2)));
         }
 
-        out << endl;
+        out << Endl;
 
         // Includes
-        out << "INCLUDE_DIRECTORIES(" << endl;
-        out << "${CMAKE_CURRENT_SOURCE_DIR}" << endl;
+        out << "INCLUDE_DIRECTORIES(" << Endl;
+        out << "${CMAKE_CURRENT_SOURCE_DIR}" << Endl;
         if(type == "operator")
-            out << "${VISIT_OPERATOR_INCLUDES}" << endl;
+            out << "${VISIT_OPERATOR_INCLUDES}" << Endl;
         else
-            out << "${VISIT_PLOT_INCLUDES}" << endl;
+            out << "${VISIT_PLOT_INCLUDES}" << Endl;
         if(!using_dev)
         {
-            out << "${QT_INCLUDE_DIR}" << endl;
-            out << "${QT_QTCORE_INCLUDE_DIR}" << endl;
-            out << "${QT_QTGUI_INCLUDE_DIR}" << endl;
-            out << "${QT_QTWIDGETS_INCLUDE_DIR}" << endl;
+            out << "${QT_INCLUDE_DIR}" << Endl;
+            out << "${QT_QTCORE_INCLUDE_DIR}" << Endl;
+            out << "${QT_QTGUI_INCLUDE_DIR}" << Endl;
+            out << "${QT_QTWIDGETS_INCLUDE_DIR}" << Endl;
         }
         if(extraIncludes.size() > 0)
             out << ToString(extraIncludes, true);
-        out << ")" << endl;
-        out << endl;
+        out << ")" << Endl;
+        out << Endl;
     }
 
     void CMakeAdd_EngineTargets(QTextStream &out)
@@ -549,7 +549,7 @@ class CMakeGeneratorPlugin : public Plugin
         out << "ADD_LIBRARY(E"<<name<<ptype << "_ser ${LIBE_SOURCES}";
         if (customwefiles)
             out << " ${LIBE_WIN32_SOURCES}";
-        out << ")" << endl;
+        out << ")" << Endl;
         if(!edefsSer.empty())
         {
             CMakeWrite_TargetDefines(out, "", "E", "_ser", edefsSer);
@@ -564,11 +564,11 @@ class CMakeGeneratorPlugin : public Plugin
         }
         if (!vtk8_elibsSer.empty())
         {
-            out << "\nif(VTK_VERSION VERSION_EQUAL \"8.1.0\")" << endl;
-            out << "    set(vtk_elibsSer " << ToString(vtk8_elibsSer) << ")" << endl;
-            out << "else()" << endl;
-            out << "    set(vtk_elibsSer " << ToString(vtk9_elibsSer) << ")" << endl;
-            out << "endif()\n" << endl;
+            out << "\nif(VTK_VERSION VERSION_EQUAL \"8.1.0\")" << Endl;
+            out << "    set(vtk_elibsSer " << ToString(vtk8_elibsSer) << ")" << Endl;
+            out << "else()" << Endl;
+            out << "    set(vtk_elibsSer " << ToString(vtk9_elibsSer) << ")" << Endl;
+            out << "endif()\n" << Endl;
         }
         out << "TARGET_LINK_LIBRARIES(E"<<name<<ptype<<"_ser visitcommon avtpipeline_ser";
         if(type == "plot")
@@ -582,14 +582,14 @@ class CMakeGeneratorPlugin : public Plugin
             out << "${vtk_libs} ";
         if (!vtk8_elibsSer.empty())
             out << "${vtk_elibsSer} ";
-        out << ")" << endl;
+        out << ")" << Endl;
         WriteCMake_ConditionalTargetLinks(out, name, "E", (ptype+"_ser"), "");
         if (type != "operator" || hasEngineSpecificCode)
-            out << "ADD_TARGET_DEFINITIONS(E"<<name<<ptype<<"_ser ENGINE)" << endl;
-        out << "SET(INSTALLTARGETS ${INSTALLTARGETS} E"<<name<<ptype<<"_ser)" << endl;
-        out << endl;
-        out << "IF(VISIT_PARALLEL)" << endl;
-        out << "    ADD_PARALLEL_LIBRARY(E"<<name<<ptype<<"_par ${LIBE_SOURCES})" << endl;
+            out << "ADD_TARGET_DEFINITIONS(E"<<name<<ptype<<"_ser ENGINE)" << Endl;
+        out << "SET(INSTALLTARGETS ${INSTALLTARGETS} E"<<name<<ptype<<"_ser)" << Endl;
+        out << Endl;
+        out << "IF(VISIT_PARALLEL)" << Endl;
+        out << "    ADD_PARALLEL_LIBRARY(E"<<name<<ptype<<"_par ${LIBE_SOURCES})" << Endl;
         if(!edefsPar.empty())
         {
             CMakeWrite_TargetDefines(out, "    ", "E", "_par", edefsPar);
@@ -604,11 +604,11 @@ class CMakeGeneratorPlugin : public Plugin
         }
         if (!vtk8_elibsPar.empty())
         {
-            out << "\n    if(VTK_VERSION VERSION_EQUAL \"8.1.0\")" << endl;
-            out << "        set(vtk_elibsPar " << ToString(vtk8_elibsPar) << ")" << endl;
-            out << "    else()" << endl;
-            out << "        set(vtk_elibsPar " << ToString(vtk9_elibsPar) << ")" << endl;
-            out << "    endif()\n" << endl;
+            out << "\n    if(VTK_VERSION VERSION_EQUAL \"8.1.0\")" << Endl;
+            out << "        set(vtk_elibsPar " << ToString(vtk8_elibsPar) << ")" << Endl;
+            out << "    else()" << Endl;
+            out << "        set(vtk_elibsPar " << ToString(vtk9_elibsPar) << ")" << Endl;
+            out << "    endif()\n" << Endl;
         }
         out << "    TARGET_LINK_LIBRARIES(E"<<name<<ptype<<"_par visitcommon avtpipeline_par";
         if(type == "plot")
@@ -622,13 +622,13 @@ class CMakeGeneratorPlugin : public Plugin
             out << "${vtk_libs} ";
         if (!vtk8_elibsPar.empty())
             out << "${vtk_elibsPar} ";
-        out << ")" << endl;
+        out << ")" << Endl;
         WriteCMake_ConditionalTargetLinks(out, name, "E", (ptype+"_par"), "    ");
         if (type != "operator" || hasEngineSpecificCode)
-            out << "    ADD_TARGET_DEFINITIONS(E"<<name<<ptype<<"_par ENGINE)" << endl;
-        out << "    SET(INSTALLTARGETS ${INSTALLTARGETS} E"<<name<<ptype<<"_par)" << endl;
-        out << "ENDIF(VISIT_PARALLEL)" << endl;
-        out << endl;
+            out << "    ADD_TARGET_DEFINITIONS(E"<<name<<ptype<<"_par ENGINE)" << Endl;
+        out << "    SET(INSTALLTARGETS ${INSTALLTARGETS} E"<<name<<ptype<<"_par)" << Endl;
+        out << "ENDIF(VISIT_PARALLEL)" << Endl;
+        out << Endl;
     }
 
     bool CustomFilesUseFortran(const std::vector<QString> &files) const
@@ -652,97 +652,97 @@ class CMakeGeneratorPlugin : public Plugin
     {
         bool useFortran = false;
 
-        out << "PROJECT(" << name<< "_" << type << ")" << endl;
-        out << endl;
+        out << "PROJECT(" << name<< "_" << type << ")" << Endl;
+        out << Endl;
         if (using_dev)
         {
-            out << "ADD_" << type.toUpper() << "_CODE_GEN_TARGETS(" << name << ")" << endl;
-            out << endl;
+            out << "ADD_" << type.toUpper() << "_CODE_GEN_TARGETS(" << name << ")" << Endl;
+            out << Endl;
         }
-        out << "SET(COMMON_SOURCES" << endl;
-        out << name << "PluginInfo.C" << endl;
-        out << name << "CommonPluginInfo.C" << endl;
-        out << atts->name << ".C" << endl;
-        out << ")" << endl;
-        out << endl;
-        out << "SET(LIBI_SOURCES" << endl;
-        out << name << "PluginInfo.C" << endl;
-        out << ")" << endl;
-        out << endl;
+        out << "SET(COMMON_SOURCES" << Endl;
+        out << name << "PluginInfo.C" << Endl;
+        out << name << "CommonPluginInfo.C" << Endl;
+        out << atts->name << ".C" << Endl;
+        out << ")" << Endl;
+        out << Endl;
+        out << "SET(LIBI_SOURCES" << Endl;
+        out << name << "PluginInfo.C" << Endl;
+        out << ")" << Endl;
+        out << Endl;
         WriteCMake_ConditionalSources(out, "I", "");
 
         // libG sources
-        out << "SET(LIBG_SOURCES" << endl;
-        out << name << "GUIPluginInfo.C" << endl;
+        out << "SET(LIBG_SOURCES" << Endl;
+        out << name << "GUIPluginInfo.C" << Endl;
         out << "Qvis" << name;
         if (type == "plot")
-            out << "PlotWindow.C" << endl;
+            out << "PlotWindow.C" << Endl;
         else
-            out << "Window.C" << endl;
-        out << "${COMMON_SOURCES}" << endl;
+            out << "Window.C" << Endl;
+        out << "${COMMON_SOURCES}" << Endl;
         if (customgfiles)
         {
             useFortran |= CustomFilesUseFortran(gfiles);
             for (size_t i=0; i<gfiles.size(); i++)
-                out << gfiles[i] << endl;
+                out << gfiles[i] << Endl;
         }
         else
             for (size_t i=0; i<defaultgfiles.size(); i++)
-                out << defaultgfiles[i] << endl;
-        out << ")" << endl;
-        out << endl;
+                out << defaultgfiles[i] << Endl;
+        out << ")" << Endl;
+        out << Endl;
         WriteCMake_ConditionalSources(out, "G", "");
 
         // libV sources
-        out << "SET(LIBV_SOURCES" << endl;
-        out << name<<"ViewerEnginePluginInfo.C" << endl;
-        out << name<<"ViewerPluginInfo.C" << endl;
+        out << "SET(LIBV_SOURCES" << Endl;
+        out << name<<"ViewerEnginePluginInfo.C" << Endl;
+        out << name<<"ViewerPluginInfo.C" << Endl;
         if(type == "plot")
-            out << "avt"<<name<<"Plot.C" << endl;
+            out << "avt"<<name<<"Plot.C" << Endl;
         if (customvfiles)
         {
             useFortran |= CustomFilesUseFortran(vfiles);
             for (size_t i=0; i<vfiles.size(); i++)
-                out << vfiles[i] << endl;
+                out << vfiles[i] << Endl;
         }
         else
             for (size_t i=0; i<defaultvfiles.size(); i++)
-                out << defaultvfiles[i] << endl;
-        out << "${COMMON_SOURCES}" << endl;
-        out << ")" << endl;
+                out << defaultvfiles[i] << Endl;
+        out << "${COMMON_SOURCES}" << Endl;
+        out << ")" << Endl;
         if (customvwfiles)
         {
-            out << "SET(LIBV_MOC_SOURCES" << endl;
+            out << "SET(LIBV_MOC_SOURCES" << Endl;
             for (size_t i=0; i<vwfiles.size(); i++)
-                out << vwfiles[i] << endl;
-            out << ")" << endl;
+                out << vwfiles[i] << Endl;
+            out << ")" << Endl;
         }
-        out << endl;
+        out << Endl;
         WriteCMake_ConditionalSources(out, "V", "");
 
         // libE sources
-        out << "SET(LIBE_SOURCES" << endl;
-        out << name<<"ViewerEnginePluginInfo.C" << endl;
-        out << name<<"EnginePluginInfo.C" << endl;
+        out << "SET(LIBE_SOURCES" << Endl;
+        out << name<<"ViewerEnginePluginInfo.C" << Endl;
+        out << name<<"EnginePluginInfo.C" << Endl;
         if (type == "plot")
-            out << "avt"<<name<<"Plot.C" << endl;
+            out << "avt"<<name<<"Plot.C" << Endl;
         if (customefiles)
         {
             useFortran |= CustomFilesUseFortran(efiles);
             for (size_t i=0; i<efiles.size(); i++)
-                out << efiles[i] << endl;
+                out << efiles[i] << Endl;
         }
         else
             for (size_t i=0; i<defaultefiles.size(); i++)
-                out << defaultefiles[i] << endl;
-        out << "${COMMON_SOURCES}" << endl;
-        out << ")" << endl;
-        out << endl;
+                out << defaultefiles[i] << Endl;
+        out << "${COMMON_SOURCES}" << Endl;
+        out << ")" << Endl;
+        out << Endl;
         WriteCMake_ConditionalSources(out, "E", "");
 
         if(useFortran)
         {
-            out << "ENABLE_LANGUAGE(Fortran)" << endl;
+            out << "ENABLE_LANGUAGE(Fortran)" << Endl;
         }
 
         WriteCMake_PlotOperator_Includes(out);
@@ -756,7 +756,7 @@ class CMakeGeneratorPlugin : public Plugin
                !cxxflags[i].startsWith("$(") &&
                !cxxflags[i].startsWith("-I"))
             {
-                 out << "ADD_DEFINITIONS(" << cxxflags[i] << ")" << endl;
+                 out << "ADD_DEFINITIONS(" << cxxflags[i] << ")" << Endl;
                  added_defs = true;
             }
         }
@@ -764,21 +764,21 @@ class CMakeGeneratorPlugin : public Plugin
         // Pass DEFINITIONS
         for (size_t i=0; i<defs.size(); i++)
         {
-            out << "ADD_DEFINITIONS(" << defs[i] << ")" << endl;
+            out << "ADD_DEFINITIONS(" << defs[i] << ")" << Endl;
             added_defs = true;
         }
         if (added_defs)
-            out << endl;
+            out << Endl;
 
         WriteCMake_ConditionalDefinitions(out);
 
         if (!vtk8_libs.empty())
         {
-            out << "if(VTK_VERSION VERSION_EQUAL \"8.1.0\")" << endl;
-            out << "    set(vtk_libs " << ToString(vtk8_libs) << ")" << endl;
-            out << "else()" << endl;
-            out << "    set(vtk_libs " << ToString(vtk9_libs) << ")" << endl;
-            out << "endif()\n" << endl;
+            out << "if(VTK_VERSION VERSION_EQUAL \"8.1.0\")" << Endl;
+            out << "    set(vtk_libs " << ToString(vtk8_libs) << ")" << Endl;
+            out << "else()" << Endl;
+            out << "    set(vtk_libs " << ToString(vtk9_libs) << ")" << Endl;
+            out << "endif()\n" << Endl;
         }
 
         std::vector<QString> linkDirs;
@@ -796,53 +796,53 @@ class CMakeGeneratorPlugin : public Plugin
                  linkDirs.push_back(ldflags[i].right(ldflags[i].size()-2));
         }
 
-        out << "LINK_DIRECTORIES(" << ToString(linkDirs) << ")" << endl;
-        out << endl;
+        out << "LINK_DIRECTORIES(" << ToString(linkDirs) << ")" << Endl;
+        out << Endl;
         QString ptype;
         if (type == "plot")
             ptype = "Plot";
         else
             ptype = "Operator";
-        out << "ADD_LIBRARY(I"<<name<<ptype<<" ${LIBI_SOURCES})" << endl;
-        out << "TARGET_LINK_LIBRARIES(I"<<name<<ptype<<" visitcommon)" << endl;
+        out << "ADD_LIBRARY(I"<<name<<ptype<<" ${LIBI_SOURCES})" << Endl;
+        out << "TARGET_LINK_LIBRARIES(I"<<name<<ptype<<" visitcommon)" << Endl;
         WriteCMake_ConditionalTargetLinks(out, name, "I", ptype, "");
-        out << "SET(INSTALLTARGETS I"<<name<<ptype<<")" << endl;
-        out << endl;
+        out << "SET(INSTALLTARGETS I"<<name<<ptype<<")" << Endl;
+        out << Endl;
 
-        out << "IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)" << endl;
+        out << "IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)" << Endl;
         if (!vtk8_glibs.empty())
         {
-            out << "    if(VTK_VERSION VERSION_EQUAL \"8.1.0\")" << endl;
-            out << "        set(vtk_glibs " << ToString(vtk8_glibs) << ")" << endl;
-			out << "    else()" << endl;
-            out << "        set(vtk_glibs " << ToString(vtk9_glibs) << ")" << endl;
-            out << "    endif()" << endl;
+            out << "    if(VTK_VERSION VERSION_EQUAL \"8.1.0\")" << Endl;
+            out << "        set(vtk_glibs " << ToString(vtk8_glibs) << ")" << Endl;
+			out << "    else()" << Endl;
+            out << "        set(vtk_glibs " << ToString(vtk9_glibs) << ")" << Endl;
+            out << "    endif()" << Endl;
         }
-        out << "    ADD_LIBRARY(G"<<name<<ptype<<" ${LIBG_SOURCES})" << endl;
-        out << "    set_target_properties(G"<<name<<ptype<<" PROPERTIES AUTOMOC ON)" << endl;
+        out << "    ADD_LIBRARY(G"<<name<<ptype<<" ${LIBG_SOURCES})" << Endl;
+        out << "    set_target_properties(G"<<name<<ptype<<" PROPERTIES AUTOMOC ON)" << Endl;
         out << "    TARGET_LINK_LIBRARIES(G" << name << ptype <<" visitcommon "
             << guilibname << " " << ToString(libs) << ToString(glibs);
         if (!vtk8_libs.empty())
             out << "${vtk_libs} ";
         if (!vtk8_glibs.empty())
             out << "${vtk_glibs} ";
-        out << ")" << endl;
+        out << ")" << Endl;
         WriteCMake_ConditionalTargetLinks(out, name, "G", ptype, "    ");
-        out << endl;
+        out << Endl;
 
         if (!vtk8_vlibs.empty())
         {
-            out << "    if(VTK_VERSION VERSION_EQUAL \"8.1.0\")" << endl;
-            out << "        set(vtk_vlibs " << ToString(vtk8_vlibs) << ")" << endl;
-            out << "    else()" << endl;
-            out << "        set(vtk_vlibs " << ToString(vtk9_vlibs) << ")" << endl;
-            out << "    endif()" << endl;
+            out << "    if(VTK_VERSION VERSION_EQUAL \"8.1.0\")" << Endl;
+            out << "        set(vtk_vlibs " << ToString(vtk8_vlibs) << ")" << Endl;
+            out << "    else()" << Endl;
+            out << "        set(vtk_vlibs " << ToString(vtk9_vlibs) << ")" << Endl;
+            out << "    endif()" << Endl;
         }
-        out << "    ADD_LIBRARY(V"<<name<<ptype<<" ${LIBV_SOURCES})" << endl;
-        out << "    ADD_TARGET_DEFINITIONS(V"<<name<<ptype<<" VIEWER)" << endl;
+        out << "    ADD_LIBRARY(V"<<name<<ptype<<" ${LIBV_SOURCES})" << Endl;
+        out << "    ADD_TARGET_DEFINITIONS(V"<<name<<ptype<<" VIEWER)" << Endl;
         if (customvwfiles)
         {
-            out << "    set_target_properties(V" << name << ptype << " PROPERTIES AUTOMOC ON)" << endl;
+            out << "    set_target_properties(V" << name << ptype << " PROPERTIES AUTOMOC ON)" << Endl;
         }
         out << "    TARGET_LINK_LIBRARIES(V" << name << ptype << " visitcommon "
             << viewerlibname << " " << ToString(libs) << ToString(vlibs);
@@ -850,66 +850,66 @@ class CMakeGeneratorPlugin : public Plugin
             out << "${vtk_libs} ";
         if (!vtk8_vlibs.empty())
             out << "${vtk_vlibs} ";
-        out << ")" << endl;
+        out << ")" << Endl;
         WriteCMake_ConditionalTargetLinks(out, name, "V", ptype, "    ");
-        out << endl;
-        out << "    SET(INSTALLTARGETS ${INSTALLTARGETS} G"<<name<<ptype<<" V"<<name<<ptype<<")" << endl;
-        out << endl;
+        out << Endl;
+        out << "    SET(INSTALLTARGETS ${INSTALLTARGETS} G"<<name<<ptype<<" V"<<name<<ptype<<")" << Endl;
+        out << Endl;
         // libS sources
-        out << "    IF(VISIT_PYTHON_SCRIPTING)" << endl;
-        out << "        SET(LIBS_SOURCES" << endl;
-        out << "            " << name<<"ScriptingPluginInfo.C" << endl;
-        out << "            Py"<<atts->name<<".C" << endl;
+        out << "    IF(VISIT_PYTHON_SCRIPTING)" << Endl;
+        out << "        SET(LIBS_SOURCES" << Endl;
+        out << "            " << name<<"ScriptingPluginInfo.C" << Endl;
+        out << "            Py"<<atts->name<<".C" << Endl;
         if (customsfiles)
             for (size_t i=0; i<sfiles.size(); i++)
-                out << "            " << sfiles[i] << endl;
+                out << "            " << sfiles[i] << Endl;
         else
             for (size_t i=0; i<defaultsfiles.size(); i++)
-                out << "            " << defaultsfiles[i] << endl;
-        out << "            ${COMMON_SOURCES}" << endl;
-        out << "        )" << endl;
+                out << "            " << defaultsfiles[i] << Endl;
+        out << "            ${COMMON_SOURCES}" << Endl;
+        out << "        )" << Endl;
         WriteCMake_ConditionalSources(out, "S", "        ");
-        out << "        ADD_LIBRARY(S"<<name<<ptype<<" ${LIBS_SOURCES})" << endl;
-        out << "        IF(WIN32)" << endl;
-        out << "            # This prevents python from #defining snprintf as _snprintf" << endl;
-        out << "            SET_TARGET_PROPERTIES(S"<<name<<ptype<<" PROPERTIES COMPILE_DEFINITIONS HAVE_SNPRINTF)" << endl;
-        out << "        ENDIF()" << endl;
+        out << "        ADD_LIBRARY(S"<<name<<ptype<<" ${LIBS_SOURCES})" << Endl;
+        out << "        IF(WIN32)" << Endl;
+        out << "            # This prevents python from #defining snprintf as _snprintf" << Endl;
+        out << "            SET_TARGET_PROPERTIES(S"<<name<<ptype<<" PROPERTIES COMPILE_DEFINITIONS HAVE_SNPRINTF)" << Endl;
+        out << "        ENDIF()" << Endl;
         out << "        TARGET_LINK_LIBRARIES(S" << name << ptype
-            << " visitcommon visitpy ${PYTHON_LIBRARY})" << endl;
+            << " visitcommon visitpy ${PYTHON_LIBRARY})" << Endl;
         WriteCMake_ConditionalTargetLinks(out, name, "S", ptype, "        ");
         out << "        SET(INSTALLTARGETS ${INSTALLTARGETS} S" << name
-            << ptype << ")" << endl;
-        out << "    ENDIF(VISIT_PYTHON_SCRIPTING)" << endl;
-        out << endl;
+            << ptype << ")" << Endl;
+        out << "    ENDIF(VISIT_PYTHON_SCRIPTING)" << Endl;
+        out << Endl;
         // Java sources
-        out << "    IF(VISIT_JAVA)" << endl;
-        out << "        FILE(COPY " << atts->name<<".java DESTINATION ${JavaClient_BINARY_DIR}/src/" << type << "s)" << endl;
+        out << "    IF(VISIT_JAVA)" << Endl;
+        out << "        FILE(COPY " << atts->name<<".java DESTINATION ${JavaClient_BINARY_DIR}/src/" << type << "s)" << Endl;
         out << "        ADD_CUSTOM_TARGET(Java"<<name<<" ALL ${Java_JAVAC_EXECUTABLE} ${VISIT_Java_FLAGS} -d ${JavaClient_BINARY_DIR} -classpath ${JavaClient_BINARY_DIR} -sourcepath ${JavaClient_BINARY_DIR} ";
         if(customjfiles)
         {
             for(size_t i = 0; i < jfiles.size(); ++i)
                 out << jfiles[i] << " ";
         }
-        out << atts->name<<".java" << endl;
-        out << "            DEPENDS JavaClient" << endl;
-        out << "            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})" << endl;
-        out << "    ENDIF(VISIT_JAVA)" << endl;
+        out << atts->name<<".java" << Endl;
+        out << "            DEPENDS JavaClient" << Endl;
+        out << "            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})" << Endl;
+        out << "    ENDIF(VISIT_JAVA)" << Endl;
 
-        out << "ENDIF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)" << endl;
-        out << endl;
+        out << "ENDIF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)" << Endl;
+        out << Endl;
 
         CMakeAdd_EngineTargets(out);
 
-        out << "VISIT_INSTALL_" << type.toUpper() << "_PLUGINS(${INSTALLTARGETS})" << endl;
-        out << "VISIT_PLUGIN_TARGET_OUTPUT_DIR(" << type << "s ${INSTALLTARGETS})" << endl;
+        out << "VISIT_INSTALL_" << type.toUpper() << "_PLUGINS(${INSTALLTARGETS})" << Endl;
+        out << "VISIT_PLUGIN_TARGET_OUTPUT_DIR(" << type << "s ${INSTALLTARGETS})" << Endl;
         if (using_dev)
           out << "VISIT_PLUGIN_TARGET_FOLDER(" << type << "s " << name
-              << " ${INSTALLTARGETS})" << endl;
-        out << endl;
+              << " ${INSTALLTARGETS})" << Endl;
+        out << Endl;
 #ifdef _WIN32
         if (!using_dev)
         {
-          out << "MESSAGE(STATUS \"Plugin will be installed to: ${VISIT_PLUGIN_DIR}\")" << endl;
+          out << "MESSAGE(STATUS \"Plugin will be installed to: ${VISIT_PLUGIN_DIR}\")" << Endl;
         }
 #endif
     }
@@ -918,99 +918,99 @@ class CMakeGeneratorPlugin : public Plugin
     {
         bool useFortran = false;
 
-        out << "PROJECT("<<name<<"_database)" << endl;
-        out << endl;
+        out << "PROJECT("<<name<<"_database)" << Endl;
+        out << Endl;
         if (using_dev)
         {
         out << "ADD_DATABASE_CODE_GEN_TARGETS(" << name ;
         if(skipInfoGen)
             out << " SKIP_INFO";
-        out << ")" << endl;
-        out << endl;
+        out << ")" << Endl;
+        out << Endl;
         }
-        out << "SET(COMMON_SOURCES" << endl;
-        out << ""<<name<<"PluginInfo.C" << endl;
-        out << ""<<name<<"CommonPluginInfo.C" << endl;
-        out << ")" << endl;
-        out << endl;
-        out << "SET(LIBI_SOURCES" << endl;
-        out << ""<<name<<"PluginInfo.C" << endl;
-        out << ")" << endl;
-        out << endl;
+        out << "SET(COMMON_SOURCES" << Endl;
+        out << ""<<name<<"PluginInfo.C" << Endl;
+        out << ""<<name<<"CommonPluginInfo.C" << Endl;
+        out << ")" << Endl;
+        out << Endl;
+        out << "SET(LIBI_SOURCES" << Endl;
+        out << ""<<name<<"PluginInfo.C" << Endl;
+        out << ")" << Endl;
+        out << Endl;
         WriteCMake_ConditionalSources(out, "I", "");
         if(!onlyEnginePlugin)
         {
-            out << "SET(LIBM_SOURCES" << endl;
-            out << ""<<name<<"MDServerPluginInfo.C" << endl;
-            out << "${COMMON_SOURCES}" << endl;
+            out << "SET(LIBM_SOURCES" << Endl;
+            out << ""<<name<<"MDServerPluginInfo.C" << Endl;
+            out << "${COMMON_SOURCES}" << Endl;
             if (custommfiles)
             {
                 useFortran |= CustomFilesUseFortran(mfiles);
                 for (size_t i=0; i<mfiles.size(); i++)
-                    out << mfiles[i] << endl;
+                    out << mfiles[i] << Endl;
             }
             else
                 for (size_t i=0; i<defaultmfiles.size(); i++)
-                    out << defaultmfiles[i] << endl;
-            out << ")" << endl;
+                    out << defaultmfiles[i] << Endl;
+            out << ")" << Endl;
             WriteCMake_ConditionalSources(out, "M", "");
             if (customwmfiles)
             {
                 useFortran |= CustomFilesUseFortran(wmfiles);
-                out << "IF(WIN32)" << endl;
-                out << "    SET(LIBM_WIN32_SOURCES" << endl;
+                out << "IF(WIN32)" << Endl;
+                out << "    SET(LIBM_WIN32_SOURCES" << Endl;
                 for (size_t i=0; i<wmfiles.size(); i++)
-                    out << "    " << wmfiles[i] << endl;
-                out << "    )" << endl;
+                    out << "    " << wmfiles[i] << Endl;
+                out << "    )" << Endl;
                 for (size_t i=0; i<wmfiles.size(); i++)
                 {
                     if(wmfiles[i].endsWith(".c"))
                     {
                         out << "    SET_SOURCE_FILES_PROPERTIES("
-                            << wmfiles[i] << endl;
-                        out << "        PROPERTIES LANGUAGE CXX)" << endl;
+                            << wmfiles[i] << Endl;
+                        out << "        PROPERTIES LANGUAGE CXX)" << Endl;
                     }
                 }
-                out << "ENDIF(WIN32)" << endl;
+                out << "ENDIF(WIN32)" << Endl;
             }
-            out << endl;
+            out << Endl;
         }
         if(!noEnginePlugin)
         {
-            out << "SET(LIBE_SOURCES" << endl;
-            out <<name<<"EnginePluginInfo.C" << endl;
-            out << "${COMMON_SOURCES}" << endl;
+            out << "SET(LIBE_SOURCES" << Endl;
+            out <<name<<"EnginePluginInfo.C" << Endl;
+            out << "${COMMON_SOURCES}" << Endl;
             if (customefiles)
             {
                 useFortran |= CustomFilesUseFortran(efiles);
                 for (size_t i=0; i<efiles.size(); i++)
-                    out << efiles[i] << endl;
+                    out << efiles[i] << Endl;
             }
             else
                 for (size_t i=0; i<defaultefiles.size(); i++)
-                    out << defaultefiles[i] << endl;
-            out << ")" << endl;
+                    out << defaultefiles[i] << Endl;
+            out << ")" << Endl;
             WriteCMake_ConditionalSources(out, "E", "");
             if (customwefiles)
             {
                 useFortran |= CustomFilesUseFortran(wefiles);
-                out << "IF(WIN32)" << endl;
-                out << "    SET(LIBE_WIN32_SOURCES" << endl;
+                out << "IF(WIN32)" << Endl;
+                out << "    SET(LIBE_WIN32_SOURCES" << Endl;
                 for (size_t i=0; i<wefiles.size(); i++)
-                    out << "    " << wefiles[i] << endl;
-                out << "    )" << endl;
+                    out << "    " << wefiles[i] << Endl;
+                out << "    )" << Endl;
                 for (size_t i=0; i<wefiles.size(); i++)
                 {
                     if(wefiles[i].endsWith(".c"))
                     {
                         out << "    SET_SOURCE_FILES_PROPERTIES("
-                            << wefiles[i] << endl;
-                        out << "        PROPERTIES LANGUAGE CXX)" << endl;
+                            << wefiles[i] << Endl;
+                        out << "        PROPERTIES LANGUAGE CXX)" << Endl;
                     }
                 }
-                out << "ENDIF(WIN32)" << endl;
+                out << "ENDIF(WIN32)" << Endl;
             }
-            out << endl;
+            out << Endl;
         }
 
         // take any ${} from the CXXFLAGS to mean a variable that contains
@@ -1025,13 +1025,13 @@ class CMakeGeneratorPlugin : public Plugin
             else if(cxxflags[i].startsWith("-I"))
                  extraIncludes.push_back(ConvertToProperVisItIncludeDir(cxxflags[i].right(cxxflags[i].size()-2)));
         }
-        out << "INCLUDE_DIRECTORIES(" << endl;
-        out << "${CMAKE_CURRENT_SOURCE_DIR}" << endl;
+        out << "INCLUDE_DIRECTORIES(" << Endl;
+        out << "${CMAKE_CURRENT_SOURCE_DIR}" << Endl;
         if(extraIncludes.size() > 0)
             out << ToString(extraIncludes, true) ;
-        out << "${VISIT_DATABASE_INCLUDES}" << endl;
-        out << ")" << endl;
-        out << endl;
+        out << "${VISIT_DATABASE_INCLUDES}" << Endl;
+        out << ")" << Endl;
+        out << Endl;
 
         WriteCMake_ConditionalIncludes(out);
 
@@ -1041,44 +1041,44 @@ class CMakeGeneratorPlugin : public Plugin
             if(!cxxflags[i].startsWith("${") &&
                !cxxflags[i].startsWith("$(") &&
                !cxxflags[i].startsWith("-I"))
-                 out << "ADD_DEFINITIONS(" << cxxflags[i] << ")" << endl;
+                 out << "ADD_DEFINITIONS(" << cxxflags[i] << ")" << Endl;
         }
 
         // Pass defines
         for (size_t i=0; i<defs.size(); i++)
         {
-            out << "ADD_DEFINITIONS(" << defs[i] << ")" << endl;
+            out << "ADD_DEFINITIONS(" << defs[i] << ")" << Endl;
         }
         if (!defs.empty())
-            out << endl;
+            out << Endl;
 
         // Pass Win32-only defines
         if (!windefs.empty())
         {
-            out << "if(WIN32)" << endl;
+            out << "if(WIN32)" << Endl;
             for (size_t i=0; i<windefs.size(); i++)
             {
-                out << "    add_compile_definitions(" << windefs[i] << ")" << endl;
+                out << "    add_compile_definitions(" << windefs[i] << ")" << Endl;
             }
-            out << "endif()"<< endl;
-            out << endl;
+            out << "endif()"<< Endl;
+            out << Endl;
         }
 
         WriteCMake_ConditionalDefinitions(out);
 
         if (!vtk8_libs.empty())
         {
-            out << "if(VTK_VERSION VERSION_EQUAL \"8.1.0\")" << endl;
-            out << "    set(vtk_libs " << ToString(vtk8_libs) << ")" << endl;
-            out << "else()" << endl;
-            out << "    set(vtk_libs " << ToString(vtk9_libs) << ")" << endl;
-            out << "endif()\n" << endl;
+            out << "if(VTK_VERSION VERSION_EQUAL \"8.1.0\")" << Endl;
+            out << "    set(vtk_libs " << ToString(vtk8_libs) << ")" << Endl;
+            out << "else()" << Endl;
+            out << "    set(vtk_libs " << ToString(vtk9_libs) << ")" << Endl;
+            out << "endif()\n" << Endl;
         }
 
         if(useFortran)
         {
-            out << "ENABLE_LANGUAGE(Fortran)" << endl;
-            out << endl;
+            out << "ENABLE_LANGUAGE(Fortran)" << Endl;
+            out << Endl;
         }
 
         // Extract extra link directories from LDFLAGS if they have ${},$(),-L
@@ -1091,21 +1091,21 @@ class CMakeGeneratorPlugin : public Plugin
             else if(ldflags[i].startsWith("-L"))
                  linkDirs.push_back(ldflags[i].right(ldflags[i].size()-2));
         }
-        out << "LINK_DIRECTORIES(" << ToString(linkDirs) << ")" << endl;
-        out << endl;
-        out << "ADD_LIBRARY(I"<<name<<"Database ${LIBI_SOURCES})" << endl;
-        out << "TARGET_LINK_LIBRARIES(I"<<name<<"Database visitcommon)" << endl;
+        out << "LINK_DIRECTORIES(" << ToString(linkDirs) << ")" << Endl;
+        out << Endl;
+        out << "ADD_LIBRARY(I"<<name<<"Database ${LIBI_SOURCES})" << Endl;
+        out << "TARGET_LINK_LIBRARIES(I"<<name<<"Database visitcommon)" << Endl;
         WriteCMake_ConditionalTargetLinks(out, name, "I", "Database", "");
-        out << "SET(INSTALLTARGETS I"<<name<<"Database)" << endl;
-        out << endl;
+        out << "SET(INSTALLTARGETS I"<<name<<"Database)" << Endl;
+        out << Endl;
         if(!onlyEnginePlugin)
         {
-            out << "IF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)" << endl;
+            out << "IF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)" << Endl;
 
             out << "    ADD_LIBRARY(M"<<name<<"Database ${LIBM_SOURCES}";
             if (customwmfiles)
                 out << "     ${LIBM_WIN32_SOURCES}";
-            out << ")" << endl;
+            out << ")" << Endl;
             if(!mdefs.empty())
             {
                 CMakeWrite_TargetDefines(out, "    ", "M", "", mdefs);
@@ -1120,34 +1120,34 @@ class CMakeGeneratorPlugin : public Plugin
             }
             if (!vtk8_mlibs.empty())
             {
-                out << "    if(VTK_VERSION VERSION_EQUAL \"8.1.0\")" << endl;
-                out << "        set(vtk_mlibs " << ToString(vtk8_mlibs) << ")" << endl;
-                out << "    else()" << endl;
-                out << "        set(vtk_mlibs " << ToString(vtk9_mlibs) << ")" << endl;
-                out << "    endif()\n" << endl;
+                out << "    if(VTK_VERSION VERSION_EQUAL \"8.1.0\")" << Endl;
+                out << "        set(vtk_mlibs " << ToString(vtk8_mlibs) << ")" << Endl;
+                out << "    else()" << Endl;
+                out << "        set(vtk_mlibs " << ToString(vtk9_mlibs) << ")" << Endl;
+                out << "    endif()\n" << Endl;
             }
             out << "    TARGET_LINK_LIBRARIES(M"<<name<<"Database visitcommon avtdbatts avtdatabase_ser " << ToString(libs) << ToString(mlibs);
             if (!vtk8_libs.empty())
                 out << "${vtk_libs} ";
             if (!vtk8_mlibs.empty())
                 out << "${vtk_mlibs} ";
-            out << ")" << endl;
+            out << ")" << Endl;
             WriteCMake_ConditionalTargetLinks(out, name, "M", "Database", "    ");
-            out << "    ADD_TARGET_DEFINITIONS(M"<<name<<"Database MDSERVER)" << endl;
-            out << "    SET(INSTALLTARGETS ${INSTALLTARGETS} M"<<name<<"Database)" << endl;
-            out << "ENDIF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)" << endl;
-            out << endl;
+            out << "    ADD_TARGET_DEFINITIONS(M"<<name<<"Database MDSERVER)" << Endl;
+            out << "    SET(INSTALLTARGETS ${INSTALLTARGETS} M"<<name<<"Database)" << Endl;
+            out << "ENDIF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)" << Endl;
+            out << Endl;
         }
         if(!noEnginePlugin)
         {
             CMakeAdd_EngineTargets(out);
         }
-        out << "VISIT_INSTALL_DATABASE_PLUGINS(${INSTALLTARGETS})" << endl;
-        out << "VISIT_PLUGIN_TARGET_OUTPUT_DIR(databases ${INSTALLTARGETS})" << endl;
+        out << "VISIT_INSTALL_DATABASE_PLUGINS(${INSTALLTARGETS})" << Endl;
+        out << "VISIT_PLUGIN_TARGET_OUTPUT_DIR(databases ${INSTALLTARGETS})" << Endl;
         if (using_dev)
           out << "VISIT_PLUGIN_TARGET_FOLDER(databases " << name
-              << " ${INSTALLTARGETS})" << endl;
-        out << endl;
+              << " ${INSTALLTARGETS})" << Endl;
+        out << Endl;
     }
 
     void WriteCMake(QTextStream &out)
@@ -1177,7 +1177,7 @@ class CMakeGeneratorPlugin : public Plugin
         }
 
         out << "# DO NOT EDIT THIS FILE! THIS FILE IS AUTOMATICALLY GENERATED "
-            << "BY xml2cmake" << endl;
+            << "BY xml2cmake" << Endl;
 
         QString qvisithome(visithome);
         QString qvisitplugdirpub(visitplugdirpub);
@@ -1198,23 +1198,23 @@ class CMakeGeneratorPlugin : public Plugin
         // include something in the generated output.
         if(!using_dev)
         {
-            out << "CMAKE_MINIMUM_REQUIRED(VERSION 3.8 FATAL_ERROR)" << endl;
+            out << "CMAKE_MINIMUM_REQUIRED(VERSION 3.8 FATAL_ERROR)" << Endl;
             if(installpublic)
             {
                 out << "SET(VISIT_PLUGIN_DIR \"" << qvisitplugdirpub
-                    << "\")" << endl;
+                    << "\")" << Endl;
             }
             else // installprivate or default
             {
                 out << "SET(VISIT_PLUGIN_DIR \"" << qvisitplugdirpri
-                    << "\")" << endl;
+                    << "\")" << Endl;
             }
 
             out << "INCLUDE(\"" << qvisithome
-                << "/include/PluginVsInstall.cmake\")" << endl;
+                << "/include/PluginVsInstall.cmake\")" << Endl;
             out << "INCLUDE(\"" << qvisithome
-                << "/include/VisItLibraryDependencies.cmake\")" << endl;
-            out << endl;
+                << "/include/VisItLibraryDependencies.cmake\")" << Endl;
+            out << Endl;
         }
         else
         {
@@ -1222,12 +1222,12 @@ class CMakeGeneratorPlugin : public Plugin
             // or private.
             if(installpublic)
             {
-               out << "SET(VISIT_PLUGIN_DIR " << qvisitplugdirpub << ")" << endl;
+               out << "SET(VISIT_PLUGIN_DIR " << qvisitplugdirpub << ")" << Endl;
             }
 
             if(installprivate)
             {
-               out << "SET(VISIT_PLUGIN_DIR " << qvisitplugdirpri << ")" << endl;
+               out << "SET(VISIT_PLUGIN_DIR " << qvisitplugdirpri << ")" << Endl;
             }
         }
 

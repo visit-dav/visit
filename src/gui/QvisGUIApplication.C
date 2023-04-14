@@ -7107,10 +7107,10 @@ QPrinterToPrinterAttributes(QPrinter *printer, PrinterAttributes *p)
     else
         p->SetDocumentName("untitled");
 
-    p->SetNumCopies(printer->numCopies());
-    p->SetPortrait(printer->orientation() == QPrinter::Portrait);
+    p->SetNumCopies(printer->copyCount());
+    p->SetPortrait(printer->pageLayout().orientation() == QPageLayout::Portrait);
     p->SetPrintColor(printer->colorMode() == QPrinter::Color);
-    p->SetPageSize((int)printer->paperSize());
+    p->SetPageSize((int)printer->pageLayout().pageSize().id());
 }
 
 // ****************************************************************************
@@ -7156,9 +7156,9 @@ PrinterAttributesToQPrinter(PrinterAttributes *p, QPrinter *printer)
     printer->setPrintProgram(p->GetPrintProgram().c_str());
     printer->setCreator(p->GetCreator().c_str());
     printer->setDocName(p->GetDocumentName().c_str());
-    printer->setNumCopies(p->GetNumCopies());
-    printer->setOrientation(p->GetPortrait() ? QPrinter::Portrait :
-        QPrinter::Landscape);
+    printer->setCopyCount(p->GetNumCopies());
+    printer->setPageOrientation(p->GetPortrait() ? QPageLayout::Portrait :
+        QPageLayout::Landscape);
     printer->setFromTo(1, 1);
     printer->setColorMode(p->GetPrintColor() ? QPrinter::Color :
         QPrinter::GrayScale);
@@ -7166,7 +7166,7 @@ PrinterAttributesToQPrinter(PrinterAttributes *p, QPrinter *printer)
         printer->setOutputFileName(p->GetOutputToFileName().c_str());
     else
         printer->setOutputFileName(QString());
-    printer->setPaperSize((QPrinter::PaperSize)p->GetPageSize());
+    printer->setPageSize((QPagedPaintDevice::PageSize)p->GetPageSize());
 }
 
 // ****************************************************************************
@@ -8880,7 +8880,6 @@ QvisGUIApplication::GetCrashFilePIDs(const QFileInfoList &fileList, intVector &o
     {
         QString fn = fileList.at(i).fileName();
         QStringList tokens = fn.split(".", QString::SkipEmptyParts);
-
         if(tokens.size() > 2) {
             bool ok;
             int pid = tokens[1].toInt(&ok, 10);
@@ -9072,7 +9071,7 @@ QvisGUIApplication::ShowCrashRecoveryDialog(const QFileInfoList &fileInfoList)
             QString filename = QFileDialog::getOpenFileName(0, tr("Select Crash Recovery File"),
                                                             GetUserVisItDirectory().c_str(),
                                                             tr("Session files (*.session)"));
-            if(filename != NULL)
+            if(!filename.isEmpty())
             {
                 PerformRestoreSessionFile(filename);
             }
