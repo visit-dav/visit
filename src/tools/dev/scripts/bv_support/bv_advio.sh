@@ -185,6 +185,12 @@ function build_advio
     sed "s%FileIO IDL DocIO%FileIO DocIO%g" configure > c2
     mv c2 configure
     chmod 750 ./configure
+    # configure has a number of broken try-run code-blocks
+    if [[ "$OPSYS" == "Darwin" ]]; then
+        sed -i orig -e 's/^main()/int main()/' configure
+    else
+        sed -i.orig -e 's/^main()/int main()/' configure
+    fi
     info "Invoking command to configure AdvIO"
     ADVIO_DARWIN=""
     if [[ "$OPSYS" == "Darwin" ]]; then
