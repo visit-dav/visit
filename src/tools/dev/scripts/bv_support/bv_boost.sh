@@ -135,11 +135,81 @@ EOF
     return 0;
 }
 
+function apply_boost_fcoalesce_templates_patch
+{
+    info "Patching boost 1.67.0 for -fcoalesce-templates"
+    patch -p0 << \EOF
+--- tools/build/src/tools/darwin.jam.orig	2023-04-14 10:31:45.000000000 -0700
++++ tools/build/src/tools/darwin.jam	2023-04-07 10:15:50.000000000 -0700
+@@ -138,10 +138,10 @@
+     common.handle-options darwin : $(condition) : $(command) : $(options) ;
+     
+     # - GCC 4.0 and higher in Darwin does not have -fcoalesce-templates.
+-    if $(real-version) < "4.0.0"
+-    {
+-        flags darwin.compile.c++ OPTIONS $(condition) : -fcoalesce-templates ;
+-    }
++#    if $(real-version) < "4.0.0"
++#    {
++#        flags darwin.compile.c++ OPTIONS $(condition) : -fcoalesce-templates ;
++#    }
+     # - GCC 4.2 and higher in Darwin does not have -Wno-long-double.
+     if $(real-version) < "4.2.0"
+     {
+EOF
+
+    if [[ $? != 0 ]] ; then
+      warn "boost patch for -fcoalesce-templates failed."
+      return 1
+    fi
+    return 0;
+}
+
+function apply_boost_clang_specific_storage_type
+{
+    info "Patching boost 1.67.0 for clang-specific storage type"
+    patch -p0 << \EOF
+--- boost/atomic/detail/ops_gcc_x86_dcas.hpp.orig	2023-04-14 10:41:18.000000000 -0700
++++ boost/atomic/detail/ops_gcc_x86_dcas.hpp	2023-04-07 10:37:15.000000000 -0700
+@@ -401,13 +401,7 @@
+ 
+     static BOOST_FORCEINLINE storage_type load(storage_type const volatile& storage, memory_order) BOOST_NOEXCEPT
+     {
+-#if defined(__clang__)
+-
+-        // Clang cannot allocate rax:rdx register pairs but it has sync intrinsics
+-        storage_type value = storage_type();
+-        return __sync_val_compare_and_swap(&storage, value, value);
+-
+-#elif defined(BOOST_ATOMIC_DETAIL_X86_NO_ASM_AX_DX_PAIRS)
++#if defined(BOOST_ATOMIC_DETAIL_X86_NO_ASM_AX_DX_PAIRS)
+ 
+         // Some compilers can't allocate rax:rdx register pair either and also don't support 128-bit __sync_val_compare_and_swap
+         uint64_t value_bits[2];
+EOF
+
+    if [[ $? != 0 ]] ; then
+      warn "boost patch for clang-specific storage type failed."
+      return 1
+    fi
+    return 0;
+}
+
 function apply_boost_patch
 {
     apply_boost_ppc_rounding_control_patch
     if [[ $? != 0 ]] ; then
        return 1
+    fi
+    if [[ "$OPSYS" == "Darwin" ]]; then
+        apply_boost_fcoalesce_templates_patch
+        if [[ $? != 0 ]] ; then
+           return 1
+        fi
+        apply_boost_clang_specific_storage_type
+        if [[ $? != 0 ]] ; then
+           return 1
+        fi
     fi
     return 0;
 }
