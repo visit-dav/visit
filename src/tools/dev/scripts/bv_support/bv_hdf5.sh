@@ -491,7 +491,7 @@ EOF
 
 function apply_hdf5_resize_configs_are_equal_patch
 {
-    info "Patching hdf5 1.8.14 for isatty"
+    info "Patching hdf5 1.8.14 for resize configs are equal"
     patch -p0 << EOF
 *** test/cache_common.h.orig	2014-10-13 04:33:37.000000000 -0700
 --- test/cache_common.h	2023-04-11 20:25:27.000000000 -0700
@@ -511,7 +511,7 @@ function apply_hdf5_resize_configs_are_equal_patch
                            hbool_t compare_init,
 EOF
     if [[ $? != 0 ]] ; then
-        warn "HDF5 1.8.14 resize_configs_are_equal patch."
+        warn "HDF5 1.8.14 resize_configs_are_equal patch failed."
         return 1
     fi
 
