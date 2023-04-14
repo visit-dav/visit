@@ -8,6 +8,11 @@
 # 
 #    To run, simply run the script with VisIt. Modify the `path_to_data_file`
 #    as needed.
+# 
+# Modifications:
+#    Justin Privitera, Fri Apr 14 10:52:39 PDT 2023
+#    Change the color table from default to spectral inverted.
+# 
 
 import conduit
 import os
