@@ -89,7 +89,7 @@ The standard arguments have to do with the query execution, output, debugging, a
 | *background_intensities* | The background intensities if ray tracing    |
 |                          | array variables. The default is 0.           |
 +--------------------------+----------------------------------------------+
-| *divide_emis_by_absorb*  | Described above.                             |
+| *divide_emis_by_absorb*  | Described above. The default is 0.           |
 +--------------------------+----------------------------------------------+
 | *image_size*             | The width and height of the image in pixels. |
 |                          | The default is 200 x 200.                    |
@@ -99,8 +99,8 @@ The standard arguments have to do with the query execution, output, debugging, a
 |                          | which turns it off.                          |
 +--------------------------+----------------------------------------------+
 | *output_ray_bounds*      | Output the ray bounds as a bounding box in a |
-|                          | VTK file. The default is off. |br| The name  |
-|                          | of the file is ``ray_bounds.vtk``.           |
+|                          | VTK file. The default is 0 |br| (off). The   |
+|                          | name of the file is ``ray_bounds.vtk``.      |
 +--------------------------+----------------------------------------------+
 | *energy_group_bounds*    | The energy group bounds can be handed off to |
 |                          | the query in a list or tuple. |br| The       |
@@ -247,12 +247,12 @@ These units appear in the :ref:`Conduit_Output` in a few different places.
 +--------------------------+----------------------------------------------+
 | *intensity_units*        | The units of the intensity output.           |
 +--------------------------+----------------------------------------------+
-| *path_length_units*      | Metadata describing the path length output.  |
+| *path_length_info*       | Metadata describing the path length output.  |
 +--------------------------+----------------------------------------------+
 
 The ``spatial_units`` and ``energy_units`` appear in the :ref:`Spatial_Extents_Meshes`.
 The ``abs_units`` and the ``emis_units`` appear in the :ref:`Query_Parameters` section of the :ref:`XRay_Metadata`.
-The ``intensity_units`` and the ``path_length_units`` appear in the :ref:`Basic_Mesh_Output` under the fields.
+The ``intensity_units`` and the ``path_length_info`` appear in the :ref:`Basic_Mesh_Output` under the fields.
 
 .. _Camera_Specification:
 
@@ -271,9 +271,11 @@ Simplified Camera Specification
 The simplified version consists of:
 
 +--------------+----------------------------------------------------------+
-| *width*      | The width of the image in physical space.                |
+| *width*      | The width of the image in physical space. The default is |
+|              | 1.0.                                                     |
 +--------------+----------------------------------------------------------+
-| *height*     | The height of the image in physical space.               |
+| *height*     | The height of the image in physical space. The default   |
+|              | is 1.0.                                                  |
 +--------------+----------------------------------------------------------+
 | *origin*     | The point in 3D corresponding to the center of the       |
 |              | image.                                                   |
@@ -795,11 +797,11 @@ Conduit Blueprint provides the best of both worlds.
 Everything is stored in one file, and all of the raw data can be accessed via :ref:`Introspecting_with_Python`.
 Additionally, it is simple to generate an image, as the Blueprint output can be read back in to VisIt and visualized (see :ref:`Visualizing_with_VisIt`).
 
-.. figure:: images/xraywhyconduit1.png
+.. figure:: images/XRay_Query_input_mesh_alt_side.png
 
    An input mesh.
 
-.. figure:: images/xraywhyconduit2.png
+.. figure:: images/XRay_Query_spatial_energy_reduced_intensities_xray_side.png
 
    The resulting x ray image from Conduit Blueprint output, visualized by plotting with VisIt.
 
@@ -905,7 +907,7 @@ Basic Mesh Output
 The most important piece of the Blueprint output is the actual query result.
 We have taken the image data that comes out of the query and packaged it into a single Blueprint mesh.
 
-.. figure:: images/xray_visualize_image2.png
+.. figure:: images/XRay_Query_image_intensities_xray_front.png
 
    The basic mesh output visualized using VisIt.
 
@@ -1368,7 +1370,7 @@ Imaging Planes
 
 Users can visualize the near, view, and far planes in physical space alongside the meshes used in the ray trace:
 
-.. figure:: images/xray_imaging_planes.png
+.. figure:: images/XRay_Query_imaging_planes_400x300_front.png
 
    The imaging planes used by the X Ray Image Query visualized on top of the simulation data.
    The near plane is in red, the view plane in transparent orange, and the far plane in blue.
@@ -1500,7 +1502,7 @@ The first is the ray corners mesh.
 This is a Blueprint mesh containing four lines that pass through the corners of the :ref:`Imaging_Planes`.
 Now the viewing frustum is visible:
 
-.. figure:: images/xray_view_frustum.png
+.. figure:: images/XRay_Query_imaging_planes_and_ray_corners_400x300_front.png
 
    A plot of 5 meshes: the actual mesh that the query used to generate results, the 3 imaging planes, and the ray corners mesh.
 
@@ -1511,14 +1513,14 @@ But for those who wish to see all of the rays used in the ray trace, the followi
 The second rays mesh provided is the ray mesh, which provides all the rays used in the ray trace, represented as lines in Blueprint.
 A note of caution: depending on how many rays are used in the ray trace, this mesh could be expensive to render, hence the inclusion of the ray corners mesh.
 
-.. figure:: images/xray_raysmesh_40x30.png
+.. figure:: images/XRay_Query_imaging_planes_and_rays_40x30_front.png
 
    There are 40x30 rays in this image, corresponding to an x ray image output of 40x30 pixels.
 
 Depending on the chosen dimensions of the output image, this mesh can contain thousands of lines.
 See the following image, which is the same query as the previous image, but this time with 400x300 pixels.
 
-.. figure:: images/xray_raysmesh_400x300.png
+.. figure:: images/XRay_Query_imaging_planes_and_rays_400x300_front.png
 
    There are 400x300 rays in this image, corresponding to an x ray image output of 400x300 pixels.
 
@@ -1528,11 +1530,11 @@ There are a couple quick solutions to this problem.
 This can be done quickly, as the ray trace is the performance bottleneck for the x ray image query.
 Here are examples:
 
-.. figure:: images/xray_raysmesh_20x15.png
+.. figure:: images/XRay_Query_imaging_planes_and_rays_20x15_front.png
 
    There are 20x15 rays in this image, corresponding to an x ray image output of 20x15 pixels.
 
-.. figure:: images/xray_raysmesh_8x6.png
+.. figure:: images/XRay_Query_imaging_planes_and_rays_8x6_front.png
 
    There are 8x6 rays in this image, corresponding to an x ray image output of 8x6 pixels.
 
@@ -1542,7 +1544,7 @@ But there is another option that does not require losing information.
 **The second solution** is adjusting the opacity of the rays using VisIt.
 Here is a view of a different run of the query, this time with the simulated x ray detector to the side of the input mesh.
 
-.. figure:: images/xray_raysmesh_side_40x30.png
+.. figure:: images/XRay_Query_imaging_planes_and_rays_40x30_side.png
 
    There are 40x30 rays in this image, corresponding to an x ray image output of 40x30 pixels. 
    This is a view of a different run of the query from the images shown thus far.
@@ -1551,20 +1553,20 @@ Even with only 40x30 rays, it is already hard to see the input mesh underneath t
 With VisIt, it is very easy to adjust the opacity of the rays and make them semitransparent.
 Here is the same view but with the opacity adjusted for greater visibility.
 
-.. figure:: images/xray_raysmesh_side_40x30_transparent.png
+.. figure:: images/XRay_Query_imaging_planes_and_transparent_rays_40x30_side.png
 
    The 40x30 rays have had their opacity lowered for greater visibility.
 
 Here is the same view but with 400x300 rays.
 
-.. figure:: images/xray_raysmesh_side_400x300.png
+.. figure:: images/XRay_Query_imaging_planes_and_rays_400x300_side.png
 
    There are 400x300 rays in this image, corresponding to an x ray image output of 40x30 pixels.
    The rays totally obscure the geometry.
 
 And here is the same view with 400x300 rays but with the ray opacity lowered.
 
-.. figure:: images/xray_raysmesh_side_400x300_transparent.png
+.. figure:: images/XRay_Query_imaging_planes_and_transparent_rays_400x300_side.png
 
    The 400x300 rays have had their opacity lowered for greater visibility.
 
@@ -1681,11 +1683,11 @@ Spatial Extents Meshes
 
 The final pieces of the Conduit Output are two more meshes, the spatial extents mesh and the spatial energy reduced mesh.
 
-.. figure:: images/xray_visualize_spatial2.png
+.. figure:: images/XRay_Query_spatial_intensities_xray_front.png
 
    The Spatial Extents Mesh visualized using VisIt.
 
-.. figure:: images/xray_visualize_spatial3.png
+.. figure:: images/XRay_Query_spatial_energy_reduced_intensities_xray_front.png
 
    The Spatial Energy Reduced Mesh visualized using VisIt.
 
@@ -1827,10 +1829,10 @@ The Spatial Energy Reduced Mesh is similar, but notable in the sense that it is 
 The impetus for including the spatial extents mesh was originally to include spatial coordinates as part of the metadata, but later on it was decided that the spatial coordinates should be promoted to be a proper Blueprint coordset.
 We then duplicated the existing topology and fields from the :ref:`Basic_Mesh_Output` so that the spatial extents coordset could be part of a valid Blueprint mesh, and could thus be visualized using VisIt.
 
-.. figure:: images/xray_spatial_extents_mesh.png
+.. figure:: images/XRay_Query_spatial_intensities_side.png
 
    The spatial extents mesh looks very similar to the basic mesh output.
-   It is in 3D and the z dimension represents the energy group bounds, which in this example run from 2.7 to 5.2.
+   It is in 3D and the z dimension represents the energy group bounds, which in this example run from 0 to 12.
 
 To visualize this mesh with VisIt, see :ref:`Visualizing_with_VisIt`. To extract the spatial extents data from the Blueprint output, see :ref:`Introspecting_with_Python`.
 
@@ -1955,7 +1957,7 @@ The later Python code examples assume that the following has already been run:
 
    DrawPlots()
 
-.. figure:: images/xray_visualize_image1.png
+.. figure:: images/XRay_Query_image_intensities_front.png
 
    A visualization of the basic mesh output.
 
@@ -1968,7 +1970,7 @@ To make the output look like an x ray image, it is simple to change the color ta
    PseudocolorAtts.colorTableName = "xray"
    SetPlotOptions(PseudocolorAtts)
 
-.. figure:: images/xray_visualize_image2.png
+.. figure:: images/XRay_Query_image_intensities_xray_front.png
 
    A visualization of the basic mesh output using the x ray color table.
 
@@ -1992,7 +1994,7 @@ To simply render the imaging planes on top of your simulation data we will do th
    AddPlot("Pseudocolor", "mesh_far_plane_topo/far_plane_field")
    DrawPlots()
 
-.. figure:: images/xray_visualize_imagingplanes1.png
+.. figure:: images/XRay_Query_imaging_planes_uncolored_400x300_front.png
 
    A visualization of the input mesh along with the imaging planes.
 
@@ -2018,7 +2020,9 @@ To make them distinct colors like in all the examples throughout this documentat
    PseudocolorAtts.opacity = 0.7
    SetPlotOptions(PseudocolorAtts)
 
-.. figure:: images/xray_visualize_imagingplanes2.png
+   # leave the far plane as is
+
+.. figure:: images/XRay_Query_imaging_planes_400x300_front.png
 
    A visualization of the input mesh along with the imaging planes, where they have had their colors adjusted.
 
@@ -2043,7 +2047,7 @@ To visualize the ray corners, it is a simple matter of doing the following:
    MeshAtts.lineWidth = 1
    SetPlotOptions(MeshAtts)
 
-.. figure:: images/xray_visualize_ray_corners.png
+.. figure:: images/XRay_Query_imaging_planes_and_ray_corners_400x300_front.png
 
    A visualization of the input mesh, the imaging planes, and the ray corners.
 
@@ -2054,7 +2058,7 @@ Now we will visualize all of the rays.
    AddPlot("Pseudocolor", "mesh_ray_topo/ray_field")
    DrawPlots()
 
-.. figure:: images/xray_visualize_rays1.png
+.. figure:: images/XRay_Query_imaging_planes_rays_and_ray_corners40x30_front.png
 
    A visualization of the input mesh, the imaging planes, the ray corners, and the rays.
 
@@ -2067,7 +2071,7 @@ As discussed in the :ref:`Rays_Meshes` section, this picture is not very helpful
    PseudocolorAtts.opacity = 0.5
    SetPlotOptions(PseudocolorAtts)
 
-.. figure:: images/xray_visualize_rays2.png
+.. figure:: images/XRay_Query_imaging_planes_transparent_rays_and_ray_corners_40x30_front.png
 
    A visualization of the input mesh, the imaging planes, the ray corners, and the rays, with their opacity adjusted.
 
@@ -2075,6 +2079,8 @@ See the :ref:`Rays_Meshes` section for more tips for making sense of the rays.
 
 **4. Finally, we will examine the** :ref:`Spatial_Extents_Meshes`.
 This should be very similar to visualizing the :ref:`Basic_Mesh_Output`.
+
+First we render the spatial extents mesh:
 
 ::
 
@@ -2089,7 +2095,7 @@ This should be very similar to visualizing the :ref:`Basic_Mesh_Output`.
 
    DrawPlots()
 
-.. figure:: images/xray_visualize_spatial1.png
+.. figure:: images/XRay_Query_spatial_intensities_front.png
 
    A visualization of the spatial extents mesh.
 
@@ -2102,9 +2108,11 @@ To make the output look like an x ray image, it is simple to change the color ta
    PseudocolorAtts.colorTableName = "xray"
    SetPlotOptions(PseudocolorAtts)
 
-.. figure:: images/xray_visualize_spatial2.png
+.. figure:: images/XRay_Query_spatial_intensities_xray_front.png
 
    A visualization of the spatial extents mesh using the x ray color table.
+
+And then we render the spatial energy reduced mesh:
 
 ::
 
@@ -2126,7 +2134,7 @@ To make the output look like an x ray image, it is simple to change the color ta
    PseudocolorAtts.colorTableName = "xray"
    SetPlotOptions(PseudocolorAtts)
 
-.. figure:: images/xray_visualize_spatial3.png
+.. figure:: images/XRay_Query_spatial_energy_reduced_intensities_xray_front.png
 
    A visualization of the spatial energy reduced mesh using the x ray color table.
 
@@ -2471,7 +2479,7 @@ Running this code using VisIt should result in renders like those shown in :ref:
 Use the tips and tricks shown in that section to gain greater clarity for answering this question.
 See the text on visualizing the rays and imaging planes in :ref:`Visualizing_with_VisIt`.
 
-.. figure:: images/xray_visualize_rays2.png
+.. figure:: images/XRay_Query_imaging_planes_transparent_rays_and_ray_corners_40x30_front.png
 
    An example render made using the above code.
 
