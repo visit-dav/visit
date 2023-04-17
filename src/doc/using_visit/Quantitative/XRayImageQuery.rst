@@ -2518,7 +2518,7 @@ The following code examples will take resultant data (the intensity values, in t
    def fetch_reshaped_field_values(data, field_name):
        nx, ny, nz = fetch_topology_dims(data)
        vals = data.fetch_existing("fields/" + field_name + "/values").value()
-       return vals.reshape(nx, ny, nz)
+       return vals.reshape(nz, ny, nx)
 
 We know that we should reshape in this order because x varies the fastest, then y, and then z.
 To verify this, we can examine the ``image_topo_order_of_domain_variables`` metadata (more information on that here: :ref:`Other_Metadata`) which records in which order the axes vary.
@@ -2571,5 +2571,5 @@ This produces the following:
      [0.         0.20180537 0.20180535 0.        ]
      [0.         0.         0.         0.        ]]]
 
-The number of values is so small because I picked an image size of 4x3 pixels to demonstrate this.
+The number of values is so small because I picked an image size of 4x3 pixels and 2 energy groups to demonstrate this.
 
