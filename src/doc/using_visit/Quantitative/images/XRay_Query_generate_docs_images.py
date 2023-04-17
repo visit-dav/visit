@@ -18,7 +18,7 @@ import conduit
 import os
 import sys
 
-path_to_data_file = "../testdata/silo_hdf5_test_data/" # CHANGE ME
+path_to_data_file = "testdata/silo_hdf5_test_data/" # CHANGE ME
 data_file = path_to_data_file + "curv3d.silo"
 
 shouldisave = True
