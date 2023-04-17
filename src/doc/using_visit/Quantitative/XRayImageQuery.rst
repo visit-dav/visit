@@ -1942,7 +1942,10 @@ The later Python code examples assume that the following has already been run:
    # In this case it is called "output.root"
    OpenDatabase("output.root")
 
-**1. Once the query has been run, to visualize the** :ref:`Basic_Mesh_Output`, **follow these steps in Python:**
+Once the query has been run, to visualize each constituent part of the output, follow these steps in Python:
+
+Visualizing the Basic Mesh Output
++++++++++++++++++++++++++++++++++
 
 ::
 
@@ -1974,8 +1977,10 @@ To make the output look like an x ray image, it is simple to change the color ta
 
    A visualization of the basic mesh output using the x ray color table.
 
-**2. Next we will cover visualizing the** :ref:`Imaging_Planes`.
-To simply render the imaging planes on top of your simulation data we will do the following:
+Visualizing the Imaging Planes
+++++++++++++++++++++++++++++++
+
+To simply render the :ref:`Imaging_Planes` on top of your simulation data we will do the following:
 
 ::
 
@@ -2026,8 +2031,10 @@ To make them distinct colors like in all the examples throughout this documentat
 
    A visualization of the input mesh along with the imaging planes, where they have had their colors adjusted.
 
-**3. Next we will look at the** :ref:`Rays_Meshes`.
-For the sake of visual clarity, we will build on the imaging planes visualization from above.
+Visualizing the Rays Meshes
++++++++++++++++++++++++++++
+
+For the sake of visual clarity, as we visualize the :ref:`Rays_Meshes`, we will build on the imaging planes visualization from above.
 To visualize the ray corners, it is a simple matter of doing the following:
 
 ::
@@ -2077,8 +2084,10 @@ As discussed in the :ref:`Rays_Meshes` section, this picture is not very helpful
 
 See the :ref:`Rays_Meshes` section for more tips for making sense of the rays.
 
-**4. Finally, we will examine the** :ref:`Spatial_Extents_Meshes`.
-This should be very similar to visualizing the :ref:`Basic_Mesh_Output`.
+Visualizing the Spatial Extents Meshes
+++++++++++++++++++++++++++++++++++++++
+
+Visualizing the :ref:`Spatial_Extents_Meshes` should be very similar to visualizing the :ref:`Basic_Mesh_Output`.
 
 First we render the spatial extents mesh:
 
@@ -2145,7 +2154,9 @@ Introspecting with Python
 
 We have covered visualizing every component of the :ref:`Conduit_Output` in the :ref:`Visualizing_with_VisIt` section; now we will demonstrate how to access the raw data using Python.
 
-**1. Getting a general overview of the output.**
+Getting a General Overview of the Output
+++++++++++++++++++++++++++++++++++++++++
+
 See :ref:`Overview_of_Output` for a visual of what the resulting Conduit tree looks like.
 First, we will get everything set up.
 
@@ -2198,7 +2209,9 @@ In general, children are not always named.
 For our purposes with the X Ray Image Query, they always will be.
 A node can behave like a python dictionary or a python list; for the latter, index access is possible.
 
-**2. Accessing the** :ref:`Basic_Mesh_Output` **data**.
+Accessing the Basic Mesh Output Data
+++++++++++++++++++++++++++++++++++++
+
 To get a sense of what the :ref:`Basic_Mesh_Output` looks like, we can run the following:
 
 ::
@@ -2275,8 +2288,10 @@ To actually extract the :ref:`Basic_Mesh_Output` data and not just see it, we ca
 
 These variables can be printed, manipulated, iterated over, etc.
 
-**3. Accessing the** :ref:`XRay_Metadata`.
-Again, to get an overview of the metadata, it is simple to print the ``state`` branch:
+Accessing the Metadata
+++++++++++++++++++++++
+
+Again, to get an overview of the :ref:`XRay_Metadata`, it is simple to print the ``state`` branch:
 
 ::
 
@@ -2348,7 +2363,9 @@ And finally, :ref:`Other_Metadata`:
    path_length_min = xrayout["domain_000000/state/xray_data/path_length_min"]
    image_topo_order_of_domain_variables = xrayout["domain_000000/state/xray_data/image_topo_order_of_domain_variables"]
 
-**4. Accessing the** :ref:`Spatial_Extents_Meshes` **data.**
+Accessing the Spatial Extents Meshes Data
++++++++++++++++++++++++++++++++++++++++++
+
 Because the :ref:`Spatial_Extents_Meshes` share a lot in common with the :ref:`Basic_Mesh_Output`, we will only cover here how to extract some of the unique values.
 
 ::
@@ -2367,7 +2384,9 @@ Because the :ref:`Spatial_Extents_Meshes` share a lot in common with the :ref:`B
    spatial_yunits = xrayout["domain_000000/coordsets/spatial_coords/units/y"]
    energy_units = xrayout["domain_000000/coordsets/spatial_coords/units/z"]
 
-**5. Everything else.**
+Accessing Everything Else
++++++++++++++++++++++++++
+
 All of the other data stored in the Conduit output can be accessed in the same way.
 To get a general sense of what is stored in particular branches of the tree, it is a simple matter of running ``print(myconduitnode)`` to quickly get an overview.
 
@@ -2378,7 +2397,9 @@ Troubleshooting
 
 Now that we have explored the Conduit Blueprint output in detail, we can use it to troubleshoot unexpected or strange query results.
 
-**1. Is my image blank?**
+
+Is my image blank?
+++++++++++++++++++
 
 This question can be answered without even examining the image (or in the case of the Blueprint output, a render of the :ref:`Basic_Mesh_Output`).
 It is as simple as checking if the minimum and maximum values for the intensities and path length are zero.
@@ -2418,7 +2439,11 @@ If the maximums were also equal to zero, then the image would be blank.
 Hence, it is possible to quickly programmatically check if the image is blank, without any need for taking the time to look at the image.
 See :ref:`Introspecting_with_Python` for more information about extracting data from the query output.
 
-**2. Why is my image blank? Is the camera facing the right way? Are the near and far clipping planes in good positions?**
+Why is my image blank? 
+++++++++++++++++++++++
+
+Is the camera facing the right way?
+Are the near and far clipping planes in good positions?
 
 This line of questioning can be quickly answered by visualizing the :ref:`Imaging_Planes_and_Rays_Meshes`.
 
@@ -2451,7 +2476,8 @@ The simulated x ray detector is situated at the near plane, looking in the direc
 Once the imaging planes and ray corners have been visualized, it is clear to see where the camera is looking, and if the near and far clipping planes are appropriately placed.
 See the text on visualizing the rays and imaging planes in :ref:`Visualizing_with_VisIt`.
 
-**3. Where are the rays intersecting my geometry?**
+Where are the rays intersecting my geometry?
+++++++++++++++++++++++++++++++++++++++++++++
 
 Answering this question is similarly simple.
 We will want to visualize the :ref:`Rays_Meshes` on top of our input mesh.
@@ -2483,11 +2509,13 @@ See the text on visualizing the rays and imaging planes in :ref:`Visualizing_wit
 
    An example render made using the above code.
 
-**4. What information is the query using to create the output?**
+What information is the query using to create the output?
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 See :ref:`Introspecting_with_Python` for information on how to extract and view the :ref:`XRay_Metadata`, which contains the information the query uses to create the output.
 
-**5. The fields in the Conduit Output are 1D. How can I reshape them to be 3D?**
+The fields in the Conduit Output are 1D. How can I reshape them to be 3D?
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 The following code examples will take resultant data (the intensity values, in this case) from the X Ray Image Query and reshape it to be 3D.
 
