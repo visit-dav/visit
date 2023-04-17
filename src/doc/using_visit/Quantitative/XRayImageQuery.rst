@@ -1942,7 +1942,7 @@ The later Python code examples assume that the following has already been run:
    # In this case it is called "output.root"
    OpenDatabase("output.root")
 
-Once the query has been run, to visualize each constituent part of it, follow these steps in Python:
+Once the query has been run, to visualize each constituent part of the output, follow these steps in Python:
 
 Visualizing the Basic Mesh Output
 +++++++++++++++++++++++++++++++++
