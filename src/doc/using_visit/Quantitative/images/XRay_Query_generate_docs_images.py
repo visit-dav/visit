@@ -345,7 +345,7 @@ def call_query(image_size = (400, 300), side_view = False):
 	# params["background_intensity"] = 0
 	# params["background_intensities"] = 0
 	# params["divide_emis_by_absorb"] = 0
-	params["image_size"] = (3, 2) # image_size
+	params["image_size"] = image_size
 	# params["debug_ray"] = -1
 	# params["output_ray_bounds"] = 0
 	params["energy_group_bounds"] = [0.0, 2.0, 6.0, 8.0, 9.0, 10.0, 12.0]
