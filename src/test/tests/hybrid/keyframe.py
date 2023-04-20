@@ -20,7 +20,11 @@
 #    deprecated animation functions.
 #
 #    Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
-#    Added ability to swtich between Silo's HDF5 and PDB data.
+#    Added ability to switch between Silo's HDF5 and PDB data.
+#
+#    Eric Brugger, Wed Mar 22 16:23:12 PDT 2023
+#    Added operator keyframe tests.
+#
 # ----------------------------------------------------------------------------
 
 
