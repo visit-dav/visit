@@ -96,6 +96,12 @@
 #    energy group bins.
 #     - More consistent query args for blueprint tests
 #     - Added slice tests for specific energy group bins.
+# 
+#    Justin Privitera, Wed Apr 26 14:07:01 PDT 2023
+#    The new conduit we are using for VisIt (0.8.7) can read in simple yaml
+#    and json (w/o bp index?) (bug was fixed) so I am updating the x ray query
+#    tests to take advantage of this and add tests back in for yaml and json
+#    cases.
 #
 # ----------------------------------------------------------------------------
 
