@@ -160,7 +160,7 @@ QvisCollapsibleFrame::QvisCollapsibleFrame(const QString& title,
     titleBar = new QvisTitleBar(title,this);
 
     layout = new QVBoxLayout(this);
-    layout->setMargin(0);
+    layout->setContentsMargins(0,0,0,0);
     layout->setSpacing(0);
     
     layout->addWidget( titleBar);
@@ -270,7 +270,7 @@ void QvisCollapsibleFrame::setHide()
 QvisCollapsibleLayout::QvisCollapsibleLayout(QWidget* parent) : QWidget(parent)
 {
     layout = new QVBoxLayout(this);
-    layout->setMargin(0);
+    layout->setContentsMargins(0,0,0,0);
     layout->setSpacing(0);
     
     // Add the layout to the base widget.

@@ -18,9 +18,6 @@ ClipGUIPluginInfo.C
 QvisClipWindow.C
 ${COMMON_SOURCES}
 )
-SET(LIBG_MOC_SOURCES
-QvisClipWindow.h
-)
 
 SET(LIBV_SOURCES
 ClipViewerEnginePluginInfo.C
@@ -48,8 +45,8 @@ TARGET_LINK_LIBRARIES(IClipOperator visitcommon)
 SET(INSTALLTARGETS IClipOperator)
 
 IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
-    QT_WRAP_CPP(GClipOperator LIBG_SOURCES ${LIBG_MOC_SOURCES})
     ADD_LIBRARY(GClipOperator ${LIBG_SOURCES})
+    set_target_properties(GClipOperator PROPERTIES AUTOMOC ON)
     TARGET_LINK_LIBRARIES(GClipOperator visitcommon gui )
 
     ADD_LIBRARY(VClipOperator ${LIBV_SOURCES})

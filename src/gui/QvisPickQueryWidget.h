@@ -41,7 +41,7 @@ class GUI_API QvisPickQueryWidget : public QWidget
 {
     Q_OBJECT
 public:
-    QvisPickQueryWidget(QWidget *parent = 0, Qt::WindowFlags f = 0);
+    QvisPickQueryWidget(QWidget *parent = 0, Qt::WindowFlags f = Qt::Widget);
     virtual ~QvisPickQueryWidget();
 
     bool                 GetQueryParameters(MapNode &params);

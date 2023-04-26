@@ -97,7 +97,7 @@ XMLEditPlugin::XMLEditPlugin(QWidget *p)
     topLayout->addWidget(pluginGroup, row, 0, 1 , 4);
     ++row;
     QVBoxLayout *innerPluginLayout = new QVBoxLayout(pluginGroup);
-    innerPluginLayout->setMargin(10);
+    innerPluginLayout->setContentsMargins(10,10,10,10);
 
     QGridLayout *pluginLayout = new QGridLayout;
     pluginLayout->setSpacing(5);
@@ -145,7 +145,7 @@ XMLEditPlugin::XMLEditPlugin(QWidget *p)
     topLayout->addWidget(plotPluginGroup, row, 0, 1, 4);
     ++row;
     QVBoxLayout *innerPlotPluginLayout = new QVBoxLayout(plotPluginGroup);
-    innerPlotPluginLayout->setMargin(10);
+    innerPlotPluginLayout->setContentsMargins(10,10,10,10);
     QGridLayout *plotPluginLayout = new QGridLayout;
     plotPluginLayout->setSpacing(5);
     int plRow = 0;
@@ -192,7 +192,7 @@ XMLEditPlugin::XMLEditPlugin(QWidget *p)
     topLayout->addWidget(operatorPluginGroup, row, 0, 1, 4);
     ++row;
     QVBoxLayout *innerOperatorPluginLayout = new QVBoxLayout(operatorPluginGroup);
-    innerOperatorPluginLayout->setMargin(10);
+    innerOperatorPluginLayout->setContentsMargins(10,10,10,10);
     QGridLayout *operatorPluginLayout = new QGridLayout;
     operatorPluginLayout->setSpacing(5);
     int opRow = 0;
@@ -275,7 +275,7 @@ XMLEditPlugin::XMLEditPlugin(QWidget *p)
     topLayout->addWidget(dbPluginGroup, row, 0, 1, 4);
     ++row;
     QVBoxLayout *innerdbPluginLayout = new QVBoxLayout(dbPluginGroup);
-    innerdbPluginLayout->setMargin(10);
+    innerdbPluginLayout->setContentsMargins(10,10,10,10);
     QGridLayout *dbPluginLayout = new QGridLayout;
     dbPluginLayout->setSpacing(5);
     int dbRow = 0;

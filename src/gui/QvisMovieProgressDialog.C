@@ -36,12 +36,12 @@ QvisMovieProgressDialog::QvisMovieProgressDialog(QPixmap &pix, QWidget *parent)
 : QDialog(parent)
 {
     QVBoxLayout *topLayout = new QVBoxLayout(this);
-    topLayout->setMargin(10);
+    topLayout->setContentsMargins(10,10,10,10);
     topLayout->setSpacing(5);
 
     QHBoxLayout *labelLayout = new QHBoxLayout();
     topLayout->addLayout(labelLayout);
-    labelLayout->setMargin(5);
+    labelLayout->setContentsMargins(5,5,5,5);
     picture = new QLabel(this);
     picture->setPixmap(pix);
     picture->setMinimumWidth(pix.width());

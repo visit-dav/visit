@@ -137,7 +137,7 @@ void
 QvisAppearanceWidget::CreateWindow()
 {
     QVBoxLayout *aLayout = new QVBoxLayout(this);
-    aLayout->setMargin(5);
+    aLayout->setContentsMargins(5,5,5,5);
     aLayout->setSpacing(10);
 
     // Create the curve color group box.

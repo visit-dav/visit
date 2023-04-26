@@ -16,6 +16,9 @@
 #   Eric Brugger, Thu Jul 15 13:34:12 PDT 2021
 #   Added qtviswinExample.C
 #
+#   Kathleen Biagas, Thu Mar 30, 2023
+#   Use AUTOMOC target property instead of QT_WRAP_CPP macro.
+#
 #****************************************************************************
 
 INCLUDE_DIRECTORIES(
@@ -212,12 +215,8 @@ qvtkopenglExample.C
 GUIWindow.C
 )
 
-SET(QVTKOPENGLEXAMPLE_MOC_SOURCES
-GUIWindow.h
-)
-QT_WRAP_CPP(qvtkopenglExample QVTKOPENGLEXAMPLE_SOURCES ${QVTKOPENGLEXAMPLE_MOC_SOURCES})
-
 ADD_EXECUTABLE(qvtkopenglExample ${QVTKOPENGLEXAMPLE_SOURCES})
+set_target_properties(qvtkopenglExample PROPERTIES AUTOMOC ON)
 VISIT_INSTALL_TARGETS(qvtkopenglExample)
 VISIT_EXAMPLES_ADD_FOLDER(qvtkopenglExample qvtkopenglExample)
 
@@ -243,12 +242,9 @@ qtvtkExample.C
 GUIWindow2.C
 )
 
-SET(QTVTKEXAMPLE_MOC_SOURCES
-GUIWindow2.h
-)
-QT_WRAP_CPP(qtvtkExample QTVTKEXAMPLE_SOURCES ${QTVTKEXAMPLE_MOC_SOURCES})
 
 ADD_EXECUTABLE(qtvtkExample ${QTVTKEXAMPLE_SOURCES})
+set_target_properties(qtvtkExample PROPERTIES AUTOMOC ON)
 VISIT_INSTALL_TARGETS(qtvtkExample)
 VISIT_EXAMPLES_ADD_FOLDER(qtvtkExample qtvtkExample)
 

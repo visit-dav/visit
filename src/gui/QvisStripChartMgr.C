@@ -108,7 +108,7 @@ QvisStripChartMgr::CreateWindowContents()
     topLayout->addWidget( stripChartGroup);
     
     chartLayout = new QGridLayout(stripChartGroup);              
-    chartLayout->setMargin(10);
+    chartLayout->setContentsMargins(10,10,10,10);
     chartLayout->setSpacing(10);
     
     // Pick and zoom buttons

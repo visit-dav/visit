@@ -46,7 +46,7 @@ QvisSessionSourceChangerDialog::QvisSessionSourceChangerDialog(QWidget *parent)
     setWindowTitle(title);
 
     QVBoxLayout *pageLayout = new QVBoxLayout(this);
-    pageLayout->setMargin(10);
+    pageLayout->setContentsMargins(10,10,10,10);
     pageLayout->setSpacing(10);
     QLabel *prompt = new QLabel(SplitPrompt(description), this);
     pageLayout->addWidget(prompt);

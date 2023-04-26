@@ -391,7 +391,7 @@ QvisVisItUpdate::startUpdate()
         QString msg;
         QString g(info.group());
         if(g.isEmpty())
-            g.sprintf("id %d", info.groupId());
+            g = QString("id %1").arg(info.groupId());
 
         msg = tr("VisIt determined that you do not have write permission "
                  "to the %1 directory where VisIt is installed. You must have "

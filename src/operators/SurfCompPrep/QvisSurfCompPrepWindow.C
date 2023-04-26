@@ -85,7 +85,7 @@ QvisSurfCompPrepWindow::CreateWindowContents()
     QWidget *surfaceTypeWidget = new QWidget(central);
     surfaceType = new QButtonGroup(surfaceTypeWidget);
     QHBoxLayout *surfaceTypeLayout = new QHBoxLayout(surfaceTypeWidget);
-    surfaceTypeLayout->setMargin(0);
+    surfaceTypeLayout->setContentsMargins(0,0,0,0);
     surfaceTypeLayout->setSpacing(10);
     QRadioButton *surfaceTypeSurfaceTypeClosest = new QRadioButton(tr("Closest"), surfaceTypeWidget);
     surfaceType->addButton(surfaceTypeSurfaceTypeClosest,0);
@@ -106,7 +106,7 @@ QvisSurfCompPrepWindow::CreateWindowContents()
     QWidget *coordSystemWidget = new QWidget(central);
     coordSystem = new QButtonGroup(coordSystemWidget);
     QHBoxLayout *coordSystemLayout = new QHBoxLayout(coordSystemWidget);
-    coordSystemLayout->setMargin(0);
+    coordSystemLayout->setContentsMargins(0,0,0,0);
     coordSystemLayout->setSpacing(10);
     QRadioButton *coordSystemCoordinateSystemCartesian = new QRadioButton(tr("Cartesian"), coordSystemWidget);
     coordSystem->addButton(coordSystemCoordinateSystemCartesian,0);

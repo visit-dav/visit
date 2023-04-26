@@ -11,9 +11,10 @@
 #include <stdio.h>
 #include <ViewerSubject.h>
 
-#include <QDesktopWidget>
 #include <QFile>
 #include <QLocale>
+#include <QRect>
+#include <QScreen>
 #include <QTimer>
 #include <QTranslator>
 
@@ -1910,6 +1911,9 @@ ViewerSubject::ProcessEvents()
 //    Brad Whitlock, Tue Apr 14 12:04:03 PDT 2009
 //    Use ViewerProperties.
 //
+//   Kathleen Biagas, Wed Apr  5 13:04:35 PDT 2023
+//   Replace obosolete desktop() with primaryScreen().
+//
 // ****************************************************************************
 
 void
@@ -1985,7 +1989,7 @@ ViewerSubject::InitializeWorkArea()
                 wmShift[0] = 0;
                 wmShift[1] = 22;
 
-                QRect geom = qApp->desktop()->screenGeometry();
+                QRect geom = qApp->primaryScreen()->geometry();
                 wmScreen[0] = geom.width();
                 wmScreen[1] = geom.height();
                 wmScreen[2] = geom.x();

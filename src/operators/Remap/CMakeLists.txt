@@ -18,9 +18,6 @@ RemapGUIPluginInfo.C
 QvisRemapWindow.C
 ${COMMON_SOURCES}
 )
-SET(LIBG_MOC_SOURCES
-QvisRemapWindow.h
-)
 
 SET(LIBV_SOURCES
 RemapViewerEnginePluginInfo.C
@@ -49,8 +46,8 @@ TARGET_LINK_LIBRARIES(IRemapOperator visitcommon)
 SET(INSTALLTARGETS IRemapOperator)
 
 IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
-    QT_WRAP_CPP(GRemapOperator LIBG_SOURCES ${LIBG_MOC_SOURCES})
     ADD_LIBRARY(GRemapOperator ${LIBG_SOURCES})
+    set_target_properties(GRemapOperator PROPERTIES AUTOMOC ON)
     TARGET_LINK_LIBRARIES(GRemapOperator visitcommon gui )
 
     ADD_LIBRARY(VRemapOperator ${LIBV_SOURCES})

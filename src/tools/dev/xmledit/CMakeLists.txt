@@ -7,6 +7,9 @@
 #   Kathleen Bonnell, Wed Jan 05 10:25:13 PST 2010
 #   Add FOLDER property.
 #
+#   Kathleen Biagas, Thu Mar 30, 2023
+#   Use AUTOMOC target property instead of QT_WRAP_CPP macro.
+#
 #****************************************************************************
 
 SET(XMLEDIT_SOURCES
@@ -25,22 +28,6 @@ XMLEditConstants.C
 XMLEditIncludes.C
 XMLEditMakefile.C
 )
-
-SET(XMLEDIT_MOC_SOURCES
-XMLEdit.h
-XMLEditAttribute.h
-XMLEditPlugin.h
-XMLEditEnums.h
-XMLEditFields.h
-XMLEditFunctions.h
-XMLEditCode.h
-XMLEditCodeGeneratorWindow.h
-XMLEditCodeSelectionDialog.h
-XMLEditConstants.h
-XMLEditIncludes.h
-XMLEditMakefile.h
-)
-QT_WRAP_CPP(xmledit XMLEDIT_SOURCES ${XMLEDIT_MOC_SOURCES})
 
 INCLUDE_DIRECTORIES(
 ${CMAKE_CURRENT_SOURCE_DIR}
@@ -65,6 +52,8 @@ IF(APPLE)
 ELSE(APPLE)
     ADD_EXECUTABLE(xmledit ${VISIT_APPLICATION_STYLE} ${XMLEDIT_SOURCES})
 ENDIF(APPLE)
+
+set_target_properties(xmledit PROPERTIES AUTOMOC ON)
 
 SET(RELEVANT_QT_LIBS 
 ${QT_QTGUI_LIBRARY}

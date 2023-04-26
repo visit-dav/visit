@@ -46,7 +46,7 @@ QvisFontAttributesWidget::QvisFontAttributesWidget(QWidget *parent) :
     opacityHidden = false;
 
     QGridLayout *gLayout = new QGridLayout(this);
-    gLayout->setMargin(0);
+    gLayout->setContentsMargins(0,0,0,0);
     gLayout->setSpacing(10);
     int row = 0;
 

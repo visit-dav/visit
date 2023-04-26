@@ -18,9 +18,6 @@ LabelGUIPluginInfo.C
 QvisLabelPlotWindow.C
 ${COMMON_SOURCES}
 )
-SET(LIBG_MOC_SOURCES
-QvisLabelPlotWindow.h
-)
 
 SET(LIBV_SOURCES
 LabelViewerEnginePluginInfo.C
@@ -60,8 +57,8 @@ TARGET_LINK_LIBRARIES(ILabelPlot visitcommon)
 SET(INSTALLTARGETS ILabelPlot)
 
 IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
-    QT_WRAP_CPP(GLabelPlot LIBG_SOURCES ${LIBG_MOC_SOURCES})
     ADD_LIBRARY(GLabelPlot ${LIBG_SOURCES})
+    set_target_properties(GLabelPlot PROPERTIES AUTOMOC ON)
     TARGET_LINK_LIBRARIES(GLabelPlot visitcommon gui )
 
     ADD_LIBRARY(VLabelPlot ${LIBV_SOURCES})

@@ -18,9 +18,6 @@ ConeGUIPluginInfo.C
 QvisConeWindow.C
 ${COMMON_SOURCES}
 )
-SET(LIBG_MOC_SOURCES
-QvisConeWindow.h
-)
 
 SET(LIBV_SOURCES
 ConeViewerEnginePluginInfo.C
@@ -48,8 +45,8 @@ TARGET_LINK_LIBRARIES(IConeOperator visitcommon)
 SET(INSTALLTARGETS IConeOperator)
 
 IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
-    QT_WRAP_CPP(GConeOperator LIBG_SOURCES ${LIBG_MOC_SOURCES})
     ADD_LIBRARY(GConeOperator ${LIBG_SOURCES})
+    set_target_properties(GConeOperator PROPERTIES AUTOMOC ON)
     TARGET_LINK_LIBRARIES(GConeOperator visitcommon gui )
 
     ADD_LIBRARY(VConeOperator ${LIBV_SOURCES})

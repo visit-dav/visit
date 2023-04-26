@@ -145,7 +145,7 @@ void
 QvisTensorPlotWindow::CreateSamplingTab(QWidget *pageTensor)
 {
     QGridLayout *topLayout = new QGridLayout(pageTensor);
-    topLayout->setMargin(5);
+    topLayout->setContentsMargins(5,5,5,5);
     topLayout->setSpacing(10);
 
     //
@@ -232,7 +232,7 @@ void
 QvisTensorPlotWindow::CreateDataTab(QWidget *pageTensor)
 {
     QGridLayout *topLayout = new QGridLayout(pageTensor);
-    topLayout->setMargin(5);
+    topLayout->setContentsMargins(5,5,5,5);
     topLayout->setSpacing(10);
 
     //
@@ -243,7 +243,7 @@ QvisTensorPlotWindow::CreateDataTab(QWidget *pageTensor)
     topLayout->addWidget(limitsGroup);
 
     QGridLayout *limitsLayout = new QGridLayout(limitsGroup);
-    limitsLayout->setMargin(5);
+    limitsLayout->setContentsMargins(5,5,5,5);
     limitsLayout->setSpacing(10);
 
     limitsLayout->addWidget( new QLabel(tr("Limits"), central), 0, 0);
@@ -283,7 +283,7 @@ QvisTensorPlotWindow::CreateDataTab(QWidget *pageTensor)
     topLayout->addWidget(colorGroupBox);
 
     QGridLayout *cgLayout = new QGridLayout(colorGroupBox);
-    cgLayout->setMargin(5);
+    cgLayout->setContentsMargins(5,5,5,5);
     cgLayout->setSpacing(10);
     cgLayout->setColumnStretch(1, 10);
 
@@ -324,7 +324,7 @@ QvisTensorPlotWindow::CreateDataTab(QWidget *pageTensor)
     topLayout->addWidget(miscGroup);
 
     QGridLayout *miscLayout = new QGridLayout(miscGroup);
-    miscLayout->setMargin(5);
+    miscLayout->setContentsMargins(5,5,5,5);
     miscLayout->setSpacing(10);
  
     // Create the legend toggle
@@ -352,7 +352,7 @@ void
 QvisTensorPlotWindow::CreateGeometryTab(QWidget *pageGlyphs)
 {
     QGridLayout *topLayout = new QGridLayout(pageGlyphs);
-    topLayout->setMargin(5);
+    topLayout->setContentsMargins(5,5,5,5);
     topLayout->setSpacing(10);
 
     //
@@ -363,7 +363,7 @@ QvisTensorPlotWindow::CreateGeometryTab(QWidget *pageGlyphs)
     topLayout->addWidget(scaleGroupBox);
 
     QGridLayout *sgLayout = new QGridLayout(scaleGroupBox);
-    sgLayout->setMargin(5);
+    sgLayout->setContentsMargins(5,5,5,5);
     sgLayout->setSpacing(10);
     sgLayout->setColumnStretch(1, 10);
 

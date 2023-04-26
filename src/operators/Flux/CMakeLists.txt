@@ -18,9 +18,6 @@ FluxGUIPluginInfo.C
 QvisFluxWindow.C
 ${COMMON_SOURCES}
 )
-SET(LIBG_MOC_SOURCES
-QvisFluxWindow.h
-)
 
 SET(LIBV_SOURCES
 FluxViewerEnginePluginInfo.C
@@ -48,8 +45,8 @@ TARGET_LINK_LIBRARIES(IFluxOperator visitcommon)
 SET(INSTALLTARGETS IFluxOperator)
 
 IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
-    QT_WRAP_CPP(GFluxOperator LIBG_SOURCES ${LIBG_MOC_SOURCES})
     ADD_LIBRARY(GFluxOperator ${LIBG_SOURCES})
+    set_target_properties(GFluxOperator PROPERTIES AUTOMOC ON)
     TARGET_LINK_LIBRARIES(GFluxOperator visitcommon gui )
 
     ADD_LIBRARY(VFluxOperator ${LIBV_SOURCES})

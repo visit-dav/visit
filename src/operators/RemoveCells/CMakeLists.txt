@@ -18,9 +18,6 @@ RemoveCellsGUIPluginInfo.C
 QvisRemoveCellsWindow.C
 ${COMMON_SOURCES}
 )
-SET(LIBG_MOC_SOURCES
-QvisRemoveCellsWindow.h
-)
 
 SET(LIBV_SOURCES
 RemoveCellsViewerEnginePluginInfo.C
@@ -48,8 +45,8 @@ TARGET_LINK_LIBRARIES(IRemoveCellsOperator visitcommon)
 SET(INSTALLTARGETS IRemoveCellsOperator)
 
 IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
-    QT_WRAP_CPP(GRemoveCellsOperator LIBG_SOURCES ${LIBG_MOC_SOURCES})
     ADD_LIBRARY(GRemoveCellsOperator ${LIBG_SOURCES})
+    set_target_properties(GRemoveCellsOperator PROPERTIES AUTOMOC ON)
     TARGET_LINK_LIBRARIES(GRemoveCellsOperator visitcommon gui )
 
     ADD_LIBRARY(VRemoveCellsOperator ${LIBV_SOURCES})

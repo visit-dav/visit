@@ -6,10 +6,11 @@
 #include <QvisColorSelectionWidget.h>
 #include <QApplication>
 #include <QBrush>
-#include <QDesktopWidget>
+#include <QMenu>
 #include <QPainter>
 #include <QPaintEvent>
-#include <QMenu>
+#include <QRect>
+#include <QScreen>
 #include <QStyle>
 #include <QStyleOption>
 
@@ -380,7 +381,9 @@ QvisColorButton::buttonColor() const
 // Creation:   Tue Dec 5 17:07:08 PST 2000
 //
 // Modifications:
-//   
+//   Kathleen Biagas, Wed Apr  5 13:04:35 PDT 2023
+//   Replace obosolete desktop() with primaryScreen().
+//
 // ****************************************************************************
 
 void
@@ -418,14 +421,14 @@ QvisColorButton::popupPressed()
         // Fix the X dimension.
         if(menuX < 0)
            menuX = 0;
-        else if(menuX + menuW > QApplication::desktop()->width())
+        else if(menuX + menuW > QApplication::primaryScreen()->geometry().width())
            menuX -= (menuW + 5);
 
         // Fix the Y dimension.
         if(menuY < 0)
            menuY = 0;
-        else if(menuY + menuH > QApplication::desktop()->height())
-           menuY -= ((menuY + menuH) - QApplication::desktop()->height());
+        else if(menuY + menuH > QApplication::primaryScreen()->geometry().height())
+           menuY -= ((menuY + menuH) - QApplication::primaryScreen()->geometry().height());
 
         // Show the popup menu.         
         popup->move(menuX, menuY);

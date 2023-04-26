@@ -11,6 +11,9 @@
 #   Replaced vtktiff with vtktiff_LIBRARIES, vtkjpeg with vtkjpeg_LIBRARIES,
 #   and vtkpng with vtkpng_LIBRARIES.
 #
+#   Kathleen Biagas, Thu Mar 30, 2023
+#   Use AUTOMOC target property instead of QT_WRAP_CPP macro.
+#
 #****************************************************************************
 
 SET(MCURVIT_SOURCES
@@ -35,24 +38,6 @@ Synchronizer.C
 IF(VISIT_STATIC)
     SET(STATIC_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/../../../viewer/main/ViewerStaticSymbolLocator.C)
 ENDIF(VISIT_STATIC)
-
-SET(MCURVIT_MOC_SOURCES
-MultiCurveProcessor.h
-MultiCurveViewer.h
-QvisAnnotationWidget.h
-QvisAppearanceWidget.h
-QvisColorButton.h
-QvisColorGridWidget.h
-QvisColorManagerWidget.h
-QvisColorSelectionWidget.h
-QvisGeneralWidget.h
-QvisGridWidget.h
-QvisLineWidthWidget.h
-QvisMessageDialog.h
-QvisOpacitySlider.h
-Synchronizer.h
-)
-QT_WRAP_CPP(mcurvit MCURVIT_SOURCES ${MCURVIT_MOC_SOURCES})
 
 INCLUDE_DIRECTORIES(
 ${CMAKE_CURRENT_SOURCE_DIR}
@@ -100,6 +85,8 @@ IF(APPLE)
 ELSE(APPLE)
     ADD_EXECUTABLE(mcurvit ${VISIT_APPLICATION_STYLE} ${MCURVIT_SOURCES} ${STATIC_SOURCES})
 ENDIF(APPLE)
+
+set_target_properties(mcurvit PROPERTIES AUTOMOC ON)
 
 SET(VIEWER_QT_LIBS 
 ${QT_QTGUI_LIBRARY}

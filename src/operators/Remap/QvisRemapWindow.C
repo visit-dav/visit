@@ -161,7 +161,7 @@ QvisRemapWindow::CreateWindowContents()
     variableType = new QWidget(central);
     variableTypeButtonGroup= new QButtonGroup(variableType);
     QHBoxLayout *variableTypeLayout = new QHBoxLayout(variableType);
-    variableTypeLayout->setMargin(0);
+    variableTypeLayout->setContentsMargins(0,0,0,0);
     variableTypeLayout->setSpacing(10);
     QRadioButton *variableTypeVariableTypesintrinsic = new QRadioButton(tr("intrinsic"), variableType);
     variableTypeButtonGroup->addButton(variableTypeVariableTypesintrinsic,0);

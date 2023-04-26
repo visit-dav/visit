@@ -836,7 +836,7 @@ QvisSaveMovieWizard::CreateChooseTemplatePage()
 
     QWidget *page2_description_vbox = new QWidget(page2);
     QVBoxLayout *vbox = new QVBoxLayout(page2_description_vbox);
-    vbox->setMargin(0);
+    vbox->setContentsMargins(0,0,0,0);
     vbox->setSpacing(10);
     hCenterLayout->addWidget(page2_description_vbox);
     hCenterLayout->setStretchFactor(page2_description_vbox, 10);
@@ -1364,7 +1364,7 @@ QvisSaveMovieWizard::CreateFormatPage()
     formatAndResolution->setTitle(tr("Format and resolution"));
     pageLayout->addWidget(formatAndResolution);
     QVBoxLayout *f2innerLayout = new QVBoxLayout(formatAndResolution);
-    f2innerLayout->setMargin(10);
+    f2innerLayout->setContentsMargins(10,10,10,10);
     QGridLayout *f2layout = new QGridLayout(0);
     f2innerLayout->addLayout(f2layout);
     f2layout->setSpacing(5);
@@ -1666,7 +1666,7 @@ QvisSaveMovieWizard::CreateFilenamePage()
     connect(outputSelectButton, SIGNAL(clicked()),
             this, SLOT(page11_selectOutputDirectory()));
     oLayout->setSpacing(0);
-    oLayout->setMargin(0);
+    oLayout->setContentsMargins(0,0,0,0);
     oLayout->setStretchFactor(page11_outputDirectoryLineEdit, 100);
     outputDirectoryLabel->setBuddy(outputDirectoryParent);
     gLayout->addWidget(outputDirectoryParent, 0, 1);

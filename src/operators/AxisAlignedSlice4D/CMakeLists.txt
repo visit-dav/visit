@@ -18,9 +18,6 @@ AxisAlignedSlice4DGUIPluginInfo.C
 QvisAxisAlignedSlice4DWindow.C
 ${COMMON_SOURCES}
 )
-SET(LIBG_MOC_SOURCES
-QvisAxisAlignedSlice4DWindow.h
-)
 
 SET(LIBV_SOURCES
 AxisAlignedSlice4DViewerEnginePluginInfo.C
@@ -48,8 +45,8 @@ TARGET_LINK_LIBRARIES(IAxisAlignedSlice4DOperator visitcommon)
 SET(INSTALLTARGETS IAxisAlignedSlice4DOperator)
 
 IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
-    QT_WRAP_CPP(GAxisAlignedSlice4DOperator LIBG_SOURCES ${LIBG_MOC_SOURCES})
     ADD_LIBRARY(GAxisAlignedSlice4DOperator ${LIBG_SOURCES})
+    set_target_properties(GAxisAlignedSlice4DOperator PROPERTIES AUTOMOC ON)
     TARGET_LINK_LIBRARIES(GAxisAlignedSlice4DOperator visitcommon gui )
 
     ADD_LIBRARY(VAxisAlignedSlice4DOperator ${LIBV_SOURCES})

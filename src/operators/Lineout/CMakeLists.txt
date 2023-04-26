@@ -18,9 +18,6 @@ LineoutGUIPluginInfo.C
 QvisLineoutWindow.C
 ${COMMON_SOURCES}
 )
-SET(LIBG_MOC_SOURCES
-QvisLineoutWindow.h
-)
 
 SET(LIBV_SOURCES
 LineoutViewerEnginePluginInfo.C
@@ -48,8 +45,8 @@ TARGET_LINK_LIBRARIES(ILineoutOperator visitcommon)
 SET(INSTALLTARGETS ILineoutOperator)
 
 IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
-    QT_WRAP_CPP(GLineoutOperator LIBG_SOURCES ${LIBG_MOC_SOURCES})
     ADD_LIBRARY(GLineoutOperator ${LIBG_SOURCES})
+    set_target_properties(GLineoutOperator PROPERTIES AUTOMOC ON)
     TARGET_LINK_LIBRARIES(GLineoutOperator visitcommon gui )
 
     ADD_LIBRARY(VLineoutOperator ${LIBV_SOURCES})

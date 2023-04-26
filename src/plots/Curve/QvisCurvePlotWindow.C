@@ -170,7 +170,7 @@ void
 QvisCurvePlotWindow::CreateDataTab(QWidget *pageData)
 {
     QGridLayout *topLayout = new QGridLayout(pageData);
-    topLayout->setMargin(5);
+    topLayout->setContentsMargins(5,5,5,5);
     topLayout->setSpacing(10);
 
     //
@@ -181,7 +181,7 @@ QvisCurvePlotWindow::CreateDataTab(QWidget *pageData)
     topLayout->addWidget(colorGroup);
 
     QGridLayout *colorLayout = new QGridLayout(colorGroup);
-    colorLayout->setMargin(5);
+    colorLayout->setContentsMargins(5,5,5,5);
     colorLayout->setSpacing(10);
  
     // Create the radio buttons for curve color source
@@ -215,7 +215,7 @@ QvisCurvePlotWindow::CreateDataTab(QWidget *pageData)
     colorLayout->addWidget(fillGroup, 1, 0, 1, 4);
 
     QGridLayout *fillLayout = new QGridLayout(fillGroup);
-    fillLayout->setMargin(5);
+    fillLayout->setContentsMargins(5,5,5,5);
     fillLayout->setSpacing(10);
 
     fillLayout->addWidget(new QLabel(tr("Fill mode"), central), 0, 0);
@@ -267,7 +267,7 @@ QvisCurvePlotWindow::CreateDataTab(QWidget *pageData)
     topLayout->addWidget(miscGroup);
 
     QGridLayout *miscLayout = new QGridLayout(miscGroup);
-    miscLayout->setMargin(5);
+    miscLayout->setContentsMargins(5,5,5,5);
     miscLayout->setSpacing(10);
  
     // Create the legend toggle
@@ -304,7 +304,7 @@ void
 QvisCurvePlotWindow::CreateGeometryTab(QWidget *pageGeometry)
 {
     QGridLayout *topLayout = new QGridLayout(pageGeometry);
-    topLayout->setMargin(5);
+    topLayout->setContentsMargins(5,5,5,5);
     topLayout->setSpacing(10);
 
     int ROW = 0;
@@ -317,7 +317,7 @@ QvisCurvePlotWindow::CreateGeometryTab(QWidget *pageGeometry)
     topLayout->addWidget(lineGroup);
 
     QGridLayout *lineLayout = new QGridLayout(lineGroup);
-    lineLayout->setMargin(5);
+    lineLayout->setContentsMargins(5,5,5,5);
     lineLayout->setSpacing(10);
 
     ROW = 0;
@@ -353,7 +353,7 @@ QvisCurvePlotWindow::CreateGeometryTab(QWidget *pageGeometry)
     topLayout->addWidget(pointGroup);
 
     QGridLayout *pointLayout = new QGridLayout(pointGroup);
-    pointLayout->setMargin(5);
+    pointLayout->setContentsMargins(5,5,5,5);
     pointLayout->setSpacing(10);
 
     ROW = 0;
@@ -488,7 +488,7 @@ void
 QvisCurvePlotWindow::CreateExtrasTab(QWidget *pageExtras)
 {
     QGridLayout *topLayout = new QGridLayout(pageExtras);
-    topLayout->setMargin(5);
+    topLayout->setContentsMargins(5,5,5,5);
     topLayout->setSpacing(10);
 
     //
@@ -499,7 +499,7 @@ QvisCurvePlotWindow::CreateExtrasTab(QWidget *pageExtras)
     topLayout->addWidget(timeCueGroup);
 
     QGridLayout *timeCueLayout = new QGridLayout(timeCueGroup);
-    timeCueLayout->setMargin(5);
+    timeCueLayout->setContentsMargins(5,5,5,5);
     timeCueLayout->setSpacing(10);
  
     doBallTimeCue = new QCheckBox(tr("Add Ball"), central);
@@ -558,7 +558,7 @@ QvisCurvePlotWindow::CreateExtrasTab(QWidget *pageExtras)
     topLayout->addWidget(coordSystemGroup);
 
     QGridLayout *coordSystemLayout = new QGridLayout(coordSystemGroup);
-    coordSystemLayout->setMargin(5);
+    coordSystemLayout->setContentsMargins(5,5,5,5);
     coordSystemLayout->setSpacing(10);
 
 
@@ -603,7 +603,7 @@ QvisCurvePlotWindow::CreateExtrasTab(QWidget *pageExtras)
 //     topLayout->addWidget(blankGroup);
 
 //     QGridLayout *blankLayout = new QGridLayout(blankGroup);
-//     blankLayout->setMargin(5);
+//     blankLayout->setContentsMargins(5,5,5,5);
 //     blankLayout->setSpacing(10);
  
 //     blankLayout->addWidget(new QLabel(tr(""), central), 0,0);

@@ -37,7 +37,7 @@ class GUI_API QvisColorSelectionWidget : public QWidget
 {
     Q_OBJECT
 public:
-    QvisColorSelectionWidget(QWidget *parent = 0, Qt::WindowFlags f = 0);
+    QvisColorSelectionWidget(QWidget *parent = 0, Qt::WindowFlags f = Qt::Widget);
     virtual ~QvisColorSelectionWidget();
     virtual QSize sizeHint() const;
 

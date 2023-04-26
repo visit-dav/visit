@@ -182,9 +182,9 @@ QvisLightingWindow::CreateWindowContents()
     lightGroupBox = new QGroupBox(central);
     lightGroupBox->setTitle(tr("Properties"));
     gLayout->addWidget(lightGroupBox, 1, 3, 1, 2);
-    gLayout->setMargin(10);
+    gLayout->setContentsMargins(10,10,10,10);
     QGridLayout *sLayout = new QGridLayout(lightGroupBox);
-    sLayout->setMargin(10);
+    sLayout->setContentsMargins(10,10,10,10);
     sLayout->setSpacing(10);
     sLayout->setRowMinimumHeight(0, 15);
 

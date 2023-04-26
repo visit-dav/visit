@@ -41,7 +41,7 @@ QvisHohlraumFluxQueryWidget::QvisHohlraumFluxQueryWidget(QWidget *parent,
     // Main layout for this widget
     // 
     QGridLayout *topLayout = new QGridLayout(this);
-    topLayout->setMargin(0);
+    topLayout->setContentsMargins(0,0,0,0);
     topLayout->setSpacing(10);
   
     // 

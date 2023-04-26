@@ -159,7 +159,7 @@ QvisHistogramPlotWindow::CreateWindowContents()
 
     QWidget     *binScaleWidget = new QWidget(histGroupBox);
     QHBoxLayout *binScaleLayout = new QHBoxLayout(binScaleWidget);    
-    binScaleLayout->setMargin(0);
+    binScaleLayout->setContentsMargins(0,0,0,0);
 
     QRadioButton *binLinearScale = new QRadioButton(tr("Linear"), binScaleWidget);
     QRadioButton *binLogScale = new QRadioButton(tr("Log"), binScaleWidget);
@@ -186,7 +186,7 @@ QvisHistogramPlotWindow::CreateWindowContents()
 
     histogramTypeWidget = new QWidget(central);
     QHBoxLayout *histogramTypeLayout = new QHBoxLayout(histogramTypeWidget);
-    histogramTypeLayout->setMargin(0);
+    histogramTypeLayout->setContentsMargins(0,0,0,0);
     
     QRadioButton *histogramTypeBinContributionFrequency =
       new QRadioButton(tr("Frequency"), histogramTypeWidget);
@@ -212,7 +212,7 @@ QvisHistogramPlotWindow::CreateWindowContents()
     hgLayout->addWidget(weightingGroup, 3, 0, 3, 5);
 
     QGridLayout *weightingLayout = new QGridLayout(weightingGroup);
-    weightingLayout->setMargin(5);
+    weightingLayout->setContentsMargins(5,5,5,5);
     weightingLayout->setSpacing(10);
 
 
@@ -221,7 +221,7 @@ QvisHistogramPlotWindow::CreateWindowContents()
     
     weightTypeWidget = new QWidget(histGroupBox);
     QHBoxLayout *weightTypeLayout = new QHBoxLayout(weightTypeWidget);
-    weightTypeLayout->setMargin(0);
+    weightTypeLayout->setContentsMargins(0,0,0,0);
     
     QRadioButton *weightTypeVolumeArea =
       new QRadioButton(tr("Area (2D) / Volume (3D)"), weightTypeWidget);
@@ -279,7 +279,7 @@ QvisHistogramPlotWindow::CreateWindowContents()
     hgLayout->addWidget(dataGroup, 6, 0, 3, 5);
 
     QGridLayout *dataLayout = new QGridLayout(dataGroup);
-    dataLayout->setMargin(5);
+    dataLayout->setContentsMargins(5,5,5,5);
     dataLayout->setSpacing(10);
 
     //
@@ -312,7 +312,7 @@ QvisHistogramPlotWindow::CreateWindowContents()
     dataLayout->addWidget(limitsGroup, 1, 0, 2, 5);
 
     QGridLayout *limitsLayout = new QGridLayout(limitsGroup);
-    limitsLayout->setMargin(5);
+    limitsLayout->setContentsMargins(5,5,5,5);
     limitsLayout->setSpacing(10);
 
     limitsLayout->addWidget( new QLabel(tr("Limits"), central), 0, 0);
@@ -393,7 +393,7 @@ QvisHistogramPlotWindow::CreateWindowContents()
 
     QWidget     *outputTypeWidget = new QWidget(styleGroupBox);
     QHBoxLayout *outputTypeLayout = new QHBoxLayout(outputTypeWidget);
-    outputTypeLayout->setMargin(0);
+    outputTypeLayout->setContentsMargins(0,0,0,0);
     
     QRadioButton *outputTypeOutputTypeCurve = new QRadioButton(tr("Curve"), outputTypeWidget);
     QRadioButton *outputTypeOutputTypeBlock = new QRadioButton(tr("Block"), outputTypeWidget);
