@@ -352,6 +352,7 @@ QvisColorTableWindow::CreateWindowContents()
     tagLabel = new QLabel(tr("Tags"), colorTableWidgetGroup);
     mgLayout->addWidget(tagLabel, 5, 0, 1, 1, Qt::AlignLeft);
     tagLineEdit = new QLineEdit(colorTableWidgetGroup);
+    tagLineEdit->setReadOnly(true);
     mgLayout->addWidget(tagLineEdit, 5, 1, 1, 5);
 
     // Tag editor
