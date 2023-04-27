@@ -96,6 +96,12 @@
 #    energy group bins.
 #     - More consistent query args for blueprint tests
 #     - Added slice tests for specific energy group bins.
+# 
+#    Justin Privitera, Wed Apr 26 14:07:01 PDT 2023
+#    The new conduit we are using for VisIt (0.8.7) can read in simple yaml
+#    and json (w/o bp index?) (bug was fixed) so I am updating the x ray query
+#    tests to take advantage of this and add tests back in for yaml and json
+#    cases.
 #
 # ----------------------------------------------------------------------------
 
@@ -626,7 +632,7 @@ def z_slice(zval, mesh_name):
     SliceAtts.meshName = mesh_name
     SetOperatorOptions(SliceAtts, 0, 1)
 
-def blueprint_test(output_type, outdir, testtextnumber, testname, hdf5 = False):
+def blueprint_test(output_type, outdir, testtextnumber, testname):
     for i in range(0, 2):
         setup_bp_test()
 
@@ -786,33 +792,32 @@ def blueprint_test(output_type, outdir, testtextnumber, testname, hdf5 = False):
 
         CloseDatabase(conduit_db)
 
-    if (hdf5):
-        units = UNITS_OFF if i == 0 else UNITS_ON
-        
-        qro = query_result_options(num_bins=3, abs_name="darr", emis_name="parr", \
-            bin_state=ENERGY_GROUP_BOUNDS, units=units, \
-            int_max=1, pl_max=892.02588)
-        test_bp_data(testname + str(i), conduit_db, qro) # bounds
-        
-        setup_bp_test()
-        
-        Query("XRay Image", output_type, outdir, 1, 0.0, 2.5, 10.0, 0, 0, 10., 10., 300, 200, ("d", "p"), [1,2,3])
-        qro = query_result_options(num_bins=1, abs_name="d", emis_name="p", \
-            bin_state=ENERGY_GROUP_BOUNDS_MISMATCH, units=UNITS_OFF, \
-            int_max=0.24153, pl_max=148.67099)
-        test_bp_data(testname + str(i), conduit_db, qro) # bounds mismatch
-        
-        Query("XRay Image", output_type, outdir, 1, 0.0, 2.5, 10.0, 0, 0, 10., 10., 300, 200, ("d", "p"))
-        qro = query_result_options(num_bins=1, abs_name="d", emis_name="p", \
-            bin_state=NO_ENERGY_GROUP_BOUNDS, units=UNITS_OFF, \
-            int_max=0.24153, pl_max=148.67099)
-        test_bp_data(testname + str(i), conduit_db, qro) # no bounds
-        
-        teardown_bp_test()
+    units = UNITS_OFF if i == 0 else UNITS_ON
+    
+    qro = query_result_options(num_bins=3, abs_name="darr", emis_name="parr", \
+        bin_state=ENERGY_GROUP_BOUNDS, units=units, \
+        int_max=1, pl_max=892.02588)
+    test_bp_data(testname + str(i), conduit_db, qro) # bounds
+    
+    setup_bp_test()
+    
+    Query("XRay Image", output_type, outdir, 1, 0.0, 2.5, 10.0, 0, 0, 10., 10., 300, 200, ("d", "p"), [1,2,3])
+    qro = query_result_options(num_bins=1, abs_name="d", emis_name="p", \
+        bin_state=ENERGY_GROUP_BOUNDS_MISMATCH, units=UNITS_OFF, \
+        int_max=0.24153, pl_max=148.67099)
+    test_bp_data(testname + str(i), conduit_db, qro) # bounds mismatch
+    
+    Query("XRay Image", output_type, outdir, 1, 0.0, 2.5, 10.0, 0, 0, 10., 10., 300, 200, ("d", "p"))
+    qro = query_result_options(num_bins=1, abs_name="d", emis_name="p", \
+        bin_state=NO_ENERGY_GROUP_BOUNDS, units=UNITS_OFF, \
+        int_max=0.24153, pl_max=148.67099)
+    test_bp_data(testname + str(i), conduit_db, qro) # no bounds
+    
+    teardown_bp_test()
 
-blueprint_test("hdf5", conduit_dir_hdf5, 32, "Blueprint_HDF5_X_Ray_Output", hdf5=True)
-blueprint_test("json", conduit_dir_json, 34, "Blueprint_JSON_X_Ray_Output", hdf5=False)
-blueprint_test("yaml", conduit_dir_yaml, 36, "Blueprint_YAML_X_Ray_Output", hdf5=False)
+blueprint_test("hdf5", conduit_dir_hdf5, 32, "Blueprint_HDF5_X_Ray_Output")
+blueprint_test("json", conduit_dir_json, 34, "Blueprint_JSON_X_Ray_Output")
+blueprint_test("yaml", conduit_dir_yaml, 36, "Blueprint_YAML_X_Ray_Output")
 
 # test detector height and width are always positive in blueprint output
 
