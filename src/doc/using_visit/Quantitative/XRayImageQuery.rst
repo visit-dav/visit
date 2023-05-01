@@ -2251,6 +2251,36 @@ And then we render the spatial energy reduced mesh:
 
    A visualization of the spatial energy reduced mesh using the x ray color table.
 
+Visualizing the 1D Spectra Curves
++++++++++++++++++++++++++++++++++
+
+Visualizing the :ref:`1D_Spectra_Curves` is slightly different than visualizing the other Blueprint meshes.
+Because the Blueprint mesh is 1-dimensional, VisIt will interpret it as a curve.
+So, instead of adding a Pseudocolor plot, we will add a Curve plot instead.
+
+::
+
+   # Make sure we have a clean slate for ensuing visualizations.
+   DeleteAllPlots()
+
+   # Add a curve plot of the intensities
+   AddPlot("Curve", "mesh_spectra_topo/intensities_spectra")
+
+   # Alternatively add a plot of the path length instead
+   # AddPlot("Curve", "mesh_spectra_topo/path_length_spectra")
+
+   DrawPlots()
+
+   # Remove the labels to clean up the image
+   SetActivePlots(0)
+   CurveAtts = CurveAttributes()
+   CurveAtts.showLabels = 0
+   SetPlotOptions(CurveAtts)
+
+.. figure:: images/TODO
+
+   A visualization of the 1D Spectra Curve mesh.
+
 .. _Introspecting_with_Python:
 
 Introspecting with Python
