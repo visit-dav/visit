@@ -2105,28 +2105,23 @@ DeleteOperatorKeyframe
 
 
 plotIndex : integer
-    A zero-based integer value corresponding to a plot's index in the plot
-    list.
+    A zero-based integer value corresponding to a plot's index in the plot list.
 
 operatorIndex : integer
     A zero-based integer value corresponding to an operators's index in the plot.
 
 frame : integer
-    A zero-based integer value corresponding to a plot keyframe at a
-    particular animation frame.
+    A zero-based integer value corresponding to a plot keyframe at a particular animation frame.
 
 
 **Description:**
 
-    The DeleteOperatorKeyframe function removes an operator keyframe from a
-    specific operator and plot. An operator keyframe is the set of operator
-    attributes at a specified frame. Operator keyframes are used to determine
-    what operator attributes will be used at a given animation frame when
-    VisIt's keyframing mode is enabled. The plotIndex argument is a zero-based
-    integer that is used to identify a plot in the plot list. The operatorIndex
-    is a zero-based integer that is used to identify an operator of a plot.
-    The frame argument is a zero-based integer that is used to identify the
-    frame at which a keyframe is to be removed.
+    The DeleteOperatorKeyframe function removes an operator keyframe from a specific operator and plot.
+    An operator keyframe is the set of operator attributes at a specified frame.
+    Operator keyframes are used to determine what operator attributes will be used at a given animation frame when VisIt's keyframing mode is enabled.
+    The plotIndex argument is a zero-based integer that is used to identify a plot in the plot list.
+    The operatorIndex is a zero-based integer that is used to identify an operator of a plot.
+    The frame argument is a zero-based integer that is used to identify the frame at which a keyframe is to be removed.
 
 
 **Example:**
@@ -2140,7 +2135,7 @@ frame : integer
   SetKeyframeAttributes(k)
   AddPlot("Pseudocolor", "hardyglobal")
   AddOperator("Slice")
-  # Set up operator keyframes so the Slice operators percent will change
+  # Set up operator keyframes so the Slice operator's percent will change
   # over time.
   s0 = SliceAttributes()
   s0.originType = s0.Percent
@@ -5686,9 +5681,7 @@ newFrame : integer
 
 **Description:**
 
-    MoveOperatorKeyframe moves a keyframe for an operator to a new animation
-    frame, which changes the operator attributes that are used for each
-    animation frame when VisIt is in keyframing mode.
+    MoveOperatorKeyframe moves a keyframe for an operator to a new animation frame, which changes the operator attributes that are used for each animation frame when VisIt is in keyframing mode.
 
 
 **Example:**
@@ -5702,7 +5695,7 @@ newFrame : integer
   SetKeyframeAttributes(k)
   AddPlot("Pseudocolor", "hardyglobal")
   AddOperator("Slice")
-  # Set up operator keyframes so the Slice operators percent will change
+  # Set up operator keyframes so the Slice operator's percent will change
   # over time.
   s0 = SliceAttributes()
   s0.originType = s0.Percent

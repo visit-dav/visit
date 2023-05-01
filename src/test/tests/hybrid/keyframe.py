@@ -491,7 +491,7 @@ SetTimeSliderState(10)
 slice.originPercent = 100
 SetOperatorOptions(slice)
 
-# Set 2 slice keyframes.
+# Set 2 isosurface keyframes.
 SetTimeSliderState(0)
 iso = IsosurfaceAttributes()
 SetOperatorOptions(iso)
