@@ -915,8 +915,6 @@ To learn more about the coordinate sets, topologies, and fields, see the :ref:`B
 Basic Mesh Output
 """""""""""""""""
 
-LEFT_OFF_HERE
-
 The most important piece of the Blueprint output is the actual query result.
 We have taken the image data that comes out of the query and packaged it into a single Blueprint mesh.
 
@@ -1667,7 +1665,7 @@ With VisIt, one need only draw a Mesh Plot of the ``mesh_ray_topo`` as opposed t
 Spatial Extents Meshes
 """"""""""""""""""""""
 
-The final pieces of the Conduit Output are two more meshes, the spatial extents mesh and the spatial energy reduced mesh.
+The spatial extents mesh and the spatial energy reduced mesh are two additional pieces that we include with the Conduit Output.
 
 .. figure:: images/XRay_Query_spatial_intensities_xray_front.png
 
@@ -1829,6 +1827,118 @@ We then duplicated the existing topology and fields from the :ref:`Basic_Mesh_Ou
    It is in 3D and the z dimension represents the energy group bounds, which in this example run from 0 to 12.
 
 To visualize this mesh with VisIt, see :ref:`Visualizing_with_VisIt`. To extract the spatial extents data from the Blueprint output, see :ref:`Introspecting_with_Python`.
+
+.. _1D_Spectra_Curves:
+
+1D Spectra Curves
+"""""""""""""""""
+
+To provide yet another view of the intensities and path lengths data, we include two curves, represented as blueprint meshes.
+
+.. figure:: images/TODO
+
+   One of the 1D Spectra Curves visualized using VisIt.
+
+Similar to the Spatial Energy Reduced Mesh (:ref:`Spatial_Extents_Meshes`), the provided mesh is a dimension collapse of the Spatial Extents Mesh.
+However, instead of collapsing the z dimension (energy group bounds) by taking a sum, we collapse the x and y dimensions (spatial extents).
+Thus we are left with a 1D curve, where for each energy group bin, there is one field value that is the result of summing the fields values (intensities or path lengths scaled by the spatial extents of each pixel) for each z-plane.
+There is one curve for the intensities and one curve for the path lengths.
+
+The following is the example from :ref:`Overview_of_Output`, but with the Blueprint mesh representing the 1D Spectra Curves fully realized:
+
+::
+
+  state: 
+    time: 4.8
+    cycle: 48
+    xray_view: 
+      ...
+    xray_query: 
+      ...
+    xray_data: 
+      ...
+    domain_id: 0
+  coordsets: 
+    image_coords: 
+      ...
+    spatial_coords: 
+      ...
+    spatial_energy_reduced_coords: 
+      ...
+    spectra_coords: 
+      type: "rectilinear"
+      values: 
+        x: [0.0, 1.0, 2.0, 3.0, 4.0]
+      units: 
+        x: "kev"
+      labels: 
+        x: "energy_group"
+    near_plane_coords: 
+      ...
+    view_plane_coords: 
+      ...
+    far_plane_coords: 
+      ...
+    ray_corners_coords: 
+      ...
+    ray_coords: 
+      ...
+  topologies: 
+    image_topo: 
+      ...
+    spatial_topo: 
+      ...
+    spatial_energy_reduced_topo: 
+      ...
+    spectra_topo: 
+      coordset: "spectra_coords"
+      type: "rectilinear"
+    near_plane_topo: 
+      ...
+    view_plane_topo: 
+      ...
+    far_plane_topo: 
+      ...
+    ray_corners_topo: 
+      ...
+    ray_topo: 
+      ...
+  fields: 
+    intensities: 
+      ...
+    path_length: 
+      ...
+    intensities_spatial: 
+      ...
+    path_length_spatial: 
+      ...
+    intensities_spatial_energy_reduced: 
+      ...
+    path_length_spatial_energy_reduced: 
+      ...
+    intensities_spectra: 
+      topology: "spectra_topo"
+      association: "element"
+      values: [1.64416097681804, 3.31540252150611, 6.65558651188286, 4.98593527287638]
+    path_length_spectra: 
+      topology: "spectra_topo"
+      association: "element"
+      values: [356.40441526888, 712.808830537761, 1425.61766107552, 1069.21324547146]
+    near_plane_field: 
+      ...
+    view_plane_field: 
+      ...
+    far_plane_field: 
+      ...
+    ray_corners_field: 
+      ...
+    ray_field: 
+      ...
+
+Again, we have the typical 3 components of a Blueprint mesh.
+This is no different than the other Blueprint meshes, despite the fact that this will be represented differently under the hood in VisIt to make it appear as a curve when plotted.
+
+To visualize this mesh with VisIt, see :ref:`Visualizing_with_VisIt`. To extract the field data from the Blueprint output, see :ref:`Introspecting_with_Python`.
 
 Pitfalls
 """"""""
