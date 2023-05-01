@@ -75,6 +75,9 @@ QvisConeWindow::~QvisConeWindow()
 //   Cyrus Harrison, Tue Aug 19 09:28:38 PDT 2008
 //   Qt4 Port - Autogen + changed some label titles, and removed lengthLabel.
 //
+//   Kathleen Biagas, Tue Apr 18 16:34:41 PDT 2023
+//   Support Qt6: buttonClicked -> idClicked.
+//
 // ****************************************************************************
 
 void
@@ -120,8 +123,13 @@ QvisConeWindow::CreateWindowContents()
     QRadioButton *representationRepresentationR_Theta = new QRadioButton(tr("Cylindrical"), representationWidget);
     representation->addButton(representationRepresentationR_Theta,2);
     representationLayout->addWidget(representationRepresentationR_Theta);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(representation, SIGNAL(buttonClicked(int)),
             this, SLOT(representationChanged(int)));
+#else
+    connect(representation, SIGNAL(idClicked(int)),
+            this, SLOT(representationChanged(int)));
+#endif
     mainLayout->addWidget(representationWidget, 3,1);
 
     upAxisLabel = new QLabel(tr("Up Axis"), central);

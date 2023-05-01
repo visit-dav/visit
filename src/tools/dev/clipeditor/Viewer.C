@@ -16,7 +16,7 @@
 #include <QEvent>
 
 Viewer::Viewer(QWidget *parent)
-    : QGLWidget(parent)
+    : QOpenGLWidget(parent)
 {
     mousedown = false;
     M.CreateIdentity();
@@ -146,7 +146,7 @@ Viewer::mousePressEvent(QMouseEvent *mev)
     lastx = mev->x();
     lasty = mev->y();
     mousedown = true;
-    updateGL();
+    update();
 }
 
 void
@@ -212,14 +212,14 @@ Viewer::mouseMoveEvent(QMouseEvent *mev)
     lastx = x;
     lasty = y;
 
-    updateGL();
+    update();
 }
 
 void
 Viewer::mouseReleaseEvent(QMouseEvent *mev)
 {
     mousedown = false;
-    updateGL();
+    update();
 }
 
 

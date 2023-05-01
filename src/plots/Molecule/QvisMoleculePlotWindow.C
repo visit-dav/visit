@@ -88,6 +88,9 @@ QvisMoleculePlotWindow::~QvisMoleculePlotWindow()
 //   Allen Sanderson, Sun Mar  7 12:49:56 PST 2010
 //   Change layout of window for 2.0 interface changes.
 //
+//   Kathleen Biagas, Tue Apr 18 16:34:41 PDT 2023
+//   Support Qt6: buttonClicked -> idClicked.
+//
 // ****************************************************************************
 
 void
@@ -232,8 +235,13 @@ QvisMoleculePlotWindow::CreateWindowContents()
     
     colorBondsGroup->addButton(colorBondsBondColoringModeColorByAtom, 0);
     colorBondsGroup->addButton(colorBondsBondColoringModeSingleColor, 1);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(colorBondsGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(colorBondsChanged(int)));
+#else
+    connect(colorBondsGroup, SIGNAL(idClicked(int)),
+            this, SLOT(colorBondsChanged(int)));
+#endif
     bondSingleColor = new QvisColorButton(bondsGroup);
     connect(bondSingleColor, SIGNAL(selectedColor(const QColor&)),
             this, SLOT(bondSingleColorChanged(const QColor&)));

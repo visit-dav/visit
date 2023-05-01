@@ -88,6 +88,9 @@ QvisIsosurfaceWindow::~QvisIsosurfaceWindow()
 //   Hank Childs, Mon Mar  8 19:45:46 PST 2010
 //   Make the min/max fields be left/right.
 //
+//   Kathleen Biagas, Tue Apr 18 16:34:41 PDT 2023
+//   Support Qt6: buttonClicked -> idClicked.
+//
 // ****************************************************************************
 
 void
@@ -169,8 +172,13 @@ QvisIsosurfaceWindow::CreateWindowContents()
     scalingButtons->button(0)->setChecked(true);
     
     // Each time a radio button is clicked, call the scaleClicked slot.
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(scalingButtons, SIGNAL(buttonClicked(int)),
             this, SLOT(scaleClicked(int)));
+#else
+    connect(scalingButtons, SIGNAL(idClicked(int)),
+            this, SLOT(scaleClicked(int)));
+#endif
 }
 
 

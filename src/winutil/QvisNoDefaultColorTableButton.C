@@ -164,7 +164,7 @@ QvisNoDefaultColorTableButton::~QvisNoDefaultColorTableButton()
 QSize
 QvisNoDefaultColorTableButton::sizeHint() const
 {
-     return QSize(125, 40).expandedTo(QApplication::globalStrut());
+     return QSize(125, 40);
 }
 
 // ****************************************************************************

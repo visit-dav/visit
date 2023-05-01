@@ -42,7 +42,7 @@ else()
 endif()
 
 target_link_libraries(vtkqt ${vtklibs} ${QT_QTCORE_LIBRARY} ${QT_QTGUI_LIBRARY}
-    ${QT_QTOPENGL_LIBRARY} ${OPENGL_LIBRARIES})
+    ${QT_QTOPENGL_LIBRARY} ${QT_QTPRINTSUPPORT_LIBRARY} ${OPENGL_LIBRARIES})
 
 if(HAVE_OSMESA)
     target_link_libraries(vtkqt ${OSMESA_LIBRARIES})

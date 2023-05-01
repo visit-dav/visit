@@ -4,7 +4,6 @@ QTextStream cOut(stdout);
 QTextStream cErr(stderr);
 QString     Endl("\n");
 
-#include <qxml.h>
 #include "Field.h"
 #include "Attribute.h"
 #include "Enum.h"

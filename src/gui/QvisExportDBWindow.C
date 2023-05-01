@@ -240,6 +240,9 @@ QvisExportDBWindow::SubjectRemoved(Subject *TheRemovedSubject)
 //   Kathleen Biagas, Mon Apr 26, 2021
 //   Add remote host to 'Directory name' if needed.
 //
+//   Kathleen Biagas, Tue Apr 18 16:34:41 PDT 2023
+//   Support Qt6: buttonClicked -> idClicked.
+//
 // ****************************************************************************
 
 void
@@ -347,8 +350,13 @@ QvisExportDBWindow::CreateWindowContents()
     varLayout->addWidget(rb0, 0, 1);
     varLayout->addWidget(rb1, 0, 2);
     rb0->setChecked(true);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(delimGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(delimiterChanged(int)));
+#else
+    connect(delimGroup, SIGNAL(idClicked(int)),
+            this, SLOT(delimiterChanged(int)));
+#endif
 
     varsButton = new QvisVariableButton(true, false, true, -1,varGroup);
     varsButton->setText(tr("Add variable"));
@@ -644,6 +652,9 @@ QvisExportDBWindow::Delimiter() const
 //   I added support for delimiters other than spaces.
 //   Work partially supported by DOE Grant SC0007548.
 //
+//   Kathleen Biagas, Tue Apr 11, 2023
+//   QString::SkipEmptyParts => Qt::SkipEmptyParts for Qt >= 6.
+//
 // ****************************************************************************
 
 void
@@ -703,7 +714,11 @@ QvisExportDBWindow::GetCurrentValues(int which_widget)
         QString temp;
         stringVector vars;
         temp = varsLineEdit->displayText().simplified();
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
         QStringList lst = temp.split(Delimiter(),QString::SkipEmptyParts);
+#else
+        QStringList lst = temp.split(Delimiter(),Qt::SkipEmptyParts);
+#endif
         
         QStringListIterator it(lst);
         while(it.hasNext())
