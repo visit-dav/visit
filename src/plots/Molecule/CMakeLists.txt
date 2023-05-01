@@ -18,9 +18,6 @@ MoleculeGUIPluginInfo.C
 QvisMoleculePlotWindow.C
 ${COMMON_SOURCES}
 )
-SET(LIBG_MOC_SOURCES
-QvisMoleculePlotWindow.h
-)
 
 SET(LIBV_SOURCES
 MoleculeViewerEnginePluginInfo.C
@@ -56,8 +53,8 @@ TARGET_LINK_LIBRARIES(IMoleculePlot visitcommon)
 SET(INSTALLTARGETS IMoleculePlot)
 
 IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
-    QT_WRAP_CPP(GMoleculePlot LIBG_SOURCES ${LIBG_MOC_SOURCES})
     ADD_LIBRARY(GMoleculePlot ${LIBG_SOURCES})
+    set_target_properties(GMoleculePlot PROPERTIES AUTOMOC ON)
     TARGET_LINK_LIBRARIES(GMoleculePlot visitcommon gui )
 
     ADD_LIBRARY(VMoleculePlot ${LIBV_SOURCES})

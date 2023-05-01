@@ -100,7 +100,7 @@ QvisToroidalPoloidalProjectionWindow::CreateWindowContents()
     centroidSource = new QWidget(central);
     centroidSourceButtonGroup= new QButtonGroup(centroidSource);
     QHBoxLayout *centroidSourceLayout = new QHBoxLayout(centroidSource);
-    centroidSourceLayout->setMargin(0);
+    centroidSourceLayout->setContentsMargins(0,0,0,0);
     centroidSourceLayout->setSpacing(10);
     QRadioButton *centroidSourceCentroidSourceManual = new QRadioButton(tr("Manual"), centroidSource);
     centroidSourceButtonGroup->addButton(centroidSourceCentroidSourceManual,0);

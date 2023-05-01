@@ -366,7 +366,7 @@ QvisLightingWidget::mousePressEvent(QMouseEvent *e)
         lastY =-( (float)(e->y()*2)/(float)height() - 1.);
         mouseDown = true;
     }
-    else if (e->button() == Qt::MidButton)
+    else if (e->button() == Qt::MiddleButton)
     {
         view2=m3du_create_identity_matrix();
         renderer.set_view_matrix(mtx_mult(view,view2));

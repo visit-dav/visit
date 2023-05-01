@@ -63,7 +63,7 @@ QvisPointControl::QvisPointControl(QWidget *parent,
 
     // Create the top layout.
     QGridLayout *topLayout = new QGridLayout(this);
-    topLayout->setMargin(0);
+    topLayout->setContentsMargins(0,0,0,0);
     topLayout->setSpacing(10);
 
     // Create the type combo box

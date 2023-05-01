@@ -33,7 +33,7 @@ VisItChangeUsernameWindow::VisItChangeUsernameWindow(QWidget *parent) :
     setWindowTitle(tr("Choose new username"));
 
     QVBoxLayout *layout = new QVBoxLayout(this);
-    layout->setMargin(10);
+    layout->setContentsMargins(10,10,10,10);
 
     QHBoxLayout *l2 = new QHBoxLayout;
     layout->addLayout(l2);

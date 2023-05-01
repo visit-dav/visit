@@ -21,9 +21,6 @@ VolumeGUIPluginInfo.C
 QvisVolumePlotWindow.C
 ${COMMON_SOURCES}
 )
-SET(LIBG_MOC_SOURCES
-QvisVolumePlotWindow.h
-)
 
 SET(LIBV_SOURCES
 VolumeViewerEnginePluginInfo.C
@@ -96,8 +93,8 @@ if(TARGET VTK::RenderingRayTracing)
 endif()
 
 IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
-    QT_WRAP_CPP(GVolumePlot LIBG_SOURCES ${LIBG_MOC_SOURCES})
     ADD_LIBRARY(GVolumePlot ${LIBG_SOURCES})
+    set_target_properties(GVolumePlot PROPERTIES AUTOMOC ON)
     TARGET_LINK_LIBRARIES(GVolumePlot visitcommon gui )
 
     ADD_LIBRARY(VVolumePlot ${LIBV_SOURCES})

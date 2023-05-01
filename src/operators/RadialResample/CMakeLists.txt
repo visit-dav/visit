@@ -18,9 +18,6 @@ RadialResampleGUIPluginInfo.C
 QvisRadialResampleWindow.C
 ${COMMON_SOURCES}
 )
-SET(LIBG_MOC_SOURCES
-QvisRadialResampleWindow.h
-)
 
 SET(LIBV_SOURCES
 RadialResampleViewerEnginePluginInfo.C
@@ -48,8 +45,8 @@ TARGET_LINK_LIBRARIES(IRadialResampleOperator visitcommon)
 SET(INSTALLTARGETS IRadialResampleOperator)
 
 IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
-    QT_WRAP_CPP(GRadialResampleOperator LIBG_SOURCES ${LIBG_MOC_SOURCES})
     ADD_LIBRARY(GRadialResampleOperator ${LIBG_SOURCES})
+    set_target_properties(GRadialResampleOperator PROPERTIES AUTOMOC ON)
     TARGET_LINK_LIBRARIES(GRadialResampleOperator visitcommon gui )
 
     ADD_LIBRARY(VRadialResampleOperator ${LIBV_SOURCES})

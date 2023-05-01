@@ -18,9 +18,6 @@ ProjectGUIPluginInfo.C
 QvisProjectWindow.C
 ${COMMON_SOURCES}
 )
-SET(LIBG_MOC_SOURCES
-QvisProjectWindow.h
-)
 
 SET(LIBV_SOURCES
 ProjectViewerEnginePluginInfo.C
@@ -48,8 +45,8 @@ TARGET_LINK_LIBRARIES(IProjectOperator visitcommon)
 SET(INSTALLTARGETS IProjectOperator)
 
 IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
-    QT_WRAP_CPP(GProjectOperator LIBG_SOURCES ${LIBG_MOC_SOURCES})
     ADD_LIBRARY(GProjectOperator ${LIBG_SOURCES})
+    set_target_properties(GProjectOperator PROPERTIES AUTOMOC ON)
     TARGET_LINK_LIBRARIES(GProjectOperator visitcommon gui )
 
     ADD_LIBRARY(VProjectOperator ${LIBV_SOURCES})

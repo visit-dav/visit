@@ -18,9 +18,6 @@ IntegralCurveGUIPluginInfo.C
 QvisIntegralCurveWindow.C
 ${COMMON_SOURCES}
 )
-SET(LIBG_MOC_SOURCES
-QvisIntegralCurveWindow.h
-)
 
 SET(LIBV_SOURCES
 IntegralCurveViewerEnginePluginInfo.C
@@ -48,8 +45,8 @@ TARGET_LINK_LIBRARIES(IIntegralCurveOperator visitcommon)
 SET(INSTALLTARGETS IIntegralCurveOperator)
 
 IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
-    QT_WRAP_CPP(GIntegralCurveOperator LIBG_SOURCES ${LIBG_MOC_SOURCES})
     ADD_LIBRARY(GIntegralCurveOperator ${LIBG_SOURCES})
+    set_target_properties(GIntegralCurveOperator PROPERTIES AUTOMOC ON)
     TARGET_LINK_LIBRARIES(GIntegralCurveOperator visitcommon gui )
 
     ADD_LIBRARY(VIntegralCurveOperator ${LIBV_SOURCES})

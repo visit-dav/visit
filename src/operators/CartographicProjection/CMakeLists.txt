@@ -18,9 +18,6 @@ CartographicProjectionGUIPluginInfo.C
 QvisCartographicProjectionWindow.C
 ${COMMON_SOURCES}
 )
-SET(LIBG_MOC_SOURCES
-QvisCartographicProjectionWindow.h
-)
 
 SET(LIBV_SOURCES
 CartographicProjectionViewerEnginePluginInfo.C
@@ -48,8 +45,8 @@ TARGET_LINK_LIBRARIES(ICartographicProjectionOperator visitcommon)
 SET(INSTALLTARGETS ICartographicProjectionOperator)
 
 IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
-    QT_WRAP_CPP(GCartographicProjectionOperator LIBG_SOURCES ${LIBG_MOC_SOURCES})
     ADD_LIBRARY(GCartographicProjectionOperator ${LIBG_SOURCES})
+    set_target_properties(GCartographicProjectionOperator PROPERTIES AUTOMOC ON)
     TARGET_LINK_LIBRARIES(GCartographicProjectionOperator visitcommon gui )
 
     ADD_LIBRARY(VCartographicProjectionOperator ${LIBV_SOURCES})

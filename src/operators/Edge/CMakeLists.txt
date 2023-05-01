@@ -18,9 +18,6 @@ EdgeGUIPluginInfo.C
 QvisEdgeWindow.C
 ${COMMON_SOURCES}
 )
-SET(LIBG_MOC_SOURCES
-QvisEdgeWindow.h
-)
 
 SET(LIBV_SOURCES
 EdgeViewerEnginePluginInfo.C
@@ -48,8 +45,8 @@ TARGET_LINK_LIBRARIES(IEdgeOperator visitcommon)
 SET(INSTALLTARGETS IEdgeOperator)
 
 IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
-    QT_WRAP_CPP(GEdgeOperator LIBG_SOURCES ${LIBG_MOC_SOURCES})
     ADD_LIBRARY(GEdgeOperator ${LIBG_SOURCES})
+    set_target_properties(GEdgeOperator PROPERTIES AUTOMOC ON)
     TARGET_LINK_LIBRARIES(GEdgeOperator visitcommon gui )
 
     ADD_LIBRARY(VEdgeOperator ${LIBV_SOURCES})

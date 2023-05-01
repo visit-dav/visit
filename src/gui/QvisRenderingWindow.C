@@ -144,7 +144,7 @@ QvisRenderingWindow::CreateBasicPage()
     QWidget *basicOptions = new QWidget(central);
     QGridLayout *basicLayout = new QGridLayout(basicOptions);
     basicLayout->setSpacing(5);
-    basicLayout->setMargin(10);
+    basicLayout->setContentsMargins(10,10,10,10);
 
     // Create the antialiasing widgets.
     antialiasingToggle = new QCheckBox(tr("Antialiasing"), basicOptions);
@@ -419,7 +419,7 @@ QvisRenderingWindow::CreateAdvancedPage()
     QWidget *advancedOptions = new QWidget(central);
     QGridLayout *advLayout = new QGridLayout(advancedOptions);
     advLayout->setSpacing(5);
-    advLayout->setMargin(10);
+    advLayout->setContentsMargins(10,10,10,10);
 
     // Create the scalable rendering widgets.
     QLabel *scalrenLabel = new QLabel(tr("Use scalable rendering"), advancedOptions);
@@ -627,7 +627,7 @@ QvisRenderingWindow::CreateAdvancedPage()
     row++;
 
     QGridLayout *osprayLayout = new QGridLayout(osprayGroup);
-    osprayLayout->setMargin(5);
+    osprayLayout->setContentsMargins(5,5,5,5);
     osprayLayout->setSpacing(10);
 
     int orow  = 0;
@@ -700,7 +700,7 @@ QvisRenderingWindow::CreateInformationPage()
     QWidget *info = new QWidget(central);
     QVBoxLayout *vLayout = new QVBoxLayout(info);
     vLayout->addSpacing(10);
-    vLayout->setMargin(10);
+    vLayout->setContentsMargins(10,10,10,10);
 
     renderNotifyToggle = new QCheckBox(tr("Query after each render"), info);
     connect(renderNotifyToggle, SIGNAL(toggled(bool)),

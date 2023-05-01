@@ -51,7 +51,7 @@ class GUI_API QvisColorGridWidget : public QvisGridWidget
 {
     Q_OBJECT
 public:
-    QvisColorGridWidget(QWidget *parent = 0, Qt::WindowFlags f = 0);
+    QvisColorGridWidget(QWidget *parent = 0, Qt::WindowFlags f = Qt::Widget);
     virtual ~QvisColorGridWidget();
 
     void setSelectedColor(const QColor &c);

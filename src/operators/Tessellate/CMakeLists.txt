@@ -18,9 +18,6 @@ TessellateGUIPluginInfo.C
 QvisTessellateWindow.C
 ${COMMON_SOURCES}
 )
-SET(LIBG_MOC_SOURCES
-QvisTessellateWindow.h
-)
 
 SET(LIBV_SOURCES
 TessellateViewerEnginePluginInfo.C
@@ -48,8 +45,8 @@ TARGET_LINK_LIBRARIES(ITessellateOperator visitcommon)
 SET(INSTALLTARGETS ITessellateOperator)
 
 IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
-    QT_WRAP_CPP(GTessellateOperator LIBG_SOURCES ${LIBG_MOC_SOURCES})
     ADD_LIBRARY(GTessellateOperator ${LIBG_SOURCES})
+    set_target_properties(GTessellateOperator PROPERTIES AUTOMOC ON)
     TARGET_LINK_LIBRARIES(GTessellateOperator visitcommon gui )
 
     ADD_LIBRARY(VTessellateOperator ${LIBV_SOURCES})

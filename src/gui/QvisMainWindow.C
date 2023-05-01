@@ -3,23 +3,24 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 #include <QApplication>
-#include <QLabel>
 #include <QCheckBox>
-#include <QFrame>
-#include <QLayout>
-#include <QPixmap>
-#include <QMenuBar>
-#include <QMenu>
+#include <QCloseEvent>
 #include <QComboBox>
+#include <QFrame>
+#include <QHideEvent>
+#include <QLabel>
+#include <QLayout>
+#include <QMenu>
+#include <QMenuBar>
+#include <QPixmap>
+#include <QPushButton>
+#include <QRect>
+#include <QScreen>
+#include <QShowEvent>
 #include <QSplitter>
 #include <QStatusBar>
-#include <QPushButton>
 #include <QTimer>
 #include <QToolTip>
-#include <QDesktopWidget>
-#include <QCloseEvent>
-#include <QHideEvent>
-#include <QShowEvent>
 
 #include <QvisMainWindow.h>
 #include <QvisFilePanel.h>
@@ -346,6 +347,9 @@
 //
 //   Eric Brugger, Thu Aug  5 11:21:21 PDT 2021
 //   Removed support for SeedMe.
+//
+//   Kathleen Biagas, Wed Apr  5 13:04:35 PDT 2023
+//   Replace obosolete desktop() with primaryScreen().
 //
 // ****************************************************************************
 #include <InstallationFunctions.h>
@@ -742,7 +746,7 @@ QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
     spinModeAct = winPopup->addAction(tr("Spin mode"),
                                      this, SLOT(toggleSpinMode()));
 
-    if(qApp->desktop()->height() < MIN_WINDOW_HEIGHT_BEFORE_POSTING_MAIN)
+    if(qApp->primaryScreen()->geometry().height() < MIN_WINDOW_HEIGHT_BEFORE_POSTING_MAIN)
     {
         splitter = 0;
 
@@ -758,7 +762,7 @@ QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
         pmw->ContentsWidget()->setMinimumHeight(400);
         CreateMainContents(pmw);
 
-        SetDefaultSplitterSizes(qApp->desktop()->height());
+        SetDefaultSplitterSizes(qApp->primaryScreen()->geometry().height());
 
         // Post the window
         pmw->post(true);
@@ -769,7 +773,7 @@ QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
 
         QWidget *central = new QWidget(this);
         QVBoxLayout *layout = new QVBoxLayout(central);
-        layout->setMargin(5);
+        layout->setContentsMargins(5,5,5,5);
         setCentralWidget(central);
 
         layout->addWidget(CreateGlobalArea(central));
@@ -784,7 +788,7 @@ QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
         notepad = new QvisNotepadArea(splitter);
 
         // May want to read these from the config file but here are the defaults.
-        SetDefaultSplitterSizes(qApp->desktop()->height());
+        SetDefaultSplitterSizes(qApp->primaryScreen()->geometry().height());
     }
 
     // Add the Help menu
@@ -1026,7 +1030,7 @@ QvisMainWindow::CreateMainContents(QSplitter *parent)
 
     QWidget *mainControls = new QWidget(parent);
     QVBoxLayout *layout = new QVBoxLayout(mainControls);
-    layout->setMargin(0);
+    layout->setContentsMargins(0,0,0,0);
 
     sourceManager = new QvisSourceManagerWidget(mainControls);
     sourceManager->ConnectPlotList(GetViewerState()->GetPlotList());
@@ -1083,7 +1087,7 @@ QvisMainWindow::CreateMainContents(QvisPostableMainWindow *win)
 
     splitter = new QSplitter(win->ContentsWidget());
     splitter->setOrientation(Qt::Vertical);
-    win->ContentsLayout()->setMargin(3);
+    win->ContentsLayout()->setContentsMargins(3,3,3,3);
     win->ContentsLayout()->addWidget(splitter);
     CreateMainContents(splitter);
 }
@@ -1141,7 +1145,7 @@ QvisMainWindow::CreateGlobalArea(QWidget *par)
 {
     QGroupBox *globalArea = new QGroupBox(tr("Global"), par);
     QHBoxLayout *globalLayout = new QHBoxLayout(globalArea);
-    globalLayout->setMargin(5);
+    globalLayout->setContentsMargins(5,5,5,5);
 
     activeWindowComboBox = new QComboBox(globalArea);
     connect(activeWindowComboBox, SIGNAL(activated(int)),

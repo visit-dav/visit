@@ -18,9 +18,6 @@ WellBoreGUIPluginInfo.C
 QvisWellBorePlotWindow.C
 ${COMMON_SOURCES}
 )
-SET(LIBG_MOC_SOURCES
-QvisWellBorePlotWindow.h
-)
 
 SET(LIBV_SOURCES
 WellBoreViewerEnginePluginInfo.C
@@ -53,8 +50,8 @@ TARGET_LINK_LIBRARIES(IWellBorePlot visitcommon)
 SET(INSTALLTARGETS IWellBorePlot)
 
 IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
-    QT_WRAP_CPP(GWellBorePlot LIBG_SOURCES ${LIBG_MOC_SOURCES})
     ADD_LIBRARY(GWellBorePlot ${LIBG_SOURCES})
+    set_target_properties(GWellBorePlot PROPERTIES AUTOMOC ON)
     TARGET_LINK_LIBRARIES(GWellBorePlot visitcommon gui )
 
     ADD_LIBRARY(VWellBorePlot ${LIBV_SOURCES})

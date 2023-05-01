@@ -152,7 +152,7 @@ SpreadsheetViewer::SpreadsheetViewer(ViewerPlot *p, QWidget *parent) :
     setCentralWidget(top);
     QVBoxLayout *topLayout = new QVBoxLayout(top);
     topLayout->setSpacing(5);
-    topLayout->setMargin(10);
+    topLayout->setContentsMargins(10,10,10,10);
 #if defined(Q_OS_MAC)
     QWidget *menuContainer = new QWidget(top);
     QHBoxLayout *menuLayout = new QHBoxLayout(menuContainer);
@@ -169,7 +169,7 @@ SpreadsheetViewer::SpreadsheetViewer(ViewerPlot *p, QWidget *parent) :
     layout->addWidget(controls3D, 10);
     QVBoxLayout *inner3D = new QVBoxLayout(controls3D);
     inner3D->addSpacing(10);
-    inner3D->setMargin(10);
+    inner3D->setContentsMargins(10,10,10,10);
     QGridLayout *layout3D = new QGridLayout(0);
     inner3D->addLayout(layout3D);
     layout3D->setSpacing(5);
@@ -198,7 +198,7 @@ SpreadsheetViewer::SpreadsheetViewer(ViewerPlot *p, QWidget *parent) :
             this, SLOT(normalChanged(int)));
     normalRadioButtons = new QWidget(controls3D);
     QHBoxLayout *nLayout = new QHBoxLayout(normalRadioButtons);
-    nLayout->setMargin(0);
+    nLayout->setContentsMargins(0,0,0,0);
     layout3D->addWidget(normalRadioButtons, 1, 1);
     QRadioButton *rb = new QRadioButton(tr("X"), normalRadioButtons);
     normalButtonGroup->addButton(rb, 0);

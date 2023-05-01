@@ -40,6 +40,9 @@ class vtkDataArray;
 //
 //      Cyrus Harrison, Thu Dec 15 14:43:47 PST 2022
 //      Added topo arg to FieldToVTK.
+// 
+//      Justin Privitera, Wed Mar 22 16:09:52 PDT 2023
+//      Added Curve1DToVTK to handle the 1d curve case.
 //
 // ****************************************************************************
 
@@ -64,6 +67,10 @@ public:
         /// so topology rides along to help with those cases
         static vtkDataArray*  FieldToVTK(const conduit::Node &topo,
                                          const conduit::Node &field);
+
+        /// support 1D meshes
+        static vtkDataSet*    Curve1DToVTK(const conduit::Node &coords,
+                                           const conduit::Node &field);
     };
 
     class AVTBLUEPRINT_API VTKToBlueprint

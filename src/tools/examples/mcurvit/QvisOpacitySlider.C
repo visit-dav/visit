@@ -23,7 +23,7 @@ static int sliderStartVal = 0;
 // ****************************************************************************
 // Method: QvisOpacitySlider::QvisOpacitySlider
 //
-// Purpose: 
+// Purpose:
 //   Constructor for the QvisOpacitySlider class.
 //
 // Arguments:
@@ -40,7 +40,7 @@ static int sliderStartVal = 0;
 //
 // ****************************************************************************
 
-QvisOpacitySlider::QvisOpacitySlider(QWidget *parent, const void *data) : 
+QvisOpacitySlider::QvisOpacitySlider(QWidget *parent, const void *data) :
     QAbstractSlider(parent)
 {
     init();
@@ -50,7 +50,7 @@ QvisOpacitySlider::QvisOpacitySlider(QWidget *parent, const void *data) :
 // ****************************************************************************
 // Method: QvisOpacitySlider::QvisOpacitySlider
 //
-// Purpose: 
+// Purpose:
 //   Constructor for the QvisOpacitySlider class.
 //
 // Arguments:
@@ -87,14 +87,14 @@ QvisOpacitySlider::QvisOpacitySlider(int minValue, int maxValue, int step,
 // ****************************************************************************
 // Method: QvisOpacitySlider::~QvisOpacitySlider
 //
-// Purpose: 
+// Purpose:
 //   Destructor for the QvisOpacitySlider class.
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Dec 7 12:18:17 PDT 2000
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 QvisOpacitySlider::~QvisOpacitySlider()
@@ -105,14 +105,16 @@ QvisOpacitySlider::~QvisOpacitySlider()
 // ****************************************************************************
 // Method: QvisOpacitySlider::init
 //
-// Purpose: 
+// Purpose:
 //   Initializes certain object attributes.
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Dec 7 12:18:36 PDT 2000
 //
 // Modifications:
-//   
+//   Kathleen Biagas, Wed Apr  5 15:11:57 PDT 2023
+//   Replace obsolete QPalette::Background with QPalette::Window.
+//
 // ****************************************************************************
 
 void
@@ -136,14 +138,14 @@ QvisOpacitySlider::init()
 // ****************************************************************************
 // Method: QvisOpacitySlider::initTicks
 //
-// Purpose: 
+// Purpose:
 //   Does what's needed when someone changes the tickmark status.
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Dec 7 12:19:28 PDT 2000
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -155,7 +157,7 @@ QvisOpacitySlider::initTicks()
 // ****************************************************************************
 // Method: QvisOpacitySlider::positionFromValue
 //
-// Purpose: 
+// Purpose:
 //   Calculates slider position corresponding to a value.
 //
 // Arguments:
@@ -167,7 +169,7 @@ QvisOpacitySlider::initTicks()
 // Creation:   Thu Dec 7 12:20:07 PDT 2000
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 int
@@ -180,7 +182,7 @@ QvisOpacitySlider::positionFromValue(int value) const
 // ****************************************************************************
 // Method: QvisOpacitySlider::available
 //
-// Purpose: 
+// Purpose:
 //   Returns the available space in which the slider can move.
 //
 // Returns:    The available space in which the slider can move
@@ -203,7 +205,7 @@ QvisOpacitySlider::available() const
 // ****************************************************************************
 // Method: QvisOpacitySlider::valueFromPosition
 //
-// Purpose: 
+// Purpose:
 //   Calculates value corresponding to slider position.
 //
 // Returns:    Value corresponding to slider position.
@@ -212,7 +214,7 @@ QvisOpacitySlider::available() const
 // Creation:   Thu Dec 7 12:22:34 PDT 2000
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 int
@@ -226,14 +228,14 @@ QvisOpacitySlider::valueFromPosition(int position) const
 // ****************************************************************************
 // Method: QvisOpacitySlider::rangeChange
 //
-// Purpose: 
+// Purpose:
 //   Implements the virtual QAbstractSlider function.
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Dec 7 12:23:15 PDT 2000
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -247,7 +249,7 @@ QvisOpacitySlider::rangeChange()
 // ****************************************************************************
 // Method: QvisOpacitySlider::paletteChange
 //
-// Purpose: 
+// Purpose:
 //   This method is called when the palette changes. The slider uses this
 //   opportunity to redraw with its new gradient.
 //
@@ -255,7 +257,7 @@ QvisOpacitySlider::rangeChange()
 // Creation:   Thu Sep 6 14:55:16 PST 2001
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -268,7 +270,7 @@ QvisOpacitySlider::paletteChange(const QPalette &)
 // ****************************************************************************
 // Method: QvisOpacitySlider::sliderRect
 //
-// Purpose: 
+// Purpose:
 //   Returns the slider handle rectangle.
 //
 // Returns:    The slider handle rectangle.
@@ -277,7 +279,7 @@ QvisOpacitySlider::paletteChange(const QPalette &)
 // Creation:   Thu Dec 7 12:26:38 PDT 2000
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 QRect
@@ -289,7 +291,7 @@ QvisOpacitySlider::sliderRect() const
 // ****************************************************************************
 // Method: QvisOpacitySlider::reallyMoveSlider
 //
-// Purpose: 
+// Purpose:
 //   Performs the actual moving of the slider.
 //
 // Arguments:
@@ -307,7 +309,7 @@ QvisOpacitySlider::sliderRect() const
 //
 // ****************************************************************************
 
-void 
+void
 QvisOpacitySlider::reallyMoveSlider(int newPos)
 {
     QRect oldR = sliderRect();
@@ -331,7 +333,7 @@ QvisOpacitySlider::reallyMoveSlider(int newPos)
 // ****************************************************************************
 // Method: QvisOpacitySlider::sliderLength
 //
-// Purpose: 
+// Purpose:
 //   Returns the width of the slider handle.
 //
 // Returns:    The width of the slider handle.
@@ -340,7 +342,7 @@ QvisOpacitySlider::reallyMoveSlider(int newPos)
 // Creation:   Thu Dec 7 12:38:54 PDT 2000
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 int
@@ -356,7 +358,7 @@ QvisOpacitySlider::sliderLength() const
 // Creation:   Thu Dec 7 12:39:24 PDT 2000
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 int
@@ -368,7 +370,7 @@ QvisOpacitySlider::maximumSliderDragDistance() const
 // ****************************************************************************
 // Method: QvisOpacitySlider::paintSlider
 //
-// Purpose: 
+// Purpose:
 //   Paints the slider button.
 //
 // Arguments:
@@ -379,7 +381,7 @@ QvisOpacitySlider::maximumSliderDragDistance() const
 // Creation:   Thu Dec 7 12:27:21 PDT 2000
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -396,7 +398,7 @@ QvisOpacitySlider::paintSlider( QPainter *p, const QPalette &,
 // ****************************************************************************
 // Method: QvisOpacitySlider::drawSliderGroove
 //
-// Purpose: 
+// Purpose:
 //   Draws the groove on which the slider handle slides.
 //
 // Arguments:
@@ -428,7 +430,7 @@ QvisOpacitySlider::drawSliderGroove(QPainter *p, int x, int y, int w, int,
 // ****************************************************************************
 // Method: QvisOpacitySlider::drawSlider
 //
-// Purpose: 
+// Purpose:
 //   Draws the slider handle.
 //
 // Arguments:
@@ -501,7 +503,7 @@ QvisOpacitySlider::drawSlider(QPainter *p, int x, int y, int w, int h)
 // ****************************************************************************
 // Method: QvisOpacitySlider::drawTicks
 //
-// Purpose: 
+// Purpose:
 //   Draws the slider's tick marks.
 //
 // Arguments:
@@ -514,7 +516,7 @@ QvisOpacitySlider::drawSlider(QPainter *p, int x, int y, int w, int h)
 // Creation:   Thu Dec 7 13:13:53 PST 2000
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -526,7 +528,7 @@ QvisOpacitySlider::drawTicks(QPainter *p, int dist, int w, int i) const
 // ****************************************************************************
 // Method: QvisOpacitySlider::drawTicks
 //
-// Purpose: 
+// Purpose:
 //   Draws the slider's tick marks.
 //
 // Arguments:
@@ -563,7 +565,7 @@ QvisOpacitySlider::drawTicks( QPainter *p, const QPalette& g, int dist,
 // ****************************************************************************
 // Method: QvisOpacitySlider::textPadding
 //
-// Purpose: 
+// Purpose:
 //   Returns the distance from the slider to the text.
 //
 // Returns:    The distance from the slider to the text.
@@ -572,7 +574,7 @@ QvisOpacitySlider::drawTicks( QPainter *p, const QPalette& g, int dist,
 // Creation:   Thu Nov 13 10:23:56 PDT 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 int
@@ -584,7 +586,7 @@ QvisOpacitySlider::textPadding() const
 // ****************************************************************************
 // Method: QvisOpacitySlider::imageWidth
 //
-// Purpose: 
+// Purpose:
 //   Returns the width of the pixmap area, which is the width of the whole
 //   widget minus the width if the text that we want to display.
 //
@@ -594,7 +596,7 @@ QvisOpacitySlider::textPadding() const
 // Creation:   Thu Nov 13 09:45:41 PDT 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 int
@@ -606,7 +608,7 @@ QvisOpacitySlider::imageWidth() const
 // ****************************************************************************
 // Method: QvisOpacitySlider::paintValueText
 //
-// Purpose: 
+// Purpose:
 //   Draws the value text at the specified location.
 //
 // Arguments:
@@ -621,6 +623,9 @@ QvisOpacitySlider::imageWidth() const
 //   Brad Whitlock, Thu Jun  5 14:29:03 PDT 2008
 //   Qt 4.
 //
+//   Kathleen Biagas, Tue Apr 11, 2023
+//   Replace obsolete QString::sprintf with QString::arg.
+//
 // ****************************************************************************
 
 void
@@ -630,7 +635,7 @@ QvisOpacitySlider::paintValueText(QPainter *p, const QPalette &cg, int x,
     // Create the text that we have to display.
     int v = (state == Dragging) ? (valueFromPosition(sliderPos)) : value();
     float t = float(v - minimum()) / float(maximum() - minimum());
-    QString txt; txt.sprintf("%d%%", int(t * 100.f));
+    QString txt = QString("%1%").arg(int(t * 100.f));
 
     // Figure out the y offset.
     int dy = h - fontMetrics().height();
@@ -644,8 +649,8 @@ QvisOpacitySlider::paintValueText(QPainter *p, const QPalette &cg, int x,
 // ****************************************************************************
 // Method: QvisOpacitySlider::createGradientImage
 //
-// Purpose: 
-//   Creates the opacity gradient pixmap that is used as the slider's 
+// Purpose:
+//   Creates the opacity gradient pixmap that is used as the slider's
 //   background pixmap.
 //
 // Programmer: Brad Whitlock
@@ -665,6 +670,9 @@ QvisOpacitySlider::paintValueText(QPainter *p, const QPalette &cg, int x,
 //
 //   Brad Whitlock, Thu Jun  5 14:17:51 PDT 2008
 //   Qt 4.
+//
+//   Kathleen Biagas, Wed Apr  5 15:11:57 PDT 2023
+//   Replace obsolete QPalette::Background with QPalette::Window.
 //
 // ****************************************************************************
 
@@ -706,7 +714,7 @@ QvisOpacitySlider::createGradientImage()
     {
         QLinearGradient grad(QPointF(0.,0.), QPointF(1.,0.));
         grad.setCoordinateMode(QGradient::ObjectBoundingMode);
-        grad.setColorAt(0., palette().color(QPalette::Background));
+        grad.setColorAt(0., palette().color(QPalette::Window));
         grad.setColorAt(1., gradientColor);
         QBrush gradBrush(grad);
         paint.fillRect(0, 0, w, h, gradBrush);
@@ -724,14 +732,14 @@ QvisOpacitySlider::createGradientImage()
 // ****************************************************************************
 // Method: QvisOpacitySlider::deleteGradientImage
 //
-// Purpose: 
+// Purpose:
 //   Delete the gradient pixmap.
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Dec 7 12:31:26 PDT 2000
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -747,7 +755,7 @@ QvisOpacitySlider::deleteGradientImage()
 // ****************************************************************************
 // Method: QvisOpacitySlider::setGradientColor
 //
-// Purpose: 
+// Purpose:
 //   Sets the color used to generate the gradient pixmap.
 //
 // Arguments:
@@ -779,14 +787,14 @@ QvisOpacitySlider::setGradientColor(const QColor &color)
 // ****************************************************************************
 // Method: QvisOpacitySlider::resizeEvent
 //
-// Purpose: 
+// Purpose:
 //   Called when the widget needs to be resized.
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Dec 7 12:24:59 PDT 2000
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -803,7 +811,7 @@ QvisOpacitySlider::resizeEvent(QResizeEvent *)
 // ****************************************************************************
 // Method: QvisOpacitySlider::paintEvent
 //
-// Purpose: 
+// Purpose:
 //   This method is called when the widget gets a paint event. It redraws the
 //   widget.
 //
@@ -820,6 +828,9 @@ QvisOpacitySlider::resizeEvent(QResizeEvent *)
 //   Brad Whitlock, Thu Nov 13 09:48:31 PDT 2003
 //   I made the width smaller so we could display the percent.
 //
+//   Kathleen Biagas, Wed Apr  5 15:11:57 PDT 2023
+//   Replace obsolete QPalette::Background with QPalette::Window.
+//
 // ****************************************************************************
 
 void
@@ -833,7 +844,7 @@ QvisOpacitySlider::paintEvent(QPaintEvent *)
         createGradientImage();
     p.drawImage(0, tickOffset, *gradientImage);
 
-    // Draw the groove on which the slider slides.    
+    // Draw the groove on which the slider slides.
     drawSliderGroove(&p, 0, tickOffset, imageWidth(), thickness(), mid);
 
     // Figure out the interval between the tick marks.
@@ -847,9 +858,9 @@ QvisOpacitySlider::paintEvent(QPaintEvent *)
 
     // Draw the tick marks.
     p.fillRect(0, 0, imageWidth(), tickOffset,
-               palette().brush(QPalette::Background));
+               palette().brush(QPalette::Window));
     p.fillRect(0, tickOffset + thickness(), imageWidth(), height(),
-               palette().brush(QPalette::Background));
+               palette().brush(QPalette::Window));
     drawTicks(&p, palette(), 0, tickOffset - 2, interval);
 
     // Draw the slider
@@ -863,7 +874,7 @@ QvisOpacitySlider::paintEvent(QPaintEvent *)
     {
         QStyleOptionFocusRect so;
         so.initFrom(this);
-        style()->drawPrimitive(QStyle::PE_FrameFocusRect, 
+        style()->drawPrimitive(QStyle::PE_FrameFocusRect,
                                &so,
                                &p);
     }
@@ -872,7 +883,7 @@ QvisOpacitySlider::paintEvent(QPaintEvent *)
 // ****************************************************************************
 // Method: QvisOpacitySlider::mousePressEvent
 //
-// Purpose: 
+// Purpose:
 //   This method is called when the mouse is pressed in this widget.
 //
 // Arguments:
@@ -904,7 +915,7 @@ QvisOpacitySlider::mousePressEvent(QMouseEvent *e)
         clickOffset = (int)(e->pos().x() - sliderPos);
 //    emit sliderPressed();
     }
-    else if(e->button() == Qt::MidButton)
+    else if(e->button() == Qt::MiddleButton)
     {
         int pos = e->pos().x();
         moveSlider(pos - sliderLength() / 2);
@@ -936,7 +947,7 @@ QvisOpacitySlider::mousePressEvent(QMouseEvent *e)
 // ****************************************************************************
 // Method: QvisOpacitySlider::mouseMoveEvent
 //
-// Purpose: 
+// Purpose:
 //   This method is called when the mouse is moved in this widget.
 //
 // Arguments:
@@ -946,7 +957,7 @@ QvisOpacitySlider::mousePressEvent(QMouseEvent *e)
 // Creation:   Thu Dec 7 12:46:37 PDT 2000
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -974,7 +985,7 @@ QvisOpacitySlider::mouseMoveEvent(QMouseEvent *e)
 // ****************************************************************************
 // Method: QvisOpacitySlider::wheelEvent
 //
-// Purpose: 
+// Purpose:
 //   This method is called when the widget gets a wheel event.
 //
 // Arguments:
@@ -984,7 +995,7 @@ QvisOpacitySlider::mouseMoveEvent(QMouseEvent *e)
 // Creation:   Thu Dec 7 12:48:10 PDT 2000
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -997,7 +1008,7 @@ QvisOpacitySlider::wheelEvent(QWheelEvent * e)
         offset_owner = this;
         offset = 0;
     }
-    offset += -e->delta()*qMax(pageStep(),singleStep())/120;
+    offset += -e->angleDelta().y()*qMax(pageStep(),singleStep())/120;
     if(qAbs(offset)<1)
         return;
     setValue( value() + int(offset) );
@@ -1007,14 +1018,14 @@ QvisOpacitySlider::wheelEvent(QWheelEvent * e)
 // ****************************************************************************
 // Method: QvisOpacitySlider::mouseReleaseEvent
 //
-// Purpose: 
+// Purpose:
 //   This method is called when the mouse button is released in the widget.
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Dec 7 12:48:56 PDT 2000
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1026,7 +1037,7 @@ QvisOpacitySlider::mouseReleaseEvent(QMouseEvent *)
 // ****************************************************************************
 // Method: QvisOpacitySlider::moveSlider
 //
-// Purpose: 
+// Purpose:
 //   Moves the left (or top) edge of the slider to position pos. Performs
 //   snapping.
 //
@@ -1037,7 +1048,7 @@ QvisOpacitySlider::mouseReleaseEvent(QMouseEvent *)
 // Creation:   Thu Dec 7 12:51:00 PDT 2000
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1054,14 +1065,14 @@ QvisOpacitySlider::moveSlider(int pos)
 // ****************************************************************************
 // Method: QvisOpacitySlider::resetState
 //
-// Purpose: 
+// Purpose:
 //   Resets all state information and stops the timer
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Dec 7 12:52:13 PDT 2000
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1092,14 +1103,14 @@ QvisOpacitySlider::resetState()
 // ****************************************************************************
 // Method: QvisOpacitySlider::keyPressEvent
 //
-// Purpose: 
+// Purpose:
 //   Called when the widget needs to respond to a key press.
 //
 // Arguments:
 //
-// Returns:    
+// Returns:
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Dec 7 12:53:45 PDT 2000
@@ -1147,7 +1158,7 @@ QvisOpacitySlider::keyPressEvent(QKeyEvent *e)
 // ****************************************************************************
 // Method: QvisOpacitySlider::setValue
 //
-// Purpose: 
+// Purpose:
 //   Makes QAbstractSlider::setValue() available as a slot.
 //
 // Arguments:
@@ -1177,7 +1188,7 @@ QvisOpacitySlider::setValue(int value)
 // ****************************************************************************
 // Method: QvisOpacitySlider::setEnabled
 //
-// Purpose: 
+// Purpose:
 //   Sets the widget's enabled state and causes it to repaint if necessary.
 //
 // Arguments:
@@ -1187,7 +1198,7 @@ QvisOpacitySlider::setValue(int value)
 // Creation:   Thu Jan 31 09:25:55 PDT 2002
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1202,14 +1213,14 @@ QvisOpacitySlider::setEnabled(bool val)
 // ****************************************************************************
 // Method: QvisOpacitySlider::addStep
 //
-// Purpose: 
+// Purpose:
 //   Moves the slider one pageStep() upwards.
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Dec 7 13:20:52 PST 2000
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1221,14 +1232,14 @@ QvisOpacitySlider::addStep()
 // ****************************************************************************
 // Method: QvisOpacitySlider::subtractStep
 //
-// Purpose: 
+// Purpose:
 //   Moves the slider one pageStep() downwards.
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Dec 7 13:21:16 PST 2000
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1240,14 +1251,14 @@ QvisOpacitySlider::subtractStep()
 // ****************************************************************************
 // Method: QvisOpacitySlider::repeatTimeout
 //
-// Purpose: 
+// Purpose:
 //   Waits for autorepeat.
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Dec 7 13:21:35 PST 2000
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1267,7 +1278,7 @@ QvisOpacitySlider::repeatTimeout()
 // ****************************************************************************
 // Method: QvisOpacitySlider::sizeHint
 //
-// Purpose: 
+// Purpose:
 //   Returns the widget's preferred size.
 //
 // Returns:    The widget's preferred size.
@@ -1276,7 +1287,7 @@ QvisOpacitySlider::repeatTimeout()
 // Creation:   Thu Dec 7 13:20:15 PST 2000
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 QSize
@@ -1295,7 +1306,7 @@ QvisOpacitySlider::sizeHint() const
 // ****************************************************************************
 // Method: QvisOpacitySlider::minimumSizeHint
 //
-// Purpose: 
+// Purpose:
 //   Returns the widget's minimum size.
 //
 // Returns:    The widget's minimum size.
@@ -1304,7 +1315,7 @@ QvisOpacitySlider::sizeHint() const
 // Creation:   Thu Dec 7 13:19:43 PST 2000
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 QSize
@@ -1319,7 +1330,7 @@ QvisOpacitySlider::minimumSizeHint() const
 // ****************************************************************************
 // Method: QvisOpacitySlider::sizePolicy
 //
-// Purpose: 
+// Purpose:
 //   Returns the widget's size policy.
 //
 // Returns:    The widget's size policy.
@@ -1328,7 +1339,7 @@ QvisOpacitySlider::minimumSizeHint() const
 // Creation:   Thu Dec 7 13:17:36 PST 2000
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 QSizePolicy
@@ -1340,7 +1351,7 @@ QvisOpacitySlider::sizePolicy() const
 // ****************************************************************************
 // Method: QvisOpacitySlider::thickness
 //
-// Purpose: 
+// Purpose:
 //   Returns the number of pixels to use for the business part of the
 //    slider (i.e. the non-tickmark portion). The remaining space is shared
 //    equally between the tickmark regions. This function and  sizeHint()
@@ -1351,7 +1362,7 @@ QvisOpacitySlider::sizePolicy() const
 // Creation:   Thu Dec 7 13:18:07 PST 2000
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 int
@@ -1370,7 +1381,7 @@ QvisOpacitySlider::thickness() const
 // ****************************************************************************
 // Method: QvisOpacitySlider::setTickInterval
 //
-// Purpose: 
+// Purpose:
 //   Sets a new tick interval.
 //
 // Arguments:
@@ -1380,7 +1391,7 @@ QvisOpacitySlider::thickness() const
 // Creation:   Thu Dec 7 13:18:58 PST 2000
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1417,14 +1428,14 @@ QvisOpacitySlider::subtractLine()
 // ****************************************************************************
 // Method: QvisOpacitySlider::valueChanged
 //
-// Purpose: 
+// Purpose:
 //   Implements the virtual QAbstractSlider function.
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Dec 7 12:23:57 PDT 2000
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void

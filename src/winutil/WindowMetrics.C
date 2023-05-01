@@ -5,7 +5,8 @@
 #include "WindowMetrics.h"
 #include <visitstream.h>
 #include <QApplication>
-#include <QDesktopWidget>
+#include <QRect>
+#include <QScreen>
 
 #if defined(Q_OS_WIN)
 #include <windows.h>
@@ -143,17 +144,16 @@ WindowMetrics::WindowMetrics()
 //    Use Qt to get the information since it does a better job with platform-
 //    specific issues like the Mac dock and multiple screens.
 //
+//    Kathleen Biagas, Wed Apr  5 13:04:35 PDT 2023
+//    Replace obosolete desktop() with primaryScreen().
+//
 // ****************************************************************************
 void
 WindowMetrics::CalculateScreen(QWidget *win,
                                int &screenX, int &screenY,
                                int &screenW, int &screenH)
 {
-    QRect rect;
-    if(win != NULL)
-        rect = qApp->desktop()->availableGeometry(win);
-    else
-        rect = qApp->desktop()->availableGeometry();
+    QRect rect = qApp->primaryScreen()->geometry();
     screenX = rect.x();
 #if defined(Q_OS_MAC)
     screenY = 0;
@@ -350,7 +350,6 @@ WindowMetrics::CalculateTopLeft(QWidget *w, int &X, int &Y)
 }
 
 #elif defined(Q_OS_MAC)
-#include <QDesktopWidget>
 
 //
 // MacOS coding
@@ -449,6 +448,9 @@ WindowMetrics::CalculateTopLeft(QWidget *w, int &X, int &Y)
 //    Jeremy Meredith, Tue Sep 25 14:38:46 PDT 2001
 //    Made standalone function.
 //
+//    Kathleen Biagas, Wed Apr  5 13:04:35 PDT 2023
+//    Replace obosolete desktop() with primaryScreen().
+//
 // ****************************************************************************
 
 void
@@ -495,8 +497,8 @@ WindowMetrics::CalculateBorders(QWidget *win,
     int border_width = leaf_attributes.border_width;
     int big_height = 0, big_width = 0;
 
-    int desktop_width  = qApp->desktop()->width();
-    int desktop_height = qApp->desktop()->height();
+    int desktop_width  = qApp->primaryScreen()->geometry().width();
+    int desktop_height = qApp->primaryScreen()->geometry().height();
 
     // Start progressing up the tree.
     int count = 0;

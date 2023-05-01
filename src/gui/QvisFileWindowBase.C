@@ -417,7 +417,7 @@ QvisFileWindowBase::CreateHostPathFilterControls()
             this, SLOT(hostChanged(int)));
     QHBoxLayout *hostLayout = new QHBoxLayout();
     hostLayout->setSpacing(5);
-    hostLayout->setMargin(0);
+    hostLayout->setContentsMargins(0,0,0,0);
     QLabel *hostLabel = new QLabel(tr("Host"), central);
     QLabel *hostImageLabel = new QLabel(central);
     hostImageLabel->setPixmap(*computerPixmap);
@@ -436,7 +436,7 @@ QvisFileWindowBase::CreateHostPathFilterControls()
             this, SLOT(pathChanged(int)));
     QHBoxLayout *pathLayout2 = new QHBoxLayout;
     pathLayout2->setSpacing(5);
-    pathLayout2->setMargin(0);
+    pathLayout2->setContentsMargins(0,0,0,0);
 
     QLabel *pathLabel = new QLabel(tr("Path"), central);
     QLabel *pathImageLabel = new QLabel(central);
@@ -459,7 +459,7 @@ QvisFileWindowBase::CreateHostPathFilterControls()
     topLayout->addLayout(toggleLayout);
     toggleLayout->setSpacing(10);
     QVBoxLayout *toggleVLayout = new QVBoxLayout(0);
-    toggleVLayout->setMargin(0);
+    toggleVLayout->setContentsMargins(0,0,0,0);
     toggleLayout->addLayout(toggleVLayout);
     currentDirToggle = new QCheckBox(tr("Use \"current working directory\" by default"), central);
     connect(currentDirToggle, SIGNAL(toggled(bool)),

@@ -314,6 +314,9 @@ QvisPlotListBoxItem::textX() const
 //   Kathleen Biagas, Wed Apr 6, 2022
 //   Fix QT_VERSION test to use Qt's QT_VERSION_CHECK.
 //
+//   Kathleen Biagas, Wed Apr  5 15:11:57 PDT 2023
+//   Replace obsolete QPalette::Background with QPalette::Window.
+//
 // ****************************************************************************
 
 void QvisPlotListBoxItem::paint(QPainter *painter)
@@ -335,7 +338,7 @@ void QvisPlotListBoxItem::paint(QPainter *painter)
     if(!isSelected())
     {
         painter->fillRect(0, 0, (bw << 1) + 3, bw + 1,
-                          listWidget()->palette().brush(QPalette::Background));
+                          listWidget()->palette().brush(QPalette::Window));
     }
     else
     {
@@ -777,6 +780,9 @@ QvisPlotListBoxItem::setTextPen(QPainter *painter, bool highlightText) const
 //   Cyrus Harrison, Mon Jul  7 13:39:58 PDT 2008
 //   Initial Qt4 Port.
 //
+//   Kathleen Biagas, Wed Apr  5 15:11:57 PDT 2023
+//   Replace obsolete QPalette::Background with QPalette::Window.
+//
 // ****************************************************************************
 
 void
@@ -784,7 +790,7 @@ QvisPlotListBoxItem::drawButtonSurface(QPainter *painter, const QRect &r) const
 {
     // Draw the button background.
     painter->fillRect(r.x() + 1, r.y() + 1, r.width() - 3, r.height() - 3,
-                      listWidget()->palette().brush(QPalette::Background));
+                      listWidget()->palette().brush(QPalette::Window));
 
     // Draw the highlights.
     int x0 = r.x();

@@ -5,7 +5,6 @@
 #include <QApplication>
 #include <QCheckBox>
 #include <QComboBox>
-#include <QDesktopWidget>
 #include <QEvent>
 #include <QLabel>
 #include <QLayout>
@@ -217,7 +216,7 @@ QvisFileOpenWindow::CreateWindowContents()
     //
     QWidget     *directoryWidget = new QWidget(listSplitter);
     QVBoxLayout *directoryVBox = new QVBoxLayout(directoryWidget);
-    directoryVBox->setMargin(0);
+    directoryVBox->setContentsMargins(0,0,0,0);
     directoryVBox->addWidget(new QLabel(tr("Directories"), directoryWidget));
 
     directoryList = new QListWidget(directoryWidget);
@@ -238,7 +237,7 @@ QvisFileOpenWindow::CreateWindowContents()
     //
     QWidget     *fileWidget = new QWidget(listSplitter);
     QVBoxLayout *fileVBox = new QVBoxLayout(fileWidget );
-    fileVBox->setMargin(0);
+    fileVBox->setContentsMargins(0,0,0,0);
 
     fileVBox->addWidget(new QLabel(tr("Files"), listSplitter));
     fileList = CreateFileListWidget(listSplitter);

@@ -18,9 +18,6 @@ ExtractPointFunction2DGUIPluginInfo.C
 QvisExtractPointFunction2DWindow.C
 ${COMMON_SOURCES}
 )
-SET(LIBG_MOC_SOURCES
-QvisExtractPointFunction2DWindow.h
-)
 
 SET(LIBV_SOURCES
 ExtractPointFunction2DViewerEnginePluginInfo.C
@@ -48,8 +45,8 @@ TARGET_LINK_LIBRARIES(IExtractPointFunction2DOperator visitcommon)
 SET(INSTALLTARGETS IExtractPointFunction2DOperator)
 
 IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
-    QT_WRAP_CPP(GExtractPointFunction2DOperator LIBG_SOURCES ${LIBG_MOC_SOURCES})
     ADD_LIBRARY(GExtractPointFunction2DOperator ${LIBG_SOURCES})
+    set_target_properties(GExtractPointFunction2DOperator PROPERTIES AUTOMOC ON)
     TARGET_LINK_LIBRARIES(GExtractPointFunction2DOperator visitcommon gui )
 
     ADD_LIBRARY(VExtractPointFunction2DOperator ${LIBV_SOURCES})

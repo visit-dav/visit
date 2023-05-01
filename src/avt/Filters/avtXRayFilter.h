@@ -79,6 +79,9 @@
 // 
 //    Justin Privitera, Mon Dec 12 13:28:55 PST 2022
 //    SetImageProperties now takes avtVectors for a few arguments.
+// 
+//    Justin Privitera, Wed Mar 29 13:48:51 PDT 2023
+//    Added CalculateImagingPlaneDims().
 //
 // ****************************************************************************
 
@@ -115,6 +118,19 @@ class AVTFILTERS_API avtXRayFilter : public avtDatasetToDatasetFilter
     void                            SetBackgroundIntensities(double *, int);
     void                            SetDebugRay(int);
     void                            SetOutputRayBounds(bool);
+    static void                     CalculateImagingPlaneDims(const double &parallelScale,
+                                                              const int (&imageSize)[2],
+                                                              const bool &perspective,
+                                                              const double &viewAngle,
+                                                              const double &nearPlane,
+                                                              const double &farPlane,
+                                                              const double &imageZoom,
+                                                              double &nearHeight,
+                                                              double &nearWidth,
+                                                              double &viewHeight,
+                                                              double &viewWidth,
+                                                              double &farHeight,
+                                                              double &farWidth);
 
   protected:
     std::string                     absVarName;

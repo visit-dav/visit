@@ -83,7 +83,7 @@ QvisMacroWindow::CreateWindowContents()
 //    macroGroup->setMinimumHeight(100);
     topLayout->addWidget(macroGroup);
     QVBoxLayout *innerMacroLayout = new QVBoxLayout(macroGroup);
-    innerMacroLayout->setMargin(10);
+    innerMacroLayout->setContentsMargins(10,10,10,10);
     innerMacroLayout->addSpacing(15);
 
     // Create the button layout.

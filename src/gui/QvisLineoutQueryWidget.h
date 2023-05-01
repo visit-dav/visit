@@ -34,7 +34,7 @@ class GUI_API QvisLineoutQueryWidget : public QWidget
 {
     Q_OBJECT
 public:
-    QvisLineoutQueryWidget(QWidget *parent = 0, Qt::WindowFlags f = 0);
+    QvisLineoutQueryWidget(QWidget *parent = 0, Qt::WindowFlags f = Qt::Widget);
     virtual ~QvisLineoutQueryWidget();
 
     bool                GetQueryParameters(MapNode &);

@@ -45,7 +45,7 @@ QvisNotepadArea::QvisNotepadArea(QWidget *parent) : QWidget(parent),
     postedLookup()
 {
     QVBoxLayout *topLayout = new QVBoxLayout(this);
-    topLayout->setMargin(0);
+    topLayout->setContentsMargins(0,0,0,0);
 
     tabs = new QTabWidget(this);
     topLayout->addWidget(tabs);
@@ -267,7 +267,7 @@ QvisNotepadArea::postWindow(QvisPostableWindow *pw, bool avoid_scroll)
             // posted before it is ever shown.
             QWidget *intermediate = new QWidget(tabs);
             QVBoxLayout *intermediateLayout = new QVBoxLayout(intermediate);
-            intermediateLayout->setMargin(0);
+            intermediateLayout->setContentsMargins(0,0,0,0);
             pw->GetCentralWidget()->setParent(intermediate);
             intermediateLayout->addWidget(pw->GetCentralWidget());
 

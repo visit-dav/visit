@@ -335,7 +335,7 @@ QvisVCRControl::QvisVCRControl(QWidget *parent) : QWidget(parent)
 
     // Create the top layout.
     QHBoxLayout *topLayout = new QHBoxLayout(this);
-    topLayout->setMargin(0);
+    topLayout->setContentsMargins(0,0,0,0);
 #if defined(Q_OS_MAC)
     topLayout->setSpacing(1);
 #else

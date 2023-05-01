@@ -13,6 +13,9 @@
 #   Brad Whitlock, Thu Oct 20 15:42:10 PDT 2011
 #   Fix static build.
 #
+#   Kathleen Biagas, Thu Mar 30, 2023
+#   Use AUTOMOC target property instead of QT_WRAP_CPP macro.
+#
 #****************************************************************************
 
 SET(SOURCES1
@@ -32,20 +35,6 @@ IF(VISIT_STATIC)
     SET(STATIC_SOURCES1 ${CMAKE_CURRENT_SOURCE_DIR}/../../../viewer/main/ViewerStaticSymbolLocator.C)
     SET(STATIC_SOURCES2 ${CMAKE_CURRENT_SOURCE_DIR}/../../../viewer/main/ViewerStaticSymbolLocator.C)
 ENDIF(VISIT_STATIC)
-
-# The subset of the sources that have Q_OBJECT in their header.
-SET(MOC_SOURCES1
-CommandParser.h
-SimpleVisApp.h
-Synchronizer.h
-)
-QT_WRAP_CPP(embedded SOURCES1 ${MOC_SOURCES1})
-
-# The subset of the sources that have Q_OBJECT in their header.
-SET(MOC_SOURCES2
-MultiWindowVisApp.h
-)
-QT_WRAP_CPP(multiwindow SOURCES2 ${MOC_SOURCES2})
 
 INCLUDE_DIRECTORIES(
 ${CMAKE_CURRENT_SOURCE_DIR}
@@ -96,6 +85,11 @@ ELSE(NOT APPLE)
 #    SET(MACOSX_BUNDLE_BUNDLE_VERSION       ${VISIT_VERSION})
 #    SET(MACOSX_BUNDLE_COPYRIGHT            "Copyright (c) 2000 - 2023, Lawrence Livermore National Security, LLC")
 ENDIF(NOT APPLE)
+
+
+set_target_properties(embedded PROPERTIES AUTOMOC ON)
+set_target_properties(multiwindow PROPERTIES AUTOMOC ON)
+
 
 SET(VIEWER_QT_LIBS 
 ${QT_QTGUI_LIBRARY}

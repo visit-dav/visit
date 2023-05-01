@@ -18,9 +18,6 @@ ThreeSliceGUIPluginInfo.C
 QvisThreeSliceWindow.C
 ${COMMON_SOURCES}
 )
-SET(LIBG_MOC_SOURCES
-QvisThreeSliceWindow.h
-)
 
 SET(LIBV_SOURCES
 ThreeSliceViewerEnginePluginInfo.C
@@ -48,8 +45,8 @@ TARGET_LINK_LIBRARIES(IThreeSliceOperator visitcommon)
 SET(INSTALLTARGETS IThreeSliceOperator)
 
 IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
-    QT_WRAP_CPP(GThreeSliceOperator LIBG_SOURCES ${LIBG_MOC_SOURCES})
     ADD_LIBRARY(GThreeSliceOperator ${LIBG_SOURCES})
+    set_target_properties(GThreeSliceOperator PROPERTIES AUTOMOC ON)
     TARGET_LINK_LIBRARIES(GThreeSliceOperator visitcommon gui )
 
     ADD_LIBRARY(VThreeSliceOperator ${LIBV_SOURCES})

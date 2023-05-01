@@ -84,7 +84,7 @@ QvisSurfaceNormalWindow::CreateWindowContents()
     centering = new QWidget(central);
     centeringButtonGroup= new QButtonGroup(centering);
     QHBoxLayout *centeringLayout = new QHBoxLayout(centering);
-    centeringLayout->setMargin(0);
+    centeringLayout->setContentsMargins(0,0,0,0);
     centeringLayout->setSpacing(10);
     QRadioButton *centeringCenteringPoint = new QRadioButton(tr("Point"), centering);
     centeringButtonGroup->addButton(centeringCenteringPoint,0);

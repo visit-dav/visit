@@ -196,7 +196,7 @@ QvisHelpWindow::CreateWindowContents()
     helpIndexTab = new QWidget(helpTabs);
     QVBoxLayout *helpIndexLayout = new QVBoxLayout(helpIndexTab);
     helpIndexLayout->setSpacing(5);
-    helpIndexLayout->setMargin(5);
+    helpIndexLayout->setContentsMargins(5,5,5,5);
     helpTabs->addTab(helpIndexTab, tr("&Index"));
     a = new QAction(this);
     a->setShortcut(QKeySequence(Qt::Key_Alt, Qt::Key_I));
@@ -216,7 +216,7 @@ QvisHelpWindow::CreateWindowContents()
     helpBookmarksTab = new QWidget(helpTabs);
     QVBoxLayout *helpBookmarksLayout = new QVBoxLayout(helpBookmarksTab);
     helpBookmarksLayout->setSpacing(10);
-    helpBookmarksLayout->setMargin(5);
+    helpBookmarksLayout->setContentsMargins(5,5,5,5);
     helpTabs->addTab(helpBookmarksTab, tr("&Bookmarks"));
     a = new QAction(this);
     a->setShortcut(QKeySequence(Qt::Key_Alt, Qt::Key_B));
@@ -225,7 +225,7 @@ QvisHelpWindow::CreateWindowContents()
     QWidget *bookmarkHBox = new QWidget(helpBookmarksTab);
     QHBoxLayout *bookmarkHBoxLayout = new QHBoxLayout(bookmarkHBox);
     bookmarkHBoxLayout->setSpacing(20);
-    bookmarkHBoxLayout->setMargin(0);
+    bookmarkHBoxLayout->setContentsMargins(0,0,0,0);
     helpBookmarksLayout->addWidget(bookmarkHBox);
     addBookmarkButton = new QPushButton(tr("Add"), bookmarkHBox);
     bookmarkHBoxLayout->addWidget(addBookmarkButton);

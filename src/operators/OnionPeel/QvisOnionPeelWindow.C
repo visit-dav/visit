@@ -118,7 +118,7 @@ void
 QvisOnionPeelWindow::CreateWindowContents()
 {
     QGridLayout *mainLayout = new QGridLayout(0);
-    mainLayout->setMargin(0);
+    mainLayout->setContentsMargins(0,0,0,0);
     topLayout->addLayout(mainLayout);
 
     //

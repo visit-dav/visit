@@ -110,7 +110,7 @@ QvisCinemaWizard::QvisCinemaWizard(AttributeSubject *atts, QWidget *parent) :
 
     QWidget *sideW = new QWidget(0);
     QVBoxLayout *sLayout = new QVBoxLayout(sideW);
-    sLayout->setMargin(0);
+    sLayout->setContentsMargins(0,0,0,0);
     sLayout->setSpacing(0);
     QPixmap logo;
     std::string logoFilename = GetVisItResourcesFile(VISIT_RESOURCES_IMAGES, "cinema-watermark.png");
@@ -267,7 +267,7 @@ QvisCinemaWizard::CreateFilenameControl(QWidget *parent)
     QWidget *filenameParent = new QWidget(parent);
     QHBoxLayout *oLayout = new QHBoxLayout(filenameParent);
     oLayout->setSpacing(0);
-    oLayout->setMargin(0);
+    oLayout->setContentsMargins(0,0,0,0);
 
     page0_fileNameLineEdit = new QLineEdit(filenameParent);
     page0_fileNameLineEdit->setMinimumWidth(300);
@@ -315,14 +315,14 @@ QvisCinemaWizard::CreateMainPage()
 
     QVBoxLayout *pageLayout = new QVBoxLayout(page0);
     pageLayout->setSpacing(10);
-    pageLayout->setMargin(5);
+    pageLayout->setContentsMargins(5,5,5,5);
 
     //
     // Database settings.
     //
     QGroupBox *gbDB = new QGroupBox(tr("Database settings"), page0);
     QGridLayout *dbLayout = new QGridLayout(gbDB);
-    dbLayout->setMargin(5);
+    dbLayout->setContentsMargins(5,5,5,5);
     pageLayout->addWidget(gbDB);
 
     QLabel *filenameLabel = new QLabel(tr("File name"), gbDB);
@@ -352,7 +352,7 @@ QvisCinemaWizard::CreateMainPage()
     //
     QGroupBox *gbImage = new QGroupBox(tr("Image settings"), page0);
     QGridLayout *iLayout = new QGridLayout(gbImage);
-    iLayout->setMargin(5);
+    iLayout->setContentsMargins(5,5,5,5);
     pageLayout->addWidget(gbImage);
 
     iLayout->addWidget(new QLabel(tr("File format"), gbImage));
@@ -397,7 +397,7 @@ QvisCinemaWizard::CreateMainPage()
     //
     QGroupBox *gbCamera = new QGroupBox(tr("Camera"), page0);
     QGridLayout *cLayout = new QGridLayout(gbCamera);
-    cLayout->setMargin(5);
+    cLayout->setContentsMargins(5,5,5,5);
     pageLayout->addWidget(gbCamera);
 
     QLabel *ctLabel = new QLabel(tr("Camera type"), gbCamera);
@@ -454,12 +454,12 @@ QvisCinemaWizard::CreateNumFramesPage()
     page1->setMinimumWidth(400);
 
     QVBoxLayout *pageLayout = new QVBoxLayout(page1);
-    pageLayout->setMargin(5);
+    pageLayout->setContentsMargins(5,5,5,5);
     pageLayout->setSpacing(10);
 
     QGridLayout *gLayout = new QGridLayout(0);
     pageLayout->addLayout(gLayout);
-    gLayout->setMargin(0);
+    gLayout->setContentsMargins(0,0,0,0);
     gLayout->setSpacing(5);
     gLayout->setColumnStretch(1, 100);
     pageLayout->addStretch(20);

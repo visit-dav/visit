@@ -729,7 +729,7 @@ QvisHostProfileWindow::CreateMachineSettingsGroup()
     QWidget *currentGroup = new QWidget();
 
     QVBoxLayout *layout = new QVBoxLayout(currentGroup);
-    layout->setMargin(5);
+    layout->setContentsMargins(5,5,5,5);
 
     //
     // Machine group
@@ -738,7 +738,7 @@ QvisHostProfileWindow::CreateMachineSettingsGroup()
     layout->addWidget(machineGroup);
     int mRow = 0;
     QGridLayout *mLayout = new QGridLayout(machineGroup);
-    mLayout->setMargin(5);
+    mLayout->setContentsMargins(5,5,5,5);
     mLayout->setSpacing(HOST_PROFILE_SPACING);
 
     hostNickname = new QLineEdit(machineGroup);
@@ -815,7 +815,7 @@ QvisHostProfileWindow::CreateMachineSettingsGroup()
     layout->addWidget(accountGroup);
     int aRow = 0;
     QGridLayout *aLayout = new QGridLayout(accountGroup);
-    aLayout->setMargin(5);
+    aLayout->setContentsMargins(5,5,5,5);
     aLayout->setSpacing(HOST_PROFILE_SPACING);
 
     userName = new QLineEdit(accountGroup);
@@ -833,7 +833,7 @@ QvisHostProfileWindow::CreateMachineSettingsGroup()
     layout->addWidget(connectionGroup);
     int cRow = 0;
     QGridLayout *cLayout = new QGridLayout(connectionGroup);
-    cLayout->setMargin(5);
+    cLayout->setContentsMargins(5,5,5,5);
     cLayout->setSpacing(HOST_PROFILE_SPACING);
     cLayout->setColumnMinimumWidth(0,15);
     cLayout->setColumnStretch(0,0);
@@ -955,7 +955,7 @@ QvisHostProfileWindow::CreateLaunchProfilesGroup()
 
     int row = 0;
     QGridLayout *layout = new QGridLayout(currentGroup);
-    layout->setMargin(5);
+    layout->setContentsMargins(5,5,5,5);
 
     profileList = new QListWidget(currentGroup);
     layout->addWidget(profileList, row,0, 1,4);
@@ -1023,9 +1023,9 @@ QvisHostProfileWindow::CreateBasicSettingsGroup()
 
     int row = 0;
     QVBoxLayout *tmpLayout = new QVBoxLayout(currentGroup);
-    tmpLayout->setMargin(0);
+    tmpLayout->setContentsMargins(0,0,0,0);
     QGridLayout *layout = new QGridLayout();
-    layout->setMargin(5);
+    layout->setContentsMargins(5,5,5,5);
     tmpLayout->addLayout(layout);
     layout->setSpacing(7);
     tmpLayout->addStretch(5);
@@ -1092,7 +1092,7 @@ QvisHostProfileWindow::CreateParallelSettingsGroup()
 {
     QWidget *currentGroup = new QWidget();
     QVBoxLayout *layout = new QVBoxLayout(currentGroup);
-    layout->setMargin(5);
+    layout->setContentsMargins(5,5,5,5);
 
     parallelCheckBox = new QCheckBox(
                      tr("Launch parallel engine"),
@@ -1155,10 +1155,10 @@ QvisHostProfileWindow::CreateLaunchSettingsGroup()
 
     int row = 0;
     QVBoxLayout *tmpLayout = new QVBoxLayout(currentGroup);
-    tmpLayout->setMargin(5);
+    tmpLayout->setContentsMargins(5,5,5,5);
     QGridLayout *layout = new QGridLayout();
     tmpLayout->addLayout(layout);
-    layout->setMargin(0);
+    layout->setContentsMargins(0,0,0,0);
     layout->setSpacing(HOST_PROFILE_SPACING+2);
     tmpLayout->addStretch(5);
 
@@ -1217,14 +1217,14 @@ QvisHostProfileWindow::CreateLaunchSettingsGroup()
     QWidget *h = new QWidget(currentGroup);
     layout->addWidget(h, row, 0, 1, 2);
     QHBoxLayout *hLayout = new QHBoxLayout(h);
-    hLayout->setMargin(0);
+    hLayout->setContentsMargins(0,0,0,0);
     hLayout->setSpacing(HOST_PROFILE_SPACING);
 
     // Create the default value widgets.
     QGroupBox *defaultGroup = new QGroupBox(tr("Defaults"), h);
     hLayout->addWidget(defaultGroup);
     QGridLayout *dLayout = new QGridLayout(defaultGroup);
-    dLayout->setMargin(5);
+    dLayout->setContentsMargins(5,5,5,5);
     dLayout->setSpacing(HOST_PROFILE_SPACING+2);
     row = 0;
 
@@ -1290,7 +1290,7 @@ QvisHostProfileWindow::CreateLaunchSettingsGroup()
     connect(constraintGroup, SIGNAL(toggled(bool)),
             this, SLOT(toggleAllowableNodeProcs(bool)));
     QGridLayout *cLayout = new QGridLayout(constraintGroup);
-    cLayout->setMargin(5);
+    cLayout->setContentsMargins(5,5,5,5);
     row = 0;
 
     QPushButton *addRow = new QPushButton(tr("Add row"), constraintGroup);
@@ -1348,10 +1348,10 @@ QvisHostProfileWindow::CreateAdvancedSettingsGroup()
 
     int row = 0;
     QVBoxLayout *tmpLayout = new QVBoxLayout(currentGroup);
-    tmpLayout->setMargin(5);
+    tmpLayout->setContentsMargins(5,5,5,5);
     QGridLayout *layout = new QGridLayout();
     tmpLayout->addLayout(layout);
-    layout->setMargin(0);
+    layout->setContentsMargins(0,0,0,0);
     layout->setSpacing(HOST_PROFILE_SPACING);
     tmpLayout->addStretch(5);
 
@@ -1446,7 +1446,7 @@ QvisHostProfileWindow::CreateHWAccelSettingsGroup()
 {
     QWidget *currentGroup = new QWidget();
     QVBoxLayout *layout = new QVBoxLayout(currentGroup);
-    layout->setMargin(5);
+    layout->setContentsMargins(5,5,5,5);
 
     QString str1(
        QString("<i>") +
@@ -1473,7 +1473,7 @@ QvisHostProfileWindow::CreateHWAccelSettingsGroup()
     layout->addWidget(hardwareGroup);
     int hRow = 0;
     QGridLayout *hLayout = new QGridLayout(hardwareGroup);
-    hLayout->setMargin(5);
+    hLayout->setContentsMargins(5,5,5,5);
     hLayout->setSpacing(HOST_PROFILE_SPACING);
 
     QLabel* lblXDisplay = new QLabel(tr("DISPLAY:"), hardwareGroup);

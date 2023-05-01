@@ -18,9 +18,6 @@ SurfaceNormalGUIPluginInfo.C
 QvisSurfaceNormalWindow.C
 ${COMMON_SOURCES}
 )
-SET(LIBG_MOC_SOURCES
-QvisSurfaceNormalWindow.h
-)
 
 SET(LIBV_SOURCES
 SurfaceNormalViewerEnginePluginInfo.C
@@ -48,8 +45,8 @@ TARGET_LINK_LIBRARIES(ISurfaceNormalOperator visitcommon)
 SET(INSTALLTARGETS ISurfaceNormalOperator)
 
 IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
-    QT_WRAP_CPP(GSurfaceNormalOperator LIBG_SOURCES ${LIBG_MOC_SOURCES})
     ADD_LIBRARY(GSurfaceNormalOperator ${LIBG_SOURCES})
+    set_target_properties(GSurfaceNormalOperator PROPERTIES AUTOMOC ON)
     TARGET_LINK_LIBRARIES(GSurfaceNormalOperator visitcommon gui )
 
     ADD_LIBRARY(VSurfaceNormalOperator ${LIBV_SOURCES})

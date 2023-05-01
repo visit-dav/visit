@@ -217,7 +217,7 @@ WriteOpenTag(QTextStream &out, const QString &tag, QString &indent)
 inline void
 WriteCloseTag(QTextStream &out, const QString &tag, QString &indent)
 {
-    out << indent << "</" << tag << ">" << endl;
+    out << indent << "</" << tag << ">" << Endl;
     indent = indent.left(indent.length()-2);
 }
 
@@ -228,7 +228,7 @@ WriteValues(QTextStream &out, const std::vector<QString> &values, QString &inden
     for (size_t i=0; i<values.size(); i++)
     {
         QString s(indent + values[i]);
-        out << s << endl;
+        out << s << Endl;
     }
     indent = indent.left(indent.length()-2);
 }
@@ -237,7 +237,7 @@ inline void
 WriteValue(QTextStream &out, const QString &value, QString &indent)
 {
     indent += "  ";
-    out << (indent + value) << endl;
+    out << (indent + value) << Endl;
     indent = indent.left(indent.length()-2);
 }
 

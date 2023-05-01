@@ -147,7 +147,7 @@ QvisScatterPlotWindow::CreateWindowContents()
     QWidget *inputGroup = new QWidget(central);
     topTab->addTab(inputGroup, tr("Inputs"));
     QVBoxLayout *inputVeryTopLayout = new QVBoxLayout(inputGroup);
-    inputVeryTopLayout->setMargin(10);
+    inputVeryTopLayout->setContentsMargins(10,10,10,10);
     inputVeryTopLayout->setSpacing(5);
     QTabWidget *tabs = new QTabWidget(inputGroup);
     inputVeryTopLayout->addWidget(tabs);
@@ -158,10 +158,10 @@ QvisScatterPlotWindow::CreateWindowContents()
     QWidget *var1Top = new QWidget(inputGroup);
     tabs->addTab(var1Top, tr("Input 1"));
     QVBoxLayout *var1VeryTopLayout = new QVBoxLayout(var1Top);
-    var1VeryTopLayout->setMargin(10);
+    var1VeryTopLayout->setContentsMargins(10,10,10,10);
     var1VeryTopLayout->setSpacing(5);
     QGridLayout *var1TopLayout = new QGridLayout(0);
-    var1TopLayout->setMargin(0);
+    var1TopLayout->setContentsMargins(0,0,0,0);
     var1VeryTopLayout->addLayout(var1TopLayout);
 
     // Create a role button
@@ -196,7 +196,7 @@ QvisScatterPlotWindow::CreateWindowContents()
     var1TopLayout->addWidget(dataGroup, 1, 0, 2, 4);
 
     QGridLayout * dataLayout = new QGridLayout(dataGroup);
-    dataLayout->setMargin(5);
+    dataLayout->setContentsMargins(5,5,5,5);
     dataLayout->setSpacing(10);
 
     //
@@ -235,7 +235,7 @@ QvisScatterPlotWindow::CreateWindowContents()
     dataLayout->addWidget(limitsGroup, 1, 0, 2, 5);
 
     QGridLayout *limitsLayout = new QGridLayout(limitsGroup);
-    limitsLayout->setMargin(5);
+    limitsLayout->setContentsMargins(5,5,5,5);
     limitsLayout->setSpacing(10);
 
 //     limitsLayout->addWidget( new QLabel(tr("Limits"), central), 0, 0);
@@ -274,10 +274,10 @@ QvisScatterPlotWindow::CreateWindowContents()
     QWidget *var2Top = new QWidget(inputGroup);
     tabs->addTab(var2Top, tr("Input 2"));
     QVBoxLayout *var2VeryTopLayout = new QVBoxLayout(var2Top);
-    var2VeryTopLayout->setMargin(10);
+    var2VeryTopLayout->setContentsMargins(10,10,10,10);
     var2VeryTopLayout->setSpacing(5);
     QGridLayout *var2TopLayout = new QGridLayout(0);
-    var2TopLayout->setMargin(0);
+    var2TopLayout->setContentsMargins(0,0,0,0);
     var2VeryTopLayout->addLayout(var2TopLayout);
 
     // Create a role button
@@ -312,7 +312,7 @@ QvisScatterPlotWindow::CreateWindowContents()
     var2TopLayout->addWidget(dataGroup, 1, 0, 2, 4);
 
     dataLayout = new QGridLayout(dataGroup);
-    dataLayout->setMargin(5);
+    dataLayout->setContentsMargins(5,5,5,5);
     dataLayout->setSpacing(10);
 
     //
@@ -351,7 +351,7 @@ QvisScatterPlotWindow::CreateWindowContents()
     dataLayout->addWidget(limitsGroup, 1, 0, 2, 5);
 
     limitsLayout = new QGridLayout(limitsGroup);
-    limitsLayout->setMargin(5);
+    limitsLayout->setContentsMargins(5,5,5,5);
     limitsLayout->setSpacing(10);
 
 //     limitsLayout->addWidget( new QLabel(tr("Limits"), central), 0, 0);
@@ -390,10 +390,10 @@ QvisScatterPlotWindow::CreateWindowContents()
     QWidget *var3Top = new QWidget(inputGroup);
     tabs->addTab(var3Top, tr("Input 3"));
     QVBoxLayout *var3VeryTopLayout = new QVBoxLayout(var3Top);
-    var3VeryTopLayout->setMargin(10);
+    var3VeryTopLayout->setContentsMargins(10,10,10,10);
     var3VeryTopLayout->setSpacing(5);
     QGridLayout *var3TopLayout = new QGridLayout(0);
-    var3TopLayout->setMargin(0);
+    var3TopLayout->setContentsMargins(0,0,0,0);
     var3VeryTopLayout->addLayout(var3TopLayout);
 
 
@@ -429,7 +429,7 @@ QvisScatterPlotWindow::CreateWindowContents()
     var3TopLayout->addWidget(dataGroup, 1, 0, 2, 4);
 
     dataLayout = new QGridLayout(dataGroup);
-    dataLayout->setMargin(5);
+    dataLayout->setContentsMargins(5,5,5,5);
     dataLayout->setSpacing(10);
 
     //
@@ -468,7 +468,7 @@ QvisScatterPlotWindow::CreateWindowContents()
     dataLayout->addWidget(limitsGroup, 1, 0, 2, 5);
 
     limitsLayout = new QGridLayout(limitsGroup);
-    limitsLayout->setMargin(5);
+    limitsLayout->setContentsMargins(5,5,5,5);
     limitsLayout->setSpacing(10);
 
 //     limitsLayout->addWidget( new QLabel(tr("Limits"), central), 0, 0);
@@ -507,10 +507,10 @@ QvisScatterPlotWindow::CreateWindowContents()
     QWidget *var4Top = new QWidget(inputGroup);
     tabs->addTab(var4Top, tr("Input 4"));
     QVBoxLayout *var4VeryTopLayout = new QVBoxLayout(var4Top);
-    var4VeryTopLayout->setMargin(10);
+    var4VeryTopLayout->setContentsMargins(10,10,10,10);
     var4VeryTopLayout->setSpacing(5);
     QGridLayout *var4TopLayout = new QGridLayout(0);
-    var4TopLayout->setMargin(0);
+    var4TopLayout->setContentsMargins(0,0,0,0);
     var4VeryTopLayout->addLayout(var4TopLayout);
 
 
@@ -547,7 +547,7 @@ QvisScatterPlotWindow::CreateWindowContents()
     var4TopLayout->addWidget(dataGroup, 1, 0, 2, 4);
 
     dataLayout = new QGridLayout(dataGroup);
-    dataLayout->setMargin(5);
+    dataLayout->setContentsMargins(5,5,5,5);
     dataLayout->setSpacing(10);
 
     //
@@ -586,7 +586,7 @@ QvisScatterPlotWindow::CreateWindowContents()
     dataLayout->addWidget(limitsGroup, 1, 0, 2, 5);
 
     limitsLayout = new QGridLayout(limitsGroup);
-    limitsLayout->setMargin(5);
+    limitsLayout->setContentsMargins(5,5,5,5);
     limitsLayout->setSpacing(10);
 
 //     limitsLayout->addWidget( new QLabel(tr("Limits"), central), 0, 0);
@@ -625,11 +625,11 @@ QvisScatterPlotWindow::CreateWindowContents()
     QWidget *appearanceGroup = new QWidget(central);
     topTab->addTab(appearanceGroup, tr("Appearance"));
     QVBoxLayout *aTopLayout = new QVBoxLayout(appearanceGroup);
-    aTopLayout->setMargin(0);
+    aTopLayout->setContentsMargins(0,0,0,0);
     aTopLayout->addSpacing(10);
     QGridLayout *aLayout = new QGridLayout(0);
     aTopLayout->addLayout(aLayout);
-    aLayout->setMargin(5);
+    aLayout->setContentsMargins(5,5,5,5);
     aLayout->setSpacing(10);
     aTopLayout->addStretch(10);
 
@@ -639,7 +639,7 @@ QvisScatterPlotWindow::CreateWindowContents()
     aTopLayout->addWidget(scalingGroup);
 
     QGridLayout *scalingLayout = new QGridLayout(scalingGroup);
-    scalingLayout->setMargin(5);
+    scalingLayout->setContentsMargins(5,5,5,5);
     scalingLayout->setSpacing(10);
  
     scaleCube = new QCheckBox(tr("Normalize the axes to a cube"), appearanceGroup);
@@ -653,7 +653,7 @@ QvisScatterPlotWindow::CreateWindowContents()
     aTopLayout->addWidget(colorGroup);
 
     QGridLayout *colorLayout = new QGridLayout(colorGroup);
-    colorLayout->setMargin(5);
+    colorLayout->setContentsMargins(5,5,5,5);
     colorLayout->setSpacing(10);
 
 
@@ -698,7 +698,7 @@ QvisScatterPlotWindow::CreateWindowContents()
     aTopLayout->addWidget(styleGroup);
 
     QGridLayout *styleLayout = new QGridLayout(styleGroup);
-    styleLayout->setMargin(5);
+    styleLayout->setContentsMargins(5,5,5,5);
     styleLayout->setSpacing(10);
 
     pointControl = new QvisPointControl(appearanceGroup, false);
@@ -737,7 +737,7 @@ QvisScatterPlotWindow::CreateWindowContents()
     topLayout->addWidget(miscGroup);
 
     QGridLayout *miscLayout = new QGridLayout(miscGroup);
-    miscLayout->setMargin(5);
+    miscLayout->setContentsMargins(5,5,5,5);
     miscLayout->setSpacing(10);
  
     // Create the legend toggle

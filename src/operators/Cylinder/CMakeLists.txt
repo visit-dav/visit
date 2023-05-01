@@ -18,9 +18,6 @@ CylinderGUIPluginInfo.C
 QvisCylinderWindow.C
 ${COMMON_SOURCES}
 )
-SET(LIBG_MOC_SOURCES
-QvisCylinderWindow.h
-)
 
 SET(LIBV_SOURCES
 CylinderViewerEnginePluginInfo.C
@@ -48,8 +45,8 @@ TARGET_LINK_LIBRARIES(ICylinderOperator visitcommon)
 SET(INSTALLTARGETS ICylinderOperator)
 
 IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
-    QT_WRAP_CPP(GCylinderOperator LIBG_SOURCES ${LIBG_MOC_SOURCES})
     ADD_LIBRARY(GCylinderOperator ${LIBG_SOURCES})
+    set_target_properties(GCylinderOperator PROPERTIES AUTOMOC ON)
     TARGET_LINK_LIBRARIES(GCylinderOperator visitcommon gui )
 
     ADD_LIBRARY(VCylinderOperator ${LIBV_SOURCES})

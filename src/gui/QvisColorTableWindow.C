@@ -6,21 +6,22 @@
 #include <ColorTableAttributes.h>
 #include <QApplication>
 #include <QButtonGroup>
-#include <QLayout>
-#include <QPushButton>
 #include <QCheckBox>
 #include <QComboBox>
 #include <QGroupBox>
+#include <QHeaderView>
 #include <QLabel>
+#include <QLayout>
 #include <QLineEdit>
+#include <QPushButton>
+#include <QRadioButton>
+#include <QRect>
+#include <QScreen>
+#include <QSlider>
+#include <QSpinBox>
 #include <QTreeWidget>
 #include <QTreeWidgetItem>
 #include <QTreeWidgetItemIterator>
-#include <QHeaderView>
-#include <QRadioButton>
-#include <QSlider>
-#include <QSpinBox>
-#include <QDesktopWidget>
 
 #include <QvisSpectrumBar.h>
 #include <QvisColorSelectionWidget.h>
@@ -245,7 +246,7 @@ QvisColorTableWindow::CreateWindowContents()
     // Want more buttons in the window? Increase this value.
     central->setMaximumHeight(830);
     // Create the widgets needed to set the default color tables.
-    topLayout->setMargin(2);
+    topLayout->setContentsMargins(2,2,2,2);
     defaultGroup = new QGroupBox(central);
     defaultGroup->setTitle(tr("Default Color Table"));
     topLayout->addWidget(defaultGroup, 5);
@@ -1647,6 +1648,9 @@ QvisColorTableWindow::UpdateDiscreteSettings()
 //   Brad Whitlock, Thu Nov 21 13:06:29 PST 2002
 //   I made it more general.
 //
+//   Kathleen Biagas, Wed Apr  5 13:04:35 PDT 2023
+//   Replace obosolete desktop() with primaryScreen().
+//
 // ****************************************************************************
 
 void
@@ -1666,14 +1670,14 @@ QvisColorTableWindow::PopupColorSelect(const QColor &c, const QPoint &p)
     // Fix the X dimension.
     if(menuX < 0)
         menuX = 0;
-    else if(menuX + menuW > QApplication::desktop()->width())
+    else if(menuX + menuW > QApplication::primaryScreen()->geometry().width())
         menuX -= (menuW + 5);
 
     // Fix the Y dimension.
     if(menuY < 0)
         menuY = 0;
-    else if(menuY + menuH > QApplication::desktop()->height())
-        menuY -= ((menuY + menuH) - QApplication::desktop()->height());
+    else if(menuY + menuH > QApplication::primaryScreen()->geometry().height())
+        menuY -= ((menuY + menuH) - QApplication::primaryScreen()->geometry().height());
 
     // Show the popup menu.
     colorSelect->move(menuX, menuY);
