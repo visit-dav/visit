@@ -702,8 +702,7 @@ ClipEditor::keyPressEvent(QKeyEvent *kev)
             }
         }
     }
-
-    viewer->updateGL();
+    viewer->update();
 }
 
 void

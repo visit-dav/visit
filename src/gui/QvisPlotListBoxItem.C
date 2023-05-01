@@ -1093,7 +1093,7 @@ QvisPlotListBoxItem::GetOperatorPixmap(int operatorType, QPixmap &pm)
         oMgr->GetEnabledID(operatorType));
 
     QString key = QString("operator_icon_%1").arg(info->GetName());
-    if(!QPixmapCache::find(key, pm))
+    if(!QPixmapCache::find(key, &pm))
     {
         if(info->XPMIconData())
         {
@@ -1137,7 +1137,7 @@ QvisPlotListBoxItem::GetPlotPixmap(int plotType, QPixmap &pm)
         pMgr->GetEnabledID(plotType));
 
     QString key = QString("plot_icon_%1").arg(info->GetName());
-    if(!QPixmapCache::find(key, pm))
+    if(!QPixmapCache::find(key, &pm))
     {
         if(info->XPMIconData())
         {

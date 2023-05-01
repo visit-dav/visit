@@ -163,6 +163,8 @@ QvisCurvePlotWindow::CreateWindowContents()
 // Creation:   Tue Dec 29 14:37:53 EST 2009
 //
 // Modifications:
+//   Kathleen Biagas, Tue Apr 18 16:34:41 PDT 2023
+//   Support Qt6: buttonClicked -> idClicked.
 //
 // ****************************************************************************
 
@@ -198,8 +200,13 @@ QvisCurvePlotWindow::CreateDataTab(QWidget *pageData)
     colorLayout->addWidget(rb, 0, 2, Qt::AlignRight | Qt::AlignVCenter);
 
     // Each time a radio button is clicked, call the scale clicked slot.
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(curveColorButtons, SIGNAL(buttonClicked(int)),
             this, SLOT(curveColorClicked(int)));
+#else
+    connect(curveColorButtons, SIGNAL(idClicked(int)),
+            this, SLOT(curveColorClicked(int)));
+#endif
 
     // Create the curve color button.
     curveColor = new QvisColorButton(central);
@@ -297,6 +304,9 @@ QvisCurvePlotWindow::CreateDataTab(QWidget *pageData)
 //   Kathleen Biagas, Wed Jun  8 17:10:30 PDT 2016
 //   Set keyboard tracking to false for spin boxes so that 'valueChanged'
 //   signal will only emit when 'enter' is pressed or spinbox loses focus.
+//
+//   Kathleen Biagas, Tue Apr 18 16:34:41 PDT 2023
+//   Support Qt6: buttonClicked -> idClicked.
 //
 // ****************************************************************************
 
@@ -428,8 +438,13 @@ QvisCurvePlotWindow::CreateGeometryTab(QWidget *pageGeometry)
 
     fillModeGroup = new QButtonGroup(pointGroup);
 
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(fillModeGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(symbolFillModeChanged(int)));
+#else
+    connect(fillModeGroup, SIGNAL(idClicked(int)),
+            this, SLOT(symbolFillModeChanged(int)));
+#endif
 
     staticButton = new QRadioButton(tr("Static"), pointGroup);
     staticButton->setChecked(true);

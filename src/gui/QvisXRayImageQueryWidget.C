@@ -15,7 +15,7 @@
 // ****************************************************************************
 // Method: QvisXRayImageQueryWidget::QvisXRayImageQueryWidget
 //
-// Purpose: 
+// Purpose:
 //   This is the constructor for the QvisXRayImageQueryWidget class.
 //
 // Arguments:
@@ -23,11 +23,11 @@
 //   name   : The name of the instance.
 //   f      : The window flags.
 //
-// Note:       This widget acts as a layout for its children since it 
+// Note:       This widget acts as a layout for its children since it
 //   positions the children manually and dispatches mouse events to them.
 //
-// Programmer: Kathleen Biagas 
-// Creation:   June 17, 2011 
+// Programmer: Kathleen Biagas
+// Creation:   June 17, 2011
 //
 // Modifications:
 //   Eric Brugger, Mon May 14 12:31:15 PDT 2012
@@ -45,13 +45,13 @@
 //
 //   Eric Brugger, Thu Jun  4 17:26:57 PDT 2015
 //   I added an option to enable outputting the ray bounds to a vtk file.
-// 
+//
 //   Justin Privitera, Tue Jun 14 10:02:21 PDT 2022
 //   Added new output type options and added output dir option.
-// 
+//
 //   Justin Privitera, Tue Sep 27 10:52:59 PDT 2022
 //   Replaced family files with filename scheme, which has more options.
-// 
+//
 //    Justin Privitera, Wed Oct 12 11:38:11 PDT 2022
 //    Removed bmp output type.
 //
@@ -60,16 +60,16 @@
 QvisXRayImageQueryWidget::QvisXRayImageQueryWidget(QWidget *parent,
     Qt::WindowFlags f) : QWidget(parent, f)
 {
-    // 
+    //
     // Main layout for this widget
-    // 
+    //
     QGridLayout *topLayout = new QGridLayout(this);
     topLayout->setContentsMargins(0,0,0,0);
     topLayout->setSpacing(10);
-  
-    // 
+
+    //
     // XRayImage type
-    // 
+    //
     topLayout->addWidget(new QLabel(tr("Output Image Format")), 0, 0);
     imageFormat = new QComboBox();
     imageFormat->addItem(tr("jpeg"));
@@ -83,9 +83,9 @@ QvisXRayImageQueryWidget::QvisXRayImageQueryWidget(QWidget *parent,
     imageFormat->setCurrentIndex(1);
     topLayout->addWidget(imageFormat, 0, 1);
 
-    // 
+    //
     // Output Directory
-    // 
+    //
     topLayout->addWidget(new QLabel(tr("Output Directory")), 1, 0);
     outDir = new QLineEdit();
     outDir->setText(".");
@@ -98,81 +98,81 @@ QvisXRayImageQueryWidget::QvisXRayImageQueryWidget(QWidget *parent,
     divideFlag->setChecked(0);
     topLayout->addWidget(divideFlag, 2, 0, 1, 2);
 
-    // 
+    //
     // Background intensities
-    // 
+    //
     topLayout->addWidget(new QLabel(tr("background intensities")), 3, 0);
     backgroundIntensities = new QLineEdit();
     backgroundIntensities->setText("0");
     topLayout->addWidget(backgroundIntensities, 3, 1);
 
-    // 
+    //
     // Normal
-    // 
+    //
     topLayout->addWidget(new QLabel(tr("Normal")), 4, 0);
     normal = new QLineEdit();
     normal->setText("0 0 1");
     topLayout->addWidget(normal, 4, 1);
 
-    // 
+    //
     // Focus
-    // 
+    //
     topLayout->addWidget(new QLabel(tr("Focus")), 5, 0);
     focus = new QLineEdit();
     focus->setText("0 0 0");
     topLayout->addWidget(focus, 5, 1);
 
-    // 
+    //
     // View up
-    // 
+    //
     topLayout->addWidget(new QLabel(tr("View up")), 6, 0);
     viewUp = new QLineEdit();
     viewUp->setText("0 1 0");
     topLayout->addWidget(viewUp, 6, 1);
 
-    // 
+    //
     // View angle
-    // 
+    //
     topLayout->addWidget(new QLabel(tr("View angle")), 7, 0);
     viewAngle = new QLineEdit();
     viewAngle->setText("30");
     topLayout->addWidget(viewAngle, 7, 1);
 
-    // 
+    //
     // Parallel scale
-    // 
+    //
     topLayout->addWidget(new QLabel(tr("Parallel scale")), 8, 0);
     parallelScale = new QLineEdit();
     parallelScale->setText("10");
     topLayout->addWidget(parallelScale, 8, 1);
 
-    // 
+    //
     // Near plane
-    // 
+    //
     topLayout->addWidget(new QLabel(tr("Near plane")), 9, 0);
     nearPlane = new QLineEdit();
     nearPlane->setText("-20");
     topLayout->addWidget(nearPlane, 9, 1);
 
-    // 
+    //
     // Far plane
-    // 
+    //
     topLayout->addWidget(new QLabel(tr("Far plane")), 10, 0);
     farPlane = new QLineEdit();
     farPlane->setText("20");
     topLayout->addWidget(farPlane, 10, 1);
 
-    // 
+    //
     // Image pan
-    // 
+    //
     topLayout->addWidget(new QLabel(tr("Image pan")), 11, 0);
     imagePan = new QLineEdit();
     imagePan->setText("0 0");
     topLayout->addWidget(imagePan, 11, 1);
 
-    // 
+    //
     // Image zoom
-    // 
+    //
     topLayout->addWidget(new QLabel(tr("Image zoom")), 12, 0);
     imageZoom = new QLineEdit();
     imageZoom->setText("1");
@@ -203,9 +203,9 @@ QvisXRayImageQueryWidget::QvisXRayImageQueryWidget(QWidget *parent,
     outputRayBounds->setChecked(0);
     topLayout->addWidget(outputRayBounds, 15, 0, 1, 2);
 
-    // 
+    //
     // Image size
-    // 
+    //
     topLayout->addWidget(new QLabel(tr("Image Size")), 16, 0);
     imageSize = new QLineEdit();
     imageSize->setText("500 500");
@@ -215,14 +215,14 @@ QvisXRayImageQueryWidget::QvisXRayImageQueryWidget(QWidget *parent,
 // ****************************************************************************
 // Method: QvisXRayImageQueryWidget::~QvisXRayImageQueryWidget
 //
-// Purpose: 
+// Purpose:
 //   This is the destructor for the QvisXRayImageQueryWidget class.
 //
 // Programmer: Kathleen Biagas
 // Creation:   June 17, 2011
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 QvisXRayImageQueryWidget::~QvisXRayImageQueryWidget()
@@ -247,14 +247,16 @@ QvisXRayImageQueryWidget::~QvisXRayImageQueryWidget()
 // Creation:   May 22, 2015
 //
 // Modifications:
+//   Kathleen Biagas, Tue Apr 11, 2023
+//   QString::SkipEmptyParts => Qt::SkipEmptyParts for Qt >= 6.
 //
 // ****************************************************************************
 
-bool 
+bool
 QvisXRayImageQueryWidget::GetDoubleValues(int whichWidget, doubleVector &pt)
 {
     QString temp;
-  
+
     if (whichWidget == 0) // Background intensities
     {
         temp = backgroundIntensities->displayText().simplified();
@@ -263,7 +265,11 @@ QvisXRayImageQueryWidget::GetDoubleValues(int whichWidget, doubleVector &pt)
 
     if(okay)
     {
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
         QStringList s = temp.split(" ", QString::SkipEmptyParts);
+#else
+        QStringList s = temp.split(" ", Qt::SkipEmptyParts);
+#endif
         for (int i = 0; okay && i < s.size(); ++i)
         {
             double val = s[i].toDouble(&okay);
@@ -287,7 +293,7 @@ QvisXRayImageQueryWidget::GetDoubleValues(int whichWidget, doubleVector &pt)
 //
 // Returns:    True if it worked.
 //
-// Programmer: Kathleen Biagas 
+// Programmer: Kathleen Biagas
 // Creation:   June 17, 2011
 //
 // Modifications:
@@ -300,11 +306,11 @@ QvisXRayImageQueryWidget::GetDoubleValues(int whichWidget, doubleVector &pt)
 //
 // ****************************************************************************
 
-bool 
+bool
 QvisXRayImageQueryWidget::GetDoubleValues(int whichWidget, int n, double *pt)
 {
     QString temp;
-  
+
     if (whichWidget == 1) // Normal
     {
         temp = normal->displayText().simplified();
@@ -355,7 +361,7 @@ QvisXRayImageQueryWidget::GetDoubleValues(int whichWidget, int n, double *pt)
             numScanned = sscanf(temp.toStdString().c_str(), "%lg %lg",
                         &pt[0], &pt[1]);
         }
-        else if (n == 3) 
+        else if (n == 3)
         {
             numScanned = sscanf(temp.toStdString().c_str(), "%lg %lg %lg",
                         &pt[0], &pt[1], &pt[2]);
@@ -377,7 +383,7 @@ QvisXRayImageQueryWidget::GetDoubleValues(int whichWidget, int n, double *pt)
 //
 // Returns:    True if it worked.
 //
-// Programmer: Kathleen Biagas 
+// Programmer: Kathleen Biagas
 // Creation:   June 17, 2011
 //
 // Modifications:
@@ -387,7 +393,7 @@ QvisXRayImageQueryWidget::GetDoubleValues(int whichWidget, int n, double *pt)
 //
 // ****************************************************************************
 
-bool 
+bool
 QvisXRayImageQueryWidget::GetIntValues(int whichWidget, int *pt)
 {
     QString temp;
@@ -414,7 +420,7 @@ QvisXRayImageQueryWidget::GetIntValues(int whichWidget, int *pt)
 // Method: QvisXRayImageQueryWidget::GetQueryParameters
 //
 // Purpose:
-//   Retrieves values from this form and stores them in the MapNode in 
+//   Retrieves values from this form and stores them in the MapNode in
 //   a manner in keeping with this query.
 //
 // Arguments:
@@ -422,13 +428,13 @@ QvisXRayImageQueryWidget::GetIntValues(int whichWidget, int *pt)
 //
 // Returns:    True if it worked.
 //
-// Programmer: Kathleen Biagas 
+// Programmer: Kathleen Biagas
 // Creation:   June 17, 2011
 //
 // Modifications:
 //   Kathleen Biagas, Wed Sep  7 08:40:22 PDT 2011
 //   Return output_type as string instead of int.
-// 
+//
 //   Kathleen Biagas, Wed Oct 17 12:12:29 PDT 2012
 //   Added upVector.
 //
@@ -441,7 +447,7 @@ QvisXRayImageQueryWidget::GetIntValues(int whichWidget, int *pt)
 //
 //   Eric Brugger, Thu Jun  4 17:26:57 PDT 2015
 //   I added an option to enable outputting the ray bounds to a vtk file.
-// 
+//
 //   Justin Privitera, Tue Sep 27 10:52:59 PDT 2022
 //   Replaced family files with filename scheme.
 //
@@ -518,5 +524,5 @@ QvisXRayImageQueryWidget::GetQueryParameters(MapNode &params)
         params["output_ray_bounds"] = (int)outputRayBounds->isChecked();
         params["image_size"] = imageSize;
     }
-    return noerrors; 
+    return noerrors;
 }

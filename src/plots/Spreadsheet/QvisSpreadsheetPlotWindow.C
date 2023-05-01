@@ -112,6 +112,9 @@ QvisSpreadsheetPlotWindow::~QvisSpreadsheetPlotWindow()
 //   Brad Whitlock, Mon Aug 11 16:03:49 PDT 2008
 //   Qt 4.
 //
+//   Kathleen Biagas, Tue Apr 18 16:34:41 PDT 2023
+//   Support Qt6: buttonClicked -> idClicked.
+//
 // ****************************************************************************
 
 void
@@ -125,7 +128,7 @@ QvisSpreadsheetPlotWindow::CreateWindowContents()
     subsetName = new QComboBox(central);
     subsetName->setEditable(false);
     subsetName->addItem(defaultItem);
-    connect(subsetName, SIGNAL(activated(const QString &)),
+    connect(subsetName, SIGNAL(currentIndexChanged(const QString &)),
             this, SLOT(subsetNameChanged(const QString &)));
     mainLayout->addWidget(subsetName, 0,1);
 
@@ -149,8 +152,13 @@ QvisSpreadsheetPlotWindow::CreateWindowContents()
     QRadioButton *normalNormalAxisZ = new QRadioButton(tr("Z"), normalWidget);
     normal->addButton(normalNormalAxisZ, 2);
     normalLayout->addWidget(normalNormalAxisZ);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(normal, SIGNAL(buttonClicked(int)),
             this, SLOT(normalChanged(int)));
+#else
+    connect(normal, SIGNAL(idClicked(int)),
+            this, SLOT(normalChanged(int)));
+#endif
     mainLayout->addWidget(normalWidget, 2,1);
 
     formatStringLabel = new QLabel(tr("Format string"), central);

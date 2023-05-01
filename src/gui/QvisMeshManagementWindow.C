@@ -115,6 +115,9 @@ QvisMeshManagementWindow::~QvisMeshManagementWindow()
 //   Cyrus Harrison, Mon Jan 26 21:26:34 PST 2015
 //   Changed check from boost interval template lib to boost proper.
 //
+//   Kathleen Biagas, Tue Apr 18 16:34:41 PDT 2023
+//   Support Qt6: buttonClicked -> idClicked.
+//
 // ****************************************************************************
 
 void
@@ -151,8 +154,13 @@ QvisMeshManagementWindow::CreateWindowContents()
     discretizeModeLabel = new QLabel(tr("Discretization mode"), pageCSGGroup);
     layoutCSGGroup->addWidget(discretizeModeLabel, 2, 0);
     discretizationMode = new QButtonGroup(pageCSGGroup);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(discretizationMode, SIGNAL(buttonClicked(int)),
             this, SLOT(discretizationModeChanged(int)));
+#else
+    connect(discretizationMode, SIGNAL(idClicked(int)),
+            this, SLOT(discretizationModeChanged(int)));
+#endif
             
     discretizeUniform = new QRadioButton(tr("Uniform"), pageCSGGroup);
     discretizationMode->addButton(discretizeUniform,0);

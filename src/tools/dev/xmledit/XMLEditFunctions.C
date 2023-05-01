@@ -38,6 +38,9 @@
 //    Cyrus Harrison, Thu May 15 16:00:46 PDT 2008
 //    First pass at porting to Qt 4.4.0
 //
+//    Kathleen Biagas, Tue Apr 18 16:34:41 PDT 2023
+//    Support Qt6: buttonClicked -> idClicked.
+//
 // ****************************************************************************
 XMLEditFunctions::XMLEditFunctions(QWidget *p)
     : QFrame(p)
@@ -120,8 +123,13 @@ XMLEditFunctions::XMLEditFunctions(QWidget *p)
             this, SLOT(UpdateWindowSingleItem()));
     connect(name, SIGNAL(textChanged(const QString&)),
             this, SLOT(nameTextChanged(const QString&)));
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(typeGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(typeGroupChanged(int)));
+#else
+    connect(typeGroup, SIGNAL(idClicked(int)),
+            this, SLOT(typeGroupChanged(int)));
+#endif
     connect(member, SIGNAL(clicked()),
             this, SLOT(memberChanged()));
     connect(target, SIGNAL(textChanged(const QString&)),
