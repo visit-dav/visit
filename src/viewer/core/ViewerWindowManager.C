@@ -5749,6 +5749,11 @@ ViewerWindowManager::UpdateAnnotationObjectList(bool delay)
 //    Made it use the plot list and I made it set the number of keyframes
 //    into the plot list.
 //
+//    Eric Brugger, Eric Brugger, Wed Mar 22 16:23:12 PDT 2023
+//    Modified where the viewer window manager keyframe and timeslider
+//    attributes are updated in response to changes in the keyframe mode
+//    and number of keyframes.
+//
 // ****************************************************************************
 
 void
@@ -5758,6 +5763,8 @@ ViewerWindowManager::SetKeyframeAttsFromClient()
         GetViewerState()->GetKeyframeAttributes()->GetEnabled());
     windows[activeWindow]->GetPlotList()->SetNKeyframes(
         GetViewerState()->GetKeyframeAttributes()->GetNFrames());
+    UpdateKeyframeAttributes();
+    UpdateWindowInformation(WINDOWINFO_TIMESLIDERS);
 }
 
 // ****************************************************************************

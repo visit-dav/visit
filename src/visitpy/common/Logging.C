@@ -609,6 +609,22 @@ static std::string log_AddOperatorRPC(ViewerRPC *rpc)
     return visitmodule() + std::string(str);
 }
 
+static std::string log_DeleteOperatorKeyframeRPC(ViewerRPC *rpc)
+{
+    char str[SLEN];
+    snprintf(str, SLEN, "DeleteOperatorKeyframe(%d, %d, %d)\n", 
+             rpc->GetIntArg1(), rpc->GetIntArg2(), rpc->GetIntArg3());
+    return visitmodule() + std::string(str);
+}
+
+static std::string log_MoveOperatorKeyframeRPC(ViewerRPC *rpc)
+{
+    char str[SLEN];
+    snprintf(str, SLEN, "MoveOperatorKeyframe(%d, %d, %d, %d)\n", 
+             rpc->GetIntArg1(), rpc->GetIntArg2(), rpc->GetIntArg3(), rpc->GetIntArg4());
+    return visitmodule() + std::string(str);
+}
+
 static std::string log_PromoteOperatorRPC(ViewerRPC *rpc)
 {
     char str[SLEN];
@@ -2015,6 +2031,9 @@ static std::string log_SetPlotOrderToFirstRPC(ViewerRPC *rpc)
 //   Kathleen Biagas, Wed Jan  9 11:32:39 PST 2013
 //   Added GetQueryParameters.
 //
+//   Eric Brugger, Wed Mar 22 16:23:12 PDT 2023
+//   Added operator keyframing.
+//
 // ****************************************************************************
 
 void
@@ -2153,6 +2172,12 @@ LogRPCs(Subject *subj, void *)
         break;
     case ViewerRPC::AddInitializedOperatorRPC:
         str = log_AddInitializedOperatorRPC(rpc);
+        break;
+    case ViewerRPC::DeleteOperatorKeyframeRPC:
+        str = log_DeleteOperatorKeyframeRPC(rpc);
+        break;
+    case ViewerRPC::MoveOperatorKeyframeRPC:
+        str = log_MoveOperatorKeyframeRPC(rpc);
         break;
     case ViewerRPC::PromoteOperatorRPC:
         str = log_PromoteOperatorRPC(rpc);

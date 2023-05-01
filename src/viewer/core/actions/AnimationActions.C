@@ -101,6 +101,11 @@ AnimationSetNFramesAction::AnimationSetNFramesAction(ViewerWindow *win) :
 //   Brad Whitlock, Tue Feb 3 16:20:22 PST 2004
 //   I made it update the keyframe attributes instead of the window info.
 //
+//   Eric Brugger, Eric Brugger, Wed Mar 22 16:23:12 PDT 2023
+//   Modified where the viewer window manager keyframe and timeslider
+//   attributes are updated in response to changes in the keyframe mode
+//   and number of keyframes.
+//
 // ****************************************************************************
 
 void
@@ -108,6 +113,7 @@ AnimationSetNFramesAction::Execute()
 {
     window->GetPlotList()->SetNKeyframes(args.GetNFrames());
     windowMgr->UpdateKeyframeAttributes();
+    windowMgr->UpdateWindowInformation(WINDOWINFO_TIMESLIDERS);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

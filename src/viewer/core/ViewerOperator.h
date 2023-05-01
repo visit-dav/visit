@@ -13,6 +13,7 @@
 
 // Forward declarations
 class AttributeSubject;
+class AttributeSubjectMap;
 class DataNode;
 class ViewerPlot;
 class ViewerOperatorPluginInfo;
@@ -92,6 +93,9 @@ class ExpressionList;
 //    Hank Childs, Thu Dec 30 22:37:51 PST 2010
 //    Change signature of GetCreatedVariables.
 //
+//    Eric Brugger, Wed Mar 22 16:23:12 PDT 2023
+//    Add operator keyframing.
+//
 // ****************************************************************************
 
 class VIEWERCORE_API ViewerOperator : public ViewerBase
@@ -99,6 +103,8 @@ class VIEWERCORE_API ViewerOperator : public ViewerBase
   public:
     ViewerOperator(const int type_, 
                    ViewerOperatorPluginInfo *viewerPluginInfo_,
+                   const bool keyframeMode_,
+                   const int cacheIndex_, const int cacheSize_,
                    ViewerPlot *plot_, const bool fromDefault);
     ViewerOperator(const ViewerOperator &);
     virtual ~ViewerOperator();
@@ -130,6 +136,13 @@ class VIEWERCORE_API ViewerOperator : public ViewerBase
     void UpdateOperatorAtts();
     std::string GetOperatorVarDescription();
 
+    void SetKeyframeMode(const bool keyframeMode_);
+    void SetCacheIndex(const int cacheIndex_);
+    void UpdateCacheSize(const int cacheSize_);
+    const int *GetKeyframeIndices(int &nIndices) const;
+    void DeleteKeyframe(const int index);
+    void MoveKeyframe(const int oldIndex, const int newIndex);
+
   protected:
     ViewerPlot                   *plot;
     
@@ -137,7 +150,13 @@ class VIEWERCORE_API ViewerOperator : public ViewerBase
     bool                          needsRecalculation;
     int                           type;
     ViewerOperatorPluginInfo     *viewerPluginInfo;
-    AttributeSubject             *operatorAtts;
+
+    AttributeSubjectMap          *operatorAtts;
+    AttributeSubject             *curOperatorAtts;
+
+    bool                          keyframeMode;
+    int                           cacheIndex;
+    int                           cacheSize;
 };
 
 #endif
