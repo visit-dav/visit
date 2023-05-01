@@ -5662,7 +5662,7 @@ return type : CLI_return_t
 
 
 MoveOperatorKeyframe
-----------------
+--------------------
 
 **Synopsis:**
 
