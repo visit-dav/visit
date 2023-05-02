@@ -1833,7 +1833,7 @@ To visualize this mesh with VisIt, see :ref:`Visualizing_with_VisIt`. To extract
 
 To provide yet another view of the intensities and path lengths data, we include two curves, represented as blueprint meshes.
 
-.. figure:: images/TODO
+.. figure:: images/XRay_Query_spectra_intensities_front.png
 
    One of the 1D Spectra Curves visualized using VisIt.
 
@@ -2275,7 +2275,7 @@ So, instead of adding a Pseudocolor plot, we will add a Curve plot instead.
    CurveAtts.showLabels = 0
    SetPlotOptions(CurveAtts)
 
-.. figure:: images/TODO
+.. figure:: images/XRay_Query_spectra_intensities_front.png
 
    A visualization of the 1D Spectra Curve mesh.
 

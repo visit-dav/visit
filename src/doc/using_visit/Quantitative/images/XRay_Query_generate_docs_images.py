@@ -256,11 +256,20 @@ def visualize_spatial_energy_reduced_topo(whichone):
 def visualize_spectra_curves(whichone):
 	ResetView()
 	AddPlot("Curve", "mesh_spectra_topo/" + whichone + "_spectra")
+	DrawPlots()
 	CurveAtts = CurveAttributes()
 	CurveAtts.showLegend = 0
 	CurveAtts.showLabels = 0
 	SetPlotOptions(CurveAtts)
-	DrawPlots()
+
+	ViewCurveAtts = ViewCurveAttributes()
+	if whichone == "intensities":
+		ViewCurveAtts.domainCoords = (-0.9282, 4.9282)
+		ViewCurveAtts.rangeCoords = (0.48126, 7.81849)
+	else:
+		ViewCurveAtts.domainCoords = (-0.42, 4.42)
+		ViewCurveAtts.rangeCoords = (244.137, 1537.89)
+	SetViewCurve(ViewCurveAtts)
 
 # these are the 2d plots, spatial energy reduced and spectra curves
 def bonus_topos(direction):
