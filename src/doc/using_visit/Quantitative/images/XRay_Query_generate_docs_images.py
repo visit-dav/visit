@@ -481,74 +481,74 @@ def main():
 
 	conduit_processing()
 
-	# #
-	# # generate images used in the blueprint example
-	# #
+	#
+	# generate images used in the blueprint example
+	#
 
-	# # first we take a picture of the input mesh
-	# ActivateDatabase(data_file)
-	# AddPlot("Pseudocolor", "d")
-	# DrawPlots()
-	# ResetView()
-	# change_to_spectral_inverted()
-	# save_image("example_input_mesh")
-	# DeleteAllPlots()
+	# first we take a picture of the input mesh
+	ActivateDatabase(data_file)
+	AddPlot("Pseudocolor", "d")
+	DrawPlots()
+	ResetView()
+	change_to_spectral_inverted()
+	save_image("example_input_mesh")
+	DeleteAllPlots()
 
-	# # then we take a picture of the blueprint output intensities
-	# OpenDatabase(example_result)
-	# visualize_image_topo("intensities")
-	# ResetView()
-	# change_to_xray()
-	# save_image("example_intensities")
-	# DeleteAllPlots()
+	# then we take a picture of the blueprint output intensities
+	OpenDatabase(example_result)
+	visualize_image_topo("intensities")
+	ResetView()
+	change_to_xray()
+	save_image("example_intensities")
+	DeleteAllPlots()
 
-	# # after this point, we no longer need annotations
-	# turn_off_annotations()
+	# after this point, we no longer need annotations
+	turn_off_annotations()
 	
-	# #
-	# # generate hi-res image and bonus topo images for FRONT view
-	# #
-	# OpenDatabase(out_400x300)
-	# image_topos(direction = "front")
-	# bonus_topos(direction = "front")
-	# CloseDatabase(out_400x300)
+	#
+	# generate hi-res image and bonus topo images for FRONT view
+	#
+	OpenDatabase(out_400x300)
+	image_topos(direction = "front")
+	bonus_topos(direction = "front")
+	CloseDatabase(out_400x300)
 	
-	# #
-	# # generate hi-res image and bonus topo images for SIDE view
-	# #
-	# OpenDatabase(out_side_400x300)
-	# image_topos(direction = "side")
-	# bonus_topos(direction = "side")
-	# CloseDatabase(out_side_400x300)
+	#
+	# generate hi-res image and bonus topo images for SIDE view
+	#
+	OpenDatabase(out_side_400x300)
+	image_topos(direction = "side")
+	bonus_topos(direction = "side")
+	CloseDatabase(out_side_400x300)
 	
-	# #
-	# # generate input mesh images for a few views
-	# #
-	# ActivateDatabase(data_file)
-	# AddPlot("Pseudocolor", "d")
-	# DrawPlots()
-	# change_to_spectral_inverted()
-	# save_image("input_mesh_front")
-	# set_view(SIDE_VIEW)
-	# save_image("input_mesh_side")
-	# set_view(SIM_VIEW)
-	# save_image("input_mesh_sim")
-	# set_view(ALT_SIDE_VIEW)
-	# save_image("input_mesh_alt_side")
-	# DeleteAllPlots()
+	#
+	# generate input mesh images for a few views
+	#
+	ActivateDatabase(data_file)
+	AddPlot("Pseudocolor", "d")
+	DrawPlots()
+	change_to_spectral_inverted()
+	save_image("input_mesh_front")
+	set_view(SIDE_VIEW)
+	save_image("input_mesh_side")
+	set_view(SIM_VIEW)
+	save_image("input_mesh_sim")
+	set_view(ALT_SIDE_VIEW)
+	save_image("input_mesh_alt_side")
+	DeleteAllPlots()
 
-	# #
-	# # generate imaging planes and rays images for multiple resolutions for FRONT view
-	# #
-	# run_imaging_planes_and_rays(res = "400x300", file = out_400x300, direction = "front")
-	# run_imaging_planes_and_rays(res = "40x30",   file = out_40x30,   direction = "front")
-	# run_imaging_planes_and_rays(res = "20x15",   file = out_20x15,   direction = "front")
-	# run_imaging_planes_and_rays(res = "8x6",     file = out_8x6,     direction = "front")
+	#
+	# generate imaging planes and rays images for multiple resolutions for FRONT view
+	#
+	run_imaging_planes_and_rays(res = "400x300", file = out_400x300, direction = "front")
+	run_imaging_planes_and_rays(res = "40x30",   file = out_40x30,   direction = "front")
+	run_imaging_planes_and_rays(res = "20x15",   file = out_20x15,   direction = "front")
+	run_imaging_planes_and_rays(res = "8x6",     file = out_8x6,     direction = "front")
 
-	# #
-	# # generate imaging planes and rays images for multiple resolutions for SIDE view
-	# #
-	# run_imaging_planes_and_rays(res = "400x300", file = out_side_400x300, direction = "side")
-	# run_imaging_planes_and_rays(res = "40x30",   file = out_side_40x30,   direction = "side")
+	#
+	# generate imaging planes and rays images for multiple resolutions for SIDE view
+	#
+	run_imaging_planes_and_rays(res = "400x300", file = out_side_400x300, direction = "side")
+	run_imaging_planes_and_rays(res = "40x30",   file = out_side_40x30,   direction = "side")
 
 main()
