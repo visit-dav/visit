@@ -199,6 +199,9 @@
 #   Eric Brugger, Fri Feb 17 15:25:36 PST 2023
 #   I added poodle.
 #
+#   Eric Brugger, Tue May  2 14:55:44 PDT 2023
+#   I updated the path to cmake for building on rztrona.
+#
 #-----------------------------------------------------------------------
 
 test=no
@@ -601,7 +604,7 @@ cd $dist/src
 ver=\`cat VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
 export PATH=\$PATH:/usr/bin/X11
-/usr/workspace/visit/visit/thirdparty_shared/3.3.0/toss3/cmake/3.18.2/linux-x86_64_gcc-7.3/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON -DVISIT_PARADIS:BOOL=ON >> ../../buildlog 2>&1
+/usr/workspace/visit/visit/thirdparty_shared/3.3.0/toss3/cmake/3.24.3/linux-x86_64_gcc-7.3/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON -DVISIT_PARADIS:BOOL=ON >> ../../buildlog 2>&1
 make manuals >> ../../buildlog 2>&1
 make -j 12 package >> ../../buildlog 2>&1
 mv visit\$ver2.linux-x86_64.tar.gz ../..
