@@ -570,9 +570,6 @@ To look at the raw data from the query, we run this code:
 This yields the following data overview.
 See :ref:`Introspecting_with_Python` for a deeper dive into viewing and extracting the raw data from the :ref:`Conduit_Output`.
 
-
-TODO
-
 ::
 
    state: 
@@ -602,15 +599,15 @@ TODO
        num_x_pixels: 400
        num_y_pixels: 300
        ... ( skipped 2 children )
-       emis_var_name: "p"
-       abs_units: "abs units"
-       emis_units: "emis units"
+       emis_var_name: "pa"
+       abs_units: "cm^2/g"
+       emis_units: "GJ/cm^2/ster/ns/keV"
      xray_data: 
        detector_width: 8.80338743415454
        detector_height: 6.60254037884486
-       intensity_max: 0.491446971893311
+       intensity_max: 1.96578788757324
        intensity_min: 0.0
-       path_length_max: 129.857009887695
+       path_length_max: 519.428039550781
        path_length_min: 0.0
        image_topo_order_of_domain_variables: "xyz"
      domain_id: 0
@@ -620,7 +617,7 @@ TODO
        values: 
          x: [0, 1, 2, ..., 399, 400]
          y: [0, 1, 2, ..., 299, 300]
-         z: [0, 1]
+         z: [0, 1, 2, 3, 4]
        labels: 
          x: "width"
          y: "height"
@@ -634,7 +631,8 @@ TODO
        values: 
          x: [0.0, 0.0220084685853863, 0.0440169371707727, ..., 8.78137896556915, 8.80338743415454]
          y: [0.0, 0.0220084679294829, 0.0440169358589658, ..., 6.58053191091538, 6.60254037884486]
-         z: [2.7, 6.2]
+         z: [0.0, 1.0, 2.0, 3.0, 4.0]
+       info: "Energy group bounds size mismatch: provided 7 bounds, but 5 in query results."
        units: 
          x: "cm"
          y: "cm"
@@ -648,19 +646,22 @@ TODO
        values: 
          x: [0.0, 0.0220084685853863, 0.0440169371707727, ..., 8.78137896556915, 8.80338743415454]
          y: [0.0, 0.0220084679294829, 0.0440169358589658, ..., 6.58053191091538, 6.60254037884486]
-       labels: 
-         x: "width"
-         y: "height"
        units: 
          x: "cm"
          y: "cm"
-     near_plane_coords: 
-       type: "explicit"
+       labels: 
+         x: "width"
+         y: "height"
+     spectra_coords: 
+       type: "rectilinear"
        values: 
-         x: [4.40169371707727, -4.40169371707727, -4.40169371707727, 4.40169371707727]
-         y: [-0.801270189422432, -0.801270189422432, 5.80127018942243, 5.80127018942243]
-         z: [-15.0, -15.0, -15.0, -15.0]
-     ... ( skipped 1 child )
+         x: [0.0, 1.0, 2.0, 3.0, 4.0]
+       units: 
+         x: "kev"
+       labels: 
+         x: "energy_group"
+       info: "Energy group bounds size mismatch: provided 7 bounds, but 5 in query results."
+     ... ( skipped 2 children )
      far_plane_coords: 
        type: "explicit"
        values: 
@@ -689,13 +690,10 @@ TODO
      spatial_energy_reduced_topo: 
        coordset: "spatial_energy_reduced_coords"
        type: "rectilinear"
-     near_plane_topo: 
-       type: "unstructured"
-       coordset: "near_plane_coords"
-       elements: 
-         shape: "quad"
-         connectivity: [0, 1, 2, 3]
-     ... ( skipped 1 child )
+     spectra_topo: 
+       coordset: "spectra_coords"
+       type: "rectilinear"
+     ... ( skipped 2 children )
      far_plane_topo: 
        type: "unstructured"
        coordset: "far_plane_coords"
@@ -739,7 +737,7 @@ TODO
        units: "path length metadata"
        values: [0.0, 0.0, 0.0, ..., 0.0, 0.0]
        strides: [1, 400, 120000]
-     ... ( skipped 4 children )
+     ... ( skipped 6 children )
      far_plane_field: 
        topology: "far_plane_topo"
        association: "element"
@@ -755,8 +753,6 @@ TODO
        association: "element"
        volume_dependent: "false"
        values: [0.0, 1.0, 2.0, ..., 119998.0, 119999.0]
-
-   
 
 The next thing we may want to do is to visualize an x ray image using VisIt_.
 The :ref:`Visualizing_with_VisIt` section goes into more detail on this subject, so for now we will only visualize the :ref:`Basic_Mesh_Output`.
