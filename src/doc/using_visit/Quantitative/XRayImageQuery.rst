@@ -525,7 +525,7 @@ The next example illustrates use of one of the :ref:`Conduit_Output` types.
    AddPlot("Pseudocolor", "d")
    DrawPlots()
 
-.. figure:: images/xray_examples_bp1.png
+.. figure:: images/XRay_Query_example_input_mesh.png
 
    Our input mesh.
 
@@ -552,7 +552,7 @@ We call the query as usual, although there are a few extra arguments we can prov
    params["abs_units"] = "cm^2/g"
    params["emis_units"] = "GJ/cm^2/ster/ns/keV"
    params["intensity_units"] = "intensity units"
-   params["path_length_info"] = "transmission"
+   params["path_length_info"] = "path length metadata"
    
    Query("XRay Image", params)
 
@@ -756,6 +756,8 @@ TODO
        volume_dependent: "false"
        values: [0.0, 1.0, 2.0, ..., 119998.0, 119999.0]
 
+   
+
 The next thing we may want to do is to visualize an x ray image using VisIt_.
 The :ref:`Visualizing_with_VisIt` section goes into more detail on this subject, so for now we will only visualize the :ref:`Basic_Mesh_Output`.
 
@@ -778,7 +780,7 @@ The :ref:`Visualizing_with_VisIt` section goes into more detail on this subject,
 
 Running this code yields the following image:
 
-.. figure:: images/xray_examples_bp2.png
+.. figure:: images/XRay_Query_example_intensities.png
 
    The resulting x ray image, visualized using VisIt.
 
