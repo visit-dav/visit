@@ -13,6 +13,10 @@
 #    Justin Privitera, Fri Apr 14 10:52:39 PDT 2023
 #    Change the color table from default to spectral inverted.
 # 
+#    Justin Privitera, Tue May  2 14:48:47 PDT 2023
+#    Spectra curves pictures are improved and this also makes the pictures for
+#    the blueprint example in the examples section.
+# -----------------------------------------------------------------------------
 
 import conduit
 import os
