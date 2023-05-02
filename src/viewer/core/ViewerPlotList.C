@@ -2788,6 +2788,118 @@ ViewerPlotList::MovePlotKeyframe(int plotId, int oldFrame, int newFrame)
 }
  
 // ****************************************************************************
+//  Method: ViewerPlotList::DeleteOperatorKeyframe
+//
+//  Purpose:
+//    Delete the keyframe from the specified operator.
+//
+//  Arguments:
+//    plotId     : The id of the plot.
+//    operatorId : The id of the operator.
+//    frame      : The keyframe to delete.
+//
+//  Programmer: Eric Brugger
+//  Creation:   Wed Mar 22 16:23:12 PDT 2023
+//
+// ****************************************************************************
+
+void
+ViewerPlotList::DeleteOperatorKeyframe(int plotId, int operatorId, int frame)
+{
+    //
+    // Check that the plot id is within range.
+    //
+    if (plotId < 0 || plotId >= nPlots)
+    {
+        debug1 << "The plot identifier is out of range." << endl;
+        return;
+    }
+
+    //
+    // Check that the operator id is within range.
+    //
+    if (operatorId < 0 || operatorId >= plots[plotId].plot->GetNOperators())
+    {
+        debug1 << "The operator identifier is out of range." << endl;
+        return;
+    }
+
+    //
+    // Delete the keyframe from the specified operator.
+    //
+    plots[plotId].plot->GetOperator(operatorId)->DeleteKeyframe(frame);
+
+    //
+    // Update the client attributes.
+    //
+    UpdatePlotList();
+    UpdatePlotAtts(false);
+    UpdateSILRestrictionAtts();
+
+    //
+    // Update the frame.
+    //
+    UpdateFrame();
+}
+ 
+// ****************************************************************************
+//  Method: ViewerPlotList::MoveOperatorKeyframe
+//
+//  Purpose:
+//    Move the position of a keyframe for the specified operator.
+//
+//  Arguments:
+//    plotId     : The id of the plot.
+//    operatorId : The id of the operator.
+//    oldFrame   : The old location of the keyframe.
+//    newFrame   : The new location of the keyframe.
+//
+//  Programmer: Eric Brugger
+//  Creation:   Wed Mar 22 16:23:12 PDT 2023
+//
+// ****************************************************************************
+
+void
+ViewerPlotList::MoveOperatorKeyframe(int plotId, int operatorId,
+    int oldFrame, int newFrame)
+{
+    //
+    // Check that the plot id is within range.
+    //
+    if (plotId < 0 || plotId >= nPlots)
+    {
+        debug1 << "The plot identifier is out of range." << endl;
+        return;
+    }
+
+    //
+    // Check that the operator id is within range.
+    //
+    if (operatorId < 0 || operatorId >= plots[plotId].plot->GetNOperators())
+    {
+        debug1 << "The operator identifier is out of range." << endl;
+        return;
+    }
+
+    //
+    // Move the keyframe for the specified operator.
+    //
+    plots[plotId].plot->GetOperator(operatorId)->MoveKeyframe(oldFrame, newFrame);
+
+    //
+    // Update the client attributes.
+    //
+    UpdatePlotList();
+    UpdatePlotAtts(false);
+    UpdateSILRestrictionAtts();
+
+    //
+    // Update the frame.
+    //
+    UpdateFrame();
+}
+ 
+// ****************************************************************************
 //  Method: ViewerPlotList::SetPlotDatabaseState
 //
 //  Purpose:
@@ -2995,6 +3107,11 @@ ViewerPlotList::MovePlotDatabaseKeyframe(int plotId, int oldFrame, int newFrame)
 //    Brad Whitlock, Fri Aug 13 16:34:06 PDT 2010
 //    Return a name map of old name to new name.
 //
+//    Eric Brugger, Eric Brugger, Wed Mar 22 16:23:12 PDT 2023
+//    Modified where the viewer window manager keyframe and timeslider
+//    attributes are updated in response to changes in the keyframe mode
+//    and number of keyframes.
+//
 // ****************************************************************************
 
 StringStringMap
@@ -3022,9 +3139,10 @@ ViewerPlotList::CopyFrom(const ViewerPlotList *pl, bool copyPlots)
     // If the plot list being copied is in keyframe mode then put the
     // current plot list in keyframe mode.
     //
-    if(pl->keyframeMode)
-        SetNKeyframes(pl->GetNKeyframes());
-    SetKeyframeMode(pl->keyframeMode);
+    SetKeyframeMode(pl->GetKeyframeMode());
+    SetNKeyframes(pl->GetNKeyframes());
+    ViewerWindowManager::Instance()->UpdateKeyframeAttributes();
+    ViewerWindowManager::Instance()->UpdateWindowInformation(WINDOWINFO_TIMESLIDERS);
 
     //
     // Copy the time sliders and the active time slider from the input
@@ -8611,6 +8729,11 @@ ViewerPlotList::GetActivePlotIDs(intVector &ids, bool onlyRealizedAndUnhidden)
 //    Brad Whitlock, Fri Apr 2 16:12:51 PST 2004
 //    Added code to switch all plots into keyframe mode.
 //
+//    Eric Brugger, Eric Brugger, Wed Mar 22 16:23:12 PDT 2023
+//    Modified where the viewer window manager keyframe and timeslider
+//    attributes are updated in response to changes in the keyframe mode
+//    and number of keyframes.
+//
 // ****************************************************************************
  
 void
@@ -8679,8 +8802,6 @@ ViewerPlotList::SetKeyframeMode(const bool mode)
         // Send some updated information back to the client.
         //
         UpdatePlotList();
-        ViewerWindowManager::Instance()->UpdateKeyframeAttributes();
-        ViewerWindowManager::Instance()->UpdateWindowInformation(WINDOWINFO_TIMESLIDERS);
 
         //
         // Update the frame.
@@ -8722,6 +8843,10 @@ ViewerPlotList::GetKeyframeMode() const
 // Creation:   Mon Apr 5 14:22:07 PST 2004
 //
 // Modifications:
+//    Eric Brugger, Eric Brugger, Wed Mar 22 16:23:12 PDT 2023
+//    Modified where the viewer window manager keyframe and timeslider
+//    attributes are updated in response to changes in the keyframe mode
+//    and number of keyframes.
 //   
 // ****************************************************************************
 
@@ -8751,8 +8876,6 @@ ViewerPlotList::SetNKeyframes(int nFrames)
         // Update the plot cache sizes.
         for(int i = 0; i < nPlots; ++i)
             plots[i].plot->UpdateCacheSize(keyframeMode, keyframeMode, nKeyframes);
-        ViewerWindowManager::Instance()->UpdateKeyframeAttributes();
-        ViewerWindowManager::Instance()->UpdateWindowInformation(WINDOWINFO_TIMESLIDERS);
     }
 }
 

@@ -120,9 +120,15 @@ int ViewerOperatorFactory::GetNOperatorTypes() const
 //    Kathleen Bonnell, Thu Sep 11 11:37:51 PDT 2003 
 //    Added 'fromDefault' arg, to be passed to ViewerOperator constructor.
 //
+//    Eric Brugger, Wed Mar 22 16:23:12 PDT 2023
+//    Add operator keyframing.
+//
 // ****************************************************************************
 
 ViewerOperator *ViewerOperatorFactory::CreateOperator(const int type,
+                                                      const bool keyframeMode,
+                                                      const int cacheIndex,
+                                                      const int cacheSize,
                                                       ViewerPlot *plot,
                                                       const bool fromDefault)
 {
@@ -140,6 +146,8 @@ ViewerOperator *ViewerOperatorFactory::CreateOperator(const int type,
     //
     return new ViewerOperator(type, 
                               viewerPluginInfo[type],
+                              keyframeMode,
+                              cacheIndex, cacheSize,
                               plot, fromDefault);
 }
 

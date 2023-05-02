@@ -4215,8 +4215,8 @@ visit_SetPlotFrameRange(PyObject *self, PyObject *args)
 // Function: visit_DeletePlotKeyframe
 //
 // Purpose:
-//   This is a Python callback that can be used to delete a keyframe for the
-//   specified plot.
+//   This is a Python callback that can be used to delete a plot keyframe
+//   for the specified plot.
 //
 // Note:
 //
@@ -4246,8 +4246,8 @@ visit_DeletePlotKeyframe(PyObject *self, PyObject *args)
 // Function: visit_MovePlotKeyframe
 //
 // Purpose:
-//   This is a Python callback that can be used to move a plot keyframe for
-//   a specified plot.
+//   This is a Python callback that can be used to move a plot keyframe
+//   for a specified plot.
 //
 // Note:
 //
@@ -4268,6 +4268,68 @@ visit_MovePlotKeyframe(PyObject *self, PyObject *args)
         return NULL;
 
     GetViewerMethods()->MovePlotKeyframe(plotId, oldFrame, newFrame);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+// ****************************************************************************
+// Function: visit_DeleteOperatorKeyframe
+//
+// Purpose:
+//   This is a Python callback that can be used to delete an operator keyframe
+//   for the specified operator.
+//
+// Note:
+//
+// Programmer: Eric Brugger
+// Creation:   Wed Mar 22 16:23:12 PDT 2023
+//
+// Modifications:
+//
+// ****************************************************************************
+
+STATIC PyObject *
+visit_DeleteOperatorKeyframe(PyObject *self, PyObject *args)
+{
+    ENSURE_VIEWER_EXISTS();
+
+    int plotId, operatorId, frame;
+    if(!PyArg_ParseTuple(args, "iii", &plotId, &operatorId, &frame))
+        return NULL;
+
+    GetViewerMethods()->DeleteOperatorKeyframe(plotId, operatorId, frame);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+// ****************************************************************************
+// Function: visit_MoveOperatorKeyframe
+//
+// Purpose:
+//   This is a Python callback that can be used to move an operator keyframe
+//   for a specified operator.
+//
+// Note:
+//
+// Programmer: Eric Brugger
+// Creation:   Wed Mar 22 16:23:12 PDT 2023
+//
+// Modifications:
+//
+// ****************************************************************************
+
+STATIC PyObject *
+visit_MoveOperatorKeyframe(PyObject *self, PyObject *args)
+{
+    ENSURE_VIEWER_EXISTS();
+
+    int plotId, operatorId, oldFrame, newFrame;
+    if(!PyArg_ParseTuple(args, "iiii", &plotId, &operatorId, &oldFrame, &newFrame))
+        return NULL;
+
+    GetViewerMethods()->MoveOperatorKeyframe(plotId, operatorId, oldFrame, newFrame);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -18205,6 +18267,8 @@ AddProxyMethods()
     AddMethod("DeleteAllPlots", visit_DeleteAllPlots,visit_DeleteAllPlots_doc);
     AddMethod("DeleteNamedSelection", visit_DeleteNamedSelection,
                                            visit_DeleteNamedSelection_doc);
+    AddMethod("DeleteOperatorKeyframe", visit_DeleteOperatorKeyframe,
+                                                 visit_DeleteOperatorKeyframe_doc);
     AddMethod("DeletePlotDatabaseKeyframe", visit_DeletePlotDatabaseKeyframe,
                                          visit_DeletePlotDatabaseKeyframe_doc);
     AddMethod("DeletePlotKeyframe", visit_DeletePlotKeyframe,
@@ -18311,6 +18375,8 @@ AddProxyMethods()
     AddMethod("GetMachineProfile", visit_GetMachineProfile, visit_GetMachineProfile_doc);
     AddMethod("GetMachineProfileNames", visit_GetMachineProfileNames, visit_GetMachineProfileNames_doc);
 
+    AddMethod("MoveOperatorKeyframe", visit_MoveOperatorKeyframe,
+                                                   visit_MoveOperatorKeyframe_doc);
     AddMethod("MovePlotDatabaseKeyframe", visit_MovePlotDatabaseKeyframe,
                                            visit_MovePlotDatabaseKeyframe_doc);
     AddMethod("MovePlotKeyframe", visit_MovePlotKeyframe,
