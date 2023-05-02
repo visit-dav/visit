@@ -2518,6 +2518,26 @@ Because the :ref:`Spatial_Extents_Meshes` share a lot in common with the :ref:`B
    spatial_yunits = xrayout["domain_000000/coordsets/spatial_coords/units/y"]
    energy_units = xrayout["domain_000000/coordsets/spatial_coords/units/z"]
 
+Accessing the 1D Spectra Curves Data
+++++++++++++++++++++++++++++++++++++
+
+The :ref:`1D_Spectra_Curves` are similar in structure to the other standard Blueprint meshes.
+
+::
+
+   # Extract the energy group bounds
+   energy_group_bounds = xrayout["domain_000000/coordsets/spectra_coords/values/x"]
+
+   # Extract the label
+   spectra_label = xrayout["domain_000000/coordsets/spectra_coords/labels/x"]
+
+   # Extract the units
+   spatial_xunits = xrayout["domain_000000/coordsets/spectra_coords/units/x"]
+
+   # Extract the field values
+   intensities_spectra_curve_values = xrayout["domain_000000/fields/intensities_spectra/values"]
+   # Extracting the same for path_length is similar
+
 Accessing Everything Else
 +++++++++++++++++++++++++
 
