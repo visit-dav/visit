@@ -19,6 +19,7 @@
 
 #include <avtHTGOptions.h>
 #include <DBOptionsAttributes.h>
+#include <DebugStream.h>
 
 #include <ImproperUseException.h>
 
@@ -203,7 +204,15 @@ avtHTGWriter::WriteChunk(vtkDataSet *ds, int chunk)
 	    // HTGWrite adds the ".htg" extension to the filename.
 	    //
             std::string path = stem + "." + arr->GetName();
-            HTGWrite(path.c_str(), blankValue, nx, bounds, values);
+	    try
+	    {
+                HTGWrite(path.c_str(), blankValue, nx, bounds, values);
+	    }
+	    catch (ImproperUseException)
+	    {
+                debug1 << "The variable " << arr->GetName()
+                       << " only had blank values." << endl;
+	    }
 
 	    if (deleteValues)
                 delete [] values;
