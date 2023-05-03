@@ -525,7 +525,7 @@ The next example illustrates use of one of the :ref:`Conduit_Output` types.
    AddPlot("Pseudocolor", "d")
    DrawPlots()
 
-.. figure:: images/xray_examples_bp1.png
+.. figure:: images/XRay_Query_example_input_mesh.png
 
    Our input mesh.
 
@@ -552,7 +552,7 @@ We call the query as usual, although there are a few extra arguments we can prov
    params["abs_units"] = "cm^2/g"
    params["emis_units"] = "GJ/cm^2/ster/ns/keV"
    params["intensity_units"] = "intensity units"
-   params["path_length_info"] = "transmission"
+   params["path_length_info"] = "path length metadata"
    
    Query("XRay Image", params)
 
@@ -599,15 +599,15 @@ See :ref:`Introspecting_with_Python` for a deeper dive into viewing and extracti
        num_x_pixels: 400
        num_y_pixels: 300
        ... ( skipped 2 children )
-       emis_var_name: "p"
-       abs_units: "abs units"
-       emis_units: "emis units"
+       emis_var_name: "pa"
+       abs_units: "cm^2/g"
+       emis_units: "GJ/cm^2/ster/ns/keV"
      xray_data: 
        detector_width: 8.80338743415454
        detector_height: 6.60254037884486
-       intensity_max: 0.491446971893311
+       intensity_max: 1.96578788757324
        intensity_min: 0.0
-       path_length_max: 129.857009887695
+       path_length_max: 519.428039550781
        path_length_min: 0.0
        image_topo_order_of_domain_variables: "xyz"
      domain_id: 0
@@ -617,7 +617,7 @@ See :ref:`Introspecting_with_Python` for a deeper dive into viewing and extracti
        values: 
          x: [0, 1, 2, ..., 399, 400]
          y: [0, 1, 2, ..., 299, 300]
-         z: [0, 1]
+         z: [0, 1, 2, 3, 4]
        labels: 
          x: "width"
          y: "height"
@@ -631,7 +631,8 @@ See :ref:`Introspecting_with_Python` for a deeper dive into viewing and extracti
        values: 
          x: [0.0, 0.0220084685853863, 0.0440169371707727, ..., 8.78137896556915, 8.80338743415454]
          y: [0.0, 0.0220084679294829, 0.0440169358589658, ..., 6.58053191091538, 6.60254037884486]
-         z: [2.7, 6.2]
+         z: [0.0, 1.0, 2.0, 3.0, 4.0]
+       info: "Energy group bounds size mismatch: provided 7 bounds, but 5 in query results."
        units: 
          x: "cm"
          y: "cm"
@@ -645,19 +646,22 @@ See :ref:`Introspecting_with_Python` for a deeper dive into viewing and extracti
        values: 
          x: [0.0, 0.0220084685853863, 0.0440169371707727, ..., 8.78137896556915, 8.80338743415454]
          y: [0.0, 0.0220084679294829, 0.0440169358589658, ..., 6.58053191091538, 6.60254037884486]
-       labels: 
-         x: "width"
-         y: "height"
        units: 
          x: "cm"
          y: "cm"
-     near_plane_coords: 
-       type: "explicit"
+       labels: 
+         x: "width"
+         y: "height"
+     spectra_coords: 
+       type: "rectilinear"
        values: 
-         x: [4.40169371707727, -4.40169371707727, -4.40169371707727, 4.40169371707727]
-         y: [-0.801270189422432, -0.801270189422432, 5.80127018942243, 5.80127018942243]
-         z: [-15.0, -15.0, -15.0, -15.0]
-     ... ( skipped 1 child )
+         x: [0.0, 1.0, 2.0, 3.0, 4.0]
+       units: 
+         x: "kev"
+       labels: 
+         x: "energy_group"
+       info: "Energy group bounds size mismatch: provided 7 bounds, but 5 in query results."
+     ... ( skipped 2 children )
      far_plane_coords: 
        type: "explicit"
        values: 
@@ -686,13 +690,10 @@ See :ref:`Introspecting_with_Python` for a deeper dive into viewing and extracti
      spatial_energy_reduced_topo: 
        coordset: "spatial_energy_reduced_coords"
        type: "rectilinear"
-     near_plane_topo: 
-       type: "unstructured"
-       coordset: "near_plane_coords"
-       elements: 
-         shape: "quad"
-         connectivity: [0, 1, 2, 3]
-     ... ( skipped 1 child )
+     spectra_topo: 
+       coordset: "spectra_coords"
+       type: "rectilinear"
+     ... ( skipped 2 children )
      far_plane_topo: 
        type: "unstructured"
        coordset: "far_plane_coords"
@@ -736,7 +737,7 @@ See :ref:`Introspecting_with_Python` for a deeper dive into viewing and extracti
        units: "path length metadata"
        values: [0.0, 0.0, 0.0, ..., 0.0, 0.0]
        strides: [1, 400, 120000]
-     ... ( skipped 4 children )
+     ... ( skipped 6 children )
      far_plane_field: 
        topology: "far_plane_topo"
        association: "element"
@@ -775,7 +776,7 @@ The :ref:`Visualizing_with_VisIt` section goes into more detail on this subject,
 
 Running this code yields the following image:
 
-.. figure:: images/xray_examples_bp2.png
+.. figure:: images/XRay_Query_example_intensities.png
 
    The resulting x ray image, visualized using VisIt.
 
@@ -805,7 +806,7 @@ Additionally, it is simple to generate an image, as the Blueprint output can be 
 
    The resulting x ray image from Conduit Blueprint output, visualized by plotting with VisIt.
 
-We have opted to enrich the Blueprint output (see :ref:`Basic_Mesh_Output`) with extensive metadata (see :ref:`XRay_Metadata`) as well as additional meshes (see :ref:`Imaging_Planes_and_Rays_Meshes` and :ref:`Spatial_Extents_Meshes`) to provide extra context and information to the user. 
+We have opted to enrich the Blueprint output (see :ref:`Basic_Mesh_Output`) with extensive metadata (see :ref:`XRay_Metadata`) as well as additional meshes (see :ref:`Imaging_Planes_and_Rays_Meshes`, :ref:`Spatial_Extents_Meshes`, and :ref:`1D_Spectra_Curves`) to provide extra context and information to the user. 
 These additions should make it easier to troubleshoot unexpected results, make sense of the query output, and pass important information through the query.
 Blueprint makes it simple to put all of this information into one file, and just as simple to read that information back out and/or visualize.
 
@@ -843,6 +844,8 @@ Here is a simplified representation of a Conduit tree that is output from the Qu
       ...
     spatial_energy_reduced_coords: 
       ...
+    spectra_coords: 
+      ...
     near_plane_coords: 
       ...
     view_plane_coords: 
@@ -859,6 +862,8 @@ Here is a simplified representation of a Conduit tree that is output from the Qu
     spatial_topo:
       ...
     spatial_energy_reduced_topo: 
+      ...
+    spectra_topo: 
       ...
     near_plane_topo: 
       ...
@@ -883,6 +888,10 @@ Here is a simplified representation of a Conduit tree that is output from the Qu
       ...
     path_length_spatial_energy_reduced: 
       ...
+    intensities_spectra: 
+      ...
+    path_length_spectra: 
+      ...
     near_plane_field: 
       ...
     view_plane_field: 
@@ -897,7 +906,7 @@ Here is a simplified representation of a Conduit tree that is output from the Qu
 There are multiple Blueprint meshes stored in this tree, as well as extensive metadata.
 Each piece of the Conduit output will be covered in more detail in ensuing parts of the documentation.
 To learn more about what lives under the ``state`` branch, see the :ref:`XRay_Metadata` section.
-To learn more about the coordinate sets, topologies, and fields, see the :ref:`Basic_Mesh_Output`, :ref:`Imaging_Planes_and_Rays_Meshes`, and :ref:`Spatial_Extents_Meshes` sections.
+To learn more about the coordinate sets, topologies, and fields, see the :ref:`Basic_Mesh_Output`, :ref:`Imaging_Planes_and_Rays_Meshes`, :ref:`Spatial_Extents_Meshes`, and :ref:`1D_Spectra_Curves` sections.
 
 .. _Basic_Mesh_Output:
 
@@ -944,6 +953,8 @@ The following is the example from :ref:`Overview_of_Output`, but with the Bluepr
       ...
     spatial_energy_reduced_coords: 
       ...
+    spectra_coords: 
+      ...
     near_plane_coords: 
       ...
     view_plane_coords: 
@@ -961,6 +972,8 @@ The following is the example from :ref:`Overview_of_Output`, but with the Bluepr
     spatial_topo: 
       ...
     spatial_energy_reduced_topo: 
+      ...
+    spectra_topo: 
       ...
     near_plane_topo: 
       ...
@@ -992,6 +1005,10 @@ The following is the example from :ref:`Overview_of_Output`, but with the Bluepr
     intensities_spatial_energy_reduced: 
       ...
     path_length_spatial_energy_reduced: 
+      ...
+    intensities_spectra: 
+      ...
+    path_length_spectra: 
       ...
     near_plane_field: 
       ...
@@ -1081,62 +1098,11 @@ See the example below, which is taken from the example in :ref:`Overview_of_Outp
       image_topo_order_of_domain_variables: "xyz"
     domain_id: 0
   coordsets: 
-    image_coords: 
-      ...
-    spatial_coords: 
-      ...
-    spatial_energy_reduced_coords: 
-      ...
-    near_plane_coords: 
-      ...
-    view_plane_coords: 
-      ...
-    far_plane_coords: 
-      ...
-    ray_corners_coords: 
-      ...
-    ray_coords: 
-      ...
+    ...
   topologies: 
-    image_topo: 
-      ...
-    spatial_topo: 
-      ...
-    spatial_energy_reduced_topo: 
-      ...
-    near_plane_topo: 
-      ...
-    view_plane_topo: 
-      ...
-    far_plane_topo: 
-      ...
-    ray_corners_topo: 
-      ...
-    ray_topo: 
-      ...
+    ...
   fields: 
-    intensities: 
-      ...
-    path_length: 
-      ...
-    intensities_spatial: 
-      ...
-    path_length_spatial: 
-      ...
-    intensities_spatial_energy_reduced: 
-      ...
-    path_length_spatial_energy_reduced: 
-      ...
-    near_plane_field: 
-      ...
-    view_plane_field: 
-      ...
-    far_plane_field: 
-      ...
-    ray_corners_field: 
-      ...
-    ray_field: 
-      ...
+    ...
 
 There are three top-level items: ``time``, ``cycle``, and ``domain_id``.
 The fact that the ``domain_id`` is present is a side effect of Conduit; all of the output data is single domain and this value has nothing to do with the query.
@@ -1397,6 +1363,8 @@ See the example below, which is taken from the example in :ref:`Overview_of_Outp
       ...
     spatial_energy_reduced_coords: 
       ...
+    spectra_coords: 
+      ...
     near_plane_coords: 
       type: "explicit"
       values: 
@@ -1425,6 +1393,8 @@ See the example below, which is taken from the example in :ref:`Overview_of_Outp
     spatial_topo: 
       ...
     spatial_energy_reduced_topo: 
+      ...
+    spectra_topo: 
       ...
     near_plane_topo: 
       type: "unstructured"
@@ -1460,6 +1430,10 @@ See the example below, which is taken from the example in :ref:`Overview_of_Outp
     intensities_spatial_energy_reduced: 
       ...
     path_length_spatial_energy_reduced: 
+      ...
+    intensities_spectra: 
+      ...
+    path_length_spectra: 
       ...
     near_plane_field: 
       topology: "near_plane_topo"
@@ -1593,6 +1567,8 @@ Now we will take a look at another example inspired by the example in :ref:`Over
       ...
     spatial_energy_reduced_coords: 
       ...
+    spectra_coords: 
+      ...
     near_plane_coords: 
       ...
     view_plane_coords: 
@@ -1617,6 +1593,8 @@ Now we will take a look at another example inspired by the example in :ref:`Over
     spatial_topo: 
       ...
     spatial_energy_reduced_topo: 
+      ...
+    spectra_topo: 
       ...
     near_plane_topo: 
       ...
@@ -1648,6 +1626,10 @@ Now we will take a look at another example inspired by the example in :ref:`Over
     intensities_spatial_energy_reduced: 
       ...
     path_length_spatial_energy_reduced: 
+      ...
+    intensities_spectra: 
+      ...
+    path_length_spectra: 
       ...
     near_plane_field: 
       ...
@@ -1681,7 +1663,7 @@ With VisIt, one need only draw a Mesh Plot of the ``mesh_ray_topo`` as opposed t
 Spatial Extents Meshes
 """"""""""""""""""""""
 
-The final pieces of the Conduit Output are two more meshes, the spatial extents mesh and the spatial energy reduced mesh.
+The spatial extents mesh and the spatial energy reduced mesh are two additional pieces that we include with the Conduit Output.
 
 .. figure:: images/XRay_Query_spatial_intensities_xray_front.png
 
@@ -1756,6 +1738,8 @@ The following is the example from :ref:`Overview_of_Output`, but with only the s
       labels: 
         x: "width"
         y: "height"
+    spectra_coords: 
+      ...
     near_plane_coords: 
       ...
     view_plane_coords: 
@@ -1775,6 +1759,8 @@ The following is the example from :ref:`Overview_of_Output`, but with only the s
     spatial_energy_reduced_topo: 
       coordset: "spatial_energy_reduced_coords"
       type: "rectilinear"
+    spectra_topo: 
+      ...
     near_plane_topo: 
       ...
     view_plane_topo: 
@@ -1810,6 +1796,10 @@ The following is the example from :ref:`Overview_of_Output`, but with only the s
       topology: "spatial_energy_reduced_topo"
       association: "element"
       values: [6.16014242172, 6.12798333168, 6.09556555748, ..., 0.0, 0.0]
+    intensities_spectra: 
+      ...
+    path_length_spectra: 
+      ...
     near_plane_field: 
       ...
     view_plane_field: 
@@ -1835,6 +1825,118 @@ We then duplicated the existing topology and fields from the :ref:`Basic_Mesh_Ou
    It is in 3D and the z dimension represents the energy group bounds, which in this example run from 0 to 12.
 
 To visualize this mesh with VisIt, see :ref:`Visualizing_with_VisIt`. To extract the spatial extents data from the Blueprint output, see :ref:`Introspecting_with_Python`.
+
+.. _1D_Spectra_Curves:
+
+1D Spectra Curves
+"""""""""""""""""
+
+To provide yet another view of the intensities and path lengths data, we include two curves, represented as blueprint meshes.
+
+.. figure:: images/XRay_Query_spectra_intensities_front.png
+
+   One of the 1D Spectra Curves visualized using VisIt.
+
+Similar to the Spatial Energy Reduced Mesh (:ref:`Spatial_Extents_Meshes`), the provided mesh is a dimension collapse of the Spatial Extents Mesh.
+However, instead of collapsing the z dimension (energy group bounds) by taking a sum, we collapse the x and y dimensions (spatial extents).
+Thus we are left with a 1D curve, where for each energy group bin, there is one field value that is the result of summing the fields values (intensities or path lengths scaled by the spatial extents of each pixel) for each z-plane.
+There is one curve for the intensities and one curve for the path lengths.
+
+The following is the example from :ref:`Overview_of_Output`, but with the Blueprint mesh representing the 1D Spectra Curves fully realized:
+
+::
+
+  state: 
+    time: 4.8
+    cycle: 48
+    xray_view: 
+      ...
+    xray_query: 
+      ...
+    xray_data: 
+      ...
+    domain_id: 0
+  coordsets: 
+    image_coords: 
+      ...
+    spatial_coords: 
+      ...
+    spatial_energy_reduced_coords: 
+      ...
+    spectra_coords: 
+      type: "rectilinear"
+      values: 
+        x: [0.0, 1.0, 2.0, 3.0, 4.0]
+      units: 
+        x: "kev"
+      labels: 
+        x: "energy_group"
+    near_plane_coords: 
+      ...
+    view_plane_coords: 
+      ...
+    far_plane_coords: 
+      ...
+    ray_corners_coords: 
+      ...
+    ray_coords: 
+      ...
+  topologies: 
+    image_topo: 
+      ...
+    spatial_topo: 
+      ...
+    spatial_energy_reduced_topo: 
+      ...
+    spectra_topo: 
+      coordset: "spectra_coords"
+      type: "rectilinear"
+    near_plane_topo: 
+      ...
+    view_plane_topo: 
+      ...
+    far_plane_topo: 
+      ...
+    ray_corners_topo: 
+      ...
+    ray_topo: 
+      ...
+  fields: 
+    intensities: 
+      ...
+    path_length: 
+      ...
+    intensities_spatial: 
+      ...
+    path_length_spatial: 
+      ...
+    intensities_spatial_energy_reduced: 
+      ...
+    path_length_spatial_energy_reduced: 
+      ...
+    intensities_spectra: 
+      topology: "spectra_topo"
+      association: "element"
+      values: [1.64416097681804, 3.31540252150611, 6.65558651188286, 4.98593527287638]
+    path_length_spectra: 
+      topology: "spectra_topo"
+      association: "element"
+      values: [356.40441526888, 712.808830537761, 1425.61766107552, 1069.21324547146]
+    near_plane_field: 
+      ...
+    view_plane_field: 
+      ...
+    far_plane_field: 
+      ...
+    ray_corners_field: 
+      ...
+    ray_field: 
+      ...
+
+Again, we have the typical 3 components of a Blueprint mesh.
+This is no different than the other Blueprint meshes, despite the fact that this will be represented differently under the hood in VisIt to make it appear as a curve when plotted.
+
+To visualize this mesh with VisIt, see :ref:`Visualizing_with_VisIt`. To extract the field data from the Blueprint output, see :ref:`Introspecting_with_Python`.
 
 Pitfalls
 """"""""
@@ -2147,6 +2249,36 @@ And then we render the spatial energy reduced mesh:
 
    A visualization of the spatial energy reduced mesh using the x ray color table.
 
+Visualizing the 1D Spectra Curves
++++++++++++++++++++++++++++++++++
+
+Visualizing the :ref:`1D_Spectra_Curves` is slightly different than visualizing the other Blueprint meshes.
+Because the Blueprint mesh is 1-dimensional, VisIt will interpret it as a curve.
+So, instead of adding a Pseudocolor plot, we will add a Curve plot instead.
+
+::
+
+   # Make sure we have a clean slate for ensuing visualizations.
+   DeleteAllPlots()
+
+   # Add a curve plot of the intensities
+   AddPlot("Curve", "mesh_spectra_topo/intensities_spectra")
+
+   # Alternatively add a plot of the path length instead
+   # AddPlot("Curve", "mesh_spectra_topo/path_length_spectra")
+
+   DrawPlots()
+
+   # Remove the labels to clean up the image
+   SetActivePlots(0)
+   CurveAtts = CurveAttributes()
+   CurveAtts.showLabels = 0
+   SetPlotOptions(CurveAtts)
+
+.. figure:: images/XRay_Query_spectra_intensities_front.png
+
+   A visualization of the 1D Spectra Curve mesh.
+
 .. _Introspecting_with_Python:
 
 Introspecting with Python
@@ -2383,6 +2515,26 @@ Because the :ref:`Spatial_Extents_Meshes` share a lot in common with the :ref:`B
    spatial_xunits = xrayout["domain_000000/coordsets/spatial_coords/units/x"]
    spatial_yunits = xrayout["domain_000000/coordsets/spatial_coords/units/y"]
    energy_units = xrayout["domain_000000/coordsets/spatial_coords/units/z"]
+
+Accessing the 1D Spectra Curves Data
+++++++++++++++++++++++++++++++++++++
+
+The :ref:`1D_Spectra_Curves` are similar in structure to the other standard Blueprint meshes.
+
+::
+
+   # Extract the energy group bounds
+   energy_group_bounds = xrayout["domain_000000/coordsets/spectra_coords/values/x"]
+
+   # Extract the label
+   spectra_label = xrayout["domain_000000/coordsets/spectra_coords/labels/x"]
+
+   # Extract the units
+   spatial_xunits = xrayout["domain_000000/coordsets/spectra_coords/units/x"]
+
+   # Extract the field values
+   intensities_spectra_curve_values = xrayout["domain_000000/fields/intensities_spectra/values"]
+   # Extracting the same for path_length is similar
 
 Accessing Everything Else
 +++++++++++++++++++++++++
