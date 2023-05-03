@@ -159,8 +159,8 @@ avtHTGWriter::WriteChunk(vtkDataSet *ds, int chunk)
         vtkDataArray *coord = coords[i];
         double dx = (coord->GetTuple1(dims[0]-1) - coord->GetTuple1(0)) /
             double(dims[0]-1);
-	double fuzz = dx / 1.0e-6;
-	for (int j = 0; j < nx; j++)
+        double fuzz = dx / 1.0e-6;
+        for (int j = 0; j < nx; j++)
         {
             double curDx = coord->GetTuple1(j+1) - coord->GetTuple1(j);
             if (curDx - dx > fuzz)
@@ -182,8 +182,8 @@ avtHTGWriter::WriteChunk(vtkDataSet *ds, int chunk)
     for (int i = 0; i < nVars; i++)
     { 
         vtkDataArray *arr = rgrid->GetCellData()->GetArray(i);
-	if (arr->GetNumberOfComponents() == 1)
-	{
+        if (arr->GetNumberOfComponents() == 1)
+        {
             float *values = NULL;
             bool deleteValues = false;
             if (arr->GetDataType() == VTK_FLOAT)
@@ -199,25 +199,25 @@ avtHTGWriter::WriteChunk(vtkDataSet *ds, int chunk)
                 deleteValues = true;
             }
 
-	    //
-	    // HTGWrite adds the ".htg" extension to the filename.
-	    //
+            //
+            // HTGWrite adds the ".htg" extension to the filename.
+            //
             std::string path = stem + "." + arr->GetName();
-	    try
-	    {
+            try
+            {
                 HTGWrite(path.c_str(), blankValue, nx, bounds, values);
-	    }
-	    catch (ImproperUseException)
-	    {
+            }
+            catch (ImproperUseException)
+            {
                 debug1 << "The variable " << arr->GetName()
                        << " only had blank values." << endl;
-	    }
+            }
 
-	    if (deleteValues)
+            if (deleteValues)
                 delete [] values;
 
-	    nWritten++;
-	}
+            nWritten++;
+        }
     }
     if (nWritten < 1)
     {
