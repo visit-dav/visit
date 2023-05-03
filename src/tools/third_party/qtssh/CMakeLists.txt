@@ -30,12 +30,14 @@
 #   Utilize putty's native CMake build system with modifications
 #   to only build our qtssh version of plink and necessary libs.
 #
+#   Kathleen Biagas, Tue May 5, 2023
+#   Disable qt6 forcing of defines for UNICODE.
+#
 #****************************************************************************
 
 project(putty)
 
 include(cmake/setup.cmake)
-
 add_compile_definitions(HAVE_CMAKE_H)
 
 add_library(utils STATIC)
@@ -63,18 +65,21 @@ VISIT_TOOLS_ADD_FOLDER(qtssh eventloop)
 
 add_library(console STATIC clicons.c console.c)
 target_include_directories(console PRIVATE
+    ${putty_SOURCE_DIR}
     ${putty_SOURCE_DIR}/${platform}
     ${GENERATED_SOURCES_DIR})
 VISIT_TOOLS_ADD_FOLDER(qtssh console)
 
 add_library(settings STATIC cmdline.c settings.c)
 target_include_directories(settings PRIVATE
+    ${putty_SOURCE_DIR}
     ${putty_SOURCE_DIR}/${platform}
     ${GENERATED_SOURCES_DIR})
 VISIT_TOOLS_ADD_FOLDER(qtssh settings)
 
 add_library(crypto STATIC proxy/cproxy.c proxy/sshproxy.c)
 target_include_directories(crypto PRIVATE
+    ${putty_SOURCE_DIR}
     ${putty_SOURCE_DIR}/${platform}
     ${GENERATED_SOURCES_DIR})
 add_subdirectory(crypto)
@@ -90,6 +95,7 @@ add_library(network STATIC
   proxy/local.c
   proxy/interactor.c)
 target_include_directories(network PRIVATE
+    ${putty_SOURCE_DIR}
     ${putty_SOURCE_DIR}/${platform}
     ${GENERATED_SOURCES_DIR})
 VISIT_TOOLS_ADD_FOLDER(qtssh network)
@@ -97,6 +103,7 @@ VISIT_TOOLS_ADD_FOLDER(qtssh network)
 add_library(noterminal STATIC stubs/no-term.c ldisc.c)
 target_include_directories(noterminal PRIVATE
      terminal
+     ${putty_SOURCE_DIR}
      ${putty_SOURCE_DIR}/${platform}
      ${GENERATED_SOURCES_DIR})
 VISIT_TOOLS_ADD_FOLDER(qtssh noterminal)
@@ -113,6 +120,7 @@ add_library(otherbackends STATIC
     $<TARGET_OBJECTS:all-backends>
     $<TARGET_OBJECTS:logging>)
 target_include_directories(otherbackends PRIVATE
+    ${putty_SOURCE_DIR}
     ${putty_SOURCE_DIR}/${platform}
     ${GENERATED_SOURCES_DIR})
 add_subdirectory(otherbackends)
@@ -124,12 +132,20 @@ add_executable(qtssh
   ${VISIT_SOURCE_DIR}/viewer/main/ui/VisItPasswordWindow.C)
 set_target_properties(qtssh PROPERTIES AUTOMOC ON)
 be_list(qtssh QTSSH SSH SERIAL OTHERBACKENDS)
+
+
+if(QT_VERSION VERSION_GREATER_EQUAL "6.2.0")
+    qt6_disable_unicode_defines(qtssh)
+endif()
+
 target_link_libraries(qtssh
   eventloop noterminal console sshclient otherbackends settings network crypto
-  utils ${platform_libraries} ${QT_QTGUI_LIBRARY} ${QT_QTCORE_LIBRARY})
+  utils ${platform_libraries}
+  ${QT_QTGUI_LIBRARY} ${QT_QTWIDGETS_LIBRARY} ${QT_QTCORE_LIBRARY})
 
 target_include_directories(qtssh PRIVATE
     ${VISIT_SOURCE_DIR}/viewer/main/ui
+    ${putty_SOURCE_DIR}
     ${putty_SOURCE_DIR}/${platform}
     ${GENERATED_SOURCES_DIR})
 

@@ -115,6 +115,10 @@ QvisSpreadsheetPlotWindow::~QvisSpreadsheetPlotWindow()
 //   Kathleen Biagas, Tue Apr 18 16:34:41 PDT 2023
 //   Support Qt6: buttonClicked -> idClicked.
 //
+//   Kathleen Biagas, Wed Apr 19 14:42:07 PDT 2023
+//   Replace `currentIndexChanged` signal for QComboBox with
+//   'currentTextChanged' as the former is not available in Qt 6.
+//
 // ****************************************************************************
 
 void
@@ -128,7 +132,7 @@ QvisSpreadsheetPlotWindow::CreateWindowContents()
     subsetName = new QComboBox(central);
     subsetName->setEditable(false);
     subsetName->addItem(defaultItem);
-    connect(subsetName, SIGNAL(currentIndexChanged(const QString &)),
+    connect(subsetName, SIGNAL(currentTextChanged(const QString &)),
             this, SLOT(subsetNameChanged(const QString &)));
     mainLayout->addWidget(subsetName, 0,1);
 

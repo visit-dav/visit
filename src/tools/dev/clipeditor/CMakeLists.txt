@@ -10,6 +10,9 @@
 #   Kathleen Biagas, Thu Mar 30, 2023
 #   Use AUTOMOC target property instead of QT_WRAP_CPP macro.
 #
+#   Kathleen Biagas, Tue May 5, 2023
+#   Disable qt6 forcing of defines for UNICODE.
+#
 #****************************************************************************
 
 SET(CLIPEDITOR_SOURCES
@@ -55,3 +58,8 @@ ADD_EXECUTABLE(clipeditor ${VISIT_APPLICATION_STYLE} ${CLIPEDITOR_SOURCES})
 set_target_properties(clipeditor PROPERTIES AUTOMOC ON)
 
 TARGET_LINK_LIBRARIES(clipeditor  ${RELEVANT_QT_LIBS} ${OPENGL_LIBRARIES})
+
+if(QT_VERSION VERSION_GREATER_EQUAL "6.2.0")
+    qt6_disable_unicode_defines(clipeditor)
+endif()
+
