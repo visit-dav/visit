@@ -65,9 +65,8 @@ void
 avtHTGWriter::OpenFile(const string &stemname, int numblocks)
 {
     stem = stemname;
-    nBlocks = numblocks;
 
-    if (nBlocks > 1)
+    if (numblocks > 1)
     {
         EXCEPTION1(ImproperUseException,
             "The HTG writer can only handle single block files.");

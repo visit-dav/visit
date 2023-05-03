@@ -45,7 +45,6 @@ avtHTGWriter : public avtDatabaseWriter
     virtual void   CloseFile(void);
 
   private:
-    int            nBlocks;
     double         blankValue;
 };
 
