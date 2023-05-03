@@ -69,7 +69,7 @@ avtHTGWriter::OpenFile(const string &stemname, int numblocks)
     if (nBlocks > 1)
     {
         EXCEPTION1(ImproperUseException,
-            "HTG Export: The HTG writer can only handle single block files.");
+            "The HTG writer can only handle single block files.");
     }
 }
 
@@ -236,77 +236,80 @@ avtHTGWriter::CloseFile(void)
     // Just needed to meet interface.
 }
 
-float HTGCreate(const float *var_in,
-                 float *var_out,
-                 int *mask,
-                 int n_levels,
-                 int nx,
-                 int blank_value,
-                 int level,
-                 int *offsets,
-                 int i_start,
-                 int j_start,
-                 int k_start)
+// ****************************************************************************
+//  Method: HTGCreate
+//
+//  Purpose:
+//      Creates a HyperTreeGrid.
+//
+//  Programmer: Eric Brugger
+//  Creation:   Mon May 1 15:28:30 PST 2023
+//
+// ****************************************************************************
+
+float HTGCreate(const float *varIn, float *varOut, int *mask, int nLevels,
+    int nx, int blankValue, int level, int *offsets,
+    int iStart, int jStart, int kStart)
 {
-    if (level < n_levels - 1)
+    if (level < nLevels - 1)
     {
         //
         // Recurse over the 8 sub-blocks.
         //
-        int nx_sub_box = 1 << (n_levels - level - 1);
+        int nxSubBox = 1 << (nLevels - level - 1);
         int offset = offsets[level];
         offsets[level] = offsets[level] + 8;
 
-        var_out[offset]   = HTGCreate(var_in, var_out, mask, n_levels, nx,
-            blank_value, level+1, offsets,
-            i_start, j_start, k_start);
-        var_out[offset+1] = HTGCreate(var_in, var_out, mask, n_levels, nx,
-            blank_value, level+1, offsets,
-            i_start + nx_sub_box, j_start, k_start);
-        var_out[offset+2] = HTGCreate(var_in, var_out, mask, n_levels, nx,
-            blank_value, level+1, offsets,
-            i_start, j_start + nx_sub_box, k_start);
-        var_out[offset+3] = HTGCreate(var_in, var_out, mask, n_levels, nx,
-            blank_value, level+1, offsets,
-            i_start + nx_sub_box, j_start + nx_sub_box, k_start);
-        var_out[offset+4] = HTGCreate(var_in, var_out, mask, n_levels, nx,
-            blank_value, level+1, offsets,
-            i_start, j_start, k_start + nx_sub_box);
-        var_out[offset+5] = HTGCreate(var_in, var_out, mask, n_levels, nx,
-            blank_value, level+1, offsets,
-            i_start + nx_sub_box, j_start, k_start + nx_sub_box);
-        var_out[offset+6] = HTGCreate(var_in, var_out, mask, n_levels, nx,
-            blank_value, level+1, offsets,
-            i_start, j_start + nx_sub_box, k_start + nx_sub_box);
-        var_out[offset+7] = HTGCreate(var_in, var_out, mask, n_levels, nx,
-            blank_value, level+1, offsets,
-            i_start + nx_sub_box, j_start + nx_sub_box, k_start + nx_sub_box);
-        mask[offset]   = var_out[offset]   == blank_value ? 1 : 0;
-        mask[offset+1] = var_out[offset+1] == blank_value ? 1 : 0;
-        mask[offset+2] = var_out[offset+2] == blank_value ? 1 : 0;
-        mask[offset+3] = var_out[offset+3] == blank_value ? 1 : 0;
-        mask[offset+4] = var_out[offset+4] == blank_value ? 1 : 0;
-        mask[offset+5] = var_out[offset+5] == blank_value ? 1 : 0;
-        mask[offset+6] = var_out[offset+6] == blank_value ? 1 : 0;
-        mask[offset+7] = var_out[offset+7] == blank_value ? 1 : 0;
+        varOut[offset]   = HTGCreate(varIn, varOut, mask, nLevels, nx,
+            blankValue, level+1, offsets,
+            iStart, jStart, kStart);
+        varOut[offset+1] = HTGCreate(varIn, varOut, mask, nLevels, nx,
+            blankValue, level+1, offsets,
+            iStart + nxSubBox, jStart, kStart);
+        varOut[offset+2] = HTGCreate(varIn, varOut, mask, nLevels, nx,
+            blankValue, level+1, offsets,
+            iStart, jStart + nxSubBox, kStart);
+        varOut[offset+3] = HTGCreate(varIn, varOut, mask, nLevels, nx,
+            blankValue, level+1, offsets,
+            iStart + nxSubBox, jStart + nxSubBox, kStart);
+        varOut[offset+4] = HTGCreate(varIn, varOut, mask, nLevels, nx,
+            blankValue, level+1, offsets,
+            iStart, jStart, kStart + nxSubBox);
+        varOut[offset+5] = HTGCreate(varIn, varOut, mask, nLevels, nx,
+            blankValue, level+1, offsets,
+            iStart + nxSubBox, jStart, kStart + nxSubBox);
+        varOut[offset+6] = HTGCreate(varIn, varOut, mask, nLevels, nx,
+            blankValue, level+1, offsets,
+            iStart, jStart + nxSubBox, kStart + nxSubBox);
+        varOut[offset+7] = HTGCreate(varIn, varOut, mask, nLevels, nx,
+            blankValue, level+1, offsets,
+            iStart + nxSubBox, jStart + nxSubBox, kStart + nxSubBox);
+        mask[offset]   = varOut[offset]   == blankValue ? 1 : 0;
+        mask[offset+1] = varOut[offset+1] == blankValue ? 1 : 0;
+        mask[offset+2] = varOut[offset+2] == blankValue ? 1 : 0;
+        mask[offset+3] = varOut[offset+3] == blankValue ? 1 : 0;
+        mask[offset+4] = varOut[offset+4] == blankValue ? 1 : 0;
+        mask[offset+5] = varOut[offset+5] == blankValue ? 1 : 0;
+        mask[offset+6] = varOut[offset+6] == blankValue ? 1 : 0;
+        mask[offset+7] = varOut[offset+7] == blankValue ? 1 : 0;
 
         //
         // Calculate and return the average.
         //
         float ave = 0.;
-        int n_val = 0;
+        int nVal = 0;
         for (int l = 0; l < 8; l++)
         {
-            if (var_out[offset+l] != blank_value)
+            if (varOut[offset+l] != blankValue)
             {
-                n_val++;
-                ave += var_out[offset+l];
+                nVal++;
+                ave += varOut[offset+l];
             }
         }
-        if (n_val)
-            ave /= float(n_val);
+        if (nVal)
+            ave /= float(nVal);
         else
-            ave = blank_value;
+            ave = blankValue;
         return ave;
     }
     else
@@ -318,69 +321,68 @@ float HTGCreate(const float *var_in,
         int offset = offsets[level];
         offsets[level] = offsets[level] + 8;
 
-        int index  = (k_start)   * nx * nx + (j_start)   * nx + (i_start);
-        int index2 = (k_start)   * nx * nx + (j_start)   * nx + (i_start+1);
-        int index3 = (k_start)   * nx * nx + (j_start+1) * nx + (i_start);
-        int index4 = (k_start)   * nx * nx + (j_start+1) * nx + (i_start+1);
-        int index5 = (k_start+1) * nx * nx + (j_start)   * nx + (i_start);
-        int index6 = (k_start+1) * nx * nx + (j_start)   * nx + (i_start+1);
-        int index7 = (k_start+1) * nx * nx + (j_start+1) * nx + (i_start);
-        int index8 = (k_start+1) * nx * nx + (j_start+1) * nx + (i_start+1);
-        var_out[offset]   = var_in[index];
-        var_out[offset+1] = var_in[index2];
-        var_out[offset+2] = var_in[index3];
-        var_out[offset+3] = var_in[index4];
-        var_out[offset+4] = var_in[index5];
-        var_out[offset+5] = var_in[index6];
-        var_out[offset+6] = var_in[index7];
-        var_out[offset+7] = var_in[index8];
-        mask[offset]   = var_out[offset]   == blank_value ? 1 : 0;
-        mask[offset+1] = var_out[offset+1] == blank_value ? 1 : 0;
-        mask[offset+2] = var_out[offset+2] == blank_value ? 1 : 0;
-        mask[offset+3] = var_out[offset+3] == blank_value ? 1 : 0;
-        mask[offset+4] = var_out[offset+4] == blank_value ? 1 : 0;
-        mask[offset+5] = var_out[offset+5] == blank_value ? 1 : 0;
-        mask[offset+6] = var_out[offset+6] == blank_value ? 1 : 0;
-        mask[offset+7] = var_out[offset+7] == blank_value ? 1 : 0;
+        int index  = (kStart)   * nx * nx + (jStart)   * nx + (iStart);
+        int index2 = (kStart)   * nx * nx + (jStart)   * nx + (iStart+1);
+        int index3 = (kStart)   * nx * nx + (jStart+1) * nx + (iStart);
+        int index4 = (kStart)   * nx * nx + (jStart+1) * nx + (iStart+1);
+        int index5 = (kStart+1) * nx * nx + (jStart)   * nx + (iStart);
+        int index6 = (kStart+1) * nx * nx + (jStart)   * nx + (iStart+1);
+        int index7 = (kStart+1) * nx * nx + (jStart+1) * nx + (iStart);
+        int index8 = (kStart+1) * nx * nx + (jStart+1) * nx + (iStart+1);
+        varOut[offset]   = varIn[index];
+        varOut[offset+1] = varIn[index2];
+        varOut[offset+2] = varIn[index3];
+        varOut[offset+3] = varIn[index4];
+        varOut[offset+4] = varIn[index5];
+        varOut[offset+5] = varIn[index6];
+        varOut[offset+6] = varIn[index7];
+        varOut[offset+7] = varIn[index8];
+        mask[offset]   = varOut[offset]   == blankValue ? 1 : 0;
+        mask[offset+1] = varOut[offset+1] == blankValue ? 1 : 0;
+        mask[offset+2] = varOut[offset+2] == blankValue ? 1 : 0;
+        mask[offset+3] = varOut[offset+3] == blankValue ? 1 : 0;
+        mask[offset+4] = varOut[offset+4] == blankValue ? 1 : 0;
+        mask[offset+5] = varOut[offset+5] == blankValue ? 1 : 0;
+        mask[offset+6] = varOut[offset+6] == blankValue ? 1 : 0;
+        mask[offset+7] = varOut[offset+7] == blankValue ? 1 : 0;
 
         //
         // Calculate and return the average.
         //
         float ave = 0.;
-        int n_val = 0;
+        int nVal = 0;
         for (int l = 0; l < 8; l++)
         {
-            if (var_out[offset+l] != blank_value)
+            if (varOut[offset+l] != blankValue)
             {
-                n_val++;
-                ave += var_out[offset+l];
+                nVal++;
+                ave += varOut[offset+l];
             }
         }
-        if (n_val)
-            ave /= float(n_val);
+        if (nVal)
+            ave /= float(nVal);
         else
-            ave = blank_value;
+            ave = blankValue;
         return ave;
     }
 }
 
-void HTGWriteFile(const string &stem,
-                    const double *bounds,
-                    int n_levels,
-                    int n_vertices,
-                    int n_descriptor,
-                    int descriptor_min,
-                    int descriptor_max,
-                    const int *descriptor,
-                    int nb_vertices_by_level_max,
-                    const int *nb_vertices_by_level,
-                    int n_mask,
-                    int mask_min,
-                    int mask_max,
-                    const int *mask,
-                    double var_min,
-                    double var_max,
-                    const float *var)
+// ****************************************************************************
+//  Method: HTGWriteFile
+//
+//  Purpose:
+//      Writes a HyperTreeGrid file.
+//
+//  Programmer: Eric Brugger
+//  Creation:   Mon May 1 15:28:30 PST 2023
+//
+// ****************************************************************************
+
+void HTGWriteFile(const string &stem, const double *bounds, int nLevels,
+    int nVertices, int nDescriptor, int descriptorMin, int descriptorMax,
+    const int *descriptor, int nbVerticesByLevelMax,
+    const int *nbVerticesByLevel, int nMask, int maskMin, int maskMax,
+    const int *mask, double varMin, double varMax, const float *var)
 {
     //
     // Write out the HTG VTK file. It is in ASCII format, which is the
@@ -404,39 +406,39 @@ void HTGWriteFile(const string &stem,
     *ofile << "      </DataArray>" << endl;
     *ofile << "    </Grid>" << endl;
     *ofile << "    <Trees>" << endl;
-    *ofile << "      <Tree Index=\"0\" NumberOfLevels=\"" << n_levels << "\" NumberOfVertices=\"" << n_vertices << "\">" << endl;
-    *ofile << "        <DataArray type=\"Bit\" Name=\"Descriptor\" NumberOfTuples=\"" << n_descriptor << "\" format=\"ascii\" RangeMin=\"" << descriptor_min << "\" RangeMax=\"" << descriptor_max << "\">" << endl;
-    for (int i = 0; i < n_descriptor; i += 6)
+    *ofile << "      <Tree Index=\"0\" NumberOfLevels=\"" << nLevels << "\" NumberOfVertices=\"" << nVertices << "\">" << endl;
+    *ofile << "        <DataArray type=\"Bit\" Name=\"Descriptor\" NumberOfTuples=\"" << nDescriptor << "\" format=\"ascii\" RangeMin=\"" << descriptorMin << "\" RangeMax=\"" << descriptorMax << "\">" << endl;
+    for (int i = 0; i < nDescriptor; i += 6)
     {
         *ofile << "          ";
-        int jmax = (i + 6 < n_descriptor) ? i + 6 : n_descriptor;
+        int jmax = (i + 6 < nDescriptor) ? i + 6 : nDescriptor;
         for (int j = i; j < jmax - 1; j++)
             *ofile << descriptor[j] << " ";
         *ofile << descriptor[jmax-1] << endl;;
     }
     *ofile << "        </DataArray>" << endl;
-    *ofile << "        <DataArray type=\"Int64\" Name=\"NbVerticesByLevel\" NumberOfTuples=\"" << n_levels << "\" format=\"ascii\" RangeMin=\"1\" RangeMax=\"" << nb_vertices_by_level_max << "\">" << endl;
+    *ofile << "        <DataArray type=\"Int64\" Name=\"NbVerticesByLevel\" NumberOfTuples=\"" << nLevels << "\" format=\"ascii\" RangeMin=\"1\" RangeMax=\"" << nbVerticesByLevelMax << "\">" << endl;
     *ofile << "          ";
-    for (int i = 0; i < n_levels - 1; i++)
-        *ofile << nb_vertices_by_level[i] << " ";
-    *ofile << nb_vertices_by_level[n_levels-1] << endl;;
+    for (int i = 0; i < nLevels - 1; i++)
+        *ofile << nbVerticesByLevel[i] << " ";
+    *ofile << nbVerticesByLevel[nLevels-1] << endl;;
     *ofile << "        </DataArray>" << endl;
-    *ofile << "        <DataArray type=\"Bit\" Name=\"Mask\" NumberOfTuples=\"" << n_mask << "\" format=\"ascii\" RangeMin=\"" << mask_min << "\" RangeMax=\"" << mask_max << "\">" << endl;
-    for (int i = 0; i < n_mask; i += 6)
+    *ofile << "        <DataArray type=\"Bit\" Name=\"Mask\" NumberOfTuples=\"" << nMask << "\" format=\"ascii\" RangeMin=\"" << maskMin << "\" RangeMax=\"" << maskMax << "\">" << endl;
+    for (int i = 0; i < nMask; i += 6)
     {
         *ofile << "          ";
-        int jmax = (i + 6 < n_mask) ? i + 6 : n_mask;
+        int jmax = (i + 6 < nMask) ? i + 6 : nMask;
         for (int j = i; j < jmax - 1; j++)
             *ofile << mask[j] << " ";
         *ofile << mask[jmax-1] << endl;;
     }
     *ofile << "        </DataArray>" << endl;
     *ofile << "        <CellData>" << endl;
-    *ofile << "          <DataArray type=\"Float64\" Name=\"u\" NumberOfTuples=\"" << n_vertices << "\" format=\"ascii\" RangeMin=\"" << var_min << "\" RangeMax=\"" << var_max << "\">" << endl;
-    for (int i = 0; i < n_vertices; i += 6)
+    *ofile << "          <DataArray type=\"Float64\" Name=\"u\" NumberOfTuples=\"" << nVertices << "\" format=\"ascii\" RangeMin=\"" << varMin << "\" RangeMax=\"" << varMax << "\">" << endl;
+    for (int i = 0; i < nVertices; i += 6)
     {
         *ofile << "          ";
-        int jmax = (i + 6 < n_vertices) ? i + 6 : n_vertices;
+        int jmax = (i + 6 < nVertices) ? i + 6 : nVertices;
         for (int j = i; j < jmax - 1; j++)
             *ofile << var[j] << " ";
         *ofile << var[jmax-1] << endl;;
@@ -449,11 +451,19 @@ void HTGWriteFile(const string &stem,
     *ofile << "</VTKFile>" << endl;
 }
 
-void HTGWrite(const std::string &path,
-               float blankValue,
-               int nx,
-               const double *bounds,
-               const float *value)
+// ****************************************************************************
+//  Method: HTGWrite
+//
+//  Purpose:
+//      Creates a HyperTreeGrid and writes it to a file.
+//
+//  Programmer: Eric Brugger
+//  Creation:   Mon May 1 15:28:30 PST 2023
+//
+// ****************************************************************************
+
+void HTGWrite(const std::string &path, float blankValue, int nx,
+    const double *bounds, const float *value)
 {
     //
     // Determine the number of levels.
@@ -637,7 +647,7 @@ void HTGWrite(const std::string &path,
     }
 
     HTGWriteFile(path, bounds, nLevels, nVertices, nDescriptor,
-                   descriptorMin, descriptorMax, descriptor,
-                   nbVerticesByLevelMax, nbVerticesByLevel,
-                   nMask, maskMin, maskMax, mask, varMin, varMax, var);
+                 descriptorMin, descriptorMax, descriptor,
+                 nbVerticesByLevelMax, nbVerticesByLevel,
+                 nMask, maskMin, maskMax, mask, varMin, varMax, var);
 }
