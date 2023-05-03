@@ -2,19 +2,13 @@
 # Project developers.  See the top-level LICENSE file for dates and other
 # details.  No copyright assignment is required to contribute to VisIt.
 
-#[======================================[
+#[============================================================================[
   Modifications:
-#]======================================]
+#]============================================================================]
 
 
 if(NOT DEFINED VISIT_QT_DIR)
     message(FATAL_ERROR "Qt6 installation directory not specified")
-endif()
-
-if(WIN32)
-    set(QT_MOC_EXECUTABLE ${VISIT_QT_DIR}/bin/moc.exe)
-else()
-    set(QT_MOC_EXECUTABLE ${VISIT_QT_DIR}/bin/moc)
 endif()
 
 set(visit_qt_modules Core Gui Widgets OpenGL OpenGLWidgets Network PrintSupport Svg Xml UiTools)
@@ -28,36 +22,6 @@ set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ${VISIT_QT_DIR}/lib/cmake)
 
 find_package(Qt6 REQUIRED ${visit_qt_modules})
 
-foreach(mod ${visit_qt_modules})
-    string(TOUPPER ${mod} upper_mod)
-    if(NOT VISIT_QT_SKIP_INSTALL)
-        if(WIN32 AND EXISTS ${VISIT_QT_DIR}/lib/Qt6${mod}.lib)
-            THIRD_PARTY_INSTALL_LIBRARY(${VISIT_QT_DIR}/lib/Qt6${mod}.lib)
-        elseif(APPLE)
-            if(EXISTS ${VISIT_QT_DIR}/lib/Qt${mod}.framework)
-                THIRD_PARTY_INSTALL_LIBRARY(${VISIT_QT_DIR}/lib/Qt${mod}.framework)
-            else()
-                get_target_property(lib_loc Qt6::${mod} LOCATION)
-                THIRD_PARTY_INSTALL_LIBRARY(${lib_loc})
-            endif()
-        endif()
-        # headers
-        if(NOT APPLE)
-            foreach(H ${Qt6${mod}_INCLUDE_DIRS})
-                if(${H} MATCHES "/include/Qt")
-                    INSTALL(DIRECTORY ${H}
-                            DESTINATION ${VISIT_INSTALLED_VERSION_INCLUDE}/qt/include
-                            FILE_PERMISSIONS OWNER_WRITE OWNER_READ
-                                             GROUP_WRITE GROUP_READ
-                                             WORLD_READ
-                            DIRECTORY_PERMISSIONS OWNER_WRITE OWNER_READ OWNER_EXECUTE
-                                                  GROUP_WRITE GROUP_READ GROUP_EXECUTE
-                                                  WORLD_READ WORLD_EXECUTE)
-                endif()
-            endforeach()
-        endif(NOT APPLE)
-    endif()
-endforeach()
 
 set(QT_QTUITOOLS_LIBRARY ${Qt6UiTools_LIBRARIES})
 set(QT_QTOPENGL_LIBRARY ${Qt6OpenGL_LIBRARIES})
@@ -78,7 +42,6 @@ set(QT_QTCORE_LIBRARY ${Qt6Core_LIBRARIES})
 if(NOT VISIT_QT_SKIP_INSTALL)
     # moc
     get_target_property(moc_location Qt6::moc LOCATION)
-    MESSAGE(STATUS "moc location: ${moc_location}")
     install(PROGRAMS ${moc_location}
             DESTINATION ${VISIT_INSTALLED_VERSION_BIN}
             PERMISSIONS OWNER_WRITE OWNER_READ OWNER_EXECUTE
@@ -87,6 +50,29 @@ if(NOT VISIT_QT_SKIP_INSTALL)
 
     foreach(mod ${visit_qt_modules})
         list(APPEND qt_libs_install Qt6::${mod})  
+
+        if(APPLE)
+            if(EXISTS ${VISIT_QT_DIR}/lib/Qt${mod}.framework)
+                THIRD_PARTY_INSTALL_LIBRARY(${VISIT_QT_DIR}/lib/Qt${mod}.framework)
+            else()
+                get_target_property(lib_loc Qt6::${mod} LOCATION)
+                THIRD_PARTY_INSTALL_LIBRARY(${lib_loc})
+            endif()
+        else()
+            # headers
+            foreach(H ${Qt6${mod}_INCLUDE_DIRS})
+                if(${H} MATCHES "/include/Qt")
+                    INSTALL(DIRECTORY ${H}
+                            DESTINATION ${VISIT_INSTALLED_VERSION_INCLUDE}/qt/include
+                            FILE_PERMISSIONS OWNER_WRITE OWNER_READ
+                                             GROUP_WRITE GROUP_READ
+                                             WORLD_READ
+                            DIRECTORY_PERMISSIONS OWNER_WRITE OWNER_READ OWNER_EXECUTE
+                                                  GROUP_WRITE GROUP_READ GROUP_EXECUTE
+                                                  WORLD_READ WORLD_EXECUTE)
+                endif()
+            endforeach()
+        endif()
     endforeach()
  
     if(APPLE)
@@ -113,7 +99,11 @@ if(NOT VISIT_QT_SKIP_INSTALL)
         endforeach()
     else()
         foreach(qtlib ${qt_libs_install})
-            get_target_property(qtlib_location ${qtlib} LOCATION)
+            if(WIN32)
+                get_target_property(qtlib_location ${qtlib} IMPORTED_IMPLIB)
+            else()
+                get_target_property(qtlib_location ${qtlib} IMPORTED_LOCATION)
+            endif()
             # On Linux, the library names are Qt6xxx.so.${QT_VERSION}
             # We need to remove the version part so that THIRD_PARTY_INSTALL_LIBRARY
             # will work correctly.
@@ -142,10 +132,8 @@ if(NOT VISIT_QT_SKIP_INSTALL)
     if (WIN32)
         install(DIRECTORY ${VISIT_QT_DIR}/plugins/platforms
                 DESTINATION ${VISIT_INSTALLED_VERSION_BIN}/qtplugins)
-        install(DIRECTORY ${VISIT_QT_DIR}/plugins/printsupport
-                DESTINATION ${VISIT_INSTALLED_VERSION_BIN}/qtplugins)
 
-        # We also need the platforms, print support and qt.conf in the build dir.
+        # We also need platforms and qt.conf in the build dir.
         file(WRITE ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/qt.conf
                  "[Paths]\nPlugins=../ThirdParty/qtplugins\n")
 
@@ -155,10 +143,7 @@ if(NOT VISIT_QT_SKIP_INSTALL)
                 ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<CONFIG>/qt.conf
             COMMAND ${CMAKE_COMMAND} -E copy_directory
                 ${VISIT_QT_DIR}/plugins/platforms
-                ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/ThirdParty/qtplugins/platforms
-            COMMAND ${CMAKE_COMMAND} -E copy_directory
-                ${VISIT_QT_DIR}/plugins/printsupport
-                ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/ThirdParty/qtplugins/printsupport)
+                ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/ThirdParty/qtplugins/platforms)
 
          visit_add_to_util_builds(copy_qt_plugins)
 
@@ -206,14 +191,14 @@ if(NOT VISIT_QT_SKIP_INSTALL)
         if(NOT OPENSSL_ROOT_DIR)
           set(OPENSSL_ROOT_DIR "${VISIT_QT_DIR}")
         endif()
-        file(COPY ${OPENSSL_ROOT_DIR}/bin/libeay32.dll
-                  ${OPENSSL_ROOT_DIR}/bin/ssleay32.dll
+        file(COPY ${OPENSSL_ROOT_DIR}/bin/libcrypto-1_1-x64.dll
+                  ${OPENSSL_ROOT_DIR}/bin/libssl-1_1-x64.dll
              DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/ThirdParty
              FILE_PERMISSIONS OWNER_READ OWNER_WRITE
                               GROUP_READ GROUP_WRITE
                               WORLD_READ)
-        install(FILES ${OPENSSL_ROOT_DIR}/bin/libeay32.dll
-                      ${OPENSSL_ROOT_DIR}/bin/ssleay32.dll
+        install(FILES ${OPENSSL_ROOT_DIR}/bin/libcrypto-1_1-x64.dll
+                      ${OPENSSL_ROOT_DIR}/bin/libssl-1_1-x64.dll
                 DESTINATION ${VISIT_INSTALLED_VERSION_BIN}
                 PERMISSIONS OWNER_READ OWNER_WRITE
                             GROUP_READ GROUP_WRITE

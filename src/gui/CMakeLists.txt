@@ -38,6 +38,9 @@
 #   Kathleen Biagas, Thu Mar 30, 2023
 #   Use AUTOMOC target property instead of QT_WRAP_CPP macro.
 #
+#   Kathleen Biagas, Tue May 5, 2023
+#   Disable qt6 forcing of defines for UNICODE.
+#
 #****************************************************************************
 
 SET(GUILIB_SOURCES
@@ -249,6 +252,10 @@ ENDIF(VISIT_STATIC)
 
 #***************************** The gui library *******************************
 ADD_LIBRARY(gui ${GUILIB_SOURCES})
+
+if(QT_VERSION VERSION_GREATER_EQUAL "6.2.0")
+    qt6_disable_unicode_defines(gui)
+endif()
 
 set_target_properties(gui PROPERTIES AUTOMOC ON)
 

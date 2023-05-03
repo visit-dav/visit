@@ -8,6 +8,9 @@
 #  Kathleen Biagas, Tue Dec 13, 2022
 #  Moved setting of vtk sources to subdir.
 #
+#  Kathleen Biagas, Tue May 5, 2023
+#  Disable qt6 forcing of defines for UNICODE.
+#
 #****************************************************************************
 
 add_library(avtqtviswindow QtVisWindow.C VisWinRenderingWithWindow.C)
@@ -40,6 +43,10 @@ include_directories(
     ${VTK_INCLUDE_DIRS})
 
 target_link_libraries(avtqtviswindow visitcommon avtviswindow_ser vtkqt ${QT_QTCORE_LIBRARY} ${QT_QTGUI_LIBRARY})
+
+if(QT_VERSION VERSION_GREATER_EQUAL "6.2.0")
+    qt6_disable_unicode_defines(avtqtviswindow)
+endif()
 
 VISIT_INSTALL_TARGETS(avtqtviswindow)
 

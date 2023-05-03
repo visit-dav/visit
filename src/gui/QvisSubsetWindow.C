@@ -171,6 +171,10 @@ QvisSubsetWindow::SubjectRemoved(Subject *s)
 //   Kathleen Biagas, Wed Apr 19 14:49:40 PDT 2023
 //   Replace deprecated 'activated' SIGNAL with 'currentIndexChanged'.
 //
+//   Kathleen Biagas, Wed Apr 19 14:42:07 PDT 2023
+//   Replace `currentIndexChanged` signal for QComboBox with
+//   'currentTextChanged' as the former is not available in Qt 6.
+//
 // ****************************************************************************
 
 void
@@ -202,7 +206,7 @@ QvisSubsetWindow::CreateWindowContents()
     sLayout->setContentsMargins(0,0,0,0);
     selectionLabel = new QLabel(tr("Applied selection"), selParent);
     selections = new QComboBox(selParent);
-    connect(selections, SIGNAL(currentIndexChanged(const QString &)),
+    connect(selections, SIGNAL(currentTextChanged(const QString &)),
             this, SLOT(selectionChanged(const QString &)));
     sLayout->addWidget(selectionLabel);
     sLayout->addWidget(selections, 10);

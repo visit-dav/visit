@@ -44,7 +44,11 @@
 #
 
 IF (WIN32)
-  SET_UP_THIRD_PARTY(SILO LIBS silohdf5)
+  if(EXISTS ${SILO_DIR}/lib/silohdf5.lib)
+      SET_UP_THIRD_PARTY(SILO LIBS silohdf5)
+  else() 
+      SET_UP_THIRD_PARTY(SILO LIBS siloh5)
+  endif()
   IF(EXISTS ${SILO_DIR}/lib/silex.exe)
     EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E copy
          ${SILO_DIR}/lib/silex.exe

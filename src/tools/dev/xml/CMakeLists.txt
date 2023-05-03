@@ -24,39 +24,23 @@ ${VISIT_SOURCE_DIR}/common/utility
 
 LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY})
 
-ADD_EXECUTABLE(xmltest         xmltest.C)
-ADD_EXECUTABLE(xml2atts        xml2atts.C)
-ADD_EXECUTABLE(xml2window      xml2window.C)
-ADD_EXECUTABLE(xml2info        xml2info.C)
-ADD_EXECUTABLE(xml2avt         xml2avt.C)
-ADD_EXECUTABLE(xml2python      xml2python.C)
-ADD_EXECUTABLE(xml2java        xml2java.C)
-ADD_EXECUTABLE(xml2cmake       xml2cmake.C)
-ADD_EXECUTABLE(xml2sim         xml2sim.C)
+set(RELEVANT_QT_LIBS ${QT_QTXML_LIBRARY} ${QT_QTCORE_LIBRARY})
 
-SET(RELEVANT_QT_LIBS 
-    ${QT_QTXML_LIBRARY}
-    ${QT_QTCORE_LIBRARY}
-)
-
-IF(VISIT_STATIC)
-    SET(RELEVANT_QT_LIBS
-        ${RELEVANT_QT_LIBS}
+if(VISIT_STATIC)
+    list(APPEND RELEVANT_QT_LIBS
         ${QT_QTXML_LIB_DEPENDENCIES}
-        ${QT_QTCORE_LIB_DEPENDENCIES}
-    )
-ENDIF(VISIT_STATIC)
+        ${QT_QTCORE_LIB_DEPENDENCIES})
+endif()
 
-# Specify the libraries to link against on Windows & Mac
-TARGET_LINK_LIBRARIES(xmltest    ${RELEVANT_QT_LIBS})
-TARGET_LINK_LIBRARIES(xml2atts   ${RELEVANT_QT_LIBS})
-TARGET_LINK_LIBRARIES(xml2window ${RELEVANT_QT_LIBS})
-TARGET_LINK_LIBRARIES(xml2info   ${RELEVANT_QT_LIBS})
-TARGET_LINK_LIBRARIES(xml2avt    ${RELEVANT_QT_LIBS})
-TARGET_LINK_LIBRARIES(xml2python ${RELEVANT_QT_LIBS})
-TARGET_LINK_LIBRARIES(xml2java   ${RELEVANT_QT_LIBS})
-TARGET_LINK_LIBRARIES(xml2cmake  ${RELEVANT_QT_LIBS})
-TARGET_LINK_LIBRARIES(xml2sim    ${RELEVANT_QT_LIBS})
+foreach(tool xml2atts xml2avt xml2cmake xml2info xml2java xml2python xml2sim
+             xmltest xml2window)
+    add_executable(${tool} ${tool}.C)
+    target_link_libraries(${tool}  ${RELEVANT_QT_LIBS})
+    if(QT_VERSION VERSION_GREATER_EQUAL "6.2.0")
+        qt6_disable_unicode_defines(${tool})
+    endif()
+endforeach()
+
 
 target_compile_definitions(xml2cmake PRIVATE VTK_MAJ=${VTK_MAJOR_VERSION} VTK_MIN=${VTK_MINOR_VERSION})
 

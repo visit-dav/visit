@@ -196,11 +196,15 @@ QvisFileOpenWindow::SetFilename(const QString &f)
 //   to autocomplete what they are typing, but they cannot add new entries to
 //   the plugin list.
 //
-//    Kathleen Biagas, Wed Apr 6, 2022
-//    Fix QT_VERSION test to use Qt's QT_VERSION_CHECK.
+//   Kathleen Biagas, Wed Apr 6, 2022
+//   Fix QT_VERSION test to use Qt's QT_VERSION_CHECK.
 //
-//    Kathleen Biagas, Wed Apr 19 14:42:07 PDT 2023
-//    Replace deprecated `activated` SIGNAL with `currentIndexChanged`.
+//   Kathleen Biagas, Wed Apr 19 14:42:07 PDT 2023
+//   Replace deprecated `activated` SIGNAL with `currentIndexChanged`.
+//
+//   Kathleen Biagas, Wed Apr 19 14:42:07 PDT 2023
+//   Replace `currentIndexChanged` signal for QComboBox with
+//   'currentTextChanged' as the former is not available in Qt 6.
 //
 // ****************************************************************************
 
@@ -277,7 +281,7 @@ QvisFileOpenWindow::CreateWindowContents()
     setDefaultOptionsForFormatButton->setEnabled(false);
     fileFormatLayout->addWidget(setDefaultOptionsForFormatButton, 1);
     fileFormatLayout->addStretch(5);
-    connect(fileFormatComboBox, SIGNAL(currentIndexChanged(const QString&)),
+    connect(fileFormatComboBox, SIGNAL(currentTextChanged(const QString&)),
             this, SLOT(fileFormatChanged(const QString&)));
     connect(setDefaultOptionsForFormatButton, SIGNAL(clicked()),
             this, SLOT(setDefaultOptionsForFormatButtonClicked()));

@@ -555,6 +555,10 @@ include(${VISIT_SOURCE_DIR}/CMake/FindZlib.cmake)
 include(${VISIT_SOURCE_DIR}/CMake/FindOSPRay.cmake)
 include(${VISIT_SOURCE_DIR}/CMake/FindJPEG.cmake)
 include(${VISIT_SOURCE_DIR}/CMake/FindSzip.cmake)
+if(VTK_VERSION VERSION_GREATER_EQUAL "9.1.0")
+    include(${VISIT_SOURCE_DIR}/CMake/FindTiff.cmake)
+endif()
+
 
 # Configure Qt and Qwt support.
 if(NOT VISIT_DBIO_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_SERVER_COMPONENTS_ONLY)

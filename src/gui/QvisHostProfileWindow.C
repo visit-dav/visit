@@ -1156,6 +1156,10 @@ QvisHostProfileWindow::CreateParallelSettingsGroup()
 //
 //   Kathleen Biagas, Wed Apr 19 14:02:45 PDT 2023
 //   Replace deprecated 'activated' signal with 'currentIndexChanged'.
+//
+//   Kathleen Biagas, Wed Apr 19 14:42:07 PDT 2023
+//   Replace `currentIndexChanged` signal for QComboBox with
+//   'currentTextChanged' as the former is not available in Qt 6.
 // 
 // ****************************************************************************
 
@@ -1206,7 +1210,7 @@ QvisHostProfileWindow::CreateLaunchSettingsGroup()
     launchMethod->addItem("sbatch/mpiexec");
     launchMethod->addItem("sbatch/mpirun");
     launchMethod->addItem("sbatch/srun");
-    connect(launchMethod, SIGNAL(currentIndexChanged(const QString &)),
+    connect(launchMethod, SIGNAL(currentTextChanged(const QString &)),
             this, SLOT(launchMethodChanged(const QString &)));
     launchCheckBox = new QCheckBox(tr("Parallel launch method"), currentGroup);
     connect(launchCheckBox, SIGNAL(toggled(bool)),
@@ -1450,6 +1454,10 @@ QvisHostProfileWindow::CreateAdvancedSettingsGroup()
 //   Brad Whitlock, Thu Oct  6 11:56:32 PDT 2011
 //   Return the created widget.
 //
+//   Kathleen Biagas, Wed Apr 19 14:42:07 PDT 2023
+//   Replace `valueChanged(const QString)` signal for QSpinBox with
+//   'valueChanged(int)' as the former is not available in Qt 6.
+//
 // ****************************************************************************
 
 QWidget *
@@ -1506,8 +1514,8 @@ QvisHostProfileWindow::CreateHWAccelSettingsGroup()
     sbNGPUs->setKeyboardTracking(false);
     sbNGPUs->setRange(0, 2048);
     sbNGPUs->setEnabled(true);
-    connect(sbNGPUs, SIGNAL(valueChanged(const QString&)), this,
-            SLOT(nGPUsChanged(const QString&)));
+    connect(sbNGPUs, SIGNAL(valueChanged(int)), this,
+            SLOT(nGPUsChanged(int)));
     hLayout->addWidget(lblNGPUs, hRow,0, 1,1);
     hLayout->addWidget(sbNGPUs, hRow,1, 1,1);
     hRow++;
@@ -4454,11 +4462,12 @@ QvisHostProfileWindow::toggleCanDoHW(bool state)
 //  Modifications:
 // ****************************************************************************
 void
-QvisHostProfileWindow::nGPUsChanged(const QString&)
+QvisHostProfileWindow::nGPUsChanged(int value)
 {
-    if(NULL == currentLaunch) { return; }
+    if(NULL == currentLaunch)
+        return;
 
-    currentLaunch->SetGPUsPerNode(sbNGPUs->value());
+    currentLaunch->SetGPUsPerNode(value);
     SetUpdate(false);
     Apply();
 }
