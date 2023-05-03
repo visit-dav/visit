@@ -25,15 +25,15 @@
 using     std::string;
 using     std::vector;
 
-static float htg_create(const float *var_in, float *var_out, int *mask,
-    int n_levels, int nx, int blank_value, int level, int *offsets,
-    int i_start, int j_start, int k_start);
-static void htg_write_file(const string &stem, const double *bounds,
-    int n_levels, int n_vertices, int n_descriptor, int descriptor_min,
-    int descriptor_max, const int *descriptor, int nb_vertices_by_level_max,
-    const int *nb_vertices_by_level, int n_mask, int mask_min, int mask_max,
-    const int *mask, double var_min, double var_max, const float *var);
-static void htg_write(const std::string &path, float blank_value, int nx,
+static float HTGCreate(const float *varIn, float *varOut, int *mask,
+    int nLevels, int nx, int blankValue, int level, int *offsets,
+    int iStart, int jStart, int kStart);
+static void HTGWriteFile(const string &stem, const double *bounds,
+    int nLevels, int nVertices, int nDescriptor, int descriptorMin,
+    int descriptorMax, const int *descriptor, int nbVerticesByLevelMax,
+    const int *nbVerticesByLevel, int nMask, int maskMin, int maskMax,
+    const int *mask, double varMin, double varMax, const float *var);
+static void HTGWrite(const std::string &path, float blankValue, int nx,
     const double *bounds, const float *value);
 
 // ****************************************************************************
@@ -200,10 +200,10 @@ avtHTGWriter::WriteChunk(vtkDataSet *ds, int chunk)
             }
 
 	    //
-	    // htg_write adds the ".htg" extension to the filename.
+	    // HTGWrite adds the ".htg" extension to the filename.
 	    //
             std::string path = stem + "." + arr->GetName();
-            htg_write(path.c_str(), blankValue, nx, bounds, values);
+            HTGWrite(path.c_str(), blankValue, nx, bounds, values);
 
 	    if (deleteValues)
                 delete [] values;
@@ -236,7 +236,7 @@ avtHTGWriter::CloseFile(void)
     // Just needed to meet interface.
 }
 
-float htg_create(const float *var_in,
+float HTGCreate(const float *var_in,
                  float *var_out,
                  int *mask,
                  int n_levels,
@@ -257,28 +257,28 @@ float htg_create(const float *var_in,
         int offset = offsets[level];
         offsets[level] = offsets[level] + 8;
 
-        var_out[offset]   = htg_create(var_in, var_out, mask, n_levels, nx,
+        var_out[offset]   = HTGCreate(var_in, var_out, mask, n_levels, nx,
             blank_value, level+1, offsets,
             i_start, j_start, k_start);
-        var_out[offset+1] = htg_create(var_in, var_out, mask, n_levels, nx,
+        var_out[offset+1] = HTGCreate(var_in, var_out, mask, n_levels, nx,
             blank_value, level+1, offsets,
             i_start + nx_sub_box, j_start, k_start);
-        var_out[offset+2] = htg_create(var_in, var_out, mask, n_levels, nx,
+        var_out[offset+2] = HTGCreate(var_in, var_out, mask, n_levels, nx,
             blank_value, level+1, offsets,
             i_start, j_start + nx_sub_box, k_start);
-        var_out[offset+3] = htg_create(var_in, var_out, mask, n_levels, nx,
+        var_out[offset+3] = HTGCreate(var_in, var_out, mask, n_levels, nx,
             blank_value, level+1, offsets,
             i_start + nx_sub_box, j_start + nx_sub_box, k_start);
-        var_out[offset+4] = htg_create(var_in, var_out, mask, n_levels, nx,
+        var_out[offset+4] = HTGCreate(var_in, var_out, mask, n_levels, nx,
             blank_value, level+1, offsets,
             i_start, j_start, k_start + nx_sub_box);
-        var_out[offset+5] = htg_create(var_in, var_out, mask, n_levels, nx,
+        var_out[offset+5] = HTGCreate(var_in, var_out, mask, n_levels, nx,
             blank_value, level+1, offsets,
             i_start + nx_sub_box, j_start, k_start + nx_sub_box);
-        var_out[offset+6] = htg_create(var_in, var_out, mask, n_levels, nx,
+        var_out[offset+6] = HTGCreate(var_in, var_out, mask, n_levels, nx,
             blank_value, level+1, offsets,
             i_start, j_start + nx_sub_box, k_start + nx_sub_box);
-        var_out[offset+7] = htg_create(var_in, var_out, mask, n_levels, nx,
+        var_out[offset+7] = HTGCreate(var_in, var_out, mask, n_levels, nx,
             blank_value, level+1, offsets,
             i_start + nx_sub_box, j_start + nx_sub_box, k_start + nx_sub_box);
         mask[offset]   = var_out[offset]   == blank_value ? 1 : 0;
@@ -364,7 +364,7 @@ float htg_create(const float *var_in,
     }
 }
 
-void htg_write_file(const string &stem,
+void HTGWriteFile(const string &stem,
                     const double *bounds,
                     int n_levels,
                     int n_vertices,
@@ -449,8 +449,8 @@ void htg_write_file(const string &stem,
     *ofile << "</VTKFile>" << endl;
 }
 
-void htg_write(const std::string &path,
-               float blank_value,
+void HTGWrite(const std::string &path,
+               float blankValue,
                int nx,
                const double *bounds,
                const float *value)
@@ -458,20 +458,20 @@ void htg_write(const std::string &path,
     //
     // Determine the number of levels.
     //
-    int n_levels = 1;
+    int nLevels = 1;
     int dim = nx;
     while (dim > 1)
     {
-        n_levels++;
+        nLevels++;
         dim = dim / 2;
     }
 
     //
     // Calculate the total number of vertices.
     //
-    int n_vertices = 0;
-    for (int i = 0; i < n_levels; i++)
-        n_vertices += 1 << i * 3;
+    int nVertices = 0;
+    for (int i = 0; i < nLevels; i++)
+        nVertices += 1 << i * 3;
 
     //
     // Calculate min and max for the variable. We only need to do
@@ -484,267 +484,160 @@ void htg_write(const std::string &path,
     //
     // Find the first non blank value.
     //
-    int i_real;
-    for (i_real = 0; i_real < nvals && value[i_real] == blank_value; i_real++)
+    int iReal;
+    for (iReal = 0; iReal < nvals && value[iReal] == blankValue; iReal++)
         /* Do nothing */;
 
-    if (i_real == nvals)
+    if (iReal == nvals)
     {
         EXCEPTION1(ImproperUseException,
             "HTG Export: The variable only had blank values.");
     }
 
-    float var_min = value[i_real];
-    float var_max = value[i_real];
-    for (int i = i_real + 1; i < nvals; i++)
+    float varMin = value[iReal];
+    float varMax = value[iReal];
+    for (int i = iReal + 1; i < nvals; i++)
     {
-        if (value[i] != blank_value)
+        if (value[i] != blankValue)
         {
-            var_min = value[i] < var_min ? value[i] : var_min;
-            var_max = value[i] > var_max ? value[i] : var_max;
+            varMin = value[i] < varMin ? value[i] : varMin;
+            varMax = value[i] > varMax ? value[i] : varMax;
         }
     }
 
     //
     // Set the number of vertices in each level.
     //
-    int *nb_vertices_by_level = new int[n_levels];
-    for (int i = 0; i < n_levels; i++)
-        nb_vertices_by_level[i] = 1 << i * 3;
+    int *nbVerticesByLevel = new int[nLevels];
+    for (int i = 0; i < nLevels; i++)
+        nbVerticesByLevel[i] = 1 << i * 3;
 
     //
     // Create the HTG, specifically the output variable and the mask.
     //
-    int *mask = new int[n_vertices];
-    float *var = new float[n_vertices];
+    int *mask = new int[nVertices];
+    float *var = new float[nVertices];
 
-    int i_level = 1;
-    int *offsets = new int[n_levels];
+    int iLevel = 1;
+    int *offsets = new int[nLevels];
     offsets[0] = 0;
-    for (int i = 1; i < n_levels; i++)
-       offsets[i] = offsets[i-1] + nb_vertices_by_level[i-1];
-    int i_start = 0;
-    int j_start = 0;
-    int k_start = 0;
-    var[0] = htg_create(value, var, mask, n_levels, nx, blank_value, i_level,
-        offsets, i_start, j_start, k_start);
-    mask[0] = var[0] == blank_value ? 1 : 0;
+    for (int i = 1; i < nLevels; i++)
+       offsets[i] = offsets[i-1] + nbVerticesByLevel[i-1];
+    int iStart = 0;
+    int jStart = 0;
+    int kStart = 0;
+    var[0] = HTGCreate(value, var, mask, nLevels, nx, blankValue, iLevel,
+        offsets, iStart, jStart, kStart);
+    mask[0] = var[0] == blankValue ? 1 : 0;
     delete [] offsets;
 
     //
     // Compress the output variable based on the mask variable.
     //
-    int *mask2 = new int[n_vertices];
-    int n_vertices2 = 9;
-    int i_var = 9;
-    int i_mask = 1;
+    int *mask2 = new int[nVertices];
+    int nVertices2 = 9;
+    int iVar = 9;
+    int iMask = 1;
     for (int i = 0; i < 9; i++)
         mask2[i] = mask[i];
-    for (int i = 1; i < n_levels - 1; i++)
+    for (int i = 1; i < nLevels - 1; i++)
     {
-        int n_bits = 1 << i * 3;
-        int nb_vertices = 0;
-        for (int j = 0; j < n_bits; j++)
+        int nBits = 1 << i * 3;
+        int nbVertices = 0;
+        for (int j = 0; j < nBits; j++)
         {
-             if (mask[i_mask] == 0)
+             if (mask[iMask] == 0)
              {
-                 nb_vertices += 8;
+                 nbVertices += 8;
                  for (int k = 0; k < 8; k++)
                  {
-                     mask2[n_vertices2] = mask[i_var];
-                     var[n_vertices2] = var[i_var];
-                     n_vertices2++;
-                     i_var++;
+                     mask2[nVertices2] = mask[iVar];
+                     var[nVertices2] = var[iVar];
+                     nVertices2++;
+                     iVar++;
                  }
              }
              else
              {
-                 i_var += 8;
+                 iVar += 8;
              }
-             i_mask++;
+             iMask++;
         }
-        nb_vertices_by_level[i+1] = nb_vertices;
+        nbVerticesByLevel[i+1] = nbVertices;
     }
-    n_vertices = n_vertices2;
+    nVertices = nVertices2;
     delete [] mask;
     mask = mask2;
 
-    int nb_vertices_by_level_max = nb_vertices_by_level[n_levels-1];
+    int nbVerticesByLevelMax = nbVerticesByLevel[nLevels-1];
 
     //
     // Determine the size of the mask variable. Remove any trailing zeros.
     //
-    int last_zero = -1;
-    int last_one = -1;
-    for (int i = 0; i < n_vertices; i++)
+    int lastZero = -1;
+    int lastOne = -1;
+    for (int i = 0; i < nVertices; i++)
     {
         if (mask[i] == 0)
-            last_zero = i;
+            lastZero = i;
         else
-            last_one = i;
+            lastOne = i;
     }
-    int n_mask = 1;
-    int mask_min = 0;
-    int mask_max = 0;
-    if (last_one != -1)
+    int nMask = 1;
+    int maskMin = 0;
+    int maskMax = 0;
+    if (lastOne != -1)
     {
-        mask_max = 1;
-        n_mask = last_one + 1;
+        maskMax = 1;
+        nMask = lastOne + 1;
     }
 
     //
     // Create the descriptor variable. It is the opposite of the mask
     // variable for all but the last level.
     //
-    int n_descriptor = 0;
-    for (int i = 0; i < n_levels-1; i++)
-        n_descriptor += nb_vertices_by_level[i];
+    int nDescriptor = 0;
+    for (int i = 0; i < nLevels-1; i++)
+        nDescriptor += nbVerticesByLevel[i];
 
-    int *descriptor = new int[n_descriptor];
-    for (int i = 0; i < n_descriptor; i++)
+    int *descriptor = new int[nDescriptor];
+    for (int i = 0; i < nDescriptor; i++)
         descriptor[i] = (mask[i] == 0) ? 1 : 0;
 
     //
     // Determine the size of the descriptor variable. Remove any trailing zeros.
     //
-    last_zero = -1;
-    last_one = -1;
-    for (int i = 0; i < n_descriptor; i++)
+    lastZero = -1;
+    lastOne = -1;
+    for (int i = 0; i < nDescriptor; i++)
     {
         if (descriptor[i] == 0)
-            last_zero = i;
+            lastZero = i;
         else
-            last_one = i;
+            lastOne = i;
     }
-    n_descriptor = 1;
-    int descriptor_min = 0;
-    int descriptor_max = 0;
-    if (last_zero == -1)
-        descriptor_min = 1;
-    if (last_one != -1)
+    nDescriptor = 1;
+    int descriptorMin = 0;
+    int descriptorMax = 0;
+    if (lastZero == -1)
+        descriptorMin = 1;
+    if (lastOne != -1)
     {
-        descriptor_max = 1;
-        n_descriptor = last_one + 1;
+        descriptorMax = 1;
+        nDescriptor = lastOne + 1;
     }
 
     //
-    // Replace any blank_value with zero.
+    // Replace any blankValue with zero.
     //
-    for (int i = 0; i <n_vertices; i++)
+    for (int i = 0; i <nVertices; i++)
     {
-        if (var[i] == blank_value)
+        if (var[i] == blankValue)
             var[i] = 0.;
     }
 
-    htg_write_file(path, bounds, n_levels, n_vertices, n_descriptor,
-                   descriptor_min, descriptor_max, descriptor,
-                   nb_vertices_by_level_max, nb_vertices_by_level,
-                   n_mask, mask_min, mask_max, mask, var_min, var_max, var);
+    HTGWriteFile(path, bounds, nLevels, nVertices, nDescriptor,
+                   descriptorMin, descriptorMax, descriptor,
+                   nbVerticesByLevelMax, nbVerticesByLevel,
+                   nMask, maskMin, maskMax, mask, varMin, varMax, var);
 }
-
-#if 0
-void htg_save(const Node &data,
-              const Node &fields,
-              const std::string &path,
-              float blank_value)
-{
-    if (data.number_of_children() != 1)
-    {
-        ASCENT_ERROR("htg extract requires a single domain."<<endl);
-    }
-
-    const conduit::Node &dom = data.child(0);
-
-    //
-    // Determine the fields. If the fields node is empty then use all
-    // the fields.
-    //
-    int nfields = fields.number_of_children();
-    std::vector<std::string> fnames;
-    if (nfields == 0 && dom.has_path("fields"))
-    {
-        fnames = dom["fields"].child_names();
-        nfields = fnames.size();
-    }
-    else
-    {
-        fnames = fields.child_names();
-    }
-
-    //
-    // Loop over the fields.
-    //
-    for(int f = 0; f < nfields; ++f)
-    {
-        const std::string fname = fnames[f];
-        if(dom.has_path("fields/" + fname))
-        {
-            const std::string fpath = "fields/" + fname;
-            const std::string topo = dom[fpath + "/topology"].as_string();
-            const std::string tpath = "topologies/" + topo;
-            const std::string coords = dom[tpath + "/coordset"].as_string();
-            const std::string cpath = "coordsets/" + coords;
-
-            if(dom[fpath + "/association"].as_string() != "element")
-            {
-                ASCENT_INFO(fname<<": htg extract requires an element association, skipping."<<endl);
-                continue;
-            }
-            if(dom[cpath + "/type"].as_string() != "uniform")
-            {
-                ASCENT_INFO(fname<<": htg extract requires a uniform mesh, skipping."<<endl);
-                continue;
-            }
-            if (!dom.has_path(cpath + "/dims/k"))
-            {
-                ASCENT_INFO(fname<<": htg extract requires a 3d mesh, skipping."<<endl);
-                continue;
-            }
-
-            int nx, ny, nz;
-            nx = dom[cpath + "/dims/i"].to_int32();
-            ny = dom[cpath + "/dims/j"].to_int32();
-            nz = dom[cpath + "/dims/k"].to_int32();
-            if (nx != ny && ny != nz)
-            {
-                ASCENT_INFO(fname<<": htg extract requires the dimensions to be equal, skipping."<<endl);
-                continue;
-            }
-            nx = nx - 1;
-            if (nx == 0 || ((nx & (nx - 1)) != 0))
-            {
-                ASCENT_INFO(fname<<": htg extract requires the grid dimension to be a power of 2, skipping."<<endl);
-                continue;
-            }
-
-            double x0, y0, z0, dx, dy, dz;
-            double bounds[6];
-            x0 = dom[cpath + "/origin/x"].to_float64();
-            y0 = dom[cpath + "/origin/y"].to_float64();
-            z0 = dom[cpath + "/origin/z"].to_float64();
-            dx = dom[cpath + "/spacing/dx"].to_float64();
-            dy = dom[cpath + "/spacing/dy"].to_float64();
-            dz = dom[cpath + "/spacing/dz"].to_float64();
-            bounds[0] = x0;
-            bounds[1] = x0 + dx * double(nx);
-            bounds[2] = y0;
-            bounds[3] = y0 + dy * double(nx);
-            bounds[4] = z0;
-            bounds[5] = z0 + dz * double(nx);
-            conduit::Node res;
-            if (dom[fpath + "/values"].dtype().is_float() &&
-                dom[fpath + "/values"].dtype().is_compact())
-            {
-                res.set_external(dom[fpath + "/values"]);
-            }
-            else
-            {
-                dom[fpath + "/values"].to_float_array(res);
-            }
-            const float *values = res.value();
-
-            htg_write(path, blank_value, nx, bounds, values);
-        }
-    }
-}
-#endif
