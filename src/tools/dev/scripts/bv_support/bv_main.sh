@@ -639,6 +639,9 @@ function initialize_build_visit()
         case $arg in
             --vtk9) DO_VTK9="yes";;
         esac
+        case $arg in
+            --qt6) DO_QT6="yes";;
+        esac
     done
 
     #get visit information..

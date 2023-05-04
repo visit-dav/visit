@@ -1,5 +1,6 @@
 function bv_vtk_initialize
 {
+    info "bv_vtk_initialize"
     export DO_VTK="yes"
     export FORCE_VTK="no"
     export USE_SYSTEM_VTK="no"
@@ -9,6 +10,7 @@ function bv_vtk_initialize
 
 function bv_vtk_enable
 {
+    info "bv_vtk_enable"
     DO_VTK="yes"
     FORCE_VTK="yes"
 }
@@ -60,7 +62,11 @@ function bv_vtk_depends_on
     if [[ "$DO_DBIO_ONLY" != "yes" ]]; then
         if [[ "$DO_ENGINE_ONLY" != "yes" ]]; then
             if [[ "$DO_SERVER_COMPONENTS_ONLY" != "yes" ]]; then
-                depends_on="${depends_on} qt"
+                if [[ "$DO_QT6" == "yes" ]]; then
+                    depends_on="${depends_on} qt6"
+                else
+                    depends_on="${depends_on} qt"
+                fi
             fi
         fi
     fi
@@ -78,12 +84,16 @@ function bv_vtk_force
 
 function bv_vtk_info
 {
+    info "bv_vtk_info"
+    if [[ $DO_QT6 == "yes" ]]; then
+        DO_VTK9="yes"
+    fi
     if [[ "$DO_VTK9" == "yes" ]] ; then
+        info "setting up vtk for version 9"
         export VTK_FILE=${VTK_FILE:-"VTK-9.1.0.tar.gz"}
         export VTK_VERSION=${VTK_VERSION:-"9.1.0"}
         export VTK_SHORT_VERSION=${VTK_SHORT_VERSION:-"9.1"}
-        #export VTK_MD5_CHECKSUM="fa61cd36491d89a17edab18522bdda49"
-        #export VTK_SHA256_CHECKSUM="6e269f07b64fb13774f5925161fb4e1f379f4e6a0131c8408c555f6b58ef3cb7"
+        export VTK_SHA256_CHECKSUM="8fed42f4f8f1eb8083107b68eaa9ad71da07110161a3116ad807f43e5ca5ce96"
     else
         export VTK_FILE=${VTK_FILE:-"VTK-8.1.0.tar.gz"}
         export VTK_VERSION=${VTK_VERSION:-"8.1.0"}
@@ -2307,12 +2317,22 @@ function build_vtk
             if [[ "$DO_SERVER_COMPONENTS_ONLY" != "yes" ]]; then
                 if [[ "$DO_VTK9" == "yes" ]]; then
                     vopts="${vopts} -DVTK_MODULE_ENABLE_VTK_GUISupportQt:BOOL:STRING=YES"
-                    vopts="${vopts} -DQt5_DIR:FILEPATH=${QT_INSTALL_DIR}/lib/cmake/Qt5"
+                    if [[ "$DO_QT6" == "yes" ]]; then
+                        vopts="${vopts} -DQt6_DIR:FILEPATH=${QT6_INSTALL_DIR}/lib/cmake/Qt6"
+                    else
+                        vopts="${vopts} -DQt6_DIR:FILEPATH=${QT_INSTALL_DIR}/lib/cmake/Qt5"
+                    fi
                 else
                     vopts="${vopts} -DModule_vtkGUISupportQtOpenGL:BOOL=true"
-                    vopts="${vopts} -DQT_QMAKE_EXECUTABLE:FILEPATH=${QT_BIN_DIR}/qmake"
-                    vopts="${vopts} -DVTK_QT_VERSION=5"
-                    vopts="${vopts} -DCMAKE_PREFIX_PATH=${QT_INSTALL_DIR}/lib/cmake"
+                    if [[ "$DO_QT6" == "yes" ]]; then
+                        vopts="${vopts} -DQT_QMAKE_EXECUTABLE:FILEPATH=${QT6_INSTALL_DIR}/bin/qmake"
+                        vopts="${vopts} -DVTK_QT_VERSION=6"
+                        vopts="${vopts} -DCMAKE_PREFIX_PATH=${QT6_INSTALL_DIR}/lib/cmake"
+                    else
+                        vopts="${vopts} -DQT_QMAKE_EXECUTABLE:FILEPATH=${QT_BIN_DIR}/qmake"
+                        vopts="${vopts} -DVTK_QT_VERSION=5"
+                        vopts="${vopts} -DCMAKE_PREFIX_PATH=${QT_INSTALL_DIR}/lib/cmake"
+                    fi
                 fi
             fi
         fi
@@ -2330,7 +2350,7 @@ function build_vtk
             if [[ "$DO_VTK9" == "yes" ]]; then
                 vopts="${vopts} -DVTK_PYTHON_VERSION:STRING=3"
                 vopts="${vopts} -DPython3_EXECUTABLE:FILEPATH=${py}"
-                vopts="${vopts} -DPython3_EXTRA_LIBS:STRING=${VTK_PY_LIBS}"
+                vopts="${vopts} -DPython3_EXTRA_LIBS:STRING=\"${VTK_PY_LIBS}\""
                 vopts="${vopts} -DPython3_INCLUDE_DIR:PATH=${pyinc}"
                 vopts="${vopts} -DPython3_LIBRARY:FILEPATH=${pylib}"
             else
@@ -2451,7 +2471,6 @@ function build_vtk
     cat bv_run_cmake.sh
     issue_command bash bv_run_cmake.sh || error "VTK configuration failed."
 
-
     #
     # Now build VTK.
     #
@@ -2503,6 +2522,7 @@ function bv_vtk_build
     # Build VTK
     #
     cd "$START_DIR"
+
     if [[ "$DO_VTK" == "yes" && "$USE_SYSTEM_VTK" == "no" ]] ; then
         check_if_installed $VTK_INSTALL_DIR $VTK_VERSION
         if [[ $? == 0 ]] ; then
