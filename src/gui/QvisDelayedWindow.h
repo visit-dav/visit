@@ -44,7 +44,7 @@ class GUI_API QvisDelayedWindow : public QvisWindowBase
 {
     Q_OBJECT
 public:
-    QvisDelayedWindow(const QString &captionString, Qt::WindowFlags f = 0);
+    QvisDelayedWindow(const QString &captionString, Qt::WindowFlags f = Qt::Widget);
     virtual ~QvisDelayedWindow();
     QWidget *GetCentralWidget();
     virtual void CreateEntireWindow();

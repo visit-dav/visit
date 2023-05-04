@@ -301,7 +301,7 @@ QvisSaveWindow::CreateWindowContents()
     nameLayout->addWidget(outputDirectoryLabel, 2, 0, 1, 2);
 
     QHBoxLayout *outputDirectoryLayout = new QHBoxLayout();
-    outputDirectoryLayout->setMargin(0);
+    outputDirectoryLayout->setContentsMargins(0,0,0,0);
     outputDirectoryLayout->setSpacing(0);
     nameLayout->addLayout(outputDirectoryLayout, 3, 0, 1, 4);
 

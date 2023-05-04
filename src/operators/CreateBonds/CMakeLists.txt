@@ -18,9 +18,6 @@ CreateBondsGUIPluginInfo.C
 QvisCreateBondsWindow.C
 ${COMMON_SOURCES}
 )
-SET(LIBG_MOC_SOURCES
-QvisCreateBondsWindow.h
-)
 
 SET(LIBV_SOURCES
 CreateBondsViewerEnginePluginInfo.C
@@ -48,8 +45,8 @@ TARGET_LINK_LIBRARIES(ICreateBondsOperator visitcommon)
 SET(INSTALLTARGETS ICreateBondsOperator)
 
 IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
-    QT_WRAP_CPP(GCreateBondsOperator LIBG_SOURCES ${LIBG_MOC_SOURCES})
     ADD_LIBRARY(GCreateBondsOperator ${LIBG_SOURCES})
+    set_target_properties(GCreateBondsOperator PROPERTIES AUTOMOC ON)
     TARGET_LINK_LIBRARIES(GCreateBondsOperator visitcommon gui )
 
     ADD_LIBRARY(VCreateBondsOperator ${LIBV_SOURCES})

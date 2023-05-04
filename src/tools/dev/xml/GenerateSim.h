@@ -80,30 +80,30 @@ class AttsGeneratorField : public virtual Field
     virtual void WriteVisItFunctionPrototype(QTextStream &h, const QString &classname)
     {
         h << "int VisIt_" << classname << "_set" << Name << "(visit_handle h, "
-          << CArgumentSet("") << ");" << endl;
+          << CArgumentSet("") << ");" << Endl;
         h << "int VisIt_" << classname << "_get" << Name << "(visit_handle h, "
-          << CArgumentGet("") << ");" << endl;
+          << CArgumentGet("") << ");" << Endl;
     }
 
     virtual void WriteVisItFunction(QTextStream &h, const QString &classname)
     {
         h << "int\nVisIt_" << classname << "_set" << Name
-          << "(visit_handle h, " << CArgumentSet("val") << ")" << endl;
-        h << "{" << endl;
-        h << "    VISIT_DYNAMIC_EXECUTE(" << classname << "_set" << Name << "," << endl;
-        h << "        int, (visit_handle, " << CArgumentSet("") << ")," << endl;
-        h << "        (h, val));" << endl;
-        h << "}" << endl;
-        h << endl;
+          << "(visit_handle h, " << CArgumentSet("val") << ")" << Endl;
+        h << "{" << Endl;
+        h << "    VISIT_DYNAMIC_EXECUTE(" << classname << "_set" << Name << "," << Endl;
+        h << "        int, (visit_handle, " << CArgumentSet("") << ")," << Endl;
+        h << "        (h, val));" << Endl;
+        h << "}" << Endl;
+        h << Endl;
 
         h << "int\nVisIt_" << classname << "_get" << Name
-          << "(visit_handle h, " << CArgumentGet("val") + ")" << endl;
-        h << "{" << endl;
-        h << "    VISIT_DYNAMIC_EXECUTE(" << classname << "_get" << Name << "," << endl;
-        h << "        int, (visit_handle, " << CArgumentGet("") << ")," << endl;
-        h << "        (h, val));" << endl;
-        h << "}" << endl;
-        h << endl;
+          << "(visit_handle h, " << CArgumentGet("val") + ")" << Endl;
+        h << "{" << Endl;
+        h << "    VISIT_DYNAMIC_EXECUTE(" << classname << "_get" << Name << "," << Endl;
+        h << "        int, (visit_handle, " << CArgumentGet("") << ")," << Endl;
+        h << "        (h, val));" << Endl;
+        h << "}" << Endl;
+        h << Endl;
     }
 
     // Some replacements to make field names shorter for Fortran
@@ -125,44 +125,44 @@ class AttsGeneratorField : public virtual Field
     {
         QString mName(FortranName(classname, "SET"));
         h << "#define F_" << pad(mName,30) << "  F77_ID(" << mName.toLower() << "_,"
-          << mName.toLower() << ", " << mName << ")" << endl;
+          << mName.toLower() << ", " << mName << ")" << Endl;
 
         mName = QString(FortranName(classname, "GET"));
         h << "#define F_" << pad(mName,30) << "  F77_ID(" << mName.toLower() << "_,"
-          << mName.toLower() << ", " << mName << ")" << endl;
+          << mName.toLower() << ", " << mName << ")" << Endl;
     }
 
     virtual void WriteVisItFortranFunction(QTextStream &h, const QString &classname, const QString &fclass)
     {
         QString mName(FortranName(fclass, "SET"));
 
-        h << "int" << endl;
-        h << "F_" << mName << "(visit_handle *h, " << CArgument() << " *val)" << endl;
-        h << "{" << endl;
-        h << "    return VisIt_" << classname << "_set" << Name << "(*h, *val);" << endl;
-        h << "}" << endl;
-        h << endl;
+        h << "int" << Endl;
+        h << "F_" << mName << "(visit_handle *h, " << CArgument() << " *val)" << Endl;
+        h << "{" << Endl;
+        h << "    return VisIt_" << classname << "_set" << Name << "(*h, *val);" << Endl;
+        h << "}" << Endl;
+        h << Endl;
 
         mName = QString(FortranName(fclass, "GET"));
-        h << "int" << endl;
-        h << "F_" << mName << "(visit_handle *h, " << CArgument() << " *val)" << endl;
-        h << "{" << endl;
-        h << "    return VisIt_" << classname << "_get" << Name << "(*h, val);" << endl;
-        h << "}" << endl;
-        h << endl;
+        h << "int" << Endl;
+        h << "F_" << mName << "(visit_handle *h, " << CArgument() << " *val)" << Endl;
+        h << "{" << Endl;
+        h << "    return VisIt_" << classname << "_get" << Name << "(*h, val);" << Endl;
+        h << "}" << Endl;
+        h << Endl;
     }
 
     virtual void WriteSimV2FunctionPrototype(QTextStream &h, const QString &classname)
     {
         h << "SIMV2_API int simv2_" << classname << "_set" << Name
-          << "(visit_handle h, " << CArgumentSet("") << ");" << endl;
+          << "(visit_handle h, " << CArgumentSet("") << ");" << Endl;
         h << "SIMV2_API int simv2_" << classname << "_get" << Name
-          << "(visit_handle h, " << CArgumentGet("") << ");" << endl;
+          << "(visit_handle h, " << CArgumentGet("") << ");" << Endl;
     }
 
     virtual void WriteSimV2ClassField(QTextStream &h, int maxLen)
     {
-        h << "    " << pad(GetCPPName(), maxLen) << " " << name << ";" << endl;
+        h << "    " << pad(GetCPPName(), maxLen) << " " << name << ";" << Endl;
     }
 
     virtual void WriteSimV2Ctor(QTextStream &h)
@@ -171,63 +171,63 @@ class AttsGeneratorField : public virtual Field
 
     virtual void WriteSimV2Function_set_helper(QTextStream &h)
     {
-        h << "        obj->" << name << " = val;" << endl;
+        h << "        obj->" << name << " = val;" << Endl;
     }
 
     virtual void WriteSimV2Function_get_helper(QTextStream &h)
     {
-        h << "        *val = obj->" << name << ";" << endl;
+        h << "        *val = obj->" << name << ";" << Endl;
     }
 
     virtual void WriteSimV2Function(QTextStream &h, const QString &classname)
     {
         QString mName(QString("simv2_") + classname + "_set" + Name);
 
-        h << "int" << endl;
+        h << "int" << Endl;
         h << mName
-          << "(visit_handle h, " << CArgumentSet("val") << ")" << endl;
-        h << "{" << endl;
+          << "(visit_handle h, " << CArgumentSet("val") << ")" << Endl;
+        h << "{" << Endl;
         if(HasCode(mName, 0))
             PrintCode(h, mName, 0);
-        h << "    int retval = VISIT_ERROR;" << endl;
-        h << "    VisIt_" << classname << " *obj = GetObject(h, \"" << mName << "\");" << endl;
-        h << "    if(obj != NULL)" << endl;
-        h << "    {" << endl;
+        h << "    int retval = VISIT_ERROR;" << Endl;
+        h << "    VisIt_" << classname << " *obj = GetObject(h, \"" << mName << "\");" << Endl;
+        h << "    if(obj != NULL)" << Endl;
+        h << "    {" << Endl;
         WriteSimV2Function_set_helper(h);
-        h << "        retval = VISIT_OKAY;" << endl;
-        h << "    }" << endl;
+        h << "        retval = VISIT_OKAY;" << Endl;
+        h << "    }" << Endl;
         if(HasCode(mName, 1))
             PrintCode(h, mName, 1);
-        h << "    return retval;" << endl;
-        h << "}" << endl;
-        h << endl;
+        h << "    return retval;" << Endl;
+        h << "}" << Endl;
+        h << Endl;
 
         mName = QString("simv2_") + classname + "_get" + Name;
-        h << "int" << endl;
+        h << "int" << Endl;
         h << mName
-          << "(visit_handle h, " << CArgumentGet(" val") << ")" << endl;
-        h << "{" << endl;
+          << "(visit_handle h, " << CArgumentGet(" val") << ")" << Endl;
+        h << "{" << Endl;
         if(HasCode(mName, 0))
             PrintCode(h, mName, 0);
-        h << "    int retval = VISIT_ERROR;" << endl;
-        h << "    if(val == NULL)" << endl;
-        h << "    {" << endl;
-        h << "        VisItError(\"" << mName << ": Invalid address.\");" << endl;
-        h << "        return VISIT_ERROR;" << endl;
-        h << "    }" << endl;
-        h << "    VisIt_" << classname << " *obj = GetObject(h, \"" << mName << "\");" << endl;
-        h << "    if(obj != NULL)" << endl;
-        h << "    {" << endl;
+        h << "    int retval = VISIT_ERROR;" << Endl;
+        h << "    if(val == NULL)" << Endl;
+        h << "    {" << Endl;
+        h << "        VisItError(\"" << mName << ": Invalid address.\");" << Endl;
+        h << "        return VISIT_ERROR;" << Endl;
+        h << "    }" << Endl;
+        h << "    VisIt_" << classname << " *obj = GetObject(h, \"" << mName << "\");" << Endl;
+        h << "    if(obj != NULL)" << Endl;
+        h << "    {" << Endl;
         WriteSimV2Function_get_helper(h);
-        h << "        retval = VISIT_OKAY;" << endl;
-        h << "    }" << endl;
-        h << "    else" << endl;
-        h << "        *val = 0;" << endl;
+        h << "        retval = VISIT_OKAY;" << Endl;
+        h << "    }" << Endl;
+        h << "    else" << Endl;
+        h << "        *val = 0;" << Endl;
         if(HasCode(mName, 1))
             PrintCode(h, mName, 1);
-        h << "    return retval;" << endl;
-        h << "}" << endl;
-        h << endl;
+        h << "    return retval;" << Endl;
+        h << "}" << Endl;
+        h << Endl;
     }
 
 protected:
@@ -253,9 +253,9 @@ class AttsGeneratorInt : public virtual Int , public virtual AttsGeneratorField
     virtual void WriteSimV2Ctor(QTextStream &h)
     {
         if(valueSet)
-            h << "    " << name << " = " << val << ";" << endl;
+            h << "    " << name << " = " << val << ";" << Endl;
         else
-            h << "    " << name << " = 0;" << endl;
+            h << "    " << name << " = 0;" << Endl;
     }
 };
 
@@ -269,19 +269,19 @@ class AttsGeneratorIntArray : public virtual IntArray , public virtual AttsGener
         : Field("intArray",n,l), IntArray(s,n,l), AttsGeneratorField("intArray",n,l) { }
     virtual void WriteSimV2ClassField(QTextStream &h, int maxLen)
     {
-        h << "    " << pad(bGetCPPName(), maxLen) << " " << name << "[" << length << "];" << endl;
+        h << "    " << pad(bGetCPPName(), maxLen) << " " << name << "[" << length << "];" << Endl;
     }
 
     virtual void WriteSimV2Function_set_helper(QTextStream &h)
     {
         for(int i = 0; i < length; ++i)
-             h << "        obj->" << name << "[" << i << "] = val[" << i << "];" << endl;
+             h << "        obj->" << name << "[" << i << "] = val[" << i << "];" << Endl;
     }
 
     virtual void WriteSimV2Function_get_helper(QTextStream &h)
     {
         for(int i = 0; i < length; ++i)
-             h << "        val[" << i << "] = obj->" << name << "[" << i << "];" << endl;
+             h << "        val[" << i << "] = obj->" << name << "[" << i << "];" << Endl;
     }
 };
 
@@ -298,39 +298,39 @@ class AttsGeneratorIntVector : public virtual IntVector , public virtual AttsGen
     virtual void WriteVisItFunctionPrototype(QTextStream &h, const QString &classname)
     {
         h << "int VisIt_" << classname << "_add" << sing()
-          << "(visit_handle h, int);" << endl;
+          << "(visit_handle h, int);" << Endl;
         h << "int VisIt_" << classname << "_getNum" << sing()
-          << "(visit_handle h, int *);" << endl;
+          << "(visit_handle h, int *);" << Endl;
         h << "int VisIt_" << classname << "_get" << sing()
-          << "(visit_handle h, int, int *);" << endl;
+          << "(visit_handle h, int, int *);" << Endl;
     }
 
     virtual void WriteVisItFunction(QTextStream &h, const QString &classname)
     {
         h << "int\nVisIt_" << classname << "_add" << sing()
-          << "(visit_handle h, int val)" << endl;
-        h << "{" << endl;
-        h << "    VISIT_DYNAMIC_EXECUTE(" << classname << "_add" << sing() << "," << endl;
-        h << "        int, (visit_handle, int)," << endl;
-        h << "        (h, val));" << endl;
-        h << "}" << endl;
-        h << endl;
+          << "(visit_handle h, int val)" << Endl;
+        h << "{" << Endl;
+        h << "    VISIT_DYNAMIC_EXECUTE(" << classname << "_add" << sing() << "," << Endl;
+        h << "        int, (visit_handle, int)," << Endl;
+        h << "        (h, val));" << Endl;
+        h << "}" << Endl;
+        h << Endl;
         h << "int\nVisIt_" << classname << "_getNum" << sing()
-          << "(visit_handle h, int *n)" << endl;
-        h << "{" << endl;
-        h << "    VISIT_DYNAMIC_EXECUTE(" << classname << "_getNum" << sing() << "," << endl;
-        h << "        int, (visit_handle, int*)," << endl;
-        h << "        (h, n));" << endl;
-        h << "}" << endl;
-        h << endl;
+          << "(visit_handle h, int *n)" << Endl;
+        h << "{" << Endl;
+        h << "    VISIT_DYNAMIC_EXECUTE(" << classname << "_getNum" << sing() << "," << Endl;
+        h << "        int, (visit_handle, int*)," << Endl;
+        h << "        (h, n));" << Endl;
+        h << "}" << Endl;
+        h << Endl;
         h << "int\nVisIt_" << classname << "_get" << sing()
-          << "(visit_handle h, int i, int *val)" << endl;
-        h << "{" << endl;
-        h << "    VISIT_DYNAMIC_EXECUTE(" << classname << "_get" << sing() << "," << endl;
-        h << "        int, (visit_handle, int, int*)," << endl;
-        h << "        (h, i, val));" << endl;
-        h << "}" << endl;
-        h << endl;
+          << "(visit_handle h, int i, int *val)" << Endl;
+        h << "{" << Endl;
+        h << "    VISIT_DYNAMIC_EXECUTE(" << classname << "_get" << sing() << "," << Endl;
+        h << "        int, (visit_handle, int, int*)," << Endl;
+        h << "        (h, i, val));" << Endl;
+        h << "}" << Endl;
+        h << Endl;
     }
 
     virtual QString FortranName(const QString &classname, const QString &action) const
@@ -343,118 +343,118 @@ class AttsGeneratorIntVector : public virtual IntVector , public virtual AttsGen
     {
         QString mName(FortranName(classname, "ADD"));
         h << "#define F_" << pad(mName,30) << "  F77_ID(" << mName.toLower() << "_,"
-          << mName.toLower() << ", " << mName << ")" << endl;
+          << mName.toLower() << ", " << mName << ")" << Endl;
 
         mName = FortranName(classname, "GETNUM");
         h << "#define F_" << pad(mName,30) << "  F77_ID(" << mName.toLower() << "_,"
-          << mName.toLower() << ", " << mName << ")" << endl;
+          << mName.toLower() << ", " << mName << ")" << Endl;
 
         mName = FortranName(classname, "GET");
         h << "#define F_" << pad(mName,30) << "  F77_ID(" << mName.toLower() << "_,"
-          << mName.toLower() << ", " << mName << ")" << endl;
+          << mName.toLower() << ", " << mName << ")" << Endl;
     }
 
     virtual void WriteVisItFortranFunction(QTextStream &h, const QString &classname, const QString &fclass)
     {
         QString mName(FortranName(fclass, "ADD"));
-        h << "int" << endl;
-        h << "F_" << mName << "(visit_handle *h, int *val)" << endl;
-        h << "{" << endl;
-        h << "    return VisIt_" << classname << "_add" << sing() << "(*h, *val);" << endl;
-        h << "}" << endl;
-        h << endl;
+        h << "int" << Endl;
+        h << "F_" << mName << "(visit_handle *h, int *val)" << Endl;
+        h << "{" << Endl;
+        h << "    return VisIt_" << classname << "_add" << sing() << "(*h, *val);" << Endl;
+        h << "}" << Endl;
+        h << Endl;
 
         mName = FortranName(fclass, "GETNUM");
-        h << "int" << endl;
-        h << "F_" << mName << "(visit_handle *h, int *n)" << endl;
-        h << "{" << endl;
-        h << "    return VisIt_" << classname << "_getNum" << sing() << "(*h, n);" << endl;
-        h << "}" << endl;
-        h << endl;
+        h << "int" << Endl;
+        h << "F_" << mName << "(visit_handle *h, int *n)" << Endl;
+        h << "{" << Endl;
+        h << "    return VisIt_" << classname << "_getNum" << sing() << "(*h, n);" << Endl;
+        h << "}" << Endl;
+        h << Endl;
 
         mName = FortranName(fclass, "GET");
-        h << "int" << endl;
-        h << "F_" << mName << "(visit_handle *h, int *i, int *val)" << endl;
-        h << "{" << endl;
-        h << "    return VisIt_" << classname << "_get" << sing() << "(*h, *i, val);" << endl;
-        h << "}" << endl;
-        h << endl;
+        h << "int" << Endl;
+        h << "F_" << mName << "(visit_handle *h, int *i, int *val)" << Endl;
+        h << "{" << Endl;
+        h << "    return VisIt_" << classname << "_get" << sing() << "(*h, *i, val);" << Endl;
+        h << "}" << Endl;
+        h << Endl;
 
     }
 
     virtual void WriteSimV2FunctionPrototype(QTextStream &h, const QString &classname)
     {
         h << "SIMV2_API int simv2_" << classname << "_add" << sing()
-          << "(visit_handle h, int);" << endl;
+          << "(visit_handle h, int);" << Endl;
         h << "SIMV2_API int simv2_" << classname << "_getNum" << sing()
-          << "(visit_handle h, int *);" << endl;
+          << "(visit_handle h, int *);" << Endl;
         h << "SIMV2_API int simv2_" << classname << "_get" << sing()
-          << "(visit_handle h, int, int *);" << endl;
+          << "(visit_handle h, int, int *);" << Endl;
     }
 
     virtual void WriteSimV2Function(QTextStream &h, const QString &classname)
     {
         QString mName(QString("simv2_") + classname + "_add" + sing());
 
-        h << "int" << endl;
-        h << mName << "(visit_handle h, int val)" << endl;
-        h << "{" << endl;
+        h << "int" << Endl;
+        h << mName << "(visit_handle h, int val)" << Endl;
+        h << "{" << Endl;
         if(HasCode(mName, 0))
             PrintCode(h, mName, 0);
-        h << "    int retval = VISIT_ERROR;" << endl;
-        h << "    VisIt_" << classname << " *obj = GetObject(h, \"" << mName << "\");" << endl;
-        h << "    if(obj != NULL)" << endl;
-        h << "    {" << endl;
-        h << "        obj->" << name << ".push_back(val);" << endl;
-        h << "        retval = VISIT_OKAY;" << endl;
-        h << "    }" << endl;
+        h << "    int retval = VISIT_ERROR;" << Endl;
+        h << "    VisIt_" << classname << " *obj = GetObject(h, \"" << mName << "\");" << Endl;
+        h << "    if(obj != NULL)" << Endl;
+        h << "    {" << Endl;
+        h << "        obj->" << name << ".push_back(val);" << Endl;
+        h << "        retval = VISIT_OKAY;" << Endl;
+        h << "    }" << Endl;
         if(HasCode(mName, 1))
             PrintCode(h, mName, 1);
-        h << "    return retval;" << endl;
-        h << "}" << endl;
-        h << endl;
+        h << "    return retval;" << Endl;
+        h << "}" << Endl;
+        h << Endl;
 
         mName = (QString("simv2_") + classname + "_getNum" + sing());
-        h << "int" << endl;
-        h << mName << "(visit_handle h, int *n)" << endl;
-        h << "{" << endl;
+        h << "int" << Endl;
+        h << mName << "(visit_handle h, int *n)" << Endl;
+        h << "{" << Endl;
         if(HasCode(mName, 0))
             PrintCode(h, mName, 0);
-        h << "    int retval = VISIT_ERROR;" << endl;
-        h << "    VisIt_" << classname << " *obj = GetObject(h, \"" << mName << "\");" << endl;
-        h << "    if(obj != NULL && n != NULL)" << endl;
-        h << "    {" << endl;
-        h << "        *n = obj->" << name << ".size();" << endl;
-        h << "        retval = VISIT_OKAY;" << endl;
-        h << "    }" << endl;
-        h << "    else" << endl;
-        h << "        *n = 0;" << endl;
+        h << "    int retval = VISIT_ERROR;" << Endl;
+        h << "    VisIt_" << classname << " *obj = GetObject(h, \"" << mName << "\");" << Endl;
+        h << "    if(obj != NULL && n != NULL)" << Endl;
+        h << "    {" << Endl;
+        h << "        *n = obj->" << name << ".size();" << Endl;
+        h << "        retval = VISIT_OKAY;" << Endl;
+        h << "    }" << Endl;
+        h << "    else" << Endl;
+        h << "        *n = 0;" << Endl;
         if(HasCode(mName, 1))
             PrintCode(h, mName, 1);
-        h << "    return retval;" << endl;
-        h << "}" << endl;
-        h << endl;
+        h << "    return retval;" << Endl;
+        h << "}" << Endl;
+        h << Endl;
 
         mName = (QString("simv2_") + classname + "_get" + sing());
-        h << "int" << endl;
-        h << mName << "(visit_handle h, int i, int *val)" << endl;
-        h << "{" << endl;
+        h << "int" << Endl;
+        h << mName << "(visit_handle h, int i, int *val)" << Endl;
+        h << "{" << Endl;
         if(HasCode(mName, 0))
             PrintCode(h, mName, 0);
-        h << "    int retval = VISIT_ERROR;" << endl;
-        h << "    VisIt_" << classname << " *obj = GetObject(h, \"" << mName << "\");" << endl;
-        h << "    if(obj != NULL && i >= 0 && i < obj->" << name << ".size())" << endl;
-        h << "    {" << endl;
-        h << "        *val = obj->" << name << "[i];" << endl;
-        h << "        retval = VISIT_OKAY;" << endl;
-        h << "    }" << endl;
-        h << "    else" << endl;
-        h << "        *val = 0;" << endl;
+        h << "    int retval = VISIT_ERROR;" << Endl;
+        h << "    VisIt_" << classname << " *obj = GetObject(h, \"" << mName << "\");" << Endl;
+        h << "    if(obj != NULL && i >= 0 && i < obj->" << name << ".size())" << Endl;
+        h << "    {" << Endl;
+        h << "        *val = obj->" << name << "[i];" << Endl;
+        h << "        retval = VISIT_OKAY;" << Endl;
+        h << "    }" << Endl;
+        h << "    else" << Endl;
+        h << "        *val = 0;" << Endl;
         if(HasCode(mName, 1))
             PrintCode(h, mName, 1);
-        h << "    return retval;" << endl;
-        h << "}" << endl;
-        h << endl;
+        h << "    return retval;" << Endl;
+        h << "}" << Endl;
+        h << Endl;
     }
 };
 
@@ -472,19 +472,19 @@ class AttsGeneratorBool : public virtual Bool , public virtual AttsGeneratorFiel
     virtual void WriteSimV2Ctor(QTextStream &h)
     {
         if(valueSet)
-            h << "    " << name << " = " << (val ? "true":"false") << ";" << endl;
+            h << "    " << name << " = " << (val ? "true":"false") << ";" << Endl;
         else
-            h << "    " << name << " = false;" << endl;
+            h << "    " << name << " = false;" << Endl;
     }
 
     virtual void WriteSimV2Function_set_helper(QTextStream &h)
     {
-        h << "        obj->" << name << " = (val > 0);" << endl;
+        h << "        obj->" << name << " = (val > 0);" << Endl;
     }
 
     virtual void WriteSimV2Function_get_helper(QTextStream &h)
     {
-        h << "        *val = obj->" << name << " ? 1 : 0;" << endl;
+        h << "        *val = obj->" << name << " ? 1 : 0;" << Endl;
     }
 };
 
@@ -500,9 +500,9 @@ class AttsGeneratorFloat : public virtual Float , public virtual AttsGeneratorFi
     virtual void WriteSimV2Ctor(QTextStream &h)
     {
         if(valueSet)
-            h << "    " << name << " = " << val << ";" << endl;
+            h << "    " << name << " = " << val << ";" << Endl;
         else
-            h << "    " << name << " = 0.f;" << endl;
+            h << "    " << name << " = 0.f;" << Endl;
     }
 };
 
@@ -520,38 +520,38 @@ class AttsGeneratorFloatArray : public virtual FloatArray , public virtual AttsG
     virtual QString CArgumentGet(const QString &var) const { return QString("float %1[%2]").arg(var).arg(length); }
     virtual void WriteSimV2ClassField(QTextStream &h, int maxLen)
     {
-        h << "    " << pad(bGetCPPName(), maxLen) << " " << name << "[" << length << "];" << endl;
+        h << "    " << pad(bGetCPPName(), maxLen) << " " << name << "[" << length << "];" << Endl;
     }
     virtual void WriteSimV2Function_set_helper(QTextStream &h)
     {
         for(int i = 0; i < length; ++i)
-             h << "        obj->" << name << "[" << i << "] = val[" << i << "];" << endl;
+             h << "        obj->" << name << "[" << i << "] = val[" << i << "];" << Endl;
     }
 
     virtual void WriteSimV2Function_get_helper(QTextStream &h)
     {
         for(int i = 0; i < length; ++i)
-             h << "        val[" << i << "] = obj->" << name << "[" << i << "];" << endl;
+             h << "        val[" << i << "] = obj->" << name << "[" << i << "];" << Endl;
     }
 
     virtual void WriteVisItFortranFunction(QTextStream &h, const QString &classname, const QString &fclass)
     {
         QString mName(FortranName(fclass, "SET"));
 
-        h << "int" << endl;
-        h << "F_" << mName << "(visit_handle *h, " << CArgumentSet("val") << ")" << endl;
-        h << "{" << endl;
-        h << "    return VisIt_" << classname << "_set" << Name << "(*h, val);" << endl;
-        h << "}" << endl;
-        h << endl;
+        h << "int" << Endl;
+        h << "F_" << mName << "(visit_handle *h, " << CArgumentSet("val") << ")" << Endl;
+        h << "{" << Endl;
+        h << "    return VisIt_" << classname << "_set" << Name << "(*h, val);" << Endl;
+        h << "}" << Endl;
+        h << Endl;
 
         mName = QString(FortranName(fclass, "GET"));
-        h << "int" << endl;
-        h << "F_" << mName << "(visit_handle *h, " << CArgumentGet("val") << ")" << endl;
-        h << "{" << endl;
-        h << "    return VisIt_" << classname << "_get" << Name << "(*h, val);" << endl;
-        h << "}" << endl;
-        h << endl;
+        h << "int" << Endl;
+        h << "F_" << mName << "(visit_handle *h, " << CArgumentGet("val") << ")" << Endl;
+        h << "{" << Endl;
+        h << "    return VisIt_" << classname << "_get" << Name << "(*h, val);" << Endl;
+        h << "}" << Endl;
+        h << Endl;
     }
 
 };
@@ -568,9 +568,9 @@ class AttsGeneratorDouble : public virtual Double , public virtual AttsGenerator
     virtual void WriteSimV2Ctor(QTextStream &h)
     {
         if(valueSet)
-            h << "    " << name << " = " << val << ";" << endl;
+            h << "    " << name << " = " << val << ";" << Endl;
         else
-            h << "    " << name << " = 0.;" << endl;
+            h << "    " << name << " = 0.;" << Endl;
     }
 };
 
@@ -588,38 +588,38 @@ class AttsGeneratorDoubleArray : public virtual DoubleArray , public virtual Att
     virtual QString CArgumentGet(const QString &var) const { return QString("double %1[%2]").arg(var).arg(length); }
     virtual void WriteSimV2ClassField(QTextStream &h, int maxLen)
     {
-        h << "    " << pad(bGetCPPName(), maxLen) << " " << name << "[" << length << "];" << endl;
+        h << "    " << pad(bGetCPPName(), maxLen) << " " << name << "[" << length << "];" << Endl;
     }
     virtual void WriteSimV2Function_set_helper(QTextStream &h)
     {
         for(int i = 0; i < length; ++i)
-             h << "        obj->" << name << "[" << i << "] = val[" << i << "];" << endl;
+             h << "        obj->" << name << "[" << i << "] = val[" << i << "];" << Endl;
     }
 
     virtual void WriteSimV2Function_get_helper(QTextStream &h)
     {
         for(int i = 0; i < length; ++i)
-             h << "        val[" << i << "] = obj->" << name << "[" << i << "];" << endl;
+             h << "        val[" << i << "] = obj->" << name << "[" << i << "];" << Endl;
     }
 
     virtual void WriteVisItFortranFunction(QTextStream &h, const QString &classname, const QString &fclass)
     {
         QString mName(FortranName(fclass, "SET"));
 
-        h << "int" << endl;
-        h << "F_" << mName << "(visit_handle *h, " << CArgumentSet("val") << ")" << endl;
-        h << "{" << endl;
-        h << "    return VisIt_" << classname << "_set" << Name << "(*h, val);" << endl;
-        h << "}" << endl;
-        h << endl;
+        h << "int" << Endl;
+        h << "F_" << mName << "(visit_handle *h, " << CArgumentSet("val") << ")" << Endl;
+        h << "{" << Endl;
+        h << "    return VisIt_" << classname << "_set" << Name << "(*h, val);" << Endl;
+        h << "}" << Endl;
+        h << Endl;
 
         mName = QString(FortranName(fclass, "GET"));
-        h << "int" << endl;
-        h << "F_" << mName << "(visit_handle *h, " << CArgumentGet("val") << ")" << endl;
-        h << "{" << endl;
-        h << "    return VisIt_" << classname << "_get" << Name << "(*h, val);" << endl;
-        h << "}" << endl;
-        h << endl;
+        h << "int" << Endl;
+        h << "F_" << mName << "(visit_handle *h, " << CArgumentGet("val") << ")" << Endl;
+        h << "{" << Endl;
+        h << "    return VisIt_" << classname << "_get" << Name << "(*h, val);" << Endl;
+        h << "}" << Endl;
+        h << Endl;
     }
 
 };
@@ -681,130 +681,130 @@ class AttsGeneratorString : public virtual String , public virtual AttsGenerator
 
     virtual void WriteVisItFunctionPrototype(QTextStream &h, const QString &classname)
     {
-        h << "int VisIt_" << classname << "_set" << Name << "(visit_handle h, const char *);" << endl;
-        h << "int VisIt_" << classname << "_get" << Name << "(visit_handle h, char **);" << endl;
+        h << "int VisIt_" << classname << "_set" << Name << "(visit_handle h, const char *);" << Endl;
+        h << "int VisIt_" << classname << "_get" << Name << "(visit_handle h, char **);" << Endl;
     }
 
     virtual void WriteVisItFunction(QTextStream &h, const QString &classname)
     {
         h << "int\nVisIt_" << classname << "_set" << Name
-          << "(visit_handle h, const char *val)" << endl;
-        h << "{" << endl;
-        h << "    VISIT_DYNAMIC_EXECUTE(" << classname << "_set" << Name << "," << endl;
-        h << "        int, (visit_handle, const char *)," << endl;
-        h << "        (h, val));" << endl;
-        h << "}" << endl;
-        h << endl;
+          << "(visit_handle h, const char *val)" << Endl;
+        h << "{" << Endl;
+        h << "    VISIT_DYNAMIC_EXECUTE(" << classname << "_set" << Name << "," << Endl;
+        h << "        int, (visit_handle, const char *)," << Endl;
+        h << "        (h, val));" << Endl;
+        h << "}" << Endl;
+        h << Endl;
 
         h << "int\nVisIt_" << classname << "_get" << Name
-          << "(visit_handle h, char **val)" << endl;
-        h << "{" << endl;
-        h << "    VISIT_DYNAMIC_EXECUTE(" << classname << "_get" << Name << "," << endl;
-        h << "        int, (visit_handle, char **)," << endl;
-        h << "        (h, val));" << endl;
-        h << "}" << endl;
-        h << endl;
+          << "(visit_handle h, char **val)" << Endl;
+        h << "{" << Endl;
+        h << "    VISIT_DYNAMIC_EXECUTE(" << classname << "_get" << Name << "," << Endl;
+        h << "        int, (visit_handle, char **)," << Endl;
+        h << "        (h, val));" << Endl;
+        h << "}" << Endl;
+        h << Endl;
     }
 
     virtual void WriteVisItFortranFunction(QTextStream &h, const QString &classname, const QString &fclass)
     {
         QString mName(FortranName(fclass, "SET"));
 
-        h << "int" << endl;
-        h << "F_" << mName << "(visit_handle *h, const char *val, int *lval)" << endl;
-        h << "{" << endl;
-        h << "    char *f_val = NULL;" << endl;
-        h << "    int retval;" << endl;
-        h << "    COPY_FORTRAN_STRING(f_val, val, lval);" << endl;
-        h << "    retval = VisIt_" << classname << "_set" << Name << "(*h, f_val);" << endl;
-        h << "    FREE(f_val);" << endl;
-        h << "    return retval;" << endl;
-        h << "}" << endl;
-        h << endl;
+        h << "int" << Endl;
+        h << "F_" << mName << "(visit_handle *h, const char *val, int *lval)" << Endl;
+        h << "{" << Endl;
+        h << "    char *f_val = NULL;" << Endl;
+        h << "    int retval;" << Endl;
+        h << "    COPY_FORTRAN_STRING(f_val, val, lval);" << Endl;
+        h << "    retval = VisIt_" << classname << "_set" << Name << "(*h, f_val);" << Endl;
+        h << "    FREE(f_val);" << Endl;
+        h << "    return retval;" << Endl;
+        h << "}" << Endl;
+        h << Endl;
 
         mName = FortranName(fclass, "GET");
-        h << "int" << endl;
-        h << "F_" << mName << "(visit_handle *h, char *val, int *lval)" << endl;
-        h << "{" << endl;
-        h << "    char *s = NULL;" << endl;
-        h << "    int retval = VisIt_" << classname << "_get" << Name << "(*h, &s);" << endl;
-        h << "    if(s != NULL)" << endl;
-        h << "    {" << endl;
-        h << "        visit_cstring_to_fstring(s, val, *lval);" << endl;
-        h << "        free(s);" << endl;
-        h << "    }" << endl;
-        h << "    return retval;" << endl;
-        h << "}" << endl;
-        h << endl;
+        h << "int" << Endl;
+        h << "F_" << mName << "(visit_handle *h, char *val, int *lval)" << Endl;
+        h << "{" << Endl;
+        h << "    char *s = NULL;" << Endl;
+        h << "    int retval = VisIt_" << classname << "_get" << Name << "(*h, &s);" << Endl;
+        h << "    if(s != NULL)" << Endl;
+        h << "    {" << Endl;
+        h << "        visit_cstring_to_fstring(s, val, *lval);" << Endl;
+        h << "        free(s);" << Endl;
+        h << "    }" << Endl;
+        h << "    return retval;" << Endl;
+        h << "}" << Endl;
+        h << Endl;
     }
 
     virtual void WriteSimV2FunctionPrototype(QTextStream &h, const QString &classname)
     {
-        h << "SIMV2_API int simv2_" << classname << "_set" << Name << "(visit_handle h, const char *);" << endl;
-        h << "SIMV2_API int simv2_" << classname << "_get" << Name << "(visit_handle h, char **);" << endl;
+        h << "SIMV2_API int simv2_" << classname << "_set" << Name << "(visit_handle h, const char *);" << Endl;
+        h << "SIMV2_API int simv2_" << classname << "_get" << Name << "(visit_handle h, char **);" << Endl;
     }
 
     virtual void WriteSimV2Ctor(QTextStream &h)
     {
         if(valueSet)
-            h << "    " << name << " = \"" << val << "\";" << endl;
+            h << "    " << name << " = \"" << val << "\";" << Endl;
         else
-            h << "    " << name << " = \"\";" << endl;
+            h << "    " << name << " = \"\";" << Endl;
     }
 
     virtual void WriteSimV2Function(QTextStream &h, const QString &classname)
     {
         QString mName(QString("simv2_") + classname + "_set" + Name);
 
-        h << "int" << endl;
-        h << mName << "(visit_handle h, const char *val)" << endl;
-        h << "{" << endl;
+        h << "int" << Endl;
+        h << mName << "(visit_handle h, const char *val)" << Endl;
+        h << "{" << Endl;
         if(HasCode(mName, 0))
             PrintCode(h, mName, 0);
-        h << "    if(val == NULL)" << endl;
-        h << "    {" << endl;
-        h << "        VisItError(\"An invalid string was provided for " << name << "\");" << endl;
-        h << "        return VISIT_ERROR;" << endl;
-        h << "    }" << endl;
-        h << "    int retval = VISIT_ERROR;" << endl;
-        h << "    VisIt_" << classname << " *obj = GetObject(h, \"" << mName << "\");" << endl;
-        h << "    if(obj != NULL)" << endl;
-        h << "    {" << endl;
-        h << "        obj->" << name << " = val;" << endl;
-        h << "        retval = VISIT_OKAY;" << endl;
-        h << "    }" << endl;
+        h << "    if(val == NULL)" << Endl;
+        h << "    {" << Endl;
+        h << "        VisItError(\"An invalid string was provided for " << name << "\");" << Endl;
+        h << "        return VISIT_ERROR;" << Endl;
+        h << "    }" << Endl;
+        h << "    int retval = VISIT_ERROR;" << Endl;
+        h << "    VisIt_" << classname << " *obj = GetObject(h, \"" << mName << "\");" << Endl;
+        h << "    if(obj != NULL)" << Endl;
+        h << "    {" << Endl;
+        h << "        obj->" << name << " = val;" << Endl;
+        h << "        retval = VISIT_OKAY;" << Endl;
+        h << "    }" << Endl;
         if(HasCode(mName, 1))
             PrintCode(h, mName, 1);
-        h << "    return retval;" << endl;
-        h << "}" << endl;
-        h << endl;
+        h << "    return retval;" << Endl;
+        h << "}" << Endl;
+        h << Endl;
 
         mName = (QString("simv2_") + classname + "_get" + Name);
-        h << "int" << endl;
-        h << mName << "(visit_handle h, char **val)" << endl;
-        h << "{" << endl;
+        h << "int" << Endl;
+        h << mName << "(visit_handle h, char **val)" << Endl;
+        h << "{" << Endl;
         if(HasCode(mName, 0))
             PrintCode(h, mName, 0);
-        h << "    if(val == NULL)" << endl;
-        h << "    {" << endl;
-        h << "        VisItError(\"" << mName << ": Invalid address.\");" << endl;
-        h << "        return VISIT_ERROR;" << endl;
-        h << "    }" << endl;
-        h << "    int retval = VISIT_ERROR;" << endl;
-        h << "    VisIt_" << classname << " *obj = GetObject(h, \"" << mName << "\");" << endl;
-        h << "    if(obj != NULL)" << endl;
-        h << "    {" << endl;
-        h << "        *val = (char*)malloc(obj->" << name << ".size() + 1);" << endl;
-        h << "        strcpy(*val, obj->" << name << ".c_str());" << endl;
-        h << "        retval = VISIT_OKAY;" << endl;
-        h << "    }" << endl;
-        h << "    else" << endl;
-        h << "        *val = NULL;" << endl;
+        h << "    if(val == NULL)" << Endl;
+        h << "    {" << Endl;
+        h << "        VisItError(\"" << mName << ": Invalid address.\");" << Endl;
+        h << "        return VISIT_ERROR;" << Endl;
+        h << "    }" << Endl;
+        h << "    int retval = VISIT_ERROR;" << Endl;
+        h << "    VisIt_" << classname << " *obj = GetObject(h, \"" << mName << "\");" << Endl;
+        h << "    if(obj != NULL)" << Endl;
+        h << "    {" << Endl;
+        h << "        *val = (char*)malloc(obj->" << name << ".size() + 1);" << Endl;
+        h << "        strcpy(*val, obj->" << name << ".c_str());" << Endl;
+        h << "        retval = VISIT_OKAY;" << Endl;
+        h << "    }" << Endl;
+        h << "    else" << Endl;
+        h << "        *val = NULL;" << Endl;
         if(HasCode(mName, 1))
             PrintCode(h, mName, 1);
-        h << "    return retval;" << endl;
-        h << "}" << endl;
-        h << endl;
+        h << "    return retval;" << Endl;
+        h << "}" << Endl;
+        h << Endl;
     }
 };
 
@@ -820,39 +820,39 @@ class AttsGeneratorStringVector : public virtual StringVector , public virtual A
 
     virtual void WriteVisItFunctionPrototype(QTextStream &h, const QString &classname)
     {
-        h << "int VisIt_" << classname << "_add" << sing() << "(visit_handle h, const char *);" << endl;
-        h << "int VisIt_" << classname << "_getNum" << sing() << "(visit_handle h, int *);" << endl;
-        h << "int VisIt_" << classname << "_get" << sing() << "(visit_handle h, int, char **);" << endl;
+        h << "int VisIt_" << classname << "_add" << sing() << "(visit_handle h, const char *);" << Endl;
+        h << "int VisIt_" << classname << "_getNum" << sing() << "(visit_handle h, int *);" << Endl;
+        h << "int VisIt_" << classname << "_get" << sing() << "(visit_handle h, int, char **);" << Endl;
     }
 
     virtual void WriteVisItFunction(QTextStream &h, const QString &classname)
     {
         h << "int\nVisIt_" << classname << "_add" << sing()
-          << "(visit_handle h, const char *val)" << endl;
-        h << "{" << endl;
-        h << "    VISIT_DYNAMIC_EXECUTE(" << classname << "_add" << sing() << "," << endl;
-        h << "        int, (visit_handle, const char *)," << endl;
-        h << "        (h, val));" << endl;
-        h << "}" << endl;
-        h << endl;
+          << "(visit_handle h, const char *val)" << Endl;
+        h << "{" << Endl;
+        h << "    VISIT_DYNAMIC_EXECUTE(" << classname << "_add" << sing() << "," << Endl;
+        h << "        int, (visit_handle, const char *)," << Endl;
+        h << "        (h, val));" << Endl;
+        h << "}" << Endl;
+        h << Endl;
 
         h << "int\nVisIt_" << classname << "_getNum" << sing()
-          << "(visit_handle h, int *val)" << endl;
-        h << "{" << endl;
-        h << "    VISIT_DYNAMIC_EXECUTE(" << classname << "_getNum" << sing() << "," << endl;
-        h << "        int, (visit_handle, int *)," << endl;
-        h << "        (h, val));" << endl;
-        h << "}" << endl;
-        h << endl;
+          << "(visit_handle h, int *val)" << Endl;
+        h << "{" << Endl;
+        h << "    VISIT_DYNAMIC_EXECUTE(" << classname << "_getNum" << sing() << "," << Endl;
+        h << "        int, (visit_handle, int *)," << Endl;
+        h << "        (h, val));" << Endl;
+        h << "}" << Endl;
+        h << Endl;
 
         h << "int\nVisIt_" << classname << "_get" << sing()
-          << "(visit_handle h, int i, char **val)" << endl;
-        h << "{" << endl;
-        h << "    VISIT_DYNAMIC_EXECUTE(" << classname << "_get" << sing() << "," << endl;
-        h << "        int, (visit_handle, int, char **)," << endl;
-        h << "        (h, i, val));" << endl;
-        h << "}" << endl;
-        h << endl;
+          << "(visit_handle h, int i, char **val)" << Endl;
+        h << "{" << Endl;
+        h << "    VISIT_DYNAMIC_EXECUTE(" << classname << "_get" << sing() << "," << Endl;
+        h << "        int, (visit_handle, int, char **)," << Endl;
+        h << "        (h, i, val));" << Endl;
+        h << "}" << Endl;
+        h << Endl;
     }
 
     virtual QString FortranName(const QString &classname, const QString &action) const
@@ -865,149 +865,149 @@ class AttsGeneratorStringVector : public virtual StringVector , public virtual A
     {
         QString mName(FortranName(classname, "ADD"));
         h << "#define F_" << pad(mName,30) << "  F77_ID(" << mName.toLower() << "_,"
-          << mName.toLower() << ", " << mName << ")" << endl;
+          << mName.toLower() << ", " << mName << ")" << Endl;
 
         mName = QString(FortranName(classname, "GETNUM"));
         h << "#define F_" << pad(mName,30) << "  F77_ID(" << mName.toLower() << "_,"
-          << mName.toLower() << ", " << mName << ")" << endl;
+          << mName.toLower() << ", " << mName << ")" << Endl;
 
         mName = QString(FortranName(classname, "GET"));
         h << "#define F_" << pad(mName,30) << "  F77_ID(" << mName.toLower() << "_,"
-          << mName.toLower() << ", " << mName << ")" << endl;
+          << mName.toLower() << ", " << mName << ")" << Endl;
     }
 
     virtual void WriteVisItFortranFunction(QTextStream &h, const QString &classname, const QString &fclass)
     {
         QString mName(FortranName(fclass, "ADD"));
 
-        h << "int" << endl;
-        h << "F_" << mName << "(visit_handle *h, const char *val, int *lval)" << endl;
-        h << "{" << endl;
-        h << "    char *f_val = NULL;" << endl;
-        h << "    int retval;" << endl;
-        h << "    COPY_FORTRAN_STRING(f_val, val, lval);" << endl;
-        h << "    retval = VisIt_" << classname << "_add" << sing() << "(*h, f_val);" << endl;
-        h << "    FREE(f_val);" << endl;
-        h << "    return retval;" << endl;
-        h << "}" << endl;
-        h << endl;
+        h << "int" << Endl;
+        h << "F_" << mName << "(visit_handle *h, const char *val, int *lval)" << Endl;
+        h << "{" << Endl;
+        h << "    char *f_val = NULL;" << Endl;
+        h << "    int retval;" << Endl;
+        h << "    COPY_FORTRAN_STRING(f_val, val, lval);" << Endl;
+        h << "    retval = VisIt_" << classname << "_add" << sing() << "(*h, f_val);" << Endl;
+        h << "    FREE(f_val);" << Endl;
+        h << "    return retval;" << Endl;
+        h << "}" << Endl;
+        h << Endl;
 
         mName = FortranName(fclass, "GETNUM");
-        h << "int" << endl;
-        h << "F_" << mName << "(visit_handle *h, int *val)" << endl;
-        h << "{" << endl;
-        h << "    return VisIt_" << classname << "_getNum" << sing() << "(*h, val);" << endl;
-        h << "}" << endl;
-        h << endl;
+        h << "int" << Endl;
+        h << "F_" << mName << "(visit_handle *h, int *val)" << Endl;
+        h << "{" << Endl;
+        h << "    return VisIt_" << classname << "_getNum" << sing() << "(*h, val);" << Endl;
+        h << "}" << Endl;
+        h << Endl;
 
         mName = FortranName(fclass, "GET");
-        h << "int" << endl;
-        h << "F_" << mName << "(visit_handle *h, int *i, char *val, int *lval)" << endl;
-        h << "{" << endl;
-        h << "    char *s = NULL;" << endl;
-        h << "    int retval;" << endl;
-        h << "    retval = VisIt_" << classname << "_get" << sing() << "(*h, *i, &s);" << endl;
-        h << "    if(s != NULL)" << endl;
-        h << "    {" << endl;
-        h << "        visit_cstring_to_fstring(s, val, *lval);" << endl;
-        h << "        free(s);" << endl;
-        h << "    }" << endl;
-        h << "    return retval;" << endl;
-        h << "}" << endl;
-        h << endl;
+        h << "int" << Endl;
+        h << "F_" << mName << "(visit_handle *h, int *i, char *val, int *lval)" << Endl;
+        h << "{" << Endl;
+        h << "    char *s = NULL;" << Endl;
+        h << "    int retval;" << Endl;
+        h << "    retval = VisIt_" << classname << "_get" << sing() << "(*h, *i, &s);" << Endl;
+        h << "    if(s != NULL)" << Endl;
+        h << "    {" << Endl;
+        h << "        visit_cstring_to_fstring(s, val, *lval);" << Endl;
+        h << "        free(s);" << Endl;
+        h << "    }" << Endl;
+        h << "    return retval;" << Endl;
+        h << "}" << Endl;
+        h << Endl;
     }
 
     virtual void WriteSimV2FunctionPrototype(QTextStream &h, const QString &classname)
     {
         h << "SIMV2_API int simv2_" << classname << "_add" << sing()
-          << "(visit_handle h, const char *);" << endl;
+          << "(visit_handle h, const char *);" << Endl;
 
         h << "SIMV2_API int simv2_" << classname << "_getNum" << sing()
-          << "(visit_handle h, int *);" << endl;
+          << "(visit_handle h, int *);" << Endl;
 
         h << "SIMV2_API int simv2_" << classname << "_get" << sing()
-          << "(visit_handle h, int, char **);" << endl;
+          << "(visit_handle h, int, char **);" << Endl;
     }
 
     virtual void WriteSimV2Function(QTextStream &h, const QString &classname)
     {
         QString mName(QString("simv2_") + classname + "_add" + sing());
 
-        h << "int" << endl;
-        h << mName << "(visit_handle h, const char *val)" << endl;
-        h << "{" << endl;
+        h << "int" << Endl;
+        h << mName << "(visit_handle h, const char *val)" << Endl;
+        h << "{" << Endl;
         if(HasCode(mName, 0))
             PrintCode(h, mName, 0);
-        h << "    if(val == NULL)" << endl;
-        h << "    {" << endl;
-        h << "        VisItError(\"An invalid string was provided for " << name << "\");" << endl;
-        h << "        return VISIT_ERROR;" << endl;
-        h << "    }" << endl;
-        h << "    int retval = VISIT_ERROR;" << endl;
-        h << "    VisIt_" << classname << " *obj = GetObject(h, \"" << mName << "\");" << endl;
-        h << "    if(obj != NULL)" << endl;
-        h << "    {" << endl;
-        h << "        obj->" << name << ".push_back(val);" << endl;
-        h << "        retval = VISIT_OKAY;" << endl;
-        h << "    }" << endl;
+        h << "    if(val == NULL)" << Endl;
+        h << "    {" << Endl;
+        h << "        VisItError(\"An invalid string was provided for " << name << "\");" << Endl;
+        h << "        return VISIT_ERROR;" << Endl;
+        h << "    }" << Endl;
+        h << "    int retval = VISIT_ERROR;" << Endl;
+        h << "    VisIt_" << classname << " *obj = GetObject(h, \"" << mName << "\");" << Endl;
+        h << "    if(obj != NULL)" << Endl;
+        h << "    {" << Endl;
+        h << "        obj->" << name << ".push_back(val);" << Endl;
+        h << "        retval = VISIT_OKAY;" << Endl;
+        h << "    }" << Endl;
         if(HasCode(mName, 1))
             PrintCode(h, mName, 1);
-        h << "    return retval;" << endl;
-        h << "}" << endl;
-        h << endl;
+        h << "    return retval;" << Endl;
+        h << "}" << Endl;
+        h << Endl;
 
         mName = (QString("simv2_") + classname + "_getNum" + sing());
-        h << "int" << endl;
-        h << mName << "(visit_handle h, int *val)" << endl;
-        h << "{" << endl;
+        h << "int" << Endl;
+        h << mName << "(visit_handle h, int *val)" << Endl;
+        h << "{" << Endl;
         if(HasCode(mName, 0))
             PrintCode(h, mName, 0);
-        h << "    if(val == NULL)" << endl;
-        h << "    {" << endl;
-        h << "        VisItError(\"" << mName << ": Invalid address\");" << endl;
-        h << "        return VISIT_ERROR;" << endl;
-        h << "    }" << endl;
-        h << "    int retval = VISIT_ERROR;" << endl;
-        h << "    VisIt_" << classname << " *obj = GetObject(h, \"" << mName << "\");" << endl;
-        h << "    if(obj != NULL)" << endl;
-        h << "    {" << endl;
-        h << "        *val = obj->" << name << ".size();" << endl;
-        h << "        retval = VISIT_OKAY;" << endl;
-        h << "    }" << endl;
-        h << "    else" << endl;
-        h << "        *val = 0;" << endl;
+        h << "    if(val == NULL)" << Endl;
+        h << "    {" << Endl;
+        h << "        VisItError(\"" << mName << ": Invalid address\");" << Endl;
+        h << "        return VISIT_ERROR;" << Endl;
+        h << "    }" << Endl;
+        h << "    int retval = VISIT_ERROR;" << Endl;
+        h << "    VisIt_" << classname << " *obj = GetObject(h, \"" << mName << "\");" << Endl;
+        h << "    if(obj != NULL)" << Endl;
+        h << "    {" << Endl;
+        h << "        *val = obj->" << name << ".size();" << Endl;
+        h << "        retval = VISIT_OKAY;" << Endl;
+        h << "    }" << Endl;
+        h << "    else" << Endl;
+        h << "        *val = 0;" << Endl;
         if(HasCode(mName, 1))
             PrintCode(h, mName, 1);
-        h << "    return retval;" << endl;
-        h << "}" << endl;
-        h << endl;
+        h << "    return retval;" << Endl;
+        h << "}" << Endl;
+        h << Endl;
 
         mName = (QString("simv2_") + classname + "_get" + sing());
-        h << "int" << endl;
-        h << mName << "(visit_handle h, int i, char **val)" << endl;
-        h << "{" << endl;
+        h << "int" << Endl;
+        h << mName << "(visit_handle h, int i, char **val)" << Endl;
+        h << "{" << Endl;
         if(HasCode(mName, 0))
             PrintCode(h, mName, 0);
-        h << "    if(val == NULL)" << endl;
-        h << "    {" << endl;
-        h << "        VisItError(\"" << mName << ": Invalid address\");" << endl;
-        h << "        return VISIT_ERROR;" << endl;
-        h << "    }" << endl;
-        h << "    int retval = VISIT_ERROR;" << endl;
-        h << "    VisIt_" << classname << " *obj = GetObject(h, \"" << mName << "\");" << endl;
-        h << "    if(obj != NULL && i >= 0 && i < obj->" << name << ".size())" << endl;
-        h << "    {" << endl;
-        h << "        *val = (char *)malloc(obj->" << name << "[i].size() + 1);" << endl;
-        h << "        strcpy(*val, obj->" << name << "[i].c_str());" << endl;
-        h << "        retval = VISIT_OKAY;" << endl;
-        h << "    }" << endl;
-        h << "    else" << endl;
-        h << "        *val = NULL;" << endl;
+        h << "    if(val == NULL)" << Endl;
+        h << "    {" << Endl;
+        h << "        VisItError(\"" << mName << ": Invalid address\");" << Endl;
+        h << "        return VISIT_ERROR;" << Endl;
+        h << "    }" << Endl;
+        h << "    int retval = VISIT_ERROR;" << Endl;
+        h << "    VisIt_" << classname << " *obj = GetObject(h, \"" << mName << "\");" << Endl;
+        h << "    if(obj != NULL && i >= 0 && i < obj->" << name << ".size())" << Endl;
+        h << "    {" << Endl;
+        h << "        *val = (char *)malloc(obj->" << name << "[i].size() + 1);" << Endl;
+        h << "        strcpy(*val, obj->" << name << "[i].c_str());" << Endl;
+        h << "        retval = VISIT_OKAY;" << Endl;
+        h << "    }" << Endl;
+        h << "    else" << Endl;
+        h << "        *val = NULL;" << Endl;
         if(HasCode(mName, 1))
             PrintCode(h, mName, 1);
-        h << "    return retval;" << endl;
-        h << "}" << endl;
-        h << endl;
+        h << "    return retval;" << Endl;
+        h << "}" << Endl;
+        h << Endl;
     }
 
 };
@@ -1092,39 +1092,39 @@ class AttsGeneratorAttVector : public virtual AttVector , public virtual AttsGen
     virtual QString CArgument() const { return "visit_handle"; }
     virtual void WriteVisItFunctionPrototype(QTextStream &h, const QString &classname)
     {
-        h << "int VisIt_" << classname << "_add" << sing() << "(visit_handle h, visit_handle);" << endl;
-        h << "int VisIt_" << classname << "_getNum" << sing() << "(visit_handle h, visit_handle *);" << endl;
-        h << "int VisIt_" << classname << "_get" << sing() << "(visit_handle h, int, visit_handle*);" << endl;
+        h << "int VisIt_" << classname << "_add" << sing() << "(visit_handle h, visit_handle);" << Endl;
+        h << "int VisIt_" << classname << "_getNum" << sing() << "(visit_handle h, visit_handle *);" << Endl;
+        h << "int VisIt_" << classname << "_get" << sing() << "(visit_handle h, int, visit_handle*);" << Endl;
     }
 
     virtual void WriteVisItFunction(QTextStream &h, const QString &classname)
     {
         h << "int\nVisIt_" << classname << "_add" << sing()
-          << "(visit_handle h, visit_handle val)" << endl;
-        h << "{" << endl;
-        h << "    VISIT_DYNAMIC_EXECUTE(" << classname << "_add" << sing() << "," << endl;
-        h << "        int, (visit_handle, visit_handle)," << endl;
-        h << "        (h, val));" << endl;
-        h << "}" << endl;
-        h << endl;
+          << "(visit_handle h, visit_handle val)" << Endl;
+        h << "{" << Endl;
+        h << "    VISIT_DYNAMIC_EXECUTE(" << classname << "_add" << sing() << "," << Endl;
+        h << "        int, (visit_handle, visit_handle)," << Endl;
+        h << "        (h, val));" << Endl;
+        h << "}" << Endl;
+        h << Endl;
 
         h << "int\nVisIt_" << classname << "_getNum" << sing()
-          << "(visit_handle h, int *val)" << endl;
-        h << "{" << endl;
-        h << "    VISIT_DYNAMIC_EXECUTE(" << classname << "_getNum" << sing() << "," << endl;
-        h << "        int, (visit_handle, int *)," << endl;
-        h << "        (h, val));" << endl;
-        h << "}" << endl;
-        h << endl;
+          << "(visit_handle h, int *val)" << Endl;
+        h << "{" << Endl;
+        h << "    VISIT_DYNAMIC_EXECUTE(" << classname << "_getNum" << sing() << "," << Endl;
+        h << "        int, (visit_handle, int *)," << Endl;
+        h << "        (h, val));" << Endl;
+        h << "}" << Endl;
+        h << Endl;
 
         h << "int\nVisIt_" << classname << "_get" << sing()
-          << "(visit_handle h, int i, visit_handle *val)" << endl;
-        h << "{" << endl;
-        h << "    VISIT_DYNAMIC_EXECUTE(" << classname << "_get" << sing() << "," << endl;
-        h << "        int, (visit_handle, int, visit_handle *)," << endl;
-        h << "        (h, i, val));" << endl;
-        h << "}" << endl;
-        h << endl;
+          << "(visit_handle h, int i, visit_handle *val)" << Endl;
+        h << "{" << Endl;
+        h << "    VISIT_DYNAMIC_EXECUTE(" << classname << "_get" << sing() << "," << Endl;
+        h << "        int, (visit_handle, int, visit_handle *)," << Endl;
+        h << "        (h, i, val));" << Endl;
+        h << "}" << Endl;
+        h << Endl;
     }
 
     virtual QString FortranName(const QString &classname, const QString &action) const
@@ -1137,140 +1137,140 @@ class AttsGeneratorAttVector : public virtual AttVector , public virtual AttsGen
     {
         QString mName(FortranName(classname, "ADD"));
         h << "#define F_" << pad(mName,30) << "  F77_ID(" << mName.toLower() << "_,"
-          << mName.toLower() << ", " << mName << ")" << endl;
+          << mName.toLower() << ", " << mName << ")" << Endl;
 
         mName = QString(FortranName(classname, "GETNUM"));
         h << "#define F_" << pad(mName,30) << "  F77_ID(" << mName.toLower() << "_,"
-          << mName.toLower() << ", " << mName << ")" << endl;
+          << mName.toLower() << ", " << mName << ")" << Endl;
 
         mName = QString(FortranName(classname, "GET"));
         h << "#define F_" << pad(mName,30) << "  F77_ID(" << mName.toLower() << "_,"
-          << mName.toLower() << ", " << mName << ")" << endl;
+          << mName.toLower() << ", " << mName << ")" << Endl;
     }
 
     virtual void WriteVisItFortranFunction(QTextStream &h, const QString &classname, const QString &fclass)
     {
         QString mName(FortranName(fclass, "ADD"));
 
-        h << "int" << endl;
-        h << "F_" << mName << "(visit_handle *h, visit_handle *val)" << endl;
-        h << "{" << endl;
-        h << "    return VisIt_" << classname << "_add" << sing() << "(*h, *val);" << endl;
-        h << "}" << endl;
-        h << endl;
+        h << "int" << Endl;
+        h << "F_" << mName << "(visit_handle *h, visit_handle *val)" << Endl;
+        h << "{" << Endl;
+        h << "    return VisIt_" << classname << "_add" << sing() << "(*h, *val);" << Endl;
+        h << "}" << Endl;
+        h << Endl;
 
         mName = FortranName(fclass, "GETNUM");
-        h << "int" << endl;
-        h << "F_" << mName << "(visit_handle *h, int *val)" << endl;
-        h << "{" << endl;
-        h << "    return VisIt_" << classname << "_getNum" << sing() << "(*h, val);" << endl;
-        h << "}" << endl;
-        h << endl;
+        h << "int" << Endl;
+        h << "F_" << mName << "(visit_handle *h, int *val)" << Endl;
+        h << "{" << Endl;
+        h << "    return VisIt_" << classname << "_getNum" << sing() << "(*h, val);" << Endl;
+        h << "}" << Endl;
+        h << Endl;
 
         mName = FortranName(fclass, "GET");
-        h << "int" << endl;
-        h << "F_" << mName << "(visit_handle *h, int *i, visit_handle *val)" << endl;
-        h << "{" << endl;
-        h << "    return VisIt_" << classname << "_get" << sing() << "(*h, *i, val);" << endl;
-        h << "}" << endl;
-        h << endl;
+        h << "int" << Endl;
+        h << "F_" << mName << "(visit_handle *h, int *i, visit_handle *val)" << Endl;
+        h << "{" << Endl;
+        h << "    return VisIt_" << classname << "_get" << sing() << "(*h, *i, val);" << Endl;
+        h << "}" << Endl;
+        h << Endl;
     }
 
     virtual void WriteSimV2FunctionPrototype(QTextStream &h, const QString &classname)
     {
         h << "SIMV2_API int simv2_" << classname << "_add" << sing()
-          << "(visit_handle h, visit_handle);" << endl;
+          << "(visit_handle h, visit_handle);" << Endl;
 
         h << "SIMV2_API int simv2_" << classname << "_getNum" << sing()
-          << "(visit_handle h, int *);" << endl;
+          << "(visit_handle h, int *);" << Endl;
 
         h << "SIMV2_API int simv2_" << classname << "_get" << sing()
-          << "(visit_handle h, int, visit_handle *);" << endl;
+          << "(visit_handle h, int, visit_handle *);" << Endl;
     }
 
     virtual void WriteSimV2ClassField(QTextStream &h, int maxLen)
     {
-        h << "    " << pad("std::vector<visit_handle>", maxLen) << " " << name << ";" << endl;
+        h << "    " << pad("std::vector<visit_handle>", maxLen) << " " << name << ";" << Endl;
     }
 
     virtual void WriteSimV2Function(QTextStream &h, const QString &classname)
     {
         QString mName(QString("simv2_") + classname + "_add" + sing());
 
-        h << "int" << endl;
-        h << mName << "(visit_handle h, visit_handle val)" << endl;
-        h << "{" << endl;
+        h << "int" << Endl;
+        h << mName << "(visit_handle h, visit_handle val)" << Endl;
+        h << "{" << Endl;
         if(HasCode(mName, 0))
             PrintCode(h, mName, 0);
-        h << "    if(val == VISIT_INVALID_HANDLE)" << endl;
-        h << "    {" << endl;
-        h << "        VisItError(\"An invalid handle was provided for " << name << "\");" << endl;
-        h << "        return VISIT_ERROR;" << endl;
-        h << "    }" << endl;
-        h << "    int retval = VISIT_ERROR;" << endl;
-        h << "    VisIt_" << classname << " *obj = GetObject(h, \"" << mName << "\");" << endl;
-        h << "    if(obj != NULL)" << endl;
-        h << "    {" << endl;
-        h << "        obj->" << name << ".push_back(val);" << endl;
-        h << "        retval = VISIT_OKAY;" << endl;
-        h << "    }" << endl;
+        h << "    if(val == VISIT_INVALID_HANDLE)" << Endl;
+        h << "    {" << Endl;
+        h << "        VisItError(\"An invalid handle was provided for " << name << "\");" << Endl;
+        h << "        return VISIT_ERROR;" << Endl;
+        h << "    }" << Endl;
+        h << "    int retval = VISIT_ERROR;" << Endl;
+        h << "    VisIt_" << classname << " *obj = GetObject(h, \"" << mName << "\");" << Endl;
+        h << "    if(obj != NULL)" << Endl;
+        h << "    {" << Endl;
+        h << "        obj->" << name << ".push_back(val);" << Endl;
+        h << "        retval = VISIT_OKAY;" << Endl;
+        h << "    }" << Endl;
         if(HasCode(mName, 1))
             PrintCode(h, mName, 1);
-        h << "    return retval;" << endl;
-        h << "}" << endl;
-        h << endl;
+        h << "    return retval;" << Endl;
+        h << "}" << Endl;
+        h << Endl;
 
         mName = (QString("simv2_") + classname + "_getNum" + sing());
-        h << "int" << endl;
-        h << mName << "(visit_handle h, int *val)" << endl;
-        h << "{" << endl;
+        h << "int" << Endl;
+        h << mName << "(visit_handle h, int *val)" << Endl;
+        h << "{" << Endl;
         if(HasCode(mName, 0))
             PrintCode(h, mName, 0);
-        h << "    if(val == NULL)" << endl;
-        h << "    {" << endl;
-        h << "        VisItError(\"" << mName << ": Invalid address\");" << endl;
-        h << "        return VISIT_ERROR;" << endl;
-        h << "    }" << endl;
-        h << "    int retval = VISIT_ERROR;" << endl;
-        h << "    VisIt_" << classname << " *obj = GetObject(h, \"" << mName << "\");" << endl;
-        h << "    if(obj != NULL)" << endl;
-        h << "    {" << endl;
-        h << "        *val = obj->" << name << ".size();" << endl;
-        h << "        retval = VISIT_OKAY;" << endl;
-        h << "    }" << endl;
-        h << "    else" << endl;
-        h << "        *val = 0;" << endl;
+        h << "    if(val == NULL)" << Endl;
+        h << "    {" << Endl;
+        h << "        VisItError(\"" << mName << ": Invalid address\");" << Endl;
+        h << "        return VISIT_ERROR;" << Endl;
+        h << "    }" << Endl;
+        h << "    int retval = VISIT_ERROR;" << Endl;
+        h << "    VisIt_" << classname << " *obj = GetObject(h, \"" << mName << "\");" << Endl;
+        h << "    if(obj != NULL)" << Endl;
+        h << "    {" << Endl;
+        h << "        *val = obj->" << name << ".size();" << Endl;
+        h << "        retval = VISIT_OKAY;" << Endl;
+        h << "    }" << Endl;
+        h << "    else" << Endl;
+        h << "        *val = 0;" << Endl;
         if(HasCode(mName, 1))
             PrintCode(h, mName, 1);
-        h << "    return retval;" << endl;
-        h << "}" << endl;
-        h << endl;
+        h << "    return retval;" << Endl;
+        h << "}" << Endl;
+        h << Endl;
 
         mName = (QString("simv2_") + classname + "_get" + sing());
-        h << "int" << endl;
-        h << mName << "(visit_handle h, int i, visit_handle *val)" << endl;
-        h << "{" << endl;
+        h << "int" << Endl;
+        h << mName << "(visit_handle h, int i, visit_handle *val)" << Endl;
+        h << "{" << Endl;
         if(HasCode(mName, 0))
             PrintCode(h, mName, 0);
-        h << "    if(val == NULL)" << endl;
-        h << "    {" << endl;
-        h << "        VisItError(\"" << mName << ": Invalid address\");" << endl;
-        h << "        return VISIT_ERROR;" << endl;
-        h << "    }" << endl;
-        h << "    int retval = VISIT_ERROR;" << endl;
-        h << "    VisIt_" << classname << " *obj = GetObject(h, \"" << mName << "\");" << endl;
-        h << "    if(obj != NULL && i >= 0 && i < obj->" << name << ".size())" << endl;
-        h << "    {" << endl;
-        h << "        *val = obj->" << name << "[i];" << endl;
-        h << "        retval = VISIT_OKAY;" << endl;
-        h << "    }" << endl;
-        h << "    else" << endl;
-        h << "        *val = NULL;" << endl;
+        h << "    if(val == NULL)" << Endl;
+        h << "    {" << Endl;
+        h << "        VisItError(\"" << mName << ": Invalid address\");" << Endl;
+        h << "        return VISIT_ERROR;" << Endl;
+        h << "    }" << Endl;
+        h << "    int retval = VISIT_ERROR;" << Endl;
+        h << "    VisIt_" << classname << " *obj = GetObject(h, \"" << mName << "\");" << Endl;
+        h << "    if(obj != NULL && i >= 0 && i < obj->" << name << ".size())" << Endl;
+        h << "    {" << Endl;
+        h << "        *val = obj->" << name << "[i];" << Endl;
+        h << "        retval = VISIT_OKAY;" << Endl;
+        h << "    }" << Endl;
+        h << "    else" << Endl;
+        h << "        *val = NULL;" << Endl;
         if(HasCode(mName, 1))
             PrintCode(h, mName, 1);
-        h << "    return retval;" << endl;
-        h << "}" << endl;
-        h << endl;
+        h << "    return retval;" << Endl;
+        h << "}" << Endl;
+        h << Endl;
     }
 };
 
@@ -1288,17 +1288,17 @@ class AttsGeneratorEnum : public virtual Enum , public virtual AttsGeneratorFiel
     virtual void WriteSimV2Ctor(QTextStream &h)
     {
         if(valueSet)
-             h << "    " << name << " = " <<enumType->values[val] << ";" << endl;
+             h << "    " << name << " = " <<enumType->values[val] << ";" << Endl;
         else
-             h << "    " << name << " = " <<enumType->values[0] << ";" << endl;
+             h << "    " << name << " = " <<enumType->values[0] << ";" << Endl;
     }
     virtual void WriteSimV2Function(QTextStream &h, const QString &classname)
     {
         QString mName(QString("simv2_") + classname + "_set" + Name);
 
-        h << "int" << endl;
-        h << mName << "(visit_handle h, " << CArgument() << " val)" << endl;
-        h << "{" << endl;
+        h << "int" << Endl;
+        h << mName << "(visit_handle h, " << CArgument() << " val)" << Endl;
+        h << "{" << Endl;
         if(HasCode(mName, 0))
             PrintCode(h, mName, 0);
         h << "    if(";
@@ -1308,10 +1308,10 @@ class AttsGeneratorEnum : public virtual Enum , public virtual AttsGeneratorFiel
                 h << "       ";
             h << "val != " << enumType->values[i];
             if(i < enumType->values.size()-1)
-                h << " &&" << endl;
+                h << " &&" << Endl;
         }
-        h << ")" << endl;
-        h << "    {" << endl;
+        h << ")" << Endl;
+        h << "    {" << Endl;
         h << "        VisItError(\"The value for " << name << " must be one of: ";
         for(size_t i = 0; i < enumType->values.size(); ++i)
         {
@@ -1319,48 +1319,48 @@ class AttsGeneratorEnum : public virtual Enum , public virtual AttsGeneratorFiel
             if(i < enumType->values.size()-1)
                 h << ", ";
         }
-        h << "\");" << endl;
-        h << "        return VISIT_ERROR;" << endl;
-        h << "    }" << endl;
-        h << "    int retval = VISIT_ERROR;" << endl;
-        h << "    VisIt_" << classname << " *obj = GetObject(h, \"" << mName << "\");" << endl;
-        h << "    if(obj != NULL)" << endl;
-        h << "    {" << endl;
-        h << "        obj->" << name << " = val;" << endl;
-        h << "        retval = VISIT_OKAY;" << endl;
-        h << "    }" << endl;
+        h << "\");" << Endl;
+        h << "        return VISIT_ERROR;" << Endl;
+        h << "    }" << Endl;
+        h << "    int retval = VISIT_ERROR;" << Endl;
+        h << "    VisIt_" << classname << " *obj = GetObject(h, \"" << mName << "\");" << Endl;
+        h << "    if(obj != NULL)" << Endl;
+        h << "    {" << Endl;
+        h << "        obj->" << name << " = val;" << Endl;
+        h << "        retval = VISIT_OKAY;" << Endl;
+        h << "    }" << Endl;
         if(HasCode(mName, 1))
             PrintCode(h, mName, 1);
-        h << "    return retval;" << endl;
-        h << "}" << endl;
-        h << endl;
+        h << "    return retval;" << Endl;
+        h << "}" << Endl;
+        h << Endl;
 
         mName = QString("simv2_") + classname + "_get" + Name;
-        h << "int" << endl;
+        h << "int" << Endl;
         h << mName
-          << "(visit_handle h, " << CArgument() << " *val)" << endl;
-        h << "{" << endl;
+          << "(visit_handle h, " << CArgument() << " *val)" << Endl;
+        h << "{" << Endl;
         if(HasCode(mName, 0))
             PrintCode(h, mName, 0);
-        h << "    int retval = VISIT_ERROR;" << endl;
-        h << "    if(val == NULL)" << endl;
-        h << "    {" << endl;
-        h << "        VisItError(\"" << mName << ": Invalid address.\");" << endl;
-        h << "        return VISIT_ERROR;" << endl;
-        h << "    }" << endl;
-        h << "    VisIt_" << classname << " *obj = GetObject(h, \"" << mName << "\");" << endl;
-        h << "    if(obj != NULL)" << endl;
-        h << "    {" << endl;
+        h << "    int retval = VISIT_ERROR;" << Endl;
+        h << "    if(val == NULL)" << Endl;
+        h << "    {" << Endl;
+        h << "        VisItError(\"" << mName << ": Invalid address.\");" << Endl;
+        h << "        return VISIT_ERROR;" << Endl;
+        h << "    }" << Endl;
+        h << "    VisIt_" << classname << " *obj = GetObject(h, \"" << mName << "\");" << Endl;
+        h << "    if(obj != NULL)" << Endl;
+        h << "    {" << Endl;
         WriteSimV2Function_get_helper(h);
-        h << "        retval = VISIT_OKAY;" << endl;
-        h << "    }" << endl;
-        h << "    else" << endl;
-        h << "        *val = 0;" << endl;
+        h << "        retval = VISIT_OKAY;" << Endl;
+        h << "    }" << Endl;
+        h << "    else" << Endl;
+        h << "        *val = 0;" << Endl;
         if(HasCode(mName, 1))
             PrintCode(h, mName, 1);
-        h << "    return retval;" << endl;
-        h << "}" << endl;
-        h << endl;
+        h << "    return retval;" << Endl;
+        h << "}" << Endl;
+        h << Endl;
     }
 
 };
@@ -1599,60 +1599,60 @@ class AttsGeneratorAttribute : public GeneratorBase
     // ------------------------------------------------------------------------
     void WriteVisItHeader(QTextStream &h)
     {
-        h << copyright_str << endl;
+        h << copyright_str << Endl;
 
-        h << "#ifndef VISIT_" << name.toUpper() << "_H" << endl;
-        h << "#define VISIT_" << name.toUpper() << "_H" << endl;
-        h << endl;
-        h << "#ifdef __cplusplus" << endl;
-        h << "extern \"C\" {" << endl;
-        h << "#endif" << endl;
-        h << endl;
-        h << "int VisIt_" << name << "_alloc(visit_handle *obj);" << endl;
-        h << "int VisIt_" << name << "_free(visit_handle obj);" << endl;
+        h << "#ifndef VISIT_" << name.toUpper() << "_H" << Endl;
+        h << "#define VISIT_" << name.toUpper() << "_H" << Endl;
+        h << Endl;
+        h << "#ifdef __cplusplus" << Endl;
+        h << "extern \"C\" {" << Endl;
+        h << "#endif" << Endl;
+        h << Endl;
+        h << "int VisIt_" << name << "_alloc(visit_handle *obj);" << Endl;
+        h << "int VisIt_" << name << "_free(visit_handle obj);" << Endl;
         for (size_t i=0; i<fields.size(); i++)
             fields[i]->WriteVisItFunctionPrototype(h, name);
-        h << endl;
-        h << "#ifdef __cplusplus" << endl;
-        h << "}" << endl;
-        h << "#endif" << endl;
-        h << endl;
-        h << "#endif" << endl;
+        h << Endl;
+        h << "#ifdef __cplusplus" << Endl;
+        h << "}" << Endl;
+        h << "#endif" << Endl;
+        h << Endl;
+        h << "#endif" << Endl;
     }
 
     // ------------------------------------------------------------------------
     // ------------------------------------------------------------------------
     void WriteVisItSource(QTextStream &h)
     {
-        h << copyright_str << endl;
+        h << copyright_str << Endl;
 
-        h << "#include <VisItDataInterface_V2.h>" << endl;
-        h << "#include \"VisItDynamic.h\"" << endl;
-        h << "#include \"VisItFortran.h\"" << endl;
-        h << endl;
-        h << "int" << endl;
-        h << "VisIt_" << name << "_alloc(visit_handle *obj)" << endl;
-        h << "{" << endl;
-        h << "    VISIT_DYNAMIC_EXECUTE(" << name << "_alloc," << endl;
-        h << "                    int, (visit_handle*)," << endl;
-        h << "                    (obj))" << endl;
-        h << "}" << endl;
-        h << endl;
-        h << "int" << endl;
-        h << "VisIt_" << name << "_free(visit_handle obj)" << endl;
-        h << "{" << endl;
-        h << "    VISIT_DYNAMIC_EXECUTE(" << name << "_free," << endl;
-        h << "                    int, (visit_handle), " << endl;
-        h << "                    (obj));" << endl;
-        h << "}" << endl;
-        h << endl;
+        h << "#include <VisItDataInterface_V2.h>" << Endl;
+        h << "#include \"VisItDynamic.h\"" << Endl;
+        h << "#include \"VisItFortran.h\"" << Endl;
+        h << Endl;
+        h << "int" << Endl;
+        h << "VisIt_" << name << "_alloc(visit_handle *obj)" << Endl;
+        h << "{" << Endl;
+        h << "    VISIT_DYNAMIC_EXECUTE(" << name << "_alloc," << Endl;
+        h << "                    int, (visit_handle*)," << Endl;
+        h << "                    (obj))" << Endl;
+        h << "}" << Endl;
+        h << Endl;
+        h << "int" << Endl;
+        h << "VisIt_" << name << "_free(visit_handle obj)" << Endl;
+        h << "{" << Endl;
+        h << "    VISIT_DYNAMIC_EXECUTE(" << name << "_free," << Endl;
+        h << "                    int, (visit_handle), " << Endl;
+        h << "                    (obj));" << Endl;
+        h << "}" << Endl;
+        h << Endl;
 
         for (size_t i=0; i<fields.size(); i++)
             fields[i]->WriteVisItFunction(h, name);
-        h << endl;
+        h << Endl;
 
-        h << "/************************** Fortran callable routines *************************/" << endl;
-        h << "/* maxlen 012345678901234567890123456789                                      */" << endl;
+        h << "/************************** Fortran callable routines *************************/" << Endl;
+        h << "/* maxlen 012345678901234567890123456789                                      */" << Endl;
         // HACK: shrink the classname for Fortran to make function names shorter.
         QString n(name.toUpper());
         if(name == "MeshMetaData")
@@ -1670,25 +1670,25 @@ class AttsGeneratorAttribute : public GeneratorBase
         else if(name == "CommandMetaData")
             n = "MDCMD";
 
-        h << "#define F_" << pad(QString("VISIT") + n + "ALLOC", 30) << "  F77_ID(visit"<<n.toLower()<<"alloc_,visit"<<n.toLower()<<"alloc,VISIT"<<n<<"ALLOC)" << endl;
-        h << "#define F_" << pad(QString("VISIT") + n + "FREE", 30) << "  F77_ID(visit"<<n.toLower()<<"free_,visit"<<n.toLower()<<"free,VISIT"<<n<<"FREE)" << endl;
+        h << "#define F_" << pad(QString("VISIT") + n + "ALLOC", 30) << "  F77_ID(visit"<<n.toLower()<<"alloc_,visit"<<n.toLower()<<"alloc,VISIT"<<n<<"ALLOC)" << Endl;
+        h << "#define F_" << pad(QString("VISIT") + n + "FREE", 30) << "  F77_ID(visit"<<n.toLower()<<"free_,visit"<<n.toLower()<<"free,VISIT"<<n<<"FREE)" << Endl;
         for (size_t i=0; i<fields.size(); i++)
             fields[i]->WriteVisItFortranMacro(h, n);
-        h << endl;
+        h << Endl;
 
-        h << "int" << endl;
-        h << "F_VISIT"<<n<<"ALLOC(visit_handle *h)" << endl;
-        h << "{" << endl;
-        h << "    return VisIt_" << name << "_alloc(h);" << endl;
-        h << "}" << endl;
-        h << endl;
+        h << "int" << Endl;
+        h << "F_VISIT"<<n<<"ALLOC(visit_handle *h)" << Endl;
+        h << "{" << Endl;
+        h << "    return VisIt_" << name << "_alloc(h);" << Endl;
+        h << "}" << Endl;
+        h << Endl;
 
-        h << "int" << endl;
-        h << "F_VISIT"<<n<<"FREE(visit_handle *h)" << endl;
-        h << "{" << endl;
-        h << "    return VisIt_"<<name<<"_free(*h);" << endl;
-        h << "}" << endl;
-        h << endl;
+        h << "int" << Endl;
+        h << "F_VISIT"<<n<<"FREE(visit_handle *h)" << Endl;
+        h << "{" << Endl;
+        h << "    return VisIt_"<<name<<"_free(*h);" << Endl;
+        h << "}" << Endl;
+        h << Endl;
 
         for (size_t i=0; i<fields.size(); i++)
             fields[i]->WriteVisItFortranFunction(h, name, n);
@@ -1698,59 +1698,59 @@ class AttsGeneratorAttribute : public GeneratorBase
     // ------------------------------------------------------------------------
     void WriteSimV2Header(QTextStream &h)
     {
-        h << copyright_str << endl;
+        h << copyright_str << Endl;
 
-        h << "#ifndef SIMV2_" << name.toUpper() << "_H" << endl;
-        h << "#define SIMV2_" << name.toUpper() << "_H" << endl;
-        h << "#include <VisItSimV2Exports.h>" << endl;
-        h << "#include <VisItInterfaceTypes_V2.h>" << endl;
-        h << endl;
-        h << "// C-callable implementation of front end functions" << endl;
-        h << "#ifdef __cplusplus" << endl;
-        h << "extern \"C\" {" << endl;
-        h << "#endif" << endl;
-        h << endl;
-        h << "SIMV2_API int simv2_" << name << "_alloc(visit_handle *obj);" << endl;
-        h << "SIMV2_API int simv2_" << name << "_free(visit_handle obj);" << endl;
+        h << "#ifndef SIMV2_" << name.toUpper() << "_H" << Endl;
+        h << "#define SIMV2_" << name.toUpper() << "_H" << Endl;
+        h << "#include <VisItSimV2Exports.h>" << Endl;
+        h << "#include <VisItInterfaceTypes_V2.h>" << Endl;
+        h << Endl;
+        h << "// C-callable implementation of front end functions" << Endl;
+        h << "#ifdef __cplusplus" << Endl;
+        h << "extern \"C\" {" << Endl;
+        h << "#endif" << Endl;
+        h << Endl;
+        h << "SIMV2_API int simv2_" << name << "_alloc(visit_handle *obj);" << Endl;
+        h << "SIMV2_API int simv2_" << name << "_free(visit_handle obj);" << Endl;
         for (size_t i=0; i<fields.size(); i++)
             fields[i]->WriteSimV2FunctionPrototype(h, name);
-        h << endl;
-        h << "#ifdef __cplusplus" << endl;
-        h << "};" << endl;
-        h << "#endif" << endl;
-        h << endl;
-        h << "// Callable from within the runtime and SimV2" << endl;
+        h << Endl;
+        h << "#ifdef __cplusplus" << Endl;
+        h << "};" << Endl;
+        h << "#endif" << Endl;
+        h << Endl;
+        h << "// Callable from within the runtime and SimV2" << Endl;
         // Write user-defined methods
         for (size_t i=0; i<functions.size(); i++)
         {
             if (functions[i]->user &&
                 functions[i]->target == generatorName)
             {
-                h << functions[i]->decl << endl;
+                h << functions[i]->decl << Endl;
             }
         }
-        h << endl;
-        h << "#endif" << endl;
+        h << Endl;
+        h << "#endif" << Endl;
     }
 
     // ------------------------------------------------------------------------
     // ------------------------------------------------------------------------
     void WriteSimV2Source(QTextStream &h)
     {
-        h << copyright_str << endl;
+        h << copyright_str << Endl;
 
-        h << "#include <cstring>" << endl;
-        h << "#include <vectortypes.h>" << endl;
-        h << "#include \"VisItDataInterfaceRuntime.h\"" << endl;
-        h << "#include \"VisItDataInterfaceRuntimeP.h\"" << endl;
-        h << "" << endl;
-        h << "#include \"simv2_" << name << ".h\"" << endl;
-        h << "" << endl;
-        h << "struct VisIt_" << name << " : public VisIt_ObjectBase" << endl;
-        h << "{" << endl;
-        h << "    VisIt_"<<name<<"();" << endl;
-        h << "    virtual ~VisIt_"<<name<<"();" << endl;
-        h << endl;
+        h << "#include <cstring>" << Endl;
+        h << "#include <vectortypes.h>" << Endl;
+        h << "#include \"VisItDataInterfaceRuntime.h\"" << Endl;
+        h << "#include \"VisItDataInterfaceRuntimeP.h\"" << Endl;
+        h << "" << Endl;
+        h << "#include \"simv2_" << name << ".h\"" << Endl;
+        h << "" << Endl;
+        h << "struct VisIt_" << name << " : public VisIt_ObjectBase" << Endl;
+        h << "{" << Endl;
+        h << "    VisIt_"<<name<<"();" << Endl;
+        h << "    virtual ~VisIt_"<<name<<"();" << Endl;
+        h << Endl;
         int maxLen = 3;
         for(size_t i = 0; i < fields.size(); ++i)
         {
@@ -1760,74 +1760,74 @@ class AttsGeneratorAttribute : public GeneratorBase
         }
         for(size_t i = 0; i < fields.size(); ++i)
             fields[i]->WriteSimV2ClassField(h, maxLen);
-        h << "};" << endl;
-        h << endl;
+        h << "};" << Endl;
+        h << Endl;
 
         // ctor
-        h << "VisIt_" << name << "::VisIt_" << name << "() : VisIt_ObjectBase(VISIT_" << name.toUpper() << ")" << endl;
-        h << "{" << endl;
+        h << "VisIt_" << name << "::VisIt_" << name << "() : VisIt_ObjectBase(VISIT_" << name.toUpper() << ")" << Endl;
+        h << "{" << Endl;
         for(size_t i = 0; i < fields.size(); ++i)
             fields[i]->WriteSimV2Ctor(h);
-        h << "}" << endl;
-        h <<endl;
+        h << "}" << Endl;
+        h <<Endl;
 
         // dtor
-        h << "VisIt_" << name << "::~VisIt_" << name << "()" << endl;
-        h << "{" << endl;
-        h << "}" << endl;
-        h <<endl;
+        h << "VisIt_" << name << "::~VisIt_" << name << "()" << Endl;
+        h << "{" << Endl;
+        h << "}" << Endl;
+        h <<Endl;
 
         // GetObject
-        h << "static VisIt_"<<name<<" *" << endl;
-        h << "GetObject(visit_handle h, const char *fname)" << endl;
-        h << "{" << endl;
-        h << "    char tmp[150];" << endl;
-        h << "    VisIt_"<<name<<" *obj = (VisIt_"<<name<<" *)VisItGetPointer(h);" << endl;
-        h << "    if(obj != NULL)" << endl;
-        h << "    {" << endl;
-        h << "        if(obj->objectType() != VISIT_"<<name.toUpper()<<")" << endl;
-        h << "        {" << endl;
-        h << "            snprintf(tmp, 150, \"%s: The provided handle does not point to \"" << endl;
-        h << "                \"a "<<name<<" object. (type=%d)\", fname, obj->objectType());" << endl;
-        h << "            VisItError(tmp);" << endl;
-        h << "            obj = NULL;" << endl;
-        h << "        }" << endl;
-        h << "    }" << endl;
-        h << "    else" << endl;
-        h << "    {" << endl;
-        h << "        snprintf(tmp, 150, \"%s: An invalid handle was provided.\", fname);" << endl;
-        h << "        VisItError(tmp);" << endl;
-        h << "    }" << endl;
-        h << endl;
-        h << "    return obj;" << endl;
-        h << "}" << endl;
-        h << endl;
+        h << "static VisIt_"<<name<<" *" << Endl;
+        h << "GetObject(visit_handle h, const char *fname)" << Endl;
+        h << "{" << Endl;
+        h << "    char tmp[150];" << Endl;
+        h << "    VisIt_"<<name<<" *obj = (VisIt_"<<name<<" *)VisItGetPointer(h);" << Endl;
+        h << "    if(obj != NULL)" << Endl;
+        h << "    {" << Endl;
+        h << "        if(obj->objectType() != VISIT_"<<name.toUpper()<<")" << Endl;
+        h << "        {" << Endl;
+        h << "            snprintf(tmp, 150, \"%s: The provided handle does not point to \"" << Endl;
+        h << "                \"a "<<name<<" object. (type=%d)\", fname, obj->objectType());" << Endl;
+        h << "            VisItError(tmp);" << Endl;
+        h << "            obj = NULL;" << Endl;
+        h << "        }" << Endl;
+        h << "    }" << Endl;
+        h << "    else" << Endl;
+        h << "    {" << Endl;
+        h << "        snprintf(tmp, 150, \"%s: An invalid handle was provided.\", fname);" << Endl;
+        h << "        VisItError(tmp);" << Endl;
+        h << "    }" << Endl;
+        h << Endl;
+        h << "    return obj;" << Endl;
+        h << "}" << Endl;
+        h << Endl;
 
-        h << "/*******************************************************************************" << endl;
-        h << " * Public functions, available to C " << endl;
-        h << " ******************************************************************************/" << endl;
-        h << "" << endl;
-        h << "int" << endl;
-        h << "simv2_"<<name<<"_alloc(visit_handle *h)" << endl;
-        h << "{" << endl;
-        h << "    *h = VisItStorePointer(new VisIt_"<<name<<");" << endl;
-        h << "    return (*h != VISIT_INVALID_HANDLE) ? VISIT_OKAY : VISIT_ERROR;" << endl;
-        h << "}" << endl;
-        h << "" << endl;
-        h << "int" << endl;
-        h << "simv2_"<<name<<"_free(visit_handle h)" << endl;
-        h << "{" << endl;
-        h << "    int retval = VISIT_ERROR;" << endl;
-        h << "    VisIt_"<<name<<" *obj = GetObject(h, \"simv2_"<<name<<"_free\");" << endl;
-        h << "    if(obj != NULL)" << endl;
-        h << "    {" << endl;
-        h << "        delete obj;" << endl;
-        h << "        VisItFreePointer(h);" << endl;
-        h << "        retval = VISIT_OKAY;" << endl;
-        h << "    }" << endl;
-        h << "    return retval;" << endl;
-        h << "}" << endl;
-        h << endl;
+        h << "/*******************************************************************************" << Endl;
+        h << " * Public functions, available to C " << Endl;
+        h << " ******************************************************************************/" << Endl;
+        h << "" << Endl;
+        h << "int" << Endl;
+        h << "simv2_"<<name<<"_alloc(visit_handle *h)" << Endl;
+        h << "{" << Endl;
+        h << "    *h = VisItStorePointer(new VisIt_"<<name<<");" << Endl;
+        h << "    return (*h != VISIT_INVALID_HANDLE) ? VISIT_OKAY : VISIT_ERROR;" << Endl;
+        h << "}" << Endl;
+        h << "" << Endl;
+        h << "int" << Endl;
+        h << "simv2_"<<name<<"_free(visit_handle h)" << Endl;
+        h << "{" << Endl;
+        h << "    int retval = VISIT_ERROR;" << Endl;
+        h << "    VisIt_"<<name<<" *obj = GetObject(h, \"simv2_"<<name<<"_free\");" << Endl;
+        h << "    if(obj != NULL)" << Endl;
+        h << "    {" << Endl;
+        h << "        delete obj;" << Endl;
+        h << "        VisItFreePointer(h);" << Endl;
+        h << "        retval = VISIT_OKAY;" << Endl;
+        h << "    }" << Endl;
+        h << "    return retval;" << Endl;
+        h << "}" << Endl;
+        h << Endl;
 
         for(size_t i = 0; i < fields.size(); ++i)
             fields[i]->WriteSimV2Function(h, name);
@@ -1838,7 +1838,7 @@ class AttsGeneratorAttribute : public GeneratorBase
             if (functions[i]->user &&
                 functions[i]->target == generatorName)
             {
-                h << functions[i]->def << endl;
+                h << functions[i]->def << Endl;
             }
         }
     }

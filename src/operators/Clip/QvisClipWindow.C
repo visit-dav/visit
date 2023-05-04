@@ -267,7 +267,7 @@ QvisClipWindow::CreateWindowContents()
     qualityGroup = new QButtonGroup(qualityWidget);
     
     QHBoxLayout *qualityLayout = new QHBoxLayout(qualityWidget);
-    qualityLayout->setMargin(0);
+    qualityLayout->setContentsMargins(0,0,0,0);
     
     QRadioButton *fastQuality = new QRadioButton("Fast", qualityWidget);
     QRadioButton *accurateQuality = new QRadioButton(tr("Accurate"), qualityWidget);
@@ -288,7 +288,7 @@ QvisClipWindow::CreateWindowContents()
     typeGroup = new QButtonGroup(typeWidget);
     
     QHBoxLayout  *typeLayout = new QHBoxLayout(typeWidget);
-    typeLayout->setMargin(0);
+    typeLayout->setContentsMargins(0,0,0,0);
     QRadioButton *planeType = new QRadioButton(tr("Plane"), typeWidget);
     QRadioButton *sphereType = new QRadioButton(tr("Sphere"), typeWidget);
     
@@ -307,7 +307,7 @@ QvisClipWindow::CreateWindowContents()
     QWidget *crinkleWidget = new QWidget(central);
     
     QHBoxLayout *crinkleLayout = new QHBoxLayout(crinkleWidget);
-    crinkleLayout->setMargin(0);
+    crinkleLayout->setContentsMargins(0,0,0,0);
     QCheckBox *crinkleClip = new QCheckBox(tr("Crinkle clip"), crinkleWidget);
     crinkleClip->setChecked(false);
     
@@ -360,7 +360,7 @@ QvisClipWindow::CreateWindowContents()
     planeWidgetsLayout->addWidget(planeToolControlledClipPlaneWidget);
     
     QHBoxLayout *planeToolControlledClipPlaneLayout = new QHBoxLayout(planeToolControlledClipPlaneWidget);
-    planeToolControlledClipPlaneLayout->setMargin(0);
+    planeToolControlledClipPlaneLayout->setContentsMargins(0,0,0,0);
     
     QRadioButton *planeToolControlledClipPlaneWhichClipPlaneNone = new QRadioButton(tr("Nothing"),          
                                                                                     planeToolControlledClipPlaneWidget);

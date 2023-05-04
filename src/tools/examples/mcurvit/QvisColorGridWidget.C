@@ -436,6 +436,9 @@ QvisColorGridWidget::mousePressEvent(QMouseEvent *e)
 //   Jeremy Meredith, Wed Dec 31 16:39:50 EST 2008
 //   Choose B/W foreground text color based on approx palette color intensity.
 //
+//   Kathleen Biagas, Tue Apr 11, 2023
+//   Replace deprecated QString::sprintf with QString.arg.
+//
 // ****************************************************************************
 
 void
@@ -463,9 +466,9 @@ QvisColorGridWidget::drawItem(QPainter &paint, int index)
             QString txt;
             if (numGridSquares == MAX_ELEMENT_NUMBER &&
                 index < MAX_ELEMENT_NUMBER)
-                txt.sprintf("%s",element_names[index]);
+                txt = QString("%1").arg(element_names[index]);
             else
-                txt.sprintf("%d",index);
+                txt = QString("%1").arg(index);
             paint.drawText(QRect(x,y,boxWidth,boxHeight),
                            Qt::AlignHCenter | Qt::AlignVCenter,
                            txt);

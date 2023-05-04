@@ -10,7 +10,6 @@
 #include <QMouseEvent>
 #include <QPen>
 #include <QColor>
-#include <QMatrix>
 #include <QPainter>
 
 // ****************************************************************************

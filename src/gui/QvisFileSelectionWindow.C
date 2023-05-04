@@ -196,7 +196,7 @@ QvisFileSelectionWindow::CreateWindowContents()
     //
     QWidget *directoryWidget = new QWidget(listSplitter);
     QVBoxLayout *directoryVBox = new QVBoxLayout(directoryWidget);
-    directoryVBox->setMargin(0);
+    directoryVBox->setContentsMargins(0,0,0,0);
     directoryVBox->addWidget(new QLabel(tr("Directories"), directoryWidget));
     directoryList = new QListWidget(directoryWidget);
     directoryVBox->addWidget(directoryList);
@@ -217,7 +217,7 @@ QvisFileSelectionWindow::CreateWindowContents()
     //
     QWidget     *fileWidget = new QWidget(listSplitter);
     QVBoxLayout *fileVBox = new QVBoxLayout(fileWidget);
-    fileVBox->setMargin(0);
+    fileVBox->setContentsMargins(0,0,0,0);
     fileVBox->addWidget(new QLabel(tr("Files"), listSplitter));
     fileList = CreateFileListWidget(listSplitter);
     fileVBox->addWidget(fileList);
@@ -238,7 +238,7 @@ QvisFileSelectionWindow::CreateWindowContents()
     //
     QWidget     *selectWidget = new QWidget(listSplitter);
     QVBoxLayout *selectVBox = new QVBoxLayout(selectWidget);
-    selectVBox->setMargin(0);
+    selectVBox->setContentsMargins(0,0,0,0);
     selectButton = new QPushButton(tr("Select"), selectWidget);
     connect(selectButton, SIGNAL(clicked()), this, SLOT(selectFile()));
     selectButton->setEnabled(false);
@@ -267,7 +267,7 @@ QvisFileSelectionWindow::CreateWindowContents()
     //
     QWidget     *selfileWidget = new QWidget(listSplitter);
     QVBoxLayout *selfileVBox= new QVBoxLayout(selfileWidget);
-    selfileVBox->setMargin(0);
+    selfileVBox->setContentsMargins(0,0,0,0);
     
     selfileVBox->addWidget(new QLabel(tr("Selected files"), selfileWidget));
     selectedFileList = CreateFileListWidget(selfileWidget);

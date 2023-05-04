@@ -63,7 +63,7 @@ class Function
                 out << ",private";
             else if(accessType == AccessProtected)
                 out << ",protected";
-            out << ") " << decl << endl;
+            out << ") " << decl << Endl;
         }
     }
 };

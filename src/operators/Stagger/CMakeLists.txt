@@ -18,9 +18,6 @@ StaggerGUIPluginInfo.C
 QvisStaggerWindow.C
 ${COMMON_SOURCES}
 )
-SET(LIBG_MOC_SOURCES
-QvisStaggerWindow.h
-)
 
 SET(LIBV_SOURCES
 StaggerViewerEnginePluginInfo.C
@@ -48,8 +45,8 @@ TARGET_LINK_LIBRARIES(IStaggerOperator visitcommon)
 SET(INSTALLTARGETS IStaggerOperator)
 
 IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
-    QT_WRAP_CPP(GStaggerOperator LIBG_SOURCES ${LIBG_MOC_SOURCES})
     ADD_LIBRARY(GStaggerOperator ${LIBG_SOURCES})
+    set_target_properties(GStaggerOperator PROPERTIES AUTOMOC ON)
     TARGET_LINK_LIBRARIES(GStaggerOperator visitcommon gui )
 
     ADD_LIBRARY(VStaggerOperator ${LIBV_SOURCES})

@@ -117,7 +117,7 @@ QvisPDFWindow::CreateWindowContents()
     var1Scaling = new QWidget(central);
     var1ScalingButtonGroup= new QButtonGroup(var1Scaling);
     QHBoxLayout *var1ScalingLayout = new QHBoxLayout(var1Scaling);
-    var1ScalingLayout->setMargin(0);
+    var1ScalingLayout->setContentsMargins(0,0,0,0);
     var1ScalingLayout->setSpacing(10);
     QRadioButton *var1ScalingScalingLinear = new QRadioButton(tr("Linear"), var1Scaling);
     var1ScalingButtonGroup->addButton(var1ScalingScalingLinear,0);
@@ -182,7 +182,7 @@ QvisPDFWindow::CreateWindowContents()
     var2Scaling = new QWidget(central);
     var2ScalingButtonGroup= new QButtonGroup(var2Scaling);
     QHBoxLayout *var2ScalingLayout = new QHBoxLayout(var2Scaling);
-    var2ScalingLayout->setMargin(0);
+    var2ScalingLayout->setContentsMargins(0,0,0,0);
     var2ScalingLayout->setSpacing(10);
     QRadioButton *var2ScalingScalingLinear = new QRadioButton(tr("Linear"), var2Scaling);
     var2ScalingButtonGroup->addButton(var2ScalingScalingLinear,0);
@@ -216,7 +216,7 @@ QvisPDFWindow::CreateWindowContents()
     numAxes = new QWidget(central);
     numAxesButtonGroup= new QButtonGroup(numAxes);
     QHBoxLayout *numAxesLayout = new QHBoxLayout(numAxes);
-    numAxesLayout->setMargin(0);
+    numAxesLayout->setContentsMargins(0,0,0,0);
     numAxesLayout->setSpacing(10);
     QRadioButton *numAxesNumAxesTwo = new QRadioButton(tr("Two"), numAxes);
     numAxesButtonGroup->addButton(numAxesNumAxesTwo,0);
@@ -264,7 +264,7 @@ QvisPDFWindow::CreateWindowContents()
     var3Scaling = new QWidget(central);
     var3ScalingButtonGroup= new QButtonGroup(var3Scaling);
     QHBoxLayout *var3ScalingLayout = new QHBoxLayout(var3Scaling);
-    var3ScalingLayout->setMargin(0);
+    var3ScalingLayout->setContentsMargins(0,0,0,0);
     var3ScalingLayout->setSpacing(10);
     QRadioButton *var3ScalingScalingLinear = new QRadioButton(tr("Linear"), var3Scaling);
     var3ScalingButtonGroup->addButton(var3ScalingScalingLinear,0);
@@ -303,7 +303,7 @@ QvisPDFWindow::CreateWindowContents()
     densityType = new QWidget(central);
     densityTypeButtonGroup= new QButtonGroup(densityType);
     QHBoxLayout *densityTypeLayout = new QHBoxLayout(densityType);
-    densityTypeLayout->setMargin(0);
+    densityTypeLayout->setContentsMargins(0,0,0,0);
     densityTypeLayout->setSpacing(10);
     QRadioButton *densityTypeDensityTypeProbability = new QRadioButton(tr("Probability"), densityType);
     densityTypeButtonGroup->addButton(densityTypeDensityTypeProbability,0);

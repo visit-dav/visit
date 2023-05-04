@@ -112,6 +112,8 @@ QvisOpacitySlider::~QvisOpacitySlider()
 // Creation:   Thu Dec 7 12:18:36 PDT 2000
 //
 // Modifications:
+//   Kathleen Biagas, Wed Apr  5 15:11:57 PDT 2023
+//   Replace obsolete QPalette::Background with QPalette::Window.
 //
 // ****************************************************************************
 
@@ -681,6 +683,9 @@ QvisOpacitySlider::paintValueText(QPainter *p, const QPalette &cg, int x,
 //   Brad Whitlock, Thu Jun  5 14:17:51 PDT 2008
 //   Qt 4.
 //
+//   Kathleen Biagas, Wed Apr  5 15:11:57 PDT 2023
+//   Replace obsolete QPalette::Background with QPalette::Window.
+//
 // ****************************************************************************
 
 void
@@ -721,7 +726,7 @@ QvisOpacitySlider::createGradientImage()
     {
         QLinearGradient grad(QPointF(0.,0.), QPointF(1.,0.));
         grad.setCoordinateMode(QGradient::ObjectBoundingMode);
-        grad.setColorAt(0., palette().color(QPalette::Background));
+        grad.setColorAt(0., palette().color(QPalette::Window));
         grad.setColorAt(1., gradientColor);
         QBrush gradBrush(grad);
         paint.fillRect(0, 0, w, h, gradBrush);
@@ -835,6 +840,9 @@ QvisOpacitySlider::resizeEvent(QResizeEvent *)
 //   Brad Whitlock, Thu Nov 13 09:48:31 PDT 2003
 //   I made the width smaller so we could display the percent.
 //
+//   Kathleen Biagas, Wed Apr  5 15:11:57 PDT 2023
+//   Replace obsolete QPalette::Background with QPalette::Window.
+//
 // ****************************************************************************
 
 void
@@ -862,9 +870,9 @@ QvisOpacitySlider::paintEvent(QPaintEvent *)
 
     // Draw the tick marks.
     p.fillRect(0, 0, imageWidth(), tickOffset,
-               palette().brush(QPalette::Background));
+               palette().brush(QPalette::Window));
     p.fillRect(0, tickOffset + thickness(), imageWidth(), height(),
-               palette().brush(QPalette::Background));
+               palette().brush(QPalette::Window));
     drawTicks(&p, palette(), 0, tickOffset - 2, interval);
 
     // Draw the slider
@@ -919,7 +927,7 @@ QvisOpacitySlider::mousePressEvent(QMouseEvent *e)
         clickOffset = (int)(e->pos().x() - sliderPos);
 //    emit sliderPressed();
     }
-    else if(e->button() == Qt::MidButton)
+    else if(e->button() == Qt::MiddleButton)
     {
         int pos = e->pos().x();
         moveSlider(pos - sliderLength() / 2);
@@ -1012,7 +1020,7 @@ QvisOpacitySlider::wheelEvent(QWheelEvent * e)
         offset_owner = this;
         offset = 0;
     }
-    offset += -e->delta()*qMax(pageStep(),singleStep())/120;
+    offset += -e->angleDelta().y()*qMax(pageStep(),singleStep())/120;
     if(qAbs(offset)<1)
         return;
     setValue( value() + int(offset) );

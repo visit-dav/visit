@@ -26,6 +26,16 @@
 #    Cyrus Harrison, Thu Dec 22 13:53:17 PST 2022
 #    Added bp part map and initial strided structured tests/ 
 #
+#    Cyrus Harrison, Mon, Mar 20, 2023  3:34:04 PM 
+#    Added rz test examples
+# 
+#    Justin Privitera, Wed Mar 22 16:09:52 PDT 2023
+#    Added 1d curve test examples.
+# 
+#    Justin Privitera, Fri Mar 24 17:47:26 PDT 2023
+#    Fixed view issue for mfem lor vector field tests.
+#    Fixed an issue where test names had two consecutive underscores.
+#
 # ----------------------------------------------------------------------------
 RequiredDatabasePlugin("Blueprint")
 
@@ -39,6 +49,8 @@ bp_poly_test_dir = "blueprint_v0.8.2_polytess_test_data"
 bp_devilray_mfem_test_dir = "blueprint_v0.8.3_devilray_mfem_test_data"
 bp_part_map_test_dir = "blueprint_v0.8.4_part_map_examples"
 bp_struct_strided_test_dir = "blueprint_v0.8.4_strided_structured_examples"
+bp_rz_test_dir = "blueprint_v0.8.6_rz_examples"
+bp_1d_curve_test_dir = "blueprint_v0.8.6_1d_curve_examples"
 
 braid_2d_hdf5_root = data_path(pjoin(bp_test_dir,"braid_2d_examples.blueprint_root_hdf5"))
 braid_3d_hdf5_root = data_path(pjoin(bp_test_dir,"braid_3d_examples.blueprint_root_hdf5"))
@@ -103,6 +115,13 @@ bp_struct_strided_2d_root = data_path(pjoin(bp_struct_strided_test_dir,
 bp_struct_strided_3d_root = data_path(pjoin(bp_struct_strided_test_dir, 
                                       "strided_structured_3d_hdf5.root"));
 
+bp_rz_examples = []
+bp_rz_examples.append(data_path(pjoin(bp_rz_test_dir,"blueprint_rz_cyl_rectilinear.root")))
+bp_rz_examples.append(data_path(pjoin(bp_rz_test_dir,"blueprint_rz_cyl_uniform.root")))
+bp_rz_examples.append(data_path(pjoin(bp_rz_test_dir,"blueprint_rz_cyl_structured.root")))
+bp_rz_examples.append(data_path(pjoin(bp_rz_test_dir,"blueprint_rz_cyl_unstructured.root")))
+
+bp_1d_curve_examples = [data_path(pjoin(bp_1d_curve_test_dir,"curves_1d.root"))]
 
 braid_2d_meshes = ["points", "uniform", "rect", "struct", "tris","quads"]
 braid_3d_meshes = ["points", "uniform", "rect", "struct", "tets","hexs"]
@@ -151,18 +170,18 @@ def devilray_mfem_test_file(name, number):
 def set_3d_view():
     v = View3DAttributes()
     v.viewNormal = (-0.510614, 0.302695, 0.804767)
-    v.focus = (0, 0, 0)
+    v.focus = (0.5, 0.5, 0.5)
     v.viewUp = (-0.0150532, 0.932691, -0.360361)
     v.viewAngle = 30
-    v.parallelScale = 17.3205
-    v.nearPlane = -34.641
-    v.farPlane = 34.641
+    v.parallelScale = 0.866025
+    v.nearPlane = -1.73205
+    v.farPlane = 1.73205
     v.imagePan = (0, 0)
     v.imageZoom = 1
     v.perspective = 1
     v.eyeAngle = 2
     v.centerOfRotationSet = 0
-    v.centerOfRotation = (0, 0, 0)
+    v.centerOfRotation = (0.5, 0.5, 0.5)
     v.axis3DScaleFlag = 0
     v.axis3DScales = (1, 1, 1)
     v.shear = (0, 0, 1)
@@ -296,7 +315,7 @@ def test_mfem_lor_mesh(tag_name, example_name, protocol, devilray = False, numbe
     SetPlotOptions(SubsetAtts)
     set_test_view(tag_name)
     DrawPlots()
-    Test(tag_name + "_" +  example_name + "_" + protocol + "_lor")
+    Test(tag_name + "_" +  example_name + ("_" + protocol if not devilray else "") + "_lor")
     DeleteAllPlots()
     ResetView()
     CloseDatabase(dbfile)
@@ -316,7 +335,7 @@ def test_mfem_lor_mesh(tag_name, example_name, protocol, devilray = False, numbe
     SetPlotOptions(SubsetAtts)
     set_test_view(tag_name)
     DrawPlots()
-    Test(tag_name + "_" +  example_name + "_" + protocol + "_legacy_lor")
+    Test(tag_name + "_" +  example_name + ("_" + protocol if not devilray else "") + "_legacy_lor")
     DeleteAllPlots()
     ResetView()
     CloseDatabase(dbfile)
@@ -353,8 +372,8 @@ def test_mfem_lor_field(tag_name, name, number, pseudocolor_fields, vector_field
         MultiresControlAtts = MultiresControlAttributes()
         MultiresControlAtts.resolution = 3
         SetOperatorOptions(MultiresControlAtts, 0, 1)
-        DrawPlots()
         set_test_view(tag_name)
+        DrawPlots()
         Test(tag_name + "_" + name + "_vector_" + field + "_lor")
         DeleteAllPlots()
         ResetView()
@@ -440,6 +459,26 @@ def test_venn(tag_name, venn_db_file):
     
 
     CloseDatabase(venn_db_file)
+
+def test_rz_example(tag_name, rz_db_file):
+    OpenDatabase(rz_db_file)
+    AddPlot("Pseudocolor", "mesh_topo/cyl")
+    AddPlot("Mesh", "mesh_topo")
+    DrawPlots()
+    ResetView()
+    Test(tag_name + "_plot_2D")
+    DeleteAllPlots()
+    ResetView()
+    # now revolve
+    AddPlot("Pseudocolor", "mesh_topo/cyl")
+    AddOperator("Revolve")
+    DrawPlots()
+    ResetView()
+    Test(tag_name + "_plot_revolved_to_3D")
+    DeleteAllPlots()
+    ResetView()
+    CloseDatabase(rz_db_file)
+
 
 def test_paren_vars():
     TestSection("Variables With Parens")
@@ -668,5 +707,21 @@ Test("bp_strided_struct_3d_vert_vals")
 DeleteAllPlots()
 CloseDatabase(bp_struct_strided_3d_root)
 
+TestSection("Blueprint RZ Examples, 0.8.6")
+for db in bp_rz_examples:
+    tag_name = os.path.basename(os.path.split(db)[1])
+    test_rz_example(tag_name,db)
+
+TestSection("Blueprint 1D Curve Examples, 0.8.6")
+for db in bp_1d_curve_examples:
+    OpenDatabase(db)
+    AddPlot("Curve", "mesh_topo/field_v")
+    DrawPlots()
+    Test("blueprint_1d_curve_vertex_assoc")
+    DeleteAllPlots()
+    AddPlot("Curve", "mesh_topo/field_e")
+    DrawPlots()
+    Test("blueprint_1d_curve_element_assoc")
+    DeleteAllPlots()
 
 Exit()

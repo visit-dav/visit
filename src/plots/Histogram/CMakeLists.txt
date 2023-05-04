@@ -18,9 +18,6 @@ HistogramGUIPluginInfo.C
 QvisHistogramPlotWindow.C
 ${COMMON_SOURCES}
 )
-SET(LIBG_MOC_SOURCES
-QvisHistogramPlotWindow.h
-)
 
 SET(LIBV_SOURCES
 HistogramViewerEnginePluginInfo.C
@@ -55,8 +52,8 @@ TARGET_LINK_LIBRARIES(IHistogramPlot visitcommon)
 SET(INSTALLTARGETS IHistogramPlot)
 
 IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
-    QT_WRAP_CPP(GHistogramPlot LIBG_SOURCES ${LIBG_MOC_SOURCES})
     ADD_LIBRARY(GHistogramPlot ${LIBG_SOURCES})
+    set_target_properties(GHistogramPlot PROPERTIES AUTOMOC ON)
     TARGET_LINK_LIBRARIES(GHistogramPlot visitcommon gui )
 
     ADD_LIBRARY(VHistogramPlot ${LIBV_SOURCES})

@@ -100,7 +100,7 @@ QvisLagrangianWindow::CreateWindowContents()
     XAxisSample = new QWidget(central);
     XAxisSampleButtonGroup= new QButtonGroup(XAxisSample);
     QHBoxLayout *XAxisSampleLayout = new QHBoxLayout(XAxisSample);
-    XAxisSampleLayout->setMargin(0);
+    XAxisSampleLayout->setContentsMargins(0,0,0,0);
     XAxisSampleLayout->setSpacing(10);
     QRadioButton *XAxisSamplesampleTypeStep = new QRadioButton(tr("Step"), XAxisSample);
     XAxisSampleButtonGroup->addButton(XAxisSamplesampleTypeStep,0);
@@ -129,7 +129,7 @@ QvisLagrangianWindow::CreateWindowContents()
     YAxisSample = new QWidget(central);
     YAxisSampleButtonGroup= new QButtonGroup(YAxisSample);
     QHBoxLayout *YAxisSampleLayout = new QHBoxLayout(YAxisSample);
-    YAxisSampleLayout->setMargin(0);
+    YAxisSampleLayout->setContentsMargins(0,0,0,0);
     YAxisSampleLayout->setSpacing(10);
     QRadioButton *YAxisSamplesampleTypeStep = new QRadioButton(tr("Step"), YAxisSample);
     YAxisSampleButtonGroup->addButton(YAxisSamplesampleTypeStep,0);

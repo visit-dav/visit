@@ -18,9 +18,6 @@ ExtrudeGUIPluginInfo.C
 QvisExtrudeWindow.C
 ${COMMON_SOURCES}
 )
-SET(LIBG_MOC_SOURCES
-QvisExtrudeWindow.h
-)
 
 SET(LIBV_SOURCES
 ExtrudeViewerEnginePluginInfo.C
@@ -48,8 +45,8 @@ TARGET_LINK_LIBRARIES(IExtrudeOperator visitcommon)
 SET(INSTALLTARGETS IExtrudeOperator)
 
 IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
-    QT_WRAP_CPP(GExtrudeOperator LIBG_SOURCES ${LIBG_MOC_SOURCES})
     ADD_LIBRARY(GExtrudeOperator ${LIBG_SOURCES})
+    set_target_properties(GExtrudeOperator PROPERTIES AUTOMOC ON)
     TARGET_LINK_LIBRARIES(GExtrudeOperator visitcommon gui )
 
     ADD_LIBRARY(VExtrudeOperator ${LIBV_SOURCES})

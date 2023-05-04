@@ -42,7 +42,7 @@ VisItPasswordWindow::VisItPasswordWindow(QWidget *parent) : QDialog(parent)
     setModal(true);
 
     QVBoxLayout *layout = new QVBoxLayout(this);
-    layout->setMargin(10);
+    layout->setContentsMargins(10,10,10,10);
 
     QHBoxLayout *l2 = new QHBoxLayout;
     layout->addLayout(l2);

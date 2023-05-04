@@ -250,7 +250,7 @@ QvisExportDBWindow::CreateWindowContents()
     topLayout->addWidget(fileBox);
 
     QGridLayout *fileLayout = new QGridLayout(fileBox);
-    fileLayout->setMargin(5);
+    fileLayout->setContentsMargins(5,5,5,5);
 
     // Directory
 
@@ -337,7 +337,7 @@ QvisExportDBWindow::CreateWindowContents()
     QGroupBox *varGroup = new QGroupBox(tr("Variables"), central);
     topLayout->addWidget(varGroup);
     QGridLayout *varLayout = new QGridLayout(varGroup);
-    varLayout->setMargin(5);
+    varLayout->setContentsMargins(5,5,5,5);
     QButtonGroup *delimGroup = new QButtonGroup(0);
     QRadioButton *rb0 = new QRadioButton(tr("Space"), varGroup);
     QRadioButton *rb1 = new QRadioButton(tr("Comma"), varGroup);
@@ -367,7 +367,7 @@ QvisExportDBWindow::CreateWindowContents()
     QGroupBox *ioGroup = new QGroupBox(tr("I/O options"), central);
     topLayout->addWidget(ioGroup);
     QGridLayout *ioLayout = new QGridLayout(ioGroup);
-    ioLayout->setMargin(5);
+    ioLayout->setContentsMargins(5,5,5,5);
 
     coordinateGroups = new QCheckBox(tr("Coordinate parallel writes with groups."), ioGroup);
     connect(coordinateGroups, SIGNAL(toggled(bool)),

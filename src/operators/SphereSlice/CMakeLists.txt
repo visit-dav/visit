@@ -18,9 +18,6 @@ SphereSliceGUIPluginInfo.C
 QvisSphereSliceWindow.C
 ${COMMON_SOURCES}
 )
-SET(LIBG_MOC_SOURCES
-QvisSphereSliceWindow.h
-)
 
 SET(LIBV_SOURCES
 SphereSliceViewerEnginePluginInfo.C
@@ -48,8 +45,8 @@ TARGET_LINK_LIBRARIES(ISphereSliceOperator visitcommon)
 SET(INSTALLTARGETS ISphereSliceOperator)
 
 IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
-    QT_WRAP_CPP(GSphereSliceOperator LIBG_SOURCES ${LIBG_MOC_SOURCES})
     ADD_LIBRARY(GSphereSliceOperator ${LIBG_SOURCES})
+    set_target_properties(GSphereSliceOperator PROPERTIES AUTOMOC ON)
     TARGET_LINK_LIBRARIES(GSphereSliceOperator visitcommon gui )
 
     ADD_LIBRARY(VSphereSliceOperator ${LIBV_SOURCES})

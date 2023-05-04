@@ -44,7 +44,7 @@ m3d_complex_element QvisScatterWidget::arrow;
 // ****************************************************************************
 // Method: QvisScatterWidget::QvisScatterWidget
 //
-// Purpose: 
+// Purpose:
 //   Constructor for the QvisScatterWidget class.
 //
 // Arguments:
@@ -60,7 +60,7 @@ m3d_complex_element QvisScatterWidget::arrow;
 //
 // ****************************************************************************
 
-QvisScatterWidget::QvisScatterWidget(QWidget *parent) : 
+QvisScatterWidget::QvisScatterWidget(QWidget *parent) :
     QWidget(parent), renderer(250,250)
 {
     setSizePolicy(QSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed));
@@ -86,14 +86,14 @@ QvisScatterWidget::QvisScatterWidget(QWidget *parent) :
 // ****************************************************************************
 // Method: QvisScatterWidget::~QvisScatterWidget
 //
-// Purpose: 
+// Purpose:
 //   Destructor for the QvisScatterWidget class.
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Dec 13 14:33:38 PST 2004
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 QvisScatterWidget::~QvisScatterWidget()
@@ -104,7 +104,7 @@ QvisScatterWidget::~QvisScatterWidget()
 // ****************************************************************************
 // Method: QvisScatterWidget::sizeHint
 //
-// Purpose: 
+// Purpose:
 //   Returns the widget's preferred size.
 //
 // Returns:    The widget's preferred size.
@@ -113,7 +113,7 @@ QvisScatterWidget::~QvisScatterWidget()
 // Creation:   Tue Mar 11 09:51:38 PDT 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 QSize
@@ -125,7 +125,7 @@ QvisScatterWidget::sizeHint() const
 // ****************************************************************************
 // Method: QvisScatterWidget::sizePolicy
 //
-// Purpose: 
+// Purpose:
 //   Returns the widget's size policy.
 //
 // Returns:    The widget's size policy.
@@ -134,7 +134,7 @@ QvisScatterWidget::sizeHint() const
 // Creation:   Tue Mar 11 09:52:11 PDT 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 QSizePolicy
@@ -147,7 +147,7 @@ QvisScatterWidget::sizePolicy() const
 // ****************************************************************************
 // Method: QvisScatterWidget::setThreeD
 //
-// Purpose: 
+// Purpose:
 //   Sets whether the widget should draw a 3D scatter plot.
 //
 // Arguments:
@@ -157,7 +157,7 @@ QvisScatterWidget::sizePolicy() const
 // Creation:   Mon Dec 13 14:34:09 PST 2004
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -174,7 +174,7 @@ QvisScatterWidget::setThreeD(bool val)
 // ****************************************************************************
 // Method: QvisScatterWidget::setHighlightAxis
 //
-// Purpose: 
+// Purpose:
 //   Sets whether the axis should be highlighted (animated).
 //
 // Arguments:
@@ -184,7 +184,7 @@ QvisScatterWidget::setThreeD(bool val)
 // Creation:   Mon Dec 13 14:34:40 PST 2004
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -212,7 +212,7 @@ QvisScatterWidget::setHighlightAxis(bool val)
 // ****************************************************************************
 // Method: QvisScatterWidget::setColoredPoints
 //
-// Purpose: 
+// Purpose:
 //   Sets whether the points should be colored.
 //
 // Arguments:
@@ -222,7 +222,7 @@ QvisScatterWidget::setHighlightAxis(bool val)
 // Creation:   Mon Dec 13 14:35:22 PST 2004
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -239,7 +239,7 @@ QvisScatterWidget::setColoredPoints(bool val)
 // ****************************************************************************
 // Method: QvisScatterWidget::createSharedElements
 //
-// Purpose: 
+// Purpose:
 //   Called to initialize the objects that are shared for all instances.
 //
 // Programmer: Brad Whitlock
@@ -249,6 +249,9 @@ QvisScatterWidget::setColoredPoints(bool val)
 //   Brad Whitlock, Fri Aug  8 13:58:28 PDT 2008
 //   Qt 4.
 //
+//   Kathleen Biagas, Wed Apr  5 15:11:57 PDT 2023
+//   Replace obsolete QPalette::Background with QPalette::Window.
+//
 // ****************************************************************************
 
 void
@@ -256,7 +259,7 @@ QvisScatterWidget::createSharedElements()
 {
     if(!sharedElementsCreated)
     {
-        QColor bg(palette().color(QPalette::Background));
+        QColor bg(palette().color(QPalette::Window));
         initializeSphere(sphere, SPHERE_XDIM, SPHERE_YDIM,
                          SPHERE_RAD,
                          float(bg.red()) / 255.,
@@ -271,14 +274,14 @@ QvisScatterWidget::createSharedElements()
 // ****************************************************************************
 // Method: QvisScatterWidget::deleteBackingPixmap
 //
-// Purpose: 
+// Purpose:
 //   Deletes the backing pixmap.
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue Mar 11 09:53:21 PDT 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -294,7 +297,7 @@ QvisScatterWidget::deleteBackingPixmap()
 // ****************************************************************************
 // Method: QvisScatterWidget::redrawScene
 //
-// Purpose: 
+// Purpose:
 //   Redraws the scene.
 //
 // Arguments:
@@ -304,7 +307,7 @@ QvisScatterWidget::deleteBackingPixmap()
 // Creation:   Mon Dec 13 14:37:26 PST 2004
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -335,7 +338,7 @@ QvisScatterWidget::redrawScene(QPainter *painter)
 // ****************************************************************************
 // Method: QvisScatterWidget::redrawScene2D
 //
-// Purpose: 
+// Purpose:
 //   Redraw the scene in 2D.
 //
 // Arguments:
@@ -345,7 +348,7 @@ QvisScatterWidget::redrawScene(QPainter *painter)
 // Creation:   Mon Dec 13 14:37:59 PST 2004
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -379,7 +382,7 @@ QvisScatterWidget::redrawScene2D(QPainter *painter)
     renderer.set_world_matrix(m3du_create_identity_matrix());
 
     // Draw the Y axis.
-    matrix4 m = m3du_create_RBT_matrix(vec_create(0.,0.,0.), 
+    matrix4 m = m3du_create_RBT_matrix(vec_create(0.,0.,0.),
         vec_create(0.,1.,0.), vec_create(1.,0.,0.));
     float lengthScale = 1.;
     if(highlightedAxis)
@@ -414,7 +417,7 @@ QvisScatterWidget::redrawScene2D(QPainter *painter)
 // ****************************************************************************
 // Method: QvisScatterWidget::redrawScene3D
 //
-// Purpose: 
+// Purpose:
 //   Redraws the scene in 3D.
 //
 // Arguments:
@@ -424,7 +427,7 @@ QvisScatterWidget::redrawScene2D(QPainter *painter)
 // Creation:   Mon Dec 13 14:38:27 PST 2004
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -501,14 +504,14 @@ QvisScatterWidget::redrawScene3D(QPainter *painter)
 // ****************************************************************************
 // Method: QvisScatterWidget::drawSpherePoints
 //
-// Purpose: 
+// Purpose:
 //   Draws the scatter points.
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Dec 13 14:38:53 PST 2004
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -567,7 +570,7 @@ QvisScatterWidget::drawSpherePoints()
 // ****************************************************************************
 // Method: QvisScatterWidget::paintEvent
 //
-// Purpose: 
+// Purpose:
 //   This method is called when the widget needs to be repainted.
 //
 // Arguments:
@@ -618,7 +621,7 @@ QvisScatterWidget::paintEvent(QPaintEvent *e)
 // ****************************************************************************
 // Method: QvisScatterWidget::resizeEvent
 //
-// Purpose: 
+// Purpose:
 //   This method is called when the widget needs to be resized.
 //
 // Arguments:
@@ -628,7 +631,7 @@ QvisScatterWidget::paintEvent(QPaintEvent *e)
 // Creation:   Mon Dec 13 14:39:38 PST 2004
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -641,21 +644,21 @@ QvisScatterWidget::resizeEvent(QResizeEvent *e)
 // ****************************************************************************
 // Method: QvisScatterWidget::setAllowAnimation
 //
-// Purpose: 
+// Purpose:
 //   Sets whether animation is currently allowed.
 //
 // Arguments:
 //   val : True if animation is allowed, false otherwise.
 //
-// Returns:    
+// Returns:
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Aug 11 09:41:03 PDT 2008
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -675,14 +678,14 @@ QvisScatterWidget::setAllowAnimation(bool val)
 // ****************************************************************************
 // Method: QvisScatterWidget::show
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the widget is shown.
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Dec 13 14:43:36 PST 2004
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -698,14 +701,14 @@ QvisScatterWidget::show()
 // ****************************************************************************
 // Method: QvisScatterWidget::hide
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the widget is hidden.
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Dec 13 14:43:36 PST 2004
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -719,7 +722,7 @@ QvisScatterWidget::hide()
 // ****************************************************************************
 // Method: QvisScatterWidget::handleTimer
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called in response to the widget's
 //   timer and is used to perform animation in the widget.
 //
@@ -727,7 +730,7 @@ QvisScatterWidget::hide()
 // Creation:   Mon Dec 13 14:43:36 PST 2004
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void

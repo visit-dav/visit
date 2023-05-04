@@ -128,7 +128,7 @@ QvisSurfacePlotWindow::CreateWindowContents()
     topLayout->addWidget(dataGroup);
 
     QGridLayout *dataLayout = new QGridLayout(dataGroup);
-    dataLayout->setMargin(5);
+    dataLayout->setContentsMargins(5,5,5,5);
     dataLayout->setSpacing(10);
 
     //
@@ -168,7 +168,7 @@ QvisSurfacePlotWindow::CreateWindowContents()
     dataLayout->addWidget(limitsGroup, 2, 0, 1, 5);
 
     QGridLayout *limitsLayout = new QGridLayout(limitsGroup);
-    limitsLayout->setMargin(5);
+    limitsLayout->setContentsMargins(5,5,5,5);
     limitsLayout->setSpacing(10);
 
     limitsLayout->addWidget( new QLabel(tr("Limits"), central), 0, 0);
@@ -212,7 +212,7 @@ QvisSurfacePlotWindow::CreateWindowContents()
  
 
     QGridLayout *surfaceLayout = new QGridLayout(surfaceGroup);
-    surfaceLayout->setMargin(5);
+    surfaceLayout->setContentsMargins(5,5,5,5);
     surfaceLayout->setSpacing(10);
     surfaceLayout->setColumnStretch(1, 10);
 
@@ -255,7 +255,7 @@ QvisSurfacePlotWindow::CreateWindowContents()
     topLayout->addWidget(wireframeGroup);
  
     QGridLayout *wireframeLayout = new QGridLayout(wireframeGroup);
-    wireframeLayout->setMargin(5);
+    wireframeLayout->setContentsMargins(5,5,5,5);
     wireframeLayout->setSpacing(10);
 
     // Create the lineWidth widget.
@@ -286,7 +286,7 @@ QvisSurfacePlotWindow::CreateWindowContents()
     topLayout->addWidget(miscGroup);
 
     QGridLayout *miscLayout = new QGridLayout(miscGroup);
-    miscLayout->setMargin(5);
+    miscLayout->setContentsMargins(5,5,5,5);
     miscLayout->setSpacing(10);
  
     // Create the legend toggle

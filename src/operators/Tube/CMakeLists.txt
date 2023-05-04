@@ -18,9 +18,6 @@ TubeGUIPluginInfo.C
 QvisTubeWindow.C
 ${COMMON_SOURCES}
 )
-SET(LIBG_MOC_SOURCES
-QvisTubeWindow.h
-)
 
 SET(LIBV_SOURCES
 TubeViewerEnginePluginInfo.C
@@ -48,8 +45,8 @@ TARGET_LINK_LIBRARIES(ITubeOperator visitcommon)
 SET(INSTALLTARGETS ITubeOperator)
 
 IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
-    QT_WRAP_CPP(GTubeOperator LIBG_SOURCES ${LIBG_MOC_SOURCES})
     ADD_LIBRARY(GTubeOperator ${LIBG_SOURCES})
+    set_target_properties(GTubeOperator PROPERTIES AUTOMOC ON)
     TARGET_LINK_LIBRARIES(GTubeOperator visitcommon gui )
 
     ADD_LIBRARY(VTubeOperator ${LIBV_SOURCES})

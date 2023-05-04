@@ -18,9 +18,6 @@ ExternalSurfaceGUIPluginInfo.C
 QvisExternalSurfaceWindow.C
 ${COMMON_SOURCES}
 )
-SET(LIBG_MOC_SOURCES
-QvisExternalSurfaceWindow.h
-)
 
 SET(LIBV_SOURCES
 ExternalSurfaceViewerEnginePluginInfo.C
@@ -48,8 +45,8 @@ TARGET_LINK_LIBRARIES(IExternalSurfaceOperator visitcommon)
 SET(INSTALLTARGETS IExternalSurfaceOperator)
 
 IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
-    QT_WRAP_CPP(GExternalSurfaceOperator LIBG_SOURCES ${LIBG_MOC_SOURCES})
     ADD_LIBRARY(GExternalSurfaceOperator ${LIBG_SOURCES})
+    set_target_properties(GExternalSurfaceOperator PROPERTIES AUTOMOC ON)
     TARGET_LINK_LIBRARIES(GExternalSurfaceOperator visitcommon gui )
 
     ADD_LIBRARY(VExternalSurfaceOperator ${LIBV_SOURCES})

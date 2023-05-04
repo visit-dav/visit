@@ -39,7 +39,7 @@ QvisDialogLineEdit::QvisDialogLineEdit(QWidget *parent)
     dialogMode = ChooseFile;
     QHBoxLayout *hLayout = new QHBoxLayout(this);
     hLayout->setSpacing(0);
-    hLayout->setMargin(0);
+    hLayout->setContentsMargins(0,0,0,0);
 
     lineEdit = new QLineEdit(this);
     lineEdit->setSizePolicy(QSizePolicy(QSizePolicy::MinimumExpanding,

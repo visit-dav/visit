@@ -84,7 +84,7 @@ QvisDelaunayWindow::CreateWindowContents()
     dimension = new QWidget(central);
     dimensionButtonGroup= new QButtonGroup(dimension);
     QHBoxLayout *dimensionLayout = new QHBoxLayout(dimension);
-    dimensionLayout->setMargin(0);
+    dimensionLayout->setContentsMargins(0,0,0,0);
     dimensionLayout->setSpacing(10);
     QRadioButton *dimensionDimensionAutomatic = new QRadioButton(tr("Automatic"), dimension);
     dimensionButtonGroup->addButton(dimensionDimensionAutomatic,0);

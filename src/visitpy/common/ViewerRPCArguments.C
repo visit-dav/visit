@@ -353,6 +353,25 @@ static PyObject *args_AddInitializedOperatorRPC(ViewerRPC *rpc)
     return ViewerRPC_one_int(rpc->GetOperatorType());
 }
 
+static PyObject *args_DeleteOperatorKeyframeRPC(ViewerRPC *rpc)
+{
+    PyObject *tuple = PyTuple_New(3);
+    PyTuple_SET_ITEM(tuple, 0, PyLong_FromLong(rpc->GetIntArg1()));
+    PyTuple_SET_ITEM(tuple, 1, PyLong_FromLong(rpc->GetIntArg2()));
+    PyTuple_SET_ITEM(tuple, 2, PyLong_FromLong(rpc->GetIntArg3()));
+    return tuple;
+}
+
+static PyObject *args_MoveOperatorKeyframeRPC(ViewerRPC *rpc)
+{
+    PyObject *tuple = PyTuple_New(4);
+    PyTuple_SET_ITEM(tuple, 0, PyLong_FromLong(rpc->GetIntArg1()));
+    PyTuple_SET_ITEM(tuple, 1, PyLong_FromLong(rpc->GetIntArg2()));
+    PyTuple_SET_ITEM(tuple, 2, PyLong_FromLong(rpc->GetIntArg3()));
+    PyTuple_SET_ITEM(tuple, 3, PyLong_FromLong(rpc->GetIntArg4()));
+    return tuple;
+}
+
 static PyObject *args_PromoteOperatorRPC(ViewerRPC *rpc)
 {
     return ViewerRPC_one_int(rpc->GetOperatorType());
@@ -934,6 +953,12 @@ args_ViewerRPC(ViewerRPC *rpc)
         break;
     case ViewerRPC::AddInitializedOperatorRPC:
         args = args_AddInitializedOperatorRPC(rpc);
+        break;
+    case ViewerRPC::DeleteOperatorKeyframeRPC:
+        args = args_DeleteOperatorKeyframeRPC(rpc);
+        break;
+    case ViewerRPC::MoveOperatorKeyframeRPC:
+        args = args_MoveOperatorKeyframeRPC(rpc);
         break;
     case ViewerRPC::PromoteOperatorRPC:
         args = args_PromoteOperatorRPC(rpc);

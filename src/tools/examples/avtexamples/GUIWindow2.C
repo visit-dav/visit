@@ -108,7 +108,7 @@ GUIWindow2::CreateMainWindow()
     // and the visualization window on the right.
     //
     QHBoxLayout *hLayout = new QHBoxLayout(central);
-    hLayout->setMargin(10);
+    hLayout->setContentsMargins(10,10,10,10);
     hLayout->setSpacing(10);
     QVBoxLayout *leftLayout = new QVBoxLayout(0);
     leftLayout->setSpacing(10);
@@ -129,7 +129,7 @@ GUIWindow2::CreateMainWindow()
     QWidget *generalWidget = new QWidget(pageGeneral);
 
     QVBoxLayout *gLayout = new QVBoxLayout(generalWidget);
-    gLayout->setMargin(5);
+    gLayout->setContentsMargins(5,5,5,5);
     gLayout->setSpacing(10);
 
     //

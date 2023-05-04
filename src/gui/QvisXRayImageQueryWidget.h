@@ -51,7 +51,7 @@ class GUI_API QvisXRayImageQueryWidget : public QWidget
 {
     Q_OBJECT
 public:
-    QvisXRayImageQueryWidget(QWidget *parent = 0, Qt::WindowFlags f = 0);
+    QvisXRayImageQueryWidget(QWidget *parent = 0, Qt::WindowFlags f = Qt::Widget);
     virtual ~QvisXRayImageQueryWidget();
 
     bool GetQueryParameters(MapNode &params);

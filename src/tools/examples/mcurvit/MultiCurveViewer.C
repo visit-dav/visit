@@ -192,7 +192,7 @@ MultiCurveViewer::CreateWindow()
     setCentralWidget(central);
 
     QHBoxLayout *hLayout = new QHBoxLayout(central);
-    hLayout->setMargin(10);
+    hLayout->setContentsMargins(10,10,10,10);
     hLayout->setSpacing(10);
     QVBoxLayout *leftLayout = new QVBoxLayout(0);
     leftLayout->setSpacing(10);

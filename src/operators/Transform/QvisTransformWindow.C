@@ -148,7 +148,7 @@ QvisTransformWindow::CreateWindowContents()
     rotateTypeWidget = new QWidget(firstPage);
     rotateType = new QButtonGroup(rotateTypeWidget);
     QHBoxLayout *rotateTypeLayout = new QHBoxLayout(rotateTypeWidget);
-    rotateTypeLayout->setMargin(0);
+    rotateTypeLayout->setContentsMargins(0,0,0,0);
     rotateTypeLayout->setSpacing(10);
     QRadioButton *rotateTypeAngleTypeDeg = new QRadioButton(tr("Deg"),rotateTypeWidget);
     rotateType->addButton(rotateTypeAngleTypeDeg, 0);

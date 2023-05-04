@@ -16,6 +16,9 @@
 #   Eric Brugger, Fri Feb 24 14:57:15 PST 2023
 #   Link with X11 library when linking with X11Extras library.
 #
+#   Kathleen Biagas, Thu Mar 30, 2023
+#   Use AUTOMOC target property instead of QT_WRAP_CPP macro.
+#
 #****************************************************************************
 
 SET(WINUTIL_SOURCES
@@ -31,16 +34,6 @@ VariableMenuPopulator.C
 WindowMetrics.C
 )
 
-# List the files that we'll run moc on
-SET(WINUTIL_MOC_SOURCES
-QvisColorTableButton.h
-QvisNoDefaultColorTableButton.h
-QvisColorTableWidget.h
-QvisVariableButton.h
-QvisVariableButtonHelper.h
-QvisVariablePopupMenu.h
-)
-QT_WRAP_CPP(WINUTIL WINUTIL_SOURCES ${WINUTIL_MOC_SOURCES})
 
 INCLUDE_DIRECTORIES(
 ${VISIT_COMMON_INCLUDES}
@@ -54,6 +47,8 @@ ${VTK_INCLUDE_DIRS}
 LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY})
 
 ADD_LIBRARY(winutil ${WINUTIL_SOURCES})
+
+set_target_properties(winutil PROPERTIES AUTOMOC ON)
 
 # Specify the libraries to link against on Windows & Mac
 TARGET_LINK_LIBRARIES(winutil visitcommon avtdbatts ${QT_QTCORE_LIBRARY} ${QT_QTGUI_LIBRARY})

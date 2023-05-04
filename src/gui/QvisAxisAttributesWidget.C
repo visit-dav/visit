@@ -58,7 +58,7 @@ QvisAxisAttributesWidget::QvisAxisAttributesWidget(QWidget *parent,
     autoScaling = true;
     autoTickMarks = true;
     QVBoxLayout *vbLayout = new QVBoxLayout(this);
-    vbLayout->setMargin(5);
+    vbLayout->setContentsMargins(5,5,5,5);
     vbLayout->setSpacing(10);
 
     //

@@ -321,7 +321,7 @@ QvisQueryWindow::CreateStandardQueryWidget()
     vbLayout->addWidget(varsLineEdit);
 
     QGridLayout *sLayout = new QGridLayout();
-    sLayout->setMargin(0);
+    sLayout->setContentsMargins(0,0,0,0);
     gLayout->addLayout(sLayout);
 
     for(int i = 0; i < 6; ++i)

@@ -18,9 +18,6 @@ ResampleGUIPluginInfo.C
 QvisResampleWindow.C
 ${COMMON_SOURCES}
 )
-SET(LIBG_MOC_SOURCES
-QvisResampleWindow.h
-)
 
 SET(LIBV_SOURCES
 ResampleViewerEnginePluginInfo.C
@@ -48,8 +45,8 @@ TARGET_LINK_LIBRARIES(IResampleOperator visitcommon)
 SET(INSTALLTARGETS IResampleOperator)
 
 IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
-    QT_WRAP_CPP(GResampleOperator LIBG_SOURCES ${LIBG_MOC_SOURCES})
     ADD_LIBRARY(GResampleOperator ${LIBG_SOURCES})
+    set_target_properties(GResampleOperator PROPERTIES AUTOMOC ON)
     TARGET_LINK_LIBRARIES(GResampleOperator visitcommon gui )
 
     ADD_LIBRARY(VResampleOperator ${LIBV_SOURCES})

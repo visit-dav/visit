@@ -163,7 +163,7 @@ QvisResampleWindow::CreateWindowContents()
     QWidget *tieResolverWidget = new QWidget(central);
     tieResolver = new QButtonGroup(tieResolverWidget);
     QHBoxLayout *tieResolverLayout = new QHBoxLayout(tieResolverWidget);
-    tieResolverLayout->setMargin(0);
+    tieResolverLayout->setContentsMargins(0,0,0,0);
     tieResolverLayout->setSpacing(10);
     QRadioButton *tieResolverTieResolverrandom = new QRadioButton(tr("random"), tieResolverWidget);
     tieResolver->addButton(tieResolverTieResolverrandom,0);

@@ -39,6 +39,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Color table tags are now restricted to contain only alphanumeric characters plus spaces, dashes, equals, greater-than or less-than characters .</li>
   <li>Added MFEM LOR setting to the MFEM Reader. Now, users may choose between the new LOR scheme and the legacy LOR scheme. The new scheme is the default.</li>
   <li>Color Table Tag Filtering is no longer optional; it is always on. There is also a new button to select (and deselect) all of the tags.</li>
+  <li>It is now possible to keyframe operator attributes. When in keyframe mode, VisIt will interpolate the operator attributes between operator keyframes. Keyframing makes it possible to easily create sophisticated animations such as animating slice planes, iso surfaces and any operator attributes available. Two new functions have been added to the Python scripting interface to support operator keyframing. They are <code>DeleteOperatorKeyframe</code> and <code>MoveOperatorKeyframe</code>.</li>
 </ul>
 
 <a name="Advanced_features"></a>
@@ -106,6 +107,7 @@ enhancements and bug-fixes that were added to this release.</p>
 <p><b><font size="4">Changes for VisIt developers in version 3.4</font></b></p>
 <ul>
   <li>Support for boolArray and boolVector was added to xml code gen tools.</li>
+  <li>Updated the "Creating a Release" section of the developer manual to describe the current process.</li>
 </ul>
 
 <p>Click the following link to view the release notes for the previous version

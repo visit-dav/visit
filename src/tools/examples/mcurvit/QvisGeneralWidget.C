@@ -129,7 +129,7 @@ void
 QvisGeneralWidget::CreateWindow()
 {
     QVBoxLayout *gLayout = new QVBoxLayout(this);
-    gLayout->setMargin(5);
+    gLayout->setContentsMargins(5,5,5,5);
     gLayout->setSpacing(10);
 
     // Create the variable list.

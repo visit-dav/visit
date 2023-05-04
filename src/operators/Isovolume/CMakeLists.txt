@@ -18,9 +18,6 @@ IsovolumeGUIPluginInfo.C
 QvisIsovolumeWindow.C
 ${COMMON_SOURCES}
 )
-SET(LIBG_MOC_SOURCES
-QvisIsovolumeWindow.h
-)
 
 SET(LIBV_SOURCES
 IsovolumeViewerEnginePluginInfo.C
@@ -49,8 +46,8 @@ TARGET_LINK_LIBRARIES(IIsovolumeOperator visitcommon)
 SET(INSTALLTARGETS IIsovolumeOperator)
 
 IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
-    QT_WRAP_CPP(GIsovolumeOperator LIBG_SOURCES ${LIBG_MOC_SOURCES})
     ADD_LIBRARY(GIsovolumeOperator ${LIBG_SOURCES})
+    set_target_properties(GIsovolumeOperator PROPERTIES AUTOMOC ON)
     TARGET_LINK_LIBRARIES(GIsovolumeOperator visitcommon gui )
 
     ADD_LIBRARY(VIsovolumeOperator ${LIBV_SOURCES})

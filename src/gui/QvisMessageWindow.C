@@ -72,7 +72,7 @@ QvisMessageWindow::QvisMessageWindow(MessageAttributes *msgAttr,
     QWidget *central = new QWidget( this );
     setCentralWidget( central );
     QVBoxLayout *topLayout = new QVBoxLayout(central);
-    topLayout->setMargin(10);
+    topLayout->setContentsMargins(10,10,10,10);
 
     // Create a multi line edit to display the message text.
     messageText = new QTextEdit(central);

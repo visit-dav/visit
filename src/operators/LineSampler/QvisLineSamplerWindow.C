@@ -114,7 +114,7 @@ QvisLineSamplerWindow::CreateWindowContents()
     meshGeometry = new QWidget(central);
     meshGeometryButtonGroup= new QButtonGroup(meshGeometry);
     QHBoxLayout *meshGeometryLayout = new QHBoxLayout(meshGeometry);
-    meshGeometryLayout->setMargin(0);
+    meshGeometryLayout->setContentsMargins(0,0,0,0);
     meshGeometryLayout->setSpacing(10);
     QRadioButton *meshGeometryCartesian =
       new QRadioButton(tr("Cartesian"), meshGeometry);
@@ -138,7 +138,7 @@ QvisLineSamplerWindow::CreateWindowContents()
     arrayConfiguration = new QWidget(central);
     arrayConfigurationButtonGroup= new QButtonGroup(arrayConfiguration);
     QHBoxLayout *arrayConfigurationLayout = new QHBoxLayout(arrayConfiguration);
-    arrayConfigurationLayout->setMargin(0);
+    arrayConfigurationLayout->setContentsMargins(0,0,0,0);
     arrayConfigurationLayout->setSpacing(10);
     QRadioButton *arrayConfigurationGeometry =
       new QRadioButton(tr("Geometry"), arrayConfiguration);
@@ -157,7 +157,7 @@ QvisLineSamplerWindow::CreateWindowContents()
     boundary = new QWidget(central);
     boundaryButtonGroup= new QButtonGroup(boundary);
     QHBoxLayout *boundaryLayout = new QHBoxLayout(boundary);
-    boundaryLayout->setMargin(0);
+    boundaryLayout->setContentsMargins(0,0,0,0);
     boundaryLayout->setSpacing(10);
     QRadioButton *boundaryData = new QRadioButton(tr("Data File"), boundary);
     boundaryButtonGroup->addButton(boundaryData,0);
@@ -191,7 +191,7 @@ QvisLineSamplerWindow::CreateWindowContents()
 
     QWidget *instance = new QWidget(central);
     QHBoxLayout *instanceLayout = new QHBoxLayout(instance);
-    instanceLayout->setMargin(0);
+    instanceLayout->setContentsMargins(0,0,0,0);
     instanceLayout->setSpacing(10);
     mainLayout->addWidget(instance, 6,0);
 
@@ -259,7 +259,7 @@ QvisLineSamplerWindow::CreateWindowContents()
 //     dChannelLayoutType = new QWidget(central);
 //     dChannelLayoutTypeButtonGroup= new QButtonGroup(dChannelLayoutType);
 //     QHBoxLayout *dChannelLayoutTypeLayout = new QHBoxLayout(dChannelLayoutType);
-//     dChannelLayoutTypeLayout->setMargin(0);
+//     dChannelLayoutTypeLayout->setContentsMargins(0,0,0,0);
 //     dChannelLayoutTypeLayout->setSpacing(10);
 //     QRadioButton *dChannelLayoutTypeAbsolute = new QRadioButton(tr("Absolute"), dChannelLayoutType);
 //     dChannelLayoutTypeButtonGroup->addButton(dChannelLayoutTypeAbsolute,0);
@@ -371,7 +371,7 @@ QvisLineSamplerWindow::CreateWindowContents()
 //     channelProjection = new QWidget(central);
 //     channelProjectionButtonGroup= new QButtonGroup(channelProjection);
 //     QHBoxLayout *channelProjectionLayout = new QHBoxLayout(channelProjection);
-//     channelProjectionLayout->setMargin(0);
+//     channelProjectionLayout->setContentsMargins(0,0,0,0);
 //     channelProjectionLayout->setSpacing(10);
 
 //     QRadioButton *channelProjectionDivergent = new QRadioButton(tr("Divergent"), channelProjection);
@@ -403,7 +403,7 @@ QvisLineSamplerWindow::CreateWindowContents()
     arrayAxis = new QWidget(central);
     arrayAxisButtonGroup= new QButtonGroup(arrayAxis);
     QHBoxLayout *arrayAxisLayout = new QHBoxLayout(arrayAxis);
-    arrayAxisLayout->setMargin(0);
+    arrayAxisLayout->setContentsMargins(0,0,0,0);
     arrayAxisLayout->setSpacing(10);
     arrayAxisArrayAxisR = new QRadioButton(tr("R"), arrayAxis);
     arrayAxisButtonGroup->addButton(arrayAxisArrayAxisR,0);
@@ -607,7 +607,7 @@ QvisLineSamplerWindow::CreateWindowContents()
     mainLayout->addWidget(geometryGroup, 0, 0, 2, 7);
 
     QGridLayout *geometryLayout = new QGridLayout(geometryGroup);
-    geometryLayout->setMargin(5);
+    geometryLayout->setContentsMargins(5,5,5,5);
     geometryLayout->setSpacing(10);
 
 
@@ -616,7 +616,7 @@ QvisLineSamplerWindow::CreateWindowContents()
     channelGeometry = new QWidget(central);
     channelGeometryButtonGroup= new QButtonGroup(channelGeometry);
     QHBoxLayout *channelGeometryLayout = new QHBoxLayout(channelGeometry);
-    channelGeometryLayout->setMargin(0);
+    channelGeometryLayout->setContentsMargins(0,0,0,0);
     channelGeometryLayout->setSpacing(10);
 
     QRadioButton *channelGeometryPoint = new QRadioButton(tr("Point"), channelGeometry);
@@ -675,7 +675,7 @@ QvisLineSamplerWindow::CreateWindowContents()
     channelProfile = new QWidget(central);
     channelProfileButtonGroup= new QButtonGroup(channelProfile);
     QHBoxLayout *channelProfileLayout = new QHBoxLayout(channelProfile);
-    channelProfileLayout->setMargin(0);
+    channelProfileLayout->setContentsMargins(0,0,0,0);
     channelProfileLayout->setSpacing(10);
     channelProfileChannelTypeTopHat = new QRadioButton(tr("TopHat"), channelProfile);
     channelProfileButtonGroup->addButton(channelProfileChannelTypeTopHat,0);
@@ -708,7 +708,7 @@ QvisLineSamplerWindow::CreateWindowContents()
     mainLayout->addWidget(integrationGroup, 2, 0, 2, 7);
 
     QGridLayout *integrationLayout = new QGridLayout(integrationGroup);
-    integrationLayout->setMargin(5);
+    integrationLayout->setContentsMargins(5,5,5,5);
     integrationLayout->setSpacing(10);
 
     channelIntegrationLabel = new QLabel(tr("Channel"), central);
@@ -759,7 +759,7 @@ QvisLineSamplerWindow::CreateWindowContents()
     mainLayout->addWidget(toroidalGroup, 4, 0, 2, 7);
 
     QGridLayout *toroidalLayout = new QGridLayout(toroidalGroup);
-    toroidalLayout->setMargin(5);
+    toroidalLayout->setContentsMargins(5,5,5,5);
     toroidalLayout->setSpacing(10);
 
 
@@ -768,7 +768,7 @@ QvisLineSamplerWindow::CreateWindowContents()
     toroidalAngleSampling = new QWidget(central);
     toroidalAngleSamplingButtonGroup= new QButtonGroup(toroidalAngleSampling);
     QHBoxLayout *toroidalAngleSamplingLayout = new QHBoxLayout(toroidalAngleSampling);
-    toroidalAngleSamplingLayout->setMargin(0);
+    toroidalAngleSamplingLayout->setContentsMargins(0,0,0,0);
     toroidalAngleSamplingLayout->setSpacing(10);
     QRadioButton *toroidalAngleSamplingToroidalAngleSamplingSingleToroidalAngleSampling = new QRadioButton(tr("Absolute"), toroidalAngleSampling);
     toroidalAngleSamplingButtonGroup->addButton(toroidalAngleSamplingToroidalAngleSamplingSingleToroidalAngleSampling,0);
@@ -814,7 +814,7 @@ QvisLineSamplerWindow::CreateWindowContents()
     mainLayout->addWidget(timeGroup, 6, 0, 2, 7);
 
     QGridLayout *timeLayout = new QGridLayout(timeGroup);
-    timeLayout->setMargin(5);
+    timeLayout->setContentsMargins(5,5,5,5);
     timeLayout->setSpacing(10);
 
     timeSamplingLabel = new QLabel(tr("Sample"), central);
@@ -822,7 +822,7 @@ QvisLineSamplerWindow::CreateWindowContents()
     timeSampling = new QWidget(central);
     timeSamplingButtonGroup= new QButtonGroup(timeSampling);
     QHBoxLayout *timeSamplingLayout = new QHBoxLayout(timeSampling);
-    timeSamplingLayout->setMargin(0);
+    timeSamplingLayout->setContentsMargins(0,0,0,0);
     timeSamplingLayout->setSpacing(10);
     QRadioButton *currentTimeStep =
       new QRadioButton(tr("Current Time Step"), timeSampling);
@@ -878,7 +878,7 @@ QvisLineSamplerWindow::CreateWindowContents()
     viewDimension = new QWidget(central);
     viewDimensionButtonGroup= new QButtonGroup(viewDimension);
     QHBoxLayout *viewDimensionLayout = new QHBoxLayout(viewDimension);
-    viewDimensionLayout->setMargin(0);
+    viewDimensionLayout->setContentsMargins(0,0,0,0);
     viewDimensionLayout->setSpacing(10);
 
 
@@ -912,7 +912,7 @@ QvisLineSamplerWindow::CreateWindowContents()
     mainLayout->addWidget(oneDPlotGroup, 1, 0, 4, 4);
 
     QGridLayout *oneDPlotLayout = new QGridLayout(oneDPlotGroup);
-    oneDPlotLayout->setMargin(5);
+    oneDPlotLayout->setContentsMargins(5,5,5,5);
     oneDPlotLayout->setSpacing(10);
 
 
@@ -947,7 +947,7 @@ QvisLineSamplerWindow::CreateWindowContents()
     displayTime = new QWidget(central);
     displayTimeButtonGroup= new QButtonGroup(displayTime);
     QHBoxLayout *displayTimeLayout = new QHBoxLayout(displayTime);
-    displayTimeLayout->setMargin(0);
+    displayTimeLayout->setContentsMargins(0,0,0,0);
     displayTimeLayout->setSpacing(10);
 
     QRadioButton *displayTimeStep = new QRadioButton(tr("Step"), displayTime);
@@ -973,7 +973,7 @@ QvisLineSamplerWindow::CreateWindowContents()
     mainLayout->addWidget(miscGroup, 5, 0, 2, 4);
 
     QGridLayout *miscLayout = new QGridLayout(miscGroup);
-    miscLayout->setMargin(5);
+    miscLayout->setContentsMargins(5,5,5,5);
     miscLayout->setSpacing(10);
 
 
@@ -983,7 +983,7 @@ QvisLineSamplerWindow::CreateWindowContents()
     viewGeometry = new QWidget(central);
     viewGeometryButtonGroup= new QButtonGroup(viewGeometry);
     QHBoxLayout *viewGeometryLayout = new QHBoxLayout(viewGeometry);
-    viewGeometryLayout->setMargin(0);
+    viewGeometryLayout->setContentsMargins(0,0,0,0);
     viewGeometryLayout->setSpacing(10);
 
 

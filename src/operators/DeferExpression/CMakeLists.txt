@@ -18,9 +18,6 @@ DeferExpressionGUIPluginInfo.C
 QvisDeferExpressionWindow.C
 ${COMMON_SOURCES}
 )
-SET(LIBG_MOC_SOURCES
-QvisDeferExpressionWindow.h
-)
 
 SET(LIBV_SOURCES
 DeferExpressionViewerEnginePluginInfo.C
@@ -48,8 +45,8 @@ TARGET_LINK_LIBRARIES(IDeferExpressionOperator visitcommon)
 SET(INSTALLTARGETS IDeferExpressionOperator)
 
 IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
-    QT_WRAP_CPP(GDeferExpressionOperator LIBG_SOURCES ${LIBG_MOC_SOURCES})
     ADD_LIBRARY(GDeferExpressionOperator ${LIBG_SOURCES})
+    set_target_properties(GDeferExpressionOperator PROPERTIES AUTOMOC ON)
     TARGET_LINK_LIBRARIES(GDeferExpressionOperator visitcommon gui )
 
     ADD_LIBRARY(VDeferExpressionOperator ${LIBV_SOURCES})

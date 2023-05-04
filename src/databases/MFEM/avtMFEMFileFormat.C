@@ -33,8 +33,6 @@
 
 #include <JSONRoot.h>
 
-// Controls whether to create original cell numbers.
-#define CREATE_ORIGINAL_CELL_NUMBERS
 
 #ifdef _WIN32
 #define strncasecmp _strnicmp
@@ -332,10 +330,8 @@ avtMFEMFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
                           spatial_dim, topo_dim);
 
         md->GetMeshes(i).LODs = atoi(dset.Mesh().Tag("max_lods").c_str());
-#ifdef CREATE_ORIGINAL_CELL_NUMBERS
         // Indicate that we're providing original cells.
         md->GetMeshes(i).containsOriginalCells = true;
-#endif
         // Add builtin mfem fields related to the mesh:
 
         std::string var_ecoloring = dset_names[i] + "_element_coloring";

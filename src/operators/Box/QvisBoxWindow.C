@@ -86,7 +86,7 @@ QvisBoxWindow::CreateWindowContents()
     amount = new QWidget(central);
     amountButtonGroup= new QButtonGroup(amount);
     QHBoxLayout *amountLayout = new QHBoxLayout(amount);
-    amountLayout->setMargin(0);
+    amountLayout->setContentsMargins(0,0,0,0);
     amountLayout->setSpacing(10);
     QRadioButton *amountAmountSome = new QRadioButton(tr("Some"), amount);
     amountButtonGroup->addButton(amountAmountSome,0);

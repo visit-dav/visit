@@ -38,7 +38,7 @@ QvisSequenceTransition::QvisSequenceTransition(const QPixmap &pix,
     QWidget *parent) : QGroupBox(parent)
 {
     QVBoxLayout *innerLayout = new QVBoxLayout(this);
-    innerLayout->setMargin(10);
+    innerLayout->setContentsMargins(10,10,10,10);
     innerLayout->addSpacing(15);
     QHBoxLayout *hLayout = new QHBoxLayout(0);
     innerLayout->addLayout(hLayout);
