@@ -10,15 +10,7 @@
 # Use the TIFF_DIR hint from the config-site .cmake file
 
 if(WIN32 AND VISIT_TIFF_DIR)
-    if(EXISTS ${VISIT_TIFF_DIR}/TiffTargets.cmake)
-        include(${VISIT_TIFF_DIR}/TiffTargets.cmake)
-    endif()
-
-    if(TARGET TIFF::tiff)
-        if(VISIT_INSTALL_THIRD_PARTY)
-           get_target_property(ilr TIFF::tiff IMPORTED_IMPLIB_RELEASE)
-           THIRD_PARTY_INSTALL_LIBRARY(${ilr})
-        endif()
-    endif()
+    SET_UP_THIRD_PARTY(TIFF LIBS tiff)
+    set(TIFF_LIBRARY ${TIFF_LIBRARY_DIR}/${TIFF_LIB})
 endif()
 
