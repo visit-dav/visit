@@ -243,61 +243,88 @@ QvisColorTableWindow::~QvisColorTableWindow()
 void
 QvisColorTableWindow::CreateWindowContents()
 {
-    // Want more buttons in the window? Increase this value.
-    central->setMaximumHeight(830);
-    // Create the widgets needed to set the default color tables.
     topLayout->setContentsMargins(2,2,2,2);
-    defaultGroup = new QGroupBox(central);
-    defaultGroup->setTitle(tr("Default Color Table"));
-    topLayout->addWidget(defaultGroup, 5);
-    
-    QVBoxLayout *innerDefaultTopLayout = new QVBoxLayout(defaultGroup);
-    QGridLayout *innerDefaultLayout = new QGridLayout();
-    innerDefaultTopLayout->addLayout(innerDefaultLayout);
-    innerDefaultLayout->setColumnMinimumWidth(1, 10);
 
-    defaultContinuous = new QvisNoDefaultColorTableButton(defaultGroup, false);
+    // The entire window will have two columns.
+    QHBoxLayout *horizontalLayout = new QHBoxLayout();
+    topLayout->addLayout(horizontalLayout);
+
+    // On the left will be the default color table chooser and the editor
+    QVBoxLayout *leftColumnLayout = new QVBoxLayout();
+    horizontalLayout->addLayout(leftColumnLayout);
+
+    // On the right will be the color table manager
+    QVBoxLayout *rightColumnLayout = new QVBoxLayout();
+    horizontalLayout->addLayout(rightColumnLayout);
+
+    // we want these to take up the same amount of horizontal space when the window is stretched
+    horizontalLayout->setStretchFactor(leftColumnLayout, 1);
+    horizontalLayout->setStretchFactor(rightColumnLayout, 1);
+
+    //
+    // Default Color Table
+    //
+
+    // create the top level widget group
+    QGroupBox *defaultColorTableGroup = new QGroupBox(central);
+    defaultColorTableGroup->setTitle(tr("Default Color Table"));
+
+    // add this to the LEFT column
+    leftColumnLayout->addWidget(defaultColorTableGroup, 5);
+
+    // create a layout for this section
+    QGridLayout *defaultColorTableLayout = new QGridLayout(defaultColorTableGroup);
+    defaultColorTableLayout->setColumnMinimumWidth(1, 10);
+
+    // create gui elements
+
+    // create the default continuous color table label and button
+    QLabel *defaultContinuousLabel = new QLabel(tr("Continuous"), defaultColorTableGroup);
+    defaultColorTableLayout->addWidget(defaultContinuousLabel, 0, 0);
+    defaultContinuous = new QvisNoDefaultColorTableButton(defaultColorTableGroup, false);
     connect(defaultContinuous, SIGNAL(selectedColorTable(const QString &)),
             this, SLOT(setDefaultContinuous(const QString &)));
-    innerDefaultLayout->addWidget(defaultContinuous, 0, 1);
-    defaultContinuousLabel = new QLabel(tr("Continuous"), defaultGroup);
-    innerDefaultLayout->addWidget(defaultContinuousLabel, 0, 0);
-
-    defaultDiscrete = new QvisNoDefaultColorTableButton(defaultGroup, true);
+    defaultColorTableLayout->addWidget(defaultContinuous, 0, 1);
+    
+    // create the default continuous color table label and button
+    QLabel *defaultDiscreteLabel = new QLabel(tr("Discrete"), defaultColorTableGroup);
+    defaultColorTableLayout->addWidget(defaultDiscreteLabel, 1, 0);
+    defaultDiscrete = new QvisNoDefaultColorTableButton(defaultColorTableGroup, true);
     connect(defaultDiscrete, SIGNAL(selectedColorTable(const QString &)),
             this, SLOT(setDefaultDiscrete(const QString &)));
-    innerDefaultLayout->addWidget(defaultDiscrete, 1, 1);
-    defaultDiscreteLabel = new QLabel(tr("Discrete"), defaultGroup);
-    innerDefaultLayout->addWidget(defaultDiscreteLabel, 1, 0);
+    defaultColorTableLayout->addWidget(defaultDiscrete, 1, 1);
 
-    QHBoxLayout *horizontalLayout = new QHBoxLayout();
+    //
+    // Color Table Manager
+    //
 
-    // Create the widget group that contains all of the color table
-    // management stuff.
-    colorTableWidgetGroup = new QGroupBox(central);
+    // create the top level widget group
+    QGroupBox *colorTableWidgetGroup = new QGroupBox(central);
     colorTableWidgetGroup->setTitle(tr("Manager"));
-    horizontalLayout->addWidget(colorTableWidgetGroup, 5);
-    QVBoxLayout *innerColorTableLayout = new QVBoxLayout(colorTableWidgetGroup);
 
-    // Create the color management widgets.
-    mgLayout = new QGridLayout();
-    innerColorTableLayout->addLayout(mgLayout);
+    // add this to the RIGHT column
+    rightColumnLayout->addWidget(colorTableWidgetGroup, 5);
+
+    // create a layout for this section
+    QGridLayout *managerLayout = new QGridLayout(colorTableWidgetGroup);
+
+    // create gui elements
 
     newButton = new QPushButton(tr("New"), colorTableWidgetGroup);
     connect(newButton, SIGNAL(clicked()), this, SLOT(addColorTable()));
-    mgLayout->addWidget(newButton, 0, 0, 1, 2);
+    managerLayout->addWidget(newButton, 0, 0, 1, 2);
 
     deleteButton = new QPushButton(tr("Delete"), colorTableWidgetGroup);
     connect(deleteButton, SIGNAL(clicked()), this, SLOT(deleteColorTable()));
-    mgLayout->addWidget(deleteButton, 0, 2, 1, 2);
+    managerLayout->addWidget(deleteButton, 0, 2, 1, 2);
 
     exportButton = new QPushButton(tr("Export"), colorTableWidgetGroup);
     connect(exportButton, SIGNAL(clicked()), this, SLOT(exportColorTable()));
-    mgLayout->addWidget(exportButton, 0, 4, 1, 2);
+    managerLayout->addWidget(exportButton, 0, 4, 1, 2);
 
     tagsSelectAllButton = new QPushButton(tr("Select All Tags"), colorTableWidgetGroup);
     connect(tagsSelectAllButton, SIGNAL(clicked()), this, SLOT(tagsSelectAll()));
-    mgLayout->addWidget(tagsSelectAllButton, 1, 0, 1, 2);
+    managerLayout->addWidget(tagsSelectAllButton, 1, 0, 1, 2);
 
     tagCombiningBehaviorChoice = new QComboBox(colorTableWidgetGroup);
     tagCombiningBehaviorChoice->addItem(tr("Colortables must match any selected tag"));
@@ -308,18 +335,16 @@ QvisColorTableWindow::CreateWindowContents()
         tagCombiningBehaviorChoice->setCurrentIndex(1);        
     connect(tagCombiningBehaviorChoice, SIGNAL(activated(int)),
             this, SLOT(tagCombiningChanged(int)));
-    mgLayout->addWidget(tagCombiningBehaviorChoice, 1, 2, 1, 4);
+    managerLayout->addWidget(tagCombiningBehaviorChoice, 1, 2, 1, 4);
 
     nameListBox = new QTreeWidget(colorTableWidgetGroup);
-    // fixed name list box size
     nameListBox->setMinimumHeight(200);
-    nameListBox->setMaximumHeight(200);
+    nameListBox->setMinimumWidth(250);
     nameListBox->setColumnCount(1);
-    // don't want the header
-    nameListBox->header()->close();
+    nameListBox->header()->close(); // we do not want the header
     connect(nameListBox, SIGNAL(currentItemChanged(QTreeWidgetItem *, QTreeWidgetItem*)),
             this, SLOT(highlightColorTable(QTreeWidgetItem *, QTreeWidgetItem*)));
-    mgLayout->addWidget(nameListBox, 3, 3, 1, 3);
+    managerLayout->addWidget(nameListBox, 3, 3, 1, 3);
 
     tagTable = new QTreeWidget(colorTableWidgetGroup);
     QStringList headers;
@@ -331,53 +356,60 @@ QvisColorTableWindow::CreateWindowContents()
             this, SLOT(tagTableItemSelected(QTreeWidgetItem *, int)));
     tagTable->clear();
     tagTable->setSortingEnabled(true);
-    // fixed tag table size
     tagTable->setMinimumHeight(200);
-    tagTable->setMaximumHeight(200);
     tagTable->setMinimumWidth(250);
     tagTable->setColumnCount(2);
-    mgLayout->addWidget(tagTable, 3, 0, 1, 3);
+    managerLayout->addWidget(tagTable, 3, 0, 1, 3);
 
     colorTableName = new QLabel(tr("Name"), colorTableWidgetGroup);
-    mgLayout->addWidget(colorTableName, 4, 0, 1, 1, Qt::AlignLeft);
+    managerLayout->addWidget(colorTableName, 4, 0, 1, 1, Qt::AlignLeft);
     nameLineEdit = new QLineEdit(colorTableWidgetGroup);
+    nameLineEdit->setReadOnly(true);
     connect(nameLineEdit, SIGNAL(textEdited(const QString &)),
             this, SLOT(searchEdited(const QString &)));
-    mgLayout->addWidget(nameLineEdit, 4, 1, 1, 2);
+    managerLayout->addWidget(nameLineEdit, 4, 1, 1, 2);
 
     searchToggle = new QCheckBox(tr("Enable Searching"), colorTableWidgetGroup);
     connect(searchToggle, SIGNAL(toggled(bool)),
             this, SLOT(searchingToggled(bool)));
-    mgLayout->addWidget(searchToggle, 4, 3, 1, 3);
+    managerLayout->addWidget(searchToggle, 4, 3, 1, 3);
 
     tagLabel = new QLabel(tr("Tags"), colorTableWidgetGroup);
-    mgLayout->addWidget(tagLabel, 5, 0, 1, 1, Qt::AlignLeft);
+    managerLayout->addWidget(tagLabel, 5, 0, 1, 1, Qt::AlignLeft);
     tagLineEdit = new QLineEdit(colorTableWidgetGroup);
     tagLineEdit->setReadOnly(true);
-    mgLayout->addWidget(tagLineEdit, 5, 1, 1, 5);
+    managerLayout->addWidget(tagLineEdit, 5, 1, 1, 5);
 
     // Tag editor
     tagEditorLabel = new QLabel(tr("Tag Editor"), colorTableWidgetGroup);
-    mgLayout->addWidget(tagEditorLabel, 6, 0, 1, 1, Qt::AlignLeft);
+    managerLayout->addWidget(tagEditorLabel, 6, 0, 1, 1, Qt::AlignLeft);
     tagEditorLineEdit = new QLineEdit(colorTableWidgetGroup);
     connect(tagEditorLineEdit, SIGNAL(editingFinished()),
             this, SLOT(tagEdited()));
-    mgLayout->addWidget(tagEditorLineEdit, 6, 1, 1, 3);
+    managerLayout->addWidget(tagEditorLineEdit, 6, 1, 1, 3);
     tagAddRemoveButton = new QPushButton(tr("Add/Remove Tag"), colorTableWidgetGroup);
     connect(tagAddRemoveButton, SIGNAL(clicked()), this, SLOT(addRemoveTag()));
-    mgLayout->addWidget(tagAddRemoveButton, 6, 4, 1, 2);
+    managerLayout->addWidget(tagAddRemoveButton, 6, 4, 1, 2);
 
-    // Add the group box that will contain the color-related widgets.
+    //
+    // Color Table Editor
+    //
+
+    // create the top level widget group
     colorWidgetGroup = new QGroupBox(central);
     colorWidgetGroup->setTitle(tr("Editor"));
-    // Note: if new buttons are added to the editor, this value must be adjusted.
-    colorWidgetGroup->setMaximumHeight(350);
-    horizontalLayout->addWidget(colorWidgetGroup, 100);
-    QVBoxLayout *innerColorLayout = new QVBoxLayout(colorWidgetGroup);
+
+    // add this to the LEFT column
+    leftColumnLayout->addWidget(colorWidgetGroup, 100);
+
+    // create a layout for this section
+    QVBoxLayout *editorLayout = new QVBoxLayout(colorWidgetGroup);
+
+    // create gui elements
 
     // Create controls to set the number of colors in the color table.
     QGridLayout *colorInfoLayout = new QGridLayout();
-    innerColorLayout->addLayout(colorInfoLayout);
+    editorLayout->addLayout(colorInfoLayout);
     colorNumColors = new QSpinBox(colorWidgetGroup);
     colorNumColors->setKeyboardTracking(false);
     colorNumColors->setRange(2,256);
@@ -385,7 +417,7 @@ QvisColorTableWindow::CreateWindowContents()
     colorNumColors->setMaximumWidth(75);
     connect(colorNumColors, SIGNAL(valueChanged(int)),
             this, SLOT(resizeColorTable(int)));
-    colorInfoLayout->addWidget(colorNumColors, 1, 3, 1, 1);
+    colorInfoLayout->addWidget(colorNumColors, 1, 3, 1, 4);
     colorInfoLayout->addWidget(new QLabel(tr("Number of colors"),
                                           colorWidgetGroup), 1, 0, 1, 3);
 
@@ -404,7 +436,7 @@ QvisColorTableWindow::CreateWindowContents()
 
     // Create the buttons that help manipulate the spectrum bar.
     QGridLayout *seLayout = new QGridLayout();
-    innerColorLayout->addLayout(seLayout);
+    editorLayout->addLayout(seLayout);
 
     alignPointButton = new QPushButton(tr("Align"), colorWidgetGroup);
     connect(alignPointButton, SIGNAL(clicked()),
@@ -443,7 +475,7 @@ QvisColorTableWindow::CreateWindowContents()
     connect(spectrumBar, SIGNAL(activeControlPointChanged(int)),
             this, SLOT(activateContinuousColor(int)));
 
-    innerColorLayout->addWidget(spectrumBar, 100);
+    editorLayout->addWidget(spectrumBar, 100);
 
     // Create the discrete color table widgets.
     discreteColors = new QvisColorGridWidget(colorWidgetGroup);
@@ -466,7 +498,7 @@ QvisColorTableWindow::CreateWindowContents()
     connect(discreteColors, SIGNAL(activateMenu(const QColor &, int, int, const QPoint &)),
             this, SLOT(chooseDiscreteColor(const QColor &, int, int, const QPoint &)));
     delete [] tmpColors;
-    innerColorLayout->addWidget(discreteColors, 100);
+    editorLayout->addWidget(discreteColors, 100);
 
     // Add a check box for index hinting
     showIndexHintsCheckBox = new QCheckBox(tr("Show index hints"), colorWidgetGroup);
@@ -478,7 +510,7 @@ QvisColorTableWindow::CreateWindowContents()
 
     // Create the discrete color table sliders, text fields.
     QGridLayout *discreteLayout = new QGridLayout();
-    innerColorLayout->addLayout(discreteLayout);
+    editorLayout->addLayout(discreteLayout);
     QString cnames[4];
     cnames[0] = tr("Red");
     cnames[1] = tr("Green");
@@ -538,14 +570,12 @@ QvisColorTableWindow::CreateWindowContents()
 
         discreteLayout->addWidget(componentSpinBoxes[j], j, 2);
     }
-    innerColorLayout->addStretch(5);
+    editorLayout->addStretch(5);
 
     // Create the color selection widget.
     colorSelect = new QvisColorSelectionWidget(NULL,Qt::Popup);
     connect(colorSelect, SIGNAL(selectedColor(const QColor &)),
             this, SLOT(selectedColor(const QColor &)));
-
-    topLayout->addLayout(horizontalLayout);
 }
 
 // ****************************************************************************

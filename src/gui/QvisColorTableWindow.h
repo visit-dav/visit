@@ -227,17 +227,11 @@ private:
     // 
 
     // Default Color Table
-    QGroupBox                *defaultGroup;
     QvisNoDefaultColorTableButton *defaultContinuous;
-    QLabel                   *defaultContinuousLabel;
     QvisNoDefaultColorTableButton *defaultDiscrete;
-    QLabel                   *defaultDiscreteLabel;
     // End Default Color Table
 
     // Manager
-    QGroupBox                *colorTableWidgetGroup;
-    QGridLayout              *mgLayout;
-
     QPushButton              *newButton;
     QPushButton              *deleteButton;
     QPushButton              *exportButton;
@@ -248,9 +242,10 @@ private:
     QTreeWidget              *tagTable;
     QTreeWidget              *nameListBox;
 
+    QLineEdit                *searchBar;
     QLabel                   *colorTableName;
     QLineEdit                *nameLineEdit;
-    QCheckBox                *searchToggle;
+    QCheckBox                *searchToggle; // TODO remove
     
     QLabel                   *tagLabel;
     QLineEdit                *tagLineEdit;
