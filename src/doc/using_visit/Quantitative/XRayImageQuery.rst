@@ -2046,6 +2046,8 @@ The later Python code examples assume that the following has already been run:
 
 Once the query has been run, to visualize each constituent part of the output, follow these steps in Python:
 
+.. _Visualizing_the_Basic_Mesh_Output:
+
 Visualizing the Basic Mesh Output
 +++++++++++++++++++++++++++++++++
 
@@ -2078,6 +2080,8 @@ To make the output look like an x ray image, it is simple to change the color ta
 .. figure:: images/XRay_Query_image_intensities_xray_front.png
 
    A visualization of the basic mesh output using the x ray color table.
+
+.. _Visualizing_the_Imaging_Planes:
 
 Visualizing the Imaging Planes
 ++++++++++++++++++++++++++++++
@@ -2133,6 +2137,8 @@ To make them distinct colors like in all the examples throughout this documentat
 
    A visualization of the input mesh along with the imaging planes, where they have had their colors adjusted.
 
+.. _Visualizing_the_Rays_Meshes:
+
 Visualizing the Rays Meshes
 +++++++++++++++++++++++++++
 
@@ -2185,6 +2191,8 @@ As discussed in the :ref:`Rays_Meshes` section, this picture is not very helpful
    A visualization of the input mesh, the imaging planes, the ray corners, and the rays, with their opacity adjusted.
 
 See the :ref:`Rays_Meshes` section for more tips for making sense of the rays.
+
+.. _Visualizing_the_Spatial_Extents_Meshes:
 
 Visualizing the Spatial Extents Meshes
 ++++++++++++++++++++++++++++++++++++++
@@ -2249,6 +2257,8 @@ And then we render the spatial energy reduced mesh:
 
    A visualization of the spatial energy reduced mesh using the x ray color table.
 
+.. _Visualizing_the_1D_Spectra_Curves:
+
 Visualizing the 1D Spectra Curves
 +++++++++++++++++++++++++++++++++
 
@@ -2285,6 +2295,8 @@ Introspecting with Python
 """""""""""""""""""""""""
 
 We have covered visualizing every component of the :ref:`Conduit_Output` in the :ref:`Visualizing_with_VisIt` section; now we will demonstrate how to access the raw data using Python.
+
+.. _Introspecting_with_Python_Overview:
 
 Getting a General Overview of the Output
 ++++++++++++++++++++++++++++++++++++++++
@@ -2340,6 +2352,8 @@ Additionally, it is possible to iterate through the children of a Conduit node u
 In general, children are not always named.
 For our purposes with the X Ray Image Query, they always will be.
 A node can behave like a python dictionary or a python list; for the latter, index access is possible.
+
+.. _Introspecting_with_Python_Basic_Mesh_Output:
 
 Accessing the Basic Mesh Output Data
 ++++++++++++++++++++++++++++++++++++
@@ -2420,6 +2434,8 @@ To actually extract the :ref:`Basic_Mesh_Output` data and not just see it, we ca
 
 These variables can be printed, manipulated, iterated over, etc.
 
+.. _Introspecting_with_Python_Metadata:
+
 Accessing the Metadata
 ++++++++++++++++++++++
 
@@ -2495,6 +2511,8 @@ And finally, :ref:`Other_Metadata`:
    path_length_min = xrayout["domain_000000/state/xray_data/path_length_min"]
    image_topo_order_of_domain_variables = xrayout["domain_000000/state/xray_data/image_topo_order_of_domain_variables"]
 
+.. _Introspecting_with_Python_Spatial_Extents_Meshes:
+
 Accessing the Spatial Extents Meshes Data
 +++++++++++++++++++++++++++++++++++++++++
 
@@ -2516,6 +2534,8 @@ Because the :ref:`Spatial_Extents_Meshes` share a lot in common with the :ref:`B
    spatial_yunits = xrayout["domain_000000/coordsets/spatial_coords/units/y"]
    energy_units = xrayout["domain_000000/coordsets/spatial_coords/units/z"]
 
+.. _Introspecting_with_Python_1D_Spectra_Curves:
+
 Accessing the 1D Spectra Curves Data
 ++++++++++++++++++++++++++++++++++++
 
@@ -2535,6 +2555,8 @@ The :ref:`1D_Spectra_Curves` are similar in structure to the other standard Blue
    # Extract the field values
    intensities_spectra_curve_values = xrayout["domain_000000/fields/intensities_spectra/values"]
    # Extracting the same for path_length is similar
+
+.. _Introspecting_with_Python_Everything_Else:
 
 Accessing Everything Else
 +++++++++++++++++++++++++
