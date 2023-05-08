@@ -204,6 +204,9 @@
 #    Moved setting of RUNTIME_OUTPUT_DIRECTORY and LIBRARY_OUTPUT_DIRECTORY
 #    to macro VISIT_PLUGIN_TARGET_OUTPUT_DIR.
 #
+#    Eric Brugger, Mon May 1 15:28:30 PST 2023
+#    Add HTG plugin.
+#
 #****************************************************************************
 
 include(${VISIT_SOURCE_DIR}/CMake/PluginMacros.cmake)
@@ -423,6 +426,7 @@ GHOST
 GMV
 GULP
 Gadget
+HTG
 Image
 LAMMPS
 Lines
