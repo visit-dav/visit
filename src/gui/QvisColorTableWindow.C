@@ -326,8 +326,8 @@ QvisColorTableWindow::CreateWindowContents()
     managerLayout->addWidget(tagsSelectAllButton, 1, 0, 1, 2);
 
     tagCombiningBehaviorChoice = new QComboBox(colorTableWidgetGroup);
-    tagCombiningBehaviorChoice->addItem(tr("Colortables must match any selected tag"));
-    tagCombiningBehaviorChoice->addItem(tr("Colortables must match every selected tag"));
+    tagCombiningBehaviorChoice->addItem(tr("Colortables must match ANY selected tag"));
+    tagCombiningBehaviorChoice->addItem(tr("Colortables must match EVERY selected tag"));
     if (tagsMatchAny)
         tagCombiningBehaviorChoice->setCurrentIndex(0);
     else
@@ -363,7 +363,6 @@ QvisColorTableWindow::CreateWindowContents()
     QLabel *colorTableName = new QLabel(tr("Name"), colorTableWidgetGroup);
     managerLayout->addWidget(colorTableName, 4, 0, 1, 1, Qt::AlignLeft);
     nameLineEdit = new QLineEdit(colorTableWidgetGroup);
-    nameLineEdit->setReadOnly(true);
     managerLayout->addWidget(nameLineEdit, 4, 1, 1, 2);
 
     QLabel *searchLabel = new QLabel(tr("Search"), colorTableWidgetGroup);
