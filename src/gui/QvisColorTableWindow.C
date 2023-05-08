@@ -360,27 +360,27 @@ QvisColorTableWindow::CreateWindowContents()
     tagTable->setColumnCount(2);
     managerLayout->addWidget(tagTable, 3, 0, 1, 3);
 
-    colorTableName = new QLabel(tr("Name"), colorTableWidgetGroup);
+    QLabel *colorTableName = new QLabel(tr("Name"), colorTableWidgetGroup);
     managerLayout->addWidget(colorTableName, 4, 0, 1, 1, Qt::AlignLeft);
     nameLineEdit = new QLineEdit(colorTableWidgetGroup);
     nameLineEdit->setReadOnly(true);
     managerLayout->addWidget(nameLineEdit, 4, 1, 1, 2);
 
-    searchLabel = new QLabel(tr("Search"), colorTableWidgetGroup);
+    QLabel *searchLabel = new QLabel(tr("Search"), colorTableWidgetGroup);
     managerLayout->addWidget(searchLabel, 4, 3, 1, 1, Qt::AlignLeft);
     searchBar = new QLineEdit(colorTableWidgetGroup);
     connect(searchBar, SIGNAL(textEdited(const QString &)),
             this, SLOT(searchEdited(const QString &)));
     managerLayout->addWidget(searchBar, 4, 4, 1, 2);
 
-    tagLabel = new QLabel(tr("Tags"), colorTableWidgetGroup);
+    QLabel *tagLabel = new QLabel(tr("Tags"), colorTableWidgetGroup);
     managerLayout->addWidget(tagLabel, 5, 0, 1, 1, Qt::AlignLeft);
     tagLineEdit = new QLineEdit(colorTableWidgetGroup);
     tagLineEdit->setReadOnly(true);
     managerLayout->addWidget(tagLineEdit, 5, 1, 1, 5);
 
     // Tag editor
-    tagEditorLabel = new QLabel(tr("Tag Editor"), colorTableWidgetGroup);
+    QLabel *tagEditorLabel = new QLabel(tr("Tag Editor"), colorTableWidgetGroup);
     managerLayout->addWidget(tagEditorLabel, 6, 0, 1, 1, Qt::AlignLeft);
     tagEditorLineEdit = new QLineEdit(colorTableWidgetGroup);
     connect(tagEditorLineEdit, SIGNAL(editingFinished()),
