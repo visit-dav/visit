@@ -272,6 +272,44 @@ VolumeAttributes::LowGradientLightingReduction_FromString(const std::string &s, 
     return false;
 }
 
+//
+// Enum conversion methods for VolumeAttributes::RenderMode
+//
+
+static const char *RenderMode_strings[] = {
+"DefaultRenderMode", "RayCastRenderMode", "GPURenderMode",
+"OSPRayRenderMode"};
+
+std::string
+VolumeAttributes::RenderMode_ToString(VolumeAttributes::RenderMode t)
+{
+    int index = int(t);
+    if(index < 0 || index >= 4) index = 0;
+    return RenderMode_strings[index];
+}
+
+std::string
+VolumeAttributes::RenderMode_ToString(int t)
+{
+    int index = (t < 0 || t >= 4) ? 0 : t;
+    return RenderMode_strings[index];
+}
+
+bool
+VolumeAttributes::RenderMode_FromString(const std::string &s, VolumeAttributes::RenderMode &val)
+{
+    val = VolumeAttributes::DefaultRenderMode;
+    for(int i = 0; i < 4; ++i)
+    {
+        if(s == RenderMode_strings[i])
+        {
+            val = (RenderMode)i;
+            return true;
+        }
+    }
+    return false;
+}
+
 // ****************************************************************************
 // Method: VolumeAttributes::VolumeAttributes
 //
@@ -332,6 +370,7 @@ void VolumeAttributes::Init()
     materialProperties[1] = 0.75;
     materialProperties[2] = 0;
     materialProperties[3] = 15;
+    renderMode = DefaultRenderMode;
 
     VolumeAttributes::SelectAll();
 }
@@ -400,6 +439,7 @@ void VolumeAttributes::Copy(const VolumeAttributes &obj)
     for(int i = 0; i < 4; ++i)
         materialProperties[i] = obj.materialProperties[i];
 
+    renderMode = obj.renderMode;
 
     VolumeAttributes::SelectAll();
 }
@@ -610,7 +650,8 @@ VolumeAttributes::operator == (const VolumeAttributes &obj) const
             (lowGradientLightingReduction == obj.lowGradientLightingReduction) &&
             (lowGradientLightingClampFlag == obj.lowGradientLightingClampFlag) &&
             (lowGradientLightingClampValue == obj.lowGradientLightingClampValue) &&
-            materialProperties_equal);
+            materialProperties_equal &&
+            (renderMode == obj.renderMode));
 }
 
 // ****************************************************************************
@@ -796,6 +837,7 @@ VolumeAttributes::SelectAll()
     Select(ID_lowGradientLightingClampFlag,    (void *)&lowGradientLightingClampFlag);
     Select(ID_lowGradientLightingClampValue,   (void *)&lowGradientLightingClampValue);
     Select(ID_materialProperties,              (void *)materialProperties, 4);
+    Select(ID_renderMode,                      (void *)&renderMode);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1092,6 +1134,12 @@ VolumeAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool force
         node->AddNode(new DataNode("materialProperties", materialProperties, 4));
     }
 
+    if(completeSave || !FieldsEqual(ID_renderMode, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("renderMode", RenderMode_ToString(renderMode)));
+    }
+
 
     // Add the node to the parent node.
     if(addToParent || forceAdd)
@@ -1310,6 +1358,22 @@ VolumeAttributes::SetFromNode(DataNode *parentNode)
         SetLowGradientLightingClampValue(node->AsDouble());
     if((node = searchNode->GetNode("materialProperties")) != 0)
         SetMaterialProperties(node->AsDoubleArray());
+    if((node = searchNode->GetNode("renderMode")) != 0)
+    {
+        // Allow enums to be int or string in the config file
+        if(node->GetNodeType() == INT_NODE)
+        {
+            int ival = node->AsInt();
+            if(ival >= 0 && ival < 4)
+                SetRenderMode(RenderMode(ival));
+        }
+        else if(node->GetNodeType() == STRING_NODE)
+        {
+            RenderMode value;
+            if(RenderMode_FromString(node->AsString(), value))
+                SetRenderMode(value);
+        }
+    }
     if(colorControlPoints.GetNumControlPoints() < 2)
          SetDefaultColorControlPoints();
 
@@ -1617,6 +1681,13 @@ VolumeAttributes::SetMaterialProperties(const double *materialProperties_)
     Select(ID_materialProperties, (void *)materialProperties, 4);
 }
 
+void
+VolumeAttributes::SetRenderMode(VolumeAttributes::RenderMode renderMode_)
+{
+    renderMode = renderMode_;
+    Select(ID_renderMode, (void *)&renderMode);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Get property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -1909,6 +1980,12 @@ VolumeAttributes::GetMaterialProperties()
     return materialProperties;
 }
 
+VolumeAttributes::RenderMode
+VolumeAttributes::GetRenderMode() const
+{
+    return RenderMode(renderMode);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Select property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -2015,6 +2092,7 @@ VolumeAttributes::GetFieldName(int index) const
     case ID_lowGradientLightingClampFlag:    return "lowGradientLightingClampFlag";
     case ID_lowGradientLightingClampValue:   return "lowGradientLightingClampValue";
     case ID_materialProperties:              return "materialProperties";
+    case ID_renderMode:                      return "renderMode";
     default:  return "invalid index";
     }
 }
@@ -2081,6 +2159,7 @@ VolumeAttributes::GetFieldType(int index) const
     case ID_lowGradientLightingClampFlag:    return FieldType_bool;
     case ID_lowGradientLightingClampValue:   return FieldType_double;
     case ID_materialProperties:              return FieldType_doubleArray;
+    case ID_renderMode:                      return FieldType_enum;
     default:  return FieldType_unknown;
     }
 }
@@ -2147,6 +2226,7 @@ VolumeAttributes::GetFieldTypeName(int index) const
     case ID_lowGradientLightingClampFlag:    return "bool";
     case ID_lowGradientLightingClampValue:   return "double";
     case ID_materialProperties:              return "doubleArray";
+    case ID_renderMode:                      return "enum";
     default:  return "invalid index";
     }
 }
@@ -2391,6 +2471,11 @@ VolumeAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
             materialProperties_equal = (materialProperties[i] == obj.materialProperties[i]);
 
         retval = materialProperties_equal;
+        }
+        break;
+    case ID_renderMode:
+        {  // new scope
+        retval = (renderMode == obj.renderMode);
         }
         break;
     default: retval = false;
