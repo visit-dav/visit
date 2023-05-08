@@ -194,7 +194,6 @@ private slots:
     void showIndexHintsToggled(bool val);
     void tagsSelectAll();
     void tagCombiningChanged(int index);
-    void searchingToggled(bool checked);
     void searchEdited(const QString &newSearchTerm);
     void tagEdited();
     void addRemoveTag();
@@ -211,7 +210,6 @@ private:
     int                      popupMode;
     bool                     sliding;
     bool                     tagsMatchAny;
-    bool                     searchingOn;
     QString                  searchTerm;
     QString                  tagEdit;
 
@@ -242,10 +240,10 @@ private:
     QTreeWidget              *tagTable;
     QTreeWidget              *nameListBox;
 
+    QLabel                   *searchLabel;
     QLineEdit                *searchBar;
     QLabel                   *colorTableName;
     QLineEdit                *nameLineEdit;
-    QCheckBox                *searchToggle; // TODO remove
     
     QLabel                   *tagLabel;
     QLineEdit                *tagLineEdit;

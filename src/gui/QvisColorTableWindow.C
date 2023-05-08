@@ -129,7 +129,6 @@ QvisColorTableWindow::QvisColorTableWindow(
     colorSelect = 0;
     colorTableTypeGroup = 0;
     tagsMatchAny = true;
-    searchingOn = false;
     searchTerm = QString("");
     tagEdit = QString("");
 }
@@ -365,14 +364,14 @@ QvisColorTableWindow::CreateWindowContents()
     managerLayout->addWidget(colorTableName, 4, 0, 1, 1, Qt::AlignLeft);
     nameLineEdit = new QLineEdit(colorTableWidgetGroup);
     nameLineEdit->setReadOnly(true);
-    connect(nameLineEdit, SIGNAL(textEdited(const QString &)),
-            this, SLOT(searchEdited(const QString &)));
     managerLayout->addWidget(nameLineEdit, 4, 1, 1, 2);
 
-    searchToggle = new QCheckBox(tr("Enable Searching"), colorTableWidgetGroup);
-    connect(searchToggle, SIGNAL(toggled(bool)),
-            this, SLOT(searchingToggled(bool)));
-    managerLayout->addWidget(searchToggle, 4, 3, 1, 3);
+    searchLabel = new QLabel(tr("Search"), colorTableWidgetGroup);
+    managerLayout->addWidget(searchLabel, 4, 3, 1, 1, Qt::AlignLeft);
+    searchBar = new QLineEdit(colorTableWidgetGroup);
+    connect(searchBar, SIGNAL(textEdited(const QString &)),
+            this, SLOT(searchEdited(const QString &)));
+    managerLayout->addWidget(searchBar, 4, 4, 1, 2);
 
     tagLabel = new QLabel(tr("Tags"), colorTableWidgetGroup);
     managerLayout->addWidget(tagLabel, 5, 0, 1, 1, Qt::AlignLeft);
@@ -417,7 +416,7 @@ QvisColorTableWindow::CreateWindowContents()
     colorNumColors->setMaximumWidth(75);
     connect(colorNumColors, SIGNAL(valueChanged(int)),
             this, SLOT(resizeColorTable(int)));
-    colorInfoLayout->addWidget(colorNumColors, 1, 3, 1, 4);
+    colorInfoLayout->addWidget(colorNumColors, 1, 3, 1, 1);
     colorInfoLayout->addWidget(new QLabel(tr("Number of colors"),
                                           colorWidgetGroup), 1, 0, 1, 3);
 
@@ -1332,20 +1331,11 @@ QvisColorTableWindow::UpdateNames()
         if (colorAtts->GetActiveElement(i))
         {
             QString ctName(colorAtts->GetNames()[i].c_str());
-            if (searchingOn)
-            {
-                if (ctName.contains(searchTerm, Qt::CaseInsensitive))
-                {
-                    QTreeWidgetItem *treeItem = new QTreeWidgetItem(nameListBox);
-                    treeItem->setText(0, ctName);
-                    nameListBox->addTopLevelItem(treeItem);  
-                }
-            }
-            else
+            if (ctName.contains(searchTerm, Qt::CaseInsensitive))
             {
                 QTreeWidgetItem *treeItem = new QTreeWidgetItem(nameListBox);
                 treeItem->setText(0, ctName);
-                nameListBox->addTopLevelItem(treeItem);
+                nameListBox->addTopLevelItem(treeItem);  
             }
         }
     }
@@ -1376,7 +1366,7 @@ QvisColorTableWindow::UpdateNames()
 
         // Set the text of the default color table into the name line edit.
         auto index = colorAtts->GetColorTableIndex(currentColorTable.toStdString());
-        if (index >= 0 && !searchingOn)
+        if (index >= 0)
         {
             nameLineEdit->setText(QString(colorAtts->GetNames()[index].c_str()));
             tagLineEdit->setText(QString(colorAtts->GetColorTables(index).GetTagsAsString().c_str()));
@@ -2449,15 +2439,6 @@ QvisColorTableWindow::equalSpacingToggled(bool)
 void
 QvisColorTableWindow::addColorTable()
 {
-    if (searchingOn)
-    {
-        QString tmp;
-        tmp = tr("Cannot add a color table while searching is enabled. "
-                 "Please disable searching first.");
-        Error(tmp);
-        return;
-    }
-
     // Get a pointer to the default color table's control points.
     ColorControlPointList *ccpl = GetDefaultColorControlPoints();
 
@@ -2547,15 +2528,6 @@ QvisColorTableWindow::addColorTable()
 void
 QvisColorTableWindow::deleteColorTable()
 {
-    if (searchingOn)
-    {
-        QString tmp;
-        tmp = tr("Cannot delete a color table while searching is enabled. "
-                 "Please disable searching first.");
-        Error(tmp);
-        return;
-    }
-
     if (nameListBox->topLevelItemCount() == 0)
     {
         QString tmp;
@@ -3274,15 +3246,7 @@ QvisColorTableWindow::resizeColorTable(int size)
 void
 QvisColorTableWindow::exportColorTable()
 {
-    if (searchingOn)
-    {
-        QString tmp;
-        tmp = tr("Cannot export a color table while searching is enabled. "
-                 "Please disable searching first.");
-        Error(tmp);
-        return;
-    }
-    else if (colorAtts->GetColorControlPoints(
+    if (colorAtts->GetColorControlPoints(
         currentColorTable.toStdString())->GetBuiltIn())
     {
         QString tmp;
@@ -3408,21 +3372,6 @@ QvisColorTableWindow::tagCombiningChanged(int index)
 //
 // ****************************************************************************
 
-void
-QvisColorTableWindow::searchingToggled(bool checked)
-{
-    searchingOn = checked;
-    if (!searchingOn)
-        searchTerm = QString("");
-    else
-    {
-        nameLineEdit->setText(searchTerm);
-        tagLineEdit->setText(QString(""));
-        tagEditorLineEdit->setText(QString(""));
-    }
-    Apply(true);
-}
-
 
 // ****************************************************************************
 // Method: QvisColorTableWindow::searchEdited
@@ -3445,12 +3394,8 @@ QvisColorTableWindow::searchingToggled(bool checked)
 void
 QvisColorTableWindow::searchEdited(const QString &newSearchTerm)
 {
-    if (searchingOn)
-    {
-        searchTerm = newSearchTerm;
-        tagLineEdit->setText(QString(""));
-        Apply(true);
-    }
+    searchTerm = newSearchTerm;
+    Apply(true);
 }
 
 
