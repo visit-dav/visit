@@ -920,6 +920,7 @@ We have taken the image data that comes out of the query and packaged it into a 
 
    The basic mesh output visualized using VisIt.
 
+To visualize this mesh with VisIt, see :ref:`Visualizing_the_Basic_Mesh_Output`.
 The following is the example from :ref:`Overview_of_Output`, but with the Blueprint mesh representing the query result fully realized: 
 
 ::
@@ -1035,7 +1036,7 @@ The fields, ``intensities`` and ``path_length``, can be thought of as containers
 Each also includes units.
 For path length, the ``units`` entry is just a way of including metadata or information about the path length, since path length is unitless.
 
-To visualize this mesh with VisIt, see :ref:`Visualizing_with_VisIt`.
+To visualize this mesh with VisIt, see :ref:`Visualizing_the_Basic_Mesh_Output`.
 
 .. _XRay_Metadata:
 
@@ -1327,7 +1328,8 @@ One of our goals with the Conduit output types (see :ref:`Output_Types` for more
 To that end, these outputs come packaged with meshes representing the imaging planes specified by the user when calling the query.
 Additionally, they also include meshes representing the rays that were used in the ray tracing.
 The following subsections discuss both of these in more detail.
-To visualize these meshes with VisIt, see :ref:`Visualizing_with_VisIt`.
+
+To visualize these meshes with VisIt, see :ref:`Visualizing_the_Imaging_Planes` and :ref:`Visualizing_the_Rays_Meshes`.
 
 .. _Imaging_Planes:
 
@@ -1342,6 +1344,7 @@ Users can visualize the near, view, and far planes in physical space alongside t
    The near plane is in red, the view plane in transparent orange, and the far plane in blue.
 
 Including this in the output gives a sense of where the camera is looking, and is also useful for checking if parts of the mesh being ray traced are outside the near and far clipping planes.
+To visualize these meshes with VisIt, see :ref:`Visualizing_the_Imaging_Planes`.
 See the example below, which is taken from the example in :ref:`Overview_of_Output`, but this time with only the imaging plane meshes fully realized: 
 
 ::
@@ -1462,6 +1465,8 @@ Next is the ``view_plane_topo``, which tells Conduit to treat the four points in
 Finally, we have the ``view_plane_field``, which has one value, "0.0". 
 This value doesn't mean anything; it is just used to tell Blueprint that the entire quad should be colored the same color.
 
+To visualize these meshes with VisIt, see :ref:`Visualizing_the_Imaging_Planes`.
+
 .. _Rays_Meshes:
 
 Rays Meshes
@@ -1546,6 +1551,7 @@ And here is the same view with 400x300 rays but with the ray opacity lowered.
 
 Hopefully it is clear at this point that there are multiple ways of looking at the rays that are used in the ray trace.
 
+To visualize these meshes with VisIt, see :ref:`Visualizing_the_Rays_Meshes`.
 Now we will take a look at another example inspired by the example in :ref:`Overview_of_Output`, but this time with only the rays meshes fully realized: 
 
 ::
@@ -1658,6 +1664,8 @@ We found that if all the rays were the same color, the resulting render was much
 Of course, rendering the rays as one color is still an option.
 With VisIt, one need only draw a Mesh Plot of the ``mesh_ray_topo`` as opposed to a Pseudocolor Plot of the ``mesh_ray_topo/ray_field``.
 
+To visualize these meshes with VisIt, see :ref:`Visualizing_the_Rays_Meshes`.
+
 .. _Spatial_Extents_Meshes:
 
 Spatial Extents Meshes
@@ -1696,6 +1704,7 @@ If the energy group bounds were not provided by the user, or the provided bounds
 The other mesh that is included, the Spatial Energy Reduced Mesh, is a simplification of the Spatial Extents Mesh.
 We collapse the information in the Spatial Extents Mesh into 2D by taking, for each x and y element (or pixel), the field value (either intensities or path lengths) to be the sum of the field values along the z axis scaled by the corresponding energy bin widths, if they are provided by the user.
 
+To visualize these meshes with VisIt, see :ref:`Visualizing_the_Spatial_Extents_Meshes`.
 The following is the example from :ref:`Overview_of_Output`, but with only the spatial extents meshes fully realized: 
 
 ::
@@ -1824,7 +1833,7 @@ We then duplicated the existing topology and fields from the :ref:`Basic_Mesh_Ou
    The spatial extents mesh looks very similar to the basic mesh output.
    It is in 3D and the z dimension represents the energy group bounds, which in this example run from 0 to 12.
 
-To visualize this mesh with VisIt, see :ref:`Visualizing_with_VisIt`. To extract the spatial extents data from the Blueprint output, see :ref:`Introspecting_with_Python`.
+To visualize these meshes with VisIt, see :ref:`Visualizing_the_Spatial_Extents_Meshes`. To extract the spatial extents data from the Blueprint output, see :ref:`Introspecting_with_Python`.
 
 .. _1D_Spectra_Curves:
 
@@ -1842,6 +1851,7 @@ However, instead of collapsing the z dimension (energy group bounds) by taking a
 Thus we are left with a 1D curve, where for each energy group bin, there is one field value that is the result of summing the fields values (intensities or path lengths scaled by the spatial extents of each pixel) for each z-plane.
 There is one curve for the intensities and one curve for the path lengths.
 
+To visualize this mesh with VisIt, see :ref:`Visualizing_the_1D_Spectra_Curves`.
 The following is the example from :ref:`Overview_of_Output`, but with the Blueprint mesh representing the 1D Spectra Curves fully realized:
 
 ::
@@ -1936,7 +1946,7 @@ The following is the example from :ref:`Overview_of_Output`, but with the Bluepr
 Again, we have the typical 3 components of a Blueprint mesh.
 This is no different than the other Blueprint meshes, despite the fact that this will be represented differently under the hood in VisIt to make it appear as a curve when plotted.
 
-To visualize this mesh with VisIt, see :ref:`Visualizing_with_VisIt`. To extract the field data from the Blueprint output, see :ref:`Introspecting_with_Python`.
+To visualize this mesh with VisIt, see :ref:`Visualizing_the_1D_Spectra_Curves`. To extract the field data from the Blueprint output, see :ref:`Introspecting_with_Python`.
 
 Pitfalls
 """"""""
@@ -2050,6 +2060,8 @@ Once the query has been run, to visualize each constituent part of the output, f
 
 Visualizing the Basic Mesh Output
 +++++++++++++++++++++++++++++++++
+
+First we will cover visualizing the :ref:`Basic_Mesh_Output`.
 
 ::
 
@@ -2197,7 +2209,7 @@ See the :ref:`Rays_Meshes` section for more tips for making sense of the rays.
 Visualizing the Spatial Extents Meshes
 ++++++++++++++++++++++++++++++++++++++
 
-Visualizing the :ref:`Spatial_Extents_Meshes` should be very similar to visualizing the :ref:`Basic_Mesh_Output`.
+Visualizing the :ref:`Spatial_Extents_Meshes` should be very similar to :ref:`Visualizing_the_Basic_Mesh_Output`.
 
 First we render the spatial extents mesh:
 
@@ -2619,7 +2631,7 @@ Why is my image blank?
 Is the camera facing the right way?
 Are the near and far clipping planes in good positions?
 
-This line of questioning can be quickly answered by visualizing the :ref:`Imaging_Planes_and_Rays_Meshes`.
+This line of questioning can be quickly answered by :ref:`Visualizing_the_Imaging_Planes` and :ref:`Visualizing_the_Rays_Meshes`.
 
 ::
 
@@ -2640,7 +2652,7 @@ This line of questioning can be quickly answered by visualizing the :ref:`Imagin
    DrawPlots()
 
 Running this code using VisIt should result in renders like those shown in :ref:`Imaging_Planes_and_Rays_Meshes`.
-To make the planes different colors, use VisIt's color table controls, or see :ref:`Visualizing_with_VisIt`.
+To make the planes different colors, use VisIt's color table controls, or see :ref:`Visualizing_the_Imaging_Planes`.
 
 .. figure:: images/xray_troubleshooting_2.png
 
@@ -2648,7 +2660,7 @@ To make the planes different colors, use VisIt's color table controls, or see :r
 
 The simulated x ray detector is situated at the near plane, looking in the direction of the view plane, and seeing nothing after the far plane.
 Once the imaging planes and ray corners have been visualized, it is clear to see where the camera is looking, and if the near and far clipping planes are appropriately placed.
-See the text on visualizing the rays and imaging planes in :ref:`Visualizing_with_VisIt`.
+See the text on visualizing the rays and imaging planes in :ref:`Visualizing_the_Imaging_Planes` and :ref:`Visualizing_the_Rays_Meshes`.
 
 Where are the rays intersecting my geometry?
 ++++++++++++++++++++++++++++++++++++++++++++
@@ -2677,7 +2689,7 @@ We will want to visualize the :ref:`Rays_Meshes` on top of our input mesh.
 
 Running this code using VisIt should result in renders like those shown in :ref:`Rays_Meshes`.
 Use the tips and tricks shown in that section to gain greater clarity for answering this question.
-See the text on visualizing the rays and imaging planes in :ref:`Visualizing_with_VisIt`.
+See the text on visualizing the rays and imaging planes in :ref:`Visualizing_the_Imaging_Planes` and :ref:`Visualizing_the_Rays_Meshes`.
 
 .. figure:: images/XRay_Query_imaging_planes_transparent_rays_and_ray_corners_40x30_front.png
 
