@@ -1846,7 +1846,6 @@ We then duplicated the existing topology and fields from the :ref:`Basic_Mesh_Ou
 
 To extract this mesh data with Python, see :ref:`Introspecting_with_Python_Spatial_Extents_Meshes`.
 To visualize these meshes with VisIt, see :ref:`Visualizing_the_Spatial_Extents_Meshes`.
-To extract the spatial extents data from the Blueprint output, see :ref:`Introspecting_with_Python`.
 
 .. _1D_Spectra_Curves:
 
