@@ -3,6 +3,7 @@
 		    {"category":"databases","file":"blueprint.py","cases":["blueprint_rz_cyl_rectilinear.root_plot_revolved_to_3D","blueprint_rz_cyl_uniform.root_plot_revolved_to_3D","blueprint_rz_cyl_structured.root_plot_revolved_to_3D","blueprint_rz_cyl_unstructured.root_plot_revolved_to_3D"]},
                     {"category":"databases","file":"diff.py"},
                     {"category":"databases","file":"exodus.py","cases":["exodus_13a","exodus_13b"]},
+                    {"category":"databases","file":"silo.py","cases":["silo_curvilinear_3d_surface_3"]},
                     {"category":"hybrid","file":"clonecopy.py"},
                     {"category":"hybrid","file":"ddf_vs_dbinning.py"},
                     {"category":"hybrid","file":"movie.py"},
