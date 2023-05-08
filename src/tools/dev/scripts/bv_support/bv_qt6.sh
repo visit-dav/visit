@@ -16,12 +16,11 @@ function bv_qt6_disable
 
 function bv_qt6_depends_on
 {
-    echo ""
-    #if [[ "$DO_MESAGL" == "yes" ]] ; then
-    #    echo "mesagl glu"
-    #else
-    #    echo ""
-    #fi
+    if [[ "$DO_MESAGL" == "yes" ]] ; then
+        echo "mesagl glu"
+    else
+        echo ""
+    fi
 }
 
 function bv_qt6_info
@@ -203,7 +202,8 @@ function build_qt6_base
     fi
     info "Configuring Qt6 base: . . . "
     set -x
-    (echo "o"; echo "yes") | CFLAGS="${QT6_CFLAGS}" CXXFLAGS="${QT6_CXXFLAGS}"  \
+    (echo "o"; echo "yes") | env PATH="${CMAKE_INSTALL}:$PATH" \
+                             CFLAGS="${QT6_CFLAGS}" CXXFLAGS="${QT6_CXXFLAGS}"  \
                              CC="${C_COMPILER}" CXX="${CXX_COMPILER}"  \
                              ../${QT6_BASE_SOURCE_DIR}/configure \
                              -prefix ${QT6_INSTALL_DIR} ${qt_flags} \
@@ -279,7 +279,7 @@ function build_qt6_tools
     info "qt6 tools options: $copts"
     info "cmake_install ${CMAKE_INSTALL}"
     info "cmake_command ${CMAKE_COMMAND}"
-    qt6_path="${CMAKE_INSTALL}/bin:$PATH"
+    qt6_path="${CMAKE_INSTALL}:$PATH"
     info "qt6 tools path: $qt6_path"
    
     info "Configuring Qt6 tools . . . "
@@ -329,7 +329,7 @@ function build_qt6_svg
     copts="${copts} -DCMAKE_INSTALL_PREFIX:PATH=${QT6_INSTALL_DIR}"
     copts="${copts} -DCMAKE_CXX_STANDARD:STRING=17"
     copts="${copts} -DCMAKE_CXX_STANDARD_REQUIRED:BOOL=ON"
-    qt6_path="${CMAKE_INSTALL}/bin:$PATH"
+    qt6_path="${CMAKE_INSTALL}:$PATH"
    
     info "Configuring Qt6 svg . . . "
     env PATH="${qt6_path}" CC="${C_COMPILER}" CXX="${CXX_COMPILER}"  \
