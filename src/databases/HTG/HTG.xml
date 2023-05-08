@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+  <Plugin name="HTG" label="HTG" type="database" dbtype="STMD" version="1.0" haswriter="true" hasoptions="true">
+    <FilePatterns>
+      *.htg
+    </FilePatterns>
+    <Attribute name="" purpose="" persistent="true" keyframe="true" exportAPI="" exportInclude="">
+    </Attribute>
+  </Plugin>
