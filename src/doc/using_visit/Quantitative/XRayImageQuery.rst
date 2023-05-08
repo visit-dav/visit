@@ -1962,7 +1962,6 @@ This is no different than the other Blueprint meshes, despite the fact that this
 
 To extract this mesh data with Python, see :ref:`Introspecting_with_Python_1D_Spectra_Curves`.
 To visualize this mesh with VisIt, see :ref:`Visualizing_the_1D_Spectra_Curves`.
-To extract the field data from the Blueprint output, see :ref:`Introspecting_with_Python`.
 
 Pitfalls
 """"""""
