@@ -57,7 +57,7 @@
 #    Removed cleanup_files since temporary files are written to the _run dir
 #    which gets removed on exit (unless --no-cleanup specified).
 #
-#    Eric Brugger,
+#    Eric Brugger, Mon May 1 15:28:30 PST 2023
 #    Added HTG export test.
 #
 # ----------------------------------------------------------------------------
