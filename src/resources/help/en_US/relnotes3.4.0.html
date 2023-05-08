@@ -59,10 +59,10 @@ enhancements and bug-fixes that were added to this release.</p>
 <ul>
   <li>Added the ability to export <a href="https://www.kitware.com/hypertreegrid-in-vtk-an-introduction/">VTK HyperTreeGrid</a> files. HyperTreeGrids are uniform hierarchical meshes. When exporting HyperTreeGrids the following restrictions apply:
     <ul>
-      <li>The meshes must be 3 dimensional rectilinear meshes.</li>
+      <li>The mesh must be a 3 dimensional rectilinear mesh.</li>
       <li>The mesh spacing must be uniform in each direction.</li>
       <li>The mesh dimensions must be equal in each direction.</li>
-      <li>The dimensions must be a power of 2.</li>
+      <li>The mesh dimensions must be a power of 2.</li>
       <li>The variable must be zone centered.</li>
     </ul>
     Typically you would use the "Resample" operator to resample the variable to meet the restrctions above.
