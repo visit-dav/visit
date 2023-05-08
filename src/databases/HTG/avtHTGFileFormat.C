@@ -18,6 +18,7 @@
 #include <DBOptionsAttributes.h>
 #include <Expression.h>
 
+#include <VisItException.h>
 #include <InvalidVariableException.h>
 
 
@@ -74,6 +75,7 @@ avtHTGFileFormat::FreeUpResources(void)
 void
 avtHTGFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 {
+    EXCEPTION1(VisItException, "The HTG database plugin can only export files.")
 }
 
 
