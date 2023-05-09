@@ -40,7 +40,7 @@ VTK_MODULE_INIT(vtkRenderingOSPRay);
 //  Method: avtDefaultRenderer::avtDefaultRenderer
 //
 //  Purpose:
-//    Initialize the memebers associated with the default renderer.
+//    Initialize the members associated with the default renderer.
 //
 //  Programmer:  Alister Maguire
 //  Creation:    April 3, 2017
