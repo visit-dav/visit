@@ -66,8 +66,7 @@ memory use.
 appropriate volume renderer based on rendering parameters and available hardware. Use the **Render mode** option to
 control this behavior.
 
-``Default``: This is the default render mode and when you select this option your volume will be rendered based on parameters set
-             and the platform.
+``Default``: This is the default render mode and when you select this option your volume will be rendered based on parameters set and the platform.
 
 ``Ray Cast``: Uses software rendering exclusively.
 
