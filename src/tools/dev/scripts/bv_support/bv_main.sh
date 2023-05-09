@@ -640,7 +640,7 @@ function initialize_build_visit()
             --vtk9) DO_VTK9="yes";;
         esac
         case $arg in
-            --qt6) DO_QT6="yes";;
+            --qt6) DO_QT6="yes"; DO_QT="no";;
         esac
     done
 
