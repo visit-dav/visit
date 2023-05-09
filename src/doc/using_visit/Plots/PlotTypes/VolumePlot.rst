@@ -104,7 +104,7 @@ control this behavior.
 
    Ray casting: SLIVR options
 
-**Rendering Method: Ray casting: OSPRay** (:numref:`Figure %s<raycasting_ospray_atts_window>`). `OSPRay <https://www.ospray.org>`_ is an Open source, Scalable, and Portable Ray tracing engine for volume-rendering on Intel Architecure CPUs,
+**Rendering Method: Ray casting: OSPRay** (:numref:`Figure %s<raycasting_ospray_atts_window>`). `OSPRay <https://www.ospray.org>`_ is an Open source, Scalable, and Portable Ray tracing engine for volume-rendering on Intel Architecture CPUs,
 
 ``AO Samples``: determines the number of rays per sample to compute ambient occlusion.
 
