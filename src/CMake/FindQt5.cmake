@@ -110,7 +110,7 @@ set(QT_QTOPENGL_LIBRARY ${Qt5OpenGL_LIBRARIES})
 
 # if/when we drop support for qt 4, perhaps leave these split and
 # add Widgets or PrintSupport only where needed
-set(QT_QTGUI_LIBRARY ${Qt5Gui_LIBRARIES})
+set(QT_QTGUI_LIBRARY ${Qt5Gui_LIBRARIES} ${OPENGL_LIBRARIES})
 set(QT_QTWIDGETS_LIBRARY ${Qt5Widgets_LIBRARIES})
 set(QT_QTPRINTSUPPORT_LIBRARY ${Qt5PrintSupport_LIBRARIES})
 
