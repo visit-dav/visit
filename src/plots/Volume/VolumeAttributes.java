@@ -27,7 +27,7 @@ import llnl.visit.GaussianControlPointList;
 
 public class VolumeAttributes extends AttributeSubject implements Plugin
 {
-    private static int VolumeAttributes_numAdditionalAtts = 42;
+    private static int VolumeAttributes_numAdditionalAtts = 43;
 
     // Enum values
     public final static int RENDERER_DEFAULT = 0;
@@ -62,6 +62,11 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
     public final static int LOWGRADIENTLIGHTINGREDUCTION_HIGH = 5;
     public final static int LOWGRADIENTLIGHTINGREDUCTION_HIGHER = 6;
     public final static int LOWGRADIENTLIGHTINGREDUCTION_HIGHEST = 7;
+
+    public final static int RENDERMODE_DEFAULTRENDERMODE = 0;
+    public final static int RENDERMODE_RAYCASTRENDERMODE = 1;
+    public final static int RENDERMODE_GPURENDERMODE = 2;
+    public final static int RENDERMODE_OSPRAYRENDERMODE = 3;
 
 
     public VolumeAttributes()
@@ -116,6 +121,7 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
         materialProperties[1] = 0.75;
         materialProperties[2] = 0;
         materialProperties[3] = 15;
+        renderMode = RENDERMODE_DEFAULTRENDERMODE;
     }
 
     public VolumeAttributes(int nMoreFields)
@@ -170,6 +176,7 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
         materialProperties[1] = 0.75;
         materialProperties[2] = 0;
         materialProperties[3] = 15;
+        renderMode = RENDERMODE_DEFAULTRENDERMODE;
     }
 
     public VolumeAttributes(VolumeAttributes obj)
@@ -226,6 +233,7 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
         for(i = 0; i < obj.materialProperties.length; ++i)
             materialProperties[i] = obj.materialProperties[i];
 
+        renderMode = obj.renderMode;
 
         SelectAll();
     }
@@ -296,7 +304,8 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
                 (lowGradientLightingReduction == obj.lowGradientLightingReduction) &&
                 (lowGradientLightingClampFlag == obj.lowGradientLightingClampFlag) &&
                 (lowGradientLightingClampValue == obj.lowGradientLightingClampValue) &&
-                materialProperties_equal);
+                materialProperties_equal &&
+                (renderMode == obj.renderMode));
     }
 
     public String GetName() { return "Volume"; }
@@ -568,6 +577,12 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
         Select(41);
     }
 
+    public void SetRenderMode(int renderMode_)
+    {
+        renderMode = renderMode_;
+        Select(42);
+    }
+
     // Property getting methods
     public boolean                  GetOsprayShadowsEnabledFlag() { return osprayShadowsEnabledFlag; }
     public boolean                  GetOsprayUseGridAcceleratorFlag() { return osprayUseGridAcceleratorFlag; }
@@ -611,6 +626,7 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
     public boolean                  GetLowGradientLightingClampFlag() { return lowGradientLightingClampFlag; }
     public double                   GetLowGradientLightingClampValue() { return lowGradientLightingClampValue; }
     public double[]                 GetMaterialProperties() { return materialProperties; }
+    public int                      GetRenderMode() { return renderMode; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
@@ -699,6 +715,8 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
             buf.WriteDouble(lowGradientLightingClampValue);
         if(WriteSelect(41, buf))
             buf.WriteDoubleArray(materialProperties);
+        if(WriteSelect(42, buf))
+            buf.WriteInt(renderMode);
     }
 
     public void ReadAtts(int index, CommunicationBuffer buf)
@@ -833,6 +851,9 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
         case 41:
             SetMaterialProperties(buf.ReadDoubleArray());
             break;
+        case 42:
+            SetRenderMode(buf.ReadInt());
+            break;
         }
     }
 
@@ -940,6 +961,16 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
         str = str + boolToString("lowGradientLightingClampFlag", lowGradientLightingClampFlag, indent) + "\n";
         str = str + doubleToString("lowGradientLightingClampValue", lowGradientLightingClampValue, indent) + "\n";
         str = str + doubleArrayToString("materialProperties", materialProperties, indent) + "\n";
+        str = str + indent + "renderMode = ";
+        if(renderMode == RENDERMODE_DEFAULTRENDERMODE)
+            str = str + "RENDERMODE_DEFAULTRENDERMODE";
+        if(renderMode == RENDERMODE_RAYCASTRENDERMODE)
+            str = str + "RENDERMODE_RAYCASTRENDERMODE";
+        if(renderMode == RENDERMODE_GPURENDERMODE)
+            str = str + "RENDERMODE_GPURENDERMODE";
+        if(renderMode == RENDERMODE_OSPRAYRENDERMODE)
+            str = str + "RENDERMODE_OSPRAYRENDERMODE";
+        str = str + "\n";
         return str;
     }
 
@@ -987,5 +1018,6 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
     private boolean                  lowGradientLightingClampFlag;
     private double                   lowGradientLightingClampValue;
     private double[]                 materialProperties;
+    private int                      renderMode;
 }
 

@@ -346,6 +346,29 @@ PyVolumeAttributes_ToString(const VolumeAttributes *atts, const char *prefix, co
         snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
+    const char *renderMode_names = "DefaultRenderMode, RayCastRenderMode, GPURenderMode, OSPRayRenderMode";
+    switch (atts->GetRenderMode())
+    {
+      case VolumeAttributes::DefaultRenderMode:
+          snprintf(tmpStr, 1000, "%srenderMode = %sDefaultRenderMode  # %s\n", prefix, prefix, renderMode_names);
+          str += tmpStr;
+          break;
+      case VolumeAttributes::RayCastRenderMode:
+          snprintf(tmpStr, 1000, "%srenderMode = %sRayCastRenderMode  # %s\n", prefix, prefix, renderMode_names);
+          str += tmpStr;
+          break;
+      case VolumeAttributes::GPURenderMode:
+          snprintf(tmpStr, 1000, "%srenderMode = %sGPURenderMode  # %s\n", prefix, prefix, renderMode_names);
+          str += tmpStr;
+          break;
+      case VolumeAttributes::OSPRayRenderMode:
+          snprintf(tmpStr, 1000, "%srenderMode = %sOSPRayRenderMode  # %s\n", prefix, prefix, renderMode_names);
+          str += tmpStr;
+          break;
+      default:
+          break;
+    }
+
     return str;
 }
 
@@ -2894,6 +2917,74 @@ VolumeAttributes_GetMaterialProperties(PyObject *self, PyObject *args)
     return retval;
 }
 
+/*static*/ PyObject *
+VolumeAttributes_SetRenderMode(PyObject *self, PyObject *args)
+{
+    VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
+
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 4)
+    {
+        std::stringstream ss;
+        ss << "An invalid renderMode value was given." << std::endl;
+        ss << "Valid values are in the range [0,3]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << " DefaultRenderMode";
+        ss << ", RayCastRenderMode";
+        ss << ", GPURenderMode";
+        ss << ", OSPRayRenderMode";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
+
+    // Set the renderMode in the object.
+    obj->data->SetRenderMode(VolumeAttributes::RenderMode(cval));
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+VolumeAttributes_GetRenderMode(PyObject *self, PyObject *args)
+{
+    VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetRenderMode()));
+    return retval;
+}
+
 
 
 PyMethodDef PyVolumeAttributes_methods[VOLUMEATTRIBUTES_NMETH] = {
@@ -2982,6 +3073,8 @@ PyMethodDef PyVolumeAttributes_methods[VOLUMEATTRIBUTES_NMETH] = {
     {"GetLowGradientLightingClampValue", VolumeAttributes_GetLowGradientLightingClampValue, METH_VARARGS},
     {"SetMaterialProperties", VolumeAttributes_SetMaterialProperties, METH_VARARGS},
     {"GetMaterialProperties", VolumeAttributes_GetMaterialProperties, METH_VARARGS},
+    {"SetRenderMode", VolumeAttributes_SetRenderMode, METH_VARARGS},
+    {"GetRenderMode", VolumeAttributes_GetRenderMode, METH_VARARGS},
     {NULL, NULL}
 };
 
@@ -3146,6 +3239,17 @@ PyVolumeAttributes_getattr(PyObject *self, char *name)
         return VolumeAttributes_GetLowGradientLightingClampValue(self, NULL);
     if(strcmp(name, "materialProperties") == 0)
         return VolumeAttributes_GetMaterialProperties(self, NULL);
+    if(strcmp(name, "renderMode") == 0)
+        return VolumeAttributes_GetRenderMode(self, NULL);
+    if(strcmp(name, "DefaultRenderMode") == 0)
+        return PyInt_FromLong(long(VolumeAttributes::DefaultRenderMode));
+    if(strcmp(name, "RayCastRenderMode") == 0)
+        return PyInt_FromLong(long(VolumeAttributes::RayCastRenderMode));
+    if(strcmp(name, "GPURenderMode") == 0)
+        return PyInt_FromLong(long(VolumeAttributes::GPURenderMode));
+    if(strcmp(name, "OSPRayRenderMode") == 0)
+        return PyInt_FromLong(long(VolumeAttributes::OSPRayRenderMode));
+
 
 
     // Add a __dict__ answer so that dir() works
@@ -3252,6 +3356,8 @@ PyVolumeAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = VolumeAttributes_SetLowGradientLightingClampValue(self, args);
     else if(strcmp(name, "materialProperties") == 0)
         obj = VolumeAttributes_SetMaterialProperties(self, args);
+    else if(strcmp(name, "renderMode") == 0)
+        obj = VolumeAttributes_SetRenderMode(self, args);
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
