@@ -1233,8 +1233,13 @@ QvisVolumePlotWindow::CreateRendererOptionsGroup(int maxWidth)
     QHBoxLayout *renderModeLayout = new QHBoxLayout(renderModeGroup);
 
     renderModeButtonGroup = new QButtonGroup(renderModeGroup);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(renderModeButtonGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(renderModeChanged(int)));
+#else
+    connect(renderModeButtonGroup, SIGNAL(idClicked(int)),
+            this, SLOT(renderModeChanged(int)));
+#endif
 
     renderModeDefaultButton = new QRadioButton(tr("Default"),renderModeGroup);
     renderModeDefaultButton->setChecked(true);
