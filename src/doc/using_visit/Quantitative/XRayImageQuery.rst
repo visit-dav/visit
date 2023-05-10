@@ -252,7 +252,7 @@ These units appear in the :ref:`Conduit_Output` in a few different places.
 
 The ``spatial_units`` and ``energy_units`` appear in the :ref:`Spatial_Extents_Meshes`.
 The ``abs_units`` and the ``emis_units`` appear in the :ref:`Query_Parameters` section of the :ref:`XRay_Metadata`.
-The ``intensity_units`` and the ``path_length_info`` appear in the :ref:`Basic_Mesh_Output` under the fields.
+The ``intensity_units`` and the ``path_length_info`` appear in the :ref:`Basic_Mesh_Output` and in the 3D Spatial Extents Mesh (:ref:`Spatial_Extents_Meshes`) under the fields.
 
 .. _Camera_Specification:
 
@@ -823,6 +823,7 @@ The Blueprint output provides multiple Blueprint meshes, which are each in turn 
 These all live within a Conduit tree, along with metadata.
 Using Conduit allows us to package everything in one place for ease of use.
 
+To extract this data with Python, see :ref:`Introspecting_with_Python_Overview`.
 Here is a simplified representation of a Conduit tree that is output from the Query: 
 
 ::
@@ -908,6 +909,8 @@ Each piece of the Conduit output will be covered in more detail in ensuing parts
 To learn more about what lives under the ``state`` branch, see the :ref:`XRay_Metadata` section.
 To learn more about the coordinate sets, topologies, and fields, see the :ref:`Basic_Mesh_Output`, :ref:`Imaging_Planes_and_Rays_Meshes`, :ref:`Spatial_Extents_Meshes`, and :ref:`1D_Spectra_Curves` sections.
 
+To extract this data with Python, see :ref:`Introspecting_with_Python_Overview`.
+
 .. _Basic_Mesh_Output:
 
 Basic Mesh Output
@@ -920,6 +923,8 @@ We have taken the image data that comes out of the query and packaged it into a 
 
    The basic mesh output visualized using VisIt.
 
+To visualize this mesh with VisIt, see :ref:`Visualizing_the_Basic_Mesh_Output`.
+To extract this mesh data with Python, see :ref:`Introspecting_with_Python_Basic_Mesh_Output`.
 The following is the example from :ref:`Overview_of_Output`, but with the Blueprint mesh representing the query result fully realized: 
 
 ::
@@ -1035,7 +1040,8 @@ The fields, ``intensities`` and ``path_length``, can be thought of as containers
 Each also includes units.
 For path length, the ``units`` entry is just a way of including metadata or information about the path length, since path length is unitless.
 
-To visualize this mesh with VisIt, see :ref:`Visualizing_with_VisIt`.
+To visualize this mesh with VisIt, see :ref:`Visualizing_the_Basic_Mesh_Output`.
+To extract this mesh data with Python, see :ref:`Introspecting_with_Python_Basic_Mesh_Output`.
 
 .. _XRay_Metadata:
 
@@ -1045,7 +1051,7 @@ Metadata
 The Conduit output types (see :ref:`Output_Types` for more information) come packaged with metadata in addition to Blueprint-conforming mesh data.
 The ability to send this metadata alongside the output mesh (and other data) is one of the advantages of using Conduit for outputs from the query.
 We hope this metadata helps to make it clear exactly what the query is doing, what information it has available to it, and what the output might look like.
-To extract the metadata from the Blueprint output, see :ref:`Introspecting_with_Python`.
+To extract the metadata from the Blueprint output, see :ref:`Introspecting_with_Python_Metadata`.
 
 Metadata is stored under the ``state`` Node in the resulting Conduit tree.
 See the example below, which is taken from the example in :ref:`Overview_of_Output`, but this time with only the metadata fully realized: 
@@ -1188,7 +1194,7 @@ An example: ::
     perspective: 1
     perspective_str: "perspective"
 
-To extract this metadata from the Blueprint output, see :ref:`Introspecting_with_Python`.
+To extract this metadata from the Blueprint output, see :ref:`Introspecting_with_Python_Metadata`.
 
 .. _Query_Parameters:
 
@@ -1244,7 +1250,7 @@ An example: ::
     abs_units: "cm^2/g"
     emis_units: "GJ/cm^2/ster/ns/keV"
 
-To extract this metadata from the Blueprint output, see :ref:`Introspecting_with_Python`.
+To extract this metadata from the Blueprint output, see :ref:`Introspecting_with_Python_Metadata`.
 
 .. _Other_Metadata:
 
@@ -1316,7 +1322,7 @@ The minimum and maximum values that are included for the path length and intensi
 If both maximums and minimums are zero, for example, the simulated detector may not be facing the right way.
 In that case, the :ref:`Imaging_Planes_and_Rays_Meshes` section may be of some use.
 
-To extract this metadata from the Blueprint output, see :ref:`Introspecting_with_Python`.
+To extract this metadata from the Blueprint output, see :ref:`Introspecting_with_Python_Metadata`.
 
 .. _Imaging_Planes_and_Rays_Meshes:
 
@@ -1327,7 +1333,8 @@ One of our goals with the Conduit output types (see :ref:`Output_Types` for more
 To that end, these outputs come packaged with meshes representing the imaging planes specified by the user when calling the query.
 Additionally, they also include meshes representing the rays that were used in the ray tracing.
 The following subsections discuss both of these in more detail.
-To visualize these meshes with VisIt, see :ref:`Visualizing_with_VisIt`.
+
+To visualize these meshes with VisIt, see :ref:`Visualizing_the_Imaging_Planes` and :ref:`Visualizing_the_Rays_Meshes`.
 
 .. _Imaging_Planes:
 
@@ -1342,6 +1349,9 @@ Users can visualize the near, view, and far planes in physical space alongside t
    The near plane is in red, the view plane in transparent orange, and the far plane in blue.
 
 Including this in the output gives a sense of where the camera is looking, and is also useful for checking if parts of the mesh being ray traced are outside the near and far clipping planes.
+
+To visualize these meshes with VisIt, see :ref:`Visualizing_the_Imaging_Planes`.
+To extract this mesh data with Python, see :ref:`Introspecting_with_Python_Everything_Else`.
 See the example below, which is taken from the example in :ref:`Overview_of_Output`, but this time with only the imaging plane meshes fully realized: 
 
 ::
@@ -1462,6 +1472,9 @@ Next is the ``view_plane_topo``, which tells Conduit to treat the four points in
 Finally, we have the ``view_plane_field``, which has one value, "0.0". 
 This value doesn't mean anything; it is just used to tell Blueprint that the entire quad should be colored the same color.
 
+To visualize these meshes with VisIt, see :ref:`Visualizing_the_Imaging_Planes`.
+To extract this mesh data with Python, see :ref:`Introspecting_with_Python_Everything_Else`.
+
 .. _Rays_Meshes:
 
 Rays Meshes
@@ -1546,6 +1559,8 @@ And here is the same view with 400x300 rays but with the ray opacity lowered.
 
 Hopefully it is clear at this point that there are multiple ways of looking at the rays that are used in the ray trace.
 
+To extract this mesh data with Python, see :ref:`Introspecting_with_Python_Everything_Else`.
+To visualize these meshes with VisIt, see :ref:`Visualizing_the_Rays_Meshes`.
 Now we will take a look at another example inspired by the example in :ref:`Overview_of_Output`, but this time with only the rays meshes fully realized: 
 
 ::
@@ -1658,6 +1673,9 @@ We found that if all the rays were the same color, the resulting render was much
 Of course, rendering the rays as one color is still an option.
 With VisIt, one need only draw a Mesh Plot of the ``mesh_ray_topo`` as opposed to a Pseudocolor Plot of the ``mesh_ray_topo/ray_field``.
 
+To extract this mesh data with Python, see :ref:`Introspecting_with_Python_Everything_Else`.
+To visualize these meshes with VisIt, see :ref:`Visualizing_the_Rays_Meshes`.
+
 .. _Spatial_Extents_Meshes:
 
 Spatial Extents Meshes
@@ -1696,6 +1714,8 @@ If the energy group bounds were not provided by the user, or the provided bounds
 The other mesh that is included, the Spatial Energy Reduced Mesh, is a simplification of the Spatial Extents Mesh.
 We collapse the information in the Spatial Extents Mesh into 2D by taking, for each x and y element (or pixel), the field value (either intensities or path lengths) to be the sum of the field values along the z axis scaled by the corresponding energy bin widths, if they are provided by the user.
 
+To extract this mesh data with Python, see :ref:`Introspecting_with_Python_Spatial_Extents_Meshes`.
+To visualize these meshes with VisIt, see :ref:`Visualizing_the_Spatial_Extents_Meshes`.
 The following is the example from :ref:`Overview_of_Output`, but with only the spatial extents meshes fully realized: 
 
 ::
@@ -1824,7 +1844,8 @@ We then duplicated the existing topology and fields from the :ref:`Basic_Mesh_Ou
    The spatial extents mesh looks very similar to the basic mesh output.
    It is in 3D and the z dimension represents the energy group bounds, which in this example run from 0 to 12.
 
-To visualize this mesh with VisIt, see :ref:`Visualizing_with_VisIt`. To extract the spatial extents data from the Blueprint output, see :ref:`Introspecting_with_Python`.
+To extract this mesh data with Python, see :ref:`Introspecting_with_Python_Spatial_Extents_Meshes`.
+To visualize these meshes with VisIt, see :ref:`Visualizing_the_Spatial_Extents_Meshes`.
 
 .. _1D_Spectra_Curves:
 
@@ -1842,6 +1863,8 @@ However, instead of collapsing the z dimension (energy group bounds) by taking a
 Thus we are left with a 1D curve, where for each energy group bin, there is one field value that is the result of summing the fields values (intensities or path lengths scaled by the spatial extents of each pixel) for each z-plane.
 There is one curve for the intensities and one curve for the path lengths.
 
+To extract this mesh data with Python, see :ref:`Introspecting_with_Python_1D_Spectra_Curves`.
+To visualize this mesh with VisIt, see :ref:`Visualizing_the_1D_Spectra_Curves`.
 The following is the example from :ref:`Overview_of_Output`, but with the Blueprint mesh representing the 1D Spectra Curves fully realized:
 
 ::
@@ -1936,7 +1959,8 @@ The following is the example from :ref:`Overview_of_Output`, but with the Bluepr
 Again, we have the typical 3 components of a Blueprint mesh.
 This is no different than the other Blueprint meshes, despite the fact that this will be represented differently under the hood in VisIt to make it appear as a curve when plotted.
 
-To visualize this mesh with VisIt, see :ref:`Visualizing_with_VisIt`. To extract the field data from the Blueprint output, see :ref:`Introspecting_with_Python`.
+To extract this mesh data with Python, see :ref:`Introspecting_with_Python_1D_Spectra_Curves`.
+To visualize this mesh with VisIt, see :ref:`Visualizing_the_1D_Spectra_Curves`.
 
 Pitfalls
 """"""""
@@ -2046,8 +2070,12 @@ The later Python code examples assume that the following has already been run:
 
 Once the query has been run, to visualize each constituent part of the output, follow these steps in Python:
 
+.. _Visualizing_the_Basic_Mesh_Output:
+
 Visualizing the Basic Mesh Output
 +++++++++++++++++++++++++++++++++
+
+First we will cover visualizing the :ref:`Basic_Mesh_Output`.
 
 ::
 
@@ -2078,6 +2106,8 @@ To make the output look like an x ray image, it is simple to change the color ta
 .. figure:: images/XRay_Query_image_intensities_xray_front.png
 
    A visualization of the basic mesh output using the x ray color table.
+
+.. _Visualizing_the_Imaging_Planes:
 
 Visualizing the Imaging Planes
 ++++++++++++++++++++++++++++++
@@ -2133,6 +2163,8 @@ To make them distinct colors like in all the examples throughout this documentat
 
    A visualization of the input mesh along with the imaging planes, where they have had their colors adjusted.
 
+.. _Visualizing_the_Rays_Meshes:
+
 Visualizing the Rays Meshes
 +++++++++++++++++++++++++++
 
@@ -2186,10 +2218,12 @@ As discussed in the :ref:`Rays_Meshes` section, this picture is not very helpful
 
 See the :ref:`Rays_Meshes` section for more tips for making sense of the rays.
 
+.. _Visualizing_the_Spatial_Extents_Meshes:
+
 Visualizing the Spatial Extents Meshes
 ++++++++++++++++++++++++++++++++++++++
 
-Visualizing the :ref:`Spatial_Extents_Meshes` should be very similar to visualizing the :ref:`Basic_Mesh_Output`.
+Visualizing the :ref:`Spatial_Extents_Meshes` should be very similar to :ref:`Visualizing_the_Basic_Mesh_Output`.
 
 First we render the spatial extents mesh:
 
@@ -2249,6 +2283,8 @@ And then we render the spatial energy reduced mesh:
 
    A visualization of the spatial energy reduced mesh using the x ray color table.
 
+.. _Visualizing_the_1D_Spectra_Curves:
+
 Visualizing the 1D Spectra Curves
 +++++++++++++++++++++++++++++++++
 
@@ -2285,6 +2321,8 @@ Introspecting with Python
 """""""""""""""""""""""""
 
 We have covered visualizing every component of the :ref:`Conduit_Output` in the :ref:`Visualizing_with_VisIt` section; now we will demonstrate how to access the raw data using Python.
+
+.. _Introspecting_with_Python_Overview:
 
 Getting a General Overview of the Output
 ++++++++++++++++++++++++++++++++++++++++
@@ -2340,6 +2378,8 @@ Additionally, it is possible to iterate through the children of a Conduit node u
 In general, children are not always named.
 For our purposes with the X Ray Image Query, they always will be.
 A node can behave like a python dictionary or a python list; for the latter, index access is possible.
+
+.. _Introspecting_with_Python_Basic_Mesh_Output:
 
 Accessing the Basic Mesh Output Data
 ++++++++++++++++++++++++++++++++++++
@@ -2420,6 +2460,8 @@ To actually extract the :ref:`Basic_Mesh_Output` data and not just see it, we ca
 
 These variables can be printed, manipulated, iterated over, etc.
 
+.. _Introspecting_with_Python_Metadata:
+
 Accessing the Metadata
 ++++++++++++++++++++++
 
@@ -2495,6 +2537,8 @@ And finally, :ref:`Other_Metadata`:
    path_length_min = xrayout["domain_000000/state/xray_data/path_length_min"]
    image_topo_order_of_domain_variables = xrayout["domain_000000/state/xray_data/image_topo_order_of_domain_variables"]
 
+.. _Introspecting_with_Python_Spatial_Extents_Meshes:
+
 Accessing the Spatial Extents Meshes Data
 +++++++++++++++++++++++++++++++++++++++++
 
@@ -2516,6 +2560,8 @@ Because the :ref:`Spatial_Extents_Meshes` share a lot in common with the :ref:`B
    spatial_yunits = xrayout["domain_000000/coordsets/spatial_coords/units/y"]
    energy_units = xrayout["domain_000000/coordsets/spatial_coords/units/z"]
 
+.. _Introspecting_with_Python_1D_Spectra_Curves:
+
 Accessing the 1D Spectra Curves Data
 ++++++++++++++++++++++++++++++++++++
 
@@ -2535,6 +2581,8 @@ The :ref:`1D_Spectra_Curves` are similar in structure to the other standard Blue
    # Extract the field values
    intensities_spectra_curve_values = xrayout["domain_000000/fields/intensities_spectra/values"]
    # Extracting the same for path_length is similar
+
+.. _Introspecting_with_Python_Everything_Else:
 
 Accessing Everything Else
 +++++++++++++++++++++++++
@@ -2597,7 +2645,7 @@ Why is my image blank?
 Is the camera facing the right way?
 Are the near and far clipping planes in good positions?
 
-This line of questioning can be quickly answered by visualizing the :ref:`Imaging_Planes_and_Rays_Meshes`.
+This line of questioning can be quickly answered by :ref:`Visualizing_the_Imaging_Planes` and :ref:`Visualizing_the_Rays_Meshes`.
 
 ::
 
@@ -2618,7 +2666,7 @@ This line of questioning can be quickly answered by visualizing the :ref:`Imagin
    DrawPlots()
 
 Running this code using VisIt should result in renders like those shown in :ref:`Imaging_Planes_and_Rays_Meshes`.
-To make the planes different colors, use VisIt's color table controls, or see :ref:`Visualizing_with_VisIt`.
+To make the planes different colors, use VisIt's color table controls, or see :ref:`Visualizing_the_Imaging_Planes`.
 
 .. figure:: images/xray_troubleshooting_2.png
 
@@ -2626,7 +2674,7 @@ To make the planes different colors, use VisIt's color table controls, or see :r
 
 The simulated x ray detector is situated at the near plane, looking in the direction of the view plane, and seeing nothing after the far plane.
 Once the imaging planes and ray corners have been visualized, it is clear to see where the camera is looking, and if the near and far clipping planes are appropriately placed.
-See the text on visualizing the rays and imaging planes in :ref:`Visualizing_with_VisIt`.
+See the text on visualizing the rays and imaging planes in :ref:`Visualizing_the_Imaging_Planes` and :ref:`Visualizing_the_Rays_Meshes`.
 
 Where are the rays intersecting my geometry?
 ++++++++++++++++++++++++++++++++++++++++++++
@@ -2655,7 +2703,7 @@ We will want to visualize the :ref:`Rays_Meshes` on top of our input mesh.
 
 Running this code using VisIt should result in renders like those shown in :ref:`Rays_Meshes`.
 Use the tips and tricks shown in that section to gain greater clarity for answering this question.
-See the text on visualizing the rays and imaging planes in :ref:`Visualizing_with_VisIt`.
+See the text on visualizing the rays and imaging planes in :ref:`Visualizing_the_Imaging_Planes` and :ref:`Visualizing_the_Rays_Meshes`.
 
 .. figure:: images/XRay_Query_imaging_planes_transparent_rays_and_ray_corners_40x30_front.png
 
@@ -2664,7 +2712,7 @@ See the text on visualizing the rays and imaging planes in :ref:`Visualizing_wit
 What information is the query using to create the output?
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-See :ref:`Introspecting_with_Python` for information on how to extract and view the :ref:`XRay_Metadata`, which contains the information the query uses to create the output.
+See :ref:`Introspecting_with_Python_Metadata` for information on how to extract and view the :ref:`XRay_Metadata`, which contains all of the view parameters and query parameters that the query uses to create the output.
 
 The fields in the Conduit Output are 1D. How can I reshape them to be 3D?
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
