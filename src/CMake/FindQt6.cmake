@@ -26,9 +26,7 @@ find_package(Qt6 REQUIRED ${visit_qt_modules})
 set(QT_QTUITOOLS_LIBRARY ${Qt6UiTools_LIBRARIES})
 set(QT_QTOPENGL_LIBRARY ${Qt6OpenGL_LIBRARIES})
 
-# For Qt 6, split these and 
-# add Widgets or PrintSupport only where needed
-set(QT_QTGUI_LIBRARY ${Qt6Gui_LIBRARIES})
+set(QT_QTGUI_LIBRARY ${Qt6Gui_LIBRARIES} ${OPENGL_LIBRARIES})
 set(QT_QTWIDGETS_LIBRARY ${Qt6Widgets_LIBRARIES})
 set(QT_QTOPENGLWIDGETS_LIBRARY ${Qt6OpenGLWidgets_LIBRARIES})
 set(QT_QTPRINTSUPPORT_LIBRARY ${Qt6PrintSupport_LIBRARIES})
