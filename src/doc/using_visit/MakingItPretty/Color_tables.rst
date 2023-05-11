@@ -47,7 +47,7 @@ You can open VisIt_'s **Color table window**, shown in :numref:`Figure %s <fig-M
 The **Color table window** is separated into three areas: The top area allows you to set the default color tables. 
 The right-hand side, or the manager portion of the window, allows you to create, delete, and export new color tables, as well as organize all the available color tables.
 See :ref:`Filtering_With_Tags` for more information. 
-The left-hand side, or editor portion of the window, allows you to edit color tables by adding, removing, moving, or changing the color of color control points.
+The left-hand side, or editor portion of the window, allows you to edit color tables by adding, removing, moving, or changing the color of control points.
 A color control point is a point with a color that influences how the color table will look.
 
 Setting the default color table
