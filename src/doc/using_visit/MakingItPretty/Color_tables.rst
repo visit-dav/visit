@@ -520,7 +520,7 @@ Tags must now only be comprised of alphanumeric characters, whitespace, dashes, 
 Searching for Color Tables
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Another option for finding the right color table is to use the search bar.
+Another option for finding the right color table is to use the search feature.
 With this option, users can type a search term into the **Search** text box, and only color tables that have a name containing that term will appear in the color table name table.
 Prior to VisIt_ 3.4, the **Name** text box doubled as the search bar, and users had to check the box for it to the right of the **Name** text box.
 
