@@ -47,8 +47,8 @@ You can open VisIt_'s **Color table window**, shown in :numref:`Figure %s <fig-M
 The **Color table window** is separated into three areas: The top area allows you to set the default color tables. 
 The right-hand side, or the manager portion of the window, allows you to create, delete, and export new color tables, as well as organize all the available color tables.
 See :ref:`Filtering_With_Tags` for more information. 
-The left-hand side, or editor portion of the window, allows you to edit color tables by adding, removing, moving, or changing the color of color control points.
-A color control point is a point with a color that influences how the color table will look.
+The left-hand side, or editor portion of the window, allows you to edit color tables by adding, removing, moving, or changing the color of control points.
+A color control point is a point with a color that influences how colors vary through the table.
 
 Setting the default color table
 """""""""""""""""""""""""""""""
@@ -520,7 +520,7 @@ Tags must now only be comprised of alphanumeric characters, whitespace, dashes, 
 Searching for Color Tables
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Another option for finding the right color table is to use the search bar.
+Another option for finding the right color table is to use the search feature.
 With this option, users can type a search term into the **Search** text box, and only color tables that have a name containing that term will appear in the color table name table.
 
 Users need only edit the search bar contents to use it.
