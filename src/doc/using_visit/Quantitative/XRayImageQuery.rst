@@ -914,7 +914,7 @@ To extract this data with Python, see :ref:`Introspecting_with_Python_Overview`.
 .. _Basic_Mesh_Output:
 
 Basic Mesh Output
-"""""""""""""""""
++++++++++++++++++
 
 The most important piece of the Blueprint output is the actual query result.
 We have taken the image data that comes out of the query and packaged it into a single Blueprint mesh.
@@ -1046,7 +1046,7 @@ To extract this mesh data with Python, see :ref:`Introspecting_with_Python_Basic
 .. _XRay_Metadata:
 
 Metadata
-""""""""
+++++++++
 
 The Conduit output types (see :ref:`Output_Types` for more information) come packaged with metadata in addition to Blueprint-conforming mesh data.
 The ability to send this metadata alongside the output mesh (and other data) is one of the advantages of using Conduit for outputs from the query.
@@ -1118,7 +1118,7 @@ The following subsections discuss each of these categories in more detail.
 .. _View_Parameters:
 
 View Parameters
-+++++++++++++++
+***************
 
 View parameters can be found under "state/xray_view".
 This metadata represents the view-related values that were used in the x ray image query calculations.
@@ -1199,7 +1199,7 @@ To extract this metadata from the Blueprint output, see :ref:`Introspecting_with
 .. _Query_Parameters:
 
 Query Parameters
-++++++++++++++++
+****************
 
 Query parameters can be found under "state/xray_query".
 This metadata represents the query-related values that were used in the x ray image query calculations.
@@ -1255,7 +1255,7 @@ To extract this metadata from the Blueprint output, see :ref:`Introspecting_with
 .. _Other_Metadata:
 
 Other Metadata
-++++++++++++++
+**************
 
 Other metadata can be found under "state/xray_data".
 These values are calculated constants based on the input parameters and output data.
@@ -1327,7 +1327,7 @@ To extract this metadata from the Blueprint output, see :ref:`Introspecting_with
 .. _Imaging_Planes_and_Rays_Meshes:
 
 Imaging Planes and Rays Meshes
-""""""""""""""""""""""""""""""
+++++++++++++++++++++++++++++++
 
 One of our goals with the Conduit output types (see :ref:`Output_Types` for more information) is to provide rich, easy to understand information about the query to facilitate usability.
 To that end, these outputs come packaged with meshes representing the imaging planes specified by the user when calling the query.
@@ -1339,7 +1339,7 @@ To visualize these meshes with VisIt, see :ref:`Visualizing_the_Imaging_Planes` 
 .. _Imaging_Planes:
 
 Imaging Planes
-++++++++++++++
+**************
 
 Users can visualize the near, view, and far planes in physical space alongside the meshes used in the ray trace:
 
@@ -1478,7 +1478,7 @@ To extract this mesh data with Python, see :ref:`Introspecting_with_Python_Every
 .. _Rays_Meshes:
 
 Rays Meshes
-+++++++++++
+***********
 
 Having the imaging planes is helpful, but sometimes it can be more useful to have a sense of the view frustum itself.
 Users may desire a clearer picture of the simulated x ray detector: where is it in space, exactly what is it looking at, and what is it not seeing?
@@ -1679,7 +1679,7 @@ To visualize these meshes with VisIt, see :ref:`Visualizing_the_Rays_Meshes`.
 .. _Spatial_Extents_Meshes:
 
 Spatial Extents Meshes
-""""""""""""""""""""""
+++++++++++++++++++++++
 
 The spatial extents mesh and the spatial energy reduced mesh are two additional pieces that we include with the Conduit Output.
 
@@ -1850,7 +1850,7 @@ To visualize these meshes with VisIt, see :ref:`Visualizing_the_Spatial_Extents_
 .. _1D_Spectra_Curves:
 
 1D Spectra Curves
-"""""""""""""""""
++++++++++++++++++
 
 To provide yet another view of the intensities and path lengths data, we include two curves, represented as blueprint meshes.
 
