@@ -128,6 +128,12 @@ class TagInfo;
 //   Removed tagFilterToggle and added tagsSelectAllButton.
 //   Removed tagsVisible.
 // 
+//   Justin Privitera, Thu May 11 12:31:12 PDT 2023
+//   Removed searchingToggled(), removed bool searchingOn, and added QLineEdit 
+//   *searchBar, as searching is always enabled now.
+//   Removed gui elements from the header that were not used outside the
+//   CreateWindowContents() function.
+// 
 // ****************************************************************************
 
 class GUI_API QvisColorTableWindow : public QvisPostableWindowObserver
@@ -194,7 +200,6 @@ private slots:
     void showIndexHintsToggled(bool val);
     void tagsSelectAll();
     void tagCombiningChanged(int index);
-    void searchingToggled(bool checked);
     void searchEdited(const QString &newSearchTerm);
     void tagEdited();
     void addRemoveTag();
@@ -211,7 +216,6 @@ private:
     int                      popupMode;
     bool                     sliding;
     bool                     tagsMatchAny;
-    bool                     searchingOn;
     QString                  searchTerm;
     QString                  tagEdit;
 
@@ -227,17 +231,11 @@ private:
     // 
 
     // Default Color Table
-    QGroupBox                *defaultGroup;
     QvisNoDefaultColorTableButton *defaultContinuous;
-    QLabel                   *defaultContinuousLabel;
     QvisNoDefaultColorTableButton *defaultDiscrete;
-    QLabel                   *defaultDiscreteLabel;
     // End Default Color Table
 
     // Manager
-    QGroupBox                *colorTableWidgetGroup;
-    QGridLayout              *mgLayout;
-
     QPushButton              *newButton;
     QPushButton              *deleteButton;
     QPushButton              *exportButton;
@@ -248,14 +246,10 @@ private:
     QTreeWidget              *tagTable;
     QTreeWidget              *nameListBox;
 
-    QLabel                   *colorTableName;
+    QLineEdit                *searchBar;
     QLineEdit                *nameLineEdit;
-    QCheckBox                *searchToggle;
-    
-    QLabel                   *tagLabel;
     QLineEdit                *tagLineEdit;
 
-    QLabel                   *tagEditorLabel;
     QLineEdit                *tagEditorLineEdit;
     QPushButton              *tagAddRemoveButton;
     // End Manager
