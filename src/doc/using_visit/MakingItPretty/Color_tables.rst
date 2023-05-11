@@ -522,16 +522,9 @@ Searching for Color Tables
 
 Another option for finding the right color table is to use the search bar.
 With this option, users can type a search term into the **Search** text box, and only color tables that have a name containing that term will appear in the color table name table.
-Prior to VisIt_ 3.4, the **Name** text box doubled as the search bar, and users had to check the box for it to the right of the **Name** text box.
 
-As of VisIt_ 3.4, searching is always on.
 Users need only edit the search bar contents to use it.
 To disable searching, simply delete all text in the search bar.
-
-Prior to VisIt_ 3.4, while searching was enabled, searching happened automatically each time the **Name** text box was edited.
-If a selection was made from the color table name table, searching would temporarily pause.
-However, as soon as the **Name** text box was edited once more, searching would resume as before.
-The only way to stop searching was to disable it via the check box.
 
 Searching also works in tandem with the tagging system.
 So, if tagging is enabled, only results from a search which have the specified tags will appear in the color table name table.
