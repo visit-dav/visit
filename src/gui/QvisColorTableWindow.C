@@ -3282,21 +3282,6 @@ QvisColorTableWindow::exportColorTable()
 
 
 // ****************************************************************************
-// Method: QvisColorTableWindow::taggingToggled
-//
-// Purpose:
-//   This is a Qt slot function that controls toggling the tags.
-//
-// Programmer: Justin Privitera
-// Creation:   Fri Jun  3 15:06:17 PDT 2022
-//
-// Modifications:
-//    Justin Privitera, Wed Feb  1 15:15:39 PST 2023
-//    Deleted the function, as tagging is now always enabled.
-//
-// ****************************************************************************
-
-// ****************************************************************************
 // Method: QvisColorTableWindow::tagsSelectAll
 //
 // Purpose:
@@ -3372,28 +3357,6 @@ QvisColorTableWindow::tagCombiningChanged(int index)
         Apply(true);
     }
 }
-
-
-// ****************************************************************************
-// Method: QvisColorTableWindow::searchingToggled
-//
-// Purpose:
-//   This is a Qt slot function that enables or disables searching.
-//
-// Programmer: Justin Privitera
-// Creation:   Thu Jul  7 10:22:58 PDT 2022
-//
-// Modifications:
-//    Justin Privitera, Wed Aug  3 19:46:13 PDT 2022
-//    The tag line edit is cleared when searching is enabled.
-// 
-//    Justin Privitera, Thu Aug 25 15:04:55 PDT 2022
-//    The tag editor line edit is cleared when searching is enabled.
-// 
-//    Justin Privitera, Thu May 11 12:31:12 PDT 2023
-//    Deleted the function as searching is always on.
-//
-// ****************************************************************************
 
 
 // ****************************************************************************
@@ -3575,18 +3538,3 @@ QvisColorTableWindow::addRemoveTag()
     }
     Apply();
 }
-
-
-// ****************************************************************************
-// Method: QvisColorTableWindow::updateNameBoxPosition
-//
-// Purpose:
-//   Updates the name box position to the given coords.
-//
-// Programmer: Justin Privitera
-// Creation:   Thu Jun 16 12:52:17 PDT 2022
-//
-// Modifications:
-//   Justin Privitera, Wed Feb  1 15:15:39 PST 2023
-//   Deleted the function, as the name box no longer needs to move.
-// ****************************************************************************
