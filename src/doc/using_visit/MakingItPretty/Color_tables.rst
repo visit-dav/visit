@@ -48,7 +48,7 @@ The **Color table window** is separated into three areas: The top area allows yo
 The right-hand side, or the manager portion of the window, allows you to create, delete, and export new color tables, as well as organize all the available color tables.
 See :ref:`Filtering_With_Tags` for more information. 
 The left-hand side, or editor portion of the window, allows you to edit color tables by adding, removing, moving, or changing the color of control points.
-A color control point is a point with a color that influences how the color table will look.
+A color control point is a point with a color that influences how colors vary through the table.
 
 Setting the default color table
 """""""""""""""""""""""""""""""
