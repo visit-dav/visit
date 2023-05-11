@@ -128,6 +128,12 @@ class TagInfo;
 //   Removed tagFilterToggle and added tagsSelectAllButton.
 //   Removed tagsVisible.
 // 
+//   Justin Privitera, Thu May 11 12:31:12 PDT 2023
+//   Removed searchingToggled(), removed bool searchingOn, and added QLineEdit 
+//   *searchBar, as searching is always enabled now.
+//   Removed gui elements from the header that were not used outside the
+//   CreateWindowContents() function.
+// 
 // ****************************************************************************
 
 class GUI_API QvisColorTableWindow : public QvisPostableWindowObserver

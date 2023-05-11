@@ -113,6 +113,9 @@ public:
 // 
 //   Justin Privitera, Mon Feb 13 14:32:02 PST 2023
 //   Removed `tagsVisible`.
+// 
+//   Justin Privitera, Thu May 11 12:31:12 PDT 2023
+//   Removed `searchingOn`.
 //
 // ****************************************************************************
 
@@ -236,6 +239,10 @@ QvisColorTableWindow::~QvisColorTableWindow()
 //   Moved namelistbox to what was its position when tagging was enabled.
 //   Removed tagFilterToggle.
 //   Added tagsSelectAllButton in its place.
+// 
+//   Justin Privitera, Thu May 11 12:31:12 PDT 2023
+//   Removed code for the search toggle and replaced with search bar.
+//   Cleaned up code, added comments, and organized the different sections.
 //
 // ****************************************************************************
 
@@ -1256,6 +1263,10 @@ QvisColorTableWindow::UpdateTags()
 //   selected color table.
 //    - Tagging is no longer optional, so all code relating to providing it
 //   as a choice has been stripped out.
+// 
+//   Justin Privitera, Thu May 11 12:31:12 PDT 2023
+//   Stripped out all code relating to searching being on or off; it is 
+//   always on now.
 //
 // ****************************************************************************
 
@@ -2432,6 +2443,9 @@ QvisColorTableWindow::equalSpacingToggled(bool)
 //
 //   Justin Privitera, Fri Sep  2 16:46:21 PDT 2022
 //   Update tag refcount on creation of a new CT.
+// 
+//   Justin Privitera, Thu May 11 12:31:12 PDT 2023
+//   No more error when searching is on; searching is always on.
 //
 // ****************************************************************************
 
@@ -2522,6 +2536,10 @@ QvisColorTableWindow::addColorTable()
 // 
 //     Justin Privitera, Thu Sep 29 15:22:38 PDT 2022
 //     Replaced braces w/ parens to avoid init list behavior.
+// 
+//     Justin Privitera, Thu May 11 12:31:12 PDT 2023
+//     No more error when searching is enabled; searching is always on.
+// 
 // ****************************************************************************
 
 void
@@ -3239,6 +3257,9 @@ QvisColorTableWindow::resizeColorTable(int size)
 // 
 //    Justin Privitera, Wed Jul 27 12:23:56 PDT 2022
 //    Error on export of a builtin color table.
+// 
+//    Justin Privitera, Thu May 11 12:31:12 PDT 2023
+//    No more error when searching is on; searching is always on.
 //
 // ****************************************************************************
 
@@ -3368,6 +3389,9 @@ QvisColorTableWindow::tagCombiningChanged(int index)
 // 
 //    Justin Privitera, Thu Aug 25 15:04:55 PDT 2022
 //    The tag editor line edit is cleared when searching is enabled.
+// 
+//    Justin Privitera, Thu May 11 12:31:12 PDT 2023
+//    Deleted the function as searching is always on.
 //
 // ****************************************************************************
 
@@ -3387,6 +3411,9 @@ QvisColorTableWindow::tagCombiningChanged(int index)
 // 
 //   Justin Privitera, Wed Aug  3 19:46:13 PDT 2022
 //   The tag line edit is cleared when searching is ongoing.
+// 
+//   Justin Privitera, Thu May 11 12:31:12 PDT 2023
+//   Simplified the function because searching is always on.
 //
 // ****************************************************************************
 
