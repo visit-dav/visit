@@ -44,14 +44,11 @@ Color Table Window
    The color table window
 
 You can open VisIt_'s **Color table window**, shown in :numref:`Figure %s <fig-MakingItPretty-ColorTables>`, by selecting **Color table** from the **Main Window**'s **Controls** menu, or by pressing ``ctrl`` + ``t``.
-The **Color table window** is vertically separated into three areas: The top area allows you to set the default color tables. 
-The middle area, or the manager portion of the window, allows you to create, delete, and export new color tables, as well as organize all the available color tables.
+The **Color table window** is separated into three areas: The top area allows you to set the default color tables. 
+The right-hand side, or the manager portion of the window, allows you to create, delete, and export new color tables, as well as organize all the available color tables.
 See :ref:`Filtering_With_Tags` for more information. 
-The bottom area, or editor
-portion of the window, allows you to edit color tables by adding,
-removing, moving, or changing the color of color control points. A
-color control point is a point with a color that influences how the
-color table will look.
+The left-hand side, or editor portion of the window, allows you to edit color tables by adding, removing, moving, or changing the color of color control points.
+A color control point is a point with a color that influences how the color table will look.
 
 Setting the default color table
 """""""""""""""""""""""""""""""
@@ -523,16 +520,20 @@ Tags must now only be comprised of alphanumeric characters, whitespace, dashes, 
 Searching for Color Tables
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Another option for finding the right color table is to enable searching. 
-With this option, users can type a search term into the **Name** text box, and only color tables that have a name containing that term will appear in the color table name table.
+Another option for finding the right color table is to use the search bar.
+With this option, users can type a search term into the **Search** text box, and only color tables that have a name containing that term will appear in the color table name table.
+Prior to VisIt_ 3.4, the **Name** text box doubled as the search bar, and users had to check the box for it to the right of the **Name** text box.
 
-To enable searching, check the box for it to the right of the **Name** text box.
-While searching is enabled, searching will happen automatically each time the **Name** text box is edited.
-If a selection is made from the color table name table, searching will temporarily pause.
-However, as soon as the **Name** text box is edited once more, searching will resume as before.
-The only way to stop searching is to disable it via the check box.
+As of VisIt_ 3.4, searching is always on.
+Users need only edit the search bar contents to use it.
+To disable searching, simply delete all text in the search bar.
 
-Searching also works in tandem with the tagging system. 
+Prior to VisIt_ 3.4, while searching was enabled, searching happened automatically each time the **Name** text box was edited.
+If a selection was made from the color table name table, searching would temporarily pause.
+However, as soon as the **Name** text box was edited once more, searching would resume as before.
+The only way to stop searching was to disable it via the check box.
+
+Searching also works in tandem with the tagging system.
 So, if tagging is enabled, only results from a search which have the specified tags will appear in the color table name table.
 
 Color Tables and Saving Settings/Sessions
