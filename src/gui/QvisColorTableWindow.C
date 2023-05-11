@@ -1345,7 +1345,7 @@ QvisColorTableWindow::UpdateNames()
             {
                 QTreeWidgetItem *treeItem = new QTreeWidgetItem(nameListBox);
                 treeItem->setText(0, ctName);
-                nameListBox->addTopLevelItem(treeItem);  
+                nameListBox->addTopLevelItem(treeItem);
             }
         }
     }
