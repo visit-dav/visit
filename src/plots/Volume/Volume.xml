@@ -75,7 +75,12 @@
         Higher
         Highest
       </Enum>
-      
+      <Enum name="RenderMode">
+        DefaultRenderMode
+        RayCastRenderMode
+        GPURenderMode
+        OSPRayRenderMode
+      </Enum>
       <Field name="osprayShadowsEnabledFlag" label="osprayShadowsEnabledFlag" type="bool">
         false
       </Field>
@@ -106,7 +111,6 @@
       <Field name="osprayMinContribution" label="osprayMinContribution" type="double">
         0.001
       </Field>
-      
       <Field name="legendFlag" label="legendFlag" type="bool">
         true
       </Field>
@@ -202,6 +206,9 @@
         0.750000
         0.000000
         15.000000
+      </Field>
+      <Field name="renderMode" label="Render Mode" type="enum" subtype="RenderMode">
+        DefaultRenderMode
       </Field>
       <Function name="ChangesRequireRecalculation" user="true" member="true">
       </Function>
