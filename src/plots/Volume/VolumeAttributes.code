@@ -640,7 +640,6 @@ VolumeViewerEnginePluginInfo::~VolumeViewerEnginePluginInfo()
     }
 }
 
-
 Target: xml2python
 Function: VolumeAttributes_SetMaterialProperties
 Declaration: VolumeAttributes_SetMaterialProperties
@@ -697,5 +696,3 @@ Condition:       VISIT_OSPRAY
 Includes:        ${OSPRAY_INCLUDE_DIR}
 VLinkLibraries:  ${OSPRAY_LIBRARIES}
 ELinkLibraries:  ${OSPRAY_LIBRARIES}
-
-
