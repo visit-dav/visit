@@ -229,7 +229,7 @@ Below, we outline the preferred structure for a VisIt_ test ``.py`` file.
 The file is divided into top-level functions and calls to the various ``TestXXX()`` methods are issued from within one of these top-level functions.
 Each top-level function performs one or more related tests involving common or highly similar setup.
 Each top-level function is then invoked from the ``.py`` file's main body.
-Each top-level function should return to main leaving the VisIt session in largely the same state as before the top-level function was invoked.
+Each top-level function should return to main leaving the VisIt_ session in largely the same state as before the top-level function was invoked.
 This includes deleting all associated plots, closing all associated databases, and possibly resetting any other relevant global state such as the view, lights, color table, SIL selection, etc.
 
 Given a python file named ``gorfo.py`` structured as below, the resulting auto generated names (and section names) are indicated in the associated comments.
