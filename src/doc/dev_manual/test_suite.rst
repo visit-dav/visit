@@ -228,9 +228,9 @@ Auto naming catenates the ``.py`` file's name with the name of the top-level fun
 Below, we outline the preferred structure for a VisIt test ``.py`` file.
 The file is divided into top-level functions and calls to the various ``TestXXX()`` methods are issued from within one of these top-level functions.
 Each top-level function performs one or more related tests involving common or highly similar setup.
-Each top-level function is then invoked from the ``.py`` files main body.
+Each top-level function is then invoked from the ``.py`` file's main body.
 Each top-level function should return to main leaving the VisIt session in largely the same state as before the top-level function was invoked.
-This includes deleting all associated plots, closing all associated databases, and possibly resetting any other global state such as the view, lights SIL selection, etc.
+This includes deleting all associated plots, closing all associated databases, and possibly resetting any other relevant global state such as the view, lights, color table, SIL selection, etc.
 
 Given a python file named ``gorfo.py`` structured as below, the resulting auto generated names (and section names) are indicated in the associated comments.
 
