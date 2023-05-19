@@ -225,7 +225,7 @@ The auto-naming algorithm requires that the ``.py`` file be structured such that
 Auto naming does not work if these methods are called from either the top/main of the ``.py`` file or from functions two or more levels deep.
 Auto naming catenates the ``.py`` file's name with the name of the top-level function from which the call was made and adds an index/count.
 
-Below, we outline the preferred structure for a VisIt test ``.py`` file.
+Below, we outline the preferred structure for a VisIt_ test ``.py`` file.
 The file is divided into top-level functions and calls to the various ``TestXXX()`` methods are issued from within one of these top-level functions.
 Each top-level function performs one or more related tests involving common or highly similar setup.
 Each top-level function is then invoked from the ``.py`` file's main body.
