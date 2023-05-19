@@ -1965,7 +1965,7 @@ To visualize this mesh with VisIt, see :ref:`Visualizing_the_1D_Spectra_Curves`.
 Quick Results
 """""""""""""
 
-One of the advantages of using Conduit Blueprint Output from the query is the ability to view quick results that give an overview of the output data.
+One of the advantages of using :ref:`Conduit_Output` is the ability to view quick results that give an overview of the output data.
 In this section, we will briefly discuss three of those quick results.
 Each of these have been discussed individually in other sections but not all together.
 
@@ -1991,7 +1991,7 @@ Now it is possible to see exactly how intensities or path length data varies acr
 
 .. figure:: images/XRay_Query_spectra_intensities_front.png
 
-   A render of the spatial energy reduced mesh intensities, viewing our typical half cylinder example from the side.
+   A render of the intensities spectra curve. The X dimension represents energy and the Y dimension represents intensities.
 
 To render this, see :ref:`Visualizing_the_1D_Spectra_Curves`.
 
