@@ -267,11 +267,22 @@ But, removing *earlier* tests from a function or moving tests relative to each o
 
 When they can be used, the ``TestValueXX()`` are a little more convenient because they do not involve storing data in files and having to maintain separate baseline files. 
 Instead the ``TestValueXX()`` methods take both an *actual* (current) and *expected* (baseline) result as arguments directly coded in the calling ``.py`` file.
-A good example of the ``TestValueXX()` can be found in ``src/test/tests/unit/test_value_simple.py``.
+A good example of using ``TestValueXX()`` can be found in ``src/test/tests/database/boxlib.py``.
+
+.. literalinclude:: ../../test/tests/databases/boxlib.py
+    :language: Python
+    :start-after: # Test precision {
+    :end-before: # Test precision }
 
 Likewise, the ``TestPOA()`` (pass on arrival) and ``TestFOA()`` (fail on arrival) methods are convenient ways to implement a test based primarily upon python logic itself with if-then-else or try-except blocks.
 These methods are useful for cases where the majority of logic for determining a passed or failed test exists primarily as the python code itself being executed.
-A good example is the ``src/test/tests/unit/atts_assign.py`` tests.
+A good example is the ``src/test/tests/quickrecipes/working_with_annotations.py`` tests
+
+.. literalinclude:: ../../test/tests/quickrecipes/working_with_annotations.py
+    :language: Python
+    :start-after: def using_gradient_background_colors():
+    :end-before: vqr_cleanup()
+
 While there may be many instances of ``TestFOA()`` (many ways a given bit of logic can fail) with the same ``name`` argument in a given sequence of logic for a single test outcome, they can be differentiated by a unique *tag* (typically the ``LINE()`` method identifing the line number.
 However, there should be only a single ``TestPOA()`` (the one way a given bit of logic can succeed) instance with the same name for the associated test outcome.
 
