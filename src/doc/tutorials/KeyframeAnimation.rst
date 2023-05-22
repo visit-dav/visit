@@ -81,7 +81,7 @@ Viewing the animation
 
 Now that we have finished creating our animation we can view it.
 
-1. Set the *Time* slice on the main control window to ``0``.
+1. Set the *Time* slider on the main control window to ``0``.
 2. Click the *Play* button.
 3. This will play the animation once through.
 
