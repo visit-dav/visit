@@ -221,36 +221,68 @@ To process a test result, these methods output a file produced by the *current* 
 `test/baseline <https://github.com/visit-dav/visit/tree/develop/test/baseline>`_.
 
 The ``TestAutoName()`` and ``TestTextAutoName()`` methods are preferred and perform the equivalent work of ``Test()`` and ``TestText()`` but generate the names of the baseline files automatically.
-The auto-naming algorithm depends on the ``.py`` file being structured such that calls to ``TestAutoName()`` and/or ``TestTextAutoName()`` are made only from within top-level functions in the ``.py`` file.
+The auto-naming algorithm requires that the ``.py`` file be structured such that calls to ``TestAutoName()`` and/or ``TestTextAutoName()`` are made from within only top-level functions in the ``.py`` file.
 Auto naming does not work if these methods are called from either the top/main of the ``.py`` file or from functions two or more levels deep.
 Auto naming catenates the ``.py`` file's name with the name of the top-level function from which the call was made and adds an index/count.
-So, given a python file named ``gorfo.py`` structured as below, the resulting auto generated names (and section names) are indicated in the associated comments.
+
+Below, we outline the preferred structure for a VisIt_ test ``.py`` file.
+The file is divided into top-level functions and calls to the various ``TestXXX()`` methods are issued from within one of these top-level functions.
+Each top-level function performs one or more related tests involving common or highly similar setup.
+Each top-level function is then invoked from the ``.py`` file's main body.
+Each top-level function should return to main leaving the VisIt_ session in largely the same state as before the top-level function was invoked.
+This includes deleting all associated plots, closing all associated databases, and possibly resetting any other relevant global state such as the view, lights, color table, SIL selection, etc.
+
+Given a python file named ``gorfo.py`` structured as below, the resulting auto generated names (and section names) are indicated in the associated comments.
 
 .. code:: python
 
   def histogram():
       ...
-      TestAutoName() # 'gorfo_histogram_0' and calls TestSection('histogram')
+      TestAutoName() # Uses baseline file named 'gorfo_histogram_0' and calls TestSection('histogram')
       ...
-      TestAutoName() # 'gorfo_histogram_1'
+      TestAutoName() # Uses baseline file named 'gorfo_histogram_1'
+      ...
+      TestValueEQ(name,bval,cval) # Compares baseline value, bval, to current value, cval
   
   def curve():
       ...
-      TestAutoName() # 'gorfo_curve_0' and calls TestSection('curve')
+      TestAutoName() # Uses baseline file named 'gorfo_curve_0' and calls TestSection('curve')
       ...
-      TestAutoName() # 'gorfo_curve_1'
-      
-The one down side to using the auto-naming methods is that restructuring the python code can lead to renaming of baseline files.
+      TestAutoName() # Uses baseline file named 'gorfo_curve_1'
+
+  #
+  # Main code
+  #
+
+  # Run the Histogram tests
+  histogram()
+
+  # Run the curve tests
+  curve()
+
+The one down side to using the auto-naming methods is that later restructuring of the python code can lead to changes in names of the baseline files.
 Existing, top-level functions can be moved relative to each other without issue.
 New tests can be added without issue.
-But, removing *earlier* tests from a function or moving tests relative to each other *within* a function leads to renaming.
+But, removing *earlier* tests from a function or moving tests relative to each other *within* a function leads to baseline file name changes.
 
 When they can be used, the ``TestValueXX()`` are a little more convenient because they do not involve storing data in files and having to maintain separate baseline files. 
-Instead the ``TestTextXX()`` methods take both an *actual* (current) and *expected* (baseline) result as arguments directly coded in the calling ``.py`` file.
+Instead the ``TestValueXX()`` methods take both an *actual* (current) and *expected* (baseline) result as arguments directly coded in the calling ``.py`` file.
+A good example of using ``TestValueXX()`` can be found in ``src/test/tests/database/boxlib.py``.
+
+.. literalinclude:: ../../test/tests/databases/boxlib.py
+    :language: Python
+    :start-after: # Test precision {
+    :end-before: # Test precision }
 
 Likewise, the ``TestPOA()`` (pass on arrival) and ``TestFOA()`` (fail on arrival) methods are convenient ways to implement a test based primarily upon python logic itself with if-then-else or try-except blocks.
 These methods are useful for cases where the majority of logic for determining a passed or failed test exists primarily as the python code itself being executed.
-A good example is the ``unit/atts_assign.py`` tests.
+A good example is the ``src/test/tests/quickrecipes/working_with_annotations.py`` tests
+
+.. literalinclude:: ../../test/tests/quickrecipes/working_with_annotations.py
+    :language: Python
+    :start-after: def using_gradient_background_colors():
+    :end-before: vqr_cleanup()
+
 While there may be many instances of ``TestFOA()`` (many ways a given bit of logic can fail) with the same ``name`` argument in a given sequence of logic for a single test outcome, they can be differentiated by a unique *tag* (typically the ``LINE()`` method identifing the line number.
 However, there should be only a single ``TestPOA()`` (the one way a given bit of logic can succeed) instance with the same name for the associated test outcome.
 
