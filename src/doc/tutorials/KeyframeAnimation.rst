@@ -20,6 +20,11 @@ Keyframe animations allow for quite complex animation behavior.
 Using keyframe animation to do modal analysis
 ---------------------------------------------
 
+Modal analysis is the study of the dynamic properties of linear structures.
+It looks for the natural frequencies of a structure.
+
+This tutorial demonstrates how to animate the natural frequencies using a sphere that is displaced by a vector field.
+
 Creating the animation
 ~~~~~~~~~~~~~~~~~~~~~~
 
@@ -49,8 +54,9 @@ We will now create a keyframe animation with 81 frames.
 8. Go to *Controls->Keyframing*.
 9. This will bring up the Keyframe Editor window.
 10. Set the *Number of frames* to ``81``.
-11. Toggle *Keyframing enabled* to on.
-12. Click *Apply*.
+11. Press *Enter*.
+12. Toggle *Keyframing enabled* to on.
+13. Click *Apply*.
 
 .. figure:: images/Keyframing-Modal3.png
 
@@ -58,14 +64,14 @@ We will now create a keyframe animation with 81 frames.
 
 We will now set the *Displacement multiplier* to range from ``0`` to ``1`` back to ``0``.
 
-13. Set the *Time* slider on the main control window to ``40``.
-14. Set the *Displacement multiplier* to ``1``.
-15. Click *Apply*.
-16. This will create a Displace operator keyframe at frame 40.
-17. Set the *Time* slider on the main control window to ``80``.
-18. Set the *Displacement multiplier* to ``0``.
-19. Click *Apply*.
-20. This will create a Displace operator keyframe at frame 80.
+14. Set the *Time* slider on the main control window to ``40``.
+15. Set the *Displacement multiplier* to ``1``.
+16. Click *Apply*.
+17. This will create a Displace operator keyframe at frame 40.
+18. Set the *Time* slider on the main control window to ``80``.
+19. Set the *Displacement multiplier* to ``0``.
+20. Click *Apply*.
+21. This will create a Displace operator keyframe at frame 80.
 
     .. figure:: images/Keyframing-Modal4.png
 
