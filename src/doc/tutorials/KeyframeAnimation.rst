@@ -72,7 +72,7 @@ We will now set the *Displacement multiplier* to range from ``0`` to ``1`` back 
 20. Click *Apply*.
 21. This will create a Displace operator keyframe at frame 80.
 
-    .. figure:: images/Keyframing-Modal4.png
+.. figure:: images/Keyframing-Modal4.png
 
     The Keyframe Editor with the three Displace operator keyframes
 
@@ -85,7 +85,7 @@ Now that we have finished creating our animation we can view it.
 2. Click the *Play* button.
 3. This will play the animation once through.
 
-    .. figure:: images/Keyframing-Modal5.png
+.. figure:: images/Keyframing-Modal5.png
 
     Key frames in our animation
 
