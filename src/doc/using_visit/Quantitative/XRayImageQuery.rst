@@ -1962,6 +1962,47 @@ This is no different than the other Blueprint meshes, despite the fact that this
 To extract this mesh data with Python, see :ref:`Introspecting_with_Python_1D_Spectra_Curves`.
 To visualize this mesh with VisIt, see :ref:`Visualizing_the_1D_Spectra_Curves`.
 
+Quick Results
+"""""""""""""
+
+One of the advantages of using :ref:`Conduit_Output` is the ability to view quick results that give an overview of the output data.
+In this section, we will briefly discuss three of those quick results.
+Each of these have been discussed individually in other sections but not all together.
+
+First is the **Spatial Energy Reduced Mesh** (discussed in greater detail here: :ref:`Spatial_Extents_Meshes`).
+This mesh is a 2-dimensional representation of the intensities and path lengths.
+We have collapsed the energy group bins to arrive at this result.
+The point of including this is to give a broad, at-a-glance view of the data.
+If, for example, many energy group bins contain uninteresting data, but a few have important structure, it can be difficult to get at that information using the :ref:`Basic_Mesh_Output` or the 3-dimensional Spatial Extents Mesh.
+Because the Spatial Energy Reduced Mesh fields are the result of taking the sum of the intensities and path lengths fields across all the energy group bins, that structure will be visible at a glance in a render of this mesh, as opposed to needing to be hunted for using VisIt's slicing and threshold tools, for example.
+
+.. figure:: images/XRay_Query_spatial_energy_reduced_intensities_xray_side.png
+
+   A render of the spatial energy reduced mesh intensities, viewing our typical half cylinder example from the side.
+
+To render this, see :ref:`Visualizing_the_Spatial_Extents_Meshes`.
+
+Next up are the **Spectra Curves** (discussed in greater detail here: :ref:`1D_Spectra_Curves`).
+This mesh is a 1-dimensional representation of the intensities and path lengths.
+Instead of collapsing the energy group bins, we have collapsed the x and y spatial dimensions to arrive at this result.
+Thus we get a curve that associates energy levels with intensities or path lengths.
+It may be helpful to view this curve with a logarithmic scale.
+Now it is possible to see exactly how intensities or path length data varies across energy levels.
+
+.. figure:: images/XRay_Query_spectra_intensities_front.png
+
+   A render of the intensities spectra curve. The X dimension represents energy and the Y dimension represents intensities.
+
+To render this, see :ref:`Visualizing_the_1D_Spectra_Curves`.
+
+The final quick view of the data that we will cover in this section are the **intensities and path lengths maximums and minimums** included as part of the :ref:`XRay_Metadata`.
+For context, we have opted to calculate the maximum and minimum intensity and path length values and output that information under :ref:`Other_Metadata`.
+These four values are not necessarily a "view" of the data, but they do give a shallow sense of what to expect.
+If all four are zero, for example, that means that all output images are blank.
+See :ref:`XRay_Troubleshooting` for more information about that case.
+Otherwise, these four values can yield a quick sanity check, as hopefully maximum and minimum intensity and path length values are within reason.
+See :ref:`Introspecting_with_Python_Metadata` for information on extracting these values from the Metadata.
+
 Pitfalls
 """"""""
 
