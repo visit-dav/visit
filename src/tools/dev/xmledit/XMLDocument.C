@@ -83,6 +83,10 @@ vector<EnumType*> EnumType::enums;
 //    Kathleen Biagas, Thu Jan  2 09:26:23 PST 2020
 //    Added new argument to plugin constructor, for hasLicense.
 //
+//    Kathleen Biagas, Mon May 22 12:39:55 PDT 2023
+//    Qt6 support: XML handling has changed. Remove QFile, QxmlInputSource,
+//    QXmlSimpleReader, ErrorHandler.  All handled now by XMLParser.
+//
 // ****************************************************************************
 
 void

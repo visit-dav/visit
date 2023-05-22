@@ -38,6 +38,9 @@
 #    Kathleen Bonnell, Fri May 2 09:21:12 MST 2014
 #    Install a copy of browser for windows.
 #
+#    Kathleen Biagas, Mon May 22 12:44:32 PDT 2023
+#    Support different library names on Windows.
+#
 #****************************************************************************/
 
 # Use the SILO_DIR hint from the config-site .cmake file
