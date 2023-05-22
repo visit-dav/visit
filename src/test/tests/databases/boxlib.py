@@ -97,6 +97,7 @@ silr.TurnOffSet(silr.SetsInCategory('materials')[1])
 SetPlotSILRestriction(silr)
 Test("boxlib_06")
 
+# Test precision {
 #
 # Test double precision is working by reading a known double precision
 # database and ensuring we get expected min/max values within 15 digits
@@ -112,5 +113,6 @@ TestValueEQ("temperature1 min", Query("Min"), 295.409999999999968, 15)
 TestValueEQ("temperature1 max", Query("Max"), 295.410000000000082, 15)
 DeleteAllPlots()
 CloseDatabase(data_path("boxlib_test_data/2D/plt0000000/Header"))
+# Test precision }
 
 Exit()

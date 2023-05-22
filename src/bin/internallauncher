@@ -654,6 +654,7 @@ output streams.
         env = env + ",VISITHOME=" + GETENV("VISITHOME")
         env = env + ",VISITARCHHOME=" + GETENV("VISITARCHHOME")
         env = env + ",VISITPLUGINDIR=" + GETENV("VISITPLUGINDIR")
+        env = env + ",PYTHONHOME=" + GETENV("PYTHONHOME")
         return [env]
 
     def mpiexec(self):
