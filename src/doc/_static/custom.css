@@ -1,3 +1,8 @@
+/* these collapsible styles are to support sections we can
+   expand and collapse in the documentation. This is typically
+   used for displaying actual VisIt code blocks where power
+   users may need more details. Examples can be found where
+   Tensor expressions are documented */
 .collapsible .header {
     display: block;
     clear: both;
@@ -10,4 +15,11 @@
 
 .collapsible .header.open:after {
     content: " ▼";
+}
+
+/* This is to override RTD's default 'nowrap' on table cells
+   which winds up causing tables with a lot of text in a cell
+   to horizontal scroll. */
+.wy-table-responsive table td {
+    white-space: normal;
 }

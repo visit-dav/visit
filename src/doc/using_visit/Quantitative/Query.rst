@@ -1,7 +1,3 @@
-.. |br| raw:: html
-
-   <br>
-
 Query
 -----
 

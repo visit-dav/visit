@@ -1,9 +1,5 @@
 .. _XRayQuery:
 
-.. |br| raw:: html
-
-   <br>
-
 X Ray Image Query
 -----------------
 
@@ -95,15 +91,15 @@ The standard arguments have to do with the query execution, output, debugging, a
 |                          | The default is 200 x 200.                    |
 +--------------------------+----------------------------------------------+
 | *debug_ray*              | The ray index for which to output ray        |
-|                          | tracing information. The default is |br| -1, |
+|                          | tracing information. The default is -1,      |
 |                          | which turns it off.                          |
 +--------------------------+----------------------------------------------+
 | *output_ray_bounds*      | Output the ray bounds as a bounding box in a |
-|                          | VTK file. The default is 0 |br| (off). The   |
+|                          | VTK file. The default is 0 (off). The        |
 |                          | name of the file is ``ray_bounds.vtk``.      |
 +--------------------------+----------------------------------------------+
 | *energy_group_bounds*    | The energy group bounds can be handed off to |
-|                          | the query in a list or tuple. |br| The       |
+|                          | the query in a list or tuple.  The           |
 |                          | values will appear in the Spatial Extents    |
 |                          | Mesh in the Blueprint output.                |
 +--------------------------+----------------------------------------------+
@@ -121,40 +117,40 @@ Output Filenames and Directories
 | *output_dir*             | The output directory. The default is "."     |
 +------+-------------------+----------------------------------------------+
 | *family_files*           | A flag indicating if the output files should |
-|                          | be familied. The default is |br| off. If it  |
+|                          | be familied. The default is off. If it       |
 |                          | is off then the output file is               |
 |                          | ``output.ext``, where ``ext`` is the file    |
-|                          | |br| extension. If the file exists it will   |
-|                          | overwrite the file. If it is on, then |br|   |
+|                          | extension. If the file exists it will        |
+|                          | overwrite the file. If it is on, then        |
 |                          | the output file is ``outputXXXX.ext``,       |
 |                          | where ``XXXX`` is chosen                     |
-|                          | to be the |br| smallest integer not to       |
+|                          | to be the smallest integer not to            |
 |                          | overwrite any existing files. As of VisIt_   |
-|                          | 3.4, |br| it is recommended to use           |
+|                          | 3.4, it is recommended to use                |
 |                          | *filename_scheme* in lieu of *family_files*. |
 +------+-------------------+----------------------------------------------+
 | *filename_scheme*        | The naming convention for output filenames.  |
-|                          | This option is available |br| in VisIt_ 3.4, |
+|                          | This option is available in VisIt_ 3.4,      |
 |                          | and is meant to replace the *family_files*   |
-|                          | option. If both |br| are provided,           |
+|                          | option. If both are provided,                |
 |                          | *filename_scheme* will be used.              |
 +------+-------------------+----------------------------------------------+
 |      | "none" or 0       | The default. Output filenames will be of the |
-|      |                   | form ``output.ext``, where |br|              |
+|      |                   | form ``output.ext``, where                   |
 |      |                   | ``ext`` is the file extension. If the        |
-|      |                   | filename already exists, VisIt_ will |br|    |
+|      |                   | filename already exists, VisIt_ will         |
 |      |                   | overwrite it.                                |
 +------+-------------------+----------------------------------------------+
 |      | "family" or 1     | If on, VisIt_ will attempt to family output  |
-|      |                   | files. Output filenames will be |br| of the  | 
+|      |                   | files. Output filenames will be of the       | 
 |      |                   | form ``output.XXXX.ext``, where ``XXXX`` is  |
-|      |                   | chosen to be the smallest |br| integer such  |
+|      |                   | chosen to be the smallest integer such       |
 |      |                   | that the filename is unique.                 |
 +------+-------------------+----------------------------------------------+
 |      | "cycle" or 2      | VisIt_ will put cycle information in the     |
-|      |                   | filename. Output filenames will be |br| of   |
+|      |                   | filename. Output filenames will be of        |
 |      |                   | the form ``output.cycle_XXXXXX.ext``, where  |
-|      |                   | ``XXXXXX`` is the cycle number. |br| If      |
+|      |                   | ``XXXXXX`` is the cycle number. If           |
 |      |                   | another file exists with this name, VisIt_   |
 |      |                   | will overwrite it.                           |
 +------+-------------------+----------------------------------------------+
@@ -170,35 +166,35 @@ Output Types
 |      | "bmp" or 0        | BMP image format. This is deprecated as of   |
 |      |                   | VisIt_ 3.4.                                  |
 +------+-------------------+----------------------------------------------+
-|      | "jpeg" or 0 |br|  | JPEG image format.                           |
+|      | "jpeg" or 0       | JPEG image format.                           |
 |      | (1 prior to       |                                              |
 |      | VisIt_ 3.4)       |                                              |
 +------+-------------------+----------------------------------------------+
-|      | "png" or 1 |br|   | PNG image format.                            |
+|      | "png" or 1        | PNG image format.                            |
 |      | (2 prior to       |                                              |
 |      | VisIt_ 3.4)       |                                              |
 +------+-------------------+----------------------------------------------+
-|      | "tif" or 2 |br|   | TIFF image format.                           |
+|      | "tif" or 2        | TIFF image format.                           |
 |      | (3 prior to       |                                              |
 |      | VisIt_ 3.4)       |                                              |
 +------+-------------------+----------------------------------------------+
 |      | "rawfloats" or 3  | File of 32 or 64 bit floating point values   |
-|      | |br| (4 prior to  | in IEEE format.                              |
+|      | (4 prior to       | in IEEE format.                              |
 |      | VisIt_ 3.4)       |                                              |
 +------+-------------------+----------------------------------------------+
-|      | "bov" or 4 |br|   | BOV (Brick Of Values) format, which consists |
-|      | (5 prior to       | of a text header |br| file describing a      |
+|      | "bov" or 4        | BOV (Brick Of Values) format, which consists |
+|      | (5 prior to       | of a text header file describing a           |
 |      | VisIt_ 3.4)       | rawfloats file.                              |
 +------+-------------------+----------------------------------------------+
-|      | "json" or 5 |br|  | Conduit JSON output.                         |
+|      | "json" or 5       | Conduit JSON output.                         |
 |      | (6 prior to       |                                              |
 |      | VisIt_ 3.4)       |                                              |
 +------+-------------------+----------------------------------------------+
-|      | "hdf5" or 6 |br|  | Conduit HDF5 output.                         |
+|      | "hdf5" or 6       | Conduit HDF5 output.                         |
 |      | (7 prior to       |                                              |
 |      | VisIt_ 3.4)       |                                              |
 +------+-------------------+----------------------------------------------+
-|      | "yaml" or 7 |br|  | Conduit YAML output.                         |
+|      | "yaml" or 7       | Conduit YAML output.                         |
 |      | (8 prior to       |                                              |
 |      | VisIt_ 3.4)       |                                              |
 +------+-------------------+----------------------------------------------+
@@ -280,10 +276,10 @@ The simplified version consists of:
 | *origin*     | The point in 3D corresponding to the center of the       |
 |              | image.                                                   |
 +--------------+----------------------------------------------------------+
-| *theta* |br| | The orientation angles. The default is 0. 0. and is      |
-| *phi*        | looking down the Z axis. Theta |br| moves around the     |
+| *theta*      | The orientation angles. The default is 0. 0. and is      |
+| *phi*        | looking down the Z axis. Theta moves around the          |
 |              | Y axis toward the X axis. Phi moves around the Z axis.   |
-|              | When |br| looking at an R-Z mesh, phi has no effect      |
+|              | When looking at an R-Z mesh, phi has no effect           |
 |              | because of symmetry.                                     |
 +--------------+----------------------------------------------------------+
 | *up_vector*  | The up vector.                                           |
@@ -308,7 +304,7 @@ The complete version consists of:
 | *view_up*        | The up vector. The default is (0., 1., 0.).          |
 +------------------+------------------------------------------------------+
 | *view_angle*     | The view angle. The default is 30. This is only used |
-|                  | if perspective |br| projection is enabled.           |
+|                  | if perspective projection is enabled.                |
 +------------------+------------------------------------------------------+
 | *parallel_scale* | The parallel scale, or view height. The default is   |
 |                  | 0.5.                                                 |
@@ -321,14 +317,14 @@ The complete version consists of:
 |                  | is (0., 0.).                                         |
 +------------------+------------------------------------------------------+
 | *image_zoom*     | The absolute image zoom factor. The default is 1.    |
-|                  | A value of 2. zooms the |br| image closer by scaling |
+|                  | A value of 2. zooms the image closer by scaling      |
 |                  | the image by a factor of 2 in the X and Y            |
-|                  | directions. |br| A value of 0.5 zooms the image      |
-|                  | further away by scaling the image by a factor |br|   |
+|                  | directions. A value of 0.5 zooms the image           |
+|                  | further away by scaling the image by a factor        |
 |                  | of 0.5 in the X and Y directions.                    |
 +------------------+------------------------------------------------------+
 | *perspective*    | Flag indicating if doing a parallel or perspective   |
-|                  | projection. |br| 0 indicates parallel projection.    |
+|                  | projection. 0 indicates parallel projection.         |
 |                  | 1 indicates perspective projection.                  |
 +------------------+------------------------------------------------------+
 
@@ -1128,23 +1124,23 @@ The following is included:
 
 +--------------------------+----------------------------------------------+
 | *normal*                 | The x, y, and z components represent the     |
-|                          | view normal vector |br| that was used in     |
+|                          | view normal vector that was used in          |
 |                          | the calculations.                            |
 +--------------------------+----------------------------------------------+
 | *focus*                  | The x, y, and z components represent the     |
-|                          | focal point that was |br| used in the        |
+|                          | focal point that was used in the             |
 |                          | calculations.                                |    
 +--------------------------+----------------------------------------------+
 | *view_up*                | The x, y, and z components represent the up  |
-|                          | vector that was |br| used in the             |
+|                          | vector that was used in the                  |
 |                          | calculations.                                |
 +--------------------------+----------------------------------------------+
 | *view_angle*             | The view angle, only used in the             |
-|                          | calculations if |br| perspective             |
+|                          | calculations if perspective                  |
 |                          | projection was enabled.                      |
 +--------------------------+----------------------------------------------+
 | *parallel_scale*         | The parallel scale, or view height, that was |
-|                          | used in the |br| calculations.               |
+|                          | used in the calculations.                    |
 +--------------------------+----------------------------------------------+
 | *near_plane*             | The near plane that was used in the          |
 |                          | calculations.                                |
@@ -1153,18 +1149,18 @@ The following is included:
 |                          | calculations.                                |
 +--------------------------+----------------------------------------------+
 | *image_pan*              | The x and y components represent the image   |
-|                          | pan that was used |br| in the calculations.  |
+|                          | pan that was used in the calculations.       |
 +--------------------------+----------------------------------------------+
 | *image_zoom*             | The absolute image zoom factor that was used |
 |                          | in the calculations.                         |
 +--------------------------+----------------------------------------------+
 | *perspective*            | A flag indicating if parallel or perspective |
-|                          | projection was used. |br| 0 indicates        |
+|                          | projection was used. 0 indicates             |
 |                          | parallel projection and 1 indicates          |
-|                          | perspective |br| projection.                 |
+|                          | perspective projection.                      |
 +--------------------------+----------------------------------------------+
 | *perspective_str*        | A String representation of the perspective   |
-|                          | parameter. See above |br| for more           |
+|                          | parameter. See above for more                |
 |                          | information.                                 |
 +--------------------------+----------------------------------------------+
 
@@ -1208,11 +1204,11 @@ The following is included:
 
 +-----------------------------+----------------------------------------------+
 | *divide_emis_by_absorb*     | A flag indicating if emissivity was divided  |
-|                             | by absorbtivity |br| in the calculations.    |
+|                             | by absorbtivity in the calculations.         |
 |                             | More details can be found above.             |
 +-----------------------------+----------------------------------------------+
 | *divide_emis_by_absorb_str* | A String representation of the               |
-|                             | divide_emis_by_absorb parameter. |br| See    |
+|                             | divide_emis_by_absorb parameter. See         |
 |                             | above for more information.                  |
 +-----------------------------+----------------------------------------------+
 | *num_x_pixels*              | The pixel extent in the X dimension in the   |
@@ -1282,27 +1278,27 @@ The following is included:
 |                                        | path lengths.                                |
 +----------------------------------------+----------------------------------------------+
 | *image_topo_order_of_domain_variables* | The intensities and path length field data   |
-|                                        | can be indexed as 3D |br|                    |
+|                                        | can be indexed as 3D                         |
 |                                        | arrays, even though they are stored in       |
-|                                        | flattened 1D arrays. |br|                    |
+|                                        | flattened 1D arrays.                         |
 |                                        | The 3D striding calculation can be fully     |
-|                                        | determined using the |br|                    |
+|                                        | determined using the                         |
 |                                        | shape of the coordinate set the fields are   |
-|                                        | associated with and |br|                     |
+|                                        | associated with and                          |
 |                                        | an optional field-specific stride array. The |
-|                                        | default case fast |br|                       |
+|                                        | default case fast                            |
 |                                        | varies the first coordinate (x), then the    |
-|                                        | second (y), and |br|                         |
+|                                        | second (y), and                              |
 |                                        | finally the third (z). The optional          |
-|                                        | field-specific stride info |br|              |
+|                                        | field-specific stride info                   |
 |                                        | enables arbitrary striding patterns. We      |
-|                                        | provide striding |br|                        |
+|                                        | provide striding                             |
 |                                        | info for these fields, however the X Ray     |
-|                                        | Image Query always |br|                      |
+|                                        | Image Query always                           |
 |                                        | writes data using the ``xyz`` (fast to slow) |
-|                                        | default strides. |br|                        |
+|                                        | default strides.                             |
 |                                        | ``image_topo_order_of_domain_variables``     |
-|                                        | provides this information |br|               |
+|                                        | provides this information                    |
 |                                        | as a string, hardcoded to be "xyz", that     |
 |                                        | reflects this.                               |
 +----------------------------------------+----------------------------------------------+
