@@ -23,3 +23,10 @@
 .wy-table-responsive table td {
     white-space: normal;
 }
+
+/* Support underlining text via :vundl:`some text`.
+   There is some corresponding logic in conf.py that
+   defines the role :vundl: as a class. */
+.vundl {
+  text-decoration: underline;
+}
