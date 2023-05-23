@@ -28,6 +28,7 @@ Contents:
     MolecularDataFeatures
     PythonExpressions
     Partitioning
+    KeyframeAnimation
     
 
 .. Indices and tables

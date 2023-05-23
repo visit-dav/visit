@@ -40,6 +40,9 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Added MFEM LOR setting to the MFEM Reader. Now, users may choose between the new LOR scheme and the legacy LOR scheme. The new scheme is the default.</li>
   <li>Color Table Tag Filtering is no longer optional; it is always on. There is also a new button to select (and deselect) all of the tags.</li>
   <li>It is now possible to keyframe operator attributes. When in keyframe mode, VisIt will interpolate the operator attributes between operator keyframes. Keyframing makes it possible to easily create sophisticated animations such as animating slice planes, iso surfaces and any operator attributes available. Two new functions have been added to the Python scripting interface to support operator keyframing. They are <code>DeleteOperatorKeyframe</code> and <code>MoveOperatorKeyframe</code>.</li>
+  <li>Color Table Searching is no longer optional; it is always on. A dedicated search bar has been added.</li>
+  <li>The Color Table Window has a new horizontal layout.</li>
+  <li>A tutorial has been added for creating keyframe animations.</li>
 </ul>
 
 <a name="Advanced_features"></a>
@@ -57,14 +60,24 @@ enhancements and bug-fixes that were added to this release.</p>
 <a name="File_format"></a>
 <p><b><font size="4">File format reader changes in version 3.4</font></b></p>
 <ul>
-    <li>HDF 4 based readers were removed: Cosmos, RAGE, ZeusMP</li>
-    <li>HDF 4 support in the Enzo reader was removed</li>
+  <li>Added the ability to export <a href="https://www.kitware.com/hypertreegrid-in-vtk-an-introduction/">VTK HyperTreeGrid</a> files. HyperTreeGrids are uniform hierarchical meshes. When exporting HyperTreeGrids the following restrictions apply:
+    <ul>
+      <li>The mesh must be a 3 dimensional rectilinear mesh.</li>
+      <li>The mesh spacing must be uniform in each direction.</li>
+      <li>The mesh dimensions must be equal in each direction.</li>
+      <li>The mesh dimensions must be a power of 2.</li>
+      <li>The variable must be zone centered.</li>
+    </ul>
+    Typically you would use the "Resample" operator to resample the variable to meet the restrictions above.
+  </li>
+  <li>HDF 4 based readers were removed: Cosmos, RAGE, ZeusMP</li>
+  <li>HDF 4 support in the Enzo reader was removed</li>
 </ul>
 
 <a name="Plot_changes"></a>
 <p><b><font size="4">Changes to VisIt's plots in version 3.4</font></b></p>
 <ul>
-  <li>feature1</li>
+  <li>Added ability to change the render mode for the default volume renderer.</li>
 </ul>
 
 <a name="Expression_changes"></a>

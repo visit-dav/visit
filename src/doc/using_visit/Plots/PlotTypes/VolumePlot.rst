@@ -6,40 +6,41 @@ Volume plot
 .. _volume_plot_example:
 
 .. figure:: ../images/volumeplot.png
-   
-   Type Ia Supernova (Image Credit: Blue Waters visualization staff, Rob Sisneros and Dave Semeraro) 
+
+   Type Ia Supernova (Image Credit: Blue Waters visualization staff, Rob Sisneros and Dave Semeraro)
 
 The Volume plot uses a visualization technique known as volume-rendering, which
 assigns color and opacity values to a range of data values. The colors and
 opacities are collectively known as a volume transfer function. The volume
 transfer function determines the colors of the plot and which parts are
-visible. The plot, shown in (:numref:`Figure %s<volume_plot_example>`), uses volume-rendering for the magnitude of vorticity. The magnitude of vorticity is a measure of turbulence that helps identify a *bubble* within the supernova.  
+visible. The plot, shown in (:numref:`Figure %s<volume_plot_example>`), uses volume-rendering for the magnitude of vorticity. The magnitude of vorticity is a measure of turbulence that helps identify a *bubble* within the supernova.
 
-The **Volume Plot Attributes Window**, shown in 
+The **Volume Plot Attributes Window**, shown in
 (:numref:`Figure %s<volume_plot_atts_window>`), is divided into two main tabs.
-The **Rendering Options** tab controls the rendering setting. Each volume 
-rendering method has a different set of inputs. Additionally, the **Rendering 
-Options** tab contains controls for lighting. **Transfer function** tab 
+The **Rendering Options** tab controls the rendering setting. Each volume
+rendering method has a different set of inputs. Additionally, the **Rendering
+Options** tab contains controls for lighting. **Transfer function** tab
 controls how the data is mapped onto colors and the opacities to use for
 different scalar values.
 
 .. _volume_plot_atts_window:
 
-.. figure:: ../images/volumewindow.png
+.. figure:: ../images/volume_plot_atts_default.png
 
    The rendering attributes for the Volume plot
 
-.. figure:: ../images/volumewindow2.png
-   
+.. figure:: ../images/volume_plot_atts_tf.png
+
    The transfer function editor for the Volume plot
 
 Rendering Options
 """""""""""""""""
 
 The Volume plot uses hardware-accelerated graphics by default. While users will
-want to operate in this mode most of the time, since it's faster, images drawn
-by software are more accurate. To get a more accurate image, select a
-**Ray casting** option from the **Rendering method** combo box. When the Volume plot
+want to operate in this mode most of the time, since it's faster, there are other
+options that may be more accurate. If the default rendering method is selected, these
+options are available in the **Render Mode** section. Alternatively, you can select
+a **Ray casting** option from the **Rendering method** combo box. When the Volume plot
 is set to use ray casting as its rendering mode, VisIt_ recalculates what the
 image should look like in software mode. Note that this can be a time-consuming
 process if the database being used is large or if the visualization window is
@@ -61,48 +62,58 @@ sampling process when the pixel opacity gets above a certain threshold. This
 method of volume-rendering yields superior pictures at the cost of speed and
 memory use.
 
-**Rendering Method: Default Rendering** (:numref:`Figure %s<default_rendering_atts_window>`).
+**Rendering Method: Default Rendering** (:numref:`Figure %s<default_rendering_atts_window>`). Selects an
+appropriate volume renderer based on rendering parameters and available hardware. Use the **Render mode** option to
+control this behavior.
+
+``Default``: This is the default render mode and when you select this option your volume will be rendered based on parameters set and the platform.
+
+``Ray Cast``: Uses software rendering exclusively.
+
+``GPU``: Uses hardware accelerated rendering exclusively.
+
+``OSPRay``: If available, uses Intel OSPRay to do software rendering.
 
 .. _default_rendering_atts_window:
 
-.. figure:: ../images/default_rendering.png
-   
-   Default Rendering options 
+.. figure:: ../images/volume_plot_atts_default.png
+
+   Default Rendering options
 
 **Rendering Method: Ray casting: compositing** (:numref:`Figure %s<raycasting_compositing_atts_window>`)
 
 .. _raycasting_compositing_atts_window:
 
-.. figure:: ../images/raycasting_compositing.png
-   
-   Ray casting: compositing options 
+.. figure:: ../images/volume_plot_atts_rcc.png
+
+   Ray casting: compositing options
 
 **Rendering Method: Ray casting: integration (grey scale)** (:numref:`Figure %s<raycasting_integration_atts_window>`)
 
 .. _raycasting_integration_atts_window:
 
-.. figure:: ../images/raycasting_integration.png
-   
+.. figure:: ../images/volume_plot_atts_rci.png
+
    Ray casting: integration (grey scale) options
 
 **Rendering Method: Ray casting: SLIVR** (:numref:`Figure %s<raycasting_slivr_atts_window>`)
 
 .. _raycasting_slivr_atts_window:
 
-.. figure:: ../images/raycasting_slivr.png
-   
+.. figure:: ../images/volume_plot_atts_slivr.png
+
    Ray casting: SLIVR options
 
-**Rendering Method: Ray casting: OSPRay** (:numref:`Figure %s<raycasting_ospray_atts_window>`). `OSPRay <https://www.ospray.org>`_ is an Open source, Scalable, and Portable Ray tracing engine for volume-rendering on Intel Architecure CPUs, 
+**Rendering Method: Ray casting: OSPRay** (:numref:`Figure %s<raycasting_ospray_atts_window>`). `OSPRay <https://www.ospray.org>`_ is an Open source, Scalable, and Portable Ray tracing engine for volume-rendering on Intel Architecture CPUs,
 
-``AO Samples``: determines the number of rays per sample to compute ambient occlusion. 
+``AO Samples``: determines the number of rays per sample to compute ambient occlusion.
 
 ``AO Distance``: determines the maximum distance to consider for ambient occlusion.
 
 .. _raycasting_ospray_atts_window:
 
 .. figure:: ../images/raycasting_ospray.png
-   
+
    Ray casting: OSPRay options
 
 The Volume plot can use lighting to enhance the look of the plot. Lighting is
@@ -122,12 +133,12 @@ Transfer Function
 """""""""""""""""
 
 You can design the color component of the volume transfer function using the
-controls in **Transfer function** tab of the **Volume Plot Attributes Window**. 
+controls in **Transfer function** tab of the **Volume Plot Attributes Window**.
 The controls are
 similar to the controls for the **Color Table Window**. There is a color
 spectrum that has color control points which determine the final look of the
 color table. Color control points are added and removed using the ``+``
-and ``-`` buttons. Dragging control points with the mouse moves them and 
+and ``-`` buttons. Dragging control points with the mouse moves them and
 changes their order. Right-clicking on a color control point displays a
 popup color menu from which a new control point color can be chosen.
 
@@ -137,7 +148,7 @@ specified by the user. Setting the limits to a smaller range of values than
 present in the database cause the plot's colors to be distributed among a
 smaller range of values, resulting in a plot with more color variety.
 
-To set the limits are set by first clicking the **Min** 
+To set the limits are set by first clicking the **Min**
 or **Max** check box next to the **Min** or **Max** text field. Clicking a
 check box enables a text field into which the user can type a new minimum or
 maximum value.
@@ -151,7 +162,7 @@ radio buttons.
 Setting opacities
 """""""""""""""""
 
-The **Transfer function** tab provides several controls that allow the user 
+The **Transfer function** tab provides several controls that allow the user
 to define the opacity portion of the volume transfer function. The opacity
 portion of the volume transfer function determines what can be seen in the
 volume-rendered image. Data values with a lower opacity allow more to be seen
@@ -162,12 +173,12 @@ opacities are located at the button of the window in the **Opacity** area.
 .. _volume_plot_opacity:
 
 .. figure:: ../images/volume_opacity.png
-   
+
    Volume Plot Opacity Options
 
 You can set opacity three ways. You can hand-draw an opacity map, create it by
-designing curves that specify the opacity when they are added together, or use 
-the opacities in the color table, if present. All 
+designing curves that specify the opacity when they are added together, or use
+the opacities in the color table, if present. All
 methods use the controls shown in :numref:`Figure %s<volume_plot_atts_window>`.
 
 The interaction mode determines how opacity is set. Clicking on the
@@ -178,7 +189,7 @@ Both controls pretend that the plot's data range is positioned horizontally
 such that the values on the left of the control correspond to the low data
 values while the values on the right of the control correspond to high data
 values. In addition to the color map, there is a histogram of the current data
-to aide in setting opacity of interesting values. 
+to aide in setting opacity of interesting values.
 The vertical direction corresponds to the opacity for the given data
 value. Taller curves are more opaque while shorter curves are more transparent.
 
@@ -186,7 +197,7 @@ value. Taller curves are more opaque while shorter curves are more transparent.
 .. _volume_plot_freeform:
 
 .. figure:: ../images/volume_freeform_controls.png
-   
+
    Volume Plot Freeform Opacity Options
 
 To design an opacity map using the **Freeform** control, position the mouse over
@@ -203,7 +214,7 @@ out small bumps in the opacity curve that occur when drawing the curve by hand.
 .. _volume_plot_gauss_controls:
 
 .. figure:: ../images/volume_gauss_controls.png
-   
+
    Volume Plot Gaussian Opacity Options
 
 The **Gaussian** control used during Gaussian interaction mode is complex but
@@ -218,7 +229,7 @@ knows which control point is used. Curves start as a smooth Gaussian shape but
 they can change between the shapes shown in by moving the shape control point
 up and down or left and right. Opacity maps are typically created by adding
 several curves to the window and altering their shapes and sizes until the
-desired image is obtained in the visualization window. The 
+desired image is obtained in the visualization window. The
 **Attenuation slider**, the final control involved in creating an opacity map,
 controls the opacity of the entire opacity map defined by the **Freeform**
 or **Gaussian** controls. It provides a knob to scale all opacities without
@@ -245,7 +256,7 @@ When the Volume plot is drawn with graphics hardware, the database is resampled
 onto a rectilinear grid that is used to place the polygons that are drawn to
 produce the image. You can control the coarseness of the resampled grid with the
 **Number of samples** text field. To increase the number of sample
-points, enter a larger number into the **Number of samples** text field. 
+points, enter a larger number into the **Number of samples** text field.
 
 When the Volume plot is drawn in ray casting mode, the number of samples along
 each ray that is cast through the data becomes important. Having too few sample
@@ -264,4 +275,3 @@ centered-differences and while it is much less compute intensive than the Sobel
 operator, it also produces lesser quality gradient vectors, which results in
 images that are not lit as well. To change the gradient calculation method,
 click on either the **Centered diff** or **Sobel** radio buttons.
-
