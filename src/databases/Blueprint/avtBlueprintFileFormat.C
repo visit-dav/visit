@@ -61,6 +61,8 @@
 #include "avtBlueprintLogging.h"
 #include "avtBlueprintTreeCache.h"
 
+#include <vtkDataArray.h>
+
 #ifdef _WIN32
 #define strcasecmp stricmp
 #endif
@@ -126,13 +128,21 @@ sanitize_var_name(const std::string &varname)
 //    Justin Privitera, Wed Aug 24 11:18:25 PDT 2022
 //    Removed setting of info, warning, and error handlers.
 //
+//    Brad Whitlock, Mon May 22 16:55:01 PDT 2023
+//    I initialized some new members.
+//
 // ****************************************************************************
 avtBlueprintFileFormat::avtBlueprintFileFormat(const char *filename, DBOptionsAttributes *opts)
     : avtSTMDFileFormat(&filename, 1),
       m_root_node(),
       m_protocol(""),
       m_tree_cache(NULL),
-      m_selected_lod(0)
+      m_selected_lod(0),
+      m_mesh_and_topo_info(),
+      m_matset_info(),
+      m_mfem_mesh_map(),
+      m_mfem_material_map(),
+      m_new_refine(true)
 {
     if (opts->GetEnum("MFEM LOR Setting") == 0)
     {
@@ -526,6 +536,9 @@ avtBlueprintFileFormat::ReadBlueprintField(int domain,
 //  Creation:   Wed Dec  9 13:02:46 PST 2020
 //
 //  Modifications:
+//    Brad Whitlock, Mon May 22 16:51:12 PDT 2023
+//    I added code to treat HO materials specially since we want them to be
+//    refined according to the selected level of detail (m_selected_lod).
 //
 // ****************************************************************************
 
@@ -574,27 +587,103 @@ avtBlueprintFileFormat::ReadBlueprintMatset(int domain,
     BP_PLUGIN_INFO(bp_index_matset.to_yaml());
 
     string topo_tag  = bp_index_matset["topology"].as_string();
-    string data_path    = bp_index_matset["path"].as_string();
+    string data_path = bp_index_matset["path"].as_string();
 
-
-    try
+    // See whether the materials in the index correspond to HO fields.
+    bool HOmaterials = false;
+    std::map<std::string, std::string> matFields;
+    if (m_root_node["blueprint_index"][mesh_name].has_child("fields"))
     {
-        m_tree_cache->FetchBlueprintTree(domain,
-                                         mesh_name,
-                                         data_path,
-                                         out);
-
-        BP_PLUGIN_INFO("done loading conduit data for " 
-                        << abs_matsetname << " [domain "<< domain << "]" );
+        const conduit::Node &n_fields = m_root_node["blueprint_index"][mesh_name]["fields"];
+        // Look for Axom convention.
+        const std::string prefix("vol_frac_");
+        size_t nmats = 0;
+        for(conduit::index_t i = 0; i < n_mat_names.number_of_children(); i++)
+        {
+            std::string matname(n_mat_names[i].name());
+            std::string fieldName(prefix + matname);
+            if(n_fields.has_child(fieldName))
+            {
+                const conduit::Node &f = n_fields.fetch_existing(fieldName);
+                if(f.has_child("basis") &&
+                   f.has_child("topology") &&
+                   f.has_child("number_of_components"))
+                {
+                    std::string tname = f["topology"].as_string();
+                    int nc = f["number_of_components"].to_int();
+                    if(tname == topo_name && nc == 1)
+                    {
+                        matFields[matname] = fieldName;
+                    }
+                }
+            }
+        }
+        // If all of the material names had a matching HO field for the volume
+        // fractions then our material is made up of HO fields.
+        HOmaterials = matFields.size() == static_cast<size_t>(n_mat_names.number_of_children());
     }
-    catch(InvalidVariableException)
+    if(HOmaterials)
     {
-        BP_PLUGIN_WARNING("failed to load conduit data for "
-                           << abs_matsetname << " [domain "<< domain << "]"
-                           << " -- skipping field for this domain");
-        // if something went wrong, reset the output node to
-        // signal the read failed, and return.
-        out.reset();
+        const std::string line("=============================================================================");
+        BP_PLUGIN_INFO(line << endl
+                            << " Start Reading HO material " << abs_matsetname_str << endl
+                            << line);
+
+        conduit::Node &vf = out["volume_fractions"];
+        conduit::Node &mn = out["matnames"];
+        int idx = 0;
+        for(auto it = matFields.begin(); it != matFields.end(); it++)
+        {
+            // Make a variable name for the volume fraction field and read it.
+            std::string matVar = mesh_name + "_" + topo_name + "/" + it->second;
+            vtkDataArray *da = GetVar(domain, matVar.c_str());
+
+            // Save the material field as float into the new out node.
+            conduit::Node &f = vf[it->first];
+            auto nzones = static_cast<vtkIdType>(da->GetNumberOfTuples());
+            f.set(conduit::DataType::float32(nzones));
+            float *fptr = f.as_float32_ptr();
+            for(vtkIdType zi = 0; zi < nzones; ++zi)
+                fptr[zi] = static_cast<float>(da->GetTuple1(zi));
+            da->Delete();
+
+            // Add the material name to the list.
+            mn[it->first] = idx++;
+        }
+        out["topology"] = mesh_name;
+
+        // Save the LOD used to make the material. This way we know if we need
+        // to purge it the next time we ask for the mesh.
+        BP_PLUGIN_INFO("Record that material " << abs_matsetname
+                       << " is at LOD " << (m_selected_lod + 1));
+        m_mfem_material_map[topo_name] = std::make_pair(abs_matsetname_str, m_selected_lod + 1);
+
+        BP_PLUGIN_INFO(line << endl
+                            << " Done Reading HO material " << abs_matsetname_str << endl
+                            << line);
+    }
+    else
+    {
+        // Non-HO path.
+        try
+        {
+            m_tree_cache->FetchBlueprintTree(domain,
+                                             mesh_name,
+                                             data_path,
+                                             out);
+
+            BP_PLUGIN_INFO("done loading conduit data for " 
+                            << abs_matsetname << " [domain "<< domain << "]" );
+        }
+        catch(InvalidVariableException)
+        {
+            BP_PLUGIN_WARNING("failed to load conduit data for "
+                               << abs_matsetname << " [domain "<< domain << "]"
+                               << " -- skipping field for this domain");
+            // if something went wrong, reset the output node to
+            // signal the read failed, and return.
+            out.reset();
+        }
     }
 
     // provide material_map
@@ -1545,10 +1634,15 @@ avtBlueprintFileFormat::GetTime()
 //    `m_new_refine` is passed to `RefineMeshToVTK` so it can choose the 
 //    appropriate MFEM LOR scheme.
 // 
-//     Justin Privitera, Wed Aug 24 11:08:51 PDT 2022
-//     Encased in try-catch block.
+//    Justin Privitera, Wed Aug 24 11:08:51 PDT 2022
+//    Encased in try-catch block.
+//
+//    Brad Whitlock, Mon May 22 17:29:05 PDT 2023
+//    I added some code to clear the mesh's material from the cache if it
+//    has an obsolete LOD.
 //
 // ****************************************************************************
+
 vtkDataSet *
 avtBlueprintFileFormat::GetMesh(int domain, const char *abs_meshname)
 {
@@ -1609,6 +1703,22 @@ avtBlueprintFileFormat::GetMesh(int domain, const char *abs_meshname)
         if( m_mfem_mesh_map[topo_name] )
         {
             BP_PLUGIN_INFO("mesh  " << topo_name << " is a mfem mesh");
+
+            // If there are any materials associated with this mesh in the cache
+            // that do not match the current refinement level, purge them so the
+            // database will re-read them at the selected level of detail.
+            auto it = m_mfem_material_map.find(topo_name);
+            if(it != m_mfem_material_map.end())
+            {
+                if(it->second.second != (m_selected_lod + 1))
+                {
+                    BP_PLUGIN_INFO("Material " << it->second.first << " has LOD "
+                        << it->second.second << ". It needs to be purged.");
+                    cache->ClearVariablesWithString(it->second.first);
+                    m_mfem_material_map.erase(it);
+                }
+            }
+
             // use mfem to refine and create a vtk dataset
             mfem::Mesh *mesh = avtConduitBlueprintDataAdaptor::BlueprintToMFEM::MeshToMFEM(data);
             res = avtMFEMDataAdaptor::RefineMeshToVTK(mesh,

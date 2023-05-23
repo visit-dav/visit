@@ -139,6 +139,7 @@ class avtBlueprintFileFormat : public avtSTMDFileFormat
     conduit::Node          m_matset_info;
 
     std::map<std::string,bool> m_mfem_mesh_map;
+    std::map<std::string,std::pair<std::string,int> > m_mfem_material_map;
 
     bool                   m_new_refine;
 
