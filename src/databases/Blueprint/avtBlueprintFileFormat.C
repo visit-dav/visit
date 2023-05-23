@@ -62,6 +62,7 @@
 #include "avtBlueprintTreeCache.h"
 
 #include <vtkDataArray.h>
+#include <algorithm>
 
 #ifdef _WIN32
 #define strcasecmp stricmp
@@ -523,7 +524,66 @@ avtBlueprintFileFormat::ReadBlueprintField(int domain,
     }
 }
 
+// ****************************************************************************
+//  Method: avtBlueprintFileFormat::DetectHOMaterial
+//
+//  Purpose:
+//    Determines whether there is a HO material.
+//
+//
+//  Programmer: Brad Whitlock
+//  Creation:   Mon May 22 16:51:12 PDT 2023
+//
+//  Modifications:
+//
+// ****************************************************************************
 
+bool
+avtBlueprintFileFormat::DetectHOMaterial(const std::string &mesh_name,
+    const std::string &topo_name,
+    const std::vector<std::string> &matNames,
+    std::map<std::string, std::string> &matFields, std::string &freeMatName) const
+{
+    bool HOmaterials = false;
+    freeMatName.clear();
+    if (m_root_node["blueprint_index"][mesh_name].has_child("fields"))
+    {
+        const conduit::Node &n_fields = m_root_node["blueprint_index"][mesh_name]["fields"];
+        // Look for Axom convention.
+        const std::string prefix("vol_frac_");
+        size_t nmats = 0;
+        for(size_t i = 0; i < matNames.size(); i++)
+        {
+            const auto &matname = matNames[i];
+            std::string fieldName(prefix + matname);
+            if(n_fields.has_child(fieldName))
+            {
+                const conduit::Node &f = n_fields.fetch_existing(fieldName);
+                if(f.has_child("basis") &&
+                   f.has_child("topology") &&
+                   f.has_child("number_of_components"))
+                {
+                    std::string tname = f["topology"].as_string();
+                    int nc = f["number_of_components"].to_int();
+                    if(tname == topo_name && nc == 1)
+                    {
+                        matFields[matname] = fieldName;
+                    }
+                }
+            }
+        }
+        // If all of the material names had a matching HO field for the volume
+        // fractions then our material is made up of HO fields.
+        HOmaterials = matFields.size() == static_cast<size_t>(matNames.size());
+
+        // See whether a free material needs to be created. Use Axom convention.
+        const std::string free_mat_name("vol_frac_free");
+        bool make_free_mat = !m_root_node["blueprint_index"][mesh_name]["fields"].has_child(free_mat_name);
+        if(make_free_mat)
+            freeMatName = "free";
+    }
+    return HOmaterials;
+}
 
 // ****************************************************************************
 //  Method: avtBlueprintFileFormat::ReadBlueprintMatset
@@ -590,44 +650,21 @@ avtBlueprintFileFormat::ReadBlueprintMatset(int domain,
     string data_path = bp_index_matset["path"].as_string();
 
     // See whether the materials in the index correspond to HO fields.
-    bool HOmaterials = false;
+    std::vector<std::string> matNames;
+    for(conduit::index_t i = 0; i < n_mat_names.number_of_children(); i++)
+        matNames.push_back(n_mat_names[i].name());
     std::map<std::string, std::string> matFields;
-    if (m_root_node["blueprint_index"][mesh_name].has_child("fields"))
-    {
-        const conduit::Node &n_fields = m_root_node["blueprint_index"][mesh_name]["fields"];
-        // Look for Axom convention.
-        const std::string prefix("vol_frac_");
-        size_t nmats = 0;
-        for(conduit::index_t i = 0; i < n_mat_names.number_of_children(); i++)
-        {
-            std::string matname(n_mat_names[i].name());
-            std::string fieldName(prefix + matname);
-            if(n_fields.has_child(fieldName))
-            {
-                const conduit::Node &f = n_fields.fetch_existing(fieldName);
-                if(f.has_child("basis") &&
-                   f.has_child("topology") &&
-                   f.has_child("number_of_components"))
-                {
-                    std::string tname = f["topology"].as_string();
-                    int nc = f["number_of_components"].to_int();
-                    if(tname == topo_name && nc == 1)
-                    {
-                        matFields[matname] = fieldName;
-                    }
-                }
-            }
-        }
-        // If all of the material names had a matching HO field for the volume
-        // fractions then our material is made up of HO fields.
-        HOmaterials = matFields.size() == static_cast<size_t>(n_mat_names.number_of_children());
-    }
-    if(HOmaterials)
+    std::string freeMatName;
+    if(DetectHOMaterial(mesh_name, topo_name, matNames, matFields, freeMatName))
     {
         const std::string line("=============================================================================");
         BP_PLUGIN_INFO(line << endl
                             << " Start Reading HO material " << abs_matsetname_str << endl
                             << line);
+
+        // See whether a free material needs to be created.
+        bool make_free_mat = !freeMatName.empty();
+        std::vector<float> freevf;
 
         conduit::Node &vf = out["volume_fractions"];
         conduit::Node &mn = out["matnames"];
@@ -647,8 +684,33 @@ avtBlueprintFileFormat::ReadBlueprintMatset(int domain,
                 fptr[zi] = static_cast<float>(da->GetTuple1(zi));
             da->Delete();
 
+            // If we need to make a free material, do it.
+            if(make_free_mat)
+            {
+                if(freevf.empty())
+                    freevf.resize(nzones, 1.f);
+                // Now, subtract the current vf from the free mat.
+                for(vtkIdType zi = 0; zi < nzones; ++zi)
+                    freevf[zi] -= fptr[zi];
+            }
+
             // Add the material name to the list.
             mn[it->first] = idx++;
+        }
+        // Append the free material.
+        if(make_free_mat)
+        {
+            // See whether any zones have sufficient free material.
+            auto it = std::find_if(freevf.begin(), freevf.end(), [](float value)
+            {
+                constexpr float SUFFICIENT_MATERIAL = 1.e-6;
+                return (1.f - value) > SUFFICIENT_MATERIAL;
+            });
+            if(it != freevf.end())
+            {
+                vf[freeMatName].set(freevf);
+                mn[freeMatName] = idx++;
+            }
         }
         out["topology"] = mesh_name;
 
@@ -684,10 +746,10 @@ avtBlueprintFileFormat::ReadBlueprintMatset(int domain,
             // signal the read failed, and return.
             out.reset();
         }
-    }
 
-    // provide material_map
-    out["matnames"] = n_mat_names;
+        // provide material_map
+        out["matnames"] = n_mat_names;
+    }
 }
 
 
@@ -952,6 +1014,11 @@ avtBlueprintFileFormat::AddBlueprintMeshAndFieldMetadata(avtDatabaseMetaData *md
 // helper method used to add materials meta data for a blueprint mesh.
 //
 // Cyrus Harrison, Tue Dec  8 10:29:21 PST 2020
+//
+// Modifications:
+//   Brad Whitlock, Tue May 23 16:04:30 PDT 2023
+//   Added some special handling if the materials are HO.
+//
 // ****************************************************************************
 void
 avtBlueprintFileFormat::AddBlueprintMaterialsMetadata(avtDatabaseMetaData *md,
@@ -1056,6 +1123,16 @@ avtBlueprintFileFormat::AddBlueprintMaterialsMetadata(avtDatabaseMetaData *md,
 
         // get matnames vec in sorted order.
         std::vector<string>  matnames = m_matset_info[mesh_matset_name]["matnames"].child_names();
+
+        // If the materials were HO then we may need to add a "free" material
+        // to the list.
+        std::map<std::string, std::string> matFields;
+        std::string freeMatName;
+        if(DetectHOMaterial(mesh_name, topo_name, matnames, matFields, freeMatName))
+        {
+            if(!freeMatName.empty())
+                matnames.push_back(freeMatName);
+        }
 
         m_matset_info[mesh_matset_name]["full_mesh_name"] = mesh_topo_name;
         m_matset_info[mesh_matset_name]["mesh_name"] = mesh_name;
@@ -2183,7 +2260,6 @@ avtBlueprintFileFormat::GetMaterial(int domain,
 
         int nmats = (int) matnames.size();
         int nzones = (int) n_silo_matset["matlist"].dtype().number_of_elements();
-
         int *matlist  = NULL;
         int *mix_mat  = NULL;
         int *mix_next = NULL;
