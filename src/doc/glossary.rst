@@ -14,7 +14,7 @@ Glossary
        to decide when it thinks it is best to enable or disable the feature.
     
    Integral Curve
-       An :vundl:`integral curve is a curve` that begins at a seed location and is
+       An integral curve is a curve that begins at a seed location and is
        tangent at every point in a vector field. It is computed by numerical
        integration of the seed location through the vector field.
 
