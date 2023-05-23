@@ -23,3 +23,8 @@
 .wy-table-responsive table td {
     white-space: normal;
 }
+
+/* Support underlining text */
+.vundl {
+  text-decoration: underline;
+}
