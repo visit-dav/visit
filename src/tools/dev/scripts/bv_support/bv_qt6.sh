@@ -7,6 +7,7 @@ function bv_qt6_initialize
 function bv_qt6_enable
 { 
     DO_QT6="yes"
+    DO_QT="no"
 }
 
 function bv_qt6_disable
