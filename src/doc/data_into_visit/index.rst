@@ -17,6 +17,7 @@ Contents:
    SiloFormat
    XdmfFormat
    BlueprintFormat
+   TestCodeTabs
 
 .. Indices and tables
 .. ==================
