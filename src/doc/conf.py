@@ -35,7 +35,7 @@ release = '3.2.2'
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-extensions = ['sphinx.ext.mathjax', 'sphinx_tabs.tabs']
+extensions = ['sphinx.ext.mathjax']
 
 # Force installation of any special stuff in the RTD virtual machine instance
 # needed to support any custom extensions.
@@ -43,6 +43,8 @@ if os.environ.get('READTHEDOCS'):
     from subprocess import call
     call(['pip', 'install', 'sphinx-notfound-page'])
     extensions.append('notfound.extension')
+    call(['pip', 'install', 'sphinx-tabs'])
+    extensions.append('sphinx_tabs.tabs')
 
 # The suffix(es) of source filenames.
 # You can specify multiple suffix as a list of string:
