@@ -62,13 +62,12 @@ using     std::string;
 // ****************************************************************************
 
 avtMOABFileFormat::avtMOABFileFormat(const char *filename, const DBOptionsAttributes *readOpts)
-    : avtSTMDFileFormat(&filename, 1), readOptions(readOpts), fileLoaded(false), file_descriptor(NULL), pcomm(NULL)
+    : avtSTMDFileFormat(&filename, 1), readOptions(readOpts),  file_descriptor(NULL), pcomm(NULL), mbCore(NULL)
 {
     // INITIALIZE DATA MEMBERS
 
 	debug1<< " constructor called, file " << filename << "\n";
     fileName = strdup(filename);
-    mbCore = new moab::Core();
 }
 
 
@@ -87,20 +86,20 @@ avtMOABFileFormat::avtMOABFileFormat(const char *filename, const DBOptionsAttrib
 // ****************************************************************************
 
 avtMOABFileFormat::~avtMOABFileFormat() {
-    debug1 << " avtMOABFileFormat::~avtMOABFileFormat \n";
+    debug1 << " avtMOABFileFormat::~avtMOABFileFormat for file:" << fileName << "\n";
     FreeUpResources();
-}
-void
-avtMOABFileFormat::FreeUpResources(void) {
-    debug1 << " avtMOABFileFormat::FreeUpResources: freeing file descriptor\n";
-    if (file_descriptor) {
-        free(file_descriptor);
-        file_descriptor = NULL;
-    }
     if (fileName != NULL)
     {
         free(fileName);
         fileName = NULL;
+    }
+}
+void
+avtMOABFileFormat::FreeUpResources(void) {
+    debug1 << " avtMOABFileFormat::FreeUpResources: freeing file descriptor for file " << fileName << "\n";
+    if (file_descriptor) {
+        free(file_descriptor);
+        file_descriptor = NULL;
     }
 #ifdef PARALLEL
 	if (pcomm)
@@ -170,14 +169,14 @@ avtMOABFileFormat::gatherMhdfInformation()
     long num_nodes = file_descriptor->nodes.count;
     int number_node_tags = file_descriptor->nodes.num_dense_tags;
 
-    debug1 << "Nodes: " << num_nodes << " dense tags: " <<  number_node_tags << "\n";
+    debug2 << "Nodes: " << num_nodes << " dense tags: " <<  number_node_tags << "\n";
     for (int i=0; i< number_node_tags; i++)
     {
         MHDF_TagDesc & tagStr = file_descriptor->tags[file_descriptor->nodes.dense_tag_indices[i]];
         const char * tag_name = tagStr.name;
 
         int sizeTag = tagStr.size;
-        debug1 << "   tag "<< i << " "  << tag_name << " size:" << sizeTag << "\n";
+        debug2 << "   tag "<< i << " "  << tag_name << " size:" << sizeTag << "\n";
         struct tagBasic  tag1;
         tag1.nameTag=string(tag_name);
         tag1.size=sizeTag;
@@ -188,11 +187,11 @@ avtMOABFileFormat::gatherMhdfInformation()
             tag1.type = tagStr.type;
         }
 
-        debug1 << "  node     tag "<< i << " "  << tag_name <<" size:" << sizeTag << "\n";
+        debug2 << "  node     tag "<< i << " "  << tag_name <<" size:" << sizeTag << "\n";
         nodeTags.push_back(tag1);
     }
 
-    debug1 << "Cells descriptors " << file_descriptor->num_elem_desc <<  "\n";
+    debug2 << "Cells descriptors " << file_descriptor->num_elem_desc <<  "\n";
 
     for (int i=0; i< file_descriptor->num_elem_desc; i++)
     {
@@ -235,8 +234,8 @@ avtMOABFileFormat::gatherMhdfInformation()
 
     if (nProcs > 1 && num_parts < nProcs)
     {
-        EXCEPTION1(InvalidVariableException, "too few parts in PARALLEL_PARTITION ");
-        debug1 << " can't load in parallel, too few parts in partition \n";
+        // EXCEPTION1(InvalidVariableException, "too few parts in PARALLEL_PARTITION ");
+        debug1 << " there are less parts in partition than processors " << "nProcs=" << nProcs << " num_parts:" << num_parts << " \n";
     }
 
     return;
@@ -610,7 +609,7 @@ vtkDataSet *
 avtMOABFileFormat::GetMesh(int domain, const char *meshname)
 {
 
-  debug1 << "avtMOABFileFormat::GetMesh domain: " << domain << " meshname :" << meshname  << " rank:" << rank << "\n";
+  debug1 << "avtMOABFileFormat::GetMesh from file: " << fileName << " domain: " << domain << " meshname :" << meshname  << " rank:" << rank << "\n";
   try
     {
         moab::ErrorCode merr;
@@ -620,8 +619,9 @@ avtMOABFileFormat::GetMesh(int domain, const char *meshname)
         // Load the mesh file fully and populate all require information
         // related to the mesh topology and entities/sets
         //
-        if (!fileLoaded)
+        if (NULL==mbCore)
         {
+            mbCore = new moab::Core();
 #ifdef PARALLEL
             string partitionMethod = readOptions->GetString("Partition:");
             string ropts="STORE_SETS_FILEIDS;PARALLEL=READ_PART;PARTITION="+partitionMethod+";";
@@ -639,7 +639,6 @@ avtMOABFileFormat::GetMesh(int domain, const char *meshname)
             pcomm->get_part_entities(localEnts);
             debug1 << " part entities : "<< localEnts.size() << "\n";
 #endif
-            fileLoaded = true;
         }
         //
         // Create the unstructured mesh
@@ -805,7 +804,7 @@ avtMOABFileFormat::GetMesh(int domain, const char *meshname)
 vtkDataArray *
 avtMOABFileFormat::GetVar(int domain, const char *varname)
 {
-    if (!fileLoaded)
+    if (NULL==mbCore)
       EXCEPTION1(InvalidVariableException, varname);
 
     try
@@ -1352,7 +1351,7 @@ avtMOABFileFormat::GetGeometrySetsVar()
 vtkDataArray *
 avtMOABFileFormat::GetVectorVar(int domain, const char *varname)
 {
-  if (!fileLoaded)
+  if (NULL==mbCore)
     EXCEPTION1(InvalidVariableException, varname);
 
   try {
