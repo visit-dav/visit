@@ -38,8 +38,13 @@ release = '3.2.2'
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = ['sphinx.ext.mathjax',
-              'sphinx_tabs.tabs',
-              'notfound.extension']
+              'sphinx_tabs.tabs']
+
+if os.environ.get('READTHEDOCS'):
+    from subprocess import call
+    call(['pip', 'install', 'sphinx-notfound-page'])
+    extensions.append('notfound.extension')
+
 
 # The suffix(es) of source filenames.
 # You can specify multiple suffix as a list of string:
