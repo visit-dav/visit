@@ -1045,7 +1045,7 @@ Also included in the ``image_coords`` are labels and units for disambiguation pu
 The ``image_topo`` exists to tell Blueprint that the rectilinear coordinate data stored in ``image_coords`` can be interpreted as a rectilinear grid.
 
 The fields, ``intensities`` and ``path_length``, can be thought of as containers for the actual image data.
-This image data is stored in 1-dimensional arrays; for information on reshaping those into 3-dimensions see the following from the :ref:`XRay_Troubleshooting` section: :ref:`XRay_blueprint_1d_to_3d_reshape`.
+This image data is stored in 1-dimensional arrays; for information on reshaping those into 3-dimensions see the following from the :ref:`XRay_Troubleshooting` section: :ref:`XRay_blueprint_1d_to_3d_reshape`
 Each field also includes units.
 For path length, the ``units`` entry is just a way of including metadata or information about the path length, since path length is unitless.
 
