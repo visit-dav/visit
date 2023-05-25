@@ -805,7 +805,7 @@ This single output file presents the query output in multiple ways using well-de
 We also provide three supported Conduit output types: HDF5, YAML, and JSON.
 The latter two are useful as they are human-readable options.
 Instead of having to choose between getting out raw data or getting out an image, Conduit Blueprint provides the best of both worlds.
-All of the meshes provided in the output can be easily plotted in VitIt_ (see :ref:`Visualizing_with_VisIt`), and everything in the output (raw intensities and path lengths data, mesh data, metadata, etc.) can be digested in Python using Conduit's Python API (see :ref:`Introspecting_with_Python`).
+All of the meshes provided in the output can be easily plotted in VisIt_ (see :ref:`Visualizing_with_VisIt`), and everything in the output (raw intensities and path lengths data, mesh data, metadata, etc.) can be digested in Python using Conduit's Python API (see :ref:`Introspecting_with_Python`).
 
 .. figure:: images/XRay_Query_input_mesh_alt_side.png
 
