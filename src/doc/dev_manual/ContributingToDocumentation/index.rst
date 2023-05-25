@@ -307,6 +307,13 @@ Often, the best answer is to *NOT* use tables and instead use
 `definition lists <http://docutils.sourceforge.net/docs/ref/rst/restructuredtext.html#definition-lists>`__
 as is used in the documentation on :ref:`expressions <Sum_Expression_Operator>`.
 
+Tabbed content
+--------------
+It may be useful at times to create tabbed content, such as wanting to display multiple-language code examples without taking up too much space.
+The `sphinx-tabs <https://sphinx-tabs.readthedocs.io/en/latest/>`_ extension is useful for this.
+Another example would be instructions for how to do something on different platforms.
+See the above referenced documentation for more information.
+
 .. _contributing_math:
 
 Math
