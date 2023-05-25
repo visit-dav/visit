@@ -63,6 +63,9 @@ Sometimes the goal of an experiment is to generate a radiograph, but the object 
 In this case, the emissivities should be non-zero and the background intensity should be supplied. 
 The background intensity can then be adjusted until the radiograph is not washed out.
 
+For a discussion of how the X Ray Image Query fits into a larger simulation workflow as well as additional detail on our efforts to add Conduit Blueprint output to the query, the following presentation is provided:
+`Supporting Simulated Diagnostics with VisIt's X Ray Image Query (DOECGF23) <https://visit-dav.github.io/largedata/presentations/privitera1_26Apr23_doecgf_xray>`_  Presented at the DOE Computer Graphics Forum 2023.
+
 Query Arguments
 ~~~~~~~~~~~~~~~
 
