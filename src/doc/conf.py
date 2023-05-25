@@ -10,7 +10,7 @@
 def setup(app):
     if hasattr(app, 'add_css_file'):
         app.add_css_file('custom.css')
-    else if hasattr(app, 'add_stylesheet'):
+    elif hasattr(app, 'add_stylesheet'):
         app.add_stylesheet('custom.css')
 
 # If extensions (or modules to document with autodoc) are in another directory,
