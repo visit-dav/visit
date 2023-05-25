@@ -480,6 +480,12 @@ function bv_python_info
     export SPHINX_RTD_BUILD_DIR="sphinx_rtd_theme-0.4.3"
     export SPHINX_RTD_MD5_CHECKSUM="6c50f30bc39046f497d336039a0c13fa"
     export SPHINX_RTD_SHA256_CHECKSUM="728607e34d60456d736cc7991fd236afb828b21b82f956c5ea75f94c8414040a"
+
+    export SPHINX_TABS_URL="https://github.com/executablebooks/sphinx-tabs/archive/refs/tags"
+    export SPHINX_TABS_FILE="v2.1.0.tar.gz"
+    export SPHINX_TABS_BUILD_DIR="sphinx-tabs-2.1.0"
+    export SPHINX_TABS_MD5_CHECKSUM="985650c490898ae674492b48f81ae497"
+    export SPHINX_TABS_SHA256_CHECKSUM="39bfc9e2051f2a048eaa9da2dbf1f56b0c03c17cc72192fc8b4357cb32a95765"
 }
 
 function bv_python_print
@@ -1890,6 +1896,51 @@ function build_sphinx_rtd
     return 0
 }
 
+# *************************************************************************** #
+#                              build_sphinx_tabs                              #
+# *************************************************************************** #
+function build_sphinx_tabs
+{
+    # download
+    if ! test -f ${SPHINX_TABS_FILE} ; then
+        download_file ${SPHINX_TABS_FILE} "${SPHINX_TABS_URL}"
+        if [[ $? != 0 ]] ; then
+            warn "Could not download ${SPHINX_TABS_FILE}"
+            return 1
+        fi
+    fi
+
+    # extract
+    if ! test -d ${SPHINX_TABS_BUILD_DIR} ; then
+        info "Extracting sphinx_tabs ..."
+        uncompress_untar ${SPHINX_TABS_FILE}
+        if test $? -ne 0 ; then
+            warn "Could not extract ${SPHINX_TABS_FILE}"
+            return 1
+        fi
+    fi
+
+    # install
+    pushd $SPHINX_TABS_BUILD_DIR > /dev/null
+    cd $SPHINX_TABS_BUILD_DIR
+    info "Installing sphinx_tabs ..."
+    ${PYTHON_COMMAND} ./setup.py install --prefix="${PYHOME}"
+    if test $? -ne 0 ; then
+        popd > /dev/null
+        warn "Could not install sphinx_tabs"
+        return 1
+    fi
+    popd > /dev/null
+
+    # fix the perms
+    if [[ "$DO_GROUP" == "yes" ]] ; then
+        chmod -R ug+w,a+rX "$VISITDIR/python"
+        chgrp -R ${GROUP} "$VISITDIR/python"
+    fi
+
+    return 0
+}
+
 function bv_python_is_enabled
 {
     if [[ $DO_PYTHON == "yes" ]]; then
@@ -1960,6 +2011,13 @@ function bv_python_is_installed
         if [[ $? != 0 ]] ; then
             if [[ $PY_CHECK_ECHO != 0 ]] ; then
                 info "python module sphinx_rtd_theme is not installed"
+            fi
+            PY_OK=0
+        fi
+        check_if_py_module_installed "sphinx_tabs"
+        if [[ $? != 0 ]] ; then
+            if [[ $PY_CHECK_ECHO != 0 ]] ; then
+                info "python module sphinx_tabs is not installed"
             fi
             PY_OK=0
         fi
@@ -2097,6 +2155,15 @@ function bv_python_build
                         error "sphinx rtd python theme build failed. Bailing out."
                     fi
                     info "Done building the sphinx rtd python theme."
+                fi
+
+                check_if_py_module_installed "sphinx_tabs"
+                if [[ $? != 0 ]] ; then
+                    build_sphinx_tabs
+                    if [[ $? != 0 ]] ; then
+                        error "sphinx tabs python module build failed. Bailing out."
+                    fi
+                    info "Done building the sphinx tabs."
                 fi
             fi
         fi
