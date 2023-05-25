@@ -38,8 +38,8 @@ release = '3.2.2'
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = ['sphinx.ext.mathjax',
-              'sphinx-notfound-page',
-              'sphinx-tabs']
+              'sphinx-tabs',
+              'notfound.extension']
 
 # The suffix(es) of source filenames.
 # You can specify multiple suffix as a list of string:
