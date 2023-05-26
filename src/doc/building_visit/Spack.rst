@@ -96,6 +96,64 @@ Here are some examples. ::
     opt/spack/cray-sles15-zen2/gcc-11.2.0/hdf5-1.8.22-c3djozhlmrvy7wpu46f36qeakemiactw
     opt/spack/cray-sles15-zen2/gcc-11.2.0/cmake-3.14.7-nnahgnkkl2d2ty2us46we75pnjepci35
 
+Building VisIt with the development version of spack
+----------------------------------------------------
+
+The following 3 patches should be applied.
+These are patches to `package.py` files that cannot be patched as part of the VisIt_ spack package.
+
+::
+
+    diff --git a/var/spack/repos/builtin/packages/libxcb/package.py b/var/spack/repos/builtin/packages/libxcb/package.py
+    index 1db0f5de5a..f19f1856de 100644
+    --- a/var/spack/repos/builtin/packages/libxcb/package.py
+    +++ b/var/spack/repos/builtin/packages/libxcb/package.py
+    @@ -50,3 +50,4 @@ def configure_args(self):
+
+         def patch(self):
+             filter_file("typedef struct xcb_auth_info_t {", "typedef struct {", "src/xcb.h")
+    +        filter_file("python python2 python3", "python3", "configure")
+
+::
+
+diff --git a/var/spack/repos/builtin/packages/visit/package.py b/var/spack/repos/builtin/packages/visit/package.py
+index 290280e17d..19bda1b1ed 100644
+--- a/var/spack/repos/builtin/packages/visit/package.py
++++ b/var/spack/repos/builtin/packages/visit/package.py
+@@ -99,7 +99,7 @@ class Visit(CMakePackage):
+     patch("visit32-missing-link-libs.patch", when="@3.2")
+
+     # Exactly one of 'gui' or 'osmesa' has to be enabled
+-    conflicts("+gui", when="+osmesa")
++    #conflicts("+gui", when="+osmesa")
+
+     depends_on("cmake@3.14.7:", type="build")
+
+::
+
+diff --git a/var/spack/repos/builtin/packages/vtk/package.py b/var/spack/repos/builtin/packages/vtk/package.py
+index c7bec82c74..d87f61ea0b 100644
+--- a/var/spack/repos/builtin/packages/vtk/package.py
++++ b/var/spack/repos/builtin/packages/vtk/package.py
+@@ -61,7 +61,7 @@ class Vtk(CMakePackage):
+     patch("xdmf2-hdf51.13.2.patch", when="@9:9.2 +xdmf")
+
+     # We cannot build with both osmesa and qt in spack
+-    conflicts("+osmesa", when="+qt")
++    #conflicts("+osmesa", when="+qt")
+
+     with when("+python"):
+         # Depend on any Python, add bounds below.
+
+Building on Frontier
+~~~~~~~~~~~~~~~~~~~~
+
+The following spack command is used to build with spack.
+
+::
+
+    spack install visit@3.3.3%gcc@11.2.0+mpi+gui+osmesa+vtkm ^python@3.7.7+shared ^mesa@21.2.5+opengl ^vtk@8.1.0+osmesa ^kokkos@3.7.01 ^vtk-m@1.9.0+kokkos+rocm~openmp+fpic amdgpu_target=gfx90a
+
 Working around recurring download failures
 ------------------------------------------
 
