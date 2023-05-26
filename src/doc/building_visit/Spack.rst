@@ -148,11 +148,24 @@ These are patches to `package.py` files that cannot be patched as part of the Vi
 Building on Frontier
 ~~~~~~~~~~~~~~~~~~~~
 
+You will first need to copy the `compilers.yaml` and `packages.yaml` files from `scripts/spack/configs/olcf/frontier/` to your `.spack` directory in your home directory.
+
 The following spack command is used to build with spack.
 
 ::
 
     spack install visit@3.3.3%gcc@11.2.0+mpi+gui+osmesa+vtkm ^python@3.7.7+shared ^mesa@21.2.5+opengl ^vtk@8.1.0+osmesa ^kokkos@3.7.01 ^vtk-m@1.9.0+kokkos+rocm~openmp+fpic amdgpu_target=gfx90a
+
+Building on Perlmutter
+~~~~~~~~~~~~~~~~~~~~~~
+
+You will first need to copy the `packages.yaml` files from `scripts/spack/configs/nersc/perlmutter/` to your `.spack` directory in your home directory.
+
+The following spack command is used to build with spack.
+
+::
+
+    spack install visit@3.3.3%gcc@11.2.0+mpi+gui+osmesa~vtkm ^python@3.7.7+shared~ssl ^mesa@21.2.5+opengl ^llvm@11.0.1~gold ^vtk@8.1.0+osmesa
 
 Working around recurring download failures
 ------------------------------------------
