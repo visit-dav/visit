@@ -71,6 +71,22 @@ library is substituted at run time for OpenGL when running the parallel
 engine to enable scalable rendering. If you specify ``--mesagl`` then
 ``--osmesa`` is unnecessary and ignored if specified.
 
+
+Building Server only
+~~~~~~~~~~~~~~~~~~~~
+Much of the time, the pre-built VisIt executables will suffice for desktop systems but you need a special version of VisIt to run on a remote server and process data there.
+In this case, you can run client/server from the desktop to the remote server.
+This means that for the remote server build of VisIt, you need only build the server programs that will read and process the data since the GUI will run locally.
+You can speed up the VisIt build considerably by adding the ``--server-components-only`` flag to build only the VisIt server and related programs.
+
+.. code:: bash
+
+  env PAR_COMPILER=mpicc ./build_visit3_3_3 --server-components-only --mesa --icet
+
+This will do a basic build, but may not include the IO libraries you need.
+You can add ``--all-io`` in order to build all the IO libraries, or specify them individually, eg  ``--hdf5 --netcdf --conduit --mfem`` to add just the HDF5, NetCDF, Conduit and Mfem IO libraries.
+
+
 Building VisIt_ with Pre-Installed (e.g. System) Libraries
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
