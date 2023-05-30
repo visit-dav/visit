@@ -6,7 +6,7 @@ The Silo file format
 If you are writing a conversion utility or if you have a simulation code written in C, C++, or Fortran then writing out Silo_ files is a good choice for getting your data into VisIt_.
 One reason for this is that among all of VisIt_'s plugins, the Silo plugin is likely one of the most advanced in terms of the various data features it supports.
 This section will illustrate how to use the Silo_ library to write out various types of scientific data.
-Since the Silo_ library provides bindings for multiple languages, including C, Fortran, and Python, the source code examples that demonstrate a particular topic will be given in more than 1 programming language, when appropriate.
+Since the Silo_ library provides bindings for multiple languages, including C, Fortran, and Python, the source code examples that demonstrate a particular topic will be given in more than one programming language, when appropriate.
 One goal of this section is to provide examples that are complete enough so that they can be readily adapted into working source code.
 This section will not necessarily explain all of the various arguments to function calls in the Silo_ library.
 You can refer to the `Silo Manual <https://software.llnl.gov/Silo/manual.html>`_ for more information.
@@ -14,7 +14,6 @@ You can refer to the `Silo Manual <https://software.llnl.gov/Silo/manual.html>`_
 Using the Silo library
 ~~~~~~~~~~~~~~~~~~~~~~
 
-VisIt_ is always built with support for reading Silo_ databases so Silo_ can be a good file format in which to store your data.
 This subsection includes information about using Silo_ such as including the appropriate header files and linking with the Silo_ library.
 
 Including Silo
@@ -37,8 +36,9 @@ Here is what you need to include in your source code in order to use Silo:
 Linking with Silo
 """""""""""""""""
 
-Before you can build a program that uses Silo_, you must locate the Silo_ include files and the Silo_ library.
-Silo_ is not distributed as part of the VisIt_ source code or binary installations so you must obtain it separately unless you are developing on the Windows platform.
+Before you can build a program that uses Silo_, you must locate the Silo_ header and library files.
+Silo_ is distributed as part of VisIt_ binary distributions but is installed in those distributions differently than it would be if it was installed as a stand-alone package.
+For example, in Linux distros, the library file, ``libsiloh5.so``, is in the VisIt_ installation's ``<version>/<arch>/lib`` directory and the header file, ``silo.h``, is in the VisIt_ installation's ``<version>/<arch>/include/silo`` directory.
 A link to the most up-to-date version of the Silo_ library's source code can be found on `Silo's Github site <https://github.com/LLNL/Silo/releases>`_.
 
 Once you download the Silo_ source code, building and installing it is usually only a matter of running its *configure* script and running *make*.
@@ -51,6 +51,7 @@ An example command line to build Silo_ with support for HDF5 is:
   --thirdparty-path /usr/local \
   --silo --hdf5 --szip
 
+Although Silo_ does not *require* HDF5, it is best to build Silo_ with it because the HDF5 driver supports more features than Silo_'s default PDB driver.
 After you've configured, built, and installed the Silo_ library, your program will have to be built against the Silo_ library.
 Building against the Silo_ library is usually accomplished by a simple adaptation of your *Makefile* and the inclusion of *silo.h* in your C-language source code.
 If you used build_visit to install Silo_ and its dependant libraries in /usr/local then you would add the following to your Makefile, adjusting the values for the install location, versions, and PLATFORM accordingly:
@@ -95,7 +96,7 @@ Note that you must configure your program to use a Multithreaded DLL version of 
 Inspecting Silo files
 ~~~~~~~~~~~~~~~~~~~~~
 
-Silo_ includes a command line utility called *browser* that can access the contents of Silo_ files.
+Unless it was explicitly *disabled* in the configuration, Silo_ includes a command line utility called *browser* that can print the contents of Silo_ files.
 To run browser, type *"browser"* into a terminal window followed by the name of a Silo_ file that you want to inspect.
 Once the browser application opens the Silo_ file, type *"ls"* to see the contents of the Silo_ file.
 From there, typing the name of any of the objects shown in the object listing will print information about that object to the console.
@@ -110,6 +111,9 @@ processor write its domain to a separate file.
 The examples that follow assume parallel simulations will write 1 file per processor.
 It is possible for multiple processors to append their data to a single Silo_ file but it requires synchronization and that technique is beyond the scope of the examples that will be presented.
 
+This paradigm for handling parallel I/O with Silo is known as the `Multiple Independent File (MIF) Parallel I/O Paradigm <https://www.hdfgroup.org/2017/03/mif-parallel-io-with-hdf5/>`__
+In fact, there is a header file available in Silo_, ``pmpio.h``, which facilitates this mode of *writing* Silo_ files.
+An example of its use can be found in Silo_'s test suite, `pmpio_silo_test_mesh.c <https://github.com/LLNL/Silo/blob/main/tests/pmpio_silo_test_mesh.c>`__
 Creating a new Silo file
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -1619,4 +1623,5 @@ Note that if you use the "EMPTY" keyword in a multivar object then the same entr
   DBPutMultimesh(dbfile, "mesh", nmesh, meshnames, meshtypes, NULL);
 
 
+You can find many more examples of various features of Silo by browsing source code in either `VisIt's <https://github.com/visit-dav/visit/tree/develop/src/tools/data/datagen>`__ or `Silo's <https://github.com/LLNL/Silo/tree/main/tests>`__ test suites or the `test data files <https://github.com/search?q=repo%3Avisit-dav%2Fvisit%20path%3Asilo*.tar.xz&type=code>`__ used in VisIt_'s testing.
 
