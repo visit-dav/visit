@@ -796,6 +796,12 @@ function build_python
     PYTHON_LDFLAGS="${PYTHON_LDFLAGS} -L${PY_ZLIB_LIB}"
     PYTHON_CPPFLAGS="${PYTHON_CPPFLAGS} -I${PY_ZLIB_INCLUDE}"
 
+    # Fix configure's notion of the architecture triplet
+    if [[ "$OPSYS" == "Darwin" ]]; then
+        sed -i orig '5344i\
+        MULTIARCH=$PLATFORM_TRIPLET' configure
+    fi
+
     info "Configuring Python"
     set -x
     ./configure OPT="$PYTHON_OPT" CXX="$cxxCompiler" CC="$cCompiler" \

@@ -322,6 +322,12 @@ function apply_qt_patch
                 fi
             fi
         fi
+        if [[ "$OPSYS" == "Darwin" ]]; then
+            apply_qt_5142_missing_cgcolorspace_header
+            if [[ $? != 0 ]] ; then
+                return 1
+            fi
+        fi
     fi
     return 0
 }
@@ -789,6 +795,30 @@ EOF
     return 0
 }
 
+function apply_qt_5142_missing_cgcolorspace_header
+{
+    info "Patching qt 5.14.2 for macOS missing <CoreGraphics/CGColorSpace.h> header"
+    patch -p0 << \EOF
+--- qtbase/src/plugins/platforms/cocoa/qiosurfacegraphicsbuffer.h.orig	2023-04-14 17:11:54.000000000 -0700
++++ qtbase/src/plugins/platforms/cocoa/qiosurfacegraphicsbuffer.h	2023-04-14 17:12:08.000000000 -0700
+@@ -40,6 +40,7 @@
+ #ifndef QIOSURFACEGRAPHICSBUFFER_H
+ #define QIOSURFACEGRAPHICSBUFFER_H
+ 
++#include <CoreGraphics/CGColorSpace.h>
+ #include <qpa/qplatformgraphicsbuffer.h>
+ #include <private/qcore_mac_p.h>
+ 
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "Patching qt 5.14.2 for macOS missing <CoreGraphics/CGColorSpace.h> header failed."
+        return 1
+    fi
+
+    return 0
+
+}
+
 function build_qt
 {
     #
@@ -833,17 +863,24 @@ function build_qt
         mkdir $QT_BUILD_DIR
     fi
 
-    cd ${QT_BUILD_DIR}
-
     #
     # Handle case where python doesn't exist.
     # The magic to determine if python exist comes from
     # https://stackoverflow.com/questions/592620/how-can-i-check-if-a-program-exists-from-a-bash-script
     #
+    pushd ${QT_SRC_DIR} > /dev/null 2>&1
     if ! command -v python > /dev/null 2>&1 ; then
-        sed -i "s/python/python3/" ./qtdeclarative/src/3rdparty/masm/masm.pri
-        sed -i "s/python -c/python3 -c/" ./qtdeclarative/qtdeclarative.pro
+        if [[ "$OPSYS" == "Darwin" ]]; then       
+            sed -i orig -e 's/python/python3/' ./qtdeclarative/src/3rdparty/masm/masm.pri
+            sed -i orig -e 's/python -c/python3 -c/' ./qtdeclarative/qtdeclarative.pro
+        else
+            sed -i.orig -e 's/python/python3/' ./qtdeclarative/src/3rdparty/masm/masm.pri
+            sed -i.orig -e 's/python -c/python3 -c/' ./qtdeclarative/qtdeclarative.pro
+        fi
     fi
+    popd > /dev/null 2>&1
+
+    cd ${QT_BUILD_DIR}
 
     #
     # Platform specific configuration
