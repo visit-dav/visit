@@ -1804,6 +1804,9 @@ MDServerConnection::SetFileGroupingOptions(const std::string &filter,
 //   I added a check for empty file lists in the virtual db definition, though
 //   I fixed a different bug so that should not be able to happen.
 //
+//    Mark C. Miller, Tue May 30 15:29:56 PDT 2023
+//    Avert possible crash by protecting loop that removes any virtual dbs
+//    with no files.
 // ****************************************************************************
 
 void
@@ -2055,7 +2058,7 @@ MDServerConnection::GetFilteredFileList(GetFileListRPC::FileList &files)
         int stage5 = visitTimer->StartTimer();
         int vfIndex = 0;
         bool needToSortFileList = false;
-        for(fileIndex = 0; fileIndex < files.names.size(); ++fileIndex)
+        for(fileIndex = 0; virtualFilesToCheck.types.size() && (fileIndex < files.names.size()); ++fileIndex)
         {
             pos = newVirtualFiles.find(files.names[fileIndex]);
             if(pos == newVirtualFiles.end())
