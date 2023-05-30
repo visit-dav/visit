@@ -101,6 +101,7 @@ To run browser, type *"browser"* into a terminal window followed by the name of 
 Once the browser application opens the Silo_ file, type *"ls"* to see the contents of the Silo_ file.
 From there, typing the name of any of the objects shown in the object listing will print information about that object to the console.
 
+Silo_ also supports a point-n-click interface to inspecting a Silo_ file called *silex* as well as a python extension module for reading and writing Silo_ files.
 Silo files and parallel codes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -182,7 +183,8 @@ Dealing with time
 
 Silo_ files are a flexible container for storing many types of data.
 Silo_'s ability to store data hierarchically in directories can allow you to store multiple time states of your simulation data within a single data file.
-However, since Silo is primarily an I/O library for storing files that contain a single time step's worth of data, VisIt_ only recognizes one time state per Silo_ file.
+However, Silo_ is most often used to store one time state per Silo_ file.
+VisIt_'s Silo_ plugin is primarily designed and used to work with Silo_ files in this modality.
 Consequently, when writing out data, programs that use Silo_ will write a new Silo_ file for each time step.
 By convention, the new file will contain an index indicating either the simulation cycle or a simple integer counter.
 
