@@ -4,6 +4,7 @@ The Silo file format
 ====================
 
 If you are writing a conversion utility or if you have a simulation code written in C, C++, or Fortran then writing out Silo_ files is a good choice for getting your data into VisIt_.
+One reason for this is that among all of VisIt_'s plugins, the Silo plugin is likely one of the most advanced in terms of the various data features it supports.
 This section will illustrate how to use the Silo_ library to write out various types of scientific data.
 Since the Silo_ library provides bindings for multiple languages, including C, Fortran, and Python, the source code examples that demonstrate a particular topic will be given in more than 1 programming language, when appropriate.
 One goal of this section is to provide examples that are complete enough so that they can be readily adapted into working source code.
