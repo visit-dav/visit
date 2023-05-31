@@ -74,7 +74,7 @@ engine to enable scalable rendering. If you specify ``--mesagl`` then
 
 Building Server only
 ~~~~~~~~~~~~~~~~~~~~
-Sometimes a special version of VisIt_ is needed for a remote server, one that only processes data and does not include any gui elements.
+Sometimes a special version of VisIt_ is needed for a remote server, one that only processes data and does not include any GUI elements.
 VisIt_ can be built in this fashion (and the build will be sped up considerably) by adding the ``-server-comonents-only flag`` to build only the server and related programs.
 Then you can run client/server from a desktop system running the GUI locally, and connect to the remote server to process data.
 
@@ -83,7 +83,7 @@ Then you can run client/server from a desktop system running the GUI locally, an
   env PAR_COMPILER=mpicc ./build_visit3_3_3 --server-components-only --mesa --icet
 
 This will do a basic build, but will probably not include the IO libraries you need (unless you only need VTK).
-You can specify any needed libraries individually, eg  ``--hdf5 --netcdf --conduit --mfem`` to add HDF5, NetCDF, Conduit and Mfem IO libraries.
+You can specify any needed libraries individually, e.g.  ``--hdf5 --netcdf --conduit --mfem`` to add HDF5, NetCDF, Conduit and Mfem IO libraries.
 
 
 Building VisIt_ with Pre-Installed (e.g. System) Libraries
