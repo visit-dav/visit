@@ -45,7 +45,7 @@ XMLEditCodeSelectionDialog::XMLEditCodeSelectionDialog(QWidget *parent) :
     QGroupBox *attGroup = new QGroupBox(this);
     attGroup->setTitle(tr("Attributes"));
     QVBoxLayout *attLayout = new QVBoxLayout(attGroup);
-    attLayout->setMargin(10);
+    attLayout->setContentsMargins(10,10,10,10);
     attLayout->setSpacing(5);
     buttons[ID_XML2ATTS] = new QCheckBox(tr("C++"), attGroup);
     attLayout->addWidget(buttons[ID_XML2ATTS]);
@@ -61,7 +61,7 @@ XMLEditCodeSelectionDialog::XMLEditCodeSelectionDialog(QWidget *parent) :
     QGroupBox *pluginGroup = new QGroupBox(this);
     pluginGroup->setTitle(tr("Plugin"));
     QVBoxLayout *pluginLayout = new QVBoxLayout(pluginGroup);
-    pluginLayout->setMargin(10);
+    pluginLayout->setContentsMargins(10,10,10,10);
     pluginLayout->setSpacing(5);
     buttons[ID_XML2WINDOW] = new QCheckBox(tr("Window"), pluginGroup);
     pluginLayout->addWidget(buttons[ID_XML2WINDOW]);

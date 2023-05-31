@@ -203,14 +203,14 @@ QvisPostableWindowSimpleObserver::CreateEntireWindow()
         setCentralWidget( central );
         topCentral = central;
         topLayout = new QVBoxLayout(central);
-        topLayout->setMargin(10);
+        topLayout->setContentsMargins(10,10,10,10);
         vLayout = topLayout;
     }
     else
     {
         topCentral = new QWidget(this);
         vLayout = new QVBoxLayout(topCentral);
-        vLayout->setMargin(10);
+        vLayout->setContentsMargins(10,10,10,10);
         vLayout->setSpacing(5);
         setCentralWidget( topCentral );
         
@@ -222,7 +222,7 @@ QvisPostableWindowSimpleObserver::CreateEntireWindow()
         sv->setWidget(central);
         vLayout->addWidget(sv);
         topLayout = new QVBoxLayout(central);
-        topLayout->setMargin(10);
+        topLayout->setContentsMargins(10,10,10,10);
     }
 
     // Call the Sub-class's CreateWindowContents function to create the

@@ -132,7 +132,7 @@ QvisGlobalLineoutWindow::CreateWindowContents()
     topLayout->addWidget(dynamic);
 
     QVBoxLayout *dlayout = new QVBoxLayout(dynamic);
-    dlayout->setMargin(10);
+    dlayout->setContentsMargins(10,10,10,10);
     dlayout->addSpacing(15);
 
     QGridLayout *dgrid = new QGridLayout();
@@ -172,11 +172,11 @@ QvisGlobalLineoutWindow::CreateWindowContents()
     topLayout->addWidget(gbox);
 
     QVBoxLayout *blayout = new QVBoxLayout(gbox);
-    blayout->setMargin(5);
+    blayout->setContentsMargins(5,5,5,5);
 
     QGridLayout *qgrid = new QGridLayout();
     blayout->addLayout(qgrid);
-    qgrid->setMargin(5);
+    qgrid->setContentsMargins(5,5,5,5);
 
     QLabel *msg = new QLabel(gbox);
     msg->setText(tr("These items can be overridden\nby the Lineout operator"));

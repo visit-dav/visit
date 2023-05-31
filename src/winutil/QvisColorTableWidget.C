@@ -31,7 +31,7 @@ QvisColorTableWidget::QvisColorTableWidget(QWidget *parent,
 {
 
     QGridLayout *topLayout = new QGridLayout(this);
-    topLayout->setMargin(0);
+    topLayout->setContentsMargins(0,0,0,0);
     topLayout->setSpacing(10);
 
     colorTableButton = new QvisColorTableButton(this);

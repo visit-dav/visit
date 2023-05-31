@@ -18,9 +18,6 @@ SmoothGUIPluginInfo.C
 QvisSmoothWindow.C
 ${COMMON_SOURCES}
 )
-SET(LIBG_MOC_SOURCES
-QvisSmoothWindow.h
-)
 
 SET(LIBV_SOURCES
 SmoothViewerEnginePluginInfo.C
@@ -48,8 +45,8 @@ TARGET_LINK_LIBRARIES(ISmoothOperator visitcommon)
 SET(INSTALLTARGETS ISmoothOperator)
 
 IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
-    QT_WRAP_CPP(GSmoothOperator LIBG_SOURCES ${LIBG_MOC_SOURCES})
     ADD_LIBRARY(GSmoothOperator ${LIBG_SOURCES})
+    set_target_properties(GSmoothOperator PROPERTIES AUTOMOC ON)
     TARGET_LINK_LIBRARIES(GSmoothOperator visitcommon gui )
 
     ADD_LIBRARY(VSmoothOperator ${LIBV_SOURCES})

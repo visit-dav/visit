@@ -18,9 +18,6 @@ DelaunayGUIPluginInfo.C
 QvisDelaunayWindow.C
 ${COMMON_SOURCES}
 )
-SET(LIBG_MOC_SOURCES
-QvisDelaunayWindow.h
-)
 
 SET(LIBV_SOURCES
 DelaunayViewerEnginePluginInfo.C
@@ -48,8 +45,8 @@ TARGET_LINK_LIBRARIES(IDelaunayOperator visitcommon)
 SET(INSTALLTARGETS IDelaunayOperator)
 
 IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
-    QT_WRAP_CPP(GDelaunayOperator LIBG_SOURCES ${LIBG_MOC_SOURCES})
     ADD_LIBRARY(GDelaunayOperator ${LIBG_SOURCES})
+    set_target_properties(GDelaunayOperator PROPERTIES AUTOMOC ON)
     TARGET_LINK_LIBRARIES(GDelaunayOperator visitcommon gui )
 
     ADD_LIBRARY(VDelaunayOperator ${LIBV_SOURCES})

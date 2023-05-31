@@ -18,9 +18,6 @@ ElevateGUIPluginInfo.C
 QvisElevateWindow.C
 ${COMMON_SOURCES}
 )
-SET(LIBG_MOC_SOURCES
-QvisElevateWindow.h
-)
 
 SET(LIBV_SOURCES
 ElevateViewerEnginePluginInfo.C
@@ -48,8 +45,8 @@ TARGET_LINK_LIBRARIES(IElevateOperator visitcommon)
 SET(INSTALLTARGETS IElevateOperator)
 
 IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
-    QT_WRAP_CPP(GElevateOperator LIBG_SOURCES ${LIBG_MOC_SOURCES})
     ADD_LIBRARY(GElevateOperator ${LIBG_SOURCES})
+    set_target_properties(GElevateOperator PROPERTIES AUTOMOC ON)
     TARGET_LINK_LIBRARIES(GElevateOperator visitcommon gui )
 
     ADD_LIBRARY(VElevateOperator ${LIBV_SOURCES})

@@ -18,9 +18,6 @@ SPHResampleGUIPluginInfo.C
 QvisSPHResampleWindow.C
 ${COMMON_SOURCES}
 )
-SET(LIBG_MOC_SOURCES
-QvisSPHResampleWindow.h
-)
 
 SET(LIBV_SOURCES
 SPHResampleViewerEnginePluginInfo.C
@@ -48,8 +45,8 @@ TARGET_LINK_LIBRARIES(ISPHResampleOperator visitcommon)
 SET(INSTALLTARGETS ISPHResampleOperator)
 
 IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
-    QT_WRAP_CPP(GSPHResampleOperator LIBG_SOURCES ${LIBG_MOC_SOURCES})
     ADD_LIBRARY(GSPHResampleOperator ${LIBG_SOURCES})
+    set_target_properties(GSPHResampleOperator PROPERTIES AUTOMOC ON)
     TARGET_LINK_LIBRARIES(GSPHResampleOperator visitcommon gui )
 
     ADD_LIBRARY(VSPHResampleOperator ${LIBV_SOURCES})

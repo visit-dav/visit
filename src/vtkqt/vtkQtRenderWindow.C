@@ -23,7 +23,6 @@
 #include <vtkRenderWindow.h>
 
 #include <QApplication>
-#include <QDesktopWidget>
 #include <vtkUnsignedCharArray.h>
 
 #ifdef __linux__

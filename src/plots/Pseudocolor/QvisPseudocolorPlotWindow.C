@@ -238,7 +238,7 @@ void
 QvisPseudocolorPlotWindow::CreateDataTab(QWidget *pageData)
 {
     QGridLayout *topLayout = new QGridLayout(pageData);
-    topLayout->setMargin(5);
+    topLayout->setContentsMargins(5,5,5,5);
     topLayout->setSpacing(10);
 
     //
@@ -249,7 +249,7 @@ QvisPseudocolorPlotWindow::CreateDataTab(QWidget *pageData)
     topLayout->addWidget(dataGroup);
 
     QGridLayout *dataLayout = new QGridLayout(dataGroup);
-    dataLayout->setMargin(5);
+    dataLayout->setContentsMargins(5,5,5,5);
     dataLayout->setSpacing(10);
 
     //
@@ -289,7 +289,7 @@ QvisPseudocolorPlotWindow::CreateDataTab(QWidget *pageData)
     dataLayout->addWidget(limitsGroup, 1, 0, 2, 5);
 
     QGridLayout *limitsLayout = new QGridLayout(limitsGroup);
-    limitsLayout->setMargin(5);
+    limitsLayout->setContentsMargins(5,5,5,5);
     limitsLayout->setSpacing(10);
 
     limitsLayout->addWidget( new QLabel(tr("Limits"), central), 0, 0);
@@ -374,7 +374,7 @@ QvisPseudocolorPlotWindow::CreateDataTab(QWidget *pageData)
     topLayout->addWidget(colorGroup);
 
     QGridLayout *colorLayout = new QGridLayout(colorGroup);
-    colorLayout->setMargin(5);
+    colorLayout->setContentsMargins(5,5,5,5);
     colorLayout->setSpacing(10);
 
     int gRow = 0;
@@ -444,7 +444,7 @@ QvisPseudocolorPlotWindow::CreateDataTab(QWidget *pageData)
     colorLayout->addWidget(opacityMinMaxGroup, gRow, 1, 1, 3);
 
     QGridLayout *opacityMinMaxLayout = new QGridLayout(opacityMinMaxGroup);
-    opacityMinMaxLayout->setMargin(5);
+    opacityMinMaxLayout->setContentsMargins(5,5,5,5);
     opacityMinMaxLayout->setSpacing(10);
 
 
@@ -495,7 +495,7 @@ QvisPseudocolorPlotWindow::CreateDataTab(QWidget *pageData)
     topLayout->addWidget(miscGroup);
 
     QGridLayout *miscLayout = new QGridLayout(miscGroup);
-    miscLayout->setMargin(5);
+    miscLayout->setContentsMargins(5,5,5,5);
     miscLayout->setSpacing(10);
 
     // Create the legend toggle
@@ -536,7 +536,7 @@ void
 QvisPseudocolorPlotWindow::CreateGeometryTab(QWidget *pageGeometry)
 {
     QGridLayout *topLayout = new QGridLayout(pageGeometry);
-    topLayout->setMargin(5);
+    topLayout->setContentsMargins(5,5,5,5);
     topLayout->setSpacing(10);
 
     //
@@ -547,7 +547,7 @@ QvisPseudocolorPlotWindow::CreateGeometryTab(QWidget *pageGeometry)
     topLayout->addWidget(lineGroup);
 
     QGridLayout *lineLayout = new QGridLayout(lineGroup);
-    lineLayout->setMargin(5);
+    lineLayout->setContentsMargins(5,5,5,5);
     lineLayout->setSpacing(10);
 
     //
@@ -710,7 +710,7 @@ QvisPseudocolorPlotWindow::CreateGeometryTab(QWidget *pageGeometry)
     topLayout->addWidget(pointGroup);
 
     QGridLayout *pointLayout = new QGridLayout(pointGroup);
-    pointLayout->setMargin(5);
+    pointLayout->setContentsMargins(5,5,5,5);
     pointLayout->setSpacing(10);
 
     // Create the point control
@@ -735,7 +735,7 @@ QvisPseudocolorPlotWindow::CreateGeometryTab(QWidget *pageGeometry)
     topLayout->addWidget(renderingGroup);
 
     QGridLayout *renderingLayout = new QGridLayout(renderingGroup);
-    renderingLayout->setMargin(5);
+    renderingLayout->setContentsMargins(5,5,5,5);
     renderingLayout->setSpacing(10);
 
 
@@ -804,7 +804,7 @@ void
 QvisPseudocolorPlotWindow::CreateExtrasTab(QWidget *pageExtras)
 {
     QGridLayout *topLayout = new QGridLayout(pageExtras);
-    topLayout->setMargin(5);
+    topLayout->setContentsMargins(5,5,5,5);
     topLayout->setSpacing(10);
 
     //
@@ -815,7 +815,7 @@ QvisPseudocolorPlotWindow::CreateExtrasTab(QWidget *pageExtras)
     topLayout->addWidget(blankGroup);
 
     QGridLayout *blankLayout = new QGridLayout(blankGroup);
-    blankLayout->setMargin(5);
+    blankLayout->setContentsMargins(5,5,5,5);
     blankLayout->setSpacing(10);
 
     blankLayout->addWidget(new QLabel(tr(""), central), 0,0);

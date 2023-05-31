@@ -18,9 +18,6 @@ CurveGUIPluginInfo.C
 QvisCurvePlotWindow.C
 ${COMMON_SOURCES}
 )
-SET(LIBG_MOC_SOURCES
-QvisCurvePlotWindow.h
-)
 
 SET(LIBV_SOURCES
 CurveViewerEnginePluginInfo.C
@@ -57,8 +54,8 @@ TARGET_LINK_LIBRARIES(ICurvePlot visitcommon)
 SET(INSTALLTARGETS ICurvePlot)
 
 IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
-    QT_WRAP_CPP(GCurvePlot LIBG_SOURCES ${LIBG_MOC_SOURCES})
     ADD_LIBRARY(GCurvePlot ${LIBG_SOURCES})
+    set_target_properties(GCurvePlot PROPERTIES AUTOMOC ON)
     TARGET_LINK_LIBRARIES(GCurvePlot visitcommon gui )
 
     ADD_LIBRARY(VCurvePlot ${LIBV_SOURCES})

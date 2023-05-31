@@ -36,7 +36,7 @@ class Code
     void Print(QTextStream &out, const QString &generatorName = QString())
     {
         if(generatorName.isEmpty() || generatorName == target)
-            out << "        Code: (" << target << ") " << name << endl;
+            out << "        Code: (" << target << ") " << name << Endl;
     }
 };
 

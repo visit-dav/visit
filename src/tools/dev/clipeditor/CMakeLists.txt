@@ -7,6 +7,9 @@
 #   Brad Whitlock, Wed Apr 10 18:00:15 PDT 2013
 #   Fix for static on Mac.
 #
+#   Kathleen Biagas, Thu Mar 30, 2023
+#   Use AUTOMOC target property instead of QT_WRAP_CPP macro.
+#
 #****************************************************************************
 
 SET(CLIPEDITOR_SOURCES
@@ -25,13 +28,6 @@ ADD_EXECUTABLE(genhexcases genhexcases.C)
 ADD_EXECUTABLE(gentetcases gentetcases.C)
 ADD_EXECUTABLE(genvoxcases genvoxcases.C)
 ADD_EXECUTABLE(genpolycases genpolycases.C)
-
-SET(CLIPEDITOR_MOC_SOURCES
-    ClipEditor.h
-    Viewer.h
-)
-
-QT_WRAP_CPP(clipeditor CLIPEDITOR_SOURCES ${CLIPEDITOR_MOC_SOURCES})
 
 SET(RELEVANT_QT_LIBS 
     ${QT_QTOPENGL_LIBRARY}
@@ -53,5 +49,7 @@ INCLUDE_DIRECTORIES(${VISIT_SOURCE_DIR}/visit_vtk/lightweight)
 LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY})
 
 ADD_EXECUTABLE(clipeditor ${VISIT_APPLICATION_STYLE} ${CLIPEDITOR_SOURCES})
+
+set_target_properties(clipeditor PROPERTIES AUTOMOC ON)
 
 TARGET_LINK_LIBRARIES(clipeditor  ${RELEVANT_QT_LIBS} ${OPENGL_LIBRARIES})

@@ -18,9 +18,6 @@ ContourGUIPluginInfo.C
 QvisContourPlotWindow.C
 ${COMMON_SOURCES}
 )
-SET(LIBG_MOC_SOURCES
-QvisContourPlotWindow.h
-)
 
 SET(LIBV_SOURCES
 ContourViewerEnginePluginInfo.C
@@ -49,8 +46,8 @@ TARGET_LINK_LIBRARIES(IContourPlot visitcommon)
 SET(INSTALLTARGETS IContourPlot)
 
 IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
-    QT_WRAP_CPP(GContourPlot LIBG_SOURCES ${LIBG_MOC_SOURCES})
     ADD_LIBRARY(GContourPlot ${LIBG_SOURCES})
+    set_target_properties(GContourPlot PROPERTIES AUTOMOC ON)
     TARGET_LINK_LIBRARIES(GContourPlot visitcommon gui )
 
     ADD_LIBRARY(VContourPlot ${LIBV_SOURCES})

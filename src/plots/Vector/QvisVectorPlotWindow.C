@@ -200,7 +200,7 @@ void
 QvisVectorPlotWindow::CreateSamplingTab(QWidget *pageVector)
 {
     QGridLayout *topLayout = new QGridLayout(pageVector);
-    topLayout->setMargin(5);
+    topLayout->setContentsMargins(5,5,5,5);
     topLayout->setSpacing(10);
 
     //
@@ -287,7 +287,7 @@ void
 QvisVectorPlotWindow::CreateDataTab(QWidget *pageVector)
 {
     QGridLayout *topLayout = new QGridLayout(pageVector);
-    topLayout->setMargin(5);
+    topLayout->setContentsMargins(5,5,5,5);
     topLayout->setSpacing(10);
 
     //
@@ -298,7 +298,7 @@ QvisVectorPlotWindow::CreateDataTab(QWidget *pageVector)
     topLayout->addWidget(limitsGroup);
 
     QGridLayout *limitsLayout = new QGridLayout(limitsGroup);
-    limitsLayout->setMargin(5);
+    limitsLayout->setContentsMargins(5,5,5,5);
     limitsLayout->setSpacing(10);
 
     limitsLayout->addWidget( new QLabel(tr("Limits"), central), 0, 0);
@@ -338,7 +338,7 @@ QvisVectorPlotWindow::CreateDataTab(QWidget *pageVector)
     topLayout->addWidget(colorGroupBox);
 
     QGridLayout *cgLayout = new QGridLayout(colorGroupBox);
-    cgLayout->setMargin(5);
+    cgLayout->setContentsMargins(5,5,5,5);
     cgLayout->setSpacing(10);
     cgLayout->setColumnStretch(1, 10);
 
@@ -379,7 +379,7 @@ QvisVectorPlotWindow::CreateDataTab(QWidget *pageVector)
     topLayout->addWidget(miscGroup);
 
     QGridLayout *miscLayout = new QGridLayout(miscGroup);
-    miscLayout->setMargin(5);
+    miscLayout->setContentsMargins(5,5,5,5);
     miscLayout->setSpacing(10);
  
     // Create the legend toggle
@@ -407,7 +407,7 @@ void
 QvisVectorPlotWindow::CreateGeometryTab(QWidget *pageGlyphs)
 {
     QGridLayout *topLayout = new QGridLayout(pageGlyphs);
-    topLayout->setMargin(5);
+    topLayout->setContentsMargins(5,5,5,5);
     topLayout->setSpacing(10);
 
     //
@@ -418,7 +418,7 @@ QvisVectorPlotWindow::CreateGeometryTab(QWidget *pageGlyphs)
     topLayout->addWidget(scaleGroupBox);
 
     QGridLayout *sgLayout = new QGridLayout(scaleGroupBox);
-    sgLayout->setMargin(5);
+    sgLayout->setContentsMargins(5,5,5,5);
     sgLayout->setSpacing(10);
     sgLayout->setColumnStretch(1, 10);
 
@@ -451,7 +451,7 @@ QvisVectorPlotWindow::CreateGeometryTab(QWidget *pageGlyphs)
     topLayout->addWidget(styleGroupBox);
 
     QGridLayout *styleLayout = new QGridLayout(styleGroupBox);
-    styleLayout->setMargin(5);
+    styleLayout->setContentsMargins(5,5,5,5);
     styleLayout->setSpacing(10);
     styleLayout->setColumnStretch(1, 10);
     
@@ -517,7 +517,7 @@ QvisVectorPlotWindow::CreateGeometryTab(QWidget *pageGlyphs)
     QWidget *originBox = new QWidget(styleGroupBox);
     originButtonGroup = new QButtonGroup(originBox);
     QHBoxLayout *originLayout = new QHBoxLayout(originBox);
-    originLayout->setMargin(0);
+    originLayout->setContentsMargins(0,0,0,0);
     originLayout->setSpacing(10);
     QLabel *vectorOriginLabel = new QLabel(tr("Vector origin"), originBox);
     connect(originButtonGroup, SIGNAL(buttonClicked(int)),
@@ -543,7 +543,7 @@ QvisVectorPlotWindow::CreateGeometryTab(QWidget *pageGlyphs)
     topLayout->addWidget(renderingGroup);
 
     QGridLayout *renderingLayout = new QGridLayout(renderingGroup);
-    renderingLayout->setMargin(5);
+    renderingLayout->setContentsMargins(5,5,5,5);
     renderingLayout->setSpacing(10);
 
     // Create the smoothing options
@@ -580,7 +580,7 @@ void
 QvisVectorPlotWindow::CreateExtrasTab(QWidget *pageExtras)
 {
     QGridLayout *topLayout = new QGridLayout(pageExtras);
-    topLayout->setMargin(5);
+    topLayout->setContentsMargins(5,5,5,5);
     topLayout->setSpacing(10);
 
     // Create the blank stuff to fill in gaps.
@@ -590,7 +590,7 @@ QvisVectorPlotWindow::CreateExtrasTab(QWidget *pageExtras)
     topLayout->addWidget(blankGroup);
 
     QGridLayout *blankLayout = new QGridLayout(blankGroup);
-    blankLayout->setMargin(5);
+    blankLayout->setContentsMargins(5,5,5,5);
     blankLayout->setSpacing(10);
  
     blankLayout->addWidget(new QLabel(tr(""), central), 0,0);

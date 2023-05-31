@@ -18,6 +18,11 @@ Simply untar to the directory of your choosing to use it.
 Note that the tarball untars its contents to ``.`` and not its own directory.
 Its best to make a directory (e.g. ``mkdir visit_java``), copy the tarball into that directory and untar it there.
 
+Java Client API Docs
+--------------------
+
+`Java Client API docs <https://visit-dav.github.io/java-client-docs/>`__
+
 Building from source
 --------------------
 

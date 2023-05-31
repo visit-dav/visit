@@ -9,6 +9,8 @@
 #ifndef AVT_BLUEPRINT_FILE_FORMAT_H
 #define AVT_BLUEPRINT_FILE_FORMAT_H
 
+#include <set>
+
 // NOTE: This is from avtblueprint lib
 #include "avtConduitBlueprintDataAdaptor.h"
 // NOTE: This is from avtmfem lib
@@ -45,6 +47,9 @@ class     DBOptionsAttributes;
 // 
 //     Justin Privitera, Wed Aug 24 11:08:51 PDT 2022
 //     Added includes for new avtmfem and avtblueprint libs.
+// 
+//    Justin Privitera, Wed Mar 22 15:48:01 PDT 2023
+//    Included set and added a set called m_curve_names.
 //
 // ****************************************************************************
 
@@ -150,6 +155,8 @@ class avtBlueprintFileFormat : public avtSTMDFileFormat
 
     std::map<std::string,bool> m_mfem_mesh_map;
     std::map<std::string,std::pair<std::string,int> > m_mfem_material_map;
+
+    std::set<std::string>  m_curve_names;
 
     bool                   m_new_refine;
 

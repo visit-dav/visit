@@ -29,8 +29,7 @@ USAGE: visit [options]::
     Startup options
     ---------------------------------------------------------------------------
         -o <filename>        Open the specified data file at startup.
-        -s <filename>        Run the specified VisIt script. Note: This
-                             argument only takes effect with -cli or -movie.
+        -s <filename>        Run the specified VisIt script.
         -sessionfile <filename>  Open the specified session file at startup
                              Note that this argument only takes effect with
                              -gui or -movie.

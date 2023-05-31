@@ -40,7 +40,7 @@ QvisAnnotationObjectInterface::QvisAnnotationObjectInterface(QWidget *parent) :
     annot = 0;
 
     topLayout = new QVBoxLayout(this);
-    topLayout->setMargin(10);
+    topLayout->setContentsMargins(10,10,10,10);
 }
 
 // ****************************************************************************

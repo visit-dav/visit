@@ -18,9 +18,6 @@ DualMeshGUIPluginInfo.C
 QvisDualMeshWindow.C
 ${COMMON_SOURCES}
 )
-SET(LIBG_MOC_SOURCES
-QvisDualMeshWindow.h
-)
 
 SET(LIBV_SOURCES
 DualMeshViewerEnginePluginInfo.C
@@ -48,8 +45,8 @@ TARGET_LINK_LIBRARIES(IDualMeshOperator visitcommon)
 SET(INSTALLTARGETS IDualMeshOperator)
 
 IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
-    QT_WRAP_CPP(GDualMeshOperator LIBG_SOURCES ${LIBG_MOC_SOURCES})
     ADD_LIBRARY(GDualMeshOperator ${LIBG_SOURCES})
+    set_target_properties(GDualMeshOperator PROPERTIES AUTOMOC ON)
     TARGET_LINK_LIBRARIES(GDualMeshOperator visitcommon gui )
 
     ADD_LIBRARY(VDualMeshOperator ${LIBV_SOURCES})

@@ -77,20 +77,25 @@ class JobSubmitter(object):
         return str(int(math.ceil(float(self.parallel.np) / float(self.parallel.nn))))
 
     # Open MPI and MPICH have different arguments for the process per node flag.
-    # This function trys to decide with flag to use. It defaults to MPICH.
+    # This function trys to decide which flag to use. If it fails to run mpirun
+    # or DOES NOT find the string "Open MPI" in the result, it assumes MPICH.
     def PPNArgument(self):
-        p = subprocess.Popen(["mpirun", "--version"],
-                             universal_newlines=True,
-                             stderr=subprocess.PIPE,
-                             stdout=subprocess.PIPE)
-        output = p.communicate()
-        new = ' '.join(output)
-        if new.find("Open MPI") == -1:
-            # MPICH
-            return "-ppn"
-        else:
-            # Open MPI
-            return "-npernode"
+        try:
+            p = subprocess.Popen(["mpirun", "--version"],
+                                 universal_newlines=True,
+                                 stderr=subprocess.PIPE,
+                                 stdout=subprocess.PIPE)
+            output = p.communicate()
+            new = ' '.join(output)
+            if new.find("Open MPI") == -1:
+                # MPICH
+                return "-ppn"
+            else:
+                # Open MPI
+                return "-npernode"
+        except:
+            pass
+        return "-ppn"
 
     def CreateCommand(self, args, debugger):
         parcmd = self.Executable()
@@ -649,6 +654,7 @@ output streams.
         env = env + ",VISITHOME=" + GETENV("VISITHOME")
         env = env + ",VISITARCHHOME=" + GETENV("VISITARCHHOME")
         env = env + ",VISITPLUGINDIR=" + GETENV("VISITPLUGINDIR")
+        env = env + ",PYTHONHOME=" + GETENV("PYTHONHOME")
         return [env]
 
     def mpiexec(self):

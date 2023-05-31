@@ -192,7 +192,7 @@ Viewer::mouseMoveEvent(QMouseEvent *mev)
             up   = MM^up;
             V.CreateView(from,at,up);
         }
-        else if (mev->buttons() == Qt::MidButton)
+        else if (mev->buttons() == Qt::MiddleButton)
         {
             Vector view_dir((at-from).normalized());
             at   += view_dir*(y2-y1)*ds_size;

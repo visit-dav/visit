@@ -6,7 +6,6 @@
 #include <QAction>
 #include <QActionGroup>
 #include <QApplication>
-#include <QDesktopWidget>
 #include <QMenu>
 #include <QPainter>
 #include <QPixmap>

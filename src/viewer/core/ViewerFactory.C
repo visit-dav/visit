@@ -179,6 +179,9 @@ ViewerFactory::CreateViewerWindow(int windowIndex)
 //   Kathleen Biagas, Mon Dec 22 10:21:22 PST 2014
 //   Add SetRemoveDuplicateNodesRPC.
 //
+//   Eric Brugger, Wed Mar 22 16:23:12 PDT 2023
+//   Add operator keyframing.
+//
 // ****************************************************************************
 
 void
@@ -227,6 +230,7 @@ ViewerFactory::SetActionManagerLogic(ViewerActionManager *mgr, ViewerWindow *win
     mgr->SetLogic(ViewerRPC::DeleteNamedSelectionRPC,       new DeleteNamedSelectionAction(win));
     mgr->SetLogic(ViewerRPC::DeletePlotDatabaseKeyframeRPC, new DeletePlotDatabaseKeyframeAction(win));
     mgr->SetLogic(ViewerRPC::DeletePlotKeyframeRPC,         new DeletePlotKeyframeAction(win));
+    mgr->SetLogic(ViewerRPC::DeleteOperatorKeyframeRPC,     new DeleteOperatorKeyframeAction(win));
     mgr->SetLogic(ViewerRPC::DeleteViewKeyframeRPC,         new DeleteViewKeyframeAction(win));
     mgr->SetLogic(ViewerRPC::DeleteWindowRPC,               new DeleteWindowAction(win));
     mgr->SetLogic(ViewerRPC::DemoteOperatorRPC,             new DemoteOperatorAction(win));
@@ -256,6 +260,7 @@ ViewerFactory::SetActionManagerLogic(ViewerActionManager *mgr, ViewerWindow *win
     mgr->SetLogic(ViewerRPC::MovePlotKeyframeRPC,           new MovePlotKeyframeAction(win));
     mgr->SetLogic(ViewerRPC::MovePlotOrderTowardFirstRPC,   new MovePlotOrderTowardFirstAction(win));
     mgr->SetLogic(ViewerRPC::MovePlotOrderTowardLastRPC,    new MovePlotOrderTowardLastAction(win));
+    mgr->SetLogic(ViewerRPC::MoveOperatorKeyframeRPC,       new MoveOperatorKeyframeAction(win));
     mgr->SetLogic(ViewerRPC::MoveViewKeyframeRPC,           new MoveViewKeyframeAction(win));
     mgr->SetLogic(ViewerRPC::MoveWindowRPC,                 new MoveWindowAction(win));
     mgr->SetLogic(ViewerRPC::OpenCLIClientRPC,              new OpenCLIClientAction(win));

@@ -92,7 +92,7 @@ QvisElevateWindow::CreateWindowContents()
     useXYLimitsWidget = new QWidget(central);
     useXYLimits= new QButtonGroup(useXYLimitsWidget);
     QHBoxLayout *useXYLimitsLayout = new QHBoxLayout(useXYLimitsWidget);
-    useXYLimitsLayout->setMargin(0);
+    useXYLimitsLayout->setContentsMargins(0,0,0,0);
     useXYLimitsLayout->setSpacing(10);
     QRadioButton *useXYLimitsScalingModeNever = new QRadioButton(tr("Never"), useXYLimitsWidget);
     useXYLimits->addButton(useXYLimitsScalingModeNever,0);
@@ -112,7 +112,7 @@ QvisElevateWindow::CreateWindowContents()
     limitsModeWidget = new QWidget(central);
     limitsMode = new QButtonGroup(limitsModeWidget);
     QHBoxLayout *limitsModeLayout = new QHBoxLayout(limitsModeWidget);
-    limitsModeLayout->setMargin(0);
+    limitsModeLayout->setContentsMargins(0,0,0,0);
     limitsModeLayout->setSpacing(10);
     QRadioButton *limitsModeLimitsModeOriginalData = new QRadioButton(tr("Original Data"), limitsModeWidget);
     limitsMode->addButton(limitsModeLimitsModeOriginalData,0);
@@ -129,7 +129,7 @@ QvisElevateWindow::CreateWindowContents()
     scalingWidget = new QWidget(central);
     scaling = new QButtonGroup(scalingWidget);
     QHBoxLayout *scalingLayout = new QHBoxLayout(scalingWidget);
-    scalingLayout->setMargin(0);
+    scalingLayout->setContentsMargins(0,0,0,0);
     scalingLayout->setSpacing(10);
     QRadioButton *scalingScalingLinear = new QRadioButton(tr("Linear"), scalingWidget);
     scaling->addButton(scalingScalingLinear,0);

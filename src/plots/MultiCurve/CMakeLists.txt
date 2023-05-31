@@ -18,9 +18,6 @@ MultiCurveGUIPluginInfo.C
 QvisMultiCurvePlotWindow.C
 ${COMMON_SOURCES}
 )
-SET(LIBG_MOC_SOURCES
-QvisMultiCurvePlotWindow.h
-)
 
 SET(LIBV_SOURCES
 MultiCurveViewerEnginePluginInfo.C
@@ -53,8 +50,8 @@ TARGET_LINK_LIBRARIES(IMultiCurvePlot visitcommon)
 SET(INSTALLTARGETS IMultiCurvePlot)
 
 IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
-    QT_WRAP_CPP(GMultiCurvePlot LIBG_SOURCES ${LIBG_MOC_SOURCES})
     ADD_LIBRARY(GMultiCurvePlot ${LIBG_SOURCES})
+    set_target_properties(GMultiCurvePlot PROPERTIES AUTOMOC ON)
     TARGET_LINK_LIBRARIES(GMultiCurvePlot visitcommon gui )
 
     ADD_LIBRARY(VMultiCurvePlot ${LIBV_SOURCES})

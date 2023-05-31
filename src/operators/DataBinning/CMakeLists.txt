@@ -18,9 +18,6 @@ DataBinningGUIPluginInfo.C
 QvisDataBinningWindow.C
 ${COMMON_SOURCES}
 )
-SET(LIBG_MOC_SOURCES
-QvisDataBinningWindow.h
-)
 
 SET(LIBV_SOURCES
 DataBinningViewerEnginePluginInfo.C
@@ -49,8 +46,8 @@ TARGET_LINK_LIBRARIES(IDataBinningOperator visitcommon)
 SET(INSTALLTARGETS IDataBinningOperator)
 
 IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
-    QT_WRAP_CPP(GDataBinningOperator LIBG_SOURCES ${LIBG_MOC_SOURCES})
     ADD_LIBRARY(GDataBinningOperator ${LIBG_SOURCES})
+    set_target_properties(GDataBinningOperator PROPERTIES AUTOMOC ON)
     TARGET_LINK_LIBRARIES(GDataBinningOperator visitcommon gui )
 
     ADD_LIBRARY(VDataBinningOperator ${LIBV_SOURCES})

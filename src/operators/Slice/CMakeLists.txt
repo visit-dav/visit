@@ -18,9 +18,6 @@ SliceGUIPluginInfo.C
 QvisSliceWindow.C
 ${COMMON_SOURCES}
 )
-SET(LIBG_MOC_SOURCES
-QvisSliceWindow.h
-)
 
 SET(LIBV_SOURCES
 SliceViewerEnginePluginInfo.C
@@ -49,8 +46,8 @@ TARGET_LINK_LIBRARIES(ISliceOperator visitcommon)
 SET(INSTALLTARGETS ISliceOperator)
 
 IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
-    QT_WRAP_CPP(GSliceOperator LIBG_SOURCES ${LIBG_MOC_SOURCES})
     ADD_LIBRARY(GSliceOperator ${LIBG_SOURCES})
+    set_target_properties(GSliceOperator PROPERTIES AUTOMOC ON)
     TARGET_LINK_LIBRARIES(GSliceOperator visitcommon gui )
 
     ADD_LIBRARY(VSliceOperator ${LIBV_SOURCES})

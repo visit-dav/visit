@@ -362,7 +362,7 @@ QvisLineWidthWidget::QvisLineWidthWidget(int width_, QWidget *parent) :
 
     // Create the combo box and add the pixmaps to it.
     QHBoxLayout *topLayout = new QHBoxLayout(this);
-    topLayout->setMargin(0);
+    topLayout->setContentsMargins(0,0,0,0);
     topLayout->setSpacing(0);
     lineWidthComboBox = new QComboBox(this);
     lineWidthComboBox->addItem(QIcon(style1Pixmap),"1");

@@ -40,7 +40,7 @@ class GUI_API QvisElementSelectionWidget : public QWidget
 {
     Q_OBJECT
   public:
-    QvisElementSelectionWidget(QWidget *parent = 0, Qt::WindowFlags f = 0);
+    QvisElementSelectionWidget(QWidget *parent = 0, Qt::WindowFlags f = Qt::Widget);
     virtual ~QvisElementSelectionWidget();
     virtual QSize sizeHint() const;
 

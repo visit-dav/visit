@@ -18,9 +18,6 @@ InverseGhostZoneGUIPluginInfo.C
 QvisInverseGhostZoneWindow.C
 ${COMMON_SOURCES}
 )
-SET(LIBG_MOC_SOURCES
-QvisInverseGhostZoneWindow.h
-)
 
 SET(LIBV_SOURCES
 InverseGhostZoneViewerEnginePluginInfo.C
@@ -48,8 +45,8 @@ TARGET_LINK_LIBRARIES(IInverseGhostZoneOperator visitcommon)
 SET(INSTALLTARGETS IInverseGhostZoneOperator)
 
 IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
-    QT_WRAP_CPP(GInverseGhostZoneOperator LIBG_SOURCES ${LIBG_MOC_SOURCES})
     ADD_LIBRARY(GInverseGhostZoneOperator ${LIBG_SOURCES})
+    set_target_properties(GInverseGhostZoneOperator PROPERTIES AUTOMOC ON)
     TARGET_LINK_LIBRARIES(GInverseGhostZoneOperator visitcommon gui )
 
     ADD_LIBRARY(VInverseGhostZoneOperator ${LIBV_SOURCES})

@@ -18,9 +18,6 @@ PoincareGUIPluginInfo.C
 QvisPoincareWindow.C
 ${COMMON_SOURCES}
 )
-SET(LIBG_MOC_SOURCES
-QvisPoincareWindow.h
-)
 
 SET(LIBV_SOURCES
 PoincareViewerEnginePluginInfo.C
@@ -52,8 +49,8 @@ TARGET_LINK_LIBRARIES(IPoincareOperator visitcommon)
 SET(INSTALLTARGETS IPoincareOperator)
 
 IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
-    QT_WRAP_CPP(GPoincareOperator LIBG_SOURCES ${LIBG_MOC_SOURCES})
     ADD_LIBRARY(GPoincareOperator ${LIBG_SOURCES})
+    set_target_properties(GPoincareOperator PROPERTIES AUTOMOC ON)
     TARGET_LINK_LIBRARIES(GPoincareOperator visitcommon gui )
 
     ADD_LIBRARY(VPoincareOperator ${LIBV_SOURCES})

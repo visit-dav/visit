@@ -230,7 +230,7 @@ QvisPlotManagerWidget::QvisPlotManagerWidget(QMenuBar *menuBar,QWidget *parent)
     varMenuFlags = 0;
 
     topLayout = new QVBoxLayout(this);
-    topLayout->setMargin(5);
+    topLayout->setContentsMargins(5,5,5,5);
 
     plotActionsToolbar = new QToolBar(this);
     plotActionsToolbar->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
@@ -344,7 +344,7 @@ QvisPlotManagerWidget::QvisPlotManagerWidget(QMenuBar *menuBar,QWidget *parent)
     topLayout->addWidget(applyWindow);
 
     QHBoxLayout *applyWindowLayout = new QHBoxLayout(applyWindow);
-    applyWindowLayout->setMargin(0);
+    applyWindowLayout->setContentsMargins(0,0,0,0);
     applyWindowLayout->setSpacing(10);
 
     applyWindowLabel = new QLabel(tr("Apply to"), applyWindow);

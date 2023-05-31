@@ -18,9 +18,6 @@ LagrangianGUIPluginInfo.C
 QvisLagrangianWindow.C
 ${COMMON_SOURCES}
 )
-SET(LIBG_MOC_SOURCES
-QvisLagrangianWindow.h
-)
 
 SET(LIBV_SOURCES
 LagrangianViewerEnginePluginInfo.C
@@ -48,8 +45,8 @@ TARGET_LINK_LIBRARIES(ILagrangianOperator visitcommon)
 SET(INSTALLTARGETS ILagrangianOperator)
 
 IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
-    QT_WRAP_CPP(GLagrangianOperator LIBG_SOURCES ${LIBG_MOC_SOURCES})
     ADD_LIBRARY(GLagrangianOperator ${LIBG_SOURCES})
+    set_target_properties(GLagrangianOperator PROPERTIES AUTOMOC ON)
     TARGET_LINK_LIBRARIES(GLagrangianOperator visitcommon gui )
 
     ADD_LIBRARY(VLagrangianOperator ${LIBV_SOURCES})

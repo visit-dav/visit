@@ -280,7 +280,7 @@ QvisDataBinningWindow::CreateWindowContents()
     outOfBoundsBehavior = new QWidget(central);
     outOfBoundsBehaviorButtonGroup= new QButtonGroup(outOfBoundsBehavior);
     QHBoxLayout *outOfBoundsBehaviorLayout = new QHBoxLayout(outOfBoundsBehavior);
-    outOfBoundsBehaviorLayout->setMargin(0);
+    outOfBoundsBehaviorLayout->setContentsMargins(0,0,0,0);
     outOfBoundsBehaviorLayout->setSpacing(10);
     QRadioButton *outOfBoundsBehaviorOutOfBoundsBehaviorClamp = new QRadioButton(tr("Clamp"), outOfBoundsBehavior);
     outOfBoundsBehaviorButtonGroup->addButton(outOfBoundsBehaviorOutOfBoundsBehaviorClamp,0);
@@ -346,7 +346,7 @@ QvisDataBinningWindow::CreateWindowContents()
     QWidget *outputWidget = new QWidget(central);
     outputButtonGroup= new QButtonGroup(outputWidget);
     QHBoxLayout *outputHLayout = new QHBoxLayout(outputWidget);
-    outputHLayout->setMargin(0);
+    outputHLayout->setContentsMargins(0,0,0,0);
     outputHLayout->setSpacing(0);
     QRadioButton *outputBins = new QRadioButton(tr("Bins"), outputWidget);
     outputButtonGroup->addButton(outputBins,0);

@@ -60,7 +60,7 @@ SpreadsheetCurveViewer::SpreadsheetCurveViewer(ViewerPlot *p, QWidget *parent) :
     setCentralWidget(top);
     QVBoxLayout *topLayout = new QVBoxLayout(top);
     topLayout->setSpacing(5);
-    topLayout->setMargin(10);
+    topLayout->setContentsMargins(10,10,10,10);
 #if defined(Q_OS_MAC)
     QWidget *menuContainer = new QWidget(top);
     QHBoxLayout *menuLayout = new QHBoxLayout(menuContainer);

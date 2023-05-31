@@ -70,11 +70,11 @@ QvisPostableMainWindow::~QvisPostableMainWindow()
 void
 QvisPostableMainWindow::CreateWindowContents()
 {
-    topLayout->setMargin(0);
+    topLayout->setContentsMargins(0,0,0,0);
     contentsWidget = new QWidget(central);
     topLayout->addWidget(contentsWidget);
     contentsLayout = new QVBoxLayout(contentsWidget);
-    contentsLayout->setMargin(0);
+    contentsLayout->setContentsMargins(0,0,0,0);
 }
 
 void

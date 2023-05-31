@@ -5,17 +5,18 @@
 #include <visit-config.h>
 #include <QvisVolumePlotWindow.h>
 #include <QApplication>
-#include <QComboBox>
-#include <QDesktopWidget>
-#include <QLayout>
-#include <QPushButton>
-#include <QCheckBox>
 #include <QButtonGroup>
-#include <QRadioButton>
-#include <QLabel>
-#include <QGroupBox>
-#include <QLineEdit>
+#include <QCheckBox>
+#include <QComboBox>
 #include <QDoubleSpinBox>
+#include <QGroupBox>
+#include <QLabel>
+#include <QLayout>
+#include <QLineEdit>
+#include <QPushButton>
+#include <QRadioButton>
+#include <QRect>
+#include <QScreen>
 #include <QSpinBox>
 #include <QTabWidget>
 
@@ -408,7 +409,7 @@ QvisVolumePlotWindow::Create1DTransferFunctionGroup(int maxWidth)
 {
     QWidget *parent = new QWidget(central);
     QVBoxLayout *pLayout = new QVBoxLayout(parent);
-    pLayout->setMargin(5);
+    pLayout->setContentsMargins(5,5,5,5);
 
     CreateColorGroup(parent, pLayout, maxWidth);
     pLayout->addSpacing(10);
@@ -456,12 +457,12 @@ QvisVolumePlotWindow::CreateColorGroup(QWidget *parent, QVBoxLayout *pLayout,
     pLayout->addWidget(colorWidgetGroup);
     pLayout->setStretchFactor(colorWidgetGroup,1000);
     QVBoxLayout *innerColorLayout = new QVBoxLayout(colorWidgetGroup);
-    innerColorLayout->setMargin(5);
+    innerColorLayout->setContentsMargins(5,5,5,5);
     innerColorLayout->setSpacing(0);
 
     // Create the buttons that help manipulate the spectrum bar.
     QHBoxLayout *seLayout = new QHBoxLayout(0);
-    seLayout->setMargin(5);
+    seLayout->setContentsMargins(5,5,5,5);
     seLayout->setSpacing(5);
     innerColorLayout->addLayout(seLayout);
 
@@ -525,7 +526,7 @@ QvisVolumePlotWindow::CreateColorGroup(QWidget *parent, QVBoxLayout *pLayout,
     innerColorLayout->addWidget(dataGroup);
 
     QGridLayout *dataLayout = new QGridLayout(dataGroup);
-    dataLayout->setMargin(5);
+    dataLayout->setContentsMargins(5,5,5,5);
     dataLayout->setSpacing(10);
 
     dataLayout->addWidget( new QLabel(tr("Scale"), central), 0, 0);
@@ -561,7 +562,7 @@ QvisVolumePlotWindow::CreateColorGroup(QWidget *parent, QVBoxLayout *pLayout,
     dataLayout->addWidget(limitsGroup, 1, 0, 1, 5);
 
     QGridLayout *limitsLayout = new QGridLayout(limitsGroup);
-    limitsLayout->setMargin(5);
+    limitsLayout->setContentsMargins(5,5,5,5);
     limitsLayout->setSpacing(10);
 
     // ARS NOTE: the limits should be in here to match the pseducolor plot
@@ -628,13 +629,13 @@ QvisVolumePlotWindow::CreateOpacityGroup(QWidget *parent, QVBoxLayout *pLayout,
     pLayout->addWidget(opacityWidgetGroup);
     pLayout->setStretchFactor(opacityWidgetGroup,1000);
     QVBoxLayout *innerOpacityLayout = new QVBoxLayout(opacityWidgetGroup);
-    innerOpacityLayout->setMargin(5);
+    innerOpacityLayout->setContentsMargins(5,5,5,5);
     innerOpacityLayout->setSpacing(0);
 
     // Create the buttons that control what mode the opacity widget it in.
     // Create the buttons that help manipulate the spectrum bar.
     QHBoxLayout *opLayout = new QHBoxLayout(0);
-    opLayout->setMargin(5);
+    opLayout->setContentsMargins(5,5,5,5);
     opLayout->setSpacing(5);
     innerOpacityLayout->addLayout(opLayout);
 
@@ -674,7 +675,7 @@ QvisVolumePlotWindow::CreateOpacityGroup(QWidget *parent, QVBoxLayout *pLayout,
 
     // Create the gaussian opacity editor widget.
     QVBoxLayout *barLayout = new QVBoxLayout(0);
-    barLayout->setMargin(0);
+    barLayout->setContentsMargins(0,0,0,0);
     barLayout->setSpacing(0);
     innerOpacityLayout->addLayout(barLayout);
     innerOpacityLayout->setStretchFactor(barLayout, 100);
@@ -703,7 +704,7 @@ QvisVolumePlotWindow::CreateOpacityGroup(QWidget *parent, QVBoxLayout *pLayout,
     QPixmap whiteIcon(white_xpm);
 
     QGridLayout *abLayout = new QGridLayout(0);
-    abLayout->setMargin(5);
+    abLayout->setContentsMargins(5,5,5,5);
     abLayout->setSpacing(5);
     innerOpacityLayout->addLayout(abLayout);
 
@@ -802,7 +803,7 @@ QvisVolumePlotWindow::CreateOpacityGroup(QWidget *parent, QVBoxLayout *pLayout,
     // Create the Opacity Variable stuff
     //
     QHBoxLayout *ovLayout = new QHBoxLayout(0);
-    ovLayout->setMargin(5);
+    ovLayout->setContentsMargins(5,5,5,5);
     ovLayout->setSpacing(10);
     innerOpacityLayout->addLayout(ovLayout);
 
@@ -812,7 +813,7 @@ QvisVolumePlotWindow::CreateOpacityGroup(QWidget *parent, QVBoxLayout *pLayout,
     ovLayout->addWidget(opacityVariableGroup);
 
     QGridLayout *opacityVariableLayout = new QGridLayout(opacityVariableGroup);
-    opacityVariableLayout->setMargin(5);
+    opacityVariableLayout->setContentsMargins(5,5,5,5);
     opacityVariableLayout->setSpacing(10);
 
 
@@ -908,7 +909,7 @@ void QvisVolumePlotWindow::CreateSamplingGroups(QWidget *parent, QLayout *pLayou
         QHBoxLayout *resampleLayout       = new QHBoxLayout(resampleGroup);
         resampleTargetWidget              = new QWidget();
         QHBoxLayout *resampleTargetLayout = new QHBoxLayout(resampleTargetWidget);
-        resampleTargetLayout->setMargin(0);
+        resampleTargetLayout->setContentsMargins(0,0,0,0);
 
         QLabel *resampleTypesLabel =
           new QLabel(tr("Resample:"), resampleGroup);
@@ -977,7 +978,7 @@ void QvisVolumePlotWindow::CreateSamplingGroups(QWidget *parent, QLayout *pLayou
         raycastingGroup->setTitle(tr("Ray Casting Options"));
         QGridLayout *raycastingLayout = new QGridLayout(raycastingGroup);
         // raycastingLayoutV->setSpacing(0);
-        // raycastingLayoutV->setMargin(0);
+        // raycastingLayoutV->setContentsMargins(0,0,0,0);
         //6 x 2 layout:
         // (0,0) Sampling method  (0,1) Rasterization   (0,2) Kernel Based       (0,4) Trilinear
         //                        (0,1) Samples per ray (0,2) sprSpinBox         (0,4) Sampling rate  (0,5) srSpinBox
@@ -1201,7 +1202,7 @@ QvisVolumePlotWindow::CreateRendererOptionsGroup(int maxWidth)
 
     // Create the rendering method radio buttons.
     this->rendererOptionsLayout = new QVBoxLayout(parent);
-    rendererOptionsLayout->setMargin(5);
+    rendererOptionsLayout->setContentsMargins(5,5,5,5);
     rendererOptionsLayout->setSpacing(5);
 
     //
@@ -1305,7 +1306,7 @@ QvisVolumePlotWindow::CreateRendererOptionsGroup(int maxWidth)
     rendererOptionsLayout->addWidget(miscGroup);
 
     QHBoxLayout *miscLayout = new QHBoxLayout(miscGroup);
-    //miscLayout->setMargin(5);
+    //miscLayout->setContentsMargins(5,5,5,5);
     //miscLayout->setSpacing(10);
 
     // Create the smooth data toggle.
@@ -3018,6 +3019,9 @@ QvisVolumePlotWindow::controlPointMoved(int, float)
 //   Brad Whitlock, Fri Jul 18 15:39:07 PDT 2008
 //   Added argument.
 //
+//   Kathleen Biagas, Wed Apr  5 13:04:35 PDT 2023
+//   Replace obosolete desktop() with primaryScreen().
+//
 // ****************************************************************************
 
 void
@@ -3037,14 +3041,14 @@ QvisVolumePlotWindow::popupColorSelect(int index, const QPoint &p)
     // Fix the X dimension.
     if(menuX < 0)
         menuX = 0;
-    else if(menuX + menuW > QApplication::desktop()->width())
+    else if(menuX + menuW > QApplication::primaryScreen()->geometry().width())
         menuX -= (menuW + 5);
 
     // Fix the Y dimension.
     if(menuY < 0)
         menuY = 0;
-    else if(menuY + menuH > QApplication::desktop()->height())
-        menuY -= ((menuY + menuH) - QApplication::desktop()->height());
+    else if(menuY + menuH > QApplication::primaryScreen()->geometry().height())
+        menuY -= ((menuY + menuH) - QApplication::primaryScreen()->geometry().height());
 
     // Show the popup menu.
     colorSelect->move(menuX, menuY);

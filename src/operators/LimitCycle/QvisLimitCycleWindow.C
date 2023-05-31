@@ -135,7 +135,7 @@ void
 QvisLimitCycleWindow::CreateIntegrationTab(QWidget *pageIntegration)
 {
     QGridLayout *mainLayout = new QGridLayout(pageIntegration);
-    mainLayout->setMargin(5);
+    mainLayout->setContentsMargins(5,5,5,5);
     mainLayout->setSpacing(10);
 
     // Create the source group box.
@@ -144,7 +144,7 @@ QvisLimitCycleWindow::CreateIntegrationTab(QWidget *pageIntegration)
     mainLayout->addWidget(sourceGroup, 0, 0, 5, 2);
 //    mainLayout->setStretchFactor(sourceGroup, 100);
     QGridLayout *sourceLayout = new QGridLayout(sourceGroup);
-    sourceLayout->setMargin(5);
+    sourceLayout->setContentsMargins(5,5,5,5);
     sourceLayout->setSpacing(10);
 
     // Create the source type combo box.
@@ -161,7 +161,7 @@ QvisLimitCycleWindow::CreateIntegrationTab(QWidget *pageIntegration)
     sourceLayout->addWidget(geometryGroup, 1, 0, 1, 6);
 
     QGridLayout *geometryLayout = new QGridLayout(geometryGroup);
-    geometryLayout->setMargin(5);
+    geometryLayout->setContentsMargins(5,5,5,5);
     geometryLayout->setSpacing(10);
     geometryLayout->setRowStretch(5,10);
 
@@ -218,7 +218,7 @@ QvisLimitCycleWindow::CreateIntegrationTab(QWidget *pageIntegration)
     samplingGroup->setTitle(tr("Sampling"));
     sourceLayout->addWidget(samplingGroup, gRow, 0, 1, 5);
     QGridLayout *samplingLayout = new QGridLayout(samplingGroup);
-    samplingLayout->setMargin(5);
+    samplingLayout->setContentsMargins(5,5,5,5);
     samplingLayout->setSpacing(10);
     samplingLayout->setRowStretch(5,10);
     gRow++;
@@ -309,7 +309,7 @@ QvisLimitCycleWindow::CreateIntegrationTab(QWidget *pageIntegration)
     mainLayout->addWidget(fieldGroup, 6, 0, 1, 1);
 //    mainLayout->setStretchFactor(fieldGroup, 100);
     QGridLayout *fieldLayout = new QGridLayout(fieldGroup);
-    fieldLayout->setMargin(5);
+    fieldLayout->setContentsMargins(5,5,5,5);
     fieldLayout->setSpacing(10);
 
 
@@ -355,7 +355,7 @@ QvisLimitCycleWindow::CreateIntegrationTab(QWidget *pageIntegration)
     mainLayout->addWidget(integrationGroup, 7, 0, 4, 2);
 //    mainLayout->setStretchFactor(integrationGroup, 100);
     QGridLayout *integrationLayout = new QGridLayout(integrationGroup);
-    integrationLayout->setMargin(5);
+    integrationLayout->setContentsMargins(5,5,5,5);
     integrationLayout->setSpacing(10);
 
     // Create the direction of integration.
@@ -407,7 +407,7 @@ QvisLimitCycleWindow::CreateIntegrationTab(QWidget *pageIntegration)
     toleranceGroup->setTitle(tr("Tolerances: max error for step < max(abstol, reltol*velocity_i) for each component i"));
     integrationLayout->addWidget(toleranceGroup, 4, 0, 2, 3);
     QGridLayout *toleranceLayout = new QGridLayout(toleranceGroup);
-    toleranceLayout->setMargin(5);
+    toleranceLayout->setContentsMargins(5,5,5,5);
     toleranceLayout->setSpacing(10);
 
     // Create the relative tolerance text field.
@@ -437,7 +437,7 @@ QvisLimitCycleWindow::CreateIntegrationTab(QWidget *pageIntegration)
     integrationLayout->addWidget(terminationGroup, 12, 0, 2, 2);
 //    integrationLayout->setStretchFactor(terminationGroup, 100);
     QGridLayout *terminationLayout = new QGridLayout(terminationGroup);
-    terminationLayout->setMargin(5);
+    terminationLayout->setContentsMargins(5,5,5,5);
     terminationLayout->setSpacing(10);
 
     QLabel *maxStepsLabel = new QLabel(tr("Maximum number of steps"), terminationGroup);
@@ -497,7 +497,7 @@ void
 QvisLimitCycleWindow::CreateAppearanceTab(QWidget *pageAppearance)
 {
     QGridLayout *mainLayout = new QGridLayout(pageAppearance);
-    mainLayout->setMargin(5);
+    mainLayout->setContentsMargins(5,5,5,5);
     mainLayout->setSpacing(10);
 
 
@@ -685,7 +685,7 @@ void
 QvisLimitCycleWindow::CreateAdvancedTab(QWidget *pageAdvanced)
 {
     QGridLayout *mainLayout = new QGridLayout(pageAdvanced);
-    mainLayout->setMargin(5);
+    mainLayout->setContentsMargins(5,5,5,5);
     mainLayout->setSpacing(5);
 
     QGroupBox *algoGrp = new QGroupBox(pageAdvanced);

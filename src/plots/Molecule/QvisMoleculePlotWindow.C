@@ -220,7 +220,7 @@ QvisMoleculePlotWindow::CreateWindowContents()
     colorBondsGroup = new QButtonGroup(colorBondsWidget);
     
     QGridLayout *colorBondsLayout = new QGridLayout(colorBondsWidget);
-    colorBondsLayout->setMargin(0);
+    colorBondsLayout->setContentsMargins(0,0,0,0);
     
     QRadioButton *colorBondsBondColoringModeColorByAtom = new QRadioButton(tr("Adjacent atom color"),
                                                                            colorBondsWidget);
@@ -332,7 +332,7 @@ QvisMoleculePlotWindow::CreateWindowContents()
     topLayout->addWidget(miscGroup);
 
     QGridLayout *miscLayout = new QGridLayout(miscGroup);
-    miscLayout->setMargin(5);
+    miscLayout->setContentsMargins(5,5,5,5);
     miscLayout->setSpacing(10);
  
     // Create the legend toggle

@@ -50,6 +50,10 @@
     </Field>
     <Field name="keyframes" label="keyframes" type="intVector">
     </Field>
+    <Field name="numKeyframesPerOperator" label="numKeyframesPerOperator" type="intVector">
+    </Field>
+    <Field name="operatorKeyframes" label="operatorKeyframes" type="intVector">
+    </Field>
     <Field name="databaseKeyframes" label="databaseKeyframes" type="intVector">
     </Field>
     <Field name="isFromSimulation" label="isFromSimulation" type="bool">

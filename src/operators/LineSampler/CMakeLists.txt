@@ -18,9 +18,6 @@ LineSamplerGUIPluginInfo.C
 QvisLineSamplerWindow.C
 ${COMMON_SOURCES}
 )
-SET(LIBG_MOC_SOURCES
-QvisLineSamplerWindow.h
-)
 
 SET(LIBV_SOURCES
 LineSamplerViewerEnginePluginInfo.C
@@ -48,8 +45,8 @@ TARGET_LINK_LIBRARIES(ILineSamplerOperator visitcommon)
 SET(INSTALLTARGETS ILineSamplerOperator)
 
 IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
-    QT_WRAP_CPP(GLineSamplerOperator LIBG_SOURCES ${LIBG_MOC_SOURCES})
     ADD_LIBRARY(GLineSamplerOperator ${LIBG_SOURCES})
+    set_target_properties(GLineSamplerOperator PROPERTIES AUTOMOC ON)
     TARGET_LINK_LIBRARIES(GLineSamplerOperator visitcommon gui )
 
     ADD_LIBRARY(VLineSamplerOperator ${LIBV_SOURCES})

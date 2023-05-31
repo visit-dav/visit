@@ -150,6 +150,9 @@
 #   Install git lfs before updating the repository. Added more logging
 #   to the git repository update.
 #
+#   Eric Brugger, Wed Mar 15 13:41:38 PDT 2023
+#   Update the location of where libstripack is copied from.
+#
 
 # Determine the users name and e-mail address.
 #
@@ -262,6 +265,9 @@ rm -f checkout_${testHost}
 cat <<EOF > checkout_${testHost}
 #!/bin/sh
 
+# So the script uses the correct git.
+export PATH=/usr/tce/bin:$PATH
+
 dateTag=\$1
 
 # Update the repository.
@@ -339,6 +345,9 @@ rm -f runit_${testHost}
 cat <<EOF > runit_${testHost}
 #!/bin/sh
 
+# So the script uses the correct git.
+export PATH=/usr/tce/bin:$PATH
+
 dateTag=\$1
 
 if test "$serial" = "true" ; then
@@ -411,7 +420,7 @@ cat ../make.err >> ../../buildlog
 echo "Source build completed at: \`date\`"
 
 # Copy stripack lib for ffp plugin tests
-cp /usr/workspace/visit/miller86/stripack/libstripack.so ./lib/.
+cp /usr/workspace/wsa/visit/visit/thirdparty_shared/3.3.2/toss4/stripack/libstripack.so ./lib/.
 
 # Update the test baselines
 cd ../test
@@ -491,6 +500,9 @@ chmod 750 runit_${testHost}
 rm -f postit_${testHost}
 cat <<EOF > postit_${testHost}
 #!/bin/sh
+
+# So the script uses the correct git.
+export PATH=/usr/tce/bin:$PATH
 
 if test "\$#" -ne 1; then
     echo "Usage: \$0 date_tag"

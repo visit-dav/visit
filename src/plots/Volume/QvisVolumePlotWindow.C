@@ -5,17 +5,18 @@
 #include <visit-config.h>
 #include <QvisVolumePlotWindow.h>
 #include <QApplication>
-#include <QComboBox>
-#include <QDesktopWidget>
-#include <QLayout>
-#include <QPushButton>
-#include <QCheckBox>
 #include <QButtonGroup>
-#include <QRadioButton>
-#include <QLabel>
+#include <QCheckBox>
+#include <QComboBox>
+#include <QDoubleSpinBox>
 #include <QGroupBox>
 #include <QLineEdit>
-#include <QDoubleSpinBox>
+#include <QLabel>
+#include <QLayout>
+#include <QPushButton>
+#include <QRadioButton>
+#include <QRect>
+#include <QScreen>
 #include <QSpinBox>
 #include <QTabWidget>
 
@@ -179,11 +180,11 @@ static const char * white_xpm[] = {
 // ****************************************************************************
 // Method: QvisVolumePlotWindow::QvisVolumePlotWindow
 //
-// Purpose: 
+// Purpose:
 //   This is the constructor for the QvisVolumePlotWindow class.
 //
 // Arguments:
-//   
+//
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Feb 5 13:58:08 PST 2001
@@ -192,7 +193,7 @@ static const char * white_xpm[] = {
 //   Brad Whitlock, Thu Feb 14 13:50:54 PST 2002
 //   Initialized parentless widgets.
 //
-//   Kathleen Bonnell, Thu Mar  3 11:01:22 PST 2005 
+//   Kathleen Bonnell, Thu Mar  3 11:01:22 PST 2005
 //   Initialized scaling.
 //
 //   Gunther Weber, Fri Apr  6 16:33:19 PDT 2007
@@ -223,7 +224,7 @@ QvisVolumePlotWindow::QvisVolumePlotWindow(const int type,
 // ****************************************************************************
 // Method: QvisVolumePlotWindow::~QvisVolumePlotWindow
 //
-// Purpose: 
+// Purpose:
 //   Destructor for the QvisVolumePlotWindow class.
 //
 // Programmer: Brad Whitlock
@@ -233,7 +234,7 @@ QvisVolumePlotWindow::QvisVolumePlotWindow(const int type,
 //   Brad Whitlock, Thu Feb 14 13:01:20 PST 2002
 //   Added deletion of parentless widgets.
 //
-//   Kathleen Bonnell, Thu Mar  3 11:01:22 PST 2005 
+//   Kathleen Bonnell, Thu Mar  3 11:01:22 PST 2005
 //   Delete scaling.
 //
 //   Cyrus Harrison, Wed Aug 27 08:54:49 PDT 2008
@@ -252,7 +253,7 @@ QvisVolumePlotWindow::~QvisVolumePlotWindow()
 // ****************************************************************************
 // Method: QvisVolumePlotWindow::CreateWindowContents
 //
-// Purpose: 
+// Purpose:
 //   Creates the widgets for the window.
 //
 // Programmer: Brad Whitlock
@@ -263,7 +264,7 @@ QvisVolumePlotWindow::~QvisVolumePlotWindow()
 //   Moved code into helper methods.
 //
 //   Brad Whitlock, Thu Dec 18 15:16:00 PST 2008
-//   I moved the transfer function radio button creation to here and I 
+//   I moved the transfer function radio button creation to here and I
 //   reorganized the code so we can create 1D/2D transfer function pages.
 //
 //   Kathleen Biagas, Wed Apr 6, 2022
@@ -305,14 +306,14 @@ QvisVolumePlotWindow::CreateWindowContents()
 // ****************************************************************************
 // Method: QvisVolumePlot::CreateMatLightGroup
 //
-// Purpose: 
+// Purpose:
 //   Creates the different Light Shading options
 //
 // Programmer: Pascal Grosset
 // Creation:   Tue Apr 10
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -340,29 +341,29 @@ QvisVolumePlotWindow::CreateMatLightGroup(QWidget *parent, QLayout *pLayout, int
     matKa->setDecimals(2);
     matKa->setSingleStep(0.05);
     matKa->setValue(0.4);
-    
+
     matKd = new QDoubleSpinBox(materialProperties);
     matKd->setMinimum(0.0);
     matKd->setMaximum(1.0);
     matKd->setDecimals(2);
     matKd->setSingleStep(0.05);
     matKd->setValue(0.75);
-    
+
     matKs = new QDoubleSpinBox(materialProperties);
     matKs->setMinimum(0.0);
     matKs->setMaximum(1.0);
     matKs->setDecimals(2);
     matKs->setSingleStep(0.05);
     matKs->setValue(0.0);
-    
+
     matN = new QDoubleSpinBox(materialProperties);
     matN->setMinimum(0.0);
     matN->setMaximum(100.0);
     matN->setDecimals(1);
     matN->setSingleStep(1);
     matN->setValue(15);
-    
-   
+
+
     Ka = new QLabel(tr("Ambient:"), materialProperties);
     Kd = new QLabel(tr("Diffuse:"), materialProperties);
     Ks = new QLabel(tr("Specular:"), materialProperties);
@@ -372,7 +373,7 @@ QvisVolumePlotWindow::CreateMatLightGroup(QWidget *parent, QLayout *pLayout, int
     Ks->setBuddy(matKs);
     specPow->setBuddy(matN);
 
-    
+
     materialPropertiesLayout->addWidget(Ka,     0,  0,  1,1, Qt::AlignRight);
     materialPropertiesLayout->addWidget(matKa,  0,  1,  1,1, Qt::AlignLeft);
 
@@ -384,27 +385,27 @@ QvisVolumePlotWindow::CreateMatLightGroup(QWidget *parent, QLayout *pLayout, int
 
     materialPropertiesLayout->addWidget(specPow,0,  10, 1,1, Qt::AlignRight);
     materialPropertiesLayout->addWidget(matN,   0,  11, 1,1, Qt::AlignLeft);
-    
+
     lightMaterialPropLayout->addWidget(lightingToggle);
     lightMaterialPropLayout->addWidget(materialProperties);
 
-    connect(matKa, SIGNAL(valueChanged(double)), this, SLOT(setMaterialKa(double))); 
-    connect(matKd, SIGNAL(valueChanged(double)), this, SLOT(setMaterialKd(double))); 
-    connect(matKs, SIGNAL(valueChanged(double)), this, SLOT(setMaterialKs(double))); 
+    connect(matKa, SIGNAL(valueChanged(double)), this, SLOT(setMaterialKa(double)));
+    connect(matKd, SIGNAL(valueChanged(double)), this, SLOT(setMaterialKd(double)));
+    connect(matKs, SIGNAL(valueChanged(double)), this, SLOT(setMaterialKs(double)));
     connect(matN , SIGNAL(valueChanged(double)), this, SLOT(setMaterialN(double) ));
 }
 
 // ****************************************************************************
 // Method: QvisVolumePlot::Create1DTransferFunctionGroup
 //
-// Purpose: 
+// Purpose:
 //   Creates the widgets associated with the 1D transfer functions.
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Dec 18 15:23:41 PST 2008
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 QWidget *
@@ -412,7 +413,7 @@ QvisVolumePlotWindow::Create1DTransferFunctionGroup(int maxWidth)
 {
     QWidget *parent = new QWidget(central);
     QVBoxLayout *pLayout = new QVBoxLayout(parent);
-    pLayout->setMargin(5);
+    pLayout->setContentsMargins(5,5,5,5);
 
     CreateColorGroup(parent, pLayout, maxWidth);
     pLayout->addSpacing(10);
@@ -424,7 +425,7 @@ QvisVolumePlotWindow::Create1DTransferFunctionGroup(int maxWidth)
 // ****************************************************************************
 // Method: QvisVolumePlotWindow::CreateColorGroup
 //
-// Purpose: 
+// Purpose:
 //   Creates the widgets in the color group.
 //
 // Note:       Adapted from CreateWindowContents when porting to Qt 4.
@@ -460,12 +461,12 @@ QvisVolumePlotWindow::CreateColorGroup(QWidget *parent, QVBoxLayout *pLayout,
     pLayout->addWidget(colorWidgetGroup);
     pLayout->setStretchFactor(colorWidgetGroup,1000);
     QVBoxLayout *innerColorLayout = new QVBoxLayout(colorWidgetGroup);
-    innerColorLayout->setMargin(5);
+    innerColorLayout->setContentsMargins(5,5,5,5);
     innerColorLayout->setSpacing(0);
 
     // Create the buttons that help manipulate the spectrum bar.
     QHBoxLayout *seLayout = new QHBoxLayout(0);
-    seLayout->setMargin(5);
+    seLayout->setContentsMargins(5,5,5,5);
     seLayout->setSpacing(5);
     innerColorLayout->addLayout(seLayout);
 
@@ -529,11 +530,11 @@ QvisVolumePlotWindow::CreateColorGroup(QWidget *parent, QVBoxLayout *pLayout,
     innerColorLayout->addWidget(dataGroup);
 
     QGridLayout *dataLayout = new QGridLayout(dataGroup);
-    dataLayout->setMargin(5);
+    dataLayout->setContentsMargins(5,5,5,5);
     dataLayout->setSpacing(10);
 
     dataLayout->addWidget( new QLabel(tr("Scale"), central), 0, 0);
-    
+
     // Create the radio buttons
     scalingButtons = new QButtonGroup(central);
 
@@ -552,7 +553,7 @@ QvisVolumePlotWindow::CreateColorGroup(QWidget *parent, QVBoxLayout *pLayout,
     connect(scalingButtons, SIGNAL(buttonClicked(int)),
             this, SLOT(scaleClicked(int)));
 
-    // Create the skew factor line edit    
+    // Create the skew factor line edit
     skewLineEdit = new QLineEdit(central);
     dataLayout->addWidget(skewLineEdit, 0, 4);
     connect(skewLineEdit, SIGNAL(returnPressed()),
@@ -565,7 +566,7 @@ QvisVolumePlotWindow::CreateColorGroup(QWidget *parent, QVBoxLayout *pLayout,
     dataLayout->addWidget(limitsGroup, 1, 0, 1, 5);
 
     QGridLayout *limitsLayout = new QGridLayout(limitsGroup);
-    limitsLayout->setMargin(5);
+    limitsLayout->setContentsMargins(5,5,5,5);
     limitsLayout->setSpacing(10);
 
     // ARS NOTE: the limits should be in here to match the pseducolor plot
@@ -578,7 +579,7 @@ QvisVolumePlotWindow::CreateColorGroup(QWidget *parent, QVBoxLayout *pLayout,
 //     limitsSelect->addItem(tr("Use Original Data"));
 //     limitsSelect->addItem(tr("Use Current Plot"));
 //     connect(limitsSelect, SIGNAL(activated(int)),
-//             this, SLOT(limitsSelectChanged(int))); 
+//             this, SLOT(limitsSelectChanged(int)));
 //     limitsLayout->addWidget(limitsSelect, 0, 1, 1, 2, Qt::AlignLeft);
 
     // Create the min toggle and line edit
@@ -589,7 +590,7 @@ QvisVolumePlotWindow::CreateColorGroup(QWidget *parent, QVBoxLayout *pLayout,
     colorMin = new QLineEdit(central);
     limitsLayout->addWidget(colorMin, 0, 1);
     connect(colorMin, SIGNAL(returnPressed()),
-            this, SLOT(colorMinProcessText())); 
+            this, SLOT(colorMinProcessText()));
 
     // Create the max toggle and line edit
     colorMaxToggle = new QCheckBox(tr("Maximum"), central);
@@ -599,13 +600,13 @@ QvisVolumePlotWindow::CreateColorGroup(QWidget *parent, QVBoxLayout *pLayout,
     colorMax = new QLineEdit(central);
     limitsLayout->addWidget(colorMax, 0, 3);
     connect(colorMax, SIGNAL(returnPressed()),
-            this, SLOT(colorMaxProcessText())); 
+            this, SLOT(colorMaxProcessText()));
 }
 
 // ****************************************************************************
 // Method: QvisVolumePlotWindow::CreateOpacityGroup
 //
-// Purpose: 
+// Purpose:
 //   Creates the widgets in the opacity group.
 //
 // Note:       Adapted from CreateWindowContents when porting to Qt 4.
@@ -617,7 +618,7 @@ QvisVolumePlotWindow::CreateColorGroup(QWidget *parent, QVBoxLayout *pLayout,
 //   Brad Whitlock, Thu Dec 18 15:17:38 PST 2008
 //   I passed in a new parent for widgets. I also changed the layout of the
 //   widgets to save a line.
-//   
+//
 // ****************************************************************************
 
 void
@@ -632,13 +633,13 @@ QvisVolumePlotWindow::CreateOpacityGroup(QWidget *parent, QVBoxLayout *pLayout,
     pLayout->addWidget(opacityWidgetGroup);
     pLayout->setStretchFactor(opacityWidgetGroup,1000);
     QVBoxLayout *innerOpacityLayout = new QVBoxLayout(opacityWidgetGroup);
-    innerOpacityLayout->setMargin(5);
+    innerOpacityLayout->setContentsMargins(5,5,5,5);
     innerOpacityLayout->setSpacing(0);
 
     // Create the buttons that control what mode the opacity widget it in.
     // Create the buttons that help manipulate the spectrum bar.
     QHBoxLayout *opLayout = new QHBoxLayout(0);
-    opLayout->setMargin(5);
+    opLayout->setContentsMargins(5,5,5,5);
     opLayout->setSpacing(5);
     innerOpacityLayout->addLayout(opLayout);
 
@@ -646,7 +647,7 @@ QvisVolumePlotWindow::CreateOpacityGroup(QWidget *parent, QVBoxLayout *pLayout,
     QLabel *interactionModeLabel = new QLabel(tr("Interaction mode"),
         opacityWidgetGroup);
     opLayout->addWidget(interactionModeLabel);
-    
+
     // Create the interaction mode button group.
     modeButtonGroup = new QButtonGroup(opacityWidgetGroup);
     connect(modeButtonGroup, SIGNAL(buttonClicked(int)),
@@ -678,7 +679,7 @@ QvisVolumePlotWindow::CreateOpacityGroup(QWidget *parent, QVBoxLayout *pLayout,
 
     // Create the gaussian opacity editor widget.
     QVBoxLayout *barLayout = new QVBoxLayout(0);
-    barLayout->setMargin(0);
+    barLayout->setContentsMargins(0,0,0,0);
     barLayout->setSpacing(0);
     innerOpacityLayout->addLayout(barLayout);
     innerOpacityLayout->setStretchFactor(barLayout, 100);
@@ -703,11 +704,11 @@ QvisVolumePlotWindow::CreateOpacityGroup(QWidget *parent, QVBoxLayout *pLayout,
     QPixmap blackIcon(black_xpm);
     QPixmap rampIcon(ramp_xpm);
     QPixmap inverseRampIcon(inverse_ramp_xpm);
-    QPixmap tentIcon(tents_xpm); 
+    QPixmap tentIcon(tents_xpm);
     QPixmap whiteIcon(white_xpm);
 
     QGridLayout *abLayout = new QGridLayout(0);
-    abLayout->setMargin(5);
+    abLayout->setContentsMargins(5,5,5,5);
     abLayout->setSpacing(5);
     innerOpacityLayout->addLayout(abLayout);
 
@@ -806,7 +807,7 @@ QvisVolumePlotWindow::CreateOpacityGroup(QWidget *parent, QVBoxLayout *pLayout,
     // Create the Opacity Variable stuff
     //
     QHBoxLayout *ovLayout = new QHBoxLayout(0);
-    ovLayout->setMargin(5);
+    ovLayout->setContentsMargins(5,5,5,5);
     ovLayout->setSpacing(10);
     innerOpacityLayout->addLayout(ovLayout);
 
@@ -816,7 +817,7 @@ QvisVolumePlotWindow::CreateOpacityGroup(QWidget *parent, QVBoxLayout *pLayout,
     ovLayout->addWidget(opacityVariableGroup);
 
     QGridLayout *opacityVariableLayout = new QGridLayout(opacityVariableGroup);
-    opacityVariableLayout->setMargin(5);
+    opacityVariableLayout->setContentsMargins(5,5,5,5);
     opacityVariableLayout->setSpacing(10);
 
 
@@ -862,7 +863,7 @@ QvisVolumePlotWindow::CreateOpacityGroup(QWidget *parent, QVBoxLayout *pLayout,
 // ****************************************************************************
 // Method: QvisVolumePlotWindow::CreateRendererOptionsGroup
 //
-// Purpose: 
+// Purpose:
 //   Creates the widgets in the renderer options group.
 //
 // Note:       Adapted from CreateWindowContents when porting to Qt 4.
@@ -873,7 +874,7 @@ QvisVolumePlotWindow::CreateOpacityGroup(QWidget *parent, QVBoxLayout *pLayout,
 // Modifications:
 //   Jeremy Meredith, Mon Jan  4 17:12:16 EST 2010
 //   Added ability to reduce amount of lighting for low-gradient-mag areas.
-//   
+//
 //   Jeremy Meredith, Tue Jan  5 14:25:17 EST 2010
 //   Added more settings for low-gradient-mag area lighting reduction: more
 //   curve shape power, and an optional max-grad-mag-value clamp useful both
@@ -890,16 +891,16 @@ QvisVolumePlotWindow::CreateOpacityGroup(QWidget *parent, QVBoxLayout *pLayout,
 //   signal will only emit when 'enter' is pressed or spinbox loses focus.
 //
 //   Alister Maguire, Fri May 12 10:15:45 PDT 2017
-//   Removed Splatting and Texture3D, and added a Default Renderer. 
+//   Removed Splatting and Texture3D, and added a Default Renderer.
 //
 //   Alister Maguire, Tue Sep 19 16:42:26 PDT 2017
-//   Moved num3DSlices initializer to the tuvok group. 
+//   Moved num3DSlices initializer to the tuvok group.
 //
 //   Kathleen Biagas, Fri Mar  2 14:55:01 MST 2018
 //   Removed tuvok.
 //
 //   Alister Maguire, Tue Jun 11 11:08:52 PDT 2019
-//   Enabled material props for the default renderer. 
+//   Enabled material props for the default renderer.
 //
 // ****************************************************************************
 void QvisVolumePlotWindow::CreateSamplingGroups(QWidget *parent, QLayout *pLayout)
@@ -912,7 +913,7 @@ void QvisVolumePlotWindow::CreateSamplingGroups(QWidget *parent, QLayout *pLayou
         QHBoxLayout *resampleLayout     = new QHBoxLayout(                                  resampleGroup);
         resampleTargetWidget            = new QWidget();
         QHBoxLayout *resampleTargetLayout= new QHBoxLayout(                                 resampleTargetWidget);
-        resampleTargetLayout->setMargin(0);
+        resampleTargetLayout->setContentsMargins(0,0,0,0);
         resampleTargetLabel             = new QLabel(tr("Number of samples"),               resampleGroup);
         resampleToggle                  = new QCheckBox(tr("Sample data onto regular grid"),resampleGroup);
         resampleTarget                  = new QSpinBox(                                     resampleGroup);
@@ -945,15 +946,15 @@ void QvisVolumePlotWindow::CreateSamplingGroups(QWidget *parent, QLayout *pLayou
 
     //ospray group
     CreateOSPRayGroups(parent, pLayout);
-        
+
     //raycasting group
     {
         raycastingGroup = new QGroupBox(parent);
         raycastingGroup->setTitle(tr("Ray Casting Options"));
         QGridLayout *raycastingLayout = new QGridLayout(raycastingGroup);
         // raycastingLayoutV->setSpacing(0);
-        // raycastingLayoutV->setMargin(0);
-        //6 x 2 layout: 
+        // raycastingLayoutV->setContentsMargins(0,0,0,0);
+        //6 x 2 layout:
         // (0,0) Sampling method  (0,1) Rasterization   (0,2) Kernel Based       (0,4) Trilinear
         //                        (0,1) Samples per ray (0,2) sprSpinBox         (0,4) Sampling rate  (0,5) srSpinBox
         samplesPerRayWidget         = new QWidget(                          raycastingGroup);
@@ -1030,6 +1031,7 @@ void QvisVolumePlotWindow::EnableDefaultGroup()
     resampleGroup->setEnabled(true);
     defaultGroup->setVisible(true);
     defaultOptions->setEnabled(true);
+    renderModeGroup->setVisible(true);
 }
 
 void QvisVolumePlotWindow::UpdateSamplingGroup()
@@ -1040,7 +1042,8 @@ void QvisVolumePlotWindow::UpdateSamplingGroup()
     defaultGroup->setVisible(false);
     raycastingGroup->setVisible(false);
     methodsGroup->setVisible(true);
-        
+    renderModeGroup->setVisible(false);
+
     tfTabs->setTabEnabled(1, true);
 
     //lighting and material properties group, enabled for all but RayCastingIntegration
@@ -1063,7 +1066,7 @@ void QvisVolumePlotWindow::UpdateSamplingGroup()
     //gradient methods
     centeredDiffButton->setEnabled(true);
     sobelButton->setEnabled(true);
- 
+
     //add sampling options to layout based on current settings
     VolumeAttributes::Renderer renderer_type=volumeAtts->GetRendererType();
     switch (renderer_type)
@@ -1077,6 +1080,7 @@ void QvisVolumePlotWindow::UpdateSamplingGroup()
         materialProperties->setEnabled(true);
         break;
     case VolumeAttributes::RayCasting:
+        renderModeGroup->setVisible(false);
         resampleGroup->setEnabled(false);
         raycastingGroup->setVisible(true);
         UpdateLowGradientGroup(true);
@@ -1104,6 +1108,7 @@ void QvisVolumePlotWindow::UpdateSamplingGroup()
 
 #ifdef VISIT_SLIVR
     case VolumeAttributes::RayCastingSLIVR:
+        renderModeGroup->setVisible(false);
         raycastingGroup->setVisible(true);
         UpdateLowGradientGroup(false);
         materialProperties->setEnabled(true);
@@ -1123,10 +1128,10 @@ void QvisVolumePlotWindow::UpdateSamplingGroup()
         osprayGroup->setVisible(true);
         osprayGroup->setEnabled(true);
         raycastingGroup->setVisible(true);
-        EnableSamplingMethods(false);   
+        EnableSamplingMethods(false);
         samplesPerRayWidget->setEnabled(true);
         samplesPerRay->setEnabled(true);
-        samplesPerRayLabel->setEnabled(true);   
+        samplesPerRayLabel->setEnabled(true);
         rendererSamplesWidget->setEnabled(true);
         rendererSamples->setEnabled(true);
         rendererSamplesLabel->setEnabled(true);
@@ -1137,12 +1142,13 @@ void QvisVolumePlotWindow::UpdateSamplingGroup()
         materialProperties->setEnabled(true);
         lowGradientGroup->setVisible(false);
         UpdateLowGradientGroup(false);
+        renderModeGroup->setVisible(false);
         break;
 #endif
 
     default:
         EXCEPTION1(ImproperUseException, "No such renderer type.");
-    }        
+    }
 }
 
 QWidget *
@@ -1161,7 +1167,7 @@ QvisVolumePlotWindow::CreateRendererOptionsGroup(int maxWidth)
 
     // Create the rendering method radio buttons.
     this->rendererOptionsLayout = new QVBoxLayout(parent);
-    rendererOptionsLayout->setMargin(5);
+    rendererOptionsLayout->setContentsMargins(5,5,5,5);
     rendererOptionsLayout->setSpacing(5);
 
     //
@@ -1192,6 +1198,40 @@ QvisVolumePlotWindow::CreateRendererOptionsGroup(int maxWidth)
     //Create sampling groups
     //
     CreateSamplingGroups(parent,rendererOptionsLayout);
+
+    //
+    // Create Render Mode Group
+    //
+    renderModeGroup = new QGroupBox(parent);
+    renderModeGroup->setTitle(tr("Render Mode"));
+    rendererOptionsLayout->addWidget(renderModeGroup);
+
+    // Create the Render Mode radio buttons.
+    QHBoxLayout *renderModeLayout = new QHBoxLayout(renderModeGroup);
+
+    renderModeButtonGroup = new QButtonGroup(renderModeGroup);
+    connect(renderModeButtonGroup, SIGNAL(buttonClicked(int)),
+            this, SLOT(renderModeChanged(int)));
+
+    renderModeDefaultButton = new QRadioButton(tr("Default"),renderModeGroup);
+    renderModeDefaultButton->setChecked(true);
+    renderModeButtonGroup->addButton(renderModeDefaultButton, 0);
+    renderModeLayout->addWidget(renderModeDefaultButton);
+
+    renderModeRaycastButton = new QRadioButton(tr("Ray Cast"),renderModeGroup);
+    renderModeButtonGroup->addButton(renderModeRaycastButton, 1);
+    renderModeLayout->addWidget(renderModeRaycastButton);
+
+    renderModeGPUButton = new QRadioButton(tr("GPU"),renderModeGroup);
+    renderModeButtonGroup->addButton(renderModeGPUButton, 2);
+    renderModeLayout->addWidget(renderModeGPUButton);
+
+    renderModeOSPRayButton = new QRadioButton(tr("OSPRay"),renderModeGroup);
+    renderModeButtonGroup->addButton(renderModeOSPRayButton, 3);
+    renderModeLayout->addWidget(renderModeOSPRayButton);
+#ifndef VISIT_OSPRAY
+    renderModeOSPRayButton->setEnabled(false);
+#endif
 
     //
     // Create the methods stuff
@@ -1226,7 +1266,7 @@ QvisVolumePlotWindow::CreateRendererOptionsGroup(int maxWidth)
     rendererOptionsLayout->addWidget(lowGradientGroup);
 
     QHBoxLayout *lowGradientLayout = new QHBoxLayout(lowGradientGroup);
- 
+
     // Create the low gradient lighting reduction combo.
     lowGradientLightingReductionLabel =
         new QLabel(tr("Reduction factor"),lowGradientGroup);
@@ -1267,7 +1307,7 @@ QvisVolumePlotWindow::CreateRendererOptionsGroup(int maxWidth)
     rendererOptionsLayout->addWidget(miscGroup);
 
     QHBoxLayout *miscLayout = new QHBoxLayout(miscGroup);
-    //miscLayout->setMargin(5);
+    //miscLayout->setContentsMargins(5,5,5,5);
     //miscLayout->setSpacing(10);
 
     // Create the smooth data toggle.
@@ -1290,7 +1330,7 @@ void QvisVolumePlotWindow::CreateOSPRayGroups(QWidget *parent, QLayout *pLayout)
     osprayGroup = new QGroupBox(parent);
     osprayGroup->setTitle(tr("OSPRay Options"));
     osprayGroupLayout = new QGridLayout(osprayGroup);
-    pLayout->addWidget(osprayGroup);    
+    pLayout->addWidget(osprayGroup);
     // flag: shadow enabled
     osprayShadowToggle = new QCheckBox(tr("Shadow"), osprayGroup);
     connect(osprayShadowToggle, SIGNAL(toggled(bool)),
@@ -1456,7 +1496,7 @@ void QvisVolumePlotWindow::osprayMinContributionChanged(double val)
 // ****************************************************************************
 // Method: QvisVolumePlotWindow::UpdateHistogram
 //
-// Purpose: 
+// Purpose:
 //   This method takes the histogram data and updates the widgets that can
 //   display it.
 //
@@ -1467,7 +1507,7 @@ void QvisVolumePlotWindow::osprayMinContributionChanged(double val)
 //
 //   Tom Fogal, Tue Mar 10 17:22:11 MST 2009
 //   Don't try to pass empty histograms to the widgets.
-//   
+//
 //   Hank Childs, Fri May 21 12:05:03 PDT 2010
 //   Add argument for need2D.
 //
@@ -1507,7 +1547,7 @@ QvisVolumePlotWindow::UpdateHistogram()
 // ****************************************************************************
 // Method: QvisVolumePlotWindow::UpdateWindow
 //
-// Purpose: 
+// Purpose:
 //   This method is called when the window's subject is changed. The
 //   subject tells this window what attributes changed and we put the
 //   new values into those widgets.
@@ -1516,9 +1556,9 @@ QvisVolumePlotWindow::UpdateHistogram()
 //   doAll : If this flag is true, update all the widgets regardless
 //           of whether or not they are selected.
 //
-// Returns:    
+// Returns:
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue Mar 27 12:07:55 PDT 2001
@@ -1554,7 +1594,7 @@ QvisVolumePlotWindow::UpdateHistogram()
 //   I moved raytrace support into the rendering mode. I also made it be
 //   a combo box.
 //
-//   Kathleen Bonnell, Thu Mar  3 11:01:22 PST 2005 
+//   Kathleen Bonnell, Thu Mar  3 11:01:22 PST 2005
 //   Added support for scaling and skew factor.
 //
 //   Hank Childs, Sun Jan  8 08:19:39 PST 2006
@@ -1601,7 +1641,7 @@ QvisVolumePlotWindow::UpdateHistogram()
 //   as an extra tweak and for making animations not have erratic lighting.
 //
 //   Jeremy Meredith, Tue Jan  5 15:51:26 EST 2010
-//   The low-gradient-mag lighting reduction now also applies to the 
+//   The low-gradient-mag lighting reduction now also applies to the
 //   3D texturing and splatting volume renderers.
 //
 //   Hank Childs, Fri May 21 12:05:03 PDT 2010
@@ -1662,7 +1702,7 @@ QvisVolumePlotWindow::UpdateWindow(bool doAll)
             legendToggle->setChecked(volumeAtts->GetLegendFlag());
             legendToggle->blockSignals(false);
             break;
-        case VolumeAttributes::ID_resampleFlag:        
+        case VolumeAttributes::ID_resampleFlag:
             updateSamplingGroup = true;
             resampleToggle->blockSignals(true);
             resampleToggle->setChecked(volumeAtts->GetResampleFlag());
@@ -1863,7 +1903,7 @@ QvisVolumePlotWindow::UpdateWindow(bool doAll)
         case VolumeAttributes::ID_rendererType:
             updateSamplingGroup = true;
             rendererTypesComboBox->blockSignals(true);
-          
+
             if (volumeAtts->GetRendererType() == VolumeAttributes::Default)
             {
                 rendererTypesComboBox->setCurrentIndex(0);
@@ -1959,7 +1999,7 @@ QvisVolumePlotWindow::UpdateWindow(bool doAll)
 // ****************************************************************************
 // Method: QvisVolumePlotWindow::UpdateColorControlPoints
 //
-// Purpose: 
+// Purpose:
 //   This method is called when the color control points must be updated.
 //
 // Programmer: Brad Whitlock
@@ -2082,7 +2122,7 @@ QvisVolumePlotWindow::UpdateColorControlPoints()
 // ****************************************************************************
 // Method: QvisVolumePlotWindow::UpdateGaussianControlPoints
 //
-// Purpose: 
+// Purpose:
 //   This method is called when we must update the opacity control points.
 //
 // Programmer: Brad Whitlock
@@ -2132,7 +2172,7 @@ QvisVolumePlotWindow::UpdateGaussianControlPoints()
 // ****************************************************************************
 // Method: QvisVolumePlotWindow::UpdateFreeform
 //
-// Purpose: 
+// Purpose:
 //   Sets the freeform opacity widget's values from the state object.
 //
 // Programmer: Brad Whitlock
@@ -2183,14 +2223,14 @@ QvisVolumePlotWindow::UpdateFreeform()
 // ****************************************************************************
 // Method: QvisVolumePlotWindow::CopyGaussianOpacitiesToFreeForm
 //
-// Purpose: 
+// Purpose:
 //   Copies the gaussian opacities to the freeform opacities.
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Sep 7 10:54:31 PDT 2001
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -2207,7 +2247,7 @@ QvisVolumePlotWindow::CopyGaussianOpacitiesToFreeForm()
 // ****************************************************************************
 // Method: QvisVolumePlotWindow::GetCurrentValues
 //
-// Purpose: 
+// Purpose:
 //   Gets the current values from certain widgets and stores the values in the
 //   state object.
 //
@@ -2242,9 +2282,9 @@ QvisVolumePlotWindow::CopyGaussianOpacitiesToFreeForm()
 //   I removed the code to get the opacity variable since it's in a different
 //   kind of widget.
 //
-//   Kathleen Bonnell, Thu Mar  3 11:01:22 PST 2005 
+//   Kathleen Bonnell, Thu Mar  3 11:01:22 PST 2005
 //   Added support for skew factor.
-//   
+//
 //   Dave Pugmire, Thu Nov  8 15:03:32 EST 2007
 //   Check the "okay" flag before setting the skew edit.
 //
@@ -2367,7 +2407,7 @@ QvisVolumePlotWindow::GetCurrentValues(int which_widget)
         if (resampleTarget->value() != volumeAtts->GetResampleTarget())
             volumeAtts->SetResampleTarget(resampleTarget->value());
     }
-    
+
     // Get the value of the minimum for the color variable.
     if(which_widget == VolumeAttributes::ID_colorVarMin || doAll)
     {
@@ -2477,7 +2517,7 @@ QvisVolumePlotWindow::GetCurrentValues(int which_widget)
 // ****************************************************************************
 // Method: QvisVolumePlotWindow::Apply
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the Apply button is clicked.
 //
 // Programmer: Brad Whitlock
@@ -2508,7 +2548,7 @@ QvisVolumePlotWindow::Apply(bool ignore)
             }
         }
     }
-                
+
     if(AutoUpdate() || ignore)
     {
         GetCurrentValues(-1);
@@ -2529,7 +2569,7 @@ QvisVolumePlotWindow::Apply(bool ignore)
 // ****************************************************************************
 // Method: QvisVolumePlotWindow::apply
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the window's Apply
 //   button is clicked.
 //
@@ -2537,7 +2577,7 @@ QvisVolumePlotWindow::Apply(bool ignore)
 // Creation:   Sat Feb 17 13:42:22 PST 2001
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -2549,7 +2589,7 @@ QvisVolumePlotWindow::apply()
 // ****************************************************************************
 // Method: QvisVolumePlotWindow::makeDefault
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the window's
 //   "Make default" button is clicked.
 //
@@ -2557,7 +2597,7 @@ QvisVolumePlotWindow::apply()
 // Creation:   Sat Feb 17 13:42:22 PST 2001
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -2572,7 +2612,7 @@ QvisVolumePlotWindow::makeDefault()
 // ****************************************************************************
 // Method: QvisVolumePlotWindow::reset
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the window's
 //   Reset button is clicked.
 //
@@ -2580,7 +2620,7 @@ QvisVolumePlotWindow::makeDefault()
 // Creation:   Sat Feb 17 13:42:22 PST 2001
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -2594,7 +2634,7 @@ QvisVolumePlotWindow::reset()
 // ****************************************************************************
 // Method: QvisVolumePlotWindow::addControlPoint
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that adds a new color control point to the
 //   spectrumbar widget.
 //
@@ -2602,7 +2642,7 @@ QvisVolumePlotWindow::reset()
 // Creation:   Mon Feb 5 14:02:09 PST 2001
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -2635,7 +2675,7 @@ QvisVolumePlotWindow::addControlPoint()
 // ****************************************************************************
 // Method: QvisVolumePlotWindow::removeControlPoint
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that removes the control point with the
 //   highest rank from the spectrum bar.
 //
@@ -2643,7 +2683,7 @@ QvisVolumePlotWindow::addControlPoint()
 // Creation:   Wed Mar 28 10:03:42 PDT 2001
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -2651,17 +2691,17 @@ QvisVolumePlotWindow::removeControlPoint()
 {
     // Remove the highest ranked control point.
     spectrumBar->removeControlPoint();
-    
+
      // Get the current attributes.
     GetCurrentValues(0);
     SetUpdate(false);
-    Apply();   
+    Apply();
 }
 
 // ****************************************************************************
 // Method: QvisVolumePlotWindow::alignControlPoints
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that tells the spectrum bar to align its
 //   control points.
 //
@@ -2669,7 +2709,7 @@ QvisVolumePlotWindow::removeControlPoint()
 // Creation:   Wed Mar 28 10:04:17 PDT 2001
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -2687,7 +2727,7 @@ QvisVolumePlotWindow::alignControlPoints()
 // ****************************************************************************
 // Method: QvisVolumePlotWindow::controlPointMoved
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the spectrum bar's control
 //   points are moved.
 //
@@ -2695,7 +2735,7 @@ QvisVolumePlotWindow::alignControlPoints()
 // Creation:   Wed Mar 28 11:39:32 PDT 2001
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -2710,7 +2750,7 @@ QvisVolumePlotWindow::controlPointMoved(int, float)
 // ****************************************************************************
 // Method: QvisVolumePlotWindow::popupColorSelect
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when a color control point in
 //   the spectrum bar widget wants to have a new color assigned to it.
 //
@@ -2727,6 +2767,9 @@ QvisVolumePlotWindow::controlPointMoved(int, float)
 //
 //   Brad Whitlock, Fri Jul 18 15:39:07 PDT 2008
 //   Added argument.
+//
+//   Kathleen Biagas, Wed Apr  5 13:04:35 PDT 2023
+//   Replace obosolete desktop() with primaryScreen().
 //
 // ****************************************************************************
 
@@ -2747,16 +2790,16 @@ QvisVolumePlotWindow::popupColorSelect(int index, const QPoint &p)
     // Fix the X dimension.
     if(menuX < 0)
         menuX = 0;
-    else if(menuX + menuW > QApplication::desktop()->width())
+    else if(menuX + menuW > QApplication::primaryScreen()->geometry().width())
         menuX -= (menuW + 5);
 
     // Fix the Y dimension.
     if(menuY < 0)
         menuY = 0;
-    else if(menuY + menuH > QApplication::desktop()->height())
-        menuY -= ((menuY + menuH) - QApplication::desktop()->height());
+    else if(menuY + menuH > QApplication::primaryScreen()->geometry().height())
+        menuY -= ((menuY + menuH) - QApplication::primaryScreen()->geometry().height());
 
-    // Show the popup menu.         
+    // Show the popup menu.
     colorSelect->move(menuX, menuY);
     colorSelect->show();
 }
@@ -2764,7 +2807,7 @@ QvisVolumePlotWindow::popupColorSelect(int index, const QPoint &p)
 // ****************************************************************************
 // Method: QvisVolumePlotWindow::selectedColor
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called by the color popup menu when
 //   a new color has been selected.
 //
@@ -2775,7 +2818,7 @@ QvisVolumePlotWindow::popupColorSelect(int index, const QPoint &p)
 // Creation:   Mon Feb 5 14:07:31 PST 2001
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -2799,7 +2842,7 @@ QvisVolumePlotWindow::selectedColor(const QColor &color)
 // ****************************************************************************
 // Method: QvisVolumePlotWindow::interactionModeChanged
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the interaction mode changes.
 //
 // Arguments:
@@ -2845,7 +2888,7 @@ QvisVolumePlotWindow::interactionModeChanged(int index)
 // ****************************************************************************
 // Method: QvisVolumePlotWindow::showColorsInAlphaWidgetToggled
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that toggles whether the color map is shown
 //   as background of the opacity widget.
 //
@@ -2881,7 +2924,7 @@ QvisVolumePlotWindow::showColorsInAlphaWidgetToggled(bool show)
 // ****************************************************************************
 // Method: QvisVolumePlotWindow::attenuationChanged
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the user changes the
 //   opacity attenuation.
 //
@@ -2909,7 +2952,7 @@ QvisVolumePlotWindow::attenuationChanged(int opacity)
 // ****************************************************************************
 // Method: QvisVolumePlotWindow::smoothDataToggled
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the "smooth data" toggle is
 //    clicked.
 //
@@ -2917,7 +2960,7 @@ QvisVolumePlotWindow::attenuationChanged(int opacity)
 // Creation:   February 8, 2002
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -2931,7 +2974,7 @@ QvisVolumePlotWindow::smoothDataToggled(bool)
 // ****************************************************************************
 // Method: QvisVolumePlotWindow::legendToggled
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the legend toggle is clicked.
 //
 // Programmer: Brad Whitlock
@@ -2954,7 +2997,7 @@ QvisVolumePlotWindow::legendToggled(bool)
 // ****************************************************************************
 // Method: QvisVolumePlotWindow::resampleToggled
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the resample toggle is clicked.
 //
 // Programmer: Allen Harvey
@@ -2972,7 +3015,7 @@ QvisVolumePlotWindow::resampleToggled(bool val)
 // ****************************************************************************
 // Method: QvisVolumePlotWindow::lightingToggled
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the lighting toggle is
 //   clicked.
 //
@@ -2995,7 +3038,7 @@ QvisVolumePlotWindow::lightingToggled(bool)
 // ****************************************************************************
 // Method: QvisVolumePlotWindow::gradientMagAffectsLightingToggled
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the toogle for
 //   whether or not the gradient magnitude affects lighting is clicked.
 //
@@ -3009,7 +3052,7 @@ QvisVolumePlotWindow::lightingToggled(bool)
 //   as an extra tweak and for making animations not have erratic lighting.
 //
 //   Jeremy Meredith, Tue Jan  5 15:51:26 EST 2010
-//   The low-gradient-mag lighting reduction now also applies to the 
+//   The low-gradient-mag lighting reduction now also applies to the
 //   3D texturing and splatting volume renderers.
 //
 // ****************************************************************************
@@ -3025,19 +3068,19 @@ QvisVolumePlotWindow::lowGradientLightingReductionChanged(int val)
 // ****************************************************************************
 // Method: QvisVolumePlotWindow::lowGradientClampToggled
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the low gradient
 //   lighting clamp flag is toggled.
-//   
+//
 //
 // Programmer: Jeremy Meredith
 // Creation:   January  5, 2010
 //
 // Modifications:
 //   Jeremy Meredith, Tue Jan  5 15:51:26 EST 2010
-//   The low-gradient-mag lighting reduction now also applies to the 
+//   The low-gradient-mag lighting reduction now also applies to the
 //   3D texturing and splatting volume renderers.
-//   
+//
 // ****************************************************************************
 
 void
@@ -3080,7 +3123,7 @@ QvisVolumePlotWindow::lowGradientClampProcessText()
 // Creation:   August 11, 2010
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -3104,7 +3147,7 @@ QvisVolumePlotWindow::limitsSelectChanged(int mode)
 // Creation:   December 11, 2001
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -3140,7 +3183,7 @@ QvisVolumePlotWindow::colorMinProcessText()
 // ****************************************************************************
 // Method: QvisVolumePlotWindow::colorMaxToggled
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the extents for the colors
 //   toggle is clicked.
 //
@@ -3150,7 +3193,7 @@ QvisVolumePlotWindow::colorMinProcessText()
 // Modifications:
 //   Brad Whitlock, Thu Feb 14 10:27:57 PDT 2002
 //   Removed code to enable the line edit.
-//   
+//
 // ****************************************************************************
 
 void
@@ -3186,7 +3229,7 @@ QvisVolumePlotWindow::colorMaxProcessText()
 // ****************************************************************************
 // Method: QvisVolumePlotWindow::opacityMinToggled
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the extents for the opacity
 //   toggle is clicked.
 //
@@ -3230,7 +3273,7 @@ QvisVolumePlotWindow::opacityMinProcessText()
 // ****************************************************************************
 // Method: QvisVolumePlotWindow::opacityMaxToggled
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the extents for the opacity
 //   toggle is clicked.
 //
@@ -3276,7 +3319,7 @@ QvisVolumePlotWindow::opacityMaxProcessText()
 // ****************************************************************************
 // Method: QvisVolumePlotWindow::smoothingMethodChanged
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the window's smooth
 //   combobox is activated.
 //
@@ -3300,7 +3343,7 @@ QvisVolumePlotWindow::smoothingMethodChanged(int val)
 // ****************************************************************************
 // Method: QvisVolumePlotWindow::equalSpacingToggled
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the window's equal spacing
 //   toggle is clicked.
 //
@@ -3324,7 +3367,7 @@ QvisVolumePlotWindow::equalSpacingToggled(bool val)
 // ****************************************************************************
 // Method: QvisVolumePlotWindow::alphaValuesChanged
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the opacity bar is
 //   modified.
 //
@@ -3334,7 +3377,7 @@ QvisVolumePlotWindow::equalSpacingToggled(bool val)
 // Modifications:
 //   Brad Whitlock, Fri Sep 7 10:15:18 PDT 2001
 //   Modified to account for changes in the attributes.
-//   
+//
 // ****************************************************************************
 
 void
@@ -3440,6 +3483,44 @@ QvisVolumePlotWindow::compactVariableChanged(const QString &var)
     Apply();
 }
 
+// ****************************************************************************
+//  Method:  QvisVolumePlotWindow::renderModeChanged
+//
+//  Purpose:
+//    Update the requested render mode based on user input
+//
+//  Arguments:
+//    val        the requested render mode
+//
+//  Programmer:  Kevin Griffin
+//  Creation:    April 27, 2023
+//
+// ****************************************************************************
+void
+QvisVolumePlotWindow::renderModeChanged(int val)
+{
+    switch (val)
+    {
+      case 0:
+        volumeAtts->SetRenderMode(VolumeAttributes::DefaultRenderMode);
+        break;
+      case 1:
+        volumeAtts->SetRenderMode(VolumeAttributes::RayCastRenderMode);
+        break;
+      case 2:
+        volumeAtts->SetRenderMode(VolumeAttributes::GPURenderMode);
+        break;
+      case 3:
+        volumeAtts->SetRenderMode(VolumeAttributes::OSPRayRenderMode);
+        break;
+      default:
+        EXCEPTION1(ImproperUseException,
+                   "The Volume plot received a signal for a render mode "
+                   "that it didn't understand");
+        break;
+    }
+    Apply();
+}
 
 // ****************************************************************************
 //  Method:  QvisVolumePlotWindow::gradientTypeChanged
@@ -3584,13 +3665,13 @@ QvisVolumePlotWindow::rendererTypeChanged(int val)
 //  Method:  QvisVolumePlotWindow::scaleClicked
 //
 //  Purpose:
-//    Update the scaling type. 
+//    Update the scaling type.
 //
 //  Arguments:
 //    scale      The new scaling type.
 //
-//  Programmer:  Kathleen Bonnell 
-//  Creation:    March 3, 2005 
+//  Programmer:  Kathleen Bonnell
+//  Creation:    March 3, 2005
 //
 // ****************************************************************************
 
@@ -3608,7 +3689,7 @@ QvisVolumePlotWindow::scaleClicked(int scale)
 // ****************************************************************************
 // Method: QvisVolumePlotWindow::colorTableClicked
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that imports the desired color table as color
 //   component of the transfer function in the volume plot attributes.
 //
@@ -3616,7 +3697,7 @@ QvisVolumePlotWindow::scaleClicked(int scale)
 //   useDefault : Whether or not to use the default color table.
 //   ctName     : The name of the color table to use.
 //
-//  Programmer:  Gunther H. Weber 
+//  Programmer:  Gunther H. Weber
 //  Creation:    April 5, 2007
 //
 // Modifications:
@@ -3639,10 +3720,10 @@ QvisVolumePlotWindow::colorTableClicked(bool useDefault, const QString &ctName)
 //  Method:  QvisVolumePlotWindow::processSkewText
 //
 //  Purpose:
-//    Update the skew factor. 
+//    Update the skew factor.
 //
-//  Programmer:  Kathleen Bonnell 
-//  Creation:    March 3, 2005 
+//  Programmer:  Kathleen Bonnell
+//  Creation:    March 3, 2005
 //
 // ****************************************************************************
 
@@ -3678,10 +3759,10 @@ QvisVolumePlotWindow::rendererSamplesChanged(double val)
 // Method:  QvisVolumePlotWindow::setLight...
 //
 // Purpose:
-//   
+//
 //
 //  Arguments:
-//    val        
+//    val
 //
 // Programmer:  Pascal Grosset
 // Creation:    Tue Apr 10 2012
@@ -3743,7 +3824,7 @@ QvisVolumePlotWindow::setMaterialKd(double val){
 void
 QvisVolumePlotWindow::setMaterialKs(double val){
     double *mat = new double[4];
-    
+
     mat = volumeAtts->GetMaterialProperties();
     mat[2]=val;
     volumeAtts->SetMaterialProperties(mat);
@@ -3809,7 +3890,7 @@ QvisVolumePlotWindow::shiftGuassiansLeft(){
 
         // Delete the gaussians
         alphaWidget->removeAllGaussians();
-        
+
         // Re-add the values
         alphaWidget->setAllGaussians(numGaussians, gcpts);
 
@@ -3849,7 +3930,7 @@ QvisVolumePlotWindow::shiftGuassiansRight(){
 
         // Delete the gaussians
         alphaWidget->removeAllGaussians();
-        
+
         // Re-add the values
         alphaWidget->setAllGaussians(numGaussians, gcpts);
 
@@ -3891,7 +3972,7 @@ QvisVolumePlotWindow::raiseGuassians(){
 
         // Delete the gaussians
         alphaWidget->removeAllGaussians();
-        
+
         // Re-add the values
         alphaWidget->setAllGaussians(numGaussians, gcpts);
 
@@ -3933,7 +4014,7 @@ QvisVolumePlotWindow::lowerGuassians(){
 
         // Delete the gaussians
         alphaWidget->removeAllGaussians();
-        
+
         // Re-add the values
         alphaWidget->setAllGaussians(numGaussians, gcpts);
 
@@ -3947,7 +4028,7 @@ QvisVolumePlotWindow::lowerGuassians(){
 // Method:  QvisVolumePlotWindow::thinGuassians
 //
 // Purpose:
-//   Makes all the gaussian curve thinner 
+//   Makes all the gaussian curve thinner
 //
 // Programmer:  Pascal Grosset
 // Creation:    Wed Sep 25 2015
@@ -3975,7 +4056,7 @@ QvisVolumePlotWindow::thinGuassians(){
 
         // Delete the gaussians
         alphaWidget->removeAllGaussians();
-        
+
         // Re-add the values
         alphaWidget->setAllGaussians(numGaussians, gcpts);
 
@@ -4017,7 +4098,7 @@ QvisVolumePlotWindow::thickenGuassians(){
 
         // Delete the gaussians
         alphaWidget->removeAllGaussians();
-        
+
         // Re-add the values
         alphaWidget->setAllGaussians(numGaussians, gcpts);
 
@@ -4059,7 +4140,7 @@ QvisVolumePlotWindow::raiseLeftGuassians(){
 
         // Delete the gaussians
         alphaWidget->removeAllGaussians();
-        
+
         // Re-add the values
         alphaWidget->setAllGaussians(numGaussians, gcpts);
 
@@ -4101,7 +4182,7 @@ QvisVolumePlotWindow::raiseRightGuassians(){
 
         // Delete the gaussians
         alphaWidget->removeAllGaussians();
-        
+
         // Re-add the values
         alphaWidget->setAllGaussians(numGaussians, gcpts);
 
@@ -4131,7 +4212,7 @@ QvisVolumePlotWindow::clearAllGuassians(){
     if (numGaussians > 0)
     {
         // Delete the gaussians
-        alphaWidget->removeAllGaussians();  
+        alphaWidget->removeAllGaussians();
     }
 }
 
@@ -4151,7 +4232,7 @@ QvisVolumePlotWindow::clearAllGuassians(){
 void
 QvisVolumePlotWindow::setGuassians(){
     // Delete the gaussians
-    alphaWidget->removeAllGaussians();  
+    alphaWidget->removeAllGaussians();
 
     int numGaussians = 10;
     float intervalWidth = 1.0/numGaussians;
@@ -4189,7 +4270,7 @@ QvisVolumePlotWindow::setGuassians(){
 void
 QvisVolumePlotWindow::setManyGuassians(){
     // Delete the gaussians
-    alphaWidget->removeAllGaussians();  
+    alphaWidget->removeAllGaussians();
 
     int numGaussians = 20;
     float intervalWidth = 1.0/numGaussians;

@@ -18,9 +18,6 @@ IndexSelectGUIPluginInfo.C
 QvisIndexSelectWindow.C
 ${COMMON_SOURCES}
 )
-SET(LIBG_MOC_SOURCES
-QvisIndexSelectWindow.h
-)
 
 SET(LIBV_SOURCES
 IndexSelectViewerEnginePluginInfo.C
@@ -48,8 +45,8 @@ TARGET_LINK_LIBRARIES(IIndexSelectOperator visitcommon)
 SET(INSTALLTARGETS IIndexSelectOperator)
 
 IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
-    QT_WRAP_CPP(GIndexSelectOperator LIBG_SOURCES ${LIBG_MOC_SOURCES})
     ADD_LIBRARY(GIndexSelectOperator ${LIBG_SOURCES})
+    set_target_properties(GIndexSelectOperator PROPERTIES AUTOMOC ON)
     TARGET_LINK_LIBRARIES(GIndexSelectOperator visitcommon gui )
 
     ADD_LIBRARY(VIndexSelectOperator ${LIBV_SOURCES})

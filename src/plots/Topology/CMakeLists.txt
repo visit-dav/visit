@@ -18,9 +18,6 @@ TopologyGUIPluginInfo.C
 QvisTopologyPlotWindow.C
 ${COMMON_SOURCES}
 )
-SET(LIBG_MOC_SOURCES
-QvisTopologyPlotWindow.h
-)
 
 SET(LIBV_SOURCES
 TopologyViewerEnginePluginInfo.C
@@ -51,8 +48,8 @@ TARGET_LINK_LIBRARIES(ITopologyPlot visitcommon)
 SET(INSTALLTARGETS ITopologyPlot)
 
 IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
-    QT_WRAP_CPP(GTopologyPlot LIBG_SOURCES ${LIBG_MOC_SOURCES})
     ADD_LIBRARY(GTopologyPlot ${LIBG_SOURCES})
+    set_target_properties(GTopologyPlot PROPERTIES AUTOMOC ON)
     TARGET_LINK_LIBRARIES(GTopologyPlot visitcommon gui )
 
     ADD_LIBRARY(VTopologyPlot ${LIBV_SOURCES})

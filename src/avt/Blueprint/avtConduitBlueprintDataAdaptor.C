@@ -5,6 +5,7 @@
 #include <avtConduitBlueprintDataAdaptor.h>
 #include <conduit.hpp>
 #include <conduit_blueprint.hpp>
+#include <conduit_blueprint_mesh_utils.hpp>
 #include "avtConduitBlueprintLogging.h"
 #include "avtConduitBlueprintInfoWarningHandler.h"
 
@@ -32,6 +33,7 @@
 #include <vtkRectilinearGrid.h>
 #include <vtkStructuredGrid.h>
 #include <vtkPolyData.h>
+#include <vtkVisItUtility.h>
 
 using namespace conduit;
 using namespace mfem;
@@ -572,7 +574,7 @@ ExplicitCoordsToVTKPoints(const Node &n_coords, const Node &n_topo)
     }
     else
     {
-        npts = (int) n_vals["x"].dtype().number_of_elements();
+        npts = (int) n_vals.child(0).dtype().number_of_elements();
     }
 
     AVT_CONDUIT_BP_INFO("ExplicitCoordsToVTKPoints:: number of points ="  << npts );
@@ -587,54 +589,78 @@ ExplicitCoordsToVTKPoints(const Node &n_coords, const Node &n_topo)
     bool have_z = false;
 
     Node n_vals_double;
+    std::string coord_sys_type = conduit::blueprint::mesh::utils::coordset::coordsys(n_coords);
 
-    if(!n_vals["x"].dtype().is_double())
+    if(coord_sys_type == "cylindrical")
     {
-        n_vals["x"].to_double_array(n_vals_double["x"]);
-        x_vals = n_vals_double["x"].value();
-    }
-    else
-    {
-        x_vals = n_vals["x"].value();
-    }
-
-
-    if(n_vals.has_child("y"))
-    {
-        have_y = true;
-
-        if(!n_vals["y"].dtype().is_double())
-        {
-            n_vals["y"].to_double_array(n_vals_double["y"]);
-            y_vals = n_vals_double["y"].value();
-        }
-        else
-        {
-            y_vals = n_vals["y"].value();
-        }
-    }
-
-    if(n_vals.has_child("z"))
-    {
-        have_z = true;
-
         if(!n_vals["z"].dtype().is_double())
         {
             n_vals["z"].to_double_array(n_vals_double["z"]);
-            z_vals = n_vals_double["z"].value();
+            x_vals = n_vals_double["z"].value();
         }
         else
         {
-            z_vals = n_vals["z"].value();
+            x_vals = n_vals["z"].value();
+        }
+
+        have_y = true;
+
+        if(!n_vals["r"].dtype().is_double())
+        {
+            n_vals["r"].to_double_array(n_vals_double["r"]);
+            y_vals = n_vals_double["r"].value();
+        }
+        else
+        {
+            y_vals = n_vals["r"].value();
         }
     }
+    else
+    {
+        if(!n_vals["x"].dtype().is_double())
+        {
+            n_vals["x"].to_double_array(n_vals_double["x"]);
+            x_vals = n_vals_double["x"].value();
+        }
+        else
+        {
+            x_vals = n_vals["x"].value();
+        }
 
+        if(n_vals.has_child("y"))
+        {
+            have_y = true;
+
+            if(!n_vals["y"].dtype().is_double())
+            {
+                n_vals["y"].to_double_array(n_vals_double["y"]);
+                y_vals = n_vals_double["y"].value();
+            }
+            else
+            {
+                y_vals = n_vals["y"].value();
+            }
+        }
+
+        if(n_vals.has_child("z"))
+        {
+            have_z = true;
+
+            if(!n_vals["z"].dtype().is_double())
+            {
+                n_vals["z"].to_double_array(n_vals_double["z"]);
+                z_vals = n_vals_double["z"].value();
+            }
+            else
+            {
+                z_vals = n_vals["z"].value();
+            }
+        }
+    }
 
     points->SetDataTypeToDouble();
     points->SetNumberOfPoints(npts);
 
-    //TODO: we could describe the VTK data array via
-    // and push the conversion directly into its memory.
 
     if(ndstrided) // strided case
     {
@@ -763,6 +789,7 @@ UniformCoordsToVTKRectilinearGrid(const Node &n_coords)
 {
     vtkRectilinearGrid *rectgrid = vtkRectilinearGrid::New();
 
+    AVT_CONDUIT_BP_INFO("UniformCoordsToVTKRectilinearGrid");
     AVT_CONDUIT_BP_INFO(n_coords.to_yaml());
 
     int nx[3];
@@ -772,18 +799,33 @@ UniformCoordsToVTKRectilinearGrid(const Node &n_coords)
     rectgrid->SetDimensions(nx);
 
     double dx[3] = {1.0,1.0,1.0};
+    std::string coord_sys_type = conduit::blueprint::mesh::utils::coordset::coordsys(n_coords);
+
     if(n_coords.has_child("spacing"))
     {
         const Node &n_spacing = n_coords["spacing"];
 
-        if(n_spacing.has_child("dx"))
-            dx[0] = n_spacing["dx"].to_double();
+        if(coord_sys_type == "cylindrical")
+        {
+            // note: we always treat z as horz axis for
+            // RZ meshes
+            if(n_spacing.has_child("dz"))
+                dx[0] = n_spacing["dz"].to_double();
 
-        if(n_spacing.has_child("dy"))
-            dx[1] = n_spacing["dy"].to_double();
+            if(n_spacing.has_child("dr"))
+                dx[1] = n_spacing["dr"].to_double();
+        }
+        else // xyz
+        {
+            if(n_spacing.has_child("dx"))
+                dx[0] = n_spacing["dx"].to_double();
 
-        if(n_spacing.has_child("dz"))
-            dx[2] = n_spacing["dz"].to_double();
+            if(n_spacing.has_child("dy"))
+                dx[1] = n_spacing["dy"].to_double();
+
+            if(n_spacing.has_child("dz"))
+                dx[2] = n_spacing["dz"].to_double();
+        }
     }
 
     double x0[3] = {0.0, 0.0, 0.0};
@@ -792,25 +834,46 @@ UniformCoordsToVTKRectilinearGrid(const Node &n_coords)
     {
         const Node &n_origin =  n_coords["origin"];
 
-        if(n_origin.has_child("x"))
-            x0[0] = n_origin["x"].to_double();
+        if(coord_sys_type == "cylindrical")
+        {
+            if(n_origin.has_child("z"))
+                x0[0] = n_origin["z"].to_double();
 
-        if(n_origin.has_child("y"))
-            x0[1] = n_origin["y"].to_double();
+            if(n_origin.has_child("r"))
+                x0[1] = n_origin["r"].to_double();
+        }
+        else
+        {
+            if(n_origin.has_child("x"))
+                x0[0] = n_origin["x"].to_double();
 
-        if(n_origin.has_child("z"))
-            x0[2] = n_origin["z"].to_double();
+            if(n_origin.has_child("y"))
+                x0[1] = n_origin["y"].to_double();
 
+            if(n_origin.has_child("z"))
+                x0[2] = n_origin["z"].to_double();
+        }
     }
 
     for (int i = 0; i < 3; i++)
     {
         vtkDataArray *da = NULL;
         DataType dt = DataType::c_double();
+
         // we have we origin, we can infer type from it
-        if(n_coords.has_path("origin/x"))
+        if(coord_sys_type == "cylindrical")
         {
-            dt = n_coords["origin"]["x"].dtype();
+            if(n_coords.has_path("origin/z"))
+            {
+                dt = n_coords["origin"]["z"].dtype();
+            }
+        }
+        else
+        {
+            if(n_coords.has_path("origin/x"))
+            {
+                dt = n_coords["origin"]["x"].dtype();
+            }
         }
 
         // since vtk uses the c-native style types
@@ -863,36 +926,63 @@ UniformCoordsToVTKRectilinearGrid(const Node &n_coords)
 vtkDataSet *
 RectilinearCoordsToVTKRectilinearGrid(const Node &n_coords)
 {
+    AVT_CONDUIT_BP_INFO("RectilinearCoordsToVTKRectilinearGrid");
+    
     vtkRectilinearGrid *rectgrid = vtkRectilinearGrid::New();
 
     const Node &n_coords_values  = n_coords["values"];
 
     int dims[3] = {1,1,1};
 
-    dims[0] = n_coords_values["x"].dtype().number_of_elements();
-    if (n_coords_values.has_child("y"))
-        dims[1] = n_coords_values["y"].dtype().number_of_elements();
-    if (n_coords_values.has_child("z"))
-        dims[2] = n_coords_values["z"].dtype().number_of_elements();
-    rectgrid->SetDimensions(dims);
+    std::string coord_sys_type = conduit::blueprint::mesh::utils::coordset::coordsys(n_coords);
 
     vtkDataArray *coords[3] = {0,0,0};
-    coords[0] = ConduitArrayToVTKDataArray(n_coords_values["x"]);
-    if (n_coords_values.has_child("y"))
-        coords[1] = ConduitArrayToVTKDataArray(n_coords_values["y"]);
-    else
+
+    AVT_CONDUIT_BP_INFO("coord system type: " << coord_sys_type);
+
+    if(coord_sys_type == "cylindrical")
     {
-        coords[1] = coords[0]->NewInstance();
-        coords[1]->SetNumberOfTuples(1);
-        coords[1]->SetComponent(0,0,0);
-    }
-    if (n_coords_values.has_child("z"))
-        coords[2] = ConduitArrayToVTKDataArray(n_coords_values["z"]);
-    else
-    {
+        dims[0] = n_coords_values["z"].dtype().number_of_elements();
+        dims[1] = n_coords_values["r"].dtype().number_of_elements();
+        rectgrid->SetDimensions(dims);
+
+        coords[0] = ConduitArrayToVTKDataArray(n_coords_values["z"]);
+        coords[1] = ConduitArrayToVTKDataArray(n_coords_values["r"]);
         coords[2] = coords[0]->NewInstance();
         coords[2]->SetNumberOfTuples(1);
         coords[2]->SetComponent(0,0,0);
+    }
+    else // cartesian
+    {
+        dims[0] = n_coords_values["x"].dtype().number_of_elements();
+        
+        if (n_coords_values.has_child("y"))
+            dims[1] = n_coords_values["y"].dtype().number_of_elements();
+        
+        if (n_coords_values.has_child("z"))
+            dims[2] = n_coords_values["z"].dtype().number_of_elements();
+
+        rectgrid->SetDimensions(dims);
+
+        coords[0] = ConduitArrayToVTKDataArray(n_coords_values["x"]);
+        
+        if (n_coords_values.has_child("y"))
+            coords[1] = ConduitArrayToVTKDataArray(n_coords_values["y"]);
+        else
+        {
+            coords[1] = coords[0]->NewInstance();
+            coords[1]->SetNumberOfTuples(1);
+            coords[1]->SetComponent(0,0,0);
+        }
+        
+        if (n_coords_values.has_child("z"))
+            coords[2] = ConduitArrayToVTKDataArray(n_coords_values["z"]);
+        else
+        {
+            coords[2] = coords[0]->NewInstance();
+            coords[2]->SetNumberOfTuples(1);
+            coords[2]->SetComponent(0,0,0);
+        }
     }
 
     rectgrid->SetXCoordinates(coords[0]);
@@ -1291,6 +1381,55 @@ avtConduitBlueprintDataAdaptor::BlueprintToVTK::FieldToVTK(
         res = ConduitArrayToVTKDataArray(field["values"]);
     }
     return res;
+}
+
+// ****************************************************************************
+vtkDataSet *
+avtConduitBlueprintDataAdaptor::BlueprintToVTK::Curve1DToVTK(
+        const conduit::Node &coords,
+        const conduit::Node &field)
+{
+    bool elem_assoc = field.has_child("association") && 
+        field["association"].as_string() == "element";
+
+    int num_field_vals = field["values"].dtype().number_of_elements();
+    if (elem_assoc)
+        num_field_vals *= 2;
+
+    vtkRectilinearGrid *rgrid = vtkVisItUtility::Create1DRGrid(num_field_vals, VTK_DOUBLE);
+    vtkDoubleArray *vals = vtkDoubleArray::New();
+    vals->SetNumberOfComponents(1);
+    vals->SetNumberOfTuples(num_field_vals);
+    vals->SetName("curve");
+    rgrid->GetPointData()->SetScalars(vals);
+
+    vtkDataArray *xs = rgrid->GetXCoordinates();
+
+    double_accessor x_vals = coords["values"][0].value();
+    double_accessor y_vals = field["values"].value();
+
+    if (elem_assoc)
+    {
+        for (vtkIdType i = 0; i < num_field_vals / 2; i ++)
+        {
+            xs->SetComponent(i * 2, 0, (double) x_vals[i]);
+            xs->SetComponent(i * 2 + 1, 0, (double) x_vals[i + 1]);
+            vals->SetComponent(i * 2, 0, (double) y_vals[i]);
+            vals->SetComponent(i * 2 + 1, 0, (double) y_vals[i]);
+        }
+    }
+    else
+    {
+        for (vtkIdType i = 0; i < num_field_vals; i ++)
+        {
+            xs->SetComponent(i, 0, (double) x_vals[i]);
+            vals->SetComponent(i, 0, (double) y_vals[i]);
+        }
+    }
+
+    vals->Delete();
+
+    return rgrid;
 }
 
 // ****************************************************************************

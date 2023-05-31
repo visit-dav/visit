@@ -57,7 +57,7 @@ QvisSILSetSelector::QvisSILSetSelector(QWidget *parent,
 
     QGridLayout *mainLayout = new QGridLayout(this);
     mainLayout->setSpacing(5);
-    mainLayout->setMargin(0);
+    mainLayout->setContentsMargins(0,0,0,0);
 
     //
     // Category
@@ -66,7 +66,6 @@ QvisSILSetSelector::QvisSILSetSelector(QWidget *parent,
     mainLayout->addWidget(categoryLabel,0,0);
 
     categoryName = new QComboBox(this);
-    categoryName->setAutoCompletion(true);
     categoryName->addItem(defaultItem);
     categoryName->setCurrentIndex(0);
     categoryName->setEditText(defaultItem);
@@ -80,7 +79,6 @@ QvisSILSetSelector::QvisSILSetSelector(QWidget *parent,
     subsetLabel = new QLabel(tr("Set"), this);
     mainLayout->addWidget(subsetLabel,1,0);
     subsetName = new QComboBox(this);
-    subsetName->setAutoCompletion(true);
     subsetName->addItem(defaultItem);
     subsetName->setCurrentIndex(0);
     connect(subsetName, SIGNAL(activated(int)),

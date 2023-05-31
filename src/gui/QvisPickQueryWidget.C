@@ -45,7 +45,7 @@ QvisPickQueryWidget::QvisPickQueryWidget(QWidget *parent,
     // Main layout for this widget
     // 
     QVBoxLayout *topLayout = new QVBoxLayout(this);
-    topLayout->setMargin(0);
+    topLayout->setContentsMargins(0,0,0,0);
     topLayout->setSpacing(10);
   
     // 
@@ -106,7 +106,7 @@ QvisPickQueryWidget::QvisPickQueryWidget(QWidget *parent,
     topLayout->addWidget(tcbox);
     QVBoxLayout *vtcLayout = new QVBoxLayout(tcbox);
     QGridLayout *gtcLayout = new QGridLayout();
-    gtcLayout->setMargin(0);
+    gtcLayout->setContentsMargins(0,0,0,0);
     vtcLayout->addLayout(gtcLayout);
 
     timePreserveType = new QButtonGroup(tcbox);
@@ -128,7 +128,7 @@ QvisPickQueryWidget::QvisPickQueryWidget(QWidget *parent,
     topLayout->addWidget(mcbox);
     QVBoxLayout *vmcLayout = new QVBoxLayout(mcbox);
     QGridLayout *gmcLayout = new QGridLayout();
-    gmcLayout->setMargin(0);
+    gmcLayout->setContentsMargins(0,0,0,0);
     vmcLayout->addLayout(gmcLayout);
 
     plotType = new QButtonGroup(mcbox);

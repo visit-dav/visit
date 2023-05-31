@@ -119,7 +119,7 @@ QvisBoundaryPlotWindow::CreateWindowContents()
     topLayout->addWidget(boundaryColorGroup);
 
     QGridLayout *colorLayout = new QGridLayout(boundaryColorGroup);
-    colorLayout->setMargin(5);
+    colorLayout->setContentsMargins(5,5,5,5);
     colorLayout->setSpacing(10);
     colorLayout->setColumnStretch(2, 1000);
 
@@ -192,7 +192,7 @@ QvisBoundaryPlotWindow::CreateWindowContents()
 
     // Create the overall opacity.
     QHBoxLayout *opLayout = new QHBoxLayout(0);
-    opLayout->setMargin(0);
+    opLayout->setContentsMargins(0,0,0,0);
     opLayout->setSpacing(5);
     colorLayout->addLayout(opLayout, 5, 0, 1, 3);
 
@@ -218,7 +218,7 @@ QvisBoundaryPlotWindow::CreateWindowContents()
     topLayout->addWidget(optionscGroup);
 
     QGridLayout *optionsLayout = new QGridLayout(optionscGroup);
-    optionsLayout->setMargin(5);
+    optionsLayout->setContentsMargins(5,5,5,5);
     optionsLayout->setSpacing(10);
  
     // Create the wireframe toggle
@@ -236,7 +236,7 @@ QvisBoundaryPlotWindow::CreateWindowContents()
     topLayout->addWidget(styleGroup);
 
     QGridLayout *styleLayout = new QGridLayout(styleGroup);
-    styleLayout->setMargin(5);
+    styleLayout->setContentsMargins(5,5,5,5);
     styleLayout->setSpacing(10);
  
     // Create the lineWidth widget.
@@ -255,7 +255,7 @@ QvisBoundaryPlotWindow::CreateWindowContents()
     topLayout->addWidget(smoothingGroup);
 
     QGridLayout *smoothingLayout = new QGridLayout(smoothingGroup);
-    smoothingLayout->setMargin(5);
+    smoothingLayout->setContentsMargins(5,5,5,5);
     smoothingLayout->setSpacing(10);
 
     smoothingLayout->addWidget(new QLabel(tr("Smoothing"), central), 0,0);
@@ -283,7 +283,7 @@ QvisBoundaryPlotWindow::CreateWindowContents()
     topLayout->addWidget(miscGroup);
 
     QGridLayout *miscLayout = new QGridLayout(miscGroup);
-    miscLayout->setMargin(5);
+    miscLayout->setContentsMargins(5,5,5,5);
     miscLayout->setSpacing(10);
  
     // Create the legend toggle
