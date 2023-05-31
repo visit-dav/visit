@@ -194,7 +194,7 @@ Building on Frontier
 
 You will first need to copy the `compilers.yaml` and `packages.yaml` files from `scripts/spack/configs/olcf/frontier/` to your `.spack` directory in your home directory.
 
-In order to have spack install the packages in the User Manged Software space the following patch will need to be applied.
+In order to have spack install the packages in the User Managed Software space the following patch will need to be applied.
 
 ::
 
