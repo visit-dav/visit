@@ -61,7 +61,7 @@ function testvercomp ()
 #
 function get_version_digits()
 {
-    retval=$($1 -v 2>&1 | tr ' -' '\n\n' | grep '^[0-9\.]*$' | grep .)
+    retval=$($1 -v 2>&1 | tr ' -' '\n\n' | grep '^[0-9\.]*$' | grep '\.')
     echo $retval
 }
 
