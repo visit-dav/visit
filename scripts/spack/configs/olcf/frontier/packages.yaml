@@ -14,10 +14,10 @@ packages:
   cmake:
     buildable: false
     externals:
-    - spec: cmake@3.22.2
-      prefix: /sw/crusher/spack-envs/base/opt/cray-sles15-zen3/cce-14.0.0/cmake-3.22.2-syicnmhmmkzyyf2b2mgxlpgeptau6gck/bin
+    - spec: cmake@3.23.2
+      prefix: /sw/crusher/spack-envs/base/opt/linux-sles15-x86_64/gcc-7.5.0/cmake-3.23.2-4r4mpiba7cwdw2hlakh5i7tchi64s3qd
       modules:
-      - cmake/3.22.2
+      - cmake/3.23.2
   cpio:
     externals:
     - spec: cpio@2.12
@@ -67,10 +67,6 @@ packages:
     externals:
     - spec: groff@1.22.3
       prefix: /usr
-  libtool:
-    externals:
-    - spec: libtool@2.4.6
-      prefix: /usr
   m4:
     externals:
     - spec: m4@1.4.18
@@ -87,6 +83,7 @@ packages:
     externals:
     - spec: openssl@1.1.1d
       prefix: /usr
+    buildable: False
   perl:
     externals:
     - spec: perl@5.26.1~cpanm+shared+threads
@@ -123,20 +120,61 @@ packages:
     compiler: [gcc, cce]
     providers:
       mpi: [cray-mpich]
+  rocm:
+    buildable: false
+    externals:
+    - prefix: /opt/rocm-5.2.0
+      spec: rocm@5.2.0
+      modules:
+      - rocm/5.2.0
   cray-mpich:
     buildable: false
     externals:
-    - prefix: /opt/cray/pe/mpich/8.1.12/ofi/gnu/9.1
-      spec: cray-mpich@8.1.12%gcc
+    - prefix: /opt/cray/pe/mpich/8.1.23/ofi/gnu/9.1
+      spec: cray-mpich@8.1.23%gcc
       modules:
-      - cray-mpich/8.1.12
-        cray-pmi/6.0.16
-        cray-pmi-lib/6.0.16
-        libfabric/1.15.0.0
-    - prefix: /opt/cray/pe/mpich/8.1.12/ofi/cray/10.0
-      spec: cray-mpich@8.1.12%cce
+      - cray-mpich/8.1.23
+        cray-pmi/6.1.8
+        libfabric/1.15.2.0
+    - prefix: /opt/cray/pe/mpich/8.1.23/ofi/cray/10.0
+      spec: cray-mpich@8.1.23%cce
       modules:
-      - cray-mpich/8.1.12
-        cray-pmi/6.0.16
-        cray-pmi-lib/6.0.16
-        libfabric/1.15.0.0
+      - cray-mpich/8.1.23
+        cray-pmi/6.1.8
+        libfabric/1.15.2.0
+  hip:
+    version: [5.2.0]
+    buildable: false
+    externals:
+    - spec: hip@5.2.0
+      prefix: /opt/rocm-5.2.0/hip
+  llvm-amdgpu:
+    version: [5.2.0]
+    buildable: false
+    externals:
+    - spec: llvm-amdgpu@5.2.0
+      prefix: /opt/rocm-5.2.0/llvm
+  hsa-rocr-dev:
+    version: [5.2.0]
+    buildable: false
+    externals:
+    - spec: hsa-rocr-dev@5.2.0
+      prefix: /opt/rocm-5.2.0/
+  rocminfo:
+    version: [5.2.0]
+    buildable: false
+    externals:
+    - spec: rocminfo@5.2.0
+      prefix: /opt/rocm-5.2.0/
+  rocm-device-libs:
+    version: [5.2.0]
+    buildable: false
+    externals:
+    - spec: rocm-device-libs@5.2.0
+      prefix: /opt/rocm-5.2.0/
+  rocprim:
+    version: [5.2.0]
+    buildable: false
+    externals:
+    - spec: rocprim@5.2.0
+      prefix: /opt/rocm-5.2.0/
