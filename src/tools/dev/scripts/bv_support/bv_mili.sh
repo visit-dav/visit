@@ -677,6 +677,8 @@ function build_mili
     # detect coral systems, which older versions of autoconf don't detect
     if [[ "$(uname -m)" == "ppc64le" ]] ; then
          extra_ac_flags="ac_cv_build=powerpc64le-unknown-linux-gnu"
+    elif [[ "$(uname -m)" == "aarch64" ]] ; then
+         extra_ac_flags="ac_cv_build=aarch64-unknown-linux-gnu"
     fi
 
     F77_ARG=""
