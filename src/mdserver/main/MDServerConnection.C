@@ -2058,7 +2058,7 @@ MDServerConnection::GetFilteredFileList(GetFileListRPC::FileList &files)
         int stage5 = visitTimer->StartTimer();
         int vfIndex = 0;
         bool needToSortFileList = false;
-        for(fileIndex = 0; virtualFilesToCheck.types.size() && (fileIndex < files.names.size()); ++fileIndex)
+        for(fileIndex = 0; !virtualFilesToCheck.types.empty() && (fileIndex < files.names.size()); ++fileIndex)
         {
             pos = newVirtualFiles.find(files.names[fileIndex]);
             if(pos == newVirtualFiles.end())
