@@ -702,6 +702,8 @@ ClipEditor::keyPressEvent(QKeyEvent *kev)
             }
         }
     }
+    // used to be updateGL, no longer available in Qt 6, so just call the
+    // simple update on the widget, which does the job.
     viewer->update();
 }
 

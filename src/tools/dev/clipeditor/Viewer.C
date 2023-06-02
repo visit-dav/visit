@@ -7,6 +7,12 @@
 //
 // Programmer: Jeremy Meredith
 // Date:       August 11, 2003
+//
+// Modifications:
+//   Kathleen Biagas, June 2, 2023
+//   Changed 'upateGL' calls to simple 'update'.  The 'updateGL' method isn't
+//   available in Qt6, and 'update' seems to do the job.
+//
 // ----------------------------------------------------------------------------
 
 #include "Viewer.h"
@@ -14,6 +20,8 @@
 #include "Shape.h"
 
 #include <QEvent>
+
+
 
 Viewer::Viewer(QWidget *parent)
     : QOpenGLWidget(parent)
