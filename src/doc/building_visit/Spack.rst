@@ -116,8 +116,7 @@ These are patches to `package.py` files that cannot be patched as part of the Vi
 
 ::
 
-    diff --git a/var/spack/repos/builtin/packages/visit/package.py b/var/spack/repos
-    /builtin/packages/visit/package.py
+    diff --git a/var/spack/repos/builtin/packages/visit/package.py b/var/spack/repos/builtin/packages/visit/package.py
     index 290280e17d..b042998979 100644
     --- a/var/spack/repos/builtin/packages/visit/package.py
     +++ b/var/spack/repos/builtin/packages/visit/package.py
