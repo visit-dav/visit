@@ -888,6 +888,8 @@ function build_qt
             fi
         elif [[ "$(uname -m)" == "ppc64" || "$(uname -m)" == "ppc64le" ]]; then
             QT_PLATFORM="linux-g++-64"
+        elif [[ "$(uname -m)" == "aarch64" ]]; then
+            QT_PLATFORM="linux-aarch64-gnu-g++"
         else
             if [[ "$C_COMPILER" == "icc" || "$CXX_COMPILER" == "icpc" ]]; then
                 QT_PLATFORM="linux-icc-32"

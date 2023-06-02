@@ -474,6 +474,17 @@ function initialize_build_visit()
             if [[ "$CXX_COMPILER" == "g++" || "$CXX_COMPILER" == "" ]]; then
                 CXX_OPT_FLAGS="$CXX_OPT_FLAGS -O2"
             fi
+        elif [[ "$(uname -m)" == "aarch64" ]] ; then
+            CFLAGS="$CFLAGS -fPIC"
+            FCFLAGS="$FCFLAGS -fPIC"
+            if [[ "$C_COMPILER" == "gcc" || "$C_COMPILER" == "" ]]; then
+                C_OPT_FLAGS="$C_OPT_FLAGS -O2"
+            fi
+            CXXFLAGS="$CXXFLAGS -fPIC"
+            if [[ "$CXX_COMPILER" == "g++" || "$CXX_COMPILER" == "" ]]; then
+                CXX_OPT_FLAGS="$CXX_OPT_FLAGS -O2"
+            fi
+            QT_PLATFORM="linux-aarch64-gnu-g++"
         fi
         export C_COMPILER=${C_COMPILER:-"gcc"}
         export CXX_COMPILER=${CXX_COMPILER:-"g++"}
