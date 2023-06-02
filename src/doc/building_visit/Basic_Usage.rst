@@ -128,3 +128,15 @@ if you built using a git clone.
   make package
 
 if you built using a tar file.
+
+
+A note about compiler versions
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+If you encounter problems with build_visit (especially building Qt), it may be due to the compiler version being used.
+
+If building Qt 6, then a fully compliant c++17 compiler is required (g++8 or newer on Linux) otherwise a compiler supporting c++14 is needed, with minimum g++ set to 7.3 or newer on Linux.
+
+Sometimes the absolute latest releases of compilers will cause compile errors during the building of third_party libraries requiring patches to the library's code base, a change to an older compiler version, or an update to a newer version of the library.
+If this is the case, and you would like us to support the compiler version you are using, please contact us by one of our :ref:`Contact methods <methods_of_contact>`, letting us know the OS and OS-version as well as the compiler version you are attempting to use, and the version of VisIt_ being built, along with all compile error messages.
+
