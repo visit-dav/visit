@@ -11,10 +11,13 @@
 
 #-----------------------------------------------------------------------------
 # Minimum compiler version check: GCC >= 7.3
-if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND
-    CMAKE_CXX_COMPILER_VERSION VERSION_LESS 7.3)
-  message(FATAL_ERROR "GCC 7.3 or later is required.")
-endif ()
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    if(USE_QT6 AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 8.1)
+      message(FATAL_ERROR "GCC 8.1 or later is required.")
+    elseif(CMAKE_CXX_COMPILER_VERSION VERSION_LESS 7.3)
+      message(FATAL_ERROR "GCC 7.3 or later is required.")
+    endif()
+endif()
 
 #-----------------------------------------------------------------------------
 # Minimum compiler version check: LLVM Clang >= 3.3
