@@ -489,9 +489,12 @@ function build_silo
     fi
 
     extra_ac_flags=""
-    # detect coral systems, which older versions of autoconf don't detect
+    # detect coral and NVIDIA Grace CPU (ARM) systems, which older versions of 
+    # autoconf don't detect
     if [[ "$(uname -m)" == "ppc64le" ]] ; then
          extra_ac_flags="ac_cv_build=powerpc64le-unknown-linux-gnu"
+    elif [[ "$(uname -m)" == "aarch64" ]] ; then
+         extra_ac_flags="ac_cv_build=aarch64-unknown-linux-gnu"
     fi 
 
     set -x
