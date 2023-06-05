@@ -247,7 +247,7 @@ The following spack command is used to build with spack.
 
 ::
 
-    spack install visit@3.3.3%gcc@11.2.0+mpi+gui+osmesa~vtkm ^python@3.7.7+shared~ssl ^mesa@21.2.5+opengl ^llvm@11.0.1~gold ^vtk@8.1.0+osmesa
+    spack install visit@3.3.3%gcc@11.2.0+mpi+gui+osmesa~vtkm ^python@3.7.7+shared ^mesa@21.2.5+opengl ^llvm@11.0.1 ^vtk@8.1.0+osmesa
 
 Working around recurring download failures
 ------------------------------------------
