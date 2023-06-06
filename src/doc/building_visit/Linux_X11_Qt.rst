@@ -12,6 +12,7 @@ Here are a couple of Qt links that prove helpful in knowing which packages need 
 * For Qt 5
 ** The libxcb section of `Building Qt5 from Git <https://wiki.qt.io/Building_Qt_5_from_Git>`_  
 ** Qt5's `X11 Requirements <https://doc.qt.io/qt-5/linux-requirements.html>`_ page.
+
 * For Qt 6 (only on develop branch)
 ** Qt6's `X11 Requirements <https://doc.qt.io/qt-6/linux-requirements.html>`_ page.
 
