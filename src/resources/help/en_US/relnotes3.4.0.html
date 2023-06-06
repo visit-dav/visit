@@ -70,6 +70,7 @@ enhancements and bug-fixes that were added to this release.</p>
     </ul>
     Typically you would use the "Resample" operator to resample the variable to meet the restrictions above.
   </li>
+  <li>VisIt's Blueprint reader has been enhanced so related high order volume fraction fields from a <i>matset</i> are grouped into a material that can be used with the FilledBoundary plot. The high order material data fields are refined through MFEM LOR, whose refinement level can be controlled with the <i>MultiresControl</i> operator.</li>
   <li>HDF 4 based readers were removed: Cosmos, RAGE, ZeusMP</li>
   <li>HDF 4 support in the Enzo reader was removed</li>
 </ul>
@@ -113,7 +114,8 @@ enhancements and bug-fixes that were added to this release.</p>
 <a name="Build_features"></a>
 <p><b><font size="4">Changes to build_visit in version 3.4</font></b></p>
 <ul>
-  <li>Removed HDF 4 support.
+  <li>Removed HDF 4 support.</li>
+  <li>Added support for building VisIt on NVIDIA Grace CPU and Arm Architecture.</li> 
 </ul>
 
 <a name="Dev_changes"></a>
@@ -125,6 +127,6 @@ enhancements and bug-fixes that were added to this release.</p>
 </ul>
 
 <p>Click the following link to view the release notes for the previous version
-of VisIt: <a href=relnotes3.3.2.html>3.3.2</a>.</p>
+of VisIt: <a href=relnotes3.3.3.html>3.3.3</a>.</p>
 </body>
 </html>

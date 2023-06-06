@@ -547,9 +547,12 @@ function build_h5part
     fi
 
     EXTRAARGS=""
-    # detect coral systems, which older versions of autoconf don't detect
+    # detect coral and NVIDIA Grace CPU (ARM) systems, which older versions of 
+    # autoconf don't detect
     if [[ "$(uname -m)" == "ppc64le" ]] ; then
          EXTRAARGS="ac_cv_build=powerpc64le-unknown-linux-gnu"
+    elif [[ "$(uname -m)" == "aarch64" ]] ; then
+         EXTRAARGS="ac_cv_build=aarch64-unknown-linux-gnu"
     fi
 
     info "Invoking command to configure H5Part"
