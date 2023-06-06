@@ -43,7 +43,10 @@ For more complete information on each of the arguments to the functions that Sil
 Silo_'s Fortran interface does not provide functions to write out multi-component data such as vectors.
 If you use the Fortran interface to Silo, you will have to write out the vector components as separate scalar variables and then write an expression to your Silo_ file that composes the components into a single vector variable.
 
-Example for writing vector data using Silo_:
+.. raw:: html
+
+  <details>
+  <summary><a>Example for writing vector data using Silo.</a></summary>
 
 .. tabs::
 
@@ -126,6 +129,11 @@ Example for writing vector data using Silo_:
         err = dbset2dstrlen(oldlen)
         end
 
+.. raw:: html
+
+  </details>
+  <br>
+
 
 Adding metadata for performance boosts
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -181,7 +189,10 @@ The data extents must be stored in a double precision array that has enough entr
 The layout of the min and max values within that array are as follows: *min_dom1*, *max_dom1*, *min_dom2*, *max_dom2*, ..., *min_domN*, *max_domN*.
 
 
-Example for writing data extents using Silo_:
+.. raw:: html
+
+  <details>
+  <summary><a>Example for writing data extents using Silo.</a></summary>
 
 .. tabs::
 
@@ -211,6 +222,11 @@ Example for writing data extents using Silo_:
         .               vartypes, optlist, ierr)
         err = dbfreeoptlist(optlist)
 
+.. raw:: html
+
+  </details>
+  <br>
+
 
 Writing spatial extents
 """""""""""""""""""""""
@@ -226,6 +242,11 @@ Spatial extents for a domain contain the minimum and maximum values of the coord
 The spatial extents must be stored in a double precision array that has enough entries to accommodate the min and max coordinate values for each domain in the multimesh object.
 The layout of the min and max values within that array for 3D domains are as follows: *xmin_dom1*, *ymin_dom1*, *zmin_dom1*, *xmax_dom1*, *ymax_dom1*, *zmax_dom1*, ..., *xmin_domN*, *ymin_domN*, *zmin_domN*, *xmax_domN*, *ymax_domN*, *zmax_domN*.
 In the event that you have 2D domains then you can omit the z-components of the min and max values and tell Silo_ that there are 4 values per min/max tuple instead of the 6 values required to specify min and max values for 3D domains.
+
+.. raw:: html
+
+  <details>
+  <summary><a>Example for writing spatial extents using Silo.</a></summary>
 
 .. tabs::
 
@@ -272,6 +293,11 @@ In the event that you have 2D domains then you can omit the z-components of the 
         err = dbputmmesh(dbfile, "quadmesh", 8, nmesh, meshnames,
         .                lmeshnames, meshtypes, optlist, ierr)
         err = dbfreeoptlist(optlist)
+
+.. raw:: html
+
+  </details>
+  <br>
 
 
 Ghost zones
@@ -324,9 +350,12 @@ For example, if you look at the upper left zone containing the "G" for ghost zon
 This means that the zone in question is a zone in domain1, the red domain, but that domain2 has a zone that exactly matches the location and values of the zone in the red domain.
 The corresponding zone in domain2 is a ghost zone.
 
+.. raw:: html
+
+  <details>
+  <summary><a>Example for writing a 3D, domain-decomposed rectilinear mesh without ghost zones.</a></summary>
 
 .. code-block:: c
-  :caption: C-Language example for writing a 3D, domain-decomposed rectilinear mesh without ghost zones.
 
   /* Create each of the domain meshes. */
   int dom = 0, xdom, ydom, zdom;
@@ -384,13 +413,22 @@ The corresponding zone in domain2 is a ghost zone.
               DBSetDir(dbfile, "..");
           }
 
+.. raw:: html
+
+  </details>
+  <br>
+
 Once you have changed your mesh-writing code to add a layer of ghost zones, where appropriate, you must indicate that the extra layer of zones are ghost zones.
 If you use Silo_'s **DBPutQuadmesh** function to write your mesh, you can indicate which zones are ghost zones by adding **DBOPT_LO_OFFSET** and **DBOPT_HI_OFFSET** to pass arrays containing high and low zone index offsets in the option list.
 If you are adding ghost zones to an unstructured mesh, you would instead adjust the **lo_offset** and **hi_offset** arguments that you pass to the **DBPutZonelist2** function.
 The next code listing shows the additions made in order to support ghost zones in a domain-decomposed rectilinear mesh.
 
+.. raw:: html
+
+  <details>
+  <summary><a>Example for writing a 3D, domain-decomposed rectilinear mesh with ghost zones</a></summary>
+
 .. code-block:: c
-  :caption: C-Language example for writing a 3D, domain-decomposed rectilinear mesh with ghost zones
 
   /* Determine the size of a zone.*/
   float cx, cy, cz;
@@ -504,6 +542,11 @@ The next code listing shows the additions made in order to support ghost zones i
               DBSetDir(dbfile, "..");
           }
 
+.. raw:: html
+
+  </details>
+  <br>
+
 There are two changes to the code in the previous listing that allow it to write ghost zones.
 First of all, the code calculates the size of a zone in the **cx**, **cy**, **cz** variables and then uses those sizes along with the location of the domain within the model to determine which domain surfaces will receive a layer of ghost zones.
 The layer of ghost zones is added by altering the start and end locations of the coordinate arrays as well as incrementing the number of zones and nodes in the dimensions that will have added ghost zones.
@@ -584,7 +627,10 @@ You can pass the **matlist** array and the mixed material arrays to the **DBPutM
 Note that when you write clean materials, your **matlist** array will contain only the numbers of valid materials.
 That is, the **matlist** array does not contain any negative mixed material array indices when you write out clean material objects.
 
-Example for writing mixed materials using Silo_:
+.. raw:: html
+
+  <details>
+  <summary><a>Example for writing mixed materials using Silo.</a></summary>
 
 .. tabs::
 
@@ -666,3 +712,9 @@ Example for writing mixed materials using Silo_:
         .              matlist, mdims, ndims, mix_next, mix_mat, mix_zone, mix_vf,
         .              mixlen, DB_FLOAT, DB_F77NULL, ierr)
         end
+
+.. raw:: html
+
+  </details>
+  <br>
+
