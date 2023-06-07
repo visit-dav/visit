@@ -2318,7 +2318,6 @@ avtXRayFilter::CalculateImagingPlaneDims(const double &parallelScale,
                    << "Output images may appear upside down." << std::endl;
         }
 
-
         const double farDist{viewDist + farPlane};
         const double nearDist_over_viewDist{nearDist / viewDist};
         const double farDist_over_viewDist{farDist / viewDist};
