@@ -302,6 +302,8 @@ QvisCinemaWizard::CreateFilenameControl(QWidget *parent)
 // Creation:   Thu Sep 14 14:52:46 PDT 2017
 //
 // Modifications:
+//   Kathleen Biagas, Tue Apr 18 16:34:41 PDT 2023
+//   Support Qt6: buttonClicked -> idClicked.
 //
 // ****************************************************************************
 
@@ -335,8 +337,13 @@ QvisCinemaWizard::CreateMainPage()
     dbTypeLabel->setToolTip(tr("The specification determines the type of Cinema database that will be created."));
     dbLayout->addWidget(dbTypeLabel, 1, 0);
     page0_specification = new QButtonGroup(gbDB);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(page0_specification, SIGNAL(buttonClicked(int)),
             this, SLOT(page0_specificationChanged(int)));
+#else
+    connect(page0_specification, SIGNAL(idClicked(int)),
+            this, SLOT(page0_specificationChanged(int)));
+#endif
     QRadioButton *rb0 = new QRadioButton(tr("A"), gbDB);
     page0_specification->addButton(rb0, 0);
     dbLayout->addWidget(rb0, 1, 1);

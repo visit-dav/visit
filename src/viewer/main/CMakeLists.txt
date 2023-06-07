@@ -26,6 +26,9 @@
 #  Kathleen Biagas, Thu Mar 30, 2023
 #  Use AUTOMOC target property instead of QT_WRAP_CPP macro.
 #
+#  Kathleen Biagas, Tue May 5, 2023
+#  Disable qt6 forcing of defines for UNICODE.
+#
 #****************************************************************************
 
 IF(VISIT_PARALLEL AND WIN32 AND HAVE_HPC_SCHEDULER)
@@ -185,6 +188,11 @@ if(VTK_VERSION VERSION_EQUAL "8.1.0)")
     set(vtkqtlib vtkGUISupportQt)
 else()
     set(vtkqtlib VTK::GUISupportQt)
+endif()
+
+
+if(QT_VERSION VERSION_GREATER_EQUAL "6.2.0")
+    qt6_disable_unicode_defines(viewer)
 endif()
 
 TARGET_LINK_LIBRARIES(viewer 

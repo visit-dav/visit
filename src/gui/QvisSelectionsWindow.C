@@ -232,6 +232,9 @@ QvisSelectionsWindow::CreateWindowContents()
 //   Brad Whitlock, Mon Nov  7 14:05:38 PST 2011
 //   I added controls for setting the id variable.
 //
+//   Kathleen Biagas, Tue Apr 18 16:34:41 PDT 2023
+//   Support Qt6: buttonClicked -> idClicked.
+//
 // ****************************************************************************
 
 QWidget *
@@ -269,8 +272,13 @@ QvisSelectionsWindow::CreatePropertiesTab(QWidget *parent)
     idVariableType->addButton(b3, 3);
     iLayout->addWidget(b3, 0, 3);
     b0->setChecked(true);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(idVariableType, SIGNAL(buttonClicked(int)),
             this, SLOT(idVariableTypeChanged(int)));
+#else
+    connect(idVariableType, SIGNAL(idClicked(int)),
+            this, SLOT(idVariableTypeChanged(int)));
+#endif
     idVariableButton = new QvisVariableButton(f2);
     idVariableButton->setVarTypes(QvisVariableButton::Scalars);
     idVariableButton->setAddDefault(false);
@@ -458,6 +466,9 @@ QvisSelectionsWindow::CreateTimeControls(QWidget *parent)
 //   Brad Whitlock, Wed Oct 12 12:23:00 PDT 2011
 //   Change cqHistogramVariable into a variable button.
 //
+//   Kathleen Biagas, Tue Apr 18 16:34:41 PDT 2023
+//   Support Qt6: buttonClicked -> idClicked.
+//
 // ****************************************************************************
 
 QWidget *
@@ -519,8 +530,13 @@ QvisSelectionsWindow::CreateCQHistogramControls(QWidget *parent)
     QRadioButton *matches = new QRadioButton(tr("Matches"), axisGroup);
     cqHistogramVariableButton = new QRadioButton(tr("Variable"), axisGroup);
     cqHistogramType = new QButtonGroup(axisGroup);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(cqHistogramType, SIGNAL(buttonClicked(int)),
             this, SLOT(histogramTypeChanged(int)));
+#else
+    connect(cqHistogramType, SIGNAL(idClicked(int)),
+            this, SLOT(histogramTypeChanged(int)));
+#endif
     cqHistogramType->addButton(timeSlice,0);
     cqHistogramType->addButton(matches,1);
     cqHistogramType->addButton(id,2);

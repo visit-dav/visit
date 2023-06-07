@@ -74,7 +74,9 @@ QvisPersistentParticlesWindow::~QvisPersistentParticlesWindow()
 // Creation:   omitted
 //
 // Modifications:
-//   
+//   Kathleen Biagas, Tue Apr 18 16:34:41 PDT 2023
+//   Support Qt6: buttonClicked -> idClicked.
+//
 // ****************************************************************************
 
 void
@@ -106,8 +108,13 @@ QvisPersistentParticlesWindow::CreateWindowContents()
     QRadioButton *startPathTypePathTypeEnumRelative = new QRadioButton(tr("Relative"), startPathType);
     startPathTypeButtonGroup->addButton(startPathTypePathTypeEnumRelative, 1);
     startPathTypeLayout->addWidget(startPathTypePathTypeEnumRelative);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(startPathTypeButtonGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(startPathTypeChanged(int)));
+#else
+    connect(startPathTypeButtonGroup, SIGNAL(idClicked(int)),
+            this, SLOT(startPathTypeChanged(int)));
+#endif
     timeLayout->addWidget(startPathType, 0,1);
 
     startIndexLabel = new QLabel(tr("Index of first time slice"), central);
@@ -131,8 +138,13 @@ QvisPersistentParticlesWindow::CreateWindowContents()
     QRadioButton *stopPathTypePathTypeEnumRelative = new QRadioButton(tr("Relative"), stopPathType);
     stopPathTypeButtonGroup->addButton(stopPathTypePathTypeEnumRelative, 1);
     stopPathTypeLayout->addWidget(stopPathTypePathTypeEnumRelative);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(stopPathTypeButtonGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(stopPathTypeChanged(int)));
+#else
+    connect(stopPathTypeButtonGroup, SIGNAL(idClicked(int)),
+            this, SLOT(stopPathTypeChanged(int)));
+#endif
     timeLayout->addWidget(stopPathType, 2,1);
 
     stopIndexLabel = new QLabel(tr("Index of last time slice"), central);

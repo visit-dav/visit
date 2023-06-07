@@ -138,6 +138,8 @@ QvisTensorPlotWindow::CreateWindowContents()
 // Creation:   September 20 2013
 //
 // Modifications:
+//   Kathleen Biagas, Tue Apr 18 16:34:41 PDT 2023
+//   Support Qt6: buttonClicked -> idClicked.
 //
 // ****************************************************************************
 
@@ -162,8 +164,13 @@ QvisTensorPlotWindow::CreateSamplingTab(QWidget *pageTensor)
     QLabel *locationLabel = new QLabel(tr("Placement"), reduceGroupBox);
     rgLayout->addWidget(locationLabel, 0, 0);
     locationButtonGroup = new QButtonGroup(reduceGroupBox);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(locationButtonGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(locationMethodChanged(int)));
+#else
+    connect(locationButtonGroup, SIGNAL(idClicked(int)),
+            this, SLOT(locationMethodChanged(int)));
+#endif
     QRadioButton *rb = new QRadioButton(tr("Adapt to the mesh resolution"), reduceGroupBox);
     rb->setChecked(true);
     locationButtonGroup->addButton(rb, 0);
@@ -180,8 +187,13 @@ QvisTensorPlotWindow::CreateSamplingTab(QWidget *pageTensor)
     QLabel *reduceLabel = new QLabel(tr("Sampling"), reduceGroupBox);
     rgLayout->addWidget(reduceLabel, 4, 0);
     reduceButtonGroup = new QButtonGroup(reduceGroupBox);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(reduceButtonGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(reduceMethodChanged(int)));
+#else
+    connect(reduceButtonGroup, SIGNAL(idClicked(int)),
+            this, SLOT(reduceMethodChanged(int)));
+#endif
     rb = new QRadioButton(tr("Fixed number"), reduceGroupBox);
     rb->setChecked(true);
     reduceButtonGroup->addButton(rb, 0);
@@ -225,6 +237,8 @@ QvisTensorPlotWindow::CreateSamplingTab(QWidget *pageTensor)
 // Creation:   September 20 2013
 //
 // Modifications:
+//   Kathleen Biagas, Tue Apr 18 16:34:41 PDT 2023
+//   Support Qt6: buttonClicked -> idClicked.
 //
 // ****************************************************************************
 
@@ -289,8 +303,13 @@ QvisTensorPlotWindow::CreateDataTab(QWidget *pageTensor)
 
     // Add the color label.
     colorButtonGroup = new QButtonGroup(colorGroupBox);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(colorButtonGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(colorModeChanged(int)));
+#else
+    connect(colorButtonGroup, SIGNAL(idClicked(int)),
+            this, SLOT(colorModeChanged(int)));
+#endif
     QRadioButton* rb = new QRadioButton(tr("Eigen values"), colorGroupBox);
     colorButtonGroup->addButton(rb, 0);
     cgLayout->addWidget(rb, 0, 0);

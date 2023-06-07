@@ -351,6 +351,9 @@
 //   Kathleen Biagas, Wed Apr  5 13:04:35 PDT 2023
 //   Replace obosolete desktop() with primaryScreen().
 //
+//   Kathleen Biagas, Wed Apr 19 14:45:53 PDT 2023
+//   Replace '+' operator for '|' for QKeySequence.
+//
 // ****************************************************************************
 #include <InstallationFunctions.h>
 QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
@@ -428,12 +431,12 @@ QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
     {
         selFileAct = filePopup->addAction(*openIcon, tr("Select &file . . ."),
                          this, SIGNAL(activateFileWindow()),
-                         QKeySequence(Qt::CTRL + Qt::Key_F));
+                         QKeySequence(Qt::CTRL | Qt::Key_F));
     }
     // keep this action so we can add reopen after it in certian cases
     openFileAct = filePopup->addAction(*openIcon, tr("Open file . . ."),
                                        this, SIGNAL(activateFileOpenWindow()),
-                                       QKeySequence(Qt::CTRL + Qt::Key_O));
+                                       QKeySequence(Qt::CTRL | Qt::Key_O));
 
     // Advanced pull-right menu.
     if (advancedMenuShowing)
@@ -463,10 +466,10 @@ QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
 
     refreshFileListAct = filePopup->addAction(tr("Refresh file list"),
                           this, SIGNAL(refreshFileList()),
-                          QKeySequence(Qt::CTRL + Qt::Key_R));
+                          QKeySequence(Qt::CTRL | Qt::Key_R));
     filePopup->addAction(tr("File &information . . ."),
                          this, SIGNAL(activateFileInformationWindow()),
-                         QKeySequence(Qt::CTRL + Qt::Key_I));
+                         QKeySequence(Qt::CTRL | Qt::Key_I));
 
     filePopup->addSeparator();
 
@@ -496,17 +499,17 @@ QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
 
     filePopup->addAction(saveIcon, tr("&Save window"),
                          this, SIGNAL(saveWindow()),
-                         QKeySequence(Qt::CTRL + Qt::Key_S));
+                         QKeySequence(Qt::CTRL | Qt::Key_S));
     filePopup->addAction(tr("Set save &options . . ."),
                          this, SIGNAL(activateSaveWindow()),
-                         QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_O));
+                         QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_O));
     filePopup->addAction(saveMovieIcon, tr("Save movie . . ."),
                          this, SIGNAL(saveMovie()));
     filePopup->addAction(cinemaIcon, tr("Save to Cinema . . ."),
                          this, SIGNAL(saveCinema()));
     filePopup->addAction(printIcon, tr("Print window"),
                          this, SIGNAL(printWindow()),
-                         QKeySequence(Qt::CTRL + Qt::Key_P));
+                         QKeySequence(Qt::CTRL | Qt::Key_P));
 
     filePopup->addSeparator();
 
@@ -517,16 +520,16 @@ QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
 
     filePopup->addAction(tr("Compute &engines . . ."),
                          this, SIGNAL(activateEngineWindow()),
-                         QKeySequence(Qt::CTRL + Qt::Key_E));
+                         QKeySequence(Qt::CTRL | Qt::Key_E));
 
     filePopup->addSeparator();
 
 #if defined(Q_OS_MAC)
     filePopup->addAction(tr("&Quit"),this, SIGNAL(quit()),
-                         QKeySequence(Qt::CTRL + Qt::Key_Q));
+                         QKeySequence(Qt::CTRL | Qt::Key_Q));
 #else
     filePopup->addAction(tr("E&xit"), this, SIGNAL(quit()),
-                         QKeySequence(Qt::CTRL + Qt::Key_X));
+                         QKeySequence(Qt::CTRL | Qt::Key_X));
 #endif
 
     //
@@ -536,73 +539,73 @@ QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
     QMenu *ctrls  = menuBar()->addMenu(tr("&Controls"));
     ctrls->addAction(animIcon, tr("&Animation . . ."),
                      this, SIGNAL(activateAnimationWindow()),
-                     QKeySequence(Qt::CTRL + Qt::Key_A));
+                     QKeySequence(Qt::CTRL | Qt::Key_A));
     ctrls->addAction(annotIcon, tr("A&nnotation . . ."),
                      this, SIGNAL(activateAnnotationWindow()),
-                     QKeySequence(Qt::CTRL + Qt::Key_N));
+                     QKeySequence(Qt::CTRL | Qt::Key_N));
     ctrls->addAction(rainbowIcon, tr("Color &table . . ."),
                      this, SIGNAL(activateColorTableWindow()),
-                     QKeySequence(Qt::CTRL + Qt::Key_T));
+                     QKeySequence(Qt::CTRL | Qt::Key_T));
     ctrls->addAction(commandIcon, tr("Launch CLI . . ."),
                      this, SIGNAL(activateCLI()),
-                     QKeySequence(Qt::CTRL + Qt::ALT + Qt::Key_C));
+                     QKeySequence(Qt::CTRL | Qt::ALT | Qt::Key_C));
     ctrls->addAction(commandIcon, tr("Command . . ."),
                      this, SIGNAL(activateCommandWindow()),
-                     QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_C));
+                     QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_C));
     ctrls->addAction(tr("&Data level comparisons . . ."),
                      this, SIGNAL(setupCMFE()),
-                     QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_D));
+                     QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_D));
     ctrls->addAction(correlationIcon, tr("&Database correlations . . ."),
                       this, SIGNAL(activateCorrelationListWindow()),
-                      QKeySequence(Qt::CTRL + Qt::Key_D));
+                      QKeySequence(Qt::CTRL | Qt::Key_D));
     ctrls->addAction(exprIcon, tr("&Expressions . . ."),
                      this, SIGNAL(activateExpressionsWindow()),
-                     QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_E));
+                     QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_E));
     ctrls->addAction(keyframeIcon, tr("&Keyframing . . ."),
                      this, SIGNAL(activateKeyframeWindow()),
-                     QKeySequence(Qt::CTRL + Qt::Key_K));
+                     QKeySequence(Qt::CTRL | Qt::Key_K));
     ctrls->addAction(lightIcon, tr("&Lighting . . ."),
                      this, SIGNAL(activateLightingWindow()),
-                     QKeySequence(Qt::CTRL + Qt::Key_L));
+                     QKeySequence(Qt::CTRL | Qt::Key_L));
     ctrls->addAction(globalLineoutIcon, tr("&Lineout . . ."),
                      this, SIGNAL(activateGlobalLineoutWindow()),
-                     QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_L));
+                     QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_L));
     ctrls->addAction(tr("Macros . . ."),
                      this, SIGNAL(activateMacroWindow()));
     ctrls->addAction(materialIcon, tr("&Material options . . ."),
                      this, SIGNAL(activateMaterialWindow()),
-                     QKeySequence(Qt::CTRL + Qt::Key_M));
+                     QKeySequence(Qt::CTRL | Qt::Key_M));
     ctrls->addAction(tr("&Mesh management . . ."),
                      this, SIGNAL(activateMeshManagementWindow()),
-                     QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_M));
+                     QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_M));
     ctrls->addAction(pickIcon, tr("&Pick . . ."),
                      this, SIGNAL(activatePickWindow()),
-                     QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_P));
+                     QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_P));
 
 #if defined(Q_OS_MAC)
     ctrls->addAction(tr("Quer&y . . ."),
                      this, SIGNAL(activateQueryWindow()),
-                     QKeySequence(Qt::CTRL + Qt::Key_Y));
+                     QKeySequence(Qt::CTRL | Qt::Key_Y));
     ctrls->addAction(tr("Quer&y over time options . . ."),
                      this, SIGNAL(activateQueryOverTimeWindow()),
-                     QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_Y));
+                     QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_Y));
 #else
     ctrls->addAction(tr("&Query over time options . . ."),
                      this, SIGNAL(activateQueryOverTimeWindow()),
-                     QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_Q));
+                     QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_Q));
     ctrls->addAction(tr("&Query . . ."),
                      this, SIGNAL(activateQueryWindow()),
-                     QKeySequence(Qt::CTRL + Qt::Key_Q));
+                     QKeySequence(Qt::CTRL | Qt::Key_Q));
 #endif
     ctrls->addAction(selectionIcon, tr("Selections . . ."),
                      this, SIGNAL(activateSelectionsWindow()),
-                     QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_S));
+                     QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_S));
     ctrls->addAction(subsetIcon, tr("S&ubset . . ."),
                      this, SIGNAL(activateSubsetWindow()),
-                     QKeySequence(Qt::CTRL + Qt::Key_U));
+                     QKeySequence(Qt::CTRL | Qt::Key_U));
     ctrls->addAction(viewIcon, tr("&View . . ."),
                      this, SIGNAL(activateViewWindow()),
-                     QKeySequence(Qt::CTRL + Qt::Key_V));
+                     QKeySequence(Qt::CTRL | Qt::Key_V));
 
     //
     // Add the Prefs menu.
@@ -610,17 +613,17 @@ QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
     QMenu *pref = menuBar()->addMenu(tr("&Options"));
     pref->addAction(tr("&Appearance . . ."),
                     this, SIGNAL(activateAppearanceWindow()),
-                    QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_A));
+                    QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_A));
     pref->addSeparator();
     pref->addAction(computerIcon, tr("&Host profiles . . ."),
                     this, SIGNAL(activateHostWindow()),
-                    QKeySequence(Qt::CTRL + Qt::Key_H));
+                    QKeySequence(Qt::CTRL | Qt::Key_H));
     pref->addAction(tr("Host profiles and configuration setup . . ."),
                     this, SIGNAL(activateSetupHostProfilesAndConfig()));
     pref->addSeparator();
     pref->addAction(tr("&Interactors . . ."),
                     this, SIGNAL(activateInteractorWindow()),
-                    QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_I));
+                    QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_I));
     pref->addAction(pluginIcon, tr("&Plugin manager . . ."),
                     this, SIGNAL(activatePluginWindow()));
     pref->addAction(tr("Preferences . . ."),
@@ -642,7 +645,7 @@ QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
     winPopup->addAction(QPixmap(newwindow_xpm), tr("New"),
                         this, SLOT(windowAdd())
 #if !(defined(Q_OS_MAC))
-                         , QKeySequence(Qt::CTRL + Qt::Key_Insert)
+                         , QKeySequence(Qt::CTRL | Qt::Key_Insert)
 #endif
                         );
 
@@ -650,7 +653,7 @@ QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
 
     winPopup->addAction(QPixmap(deletewindow_xpm), tr("Delete"),
                          this, SLOT(windowDelete()),
-                         QKeySequence(Qt::CTRL + Qt::Key_Delete));
+                         QKeySequence(Qt::CTRL | Qt::Key_Delete));
 
     winPopup->addAction(tr("Clear all"), this, SLOT(windowClearAll()));
 
@@ -2599,6 +2602,9 @@ QvisMainWindow::GetTimeStateFormat() const
 //   it is hidden, as it was a performance problem with many time steps, so we
 //   need to force it to update as it gets shown to make sure it's up to date.
 //
+//   Kathleen Biagas, Wed Apr 19 14:45:53 PDT 2023
+//   Replace '+' operator for '|' for QKeySequence.
+//
 // ****************************************************************************
 
 void
@@ -2613,7 +2619,7 @@ QvisMainWindow::SetShowSelectedFiles(bool val)
         {
             selFileAct = filePopup->addAction(*openIcon, tr("Select &file . . ."),
                          this, SIGNAL(activateFileWindow()),
-                         QKeySequence(Qt::CTRL + Qt::Key_F));
+                         QKeySequence(Qt::CTRL | Qt::Key_F));
             filePopup->insertAction(openFileAct, selFileAct);
 
             // Show selected files. Put reopen, close in an advanced menu.

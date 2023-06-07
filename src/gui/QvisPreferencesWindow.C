@@ -237,6 +237,9 @@ QvisPreferencesWindow::CreateWindowContents()
 //    Eric Brugger, Fri Feb 24 14:57:15 PST 2023
 //    I replaced vtkh with vtkm.
 //
+//    Kathleen Biagas, Tue Apr 18 16:34:41 PDT 2023
+//    Support Qt6: buttonClicked -> idClicked.
+//
 // ****************************************************************************
 
 void
@@ -297,8 +300,13 @@ QvisPreferencesWindow::CreateGeneralTab(QWidget *gTab)
     precisionGroup->setTitle(tr("Floating point precision:"));
     genLayout->addWidget(precisionGroup);
     precisionType = new QButtonGroup();
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(precisionType, SIGNAL(buttonClicked(int)),
             this, SLOT(precisionTypeChanged(int)));
+#else
+    connect(precisionType, SIGNAL(idClicked(int)),
+            this, SLOT(precisionTypeChanged(int)));
+#endif
 
     QHBoxLayout *precLayout = new QHBoxLayout(precisionGroup);
     QRadioButton *dec = new QRadioButton(tr("Float"));
@@ -319,8 +327,13 @@ QvisPreferencesWindow::CreateGeneralTab(QWidget *gTab)
     backendGroup->setTitle(tr("Parallel computation library:"));
     genLayout->addWidget(backendGroup);
     backendType = new QButtonGroup();
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(backendType, SIGNAL(buttonClicked(int)),
             this, SLOT(backendTypeChanged(int)));
+#else
+    connect(backendType, SIGNAL(idClicked(int)),
+            this, SLOT(backendTypeChanged(int)));
+#endif
 
     QHBoxLayout *backendLayout = new QHBoxLayout(backendGroup);
     QRadioButton *b0 = new QRadioButton(tr("VTK"));
@@ -450,6 +463,8 @@ QvisPreferencesWindow::CreateSessionFilesTab(QWidget *sfTab)
 // Creation:   November 8, 2019
 //
 // Modifications:
+//   Kathleen Biagas, Tue Apr 18 16:34:41 PDT 2023
+//   Support Qt6: buttonClicked -> idClicked.
 //
 // ****************************************************************************
 
@@ -491,8 +506,13 @@ QvisPreferencesWindow::CreateFilePanelTab(QWidget *fpTab)
     timeStateDisplayMode->addButton(rb,2);
     tsModeLayout->addWidget(rb, 3, 2);
     timeStateDisplayMode->button(int(tsFormat.GetDisplayMode()))->setChecked(true);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(timeStateDisplayMode, SIGNAL(buttonClicked(int)),
             this, SLOT(handleTimeStateDisplayModeChange(int)));
+#else
+    connect(timeStateDisplayMode, SIGNAL(idClicked(int)),
+            this, SLOT(handleTimeStateDisplayModeChange(int)));
+#endif
 
     //
     // Create widgets that let you set the time format.

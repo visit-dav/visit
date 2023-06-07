@@ -102,6 +102,9 @@ QvisWellBorePlotWindow::~QvisWellBorePlotWindow()
 //   Kathleen Bonnell, Mon Jan 17 18:17:26 MST 2011
 //   Change colorTableButton to colorTableWidget to gain invert toggle.
 //
+//   Kathleen Biagas, Tue Apr 18 16:34:41 PDT 2023
+//   Support Qt6: buttonClicked -> idClicked.
+//
 // ****************************************************************************
 
 void
@@ -174,8 +177,13 @@ QvisWellBorePlotWindow::CreateWindowContents()
     // Create the mode buttons that determine if the window is in single,
     // multiple, or color table color mode.
     colorModeButtons = new QButtonGroup(0);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(colorModeButtons, SIGNAL(buttonClicked(int)),
             this, SLOT(colorModeChanged(int)));
+#else
+    connect(colorModeButtons, SIGNAL(idClicked(int)),
+            this, SLOT(colorModeChanged(int)));
+#endif
     QGridLayout *colorLayout = new QGridLayout(wellColorGroup);
     colorLayout->setSpacing(10);
     colorLayout->setColumnStretch(2, 1000);
