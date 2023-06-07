@@ -2288,6 +2288,9 @@ avtXRayFilter::RedistributeLines(int nLeaves, int *nLinesPerDataset,
 //  Creation:   March 29 2023
 //
 //  Modifications:
+//    Justin Privitera, Wed Jun  7 15:47:17 PDT 2023
+//    Added a warning for the pitfalls case from the docs that will trigger
+//    if the near plane is outside the view frustum.
 //
 // ****************************************************************************
 void
