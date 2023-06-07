@@ -1177,7 +1177,7 @@ Note that the node indices in the example begin at one so the example code will 
 .. raw:: html 
 
    <details>
-   <summary><a>Example for returning an unstructured mesh from GetMesh with VTK 8</a></summary>
+   <summary><a>Example for returning an unstructured mesh from GetMesh.</a></summary>
 
 .. code-block:: c
 
