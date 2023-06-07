@@ -64,7 +64,7 @@ function bv_qt6_host_profile
         echo "##" >> $HOSTCONF
         echo "## QT6" >> $HOSTCONF
         echo "##" >> $HOSTCONF
-        echo "SETUP_APP_VERSION(QT $QT_VERSION)" >> $HOSTCONF
+        echo "SETUP_APP_VERSION(QT $QT6_VERSION)" >> $HOSTCONF
         echo "VISIT_OPTION_DEFAULT(VISIT_QT_DIR \${VISITHOME}/qt/$QT6_VERSION/\${VISITARCH})" >> $HOSTCONF
      fi
 }
