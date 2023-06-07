@@ -97,6 +97,9 @@ QvisQueryOverTimeWindow::~QvisQueryOverTimeWindow()
 //   Kathleen Biagas, Fri Aug 26 17:12:13 PDT 2011
 //   Removed start/end times and stride.
 //
+//   Kathleen Biagas, Tue Apr 18 16:34:41 PDT 2023
+//   Support Qt6: buttonClicked -> idClicked.
+//
 // ****************************************************************************
 
 void
@@ -116,7 +119,11 @@ QvisQueryOverTimeWindow::CreateWindowContents()
     timeTypeBoxLayout->addWidget(mLabel, 0, 0, 1, 3);
 
     timeType = new QButtonGroup(timeTypeBox);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(timeType, SIGNAL(buttonClicked(int)), this, SLOT(timeTypeChanged(int)));
+#else
+    connect(timeType, SIGNAL(idClicked(int)), this, SLOT(timeTypeChanged(int)));
+#endif
 
     QHBoxLayout *timeTypeLayout = new QHBoxLayout();
 

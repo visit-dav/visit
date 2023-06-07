@@ -8,6 +8,7 @@
 #include <ViewerPlotList.h>
 #include <ViewerWindow.h>
 #include <QAction>
+#include <QActionGroup>
 #include <QIcon>
 #include <QMenu>
 #include <QToolBar>

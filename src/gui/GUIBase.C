@@ -1507,6 +1507,8 @@ GUIBase::LineEditGetInt(QLineEdit *lineEdit, int &val)
 // Creation:   Thu Jun 19 10:41:41 PDT 2008
 //
 // Modifications:
+//   Kathleen Biagas, Tue Apr 11, 2023
+//   QString::SkipEmptyParts => Qt::SkipEmptyParts for Qt >= 6.
 //
 // ****************************************************************************
 
@@ -1518,7 +1520,12 @@ GUIBase::QStringToDoubles(const QString &str, double *vals, int maxVals)
     if(!str.isEmpty())
     {
         bool okay = true;
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
         QStringList s = str.split(" ", QString::SkipEmptyParts);
+#else
+        QStringList s = str.split(" ", Qt::SkipEmptyParts);
+#endif
+
         for(int i = 0; i < maxVals && okay; ++i)
         {
             if(i < s.size())
@@ -1551,6 +1558,8 @@ GUIBase::QStringToDoubles(const QString &str, double *vals, int maxVals)
 // Creation:   Thu Jun 19 10:41:41 PDT 2008
 //
 // Modifications:
+//   Kathleen Biagas, Tue Apr 11, 2023
+//   QString::SkipEmptyParts => Qt::SkipEmptyParts for Qt >= 6.
 //
 // ****************************************************************************
 
@@ -1562,7 +1571,11 @@ GUIBase::QStringToDoubles(const QString &str, doubleVector &vals, int maxVals)
     if(!str.isEmpty())
     {
         bool okay = true;
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
         QStringList s = str.split(" ", QString::SkipEmptyParts);
+#else
+        QStringList s = str.split(" ", Qt::SkipEmptyParts);
+#endif
         for(int i = 0; i < s.size() && okay; ++i)
         {
             if(maxVals == -1 || i < maxVals)
@@ -1595,6 +1608,8 @@ GUIBase::QStringToDoubles(const QString &str, doubleVector &vals, int maxVals)
 // Creation:   Thu Jun 19 10:41:41 PDT 2008
 //
 // Modifications:
+//   Kathleen Biagas, Tue Apr 11, 2023
+//   QString::SkipEmptyParts => Qt::SkipEmptyParts for Qt >= 6.
 //
 // ****************************************************************************
 
@@ -1606,7 +1621,11 @@ GUIBase::QStringToFloats(const QString &str, float *vals, int maxVals)
     if(!str.isEmpty())
     {
         bool okay = true;
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
         QStringList s = str.split(" ", QString::SkipEmptyParts);
+#else
+        QStringList s = str.split(" ", Qt::SkipEmptyParts);
+#endif
         for(int i = 0; i < maxVals && okay; ++i)
         {
             if(i < s.size())
@@ -1628,7 +1647,11 @@ GUIBase::QStringToFloats(const QString &str, floatVector &vals, int maxVals)
     if(!str.isEmpty())
     {
         bool okay = true;
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
         QStringList s = str.split(" ", QString::SkipEmptyParts);
+#else
+        QStringList s = str.split(" ", Qt::SkipEmptyParts);
+#endif
         for(int i = 0; i < s.size() && okay; ++i)
         {
             if(maxVals == -1 || i < maxVals)
@@ -1661,6 +1684,8 @@ GUIBase::QStringToFloats(const QString &str, floatVector &vals, int maxVals)
 // Creation:   Thu Jun 19 10:41:41 PDT 2008
 //
 // Modifications:
+//   Kathleen Biagas, Tue Apr 11, 2023
+//   QString::SkipEmptyParts => Qt::SkipEmptyParts for Qt >= 6.
 //
 // ****************************************************************************
 
@@ -1672,7 +1697,11 @@ GUIBase::QStringToInts(const QString &str, int *vals, int maxVals)
     if(!str.isEmpty())
     {
         bool okay = true;
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
         QStringList s = str.split(" ", QString::SkipEmptyParts);
+#else
+        QStringList s = str.split(" ", Qt::SkipEmptyParts);
+#endif
         for(int i = 0; i < maxVals && okay; ++i)
         {
             if(i < s.size())
@@ -1705,6 +1734,8 @@ GUIBase::QStringToInts(const QString &str, int *vals, int maxVals)
 // Creation:   Thu Jun 19 10:41:41 PDT 2008
 //
 // Modifications:
+//   Kathleen Biagas, Tue Apr 11, 2023
+//   QString::SkipEmptyParts => Qt::SkipEmptyParts for Qt >= 6.
 //
 // ****************************************************************************
 
@@ -1716,7 +1747,11 @@ GUIBase::QStringToInts(const QString &str, intVector &vals, int maxVals)
     if(!str.isEmpty())
     {
         bool okay = true;
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
         QStringList s = str.split(" ", QString::SkipEmptyParts);
+#else
+        QStringList s = str.split(" ", Qt::SkipEmptyParts);
+#endif
         for(int i = 0; i < s.size() && okay; ++i)
         {
             if(maxVals == -1 || i < maxVals)
@@ -1773,7 +1808,11 @@ GUIBase::QStringToBools(const QString &str, bool *vals, int maxVals)
     if(!str.isEmpty())
     {
         bool okay = true;
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
         QStringList s = str.split(" ", QString::SkipEmptyParts);
+#else
+        QStringList s = str.split(" ", Qt::SkipEmptyParts);
+#endif
         for(int i = 0; i < maxVals && okay; ++i)
         {
             if(i < s.size())
@@ -1806,6 +1845,8 @@ GUIBase::QStringToBools(const QString &str, bool *vals, int maxVals)
 // Creation:   Tue Nov 15, 2022
 //
 // Modifications:
+//   Kathleen Biagas, Tue Apr 11, 2023
+//   QString::SkipEmptyParts => Qt::SkipEmptyParts for Qt >= 6.
 //
 // ****************************************************************************
 
@@ -1817,7 +1858,11 @@ GUIBase::QStringToBools(const QString &str, boolVector &vals, int maxVals)
     if(!str.isEmpty())
     {
         bool okay = true;
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
         QStringList s = str.split(" ", QString::SkipEmptyParts);
+#else
+        QStringList s = str.split(" ", Qt::SkipEmptyParts);
+#endif
         for(int i = 0; i < s.size() && okay; ++i)
         {
             if(maxVals == -1 || i < maxVals)

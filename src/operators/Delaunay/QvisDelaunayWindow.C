@@ -70,7 +70,9 @@ QvisDelaunayWindow::~QvisDelaunayWindow()
 // Creation:   omitted
 //
 // Modifications:
-//   
+//   Kathleen Biagas, Tue Apr 18 16:34:41 PDT 2023
+//   Support Qt6: buttonClicked -> idClicked.
+//
 // ****************************************************************************
 
 void
@@ -95,10 +97,14 @@ QvisDelaunayWindow::CreateWindowContents()
     QRadioButton *dimensionDimensionTetrahedralization = new QRadioButton(tr("Tetrahedralization"), dimension);
     dimensionButtonGroup->addButton(dimensionDimensionTetrahedralization,2);
     dimensionLayout->addWidget(dimensionDimensionTetrahedralization);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(dimensionButtonGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(dimensionChanged(int)));
+#else
+    connect(dimensionButtonGroup, SIGNAL(idClicked(int)),
+            this, SLOT(dimensionChanged(int)));
+#endif
     mainLayout->addWidget(dimension, 0,1);
-
 }
 
 

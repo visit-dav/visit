@@ -120,6 +120,13 @@ QvisSliceWindow::~QvisSliceWindow()
 //   Cyrus Harrison, Tue Jul  8 14:48:38 PDT 2008
 //   Initial Qt4 Port.
 //
+//   Kathleen Biagas, Wed Apr 12 12:52:05 PDT 2023
+//   Remove use of deprecated setAutoCompletion for meshName. By default an
+//   editable QComboBox uses a case-insenstive auto completer.
+//
+//   Kathleen Biagas, Tue Apr 18 16:34:41 PDT 2023
+//   Support Qt6: buttonClicked -> idClicked.
+//
 // ****************************************************************************
 
 void
@@ -135,8 +142,13 @@ QvisSliceWindow::CreateWindowContents()
     normalLayout->setSpacing(5);
 
     normalTypeGroup = new QButtonGroup(normalBox);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(normalTypeGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(normalTypeChanged(int)));
+#else
+    connect(normalTypeGroup, SIGNAL(idClicked(int)),
+            this, SLOT(normalTypeChanged(int)));
+#endif
 
     //    Orthogonal
     normalLayout->addWidget(new QLabel(tr("Orthogonal"), normalBox), 1,0);
@@ -202,8 +214,13 @@ QvisSliceWindow::CreateWindowContents()
     topLayout->addWidget(originBox);
 
     originTypeGroup = new QButtonGroup(originBox);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(originTypeGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(originTypeChanged(int)));
+#else
+    connect(originTypeGroup, SIGNAL(idClicked(int)),
+            this, SLOT(originTypeChanged(int)));
+#endif
 
 
     QGridLayout *originLayout = new QGridLayout(originBox);
@@ -332,7 +349,6 @@ QvisSliceWindow::CreateWindowContents()
     meshLabel = new QLabel(tr("Mesh"), originBox);
     meshName = new QComboBox(originBox);
     meshName->setEditable(true);
-    meshName->setAutoCompletion(true);
     meshName->setInsertPolicy(QComboBox::NoInsert);
     meshName->addItem(defaultItem);
     meshName->setCurrentIndex(0);

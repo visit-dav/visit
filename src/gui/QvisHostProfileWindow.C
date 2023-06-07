@@ -716,10 +716,13 @@ QvisHostProfileWindow::downloadHosts(QNetworkReply *reply)
 //   Brad Whitlock, Wed Aug 15 13:58:14 PDT 2012
 //   I added ssh command.
 //
-//    Kathleen Biagas, Wed Dec 16 11:07:43 MST 2015
-//    Replace slot 'sshCommandChanged' with 'sshCommandRetPressed', so that
-//    sshCommand is only processed once editing has finished.  Will be
-//    triggered by 'returnPressed'/'editingFinished' signals from the widget.
+//   Kathleen Biagas, Wed Dec 16 11:07:43 MST 2015
+//   Replace slot 'sshCommandChanged' with 'sshCommandRetPressed', so that
+//   sshCommand is only processed once editing has finished.  Will be
+//   triggered by 'returnPressed'/'editingFinished' signals from the widget.
+//
+//   Kathleen Biagas, Tue Apr 18 16:34:41 PDT 2023
+//   Support Qt6: buttonClicked -> idClicked.
 //
 // ****************************************************************************
 
@@ -855,8 +858,13 @@ QvisHostProfileWindow::CreateMachineSettingsGroup()
     cRow++;
 
     clientHostNameMethod = new QButtonGroup(connectionGroup);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(clientHostNameMethod, SIGNAL(buttonClicked(int)),
             this, SLOT(clientHostNameMethodChanged(int)));
+#else
+    connect(clientHostNameMethod, SIGNAL(idClicked(int)),
+            this, SLOT(clientHostNameMethodChanged(int)));
+#endif
     chnMachineName = new QRadioButton(tr("Use local machine name"), connectionGroup);
     chnParseFromSSHClient = new QRadioButton(tr("Parse from SSH_CLIENT environment variable"),
                                              connectionGroup);
@@ -1146,6 +1154,13 @@ QvisHostProfileWindow::CreateParallelSettingsGroup()
 //   Brad Whitlock, Wed Nov  7 10:53:27 PST 2018
 //   Add lrun.
 //
+//   Kathleen Biagas, Wed Apr 19 14:02:45 PDT 2023
+//   Replace deprecated 'activated' signal with 'currentIndexChanged'.
+//
+//   Kathleen Biagas, Wed Apr 19 14:42:07 PDT 2023
+//   Replace `currentIndexChanged` signal for QComboBox with
+//   'currentTextChanged' as the former is not available in Qt 6.
+// 
 // ****************************************************************************
 
 QWidget *
@@ -1195,7 +1210,7 @@ QvisHostProfileWindow::CreateLaunchSettingsGroup()
     launchMethod->addItem("sbatch/mpiexec");
     launchMethod->addItem("sbatch/mpirun");
     launchMethod->addItem("sbatch/srun");
-    connect(launchMethod, SIGNAL(activated(const QString &)),
+    connect(launchMethod, SIGNAL(currentTextChanged(const QString &)),
             this, SLOT(launchMethodChanged(const QString &)));
     launchCheckBox = new QCheckBox(tr("Parallel launch method"), currentGroup);
     connect(launchCheckBox, SIGNAL(toggled(bool)),
@@ -1439,6 +1454,10 @@ QvisHostProfileWindow::CreateAdvancedSettingsGroup()
 //   Brad Whitlock, Thu Oct  6 11:56:32 PDT 2011
 //   Return the created widget.
 //
+//   Kathleen Biagas, Wed Apr 19 14:42:07 PDT 2023
+//   Replace `valueChanged(const QString)` signal for QSpinBox with
+//   'valueChanged(int)' as the former is not available in Qt 6.
+//
 // ****************************************************************************
 
 QWidget *
@@ -1495,8 +1514,8 @@ QvisHostProfileWindow::CreateHWAccelSettingsGroup()
     sbNGPUs->setKeyboardTracking(false);
     sbNGPUs->setRange(0, 2048);
     sbNGPUs->setEnabled(true);
-    connect(sbNGPUs, SIGNAL(valueChanged(const QString&)), this,
-            SLOT(nGPUsChanged(const QString&)));
+    connect(sbNGPUs, SIGNAL(valueChanged(int)), this,
+            SLOT(nGPUsChanged(int)));
     hLayout->addWidget(lblNGPUs, hRow,0, 1,1);
     hLayout->addWidget(sbNGPUs, hRow,1, 1,1);
     hRow++;
@@ -4443,11 +4462,12 @@ QvisHostProfileWindow::toggleCanDoHW(bool state)
 //  Modifications:
 // ****************************************************************************
 void
-QvisHostProfileWindow::nGPUsChanged(const QString&)
+QvisHostProfileWindow::nGPUsChanged(int value)
 {
-    if(NULL == currentLaunch) { return; }
+    if(NULL == currentLaunch)
+        return;
 
-    currentLaunch->SetGPUsPerNode(sbNGPUs->value());
+    currentLaunch->SetGPUsPerNode(value);
     SetUpdate(false);
     Apply();
 }

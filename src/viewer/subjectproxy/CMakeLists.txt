@@ -7,6 +7,9 @@
 #   Kathleen Biagas, Thu Mar 30, 2023
 #   Use AUTOMOC target property instead of QT_WRAP_CPP macro.
 #
+#   Kathleen Biagas, Tue May 5, 2023
+#   Disable qt6 forcing of defines for UNICODE.
+#
 #****************************************************************************
 
 #ADD_DEPENDENCIES(rpc)
@@ -91,6 +94,12 @@ IF(VISIT_STATIC)
         ${QT_QTCORE_LIB_DEPENDENCIES}
     )
 ENDIF(VISIT_STATIC)
+
+
+if(QT_VERSION VERSION_GREATER_EQUAL "6.2.0")
+    qt6_disable_unicode_defines(viewersubjectproxy)
+endif()
+
 
 TARGET_LINK_LIBRARIES(viewersubjectproxy
 viewer

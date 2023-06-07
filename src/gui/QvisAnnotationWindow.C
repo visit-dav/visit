@@ -1101,6 +1101,9 @@ QvisAnnotationWindow::CreateGeneralTabArray(QWidget *parentWidget)
 //   Set keyboard tracking to false for spin boxes so that 'valueChanged'
 //   signal will only emit when 'enter' is pressed or spinbox loses focus.
 //
+//   Kathleen Biagas, Tue Apr 18 16:34:41 PDT 2023
+//   Support Qt6: buttonClicked -> idClicked.
+//
 // ****************************************************************************
 
 void
@@ -1144,8 +1147,13 @@ QvisAnnotationWindow::CreateColorTab()
     QLabel *backgroundStyleLabel = new QLabel(tr("Background style"), pageColor);
     cLayout->addWidget(backgroundStyleLabel, row, 0);
     backgroundStyleButtons = new QButtonGroup(pageColor);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(backgroundStyleButtons, SIGNAL(buttonClicked(int)),
             this, SLOT(backgroundStyleChanged(int)));
+#else
+    connect(backgroundStyleButtons, SIGNAL(idClicked(int)),
+            this, SLOT(backgroundStyleChanged(int)));
+#endif
     QGridLayout *mLayout = new QGridLayout(0);
     cLayout->addLayout(mLayout, row, 1, 1, 4);
     QRadioButton *solid = new QRadioButton(tr("Solid"), pageColor);
@@ -1271,6 +1279,9 @@ QvisAnnotationWindow::CreateColorTab()
 //   Brad Whitlock, Thu Jun 26 11:00:21 PDT 2008
 //   Qt 4.
 //
+//   Kathleen Biagas, Tue Apr 18 16:34:41 PDT 2023
+//   Support Qt6: buttonClicked -> idClicked.
+//
 // ****************************************************************************
 
 void
@@ -1301,8 +1312,13 @@ QvisAnnotationWindow::CreateObjectsTab()
     objButtonLayout->setContentsMargins(10,10,10,10);
     objButtonLayout->setSpacing(5);
     objButtonGroup = new QButtonGroup(newObjectGroup);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(objButtonGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(addNewAnnotationObject(int)));
+#else
+    connect(objButtonGroup, SIGNAL(idClicked(int)),
+            this, SLOT(addNewAnnotationObject(int)));
+#endif
 
     //
     // Create the annotation object list and controls to do things to them.

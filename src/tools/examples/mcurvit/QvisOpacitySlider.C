@@ -574,13 +574,19 @@ QvisOpacitySlider::drawTicks( QPainter *p, const QPalette& g, int dist,
 // Creation:   Thu Nov 13 10:23:56 PDT 2003
 //
 // Modifications:
+//   Kathleen Biagas, Wed Apr 6, 2022
+//   Fix QT_VERSION test to use Qt's QT_VERSION_CHECK.
 //
 // ****************************************************************************
 
 int
 QvisOpacitySlider::textPadding() const
 {
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 11, 0))
+    return fontMetrics().horizontalAdvance("0") / 2;
+#else
     return fontMetrics().width("0") / 2;
+#endif
 }
 
 // ****************************************************************************
@@ -596,13 +602,19 @@ QvisOpacitySlider::textPadding() const
 // Creation:   Thu Nov 13 09:45:41 PDT 2003
 //
 // Modifications:
+//   Kathleen Biagas, Wed Apr 6, 2022
+//   Fix QT_VERSION test to use Qt's QT_VERSION_CHECK.
 //
 // ****************************************************************************
 
 int
 QvisOpacitySlider::imageWidth() const
 {
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 11, 0))
+    return width() - fontMetrics().horizontalAdvance("100%") - textPadding();
+#else
     return width() - fontMetrics().width("100%") - textPadding();
+#endif
 }
 
 // ****************************************************************************
@@ -623,8 +635,8 @@ QvisOpacitySlider::imageWidth() const
 //   Brad Whitlock, Thu Jun  5 14:29:03 PDT 2008
 //   Qt 4.
 //
-//   Kathleen Biagas, Tue Apr 11, 2023
-//   Replace obsolete QString::sprintf with QString::arg.
+//   Kathleen Biagas, Thu Jan 21, 2021
+//   Replace QString.asprintf with QString.arg.
 //
 // ****************************************************************************
 
