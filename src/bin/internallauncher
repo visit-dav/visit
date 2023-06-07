@@ -543,6 +543,8 @@ class JobSubmitter_psub(JobSubmitter):
 # Date:       Thu May 17 14:22:04 PDT 2012
 #
 # Modifications:
+#   Eric Brugger, Wed 07 Jun 2023 03:56:57 PM PDT
+#   Updated the srun invokation.
 #
 ###############################################################################
 
@@ -572,10 +574,7 @@ class JobSubmitter_salloc(JobSubmitter):
         if self.parallel.launchargs != None:
             parcmd = parcmd + self.parallel.launchargs
 
-        parcmd = parcmd + ["srun","-N1","-n1","--preserve-env","--mpi=none", "mpirun"]
-
-        if self.parallel.nn != None:
-            parcmd = parcmd + ["--npernode", self.PPN()]
+        parcmd = parcmd + ["srun"]
 
         parcmd = debugger.CreateCommand(parcmd + self.VisItExecutable() + args)
 
