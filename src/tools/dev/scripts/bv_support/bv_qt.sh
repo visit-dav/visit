@@ -150,6 +150,11 @@ function bv_qt_print_usage
 
 function bv_qt_host_profile
 {
+    # this seems to get called even when adding --qt6 should be disabling qt5.
+    # so prevent Qt5 from being added to host profile
+    if [[ "$DO_QT6" == "yes" ]]; then
+        return;
+    fi
     if [[ "$DO_DBIO_ONLY" != "yes" ]]; then
         if [[ "$DO_ENGINE_ONLY" != "yes" ]]; then
             if [[ "$DO_SERVER_COMPONENTS_ONLY" != "yes" ]]; then 

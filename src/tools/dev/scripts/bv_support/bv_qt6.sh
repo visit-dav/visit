@@ -57,13 +57,14 @@ function bv_qt6_print_usage
 
 function bv_qt6_host_profile
 {
-    # b_qt_host_profile has tests for ENGINE_ONLY etc, but if any of those conditions are set, then
-    # DO_QT6 is "no"
+    # bv_qt_host_profile has tests for ENGINE_ONLY etc, but if any of those conditions
+    # are set, then DO_QT6 is "no", so no need to test for them here.
     if [[ "$DO_QT6" == "yes" ]] ; then
         echo >> $HOSTCONF
         echo "##" >> $HOSTCONF
         echo "## QT6" >> $HOSTCONF
         echo "##" >> $HOSTCONF
+        echo "SETUP_APP_VERSION(QT $QT_VERSION)" >> $HOSTCONF
         echo "VISIT_OPTION_DEFAULT(VISIT_QT_DIR \${VISITHOME}/qt/$QT6_VERSION/\${VISITARCH})" >> $HOSTCONF
      fi
 }
