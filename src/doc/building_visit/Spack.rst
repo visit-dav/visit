@@ -116,8 +116,7 @@ These are patches to `package.py` files that cannot be patched as part of the Vi
 
 ::
 
-    diff --git a/var/spack/repos/builtin/packages/visit/package.py b/var/spack/repos
-    /builtin/packages/visit/package.py
+    diff --git a/var/spack/repos/builtin/packages/visit/package.py b/var/spack/repos/builtin/packages/visit/package.py
     index 290280e17d..b042998979 100644
     --- a/var/spack/repos/builtin/packages/visit/package.py
     +++ b/var/spack/repos/builtin/packages/visit/package.py
@@ -248,7 +247,7 @@ The following spack command is used to build with spack.
 
 ::
 
-    spack install visit@3.3.3%gcc@11.2.0+mpi+gui+osmesa~vtkm ^python@3.7.7+shared~ssl ^mesa@21.2.5+opengl ^llvm@11.0.1~gold ^vtk@8.1.0+osmesa
+    spack install visit@3.3.3%gcc@11.2.0+mpi+gui+osmesa~vtkm ^python@3.7.7+shared ^mesa@21.2.5+opengl ^llvm@11.0.1 ^vtk@8.1.0+osmesa
 
 Working around recurring download failures
 ------------------------------------------
