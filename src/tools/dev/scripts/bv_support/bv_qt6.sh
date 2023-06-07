@@ -108,8 +108,9 @@ function build_qt6_base
         mkdir $QT6_BASE_BUILD_DIR
     fi
 
-    cd ${QT6_BASE_BUILD_DIR}
-
+    # Qt6 has a check for symlinks in its build dir,
+    # so use 'cd -P' to resolve them if they are present
+    cd -P ${QT6_BASE_BUILD_DIR}
 
     #
     # Platform specific configuration
