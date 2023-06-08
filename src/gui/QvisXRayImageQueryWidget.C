@@ -156,7 +156,7 @@ QvisXRayImageQueryWidget::QvisXRayImageQueryWidget(QWidget *parent,
     //
     // View Width Override
     //
-    topLayout->addWidget(new QLabel(tr("View Width Override")), 10, 0);
+    topLayout->addWidget(new QLabel(tr("View width override")), 10, 0);
     viewWidthOverride = new QLineEdit();
     viewWidthOverride->setText("10");
     topLayout->addWidget(viewWidthOverride, 10, 1);
@@ -417,7 +417,7 @@ QvisXRayImageQueryWidget::GetIntValues(int whichWidget, int *pt)
 {
     QString temp;
 
-    if (whichWidget == 10) // Image size
+    if (whichWidget == 11) // Image size
     {
         temp = imageSize->displayText().simplified();
     }
