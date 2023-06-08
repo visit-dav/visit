@@ -180,7 +180,9 @@ class QUERY_API avtXRayImageQuery : public avtDatasetQuery
     avtVector                 focus;
     avtVector                 viewUp;
     double                    viewAngle;
-    double                    parallelScale;
+    double                    parallelScale; // view height
+    double                    viewWidthOverride; // view width
+    bool                      nonSquarePixels;
     double                    nearPlane;
     double                    farPlane;
     double                    imagePan[2];

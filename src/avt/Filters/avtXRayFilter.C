@@ -384,6 +384,8 @@ avtXRayFilter::avtXRayFilter()
     viewUp[2] = 0;
     viewAngle = 30;
     parallelScale = 0.5;
+    viewWidthOverride = 0.0;
+    nonSquarePixels = false;
     nearPlane = -0.5;
     farPlane = 0.5;
     imagePan[0] = 0;
@@ -500,29 +502,32 @@ avtXRayFilter::UpdateDataObjectInfo(void)
 
 void
 avtXRayFilter::SetImageProperties(avtVector _normal, avtVector _focus, 
-    avtVector _viewUp, double _viewAngle, double _parallelScale,
+    avtVector _viewUp, double _viewAngle,
+    double _parallelScale, double _viewWidthOverride, bool _nonSquarePixels,
     double _nearPlane, double _farPlane, double *_imagePan,
     double _imageZoom, bool _perspective, int *_imageSize)
 {
-    normal[0]     = _normal[0];
-    normal[1]     = _normal[1];
-    normal[2]     = _normal[2];
-    focus[0]      = _focus[0];
-    focus[1]      = _focus[1];
-    focus[2]      = _focus[2];
-    viewUp[0]     = _viewUp[0];
-    viewUp[1]     = _viewUp[1];
-    viewUp[2]     = _viewUp[2];
-    viewAngle     = _viewAngle;
-    parallelScale = _parallelScale;
-    nearPlane     = _nearPlane;
-    farPlane      = _farPlane;
-    imagePan[0]   = _imagePan[0];
-    imagePan[1]   = _imagePan[1];
-    imageZoom     = _imageZoom;
-    perspective   = _perspective;
-    imageSize[0]  = _imageSize[0];
-    imageSize[1]  = _imageSize[1];
+    normal[0]         = _normal[0];
+    normal[1]         = _normal[1];
+    normal[2]         = _normal[2];
+    focus[0]          = _focus[0];
+    focus[1]          = _focus[1];
+    focus[2]          = _focus[2];
+    viewUp[0]         = _viewUp[0];
+    viewUp[1]         = _viewUp[1];
+    viewUp[2]         = _viewUp[2];
+    viewAngle         = _viewAngle;
+    parallelScale     = _parallelScale;
+    viewWidthOverride = _viewWidthOverride;
+    nonSquarePixels   = _nonSquarePixels;
+    nearPlane         = _nearPlane;
+    farPlane          = _farPlane;
+    imagePan[0]       = _imagePan[0];
+    imagePan[1]       = _imagePan[1];
+    imageZoom         = _imageZoom;
+    perspective       = _perspective;
+    imageSize[0]      = _imageSize[0];
+    imageSize[1]      = _imageSize[1];
 
     numPixels = imageSize[0] * imageSize[1];
 }
@@ -2292,6 +2297,8 @@ avtXRayFilter::RedistributeLines(int nLeaves, int *nLinesPerDataset,
 // ****************************************************************************
 void
 avtXRayFilter::CalculateImagingPlaneDims(const double &parallelScale,
+                                         const double &viewWidthOverride,
+                                         const bool &nonSquarePixels,
                                          const int (&imageSize)[2],
                                          const bool &perspective,
                                          const double &viewAngle,
@@ -2306,10 +2313,13 @@ avtXRayFilter::CalculateImagingPlaneDims(const double &parallelScale,
                                          double &farWidth)
 {
     viewHeight = parallelScale;
-    viewWidth = (static_cast<float>(imageSize[0]) / static_cast<float>(imageSize[1])) * viewHeight;
+    if (nonSquarePixels)
+        viewWidth = viewWidthOverride;
+    else
+        viewWidth = (static_cast<float>(imageSize[0]) / static_cast<float>(imageSize[1])) * viewHeight;
     if (perspective)
     {
-        const double viewDist{parallelScale / tan ((viewAngle * 3.1415926535) / 360.)};
+        const double viewDist{viewHeight / tan ((viewAngle * 3.1415926535) / 360.)};
         const double nearDist{viewDist + nearPlane};
         const double farDist{viewDist + farPlane};
         const double nearDist_over_viewDist{nearDist / viewDist};
@@ -2366,8 +2376,8 @@ avtXRayFilter::CalculateLines(void)
     // far plane.
     //
     double nearHeight, viewHeight, farHeight, nearWidth, viewWidth, farWidth;
-    CalculateImagingPlaneDims(parallelScale, imageSize, 
-                              perspective, viewAngle,
+    CalculateImagingPlaneDims(parallelScale, viewWidthOverride, nonSquarePixels,
+                              imageSize, perspective, viewAngle,
                               nearPlane, farPlane, imageZoom,
                               nearHeight, nearWidth,
                               viewHeight, viewWidth,

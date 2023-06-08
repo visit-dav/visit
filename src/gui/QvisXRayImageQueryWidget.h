@@ -71,6 +71,8 @@ private:
     QLineEdit       *viewUp;
     QLineEdit       *viewAngle;
     QLineEdit       *parallelScale;
+    QLineEdit       *viewWidthOverride;
+    QCheckBox       *nonSquarePixels;
     QLineEdit       *nearPlane;
     QLineEdit       *farPlane;
     QLineEdit       *imagePan;

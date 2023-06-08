@@ -147,69 +147,84 @@ QvisXRayImageQueryWidget::QvisXRayImageQueryWidget(QWidget *parent,
     topLayout->addWidget(parallelScale, 8, 1);
 
     //
+    // Non-Square Pixels
+    //
+    nonSquarePixels = new QCheckBox(tr("Non-Square Pixels"));
+    nonSquarePixels->setChecked(0);
+    topLayout->addWidget(nonSquarePixels, 9, 0, 1, 2);
+
+    //
+    // View Width Override
+    //
+    topLayout->addWidget(new QLabel(tr("View Width Override")), 10, 0);
+    viewWidthOverride = new QLineEdit();
+    viewWidthOverride->setText("10");
+    topLayout->addWidget(viewWidthOverride, 10, 1);
+
+    //
     // Near plane
     //
-    topLayout->addWidget(new QLabel(tr("Near plane")), 9, 0);
+    topLayout->addWidget(new QLabel(tr("Near plane")), 11, 0);
     nearPlane = new QLineEdit();
     nearPlane->setText("-20");
-    topLayout->addWidget(nearPlane, 9, 1);
+    topLayout->addWidget(nearPlane, 11, 1);
 
     //
     // Far plane
     //
-    topLayout->addWidget(new QLabel(tr("Far plane")), 10, 0);
+    topLayout->addWidget(new QLabel(tr("Far plane")), 12, 0);
     farPlane = new QLineEdit();
     farPlane->setText("20");
-    topLayout->addWidget(farPlane, 10, 1);
+    topLayout->addWidget(farPlane, 12, 1);
 
     //
     // Image pan
     //
-    topLayout->addWidget(new QLabel(tr("Image pan")), 11, 0);
+    topLayout->addWidget(new QLabel(tr("Image pan")), 13, 0);
     imagePan = new QLineEdit();
     imagePan->setText("0 0");
-    topLayout->addWidget(imagePan, 11, 1);
+    topLayout->addWidget(imagePan, 13, 1);
 
     //
     // Image zoom
     //
-    topLayout->addWidget(new QLabel(tr("Image zoom")), 12, 0);
+    topLayout->addWidget(new QLabel(tr("Image zoom")), 14, 0);
     imageZoom = new QLineEdit();
     imageZoom->setText("1");
-    topLayout->addWidget(imageZoom, 12, 1);
+    topLayout->addWidget(imageZoom, 14, 1);
 
     //
     // Perspective
     //
     perspective = new QCheckBox(tr("Perspective"));
     perspective->setChecked(0);
-    topLayout->addWidget(perspective, 13, 0, 1, 2);
+    topLayout->addWidget(perspective, 15, 0, 1, 2);
 
     //
     // Filename Scheme
     //
-    topLayout->addWidget(new QLabel(tr("Filenaming scheme")), 14, 0);
+    topLayout->addWidget(new QLabel(tr("Filenaming scheme")), 16, 0);
     filenameScheme = new QComboBox();
     filenameScheme->addItem("none");
     filenameScheme->addItem("family");
     filenameScheme->addItem("cycle");
     filenameScheme->setCurrentIndex(0);
-    topLayout->addWidget(filenameScheme, 14, 1);
+    topLayout->addWidget(filenameScheme, 16, 1);
 
     //
     // Output ray bounds
     //
     outputRayBounds = new QCheckBox(tr("Output ray bounds"));
     outputRayBounds->setChecked(0);
-    topLayout->addWidget(outputRayBounds, 15, 0, 1, 2);
+    topLayout->addWidget(outputRayBounds, 17, 0, 1, 2);
 
     //
     // Image size
     //
-    topLayout->addWidget(new QLabel(tr("Image Size")), 16, 0);
+    topLayout->addWidget(new QLabel(tr("Image Size")), 18, 0);
     imageSize = new QLineEdit();
     imageSize->setText("500 500");
-    topLayout->addWidget(imageSize, 16, 1);
+    topLayout->addWidget(imageSize, 18, 1);
 }
 
 // ****************************************************************************
@@ -331,19 +346,23 @@ QvisXRayImageQueryWidget::GetDoubleValues(int whichWidget, int n, double *pt)
     {
         temp = parallelScale->displayText().simplified();
     }
-    else if (whichWidget == 6) // Near plane
+    else if (whichWidget == 6) // View Width Override
+    {
+        temp = viewWidthOverride->displayText().simplified();
+    }
+    else if (whichWidget == 7) // Near plane
     {
         temp = nearPlane->displayText().simplified();
     }
-    else if (whichWidget == 7) // Far plane
+    else if (whichWidget == 8) // Far plane
     {
         temp = farPlane->displayText().simplified();
     }
-    else if (whichWidget == 8) // Image pan
+    else if (whichWidget == 9) // Image pan
     {
         temp = imagePan->displayText().simplified();
     }
-    else if (whichWidget == 9) // Image zoom
+    else if (whichWidget == 10) // Image zoom
     {
         temp = imageZoom->displayText().simplified();
     }
@@ -459,7 +478,7 @@ QvisXRayImageQueryWidget::GetQueryParameters(MapNode &params)
     doubleVector normal(3);
     doubleVector focus(3);
     doubleVector viewUp(3);
-    double       viewAngle, parallelScale, nearPlane, farPlane;
+    double       viewAngle, parallelScale, viewWidthOverride, nearPlane, farPlane;
     doubleVector imagePan(2);
     double       imageZoom;
     intVector    imageSize(2);
@@ -486,19 +505,22 @@ QvisXRayImageQueryWidget::GetQueryParameters(MapNode &params)
     if (noerrors && !GetDoubleValues(5, 1, &parallelScale))
         noerrors = false;
 
-    if (noerrors && !GetDoubleValues(6, 1, &nearPlane))
+    if (noerrors && !GetDoubleValues(6, 1, &viewWidthOverride))
         noerrors = false;
 
-    if (noerrors && !GetDoubleValues(7, 1, &farPlane))
+    if (noerrors && !GetDoubleValues(7, 1, &nearPlane))
         noerrors = false;
 
-    if (noerrors && !GetDoubleValues(8, 2, &imagePan[0]))
+    if (noerrors && !GetDoubleValues(8, 1, &farPlane))
         noerrors = false;
 
-    if (noerrors && !GetDoubleValues(9, 1, &imageZoom))
+    if (noerrors && !GetDoubleValues(9, 2, &imagePan[0]))
         noerrors = false;
 
-    if (noerrors && !GetIntValues(10, &imageSize[0]))
+    if (noerrors && !GetDoubleValues(10, 1, &imageZoom))
+        noerrors = false;
+
+    if (noerrors && !GetIntValues(11, &imageSize[0]))
         noerrors = false;
 
     if (noerrors)
@@ -515,6 +537,8 @@ QvisXRayImageQueryWidget::GetQueryParameters(MapNode &params)
         params["view_up"] = viewUp;
         params["view_angle"] = viewAngle;
         params["parallel_scale"] = parallelScale;
+        if (nonSquarePixels->isChecked())
+            params["view_width"] = viewWidthOverride;
         params["near_plane"] = nearPlane;
         params["far_plane"] = farPlane;
         params["image_pan"] = imagePan;

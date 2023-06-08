@@ -107,6 +107,8 @@ class AVTFILTERS_API avtXRayFilter : public avtDatasetToDatasetFilter
                                                        avtVector _viewUp,
                                                        double    _viewAngle,
                                                        double    _parallelScale,
+                                                       double    _viewWidthOverride,
+                                                       bool      _nonSquarePixels,
                                                        double    _nearPlane,
                                                        double    _farPlane,
                                                        double   *_imagePan,
@@ -119,6 +121,8 @@ class AVTFILTERS_API avtXRayFilter : public avtDatasetToDatasetFilter
     void                            SetDebugRay(int);
     void                            SetOutputRayBounds(bool);
     static void                     CalculateImagingPlaneDims(const double &parallelScale,
+                                                              const double &viewWidthOverride,
+                                                              const bool &nonSquarePixels,
                                                               const int (&imageSize)[2],
                                                               const bool &perspective,
                                                               const double &viewAngle,
@@ -146,7 +150,9 @@ class AVTFILTERS_API avtXRayFilter : public avtDatasetToDatasetFilter
 
     double                          normal[3], focus[3], viewUp[3];
     double                          viewAngle;
-    double                          parallelScale;
+    double                          parallelScale; // view height
+    double                          viewWidthOverride; // view width
+    bool                            nonSquarePixels;
     double                          nearPlane, farPlane;
     double                          imagePan[2], imageZoom;
     bool                            perspective;
