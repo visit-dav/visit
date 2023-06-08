@@ -544,7 +544,7 @@ class JobSubmitter_psub(JobSubmitter):
 #
 # Modifications:
 #   Eric Brugger, Wed 07 Jun 2023 03:56:57 PM PDT
-#   Updated the srun invokation.
+#   Updated the srun invocation.
 #
 ###############################################################################
 
