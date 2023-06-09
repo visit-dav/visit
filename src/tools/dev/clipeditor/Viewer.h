@@ -12,14 +12,14 @@
 #ifndef VIEWER_H
 #define VIEWER_H
 
-#include <QGLWidget>
+#include <QOpenGLWidget>
 #include <QMouseEvent>
 
 #include "Vector.h"
 #include "Matrix.h"
 #include "DataSet.h"
 
-class Viewer : public QGLWidget
+class Viewer : public QOpenGLWidget
 {
     Q_OBJECT
   public:

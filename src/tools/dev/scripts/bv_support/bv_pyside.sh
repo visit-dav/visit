@@ -7,7 +7,12 @@ function bv_pyside_initialize
 
 function bv_pyside_enable
 {
-    DO_PYSIDE="yes"
+    # until Pyside for qt 6 can be implemented
+    if [[ "$DO_QT6" == "yes" ]] ; then
+        DO_PYSIDE="no"
+    else
+        DO_PYSIDE="yes"
+    fi
 }
 
 function bv_pyside_disable

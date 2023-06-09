@@ -481,6 +481,52 @@ public:
 };
 
 // ****************************************************************************
+// class VIEWERCORE_API : DeleteOperatorKeyframeAction
+//
+// Purpose:
+//   Deletes an operator keyframe.
+//
+// Notes:      
+//
+// Programmer: Eric Brugger
+// Creation:   Wed Mar 22 16:23:12 PDT 2023
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+class VIEWERCORE_API DeleteOperatorKeyframeAction : public ViewerActionLogic
+{
+public:
+    DeleteOperatorKeyframeAction(ViewerWindow *win) : ViewerActionLogic(win) {}
+    virtual ~DeleteOperatorKeyframeAction() {}
+    virtual void Execute();
+};
+
+// ****************************************************************************
+// class VIEWERCORE_API : MoveOperatorKeyframeAction
+//
+// Purpose:
+//   Moves an operator keyframe.
+//
+// Notes:      
+//
+// Programmer: Eric Brugger
+// Creation:   Wed Mar 22 16:23:12 PDT 2023
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+class VIEWERCORE_API MoveOperatorKeyframeAction : public ViewerActionLogic
+{
+public:
+    MoveOperatorKeyframeAction(ViewerWindow *win) : ViewerActionLogic(win) {}
+    virtual ~MoveOperatorKeyframeAction() {}
+    virtual void Execute();
+};
+
+// ****************************************************************************
 // class VIEWERCORE_API : SetPlotDatabaseStateAction
 //
 // Purpose:

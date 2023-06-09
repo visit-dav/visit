@@ -39,6 +39,10 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Color table tags are now restricted to contain only alphanumeric characters plus spaces, dashes, equals, greater-than or less-than characters .</li>
   <li>Added MFEM LOR setting to the MFEM Reader. Now, users may choose between the new LOR scheme and the legacy LOR scheme. The new scheme is the default.</li>
   <li>Color Table Tag Filtering is no longer optional; it is always on. There is also a new button to select (and deselect) all of the tags.</li>
+  <li>It is now possible to keyframe operator attributes. When in keyframe mode, VisIt will interpolate the operator attributes between operator keyframes. Keyframing makes it possible to easily create sophisticated animations such as animating slice planes, iso surfaces and any operator attributes available. Two new functions have been added to the Python scripting interface to support operator keyframing. They are <code>DeleteOperatorKeyframe</code> and <code>MoveOperatorKeyframe</code>.</li>
+  <li>Color Table Searching is no longer optional; it is always on. A dedicated search bar has been added.</li>
+  <li>The Color Table Window has a new horizontal layout.</li>
+  <li>A tutorial has been added for creating keyframe animations.</li>
 </ul>
 
 <a name="Advanced_features"></a>
@@ -56,14 +60,25 @@ enhancements and bug-fixes that were added to this release.</p>
 <a name="File_format"></a>
 <p><b><font size="4">File format reader changes in version 3.4</font></b></p>
 <ul>
-    <li>HDF 4 based readers were removed: Cosmos, RAGE, ZeusMP</li>
-    <li>HDF 4 support in the Enzo reader was removed</li>
+  <li>Added the ability to export <a href="https://www.kitware.com/hypertreegrid-in-vtk-an-introduction/">VTK HyperTreeGrid</a> files. HyperTreeGrids are uniform hierarchical meshes. When exporting HyperTreeGrids the following restrictions apply:
+    <ul>
+      <li>The mesh must be a 3 dimensional rectilinear mesh.</li>
+      <li>The mesh spacing must be uniform in each direction.</li>
+      <li>The mesh dimensions must be equal in each direction.</li>
+      <li>The mesh dimensions must be a power of 2.</li>
+      <li>The variable must be zone centered.</li>
+    </ul>
+    Typically you would use the "Resample" operator to resample the variable to meet the restrictions above.
+  </li>
+  <li>VisIt's Blueprint reader has been enhanced so related high order volume fraction fields from a <i>matset</i> are grouped into a material that can be used with the FilledBoundary plot. The high order material data fields are refined through MFEM LOR, whose refinement level can be controlled with the <i>MultiresControl</i> operator.</li>
+  <li>HDF 4 based readers were removed: Cosmos, RAGE, ZeusMP</li>
+  <li>HDF 4 support in the Enzo reader was removed</li>
 </ul>
 
 <a name="Plot_changes"></a>
 <p><b><font size="4">Changes to VisIt's plots in version 3.4</font></b></p>
 <ul>
-  <li>feature1</li>
+  <li>Added ability to change the render mode for the default volume renderer.</li>
 </ul>
 
 <a name="Expression_changes"></a>
@@ -78,6 +93,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>The X Ray Image Query now supports three different file naming "schemes". The default is "none", which will attempt to keep the filename as simple as possible. There is an option to "family" output files, which has nearly the same behavior as the old "family_files" option. The final option is to have "cycle" information in filenames. The "family_files" option has not been removed to preserve backwards compatibility. If both options are present, "filename_scheme" will be used instead.</li>
   <li>Output filenaming conventions have been updated and standardized for X Ray Image Query outputs.</li>
   <li>The BMP output type for the X Ray Image Query has been removed.</li>
+  <li>The X Ray Image Query warns users if their camera setup is error-prone.</li>
 </ul>
 
 <a name="Bugs_fixed"></a>
@@ -99,7 +115,8 @@ enhancements and bug-fixes that were added to this release.</p>
 <a name="Build_features"></a>
 <p><b><font size="4">Changes to build_visit in version 3.4</font></b></p>
 <ul>
-  <li>Removed HDF 4 support.
+  <li>Removed HDF 4 support.</li>
+  <li>Added support for building VisIt on NVIDIA Grace CPU and Arm Architecture.</li> 
 </ul>
 
 <a name="Dev_changes"></a>
@@ -107,9 +124,11 @@ enhancements and bug-fixes that were added to this release.</p>
 <ul>
   <li>Support for boolArray and boolVector was added to xml code gen tools.</li>
   <li>Updated the "Creating a Release" section of the developer manual to describe the current process.</li>
+  <li>Add support for Qt6.  The build_visit option is '--qt6', which will build qt version 6.4.2, and also force building of VTK-9 if '--vtk' is also enabled.</li>
+  <li>Added ability to create tabbed content in the sphinx documentation by adding sphinx-tabs extension.</li>
 </ul>
 
 <p>Click the following link to view the release notes for the previous version
-of VisIt: <a href=relnotes3.3.2.html>3.3.2</a>.</p>
+of VisIt: <a href=relnotes3.3.3.html>3.3.3</a>.</p>
 </body>
 </html>

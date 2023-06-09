@@ -4,7 +4,7 @@ CASE: sbatch/aprun
 INPUT: visit -engine -norun engine_par -l sbatch/aprun -np 8 -p pbatch -b bdivp -nn 1 -sla "-arg1 -arg2" -host 127.0.0.1 -port 5600
 
 RESULTS:
-sbatch --export=HOME=$HOME,LIBPATH=$VISITDIR/lib,LD_LIBRARY_PATH=$VISITDIR/lib/osmesa:$VISITDIR/lib/mesagl:$VISITDIR/lib:/usr/tce/packages/cuda/cuda-8.0/lib64:,VISITHOME=$VISITDIR,VISITARCHHOME=$VISITDIR/,VISITPLUGINDIR=$HOME/.visit/$VERSION/$PLATFORM/plugins:$VISITDIR/plugins --partition=pbatch --account=bdivp --ntasks=8 --nodes=1 --tasks-per-node=8 $LAUNCHSCRIPT
+sbatch --export=HOME=$HOME,LIBPATH=$VISITDIR/lib,LD_LIBRARY_PATH=$VISITDIR/lib/osmesa:$VISITDIR/lib/mesagl:$VISITDIR/lib:/usr/tce/packages/cuda/cuda-8.0/lib64:,VISITHOME=$VISITDIR,VISITARCHHOME=$VISITDIR/,VISITPLUGINDIR=$HOME/.visit/$VERSION/$PLATFORM/plugins:$VISITDIR/plugins,PYTHONHOME=$VISITDIR/lib/python --partition=pbatch --account=bdivp --ntasks=8 --nodes=1 --tasks-per-node=8 $LAUNCHSCRIPT
 
 Contents of $LAUNCHSCRIPT:
 #!/bin/sh
@@ -19,7 +19,7 @@ CASE: sbatch/aprun -totalview engine_par
 INPUT: visit -engine -norun engine_par -l sbatch/aprun -np 8 -p pbatch -b bdivp -nn 1 -sla "-arg1 -arg2" -host 127.0.0.1 -port 5600 -totalview engine_par
 
 RESULTS:
-sbatch --export=HOME=$HOME,LIBPATH=$VISITDIR/lib,LD_LIBRARY_PATH=$VISITDIR/lib/osmesa:$VISITDIR/lib/mesagl:$VISITDIR/lib:/usr/tce/packages/cuda/cuda-8.0/lib64:,VISITHOME=$VISITDIR,VISITARCHHOME=$VISITDIR/,VISITPLUGINDIR=$HOME/.visit/$VERSION/$PLATFORM/plugins:$VISITDIR/plugins --partition=pbatch --account=bdivp --ntasks=8 --nodes=1 --tasks-per-node=8 $LAUNCHSCRIPT
+sbatch --export=HOME=$HOME,LIBPATH=$VISITDIR/lib,LD_LIBRARY_PATH=$VISITDIR/lib/osmesa:$VISITDIR/lib/mesagl:$VISITDIR/lib:/usr/tce/packages/cuda/cuda-8.0/lib64:,VISITHOME=$VISITDIR,VISITARCHHOME=$VISITDIR/,VISITPLUGINDIR=$HOME/.visit/$VERSION/$PLATFORM/plugins:$VISITDIR/plugins,PYTHONHOME=$VISITDIR/lib/python --partition=pbatch --account=bdivp --ntasks=8 --nodes=1 --tasks-per-node=8 $LAUNCHSCRIPT
 
 Contents of $LAUNCHSCRIPT:
 #!/bin/sh
@@ -34,7 +34,7 @@ CASE: sbatch/aprun -valgrind engine_par
 INPUT: visit -engine -norun engine_par -l sbatch/aprun -np 8 -p pbatch -b bdivp -nn 1 -sla "-arg1 -arg2" -host 127.0.0.1 -port 5600 -valgrind engine_par
 
 RESULTS:
-sbatch --export=HOME=$HOME,LIBPATH=$VISITDIR/lib,LD_LIBRARY_PATH=$VISITDIR/lib/osmesa:$VISITDIR/lib/mesagl:$VISITDIR/lib:/usr/tce/packages/cuda/cuda-8.0/lib64:,VISITHOME=$VISITDIR,VISITARCHHOME=$VISITDIR/,VISITPLUGINDIR=$HOME/.visit/$VERSION/$PLATFORM/plugins:$VISITDIR/plugins --partition=pbatch --account=bdivp --ntasks=8 --nodes=1 --tasks-per-node=8 $LAUNCHSCRIPT
+sbatch --export=HOME=$HOME,LIBPATH=$VISITDIR/lib,LD_LIBRARY_PATH=$VISITDIR/lib/osmesa:$VISITDIR/lib/mesagl:$VISITDIR/lib:/usr/tce/packages/cuda/cuda-8.0/lib64:,VISITHOME=$VISITDIR,VISITARCHHOME=$VISITDIR/,VISITPLUGINDIR=$HOME/.visit/$VERSION/$PLATFORM/plugins:$VISITDIR/plugins,PYTHONHOME=$VISITDIR/lib/python --partition=pbatch --account=bdivp --ntasks=8 --nodes=1 --tasks-per-node=8 $LAUNCHSCRIPT
 
 Contents of $LAUNCHSCRIPT:
 #!/bin/sh
@@ -49,7 +49,7 @@ CASE: sbatch/aprun -strace engine_par
 INPUT: visit -engine -norun engine_par -l sbatch/aprun -np 8 -p pbatch -b bdivp -nn 1 -sla "-arg1 -arg2" -host 127.0.0.1 -port 5600 -strace engine_par
 
 RESULTS:
-sbatch --export=HOME=$HOME,LIBPATH=$VISITDIR/lib,LD_LIBRARY_PATH=$VISITDIR/lib/osmesa:$VISITDIR/lib/mesagl:$VISITDIR/lib:/usr/tce/packages/cuda/cuda-8.0/lib64:,VISITHOME=$VISITDIR,VISITARCHHOME=$VISITDIR/,VISITPLUGINDIR=$HOME/.visit/$VERSION/$PLATFORM/plugins:$VISITDIR/plugins --partition=pbatch --account=bdivp --ntasks=8 --nodes=1 --tasks-per-node=8 $LAUNCHSCRIPT
+sbatch --export=HOME=$HOME,LIBPATH=$VISITDIR/lib,LD_LIBRARY_PATH=$VISITDIR/lib/osmesa:$VISITDIR/lib/mesagl:$VISITDIR/lib:/usr/tce/packages/cuda/cuda-8.0/lib64:,VISITHOME=$VISITDIR,VISITARCHHOME=$VISITDIR/,VISITPLUGINDIR=$HOME/.visit/$VERSION/$PLATFORM/plugins:$VISITDIR/plugins,PYTHONHOME=$VISITDIR/lib/python --partition=pbatch --account=bdivp --ntasks=8 --nodes=1 --tasks-per-node=8 $LAUNCHSCRIPT
 
 Contents of $LAUNCHSCRIPT:
 #!/bin/sh

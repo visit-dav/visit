@@ -13,12 +13,16 @@
 #    Justin Privitera, Fri Apr 14 10:52:39 PDT 2023
 #    Change the color table from default to spectral inverted.
 # 
+#    Justin Privitera, Tue May  2 14:48:47 PDT 2023
+#    Spectra curves pictures are improved and this also makes the pictures for
+#    the blueprint example in the examples section.
+# -----------------------------------------------------------------------------
 
 import conduit
 import os
 import sys
 
-path_to_data_file = "testdata/silo_hdf5_test_data/" # CHANGE ME
+path_to_data_file = "../testdata/silo_hdf5_test_data/" # CHANGE ME
 data_file = path_to_data_file + "curv3d.silo"
 
 shouldisave = True
@@ -110,7 +114,7 @@ def set_view(view):
 		View3DAtts.nearPlane = -15
 		View3DAtts.farPlane = 15
 	else:
-		print("invalid view selected. Setting view to default")
+		print("Invalid view selected. Setting view to default")
 	SetView3D(View3DAtts)
 
 def turn_off_annotations():
@@ -256,11 +260,20 @@ def visualize_spatial_energy_reduced_topo(whichone):
 def visualize_spectra_curves(whichone):
 	ResetView()
 	AddPlot("Curve", "mesh_spectra_topo/" + whichone + "_spectra")
+	DrawPlots()
 	CurveAtts = CurveAttributes()
 	CurveAtts.showLegend = 0
 	CurveAtts.showLabels = 0
 	SetPlotOptions(CurveAtts)
-	DrawPlots()
+
+	ViewCurveAtts = ViewCurveAttributes()
+	if whichone == "intensities":
+		ViewCurveAtts.domainCoords = (-0.9282, 4.9282)
+		ViewCurveAtts.rangeCoords = (0.48126, 7.81849)
+	else:
+		ViewCurveAtts.domainCoords = (-0.42, 4.42)
+		ViewCurveAtts.rangeCoords = (244.137, 1537.89)
+	SetViewCurve(ViewCurveAtts)
 
 # these are the 2d plots, spatial energy reduced and spectra curves
 def bonus_topos(direction):
@@ -336,19 +349,25 @@ def setup():
 	# DefineArrayExpression("da", "array_compose(d1,d2,d3,d4,d5,d6)")
 	# DefineArrayExpression("pa", "array_compose(p1,p2,p3,p4,p5,p6)")
 
-def call_query(image_size = (400, 300), side_view = False):
+def call_query(image_size = (400, 300), side_view = False, example_query = False):
 	# params = GetQueryParameters("XRay Image")
 	params = dict()
 
 	# standard args
-	params["vars"] = ("da", "pa")
+	if example_query:
+		params["vars"] = ("d", "p")
+	else:
+		params["vars"] = ("da", "pa")
 	# params["background_intensity"] = 0
 	# params["background_intensities"] = 0
 	# params["divide_emis_by_absorb"] = 0
 	params["image_size"] = image_size
 	# params["debug_ray"] = -1
 	# params["output_ray_bounds"] = 0
-	params["energy_group_bounds"] = [0.0, 2.0, 6.0, 8.0, 9.0, 10.0, 12.0]
+	if example_query:
+		params["energy_group_bounds"] = [2.7, 6.2]
+	else:
+		params["energy_group_bounds"] = [0.0, 2.0, 6.0, 8.0, 9.0, 10.0, 12.0]
 
 	# filename, directory, and output type choices
 	params["output_dir"] = "."
@@ -448,7 +467,6 @@ def run_imaging_planes_and_rays(res, file, direction):
 
 def main():
 	setup()
-	turn_off_annotations()
 
 	call_query(image_size = (400, 300))
 	out_400x300 = "output.0000.root"
@@ -469,23 +487,56 @@ def main():
 	call_query(image_size = (40, 30), side_view = True)
 	out_side_40x30 = "output.0005.root"
 
+	call_query(image_size = (400, 300), example_query = True)
+	example_result = "output.0006.root"
+
 	DeleteAllPlots()
 
-	# conduit_processing()
+	conduit_processing()
+
+	#
+	# generate images used in the blueprint example
+	#
+
+	# first we take a picture of the input mesh
+	ActivateDatabase(data_file)
+	AddPlot("Pseudocolor", "d")
+	DrawPlots()
+	ResetView()
+	change_to_spectral_inverted()
+	save_image("example_input_mesh")
+	DeleteAllPlots()
+
+	# then we take a picture of the blueprint output intensities
+	OpenDatabase(example_result)
+	visualize_image_topo("intensities")
+	ResetView()
+	change_to_xray()
+	save_image("example_intensities")
+	DeleteAllPlots()
+
+	# after this point, we no longer need annotations
+	turn_off_annotations()
 	
+	#
 	# generate hi-res image and bonus topo images for FRONT view
+	#
 	OpenDatabase(out_400x300)
 	image_topos(direction = "front")
 	bonus_topos(direction = "front")
 	CloseDatabase(out_400x300)
 	
+	#
 	# generate hi-res image and bonus topo images for SIDE view
+	#
 	OpenDatabase(out_side_400x300)
 	image_topos(direction = "side")
 	bonus_topos(direction = "side")
 	CloseDatabase(out_side_400x300)
 	
+	#
 	# generate input mesh images for a few views
+	#
 	ActivateDatabase(data_file)
 	AddPlot("Pseudocolor", "d")
 	DrawPlots()
@@ -499,13 +550,17 @@ def main():
 	save_image("input_mesh_alt_side")
 	DeleteAllPlots()
 
+	#
 	# generate imaging planes and rays images for multiple resolutions for FRONT view
+	#
 	run_imaging_planes_and_rays(res = "400x300", file = out_400x300, direction = "front")
 	run_imaging_planes_and_rays(res = "40x30",   file = out_40x30,   direction = "front")
 	run_imaging_planes_and_rays(res = "20x15",   file = out_20x15,   direction = "front")
 	run_imaging_planes_and_rays(res = "8x6",     file = out_8x6,     direction = "front")
 
+	#
 	# generate imaging planes and rays images for multiple resolutions for SIDE view
+	#
 	run_imaging_planes_and_rays(res = "400x300", file = out_side_400x300, direction = "side")
 	run_imaging_planes_and_rays(res = "40x30",   file = out_side_40x30,   direction = "side")
 

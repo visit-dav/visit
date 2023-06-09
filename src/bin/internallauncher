@@ -77,20 +77,25 @@ class JobSubmitter(object):
         return str(int(math.ceil(float(self.parallel.np) / float(self.parallel.nn))))
 
     # Open MPI and MPICH have different arguments for the process per node flag.
-    # This function trys to decide with flag to use. It defaults to MPICH.
+    # This function trys to decide which flag to use. If it fails to run mpirun
+    # or DOES NOT find the string "Open MPI" in the result, it assumes MPICH.
     def PPNArgument(self):
-        p = subprocess.Popen(["mpirun", "--version"],
-                             universal_newlines=True,
-                             stderr=subprocess.PIPE,
-                             stdout=subprocess.PIPE)
-        output = p.communicate()
-        new = ' '.join(output)
-        if new.find("Open MPI") == -1:
-            # MPICH
-            return "-ppn"
-        else:
-            # Open MPI
-            return "-npernode"
+        try:
+            p = subprocess.Popen(["mpirun", "--version"],
+                                 universal_newlines=True,
+                                 stderr=subprocess.PIPE,
+                                 stdout=subprocess.PIPE)
+            output = p.communicate()
+            new = ' '.join(output)
+            if new.find("Open MPI") == -1:
+                # MPICH
+                return "-ppn"
+            else:
+                # Open MPI
+                return "-npernode"
+        except:
+            pass
+        return "-ppn"
 
     def CreateCommand(self, args, debugger):
         parcmd = self.Executable()
@@ -538,6 +543,8 @@ class JobSubmitter_psub(JobSubmitter):
 # Date:       Thu May 17 14:22:04 PDT 2012
 #
 # Modifications:
+#   Eric Brugger, Wed 07 Jun 2023 03:56:57 PM PDT
+#   Updated the srun invocation.
 #
 ###############################################################################
 
@@ -567,10 +574,7 @@ class JobSubmitter_salloc(JobSubmitter):
         if self.parallel.launchargs != None:
             parcmd = parcmd + self.parallel.launchargs
 
-        parcmd = parcmd + ["srun","-N1","-n1","--preserve-env","--mpi=none", "mpirun"]
-
-        if self.parallel.nn != None:
-            parcmd = parcmd + ["--npernode", self.PPN()]
+        parcmd = parcmd + ["srun"]
 
         parcmd = debugger.CreateCommand(parcmd + self.VisItExecutable() + args)
 
@@ -649,6 +653,7 @@ output streams.
         env = env + ",VISITHOME=" + GETENV("VISITHOME")
         env = env + ",VISITARCHHOME=" + GETENV("VISITARCHHOME")
         env = env + ",VISITPLUGINDIR=" + GETENV("VISITPLUGINDIR")
+        env = env + ",PYTHONHOME=" + GETENV("PYTHONHOME")
         return [env]
 
     def mpiexec(self):

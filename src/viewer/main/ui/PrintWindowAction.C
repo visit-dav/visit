@@ -128,7 +128,7 @@ PrintWindowAction::Execute()
         printer.setOutputFileName(QString());
         debug1 << "\toutputFilename=(empty)" << endl;
     }
-    printer.setPageSize((QPagedPaintDevice::PageSize)GetViewerState()->GetPrinterAttributes()->GetPageSize());
+    printer.setPageSize(QPageSize((QPageSize::PageSizeId)GetViewerState()->GetPrinterAttributes()->GetPageSize()));
     debug1 << "\tpaperSize=" << GetViewerState()->GetPrinterAttributes()->GetPageSize() << endl;
 
     //

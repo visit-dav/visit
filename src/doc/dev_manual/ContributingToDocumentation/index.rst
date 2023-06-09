@@ -99,6 +99,7 @@ use of Sphinx as we move forward. These are discussed at the
 * Bracket word(s) with one star (``*word*``) for *italics*.
 * Bracket word(s) with two stars (``**some words**``) for **bold**.
 * Bracket word(s) with two backticks (:samp:`\ ``some words```) for ``literal``.
+* Use :samp:`\ :v\ undl:`words to underline`` to :vundl:`underline words`.
 * Bracketed word(s) should not span line breaks.
 * Use ``literals`` for code, commands, arguments, file names, etc.
 * Use **bold** to refer to VisIt_ **Widget**, **Operator** or **Plot**
@@ -305,6 +306,13 @@ the editor window. It is cumbersome to deal with but rich in capabilities.
 Often, the best answer is to *NOT* use tables and instead use
 `definition lists <http://docutils.sourceforge.net/docs/ref/rst/restructuredtext.html#definition-lists>`__
 as is used in the documentation on :ref:`expressions <Sum_Expression_Operator>`.
+
+Tabbed content
+--------------
+It may be useful at times to create tabbed content, such as wanting to display multiple-language code examples without taking up too much space.
+The `sphinx-tabs <https://sphinx-tabs.readthedocs.io/en/latest/>`_ extension is useful for this.
+Another example would be instructions for how to do something on different platforms.
+See the above referenced documentation for more information.
 
 .. _contributing_math:
 

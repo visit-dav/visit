@@ -72,7 +72,9 @@ QvisLagrangianWindow::~QvisLagrangianWindow()
 // Creation:   omitted
 //
 // Modifications:
-//   
+//   Kathleen Biagas, Tue Apr 18 16:34:41 PDT 2023
+//   Support Qt6: buttonClicked -> idClicked.
+//
 // ****************************************************************************
 
 void
@@ -120,8 +122,13 @@ QvisLagrangianWindow::CreateWindowContents()
     QRadioButton *XAxisSamplesampleTypeVariable = new QRadioButton(tr("Variable"), XAxisSample);
     XAxisSampleButtonGroup->addButton(XAxisSamplesampleTypeVariable,5);
     XAxisSampleLayout->addWidget(XAxisSamplesampleTypeVariable);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(XAxisSampleButtonGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(XAxisSampleChanged(int)));
+#else
+    connect(XAxisSampleButtonGroup, SIGNAL(idClicked(int)),
+            this, SLOT(XAxisSampleChanged(int)));
+#endif
     mainLayout->addWidget(XAxisSample, 2,1);
 
     YAxisSampleLabel = new QLabel(tr("Y Axis Sample"), central);
@@ -149,8 +156,13 @@ QvisLagrangianWindow::CreateWindowContents()
     QRadioButton *YAxisSamplesampleTypeVariable = new QRadioButton(tr("Variable"), YAxisSample);
     YAxisSampleButtonGroup->addButton(YAxisSamplesampleTypeVariable,5);
     YAxisSampleLayout->addWidget(YAxisSamplesampleTypeVariable);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(YAxisSampleButtonGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(YAxisSampleChanged(int)));
+#else
+    connect(YAxisSampleButtonGroup, SIGNAL(idClicked(int)),
+            this, SLOT(YAxisSampleChanged(int)));
+#endif
     mainLayout->addWidget(YAxisSample, 3,1);
 
     variableLabel = new QLabel(tr("Variable"), central);

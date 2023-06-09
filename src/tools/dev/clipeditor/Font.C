@@ -3,11 +3,20 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ************************************************************************* //
-//                             arial_font.C                                  //
+//                             Font.C                                        //
 // ************************************************************************* //
-
-#include <qgl.h>
+//
 #include "Font.h"
+
+#include <qglobal.h> // For QT_VERSION_CHECK
+
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+    #include <qgl.h>
+#else
+    #include <QOpenGLFunctions>
+#endif
+
+#include <cstring>
 
 // THE NEXT 1200 LINES ARE FROM MESHTV's FILE spi/arial.h
 

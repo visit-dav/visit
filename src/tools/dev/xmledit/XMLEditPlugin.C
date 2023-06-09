@@ -68,6 +68,9 @@
 //    Kathleen Biagas, Thu Jan  2 10:05:15 MST 2020
 //    Added hasLicense.
 //
+//    Kathleen Biagas, Tue Apr 18 16:34:41 PDT 2023
+//    Support Qt6: buttonClicked -> idClicked.
+//
 // ****************************************************************************
 
 XMLEditPlugin::XMLEditPlugin(QWidget *p)
@@ -328,8 +331,13 @@ XMLEditPlugin::XMLEditPlugin(QWidget *p)
 
     xmldoc = NULL;
 
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(attpluginGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(attpluginGroupChanged(int)));
+#else
+    connect(attpluginGroup, SIGNAL(idClicked(int)),
+            this, SLOT(attpluginGroupChanged(int)));
+#endif
     connect(name, SIGNAL(textChanged(const QString &)),
             this,  SLOT(nameTextChanged(const QString &)));
     connect(label, SIGNAL(textChanged(const QString &)),
