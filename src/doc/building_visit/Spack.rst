@@ -302,17 +302,13 @@ These files are stored in your ``~/.spack`` directory. ::
     .spack/<platform>/compilers.yaml
     .spack/packages.yaml
 
-The VisIt_ repository at GitHub contains ``compilers.yaml`` and ``packages.yaml`` files for popular systems in the directory ``scripts/spack/configs``.
+The VisIt_ repository at GitHub contains ``compilers.yaml`` and / or ``packages.yaml`` files for popular systems in the directory ``scripts/spack/configs``.
 
-Here are the ``compilers.yaml`` and ``packages.yaml`` files for ``spock.olcf.ornl.gov`` for VisIt_.
-
-``compilers.yaml``
-
-.. literalinclude:: ../../../scripts/spack/configs/olcf/spock/compilers.yaml
+Here is the ``packages.yaml`` files for ``frontier.olcf.ornl.gov`` for VisIt_.
 
 ``packages.yaml``
 
-.. literalinclude:: ../../../scripts/spack/configs/olcf/spock/packages.yaml
+.. literalinclude:: ../../../scripts/spack/configs/olcf/frontier/packages.yaml
 
 Debugging a spack package
 -------------------------
