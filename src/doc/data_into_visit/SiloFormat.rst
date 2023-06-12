@@ -726,14 +726,6 @@ The procedure for creating the zone list (connectivity information) is the same 
 The order in which the nodes are specified is also more important for 3D shapes because if the nodes are not given in the right order, the zones can become tangled.
 The proper zone ordering for each of the four supported 3D zone shapes is shown in `the Silo_'s user manual <https://wci.llnl.gov/sites/wci/files/2020-08/LLNL-SM-654357.pdf?#page=122>`__.
 
-.. _silo_celltypes:
-
-.. figure:: images/silo_celltypes.png
-  :scale: 50%
-
-  Node ordering for Silo_'s 3D unstructured zone types. 
-
-
 :numref:`Figure %s <silo_meshucd3d>` shows an example of a simple 3D unstructured mesh consisting of 2 hexahedrons, 1 pyramid, 1 prism, and 1 tetrahedron.
 
 .. _silo_meshucd3d:
