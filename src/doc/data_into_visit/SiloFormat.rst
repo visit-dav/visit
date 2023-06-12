@@ -1609,7 +1609,7 @@ If a processor does not contribute any data, insert the ``"EMPTY"`` keyword into
 multi-object in place of the path and variable.
 The ``"EMPTY"`` keyword allows the size of the multi-object to remain fixed over time even as the number of processors that contribute data changes.
 Keeping the size of the multi-object fixed over time ensures that VisIt_'s subsetting controls will continue to function as expected.
-Note that if you use the "EMPTY" keyword in a multivar object then the same entry in the multimesh object for the variable must also contain the "EMPTY" keyword.
+Note that if you use the ``"EMPTY"`` keyword in a multivar object then the same entry in the multimesh object for the variable must also contain the "EMPTY" keyword.
 
 .. code-block:: c
   :caption: C_Language example using the EMPTY keyword.
