@@ -908,17 +908,16 @@ API Commonality
 
 Each of the provided functions for writing scalar variables does have certain arguments in common.
 For example, all of the functions must be provided the name of the variable to write out.
-write out.
 The name that you pick is the name that will appear in VisIt_'s plot menus.
 Be careful when you pick your variable names because you should avoid characters that include punctuation marks and spaces.
-Variable names should only contain letters and numbers and they should begin with a letter.
+Variable names should contain only letters, numbers and underscores and they should begin with a letter.
 These guidelines are in place to assure that your data files will have the utmost compatibility with VisIt's :ref:`Expression<Expressions>` language.
 
 All variables must be defined on a mesh.
 If you examine the code examples in this section, each Silo_ function that writes out a variable will be passed the name of the mesh on which the variable is to be defined.
 
 Each of the Silo_ function calls will accept a pointer to the array that contains the variable's data.
-The data can be stored in several internal formats: **char**, **short**, **int**, **long**, **float**, and **double**.
+The data can be stored in several internal formats: ``char``, ``short``, ``int``, ``long``, ``float``, and ``double``.
 Since Silo_'s variable writing functions use a pointer to pass the data, you can pass a pointer that points to data in any of the mentioned types.
 In addition, you must pass a flag that indicates to Silo_ the type of data stored in the array whose address you've passed.
 
@@ -932,7 +931,7 @@ While a rectilinear mesh's coordinates could be specified quite compactly as sep
 Regardless of how the coordinates were specified, both mesh types contain
 (NX-1)*(NY-1)*(NZ-1) zones and NX*NY*NZ nodes.
 This means that the code to write a variable on a rectilinear mesh will be identical to the code to write a zone-centered variable on a curvilinear mesh!
-Silo_ provides the **DBPutQuadvar1** function to write scalar variables for both rectilinear and curvilinear meshes.
+Silo_ provides the ``DBPutQuadvar1`` function to write scalar variables for both rectilinear and curvilinear meshes.
 
 Example for writing zone-centered variables:
 
@@ -1024,11 +1023,11 @@ Example for writing zone-centered variables:
         .              ndims, DB_F77NULL, 0, DB_CHAR, DB_ZONECENT, DB_F77NULL, ierr)
 
 Both of the previous code examples produce a data file with 4 different scalar arrays.
-Note that in both of the previous code examples, the same **DBPutQuadvar1** function (or **dbputqv1** in Fortran) function was used to write out data arrays of differing types.
+Note that in both of the previous code examples, the same ``DBPutQuadvar1`` function (or ``dbputqv1`` in Fortran) function was used to write out data arrays of differing types.
 
-The **DBPutQuadvar1** function can also be used to write out node centered variables.
+The ``DBPutQuadvar1`` function can also be used to write out node centered variables.
 There are two differences that you must observe when writing a node-centered variable as opposed to writing a zone-centered variable.
-First, the data array that you pass to the **DBPutQuadvar1** function must be larger by 1 in each of its dimensions and you must pass **DB_NODECENT** instead of **DB_ZONECENT**.
+First, the data array that you pass to the ``DBPutQuadvar1`` function must be larger by 1 in each of its dimensions and you must pass ``DB_NODECENT`` instead of ``DB_ZONECENT``.
 
 Example for writing node-centered variables:
 
@@ -1176,7 +1175,7 @@ Point meshes
 """"""""""""
 
 Point meshes, which are meshes composed of a set of points can, like other mesh types, have values associated with each point.
-Silo_ provides the **DBPutPointVar1** function that you can use to write out a scalar variable stored on a point mesh.
+Silo_ provides the ``DBPutPointVar1`` function that you can use to write out a scalar variable stored on a point mesh.
 Nodes and the zones are really the same thing in a point mesh so you can consider zone-centered scalars to be the same thing as node-centered scalars.
 
 .. _silo_pointvar3d:
@@ -1232,7 +1231,7 @@ If the variable to be stored is node-centered then the array containing the vari
 Thinking of the data array as a 1-D array simplifies indexing since the number used to identify a particular node is the same index that would be used to access data in the variable array (assuming 0-origin in C and 1-origin in Fortran).
 Since the data array is always 1-D for an unstructured mesh, the code to store variables on 2D and 3D unstructured meshes is identical.
 :numref:`Figure %s <silo_ucdvar2d>` shows a 2D unstructured mesh with both zonal and nodal variables.
-Silo_ provides the **DBPutUcdvar1** function for writing scalar variables on unstructured meshes.
+Silo_ provides the ``DBPutUcdvar1`` function for writing scalar variables on unstructured meshes.
 
 Example for writing variables on an unstructured mesh:
 
@@ -1271,8 +1270,8 @@ Adding variable units
 
 All of the examples for writing scalar variables presented so far have focused on the basics of writing a variable array to a Silo_ file.
 Silo_'s option list mechanism allows a variable object to be annotated with various extra information.
-In the case of scalar variables, the option list passed to **DBPutQuadvar1** and **DBPutUcdvar1** can contain the units that describe the variable being stored.
-Refer to the `Silo Manual <https://software.llnl.gov/Silo/manual.html>`_ for a complete list of the options accepted by the **DBPutQuadvar1** and **DBPutUcdvar1** functions.
+In the case of scalar variables, the option list passed to ``DBPutQuadvar1`` and ``DBPutUcdvar1`` can contain the units that describe the variable being stored.
+Refer to the `Silo Manual <https://software.llnl.gov/Silo/manual.html>`__ for a complete list of the options accepted by the ``DBPutQuadvar1`` and ``DBPutUcdvar1`` functions.
 When a scalar variable has associated units, the units appear in the variable legend in VisIt_'s visualization window (see :numref:`Figure %s <silo_varunits>`).
 
 .. _silo_varunits:
@@ -1283,8 +1282,8 @@ When a scalar variable has associated units, the units appear in the variable le
   Plot legend with units.
 
 If you want to add units to the variable that you write, you must create an option list to pass to the function writing your variable.
-You may recall that option lists are created with the **DBMakeOptlist** function and freed with the **DBFreeOptlist** function.
-In order to add units to the option list, you must add the **DBOPT_UNITS** option.
+You may recall that option lists are created with the ``DBMakeOptlist`` function and freed with the ``DBFreeOptlist`` function.
+In order to add units to the option list, you must add the ``DBOPT_UNITS`` option.
 
 Example for writing a variable with units:
 
@@ -1319,7 +1318,7 @@ Single precision vs. Double precision
 
 After having written some variables to a Silo_ file, you've no doubt learned that you can pass a pointer to data of many different representations and precisions (char, int, float, double, etc.).
 When you pass data to a Silo_ function, you also must pass a flag that tells Silo_ how to interpret the data stored in your data array.
-For example, if you have single precision floating point data then you would tell Silo_ to traverse the data as such using the **DB_FLOAT** type flag in the function call to **DBPutQuadvar1**.
+For example, if you have single precision floating point data then you would tell Silo_ to traverse the data as such using the ``DB_FLOAT`` type flag in the function call to ``DBPutQuadvar1``.
 Many of the functions in the Silo_ library require a type flag to indicate the type of data being passed to Silo_.
 In fact, even the functions to write mesh coordinates can accept different data types.
 This means that you can use double-precision to specify your mesh coordinates, which can be immensely useful when dealing with very large or very small objects.
@@ -1345,9 +1344,9 @@ Writing expressions
 """""""""""""""""""
 
 You can plot derived quantities in VisIt_ by creating expressions that involve variables from your database.
-Sometimes, it is useful to include expression definitions in your Silo_ file so they are available to VisIt without you first having to create them.
-Silo_ provides the **DBPutdefvars** function so you can write your expressions to a Silo_ file.
-Expression names should be valid VisIt_ expression names, as defined in the "ref:`Expressions<Expressions>` section.
+Sometimes, it is useful to include expression definitions in your Silo_ file so they are available to VisIt without users having to first create them manually.
+Silo_ provides the `DBPutdefvars`` function so you can write your expressions to a Silo_ file.
+Expression names should be valid VisIt_ expression names, as defined in the :ref:`Built-in_expressions` section.
 Likewise, the expression definitions should contain only expressions that are supported by the VisIt_ expression language.
 
 While VisIt_'s expression language can be useful for calculating a multitude of expressions, it can be particularly useful for grouping vector or tensor components into vector and tensor variables.
@@ -1393,11 +1392,11 @@ Example for writing out expression definitions:
         err = dbset2dstrlen(oldlen)
 
 
-In the previous Fortran example for writing expressions, there are more functions involved than just the **dbputdefvars** function.
-It is critical to set the maximum 2D string length for strings in the Silo_ library, using the **dbset2dstrlen** function, so the Fortran interface to Silo_ will be able to correctly traverse the string data passed to it from Fortran.
+In the previous Fortran example for writing expressions, there are more functions involved than just the ``dbputdefvars`` function.
+It is critical to set the maximum 2D string length for strings in the Silo_ library, using the ``dbset2dstrlen`` function, so the Fortran interface to Silo_ will be able to correctly traverse the string data passed to it from Fortran.
 In the previous example, we used 20 characters for both the expression names and
 definitions.
-We call **dbset2dstrlen** to set the maximum allowable 2d string length to 20 characters before we pass our arrays of 20 character strings to the **dbputdefvars** function.
+We call ``dbset2dstrlen`` to set the maximum allowable 2d string length to 20 characters before we pass our arrays of 20 character strings to the ``dbputdefvars`` function.
 In addition, we must also pass valid lengths for the expression name and definition strings.
 The lengths should be at least 1 character long but no longer than the maximum allowable string length, which we set to 20 characters in the example program.
 Passing valid string lengths is important so the expressions that you save to your file do not contain any extra characters, such as trailing spaces.
