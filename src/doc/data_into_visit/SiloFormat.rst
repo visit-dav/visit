@@ -1407,7 +1407,7 @@ Creating a master file for parallel
 When a parallel program saves out its data files, often the most efficient method of I/O is for each processor to write its own piece of the simulation, or domain, to its own Silo_ file.
 If each processor writes its own Silo_ file then no communication or synchronization must take place to manage access to a shared file.
 However, once the simulation has completed, there are many files and all of them are required to reconstitute the simulated object.
-Plotting each domain file in VisIt would be very tedious so Silo provides functions to create what is known as a "master file", which is a top-level file that effectively unifies all of the domain files into a whole.
+Expecting a user to plot each domain file manually in VisIt would be very tedious. So, Silo_ provides functions to create what is known as a *master* file (or *root* file), which is a top-level file that defines cooresponding objects which list all their constituent Silo_ objects in the the domain files.
 When you open a master file in VisIt_ and plot variables out of it, all domains are plotted.
 
 Master files contain what are known as multimeshes, multivars, and multimaterials.
@@ -1435,9 +1435,9 @@ In the given example, the meshes that make up the entire mesh are stored in sepa
 The mesh and any data that may be defined on it is stored in those files.
 Remember that storing pieces of a single mesh is commonplace when parallel processes write their own file.
 Plotting each of the smaller files individually in VisIt_ is not neccessary when a master file has been generated since plotting the multimesh object from the master file will cause VisIt_ to plot each of its constituent meshes.
-The code that will follow shows how to use Silo_'s **DBPutMultimesh** function to write out a multimesh object that reassembles meshes from many domain files into a whole mesh.
+The code that will follow shows how to use Silo_'s ``DBPutMultimesh`` function to write out a multimesh object that reassembles meshes from many domain files into a whole mesh.
 
-The list of meshes or items in a multi-object generally take the form: *path:item* where *path* is the file system path to the item and *item* is the name of the object being referenced.
+The list of meshes or items in a multi-object generally take the form: ``<path>:<item>`` where ``<path>`` is the file system path to the Silo_ file containing the object and ``<item>`` is the path of the object in the Silo_ file. The colon character, ``:`` disambiguates these two parts of the object's name.
 Note that the path may be specified as a relative or absolute path using names valid for the file system containing the master file.
 However, we strongly recommend using only relative paths so the master file does not reference directories that exist only on one file system.
 Using relative paths makes the master files much more portable since they allow the data files to be moved.
@@ -1546,7 +1546,7 @@ Creating a multivar
 
 A multivar object is the variable equivalent of a multimesh object.
 Like the multimesh object, a multivar object contains a list of filenames that make up the variable represented by the multivar object.
-Silo_ provides the **DBPutMultivar** function for writing out multivar objects.
+Silo_ provides the ``DBPutMultivar`` function for writing out multivar objects.
 
 Example for writing a multivar:
 
@@ -1613,9 +1613,9 @@ When some processors do not write data files, creating your multi-objects can be
 Note that because of how VisIt_ represents its domain subsets, etc, you will want to keep the number of filenames in a multi-object equal to the number of processors that you are using (the maximum number of domains that you will generate).
 If the length of the list varies over time then VisIt_'s subsetting controls may not behave as expected.
 To keep things simple, if you have N processors that write N files, you will always want N entries in your multiobjects.
-If a processor does not contribute any data, insert the "EMPTY" keyword into the
+If a processor does not contribute any data, insert the ``"EMPTY"`` keyword into the
 multi-object in place of the path and variable.
-The "EMPTY" keyword allows the size of the multi-object to remain fixed over time even as the number of processors that contribute data changes.
+The ``"EMPTY"`` keyword allows the size of the multi-object to remain fixed over time even as the number of processors that contribute data changes.
 Keeping the size of the multi-object fixed over time ensures that VisIt_'s subsetting controls will continue to function as expected.
 Note that if you use the "EMPTY" keyword in a multivar object then the same entry in the multimesh object for the variable must also contain the "EMPTY" keyword.
 
@@ -1632,5 +1632,6 @@ Note that if you use the "EMPTY" keyword in a multivar object then the same entr
   DBPutMultimesh(dbfile, "mesh", nmesh, meshnames, meshtypes, NULL);
 
 
+For really large scale problems (say more than say 10\ :sup:`5`, explicitly listing the names of constituent domain-level objects comprising a mutli-block object can result in a performance issue. As a result, Silo_ provides an ``sprintf-`` like mechanism for generating file system paths and Silo_ object paths on the fly. This mechanism is known as a *namescheme*. It is a best scalability practice to use Silo_ nameschemes for multi-block objects. For more information, see the Silo_ user's manual regarding `DBMakeNamescheme <https://wci.llnl.gov/sites/wci/files/2020-08/LLNL-SM-654357.pdf?#page=226>`__ and the associated optlist options, ``DBOPT_MB_FILE_NS` and ``DBOPT_MB_BLOCK_NS`` for multi-block objects.
 You can find many more examples of various features of Silo by browsing source code in either `VisIt's <https://github.com/visit-dav/visit/tree/develop/src/tools/data/datagen>`__ or `Silo's <https://github.com/LLNL/Silo/tree/main/tests>`__ test suites or the `test data files <https://github.com/search?q=repo%3Avisit-dav%2Fvisit%20path%3Asilo*.tar.xz&type=code>`__ used in VisIt_'s testing.
 
