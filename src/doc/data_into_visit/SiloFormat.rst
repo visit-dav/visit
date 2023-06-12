@@ -111,22 +111,23 @@ Many parallel simulation codes will divide the entire simulated mesh into submes
 Often, the most efficient I/O strategy for the simulation code is to make each
 processor write its domain to a separate file.
 The examples that follow assume parallel simulations will write 1 file per processor.
-It is possible for multiple processors to append their data to a single Silo_ file but it requires synchronization and that technique is beyond the scope of the examples that will be presented.
+It is possible for multiple processors to append their data to a single Silo_ file but it requires synchronization and that technique is beyond the scope of the examples presented here.
 
 This paradigm for handling parallel I/O with Silo is known as the `Multiple Independent File (MIF) Parallel I/O Paradigm <https://www.hdfgroup.org/2017/03/mif-parallel-io-with-hdf5/>`__
 In fact, there is a header file available in Silo_, ``pmpio.h``, which facilitates this mode of *writing* Silo_ files.
 An example of its use can be found in Silo_'s test suite, `pmpio_silo_test_mesh.c <https://github.com/LLNL/Silo/blob/main/tests/pmpio_silo_test_mesh.c>`__
+
 Creating a new Silo file
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
 The first step to saving data to a Silo_ file is to create the file and obtain a handle that will be used to reference the file.
 The handle will be passed to other Silo_ function calls in order to add new objects to the file.
-Silo_ creates new files using the **DBCreate** function, which takes the name of the new file, access modes, a descriptive comment, and the underlying file type as arguments.
+Silo_ creates new files using the ``DBCreate`` function, which takes the name of the new file, access modes, a descriptive comment, and the underlying file type as arguments.
 In addition to being a library, Silo_ is a self-describing data model, which can be implemented on top of many different underlying file formats.
-Silo_ includes drivers that allow it to read data from several different file formats, the most important of which are: PDB (A legacy LLNL file format) format, and HDF5 format.
+Silo_ includes drivers that allow it to read data from several different file formats, the most important of which are: Portable DataBase (PDB) (A legacy LLNL format), and HDF5 format.
 Silo_ files stored in HDF5 format often provide performance advantages so the following code to open a Silo_ file will create HDF5-based Silo_ files.
-You tell Silo_ to create HDF5-based Silo_ files by passing the **DB_HDF5** argument to the **DBCreate** function.
-If your Silo_ library does not have built-in HDF5 support then you can pass **DB_PDB** instead to create PDB-based Silo_ files.
+You tell Silo_ to create HDF5-based Silo_ files by passing the ``DB_HDF5`` argument to the ``DBCreate`` function.
+If your Silo_ library does not have built-in HDF5 support then you can pass ``DB_PDB`` instead to create PDB-based Silo_ files.
 
 
 Example for creating a new Silo file:
@@ -175,18 +176,18 @@ Example for creating a new Silo file:
     10000 stop
         end
 
-In addition to using the **DBCreate** function, the previous examples also use the **DBClose** function.
-The **DBClose** function ensures that all data is written to the file and then closes the Silo_ file.
-You must call the **DBClose** function when you want to close a Silo_ file or your file may not be complete.
+In addition to using the ``DBCreate`` function, the previous examples also use the ``DBClose`` function.
+The ``DBClose`` function ensures that all data is written to the file and then closes the Silo_ file.
+You must call the ``DBClose`` function when you want to close a Silo_ file or your file may not be complete.
 
 Dealing with time
 ~~~~~~~~~~~~~~~~~
 
-Silo_ files are a flexible container for storing many types of data.
+A Silo_ file is a flexible container for storing many types of data.
 Silo_'s ability to store data hierarchically in directories can allow you to store multiple time states of your simulation data within a single data file.
-However, Silo_ is most often used to store one time state per Silo_ file.
+However, Silo_ is most often used to store one time state per Silo_ file (or ensemble of files in a parallel context)
 VisIt_'s Silo_ plugin is primarily designed and used to work with Silo_ files in this modality.
-Consequently, when writing out data, programs that use Silo_ will write a new Silo_ file for each time step.
+Consequently, when writing data, programs that use Silo_ will write a new Silo_ file for each time step.
 By convention, the new file will contain an index indicating either the simulation cycle or a simple integer counter.
 
 .. code-block:: c
@@ -220,10 +221,10 @@ By convention, the new file will contain an index indicating either the simulati
       return 0;
   }
 
-The above code listing will write out Silo_ files with names such as: output0000.silo, output0001.silo, output0002.silo, ... .
+The above code listing will write out Silo_ files with names such as: ``output0000.silo``, ``output0001.silo``, ``output0002.silo``, ... .
 Each file contains the data from a particular simulation time state.
 It may seem like the data are less related because they are stored in different files but the fact that the files are related in time is subtly encoded in the name of each of the files.
-When VisIt_ recognizes a pattern in the names of the files such as "output????.silo", in this case, VisIt_ automatically groups the files into a time-varying database.
+When VisIt_ recognizes a pattern in the names of the files such as ``output????.silo``, in this case, VisIt_ automatically recognizes the files as a time-varying database (e.g. a *virtual* database).
 If you choose names for your Silo_ files that cannot be grouped by recognizing a
 numeric pattern in the trailing part of the file name then you must use a 
 :ref:`.visit<dotvisitfiles>` file to tell VisIt_ that your files are related in time.
@@ -234,19 +235,22 @@ Option lists
 Many of Silo_'s more complex functions accept an auxiliary argument called an option list.
 An option list is a list of option/value pairs and it is used to specify additional metadata about the data being stored.
 Each Silo_ function that accepts an option list has its options enumerated in the `Silo Manual <https://software.llnl.gov/Silo/manual.html>`_.
-This manual will cover only a subset of available options.
+We cover only a subset of available options here.
 Option lists need not be passed to the Silo_ functions that do support them.
 In fact, most of the source code examples in this manual will pass NULL instead of passing a pointer to an option list.
 Omitting the option list from the Silo_ function call in this way is not harmful; it only means that certain pieces of additional metadata will not be stored with the data.
 
-Option lists are created using the **DBMakeOptlist** function.
-Once an option list object is created, you can add options to it using the **DBAddOption** function.
-Option lists are freed using the **DBFreeOptlist** function.
+Option lists are created using the ``DBMakeOptlist`` function.
+Although this function requires the caller to specify a (maximum) number of options, newer versions (>= version 4.9) of the Silo_ library handle cases where the caller adds more options than this maximum number without issue.
+Once an option list object is created, you can add options to it using the ``DBAddOption`` function.
+Option lists are freed using the ``DBFreeOptlist`` function.
+
+Any pointers passed in a ``DBAddOption`` call must not be changed until after the last Silo_ call in which the associated option list is used is made. A common mistake is for callers to pass a pointer to an *automatic* variable in a subroutine. That pointer becomes invalid upon returning from the subroutine where it was set and when the option list is later used, the associated option is problematic.
 
 Cycle and time
 """"""""""""""
 
-We've established that a notion of time can be encoded into filenames using ranges of numbers in each filename.
+We've explained that a notion of time can be encoded into filenames using ranges of digits in each filename.
 VisIt_ can use the numbers in the names of related files to guess cycle number, a metric for how many times a simulation has iterated.
 It is possible to use Silo_'s option list feature to directly encode the cycle number and the simulation time into the stored data.
 
