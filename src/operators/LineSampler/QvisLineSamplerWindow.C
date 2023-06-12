@@ -90,6 +90,8 @@ QvisLineSamplerWindow::~QvisLineSamplerWindow()
 // Creation:   omitted
 //
 // Modifications:
+//   Kathleen Biagas, Tue Apr 18 16:34:41 PDT 2023
+//   Support Qt6: buttonClicked -> idClicked.
 //
 // ****************************************************************************
 
@@ -99,7 +101,7 @@ QvisLineSamplerWindow::CreateWindowContents()
     int width = 100;
 
     propertyTabs = new QTabWidget(central);
-    topLayout->addWidget(propertyTabs, 1, 0);
+    topLayout->addWidget(propertyTabs, 1);
 
     // ----------------------------------------------------------------------
     // Main tab
@@ -128,8 +130,13 @@ QvisLineSamplerWindow::CreateWindowContents()
       new QRadioButton(tr("Toroidal"), meshGeometry);
     meshGeometryButtonGroup->addButton(meshGeometryToroidal,2);
     meshGeometryLayout->addWidget(meshGeometryToroidal);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(meshGeometryButtonGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(meshGeometryChanged(int)));
+#else
+    connect(meshGeometryButtonGroup, SIGNAL(idClicked(int)),
+            this, SLOT(meshGeometryChanged(int)));
+#endif
     mainLayout->addWidget(meshGeometry, 0,1,1,2);
 
 
@@ -148,8 +155,13 @@ QvisLineSamplerWindow::CreateWindowContents()
       new QRadioButton(tr("Manual List"), arrayConfiguration);
     arrayConfigurationButtonGroup->addButton(arrayConfigurationManual,1);
     arrayConfigurationLayout->addWidget(arrayConfigurationManual);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(arrayConfigurationButtonGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(arrayConfigurationChanged(int)));
+#else
+    connect(arrayConfigurationButtonGroup, SIGNAL(idClicked(int)),
+            this, SLOT(arrayConfigurationChanged(int)));
+#endif
     mainLayout->addWidget(arrayConfiguration, 1,1);
 
     boundaryLabel = new QLabel(tr("Boundary"), central);
@@ -165,8 +177,13 @@ QvisLineSamplerWindow::CreateWindowContents()
     QRadioButton *boundaryWall = new QRadioButton(tr("Wall File"), boundary);
     boundaryButtonGroup->addButton(boundaryWall,1);
     boundaryLayout->addWidget(boundaryWall);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(boundaryButtonGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(boundaryChanged(int)));
+#else
+    connect(boundaryButtonGroup, SIGNAL(idClicked(int)),
+            this, SLOT(boundaryChanged(int)));
+#endif
     mainLayout->addWidget(boundary, 2,1);
 
     wallReadFile =
@@ -267,8 +284,13 @@ QvisLineSamplerWindow::CreateWindowContents()
 //     QRadioButton *dChannelLayoutTypeRelative = new QRadioButton(tr("Relative"), dChannelLayoutType);
 //     dChannelLayoutTypeButtonGroup->addButton(dChannelLayoutTypeRelative,1);
 //     dChannelLayoutTypeLayout->addWidget(dChannelLayoutTypeRelative);
+//#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
 //     connect(dChannelLayoutTypeButtonGroup, SIGNAL(buttonClicked(int)),
 //             this, SLOT(channelLayoutTypeChanged(int)));
+//#else 
+//     connect(dChannelLayoutTypeButtonGroup, SIGNAL(idClicked(int)),
+//             this, SLOT(channelLayoutTypeChanged(int)));
+//#endif 
 //     divergentLayout->addWidget(dChannelLayoutType, 1,1,1,2);
 
 //     poloialAngleLabel = new QLabel(tr("Absolute angle"), central);
@@ -385,8 +407,13 @@ QvisLineSamplerWindow::CreateWindowContents()
 //     QRadioButton *channelProjectionGrid = new QRadioButton(tr("Grid"), channelProjection);
 //     channelProjectionButtonGroup->addButton(channelProjectionGrid,2);
 //     channelProjectionLayout->addWidget(channelProjectionGrid);
+//#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
 //     connect(channelProjectionButtonGroup, SIGNAL(buttonClicked(int)),
 //             this, SLOT(channelProjectionChanged(int)));
+//#else
+//     connect(channelProjectionButtonGroup, SIGNAL(idClicked(int)),
+//             this, SLOT(channelProjectionChanged(int)));
+//#endif
 //    mainLayout->addWidget(channelProjection, 2,1,1,2);
 
 
@@ -411,8 +438,13 @@ QvisLineSamplerWindow::CreateWindowContents()
     arrayAxisArrayAxisZ = new QRadioButton(tr("Z"), arrayAxis);
     arrayAxisButtonGroup->addButton(arrayAxisArrayAxisZ,1);
     arrayAxisLayout->addWidget(arrayAxisArrayAxisZ);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(arrayAxisButtonGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(arrayAxisChanged(int)));
+#else
+    connect(arrayAxisButtonGroup, SIGNAL(idClicked(int)),
+            this, SLOT(arrayAxisChanged(int)));
+#endif
     mainLayout->addWidget(arrayAxis, 10,1);
 
     poloialAngleLabel = new QLabel(tr("Poloidal angle"), central);
@@ -635,8 +667,13 @@ QvisLineSamplerWindow::CreateWindowContents()
     // channelGeometryButtonGroup->addButton(channelGeometryCone,3);
     // channelGeometryLayout->addWidget(channelGeometryCone);
 
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(channelGeometryButtonGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(channelGeometryChanged(int)));
+#else
+    connect(channelGeometryButtonGroup, SIGNAL(idClicked(int)),
+            this, SLOT(channelGeometryChanged(int)));
+#endif
     geometryLayout->addWidget(channelGeometry, 0,1,1,3);
 
     sampleDistanceLabel = new QLabel(tr("Linear sample distance"), central);
@@ -683,8 +720,13 @@ QvisLineSamplerWindow::CreateWindowContents()
     channelProfileChannelTypeGaussian = new QRadioButton(tr("Gaussian"), channelProfile);
     channelProfileButtonGroup->addButton(channelProfileChannelTypeGaussian,1);
     channelProfileLayout->addWidget(channelProfileChannelTypeGaussian);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(channelProfileButtonGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(channelProfileChanged(int)));
+#else
+    connect(channelProfileButtonGroup, SIGNAL(idClicked(int)),
+            this, SLOT(channelProfileChanged(int)));
+#endif
     geometryLayout->addWidget(channelProfile, 3,1);
 
     standardDeviationLabel = new QLabel(tr("Standard deviation"), central);
@@ -726,8 +768,13 @@ QvisLineSamplerWindow::CreateWindowContents()
     channelIntegrationButtonGroup->addButton(channelIntegrationSummation,1);
     integrationLayout->addWidget(channelIntegrationSummation,0,2);
 
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(channelIntegrationButtonGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(channelIntegrationChanged(int)));
+#else
+    connect(channelIntegrationButtonGroup, SIGNAL(idClicked(int)),
+            this, SLOT(channelIntegrationChanged(int)));
+#endif
 
     toroidalIntegrationLabel = new QLabel(tr("Toroidal"), central);
     integrationLayout->addWidget(toroidalIntegrationLabel,1,0);
@@ -749,9 +796,13 @@ QvisLineSamplerWindow::CreateWindowContents()
     toroidalIntegrationButtonGroup->addButton(toroidalIntegrationSummation,2);
     integrationLayout->addWidget(toroidalIntegrationSummation,1,3);
 
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(toroidalIntegrationButtonGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(toroidalIntegrationChanged(int)));
-
+#else
+    connect(toroidalIntegrationButtonGroup, SIGNAL(idClicked(int)),
+            this, SLOT(toroidalIntegrationChanged(int)));
+#endif
 
     // Create the toroidal sampling group box.
     toroidalGroup = new QGroupBox(samplingTab);
@@ -776,8 +827,13 @@ QvisLineSamplerWindow::CreateWindowContents()
     QRadioButton *toroidalAngleSamplingToroidalAngleSamplingSummationToroidalAngleSampling = new QRadioButton(tr("Relative"), toroidalAngleSampling);
     toroidalAngleSamplingButtonGroup->addButton(toroidalAngleSamplingToroidalAngleSamplingSummationToroidalAngleSampling,1);
     toroidalAngleSamplingLayout->addWidget(toroidalAngleSamplingToroidalAngleSamplingSummationToroidalAngleSampling);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(toroidalAngleSamplingButtonGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(toroidalAngleSamplingChanged(int)));
+#else
+    connect(toroidalAngleSamplingButtonGroup, SIGNAL(idClicked(int)),
+            this, SLOT(toroidalAngleSamplingChanged(int)));
+#endif
     toroidalLayout->addWidget(toroidalAngleSampling,0,1,1,7);
 
     toroidalAngleSampleLabel = new QLabel(tr("Toroidal sample angle"), central);
@@ -832,8 +888,13 @@ QvisLineSamplerWindow::CreateWindowContents()
       new QRadioButton(tr("Multiple Time Steps"), timeSampling);
     timeSamplingButtonGroup->addButton(multipleTimeSteps,1);
     timeSamplingLayout->addWidget(multipleTimeSteps);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(timeSamplingButtonGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(timeSamplingChanged(int)));
+#else
+    connect(timeSamplingButtonGroup, SIGNAL(idClicked(int)),
+            this, SLOT(timeSamplingChanged(int)));
+#endif
     timeLayout->addWidget(timeSampling,0,1,1,7);
 
     timeStepLabel = new QLabel(tr("Time step"), central);
@@ -894,8 +955,13 @@ QvisLineSamplerWindow::CreateWindowContents()
     viewDimensionButtonGroup->addButton(viewDimensionThree,2);
     viewDimensionLayout->addWidget(viewDimensionThree);
 
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(viewDimensionButtonGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(viewDimensionChanged(int)));
+#else
+    connect(viewDimensionButtonGroup, SIGNAL(idClicked(int)),
+            this, SLOT(viewDimensionChanged(int)));
+#endif
 
     mainLayout->addWidget(viewDimension,0,1);
 
@@ -962,8 +1028,13 @@ QvisLineSamplerWindow::CreateWindowContents()
     displayTimeButtonGroup->addButton(displayTimeCycle,2);
     displayTimeLayout->addWidget(displayTimeCycle);
 
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(displayTimeButtonGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(displayTimeChanged(int)));
+#else
+    connect(displayTimeButtonGroup, SIGNAL(idClicked(int)),
+            this, SLOT(displayTimeChanged(int)));
+#endif
 
     oneDPlotLayout->addWidget(displayTime,3,1);
 
@@ -999,8 +1070,13 @@ QvisLineSamplerWindow::CreateWindowContents()
     viewGeometryButtonGroup->addButton(viewGeometryThree,2);
     viewGeometryLayout->addWidget(viewGeometryThree);
 
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(viewGeometryButtonGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(viewGeometryChanged(int)));
+#else
+    connect(viewGeometryButtonGroup, SIGNAL(idClicked(int)),
+            this, SLOT(viewGeometryChanged(int)));
+#endif
 
    miscLayout->addWidget(viewGeometry,0,1);
 

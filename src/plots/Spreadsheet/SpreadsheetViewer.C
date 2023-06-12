@@ -30,6 +30,7 @@
 #include <SpreadsheetTable.h>
 
 // Need these?
+#include <QEnterEvent>
 #include <QCloseEvent>
 
 #include <QvisColorTableButton.h>
@@ -122,6 +123,9 @@
 //   Brad Whitlock, Thu Jul  7 18:06:45 PDT 2016
 //   Ensure that the color table atts are set into the color table button.
 //
+//   Kathleen Biagas, Tue Apr 18 16:34:41 PDT 2023
+//   Support Qt6: buttonClicked -> idClicked.
+//
 // ****************************************************************************
 
 SpreadsheetViewer::SpreadsheetViewer(ViewerPlot *p, QWidget *parent) :
@@ -194,8 +198,13 @@ SpreadsheetViewer::SpreadsheetViewer(ViewerPlot *p, QWidget *parent) :
     layout3D->addWidget(normalLabel, 1, 0);
 
     normalButtonGroup = new QButtonGroup (0);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(normalButtonGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(normalChanged(int)));
+#else
+    connect(normalButtonGroup, SIGNAL(idClicked(int)),
+            this, SLOT(normalChanged(int)));
+#endif
     normalRadioButtons = new QWidget(controls3D);
     QHBoxLayout *nLayout = new QHBoxLayout(normalRadioButtons);
     nLayout->setContentsMargins(0,0,0,0);
@@ -566,7 +575,7 @@ SpreadsheetViewer::updateVariableMenus()
 // ****************************************************************************
 
 void
-SpreadsheetViewer::enterEvent(QEvent *e)
+SpreadsheetViewer::enterEvent(QEnterEvent *e)
 {
     QMainWindow::enterEvent(e);
     updateVariableMenus();

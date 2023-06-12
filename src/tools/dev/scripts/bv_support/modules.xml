@@ -43,6 +43,7 @@
             <lib name="ospray"/>
             <lib name="pidx"/>
             <lib name="pyside"/>
+            <lib name="qt6"/>
             <lib name="silo"/>
             <lib name="stripack"/>
             <lib name="szip"/>
@@ -207,6 +208,7 @@
             <lib name="mpich"/>
             <lib name="osmesa"/>
             <lib name="pyqt"/>
+            <lib name="qt6"/>
             <lib name="uintah"/>
             <lib name="damaris"/>
             <lib name="xercesc"/>

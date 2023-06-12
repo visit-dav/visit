@@ -15,7 +15,7 @@
 
 #include <QString>
 #include <QTcpSocket>
-#include <QTime>
+#include <QElapsedTimer>
 class QWsSocket : public QAbstractSocket
 {
     using QAbstractSocket::close;
@@ -81,7 +81,7 @@ private:
     // private vars
     QTcpSocket * tcpSocket;
     QByteArray currentFrame;
-    QTime pingTimer;
+    QElapsedTimer pingTimer;
     quint8 protocolVersion;
 
 public:

@@ -2288,6 +2288,9 @@ avtXRayFilter::RedistributeLines(int nLeaves, int *nLinesPerDataset,
 //  Creation:   March 29 2023
 //
 //  Modifications:
+//    Justin Privitera, Wed Jun  7 15:47:17 PDT 2023
+//    Added a warning for the pitfalls case from the docs that will trigger
+//    if the near plane is outside the view frustum.
 //
 // ****************************************************************************
 void
@@ -2311,6 +2314,13 @@ avtXRayFilter::CalculateImagingPlaneDims(const double &parallelScale,
     {
         const double viewDist{parallelScale / tan ((viewAngle * 3.1415926535) / 360.)};
         const double nearDist{viewDist + nearPlane};
+        if (nearDist < 0)
+        {
+            // the pitfall case in the docs; the near plane is behind the view frustum leading to confusion
+            debug1 << "[XRayFilter] WARNING: The specified near plane is outside the view frustum. "
+                   << "Output images may appear upside down." << std::endl;
+        }
+
         const double farDist{viewDist + farPlane};
         const double nearDist_over_viewDist{nearDist / viewDist};
         const double farDist_over_viewDist{farDist / viewDist};

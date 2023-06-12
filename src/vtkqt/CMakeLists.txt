@@ -10,6 +10,9 @@
 #    Kevin Griffin, Tue Apr 25 11:43:15 PDT 2017
 #    Added Cocoa framework for OSX helper function.
 #
+#    Kathleen Biagas, Tue May 5, 2023
+#    Disable qt6 forcing of defines for UNICODE.
+#
 #****************************************************************************
 
 set(VTKQT_SOURCES
@@ -41,8 +44,12 @@ else()
         VTK::RenderingOpenGL2 VTK::RenderingFreeType)
 endif()
 
+if(QT_VERSION VERSION_GREATER_EQUAL "6.2.0")
+    qt6_disable_unicode_defines(vtkqt)
+endif()
+
 target_link_libraries(vtkqt ${vtklibs} ${QT_QTCORE_LIBRARY} ${QT_QTGUI_LIBRARY}
-    ${QT_QTOPENGL_LIBRARY} ${OPENGL_LIBRARIES})
+    ${QT_QTOPENGL_LIBRARY} ${QT_QTPRINTSUPPORT_LIBRARY} ${OPENGL_LIBRARIES})
 
 if(HAVE_OSMESA)
     target_link_libraries(vtkqt ${OSMESA_LIBRARIES})

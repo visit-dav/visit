@@ -651,25 +651,31 @@ include(${CMAKE_CURRENT_SOURCE_DIR}/CMake/VisItFunctions.cmake)
 #-----------------------------------------------------------------------------
 # Set VISIT_CONFIG_SITE_FILE and include it if it exists
 #-----------------------------------------------------------------------------
-if(VISIT_CONFIG_SITE)
-    set(VISIT_CONFIG_SITE_FILE ${VISIT_CONFIG_SITE})
-else()
-    set(VISIT_CONFIG_SITE_FILE "${CMAKE_CURRENT_SOURCE_DIR}/config-site/${HOSTNAME}.cmake")
-    if(WIN32)
-        if(NOT EXISTS ${VISIT_CONFIG_SITE_FILE})
-            set(VISIT_CONFIG_SITE_FILE "${CMAKE_CURRENT_SOURCE_DIR}/config-site/windows.cmake")
+macro(include_visit_config_site)
+    if(VISIT_CONFIG_SITE)
+        set(VISIT_CONFIG_SITE_FILE ${VISIT_CONFIG_SITE})
+    else()
+        set(VISIT_CONFIG_SITE_FILE "${CMAKE_CURRENT_SOURCE_DIR}/config-site/${HOSTNAME}.cmake")
+        if(WIN32)
+            if(NOT EXISTS ${VISIT_CONFIG_SITE_FILE})
+                set(VISIT_CONFIG_SITE_FILE "${CMAKE_CURRENT_SOURCE_DIR}/config-site/windows.cmake")
+            endif()
         endif()
     endif()
+    if(EXISTS ${VISIT_CONFIG_SITE_FILE})
+        message(STATUS "Including config-site file '${VISIT_CONFIG_SITE_FILE}'")
+        include(${VISIT_CONFIG_SITE_FILE})
+    else()
+        message(STATUS "The config-site file (${VISIT_CONFIG_SITE_FILE}) does not exist")
+    endif()
+
+    unset(VISIT_CONFIG_SITE_FILE)
+endmacro()
+
+if(NOT WIN32)
+    include_visit_config_site()
 endif()
 
-if(EXISTS ${VISIT_CONFIG_SITE_FILE})
-    message(STATUS "Including config-site file '${VISIT_CONFIG_SITE_FILE}'")
-    include(${VISIT_CONFIG_SITE_FILE})
-else()
-    message(STATUS "The config-site file (${VISIT_CONFIG_SITE_FILE}) does not exist")
-endif()
-
-unset(VISIT_CONFIG_SITE_FILE)
 
 #-----------------------------------------------------------------------------
 # If not already set, we use a default build type of Release
@@ -695,6 +701,9 @@ set(CMAKE_Fortran_COMPILER ${VISIT_FORTRAN_COMPILER})
 
 project(VISIT)
 
+if(WIN32)
+    include_visit_config_site()
+endif()
 
 include(${VISIT_SOURCE_DIR}/CMake/CheckMinimumCompilerVersion.cmake)
 include(${VISIT_SOURCE_DIR}/CMake/SystemChecks.cmake)
@@ -736,7 +745,7 @@ foreach(pkg ADIOS ADIOS2 ADIOS2_PAR ADVIO BLOSC BOOST BOXLIB CFITSIO CGNS
             CONDUIT DAMARIS EMBREE FMS GDAL GFORTRAN HDF5 HDF5_MPI H5PART ICET
             ISPC JPEG LLVM MDSPLUS MFEM MILI MOAB MOAB_MPI NEKTAR++ NETCDF
             OPENGL OPENEXR OSPRAY PIDX PYSIDE PYTHON QT QWT SILO SZIP TBB
-            UINTAH VTK VTKM XDMF XSD ZLIB)
+            TIFF UINTAH VTK VTKM XDMF XSD ZLIB)
     VISIT_3RDPARTY_DIR(${pkg})
 endforeach()
 

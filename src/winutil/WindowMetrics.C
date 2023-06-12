@@ -11,7 +11,9 @@
 #if defined(Q_OS_WIN)
 #include <windows.h>
 #elif defined(Q_OS_LINUX)
-#include <QtX11Extras/QX11Info>
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+    #include <QtX11Extras/QX11Info>
+#endif
 #include <X11/Xlib.h>
 static Window GetParent(Display *dpy, Window win, Window *root_ret=NULL);
 #endif
@@ -203,7 +205,15 @@ WindowMetrics::MeasureScreen(bool waitForWM)
     // Try and determine if we're displaying X11 to a Mac.
     //
     int nExt = 0, appleDisplay = 0;
-    char **ext = XListExtensions(QX11Info::display(), &nExt);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+    char **ext = XListExtensions(QX11Info::display() , &nExt);
+#else
+    auto x11NativeInterface = qApp->nativeInterface<QNativeInterface::QX11Application>();
+    if(x11NativeInterface == NULL)
+        return;
+  
+    char **ext = XListExtensions(x11NativeInterface->display() , &nExt);
+#endif
     for(int e = 0; e < nExt; ++e)
     {
         if(strcmp(ext[e], "Apple-DRI") == 0 ||
@@ -464,7 +474,18 @@ WindowMetrics::CalculateBorders(QWidget *win,
     XWindowAttributes parent_attributes;
 
     // Get the display pointer and window Id from the main window.
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     Display *dpy = QX11Info::display();
+#else
+    auto x11NativeInterface = qApp->nativeInterface<QNativeInterface::QX11Application>();
+    if(x11NativeInterface == NULL)
+    {
+         // ERROR - get out and use defaults.
+         return;
+    }
+
+    Display *dpy = x11NativeInterface->display();
+#endif
     Window main_window = win->winId();
 
     // There is a GUI window, so we must adjust the work area. 
@@ -635,7 +656,17 @@ WindowMetrics::CalculateTopLeft(QWidget *wid, int &X, int &Y)
     XWindowAttributes atts;
 
     // Get the display pointer and window Id from the widget.
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     Display *dpy  = QX11Info::display();
+#else
+    auto x11NativeInterface = qApp->nativeInterface<QNativeInterface::QX11Application>();
+    if(x11NativeInterface == NULL)
+    {
+        // Error ?
+        return;
+    }
+    Display *dpy  = x11NativeInterface->display();
+#endif
     Window window = wid->winId();
 
     // Find the parent and the root.
