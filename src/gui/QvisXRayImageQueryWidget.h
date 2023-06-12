@@ -12,6 +12,7 @@
 class QCheckBox;
 class QComboBox;
 class QLineEdit;
+class QLabel;
 class MapNode;
 
 // ****************************************************************************
@@ -56,6 +57,8 @@ public:
 
     bool GetQueryParameters(MapNode &params);
 
+private slots:
+    void             nonSquarePixelsToggled(bool);
 
 private:
     bool             GetDoubleValues(int whichWidget, doubleVector &pt);
@@ -72,6 +75,7 @@ private:
     QLineEdit       *viewAngle;
     QLineEdit       *parallelScale;
     QLineEdit       *viewWidthOverride;
+    QLabel          *viewWidthOverrideLabel;
     QCheckBox       *nonSquarePixels;
     QLineEdit       *nearPlane;
     QLineEdit       *farPlane;

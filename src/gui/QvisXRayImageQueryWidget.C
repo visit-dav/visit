@@ -156,10 +156,17 @@ QvisXRayImageQueryWidget::QvisXRayImageQueryWidget(QWidget *parent,
     //
     // View Width Override
     //
-    topLayout->addWidget(new QLabel(tr("View width override")), 10, 0);
+    viewWidthOverrideLabel = new QLabel(tr("View width override"));
+    topLayout->addWidget(viewWidthOverrideLabel, 10, 0);
     viewWidthOverride = new QLineEdit();
     viewWidthOverride->setText("10");
     topLayout->addWidget(viewWidthOverride, 10, 1);
+
+    // only show these widgets if non-square pixels is enabled
+    viewWidthOverrideLabel->hide();
+    viewWidthOverride->hide();
+    connect(nonSquarePixels, SIGNAL(toggled(bool)),
+            this, SLOT(nonSquarePixelsToggled(bool)));
 
     //
     // Near plane
@@ -549,4 +556,37 @@ QvisXRayImageQueryWidget::GetQueryParameters(MapNode &params)
         params["image_size"] = imageSize;
     }
     return noerrors;
+}
+
+
+//
+// Qt slot functions
+//
+
+// ****************************************************************************
+// Method: QvisXRayImageQueryWidget::nonSquarePixelsToggled
+//
+// Purpose: 
+//   Updates the controls displayed.
+//
+// Programmer: Justin Privitera
+// Creation:   June 12, 2023
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisXRayImageQueryWidget::nonSquarePixelsToggled(bool val)
+{
+    if (val)
+    {
+        viewWidthOverrideLabel->show();
+        viewWidthOverride->show();
+    }
+    else
+    {
+        viewWidthOverrideLabel->hide();
+        viewWidthOverride->hide();
+    }
 }
