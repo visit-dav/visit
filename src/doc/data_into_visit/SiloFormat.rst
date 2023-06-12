@@ -247,12 +247,14 @@ Option lists are freed using the ``DBFreeOptlist`` function.
 
 Any pointers passed in a ``DBAddOption`` call must not be changed until after the last Silo_ call in which the associated option list is used is made. A common mistake is for callers to pass a pointer to an *automatic* variable in a subroutine. That pointer becomes invalid upon returning from the subroutine where it was set and when the option list is later used, the associated option is problematic.
 
+Any pointers passed in a ``DBAddOption`` call must not be changed until after the last Silo_ call in which the associated option list is used is made. A common mistake is for callers to pass a pointer to an *automatic* variable in a subroutine. That pointer becomes invalid upon returning from the subroutine where it was set and when the option list is later used, the associated option is problematic.
+
 Cycle and time
 """"""""""""""
 
 We've explained that a notion of time can be encoded into filenames using ranges of digits in each filename.
 VisIt_ can use the numbers in the names of related files to guess cycle number, a metric for how many times a simulation has iterated.
-It is possible to use Silo_'s option list feature to directly encode the cycle number and the simulation time into the stored data.
+It is also possible to use Silo_'s option list feature to directly encode the cycle number and the simulation time into the stored data.
 
 Example for saving cycle and time using an option list.
 
@@ -298,9 +300,9 @@ Writing a rectilinear mesh
 A rectilinear mesh is a 2D or 3D mesh where all coordinates are aligned with the axes.
 Each axis of the rectilinear mesh can have different, non-uniform spacing, allowing for details to be concentrated in certain regions of the mesh.
 Rectlinear meshes are specified by lists of coordinate values for each axis.
-Since the mesh is aligned to the axes, it is only necessary to specify one set of X and Y values to generate all of the coordinates for the entire mesh.
+Since the mesh is aligned to the axes, it is only necessary to specify one set of values along each axis to specify all of the coordinates for the entire mesh.
 :numref:`Figure %s <silo_meshrect2d>` contains an example of a 2D rectilinear mesh.
-The Silo function call to write a rectlinear mesh is called **DBPutQuadmesh**.
+The Silo function call to write a rectlinear mesh is called ``DBPutQuadmesh``.
 
 .. _silo_meshrect2d:
 
@@ -343,14 +345,14 @@ Example for writing a 2D rectilinear mesh:
 
 
 
-The previous code examples demonstrate how to write out a 2D rectilinear mesh using Silo_'s **DBPutQuadmesh** function (called **dbputqm** in Fortran).
-There are three pieces of important information passed to the **DBPutQuadmesh** function.
+The previous code examples demonstrate how to write out a 2D rectilinear mesh using Silo_'s ``DBPutQuadmesh`` function (called ``dbputqm`` in Fortran).
+There are three pieces of important information passed to the ``DBPutQuadmesh`` function.
 The first important piece information is the name of the mesh being created.
 The name that you choose will be the name that you use when writing a variable to a Silo_ file and also the name that you will see in VisIt_'s plot menus when you want to create a Mesh plot in VisIt_.
 After the name, you provide the coordinate arrays that contain the X and Y point values that ultimately form the set of X,Y coordinate pairs that describe the mesh.
 The C-interface to Silo_ requires that you pass pointers to the coordinate arrays in a single pointer array.
-The Fortran interface to Silo requires you to pass the names of the coordinate arrays, followed by the actual coordinate arrays, with a value of **DB_F77NULL** for any arrays that you do not use.
-The final critical pieces of information that must be passed to the **DBPutQuadmesh** function are the dimensions of the mesh, which correspond to the number of nodes, or coordinate values, along the mesh in a given dimension.
+The Fortran interface to Silo requires you to pass the names of the coordinate arrays, followed by the actual coordinate arrays, with a value of ``DB_F77NULL`` for any arrays that you do not use.
+The final critical pieces of information that must be passed to the ``DBPutQuadmesh`` function are the dimensions of the mesh, which correspond to the number of nodes, or coordinate values, along the mesh in a given dimension.
 The dimensions are passed in an array, along with the number of dimensions, which must be 2 or 3.
 :numref:`Figure %s <silo_meshrect3d>` shows an example of a 3D rectilinear mesh for the upcoming code examples.
 
@@ -403,8 +405,7 @@ Writing a curvilinear mesh
 
 A curvilinear mesh is similar to a rectlinear mesh.
 The main difference between the two mesh types is how coordinates are specified.
-Recall that in a rectilinear mesh, the coordinates are specified individually for each axis and only a small subset of the nodes in the mesh are provided.
-The coordinate arrays are used to assemble a point for each node in the mesh.
+Recall that in a rectilinear mesh, the coordinates are specified individually for each axis. Their cross-product determines the coordinates of any one node in the mesh.
 In a curvilinear mesh, you must provide an X,Y,Z value for every node in the mesh.
 Providing the coordinates for every point explicitly allows you to specify more
 complex geometries than are possible using rectilinear meshes.
@@ -421,9 +422,9 @@ Note how the mesh coordinates on the mesh in :numref:`Figure %s <silo_meshcurv2d
 The fine line between a rectilinear mesh and a curvilinear mesh comes down to how the coordinates are specified.
 Silo_ dicates that the coordinates be specified with an array of X coordinates, an array of Y-coordinates, and an optional array of Z-coordinates.
 The difference, of course, is that in a curvilinear mesh, there are explicit values for each node's X,Y,Z points.
-Silo_ uses the same **DBPutQuadmesh** function to write out curvilinear meshes.
+Silo_ uses the same ``DBPutQuadmesh`` function to write out curvilinear meshes.
 The coordinate arrays are passed the same as for the rectilinear mesh, though the X,Y,Z arrays now point to larger arrays.
-You can pass the **DB_NONCOLLINEAR** flag to the **DBPutQuadmesh** function in order to indicate that the coordinate arrays contain values for every node in the mesh.
+You can pass the ``DB_NONCOLLINEAR`` flag to the ``DBPutQuadmesh`` function in order to indicate that the coordinate arrays contain values for every node in the mesh.
 
 Example for writing a 2D curvilinear mesh:
 
@@ -527,8 +528,8 @@ Example for writing a 3D curvilinear mesh:
 Writing a point mesh
 ~~~~~~~~~~~~~~~~~~~~
 
-A point mesh is a set of 2D or 3D points where the nodes also constitute the cells in the mesh.
-Silo_ provides the **DBPutPointmesh** function so you can write out particle systems represented as point meshes.
+A point mesh is a set of 2D or 3D points where the nodes themselves also constitute the *only* cells in the mesh.
+Silo_ provides the ``DBPutPointmesh`` function so you can write out particle systems represented as point meshes.
 
 .. _silo_meshpoint2d:
 
@@ -647,7 +648,7 @@ Silo_ supports the creation of 2D unstructured meshes composed of triangles, qua
 However, VisIt_ splits polygonal cells into triangles.
 Unstructured meshes are specified in terms of a set of nodes and then a zone list consisting of lists of nodes, called connectivity information, that make up the zones in the mesh.
 When creating connectivity information, be sure that the nodes in your zones are specified so that when you iterate over the nodes in the zone that a counter-clockwise pattern is observed.
-Silo_ provides the **DBPutZonelist** function to store out the connectivity information.
+Silo_ provides the ``DBPutZonelist`` function to store out the connectivity information.
 The coordinates for the unstructured mesh itself is written out using the
 **DBPutUcdmesh** function.
 
@@ -719,10 +720,11 @@ Example for writing a 2D unstructured mesh:
 
 3D unstructured meshes are created much the same way as 2D unstructured meshes are created.
 The main difference is that in 2D, you use triangles and quadrilateral zone types, in 3D, you use hexahedrons, pyramids, prisms, and tetrahedrons to compose your mesh.
+Silo_ also supports fully arbitrary polyhedral zones but that will not be covered here.
 The procedure for creating the node coordinates is the same with the exception that 3D meshes also require a Z-coordinate.
 The procedure for creating the zone list (connectivity information) is the same except that you specify cells using a larger number of nodes because they are 3D.
 The order in which the nodes are specified is also more important for 3D shapes because if the nodes are not given in the right order, the zones can become tangled.
-The proper zone ordering for each of the four supported 3D zone shapes is shown in :numref:`Figure %s <silo_celltypes>`.
+The proper zone ordering for each of the four supported 3D zone shapes is shown in `the Silo_'s user manual <https://wci.llnl.gov/sites/wci/files/2020-08/LLNL-SM-654357.pdf?#page=122>`__.
 
 .. _silo_celltypes:
 
@@ -830,7 +832,7 @@ It is possible to add additional annotations to your meshes that you store to Si
 This subsection covers how to change the axis titles and units that will be used when VisIt_ plots your mesh.
 By default, VisIt_ uses "X-Axis", "Y-Axis", and "ZAxis" when labelling the coordinate axes.
 You can override the default labels using an option list.
-Option lists are created with the **DBMakeOptlist** function and freed with the **DBFreeOptlist** function.
+Option lists are created with the ``DBMakeOptlist`` function and freed with the ``DBFreeOptlist`` function.
 All of the Silo_ functions for writing meshes that we've demonstrated so far can
 accept option lists that contain custom axis labels and units.
 Refer to the `Silo Manual <https://software.llnl.gov/Silo/manual.html>`_ for more information on additional options that can be passed via option lists.
@@ -872,6 +874,7 @@ Example for associating new axis labels and units with a mesh:
     c Free the option list
         err = dbfreeoptlist(optlistid)
 
+Another intersting feature of Silo_ related to structured and unstructured meshes is its ability to apply various compression algorithms including FPZIP, HZIP and ZFP to the mesh as well as its variables. See the documentation on ``DBSetCompression()`` in the `Silo user's manual <https://wci.llnl.gov/sites/wci/files/2020-08/LLNL-SM-654357.pdf?#page=49>`__ for more information.
 
 Writing a scalar variable
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -904,7 +907,7 @@ API Commonality
 """""""""""""""
 
 Each of the provided functions for writing scalar variables does have certain arguments in common.
-For example, all of the functions must be provided the name of the variable to
+For example, all of the functions must be provided the name of the variable to write out.
 write out.
 The name that you pick is the name that will appear in VisIt_'s plot menus.
 Be careful when you pick your variable names because you should avoid characters that include punctuation marks and spaces.
