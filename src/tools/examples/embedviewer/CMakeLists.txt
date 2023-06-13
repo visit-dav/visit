@@ -16,6 +16,9 @@
 #   Kathleen Biagas, Thu Mar 30, 2023
 #   Use AUTOMOC target property instead of QT_WRAP_CPP macro.
 #
+#   Kathleen Biagas, Tue May 5, 2023
+#   Disable qt6 forcing of defines for UNICODE.
+#
 #****************************************************************************
 
 SET(SOURCES1
@@ -142,6 +145,14 @@ ${VIEWER_QT_LIBS}
 
 TARGET_LINK_LIBRARIES(embedded ${EMBEDDED_VIEWER_LIBS})
 TARGET_LINK_LIBRARIES(multiwindow ${EMBEDDED_VIEWER_LIBS})
+
+
+if(QT_VERSION VERSION_GREATER_EQUAL "6.2.0")
+    qt6_disable_unicode_defines(embedded)
+    qt6_disable_unicode_defines(multiwindow)
+endif()
+
+
 
 IF(APPLE)
     # Hey, do we need this on 10.6?

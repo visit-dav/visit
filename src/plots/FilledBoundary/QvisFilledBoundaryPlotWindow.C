@@ -105,6 +105,9 @@ QvisFilledBoundaryPlotWindow::~QvisFilledBoundaryPlotWindow()
 //   Kathleen Bonnell, Mon Jan 17 18:10:28 MST 2011
 //   Change colorTableButton to colorTableWidget to gain invert toggle.
 //
+//   Kathleen Biagas, Tue Apr 18 16:34:41 PDT 2023
+//   Support Qt6: buttonClicked -> idClicked.
+//
 // ****************************************************************************
 
 void
@@ -123,8 +126,13 @@ QvisFilledBoundaryPlotWindow::CreateWindowContents()
     // Create the mode buttons that determine if the window is in single
     // or multiple color mode.
     colorModeButtons = new QButtonGroup(boundaryColorGroup);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(colorModeButtons, SIGNAL(buttonClicked(int)),
             this, SLOT(colorModeChanged(int)));
+#else
+    connect(colorModeButtons, SIGNAL(idClicked(int)),
+            this, SLOT(colorModeChanged(int)));
+#endif
 
     QRadioButton *rb = new QRadioButton(tr("Color table"), boundaryColorGroup);
     colorModeButtons->addButton(rb, 0);
@@ -297,8 +305,13 @@ QvisFilledBoundaryPlotWindow::CreateWindowContents()
 
     // Create the smoothing level buttons
     smoothingLevelButtons = new QButtonGroup(central);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(smoothingLevelButtons, SIGNAL(buttonClicked(int)),
             this, SLOT(smoothingLevelChanged(int)));
+#else
+    connect(smoothingLevelButtons, SIGNAL(idClicked(int)),
+            this, SLOT(smoothingLevelChanged(int)));
+#endif
 
     rb = new QRadioButton(tr("None"), central);
     smoothingLevelButtons->addButton(rb, 0);

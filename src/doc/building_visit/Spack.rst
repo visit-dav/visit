@@ -249,6 +249,15 @@ The following spack command is used to build with spack.
 
     spack install visit@3.3.3%gcc@11.2.0+mpi+gui+osmesa~vtkm ^python@3.7.7+shared ^mesa@21.2.5+opengl ^llvm@11.0.1 ^vtk@8.1.0+osmesa
 
+The installation will fail to install some shared libraries in the VisIt_ lib directory.
+The following script will copy the necessary libraries.
+
+::
+
+    #!/bin/bash
+    cp /global/homes/b/brugger/spack/spack/opt/spack/linux-sles15-zen3/gcc-11.2.0/libtiff-4.5.0-ijtdgosjdshvhhtnhmh2jmmrfobk2udg/lib64/libtiff.so.6.0.0 /global/homes/b/brugger/spack/spack/opt/spack/linux-sles15-zen3/gcc-11.2.0/visit-3.3.3-th5ncewyylv4p4gszkpciogov3ky5cb6/3.3.3/linux-x86_64/lib
+    ln -s libtiff.so.6.0.0 /global/homes/b/brugger/spack/spack/opt/spack/linux-sles15-zen3/gcc-11.2.0/visit-3.3.3-th5ncewyylv4p4gszkpciogov3ky5cb6/3.3.3/linux-x86_64/lib/libtiff.so.6
+
 Working around recurring download failures
 ------------------------------------------
 
@@ -293,17 +302,13 @@ These files are stored in your ``~/.spack`` directory. ::
     .spack/<platform>/compilers.yaml
     .spack/packages.yaml
 
-The VisIt_ repository at GitHub contains ``compilers.yaml`` and ``packages.yaml`` files for popular systems in the directory ``scripts/spack/configs``.
+The VisIt_ repository at GitHub contains ``compilers.yaml`` and / or ``packages.yaml`` files for popular systems in the directory ``scripts/spack/configs``.
 
-Here are the ``compilers.yaml`` and ``packages.yaml`` files for ``spock.olcf.ornl.gov`` for VisIt_.
-
-``compilers.yaml``
-
-.. literalinclude:: ../../../scripts/spack/configs/olcf/spock/compilers.yaml
+Here is the ``packages.yaml`` file for ``frontier.olcf.ornl.gov`` for VisIt_.
 
 ``packages.yaml``
 
-.. literalinclude:: ../../../scripts/spack/configs/olcf/spock/packages.yaml
+.. literalinclude:: ../../../scripts/spack/configs/olcf/frontier/packages.yaml
 
 Debugging a spack package
 -------------------------

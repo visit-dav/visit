@@ -34,6 +34,9 @@
 //   Dave Pugmire, Thu Mar 15 11:19:33 EDT 2012
 //   Add location named selections.
 //
+//   Kathleen Biagas, Tue Apr 18 16:34:41 PDT 2023
+//   Support Qt6: buttonClicked -> idClicked.
+//
 // ****************************************************************************
 
 QvisSelectionsDialog::QvisSelectionsDialog(
@@ -61,8 +64,13 @@ QvisSelectionsDialog::QvisSelectionsDialog(
     if(m == SOURCE_USE_DB_OR_PLOT)
     {
         QButtonGroup *bg = new QButtonGroup(central);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
         connect(bg, SIGNAL(buttonClicked(int)),
                 this, SLOT(selectionChoiceChanged(int)));
+#else
+        connect(bg, SIGNAL(idClicked(int)),
+                this, SLOT(selectionChoiceChanged(int)));
+#endif
         QRadioButton *b0 = new QRadioButton(tr("Plot"), central);
         bg->addButton(b0, 0);
         QRadioButton *b1 = new QRadioButton(dbTxt, central);
@@ -112,8 +120,13 @@ QvisSelectionsDialog::QvisSelectionsDialog(
     bg2->addButton(b3, 3);
     iLayout->addWidget(b3, 0, 3);
     b0->setChecked(true);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(bg2, SIGNAL(buttonClicked(int)),
             this, SLOT(idVariableTypeChanged(int)));
+#else
+    connect(bg2, SIGNAL(idClicked(int)),
+            this, SLOT(idVariableTypeChanged(int)));
+#endif
     idVariableButton = new QvisVariableButton(central);
     idVariableButton->setVarTypes(QvisVariableButton::Scalars);
     idVariableButton->setAddDefault(false);

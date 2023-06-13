@@ -384,7 +384,7 @@ MovieSequenceFactory::SequencePixmap(int id, QPixmap &pix) const
             .arg(it->second->SequenceName().c_str())
             .arg(it->second->SequenceId());
 
-        if(QPixmapCache::find(key, pix))
+        if(QPixmapCache::find(key, &pix))
         {
             return true;
         }

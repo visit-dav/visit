@@ -244,6 +244,9 @@ QvisColorTableWindow::~QvisColorTableWindow()
 //   Removed code for the search toggle and replaced with search bar.
 //   Cleaned up code, added comments, and organized the different sections.
 //
+//   Kathleen Biagas, Tue Apr 18 16:34:41 PDT 2023
+//   Support Qt6: buttonClicked -> idClicked.
+//
 // ****************************************************************************
 
 void
@@ -435,9 +438,13 @@ QvisColorTableWindow::CreateWindowContents()
     rb = new QRadioButton(tr("Discrete"),colorWidgetGroup);
     colorTableTypeGroup->addButton(rb,1);
     colorInfoLayout->addWidget(rb, 0, 5, 1, 2);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(colorTableTypeGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(setColorTableType(int)));
-
+#else
+    connect(colorTableTypeGroup, SIGNAL(idClicked(int)),
+            this, SLOT(setColorTableType(int)));
+#endif
 
     // Create the buttons that help manipulate the spectrum bar.
     QGridLayout *seLayout = new QGridLayout();

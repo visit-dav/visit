@@ -135,6 +135,9 @@ QvisPoincareWindow::CreateWindowContents()
 //   Set keyboard tracking to false for spin boxes so that 'valueChanged'
 //   signal will only emit when 'enter' is pressed or spinbox loses focus.
 //
+//   Kathleen Biagas, Tue Apr 18 16:34:41 PDT 2023
+//   Support Qt6: buttonClicked -> idClicked.
+//
 // ****************************************************************************
 
 void
@@ -352,8 +355,13 @@ QvisPoincareWindow::CreateIntegrationTab(QWidget *pageIntegration)
 //     coordinateLayout->addWidget(cartesianButton, 0, 0);
 //     coordinateLayout->addWidget(cylindricalButton, 0, 1);
 
+//#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
 //     connect(coordinateButtonGroup, SIGNAL(buttonClicked(int)), this,
 //          SLOT(coordinateButtonGroupChanged(int)));
+//#else
+//     connect(coordinateButtonGroup, SIGNAL(idClicked(int)), this,
+//          SLOT(coordinateButtonGroupChanged(int)));
+//#endif
 
     // Create the punctures group box.
     QGroupBox *puncturesGroup = new QGroupBox(central);
@@ -416,8 +424,13 @@ QvisPoincareWindow::CreateIntegrationTab(QWidget *pageIntegration)
       new QRadioButton(tr("Double"), puncturePlotType);
     puncturePlotTypeButtonGroup->addButton(puncturePlotTypeTypeTorodial,1);
     puncturePlotTypeLayout->addWidget(puncturePlotTypeTypeTorodial);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(puncturePlotTypeButtonGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(puncturePlotTypeChanged(int)));
+#else
+    connect(puncturePlotTypeButtonGroup, SIGNAL(idClicked(int)),
+            this, SLOT(puncturePlotTypeChanged(int)));
+#endif
     puncturePlotLayout->addWidget(puncturePlotType, 1, 1);
 
 
@@ -468,8 +481,13 @@ puncturePlotLayout->addWidget(maxStepsLabel, 2, 0, 1, 2);
       new QRadioButton(tr("Toroidal"), puncturePlane);
     puncturePlaneButtonGroup->addButton(puncturePlaneTypeTorodial,1);
     puncturePlaneTypeLayout->addWidget(puncturePlaneTypeTorodial);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(puncturePlaneButtonGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(puncturePlaneChanged(int)));
+#else
+    connect(puncturePlaneButtonGroup, SIGNAL(idClicked(int)),
+            this, SLOT(puncturePlaneChanged(int)));
+#endif
     puncturePlaneLayout->addWidget(puncturePlane, 1, 1);
 }
 
@@ -483,6 +501,8 @@ puncturePlotLayout->addWidget(maxStepsLabel, 2, 0, 1, 2);
 // Creation:   Tue Dec 29 14:37:53 EST 2009
 //
 // Modifications:
+//   Kathleen Biagas, Tue Apr 18 16:34:41 PDT 2023
+//   Support Qt6: buttonClicked -> idClicked.
 //
 // ****************************************************************************
 
@@ -508,8 +528,13 @@ QvisPoincareWindow::CreateAnalysisTab(QWidget *pageAnalysis)
       new QRadioButton(tr("Full"), analysis);
     analysisButtonGroup->addButton(analysisTypeNormal,1);
     analysisTypeLayout->addWidget(analysisTypeNormal);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(analysisButtonGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(analysisChanged(int)));
+#else
+    connect(analysisButtonGroup, SIGNAL(idClicked(int)),
+            this, SLOT(analysisChanged(int)));
+#endif
     mainLayout->addWidget(analysis, 0, 1, Qt::AlignTop);
 
 
@@ -706,6 +731,8 @@ QvisPoincareWindow::CreateAnalysisTab(QWidget *pageAnalysis)
 // Creation:   Tue Dec 29 14:37:53 EST 2009
 //
 // Modifications:
+//   Kathleen Biagas, Tue Apr 18 16:34:41 PDT 2023
+//   Support Qt6: buttonClicked -> idClicked.
 //
 // ****************************************************************************
 
@@ -829,8 +856,13 @@ QvisPoincareWindow::CreateAppearanceTab(QWidget *pageAppearance)
       new QRadioButton(tr("Smooth"), overlaps);
     overlapsButtonGroup->addButton(overlapTypeSmooth,3);
     overlapTypeLayout->addWidget(overlapTypeSmooth);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(overlapsButtonGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(overlapsChanged(int)));
+#else
+    connect(overlapsButtonGroup, SIGNAL(idClicked(int)),
+            this, SLOT(overlapsChanged(int)));
+#endif
     overlapsLayout->addWidget(overlaps, 0, 1, Qt::AlignTop);
 
 
@@ -851,7 +883,11 @@ QvisPoincareWindow::CreateAppearanceTab(QWidget *pageAppearance)
     icButtonGroup->addButton(pathlineButton, 1);
     icGrpLayout->addWidget(streamlineButton, 1, 0);
     icGrpLayout->addWidget(pathlineButton, 2, 0);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(icButtonGroup, SIGNAL(buttonClicked(int)), this, SLOT(icButtonGroupChanged(int)));
+#else
+    connect(icButtonGroup, SIGNAL(idClicked(int)), this, SLOT(icButtonGroupChanged(int)));
+#endif
 
     // Pathline Options
     QGroupBox *pathlineOptionsGrp = new QGroupBox(icGrp);
@@ -899,7 +935,11 @@ QvisPoincareWindow::CreateAppearanceTab(QWidget *pageAppearance)
     pathlineCMFEButtonGroup->addButton(posButton, 1);
     cmfeOptionsGrpLayout->addWidget(connButton, 2, 0, 1, 5);
     cmfeOptionsGrpLayout->addWidget(posButton, 3, 0, 1, 5);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(pathlineCMFEButtonGroup, SIGNAL(buttonClicked(int)), this, SLOT(pathlineCMFEButtonGroupChanged(int)));
+#else
+    connect(pathlineCMFEButtonGroup, SIGNAL(idClicked(int)), this, SLOT(pathlineCMFEButtonGroupChanged(int)));
+#endif
 }
 
 

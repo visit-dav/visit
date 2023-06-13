@@ -158,13 +158,16 @@ QvisNoDefaultColorTableButton::~QvisNoDefaultColorTableButton()
 // Creation:   Sat Jun 16 20:07:23 PST 2001
 //
 // Modifications:
-//   
+//    Kathleen Biagas, Mon May 22 12:41:37 PDT 2023
+//    Removed use of QApplication::globalStrut, as it is a no-op (deprecated)
+//    in Qt5 and removed in Qt6.
+//
 // ****************************************************************************
 
 QSize
 QvisNoDefaultColorTableButton::sizeHint() const
 {
-     return QSize(125, 40).expandedTo(QApplication::globalStrut());
+     return QSize(125, 40);
 }
 
 // ****************************************************************************

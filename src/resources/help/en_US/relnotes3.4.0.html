@@ -93,6 +93,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>The X Ray Image Query now supports three different file naming "schemes". The default is "none", which will attempt to keep the filename as simple as possible. There is an option to "family" output files, which has nearly the same behavior as the old "family_files" option. The final option is to have "cycle" information in filenames. The "family_files" option has not been removed to preserve backwards compatibility. If both options are present, "filename_scheme" will be used instead.</li>
   <li>Output filenaming conventions have been updated and standardized for X Ray Image Query outputs.</li>
   <li>The BMP output type for the X Ray Image Query has been removed.</li>
+  <li>The X Ray Image Query warns users if their camera setup is error-prone.</li>
 </ul>
 
 <a name="Bugs_fixed"></a>
@@ -123,6 +124,7 @@ enhancements and bug-fixes that were added to this release.</p>
 <ul>
   <li>Support for boolArray and boolVector was added to xml code gen tools.</li>
   <li>Updated the "Creating a Release" section of the developer manual to describe the current process.</li>
+  <li>Add support for Qt6.  The build_visit option is '--qt6', which will build qt version 6.4.2, and also force building of VTK-9 if '--vtk' is also enabled.</li>
   <li>Added ability to create tabbed content in the sphinx documentation by adding sphinx-tabs extension.</li>
 </ul>
 

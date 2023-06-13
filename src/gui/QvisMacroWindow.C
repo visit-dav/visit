@@ -72,6 +72,9 @@ QvisMacroWindow::~QvisMacroWindow()
 //   Cyrus Harrison, Tue Jun 10 15:00:05 PDT 2008
 //   Initial Qt4 Port.
 //
+//   Kathleen Biagas, Tue Apr 18 16:34:41 PDT 2023
+//   Support Qt6: buttonClicked -> idClicked.
+//
 // ****************************************************************************
 
 void
@@ -93,8 +96,13 @@ QvisMacroWindow::CreateWindowContents()
 
     // Create the button group.
     macroButtons = new QButtonGroup(macroGroup);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(macroButtons, SIGNAL(buttonClicked(int)),
             this, SLOT(invokeMacro(int)));
+#else
+    connect(macroButtons, SIGNAL(idClicked(int)),
+            this, SLOT(invokeMacro(int)));
+#endif
 }
 
 
