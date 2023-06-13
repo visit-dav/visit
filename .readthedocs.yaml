@@ -13,6 +13,6 @@ sphinx:
 formats: all
 
 python:
-  version: 3.7
+  version: 3.9
   install:
     - requirements: src/doc/requirements.txt
