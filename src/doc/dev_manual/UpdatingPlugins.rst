@@ -49,7 +49,7 @@ The condition is a CMake variable that describes something related to the build:
 Conditionals must be specified in the *.code* file with *Target* specified as *xml2cmake*, as seen in the code file for the Volume plot:
 
 .. literalinclude:: ../../plots/Volume/VolumeAttributes.code
-    :lines: 691-699
+    :lines: 691-698
 
 These conditionals create these lines in the CMakeLists.txt:
 
