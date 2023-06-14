@@ -545,6 +545,9 @@ VisWinRendering::EnableDepthPeeling()
 //  Creation:   Wed Aug 12 11:49:37 PDT 2015
 //
 //  Modifications:
+//    Eric Brugger, Tue Jun 13 17:25:05 PDT 2023
+//    Remove the call enabling multi sampling. This fixes a bug where the
+//    visualization window is black when using mesagl.
 //
 // ****************************************************************************
 void
@@ -553,7 +556,6 @@ VisWinRendering::DisableDepthPeeling()
     // restore window settings
     vtkRenderWindow *rwin = GetRenderWindow();
     rwin->SetAlphaBitPlanes(0);
-    rwin->SetMultiSamples(multiSamples);
 
     // configure renderer
     canvas->SetUseDepthPeeling(false);
