@@ -18,10 +18,17 @@ Here are a couple of Qt links that prove helpful in knowing which packages need 
 VisIt_ also maintains a few Docker files that may prove useful:
 
 * `centos8 <https://github.com/visit-dav/visit/blob/develop/scripts/docker/Dockerfile-centos8>`_
+
 * `debian9 <https://github.com/visit-dav/visit/blob/develop/scripts/docker/Dockerfile-debian9>`_
+
 * `debian10 <https://github.com/visit-dav/visit/blob/develop/scripts/docker/Dockerfile-debian10>`_
+
 * `debian11 <https://github.com/visit-dav/visit/blob/develop/scripts/docker/Dockerfile-debian11>`_
+
 * `fedora31 <https://github.com/visit-dav/visit/blob/develop/scripts/docker/Dockerfile-fedora31>`_
+
 * `ubuntu18 <https://github.com/visit-dav/visit/blob/develop/scripts/docker/Dockerfile-ubuntu18>`_
+
 * `ubuntu20 <https://github.com/visit-dav/visit/blob/develop/scripts/docker/Dockerfile-ubuntu20>`_
+
 * `ubuntu21 <https://github.com/visit-dav/visit/blob/develop/scripts/docker/Dockerfile-ubuntu21>`_
