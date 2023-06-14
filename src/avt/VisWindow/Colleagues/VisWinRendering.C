@@ -8,8 +8,6 @@
 
 #include <VisWinRendering.h>
 
-#include <visit-config.h> // For LIB_VERSION_LE
-
 #include <vtkCallbackCommand.h>
 #include <vtkCullerCollection.h>
 #include <vtkFloatArray.h>
