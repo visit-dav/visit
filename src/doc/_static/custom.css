@@ -20,12 +20,12 @@
     margin-bottom: 0.5cm;
 }
 
-.collapsible .header:after {
-    content: " ▶";
+.collapsible .header:before {
+    content: "▶ ";
 }
 
-.collapsible .header.open:after {
-    content: " ▼";
+.collapsible .header.open:before {
+    content: "▼ ";
 }
 
 /* This is to override RTD's default 'nowrap' on table cells
