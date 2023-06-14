@@ -3,6 +3,17 @@
    used for displaying actual VisIt code blocks where power
    users may need more details. Examples can be found where
    Tensor expressions are documented */
+
+/* ensure space below a collapsible section */
+.collapsible {
+    padding-bottom: 20px;
+}
+
+/* undue effects of wrapping collapsible and header divs in <p>...</p> */
+.collapsible .header p {
+    display: inline;
+}
+
 .collapsible .header {
     display: block;
     clear: both;
