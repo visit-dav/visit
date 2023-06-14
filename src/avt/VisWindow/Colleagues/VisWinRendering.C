@@ -148,6 +148,10 @@ bool VisWinRendering::stereoEnabled = false;
 //   Kathleen Biagas, Wed Aug 17, 2022
 //   Incorporate ARSanderson's OSPRAY 2.8.0 work for VTK 9.
 //
+//   Eric Brugger, Tue Jun 13 17:25:05 PDT 2023
+//   Remove multi sampling related code when using VTK 9. This fixes a bug
+//   where the visualization window is black when using mesagl.
+//
 // ****************************************************************************
 
 VisWinRendering::VisWinRendering(VisWindowColleagueProxy &p) :
@@ -158,7 +162,11 @@ VisWinRendering::VisWinRendering(VisWindowColleagueProxy &p) :
     specularColor(ColorAttribute(255,255,255,255)), colorTexturingFlag(true),
     orderComposite(true), depthCompositeThreads(2), depthCompositeBlocking(65536),
     alphaCompositeThreads(2), alphaCompositeBlocking(65536), depthPeeling(false),
+#if LIB_VERSION_LE(VTK,8,2,0)
     occlusionRatio(0.01), numberOfPeels(32), multiSamples(8), renderInfo(NULL),
+#else
+    occlusionRatio(0.01), numberOfPeels(32), renderInfo(NULL),
+#endif
     renderInfoData(NULL), renderEvent(NULL), renderEventData(NULL),
     notifyForEachRender(false), inMotion(false),
     minRenderTime(numeric_limits<double>::max()),
@@ -513,6 +521,9 @@ VisWinRendering::SetBackgroundColor(double br, double bg, double bb)
 //  Creation:   Wed Aug 12 11:49:37 PDT 2015
 //
 //  Modifications:
+//    Eric Brugger, Tue Jun 13 17:25:05 PDT 2023
+//    Remove multi sampling related code when using VTK 9. This fixes a bug
+//    where the visualization window is black when using mesagl.
 //
 // ****************************************************************************
 
@@ -521,8 +532,10 @@ VisWinRendering::EnableDepthPeeling()
 {
     vtkRenderWindow *rwin = GetRenderWindow();
 
+#if LIB_VERSION_LE(VTK,8,2,0)
     // save window settings
     multiSamples = rwin->GetMultiSamples();
+#endif
 
     // configure window
     rwin->SetAlphaBitPlanes(1);
@@ -548,7 +561,7 @@ VisWinRendering::EnableDepthPeeling()
 //
 //  Modifications:
 //    Eric Brugger, Tue Jun 13 17:25:05 PDT 2023
-//    Remove the call enabling multi sampling with VTK 9. This fixes a bug
+//    Remove multi sampling related code when using VTK 9. This fixes a bug
 //    where the visualization window is black when using mesagl.
 //
 // ****************************************************************************
