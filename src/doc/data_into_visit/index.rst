@@ -17,6 +17,7 @@ Contents:
    SiloFormat
    XdmfFormat
    BlueprintFormat
+   AdvancedTopics 
 
 .. Indices and tables
 .. ==================
