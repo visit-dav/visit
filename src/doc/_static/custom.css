@@ -6,7 +6,7 @@
 
 /* ensure space below a collapsible section */
 .collapsible {
-    padding-bottom: 20px;
+    padding-bottom: 15px;
 }
 
 /* undue effects of wrapping collapsible and header divs in <p>...</p> */
