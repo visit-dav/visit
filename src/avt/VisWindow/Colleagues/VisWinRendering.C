@@ -8,6 +8,8 @@
 
 #include <VisWinRendering.h>
 
+#include <visit-config.h> // For LIB_VERSION_LE
+
 #include <vtkCallbackCommand.h>
 #include <vtkCullerCollection.h>
 #include <vtkFloatArray.h>
@@ -546,8 +548,8 @@ VisWinRendering::EnableDepthPeeling()
 //
 //  Modifications:
 //    Eric Brugger, Tue Jun 13 17:25:05 PDT 2023
-//    Remove the call enabling multi sampling. This fixes a bug where the
-//    visualization window is black when using mesagl.
+//    Remove the call enabling multi sampling with VTK 9. This fixes a bug
+//    where the visualization window is black when using mesagl.
 //
 // ****************************************************************************
 void
@@ -556,6 +558,9 @@ VisWinRendering::DisableDepthPeeling()
     // restore window settings
     vtkRenderWindow *rwin = GetRenderWindow();
     rwin->SetAlphaBitPlanes(0);
+#if LIB_VERSION_LE(VTK,8,2,0)
+    rwin->SetMultiSamples(multiSamples);
+#endif
 
     // configure renderer
     canvas->SetUseDepthPeeling(false);
