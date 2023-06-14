@@ -1,6 +1,9 @@
 // Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
+
+#include <visit-config.h> // For LIB_VERISON_LE
+
 #include <vtkSphericalTransform.h>
 #include <vtkGeoProjection.h>
 #include <vtkGeoTransform.h>
@@ -227,37 +230,42 @@ avtCartographicProjectionFilter::ExecuteData(avtDataRepresentation *in_dr)
       ds->ShallowCopy(in_ds);
     break;
     case VTK_POLY_DATA:
-// some special treatment is done here for polylines which - when projected -
-// "fall on the other side of the Earth".
-// Detect an line segment within the polyline which has a very long length and split.
+    { // new scope
+      // some special treatment is done here for polylines which -
+      // when projected -  "fall on the other side of the Earth".
+      // Detect an line segment within the polyline which has a very
+      // long length and split.
       ds = vtkPolyData::New();
       ca_n = vtkCellArray::New();
       static_cast<vtkPolyData *>(ds)->SetPolys(ca_n);
       ca_n->Delete();
 
       ca = static_cast<vtkPolyData *>(in_ds)->GetPolys();
-      vtkIdType npts, *pts;
+      vtkIdType npts;
+#if LIB_VERSION_LE(VTK,8,1,0)
+      vtkIdType *pts=nullptr;
+#else
+      const vtkIdType *pts=nullptr;
+#endif
 
       ca->InitTraversal();
-// for each polygon, change for big changes in coordinates and split lines
+      // for each polygon, change for big changes in coordinates and split lines
       for(int i =0; i < ca->GetNumberOfCells (); i++)
          {
          changeOfSigns = 0;
          ca->GetNextCell(npts, pts);
          k = npts-1;
-// start from end and split if necessary
+         // start from end and split if necessary
          for(int j =npts-1; j >0; j--)
            {
            newPoints->GetPoint(pts[j-1], p_pt); // previous pt
            newPoints->GetPoint(pts[j], c_pt);    // current pt
-//           if(((p_pt[0] > 0) && (c_pt[0] < 0) || (p_pt[0] < 0) && (c_pt[0] > 0)))
-// compute a 2d distance 
+           // compute a 2d distance 
            if(sqrt((p_pt[0] - c_pt[0])*(p_pt[0] - c_pt[0]) + (p_pt[1] - c_pt[1])*(p_pt[1] - c_pt[1])) > tol )
              {
              changeOfSigns++;
              ca_n->InsertNextCell(k-j+1, &pts[j]); k = j-1;
              }
-//           cerr << "pts["<< pts[j] << "] = " << x[0] << " "  << x[1] << " " << x[2] << endl;
            }
         if(changeOfSigns == 0)
           {
@@ -268,6 +276,7 @@ avtCartographicProjectionFilter::ExecuteData(avtDataRepresentation *in_dr)
           ca_n->InsertNextCell(k+1, pts); // what is left-over after all the splits
           }
          }
+    }
     break;
     default:
       debug4 << "not supported for this grid type"  <<endl;
