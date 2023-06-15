@@ -209,6 +209,10 @@ class VisWindowColleagueProxy;
 //    Kathleen Biagas, Wed Aug 17, 2022
 //    Incorporate ARSanderson's OSPRAY 2.8.0 work for VTK 9.
 //
+//    Eric Brugger, Tue Jun 13 17:25:05 PDT 2023
+//    Remove multi sampling related code when using VTK 9. This fixes a bug
+//    where the visualization window is black when using mesagl.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWinRendering : public VisWinColleague
@@ -442,7 +446,9 @@ class VISWINDOW_API VisWinRendering : public VisWinColleague
     bool                          depthPeeling;
     double                        occlusionRatio;
     int                           numberOfPeels;
+#if LIB_VERSION_LE(VTK,8,2,0)
     int                           multiSamples;
+#endif
 #if defined(VISIT_OSPRAY) || defined(HAVE_OSPRAY)
     bool                          osprayRendering {false};
     int                           ospraySPP {1};
