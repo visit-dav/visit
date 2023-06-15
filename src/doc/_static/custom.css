@@ -3,18 +3,29 @@
    used for displaying actual VisIt code blocks where power
    users may need more details. Examples can be found where
    Tensor expressions are documented */
+
+/* ensure space below a collapsible section */
+.collapsible {
+    padding-bottom: 15px;
+}
+
+/* undue effects of wrapping collapsible and header divs in <p>...</p> */
+.collapsible .header p {
+    display: inline;
+}
+
 .collapsible .header {
     display: block;
     clear: both;
     margin-bottom: 0.5cm;
 }
 
-.collapsible .header:after {
-    content: " ▶";
+.collapsible .header:before {
+    content: "▶ ";
 }
 
-.collapsible .header.open:after {
-    content: " ▼";
+.collapsible .header.open:before {
+    content: "▼ ";
 }
 
 /* This is to override RTD's default 'nowrap' on table cells
