@@ -307,6 +307,32 @@ Often, the best answer is to *NOT* use tables and instead use
 `definition lists <http://docutils.sourceforge.net/docs/ref/rst/restructuredtext.html#definition-lists>`__
 as is used in the documentation on :ref:`expressions <Sum_Expression_Operator>`.
 
+Collapsible content
+-------------------
+
+Extra details and code samples are a couple of reasons for wanting collapsible content.
+
+.. container:: collapsible
+
+  .. container:: header
+
+    Click me to see how its done.
+
+  .. code-block::
+   
+    .. container:: collapsible
+
+      .. container:: header
+
+        Click me to see how its done.
+
+      Put any content here.
+      Just prose or 
+
+      .. code-bock:: c
+
+        std::out << "Hello World" << std::endl;
+  
 Tabbed content
 --------------
 It may be useful at times to create tabbed content, such as wanting to display multiple-language code examples without taking up too much space.
