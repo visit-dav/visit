@@ -43,96 +43,93 @@ For more complete information on each of the arguments to the functions that Sil
 Silo_'s Fortran interface does not provide functions to write out multi-component data such as vectors.
 If you use the Fortran interface to Silo, you will have to write out the vector components as separate scalar variables and then write an expression to your Silo_ file that composes the components into a single vector variable.
 
-.. raw:: html
+.. container:: collapsible
 
-  <details>
-  <summary><a>Example for writing vector data using Silo.</a></summary>
+  .. container:: header
 
-.. tabs::
+    Example for writing vector data using Silo.
 
-  .. code-tab:: c
+  .. tabs::
 
-    int i, dims[3], ndims = 3;
-    int nnodes = NX*NY*NZ;
-    float *comp[3];
-    char *varnames[] = {"nodal_comp0","nodal_comp1","nodal_comp2"};
-    comp[0] = (float *)malloc(sizeof(float)*nnodes);
-    comp[1] = (float *)malloc(sizeof(float)*nnodes);
-    comp[2] = (float *)malloc(sizeof(float)*nnodes);
-    for(i = 0; i < nnodes; ++i)
-    {
-        comp[0][i] = (float)i; /*vector component 0*/
-        comp[1][i] = (float)i; /*vector component 1*/
-        comp[2][i] = (float)i; /*vector component 2*/
-    }
-    dims[0] = NX; dims[1] = NY; dims[2] = NZ;
-    DBPutQuadvar(dbfile, "nodal", "quadmesh",
-                 3, varnames, comp, dims,
-                 ndims, NULL, 0, DB_FLOAT, DB_NODECENT, NULL);
-    free(comp[0]);
-    free(comp[1]);
-    free(comp[2]);
+    .. code-tab:: c
 
-  .. code-tab:: fortranfixed
+      int i, dims[3], ndims = 3;
+      int nnodes = NX*NY*NZ;
+      float *comp[3];
+      char *varnames[] = {"nodal_comp0","nodal_comp1","nodal_comp2"};
+      comp[0] = (float *)malloc(sizeof(float)*nnodes);
+      comp[1] = (float *)malloc(sizeof(float)*nnodes);
+      comp[2] = (float *)malloc(sizeof(float)*nnodes);
+      for(i = 0; i < nnodes; ++i)
+      {
+          comp[0][i] = (float)i; /*vector component 0*/
+          comp[1][i] = (float)i; /*vector component 1*/
+          comp[2][i] = (float)i; /*vector component 2*/
+      }
+      dims[0] = NX; dims[1] = NY; dims[2] = NZ;
+      DBPutQuadvar(dbfile, "nodal", "quadmesh",
+                   3, varnames, comp, dims,
+                   ndims, NULL, 0, DB_FLOAT, DB_NODECENT, NULL);
+      free(comp[0]);
+      free(comp[1]);
+      free(comp[2]);
 
-        subroutine write_nodecent_quadvar(dbfile)
-        implicit none
-        integer dbfile
-        include "silo.inc"
-        integer err, ierr, dims(3), ndims,i,j,k,index,NX,NY,NZ
-        parameter (NX = 4)
-        parameter (NY = 3)
-        parameter (NZ = 2)
-        real comp0(NX,NY,NZ), comp1(NX,NY,NZ), comp2(NX,NY,NZ)
-        data dims/NX,NY,NZ/
-        index = 0
-        do 20020 k=1,NZ
-            do 20010 j=1,NY
-                do 20000 i=1,NX
-                    comp0(i,j,k) = float(index)
-                    comp1(i,j,k) = float(index)
-                    comp2(i,j,k) = float(index)
-                    index = index + 1
-    20000 continue
-    20010 continue
-    20020 continue
-        ndims = 3
-        err = dbputqv1(dbfile, "n_comp0", 11, "quadmesh", 8, comp0, dims, ndims,
-        .              DB_F77NULL, 0, DB_FLOAT, DB_NODECENT, DB_F77NULL, ierr)
-        err = dbputqv1(dbfile, "n_comp1", 11, "quadmesh", 8, comp1, dims, ndims,
-        .              DB_F77NULL, 0, DB_FLOAT, DB_NODECENT, DB_F77NULL, ierr)
-        err = dbputqv1(dbfile, "n_comp2", 11, "quadmesh", 8, comp2, dims, ndims,
-        .              DB_F77NULL, 0, DB_FLOAT, DB_NODECENT, DB_F77NULL, ierr)
-        end
-        subroutine write_defvars(dbfile)
-        implicit none
-        integer dbfile
-        include "silo.inc"
-        integer err, ierr, types(2), lnames(2), ldefs(2), oldlen
-    c Initialize some 20 character length strings
-        character*40 names(2) /'zonalvec ' ,
-        .                      ' nodalvec ' /
-        character*40 defs(2) /'{z_comp0,z_comp1,z_comp2} ',
-        .                     '{n_comp0,n_comp1,n_comp2} '/
-    c Store the length of each string
-        data lnames/8, 8/
-        data ldefs/37, 37/
-        data types/DB_VARTYPE_VECTOR, DB_VARTYPE_VECTOR/
-    c Set the maximum string length to 40 since that is how long our
-    c strings are
-        oldlen = dbget2dstrlen()
-        err = dbset2dstrlen(40)
-    c Write out the expressions
-        err = dbputdefvars(dbfile, "defvars", 7, 2, names, lnames,
-        .                  types, defs, ldefs, DB_F77NULL, ierr)
-    c Restore the previous value for maximum string length
-        err = dbset2dstrlen(oldlen)
-        end
+    .. code-tab:: fortranfixed
 
-.. raw:: html
+          subroutine write_nodecent_quadvar(dbfile)
+          implicit none
+          integer dbfile
+          include "silo.inc"
+          integer err, ierr, dims(3), ndims,i,j,k,index,NX,NY,NZ
+          parameter (NX = 4)
+          parameter (NY = 3)
+          parameter (NZ = 2)
+          real comp0(NX,NY,NZ), comp1(NX,NY,NZ), comp2(NX,NY,NZ)
+          data dims/NX,NY,NZ/
+          index = 0
+          do 20020 k=1,NZ
+              do 20010 j=1,NY
+                  do 20000 i=1,NX
+                      comp0(i,j,k) = float(index)
+                      comp1(i,j,k) = float(index)
+                      comp2(i,j,k) = float(index)
+                      index = index + 1
+      20000 continue
+      20010 continue
+      20020 continue
+          ndims = 3
+          err = dbputqv1(dbfile, "n_comp0", 11, "quadmesh", 8, comp0, dims, ndims,
+          .              DB_F77NULL, 0, DB_FLOAT, DB_NODECENT, DB_F77NULL, ierr)
+          err = dbputqv1(dbfile, "n_comp1", 11, "quadmesh", 8, comp1, dims, ndims,
+          .              DB_F77NULL, 0, DB_FLOAT, DB_NODECENT, DB_F77NULL, ierr)
+          err = dbputqv1(dbfile, "n_comp2", 11, "quadmesh", 8, comp2, dims, ndims,
+          .              DB_F77NULL, 0, DB_FLOAT, DB_NODECENT, DB_F77NULL, ierr)
+          end
+          subroutine write_defvars(dbfile)
+          implicit none
+          integer dbfile
+          include "silo.inc"
+          integer err, ierr, types(2), lnames(2), ldefs(2), oldlen
+      c Initialize some 20 character length strings
+          character*40 names(2) /'zonalvec ' ,
+          .                      ' nodalvec ' /
+          character*40 defs(2) /'{z_comp0,z_comp1,z_comp2} ',
+          .                     '{n_comp0,n_comp1,n_comp2} '/
+      c Store the length of each string
+          data lnames/8, 8/
+          data ldefs/37, 37/
+          data types/DB_VARTYPE_VECTOR, DB_VARTYPE_VECTOR/
+      c Set the maximum string length to 40 since that is how long our
+      c strings are
+          oldlen = dbget2dstrlen()
+          err = dbset2dstrlen(40)
+      c Write out the expressions
+          err = dbputdefvars(dbfile, "defvars", 7, 2, names, lnames,
+          .                  types, defs, ldefs, DB_F77NULL, ierr)
+      c Restore the previous value for maximum string length
+          err = dbset2dstrlen(oldlen)
+          end
 
-  </details>
-  <br>
 
 
 Adding metadata for performance boosts
@@ -189,43 +186,39 @@ The data extents must be stored in a double precision array that has enough entr
 The layout of the min and max values within that array are as follows: *min_dom1*, *max_dom1*, *min_dom2*, *max_dom2*, ..., *min_domN*, *max_domN*.
 
 
-.. raw:: html
+.. container:: collapsible
 
-  <details>
-  <summary><a>Example for writing data extents using Silo.</a></summary>
+  .. container:: header
 
-.. tabs::
+    Example for writing data extents using Silo.
 
-  .. code-tab:: c
+  .. tabs::
 
-    const int two = 2;
-    double extents[NDOMAINS][2];
-    DBoptlist *optlist = NULL;
-    /* Calculate the per-domain data extents for this variable. */
-    /* Write the multivar.*/
-    optlist = DBMakeOptlist(2);
-    DBAddOption(optlist, DBOPT_EXTENTS_SIZE, (void *)&two);
-    DBAddOption(optlist, DBOPT_EXTENTS, (void *)extents);
-    DBPutMultivar(dbfile, "var", nvar, varnames, vartypes, optlist);
-    DBFreeOptlist(optlist);
+    .. code-tab:: c
 
-  .. code-tab:: fortranfixed
+      const int two = 2;
+      double extents[NDOMAINS][2];
+      DBoptlist *optlist = NULL;
+      /* Calculate the per-domain data extents for this variable. */
+      /* Write the multivar.*/
+      optlist = DBMakeOptlist(2);
+      DBAddOption(optlist, DBOPT_EXTENTS_SIZE, (void *)&two);
+      DBAddOption(optlist, DBOPT_EXTENTS, (void *)extents);
+      DBPutMultivar(dbfile, "var", nvar, varnames, vartypes, optlist);
+      DBFreeOptlist(optlist);
 
-        double precision extents(2,NDOMAINS)
-        integer err, optlist
-    c Calculate the per-domain data extents for this variable.
-    c Write the multivar.
-        err = dbmkoptlist(2, optlist)
-        err = dbaddiopt(optlist, DBOPT_EXTENTS_SIZE, 2)
-        err = dbadddopt(optlist, DBOPT_EXTENTS, extents)
-        err = dbputmvar(dbfile, "var", 3, nvar, varnames, lvarnames,
-        .               vartypes, optlist, ierr)
-        err = dbfreeoptlist(optlist)
+    .. code-tab:: fortranfixed
 
-.. raw:: html
-
-  </details>
-  <br>
+          double precision extents(2,NDOMAINS)
+          integer err, optlist
+      c Calculate the per-domain data extents for this variable.
+      c Write the multivar.
+          err = dbmkoptlist(2, optlist)
+          err = dbaddiopt(optlist, DBOPT_EXTENTS_SIZE, 2)
+          err = dbadddopt(optlist, DBOPT_EXTENTS, extents)
+          err = dbputmvar(dbfile, "var", 3, nvar, varnames, lvarnames,
+          .               vartypes, optlist, ierr)
+          err = dbfreeoptlist(optlist)
 
 
 Writing spatial extents
@@ -243,61 +236,57 @@ The spatial extents must be stored in a double precision array that has enough e
 The layout of the min and max values within that array for 3D domains are as follows: *xmin_dom1*, *ymin_dom1*, *zmin_dom1*, *xmax_dom1*, *ymax_dom1*, *zmax_dom1*, ..., *xmin_domN*, *ymin_domN*, *zmin_domN*, *xmax_domN*, *ymax_domN*, *zmax_domN*.
 In the event that you have 2D domains then you can omit the z-components of the min and max values and tell Silo_ that there are 4 values per min/max tuple instead of the 6 values required to specify min and max values for 3D domains.
 
-.. raw:: html
+.. container:: collapsible
 
-  <details>
-  <summary><a>Example for writing spatial extents using Silo.</a></summary>
+  .. container:: header
 
-.. tabs::
+    Example for writing spatial extents using Silo.
 
-  .. code-tab:: c
+  .. tabs::
 
-    const int six = 6;
-    double spatial_extents[NDOMAINS][6];
-    DBoptlist *optlist = NULL;
-    /* Calculate the per-domain spatial extents for this mesh. */
-    for(int i = 0; i < NDOMAINS; ++i)
-    {
-    spatial_extents[i][0] = xmin; /* xmin for i'th domain */
-    spatial_extents[i][1] = ymin; /* ymin for i'th domain */
-    spatial_extents[i][2] = zmin; /* zmin for i'th domain */
-    spatial_extents[i][3] = xmin; /* xmax for i'th domain */
-    spatial_extents[i][4] = ymax; /* ymax for i'th domain */
-    spatial_extents[i][5] = zmax; /* zmax for i'th domain */
-    }
-    /* Write the multimesh. */
-    optlist = DBMakeOptlist(2);
-    DBAddOption(optlist, DBOPT_EXTENTS_SIZE, (void *)&six);
-    DBAddOption(optlist, DBOPT_EXTENTS, (void *)spatial_extents);
-    DBPutMultimesh(dbfile, "mesh", nmesh, meshnames, meshtypes, optlist);
-    DBFreeOptlist(optlist);
+    .. code-tab:: c
+
+      const int six = 6;
+      double spatial_extents[NDOMAINS][6];
+      DBoptlist *optlist = NULL;
+      /* Calculate the per-domain spatial extents for this mesh. */
+      for(int i = 0; i < NDOMAINS; ++i)
+      {
+          spatial_extents[i][0] = xmin; /* xmin for i'th domain */
+          spatial_extents[i][1] = ymin; /* ymin for i'th domain */
+          spatial_extents[i][2] = zmin; /* zmin for i'th domain */
+          spatial_extents[i][3] = xmin; /* xmax for i'th domain */
+          spatial_extents[i][4] = ymax; /* ymax for i'th domain */
+          spatial_extents[i][5] = zmax; /* zmax for i'th domain */
+      }
+      /* Write the multimesh. */
+      optlist = DBMakeOptlist(2);
+      DBAddOption(optlist, DBOPT_EXTENTS_SIZE, (void *)&six);
+      DBAddOption(optlist, DBOPT_EXTENTS, (void *)spatial_extents);
+      DBPutMultimesh(dbfile, "mesh", nmesh, meshnames, meshtypes, optlist);
+      DBFreeOptlist(optlist);
 
 
-  .. code-tab:: fortranfixed
+    .. code-tab:: fortranfixed
 
-        double precision spatial_extents(6,NDOMAINS)
-        integer optlist, err, dom
-    c Calculate the per-domain spatial extents for this mesh.
-        do 10000 dom=1,NDOMAINS
-            spatial_extents(1,dom) = xmin
-            spatial_extents(2,dom) = ymin
-            spatial_extents(3,dom) = zmin
-            spatial_extents(4,dom) = xmin
-            spatial_extents(5,dom) = ymax
-            spatial_extents(6,dom) = zmax
-    10000 continue
-    c Write the multimesh
-        err = dbmkoptlist(2, optlist)
-        err = dbaddiopt(optlist, DBOPT_EXTENTS_SIZE, 6)
-        err = dbadddopt(optlist, DBOPT_EXTENTS, spatial_extents)
-        err = dbputmmesh(dbfile, "quadmesh", 8, nmesh, meshnames,
-        .                lmeshnames, meshtypes, optlist, ierr)
-        err = dbfreeoptlist(optlist)
-
-.. raw:: html
-
-  </details>
-  <br>
+          double precision spatial_extents(6,NDOMAINS)
+          integer optlist, err, dom
+      c Calculate the per-domain spatial extents for this mesh.
+          do 10000 dom=1,NDOMAINS
+              spatial_extents(1,dom) = xmin
+              spatial_extents(2,dom) = ymin
+              spatial_extents(3,dom) = zmin
+              spatial_extents(4,dom) = xmin
+              spatial_extents(5,dom) = ymax
+              spatial_extents(6,dom) = zmax
+          10000 continue
+      c Write the multimesh
+          err = dbmkoptlist(2, optlist)
+          err = dbaddiopt(optlist, DBOPT_EXTENTS_SIZE, 6)
+          err = dbadddopt(optlist, DBOPT_EXTENTS, spatial_extents)
+          err = dbputmmesh(dbfile, "quadmesh", 8, nmesh, meshnames,
+          .                lmeshnames, meshtypes, optlist, ierr)
+          err = dbfreeoptlist(optlist)
 
 
 Ghost zones
@@ -350,202 +339,196 @@ For example, if you look at the upper left zone containing the "G" for ghost zon
 This means that the zone in question is a zone in domain1, the red domain, but that domain2 has a zone that exactly matches the location and values of the zone in the red domain.
 The corresponding zone in domain2 is a ghost zone.
 
-.. raw:: html
+.. container:: collapsible
 
-  <details>
-  <summary><a>Example for writing a 3D, domain-decomposed rectilinear mesh without ghost zones.</a></summary>
+  .. container:: header
 
-.. code-block:: c
+    Example for writing a 3D, domain-decomposed rectilinear mesh without ghost zones.
 
-  /* Create each of the domain meshes. */
-  int dom = 0, xdom, ydom, zdom;
-  for(zdom = 0; zdom < NZDOMS; ++zdom)
-      for(ydom = 0; ydom < NYDOMS; ++ydom)
-          for(xdom = 0; xdom < NXDOMS; ++xdom, ++dom)
-          {
-              float xc[NX], yc[NY], zc[NZ];
-              float *coords[] = {xc, yc, zc};
-              int index = 0;
-              float xstart, xend, ystart, yend, zstart, zend;
-              int xzones, yzones, zzones, nzones;
-              int xnodes, ynodes, znodes;
-              /* Create a new directory. */
-              char dirname[100];
-              sprintf(dirname, "Domain%03d", dom);
-              DBMkDir(dbfile, dirname);
-              DBSetDir(dbfile, dirname);
-              /* Determine default start, end coordinates */
-              xstart = (float)xdom * XSIZE;
-              xend = (float)(xdom+1) * XSIZE;
-              xzones = NX-1;
-              ystart = (float)ydom * YSIZE;
-              yend = (float)(ydom+1) * YSIZE;
-              yzones = NY-1;
-              zstart = (float)zdom * ZSIZE;
-              zend = (float)(zdom+1) * ZSIZE;
-              zzones = NZ-1;
-              xnodes = xzones + 1;
-              ynodes = yzones + 1;
-              znodes = zzones + 1;
-              /* Create the mesh coordinates. */
-              for(i = 0; i < xnodes; ++i 
-              {
-                  float t = (float)i / (float)(xnodes-1);
-                  xc[i] = (1.-t)*xstart + t*xend;
-              }
-              for(i = 0; i < ynodes; ++i)
-              {
-                  float t = (float)i / (float)(ynodes-1);
-                  yc[i] = (1.-t)*ystart + t*yend;
-              }
-              for(i = 0; i < znodes; ++i)
-              {
-                  float t = (float)i / (float)(znodes-1);
-                  zc[i] = (1.-t)*zstart + t*zend;
-              }
-              /* Write a rectilinear mesh. */
-              dims[0] = xnodes;
-              dims[1] = ynodes;
-              dims[2] = znodes;
-              DBPutQuadmesh(dbfile, "quadmesh", NULL, coords, dims, ndims,
-                            DB_FLOAT, DB_COLLINEAR, NULL);
-              /* Go back to the top directory. */
-              DBSetDir(dbfile, "..");
-          }
+  .. code-block:: c
 
-.. raw:: html
+    /* Create each of the domain meshes. */
+    int dom = 0, xdom, ydom, zdom;
+    for(zdom = 0; zdom < NZDOMS; ++zdom)
+        for(ydom = 0; ydom < NYDOMS; ++ydom)
+            for(xdom = 0; xdom < NXDOMS; ++xdom, ++dom)
+            {
+                float xc[NX], yc[NY], zc[NZ];
+                float *coords[] = {xc, yc, zc};
+                int index = 0;
+                float xstart, xend, ystart, yend, zstart, zend;
+                int xzones, yzones, zzones, nzones;
+                int xnodes, ynodes, znodes;
+                /* Create a new directory. */
+                char dirname[100];
+                sprintf(dirname, "Domain%03d", dom);
+                DBMkDir(dbfile, dirname);
+                DBSetDir(dbfile, dirname);
+                /* Determine default start, end coordinates */
+                xstart = (float)xdom * XSIZE;
+                xend = (float)(xdom+1) * XSIZE;
+                xzones = NX-1;
+                ystart = (float)ydom * YSIZE;
+                yend = (float)(ydom+1) * YSIZE;
+                yzones = NY-1;
+                zstart = (float)zdom * ZSIZE;
+                zend = (float)(zdom+1) * ZSIZE;
+                zzones = NZ-1;
+                xnodes = xzones + 1;
+                ynodes = yzones + 1;
+                znodes = zzones + 1;
+                /* Create the mesh coordinates. */
+                for(i = 0; i < xnodes; ++i
+                {
+                    float t = (float)i / (float)(xnodes-1);
+                    xc[i] = (1.-t)*xstart + t*xend;
+                }
+                for(i = 0; i < ynodes; ++i)
+                {
+                    float t = (float)i / (float)(ynodes-1);
+                    yc[i] = (1.-t)*ystart + t*yend;
+                }
+                for(i = 0; i < znodes; ++i)
+                {
+                    float t = (float)i / (float)(znodes-1);
+                    zc[i] = (1.-t)*zstart + t*zend;
+                }
+                /* Write a rectilinear mesh. */
+                dims[0] = xnodes;
+                dims[1] = ynodes;
+                dims[2] = znodes;
+                DBPutQuadmesh(dbfile, "quadmesh", NULL, coords, dims, ndims,
+                              DB_FLOAT, DB_COLLINEAR, NULL);
+                /* Go back to the top directory. */
+                DBSetDir(dbfile, "..");
+            }
 
-  </details>
-  <br>
 
 Once you have changed your mesh-writing code to add a layer of ghost zones, where appropriate, you must indicate that the extra layer of zones are ghost zones.
 If you use Silo_'s **DBPutQuadmesh** function to write your mesh, you can indicate which zones are ghost zones by adding **DBOPT_LO_OFFSET** and **DBOPT_HI_OFFSET** to pass arrays containing high and low zone index offsets in the option list.
 If you are adding ghost zones to an unstructured mesh, you would instead adjust the **lo_offset** and **hi_offset** arguments that you pass to the **DBPutZonelist2** function.
 The next code listing shows the additions made in order to support ghost zones in a domain-decomposed rectilinear mesh.
 
-.. raw:: html
+.. container:: collapsible
 
-  <details>
-  <summary><a>Example for writing a 3D, domain-decomposed rectilinear mesh with ghost zones</a></summary>
+  .. container:: header
 
-.. code-block:: c
+    Example for writing a 3D, domain-decomposed rectilinear mesh with ghost zones.
 
-  /* Determine the size of a zone.*/
-  float cx, cy, cz;
-  cx = XSIZE / (float)(NX-1);
-  cy = YSIZE / (float)(NY-1);
-  cz = ZSIZE / (float)(NZ-1);
-  /* Create each of the domain meshes. */
-  int dom = 0, xdom, ydom, zdom;
-  for(zdom = 0; zdom < NZDOMS; ++zdom)
-      for(ydom = 0; ydom < NYDOMS; ++ydom)
-          for(xdom = 0; xdom < NXDOMS; ++xdom, ++dom)
-          {
-              float xc[NX], yc[NY], zc[NZ];
-              float *coords[] = {xc, yc, zc};
-              int index = 0;
-              float xstart, xend, ystart, yend, zstart, zend;
-              int xzones, yzones, zzones, nzones;
-              int xnodes, ynodes, znodes;
-              int hi_offset[3], lo_offset[3];
-              DBoptlist *optlist = NULL;
-              /* Create a new directory. */ 
-              char dirname[100];
-              sprintf(dirname, "Domain%03d", dom);
-              DBMkDir(dbfile, dirname);
-              DBSetDir(dbfile, dirname);
-              /* Determine default start, end coordinates */
-              xstart = (float)xdom * XSIZE;
-              xend = (float)(xdom+1) * XSIZE;
-              xzones = NX-1;
-              ystart = (float)ydom * YSIZE;
-              yend = (float)(ydom+1) * YSIZE;
-              yzones = NY-1;
-              zstart = (float)zdom * ZSIZE;
-              zend = (float)(zdom+1) * ZSIZE;
-              zzones = NZ-1;
-              /* Set the starting hi/lo offsets. */
-              lo_offset[0] = 0;
-              lo_offset[1] = 0;
-              lo_offset[2] = 0;
-              hi_offset[0] = 0;
-              hi_offset[1] = 0;
-              hi_offset[2] = 0;
-              /* Adjust the start and end coordinates based on whether
+  .. code-block:: c
+
+    /* Determine the size of a zone.*/
+    float cx, cy, cz;
+    cx = XSIZE / (float)(NX-1);
+    cy = YSIZE / (float)(NY-1);
+    cz = ZSIZE / (float)(NZ-1);
+    /* Create each of the domain meshes. */
+    int dom = 0, xdom, ydom, zdom;
+    for(zdom = 0; zdom < NZDOMS; ++zdom)
+        for(ydom = 0; ydom < NYDOMS; ++ydom)
+            for(xdom = 0; xdom < NXDOMS; ++xdom, ++dom)
+            {
+                float xc[NX], yc[NY], zc[NZ];
+                float *coords[] = {xc, yc, zc};
+                int index = 0;
+                float xstart, xend, ystart, yend, zstart, zend;
+                int xzones, yzones, zzones, nzones;
+                int xnodes, ynodes, znodes;
+                int hi_offset[3], lo_offset[3];
+                DBoptlist *optlist = NULL;
+                /* Create a new directory. */
+                char dirname[100];
+                sprintf(dirname, "Domain%03d", dom);
+                DBMkDir(dbfile, dirname);
+                DBSetDir(dbfile, dirname);
+                /* Determine default start, end coordinates */
+                xstart = (float)xdom * XSIZE;
+                xend = (float)(xdom+1) * XSIZE;
+                xzones = NX-1;
+                ystart = (float)ydom * YSIZE;
+                yend = (float)(ydom+1) * YSIZE;
+                yzones = NY-1;
+                zstart = (float)zdom * ZSIZE;
+                zend = (float)(zdom+1) * ZSIZE;
+                zzones = NZ-1;
+                /* Set the starting hi/lo offsets. */
+                lo_offset[0] = 0;
+                lo_offset[1] = 0;
+                lo_offset[2] = 0;
+                hi_offset[0] = 0;
+                hi_offset[1] = 0;
+                hi_offset[2] = 0;
+                /* Adjust the start and end coordinates based on whether
                  or not we have ghost zones. */
-              if(xdom > 0)
-              {
-                  xstart -= cx;
-                  lo_offset[0] = 1;
-                  ++xzones;
-              }
-              if(xdom < NXDOMS-1)
-              {
-                  xend += cx;
-                  hi_offset[0] = 1;
-                  ++xzones;
-              }
-              if(ydom > 0)
-              {
-                  ystart -= cy;
-                  lo_offset[1] = 1;
-                  ++yzones;
-              }
-              if(ydom < NYDOMS-1)
-              {
-                  yend += cy;
-                  hi_offset[1] = 1;
-                  ++yzones;
-              }
-              if(zdom > 0)
-              {
-                  zstart -= cz;
-                  lo_offset[2] = 1;
-                  ++zzones;
-              }
-              if(zdom < NZDOMS-1)
-              {
-                  zend += cz;
-                  hi_offset[2] = 1;
-                  ++zzones;
-              }
-              xnodes = xzones + 1;
-              ynodes = yzones + 1;
-              znodes = zzones + 1;
-              /* Create the mesh coordinates. */
-              for(i = 0; i < xnodes; ++i)
-              {
-                  float t = (float)i / (float)(xnodes-1);
-                  xc[i] = (1.-t)*xstart + t*xend;
-              }
-              for(i = 0; i < ynodes; ++i)
-              {
-                  float t = (float)i / (float)(ynodes-1);
-                  yc[i] = (1.-t)*ystart + t*yend;
-              }
-              for(i = 0; i < znodes; ++i)
-              {
-                  float t = (float)i / (float)(znodes-1);
-                  zc[i] = (1.-t)*zstart + t*zend;
-              }
-              /* Write a rectilinear mesh. */
-              dims[0] = xnodes;
-              dims[1] = ynodes;
-              dims[2] = znodes;
-              optlist = DBMakeOptlist(2);
-              DBAddOption(optlist, DBOPT_HI_OFFSET, (void *)hi_offset);
-              DBAddOption(optlist, DBOPT_LO_OFFSET, (void *)lo_offset);
-              DBPutQuadmesh(dbfile, "quadmesh", NULL, coords, dims, ndims,
-                            DB_FLOAT, DB_COLLINEAR, optlist);
-              DBFreeOptlist(optlist);
-              /* Go back to the top directory. */
-              DBSetDir(dbfile, "..");
-          }
+                if(xdom > 0)
+                {
+                    xstart -= cx;
+                    lo_offset[0] = 1;
+                    ++xzones;
+                }
+                if(xdom < NXDOMS-1)
+                {
+                    xend += cx;
+                    hi_offset[0] = 1;
+                    ++xzones;
+                }
+                if(ydom > 0)
+                {
+                    ystart -= cy;
+                    lo_offset[1] = 1;
+                    ++yzones;
+                }
+                if(ydom < NYDOMS-1)
+                {
+                    yend += cy;
+                    hi_offset[1] = 1;
+                    ++yzones;
+                }
+                if(zdom > 0)
+                {
+                    zstart -= cz;
+                    lo_offset[2] = 1;
+                    ++zzones;
+                }
+                if(zdom < NZDOMS-1)
+                {
+                    zend += cz;
+                    hi_offset[2] = 1;
+                    ++zzones;
+                }
+                xnodes = xzones + 1;
+                ynodes = yzones + 1;
+                znodes = zzones + 1;
+                /* Create the mesh coordinates. */
+                for(i = 0; i < xnodes; ++i)
+                {
+                    float t = (float)i / (float)(xnodes-1);
+                    xc[i] = (1.-t)*xstart + t*xend;
+                }
+                for(i = 0; i < ynodes; ++i)
+                {
+                    float t = (float)i / (float)(ynodes-1);
+                    yc[i] = (1.-t)*ystart + t*yend;
+                }
+                for(i = 0; i < znodes; ++i)
+                {
+                    float t = (float)i / (float)(znodes-1);
+                    zc[i] = (1.-t)*zstart + t*zend;
+                }
+                /* Write a rectilinear mesh. */
+                dims[0] = xnodes;
+                dims[1] = ynodes;
+                dims[2] = znodes;
+                optlist = DBMakeOptlist(2);
+                DBAddOption(optlist, DBOPT_HI_OFFSET, (void *)hi_offset);
+                DBAddOption(optlist, DBOPT_LO_OFFSET, (void *)lo_offset);
+                DBPutQuadmesh(dbfile, "quadmesh", NULL, coords, dims, ndims,
+                              DB_FLOAT, DB_COLLINEAR, optlist);
+                DBFreeOptlist(optlist);
+                /* Go back to the top directory. */
+                DBSetDir(dbfile, "..");
+            }
 
-.. raw:: html
-
-  </details>
-  <br>
 
 There are two changes to the code in the previous listing that allow it to write ghost zones.
 First of all, the code calculates the size of a zone in the **cx**, **cy**, **cz** variables and then uses those sizes along with the location of the domain within the model to determine which domain surfaces will receive a layer of ghost zones.
@@ -627,94 +610,91 @@ You can pass the **matlist** array and the mixed material arrays to the **DBPutM
 Note that when you write clean materials, your **matlist** array will contain only the numbers of valid materials.
 That is, the **matlist** array does not contain any negative mixed material array indices when you write out clean material objects.
 
-.. raw:: html
+.. container:: collapsible
 
-  <details>
-  <summary><a>Example for writing mixed materials using Silo.</a></summary>
+  .. container:: header
 
-.. tabs::
+    Example for writing mixed materials using Silo.
 
-  .. code-tab:: c
+  .. tabs::
 
-    /* Material arrays */
-    int nmats = 2, mdims[2];
-    int matnos[] = {1,2,3};
-    char *matnames[] = {"Water", "Membrane", "Air"};
-    int matlist[] = {
-        3, -1, -3, 1,
-        3, -5, -7, 1,
-        3, -9, -11, -14
-    };
-    float mix_vf[] = {
-        0.75,0.25, 0.1875,0.8125,
-        0.625,0.375, 0.4375,0.56250,
-        0.3,0.7, 0.2,0.4,0.4, 0.45,0.55
-    };
-    int mix_zone[] = {
-        1,1, 2,2,
-        5,5, 6,6,
-        9,9, 10,10,10, 11,11
-    };
-    int mix_mat[] = {
-        2,3, 2,1,
-        2,3, 2,1,
-        2,3, 1,2,3, 2,1
-    };
-    int mix_next[] = {
-        2,0, 4,0,
-        6,0, 8,0,
-        10,0, 12,13,0, 15,0
-    };
-    int mixlen = 15;
-    /* Write out the material */
-    mdims[0] = NX-1;
-    mdims[1] = NY-1;
-    optlist = DBMakeOptlist(1);
-    DBAddOption(optlist, DBOPT_MATNAMES, matnames);
-    DBPutMaterial(dbfile, "mat", "quadmesh", nmats, matnos, matlist,
-                  mdims, ndims, mix_next, mix_mat, mix_zone, mix_vf, mixlen,
-    DB_FLOAT, optlist);
-    DBFreeOptlist(optlist);
+    .. code-tab:: c
+
+      /* Material arrays */
+      int nmats = 2, mdims[2];
+      int matnos[] = {1,2,3};
+      char *matnames[] = {"Water", "Membrane", "Air"};
+      int matlist[] = {
+          3, -1, -3, 1,
+          3, -5, -7, 1,
+          3, -9, -11, -14
+      };
+      float mix_vf[] = {
+          0.75,0.25, 0.1875,0.8125,
+          0.625,0.375, 0.4375,0.56250,
+          0.3,0.7, 0.2,0.4,0.4, 0.45,0.55
+      };
+      int mix_zone[] = {
+          1,1, 2,2,
+          5,5, 6,6,
+          9,9, 10,10,10, 11,11
+      };
+      int mix_mat[] = {
+          2,3, 2,1,
+          2,3, 2,1,
+          2,3, 1,2,3, 2,1
+      };
+      int mix_next[] = {
+          2,0, 4,0,
+          6,0, 8,0,
+          10,0, 12,13,0, 15,0
+      };
+      int mixlen = 15;
+      /* Write out the material */
+      mdims[0] = NX-1;
+      mdims[1] = NY-1;
+      optlist = DBMakeOptlist(1);
+      DBAddOption(optlist, DBOPT_MATNAMES, matnames);
+      DBPutMaterial(dbfile, "mat", "quadmesh", nmats, matnos, matlist,
+                    mdims, ndims, mix_next, mix_mat, mix_zone, mix_vf, mixlen,
+                    DB_FLOAT, optlist);
+      DBFreeOptlist(optlist);
 
 
-  .. code-tab:: fortranfixed
+    .. code-tab:: fortranfixed
 
-        subroutine write_mixedmaterial(dbfile)
-        implicit none
-        integer dbfile
-        include "silo.inc"
-        integer NX, NY
-        parameter (NX = 5)
-        parameter (NY = 4)
-        integer err, ierr, optlist, ndims, nmats, mixlen
-        integer mdims(2) /NX-1, NY-1/
-        integer matnos(3) /1,2,3/
-        integer matlist(12) /3, -1, -3, 1,
-        .                    3, -5, -7, 1,
-        .                    3, -9, -11, -14/
-        real mix_vf(15) /0.75,0.25, 0.1875,0.8125,
-        .                0.625,0.375, 0.4375,0.56250,
-        .                0.3,0.7, 0.2,0.4,0.4, 0.45,0.55/
-        integer mix_zone(15) /1,1, 2,2,
-        .                     5,5, 6,6,
-        .                     9,9, 10,10,10, 11,11/
-        integer mix_mat(15) /2,3, 2,1,
-        .                    2,3, 2,1,
-        .                    2,3, 1,2,3, 2,1/
-        integer mix_next(15) /2,0, 4,0,
-        .                     6,0, 8,0,
-        .                     10,0, 12,13,0, 15,0/
-        ndims = 2
-        nmats = 3
-        mixlen = 15
-    c Write out the material
-        err = dbputmat(dbfile, "mat", 3, "quadmesh", 8, nmats, matnos,
-        .              matlist, mdims, ndims, mix_next, mix_mat, mix_zone, mix_vf,
-        .              mixlen, DB_FLOAT, DB_F77NULL, ierr)
-        end
+          subroutine write_mixedmaterial(dbfile)
+          implicit none
+          integer dbfile
+          include "silo.inc"
+          integer NX, NY
+          parameter (NX = 5)
+          parameter (NY = 4)
+          integer err, ierr, optlist, ndims, nmats, mixlen
+          integer mdims(2) /NX-1, NY-1/
+          integer matnos(3) /1,2,3/
+          integer matlist(12) /3, -1, -3, 1,
+          .                    3, -5, -7, 1,
+          .                    3, -9, -11, -14/
+          real mix_vf(15) /0.75,0.25, 0.1875,0.8125,
+          .                0.625,0.375, 0.4375,0.56250,
+          .                0.3,0.7, 0.2,0.4,0.4, 0.45,0.55/
+          integer mix_zone(15) /1,1, 2,2,
+          .                     5,5, 6,6,
+          .                     9,9, 10,10,10, 11,11/
+          integer mix_mat(15) /2,3, 2,1,
+          .                    2,3, 2,1,
+          .                    2,3, 1,2,3, 2,1/
+          integer mix_next(15) /2,0, 4,0,
+          .                     6,0, 8,0,
+          .                     10,0, 12,13,0, 15,0/
+          ndims = 2
+          nmats = 3
+          mixlen = 15
+      c Write out the material
+          err = dbputmat(dbfile, "mat", 3, "quadmesh", 8, nmats, matnos,
+          .              matlist, mdims, ndims, mix_next, mix_mat, mix_zone, mix_vf,
+          .              mixlen, DB_FLOAT, DB_F77NULL, ierr)
+          end
 
-.. raw:: html
-
-  </details>
-  <br>
 
