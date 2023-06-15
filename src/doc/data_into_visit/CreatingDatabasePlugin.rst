@@ -31,7 +31,7 @@ Once the data has been read, it is fed through the visualization pipeline and re
 .. figure:: images/architecture.png
   :scale: 50%
 
-  VisIt's architecture 
+  VisIt's architecture
 
 Plug-ins
 ~~~~~~~~
@@ -98,8 +98,8 @@ To get started with building your plug-in, the first step is to create a source 
 It is best that the directory name be the name of your file format or the name of your simulation.
 Once you have created a directory for your plug-in files, you can run VisIt_'s XMLEdit program.
 To start XMLEdit on UNIX systems where VisIt_ is installed, open a command window and type ``xmledit``.
-On Windows systems, XMLEdit should be available in the **Start** menu under VisIt_'s plug-in development options. 
-Or, run from a command prompt: ``C:\path\to\visit\xmledit``, substituting the correct path to the location where VisIt_ is installed. 
+On Windows systems, XMLEdit should be available in the **Start** menu under VisIt_'s plug-in development options.
+Or, run from a command prompt: ``C:\path\to\visit\xmledit``, substituting the correct path to the location where VisIt_ is installed.
 
 .. _xmledit_plugintab:
 
@@ -169,7 +169,7 @@ Finally, add the name of the library (e.g. ``netcdf`` instead of ``-lnetcdf``) i
 You can also add extra files to the *libE* and *libM* plug-ins by adding a list of files to the **Engine files** and **MDServer files** text fields, respectively.
 There are also rarely needed MDServer-specific or Engine-specific *defines*, *cxxflags*, or *ldflags*.
 The engine options are further broken down into serial and parallel versions.
- 
+
 If you change any of these options, shown in :numref:`Figure %s <xmledit_cmaketab>`, be sure to save your XML file before quitting XMLEdit.
 
 .. _xmledit_cmaketab:
@@ -353,7 +353,7 @@ The only methods that you absolutely must implement are:
   A tuple is the equivalent of a value associated with a zone or node but it can store more than one value.
   If your file format does not need to return vector data then you can leave the ``return 0;`` implementation that you added in order to get your plug-in to build.
 
-  
+
 Debugging your plug-in
 ~~~~~~~~~~~~~~~~~~~~~~
 
@@ -375,31 +375,27 @@ The debugging logs will contain information written to them by the debugging sta
 If you want to add debugging statements to your AVT code then you can use the *debug1*, *debug2*, *debug3*, *debug4*, or *debug5* streams as shown in the next code listing.
 
 
-.. raw:: html 
+.. container:: collapsible
 
-   <details>
-   <summary><a>Example for using debug streams</a></summary>
+  .. container:: header
 
-.. code-block:: c
+    Example for using debug streams
 
-  // NOTE - This code incomplete and is for example purposes only.
-  // Include this header for debug streams.
-  #include <DebugStream.h>
+  .. code-block:: c
 
-  vtkDataSet *
-  avtXXXXFileFormat::GetMesh(const char *meshname)
-  {
-      // Write messages to different levels of the debug logs.
-      debug1 << "Hi from avtXXXXFileFormat::GetMesh" << endl;
-      debug4 << "Many database plug-ins prefer debug4" << endl;
-      debug5 << "Lots of detail from avtXXXXFileFormat::GetMesh" << endl;
-      return 0;
-  }
+    // NOTE - This code is incomplete and is for example purposes only.
+    // Include this header for debug streams.
+    #include <DebugStream.h>
 
-.. raw:: html 
-
-   </details>
-   <br>
+    vtkDataSet *
+    avtXXXXFileFormat::GetMesh(const char *meshname)
+    {
+        // Write messages to different levels of the debug logs.
+        debug1 << "Hi from avtXXXXFileFormat::GetMesh" << endl;
+        debug4 << "Many database plug-ins prefer debug4" << endl;
+        debug5 << "Lots of detail from avtXXXXFileFormat::GetMesh" << endl;
+        return 0;
+    }
 
 
 Dumping VTK objects to disk
@@ -431,54 +427,50 @@ When the *InvalidDBTypeException* exception is thrown, VisIt_'s database factory
 This procedure ccontinues until the file is opened by a suitable plug-in or the file cannot be opened at all.
 
 
-.. raw:: html 
+.. container:: collapsible
 
-   <details>
-   <summary><a>Example for identifying a file</a></summary>
+  .. container:: header
 
-.. code-block:: c
+    Example for identifying a file.
 
-  // NOTE - This code incomplete and is for example purposes only.
+  .. code-block:: c
 
-  #include <InvalidDBTypeException.h>
+    // NOTE - This code is incomplete and is for example purposes only.
 
-  avtXXXXFileFormat::avtXXXXFileFormat(const char *filename)
-        : avtSTSDFileFormat(filename)
-  {
-      initialized = false;
-  }
-  // Override this method in your reader
-  void
-  avtXXXXFileFormat::ActivateTimestep()
-  {
-      Initialize();
-  }
-  // Provide this method in your reader
-  void
-  avtXXXXFileFormat::Initialize())
-  {
-      if(!initialized)
-      {
-          bool okay = false;
-          // Open the file specified by the filename argument here using
-          // your file format API. See if the file has the right things in
-          // it. If so, set okay to true.
-          YOU MUST IMPLEMENT THIS
-          // If your file format API could not open the file then throw
-          // an exception.
-          if (!okay)
-          {
-              EXCEPTION1(InvalidDBTypeException,
-                         "The file could not be opened");
-          }
-          initialized = true;
-      }
-  }
+    #include <InvalidDBTypeException.h>
 
-.. raw:: html 
-
-   </details>
-   <br>
+    avtXXXXFileFormat::avtXXXXFileFormat(const char *filename)
+          : avtSTSDFileFormat(filename)
+    {
+        initialized = false;
+    }
+    // Override this method in your reader
+    void
+    avtXXXXFileFormat::ActivateTimestep()
+    {
+        Initialize();
+    }
+    // Provide this method in your reader
+    void
+    avtXXXXFileFormat::Initialize())
+    {
+        if(!initialized)
+        {
+            bool okay = false;
+            // Open the file specified by the filename argument here using
+            // your file format API. See if the file has the right things in
+            // it. If so, set okay to true.
+            YOU MUST IMPLEMENT THIS
+            // If your file format API could not open the file then throw
+            // an exception.
+            if (!okay)
+            {
+                EXCEPTION1(InvalidDBTypeException,
+                           "The file could not be opened");
+            }
+            initialized = true;
+        }
+    }
 
 
 If your database reader plug-in uses a unique file extension then you have the option of deferring any file opens until later when metadata is required.
@@ -562,35 +554,31 @@ Now that the most important attributes of the *avtMeshMetaData* object have been
 specified, you can add extra information such as the names or units of the coordinate dimensions.
 Once all attributes are set to your satisfaction, you must add the *avtMeshMetaData* object to the *avtDatabaseMetaData* object.
 
-.. raw:: html 
+.. container:: collapsible
 
-   <details>
-   <summary><a>Example for returning mesh metadata</a></summary>
+  .. container:: header
 
-.. code-block:: c
+    Example for returning mesh metadata.
 
-  // NOTE - This code incomplete and is for example purposes only.
-  void
-  avtXXXXFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
-  {
-      // Add a point mesh to the metadata. Note that this example will
-      // always expose a mesh called "particles" to VisIt. A real
-      // plug-in may want to read a list of meshes from the data
-      // file.
-      avtMeshMetaData *mmd = new avtMeshMetaData;
-      mmd->name = "particles";
-      mmd->spatialDimension = 3;
-      mmd->topologicalDimension = 0;
-      mmd->meshType = AVT_POINT_MESH;
-      mmd->numBlocks = 1;
-      md->Add(mmd);
-      // Add other objects to the metadata object.
-  }
+  .. code-block:: c
 
-.. raw:: html 
-
-   </details>
-   <br>
+    // NOTE - This code is incomplete and is for example purposes only.
+    void
+    avtXXXXFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
+    {
+        // Add a point mesh to the metadata. Note that this example will
+        // always expose a mesh called "particles" to VisIt. A real
+        // plug-in may want to read a list of meshes from the data
+        // file.
+        avtMeshMetaData *mmd = new avtMeshMetaData;
+        mmd->name = "particles";
+        mmd->spatialDimension = 3;
+        mmd->topologicalDimension = 0;
+        mmd->meshType = AVT_POINT_MESH;
+        mmd->numBlocks = 1;
+        md->Add(mmd);
+        // Add other objects to the metadata object.
+    }
 
 
 Returning scalar metadata
@@ -609,36 +597,32 @@ Once you have set the *name* and *meshName* members, you can set the *centering*
 The *centering* member of the *avtScalarMetaData* object can be set to *AVT_NODECENT* or *AVT_ZONECENT*, indicating that the data is defined on the nodes or at the zone centers, respectively.
 If you want to indicate units that are associated with the scalar variable, set the *hasUnits* member to *true* and set the *units* string to the appropriate unit names.
 
-.. raw:: html 
+.. container:: collapsible
 
-   <details>
-   <summary><a>Example for returning scalar metadata</a></summary>
+  .. container:: header
 
-.. code-block:: c
+    Example for returning scalar metadata.
 
-  // NOTE - This code incomplete and is for example purposes only.
-  void
-  avtXXXXFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
-  {
-      // Add a mesh called "mesh" to the metadata object.
-      // Add a scalar to the metadata. Note that this plug-in will
-      // always expose a scalar called "temperature" to VisIt. A real
-      // plug-in may want to read a list of scalars from the data
-      // file.
-      avtScalarMetaData *smd = new avtScalarMetaData;
-      smd->name = "temperature";
-      smd->meshName = "mesh";
-      smd->centering = AVT_ZONECENT;
-      smd->hasUnits = true;
-      smd->units = "Celsius";
-      md->Add(smd);
-      // Add other objects to the metadata object.
-  }
+  .. code-block:: c
 
-.. raw:: html 
-
-   </details>
-   <br>
+    // NOTE - This code is incomplete and is for example purposes only.
+    void
+    avtXXXXFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
+    {
+        // Add a mesh called "mesh" to the metadata object.
+        // Add a scalar to the metadata. Note that this plug-in will
+        // always expose a scalar called "temperature" to VisIt. A real
+        // plug-in may want to read a list of scalars from the data
+        // file.
+        avtScalarMetaData *smd = new avtScalarMetaData;
+        smd->name = "temperature";
+        smd->meshName = "mesh";
+        smd->centering = AVT_ZONECENT;
+        smd->hasUnits = true;
+        smd->units = "Celsius";
+        md->Add(smd);
+        // Add other objects to the metadata object.
+    }
 
 
 Returning vector metadata
@@ -649,42 +633,33 @@ In fact, if you change the object type that you create from *avtScalarMetaData* 
 After you set the basic vector metadata attributes, you must set the *varDim* member to *2* if you have a 2-component vector or *3* if you have a 3-component vector.
 
 
-.. raw:: html 
+.. container:: collapsible
 
-   <details>
-   <summary><a>Example for returning vector metadata</a></summary>
+  .. container:: header
 
-.. code-block:: c
+    Example for returning vector metadata.
 
-  // NOTE - This code incomplete and is for example purposes only.
-  void
-  avtXXXXFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
-  {
-      // Add a mesh called "mesh" to the metadata object.
-      // Add a vector to the metadata. Note that this plug-in will
-      // always expose a vector called "velocity" to VisIt. A real
-      // plug-in may want to read a list of vectors from the data
-      // file.
-      avtVectorMetaData *vmd = new avtVectorMetaData;
-      vmd->name = "velocity";
-      vmd->meshName = "mesh";
-      vmd->centering = AVT_ZONECENT;
-      vmd->hasUnits = true;
-      vmd->units = "m/s";
-      vmd->varDim = 3;
-      md->Add(vmd);
-      // Add other objects to the metadata object.
-  }
+  .. code-block:: c
 
-.. raw:: html 
-
-   </details>
-   <br>
-
-.. raw:: html 
-
-   </details>
-   <br>
+    // NOTE - This code is incomplete and is for example purposes only.
+    void
+    avtXXXXFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
+    {
+        // Add a mesh called "mesh" to the metadata object.
+        // Add a vector to the metadata. Note that this plug-in will
+        // always expose a vector called "velocity" to VisIt. A real
+        // plug-in may want to read a list of vectors from the data
+        // file.
+        avtVectorMetaData *vmd = new avtVectorMetaData;
+        vmd->name = "velocity";
+        vmd->meshName = "mesh";
+        vmd->centering = AVT_ZONECENT;
+        vmd->hasUnits = true;
+        vmd->units = "m/s";
+        vmd->varDim = 3;
+        md->Add(vmd);
+        // Add other objects to the metadata object.
+    }
 
 
 Returning material metadata
@@ -697,38 +672,35 @@ Material metadata is stored in an *avtMaterialMetaData* object and it consists o
 If you had a material called "mat1" defined on "mesh" and "mat1" was
 composed of: "Steel", "Wood", "Glue", and "Air" then the metadata object needed to expose "mat1" to VisIt_ would look like the following code listing:
 
-.. raw:: html 
+.. container:: collapsible
 
-   <details>
-   <summary><a>Example for material mesh metadata</a></summary>
+  .. container:: header
 
-.. code-block:: c
+    Example for material mesh metadata.
 
-  // NOTE - This code incomplete and is for example purposes only.
-  void
-  avtXXXXFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
-  {
-      // Add a mesh called "mesh" to the metadata object.
-      // Add a material to the metadata. Note that this plug-in will
-      // always expose a material called "mat1" to VisIt. A real
-      // plug-in may want to use from the data file to construct
-      // a material.
-      avtMaterialMetaData *matmd = new avtMaterialMetaData;
-      matmd->name = "mat1";
-      matmd->meshName = "mesh";
-      matmd->numMaterials = 4;
-      matmd->materialNames.push_back("Steel");
-      matmd->materialNames.push_back("Wood");
-      matmd->materialNames.push_back("Glue");
-      matmd->materialNames.push_back("Air");
-      md->Add(matmd);
-      // Add other objects to the metadata object.
-  }
+  .. code-block:: c
 
-.. raw:: html 
+    // NOTE - This code is incomplete and is for example purposes only.
+    void
+    avtXXXXFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
+    {
+        // Add a mesh called "mesh" to the metadata object.
+        // Add a material to the metadata. Note that this plug-in will
+        // always expose a material called "mat1" to VisIt. A real
+        // plug-in may want to use from the data file to construct
+        // a material.
+        avtMaterialMetaData *matmd = new avtMaterialMetaData;
+        matmd->name = "mat1";
+        matmd->meshName = "mesh";
+        matmd->numMaterials = 4;
+        matmd->materialNames.push_back("Steel");
+        matmd->materialNames.push_back("Wood");
+        matmd->materialNames.push_back("Glue");
+        matmd->materialNames.push_back("Air");
+        md->Add(matmd);
+        // Add other objects to the metadata object.
+    }
 
-   </details>
-   <br>
 
 Returning expressions
 """""""""""""""""""""
@@ -743,41 +715,37 @@ Custom expressions are added to the *avtDatabaseMetaData* object by creating *Ex
 The *Expression* object lets you provide the name and definition of an expression as well as the expression's expected return type (scalar, vector, tensor, etc.) and whether the expression should be hidden from the user.
 Hidden expressions can be useful if you build a complex expression that makes use of smaller sub-expressions that do not need to be exposed in the VisIt_ user interface.
 
-.. raw:: html 
+.. container:: collapsible
 
-   <details>
-   <summary><a>Example for returning expression metadata</a></summary>
+  .. container:: header
 
-.. code-block:: c
+    Example for returning expression metadata.
 
-  // NOTE - This code incomplete and is for example purposes only.
-  #include <Expression.h>
+  .. code-block:: c
 
-  void
-  avtXXXXFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
-  {
-      // Add a mesh called "mesh" to the metadata object.
-      // Add scalars to the metadata object.
-      // Add expression definitions to the metadata object.
-      Expression *e0 = new Expression;
-      e0->SetName("speed");
-      e0->SetDefinition("{u,v,w}");
-      e0->SetType(Expression::VectorMeshVar);
-      e0->SetHidden(false);
-      md->AddExpression(e0);
-      Expression *e1 = new Expression;
-      e1->SetName("density");
-      e1->SetDefinition("mass/volume");
-      e1->SetType(Expression::ScalarMeshVar);
-      e1->SetHidden(false);
-      md->AddExpression(e1);
-      // Add other objects to the metadata object.
-  }
+    // NOTE - This code is incomplete and is for example purposes only.
+    #include <Expression.h>
 
-.. raw:: html 
-
-   </details>
-   <br>
+    void
+    avtXXXXFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
+    {
+        // Add a mesh called "mesh" to the metadata object.
+        // Add scalars to the metadata object.
+        // Add expression definitions to the metadata object.
+        Expression *e0 = new Expression;
+        e0->SetName("speed");
+        e0->SetDefinition("{u,v,w}");
+        e0->SetType(Expression::VectorMeshVar);
+        e0->SetHidden(false);
+        md->AddExpression(e0);
+        Expression *e1 = new Expression;
+        e1->SetName("density");
+        e1->SetDefinition("mass/volume");
+        e1->SetType(Expression::ScalarMeshVar);
+        e1->SetHidden(false);
+        md->AddExpression(e1);
+        // Add other objects to the metadata object.
+    }
 
 
 Returning a mesh
@@ -801,41 +769,37 @@ The *GetMesh* method is always passed a string containing the name of the mesh t
 If your file format only ever has one mesh then you can ignore the meshname argument.
 However, if your file format can contain more than one mesh then you should check the name of the requested mesh before returning a VTK object so you create and return the correct mesh.
 
-.. raw:: html 
+.. container:: collapsible
 
-   <details>
-   <summary><a>Example for which mesh to return in GetMesh</a></summary>
+  .. container:: header
 
-.. code-block:: c
+    Example for which mesh to return in GetMesh
 
-  // NOTE - This code incomplete and is for example purposes only.
-  #include <InvalidVariableException.h>
-  vtkDataSet *
-  avtXXXXFileFormat::GetMesh(const char *meshname)
-  {
-      // Determine which mesh to return.
-      if (strcmp(meshname, "mesh") == 0)
-      {
-          // Create a VTK object for "mesh"
-          return mesh;
-      }
-      else if (strcmp(meshname, "mesh2") == 0)
-      {
-          // Create a VTK object for "mesh2"
-          return mesh2;
-      }
-      else
-      {
-          // No mesh name that we recognize.
-          EXCEPTION1(InvalidVariableException, meshname);
-      }
-      return 0;
-  }
+  .. code-block:: c
 
-.. raw:: html 
-
-   </details>
-   <br>
+    // NOTE - This code is incomplete and is for example purposes only.
+    #include <InvalidVariableException.h>
+    vtkDataSet *
+    avtXXXXFileFormat::GetMesh(const char *meshname)
+    {
+        // Determine which mesh to return.
+        if (strcmp(meshname, "mesh") == 0)
+        {
+            // Create a VTK object for "mesh"
+            return mesh;
+        }
+        else if (strcmp(meshname, "mesh2") == 0)
+        {
+            // Create a VTK object for "mesh2"
+            return mesh2;
+        }
+        else
+        {
+            // No mesh name that we recognize.
+            EXCEPTION1(InvalidVariableException, meshname);
+        }
+        return 0;
+    }
 
 
 If your database reader plug-in is derived from one of the *MT* or *MD* file format interfaces then the *GetMesh* method will have, in addition to the *meshname* argument, either a *timestate* argument, *domain* argument, or both.
@@ -870,72 +834,68 @@ Finally, fill in the code for reading the X coordinate values into the xarray ar
 Once you have replaced the capitalized code portions with code that reads values from your file format, your plug-in should be able to return a valid
 *vtkRectilinearGrid* object once you rebuild it.
 
-.. raw:: html 
+.. container:: collapsible
 
-   <details>
-   <summary><a>Example for creating vtkRectilinearGrid in GetMesh</a></summary>
+  .. container:: header
 
-.. code-block:: c
+    Example for creating vtkRectilinearGrid in GetMesh.
 
-  // NOTE - This code incomplete and requires capitalized portions
-  // to be replaced with code to read values from your file format.
-  #include <vtkFloatArray.h>
-  #include <vtkRectilinearGrid.h>
+  .. code-block:: c
 
-  vtkDataSet *
-  avtXXXFileFormat::GetMesh(const char *meshname)
-  {
-      int ndims = 2;
-      int dims[3] = {1,1,1};
-      vtkFloatArray *coords[3] = {0,0,0};
-      // Read the ndims and number of X,Y,Z nodes from file.
-      ndims = NUMBER OF MESH DIMENSIONS;
-      dims[0] = NUMBER OF NODES IN X-DIMENSION;
-      dims[1] = NUMBER OF NODES IN Y-DIMENSION;
-      dims[2] = NUMBER OF NODES IN Z-DIMENSION, OR 1 IF 2D;
-      // Read the X coordinates from the file.
-      coords[0] = vtkFloatArray::New();
-      coords[0]->SetNumberOfTuples(dims[0]);
-      float *xarray = (float *)coords[0]->GetVoidPointer(0);
-      READ dims[0] FLOAT VALUES INTO xarray
-      // Read the Y coordinates from the file.
-      coords[1] = vtkFloatArray::New();
-      coords[1]->SetNumberOfTuples(dims[1]);
-      float *yarray = (float *)coords[1]->GetVoidPointer(0);
-      READ dims[1] FLOAT VALUES INTO yarray
-      // Read the Z coordinates from the file.
-      coords[2] = vtkFloatArray::New();
-      if(ndims > 2)
-      {
-          coords[2]->SetNumberOfTuples(dims[2]);
-          float *zarray = (float *)coords[2]->GetVoidPointer(0);
-          READ dims[2] FLOAT VALUES INTO zarray
-      }
-      else
-      {
-          coords[2]->SetNumberOfTuples(1);
-          coords[2]->SetComponent(0, 0, 0.);
-      }
+    // NOTE - This code is incomplete and requires capitalized portions
+    // to be replaced with code to read values from your file format.
+    #include <vtkFloatArray.h>
+    #include <vtkRectilinearGrid.h>
 
-      //
-      // Create the vtkRectilinearGrid object and set its dimensions
-      // and coordinates.
-      //
-      vtkRectilinearGrid *rgrid = vtkRectilinearGrid::New();
-      rgrid->SetDimensions(dims);
-      rgrid->SetXCoordinates(coords[0]);
-      coords[0]->Delete();
-      rgrid->SetYCoordinates(coords[1]);
-      coords[1]->Delete();
-      rgrid->SetZCoordinates(coords[2]);
-      coords[2]->Delete();
-      return rgrid;
-  }
+    vtkDataSet *
+    avtXXXFileFormat::GetMesh(const char *meshname)
+    {
+        int ndims = 2;
+        int dims[3] = {1,1,1};
+        vtkFloatArray *coords[3] = {0,0,0};
+        // Read the ndims and number of X,Y,Z nodes from file.
+        ndims = NUMBER OF MESH DIMENSIONS;
+        dims[0] = NUMBER OF NODES IN X-DIMENSION;
+        dims[1] = NUMBER OF NODES IN Y-DIMENSION;
+        dims[2] = NUMBER OF NODES IN Z-DIMENSION, OR 1 IF 2D;
+        // Read the X coordinates from the file.
+        coords[0] = vtkFloatArray::New();
+        coords[0]->SetNumberOfTuples(dims[0]);
+        float *xarray = (float *)coords[0]->GetVoidPointer(0);
+        READ dims[0] FLOAT VALUES INTO xarray
+        // Read the Y coordinates from the file.
+        coords[1] = vtkFloatArray::New();
+        coords[1]->SetNumberOfTuples(dims[1]);
+        float *yarray = (float *)coords[1]->GetVoidPointer(0);
+        READ dims[1] FLOAT VALUES INTO yarray
+        // Read the Z coordinates from the file.
+        coords[2] = vtkFloatArray::New();
+        if(ndims > 2)
+        {
+            coords[2]->SetNumberOfTuples(dims[2]);
+            float *zarray = (float *)coords[2]->GetVoidPointer(0);
+            READ dims[2] FLOAT VALUES INTO zarray
+        }
+        else
+        {
+            coords[2]->SetNumberOfTuples(1);
+            coords[2]->SetComponent(0, 0, 0.);
+        }
 
-.. raw:: html 
-
-   </details>
-   <br>
+        //
+        // Create the vtkRectilinearGrid object and set its dimensions
+        // and coordinates.
+        //
+        vtkRectilinearGrid *rgrid = vtkRectilinearGrid::New();
+        rgrid->SetDimensions(dims);
+        rgrid->SetXCoordinates(coords[0]);
+        coords[0]->Delete();
+        rgrid->SetYCoordinates(coords[1]);
+        coords[1]->Delete();
+        rgrid->SetZCoordinates(coords[2]);
+        coords[2]->Delete();
+        return rgrid;
+    }
 
 
 Curvilinear meshes
@@ -959,90 +919,87 @@ Once you have done that, read the number of nodes in each of the X,Y,Z dimension
 Finally, fill in the code for reading the X coordinate values into the *xarray* array and do the same for the Y and Z coordinate arrays.
 Once you have replaced the capitalized code portions with code that reads values from your file format, your plug-in should be able to return a valid *vtkStructuredGrid* object once you rebuild it.
 
-.. raw:: html 
+.. container:: collapsible
 
-   <details>
-   <summary><a>Example for creating vtkStructuredGrid in GetMesh</a></summary>
+  .. container:: header
 
-.. code-block:: c
+    Example for creating vtkStructuredGrid in GetMesh.
 
-  // NOTE - This code incomplete and requires capitalized portions
-  // to be replaced with code to read values from your file format.
+  .. code-block:: c
 
-  #include <vtkPoints.h>
-  #include <vtkStructuredGrid.h>
+    // NOTE - This code is incomplete and requires capitalized portions
+    // to be replaced with code to read values from your file format.
 
-  vtkDataSet *
-  avtXXXFileFormat::GetMesh(const char *meshname)
-  {
-      int ndims = 2;
-      int dims[3] = {1,1,1};
-      ndims = NUMBER OF MESH DIMENSIONS;
-      dims[0] = NUMBER OF NODES IN X-DIMENSION;
-      dims[1] = NUMBER OF NODES IN Y-DIMENSION;
-      dims[2] = NUMBER OF NODES IN Z-DIMENSION, OR 1 IF 2D;
-      int nnodes = dims[0]*dims[1]*dims[2];
-      // Read the X coordinates from the file.
-      float *xarray = new float[nnodes];
-      READ nnodes FLOAT VALUES INTO xarray
-      // Read the Y coordinates from the file.
-      float *yarray = new float[nnodes];
-      READ nnodes FLOAT VALUES INTO yarray
-      // Read the Z coordinates from the file.
-      float *zarray = 0;
-      if(ndims > 2  )
-      {
-          zarray = new float[nnodes];
-          READ dims[2] FLOAT VALUES INTO zarray
-      }
-      //
-      // Create the vtkStructuredGrid and vtkPoints objects.
-      //
-      vtkStructuredGrid *sgrid = vtkStructuredGrid::New();
-      vtkPoints *points = vtkPoints::New();
-      sgrid->SetPoints(points);
-      sgrid->SetDimensions(dims);
-      points->Delete();
-      points->SetNumberOfPoints(nnodes);
-      //
-      // Copy the coordinate values into the vtkPoints object.
-      //
-      float *pts = (float *) points->GetVoidPointer(0);
-      float *xc = xarray;
-      float *yc = yarray;
-      float *zc = zarray;
-      if(ndims == 3)
-      {
-          for(int k = 0; k < dims[2]; ++k)
-              for(int j = 0; j < dims[1]; ++j)
-                  for(int i = 0; i < dims[0]; ++i)
-                  {
-                      *pts++ = *xc++;
-                      *pts++ = *yc++;
-                      *pts++ = *zc++;
-                  }
-      }
-      else if(ndims == 2)
-      {
-          for(int j = 0; j < dims[1]; ++j)
-              for(int i = 0; i < dims[0]; ++i)
-              {
-                  *pts++ = *xc++;
-                  *pts++ = *yc++;
-                  *pts++ = 0.;
-              }
-      }
-      // Delete temporary arrays.
-      delete [] xarray;
-      delete [] yarray;
-      delete [] zarray;
-      return sgrid;
-  }
+    #include <vtkPoints.h>
+    #include <vtkStructuredGrid.h>
 
-.. raw:: html 
+    vtkDataSet *
+    avtXXXFileFormat::GetMesh(const char *meshname)
+    {
+        int ndims = 2;
+        int dims[3] = {1,1,1};
+        ndims = NUMBER OF MESH DIMENSIONS;
+        dims[0] = NUMBER OF NODES IN X-DIMENSION;
+        dims[1] = NUMBER OF NODES IN Y-DIMENSION;
+        dims[2] = NUMBER OF NODES IN Z-DIMENSION, OR 1 IF 2D;
+        int nnodes = dims[0]*dims[1]*dims[2];
+        // Read the X coordinates from the file.
+        float *xarray = new float[nnodes];
+        READ nnodes FLOAT VALUES INTO xarray
+        // Read the Y coordinates from the file.
+        float *yarray = new float[nnodes];
+        READ nnodes FLOAT VALUES INTO yarray
+        // Read the Z coordinates from the file.
+        float *zarray = 0;
+        if(ndims > 2  )
+        {
+            zarray = new float[nnodes];
+            READ dims[2] FLOAT VALUES INTO zarray
+        }
+        //
+        // Create the vtkStructuredGrid and vtkPoints objects.
+        //
+        vtkStructuredGrid *sgrid = vtkStructuredGrid::New();
+        vtkPoints *points = vtkPoints::New();
+        sgrid->SetPoints(points);
+        sgrid->SetDimensions(dims);
+        points->Delete();
+        points->SetNumberOfPoints(nnodes);
+        //
+        // Copy the coordinate values into the vtkPoints object.
+        //
+        float *pts = (float *) points->GetVoidPointer(0);
+        float *xc = xarray;
+        float *yc = yarray;
+        float *zc = zarray;
+        if(ndims == 3)
+        {
+            for(int k = 0; k < dims[2]; ++k)
+                for(int j = 0; j < dims[1]; ++j)
+                    for(int i = 0; i < dims[0]; ++i)
+                    {
+                        *pts++ = *xc++;
+                        *pts++ = *yc++;
+                        *pts++ = *zc++;
+                    }
+        }
+        else if(ndims == 2)
+        {
+            for(int j = 0; j < dims[1]; ++j)
+                for(int i = 0; i < dims[0]; ++i)
+                {
+                    *pts++ = *xc++;
+                    *pts++ = *yc++;
+                    *pts++ = 0.;
+                }
+        }
+        // Delete temporary arrays.
+        delete [] xarray;
+        delete [] yarray;
+        delete [] zarray;
+        return sgrid;
+    }
 
-   </details>
-   <br>
 
 
 Point meshes
@@ -1062,91 +1019,88 @@ Finally, fill in the code for reading the X coordinate values into the *xarray* 
 Once you have replaced the capitalized code portions with code that reads values from your file format, your plug-in should be able to return a valid *vtkUnstructuredGrid* object once you rebuild it.
 
 
-.. raw:: html 
+.. container:: collapsible
 
-   <details>
-   <summary><a>Example for returning a point mesh from GetMesh</a></summary>
+  .. container:: header
 
-.. code-block:: c
+    Example for returning a point mesh from GetMesh
 
-  // NOTE - This code incomplete and requires capitalized portions
-  // to be replaced with code to read values from your file format.
+  .. code-block:: c
 
-  #include <vtkPoints.h>
-  #include <vtkUnstructuredGrid.h>
+    // NOTE - This code is incomplete and requires capitalized portions
+    // to be replaced with code to read values from your file format.
 
-  vtkDataSet *
-  avtXXXFileFormat::GetMesh(const char *meshname)
-  {
-      int ndims = 2;
-      int nnodes;
-      // Read the ndims and number of nodes from file.
-      ndims = NUMBER OF MESH DIMENSIONS;
-      nnodes = NUMBER OF NODES IN THE MESH;
-      // Read the X coordinates from the file.
-      float *xarray = new float[nnodes];
-      READ nnodes FLOAT VALUES INTO xarray
-      // Read the Y coordinates from the file.
-      float *yarray = new float[nnodes];
-      READ nnodes FLOAT VALUES INTO yarray
-      // Read the Z coordinates from the file.
-      float *zarray = 0;
-      if(ndims > 2)
-      {
-          zarray = new float[nnodes];
-          READ dims[2] FLOAT VALUES INTO zarray
-      }
-      //
-      // Create the vtkPoints object and copy points into it.
-      //
-      vtkPoints *points = vtkPoints::New();
-      points->SetNumberOfPoints(nnodes);
-      float *pts = (float *) points->GetVoidPointer(0);
-      float *xc = xarray;
-      float *yc = yarray;
-      float *zc = zarray;
-      if(ndims == 3)
-      {
-          for(int i = 0; i < nnodes; ++i)
-          {
-              *pts++ = *xc++;
-              *pts++ = *yc++;
-              *pts++ = *zc++;
-          }
-      }
-      else if(ndims == 2)
-      {
-          for(int i = 0; i < nnodes; ++i)
-          {
-              *pts++ = *xc++;
-              *pts++ = *yc++;
-              *pts++ = 0.;
-          }
-      }
-      //
-      // Create a vtkUnstructuredGrid to contain the point cells.
-      //
-      vtkUnstructuredGrid *ugrid = vtkUnstructuredGrid::New();
-      ugrid->SetPoints(points);
-      points->Delete();
-      ugrid->Allocate(nnodes);
-      vtkIdType onevertex;
-      for(int i = 0; i < nnodes; ++i)
-      {
-          onevertex = i;
-          ugrid->InsertNextCell(VTK_VERTEX, 1, &onevertex);
-      }
-      // Delete temporary arrays.
-      delete [] xarray;
-      delete [] yarray;
-      delete [] zarray;
-      return ugrid;
-  }
+    #include <vtkPoints.h>
+    #include <vtkUnstructuredGrid.h>
 
-.. raw:: html 
+    vtkDataSet *
+    avtXXXFileFormat::GetMesh(const char *meshname)
+    {
+        int ndims = 2;
+        int nnodes;
+        // Read the ndims and number of nodes from file.
+        ndims = NUMBER OF MESH DIMENSIONS;
+        nnodes = NUMBER OF NODES IN THE MESH;
+        // Read the X coordinates from the file.
+        float *xarray = new float[nnodes];
+        READ nnodes FLOAT VALUES INTO xarray
+        // Read the Y coordinates from the file.
+        float *yarray = new float[nnodes];
+        READ nnodes FLOAT VALUES INTO yarray
+        // Read the Z coordinates from the file.
+        float *zarray = 0;
+        if(ndims > 2)
+        {
+            zarray = new float[nnodes];
+            READ dims[2] FLOAT VALUES INTO zarray
+        }
+        //
+        // Create the vtkPoints object and copy points into it.
+        //
+        vtkPoints *points = vtkPoints::New();
+        points->SetNumberOfPoints(nnodes);
+        float *pts = (float *) points->GetVoidPointer(0);
+        float *xc = xarray;
+        float *yc = yarray;
+        float *zc = zarray;
+        if(ndims == 3)
+        {
+            for(int i = 0; i < nnodes; ++i)
+            {
+                *pts++ = *xc++;
+                *pts++ = *yc++;
+                *pts++ = *zc++;
+            }
+        }
+        else if(ndims == 2)
+        {
+            for(int i = 0; i < nnodes; ++i)
+            {
+                *pts++ = *xc++;
+                *pts++ = *yc++;
+                *pts++ = 0.;
+            }
+        }
+        //
+        // Create a vtkUnstructuredGrid to contain the point cells.
+        //
+        vtkUnstructuredGrid *ugrid = vtkUnstructuredGrid::New();
+        ugrid->SetPoints(points);
+        points->Delete();
+        ugrid->Allocate(nnodes);
+        vtkIdType onevertex;
+        for(int i = 0; i < nnodes; ++i)
+        {
+            onevertex = i;
+            ugrid->InsertNextCell(VTK_VERTEX, 1, &onevertex);
+        }
+        // Delete temporary arrays.
+        delete [] xarray;
+        delete [] yarray;
+        delete [] zarray;
+        return ugrid;
+    }
 
-   </details>
-   <br>
 
 Unstructured meshes
 """""""""""""""""""
@@ -1169,142 +1123,138 @@ The next code listing shows how to create a *vtkUnstructuredGrid* object.
 The connectivity for an unstructured grid can be stored in a file format using a myriad of different approaches.
 The example code assumes that the connectivity will be stored in an integer array that contains the information for each cell, beginning with the cell type for the first cell, followed by a list of node indices that are used in the cell.
 After that, the cell type for the second cell appears, followed by its node indices, and so on.
-For example, if you wanted to store connectivity for cells 1 and 2 in the example shown in 
+For example, if you wanted to store connectivity for cells 1 and 2 in the example shown in
 :numref:`Figure %s <mesh_ucd2d>` then the connectivity array would contain: [VTK_TRIANGLE, 2, 4, 7,
 VTK_TRIANGLE, 4, 8, 7, ...].
 Note that the node indices in the example begin at one so the example code will subtract one from all of the node indices to ensure that they begin at zero, the starting index for the *vtkPoints* array.
 
-.. raw:: html 
+.. container:: collapsible
 
-   <details>
-   <summary><a>Example for returning an unstructured mesh from GetMesh.</a></summary>
+  .. container:: header
 
-.. code-block:: c
+    Example for returning an unstructured mesh from GetMesh.
 
-  // NOTE - This code incomplete and requires capitalized portions
-  // to be replaced with code to read values from your file format.
+  .. code-block:: c
 
-  #include <vtkPoints.h>
-  #include <vtkUnstructuredGrid.h>
-  #include <InvalidVariableException.h>
+    // NOTE - This code is incomplete and requires capitalized portions
+    // to be replaced with code to read values from your file format.
 
-  vtkDataSet *
-  avtXXXFileFormat::GetMesh(const char *meshname)
-  {
-      int ndims = 2;
-      int nnodes, ncells, origin = 1;
-      // Read the ndims, nnodes, ncells, origin from file.
-      ndims = NUMBER OF MESH DIMENSIONS;
-      nnodes = NUMBER OF NODES IN THE MESH;
-      ncells = NUMBER OF CELLS IN THE MESH;
-      origin = GET THE ARRAY ORIGIN (0 or 1);
-      // Read the X coordinates from the file.
-      float *xarray = new float[nnodes];
-      READ nnodes FLOAT VALUES INTO xarray
-      // Read the Y coordinates from the file.
-      float *yarray = new float[nnodes];
-      READ nnodes FLOAT VALUES INTO yarray
-      // Read the Z coordinates from the file.
-      float *zarray = 0;
-      if(ndims > 2)
-      {
-          zarray = new float[nnodes];
-          READ dims[2] FLOAT VALUES INTO zarray
-      }
-      // Read in the connectivity array. This example assumes that
-      // the connectivity will be stored: type, indices, type,
-      // indices, ... and that there will be a type/index list
-      // pair for each cell in the mesh.
-      int *connectivity = 0;
-      ALLOCATE connectivity ARRAY AND READ VALUES INTO IT.
-      //
-      // Create the vtkPoints object and copy points into it.
-      //
-      vtkPoints *points = vtkPoints::New();
-      points->SetNumberOfPoints(nnodes);
-      float *pts = (float *) points->GetVoidPointer(0);
-      float *xc = xarray;
-      float *yc = yarray;
-      float *zc = zarray;
-      if(ndims == 3)
-      {
-          for(int i = 0; i < nnodes; ++i)
-          {
-              *pts++ = *xc++;
-              *pts++ = *yc++;
-              *pts++ = *zc++;
-          }
-      }
-      else if(ndims == 2)
-      {
-          for(int i = 0; i < nnodes; ++i)
-          {
-              *pts++ = *xc++;
-              *pts++ = *yc++;
-              *pts++ = 0.;
-          }
-      }
-      // Delete temporary arrays.
-      delete [] xarray;
-      delete [] yarray;
-      delete [] zarray;
-      //
-      // Create a vtkUnstructuredGrid to contain the point cells.
-      //
-      vtkUnstructuredGrid *ugrid = vtkUnstructuredGrid::New();
-      ugrid->SetPoints(points);
-      points->Delete();
-      ugrid->Allocate(ncells);
-      vtkIdType verts[8];
-      int *conn = connectivity
-      for(int i = 0; i < ncells; ++i)
-      {
-          int fileCellType = *conn++;
-          // Your file's cellType will likely not match so you
-          // will have to translate fileCellType to a VTK
-          // cell type.
-          int cellType = MAP fileCellType TO VTK CELL TYPE.
-          // Determine number of vertices for each cell type.
-          if(cellType == VTK_VERTEX)
-              nverts = 1;
-          else if(cellType == VTK_LINE)
-              nverts = 2;
-          else if(cellType == VTK_TRIANGLE)
-              nverts = 3;
-          else if(cellType == VTK_QUAD)
-              nverts = 4;
-          else if(cellType == VTK_TETRA)
-              nverts = 4;
-          else if(cellType == VTK_PYRAMID)
-              nverts = 5;
-          else if(cellType == VTK_WEDGE)
-              nverts = 6;
-          else if(cellType == VTK_HEXAHEDRON)
-              nverts = 8;
-          else
-          {
-              delete [] connectivity;
-              ugrid->Delete();
-              // Other cell type - need to add a case for it.
-              // In the meantime, throw exception or if you
-              // know enough, skip the cell.
-              EXCEPTION0(InvalidVariableException, meshname);
-          }
-          // Make a list of node indices that make up the cell.
-          for(int j = 0; j < nverts; ++j)
-              verts[j] = conn[j] - origin;
-          conn += nverts;
-          // Insert the cell into the mesh.
-          ugrid->InsertNextCell(cellType, nverts, verts);
-      }
-      delete [] connectivity;
-      return ugrid;
-  }
+    #include <vtkPoints.h>
+    #include <vtkUnstructuredGrid.h>
+    #include <InvalidVariableException.h>
 
-.. raw:: html 
-
-   </details>
-   <br>
+    vtkDataSet *
+    avtXXXFileFormat::GetMesh(const char *meshname)
+    {
+        int ndims = 2;
+        int nnodes, ncells, origin = 1;
+        // Read the ndims, nnodes, ncells, origin from file.
+        ndims = NUMBER OF MESH DIMENSIONS;
+        nnodes = NUMBER OF NODES IN THE MESH;
+        ncells = NUMBER OF CELLS IN THE MESH;
+        origin = GET THE ARRAY ORIGIN (0 or 1);
+        // Read the X coordinates from the file.
+        float *xarray = new float[nnodes];
+        READ nnodes FLOAT VALUES INTO xarray
+        // Read the Y coordinates from the file.
+        float *yarray = new float[nnodes];
+        READ nnodes FLOAT VALUES INTO yarray
+        // Read the Z coordinates from the file.
+        float *zarray = 0;
+        if(ndims > 2)
+        {
+            zarray = new float[nnodes];
+            READ dims[2] FLOAT VALUES INTO zarray
+        }
+        // Read in the connectivity array. This example assumes that
+        // the connectivity will be stored: type, indices, type,
+        // indices, ... and that there will be a type/index list
+        // pair for each cell in the mesh.
+        int *connectivity = 0;
+        ALLOCATE connectivity ARRAY AND READ VALUES INTO IT.
+        //
+        // Create the vtkPoints object and copy points into it.
+        //
+        vtkPoints *points = vtkPoints::New();
+        points->SetNumberOfPoints(nnodes);
+        float *pts = (float *) points->GetVoidPointer(0);
+        float *xc = xarray;
+        float *yc = yarray;
+        float *zc = zarray;
+        if(ndims == 3)
+        {
+            for(int i = 0; i < nnodes; ++i)
+            {
+                *pts++ = *xc++;
+                *pts++ = *yc++;
+                *pts++ = *zc++;
+            }
+        }
+        else if(ndims == 2)
+        {
+            for(int i = 0; i < nnodes; ++i)
+            {
+                *pts++ = *xc++;
+                *pts++ = *yc++;
+                *pts++ = 0.;
+            }
+        }
+        // Delete temporary arrays.
+        delete [] xarray;
+        delete [] yarray;
+        delete [] zarray;
+        //
+        // Create a vtkUnstructuredGrid to contain the point cells.
+        //
+        vtkUnstructuredGrid *ugrid = vtkUnstructuredGrid::New();
+        ugrid->SetPoints(points);
+        points->Delete();
+        ugrid->Allocate(ncells);
+        vtkIdType verts[8];
+        int *conn = connectivity
+        for(int i = 0; i < ncells; ++i)
+        {
+            int fileCellType = *conn++;
+            // Your file's cellType will likely not match so you
+            // will have to translate fileCellType to a VTK
+            // cell type.
+            int cellType = MAP fileCellType TO VTK CELL TYPE.
+            // Determine number of vertices for each cell type.
+            if(cellType == VTK_VERTEX)
+                nverts = 1;
+            else if(cellType == VTK_LINE)
+                nverts = 2;
+            else if(cellType == VTK_TRIANGLE)
+                nverts = 3;
+            else if(cellType == VTK_QUAD)
+                nverts = 4;
+            else if(cellType == VTK_TETRA)
+                nverts = 4;
+            else if(cellType == VTK_PYRAMID)
+                nverts = 5;
+            else if(cellType == VTK_WEDGE)
+                nverts = 6;
+            else if(cellType == VTK_HEXAHEDRON)
+                nverts = 8;
+            else
+            {
+                delete [] connectivity;
+                ugrid->Delete();
+                // Other cell type - need to add a case for it.
+                // In the meantime, throw exception or if you
+                // know enough, skip the cell.
+                EXCEPTION0(InvalidVariableException, meshname);
+            }
+            // Make a list of node indices that make up the cell.
+            for(int j = 0; j < nverts; ++j)
+                verts[j] = conn[j] - origin;
+            conn += nverts;
+            // Insert the cell into the mesh.
+            ugrid->InsertNextCell(cellType, nverts, verts);
+        }
+        delete [] connectivity;
+        return ugrid;
+    }
 
 
 The previous code listing shows how to create an unstructured mesh in a *vtkUnstructuredGrid* object.
@@ -1336,39 +1286,36 @@ The length of the array that you allocate to contain your variable must match ei
 The length is determined by the scalar variable's centering (cell-centered, node-centered).
 
 
-.. raw:: html 
+.. container:: collapsible
 
-   <details>
-   <summary><a>Example for returning data from GetVar</a></summary>
+  .. container:: header
 
-.. code-block:: c
+    Example for returning data from GetVar.
 
-  // NOTE - This code incomplete and requires capitalized portions
-  // to be replaced with code to read values from your file format.
+  .. code-block:: c
 
-  #include <vtkFloatArray.h>
+    // NOTE - This code is incomplete and requires capitalized portions
+    // to be replaced with code to read values from your file format.
 
-  vtkDataArray *
-  avtXXXFileFormat::GetVar(const char *varname)
-  {
-      int nvals;
-      // Read the number of vaues contained in the array
-      // specified by varname.
-      nvals = NUMBER OF VALUES IN ARRAY NAMED BY varname;
-      // Allocate the return vtkFloatArray object. Note that
-      // you can use vtkFloatArray, vtkDoubleArray,
-      // vtkUnsignedCharArray, vtkIntArray, etc.
-      vtkFloatArray *arr = vtkFloatArray::New();
-      arr->SetNumberOfTuples(nvals);
-      float *data = (float *)arr->GetVoidPointer(0);
-      READ nvals FLOAT NUMBERS INTO THE data ARRAY.
-      return arr;
-  }
+    #include <vtkFloatArray.h>
 
-.. raw:: html 
+    vtkDataArray *
+    avtXXXFileFormat::GetVar(const char *varname)
+    {
+        int nvals;
+        // Read the number of vaues contained in the array
+        // specified by varname.
+        nvals = NUMBER OF VALUES IN ARRAY NAMED BY varname;
+        // Allocate the return vtkFloatArray object. Note that
+        // you can use vtkFloatArray, vtkDoubleArray,
+        // vtkUnsignedCharArray, vtkIntArray, etc.
+        vtkFloatArray *arr = vtkFloatArray::New();
+        arr->SetNumberOfTuples(nvals);
+        float *data = (float *)arr->GetVoidPointer(0);
+        READ nvals FLOAT NUMBERS INTO THE data ARRAY.
+        return arr;
+    }
 
-   </details>
-   <br>
 
 In the previous code listing, there are two capitalized areas that need to have code added to them in order to have a completed *GetVar* method.
 The first change that you must make is to add code to read the size of the array to be created into the *nvals* variable.
@@ -1390,88 +1337,85 @@ If the third component is not needed then all values in the third component shou
 The *GetVectorVar* code listing shows how to return a *vtkFloatArray* with multiple components from the *GetVectorVar* method.
 As with the code listing for *GetVar*, this code listing requires you to replace capitalized lines of code with code that reads data from your file format and stores the results in the variables provided.
 
-.. raw:: html 
+.. container:: collapsible
 
-   <details>
-   <summary><a>Example for returning data from GetVectorVar</a></summary>
+  .. container:: header
 
-.. code-block:: c
+    Example for returning data from GetVectorVar.
 
-  // NOTE - This code incomplete and requires capitalized portions
-  // to be replaced with code to read values from your file format.
+  .. code-block:: c
 
-  #include <vtkFloatArray.h>
-  #include <InvalidVariableException.h>
+    // NOTE - This code is incomplete and requires capitalized portions
+    // to be replaced with code to read values from your file format.
 
-  vtkDataArray *
-  avtXXXFileFormat::GetVectorVar(const char *varname)
-  {
-      int nvals, ncomps = 3;
-      // Read the number of values contained in the array
-      // specified by varname.
-      nvals = NUMBER OF VALUES IN ARRAY NAMED BY varname;
-      ncomps = NUMBER OF VECTOR COMPONENTS IN ARRAY NAMED BY varname;
-      // Read component 1 from the file.
-      float *comp1 = new float[nvals];
-      READ nvals FLOAT VALUES INTO comp1
-      // Read component 2 from the file.
-      float *comp2 = new float[nvals];
-      READ nvals FLOAT VALUES INTO comp2
-      // Read component 3 from the file.
-      float *comp3 = 0;
-      if(ncomps > 2)
-      {
-          comp3 = new float[nvals];
-          READ nvals FLOAT VALUES INTO comp3
-      }
-      // Allocate the return vtkFloatArray object. Note that
-      // you can use vtkFloatArray, vtkDoubleArray,
-      // vtkUnsignedCharArray, vtkIntArray, etc.
-      vtkFloatArray *arr = vtkFloatArray::New();
-      arr->SetNumberOfComponents(3);
-      arr->SetNumberOfTuples(nvals);
-      float *data = (float *)arr->GetVoidPointer(0);
-      float *c1 = comp1;
-      float *c2 = comp2;
-      float *c3 = comp3;
-      if(ncomps == 3)
-      {
-          for(int i = 0; i < nvals; ++i)
-          {
-              *data++ = *c1++;
-              *data++ = *c2++;
-              *data++ = *c3++;
-          }
-      }
-      else if(ncomps == 2)
-      {
-          for(int i = 0; i < nvals; ++i)
-          {
-              *data++ = *c1++;
-              *data++ = *c2++;
-              *data++ = 0.;
-          }
-      }
-      else
-      {
-          delete [] comp1;
-          delete [] comp2;
-          delete [] comp3;
-          arr->Delete();
-          EXCEPTION1(InvalidVariableException, varname);
-      }
-      // Delete temporary arrays.
-      delete [] comp1;
-      delete [] comp2;
-      delete [] comp3;
+    #include <vtkFloatArray.h>
+    #include <InvalidVariableException.h>
 
-      return arr;
-  }
+    vtkDataArray *
+    avtXXXFileFormat::GetVectorVar(const char *varname)
+    {
+        int nvals, ncomps = 3;
+        // Read the number of values contained in the array
+        // specified by varname.
+        nvals = NUMBER OF VALUES IN ARRAY NAMED BY varname;
+        ncomps = NUMBER OF VECTOR COMPONENTS IN ARRAY NAMED BY varname;
+        // Read component 1 from the file.
+        float *comp1 = new float[nvals];
+        READ nvals FLOAT VALUES INTO comp1
+        // Read component 2 from the file.
+        float *comp2 = new float[nvals];
+        READ nvals FLOAT VALUES INTO comp2
+        // Read component 3 from the file.
+        float *comp3 = 0;
+        if(ncomps > 2)
+        {
+            comp3 = new float[nvals];
+            READ nvals FLOAT VALUES INTO comp3
+        }
+        // Allocate the return vtkFloatArray object. Note that
+        // you can use vtkFloatArray, vtkDoubleArray,
+        // vtkUnsignedCharArray, vtkIntArray, etc.
+        vtkFloatArray *arr = vtkFloatArray::New();
+        arr->SetNumberOfComponents(3);
+        arr->SetNumberOfTuples(nvals);
+        float *data = (float *)arr->GetVoidPointer(0);
+        float *c1 = comp1;
+        float *c2 = comp2;
+        float *c3 = comp3;
+        if(ncomps == 3)
+        {
+            for(int i = 0; i < nvals; ++i)
+            {
+                *data++ = *c1++;
+                *data++ = *c2++;
+                *data++ = *c3++;
+            }
+        }
+        else if(ncomps == 2)
+        {
+            for(int i = 0; i < nvals; ++i)
+            {
+                *data++ = *c1++;
+                *data++ = *c2++;
+                *data++ = 0.;
+            }
+        }
+        else
+        {
+            delete [] comp1;
+            delete [] comp2;
+            delete [] comp3;
+            arr->Delete();
+            EXCEPTION1(InvalidVariableException, varname);
+        }
+        // Delete temporary arrays.
+        delete [] comp1;
+        delete [] comp2;
+        delete [] comp3;
 
-.. raw:: html 
+        return arr;
+    }
 
-   </details>
-   <br>
 
 
 Using a VTK reader class
@@ -1530,34 +1474,31 @@ If you provide *GetCycle* then the *ReturnsValidCycle* method should return *tru
 The same pattern applies if you implement *GetTime* - except that you would also implement the *ReturnsValidTime* method.
 Replace the capitalized sections of code in the listing with code to read the correct cycle and time values from your file format.
 
-.. raw:: html 
+.. container:: collapsible
 
-   <details>
-   <summary><a>Example for returning cyles, times from ST plug-in </a></summary>
+  .. container:: header
 
-.. code-block:: c
+    Example for returning cyles, times from ST plug-in.
 
-  // NOTE - This code incomplete and requires capitalized portions
-  // to be replaced with code to read values from your file format.
+  .. code-block:: c
 
-  int
-  avtXXXFileFormat::GetCycle(void)
-  {
-      int cycle = OPEN FILE AND READ THE CYCLE VALUE;
-      return cycle;
-  }
+    // NOTE - This code is incomplete and requires capitalized portions
+    // to be replaced with code to read values from your file format.
 
-  double
-  avtXXXFileFormat::GetTime(void)
-  {
-      double dtime = OPEN FILE AND READ THE TIME VALUE;
-      return dtime;
-  }
+    int
+    avtXXXFileFormat::GetCycle(void)
+    {
+        int cycle = OPEN FILE AND READ THE CYCLE VALUE;
+        return cycle;
+    }
 
-.. raw:: html 
+    double
+    avtXXXFileFormat::GetTime(void)
+    {
+        double dtime = OPEN FILE AND READ THE TIME VALUE;
+        return dtime;
+    }
 
-   </details>
-   <br>
 
 In the event that you implement the *GetCycle* method but no cycle value is available in the file, you can return the *INVALID_CYCLE* value to make VisIt_ discard your plug-in's cycle number and guess the cycle number from the filename.
 If you want VisIt_ to successfully guess the cycle number from the filename then you must implement the *GetCycleFromFilename* method.
@@ -1589,53 +1530,49 @@ This simplifies the implementation and ensures that the number of time states re
 Replace the capitalized sections of code in the listing with code to read the correct cycles and times from your file format.
 
 
-.. raw:: html 
+.. container:: collapsible
 
-   <details>
-   <summary><a>Example for returning cycles, times from MT plug-in</a></summary>
+  .. container:: header
 
-.. code-block:: c
+    Example for returning cycles, times from MT plug-in.
 
-  // NOTE - This code incomplete and requires capitalized portions
-  // to be replaced with code to read values from your file format.
+  .. code-block:: c
 
-  void
-  avtXXXFileFormat::GetCycles(std::vector<int> &cycles)
-  {
-      int ncycles, *vals = 0;
-      ncycles = OPEN FILE AND READ THE NUMBER OF CYCLES;
-      READ ncycles INTEGER VALUES INTO THE vals ARRAY;
-      // Store the cycles in the vector.
-      for(int i = 0; i < ncycles; ++i)
-          cycles.push_back(vals[i]);
-      delete [] vals;
-  }
+    // NOTE - This code is incomplete and requires capitalized portions
+    // to be replaced with code to read values from your file format.
 
-  void
-  avtXXXFileFormat::GetTime(std::vector<double> &times)
-  {
-      int ntimes;
-      double *vals = 0;
-      ntimes = OPEN FILE AND READ THE NUMBER OF TIMES;
-      READ ntimes DOUBLE VALUES INTO THE vals ARRAY;
-      // Store the times in the vector.
-      for(int i = 0; i < ntimes; ++i)
-          times.push_back(vals[i]);
-      delete [] vals;
-  }
+    void
+    avtXXXFileFormat::GetCycles(std::vector<int> &cycles)
+    {
+        int ncycles, *vals = 0;
+        ncycles = OPEN FILE AND READ THE NUMBER OF CYCLES;
+        READ ncycles INTEGER VALUES INTO THE vals ARRAY;
+        // Store the cycles in the vector.
+        for(int i = 0; i < ncycles; ++i)
+            cycles.push_back(vals[i]);
+        delete [] vals;
+    }
 
-  int
-  avtXXXXFileFormat::GetNTimesteps(void)
-  {
-      std::vector<double> times;
-      GetTimes(times);
-      return times.size();
-  }
+    void
+    avtXXXFileFormat::GetTime(std::vector<double> &times)
+    {
+        int ntimes;
+        double *vals = 0;
+        ntimes = OPEN FILE AND READ THE NUMBER OF TIMES;
+        READ ntimes DOUBLE VALUES INTO THE vals ARRAY;
+        // Store the times in the vector.
+        for(int i = 0; i < ntimes; ++i)
+            times.push_back(vals[i]);
+        delete [] vals;
+    }
 
-.. raw:: html 
-
-   </details>
-   <br>
+    int
+    avtXXXXFileFormat::GetNTimesteps(void)
+    {
+        std::vector<double> times;
+        GetTimes(times);
+        return times.size();
+    }
 
 
 Auxiliary data
@@ -1667,62 +1604,59 @@ If the data extents are available then the list of minimum and maximum values fo
 Once the interval tree is constructed, as shown in the code listing, the *GetAuxiliaryData* method must return the interval tree object and set the destructor function argument to a function that can be called to later destroy the interval tree.
 To add support for data extents to your database reader plug-in, copy the *GetAuxiliaryData* method in the code listing and replace the capitalized lines of code with code that reads the required information from your file format.
 
-.. raw:: html 
+.. container:: collapsible
 
-   <details>
-   <summary><a>Example for returning data extents</a></summary>
+  .. container:: header
 
-.. code-block:: c
+    Example for returning data extents.
 
-  // NOTE - This code is incomplete and requires capitalized portions
-  // to be replaced with code to read values from your file format.
+  .. code-block:: c
 
-  #include <avtIntervalTree.h>
+    // NOTE - This code is incomplete and requires capitalized portions
+    // to be replaced with code to read values from your file format.
 
-  // STMD version of GetAuxiliaryData.
+    #include <avtIntervalTree.h>
 
-  void *
-  avtXXXXFileFormat::GetAuxiliaryData(const char *var,
-      int domain, const char *type, void *,
-      DestructorFunction &df)
-  {
-      void *retval = 0;
-      if(strcmp(type, AUXILIARY_DATA_DATA_EXTENTS) == 0)
-      {
-          // Read the number of domains for the mesh.
-          int ndoms = READ NUMBER OF DOMAINS FROM FILE;
-          // Read the min/max values for each domain of the
-          // "var" variable. This information should be in
-          // a single file and should be available without
-          // having to read the real data.
-          double *minvals = new double[ndoms];
-          double *maxvals = new double[ndoms];
-          READ ndoms DOUBLE VALUES INTO minvals ARRAY.
-          READ ndoms DOUBLE VALUES INTO maxvals ARRAY.
-          // Create an interval tree
-          avtIntervalTree *itree = new avtIntervalTree(ndoms, 1);
-          for(int dom = 0; dom < ndoms; ++dom)
-          {
-              double range[2];
-              range[0] = minvals[dom];
-              range[1] = maxvals[dom];
-              itree->AddElement(dom, range);
-          }
-          itree->Calculate(true);
-          // Delete temporary arrays.
-          delete [] minvals;
-          delete [] maxvals;
-          // Set return values
-          retval = (void *)itree;
-          df = avtIntervalTree::Destruct;
-      }
-      return retval;
-  }
+    // STMD version of GetAuxiliaryData.
 
-.. raw:: html 
+    void *
+    avtXXXXFileFormat::GetAuxiliaryData(const char *var,
+        int domain, const char *type, void *,
+        DestructorFunction &df)
+    {
+        void *retval = 0;
+        if(strcmp(type, AUXILIARY_DATA_DATA_EXTENTS) == 0)
+        {
+            // Read the number of domains for the mesh.
+            int ndoms = READ NUMBER OF DOMAINS FROM FILE;
+            // Read the min/max values for each domain of the
+            // "var" variable. This information should be in
+            // a single file and should be available without
+            // having to read the real data.
+            double *minvals = new double[ndoms];
+            double *maxvals = new double[ndoms];
+            READ ndoms DOUBLE VALUES INTO minvals ARRAY.
+            READ ndoms DOUBLE VALUES INTO maxvals ARRAY.
+            // Create an interval tree
+            avtIntervalTree *itree = new avtIntervalTree(ndoms, 1);
+            for(int dom = 0; dom < ndoms; ++dom)
+            {
+                double range[2];
+                range[0] = minvals[dom];
+                range[1] = maxvals[dom];
+                itree->AddElement(dom, range);
+            }
+            itree->Calculate(true);
+            // Delete temporary arrays.
+            delete [] minvals;
+            delete [] maxvals;
+            // Set return values
+            retval = (void *)itree;
+            df = avtIntervalTree::Destruct;
+        }
+        return retval;
+    }
 
-   </details>
-   <br>
 
 
 Returning spatial extents
@@ -1739,61 +1673,58 @@ When adding information about a specific domain to the interval tree, you must p
 The spatial extents for one domain are expected to be provided in the following order: xmin, xmax, ymin, ymax, zmin, zmax.
 To add support for spatial extents to your database reader plug-in, copy the *GetAuxiliaryData* method in the code listing and replace the capitalized lines of code with code that reads the required information from your file format.
 
-.. raw:: html 
+.. container:: collapsible
 
-   <details>
-   <summary><a>Example for returning spatial extents</a></summary>
+  .. container:: header
 
-.. code-block:: c
+    Example for returning spatial extents.
 
-  // NOTE - This code incomplete and requires capitalized portions
-  // to be replaced with code to read values from your file format.
+  .. code-block:: c
 
-  #include <avtIntervalTree.h>
+    // NOTE - This code is incomplete and requires capitalized portions
+    // to be replaced with code to read values from your file format.
 
-  // STMD version of GetAuxiliaryData.
+    #include <avtIntervalTree.h>
 
-  void *
-  avtXXXXFileFormat::GetAuxiliaryData(const char *var,
-      int domain, const char *type, void *,
-      DestructorFunction &df)
-  {
-      void *retval = 0;
-      if(strcmp(type, AUXILIARY_DATA_SPATIAL_EXTENTS) == 0)
-      {
-          // Read the number of domains for the mesh.
-          int ndoms = READ NUMBER OF DOMAINS FROM FILE;
-          // Read the spatial extents for each domain of the
-          // mesh. This information should be in a single
-          // and should be available without having to
-          // read the real data. The expected format for
-          // the data in the spatialextents array is to
-          // repeat the following pattern for each domain:
-          // xmin, xmax, ymin, ymax, zmin, zmax.
-          double *spatialextents = new double[ndoms * 6];
-          READ ndoms*6 DOUBLE VALUES INTO spatialextents ARRAY.
-          // Create an interval tree
-          avtIntervalTree *itree = new avtIntervalTree(ndoms, 3);
-          double *extents = spatialextents;
-          for(int dom = 0; dom < ndoms; ++dom)
-          {
-              itree->AddElement(dom, extents);
-              extents += 6;
-          }
-          itree->Calculate(true);
-          // Delete temporary array.
-          delete [] spatialextents;
-          // Set return values
-          retval = (void *)itree;
-          df = avtIntervalTree::Destruct;
-      }
-      return retval;
-  }
+    // STMD version of GetAuxiliaryData.
 
-.. raw:: html 
+    void *
+    avtXXXXFileFormat::GetAuxiliaryData(const char *var,
+        int domain, const char *type, void *,
+        DestructorFunction &df)
+    {
+        void *retval = 0;
+        if(strcmp(type, AUXILIARY_DATA_SPATIAL_EXTENTS) == 0)
+        {
+            // Read the number of domains for the mesh.
+            int ndoms = READ NUMBER OF DOMAINS FROM FILE;
+            // Read the spatial extents for each domain of the
+            // mesh. This information should be in a single
+            // and should be available without having to
+            // read the real data. The expected format for
+            // the data in the spatialextents array is to
+            // repeat the following pattern for each domain:
+            // xmin, xmax, ymin, ymax, zmin, zmax.
+            double *spatialextents = new double[ndoms * 6];
+            READ ndoms*6 DOUBLE VALUES INTO spatialextents ARRAY.
+            // Create an interval tree
+            avtIntervalTree *itree = new avtIntervalTree(ndoms, 3);
+            double *extents = spatialextents;
+            for(int dom = 0; dom < ndoms; ++dom)
+            {
+                itree->AddElement(dom, extents);
+                extents += 6;
+            }
+            itree->Calculate(true);
+            // Delete temporary array.
+            delete [] spatialextents;
+            // Set return values
+            retval = (void *)itree;
+            df = avtIntervalTree::Destruct;
+        }
+        return retval;
+    }
 
-   </details>
-   <br>
 
 
 Returning materials
@@ -1808,96 +1739,93 @@ Materials can also be structured so that instead of providing just one material 
 So-called "mixed materials" are created using additional arrays, described in :ref:`Materials <Data_Into_VisIt_Materials>`.
 To add support for materials in your database reader plug-in's *GetAuxiliaryData* method, replace the capitalized lines in the code example with code that read the necessary values from your file format.
 
-.. raw:: html 
+.. container:: collapsible
 
-   <details>
-   <summary><a>Example for returning materials</a></summary>
+  .. container:: header
 
-.. code-block:: c
+    Example for returning materials.
 
-  // NOTE - This code incomplete and requires capitalized portions
-  // to be replaced with code to read values from your file format.
+  .. code-block:: c
 
-  #include <avtMaterial.h>
+    // NOTE - This code is incomplete and requires capitalized portions
+    // to be replaced with code to read values from your file format.
 
-  // STMD version of GetAuxiliaryData.
+    #include <avtMaterial.h>
 
-  void *
-  avtXXXXFileFormat::GetAuxiliaryData(const char *var,
-      int domain, const char *type, void *,
-      DestructorFunction &df)
-  {
-      void *retval = 0;
-      if(strcmp(type, AUXILIARY_DATA_MATERIAL) == 0)
-      {
-          int dims[3] = {1,1,1}, ndims = 1;
-          // Structured mesh case
-          ndims = MESH DIMENSION, 2 OR 3;
-          dims[0] = NUMBER OF ZONES IN X DIMENSION;
-          dims[1] = NUMBER OF ZONES IN Y DIMENSION;
-          dims[2] = NUMBER OF ZONES IN Z DIMENSION, OR 1 IF 2D;
-          // Unstructured mesh case
-          dims[0] = NUMBER OF ZONES IN THE MESH
-          ndims = 1;
-          // Read the number of materials from the file. This
-          // must have already been read from the file when
-          // PopulateDatabaseMetaData was called.
-          int nmats = NUMBER OF MATERIALS;
-          // The matnos array contains the list of numbers that
-          // are associated with particular materials. For example,
-          // matnos[0] is the number that will be associated with
-          // the first material and any time it is seen in the
-          // matlist array, that number should be taken to mean
-          // material 1. The numbers in the matnos array must
-          // all be greater than or equal to 1.
-          int *matnos = new int[nmats];
-          READ nmats INTEGER VALUES INTO THE matnos ARRAY.
-          // Read the material names from your file format or
-          // make up names for the materials. Use the same
-          // approach as when you created material names in
-          // the PopulateDatabaseMetaData method.
-          char **names = new char *[nmats];
-          READ MATERIAL NAMES FROM YOUR FILE FORMAT UNTIL EACH
-          ELEMENT OF THE names ARRAY POINTS TO ITS OWN STRING.
-          // Read the matlist array, which tells what the material
-          // is for each zone in the mesh.
-          int nzones = dims[0] * dims[1] * dims[2];
-          int *matlist = new int[nzones];
-          READ nzones INTEGERS INTO THE matlist array.
-          // Optionally create mix_mat, mix_next, mix_zone, mix_vf
-          // arrays and read their contents from the file format.
-          // Use the information to create an avtMaterial object.
-          avtMaterial *mat = new avtMaterial(
-              nmats,
-              matnos,
-              names,
-              ndims,
-              dims,
-              0,
-              matlist,
-              0, // length of mix arrays
-              0, // mix_mat array
-              0, // mix_next array
-              0, // mix_zone array
-              0 // mix_vf array);
+    // STMD version of GetAuxiliaryData.
 
-          // Clean up.
-          delete [] matlist;
-          delete [] matnos;
-          for(int i = 0; i < nmats; ++i)
-              delete [] names[i];
-          delete [] names;
-          // Set the return values.
-          retval = (void *)mat;
-          df = avtMaterial::Destruct;
-      }
-      return retval;
-  }
+    void *
+    avtXXXXFileFormat::GetAuxiliaryData(const char *var,
+        int domain, const char *type, void *,
+        DestructorFunction &df)
+    {
+        void *retval = 0;
+        if(strcmp(type, AUXILIARY_DATA_MATERIAL) == 0)
+        {
+            int dims[3] = {1,1,1}, ndims = 1;
+            // Structured mesh case
+            ndims = MESH DIMENSION, 2 OR 3;
+            dims[0] = NUMBER OF ZONES IN X DIMENSION;
+            dims[1] = NUMBER OF ZONES IN Y DIMENSION;
+            dims[2] = NUMBER OF ZONES IN Z DIMENSION, OR 1 IF 2D;
+            // Unstructured mesh case
+            dims[0] = NUMBER OF ZONES IN THE MESH
+            ndims = 1;
+            // Read the number of materials from the file. This
+            // must have already been read from the file when
+            // PopulateDatabaseMetaData was called.
+            int nmats = NUMBER OF MATERIALS;
+            // The matnos array contains the list of numbers that
+            // are associated with particular materials. For example,
+            // matnos[0] is the number that will be associated with
+            // the first material and any time it is seen in the
+            // matlist array, that number should be taken to mean
+            // material 1. The numbers in the matnos array must
+            // all be greater than or equal to 1.
+            int *matnos = new int[nmats];
+            READ nmats INTEGER VALUES INTO THE matnos ARRAY.
+            // Read the material names from your file format or
+            // make up names for the materials. Use the same
+            // approach as when you created material names in
+            // the PopulateDatabaseMetaData method.
+            char **names = new char *[nmats];
+            READ MATERIAL NAMES FROM YOUR FILE FORMAT UNTIL EACH
+            ELEMENT OF THE names ARRAY POINTS TO ITS OWN STRING.
+            // Read the matlist array, which tells what the material
+            // is for each zone in the mesh.
+            int nzones = dims[0] * dims[1] * dims[2];
+            int *matlist = new int[nzones];
+            READ nzones INTEGERS INTO THE matlist array.
+            // Optionally create mix_mat, mix_next, mix_zone, mix_vf
+            // arrays and read their contents from the file format.
+            // Use the information to create an avtMaterial object.
+            avtMaterial *mat = new avtMaterial(
+                nmats,
+                matnos,
+                names,
+                ndims,
+                dims,
+                0,
+                matlist,
+                0, // length of mix arrays
+                0, // mix_mat array
+                0, // mix_next array
+                0, // mix_zone array
+                0 // mix_vf array);
 
-.. raw:: html 
+            // Clean up.
+            delete [] matlist;
+            delete [] matnos;
+            for(int i = 0; i < nmats; ++i)
+                delete [] names[i];
+            delete [] names;
+            // Set the return values.
+            retval = (void *)mat;
+            df = avtMaterial::Destruct;
+        }
+        return retval;
+    }
 
-   </details>
-   <br>
 
 Returning ghost zones
 ~~~~~~~~~~~~~~~~~~~~~
@@ -1915,56 +1843,52 @@ The code in the listing can be used to remove zones from any mesh type and works
 Replace any capitalized code with code that can read the necessary values from your file format.
 
 
-.. raw:: html 
+.. container:: collapsible
 
-   <details>
-   <summary><a>Example for returning ghost data</a></summary>
+  .. container:: header
 
-.. code-block:: c
-  :caption: Example for returning ghost data
+    Example for returning ghost data.
 
-  // NOTE - This code incomplete and requires capitalized portions
-  // to be replaced with code to read values from your file format.
+  .. code-block:: c
+    :caption: Example for returning ghost data
 
-  #include <avtGhostData.h>
-  #include <vtkUnsignedCharArray.h>
+    // NOTE - This code is incomplete and requires capitalized portions
+    // to be replaced with code to read values from your file format.
 
-  vtkDataSet *
-  avtXXXXFileFormat::GetMesh(const char *meshname)
-  {
-      // Code to create your mesh goes here.
-      vtkDataSet *retval = CODE TO CREATE YOUR MESH;
-      // Now that you have your mesh, figure out which cells need
-      // to be removed.
-      int nCells = retval->GetNumberOfCells();
-      int *blanks = new int[nCells];
-      READ nCells INTEGER VALUES INTO blanks ARRAY.
-      // Now that we have the blanks array, create avtGhostZones.
-      unsigned char realVal = 0, ghost = 0;
-      avtGhostData::AddGhostZoneType(ghost, ZONE_NOT_APPLICABLE_TO_PROBLEM);
-      vtkUnsignedCharArray *ghostCells = vtkUnsignedCharArray::New();
-      ghostCells->SetName("avtGhostZones");
-      ghostCells->Allocate(nCells);
-      for(int i = 0; i < nCells; ++i)
-      {
-          if(blanks[i])
-              ghostCells->InsertNextValue(realVal);
-          else
-              ghostCells->InsertNextValue(ghost);
-      }
+    #include <avtGhostData.h>
+    #include <vtkUnsignedCharArray.h>
 
-      retval->GetCellData()->AddArray(ghostCells);
-      retval->SetUpdateGhostLevel(0);
-      ghostCells->Delete();
-      // Clean up
-      delete [] blanks;
-      return retval;
-  }
+    vtkDataSet *
+    avtXXXXFileFormat::GetMesh(const char *meshname)
+    {
+        // Code to create your mesh goes here.
+        vtkDataSet *retval = CODE TO CREATE YOUR MESH;
+        // Now that you have your mesh, figure out which cells need
+        // to be removed.
+        int nCells = retval->GetNumberOfCells();
+        int *blanks = new int[nCells];
+        READ nCells INTEGER VALUES INTO blanks ARRAY.
+        // Now that we have the blanks array, create avtGhostZones.
+        unsigned char realVal = 0, ghost = 0;
+        avtGhostData::AddGhostZoneType(ghost, ZONE_NOT_APPLICABLE_TO_PROBLEM);
+        vtkUnsignedCharArray *ghostCells = vtkUnsignedCharArray::New();
+        ghostCells->SetName("avtGhostZones");
+        ghostCells->Allocate(nCells);
+        for(int i = 0; i < nCells; ++i)
+        {
+            if(blanks[i])
+                ghostCells->InsertNextValue(realVal);
+            else
+                ghostCells->InsertNextValue(ghost);
+        }
 
-.. raw:: html 
-
-   </details>
-   <br>
+        retval->GetCellData()->AddArray(ghostCells);
+        retval->SetUpdateGhostLevel(0);
+        ghostCells->Delete();
+        // Clean up
+        delete [] blanks;
+        return retval;
+    }
 
 
 Ghost zones at the domain boundaries
