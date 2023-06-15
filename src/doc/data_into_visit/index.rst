@@ -6,8 +6,8 @@ Getting Data into VisIt_
 Contents:
 
 .. toctree::
-   :maxdepth: 1 
-   :numbered: 
+   :maxdepth: 1
+   :numbered:
 
    Intro
    VTKFormat
@@ -17,7 +17,8 @@ Contents:
    SiloFormat
    XdmfFormat
    BlueprintFormat
-   AdvancedTopics 
+   AdvancedTopics
+   CreatingDatabasePlugin
 
 .. Indices and tables
 .. ==================
