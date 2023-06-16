@@ -398,6 +398,9 @@ if not os.path.isdir(conduit_dir_imaging_planes1):
 conduit_dir_detector_dims = pjoin(outdir_set, "detector_dims")
 if not os.path.isdir(conduit_dir_detector_dims):
     os.mkdir(conduit_dir_detector_dims)
+conduit_dir_nonsquare_pixels = pjoin(outdir_set, "nonsquare_pix")
+if not os.path.isdir(conduit_dir_nonsquare_pixels):
+    os.mkdir(conduit_dir_nonsquare_pixels)
 
 def setup_bp_test():
     OpenDatabase(silo_data_path("curv3d.silo"))
@@ -641,7 +644,7 @@ def blueprint_test(output_type, outdir, testtextnumber, testname):
         origin = (0.0, 2.5, 10.0)
         theta = 0
         phi = 0
-        width = 10
+        width = 15
         height = 10
         image_size = (300, 200)
 
@@ -894,12 +897,226 @@ def test_imaging_planes_and_rays():
         View3DAtts.farPlane = 117.306
         SetView3D(View3DAtts)
 
-        Test("Blueprint_HDF5_Imaging_Planes" + str(i))
+        Test("Blueprint_HDF5_Imaging_Planes" + str(i), 0, 1)
 
         teardown_bp_test()
         CloseDatabase(conduit_db)
 
 test_imaging_planes_and_rays()
+
+def test_non_square_pixels():
+    setup_bp_test()
+
+    params = dict()
+
+    params["vars"] = ("d", "p")
+    params["image_size"] = (300, 300)
+    params["energy_group_bounds"] = [2.7, 6.2]
+
+    # filename, directory, and output type choices
+    params["output_dir"] = conduit_dir_nonsquare_pixels
+    params["filename_scheme"] = "family" # "none", "family", or "cycle" 
+    params["output_type"] = "hdf5"
+
+    params["focus"] = (0., 2.5, 10.)
+    params["parallel_scale"] = 10.
+    params["near_plane"] = -25.
+    params["far_plane"] = 25.
+    params["view_angle"] = 30
+    params["perspective"] = 1 # 0 parallel, 1 perspective
+
+    # default
+    params["image_size"] = (300, 300)
+    Query("XRay Image", params)
+
+    # view width is set but is equal to what it would have been if it were calculated
+    params["view_width"] = 10.
+    Query("XRay Image", params)
+
+    # view width is twice the length of the parallel scale
+    params["view_width"] = 20.
+    Query("XRay Image", params)
+
+    # view width is half the length of the parallel scale
+    params["view_width"] = 5.
+    Query("XRay Image", params)
+
+    # view width is half the length of the parallel scale
+    # less pixels to demonstrate
+    params["image_size"] = (4, 4)
+    params["view_width"] = 5.
+    Query("XRay Image", params)
+
+    conduit_db = pjoin(conduit_dir_nonsquare_pixels, "output.*.root database")
+    OpenDatabase(conduit_db)
+    
+    # first we test the imaging planes and rays look as we expect
+    AddPlot("Pseudocolor", "mesh_near_plane_topo/near_plane_field")
+    AddPlot("Pseudocolor", "mesh_view_plane_topo/view_plane_field")
+    AddPlot("Pseudocolor", "mesh_far_plane_topo/far_plane_field")
+    DrawPlots()
+
+    # Make the plot of the near plane active
+    SetActivePlots(1)
+    PseudocolorAtts = PseudocolorAttributes()
+    # We invert the color table so that it is a different color from the far plane
+    PseudocolorAtts.invertColorTable = 1
+    SetPlotOptions(PseudocolorAtts)
+
+    # Make the plot of the view plane active
+    SetActivePlots(2)
+    PseudocolorAtts = PseudocolorAttributes()
+    PseudocolorAtts.colorTableName = "Oranges"
+    PseudocolorAtts.invertColorTable = 1
+    PseudocolorAtts.opacityType = PseudocolorAtts.Constant  # ColorTable, FullyOpaque, Constant, Ramp, VariableRange
+    # We lower the opacity so that the view plane does not obstruct our view of anything.
+    PseudocolorAtts.opacity = 0.7
+    SetPlotOptions(PseudocolorAtts)
+
+    # leave the far plane as is
+
+    # add ray corners topo
+    AddPlot("Mesh", "mesh_ray_corners_topo")
+    DrawPlots()
+    MeshAtts = MeshAttributes()
+    MeshAtts.lineWidth = 1
+    SetPlotOptions(MeshAtts)
+
+    # set view
+    View3DAtts = View3DAttributes()
+    View3DAtts.viewNormal = (-0.350116, 0.224905, -0.909306)
+    View3DAtts.focus = (0, 2.5, 10)
+    View3DAtts.viewUp = (0.0306245, 0.972977, 0.228862)
+    View3DAtts.viewAngle = 30
+    View3DAtts.parallelScale = 34.3903
+    View3DAtts.nearPlane = -68.7807
+    View3DAtts.farPlane = 68.7807
+    View3DAtts.imagePan = (0, 0)
+    View3DAtts.imageZoom = 1
+    View3DAtts.perspective = 1
+    View3DAtts.eyeAngle = 2
+    View3DAtts.centerOfRotationSet = 0
+    View3DAtts.centerOfRotation = (0, 2.5, 10)
+    View3DAtts.axis3DScaleFlag = 0
+    View3DAtts.axis3DScales = (1, 1, 1)
+    View3DAtts.shear = (0, 0, 1)
+    View3DAtts.windowValid = 1
+    SetView3D(View3DAtts)
+
+    # take pictures of all the ray setups
+    Test("NonSquare_Pixels_Ray_trace_setup_1", 0, 1)
+    TimeSliderNextState()
+    AddPlot("Pseudocolor", "mesh_ray_topo/ray_field", 1, 1)
+    DrawPlots()
+    Test("NonSquare_Pixels_Ray_trace_setup_2", 0, 1)
+    HideActivePlots()
+    TimeSliderNextState()
+    Test("NonSquare_Pixels_Ray_trace_setup_3", 0, 1)
+    TimeSliderNextState()
+    Test("NonSquare_Pixels_Ray_trace_setup_4", 0, 1)
+    HideActivePlots()
+    Test("NonSquare_Pixels_Ray_trace_setup_5", 0, 1)
+    HideActivePlots()
+    TimeSliderNextState()
+    Test("NonSquare_Pixels_Ray_trace_setup_6", 0, 1)
+    TimeSliderNextState()
+    Test("NonSquare_Pixels_Ray_trace_setup_7", 0, 1)
+    HideActivePlots()
+    Test("NonSquare_Pixels_Ray_trace_setup_8", 0, 1)
+    HideActivePlots()
+    TimeSliderNextState()
+    Test("NonSquare_Pixels_Ray_trace_setup_9", 0, 1)
+    TimeSliderNextState()
+    Test("NonSquare_Pixels_Ray_trace_setup_10", 0, 1)
+    HideActivePlots()
+    Test("NonSquare_Pixels_Ray_trace_setup_11", 0, 1)
+    HideActivePlots()
+
+    # cleanup
+    TimeSliderNextState()
+    DeleteAllPlots()
+
+    # take pictures of the hi-res images
+    AddPlot("Pseudocolor", "mesh_image_topo/intensities", 1, 1)
+    DrawPlots()
+    ResetView()
+    AddPlot("Pseudocolor", "mesh_spatial_topo/intensities_spatial", 1, 1)
+    DrawPlots()
+    HideActivePlots()
+    SetActivePlots((0, 1))
+    Test("NonSquare_Pixels_hi_res_images1", 0, 1)
+    HideActivePlots()
+    Test("NonSquare_Pixels_hi_res_images2", 0, 1)
+    HideActivePlots()
+    TimeSliderNextState()
+    TimeSliderNextState()
+    Test("NonSquare_Pixels_hi_res_images3", 0, 1)
+    HideActivePlots()
+    Test("NonSquare_Pixels_hi_res_images4", 0, 1)
+    HideActivePlots()
+    TimeSliderNextState()
+    TimeSliderNextState()
+    Test("NonSquare_Pixels_hi_res_images5", 0, 1)
+    HideActivePlots()
+    Test("NonSquare_Pixels_hi_res_images6", 0, 1)
+    HideActivePlots()
+    TimeSliderNextState()
+    TimeSliderNextState()
+    Test("NonSquare_Pixels_hi_res_images7", 0, 1)
+    HideActivePlots()
+    Test("NonSquare_Pixels_hi_res_images8", 0, 1)
+    HideActivePlots()
+    TimeSliderNextState()
+
+    # cleanup
+    TimeSliderNextState()
+    DeleteAllPlots()
+
+    # take pictures of the low res images
+    AddPlot("Pseudocolor", "mesh_image_topo/intensities", 1, 1)
+    DrawPlots()
+    AddPlot("Mesh", "mesh_image_topo", 1, 1)
+    DrawPlots()
+    AddPlot("Pseudocolor", "mesh_spatial_topo/intensities_spatial", 1, 1)
+    DrawPlots()
+    AddPlot("Mesh", "mesh_spatial_topo", 1, 1)
+    DrawPlots()
+    SetActivePlots((2, 3))
+    HideActivePlots()
+    TimeSliderNextState()
+    ResetView()
+    SetActivePlots((0, 2, 3))
+    SetActivePlots((0, 1, 2, 3))
+    Test("NonSquare_Pixels_low_res_mesh_plots1", 0, 1)
+    HideActivePlots()
+    Test("NonSquare_Pixels_low_res_mesh_plots2", 0, 1)
+    HideActivePlots()
+    TimeSliderNextState()
+    TimeSliderNextState()
+    ResetView()
+    Test("NonSquare_Pixels_low_res_mesh_plots3", 0, 1)
+    HideActivePlots()
+    Test("NonSquare_Pixels_low_res_mesh_plots4", 0, 1)
+    HideActivePlots()
+    TimeSliderNextState()
+    TimeSliderNextState()
+    ResetView()
+    Test("NonSquare_Pixels_low_res_mesh_plots5", 0, 1)
+    HideActivePlots()
+    Test("NonSquare_Pixels_low_res_mesh_plots6", 0, 1)
+    HideActivePlots()
+    TimeSliderNextState()
+    TimeSliderNextState()
+    ResetView()
+    Test("NonSquare_Pixels_low_res_mesh_plots7", 0, 1)
+    HideActivePlots()
+    Test("NonSquare_Pixels_low_res_mesh_plots8", 0, 1)
+    HideActivePlots()
+
+    teardown_bp_test()
+    CloseDatabase(conduit_db)
+
+# test_non_square_pixels()
 
 # 
 # test catching failures
