@@ -2297,7 +2297,7 @@ avtXRayFilter::RedistributeLines(int nLeaves, int *nLinesPerDataset,
 // ****************************************************************************
 void
 avtXRayFilter::CalculateImagingPlaneDims(const double &parallelScale,
-                                         const double &viewWidthOverride,
+                                         double &viewWidthOverride,
                                          const bool &nonSquarePixels,
                                          const int (&imageSize)[2],
                                          const bool &perspective,
@@ -2314,9 +2314,14 @@ avtXRayFilter::CalculateImagingPlaneDims(const double &parallelScale,
 {
     viewHeight = parallelScale;
     if (nonSquarePixels)
+    {
         viewWidth = viewWidthOverride;
+    }
     else
+    {
         viewWidth = (static_cast<float>(imageSize[0]) / static_cast<float>(imageSize[1])) * viewHeight;
+        viewWidthOverride = viewWidth;
+    }
     if (perspective)
     {
         const double viewDist{viewHeight / tan ((viewAngle * 3.1415926535) / 360.)};

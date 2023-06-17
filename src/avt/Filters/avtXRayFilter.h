@@ -121,7 +121,7 @@ class AVTFILTERS_API avtXRayFilter : public avtDatasetToDatasetFilter
     void                            SetDebugRay(int);
     void                            SetOutputRayBounds(bool);
     static void                     CalculateImagingPlaneDims(const double &parallelScale,
-                                                              const double &viewWidthOverride,
+                                                              double &viewWidthOverride,
                                                               const bool &nonSquarePixels,
                                                               const int (&imageSize)[2],
                                                               const bool &perspective,

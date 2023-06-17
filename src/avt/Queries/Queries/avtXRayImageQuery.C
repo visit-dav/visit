@@ -2383,15 +2383,8 @@ avtXRayImageQuery::WriteBlueprintXRayView(conduit::Node &xray_view)
     xray_view["view_up/z"] = viewUp[2];
     xray_view["view_angle"] = viewAngle;
     xray_view["parallel_scale"] = parallelScale;
-    if (nonSquarePixels)
-    {
-        xray_view["view_width"] = viewWidthOverride;
-        xray_view["non_square_pixels"] = "yes";
-    }
-    else
-    {
-        xray_view["non_square_pixels"] = "no";
-    }
+    xray_view["view_width"] = viewWidthOverride;
+    xray_view["non_square_pixels"] = (nonSquarePixels ? "yes" : "no");
     xray_view["near_plane"] = nearPlane;
     xray_view["far_plane"] = farPlane;
     xray_view["image_pan/x"] = imagePan[0];
