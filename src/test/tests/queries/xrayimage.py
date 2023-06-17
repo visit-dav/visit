@@ -449,6 +449,12 @@ def test_bp_state_xray_view(testname, xrayout):
     
     parallel_scale = xrayout["domain_000000/state/xray_view/parallel_scale"]
     TestValueEQ(testname + "_view_parallel_scale", parallel_scale, 5)
+
+    view_width = xrayout["domain_000000/state/xray_view/view_width"]
+    TestValueEQ(testname + "_view_view_width", view_width, 7.5)
+
+    non_square_pixels = xrayout["domain_000000/state/xray_view/non_square_pixels"]
+    TestValueEQ(testname + "_view_non_square_pixels", non_square_pixels, "yes")
     
     near_plane = xrayout["domain_000000/state/xray_view/near_plane"]
     TestValueEQ(testname + "_view_near_plane", near_plane, -100)
