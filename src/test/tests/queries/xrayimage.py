@@ -103,6 +103,9 @@
 #    tests to take advantage of this and add tests back in for yaml and json
 #    cases.
 #
+#    Justin Privitera, Fri Jun 16 17:17:14 PDT 2023
+#    Added tests for the new view width override and non square pixels 
+#    settings.
 # ----------------------------------------------------------------------------
 
 import os

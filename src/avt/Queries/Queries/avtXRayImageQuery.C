@@ -186,6 +186,9 @@ inline bool multipleOutputFiles(int otype, int numBins)
 // 
 //    Justin Privitera, Fri Apr  7 16:39:30 PDT 2023
 //    outputRayBounds is now included in the constructor.
+// 
+//    Justin Privitera, Fri Jun 16 17:17:14 PDT 2023
+//    Added view width override and non square pixels.
 //
 // ****************************************************************************
 
@@ -348,6 +351,9 @@ avtXRayImageQuery::~avtXRayImageQuery()
 // 
 //    Justin Privitera, Mon Dec 12 13:28:55 PST 2022
 //    Changed path_length_units to path_length_info.
+// 
+//    Justin Privitera, Fri Jun 16 17:17:14 PDT 2023
+//    Added view width override and non square pixels.
 //
 // ****************************************************************************
 
@@ -1285,6 +1291,10 @@ avtXRayImageQuery::GetSecondaryVars(std::vector<std::string> &outVars)
 //    Leverage avtXRayFilter::CalculateImagingPlaneDims so that calculations
 //    are not duplicated here as well.
 //    Send "state" node to metadata write call for conduit blueprint output.
+// 
+//    Justin Privitera, Fri Jun 16 17:17:14 PDT 2023
+//    Added view width override and non square pixels to call to 
+//    CalculateImagingPlaneDims().
 // 
 // ****************************************************************************
 
@@ -2366,6 +2376,9 @@ avtXRayImageQuery::WriteBlueprintImagingMeshes(conduit::Node &data_out,
 // 
 //    Justin Privitera, Wed Mar 29 13:48:51 PDT 2023
 //    Leverage conduit's features to make the code more legible.
+// 
+//    Justin Privitera, Fri Jun 16 17:17:14 PDT 2023
+//    Added view width override and non square pixels.
 //
 // ****************************************************************************
 #ifdef HAVE_CONDUIT
@@ -3076,6 +3089,10 @@ avtXRayImageQuery::GetDefaultInputParams(MapNode &params)
 //
 //  Programmer: Eric Brugger
 //  Creation:   November 20, 2014
+// 
+//  Modifications:
+//    Justin Privitera, Fri Jun 16 17:17:14 PDT 2023
+//    Added view width override and non square pixels.
 //
 // ****************************************************************************
 

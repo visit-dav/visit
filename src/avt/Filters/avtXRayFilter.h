@@ -82,6 +82,9 @@
 // 
 //    Justin Privitera, Wed Mar 29 13:48:51 PDT 2023
 //    Added CalculateImagingPlaneDims().
+// 
+//    Justin Privitera, Fri Jun 16 17:17:14 PDT 2023
+//    Added view width override and non square pixels.
 //
 // ****************************************************************************
 

@@ -54,6 +54,9 @@
 //
 //    Justin Privitera, Wed Oct 12 11:38:11 PDT 2022
 //    Removed bmp output type.
+// 
+//    Justin Privitera, Fri Jun 16 17:17:14 PDT 2023
+//    Added view width override and non square pixels.
 //
 // ****************************************************************************
 
@@ -325,6 +328,9 @@ QvisXRayImageQueryWidget::GetDoubleValues(int whichWidget, doubleVector &pt)
 //   Eric Brugger, Fri May 22 15:52:32 PDT 2015
 //   I updated the window to use the new view description and support the
 //   recently added background intensity parameter.
+// 
+//    Justin Privitera, Fri Jun 16 17:17:14 PDT 2023
+//    Added view width override and non square pixels.
 //
 // ****************************************************************************
 
@@ -476,6 +482,9 @@ QvisXRayImageQueryWidget::GetIntValues(int whichWidget, int *pt)
 //
 //   Justin Privitera, Tue Sep 27 10:52:59 PDT 2022
 //   Replaced family files with filename scheme.
+// 
+//    Justin Privitera, Fri Jun 16 17:17:14 PDT 2023
+//    Added view width override and non square pixels.
 //
 // ****************************************************************************
 bool

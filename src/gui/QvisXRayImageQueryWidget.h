@@ -45,6 +45,9 @@ class MapNode;
 // 
 //   Justin Privitera, Tue Sep 27 10:52:59 PDT 2022
 //   Replaced family files with filename scheme.
+// 
+//   Justin Privitera, Fri Jun 16 17:17:14 PDT 2023
+//   Added view width override and non square pixels.
 //
 // ****************************************************************************
 

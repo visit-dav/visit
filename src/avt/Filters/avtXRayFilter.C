@@ -366,6 +366,9 @@ static bool IntersectLineWithQuad(const double v_00[3], const double v_10[3],
 //
 //    Eric Brugger, Thu Jun  4 15:58:10 PDT 2015
 //    I added an option to enable outputting the ray bounds to a vtk file.
+// 
+//    Justin Privitera, Fri Jun 16 17:17:14 PDT 2023
+//    Added view width override and non square pixels.
 //
 // ****************************************************************************
 
@@ -497,6 +500,9 @@ avtXRayFilter::UpdateDataObjectInfo(void)
 //    Justin Privitera, Mon Dec 12 13:28:55 PST 2022
 //    Use avtVectors for some inputs since they come that way from 
 //    avtXRayImageQuery.
+// 
+//    Justin Privitera, Fri Jun 16 17:17:14 PDT 2023
+//    Added view width override and non square pixels.
 //
 // ****************************************************************************
 
@@ -2293,6 +2299,9 @@ avtXRayFilter::RedistributeLines(int nLeaves, int *nLinesPerDataset,
 //  Creation:   March 29 2023
 //
 //  Modifications:
+//    Justin Privitera, Fri Jun 16 17:17:14 PDT 2023
+//    Added viewWidthOverride and nonSquarePixels arguments, and logic using
+//    them.
 //
 // ****************************************************************************
 void
@@ -2361,6 +2370,9 @@ avtXRayFilter::CalculateImagingPlaneDims(const double &parallelScale,
 // 
 //    Justin Privitera, Wed Mar 29 13:19:53 PDT 2023
 //    Moved some calculations to CalculateImagingPlaneDims().
+// 
+//    Justin Privitera, Fri Jun 16 17:17:14 PDT 2023
+//    Added new arguments to CalculateImagingPlaneDims().
 //
 // ****************************************************************************
 
