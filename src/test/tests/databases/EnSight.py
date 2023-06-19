@@ -16,6 +16,8 @@
 #
 # ----------------------------------------------------------------------------
 
+RequiredDatabasePlugin("EnSight")
+
 def test0(datapath):
     TestSection("MT, ASCII, EnSight Gold files")
 
