@@ -316,7 +316,7 @@
           "name": "customlauncher"
         },
         {
-          "name": "host_nersc_cori.xml"
+          "name": "host_nersc_perlmutter.xml"
         }
       ]
     },

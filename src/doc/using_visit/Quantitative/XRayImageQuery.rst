@@ -2099,6 +2099,8 @@ If we adjust the query so that the near plane is further away (say maybe from -1
 Following the ray corners, we see that the upper right corner for the near plane is actually on the bottom left, because the whole near plane has been reflected to accommodate the fact that it is behind the frustum.
 This explains why the spatial extents mesh appears upside down; it is actually reflected across the x and y axes.
 
+This special case will trigger a warning message if VisIt_ is run with ``-debug 1``.
+
 .. _Visualizing_with_VisIt:
 
 Visualizing with VisIt
