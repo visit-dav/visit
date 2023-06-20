@@ -186,6 +186,9 @@ inline bool multipleOutputFiles(int otype, int numBins)
 // 
 //    Justin Privitera, Fri Apr  7 16:39:30 PDT 2023
 //    outputRayBounds is now included in the constructor.
+// 
+//    Justin Privitera, Fri Jun 16 17:17:14 PDT 2023
+//    Added view width override and non square pixels.
 //
 // ****************************************************************************
 
@@ -228,6 +231,8 @@ avtXRayImageQuery::avtXRayImageQuery():
     viewUp[2] = 0.0;
     viewAngle = 30.;
     parallelScale = 0.5;
+    viewWidthOverride = 0.0;
+    nonSquarePixels = false;
     nearPlane = -0.5;
     farPlane = 0.5;
     imagePan[0] = 0.0;
@@ -346,6 +351,9 @@ avtXRayImageQuery::~avtXRayImageQuery()
 // 
 //    Justin Privitera, Mon Dec 12 13:28:55 PST 2022
 //    Changed path_length_units to path_length_info.
+// 
+//    Justin Privitera, Fri Jun 16 17:17:14 PDT 2023
+//    Added view width override and non square pixels.
 //
 // ****************************************************************************
 
@@ -486,6 +494,12 @@ avtXRayImageQuery::SetInputParams(const MapNode &params)
     if (params.HasNumericEntry("parallel_scale"))
     {
         parallelScale = params.GetEntry("parallel_scale")->ToDouble();
+    }
+
+    if (params.HasNumericEntry("view_width"))
+    {
+        viewWidthOverride = params.GetEntry("view_width")->ToDouble();
+        nonSquarePixels = true;
     }
 
     if (params.HasNumericEntry("near_plane"))
@@ -1278,6 +1292,10 @@ avtXRayImageQuery::GetSecondaryVars(std::vector<std::string> &outVars)
 //    are not duplicated here as well.
 //    Send "state" node to metadata write call for conduit blueprint output.
 // 
+//    Justin Privitera, Fri Jun 16 17:17:14 PDT 2023
+//    Added view width override and non square pixels to call to 
+//    CalculateImagingPlaneDims().
+// 
 // ****************************************************************************
 
 void
@@ -1364,7 +1382,8 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
     if (useOldView)
         ConvertOldImagePropertiesToNew();
     filt->SetImageProperties(normal, focus, viewUp, viewAngle, parallelScale,
-        nearPlane, farPlane, imagePan, imageZoom, perspective, imageSize);
+        viewWidthOverride, nonSquarePixels, nearPlane, farPlane, imagePan, 
+        imageZoom, perspective, imageSize);
 
     filt->SetDivideEmisByAbsorb(divideEmisByAbsorb);
     filt->SetBackgroundIntensity(backgroundIntensity);
@@ -1532,7 +1551,8 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
 #ifdef HAVE_CONDUIT
             // calculate constants for use in multiple functions
             double nearHeight, nearWidth, viewHeight, viewWidth, farHeight, farWidth;
-            avtXRayFilter::CalculateImagingPlaneDims(parallelScale, imageSize, 
+            avtXRayFilter::CalculateImagingPlaneDims(parallelScale, viewWidthOverride,
+                                                     nonSquarePixels, imageSize,
                                                      perspective, viewAngle,
                                                      nearPlane, farPlane, imageZoom,
                                                      nearHeight, nearWidth,
@@ -2356,6 +2376,9 @@ avtXRayImageQuery::WriteBlueprintImagingMeshes(conduit::Node &data_out,
 // 
 //    Justin Privitera, Wed Mar 29 13:48:51 PDT 2023
 //    Leverage conduit's features to make the code more legible.
+// 
+//    Justin Privitera, Fri Jun 16 17:17:14 PDT 2023
+//    Added view width override and non square pixels.
 //
 // ****************************************************************************
 #ifdef HAVE_CONDUIT
@@ -2373,6 +2396,8 @@ avtXRayImageQuery::WriteBlueprintXRayView(conduit::Node &xray_view)
     xray_view["view_up/z"] = viewUp[2];
     xray_view["view_angle"] = viewAngle;
     xray_view["parallel_scale"] = parallelScale;
+    xray_view["view_width"] = viewWidthOverride;
+    xray_view["non_square_pixels"] = (nonSquarePixels ? "yes" : "no");
     xray_view["near_plane"] = nearPlane;
     xray_view["far_plane"] = farPlane;
     xray_view["image_pan/x"] = imagePan[0];
@@ -3064,6 +3089,10 @@ avtXRayImageQuery::GetDefaultInputParams(MapNode &params)
 //
 //  Programmer: Eric Brugger
 //  Creation:   November 20, 2014
+// 
+//  Modifications:
+//    Justin Privitera, Fri Jun 16 17:17:14 PDT 2023
+//    Added view width override and non square pixels.
 //
 // ****************************************************************************
 
@@ -3095,6 +3124,8 @@ avtXRayImageQuery::ConvertOldImagePropertiesToNew()
     }
     viewAngle = 30;
     parallelScale = height / 2.;
+    viewWidthOverride = width / 2.;
+    nonSquarePixels = true;
 
     //
     // The 10 below is to get the results to match previous results more

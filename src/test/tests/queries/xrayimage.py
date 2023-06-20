@@ -103,6 +103,9 @@
 #    tests to take advantage of this and add tests back in for yaml and json
 #    cases.
 #
+#    Justin Privitera, Fri Jun 16 17:17:14 PDT 2023
+#    Added tests for the new view width override and non square pixels 
+#    settings.
 # ----------------------------------------------------------------------------
 
 import os
@@ -398,6 +401,9 @@ if not os.path.isdir(conduit_dir_imaging_planes1):
 conduit_dir_detector_dims = pjoin(outdir_set, "detector_dims")
 if not os.path.isdir(conduit_dir_detector_dims):
     os.mkdir(conduit_dir_detector_dims)
+conduit_dir_nonsquare_pixels = pjoin(outdir_set, "nonsquare_pix")
+if not os.path.isdir(conduit_dir_nonsquare_pixels):
+    os.mkdir(conduit_dir_nonsquare_pixels)
 
 def setup_bp_test():
     OpenDatabase(silo_data_path("curv3d.silo"))
@@ -446,6 +452,12 @@ def test_bp_state_xray_view(testname, xrayout):
     
     parallel_scale = xrayout["domain_000000/state/xray_view/parallel_scale"]
     TestValueEQ(testname + "_view_parallel_scale", parallel_scale, 5)
+
+    view_width = xrayout["domain_000000/state/xray_view/view_width"]
+    TestValueEQ(testname + "_view_view_width", view_width, 7.5)
+
+    non_square_pixels = xrayout["domain_000000/state/xray_view/non_square_pixels"]
+    TestValueEQ(testname + "_view_non_square_pixels", non_square_pixels, "yes")
     
     near_plane = xrayout["domain_000000/state/xray_view/near_plane"]
     TestValueEQ(testname + "_view_near_plane", near_plane, -100)
@@ -526,8 +538,6 @@ def test_bp_state_xray_data(testname, xrayout, int_max, pl_max):
 NO_ENERGY_GROUP_BOUNDS = 0
 ENERGY_GROUP_BOUNDS_MISMATCH = 1
 ENERGY_GROUP_BOUNDS = 2
-
-
 
 class query_result_options:
     def __init__(self, num_bins, abs_name, emis_name, bin_state, units, int_max, pl_max):
@@ -641,7 +651,7 @@ def blueprint_test(output_type, outdir, testtextnumber, testname):
         origin = (0.0, 2.5, 10.0)
         theta = 0
         phi = 0
-        width = 10
+        width = 15
         height = 10
         image_size = (300, 200)
 
@@ -684,7 +694,7 @@ def blueprint_test(output_type, outdir, testtextnumber, testname):
             params["height"] = height
             params["image_size"] = image_size
             params["vars"] = ("darr", "parr")
-            params["energy_group_bounds"] = [0.0, 2.0, 6.0, 8.0]
+            params["energy_group_bounds"] = energy_group_bounds
             params["spatial_units"] = "cm"
             params["energy_units"] = "kev"
             params["abs_units"] = "abs units"
@@ -801,13 +811,13 @@ def blueprint_test(output_type, outdir, testtextnumber, testname):
     
     setup_bp_test()
     
-    Query("XRay Image", output_type, outdir, 1, 0.0, 2.5, 10.0, 0, 0, 10., 10., 300, 200, ("d", "p"), [1,2,3])
+    Query("XRay Image", output_type, outdir, 1, 0.0, 2.5, 10.0, 0, 0, 15., 10., 300, 200, ("d", "p"), [1,2,3])
     qro = query_result_options(num_bins=1, abs_name="d", emis_name="p", \
         bin_state=ENERGY_GROUP_BOUNDS_MISMATCH, units=UNITS_OFF, \
         int_max=0.24153, pl_max=148.67099)
     test_bp_data(testname + str(i), conduit_db, qro) # bounds mismatch
     
-    Query("XRay Image", output_type, outdir, 1, 0.0, 2.5, 10.0, 0, 0, 10., 10., 300, 200, ("d", "p"))
+    Query("XRay Image", output_type, outdir, 1, 0.0, 2.5, 10.0, 0, 0, 15., 10., 300, 200, ("d", "p"))
     qro = query_result_options(num_bins=1, abs_name="d", emis_name="p", \
         bin_state=NO_ENERGY_GROUP_BOUNDS, units=UNITS_OFF, \
         int_max=0.24153, pl_max=148.67099)
@@ -900,6 +910,222 @@ def test_imaging_planes_and_rays():
         CloseDatabase(conduit_db)
 
 test_imaging_planes_and_rays()
+
+def test_non_square_pixels():
+    DeleteAllPlots()
+    setup_bp_test()
+
+    params = dict()
+
+    params["vars"] = ("d", "p")
+    params["image_size"] = (300, 300)
+    params["energy_group_bounds"] = [2.7, 6.2]
+
+    # filename, directory, and output type choices
+    params["output_dir"] = conduit_dir_nonsquare_pixels
+    params["filename_scheme"] = "family" # "none", "family", or "cycle" 
+    params["output_type"] = "hdf5"
+
+    params["focus"] = (0., 2.5, 10.)
+    params["parallel_scale"] = 10.
+    params["near_plane"] = -25.
+    params["far_plane"] = 25.
+    params["view_angle"] = 30
+    params["perspective"] = 1 # 0 parallel, 1 perspective
+
+    # default
+    Query("XRay Image", params)
+    params["image_size"] = (4, 4)
+    Query("XRay Image", params)
+    params["image_size"] = (300, 300)
+
+    # view width is set but is equal to what it would have been if it were calculated
+    params["view_width"] = 10.
+    Query("XRay Image", params)
+    params["image_size"] = (4, 4)
+    Query("XRay Image", params)
+    params["image_size"] = (300, 300)
+
+    # view width is twice the length of the parallel scale
+    params["view_width"] = 20.
+    Query("XRay Image", params)
+    params["image_size"] = (4, 4)
+    Query("XRay Image", params)
+    params["image_size"] = (300, 300)
+
+    # view width is half the length of the parallel scale
+    params["view_width"] = 5.
+    Query("XRay Image", params)
+    params["image_size"] = (4, 4)
+    Query("XRay Image", params)
+
+    conduit_db = pjoin(conduit_dir_nonsquare_pixels, "output.*.root database")
+    OpenDatabase(conduit_db)
+    
+    # first we test the imaging planes and rays look as we expect
+    AddPlot("Pseudocolor", "mesh_near_plane_topo/near_plane_field")
+    AddPlot("Pseudocolor", "mesh_view_plane_topo/view_plane_field")
+    AddPlot("Pseudocolor", "mesh_far_plane_topo/far_plane_field")
+    DrawPlots()
+
+    # Make the plot of the near plane active
+    SetActivePlots(1)
+    PseudocolorAtts = PseudocolorAttributes()
+    # We invert the color table so that it is a different color from the far plane
+    PseudocolorAtts.invertColorTable = 1
+    SetPlotOptions(PseudocolorAtts)
+
+    # Make the plot of the view plane active
+    SetActivePlots(2)
+    PseudocolorAtts = PseudocolorAttributes()
+    PseudocolorAtts.colorTableName = "hot_and_cold"
+    PseudocolorAtts.invertColorTable = 1
+    PseudocolorAtts.opacityType = PseudocolorAtts.Constant  # ColorTable, FullyOpaque, Constant, Ramp, VariableRange
+    # We lower the opacity so that the view plane does not obstruct our view of anything.
+    PseudocolorAtts.opacity = 0.7
+    SetPlotOptions(PseudocolorAtts)
+
+    # leave the far plane as is
+
+    # add ray corners topo
+    AddPlot("Mesh", "mesh_ray_corners_topo")
+    DrawPlots()
+    MeshAtts = MeshAttributes()
+    MeshAtts.lineWidth = 1
+    SetPlotOptions(MeshAtts)
+
+    # set view
+    View3DAtts = View3DAttributes()
+    View3DAtts.viewNormal = (-0.350116, 0.224905, -0.909306)
+    View3DAtts.focus = (0, 2.5, 10)
+    View3DAtts.viewUp = (0.0306245, 0.972977, 0.228862)
+    View3DAtts.viewAngle = 30
+    View3DAtts.parallelScale = 34.3903
+    View3DAtts.nearPlane = -68.7807
+    View3DAtts.farPlane = 68.7807
+    View3DAtts.imagePan = (0, 0)
+    View3DAtts.imageZoom = 1
+    View3DAtts.perspective = 1
+    View3DAtts.eyeAngle = 2
+    View3DAtts.centerOfRotationSet = 0
+    View3DAtts.centerOfRotation = (0, 2.5, 10)
+    View3DAtts.axis3DScaleFlag = 0
+    View3DAtts.axis3DScales = (1, 1, 1)
+    View3DAtts.shear = (0, 0, 1)
+    View3DAtts.windowValid = 1
+    SetView3D(View3DAtts)
+
+    # take pictures of all the ray setups
+    Test("NonSquare_Pixels_Ray_trace_setup_1")
+    TimeSliderNextState()
+    AddPlot("Pseudocolor", "mesh_ray_topo/ray_field")
+    DrawPlots()
+    Test("NonSquare_Pixels_Ray_trace_setup_2")
+    HideActivePlots()
+    TimeSliderNextState()
+    Test("NonSquare_Pixels_Ray_trace_setup_3")
+    TimeSliderNextState()
+    HideActivePlots()
+    Test("NonSquare_Pixels_Ray_trace_setup_4")
+    HideActivePlots()
+    TimeSliderNextState()
+    Test("NonSquare_Pixels_Ray_trace_setup_5")
+    TimeSliderNextState()
+    HideActivePlots()
+    Test("NonSquare_Pixels_Ray_trace_setup_6")
+    HideActivePlots()
+    TimeSliderNextState()
+    Test("NonSquare_Pixels_Ray_trace_setup_7")
+    TimeSliderNextState()
+    HideActivePlots()
+    Test("NonSquare_Pixels_Ray_trace_setup_8")
+    HideActivePlots()
+
+    # cleanup
+    TimeSliderNextState()
+    DeleteAllPlots()
+
+    # take pictures of the hi-res images
+    AddPlot("Pseudocolor", "mesh_image_topo/intensities", 1, 1)
+    DrawPlots()
+    ResetView()
+    AddPlot("Pseudocolor", "mesh_spatial_topo/intensities_spatial", 1, 1)
+    DrawPlots()
+    HideActivePlots()
+    SetActivePlots((0, 1))
+    Test("NonSquare_Pixels_hi_res_images1")
+    HideActivePlots()
+    Test("NonSquare_Pixels_hi_res_images2")
+    HideActivePlots()
+    TimeSliderNextState()
+    TimeSliderNextState()
+    Test("NonSquare_Pixels_hi_res_images3")
+    HideActivePlots()
+    Test("NonSquare_Pixels_hi_res_images4")
+    HideActivePlots()
+    TimeSliderNextState()
+    TimeSliderNextState()
+    Test("NonSquare_Pixels_hi_res_images5")
+    HideActivePlots()
+    Test("NonSquare_Pixels_hi_res_images6")
+    HideActivePlots()
+    TimeSliderNextState()
+    TimeSliderNextState()
+    Test("NonSquare_Pixels_hi_res_images7")
+    HideActivePlots()
+    Test("NonSquare_Pixels_hi_res_images8")
+    HideActivePlots()
+    TimeSliderNextState()
+
+    # cleanup
+    TimeSliderNextState()
+    DeleteAllPlots()
+
+    # take pictures of the low res images
+    AddPlot("Pseudocolor", "mesh_image_topo/intensities", 1, 1)
+    DrawPlots()
+    AddPlot("Mesh", "mesh_image_topo", 1, 1)
+    DrawPlots()
+    AddPlot("Pseudocolor", "mesh_spatial_topo/intensities_spatial", 1, 1)
+    DrawPlots()
+    AddPlot("Mesh", "mesh_spatial_topo", 1, 1)
+    DrawPlots()
+    SetActivePlots((2, 3))
+    HideActivePlots()
+    TimeSliderNextState()
+    ResetView()
+    SetActivePlots((0, 2, 3))
+    SetActivePlots((0, 1, 2, 3))
+    Test("NonSquare_Pixels_low_res_mesh_plots1")
+    HideActivePlots()
+    Test("NonSquare_Pixels_low_res_mesh_plots2")
+    HideActivePlots()
+    TimeSliderNextState()
+    TimeSliderNextState()
+    ResetView()
+    Test("NonSquare_Pixels_low_res_mesh_plots3")
+    HideActivePlots()
+    Test("NonSquare_Pixels_low_res_mesh_plots4")
+    HideActivePlots()
+    TimeSliderNextState()
+    TimeSliderNextState()
+    ResetView()
+    Test("NonSquare_Pixels_low_res_mesh_plots5")
+    HideActivePlots()
+    Test("NonSquare_Pixels_low_res_mesh_plots6")
+    HideActivePlots()
+    TimeSliderNextState()
+    TimeSliderNextState()
+    ResetView()
+    Test("NonSquare_Pixels_low_res_mesh_plots7")
+    HideActivePlots()
+    Test("NonSquare_Pixels_low_res_mesh_plots8")
+    HideActivePlots()
+
+    teardown_bp_test()
+    CloseDatabase(conduit_db)
+
+test_non_square_pixels()
 
 # 
 # test catching failures
