@@ -103,7 +103,6 @@ public:
     virtual bool                      FieldsEqual(int index, const AttributeGroup *rhs) const;
 
     // User-defined methods
-    int GetColorTableIndex(const std::string &name) const;
     const ColorControlPointList *GetColorControlPoints(int index) const;
     const ColorControlPointList *GetColorControlPoints(const std::string &name) const;
     void AddColorTable(const std::string &name, const ColorControlPointList &cpts);
