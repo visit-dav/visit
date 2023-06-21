@@ -129,6 +129,9 @@ QvisLimitCycleWindow::CreateWindowContents()
 //   Set keyboard tracking to false for spin boxes so that 'valueChanged'
 //   signal will only emit when 'enter' is pressed or spinbox loses focus.
 //
+//   Kathleen Biagas, Tue Apr 18 16:34:41 PDT 2023
+//   Support Qt6: buttonClicked -> idClicked.
+//
 // ****************************************************************************
 
 void
@@ -234,7 +237,11 @@ QvisLimitCycleWindow::CreateIntegrationTab(QWidget *pageIntegration)
 //    samplingTypeButtonGroup->addButton(samplingTypeButtons[1], 1);
     samplingLayout->addWidget(samplingTypeButtons[0], sRow, 1);
 //    samplingLayout->addWidget(samplingTypeButtons[1], sRow, 2);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(samplingTypeButtonGroup, SIGNAL(buttonClicked(int)), this, SLOT(samplingTypeChanged(int)));
+#else
+    connect(samplingTypeButtonGroup, SIGNAL(idClicked(int)), this, SLOT(samplingTypeChanged(int)));
+#endif
 
     fillLabel = new QLabel(tr("Sampling along:"), samplingGroup);
     samplingLayout->addWidget(fillLabel, sRow, 3);
@@ -246,7 +253,11 @@ QvisLimitCycleWindow::CreateIntegrationTab(QWidget *pageIntegration)
     fillButtonGroup->addButton(fillButtons[1], 1);
     samplingLayout->addWidget(fillButtons[0], sRow, 4);
     samplingLayout->addWidget(fillButtons[1], sRow, 5);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(fillButtonGroup, SIGNAL(buttonClicked(int)), this, SLOT(fillChanged(int)));
+#else
+    connect(fillButtonGroup, SIGNAL(idClicked(int)), this, SLOT(fillChanged(int)));
+#endif
 
     sRow++;
 
@@ -491,6 +502,9 @@ QvisLimitCycleWindow::CreateIntegrationTab(QWidget *pageIntegration)
 //   Dave Pugmire, Mon Feb 21 08:17:42 EST 2011
 //   Add color by correlation distance.
 //
+//   Kathleen Biagas, Tue Apr 18 16:34:41 PDT 2023
+//   Support Qt6: buttonClicked -> idClicked.
+//
 // ****************************************************************************
 
 void
@@ -608,7 +622,11 @@ QvisLimitCycleWindow::CreateAppearanceTab(QWidget *pageAppearance)
     icButtonGroup->addButton(pathlineButton, 1);
     icGrpLayout->addWidget(streamlineButton, 1, 0);
     icGrpLayout->addWidget(pathlineButton, 2, 0);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(icButtonGroup, SIGNAL(buttonClicked(int)), this, SLOT(icButtonGroupChanged(int)));
+#else
+    connect(icButtonGroup, SIGNAL(idClicked(int)), this, SLOT(icButtonGroupChanged(int)));
+#endif
 
     // Pathline Options
     QGroupBox *pathlineOptionsGrp = new QGroupBox(icGrp);
@@ -656,7 +674,11 @@ QvisLimitCycleWindow::CreateAppearanceTab(QWidget *pageAppearance)
     pathlineCMFEButtonGroup->addButton(posButton, 1);
     cmfeOptionsGrpLayout->addWidget(connButton, 2, 0, 1, 5);
     cmfeOptionsGrpLayout->addWidget(posButton, 3, 0, 1, 5);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(pathlineCMFEButtonGroup, SIGNAL(buttonClicked(int)), this, SLOT(pathlineCMFEButtonGroupChanged(int)));
+#else
+    connect(pathlineCMFEButtonGroup, SIGNAL(idClicked(int)), this, SLOT(pathlineCMFEButtonGroupChanged(int)));
+#endif
 }
 
 // ****************************************************************************

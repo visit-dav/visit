@@ -7166,7 +7166,7 @@ PrinterAttributesToQPrinter(PrinterAttributes *p, QPrinter *printer)
         printer->setOutputFileName(p->GetOutputToFileName().c_str());
     else
         printer->setOutputFileName(QString());
-    printer->setPageSize((QPagedPaintDevice::PageSize)p->GetPageSize());
+    printer->setPageSize(QPageSize((QPageSize::PageSizeId)p->GetPageSize()));
 }
 
 // ****************************************************************************
@@ -8870,6 +8870,8 @@ QvisGUIApplication::CrashRecoveryFile() const
 // Creation:   Mon Mar 12 14:18:57 PDT 2018
 //
 // Modifications:
+//   Kathleen Biagas, Tue Apr 11, 2023
+//   QString::SkipEmptyParts => Qt::SkipEmptyParts for Qt >= 6.
 //
 // ****************************************************************************
 
@@ -8879,7 +8881,11 @@ QvisGUIApplication::GetCrashFilePIDs(const QFileInfoList &fileList, intVector &o
     for(int i=0; i<fileList.size(); i++)
     {
         QString fn = fileList.at(i).fileName();
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
         QStringList tokens = fn.split(".", QString::SkipEmptyParts);
+#else
+        QStringList tokens = fn.split(".", Qt::SkipEmptyParts);
+#endif
         if(tokens.size() > 2) {
             bool ok;
             int pid = tokens[1].toInt(&ok, 10);
@@ -8908,6 +8914,9 @@ QvisGUIApplication::GetCrashFilePIDs(const QFileInfoList &fileList, intVector &o
 //   Kathleen Biagas, Wed Mar 29 08:10:38 PDT 2023
 //   Replaced QRegExp (which has been deprecated) with QRegularExpression.
 //
+//   Kathleen Biagas, Tue Apr 11, 2023
+//   QString::SkipEmptyParts => Qt::SkipEmptyParts for Qt >= 6.
+//
 // ****************************************************************************
 
 void
@@ -8922,7 +8931,11 @@ QvisGUIApplication::GetSystemPIDs(std::vector<int> &outPIDs)
     while(fgets(buf, 2048, f) != NULL)
     {
         QString pidStr(buf);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
         QStringList tokens = pidStr.split(QRegularExpression("\\s+"), QString::SkipEmptyParts); // whitespace character
+#else
+        QStringList tokens = pidStr.split(QRegularExpression("\\s+"), Qt::SkipEmptyParts); // whitespace character
+#endif
 
         int pid = tokens[0].toInt(&ok, 10);
 
@@ -8998,12 +9011,12 @@ QvisGUIApplication::RestoreCrashRecoveryFile()
         GetSystemPIDs(systemPIDs);
 
         // Exclude crash files of any currently running VisIt processes
-        for(int i=0; i<crashFilePIDs.size(); i++)
+        for(size_t i=0; i<crashFilePIDs.size(); i++)
         {
             int crashFilePID = crashFilePIDs[i];
             bool addFile = true;
 
-            for(int j=0; j<systemPIDs.size(); j++)
+            for(size_t j=0; j<systemPIDs.size(); j++)
             {
                 if(crashFilePID == systemPIDs[j])
                 {

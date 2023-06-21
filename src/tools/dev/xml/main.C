@@ -19,6 +19,7 @@
 #include <iterator>
 #include <string>
 #include <vector>
+#include <QtGlobal>
 #include "XMLParser.h"
 
 // Prototypes
@@ -67,44 +68,6 @@ PrintUsage(const char *prog)
 #endif
 }
 
-class ErrorHandler : public QXmlErrorHandler
-{
-public:
-    ErrorHandler() : QXmlErrorHandler(), stream(stderr)
-    {
-    }
-    virtual ~ErrorHandler()
-    {
-    }
-
-    bool error(const QXmlParseException & exception)
-    {
-        stream << "Error: " << exception.message() << "\n";
-        stream << "Line: "   << exception.lineNumber() << "\n";
-        stream << "Column: " << exception.columnNumber() << "\n";
-        return true;
-    }
-    bool warning(const QXmlParseException & exception)
-    {
-        stream << "Warning: " << exception.message() << "\n";
-        stream << "Line: "   << exception.lineNumber() << "\n";
-        stream << "Column: " << exception.columnNumber() << "\n";
-        return true;
-    }
-    bool fatalError(const QXmlParseException & exception)
-    {
-        stream << "Fatal error: " << exception.message() << "\n";
-        stream << "Line: "   << exception.lineNumber() << "\n";
-        stream << "Column: " << exception.columnNumber() << "\n";
-        return true;
-    }
-    virtual QString errorString() const
-    {
-        return "No error string defined....";
-    }
-
-    QTextStream stream;
-};
 
 // ****************************************************************************
 //  Function:  Open
@@ -168,12 +131,12 @@ Open(const QString &name_withoutpath)
     if (alreadyexists || !file)
     {
         cErr << "Warning: Could not create file '"
-             << name.toStdString().c_str()
+             << name
              << "' for writing." << Endl;
         if (!clobber)
         {
             cErr << "Info: If you wish to overwrite file '"
-                 << name.toStdString().c_str()
+                 << name
                  <<"'," << Endl;
             cErr << "Info: you might want to give the -clobber flag." << Endl;
         }
@@ -522,6 +485,9 @@ int main(int argc, char *argv[])
 //    Kathleen Biagas, Wed Nov 30 19:16:52 PST 2016
 //    Update URL used for setFeature.
 //
+//    Kathleen Biagas, Tue Apr 25 14:50:50 PDT 2023
+//    XMLParser is now the parser, not a content handler.
+//
 // ****************************************************************************
 
 void
@@ -544,17 +510,7 @@ ProcessFile(QString file)
     XMLParser     parser(fieldFactory, file);
     try
     {
-        QFile             xmlFile(file);
-        QXmlInputSource   source(&xmlFile);
-        QXmlSimpleReader  reader;
-        ErrorHandler      errorhandler;
-
-        reader.setFeature(
-           "http://qt-project.org/xml/features/report-whitespace-only-CharData",
-           false);
-        reader.setContentHandler(&parser);
-        reader.setErrorHandler(&errorhandler);
-        reader.parse(source);
+        parser.parse();
 
         docType   = parser.docType;
         plugin    = parser.plugin;
@@ -571,13 +527,13 @@ ProcessFile(QString file)
     }
     catch (const QString &s)
     {
-        cErr << "ERROR: " << s.toStdString().c_str() << Endl;
+        cErr << "ERROR: " << s << Endl;
         Die();
     }
 
     if (docType.isNull())
     {
-        cErr << "Error in parsing " << file.toStdString().c_str() << Endl;
+        cErr << "Error in parsing " << file << Endl;
         Die();
     }
 

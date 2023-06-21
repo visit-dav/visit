@@ -101,6 +101,9 @@ QvisIndexSelectWindow::~QvisIndexSelectWindow()
 //   Set keyboard tracking to false for spin boxes so that 'valueChanged'
 //   signal will only emit when 'enter' is pressed or spinbox loses focus.
 //
+//   Kathleen Biagas, Tue Apr 18 16:34:41 PDT 2023
+//   Support Qt6: buttonClicked -> idClicked.
+//
 // ****************************************************************************
 
 void
@@ -125,8 +128,13 @@ QvisIndexSelectWindow::CreateWindowContents()
     QRadioButton *dimDimensionThreeD = new QRadioButton(tr("3D"), dimWidget);
     dimLayout->addWidget(dimDimensionThreeD);
     dim->addButton(dimDimensionThreeD,2);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(dim, SIGNAL(buttonClicked(int)),
             this, SLOT(dimChanged(int)));
+#else
+    connect(dim, SIGNAL(idClicked(int)),
+            this, SLOT(dimChanged(int)));
+#endif
     mainLayout->addWidget(dimWidget, row, 1, 1, 3);
 
     ++row;

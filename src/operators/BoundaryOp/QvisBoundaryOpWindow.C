@@ -70,6 +70,9 @@ QvisBoundaryOpWindow::~QvisBoundaryOpWindow()
 //   Cyrus Harrison, Mon Aug 18 21:11:25 PDT 2008
 //   Qt4 Port.  
 //
+//   Kathleen Biagas, Tue Apr 18 16:34:41 PDT 2023
+//   Support Qt6: buttonClicked -> idClicked.
+//
 // ****************************************************************************
 
 void
@@ -77,8 +80,13 @@ QvisBoundaryOpWindow::CreateWindowContents()
 {
     // Create the smoothing level buttons
     smoothingLevelButtons = new QButtonGroup(central);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(smoothingLevelButtons, SIGNAL(buttonClicked(int)),
             this, SLOT(smoothingLevelChanged(int)));
+#else
+    connect(smoothingLevelButtons, SIGNAL(idClicked(int)),
+            this, SLOT(smoothingLevelChanged(int)));
+#endif
     QGridLayout *smoothingLayout = new QGridLayout();
     topLayout->addLayout(smoothingLayout);
     smoothingLayout->setSpacing(10);

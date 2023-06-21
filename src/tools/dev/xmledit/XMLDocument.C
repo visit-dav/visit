@@ -28,35 +28,6 @@ using namespace std;
 
 vector<EnumType*> EnumType::enums;
 
-class ErrorHandler : public QXmlErrorHandler
-{
-    bool error(const QXmlParseException & exception)
-    {
-        cErr << "Error (line "<< exception.lineNumber()
-             << " column " << exception.columnNumber()
-             << "): " << exception.message() << Endl;
-        return false;
-    }
-    bool warning(const QXmlParseException & exception)
-    {
-        cErr << "Warning (line "<< exception.lineNumber()
-             << " column " << exception.columnNumber()
-             << "): " << exception.message() << Endl;
-        return false;
-    }
-    bool fatalError(const QXmlParseException & exception)
-    {
-        cErr << "Fatal error (line "<< exception.lineNumber()
-             << " column " << exception.columnNumber()
-             << "): " << exception.message() << Endl;
-        return false;
-    }
-    QString errorString() const
-    {
-        return "No error string defined....";
-    }
-};
-
 // ****************************************************************************
 //  Method:  XMLDocument::open
 //
@@ -112,6 +83,10 @@ class ErrorHandler : public QXmlErrorHandler
 //    Kathleen Biagas, Thu Jan  2 09:26:23 PST 2020
 //    Added new argument to plugin constructor, for hasLicense.
 //
+//    Kathleen Biagas, Mon May 22 12:39:55 PDT 2023
+//    Qt6 support: XML handling has changed. Remove QFile, QxmlInputSource,
+//    QXmlSimpleReader, ErrorHandler.  All handled now by XMLParser.
+//
 // ****************************************************************************
 
 void
@@ -140,17 +115,7 @@ XMLDocument::open(const QString &file)
 
     try
     {
-        QFile             xmlFile(file);
-        QXmlInputSource   source(&xmlFile);
-        QXmlSimpleReader  reader;
-        ErrorHandler      errorhandler;
-
-        reader.setFeature("http://qt-project.org/xml/features/report-whitespace-only-CharData", false);
-        reader.setContentHandler(&parser);
-        reader.setErrorHandler(&errorhandler);
-        bool success = reader.parse(source);
-
-        if (!success)
+        if (!parser.parse())
         {
             cerr << "Error parsing input file " << file.toStdString() << endl;
             exit(-1);

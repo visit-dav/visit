@@ -20,6 +20,10 @@
 
 #include "conduit.hpp"
 
+#include <string>
+#include <vector>
+#include <map>
+
 class     avtMaterial;
 class     DBOptionsAttributes;
 
@@ -121,6 +125,12 @@ class avtBlueprintFileFormat : public avtSTMDFileFormat
                                               const std::string &abs_varname,
                                               conduit::Node &out);
 
+    bool                   DetectHOMaterial(const std::string &mesh_name,
+                                            const std::string &topo_name,
+                                            const std::vector<std::string> &matNames,
+                                            std::map<std::string, std::string> &matFields,
+                                            std::string &freeMatName) const;
+
     void                   ReadBlueprintMatset(int domain,
                                                const std::string &abs_matsetname,
                                                conduit::Node &out);
@@ -144,6 +154,7 @@ class avtBlueprintFileFormat : public avtSTMDFileFormat
     conduit::Node          m_matset_info;
 
     std::map<std::string,bool> m_mfem_mesh_map;
+    std::map<std::string,std::pair<std::string,int> > m_mfem_material_map;
 
     std::set<std::string>  m_curve_names;
 
