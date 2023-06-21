@@ -23,14 +23,14 @@
 // ****************************************************************************
 // Method: QvisThresholdWindow::QvisThresholdWindow
 //
-// Purpose: 
+// Purpose:
 //   Constructor
 //
 // Programmer: xml2window
 // Creation:   Fri Apr 12 14:41:06 PST 2002
 //
 // Modifications:
-//   
+//
 //   Mark Blair, Tue Mar  7 13:25:00 PST 2006
 //   Upgraded to support multiple threshold variables.
 //
@@ -65,14 +65,14 @@ QvisThresholdWindow::QvisThresholdWindow(const int type,
 // ****************************************************************************
 // Method: QvisThresholdWindow::~QvisThresholdWindow
 //
-// Purpose: 
+// Purpose:
 //   Destructor
 //
 // Programmer: xml2window
 // Creation:   Fri Apr 12 14:41:06 PST 2002
 //
 // Modifications:
-//   
+//
 //   Mark Blair, Thu Sep 21 15:16:27 PDT 2006
 //   Need to delete GUI variable list object.
 //
@@ -90,7 +90,7 @@ QvisThresholdWindow::~QvisThresholdWindow()
 // ****************************************************************************
 // Method: QvisThresholdWindow::CreateWindow
 //
-// Purpose: 
+// Purpose:
 //   Creates the widgets for the window.
 //
 // Programmer: xml2window
@@ -121,6 +121,9 @@ QvisThresholdWindow::~QvisThresholdWindow()
 //   Kevin Griffin, Thu Feb  9 11:33:18 PST 2017
 //   Added 'Bounds Input' label and associated radio buttons (Default, Custom).
 //
+//   Kathleen Biagas, Tue Apr 18 16:34:41 PDT 2023
+//   Support Qt6: buttonClicked -> idClicked.
+//
 // ****************************************************************************
 
 void
@@ -133,22 +136,22 @@ QvisThresholdWindow::CreateWindowContents()
 
     QGridLayout *threshVarsLayout = new QGridLayout(threshVarsBox);
     threshVars = new QTableWidget(threshVarsBox);
-    
+
     threshVarsLayout->addWidget(threshVars, 0, 0, 1, 3); // row, col, rowspan, colspan
 
     threshVars->setSelectionMode(QAbstractItemView::SingleSelection);
     threshVars->setColumnCount(4);
-    
+
     QStringList hzHeaderLbls;
-    hzHeaderLbls << tr("Variable") 
-                 << tr("Lower bound") 
-                 << tr("Upper bound") 
+    hzHeaderLbls << tr("Variable")
+                 << tr("Lower bound")
+                 << tr("Upper bound")
                  << tr("Show zone if");
     threshVars->setHorizontalHeaderLabels(hzHeaderLbls);
     threshVars->verticalHeader()->hide();
     threshVars->setColumnWidth(3, threshVars->columnWidth(3)+15);
-    
-    QvisVariableButton *addVarToList = new QvisVariableButton(false, 
+
+    QvisVariableButton *addVarToList = new QvisVariableButton(false,
                                                               true,
                                                               true,
                                    QvisVariableButton::Scalars, threshVarsBox);
@@ -156,32 +159,36 @@ QvisThresholdWindow::CreateWindowContents()
     addVarToList->setChangeTextOnVariableChange(false);
     connect(addVarToList, SIGNAL(activated(const QString &)), this, SLOT(variableAddedToList(const QString &)));
     threshVarsLayout->addWidget(addVarToList, 3, 0);
-    
+
     QPushButton *deleteSelectedVar = new QPushButton(
         QString(tr("Delete selected variable")), threshVarsBox);
     connect(deleteSelectedVar, SIGNAL(clicked()),
         this, SLOT(selectedVariableDeleted()));
     threshVarsLayout->addWidget(deleteSelectedVar, 3, 1);
-    
+
     threshVarsLayout->addWidget(new QLabel(tr("Bounds Input:"), threshVarsBox), 5, 0, 1, 1);
-    
+
     QWidget *boundsInputWidget = new QWidget(threshVarsBox);
     QHBoxLayout *boundsInputWidgetLayout = new QHBoxLayout(boundsInputWidget);
     boundsInputWidgetLayout->setAlignment(Qt::AlignLeft);
-    
+
     boundsInputType = new QButtonGroup(threshVarsBox);
-    
+
     QRadioButton *defaulRadioButton = new QRadioButton(tr("Default"), boundsInputWidget);
     boundsInputType->addButton(defaulRadioButton,0);
     boundsInputWidgetLayout->addWidget(defaulRadioButton);
-    
+
     QRadioButton *customRadioButton = new QRadioButton(tr("Custom"), boundsInputWidget);
     boundsInputType->addButton(customRadioButton,1);
     boundsInputWidgetLayout->addWidget(customRadioButton);
-    
+
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(boundsInputType, SIGNAL(buttonClicked(int)), this, SLOT(boundsInputTypeChanged(int)));
+#else
+    connect(boundsInputType, SIGNAL(idClicked(int)), this, SLOT(boundsInputTypeChanged(int)));
+#endif
     threshVarsLayout->addWidget(boundsInputWidget, 5, 1, 1, 2);
-    
+
 
     // For all threshold variables
     QGroupBox *forAllVarsBox = new QGroupBox(tr("For all threshold variables"),central);
@@ -191,12 +198,12 @@ QvisThresholdWindow::CreateWindowContents()
 
     forAllVarsLayout->addWidget(new QLabel(tr("Output Mesh Is:"),
                                 forAllVarsBox), 1, 0, 1, 1);
-    
+
     outputMeshType = new QButtonGroup(forAllVarsBox);
     QWidget *outputMeshWidget = new QWidget(forAllVarsBox);
-    
+
     QHBoxLayout *outputMeshWidgetLayout = new QHBoxLayout(outputMeshWidget);
-    
+
     QRadioButton *zonesFromInput =
         new QRadioButton(tr("Zones from input"), outputMeshWidget);
     outputMeshType->addButton(zonesFromInput,0);
@@ -204,9 +211,14 @@ QvisThresholdWindow::CreateWindowContents()
     QRadioButton *pointMesh = new QRadioButton(tr("Point mesh"), outputMeshWidget);
     outputMeshType->addButton(pointMesh,1);
     outputMeshWidgetLayout->addWidget(pointMesh);
-    
+
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(outputMeshType, SIGNAL(buttonClicked(int)),
             this, SLOT(outputMeshTypeChanged(int)));
+#else
+    connect(outputMeshType, SIGNAL(idClicked(int)),
+            this, SLOT(outputMeshTypeChanged(int)));
+#endif
     forAllVarsLayout->addWidget(outputMeshWidget, 1, 1, 1, 2);
 }
 
@@ -222,9 +234,9 @@ QvisThresholdWindow::CreateWindowContents()
 //   lower : The lower value.
 //   upper : The upper value.
 //
-// Returns:    
+// Returns:
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Aug 18 12:33:04 PDT 2014
@@ -264,18 +276,18 @@ QvisThresholdWindow::SetLowerUpper(int idx, double lower, double upper)
 // ****************************************************************************
 // Method: QvisThresholdWindow::UpdateWindow
 //
-// Purpose: 
+// Purpose:
 //   Updates the widgets in the window when the subject changes.
 //
 // Programmer: xml2window
 // Creation:   Fri Apr 12 14:41:06 PST 2002
 //
 // Modifications:
-//   
+//
 //   Hank Childs, Thu Sep 25 09:16:09 PDT 2003
 //   Allow for "min" and "max" to be valid values in the lbound and ubound
 //   windows.
-//   
+//
 //   Jeremy Meredith, Tue Nov 16 11:39:53 PST 2004
 //   Replaced simple QString::sprintf's with a setNum because there seems
 //   to be a bug causing numbers to be incremented by .00001.  See '5263.
@@ -336,7 +348,7 @@ QvisThresholdWindow::UpdateWindow(bool doAll)
     intVector curZonePortions;
 
     atts->ForceAttributeConsistency();
-    
+
     for (int attIndex = 0; attIndex < atts->NumAttributes(); attIndex++)
     {
         switch (attIndex)
@@ -348,14 +360,14 @@ QvisThresholdWindow::UpdateWindow(bool doAll)
             case ThresholdAttributes::ID_boundsInputType:
                 boundsInputType->button(biType)->setChecked(true);
                 atts->SetBoundsInputType(biType);
-                
+
                 break;
 
             case ThresholdAttributes::ID_listedVarNames:
                 PopulateThresholdVariablesList();
 
                 break;
-            case ThresholdAttributes::ID_zonePortions: 
+            case ThresholdAttributes::ID_zonePortions:
                 curZonePortions = atts->GetZonePortions();
                 QComboBox *cbox;
                 for (size_t varNum = 0; varNum < curZonePortions.size(); varNum++ )
@@ -363,7 +375,7 @@ QvisThresholdWindow::UpdateWindow(bool doAll)
                     cbox=(QComboBox*)threshVars->cellWidget((int)varNum, threshVars->columnCount()-1);
                     cbox->setCurrentIndex(curZonePortions[varNum]);
                 }
-                
+
                 SetZoneIncludeSelectEnabled(atts->GetOutputMeshType() == ThresholdAttributes::InputZones);
                 break;
 
@@ -411,7 +423,7 @@ QvisThresholdWindow::UpdateWindow(bool doAll)
 // ****************************************************************************
 // Method: QvisThresholdWindow::GetCurrentValues
 //
-// Purpose: 
+// Purpose:
 //   Gets values from certain widgets and stores them in the subject.
 //
 // Programmer: xml2window
@@ -453,13 +465,16 @@ QvisThresholdWindow::UpdateWindow(bool doAll)
 //   Kevin Griffin, Wed Feb 15 11:50:13 PDT 2017
 //   Added support for the custom bounds input capability (Feature #2646).
 //
+//   Kathleen Biagas, Wed Apr 12, 2023
+//   QString::SkipEmptyParts => Qt::SkipEmptyParts for Qt >= 6.
+//
 // ****************************************************************************
 
 void
 QvisThresholdWindow::GetCurrentValues(int which_widget)
 {
     if (which_widget != -1) return;
-    
+
     bool isDefault = threshVars->columnCount() == 4;
     stringVector curVarNames;
     doubleVector curLowerBounds;
@@ -471,38 +486,38 @@ QvisThresholdWindow::GetCurrentValues(int which_widget)
     {
         debug3 << "QTW/GCV/1: Threshold GUI out of sync with internal data."
                << endl;
-               
+
         curVarNames.push_back(std::string("default"));
         curLowerBounds.push_back(-1e+37);
         curUpperBounds.push_back(+1e+37);
         curBoundsRange.push_back("-1e+37:1e+37");
         curZonePortions.push_back((int)ThresholdAttributes::PartOfZone);
-    
+
         atts->SetListedVarNames(curVarNames);
         atts->SetLowerBounds(curLowerBounds);
         atts->SetUpperBounds(curUpperBounds);
         atts->SetBoundsRange(curBoundsRange);
         atts->SetZonePortions(curZonePortions);
-        
+
         threshVars->setRowCount(0);
         AddNewRowToVariablesList(QString("default"));
 
         guiFullVarNames.clear();
         guiFullVarNames.push_back(std::string("default"));
-        
+
         return;
     }
-    
+
     int listRowCount = threshVars->rowCount();
     bool valueIsValid;
     double lowerBound, upperBound, bound;
     QString lowerBoundText, upperBoundText, boundsText, errMsg;
-    
+
     for (int rowNum = 0; rowNum < listRowCount; rowNum++ )
     {
         int col = 1;
         curVarNames.push_back(guiFullVarNames[rowNum]);
-        
+
         if(isDefault)
         {
             lowerBoundText = threshVars->item(rowNum,col++)->text().trimmed();
@@ -512,11 +527,15 @@ QvisThresholdWindow::GetCurrentValues(int which_widget)
         {
             boundsText = threshVars->item(rowNum, col++)->text().trimmed();
             curBoundsRange.push_back(boundsText.toStdString());
-            
+
             if(!boundsText.trimmed().isEmpty() && IsSimpleBounds(boundsText))
             {
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
                 QStringList minmaxTokens = boundsText.split(":", QString::SkipEmptyParts);
-                
+#else
+                QStringList minmaxTokens = boundsText.split(":", Qt::SkipEmptyParts);
+#endif
+
                 if(minmaxTokens.length() == 1)
                 {
                     lowerBoundText = minmaxTokens[0].trimmed();
@@ -534,7 +553,7 @@ QvisThresholdWindow::GetCurrentValues(int which_widget)
                 upperBoundText = "max";
             }
         }
-        
+
         if (lowerBoundText == QString(tr("min")))
         {
             lowerBound = -1e+37;
@@ -543,7 +562,7 @@ QvisThresholdWindow::GetCurrentValues(int which_widget)
         {
             valueIsValid = !lowerBoundText.isEmpty();
             if (valueIsValid) lowerBound = lowerBoundText.toDouble(&valueIsValid);
-            
+
             if (!valueIsValid)
             {
                 Message(tr("Invalid lower bound; will reset to min."));
@@ -560,7 +579,7 @@ QvisThresholdWindow::GetCurrentValues(int which_widget)
         {
             valueIsValid = !upperBoundText.isEmpty();
             if (valueIsValid) upperBound = upperBoundText.toDouble(&valueIsValid);
-            
+
             if (!valueIsValid)
             {
                 Message(tr("Invalid upper bound; will reset to max."));
@@ -568,27 +587,27 @@ QvisThresholdWindow::GetCurrentValues(int which_widget)
                 upperBound = +1e+37;
             }
         }
-        
+
         if (lowerBound > upperBound)
         {
             Message(tr("Lower bound exceeds upper bound; will reverse them."));
-            
+
             bound = lowerBound; lowerBound = upperBound; upperBound = bound;
         }
-        
+
         curLowerBounds.push_back(lowerBound);
         curUpperBounds.push_back(upperBound);
-        
+
         if(isDefault)
         {
             boundsText = DoubleToQString(lowerBound).append(":").append(DoubleToQString(upperBound));
             curBoundsRange.push_back(boundsText.toStdString());
         }
-        
+
         QComboBox *cbox = (QComboBox*)threshVars->cellWidget(rowNum, col++);
         curZonePortions.push_back(cbox->currentIndex());
     }
-    
+
     atts->SetListedVarNames(curVarNames);
     atts->SetLowerBounds(curLowerBounds);
     atts->SetUpperBounds(curUpperBounds);
@@ -612,6 +631,9 @@ QvisThresholdWindow::GetCurrentValues(int which_widget)
 //  Creation:   Thu Mar 23 08:25:21 PDT 2017
 //
 //  Modifications:
+//   Kathleen Biagas, Wed Apr 12, 2023
+//   QString::SkipEmptyParts => Qt::SkipEmptyParts for Qt >= 6.
+//
 // ****************************************************************************
 
 bool
@@ -621,8 +643,12 @@ QvisThresholdWindow::IsSimpleBounds(const QString &boundsText)
     {
         return true;
     }
-    
+
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     QStringList tokens = boundsText.split(":", QString::SkipEmptyParts);
+#else
+    QStringList tokens = boundsText.split(":", Qt::SkipEmptyParts);
+#endif
     return (tokens.length() <= 2);
 }
 
@@ -656,10 +682,10 @@ QvisThresholdWindow::variableAddedToList(const QString &variableToAdd)
     {
         if (QString(guiFullVarNames[varNum].c_str()) == variableToAdd) return;
     }
-    
+
     QString vname = PrepareVariableNameText(variableToAdd, 20);
     AddNewRowToVariablesList(QString(vname));
-    
+
     guiFullVarNames.push_back(variableToAdd.toStdString());
 }
 
@@ -681,12 +707,12 @@ QvisThresholdWindow::selectedVariableDeleted()
                << endl;
         return;
     }
- 
+
     if (guiFullVarNames.empty())
         return;
- 
+
     int selectedVarNum = threshVars->currentRow();
- 
+
     if (selectedVarNum >= 0)
     {
         threshVars->removeRow(selectedVarNum);
@@ -713,25 +739,25 @@ void
 QvisThresholdWindow::boundsInputTypeChanged(int buttonID)
 {
     ThresholdAttributes::BoundsInputType newBoundsInputType = ThresholdAttributes::BoundsInputType(buttonID);
-    
+
     if(newBoundsInputType != atts->GetBoundsInputType())
     {
         QStringList headerLabels;
-        
+
         // Change input table
         if(newBoundsInputType == ThresholdAttributes::Custom)
         {
             int colSize = threshVars->columnWidth(1) + threshVars->columnWidth(2);
-            
+
             // Delete upper bound column
             threshVars->removeColumn(2);
-            
+
             // Add new header
             headerLabels << tr("Variable") << tr("Range") << tr("Show zone if");
             threshVars->setHorizontalHeaderLabels(headerLabels);
-            
+
             threshVars->setColumnWidth(1, colSize);
-            
+
             // Update range data
             if(atts->GetBoundsRange().size() > 0)
             {
@@ -744,7 +770,7 @@ QvisThresholdWindow::boundsInputTypeChanged(int buttonID)
             else
             {
                 threshVars->setItem(0, 1, new QTableWidgetItem(QString("min:max")));
-                
+
                 stringVector boundsRange;
                 boundsRange.push_back("min:max");
                 atts->SetBoundsRange(boundsRange);
@@ -753,16 +779,16 @@ QvisThresholdWindow::boundsInputTypeChanged(int buttonID)
         else    // Bounds input == Default
         {
             int colSize = threshVars->columnWidth(1) / 2;
-            
+
             // Add column
             threshVars->insertColumn(2);
             threshVars->setColumnWidth(1, colSize);
             threshVars->setColumnWidth(2, colSize);
-            
+
             // Add new header
             headerLabels << tr("Variable") << tr("Lower bound") << tr("Upper bound") << tr("Show zone if");
             threshVars->setHorizontalHeaderLabels(headerLabels);
-            
+
             // Update lower/upper bounds data
             if(atts->GetLowerBounds().size() == atts->GetUpperBounds().size())
             {
@@ -770,25 +796,25 @@ QvisThresholdWindow::boundsInputTypeChanged(int buttonID)
                 {
                     double lower = atts->GetLowerBounds()[varNum];
                     double upper = atts->GetUpperBounds()[varNum];
-                    
+
                     // Set lower/upper bounds values
                     QString lStr, uStr;
                     if (lower < -9e+36)
                         lStr = "min";
                     else
                         lStr = DoubleToQString(lower);
-                    
+
                     if (upper > 9e+36)
                         uStr = "max";
                     else
                         uStr = DoubleToQString(upper);
-                    
+
                     threshVars->setItem((int)varNum, 1, new QTableWidgetItem(lStr));
                     threshVars->setItem((int)varNum, 2, new QTableWidgetItem(uStr));
                 }
             }
         }
-        
+
         atts->SetBoundsInputType(newBoundsInputType);
     }
 }
@@ -802,7 +828,7 @@ QvisThresholdWindow::outputMeshTypeChanged(int buttonID)
 
     if (newOutputMeshType != atts->GetOutputMeshType())
     {
-        SetZoneIncludeSelectEnabled(newOutputMeshType == 
+        SetZoneIncludeSelectEnabled(newOutputMeshType ==
                                        ThresholdAttributes::InputZones);
         atts->SetOutputMeshType(newOutputMeshType);
     }
@@ -842,7 +868,7 @@ QvisThresholdWindow::apply()
 // Creation:   Tue Apr 10 17:59:47 PDT 2007
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -854,7 +880,7 @@ QvisThresholdWindow::PopulateThresholdVariablesList()
     int guiVarCount = (int)guiFullVarNames.size();
     int guiVarNum = 0;
     int curVarNum;
-    
+
     if (threshVars->rowCount() != guiVarCount)
     {
         debug3 << "QTW/PTVL/1: Threshold GUI out of sync with internal data."
@@ -865,12 +891,12 @@ QvisThresholdWindow::PopulateThresholdVariablesList()
     while (guiVarNum < guiVarCount)
     {
         guiVarName = guiFullVarNames[guiVarNum];
-        
+
         for (curVarNum = 0; curVarNum < curVarCount; curVarNum++ )
         {
             if (curVarNames[curVarNum] == guiVarName) break;
         }
-        
+
         if (curVarNum < curVarCount)
             guiVarNum++;
         else
@@ -890,7 +916,7 @@ QvisThresholdWindow::PopulateThresholdVariablesList()
         {
             if (guiFullVarNames[guiVarNum] == curVarName) break;
         }
-        
+
         if (guiVarNum >= guiVarCount)   // guiVarCount is NOT incremented.
         {
             QString vname = PrepareVariableNameText(QString(curVarName.c_str()), 20);
@@ -929,14 +955,14 @@ QvisThresholdWindow::AddNewRowToVariablesList(const QString &variableName)
 {
     bool isDefault = threshVars->columnCount() == 4;
     int col = 0;
-    
+
     int nrows = threshVars->rowCount();
     threshVars->setRowCount(nrows + 1);
-    
+
     QTableWidgetItem *name_item = new QTableWidgetItem(variableName);
     name_item->setFlags(Qt::ItemIsSelectable);
     threshVars->setItem(nrows,col++,name_item);
-    
+
     if(isDefault)
     {
         threshVars->setItem(nrows,col++,new QTableWidgetItem(tr("min")));
@@ -946,13 +972,13 @@ QvisThresholdWindow::AddNewRowToVariablesList(const QString &variableName)
     {
         threshVars->setItem(nrows, col++, new QTableWidgetItem(tr("min:max")));
     }
-    
+
     QComboBox *cbox = new QComboBox();
     cbox->addItem(tr("All in range"));
     cbox->addItem(tr("Part in range"));
     cbox->setCurrentIndex(1);
     threshVars->setCellWidget(nrows,col++,cbox);
-    
+
     threshVars->resizeColumnToContents(0);
     threshVars->resizeColumnToContents(1);
     if(isDefault)
@@ -1004,7 +1030,7 @@ void
 QvisThresholdWindow::SetZoneIncludeSelectEnabled(bool val)
 {
     int nrows = threshVars->rowCount();
-    
+
     for(int i=0; i<nrows;i++)
         threshVars->cellWidget(i,threshVars->columnCount()-1)->setEnabled(val);
 }
@@ -1030,7 +1056,7 @@ QvisThresholdWindow::SetTableWidth()
 {
     int cols = threshVars->columnCount();
     int width = 4;
-    
+
     for(int i=0; i<cols; i++)
         width += threshVars->columnWidth(i);
     threshVars->setMinimumWidth(width);

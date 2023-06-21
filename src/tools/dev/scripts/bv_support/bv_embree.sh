@@ -7,7 +7,12 @@ function bv_embree_initialize
 
 function bv_embree_enable
 {
-    DO_EMBREE="yes"
+    # separate embree not required by ospray for vtk-9
+    if [[ "$DO_VTK9" == "yes" ]] ; then
+        DO_EMBREE="no"
+    else
+        DO_EMBREE="yes"
+    fi
 }
 
 function bv_embree_disable

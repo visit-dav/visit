@@ -66,10 +66,12 @@ function bv_zlib_initialize_vars
 
 function bv_zlib_ensure
 {
-    ensure_built_or_ready "zlib" $ZLIB_VERSION $ZLIB_BUILD_DIR $ZLIB_FILE $ZLIB_URL
-    if [[ $? != 0 ]] ; then
-        ANY_ERRORS="yes"
-        error "Unable to build ZLIB.  ${ZLIB_FILE} not found."
+    if [[ $DO_ZLIB == "yes" ]]; then
+        ensure_built_or_ready "zlib" $ZLIB_VERSION $ZLIB_BUILD_DIR $ZLIB_FILE $ZLIB_URL
+        if [[ $? != 0 ]] ; then
+            ANY_ERRORS="yes"
+            error "Unable to build ZLIB.  ${ZLIB_FILE} not found."
+        fi
     fi
 }
 

@@ -94,7 +94,6 @@ class avtMOABFileFormat : public avtSTMDFileFormat
     moab::Core*            mbCore;
     char*                  fileName;
     const DBOptionsAttributes *  readOptions;
-    bool                   fileLoaded;
     struct mhdf_FileDesc *       file_descriptor;
     std::set<int>          materials;
     std::set<int>          neumannsets;

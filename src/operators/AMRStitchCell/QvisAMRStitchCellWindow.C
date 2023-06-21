@@ -70,7 +70,9 @@ QvisAMRStitchCellWindow::~QvisAMRStitchCellWindow()
 // Creation:   omitted
 //
 // Modifications:
-//   
+//   Kathleen Biagas, Tue Apr 18 16:34:41 PDT 2023
+//   Support Qt6: buttonClicked -> idClicked.
+//
 // ****************************************************************************
 
 void
@@ -95,8 +97,13 @@ QvisAMRStitchCellWindow::CreateWindowContents()
     QRadioButton *CreateCellsOfTypeCreateTypeStitchCells = new QRadioButton(tr("StitchCells"), CreateCellsOfType);
     CreateCellsOfTypeButtonGroup->addButton(CreateCellsOfTypeCreateTypeStitchCells,2);
     CreateCellsOfTypeLayout->addWidget(CreateCellsOfTypeCreateTypeStitchCells);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(CreateCellsOfTypeButtonGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(CreateCellsOfTypeChanged(int)));
+#else
+    connect(CreateCellsOfTypeButtonGroup, SIGNAL(idClicked(int)),
+            this, SLOT(CreateCellsOfTypeChanged(int)));
+#endif
     mainLayout->addWidget(CreateCellsOfType, 0,1);
 
 }

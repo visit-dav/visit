@@ -36,7 +36,7 @@
 
 #include "Shape.h"
 #include "Vector.h"
-#include <QGLWidget>
+#include <QOpenGLWidget>
 #include "Font.h"
 #include "Transforms.h"
 

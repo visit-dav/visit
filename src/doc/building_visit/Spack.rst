@@ -96,6 +96,168 @@ Here are some examples. ::
     opt/spack/cray-sles15-zen2/gcc-11.2.0/hdf5-1.8.22-c3djozhlmrvy7wpu46f36qeakemiactw
     opt/spack/cray-sles15-zen2/gcc-11.2.0/cmake-3.14.7-nnahgnkkl2d2ty2us46we75pnjepci35
 
+Building VisIt with the development version of spack
+----------------------------------------------------
+
+The following 3 patches should be applied.
+These are patches to `package.py` files that cannot be patched as part of the VisIt_ spack package.
+
+::
+
+    diff --git a/var/spack/repos/builtin/packages/libxcb/package.py b/var/spack/repos/builtin/packages/libxcb/package.py
+    index 1db0f5de5a..f19f1856de 100644
+    --- a/var/spack/repos/builtin/packages/libxcb/package.py
+    +++ b/var/spack/repos/builtin/packages/libxcb/package.py
+    @@ -50,3 +50,4 @@ def configure_args(self):
+
+         def patch(self):
+             filter_file("typedef struct xcb_auth_info_t {", "typedef struct {", "src/xcb.h")
+    +        filter_file("python python2 python3", "python3", "configure")
+
+::
+
+    diff --git a/var/spack/repos/builtin/packages/visit/package.py b/var/spack/repos/builtin/packages/visit/package.py
+    index 290280e17d..b042998979 100644
+    --- a/var/spack/repos/builtin/packages/visit/package.py
+    +++ b/var/spack/repos/builtin/packages/visit/package.py
+    @@ -72,7 +72,7 @@ class Visit(CMakePackage):
+         version("3.0.1", sha256="a506d4d83b8973829e68787d8d721199523ce7ec73e7594e93333c214c2c12bd")
+
+         root_cmakelists_dir = "src"
+    -    generator("ninja")
+    +    #generator("ninja")
+
+         variant("gui", default=True, description="Enable VisIt's GUI")
+         variant("osmesa", default=False, description="Use OSMesa for off-screen CPU rendering")
+    @@ -99,7 +99,7 @@ class Visit(CMakePackage):
+         patch("visit32-missing-link-libs.patch", when="@3.2")
+
+         # Exactly one of 'gui' or 'osmesa' has to be enabled
+    -    conflicts("+gui", when="+osmesa")
+    +    #conflicts("+gui", when="+osmesa")
+
+         depends_on("cmake@3.14.7:", type="build")
+
+    @@ -264,24 +264,24 @@ def cmake_args(self):
+             args.extend(
+                 [
+                     self.define("VISIT_USE_X", "glx" in spec),
+    -                self.define("VISIT_MESAGL_DIR", "IGNORE"),
+    -                self.define("VISIT_OPENGL_DIR", "IGNORE"),
+    -                self.define("VISIT_OSMESA_DIR", "IGNORE"),
+                     self.define("OpenGL_GL_PREFERENCE", "LEGACY"),
+                     self.define("OPENGL_INCLUDE_DIR", spec["gl"].headers.directories[0]),
+                     self.define("OPENGL_glu_LIBRARY", spec["glu"].libs[0]),
+                 ]
+             )
+             if "+osmesa" in spec:
+    +            args.append(self.define("VISIT_MESAGL_DIR", spec["mesa"].prefix))
+    +            if '+llvm' in spec['mesa']:
+    +                args.append(self.define('VISIT_LLVM_DIR', spec['libllvm'].prefix))
+    +        else:
+                 args.extend(
+                     [
+    -                    self.define("HAVE_OSMESA", True),
+    -                    self.define("OSMESA_LIBRARIES", spec["osmesa"].libs[0]),
+    -                    self.define("OPENGL_gl_LIBRARY", spec["osmesa"].libs[0]),
+    +                    self.define("VISIT_MESAGL_DIR", "IGNORE"),
+    +                    self.define("VISIT_OPENGL_DIR", "IGNORE"),
+    +                    self.define("VISIT_OSMESA_DIR", "IGNORE"),
+    +                    self.define("OPENGL_gl_LIBRARY", spec["gl"].libs[0])
+                     ]
+                 )
+    -        else:
+    -            args.append(self.define("OPENGL_gl_LIBRARY", spec["gl"].libs[0]))
+
+             if "+hdf5" in spec:
+                 args.append(self.define("HDF5_DIR", spec["hdf5"].prefix))
+
+::
+
+    diff --git a/var/spack/repos/builtin/packages/vtk/package.py b/var/spack/repos/builtin/packages/vtk/package.py
+    index c7bec82c74..d87f61ea0b 100644
+    --- a/var/spack/repos/builtin/packages/vtk/package.py
+    +++ b/var/spack/repos/builtin/packages/vtk/package.py
+    @@ -61,7 +61,7 @@ class Vtk(CMakePackage):
+         patch("xdmf2-hdf51.13.2.patch", when="@9:9.2 +xdmf")
+
+         # We cannot build with both osmesa and qt in spack
+    -    conflicts("+osmesa", when="+qt")
+    +    #conflicts("+osmesa", when="+qt")
+
+         with when("+python"):
+             # Depend on any Python, add bounds below.
+
+Building on Frontier
+~~~~~~~~~~~~~~~~~~~~
+
+You will first need to copy the `compilers.yaml` and `packages.yaml` files from `scripts/spack/configs/olcf/frontier/` to your `.spack` directory in your home directory.
+
+In order to have spack install the packages in the User Managed Software space the following patch will need to be applied.
+
+::
+
+    diff --git a/etc/spack/defaults/config.yaml b/etc/spack/defaults/config.yaml
+    index 43f8a98dff..e9560a9304 100644
+    --- a/etc/spack/defaults/config.yaml
+    +++ b/etc/spack/defaults/config.yaml
+    @@ -17,7 +17,7 @@ config:
+       # This is the path to the root of the Spack install tree.
+       # You can use $spack here to refer to the root of the spack instance.
+       install_tree:
+    -    root: $spack/opt/spack
+    +    root: /sw/frontier/ums/ums022
+         projections:
+           all: "{architecture}/{compiler.name}-{compiler.version}/{name}-{version}-{hash}"
+         # install_tree can include an optional padded length (int or boolean)
+
+The following spack command is used to build VisIt_.
+
+::
+
+    spack install visit@3.3.3%gcc@11.2.0+mpi+gui+osmesa+vtkm ^python@3.7.7+shared ^mesa@21.2.5+opengl ^vtk@8.1.0+osmesa ^kokkos@3.7.01 ^vtk-m@1.9.0+kokkos+rocm~openmp+fpic amdgpu_target=gfx90a
+
+The installation will fail to install some shared libraries in the VisIt_ lib directory.
+The following script will copy the necessary libraries.
+
+::
+
+    #!/bin/bash
+    cp /sw/frontier/ums/ums022/linux-sles15-zen3/gcc-11.2.0/libtiff-4.5.0-ir2ffe7vygycyfrjz7efnohvyk7vfxnw/lib64/libtiff.so.6.0.0 /sw/frontier/ums/ums022/linux-sles15-zen3/gcc-11.2.0/visit-3.3.3-zfoh2caq5tbshlvtujditymjizstvewe/3.3.3/linux-x86_64/lib
+    ln -s libtiff.so.6.0.0 /sw/frontier/ums/ums022/linux-sles15-zen3/gcc-11.2.0/visit-3.3.3-zfoh2caq5tbshlvtujditymjizstvewe/3.3.3/linux-x86_64/lib/libtiff.so.6
+    cp /sw/frontier/ums/ums022/linux-sles15-zen3/gcc-11.2.0/kokkos-3.7.01-wm7zn4cuywfzttqg4o3xk454zulq6ebp/lib64/libkokkoscontainers.so.3.7.01 /sw/frontier/ums/ums022/linux-sles15-zen3/gcc-11.2.0/visit-3.3.3-zfoh2caq5tbshlvtujditymjizstvewe/3.3.3/linux-x86_64/lib
+    cp /sw/frontier/ums/ums022/linux-sles15-zen3/gcc-11.2.0/kokkos-3.7.01-wm7zn4cuywfzttqg4o3xk454zulq6ebp/lib64/libkokkoscore.so.3.7.01 /sw/frontier/ums/ums022/linux-sles15-zen3/gcc-11.2.0/visit-3.3.3-zfoh2caq5tbshlvtujditymjizstvewe/3.3.3/linux-x86_64/lib
+    cp /sw/frontier/ums/ums022/linux-sles15-zen3/gcc-11.2.0/kokkos-3.7.01-wm7zn4cuywfzttqg4o3xk454zulq6ebp/lib64/libkokkossimd.so.3.7.01 /sw/frontier/ums/ums022/linux-sles15-zen3/gcc-11.2.0/visit-3.3.3-zfoh2caq5tbshlvtujditymjizstvewe/3.3.3/linux-x86_64/lib
+    ln -s libkokkoscontainers.so.3.7.01 /sw/frontier/ums/ums022/linux-sles15-zen3/gcc-11.2.0/visit-3.3.3-zfoh2caq5tbshlvtujditymjizstvewe/3.3.3/linux-x86_64/lib/libkokkoscontainers.so.3.7
+    ln -s libkokkoscontainers.so.3.7 /sw/frontier/ums/ums022/linux-sles15-zen3/gcc-11.2.0/visit-3.3.3-zfoh2caq5tbshlvtujditymjizstvewe/3.3.3/linux-x86_64/lib/libkokkoscontainers.so
+    ln -s libkokkoscore.so.3.7.01 /sw/frontier/ums/ums022/linux-sles15-zen3/gcc-11.2.0/visit-3.3.3-zfoh2caq5tbshlvtujditymjizstvewe/3.3.3/linux-x86_64/lib/libkokkoscore.so.3.7
+    ln -s libkokkoscore.so.3.7 /sw/frontier/ums/ums022/linux-sles15-zen3/gcc-11.2.0/visit-3.3.3-zfoh2caq5tbshlvtujditymjizstvewe/3.3.3/linux-x86_64/lib/libkokkoscore.so
+    ln -s libkokkossimd.so.3.7.01 /sw/frontier/ums/ums022/linux-sles15-zen3/gcc-11.2.0/visit-3.3.3-zfoh2caq5tbshlvtujditymjizstvewe/3.3.3/linux-x86_64/lib/libkokkossimd.so.3.7
+    ln -s libkokkossimd.so.3.7 /sw/frontier/ums/ums022/linux-sles15-zen3/gcc-11.2.0/visit-3.3.3-zfoh2caq5tbshlvtujditymjizstvewe/3.3.3/linux-x86_64/lib/libkokkossimd.so
+    cp /opt/rocm-5.2.0/lib/libamdhip64.so.5.2.50200 /sw/frontier/ums/ums022/linux-sles15-zen3/gcc-11.2.0/visit-3.3.3-zfoh2caq5tbshlvtujditymjizstvewe/3.3.3/linux-x86_64/lib
+    ln -s libamdhip64.so.5.2.50200 /sw/frontier/ums/ums022/linux-sles15-zen3/gcc-11.2.0/visit-3.3.3-zfoh2caq5tbshlvtujditymjizstvewe/3.3.3/linux-x86_64/lib/libamdhip64.so.5
+    ln -s libamdhip64.so.5 /sw/frontier/ums/ums022/linux-sles15-zen3/gcc-11.2.0/visit-3.3.3-zfoh2caq5tbshlvtujditymjizstvewe/3.3.3/linux-x86_64/lib/libamdhip64.so
+
+Building on Perlmutter
+~~~~~~~~~~~~~~~~~~~~~~
+
+You will first need to copy the `packages.yaml` files from `scripts/spack/configs/nersc/perlmutter/` to your `.spack` directory in your home directory.
+
+The following spack command is used to build with spack.
+
+::
+
+    spack install visit@3.3.3%gcc@11.2.0+mpi+gui+osmesa~vtkm ^python@3.7.7+shared ^mesa@21.2.5+opengl ^llvm@11.0.1 ^vtk@8.1.0+osmesa
+
+The installation will fail to install some shared libraries in the VisIt_ lib directory.
+The following script will copy the necessary libraries.
+
+::
+
+    #!/bin/bash
+    cp /global/homes/b/brugger/spack/spack/opt/spack/linux-sles15-zen3/gcc-11.2.0/libtiff-4.5.0-ijtdgosjdshvhhtnhmh2jmmrfobk2udg/lib64/libtiff.so.6.0.0 /global/homes/b/brugger/spack/spack/opt/spack/linux-sles15-zen3/gcc-11.2.0/visit-3.3.3-th5ncewyylv4p4gszkpciogov3ky5cb6/3.3.3/linux-x86_64/lib
+    ln -s libtiff.so.6.0.0 /global/homes/b/brugger/spack/spack/opt/spack/linux-sles15-zen3/gcc-11.2.0/visit-3.3.3-th5ncewyylv4p4gszkpciogov3ky5cb6/3.3.3/linux-x86_64/lib/libtiff.so.6
+
 Working around recurring download failures
 ------------------------------------------
 
@@ -140,17 +302,13 @@ These files are stored in your ``~/.spack`` directory. ::
     .spack/<platform>/compilers.yaml
     .spack/packages.yaml
 
-The VisIt_ repository at GitHub contains ``compilers.yaml`` and ``packages.yaml`` files for popular systems in the directory ``scripts/spack/configs``.
+The VisIt_ repository at GitHub contains ``compilers.yaml`` and / or ``packages.yaml`` files for popular systems in the directory ``scripts/spack/configs``.
 
-Here are the ``compilers.yaml`` and ``packages.yaml`` files for ``spock.olcf.ornl.gov`` for VisIt_.
-
-``compilers.yaml``
-
-.. literalinclude:: ../../../scripts/spack/configs/olcf/spock/compilers.yaml
+Here is the ``packages.yaml`` file for ``frontier.olcf.ornl.gov`` for VisIt_.
 
 ``packages.yaml``
 
-.. literalinclude:: ../../../scripts/spack/configs/olcf/spock/packages.yaml
+.. literalinclude:: ../../../scripts/spack/configs/olcf/frontier/packages.yaml
 
 Debugging a spack package
 -------------------------

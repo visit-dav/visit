@@ -76,8 +76,13 @@ QvisSimulationCommandWindow::CreateWindowContents()
     vb->addLayout(commandButtonLayout);
     vb->addStretch(10);
     commandButtonLayout->setContentsMargins(0,0,0,0);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(commandGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(handleCommandButton(int)));
+#else
+    connect(commandGroup, SIGNAL(idClicked(int)),
+            this, SLOT(handleCommandButton(int)));
+#endif
     bool added = false;
     EnsureButtonExists(5, added);
 

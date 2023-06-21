@@ -71,7 +71,9 @@ QvisSurfCompPrepWindow::~QvisSurfCompPrepWindow()
 // Creation:   omitted
 //
 // Modifications:
-//   
+//   Kathleen Biagas, Tue Apr 18 16:34:41 PDT 2023
+//   Support Qt6: buttonClicked -> idClicked.
+//
 // ****************************************************************************
 
 void
@@ -96,8 +98,13 @@ QvisSurfCompPrepWindow::CreateWindowContents()
     QRadioButton *surfaceTypeSurfaceTypeAverage = new QRadioButton(tr("Average"), surfaceTypeWidget);
     surfaceType->addButton(surfaceTypeSurfaceTypeAverage,2);
     surfaceTypeLayout->addWidget(surfaceTypeSurfaceTypeAverage);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(surfaceType, SIGNAL(buttonClicked(int)),
             this, SLOT(surfaceTypeChanged(int)));
+#else
+    connect(surfaceType, SIGNAL(idClicked(int)),
+            this, SLOT(surfaceTypeChanged(int)));
+#endif
     mainLayout->addWidget(surfaceTypeWidget, 0,1);
 
     coordSystemLabel = new QLabel(tr("Coordinate System"), central);
@@ -117,8 +124,13 @@ QvisSurfCompPrepWindow::CreateWindowContents()
     QRadioButton *coordSystemCoordinateSystemSpherical = new QRadioButton(tr("Spherical"), coordSystemWidget);
     coordSystem->addButton(coordSystemCoordinateSystemSpherical,2);
     coordSystemLayout->addWidget(coordSystemCoordinateSystemSpherical);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(coordSystem, SIGNAL(buttonClicked(int)),
             this, SLOT(coordSystemChanged(int)));
+#else
+    connect(coordSystem, SIGNAL(idClicked(int)),
+            this, SLOT(coordSystemChanged(int)));
+#endif
     mainLayout->addWidget(coordSystemWidget, 1,1);
 
     thetaStartLabel = new QLabel(tr("Start for Theta (degrees)"), central);

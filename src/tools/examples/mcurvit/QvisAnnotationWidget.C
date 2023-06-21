@@ -22,7 +22,7 @@
 // ****************************************************************************
 // Method: QvisAnnotationWidget::QvisAnnotationWidget
 //
-// Purpose: 
+// Purpose:
 //   Constructor.
 //
 // Programmer: Eric Brugger
@@ -43,14 +43,14 @@ QvisAnnotationWidget::QvisAnnotationWidget(QWidget *parent, VisItViewer *v) :
 // ****************************************************************************
 // Method: QvisAnnotationWidget::~QvisAnnotationWidget
 //
-// Purpose: 
+// Purpose:
 //   Destructor.
 //
 // Programmer: Eric Brugger
 // Creation:   Mon Feb  2 13:31:33 PST 2009
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 QvisAnnotationWidget::~QvisAnnotationWidget()
@@ -60,14 +60,14 @@ QvisAnnotationWidget::~QvisAnnotationWidget()
 // ****************************************************************************
 // Method: QvisAnnotationWidget::Update
 //
-// Purpose: 
+// Purpose:
 //   Update the widgets associated with the specified subject.
 //
 // Programmer: Eric Brugger
 // Creation:   Mon Feb  2 13:31:33 PST 2009
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -84,14 +84,14 @@ QvisAnnotationWidget::Update(Subject *subject)
 // ****************************************************************************
 // Method: QvisAnnotationWidget::SubjectRemoved
 //
-// Purpose: 
+// Purpose:
 //   Tell the window that the subject being observed is no longer valid.
 //
 // Programmer: Eric Brugger
 // Creation:   Mon Feb  2 13:31:33 PST 2009
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -531,7 +531,11 @@ QvisAnnotationWidget::QStringToDoubles(const QString &str, double *vals, int max
     if(!str.isEmpty())
     {
         bool okay = true;
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
         QStringList s = str.split(" ", QString::SkipEmptyParts);
+#else
+        QStringList s = str.split(" ", Qt::SkipEmptyParts);
+#endif
         for(int i = 0; i < maxVals && okay; ++i)
         {
             if(i < s.size())

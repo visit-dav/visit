@@ -111,6 +111,9 @@ QvisLabelPlotWindow::~QvisLabelPlotWindow()
 //   Set keyboard tracking to false for spin boxes so that 'valueChanged'
 //   signal will only emit when 'enter' is pressed or spinbox loses focus.
 //
+//   Kathleen Biagas, Tue Apr 18 16:34:41 PDT 2023
+//   Support Qt6: buttonClicked -> idClicked.
+//
 // ****************************************************************************
 
 void
@@ -176,8 +179,13 @@ QvisLabelPlotWindow::CreateWindowContents()
     depthTestButtonGroup->addButton(rb, 2);
     dtLayout->addWidget(rb);
     
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(depthTestButtonGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(depthTestButtonGroupChanged(int)));
+#else
+    connect(depthTestButtonGroup, SIGNAL(idClicked(int)),
+            this, SLOT(depthTestButtonGroupChanged(int)));
+#endif
     selLayout->addWidget(new QLabel(tr("Depth test mode"), selectionGroupBox), 3, 0);
     selLayout->addLayout(dtLayout, 3, 1, 1, 2);
 

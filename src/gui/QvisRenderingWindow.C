@@ -135,6 +135,9 @@ QvisRenderingWindow::~QvisRenderingWindow()
 //   Added a label and tooltip indicating that a VisIt restart is required
 //   when changing anti-aliasing.
 //
+//   Kathleen Biagas, Tue Apr 18 16:34:41 PDT 2023
+//   Support Qt6: buttonClicked -> idClicked.
+//
 // ****************************************************************************
 
 QWidget *
@@ -313,8 +316,13 @@ QvisRenderingWindow::CreateBasicPage()
     QLabel *drawObjLabel = new QLabel(tr("Draw objects as"), basicOptions);
     basicLayout->addWidget(drawObjLabel, row, 0, 1, 3);
     objectRepresentation = new QButtonGroup(basicOptions);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(objectRepresentation, SIGNAL(buttonClicked(int)),
             this, SLOT(objectRepresentationChanged(int)));
+#else
+    connect(objectRepresentation, SIGNAL(idClicked(int)),
+            this, SLOT(objectRepresentationChanged(int)));
+#endif
     row++;
 
     QRadioButton *surfaces = new QRadioButton(tr("Surfaces"), basicOptions);
@@ -336,8 +344,13 @@ QvisRenderingWindow::CreateBasicPage()
     row++;
 
     stereoType = new QButtonGroup(basicOptions);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(stereoType, SIGNAL(buttonClicked(int)),
             this, SLOT(stereoTypeChanged(int)));
+#else
+    connect(stereoType, SIGNAL(idClicked(int)),
+            this, SLOT(stereoTypeChanged(int)));
+#endif
     redblue = new QRadioButton(tr("Red/Blue"), basicOptions);
     stereoType->addButton(redblue, 0);
     basicLayout->addWidget(redblue, row, 1);
@@ -409,6 +422,9 @@ QvisRenderingWindow::CreateBasicPage()
 //   Incorporate ARSanderson's OSPRAY 2.8.0 work for VTK 9.
 //   (bracketed by #elif defined(HAVE_OSPRAY).
 //
+//   Kathleen Biagas, Tue Apr 18 16:34:41 PDT 2023
+//   Support Qt6: buttonClicked -> idClicked.
+//
 // ****************************************************************************
 
 QWidget *
@@ -425,8 +441,13 @@ QvisRenderingWindow::CreateAdvancedPage()
     QLabel *scalrenLabel = new QLabel(tr("Use scalable rendering"), advancedOptions);
     advLayout->addWidget(scalrenLabel, row, 0, 1, 3);
     scalrenActivationMode = new QButtonGroup(advancedOptions);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(scalrenActivationMode, SIGNAL(buttonClicked(int)),
             this, SLOT(scalrenActivationModeChanged(int)));
+#else
+    connect(scalrenActivationMode, SIGNAL(idClicked(int)),
+            this, SLOT(scalrenActivationModeChanged(int)));
+#endif
     row++;
 
     scalrenAuto = new QRadioButton(tr("Auto"), advancedOptions);
@@ -459,8 +480,13 @@ QvisRenderingWindow::CreateAdvancedPage()
                                       advancedOptions);
     advLayout->addWidget(scalrenCompressLabel, row, 0, 1, 3);
     scalrenCompressMode = new QButtonGroup(advancedOptions);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(scalrenCompressMode, SIGNAL(buttonClicked(int)),
             this, SLOT(scalrenCompressModeChanged(int)));
+#else
+    connect(scalrenCompressMode, SIGNAL(idClicked(int)),
+            this, SLOT(scalrenCompressModeChanged(int)));
+#endif
     row++;
 
     QRadioButton *cmp_auto = new QRadioButton(tr("Auto"), advancedOptions);
@@ -479,8 +505,13 @@ QvisRenderingWindow::CreateAdvancedPage()
     QLabel *compactDomainsLabel = new QLabel(tr("Compact domains on engine"), advancedOptions);
     advLayout->addWidget(compactDomainsLabel, row, 0, 1, 3);
     compactDomainsActivationMode = new QButtonGroup(advancedOptions);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(compactDomainsActivationMode, SIGNAL(buttonClicked(int)),
             this, SLOT(compactDomainsActivationModeChanged(int)));
+#else
+    connect(compactDomainsActivationMode, SIGNAL(idClicked(int)),
+            this, SLOT(compactDomainsActivationModeChanged(int)));
+#endif
     row++;
 
     compactDomainsAuto = new QRadioButton(tr("Auto"), advancedOptions);

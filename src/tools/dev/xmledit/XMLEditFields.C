@@ -89,6 +89,9 @@ class QNarrowLineEdit : public QLineEdit
 //    Kathleen Biagas, Thu Aug 25 14:24:11 MST 2011
 //    Added persistent checkbox.
 //
+//    Kathleen Biagas, Tue Apr 18 16:34:41 PDT 2023
+//    Support Qt6: buttonClicked -> idClicked.
+//
 // ****************************************************************************
 
 XMLEditFields::XMLEditFields(QWidget *p)
@@ -184,8 +187,13 @@ XMLEditFields::XMLEditFields(QWidget *p)
     vnLayout->setSpacing(5);
     varNameButtons = new QButtonGroup(this);
     varNameButtons->setExclusive(false);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(varNameButtons, SIGNAL(buttonClicked(int)),
             this, SLOT(variableTypeClicked(int)));
+#else
+    connect(varNameButtons, SIGNAL(idClicked(int)),
+            this, SLOT(variableTypeClicked(int)));
+#endif
     QCheckBox *cb = new QCheckBox(tr("Meshes"), variableNameGroup);
     varNameButtons->addButton(cb,0);
     vnLayout->addWidget(cb, 0, 0);
@@ -299,8 +307,13 @@ XMLEditFields::XMLEditFields(QWidget *p)
             this, SLOT(fieldlistUp()));
     connect(downButton, SIGNAL(pressed()),
             this, SLOT(fieldlistDown()));
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(access, SIGNAL(buttonClicked(int)),
             this, SLOT(accessChanged(int)));
+#else
+    connect(access, SIGNAL(idClicked(int)),
+            this, SLOT(accessChanged(int)));
+#endif
 }
 
 // ****************************************************************************

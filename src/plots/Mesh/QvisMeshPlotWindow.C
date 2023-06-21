@@ -129,6 +129,9 @@ QvisMeshPlotWindow::~QvisMeshPlotWindow()
 //   Kathleen Biagas, Thu Apr 23 13:13:16 PDT 2015
 //   Removed never used outlineOnly and errorTolerance widgets.
 //
+//   Kathleen Biagas, Tue Apr 18 16:34:41 PDT 2023
+//   Support Qt6: buttonClicked -> idClicked.
+//
 // ****************************************************************************
 
 void
@@ -179,8 +182,13 @@ QvisMeshPlotWindow::CreateWindowContents()
     colorLayout->addWidget(rb, 0, 3, Qt::AlignRight | Qt::AlignVCenter);
 
     // Each time a radio button is clicked, call the scale clicked slot.
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(meshColorButtons, SIGNAL(buttonClicked(int)),
             this, SLOT(meshColorClicked(int)));
+#else
+    connect(meshColorButtons, SIGNAL(idClicked(int)),
+            this, SLOT(meshColorClicked(int)));
+#endif
 
     // Create the mesh color button.
     meshColor = new QvisColorButton(central);
@@ -206,8 +214,13 @@ QvisMeshPlotWindow::CreateWindowContents()
     colorLayout->addWidget(rb, 1, 3, Qt::AlignRight | Qt::AlignVCenter);
 
     // Each time a radio button is clicked, call the scale clicked slot.
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(opaqueColorButtons, SIGNAL(buttonClicked(int)),
             this, SLOT(opaqueColorClicked(int)));
+#else
+    connect(opaqueColorButtons, SIGNAL(idClicked(int)),
+            this, SLOT(opaqueColorClicked(int)));
+#endif
 
     // Create the opaque color button.
     opaqueColor = new QvisColorButton(central);
@@ -218,8 +231,13 @@ QvisMeshPlotWindow::CreateWindowContents()
     // Create the opaque mode buttons
     colorLayout->addWidget(new QLabel(tr("Opaque mode"), central), 2, 0);
     opaqueModeGroup = new QButtonGroup(central);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(opaqueModeGroup, SIGNAL(buttonClicked(int)), this,
             SLOT(opaqueModeChanged(int)));
+#else
+    connect(opaqueModeGroup, SIGNAL(idClicked(int)), this,
+            SLOT(opaqueModeChanged(int)));
+#endif
 
     QHBoxLayout *opaqueModeLayout = new QHBoxLayout();
     opaqueModeLayout->setContentsMargins(0,0,0,0);
@@ -304,8 +322,13 @@ QvisMeshPlotWindow::CreateWindowContents()
 
     // Create the smoothing level buttons
     smoothingLevelButtons = new QButtonGroup(central);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(smoothingLevelButtons, SIGNAL(buttonClicked(int)),
             this, SLOT(smoothingLevelChanged(int)));
+#else
+    connect(smoothingLevelButtons, SIGNAL(idClicked(int)),
+            this, SLOT(smoothingLevelChanged(int)));
+#endif
 
     rb = new QRadioButton(tr("None"), central);
     smoothingLevelButtons->addButton(rb, 0);
