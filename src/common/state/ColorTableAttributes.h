@@ -9,6 +9,8 @@
 #include <AttributeSubject.h>
 
 class ColorControlPointList;
+class TagInfo;
+
 
 // ****************************************************************************
 // Class: ColorTableAttributes
@@ -65,6 +67,7 @@ public:
     void SetDefaultContinuous(const std::string &defaultContinuous_);
     void SetDefaultDiscrete(const std::string &defaultDiscrete_);
     void SetChangesMade(bool changesMade_);
+    void SetTagsMatchAny(bool tagsMatchAny_);
 
     // Property getting methods
     const stringVector &GetNames() const;
@@ -78,6 +81,7 @@ public:
     const std::string  &GetDefaultDiscrete() const;
           std::string  &GetDefaultDiscrete();
     bool               GetChangesMade() const;
+    bool               GetTagsMatchAny() const;
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -111,6 +115,10 @@ public:
     void RemoveColorTable(int index);
     void SetActiveElement(int index, bool val);
     bool GetActiveElement(int index);
+    stringVector StringifyTagChanges();
+    void UnstringifyAndMergeTagChanges(stringVector changes);
+    void addTagToColorTable(const std::string ctName, const std::string tagName, ColorControlPointList* ccpl);
+    void removeTagFromColorTable(const std::string ctName, const std::string tagName, ColorControlPointList* ccpl);
     virtual void ProcessOldVersions(DataNode *parentNode, const char *configVersion);
 
     // IDs that can be used to identify fields in case statements
@@ -121,6 +129,7 @@ public:
         ID_defaultContinuous,
         ID_defaultDiscrete,
         ID_changesMade,
+        ID_tagsMatchAny,
         ID__LAST
     };
 
@@ -133,11 +142,12 @@ private:
     std::string          defaultContinuous;
     std::string          defaultDiscrete;
     bool                 changesMade;
+    bool                 tagsMatchAny;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define COLORTABLEATTRIBUTES_TMFS "s*i*a*ssb"
+#define COLORTABLEATTRIBUTES_TMFS "s*i*a*ssbb"
 
 #endif

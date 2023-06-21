@@ -168,8 +168,6 @@ protected:
     void ChangeSelectedColor(const QColor &c);
     void PopupColorSelect(const QColor &, const QPoint &p);
     QColor GetNextColor();
-    stringVector StringifyTagChanges();
-    void UnstringifyAndMergeTagChanges(stringVector changes);
 
 private slots:
     void resizeColorTable(int);
@@ -203,19 +201,12 @@ private slots:
     void searchEdited(const QString &newSearchTerm);
     void tagEdited();
     void addRemoveTag();
-    void addTagToColorTable(const std::string ctName, 
-                            const std::string tagName,
-                            ColorControlPointList* ccpl);
-    void removeTagFromColorTable(const std::string ctName, 
-                                 const std::string tagName,
-                                 ColorControlPointList* ccpl);
 private:
     ColorTableAttributes     *colorAtts;
     int                      colorCycle;
     QString                  currentColorTable;
     int                      popupMode;
     bool                     sliding;
-    bool                     tagsMatchAny;
     QString                  searchTerm;
     QString                  tagEdit;
 

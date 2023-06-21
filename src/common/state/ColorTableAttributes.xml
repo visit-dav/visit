@@ -15,6 +15,9 @@
     <Field name="changesMade" label="changesMade" type="bool">
       false
     </Field>
+    <Field name="tagsMatchAny" label="tagsMatchAny" type="bool">
+      true
+    </Field>
     <Function name="GetColorTableIndex" user="true" member="true">
     </Function>
     <Function name="GetColorControlPoints1" user="true" member="true">
@@ -41,12 +44,29 @@
     </Function>
     <Function name="GetActiveElement" user="true" member="true">
     </Function>
+    <Function name="StringifyTagChanges" user="true" member="true">
+    </Function>
+    <Function name="UnstringifyAndMergeTagChanges" user="true" member="true">
+    </Function>
+    <Function name="addTagToColorTable" user="true" member="true">
+    </Function>
+    <Function name="removeTagFromColorTable" user="true" member="true">
+    </Function>
     <Function name="ProcessOldVersions" user="true" member="true">
     </Function>
     <Include file="source" quoted="false">
       ColorControlPoint.h
     </Include>
     <Include file="source" quoted="false">
+      DebugStream.h
+    </Include>
+    <Include file="source" quoted="false">
       map
+    </Include>
+    <Include file="source" quoted="false">
+      algorithm
+    </Include>
+    <Include file="source" quoted="false">
+      set
     </Include>
   </Attribute>

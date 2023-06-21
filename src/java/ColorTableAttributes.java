@@ -24,7 +24,7 @@ import java.lang.Integer;
 
 public class ColorTableAttributes extends AttributeSubject
 {
-    private static int ColorTableAttributes_numAdditionalAtts = 6;
+    private static int ColorTableAttributes_numAdditionalAtts = 7;
 
     public ColorTableAttributes()
     {
@@ -36,6 +36,7 @@ public class ColorTableAttributes extends AttributeSubject
         defaultContinuous = new String("hot");
         defaultDiscrete = new String("levels");
         changesMade = false;
+        tagsMatchAny = true;
     }
 
     public ColorTableAttributes(int nMoreFields)
@@ -48,6 +49,7 @@ public class ColorTableAttributes extends AttributeSubject
         defaultContinuous = new String("hot");
         defaultDiscrete = new String("levels");
         changesMade = false;
+        tagsMatchAny = true;
     }
 
     public ColorTableAttributes(ColorTableAttributes obj)
@@ -77,6 +79,7 @@ public class ColorTableAttributes extends AttributeSubject
         defaultContinuous = new String(obj.defaultContinuous);
         defaultDiscrete = new String(obj.defaultDiscrete);
         changesMade = obj.changesMade;
+        tagsMatchAny = obj.tagsMatchAny;
 
         SelectAll();
     }
@@ -119,7 +122,8 @@ public class ColorTableAttributes extends AttributeSubject
                 colorTables_equal &&
                 (defaultContinuous.equals(obj.defaultContinuous)) &&
                 (defaultDiscrete.equals(obj.defaultDiscrete)) &&
-                (changesMade == obj.changesMade));
+                (changesMade == obj.changesMade) &&
+                (tagsMatchAny == obj.tagsMatchAny));
     }
 
     // Property setting methods
@@ -153,6 +157,12 @@ public class ColorTableAttributes extends AttributeSubject
         Select(5);
     }
 
+    public void SetTagsMatchAny(boolean tagsMatchAny_)
+    {
+        tagsMatchAny = tagsMatchAny_;
+        Select(6);
+    }
+
     // Property getting methods
     public Vector  GetNames() { return names; }
     public Vector  GetActive() { return active; }
@@ -160,6 +170,7 @@ public class ColorTableAttributes extends AttributeSubject
     public String  GetDefaultContinuous() { return defaultContinuous; }
     public String  GetDefaultDiscrete() { return defaultDiscrete; }
     public boolean GetChangesMade() { return changesMade; }
+    public boolean GetTagsMatchAny() { return tagsMatchAny; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
@@ -183,6 +194,8 @@ public class ColorTableAttributes extends AttributeSubject
             buf.WriteString(defaultDiscrete);
         if(WriteSelect(5, buf))
             buf.WriteBool(changesMade);
+        if(WriteSelect(6, buf))
+            buf.WriteBool(tagsMatchAny);
     }
 
     public void ReadAtts(int index, CommunicationBuffer buf)
@@ -217,6 +230,9 @@ public class ColorTableAttributes extends AttributeSubject
         case 5:
             SetChangesMade(buf.ReadBool());
             break;
+        case 6:
+            SetTagsMatchAny(buf.ReadBool());
+            break;
         }
     }
 
@@ -238,6 +254,7 @@ public class ColorTableAttributes extends AttributeSubject
         str = str + stringToString("defaultContinuous", defaultContinuous, indent) + "\n";
         str = str + stringToString("defaultDiscrete", defaultDiscrete, indent) + "\n";
         str = str + boolToString("changesMade", changesMade, indent) + "\n";
+        str = str + boolToString("tagsMatchAny", tagsMatchAny, indent) + "\n";
         return str;
     }
 
@@ -379,5 +396,6 @@ public class ColorTableAttributes extends AttributeSubject
     private String  defaultContinuous;
     private String  defaultDiscrete;
     private boolean changesMade;
+    private boolean tagsMatchAny;
 }
 
