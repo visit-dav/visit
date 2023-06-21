@@ -125,27 +125,7 @@ Postfix:
     }
 #endif
 
-Target: xml2java
-Function: GetColorTableIndex
-Declaration: GetColorTableIndex
-Definition:
-    public int GetColorTableIndex(String name)
-    {
-        int retval = -1;
-        for(int i = 0; i < names.size(); ++i)
-        {
-            String n = (String)names.elementAt(i);
-            if(n.equals(name))
-            {
-                retval = i;
-                break;
-            }
-        }
-
-        return retval;
-    }
-
-Target: xml2python
+Target: xml2atts
 Function: GetColorTableIndex
 Declaration: int GetColorTableIndex(const std::string &name) const;
 Definition:
@@ -184,6 +164,26 @@ ColorTableAttributes::GetColorTableIndex(const std::string &name) const
 
     return retval;
 }
+
+Target: xml2java
+Function: GetColorTableIndex
+Declaration: GetColorTableIndex
+Definition:
+    public int GetColorTableIndex(String name)
+    {
+        int retval = -1;
+        for(int i = 0; i < names.size(); ++i)
+        {
+            String n = (String)names.elementAt(i);
+            if(n.equals(name))
+            {
+                retval = i;
+                break;
+            }
+        }
+
+        return retval;
+    }
 
 Target: xml2atts
 Function: GetColorControlPoints1
@@ -848,6 +848,7 @@ ColorTableAttributes::GetActiveElement(int index)
         return active[index];
 }
 
+Target: xml2atts
 Function: ProcessOldVersions
 Declaration: virtual void ProcessOldVersions(DataNode *parentNode, const char *configVersion);
 Definition:

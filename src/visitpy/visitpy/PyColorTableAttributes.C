@@ -513,42 +513,6 @@ ColorTableAttributes_GetChangesMade(PyObject *self, PyObject *args)
 }
 
 
-// ****************************************************************************
-// Method: ColorTableAttributes::GetColorTableIndex
-//
-// Purpose:
-//   Returns the index of the specified color table.
-//
-// Arguments:
-//   name : The name of the color table that we want.
-//
-// Returns:    The index or -1 if the color table is not in the list.
-//
-// Note:
-//
-// Programmer: Brad Whitlock
-// Creation:   Sat Jun 16 20:32:23 PST 2001
-//
-// Modifications:
-//
-// ****************************************************************************
-
-int
-ColorTableAttributes::GetColorTableIndex(const std::string &name) const
-{
-    int retval = -1;
-    for(size_t i = 0; i < names.size(); ++i)
-    {
-        if(names[i] == name)
-        {
-            retval = i;
-            break;
-        }
-    }
-
-    return retval;
-}
-
 
 PyMethodDef PyColorTableAttributes_methods[COLORTABLEATTRIBUTES_NMETH] = {
     {"Notify", ColorTableAttributes_Notify, METH_VARARGS},
@@ -567,7 +531,6 @@ PyMethodDef PyColorTableAttributes_methods[COLORTABLEATTRIBUTES_NMETH] = {
     {"GetDefaultDiscrete", ColorTableAttributes_GetDefaultDiscrete, METH_VARARGS},
     {"SetChangesMade", ColorTableAttributes_SetChangesMade, METH_VARARGS},
     {"GetChangesMade", ColorTableAttributes_GetChangesMade, METH_VARARGS},
-    {"int GetColorTableIndex(const std::string &name) const;", int GetColorTableIndex(const std::string &name) const;, METH_VARARGS},
     {NULL, NULL}
 };
 
