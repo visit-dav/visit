@@ -3177,9 +3177,7 @@ QvisColorTableWindow::tagsSelectAll()
 {
     tagTable->blockSignals(true);
     // If all the tags are already enabled
-    if (std::all_of(tagList.begin(), tagList.end(), 
-        [](std::pair<std::string, TagInfo> const tagListEntry)
-        { return tagListEntry.second.active; }))
+    if (colorAtts->AllTagsSelected())
     {
         // then we want to disable all of them
         for (auto &tagListEntry : tagList)
@@ -3222,11 +3220,8 @@ void
 QvisColorTableWindow::tagCombiningChanged(int index)
 {
     bool old_val = colorAtts->GetTagsMatchAny();
-    if (index == 0)
-        colorAtts->SetTagsMatchAny(true);
-    else
-        colorAtts->SetTagsMatchAny(false);
-    // have any changes actually been made?
+    colorAtts->SetTagsMatchAny(index == 0);
+    // has the tag combining behavior been changed?
     if (old_val != colorAtts->GetTagsMatchAny())
     {
         UpdateNames();

@@ -52,6 +52,8 @@
     </Function>
     <Function name="removeTagFromColorTable" user="true" member="true">
     </Function>
+    <Function name="AllTagsSelected" user="true" member="true">
+    </Function>
     <Function name="ProcessOldVersions" user="true" member="true">
     </Function>
     <Include file="source" quoted="false">

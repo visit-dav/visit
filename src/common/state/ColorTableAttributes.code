@@ -897,6 +897,7 @@ ColorTableAttributes::GetActiveElement(int index)
 {
     if (index >= 0 && index < active.size())
         return active[index];
+    // TODO what to return if out of bounds?
 }
 
 Function: StringifyTagChanges
@@ -1085,6 +1086,29 @@ ColorTableAttributes::removeTagFromColorTable(const std::string ctName,
             tagList[tagName].numrefs --;
         }
     }
+}
+
+Function: AllTagsSelected
+Declaration: bool AllTagsSelected();
+Definition:
+// ****************************************************************************
+// Method: ColorTableAttributes::AllTagsSelected
+//
+// Purpose:
+//    TODO
+//
+// Programmer: Justin Privitera
+// Creation:   TODO
+//
+// Modifications:
+//
+// ****************************************************************************
+bool
+ColorTableAttributes::AllTagsSelected()
+{
+    return std::all_of(tagList.begin(), tagList.end(), 
+                       [](std::pair<std::string, TagInfo> const tagListEntry)
+                       { return tagListEntry.second.active; });
 }
 
 Target: xml2atts

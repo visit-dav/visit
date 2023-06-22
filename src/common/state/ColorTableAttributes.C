@@ -1748,6 +1748,26 @@ ColorTableAttributes::removeTagFromColorTable(const std::string ctName,
 }
 
 // ****************************************************************************
+// Method: ColorTableAttributes::AllTagsSelected
+//
+// Purpose:
+//    TODO
+//
+// Programmer: Justin Privitera
+// Creation:   TODO
+//
+// Modifications:
+//
+// ****************************************************************************
+bool
+ColorTableAttributes::AllTagsSelected()
+{
+    return std::all_of(tagList.begin(), tagList.end(), 
+                       [](std::pair<std::string, TagInfo> const tagListEntry)
+                       { return tagListEntry.second.active; });
+}
+
+// ****************************************************************************
 // Method: ColorTableAttributes::ProcessOldVersions
 //
 // Purpose:
