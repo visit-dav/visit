@@ -120,6 +120,8 @@ public:
     void addTagToColorTable(const std::string ctName, const std::string tagName, ColorControlPointList* ccpl);
     void removeTagFromColorTable(const std::string ctName, const std::string tagName, ColorControlPointList* ccpl);
     bool AllTagsSelected();
+    std::map<std::string, TagInfo> & GetTagList();
+    void FilterTablesByTag();
     virtual void ProcessOldVersions(DataNode *parentNode, const char *configVersion);
 
     // IDs that can be used to identify fields in case statements

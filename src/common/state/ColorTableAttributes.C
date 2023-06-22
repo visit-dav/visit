@@ -1569,6 +1569,7 @@ ColorTableAttributes::GetActiveElement(int index)
 {
     if (index >= 0 && index < active.size())
         return active[index];
+    // TODO what to return if out of bounds?
 }
 
 // ****************************************************************************
@@ -1765,6 +1766,83 @@ ColorTableAttributes::AllTagsSelected()
     return std::all_of(tagList.begin(), tagList.end(), 
                        [](std::pair<std::string, TagInfo> const tagListEntry)
                        { return tagListEntry.second.active; });
+}
+
+// ****************************************************************************
+// Method: ColorTableAttributes::GetTagList
+//
+// Purpose:
+//    TODO
+//
+// Programmer: Justin Privitera
+// Creation:   TODO
+//
+// Modifications:
+//
+// ****************************************************************************
+std::map<std::string, TagInfo> &
+ColorTableAttributes::GetTagList()
+{
+    return tagList;
+}
+
+// ****************************************************************************
+// Method: ColorTableAttributes::FilterTablesByTag
+//
+// Purpose:
+//    TODO
+//
+// Programmer: Justin Privitera
+// Creation:   TODO
+//
+// Modifications:
+//
+// ****************************************************************************
+void
+ColorTableAttributes::FilterTablesByTag()
+{
+    // for each color table
+    for (int i = 0; i < GetNumColorTables(); i ++)
+    {
+        bool tagFound = false;
+        // go thru global tags
+        for (const auto& mapitem : tagList)
+        {
+            // if the global tag is active
+            if (mapitem.second.active)
+            {
+                tagFound = false;
+                // go thru local tags
+                for (int k = 0; k < GetColorTables(i).GetNumTags(); k ++)
+                {
+                    // if the current global tag is the same as our local tag
+                    if (mapitem.first == GetColorTables(i).GetTag(k))
+                    {
+                        tagFound = true;
+                        break;
+                    }
+                }
+                if (tagFound == GetTagsMatchAny())
+                // If both are true, that means...
+                // 1) tagsMatchAny is true so we only need one tag from 
+                //    the global tag list to be present in the local tag
+                //    list, AND
+                // 2) tagFound is true, so there is no need to keep 
+                //    searching for a tag that is in both the local and
+                //    global tag lists. Thus we can end iteration early.
+                // If both are false, that means...
+                // 1) tagsMatchAny is false so we need every tag from the
+                //    global tag list to be present in the local tag list, AND
+                // 2) tagFound is false, so there exists a global tag that
+                //    is not in the local tag list, hence we can give up 
+                //    early because we know that this color table does not
+                //    have every tag in the global tag list.
+                    break;
+            }
+        }
+        // we mark the color table as active or inactive
+        SetActiveElement(i, tagFound);
+    }
 }
 
 // ****************************************************************************
