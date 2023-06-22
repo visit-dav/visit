@@ -55,7 +55,11 @@
 //    Hank Childs, Tue Dec 20 14:43:08 PST 2011
 //    Add method DescriptionString.
 //
+//    Brad Whitlock, Fri Jun 16 14:45:15 PDT 2023
+//    Add overrides for InvalidatesZones, InvalidatesNodes.
+//
 // ****************************************************************************
+
 class PIPELINE_API avtResolutionSelection : public avtDataSelection
 {
 public:
@@ -64,6 +68,9 @@ public:
     // base class api
     virtual const char*  GetType() const { return "avtResolutionSelection"; }
     virtual std::string     DescriptionString(void);
+
+    virtual bool         InvalidatesZones() const override { return false; }
+    virtual bool         InvalidatesNodes() const override { return false; }
 
     // added functionality
     virtual void         setResolution(int r) { mResolution = r; }

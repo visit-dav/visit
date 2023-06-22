@@ -93,6 +93,9 @@
 //    Added virtual method "DescriptionString", so that data selections can
 //    add to the key used for caching.
 //
+//    Brad Whitlock, Fri Jun 16 14:45:15 PDT 2023
+//    Added InvalidatesZones, InvalidatesNodes.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDataSelection 
@@ -105,6 +108,9 @@ class PIPELINE_API avtDataSelection
     virtual bool            operator==(const avtDataSelection &) const
                                 { EXCEPTION0(ImproperUseException); return false; };
     virtual std::string     DescriptionString(void) = 0;
+
+    virtual bool            InvalidatesZones() const { return true; }
+    virtual bool            InvalidatesNodes() const { return true; }
 
   private:
 };
