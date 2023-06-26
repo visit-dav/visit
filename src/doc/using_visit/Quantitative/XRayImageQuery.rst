@@ -313,6 +313,14 @@ The complete version consists of:
 | *parallel_scale* | The parallel scale, or view height. The default is   |
 |                  | 0.5.                                                 |
 +------------------+------------------------------------------------------+
+| *view_width*     | The view width. The default is 0.5. If this argument |
+|                  | is not specified, the query will assume pixels are   |
+|                  | to be square, and it will use the specified          |
+|                  | ``image_size`` and the ``parallel_scale`` to         |
+|                  | calculate the correct ``view_width``. If this        |
+|                  | argument *is* specified, the query may produce       |
+|                  | results with non-square pixels.                      |
++------------------+------------------------------------------------------+
 | *near_plane*     | The near clipping plane. The default is -0.5.        |
 +------------------+------------------------------------------------------+
 | *far_plane*      | The far clipping plane. The default is 0.5.          |
@@ -589,7 +597,7 @@ See :ref:`Introspecting_with_Python` for a deeper dive into viewing and extracti
          y: 1.0
          z: 0.0
        view_angle: 30.0
-       ... ( skipped 4 children )
+       ... ( skipped 6 children )
        image_zoom: 1.0
        perspective: 1
        perspective_str: "perspective"
@@ -1085,6 +1093,8 @@ See the example below, which is taken from the example in :ref:`Overview_of_Outp
         z: 0.0
       view_angle: 30.0
       parallel_scale: 5.0
+      view_width: 6.667
+      non_square_pixels: "no"
       near_plane: -50.0
       far_plane: 50.0
       image_pan: 
@@ -1155,6 +1165,13 @@ The following is included:
 | *parallel_scale*         | The parallel scale, or view height, that was |
 |                          | used in the calculations.                    |
 +--------------------------+----------------------------------------------+
+| *view_width*             | The view width that was used in the          |
+|                          | calculations.                                |
++--------------------------+----------------------------------------------+
+| *non_square_pixels*      | "yes" means that the output is using         |
+|                          | non-square pixels, meaning that a view width |
+|                          | was specified in the camera setup.           |
++--------------------------+----------------------------------------------+
 | *near_plane*             | The near plane that was used in the          |
 |                          | calculations.                                |
 +--------------------------+----------------------------------------------+
@@ -1194,6 +1211,8 @@ An example: ::
       z: 0.0
     view_angle: 30.0
     parallel_scale: 5.0
+    view_width: 5.0
+    non_square_pixels: "no"
     near_plane: -50.0
     far_plane: 50.0
     image_pan: 
@@ -2553,6 +2572,8 @@ Next up is :ref:`View_Parameters`:
 
    view_angle = xrayout["domain_000000/state/xray_view/view_angle"]
    parallel_scale = xrayout["domain_000000/state/xray_view/parallel_scale"]
+   view_width = xrayout["domain_000000/state/xray_view/view_width"]
+   non_square_pixels = xrayout["domain_000000/state/xray_view/non_square_pixels"]
    near_plane = xrayout["domain_000000/state/xray_view/near_plane"]
    far_plane = xrayout["domain_000000/state/xray_view/far_plane"]
 

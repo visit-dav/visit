@@ -84,7 +84,7 @@ enhancements and bug-fixes that were added to this release.</p>
 <a name="Expression_changes"></a>
 <p><b><font size="4">Changes to VisIt's expression language in version 3.4</font></b></p>
 <ul>
-  <li>feature1</li>
+  <li>The <i>matvf</i> expression now works with high order materials so it returns refined LOR volume fractions when the <i>MultiresControl</i> operator is used.</li>
 </ul>
 
 <a name="Query_changes"></a>
@@ -94,11 +94,13 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Output filenaming conventions have been updated and standardized for X Ray Image Query outputs.</li>
   <li>The BMP output type for the X Ray Image Query has been removed.</li>
   <li>The X Ray Image Query warns users if their camera setup is error-prone.</li>
+  <li>The X Ray Image Query now allows users to specify a view width, which can cause pixels in the output to not be square.</li>
 </ul>
 
 <a name="Bugs_fixed"></a>
 <p><b><font size="4">Other bugs fixed in version 3.4</font></b></p>
 <ul>
+  <li>Fixed a bug that caused VisIt's viewer to crash in rare occasions involving failed queries.</li>
   <li>Fixed an issue that caused VisIt to treat color tables created via the CLI as though they were built-in color tables.</li>
   <li>Fixed an issue that caused the "No Tags" tag to not appear in the tag table.</li>
   <li>The Color Table Attributes now no longer can set default continuous and/or default discrete color tables to not continuous and not discrete color tables, respectively, when a color table is removed.</li>
