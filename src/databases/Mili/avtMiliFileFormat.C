@@ -1020,8 +1020,8 @@ avtMiliFileFormat::ReadMesh(int dom)
                 else
                 {
                     char msg[128];
-                    snprintf(msg, 128, "MiliClassMetaData for shortName %s "
-                             "not found. This suggests that this class is "
+                    snprintf(msg, 128, "MiliClassMetaData for shortName \"%s\""
+                             " not found. This suggests that this class is "
                              "missing from the top level mili file.", shortName);
                     EXCEPTION1(ImproperUseException, msg);
                 }
