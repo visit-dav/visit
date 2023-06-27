@@ -104,6 +104,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>The Color Table Attributes now no longer can set default continuous and/or default discrete color tables to not continuous and not discrete color tables, respectively, when a color table is removed.</li>
   <li>Fixed a bug with the python cli's TurnOffMaterials() method where it would give a poor error message when passing an integer instead of a string.</li>
   <li>The <code>GetLastError()</code> CLI method now accepts an optional integer argument indicating whether to clear out the last error message after retrieving it.</li>
+  <li>For the Mili plugin, if a class is missing from a top level mili file, the plugin will now throw an exception explaining what happened instead of failing mysteriously.</li>
 </ul>
 
 <a name="Configuration_changes"></a>
