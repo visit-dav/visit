@@ -118,9 +118,18 @@ public:
     stringVector StringifyTagChanges();
     void UnstringifyAndMergeTagChanges(stringVector changes);
     void addTagToColorTable(const std::string ctName, const std::string tagName, ColorControlPointList* ccpl);
-    void removeTagFromColorTable(const std::string ctName, const std::string tagName, ColorControlPointList* ccpl);
+    std::pair<bool, std::string> removeTagFromColorTable(const std::string ctName, const std::string tagName, ColorControlPointList* ccpl);
     bool AllTagsSelected();
-    std::map<std::string, TagInfo> & GetTagList();
+    std::map<std::string, TagInfo> * GetTagList();
+    void SetTagActive(const std::string tagname, bool active);
+    bool GetTagActive(const std::string tagname);
+    void IncrementTagNumRefs(const std::string tagname);
+    void DecrementTagNumRefs(const std::string tagname);
+    int GetTagNumRefs(const std::string tagname);
+    void SetTagTableItem(const std::string tagname, void * newTagTableItem);
+    void * GetTagTableItem(const std::string tagname);
+    bool CheckTagInTagList(const std::string tagname);
+    void RemoveUnusedTagsFromTagTable(std::vector<void *> &tagTableItems);
     void FilterTablesByTag();
     virtual void ProcessOldVersions(DataNode *parentNode, const char *configVersion);
 

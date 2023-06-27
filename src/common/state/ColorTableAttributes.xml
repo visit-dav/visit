@@ -56,6 +56,24 @@
     </Function>
     <Function name="GetTagList" user="true" member="true">
     </Function>
+    <Function name="SetTagActive" user="true" member="true">
+    </Function>
+    <Function name="GetTagActive" user="true" member="true">
+    </Function>
+    <Function name="IncrementTagNumRefs" user="true" member="true">
+    </Function>
+    <Function name="DecrementTagNumRefs" user="true" member="true">
+    </Function>
+    <Function name="GetTagNumRefs" user="true" member="true">
+    </Function>
+    <Function name="SetTagTableItem" user="true" member="true">
+    </Function>
+    <Function name="GetTagTableItem" user="true" member="true">
+    </Function>
+    <Function name="CheckTagInTagList" user="true" member="true">
+    </Function>
+    <Function name="RemoveUnusedTagsFromTagTable" user="true" member="true">
+    </Function>
     <Function name="FilterTablesByTag" user="true" member="true">
     </Function>
     <Function name="ProcessOldVersions" user="true" member="true">

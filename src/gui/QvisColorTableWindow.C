@@ -922,8 +922,8 @@ void
 QvisColorTableWindow::AddToTagTable(std::string currtag)
 {
     QTreeWidgetItem *item = new QTreeWidgetItem(tagTable);
-    colorAtts->GetTagList[currtag].tagTableItem = static_cast<void *>(item);
-    item->setCheckState(0, colorAtts->GetTagList[currtag].active ? Qt::Checked : Qt::Unchecked);
+    colorAtts->SetTagTableItem(currtag, static_cast<void *>(item));
+    item->setCheckState(0, colorAtts->GetTagActive(currtag) ? Qt::Checked : Qt::Unchecked);
     item->setText(1, currtag.c_str());
 }
 
@@ -964,11 +964,10 @@ void
 QvisColorTableWindow::AddGlobalTag(std::string currtag, bool first_time)
 {
     // if the given tag is NOT in the global tag list
-    if ((*(colorAtts->GetTagList())).find(currtag) == (*(colorAtts->GetTagList())).end())
+    if (! colorAtts->CheckTagInTagList(currtag))
     {
         // make the "Default" and "User Defined" tags active by default
-        (*(colorAtts->GetTagList()))[currtag].active = 
-            (currtag == "Default" || currtag == "User Defined") && first_time;
+        colorAtts->SetTagActive(currtag, (currtag == "Default" || currtag == "User Defined") && first_time);
         AddToTagTable(currtag);
     }
     else
@@ -988,7 +987,7 @@ QvisColorTableWindow::AddGlobalTag(std::string currtag, bool first_time)
         // We have to do this logic AFTER the above logic because otherwise 
         // currtag will already be added to the tagList, which will mess up
         // our searching for it.
-        (*(colorAtts->GetTagList()))[currtag].numrefs ++;
+        colorAtts->IncrementTagNumRefs(currtag);
         // Whether or not we end up adding to the tag table, the fact that 
         // this function was called with this tag means there is another
         // reference to it, so we should update the numrefs. Hence why
@@ -1028,7 +1027,6 @@ QvisColorTableWindow::AddGlobalTag(std::string currtag, bool first_time)
 //    has been removed.
 //
 // ****************************************************************************
-
 void
 QvisColorTableWindow::UpdateTags()
 {
@@ -1051,7 +1049,7 @@ QvisColorTableWindow::UpdateTags()
                 // until they go through `AddGlobalTag`, so we shouldn't update
                 // the refcount here.
                 if (! first_time)
-                    (*(colorAtts->GetTagList()))["No Tags"].numrefs ++;
+                    colorAtts->IncrementTagNumRefs("No Tags");
             }
 
             // iterate thru each tag in the given color table
@@ -1067,29 +1065,21 @@ QvisColorTableWindow::UpdateTags()
     first_time = false;
 
     // Purge tagList/tagTable entries that have 0 refcount.
-    for (auto itr = (*(colorAtts->GetTagList())).begin(); itr != (*(colorAtts->GetTagList())).end();)
-    {
-        if (itr->second.numrefs <= 0)
+    std::vector<void *> tagTableItems;
+    colorAtts->RemoveUnusedTagsFromTagTable(tagTableItems);
+    std::for_each(tagTableItems.begin(), tagTableItems.end(),
+        [this](void * tagTableItemVoidPtr)
         {
-            // if this tag list item has an associated tag table entry
-            if (QTreeWidgetItem *tagTableItem = itr->second.tagTableItem)
+            QTreeWidgetItem *tagTableItem = static_cast<QTreeWidgetItem *>(tagTableItemVoidPtr);
+            auto index = tagTable->indexOfTopLevelItem(tagTableItem);
+            if (index != -1)
             {
-                auto index = tagTable->indexOfTopLevelItem(tagTableItem);
-                // For some reason, the item is not in the tag table. This 
-                // should not be possible, but if it does happen, we can 
-                // recover.
-                if (index != -1)
-                {
-                    tagTable->takeTopLevelItem(index);
-                    delete tagTableItem;
-                }
+                tagTable->takeTopLevelItem(index);
+                delete tagTableItem;
             }
-            // else - there is no tag table entry to delete so we can continue
-            itr = (*(colorAtts->GetTagList())).erase(itr);
-        }
-        else
-            itr ++;
-    }
+            // If the item is not in the tag table, then we will skip deleting it.
+        });
+
     tagTable->sortByColumn(1, Qt::AscendingOrder);
 }
 
@@ -2310,7 +2300,7 @@ QvisColorTableWindow::addColorTable()
             cpts.SetBuiltIn(false);
             colorAtts->AddColorTable(currentColorTable.toStdString(), cpts);
             for (auto tag : cpts.GetTagNames())
-                (*(colorAtts->GetTagList()))[tag].numrefs ++;
+                colorAtts->IncrementTagNumRefs(tag);
         }
         else
         {
@@ -2329,7 +2319,7 @@ QvisColorTableWindow::addColorTable()
             cpts.SetBuiltIn(false);
             colorAtts->AddColorTable(currentColorTable.toStdString(), cpts);
             for (auto tag : cpts.GetTagNames())
-                (*(colorAtts->GetTagList()))[tag].numrefs ++;
+                colorAtts->IncrementTagNumRefs(tag);
         }
 
         // Tell all of the observers to update.
@@ -2409,7 +2399,7 @@ QvisColorTableWindow::deleteColorTable()
             Error(tmp);
             return;
         }
-        if ((*(colorAtts->GetTagList()))["Continuous"].numrefs == 1 && ccpl->HasTag("Continuous"))
+        if (colorAtts->GetTagNumRefs("Continuous") == 1 && ccpl->HasTag("Continuous"))
         {
             QString tmp;
             tmp = tr("This is the last Continuous Color Table. There must be"
@@ -2418,7 +2408,7 @@ QvisColorTableWindow::deleteColorTable()
             Error(tmp);
             return;
         }
-        if ((*(colorAtts->GetTagList()))["Discrete"].numrefs == 1 && ccpl->HasTag("Discrete"))
+        if (colorAtts->GetTagNumRefs("Discrete") == 1 && ccpl->HasTag("Discrete"))
         {
             QString tmp;
             tmp = tr("This is the last Discrete Color Table. There must be"
@@ -2428,7 +2418,7 @@ QvisColorTableWindow::deleteColorTable()
             return;
         }
         for (auto tag : ccpl->GetTagNames())
-            (*(colorAtts->GetTagList()))[tag].numrefs --;
+            colorAtts->DecrementTagNumRefs(tag);
         GetViewerMethods()->DeleteColorTable(ctName.c_str());
     }
     else
@@ -2512,7 +2502,7 @@ QvisColorTableWindow::highlightColorTable(QTreeWidgetItem *current,
 void
 QvisColorTableWindow::tagTableItemSelected(QTreeWidgetItem *item, int column)
 {
-    (*(colorAtts->GetTagList()))[item->text(1).toStdString()].active = item->checkState(0) == Qt::Checked;
+    colorAtts->SetTagActive(item->text(1).toStdString(), item->checkState(0) == Qt::Checked);
     UpdateNames();
     colorAtts->SetChangesMade(true);
     ctObserver.SetUpdate(true);
@@ -3270,9 +3260,19 @@ QvisColorTableWindow::addRemoveTag()
             auto index(colorAtts->GetColorTableIndex(currentColorTable.toStdString()));
             auto ctName(static_cast<std::string>(colorAtts->GetNames()[index]));
             if (ccpl->HasTag(tagName))
-                colorAtts->removeTagFromColorTable(ctName, tagName, ccpl);
+            {
+                auto result(colorAtts->removeTagFromColorTable(ctName, tagName, ccpl));
+                if (!result.first)
+                {
+                    auto tmp(tr("Tag Editing WARNING: ") + QString(result.second.c_str()));
+                    Error(tmp);
+                    return;
+                }
+            }
             else
+            {
                 colorAtts->addTagToColorTable(ctName, tagName, ccpl);
+            }
         }
         else
         {
