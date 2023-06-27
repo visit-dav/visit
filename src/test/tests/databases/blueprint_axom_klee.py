@@ -91,10 +91,60 @@ def test1():
 def test2():
     bj_test_helper("balls_and_jacks_q7o5", "blueprint_axom_klee_2", "P5 Material")
 
+def test3():
+    TestSection("matvf on HO materials")
+    db = data_path(pjoin("axom_klee_test_data", "3mat_q12o12", "shaping.root"))
+    OpenDatabase(db)
+
+    AddPlot("FilledBoundary", "shaping_mesh_material")
+    AddOperator("MultiresControl")
+    op = MultiresControlAttributes()
+    op.resolution = 16
+    SetOperatorOptions(op)
+    DrawPlots()
+    ResetView()
+    Test("blueprint_axom_klee_3_00")
+    DeleteAllPlots()
+
+    DefineScalarExpression("vf_inner", 'matvf(shaping_mesh_material, "inner")')
+    DefineScalarExpression("vf_middle", 'matvf(shaping_mesh_material, "middle")')
+    DefineScalarExpression("vf_outer", 'matvf(shaping_mesh_material, "outer")')
+    AddPlot("Pseudocolor", "vf_inner")
+    AddOperator("MultiresControl")
+    op = MultiresControlAttributes()
+    op.resolution = 3
+    op.maxResolution = 20
+    SetOperatorOptions(op)
+    DrawPlots()
+    Test("blueprint_axom_klee_3_01")
+    op.resolution = 20
+    SetOperatorOptions(op)
+    Test("blueprint_axom_klee_3_02")
+
+    ChangeActivePlotsVar("vf_middle")
+    op.resolution = 3
+    SetOperatorOptions(op)
+    Test("blueprint_axom_klee_3_03")
+    op.resolution = 20
+    SetOperatorOptions(op)
+    Test("blueprint_axom_klee_3_04")
+
+    ChangeActivePlotsVar("vf_outer")
+    op.resolution = 3
+    SetOperatorOptions(op)
+    Test("blueprint_axom_klee_3_05")
+    op.resolution = 20
+    SetOperatorOptions(op)
+    Test("blueprint_axom_klee_3_06")
+
+    DeleteAllPlots()
+    CloseDatabase(db)
+
 def main():
     test0()
     test1()
     test2()
+    test3()
 
 main()
 Exit()
