@@ -916,6 +916,10 @@ avtMiliFileFormat::ExtractMeshIdFromPath(const string &varPath)
 //    Alister Maguire, Thu Aug 13 08:41:53 PDT 2020
 //    Fixed a bug preventing numClassesPerCellType to be adjusted
 //    correctly.
+// 
+//    Justin Privitera, Tue Jun 27 15:15:14 PDT 2023
+//    Throw an exception to prevent crashing mysteriously when 
+//    GetClassMDByShortName returns NULL.
 //
 // ****************************************************************************
 
