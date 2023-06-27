@@ -1237,6 +1237,7 @@ QueryAttributes::PrintSelf(ostream &os)
 void
 QueryAttributes::SetResultsValue(const double val)
 {
+    resultsValue.resize(1);
     resultsValue[0] = val;
 }
 

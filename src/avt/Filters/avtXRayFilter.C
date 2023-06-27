@@ -366,6 +366,9 @@ static bool IntersectLineWithQuad(const double v_00[3], const double v_10[3],
 //
 //    Eric Brugger, Thu Jun  4 15:58:10 PDT 2015
 //    I added an option to enable outputting the ray bounds to a vtk file.
+// 
+//    Justin Privitera, Fri Jun 16 17:17:14 PDT 2023
+//    Added view width override and non square pixels.
 //
 // ****************************************************************************
 
@@ -384,6 +387,8 @@ avtXRayFilter::avtXRayFilter()
     viewUp[2] = 0;
     viewAngle = 30;
     parallelScale = 0.5;
+    viewWidthOverride = 0.0;
+    nonSquarePixels = false;
     nearPlane = -0.5;
     farPlane = 0.5;
     imagePan[0] = 0;
@@ -495,34 +500,40 @@ avtXRayFilter::UpdateDataObjectInfo(void)
 //    Justin Privitera, Mon Dec 12 13:28:55 PST 2022
 //    Use avtVectors for some inputs since they come that way from 
 //    avtXRayImageQuery.
+// 
+//    Justin Privitera, Fri Jun 16 17:17:14 PDT 2023
+//    Added view width override and non square pixels.
 //
 // ****************************************************************************
 
 void
 avtXRayFilter::SetImageProperties(avtVector _normal, avtVector _focus, 
-    avtVector _viewUp, double _viewAngle, double _parallelScale,
+    avtVector _viewUp, double _viewAngle,
+    double _parallelScale, double _viewWidthOverride, bool _nonSquarePixels,
     double _nearPlane, double _farPlane, double *_imagePan,
     double _imageZoom, bool _perspective, int *_imageSize)
 {
-    normal[0]     = _normal[0];
-    normal[1]     = _normal[1];
-    normal[2]     = _normal[2];
-    focus[0]      = _focus[0];
-    focus[1]      = _focus[1];
-    focus[2]      = _focus[2];
-    viewUp[0]     = _viewUp[0];
-    viewUp[1]     = _viewUp[1];
-    viewUp[2]     = _viewUp[2];
-    viewAngle     = _viewAngle;
-    parallelScale = _parallelScale;
-    nearPlane     = _nearPlane;
-    farPlane      = _farPlane;
-    imagePan[0]   = _imagePan[0];
-    imagePan[1]   = _imagePan[1];
-    imageZoom     = _imageZoom;
-    perspective   = _perspective;
-    imageSize[0]  = _imageSize[0];
-    imageSize[1]  = _imageSize[1];
+    normal[0]         = _normal[0];
+    normal[1]         = _normal[1];
+    normal[2]         = _normal[2];
+    focus[0]          = _focus[0];
+    focus[1]          = _focus[1];
+    focus[2]          = _focus[2];
+    viewUp[0]         = _viewUp[0];
+    viewUp[1]         = _viewUp[1];
+    viewUp[2]         = _viewUp[2];
+    viewAngle         = _viewAngle;
+    parallelScale     = _parallelScale;
+    viewWidthOverride = _viewWidthOverride;
+    nonSquarePixels   = _nonSquarePixels;
+    nearPlane         = _nearPlane;
+    farPlane          = _farPlane;
+    imagePan[0]       = _imagePan[0];
+    imagePan[1]       = _imagePan[1];
+    imageZoom         = _imageZoom;
+    perspective       = _perspective;
+    imageSize[0]      = _imageSize[0];
+    imageSize[1]      = _imageSize[1];
 
     numPixels = imageSize[0] * imageSize[1];
 }
@@ -2292,9 +2303,15 @@ avtXRayFilter::RedistributeLines(int nLeaves, int *nLinesPerDataset,
 //    Added a warning for the pitfalls case from the docs that will trigger
 //    if the near plane is outside the view frustum.
 //
+//    Justin Privitera, Fri Jun 16 17:17:14 PDT 2023
+//    Added viewWidthOverride and nonSquarePixels arguments, and logic using
+//    them.
+//
 // ****************************************************************************
 void
 avtXRayFilter::CalculateImagingPlaneDims(const double &parallelScale,
+                                         double &viewWidthOverride,
+                                         const bool &nonSquarePixels,
                                          const int (&imageSize)[2],
                                          const bool &perspective,
                                          const double &viewAngle,
@@ -2309,10 +2326,18 @@ avtXRayFilter::CalculateImagingPlaneDims(const double &parallelScale,
                                          double &farWidth)
 {
     viewHeight = parallelScale;
-    viewWidth = (static_cast<float>(imageSize[0]) / static_cast<float>(imageSize[1])) * viewHeight;
+    if (nonSquarePixels)
+    {
+        viewWidth = viewWidthOverride;
+    }
+    else
+    {
+        viewWidth = (static_cast<float>(imageSize[0]) / static_cast<float>(imageSize[1])) * viewHeight;
+        viewWidthOverride = viewWidth;
+    }
     if (perspective)
     {
-        const double viewDist{parallelScale / tan ((viewAngle * 3.1415926535) / 360.)};
+        const double viewDist{viewHeight / tan ((viewAngle * 3.1415926535) / 360.)};
         const double nearDist{viewDist + nearPlane};
         if (nearDist < 0)
         {
@@ -2356,6 +2381,9 @@ avtXRayFilter::CalculateImagingPlaneDims(const double &parallelScale,
 // 
 //    Justin Privitera, Wed Mar 29 13:19:53 PDT 2023
 //    Moved some calculations to CalculateImagingPlaneDims().
+// 
+//    Justin Privitera, Fri Jun 16 17:17:14 PDT 2023
+//    Added new arguments to CalculateImagingPlaneDims().
 //
 // ****************************************************************************
 
@@ -2376,8 +2404,8 @@ avtXRayFilter::CalculateLines(void)
     // far plane.
     //
     double nearHeight, viewHeight, farHeight, nearWidth, viewWidth, farWidth;
-    CalculateImagingPlaneDims(parallelScale, imageSize, 
-                              perspective, viewAngle,
+    CalculateImagingPlaneDims(parallelScale, viewWidthOverride, nonSquarePixels,
+                              imageSize, perspective, viewAngle,
                               nearPlane, farPlane, imageZoom,
                               nearHeight, nearWidth,
                               viewHeight, viewWidth,

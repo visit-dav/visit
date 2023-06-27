@@ -117,6 +117,9 @@
 // 
 //    Justin Privitera, Wed Mar 15 17:51:13 PDT 2023
 //    Changed names of some of the arguments to blueprint-related functions.
+// 
+//    Justin Privitera, Fri Jun 16 17:17:14 PDT 2023
+//    Added view width override and non square pixels.
 //
 // ****************************************************************************
 
@@ -180,7 +183,9 @@ class QUERY_API avtXRayImageQuery : public avtDatasetQuery
     avtVector                 focus;
     avtVector                 viewUp;
     double                    viewAngle;
-    double                    parallelScale;
+    double                    parallelScale; // view height
+    double                    viewWidthOverride; // view width
+    bool                      nonSquarePixels;
     double                    nearPlane;
     double                    farPlane;
     double                    imagePan[2];
