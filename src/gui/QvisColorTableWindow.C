@@ -1164,7 +1164,7 @@ QvisColorTableWindow::UpdateNames()
     // actually populate the name list box
     for (int i = 0; i < colorAtts->GetNumColorTables(); i ++)
     {
-        // if the color table is active
+        // if the color table is active (e.g. within the current filtering selection)
         if (colorAtts->GetActiveElement(i))
         {
             QString ctName(colorAtts->GetNames()[i].c_str());
@@ -3132,20 +3132,24 @@ QvisColorTableWindow::tagsSelectAll()
     if (colorAtts->AllTagsSelected())
     {
         // then we want to disable all of them
-        for (auto &tagListEntry : (*(colorAtts->GetTagList())))
-        {
-            tagListEntry.second.active = false;
-            static_cast<QTreeWidgetItem *>(tagListEntry.second.tagTableItem)->setCheckState(0, Qt::Unchecked);
-        }
+        std::vector<void *> tagTableItems;
+        colorAtts->EnableDisableAllTags(false, tagTableItems);
+        std::for_each(tagTableItems.begin(), tagTableItems.end(),
+            [](void * tagTableItem)
+            {
+                static_cast<QTreeWidgetItem *>(tagTableItem)->setCheckState(0, Qt::Unchecked);
+            });
     }
     else
     {
         // otherwise, we want to enable all of them
-        for (auto &tagListEntry : (*(colorAtts->GetTagList())))
-        {
-            tagListEntry.second.active = true;
-            static_cast<QTreeWidgetItem *>(tagListEntry.second.tagTableItem)->setCheckState(0, Qt::Checked);
-        }
+        std::vector<void *> tagTableItems;
+        colorAtts->EnableDisableAllTags(true, tagTableItems);
+        std::for_each(tagTableItems.begin(), tagTableItems.end(),
+            [](void * tagTableItem)
+            {
+                static_cast<QTreeWidgetItem *>(tagTableItem)->setCheckState(0, Qt::Checked);
+            });
     }
     tagTable->blockSignals(false);
     UpdateNames();

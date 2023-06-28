@@ -40,8 +40,6 @@
     </Function>
     <Function name="SetFromNode" user="false" member="true">
     </Function>
-    <Function name="SetActiveElement" user="true" member="true">
-    </Function>
     <Function name="GetActiveElement" user="true" member="true">
     </Function>
     <Function name="StringifyTagChanges" user="true" member="true">
@@ -54,7 +52,7 @@
     </Function>
     <Function name="AllTagsSelected" user="true" member="true">
     </Function>
-    <Function name="GetTagList" user="true" member="true">
+    <Function name="EnableDisableAllTags" user="true" member="true">
     </Function>
     <Function name="SetTagActive" user="true" member="true">
     </Function>

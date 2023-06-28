@@ -113,14 +113,13 @@ public:
     void AddColorTable(const std::string &name, const ColorControlPointList &cpts);
     void RemoveColorTable(const std::string &name);
     void RemoveColorTable(int index);
-    void SetActiveElement(int index, bool val);
     bool GetActiveElement(int index);
     stringVector StringifyTagChanges();
     void UnstringifyAndMergeTagChanges(stringVector changes);
     void addTagToColorTable(const std::string ctName, const std::string tagName, ColorControlPointList* ccpl);
     std::pair<bool, std::string> removeTagFromColorTable(const std::string ctName, const std::string tagName, ColorControlPointList* ccpl);
     bool AllTagsSelected();
-    std::map<std::string, TagInfo> * GetTagList();
+    void EnableDisableAllTags(bool enable, std::vector<void *> &tagTableItems);
     void SetTagActive(const std::string tagname, bool active);
     bool GetTagActive(const std::string tagname);
     void IncrementTagNumRefs(const std::string tagname);

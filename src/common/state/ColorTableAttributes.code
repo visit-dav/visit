@@ -841,37 +841,6 @@ ColorTableAttributes::SetFromNode(DataNode *parentNode)
         UnstringifyAndMergeTagChanges(node->AsStringVector());
 }
 
-Function: SetActiveElement
-Declaration: void SetActiveElement(int index, bool val);
-Definition:
-// ****************************************************************************
-// Method: ColorTableAttributes::SetActiveElement
-//
-// Purpose:
-//   Sets the color table corresponding to the given index to active or 
-//   inactive (appearing in the namelistbox or not) depending on the boolean
-//   value passed.
-//
-// Arguments:
-//   index - index of the color table
-//   val   - bool to set active or inactive
-//
-// Programmer: Justin Privitera
-// Creation:   Mon Jun  6 17:10:40 PDT 2022
-//
-// Modifications:
-//    Justin Privitera, Wed Jun 29 17:50:24 PDT 2022
-//    Added guard to prevent index out of bound errors.
-//
-// ****************************************************************************
-
-void
-ColorTableAttributes::SetActiveElement(int index, bool val)
-{
-    if (index >= 0 && index < active.size())
-        active[index] = val;
-}
-
 Function: GetActiveElement
 Declaration: bool GetActiveElement(int index);
 Definition:
@@ -1110,15 +1079,14 @@ ColorTableAttributes::AllTagsSelected()
                        { return tagListEntry.second.active; });
 }
 
-Function: GetTagList
-Declaration: std::map<std::string, TagInfo> * GetTagList();
+Function: EnableDisableAllTags
+Declaration: void EnableDisableAllTags(bool enable, std::vector<void *> &tagTableItems);
 Definition:
 // ****************************************************************************
-// Method: ColorTableAttributes::GetTagList
+// Method: ColorTableAttributes::EnableDisableAllTags
 //
 // Purpose:
 //    TODO
-// TODO deprecate?
 //
 // Programmer: Justin Privitera
 // Creation:   06/27/23
@@ -1126,10 +1094,15 @@ Definition:
 // Modifications:
 //
 // ****************************************************************************
-std::map<std::string, TagInfo> *
-ColorTableAttributes::GetTagList()
+void
+ColorTableAttributes::EnableDisableAllTags(bool enable, std::vector<void *> &tagTableItems)
 {
-    return &tagList;
+    for (auto &tagListEntry : tagList)
+    {
+        tagListEntry.second.active = enable;
+        // we trust that the caller will check or uncheck all tag table items
+        tagTableItems.push_back(tagListEntry.second.tagTableItem);
+    }
 }
 
 Function: SetTagActive
@@ -1223,7 +1196,7 @@ Definition:
 // Method: ColorTableAttributes::GetTagNumRefs
 //
 // Purpose:
-//    TODO
+//    Returns how many color tables have this tag (numrefs).
 //
 // Programmer: Justin Privitera
 // Creation:   06/27/23
@@ -1244,7 +1217,7 @@ Definition:
 // Method: ColorTableAttributes::SetTagTableItem
 //
 // Purpose:
-//    TODO
+//    Set the pointer to a tag table item for a given tag.
 //
 // Programmer: Justin Privitera
 // Creation:   06/27/23
@@ -1265,7 +1238,7 @@ Definition:
 // Method: ColorTableAttributes::GetTagTableItem
 //
 // Purpose:
-//    TODO
+//    Return the pointer to a tag table item for a given tag.
 //
 // Programmer: Justin Privitera
 // Creation:   06/27/23
@@ -1341,7 +1314,8 @@ Definition:
 // Method: ColorTableAttributes::FilterTablesByTag
 //
 // Purpose:
-//    TODO
+//    Filters color tables by tag, setting tables to active if they are within
+//    the current tag filtering selection.
 //
 // Programmer: Justin Privitera
 // Creation:   06/27/23
@@ -1392,7 +1366,8 @@ ColorTableAttributes::FilterTablesByTag()
             }
         }
         // we mark the color table as active or inactive
-        SetActiveElement(i, tagFound);
+        if (i >= 0 && i < active.size())
+            active[i] = tagFound;
     }
 }
 
