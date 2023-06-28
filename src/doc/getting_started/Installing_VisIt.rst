@@ -148,6 +148,15 @@ Available options are as follows::
                            %HOMEPATH% for single user.
                            MUST BE THE LAST PARAMETER!
 
+Installing ffmpeg
+~~~~~~~~~~~~~~~~~
+
+Ffmpeg is a high quality MPEG 4 encoder.
+The VisIt_ movie wizard will use ffmpeg if it is found in the user's search path.
+Ffmpeg's licensing is incompatible with VisIt_'s so we do not ship and install ffmpeg with VisIt_.
+It is possible to install ffmpeg as part of a VisIt_ installation so that it is available for all user's.
+
+
 Startup Options
 ~~~~~~~~~~~~~~~
 
