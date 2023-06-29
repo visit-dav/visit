@@ -158,6 +158,31 @@ function bv_vtk_ensure
 # *************************************************************************** #
 #                            Function 6, build_vtk                            #
 # *************************************************************************** #
+function apply_vtk9_vtkdatawriter_patch
+{
+  # patch vtkDataWriter to fix a bug when writing a vtkBitArray
+   patch -p0 << \EOF
+--- IO/Legacy/vtkDataWriter.cxx.orig      2023-06-28 10:10:35.329318000 -0700
++++ IO/Legacy/vtkDataWriter.cxx   2023-06-28 10:10:55.904372000 -0700
+@@ -1136,7 +1136,7 @@
+       else
+       {
+         unsigned char* cptr = static_cast<vtkBitArray*>(data)->GetPointer(0);
+-        fp->write(reinterpret_cast<char*>(cptr), (sizeof(unsigned char)) * ((num - 1) / 8 + 1));
++        fp->write(reinterpret_cast<char*>(cptr), (sizeof(unsigned char)) * ((num*numComp - 1) / 8 + 1));
+       }
+       *fp << "\n";
+     }
+
+EOF
+
+    if [[ $? != 0 ]] ; then
+      warn "vtk patch for vtkDataWriter.cxx failed."
+      return 1
+    fi
+    return 0;
+
+}
 
 function apply_vtk9_vtkopenfoamreader_header_patch
 {
@@ -1126,7 +1151,7 @@ function apply_vtk8_vtkdatawriter_patch
         else
         {
 !         unsigned char* cptr = static_cast<vtkBitArray*>(data)->GetPointer(0);
-!         fp->write(reinterpret_cast<char*>(cptr), (sizeof(unsigned char)) * ((num - 1) / 8 + 1));
+!         fp->write(reinterpret_cast<char*>(cptr), (sizeof(unsigned char)) * ((num*numComp - 1) / 8 + 1));
         }
         *fp << "\n";
       }
@@ -2039,6 +2064,11 @@ function apply_vtk_patch
         apply_vtk9_vtkCutter_patch
         if [[ $? != 0 ]] ; then
             return 1
+        fi
+
+        apply_vtk9_vtkdatawriter_patch
+        if [[ $? != 0 ]] ; then
+           return 1
         fi
 
     else
