@@ -129,7 +129,7 @@ public:
     void * GetTagTableItem(const std::string tagname);
     bool CheckTagInTagList(const std::string tagname);
     void RemoveUnusedTagsFromTagTable(std::vector<void *> &tagTableItems);
-    void PopulateTagList(bool first_time, std::vector<std::string> &tagsToAdd);
+    void PopulateTagList(std::vector<std::pair<std::string, bool>> &tagsToAdd);
     void FilterTablesByTag();
     virtual void ProcessOldVersions(DataNode *parentNode, const char *configVersion);
 

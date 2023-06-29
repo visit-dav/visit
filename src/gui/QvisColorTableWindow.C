@@ -928,73 +928,6 @@ QvisColorTableWindow::AddToTagTable(std::string currtag)
 }
 
 // ****************************************************************************
-// Method: QvisColorTableWindow::AddGlobalTag
-//
-// Purpose:
-//   Adds a tag discovered when looking through each color table to the global 
-//   tag list. Also adds to the tag table if the tag is not in it.
-//
-// Programmer: Justin Privitera
-// Creation:   Tue Jun  7 12:36:55 PDT 2022
-//
-// Modifications:
-//    Justin Privitera, Mon Jun 27 17:33:23 PDT 2022
-//    Added call to AddToTagTable() to reduce code bloat.
-//    Renamed `run_before` to `first_time`.
-// 
-//    Justin Privitera, Fri Aug 19 20:57:38 PDT 2022
-//    We now throw an error if there are too many tags.
-// 
-//    Justin Privitera, Fri Sep  2 16:46:21 PDT 2022
-//    No limit on the number of tags.
-//    Refactor allows for much cleaner interface for working with tag data.
-//    No need to collect indices of tags anymore due to refactor.
-//    Calculate refcount for each tag on the very first iteration through.
-// 
-//    Justin Privitera, Wed Sep 21 16:51:24 PDT 2022
-//    Extra clarifying comments.
-// 
-//   Justin Privitera, Thu Jan 26 11:39:29 PST 2023
-//   Changed "Standard" tag to "Default" and made "User Defined" turned on by
-//   default.
-//
-// ****************************************************************************
-
-void
-QvisColorTableWindow::AddGlobalTag(std::string currtag, bool first_time)
-{
-    // if the given tag is NOT in the global tag list
-    if (! colorAtts->CheckTagInTagList(currtag))
-    {
-        // make the "Default" and "User Defined" tags active by default
-        colorAtts->SetTagActive(currtag, (currtag == "Default" || currtag == "User Defined") && first_time);
-        AddToTagTable(currtag);
-    }
-    else
-    {
-        // We only want to run this check if the first case is not true.
-        QList<QTreeWidgetItem*> items = tagTable->findItems(
-            QString::fromStdString(currtag), Qt::MatchExactly, 1);
-        // If the given tag IS in the global tag list but does not have a tagTable entry
-        if (items.count() == 0)
-            AddToTagTable(currtag);
-    }
-    // Only the very first time can we guarantee that each reference to each
-    // tag has not been encountered before, so it is safe to increment here.
-    // Why is this? `AddGlobalTag()` is getting called unconditionally FOR
-    // EVERY tag in the CCPL, whether or not that tag has been added before.
-    if (first_time)
-        // We have to do this logic AFTER the above logic because otherwise 
-        // currtag will already be added to the tagList, which will mess up
-        // our searching for it.
-        colorAtts->IncrementTagNumRefs(currtag);
-        // Whether or not we end up adding to the tag table, the fact that 
-        // this function was called with this tag means there is another
-        // reference to it, so we should update the numrefs. Hence why
-        // we do NOT update the numrefs in `AddToTagTable()`.
-}
-
-// ****************************************************************************
 // Method: QvisColorTableWindow::UpdateTags
 //
 // Purpose:
@@ -1030,16 +963,35 @@ QvisColorTableWindow::AddGlobalTag(std::string currtag, bool first_time)
 void
 QvisColorTableWindow::UpdateTags()
 {
-    // We want the 'Default' and 'User Defined' tags to be checked the very first time a user
-    // opens the color table window, hence the inclusion of `first_time`.
-    static bool first_time = true;
-    std::vector<std::string> tagsToAdd;
-    colorAtts->PopulateTagList(first_time, tagsToAdd);
-    std::for_each(tagsToAdd.begin(), tagsToAdd.end(),
-        [this](std::string tagname) { AddGlobalTag(tagname, first_time); });
-    first_time = false;
+    // 1. Populate Tag List
+    // each pair contains the name of a tag and a boolean indicating whether or not we know
+    // for certain that the tag should be added to the tag table. True means yes it is good
+    // to go, false means that we need to check
+    std::vector<std::pair<std::string, bool>> tagsToAdd;
+    colorAtts->PopulateTagList(tagsToAdd);
 
-    // Purge tagList/tagTable entries that have 0 refcount.
+    // 2. Add Tags to Tag Table
+    std::for_each(tagsToAdd.begin(), tagsToAdd.end(),
+        [this](std::pair<std::string, bool> tagpair)
+        {
+            std::string currtag = tagpair.first;
+            bool wasNotInGlobalTagList = tagpair.second;
+
+            // if the given tag is NOT in the global tag list
+            if (wasNotInGlobalTagList)
+                AddToTagTable(currtag);
+            else // if it was in the global tag list, we need to check if it is ok to add to the tag table
+            {
+                // We only want to run this check if the first case is not true.
+                QList<QTreeWidgetItem*> items = tagTable->findItems(
+                    QString::fromStdString(currtag), Qt::MatchExactly, 1);
+                // If the given tag IS in the global tag list but does not have a tagTable entry
+                if (items.count() == 0)
+                    AddToTagTable(currtag);
+            }
+        });
+
+    // 3. Purge tagList/tagTable entries that have 0 refcount.
     std::vector<void *> tagTableItems;
     colorAtts->RemoveUnusedTagsFromTagTable(tagTableItems);
     std::for_each(tagTableItems.begin(), tagTableItems.end(),

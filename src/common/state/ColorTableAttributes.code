@@ -1308,7 +1308,7 @@ ColorTableAttributes::RemoveUnusedTagsFromTagTable(std::vector<void *> &tagTable
 }
 
 Function: PopulateTagList
-Declaration: void PopulateTagList(bool first_time, std::vector<std::string> &tagsToAdd);
+Declaration: void PopulateTagList(std::vector<std::pair<std::string, bool>> &tagsToAdd);
 Definition:
 // ****************************************************************************
 // Method: ColorTableAttributes::PopulateTagList
@@ -1323,8 +1323,12 @@ Definition:
 //
 // ****************************************************************************
 void
-ColorTableAttributes::PopulateTagList(bool first_time, std::vector<std::string> &tagsToAdd)
+ColorTableAttributes::PopulateTagList(std::vector<std::pair<std::string, bool>> &tagsToAdd)
 {
+    // We want the 'Default' and 'User Defined' tags to be checked the very first time a user
+    // opens the color table window, hence the inclusion of `first_time`.
+    static bool first_time = true;
+
     // populate tags list
     // iterate thru each color table
     for (int i = 0; i < GetNumColorTables(); i ++)
@@ -1349,13 +1353,54 @@ ColorTableAttributes::PopulateTagList(bool first_time, std::vector<std::string> 
             for (int j = 0; j < ccpl.GetNumTags(); j ++)
             {
                 // add the tag if it is not already in the global tag list
-                // we trust that the caller will handle this
-                tagsToAdd.push_back(ccpl.GetTag(j));
+
+                std::string currtag = ccpl.GetTag(j);
+                if (! CheckTagInTagList(currtag))
+                {
+                    // add the tag to the tag list
+                    tagList[currtag].active = false;
+                    
+                    // send the tag back with a flag indicating that this tag is definitely
+                    // good to be added to the tag table, since it was not in the tag list
+                    tagsToAdd.push_back(std::make_pair(currtag, true));
+                }
+                else
+                {
+                    // the tag is already in the tag list so we don't need to do anything special
+
+                    // send the tag back with a flag indicating that it is unknown whether or not
+                    // this tag should be added to the tag table, since it was in the tag list
+                    tagsToAdd.push_back(std::make_pair(currtag, false));
+                }
+                // Only the very first time can we guarantee that each reference to each
+                // tag has not been encountered before, so it is safe to increment here.
+                // Why is this? `AddGlobalTag()` is getting called unconditionally FOR
+                // EVERY tag in the CCPL, whether or not that tag has been added before.
+                if (first_time)
+                    // We have to do this logic AFTER the above logic because otherwise 
+                    // currtag will already be added to the tagList, which will mess up
+                    // our searching for it.
+                    IncrementTagNumRefs(currtag);
+                    // Whether or not we end up adding to the tag table, the fact that 
+                    // this function was called with this tag means there is another
+                    // reference to it, so we should update the numrefs. Hence why
+                    // we do NOT update the numrefs in `AddToTagTable()`.
             }
             // tell the ccpl that we have taken note of all of its tag changes
             ccpl.SetTagChangesMade(false);
         }
     }
+
+    // make the "Default" and "User Defined" tags active by default
+    if (first_time)
+    {
+        if (CheckTagInTagList("Default"))
+            SetTagActive("Default", true);
+        if (CheckTagInTagList("User Defined"))
+            SetTagActive("User Defined", true);
+    }
+
+    first_time = false;
 }
 
 Function: FilterTablesByTag
