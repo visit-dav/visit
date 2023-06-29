@@ -72,6 +72,8 @@
     </Function>
     <Function name="RemoveUnusedTagsFromTagTable" user="true" member="true">
     </Function>
+    <Function name="PopulateTagList" user="true" member="true">
+    </Function>
     <Function name="FilterTablesByTag" user="true" member="true">
     </Function>
     <Function name="ProcessOldVersions" user="true" member="true">

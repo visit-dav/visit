@@ -1938,6 +1938,54 @@ ColorTableAttributes::RemoveUnusedTagsFromTagTable(std::vector<void *> &tagTable
 }
 
 // ****************************************************************************
+// Method: ColorTableAttributes::PopulateTagList
+//
+// Purpose:
+//    TODO
+//
+// Programmer: Justin Privitera
+// Creation:   06/27/23
+//
+// Modifications:
+//
+// ****************************************************************************
+void
+ColorTableAttributes::PopulateTagList(bool first_time, std::vector<std::string> &tagsToAdd)
+{
+    // populate tags list
+    // iterate thru each color table
+    for (int i = 0; i < GetNumColorTables(); i ++)
+    {
+        auto ccpl = GetColorTables(i);
+        // only try to add tags if the ccpl thinks it has new info
+        if (ccpl.GetTagChangesMade())
+        {
+            // if this table doesn't have tags, then add the no-tags tag
+            if (ccpl.GetNumTags() == 0)
+            {
+                ccpl.AddTag("No Tags");
+                // Every time I add a tag, I need to update the refcount.
+                // However, if this is the `first_time`, no tags have any refcount,
+                // until they go through `AddGlobalTag`, so we shouldn't update
+                // the refcount here.
+                if (! first_time)
+                    IncrementTagNumRefs("No Tags");
+            }
+
+            // iterate thru each tag in the given color table
+            for (int j = 0; j < ccpl.GetNumTags(); j ++)
+            {
+                // add the tag if it is not already in the global tag list
+                // we trust that the caller will handle this
+                tagsToAdd.push_back(ccpl.GetTag(j));
+            }
+            // tell the ccpl that we have taken note of all of its tag changes
+            ccpl.SetTagChangesMade(false);
+        }
+    }
+}
+
+// ****************************************************************************
 // Method: ColorTableAttributes::FilterTablesByTag
 //
 // Purpose:

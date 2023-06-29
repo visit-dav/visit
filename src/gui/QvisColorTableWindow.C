@@ -1033,35 +1033,10 @@ QvisColorTableWindow::UpdateTags()
     // We want the 'Default' and 'User Defined' tags to be checked the very first time a user
     // opens the color table window, hence the inclusion of `first_time`.
     static bool first_time = true;
-    // populate tags list
-    // iterate thru each color table
-    for (int i = 0; i < colorAtts->GetNumColorTables(); i ++)
-    {
-        // only try to add tags if the ccpl thinks it has new info
-        if (colorAtts->GetColorTables(i).GetTagChangesMade())
-        {
-            // if this table doesn't have tags, then add the no-tags tag
-            if (colorAtts->GetColorTables(i).GetNumTags() == 0)
-            {
-                colorAtts->GetColorTables(i).AddTag("No Tags");
-                // Every time I add a tag, I need to update the refcount.
-                // However, if this is the `first_time`, no tags have any refcount,
-                // until they go through `AddGlobalTag`, so we shouldn't update
-                // the refcount here.
-                if (! first_time)
-                    colorAtts->IncrementTagNumRefs("No Tags");
-            }
-
-            // iterate thru each tag in the given color table
-            for (int j = 0; j < colorAtts->GetColorTables(i).GetNumTags(); j ++)
-            {
-                // add the tag if it is not already in the global tag list
-                AddGlobalTag(colorAtts->GetColorTables(i).GetTag(j), first_time);
-            }
-            // tell the ccpl that we have taken note of all of its tag changes
-            colorAtts->GetColorTables(i).SetTagChangesMade(false);
-        }
-    }
+    std::vector<std::string> tagsToAdd;
+    colorAtts->PopulateTagList(first_time, tagsToAdd);
+    std::for_each(tagsToAdd.begin(), tagsToAdd.end(),
+        [this](std::string tagname) { AddGlobalTag(tagname, first_time); });
     first_time = false;
 
     // Purge tagList/tagTable entries that have 0 refcount.
