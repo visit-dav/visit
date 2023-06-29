@@ -56,6 +56,9 @@ import subprocess
 #   Cyrus, Wed Dec 18 09:05:28 PST 2019
 #   Python 2 to 3 tweaks
 #
+#   Eric Brugger, Wed Jun 28 11:39:29 PDT 2023
+#   Added support for ffmpeg.
+#
 ###############################################################################
 
 # -----------------------------------------------------------------------------
@@ -142,6 +145,7 @@ visitargs        = []
 programs = (
 "-add_visit_searchpath",
 "-convert",
+"-ffmpeg",
 "-makemili_driver",
 "-mpeg2encode",
 "-mpeg_encode",
@@ -371,7 +375,7 @@ if GETENV("VISIT_STARTED_FROM_APPBUNDLE") == "TRUE":
 #     If the user specified the minor version then add a -forceversion with
 #     the minor version
 # -----------------------------------------------------------------------------
-if progname != "mpeg2encode" and forceversion_set == 0 and add_forceversion == 1:
+if progname != "mpeg2encode" and progname != "ffmpeg" and forceversion_set == 0 and add_forceversion == 1:
     visitargs = ["-forceversion", ver] + visitargs
 
 # -----------------------------------------------------------------------------

@@ -148,6 +148,35 @@ Available options are as follows::
                            %HOMEPATH% for single user.
                            MUST BE THE LAST PARAMETER!
 
+Installing ffmpeg
+~~~~~~~~~~~~~~~~~
+
+``ffmpeg`` is a high quality MPEG 4 encoder.
+The VisIt_ movie wizard uses ``ffmpeg`` if it is found in the user's search path.
+``ffmpeg``'s licensing is incompatible with VisIt_'s so we do not ship and install ``ffmpeg`` with VisIt_.
+You can install ``ffmpeg`` as part of a VisIt_ installation so that it is available for all user's.
+
+To install ``ffmpeg`` as part of a VisIt_ installation you would do the following steps.
+
+1) Get the ``ffmpeg`` executable for each platform of interest.
+2) Copy the ``ffmpeg`` executable for each platform to the architecture specific bin directory.
+3) Set the group and file permissions appropriately for each executable.
+4) Create a soft link from ``ffmepg`` to ``frontendlauncher`` in the bin directory.
+
+Here we go through an example where we install ``ffmpeg`` into  VisIt_ 3.3.3, which has two architectures (``linux-intel`` and ``linux-x86_64``) installed.
+The ``ffmpeg`` executables are named ``ffmpeg.intel`` and ``ffmpeg.x86_64``.
+We will set the group to ``visit`` and the file permissions to ``775``.
+
+.. code:: bash
+
+    cp ffmpeg.intel visit/3.3.3/linux-intel/bin/ffmpeg
+    chgrp visit visit/3.3.3/linux-intel/bin/ffmpeg
+    chmod 775 visit/3.3.3/linux-intel/bin/ffmpeg
+    cp ffmpeg.x86_64 visit/3.3.3/linux-x86_64/bin/ffmpeg
+    chgrp visit visit/3.3.3/linux-x86_64/bin/ffmpeg
+    chmod 775 visit/3.3.3/linux-x86_64/bin/ffmpeg
+    ln -s frontendlaucher visit/bin/ffmpeg
+
 Startup Options
 ~~~~~~~~~~~~~~~
 
