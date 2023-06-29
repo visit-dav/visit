@@ -916,6 +916,10 @@ avtMiliFileFormat::ExtractMeshIdFromPath(const string &varPath)
 //    Alister Maguire, Thu Aug 13 08:41:53 PDT 2020
 //    Fixed a bug preventing numClassesPerCellType to be adjusted
 //    correctly.
+// 
+//    Justin Privitera, Tue Jun 27 15:15:14 PDT 2023
+//    Throw an exception to prevent crashing mysteriously when 
+//    GetClassMDByShortName returns NULL.
 //
 // ****************************************************************************
 
@@ -1010,10 +1014,22 @@ avtMiliFileFormat::ReadMesh(int dom)
                 classNames.push_back(string(shortName));
                 nDomCells += nCells;
 
-                miliMetaData[meshId]->GetClassMDByShortName(shortName)->
-                    SetConnectivityOffset(dom, offset);
-                miliMetaData[meshId]->GetClassMDByShortName(shortName)->
-                    SetNumElements(dom, nCells);
+                MiliClassMetaData *mcmd = miliMetaData[meshId]->
+                    GetClassMDByShortName(shortName);
+                if (mcmd)
+                {
+                    mcmd->SetConnectivityOffset(dom, offset);
+                    mcmd->SetNumElements(dom, nCells);
+                }
+                else
+                {
+                    char msg[128];
+                    snprintf(msg, 128, "MiliClassMetaData for shortName \"%s\""
+                             " not found. This suggests that this class is "
+                             "missing from the top level mili file.", shortName);
+                    EXCEPTION1(ImproperUseException, msg);
+                }
+                
                 offset += nCells;
             }
             numClassesPerCellType[i] = adjustedNumClassesPerCellType;
