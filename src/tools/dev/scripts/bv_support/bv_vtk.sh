@@ -1151,7 +1151,7 @@ function apply_vtk8_vtkdatawriter_patch
         else
         {
 !         unsigned char* cptr = static_cast<vtkBitArray*>(data)->GetPointer(0);
-!         fp->write(reinterpret_cast<char*>(cptr), (sizeof(unsigned char)) * ((num - 1) / 8 + 1));
+!         fp->write(reinterpret_cast<char*>(cptr), (sizeof(unsigned char)) * ((num*numComp - 1) / 8 + 1));
         }
         *fp << "\n";
       }
