@@ -117,6 +117,11 @@ void GetDataMajorEigenvalueRange(vtkDataSet *, double *, const char *, bool, boo
 //    Fixed the code to find extents of transformed rect grids -- it was
 //    only working for special cases before.  I also made it clearer.
 //
+//    Kathleen Biagas, Friday June 30, 2023
+//    VTK9 change: To preserve previsous behavior, call GetCellsBounds for
+//    PolyData instead of GetBounds.  The latter now returns extents of the
+//    points set (which may not be fully connected to cells).
+//
 // ****************************************************************************
 
 void 
@@ -156,8 +161,19 @@ CGetSpatialExtents(avtDataRepresentation &data, void *info, bool &success)
         else if (ds->GetNumberOfCells() > 0 && ds->GetNumberOfPoints() > 0)
         {
             double bounds[6];
-            ds->GetBounds(bounds);
-
+#if LIB_VERSION_GE(VTK,9,1,0)
+            // VTK-9, GetBounds for PolyData now returns extents of the
+            // point set, not the geometry so we must use GetCellsBounds
+            // here to preserve previous behavior
+            if (ds->GetDataObjectType() == VTK_POLY_DATA)
+            {
+                ((vtkPolyData*)ds)->GetCellsBounds(bounds);
+            }
+            else
+#endif
+            {
+                ds->GetBounds(bounds);
+            }
             //
             // If we have gotten extents from another data rep, then merge the
             // extents.  Otherwise copy them over.
