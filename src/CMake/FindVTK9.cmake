@@ -2,12 +2,14 @@
 # Project developers.  See the top-level LICENSE file for dates and other
 # details.  No copyright assignment is required to contribute to VisIt.
 
-#****************************************************************************
+#*****************************************************************************
 # Notes: Copied from FindVisItVTK.cmake and reworked for VTK-9.
 #
 # Modifications:
+#  Kathleen Biagas, Jun 29, 2023
+#  WrappingPythonCore needs special logic, has Python version as part of name.
 #
-#****************************************************************************/
+#*****************************************************************************
 
 # Use the VTK_DIR hint from the config-site .cmake file
 
@@ -97,8 +99,11 @@ else(VISIT_VTK_SKIP_INSTALL)
         SET(pathnameandprefixlib "${VTK_PREFIX_PATH}/lib/")
     endif(NOT WIN32)
     macro(SETUP_INSTALL vtk_component)
-        IF(${vtk_component} MATCHES "vtksys")
+        if(${vtk_component} MATCHES "vtksys")
           set(LIBNAME   ${pathnameandprefix}${vtk_component}-${VTK_MAJOR_VERSION}.${VTK_MINOR_VERSION}.${SO_EXT})
+        elseif(${vtk_component} MATCHES "WrappingPythonCore")
+          # also needs PYTHON_VERSION
+          set(LIBNAME   ${pathnameandprefix}vtk${vtk_component}${PYTHON_VERSION}-${VTK_MAJOR_VERSION}.${VTK_MINOR_VERSION}.${SO_EXT})
         else()
             set(LIBNAME   ${pathnameandprefix}vtk${vtk_component}-${VTK_MAJOR_VERSION}.${VTK_MINOR_VERSION}.${SO_EXT})
         endif()
