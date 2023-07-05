@@ -7786,9 +7786,9 @@ avtGenericDatabase::CommunicateGhostZonesFromDomainBoundariesFromFile(
 //    Modify to handle meshes with no points or cells.
 //
 //    Eric Brugger, Wed Jul  5 10:41:32 PDT 2023
-//    Modified to handle the case where a domain has mixed materials but
-//    no variable. This can occur with a variable that is only defined on
-//    a material and the material isn't present in the domain.
+//    Modified to handle the case where a variable is defined on a subset
+//    of the materials and a domain has mixed materials without the material
+//    the variable was defined on.
 //
 // ****************************************************************************
 
