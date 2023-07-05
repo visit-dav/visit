@@ -7841,7 +7841,7 @@ avtGenericDatabase::CommunicateGhostZonesFromDomainBoundaries(
         else
             allmats = false;
 
-	// If the dataset is NULL then it is variable that is defined on
+	// If the dataset is NULL then it is a variable that is defined on
 	// a material and this domain doesn't contain the material.
 	// Exchanging mixed variable information doesn't make sense in this
 	// case.
@@ -8239,7 +8239,7 @@ avtGenericDatabase::CommunicateGhostZonesFromDomainBoundaries(
                 {
                     avtMaterial *mat = matList[j];
 
-	            // If the dataset is NULL then it is variable that is
+	            // If the dataset is NULL then it is a variable that is
 		    // defined on a material and this domain doesn't contain
 		    // the material. Exchanging mixed variable information
 		    // doesn't make sense in this case.
