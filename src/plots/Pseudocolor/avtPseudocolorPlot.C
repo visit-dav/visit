@@ -23,6 +23,7 @@
 #include <avtVertexExtractor.h>
 
 #include <DebugStream.h>
+#include <ImproperUseException.h>
 #include <InvalidLimitsException.h>
 
 #include <string>
@@ -1221,6 +1222,9 @@ avtPseudocolorPlot::SetOpacityFromAtts()
 //    Modified the range limits text to use the current variable limits
 //    if OriginalData is not set.
 //
+//    Eric Brugger, Thu Jul  6 13:31:48 PDT 2023
+//    Throw an improper use exception if the variable range was never set.
+//
 // ****************************************************************************
 
 void
@@ -1258,6 +1262,16 @@ avtPseudocolorPlot::SetLegendRanges()
     else
         mapper->GetCurrentVarRange(min, max);
     varLegend->SetVarRange(min, max);
+
+    //
+    // Check if the limits were ever set. This would only happen if there
+    // was data and the entire mesh was ghost data.
+    //
+    if (min == DBL_MAX && max == -DBL_MAX)
+    {
+        EXCEPTION1(ImproperUseException,
+            "The entire mesh consisted of ghost zones.");
+    }
 
     varLegend->UseBelowRangeColor(atts.GetUseBelowMinColor());
     varLegend->UseAboveRangeColor(atts.GetUseAboveMaxColor());
