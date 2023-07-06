@@ -26,6 +26,8 @@
 #include <ImproperUseException.h>
 #include <InvalidLimitsException.h>
 
+#include <float.h>
+
 #include <string>
 #include <vector>
 
