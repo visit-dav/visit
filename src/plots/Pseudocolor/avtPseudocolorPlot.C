@@ -1267,12 +1267,12 @@ avtPseudocolorPlot::SetLegendRanges()
 
     //
     // Check if the limits were ever set. This would only happen if there
-    // was data and the entire mesh was ghost data.
+    // was no data or the entire mesh was ghost data.
     //
     if (min == DBL_MAX && max == -DBL_MAX)
     {
         EXCEPTION1(ImproperUseException,
-            "The entire mesh consisted of ghost zones.");
+            "The entire mesh consists of ghost zones.");
     }
 
     varLegend->UseBelowRangeColor(atts.GetUseBelowMinColor());
