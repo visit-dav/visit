@@ -1403,6 +1403,9 @@ MiliClassMetaData::GetNumElements(int domain)
 //  Creation:   Jan 15, 2019
 //
 //  Modifications:
+//    Eric Brugger, Thu Jul  6 13:31:48 PDT 2023
+//    Movied the Mili superClassId M_PARTICLE from the PARTICLE to the
+//    CELL classType.
 //
 // ****************************************************************************
 
@@ -1417,6 +1420,7 @@ MiliClassMetaData::DetermineType()
         case M_NODE:
             classType = NODE;
             break;
+        case M_PARTICLE:
         case M_TRUSS:
         case M_BEAM:
         case M_TRI:
@@ -1436,9 +1440,6 @@ MiliClassMetaData::DetermineType()
             break;
         case M_SURFACE:
             classType = SURFACE;
-            break;
-        case M_PARTICLE:
-            classType = PARTICLE;
             break;
         default:
             classType = UNKNOWN;
