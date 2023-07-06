@@ -7785,6 +7785,11 @@ avtGenericDatabase::CommunicateGhostZonesFromDomainBoundariesFromFile(
 //    Eric Brugger, Mon May 24 11:38:21 PDT 2021
 //    Modify to handle meshes with no points or cells.
 //
+//    Eric Brugger, Wed Jul  5 10:41:32 PDT 2023
+//    Modified to handle the case where a variable is defined on a subset
+//    of the materials and a domain has mixed materials without the material
+//    the variable was defined on.
+//
 // ****************************************************************************
 
 bool
@@ -7836,7 +7841,11 @@ avtGenericDatabase::CommunicateGhostZonesFromDomainBoundaries(
         else
             allmats = false;
 
-        if (mat != NULL && mat->GetMixlen() > 0)
+	// If the dataset is NULL then it is a variable that is defined on
+	// a material and this domain doesn't contain the material.
+	// Exchanging mixed variable information doesn't make sense in this
+	// case.
+        if (mat != NULL && mat->GetMixlen() > 0 && ds.GetDataset(i, 0) != NULL)
         {
             int num = (int)ds.GetAllMixVars(i).size();
             most_mixvars = (most_mixvars > num ? most_mixvars : num);
@@ -8229,7 +8238,13 @@ avtGenericDatabase::CommunicateGhostZonesFromDomainBoundaries(
                 for (int j = 0 ; j < (int)doms.size(); j++)
                 {
                     avtMaterial *mat = matList[j];
-                    if (mat != NULL && mat->GetMixlen() > 0)
+
+	            // If the dataset is NULL then it is a variable that is
+		    // defined on a material and this domain doesn't contain
+		    // the material. Exchanging mixed variable information
+		    // doesn't make sense in this case.
+                    if (mat != NULL && mat->GetMixlen() > 0 &&
+                        ds.GetDataset(j, 0) != NULL)
                     {
                         avtMixedVariable *mv = (avtMixedVariable *)
                                                  *(ds.GetAllMixVars(j)[i]);
