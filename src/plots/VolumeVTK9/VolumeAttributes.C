@@ -2658,6 +2658,7 @@ VolumeAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
 //
 // ****************************************************************************
 
+#include <visit-config.h>
 #ifdef VIEWER
 #include <avtCallback.h>
 #endif
@@ -2820,7 +2821,7 @@ VolumeAttributes::ProcessOldVersions(DataNode *parentNode,
                     "Parallel", "3.5.0"));
 #endif
                 dn->SetString(Renderer_ToString(VolumeAttributes::Parallel));
-                searchNode->AddNode(new DataNode("OSPRayEnabledFlag", "true"));
+                searchNode->AddNode(new DataNode("OSPRayEnabledFlag", true));
             }
         }
     }
