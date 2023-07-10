@@ -38,7 +38,7 @@ struct VolumeAttributesObject
 //
 static PyObject *NewVolumeAttributes(int);
 std::string
-PyVolumeAttributes_ToString(const VolumeAttributes *atts, const char *prefix)
+PyVolumeAttributes_ToString(const VolumeAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -116,7 +116,7 @@ PyVolumeAttributes_ToString(const VolumeAttributes *atts, const char *prefix)
     { // new scope
         std::string objPrefix(prefix);
         objPrefix += "colorControlPoints.";
-        str += PyColorControlPointList_ToString(&atts->GetColorControlPoints(), objPrefix.c_str());
+        str += PyColorControlPointList_ToString(&atts->GetColorControlPoints(), objPrefix.c_str(), forLogging);
     }
     snprintf(tmpStr, 1000, "%sopacityAttenuation = %g\n", prefix, atts->GetOpacityAttenuation());
     str += tmpStr;
@@ -142,11 +142,15 @@ PyVolumeAttributes_ToString(const VolumeAttributes *atts, const char *prefix)
     { // new scope
         std::string objPrefix(prefix);
         objPrefix += "opacityControlPoints.";
-        str += PyGaussianControlPointList_ToString(&atts->GetOpacityControlPoints(), objPrefix.c_str());
+        str += PyGaussianControlPointList_ToString(&atts->GetOpacityControlPoints(), objPrefix.c_str(), forLogging);
     }
-    const char *resampleType_names = "OnlyIfRequired, SingleDomain, ParallelRedistribute, ParallelPerRank, NoResampling";
+    const char *resampleType_names = "NoResampling, OnlyIfRequired, SingleDomain, ParallelRedistribute, ParallelPerRank";
     switch (atts->GetResampleType())
     {
+      case VolumeAttributes::NoResampling:
+          snprintf(tmpStr, 1000, "%sresampleType = %sNoResampling  # %s\n", prefix, prefix, resampleType_names);
+          str += tmpStr;
+          break;
       case VolumeAttributes::OnlyIfRequired:
           snprintf(tmpStr, 1000, "%sresampleType = %sOnlyIfRequired  # %s\n", prefix, prefix, resampleType_names);
           str += tmpStr;
@@ -161,10 +165,6 @@ PyVolumeAttributes_ToString(const VolumeAttributes *atts, const char *prefix)
           break;
       case VolumeAttributes::ParallelPerRank:
           snprintf(tmpStr, 1000, "%sresampleType = %sParallelPerRank  # %s\n", prefix, prefix, resampleType_names);
-          str += tmpStr;
-          break;
-      case VolumeAttributes::NoResampling:
-          snprintf(tmpStr, 1000, "%sresampleType = %sNoResampling  # %s\n", prefix, prefix, resampleType_names);
           str += tmpStr;
           break;
       default:
@@ -1562,11 +1562,11 @@ VolumeAttributes_SetResampleType(PyObject *self, PyObject *args)
         ss << "An invalid resampleType value was given." << std::endl;
         ss << "Valid values are in the range [0,4]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << " OnlyIfRequired";
+        ss << " NoResampling";
+        ss << ", OnlyIfRequired";
         ss << ", SingleDomain";
         ss << ", ParallelRedistribute";
         ss << ", ParallelPerRank";
-        ss << ", NoResampling";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -3335,6 +3335,8 @@ PyVolumeAttributes_getattr(PyObject *self, char *name)
         return VolumeAttributes_GetOpacityControlPoints(self, NULL);
     if(strcmp(name, "resampleType") == 0)
         return VolumeAttributes_GetResampleType(self, NULL);
+    if(strcmp(name, "NoResampling") == 0)
+        return PyInt_FromLong(long(VolumeAttributes::NoResampling));
     if(strcmp(name, "OnlyIfRequired") == 0)
         return PyInt_FromLong(long(VolumeAttributes::OnlyIfRequired));
     if(strcmp(name, "SingleDomain") == 0)
@@ -3343,8 +3345,6 @@ PyVolumeAttributes_getattr(PyObject *self, char *name)
         return PyInt_FromLong(long(VolumeAttributes::ParallelRedistribute));
     if(strcmp(name, "ParallelPerRank") == 0)
         return PyInt_FromLong(long(VolumeAttributes::ParallelPerRank));
-    if(strcmp(name, "NoResampling") == 0)
-        return PyInt_FromLong(long(VolumeAttributes::NoResampling));
 
     if(strcmp(name, "resampleTarget") == 0)
         return VolumeAttributes_GetResampleTarget(self, NULL);
@@ -3456,44 +3456,50 @@ PyVolumeAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "materialProperties") == 0)
         return VolumeAttributes_GetMaterialProperties(self, NULL);
 
+#include <visit-config.h>
+
+#if VISIT_OBSOLETE_AT_VERSION(3,5,0)
+#error This code is obsolete in this verison of VisIt and should be removed.
+#else
     // Try and handle legacy fields
-
-#define DEPRECATED_MESSAGE(type) \
-    PyErr_WarnFormat(NULL, 3, "%s is no longer a valid Volume attribute.\n" \
+#define DEPRECATED_MESSAGE(type, msg) \
+    PyErr_WarnFormat(NULL, 1, "%s is no longer a valid Volume attribute.\n" \
                     "It's value is being ignored, " \
-                    "please remove it from your script.\n", type);
-
+                    "please remove it from your script.\n", \
+                    "Try using %s instead.\n", type, msg);
 #define NAME_CHANGE_MESSAGE(old, new) \
-    PyErr_WarnFormat(NULL, 3, "%s is no longer a valid Volume attribute.\n" \
+    PyErr_WarnFormat(NULL, 1, "%s is no longer a valid Volume attribute.\n" \
                     "It's name has been changed to %s, " \
                     "please update your script.\n", old, new);
 
-    if (strcmp(name, "compactVariable") == 0)
+    // rendererTypes
+    if(strcmp(name, "Default") == 0)
     {
-        DEPRECATED_MESSAGE("compactVariable");
+        NAME_CHANGE_MESSAGE(name, "Serial");
         return PyInt_FromLong(0L);
     }
-
-    if (strcmp(name, "osprayAoTransparencyEnabledFlag") == 0)
+    if(strcmp(name, "RayCasting") == 0)
     {
-        NAME_CHANGE_MESSAGE("osprayAoTransparencyEnabledFlag",
-                            "osprayAOTransparencyEnabledFlag");
+        NAME_CHANGE_MESSAGE(name, "Composite");
         return PyInt_FromLong(0L);
     }
-
-    if (strcmp(name, "osprayAoSamples") == 0)
+    if(strcmp(name, "RayCastingIntegration") == 0)
     {
-        NAME_CHANGE_MESSAGE("osprayAoSamples",
-                            "osprayAOSamples");
+        NAME_CHANGE_MESSAGE(name, "Integration");
         return PyInt_FromLong(0L);
     }
-
-    if (strcmp(name, "osprayAoDistance") == 0)
+    if(strcmp(name, "RayCastingSLIVR") == 0)
     {
-        NAME_CHANGE_MESSAGE("osprayAoDistance",
-                            "osprayAODistance");
+        NAME_CHANGE_MESSAGE(name, "SLIVR");
         return PyInt_FromLong(0L);
     }
+    if(strcmp(name, "RayCastingOSPRay") == 0)
+    {
+        DEPRECATED_MESSAGE(name, "'Parallel' for 'rendererType' and set 'OSPRayEnabledFlag' to '1'");
+        return PyInt_FromLong(0L);
+    }
+    // end Renderer types
+#endif
 
     // Add a __dict__ answer so that dir() works
     if (!strcmp(name, "__dict__"))
@@ -3606,37 +3612,78 @@ PyVolumeAttributes_setattr(PyObject *self, char *name, PyObject *args)
     else if(strcmp(name, "materialProperties") == 0)
         obj = VolumeAttributes_SetMaterialProperties(self, args);
 
+#if VISIT_OBSOLETE_AT_VERSION(3,5,0)
+#error This code is obsolete in this version. Please remove it
+#else
+#define NAME_CHANGE_MESSAGE(old, new) \
+    PyErr_WarnFormat(NULL, 1, "%s is no longer a valid Volume attribute.\n" \
+                    "It's name has been changed to %s, " \
+                    "please update your script.\n", old, new);
+
+#define DEPRECATED_MESSAGE(type) \
+    PyErr_WarnFormat(NULL, 1, "%s is no longer a valid Volume attribute.\n" \
+                    "It's value is being ignored, " \
+                    "please remove it from your script.\n", type);
+
     // Try and handle legacy fields
     if(obj == &NULL_PY_OBJ)
     {
-        if(strcmp(name, "compactVariable") == 0)
+        if (strcmp(name, "osprayShadowsEnabledFlag") == 0)
         {
-            PyErr_WarnFormat(NULL, 3, "'%s' is obsolete. It is being ignored", name);
-            Py_INCREF(Py_None);
-            obj = Py_None;
+            NAME_CHANGE_MESSAGE(name, "OSPRayShadowsEnabledFlag");
+            obj = VolumeAttributes_SetOSPRayShadowsEnabledFlag(self, args);
+        }
+        else if (strcmp(name, "osprayUseGridAcceleratorFlag") == 0)
+        {
+            NAME_CHANGE_MESSAGE(name, "OSPRayUseGridAcceleratorFlag");
+            obj = VolumeAttributes_SetOSPRayUseGridAcceleratorFlag(self, args);
+        }
+        else if (strcmp(name, "osprayPreIntegrationFlag") == 0)
+        {
+            NAME_CHANGE_MESSAGE(name, "OSPRayPreIntegrationFlag");
+            obj = VolumeAttributes_SetOSPRayPreIntegrationFlag(self, args);
+        }
+        else if (strcmp(name, "osprayOneSidedLightingFlag") == 0)
+        {
+            NAME_CHANGE_MESSAGE(name, "OSPRayOneSidedLightingFlag");
+            obj = VolumeAttributes_SetOSPRayOneSidedLightingFlag(self, args);
+        }
+        else if (strcmp(name, "osprayAoTransparencyEnabledFlag") == 0)
+        {
+            NAME_CHANGE_MESSAGE(name, "OSPRayAOTransparencyEnabledFlag");
+            obj = VolumeAttributes_SetOSPRayAOTransparencyEnabledFlag(self, args);
+        }
+        else if (strcmp(name, "ospraySpp") == 0)
+        {
+            NAME_CHANGE_MESSAGE(name, "OSPRaySPP");
+            obj = VolumeAttributes_SetOSPRaySPP(self, args);
+        }
+        else if (strcmp(name, "osprayAoSamples") == 0)
+        {
+            NAME_CHANGE_MESSAGE(name, "OSPRayAOSamples");
+            obj = VolumeAttributes_SetOSPRayAOSamples(self, args);
+        }
+        else if (strcmp(name, "osprayAoDistance") == 0)
+        {
+            NAME_CHANGE_MESSAGE(name, "OSPRayAODistance");
+            obj = VolumeAttributes_SetOSPRayAODistance(self, args);
+        }
+        else if (strcmp(name, "osprayMinContribution") == 0)
+        {
+            NAME_CHANGE_MESSAGE(name, "OSPRayMinContribution");
+            obj = VolumeAttributes_SetOSPRayMinContribution(self, args);
         }
 
-        if(strcmp(name, "osprayAoTransparencyEnabledFlag") == 0)
+        if ((strcmp(name, "resampleFlag") == 0) ||
+            (strcmp(name, "compactVariable") == 0)  ||
+            (strcmp(name, "renderMode") == 0))
         {
-            PyErr_WarnFormat(NULL, 3, "'%s' is obsolete. It is being ignored", name);
-            Py_INCREF(Py_None);
-            obj = Py_None;
-        }
-
-        if(strcmp(name, "osprayAoSamples") == 0)
-        {
-            PyErr_WarnFormat(NULL, 3, "'%s' is obsolete. It is being ignored", name);
-            Py_INCREF(Py_None);
-            obj = Py_None;
-        }
-
-        if(strcmp(name, "osprayAoDistance") == 0)
-        {
-            PyErr_WarnFormat(NULL, 3, "'%s' is obsolete. It is being ignored", name);
+            DEPRECATED_MESSAGE(name);
             Py_INCREF(Py_None);
             obj = Py_None;
         }
     }
+#endif
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
@@ -3655,7 +3702,7 @@ static int
 VolumeAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     VolumeAttributesObject *obj = (VolumeAttributesObject *)v;
-    fprintf(fp, "%s", PyVolumeAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyVolumeAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -3663,7 +3710,7 @@ PyObject *
 VolumeAttributes_str(PyObject *v)
 {
     VolumeAttributesObject *obj = (VolumeAttributesObject *)v;
-    return PyString_FromString(PyVolumeAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyVolumeAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -3712,7 +3759,7 @@ VISIT_PY_TYPE_OBJ(VolumeAttributesType,         \
 static PyObject *
 VolumeAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
-    // only compare against the same type
+    // only compare against the same type 
     if ( Py_TYPE(self) != &VolumeAttributesType
          || Py_TYPE(other) != &VolumeAttributesType)
     {
@@ -3815,7 +3862,7 @@ PyVolumeAttributes_GetLogString()
 {
     std::string s("VolumeAtts = VolumeAttributes()\n");
     if(currentAtts != 0)
-        s += PyVolumeAttributes_ToString(currentAtts, "VolumeAtts.");
+        s += PyVolumeAttributes_ToString(currentAtts, "VolumeAtts.", true);
     return s;
 }
 
@@ -3828,7 +3875,7 @@ PyVolumeAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("VolumeAtts = VolumeAttributes()\n");
-        s += PyVolumeAttributes_ToString(currentAtts, "VolumeAtts.");
+        s += PyVolumeAttributes_ToString(currentAtts, "VolumeAtts.", true);
         cb(s);
     }
 }
