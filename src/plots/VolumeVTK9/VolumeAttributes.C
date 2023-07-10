@@ -50,8 +50,8 @@ VolumeAttributes::Renderer_FromString(const std::string &s, VolumeAttributes::Re
 //
 
 static const char *ResampleType_strings[] = {
-"OnlyIfRequired", "SingleDomain", "ParallelRedistribute",
-"ParallelPerRank", "NoResampling"};
+"NoResampling", "OnlyIfRequired", "SingleDomain",
+"ParallelRedistribute", "ParallelPerRank"};
 
 std::string
 VolumeAttributes::ResampleType_ToString(VolumeAttributes::ResampleType t)
@@ -71,7 +71,7 @@ VolumeAttributes::ResampleType_ToString(int t)
 bool
 VolumeAttributes::ResampleType_FromString(const std::string &s, VolumeAttributes::ResampleType &val)
 {
-    val = VolumeAttributes::OnlyIfRequired;
+    val = VolumeAttributes::NoResampling;
     for(int i = 0; i < 5; ++i)
     {
         if(s == ResampleType_strings[i])
@@ -2657,9 +2657,15 @@ VolumeAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
 // Creation:   June 18, 2003
 //
 // ****************************************************************************
+
+#include <visit-config.h>
+#ifdef VIEWER
+#include <avtCallback.h>
+#endif
+
 void
 VolumeAttributes::ProcessOldVersions(DataNode *parentNode,
-                                       const char *configVersion)
+                                     const char *configVersion)
 {
     if(parentNode == 0)
         return;
@@ -2668,43 +2674,158 @@ VolumeAttributes::ProcessOldVersions(DataNode *parentNode,
     if(searchNode == 0)
         return;
 
-    if (VersionLessThan(configVersion, "3.2.1"))
+#if VISIT_OBSOLETE_AT_VERSION(3,5,0)
+#error This code is obsolete in this version of VisIt and should be removed.
+#else
+    if (VersionLessThan(configVersion, "3.4.0"))
     {
+        DataNode *dn = nullptr;
         if (searchNode->GetNode("compactVariable") != nullptr)
         {
-            searchNode->RemoveNode("compactVariable");
+#ifdef VIEWER
+            avtCallback::IssueWarning(DeprecationMessage("compactVariable", "3.5.0"));
+#endif
+            searchNode->RemoveNode("compactVariable", true);
         }
-
-        DataNode *dn = nullptr;
+        if (searchNode->GetNode("renderMode") != nullptr)
+        {
+#ifdef VIEWER
+            avtCallback::IssueWarning(DeprecationMessage("renderNode", "3.5.0"));
+#endif
+            searchNode->RemoveNode("renderMode", true);
+        }
         if ((dn = searchNode->GetNode("resampleFlag")) != nullptr)
         {
+#ifdef VIEWER
+            avtCallback::IssueWarning(DeprecationMessage("resampleFlag", "resampleType", "3.5.0"));
+#endif
             int intVal = dn->AsInt();
 
             VolumeAttributes::ResampleType val = (intVal ? OnlyIfRequired : SingleDomain);
 
-            searchNode->RemoveNode("resampleFlag");
+            searchNode->RemoveNode("resampleFlag", true);
             searchNode->AddNode(new DataNode("resampleType",
                                               ResampleType_ToString(val)));
         }
-
-        dn = nullptr;
+        if ((dn = searchNode->GetNode("osprayShadowsEnabledFlag")) != nullptr)
+        {
+#ifdef VIEWER
+            avtCallback::IssueWarning(DeprecationMessage("osprayShadowsEnabledFlag",
+                "OSPRayShadowsEnabledFlag", "3.5.0"));
+#endif
+            dn->SetKey("OSPRayShadowsEnabledFlag");
+        }
+        if ((dn = searchNode->GetNode("osprayUseGridAcceleratorFlag")) != nullptr)
+        {
+#ifdef VIEWER
+            avtCallback::IssueWarning(DeprecationMessage("osprayUseGridAcceleratorFlag",
+                "OSPRayUseGridAcceleratorFlag", "3.5.0"));
+#endif
+            dn->SetKey("OSPRayUseGridAcceleratorFlag");
+        }
+        if ((dn = searchNode->GetNode("osprayPreIntegrationFlag")) != nullptr)
+        {
+#ifdef VIEWER
+            avtCallback::IssueWarning(DeprecationMessage("osprayPreIntegrationFlag",
+                "OSPRayPreIntegrationFlag", "3.5.0"));
+#endif
+            dn->SetKey("OSPRayPreIntegrationFlag");
+        }
+        if ((dn = searchNode->GetNode("osprayOneSidedLightingFlag")) != nullptr)
+        {
+#ifdef VIEWER
+            avtCallback::IssueWarning(DeprecationMessage("osprayOneSidedLightingFlag",
+                "OSPRayOneSidedLightingFlag", "3.5.0"));
+#endif
+            dn->SetKey("OSPRayOneSidedLightingFlag");
+        }
         if ((dn = searchNode->GetNode("osprayAoTransparencyEnabledFlag")) != nullptr)
         {
-            dn->SetKey("osprayAOTransparencyEnabledFlag");
+#ifdef VIEWER
+            avtCallback::IssueWarning(DeprecationMessage("osprayAoTransparencyEnabledFlag",
+                "OSPRayAOTransparencyEnabledFlag", "3.5.0"));
+#endif
+            dn->SetKey("OSPRayAOTransparencyEnabledFlag");
         }
-
-        dn = nullptr;
+        if ((dn = searchNode->GetNode("ospraySpp")) != nullptr)
+        {
+#ifdef VIEWER
+            avtCallback::IssueWarning(DeprecationMessage("ospraySpp",
+                "OSPRaySPP", "3.5.0"));
+#endif
+            dn->SetKey("OSPRaySPP");
+        }
         if ((dn = searchNode->GetNode("osprayAoSamples")) != nullptr)
         {
-            dn->SetKey("osprayAOSamples");
+#ifdef VIEWER
+            avtCallback::IssueWarning(DeprecationMessage("osprayAoSamples",
+                "OSPRayAOSamples", "3.5.0"));
+#endif
+            dn->SetKey("OSPRayAOSamples");
         }
-
-        dn = nullptr;
         if ((dn = searchNode->GetNode("osprayAoDistance")) != nullptr)
         {
-            dn->SetKey("osprayAODistance");
+#ifdef VIEWER
+            avtCallback::IssueWarning(DeprecationMessage("osprayAoDistance",
+                "OSPRayAODistance", "3.5.0"));
+#endif
+            dn->SetKey("OSPRayAODistance");
+        }
+        if ((dn = searchNode->GetNode("osprayMinContribution")) != nullptr)
+        {
+#ifdef VIEWER
+            avtCallback::IssueWarning(DeprecationMessage("osprayMinContribution",
+                "OSPRayMinContribution", "3.5.0"));
+#endif
+            dn->SetKey("OSPRayMinContribution");
+        }
+        if ((dn = searchNode->GetNode("rendererType")) != nullptr)
+        {
+            std::string type = dn->AsString();
+            if (type == "Default")
+            {
+#ifdef VIEWER
+                avtCallback::IssueWarning(DeprecationMessage("Default",
+                    "Default", "3.5.0"));
+#endif
+                dn->SetString(Renderer_ToString(VolumeAttributes::Serial));
+            }
+            else if (type == "RayCasting")
+            {
+#ifdef VIEWER
+                avtCallback::IssueWarning(DeprecationMessage("RayCasting",
+                    "Composite", "3.5.0"));
+#endif
+                dn->SetString(Renderer_ToString(VolumeAttributes::Composite));
+            }
+            else if (type == "RayCastingIntegration")
+            {
+#ifdef VIEWER
+                avtCallback::IssueWarning(DeprecationMessage("RayCastingIntegration",
+                    "Integration", "3.5.0"));
+#endif
+                dn->SetString(Renderer_ToString(VolumeAttributes::Integration));
+            }
+            else if (type == "RayCastingSLIVR")
+            {
+#ifdef VIEWER
+                avtCallback::IssueWarning(DeprecationMessage("RayCastingSLIVR",
+                    "SLIVR", "3.5.0"));
+#endif
+                dn->SetString(Renderer_ToString(VolumeAttributes::SLIVR));
+            }
+            else if (type == "RayCastingOSPRay")
+            {
+#ifdef VIEWER
+                avtCallback::IssueWarning(DeprecationMessage("RayCastingOSPRay",
+                    "Parallel", "3.5.0"));
+#endif
+                dn->SetString(Renderer_ToString(VolumeAttributes::Parallel));
+                searchNode->AddNode(new DataNode("OSPRayEnabledFlag", true));
+            }
         }
     }
+#endif
 }
 
 // ****************************************************************************
