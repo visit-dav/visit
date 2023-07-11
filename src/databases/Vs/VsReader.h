@@ -33,6 +33,7 @@ class VsUniformMesh;
 class VsRectilinearMesh;
 class VsDataset;
 
+
 /**
  * VsReader is a class for getting the vizschema metadata of objects
  * in and HDF5 file and also being able to return such objects.
@@ -45,7 +46,7 @@ public:
    * @param filename the name of the HDF5 file
    * @param r Empty VsRegistry object
    */
-  VsReader(const std::string& filename, VsRegistry* r);
+  VsReader(const std::string& filename);
 
   /**
    * Destructor.
@@ -88,12 +89,29 @@ public:
                int* destCounts = 0,
                int* destStrides = 0 ) const;    
 
+  VsRegistry* getRegistry() {
+      return registry;
+  }
+
 private:
   VsFile* fileData;
   
   static int numInstances;
   
   VsRegistry* registry;
+};
+
+class VsReaderHolder {
+  public:
+    VsReaderHolder(VsReader* r) {
+      reader = r;
+    }
+
+    ~VsReaderHolder() {
+      delete(reader);
+    }
+  private:
+    VsReader* reader;
 };
 
 #endif // VS_READER_H_

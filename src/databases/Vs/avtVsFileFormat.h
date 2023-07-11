@@ -102,6 +102,7 @@ class avtVsFileFormat: public avtSTMDFileFormat {
  *         (must delete when done)
  */
     virtual vtkDataSet* GetMesh(int domain, const char* meshname);
+    vtkDataSet* GetMesh(VsReader* reader, int domain, const char* meshname);
 
 /**
  * get a scalar variable by name
@@ -113,6 +114,7 @@ class avtVsFileFormat: public avtSTMDFileFormat {
  *         (must delete when done)
  */
     virtual vtkDataArray* GetVar(int domain, const char* varname);
+    vtkDataArray* GetVar(VsReader* reader, int domain, const char* varname);
 
 /**
  * Get variable in the case when it is stored on a node by node basis per cell.
@@ -122,6 +124,8 @@ class avtVsFileFormat: public avtSTMDFileFormat {
  */
     virtual vtkDataArray* NodalVar(VsVariable* meta,
         std::string requestedName, int component);
+    vtkDataArray* NodalVar(VsReader* reader, VsVariable* meta,
+        std::string requestedName, int component);
 
 /**
  * Get a variable that is "standard".  A standard variable is a variable that
@@ -129,20 +133,21 @@ class avtVsFileFormat: public avtSTMDFileFormat {
  * discontinuous Galerkin type data (or likely other high order data).
  */
     virtual vtkDataArray* StandardVar(int domain, const char* requestedName);
+    vtkDataArray* StandardVar(VsReader* reader, int domain, const char* requestedName);
 
 /**
  * Determine if the name is a component of a larger vector
  * @param name is the name of the variable
  * @param componentIndex is the index of that variable (returned).
  */
-    virtual bool nameIsComponent(std::string& name, int& componentIndex);
+    virtual bool nameIsComponent(VsReader* reader, std::string& name, int& componentIndex);
 
 /**
  * Check to see if the name has been transformed to a different name for
  * display
  * @param name is the name of the variable
  */
-    virtual bool isTransformedName(std::string& name);
+    virtual bool isTransformedName(VsReader* reader, std::string& name);
 
 /**
  * Free up any resources created by this object.
@@ -176,18 +181,8 @@ class avtVsFileFormat: public avtSTMDFileFormat {
 /** The file containing the data */
     std::string dataFileName;
 
-/** Pointer to the reader */
-    VsReader* reader;
-
 /** Ensure data has been read */
-    void LoadData();
-
-/**
- * This is not the best way to do this.  In fact every type of mesh should
- * have a separate class and then there would be a pointer to the type selected.
- * Since I only have one class that uses this approach I'm doing it this way.
- */
-    HighOrderUnstructuredData thisData;
+    VsReader* LoadData();
 
 /**
  * Change the default behavior so that the plugin does not populate
@@ -205,7 +200,7 @@ class avtVsFileFormat: public avtSTMDFileFormat {
  * @requestedName is the full name of the variable
  * @componentIndex is the component we are requesting
  */
-    VsVariable* getVariableMeta(int domain, std::string requestedName,
+    VsVariable* getVariableMeta(VsReader* reader, int domain, std::string requestedName,
         int &componentIndex);
 
 /**
@@ -213,10 +208,6 @@ class avtVsFileFormat: public avtSTMDFileFormat {
  */
     static int instanceCounter;
 
-/**
- * A registry of all objects found in the data file
- */
-    VsRegistry* registry;
 
 /** Some stuff to keep track of data selections */
     std::vector<avtDataSelection_p> selList;
@@ -230,44 +221,51 @@ class avtVsFileFormat: public avtSTMDFileFormat {
     std::vector<std::string> curveNames;
 
 /**
+ * To minimize how often we need to open & read the file, cache some simple information.
+ * These are in the form of a map from the file name to the data required.
+ */
+    std::map<std::string, int> cycleData;
+    std::map<std::string, double> timeData;
+
+/**
  * Set the axis labels for a mesh.
  *
  * @param mmd a pointer to the object that needs the axis labels.
  */
-    void setAxisLabels(avtMeshMetaData* mmd, bool transform = false);
+    void setAxisLabels(VsRegistry* registry, avtMeshMetaData* mmd, bool transform = false);
 
 /**
  * Set the global extents for a mesh.
  *
  * @param mmd a pointer to the object that needs the axis labels.
  */
-    void setGlobalExtents(avtMeshMetaData* mmd);
+    void setGlobalExtents(VsRegistry* registry, avtMeshMetaData* mmd);
 
 /**
  * Create various meshes.
  */
-    vtkDataSet* getUniformMesh(VsUniformMesh*, bool, int*, int*, int*);
-    vtkDataSet* getRectilinearMesh(VsRectilinearMesh*, bool, int*, int*, int*,
+    vtkDataSet* getUniformMesh(VsReader*, VsUniformMesh*, bool, int*, int*, int*);
+    vtkDataSet* getRectilinearMesh(VsReader*, VsRectilinearMesh*, bool, int*, int*, int*,
         bool);
-    vtkDataSet* getStructuredMesh(VsStructuredMesh*, bool, int*, int*, int*);
-    vtkDataSet* getUnstructuredMesh(VsUnstructuredMesh*, bool, int*, int*,
+    vtkDataSet* getStructuredMesh(VsReader*, VsStructuredMesh*, bool, int*, int*, int*);
+    vtkDataSet* getUnstructuredMesh(VsReader*, VsUnstructuredMesh*, bool, int*, int*,
         int*);
-    vtkDataSet* getPointMesh(VsVariableWithMesh*, bool, int*, int*, int*, bool);
-    vtkDataSet* getHighOrderUnstructuredMesh(VsUnstructuredMesh*, bool, int*,
+    vtkDataSet* getPointMesh(VsReader*, VsVariableWithMesh*, bool, int*, int*, int*, bool);
+    vtkDataSet* getHighOrderUnstructuredMesh(VsReader*, VsUnstructuredMesh*, bool, int*,
         int*, int*);
-    vtkDataSet* getCurve(int domain, const std::string& name);
+    vtkDataSet* getCurve(VsReader*, int domain, const std::string& name);
 
 
 /**
  * Each type of object is added to the database with a separate method
  * for neatness.
  */
-    void RegisterMeshes(avtDatabaseMetaData* md);
-    void RegisterMdMeshes(avtDatabaseMetaData* md);
-    void RegisterVarsWithMesh(avtDatabaseMetaData* md);
-    void RegisterVars(avtDatabaseMetaData* md);
-    void RegisterMdVars(avtDatabaseMetaData* md);
-    void RegisterExpressions(avtDatabaseMetaData* md);
+    void RegisterMeshes(VsRegistry*, avtDatabaseMetaData* md);
+    void RegisterMdMeshes(VsRegistry*, avtDatabaseMetaData* md);
+    void RegisterVarsWithMesh(VsRegistry*, avtDatabaseMetaData* md);
+    void RegisterVars(VsRegistry*, avtDatabaseMetaData* md);
+    void RegisterMdVars(VsRegistry*, avtDatabaseMetaData* md);
+    void RegisterExpressions(VsRegistry*, avtDatabaseMetaData* md);
 
     void GetSelectionBounds(size_t numTopologicalDims,
         std::vector<int> &numCells,
@@ -286,7 +284,9 @@ class avtVsFileFormat: public avtSTMDFileFormat {
         bool isNodal = true);
 
     template <typename TYPE>
-    void fillInMaskNodeArray(const std::vector<int>& gdims,
+    void fillInMaskNodeArray(
+        VsReader* reader,
+        const std::vector<int>& gdims,
         VsDataset *mask, bool maskIsFortranOrder,
         vtkUnsignedCharArray *maskedNodes);
 

@@ -77,6 +77,7 @@ VsFile::~VsFile() {
   }
 
 // Close this file
+  VsLog::debugLog() <<"VsFile::~VsFile() - Closing " <<fileName.c_str() <<std::endl;
   H5Fclose(getId());
 }
 
