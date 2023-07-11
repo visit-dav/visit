@@ -1404,7 +1404,7 @@ MiliClassMetaData::GetNumElements(int domain)
 //
 //  Modifications:
 //    Eric Brugger, Thu Jul  6 13:31:48 PDT 2023
-//    Movied the Mili superClassId M_PARTICLE from the PARTICLE to the
+//    Moved the Mili superClassId M_PARTICLE from the PARTICLE to the
 //    CELL classType.
 //
 // ****************************************************************************
