@@ -327,10 +327,6 @@ avtDatasetExaminer::GetSpatialExtents(std::vector<avtDataTree_p> &l,double *se)
 //    Kathleen Biagas, Wed May 28 17:38:40 MST 2014
 //    Added connectedNodesOnly.
 //
-//    Eric Brugger, Thu Jul  6 13:31:48 PDT 2023
-//    Added debug output and return false if no values could be found to
-//    set the limits.
-//
 // ****************************************************************************
 
 bool
@@ -364,17 +360,6 @@ avtDatasetExaminer::GetDataExtents(avtDataset_p &ds, double *de,
         }
     }
     
-    //
-    // If the data extents are still their initial values, then there were
-    // no elements or the cells were all ghost cells.
-    //
-    if (de[0] = +DBL_MAX && de[1] == -DBL_MAX)
-    {
-        debug1 << "Unable to determine data extents -- there was either no data "
-               << "or all the data was in ghost zones." << endl;
-        foundExtents = false;
-    }
-
     return foundExtents;
 }
 
