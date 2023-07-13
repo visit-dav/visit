@@ -110,7 +110,7 @@ public:
     int GetColorTableIndex(const std::string &name) const;
     const ColorControlPointList *GetColorControlPoints(int index) const;
     const ColorControlPointList *GetColorControlPoints(const std::string &name) const;
-    void AddColorTable(const std::string &name, const ColorControlPointList &cpts);
+    void AddColorTable(const std::string &name, ColorControlPointList &cpts);
     void RemoveColorTable(const std::string &name);
     void RemoveColorTable(int index);
     bool GetActiveElement(int index);
@@ -122,14 +122,13 @@ public:
     void EnableDisableAllTags(bool enable, std::vector<void *> &tagTableItems);
     void SetTagActive(const std::string tagname, bool active);
     bool GetTagActive(const std::string tagname);
-    void IncrementTagNumRefs(const std::string tagname);
-    void DecrementTagNumRefs(const std::string tagname);
     int GetTagNumRefs(const std::string tagname);
     void SetTagTableItem(const std::string tagname, void * newTagTableItem);
     void * GetTagTableItem(const std::string tagname);
     bool CheckTagInTagList(const std::string tagname);
     void RemoveUnusedTagsFromTagTable(std::vector<void *> &tagTableItems);
-    void PopulateTagList(std::vector<std::pair<std::string, bool>> &tagsToAdd);
+    void GetNewTagNames(std::vector<std::string> &tagsToAdd);
+    bool FilterTableByTag(const ColorControlPointList &ccpl);
     void FilterTablesByTag();
     virtual void ProcessOldVersions(DataNode *parentNode, const char *configVersion);
 

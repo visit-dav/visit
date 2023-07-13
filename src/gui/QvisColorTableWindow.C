@@ -904,30 +904,6 @@ QvisColorTableWindow::UpdateEditor()
 }
 
 // ****************************************************************************
-// Method: QvisColorTableWindow::AddToTagTable
-//
-// Purpose:
-//   Adds entries to the tag table. Called by AddGlobalTag().
-//
-// Programmer: Justin Privitera
-// Creation:   Mon Jun 27 17:30:16 PDT 2022
-//
-// Modifications:
-//    Justin Privitera, Fri Sep  2 16:46:21 PDT 2022
-//    Eliminated tag index arg as well as need for secret tag table column.
-//
-// ****************************************************************************
-
-void
-QvisColorTableWindow::AddToTagTable(std::string currtag)
-{
-    QTreeWidgetItem *item = new QTreeWidgetItem(tagTable);
-    colorAtts->SetTagTableItem(currtag, static_cast<void *>(item));
-    item->setCheckState(0, colorAtts->GetTagActive(currtag) ? Qt::Checked : Qt::Unchecked);
-    item->setText(1, currtag.c_str());
-}
-
-// ****************************************************************************
 // Method: QvisColorTableWindow::UpdateTags
 //
 // Purpose:
@@ -964,30 +940,23 @@ void
 QvisColorTableWindow::UpdateTags()
 {
     // 1. Populate Tag List
-    // each pair contains the name of a tag and a boolean indicating whether or not we know
-    // for certain that the tag should be added to the tag table. True means yes it is good
-    // to go, false means that we need to check
-    std::vector<std::pair<std::string, bool>> tagsToAdd;
-    colorAtts->PopulateTagList(tagsToAdd);
+    std::vector<std::string> tagsToAdd;
+    colorAtts->GetNewTagNames(tagsToAdd);
 
     // 2. Add Tags to Tag Table
     std::for_each(tagsToAdd.begin(), tagsToAdd.end(),
-        [this](std::pair<std::string, bool> tagpair)
+        [this](std::string currtag)
         {
-            std::string currtag = tagpair.first;
-            bool wasNotInGlobalTagList = tagpair.second;
-
-            // if the given tag is NOT in the global tag list
-            if (wasNotInGlobalTagList)
-                AddToTagTable(currtag);
-            else // if it was in the global tag list, we need to check if it is ok to add to the tag table
+            // check if the tag has a tag table entry
+            // TODO wouldn't it be better to just check if the tag list item was null?
+            QList<QTreeWidgetItem*> items = tagTable->findItems(
+                QString::fromStdString(currtag), Qt::MatchExactly, 1);
+            if (items.count() == 0)
             {
-                // We only want to run this check if the first case is not true.
-                QList<QTreeWidgetItem*> items = tagTable->findItems(
-                    QString::fromStdString(currtag), Qt::MatchExactly, 1);
-                // If the given tag IS in the global tag list but does not have a tagTable entry
-                if (items.count() == 0)
-                    AddToTagTable(currtag);
+                QTreeWidgetItem *item = new QTreeWidgetItem(tagTable);
+                colorAtts->SetTagTableItem(currtag, static_cast<void *>(item));
+                item->setCheckState(0, colorAtts->GetTagActive(currtag) ? Qt::Checked : Qt::Unchecked);
+                item->setText(1, currtag.c_str());
             }
         });
 
@@ -2226,8 +2195,6 @@ QvisColorTableWindow::addColorTable()
             cpts.SetTagChangesMade(true); // need to set manually b/c orig val was copied
             cpts.SetBuiltIn(false);
             colorAtts->AddColorTable(currentColorTable.toStdString(), cpts);
-            for (auto tag : cpts.GetTagNames())
-                colorAtts->IncrementTagNumRefs(tag);
         }
         else
         {
@@ -2245,8 +2212,6 @@ QvisColorTableWindow::addColorTable()
             cpts.AddTag("User Defined");
             cpts.SetBuiltIn(false);
             colorAtts->AddColorTable(currentColorTable.toStdString(), cpts);
-            for (auto tag : cpts.GetTagNames())
-                colorAtts->IncrementTagNumRefs(tag);
         }
 
         // Tell all of the observers to update.
@@ -2344,8 +2309,6 @@ QvisColorTableWindow::deleteColorTable()
             Error(tmp);
             return;
         }
-        for (auto tag : ccpl->GetTagNames())
-            colorAtts->DecrementTagNumRefs(tag);
         GetViewerMethods()->DeleteColorTable(ctName.c_str());
     }
     else

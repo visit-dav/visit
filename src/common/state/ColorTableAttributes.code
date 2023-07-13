@@ -138,6 +138,15 @@ Postfix:
 #endif
 
 Target: xml2atts
+Initialization: tagsMatchAny
+    tagsMatchAny = true;
+    
+    // We set the 'Default' and 'User Defined' tags to active by default; this can 
+    // be overridden by setting from node.
+    tagList["Default"].active = true;
+    tagList["User Defined"].active = true;
+    // if no color tables have these tags, then they will be pruned later by the color table window
+
 Function: GetColorTableIndex
 Declaration: int GetColorTableIndex(const std::string &name) const;
 Definition:
@@ -307,7 +316,7 @@ Definition:
 
 Target: xml2atts
 Function: AddColorTable
-Declaration: void AddColorTable(const std::string &name, const ColorControlPointList &cpts);
+Declaration: void AddColorTable(const std::string &name, ColorControlPointList &cpts);
 Definition:
 // ****************************************************************************
 // Method: ColorTableAttributes::AddColorTable
@@ -347,7 +356,7 @@ Definition:
 
 void
 ColorTableAttributes::AddColorTable(const std::string &name,
-    const ColorControlPointList &cpts)
+                                    ColorControlPointList &cpts)
 {
     bool defaultContinuous = false;
     if (GetDefaultContinuous() == name)
@@ -365,6 +374,25 @@ ColorTableAttributes::AddColorTable(const std::string &name,
             return;
         RemoveColorTable(index);
     }
+
+    // if this table doesn't have tags, then add the no-tags tag
+    if (cpts.GetNumTags() == 0)
+    {
+        cpts.AddTag("No Tags");
+    }
+
+    // iterate thru each tag in the given color table
+    for (int j = 0; j < cpts.GetNumTags(); j ++)
+    {
+        // add the tag if it is not already in the global tag list
+        std::string currtag = cpts.GetTag(j);
+        if (! CheckTagInTagList(currtag))
+            // add the tag to the tag list
+            tagList[currtag].active = false;
+        tagList[currtag].numrefs ++;
+    }
+
+    cpts.SetTagChangesMade(true);
 
     // Append the color table to the list.
     names.push_back(name);
@@ -385,6 +413,11 @@ ColorTableAttributes::AddColorTable(const std::string &name,
         names[i] = pos->first;
         colorTables[i] = pos->second;
     }
+
+    // determine if this color table belongs in the current tag filtering selection
+    int CTindex = GetColorTableIndex(name);
+    if (CTindex >= 0 && CTindex < active.size())
+        active[CTindex] = FilterTableByTag(cpts);
 
     if (defaultContinuous)
         SetDefaultContinuous(name);
@@ -494,6 +527,9 @@ ColorTableAttributes::RemoveColorTable(int index)
         bool isDefaultContinuous, isDefaultDiscrete;
         isDefaultContinuous = (names[index] == defaultContinuous);
         isDefaultDiscrete = (names[index] == defaultDiscrete);
+
+        for (auto tag : GetColorControlPoints(index)->GetTagNames())
+            tagList[tag].numrefs --;
 
         // Iterate through the vector "index" times.
         stringVector::iterator pos = names.begin();
@@ -839,6 +875,8 @@ ColorTableAttributes::SetFromNode(DataNode *parentNode)
         tagsMatchAny = node->AsBool();
     if((node = searchNode->GetNode("tagChanges")) != 0)
         UnstringifyAndMergeTagChanges(node->AsStringVector());
+
+    FilterTablesByTag();
 }
 
 Function: GetActiveElement
@@ -866,7 +904,7 @@ ColorTableAttributes::GetActiveElement(int index)
 {
     if (index >= 0 && index < active.size())
         return active[index];
-    // TODO what to return if out of bounds?
+    return false;
 }
 
 Function: StringifyTagChanges
@@ -1147,48 +1185,6 @@ ColorTableAttributes::GetTagActive(const std::string tagname)
     return tagList[tagname].active;
 }
 
-Function: IncrementTagNumRefs
-Declaration: void IncrementTagNumRefs(const std::string tagname);
-Definition:
-// ****************************************************************************
-// Method: ColorTableAttributes::IncrementTagNumRefs
-//
-// Purpose:
-//    TODO
-//
-// Programmer: Justin Privitera
-// Creation:   06/27/23
-//
-// Modifications:
-//
-// ****************************************************************************
-void
-ColorTableAttributes::IncrementTagNumRefs(const std::string tagname)
-{
-    tagList[tagname].numrefs ++;
-}
-
-Function: DecrementTagNumRefs
-Declaration: void DecrementTagNumRefs(const std::string tagname);
-Definition:
-// ****************************************************************************
-// Method: ColorTableAttributes::DecrementTagNumRefs
-//
-// Purpose:
-//    TODO
-//
-// Programmer: Justin Privitera
-// Creation:   06/27/23
-//
-// Modifications:
-//
-// ****************************************************************************
-void
-ColorTableAttributes::DecrementTagNumRefs(const std::string tagname)
-{
-    tagList[tagname].numrefs --;
-}
-
 Function: GetTagNumRefs
 Declaration: int GetTagNumRefs(const std::string tagname);
 Definition:
@@ -1307,14 +1303,14 @@ ColorTableAttributes::RemoveUnusedTagsFromTagTable(std::vector<void *> &tagTable
     }
 }
 
-Function: PopulateTagList
-Declaration: void PopulateTagList(std::vector<std::pair<std::string, bool>> &tagsToAdd);
+Function: GetNewTagNames
+Declaration: void GetNewTagNames(std::vector<std::string> &tagsToAdd);
 Definition:
 // ****************************************************************************
-// Method: ColorTableAttributes::PopulateTagList
+// Method: ColorTableAttributes::GetNewTagNames
 //
 // Purpose:
-//    TODO
+//    Gets the names of tags that should likely be added to the tag table.
 //
 // Programmer: Justin Privitera
 // Creation:   06/27/23
@@ -1323,12 +1319,8 @@ Definition:
 //
 // ****************************************************************************
 void
-ColorTableAttributes::PopulateTagList(std::vector<std::pair<std::string, bool>> &tagsToAdd)
+ColorTableAttributes::GetNewTagNames(std::vector<std::string> &tagsToAdd)
 {
-    // We want the 'Default' and 'User Defined' tags to be checked the very first time a user
-    // opens the color table window, hence the inclusion of `first_time`.
-    static bool first_time = true;
-
     // populate tags list
     // iterate thru each color table
     for (int i = 0; i < GetNumColorTables(); i ++)
@@ -1337,70 +1329,74 @@ ColorTableAttributes::PopulateTagList(std::vector<std::pair<std::string, bool>> 
         // only try to add tags if the ccpl thinks it has new info
         if (ccpl.GetTagChangesMade())
         {
-            // if this table doesn't have tags, then add the no-tags tag
-            if (ccpl.GetNumTags() == 0)
-            {
-                ccpl.AddTag("No Tags");
-                // Every time I add a tag, I need to update the refcount.
-                // However, if this is the `first_time`, no tags have any refcount,
-                // until they go through `AddGlobalTag`, so we shouldn't update
-                // the refcount here.
-                if (! first_time)
-                    IncrementTagNumRefs("No Tags");
-            }
-
             // iterate thru each tag in the given color table
             for (int j = 0; j < ccpl.GetNumTags(); j ++)
             {
-                // add the tag if it is not already in the global tag list
-
                 std::string currtag = ccpl.GetTag(j);
-                if (! CheckTagInTagList(currtag))
-                {
-                    // add the tag to the tag list
-                    tagList[currtag].active = false;
-                    
-                    // send the tag back with a flag indicating that this tag is definitely
-                    // good to be added to the tag table, since it was not in the tag list
-                    tagsToAdd.push_back(std::make_pair(currtag, true));
-                }
-                else
-                {
-                    // the tag is already in the tag list so we don't need to do anything special
-
-                    // send the tag back with a flag indicating that it is unknown whether or not
-                    // this tag should be added to the tag table, since it was in the tag list
-                    tagsToAdd.push_back(std::make_pair(currtag, false));
-                }
-                // Only the very first time can we guarantee that each reference to each
-                // tag has not been encountered before, so it is safe to increment here.
-                // Why is this? `AddGlobalTag()` is getting called unconditionally FOR
-                // EVERY tag in the CCPL, whether or not that tag has been added before.
-                if (first_time)
-                    // We have to do this logic AFTER the above logic because otherwise 
-                    // currtag will already be added to the tagList, which will mess up
-                    // our searching for it.
-                    IncrementTagNumRefs(currtag);
-                    // Whether or not we end up adding to the tag table, the fact that 
-                    // this function was called with this tag means there is another
-                    // reference to it, so we should update the numrefs. Hence why
-                    // we do NOT update the numrefs in `AddToTagTable()`.
+                tagsToAdd.push_back(currtag);
             }
             // tell the ccpl that we have taken note of all of its tag changes
             ccpl.SetTagChangesMade(false);
         }
     }
+}
 
-    // make the "Default" and "User Defined" tags active by default
-    if (first_time)
+Function: FilterTableByTag
+Declaration: bool FilterTableByTag(const ColorControlPointList &ccpl);
+Definition:
+// ****************************************************************************
+// Method: ColorTableAttributes::FilterTableByTag
+//
+// Purpose:
+//    TODO
+//
+// Programmer: Justin Privitera
+// Creation:   07/13/23
+//
+// Modifications:
+//
+// ****************************************************************************
+bool
+ColorTableAttributes::FilterTableByTag(const ColorControlPointList &ccpl)
+{
+    bool tagFound = false;
+    // go thru global tags
+    for (const auto& mapitem : tagList)
     {
-        if (CheckTagInTagList("Default"))
-            SetTagActive("Default", true);
-        if (CheckTagInTagList("User Defined"))
-            SetTagActive("User Defined", true);
+        // if the global tag is active
+        if (mapitem.second.active)
+        {
+            tagFound = false;
+            // go thru local tags
+            for (int k = 0; k < ccpl.GetNumTags(); k ++)
+            {
+                // if the current global tag is the same as our local tag
+                if (mapitem.first == ccpl.GetTag(k))
+                {
+                    tagFound = true;
+                    break;
+                }
+            }
+            if (tagFound == GetTagsMatchAny())
+            // If both are true, that means...
+            // 1) tagsMatchAny is true so we only need one tag from 
+            //    the global tag list to be present in the local tag
+            //    list, AND
+            // 2) tagFound is true, so there is no need to keep 
+            //    searching for a tag that is in both the local and
+            //    global tag lists. Thus we can end iteration early.
+            // If both are false, that means...
+            // 1) tagsMatchAny is false so we need every tag from the
+            //    global tag list to be present in the local tag list, AND
+            // 2) tagFound is false, so there exists a global tag that
+            //    is not in the local tag list, hence we can give up 
+            //    early because we know that this color table does not
+            //    have every tag in the global tag list.
+                break;
+        }
     }
-
-    first_time = false;
+    // we mark the color table as active or inactive
+    return tagFound;
 }
 
 Function: FilterTablesByTag
@@ -1425,49 +1421,12 @@ ColorTableAttributes::FilterTablesByTag()
     // for each color table
     for (int i = 0; i < GetNumColorTables(); i ++)
     {
-        bool tagFound = false;
-        // go thru global tags
-        for (const auto& mapitem : tagList)
-        {
-            // if the global tag is active
-            if (mapitem.second.active)
-            {
-                tagFound = false;
-                // go thru local tags
-                for (int k = 0; k < GetColorTables(i).GetNumTags(); k ++)
-                {
-                    // if the current global tag is the same as our local tag
-                    if (mapitem.first == GetColorTables(i).GetTag(k))
-                    {
-                        tagFound = true;
-                        break;
-                    }
-                }
-                if (tagFound == GetTagsMatchAny())
-                // If both are true, that means...
-                // 1) tagsMatchAny is true so we only need one tag from 
-                //    the global tag list to be present in the local tag
-                //    list, AND
-                // 2) tagFound is true, so there is no need to keep 
-                //    searching for a tag that is in both the local and
-                //    global tag lists. Thus we can end iteration early.
-                // If both are false, that means...
-                // 1) tagsMatchAny is false so we need every tag from the
-                //    global tag list to be present in the local tag list, AND
-                // 2) tagFound is false, so there exists a global tag that
-                //    is not in the local tag list, hence we can give up 
-                //    early because we know that this color table does not
-                //    have every tag in the global tag list.
-                    break;
-            }
-        }
         // we mark the color table as active or inactive
         if (i >= 0 && i < active.size())
-            active[i] = tagFound;
+            active[i] = FilterTableByTag(GetColorTables(i));;
     }
 }
 
-Target: xml2atts
 Function: ProcessOldVersions
 Declaration: virtual void ProcessOldVersions(DataNode *parentNode, const char *configVersion);
 Definition:
