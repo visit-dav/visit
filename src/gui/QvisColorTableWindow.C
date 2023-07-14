@@ -939,6 +939,11 @@ QvisColorTableWindow::UpdateEditor()
 void
 QvisColorTableWindow::UpdateTags()
 {
+
+    colorAtts->PrintTagList();
+    std::cout << "=======================" << std::endl;
+
+
     // 1. Populate Tag List
     std::vector<std::string> tagsToAdd;
     colorAtts->GetNewTagNames(tagsToAdd);
@@ -960,6 +965,9 @@ QvisColorTableWindow::UpdateTags()
             }
         });
 
+    colorAtts->PrintTagList();
+    std::cout << "=======================" << std::endl;
+
     // 3. Purge tagList/tagTable entries that have 0 refcount.
     std::vector<void *> tagTableItems;
     colorAtts->RemoveUnusedTagsFromTagTable(tagTableItems);
@@ -975,6 +983,9 @@ QvisColorTableWindow::UpdateTags()
             }
             // If the item is not in the tag table, then we will skip deleting it.
         });
+
+    colorAtts->PrintTagList();
+    std::cout << "=======================" << std::endl;
 
     tagTable->sortByColumn(1, Qt::AscendingOrder);
 }
@@ -1115,18 +1126,25 @@ QvisColorTableWindow::UpdateNames()
     // Set the enabled state of the delete button.
     deleteButton->setEnabled(colorAtts->GetNumColorTables() > 1);
 
-    static bool run_before = false;
-    if (!run_before)
-    {
-        // This only needs to happen the very first time for loading options.
-        // If visit isn't opened with saved config and guiconfig files, then
-        // this is redundant, but doesn't hurt. If it happens more than once
-        // then VisIt will crash.
-        run_before = true;
-        colorAtts->SetChangesMade(true);
-        ctObserver.SetUpdate(true);
-        Apply(true);
-    }
+    // TODO
+    // std::cout << "hi7" << std::endl;
+
+    // static bool run_before = false;
+    // if (!run_before)
+    // {
+    //     // This only needs to happen the very first time for loading options.
+    //     // If visit isn't opened with saved config and guiconfig files, then
+    //     // this is redundant, but doesn't hurt. If it happens more than once
+    //     // then VisIt will crash.
+    //     run_before = true;
+    //     colorAtts->SetChangesMade(true);
+    //     ctObserver.SetUpdate(true);
+    //     std::cout << "test3" << std::endl;
+    //     Apply(true);
+    //     std::cout << "test4" << std::endl;
+    // }
+
+    // std::cout << "bye" << std::endl;
 }
 
 // ****************************************************************************
@@ -1758,7 +1776,10 @@ QvisColorTableWindow::Apply(bool ignore)
     {
         // Send the color table definitions to the viewer.
         GetCurrentValues(1);
+        std::cout << nameLineEdit->displayText().simplified().toStdString() << std::endl;
+        std::cout << "here1" << std::endl;
         colorAtts->Notify();
+        std::cout << "here2" << std::endl;
 
         // Make the viewer update the plots that use the specified colortable.
         GetViewerMethods()->UpdateColorTable(currentColorTable.toStdString());

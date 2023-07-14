@@ -130,6 +130,7 @@ public:
     void GetNewTagNames(std::vector<std::string> &tagsToAdd);
     bool FilterTableByTag(const ColorControlPointList &ccpl);
     void FilterTablesByTag();
+    void PrintTagList();
     virtual void ProcessOldVersions(DataNode *parentNode, const char *configVersion);
 
     // IDs that can be used to identify fields in case statements

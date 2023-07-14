@@ -73,6 +73,8 @@
     </Function>
     <Function name="FilterTablesByTag" user="true" member="true">
     </Function>
+    <Function name="PrintTagList" user="true" member="true">
+    </Function>
     <Function name="ProcessOldVersions" user="true" member="true">
     </Function>
     <Include file="source" quoted="false">

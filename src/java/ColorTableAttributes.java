@@ -36,7 +36,7 @@ public class ColorTableAttributes extends AttributeSubject
         defaultContinuous = new String("hot");
         defaultDiscrete = new String("levels");
         changesMade = false;
-        tagsMatchAny = true;
+        tagsMatchAny = false;
     }
 
     public ColorTableAttributes(int nMoreFields)
@@ -49,7 +49,7 @@ public class ColorTableAttributes extends AttributeSubject
         defaultContinuous = new String("hot");
         defaultDiscrete = new String("levels");
         changesMade = false;
-        tagsMatchAny = true;
+        tagsMatchAny = false;
     }
 
     public ColorTableAttributes(ColorTableAttributes obj)

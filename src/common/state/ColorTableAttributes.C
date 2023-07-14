@@ -1378,6 +1378,10 @@ ColorTableAttributes::AddColorTable(const std::string &name,
         tagList[currtag].numrefs ++;
     }
 
+    std::cout << "tag list after adding color table " << name << std::endl;
+    PrintTagList();
+    std::cout << "======" << std::endl;
+
     cpts.SetTagChangesMade(true);
 
     // Append the color table to the list.
@@ -2048,6 +2052,30 @@ ColorTableAttributes::FilterTablesByTag()
         // we mark the color table as active or inactive
         if (i >= 0 && i < active.size())
             active[i] = FilterTableByTag(GetColorTables(i));;
+    }
+}
+
+// ****************************************************************************
+// Method: ColorTableAttributes::PrintTagList
+//
+// Purpose:
+//    TODO
+//
+// Programmer: Justin Privitera
+// Creation:   TODO
+//
+// Modifications:
+//
+// ****************************************************************************
+void
+ColorTableAttributes::PrintTagList()
+{
+    for (auto itr = tagList.begin(); itr != tagList.end(); itr ++)
+    {
+        std::cout << itr->first << ":" << std::endl;
+        std::cout << "   active: " << itr->second.active << std::endl;
+        std::cout << "   numrefs: " << itr->second.numrefs << std::endl;
+        std::cout << "   tagTableItem valid: " << (itr->second.tagTableItem ? "yes" : "no") << std::endl;
     }
 }
 
