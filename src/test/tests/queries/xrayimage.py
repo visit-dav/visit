@@ -176,9 +176,7 @@ OpenDatabase(silo_data_path("curv2d.silo"))
 AddPlot("Pseudocolor", "d")
 DrawPlots()
 
-#retreive default query parameters
-params = GetQueryParameters("XRay Image")
-#modify as necessary
+params = dict()
 params['image_size'] = (300, 300)
 params['divide_emis_by_absorb'] = 1
 params['width'] = 10.
