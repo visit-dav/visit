@@ -208,7 +208,8 @@ avtXRayImageQuery::avtXRayImageQuery():
     outputType = PNG_OUT;
     outputDir = ".";
     useSpecifiedUpVector = true;
-    useOldView = true;
+    useNewView = true;
+    useOldView = false;
 
     spatialUnits = "no units provided";
     energyUnits = "no units provided";
@@ -454,6 +455,7 @@ avtXRayImageQuery::SetInputParams(const MapNode &params)
         useSpecifiedUpVector = params.GetEntry("useUpVector")->ToBool();
     }
 
+    useNewView = false;
     useOldView = false;
 
     //
@@ -466,6 +468,7 @@ avtXRayImageQuery::SetInputParams(const MapNode &params)
         if (v.size() != 3)
             EXCEPTION2(QueryArgumentException, "normal", 3);
         normal[0] = v[0]; normal[1] = v[1]; normal[2] = v[2];
+        useNewView = true;
     }
 
     if (params.HasNumericVectorEntry("focus"))
@@ -475,6 +478,7 @@ avtXRayImageQuery::SetInputParams(const MapNode &params)
         if (v.size() != 3)
             EXCEPTION2(QueryArgumentException, "focus", 3);
         focus[0] = v[0]; focus[1] = v[1]; focus[2] = v[2];
+        useNewView = true;
     }
 
     if (params.HasNumericVectorEntry("view_up"))
@@ -484,32 +488,38 @@ avtXRayImageQuery::SetInputParams(const MapNode &params)
         if (v.size() != 3)
             EXCEPTION2(QueryArgumentException, "view_up", 3);
         viewUp[0] = v[0]; viewUp[1] = v[1]; viewUp[2] = v[2];
+        useNewView = true;
     }
 
     if (params.HasNumericEntry("view_angle"))
     {
         viewAngle = params.GetEntry("view_angle")->ToDouble();
+        useNewView = true;
     }
 
     if (params.HasNumericEntry("parallel_scale"))
     {
         parallelScale = params.GetEntry("parallel_scale")->ToDouble();
+        useNewView = true;
     }
 
     if (params.HasNumericEntry("view_width"))
     {
         viewWidthOverride = params.GetEntry("view_width")->ToDouble();
         nonSquarePixels = true;
+        useNewView = true;
     }
 
     if (params.HasNumericEntry("near_plane"))
     {
         nearPlane = params.GetEntry("near_plane")->ToDouble();
+        useNewView = true;
     }
 
     if (params.HasNumericEntry("far_plane"))
     {
         farPlane = params.GetEntry("far_plane")->ToDouble();
+        useNewView = true;
     }
 
     if (params.HasNumericVectorEntry("image_pan"))
@@ -519,16 +529,19 @@ avtXRayImageQuery::SetInputParams(const MapNode &params)
         if (v.size() != 2)
             EXCEPTION2(QueryArgumentException, "image_pan", 2);
         imagePan[0] = v[0]; imagePan[1] = v[1];
+        useNewView = true;
     }
 
     if (params.HasNumericEntry("image_zoom"))
     {
         imageZoom = params.GetEntry("image_zoom")->ToDouble();
+        useNewView = true;
     }
 
     if (params.HasNumericEntry("perspective"))
     {
         perspective = params.GetEntry("perspective")->ToBool();
+        useNewView = true;
     }
 
     if (params.HasNumericVectorEntry("image_size"))
@@ -1379,7 +1392,7 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
 
     avtXRayFilter *filt = new avtXRayFilter;
 
-    if (useOldView)
+    if (useOldView && !useNewView)
         ConvertOldImagePropertiesToNew();
     filt->SetImageProperties(normal, focus, viewUp, viewAngle, parallelScale,
         viewWidthOverride, nonSquarePixels, nearPlane, farPlane, imagePan, 
@@ -3026,28 +3039,7 @@ avtXRayImageQuery::GetDefaultInputParams(MapNode &params)
     params["path_length_info"] = std::string("path length info");
 
     //
-    // The old view parameters.
-    //
-    params["width"] = 1.0;
-    params["height"] = 1.0;
-
-    doubleVector o;
-    o.push_back(0.0);
-    o.push_back(0.0);
-    o.push_back(0.0);
-    params["origin"] = o;
-
-    params["theta"] = 0.0;
-    params["phi"] = 0.0;
-
-    doubleVector uv;
-    uv.push_back(0.0);
-    uv.push_back(1.0);
-    uv.push_back(0.0);
-    params["up_vector"] = uv;
-
-    //
-    // The new view parameters.
+    // The view parameters.
     //
     doubleVector f;
     f.push_back(0.0);

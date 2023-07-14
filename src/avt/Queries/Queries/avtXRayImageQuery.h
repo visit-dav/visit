@@ -177,7 +177,9 @@ class QUERY_API avtXRayImageQuery : public avtDatasetQuery
     int                       outputType;
     std::string               outputDir;
     bool                      useSpecifiedUpVector;
-    bool                      useOldView;
+    bool                      useOldView; // not the default. Will only be triggered if no new
+                              // view params are provided AND old params have been provided.
+    bool                      useNewView; // the default. Will be triggered if the above is not true.
     // The new view specification
     avtVector                 normal;
     avtVector                 focus;
