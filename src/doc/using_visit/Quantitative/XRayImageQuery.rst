@@ -260,38 +260,8 @@ Camera Specification
 """"""""""""""""""""
 
 The query also takes arguments that specify the orientation of the camera in 3 dimensions. 
-This can take 2 forms. 
-The first is a simplified specification that gives limited control over the camera and the second is a complete specification that matches the 3D image viewing parameters. 
-
-.. _Simplified_Camera_Specification:
-
-Simplified Camera Specification
-+++++++++++++++++++++++++++++++
-
-The simplified version consists of:
-
-+--------------+----------------------------------------------------------+
-| *width*      | The width of the image in physical space. The default is |
-|              | 1.0.                                                     |
-+--------------+----------------------------------------------------------+
-| *height*     | The height of the image in physical space. The default   |
-|              | is 1.0.                                                  |
-+--------------+----------------------------------------------------------+
-| *origin*     | The point in 3D corresponding to the center of the       |
-|              | image.                                                   |
-+--------------+----------------------------------------------------------+
-| *theta*      | The orientation angles. The default is 0. 0. and is      |
-| *phi*        | looking down the Z axis. Theta moves around the          |
-|              | Y axis toward the X axis. Phi moves around the Z axis.   |
-|              | When looking at an R-Z mesh, phi has no effect           |
-|              | because of symmetry.                                     |
-+--------------+----------------------------------------------------------+
-| *up_vector*  | The up vector.                                           |
-+--------------+----------------------------------------------------------+
-
-*If any of the above properties are specified in the parameters, the query will use the simplified version.*
-
-During execution, the simplified camera specification parameters are converted to the complete ones.
+This can take 2 forms.
+The first is a complete specification that matches the 3D image viewing parameters and the second is a simplified specification that gives limited control over the camera but is easier to use.
 
 .. _Complete_Camera_Specification:
 
@@ -340,39 +310,46 @@ The complete version consists of:
 |                  | 1 indicates perspective projection.                  |
 +------------------+------------------------------------------------------+
 
+*If any of the above properties are specified in the parameters, the query will use the complete version and disregard all arguments pertaining to the simplified version.*
+
 When a Conduit Blueprint output type is specified, these parameters will appear in the metadata.
 See :ref:`View_Parameters` for more information.
+
+.. _Simplified_Camera_Specification:
+
+Simplified Camera Specification
++++++++++++++++++++++++++++++++
+
+The simplified version consists of:
+
++--------------+----------------------------------------------------------+
+| *width*      | The width of the image in physical space. The default is |
+|              | 1.0.                                                     |
++--------------+----------------------------------------------------------+
+| *height*     | The height of the image in physical space. The default   |
+|              | is 1.0.                                                  |
++--------------+----------------------------------------------------------+
+| *origin*     | The point in 3D corresponding to the center of the       |
+|              | image.                                                   |
++--------------+----------------------------------------------------------+
+| *theta*      | The orientation angles. The default is 0. 0. and is      |
+| *phi*        | looking down the Z axis. Theta moves around the          |
+|              | Y axis toward the X axis. Phi moves around the Z axis.   |
+|              | When looking at an R-Z mesh, phi has no effect           |
+|              | because of symmetry.                                     |
++--------------+----------------------------------------------------------+
+| *up_vector*  | The up vector.                                           |
++--------------+----------------------------------------------------------+
+
+During execution, the simplified camera specification parameters are converted to the complete ones.
 
 Calling the Query
 """""""""""""""""
 
 There are a couple ways to call the X Ray Image Query, with their own nuances.
 
-The first is the old style argument passing:
-
-::
-
-   Query("XRay Image", 
-      output_type, 
-      output_dir, 
-      divide_emis_by_absorb, 
-      origin_x,
-      origin_y,
-      origin_z,
-      theta, 
-      phi, 
-      width, 
-      height, 
-      image_size_x, 
-      image_size_y, 
-      vars)
-
-   # An example
-   Query("XRay Image", "hdf5", ".", 1, 0.0, 2.5, 10.0, 0, 0, 10., 10., 400, 300, ("d", "p"))
-
-This way of calling the query makes use of the :ref:`Simplified_Camera_Specification`.
-
-It is recommended to instead use the standard way of calling the query, using a dictionary to store the arguments.
+The first is the standard way of calling the query, by using a dictionary to store the arguments.
+This way is recommended.
 Here is an example:
 
 ::
@@ -394,7 +371,32 @@ Of course, one could use this to set up the parameters instead:
 
    params = GetQueryParameters("XRay Image")
 
-However, this will force the :ref:`Simplified_Camera_Specification` to be used, since it includes default arguments for *all* of the various arguments, and if *any* of the :ref:`Simplified_Camera_Specification` arguments are present, they will override those of the :ref:`Complete_Camera_Specification`.
+The default arguments to the query will be provided here, containing the :ref:`Complete_Camera_Specification` and not the :ref:`Simplified_Camera_Specification` arguments.
+To use the :ref:`Simplified_Camera_Specification` arguments, one must specify them manually and not specify any arguments from the :ref:`Complete_Camera_Specification`.
+
+The second way to call the query is the old style of argument passing:
+
+::
+
+   Query("XRay Image", 
+      output_type, 
+      output_dir, 
+      divide_emis_by_absorb, 
+      origin_x,
+      origin_y,
+      origin_z,
+      theta, 
+      phi, 
+      width, 
+      height, 
+      image_size_x, 
+      image_size_y, 
+      vars)
+
+   # An example
+   Query("XRay Image", "hdf5", ".", 1, 0.0, 2.5, 10.0, 0, 0, 10., 10., 400, 300, ("d", "p"))
+
+This way of calling the query exclusively makes use of the :ref:`Simplified_Camera_Specification`.
 
 Examples
 ~~~~~~~~
