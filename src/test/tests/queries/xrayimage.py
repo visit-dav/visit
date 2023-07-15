@@ -831,7 +831,7 @@ blueprint_test("yaml", conduit_dir_yaml, 36, "Blueprint_YAML_X_Ray_Output")
 
 setup_bp_test()
 
-params = dict()
+params = GetQueryParameters("XRay Image")
 params["image_size"] = (400, 300)
 params["output_type"] = "hdf5"
 params["output_dir"] = conduit_dir_detector_dims
@@ -862,7 +862,7 @@ def test_imaging_planes_and_rays():
     for i in range(0, 2):
         setup_bp_test()
 
-        params = dict()
+        params = GetQueryParameters("XRay Image")
         params["image_size"] = (400, 300)
         params["output_dir"] = conduit_dir_imaging_planes0 if i == 0 else conduit_dir_imaging_planes1
         params["output_type"] = "hdf5"
@@ -913,7 +913,7 @@ def test_non_square_pixels():
     DeleteAllPlots()
     setup_bp_test()
 
-    params = dict()
+    params = GetQueryParameters("XRay Image")
 
     params["vars"] = ("d", "p")
     params["image_size"] = (300, 300)

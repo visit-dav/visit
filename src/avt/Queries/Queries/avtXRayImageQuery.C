@@ -189,6 +189,10 @@ inline bool multipleOutputFiles(int otype, int numBins)
 // 
 //    Justin Privitera, Fri Jun 16 17:17:14 PDT 2023
 //    Added view width override and non square pixels.
+// 
+//    Justin Privitera, Fri Jul 14 17:33:07 PDT 2023
+//    Added new view params flag. Turned it on by default and turned old view 
+//    params flag off by default.
 //
 // ****************************************************************************
 
@@ -355,6 +359,9 @@ avtXRayImageQuery::~avtXRayImageQuery()
 // 
 //    Justin Privitera, Fri Jun 16 17:17:14 PDT 2023
 //    Added view width override and non square pixels.
+// 
+//    Justin Privitera, Fri Jul 14 17:33:07 PDT 2023
+//    Added logic for triggering the new camera properties.
 //
 // ****************************************************************************
 
@@ -1308,6 +1315,9 @@ avtXRayImageQuery::GetSecondaryVars(std::vector<std::string> &outVars)
 //    Justin Privitera, Fri Jun 16 17:17:14 PDT 2023
 //    Added view width override and non square pixels to call to 
 //    CalculateImagingPlaneDims().
+// 
+//    Justin Privitera, Fri Jul 14 17:33:07 PDT 2023
+//    New logic to determine if old camera properties are being used.
 // 
 // ****************************************************************************
 
@@ -2999,6 +3009,9 @@ avtXRayImageQuery::WriteBlueprintMeshes(conduit::Node &data_out,
 // 
 //    Justin Privitera, Mon Dec 12 13:28:55 PST 2022
 //    Changed path_length_units to path_length_info.
+// 
+//    Justin Privitera, Fri Jul 14 17:33:07 PDT 2023
+//    Removed old parameters from default.
 //
 // ****************************************************************************
 

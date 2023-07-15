@@ -120,6 +120,9 @@
 // 
 //    Justin Privitera, Fri Jun 16 17:17:14 PDT 2023
 //    Added view width override and non square pixels.
+// 
+//    Justin Privitera, Fri Jul 14 17:33:07 PDT 2023
+//    Added useNewView.
 //
 // ****************************************************************************
 
