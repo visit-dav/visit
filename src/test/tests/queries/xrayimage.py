@@ -106,6 +106,10 @@
 #    Justin Privitera, Fri Jun 16 17:17:14 PDT 2023
 #    Added tests for the new view width override and non square pixels 
 #    settings.
+# 
+#    Justin Privitera, Fri Jul 14 17:33:07 PDT 2023
+#    Updated tests to reflect the new reality that the complete camera spec
+#    is now the default.
 # ----------------------------------------------------------------------------
 
 import os
