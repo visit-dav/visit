@@ -346,7 +346,7 @@ During execution, the simplified camera specification parameters are converted t
 Calling the Query
 """""""""""""""""
 
-There are a couple ways to call the X Ray Image Query, with their own nuances.
+There are a couple ways to call the X Ray Image Query, each with their own nuances.
 
 The first is the standard way of calling the query, by using a dictionary to store the arguments.
 This way is recommended.
