@@ -26,8 +26,9 @@ class avtLookupTable;
 class avtShiftCenteringFilter;
 class avtUserDefinedMapper;
 class avtVolumeFilter;
+class avtVolumeResampleFilter;
 class avtLowerResolutionVolumeFilter;
-class avtResampleFilter;
+
 
 
 // ****************************************************************************
@@ -86,6 +87,9 @@ class avtResampleFilter;
 //    Brad Whitlock, Tue Jan 31 12:11:11 PST 2012
 //    I added a compact tree filter.
 //
+//    Kathleen Biagas, Wed July 12, 2023 
+//    Added avtVolumeResampleFilter, removed avtResampleFilter.
+//
 // ****************************************************************************
 
 class
@@ -112,20 +116,13 @@ avtVolumePlot : public avtVolumeDataPlot
     virtual bool        ManagesOwnTransparency(void);
 
   protected:
-    enum ResampleReason // Must match avtVolumePLot.h
-    {
-        NoResampling       = 0x0,
-        MutlipleDatasets   = 0x1,
-        NonRectilinearGrid = 0x2,
-        DifferentCentering = 0x4
-    };
 
     VolumeAttributes                atts;
 
     avtLowerResolutionVolumeFilter *lowResVolumeFilter {nullptr};
     avtVolumeFilter                *volumeFilter {nullptr};
+    avtVolumeResampleFilter        *volumeResampleFilter {nullptr};
     avtGradientExpression          *gradientFilter {nullptr};
-    avtResampleFilter              *resampleFilter {nullptr};
     avtShiftCenteringFilter        *shiftCentering {nullptr};
     avtCompactTreeFilter           *compactTree {nullptr};
     avtVolumeRenderer_p             renderer {nullptr};
@@ -142,8 +139,6 @@ avtVolumePlot : public avtVolumeDataPlot
     virtual avtLegend_p      GetLegend(void) { return varLegendRefPtr; };
     void                     SetLegendOpacities();
     virtual avtContract_p    EnhanceSpecification(avtContract_p);
-
-    int                      DataMustBeResampled(avtDataObject_p);
 };
 
 #endif

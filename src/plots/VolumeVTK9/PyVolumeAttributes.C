@@ -3459,43 +3459,38 @@ PyVolumeAttributes_getattr(PyObject *self, char *name)
 #include <visit-config.h>
 
 #if VISIT_OBSOLETE_AT_VERSION(3,5,0)
-#error This code is obsolete in this verison of VisIt and should be removed.
+#error This code is obsolete in this version of VisIt and should be removed.
 #else
     // Try and handle legacy fields
-#define DEPRECATED_MESSAGE(type, msg) \
-    PyErr_WarnFormat(NULL, 1, "%s is no longer a valid Volume attribute.\n" \
-                    "It's value is being ignored, " \
-                    "please remove it from your script.\n", \
-                    "Try using %s instead.\n", type, msg);
-#define NAME_CHANGE_MESSAGE(old, new) \
-    PyErr_WarnFormat(NULL, 1, "%s is no longer a valid Volume attribute.\n" \
-                    "It's name has been changed to %s, " \
-                    "please update your script.\n", old, new);
+#define NAME_CHANGE_MESSAGE2(oldname, newname) \
+    PyErr_WarnFormat(NULL, 1, "'%s' is no longer a valid Volume attribute.\n" \
+                    "It's name has been changed to '%s', " \
+                    "please update your script.\n", oldname, newname);
 
     // rendererTypes
     if(strcmp(name, "Default") == 0)
     {
-        NAME_CHANGE_MESSAGE(name, "Serial");
+        NAME_CHANGE_MESSAGE2(name, "Serial");
         return PyInt_FromLong(0L);
     }
     if(strcmp(name, "RayCasting") == 0)
     {
-        NAME_CHANGE_MESSAGE(name, "Composite");
+        NAME_CHANGE_MESSAGE2(name, "Composite");
         return PyInt_FromLong(0L);
     }
     if(strcmp(name, "RayCastingIntegration") == 0)
     {
-        NAME_CHANGE_MESSAGE(name, "Integration");
+        NAME_CHANGE_MESSAGE2(name, "Integration");
         return PyInt_FromLong(0L);
     }
     if(strcmp(name, "RayCastingSLIVR") == 0)
     {
-        NAME_CHANGE_MESSAGE(name, "SLIVR");
+        NAME_CHANGE_MESSAGE2(name, "SLIVR");
         return PyInt_FromLong(0L);
     }
     if(strcmp(name, "RayCastingOSPRay") == 0)
     {
-        DEPRECATED_MESSAGE(name, "'Parallel' for 'rendererType' and set 'OSPRayEnabledFlag' to '1'");
+        PyErr_WarnFormat(NULL, 1, "'RayCastingOSPRay is no longer a valid Volume attribute.\nIt's value is being ignored, please remove it from your script.\nTry using 'Parallel' for 'rendererType' and set 'OSPRayEnabledFlag' to '1'\n");
         return PyInt_FromLong(0L);
     }
     // end Renderer types
@@ -3613,17 +3608,17 @@ PyVolumeAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = VolumeAttributes_SetMaterialProperties(self, args);
 
 #if VISIT_OBSOLETE_AT_VERSION(3,5,0)
-#error This code is obsolete in this version. Please remove it
+#error This code is obsolete in this version of VisIt. Please remove it
 #else
-#define NAME_CHANGE_MESSAGE(old, new) \
-    PyErr_WarnFormat(NULL, 1, "%s is no longer a valid Volume attribute.\n" \
-                    "It's name has been changed to %s, " \
-                    "please update your script.\n", old, new);
+#define NAME_CHANGE_MESSAGE(oldname, newname) \
+    PyErr_WarnFormat(NULL, 1, "'%s' is no longer a valid Volume attribute.\n" \
+                    "It's name has been changed to '%s', " \
+                    "please update your script.\n", oldname, newname);
 
-#define DEPRECATED_MESSAGE(type) \
-    PyErr_WarnFormat(NULL, 1, "%s is no longer a valid Volume attribute.\n" \
+#define DEPRECATED_MESSAGE(oldname) \
+    PyErr_WarnFormat(NULL, 1, "'%s' is no longer a valid Volume attribute.\n" \
                     "It's value is being ignored, " \
-                    "please remove it from your script.\n", type);
+                    "please remove it from your script.\n", oldname);
 
     // Try and handle legacy fields
     if(obj == &NULL_PY_OBJ)
@@ -3642,6 +3637,11 @@ PyVolumeAttributes_setattr(PyObject *self, char *name, PyObject *args)
         {
             NAME_CHANGE_MESSAGE(name, "OSPRayPreIntegrationFlag");
             obj = VolumeAttributes_SetOSPRayPreIntegrationFlag(self, args);
+        }
+        else if (strcmp(name, "ospraySingleShadeFlag") == 0)
+        {
+            NAME_CHANGE_MESSAGE(name, "OSPRaySingleShadeFlag");
+            obj = VolumeAttributes_SetOSPRaySingleShadeFlag(self, args);
         }
         else if (strcmp(name, "osprayOneSidedLightingFlag") == 0)
         {
