@@ -4,13 +4,22 @@
       ${VISIT_INCLUDE_DIR}/avt/Expressions/Abstract
       ${VISIT_INCLUDE_DIR}/avt/Expressions/General
     </CXXFLAGS>
-    <Files components="V,E">
+    <Files components="V">
       avtVolumeRenderer.C
       avtVolumeFilter.C
       avtLowerResolutionVolumeFilter.C
       avtVisItVTKRenderer.C
       avtVisItVTKRenderFilter.C
       avtICETCompositor.C
+    </Files>
+    <Files components="E">
+      avtVolumeRenderer.C
+      avtVolumeFilter.C
+      avtLowerResolutionVolumeFilter.C
+      avtVisItVTKRenderer.C
+      avtVisItVTKRenderFilter.C
+      avtICETCompositor.C
+      avtVolumeResampleFilter.C
     </Files>
     <LIBS components="V">
       VTK::RenderingVolume

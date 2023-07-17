@@ -2731,6 +2731,14 @@ VolumeAttributes::ProcessOldVersions(DataNode *parentNode,
 #endif
             dn->SetKey("OSPRayPreIntegrationFlag");
         }
+        if ((dn = searchNode->GetNode("ospraySingleShadeFlag")) != nullptr)
+        {
+#ifdef VIEWER
+            avtCallback::IssueWarning(DeprecationMessage("ospraySingleShadeFlag",
+                "OSPRaySingleShadeFlag", "3.5.0"));
+#endif
+            dn->SetKey("OSPRaySingleShadeFlag");
+        }
         if ((dn = searchNode->GetNode("osprayOneSidedLightingFlag")) != nullptr)
         {
 #ifdef VIEWER
