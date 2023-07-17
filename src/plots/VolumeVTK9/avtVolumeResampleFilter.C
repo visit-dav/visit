@@ -62,8 +62,10 @@ avtVolumeResampleFilter::~avtVolumeResampleFilter()
 //  Purpose:
 //    Performs resampling if necessary.
 //
+//  Notes:  moved from avtVolumePlot::ApplyRenderingTransformation
+//
 //  Programmer: Kathleen Biagas
-//  Creation:   July 11, 2023 
+//  Creation:   July 11, 2023
 //
 //  Modifications:
 //
@@ -161,6 +163,7 @@ avtVolumeResampleFilter::Execute(void)
             if( PAR_Size() > 1 )
                 msg += " and distributed across all ranks";
             msg += ".";
+            msg += "\nIf results are not satisfactory, modify the resampling options.";
 
             avtCallback::IssueWarning(msg.c_str());
         }
@@ -234,6 +237,29 @@ avtVolumeResampleFilter::Execute(void)
     }
 }
 
+// ****************************************************************************
+//  Method: avtVolumePlot::DataMustBeResampled
+//
+//  Purpose:
+//      Some types of data MUST be resampled or they cannot be rendered.
+//
+//  Notes:  Moved from avtVolumePlot by ksb, July 17, 2023.
+//
+//  Arguments:
+//      input   The input data object.
+//
+//  Returns:    bool
+//
+//  Programmer: Cameron Christensen
+//  Creation:   Thursday, September 05, 2013
+//
+//  Modifications:
+//    Burlen Loring, Mon Oct  5 06:42:17 PDT 2015
+//    Catch the exception that can occur when using an operator that produces
+//    a variable that doesn't exist in the database.
+//
+// ****************************************************************************
+
 int
 avtVolumeResampleFilter::DataMustBeResampled(avtDataObject_p input)
 {
@@ -243,7 +269,7 @@ avtVolumeResampleFilter::DataMustBeResampled(avtDataObject_p input)
 
     if(datts.GetRectilinearGridHasTransform())
         resampling |= ImplicitTransform;
-    
+
     //
     // Unless the input data is a single domain rectilinear mesh,
     // with both the color and opacity data having the same centering,
@@ -260,7 +286,7 @@ avtVolumeResampleFilter::DataMustBeResampled(avtDataObject_p input)
     avtDataTree_p tree = ds->GetDataTree();
     // Get the input data.
     int nsets = 0;
-    vtkDataSet **leaves = tree->GetAllLeaves(nsets); 
+    vtkDataSet **leaves = tree->GetAllLeaves(nsets);
     if( nsets > 1 )
         resampling |= MultipleDatasets;
 
@@ -319,7 +345,7 @@ avtVolumeResampleFilter::DataMustBeResampled(avtDataObject_p input)
 //    No-op.
 //
 //  Programmer: Kathleen Biagas
-//  Creation:   July 11, 2023 
+//  Creation:   July 11, 2023
 //
 //  Modifications:
 //
@@ -339,7 +365,7 @@ avtVolumeResampleFilter::ModifyContract(avtContract_p contract)
 //      Verifies that the input is 3D data, throws an exception if not.
 //
 //  Programmer: Kathleen Biagas
-//  Creation:   July 11, 2023 
+//  Creation:   July 11, 2023
 //
 // ****************************************************************************
 
@@ -351,5 +377,4 @@ avtVolumeResampleFilter::VerifyInput(void)
         EXCEPTION2(InvalidDimensionsException, "Volume", "3D");
     }
 }
-
 
