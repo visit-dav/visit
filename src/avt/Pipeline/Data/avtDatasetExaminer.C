@@ -340,7 +340,7 @@ avtDatasetExaminer::GetDataExtents(avtDataset_p &ds, double *de,
     // If the data extents are still their initial values, then there were
     // no elements or the cells were all ghost cells.
     //
-    if (de[0] = +DBL_MAX && de[1] == -DBL_MAX)
+    if (de[0] == +DBL_MAX && de[1] == -DBL_MAX)
     {
         debug1 << "Unable to determine data extents -- there was either no data "
                << "or all the data was in ghost zones." << endl;
