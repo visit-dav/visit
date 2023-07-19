@@ -758,6 +758,9 @@ avtBlueprintFileFormat::DetectHOMaterial(const std::string &mesh_name,
 //    Brad Whitlock, Wed Jul 19 13:56:42 PDT 2023
 //    I added display_name support.
 //
+//    Brad Whitlock, Wed Jul 19 13:56:42 PDT 2023
+//    I added display_name support.
+//
 // ****************************************************************************
 
 void
