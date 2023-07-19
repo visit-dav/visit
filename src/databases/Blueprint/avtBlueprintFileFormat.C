@@ -676,6 +676,9 @@ avtBlueprintFileFormat::DetectHOMaterial(const std::string &mesh_name,
 //    I added code to treat HO materials specially since we want them to be
 //    refined according to the selected level of detail (m_selected_lod).
 //
+//    Brad Whitlock, Wed Jul 19 13:56:42 PDT 2023
+//    I added display_name support.
+//
 // ****************************************************************************
 
 void
@@ -749,6 +752,11 @@ avtBlueprintFileFormat::ReadBlueprintMatset(int domain,
         {
             // Make a variable name for the volume fraction field and read it.
             std::string matVar = mesh_name + "_" + topo_name + "/" + it->second;
+            // If there is a display_name, use that to request the data.
+            const Node &bp_idx_fields = m_root_node["blueprint_index"][mesh_name]["fields"];
+            const Node *bpi = GetBlueprintIndexForField(bp_idx_fields, it->second);
+            if(bpi != nullptr && bpi->has_child(DISPLAY_NAME))
+                matVar = bpi->fetch_existing(DISPLAY_NAME).as_string();
             vtkDataArray *da = GetVar(domain, matVar.c_str());
 
             // Save the material field as float into the new out node.
