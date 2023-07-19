@@ -71,6 +71,7 @@ enhancements and bug-fixes that were added to this release.</p>
     Typically you would use the "Resample" operator to resample the variable to meet the restrictions above.
   </li>
   <li>VisIt's Blueprint reader has been enhanced so related high order volume fraction fields from a <i>matset</i> are grouped into a material that can be used with the FilledBoundary plot. The high order material data fields are refined through MFEM LOR, whose refinement level can be controlled with the <i>MultiresControl</i> operator.</li>
+  <li>VisIt's Blueprint reader was enhanced so fields in Blueprint index files can supply a <i>display_name</i> hint that specifies the name used to expose the field in VisIt. This feature enables the index file to group related variables under sub-menus if the names in include slash characters.</li>
   <li>HDF 4 based readers were removed: Cosmos, RAGE, ZeusMP</li>
   <li>HDF 4 support in the Enzo reader was removed</li>
 </ul>

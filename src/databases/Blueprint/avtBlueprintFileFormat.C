@@ -80,6 +80,8 @@ using std::string;
 using namespace conduit;
 using namespace mfem;
 
+const std::string avtBlueprintFileFormat::DISPLAY_NAME("display_name");
+
 // ****************************************************************************
 //  Method: avtBlueprintFileFormat::FetchMeshAndTopoNames
 //
@@ -447,7 +449,69 @@ avtBlueprintFileFormat::ReadBlueprintMesh(int domain,
 }
 
 // ****************************************************************************
-//  Method: avtBlueprintFileFormat::ReadBlueprintMesh
+//  Method: avtBlueprintFileFormat::GetBlueprintIndexForField
+//
+//  Purpose:
+//    Returns a node in the Blueprint index for the field that either has the
+//    supplied name or has a DISPLAY_NAME that matches the supplied name.
+//
+//  Programmer: Brad Whitlock
+//  Creation:   Tue Jul 18 15:57:00 PDT 2023
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+const Node *
+avtBlueprintFileFormat::GetBlueprintIndexForField(const Node &fields,
+    const string &abs_varname) const
+{
+    const char *mName = "GetBlueprintIndexForField";
+    BP_PLUGIN_INFO(mName << ": " << abs_varname);
+    const Node *retval = nullptr;
+    string varname = FileFunctions::Basename(abs_varname);
+
+    if (fields.has_child(varname))
+    {
+        BP_PLUGIN_INFO(mName << ": found " << varname);
+        retval = fields.fetch_ptr(varname);
+    }
+    else
+    {
+        // We may have been given a display name for the variable as opposed
+        // to its real name. See if we can find that.
+        BP_PLUGIN_INFO(mName << ": checking fields for a display name.");
+        for(conduit::index_t i = 0; i < fields.number_of_children(); i++)
+        {
+            const Node *f = fields.child_ptr(i);
+            BP_PLUGIN_INFO(mName << ": checking field " << f->name() << ".");
+            if(f->has_child(DISPLAY_NAME))
+            {
+                std::string dn = f->fetch_existing(DISPLAY_NAME).as_string();
+                if(dn == abs_varname)
+                {
+                    BP_PLUGIN_INFO(mName << ": " << f->name() << " matched based on "
+                                   << DISPLAY_NAME << " " << dn);
+                    retval = f;
+                    break;
+                }
+            }
+        }
+
+        // only throw an error if element_coloring is not in the name
+        // element_coloring won't be in the index, its automatic.
+        if(retval == nullptr &&
+           varname.find("element_coloring") == std::string::npos)
+        {
+            BP_PLUGIN_EXCEPTION1(InvalidVariableException,
+                                 "field " << varname << " not found in blueprint index");
+        }
+    }
+    return retval;
+}
+
+// ****************************************************************************
+//  Method: avtBlueprintFileFormat::ReadBlueprintField
 //
 //  Purpose:
 //      Reads a field for the given domain into the `out` conduit Node.
@@ -465,6 +529,9 @@ avtBlueprintFileFormat::ReadBlueprintMesh(int domain,
 // 
 //    Justin Privitera, Wed Mar 22 16:09:52 PDT 2023
 //    Handle the 1D curve case.
+//
+//    Brad Whitlock, Tue Jul 18 16:02:13 PDT 2023
+//    Locate the index node for the variable using GetBlueprintIndexField.
 //
 // ****************************************************************************
 
@@ -498,30 +565,21 @@ avtBlueprintFileFormat::ReadBlueprintField(int domain,
     BP_PLUGIN_INFO("mesh name: " << mesh_name);
     BP_PLUGIN_INFO("topo name: " << topo_name);
 
-    string varname  = FileFunctions::Basename(abs_varname);
-
     if (!m_root_node["blueprint_index"].has_child(mesh_name))
     {
         BP_PLUGIN_EXCEPTION1(InvalidVariableException,
                              "mesh " << mesh_name << " not found in blueprint index");
     }
 
-    if (!m_root_node["blueprint_index"][mesh_name]["fields"].has_child(varname))
+    // Look up the index node for the field.
+    const Node &fields = m_root_node["blueprint_index"][mesh_name]["fields"];
+    const Node *bp_index_field = GetBlueprintIndexForField(fields, abs_varname);
+    std::string data_path;
+    if(bp_index_field != nullptr)
     {
-        // only throw an error if element_coloring is not in the name
-        // element_coloring won't be in the index, its automatic.
-        if(varname.find("element_coloring") == std::string::npos)
-        {
-            BP_PLUGIN_EXCEPTION1(InvalidVariableException,
-                                 "field " << varname << " not found in blueprint index");
-        }
+        BP_PLUGIN_INFO(bp_index_field->to_yaml());
+        data_path    = bp_index_field->fetch_existing("path").as_string();
     }
-
-    const Node &bp_index_field = m_root_node["blueprint_index"][mesh_name]["fields"][varname];
-    BP_PLUGIN_INFO(bp_index_field.to_yaml());
-
-    string topo_tag  = bp_index_field["topology"].as_string();
-    string data_path    = bp_index_field["path"].as_string();
 
     try
     {
@@ -969,9 +1027,19 @@ avtBlueprintFileFormat::AddBlueprintMeshAndFieldMetadata(avtDatabaseMetaData *md
             string var_mesh_name = mesh_name + "_" + var_topo_name;
             string varname_wmesh = var_mesh_name + "/" + varname;
 
+            // Make the variable name that the user sees.
+            string varname_display(varname_wmesh);
+            if(n_field.has_child(DISPLAY_NAME))
+            {
+                varname_display = n_field[DISPLAY_NAME].as_string();
+                BP_PLUGIN_INFO("Field \"" << varname
+                               << "\" is being exposed as \""
+                               << varname_display << "\".");
+            }
+
             if (topo_dims[var_topo_name] == 0)
             {
-                BP_PLUGIN_WARNING("Field \"" << varname_wmesh
+                BP_PLUGIN_WARNING("Field \"" << varname_display
                                   << "\" defined on unknown topology=\""
                                   << n_field["topology"].as_string());
                 continue;
@@ -1018,7 +1086,6 @@ avtBlueprintFileFormat::AddBlueprintMeshAndFieldMetadata(avtDatabaseMetaData *md
                     }
                     else
                         node_centered = h1 && !l2;
-                    
                     if (!node_centered)
                         cent = AVT_ZONECENT;
                 }
@@ -1027,27 +1094,27 @@ avtBlueprintFileFormat::AddBlueprintMeshAndFieldMetadata(avtDatabaseMetaData *md
             // special 1D case
             if (ndims == 1)
             {
-                m_curve_names.insert(varname_wmesh);
+                m_curve_names.insert(varname_display);
                 avtCurveMetaData *curve = new avtCurveMetaData;
-                curve->name = varname_wmesh;
+                curve->name = varname_display;
                 md->Add(curve);
             }
             else if (ncomps == 1)
-                md->Add(new avtScalarMetaData(varname_wmesh, var_mesh_name, cent));
+                md->Add(new avtScalarMetaData(varname_display, var_mesh_name, cent));
             else if (ndims == 2 && ncomps == 2)
-                md->Add(new avtVectorMetaData(varname_wmesh, var_mesh_name, cent, ncomps));
+                md->Add(new avtVectorMetaData(varname_display, var_mesh_name, cent, ncomps));
             else if (ndims == 2 && ncomps == 3)
-                md->Add(new avtSymmetricTensorMetaData(varname_wmesh, var_mesh_name, cent, ncomps));
+                md->Add(new avtSymmetricTensorMetaData(varname_display, var_mesh_name, cent, ncomps));
             else if (ndims == 2 && ncomps == 4)
-                md->Add(new avtTensorMetaData(varname_wmesh, var_mesh_name, cent, ncomps));
+                md->Add(new avtTensorMetaData(varname_display, var_mesh_name, cent, ncomps));
             else if (ndims == 3 && ncomps == 3)
-                md->Add(new avtVectorMetaData(varname_wmesh, var_mesh_name, cent, ncomps));
+                md->Add(new avtVectorMetaData(varname_display, var_mesh_name, cent, ncomps));
             else if (ndims == 3 && ncomps == 6)
-                md->Add(new avtSymmetricTensorMetaData(varname_wmesh, var_mesh_name, cent, ncomps));
+                md->Add(new avtSymmetricTensorMetaData(varname_display, var_mesh_name, cent, ncomps));
             else if (ndims == 3 && ncomps == 9)
-                md->Add(new avtTensorMetaData(varname_wmesh, var_mesh_name, cent, ncomps));
+                md->Add(new avtTensorMetaData(varname_display, var_mesh_name, cent, ncomps));
             else
-                md->Add(new avtArrayMetaData(varname_wmesh, var_mesh_name, cent, ncomps));
+                md->Add(new avtArrayMetaData(varname_display, var_mesh_name, cent, ncomps));
         }
     }
 }

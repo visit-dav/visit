@@ -102,6 +102,7 @@ class avtBlueprintFileFormat : public avtSTMDFileFormat
                                 { return false; }
 
   private:
+    static const std::string DISPLAY_NAME;
 
     void                   AddBlueprintMeshAndFieldMetadata(avtDatabaseMetaData *md,
                                                             std::string const &mesh_name, 
@@ -141,6 +142,8 @@ class avtBlueprintFileFormat : public avtSTMDFileFormat
 
     avtMaterial           *GetMaterial(int domain, const char *mat_name);
 
+    const conduit::Node   *GetBlueprintIndexForField(const conduit::Node &fields,
+                                                     const std::string &abs_varname) const;
 
     conduit::Node          m_root_node;
     
