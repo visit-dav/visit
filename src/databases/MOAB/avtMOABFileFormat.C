@@ -982,9 +982,9 @@ avtMOABFileFormat::GetPartitionTagAsEnumScalar(){
         moab::ErrorCode merr = mbCore->get_entities_by_handle(0, ents, false);MBVIS_CHK_ERR(merr);
         // remove the vertices and the entity sets
         moab::Range vts = ents.subset_by_type(moab::MBVERTEX);
-        ents = subtract(ents, vts);
-        vts = ents.subset_by_type(moab::MBENTITYSET);
-        ents = subtract(ents, vts);
+        ents = *select;
+	if (ents.empty())
+          ents = vts; 
         vtkIntArray *pparr = vtkIntArray::New();
         pparr->SetNumberOfComponents(1);
         pparr->SetNumberOfTuples(ents.size());
@@ -1059,9 +1059,7 @@ avtMOABFileFormat::GetMaterialTagAsEnumScalar()
       moab::ErrorCode merr = mbCore->get_entities_by_handle(0, ents, false);MBVIS_CHK_ERR(merr);
       // remove the vertices and the entity sets
       moab::Range vts = ents.subset_by_type(moab::MBVERTEX);
-      ents = subtract(ents, vts);
-      vts = ents.subset_by_type(moab::MBENTITYSET);
-      ents = subtract(ents, vts);
+      ents = *select;
       vtkIntArray *pparr = vtkIntArray::New();
       pparr->SetNumberOfComponents(1);
       pparr->SetNumberOfTuples(ents.size());
@@ -1133,9 +1131,7 @@ avtMOABFileFormat::GetNeumannSetsVar()
         moab::ErrorCode merr = mbCore->get_entities_by_handle(0, ents, false);MBVIS_CHK_ERR(merr);
         // remove the vertices and the entity sets
         moab::Range vts = ents.subset_by_type(moab::MBVERTEX);
-        ents = subtract(ents, vts);
-        vts = ents.subset_by_type(moab::MBENTITYSET);
-        ents = subtract(ents, vts);
+        ents = *select;
 
         const int bpuc = sizeof(unsigned char)*8;
         vtkBitArray *retval = 0;
@@ -1279,9 +1275,7 @@ avtMOABFileFormat::GetGeometrySetsVar()
         moab::ErrorCode merr = mbCore->get_entities_by_handle(0, ents, false);MBVIS_CHK_ERR(merr);
         // remove the vertices and the entity sets
         moab::Range vts = ents.subset_by_type(moab::MBVERTEX);
-        ents = subtract(ents, vts);
-        vts = ents.subset_by_type(moab::MBENTITYSET);
-        ents = subtract(ents, vts);
+        ents = *select;
 
         const int bpuc = sizeof(unsigned char)*8;
         vtkBitArray *retval = 0;
