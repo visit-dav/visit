@@ -375,6 +375,12 @@ function bv_python_info
     export SPHINX_RTD_MD5_CHECKSUM=""
     export SPHINX_RTD_SHA256_CHECKSUM=""
 
+    # needed by sphinx_rtd_theme
+    export SPHINX_RTD_URL=""
+    export SPHINX_RTD_FILE="sphinxcontrib-jquery_4.1.tar.gz"
+    export SPHINX_RTD_BUILD_DIR="sphinxcontrib-jquery-4.1"
+    export SPHINX_RTD_MD5_CHECKSUM=""
+
     export SPHINX_TABS_URL=""
     export SPHINX_TABS_FILE="sphinx-tabs-3.4.1.tar.gz"
     export SPHINX_TABS_BUILD_DIR="sphinx-tabs-3.4.1"
@@ -1680,6 +1686,14 @@ function build_sphinx
 function build_sphinx_rtd
 {
     # download
+    if ! test -f ${SPHINXCONTRIB_JQUERY_FILE} ; then
+        download_file ${SPHINXCONTRIB_JQUERY_FILE} "${SPHINXCONTRIB_JQUERY_URL}"
+        if [[ $? != 0 ]] ; then
+            warn "Could not download ${SPHINXCONTRIB_JQUERY_FILE}"
+            return 1
+        fi
+    fi
+
     if ! test -f ${SPHINX_RTD_FILE} ; then
         download_file ${SPHINX_RTD_FILE} "${SPHINX_RTD_URL}"
         if [[ $? != 0 ]] ; then
@@ -1689,6 +1703,15 @@ function build_sphinx_rtd
     fi
 
     # extract
+    if ! test -d ${SPHINXCONTRIB_JQUERY_FILE} ; then
+        info "Extracting sphinxcontrib-jquery ..."
+        uncompress_untar ${SPHINXCONTRIB_JQUERY_FILE}
+        if test $? -ne 0 ; then
+            warn "Could not extract ${SPHINXCONTRIB_JQUERY_FILE}"
+            return 1
+        fi
+    fi
+
     if ! test -d ${SPHINX_RTD_BUILD_DIR} ; then
         info "Extracting sphinx_rtd ..."
         uncompress_untar ${SPHINX_RTD_FILE}
@@ -1699,6 +1722,16 @@ function build_sphinx_rtd
     fi
 
     # install
+    pushd $SPHINXCONTRIB_JQUERY_BUILD_DIR > /dev/null
+    info "Installing sphinxcontrib-jquery ..."
+    ${PYTHON_COMMAND} -m pip install --no-deps .
+    if test $? -ne 0 ; then
+        popd > /dev/null
+        warn "Could not install sphinxcontrib-jquery"
+        return 1
+    fi
+    popd > /dev/null
+
     pushd $SPHINX_RTD_BUILD_DIR > /dev/null
     info "Installing sphinx_rtd ..."
     ${PYTHON_COMMAND} -m pip install --no-deps .
