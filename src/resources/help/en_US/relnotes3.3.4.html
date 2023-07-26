@@ -23,7 +23,9 @@ enhancements and bug-fixes that were added to this release.</p>
 <ul>
   <li>A better error message was added for Revolved volume query when applied to meshes whose spatial dimension is not 2.</li>
   <li>Avert potential crash in mdserver matching file names for virtual database recognition.</li>
-  <li>Bugs Fixed 2</li>
+  <li>Fixed a bug where an error would incorrectly be detected when creating ghost zones. Specifically, it occurred when a block had mixed materials and the block didn't contain the material the variable was defined on.</li>
+  <li>Fixed a bug reading particle data from Mili files. The particle data would not appear and could cause the engine to crash if the number of particles was larger than the number of elements.</li>
+  <li>Fixed a bug where the pseudocolor plot would have NaNs in the legend if the mesh contained no elements or all the elements were ghost elements. Now it preints an error message with a description of the error.</li>
 </ul>
 
 <a name="Enhancements"></a>

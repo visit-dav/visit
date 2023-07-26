@@ -38,11 +38,11 @@ public:
     };
     enum ResampleType
     {
+        NoResampling,
         OnlyIfRequired,
         SingleDomain,
         ParallelRedistribute,
-        ParallelPerRank,
-        NoResampling
+        ParallelPerRank
     };
     enum ResampleCentering
     {

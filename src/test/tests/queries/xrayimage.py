@@ -106,6 +106,10 @@
 #    Justin Privitera, Fri Jun 16 17:17:14 PDT 2023
 #    Added tests for the new view width override and non square pixels 
 #    settings.
+# 
+#    Justin Privitera, Fri Jul 14 17:33:07 PDT 2023
+#    Updated tests to reflect the new reality that the complete camera spec
+#    is now the default.
 # ----------------------------------------------------------------------------
 
 import os
@@ -176,9 +180,7 @@ OpenDatabase(silo_data_path("curv2d.silo"))
 AddPlot("Pseudocolor", "d")
 DrawPlots()
 
-#retreive default query parameters
-params = GetQueryParameters("XRay Image")
-#modify as necessary
+params = dict()
 params['image_size'] = (300, 300)
 params['divide_emis_by_absorb'] = 1
 params['width'] = 10.
@@ -833,7 +835,7 @@ blueprint_test("yaml", conduit_dir_yaml, 36, "Blueprint_YAML_X_Ray_Output")
 
 setup_bp_test()
 
-params = dict()
+params = GetQueryParameters("XRay Image")
 params["image_size"] = (400, 300)
 params["output_type"] = "hdf5"
 params["output_dir"] = conduit_dir_detector_dims
@@ -864,7 +866,7 @@ def test_imaging_planes_and_rays():
     for i in range(0, 2):
         setup_bp_test()
 
-        params = dict()
+        params = GetQueryParameters("XRay Image")
         params["image_size"] = (400, 300)
         params["output_dir"] = conduit_dir_imaging_planes0 if i == 0 else conduit_dir_imaging_planes1
         params["output_type"] = "hdf5"
@@ -915,7 +917,7 @@ def test_non_square_pixels():
     DeleteAllPlots()
     setup_bp_test()
 
-    params = dict()
+    params = GetQueryParameters("XRay Image")
 
     params["vars"] = ("d", "p")
     params["image_size"] = (300, 300)
