@@ -29,6 +29,9 @@
 #  Kathleen Biagas, Tue May 5, 2023
 #  Disable qt6 forcing of defines for UNICODE.
 #
+#  Eric Brugger, Tue Jul 25 11:23:55 EDT 2023
+#  Change CMAKE_THREAD_LIBS to Threads::Threads.
+#
 #****************************************************************************
 
 IF(VISIT_PARALLEL AND WIN32 AND HAVE_HPC_SCHEDULER)
@@ -216,7 +219,7 @@ avtwriter_ser
 avtqtviswindow
 winutil
 ${VIEWER_QT_LIBS}
-${CMAKE_THREAD_LIBS}
+Threads::Threads
 ${vtkqtlib}
 )
 
