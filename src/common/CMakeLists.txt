@@ -87,7 +87,7 @@ target_link_libraries(visitcommon PUBLIC ${ZLIB_LIBRARY})
 if(WIN32)
     target_link_libraries(visitcommon PUBLIC ws2_32 shlwapi userenv )
 else()
-    target_link_libraries(visitcommon ${ZLIB_LIBRARY} Threads::Threads ${DL_LIB})
+    target_link_libraries(visitcommon PUBLIC Threads::Threads ${DL_LIB})
 endif()
 
 VISIT_INSTALL_TARGETS(visitcommon)
