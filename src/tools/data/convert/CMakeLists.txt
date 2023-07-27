@@ -25,6 +25,9 @@
 #   Eric Brugger, Fri Feb 24 14:57:15 PST 2023
 #   Replaced vtkjpeg with vtkjpeg_LIBRARIES and vtkpng with vtkpng_LIBRARIES.
 #
+#  Eric Brugger, Tue Jul 25 11:23:55 EDT 2023
+#  Change CMAKE_THREAD_LIBS to Threads::Threads.
+#
 #****************************************************************************
 
 INCLUDE_DIRECTORIES(
@@ -101,7 +104,7 @@ IF(VISIT_DBIO_ONLY)
         visit_vtk
         ${ALL_THIRDPARTY_IO_LIB}
         ${VTK_EXTRA_LIBS}
-        ${CMAKE_THREAD_LIBS}
+        Threads::Threads
         ${ZLIB_LIBRARY}
     )
 ELSE()
@@ -126,7 +129,7 @@ ELSE()
         ${ALL_THIRDPARTY_IO_LIB}
         ${VTK_EXTRA_LIBS}
         ${OPENGL_LIBRARIES}
-        ${CMAKE_THREAD_LIBS}
+        Threads::Threads
         ${ZLIB_LIBRARY}
     )
     if(HAVE_OSMESA)
@@ -165,7 +168,7 @@ IF(VISIT_PARALLEL)
             visit_vtk
             ${ALL_THIRDPARTY_IO_LIB}
             ${VTK_EXTRA_LIBS}
-            ${CMAKE_THREAD_LIBS}
+            Threads::Threads
             ${ZLIB_LIBRARY}
         )
     ELSE()
@@ -189,7 +192,7 @@ IF(VISIT_PARALLEL)
             ${ALL_THIRDPARTY_IO_LIB}
             ${VTK_EXTRA_LIBS}
             ${OPENGL_LIBRARIES}
-            ${CMAKE_THREAD_LIBS}
+            Threads::Threads
             ${ZLIB_LIBRARY}
         )
         if(HAVE_OSMESA)

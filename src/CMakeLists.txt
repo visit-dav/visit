@@ -517,6 +517,9 @@
 #    Eric Brugger, Fri Feb 24 14:57:15 PST 2023
 #    I replaced vtkh with vtkm.
 #
+#    Eric Brugger, Tue Jul 25 11:23:55 EDT 2023
+#    Switched pthreads check to modern usage using find_package.
+#
 #****************************************************************************
 
 cmake_minimum_required(VERSION 3.15 FATAL_ERROR)
@@ -1896,11 +1899,9 @@ CHECK_TYPE_SIZE("off64_t" SIZEOF_OFF64_T)
 TEST_BIG_ENDIAN(WORDS_BIGENDIAN)
 
 # Check for threads
-IF(WIN32)
-    SET(HAVE_THREADS  1)
-ELSE(WIN32)
-    SET(HAVE_THREADS  ${CMAKE_USE_PTHREADS})
-ENDIF(WIN32)
+find_package(Threads)
+message(STATUS "Threads_FOUND=${Threads_FOUND}")
+set(HAVE_THREADS  ${Threads_FOUND})
 
 # manually check for socklen_t as CHECK_SYMBOL_EXISTS
 # doesn't appear to work on linux (at least)
