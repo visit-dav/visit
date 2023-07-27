@@ -1901,7 +1901,6 @@ TEST_BIG_ENDIAN(WORDS_BIGENDIAN)
 # Check for threads
 find_package(Threads)
 message(STATUS "Threads_FOUND=${Threads_FOUND}")
-#message(STATUS "Threads::Threads=${Threads::Threads}")
 set(HAVE_THREADS  ${Threads_FOUND})
 
 # manually check for socklen_t as CHECK_SYMBOL_EXISTS
