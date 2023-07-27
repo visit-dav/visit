@@ -376,10 +376,10 @@ function bv_python_info
     export SPHINX_RTD_SHA256_CHECKSUM=""
 
     # needed by sphinx_rtd_theme
-    export SPHINX_RTD_URL=""
-    export SPHINX_RTD_FILE="sphinxcontrib-jquery_4.1.tar.gz"
-    export SPHINX_RTD_BUILD_DIR="sphinxcontrib-jquery-4.1"
-    export SPHINX_RTD_MD5_CHECKSUM=""
+    export SPHINXCONTRIB_JQUERY_URL=""
+    export SPHINXCONTRIB_JQUERY_FILE="sphinxcontrib-jquery-4.1.tar.gz"
+    export SPHINXCONTRIB_JQUERY_BUILD_DIR="sphinxcontrib-jquery-4.1"
+    export SPHINXCONTRIB_JQUERY_MD5_CHECKSUM=""
 
     export SPHINX_TABS_URL=""
     export SPHINX_TABS_FILE="sphinx-tabs-3.4.1.tar.gz"
