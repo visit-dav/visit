@@ -23,6 +23,9 @@
 #  Eric Brugger, Fri Feb 24 14:57:15 PST 2023
 #  Replaced vtkpng with vtkpng_LIBRARIES and vtkjpeg with vtkjpeg_LIBRARIES.
 #
+#  Eric Brugger, Tue Jul 25 11:23:55 EDT 2023
+#  Change CMAKE_THREAD_LIBS to Threads::Threads.
+#
 #****************************************************************************
 
 IF(VISIT_PARALLEL AND WIN32 AND HAVE_HPC_SCHEDULER)
@@ -229,7 +232,7 @@ avtwriter_ser
 avtqtviswindow
 winutil
 ${VIEWER_QT_LIBS}
-${CMAKE_THREAD_LIBS}
+Threads::Threads
 vtkGUISupportQt
 )
 

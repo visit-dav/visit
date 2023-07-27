@@ -11,6 +11,9 @@
 #   Replaced vtktiff with vtktiff_LIBRARIES, vtkjpeg with vtkjpeg_LIBRARIES,
 #   and vtkpng with vtkpng_LIBRARIES.
 #
+#  Eric Brugger, Tue Jul 25 11:23:55 EDT 2023
+#  Change CMAKE_THREAD_LIBS to Threads::Threads.
+#
 #****************************************************************************
 
 INCLUDE_DIRECTORIES(
@@ -74,7 +77,7 @@ ${VTK_EXTRA_LIBS}
 ${ALL_THIRDPARTY_IO_LIB}
 ${MESA_LIB}
 ${OPENGL_LIBRARIES}
-${CMAKE_THREAD_LIBS}
+Threads::Threads
 )
 IF(NOT WIN32)
     TARGET_LINK_LIBRARIES(visitprotocol dl)

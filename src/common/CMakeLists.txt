@@ -59,6 +59,9 @@
 #   Eric Brugger, Thu Aug  5 11:21:21 PDT 2021
 #   Removed support for SeedMe.
 #
+#   Eric Brugger, Tue Jul 25 11:23:55 EDT 2023
+#   Change CMAKE_THREAD_LIBS to Threads::Threads.
+#
 #****************************************************************************
 
 
@@ -483,7 +486,7 @@ if(WIN32)
     # for std::filesystem::path used in FileFunctions
     target_compile_features(visitcommon PRIVATE cxx_std_17)
 else()
-    target_link_libraries(visitcommon ${ZLIB_LIBRARY} ${CMAKE_THREAD_LIBS} ${DL_LIB})
+    target_link_libraries(visitcommon ${ZLIB_LIBRARY} Threads::Threads ${DL_LIB})
 endif()
 
 if(VISIT_ENABLE_UNIT_TESTS)
@@ -492,27 +495,27 @@ if(VISIT_ENABLE_UNIT_TESTS)
 
     add_executable(Namescheme_test utility/Namescheme_test.C)
     target_link_libraries(Namescheme_test ${VISIT_EXE_LINKER_FLAGS} 
-         visitcommon ${ZLIB_LIBRARY} ${CMAKE_THREAD_LIBS} ${DL_LIB})
+         visitcommon ${ZLIB_LIBRARY} Threads::Threads ${DL_LIB})
     set_target_properties(Namescheme_test PROPERTIES FOLDER unit_tests)
 
     add_executable(Utility_test utility/Utility_test.C)
     target_link_libraries(Utility_test ${VISIT_EXE_LINKER_FLAGS} visitcommon 
-        ${ZLIB_LIBRARY} ${CMAKE_THREAD_LIBS} ${DL_LIB})
+	    ${ZLIB_LIBRARY} Threads::Threads ${DL_LIB})
     set_target_properties(Utility_test PROPERTIES FOLDER unit_tests)
 
     add_executable(StringHelpers_test utility/StringHelpers_test.C)
     target_link_libraries(StringHelpers_test ${VISIT_EXE_LINKER_FLAGS}
-            visitcommon ${ZLIB_LIBRARY} ${CMAKE_THREAD_LIBS} ${DL_LIB})
+            visitcommon ${ZLIB_LIBRARY} Threads::Threads ${DL_LIB})
     set_target_properties(StringHelpers_test PROPERTIES FOLDER unit_tests)
 
     if(NOT WIN32)
         add_executable(exprconfig expr/ExprConfig.C)
         target_link_libraries(exprconfig ${VISIT_EXE_LINKER_FLAGS} 
-            visitcommon ${ZLIB_LIBRARY} ${CMAKE_THREAD_LIBS} ${DL_LIB})
+            visitcommon ${ZLIB_LIBRARY} Threads::Threads ${DL_LIB})
 
         add_executable(exprtest expr/test.C)
         target_link_libraries(exprtest ${VISIT_EXE_LINKER_FLAGS} 
-            visitcommon ${ZLIB_LIBRARY} ${CMAKE_THREAD_LIBS} ${DL_LIB})
+            visitcommon ${ZLIB_LIBRARY} Threads::Threads ${DL_LIB})
 
         add_custom_target(init)
         add_dependencies(init exprconfig)

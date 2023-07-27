@@ -35,6 +35,9 @@
 #   Replaced vtktiff with vtktiff_LIBRARIES, vtkpng with vtkpng_LIBRARIES,
 #   and vtkjpeg with vtkjpeg_LIBRARIES.
 #
+#   Eric Brugger, Tue Jul 25 11:23:55 EDT 2023
+#   Change CMAKE_THREAD_LIBS to Threads::Threads.
+#
 #****************************************************************************
 
 SET(MDSERVER_SOURCES
@@ -119,7 +122,7 @@ TARGET_LINK_LIBRARIES(mdserver
     ${vtkpng_LIBRARIES}
     ${vtkjpeg_LIBRARIES}
     ${ZLIB_LIBRARY}
-    ${CMAKE_THREAD_LIBS}
+    Threads::Threads
     ${DL_LIB}
 )
 
