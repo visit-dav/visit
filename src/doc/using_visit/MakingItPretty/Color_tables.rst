@@ -384,15 +384,18 @@ Then, plotting this expression using the 4-color **Discrete** color table, the d
 
 As can be seen in the side-by-side comparison in :numref:`Figure %s <fig-MakingItPretty-comparing-banded-coloring>`, there is a noticeable difference between the results produced by the two approaches demonstrated here to create a banded coloring.
 
-.. _fig-MakingItPretty-comparing-banded-coloring:
 
 .. list-table:: 
 
+    .. _fig-MakingItPretty-comparing-banded-coloring:
+
     * - .. figure:: images/MakingItPretty-continuous-banded-coloring.png
+           :width: 300
 
            Continuous table
 
       - .. figure:: images/MakingItPretty-numerically-banded-coloring.png
+           :width: 300
 
            Discrete table
 
