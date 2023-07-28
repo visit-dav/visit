@@ -265,5 +265,4 @@ Here's an example of what is needed:
         exit()
 
 
-Now, you can copy a regression test to the same directory as this script, add
-``Source("TestingStuff.py")`` to the top of the regression test, and run ``visit -cli -s testname.py``, along with any debugging options you desire.
+Now, you can copy a regression test to the same directory as this script, add ``Source("TestingStuff.py")`` to the top of the regression test, and run ``visit -cli -s testname.py``, along with any debugging options you desire.
