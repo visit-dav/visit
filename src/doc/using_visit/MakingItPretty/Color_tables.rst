@@ -390,11 +390,11 @@ As can be seen in the side-by-side comparison in :numref:`Figure %s <fig-MakingI
 
     * - .. figure:: images/MakingItPretty-continuous-banded-coloring.png
 
-           Fig 1. Representations
+           Continuous table
 
       - .. figure:: images/MakingItPretty-numerically-banded-coloring.png
 
-           Fig 2. Transparency
+           Discrete table
 
 The second approach (on the right) using the combination of a **Discrete** color table and a conditional expression shows significantly more jagged banding.
 This has to do with the ordering of operations of *interpolation* of the variable across mesh zones and then *mapping* of the variable values to colors.
