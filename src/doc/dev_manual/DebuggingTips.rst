@@ -15,8 +15,10 @@ When you run ``visit`` on the command line, you can optionally add the ``-debug 
 The number of debugging logs can be 1, 2, 3, 4, or 5, with debugging log 5 being the most detailed.
 When VisIt_'s components are told to run with debugging logs turned on, each component writes a set of debugging logs.
 For example, the database server component will write A.mdserver.1.vlog, A.mdserver.2.vlog,...,A.mdserver.5.vlog if you pass ``-debug 5`` on the VisIt_ command line.
-Subsequent runs of VisIt_ will copy current logs to files with a prepended *B* (instead of *A*), then *C* and so on.
-Most current runs will always begin with *A*.
+Subsequent runs of VisIt_ will rename existing logs with the initial letter advanced to the next letter in the alphabet.
+For example A.mdserver.5.vlog will be renamed to B.mdserver.5.vlog.
+At most five sets of debugging logs will be kept.
+The logs from the most current run will always begin with *A*.
 If you don't want that behavior, you may add ``-clobber_vlogs`` to VisIt_'s command line arguments.
 The A.mdserver*.vlog and A.engine*.vlog files are useful when debugging a database reader plug-in.
 The A.viewer*.vlog and A.engine*.vlog files are usefule when debugging a plot plugin.
@@ -60,7 +62,7 @@ You can even have only every Nth processor output debug logs by using ``-debug-p
 
 .. _DumpingPipelineInfo:
 
-Dumping VTK objects and Pipeline information to disk
+Dumping VTK objects and pipeline information to disk
 ----------------------------------------------------
 
 In addition to the ``-debug`` argument, VisIt_ also supports a ``-dump`` argument.
