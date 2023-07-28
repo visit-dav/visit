@@ -382,8 +382,21 @@ Then, plotting this expression using the 4-color **Discrete** color table, the d
 
    A 4-color **Discrete** color table coloring combined with a conditional expression
 
-There is a noticeable difference between the result produced by the two approaches used here to create a banded coloring.
-The second approach using the combination of a **Discrete** color table and a conditional expression shows significantly more jagged banding.
+As can be seen in the side-by-side comparison in :numref:`Figure %s <fig-MakingItPretty-comparing-banded-coloring>`, there is a noticeable difference between the results produced by the two approaches demonstrated here to create a banded coloring.
+
+.. _fig-MakingItPretty-comparing-banded-coloring:
+
+.. list-table:: 
+
+    * - .. figure:: images/MakingItPretty-continuous-banded-coloring.png
+
+           Fig 1. Representations
+
+      - .. figure:: images/MakingItPretty-numerically-banded-coloring.png
+
+           Fig 2. Transparency
+
+The second approach (on the right) using the combination of a **Discrete** color table and a conditional expression shows significantly more jagged banding.
 This has to do with the ordering of operations of *interpolation* of the variable across mesh zones and then *mapping* of the variable values to colors.
 The first approach performs *interpolation* followed by *mapping*.
 The second approach effectively performs the *mapping* first through its use of the conditional expression replacing the smoothly varying variable with a highly discontinuous variable after which *interpolation* is performed.
