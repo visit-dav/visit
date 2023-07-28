@@ -55,10 +55,8 @@ You should always try to use VisIt_'s Python interpreter directly, since importi
 When importing the VisIt_ module into the system Python there are, in general, three things you must do.
 
 1. Tell the Python interpreter where the standard C++ library used to compile VisIt_ is located.
-This needs to be done before any modules other than `ctypes` are imported.
-
+   This needs to be done before any modules other than `ctypes` are imported.
 2. Tell the Python interpreter where the VisIt_ module is located.
-
 3. Specify the version of VisIt_ you are using if you have multiple versions of VisIt_ installed in the same directory.
 
 Not all of the steps are necessary.
