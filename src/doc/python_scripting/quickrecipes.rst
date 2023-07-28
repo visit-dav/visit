@@ -45,7 +45,93 @@ To make sure that the plot gets drawn, call the DrawPlots function.
     :end-before: # getting something on the screen }
     :dedent: 4
 
-Handling Command line Arguments
+Using VisIt with the system Python
+----------------------------------
+
+There are situations where you may want to import the VisIt_ module into the system Python.
+Some common use cases are using VisIt_ as part of a larger Python workflow or when you need to use a Python module that VisIt_'s Python does not include.
+You should always try to use VisIt_'s Python interpreter directly, since importing VisIt's Python module may not always work.
+
+When importing the VisIt_ module into the system Python, at a minimum the major version numbers must match and ideally the major and minor version numbers would match.
+In general, there are three things you must do to import the VisIt_ module into the system Python.
+
+1. Tell the Python interpreter where the standard C++ library used to compile VisIt_ is located.
+   This needs to be done before any modules other than `ctypes` are imported.
+2. Tell the Python interpreter where the VisIt_ module is located.
+3. Specify the version of VisIt_ you are using if you have multiple versions of VisIt_ installed in the same directory.
+
+Not all of the steps are necessary.
+For example, if VisIt_ was compiled with the default system compiler then you do not need to perform the first step.
+It is important that the steps are done in the order specified above.
+
+In this example VisIt_ is imported into the system Python and used to save an image from one of our sample datasets.
+The paths specified for the location of the standard C++ library and the VisIt_ module will need to be changed as appropriate for your system. ::
+
+    python3
+    Python 3.7.2 (default, Feb 26 2019, 08:59:10)
+    [GCC 4.9.3] on linux
+    Type "help", "copyright", "credits" or "license" for more information.
+    >>> import ctypes
+    >>> ctypes.cdll.LoadLibrary('/usr/tce/packages/gcc/gcc-7.3.0/lib64/libstdc++.so.6')
+    <CDLL '/usr/tce/packages/gcc/gcc-7.3.0/lib64/libstdc++.so.6', handle 6d3e30 at 0x2aaaac14b7f0>
+    >>> import sys
+    >>> sys.path.append("/usr/gapps/visit/3.3.3/linux-x86_64/lib/site-packages/")
+    >>> import visit
+    >>> visit.AddArgument("-v")
+    >>> visit.AddArgument("3.3.3")
+    >>> visit.LaunchNowin()
+    Running: viewer3.3.3 -nowin -forceversion 3.3.3 -noint -host 127.0.0.1 -port 5601
+    True
+    >>> import visit
+    >>> visit.OpenDatabase("/usr/gapps/visit/data/noise.silo")
+    Running: mdserver3.3.3 -forceversion 3.3.3 -host 127.0.0.1 -port 5601
+    Running: engine_ser3.3.3 -forceversion 3.3.3 -dir /usr/gapps/visit -idle-timeout 480 -host 127.0.0.1 -port 5601
+    1
+    >>> visit.AddPlot("Pseudocolor", "hardyglobal")
+    1
+    >>> visit.DrawPlots()
+    1
+    >>> visit.SaveWindow()
+    VisIt: Message - Rendering window 1...
+    VisIt: Message - Saving window 1...
+    VisIt: Message - Saved visit0000.png
+    'visit0000.png'
+    >>> quit()
+
+Sometimes telling Python where the standard C++ library used to compile VisIt_ is located does not work and instead you can tell it where VisIt_'s Python library is located. ::
+
+    python3
+    Python 3.9.12 (main, Apr 15 2022, 09:20:22)
+    [GCC 10.3.1 20210422 (Red Hat 10.3.1-1)] on linux
+    Type "help", "copyright", "credits" or "license" for more information.
+    >>> import ctypes
+    >>> ctypes.CDLL('/usr/gapps/visit/3.3.3/linux-x86_64-toss4/lib/libpython3.7m.so')
+    <CDLL '/usr/gapps/visit/3.3.3/linux-x86_64-toss4/lib/libpython3.7m.so', handle 508b30 at 0x155546edf4f0>
+    >>> import sys
+    >>> sys.path.append("/usr/gapps/visit/3.3.3/linux-x86_64-toss4/lib/site-packages")
+    >>> import visit
+    >>> visit.AddArgument("-v")
+    >>> visit.AddArgument("3.3.3")
+    >>> visit.LaunchNowin()
+    Running: viewer3.3.3 -nowin -forceversion 3.3.3 -noint -host 127.0.0.1 -port 5600
+    True
+    >>> import visit
+    >>> visit.OpenDatabase("/usr/gapps/visit/data/noise.silo")
+    Running: mdserver3.3.3 -forceversion 3.3.3 -host 127.0.0.1 -port 5600
+    Running: engine_ser3.3.3 -forceversion 3.3.3 -dir /usr/gapps/visit -idle-timeout 480 -host 127.0.0.1 -port 5600
+    1
+    >>> visit.AddPlot("Pseudocolor", "hardyglobal")
+    1
+    >>> visit.DrawPlots()
+    1
+    >>> visit.SaveWindow()
+    VisIt: Message - Rendering window 1...
+    VisIt: Message - Saving window 1...
+    VisIt: Message - Saved visit0000.png
+    'visit0000.png'
+    >>> quit()
+
+Handling Command line arguments
 -------------------------------
 
 In some cases, a VisIt_ python script also needs to handle its own command line arguments.
@@ -587,7 +673,7 @@ Once you have the plot's name, you can obtain a reference to its legend annotati
     :end-before: # modifying a legend }
     :dedent: 4
 
-Working with Color Tables
+Working with color tables
 -------------------------
 
 Sometimes it is helpful to create a new color table or manipulate an existing user defined color table.
