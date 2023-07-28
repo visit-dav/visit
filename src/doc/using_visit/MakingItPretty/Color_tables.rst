@@ -389,6 +389,7 @@ As can be seen in the side-by-side comparison in :numref:`Figure %s <fig-MakingI
 .. list-table:: 
 
     * - .. figure:: images/MakingItPretty-continuous-banded-coloring.png
+           :scale: 90%
 
            Fig 1. Representations
 
