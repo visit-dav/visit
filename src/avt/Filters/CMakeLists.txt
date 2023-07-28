@@ -61,6 +61,9 @@
 #   Kathleen Biagas, Wed Mar 15, 2023 
 #   Only link with pthread if not on Windows.
 #
+#   Eric Brugger, Tue Jul 25 11:23:55 EDT 2023
+#   Change pthread to Threads::Threads.
+#
 #****************************************************************************/
 
 SET(AVTFILTERS_SOURCES
@@ -206,7 +209,7 @@ ENDIF()
 if(HAVE_LIBVTKM)
     target_link_libraries(avtfilters_ser vtkm_cont vtkm_filter_contour vtkm_filter_entity_extraction vtkm_filter_field_conversion)
     if(NOT WIN32)
-        target_link_libraries(avtfilters_ser pthread)
+        target_link_libraries(avtfilters_ser Threads::Threads)
     endif()
     if(VTKm_ENABLE_KOKKOS)
         target_link_libraries(avtfilters_ser amdhip64)
@@ -227,7 +230,7 @@ IF(VISIT_PARALLEL)
     if(HAVE_LIBVTKM)
         target_link_libraries(avtfilters_par vtkm_cont vtkm_filter_contour vtkm_filter_entity_extraction vtkm_filter_field_conversion)
         if(NOT WIN32)
-            target_link_libraries(avtfilters_par pthread)
+            target_link_libraries(avtfilters_par Threads::Threads)
         endif()
         if(VTKm_ENABLE_KOKKOS)
             target_link_libraries(avtfilters_par amdhip64)
