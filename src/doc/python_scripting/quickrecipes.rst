@@ -52,7 +52,8 @@ There are situations where you may want to import the VisIt_ module into the sys
 Some common use cases are using VisIt_ as part of a larger Python workflow or when you need to use a Python module that VisIt_'s Python does not include.
 You should always try to use VisIt_'s Python interpreter directly, since importing VisIt's Python module may not always work.
 
-When importing the VisIt_ module into the system Python there are, in general, three things you must do.
+When importing the VisIt_ module into the system Python, at a minimum the major version numbers must match and ideally the major and minor version numbers would match.
+In general, there are three things you must do to import the VisIt_ module into the system Python.
 
 1. Tell the Python interpreter where the standard C++ library used to compile VisIt_ is located.
    This needs to be done before any modules other than `ctypes` are imported.
