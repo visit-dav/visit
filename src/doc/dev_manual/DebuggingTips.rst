@@ -15,10 +15,11 @@ When you run ``visit`` on the command line, you can optionally add the ``-debug 
 The number of debugging logs can be 1, 2, 3, 4, or 5, with debugging log 5 being the most detailed.
 When VisIt_'s components are told to run with debugging logs turned on, each component writes a set of debugging logs.
 For example, the database server component will write A.mdserver.1.vlog, A.mdserver.2.vlog,...,A.mdserver.5.vlog if you pass ``-debug 5`` on the VisIt_ command line.
-Subsequent runs of VisIt_ will prepend *B* then *C* and so on.
+Subsequent runs of VisIt_ will copy current logs to files with a prepended *B* (instead of *A*), then *C* and so on.
+Most current runs will always begin with *A*.
 If you don't want that behavior, you may add ``-clobber_vlogs`` to VisIt_'s command line arguments.
-The A.mdserver*.vlog and A.engine*.vlog files are useful when debugging a database reader plug-in.  The A.viewer*.vlog and A.engine*.vlog files are usefule when debugging a plot plugin.
-
+The A.mdserver*.vlog and A.engine*.vlog files are useful when debugging a database reader plug-in.
+The A.viewer*.vlog and A.engine*.vlog files are usefule when debugging a plot plugin.
 
 The debugging logs will contain information written to them by the debugging statements in VisIt_'s source code.
 If you want to add debugging statements to your AVT code then you can use the *debug1*, *debug2*, *debug3*, *debug4*, or *debug5* streams as shown in the following code listing.
@@ -157,3 +158,110 @@ cli        src/visitpy/cli/cli.C      main
               VisItInit::SetComponentName("gui");
   
 
+Debugging a regression failure outside of the test suite
+--------------------------------------------------------
+
+Sometimes the testing harness infrastructure gets in the way of debugging a failing regression test, and you just want to run the testing script or a portion of the script directly with VisIt_'s cli.
+Here's a quick way to do just that.
+
+First, you need a script that mimics some of the testing harness functions, so you don't need to modify the actual testing script as much.
+Here's an example of what is needed:
+
+.. container:: collapsible
+
+  .. container:: header
+
+    TestingStuff.py
+
+  .. code-block:: python
+
+    # script to aid in debugging regression tests outside of the testing harness
+    # it mimics some of the testing methods so that actual test scripts don't
+    # need to be modified so much
+
+    # use this script by adding 'Source("TestingStuff.py")' to the top of a
+    # regression test.  Use full path if the regression test doesn't live at
+    # the same location as this script.
+
+
+
+    # mimic testing 'data_path' by specifying a location where the testdata
+    # can be found.  It is best if this points to an actual build/testdata dir
+    # so that you are using the same data as the regression tests
+    def data_path(fname):
+        return "/my/path/to/VisIts/testdata/%s"%fname
+
+    def silo_data_path(fname):
+        return data_path("silo_hdf5_test_data/%s"%fname)
+
+    def TurnOnAllAnnotations(givenAtts=0):
+        """
+        Turns on all annotations.
+
+        Either from the default instance of AnnotationAttributes,
+        or using 'givenAtts'.
+        """
+        if (givenAtts == 0):
+            a = AnnotationAttributes()
+        else:
+            a = givenAtts
+        a.axes2D.visible = 1
+        a.axes3D.visible = 1
+        a.axes3D.triadFlag = 1
+        a.axes3D.bboxFlag = 1
+        a.userInfoFlag = 0
+        a.databaseInfoFlag = 1
+        a.legendInfoFlag = 1
+        SetAnnotationAttributes(a)
+
+    def TurnOffAllAnnotations(givenAtts=0):
+        """
+        Turns off all annotations.
+
+        Either from the default instance of AnnotationAttributes,
+        or using 'givenAtts'.
+        """
+        if (givenAtts == 0):
+            a = AnnotationAttributes()
+        else:
+            a = givenAtts
+        a.axes2D.visible = 0
+        a.axes3D.visible = 0
+        a.axes3D.triadFlag = 0
+        a.axes3D.bboxFlag = 0
+        a.userInfoFlag = 0
+        a.databaseInfoFlag = 0
+        a.legendInfoFlag = 0
+        SetAnnotationAttributes(a)
+
+    def Test(fname):
+        swa = SaveWindowAttributes()
+        swa.family = 0
+        swa.fileName = fname
+        swa.screenCapture = 0
+        SetSaveWindowAttributes(swa)
+        SaveWindow()
+
+    def Test(fname, swa = 0, alreadySaved=0):
+        if (swa != 0):
+            sa = swa
+        else:
+            sa = SaveWindowAttributes()
+        sa.screenCapture = 1
+        sa.family = 0
+        sa.fileName = fname
+        SetSaveWindowAttributes(sa)
+        SaveWindow()
+
+    def TestText(name, results):
+        print("%s: %s"%(name, results))
+
+    def TestSection(stuff):
+        print(stuff)
+
+    def Exit():
+        exit()
+
+
+Now, you can copy a regression test to the same directory as this script, add
+``Source("TestingStuff.py")`` to the top of the regression test, and run ``visit -cli -s testname.py``, along with any debugging options you desire.

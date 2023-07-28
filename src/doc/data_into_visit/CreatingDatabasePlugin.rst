@@ -357,7 +357,8 @@ The only methods that you absolutely must implement are:
 Debugging your plug-in
 ~~~~~~~~~~~~~~~~~~~~~~
 
-Before beginning to write code for your plug-in, you should know a few techniques for debugging your plug-in since debugging VisIt_ can be tricky because of its distributed architecture.  See :ref:`Debugging Tips <Debugging Tips>` for detailed information.
+Before beginning to write code for your plug-in, you should know a few techniques for debugging your plug-in since debugging VisIt_ can be tricky because of its distributed architecture.
+See :ref:`Debugging Tips <Debugging Tips>` for detailed information.
 
 
 Opening your file
