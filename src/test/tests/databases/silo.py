@@ -86,7 +86,12 @@
 #    Kathleen Biagas, Mon Nov 28, 2022
 #    Remove obsolete 'colorByMag' vector att with 'colorByMagnitude'.
 #
+#    Kathleen Biagas, Tue July 11, 2023
+#    Don't allow tests using wave_1file.visit to run on Windows, as they
+#    involve symlinks. Symink access on the testing machine is disallowed.
+#
 # ----------------------------------------------------------------------------
+
 TurnOffAllAnnotations() # defines global object 'a'
 
 # Turn off sets by name
@@ -422,29 +427,33 @@ Test("silo_35")
 DeleteAllPlots()
 CloseDatabase(data_path("silo_pdb_test_data/odd_multi.silo"))
 
-OpenDatabase(silo_data_path("wave_1file.visit"))
+if not sys.platform.startswith("win"):
+    # files listed in the .visit file (eg wave_1file.silo:cycle_xxx)
+    # are symlinks to wave_1file.silo and symlink access is disallowed
+    # on the windows testing machine.
+    OpenDatabase(silo_data_path("wave_1file.visit"))
 
-AddPlot("Mesh","quadmesh")
-AddPlot("Pseudocolor","pressure")
-DrawPlots()
-ResetView()
-Test("silo_36")
-TimeSliderSetState(23)
-Test("silo_37")
-TimeSliderNextState()
-TimeSliderNextState()
-TimeSliderNextState()
-Test("silo_38")
-TimeSliderPreviousState()
-TimeSliderPreviousState()
-TimeSliderPreviousState()
-TimeSliderPreviousState()
-TimeSliderPreviousState()
-TimeSliderPreviousState()
-Test("silo_39")
+    AddPlot("Mesh","quadmesh")
+    AddPlot("Pseudocolor","pressure")
+    DrawPlots()
+    ResetView()
+    Test("silo_36")
+    TimeSliderSetState(23)
+    Test("silo_37")
+    TimeSliderNextState()
+    TimeSliderNextState()
+    TimeSliderNextState()
+    Test("silo_38")
+    TimeSliderPreviousState()
+    TimeSliderPreviousState()
+    TimeSliderPreviousState()
+    TimeSliderPreviousState()
+    TimeSliderPreviousState()
+    TimeSliderPreviousState()
+    Test("silo_39")
 
-DeleteAllPlots()
-CloseDatabase(silo_data_path("wave_1file.visit"))
+    DeleteAllPlots()
+    CloseDatabase(silo_data_path("wave_1file.visit"))
 
 TestSection("Silo AMR w/Mrgtrees")
 TurnOffAllAnnotations()
