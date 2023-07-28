@@ -672,7 +672,7 @@ Once you have the plot's name, you can obtain a reference to its legend annotati
     :end-before: # modifying a legend }
     :dedent: 4
 
-Working with Color Tables
+Working with color tables
 -------------------------
 
 Sometimes it is helpful to create a new color table or manipulate an existing user defined color table.
