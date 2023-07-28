@@ -389,7 +389,6 @@ As can be seen in the side-by-side comparison in :numref:`Figure %s <fig-MakingI
 .. list-table:: 
 
     * - .. figure:: images/MakingItPretty-continuous-banded-coloring.png
-           :scale: 90%
 
            Fig 1. Representations
 
@@ -401,6 +400,8 @@ The second approach (on the right) using the combination of a **Discrete** color
 This has to do with the ordering of operations of *interpolation* of the variable across mesh zones and then *mapping* of the variable values to colors.
 The first approach performs *interpolation* followed by *mapping*.
 The second approach effectively performs the *mapping* first through its use of the conditional expression replacing the smoothly varying variable with a highly discontinuous variable after which *interpolation* is performed.
+In addition, the legend (on the right) does not do a good a job conveying the mapping of the variable's color to its values.
+This has to do with the use of the *intermediate* expression variable to help perform the mapping.
 
 Converting color table types
 """"""""""""""""""""""""""""
