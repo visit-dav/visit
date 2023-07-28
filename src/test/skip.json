@@ -16,7 +16,7 @@
                     {"category":"quickrecipes","file":"how_to_start.py"},
                     {"category":"quickrecipes","file":"opening_compute_engine.py"},
                     {"platform":"win", "category":"databases","file":"ffp.py","cases":["ffp_03"]},
-                    {"platform":"win", "category":"databases","file":"silo.py","cases":["silo_26","silo_36","silo_37","silo_38","silo_39"]},
+                    {"platform":"win", "category":"databases","file":"silo.py","cases":["silo_26"]},
                     {"platform":"win", "category":"hybrid","file":"field_operators.py","cases":["field_op_04"]},
                     {"platform":"win", "category":"hybrid","file":"selection_pp.py"},
                     {"platform":"win", "category":"plugins"},
