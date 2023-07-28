@@ -22,7 +22,7 @@ PyObject *     PySphereSliceAttributes_Wrap(const SphereSliceAttributes *attr);
 void           PySphereSliceAttributes_SetParent(PyObject *obj, PyObject *parent);
 void           PySphereSliceAttributes_SetDefaults(const SphereSliceAttributes *atts);
 std::string    PySphereSliceAttributes_GetLogString();
-std::string    PySphereSliceAttributes_ToString(const SphereSliceAttributes *, const char *);
+std::string    PySphereSliceAttributes_ToString(const SphereSliceAttributes *, const char *, const bool=false);
 PyObject *     PySphereSliceAttributes_getattr(PyObject *self, char *name);
 int            PySphereSliceAttributes_setattr(PyObject *self, char *name, PyObject *args);
 extern PyMethodDef PySphereSliceAttributes_methods[SPHERESLICEATTRIBUTES_NMETH];

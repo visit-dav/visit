@@ -33,6 +33,8 @@
 class VISIT_VTK_API vtkAxisDepthSort : public vtkPolyDataAlgorithm
 {
   public:
+    vtkTypeMacro(vtkAxisDepthSort, vtkPolyDataAlgorithm);
+
     static vtkAxisDepthSort      *New();
 
     vtkPolyData                  *GetPlusXOutput();
@@ -44,15 +46,15 @@ class VISIT_VTK_API vtkAxisDepthSort : public vtkPolyDataAlgorithm
 
   protected:
                                   vtkAxisDepthSort();
-    virtual                      ~vtkAxisDepthSort() {;};
+    virtual                      ~vtkAxisDepthSort() {;}
 
     int                           RequestData(vtkInformation *,
                                       vtkInformationVector **,
                                       vtkInformationVector *) override;
 
   private:
-                                  vtkAxisDepthSort(const vtkAxisDepthSort &);
-                                  void operator=(const vtkAxisDepthSort &);
+                                  vtkAxisDepthSort(const vtkAxisDepthSort &) = delete;
+                                  void operator=(const vtkAxisDepthSort &) = delete;
 };
 
 

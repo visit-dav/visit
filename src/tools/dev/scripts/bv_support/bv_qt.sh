@@ -9,8 +9,13 @@ function bv_qt_initialize
 
 function bv_qt_enable
 {
-    DO_QT="yes"
-    FORCE_QT="yes"
+    if [[ "$DO_QT6" == "no" ]] ; then
+        DO_QT="yes"
+        FORCE_QT="yes"
+    else
+       DO_QT="no"
+       FORCE_QT="no"
+    fi
 }
 
 function bv_qt_disable
@@ -95,7 +100,7 @@ function bv_qt_initialize_vars
 function bv_qt_depends_on
 {
     if [[ "$DO_MESAGL" == "yes" ]] ; then
-       echo "mesagl glu"
+        echo "mesagl glu"
     else
         echo ""
     fi
@@ -106,14 +111,25 @@ function bv_qt_info
 {
     bv_qt_enable
 
-    export QT_VERSION=${QT_VERSION:-"5.14.2"}
-    export QT_SHORT_VERSION=${QT_SHORT_VERSION:-"5.14"}
-    export QT_FILE=${QT_FILE:-"qt-everywhere-src-${QT_VERSION}.tar.xz"}
-    export QT_BUILD_DIR=${QT_BUILD_DIR:-"${QT_FILE%.tar*}"}
-    export QT_BIN_DIR=${QT_BIN_DIR:-"${QT_BUILD_DIR}/bin"}
-    export QT_URL=${QT_URL:-"http://download.qt.io/archive/qt/${QT_SHORT_VERSION}/${QT_VERSION}/single/"}
-    export QT_MD5_CHECKSUM="b3d2b6d00e6ca8a8ede6d1c9bdc74daf"
-    export QT_SHA256_CHECKSUM="c6fcd53c744df89e7d3223c02838a33309bd1c291fcb6f9341505fe99f7f19fa"
+    if [[ "$DO_QT510" == "yes" ]] ; then
+        export QT_VERSION=${QT_VERSION:-"5.10.1"}
+        export QT_SHORT_VERSION=${QT_SHORT_VERSION:-"5.10"}
+        export QT_FILE=${QT_FILE:-"qt-everywhere-src-${QT_VERSION}.tar.xz"}
+        export QT_BUILD_DIR=${QT_BUILD_DIR:-"${QT_FILE%.tar*}"}
+        export QT_BIN_DIR=${QT_BIN_DIR:-"${QT_BUILD_DIR}/bin"}
+        export QT_URL=${QT_URL:-"http://download.qt.io/archive/qt/${QT_SHORT_VERSION}/${QT_VERSION}/single/"}
+        export QT_MD5_CHECKSUM="7e167b9617e7bd64012daaacb85477af"
+        export QT_SHA256_CHECKSUM="05ffba7b811b854ed558abf2be2ddbd3bb6ddd0b60ea4b5da75d277ac15e740a"
+    else
+        export QT_VERSION=${QT_VERSION:-"5.14.2"}
+        export QT_SHORT_VERSION=${QT_SHORT_VERSION:-"5.14"}
+        export QT_FILE=${QT_FILE:-"qt-everywhere-src-${QT_VERSION}.tar.xz"}
+        export QT_BUILD_DIR=${QT_BUILD_DIR:-"${QT_FILE%.tar*}"}
+        export QT_BIN_DIR=${QT_BIN_DIR:-"${QT_BUILD_DIR}/bin"}
+        export QT_URL=${QT_URL:-"http://download.qt.io/archive/qt/${QT_SHORT_VERSION}/${QT_VERSION}/single/"}
+        export QT_MD5_CHECKSUM="b3d2b6d00e6ca8a8ede6d1c9bdc74daf"
+        export QT_SHA256_CHECKSUM="c6fcd53c744df89e7d3223c02838a33309bd1c291fcb6f9341505fe99f7f19fa"
+    fi
 }
 
 function bv_qt_print
@@ -134,6 +150,11 @@ function bv_qt_print_usage
 
 function bv_qt_host_profile
 {
+    # this seems to get called even when adding --qt6 should be disabling qt5.
+    # so prevent Qt5 from being added to host profile
+    if [[ "$DO_QT6" == "yes" ]]; then
+        return;
+    fi
     if [[ "$DO_DBIO_ONLY" != "yes" ]]; then
         if [[ "$DO_ENGINE_ONLY" != "yes" ]]; then
             if [[ "$DO_SERVER_COMPONENTS_ONLY" != "yes" ]]; then 
@@ -162,13 +183,6 @@ function bv_qt_ensure
         if [[ $? != 0 ]] ; then
             return 1
         fi
-    fi
-}
-
-function bv_qt_dry_run
-{
-    if [[ "$DO_QT" == "yes" ]] ; then
-        echo "Dry run option not set for qt."
     fi
 }
 
@@ -206,8 +220,86 @@ function qt_license_prompt
 
 function apply_qt_patch
 {
-    if [[ ${QT_VERSION} == 5.14.2 ]] ; then
+    if [[ ${QT_VERSION} == 5.10.1 ]] ; then
+        if [[ "$DO_MESAGL" == "yes" ]] ; then
+            if [[ "$OPSYS" == "Linux" ]]; then
+                apply_qt_5101_linux_mesagl_patch
+                if [[ $? != 0 ]] ; then
+                    return 1
+                fi
+            fi
+        fi
+
+        if [[ -f /etc/centos-release ]] ; then
+            VER=`cat /etc/centos-release | cut -d' ' -f 4`
+            if [[ "${VER:0:2}" == "8." ]] ; then
+                apply_qt_5101_centos8_patch
+                if [[ $? != 0 ]] ; then
+                    return 1
+                fi
+            fi
+        elif [[ -f /etc/lsb-release ]] ; then
+            VER=`cat /etc/lsb-release | grep "DISTRIB_RELEASE" | cut -d'=' -f 2`
+            if [[ "${VER:0:3}" == "19." || "${VER:0:3}" == "20." ]] ; then
+                apply_qt_5101_centos8_patch
+                if [[ $? != 0 ]] ; then
+                    return 1
+                fi
+            fi
+        elif [[ -f /etc/os-release ]] ; then
+            REDHAT_VER=`cat /etc/os-release | grep "REDHAT_SUPPORT_PRODUCT_VERSION" | cut -d'=' -f 2`
+            DEBIAN_VER=`cat /etc/os-release | grep "PRETTY_NAME" | cut -d' ' -f 3`
+            if [[ "${REDHAT_VER:1:1}" == "8"  || \
+                  "${REDHAT_VER:0:2}" == "31" || \
+                  "${DEBIAN_VER:0:2}" == "10" ]] ; then
+                apply_qt_5101_centos8_patch
+                if [[ $? != 0 ]] ; then
+                    return 1
+                fi
+            fi
+        fi
+
+        if [[ "$OPSYS" == "Linux" ]]; then
+            apply_qt_5101_blueos_patch
+            if [[ $? != 0 ]] ; then
+                return 1
+            fi
+
+            if [[ "$C_COMPILER" == "gcc" ]]; then
+                apply_qt_5101_gcc_9_2_patch
+                if [[ $? != 0 ]] ; then
+                    return 1
+                fi
+            fi
+        fi
+
+        if [[ "$OPSYS" == "Darwin" ]]; then
+            productVersion=`sw_vers -productVersion`
+            if [[ $productVersion == 10.14.[0-9]* || \
+                  $productVersion == 10.15.[0-9]* ]] ; then
+                apply_qt_5101_macos_mojave_patch
+                if [[ $? != 0 ]] ; then
+                    return 1
+                fi
+            fi
+        fi
+
+        #
+        # If python doesn't exist, substitute python2 for python.
+        #
+        python -c "print(1)"
+        if [[ $? != 0 ]] ; then
+            info "Patching qt 5.10.1 for python to python2"
+            cd qtdeclarative
+            find . -type f -exec sed -i "s/python/python2/g" {} \;
+            cd ..
+        fi
+    elif [[ ${QT_VERSION} == 5.14.2 ]] ; then
         apply_qt_5142_numeric_limits_patch
+        if [[ $? != 0 ]] ; then
+            return 1
+        fi
+        apply_qt_5142_cmath_patch
         if [[ $? != 0 ]] ; then
             return 1
         fi
@@ -232,8 +324,183 @@ function apply_qt_patch
                 sed -i "s/\/usr\/lib64/\/usr\/lib/" ./qtbase/mkspecs/linux-icc-64/qmake.conf
             fi
         fi
+        if [[ "$OPSYS" == "Darwin" ]]; then
+            if [[ $(echo $MACOSX_DEPLOYMENT_TARGET | tr -d '.') -ge 1014 ]]; then
+                apply_qt_5142_macOS_1014_hunspell_patch
+                if [[ $? != 0 ]] ; then
+                    return 1
+                fi
+            fi
+        fi
     fi
     return 0
+}
+
+function apply_qt_5101_linux_mesagl_patch
+{
+    info "Patching qt 5.10.1 for Linux and Mesa-as-GL"
+    patch -p0 <<EOF
+    diff -c qtbase/mkspecs/linux-g++-64/qmake.conf.orig  qtbase/mkspecs/linux-g++-64/qmake.conf
+    *** qtbase/mkspecs/linux-g++-64/qmake.conf.orig     Thu Feb  8 18:24:48 2018
+    --- qtbase/mkspecs/linux-g++-64/qmake.conf  Fri Feb 22 22:04:50 2019
+    ***************
+    *** 19,24 ****
+  
+  
+      QMAKE_LIBDIR_X11        = /usr/X11R6/lib64
+    ! QMAKE_LIBDIR_OPENGL     = /usr/X11R6/lib64
+  
+      load(qt_config)
+    --- 19,25 ----
+  
+  
+      QMAKE_LIBDIR_X11        = /usr/X11R6/lib64
+    ! QMAKE_LIBDIR_OPENGL=$MESAGL_LIB_DIR $LLVM_LIB_DIR
+    ! QMAKE_INCDIR_OPENGL=$MESAGL_INCLUDE_DIR
+  
+      load(qt_config)
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "qt 5.10.1 linux mesagl patch failed."
+        return 1
+    fi
+
+    patch -p0 <<EOF
+diff -c qtbase/mkspecs/linux-icc-64/qmake.conf.orig qtbase/mkspecs/linux-icc-64/qmake.conf
+*** qtbase/mkspecs/linux-icc-64/qmake.conf.orig Fri Nov 22 15:24:45 2019
+--- qtbase/mkspecs/linux-icc-64/qmake.conf      Fri Nov 22 15:25:11 2019
+***************
+*** 13,16 ****
+  # Change the all LIBDIR variables to use lib64 instead of lib
+  
+  QMAKE_LIBDIR_X11        = /usr/X11R6/lib64
+! QMAKE_LIBDIR_OPENGL     = /usr/X11R6/lib64
+--- 13,17 ----
+  # Change the all LIBDIR variables to use lib64 instead of lib
+  
+  QMAKE_LIBDIR_X11        = /usr/X11R6/lib64
+! QMAKE_LIBDIR_OPENGL=$MESAGL_LIB_DIR $LLVM_LIB_DIR
+! QMAKE_INCDIR_OPENGL=$MESAGL_INCLUDE_DIR
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "qt 5.10.1 linux mesagl patch failed."
+        return 1
+    fi
+
+    return 0;
+}
+
+function apply_qt_5101_centos8_patch
+{
+    info "Patching qt 5.10.1 for Centos8"
+    patch -p0 <<EOF
+diff -c qtbase/src/corelib/io/qfilesystemengine_unix.cpp.orig qtbase/src/corelib/io/qfilesystemengine_unix.cpp
+*** qtbase/src/corelib/io/qfilesystemengine_unix.cpp.orig       Thu Oct 17 13:54:59 2019
+--- qtbase/src/corelib/io/qfilesystemengine_unix.cpp    Thu Oct 17 13:57:20 2019
+***************
+*** 97,102 ****
+--- 97,103 ----
+  #  define FICLONE       _IOW(0x94, 9, int)
+  #endif
+  
++ #if 0
+  #  if !QT_CONFIG(renameat2) && defined(SYS_renameat2)
+  static int renameat2(int oldfd, const char *oldpath, int newfd, const char *newpath, unsigned flags)
+  { return syscall(SYS_renameat2, oldfd, oldpath, newfd, newpath, flags); }
+***************
+*** 108,117 ****
+--- 109,121 ----
+  { return syscall(SYS_statx, dirfd, pathname, flag, mask, statxbuf); }
+  #  endif
+  #endif
++ #endif
+  
++ #if 0
+  #ifndef STATX_BASIC_STATS
+  struct statx { mode_t stx_mode; };
+  #endif
++ #endif
+  
+  QT_BEGIN_NAMESPACE
+  
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "qt 5.10.1 centos8 patch failed."
+        return 1
+    fi
+
+    return 0;
+}
+
+function apply_qt_5101_blueos_patch
+{
+    info "Patching qt 5.10.1 for Blueos"
+    sed -i "s/PNG_ARM_NEON_OPT=0/PNG_ARM_NEON_OPT=0 PNG_POWERPC_VSX_OPT=0/" qtbase/src/3rdparty/libpng/libpng.pro
+    if [[ $? != 0 ]] ; then
+        warn "qt 5.10.1 blueos patch failed."
+        return 1
+    fi
+
+    return 0;
+}
+
+function apply_qt_5101_macos_mojave_patch
+{
+    info "Patching qt 5.10.1 for macOS 10.14 (Mojave)..."
+    patch -p0 <<EOF
+diff -c qtbase/src/platformsupport/fontdatabases/mac/qfontengine_coretext.mm.orig qtbase/src/platformsupport/fontdatabases/mac/qfontengine_coretext.mm
+*** qtbase/src/platformsupport/fontdatabases/mac/qfontengine_coretext.mm.orig   2020-01-16 11:06:12.000000000 -0800
+--- qtbase/src/platformsupport/fontdatabases/mac/qfontengine_coretext.mm        2020-01-16 11:06:38.000000000 -0800
+***************
+*** 830,836 ****
+  
+  QFixed QCoreTextFontEngine::emSquareSize() const
+  {
+!     return QFixed::QFixed(int(CTFontGetUnitsPerEm(ctfont)));
+  }
+  
+  QFontEngine *QCoreTextFontEngine::cloneWithSize(qreal pixelSize) const
+--- 830,836 ----
+  
+  QFixed QCoreTextFontEngine::emSquareSize() const
+  {
+!     return QFixed(int(CTFontGetUnitsPerEm(ctfont)));
+  }
+  
+  QFontEngine *QCoreTextFontEngine::cloneWithSize(qreal pixelSize) const
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "qt 5.10.1 macOS patch failed."
+        return 1
+    fi
+
+    return 0;
+}
+
+function apply_qt_5101_gcc_9_2_patch
+{
+    info "Patching qt 5.10.1 for gcc 9.2"
+    patch -p0 <<EOF
+diff -c qtbase/src/corelib/global/qrandom.cpp.orig qtbase/src/corelib/global/qrandom.cpp
+*** qtbase/src/corelib/global/qrandom.cpp.orig  Mon Mar  9 17:09:47 2020
+--- qtbase/src/corelib/global/qrandom.cpp       Mon Mar  9 17:10:42 2020
+***************
+*** 220,225 ****
+--- 220,226 ----
+  #endif // Q_OS_WINRT
+  
+      static SystemGenerator &self();
++     typedef quint32 result_type;
+      void generate(quint32 *begin, quint32 *end) Q_DECL_NOEXCEPT_EXPR(FillBufferNoexcept);
+  
+      // For std::mersenne_twister_engine implementations that use something
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "qt 5.10.1 gcc 9.2 patch failed."
+        return 1
+    fi
+
+    return 0;
 }
 
 function apply_qt_5142_numeric_limits_patch
@@ -295,6 +562,32 @@ diff -c qtbase/src/corelib/text/qbytearraymatcher.h.orig c qtbase/src/corelib/te
 EOF
     if [[ $? != 0 ]] ; then
         warn "qt 5.14.2 for numeric-limits patch3 failed"
+        return 1
+    fi
+
+    return 0
+}
+
+function apply_qt_5142_cmath_patch
+{
+    info "Patching qt 5.14.2 for qjp2handler cmath include"
+    patch -p0 <<EOF
+diff -c qtimageformats/src/plugins/imageformats/jp2/qjp2handler.cpp.orig qtimageformats/src/plugins/imageformats/jp2/qjp2handler.cpp
+*** qtimageformats/src/plugins/imageformats/jp2/qjp2handler.cpp.orig
+--- qtimageformats/src/plugins/imageformats/jp2/qjp2handler.cpp
+***************
+*** 45,50 ****
+--- 45,51 ----
+  #include "qcolor.h"
+
+  #include <jasper/jasper.h>
++ #include <cmath>
+
+  QT_BEGIN_NAMESPACE
+
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "qt 5.14.2 for qjp2handler cmath include"
         return 1
     fi
 
@@ -385,7 +678,7 @@ EOF
         return 1
     fi
 
-    return 0;
+    return 0
 }
 
 function apply_qt_5142_linux_opengl_patch
@@ -443,7 +736,67 @@ EOF
         return 1
     fi
 
-    return 0;
+    return 0
+}
+
+function apply_qt_5142_macOS_1014_hunspell_patch
+{   
+    info "Patching qt 5.14.2 for macOS 10.14 hunspell"
+    patch -p0 <<EOF
+diff -c qtvirtualkeyboard/src/plugins/hunspell/hunspellinputmethod/hunspellworker_p.h.orig qtvirtualkeyboard/src/plugins/hunspell/hunspellinputmethod/hunspellworker_p.h
+*** qtvirtualkeyboard/src/plugins/hunspell/hunspellinputmethod/hunspellworker_p.h.orig
+--- qtvirtualkeyboard/src/plugins/hunspell/hunspellinputmethod/hunspellworker_p.h
+***************
+*** 48,54 ****
+  #include <QSharedPointer>
+  #include <QVector>
+  #include <QLoggingCategory>
+! #include <hunspell/hunspell.h>
+  #include <QtHunspellInputMethod/qhunspellinputmethod_global.h>
+  
+  QT_BEGIN_NAMESPACE
+--- 48,54 ----
+  #include <QSharedPointer>
+  #include <QVector>
+  #include <QLoggingCategory>
+! #include <hunspell.h>
+  #include <QtHunspellInputMethod/qhunspellinputmethod_global.h>
+  
+  QT_BEGIN_NAMESPACE
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "Patching qt 5.14.2 for macOS 10.14 hunspell failed."
+        return 1
+    fi
+
+    patch -p0 <<EOF
+diff -c qtvirtualkeyboard/src/plugins/hunspell/hunspellinputmethod/hunspellinputmethod_p.cpp.orig qtvirtualkeyboard/src/plugins/hunspell/hunspellinputmethod/hunspellinputmethod_p.cpp
+*** qtvirtualkeyboard/src/plugins/hunspell/hunspellinputmethod/hunspellinputmethod_p.cpp.orig
+--- qtvirtualkeyboard/src/plugins/hunspell/hunspellinputmethod/hunspellinputmethod_p.cpp
+***************
+*** 29,35 ****
+  
+  #include <QtHunspellInputMethod/private/hunspellinputmethod_p_p.h>
+  #include <QtVirtualKeyboard/qvirtualkeyboardinputcontext.h>
+! #include <hunspell/hunspell.h>
+  #include <QStringList>
+  #include <QDir>
+  #include <QTextCodec>
+--- 29,35 ----
+  
+  #include <QtHunspellInputMethod/private/hunspellinputmethod_p_p.h>
+  #include <QtVirtualKeyboard/qvirtualkeyboardinputcontext.h>
+! #include <hunspell.h>
+  #include <QStringList>
+  #include <QDir>
+  #include <QTextCodec>
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "Patching qt 5.14.2 for macOS 10.14 hunspell failed."
+        return 1
+    fi
+
+    return 0
 }
 
 function build_qt
@@ -477,6 +830,20 @@ function build_qt
                  "failing harmlessly on a second application."
         fi
     fi
+
+    # move back up to the start dir
+    cd "$START_DIR"
+
+    # Make a build directory for an out-of-source build. Change the
+    # QT_BUILD_DIR variable to represent the out-of-source build directory.
+    QT_SRC_DIR=$QT_BUILD_DIR
+    QT_BUILD_DIR="${QT_SRC_DIR}-build"
+    if [[ ! -d $QT_BUILD_DIR ]] ; then
+        echo "Making build directory $QT_BUILD_DIR"
+        mkdir $QT_BUILD_DIR
+    fi
+
+    cd ${QT_BUILD_DIR}
 
     #
     # Handle case where python doesn't exist.
@@ -531,6 +898,8 @@ function build_qt
             fi
         elif [[ "$(uname -m)" == "ppc64" || "$(uname -m)" == "ppc64le" ]]; then
             QT_PLATFORM="linux-g++-64"
+        elif [[ "$(uname -m)" == "aarch64" ]]; then
+            QT_PLATFORM="linux-aarch64-gnu-g++"
         else
             if [[ "$C_COMPILER" == "icc" || "$CXX_COMPILER" == "icpc" ]]; then
                 QT_PLATFORM="linux-icc-32"
@@ -575,8 +944,6 @@ function build_qt
 
     QT_VER_MSG="Qt5"
     qt_flags="${qt_flags} -skip 3d"
-    qt_flags="${qt_flags} -skip activeqt"
-    qt_flags="${qt_flags} -skip androidextras"
     qt_flags="${qt_flags} -skip charts"
     qt_flags="${qt_flags} -skip connectivity"
     qt_flags="${qt_flags} -skip datavis3d"
@@ -584,14 +951,11 @@ function build_qt
     qt_flags="${qt_flags} -skip gamepad"
     qt_flags="${qt_flags} -skip graphicaleffects"
     qt_flags="${qt_flags} -skip location"
-    qt_flags="${qt_flags} -skip lottie"
     qt_flags="${qt_flags} -skip multimedia"
     qt_flags="${qt_flags} -skip networkauth"
     qt_flags="${qt_flags} -skip purchasing"
-    qt_flags="${qt_flags} -skip quick3d"
     qt_flags="${qt_flags} -skip quickcontrols"
     qt_flags="${qt_flags} -skip quickcontrols2"
-    qt_flags="${qt_flags} -skip quicktimeline"
     qt_flags="${qt_flags} -skip remoteobjects"
     qt_flags="${qt_flags} -skip scxml"
     qt_flags="${qt_flags} -skip sensors"
@@ -603,9 +967,24 @@ function build_qt
     qt_flags="${qt_flags} -no-qml-debug"
     qt_flags="${qt_flags} -qt-zlib"
     qt_flags="${qt_flags} -qt-libpng"
+    if [[ ${QT_VERSION} == 5.10.1 ]] ; then
+        qt_flags="${qt_flags} -skip canvas3d"
+    elif [[ ${QT_VERSION} == 5.14.2 ]] ; then
+        qt_flags="${qt_flags} -skip activeqt"
+        qt_flags="${qt_flags} -skip androidextras"
+        qt_flags="${qt_flags} -skip lottie"
+        qt_flags="${qt_flags} -skip quick3d"
+        qt_flags="${qt_flags} -skip quicktimeline"
+    fi
 
-    if [[ "$OPSYS" == "Linux" ]] ; then
-        qt_flags="${qt_flags} -qt-xcb --xkbcommon=yes -xcb-native-painting"
+    if [[ ${QT_VERSION} == 5.10.1 ]] ; then
+        if [[ "$OPSYS" == "Linux" ]] ; then
+            qt_flags="${qt_flags} -qt-xcb -qt-xkbcommon"
+        fi
+    elif [[ ${QT_VERSION} == 5.14.2 ]] ; then
+        if [[ "$OPSYS" == "Linux" ]] ; then
+            qt_flags="${qt_flags} -qt-xcb --xkbcommon=yes -xcb-native-painting"
+        fi
     fi
 
     if [[ "$VISIT_BUILD_MODE" == "Release" ]] ; then
@@ -617,7 +996,7 @@ function build_qt
     info "Configuring ${QT_VER_MSG}: "
     set -x
     (echo "o"; echo "yes") | CFLAGS="${QT_CFLAGS}" CXXFLAGS="${QT_CXXFLAGS}"  \
-                                   ./configure -prefix ${QT_INSTALL_DIR} \
+                                   ../${QT_SRC_DIR}/configure -prefix ${QT_INSTALL_DIR} \
                                    -platform ${QT_PLATFORM} \
                                    -make libs -make tools -no-separate-debug-info \
                                    ${qt_flags} | tee qt.config.out
@@ -625,6 +1004,14 @@ function build_qt
     if [[ $? != 0 ]] ; then
         warn "${QT_VER_MSG} configure failed. Giving up."
         return 1
+    fi
+
+    if [[ "$DO_MESAGL" == "yes" ]] ; then
+        if [[ ${QT_VERSION} == 5.10.1 ]] ; then
+            if [[ "$OPSYS" == "Linux" ]]; then
+                sed -i 's/-o Makefile/-o Makefile -after "QMAKE_LIBS_OPENGL+=-lLLVM"/' Makefile
+            fi
+        fi
     fi
 
     #

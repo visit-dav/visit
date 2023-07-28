@@ -55,6 +55,9 @@
 #   Remove 'if(VISIT_PARALLEL AND VISIT_FORTRAN)', 'if(VISIT_FORTRAN)', and
 #   'if(VISIT_PARALLEL)' from functions so if-tests are performed only once.
 #
+#   Kathleen Biagas, Wed Nov 30, 2022
+#   Remove test for VISIT_OUT_OF_SOURCE_BUILD, as out-of-source is required.
+#
 #****************************************************************************
 
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR})
@@ -268,8 +271,7 @@ ENDIF(VISIT_PARALLEL)
 
 
 # copy python examples to simulation examples build dir
-IF(VISIT_OUT_OF_SOURCE_BUILD)
-    ADD_PYTHON_SIMV2_SIMULATION(material.py)
-    ADD_PYTHON_SIMV2_SIMULATION(updateplots.py)
-    ADD_PYTHON_SIMV2_SIMULATION(var.py)
-ENDIF()
+ADD_PYTHON_SIMV2_SIMULATION(material.py)
+ADD_PYTHON_SIMV2_SIMULATION(updateplots.py)
+ADD_PYTHON_SIMV2_SIMULATION(var.py)
+

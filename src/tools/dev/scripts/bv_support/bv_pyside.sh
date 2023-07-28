@@ -7,7 +7,12 @@ function bv_pyside_initialize
 
 function bv_pyside_enable
 {
-    DO_PYSIDE="yes"
+    # until Pyside for qt 6 can be implemented
+    if [[ "$DO_QT6" == "yes" ]] ; then
+        DO_PYSIDE="no"
+    else
+        DO_PYSIDE="yes"
+    fi
 }
 
 function bv_pyside_disable
@@ -99,13 +104,6 @@ function bv_pyside_ensure
             DO_PYSIDE="no"
             error "Unable to build PySide.  ${PYSIDE_FILE} not found."
         fi
-    fi
-}
-
-function bv_pyside_dry_run
-{
-    if [[ "$DO_PYSIDE" == "yes" ]] ; then
-        echo "Dry run option not set for pyside."
     fi
 }
 
@@ -382,8 +380,7 @@ function build_pyside
     #    #fi
     #    ${pysideenv} ${PYTHON_COMMAND} ./setup.py install  --ignore-git --parallel=8 \
     #        --qmake=${QT_BIN_DIR}/qmake \
-    #        --cmake=${CMAKE_INSTALL}/cmake \
-    #        --openssl=$VISIT_DIR/openssl/$OPENSSL_VERSION/$VISITARCH/bin
+    #        --cmake=${CMAKE_INSTALL}/cmake
     #
     #    if test $? -ne 0 ; then
     #        warn "Could not install pyside"

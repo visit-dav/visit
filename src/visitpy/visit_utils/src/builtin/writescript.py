@@ -15,6 +15,9 @@
 #   Eric Brugger, Fri Jan  4 10:17:07 PST 2013
 #   I replaced a call to GetCurveView with GetViewCurve, since the former
 #   was incorrect. This fix was provided by Jean Favre.
+# 
+#   Justin Privitera, Wed May  4 13:53:26 PDT 2022
+#   Updated documentation in the docstring.
 #
 ###############################################################################
 
@@ -26,16 +29,63 @@ except:
     pass
 
 def WriteScript(f):
-    """Write Python code to replicate the current VisIt state to the specified file object.
+    """Synopsis:
+
+    WriteScript(f)
+
+
+Arguments:
+
+    f : file
+    The python file object that will be written to.
+
+
+Description:
+
+    WriteScript() saves the current state of VisIt as a Python script
+    that can be used later to reproduce a visualization. This is like saving
+    a session file. But, the output of WriteScript can be further customized.
+    The resulting script will contain commands to set up plots in any
+    visualization window that contained plots when WriteScript was called.
+    It may be more verbose than necessary, so users may find it useful to
+    delete portions of the script that are not needed. This will depend on
+    how many plots there are or the complexity of the data. For example, it
+    might useful to remove code related to setting a plot's SIL restriction.
+    Once the script is edited to satisfaction, it can be replayed it in VisIt.
+    See below.
+
 
 Example:
-    WriteScript('foo.py')
 
-    or
-
-    f = open('script.py', 'wt')
+    #
+    # First, create the script.
+    #
+    #% visit -cli
+    OpenDatabase("foo.silo")
+    AddPlot("Pseudocolor","dx")
+    DrawPlots()
+    ChangeActivePlotsVar("dy")
+    WriteScript("plot_dx_and_dy.py")
+    #
+    # or
+    #
+    #% visit -cli
+    OpenDatabase("foo.silo")
+    AddPlot("Pseudocolor","dx")
+    DrawPlots()
+    ChangeActivePlotsVar("dy")
+    f = open("plot_dx_and_dy.py", "wt")
     WriteScript(f)
     f.close()
+    #
+    # Now run the script in a terminal to replay it in VisIt.
+    #
+    # visit -cli -s script.py
+    #
+    # Or, the script can be used with VisIt's movie making scripts as a
+    # basis to set up the initial visualization:
+    #
+    # visit -movie -format mpeg -geometry 800x800 -scriptfile script.py -output scriptmovie
     """
     def object_type(obj):
         return str(type(obj))[7:-2]

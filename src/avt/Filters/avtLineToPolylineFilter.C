@@ -8,8 +8,13 @@
 
 #include <avtLineToPolylineFilter.h>
 
+#include <visit-config.h> // For LIB_VERSION_LE
+
 #include <vtkCellArray.h>
 #include <vtkCellData.h>
+#if LIB_VERSION_GE(VTK, 9,1,0)
+#include <vtkCellArrayIterator.h>
+#endif
 #include <vtkDataSet.h>
 #include <vtkPolyData.h>
 
@@ -156,29 +161,41 @@ avtLineToPolylineFilter::ExecuteData(avtDataRepresentation *inDR)
     // and add them to the free edges list. We just add the polylines
     // straight away.
     //
-    input->GetLines()->InitTraversal();
-    vtkIdType n, *pts = 0;
+    vtkCellArray *inlines = input->GetLines();
+    vtkIdType n = 0;
     std::set<edge> freeEdges;
-    vtkIdType toCellId = input->GetVerts()->GetNumberOfCells();
-    for(vtkIdType cellid = 0; input->GetLines()->GetNextCell(n, pts); ++cellid)
+    const vtkIdType numVerts = input->GetVerts()->GetNumberOfCells();
+    vtkIdType toCellId = numVerts;
+#if LIB_VERSION_LE(VTK,8,1,0)
+    inlines->InitTraversal();
+    vtkIdType *cellPts = nullptr;
+    for(vtkIdType cellid = 0; inlines->GetNextCell(n, cellPts); ++cellid)
     {
-        vtkIdType fromCellId = cellid + input->GetVerts()->GetNumberOfCells();
+#else
+    const vtkIdType *cellPts = nullptr;
+    vtkIdType cellid = 0;
+    auto iter = vtk::TakeSmartPointer(inlines->NewIterator());
+    for (iter->GoToFirstCell(); !iter->IsDoneWithTraversal(); iter->GoToNextCell(), cellid++)
+    {
+        iter->GetCurrentCell(n, cellPts);
+#endif
+        vtkIdType fromCellId = cellid + numVerts;
         if(n == 2)
         {
-            edge e01(pts[0], pts[1], fromCellId);
+            edge e01(cellPts[0], cellPts[1], fromCellId);
             freeEdges.insert(e01);
         }
         else
         {
             // Copy in the polyline
             outCD->CopyData(inCD, fromCellId, toCellId++);
-            output->InsertNextCell(VTK_POLY_LINE, n, pts);
+            output->InsertNextCell(VTK_POLY_LINE, n, cellPts);
         }
     }
 
     int grouping = visitTimer->StartTimer();
     int ptsBufSize = 200;
-    pts = new vtkIdType[ptsBufSize];
+    vtkIdType *pts = new vtkIdType[ptsBufSize];
     while(!freeEdges.empty())
     {
         std::deque<vtkIdType> shape;

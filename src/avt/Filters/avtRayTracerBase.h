@@ -11,6 +11,8 @@
 
 #include <filters_exports.h>
 
+#include <visit-config.h> // For LIB_VERSION_GE
+
 #include <avtDatasetToImageFilter.h>
 #include <avtViewInfo.h>
 #include <avtOpacityMap.h>
@@ -63,6 +65,9 @@ class   vtkMatrix4x4;
 //    Pascal Grosset, Fri Sep 20 2013
 //    Added ray casting slivr & trilinear interpolation
 //
+//    Kathleen Biagas, Wed Aug 17, 2022
+//    Incorporate ARSanderson's OSPRAY 2.8.0 work for VTK 9.
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtRayTracerBase : public avtDatasetToImageFilter
@@ -85,9 +90,9 @@ class AVTFILTERS_API avtRayTracerBase : public avtDatasetToImageFilter
     void                  SetScreen(int, int);
     void                  SetSamplesPerRay(int);
     void                  SetBackgroundColor(const unsigned char [3]);
-    void                  SetBackgroundMode(int mode);
-    void                  SetGradientBackgroundColors(const double [3],
-                                                      const double [3]);
+    virtual void          SetBackgroundMode(int mode) = 0;
+    virtual void          SetGradientBackgroundColors(const double [3],
+                                                      const double [3]) = 0;
     int                   GetSamplesPerRay(void)  { return samplesPerRay; };
     const int            *GetScreen(void)         { return screen; };
 
@@ -97,22 +102,33 @@ class AVTFILTERS_API avtRayTracerBase : public avtDatasetToImageFilter
     void                  SetTransferFn(avtOpacityMap *_transferFn1D) {transferFn1D = _transferFn1D; };
     void                  SetTrilinear(bool t) {trilinearInterpolation = t; };
 
+#if LIB_VERSION_GE(VTK,9,1,0)
+    void                  SetActiveVarName( std::string name ) { activeVarName = name; };
+    void                  SetOpacityVarName( std::string name ) { opacityVarName = name; };
+    void                  SetGradientVarName( std::string name ) { gradientVarName = name; };
+#endif
 
   protected:
-    avtViewInfo           view;
+    avtViewInfo           viewInfo;
 
-    int                   screen[2];
-    int                   samplesPerRay;
-    bool                  kernelBasedSampling;
-    bool                  trilinearInterpolation;
-    int                   backgroundMode;
-    unsigned char         background[3];
-    double                gradBG1[3];
-    double                gradBG2[3];
-    avtRayFunction       *rayfoo;
-    avtOpacityMap        *transferFn1D;
+    int                   screen[2] = {400,400};
+    int                   samplesPerRay{40};
+    bool                  kernelBasedSampling{false};
+    bool                  trilinearInterpolation{false};
 
-    avtImage_p            opaqueImage;
+    unsigned char         background[3] = {255,255,255};
+
+    avtRayFunction       *rayfoo{nullptr};
+
+#if LIB_VERSION_GE(VTK,9,1,0)
+    std::string           activeVarName{"default"};
+    std::string           opacityVarName{"default"};
+    std::string           gradientVarName{"default"};
+#endif
+
+    avtOpacityMap        *transferFn1D{nullptr};
+
+    avtImage_p            opaqueImage{nullptr};
 
     virtual void          Execute(void) = 0;
 

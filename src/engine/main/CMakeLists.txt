@@ -39,6 +39,15 @@
 #    Eric Brugger, Tue Jul 20 11:55:04 PDT 2021
 #    Added OPENGL_INCLUDE_DIR to the include directories if building IceT
 #    with MesaGL.
+# 
+#    Justin Privitera, Wed Aug 24 11:08:51 PDT 2022
+#    Added logic to be aware of avtBP lib.
+#
+#    Eric Brugger, Fri Feb 24 14:57:15 PST 2023
+#    Replace vtkjpeg with vtkjpeg_LIBRARIES and vtkpng with vtkpng_LIBRARIES.
+#
+#    Eric Brugger, Tue Jul 25 11:23:55 EDT 2023
+#    Change CMAKE_THREAD_LIBS to Threads::Threads.
 #
 #****************************************************************************
 
@@ -120,11 +129,7 @@ if(HAVE_OSMESA OR HAVE_EGL)
 endif()
 
 # Add link directories
-link_directories(
-  ${LIBRARY_OUTPUT_DIRECTORY}
-  ${ALL_THIRDPARTY_IO_LIBRARY_DIR}
-)
-
+link_directories(${LIBRARY_OUTPUT_DIRECTORY} ${AVT_REQUIRED_LIB_DIR})
 
 #********************************* SERIAL ************************************
 add_library(engine_ser ${LIBENGINE_SOURCES})
@@ -142,6 +147,23 @@ target_link_libraries(engine_ser
     avtviswindow_ser
     avtpipeline_ser
 )
+
+if(CONDUIT_FOUND AND MFEM_FOUND)
+    LINK_DIRECTORIES(
+        ${MFEM_LIBRARY_DIR}
+        ${CONDUIT_LIBRARY_DIR}
+        )
+    INCLUDE_DIRECTORIES(
+        ${MFEM_INCLUDE_DIR}
+        ${CONDUIT_INCLUDE_DIR}
+        ${VISIT_SOURCE_DIR}/avt/Blueprint
+        )
+    TARGET_LINK_LIBRARIES(engine_ser 
+        ${MFEM_LIB} 
+        avtblueprint
+        )
+endif()
+
 
 if(HAVE_OSMESA OR HAVE_EGL)
     target_link_libraries(engine_ser visit_vtk_offscreen)
@@ -170,11 +192,10 @@ target_link_libraries(engine_ser_exe
     ${engine_ser_exe_EPlot_ser}
     engine_ser
     visit_verdict
-    vtkjpeg
-    vtkpng
-    ${VTK_FREETYPE_LIBRARIES}
+    ${vtkjpeg_LIBRARIES}
+    ${vtkpng_LIBRARIES}
     ${ALL_THIRDPARTY_IO_LIB}
-    ${CMAKE_THREAD_LIBS}
+    Threads::Threads
     ${ZLIB_LIBRARY}
 )
 
@@ -239,6 +260,13 @@ if(VISIT_PARALLEL)
         ${ICET_DYNAMIC_LIB}
     )
 
+    if(CONDUIT_FOUND AND MFEM_FOUND)
+        TARGET_LINK_LIBRARIES(engine_par
+            ${MFEM_LIB} 
+            avtblueprint
+            )
+    endif()
+
     if(HAVE_OSMESA OR HAVE_EGL)
         target_link_libraries(engine_par visit_vtk_offscreen)
     endif()
@@ -276,12 +304,11 @@ if(VISIT_PARALLEL)
         ${engine_par_exe_EPlot_par}
         engine_par
         visit_verdict
-        vtkjpeg
-        vtkpng
-        ${VTK_FREETYPE_LIBRARIES}
+        ${vtkjpeg_LIBRARIES}
+        ${vtkpng_LIBRARIES}
         ${ALL_THIRDPARTY_IO_LIB}
         ${ICET_STATIC_LIB}
-        ${CMAKE_THREAD_LIBS}
+        Threads::Threads
         ${ZLIB_LIBRARY}
     )
 

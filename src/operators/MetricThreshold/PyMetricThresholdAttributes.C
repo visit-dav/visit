@@ -36,7 +36,7 @@ struct MetricThresholdAttributesObject
 //
 static PyObject *NewMetricThresholdAttributes(int);
 std::string
-PyMetricThresholdAttributes_ToString(const MetricThresholdAttributes *atts, const char *prefix)
+PyMetricThresholdAttributes_ToString(const MetricThresholdAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -1592,7 +1592,7 @@ static int
 MetricThresholdAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     MetricThresholdAttributesObject *obj = (MetricThresholdAttributesObject *)v;
-    fprintf(fp, "%s", PyMetricThresholdAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyMetricThresholdAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -1600,7 +1600,7 @@ PyObject *
 MetricThresholdAttributes_str(PyObject *v)
 {
     MetricThresholdAttributesObject *obj = (MetricThresholdAttributesObject *)v;
-    return PyString_FromString(PyMetricThresholdAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyMetricThresholdAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -1752,7 +1752,7 @@ PyMetricThresholdAttributes_GetLogString()
 {
     std::string s("MetricThresholdAtts = MetricThresholdAttributes()\n");
     if(currentAtts != 0)
-        s += PyMetricThresholdAttributes_ToString(currentAtts, "MetricThresholdAtts.");
+        s += PyMetricThresholdAttributes_ToString(currentAtts, "MetricThresholdAtts.", true);
     return s;
 }
 
@@ -1765,7 +1765,7 @@ PyMetricThresholdAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("MetricThresholdAtts = MetricThresholdAttributes()\n");
-        s += PyMetricThresholdAttributes_ToString(currentAtts, "MetricThresholdAtts.");
+        s += PyMetricThresholdAttributes_ToString(currentAtts, "MetricThresholdAtts.", true);
         cb(s);
     }
 }

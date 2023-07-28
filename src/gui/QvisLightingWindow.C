@@ -120,6 +120,9 @@ QvisLightingWindow::~QvisLightingWindow()
 //   Cyrus Harrison, Tue Jun 10 10:04:26 PDT 20
 //   Initial Qt4 Port.
 //
+//   Kathleen Biagas, Tue Apr 18 16:34:41 PDT 2023
+//   Support Qt6: buttonClicked -> idClicked.
+//
 // ****************************************************************************
 
 void
@@ -141,8 +144,13 @@ QvisLightingWindow::CreateWindowContents()
     gLayout->addWidget(modeLabel, 0, 0);
 
     modeButtons = new QButtonGroup(central);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(modeButtons, SIGNAL(buttonClicked(int)),
             this, SLOT(modeClicked(int)));
+#else
+    connect(modeButtons, SIGNAL(idClicked(int)),
+            this, SLOT(modeClicked(int)));
+#endif
     QRadioButton *rb = new QRadioButton(tr("Edit"), central);
     modeButtons->addButton(rb, 0);
     gLayout->addWidget(rb, 0, 1, Qt::AlignLeft);
@@ -182,9 +190,9 @@ QvisLightingWindow::CreateWindowContents()
     lightGroupBox = new QGroupBox(central);
     lightGroupBox->setTitle(tr("Properties"));
     gLayout->addWidget(lightGroupBox, 1, 3, 1, 2);
-    gLayout->setMargin(10);
+    gLayout->setContentsMargins(10,10,10,10);
     QGridLayout *sLayout = new QGridLayout(lightGroupBox);
-    sLayout->setMargin(10);
+    sLayout->setContentsMargins(10,10,10,10);
     sLayout->setSpacing(10);
     sLayout->setRowMinimumHeight(0, 15);
 

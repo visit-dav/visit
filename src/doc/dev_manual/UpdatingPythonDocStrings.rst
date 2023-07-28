@@ -15,10 +15,6 @@ Steps to update the Python scripting manual
 -------------------------------------------
 
 #. Modify ``python_scripting/functions.rst``.
-
-   * **NOTE:** Ordinarily, we keep documentation to a :ref:`single sentence per line of text <contributing_line_length>` and do not wrap lines at arbitrary column widths.
-     However, for the ``functions.rst`` file from which python doc strings are generated, we must forego this requirement. Otherwise, the doc strings do not display nicely at the python prompt.
-
 #. Run ``functions_to_plain_py.py`` to generate ``PY_RST_FUNCTIONS_TO_PYTHON.py``.
 #. Run ``2to3 -p PY_RST_FUNCTIONS_TO_PYTHON.py`` to check for Python syntax errors and Python 3 compatibly.
 
@@ -32,7 +28,7 @@ Steps to update the Python scripting manual
 #. Run the ``sphinx_cli_extractor.py`` tool producing new ``attributes.rst`` and ``events.rst`` files.
    To do so, you may need to use a combination of the ``PATH`` and ``PYTHONPATH`` environment variables to tell the ``sphinx_cli_extractor.py`` script where to find the VisIt_ module, ``visit`` in VisIt_'s ``site-packages`` and where to find the Python installation that that module is expecting to run with.
    In addition, you may need to use the ``PYTHONHOME`` environment variable to tell VisIt_'s ``visit`` module where to find standard Python libraries.
-   For example, to use an installed version of VisIt_ on my OSX machine, the command would look like...
+   For example, to use an installed version of VisIt_ on my macOS machine, the command would look like...
 
    .. code-block:: shell
 

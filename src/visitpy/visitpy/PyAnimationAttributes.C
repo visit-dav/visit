@@ -36,7 +36,7 @@ struct AnimationAttributesObject
 //
 static PyObject *NewAnimationAttributes(int);
 std::string
-PyAnimationAttributes_ToString(const AnimationAttributes *atts, const char *prefix)
+PyAnimationAttributes_ToString(const AnimationAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -524,7 +524,7 @@ static int
 AnimationAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     AnimationAttributesObject *obj = (AnimationAttributesObject *)v;
-    fprintf(fp, "%s", PyAnimationAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyAnimationAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -532,7 +532,7 @@ PyObject *
 AnimationAttributes_str(PyObject *v)
 {
     AnimationAttributesObject *obj = (AnimationAttributesObject *)v;
-    return PyString_FromString(PyAnimationAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyAnimationAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -684,7 +684,7 @@ PyAnimationAttributes_GetLogString()
 {
     std::string s("AnimationAtts = AnimationAttributes()\n");
     if(currentAtts != 0)
-        s += PyAnimationAttributes_ToString(currentAtts, "AnimationAtts.");
+        s += PyAnimationAttributes_ToString(currentAtts, "AnimationAtts.", true);
     return s;
 }
 
@@ -697,7 +697,7 @@ PyAnimationAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("AnimationAtts = AnimationAttributes()\n");
-        s += PyAnimationAttributes_ToString(currentAtts, "AnimationAtts.");
+        s += PyAnimationAttributes_ToString(currentAtts, "AnimationAtts.", true);
         cb(s);
     }
 }

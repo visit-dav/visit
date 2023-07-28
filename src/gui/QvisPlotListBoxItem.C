@@ -223,13 +223,15 @@ QvisPlotListBoxItem::height(const QListWidget *lb) const
 // Creation:   Mon Sep 11 11:45:01 PDT 2000
 //
 // Modifications:
+//   Kathleen Biagas, Wed Apr 6, 2022
+//   Fix QT_VERSION test to use Qt's QT_VERSION_CHECK.
 //
 // ****************************************************************************
 
 int
 QvisPlotListBoxItem::width(const QListWidget *lb) const
 {
-#if QT_VERSION >= 0x051100
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 11, 0))
     return lb ? lb->fontMetrics().horizontalAdvance(text()) + 6 : 0;
 #else
     return lb ? lb->fontMetrics().width(text()) + 6 : 0;
@@ -309,6 +311,12 @@ QvisPlotListBoxItem::textX() const
 //   Take into account more criteria when determining whether an operator will
 //   be highlighted.
 //
+//   Kathleen Biagas, Wed Apr 6, 2022
+//   Fix QT_VERSION test to use Qt's QT_VERSION_CHECK.
+//
+//   Kathleen Biagas, Wed Apr  5 15:11:57 PDT 2023
+//   Replace obsolete QPalette::Background with QPalette::Window.
+//
 // ****************************************************************************
 
 void QvisPlotListBoxItem::paint(QPainter *painter)
@@ -330,7 +338,7 @@ void QvisPlotListBoxItem::paint(QPainter *painter)
     if(!isSelected())
     {
         painter->fillRect(0, 0, (bw << 1) + 3, bw + 1,
-                          listWidget()->palette().brush(QPalette::Background));
+                          listWidget()->palette().brush(QPalette::Window));
     }
     else
     {
@@ -441,7 +449,7 @@ void QvisPlotListBoxItem::paint(QPainter *painter)
             // The prefix is a database name.
             dbName = prefix;
         }
-#if QT_VERSION >= 0x051100
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 11, 0))
         int expandX = x + fm.horizontalAdvance("9") / 2;
 #else
         int expandX = x + fm.width("9") / 2;
@@ -772,6 +780,9 @@ QvisPlotListBoxItem::setTextPen(QPainter *painter, bool highlightText) const
 //   Cyrus Harrison, Mon Jul  7 13:39:58 PDT 2008
 //   Initial Qt4 Port.
 //
+//   Kathleen Biagas, Wed Apr  5 15:11:57 PDT 2023
+//   Replace obsolete QPalette::Background with QPalette::Window.
+//
 // ****************************************************************************
 
 void
@@ -779,7 +790,7 @@ QvisPlotListBoxItem::drawButtonSurface(QPainter *painter, const QRect &r) const
 {
     // Draw the button background.
     painter->fillRect(r.x() + 1, r.y() + 1, r.width() - 3, r.height() - 3,
-                      listWidget()->palette().brush(QPalette::Background));
+                      listWidget()->palette().brush(QPalette::Window));
 
     // Draw the highlights.
     int x0 = r.x();
@@ -1082,7 +1093,7 @@ QvisPlotListBoxItem::GetOperatorPixmap(int operatorType, QPixmap &pm)
         oMgr->GetEnabledID(operatorType));
 
     QString key = QString("operator_icon_%1").arg(info->GetName());
-    if(!QPixmapCache::find(key, pm))
+    if(!QPixmapCache::find(key, &pm))
     {
         if(info->XPMIconData())
         {
@@ -1126,7 +1137,7 @@ QvisPlotListBoxItem::GetPlotPixmap(int plotType, QPixmap &pm)
         pMgr->GetEnabledID(plotType));
 
     QString key = QString("plot_icon_%1").arg(info->GetName());
-    if(!QPixmapCache::find(key, pm))
+    if(!QPixmapCache::find(key, &pm))
     {
         if(info->XPMIconData())
         {

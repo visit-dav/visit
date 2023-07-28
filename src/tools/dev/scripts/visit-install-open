@@ -128,6 +128,23 @@
 #   Eric Brugger, Mon Jan 13 15:34:55 PST 2020
 #   I removed rzuseq and vulcan.
 #
+#   Eric Brugger, Wed Jun  8 10:42:23 PDT 2022
+#   I added logic to the quartz and rztrona installs to copy libraries
+#   needed to run on toss4 systems.
+#
+#   Eric Brugger, Tue Jun 14 11:55:03 PDT 2022
+#   I removed the logic on the quartz and rztrona installs that copies
+#   the libraries needed by Qt, since those now get included by default.
+#
+#   Eric Brugger, Thu Feb  9 09:53:52 PST 2023
+#   I modified the rztrona and rzansel installs to install versions
+#   built on quartz and lassen. I modified the rztrona install to
+#   copy the darshan library into the VisIt lib directory so that it
+#   would run on toss4.
+#
+#   Eric Brugger, Fri Feb 17 09:36:29 PST 2023
+#   I added poodle and rzalastor.
+#
 #-----------------------------------------------------------------------
 
 test=no
@@ -170,8 +187,10 @@ esac
 #
 kickit=true
 quartz=true
+poodle=true
 lassen=true
 rztrona=true
+rzalastor=true
 rzansel=true
 cooley=false
 
@@ -188,8 +207,10 @@ do
       -none)
          kickit=false
          quartz=false
+         poodle=false
          lassen=false
          rztrona=false
+         rzalastor=false
          rzansel=false
          shift
          ;;
@@ -209,6 +230,14 @@ do
          quartz=true
          shift
          ;;
+      -poodle)
+         poodle=false
+         shift
+         ;;
+      +poodle)
+         poodle=true
+         shift
+         ;;
       -lassen)
          lassen=false
          shift
@@ -223,6 +252,14 @@ do
          ;;
       +rztrona)
          rztrona=true
+         shift
+         ;;
+      -rzalastor)
+         rzalastor=false
+         shift
+         ;;
+      +rzalastor)
+         rzalastor=true
          shift
          ;;
       -rzansel)
@@ -276,11 +313,6 @@ rm -f kickit
 cat <<EOF > kickit
 #!/bin/sh
 ./visit-install -private -c llnl_open -g visit -b wbronze -gw -l $ver linux-x86_64-rhel7 /usr/gapps/visit > installlog 2>&1
-cp /usr/gapps/gcc/gcc-9.1/lib64/libstdc++.so.6.0.26 /usr/gapps/visit/$ver+/linux-x86_64/lib
-ln -s libstdc++.so.6.0.26 /usr/gapps/visit/$ver+/linux-x86_64/lib/libstdc++.so
-ln -s libstdc++.so.6.0.26 /usr/gapps/visit/$ver+/linux-x86_64/lib/libstdc++.so.6
-chgrp visit /usr/gapps/visit/$ver+/linux-x86_64/lib/libstdc++.so.6.0.26
-chmod 664 /usr/gapps/visit/$ver+/linux-x86_64/lib/libstdc++.so.6.0.26
 rm -f resultlog
 echo "        install of visit on kickit"          > resultlog 2>&1
 echo "       ----------------------------"         >> resultlog 2>&1
@@ -295,6 +327,8 @@ echo "number of plot plugins = "\`ls /usr/gapps/visit/$ver+/linux-x86_64/plugins
 echo ""                                            >> resultlog 2>&1
 echo "The database plugins:"                       >> resultlog 2>&1
 ls /usr/gapps/visit/$ver+/linux-x86_64/plugins/databases/libI* | sed "s/\/usr\/gapps\/visit\/$ver+\/linux-x86_64\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+rm -f resultlog.kickit
+mv resultlog resultlog.kickit
 EOF
 
 if [ $kickit = true ]
@@ -306,7 +340,7 @@ then
       cp visit$ver2.linux-x86_64-rhel7.tar.gz ~/visit$ver2.linux-x86_64-rhel7.tar.gz
       cp visit-install ~
       cp kickit ~/kickit_install
-      echo "cd;chmod 750 kickit_install;./kickit_install" | bash &
+      ssh kickit "chmod 750 kickit_install;./kickit_install"
    fi
 fi
 
@@ -317,6 +351,19 @@ rm -f quartz
 cat <<EOF > quartz
 #!/bin/sh
 ./visit-install -private -c llnl_open_cz -g visit -b wbronze -gw -l $ver linux-x86_64-quartz /usr/gapps/visit > installlog 2>&1
+# Copy libraries needed for fortran for toss4 systems.
+cd /usr/tce/packages/gcc/gcc-7.1.0/lib64
+cp libgfortran.so.4.0.0 /usr/gapps/visit/$ver+/linux-x86_64/lib
+cd /usr/tce/packages/darshan/darshan-3.2.1/runtime/mvapich2-2.3/lib
+cp libdarshan.so /usr/gapps/visit/$ver+/linux-x86_64/lib
+cd /usr/gapps/visit/$ver+/linux-x86_64/lib
+chgrp visit libgfortran.so.4.0.0
+chmod g+rwX,o+rX libgfortran.so.4.0.0
+ln -s libgfortran.so.4.0.0 libgfortran.so
+ln -s libgfortran.so.4.0.0 libgfortran.so.4
+chgrp visit libdarshan.so
+chmod g+rwX,o+rX libdarshan.so
+cd
 rm -f resultlog
 echo ""                                              > resultlog 2>&1
 echo "        install of visit on quartz"            >> resultlog 2>&1
@@ -332,6 +379,7 @@ echo "number of plot plugins = "\`ls /usr/gapps/visit/$ver+/linux-x86_64/plugins
 echo ""                                              >> resultlog 2>&1
 echo "The database plugins:"                         >> resultlog 2>&1
 ls /usr/gapps/visit/$ver+/linux-x86_64/plugins/databases/libI* | sed "s/\/usr\/gapps\/visit\/$ver+\/linux-x86_64\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+rm -f resultlog.quartz
 mv resultlog resultlog.quartz
 EOF
 
@@ -344,6 +392,45 @@ then
       scp visit-install quartz:
       scp quartz quartz:quartz_install
       ssh quartz "chmod 750 quartz_install;./quartz_install"
+   fi
+fi
+
+#
+# Install on poodle.
+#
+rm -f poodle
+cat <<EOF > poodle
+#!/bin/sh
+./visit-install -private -c llnl_open_cz -g visit -b wbronze -gw -l $ver linux-x86_64-poodle /usr/gapps/visit > installlog 2>&1
+mv /usr/gapps/visit/$ver+/linux-x86_64 /usr/gapps/visit/$ver+/linux-x86_64-toss4
+rm -f resultlog
+echo ""                                              > resultlog 2>&1
+echo "        install of visit on poodle"            >> resultlog 2>&1
+echo "       ----------------------------"           >> resultlog 2>&1
+echo ""                                              >> resultlog 2>&1
+df -k /usr/gapps/visit                               >> resultlog 2>&1
+echo ""                                              >> resultlog 2>&1
+ls -l /usr/gapps/visit/$ver+/linux-x86_64-toss4/bin  >> resultlog 2>&1
+echo ""                                              >> resultlog 2>&1
+echo "number of database plugins = "\`ls /usr/gapps/visit/$ver+/linux-x86_64-toss4/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
+echo "number of operator plugins = "\`ls /usr/gapps/visit/$ver+/linux-x86_64-toss4/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
+echo "number of plot plugins = "\`ls /usr/gapps/visit/$ver+/linux-x86_64-toss4/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
+echo ""                                              >> resultlog 2>&1
+echo "The database plugins:"                         >> resultlog 2>&1
+ls /usr/gapps/visit/$ver+/linux-x86_64-toss4/plugins/databases/libI* | sed "s/\/usr\/gapps\/visit\/$ver+\/linux-x86_64-toss4\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+rm -f resultlog.poodle
+mv resultlog resultlog.poodle
+EOF
+
+if [ $poodle = true ]
+then
+   if [ $test = no ]
+   then
+      scp poodle18:/usr/tmp/$user/poodle/visitbuild/visit$ver2.linux-x86_64.tar.gz visit$ver2.linux-x86_64-poodle.tar.gz
+      scp visit$ver2.linux-x86_64-poodle.tar.gz poodle:
+      scp visit-install poodle:
+      scp poodle poodle:poodle_install
+      ssh poodle "chmod 750 poodle_install;./poodle_install"
    fi
 fi
 
@@ -369,6 +456,7 @@ echo "number of plot plugins = "\`ls /usr/gapps/visit/$ver+/linux-intel/plugins/
 echo ""                                              >> resultlog 2>&1
 echo "The database plugins:"                         >> resultlog 2>&1
 ls /usr/gapps/visit/$ver+/linux-intel/plugins/databases/libI* | sed "s/\/usr\/gapps\/visit\/$ver+\/linux-intel\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+rm -f resultlog.lassen
 mv resultlog resultlog.lassen
 EOF
 
@@ -390,7 +478,20 @@ fi
 rm -f rztrona
 cat <<EOF > rztrona
 #!/bin/sh
-./visit-install -private -c llnl_open_rz -g visit -b wbronze -gw -l $ver linux-rztrona /usr/gapps/visit > installlog 2>&1
+./visit-install -private -c llnl_open_rz -g visit -b wbronze -gw -l $ver linux-x86_64-quartz /usr/gapps/visit > installlog 2>&1
+# Copy libraries needed for fortran for toss4 systems.
+cd /usr/tce/packages/gcc/gcc-7.1.0/lib64
+cp libgfortran.so.4.0.0 /usr/gapps/visit/$ver+/linux-x86_64/lib
+cd /usr/tce/packages/darshan/darshan-3.2.1/runtime/mvapich2-2.3/lib
+cp libdarshan.so /usr/gapps/visit/$ver+/linux-x86_64/lib
+cd /usr/gapps/visit/$ver+/linux-x86_64/lib
+chgrp visit libgfortran.so.4.0.0
+chmod g+rwX,o+rX libgfortran.so.4.0.0
+ln -s libgfortran.so.4.0.0 libgfortran.so
+ln -s libgfortran.so.4.0.0 libgfortran.so.4
+chgrp visit libdarshan.so
+chmod g+rwX,o+rX libdarshan.so
+cd
 rm -f resultlog
 echo "        install of visit on rztrona"          > resultlog 2>&1
 echo "       -----------------------------"         >> resultlog 2>&1
@@ -405,18 +506,57 @@ echo "number of plot plugins = "\`ls /usr/gapps/visit/$ver+/linux-x86_64/plugins
 echo ""                                             >> resultlog 2>&1
 echo "The database plugins:"                        >> resultlog 2>&1
 ls /usr/gapps/visit/$ver+/linux-x86_64/plugins/databases/libI* | sed "s/\/usr\/gapps\/visit\/$ver+\/linux-x86_64\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
-mail -s "VisIt install ($ver): rztrona" $emailName < resultlog
+rm -f resultlog.rztrona
+mv resultlog resultlog.rztrona
+mail -s "VisIt install ($ver): rztrona" $emailName < resultlog.rztrona
 EOF
 
 if [ $rztrona = true ]
 then
    if [ $test = no ]
    then
-      scp rztrona5:/usr/tmp/$user/rztrona/visitbuild/visit$ver2.linux-x86_64.tar.gz visit$ver2.linux-rztrona.tar.gz
-      scp visit$ver2.linux-rztrona.tar.gz rztrona:
+      scp visit$ver2.linux-x86_64-quartz.tar.gz rztrona:
       scp visit-install rztrona:
       scp rztrona rztrona:rztrona_install
       ssh rztrona "chmod 750 rztrona_install;./rztrona_install"
+   fi
+fi
+
+#
+# Install on rzalastor
+#
+rm -f rzalastor
+cat <<EOF > rzalastor
+#!/bin/sh
+./visit-install -private -c llnl_open_rz -g visit -b wbronze -gw -l $ver linux-x86_64-poodle /usr/gapps/visit > installlog 2>&1
+mv /usr/gapps/visit/$ver+/linux-x86_64 /usr/gapps/visit/$ver+/linux-x86_64-toss4
+rm -f resultlog
+echo "        install of visit on rzalastor"        > resultlog 2>&1
+echo "       -------------------------------"       >> resultlog 2>&1
+echo ""                                             >> resultlog 2>&1
+df -k /usr/gapps/visit                              >> resultlog 2>&1
+echo ""                                             >> resultlog 2>&1
+ls -l /usr/gapps/visit/$ver+/linux-x86_64-toss4/bin >> resultlog 2>&1
+echo ""                                             >> resultlog 2>&1
+echo "number of database plugins = "\`ls /usr/gapps/visit/$ver+/linux-x86_64-toss4/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
+echo "number of operator plugins = "\`ls /usr/gapps/visit/$ver+/linux-x86_64-toss4/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
+echo "number of plot plugins = "\`ls /usr/gapps/visit/$ver+/linux-x86_64-toss4/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
+echo ""                                             >> resultlog 2>&1
+echo "The database plugins:"                        >> resultlog 2>&1
+ls /usr/gapps/visit/$ver+/linux-x86_64-toss4/plugins/databases/libI* | sed "s/\/usr\/gapps\/visit\/$ver+\/linux-x86_64-toss4\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+rm -f resultlog.rzalastor
+mv resultlog resultlog.rzalastor
+mail -s "VisIt install ($ver): rzalastor" $emailName < resultlog.rzalastor
+EOF
+
+if [ $rzalastor = true ]
+then
+   if [ $test = no ]
+   then
+      scp visit$ver2.linux-x86_64-poodle.tar.gz rzalastor:
+      scp visit-install rzalastor:
+      scp rzalastor rzalastor:rzalastor_install
+      ssh rzalastor "chmod 750 rzalastor_install;./rzalastor_install"
    fi
 fi
 
@@ -426,7 +566,7 @@ fi
 rm -f rzansel
 cat <<EOF > rzansel
 #!/bin/sh
-./visit-install -private -c llnl_open_rz -g visit -b wbronze -gw -l $ver linux-rzansel /usr/gapps/visit > installlog 2>&1
+./visit-install -private -c llnl_open_rz -g visit -b wbronze -gw -l $ver linux-intel-lassen /usr/gapps/visit > installlog 2>&1
 rm -f resultlog
 echo "        install of visit on rzansel"          > resultlog 2>&1
 echo "       -----------------------------"         >> resultlog 2>&1
@@ -441,15 +581,16 @@ echo "number of plot plugins = "\`ls /usr/gapps/visit/$ver+/linux-intel/plugins/
 echo ""                                             >> resultlog 2>&1
 echo "The database plugins:"                        >> resultlog 2>&1
 ls /usr/gapps/visit/$ver+/linux-intel/plugins/databases/libI* | sed "s/\/usr\/gapps\/visit\/$ver+\/linux-intel\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
-mail -s "VisIt install ($ver): rzansel" $emailName < resultlog
+rm -f resultlog.rzansel
+mv resultlog resultlog.rzansel
+mail -s "VisIt install ($ver): rzansel" $emailName < resultlog.rzansel
 EOF
 
 if [ $rzansel = true ]
 then
    if [ $test = no ]
    then
-      scp rzansel61:/usr/tmp/$user/rzansel/visitbuild/visit$ver2.linux-intel.tar.gz visit$ver2.linux-rzansel.tar.gz
-      scp visit$ver2.linux-rzansel.tar.gz rzansel:
+      scp visit$ver2.linux-intel-lassen.tar.gz rzansel:
       scp visit-install rzansel:
       scp rzansel rzansel:rzansel_install
       ssh rzansel "chmod 750 rzansel_install;./rzansel_install"
@@ -477,7 +618,9 @@ echo "number of plot plugins = "\`ls /soft/visualization/visit/$ver+/linux-x86_6
 echo ""                                                 >> resultlog 2>&1
 echo "The database plugins:"                            >> resultlog 2>&1
 ls /soft/visualization/visit/$ver+/linux-x86_64/plugins/databases/libI* | sed "s/soft\/visualization\/visit\/$ver+\/linux-x86_64\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
-mail -s "VisIt install ($ver): cooley" $emailName < resultlog
+rm -f resultlog.cooley
+mv resultlog resultlog.cooley
+mail -s "VisIt install ($ver): cooley" $emailName < resultlog.cooley
 EOF
 
 if [ $cooley = true ]
@@ -495,5 +638,5 @@ fi
 #
 if [ $test = no ]
 then
-   rm -f kickit quartz lassen rztrona rzansel cooley
+   rm -f kickit quartz poodle lassen rztrona rzalastor rzansel cooley
 fi

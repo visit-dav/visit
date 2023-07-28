@@ -104,6 +104,9 @@ QvisSubsetPlotWindow::~QvisSubsetPlotWindow()
 //   Kathleen Bonnell, Mon Jan 17 18:14:12 MST 2011
 //   Change colorTableButton to colorTableWidget to gain invert toggle.
 //
+//   Kathleen Biagas, Tue Apr 18 16:34:41 PDT 2023
+//   Support Qt6: buttonClicked -> idClicked.
+//
 // ****************************************************************************
 
 void
@@ -115,15 +118,20 @@ QvisSubsetPlotWindow::CreateWindowContents()
     topLayout->addWidget(subsetColorGroup);
 
     QGridLayout *colorLayout = new QGridLayout(subsetColorGroup);
-    colorLayout->setMargin(5);
+    colorLayout->setContentsMargins(5,5,5,5);
     colorLayout->setSpacing(10);
     colorLayout->setColumnStretch(2, 1000);
 
     // Create the mode buttons that determine if the window is in single
     // or multiple color mode.
     colorModeButtons = new QButtonGroup(subsetColorGroup);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(colorModeButtons, SIGNAL(buttonClicked(int)),
             this, SLOT(colorModeChanged(int)));
+#else
+    connect(colorModeButtons, SIGNAL(idClicked(int)),
+            this, SLOT(colorModeChanged(int)));
+#endif
 
     QRadioButton *rb = new QRadioButton(tr("Color table"), subsetColorGroup);
     colorModeButtons->addButton(rb, 0);
@@ -188,7 +196,7 @@ QvisSubsetPlotWindow::CreateWindowContents()
 
     // Create the overall opacity.
     QHBoxLayout *opLayout = new QHBoxLayout(0);
-    opLayout->setMargin(0);
+    opLayout->setContentsMargins(0,0,0,0);
     opLayout->setSpacing(5);
     colorLayout->addLayout(opLayout, 5, 0, 1, 3);
 
@@ -215,7 +223,7 @@ QvisSubsetPlotWindow::CreateWindowContents()
     topLayout->addWidget(optionscGroup);
 
     QGridLayout *optionsLayout = new QGridLayout(optionscGroup);
-    optionsLayout->setMargin(5);
+    optionsLayout->setContentsMargins(5,5,5,5);
     optionsLayout->setSpacing(10);
  
     // Create the wireframe toggle
@@ -240,7 +248,7 @@ QvisSubsetPlotWindow::CreateWindowContents()
     topLayout->addWidget(styleGroup);
 
     QGridLayout *styleLayout = new QGridLayout(styleGroup);
-    styleLayout->setMargin(5);
+    styleLayout->setContentsMargins(5,5,5,5);
     styleLayout->setSpacing(10);
  
     // Create the point control
@@ -273,15 +281,20 @@ QvisSubsetPlotWindow::CreateWindowContents()
     topLayout->addWidget(smoothingGroup);
 
     QGridLayout *smoothingLayout = new QGridLayout(smoothingGroup);
-    smoothingLayout->setMargin(5);
+    smoothingLayout->setContentsMargins(5,5,5,5);
     smoothingLayout->setSpacing(10);
 
     smoothingLayout->addWidget(new QLabel(tr("Smoothing"), central), 0,0);
 
     // Create the smoothing level buttons
     smoothingLevelButtons = new QButtonGroup(central);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(smoothingLevelButtons, SIGNAL(buttonClicked(int)),
             this, SLOT(smoothingLevelChanged(int)));
+#else
+    connect(smoothingLevelButtons, SIGNAL(idClicked(int)),
+            this, SLOT(smoothingLevelChanged(int)));
+#endif
 
     rb = new QRadioButton(tr("None"), central);
     smoothingLevelButtons->addButton(rb, 0);
@@ -301,7 +314,7 @@ QvisSubsetPlotWindow::CreateWindowContents()
     topLayout->addWidget(miscGroup);
 
     QGridLayout *miscLayout = new QGridLayout(miscGroup);
-    miscLayout->setMargin(5);
+    miscLayout->setContentsMargins(5,5,5,5);
     miscLayout->setSpacing(10);
  
     // Create the legend toggle

@@ -135,6 +135,9 @@ QvisRenderingWindow::~QvisRenderingWindow()
 //   Added a label and tooltip indicating that a VisIt restart is required
 //   when changing anti-aliasing.
 //
+//   Kathleen Biagas, Tue Apr 18 16:34:41 PDT 2023
+//   Support Qt6: buttonClicked -> idClicked.
+//
 // ****************************************************************************
 
 QWidget *
@@ -144,7 +147,7 @@ QvisRenderingWindow::CreateBasicPage()
     QWidget *basicOptions = new QWidget(central);
     QGridLayout *basicLayout = new QGridLayout(basicOptions);
     basicLayout->setSpacing(5);
-    basicLayout->setMargin(10);
+    basicLayout->setContentsMargins(10,10,10,10);
 
     // Create the antialiasing widgets.
     antialiasingToggle = new QCheckBox(tr("Antialiasing"), basicOptions);
@@ -313,8 +316,13 @@ QvisRenderingWindow::CreateBasicPage()
     QLabel *drawObjLabel = new QLabel(tr("Draw objects as"), basicOptions);
     basicLayout->addWidget(drawObjLabel, row, 0, 1, 3);
     objectRepresentation = new QButtonGroup(basicOptions);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(objectRepresentation, SIGNAL(buttonClicked(int)),
             this, SLOT(objectRepresentationChanged(int)));
+#else
+    connect(objectRepresentation, SIGNAL(idClicked(int)),
+            this, SLOT(objectRepresentationChanged(int)));
+#endif
     row++;
 
     QRadioButton *surfaces = new QRadioButton(tr("Surfaces"), basicOptions);
@@ -336,8 +344,13 @@ QvisRenderingWindow::CreateBasicPage()
     row++;
 
     stereoType = new QButtonGroup(basicOptions);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(stereoType, SIGNAL(buttonClicked(int)),
             this, SLOT(stereoTypeChanged(int)));
+#else
+    connect(stereoType, SIGNAL(idClicked(int)),
+            this, SLOT(stereoTypeChanged(int)));
+#endif
     redblue = new QRadioButton(tr("Red/Blue"), basicOptions);
     stereoType->addButton(redblue, 0);
     basicLayout->addWidget(redblue, row, 1);
@@ -405,6 +418,13 @@ QvisRenderingWindow::CreateBasicPage()
 //   Garrett Morrison, Fri May 11 17:57:47 PDT 2018
 //   Added OSPRay option default values
 //
+//   Kathleen Biagas, Wed Aug 17, 2022
+//   Incorporate ARSanderson's OSPRAY 2.8.0 work for VTK 9.
+//   (bracketed by #elif defined(HAVE_OSPRAY).
+//
+//   Kathleen Biagas, Tue Apr 18 16:34:41 PDT 2023
+//   Support Qt6: buttonClicked -> idClicked.
+//
 // ****************************************************************************
 
 QWidget *
@@ -415,14 +435,19 @@ QvisRenderingWindow::CreateAdvancedPage()
     QWidget *advancedOptions = new QWidget(central);
     QGridLayout *advLayout = new QGridLayout(advancedOptions);
     advLayout->setSpacing(5);
-    advLayout->setMargin(10);
+    advLayout->setContentsMargins(10,10,10,10);
 
     // Create the scalable rendering widgets.
     QLabel *scalrenLabel = new QLabel(tr("Use scalable rendering"), advancedOptions);
     advLayout->addWidget(scalrenLabel, row, 0, 1, 3);
     scalrenActivationMode = new QButtonGroup(advancedOptions);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(scalrenActivationMode, SIGNAL(buttonClicked(int)),
             this, SLOT(scalrenActivationModeChanged(int)));
+#else
+    connect(scalrenActivationMode, SIGNAL(idClicked(int)),
+            this, SLOT(scalrenActivationModeChanged(int)));
+#endif
     row++;
 
     scalrenAuto = new QRadioButton(tr("Auto"), advancedOptions);
@@ -455,8 +480,13 @@ QvisRenderingWindow::CreateAdvancedPage()
                                       advancedOptions);
     advLayout->addWidget(scalrenCompressLabel, row, 0, 1, 3);
     scalrenCompressMode = new QButtonGroup(advancedOptions);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(scalrenCompressMode, SIGNAL(buttonClicked(int)),
             this, SLOT(scalrenCompressModeChanged(int)));
+#else
+    connect(scalrenCompressMode, SIGNAL(idClicked(int)),
+            this, SLOT(scalrenCompressModeChanged(int)));
+#endif
     row++;
 
     QRadioButton *cmp_auto = new QRadioButton(tr("Auto"), advancedOptions);
@@ -475,8 +505,13 @@ QvisRenderingWindow::CreateAdvancedPage()
     QLabel *compactDomainsLabel = new QLabel(tr("Compact domains on engine"), advancedOptions);
     advLayout->addWidget(compactDomainsLabel, row, 0, 1, 3);
     compactDomainsActivationMode = new QButtonGroup(advancedOptions);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(compactDomainsActivationMode, SIGNAL(buttonClicked(int)),
             this, SLOT(compactDomainsActivationModeChanged(int)));
+#else
+    connect(compactDomainsActivationMode, SIGNAL(idClicked(int)),
+            this, SLOT(compactDomainsActivationModeChanged(int)));
+#endif
     row++;
 
     compactDomainsAuto = new QRadioButton(tr("Auto"), advancedOptions);
@@ -604,6 +639,67 @@ QvisRenderingWindow::CreateAdvancedPage()
     connect(osprayRenderingToggle, SIGNAL(toggled(bool)),
             osprayShadowsToggle, SLOT(setEnabled(bool)));
     row++;
+#elif defined(HAVE_OSPRAY)
+    QFrame *line = new QFrame(advancedOptions);
+    line->setFrameShape(QFrame::HLine);
+    line->setFrameShadow(QFrame::Sunken);
+    line->setFixedHeight(2);
+    line->setLineWidth(1);
+    advLayout->addWidget(line, row, 0, 2, 4);
+    row += 2;
+
+    // Create the OSPRay group box.
+    osprayGroup = new QGroupBox(tr("OSPRay Rendering"), advancedOptions);
+    osprayGroup->setCheckable(true);
+    osprayGroup->setChecked(false);
+    connect(osprayGroup, SIGNAL(toggled(bool)),
+            this, SLOT(osprayRenderingToggled(bool)));
+    advLayout->addWidget(osprayGroup, row, 0, 3, 4);
+    row++;
+
+    QGridLayout *osprayLayout = new QGridLayout(osprayGroup);
+    osprayLayout->setContentsMargins(5,5,5,5);
+    osprayLayout->setSpacing(10);
+
+    int orow  = 0;
+    ospraySPPLabel = new QLabel(tr("Samples per pixel"), advancedOptions);
+    ospraySPPLabel->setEnabled(false);
+    osprayLayout->addWidget(ospraySPPLabel, orow, 0, 1, 2);
+    ospraySPP = new QSpinBox(advancedOptions);
+    ospraySPP->setMinimum(1);
+    ospraySPP->setEnabled(false);
+    connect(ospraySPP, SIGNAL(valueChanged(int)),
+            this, SLOT(ospraySPPChanged(int)));
+    osprayLayout->addWidget(ospraySPP, orow, 2);
+    orow++;
+    connect(osprayGroup, SIGNAL(toggled(bool)),
+            ospraySPPLabel, SLOT(setEnabled(bool)));
+    connect(osprayGroup, SIGNAL(toggled(bool)),
+            ospraySPP, SLOT(setEnabled(bool)));
+
+    osprayAOLabel = new QLabel(tr("Ambient occlusion samples"), advancedOptions);
+    osprayAOLabel->setEnabled(false);
+    osprayLayout->addWidget(osprayAOLabel, orow, 0, 1, 2);
+    osprayAO = new QSpinBox(advancedOptions);
+    osprayAO->setMinimum(0);
+    osprayAO->setEnabled(false);
+    connect(osprayAO, SIGNAL(valueChanged(int)),
+            this, SLOT(osprayAOChanged(int)));
+    osprayLayout->addWidget(osprayAO, orow, 2);
+    orow++;
+    connect(osprayGroup, SIGNAL(toggled(bool)),
+            osprayAOLabel, SLOT(setEnabled(bool)));
+    connect(osprayGroup, SIGNAL(toggled(bool)),
+            osprayAO, SLOT(setEnabled(bool)));
+
+    osprayShadowsToggle = new QCheckBox(tr("Shadows"), advancedOptions);
+    osprayShadowsToggle->setEnabled(false);
+    connect(osprayShadowsToggle, SIGNAL(toggled(bool)),
+            this, SLOT(osprayShadowsToggled(bool)));
+    osprayLayout->addWidget(osprayShadowsToggle, orow, 0, 1, 2);
+    orow++;
+    connect(osprayGroup, SIGNAL(toggled(bool)),
+            osprayShadowsToggle, SLOT(setEnabled(bool)));
 #endif
 
     return advancedOptions;
@@ -635,7 +731,7 @@ QvisRenderingWindow::CreateInformationPage()
     QWidget *info = new QWidget(central);
     QVBoxLayout *vLayout = new QVBoxLayout(info);
     vLayout->addSpacing(10);
-    vLayout->setMargin(10);
+    vLayout->setContentsMargins(10,10,10,10);
 
     renderNotifyToggle = new QCheckBox(tr("Query after each render"), info);
     connect(renderNotifyToggle, SIGNAL(toggled(bool)),
@@ -826,12 +922,17 @@ QvisRenderingWindow::UpdateWindow(bool doAll)
 //   Modified OSPRay rendering toggle to disable other OSPRay options
 //   when it is disabled
 //
+//   Kathleen Biagas, Wed Aug 17, 2022
+//   Incorporate ARSanderson's OSPRAY 2.8.0 work for VTK 9.
+//   (bracketed by #elif defined(HAVE_OSPRAY).
+//
 // ****************************************************************************
 
 void
 QvisRenderingWindow::UpdateOptions(bool doAll)
 {
     QString tmp;
+    bool enabled;
     int itmp, itmp2;
 
     // Loop through all the attributes and do something for
@@ -884,11 +985,60 @@ QvisRenderingWindow::UpdateOptions(bool doAll)
             renderNotifyToggle->setChecked(renderAtts->GetNotifyForEachRender());
             renderNotifyToggle->blockSignals(false);
             break;
+        case RenderingAttributes::ID_depthPeeling:
+            enabled = renderAtts->GetDepthPeeling();
+            depthPeeling->blockSignals(true);
+            depthPeeling->setChecked(enabled);
+            depthPeeling->blockSignals(false);
+            occlusionRatioLabel->setEnabled(enabled);
+            occlusionRatio->setEnabled(enabled);
+            numberOfPeelsLabel->setEnabled(enabled);
+            numberOfPeels->setEnabled(enabled);
+            break;
+        case RenderingAttributes::ID_occlusionRatio:
+            tmp = DoubleToQString(renderAtts->GetOcclusionRatio());
+            occlusionRatio->blockSignals(true);
+            occlusionRatio->setText(tmp);
+            occlusionRatio->blockSignals(false);
+            break;
+        case RenderingAttributes::ID_numberOfPeels:
+            tmp = IntToQString(renderAtts->GetNumberOfPeels());
+            numberOfPeels->blockSignals(true);
+            numberOfPeels->setText(tmp);
+            numberOfPeels->blockSignals(false);
+            break;
 #ifdef VISIT_OSPRAY
         case RenderingAttributes::ID_osprayRendering:
             osprayRenderingToggle->blockSignals(true);
             osprayRenderingToggle->setChecked(renderAtts->GetOsprayRendering());
             osprayRenderingToggle->blockSignals(false);
+            break;
+        case RenderingAttributes::ID_ospraySPP:
+            ospraySPP->blockSignals(true);
+            ospraySPP->setValue(int(renderAtts->GetOspraySPP()));
+            ospraySPP->blockSignals(false);
+            break;
+        case RenderingAttributes::ID_osprayAO:
+            osprayAO->blockSignals(true);
+            osprayAO->setValue(int(renderAtts->GetOsprayAO()));
+            osprayAO->blockSignals(false);
+            break;
+        case RenderingAttributes::ID_osprayShadows:
+            osprayShadowsToggle->blockSignals(true);
+            osprayShadowsToggle->setChecked(renderAtts->GetOsprayShadows());
+            osprayShadowsToggle->blockSignals(false);
+            break;
+#elif defined(HAVE_OSPRAY)
+        case RenderingAttributes::ID_osprayRendering:
+            enabled = renderAtts->GetOsprayRendering();
+            osprayGroup->blockSignals(true);
+            osprayGroup->setChecked(enabled);
+            ospraySPPLabel->setEnabled(enabled);
+            ospraySPP->setEnabled(enabled);
+            osprayAOLabel->setEnabled(enabled);
+            osprayAO->setEnabled(enabled);
+            osprayShadowsToggle->setEnabled(enabled);
+            osprayGroup->blockSignals(false);
             break;
         case RenderingAttributes::ID_ospraySPP:
             ospraySPP->blockSignals(true);

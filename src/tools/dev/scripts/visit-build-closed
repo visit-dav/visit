@@ -108,6 +108,9 @@
 #   Updated the compiler version in the cmake path for winnipeg and
 #   trinity.
 #
+#   Eric Brugger, Tue Jun 14 11:49:17 PDT 2022
+#   I updated the 3.2.0 cmake paths to 3.3.0. I removed winnipeg.
+#
 #-----------------------------------------------------------------------
 
 test=no
@@ -117,7 +120,6 @@ user=`whoami`
 #
 # Parse the execute line, providing default values for error checking.
 #
-winnipeg=true
 jade=true
 sierra=true
 trinity=true
@@ -133,18 +135,9 @@ for abc
 do
    case $1 in
       -none)
-         winnipeg=false
          jade=false
          sierra=false
          trinity=false
-         shift
-         ;;
-      -winnipeg)
-         winnipeg=false
-         shift
-         ;;
-      +winnipeg)
-         winnipeg=true
          shift
          ;;
       -jade)
@@ -185,7 +178,6 @@ if [ $dist = undefined ]
 then
    echo "Usage: [-none] [-<machine name>] -d <distribution>"
    echo "Valid machine names:"
-   echo "    winnipeg (B-Div, x86_64),"
    echo "    jade (LC, x86_64)"
    echo "    sierra (LC, ppc)"
    echo "    trinity (LANL, x86_64)"
@@ -200,53 +192,6 @@ if [ ! -f $distfile ]
 then
    echo "Distribution file doesn't exist."
    exit
-fi
-
-#
-# Build on winnipeg.
-#
-rm -f winnipeg
-cat <<EOF > winnipeg
-#!/bin/sh
-if test ! -e winnipeg ; then
-   mkdir winnipeg
-fi
-rm -rf winnipeg/visitbuild
-mkdir winnipeg/visitbuild
-mv winnipeg_$dist.tar.gz winnipeg/visitbuild/$dist.tar.gz
-cd winnipeg/visitbuild
-gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
-cd $dist/src
-ver=\`cat VERSION\`
-ver2=\`echo \$ver | tr "." "_"\`
-/misc/gapps/visit/thirdparty_shared/3.2.0/cmake/3.14.7/linux-x86_64_gcc-9.1/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON -DVISIT_PARADIS:BOOL=ON >> ../../buildlog 2>&1
-make manuals >> ../../buildlog 2>&1
-make -j 4 package >> ../../buildlog 2>&1
-mv visit\$ver2.linux-x86_64.tar.gz ../..
-cd ../..
-rm -f resultlog
-echo "        build of visit on winnipeg"   > resultlog 2>&1
-echo "       ----------------------------"  >> resultlog 2>&1
-echo ""                                     >> resultlog 2>&1
-ls -l                                       >> resultlog 2>&1
-echo ""                                     >> resultlog 2>&1
-echo "number of database plugins = "\`ls $dist/src/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
-echo "number of operator plugins = "\`ls $dist/src/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
-echo "number of plot plugins = "\`ls $dist/src/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
-echo ""                                     >> resultlog 2>&1
-echo "The database plugins:"                >> resultlog 2>&1
-ls $dist/src/plugins/databases/libI* | sed "s/$dist\/src\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
-EOF
- 
-if [ $winnipeg = true ]
-then
-   if [ $test = no ]
-   then
-      echo "Building on winnipeg"
-      scp -P 22 winnipeg winnipeg:winnipeg_buildit
-      scp -P 22 $dist.tar.gz winnipeg:winnipeg_$dist.tar.gz
-      ssh -p 22 winnipeg "chmod 750 winnipeg_buildit;./winnipeg_buildit" &
-   fi
 fi
 
 #
@@ -271,7 +216,7 @@ gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
 cd $dist/src
 ver=\`cat VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
-/usr/workspace/visit/visit/thirdparty_shared/3.2.0/toss3/cmake/3.14.7/linux-x86_64_gcc-6.1/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON -DVISIT_PARADIS:BOOL=ON >> ../../buildlog 2>&1
+/usr/workspace/visit/visit/thirdparty_shared/3.3.0/toss3/cmake/3.18.2/linux-x86_64_gcc-7.3/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON -DVISIT_PARADIS:BOOL=ON >> ../../buildlog 2>&1
 make manuals >> ../../buildlog 2>&1
 make -j 8 package >> ../../buildlog 2>&1
 mv visit\$ver2.linux-x86_64.tar.gz ../..
@@ -321,7 +266,7 @@ gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
 cd $dist/src
 ver=\`cat VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
-/usr/workspace/visit/visit/thirdparty_shared/3.2.0/blueos/cmake/3.14.7/linux-ppc64le_gcc-7.3/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON >> ../../buildlog 2>&1
+/usr/workspace/visit/visit/thirdparty_shared/3.3.0/blueos/cmake/3.18.2/linux-ppc64le_gcc-7.3/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON >> ../../buildlog 2>&1
 make manuals >> ../../buildlog 2>&1
 make -j 12 package >> ../../buildlog 2>&1
 mv visit\$ver2.linux-intel.tar.gz ../..
@@ -371,7 +316,7 @@ gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
 cd $dist/src
 ver=\`cat VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
-/usr/projects/views/visit/thirdparty_shared/3.2.0/cmake/3.14.7/linux-x86_64_gcc-8.2/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON >> ../../buildlog 2>&1
+/usr/projects/views/visit/thirdparty_shared/3.3.1/cmake/3.18.2/linux-x86_64_cc/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON >> ../../buildlog 2>&1
 make manuals >> ../../buildlog 2>&1
 make -j 6 package >> ../../buildlog 2>&1
 mv visit\$ver2.linux-x86_64.tar.gz ../..
@@ -406,5 +351,5 @@ fi
 #
 if [ $test = no ]
 then
-   rm -f winnipeg jade sierra trinity
+   rm -f jade sierra trinity
 fi

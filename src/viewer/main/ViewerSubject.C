@@ -11,9 +11,10 @@
 #include <stdio.h>
 #include <ViewerSubject.h>
 
-#include <QDesktopWidget>
 #include <QFile>
 #include <QLocale>
+#include <QRect>
+#include <QScreen>
 #include <QTimer>
 #include <QTranslator>
 
@@ -181,7 +182,7 @@ static const char *dummy_string1 = "DEBUG_MEMORY_LEAKS";
 // Purpose:
 //   Handles deferred commands from a simulation.
 //
-// Notes:    
+// Notes:
 //
 // Programmer: Brad Whitlock
 // Creation:   Wed Sep  3 11:59:13 PDT 2014
@@ -196,7 +197,7 @@ public:
     ViewerCommandDeferredCommandFromSimulation(ViewerSubject *vs,
                                                EngineKey a,
                                                const std::string &b,
-                                               const std::string &c) : 
+                                               const std::string &c) :
         ViewerInternalCommand(), viewerSubject(vs), key(a), db(b), command(c)
     {
     }
@@ -222,7 +223,7 @@ private:
 // Purpose:
 //   Handles sync with clients.
 //
-// Notes:    
+// Notes:
 //
 // Programmer: Brad Whitlock
 // Creation:   Wed Sep  3 11:59:41 PDT 2014
@@ -234,7 +235,7 @@ private:
 class ViewerCommandSync : public ViewerInternalCommand
 {
 public:
-    ViewerCommandSync(ViewerObserverToSignal *obj, int t) : 
+    ViewerCommandSync(ViewerObserverToSignal *obj, int t) :
         ViewerInternalCommand(), syncObserver(obj), tag(t)
     {
     }
@@ -314,8 +315,8 @@ using std::string;
 //    Hank Childs, Mon Jul 18 16:00:32 PDT 2005
 //    Initialize qt_argv.
 //
-//    Kathleen Bonnell, Tue Jun 20 16:02:38 PDT 2006 
-//    Add plotInfoAtts. 
+//    Kathleen Bonnell, Tue Jun 20 16:02:38 PDT 2006
+//    Add plotInfoAtts.
 //
 //    Brad Whitlock, Mon Feb 12 17:36:41 PST 2007
 //    Changed base class to ViewerBase.
@@ -340,7 +341,7 @@ using std::string;
 //
 // ****************************************************************************
 
-ViewerSubject::ViewerSubject() : ViewerBaseUI(), 
+ViewerSubject::ViewerSubject() : ViewerBaseUI(),
     launchEngineAtStartup(), openDatabaseOnStartup(), openScriptOnStartup(),
     interpretCommands(), xfer(), clients(),
     unknownArguments(), clientArguments()
@@ -451,8 +452,8 @@ ViewerSubject::ViewerSubject() : ViewerBaseUI(),
 //    Hank Childs, Mon Jul 18 16:00:32 PDT 2005
 //    Free qt_argv.
 //
-//    Kathleen Bonnell, Tue Jun 20 16:02:38 PDT 2006 
-//    Add plotInfoAtts. 
+//    Kathleen Bonnell, Tue Jun 20 16:02:38 PDT 2006
+//    Add plotInfoAtts.
 //
 //    Mark C. Miller, Wed Jan 10 11:50:51 PST 2007
 //    Fixed mismatched delete for configFileName
@@ -568,13 +569,13 @@ ViewerSubject::Connect(int *argc, char ***argv)
 // ****************************************************************************
 // Method: ViewerSubject::Initialize
 //
-// Purpose: 
+// Purpose:
 //   First stage of initialization for various objects in the viewer subject.
 //   Other stages are started by calling this method.
 //
 // Arguments:
 //
-// Returns:    
+// Returns:
 //
 // Note:       Must be called after ProcessArguments(), Connect() and after a
 //             QApplication has been created.
@@ -642,7 +643,7 @@ ViewerSubject::Initialize()
         CustomizeAppearance();
     }
 
-    // Ensure that we always create a connection printer for VCL that uses 
+    // Ensure that we always create a connection printer for VCL that uses
     // socket notifiers.
     GetViewerFactory()->OverrideCreateConnectionPrinter(
         OverrideCreateConnectionPrinter);
@@ -654,7 +655,7 @@ ViewerSubject::Initialize()
 
     // Install a launch progress callback for the server manager.
     ViewerServerManager::SetLaunchProgressCallback(LaunchProgressCB, (void*)this);
-    // Install a callback for the server manager for when it needs to launch 
+    // Install a callback for the server manager for when it needs to launch
     // programs via the engine.
     ViewerServerManager::SetOpenWithEngineCallback(OpenWithEngine, (void*)this);
     // Install a callback to schedule execution of internal commands.
@@ -735,7 +736,7 @@ ViewerSubject::EnableClientInput()
 // ****************************************************************************
 // Method: ViewerSubject::ConnectXfer
 //
-// Purpose: 
+// Purpose:
 //   Connects various objects to the Xfer object.
 //
 // Programmer: Brad Whitlock
@@ -780,7 +781,7 @@ ViewerSubject::ConnectXfer()
 // ****************************************************************************
 // Method: ViewerSubject::ConnectObjectsAndHandlers
 //
-// Purpose: 
+// Purpose:
 //   Creates certain objects that are observers and sets up their slots and
 //   callback functions.
 //
@@ -798,7 +799,7 @@ ViewerSubject::ConnectXfer()
 //   Added new observers for client information.
 //
 //   Brad Whitlock, Mon Feb 12 11:06:42 PDT 2007
-//   Made it use ViewerState and renamed a class for translating 
+//   Made it use ViewerState and renamed a class for translating
 //   Subject/Observer into Qt signals. Added color table observer.
 //
 //   Jeremy Meredith, Wed Apr 30 12:23:04 EDT 2008
@@ -922,7 +923,7 @@ ViewerSubject::ConnectObjectsAndHandlers()
 // ****************************************************************************
 // Method: ViewerSubject::InformClientOfPlugins
 //
-// Purpose: 
+// Purpose:
 //   Inform the client of the plugins that are loaded. This needs to be done
 //   prior to the config settings being read for the plugin objects because
 //   once that happens, they are added to the config manager, which means that
@@ -947,7 +948,7 @@ ViewerSubject::InformClientOfPlugins() const
 // ****************************************************************************
 // Method: ViewerSubject::HeavyInitialization
 //
-// Purpose: 
+// Purpose:
 //   Does the expensive initialization like loading plugins, processing the
 //   config file, setting up windows, and possibly launching an engine.
 //
@@ -957,7 +958,7 @@ ViewerSubject::InformClientOfPlugins() const
 // Modifications:
 //   Kathleen Bonnell, Mon Sep 15 13:09:19 PDT 2003
 //   Tell ViewerQueryManager to initialize the query list after plugins load.
-//   
+//
 //   Jeremy Meredith, Fri Sep 26 12:50:29 PDT 2003
 //   Modify default rendering attributes to use stereo if it was specified
 //   on the command line.
@@ -1083,7 +1084,7 @@ ViewerSubject::HeavyInitialization()
 
         // Hook up the viewer delayed state. If we're currently reading from the parent,
         // we don't want to hook it up since it adds observers to the subjects in
-        // the global viewer state, which could currently be in a Notify() if 
+        // the global viewer state, which could currently be in a Notify() if
         // processingFromParent is true.
         if(processingFromParent)
             QTimer::singleShot(100, this, SLOT(CreateViewerDelayedState()));
@@ -1111,7 +1112,7 @@ ViewerSubject::HeavyInitialization()
 // ****************************************************************************
 // Method: ViewerSubject::CreateViewerDelayedState
 //
-// Purpose: 
+// Purpose:
 //   This method sets up the delayed viewer state, which lets us execute
 //   viewer methods later in the central xfer queue. Methods executed in this
 //   fashion won't be executed during engine RPC's or at other bad times.
@@ -1123,7 +1124,7 @@ ViewerSubject::HeavyInitialization()
 //   Brad Whitlock, Fri Jan 9 14:25:04 PST 2009
 //   Added exception handling to make sure that exceptions do not escape
 //   back into the Qt event loop.
-//   
+//
 //   Mark C. Miller, Wed Jun 17 17:46:18 PDT 2009
 //   Replaced CATCHALL(...) with CATCHALL
 // ****************************************************************************
@@ -1133,7 +1134,7 @@ ViewerSubject::CreateViewerDelayedState()
 {
     TRY
     {
-        // Create an internal ViewerState that we'll use for the ViewerMethods 
+        // Create an internal ViewerState that we'll use for the ViewerMethods
         // object. We use a buffered version so all of the input from the viewer
         // methods and state will be buffered into the central input for the
         // xfer object. This should cause all commands to be buffered until they
@@ -1156,7 +1157,7 @@ ViewerSubject::CreateViewerDelayedState()
 // ****************************************************************************
 // Method: ViewerSubject::GetViewerDelayedState
 //
-// Purpose: 
+// Purpose:
 //   Returns the buffered viewer state if it has been created.
 //
 // Arguments:
@@ -1164,13 +1165,13 @@ ViewerSubject::CreateViewerDelayedState()
 // Returns:    The buffered viewer state otherwise the regular unbuffered
 //             viewer state.
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Wed Aug 20 16:06:25 PDT 2008
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 ViewerState *
@@ -1188,7 +1189,7 @@ ViewerSubject::GetViewerDelayedMethods()
 // ****************************************************************************
 // Method: ViewerSubject::AddInputToXfer
 //
-// Purpose: 
+// Purpose:
 //   All ViewerClientConnection objects emit a signal that is connected to
 //   this method, which adds the client's input to the single xfer that we
 //   actually use to schedule execution of RPC's.
@@ -1252,7 +1253,7 @@ ViewerSubject::AddInputToXfer(ViewerClientConnection *client,
 // ****************************************************************************
 // Method: ViewerSubject::DisconnectClient
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when a client connection is lost.
 //
 // Arguments:
@@ -1265,7 +1266,7 @@ ViewerSubject::AddInputToXfer(ViewerClientConnection *client,
 //   Brad Whitlock, Fri Jan 9 14:03:58 PST 2009
 //   I added code to catch VisItException since we should not allow it to
 //   escape from a Qt slot.
-//   
+//
 //   Mark C. Miller, Wed Jun 17 17:46:18 PDT 2009
 //   Replaced CATCHALL(...) with CATCHALL
 // ****************************************************************************
@@ -1326,7 +1327,7 @@ ViewerSubject::DisconnectClient(ViewerClientConnection *client)
 // ****************************************************************************
 // Method: ViewerSubject::InitializePluginManagers
 //
-// Purpose: 
+// Purpose:
 //   Reads the common plugin info for plot and operator plugins and populates
 //   the pluginAtts.
 //
@@ -1450,7 +1451,7 @@ ViewerSubject::InitializePluginManagers()
 // ****************************************************************************
 // Method: ViewerSubject::LoadPlotPlugins
 //
-// Purpose: 
+// Purpose:
 //   Loads the plot plugins and creates the plot factory object.
 //
 // Note:       Moved from other methods to here.
@@ -1520,7 +1521,7 @@ ViewerSubject::LoadPlotPlugins()
 // ****************************************************************************
 // Method: ViewerSubject::LoadOperatorPlugins
 //
-// Purpose: 
+// Purpose:
 //   Loads the operator plugins and creates the operator factory object.
 //
 // Note:       Moved from other methods to here.
@@ -1587,7 +1588,7 @@ ViewerSubject::LoadOperatorPlugins()
     for (int i = 0; i < GetOperatorPluginManager()->GetNAllPlugins(); i++)
     {
         std::string id(GetOperatorPluginManager()->GetAllID(i));
-        // Get the operator's category and set it in the plugin manager 
+        // Get the operator's category and set it in the plugin manager
         // attributes if its plugin category is empty.
         std::string category(GetOperatorPluginManager()->
                              GetOperatorCategoryName(id));
@@ -1609,7 +1610,7 @@ ViewerSubject::LoadOperatorPlugins()
 // ****************************************************************************
 // Method: ViewerSubject::AddInitialWindows
 //
-// Purpose: 
+// Purpose:
 //   Adds the appropriate number of vis windows.
 //
 // Programmer: Brad Whitlock
@@ -1645,7 +1646,7 @@ ViewerSubject::AddInitialWindows()
 // ****************************************************************************
 // Method: ViewerSubject::LaunchEngineOnStartup
 //
-// Purpose: 
+// Purpose:
 //   Launches an engine as part of the heavy initialization step.
 //
 // Programmer: Brad Whitlock
@@ -1654,7 +1655,7 @@ ViewerSubject::AddInitialWindows()
 // Modifications:
 //    Jeremy Meredith, Tue Mar 23 14:34:53 PST 2004
 //    Use the engineParallelArguments for this launch.
-//   
+//
 //    Jeremy Meredith, Tue Mar 30 10:52:06 PST 2004
 //    Added an engine key used to start engines.  We know we will not be
 //    connecting to a running simulation at startup (right now), so we
@@ -1717,7 +1718,7 @@ ViewerSubject::LaunchEngineOnStartup()
 // ****************************************************************************
 // Method: ViewerSubject::OpenDatabaseOnStartup
 //
-// Purpose: 
+// Purpose:
 //   This method opens a file on startup if there is a file to open.
 //
 // Programmer: Brad Whitlock
@@ -1729,7 +1730,7 @@ ViewerSubject::LaunchEngineOnStartup()
 //   suffix, e.g. "-o foobar,LAMMPS_1.0".
 //
 //   Brad Whitlock, Thu Aug 28 10:47:15 PDT 2014
-//   Use ViewerMethods to open the database. 
+//   Use ViewerMethods to open the database.
 //
 // ****************************************************************************
 
@@ -1761,14 +1762,14 @@ ViewerSubject::OpenDatabaseOnStartup()
 // ****************************************************************************
 // Method: ViewerSubject::OpenScriptOnStartup
 //
-// Purpose: 
+// Purpose:
 //   This method opens a script on startup if there is a script to open.
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Apr  9 16:05:43 PDT 2009
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1787,7 +1788,7 @@ ViewerSubject::OpenScriptOnStartup()
 // ****************************************************************************
 // Method: ViewerSubject::DelayedProcessSettings
 //
-// Purpose: 
+// Purpose:
 //   Lets the various viewer objects from ViewerSubject on down process
 //   settings using the local settings DataNode.
 //
@@ -1810,7 +1811,7 @@ ViewerSubject::DelayedProcessSettings()
 // ****************************************************************************
 // Method: ViewerSubject::ProcessEventsCB
 //
-// Purpose: 
+// Purpose:
 //   This is a static callback function that calls ProcessEvents.
 //
 // Arguments:
@@ -1820,7 +1821,7 @@ ViewerSubject::DelayedProcessSettings()
 // Creation:   Tue May 7 16:27:22 PST 2002
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1836,11 +1837,11 @@ ViewerSubject::ProcessEventsCB(void *cbData)
 // ****************************************************************************
 // Method: ViewerSubject::ProcessEvents
 //
-// Purpose: 
+// Purpose:
 //   This method is called from other loops where we do not have control.
 //   For the most part this is called from the inner loop of certain RPCs
 //   where the work lasts long enough where we want to still redraw, etc.
-//   
+//
 // Programmer: Brad Whitlock
 // Creation:   Tue May 7 16:25:01 PST 2002
 //
@@ -1887,7 +1888,7 @@ ViewerSubject::ProcessEvents()
 // ****************************************************************************
 // Method: ViewerSubject::InitializeWorkArea
 //
-// Purpose: 
+// Purpose:
 //   Determines how much of the screen will be allocated to viewer windows.
 //
 // Programmer: Brad Whitlock
@@ -1909,6 +1910,9 @@ ViewerSubject::ProcessEvents()
 //
 //    Brad Whitlock, Tue Apr 14 12:04:03 PDT 2009
 //    Use ViewerProperties.
+//
+//   Kathleen Biagas, Wed Apr  5 13:04:35 PDT 2023
+//   Replace obosolete desktop() with primaryScreen().
 //
 // ****************************************************************************
 
@@ -1952,7 +1956,7 @@ ViewerSubject::InitializeWorkArea()
 
         if(GetViewerProperties()->GetWindowBorders().size() == 0 ||
            GetViewerProperties()->GetWindowShift().size() == 0 ||
-           GetViewerProperties()->GetWindowPreShift().size() == 0 || 
+           GetViewerProperties()->GetWindowPreShift().size() == 0 ||
            GetViewerProperties()->GetWindowGeometry().size() == 0)
         {
             if(GetViewerProperties()->GetUseWindowMetrics())
@@ -1985,7 +1989,7 @@ ViewerSubject::InitializeWorkArea()
                 wmShift[0] = 0;
                 wmShift[1] = 22;
 
-                QRect geom = qApp->desktop()->screenGeometry();
+                QRect geom = qApp->primaryScreen()->geometry();
                 wmScreen[0] = geom.width();
                 wmScreen[1] = geom.height();
                 wmScreen[2] = geom.x();
@@ -2066,7 +2070,7 @@ ViewerSubject::InitializeWorkArea()
 // ****************************************************************************
 // Method: ViewerSubject::CustomizeAppearance
 //
-// Purpose: 
+// Purpose:
 //   Customizes the viewer's appearance based on command line arguments and
 //   settings in the configuration file.
 //
@@ -2127,8 +2131,8 @@ ViewerSubject::CustomizeAppearance()
 //    Hank Childs, Mon Feb 26 11:33:37 PST 2007
 //    Issue a warning when a config file was not found.
 //
-//    Kathleen Bonnell, Tue Jul 24 15:44:37 PDT 2007 
-//    Added WIN32 specific-code to handle an arg that may have spaces in it. 
+//    Kathleen Bonnell, Tue Jul 24 15:44:37 PDT 2007
+//    Added WIN32 specific-code to handle an arg that may have spaces in it.
 //
 //    Brad Whitlock, Thu Aug 14 14:44:22 PDT 2008
 //    Move creation of the config manager to the constructor.
@@ -2179,7 +2183,7 @@ ViewerSubject::ReadConfigFiles(int argc, char **argv)
             {
                 for (int j = i+2; j < argc; j++, argcnt++)
                 {
-                    if (tmp[tmp.length()-1] == '\"' || 
+                    if (tmp[tmp.length()-1] == '\"' ||
                         tmp[tmp.length()-1] == '\'')
                         break;
                     tmp += " ";
@@ -2189,7 +2193,7 @@ ViewerSubject::ReadConfigFiles(int argc, char **argv)
             GetViewerProperties()->SetConfigurationFileName(tmp);
             nConfigArgs = argcnt;
 #endif
-        }       
+        }
     }
 
     GetViewerStateManager()->ReadConfigFile(specifiedConfig);
@@ -2311,7 +2315,7 @@ ViewerSubject::ReadConfigFiles(int argc, char **argv)
 //    Jeremy Meredith, Tue Jul 17 16:39:40 EDT 2007
 //    Added -fullscreen argument.
 //
-//    Kathleen Bonnell, Tue Jul 24 15:51:03 PDT 2007 
+//    Kathleen Bonnell, Tue Jul 24 15:51:03 PDT 2007
 //    On Windows, increment using nConfigArgs when removing -config and its
 //    arg.
 //
@@ -2352,6 +2356,9 @@ ViewerSubject::ReadConfigFiles(int argc, char **argv)
 //
 //    Alok Hota, Tue Feb 23 19:10:32 PST 2016
 //    Add -ospray argument.
+//
+//    Kathleen Biagas, Wed Aug 17, 2022
+//    Incorporate ARSanderson's OSPRAY 2.8.0 work for VTK 9.
 //
 // ****************************************************************************
 
@@ -2431,7 +2438,7 @@ ViewerSubject::ProcessCommandLine(int argc, char **argv)
         }
         else if (strcmp(argv[i], "-debug") == 0)
         {
-            int debugLevel = 1; 
+            int debugLevel = 1;
             bool bufferDebug = false;
             bool decorateDebug = false;
 
@@ -2496,7 +2503,7 @@ ViewerSubject::ProcessCommandLine(int argc, char **argv)
 #ifndef WIN32
             ++i;
 #else
-            i+=nConfigArgs; 
+            i+=nConfigArgs;
 #endif
         }
         else if (strcmp(argv[i], "-foreground") == 0 ||
@@ -2613,10 +2620,17 @@ ViewerSubject::ProcessCommandLine(int argc, char **argv)
         {
             WindowMetrics::SetEmbeddedWindowState(true);
         }
-#ifdef VISIT_OSPRAY
+#ifdef VISIT_OSPRAY // ospray 1.6.1, vtk8
         else if (strcmp(argv[i], "-ospray") == 0)
         {
             avtCallback::SetOSPRayMode(true);
+        }
+#elif defined(HAVE_OSPRAY) // ospray 2.8, vtk 9
+        else if (strcmp(argv[i], "-ospray") == 0)
+        {
+            debug5 << "Viewer launching with OSPRay" << endl;
+            avtCallback::SetUseOSPRay(true);
+            GetViewerState()->GetRenderingAttributes()->SetOsprayRendering(true);
         }
 #endif
         else if (strcmp(argv[i], "-fullscreen") == 0)
@@ -2880,14 +2894,14 @@ ViewerSubject::Close()
 // ****************************************************************************
 // Method: ViewerSubject::ConnectToMetaDataServer
 //
-// Purpose: 
+// Purpose:
 //   Execute ViewerRPC::ConnectToMetaDataServerRPC
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Aug 22 10:57:49 PDT 2014
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -2909,12 +2923,12 @@ ViewerSubject::ConnectToMetaDataServer()
          debug1 << "\t" << sv[i].c_str() << endl;
 
     //
-    // Tell the viewer's fileserver to have its mdserver running on 
+    // Tell the viewer's fileserver to have its mdserver running on
     // the specified host to connect to another process.
     //
     GetViewerFileServer()->ConnectServer(
         GetViewerState()->GetViewerRPC()->GetProgramHost(),
-        GetViewerState()->GetViewerRPC()->GetProgramOptions()); 
+        GetViewerState()->GetViewerRPC()->GetProgramOptions());
 
     visitTimer->StopTimer(timeid, "Time spent telling mdserver to connect to client.");
 
@@ -3365,7 +3379,7 @@ ViewerSubject::Export()
 //   ek     : The key of the sim to which we're connecting.
 //   cbdata : Callback data.
 //
-// Returns:    
+// Returns:
 //
 // Note:       In this case, the extra work we're doing when connecting to the
 //             simulation is to hook up socket notifiers, etc that will help
@@ -3433,9 +3447,9 @@ ViewerSubject::SimConnect(EngineKey &ek)
 // Arguments:
 //   md  : A pointer to the new file metadata.
 //
-// Returns:    
+// Returns:
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Wed Aug 27 17:43:03 PDT 2014
@@ -3444,7 +3458,7 @@ ViewerSubject::SimConnect(EngineKey &ek)
 //
 //    Mark C. Miller, Thu Jun  8 15:07:19 PDT 2017
 //    Do nothing if SEG is disabled. Since GetOperatorCreatedExpressions
-//    already updates the global expression list, don't pass it in here. 
+//    already updates the global expression list, don't pass it in here.
 //    Just pass in a dummy, empty list.
 // ****************************************************************************
 
@@ -3465,7 +3479,7 @@ ViewerSubject::UpdateExpressionCallback(const avtDatabaseMetaData *md, void *)
 // ****************************************************************************
 // Method: ViewerSubject::RemoveCrashRecoveryFile
 //
-// Purpose: 
+// Purpose:
 //   Removes the viewer's crash recovery file.
 //
 // Programmer: Brad Whitlock
@@ -3688,7 +3702,7 @@ ViewerSubject::CommandNotificationCallback(void *cbdata, int timeout)
 // ****************************************************************************
 //  Method: ViewerSubject::ProcessInternalCommands
 //
-//  Purpose: 
+//  Purpose:
 //    This is a Qt slot function that is called when there are internal commands
 //    that must be processed.
 //
@@ -3719,7 +3733,7 @@ ViewerSubject::ProcessInternalCommands()
 // ****************************************************************************
 // Method: ViewerSubject::StartLaunchProgress
 //
-// Purpose: 
+// Purpose:
 //   This method is called when the launch progress callback is called the
 //   first time. In this case, we disable command processing.
 //
@@ -3743,7 +3757,7 @@ ViewerSubject::StartLaunchProgress()
 // ****************************************************************************
 // Method: ViewerSubject::EndLaunchProgress
 //
-// Purpose: 
+// Purpose:
 //   This method is called when the launch progress callback is called the
 //   first time. In this case, we enable command processing.
 //
@@ -3753,7 +3767,7 @@ ViewerSubject::StartLaunchProgress()
 // Modifications:
 //   Brad Whitlock, Wed Jul 23 13:51:04 PST 2003
 //   Set the launchingComponent flag.
-//   
+//
 // ****************************************************************************
 
 void
@@ -3767,7 +3781,7 @@ ViewerSubject::EndLaunchProgress()
 // ****************************************************************************
 // Method: ViewerSubject::LaunchProgressCB
 //
-// Purpose: 
+// Purpose:
 //   This is the callback function for launch progress. It is called several
 //   times as a process is being launched. Its job is to act as a surrogate
 //   event loop and show the progress dialog.
@@ -3842,7 +3856,7 @@ ViewerSubject::LaunchProgressCB(void *d, int stage)
     else if (stage == 2)
     {
         This->EndLaunchProgress();
-        if (windowsShowing) 
+        if (windowsShowing)
         {
             if(!progress->GetIgnoreHide())
                 progress->Hide();
@@ -3856,7 +3870,7 @@ ViewerSubject::LaunchProgressCB(void *d, int stage)
 // ****************************************************************************
 // Method: ViewerSubject::SendKeepAlives
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that sends keep alive signals to all of the
 //   remote components.
 //
@@ -3893,7 +3907,7 @@ ViewerSubject::SendKeepAlives()
 {
     TRY
     {
-        if(launchingComponent || 
+        if(launchingComponent ||
            GetViewerProperties()->GetInExecute() ||
            GetViewerProperties()->GetInLaunch())
         {
@@ -3920,18 +3934,18 @@ ViewerSubject::SendKeepAlives()
 // ****************************************************************************
 // Method: ViewerSubject::HandleViewerRPC
 //
-// Purpose: 
+// Purpose:
 //    This is a Qt slot function that handles RPC's for the
 //    ViewerSubject class.
 //
-// Note:       No exceptions are allowed to be propagated back to the Qt 
+// Note:       No exceptions are allowed to be propagated back to the Qt
 //             event loop.
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Jan 9 14:56:49 PST 2009
 //
 // Modifications:
-//   
+//
 //   Mark C. Miller, Wed Jun 17 17:46:18 PDT 2009
 //   Replaced CATCHALL(...) with CATCHALL
 // ****************************************************************************
@@ -3953,7 +3967,7 @@ ViewerSubject::HandleViewerRPC()
 // ****************************************************************************
 //  Method: ViewerSubject::HandleViewerRPCEx
 //
-//  Purpose: 
+//  Purpose:
 //    Handles RPC's for the ViewerSubject class.
 //
 //  Arguments:
@@ -4152,7 +4166,7 @@ ViewerSubject::BroadcastImage(int windowId, bool inMotion)
 
         for(size_t j = 0; j < activeWindows.size(); ++j) {
             if(activeWindows[j] == windowId &&
-              (ViewerClientAttributes::RenderType)typeWindows[j] == ViewerClientAttributes::Image) 
+              (ViewerClientAttributes::RenderType)typeWindows[j] == ViewerClientAttributes::Image)
             {
                 activeClients.push_back(clients[i]);
                 break;
@@ -4222,7 +4236,7 @@ ViewerSubject::BroadcastImage(int windowId, bool inMotion)
 // ****************************************************************************
 // Method: ViewerSubject::PostponeAction
 //
-// Purpose: 
+// Purpose:
 //   Postpones an action by copying its serialized contents into the
 //   xfer object's input connection. This allows us to safely schedule its
 //   execution.
@@ -4280,7 +4294,7 @@ ViewerSubject::PostponeActionCallback(int windowId, const ViewerRPC &args, void 
 // ****************************************************************************
 // Method: ViewerSubject::HandlePostponedAction
 //
-// Purpose: 
+// Purpose:
 //   Handles postponed actions that have been queued up in the client input.
 //
 // Note:       This method executes actions that have been postponed. Note
@@ -4385,7 +4399,7 @@ ViewerSubject::HandlePostponedAction()
 // ****************************************************************************
 // Method: ViewerSubject::SpecialOpcodeCallback
 //
-// Purpose: 
+// Purpose:
 //   This is a static callback function that ViewerSubject's xfer object
 //   calls when it encounters a special opcode.
 //
@@ -4397,7 +4411,7 @@ ViewerSubject::HandlePostponedAction()
 // Creation:   Thu Feb 27 11:24:44 PDT 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void // static
@@ -4411,7 +4425,7 @@ ViewerSubject::SpecialOpcodeCallback(int opcode, void *data)
 // ****************************************************************************
 // Method: ViewerSubject::ProcessSpecialOpcodes
 //
-// Purpose: 
+// Purpose:
 //   This method handles special opcodes for the viewer.
 //
 // Arguments:
@@ -4472,7 +4486,7 @@ ViewerSubject::ProcessSpecialOpcodes(int opcode)
 // ****************************************************************************
 // Method: ViewerSubject::BroadcastToAllClients
 //
-// Purpose: 
+// Purpose:
 //   This is a special callback for the master xfer object to be called when
 //   it needs to update. We use this method to tell all of the clients to
 //   update themselves.
@@ -4486,7 +4500,7 @@ ViewerSubject::ProcessSpecialOpcodes(int opcode)
 // Creation:   Tue May 3 15:14:41 PST 2005
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -4506,7 +4520,7 @@ ViewerSubject::BroadcastToAllClients(void *data1, Subject *data2)
 // ****************************************************************************
 // Method: ViewerSubject::HandleSync
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the syncAtts are modified
 //   by the client. This function queues an internal command that will send
 //   the syncAtts back to the client.
@@ -4539,7 +4553,7 @@ ViewerSubject::HandleSync()
 // ****************************************************************************
 // Method: ViewerSubject::HandleClientMethod
 //
-// Purpose: 
+// Purpose:
 //   The client method object is not normally sent automatically to the
 //   clients so we do it here.
 //
@@ -4575,7 +4589,7 @@ ViewerSubject::HandleClientMethod()
             debug1 << "Broadcasting client method: "
                    << GetViewerState()->GetClientMethod()->GetMethodName().c_str() << " to all "
                    << clients.size() << " client(s)." << endl;
-    
+
             BroadcastToAllClients((void *)this, GetViewerState()->GetClientMethod());
         }
     }
@@ -4589,7 +4603,7 @@ ViewerSubject::HandleClientMethod()
 // ****************************************************************************
 // Method: ViewerSubject::HandleClientInformation
 //
-// Purpose: 
+// Purpose:
 //   Adds the client information to the list and sends it back to the client.
 //
 // Programmer: Brad Whitlock
@@ -4641,7 +4655,7 @@ ViewerSubject::HandleClientInformation()
 
         BroadcastToAllClients((void *)this, GetViewerState()->GetClientInformationList());
 
-        // If we just received client method information from the cli then try and 
+        // If we just received client method information from the cli then try and
         // interpret any commands that we've stored up.
         if(HasInterpreter() && interpretCommands.size() > 0)
         {
@@ -4660,7 +4674,7 @@ ViewerSubject::HandleClientInformation()
 // ****************************************************************************
 // Method: ViewerSubject::DiscoverClientInformation
 //
-// Purpose: 
+// Purpose:
 //   Invokes a special client method on all clients so we know which methods,
 //   etc that they have.
 //
@@ -4707,7 +4721,7 @@ ViewerSubject::DiscoverClientInformation()
 // ****************************************************************************
 // Method: ViewerSubject::OpenClient
 //
-// Purpose: 
+// Purpose:
 //   Handles the ViewerRPC that tells the viewer to reverse launch a new
 //   viewer client.
 //
@@ -4740,7 +4754,7 @@ ViewerSubject::OpenClient()
     //
     // Create a new viewer client connection.
     //
-    ViewerClientConnection *newClient = new 
+    ViewerClientConnection *newClient = new
         ViewerClientConnection(GetViewerState(), this, clientName.c_str());
     newClient->SetupSpecialOpcodeHandler(SpecialOpcodeCallback, (void *)this);
 
@@ -4768,7 +4782,7 @@ ViewerSubject::OpenClient()
         for(size_t i = 0; i < programOptions.size(); ++i)
             args.push_back(programOptions[i]);
         bool success = newClient->LaunchClient(program, args, 0, 0, LaunchProgressCB, cbData);
-        if(success) 
+        if(success)
 	{
             clients.push_back(newClient);
 
@@ -4790,10 +4804,10 @@ ViewerSubject::OpenClient()
     }
     CATCHALL
         delete newClient;
-    
+
   	// Stop progress if still running
     	if(!progress->GetCancelled())
-    	{  
+    	{
     	    EndLaunchProgress();
     	    progress->Hide();
     	}
@@ -4895,7 +4909,7 @@ ViewerSubject::ReadFromSimulationAndProcess(int socket)
 //    Brad Whitlock, Fri Jan 9 14:25:04 PST 2009
 //    Added exception handling to make sure that exceptions do not escape
 //    back into the Qt event loop.
-//   
+//
 //    Mark C. Miller, Wed Jun 17 17:46:18 PDT 2009
 //    Replaced CATCHALL(...) with CATCHALL
 //
@@ -5003,7 +5017,7 @@ ViewerSubject::HandleMetaDataUpdated(const string &host,
 //    Replaced CATCHALL(...) with CATCHALL
 //
 //    Brad Whitlock, Wed Jul 11 11:00:29 PDT 2012
-//    Call UpdateSILRestriction on the plot list. That's like a replace in 
+//    Call UpdateSILRestriction on the plot list. That's like a replace in
 //    that it will update the plot's SIL to match the new SIL but it does not
 //    clear the actor or cause the plot to reexecute.
 //
@@ -5052,7 +5066,7 @@ ViewerSubject::HandleSILAttsUpdated(const string &host,
 // ****************************************************************************
 // Method: ViewerSubject::HandleColorTable
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the color table attributes
 //   update. The purpose is to update all color table buttons so they have the
 //   right list of color table names.
@@ -5064,12 +5078,23 @@ ViewerSubject::HandleSILAttsUpdated(const string &host,
 //   Brad Whitlock, Fri Jan 9 14:25:04 PST 2009
 //   Added exception handling to make sure that exceptions do not escape
 //   back into the Qt event loop.
-//   
+//
 //   Mark C. Miller, Wed Jun 17 17:46:18 PDT 2009
 //   Replaced CATCHALL(...) with CATCHALL
 //
 //   Kathleen Biagas, Mon Aug  4 15:42:48 PDT 2014
 //   Send category name when adding color table.
+//
+//   Justin Privitera, Thu Jun 16 18:01:49 PDT 2022
+//   Removed category from call to addColorTable().
+//
+//   Justin Privitera, Wed Jul 13 15:24:42 PDT 2022
+//   Added `setColorTableAttributes` call for the QvisColorTableButton and
+//   QvisNoDefaultColorTableButton.
+// 
+//   Justin Privitera, Fri Sep  2 16:46:21 PDT 2022
+//   Added the missing logic from the ctObserver. Now we check if a CT is 
+//   "active" before trying to put it in the buttons.
 //
 // ****************************************************************************
 
@@ -5092,16 +5117,20 @@ ViewerSubject::HandleColorTable()
         {
             // Clear all of the color tables.
             QvisColorTableButton::clearAllColorTables();
+            QvisColorTableButton::setColorTableAttributes(colorAtts);
             QvisNoDefaultColorTableButton::clearAllColorTables();
+            QvisNoDefaultColorTableButton::setColorTableAttributes(colorAtts);
 
             int nNames = colorAtts->GetNumColorTables();
             const stringVector &names = colorAtts->GetNames();
+            const intVector &active = colorAtts->GetActive();
             for(int i = 0; i < nNames; ++i)
             {
-                QvisColorTableButton::addColorTable(names[i].c_str(), 
-                    colorAtts->GetColorTables(i).GetCategoryName().c_str());
-                QvisNoDefaultColorTableButton::addColorTable(names[i].c_str(),
-                    colorAtts->GetColorTables(i).GetCategoryName().c_str());
+                if (active[i])
+                {
+                    QvisColorTableButton::addColorTable(names[i].c_str());
+                    QvisNoDefaultColorTableButton::addColorTable(names[i].c_str());
+                }
             }
 
             // Update all of the QvisColorTableButton widgets.
@@ -5120,7 +5149,7 @@ ViewerSubject::HandleColorTable()
 // ****************************************************************************
 // Method: ViewerSubject::DeferCommandFromSimulation
 //
-// Purpose: 
+// Purpose:
 //   This method is called when we get a command from a simulation. We save it
 //   for later when we can call it from the top of the event loop. This is done
 //   for safety since it should prevent us from trying to service more engine
@@ -5139,7 +5168,7 @@ ViewerSubject::HandleColorTable()
 // ****************************************************************************
 
 void
-ViewerSubject::DeferCommandFromSimulation(const EngineKey &key, 
+ViewerSubject::DeferCommandFromSimulation(const EngineKey &key,
     const std::string &db, const std::string &command)
 {
     TRY
@@ -5149,7 +5178,7 @@ ViewerSubject::DeferCommandFromSimulation(const EngineKey &key,
                << endl;
 
         // Defer execution of the command.
-        ViewerCommandDeferredCommandFromSimulation *cmd = 
+        ViewerCommandDeferredCommandFromSimulation *cmd =
             new ViewerCommandDeferredCommandFromSimulation(this, key, db, command);
         GetViewerMessaging()->QueueCommand(cmd);
     }
@@ -5163,7 +5192,7 @@ ViewerSubject::DeferCommandFromSimulation(const EngineKey &key,
 // ****************************************************************************
 // Method: ViewerSubject::HandleCommandFromSimulation
 //
-// Purpose: 
+// Purpose:
 //   This method gets called when we need to handle commands that come from
 //   the simulation.
 //
@@ -5186,7 +5215,7 @@ ViewerSubject::DeferCommandFromSimulation(const EngineKey &key,
 //   I added INTERNALSYNC so we can sync with the simulation.
 //
 //   Cyrus Harrison, Tue Apr 14 13:35:54 PDT 2009
-//   Changed the interface to ReplaceDatabase to support option for only 
+//   Changed the interface to ReplaceDatabase to support option for only
 //   replacing active plots.
 //
 //   Brad Whitlock, Sun Feb 27 21:12:17 PST 2011
@@ -5208,7 +5237,7 @@ ViewerSubject::DeferCommandFromSimulation(const EngineKey &key,
 // ****************************************************************************
 
 void
-ViewerSubject::HandleCommandFromSimulation(const EngineKey &key, 
+ViewerSubject::HandleCommandFromSimulation(const EngineKey &key,
     const std::string &db, const std::string &command)
 {
     debug1 << "HandleCommandFromSimulation: key=" << key.ID()
@@ -5217,7 +5246,7 @@ ViewerSubject::HandleCommandFromSimulation(const EngineKey &key,
 
     if(command == "UpdatePlots")
     {
-        // The simulation told us that it wants us to update all of the plots 
+        // The simulation told us that it wants us to update all of the plots
         // that use it as a source.
         ViewerWindowManager::Instance()->ReplaceDatabase(key, db, 0, false, true,
                                                          false);
@@ -5278,7 +5307,7 @@ ViewerSubject::HandleCommandFromSimulation(const EngineKey &key,
 
             msg << "SetUI command expected 5 values but recieved " << s.size()
                 << " values. The original command is '"  << command << "'";
-            
+
             GetViewerMessaging()->Warning(msg.str());
 
             return;
@@ -5384,7 +5413,7 @@ ViewerSubject::HandleCommandFromSimulation(const EngineKey &key,
                 id = thisID;
         }
         if(!id.empty())
-        { 
+        {
             bool applyOperatorSave = GetViewerState()->GetGlobalAttributes()->GetApplyOperator();
             GetViewerState()->GetGlobalAttributes()->SetApplyOperator(false);
 
@@ -5503,19 +5532,19 @@ ViewerSubject::HandleCommandFromSimulation(const EngineKey &key,
 // ****************************************************************************
 // Method: ViewerSubject::HasInterpreter
 //
-// Purpose: 
+// Purpose:
 //   Scans the client information list and looks for a client that has an
 //   Interpret method.
 //
 // Returns:    True if there is a client with an interpreter; False otherwise.
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Jun 11 11:54:16 PDT 2007
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 bool
@@ -5523,7 +5552,7 @@ ViewerSubject::HasInterpreter() const
 {
     // Let's make sure that there's an Interpret client first.
     bool hasInterpreter = false;
-    for(int i = 0; 
+    for(int i = 0;
         i < GetViewerState()->GetClientInformationList()->GetNumClients() &&
         !hasInterpreter;
         ++i)
@@ -5540,22 +5569,22 @@ ViewerSubject::HasInterpreter() const
 // ****************************************************************************
 // Method: ViewerSubject::InterpretCommands
 //
-// Purpose: 
+// Purpose:
 //   Allows the viewer to interpret CLI commands, launching a CLI if one does
 //   not exist.
 //
 // Arguments:
 //   commands : The command string to execute. More than one line can be
 //              included by using end of line characters.
-// Returns:    
+// Returns:
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Jun 11 11:51:32 PDT 2007
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -5580,7 +5609,7 @@ ViewerSubject::InterpretCommands(const std::string &commands)
         if(interpretCommands.size() == 0)
         {
             // Add to the sim commands. NOTE that this needs to happen before
-            // the client is launched or we can get into InterpretCommands 
+            // the client is launched or we can get into InterpretCommands
             // again if another command is send for interpretation while the
             // client is getting launched.
             interpretCommands += cmd;
@@ -5620,12 +5649,12 @@ ViewerSubject::InterpretCommands(const std::string &commands)
 // ****************************************************************************
 // Method: ViewerSubject::GetNowinMode
 //
-// Purpose: 
+// Purpose:
 //   Get the nowin mode.
 //
 // Returns:    The current nowin mode.
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Aug 22 15:16:39 PST 2008
@@ -5633,7 +5662,7 @@ ViewerSubject::InterpretCommands(const std::string &commands)
 // Modifications:
 //   Brad Whitlock, Tue Apr 14 11:28:20 PDT 2009
 //   Use ViewerProperties.
-//   
+//
 // ****************************************************************************
 
 bool
@@ -5645,7 +5674,7 @@ ViewerSubject::GetNowinMode() const
 // ****************************************************************************
 // Method: ViewerSubject::SetNowinMode
 //
-// Purpose: 
+// Purpose:
 //   Set the nowin mode.
 //
 // Arguments:
@@ -5671,29 +5700,29 @@ ViewerSubject::SetNowinMode(bool value)
     avtCallback::SetSoftwareRendering(value);
     avtCallback::SetNowinMode(value);
 }
-                 
+
 // ****************************************************************************
 // Method: ViewerSubject::OpenWithEngine
 //
-// Purpose: 
+// Purpose:
 //   This is a callback function that lets us launch a program through the
 //   compute engine instead of through VCL.
 //
 // Arguments:
 //
-// Returns:    
+// Returns:
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue Nov 29 16:35:08 PST 2011
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
-ViewerSubject::OpenWithEngine(const std::string &remoteHost, 
+ViewerSubject::OpenWithEngine(const std::string &remoteHost,
     const stringVector &args, void *data)
 {
     const char *mName = "ViewerSubject::OpenWithEngine: ";
@@ -5718,7 +5747,7 @@ ViewerSubject::OpenWithEngine(const std::string &remoteHost,
         bool skipChooser = false;
         int numRestarts = 0;
         bool reverseLaunch = false;
-        GetViewerEngineManager()->CreateEngineEx(ek, moreArgs, skipChooser, numRestarts, 
+        GetViewerEngineManager()->CreateEngineEx(ek, moreArgs, skipChooser, numRestarts,
             reverseLaunch, progress);
     }
 
@@ -5745,9 +5774,9 @@ ViewerSubject::OpenWithEngine(const std::string &remoteHost,
 //   op     : The operation 0==update, 1=stop.
 //   cbdata : the callback data.
 //
-// Returns:    
+// Returns:
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue Sep  2 15:40:04 PDT 2014
@@ -5769,7 +5798,7 @@ ViewerSubject::AnimationCallback(int op, void *cbdata)
 // ****************************************************************************
 //  Method: ViewerSubject::UpdateAnimationTimer
 //
-//  Purpose: 
+//  Purpose:
 //    This routine determines if the timer for performing animations should
 //    be changed (either turned on or off) based on the current state of the
 //    timer and the state of all the animations.
@@ -5870,7 +5899,7 @@ ViewerSubject::UpdateAnimationTimer()
 // ****************************************************************************
 // Method: ViewerSubject::StopAnimationTimer
 //
-// Purpose: 
+// Purpose:
 //   Turns off the animation timer and makes all animations stop.
 //
 // Note:       This method is only called when a window is deleted using
@@ -5927,7 +5956,7 @@ ViewerSubject::StopAnimationTimer()
 // ****************************************************************************
 //  Method: ViewerWindowManager::HandleAnimation
 //
-//  Purpose: 
+//  Purpose:
 //    This routine gets called whenever the animation timer goes off.  It
 //    advances the appropriate animation to the next frame.  The routine
 //    uses a round robin approach to decide which animation to advance so
@@ -5992,7 +6021,7 @@ ViewerSubject::HandleAnimation()
     //
     // Return without doing anything if the engine is executing.
     //
-    if(GetViewerProperties()->GetInExecute() || 
+    if(GetViewerProperties()->GetInExecute() ||
        windowMgr->GetWindowsHidden() ||
        windowMgr->GetWindowsIconified())
     {
@@ -6088,7 +6117,7 @@ ViewerSubject::HandleAnimation()
             {
                 ; // nothing
             }
-            ENDTRY 
+            ENDTRY
 
             // Start the timer up again.
             timer->blockSignals(false);
@@ -6111,12 +6140,12 @@ ViewerSubject::HandleAnimation()
 //   inMotion : Whether the user is interacting with the mouse.
 //   data     : Callback data (a pointer to ViewerSubject).
 //
-// Returns:    
+// Returns:
 //
-// Note:       
+// Note:
 //
 // Programmer: Hari Krishnan
-// Creation:   
+// Creation:
 //
 // Modifications:
 //

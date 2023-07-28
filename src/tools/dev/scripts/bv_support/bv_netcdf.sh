@@ -108,13 +108,6 @@ function bv_netcdf_ensure
     fi
 }
 
-function bv_netcdf_dry_run
-{
-    if [[ "$DO_NETCDF" == "yes" ]] ; then
-        echo "Dry run option not set for netcdf."
-    fi
-}
-
 function apply_netcdf_411_macOS_patch
 {
     patch -p0 << \EOF
@@ -358,9 +351,12 @@ function build_netcdf
         fi
     fi
     EXTRA_AC_FLAGS=""
-    # detect coral systems, which older versions of autoconf don't detect
+    # detect coral and NVIDIA Grace CPU (ARM) systems, which older versions of 
+    # autoconf don't detect
     if [[ "$(uname -m)" == "ppc64le" ]] ; then
          EXTRA_AC_FLAGS="ac_cv_build=powerpc64le-unknown-linux-gnu"
+    elif [[ "$(uname -m)" == "aarch64" ]] ; then
+         EXTRA_AC_FLAGS="ac_cv_build=aarch64-unknown-linux-gnu"
     fi
     H5ARGS=""
     if [[ "$DO_HDF5" == "yes" ]] ; then

@@ -229,7 +229,7 @@ QvisFilePanel::QvisFilePanel(QWidget *parent) :
     // Create the top layout that will contain the widgets.
     QVBoxLayout *topLayout = new QVBoxLayout(this);
     topLayout->setSpacing(5);
-    topLayout->setMargin(5);
+    topLayout->setContentsMargins(5,5,5,5);
 
     fileTree = new QTreeWidget(this);
     fileTree->header()->hide();
@@ -257,7 +257,7 @@ QvisFilePanel::QvisFilePanel(QWidget *parent) :
 
     // Create the file opening buttons.
     QHBoxLayout *buttonLayout = new QHBoxLayout(0);
-    buttonLayout->setMargin(0);
+    buttonLayout->setContentsMargins(0,0,0,0);
     topLayout->addLayout(buttonLayout);
     topLayout->setStretchFactor(buttonLayout, 10);
     openButton = new QPushButton(tr("Open"));

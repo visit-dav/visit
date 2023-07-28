@@ -36,7 +36,7 @@ struct ExtrudeAttributesObject
 //
 static PyObject *NewExtrudeAttributes(int);
 std::string
-PyExtrudeAttributes_ToString(const ExtrudeAttributes *atts, const char *prefix)
+PyExtrudeAttributes_ToString(const ExtrudeAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -555,7 +555,7 @@ static int
 ExtrudeAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     ExtrudeAttributesObject *obj = (ExtrudeAttributesObject *)v;
-    fprintf(fp, "%s", PyExtrudeAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyExtrudeAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -563,7 +563,7 @@ PyObject *
 ExtrudeAttributes_str(PyObject *v)
 {
     ExtrudeAttributesObject *obj = (ExtrudeAttributesObject *)v;
-    return PyString_FromString(PyExtrudeAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyExtrudeAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -715,7 +715,7 @@ PyExtrudeAttributes_GetLogString()
 {
     std::string s("ExtrudeAtts = ExtrudeAttributes()\n");
     if(currentAtts != 0)
-        s += PyExtrudeAttributes_ToString(currentAtts, "ExtrudeAtts.");
+        s += PyExtrudeAttributes_ToString(currentAtts, "ExtrudeAtts.", true);
     return s;
 }
 
@@ -728,7 +728,7 @@ PyExtrudeAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("ExtrudeAtts = ExtrudeAttributes()\n");
-        s += PyExtrudeAttributes_ToString(currentAtts, "ExtrudeAtts.");
+        s += PyExtrudeAttributes_ToString(currentAtts, "ExtrudeAtts.", true);
         cb(s);
     }
 }

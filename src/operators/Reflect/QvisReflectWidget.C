@@ -64,7 +64,7 @@ m3d_complex_element QvisReflectWidget::arrow;
 // ****************************************************************************
 // Method: QvisReflectWidget::QvisReflectWidget
 //
-// Purpose: 
+// Purpose:
 //   Constructor for the QvisReflectWidget class.
 //
 // Arguments:
@@ -83,7 +83,7 @@ m3d_complex_element QvisReflectWidget::arrow;
 //
 // ****************************************************************************
 
-QvisReflectWidget::QvisReflectWidget(QWidget *parent) : 
+QvisReflectWidget::QvisReflectWidget(QWidget *parent) :
     QWidget(parent), renderer(250,250)
 {
     setMinimumSize(250,250);
@@ -108,7 +108,7 @@ QvisReflectWidget::QvisReflectWidget(QWidget *parent) :
 // ****************************************************************************
 // Method: QvisReflectWidget::~QvisReflectWidget
 //
-// Purpose: 
+// Purpose:
 //   Destructor for the QvisReflectWidget class.
 //
 // Programmer: Brad Whitlock
@@ -127,7 +127,7 @@ QvisReflectWidget::~QvisReflectWidget()
 // ****************************************************************************
 // Method: QvisReflectWidget::sizeHint
 //
-// Purpose: 
+// Purpose:
 //   Returns the widget's preferred size.
 //
 // Returns:    The widget's preferred size.
@@ -136,7 +136,7 @@ QvisReflectWidget::~QvisReflectWidget()
 // Creation:   Tue Mar 11 09:51:38 PDT 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 QSize
@@ -148,7 +148,7 @@ QvisReflectWidget::sizeHint() const
 // ****************************************************************************
 // Method: QvisReflectWidget::sizePolicy
 //
-// Purpose: 
+// Purpose:
 //   Returns the widget's size policy.
 //
 // Returns:    The widget's size policy.
@@ -157,7 +157,7 @@ QvisReflectWidget::sizeHint() const
 // Creation:   Tue Mar 11 09:52:11 PDT 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 QSizePolicy
@@ -169,7 +169,7 @@ QvisReflectWidget::sizePolicy() const
 // ****************************************************************************
 // Method: QvisReflectWidget::setMode2D
 //
-// Purpose: 
+// Purpose:
 //   Sets the 2d mode.
 //
 // Arguments:
@@ -197,7 +197,7 @@ QvisReflectWidget::setMode2D(bool val)
 // ****************************************************************************
 // Method: QvisReflectWidget::getMode2D
 //
-// Purpose: 
+// Purpose:
 //   Returns the 2d mode.
 //
 // Returns:    The 2d mode.
@@ -206,7 +206,7 @@ QvisReflectWidget::setMode2D(bool val)
 // Creation:   Mon Jun 23 16:51:49 PST 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 bool
@@ -218,7 +218,7 @@ QvisReflectWidget::getMode2D() const
 // ****************************************************************************
 // Method: QvisReflectWidget::createSharedElements
 //
-// Purpose: 
+// Purpose:
 //   Creates the static geometry that is rendered when we draw the widget.
 //
 // Programmer: Brad Whitlock
@@ -264,7 +264,7 @@ QvisReflectWidget::createSharedElements()
 // ****************************************************************************
 // Method: QvisReflectWidget::redrawScene
 //
-// Purpose: 
+// Purpose:
 //   Redraws the scene using the specified painter.
 //
 // Arguments:
@@ -306,7 +306,7 @@ QvisReflectWidget::redrawScene(QPainter *painter)
 // ****************************************************************************
 // Method: QvisReflectWidget::redrawScene2D
 //
-// Purpose: 
+// Purpose:
 //   Redraws the reflection widget in its 2d mode.
 //
 // Arguments:
@@ -322,13 +322,19 @@ QvisReflectWidget::redrawScene(QPainter *painter)
 //   Hank Childs, Thu Jun  8 14:08:18 PDT 2006
 //   Fix compiler warnings for casting.
 //
+//   Kathleen Biagas, Wed Apr 6, 2022
+//   Fix QT_VERSION test to use Qt's QT_VERSION_CHECK.
+//
+//   Kathleen Biagas, Wed Apr  5 15:11:57 PDT 2023
+//   Replace obsolete QPalette::Background with QPalette::Window.
+//
 // ****************************************************************************
 
 void
 QvisReflectWidget::redrawScene2D(QPainter *painter)
 {
     // Fill in the background color.
-    painter->fillRect(rect(), palette().brush(QPalette::Background));
+    painter->fillRect(rect(), palette().brush(QPalette::Window));
 
     //
     // Set up the camera.
@@ -365,7 +371,7 @@ QvisReflectWidget::redrawScene2D(QPainter *painter)
     painter->setPen(palette().windowText().color());
     const char *x = "+X";
     painter->drawText((int) x0.x, (int) (x0.y + h), "-X");
-#if QT_VERSION >= 0x051100
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 11, 0))
     int wx = fontMetrics().horizontalAdvance(x);
 #else
     int wx = fontMetrics().width(x);
@@ -378,7 +384,7 @@ QvisReflectWidget::redrawScene2D(QPainter *painter)
 // ****************************************************************************
 // Method: QvisReflectWidget::drawOnOffActors
 //
-// Purpose: 
+// Purpose:
 //   Draws the on/off actors (the cubes, sphere).
 //
 // Arguments:
@@ -389,7 +395,7 @@ QvisReflectWidget::redrawScene2D(QPainter *painter)
 // Creation:   Tue Jun 24 17:39:47 PST 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -427,7 +433,7 @@ QvisReflectWidget::drawOnOffActors(int n, float scale)
 // ****************************************************************************
 // Method: QvisReflectWidget::redrawScene3D
 //
-// Purpose: 
+// Purpose:
 //   Redraws the scene in its 3d mode.
 //
 // Arguments:
@@ -437,7 +443,7 @@ QvisReflectWidget::drawOnOffActors(int n, float scale)
 // Creation:   Mon Jun 23 16:58:09 PST 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -452,14 +458,14 @@ QvisReflectWidget::redrawScene3D(QPainter *painter)
 // ****************************************************************************
 // Method: QvisReflectWidget::setupCamera
 //
-// Purpose: 
+// Purpose:
 //   Sets up the camera based on the current camera and the camera interpolant.
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue Mar 11 09:54:37 PDT 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -480,7 +486,7 @@ QvisReflectWidget::setupCamera()
     const float camera2Angle = 3.8253f;
 #endif
 
-    float angle = (1. - cameraInterpolant) * camera1Angle + 
+    float angle = (1. - cameraInterpolant) * camera1Angle +
                   cameraInterpolant * camera2Angle;
 
     // figure out x and z using the angle.
@@ -500,7 +506,7 @@ QvisReflectWidget::setupCamera()
 // ****************************************************************************
 // Method: QvisReflectWidget::setupAndDraw
 //
-// Purpose: 
+// Purpose:
 //   Sets up the scene and draws it using the specified painter.
 //
 // Arguments:
@@ -522,8 +528,11 @@ QvisReflectWidget::setupCamera()
 //   Hank Childs, Thu Jun  8 14:08:18 PDT 2006
 //   Fix compiler warnings for casting.
 //
-//    Cyrus Harrison, Tue Aug 19 08:52:09 PDT 2008
-//    Qt4 Port.
+//   Cyrus Harrison, Tue Aug 19 08:52:09 PDT 2008
+//   Qt4 Port.
+//
+//   Kathleen Biagas, Wed Apr  5 15:11:57 PDT 2023
+//   Replace obsolete QPalette::Background with QPalette::Window.
 //
 // ****************************************************************************
 
@@ -531,7 +540,7 @@ void
 QvisReflectWidget::setupAndDraw(QPainter *p)
 {
     // Fill in the background color.
-    p->fillRect(rect(), palette().brush(QPalette::Background));
+    p->fillRect(rect(), palette().brush(QPalette::Window));
 
     renderer.set_light(1, M3D_LIGHT_EYE, 0.f,0.f,-35.f, 1.f, 1.f, 1.f);
     renderer.set_light(2, M3D_LIGHT_OFF, 0.f,0.f,-1.f, 0.f, 0.f, 0.f);
@@ -610,7 +619,7 @@ QvisReflectWidget::setupAndDraw(QPainter *p)
 // ****************************************************************************
 // Method: QvisReflectWidget::ScaleTranslateFromOriginToOctant
 //
-// Purpose: 
+// Purpose:
 //   Sets the world matrix so that the origin is translated to the center
 //   of the specified octant.
 //
@@ -668,7 +677,7 @@ QvisReflectWidget::ScaleTranslateFromOriginToOctant(int octant, float s)
 // ****************************************************************************
 // Method: QvisReflectWidget::setValues
 //
-// Purpose: 
+// Purpose:
 //   Sets the on/off flags for all 8 octants.
 //
 // Arguments:
@@ -704,7 +713,7 @@ QvisReflectWidget::setValues(bool *octants)
 // ****************************************************************************
 // Method: QvisReflectWidget::setOriginalOctant
 //
-// Purpose: 
+// Purpose:
 //   Sets the original octant (the one with the ball)
 //
 // Arguments:
@@ -716,7 +725,7 @@ QvisReflectWidget::setValues(bool *octants)
 // Modifications:
 //    Cyrus Harrison, Tue Aug 19 08:52:09 PDT 2008
 //    Qt4 Port.
-// 
+//
 // ****************************************************************************
 
 void
@@ -734,7 +743,7 @@ QvisReflectWidget::setOriginalOctant(int octant)
 // ****************************************************************************
 // Method: QvisReflectWidget::mouseReleaseEvent
 //
-// Purpose: 
+// Purpose:
 //   This is an event handling function that is called when the mouse is
 //   released in the widget.
 //
@@ -791,7 +800,7 @@ QvisReflectWidget::mouseReleaseEvent(QMouseEvent *e)
 // ****************************************************************************
 // Method: QvisReflectWidget::handleTimer
 //
-// Purpose: 
+// Purpose:
 //   This is an internal slot function that is called when the animation timer
 //   is activated. We use it to update the camera location.
 //
@@ -809,7 +818,7 @@ QvisReflectWidget::handleTimer()
 {
     update();
 
-    if(activeCamera == 0) 
+    if(activeCamera == 0)
         cameraInterpolant -= ANIMATION_DELTA;
     else
         cameraInterpolant += ANIMATION_DELTA;
@@ -831,7 +840,7 @@ QvisReflectWidget::handleTimer()
 // ****************************************************************************
 // Method: QvisReflectWidget::paintEvent
 //
-// Purpose: 
+// Purpose:
 //   This method is called when the widget needs to paint itself.
 //
 // Arguments:
@@ -857,7 +866,7 @@ QvisReflectWidget::paintEvent(QPaintEvent *e)
 // ****************************************************************************
 // Method: QvisReflectWidget::resizeEvent
 //
-// Purpose: 
+// Purpose:
 //   This method is called when the widget is resized.
 //
 // Arguments:
@@ -881,14 +890,14 @@ QvisReflectWidget::resizeEvent(QResizeEvent *e)
 // ****************************************************************************
 // Method: QvisReflectWidget::initializeAxes2D
 //
-// Purpose: 
+// Purpose:
 //   Initializes the 2D axes elements.
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue Jun 24 17:05:22 PST 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -913,7 +922,7 @@ QvisReflectWidget::initializeAxes2D()
 // ****************************************************************************
 // Method: initializeAxes
 //
-// Purpose: 
+// Purpose:
 //   Initializes the axes elements.
 //
 // Programmer: Brad Whitlock
@@ -983,7 +992,7 @@ QvisReflectWidget::initializeAxes()
 // ****************************************************************************
 // Method: QvisReflectWidget::initializeSphere
 //
-// Purpose: 
+// Purpose:
 //   Initializes a sphere object.
 //
 // Arguments:
@@ -996,7 +1005,7 @@ QvisReflectWidget::initializeAxes()
 // Creation:   Tue Mar 11 10:33:19 PDT 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1076,7 +1085,7 @@ QvisReflectWidget::initializeSphere(m3d_complex_element &obj, int nx, int ny,
 // ****************************************************************************
 // Method: QvisReflectWidget::initializeCube
 //
-// Purpose: 
+// Purpose:
 //   Creates a rounded cube.
 //
 // Arguments:
@@ -1089,7 +1098,7 @@ QvisReflectWidget::initializeSphere(m3d_complex_element &obj, int nx, int ny,
 // Creation:   Tue Mar 11 10:34:35 PDT 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1276,14 +1285,14 @@ static int faces[6][4] = {
 // ****************************************************************************
 // Method: QvisReflectWidget::initializeArrow
 //
-// Purpose: 
+// Purpose:
 //   Initializes the arrow object.
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue Mar 11 10:36:49 PDT 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void

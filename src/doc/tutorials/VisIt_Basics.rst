@@ -32,15 +32,16 @@ Opening files
 
 The first thing to do is to open files.
 
-1. Go to the *GUI* and click on the *Open* icon.
-2. This brings up the File open window.
+1. `Download <https://visit-dav.github.io/largedata/datarchives/visit_tutorial>`_ the tutorial data folder.
+2. Go to the *GUI* and click on the *Open* icon.
+3. This brings up the File open window.
 
 .. figure:: images/Basics-FileOpen.png
 
    The File open window
 
-3. Change the *Path* field to the "tutorial_data" folder.
-4. Highlight the file "example.silo" and then click *OK*.
+4. Change the *Path* field to the "tutorial_data" folder.
+5. Highlight the file "example.silo" and then click *OK*.
 
 You've opened a file!
 
@@ -223,7 +224,8 @@ Using lineout mode
 
 Lineout mode is indicated by the Lineout icon, represented by a curve plot
 of red and blue curves, being indented. It allows the user to create a plot
-of a scalar variable as a function of distance along a line.
+of a scalar variable as a function of distance along a line. 
+Lineout is specific to 2D.
 
 1. First, reset the view again.
 2. Click on the Lineout icon.

@@ -217,6 +217,13 @@ class JobSubmitter_bsub_LLNL(JobSubmitter):
 #   Cyrus Harrison, Mon Jun  7 09:53:53 PDT 2021
 #   Python 3 universal_newlines for Popen
 #
+#   Eric Brugger, Wed Jun  8 10:30:35 PDT 2022
+#   Added logic to set the LD_LIBRARY_PATH appropriately for MPI on toss3
+#   and toss4 x86_64 systems.
+#
+#   Eric Brugger, Fri Feb 17 14:33:43 PST 2023
+#   Added logic to set the visitarch appropriately on toss4 x86_64 systems.
+#
 ###############################################################################
 
 class LLNLLauncher(MainLauncher):
@@ -284,15 +291,29 @@ class LLNLLauncher(MainLauncher):
             SETENV("LD_LIBRARY_PATH", new_ld_library_path)
 
         #
-        # Set the LD_LIBRARY_PATH to include the path to MPI on
-        # linux-x86_64 systems.
+        # Set the LD_LIBRARY_PATH to include the path to MPI on toss3 or
+        # toss4 x86_64 systems.
         #
-        if self.visitarch == "linux-x86_64":
+        sys_type = GETENV("SYS_TYPE")
+        if sys_type == "toss_3_x86_64" or sys_type == "toss_3_x86_64_ib":
             mpi_ld_library_paths = ["/usr/tce/packages/mvapich2/mvapich2-2.2-intel-16.0.3/lib", "/usr/tce/packages/intel/intel-16.0.3/lib/intel64"]
+            SETENV("LD_LIBRARY_PATH", self.joinpaths(mpi_ld_library_paths))
+        elif sys_type == "toss_4_x86_64" or sys_type == "toss_4_x86_64_ib":
+            mpi_ld_library_paths = ["/usr/tce/packages/mvapich2-tce/mvapich2-2.3.6-gcc-10.3.1/lib"]
             SETENV("LD_LIBRARY_PATH", self.joinpaths(mpi_ld_library_paths))
 
         # Unset LD_PRELOAD
         UNSETENV("LD_PRELOAD")
+
+        #
+        # Set the visitarch to linux-x86_64-toss4 if the kernel version
+        # starts with "4" and processor type is "x86_64".
+        #
+        kernel = subprocess.run(['uname', '-r'], stdout=subprocess.PIPE)
+        proc = subprocess.run(['uname', '-p'], stdout=subprocess.PIPE)
+        if proc.stdout.decode('utf-8')[:6] == "x86_64" and \
+           kernel.stdout.decode('utf-8')[:1] == "4":
+            self.visitarch = "linux-x86_64-toss4"
 
     #
     # Override the JobSubmitterFactory method so the custom job submitter can

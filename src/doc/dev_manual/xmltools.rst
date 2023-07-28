@@ -1,15 +1,17 @@
+.. _XML Tools:
+
 XML Tools
-============================
+=========
 
 Overview
---------------------------------
-VisIt_ developers use several xml-based code generation tools to implement
-VisIt_'s features. The source core for these tools is kept in 
-``src/tools/dev/xml/`` and ``src/tools/dev/xmledit/``.
+--------
+VisIt_ developers use several xml-based code generation tools to implement VisIt_'s features. 
+The source core for these tools is kept in ``src/tools/dev/xml/`` and ``src/tools/dev/xmledit/``.
 
 Types Managed by XML Tools
 --------------------------
-These XML tools are designed to be aware of a number of basic data types. These include...
+These XML tools are designed to be aware of a number of basic data types. 
+These include...
 
 * ``Bool``
 * ``Int``
@@ -19,7 +21,8 @@ These XML tools are designed to be aware of a number of basic data types. These 
 * ``String``
 
 In addition to these *basic* types as *scalars*, we also support ``Arrays`` of fixed length and ``Vectors`` of arbitrary length of these basic types.
-There is also support for a number of types that require special handling. These are...
+There is also support for a number of types that require special handling. 
+These are...
 
 * types defined in the ``avtTypes.h`` `header file <https://github.com/visit-dav/visit/blob/develop/src/avt/DBAtts/MetaData/avtTypes.h>`_
 
@@ -43,12 +46,12 @@ For more details, please see `this issue <https://github.com/visit-dav/visit/iss
 CMake Integration
 --------------------
 
-We rely on xml code generation to keep our State object, Attribute, and Plugin
-APIs up-to-date. To automate the process we provide CMake targets that call our
-xml code generation tools for each object or plugin registred. Individual code
-gen targets are all wired into top level targets that allow you to apply the
-code gen tools to categories of code gen tasks.  These targets replace older
-tools such as regen-ajp and various regenerateatts.py scripts.
+We rely on xml code generation to keep our State object, Attribute, and Plugin APIs up-to-date. 
+To automate the process we provide CMake targets that call our xml code generation tools for each object or plugin registered. 
+Individual code gen targets are all wired into top level targets that allow you to apply the code gen tools to categories of code gen tasks.  
+These targets replace older tools such as regen-ajp and various regenerateatts.py scripts. 
+Keep in mind however, that these targets are only created for plugins that are enabled for building. 
+Any use of the plugin-reducing CMake vars (*VISIT_BUILD_MINIMAL_PLUGINS* and any of the *VISIT_SELECTED_XXX_PLUGINS*) will limit the created code gen targets to those plugins being built.
 
 
 Top Level CMake Code Gen Targets
@@ -104,14 +107,5 @@ Plugin Tools Helper functions in ``src/CMake/PluginMacros.cmake``:
 
 * **ADD_OPERATOR_CODE_GEN_TARGETS** - alias for ADD_PLUGIN_CODE_GEN_TARGETS
 * **ADD_PLOT_CODE_GEN_TARGETS** - alias for ADD_PLUGIN_CODE_GEN_TARGETS
-
-
-CMake Options
-~~~~~~~~~~~~~~~~~
-
-**VISIT_CMAKE_VERBOSE_GEN_TARGET_MESSAGES** (default: **OFF**) When enabled
-display messages about code gen targets during CMake configure time.
-
-
 
 

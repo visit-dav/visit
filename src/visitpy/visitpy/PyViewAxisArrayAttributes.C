@@ -36,7 +36,7 @@ struct ViewAxisArrayAttributesObject
 //
 static PyObject *NewViewAxisArrayAttributes(int);
 std::string
-PyViewAxisArrayAttributes_ToString(const ViewAxisArrayAttributes *atts, const char *prefix)
+PyViewAxisArrayAttributes_ToString(const ViewAxisArrayAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -422,7 +422,7 @@ static int
 ViewAxisArrayAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     ViewAxisArrayAttributesObject *obj = (ViewAxisArrayAttributesObject *)v;
-    fprintf(fp, "%s", PyViewAxisArrayAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyViewAxisArrayAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -430,7 +430,7 @@ PyObject *
 ViewAxisArrayAttributes_str(PyObject *v)
 {
     ViewAxisArrayAttributesObject *obj = (ViewAxisArrayAttributesObject *)v;
-    return PyString_FromString(PyViewAxisArrayAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyViewAxisArrayAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -582,7 +582,7 @@ PyViewAxisArrayAttributes_GetLogString()
 {
     std::string s("ViewAxisArrayAtts = ViewAxisArrayAttributes()\n");
     if(currentAtts != 0)
-        s += PyViewAxisArrayAttributes_ToString(currentAtts, "ViewAxisArrayAtts.");
+        s += PyViewAxisArrayAttributes_ToString(currentAtts, "ViewAxisArrayAtts.", true);
     return s;
 }
 
@@ -595,7 +595,7 @@ PyViewAxisArrayAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("ViewAxisArrayAtts = ViewAxisArrayAttributes()\n");
-        s += PyViewAxisArrayAttributes_ToString(currentAtts, "ViewAxisArrayAtts.");
+        s += PyViewAxisArrayAttributes_ToString(currentAtts, "ViewAxisArrayAtts.", true);
         cb(s);
     }
 }

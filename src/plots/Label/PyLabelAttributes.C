@@ -39,7 +39,7 @@ struct LabelAttributesObject
 //
 static PyObject *NewLabelAttributes(int);
 std::string
-PyLabelAttributes_ToString(const LabelAttributes *atts, const char *prefix)
+PyLabelAttributes_ToString(const LabelAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -107,12 +107,12 @@ PyLabelAttributes_ToString(const LabelAttributes *atts, const char *prefix)
     { // new scope
         std::string objPrefix(prefix);
         objPrefix += "textFont1.";
-        str += PyFontAttributes_ToString(&atts->GetTextFont1(), objPrefix.c_str());
+        str += PyFontAttributes_ToString(&atts->GetTextFont1(), objPrefix.c_str(), forLogging);
     }
     { // new scope
         std::string objPrefix(prefix);
         objPrefix += "textFont2.";
-        str += PyFontAttributes_ToString(&atts->GetTextFont2(), objPrefix.c_str());
+        str += PyFontAttributes_ToString(&atts->GetTextFont2(), objPrefix.c_str(), forLogging);
     }
     const char *horizontalJustification_names = "HCenter, Left, Right";
     switch (atts->GetHorizontalJustification())
@@ -1096,138 +1096,6 @@ PyLabelAttributes_setattr(PyObject *self, char *name, PyObject *args)
     else if(strcmp(name, "formatTemplate") == 0)
         obj = LabelAttributes_SetFormatTemplate(self, args);
 
-    // Try to handle legacy fields
-    if(obj == &NULL_PY_OBJ)
-    {
-#define GETCOLOR if(!PyArg_ParseTuple(args, "iiii", &c[0], &c[1], &c[2], &c[3])) \
-    { \
-        c[3] = 255; \
-        if(!PyArg_ParseTuple(args, "iii", &c[0], &c[1], &c[2])) \
-        { \
-            double dr, dg, db, da; \
-            if(PyArg_ParseTuple(args, "dddd", &dr, &dg, &db, &da)) \
-            { \
-                c[0] = int(dr); \
-                c[1] = int(dg); \
-                c[2] = int(db); \
-                c[3] = int(da); \
-            } \
-            else if(PyArg_ParseTuple(args, "ddd", &dr, &dg, &db)) \
-            { \
-                c[0] = int(dr); \
-                c[1] = int(dg); \
-                c[2] = int(db); \
-                c[3] = 255; \
-            } \
-            else \
-            { \
-                PyObject *obj2 = NULL; \
-                if(!PyArg_ParseTuple(args, "O", &obj2)) \
-                    success = false; \
-                if(!PyTuple_Check(obj2)) \
-                    success = false; \
-                if(PyTuple_Size(obj2) < 3 || PyTuple_Size(obj2) > 4) \
-                    success = false; \
-                for(int i = 0; i < PyTuple_Size(obj2); ++i) \
-                { \
-                    PyObject *item = PyTuple_GET_ITEM(obj2, i); \
-                    if(PyInt_Check(item)) \
-                        c[i] = int(PyInt_AS_LONG(PyTuple_GET_ITEM(obj2, i))); \
-                    else if(PyFloat_Check(item)) \
-                        c[i] = int(PyFloat_AS_DOUBLE(PyTuple_GET_ITEM(obj2, i))); \
-                    else \
-                        success = false; \
-                } \
-            } \
-        } \
-        PyErr_Clear(); \
-    }
-
-        LabelAttributesObject *LabelObj = (LabelAttributesObject *)self;
-        FontAttributes font1 = LabelObj->data->GetTextFont1();
-        FontAttributes font2 = LabelObj->data->GetTextFont2();
-
-        //
-        // Removed in 3.0.0
-        //
-        if(strcmp(name, "textHeight1") == 0)
-        {
-            PyErr_WarnEx(NULL, "'textHeight1' is obsolete. Trying to accomodate.", 3);
-            double val = -1.0;
-            val = PyFloat_AsDouble(args);
-            if (val != -1.0)
-            {
-                // Increase the value, new labels are smaller, we want
-                // a better approximation of the original size
-                font1.SetScale((val+0.02)*100);
-            }
-            Py_INCREF(Py_None);
-            obj = Py_None;
-        }
-        else if(strcmp(name, "textHeight2") == 0)
-        {
-            PyErr_WarnEx(NULL, "'textHeight2' is obsolete. Trying to accomodate.", 3);
-            double val = -1.0;
-            val = PyFloat_AsDouble(args);
-            if (val != -1.0)
-            {
-                // Increase the value, new labels are smaller, we want
-                // a better approximation of the original size
-                font2.SetScale((val+0.02)*100);
-            }
-            Py_INCREF(Py_None);
-            obj = Py_None;
-        }
-        else if(strcmp(name, "specifyTextColor1") == 0)
-        {
-            PyErr_WarnEx(NULL, "'specifyTextColor1' is obsolete. Trying to accomodate.", 3);
-            int ival = -1;
-            ival = (int) PyLong_AsLong(args);
-            if (ival != -1)
-                font1.SetUseForegroundColor(ival == 0 ? 1: 0);
-            Py_INCREF(Py_None);
-            obj = Py_None;
-        }
-        else if(strcmp(name, "specifyTextColor2") == 0)
-        {
-            PyErr_WarnEx(NULL, "'specifyTextColor2' is obsolete. Trying to accomodate.", 3);
-            int ival = -1;
-            ival = (int) PyLong_AsLong(args);
-            if (ival != -1)
-                font2.SetUseForegroundColor(ival == 0 ? 1: 0);
-            Py_INCREF(Py_None);
-            obj = Py_None;
-        }
-        else if(strcmp(name, "textColor1") == 0)
-        {
-            int c[4];
-            bool success = true;
-            GETCOLOR;
-            if (success)
-            {
-                font1.GetColor().SetRgba(c[0], c[1], c[2], c[3]);
-                Py_INCREF(Py_None);
-                obj = Py_None;
-            }
-        }
-        else if(strcmp(name, "textColor2") == 0)
-        {
-            int c[4];
-            bool success = true;
-            GETCOLOR;
-            if (success)
-            {
-                font2.GetColor().SetRgba(c[0], c[1], c[2], c[3]);
-                Py_INCREF(Py_None);
-                obj = Py_None;
-            }
-        }
-        if (obj != &NULL_PY_OBJ)
-        {
-            LabelObj->data->SetTextFont1(font1);
-            LabelObj->data->SetTextFont2(font2);
-        }
-    }
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
@@ -1246,7 +1114,7 @@ static int
 LabelAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     LabelAttributesObject *obj = (LabelAttributesObject *)v;
-    fprintf(fp, "%s", PyLabelAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyLabelAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -1254,7 +1122,7 @@ PyObject *
 LabelAttributes_str(PyObject *v)
 {
     LabelAttributesObject *obj = (LabelAttributesObject *)v;
-    return PyString_FromString(PyLabelAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyLabelAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -1406,7 +1274,7 @@ PyLabelAttributes_GetLogString()
 {
     std::string s("LabelAtts = LabelAttributes()\n");
     if(currentAtts != 0)
-        s += PyLabelAttributes_ToString(currentAtts, "LabelAtts.");
+        s += PyLabelAttributes_ToString(currentAtts, "LabelAtts.", true);
     return s;
 }
 
@@ -1419,7 +1287,7 @@ PyLabelAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("LabelAtts = LabelAttributes()\n");
-        s += PyLabelAttributes_ToString(currentAtts, "LabelAtts.");
+        s += PyLabelAttributes_ToString(currentAtts, "LabelAtts.", true);
         cb(s);
     }
 }

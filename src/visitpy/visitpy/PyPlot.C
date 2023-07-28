@@ -36,7 +36,7 @@ struct PlotObject
 //
 static PyObject *NewPlot(int);
 std::string
-PyPlot_ToString(const Plot *atts, const char *prefix)
+PyPlot_ToString(const Plot *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -137,6 +137,38 @@ PyPlot_ToString(const Plot *atts, const char *prefix)
             snprintf(tmpStr, 1000, "%d", keyframes[i]);
             str += tmpStr;
             if(i < keyframes.size() - 1)
+            {
+                snprintf(tmpStr, 1000, ", ");
+                str += tmpStr;
+            }
+        }
+        snprintf(tmpStr, 1000, ")\n");
+        str += tmpStr;
+    }
+    {   const intVector &numKeyframesPerOperator = atts->GetNumKeyframesPerOperator();
+        snprintf(tmpStr, 1000, "%snumKeyframesPerOperator = (", prefix);
+        str += tmpStr;
+        for(size_t i = 0; i < numKeyframesPerOperator.size(); ++i)
+        {
+            snprintf(tmpStr, 1000, "%d", numKeyframesPerOperator[i]);
+            str += tmpStr;
+            if(i < numKeyframesPerOperator.size() - 1)
+            {
+                snprintf(tmpStr, 1000, ", ");
+                str += tmpStr;
+            }
+        }
+        snprintf(tmpStr, 1000, ")\n");
+        str += tmpStr;
+    }
+    {   const intVector &operatorKeyframes = atts->GetOperatorKeyframes();
+        snprintf(tmpStr, 1000, "%soperatorKeyframes = (", prefix);
+        str += tmpStr;
+        for(size_t i = 0; i < operatorKeyframes.size(); ++i)
+        {
+            snprintf(tmpStr, 1000, "%d", operatorKeyframes[i]);
+            str += tmpStr;
+            if(i < operatorKeyframes.size() - 1)
             {
                 snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
@@ -1169,6 +1201,158 @@ Plot_GetKeyframes(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
+Plot_SetNumKeyframesPerOperator(PyObject *self, PyObject *args)
+{
+    PlotObject *obj = (PlotObject *)self;
+
+    intVector vec;
+
+    if (PyNumber_Check(args))
+    {
+        long val = PyLong_AsLong(args);
+        int cval = int(val);
+        if (val == -1 && PyErr_Occurred())
+        {
+            PyErr_Clear();
+            return PyErr_Format(PyExc_TypeError, "number not interpretable as C++ int");
+        }
+        if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+            return PyErr_Format(PyExc_ValueError, "number not interpretable as C++ int");
+        vec.resize(1);
+        vec[0] = cval;
+    }
+    else if (PySequence_Check(args) && !PyUnicode_Check(args))
+    {
+        vec.resize(PySequence_Size(args));
+        for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)
+        {
+            PyObject *item = PySequence_GetItem(args, i);
+
+            if (!PyNumber_Check(item))
+            {
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_TypeError, "arg %d is not a number type", (int) i);
+            }
+
+            long val = PyLong_AsLong(item);
+            int cval = int(val);
+
+            if (val == -1 && PyErr_Occurred())
+            {
+                Py_DECREF(item);
+                PyErr_Clear();
+                return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ int", (int) i);
+            }
+            if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+            {
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_ValueError, "arg %d not interpretable as C++ int", (int) i);
+            }
+            Py_DECREF(item);
+
+            vec[i] = cval;
+        }
+    }
+    else
+        return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more ints");
+
+    obj->data->GetNumKeyframesPerOperator() = vec;
+    // Mark the numKeyframesPerOperator in the object as modified.
+    obj->data->SelectNumKeyframesPerOperator();
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+Plot_GetNumKeyframesPerOperator(PyObject *self, PyObject *args)
+{
+    PlotObject *obj = (PlotObject *)self;
+    // Allocate a tuple the with enough entries to hold the numKeyframesPerOperator.
+    const intVector &numKeyframesPerOperator = obj->data->GetNumKeyframesPerOperator();
+    PyObject *retval = PyTuple_New(numKeyframesPerOperator.size());
+    for(size_t i = 0; i < numKeyframesPerOperator.size(); ++i)
+        PyTuple_SET_ITEM(retval, i, PyInt_FromLong(long(numKeyframesPerOperator[i])));
+    return retval;
+}
+
+/*static*/ PyObject *
+Plot_SetOperatorKeyframes(PyObject *self, PyObject *args)
+{
+    PlotObject *obj = (PlotObject *)self;
+
+    intVector vec;
+
+    if (PyNumber_Check(args))
+    {
+        long val = PyLong_AsLong(args);
+        int cval = int(val);
+        if (val == -1 && PyErr_Occurred())
+        {
+            PyErr_Clear();
+            return PyErr_Format(PyExc_TypeError, "number not interpretable as C++ int");
+        }
+        if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+            return PyErr_Format(PyExc_ValueError, "number not interpretable as C++ int");
+        vec.resize(1);
+        vec[0] = cval;
+    }
+    else if (PySequence_Check(args) && !PyUnicode_Check(args))
+    {
+        vec.resize(PySequence_Size(args));
+        for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)
+        {
+            PyObject *item = PySequence_GetItem(args, i);
+
+            if (!PyNumber_Check(item))
+            {
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_TypeError, "arg %d is not a number type", (int) i);
+            }
+
+            long val = PyLong_AsLong(item);
+            int cval = int(val);
+
+            if (val == -1 && PyErr_Occurred())
+            {
+                Py_DECREF(item);
+                PyErr_Clear();
+                return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ int", (int) i);
+            }
+            if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+            {
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_ValueError, "arg %d not interpretable as C++ int", (int) i);
+            }
+            Py_DECREF(item);
+
+            vec[i] = cval;
+        }
+    }
+    else
+        return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more ints");
+
+    obj->data->GetOperatorKeyframes() = vec;
+    // Mark the operatorKeyframes in the object as modified.
+    obj->data->SelectOperatorKeyframes();
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+Plot_GetOperatorKeyframes(PyObject *self, PyObject *args)
+{
+    PlotObject *obj = (PlotObject *)self;
+    // Allocate a tuple the with enough entries to hold the operatorKeyframes.
+    const intVector &operatorKeyframes = obj->data->GetOperatorKeyframes();
+    PyObject *retval = PyTuple_New(operatorKeyframes.size());
+    for(size_t i = 0; i < operatorKeyframes.size(); ++i)
+        PyTuple_SET_ITEM(retval, i, PyInt_FromLong(long(operatorKeyframes[i])));
+    return retval;
+}
+
+/*static*/ PyObject *
 Plot_SetDatabaseKeyframes(PyObject *self, PyObject *args)
 {
     PlotObject *obj = (PlotObject *)self;
@@ -1558,6 +1742,10 @@ PyMethodDef PyPlot_methods[PLOT_NMETH] = {
     {"GetEndFrame", Plot_GetEndFrame, METH_VARARGS},
     {"SetKeyframes", Plot_SetKeyframes, METH_VARARGS},
     {"GetKeyframes", Plot_GetKeyframes, METH_VARARGS},
+    {"SetNumKeyframesPerOperator", Plot_SetNumKeyframesPerOperator, METH_VARARGS},
+    {"GetNumKeyframesPerOperator", Plot_GetNumKeyframesPerOperator, METH_VARARGS},
+    {"SetOperatorKeyframes", Plot_SetOperatorKeyframes, METH_VARARGS},
+    {"GetOperatorKeyframes", Plot_GetOperatorKeyframes, METH_VARARGS},
     {"SetDatabaseKeyframes", Plot_SetDatabaseKeyframes, METH_VARARGS},
     {"GetDatabaseKeyframes", Plot_GetDatabaseKeyframes, METH_VARARGS},
     {"SetIsFromSimulation", Plot_SetIsFromSimulation, METH_VARARGS},
@@ -1632,6 +1820,10 @@ PyPlot_getattr(PyObject *self, char *name)
         return Plot_GetEndFrame(self, NULL);
     if(strcmp(name, "keyframes") == 0)
         return Plot_GetKeyframes(self, NULL);
+    if(strcmp(name, "numKeyframesPerOperator") == 0)
+        return Plot_GetNumKeyframesPerOperator(self, NULL);
+    if(strcmp(name, "operatorKeyframes") == 0)
+        return Plot_GetOperatorKeyframes(self, NULL);
     if(strcmp(name, "databaseKeyframes") == 0)
         return Plot_GetDatabaseKeyframes(self, NULL);
     if(strcmp(name, "isFromSimulation") == 0)
@@ -1698,6 +1890,10 @@ PyPlot_setattr(PyObject *self, char *name, PyObject *args)
         obj = Plot_SetEndFrame(self, args);
     else if(strcmp(name, "keyframes") == 0)
         obj = Plot_SetKeyframes(self, args);
+    else if(strcmp(name, "numKeyframesPerOperator") == 0)
+        obj = Plot_SetNumKeyframesPerOperator(self, args);
+    else if(strcmp(name, "operatorKeyframes") == 0)
+        obj = Plot_SetOperatorKeyframes(self, args);
     else if(strcmp(name, "databaseKeyframes") == 0)
         obj = Plot_SetDatabaseKeyframes(self, args);
     else if(strcmp(name, "isFromSimulation") == 0)
@@ -1729,7 +1925,7 @@ static int
 Plot_print(PyObject *v, FILE *fp, int flags)
 {
     PlotObject *obj = (PlotObject *)v;
-    fprintf(fp, "%s", PyPlot_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyPlot_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -1737,7 +1933,7 @@ PyObject *
 Plot_str(PyObject *v)
 {
     PlotObject *obj = (PlotObject *)v;
-    return PyString_FromString(PyPlot_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyPlot_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -1889,7 +2085,7 @@ PyPlot_GetLogString()
 {
     std::string s("Plot = Plot()\n");
     if(currentAtts != 0)
-        s += PyPlot_ToString(currentAtts, "Plot.");
+        s += PyPlot_ToString(currentAtts, "Plot.", true);
     return s;
 }
 
@@ -1902,7 +2098,7 @@ PyPlot_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("Plot = Plot()\n");
-        s += PyPlot_ToString(currentAtts, "Plot.");
+        s += PyPlot_ToString(currentAtts, "Plot.", true);
         cb(s);
     }
 }

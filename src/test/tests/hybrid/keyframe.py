@@ -20,7 +20,11 @@
 #    deprecated animation functions.
 #
 #    Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
-#    Added ability to swtich between Silo's HDF5 and PDB data.
+#    Added ability to switch between Silo's HDF5 and PDB data.
+#
+#    Eric Brugger, Wed Mar 22 16:23:12 PDT 2023
+#    Added operator keyframe tests.
+#
 # ----------------------------------------------------------------------------
 
 
@@ -454,5 +458,86 @@ SetTimeSliderState(3)
 Test("keyframe_61")
 SetTimeSliderState(4)
 Test("keyframe_62")
+
+# Clear the window and reset the view in preparation
+# to test operator keyframes.
+TestSection("Operator keyframes")
+DeleteAllPlots()
+ResetView()
+
+# Open a database.
+OpenDatabase(silo_data_path("noise.silo"))
+
+# Set the number of frames to be 11.
+AnimationSetNFrames(11)
+ 
+# Create a pseudocolor plot that exists over the first
+# 11 frames of the animation.
+AddPlot("Pseudocolor", "hardyglobal")
+AddOperator("Slice")
+AddOperator("Isosurface")
+SetPlotFrameRange(0, 0, 10)
+ 
+# Set 3 slice keyframes.
+SetTimeSliderState(0)
+slice = SliceAttributes()
+slice.originType = slice.Percent
+slice.originPercent = 0
+slice.project2d = 0
+SetOperatorOptions(slice)
+SetTimeSliderState(2)
+SetOperatorOptions(slice)
+SetTimeSliderState(10)
+slice.originPercent = 100
+SetOperatorOptions(slice)
+
+# Set 2 isosurface keyframes.
+SetTimeSliderState(0)
+iso = IsosurfaceAttributes()
+SetOperatorOptions(iso)
+SetTimeSliderState(5)
+iso.contourNLevels = 5
+SetOperatorOptions(iso)
+
+SetTimeSliderState(0)
+DrawPlots()
+
+v = GetView3D()
+v.viewNormal = (0.225979, 0.625179, 0.747051)
+v.focus = (0, 0, 0)
+v.viewUp = (-0.965293, 0.246786, 0.0854703)
+v.viewAngle = 30
+v.parallelScale = 17.3205
+v.nearPlane = -34.641
+v.farPlane = 34.641
+v.perspective = 1
+SetView3D(v)
+
+# Check a bunch of frames.
+Test("keyframe_63")
+SetTimeSliderState(2)
+Test("keyframe_64")
+SetTimeSliderState(5)
+Test("keyframe_65")
+SetTimeSliderState(7)
+Test("keyframe_66")
+SetTimeSliderState(10)
+Test("keyframe_67")
+
+# Delete the slice keyframe and move the isosurface keyframe.
+DeleteOperatorKeyframe(0, 0, 2)
+MoveOperatorKeyframe(0, 1, 5, 10)
+
+# Check a bunch of frames.
+SetTimeSliderState(0)
+Test("keyframe_68")
+SetTimeSliderState(2)
+Test("keyframe_69")
+SetTimeSliderState(5)
+Test("keyframe_70")
+SetTimeSliderState(7)
+Test("keyframe_71")
+SetTimeSliderState(10)
+Test("keyframe_72")
 
 Exit()

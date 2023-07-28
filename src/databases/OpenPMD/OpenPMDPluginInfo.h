@@ -18,7 +18,7 @@ class avtDatabaseWriter;
 //  Class: OpenPMDDatabasePluginInfo
 //
 //  Purpose:
-//    Classes that provide all the information about the openPMD plugin.
+//    Classes that provide all the information about the OpenPMD plugin.
 //    Portions are separated into pieces relevant to the appropriate
 //    components of VisIt.
 //

@@ -50,7 +50,7 @@ struct avtDatabaseMetaDataObject
 //
 static PyObject *NewavtDatabaseMetaData(int);
 std::string
-PyavtDatabaseMetaData_ToString(const avtDatabaseMetaData *atts, const char *prefix)
+PyavtDatabaseMetaData_ToString(const avtDatabaseMetaData *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -187,7 +187,7 @@ PyavtDatabaseMetaData_ToString(const avtDatabaseMetaData *atts, const char *pref
     { // new scope
         std::string objPrefix(prefix);
         objPrefix += "exprList.";
-        str += PyExpressionList_ToString(&atts->GetExprList(), objPrefix.c_str());
+        str += PyExpressionList_ToString(&atts->GetExprList(), objPrefix.c_str(), forLogging);
     }
     { // new scope
         int index = 0;
@@ -197,7 +197,7 @@ PyavtDatabaseMetaData_ToString(const avtDatabaseMetaData *atts, const char *pref
             const avtMeshMetaData *current = (const avtMeshMetaData *)(*pos);
             snprintf(tmpStr, 1000, "GetMeshes(%d).", index);
             std::string objPrefix(prefix + std::string(tmpStr));
-            str += PyavtMeshMetaData_ToString(current, objPrefix.c_str());
+            str += PyavtMeshMetaData_ToString(current, objPrefix.c_str(), forLogging);
         }
         if(index == 0)
             str += "#meshes does not contain any avtMeshMetaData objects.\n";
@@ -210,7 +210,7 @@ PyavtDatabaseMetaData_ToString(const avtDatabaseMetaData *atts, const char *pref
             const avtSubsetsMetaData *current = (const avtSubsetsMetaData *)(*pos);
             snprintf(tmpStr, 1000, "GetSubsets(%d).", index);
             std::string objPrefix(prefix + std::string(tmpStr));
-            str += PyavtSubsetsMetaData_ToString(current, objPrefix.c_str());
+            str += PyavtSubsetsMetaData_ToString(current, objPrefix.c_str(), forLogging);
         }
         if(index == 0)
             str += "#subsets does not contain any avtSubsetsMetaData objects.\n";
@@ -223,7 +223,7 @@ PyavtDatabaseMetaData_ToString(const avtDatabaseMetaData *atts, const char *pref
             const avtScalarMetaData *current = (const avtScalarMetaData *)(*pos);
             snprintf(tmpStr, 1000, "GetScalars(%d).", index);
             std::string objPrefix(prefix + std::string(tmpStr));
-            str += PyavtScalarMetaData_ToString(current, objPrefix.c_str());
+            str += PyavtScalarMetaData_ToString(current, objPrefix.c_str(), forLogging);
         }
         if(index == 0)
             str += "#scalars does not contain any avtScalarMetaData objects.\n";
@@ -236,7 +236,7 @@ PyavtDatabaseMetaData_ToString(const avtDatabaseMetaData *atts, const char *pref
             const avtVectorMetaData *current = (const avtVectorMetaData *)(*pos);
             snprintf(tmpStr, 1000, "GetVectors(%d).", index);
             std::string objPrefix(prefix + std::string(tmpStr));
-            str += PyavtVectorMetaData_ToString(current, objPrefix.c_str());
+            str += PyavtVectorMetaData_ToString(current, objPrefix.c_str(), forLogging);
         }
         if(index == 0)
             str += "#vectors does not contain any avtVectorMetaData objects.\n";
@@ -249,7 +249,7 @@ PyavtDatabaseMetaData_ToString(const avtDatabaseMetaData *atts, const char *pref
             const avtTensorMetaData *current = (const avtTensorMetaData *)(*pos);
             snprintf(tmpStr, 1000, "GetTensors(%d).", index);
             std::string objPrefix(prefix + std::string(tmpStr));
-            str += PyavtTensorMetaData_ToString(current, objPrefix.c_str());
+            str += PyavtTensorMetaData_ToString(current, objPrefix.c_str(), forLogging);
         }
         if(index == 0)
             str += "#tensors does not contain any avtTensorMetaData objects.\n";
@@ -262,7 +262,7 @@ PyavtDatabaseMetaData_ToString(const avtDatabaseMetaData *atts, const char *pref
             const avtSymmetricTensorMetaData *current = (const avtSymmetricTensorMetaData *)(*pos);
             snprintf(tmpStr, 1000, "GetSymmTensors(%d).", index);
             std::string objPrefix(prefix + std::string(tmpStr));
-            str += PyavtSymmetricTensorMetaData_ToString(current, objPrefix.c_str());
+            str += PyavtSymmetricTensorMetaData_ToString(current, objPrefix.c_str(), forLogging);
         }
         if(index == 0)
             str += "#symmTensors does not contain any avtSymmetricTensorMetaData objects.\n";
@@ -275,7 +275,7 @@ PyavtDatabaseMetaData_ToString(const avtDatabaseMetaData *atts, const char *pref
             const avtArrayMetaData *current = (const avtArrayMetaData *)(*pos);
             snprintf(tmpStr, 1000, "GetArrays(%d).", index);
             std::string objPrefix(prefix + std::string(tmpStr));
-            str += PyavtArrayMetaData_ToString(current, objPrefix.c_str());
+            str += PyavtArrayMetaData_ToString(current, objPrefix.c_str(), forLogging);
         }
         if(index == 0)
             str += "#arrays does not contain any avtArrayMetaData objects.\n";
@@ -288,7 +288,7 @@ PyavtDatabaseMetaData_ToString(const avtDatabaseMetaData *atts, const char *pref
             const avtMaterialMetaData *current = (const avtMaterialMetaData *)(*pos);
             snprintf(tmpStr, 1000, "GetMaterials(%d).", index);
             std::string objPrefix(prefix + std::string(tmpStr));
-            str += PyavtMaterialMetaData_ToString(current, objPrefix.c_str());
+            str += PyavtMaterialMetaData_ToString(current, objPrefix.c_str(), forLogging);
         }
         if(index == 0)
             str += "#materials does not contain any avtMaterialMetaData objects.\n";
@@ -301,7 +301,7 @@ PyavtDatabaseMetaData_ToString(const avtDatabaseMetaData *atts, const char *pref
             const avtSpeciesMetaData *current = (const avtSpeciesMetaData *)(*pos);
             snprintf(tmpStr, 1000, "GetSpecies(%d).", index);
             std::string objPrefix(prefix + std::string(tmpStr));
-            str += PyavtSpeciesMetaData_ToString(current, objPrefix.c_str());
+            str += PyavtSpeciesMetaData_ToString(current, objPrefix.c_str(), forLogging);
         }
         if(index == 0)
             str += "#species does not contain any avtSpeciesMetaData objects.\n";
@@ -314,7 +314,7 @@ PyavtDatabaseMetaData_ToString(const avtDatabaseMetaData *atts, const char *pref
             const avtCurveMetaData *current = (const avtCurveMetaData *)(*pos);
             snprintf(tmpStr, 1000, "GetCurves(%d).", index);
             std::string objPrefix(prefix + std::string(tmpStr));
-            str += PyavtCurveMetaData_ToString(current, objPrefix.c_str());
+            str += PyavtCurveMetaData_ToString(current, objPrefix.c_str(), forLogging);
         }
         if(index == 0)
             str += "#curves does not contain any avtCurveMetaData objects.\n";
@@ -327,7 +327,7 @@ PyavtDatabaseMetaData_ToString(const avtDatabaseMetaData *atts, const char *pref
             const avtLabelMetaData *current = (const avtLabelMetaData *)(*pos);
             snprintf(tmpStr, 1000, "GetLabels(%d).", index);
             std::string objPrefix(prefix + std::string(tmpStr));
-            str += PyavtLabelMetaData_ToString(current, objPrefix.c_str());
+            str += PyavtLabelMetaData_ToString(current, objPrefix.c_str(), forLogging);
         }
         if(index == 0)
             str += "#labels does not contain any avtLabelMetaData objects.\n";
@@ -340,7 +340,7 @@ PyavtDatabaseMetaData_ToString(const avtDatabaseMetaData *atts, const char *pref
             const avtDefaultPlotMetaData *current = (const avtDefaultPlotMetaData *)(*pos);
             snprintf(tmpStr, 1000, "GetDefaultPlots(%d).", index);
             std::string objPrefix(prefix + std::string(tmpStr));
-            str += PyavtDefaultPlotMetaData_ToString(current, objPrefix.c_str());
+            str += PyavtDefaultPlotMetaData_ToString(current, objPrefix.c_str(), forLogging);
         }
         if(index == 0)
             str += "#defaultPlots does not contain any avtDefaultPlotMetaData objects.\n";
@@ -353,7 +353,7 @@ PyavtDatabaseMetaData_ToString(const avtDatabaseMetaData *atts, const char *pref
     { // new scope
         std::string objPrefix(prefix);
         objPrefix += "simInfo.";
-        str += PyavtSimulationInformation_ToString(&atts->GetSimInfo(), objPrefix.c_str());
+        str += PyavtSimulationInformation_ToString(&atts->GetSimInfo(), objPrefix.c_str(), forLogging);
     }
     {   const stringVector &suggestedDefaultSILRestriction = atts->GetSuggestedDefaultSILRestriction();
         snprintf(tmpStr, 1000, "%ssuggestedDefaultSILRestriction = (", prefix);
@@ -3315,7 +3315,7 @@ static int
 avtDatabaseMetaData_print(PyObject *v, FILE *fp, int flags)
 {
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)v;
-    fprintf(fp, "%s", PyavtDatabaseMetaData_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyavtDatabaseMetaData_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -3323,7 +3323,7 @@ PyObject *
 avtDatabaseMetaData_str(PyObject *v)
 {
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)v;
-    return PyString_FromString(PyavtDatabaseMetaData_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyavtDatabaseMetaData_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -3475,7 +3475,7 @@ PyavtDatabaseMetaData_GetLogString()
 {
     std::string s("avtDatabaseMetaData = avtDatabaseMetaData()\n");
     if(currentAtts != 0)
-        s += PyavtDatabaseMetaData_ToString(currentAtts, "avtDatabaseMetaData.");
+        s += PyavtDatabaseMetaData_ToString(currentAtts, "avtDatabaseMetaData.", true);
     return s;
 }
 
@@ -3488,7 +3488,7 @@ PyavtDatabaseMetaData_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("avtDatabaseMetaData = avtDatabaseMetaData()\n");
-        s += PyavtDatabaseMetaData_ToString(currentAtts, "avtDatabaseMetaData.");
+        s += PyavtDatabaseMetaData_ToString(currentAtts, "avtDatabaseMetaData.", true);
         cb(s);
     }
 }

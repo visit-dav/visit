@@ -16,6 +16,9 @@
 
 =========================================================================*/
 #include "vtkVisItContourFilter.h"
+
+#include <visit-config.h> // For LIB_VERSION_LE
+
 #include <vtkAppendPolyData.h>
 #include <vtkCellData.h>
 #include <vtkContourFilter.h>
@@ -414,7 +417,11 @@ vtkVisItContourFilter::UnstructuredGridExecute(vtkDataSet *input,
         vtkIdType  cellId = (CellList != NULL ? CellList[i] : i);
         int        cellType = ug->GetCellType(cellId);
         vtkIdType  npts;
+#if LIB_VERSION_LE(VTK, 8,1,0)
         vtkIdType *pts;
+#else
+        const vtkIdType *pts;
+#endif
         ug->GetCellPoints(cellId, npts, pts);
         const int *triangulation_table = NULL;
         const int *vertices_from_edges = NULL;
@@ -491,7 +498,12 @@ vtkVisItContourFilter::UnstructuredGridExecute(vtkDataSet *input,
 
             if(cellType == VTK_POLYHEDRON)
             {
-                vtkIdType nFaces, *facePtIds;
+                vtkIdType nFaces;
+#if LIB_VERSION_LE(VTK, 8,1,0)
+                vtkIdType *facePtIds;
+#else
+                const vtkIdType *facePtIds;
+#endif
                 ug->GetFaceStream(cellId, nFaces, facePtIds);
                 stuff_I_cant_contour->InsertNextCell(cellType, npts, pts, 
                      nFaces, facePtIds);

@@ -7,6 +7,7 @@
 
 #include <qwt_plot.h>
 #include <qwt_plot_curve.h>
+#include <QPen>
 
 #define HISTORY 50
 #define MAX_STRIP_CHART_VARS 5

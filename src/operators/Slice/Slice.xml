@@ -2,7 +2,6 @@
   <Plugin name="Slice" type="operator" label="Slice" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" iconFile="Slice.xpm" category="Slicing">
     <Attribute name="SliceAttributes" purpose="This class contains attributes for the arbitrary slice." persistent="true" keyframe="true" exportAPI="" exportInclude="" codefile="SliceAttributes.code">
       <CXXFLAGS>
-        -I${VTKh_INCLUDE_DIRS}
         -I${VTKm_INCLUDE_DIRS}
       </CXXFLAGS>
       <Enum name="AxisType">

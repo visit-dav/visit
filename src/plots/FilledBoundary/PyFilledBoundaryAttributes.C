@@ -6,6 +6,7 @@
 #include <ObserverToCallback.h>
 #include <stdio.h>
 #include <Py2and3Support.h>
+#include <visit-config.h>
 #include <ColorAttribute.h>
 #include <PyColorAttributeList.h>
 #include <ColorAttribute.h>
@@ -40,7 +41,7 @@ struct FilledBoundaryAttributesObject
 //
 static PyObject *NewFilledBoundaryAttributes(int);
 std::string
-PyFilledBoundaryAttributes_ToString(const FilledBoundaryAttributes *atts, const char *prefix)
+PyFilledBoundaryAttributes_ToString(const FilledBoundaryAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -1614,83 +1615,6 @@ PyFilledBoundaryAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "pointSizePixels") == 0)
         return FilledBoundaryAttributes_GetPointSizePixels(self, NULL);
 
-    // Try and handle legacy fields
-
-    //
-    // Removed in 2.13.0
-    //
-    bool boundaryTypeFound = false;
-    bool lineStyleFound = false;
-    // boundaryType and it's possible enumerations
-    if (strcmp(name, "boundaryType") == 0)
-    {
-        boundaryTypeFound = true;
-    }
-    else if (strcmp(name, "Domain") == 0)
-    {
-        boundaryTypeFound = true;
-    }
-    else if (strcmp(name, "Group") == 0)
-    {
-        boundaryTypeFound = true;
-    }
-    else if (strcmp(name, "Material") == 0)
-    {
-        boundaryTypeFound = true;
-    }
-    else if (strcmp(name, "Unknown") == 0)
-    {
-        boundaryTypeFound = true;
-    }
-    if (strcmp(name, "filledFlag") == 0)
-    {
-        PyErr_WarnEx(NULL,
-            "filledFlag is no longer a valid FilledBoundary "
-            "attribute.\nIt's value is being ignored, please remove "
-            "it from your script.\n", 3);
-        return PyInt_FromLong(0L);
-    }
-    //
-
-    // Removed in 3.0.0
-    //
-    // lineStyle and it's possible enumerations
-    else if (strcmp(name, "lineStyle") == 0)
-    {
-        lineStyleFound = true;
-    }
-    else if (strcmp(name, "SOLID") == 0)
-    {
-        lineStyleFound = true;
-    }
-    else if (strcmp(name, "DASH") == 0)
-    {
-        lineStyleFound = true;
-    }
-    else if (strcmp(name, "DOT") == 0)
-    {
-        lineStyleFound = true;
-    }
-    else if (strcmp(name, "DOTDASH") == 0)
-    {
-        lineStyleFound = true;
-    }
-    if (boundaryTypeFound)
-    {
-        PyErr_WarnEx(NULL,
-            "boundaryType is no longer a valid FilledBoundary "
-            "attribute.\nIt's value is being ignored, please remove "
-            "it from your script.\n", 3);
-        return PyInt_FromLong(0L);
-    }
-    if (lineStyleFound)
-    {
-        PyErr_WarnEx(NULL,
-            "lineStyle is no longer a valid FilledBoundary "
-            "attribute.\nIt's value is being ignored, please remove "
-            "it from your script.\n", 3);
-        return PyInt_FromLong(0L);
-    }
 
     // Add a __dict__ answer so that dir() works
     if (!strcmp(name, "__dict__"))
@@ -1751,28 +1675,6 @@ PyFilledBoundaryAttributes_setattr(PyObject *self, char *name, PyObject *args)
     else if(strcmp(name, "pointSizePixels") == 0)
         obj = FilledBoundaryAttributes_SetPointSizePixels(self, args);
 
-    // Try and handle legacy fields
-    if(obj == &NULL_PY_OBJ)
-    {
-        if(strcmp(name, "filledFlag") == 0)
-        {
-            PyErr_WarnEx(NULL, "'filledFlag' is obsolete. It is being ignored.", 3);
-            Py_INCREF(Py_None);
-            obj = Py_None;
-        }
-        else if(strcmp(name, "boundaryType") == 0)
-        {
-            PyErr_WarnEx(NULL, "'boundaryType' is obsolete. It is being ignored.", 3);
-            Py_INCREF(Py_None);
-            obj = Py_None;
-        }
-        else if(strcmp(name, "lineStyle") == 0)
-        {
-            PyErr_WarnEx(NULL, "'lineStyle' is obsolete. It is being ignored.", 3);
-            Py_INCREF(Py_None);
-            obj = Py_None;
-        }
-    }
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
@@ -1791,7 +1693,7 @@ static int
 FilledBoundaryAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     FilledBoundaryAttributesObject *obj = (FilledBoundaryAttributesObject *)v;
-    fprintf(fp, "%s", PyFilledBoundaryAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyFilledBoundaryAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -1799,7 +1701,7 @@ PyObject *
 FilledBoundaryAttributes_str(PyObject *v)
 {
     FilledBoundaryAttributesObject *obj = (FilledBoundaryAttributesObject *)v;
-    return PyString_FromString(PyFilledBoundaryAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyFilledBoundaryAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -1951,7 +1853,7 @@ PyFilledBoundaryAttributes_GetLogString()
 {
     std::string s("FilledBoundaryAtts = FilledBoundaryAttributes()\n");
     if(currentAtts != 0)
-        s += PyFilledBoundaryAttributes_ToString(currentAtts, "FilledBoundaryAtts.");
+        s += PyFilledBoundaryAttributes_ToString(currentAtts, "FilledBoundaryAtts.", true);
     return s;
 }
 
@@ -1964,7 +1866,7 @@ PyFilledBoundaryAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("FilledBoundaryAtts = FilledBoundaryAttributes()\n");
-        s += PyFilledBoundaryAttributes_ToString(currentAtts, "FilledBoundaryAtts.");
+        s += PyFilledBoundaryAttributes_ToString(currentAtts, "FilledBoundaryAtts.", true);
         cb(s);
     }
 }

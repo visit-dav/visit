@@ -72,7 +72,9 @@ QvisPDFWindow::~QvisPDFWindow()
 // Creation:   omitted
 //
 // Modifications:
-//   
+//   Kathleen Biagas, Tue Apr 18 16:34:41 PDT 2023
+//   Support Qt6: buttonClicked -> idClicked.
+//
 // ****************************************************************************
 
 void
@@ -117,7 +119,7 @@ QvisPDFWindow::CreateWindowContents()
     var1Scaling = new QWidget(central);
     var1ScalingButtonGroup= new QButtonGroup(var1Scaling);
     QHBoxLayout *var1ScalingLayout = new QHBoxLayout(var1Scaling);
-    var1ScalingLayout->setMargin(0);
+    var1ScalingLayout->setContentsMargins(0,0,0,0);
     var1ScalingLayout->setSpacing(10);
     QRadioButton *var1ScalingScalingLinear = new QRadioButton(tr("Linear"), var1Scaling);
     var1ScalingButtonGroup->addButton(var1ScalingScalingLinear,0);
@@ -128,8 +130,13 @@ QvisPDFWindow::CreateWindowContents()
     QRadioButton *var1ScalingScalingSkew = new QRadioButton(tr("Skew"), var1Scaling);
     var1ScalingButtonGroup->addButton(var1ScalingScalingSkew,2);
     var1ScalingLayout->addWidget(var1ScalingScalingSkew);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(var1ScalingButtonGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(var1ScalingChanged(int)));
+#else
+    connect(var1ScalingButtonGroup, SIGNAL(idClicked(int)),
+            this, SLOT(var1ScalingChanged(int)));
+#endif
     mainLayout->addWidget(var1Scaling, 5,1);
 
     var1SkewFactorLabel = new QLabel(tr("Variable 1 skew factor"), central);
@@ -182,7 +189,7 @@ QvisPDFWindow::CreateWindowContents()
     var2Scaling = new QWidget(central);
     var2ScalingButtonGroup= new QButtonGroup(var2Scaling);
     QHBoxLayout *var2ScalingLayout = new QHBoxLayout(var2Scaling);
-    var2ScalingLayout->setMargin(0);
+    var2ScalingLayout->setContentsMargins(0,0,0,0);
     var2ScalingLayout->setSpacing(10);
     QRadioButton *var2ScalingScalingLinear = new QRadioButton(tr("Linear"), var2Scaling);
     var2ScalingButtonGroup->addButton(var2ScalingScalingLinear,0);
@@ -193,8 +200,13 @@ QvisPDFWindow::CreateWindowContents()
     QRadioButton *var2ScalingScalingSkew = new QRadioButton(tr("Skew"), var2Scaling);
     var2ScalingButtonGroup->addButton(var2ScalingScalingSkew,2);
     var2ScalingLayout->addWidget(var2ScalingScalingSkew);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(var2ScalingButtonGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(var2ScalingChanged(int)));
+#else
+    connect(var2ScalingButtonGroup, SIGNAL(idClicked(int)),
+            this, SLOT(var2ScalingChanged(int)));
+#endif
     mainLayout->addWidget(var2Scaling, 13,1);
 
     var2SkewFactorLabel = new QLabel(tr("Variable 2 skew factor"), central);
@@ -216,7 +228,7 @@ QvisPDFWindow::CreateWindowContents()
     numAxes = new QWidget(central);
     numAxesButtonGroup= new QButtonGroup(numAxes);
     QHBoxLayout *numAxesLayout = new QHBoxLayout(numAxes);
-    numAxesLayout->setMargin(0);
+    numAxesLayout->setContentsMargins(0,0,0,0);
     numAxesLayout->setSpacing(10);
     QRadioButton *numAxesNumAxesTwo = new QRadioButton(tr("Two"), numAxes);
     numAxesButtonGroup->addButton(numAxesNumAxesTwo,0);
@@ -224,8 +236,13 @@ QvisPDFWindow::CreateWindowContents()
     QRadioButton *numAxesNumAxesThree = new QRadioButton(tr("Three"), numAxes);
     numAxesButtonGroup->addButton(numAxesNumAxesThree,1);
     numAxesLayout->addWidget(numAxesNumAxesThree);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(numAxesButtonGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(numAxesChanged(int)));
+#else
+    connect(numAxesButtonGroup, SIGNAL(idClicked(int)),
+            this, SLOT(numAxesChanged(int)));
+#endif
     mainLayout->addWidget(numAxes, 16,1);
 
     var3Label = new QLabel(tr("Variable 3"), central);
@@ -264,7 +281,7 @@ QvisPDFWindow::CreateWindowContents()
     var3Scaling = new QWidget(central);
     var3ScalingButtonGroup= new QButtonGroup(var3Scaling);
     QHBoxLayout *var3ScalingLayout = new QHBoxLayout(var3Scaling);
-    var3ScalingLayout->setMargin(0);
+    var3ScalingLayout->setContentsMargins(0,0,0,0);
     var3ScalingLayout->setSpacing(10);
     QRadioButton *var3ScalingScalingLinear = new QRadioButton(tr("Linear"), var3Scaling);
     var3ScalingButtonGroup->addButton(var3ScalingScalingLinear,0);
@@ -275,8 +292,13 @@ QvisPDFWindow::CreateWindowContents()
     QRadioButton *var3ScalingScalingSkew = new QRadioButton(tr("Skew"), var3Scaling);
     var3ScalingButtonGroup->addButton(var3ScalingScalingSkew,2);
     var3ScalingLayout->addWidget(var3ScalingScalingSkew);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(var3ScalingButtonGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(var3ScalingChanged(int)));
+#else
+    connect(var3ScalingButtonGroup, SIGNAL(idClicked(int)),
+            this, SLOT(var3ScalingChanged(int)));
+#endif
     mainLayout->addWidget(var3Scaling, 22,1);
 
     var3SkewFactorLabel = new QLabel(tr("Variable 3 skew factor"), central);
@@ -303,7 +325,7 @@ QvisPDFWindow::CreateWindowContents()
     densityType = new QWidget(central);
     densityTypeButtonGroup= new QButtonGroup(densityType);
     QHBoxLayout *densityTypeLayout = new QHBoxLayout(densityType);
-    densityTypeLayout->setMargin(0);
+    densityTypeLayout->setContentsMargins(0,0,0,0);
     densityTypeLayout->setSpacing(10);
     QRadioButton *densityTypeDensityTypeProbability = new QRadioButton(tr("Probability"), densityType);
     densityTypeButtonGroup->addButton(densityTypeDensityTypeProbability,0);
@@ -311,8 +333,13 @@ QvisPDFWindow::CreateWindowContents()
     QRadioButton *densityTypeDensityTypeZoneCount = new QRadioButton(tr("ZoneCount"), densityType);
     densityTypeButtonGroup->addButton(densityTypeDensityTypeZoneCount,1);
     densityTypeLayout->addWidget(densityTypeDensityTypeZoneCount);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(densityTypeButtonGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(densityTypeChanged(int)));
+#else
+    connect(densityTypeButtonGroup, SIGNAL(idClicked(int)),
+            this, SLOT(densityTypeChanged(int)));
+#endif
     mainLayout->addWidget(densityType, 26,1);
 
 }

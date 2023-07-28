@@ -35,7 +35,7 @@ struct CartographicProjectionAttributesObject
 //
 static PyObject *NewCartographicProjectionAttributes(int);
 std::string
-PyCartographicProjectionAttributes_ToString(const CartographicProjectionAttributes *atts, const char *prefix)
+PyCartographicProjectionAttributes_ToString(const CartographicProjectionAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -343,7 +343,7 @@ static int
 CartographicProjectionAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     CartographicProjectionAttributesObject *obj = (CartographicProjectionAttributesObject *)v;
-    fprintf(fp, "%s", PyCartographicProjectionAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyCartographicProjectionAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -351,7 +351,7 @@ PyObject *
 CartographicProjectionAttributes_str(PyObject *v)
 {
     CartographicProjectionAttributesObject *obj = (CartographicProjectionAttributesObject *)v;
-    return PyString_FromString(PyCartographicProjectionAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyCartographicProjectionAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -503,7 +503,7 @@ PyCartographicProjectionAttributes_GetLogString()
 {
     std::string s("CartographicProjectionAtts = CartographicProjectionAttributes()\n");
     if(currentAtts != 0)
-        s += PyCartographicProjectionAttributes_ToString(currentAtts, "CartographicProjectionAtts.");
+        s += PyCartographicProjectionAttributes_ToString(currentAtts, "CartographicProjectionAtts.", true);
     return s;
 }
 
@@ -516,7 +516,7 @@ PyCartographicProjectionAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("CartographicProjectionAtts = CartographicProjectionAttributes()\n");
-        s += PyCartographicProjectionAttributes_ToString(currentAtts, "CartographicProjectionAtts.");
+        s += PyCartographicProjectionAttributes_ToString(currentAtts, "CartographicProjectionAtts.", true);
         cb(s);
     }
 }

@@ -7,7 +7,11 @@
 #  Date:       March 30, 2022
 #
 #  Modificatons:
+#    Justin Privitera, Wed Aug  3 19:46:13 PDT 2022
+#    Made changes to reflect the fact that built-in tables cannot be edited.
 #
+#    Mark C. Miller, Mon Dec 12 19:02:35 PST 2022
+#    Add introspecting block
 # ----------------------------------------------------------------------------
 
 
@@ -17,14 +21,36 @@
 # comments of the form '# sometext {' and '# sometext }' bracket the sections
 # that are 'literalinclude'd in quickrecipes.rst.
 
+def introspectingColorTable():
+
+    # introspectingColorTable {
+    hotCT = GetColorTable("hot")
+    print(hotCT)
+    # results of print
+    #    GetControlPoints(0).colors = (0, 0, 255, 255)
+    #    GetControlPoints(0).position = 0
+    #    GetControlPoints(1).colors = (0, 255, 255, 255)
+    #    GetControlPoints(1).position = 0.25
+    #    GetControlPoints(2).colors = (0, 255, 0, 255)
+    #    GetControlPoints(2).position = 0.5
+    #    GetControlPoints(3).colors = (255, 255, 0, 255)
+    #    GetControlPoints(3).position = 0.75
+    #    GetControlPoints(4).colors = (255, 0, 0, 255)
+    #    GetControlPoints(4).position = 1
+    #    smoothing = Linear  # NONE, Linear, CubicSpline
+    #    equalSpacingFlag = 0
+    #    discreteFlag = 0
+    # introspectingColorTable }
+
 def modifyExistingColorTable():
 
     # modifyTable1 {
     OpenDatabase(silo_data_path("rect2d.silo"))
     AddPlot("Pseudocolor", "d")
+
     pc = PseudocolorAttributes()
     pc.centering=pc.Nodal 
-    # set color table name so changes to it will be reflected in plot
+    # set color table name
     pc.colorTableName = "hot"
     SetPlotOptions(pc)
     
@@ -46,8 +72,12 @@ def modifyExistingColorTable():
     hotCT.RemoveControlPoints(4)
     hotCT.RemoveControlPoints(3)
 
-    # using the same name replaces the current ColorTable of that name
-    SetColorTable("hot", hotCT)
+    # We must use a different name, as VisIt will not allow overwriting of built-in color tables
+    SetColorTable("hot_edited", hotCT)
+
+    # set color table name so changes to it will be reflected in plot
+    pc.colorTableName = "hot_edited"
+    SetPlotOptions(pc)
     # modifyTable2 }
 
     Test("modified_hot_table_1")
@@ -56,7 +86,7 @@ def modifyExistingColorTable():
     # Change colors
     hotCT.GetControlPoints(0).colors = (255,0,0,255)
     hotCT.GetControlPoints(1).colors = (255, 0, 255, 255)
-    SetColorTable("hot", hotCT)
+    SetColorTable("hot_edited", hotCT)
     # modifyTable3 }
 
     Test("modified_hot_table_2")
@@ -88,10 +118,8 @@ def modifyExistingColorTable():
 
     Test("hot3")
 
-    # restore the original hot color table
-    SetColorTable("hot", hotCTorig)
-
     # remove the added color tables
+    RemoveColorTable("hot_edited")
     RemoveColorTable("hot2")
     RemoveColorTable("hot3")
     DeleteAllPlots()
@@ -178,12 +206,11 @@ def createDiscreteUsingVTKNamedColors():
     RemoveColorTable("mylevels")
     DeleteAllPlots()
 
-
 def main():
+    introspectingColorTable()
     modifyExistingColorTable()
     createContinuous()
     createDiscreteUsingVTKNamedColors()
-
 
 main()
 Exit()

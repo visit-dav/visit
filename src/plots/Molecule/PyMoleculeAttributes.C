@@ -6,6 +6,7 @@
 #include <ObserverToCallback.h>
 #include <stdio.h>
 #include <Py2and3Support.h>
+#include <visit-config.h>
 #include <ColorAttribute.h>
 
 // ****************************************************************************
@@ -37,7 +38,7 @@ struct MoleculeAttributesObject
 //
 static PyObject *NewMoleculeAttributes(int);
 std::string
-PyMoleculeAttributes_ToString(const MoleculeAttributes *atts, const char *prefix)
+PyMoleculeAttributes_ToString(const MoleculeAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -1638,41 +1639,6 @@ PyMoleculeAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "scalarMax") == 0)
         return MoleculeAttributes_GetScalarMax(self, NULL);
 
-    // Try and handle legacy fields
-
-    //
-    // Removed in 3.0.0
-    //
-    // bondLineStyle and it's possible enumerations
-    bool bondLineStyleFound = false;
-    if (strcmp(name, "bondLineStyle") == 0)
-    {
-        bondLineStyleFound = true;
-    }
-    else if (strcmp(name, "SOLID") == 0)
-    {
-        bondLineStyleFound = true;
-    }
-    else if (strcmp(name, "DASH") == 0)
-    {
-        bondLineStyleFound = true;
-    }
-    else if (strcmp(name, "DOT") == 0)
-    {
-        bondLineStyleFound = true;
-    }
-    else if (strcmp(name, "DOTDASH") == 0)
-    {
-        bondLineStyleFound = true;
-    }
-    if (bondLineStyleFound)
-    {
-        PyErr_WarnEx(NULL,
-            "bondLineStyle is no longer a valid Molecule "
-            "attribute.\nIt's value is being ignored, please remove "
-            "it from your script.\n", 3);
-        return PyInt_FromLong(0L);
-    }
 
     // Add a __dict__ answer so that dir() works
     if (!strcmp(name, "__dict__"))
@@ -1737,19 +1703,6 @@ PyMoleculeAttributes_setattr(PyObject *self, char *name, PyObject *args)
     else if(strcmp(name, "scalarMax") == 0)
         obj = MoleculeAttributes_SetScalarMax(self, args);
 
-    // Try and handle legacy fields
-    if(obj == &NULL_PY_OBJ)
-    {
-        //
-        // Removed in 3.0.0
-        //
-        if(strcmp(name, "bondLineStyle") == 0)
-        {
-            PyErr_WarnEx(NULL, "'bondLineStyle' is obsolete. It is being ignored.", 3);
-            Py_INCREF(Py_None);
-            obj = Py_None;
-        }
-    }
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
@@ -1768,7 +1721,7 @@ static int
 MoleculeAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     MoleculeAttributesObject *obj = (MoleculeAttributesObject *)v;
-    fprintf(fp, "%s", PyMoleculeAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyMoleculeAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -1776,7 +1729,7 @@ PyObject *
 MoleculeAttributes_str(PyObject *v)
 {
     MoleculeAttributesObject *obj = (MoleculeAttributesObject *)v;
-    return PyString_FromString(PyMoleculeAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyMoleculeAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -1928,7 +1881,7 @@ PyMoleculeAttributes_GetLogString()
 {
     std::string s("MoleculeAtts = MoleculeAttributes()\n");
     if(currentAtts != 0)
-        s += PyMoleculeAttributes_ToString(currentAtts, "MoleculeAtts.");
+        s += PyMoleculeAttributes_ToString(currentAtts, "MoleculeAtts.", true);
     return s;
 }
 
@@ -1941,7 +1894,7 @@ PyMoleculeAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("MoleculeAtts = MoleculeAttributes()\n");
-        s += PyMoleculeAttributes_ToString(currentAtts, "MoleculeAtts.");
+        s += PyMoleculeAttributes_ToString(currentAtts, "MoleculeAtts.", true);
         cb(s);
     }
 }

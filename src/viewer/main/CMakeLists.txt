@@ -20,6 +20,18 @@
 #  Kevin Griffin, Mon Oct 19 09:43:37 PDT 2020
 #  Updated the bundle name, icon file name, identifier and copyright
 #
+#  Eric Brugger, Fri Feb 24 14:57:15 PST 2023
+#  Replaced vtkpng with vtkpng_LIBRARIES and vtkjpeg with vtkjpeg_LIBRARIES.
+#
+#  Kathleen Biagas, Thu Mar 30, 2023
+#  Use AUTOMOC target property instead of QT_WRAP_CPP macro.
+#
+#  Kathleen Biagas, Tue May 5, 2023
+#  Disable qt6 forcing of defines for UNICODE.
+#
+#  Eric Brugger, Tue Jul 25 11:23:55 EDT 2023
+#  Change CMAKE_THREAD_LIBS to Threads::Threads.
+#
 #****************************************************************************
 
 IF(VISIT_PARALLEL AND WIN32 AND HAVE_HPC_SCHEDULER)
@@ -37,11 +49,6 @@ ddt/DDTManager.C
 ddt/DDTSession.C
 ddt/DDTActions.C
 ddt/DDTActionsUI.C
-)
-
-SET(VIEWER_DDT_MOC
-ddt/DDTManager.h
-ddt/DDTSession.h
 )
 ENDIF(VISIT_DDT)
 
@@ -73,19 +80,6 @@ ui/VisItPasswordWindow.C
 ui/WindowActionsUI.C
 )
 
-SET(VIEWER_UI_MOC
-ui/PlotAndOperatorActionsUI.h
-ui/ViewerActionUI.h
-ui/ViewerActionUIMultiple.h
-ui/ViewerActionUISingle.h
-ui/ViewerConnectionPrinterUI.h
-ui/ViewerConnectionProgressDialog.h
-ui/ViewerHostProfileSelectorWithWin.h
-ui/ViewerPasswordWindow.h
-ui/VisItChangeUsernameWindow.h
-ui/VisItPasswordWindow.h
-)
-
 SET(VIEWERLIB_SOURCES
 ${VIEWER_UI}
 ${VIEWER_DDT}
@@ -114,22 +108,6 @@ ${VIEWERLIB_WIN32_SOURCES}
 IF(VISIT_STATIC)
     SET(VIEWER_STATIC_SOURCES ViewerStaticSymbolLocator.C)
 ENDIF(VISIT_STATIC)
-
-SET(VIEWERLIB_MOC_SOURCES
-${VIEWER_UI_MOC}
-${VIEWER_DDT_MOC}
-SharedDaemon.h
-ViewerBaseUI.h
-ViewerClientConnection.h
-ViewerCommandFromSimObserver.h
-ViewerMetaDataObserver.h
-ViewerObserverToSignal.h
-ViewerSILAttsObserver.h
-ViewerStateBuffered.h
-ViewerSubject.h
-WebSocketConnection.h
-)
-QT_WRAP_CPP(viewer VIEWERLIB_SOURCES ${VIEWERLIB_MOC_SOURCES})
 
 IF (NOT WIN32)
     # This keeps comm's exceptions visible when using -fvisibility=hidden
@@ -176,6 +154,7 @@ ${VISIT_SOURCE_DIR}/winutil
 ${VTK_INCLUDE_DIRS}
 )
 
+
 if(HAVE_OSMESA OR HAVE_EGL)
     include_directories(${VISIT_SOURCE_DIR}/visit_vtk/offscreen)
 endif()
@@ -185,6 +164,9 @@ LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY})
 
 #*************************** The viewer library ******************************
 ADD_LIBRARY(viewer ${VIEWERLIB_SOURCES})
+
+set_target_properties(viewer PROPERTIES AUTOMOC ON)
+
 IF (WIN32)
     SET_TARGET_PROPERTIES(viewer PROPERTIES OUTPUT_NAME viewerlib)
 ENDIF (WIN32)
@@ -204,6 +186,17 @@ IF(VISIT_STATIC)
         ${QT_QTNETWORK_LIB_DEPENDENCIES}
     )
 ENDIF(VISIT_STATIC)
+
+if(VTK_VERSION VERSION_EQUAL "8.1.0)")
+    set(vtkqtlib vtkGUISupportQt)
+else()
+    set(vtkqtlib VTK::GUISupportQt)
+endif()
+
+
+if(QT_VERSION VERSION_GREATER_EQUAL "6.2.0")
+    qt6_disable_unicode_defines(viewer)
+endif()
 
 TARGET_LINK_LIBRARIES(viewer 
 viewerrpc
@@ -226,8 +219,8 @@ avtwriter_ser
 avtqtviswindow
 winutil
 ${VIEWER_QT_LIBS}
-${CMAKE_THREAD_LIBS}
-vtkGUISupportQt
+Threads::Threads
+${vtkqtlib}
 )
 
 if(HAVE_OSMESA OR HAVE_EGL)
@@ -253,7 +246,7 @@ ELSE(NOT APPLE)
     SET(MACOSX_BUNDLE_LONG_VERSION_STRING  "VisIt version ${VISIT_VERSION}")
     SET(MACOSX_BUNDLE_SHORT_VERSION_STRING "VisIt ${VISIT_VERSION}")
     SET(MACOSX_BUNDLE_BUNDLE_VERSION       ${VISIT_VERSION})
-    SET(MACOSX_BUNDLE_COPYRIGHT            "Copyright (c) 2000 - 2021, Lawrence Livermore National Security, LLC")
+    SET(MACOSX_BUNDLE_COPYRIGHT            "Copyright (c) 2000 - 2023, Lawrence Livermore National Security, LLC")
     
     IF(VISIT_STATIC)
         MAC_NIB_INSTALL(viewer)
@@ -261,15 +254,15 @@ ELSE(NOT APPLE)
 ENDIF(NOT APPLE)
 
 SET_TARGET_PROPERTIES(viewer_exe PROPERTIES OUTPUT_NAME viewer)
+
 TARGET_LINK_LIBRARIES(viewer_exe
     ${viewer_exe_IOperator}
     ${viewer_exe_VOperator}
     ${viewer_exe_IPlot}
     ${viewer_exe_VPlot}
     viewer
-    vtkpng
-    vtkjpeg
-    ${VTK_FREETYPE_LIBRARIES}
+    ${vtkpng_LIBRARIES}
+    ${vtkjpeg_LIBRARIES}
 )
 
 # If we're building statically then the viewer can't be linked until the plugin

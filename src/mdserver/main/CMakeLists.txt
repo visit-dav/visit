@@ -27,6 +27,16 @@
 #   David Camp, Thu Aug 27 09:25:33 PDT 2015
 #   Added the SaveSessionRPCExecutor.C and RestoreSessionRPCExecutor.C files.
 #   They are used for the remove save and load of session files.
+# 
+#   Justin Privitera, Wed Aug 24 11:08:51 PDT 2022
+#   Added logic to make mdserver aware of avtBP lib.
+#
+#   Eric Brugger, Fri Feb 24 14:57:15 PST 2023
+#   Replaced vtktiff with vtktiff_LIBRARIES, vtkpng with vtkpng_LIBRARIES,
+#   and vtkjpeg with vtkjpeg_LIBRARIES.
+#
+#   Eric Brugger, Tue Jul 25 11:23:55 EDT 2023
+#   Change CMAKE_THREAD_LIBS to Threads::Threads.
 #
 #****************************************************************************
 
@@ -89,9 +99,16 @@ ${VISIT_SOURCE_DIR}/visit_vtk/lightweight
 ${SIMV2_PLUGIN_DIR}
 )
 
+if(VTK_VERSION VERSION_EQUAL "8.1.0")
+    set(vtklibs vtkCommonCore vtkIOCore vtktiff vtkpng vtkjpeg)
+else()
+    set(vtklibs VTK::CommonCore VTK::IOCore VTK::tiff VTK::png VTK::jpeg)
+endif()
+
 LINK_DIRECTORIES(
 ${LIBRARY_OUTPUT_DIRECTORY}
 ${ALL_THIRDPARTY_IO_LIBRARY_DIR}
+${AVT_REQUIRED_LIB_DIR}
 )
 
 ADD_EXECUTABLE(mdserver ${VISIT_APPLICATION_STYLE} ${MDSERVER_SOURCES} ${MDSERVER_STATIC_SOURCES} ${VISIT_MDSERVER_RESOURCE_FILE})
@@ -105,15 +122,30 @@ TARGET_LINK_LIBRARIES(mdserver
     avtdatabase_ser
     lightweight_visit_vtk
     visit_verdict
-    vtkCommonCore
-    vtkIOCore
-    vtktiff
-    vtkpng
-    vtkjpeg
+    ${vtklibs}
+    ${vtktiff_LIBRARIES}
+    ${vtkpng_LIBRARIES}
+    ${vtkjpeg_LIBRARIES}
     ${ZLIB_LIBRARY}
-    ${CMAKE_THREAD_LIBS}
+    Threads::Threads
     ${DL_LIB}
 )
+
+if(CONDUIT_FOUND AND MFEM_FOUND)
+    LINK_DIRECTORIES(
+        ${MFEM_LIBRARY_DIR}
+        ${CONDUIT_LIBRARY_DIR}
+        )
+    INCLUDE_DIRECTORIES(
+        ${MFEM_INCLUDE_DIR}
+        ${CONDUIT_INCLUDE_DIR}
+        ${VISIT_SOURCE_DIR}/avt/Blueprint
+        )
+    TARGET_LINK_LIBRARIES(mdserver 
+        ${MFEM_LIB} 
+        avtblueprint
+        )
+endif()
 
 if(WIN32 AND MSVC)
     set_target_properties(mdserver PROPERTIES LINK_FLAGS "/STACK:4000000")

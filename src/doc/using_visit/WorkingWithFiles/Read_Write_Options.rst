@@ -6,6 +6,28 @@ Several database plugins have options that affect reading and/or writing with th
 format. These are described in this section. Alternatively, in some cases, the
 behavior of a database plugin may be affected by enviornment variables.
 
+Blueprint
+~~~~~~~~~
+
+MFEM LOR Setting
+""""""""""""""""
+This option allows the user to select a MFEM Low-Order-Refinement Scheme. 
+The two options are Legacy LOR and MFEM LOR. 
+The Legacy setting was previously VisIt's only LOR method in the Blueprint Plugin. 
+It produces discontinuous output, while the new option produces a continuous low order mesh. 
+This new option is the default.
+
+MFEM
+~~~~
+
+MFEM LOR Setting
+""""""""""""""""
+This option allows the user to select a MFEM Low-Order-Refinement Scheme. 
+The two options are Legacy LOR and MFEM LOR. 
+The Legacy setting was previously VisIt's only LOR method in the MFEM Plugin. 
+It produces discontinuous output, while the new option produces a continuous low order mesh. 
+This new option is the default.
+
 Exodus
 ~~~~~~
 

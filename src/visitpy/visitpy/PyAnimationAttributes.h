@@ -23,7 +23,7 @@ VISITPY_API PyObject *     PyAnimationAttributes_Wrap(const AnimationAttributes 
 void VISITPY_API           PyAnimationAttributes_SetParent(PyObject *obj, PyObject *parent);
 void VISITPY_API           PyAnimationAttributes_SetDefaults(const AnimationAttributes *atts);
 std::string VISITPY_API    PyAnimationAttributes_GetLogString();
-std::string VISITPY_API    PyAnimationAttributes_ToString(const AnimationAttributes *, const char *);
+std::string VISITPY_API    PyAnimationAttributes_ToString(const AnimationAttributes *, const char *, const bool=false);
 VISITPY_API PyObject *     PyAnimationAttributes_getattr(PyObject *self, char *name);
 int VISITPY_API            PyAnimationAttributes_setattr(PyObject *self, char *name, PyObject *args);
 VISITPY_API extern PyMethodDef PyAnimationAttributes_methods[ANIMATIONATTRIBUTES_NMETH];

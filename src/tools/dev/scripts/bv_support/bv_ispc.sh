@@ -7,7 +7,12 @@ function bv_ispc_initialize
 
 function bv_ispc_enable
 {
-    DO_ISPC="yes"
+    # separate ispc not required by ospray for vtk-9
+    if [[ "$DO_VTK9" == "yes" ]] ; then
+        DO_ISPC="no"
+    else
+        DO_ISPC="yes"
+    fi
 }
 
 function bv_ispc_disable
@@ -101,13 +106,6 @@ function bv_ispc_ensure
             DO_ISPC="no"
             error "Unable to build ISPC.  ${ISPC_FILE} not found."
         fi
-    fi
-}
-
-function bv_ispc_dry_run
-{
-    if [[ "$DO_ISPC" == "yes" ]] ; then
-        echo "Dry run option not set for ISPC."
     fi
 }
 

@@ -42,7 +42,7 @@ class Include
     {
         if(generatorName.isEmpty() || generatorName == target)
             out << "        Include: (" << target << ") "
-                << include << endl;
+                << include << Endl;
     }
 };
 

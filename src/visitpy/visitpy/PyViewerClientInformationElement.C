@@ -36,7 +36,7 @@ struct ViewerClientInformationElementObject
 //
 static PyObject *NewViewerClientInformationElement(int);
 std::string
-PyViewerClientInformationElement_ToString(const ViewerClientInformationElement *atts, const char *prefix)
+PyViewerClientInformationElement_ToString(const ViewerClientInformationElement *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -482,7 +482,7 @@ static int
 ViewerClientInformationElement_print(PyObject *v, FILE *fp, int flags)
 {
     ViewerClientInformationElementObject *obj = (ViewerClientInformationElementObject *)v;
-    fprintf(fp, "%s", PyViewerClientInformationElement_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyViewerClientInformationElement_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -490,7 +490,7 @@ PyObject *
 ViewerClientInformationElement_str(PyObject *v)
 {
     ViewerClientInformationElementObject *obj = (ViewerClientInformationElementObject *)v;
-    return PyString_FromString(PyViewerClientInformationElement_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyViewerClientInformationElement_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -642,7 +642,7 @@ PyViewerClientInformationElement_GetLogString()
 {
     std::string s("ViewerClientInformationElement = ViewerClientInformationElement()\n");
     if(currentAtts != 0)
-        s += PyViewerClientInformationElement_ToString(currentAtts, "ViewerClientInformationElement.");
+        s += PyViewerClientInformationElement_ToString(currentAtts, "ViewerClientInformationElement.", true);
     return s;
 }
 
@@ -655,7 +655,7 @@ PyViewerClientInformationElement_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("ViewerClientInformationElement = ViewerClientInformationElement()\n");
-        s += PyViewerClientInformationElement_ToString(currentAtts, "ViewerClientInformationElement.");
+        s += PyViewerClientInformationElement_ToString(currentAtts, "ViewerClientInformationElement.", true);
         cb(s);
     }
 }

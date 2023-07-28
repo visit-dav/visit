@@ -8,7 +8,6 @@
 #include <ColorTableAttributes.h>
 #include <SelectionList.h>
 
-
 // ****************************************************************************
 // Method: ViewerMethods::ViewerMethods
 //
@@ -2107,6 +2106,73 @@ ViewerMethods::MovePlotKeyframe(int plotId, int oldFrame, int newFrame)
 }
 
 // ****************************************************************************
+//  Method: ViewerMethods::DeleteOperatorKeyframe
+//
+//  Purpose:
+//    Delete the keyframe for the specified operator.
+//
+//  Arguments:
+//    plotId     The id of the plot.
+//    operatorId The id of the operator.
+//    frame      The keyframe to delete.
+//
+//  Programmer: Eric Brugger
+//  Creation:   Wed Mar 22 16:23:12 PDT 2023
+//
+// ****************************************************************************
+void
+ViewerMethods::DeleteOperatorKeyframe(int plotId, int operatorId, int frame)
+{
+    //
+    // Set the rpc type and arguments.
+    //
+    state->GetViewerRPC()->SetRPCType(ViewerRPC::DeleteOperatorKeyframeRPC);
+    state->GetViewerRPC()->SetIntArg1(plotId);
+    state->GetViewerRPC()->SetIntArg2(operatorId);
+    state->GetViewerRPC()->SetIntArg3(frame);
+
+    //
+    // Issue the RPC.
+    //
+    state->GetViewerRPC()->Notify();
+}
+
+// ****************************************************************************
+//  Method: ViewerMethods::MoveOperatorKeyframe
+//
+//  Purpose:
+//    Move the the position of a keyframe for the specified operator.
+//
+//  Arguments:
+//    plotId     The id of the plot.
+//    operatorId The id of the operator.
+//    oldFrame   The old location of the keyframe.
+//    newFrame   The new location of the keyframe.
+//
+//  Programmer: Eric Brugger
+//  Creation:   Wed Mar 22 16:23:12 PDT 2023
+//
+// ****************************************************************************
+void
+ViewerMethods::MoveOperatorKeyframe(int plotId, int operatorId,
+    int oldFrame, int newFrame)
+{
+    //
+    // Set the rpc type and arguments.
+    //
+    state->GetViewerRPC()->SetRPCType(ViewerRPC::MoveOperatorKeyframeRPC);
+    state->GetViewerRPC()->SetIntArg1(plotId);
+    state->GetViewerRPC()->SetIntArg2(operatorId);
+    state->GetViewerRPC()->SetIntArg3(oldFrame);
+    state->GetViewerRPC()->SetIntArg4(newFrame);
+
+    //
+    // Issue the RPC.
+    //
+    state->GetViewerRPC()->Notify();
+}
+
+// ****************************************************************************
 //  Method: ViewerMethods::SetPlotDatabaseState
 //
 //  Purpose:
@@ -2290,10 +2356,13 @@ ViewerMethods::SetPlotFollowsTime(bool val)
 //  Ellen Tarwater October 12, 2007
 //  added drawAllPlots flag
 //
+//    Mark C. Miller, Fri Mar 17 15:14:30 PDT 2023
+//    Add APPLE-specific logic to address blank viewer windows (#18090)
 // ****************************************************************************
 void
 ViewerMethods::DrawPlots(bool drawAllPlots)
 {
+
     //
     // Set the rpc type and arguments.
     //
@@ -2304,6 +2373,19 @@ ViewerMethods::DrawPlots(bool drawAllPlots)
     // Issue the RPC.
     //
     state->GetViewerRPC()->Notify();
+
+    // Stop gap to avert blank viewer windows (#18090)
+    // There is associated logic in core/ViewerWindowManager::SetWindowLayout
+    // which responds to these two successive calls
+#if defined(__APPLE__)
+    static bool first = true;
+    if (first)
+    {
+        first = false;
+        SetWindowLayout(-5); // -5 is magic number to trigger special logic
+        SetWindowLayout(-5); // -5 is magic number to trigger special logic
+    }
+#endif
 }
 
 // ****************************************************************************
@@ -3584,7 +3666,7 @@ ViewerMethods::ResetPickAttributes()
 
 
 // ****************************************************************************
-// Method: ViewerMethods::SetActiveContinuousColorTable
+// Method: ViewerMethods::SetDefaultContinuousColorTable
 //
 // Purpose: 
 //   Sets the active continuous color table. This is the color table that
@@ -3597,16 +3679,19 @@ ViewerMethods::ResetPickAttributes()
 // Creation:   Wed Jun 13 16:55:21 PST 2001
 //
 // Modifications:
+//   Justin Privitera, Wed May 18 11:25:46 PDT 2022
+//   Changed *active* to *default* for everything related to color tables.
+//   In this case I changed the function name.
 //   
 // ****************************************************************************
 
 void
-ViewerMethods::SetActiveContinuousColorTable(const std::string &colorTableName)
+ViewerMethods::SetDefaultContinuousColorTable(const std::string &colorTableName)
 {
     // If it's a valid color table name, make it active.
     if(state->GetColorTableAttributes()->GetColorTableIndex(colorTableName) != -1)
     {
-        state->GetColorTableAttributes()->SetActiveContinuous(colorTableName);
+        state->GetColorTableAttributes()->SetDefaultContinuous(colorTableName);
         state->GetColorTableAttributes()->Notify();
 
         // Update the color table. This has the effect of making all plots
@@ -3617,7 +3702,7 @@ ViewerMethods::SetActiveContinuousColorTable(const std::string &colorTableName)
 }
 
 // ****************************************************************************
-// Method: ViewerMethods::SetActiveDiscreteColorTable
+// Method: ViewerMethods::SetDefaultDiscreteColorTable
 //
 // Purpose: 
 //   Sets the active discrete color table. This is the color table that
@@ -3630,16 +3715,19 @@ ViewerMethods::SetActiveContinuousColorTable(const std::string &colorTableName)
 // Creation:   Wed Jun 13 16:55:21 PST 2001
 //
 // Modifications:
+//   Justin Privitera, Wed May 18 11:25:46 PDT 2022
+//   Changed *active* to *default* for everything related to color tables.
+//   In this case I changed the function name.
 //   
 // ****************************************************************************
 
 void
-ViewerMethods::SetActiveDiscreteColorTable(const std::string &colorTableName)
+ViewerMethods::SetDefaultDiscreteColorTable(const std::string &colorTableName)
 {
     // If it's a valid color table name, make it active.
     if(state->GetColorTableAttributes()->GetColorTableIndex(colorTableName) != -1)
     {
-        state->GetColorTableAttributes()->SetActiveDiscrete(colorTableName);
+        state->GetColorTableAttributes()->SetDefaultDiscrete(colorTableName);
         state->GetColorTableAttributes()->Notify();
     }
 }

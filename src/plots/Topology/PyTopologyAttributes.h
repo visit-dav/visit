@@ -22,7 +22,7 @@ PyObject *     PyTopologyAttributes_Wrap(const TopologyAttributes *attr);
 void           PyTopologyAttributes_SetParent(PyObject *obj, PyObject *parent);
 void           PyTopologyAttributes_SetDefaults(const TopologyAttributes *atts);
 std::string    PyTopologyAttributes_GetLogString();
-std::string    PyTopologyAttributes_ToString(const TopologyAttributes *, const char *);
+std::string    PyTopologyAttributes_ToString(const TopologyAttributes *, const char *, const bool=false);
 PyObject *     PyTopologyAttributes_getattr(PyObject *self, char *name);
 int            PyTopologyAttributes_setattr(PyObject *self, char *name, PyObject *args);
 extern PyMethodDef PyTopologyAttributes_methods[TOPOLOGYATTRIBUTES_NMETH];

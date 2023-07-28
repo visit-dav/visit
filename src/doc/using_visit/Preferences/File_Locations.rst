@@ -20,9 +20,11 @@ of these files depends on a few different factors including
    * Whether VisIt_ is running in
      :ref:`client/server mode <Client-Server Mode>`.
 
+.. _vuser_home:
+
 The Platform and the User's *Home* Directory
 """"""""""""""""""""""""""""""""""""""""""""
-Typically, on UNIX and OSX systems, prescribed configuration files
+Typically, on UNIX and macOS systems, prescribed configuration files
 are stored in ``~/.visit`` whereas on Windows systems, they are, by default, in
 ``%USERPROFILE%\Documents\VisIt``, which may be something like
 ``C:\Users\<user-name>\Documents\VisIt``. Furthermore, on Windows, Visit_ honors
@@ -40,7 +42,7 @@ The Launch Method and the *Current Working Directory*
 The launch method effects what VisIt_ uses as the
 `current working directory <https://en.wikipedia.org/wiki/Working_directory>`_
 or ``CWD``.
-On Windows and OSX it is most common to start VisIt_ by clicking an icon. In these
+On Windows and macOS it is most common to start VisIt_ by clicking an icon. In these
 cases, VisIt_ uses the user's ``$HOME`` or login directory as the current working
 directory.
 
@@ -144,7 +146,7 @@ VisIt :ref:`Run Commands (rc) <visitrc_file>` File
 `Custom Plugin <http://visitusers.org/index.php?title=Building_plugins_using_CMake>`_ Files
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 * Location and file name(s): There are separate directories in ``VUSER_HOME``
-  for *private*, user-specific operator, database and plot plugins. On UNIX/OSX,
+  for *private*, user-specific operator, database and plot plugins. On UNIX/macOS,
   these are
 
   * ``VUSER_HOME/<visit-version>/<visit-arch>/plugins/operators/``
@@ -241,7 +243,7 @@ other than ``VUSER_HOME``. These are breifly described in this section.
   VisIt_ is being run in :ref:`client/server mode <Client-Server Mode>`.
   When running client/server, some logs are written on the client and some on
   the server. On Windows, the logs on the client are always located in
-  ``VUSER_HOME`` but on UNIX/OSX the logs on the client are written to whatever
+  ``VUSER_HOME`` but on UNIX/macOS the logs on the client are written to whatever
   the ``CWD`` was when VisIt_ was started. If started by
   clicking on an icon, this is most
   likely the the user's login directory. If started from a command-line, it is
@@ -252,7 +254,7 @@ other than ``VUSER_HOME``. These are breifly described in this section.
   system in their login (home) directory. In a purely local scenario, all logs
   are written to the ``CWD``.
 
-  On UNIX/OSX, the names of the log files are of the form
+  On UNIX/macOS, the names of the log files are of the form
   ``<letter>.<component-name>.<mpi-rank-or-$pid>.<debug-level>.vlog`` where
   ``<letter>`` is one of ``A`` through ``E``, ``<component-name>`` is one of
   ``gui``, ``mdserver``, ``viewer``, ``engine_ser``, ``engine_par``,
@@ -273,7 +275,7 @@ other than ``VUSER_HOME``. These are breifly described in this section.
 * Written: Continuously by VisIt if ``-debug L`` where ``L`` is the debug *level*
   and is an integer in the range ``[1...5]`` is given on the command-line that
   starts VisIt_ or buffered if a ``b`` is given immediately afte the debug level
-  integer. In addition, on UNIX/OSX VisIt_ maintains the 5 most recently written
+  integer. In addition, on UNIX/macOS VisIt_ maintains the 5 most recently written
   logs from the 5 most recent component executions each beginning with the letters
   ``A`` through ``E``, ``A`` being the most recent.
 * Format: Various, ad-hoc ASCII, mostly human readable.

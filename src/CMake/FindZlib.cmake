@@ -14,7 +14,7 @@
 #   Always set VTKZLIB_LIB on windows if the vtkzlib target exists.
 #
 #   Kathleen Biagas, Fri Aug  9 11:01:29 PDT 2013
-#   IF this file finds zlib, set HAVE_ZLIB_H. CHECK_INCLUDE_FILES might not 
+#   IF this file finds zlib, set HAVE_ZLIB_H. CHECK_INCLUDE_FILES might not
 #   find it, especially on windows.
 #
 #   Kathleen Biagas, Tues Oct 1 09:33:47 MST 2013
@@ -28,15 +28,13 @@
 #
 #****************************************************************************/
 
-# Use the ZLIB_DIR hint from the config-site .cmake file 
-
-include(${VISIT_SOURCE_DIR}/CMake/SetUpThirdParty.cmake)
+# Use the ZLIB_DIR hint from the config-site .cmake file
 
 if (WIN32)
     if(ZLIB_LIB_NAME)
-        SET_UP_THIRD_PARTY(ZLIB lib include ${ZLIB_LIB_NAME})
+        SET_UP_THIRD_PARTY(ZLIB LIBS ${ZLIB_LIB_NAME})
     else()
-        SET_UP_THIRD_PARTY(ZLIB lib include zlib1)
+        SET_UP_THIRD_PARTY(ZLIB LIBS zlib1)
     endif()
     if (ZLIB_FOUND)
         # use full path here, instead of just lib file.
@@ -49,11 +47,7 @@ if (WIN32)
 else (WIN32)
     # Have we told VisIt where to look for zlib?
     if (VISIT_ZLIB_DIR)
-        if (LINUX AND CMAKE_SIZEOF_VOID_P EQUAL 8 AND EXISTS ${ZLIB_DIR}/lib64)
-            SET_UP_THIRD_PARTY(ZLIB lib64 include z)
-        else ()
-            SET_UP_THIRD_PARTY(ZLIB lib include z)
-        endif ()
+        SET_UP_THIRD_PARTY(ZLIB LIBS z)
         if (ZLIB_FOUND)
         # use full path here, instead of just lib file.
             set(ZLIB_LIBRARY "${ZLIB_LIBRARY_DIR}/${ZLIB_LIB}" CACHE STRING "zlib library" FORCE)

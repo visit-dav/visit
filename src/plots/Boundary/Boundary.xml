@@ -40,8 +40,6 @@
       </Function>
       <Function name="VarChangeRequiresReset" user="true" member="true">
       </Function>
-      <Function name="ProcessOldVersions" user="true" member="true">
-      </Function>
       <Function name="PyBoundaryAttributes_SetDefaults" user="false" member="true">
       </Function>
       <Function name="BoundaryViewerEnginePluginInfo::InitializePlotAtts" user="false" member="true">
@@ -52,5 +50,8 @@
       </Function>
       <Function name="BoundaryViewerEnginePluginInfo::PrivateSetPlotAtts" user="true" member="true" access="private">
       </Function>
+      <Include file="source" quoted="false" target="xml2python">
+        visit-config.h
+      </Include>
     </Attribute>
   </Plugin>

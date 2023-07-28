@@ -10,11 +10,14 @@
 
 
 #-----------------------------------------------------------------------------
-# Minimum compiler version check: GCC >= 6.0
-if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND
-    CMAKE_CXX_COMPILER_VERSION VERSION_LESS 6.0)
-  message(FATAL_ERROR "GCC 6.0 or later is required.")
-endif ()
+# Minimum compiler version check: GCC >= 7.3
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    if(USE_QT6 AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 8.1)
+      message(FATAL_ERROR "GCC 8.1 or later is required.")
+    elseif(CMAKE_CXX_COMPILER_VERSION VERSION_LESS 7.3)
+      message(FATAL_ERROR "GCC 7.3 or later is required.")
+    endif()
+endif()
 
 #-----------------------------------------------------------------------------
 # Minimum compiler version check: LLVM Clang >= 3.3
@@ -45,8 +48,12 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "Intel" AND
   message(FATAL_ERROR "Intel C++ (ICC) 14.0 or later is required.")
 endif ()
 
-set(CMAKE_CXX_STANDARD 11)
+#-----------------------------------------------------------------------------
+# VTKm requires C++14. Turning off extensions for maximum compatability.
+set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
+set(CMAKE_CXX_EXTENSIONS OFF)
 
+set(BLT_CXX_STD "c++14" CACHE STRING "")
 

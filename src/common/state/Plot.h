@@ -66,6 +66,8 @@ public:
     void SelectOperators();
     void SelectOperatorNames();
     void SelectKeyframes();
+    void SelectNumKeyframesPerOperator();
+    void SelectOperatorKeyframes();
     void SelectDatabaseKeyframes();
     void SelectDescription();
     void SelectSelection();
@@ -87,6 +89,8 @@ public:
     void SetBeginFrame(int beginFrame_);
     void SetEndFrame(int endFrame_);
     void SetKeyframes(const intVector &keyframes_);
+    void SetNumKeyframesPerOperator(const intVector &numKeyframesPerOperator_);
+    void SetOperatorKeyframes(const intVector &operatorKeyframes_);
     void SetDatabaseKeyframes(const intVector &databaseKeyframes_);
     void SetIsFromSimulation(bool isFromSimulation_);
     void SetFollowsTime(bool followsTime_);
@@ -117,6 +121,10 @@ public:
     int                GetEndFrame() const;
     const intVector    &GetKeyframes() const;
           intVector    &GetKeyframes();
+    const intVector    &GetNumKeyframesPerOperator() const;
+          intVector    &GetNumKeyframesPerOperator();
+    const intVector    &GetOperatorKeyframes() const;
+          intVector    &GetOperatorKeyframes();
     const intVector    &GetDatabaseKeyframes() const;
           intVector    &GetDatabaseKeyframes();
     bool               GetIsFromSimulation() const;
@@ -166,6 +174,8 @@ public:
         ID_beginFrame,
         ID_endFrame,
         ID_keyframes,
+        ID_numKeyframesPerOperator,
+        ID_operatorKeyframes,
         ID_databaseKeyframes,
         ID_isFromSimulation,
         ID_followsTime,
@@ -192,6 +202,8 @@ private:
     int          beginFrame;
     int          endFrame;
     intVector    keyframes;
+    intVector    numKeyframesPerOperator;
+    intVector    operatorKeyframes;
     intVector    databaseKeyframes;
     bool         isFromSimulation;
     bool         followsTime;
@@ -203,6 +215,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define PLOT_TMFS "iisbbbssi*s*iiiiii*i*bbssb"
+#define PLOT_TMFS "iisbbbssi*s*iiiiii*i*i*i*bbssb"
 
 #endif

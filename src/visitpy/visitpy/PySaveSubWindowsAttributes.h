@@ -23,7 +23,7 @@ VISITPY_API PyObject *     PySaveSubWindowsAttributes_Wrap(const SaveSubWindowsA
 void VISITPY_API           PySaveSubWindowsAttributes_SetParent(PyObject *obj, PyObject *parent);
 void VISITPY_API           PySaveSubWindowsAttributes_SetDefaults(const SaveSubWindowsAttributes *atts);
 std::string VISITPY_API    PySaveSubWindowsAttributes_GetLogString();
-std::string VISITPY_API    PySaveSubWindowsAttributes_ToString(const SaveSubWindowsAttributes *, const char *);
+std::string VISITPY_API    PySaveSubWindowsAttributes_ToString(const SaveSubWindowsAttributes *, const char *, const bool=false);
 VISITPY_API PyObject *     PySaveSubWindowsAttributes_getattr(PyObject *self, char *name);
 int VISITPY_API            PySaveSubWindowsAttributes_setattr(PyObject *self, char *name, PyObject *args);
 VISITPY_API extern PyMethodDef PySaveSubWindowsAttributes_methods[SAVESUBWINDOWSATTRIBUTES_NMETH];

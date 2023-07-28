@@ -36,7 +36,7 @@ struct RemoveCellsAttributesObject
 //
 static PyObject *NewRemoveCellsAttributes(int);
 std::string
-PyRemoveCellsAttributes_ToString(const RemoveCellsAttributes *atts, const char *prefix)
+PyRemoveCellsAttributes_ToString(const RemoveCellsAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -315,7 +315,7 @@ static int
 RemoveCellsAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     RemoveCellsAttributesObject *obj = (RemoveCellsAttributesObject *)v;
-    fprintf(fp, "%s", PyRemoveCellsAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyRemoveCellsAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -323,7 +323,7 @@ PyObject *
 RemoveCellsAttributes_str(PyObject *v)
 {
     RemoveCellsAttributesObject *obj = (RemoveCellsAttributesObject *)v;
-    return PyString_FromString(PyRemoveCellsAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyRemoveCellsAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -475,7 +475,7 @@ PyRemoveCellsAttributes_GetLogString()
 {
     std::string s("RemoveCellsAtts = RemoveCellsAttributes()\n");
     if(currentAtts != 0)
-        s += PyRemoveCellsAttributes_ToString(currentAtts, "RemoveCellsAtts.");
+        s += PyRemoveCellsAttributes_ToString(currentAtts, "RemoveCellsAtts.", true);
     return s;
 }
 
@@ -488,7 +488,7 @@ PyRemoveCellsAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("RemoveCellsAtts = RemoveCellsAttributes()\n");
-        s += PyRemoveCellsAttributes_ToString(currentAtts, "RemoveCellsAtts.");
+        s += PyRemoveCellsAttributes_ToString(currentAtts, "RemoveCellsAtts.", true);
         cb(s);
     }
 }

@@ -36,7 +36,7 @@ struct LineSamplerAttributesObject
 //
 static PyObject *NewLineSamplerAttributes(int);
 std::string
-PyLineSamplerAttributes_ToString(const LineSamplerAttributes *atts, const char *prefix)
+PyLineSamplerAttributes_ToString(const LineSamplerAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -2855,7 +2855,7 @@ LineSamplerAttributes_SetToroidalIntegration(PyObject *self, PyObject *args)
         ss << "Valid values are in the range [0,2]." << std::endl;
         ss << "You can also use the following symbolic names:";
         ss << " NoToroidalIntegration";
-        ss << ", ToroidalTimeSample";
+        ss << ", SampleToroidally";
         ss << ", IntegrateToroidally";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
@@ -4170,7 +4170,7 @@ static int
 LineSamplerAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)v;
-    fprintf(fp, "%s", PyLineSamplerAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyLineSamplerAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -4178,7 +4178,7 @@ PyObject *
 LineSamplerAttributes_str(PyObject *v)
 {
     LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)v;
-    return PyString_FromString(PyLineSamplerAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyLineSamplerAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -4330,7 +4330,7 @@ PyLineSamplerAttributes_GetLogString()
 {
     std::string s("LineSamplerAtts = LineSamplerAttributes()\n");
     if(currentAtts != 0)
-        s += PyLineSamplerAttributes_ToString(currentAtts, "LineSamplerAtts.");
+        s += PyLineSamplerAttributes_ToString(currentAtts, "LineSamplerAtts.", true);
     return s;
 }
 
@@ -4343,7 +4343,7 @@ PyLineSamplerAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("LineSamplerAtts = LineSamplerAttributes()\n");
-        s += PyLineSamplerAttributes_ToString(currentAtts, "LineSamplerAtts.");
+        s += PyLineSamplerAttributes_ToString(currentAtts, "LineSamplerAtts.", true);
         cb(s);
     }
 }

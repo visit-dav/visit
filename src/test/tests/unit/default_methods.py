@@ -22,6 +22,10 @@ TestValueEQ("GetDebugLevel()", GetDebugLevel(), 0)
 DeleteWindow()
 TestValueEQ("GetLastError()", GetLastError(), "Can't delete the last window.")
 
+# Test that we can clear the last error too
+GetLastError(1)
+TestValueEQ("Clearing GetLastError()", GetLastError(), "")
+
 # This version number test assumes 3, single digits
 TestValueGE("Version()", int(Version().replace('.','')), 321)
 

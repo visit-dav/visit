@@ -15,6 +15,7 @@ std::string         DataNode::bogusString;
 charVector          DataNode::bogusCharVector;
 unsignedCharVector  DataNode::bogusUnsignedCharVector;
 intVector           DataNode::bogusIntVector;
+boolVector          DataNode::bogusBoolVector;
 longVector          DataNode::bogusLongVector;
 floatVector         DataNode::bogusFloatVector;
 doubleVector        DataNode::bogusDoubleVector;
@@ -255,6 +256,13 @@ DataNode::DataNode(const std::string &name, const stringVector &vec) : Key(name)
     Data = (void *)(new stringVector(vec));
 }
 
+DataNode::DataNode(const std::string &name, const boolVector &vec) : Key(name)
+{
+    NodeType = BOOL_VECTOR_NODE;
+    Length = 0;
+    Data = (void *)(new boolVector(vec));
+}
+
 DataNode::DataNode(const std::string &name, const MapNode &val) : Key(name)
 {
     NodeType = MAP_NODE_NODE;
@@ -298,6 +306,9 @@ DataNode::~DataNode()
 // Modifications:
 //   Cyrus Harrison, Thu Apr 18 10:37:46 PDT 2019
 //   Added default case to switch.
+// 
+//   Justin Privitera, Thu Jun 16 18:01:49 PDT 2022
+//   Added logic for bool vectors.
 //
 // ****************************************************************************
 
@@ -471,7 +482,10 @@ DataNode::FreeData()
         }
         break;
     case BOOL_VECTOR_NODE:
-        // Do nothing since it can't be instantiated.
+        { // new scope
+            boolVector *bptr = (boolVector *)Data;
+            delete bptr;
+        }
         break;
     case MAP_NODE_NODE:
         { // new scope
@@ -630,6 +644,12 @@ const stringVector &
 DataNode::AsStringVector() const
 {
     return AsClass<stringVector>(bogusStringVector);
+}
+
+const boolVector &
+DataNode::AsBoolVector() const
+{
+    return AsClass<boolVector>(bogusBoolVector);
 }
 
 
@@ -1064,6 +1084,14 @@ DataNode::SetStringVector(const stringVector &vec)
     FreeData();
     NodeType = STRING_VECTOR_NODE;
     Data = (void *)(new stringVector(vec));
+}
+
+void
+DataNode::SetBoolVector(const boolVector &vec)
+{
+    FreeData();
+    NodeType = BOOL_VECTOR_NODE;
+    Data = (void *)(new boolVector(vec));
 }
 
 void

@@ -16,7 +16,7 @@ Version()
 #ifdef VISIT_VERSION
      return VISIT_VERSION;
 #else
-     return "2.0";
+     return "3.3";
 #endif
 }
 

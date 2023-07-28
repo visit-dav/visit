@@ -71,6 +71,21 @@ library is substituted at run time for OpenGL when running the parallel
 engine to enable scalable rendering. If you specify ``--mesagl`` then
 ``--osmesa`` is unnecessary and ignored if specified.
 
+
+Building Server only
+~~~~~~~~~~~~~~~~~~~~
+Sometimes a special version of VisIt_ is needed for a remote server, one that only processes data and does not include any GUI elements.
+VisIt_ can be built in this fashion (and the build will be sped up considerably) by adding the ``-server-comonents-only flag`` to build only the server and related programs.
+Then you can run client/server from a desktop system running the GUI locally, and connect to the remote server to process data.
+
+.. code:: bash
+
+  env PAR_COMPILER=mpicc ./build_visit3_3_3 --server-components-only --mesa --icet
+
+This will do a basic build, but will probably not include the IO libraries you need (unless you only need VTK).
+You can specify any needed libraries individually, e.g.  ``--hdf5 --netcdf --conduit --mfem`` to add HDF5, NetCDF, Conduit and Mfem IO libraries.
+
+
 Building VisIt_ with Pre-Installed (e.g. System) Libraries
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -116,7 +131,7 @@ Compiler (Run-Time) Compatability : Pre-installed libraries are not built with a
     The compiler (run-time) used for pre-installed libraries may not be compatable with the compiler (run-time) VisIt_ requires.
 
 There are likely other subtle compatability issues that can arise which we have neglected to mention here.
-A fully featured build of VisIt_ can involve 35+ libraries, many of which may come pre-installed (Qt, VTK, Python, HDF5, netCDF, OpenSSL, OpenGL, MPI to name a few) on any particular platform.
+A fully featured build of VisIt_ can involve 35+ libraries, many of which may come pre-installed (Qt, VTK, Python, HDF5, netCDF, OpenGL, MPI to name a few) on any particular platform.
 Bottom line, the number of ways pre-installed libraries can be built such that they will cause VisIt_ to either fail to build or fail to run properly are almost boundless.
 For this reason, we discourage users from attempting to build VisIt_ using pre-installed libraries and warn users that in all likelihood we will not have sufficient resources to help address any resulting issues that may arise.
 

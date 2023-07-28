@@ -52,7 +52,7 @@ QvisSessionSourceChanger::QvisSessionSourceChanger(QWidget *parent)
     gridLayout->setColumnStretch(1, 10);
     
     QVBoxLayout *srcPropLayout = new QVBoxLayout(sourceProperties);
-    srcPropLayout->setMargin(10);
+    srcPropLayout->setContentsMargins(10,10,10,10);
     srcPropLayout->setSpacing(5);
 
     // Create the source property controls.

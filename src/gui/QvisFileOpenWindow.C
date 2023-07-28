@@ -5,7 +5,6 @@
 #include <QApplication>
 #include <QCheckBox>
 #include <QComboBox>
-#include <QDesktopWidget>
 #include <QEvent>
 #include <QLabel>
 #include <QLayout>
@@ -184,6 +183,28 @@ QvisFileOpenWindow::SetFilename(const QString &f)
 //    David Camp, Thu Aug 27 09:40:00 PDT 2015
 //    Added a filename field if showFilename is true. For Session dialog.
 //    Also hide files if Session dialog.
+// 
+//   Justin Privitera, Tue May 17 11:06:11 PDT 2022
+//   1) Fixed an issue where the list of plugins in the file open window could 
+//   disappear when selecting plugins from the list multiple times.
+//   2) In the plugin selection in the file open window, users can now delete 
+//   the text that is there and start typing the name of the plugin that they 
+//   wish to open files with, and VisIt will autocomplete the entered text to 
+//   select a plugin. This was accomplished by making the fileFormatComboBox
+//   "editable", but making its "insertPolicy" be "NoInsert". In this way,
+//   users can type whatever they need in the box and the box will attempt
+//   to autocomplete what they are typing, but they cannot add new entries to
+//   the plugin list.
+//
+//   Kathleen Biagas, Wed Apr 6, 2022
+//   Fix QT_VERSION test to use Qt's QT_VERSION_CHECK.
+//
+//   Kathleen Biagas, Wed Apr 19 14:42:07 PDT 2023
+//   Replace deprecated `activated` SIGNAL with `currentIndexChanged`.
+//
+//   Kathleen Biagas, Wed Apr 19 14:42:07 PDT 2023
+//   Replace `currentIndexChanged` signal for QComboBox with
+//   'currentTextChanged' as the former is not available in Qt 6.
 //
 // ****************************************************************************
 
@@ -202,12 +223,12 @@ QvisFileOpenWindow::CreateWindowContents()
     //
     QWidget     *directoryWidget = new QWidget(listSplitter);
     QVBoxLayout *directoryVBox = new QVBoxLayout(directoryWidget);
-    directoryVBox->setMargin(0);
+    directoryVBox->setContentsMargins(0,0,0,0);
     directoryVBox->addWidget(new QLabel(tr("Directories"), directoryWidget));
 
     directoryList = new QListWidget(directoryWidget);
     directoryVBox->addWidget(directoryList);
-#if QT_VERSION >= 0x051100
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 11, 0))
     int minColumnWidth = fontMetrics().horizontalAdvance("X");
 #else
     int minColumnWidth = fontMetrics().width("X");
@@ -223,7 +244,7 @@ QvisFileOpenWindow::CreateWindowContents()
     //
     QWidget     *fileWidget = new QWidget(listSplitter);
     QVBoxLayout *fileVBox = new QVBoxLayout(fileWidget );
-    fileVBox->setMargin(0);
+    fileVBox->setContentsMargins(0,0,0,0);
 
     fileVBox->addWidget(new QLabel(tr("Files"), listSplitter));
     fileList = CreateFileListWidget(listSplitter);
@@ -249,13 +270,18 @@ QvisFileOpenWindow::CreateWindowContents()
     QLabel *openFileAsTypeLabel = new QLabel(tr("Open file as type:"));
     fileFormatLayout->addWidget(openFileAsTypeLabel);
     fileFormatComboBox = new QComboBox(central);
+    fileFormatComboBox->setEditable(true);
+    fileFormatComboBox->setInsertPolicy(QComboBox::NoInsert);
+    fileFormatComboBox->setMaxVisibleItems(50);
+    // needs qt 5.15; at the time of writing we use qt 5.14
+    // fileFormatComboBox->setPlaceholderText("Guess from file name/extension");
     fileFormatLayout->addWidget(fileFormatComboBox, 10);
     setDefaultOptionsForFormatButton = new QPushButton(
            tr("Set default open options..."), central);
     setDefaultOptionsForFormatButton->setEnabled(false);
     fileFormatLayout->addWidget(setDefaultOptionsForFormatButton, 1);
     fileFormatLayout->addStretch(5);
-    connect(fileFormatComboBox, SIGNAL(activated(const QString&)),
+    connect(fileFormatComboBox, SIGNAL(currentTextChanged(const QString&)),
             this, SLOT(fileFormatChanged(const QString&)));
     connect(setDefaultOptionsForFormatButton, SIGNAL(clicked()),
             this, SLOT(setDefaultOptionsForFormatButtonClicked()));
@@ -388,6 +414,10 @@ QvisFileOpenWindow::UpdateWindow(bool doAll)
 //
 //   Cyrus Harrison, Tue Jun 24 11:15:28 PDT 2008
 //   Initial Qt4 Port.
+// 
+//   Justin Privitera, Tue Apr 19 12:07:06 PDT 2022
+//   Sorted the filetype names alphabetically so the lower case filetypes are 
+//   not at the end of the list.
 //
 // ****************************************************************************
 
@@ -408,6 +438,8 @@ QvisFileOpenWindow::UpdateFileFormatComboBox()
     int nTypes = plugins.GetTypes().size();
     fileFormatComboBox->addItem(tr("Guess from file name/extension"));
     FileOpenOptions *opts = GetViewerState()->GetFileOpenOptions();
+
+    QStringList *filetypes = new QStringList();
     
     for (int i = 0 ; i < nTypes ; i++)
     {
@@ -415,10 +447,17 @@ QvisFileOpenWindow::UpdateFileFormatComboBox()
         {
             if (opts->GetTypeNames()[j] == plugins.GetTypes()[i] && opts->GetEnabled()[j] )
             {
-                fileFormatComboBox->addItem(plugins.GetTypes()[i].c_str());
+                filetypes->push_back(plugins.GetTypes()[i].c_str());
                 break;
             }
         }
+    }
+
+    filetypes->sort(Qt::CaseInsensitive);
+
+    for (int i = 0; i < filetypes->size(); i ++)
+    {
+        fileFormatComboBox->addItem((*filetypes)[i]);
     }
 
     if (!oldtype.isNull())

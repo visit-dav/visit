@@ -36,7 +36,7 @@ struct ViewAttributesObject
 //
 static PyObject *NewViewAttributes(int);
 std::string
-PyViewAttributes_ToString(const ViewAttributes *atts, const char *prefix)
+PyViewAttributes_ToString(const ViewAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -1275,7 +1275,7 @@ static int
 ViewAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     ViewAttributesObject *obj = (ViewAttributesObject *)v;
-    fprintf(fp, "%s", PyViewAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyViewAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -1283,7 +1283,7 @@ PyObject *
 ViewAttributes_str(PyObject *v)
 {
     ViewAttributesObject *obj = (ViewAttributesObject *)v;
-    return PyString_FromString(PyViewAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyViewAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -1435,7 +1435,7 @@ PyViewAttributes_GetLogString()
 {
     std::string s("ViewAtts = ViewAttributes()\n");
     if(currentAtts != 0)
-        s += PyViewAttributes_ToString(currentAtts, "ViewAtts.");
+        s += PyViewAttributes_ToString(currentAtts, "ViewAtts.", true);
     return s;
 }
 
@@ -1448,7 +1448,7 @@ PyViewAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("ViewAtts = ViewAttributes()\n");
-        s += PyViewAttributes_ToString(currentAtts, "ViewAtts.");
+        s += PyViewAttributes_ToString(currentAtts, "ViewAtts.", true);
         cb(s);
     }
 }

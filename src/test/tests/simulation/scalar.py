@@ -5,10 +5,12 @@
 #
 #  Tests:      libsim - connecting to simulation and retrieving data from it.
 #
-#  Programmer: Kathleen Biagas 
-#  Date:       June 18, 2014 
+#  Programmer: Kathleen Biagas
+#  Date:       June 18, 2014
 #
 #  Modifications:
+#    Kathleen Biagas, Mon Nov 28, 2022
+#    Replace obsolete Label text attributes with new versions.
 #
 # ----------------------------------------------------------------------------
 
@@ -28,7 +30,7 @@ if connected:
     AddPlot("Pseudocolor", "zonal")
     AddPlot("Label", "zonal")
     LabelAtts = LabelAttributes()
-    LabelAtts.textHeight1 = 0.05
+    LabelAtts.textFont1.scale = 7
     SetPlotOptions(LabelAtts)
     DrawPlots()
     Test("scalar02")
@@ -40,7 +42,7 @@ if connected:
     AddPlot("Pseudocolor", "nodal")
     AddPlot("Label", "nodal")
     LabelAtts = LabelAttributes()
-    LabelAtts.textHeight1 = 0.05
+    LabelAtts.textFont1.scale = 7
     LabelAtts.depthTestMode = LabelAtts.LABEL_DT_NEVER
     SetPlotOptions(LabelAtts)
 
@@ -48,7 +50,7 @@ if connected:
     Test("scalar03")
 
 # Close down the simulation.
-if started:        
+if started:
     sim.endsim()
 
 Exit()

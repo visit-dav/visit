@@ -371,6 +371,8 @@ QvisParallelCoordinatesWidget::drawAxes(QPainter *painter)
 // Creation:   Wed Jun 14 18:54:00 PDT 2006
 //
 // Modifications:
+//   Kathleen Biagas, Wed Apr 6, 2022
+//   Fix QT_VERSION test to use Qt's QT_VERSION_CHECK.
 //   
 // ****************************************************************************
 
@@ -407,7 +409,7 @@ QvisParallelCoordinatesWidget::drawAxisTitles(QPainter *painter)
         for (charNum = 0; charNum < titleCharCount; charNum++)
         {
             titleChar = axisTitle.substr(charNum, 1);
-#if QT_VERSION >= 0x051100
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 11, 0))
             charXPos = axisX - fontMetrics().horizontalAdvance(QChar(*(axisTitle.c_str())))/2;
 #else
             charXPos = axisX - fontMetrics().width(QChar(*(axisTitle.c_str())))/2;

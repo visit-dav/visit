@@ -493,17 +493,121 @@ object's lower left corner.
 The size of the text is set using the **Height** spin box. The height is the
 fraction of the visualization window height.
 
-To set the text that a text annotation object displays, type a new string
-into the **Text** text field. You can make the text annotation object display
-any characters that you type in but you can also use the $time wildcard
-string to make the text annotation object display the time for the current
-time state of the active database. A text string of the form: Time=$time
-will display Time=10 in the visualization window when the active database's
-time is 10. Whatever text you enter for the text annotation object is used
-to identify the text annotation object in the **Annotation objects** list.
+To set the text that a text annotation object displays, type a new string into the **Text** text field.
+You can make the text annotation object display any characters that you type in.
+Whatever text you enter for the text annotation object is used to identify the text annotation object in the **Annotation objects** list.
+In addition to the usual text properties, text annotation objects can also include a shadow.
 
-In addition to the usual text properties, text annotation objects can also
-include a shadow.
+Named database values in text annotations
+"""""""""""""""""""""""""""""""""""""""""
+
+A variety of named database values can be displayed in text annotations.
+These are introduced with a leading ``$`` character followed by the value's name.
+An optional ``%`` character following the value's name introduces a `printf-style formatting string <https://en.wikipedia.org/wiki/Printf_format_string>`__ which can be used to control the value's printed format.
+
+.. warning::
+
+   Presently, the ``$`` values that are displayed are taken always from database associated with the *first* plot in the plot list.
+   If the plot list is changed such that the database associated with the *first* plot that was in effect at the time the annotation was created is changed, the rendered text for named database value annotations may change.
+
+The list of named values currently supported along with their *default* formats are 
+
+    +--------------------+----------+-------------------------------------+
+    |   **Value name**   | **Fmt**  |       **Meaning**                   |
+    +--------------------+----------+-------------------------------------+
+    | time               |    %g    |  time value                         |
+    +--------------------+----------+-------------------------------------+
+    | cycle              |    %d    |  cycle number                       |
+    +--------------------+----------+-------------------------------------+
+    | index              |    %d    |  state number starting from zero    |
+    +--------------------+----------+-------------------------------------+
+    | numstates          |    %d    |  total number of states in database |
+    +--------------------+----------+-------------------------------------+
+    | dbcomment          |    %s    |  database comment                   |
+    +--------------------+----------+-------------------------------------+
+    | lod                |    %z    |  levels of detail                   |
+    +--------------------+----------+-------------------------------------+
+    | vardim             |    %d    |  variable dimension                 |
+    +--------------------+----------+-------------------------------------+
+    | numvar             |    %d    |  number of variables                |
+    +--------------------+----------+-------------------------------------+
+    | topdim             |    %d    |  topological dim. of assoc. mesh    |
+    +--------------------+----------+-------------------------------------+
+    | spatialdim         |    %d    |  spatial dim. of assoc. mesh        |
+    +--------------------+----------+-------------------------------------+
+    | varname            |    %s    |  variable name                      |
+    +--------------------+----------+-------------------------------------+
+    | varunits           |    %s    |  variable units                     |
+    +--------------------+----------+-------------------------------------+
+    | meshname           |    %s    |  name of mesh assoc. w/variable     |
+    +--------------------+----------+-------------------------------------+
+    | filename           |    %s    |  name of database file              |
+    +--------------------+----------+-------------------------------------+
+    | fulldbname         |    %s    |  full path name of database file    |
+    +--------------------+----------+-------------------------------------+
+    | xunits             |    %s    |  x units                            |
+    +--------------------+----------+-------------------------------------+
+    | yunits             |    %s    |  y units                            |
+    +--------------------+----------+-------------------------------------+
+    | zunits             |    %s    |  z units                            |
+    +--------------------+----------+-------------------------------------+
+    | xlabel             |    %s    |  x axis label                       |
+    +--------------------+----------+-------------------------------------+
+    | ylabel             |    %s    |  y axis label                       |
+    +--------------------+----------+-------------------------------------+
+    | zlabel             |    %s    |  z axis label                       |
+    +--------------------+----------+-------------------------------------+
+
+In addition, the following ``$<T>tafile<I>`` named values permit arbitrary text annotation content to be taken from a ``txt`` file with name of the form ``<T>tafile<I>.txt`` where ``<T>`` is either ``s`` (for files of string values), ``i`` (for files of integer values) or ``f`` (for files of floating point values) and ``<I>`` is either ``1``, ``2`` or ``3`` to provide 3 separate options for storing files of values used for different annotation purposes.
+Each line of such a file corresponds to a time step in a time series.
+If a ``$$<T>tafile<I>`` named annotation is used, VisIt_ will search for the associated file first in the same directory containing the database, then in the directory ``/$TMPDIR/$USER`` or (``/var/tmp/$USER``) and finally in :ref:`vuser_home`.
+
+A common use case for ``$<T>tafile<I>`` named values is for animations to display the numerical values from a query over time and have those values update as the time step being displayed changes.
+
+    +--------------------+----------+-------------------------------------+
+    |   **Value name**   | **Fmt**  |       **Meaning**                   |
+    +--------------------+----------+-------------------------------------+
+    | itafile1           |    %d    |  ints from itafile1.txt             |
+    |                    |          |  one line per timestep.             |
+    +--------------------+----------+-------------------------------------+
+    | itafile2           |    %d    |  ints from itafile2.txt             |
+    |                    |          |  one line per timestep.             |
+    +--------------------+----------+-------------------------------------+
+    | itafile3           |    %d    |  ints from itafile3.txt             |
+    |                    |          |  one line per timestep.             |
+    +--------------------+----------+-------------------------------------+
+    | ftafile1           |    %g    |  floats from ftafile1.txt           |
+    |                    |          |  one line per timestep.             |
+    +--------------------+----------+-------------------------------------+
+    | ftafile2           |    %g    |  floats from ftafile2.txt           |
+    |                    |          |  one line per timestep.             |
+    +--------------------+----------+-------------------------------------+
+    | ftafile3           |    %g    |  floats from ftafile3.txt           |
+    |                    |          |  one line per timestep.             |
+    +--------------------+----------+-------------------------------------+
+    | stafile1           |    %s    |  strings from stafile1.txt          |
+    |                    |          |  one line per timestep.             |
+    +--------------------+----------+-------------------------------------+
+    | stafile2           |    %s    |  strings from stafile2.txt          |
+    |                    |          |  one line per timestep.             |
+    +--------------------+----------+-------------------------------------+
+    | stafile3           |    %s    |  strings from stafile3.txt          |
+    |                    |          |  one line per timestep.             |
+    +--------------------+----------+-------------------------------------+
+
+.. warning::
+
+   Only the first 255 characters on each line of a ``$<T>tafile<I>`` annotation are used.
+
+Multiple named values can appear in a text annotation string and the same named value can also appear multiple times.
+
+For example, to create a text annoation which displays ``State index = XXX`` where ``XXX`` is the number for the index, set the annotation string to ``State index = $index``.
+To display the current cycle number always with 6 digits and leading zeros when necessary, use the string ``$cycle%06d`` where the optional ``%`` followed by a printf-style format string is specified.
+To display the first 3 characters of the variable name, use the string ``$varname%.3s``.
+
+The ``$dbcomment`` and ``$<T>tafile<I>`` named values are useful for complicated cases because they allow arbitrary text defined in the database comment or an external file to be used.
+For example, the *state space* of a given database could be rather complicated involving not only iterations of the main PDE solve loop but also mesh adaptivity iterations, material advection iterations, etc.
+In this case, if the data producer created appropriate content in the database comment or in a text file, the ``$dbcomment`` or ``$<T>tafile<X>`` named value is a way to render all relevant iteration identifiers as a text annotation.
 
 3D text annotation objects
 """"""""""""""""""""""""""
@@ -767,17 +871,16 @@ their size, and optional transparency color.
   
    An Example of a visualization with two overlaid image annotations
 
-The first step in incorporating an image annotation into a visualization
-is to choose the file that contains the image that will serve as the
-annotation. To choose an image file for the image annotation, type in
-the full path and filename to the file that you want to use into the
-**Image source** text field. You can also use the file browser to locate
-the image file if you click on the "..." button to the right of the
-**Image source** text field in the **Image annotation interface**, shown
-in :numref:`Figure %s <fig-MakingItPretty-AnnotationObjectImage>`. Note
-that since image annotations are incorporated into a visualization inside
-of VisIt_'s viewer component, the image file must be located on the same
-computer that runs the viewer.
+The first step in incorporating an image annotation into a visualization is to choose the file that contains the image that will serve as the annotation.
+To choose an image file for the image annotation, type in the full path and filename to the file that you want to use into the **Image source** text field.
+You can also use the file browser to locate the image file if you click on the "..." button to the right of the **Image source** text field in the **Image annotation interface**, shown in :numref:`Figure %s <fig-MakingItPretty-AnnotationObjectImage>`.
+
+.. warning::
+
+   Currently, there is a limitation in the use of image annotations while operating in client/server mode.
+   The *path* used must be the *same* on both the local (client) and remote (server) machines.
+   Often, the only way to achieve this may be to have the image file in ``/tmp`` or ``/var/tmp``.
+   For parallel engines, this may necessitate a complicated set of manual steps to a) wait for the parallel job to start, b) identify the node running MPI rank 0 (the only MPI rank where annotations are processed) and c) copy the file to the ``/tmp`` directory on that node assuming access controls will even allow that.
 
 .. _fig-MakingItPretty-AnnotationObjectImage:
 

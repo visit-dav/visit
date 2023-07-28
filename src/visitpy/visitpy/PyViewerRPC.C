@@ -36,7 +36,7 @@ struct ViewerRPCObject
 //
 static PyObject *NewViewerRPC(int);
 std::string
-PyViewerRPC_ToString(const ViewerRPC *atts, const char *prefix)
+PyViewerRPC_ToString(const ViewerRPC *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -51,49 +51,49 @@ PyViewerRPC_ToString(const ViewerRPC *atts, const char *prefix)
         "AddEmbeddedPlotRPC, SetPlotFrameRangeRPC, DeletePlotKeyframeRPC, MovePlotKeyframeRPC, "
         "DeleteActivePlotsRPC, HideActivePlotsRPC, DrawPlotsRPC, DisableRedrawRPC, "
         "RedrawRPC, SetActivePlotsRPC, ChangeActivePlotsVarRPC, AddOperatorRPC, "
-        "AddInitializedOperatorRPC, PromoteOperatorRPC, DemoteOperatorRPC, RemoveOperatorRPC, "
-        "RemoveLastOperatorRPC, RemoveAllOperatorsRPC, SaveWindowRPC, SetDefaultPlotOptionsRPC, "
-        "SetPlotOptionsRPC, SetDefaultOperatorOptionsRPC, SetOperatorOptionsRPC, WriteConfigFileRPC, "
-        "ConnectToMetaDataServerRPC, IconifyAllWindowsRPC, DeIconifyAllWindowsRPC, ShowAllWindowsRPC, "
-        "HideAllWindowsRPC, UpdateColorTableRPC, SetAnnotationAttributesRPC, SetDefaultAnnotationAttributesRPC, "
-        "ResetAnnotationAttributesRPC, SetKeyframeAttributesRPC, SetPlotSILRestrictionRPC, SetViewAxisArrayRPC, "
-        "SetViewCurveRPC, SetView2DRPC, SetView3DRPC, ResetPlotOptionsRPC, "
-        "ResetOperatorOptionsRPC, SetAppearanceRPC, ProcessExpressionsRPC, SetLightListRPC, "
-        "SetDefaultLightListRPC, ResetLightListRPC, SetAnimationAttributesRPC, SetWindowAreaRPC, "
-        "PrintWindowRPC, ResetViewRPC, RecenterViewRPC, ToggleAllowPopupRPC, "
-        "ToggleMaintainViewModeRPC, ToggleBoundingBoxModeRPC, ToggleCameraViewModeRPC, TogglePerspectiveViewRPC, "
-        "ToggleSpinModeRPC, ToggleLockTimeRPC, ToggleLockToolsRPC, ToggleLockViewModeRPC, "
-        "ToggleFullFrameRPC, UndoViewRPC, RedoViewRPC, InvertBackgroundRPC, "
-        "ClearPickPointsRPC, RemovePicksRPC, SetWindowModeRPC, EnableToolRPC, "
-        "SetToolUpdateModeRPC, CopyViewToWindowRPC, CopyLightingToWindowRPC, CopyAnnotationsToWindowRPC, "
-        "CopyPlotsToWindowRPC, ClearCacheRPC, ClearCacheForAllEnginesRPC, SetViewExtentsTypeRPC, "
-        "ClearRefLinesRPC, SetRenderingAttributesRPC, QueryRPC, CloneWindowRPC, "
-        "SetMaterialAttributesRPC, SetDefaultMaterialAttributesRPC, ResetMaterialAttributesRPC, SetPlotDatabaseStateRPC, "
-        "DeletePlotDatabaseKeyframeRPC, MovePlotDatabaseKeyframeRPC, ClearViewKeyframesRPC, DeleteViewKeyframeRPC, "
-        "MoveViewKeyframeRPC, SetViewKeyframeRPC, OpenMDServerRPC, EnableToolbarRPC, "
-        "HideToolbarsRPC, HideToolbarsForAllWindowsRPC, ShowToolbarsRPC, ShowToolbarsForAllWindowsRPC, "
-        "SetToolbarIconSizeRPC, SaveViewRPC, SetGlobalLineoutAttributesRPC, SetPickAttributesRPC, "
-        "ExportColorTableRPC, ExportEntireStateRPC, ImportEntireStateRPC, ImportEntireStateWithDifferentSourcesRPC, "
-        "ResetPickAttributesRPC, AddAnnotationObjectRPC, HideActiveAnnotationObjectsRPC, DeleteActiveAnnotationObjectsRPC, "
-        "RaiseActiveAnnotationObjectsRPC, LowerActiveAnnotationObjectsRPC, SetAnnotationObjectOptionsRPC, SetDefaultAnnotationObjectListRPC, "
-        "ResetAnnotationObjectListRPC, ResetPickLetterRPC, SetDefaultPickAttributesRPC, ChooseCenterOfRotationRPC, "
-        "SetCenterOfRotationRPC, SetQueryOverTimeAttributesRPC, SetDefaultQueryOverTimeAttributesRPC, ResetQueryOverTimeAttributesRPC, "
-        "ResetLineoutColorRPC, SetInteractorAttributesRPC, SetDefaultInteractorAttributesRPC, ResetInteractorAttributesRPC, "
-        "GetProcInfoRPC, SendSimulationCommandRPC, UpdateDBPluginInfoRPC, ExportDBRPC, "
-        "SetTryHarderCyclesTimesRPC, OpenClientRPC, OpenGUIClientRPC, OpenCLIClientRPC, "
-        "SuppressQueryOutputRPC, SetQueryFloatFormatRPC, SetMeshManagementAttributesRPC, SetDefaultMeshManagementAttributesRPC, "
-        "ResetMeshManagementAttributesRPC, ResizeWindowRPC, MoveWindowRPC, MoveAndResizeWindowRPC, "
-        "SetStateLoggingRPC, ConstructDataBinningRPC, RequestMetaDataRPC, SetTreatAllDBsAsTimeVaryingRPC, "
-        "SetCreateMeshQualityExpressionsRPC, SetCreateTimeDerivativeExpressionsRPC, SetCreateVectorMagnitudeExpressionsRPC, SetPrecisionTypeRPC, "
-        "SetBackendTypeRPC, CopyActivePlotsRPC, SetPlotFollowsTimeRPC, TurnOffAllLocksRPC, "
-        "SetDefaultFileOpenOptionsRPC, SetSuppressMessagesRPC, ApplyNamedSelectionRPC, CreateNamedSelectionRPC, "
-        "DeleteNamedSelectionRPC, LoadNamedSelectionRPC, SaveNamedSelectionRPC, SetNamedSelectionAutoApplyRPC, "
-        "UpdateNamedSelectionRPC, InitializeNamedSelectionVariablesRPC, MenuQuitRPC, SetPlotDescriptionRPC, "
-        "MovePlotOrderTowardFirstRPC, MovePlotOrderTowardLastRPC, SetPlotOrderToFirstRPC, SetPlotOrderToLastRPC, "
-        "RenamePickLabelRPC, GetQueryParametersRPC, DDTConnectRPC, DDTFocusRPC, "
-        "ReleaseToDDTRPC, PlotDDTVispointVariablesRPC, ExportRPC, ExportHostProfileRPC, "
-        "StartPlotAnimationRPC, StopPlotAnimationRPC, ReadHostProfilesFromDirectoryRPC, SetRemoveDuplicateNodesRPC, "
-        "MaxRPC";
+        "AddInitializedOperatorRPC, DeleteOperatorKeyframeRPC, MoveOperatorKeyframeRPC, PromoteOperatorRPC, "
+        "DemoteOperatorRPC, RemoveOperatorRPC, RemoveLastOperatorRPC, RemoveAllOperatorsRPC, "
+        "SaveWindowRPC, SetDefaultPlotOptionsRPC, SetPlotOptionsRPC, SetDefaultOperatorOptionsRPC, "
+        "SetOperatorOptionsRPC, WriteConfigFileRPC, ConnectToMetaDataServerRPC, IconifyAllWindowsRPC, "
+        "DeIconifyAllWindowsRPC, ShowAllWindowsRPC, HideAllWindowsRPC, UpdateColorTableRPC, "
+        "SetAnnotationAttributesRPC, SetDefaultAnnotationAttributesRPC, ResetAnnotationAttributesRPC, SetKeyframeAttributesRPC, "
+        "SetPlotSILRestrictionRPC, SetViewAxisArrayRPC, SetViewCurveRPC, SetView2DRPC, "
+        "SetView3DRPC, ResetPlotOptionsRPC, ResetOperatorOptionsRPC, SetAppearanceRPC, "
+        "ProcessExpressionsRPC, SetLightListRPC, SetDefaultLightListRPC, ResetLightListRPC, "
+        "SetAnimationAttributesRPC, SetWindowAreaRPC, PrintWindowRPC, ResetViewRPC, "
+        "RecenterViewRPC, ToggleAllowPopupRPC, ToggleMaintainViewModeRPC, ToggleBoundingBoxModeRPC, "
+        "ToggleCameraViewModeRPC, TogglePerspectiveViewRPC, ToggleSpinModeRPC, ToggleLockTimeRPC, "
+        "ToggleLockToolsRPC, ToggleLockViewModeRPC, ToggleFullFrameRPC, UndoViewRPC, "
+        "RedoViewRPC, InvertBackgroundRPC, ClearPickPointsRPC, RemovePicksRPC, "
+        "SetWindowModeRPC, EnableToolRPC, SetToolUpdateModeRPC, CopyViewToWindowRPC, "
+        "CopyLightingToWindowRPC, CopyAnnotationsToWindowRPC, CopyPlotsToWindowRPC, ClearCacheRPC, "
+        "ClearCacheForAllEnginesRPC, SetViewExtentsTypeRPC, ClearRefLinesRPC, SetRenderingAttributesRPC, "
+        "QueryRPC, CloneWindowRPC, SetMaterialAttributesRPC, SetDefaultMaterialAttributesRPC, "
+        "ResetMaterialAttributesRPC, SetPlotDatabaseStateRPC, DeletePlotDatabaseKeyframeRPC, MovePlotDatabaseKeyframeRPC, "
+        "ClearViewKeyframesRPC, DeleteViewKeyframeRPC, MoveViewKeyframeRPC, SetViewKeyframeRPC, "
+        "OpenMDServerRPC, EnableToolbarRPC, HideToolbarsRPC, HideToolbarsForAllWindowsRPC, "
+        "ShowToolbarsRPC, ShowToolbarsForAllWindowsRPC, SetToolbarIconSizeRPC, SaveViewRPC, "
+        "SetGlobalLineoutAttributesRPC, SetPickAttributesRPC, ExportColorTableRPC, ExportEntireStateRPC, "
+        "ImportEntireStateRPC, ImportEntireStateWithDifferentSourcesRPC, ResetPickAttributesRPC, AddAnnotationObjectRPC, "
+        "HideActiveAnnotationObjectsRPC, DeleteActiveAnnotationObjectsRPC, RaiseActiveAnnotationObjectsRPC, LowerActiveAnnotationObjectsRPC, "
+        "SetAnnotationObjectOptionsRPC, SetDefaultAnnotationObjectListRPC, ResetAnnotationObjectListRPC, ResetPickLetterRPC, "
+        "SetDefaultPickAttributesRPC, ChooseCenterOfRotationRPC, SetCenterOfRotationRPC, SetQueryOverTimeAttributesRPC, "
+        "SetDefaultQueryOverTimeAttributesRPC, ResetQueryOverTimeAttributesRPC, ResetLineoutColorRPC, SetInteractorAttributesRPC, "
+        "SetDefaultInteractorAttributesRPC, ResetInteractorAttributesRPC, GetProcInfoRPC, SendSimulationCommandRPC, "
+        "UpdateDBPluginInfoRPC, ExportDBRPC, SetTryHarderCyclesTimesRPC, OpenClientRPC, "
+        "OpenGUIClientRPC, OpenCLIClientRPC, SuppressQueryOutputRPC, SetQueryFloatFormatRPC, "
+        "SetMeshManagementAttributesRPC, SetDefaultMeshManagementAttributesRPC, ResetMeshManagementAttributesRPC, ResizeWindowRPC, "
+        "MoveWindowRPC, MoveAndResizeWindowRPC, SetStateLoggingRPC, ConstructDataBinningRPC, "
+        "RequestMetaDataRPC, SetTreatAllDBsAsTimeVaryingRPC, SetCreateMeshQualityExpressionsRPC, SetCreateTimeDerivativeExpressionsRPC, "
+        "SetCreateVectorMagnitudeExpressionsRPC, SetPrecisionTypeRPC, SetBackendTypeRPC, CopyActivePlotsRPC, "
+        "SetPlotFollowsTimeRPC, TurnOffAllLocksRPC, SetDefaultFileOpenOptionsRPC, SetSuppressMessagesRPC, "
+        "ApplyNamedSelectionRPC, CreateNamedSelectionRPC, DeleteNamedSelectionRPC, LoadNamedSelectionRPC, "
+        "SaveNamedSelectionRPC, SetNamedSelectionAutoApplyRPC, UpdateNamedSelectionRPC, InitializeNamedSelectionVariablesRPC, "
+        "MenuQuitRPC, SetPlotDescriptionRPC, MovePlotOrderTowardFirstRPC, MovePlotOrderTowardLastRPC, "
+        "SetPlotOrderToFirstRPC, SetPlotOrderToLastRPC, RenamePickLabelRPC, GetQueryParametersRPC, "
+        "DDTConnectRPC, DDTFocusRPC, ReleaseToDDTRPC, PlotDDTVispointVariablesRPC, "
+        "ExportRPC, ExportHostProfileRPC, StartPlotAnimationRPC, StopPlotAnimationRPC, "
+        "ReadHostProfilesFromDirectoryRPC, SetRemoveDuplicateNodesRPC, MaxRPC";
     switch (atts->GetRPCType())
     {
       case ViewerRPC::CloseRPC:
@@ -262,6 +262,14 @@ PyViewerRPC_ToString(const ViewerRPC *atts, const char *prefix)
           break;
       case ViewerRPC::AddInitializedOperatorRPC:
           snprintf(tmpStr, 1000, "%sRPCType = %sAddInitializedOperatorRPC  # %s\n", prefix, prefix, RPCType_names);
+          str += tmpStr;
+          break;
+      case ViewerRPC::DeleteOperatorKeyframeRPC:
+          snprintf(tmpStr, 1000, "%sRPCType = %sDeleteOperatorKeyframeRPC  # %s\n", prefix, prefix, RPCType_names);
+          str += tmpStr;
+          break;
+      case ViewerRPC::MoveOperatorKeyframeRPC:
+          snprintf(tmpStr, 1000, "%sRPCType = %sMoveOperatorKeyframeRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::PromoteOperatorRPC:
@@ -1081,6 +1089,8 @@ PyViewerRPC_ToString(const ViewerRPC *atts, const char *prefix)
     str += tmpStr;
     snprintf(tmpStr, 1000, "%sintArg3 = %d\n", prefix, atts->GetIntArg3());
     str += tmpStr;
+    snprintf(tmpStr, 1000, "%sintArg4 = %d\n", prefix, atts->GetIntArg4());
+    str += tmpStr;
     snprintf(tmpStr, 1000, "%sstringArg1 = \"%s\"\n", prefix, atts->GetStringArg1().c_str());
     str += tmpStr;
     snprintf(tmpStr, 1000, "%sstringArg2 = \"%s\"\n", prefix, atts->GetStringArg2().c_str());
@@ -1138,11 +1148,11 @@ ViewerRPC_SetRPCType(PyObject *self, PyObject *args)
         return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
     }
 
-    if (cval < 0 || cval >= 210)
+    if (cval < 0 || cval >= 212)
     {
         std::stringstream ss;
         ss << "An invalid RPCType value was given." << std::endl;
-        ss << "Valid values are in the range [0,209]." << std::endl;
+        ss << "Valid values are in the range [0,211]." << std::endl;
         ss << "You can also use the following symbolic names:";
         ss << " CloseRPC";
         ss << ", DetachRPC";
@@ -1186,6 +1196,8 @@ ViewerRPC_SetRPCType(PyObject *self, PyObject *args)
         ss << ", ChangeActivePlotsVarRPC";
         ss << ", AddOperatorRPC";
         ss << ", AddInitializedOperatorRPC";
+        ss << ", DeleteOperatorKeyframeRPC";
+        ss << ", MoveOperatorKeyframeRPC";
         ss << ", PromoteOperatorRPC";
         ss << ", DemoteOperatorRPC";
         ss << ", RemoveOperatorRPC";
@@ -3013,6 +3025,66 @@ ViewerRPC_GetIntArg3(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
+ViewerRPC_SetIntArg4(PyObject *self, PyObject *args)
+{
+    ViewerRPCObject *obj = (ViewerRPCObject *)self;
+
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
+
+    // Set the intArg4 in the object.
+    obj->data->SetIntArg4(cval);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+ViewerRPC_GetIntArg4(PyObject *self, PyObject *args)
+{
+    ViewerRPCObject *obj = (ViewerRPCObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetIntArg4()));
+    return retval;
+}
+
+/*static*/ PyObject *
 ViewerRPC_SetStringArg1(PyObject *self, PyObject *args)
 {
     ViewerRPCObject *obj = (ViewerRPCObject *)self;
@@ -3254,6 +3326,8 @@ PyMethodDef PyViewerRPC_methods[VIEWERRPC_NMETH] = {
     {"GetIntArg2", ViewerRPC_GetIntArg2, METH_VARARGS},
     {"SetIntArg3", ViewerRPC_SetIntArg3, METH_VARARGS},
     {"GetIntArg3", ViewerRPC_GetIntArg3, METH_VARARGS},
+    {"SetIntArg4", ViewerRPC_SetIntArg4, METH_VARARGS},
+    {"GetIntArg4", ViewerRPC_GetIntArg4, METH_VARARGS},
     {"SetStringArg1", ViewerRPC_SetStringArg1, METH_VARARGS},
     {"GetStringArg1", ViewerRPC_GetStringArg1, METH_VARARGS},
     {"SetStringArg2", ViewerRPC_SetStringArg2, METH_VARARGS},
@@ -3369,6 +3443,10 @@ PyViewerRPC_getattr(PyObject *self, char *name)
         return PyInt_FromLong(long(ViewerRPC::AddOperatorRPC));
     if(strcmp(name, "AddInitializedOperatorRPC") == 0)
         return PyInt_FromLong(long(ViewerRPC::AddInitializedOperatorRPC));
+    if(strcmp(name, "DeleteOperatorKeyframeRPC") == 0)
+        return PyInt_FromLong(long(ViewerRPC::DeleteOperatorKeyframeRPC));
+    if(strcmp(name, "MoveOperatorKeyframeRPC") == 0)
+        return PyInt_FromLong(long(ViewerRPC::MoveOperatorKeyframeRPC));
     if(strcmp(name, "PromoteOperatorRPC") == 0)
         return PyInt_FromLong(long(ViewerRPC::PromoteOperatorRPC));
     if(strcmp(name, "DemoteOperatorRPC") == 0)
@@ -3760,6 +3838,8 @@ PyViewerRPC_getattr(PyObject *self, char *name)
         return ViewerRPC_GetIntArg2(self, NULL);
     if(strcmp(name, "intArg3") == 0)
         return ViewerRPC_GetIntArg3(self, NULL);
+    if(strcmp(name, "intArg4") == 0)
+        return ViewerRPC_GetIntArg4(self, NULL);
     if(strcmp(name, "stringArg1") == 0)
         return ViewerRPC_GetStringArg1(self, NULL);
     if(strcmp(name, "stringArg2") == 0)
@@ -3846,6 +3926,8 @@ PyViewerRPC_setattr(PyObject *self, char *name, PyObject *args)
         obj = ViewerRPC_SetIntArg2(self, args);
     else if(strcmp(name, "intArg3") == 0)
         obj = ViewerRPC_SetIntArg3(self, args);
+    else if(strcmp(name, "intArg4") == 0)
+        obj = ViewerRPC_SetIntArg4(self, args);
     else if(strcmp(name, "stringArg1") == 0)
         obj = ViewerRPC_SetStringArg1(self, args);
     else if(strcmp(name, "stringArg2") == 0)
@@ -3871,7 +3953,7 @@ static int
 ViewerRPC_print(PyObject *v, FILE *fp, int flags)
 {
     ViewerRPCObject *obj = (ViewerRPCObject *)v;
-    fprintf(fp, "%s", PyViewerRPC_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyViewerRPC_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -3879,7 +3961,7 @@ PyObject *
 ViewerRPC_str(PyObject *v)
 {
     ViewerRPCObject *obj = (ViewerRPCObject *)v;
-    return PyString_FromString(PyViewerRPC_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyViewerRPC_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -4031,7 +4113,7 @@ PyViewerRPC_GetLogString()
 {
     std::string s("ViewerRPC = ViewerRPC()\n");
     if(currentAtts != 0)
-        s += PyViewerRPC_ToString(currentAtts, "ViewerRPC.");
+        s += PyViewerRPC_ToString(currentAtts, "ViewerRPC.", true);
     return s;
 }
 
@@ -4044,7 +4126,7 @@ PyViewerRPC_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("ViewerRPC = ViewerRPC()\n");
-        s += PyViewerRPC_ToString(currentAtts, "ViewerRPC.");
+        s += PyViewerRPC_ToString(currentAtts, "ViewerRPC.", true);
         cb(s);
     }
 }

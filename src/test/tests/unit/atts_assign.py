@@ -17,10 +17,16 @@
 #    ValueError, so change expected results in those cases.
 #
 # ----------------------------------------------------------------------------
-import copy, io, sys
+import copy, io, numpy, sys
 
 # Some useful global variables
 X = [2,4,6]
+NumPy2Int = numpy.array([1,2])
+NumPy2Flt = numpy.array([1.1,2.2])
+NumPy3Int = numpy.array([1,2,3])
+NumPy3Flt = numpy.array([1.1,2.2,3.3])
+NumPy4Int = numpy.array([1,2,3,4])
+NumPy4Flt = numpy.array([1.1,2.2,3.3,4.4])
 Max32BitInt = 2147483647
 Max32BitInt1 = Max32BitInt+1
 MaxIntAs32BitFloat = 16777216
@@ -86,7 +92,7 @@ def TestAssignmentToTuple():
         pass
 
     # The above cases can't be put in a loop. Put remaining cases in a loop
-    fails = [(1,2), (1,2,3,4), '123', (1,1+2j,3), (1,X,3), (1,'b',3), (1,None,3)]
+    fails = [(1,2), (1,2,3,4), '123', (1,1+2j,3), (1,X,3), (1,'b',3), (1,None,3), NumPy2Flt, NumPy4Flt]
     for i in range(len(fails)):
         try:
             ca.point1 = fails[i]
@@ -116,7 +122,7 @@ def TestAssignmentToTuple():
         TestFOA('ca.point1=1,2,3', LINE())
         pass
 
-    works = [(1,2,3), (1.1,2.2,3.3), tuple(X)]
+    works = [(1,2,3), (1.1,2.2,3.3), tuple(X), NumPy3Int, NumPy3Flt]
     for i in range(len(works)):
         try:
             ca.point1 = works[i]
@@ -552,6 +558,7 @@ def TestAssignmentToUCharVector():
         except:
             TestFOA('mca.changedColors=%s'%repr2(works[i]), LINE()) 
 
+    works += [NumPy3Int] # NP arrays only work via deref operator
     for i in range(len(works)):
         try:
             mca.SetChangedColors(*works[i])
@@ -610,6 +617,7 @@ def TestAssignmentToIntVector():
         except:
             TestFOA('opa.index=%s'%repr2(works[i]), LINE()) 
 
+    works += [NumPy3Int] # NP Arrays work only via deref operator
     for i in range(len(works)):
         try:
             opa.SetIndex(*works[i])
@@ -661,6 +669,7 @@ def TestAssignmentToDoubleVector():
         except:
             TestFOA('ca.contourValue=%s'%repr2(works[i]), LINE()) 
 
+    works += [NumPy3Flt] # NP Arrays work only via deref operator
     for i in range(len(works)):
         try:
             ca.SetContourValue(*works[i])
@@ -838,7 +847,8 @@ def TestAssignmentToIntArray():
             TestFOA('ra.SetReflections(%s)'%repr2(fails[i]), LINE())
             pass
 
-    works = [(0,1,0,1,0,1,0,1), (-1,100,-1,100,-1,100,-1,100), (0,True,False,1,0,1,0,1), (0,1,Max32BitInt,1,0,1,0,1)]
+    NumPyArray = numpy.array([0,1,0,1,0,1,0,1])
+    works = [(0,1,0,1,0,1,0,1), (-1,100,-1,100,-1,100,-1,100), (0,True,False,1,0,1,0,1), (0,1,Max32BitInt,1,0,1,0,1), NumPyArray]
     for i in range(len(works)):
         try:
             ra.reflections = works[i]
@@ -902,7 +912,7 @@ def TestAssignmentToFloatArray():
             TestFOA('rra.SetCenter(%s)'%repr2(fails[i]), LINE())
             pass
 
-    works = [(1,2,3), (1.1,2.2,3.3), tuple(X), (1,True,3), (1,False,3), (1,Max32BitFloatA,3)]
+    works = [(1,2,3), (1.1,2.2,3.3), tuple(X), (1,True,3), (1,False,3), (1,Max32BitFloatA,3), NumPy3Flt]
     for i in range(len(works)):
         try:
             rra.center = works[i]
@@ -973,6 +983,8 @@ def TestAssignmentToDoubleArray():
         except:
             TestFOA('va.materialProperties=%s'%repr2(works[i]), LINE())
 
+    NumPyArray = numpy.array([1.1,2.2,3.3,4.4])
+    works += [NumPyArray]
     for i in range(len(works)):
         try:
             va.SetMaterialProperties(*works[i])
@@ -1047,18 +1059,46 @@ def TestColorAttributeStuff():
         TestFOA('cla.Getcolors(2)', LINE())
         pass
         
-def TestDirOutput(obj, minlen = 5, names = None):
-    TestSection('behavior of dir()')
+def TestDirOutput(obj, names):
     try:
         x = [f for f in dir(obj) if not (f.startswith('__') and f.endswith('__'))]
-        if minlen and len(x) < minlen:
-            TestFOA('dir(%s): minlen: %d < %d'%(repr(obj),len(x),minlen), LINE()) 
-        x  = [n for n in names if n in x]
-        if len(x) != len(names):
-            TestFOA('dir(%s): names: %s'%(repr(obj), names), LINE()) 
-        TestPOA('dir(%s)'%repr())
+        y = [n for n in names if n in x]
+        if len(y) != len(names):
+            raise Exception
+        x = repr(obj)
+        if x.startswith('<built-in'):
+            x = x.strip('<>').split()[2]
+        else:
+            x = x.strip('<>').split()[0]
+        TestPOA('dir(%s)'%x)
     except:
-        TestFOA('dir(%s)'%repr(obj), LINE()) 
+        TestFOA('dir(%s)'%x, LINE()) 
+
+#
+# Test that dir(x) appears to work
+#
+def TestDir(global_dir_result):
+    TestSection('behavior of dir()')
+
+    #
+    # Testing of global dir() behavior can't be done from within a func
+    #
+    global_dir_checks = ['AddPlot', 'DeleteAllPlots', 'Launch', 'GetMetaData']
+    y = [n for n in global_dir_checks if n in global_dir_result]
+    if len(y) != len(global_dir_checks):
+        TestFOA('dir()', LINE()) 
+    else:
+        TestPOA('dir()')
+
+    #
+    # Test a random handful of object level dirs
+    #
+    TestDirOutput(SILRestriction(), ['NumSets', 'TurnOnAll', 'Wholes'])
+    TestDirOutput(PseudocolorAttributes(), ['GetCentering', 'GetColorTableName',
+        'GetLightingFlag', 'GetLimitsMode', 'GetMax', 'SetCentering',
+        'SetColorTableName', 'SetLegendFlag', 'SetLimitsMode'])
+    TestDirOutput(ColorAttributeList(), ['AddColors', 'ClearColors', 'GetColors'])
+
 
 # Class to facilitate stdout redirect for testing `help()`
 class my_redirect_stdout(list):
@@ -1074,59 +1114,79 @@ class my_redirect_stdout(list):
 # Below import works only for Python > 3.4
 # So, we use the class def above
 # from contextlib import redirect_stdout
-def TestHelpOutput(thing, minlen = 200, words = None):
-    TestSection('behavior of help()')
+def TestHelpOutput(thing, words = None):
     try:
         with my_redirect_stdout() as output:
             help(thing)
-        if minlen and len(str(output)) < minlen:
-            TestFOA('dir(%s): minlen: %d < %d'%(repr(thing),len(output),minlen), LINE()) 
         x  = [w for w in words if w in str(output)]
         if len(x) != len(words):
-            TestFOA('dir(%s): words: %s'%(repr(thing), words), LINE()) 
+            raise Exception
+        x = repr(thing)
+        if x.startswith('<built-in'):
+            x = x.strip('<>').split()[2]
+        else:
+            x = x.strip('<>').split()[0]
+        TestPOA('help(%s)'%x)
     except:
-        TestFOA('help(%s)'%repr(thing), LINE()) 
-    
+        TestFOA('help(%s)'%x, LINE()) 
+
+def TestHelp():    
+    TestSection('behavior of help()')
+
+    TestHelpOutput(AddPlot, ['plotType', 'variableName', 'inheritSIL'])
+    TestHelpOutput(CreateDatabaseCorrelation,
+        ['IndexForIndexCorrelation', 'CycleCorrelation', 'StretchedIndexCorrelation'])
+    TestHelpOutput(SILRestriction(),[]) # should not except
+    TestHelpOutput(SILRestriction, ['GlobalAttributes', 'SetPlotSILRestriction',
+        'TurnDomainsOff', 'TurnDomainsOn', 'TurnMaterialsOff', 'TurnMaterialsOn'])
+    TestHelpOutput('wholes', ['SILRestriction'])
+    TestHelpOutput('tensor', ['DefineArrayExpression', 'DefineTensorExpression',
+        'LCSAttributes', 'SPHResampleAttributes', 'TensorAttributes'])
+
+#
 # Scalar assignments
+#
 # TestAssignmentToUChar() No instances in any .xml files
 TestAssignmentToBool()
 TestAssignmentToInt()
 TestAssignmentToFloat()
 TestAssignmentToDouble()
 TestAssignmentToString()
-
 TestAssignmentToGlyphType()
 TestAssignmentToEnum()
-
 TestAssignmentToTuple()
 
+#
 # Vector assignments
+#
 TestAssignmentToUCharVector()
 #TestAssignmentToBoolVector() No instances in any .xml files
 TestAssignmentToIntVector()
 #TestAssignmentToFloatVector() No instances in any .xml files
 TestAssignmentToDoubleVector()
 
+#
 # Array assignments
+#
 TestAssignmentToUCharArray()
 #TestAssignmentToBoolArray() No instances in any .xml files
 TestAssignmentToIntArray()
 TestAssignmentToFloatArray()
 TestAssignmentToDoubleArray()
 
+#
 # Attribute Assignments
+#
 TestColorAttributeStuff()
 
+#
+# Dir behavior
+#
+TestDir(dir())
 
-
-# Test that dir(x) appears to work
-#TestDirOutput(SILRestriction(), None, ['NumSets', 'TurnOnAll', 'Wholes', 'TopSets'])
-#TestDirOutput(PseudocolorAttributes(), 50)
-#TestDirOutput(ColorAttributeList(), None, ['AddColors', 'ClearColors', 'GetColors'])
-
-# Test Help
-#TestHelpOutput(AddPlot, None, ['plotType', 'variableName', 'inheritSIL'])
-#TestHelpOutput(CreateDatabaseCorrelation, None,
-#    ['IndexForIndexCorrelation', 'CycleCorrelation', 'StretchedIndexCorrelation'])
+#
+# Help() behavior
+#
+TestHelp()
     
 Exit()

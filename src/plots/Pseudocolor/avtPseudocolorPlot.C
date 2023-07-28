@@ -23,7 +23,10 @@
 #include <avtVertexExtractor.h>
 
 #include <DebugStream.h>
+#include <ImproperUseException.h>
 #include <InvalidLimitsException.h>
+
+#include <float.h>
 
 #include <string>
 #include <vector>
@@ -1217,6 +1220,13 @@ avtPseudocolorPlot::SetOpacityFromAtts()
 //    Kathleen Biagas, Tue Nov  5 11:42:38 PST 2019
 //    Remove glyphMapper.
 //
+//    Eric Brugger, Wed Mar  8 16:50:08 PST 2023
+//    Modified the range limits text to use the current variable limits
+//    if OriginalData is not set.
+//
+//    Eric Brugger, Thu Jul  6 13:31:48 PDT 2023
+//    Throw an improper use exception if the variable range was never set.
+//
 // ****************************************************************************
 
 void
@@ -1249,8 +1259,21 @@ avtPseudocolorPlot::SetLegendRanges()
     //
     // set and get the range for the legend's limits text
     //
-    mapper->GetVarRange(min, max);
+    if (atts.GetLimitsMode() == PseudocolorAttributes::OriginalData)
+        mapper->GetVarRange(min, max);
+    else
+        mapper->GetCurrentVarRange(min, max);
     varLegend->SetVarRange(min, max);
+
+    //
+    // Check if the limits were ever set. This would only happen if there
+    // was no data or the entire mesh was ghost data.
+    //
+    if (min == DBL_MAX && max == -DBL_MAX)
+    {
+        EXCEPTION1(ImproperUseException,
+            "The entire mesh consists of ghost zones.");
+    }
 
     varLegend->UseBelowRangeColor(atts.GetUseBelowMinColor());
     varLegend->UseAboveRangeColor(atts.GetUseAboveMaxColor());

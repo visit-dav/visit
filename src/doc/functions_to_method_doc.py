@@ -1,7 +1,9 @@
-#!/usr/bin/env python
+#! /usr/bin/env ./functions_to_method_doc.wrapper
 
-import sys
 import argparse
+import re
+import sys
+import textwrap
 
 parser=argparse.ArgumentParser(
     description='''Auto-generate MethodDoc.C and MethodDoc.h.''')
@@ -126,6 +128,31 @@ class DescriptionContainer(Container):
         self.title = 'Description:'
         Container.__init__(self)
 
+    def __str__(self):
+        if self.last:
+            self.text = self.text[0:-1]
+        output  = '"' + self.title + r'\n' + '"\n'
+        output += '"' + r'\n' + '"\n'
+
+        # remove sphinx formatting
+        for i in range(len(self.text)):
+            self.text[i] = self.text[i].replace('``','') # code typeface
+            self.text[i] = self.text[i].replace('**','') # bold typeface
+            self.text[i] = re.sub(r'(\s)\*(\w*)\*', r'\1\2', self.text[i]) # italic typeface
+            self.text[i] = re.sub(r'(:ref:)?`(.*) <.*>`_{0,2}', r'\2', self.text[i]) # links
+            self.text[i] = self.text[i].replace('VisIt_','VisIt') # VisIt_ link
+
+        # line wrap the output
+        for line in textwrap.wrap(' '.join(self.text)):
+            output += '"' + line + r'\n' + '"\n'
+
+        if self.last:
+            output += ';\n'
+        else:
+            output += '"' + r'\n' + '"\n'
+            output += '"' + r'\n' + '"\n'
+        return output
+
 
 class ExampleContainer(Container): 
     def __init__(self):
@@ -152,12 +179,14 @@ def insert_backslash(text):
 
 def split_colon_add_spaces(line):
     colon_index = line.find(':')
-    if colon_index > -1:
-        output = line[:colon_index-1]
+    indent = line[:4].count(' ')
+    if indent == 4:
+        output = '    ' + line
+    elif colon_index > -1:
+        output = line
     else:
         output = '    ' + line
     return output
-
 
 def write_state(writer, state_dict):
     if state_dict['synopsis']:
@@ -193,8 +222,8 @@ if __name__ == '__main__':
         c_output_name  = top_level + '/src/visitpy/common/MethodDoc.C'
 
     func_file   = open(func_file_name, 'r')
-    h_output    = open(h_output_name,'w')
-    c_output    = open(c_output_name,'w')
+    h_output    = open(h_output_name,'w',newline='')
+    c_output    = open(c_output_name,'w',newline='')
     
     h_output.write(copyright)
     h_output.write(note)

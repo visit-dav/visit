@@ -66,13 +66,6 @@ function bv_szip_ensure
     fi
 }
 
-function bv_szip_dry_run
-{
-    if [[ "$DO_SZIP" == "yes" ]] ; then
-        echo "Dry run option not set for szip."
-    fi
-}
-
 # *************************************************************************** #
 #                          Function 8.0, build_szip                           #
 # *************************************************************************** #
@@ -102,9 +95,12 @@ function build_szip
     fi
 
     extra_ac_flags=""
-    # detect coral systems, which older versions of autoconf don't detect
+    # detect coral and NVIDIA Grace CPU (ARM) systems, which older versions of 
+    # autoconf don't detect
     if [[ "$(uname -m)" == "ppc64le" ]] ; then
          extra_ac_flags="ac_cv_build=powerpc64le-unknown-linux-gnu"
+    elif [[ "$(uname -m)" == "aarch64" ]] ; then
+         extra_ac_flags="ac_cv_build=aarch64-unknown-linux-gnu"
     fi
 
     set -x

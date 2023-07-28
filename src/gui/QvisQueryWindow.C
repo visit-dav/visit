@@ -321,7 +321,7 @@ QvisQueryWindow::CreateStandardQueryWidget()
     vbLayout->addWidget(varsLineEdit);
 
     QGridLayout *sLayout = new QGridLayout();
-    sLayout->setMargin(0);
+    sLayout->setContentsMargins(0,0,0,0);
     gLayout->addLayout(sLayout);
 
     for(int i = 0; i < 6; ++i)
@@ -977,7 +977,6 @@ QvisQueryWindow::UpdateArgumentPanel(const QString &qname)
     {
         bool showWidgets[6] = {false, false, false, false, false, false};
         bool showDataOptions = false;
-        bool showDumpOptions = false;
         bool showGlobal = false;
         bool showDumpIndex = false;
         bool showDumpCoordinates = false;
@@ -1813,6 +1812,9 @@ QvisQueryWindow::GetFloatingPointNumber(int index, double *num)
 //   Cyrus Harrison, Tue Jun 24 16:21:00 PDT 2008
 //   When spitting to create the vars list, discard empty parts.
 //
+//   Kathleen Biagas, Tue Apr 11, 2023
+//   QString::SkipEmptyParts => Qt::SkipEmptyParts for Qt >= 6.
+//
 // ****************************************************************************
 
 bool
@@ -1823,7 +1825,11 @@ QvisQueryWindow::GetVars(stringVector &vars)
     QString temp(varsLineEdit->displayText().trimmed());
 
     // Split the variable list using the spaces.
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     QStringList sList = temp.split(" ",QString::SkipEmptyParts);
+#else
+    QStringList sList = temp.split(" ",Qt::SkipEmptyParts);
+#endif
 
     QStringList::Iterator it;
 

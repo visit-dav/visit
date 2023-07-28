@@ -22,7 +22,7 @@ PyObject *     PyMoleculeAttributes_Wrap(const MoleculeAttributes *attr);
 void           PyMoleculeAttributes_SetParent(PyObject *obj, PyObject *parent);
 void           PyMoleculeAttributes_SetDefaults(const MoleculeAttributes *atts);
 std::string    PyMoleculeAttributes_GetLogString();
-std::string    PyMoleculeAttributes_ToString(const MoleculeAttributes *, const char *);
+std::string    PyMoleculeAttributes_ToString(const MoleculeAttributes *, const char *, const bool=false);
 PyObject *     PyMoleculeAttributes_getattr(PyObject *self, char *name);
 int            PyMoleculeAttributes_setattr(PyObject *self, char *name, PyObject *args);
 extern PyMethodDef PyMoleculeAttributes_methods[MOLECULEATTRIBUTES_NMETH];

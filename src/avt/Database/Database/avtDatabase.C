@@ -781,6 +781,9 @@ avtDatabase::GetOutput(const char *var, int ts)
 //    Changed 'for loop' to speed up the action. No need to test all if once
 //    any are true we are going to invalidate the zones.
 //
+//    Brad Whitlock, Fri Jun 16 14:43:44 PDT 2023
+//    Make invalidating nodes/zones for data selections conditional.
+//
 // ****************************************************************************
 
 void
@@ -797,6 +800,7 @@ avtDatabase::PopulateDataObjectInformation(avtDataObject_p &dob,
     avtDataValidity   &validity = dob->GetInfo().GetValidity();
 
     avtDatabaseMetaData *md = GetMetaData(ts);
+    atts.SetCommentInDB(md->GetDatabaseComment());
     atts.SetDynamicDomainDecomposition(md->GetFormatCanDoDomainDecomposition());
     string mesh = md->MeshForVar(var);
     const avtMeshMetaData *mmd = md->GetMesh(mesh);
@@ -834,12 +838,15 @@ avtDatabase::PopulateDataObjectInformation(avtDataObject_p &dob,
         {
             if (selectionsApplied[i])
             {
+                const auto selection = spec->GetDataSelection(i);
+
                 // We need to set these as invalid, or else caching could
                 // kick in and we might end up using acceleration structures
                 // across pipeline executions that were no longer valid.
-                validity.InvalidateZones();
-                validity.InvalidateNodes();
-                break;
+                if(selection->InvalidatesZones())
+                    validity.InvalidateZones();
+                if(selection->InvalidatesNodes())
+                    validity.InvalidateNodes();
             }
         }
         if (mmd->zonesWereSplit)
@@ -2386,6 +2393,10 @@ avtDatabase::NumStagesForFetch(avtDataRequest_p)
 //    Eric Brugger, Fri May  1 12:39:32 PDT 2020
 //    Added logic to skip lines that start with !TIME and !ENSEMBLE.
 //
+//    Kathleen Biagas, Thu Oct 27 11:45:24 PDT 2022
+//    Removed badCount, it prevented .visit files from having comments
+//    associated with each file when fileCount >= 10000.
+//
 // ****************************************************************************
 
 bool
@@ -2411,11 +2422,10 @@ avtDatabase::GetFileListFromTextFile(const char *textfile,
     char  str_auto[1024];
     char  str_with_dir[2048];
     int   goodCount = 0; // number of valid lines, keywords and files
-    int   badCount = 0; // number of empty and comment lines
     int   fileCount = 0; // number of non empty, non comment, non keyword, lines
     int   bang_nBlocks = -1;
     bool failed = false;
-    while (!ifile.eof() && !failed && badCount < 10000)
+    while (!ifile.eof() && !failed)
     {
         str_auto[0] = '\0';
         ifile.getline(str_auto, 1024, '\n');
@@ -2498,8 +2508,6 @@ avtDatabase::GetFileListFromTextFile(const char *textfile,
             if (str_auto[0] != '!')
                 ++fileCount;
         }
-        else
-            ++badCount;
     }
 
     if (bang_nBlocks > 0 && !failed)

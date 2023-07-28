@@ -49,7 +49,6 @@
 #include "conduit_blueprint_mpi.hpp"
 #endif
 
-#include "avtBlueprintDataAdaptor.h"
 #include "avtBlueprintLogging.h"
 
 using     std::string;
@@ -182,6 +181,9 @@ blueprint_writer_plugin_error_handler(const std::string &msg,
 //
 //  Chris Laganella Wed Dec 15 17:57:09 EST 2021
 //  Add conditional compilation based on flatten/partition support
+// 
+//    Justin Privitera, Tue Aug 23 14:40:24 PDT 2022
+//    Removed `CONDUIT_HAVE_PARTITION_FLATTEN` check.
 //
 // ****************************************************************************
 
@@ -192,7 +194,6 @@ avtBlueprintWriter::avtBlueprintWriter(DBOptionsAttributes *options) :m_stem(),
 
     m_op = BP_MESH_OP_NONE;
 
-#if CONDUIT_HAVE_PARTITION_FLATTEN == 1
     if(options)
     {
         int op_val = options->GetEnum("Operation");
@@ -224,7 +225,6 @@ avtBlueprintWriter::avtBlueprintWriter(DBOptionsAttributes *options) :m_stem(),
             }
         }
     }
-#endif
 
     conduit::utils::set_info_handler(blueprint_writer_plugin_info_handler);
     conduit::utils::set_warning_handler(blueprint_writer_plugin_warning_handler);
@@ -373,9 +373,11 @@ avtBlueprintWriter::WriteChunk(vtkDataSet *ds, int chunk)
 //
 //  Brad Whitlock, Fri Apr  1 13:41:32 PDT 2022
 //  Removed /c0 since Conduit scalars are no longer mcarrays.
+// 
+//    Justin Privitera, Tue Aug 23 14:40:24 PDT 2022
+//    Removed `CONDUIT_HAVE_PARTITION_FLATTEN` check.
 //
 // ****************************************************************************
-#if CONDUIT_HAVE_PARTITION_FLATTEN == 1
 static void
 BuildSelections(Node &domains,
                                     Node &selections)
@@ -432,7 +434,6 @@ BuildSelections(Node &domains,
     }
     BP_PLUGIN_INFO("Done building selections." << selections.schema().to_json());
 }
-#endif
 
 // ****************************************************************************
 //  Method: avtBlueprintWriter::ChunkToBpMesh
@@ -446,6 +447,8 @@ BuildSelections(Node &domains,
 //  This code originated in OpenFile()
 //
 //  Modifications:
+//     Justin Privitera, Wed Aug 24 11:08:51 PDT 2022
+//     Call vtk to bp from the avt conduit bp data adaptor.
 //
 // ****************************************************************************
 void
@@ -471,7 +474,7 @@ avtBlueprintWriter::ChunkToBpMesh(vtkDataSet *ds, int chunk, int ndims,
         mesh["state/time"] = m_time;
     }
 
-    avtBlueprintDataAdaptor::BP::VTKToBlueprint(mesh, ds, ndims);
+    avtConduitBlueprintDataAdaptor::VTKToBlueprint::VTKToBlueprintMesh(mesh, ds, ndims);
 
     Node verify_info;
     if(!blueprint::mesh::verify(mesh,verify_info))
@@ -532,6 +535,10 @@ avtBlueprintWriter::CreateOutputDir()
 //
 //  Mark C. Miller, Thu May  7 15:04:11 PDT 2020
 //  Add expressions output
+// 
+//  Justin Privitera, Wed Apr 27 22:56:31 PDT 2022
+//  Removed expressions output.
+// 
 // ****************************************************************************
 void
 avtBlueprintWriter::GenRootNode(conduit::Node &mesh,
@@ -567,36 +574,6 @@ avtBlueprintWriter::GenRootNode(conduit::Node &mesh,
                                     "",
                                     m_nblocks,
                                     bp_idx["mesh"]);
-
-    // handle expressions 
-    for (int i = 0; i < exprList.GetNumExpressions(); i++)
-    {
-        Expression const expr = exprList.GetExpressions(i);
-
-        if (expr.GetFromOperator()) continue;
-        if (expr.GetAutoExpression()) continue;
-        if (expr.GetHidden()) continue;
-
-        std::string ename = expr.GetName();
-        // Replace any slash chars in expr name with underscores.
-        // If we don't, Conduit interprets slash chars as new nodes.
-        for (std::string::size_type j = 0; j < ename.size(); j++)
-            if (ename[j] == '/') ename[j] = '_';
-        std::string expr_path = "mesh/expressions/" + ename;
-        bp_idx[expr_path + "/topology"] = "topo";
-        int ncomps = 1;
-        switch (expr.GetType())
-        {
-            case Expression::CurveMeshVar:  ncomps = 1;    break;
-            case Expression::ScalarMeshVar: ncomps = 1;   break;
-            case Expression::VectorMeshVar: ncomps = ndims;   break;
-            case Expression::SymmetricTensorMeshVar: ncomps = (ndims == 2 ? 3 : 6);   break;
-            case Expression::TensorMeshVar: ncomps = ndims * ndims;   break;
-            default: break;
-        }
-        bp_idx[expr_path + "/number_of_components"] = ncomps;
-        bp_idx[expr_path + "/definition"] = expr.GetDefinition();
-    }
 
     // work around conduit bug
     if(mesh.has_path("state/cycle"))
@@ -670,6 +647,10 @@ avtBlueprintWriter::WriteMeshDomain(Node &mesh, int domain_id)
 //  Added BuildSelections call and surrounding logic
 //
 //  Chris Laganella Wed Dec 15 18:01:21 EST 2021
+// 
+//    Justin Privitera, Tue Aug 23 14:40:24 PDT 2022
+//    Removed `CONDUIT_HAVE_PARTITION_FLATTEN` check.
+//
 // ****************************************************************************
 void
 avtBlueprintWriter::CloseFile(void)
@@ -678,7 +659,6 @@ avtBlueprintWriter::CloseFile(void)
     BP_PLUGIN_INFO("I'm rank " << writeContext.Rank() << " and I called CloseFile().");
 #endif
 
-#if CONDUIT_HAVE_PARTITION_FLATTEN == 1
     if(m_op == BP_MESH_OP_FLATTEN_CSV || m_op == BP_MESH_OP_FLATTEN_HDF5)
     {
         debug5 << "Flatten options:\n" << m_options.to_string() << std::endl;
@@ -769,7 +749,6 @@ avtBlueprintWriter::CloseFile(void)
             }
         }
     }
-#endif
 }
 
 // ****************************************************************************

@@ -10,6 +10,8 @@
 def setup(app):
     if hasattr(app, 'add_css_file'):
         app.add_css_file('custom.css')
+    elif hasattr(app, 'add_stylesheet'):
+        app.add_stylesheet('custom.css')
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -35,7 +37,8 @@ release = '3.2.2'
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-extensions = ['sphinx.ext.mathjax']
+extensions = ['sphinx.ext.mathjax',
+              'sphinx_tabs.tabs']
 
 # Force installation of any special stuff in the RTD virtual machine instance
 # needed to support any custom extensions.
@@ -43,6 +46,7 @@ if os.environ.get('READTHEDOCS'):
     from subprocess import call
     call(['pip', 'install', 'sphinx-notfound-page'])
     extensions.append('notfound.extension')
+
 
 # The suffix(es) of source filenames.
 # You can specify multiple suffix as a list of string:
@@ -79,6 +83,8 @@ rst_epilog = """
 .. |*nix| replace:: Centos, Debian, Fedora, Redhat, TOSS, Ubuntu
 .. |fs*nix| replace:: Redhat, TOSS, Ubuntu
 .. |ps*nix| replace:: Centos, Debian, Fedora
+.. role:: vundl
+    :class: vundl
 """
 
 # Add any paths that contain templates here, relative to this directory.
@@ -104,6 +110,11 @@ if not os.environ.get('READTHEDOCS'):
         version
     except:
         version = "local_build"
+else:
+    try:
+        version
+    except:
+        version = "rtd_build"
 
 htmlhelp_basename = 'VisItUserManualdoc'
 

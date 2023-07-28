@@ -38,8 +38,8 @@ class     vtkDataArray;
 //    Hank Childs, Tue Feb 24 17:33:45 PST 2004
 //    Account for multiple variables.
 //
-//    Kathleen Bonnell, Thu Mar 11 10:14:20 PST 2004 
-//    Removed GetDataMagnitudeExtents, now handled correctly by GetDataExtents. 
+//    Kathleen Bonnell, Thu Mar 11 10:14:20 PST 2004
+//    Removed GetDataMagnitudeExtents, now handled correctly by GetDataExtents.
 //
 //    Hank Childs, Mon Jan  9 09:54:53 PST 2006
 //    Added new form of GetSpatialExtents.
@@ -63,11 +63,18 @@ class     vtkDataArray;
 //    Kathleen Biagas, Wed Nov 18 2020
 //    Replace VISIT_LONG_LONG with long long.
 //
+//    Kathleen Biagas, Tue Apr 5, 2022
+//    Added GetTopologicalDim methods (2).
+//
+//    Kathleen Biagas, Wed Aug 17, 2022
+//    Incorporate ARSanderson's OSPRAY 2.8.0 work for VTK 9, add HasData.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDatasetExaminer
 {
   public:
+    static bool               HasData(avtDataset_p &);
     static long long    GetNumberOfNodes(avtDataset_p &, bool=false);
     static long long    GetNumberOfZones(avtDataset_p &, bool = false);
     static void               GetNumberOfZones(avtDataset_p&, long long&,
@@ -76,7 +83,7 @@ class PIPELINE_API avtDatasetExaminer
                                                long long&, bool=false);
     static void               GetVariableList(avtDataset_p &, VarList &);
     static bool               GetSpatialExtents(avtDataset_p &, double *);
-    static bool               GetSpatialExtents(std::vector<avtDataTree_p> &, 
+    static bool               GetSpatialExtents(std::vector<avtDataTree_p> &,
                                                 double *);
     static bool               GetDataExtents(avtDataset_p &, double *,
                                              const char * = NULL,
@@ -88,10 +95,12 @@ class PIPELINE_API avtDatasetExaminer
     static vtkDataArray      *GetArray(avtDataset_p &, const char *, int,
                                        avtCentering &);
     static avtCentering       GetVariableCentering(avtDataset_p&, const char*);
-    static bool               CalculateHistogram(avtDataset_p&, 
+    static bool               CalculateHistogram(avtDataset_p&,
                                                  const std::string &var,
                                                  double min, double max,
                                                  std::vector<long long> &);
+    static int               GetTopologicalDim(avtDataset_p &);
+    static int               GetTopologicalDim(avtDataTree_p &, const int);
 };
 
 

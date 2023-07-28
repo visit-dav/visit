@@ -22,7 +22,7 @@ PyObject *     PySurfaceAttributes_Wrap(const SurfaceAttributes *attr);
 void           PySurfaceAttributes_SetParent(PyObject *obj, PyObject *parent);
 void           PySurfaceAttributes_SetDefaults(const SurfaceAttributes *atts);
 std::string    PySurfaceAttributes_GetLogString();
-std::string    PySurfaceAttributes_ToString(const SurfaceAttributes *, const char *);
+std::string    PySurfaceAttributes_ToString(const SurfaceAttributes *, const char *, const bool=false);
 PyObject *     PySurfaceAttributes_getattr(PyObject *self, char *name);
 int            PySurfaceAttributes_setattr(PyObject *self, char *name, PyObject *args);
 extern PyMethodDef PySurfaceAttributes_methods[SURFACEATTRIBUTES_NMETH];

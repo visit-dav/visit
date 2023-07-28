@@ -9,6 +9,7 @@
 
 #include <QHash>
 #include <QTextCharFormat>
+#include <QRegularExpression>
 
 class QTextDocument;
 
@@ -24,13 +25,12 @@ protected:
 
 private:
     void setupRules();
-    bool checkOpen(const QRegExp &regx,const QString &text,bool open);
-    bool checkClosed(const QRegExp &regx,const QString &text);
+    bool checkOpen(const QRegularExpression &regx,const QString &text,bool open);
 
     struct HighlightingRule
     {
-        QRegExp         pattern;
-        QTextCharFormat format;
+        QRegularExpression  pattern;
+        QTextCharFormat     format;
     };
 
     QVector<HighlightingRule> rules;
@@ -39,8 +39,8 @@ private:
     QMap<QString,QStringList>     patterns;
     QStringList                   order;
     
-    QRegExp                       tripleSingleQuote;
-    QRegExp                       tripleDoubleQuote;
+    QRegularExpression            tripleSingleQuote;
+    QRegularExpression            tripleDoubleQuote;
 
 };
 

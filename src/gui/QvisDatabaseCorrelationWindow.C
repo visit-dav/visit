@@ -101,7 +101,7 @@ QvisDatabaseCorrelationWindow::CreateWidgets(
     setCentralWidget(central);
 
     QVBoxLayout *topLayout = new QVBoxLayout(central);
-    topLayout->setMargin(10);
+    topLayout->setContentsMargins(10,10,10,10);
     topLayout->setSpacing(5);
 
     // Create the name line edit.

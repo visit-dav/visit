@@ -45,7 +45,7 @@ struct AnnotationAttributesObject
 //
 static PyObject *NewAnnotationAttributes(int);
 std::string
-PyAnnotationAttributes_ToString(const AnnotationAttributes *atts, const char *prefix)
+PyAnnotationAttributes_ToString(const AnnotationAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -53,12 +53,12 @@ PyAnnotationAttributes_ToString(const AnnotationAttributes *atts, const char *pr
     { // new scope
         std::string objPrefix(prefix);
         objPrefix += "axes2D.";
-        str += PyAxes2D_ToString(&atts->GetAxes2D(), objPrefix.c_str());
+        str += PyAxes2D_ToString(&atts->GetAxes2D(), objPrefix.c_str(), forLogging);
     }
     { // new scope
         std::string objPrefix(prefix);
         objPrefix += "axes3D.";
-        str += PyAxes3D_ToString(&atts->GetAxes3D(), objPrefix.c_str());
+        str += PyAxes3D_ToString(&atts->GetAxes3D(), objPrefix.c_str(), forLogging);
     }
     if(atts->GetUserInfoFlag())
         snprintf(tmpStr, 1000, "%suserInfoFlag = 1\n", prefix);
@@ -68,7 +68,7 @@ PyAnnotationAttributes_ToString(const AnnotationAttributes *atts, const char *pr
     { // new scope
         std::string objPrefix(prefix);
         objPrefix += "userInfoFont.";
-        str += PyFontAttributes_ToString(&atts->GetUserInfoFont(), objPrefix.c_str());
+        str += PyFontAttributes_ToString(&atts->GetUserInfoFont(), objPrefix.c_str(), forLogging);
     }
     if(atts->GetDatabaseInfoFlag())
         snprintf(tmpStr, 1000, "%sdatabaseInfoFlag = 1\n", prefix);
@@ -83,7 +83,7 @@ PyAnnotationAttributes_ToString(const AnnotationAttributes *atts, const char *pr
     { // new scope
         std::string objPrefix(prefix);
         objPrefix += "databaseInfoFont.";
-        str += PyFontAttributes_ToString(&atts->GetDatabaseInfoFont(), objPrefix.c_str());
+        str += PyFontAttributes_ToString(&atts->GetDatabaseInfoFont(), objPrefix.c_str(), forLogging);
     }
     const char *databaseInfoExpansionMode_names = "File, Directory, Full, Smart, SmartDirectory";
     switch (atts->GetDatabaseInfoExpansionMode())
@@ -192,7 +192,7 @@ PyAnnotationAttributes_ToString(const AnnotationAttributes *atts, const char *pr
     { // new scope
         std::string objPrefix(prefix);
         objPrefix += "axesArray.";
-        str += PyAxesArray_ToString(&atts->GetAxesArray(), objPrefix.c_str());
+        str += PyAxesArray_ToString(&atts->GetAxesArray(), objPrefix.c_str(), forLogging);
     }
     return str;
 }
@@ -1637,7 +1637,7 @@ static int
 AnnotationAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     AnnotationAttributesObject *obj = (AnnotationAttributesObject *)v;
-    fprintf(fp, "%s", PyAnnotationAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyAnnotationAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -1645,7 +1645,7 @@ PyObject *
 AnnotationAttributes_str(PyObject *v)
 {
     AnnotationAttributesObject *obj = (AnnotationAttributesObject *)v;
-    return PyString_FromString(PyAnnotationAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyAnnotationAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -1797,7 +1797,7 @@ PyAnnotationAttributes_GetLogString()
 {
     std::string s("AnnotationAtts = AnnotationAttributes()\n");
     if(currentAtts != 0)
-        s += PyAnnotationAttributes_ToString(currentAtts, "AnnotationAtts.");
+        s += PyAnnotationAttributes_ToString(currentAtts, "AnnotationAtts.", true);
     return s;
 }
 
@@ -1810,7 +1810,7 @@ PyAnnotationAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("AnnotationAtts = AnnotationAttributes()\n");
-        s += PyAnnotationAttributes_ToString(currentAtts, "AnnotationAtts.");
+        s += PyAnnotationAttributes_ToString(currentAtts, "AnnotationAtts.", true);
         cb(s);
     }
 }

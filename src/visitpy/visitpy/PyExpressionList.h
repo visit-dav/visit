@@ -23,7 +23,7 @@ VISITPY_API PyObject *     PyExpressionList_Wrap(const ExpressionList *attr);
 void VISITPY_API           PyExpressionList_SetParent(PyObject *obj, PyObject *parent);
 void VISITPY_API           PyExpressionList_SetDefaults(const ExpressionList *atts);
 std::string VISITPY_API    PyExpressionList_GetLogString();
-std::string VISITPY_API    PyExpressionList_ToString(const ExpressionList *, const char *);
+std::string VISITPY_API    PyExpressionList_ToString(const ExpressionList *, const char *, const bool=false);
 VISITPY_API PyObject *     PyExpressionList_getattr(PyObject *self, char *name);
 int VISITPY_API            PyExpressionList_setattr(PyObject *self, char *name, PyObject *args);
 VISITPY_API extern PyMethodDef PyExpressionList_methods[EXPRESSIONLIST_NMETH];

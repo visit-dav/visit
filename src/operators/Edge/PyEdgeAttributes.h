@@ -22,7 +22,7 @@ PyObject *     PyEdgeAttributes_Wrap(const EdgeAttributes *attr);
 void           PyEdgeAttributes_SetParent(PyObject *obj, PyObject *parent);
 void           PyEdgeAttributes_SetDefaults(const EdgeAttributes *atts);
 std::string    PyEdgeAttributes_GetLogString();
-std::string    PyEdgeAttributes_ToString(const EdgeAttributes *, const char *);
+std::string    PyEdgeAttributes_ToString(const EdgeAttributes *, const char *, const bool=false);
 PyObject *     PyEdgeAttributes_getattr(PyObject *self, char *name);
 int            PyEdgeAttributes_setattr(PyObject *self, char *name, PyObject *args);
 extern PyMethodDef PyEdgeAttributes_methods[EDGEATTRIBUTES_NMETH];

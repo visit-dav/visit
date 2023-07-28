@@ -21,6 +21,9 @@
 #include <QTextEdit>
 #include <QMenu>
 #include <QPushButton>
+#include <QRegularExpression>
+#include <QRegularExpressionMatch>
+#include <QRegularExpressionMatchIterator>
 #include <QSplitter>
 
 #include <QNarrowLineEdit.h>
@@ -175,6 +178,9 @@
 //    Justin Privitera, Wed Mar 30 12:50:59 PDT 2022
 //    Added "ghost_zoneid" expression under mesh submenu.
 //
+//    Kathleen Biagas, Wed Jun 15 2022
+//    Added crack_width to misc submenu.
+//
 // ****************************************************************************
 
 struct ExprNameList
@@ -269,6 +275,7 @@ const char *expr_trig[] = {
     "acos",
     "asin",
     "atan",
+    "atan2",
     "cos",
     "cosh",
     "deg2rad",
@@ -367,6 +374,7 @@ const char *expr_misc[] = {
     "bin",
     "cell_constant",
     "conn_components",
+    "crack_width",
     "curve_domain",
     "curve_integrate",
     "curve_swapxy",
@@ -688,7 +696,7 @@ QvisExpressionsWindow::CreateStandardEditor()
     stdEditorWidget = new QWidget();
 
     QGridLayout *layout = new QGridLayout(stdEditorWidget);
-    layout->setMargin(5);
+    layout->setContentsMargins(5,5,5,5);
     int row = 0;
 
     stdDefinitionEditLabel = new QLabel(tr("Definition"), stdEditorWidget);
@@ -752,7 +760,7 @@ QvisExpressionsWindow::CreatePythonFilterEditor()
     pyEditorWidget = new QWidget();
 
     QGridLayout *layout = new QGridLayout(pyEditorWidget);
-    layout->setMargin(5);
+    layout->setContentsMargins(5,5,5,5);
     int row = 0;
 
     pyArgsEditLabel = new QLabel(tr("Arguments"), pyEditorWidget);
@@ -1508,6 +1516,9 @@ QvisExpressionsWindow::UpdatePythonExpression()
 //    Cyrus Harrison,Thu Apr  8 12:40:22 PDT 2010
 //    Resolved issue w/ incorrectly flagging non python expressions.
 //
+//    Kathleen Biagas, Wed Mar 29 08:10:38 PDT 2023
+//    Replaced QRegExp (which has been deprecated) with QRegularExpression.
+//
 // ****************************************************************************
 bool
 QvisExpressionsWindow::ParsePythonExpression(const QString &expr_def,
@@ -1537,13 +1548,13 @@ QvisExpressionsWindow::ParsePythonExpression(const QString &expr_def,
     // look for instances of <ws>* , <ws>* " [anything] " <ws>* )
     // all instances of " within the python expression should be escaped.
 
-    QRegExp regx("(\\s*\\,\\s*\\\")(.+)(\\\"\\s*\\))");
-    int match_pos = 0;
-    while((match_pos = regx.indexIn(edef, match_pos)) != -1)
+    QRegularExpression regx("(\\s*\\,\\s*\\\")(.+)(\\\"\\s*\\))");
+    QRegularExpressionMatchIterator iter = regx.globalMatch(edef);
+    while(iter.hasNext())
     {
-        args_stop_idx = regx.pos(1);
-        res_script    = regx.cap(2);
-        match_pos    += regx.matchedLength();
+        QRegularExpressionMatch match = iter.next();
+        args_stop_idx = match.capturedStart(1);
+        res_script    = match.captured(2);
     }
 
     if(args_stop_idx == -1)
@@ -1661,12 +1672,14 @@ QvisExpressionsWindow::UpdateStandardExpressionEditor(const QString &expr_def)
 //    Removed angle brackets from constantvalue field 
 //    in all 4 constant functions.
 //
+//    Kathleen Biagas, Wed Jun 15 2022
+//    Added crack_width.
+//
 // ****************************************************************************
 
 QString
 QvisExpressionsWindow::ExpandFunction(const QString &func_name)
 {
-
     QString res;
     bool doParens = (func_name.length() >= 2);
 
@@ -1855,6 +1868,11 @@ QvisExpressionsWindow::ExpandFunction(const QString &func_name)
     else if (func_name == "divide")
     {
         res += QString("(<val_numerator>, <val_denominator>, [<div_by_zero_value>, <tolerance>])");
+        doParens = false;
+    }
+    else if (func_name == "crack_width")
+    {
+        res += QString("(crack_number, <crack1_dir>, <crack2_dir>, <crack3_dir>, <strain_tensor>, volume2(<mesh_name>))");
         doParens = false;
     }
 

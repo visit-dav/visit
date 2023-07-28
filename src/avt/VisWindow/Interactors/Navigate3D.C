@@ -71,6 +71,11 @@ Navigate3D::Navigate3D(VisWindowInteractorProxy &v) : VisitInteractor(v)
 //    Kathleen Bonnell, Wed Jun  8 09:57:09 PDT 2011
 //    Use current EventPosition instead of Last.
 //
+//    Kathleen Biagas, Wed Aug 17 2022
+//    Test useOSPRay to determine if PanCamera or PanImage should be used.
+//    It will be true only if HAVE_OSPRAY is true and ospray rendering is
+//    currently being used.
+//
 // ****************************************************************************
 
 void
@@ -91,8 +96,17 @@ Navigate3D::OnTimer(void)
         break;
 
       case VTKIS_PAN:
-        PanImage3D(Pos[0], Pos[1]);
-
+        // Currently the SetWindowCenter called from avtViewInfo.C
+        // does not get used in the vtkOSPRayCamerNode so instead pan
+        // the camera rather than the image.
+        if (useOSPRay)
+        {
+            PanCamera3D(Pos[0], Pos[1]);
+        }
+        else
+        {
+            PanImage3D(Pos[0], Pos[1]);
+        }
         rwi->CreateTimer(VTKI_TIMER_UPDATE);
         break;
 

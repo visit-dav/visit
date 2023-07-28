@@ -36,7 +36,7 @@ struct DeferExpressionAttributesObject
 //
 static PyObject *NewDeferExpressionAttributes(int);
 std::string
-PyDeferExpressionAttributes_ToString(const DeferExpressionAttributes *atts, const char *prefix)
+PyDeferExpressionAttributes_ToString(const DeferExpressionAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -210,7 +210,7 @@ static int
 DeferExpressionAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     DeferExpressionAttributesObject *obj = (DeferExpressionAttributesObject *)v;
-    fprintf(fp, "%s", PyDeferExpressionAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyDeferExpressionAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -218,7 +218,7 @@ PyObject *
 DeferExpressionAttributes_str(PyObject *v)
 {
     DeferExpressionAttributesObject *obj = (DeferExpressionAttributesObject *)v;
-    return PyString_FromString(PyDeferExpressionAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyDeferExpressionAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -370,7 +370,7 @@ PyDeferExpressionAttributes_GetLogString()
 {
     std::string s("DeferExpressionAtts = DeferExpressionAttributes()\n");
     if(currentAtts != 0)
-        s += PyDeferExpressionAttributes_ToString(currentAtts, "DeferExpressionAtts.");
+        s += PyDeferExpressionAttributes_ToString(currentAtts, "DeferExpressionAtts.", true);
     return s;
 }
 
@@ -383,7 +383,7 @@ PyDeferExpressionAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("DeferExpressionAtts = DeferExpressionAttributes()\n");
-        s += PyDeferExpressionAttributes_ToString(currentAtts, "DeferExpressionAtts.");
+        s += PyDeferExpressionAttributes_ToString(currentAtts, "DeferExpressionAtts.", true);
         cb(s);
     }
 }

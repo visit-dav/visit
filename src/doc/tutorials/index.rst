@@ -27,6 +27,8 @@ Contents:
     MakingMovies
     MolecularDataFeatures
     PythonExpressions
+    Partitioning
+    KeyframeAnimation
     
 
 .. Indices and tables

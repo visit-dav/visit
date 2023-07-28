@@ -151,6 +151,12 @@ class ViewerState;
 //
 //   Alister Maguire, Mon Oct 16 15:41:23 PDT 2017
 //   Added RemovePicks.
+// 
+//   Justin Privitera, Wed May 18 11:25:46 PDT 2022
+//   Changed *active* to *default* for everything related to color tables.
+//
+//   Eric Brugger, Wed Mar 22 16:23:12 PDT 2023
+//   Added operator keyframing.
 //
 // ****************************************************************************
 
@@ -249,6 +255,9 @@ public:
     void SetPlotFrameRange(int plotId, int frame0, int frame1);
     void DeletePlotKeyframe(int plotId, int frame);
     void MovePlotKeyframe(int plotId, int oldFrame, int newFrame);
+    void DeleteOperatorKeyframe(int plotId, int operatorId, int frame);
+    void MoveOperatorKeyframe(int plotId, int operatorId,
+                              int oldFrame, int newFrame);
     void SetPlotDatabaseState(int plotId, int frame, int state);
     void DeletePlotDatabaseKeyframe(int plotId, int frame);
     void MovePlotDatabaseKeyframe(int plotId, int oldFrame, int newFrame);
@@ -282,8 +291,8 @@ public:
     void SetOperatorOptions(int oper);
     void ResetOperatorOptions(int type);
 
-    void SetActiveContinuousColorTable(const std::string &colorTableName);
-    void SetActiveDiscreteColorTable(const std::string &colorTableName);
+    void SetDefaultContinuousColorTable(const std::string &colorTableName);
+    void SetDefaultDiscreteColorTable(const std::string &colorTableName);
     void DeleteColorTable(const std::string &colorTableName);
     void UpdateColorTable(const std::string &colorTableName);
     void ExportColorTable(const std::string &colorTableName);

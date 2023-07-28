@@ -38,7 +38,7 @@ struct Axes2DObject
 //
 static PyObject *NewAxes2D(int);
 std::string
-PyAxes2D_ToString(const Axes2D *atts, const char *prefix)
+PyAxes2D_ToString(const Axes2D *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -109,12 +109,12 @@ PyAxes2D_ToString(const Axes2D *atts, const char *prefix)
     { // new scope
         std::string objPrefix(prefix);
         objPrefix += "xAxis.";
-        str += PyAxisAttributes_ToString(&atts->GetXAxis(), objPrefix.c_str());
+        str += PyAxisAttributes_ToString(&atts->GetXAxis(), objPrefix.c_str(), forLogging);
     }
     { // new scope
         std::string objPrefix(prefix);
         objPrefix += "yAxis.";
-        str += PyAxisAttributes_ToString(&atts->GetYAxis(), objPrefix.c_str());
+        str += PyAxisAttributes_ToString(&atts->GetYAxis(), objPrefix.c_str(), forLogging);
     }
     return str;
 }
@@ -702,7 +702,7 @@ static int
 Axes2D_print(PyObject *v, FILE *fp, int flags)
 {
     Axes2DObject *obj = (Axes2DObject *)v;
-    fprintf(fp, "%s", PyAxes2D_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyAxes2D_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -710,7 +710,7 @@ PyObject *
 Axes2D_str(PyObject *v)
 {
     Axes2DObject *obj = (Axes2DObject *)v;
-    return PyString_FromString(PyAxes2D_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyAxes2D_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -862,7 +862,7 @@ PyAxes2D_GetLogString()
 {
     std::string s("Axes2D = Axes2D()\n");
     if(currentAtts != 0)
-        s += PyAxes2D_ToString(currentAtts, "Axes2D.");
+        s += PyAxes2D_ToString(currentAtts, "Axes2D.", true);
     return s;
 }
 
@@ -875,7 +875,7 @@ PyAxes2D_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("Axes2D = Axes2D()\n");
-        s += PyAxes2D_ToString(currentAtts, "Axes2D.");
+        s += PyAxes2D_ToString(currentAtts, "Axes2D.", true);
         cb(s);
     }
 }

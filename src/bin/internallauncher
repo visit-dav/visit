@@ -77,20 +77,25 @@ class JobSubmitter(object):
         return str(int(math.ceil(float(self.parallel.np) / float(self.parallel.nn))))
 
     # Open MPI and MPICH have different arguments for the process per node flag.
-    # This function trys to decide with flag to use. It defaults to MPICH.
+    # This function trys to decide which flag to use. If it fails to run mpirun
+    # or DOES NOT find the string "Open MPI" in the result, it assumes MPICH.
     def PPNArgument(self):
-        p = subprocess.Popen(["mpirun", "--version"],
-                             universal_newlines=True,
-                             stderr=subprocess.PIPE,
-                             stdout=subprocess.PIPE)
-        output = p.communicate()
-        new = ' '.join(output)
-        if new.find("Open MPI") == -1:
-            # MPICH
-            return "-ppn"
-        else:
-            # Open MPI
-            return "-npernode"
+        try:
+            p = subprocess.Popen(["mpirun", "--version"],
+                                 universal_newlines=True,
+                                 stderr=subprocess.PIPE,
+                                 stdout=subprocess.PIPE)
+            output = p.communicate()
+            new = ' '.join(output)
+            if new.find("Open MPI") == -1:
+                # MPICH
+                return "-ppn"
+            else:
+                # Open MPI
+                return "-npernode"
+        except:
+            pass
+        return "-ppn"
 
     def CreateCommand(self, args, debugger):
         parcmd = self.Executable()
@@ -538,6 +543,8 @@ class JobSubmitter_psub(JobSubmitter):
 # Date:       Thu May 17 14:22:04 PDT 2012
 #
 # Modifications:
+#   Eric Brugger, Wed 07 Jun 2023 03:56:57 PM PDT
+#   Updated the srun invocation.
 #
 ###############################################################################
 
@@ -567,10 +574,7 @@ class JobSubmitter_salloc(JobSubmitter):
         if self.parallel.launchargs != None:
             parcmd = parcmd + self.parallel.launchargs
 
-        parcmd = parcmd + ["srun","-N1","-n1","--preserve-env","--mpi=none", "mpirun"]
-
-        if self.parallel.nn != None:
-            parcmd = parcmd + ["--npernode", self.PPN()]
+        parcmd = parcmd + ["srun"]
 
         parcmd = debugger.CreateCommand(parcmd + self.VisItExecutable() + args)
 
@@ -649,6 +653,7 @@ output streams.
         env = env + ",VISITHOME=" + GETENV("VISITHOME")
         env = env + ",VISITARCHHOME=" + GETENV("VISITARCHHOME")
         env = env + ",VISITPLUGINDIR=" + GETENV("VISITPLUGINDIR")
+        env = env + ",PYTHONHOME=" + GETENV("PYTHONHOME")
         return [env]
 
     def mpiexec(self):
@@ -1504,6 +1509,38 @@ class CudaMemcheck(Debugger):
         return launcherargs + self.Executable() + visitargs
 
 ###############################################################################
+# Class: NsightSystems
+#
+# Purpose: Launch a VisIt component under Nsight Systems. Anaylzes component
+#          performance system-wide.
+#
+# Programmer: Kevin Griffin
+# Date:       Fri Sep  9 13:56:16 PDT 2022
+#
+# Modifications:
+#
+###############################################################################
+
+class NsightSystems(Debugger):
+    def __init__(self, launcher):
+        super(NsightSystems, self).__init__(launcher)
+
+    def Executable(self):
+        return ["nsys"]
+
+    def CreateCommand(self, args):
+        launcherargs, visitargs = self.SeparateArguments(args)
+        nsysargs = self.DebuggerArguments()
+
+        if len(nsysargs) == 0:
+            nsysargs = ["profile", "--stats=true", "--gpu-metrics-device=all"]
+
+        if len(launcherargs) > 0:
+            return launcherargs + self.Executable() + nsysargs + visitargs
+        else:
+            return self.Executable() + nsysargs + visitargs
+
+###############################################################################
 # Class: ValgrindDebugger
 #
 # Purpose:    Launch a VisIt component under valgrind.
@@ -1613,6 +1650,34 @@ class StraceDebugger(Debugger):
             strace = strace + ["-ttt", "-T"]
         launcherargs, visitargs = self.SeparateArguments(args)
         return launcherargs + strace + visitargs
+
+###############################################################################
+# Class: RocprofDebugger
+#
+# Purpose:    Launch a VisIt component under rocprof.
+#
+# Programmer: Eric Brugger
+# Date:       Fri Feb 24 14:57:15 PST 2023
+#
+# Modifications:
+#
+###############################################################################
+
+class RocprofDebugger(Debugger):
+    def __init__(self, launcher):
+        super(RocprofDebugger, self).__init__(launcher)
+
+    def Executable(self):
+        return ["echo"]
+
+    def CreateCommand(self, args):
+        rocprof = self.Executable()
+        if len(self.debug.debuggerArgs) > 1:
+            rocprof = rocprof + self.DebuggerArguments()
+        else:
+            rocprof = rocprof + ["rocprof", "--hip-trace", "-o", "hiptraceout.csv"]
+        launcherargs, visitargs = self.SeparateArguments(args)
+        return launcherargs + rocprof + visitargs
 
 ###############################################################################
 # Class: ApitraceDebugger
@@ -3249,6 +3314,12 @@ VisIt does not recognize your terminal application so it will ignore the -newcon
     #   Kevin Griffin, Mon Mar 21 16:34:52 PDT 2016 
     #   Added cuda-memcheck.
     #
+    #   Kevin Griffin, Fri Sep  9 13:56:16 PDT 2022
+    #   Added nsys.
+    #
+    #   Eric Brugger, Fri Feb 24 14:57:15 PST 2023
+    #   Added rocprof.
+    #
     ############################################################################
     def Debuggers(self):
         return ["gdb",
@@ -3263,7 +3334,9 @@ VisIt does not recognize your terminal application so it will ignore the -newcon
                 "nvprof",
                 "cuda-memcheck",
                 "vtune",
-                "instruments"]
+                "instruments",
+                "nsys",
+                "rocprof"]
 
     ############################################################################
     # Method: DebuggerFactory
@@ -3288,6 +3361,12 @@ VisIt does not recognize your terminal application so it will ignore the -newcon
     #
     #   Kevin Griffin Mon Mar 21 16:34:52 PDT 2016
     #   Added cuda-memcheck.
+    #
+    #   Kevin Griffin, Fri Sep  9 13:56:16 PDT 2022
+    #   Added nsys.
+    #
+    #   Eric Brugger, Fri Feb 24 14:57:15 PST 2023
+    #   Added rocprof.
     #
     ############################################################################
 
@@ -3318,6 +3397,10 @@ VisIt does not recognize your terminal application so it will ignore the -newcon
             return VTuneProfiler(self)
         elif debugger == "instruments":
             return InstrumentsProfiler(self)
+        elif debugger == "nsys":
+            return NsightSystems(self)
+        elif debugger == "rocprof":
+            return RocprofDebugger(self)
         # Return a debugger that does not do anything.
         return Debugger(self)
 

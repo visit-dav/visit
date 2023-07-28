@@ -36,7 +36,7 @@ struct FiveFoldTetSubdivisionAttributesObject
 //
 static PyObject *NewFiveFoldTetSubdivisionAttributes(int);
 std::string
-PyFiveFoldTetSubdivisionAttributes_ToString(const FiveFoldTetSubdivisionAttributes *atts, const char *prefix)
+PyFiveFoldTetSubdivisionAttributes_ToString(const FiveFoldTetSubdivisionAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -696,7 +696,7 @@ static int
 FiveFoldTetSubdivisionAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     FiveFoldTetSubdivisionAttributesObject *obj = (FiveFoldTetSubdivisionAttributesObject *)v;
-    fprintf(fp, "%s", PyFiveFoldTetSubdivisionAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyFiveFoldTetSubdivisionAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -704,7 +704,7 @@ PyObject *
 FiveFoldTetSubdivisionAttributes_str(PyObject *v)
 {
     FiveFoldTetSubdivisionAttributesObject *obj = (FiveFoldTetSubdivisionAttributesObject *)v;
-    return PyString_FromString(PyFiveFoldTetSubdivisionAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyFiveFoldTetSubdivisionAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -856,7 +856,7 @@ PyFiveFoldTetSubdivisionAttributes_GetLogString()
 {
     std::string s("FiveFoldTetSubdivisionAtts = FiveFoldTetSubdivisionAttributes()\n");
     if(currentAtts != 0)
-        s += PyFiveFoldTetSubdivisionAttributes_ToString(currentAtts, "FiveFoldTetSubdivisionAtts.");
+        s += PyFiveFoldTetSubdivisionAttributes_ToString(currentAtts, "FiveFoldTetSubdivisionAtts.", true);
     return s;
 }
 
@@ -869,7 +869,7 @@ PyFiveFoldTetSubdivisionAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("FiveFoldTetSubdivisionAtts = FiveFoldTetSubdivisionAttributes()\n");
-        s += PyFiveFoldTetSubdivisionAttributes_ToString(currentAtts, "FiveFoldTetSubdivisionAtts.");
+        s += PyFiveFoldTetSubdivisionAttributes_ToString(currentAtts, "FiveFoldTetSubdivisionAtts.", true);
         cb(s);
     }
 }

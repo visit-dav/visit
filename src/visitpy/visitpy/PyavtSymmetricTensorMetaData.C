@@ -36,12 +36,12 @@ struct avtSymmetricTensorMetaDataObject
 //
 static PyObject *NewavtSymmetricTensorMetaData(int);
 std::string
-PyavtSymmetricTensorMetaData_ToString(const avtSymmetricTensorMetaData *atts, const char *prefix)
+PyavtSymmetricTensorMetaData_ToString(const avtSymmetricTensorMetaData *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
 
-    str = PyavtVarMetaData_ToString(atts, prefix);
+    str = PyavtVarMetaData_ToString(atts, prefix, forLogging);
 
     snprintf(tmpStr, 1000, "%sdim = %d\n", prefix, atts->dim);
     str += tmpStr;
@@ -221,7 +221,7 @@ static int
 avtSymmetricTensorMetaData_print(PyObject *v, FILE *fp, int flags)
 {
     avtSymmetricTensorMetaDataObject *obj = (avtSymmetricTensorMetaDataObject *)v;
-    fprintf(fp, "%s", PyavtSymmetricTensorMetaData_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyavtSymmetricTensorMetaData_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -229,7 +229,7 @@ PyObject *
 avtSymmetricTensorMetaData_str(PyObject *v)
 {
     avtSymmetricTensorMetaDataObject *obj = (avtSymmetricTensorMetaDataObject *)v;
-    return PyString_FromString(PyavtSymmetricTensorMetaData_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyavtSymmetricTensorMetaData_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -381,7 +381,7 @@ PyavtSymmetricTensorMetaData_GetLogString()
 {
     std::string s("avtSymmetricTensorMetaData = avtSymmetricTensorMetaData()\n");
     if(currentAtts != 0)
-        s += PyavtSymmetricTensorMetaData_ToString(currentAtts, "avtSymmetricTensorMetaData.");
+        s += PyavtSymmetricTensorMetaData_ToString(currentAtts, "avtSymmetricTensorMetaData.", true);
     return s;
 }
 
@@ -394,7 +394,7 @@ PyavtSymmetricTensorMetaData_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("avtSymmetricTensorMetaData = avtSymmetricTensorMetaData()\n");
-        s += PyavtSymmetricTensorMetaData_ToString(currentAtts, "avtSymmetricTensorMetaData.");
+        s += PyavtSymmetricTensorMetaData_ToString(currentAtts, "avtSymmetricTensorMetaData.", true);
         cb(s);
     }
 }

@@ -93,6 +93,8 @@ vtkCrackWidthFilter::~vtkCrackWidthFilter()
 //  Method: vtkCrackWidthFilter_OrderThem 
 //
 //  Purpose: Creates a max-to-min ordering based on the passed deltas. 
+//  
+//  Notes:  This code is duplicated in avtCrackWidthExpression.
 //
 //  Programmer: Kathleen Bonnell
 //  Creation:   October 13, 2006 
@@ -136,6 +138,8 @@ vtkCrackWidthFilter_OrderThem(double delta1, double delta2, double delta3,
 //  Method: vtkCrackWidthFilter::RequestData
 //
 //  Purpose: Executes this filter.
+//  
+//  Notes:  This code is duplicated in avtCrackWidthExpression.
 //
 //  Programmer: Kathleen Bonnell
 //  Creation:   August 22, 2005
@@ -344,6 +348,8 @@ vtkCrackWidthFilter::RequestData(
 //  Purpose: Determines the effective length in the crack direction for a
 //           given cell
 //  
+//  Notes:  This code is duplicated in avtCrackWidthExpression.
+//
 //  Arguments:
 //    cell      The cell.
 //    cellId    The id of the cell.
@@ -371,6 +377,9 @@ vtkCrackWidthFilter::RequestData(
 //    I modified the function to return the effective length in the crack
 //    direction instead of the crack width and changed the name to match.
 //
+//    Kathleen Biagas, Wed June 15, 2022
+//    Guard against divide-by-zero.
+//
 // ***************************************************************************
 
 double
@@ -386,7 +395,9 @@ vtkCrackWidthFilter::LengthForCell(vtkCell *cell, vtkIdType cellId,
     this->Slicer->SetOrigin(const_cast<double*>(center));
     this->MassProp->SetInputConnection(this->Slicer->GetOutputPort());
     this->MassProp->Update();
-    L =  zVol / this->MassProp->GetSurfaceArea();
+    double sa = this->MassProp->GetSurfaceArea();
+    if (sa != 0.)
+        L =  zVol / sa;
     }
   else
     {

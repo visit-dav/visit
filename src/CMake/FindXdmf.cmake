@@ -24,20 +24,14 @@
 #   Kathleen Biagas, Fri May 3 16:55:12 MST 2013
 #   If our xdmf depends on vtlibxml2, ensure it exists.
 #
+#   Kathleen Biagas, Fri May 3 16:55:12 MST 2013
+#   Don't test for vtklibxml2 here, SET_UP_THIRD_PARTY checks already,
+#   and other libs with LIBDEP don't perform an extra check.
+#
 #****************************************************************************/
 
-# Use the XDMF_DIR hint from the config-site .cmake file 
+# Use the XDMF_DIR hint from the config-site .cmake file
 #
 
-IF(VISIT_XDMF_LIBDEP)
-    LIST(FIND VISIT_XDMF_LIBDEP vtklibxml2-${VTK_MAJOR_VERSION}.${VTK_MINOR_VERSION} xdmf_needs_vtkxml)
-    IF(${xdmf_needs_vtkxml} GREATER "-1" AND NOT TARGET vtklibxml2)
-        MESSAGE(STATUS "Xdmf depends on vtklibxml2, but it doesn't exist")
-        RETURN()
-    ENDIF()
-ENDIF()
-
-INCLUDE(${VISIT_SOURCE_DIR}/CMake/SetUpThirdParty.cmake)
-
-SET_UP_THIRD_PARTY(XDMF lib include Xdmf)
+SET_UP_THIRD_PARTY(XDMF LIBS Xdmf)
 

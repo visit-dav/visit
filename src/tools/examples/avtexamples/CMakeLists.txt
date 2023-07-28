@@ -16,6 +16,15 @@
 #   Eric Brugger, Thu Jul 15 13:34:12 PDT 2021
 #   Added qtviswinExample.C
 #
+#   Kathleen Biagas, Thu Mar 30, 2023
+#   Use AUTOMOC target property instead of QT_WRAP_CPP macro.
+#
+#   Kathleen Biagas, Tue May 5, 2023
+#   Disable qt6 forcing of defines for UNICODE.
+#
+#   Eric Brugger, Tue Jul 25 11:23:55 EDT 2023
+#   Change CMAKE_THREAD_LIBS to Threads::Threads.
+#
 #****************************************************************************
 
 INCLUDE_DIRECTORIES(
@@ -64,6 +73,7 @@ ${VTK_INCLUDE_DIRS}
 )
 
 LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY}
+${AVT_REQUIRED_LIB_DIR}
 ${ALL_THIRDPARTY_IO_LIBRARY_DIR}
 ${ICET_LIBRARY_DIR}
 )
@@ -84,7 +94,7 @@ visitcommon
 visit_vtk
 ${ALL_THIRDPARTY_IO_LIB}
 ${OPENGL_LIBRARIES}
-${CMAKE_THREAD_LIBS}
+Threads::Threads
 ${ZLIB_LIBRARY}
 )
 
@@ -114,7 +124,7 @@ visitcommon
 visit_vtk
 ${ALL_THIRDPARTY_IO_LIB}
 ${OPENGL_LIBRARIES}
-${CMAKE_THREAD_LIBS}
+Threads::Threads
 ${ZLIB_LIBRARY}
 )
 
@@ -141,7 +151,7 @@ visitcommon
 visit_vtk
 ${ALL_THIRDPARTY_IO_LIB}
 ${OPENGL_LIBRARIES}
-${CMAKE_THREAD_LIBS}
+Threads::Threads
 ${ZLIB_LIBRARY}
 )
 
@@ -171,7 +181,7 @@ visitcommon
 visit_vtk
 ${ALL_THIRDPARTY_IO_LIB}
 ${OPENGL_LIBRARIES}
-${CMAKE_THREAD_LIBS}
+Threads::Threads
 ${ZLIB_LIBRARY}
 )
 
@@ -202,7 +212,7 @@ visitcommon
 visit_vtk
 ${ALL_THIRDPARTY_IO_LIB}
 ${OPENGL_LIBRARIES}
-${CMAKE_THREAD_LIBS}
+Threads::Threads
 ${ZLIB_LIBRARY}
 )
 
@@ -211,14 +221,16 @@ qvtkopenglExample.C
 GUIWindow.C
 )
 
-SET(QVTKOPENGLEXAMPLE_MOC_SOURCES
-GUIWindow.h
-)
-QT_WRAP_CPP(qvtkopenglExample QVTKOPENGLEXAMPLE_SOURCES ${QVTKOPENGLEXAMPLE_MOC_SOURCES})
-
 ADD_EXECUTABLE(qvtkopenglExample ${QVTKOPENGLEXAMPLE_SOURCES})
+set_target_properties(qvtkopenglExample PROPERTIES AUTOMOC ON)
 VISIT_INSTALL_TARGETS(qvtkopenglExample)
 VISIT_EXAMPLES_ADD_FOLDER(qvtkopenglExample qvtkopenglExample)
+
+if(VTK_VERSION VERSION_EQUAL "8.1.0")
+  set(vtklibs vtkCommonColor vtkFiltersSources vtkInteractionStyle vtkRenderingOpenGL2)
+else()
+  set(vtklibs VTK::CommonColor VTK::FiltersSources VTK::InteractionStyle VTK::RenderingOpenGL2)
+endif()
 
 TARGET_LINK_LIBRARIES(qvtkopenglExample
 vtkqt
@@ -226,10 +238,7 @@ ${QT_QTGUI_LIBRARY}
 ${QT_QTOPENGL_LIBRARY}
 ${QT_QTNETWORK_LIBRARY}
 ${QT_QTCORE_LIBRARY}
-vtkCommonColor
-vtkFiltersSources
-vtkInteractionStyle
-vtkRenderingOpenGL2
+${vtklibs}
 ${OPENGL_LIBRARIES}
 ${ZLIB_LIBRARY}
 )
@@ -239,14 +248,17 @@ qtvtkExample.C
 GUIWindow2.C
 )
 
-SET(QTVTKEXAMPLE_MOC_SOURCES
-GUIWindow2.h
-)
-QT_WRAP_CPP(qtvtkExample QTVTKEXAMPLE_SOURCES ${QTVTKEXAMPLE_MOC_SOURCES})
 
 ADD_EXECUTABLE(qtvtkExample ${QTVTKEXAMPLE_SOURCES})
+set_target_properties(qtvtkExample PROPERTIES AUTOMOC ON)
 VISIT_INSTALL_TARGETS(qtvtkExample)
 VISIT_EXAMPLES_ADD_FOLDER(qtvtkExample qtvtkExample)
+
+if(VTK_VERSION VERSION_EQUAL "8.1.0")
+  set(vtklibs vtkCommonColor vtkFiltersSources vtkInteractionStyle)
+else()
+  set(vtklibs VTK::CommonColor VTK::FiltersSources VTK::InteractionStyle VTK::RenderingVolumeOpenGL2)
+endif()
 
 TARGET_LINK_LIBRARIES(qtvtkExample
 vtkqt
@@ -254,9 +266,7 @@ ${QT_QTGUI_LIBRARY}
 ${QT_QTOPENGL_LIBRARY}
 ${QT_QTNETWORK_LIBRARY}
 ${QT_QTCORE_LIBRARY}
-vtkCommonColor
-vtkFiltersSources
-vtkInteractionStyle
+${vtklibs}
 ${OPENGL_LIBRARIES}
 ${ZLIB_LIBRARY}
 )
@@ -269,6 +279,11 @@ ADD_EXECUTABLE(qtviswinExample ${QTVISWINEXAMPLE_SOURCES})
 VISIT_INSTALL_TARGETS(qtviswinExample)
 VISIT_EXAMPLES_ADD_FOLDER(qtviswinExample qtviswinExample)
 
+if(VTK_VERSION VERSION_EQUAL "8.1.0")
+  set(vtkqtlib vtkGUISupportQt)
+else()
+  set(vtkqtlib VTK::GUISupportQt)
+endif()
 TARGET_LINK_LIBRARIES(qtviswinExample
 visitcommon
 avtdbatts
@@ -284,5 +299,10 @@ ${QT_QTGUI_LIBRARY}
 ${QT_QTOPENGL_LIBRARY}
 ${QT_QTNETWORK_LIBRARY}
 ${QT_QTCORE_LIBRARY}
-vtkGUISupportQt
+${vtkqtlib}
 )
+
+if(QT_VERSION VERSION_GREATER_EQUAL "6.2.0")
+    qt6_disable_unicode_defines(qtviswinExample)
+endif()
+

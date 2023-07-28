@@ -11,6 +11,7 @@
 
 #include <pipeline_exports.h>
 #include <visitstream.h>
+#include <visit-config.h> // For LIB_VERSION_GE
 
 struct RGBA
 {
@@ -34,7 +35,7 @@ struct RGBAF
 //  Class: avtOpacityMap
 //
 //  Purpose:
-//      Defines a mapping over an interval [low, high] into the 
+//      Defines a mapping over an interval [low, high] into the
 //      interval [0, 1].  This is used by the volume rendering module.
 //
 //  Programmer: Hank Childs
@@ -57,7 +58,7 @@ struct RGBAF
 //
 //    Qi WU, Sat Jun 10 22:21:27 MST 2018
 //    Add function 'SetTableFloatNOC' to generate a transfer function without
-//    the opacity correction term. This function will be used for OSPRay 
+//    the opacity correction term. This function will be used for OSPRay
 //    volume rendering
 //
 // ****************************************************************************
@@ -72,15 +73,23 @@ class PIPELINE_API avtOpacityMap
     void operator = (const avtOpacityMap &obj);
 
     const RGBA                  *GetTable(void) { return table; };
+#if LIB_VERSION_LE(VTK,8,1,0)
     const RGBAF                 *GetTableFloat(void) { return transferFn1D; };
-    void                         SetTable(unsigned char *, int, double = 1.);
-    void                         SetTable(unsigned char *arr, int te, 
-                                               double attenuation, float over);
     void                         SetTableFloat(unsigned char *arr, int te,
                                                double attenuation, float over);
+    void                         SetTable(unsigned char *arr, int te,
+                                          double attenuation, float over);
     void                         SetTableFloatNOC(unsigned char *arr, int te,
-                                                           double attenuation);
+                                                  double attenuation);
+#else
+    const RGBAF                 *GetTransferFunc(void) { return transferFn1D; };
+    void                         SetTableComposite(unsigned char *arr, int te,
+                                               double attenuation, float over);
+#endif
+
+    void                         SetTable(unsigned char *, int, double = 1.);
     void                         SetTable(RGBA *, int, double = 1.);
+
     const RGBA                  &GetOpacity(double);
 
     void                         AddRange(double lo, double hi, RGBA &rgba);
@@ -91,7 +100,7 @@ class PIPELINE_API avtOpacityMap
     double                       GetMax(void)     { return max; };
     double                       GetMinVisibleScalar();
     double                       GetMaxVisibleScalar();
-    
+
     void                         ComputeVisibleRange();
 
     inline int                   Quantize(const double &);
@@ -99,7 +108,7 @@ class PIPELINE_API avtOpacityMap
                                                       { return tableEntries; };
 
     float                        QuantizeValF(const double &val);
-    int                          QueryTF(double scalarValue, 
+    int                          QueryTF(double scalarValue,
                                          double color[4]) const;
     float                        QueryAlpha(double scalarValue) const;
 
@@ -112,7 +121,7 @@ class PIPELINE_API avtOpacityMap
     double                       max, min;
     double                       range, inverseRange, multiplier;
     int                          minVisibleScalarIndex, maxVisibleScalarIndex;
-    double                       minVisibleScalar, maxVisibleScalar;    
+    double                       minVisibleScalar, maxVisibleScalar;
 
     void                         SetIntermediateVars(void);
 };
@@ -147,7 +156,7 @@ class PIPELINE_API avtOpacityMap
 inline int
 avtOpacityMap::Quantize(const double &val)
 {
-    int index = (int) ((val-min)*multiplier); 
+    int index = (int) ((val-min)*multiplier);
 
     // This should be handled by the logic below ... but if we have
     // a large range for the variable, but the user set's a narrow range
@@ -156,7 +165,7 @@ avtOpacityMap::Quantize(const double &val)
         return 0;
     if (val > max)
         return tableEntries-1;
-   
+
     //
     // The normal case -- what we calculated was in the range.
     //
@@ -168,9 +177,9 @@ avtOpacityMap::Quantize(const double &val)
     return (index < 0 ? 0 : tableEntries-1);
 }
 
-inline float 
+inline float
 avtOpacityMap::QuantizeValF(const double &val){
-    float testVal = ((val-min)*multiplier); 
+    float testVal = ((val-min)*multiplier);
 
     if (val < min)
         return 0;
@@ -185,7 +194,7 @@ avtOpacityMap::QuantizeValF(const double &val){
         return testVal;
     }
 
-    return (testVal < 0 ? 0 : tableEntries-1); 
+    return (testVal < 0 ? 0 : tableEntries-1);
 }
 
 
@@ -194,16 +203,16 @@ avtOpacityMap::QuantizeValF(const double &val){
 //
 //  Purpose:
 //      Queries a Transfer function for the color based on the scalr value
-//      passed in 
+//      passed in
 //
 //  Arguments:
 //      scalarValue     scalar value
 //      color           the color queried from the transfer function based on
 //                      the scalar value
 //
-//  Returns: 
+//  Returns:
 //
-//  Programmer: Pascal Grosset 
+//  Programmer: Pascal Grosset
 //  Creation:   June 3, 2013
 //
 //  Modifications:
@@ -246,13 +255,13 @@ avtOpacityMap::QueryTF(double scalarValue, double color[4]) const
     double colorLow[4], colorHigh[4];
     float indexPos, indexDiff;
 
-    indexPos  = (scalarValue-min)/(max-min) * (tableEntries-1); 
+    indexPos  = (scalarValue-min)/(max-min) * (tableEntries-1);
     // ^^^^ multiplier = 1.0/(max-min) * tableEntries
     indexLow  = (int)indexPos;
     indexHigh = (int)(indexPos+1.0);
 
     indexDiff = indexPos - indexLow;
-    
+
     colorRGBALow = transferFn1D[indexLow];
     colorLow[0] = colorRGBALow.R;
     colorLow[1] = colorRGBALow.G;
@@ -291,7 +300,7 @@ avtOpacityMap::QueryAlpha(double scalarValue) const
     int   indexLow  = static_cast<int>(indexPos);
     int   indexHigh = static_cast<int>(indexPos+1.0);
     float indexDiff = indexPos - indexLow;
-    
+
     float a0 = transferFn1D[indexLow].A;
     float a1 = transferFn1D[indexHigh].A;
 

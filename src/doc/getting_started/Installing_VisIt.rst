@@ -28,6 +28,13 @@ Installing on macOS
 
 VisIt_ releases include an app-bundle for macOS packaged in a DMG image.
 Download and open the DMG file and copy the VisIt_ app-bundle to your applications directory or any other path.
+
+.. note::
+   If you have a previous version of VisIt already installed, you may be prompted by macOS to decide if you want to **Keep both** versions or **Replace** the old version with the new version.
+   If you choose **Keep both**, macOS will automatically adjust the name of the new version to something like ``VisIt 2``.
+   The space will cause problems and it will have to be removed by changing the name to something without spaces like ``VisIt2`` or ``VisIt-2`` or ``VisIt-x.y.z`` where ``x.y.z`` is the version number of the installation.
+   If you do not have the necessary privileges to change the name, a system administrator's help may be needed.
+
 To run VisIt_ double click on the VisIt_ app-bundle.
 Alternatively, VisIt_ can be run on macOS from the ``Terminal`` using a command of the form:
 
@@ -140,6 +147,35 @@ Available options are as follows::
                            Default is %PROGRAM FILES% for ALL USERS and
                            %HOMEPATH% for single user.
                            MUST BE THE LAST PARAMETER!
+
+Installing ffmpeg
+~~~~~~~~~~~~~~~~~
+
+``ffmpeg`` is a high quality MPEG 4 encoder.
+The VisIt_ movie wizard uses ``ffmpeg`` if it is found in the user's search path.
+``ffmpeg``'s licensing is incompatible with VisIt_'s so we do not ship and install ``ffmpeg`` with VisIt_.
+You can install ``ffmpeg`` as part of a VisIt_ installation so that it is available for all user's.
+
+To install ``ffmpeg`` as part of a VisIt_ installation you would do the following steps.
+
+1) Get the ``ffmpeg`` executable for each platform of interest.
+2) Copy the ``ffmpeg`` executable for each platform to the architecture specific bin directory.
+3) Set the group and file permissions appropriately for each executable.
+4) Create a soft link from ``ffmepg`` to ``frontendlauncher`` in the bin directory.
+
+Here we go through an example where we install ``ffmpeg`` into  VisIt_ 3.3.3, which has two architectures (``linux-intel`` and ``linux-x86_64``) installed.
+The ``ffmpeg`` executables are named ``ffmpeg.intel`` and ``ffmpeg.x86_64``.
+We will set the group to ``visit`` and the file permissions to ``775``.
+
+.. code:: bash
+
+    cp ffmpeg.intel visit/3.3.3/linux-intel/bin/ffmpeg
+    chgrp visit visit/3.3.3/linux-intel/bin/ffmpeg
+    chmod 775 visit/3.3.3/linux-intel/bin/ffmpeg
+    cp ffmpeg.x86_64 visit/3.3.3/linux-x86_64/bin/ffmpeg
+    chgrp visit visit/3.3.3/linux-x86_64/bin/ffmpeg
+    chmod 775 visit/3.3.3/linux-x86_64/bin/ffmpeg
+    ln -s frontendlaucher visit/bin/ffmpeg
 
 Startup Options
 ~~~~~~~~~~~~~~~

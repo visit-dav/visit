@@ -301,6 +301,9 @@ typedef std::map<std::string, int> StringIntMap;
 //    Alister Maguire, Mon Jun  4 15:13:43 PDT 2018
 //    Added SetViewScale. 
 //
+//    Eric Brugger, Wed Mar 22 16:23:12 PDT 2023
+//    Added operator keyframing.
+//
 // ****************************************************************************
 
 
@@ -376,6 +379,9 @@ public:
     void SetPlotRange(int plotId, int frame0, int frame1);
     void DeletePlotKeyframe(int plotId, int frame);
     void MovePlotKeyframe(int plotId, int oldFrame, int newFrame);
+    void DeleteOperatorKeyframe(int plotId, int operatorId, int frame);
+    void MoveOperatorKeyframe(int plotId, int operatorId,
+                              int oldFrame, int newFrame);
     void SetPlotDatabaseState(int plotId, int frame, int state);
     void DeletePlotDatabaseKeyframe(int plotId, int frame);
     void MovePlotDatabaseKeyframe(int plotId, int oldFrame, int newFrame);

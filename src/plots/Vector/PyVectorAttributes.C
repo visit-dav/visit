@@ -6,6 +6,7 @@
 #include <ObserverToCallback.h>
 #include <stdio.h>
 #include <Py2and3Support.h>
+#include <visit-config.h>
 #include <ColorAttribute.h>
 
 // ****************************************************************************
@@ -37,7 +38,7 @@ struct VectorAttributesObject
 //
 static PyObject *NewVectorAttributes(int);
 std::string
-PyVectorAttributes_ToString(const VectorAttributes *atts, const char *prefix)
+PyVectorAttributes_ToString(const VectorAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -2050,51 +2051,6 @@ PyVectorAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "animationStep") == 0)
         return VectorAttributes_GetAnimationStep(self, NULL);
 
-    // Try and handle legacy fields in VectorAttributes
-
-    //
-    // Removed in 3.2.0
-    //
-    if(strcmp(name, "colorByMag") == 0)
-    {
-        VectorAttributesObject *vectorObj = (VectorAttributesObject *)self;
-        bool colorByMagnitude = vectorObj->data->GetColorByMagnitude();
-        return PyInt_FromLong(colorByMagnitude?1L:0L);
-    }
-
-    //
-    // Removed in 3.0.0
-    //
-    // lineStyle and it's possible enumerations
-    bool lineStyleFound = false;
-    if (strcmp(name, "lineStyle") == 0)
-    {
-        lineStyleFound = true;
-    }
-    else if (strcmp(name, "SOLID") == 0)
-    {
-        lineStyleFound = true;
-    }
-    else if (strcmp(name, "DASH") == 0)
-    {
-        lineStyleFound = true;
-    }
-    else if (strcmp(name, "DOT") == 0)
-    {
-        lineStyleFound = true;
-    }
-    else if (strcmp(name, "DOTDASH") == 0)
-    {
-        lineStyleFound = true;
-    }
-    if (lineStyleFound)
-    {
-        PyErr_WarnEx(NULL,
-            "lineStyle is no longer a valid Vector "
-            "attribute.\nIt's value is being ignored, please remove "
-            "it from your script.\n", 3);
-        return PyInt_FromLong(0L);
-    }
 
     // Add a __dict__ answer so that dir() works
     if (!strcmp(name, "__dict__"))
@@ -2171,39 +2127,6 @@ PyVectorAttributes_setattr(PyObject *self, char *name, PyObject *args)
     else if(strcmp(name, "animationStep") == 0)
         obj = VectorAttributes_SetAnimationStep(self, args);
 
-   // Try and handle legacy fields in VectorAttributes
-    if(obj == &NULL_PY_OBJ)
-    {
-        VectorAttributesObject *VectorObj = (VectorAttributesObject *)self;
-
-        //
-        // Removed in 3.2.0
-        //
-        if(strcmp(name, "colorByMag") == 0)
-        {
-            int ival = -1;
-            PyErr_WarnEx(NULL, "'colorByMag' is obsolete. Use 'colorByMagnitude'.", 3);
-            ival = (int) PyLong_AsLong(args);
-            if (ival != -1)
-            {
-                if (ival == 0)
-                    VectorObj->data->SetColorByMagnitude(false);
-                else
-                    VectorObj->data->SetColorByMagnitude(true);
-            }
-            Py_INCREF(Py_None);
-            obj = Py_None;
-        }
-        //
-        // Removed in 3.0.0
-        //
-        if(strcmp(name, "lineStyle") == 0)
-        {
-            PyErr_WarnEx(NULL, "'lineStyle' is obsolete. It is being ignored.", 3);
-            Py_INCREF(Py_None);
-            obj = Py_None;
-        }
-    }
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
@@ -2222,7 +2145,7 @@ static int
 VectorAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     VectorAttributesObject *obj = (VectorAttributesObject *)v;
-    fprintf(fp, "%s", PyVectorAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyVectorAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -2230,7 +2153,7 @@ PyObject *
 VectorAttributes_str(PyObject *v)
 {
     VectorAttributesObject *obj = (VectorAttributesObject *)v;
-    return PyString_FromString(PyVectorAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyVectorAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -2382,7 +2305,7 @@ PyVectorAttributes_GetLogString()
 {
     std::string s("VectorAtts = VectorAttributes()\n");
     if(currentAtts != 0)
-        s += PyVectorAttributes_ToString(currentAtts, "VectorAtts.");
+        s += PyVectorAttributes_ToString(currentAtts, "VectorAtts.", true);
     return s;
 }
 
@@ -2395,7 +2318,7 @@ PyVectorAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("VectorAtts = VectorAttributes()\n");
-        s += PyVectorAttributes_ToString(currentAtts, "VectorAtts.");
+        s += PyVectorAttributes_ToString(currentAtts, "VectorAtts.", true);
         cb(s);
     }
 }

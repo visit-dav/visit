@@ -36,7 +36,7 @@ struct KeyframeAttributesObject
 //
 static PyObject *NewKeyframeAttributes(int);
 std::string
-PyKeyframeAttributes_ToString(const KeyframeAttributes *atts, const char *prefix)
+PyKeyframeAttributes_ToString(const KeyframeAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -329,7 +329,7 @@ static int
 KeyframeAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     KeyframeAttributesObject *obj = (KeyframeAttributesObject *)v;
-    fprintf(fp, "%s", PyKeyframeAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyKeyframeAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -337,7 +337,7 @@ PyObject *
 KeyframeAttributes_str(PyObject *v)
 {
     KeyframeAttributesObject *obj = (KeyframeAttributesObject *)v;
-    return PyString_FromString(PyKeyframeAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyKeyframeAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -489,7 +489,7 @@ PyKeyframeAttributes_GetLogString()
 {
     std::string s("KeyframeAtts = KeyframeAttributes()\n");
     if(currentAtts != 0)
-        s += PyKeyframeAttributes_ToString(currentAtts, "KeyframeAtts.");
+        s += PyKeyframeAttributes_ToString(currentAtts, "KeyframeAtts.", true);
     return s;
 }
 
@@ -502,7 +502,7 @@ PyKeyframeAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("KeyframeAtts = KeyframeAttributes()\n");
-        s += PyKeyframeAttributes_ToString(currentAtts, "KeyframeAtts.");
+        s += PyKeyframeAttributes_ToString(currentAtts, "KeyframeAtts.", true);
         cb(s);
     }
 }

@@ -353,7 +353,7 @@ QvisAnnotationWindow::CreateGeneralTab()
 
     // use two layouts, so we can have a compact look
     QVBoxLayout *glayout = new QVBoxLayout(pageGeneral);
-    glayout->setMargin(5);
+    glayout->setContentsMargins(5,5,5,5);
     QHBoxLayout *hlayout = new QHBoxLayout(0);
     hlayout->setSpacing(5);
     glayout->addLayout(hlayout);
@@ -496,7 +496,7 @@ QvisAnnotationWindow::Create2DTab()
     page2D = new QWidget(central);
     QVBoxLayout *page2DLayout = new QVBoxLayout(page2D);
     page2DLayout->setSpacing(5);
-    page2DLayout->setMargin(10);
+    page2DLayout->setContentsMargins(10,10,10,10);
     tabs->addTab(page2D, tr("2D"));
 
     axesFlagToggle2D = new QCheckBox(tr("Show axes"), page2D);
@@ -553,12 +553,12 @@ QvisAnnotationWindow::CreateGeneralTab2D(QWidget *parentWidget)
 {
     QWidget *top = new QWidget(parentWidget);
     QVBoxLayout *vlayout = new QVBoxLayout(top);
-    vlayout->setMargin(10);
+    vlayout->setContentsMargins(10,10,10,10);
     QGridLayout *lLayout = new QGridLayout(0);
     vlayout->addLayout(lLayout);
     vlayout->addStretch(100);
     lLayout->setSpacing(5);
-    lLayout->setMargin(0);
+    lLayout->setContentsMargins(0,0,0,0);
     lLayout->setColumnStretch(1, 10);
 
     // Create auto set scaling check box.
@@ -662,7 +662,7 @@ QvisAnnotationWindow::Create3DTab()
     page3D = new QWidget(central);
     QVBoxLayout *page3DLayout = new QVBoxLayout(page3D);
     page3DLayout->setSpacing(10);
-    page3DLayout->setMargin(10);
+    page3DLayout->setContentsMargins(10,10,10,10);
     tabs->addTab(page3D, tr("3D"));
 
     // Create the toggle for drawing the axes.
@@ -757,12 +757,12 @@ QvisAnnotationWindow::CreateGeneralTab3D(QWidget *parentWidget)
 {
     QWidget *top = new QWidget(parentWidget);
     QVBoxLayout *vlayout = new QVBoxLayout(top);
-    vlayout->setMargin(10);
+    vlayout->setContentsMargins(10,10,10,10);
     QGridLayout *rLayout = new QGridLayout(0);
     vlayout->addLayout(rLayout);
     vlayout->addStretch(100);
     rLayout->setSpacing(5);
-    rLayout->setMargin(0);
+    rLayout->setContentsMargins(0,0,0,0);
     rLayout->setColumnStretch(1, 10);
 
     int row = 0;
@@ -776,7 +776,7 @@ QvisAnnotationWindow::CreateGeneralTab3D(QWidget *parentWidget)
     // Create the axes layout
     QGridLayout *axesLayout = new QGridLayout(axesGroup);
     axesLayout->setSpacing(5);
-    axesLayout->setMargin(0);
+    axesLayout->setContentsMargins(0,0,0,0);
     axesLayout->setColumnStretch(1, 10);
     int axesRow = 0;
 
@@ -839,7 +839,7 @@ QvisAnnotationWindow::CreateGeneralTab3D(QWidget *parentWidget)
 
     QGridLayout *bboxLayout = new QGridLayout(bboxGroup);
     bboxLayout->setSpacing(5);
-    bboxLayout->setMargin(0);
+    bboxLayout->setContentsMargins(0,0,0,0);
     bboxLayout->setColumnStretch(1, 10);
     int bboxRow = 0;
 
@@ -876,7 +876,7 @@ QvisAnnotationWindow::CreateGeneralTab3D(QWidget *parentWidget)
 
     QGridLayout *triadLayout = new QGridLayout(triadGroup);
     triadLayout->setSpacing(5);
-    triadLayout->setMargin(0);
+    triadLayout->setContentsMargins(0,0,0,0);
     triadLayout->setColumnStretch(1, 10);
     int triadRow = 0;
 
@@ -979,7 +979,7 @@ QvisAnnotationWindow::CreateArrayTab()
     pageArray = new QWidget(central);
     QVBoxLayout *aLayout = new QVBoxLayout(pageArray);
     aLayout->setSpacing(5);
-    aLayout->setMargin(10);
+    aLayout->setContentsMargins(10,10,10,10);
     tabs->addTab(pageArray, tr("Array"));
 
     axesFlagToggleArray = new QCheckBox(tr("Show axes"), pageArray);
@@ -1032,12 +1032,12 @@ QvisAnnotationWindow::CreateGeneralTabArray(QWidget *parentWidget)
 {
     QWidget *top = new QWidget(parentWidget);
     QVBoxLayout *vlayout = new QVBoxLayout(top);
-    vlayout->setMargin(10);
+    vlayout->setContentsMargins(10,10,10,10);
     QGridLayout *lLayout = new QGridLayout(0);
     vlayout->addLayout(lLayout);
     vlayout->addStretch(100);
     lLayout->setSpacing(5);
-    lLayout->setMargin(0);
+    lLayout->setContentsMargins(0,0,0,0);
     lLayout->setColumnStretch(1, 10);
 
     int row = 0;
@@ -1101,6 +1101,9 @@ QvisAnnotationWindow::CreateGeneralTabArray(QWidget *parentWidget)
 //   Set keyboard tracking to false for spin boxes so that 'valueChanged'
 //   signal will only emit when 'enter' is pressed or spinbox loses focus.
 //
+//   Kathleen Biagas, Tue Apr 18 16:34:41 PDT 2023
+//   Support Qt6: buttonClicked -> idClicked.
+//
 // ****************************************************************************
 
 void
@@ -1115,7 +1118,7 @@ QvisAnnotationWindow::CreateColorTab()
     tabs->addTab(pageColor, tr("Colors"));
 
     QVBoxLayout *vcLayout = new QVBoxLayout(pageColor);
-    vcLayout->setMargin(10);
+    vcLayout->setContentsMargins(10,10,10,10);
     QGridLayout *cLayout = new QGridLayout(0);
     cLayout->setSpacing(10);
     vcLayout->addLayout(cLayout);
@@ -1144,8 +1147,13 @@ QvisAnnotationWindow::CreateColorTab()
     QLabel *backgroundStyleLabel = new QLabel(tr("Background style"), pageColor);
     cLayout->addWidget(backgroundStyleLabel, row, 0);
     backgroundStyleButtons = new QButtonGroup(pageColor);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(backgroundStyleButtons, SIGNAL(buttonClicked(int)),
             this, SLOT(backgroundStyleChanged(int)));
+#else
+    connect(backgroundStyleButtons, SIGNAL(idClicked(int)),
+            this, SLOT(backgroundStyleChanged(int)));
+#endif
     QGridLayout *mLayout = new QGridLayout(0);
     cLayout->addLayout(mLayout, row, 1, 1, 4);
     QRadioButton *solid = new QRadioButton(tr("Solid"), pageColor);
@@ -1271,6 +1279,9 @@ QvisAnnotationWindow::CreateColorTab()
 //   Brad Whitlock, Thu Jun 26 11:00:21 PDT 2008
 //   Qt 4.
 //
+//   Kathleen Biagas, Tue Apr 18 16:34:41 PDT 2023
+//   Support Qt6: buttonClicked -> idClicked.
+//
 // ****************************************************************************
 
 void
@@ -1283,11 +1294,11 @@ QvisAnnotationWindow::CreateObjectsTab()
     tabs->addTab(pageObjects, tr("Objects"));
 
     QVBoxLayout *objTopLayout = new QVBoxLayout(pageObjects);
-    objTopLayout->setMargin(10);
+    objTopLayout->setContentsMargins(10,10,10,10);
     objTopLayout->setSpacing(5);
 
     QHBoxLayout *hLayout = new QHBoxLayout(0);
-    hLayout->setMargin(0);
+    hLayout->setContentsMargins(0,0,0,0);
     objTopLayout->addLayout(hLayout);
 
     //
@@ -1298,17 +1309,22 @@ QvisAnnotationWindow::CreateObjectsTab()
     hLayout->addWidget(newObjectGroup);
 
     QVBoxLayout *objButtonLayout = new QVBoxLayout(newObjectGroup);
-    objButtonLayout->setMargin(10);
+    objButtonLayout->setContentsMargins(10,10,10,10);
     objButtonLayout->setSpacing(5);
     objButtonGroup = new QButtonGroup(newObjectGroup);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(objButtonGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(addNewAnnotationObject(int)));
+#else
+    connect(objButtonGroup, SIGNAL(idClicked(int)),
+            this, SLOT(addNewAnnotationObject(int)));
+#endif
 
     //
     // Create the annotation object list and controls to do things to them.
     //
     QGridLayout *annotListLayout = new QGridLayout(0);
-    annotListLayout->setMargin(0);
+    annotListLayout->setContentsMargins(0,0,0,0);
     hLayout->addLayout(annotListLayout);
     hLayout->setStretchFactor(annotListLayout, 10);
     annotListLayout->addWidget(new QLabel(tr("Annotation objects"),

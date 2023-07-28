@@ -24,7 +24,7 @@ VISITPY_API PyObject *     PyavtScalarMetaData_Wrap(const avtScalarMetaData *att
 void VISITPY_API           PyavtScalarMetaData_SetParent(PyObject *obj, PyObject *parent);
 void VISITPY_API           PyavtScalarMetaData_SetDefaults(const avtScalarMetaData *atts);
 std::string VISITPY_API    PyavtScalarMetaData_GetLogString();
-std::string VISITPY_API    PyavtScalarMetaData_ToString(const avtScalarMetaData *, const char *);
+std::string VISITPY_API    PyavtScalarMetaData_ToString(const avtScalarMetaData *, const char *, const bool=false);
 VISITPY_API PyObject *     PyavtScalarMetaData_getattr(PyObject *self, char *name);
 int VISITPY_API            PyavtScalarMetaData_setattr(PyObject *self, char *name, PyObject *args);
 VISITPY_API extern PyMethodDef PyavtScalarMetaData_methods[AVTSCALARMETADATA_NMETH];

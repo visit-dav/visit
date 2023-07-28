@@ -9,7 +9,7 @@
 #ifndef VIS_WIN_TEXT3D_COLLEAGUE_H
 #define VIS_WIN_TEXT3D_COLLEAGUE_H
 #include <viswindow_exports.h>
-#include <avtAnnotationColleague.h>
+#include <avtAnnotationWithTextColleague.h>
 #include <ColorAttribute.h>
 
 class vtkFollower;
@@ -35,7 +35,7 @@ class vtkVectorText;
 //   
 // ****************************************************************************
 
-class VISWINDOW_API avtText3DColleague : public avtAnnotationColleague
+class VISWINDOW_API avtText3DColleague : public avtAnnotationWithTextColleague
 {
 public:
     avtText3DColleague(VisWindowColleagueProxy &);
@@ -64,19 +64,12 @@ protected:
     void SetText(const char *text);
     void UpdateActorScale();
 
-    static double initialTime;
-    static int    initialCycle;
-
     // Make a heap-allocated structure to prevent weird errors on MacOS X/gcc 4.0.1
     struct Text3DInformation
     {
         ColorAttribute  textColor;
         bool            positionInitialized;
         bool            scaleInitialized;
-        char           *textFormatString;
-        char           *textString;
-        double          currentTime;
-        int             currentCycle;
 
         bool            useForegroundForTextColor;
         bool            useRelativeHeight;

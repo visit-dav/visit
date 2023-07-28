@@ -325,7 +325,7 @@ QvisPickWindow::CreateWindowContents()
     {
         pages[i] = new QWidget();
         QVBoxLayout *vLayout = new QVBoxLayout(pages[i]);
-        vLayout->setMargin(10);
+        vLayout->setContentsMargins(10,10,10,10);
         vLayout->setSpacing(5);
         pages[i]->hide();
         infoLists[i]  = new QTextEdit(pages[i]);
@@ -516,7 +516,7 @@ QvisPickWindow::CreateDisplayOptionsTab()
     nodeGroupBox->setTitle(tr("For nodes"));
     dLayout->addWidget(nodeGroupBox, 5, 0, 1, 4);
     QGridLayout *nLayout = new QGridLayout(nodeGroupBox);
-    nLayout->setMargin(10);
+    nLayout->setContentsMargins(10,10,10,10);
     nLayout->setSpacing(10);
 
     nodeId = new QCheckBox(tr("Id"), nodeGroupBox);
@@ -541,7 +541,7 @@ QvisPickWindow::CreateDisplayOptionsTab()
     zoneGroupBox->setTitle(tr("For zones"));
     dLayout->addWidget(zoneGroupBox, 6, 0, 1, 4);
     QGridLayout *zLayout = new QGridLayout(zoneGroupBox);
-    zLayout->setMargin(10);
+    zLayout->setContentsMargins(10,10,10,10);
     zLayout->setSpacing(10);
 
     zoneId = new QCheckBox(tr("Id"), zoneGroupBox);

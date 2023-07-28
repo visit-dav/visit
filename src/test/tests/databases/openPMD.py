@@ -9,7 +9,7 @@
 #  Date:       Mon Oct 28 13:00:15 EDT 2019
 #
 # ----------------------------------------------------------------------------
-RequiredDatabasePlugin("openPMD")
+RequiredDatabasePlugin("OpenPMD")
 
 openPMDFile = 'openpmd_test_data/data00000500.opmd'
 

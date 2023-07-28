@@ -8,6 +8,8 @@
 
 #include <float.h>
 
+#include <visit-config.h> // For LIB_VERSION_LE
+
 #include <avtResampleFilter.h>
 
 #include <vtkCellData.h>
@@ -55,7 +57,7 @@ static vtkDataArray        *GetCoordinates(double, double, int, int, int);
 //  Arguments:
 //      atts    The attributes the filter should use.
 //
-//  Programmer: Hank Childs 
+//  Programmer: Hank Childs
 //  Creation:   March 26, 2001
 //
 //  Modifications:
@@ -122,7 +124,7 @@ avtResampleFilter::Create(const AttributeGroup *atts)
 //
 //  Returns:       The output rectilinear grid.
 //
-//  Programmer: Hank Childs 
+//  Programmer: Hank Childs
 //  Creation:   March 26, 2001
 //
 //  Modifications:
@@ -163,9 +165,9 @@ avtResampleFilter::Execute(void)
 //
 //    Kathleen Bonnell, Mon Apr 23 13:26:00 PDT 2001
 //    Forced the output of this filter to be an avtDataTree with the same
-//    number of children as the input, in order for it to work correctly 
+//    number of children as the input, in order for it to work correctly
 //    with domain lists elsewhere in the pipeline.
-//  
+//
 //    Hank Childs, Tue Apr 24 16:54:51 PDT 2001
 //    Send the data extents down before resampling.
 //
@@ -181,7 +183,7 @@ avtResampleFilter::Execute(void)
 //    Hank Childs, Wed Nov 14 16:42:17 PST 2001
 //    Add support for multiple variables.
 //
-//    Hank Childs, Wed Nov 28 12:46:49 PST 2001 
+//    Hank Childs, Wed Nov 28 12:46:49 PST 2001
 //    Do not send down a NULL data tree when we have no data, send a dummy
 //    instead.
 //
@@ -211,7 +213,7 @@ avtResampleFilter::Execute(void)
 //    Fix memory leak.
 //
 //    Mark C. Miller, Tue Sep 13 20:09:49 PDT 2005
-//    Added test for if data selection has already been applied 
+//    Added test for if data selection has already been applied
 //
 //    Mark C. Miller, Thu Sep 15 11:30:18 PDT 2005
 //    Modified where data selection bypass is done and added matching
@@ -256,6 +258,10 @@ avtResampleFilter::Execute(void)
 //    Hank Childs, Thu Aug 26 13:47:30 PDT 2010
 //    Change extents names.
 //
+//    Kathleen Biagas, Wed Aug 17, 2022
+//    Incorporate ARSanderson's OSPRAY 2.8.0 work for VTK 9:
+//    utilize PerRankResample.
+//
 // ****************************************************************************
 
 void
@@ -270,7 +276,7 @@ avtResampleFilter::ResampleInput(void)
     debug4 << "Resampling over space: " << bounds[0] << ", " << bounds[1]
            << ": " << bounds[2] << ", " << bounds[3] << ": " << bounds[4]
            << ", " << bounds[5] << endl;
-    
+
     //
     // Our resampling leaves some invalid values in the data range.  The
     // easiest way to bypass this is to get the data range from the input and
@@ -297,7 +303,7 @@ avtResampleFilter::ResampleInput(void)
     //
     // If there are no variables, then just create the mesh and exit.
     //
-    bool thereAreNoVariables = 
+    bool thereAreNoVariables =
           (GetInput()->GetInfo().GetAttributes().GetNumberOfVariables() <= 0);
     if (thereAreNoVariables)
     {
@@ -327,7 +333,7 @@ avtResampleFilter::ResampleInput(void)
     // This is because large X is at the right and large Y is at the top.
     // The z-buffer has the closest points at z=0, so Z is going away from the
     // screen ===> left handed coordinate system.  If we reflect across X,
-    // then this will account for the difference between the coordinate 
+    // then this will account for the difference between the coordinate
     // systems.
     //
     scale[0] *= -1.;
@@ -347,7 +353,7 @@ avtResampleFilter::ResampleInput(void)
     avtWorldSpaceToImageSpaceTransform trans(view, scale);
     trans.SetInput(termsrc.GetOutput());
 
-    bool doKernel = 
+    bool doKernel =
         (GetInput()->GetInfo().GetAttributes().GetTopologicalDimension() == 0);
     avtSamplePointExtractor extractor(width, height, depth);
     extractor.SendCellsMode(false);
@@ -401,8 +407,27 @@ avtResampleFilter::ResampleInput(void)
     avtImagePartition partition(width, height, PAR_Size(), PAR_Rank());
     communicator.SetImagePartition(&partition);
     bool doDistributedResample = false;
+#if LIB_VERSION_LE(VTK,8,1,0)
 #ifdef PARALLEL
     doDistributedResample = atts.GetDistributedResample();
+#endif
+#else
+    bool doPerRankResample = false;
+#ifdef PARALLEL
+    // When running in parallel one can resample all of the data on to
+    // one large rectilinear grid then distribute chunks of the grid
+    // to each rank. Or one can resample the data that is per rank
+    // with the resampled data remaining on the same rank. If both are
+    // off then the data is all resampled on to rank 0.
+    doDistributedResample = atts.GetDistributedResample();
+    doPerRankResample     = atts.GetPerRankResample();
+
+    if( doDistributedResample && doPerRankResample )
+    {
+        EXCEPTION1(VisItException, "Can not do both a distributed and local resample");
+    }
+
+#endif
 #endif
 
     if (doDistributedResample)
@@ -434,7 +459,7 @@ avtResampleFilter::ResampleInput(void)
     }
 
     //
-    // Create a rectilinear dataset that is stretched according to the 
+    // Create a rectilinear dataset that is stretched according to the
     // original bounds.
     //
     int width_start  = 0;
@@ -443,7 +468,7 @@ avtResampleFilter::ResampleInput(void)
     int height_end   = height;
     if (doDistributedResample)
     {
-        partition.GetThisPartition(width_start, width_end, height_start, 
+        partition.GetThisPartition(width_start, width_end, height_start,
                                    height_end);
         width_end += 1;
         height_end += 1;
@@ -484,10 +509,14 @@ avtResampleFilter::ResampleInput(void)
     // which uses MPI_MAX for an all reduce.  So give uncovered regions very
     // small values now (-FLT_MAX) and then replace them later.
     double defaultPlaceholder = -FLT_MAX;
-    samples->GetVolume()->GetVariables(defaultPlaceholder, vars, 
+    samples->GetVolume()->GetVariables(defaultPlaceholder, vars,
                                        numArrays, ip);
 
+#if LIB_VERSION_LE(VTK,8,1,0)
     if (!doDistributedResample)
+#else
+    if (!doDistributedResample && !doPerRankResample)
+#endif
     {
         //
         // Collect will perform the parallel collection.  Does nothing in
@@ -499,7 +528,7 @@ avtResampleFilter::ResampleInput(void)
             Collect(ptr, vars[i]->GetNumberOfComponents()*width*height*depth);
         }
     }
-    
+
     // Now replace the -FLT_MAX's with the default value.  (See comment above.)
     for (i = 0 ; i < numArrays ; i++)
     {
@@ -509,12 +538,13 @@ avtResampleFilter::ResampleInput(void)
         {
             double *ptr = (double *) vars[i]->GetVoidPointer(0);
             for (j = 0 ; j < numTups ; j++)
-                ptr[j] = (ptr[j] == defaultPlaceholder 
-                                 ? atts.GetDefaultVal() 
+                ptr[j] = (ptr[j] == defaultPlaceholder
+                                 ? atts.GetDefaultVal()
                                  : ptr[j]);
         }
     }
-   
+
+#if LIB_VERSION_LE(VTK,8,1,0)
     bool iHaveData = false;
     if (doDistributedResample)
         iHaveData = true;
@@ -523,6 +553,13 @@ avtResampleFilter::ResampleInput(void)
     if (height_end > height)
         iHaveData = false;
     if (iHaveData)
+#else
+    if ((PAR_Rank() == 0 ||       // Always have data on Rank 0.
+         doDistributedResample || // All ranks should have data.
+         (doPerRankResample &&    // Not all ranks will have data.
+          avtDatasetExaminer::HasData(ds))) &&
+        (height_end <= height))
+#endif
     {
         vtkRectilinearGrid *rg = CreateGrid(bounds, width, height, depth,
                                         width_start, width_end, height_start,
@@ -543,7 +580,7 @@ avtResampleFilter::ResampleInput(void)
                         if (weight <= min_weight)
                             vars[i]->SetComponent(k, j, atts.GetDefaultVal());
                         else
-                            vars[i]->SetComponent(k, j, 
+                            vars[i]->SetComponent(k, j,
                                          vars[i]->GetComponent(k, j) / weight);
                     }
                 }
@@ -562,12 +599,10 @@ avtResampleFilter::ResampleInput(void)
                 {
                     if (cellCenteredOutput)
                     {
-                        rg->GetCellData()->AddArray(vars[i]);
                         rg->GetCellData()->SetScalars(vars[i]);
                     }
                     else
                     {
-                        rg->GetPointData()->AddArray(vars[i]);
                         rg->GetPointData()->SetScalars(vars[i]);
                     }
                 }
@@ -699,8 +734,8 @@ avtResampleFilter::GetDimensions(int &width, int &height, int &depth,
             bounds[4] != +DBL_MAX && bounds[5] != -DBL_MAX)
         {
             //
-            // Classic algebra problem -- we know the volume of the cube and 
-            // the ratio of the sides, but not the actual length of any of the 
+            // Classic algebra problem -- we know the volume of the cube and
+            // the ratio of the sides, but not the actual length of any of the
             // sides.  Start off by determining the ratios and the put
             // everything in terms of the number of sample points in the width.
             // Once that is solved, everything falls out.
@@ -791,11 +826,24 @@ avtResampleFilter::GetDimensions(int &width, int &height, int &depth,
 //    Hank Childs, Tue Nov 30 21:54:43 PST 2010
 //    Remove const qualification.
 //
+//    Kathleen Biagas, Wed Aug 17, 2022
+//    Incorporate ARSanderson's OSPRAY 2.8.0 work for VTK 9:
+//    utilize PerRankResample.
+//
 // ****************************************************************************
 bool avtResampleFilter::GetBounds(double bounds[6])
 {
     bool is3D = true;
+#if LIB_VERSION_GE(VTK,9,1,0)
+    if (atts.GetPerRankResample())
+    {
+        avtDataset_p ds = GetTypedInput();
+        avtDatasetExaminer::GetSpatialExtents( ds, bounds );
+    }
+    else if (atts.GetUseBounds())
+#else
     if (atts.GetUseBounds())
+#endif
     {
         bounds[0] = atts.GetMinX();
         bounds[1] = atts.GetMaxX();
@@ -1042,7 +1090,7 @@ CreateGrid(const double *bounds, int numX, int numY, int numZ, int minX,
 //  Modifications:
 //    Kathleen Bonnell, Mon Nov 19 15:31:36 PST 2001
 //    Changes in VTK 4.0 API require use of vtkDataArray /vtkFloatArray
-//    in place of vtkScalars. 
+//    in place of vtkScalars.
 //
 //    Hank Childs, Fri Sep 30 10:50:24 PDT 2005
 //    Add support for distributed resampling.

@@ -16,6 +16,7 @@
 class QButtonGroup;
 class QCheckBox;
 class QComboBox;
+class QEnterEvent;
 class QGroupBox;
 class QHBox;
 class QLabel;
@@ -67,6 +68,9 @@ class ViewerPlot;
 //   Brad Whitlock, Tue May 26 11:09:08 PDT 2009
 //   I added lineout operations.
 //
+//   Kathleen Biagas, Wed Apr 19 14:56:09 PDT 2023
+//   Use QEnterEvent as arg to enterEvent.
+//
 // ****************************************************************************
 
 class SpreadsheetViewer : public QMainWindow, public Observer
@@ -83,7 +87,7 @@ public:
 
     virtual void Update(Subject *);
 protected:
-    virtual void enterEvent(QEvent *);
+    virtual void enterEvent(QEnterEvent *);
     virtual void closeEvent(QCloseEvent *e);
 private slots:
     void formatChanged();

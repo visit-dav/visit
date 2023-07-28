@@ -38,7 +38,7 @@ struct QueryOverTimeAttributesObject
 //
 static PyObject *NewQueryOverTimeAttributes(int);
 std::string
-PyQueryOverTimeAttributes_ToString(const QueryOverTimeAttributes *atts, const char *prefix)
+PyQueryOverTimeAttributes_ToString(const QueryOverTimeAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -945,7 +945,7 @@ static int
 QueryOverTimeAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     QueryOverTimeAttributesObject *obj = (QueryOverTimeAttributesObject *)v;
-    fprintf(fp, "%s", PyQueryOverTimeAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyQueryOverTimeAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -953,7 +953,7 @@ PyObject *
 QueryOverTimeAttributes_str(PyObject *v)
 {
     QueryOverTimeAttributesObject *obj = (QueryOverTimeAttributesObject *)v;
-    return PyString_FromString(PyQueryOverTimeAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyQueryOverTimeAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //

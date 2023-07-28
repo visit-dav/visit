@@ -23,7 +23,7 @@ VISITPY_API PyObject *     PyQueryAttributes_Wrap(const QueryAttributes *attr);
 void VISITPY_API           PyQueryAttributes_SetParent(PyObject *obj, PyObject *parent);
 void VISITPY_API           PyQueryAttributes_SetDefaults(const QueryAttributes *atts);
 std::string VISITPY_API    PyQueryAttributes_GetLogString();
-std::string VISITPY_API    PyQueryAttributes_ToString(const QueryAttributes *, const char *);
+std::string VISITPY_API    PyQueryAttributes_ToString(const QueryAttributes *, const char *, const bool=false);
 VISITPY_API PyObject *     PyQueryAttributes_getattr(PyObject *self, char *name);
 int VISITPY_API            PyQueryAttributes_setattr(PyObject *self, char *name, PyObject *args);
 VISITPY_API extern PyMethodDef PyQueryAttributes_methods[QUERYATTRIBUTES_NMETH];

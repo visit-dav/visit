@@ -51,7 +51,7 @@ struct SaveSubWindowsAttributesObject
 //
 static PyObject *NewSaveSubWindowsAttributes(int);
 std::string
-PySaveSubWindowsAttributes_ToString(const SaveSubWindowsAttributes *atts, const char *prefix)
+PySaveSubWindowsAttributes_ToString(const SaveSubWindowsAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -61,82 +61,82 @@ PySaveSubWindowsAttributes_ToString(const SaveSubWindowsAttributes *atts, const 
     { // new scope
         std::string objPrefix(prefix);
         objPrefix += "win1.";
-        str += PySaveSubWindowAttributes_ToString(&atts->GetWin1(), objPrefix.c_str());
+        str += PySaveSubWindowAttributes_ToString(&atts->GetWin1(), objPrefix.c_str(), forLogging);
     }
     { // new scope
         std::string objPrefix(prefix);
         objPrefix += "win2.";
-        str += PySaveSubWindowAttributes_ToString(&atts->GetWin2(), objPrefix.c_str());
+        str += PySaveSubWindowAttributes_ToString(&atts->GetWin2(), objPrefix.c_str(), forLogging);
     }
     { // new scope
         std::string objPrefix(prefix);
         objPrefix += "win3.";
-        str += PySaveSubWindowAttributes_ToString(&atts->GetWin3(), objPrefix.c_str());
+        str += PySaveSubWindowAttributes_ToString(&atts->GetWin3(), objPrefix.c_str(), forLogging);
     }
     { // new scope
         std::string objPrefix(prefix);
         objPrefix += "win4.";
-        str += PySaveSubWindowAttributes_ToString(&atts->GetWin4(), objPrefix.c_str());
+        str += PySaveSubWindowAttributes_ToString(&atts->GetWin4(), objPrefix.c_str(), forLogging);
     }
     { // new scope
         std::string objPrefix(prefix);
         objPrefix += "win5.";
-        str += PySaveSubWindowAttributes_ToString(&atts->GetWin5(), objPrefix.c_str());
+        str += PySaveSubWindowAttributes_ToString(&atts->GetWin5(), objPrefix.c_str(), forLogging);
     }
     { // new scope
         std::string objPrefix(prefix);
         objPrefix += "win6.";
-        str += PySaveSubWindowAttributes_ToString(&atts->GetWin6(), objPrefix.c_str());
+        str += PySaveSubWindowAttributes_ToString(&atts->GetWin6(), objPrefix.c_str(), forLogging);
     }
     { // new scope
         std::string objPrefix(prefix);
         objPrefix += "win7.";
-        str += PySaveSubWindowAttributes_ToString(&atts->GetWin7(), objPrefix.c_str());
+        str += PySaveSubWindowAttributes_ToString(&atts->GetWin7(), objPrefix.c_str(), forLogging);
     }
     { // new scope
         std::string objPrefix(prefix);
         objPrefix += "win8.";
-        str += PySaveSubWindowAttributes_ToString(&atts->GetWin8(), objPrefix.c_str());
+        str += PySaveSubWindowAttributes_ToString(&atts->GetWin8(), objPrefix.c_str(), forLogging);
     }
     { // new scope
         std::string objPrefix(prefix);
         objPrefix += "win9.";
-        str += PySaveSubWindowAttributes_ToString(&atts->GetWin9(), objPrefix.c_str());
+        str += PySaveSubWindowAttributes_ToString(&atts->GetWin9(), objPrefix.c_str(), forLogging);
     }
     { // new scope
         std::string objPrefix(prefix);
         objPrefix += "win10.";
-        str += PySaveSubWindowAttributes_ToString(&atts->GetWin10(), objPrefix.c_str());
+        str += PySaveSubWindowAttributes_ToString(&atts->GetWin10(), objPrefix.c_str(), forLogging);
     }
     { // new scope
         std::string objPrefix(prefix);
         objPrefix += "win11.";
-        str += PySaveSubWindowAttributes_ToString(&atts->GetWin11(), objPrefix.c_str());
+        str += PySaveSubWindowAttributes_ToString(&atts->GetWin11(), objPrefix.c_str(), forLogging);
     }
     { // new scope
         std::string objPrefix(prefix);
         objPrefix += "win12.";
-        str += PySaveSubWindowAttributes_ToString(&atts->GetWin12(), objPrefix.c_str());
+        str += PySaveSubWindowAttributes_ToString(&atts->GetWin12(), objPrefix.c_str(), forLogging);
     }
     { // new scope
         std::string objPrefix(prefix);
         objPrefix += "win13.";
-        str += PySaveSubWindowAttributes_ToString(&atts->GetWin13(), objPrefix.c_str());
+        str += PySaveSubWindowAttributes_ToString(&atts->GetWin13(), objPrefix.c_str(), forLogging);
     }
     { // new scope
         std::string objPrefix(prefix);
         objPrefix += "win14.";
-        str += PySaveSubWindowAttributes_ToString(&atts->GetWin14(), objPrefix.c_str());
+        str += PySaveSubWindowAttributes_ToString(&atts->GetWin14(), objPrefix.c_str(), forLogging);
     }
     { // new scope
         std::string objPrefix(prefix);
         objPrefix += "win15.";
-        str += PySaveSubWindowAttributes_ToString(&atts->GetWin15(), objPrefix.c_str());
+        str += PySaveSubWindowAttributes_ToString(&atts->GetWin15(), objPrefix.c_str(), forLogging);
     }
     { // new scope
         std::string objPrefix(prefix);
         objPrefix += "win16.";
-        str += PySaveSubWindowAttributes_ToString(&atts->GetWin16(), objPrefix.c_str());
+        str += PySaveSubWindowAttributes_ToString(&atts->GetWin16(), objPrefix.c_str(), forLogging);
     }
     return str;
 }
@@ -840,7 +840,7 @@ static int
 SaveSubWindowsAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     SaveSubWindowsAttributesObject *obj = (SaveSubWindowsAttributesObject *)v;
-    fprintf(fp, "%s", PySaveSubWindowsAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PySaveSubWindowsAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -848,7 +848,7 @@ PyObject *
 SaveSubWindowsAttributes_str(PyObject *v)
 {
     SaveSubWindowsAttributesObject *obj = (SaveSubWindowsAttributesObject *)v;
-    return PyString_FromString(PySaveSubWindowsAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PySaveSubWindowsAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -1000,7 +1000,7 @@ PySaveSubWindowsAttributes_GetLogString()
 {
     std::string s("SaveSubWindowsAtts = SaveSubWindowsAttributes()\n");
     if(currentAtts != 0)
-        s += PySaveSubWindowsAttributes_ToString(currentAtts, "SaveSubWindowsAtts.");
+        s += PySaveSubWindowsAttributes_ToString(currentAtts, "SaveSubWindowsAtts.", true);
     return s;
 }
 
@@ -1013,7 +1013,7 @@ PySaveSubWindowsAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("SaveSubWindowsAtts = SaveSubWindowsAttributes()\n");
-        s += PySaveSubWindowsAttributes_ToString(currentAtts, "SaveSubWindowsAtts.");
+        s += PySaveSubWindowsAttributes_ToString(currentAtts, "SaveSubWindowsAtts.", true);
         cb(s);
     }
 }

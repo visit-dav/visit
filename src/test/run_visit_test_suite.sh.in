@@ -1,6 +1,18 @@
 #!/bin/bash
-@PYTHON_EXECUTABLE@ @CMAKE_CURRENT_SOURCE_DIR@/visit_test_suite.py \
-   -d @CMAKE_BINARY_DIR@/testdata/  \
-   -b @CMAKE_CURRENT_SOURCE_DIR@/../../test/baseline/   \
+#
+# Developers beware...if you are doing development on any of VisIt's test
+# harness python code or on data files being used in testing, you will 
+# need to remake each time you make a change you wish to test. This is
+# because the files need to get copied to their appropriate place in the
+# build dir.
+#
+env PYTHONPATH=@CMAKE_BINARY_DIR@/lib/site-packages/ \
+@PYTHON_EXECUTABLE@ @CMAKE_CURRENT_SOURCE_DIR@/run_visit_test_suite.py \
+   -d @CMAKE_BINARY_DIR@/testdata/ \
+   -b @CMAKE_CURRENT_SOURCE_DIR@/../../test/baseline/  \
+   -t @CMAKE_CURRENT_SOURCE_DIR@/tests \
    -o output \
+   -s @VISIT_SOURCE_DIR@/test/skip.json \
+   --src @VISIT_SOURCE_DIR@ \
+   --cmake @CMAKE_COMMAND@ \
    -e @CMAKE_BINARY_DIR@/bin/visit "$@"

@@ -7,6 +7,9 @@
 // ************************************************************************* //
 
 #include <avtIndexSelectFilter.h>
+
+#include <visit-config.h> // For LIB_VERSION_LE
+
 #include <avtExecutionManager.h>
 
 #include <vtkCell.h>
@@ -711,7 +714,12 @@ avtIndexSelectFilter::ExecuteData(avtDataRepresentation *in_dr)
             for (int i = 0 ; i < ncells ; i++)
             {
                 int celltype = ugrid->GetCellType(i);
-                vtkIdType *pts, npts;
+                vtkIdType npts;
+#if LIB_VERSION_LE(VTK,8,1,0)
+                vtkIdType *pts;
+#else
+                const vtkIdType *pts;
+#endif
                 ugrid->GetCellPoints(i, npts, pts);
                 out_pd->InsertNextCell(celltype, npts, pts);
             }

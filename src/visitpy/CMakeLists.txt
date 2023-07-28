@@ -52,6 +52,13 @@
 #
 #  Chris Laganella, Mon Feb  7 20:36:34 EST 2022
 #  Link the visitmodule to "rt" on non windows platforms.
+#
+#  Kathleen Biagas, Fri Sep 9, 2022
+#  Link with CMAKE_THREAD_LIBS.
+#
+#  Eric Brugger, Tue Jul 25 11:23:55 EDT 2023
+#  Change CMAKE_THREAD_LIBS to Threads::Threads.
+#
 #****************************************************************************
 
 #########################################################
@@ -387,6 +394,7 @@ avtdbatts
 viewerrpc
 visitcommon
 ${PYTHON_LIBRARIES}
+Threads::Threads
 )
 
 # Create the CLI
@@ -407,7 +415,7 @@ avtdbatts
 visitcommon
 visitpy
 ${PYTHON_LIBRARIES}
-${CMAKE_THREAD_LIBS}
+Threads::Threads
 )
 IF(NOT WIN32)
     TARGET_LINK_LIBRARIES(cli dl)

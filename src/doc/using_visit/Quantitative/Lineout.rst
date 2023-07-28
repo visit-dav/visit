@@ -369,6 +369,7 @@ the **Samples** text field. The **Use Sampling** toggle button controls
 whether sampling is used and **Samples** is used to set the number of
 sample points when sampling.
 
+.. _LineoutInteractivemode:
 
 Interactive mode
 """"""""""""""""
@@ -449,6 +450,8 @@ will only apply to future lineouts, not lineouts already created.
 .. figure:: images/lineoutoptionswindow.png
 
    Lineout Options Window
+
+.. _lineoutdestinationwindow:
 
 Lineout destination window
 """"""""""""""""""""""""""

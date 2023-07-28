@@ -75,13 +75,6 @@ function bv_h5part_ensure
     fi
 }
 
-function bv_h5part_dry_run
-{
-    if [[ "$DO_H5PART" == "yes" ]] ; then
-        echo "Dry run option not set for h5part."
-    fi
-}
-
 function apply_h5part_1_6_6_patch
 {
     info "Patching H5Part"
@@ -554,9 +547,12 @@ function build_h5part
     fi
 
     EXTRAARGS=""
-    # detect coral systems, which older versions of autoconf don't detect
+    # detect coral and NVIDIA Grace CPU (ARM) systems, which older versions of 
+    # autoconf don't detect
     if [[ "$(uname -m)" == "ppc64le" ]] ; then
          EXTRAARGS="ac_cv_build=powerpc64le-unknown-linux-gnu"
+    elif [[ "$(uname -m)" == "aarch64" ]] ; then
+         EXTRAARGS="ac_cv_build=aarch64-unknown-linux-gnu"
     fi
 
     info "Invoking command to configure H5Part"

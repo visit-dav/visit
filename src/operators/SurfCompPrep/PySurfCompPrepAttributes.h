@@ -22,7 +22,7 @@ PyObject *     PySurfCompPrepAttributes_Wrap(const SurfCompPrepAttributes *attr)
 void           PySurfCompPrepAttributes_SetParent(PyObject *obj, PyObject *parent);
 void           PySurfCompPrepAttributes_SetDefaults(const SurfCompPrepAttributes *atts);
 std::string    PySurfCompPrepAttributes_GetLogString();
-std::string    PySurfCompPrepAttributes_ToString(const SurfCompPrepAttributes *, const char *);
+std::string    PySurfCompPrepAttributes_ToString(const SurfCompPrepAttributes *, const char *, const bool=false);
 PyObject *     PySurfCompPrepAttributes_getattr(PyObject *self, char *name);
 int            PySurfCompPrepAttributes_setattr(PyObject *self, char *name, PyObject *args);
 extern PyMethodDef PySurfCompPrepAttributes_methods[SURFCOMPPREPATTRIBUTES_NMETH];

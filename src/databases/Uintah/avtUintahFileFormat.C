@@ -337,7 +337,7 @@ avtUintahFileFormat::avtUintahFileFormat(const char *filename,
     EXCEPTION1(InvalidDBTypeException, "The function getGridData could not be located in the library!!!");
   }
 
-#if (VISIT_APP_VERSION_CHECK(2, 0, 0) <= UINTAH_VERSION_HEX )
+#if LIB_VERSION_LE(UINTAH, 2,0,0)
   variableExists = (bool (*)(DataArchive*, std::string)) dlsym(libHandle, "variableExists");
   if((error = dlerror()) != NULL)
   {
@@ -345,7 +345,7 @@ avtUintahFileFormat::avtUintahFileFormat(const char *filename,
   }
 #endif
 
-#if (VISIT_APP_VERSION_CHECK(2, 5, 1) <= UINTAH_VERSION_HEX )
+#if LIB_VERSION_LE(UINTAH, 2,5,1)
   getNumberParticles = (unsigned int (*)(DataArchive*, GridP*, int, int, int, int)) dlsym(libHandle, "getNumberParticles");
   if((error = dlerror()) != NULL)
   {
@@ -773,7 +773,7 @@ avtUintahFileFormat::ReadMetaData(avtDatabaseMetaData *md, int timeState)
 
     avtScalarMetaData *scalar;
 
-#if (VISIT_APP_VERSION_CHECK(2, 1, 0) <= UINTAH_VERSION_HEX )
+#if LIB_VERSION_LE(UINTAH, 2,1,0)
     scalar = new avtScalarMetaData();
     scalar->name = "Patch/Id";
     scalar->meshName = mesh_for_this_var;
@@ -1387,7 +1387,7 @@ avtUintahFileFormat::GetMesh(int timestate, int domain, const char *meshname)
 
         //todo: this returns an array of doubles. Need to return
         //expected datatype to avoid unnecessary conversion.
-#if (VISIT_APP_VERSION_CHECK(2, 0, 0) <= UINTAH_VERSION_HEX )
+#if LIB_VERSION_LE(UINTAH, 2,0,0)
         if( variableExists(archive, "p.particleID") )
 #endif
         {
@@ -1785,9 +1785,9 @@ avtUintahFileFormat::GetVar(int timestate, int domain, const char *varname)
           pd->data = new double[pd->num * pd->components];
 
           // Patch processor rank
-#if (VISIT_APP_VERSION_CHECK(2, 5, 1) <= UINTAH_VERSION_HEX )
+#if LIB_VERSION_LE(UINTAH, 2,5,1)
           double value = patchInfo.getProcId();
-#elif (VISIT_APP_VERSION_CHECK(2, 2, 0) <= UINTAH_VERSION_HEX )
+#elif LIB_VERSION_LE(UINTAH, 2,2,0)
           double value = patchInfo.getProcRankId();
 #else
           double value = patchInfo.getProcId();
@@ -1881,9 +1881,9 @@ avtUintahFileFormat::GetVar(int timestate, int domain, const char *varname)
         phigh[i] += nhigh[i];
     }
 
-#if (VISIT_APP_VERSION_CHECK(2, 5, 1) <= UINTAH_VERSION_HEX )
+#if LIB_VERSION_LE(UINTAH, 2,5,1)
     double rank = patchInfo.getProcId();
-#elif (VISIT_APP_VERSION_CHECK(2, 2, 0) <= UINTAH_VERSION_HEX )
+#elif LIB_VERSION_LE(UINTAH, 2,2,0)
     double rank = patchInfo.getProcRankId();
 #else
     double rank = patchInfo.getProcId();
@@ -1903,7 +1903,7 @@ avtUintahFileFormat::GetVar(int timestate, int domain, const char *varname)
         gd->components = 1;
         gd->data = new double[gd->num * gd->components];
 
-#if (VISIT_APP_VERSION_CHECK(2, 0, 0) <= UINTAH_VERSION_HEX )
+#if LIB_VERSION_LE(UINTAH, 2,0,0)
         gd->data[0] = patchInfo.getPatchId();
 #endif
       }

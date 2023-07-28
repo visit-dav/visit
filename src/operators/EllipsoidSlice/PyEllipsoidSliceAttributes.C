@@ -36,7 +36,7 @@ struct EllipsoidSliceAttributesObject
 //
 static PyObject *NewEllipsoidSliceAttributes(int);
 std::string
-PyEllipsoidSliceAttributes_ToString(const EllipsoidSliceAttributes *atts, const char *prefix)
+PyEllipsoidSliceAttributes_ToString(const EllipsoidSliceAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -422,7 +422,7 @@ static int
 EllipsoidSliceAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     EllipsoidSliceAttributesObject *obj = (EllipsoidSliceAttributesObject *)v;
-    fprintf(fp, "%s", PyEllipsoidSliceAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyEllipsoidSliceAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -430,7 +430,7 @@ PyObject *
 EllipsoidSliceAttributes_str(PyObject *v)
 {
     EllipsoidSliceAttributesObject *obj = (EllipsoidSliceAttributesObject *)v;
-    return PyString_FromString(PyEllipsoidSliceAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyEllipsoidSliceAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -582,7 +582,7 @@ PyEllipsoidSliceAttributes_GetLogString()
 {
     std::string s("EllipsoidSliceAtts = EllipsoidSliceAttributes()\n");
     if(currentAtts != 0)
-        s += PyEllipsoidSliceAttributes_ToString(currentAtts, "EllipsoidSliceAtts.");
+        s += PyEllipsoidSliceAttributes_ToString(currentAtts, "EllipsoidSliceAtts.", true);
     return s;
 }
 
@@ -595,7 +595,7 @@ PyEllipsoidSliceAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("EllipsoidSliceAtts = EllipsoidSliceAttributes()\n");
-        s += PyEllipsoidSliceAttributes_ToString(currentAtts, "EllipsoidSliceAtts.");
+        s += PyEllipsoidSliceAttributes_ToString(currentAtts, "EllipsoidSliceAtts.", true);
         cb(s);
     }
 }

@@ -38,7 +38,7 @@ struct ScatterAttributesObject
 //
 static PyObject *NewScatterAttributes(int);
 std::string
-PyScatterAttributes_ToString(const ScatterAttributes *atts, const char *prefix)
+PyScatterAttributes_ToString(const ScatterAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -3311,7 +3311,7 @@ static int
 ScatterAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     ScatterAttributesObject *obj = (ScatterAttributesObject *)v;
-    fprintf(fp, "%s", PyScatterAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyScatterAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -3319,7 +3319,7 @@ PyObject *
 ScatterAttributes_str(PyObject *v)
 {
     ScatterAttributesObject *obj = (ScatterAttributesObject *)v;
-    return PyString_FromString(PyScatterAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyScatterAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -3471,7 +3471,7 @@ PyScatterAttributes_GetLogString()
 {
     std::string s("ScatterAtts = ScatterAttributes()\n");
     if(currentAtts != 0)
-        s += PyScatterAttributes_ToString(currentAtts, "ScatterAtts.");
+        s += PyScatterAttributes_ToString(currentAtts, "ScatterAtts.", true);
     return s;
 }
 
@@ -3484,7 +3484,7 @@ PyScatterAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("ScatterAtts = ScatterAttributes()\n");
-        s += PyScatterAttributes_ToString(currentAtts, "ScatterAtts.");
+        s += PyScatterAttributes_ToString(currentAtts, "ScatterAtts.", true);
         cb(s);
     }
 }

@@ -36,7 +36,7 @@ struct LimitCycleAttributesObject
 //
 static PyObject *NewLimitCycleAttributes(int);
 std::string
-PyLimitCycleAttributes_ToString(const LimitCycleAttributes *atts, const char *prefix)
+PyLimitCycleAttributes_ToString(const LimitCycleAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -4748,7 +4748,7 @@ static int
 LimitCycleAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)v;
-    fprintf(fp, "%s", PyLimitCycleAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyLimitCycleAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -4756,7 +4756,7 @@ PyObject *
 LimitCycleAttributes_str(PyObject *v)
 {
     LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)v;
-    return PyString_FromString(PyLimitCycleAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyLimitCycleAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -4908,7 +4908,7 @@ PyLimitCycleAttributes_GetLogString()
 {
     std::string s("LimitCycleAtts = LimitCycleAttributes()\n");
     if(currentAtts != 0)
-        s += PyLimitCycleAttributes_ToString(currentAtts, "LimitCycleAtts.");
+        s += PyLimitCycleAttributes_ToString(currentAtts, "LimitCycleAtts.", true);
     return s;
 }
 
@@ -4921,7 +4921,7 @@ PyLimitCycleAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("LimitCycleAtts = LimitCycleAttributes()\n");
-        s += PyLimitCycleAttributes_ToString(currentAtts, "LimitCycleAtts.");
+        s += PyLimitCycleAttributes_ToString(currentAtts, "LimitCycleAtts.", true);
         cb(s);
     }
 }

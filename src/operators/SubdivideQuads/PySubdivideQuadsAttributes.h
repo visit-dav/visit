@@ -22,7 +22,7 @@ PyObject *     PySubdivideQuadsAttributes_Wrap(const SubdivideQuadsAttributes *a
 void           PySubdivideQuadsAttributes_SetParent(PyObject *obj, PyObject *parent);
 void           PySubdivideQuadsAttributes_SetDefaults(const SubdivideQuadsAttributes *atts);
 std::string    PySubdivideQuadsAttributes_GetLogString();
-std::string    PySubdivideQuadsAttributes_ToString(const SubdivideQuadsAttributes *, const char *);
+std::string    PySubdivideQuadsAttributes_ToString(const SubdivideQuadsAttributes *, const char *, const bool=false);
 PyObject *     PySubdivideQuadsAttributes_getattr(PyObject *self, char *name);
 int            PySubdivideQuadsAttributes_setattr(PyObject *self, char *name, PyObject *args);
 extern PyMethodDef PySubdivideQuadsAttributes_methods[SUBDIVIDEQUADSATTRIBUTES_NMETH];

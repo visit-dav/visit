@@ -1,15 +1,15 @@
 # ----------------------------------------------------------------------------
 #  CLASSES: nightly
 #
-#  Test Case:  silo.py 
+#  Test Case:  silo.py
 #
 #  Tests:      multi-part silo files
 #              operators - slice
 #              operators - onion peel
-#              selection - by domains 
+#              selection - by domains
 #
-#  Programmer: Mark C. Miller 
-#  Date:       March 8, 2004 
+#  Programmer: Mark C. Miller
+#  Date:       March 8, 2004
 #
 #  Defects:    4335/4337.
 #
@@ -17,7 +17,7 @@
 #    Kathleen Bonnell, Tue Mar  9 08:48:14 PST 2004
 #    Turned off databaseInfo annotation, Used TurnOffDomains instead of
 #    SIL sets to get correct domain turned off, reordered DrawPlots for
-#    test 3 so that we get same results in parallel.  For OnionPeel, use 
+#    test 3 so that we get same results in parallel.  For OnionPeel, use
 #    SetDefaultOperatorOptions so that options are applied.
 #
 #    Hank Childs, Thu Jun 24 09:59:12 PDT 2004
@@ -33,7 +33,7 @@
 #    Added time invariant mesh tests
 #
 #    Mark C. Miller, Wed Feb  7 20:23:22 PST 2007
-#    Modified code to set SIL Restriction for mesh1_dup to be independent 
+#    Modified code to set SIL Restriction for mesh1_dup to be independent
 #    of the file structure. Added test for multivar that spans multiple
 #    multimeshes; it should fail.
 #
@@ -69,11 +69,11 @@
 #    Mark C. Miller, Tue Feb 28 00:36:09 PST 2012
 #    Added a slew of tests for hybrid zoo and arbitrary polygonal/polyhedral
 #    meshes and variables defined upon them.
-# 
-#    Kathleen Biagas, Thurs May 23 14:09:15 MST 2013 
+#
+#    Kathleen Biagas, Thurs May 23 14:09:15 MST 2013
 #    Don't run certain tests on Windows that cause a crash.
 #
-#    Kathleen Biagas, Thurs Jun 6 11:04:13 PDT 2013 
+#    Kathleen Biagas, Thurs Jun 6 11:04:13 PDT 2013
 #    Re-enable tests 42,44, and 45 on Windows, now that crash has been fixed.
 #
 #    Edward Rusu, Tues Oct 2 8:20:24 PDT 2018
@@ -83,7 +83,15 @@
 #    Turn off cycling of colors for all Curve plot tests.  Set the colors
 #    individually to match current baseline results.
 #
+#    Kathleen Biagas, Mon Nov 28, 2022
+#    Remove obsolete 'colorByMag' vector att with 'colorByMagnitude'.
+#
+#    Kathleen Biagas, Tue July 11, 2023
+#    Don't allow tests using wave_1file.visit to run on Windows, as they
+#    involve symlinks. Symink access on the testing machine is disallowed.
+#
 # ----------------------------------------------------------------------------
+
 TurnOffAllAnnotations() # defines global object 'a'
 
 # Turn off sets by name
@@ -102,7 +110,7 @@ OpenDatabase(silo_data_path("multipart_multi_ucd3d.silo"))
 
 
 #
-# Test simple read and display of a variable 
+# Test simple read and display of a variable
 #
 AddPlot("Pseudocolor","d")
 DrawPlots()
@@ -144,7 +152,7 @@ AddPlot("Pseudocolor","p")
 op = OnionPeelAttributes()
 op.categoryName = "domains"
 op.subsetName = "domain11"
-op.index = (5) 
+op.index = (5)
 op.logical = 0
 op.adjacencyType = op.Face
 op.requestedLayer = 3
@@ -160,7 +168,7 @@ HideActivePlots()
 
 
 #
-# Do some os work to create what VisIt will see as a 
+# Do some os work to create what VisIt will see as a
 # 'virtual' database of multi-part silo files by
 # creating appropriately named links
 #
@@ -169,7 +177,7 @@ HideActivePlots()
 # Cyrus: I tried to change this, from prev code
 # b/c symlinks won't work on Windows.
 #
-# also silo paths in multipart_multi_ucd3d, don't point to 
+# also silo paths in multipart_multi_ucd3d, don't point to
 # gorfo files,they won't work out of the data dir
 # (and we shouldn't be modifying the data dir !)
 
@@ -178,7 +186,7 @@ HideActivePlots()
 # All the copies are made into the run_dir by default, which gets cleaned
 # up unless --no-cleanup is used.
 
-# remove any gorfos 
+# remove any gorfos
 for f in glob.glob("gorfo_*"):
     os.remove(f)
 
@@ -187,7 +195,7 @@ i = 0
 
 for filename in glob.glob(silo_data_path("multipart_multi_ucd3d*.silo")):
     # copy the original file because the silo files have relatives paths
-    shutil.copy(filename, os.path.basename(filename)) 
+    shutil.copy(filename, os.path.basename(filename))
     if filename.endswith("multipart_multi_ucd3d.silo"):
         shutil.copy(filename,"gorfo_1000")
         shutil.copy(filename,"gorfo_2000")
@@ -271,7 +279,7 @@ AddPlot("Vector","vec")
 vec = VectorAttributes()
 vec.useStride = 1
 vec.stride = 41
-vec.colorByMag = 0
+vec.colorByMagnitude = 0
 SetPlotOptions(vec)
 DrawPlots()
 Test("silo_21")
@@ -419,29 +427,33 @@ Test("silo_35")
 DeleteAllPlots()
 CloseDatabase(data_path("silo_pdb_test_data/odd_multi.silo"))
 
-OpenDatabase(silo_data_path("wave_1file.visit"))
+if not sys.platform.startswith("win"):
+    # files listed in the .visit file (eg wave_1file.silo:cycle_xxx)
+    # are symlinks to wave_1file.silo and symlink access is disallowed
+    # on the windows testing machine.
+    OpenDatabase(silo_data_path("wave_1file.visit"))
 
-AddPlot("Mesh","quadmesh")
-AddPlot("Pseudocolor","pressure")
-DrawPlots()
-ResetView()
-Test("silo_36")
-TimeSliderSetState(23)
-Test("silo_37")
-TimeSliderNextState()
-TimeSliderNextState()
-TimeSliderNextState()
-Test("silo_38")
-TimeSliderPreviousState()
-TimeSliderPreviousState()
-TimeSliderPreviousState()
-TimeSliderPreviousState()
-TimeSliderPreviousState()
-TimeSliderPreviousState()
-Test("silo_39")
+    AddPlot("Mesh","quadmesh")
+    AddPlot("Pseudocolor","pressure")
+    DrawPlots()
+    ResetView()
+    Test("silo_36")
+    TimeSliderSetState(23)
+    Test("silo_37")
+    TimeSliderNextState()
+    TimeSliderNextState()
+    TimeSliderNextState()
+    Test("silo_38")
+    TimeSliderPreviousState()
+    TimeSliderPreviousState()
+    TimeSliderPreviousState()
+    TimeSliderPreviousState()
+    TimeSliderPreviousState()
+    TimeSliderPreviousState()
+    Test("silo_39")
 
-DeleteAllPlots()
-CloseDatabase(silo_data_path("wave_1file.visit"))
+    DeleteAllPlots()
+    CloseDatabase(silo_data_path("wave_1file.visit"))
 
 TestSection("Silo AMR w/Mrgtrees")
 TurnOffAllAnnotations()
@@ -683,11 +695,67 @@ SetPlotOptions(curveAtts)
 DrawPlots()
 Test("silo_%d"%testNum)
 testNum = testNum + 1
-DeleteAllPlots()
 
+DeleteAllPlots()
 CloseDatabase(silo_data_path("multi_rect2d.silo"))
 
+def curvilinear_3d_surface():
+    """Curvilinear (quad) surfaces in 3D"""
 
+    OpenDatabase(silo_data_path("quad_disk.silo"))
 
+    AddPlot("Pseudocolor","sphElev_on_mesh_3d")
+    ResetView()
+    DrawPlots()
+    v = GetView3D()
+    v.RotateAxis(0,-20)
+    v.RotateAxis(1,-30)
+    SetView3D(v)
+    TestAutoName()
+    DeleteAllPlots()
+
+    AddPlot("Pseudocolor","sphElev_on_meshD_3d")
+    DrawPlots()
+    TestAutoName()
+    DeleteAllPlots()
+
+    AddPlot("FilledBoundary", "mat_3d(mesh_3d)")
+    DrawPlots()
+    TestAutoName()
+    DeleteAllPlots()
+
+    CloseDatabase(silo_data_path("quad_disk.silo"))
+    OpenDatabase(silo_data_path("specmix_quad.silo"))
+
+    # Index select doesn't work quite right here
+    AddPlot("Mesh","Mesh_3d")
+    AddOperator("IndexSelect")
+    idxsel = IndexSelectAttributes()
+    idxsel.xMin = 5
+    idxsel.xMax = 15
+    SetOperatorOptions(idxsel)
+    ResetView()
+    DrawPlots()
+    TestAutoName()
+    DeleteAllPlots()
+
+    AddPlot("Pseudocolor","p3d")
+    DrawPlots()
+    TestAutoName()
+    DeleteAllPlots()
+
+    AddPlot("Pseudocolor","u3d")
+    DrawPlots()
+    TestAutoName()
+    DeleteAllPlots()
+
+    AddPlot("FilledBoundary", "Material_3d(Mesh_3d)")
+    DrawPlots()
+    TestAutoName()
+    DeleteAllPlots()
+
+    CloseDatabase(silo_data_path("specmix_quad.silo"))
+
+curvilinear_3d_surface()
 
 Exit()

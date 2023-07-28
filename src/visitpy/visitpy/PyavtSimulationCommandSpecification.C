@@ -36,7 +36,7 @@ struct avtSimulationCommandSpecificationObject
 //
 static PyObject *NewavtSimulationCommandSpecification(int);
 std::string
-PyavtSimulationCommandSpecification_ToString(const avtSimulationCommandSpecification *atts, const char *prefix)
+PyavtSimulationCommandSpecification_ToString(const avtSimulationCommandSpecification *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -766,7 +766,7 @@ static int
 avtSimulationCommandSpecification_print(PyObject *v, FILE *fp, int flags)
 {
     avtSimulationCommandSpecificationObject *obj = (avtSimulationCommandSpecificationObject *)v;
-    fprintf(fp, "%s", PyavtSimulationCommandSpecification_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyavtSimulationCommandSpecification_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -774,7 +774,7 @@ PyObject *
 avtSimulationCommandSpecification_str(PyObject *v)
 {
     avtSimulationCommandSpecificationObject *obj = (avtSimulationCommandSpecificationObject *)v;
-    return PyString_FromString(PyavtSimulationCommandSpecification_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyavtSimulationCommandSpecification_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -926,7 +926,7 @@ PyavtSimulationCommandSpecification_GetLogString()
 {
     std::string s("avtSimulationCommandSpecification = avtSimulationCommandSpecification()\n");
     if(currentAtts != 0)
-        s += PyavtSimulationCommandSpecification_ToString(currentAtts, "avtSimulationCommandSpecification.");
+        s += PyavtSimulationCommandSpecification_ToString(currentAtts, "avtSimulationCommandSpecification.", true);
     return s;
 }
 
@@ -939,7 +939,7 @@ PyavtSimulationCommandSpecification_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("avtSimulationCommandSpecification = avtSimulationCommandSpecification()\n");
-        s += PyavtSimulationCommandSpecification_ToString(currentAtts, "avtSimulationCommandSpecification.");
+        s += PyavtSimulationCommandSpecification_ToString(currentAtts, "avtSimulationCommandSpecification.", true);
         cb(s);
     }
 }

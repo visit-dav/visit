@@ -137,13 +137,6 @@ function bv_hdf5_ensure
     fi
 }
 
-function bv_hdf5_dry_run
-{
-    if [[ "$DO_HDF5" == "yes" ]] ; then
-        echo "Dry run option not set for hdf5."
-    fi
-}
-
 function apply_hdf5_1814_static_patch
 {
     info "Patching hdf5 1.8.14 for static build"
@@ -600,9 +593,12 @@ function build_hdf5
     fi
 
     extra_ac_flags=""
-    # detect coral systems, which older versions of autoconf don't detect
+    # detect coral and NVIDIA Grace CPU (ARM) systems, which older versions of 
+    # autoconf don't detect
     if [[ "$(uname -m)" == "ppc64le" ]] ; then
          extra_ac_flags="ac_cv_build=powerpc64le-unknown-linux-gnu"
+    elif [[ "$(uname -m)" == "aarch64" ]] ; then
+         extra_ac_flags="ac_cv_build=aarch64-unknown-linux-gnu"
     fi 
     
     for bt in $par_build_types; do

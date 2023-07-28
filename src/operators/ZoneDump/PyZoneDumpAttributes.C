@@ -36,7 +36,7 @@ struct ZoneDumpAttributesObject
 //
 static PyObject *NewZoneDumpAttributes(int);
 std::string
-PyZoneDumpAttributes_ToString(const ZoneDumpAttributes *atts, const char *prefix)
+PyZoneDumpAttributes_ToString(const ZoneDumpAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -440,7 +440,7 @@ static int
 ZoneDumpAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     ZoneDumpAttributesObject *obj = (ZoneDumpAttributesObject *)v;
-    fprintf(fp, "%s", PyZoneDumpAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyZoneDumpAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -448,7 +448,7 @@ PyObject *
 ZoneDumpAttributes_str(PyObject *v)
 {
     ZoneDumpAttributesObject *obj = (ZoneDumpAttributesObject *)v;
-    return PyString_FromString(PyZoneDumpAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyZoneDumpAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -600,7 +600,7 @@ PyZoneDumpAttributes_GetLogString()
 {
     std::string s("ZoneDumpAtts = ZoneDumpAttributes()\n");
     if(currentAtts != 0)
-        s += PyZoneDumpAttributes_ToString(currentAtts, "ZoneDumpAtts.");
+        s += PyZoneDumpAttributes_ToString(currentAtts, "ZoneDumpAtts.", true);
     return s;
 }
 
@@ -613,7 +613,7 @@ PyZoneDumpAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("ZoneDumpAtts = ZoneDumpAttributes()\n");
-        s += PyZoneDumpAttributes_ToString(currentAtts, "ZoneDumpAtts.");
+        s += PyZoneDumpAttributes_ToString(currentAtts, "ZoneDumpAtts.", true);
         cb(s);
     }
 }

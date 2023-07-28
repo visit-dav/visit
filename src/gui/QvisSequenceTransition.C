@@ -32,13 +32,16 @@
 //   Brad Whitlock, Tue Oct  7 09:28:24 PDT 2008
 //   Qt 4.
 //
+//   Kathleen Biagas, Tue Apr 18 16:34:41 PDT 2023
+//   Support Qt6: buttonClicked -> idClicked.
+//
 // ****************************************************************************
 
 QvisSequenceTransition::QvisSequenceTransition(const QPixmap &pix,
     QWidget *parent) : QGroupBox(parent)
 {
     QVBoxLayout *innerLayout = new QVBoxLayout(this);
-    innerLayout->setMargin(10);
+    innerLayout->setContentsMargins(10,10,10,10);
     innerLayout->addSpacing(15);
     QHBoxLayout *hLayout = new QHBoxLayout(0);
     innerLayout->addLayout(hLayout);
@@ -53,8 +56,11 @@ QvisSequenceTransition::QvisSequenceTransition(const QPixmap &pix,
     leftLayout->addWidget(new QLabel("    ", this), 1, 0);
 
     bg1 = new QButtonGroup(this);
-    connect(bg1, SIGNAL(buttonClicked(int)),
-            this, SLOT(bg1Clicked(int)));
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+    connect(bg1, SIGNAL(buttonClicked(int)), this, SLOT(bg1Clicked(int)));
+#else
+    connect(bg1, SIGNAL(idClicked(int)), this, SLOT(bg1Clicked(int)));
+#endif
     QRadioButton *rb = new QRadioButton(tr("Frames"), this);
     bg1->addButton(rb, 0);
     leftLayout->addWidget(rb, 1, 1);
@@ -86,8 +92,11 @@ QvisSequenceTransition::QvisSequenceTransition(const QPixmap &pix,
     rightLayout->addWidget(new QLabel("    ", this), 1, 0);
 
     bg2 = new QButtonGroup(this);
-    connect(bg2, SIGNAL(buttonClicked(int)),
-            this, SLOT(bg2Clicked(int)));
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+    connect(bg2, SIGNAL(buttonClicked(int)), this, SLOT(bg2Clicked(int)));
+#else
+    connect(bg2, SIGNAL(idClicked(int)), this, SLOT(bg2Clicked(int)));
+#endif
     rb = new QRadioButton(tr("Frames"), this);
     bg2->addButton(rb, 0);
     rightLayout->addWidget(rb, 1, 1);

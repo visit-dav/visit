@@ -8,6 +8,8 @@
 
 #include <avtNamedSelectionFilter.h>
 
+#include <visit-config.h> // For LIB_VERSION_LE
+
 #include <vtkCellData.h>
 #include <vtkDataSet.h>
 #include <vtkFloatArray.h>
@@ -169,7 +171,13 @@ avtNamedSelectionFilter::SelectedData(vtkDataSet *in_ds,
         arr->Delete();
         vtkThreshold *thres = vtkThreshold::New();
         thres->SetInputData(ds);
+#if LIB_VERSION_LE(VTK,8,1,0)
         thres->ThresholdBetween(0.5, 1.5);
+#else
+        thres->SetLowerThreshold(0.5);
+        thres->SetUpperThreshold(1.5);
+        thres->SetThresholdFunction(vtkThreshold::THRESHOLD_BETWEEN);
+#endif
         thres->SetInputArrayToProcess(0, 0, 0, 
               vtkDataObject::FIELD_ASSOCIATION_CELLS, "_avt_thresh_var");
         thres->Update();

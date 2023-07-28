@@ -70,13 +70,6 @@ function bv_damaris_ensure
     fi
 }
 
-function bv_damaris_dry_run
-{
-    if [[ "$DO_DAMARIS" == "yes" ]] ; then
-        echo "Dry run option not set for Damaris."
-    fi
-}
-
 function apply_damaris_patch
 {
     return 0

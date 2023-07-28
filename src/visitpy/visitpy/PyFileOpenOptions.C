@@ -37,7 +37,7 @@ struct FileOpenOptionsObject
 //
 static PyObject *NewFileOpenOptions(int);
 std::string
-PyFileOpenOptions_ToString(const FileOpenOptions *atts, const char *prefix)
+PyFileOpenOptions_ToString(const FileOpenOptions *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -82,7 +82,7 @@ PyFileOpenOptions_ToString(const FileOpenOptions *atts, const char *prefix)
             const DBOptionsAttributes *current = (const DBOptionsAttributes *)(*pos);
             snprintf(tmpStr, 1000, "GetOpenOptions(%d).", index);
             std::string objPrefix(prefix + std::string(tmpStr));
-            str += PyDBOptionsAttributes_ToString(current, objPrefix.c_str());
+            str += PyDBOptionsAttributes_ToString(current, objPrefix.c_str(), forLogging);
         }
         if(index == 0)
             str += "#openOptions does not contain any DBOptionsAttributes objects.\n";
@@ -612,7 +612,7 @@ static int
 FileOpenOptions_print(PyObject *v, FILE *fp, int flags)
 {
     FileOpenOptionsObject *obj = (FileOpenOptionsObject *)v;
-    fprintf(fp, "%s", PyFileOpenOptions_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyFileOpenOptions_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -620,7 +620,7 @@ PyObject *
 FileOpenOptions_str(PyObject *v)
 {
     FileOpenOptionsObject *obj = (FileOpenOptionsObject *)v;
-    return PyString_FromString(PyFileOpenOptions_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyFileOpenOptions_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -772,7 +772,7 @@ PyFileOpenOptions_GetLogString()
 {
     std::string s("FileOpenOptions = FileOpenOptions()\n");
     if(currentAtts != 0)
-        s += PyFileOpenOptions_ToString(currentAtts, "FileOpenOptions.");
+        s += PyFileOpenOptions_ToString(currentAtts, "FileOpenOptions.", true);
     return s;
 }
 
@@ -785,7 +785,7 @@ PyFileOpenOptions_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("FileOpenOptions = FileOpenOptions()\n");
-        s += PyFileOpenOptions_ToString(currentAtts, "FileOpenOptions.");
+        s += PyFileOpenOptions_ToString(currentAtts, "FileOpenOptions.", true);
         cb(s);
     }
 }

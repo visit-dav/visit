@@ -36,7 +36,7 @@ struct WindowInformationObject
 //
 static PyObject *NewWindowInformation(int);
 std::string
-PyWindowInformation_ToString(const WindowInformation *atts, const char *prefix)
+PyWindowInformation_ToString(const WindowInformation *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -2265,7 +2265,7 @@ static int
 WindowInformation_print(PyObject *v, FILE *fp, int flags)
 {
     WindowInformationObject *obj = (WindowInformationObject *)v;
-    fprintf(fp, "%s", PyWindowInformation_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyWindowInformation_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -2273,7 +2273,7 @@ PyObject *
 WindowInformation_str(PyObject *v)
 {
     WindowInformationObject *obj = (WindowInformationObject *)v;
-    return PyString_FromString(PyWindowInformation_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyWindowInformation_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -2425,7 +2425,7 @@ PyWindowInformation_GetLogString()
 {
     std::string s("WindowInformation = WindowInformation()\n");
     if(currentAtts != 0)
-        s += PyWindowInformation_ToString(currentAtts, "WindowInformation.");
+        s += PyWindowInformation_ToString(currentAtts, "WindowInformation.", true);
     return s;
 }
 
@@ -2438,7 +2438,7 @@ PyWindowInformation_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("WindowInformation = WindowInformation()\n");
-        s += PyWindowInformation_ToString(currentAtts, "WindowInformation.");
+        s += PyWindowInformation_ToString(currentAtts, "WindowInformation.", true);
         cb(s);
     }
 }

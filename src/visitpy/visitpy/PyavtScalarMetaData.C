@@ -36,12 +36,12 @@ struct avtScalarMetaDataObject
 //
 static PyObject *NewavtScalarMetaData(int);
 std::string
-PyavtScalarMetaData_ToString(const avtScalarMetaData *atts, const char *prefix)
+PyavtScalarMetaData_ToString(const avtScalarMetaData *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
 
-    str = PyavtVarMetaData_ToString(atts, prefix);
+    str = PyavtVarMetaData_ToString(atts, prefix, forLogging);
 
     if(atts->treatAsASCII)
         snprintf(tmpStr, 1000, "%streatAsASCII = 1\n", prefix);
@@ -1466,7 +1466,7 @@ static int
 avtScalarMetaData_print(PyObject *v, FILE *fp, int flags)
 {
     avtScalarMetaDataObject *obj = (avtScalarMetaDataObject *)v;
-    fprintf(fp, "%s", PyavtScalarMetaData_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyavtScalarMetaData_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -1474,7 +1474,7 @@ PyObject *
 avtScalarMetaData_str(PyObject *v)
 {
     avtScalarMetaDataObject *obj = (avtScalarMetaDataObject *)v;
-    return PyString_FromString(PyavtScalarMetaData_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyavtScalarMetaData_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -1626,7 +1626,7 @@ PyavtScalarMetaData_GetLogString()
 {
     std::string s("avtScalarMetaData = avtScalarMetaData()\n");
     if(currentAtts != 0)
-        s += PyavtScalarMetaData_ToString(currentAtts, "avtScalarMetaData.");
+        s += PyavtScalarMetaData_ToString(currentAtts, "avtScalarMetaData.", true);
     return s;
 }
 
@@ -1639,7 +1639,7 @@ PyavtScalarMetaData_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("avtScalarMetaData = avtScalarMetaData()\n");
-        s += PyavtScalarMetaData_ToString(currentAtts, "avtScalarMetaData.");
+        s += PyavtScalarMetaData_ToString(currentAtts, "avtScalarMetaData.", true);
         cb(s);
     }
 }

@@ -15,6 +15,7 @@ to compute highly sophisticated quantitative, as opposed to visual, results.
 
     Expressions
     Query
+    X Ray Image Query <XRayImageQuery>
     Pick
     Lineout
     LineSampler

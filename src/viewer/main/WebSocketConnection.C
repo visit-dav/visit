@@ -21,7 +21,8 @@
 #include <QTcpSocket>
 #include <QTime>
 
-#include <QRegExp>
+#include <QRegularExpression>
+#include <QRegularExpressionMatch>
 #include <QStringList>
 #include <QByteArray>
 #include <QCryptographicHash>
@@ -670,83 +671,112 @@ QWsSocket::computeAcceptV1( QString key1, QString key2, QString key3 )
     return QString( md5 );
 }
 
+// ***************************************************************************
+// Modifications:
+//   Kathleen Biagas, Wed Mar 29 08:10:38 PDT 2023
+//   Replaced QRegExp (which has been deprecated) with QRegularExpression.
+// 
+// ***************************************************************************
 bool
 QWsSocket::initializeWebSocket(const QString &request, QString &response)
 {
 //    std::cout << request.toStdString() << std::endl;
-    QRegExp regExp;
-    regExp.setMinimal( true );
+    QRegularExpression regExp;
+    regExp.setPatternOptions(QRegularExpression::InvertedGreedinessOption);
+    QRegularExpressionMatch regexMatch;
 
-    // Extract mandatory datas
+    // Extract mandatory data
 
     // Version
-    regExp.setPattern( regExpVersionStr );
-    regExp.indexIn(request);
-    QString versionStr = regExp.cap(1);
-    int version = 0;
-    if ( ! versionStr.isEmpty() )
-        version = versionStr.toInt();
+    int version =0;
+    regExp.setPattern(regExpVersionStr);
+    if(request.contains(regExp, &regexMatch))
+    {
+        QString versionStr = regexMatch.captured(1);
+        if ( ! versionStr.isEmpty() )
+            version = versionStr.toInt();
+    }
 
     // Resource name
-    regExp.setPattern( regExpResourceNameStr );
-    regExp.indexIn(request);
-    QString resourceName = regExp.cap(1);
+    QString resourceName;
+    regExp.setPattern(regExpResourceNameStr);
+    if(request.contains(regExp, &regexMatch))
+    {
+        resourceName = regexMatch.captured(1);
+    }
 
     // Host (address & port)
-    regExp.setPattern( regExpHostStr );
-    regExp.indexIn(request);
-    QStringList sl = regExp.cap(1).split(':');
-    QString hostAddress = sl[0];
+    QString hostAddress;
     QString hostPort;
-    if ( sl.size() > 1 )
-        hostPort = sl[1];
+    regExp.setPattern(regExpHostStr);
+    if(request.contains(regExp, &regexMatch))
+    {
+        QStringList sl = regexMatch.captured(1).split(':');
+        hostAddress = sl[0];
+        if ( sl.size() > 1 )
+            hostPort = sl[1];
+    }
 
     // Key
     QString key, key1, key2, key3;
-    if ( version >= 6 )
+    if (version >= 6)
     {
-        regExp.setPattern( regExpKeyStr );
-        regExp.indexIn(request);
-        key = regExp.cap(1);
+        regExp.setPattern(regExpKeyStr);
+        if(request.contains(regExp, &regexMatch))
+        {
+            key = regexMatch.captured(1);
+        }
     }
     else
     {
-        regExp.setPattern( regExpKey1Str );
-        regExp.indexIn(request);
-        key1 = regExp.cap(1);
-        regExp.setPattern( regExpKey2Str );
-        regExp.indexIn(request);
-        key2 = regExp.cap(1);
-        regExp.setPattern( regExpKey3Str );
-        regExp.indexIn(request);
-        key3 = regExp.cap(1);
+        regExp.setPattern(regExpKey1Str);
+        if(request.contains(regExp, &regexMatch))
+        {
+            key1 = regexMatch.captured(1);
+        }
+        regExp.setPattern(regExpKey2Str);
+        if(request.contains(regExp, &regexMatch))
+        {
+            key2 = regexMatch.captured(1);
+        }
+        regExp.setPattern(regExpKey3Str);
+        if(request.contains(regExp, &regexMatch))
+        {
+            key3 = regexMatch.captured(1);
+        }
     }
 
-    // Extract optional datas
+    // Extract optional data
     // Origin
     QString origin;
     if ( version < 6 || version > 8 )
     {
         regExp.setPattern( regExpOriginStr );
-        regExp.indexIn(request);
-        origin = regExp.cap(1);
     }
     else
     {
-        regExp.setPattern( regExpOriginV6Str );
-        regExp.indexIn(request);
-        origin = regExp.cap(1);
+        regExp.setPattern(regExpOriginV6Str);
+    }
+    if(request.contains(regExp, &regexMatch))
+    {
+        origin = regexMatch.captured(1);
     }
 
     // Protocol
-    regExp.setPattern( regExpProtocolStr );
-    regExp.indexIn(request);
-    QString protocol = regExp.cap(1);
+    QString protocol;
+    regExp.setPattern(regExpProtocolStr);
+    if(request.contains(regExp, &regexMatch))
+    {
+        protocol = regexMatch.captured(1);
+    }
 
     // Extensions
-    regExp.setPattern( regExpExtensionsStr );
-    regExp.indexIn(request);
-    QString extensions = regExp.cap(1);
+    QString extensions;
+    regExp.setPattern(regExpExtensionsStr);
+    if(request.contains(regExp, &regexMatch))
+    {
+        extensions = regexMatch.captured(1);
+    }
 
     ////////////////////////////////////////////////////////////////////
 

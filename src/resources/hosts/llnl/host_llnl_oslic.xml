@@ -53,7 +53,7 @@
         <Field name="timeLimitSet" type="bool">true</Field>
         <Field name="timeLimit" type="string">60:00</Field>
         <Field name="launchMethodSet" type="bool">true</Field>
-        <Field name="launchMethod" type="string">msub/srun</Field>
+        <Field name="launchMethod" type="string">sbatch/srun</Field>
         <Field name="forceStatic" type="bool">true</Field>
         <Field name="forceDynamic" type="bool">false</Field>
         <Field name="active" type="bool">false</Field>

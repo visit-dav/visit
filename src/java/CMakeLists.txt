@@ -386,6 +386,7 @@ NIFGUI.java
 OpenGUI.java 
 PlotAtts.java 
 PlotTypes.java
+PlotVector.java 
 RunViewer.java 
 TryAnnotations.java 
 TryLighting.java 
@@ -429,7 +430,7 @@ ADD_CUSTOM_TARGET(main DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/java_examples_out.txt
 # Custom target for building the docs
 ADD_CUSTOM_TARGET(visit_java_docs 
     COMMAND ${CMAKE_COMMAND} -E make_directory ${JavaClient_BINARY_DIR}/docs
-    COMMAND ${Java_JAVADOC_EXECUTABLE} -d docs ${JavaClient_SOURCE_DIR}/*.java
+    COMMAND ${Java_JAVADOC_EXECUTABLE} -notimestamp -d docs ${JavaClient_SOURCE_DIR}/*.java
     COMMAND ${CMAKE_COMMAND} -E copy ${JavaClient_SOURCE_DIR}/stylesheet.css ${JavaClient_BINARY_DIR}/docs
     WORKING_DIRECTORY ${JavaClient_BINARY_DIR}
 )

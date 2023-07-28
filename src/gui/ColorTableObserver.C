@@ -65,6 +65,13 @@ ColorTableObserver::~ColorTableObserver()
 //   Kathleen Biagas, Mon Aug  4 15:48:31 PDT 2014
 //   Send category name when ading a color table, change in groupingFlag means
 //   the buttons need a change.
+// 
+//   Justin Privitera, Thu Jun 16 18:01:49 PDT 2022
+//   Removed categories, added tags, and new `active` array that says if color
+//   should be visible in the button.
+// 
+//   Justin Privitera, Mon Feb 13 14:32:02 PST 2023
+//   Removed check for tagging flag, as it no longer exists.
 //
 // ****************************************************************************
 
@@ -83,8 +90,11 @@ ColorTableObserver::Update(Subject *)
     // have to update the widget.
     if(colorAtts->IsSelected(ColorTableAttributes::ID_names) ||
        colorAtts->IsSelected(ColorTableAttributes::ID_colorTables) ||
-       colorAtts->IsSelected(ColorTableAttributes::ID_groupingFlag))
+       colorAtts->GetChangesMade())
     {
+        // reset
+        colorAtts->SetChangesMade(false);
+
         // Clear all of the color tables.
         QvisColorTableButton::setColorTableAttributes(colorAtts);
         QvisColorTableButton::clearAllColorTables();
@@ -93,12 +103,25 @@ ColorTableObserver::Update(Subject *)
 
         int nNames = colorAtts->GetNumColorTables();
         const stringVector &names = colorAtts->GetNames();
-        for(int i = 0; i < nNames; ++i)
+        const intVector &active = colorAtts->GetActive();
+
+        // This should never happen. Resetting the names will reset the active
+        // array as well, and make every color table active. However, this does
+        // happen; when loading settings from config/session files, `names` is
+        // populated but `active` is left empty. Ideally, loading settings
+        // would correctly preserve which color tables are active, but this
+        // final guard here works just fine, as which color tables are active
+        // is calculated after this.
+        if (names.size() != active.size())
+            colorAtts->SetNames(names);
+        
+        for (int i = 0; i < nNames; ++i)
         {
-            QvisColorTableButton::addColorTable(names[i].c_str(),
-              colorAtts->GetColorTables(i).GetCategoryName().c_str());
-            QvisNoDefaultColorTableButton::addColorTable(names[i].c_str(),
-              colorAtts->GetColorTables(i).GetCategoryName().c_str());
+            if (active[i])
+            {
+                QvisColorTableButton::addColorTable(names[i].c_str());
+                QvisNoDefaultColorTableButton::addColorTable(names[i].c_str());
+            }
         }
 
         // Update all of the QvisColorTableButton widgets.

@@ -42,7 +42,9 @@ int SpreadsheetCurveViewer::counter = -1;
 // Creation:   Fri May  8 16:48:45 PDT 2009
 //
 // Modifications:
-//   
+//    Kathleen Biagas, Wed Apr 6, 2022
+//    Fix QT_VERSION test to use Qt's QT_VERSION_CHECK.
+// 
 // ****************************************************************************
 
 SpreadsheetCurveViewer::SpreadsheetCurveViewer(ViewerPlot *p, QWidget *parent) : 
@@ -58,7 +60,7 @@ SpreadsheetCurveViewer::SpreadsheetCurveViewer(ViewerPlot *p, QWidget *parent) :
     setCentralWidget(top);
     QVBoxLayout *topLayout = new QVBoxLayout(top);
     topLayout->setSpacing(5);
-    topLayout->setMargin(10);
+    topLayout->setContentsMargins(10,10,10,10);
 #if defined(Q_OS_MAC)
     QWidget *menuContainer = new QWidget(top);
     QHBoxLayout *menuLayout = new QHBoxLayout(menuContainer);
@@ -66,7 +68,7 @@ SpreadsheetCurveViewer::SpreadsheetCurveViewer(ViewerPlot *p, QWidget *parent) :
 #endif
 
     curveText = new QTextEdit(top);
-#if QT_VERSION >= 0x051100
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 11, 0))
     int xwidth = fontMetrics().horizontalAdvance("X");
 #else
     int xwidth = fontMetrics().width("X");

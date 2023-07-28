@@ -39,11 +39,11 @@ function bv_vtkm_initialize_vars
 
 function bv_vtkm_info
 {
-    export VTKM_VERSION=${VTKM_VERSION:-"v1.7.0"}
+    export VTKM_VERSION=${VTKM_VERSION:-"v1.9.0"}
     export VTKM_FILE=${VTKM_FILE:-"vtk-m-${VTKM_VERSION}.tar.gz"}
     export VTKM_BUILD_DIR=${VTKM_BUILD_DIR:-"vtk-m-${VTKM_VERSION}"}
-    export VTKM_MD5_CHECKSUM="8dcaf4472d2f4729a3f5ab2381e4d818"
-    export VTKM_SHA256_CHECKSUM="a86667ac22057462fc14495363cfdcc486da125b366cb568ec23c86946439be4"
+    export VTKM_MD5_CHECKSUM="8c236061c546e528a66372d556f3991c"
+    export VTKM_SHA256_CHECKSUM="12355dea1a24ec32767260068037adeb71abb3df2f9f920c92ce483f35ff46e4"
 }
 
 function bv_vtkm_print
@@ -81,13 +81,6 @@ function bv_vtkm_ensure
             DO_VTKM="no"
             error "Unable to build VTKm. ${VTKM_FILE} not found."
         fi
-    fi
-}
-
-function bv_vtkm_dry_run
-{
-    if [[ "$DO_VTKM" == "yes" ]] ; then
-        echo "Dry run option not set for VTKm"
     fi
 }
 
@@ -206,6 +199,7 @@ function build_vtkm
     vopts="${vopts} -DVTKm_USE_DOUBLE_PRECISION:BOOL=ON"
     vopts="${vopts} -DVTKm_USE_DEFAULT_TYPES_FOR_VTK:BOOL=ON"
     vopts="${vopts} -DCMAKE_BUILD_TYPE:STRING=${VISIT_BUILD_MODE}"
+    vopts="${vopts} -DCMAKE_POSITION_INDEPENDENT_CODE:BOOL=ON"
     vopts="${vopts} -DBUILD_SHARED_LIBS:BOOL=OFF"
     # Disable CUDA support for now since it requires using the CUDA compiler
     # to build all of VisIt, which we don't want to do.

@@ -3,7 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ****************************************************************************
-//                               ADIOS2PluginInfo.h
+//  ADIOS2PluginInfo.h
 // ****************************************************************************
 
 #ifndef ADIOS2_PLUGIN_INFO_H
@@ -48,7 +48,6 @@ class ADIOS2CommonPluginInfo : public virtual CommonDatabasePluginInfo, public v
     virtual DatabaseType              GetDatabaseType();
     virtual avtDatabase              *SetupDatabase(const char * const *list,
                                                     int nList, int nBlock);
-    virtual std::string               GetLicense() const;
 };
 
 class ADIOS2MDServerPluginInfo : public virtual MDServerDatabasePluginInfo, public virtual ADIOS2CommonPluginInfo

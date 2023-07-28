@@ -8,9 +8,13 @@
 
 #include <avtCreateBondsFilter.h>
 
+#include <visit-config.h> // For LIB_VERSION_GE
 #include <vtkDataSet.h>
 #include <vtkCellData.h>
 #include <vtkCellArray.h>
+#if LIB_VERSION_GE(VTK,9,1,0)
+#include <vtkCellArrayIterator.h>
+#endif
 #include <vtkGeometryFilter.h>
 #include <vtkPointData.h>
 #include <vtkPoints.h>
@@ -355,6 +359,9 @@ avtCreateBondsFilter::ExecuteData(avtDataRepresentation *in_dr)
 //   Eric Brugger, Wed Jul 23 11:25:16 PDT 2014
 //   Modified the class to work with avtDataRepresentation.
 //
+//   Kathleen Biagas, Thu Aug 11, 2022
+//   Support VTK9: use vtkCellArrayIterator.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -367,7 +374,6 @@ avtCreateBondsFilter::ExecuteData_Fast(vtkPolyData *in, float maxBondDist,
     // Extract some input data
     //
     vtkPoints    *inPts = in->GetPoints();
-    vtkCellArray *inVerts = in->GetVerts();
     vtkPointData *inPD  = in->GetPointData();
     vtkCellData  *inCD  = in->GetCellData();
     int nPts   = in->GetNumberOfPoints();
@@ -423,17 +429,36 @@ avtCreateBondsFilter::ExecuteData_Fast(vtkPolyData *in, float maxBondDist,
         int outpt = outPts->InsertNextPoint(pt);
         outPD->CopyData(inPD, p, outpt);
     }
-    vtkIdType *vertPtr = inVerts->GetPointer();
-    for (int v=0; v<nVerts; v++)
+
+    if (nVerts > 0)
     {
-        if (*vertPtr == 1)
+#if LIB_VERSION_LE(VTK,8,1,0)
+        vtkCellArray *inVerts = in->GetVerts();
+        vtkIdType *vertPtr = inVerts->GetPointer();
+        for (int v=0; v<nVerts; v++)
         {
-            vtkIdType id = *(vertPtr+1);
-            int outcell = outVerts->InsertNextCell(1);
-            outVerts->InsertCellPoint(id);
-            outCD->CopyData(inCD, v, outcell);
+            if (*vertPtr == 1)
+            {
+                vtkIdType id = *(vertPtr+1);
+                int outcell = outVerts->InsertNextCell(1);
+                outVerts->InsertCellPoint(id);
+                outCD->CopyData(inCD, v, outcell);
+            }
+            vertPtr += (*vertPtr+1);
         }
-        vertPtr += (*vertPtr+1);
+#else
+        auto inVerts = vtk::TakeSmartPointer(in->GetVerts()->NewIterator());
+        for (inVerts->GoToFirstCell(); !inVerts->IsDoneWithTraversal(); inVerts->GoToNextCell())
+        {
+            vtkIdList *vertPtr = inVerts->GetCurrentCell();
+            if (vertPtr->GetNumberOfIds() == 1)
+            {
+                vtkIdType outcell = outVerts->InsertNextCell(1);
+                outVerts->InsertCellPoint(vertPtr->GetId(0));
+                outCD->CopyData(inCD, inVerts->GetCurrentCellId(), outcell);
+            }
+        }
+#endif
     }
 
     int natoms = in->GetNumberOfPoints();
@@ -461,7 +486,7 @@ avtCreateBondsFilter::ExecuteData_Fast(vtkPolyData *in, float maxBondDist,
             zv[j] = atts.GetZVector()[j];
         }
     }
-    
+
     //
     // ni,nj,nk are the number of bins in the i,j,k directions
     //
@@ -477,7 +502,7 @@ avtCreateBondsFilter::ExecuteData_Fast(vtkPolyData *in, float maxBondDist,
     int nk = 3 + int((maxz - minz) / maxBondDist);
 
     int max_per_atom = atts.GetMaxBondsClamp();
-    
+
     //
     // Support for per-axis periodicity here
     //
@@ -678,7 +703,7 @@ avtCreateBondsFilter::ExecuteData_Fast(vtkPolyData *in, float maxBondDist,
 
     delete[] atomgrid;
 
-    return out;    
+    return out;
 }
 
 
@@ -716,11 +741,14 @@ avtCreateBondsFilter::ExecuteData_Fast(vtkPolyData *in, float maxBondDist,
 //    Use the element variable specified in the attributes.
 //    Support any type of input nodal array.
 //
-//    Kathleen Biagas, Tue Aug 21 16:08:27 MST 2012 
+//    Kathleen Biagas, Tue Aug 21 16:08:27 MST 2012
 //    Preserve coordinate type.
 //
 //    Eric Brugger, Wed Jul 23 11:25:16 PDT 2014
 //    Modified the class to work with avtDataRepresentation.
+//
+//    Kathleen Biagas, Thu Aug 11, 2022
+//    Support VTK9: use vtkCellArrayIterator.
 //
 // ****************************************************************************
 
@@ -731,7 +759,6 @@ avtCreateBondsFilter::ExecuteData_Slow(vtkPolyData *in)
     // Extract some input data
     //
     vtkPoints    *inPts = in->GetPoints();
-    vtkCellArray *inVerts = in->GetVerts();
     vtkPointData *inPD  = in->GetPointData();
     vtkCellData  *inCD  = in->GetCellData();
     int nPts   = in->GetNumberOfPoints();
@@ -786,17 +813,36 @@ avtCreateBondsFilter::ExecuteData_Slow(vtkPolyData *in)
         int outpt = outPts->InsertNextPoint(pt);
         outPD->CopyData(inPD, p, outpt);
     }
-    vtkIdType *vertPtr = inVerts->GetPointer();
-    for (int v=0; v<nVerts; v++)
+
+    if (nVerts > 0)
     {
-        if (*vertPtr == 1)
+#if LIB_VERSION_LE(VTK,8,1,0)
+        vtkCellArray *inVerts = in->GetVerts();
+        vtkIdType *vertPtr = inVerts->GetPointer();
+        for (int v=0; v<nVerts; v++)
         {
-            vtkIdType id = *(vertPtr+1);
-            int outcell = outVerts->InsertNextCell(1);
-            outVerts->InsertCellPoint(id);
-            outCD->CopyData(inCD, v, outcell);
+            if (*vertPtr == 1)
+            {
+                vtkIdType id = *(vertPtr+1);
+                int outcell = outVerts->InsertNextCell(1);
+                outVerts->InsertCellPoint(id);
+                outCD->CopyData(inCD, v, outcell);
+            }
         }
         vertPtr += (*vertPtr+1);
+#else
+        auto inVerts = vtk::TakeSmartPointer(in->GetVerts()->NewIterator());
+        for (inVerts->GoToFirstCell(); !inVerts->IsDoneWithTraversal(); inVerts->GoToNextCell())
+        {
+            vtkIdList *vertPtr = inVerts->GetCurrentCell();
+            if (vertPtr->GetNumberOfIds() == 1)
+            {
+                int outcell = outVerts->InsertNextCell(1);
+                outVerts->InsertCellPoint(vertPtr->GetId(0));
+                outCD->CopyData(inCD, inVerts->GetCurrentCellId(), outcell);
+            }
+        }
+#endif
     }
 
     int natoms = in->GetNumberOfPoints();
@@ -967,7 +1013,7 @@ avtCreateBondsFilter::ExecuteData_Slow(vtkPolyData *in)
                                     newJ[image] = outPts->InsertNextPoint(pj);
                                     imageMap[jthImage] = newJ[image];
                                     outPD->CopyData(inPD, j, newJ[image]);
-                                        
+
                                     // We're not adding a vertex cell here;
                                     // these are not real atoms, and the
                                     // molecule plot will now avoid drawing

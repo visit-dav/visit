@@ -3,7 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ****************************************************************************
-//                               sw4imgPluginInfo.h
+//  sw4imgPluginInfo.h
 // ****************************************************************************
 
 #ifndef SW4IMG_PLUGIN_INFO_H
@@ -48,7 +48,6 @@ class sw4imgCommonPluginInfo : public virtual CommonDatabasePluginInfo, public v
     virtual DatabaseType              GetDatabaseType();
     virtual avtDatabase              *SetupDatabase(const char * const *list,
                                                     int nList, int nBlock);
-    virtual std::string               GetLicense() const;
 };
 
 class sw4imgMDServerPluginInfo : public virtual MDServerDatabasePluginInfo, public virtual sw4imgCommonPluginInfo

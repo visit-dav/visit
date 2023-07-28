@@ -40,7 +40,7 @@ class GUI_API QvisDelayedWindowSimpleObserver : public QvisDelayedWindow, public
 {
     Q_OBJECT
 public:
-    QvisDelayedWindowSimpleObserver(const QString &caption, Qt::WindowFlags f = 0);
+    QvisDelayedWindowSimpleObserver(const QString &caption, Qt::WindowFlags f = Qt::Widget);
     virtual ~QvisDelayedWindowSimpleObserver();
     virtual void CreateWindowContents() = 0;
     virtual void Update(Subject *TheChangedSubject);

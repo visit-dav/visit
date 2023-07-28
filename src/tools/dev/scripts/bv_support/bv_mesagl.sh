@@ -98,13 +98,6 @@ function bv_mesagl_ensure
     fi
 }
 
-function bv_mesagl_dry_run
-{
-    if [[ "$DO_MESAGL" == "yes" ]] ; then
-        echo "Dry run option not set for mesagl."
-    fi
-}
-
 function apply_mesagl_patch
 {
     patch -p0 << \EOF

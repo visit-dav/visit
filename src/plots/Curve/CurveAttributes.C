@@ -1823,38 +1823,3 @@ CurveAttributes::ChangesRequireRecalculation(const CurveAttributes &obj) const
     return false;
 }
 
-// ****************************************************************************
-// Method: CurveAttributes::ProcessOldVersions
-//
-// Purpose:
-//   This method creates modifies a DataNode representation of the object
-//   so it conforms to the newest representation of the object, which can
-//   can be read back in.
-//
-// Programmer: Kathleen Bonnell
-// Creation:   August 16, 2010
-//
-// Modifications:
-//   Kathleen Biagas, Tue Feb 15 13:34:17 PST 2022
-//   Removed processing of version < 2.1.0.
-//
-// ****************************************************************************
-
-void
-CurveAttributes::ProcessOldVersions(DataNode *parentNode,
-                                         const char *configVersion)
-{
-    if (parentNode == 0)
-        return;
-
-    DataNode *searchNode = parentNode->GetNode("CurveAttributes");
-    if (searchNode == 0)
-        return;
-
-    if (VersionLessThan(configVersion, "3.0.0"))
-    {
-       if (searchNode->GetNode("lineStyle") != 0)
-            searchNode->RemoveNode("lineStyle");
-    }
-}
-

@@ -58,6 +58,9 @@ avtStrainGreenLagrangeExpression::~avtStrainGreenLagrangeExpression()
 //  Modifications:
 //    Kathleen Biagas, Wed Apr 4 12:02:10 PDT 2012
 //    Set output's data type to same as input.
+// 
+//    Justin Privitera, Fri Sep 16 11:58:19 PDT 2022
+//    Renamed avtStrainTensorExpression to avtStrainExpression.
 //
 // ****************************************************************************
 
@@ -144,7 +147,7 @@ avtStrainGreenLagrangeExpression::DeriveVariable (vtkDataSet *in_ds, int current
             }
             //
             // This is where the strain algorithms start to differ
-            avtStrainTensorExpression::HexPartialDerivative
+            avtStrainExpression::HexPartialDerivative
                 (px, py, pz, x, y, z);
             for (size_t j = 0; j < 9; j++) 
                 F[j] = 0.0;

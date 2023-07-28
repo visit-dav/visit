@@ -57,6 +57,9 @@
 #    Removed cleanup_files since temporary files are written to the _run dir
 #    which gets removed on exit (unless --no-cleanup specified).
 #
+#    Eric Brugger, Mon May 1 15:28:30 PST 2023
+#    Added HTG export test.
+#
 # ----------------------------------------------------------------------------
 import time
 import os.path
@@ -505,7 +508,7 @@ def test_bov():
     ExportDatabase(e, opts)
     time.sleep(1)
     TestValueEQ("test_bov_uncompressed.bov exists", os.path.isfile("test_bov_uncompressed.bov"), True)
-    TestValueEQ("test_bov_uncompressed exists", os.path.isfile("test_bov_uncompressed"), True)
+    TestValueEQ("test_bov_uncompressed.bof exists", os.path.isfile("test_bov_uncompressed.bof"), True)
     ReplaceDatabase("test_bov_uncompressed.bov")
     Test("export_db_5_01")
 
@@ -517,15 +520,11 @@ def test_bov():
     ExportDatabase(e, opts)
     time.sleep(1)
     TestValueEQ("test_bov_gzip.bov exists", os.path.isfile("test_bov_gzip.bov"), True)
-    TestValueEQ("test_bov_gzip.gz exists", os.path.isfile("test_bov_gzip.gz"), True)
-    with gzip.open("test_bov_gzip.gz", "rb") as f_in:
-        with open("test_bov_gzip", "wb") as f_out:
-            shutil.copyfileobj(f_in, f_out);
+    TestValueEQ("test_bov_gzip.bof.gz exists", os.path.isfile("test_bov_gzip.bof.gz"), True)
     ReplaceDatabase("test_bov_gzip.bov")
     Test("export_db_5_02")
 
     DeleteAllPlots()
-
 
 def test_vtk_tetrahedralize():
     dbs_noext = ["ucd3d", "specmix_ucd"]
@@ -556,6 +555,42 @@ def test_vtk_tetrahedralize():
         TestText("export_db_vtk_tets_%s"%db_noext, "Ratio of exported zone count to original is %d"%(nzNew/nzOrig))
         DeleteAllPlots()
 
+def test_htg():
+    TestSection("Test htg export.")
+    OpenDatabase(silo_data_path("globe.silo"))
+    AddPlot("Pseudocolor", "dx")
+    AddOperator("Resample")
+    resample = ResampleAttributes()
+    resample.useExtents = 0
+    resample.startX = -10
+    resample.endX = 10
+    resample.samplesX = 16
+    resample.startY = -10
+    resample.endY = 10
+    resample.samplesY = 16
+    resample.is3D = 1
+    resample.startZ = -10
+    resample.endZ = 10
+    resample.samplesZ = 16
+    resample.defaultValue = -10000
+    resample.distributedResample = 0
+    resample.cellCenteredOutput = 1
+    SetOperatorOptions(resample)
+    DrawPlots()
+
+    e = ExportDBAttributes()
+    e.db_type = "HTG"
+    e.filename = "globe"
+    opts = GetExportOptions("HTG")
+    opts['Blank value'] = -10000
+    ExportDatabase(e, opts)
+
+    htg_text = Path('globe.dx.htg').read_text()
+
+    TestText("globe.dx.htg", htg_text)
+
+    DeleteAllPlots()
+
 def main():
     test0()
     test1()
@@ -569,6 +604,7 @@ def main():
     test4()
     test_bov()
     test_vtk_tetrahedralize()
+    test_htg()
 
 main()
 Exit()

@@ -14,6 +14,9 @@
 //    Jeremy Meredith, Mon Jul  9 15:22:06 EDT 2012
 //    Added 5- thru 8-sided polygon shapes.
 //
+//    Kathleen Biagas, Wed Apr  5 12:45:21 PDT 2023
+//    Remove call to obsolete function setColorSpec.
+//
 // ----------------------------------------------------------------------------
 
 #include <QApplication>
@@ -29,7 +32,6 @@ using namespace std;
 
 int main(int argc, char *argv[])
 {
-    QApplication::setColorSpec( QApplication::ManyColor );
     QApplication *a = new QApplication( argc, argv );
 
     if (argc != 2)

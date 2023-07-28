@@ -6,6 +6,7 @@
 #include <ObserverToCallback.h>
 #include <stdio.h>
 #include <Py2and3Support.h>
+#include <visit-config.h>
 #include <ColorAttribute.h>
 #include <PyColorAttributeList.h>
 #include <GlyphTypes.h>
@@ -39,7 +40,7 @@ struct SubsetAttributesObject
 //
 static PyObject *NewSubsetAttributes(int);
 std::string
-PySubsetAttributes_ToString(const SubsetAttributes *atts, const char *prefix)
+PySubsetAttributes_ToString(const SubsetAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -1460,76 +1461,6 @@ PySubsetAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "pointSizePixels") == 0)
         return SubsetAttributes_GetPointSizePixels(self, NULL);
 
-    // Try and handle legacy fields
-
-    //
-    //  Changed in 2.13.0 to be internal
-    //
-    // subsetType and it's possible enumerations
-    // these should have been internal all along ...
-    if (strcmp(name, "subsetType") == 0)
-    {
-        PyErr_WarnFormat(NULL, 3, "'%s' is obsolete. It is being ignored.", name);
-        return PyInt_FromLong(0L);
-    }
-    else if (strcmp(name, "Domain") == 0)
-    {
-        PyErr_WarnFormat(NULL, 3, "'%s' is obsolete. It is being ignored.", name);
-        return PyInt_FromLong(0L);
-    }
-    else if (strcmp(name, "Group") == 0)
-    {
-        PyErr_WarnFormat(NULL, 3, "'%s' is obsolete. It is being ignored.", name);
-        return PyInt_FromLong(0L);
-    }
-    else if (strcmp(name, "Material") == 0)
-    {
-        PyErr_WarnFormat(NULL, 3, "'%s' is obsolete. It is being ignored.", name);
-        return PyInt_FromLong(0L);
-    }
-    else if (strcmp(name, "Unknown") == 0)
-    {
-        PyErr_WarnFormat(NULL, 3, "'%s' is obsolete. It is being ignored.", name);
-        return PyInt_FromLong(0L);
-    }
-    //
-    //  Removed in 2.13.0
-    //
-    // filledFlag -- hasn't been used in a LONG time
-    else if (strcmp(name, "filledFlag") == 0)
-    {
-        PyErr_WarnFormat(NULL, 3, "'%s' is obsolete. It is being ignored.", name);
-        return PyInt_FromLong(0L);
-    }
-    //
-    //  Removed in 3.0.0
-    //
-    // lineStyle and it's possible enumerations
-    else if (strcmp(name, "lineStyle") == 0)
-    {
-        PyErr_WarnFormat(NULL, 3, "'%s' is obsolete. It is being ignored.", name);
-        return PyInt_FromLong(0L);
-    }
-    else if (strcmp(name, "SOLID") == 0)
-    {
-        PyErr_WarnFormat(NULL, 3, "'%s' is obsolete. It is being ignored.", name);
-        return PyInt_FromLong(0L);
-    }
-    else if (strcmp(name, "DASH") == 0)
-    {
-        PyErr_WarnFormat(NULL, 3, "'%s' is obsolete. It is being ignored.", name);
-        return PyInt_FromLong(0L);
-    }
-    else if (strcmp(name, "DOT") == 0)
-    {
-        PyErr_WarnFormat(NULL, 3, "'%s' is obsolete. It is being ignored.", name);
-        return PyInt_FromLong(0L);
-    }
-    else if (strcmp(name, "DOTDASH") == 0)
-    {
-        PyErr_WarnFormat(NULL, 3, "'%s' is obsolete. It is being ignored.", name);
-        return PyInt_FromLong(0L);
-    }
 
     // Add a __dict__ answer so that dir() works
     if (!strcmp(name, "__dict__"))
@@ -1586,38 +1517,6 @@ PySubsetAttributes_setattr(PyObject *self, char *name, PyObject *args)
     else if(strcmp(name, "pointSizePixels") == 0)
         obj = SubsetAttributes_SetPointSizePixels(self, args);
 
-    // Try and handle legacy fields
-    if(obj == &NULL_PY_OBJ)
-    {
-        //
-        //  Removed in 2.13.0
-        //
-        if(strcmp(name, "filledFlag") == 0)
-        {
-            PyErr_WarnFormat(NULL, 3, "'%s' is obsolete. It is being ignored.", name);
-            Py_INCREF(Py_None);
-            obj = Py_None;
-        }
-        //
-        //  Changed in 2.13.0 to be internal
-        //
-        // internal only, shouldn't be set by scripts
-        else if(strcmp(name, "subsetType") == 0)
-        {
-            PyErr_WarnFormat(NULL, 3, "'%s' is obsolete. It is being ignored.", name);
-            Py_INCREF(Py_None);
-            obj = Py_None;
-        }
-        //
-        //  Removed in 3.0.0
-        //
-        else if(strcmp(name, "lineStyle") == 0)
-        {
-            PyErr_WarnFormat(NULL, 3, "'%s' is obsolete. It is being ignored.", name);
-            Py_INCREF(Py_None);
-            obj = Py_None;
-        }
-    }
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
@@ -1636,7 +1535,7 @@ static int
 SubsetAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     SubsetAttributesObject *obj = (SubsetAttributesObject *)v;
-    fprintf(fp, "%s", PySubsetAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PySubsetAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -1644,7 +1543,7 @@ PyObject *
 SubsetAttributes_str(PyObject *v)
 {
     SubsetAttributesObject *obj = (SubsetAttributesObject *)v;
-    return PyString_FromString(PySubsetAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PySubsetAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -1796,7 +1695,7 @@ PySubsetAttributes_GetLogString()
 {
     std::string s("SubsetAtts = SubsetAttributes()\n");
     if(currentAtts != 0)
-        s += PySubsetAttributes_ToString(currentAtts, "SubsetAtts.");
+        s += PySubsetAttributes_ToString(currentAtts, "SubsetAtts.", true);
     return s;
 }
 
@@ -1809,7 +1708,7 @@ PySubsetAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("SubsetAtts = SubsetAttributes()\n");
-        s += PySubsetAttributes_ToString(currentAtts, "SubsetAtts.");
+        s += PySubsetAttributes_ToString(currentAtts, "SubsetAtts.", true);
         cb(s);
     }
 }

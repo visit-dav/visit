@@ -36,11 +36,11 @@ struct avtLabelMetaDataObject
 //
 static PyObject *NewavtLabelMetaData(int);
 std::string
-PyavtLabelMetaData_ToString(const avtLabelMetaData *atts, const char *prefix)
+PyavtLabelMetaData_ToString(const avtLabelMetaData *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
 
-    str = PyavtVarMetaData_ToString(atts, prefix);
+    str = PyavtVarMetaData_ToString(atts, prefix, forLogging);
 
     return str;
 }
@@ -152,7 +152,7 @@ static int
 avtLabelMetaData_print(PyObject *v, FILE *fp, int flags)
 {
     avtLabelMetaDataObject *obj = (avtLabelMetaDataObject *)v;
-    fprintf(fp, "%s", PyavtLabelMetaData_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyavtLabelMetaData_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -160,7 +160,7 @@ PyObject *
 avtLabelMetaData_str(PyObject *v)
 {
     avtLabelMetaDataObject *obj = (avtLabelMetaDataObject *)v;
-    return PyString_FromString(PyavtLabelMetaData_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyavtLabelMetaData_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -312,7 +312,7 @@ PyavtLabelMetaData_GetLogString()
 {
     std::string s("avtLabelMetaData = avtLabelMetaData()\n");
     if(currentAtts != 0)
-        s += PyavtLabelMetaData_ToString(currentAtts, "avtLabelMetaData.");
+        s += PyavtLabelMetaData_ToString(currentAtts, "avtLabelMetaData.", true);
     return s;
 }
 
@@ -325,7 +325,7 @@ PyavtLabelMetaData_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("avtLabelMetaData = avtLabelMetaData()\n");
-        s += PyavtLabelMetaData_ToString(currentAtts, "avtLabelMetaData.");
+        s += PyavtLabelMetaData_ToString(currentAtts, "avtLabelMetaData.", true);
         cb(s);
     }
 }

@@ -122,6 +122,9 @@
 //    Kathleen Biagas, Thu Jun  9 16:22:37 PDT 2016
 //    For QSpinBox, turn off keyboardTracking.
 //
+//    Kathleen Biagas, Thu Nov 17, 2022
+//    Added boolArray and boolVector.
+//
 // ****************************************************************************
 
 class WindowGeneratorField : public virtual Field
@@ -136,38 +139,38 @@ class WindowGeneratorField : public virtual Field
     // helper functions
     void writeSourceCreateLabel(QTextStream &c)
     {
-        c << "    "<<name<<"Label = new QLabel(tr(\""<<label<<"\"), central);" << endl;
-        c << "    mainLayout->addWidget("<<name<<"Label,"<<index<<",0);" << endl;
+        c << "    "<<name<<"Label = new QLabel(tr(\""<<label<<"\"), central);" << Endl;
+        c << "    mainLayout->addWidget("<<name<<"Label,"<<index<<",0);" << Endl;
     }
     // virtual functions
     virtual void               writeHeaderCallback(QTextStream &h)
     {
-        h << "    //writeHeaderCallback unknown for " << type << " (variable " << name << ")" << endl;
+        h << "    //writeHeaderCallback unknown for " << type << " (variable " << name << ")" << Endl;
     }
     virtual void               writeHeaderLabelData(QTextStream &h)
     {
-        h << "    QLabel *"<<name<<"Label;" << endl;
+        h << "    QLabel *"<<name<<"Label;" << Endl;
     }
     virtual void               writeHeaderData(QTextStream &h)
     {
-        h << "    //writeHeaderData unknown for " << type << " (variable " << name << ")" << endl;
+        h << "    //writeHeaderData unknown for " << type << " (variable " << name << ")" << Endl;
     }
     virtual void               writeSourceCreate(QTextStream &c)
     {
-        c << "    //writeSourceCreate unknown for " << type << " (variable " << name << ")" << endl;
+        c << "    //writeSourceCreate unknown for " << type << " (variable " << name << ")" << Endl;
     }
     virtual bool               providesSourceGetCurrent() const { return false; }
     virtual void               writeSourceGetCurrent(QTextStream &c)
     {
-        c << "        //writeSourceGetCurrent unknown for " << type << " (variable " << name << ")" << endl;
+        c << "        //writeSourceGetCurrent unknown for " << type << " (variable " << name << ")" << Endl;
     }
     virtual void               writeSourceUpdateWindow(QTextStream &c)
     {
-        c << "        //writeSourceUpdate unknown for " << type << " (variable " << name << ")" << endl;
+        c << "        //writeSourceUpdate unknown for " << type << " (variable " << name << ")" << Endl;
     }
     virtual void               writeSourceCallback(QString &classname, QString &windowname, QTextStream &c, bool isEnabler)
     {
-        c << "//writeSourceCallback unknown for " << type << " (variable " << name << ")" << endl;
+        c << "//writeSourceCallback unknown for " << type << " (variable " << name << ")" << Endl;
     }
 };
 
@@ -182,93 +185,93 @@ class WindowGeneratorInt : public virtual Int , public virtual WindowGeneratorFi
     virtual void            writeHeaderCallback(QTextStream &h)
     {
         if (rangeSet)
-            h << "    void "<<name<<"Changed(int val);" << endl;
+            h << "    void "<<name<<"Changed(int val);" << Endl;
         else
-            h << "    void "<<name<<"ProcessText();" << endl;
+            h << "    void "<<name<<"ProcessText();" << Endl;
     }
     virtual void            writeHeaderData(QTextStream &h)
     {
         if (rangeSet)
-            h << "    QSpinBox *"<<name<<";" << endl;
+            h << "    QSpinBox *"<<name<<";" << Endl;
         else
-            h << "    QLineEdit *"<<name<<";" << endl;
+            h << "    QLineEdit *"<<name<<";" << Endl;
     }
     virtual void            writeSourceCreate(QTextStream &c)
     {
         writeSourceCreateLabel(c);
         if (rangeSet)
         {
-            c << "    "<<name<<" = new QSpinBox(central);" << endl;
-            c << "    "<<name<<"->setKeyboardTracking(false);"<<endl;
-            c << "    "<<name<<"->setMinimum("<<min<<");"<<endl;
-            c << "    "<<name<<"->setMaximum("<<max<<");"<<endl;
-            c << "    connect("<<name<<", SIGNAL(valueChanged(int)), " << endl
-              << "            this, SLOT("<<name<<"Changed(int)));" << endl;
+            c << "    "<<name<<" = new QSpinBox(central);" << Endl;
+            c << "    "<<name<<"->setKeyboardTracking(false);"<<Endl;
+            c << "    "<<name<<"->setMinimum("<<min<<");"<<Endl;
+            c << "    "<<name<<"->setMaximum("<<max<<");"<<Endl;
+            c << "    connect("<<name<<", SIGNAL(valueChanged(int)), " << Endl
+              << "            this, SLOT("<<name<<"Changed(int)));" << Endl;
         }
         else
         {
-            c << "    "<<name<<" = new QLineEdit(central);" << endl;
-            c << "    connect("<<name<<", SIGNAL(returnPressed())," << endl
-              << "            this, SLOT("<<name<<"ProcessText()));" << endl;
+            c << "    "<<name<<" = new QLineEdit(central);" << Endl;
+            c << "    connect("<<name<<", SIGNAL(returnPressed())," << Endl
+              << "            this, SLOT("<<name<<"ProcessText()));" << Endl;
         }
-        c << "    mainLayout->addWidget("<<name<<", "<<index<<",1);" << endl;
+        c << "    mainLayout->addWidget("<<name<<", "<<index<<",1);" << Endl;
     }
     virtual bool            providesSourceGetCurrent() const { return true; }
     virtual void            writeSourceGetCurrent(QTextStream &c)
     {
         if (rangeSet)
         {
-            c << "        if ("<<name<<"->value() != atts->Get"<<Name<<"())" << endl;
-            c << "            atts->Set"<<Name<<"("<<name<<"->value())" << endl;
+            c << "        if ("<<name<<"->value() != atts->Get"<<Name<<"())" << Endl;
+            c << "            atts->Set"<<Name<<"("<<name<<"->value())" << Endl;
         }
         else
         {
-            c << "        int val;" << endl;
-            c << "        if(LineEditGetInt("<<name<<", val))" << endl;
-            c << "            atts->Set"<<Name<<"(val);" << endl;
-            c << "        else" << endl;
-            c << "        {" << endl;
+            c << "        int val;" << Endl;
+            c << "        if(LineEditGetInt("<<name<<", val))" << Endl;
+            c << "            atts->Set"<<Name<<"(val);" << Endl;
+            c << "        else" << Endl;
+            c << "        {" << Endl;
             QString msgLabel = (label.length()>0) ? label : name;
-            c << "            ResettingError(tr(\""<<msgLabel<<"\")," << endl;
-            c << "                IntToQString(atts->Get"<<Name<<"()));" << endl;
-            c << "            atts->Set"<<Name<<"(atts->Get"<<Name<<"());" << endl;
-            c << "        }" << endl;
+            c << "            ResettingError(tr(\""<<msgLabel<<"\")," << Endl;
+            c << "                IntToQString(atts->Get"<<Name<<"()));" << Endl;
+            c << "            atts->Set"<<Name<<"(atts->Get"<<Name<<"());" << Endl;
+            c << "        }" << Endl;
         }
     }
     virtual void            writeSourceUpdateWindow(QTextStream &c)
     {
         if (rangeSet)
         {
-            c << "            "<<name<<"->blockSignals(true);" << endl;
-            c << "            "<<name<<"->setValue(atts->Get"<<Name<<"());" << endl;
-            c << "            "<<name<<"->blockSignals(false);" << endl;
+            c << "            "<<name<<"->blockSignals(true);" << Endl;
+            c << "            "<<name<<"->setValue(atts->Get"<<Name<<"());" << Endl;
+            c << "            "<<name<<"->blockSignals(false);" << Endl;
         }
         else
         {
-            c << "            "<<name<<"->setText(IntToQString(atts->Get"<<Name<<"()));" << endl;
+            c << "            "<<name<<"->setText(IntToQString(atts->Get"<<Name<<"()));" << Endl;
         }
     }
     virtual void            writeSourceCallback(QString &classname, QString &windowname, QTextStream &c, bool isEnabler)
     {
         if (rangeSet)
         {
-            c << "void" << endl;
-            c << windowname<<"::"<<name<<"Changed(int val)" << endl;
-            c << "{" << endl;
-            c << "    atts->Set"<<Name<<"(val);" << endl;
+            c << "void" << Endl;
+            c << windowname<<"::"<<name<<"Changed(int val)" << Endl;
+            c << "{" << Endl;
+            c << "    atts->Set"<<Name<<"(val);" << Endl;
             if(!isEnabler)
-                c << "    SetUpdate(false);" << endl;
-            c << "    Apply();" << endl;
-            c << "}" << endl;
+                c << "    SetUpdate(false);" << Endl;
+            c << "    Apply();" << Endl;
+            c << "}" << Endl;
         }
         else
         {
-            c << "void" << endl;
-            c << windowname<<"::"<<name<<"ProcessText()" << endl;
-            c << "{" << endl;
-            c << "    GetCurrentValues("<<classname << "::ID_" << name<<");" << endl;
-            c << "    Apply();" << endl;
-            c << "}" << endl;
+            c << "void" << Endl;
+            c << windowname<<"::"<<name<<"ProcessText()" << Endl;
+            c << "{" << Endl;
+            c << "    GetCurrentValues("<<classname << "::ID_" << name<<");" << Endl;
+            c << "    Apply();" << Endl;
+            c << "}" << Endl;
         }
     }
 };
@@ -284,46 +287,46 @@ class WindowGeneratorIntArray : public virtual IntArray , public virtual WindowG
         : Field("intArray",n,l), IntArray(s,n,l), WindowGeneratorField("intArray",n,l) { }
     virtual void            writeHeaderCallback(QTextStream &h)
     {
-        h << "    void "<<name<<"ProcessText();" << endl;
+        h << "    void "<<name<<"ProcessText();" << Endl;
     }
     virtual void            writeHeaderData(QTextStream &h)
     {
-        h << "    QLineEdit *"<<name<<";" << endl;
+        h << "    QLineEdit *"<<name<<";" << Endl;
     }
     virtual void            writeSourceCreate(QTextStream &c)
     {
         writeSourceCreateLabel(c);
-        c << "    "<<name<<" = new QLineEdit(central);" << endl;
-        c << "    connect("<<name<<", SIGNAL(returnPressed())," << endl
-          << "            this, SLOT("<<name<<"ProcessText()));" << endl;
-        c << "    mainLayout->addWidget("<<name<<", "<<index<<",1);" << endl;
+        c << "    "<<name<<" = new QLineEdit(central);" << Endl;
+        c << "    connect("<<name<<", SIGNAL(returnPressed())," << Endl
+          << "            this, SLOT("<<name<<"ProcessText()));" << Endl;
+        c << "    mainLayout->addWidget("<<name<<", "<<index<<",1);" << Endl;
     }
     virtual bool            providesSourceGetCurrent() const { return true; }
     virtual void            writeSourceGetCurrent(QTextStream &c)
     {
-        c << "        int val[" << length << "];" << endl;
-        c << "        if(LineEditGetInts("<<name<<", val, " << length << "))" << endl;
-        c << "            atts->Set"<<Name<<"(val);" << endl;
-        c << "        else" << endl;
-        c << "        {" << endl;
+        c << "        int val[" << length << "];" << Endl;
+        c << "        if(LineEditGetInts("<<name<<", val, " << length << "))" << Endl;
+        c << "            atts->Set"<<Name<<"(val);" << Endl;
+        c << "        else" << Endl;
+        c << "        {" << Endl;
         QString msgLabel = (label.length()>0) ? label : name;
-        c << "            ResettingError(tr(\""<<msgLabel<<"\")," << endl;
-        c << "                IntsToQString(atts->Get"<<Name<<"(), "<<length<<"));" << endl;
-        c << "            atts->Set"<<Name<<"(atts->Get"<<Name<<"());" << endl;
-        c << "        }" << endl;
+        c << "            ResettingError(tr(\""<<msgLabel<<"\")," << Endl;
+        c << "                IntsToQString(atts->Get"<<Name<<"(), "<<length<<"));" << Endl;
+        c << "            atts->Set"<<Name<<"(atts->Get"<<Name<<"());" << Endl;
+        c << "        }" << Endl;
     }
     virtual void            writeSourceUpdateWindow(QTextStream &c)
     {
-        c << "            "<<name<<"->setText(IntsToQString(atts->Get"<<Name<<"(),"<<length<<"));" << endl;
+        c << "            "<<name<<"->setText(IntsToQString(atts->Get"<<Name<<"(),"<<length<<"));" << Endl;
     }
     virtual void            writeSourceCallback(QString &classname, QString &windowname, QTextStream &c, bool isEnabler)
     {
-        c << "void" << endl;
-        c << windowname<<"::"<<name<<"ProcessText()" << endl;
-        c << "{" << endl;
-        c << "    GetCurrentValues("<<classname << "::ID_" << name<<");" << endl;
-        c << "    Apply();" << endl;
-        c << "}" << endl;
+        c << "void" << Endl;
+        c << windowname<<"::"<<name<<"ProcessText()" << Endl;
+        c << "{" << Endl;
+        c << "    GetCurrentValues("<<classname << "::ID_" << name<<");" << Endl;
+        c << "    Apply();" << Endl;
+        c << "}" << Endl;
     }
 };
 
@@ -338,46 +341,46 @@ class WindowGeneratorIntVector : public virtual IntVector , public virtual Windo
         : Field("intVector",n,l), IntVector(n,l), WindowGeneratorField("intVector",n,l) { }
     virtual void            writeHeaderCallback(QTextStream &h)
     {
-        h << "    void "<<name<<"ProcessText();" << endl;
+        h << "    void "<<name<<"ProcessText();" << Endl;
     }
     virtual void            writeHeaderData(QTextStream &h)
     {
-        h << "    QLineEdit *"<<name<<";" << endl;
+        h << "    QLineEdit *"<<name<<";" << Endl;
     }
     virtual void            writeSourceCreate(QTextStream &c)
     {
         writeSourceCreateLabel(c);
-        c << "    "<<name<<" = new QLineEdit(central);" << endl;
-        c << "    connect("<<name<<", SIGNAL(returnPressed())," << endl
-          << "            this, SLOT("<<name<<"ProcessText()));" << endl;
-        c << "    mainLayout->addWidget("<<name<<", "<<index<<",1);" << endl;
+        c << "    "<<name<<" = new QLineEdit(central);" << Endl;
+        c << "    connect("<<name<<", SIGNAL(returnPressed())," << Endl
+          << "            this, SLOT("<<name<<"ProcessText()));" << Endl;
+        c << "    mainLayout->addWidget("<<name<<", "<<index<<",1);" << Endl;
     }
     virtual bool            providesSourceGetCurrent() const { return true; }
     virtual void            writeSourceGetCurrent(QTextStream &c)
     {
-        c << "        intVector val;" << endl;
-        c << "        if(LineEditGetInts("<<name<<", val))" << endl;
-        c << "            atts->Set"<<Name<<"(val);" << endl;
-        c << "        else" << endl;
-        c << "        {" << endl;
+        c << "        intVector val;" << Endl;
+        c << "        if(LineEditGetInts("<<name<<", val))" << Endl;
+        c << "            atts->Set"<<Name<<"(val);" << Endl;
+        c << "        else" << Endl;
+        c << "        {" << Endl;
         QString msgLabel = (label.length()>0) ? label : name;
-        c << "            ResettingError(tr(\""<<msgLabel<<"\")," << endl;
-        c << "                IntsToQString(atts->Get"<<Name<<"()));" << endl;
-        c << "            atts->Set"<<Name<<"(atts->Get"<<Name<<"());" << endl;
-        c << "        }" << endl;
+        c << "            ResettingError(tr(\""<<msgLabel<<"\")," << Endl;
+        c << "                IntsToQString(atts->Get"<<Name<<"()));" << Endl;
+        c << "            atts->Set"<<Name<<"(atts->Get"<<Name<<"());" << Endl;
+        c << "        }" << Endl;
     }
     virtual void            writeSourceUpdateWindow(QTextStream &c)
     {
-        c << "            "<<name<<"->setText(IntsToQString(atts->Get"<<Name<<"()));" << endl;
+        c << "            "<<name<<"->setText(IntsToQString(atts->Get"<<Name<<"()));" << Endl;
     }
     virtual void            writeSourceCallback(QString &classname, QString &windowname, QTextStream &c, bool isEnabler)
     {
-        c << "void" << endl;
-        c << windowname<<"::"<<name<<"ProcessText()" << endl;
-        c << "{" << endl;
-        c << "    GetCurrentValues("<<classname << "::ID_" << name<<");" << endl;
-        c << "    Apply();" << endl;
-        c << "}" << endl;
+        c << "void" << Endl;
+        c << windowname<<"::"<<name<<"ProcessText()" << Endl;
+        c << "{" << Endl;
+        c << "    GetCurrentValues("<<classname << "::ID_" << name<<");" << Endl;
+        c << "    Apply();" << Endl;
+        c << "}" << Endl;
     }
 };
 
@@ -393,42 +396,149 @@ class WindowGeneratorBool : public virtual Bool , public virtual WindowGenerator
     virtual bool            HasLabel() {return false;}
     virtual void            writeHeaderCallback(QTextStream &h)
     {
-        h << "    void "<<name<<"Changed(bool val);" << endl;
+        h << "    void "<<name<<"Changed(bool val);" << Endl;
     }
     virtual void            writeHeaderData(QTextStream &h)
     {
-        h << "    QCheckBox *"<<name<<";" << endl;
+        h << "    QCheckBox *"<<name<<";" << Endl;
     }
     virtual void            writeSourceCreate(QTextStream &c)
     {
-        c << "    "<<name<<" = new QCheckBox(tr(\""<<label<<"\"), central);" << endl;
-        c << "    connect("<<name<<", SIGNAL(toggled(bool))," << endl
-          << "            this, SLOT("<<name<<"Changed(bool)));" << endl;
-        c << "    mainLayout->addWidget("<<name<<", "<<index<<",0);" << endl;
+        c << "    "<<name<<" = new QCheckBox(tr(\""<<label<<"\"), central);" << Endl;
+        c << "    connect("<<name<<", SIGNAL(toggled(bool))," << Endl
+          << "            this, SLOT("<<name<<"Changed(bool)));" << Endl;
+        c << "    mainLayout->addWidget("<<name<<", "<<index<<",0);" << Endl;
     }
     virtual void            writeHeaderLabelData(QTextStream &h)
     {
     }
     virtual void            writeSourceGetCurrent(QTextStream &c)
     {
-        c << "        // Nothing for " << name << endl;
+        c << "        // Nothing for " << name << Endl;
     }
     virtual void            writeSourceUpdateWindow(QTextStream &c)
     {
-        c << "            "<<name<<"->blockSignals(true);" << endl;
-        c << "            "<<name<<"->setChecked(atts->Get"<<Name<<"());" << endl;
-        c << "            "<<name<<"->blockSignals(false);" << endl;
+        c << "            "<<name<<"->blockSignals(true);" << Endl;
+        c << "            "<<name<<"->setChecked(atts->Get"<<Name<<"());" << Endl;
+        c << "            "<<name<<"->blockSignals(false);" << Endl;
     }
     virtual void            writeSourceCallback(QString &, QString &windowname, QTextStream &c, bool isEnabler)
     {
-        c << "void" << endl;
-        c << windowname<<"::"<<name<<"Changed(bool val)" << endl;
-        c << "{" << endl;
-        c << "    atts->Set"<<Name<<"(val);" << endl;
+        c << "void" << Endl;
+        c << windowname<<"::"<<name<<"Changed(bool val)" << Endl;
+        c << "{" << Endl;
+        c << "    atts->Set"<<Name<<"(val);" << Endl;
         if(!isEnabler)
-            c << "    SetUpdate(false);" << endl;
-        c << "    Apply();" << endl;
-        c << "}" << endl;
+            c << "    SetUpdate(false);" << Endl;
+        c << "    Apply();" << Endl;
+        c << "}" << Endl;
+    }
+};
+
+//
+// ---------------------------------- BoolArray --------------------------------
+//
+class WindowGeneratorBoolArray : public virtual BoolArray , public virtual WindowGeneratorField
+{
+  public:
+    WindowGeneratorBoolArray(const QString &s, const QString &n, const QString &l)
+        : Field("boolArray",n,l), BoolArray(s,n,l), WindowGeneratorField("boolArray",n,l) { }
+    virtual void            writeHeaderCallback(QTextStream &h)
+    {
+        h << "    void "<<name<<"ProcessText();" << Endl;
+    }
+    virtual void            writeHeaderData(QTextStream &h)
+    {
+        h << "    QLineEdit *"<<name<<";" << Endl;
+    }
+    virtual void            writeSourceCreate(QTextStream &c)
+    {
+        writeSourceCreateLabel(c);
+        c << "    "<<name<<" = new QLineEdit(central);" << Endl;
+        c << "    connect("<<name<<", SIGNAL(returnPressed())," << Endl
+          << "            this, SLOT("<<name<<"ProcessText()));" << Endl;
+        c << "    mainLayout->addWidget("<<name<<", "<<index<<",1);" << Endl;
+    }
+    virtual bool            providesSourceGetCurrent() const { return true; }
+    virtual void            writeSourceGetCurrent(QTextStream &c)
+    {
+        c << "        bool val[" << length << "];" << Endl;
+        c << "        if(LineEditGetBools("<<name<<", val, " << length << "))" << Endl;
+        c << "            atts->Set"<<Name<<"(val);" << Endl;
+        c << "        else" << Endl;
+        c << "        {" << Endl;
+        QString msgLabel = (label.length()>0) ? label : name;
+        c << "            ResettingError(tr(\""<<msgLabel<<"\")," << Endl;
+        c << "                BoolsToQString(atts->Get"<<Name<<"(), "<<length<<"));" << Endl;
+        c << "            atts->Set"<<Name<<"(atts->Get"<<Name<<"());" << Endl;
+        c << "        }" << Endl;
+    }
+    virtual void            writeSourceUpdateWindow(QTextStream &c)
+    {
+        c << "            "<<name<<"->setText(BoolsToQString(atts->Get"<<Name<<"(),"<<length<<"));" << Endl;
+    }
+    virtual void            writeSourceCallback(QString &classname, QString &windowname, QTextStream &c, bool isEnabler)
+    {
+        c << "void" << Endl;
+        c << windowname<<"::"<<name<<"ProcessText()" << Endl;
+        c << "{" << Endl;
+        c << "    GetCurrentValues("<<classname << "::ID_" << name<<");" << Endl;
+        c << "    Apply();" << Endl;
+        c << "}" << Endl;
+    }
+};
+
+
+//
+// --------------------------------- BoolVector --------------------------------
+//
+class WindowGeneratorBoolVector : public virtual BoolVector , public virtual WindowGeneratorField
+{
+  public:
+    WindowGeneratorBoolVector(const QString &n, const QString &l)
+        : Field("boolVector",n,l), BoolVector(n,l), WindowGeneratorField("boolVector",n,l) { }
+    virtual void            writeHeaderCallback(QTextStream &h)
+    {
+        h << "    void "<<name<<"ProcessText();" << Endl;
+    }
+    virtual void            writeHeaderData(QTextStream &h)
+    {
+        h << "    QLineEdit *"<<name<<";" << Endl;
+    }
+    virtual void            writeSourceCreate(QTextStream &c)
+    {
+        writeSourceCreateLabel(c);
+        c << "    "<<name<<" = new QLineEdit(central);" << Endl;
+        c << "    connect("<<name<<", SIGNAL(returnPressed())," << Endl
+          << "            this, SLOT("<<name<<"ProcessText()));" << Endl;
+        c << "    mainLayout->addWidget("<<name<<", "<<index<<",1);" << Endl;
+    }
+    virtual bool            providesSourceGetCurrent() const { return true; }
+    virtual void            writeSourceGetCurrent(QTextStream &c)
+    {
+        c << "        boolVector val;" << Endl;
+        c << "        if(LineEditGetBools("<<name<<", val))" << Endl;
+        c << "            atts->Set"<<Name<<"(val);" << Endl;
+        c << "        else" << Endl;
+        c << "        {" << Endl;
+        QString msgLabel = (label.length()>0) ? label : name;
+        c << "            ResettingError(tr(\""<<msgLabel<<"\")," << Endl;
+        c << "                BoolsToQString(atts->Get"<<Name<<"()));" << Endl;
+        c << "            atts->Set"<<Name<<"(atts->Get"<<Name<<"());" << Endl;
+        c << "        }" << Endl;
+    }
+    virtual void            writeSourceUpdateWindow(QTextStream &c)
+    {
+        c << "            "<<name<<"->setText(BoolsToQString(atts->Get"<<Name<<"()));" << Endl;
+    }
+    virtual void            writeSourceCallback(QString &classname, QString &windowname, QTextStream &c, bool isEnabler)
+    {
+        c << "void" << Endl;
+        c << windowname<<"::"<<name<<"ProcessText()" << Endl;
+        c << "{" << Endl;
+        c << "    GetCurrentValues("<<classname << "::ID_" << name<<");" << Endl;
+        c << "    Apply();" << Endl;
+        c << "}" << Endl;
     }
 };
 
@@ -443,46 +553,46 @@ class WindowGeneratorFloat : public virtual Float , public virtual WindowGenerat
         : Field("float",n,l), Float(n,l), WindowGeneratorField("float",n,l) { }
     virtual void            writeHeaderCallback(QTextStream &h)
     {
-        h << "    void "<<name<<"ProcessText();" << endl;
+        h << "    void "<<name<<"ProcessText();" << Endl;
     }
     virtual void            writeHeaderData(QTextStream &h)
     {
-        h << "    QLineEdit *"<<name<<";" << endl;
+        h << "    QLineEdit *"<<name<<";" << Endl;
     }
     virtual void            writeSourceCreate(QTextStream &c)
     {
         writeSourceCreateLabel(c);
-        c << "    "<<name<<" = new QLineEdit(central);" << endl;
-        c << "    connect("<<name<<", SIGNAL(returnPressed())," << endl
-          << "            this, SLOT("<<name<<"ProcessText()));" << endl;
-        c << "    mainLayout->addWidget("<<name<<", "<<index<<",1);" << endl;
+        c << "    "<<name<<" = new QLineEdit(central);" << Endl;
+        c << "    connect("<<name<<", SIGNAL(returnPressed())," << Endl
+          << "            this, SLOT("<<name<<"ProcessText()));" << Endl;
+        c << "    mainLayout->addWidget("<<name<<", "<<index<<",1);" << Endl;
     }
     virtual bool            providesSourceGetCurrent() const { return true; }
     virtual void            writeSourceGetCurrent(QTextStream &c)
     {
-        c << "        float val;" << endl;
-        c << "        if(LineEditGetFloat("<<name<<", val))" <<endl;
-        c << "            atts->Set"<<Name<<"(val);" << endl;
-        c << "        else" << endl;
-        c << "        {" << endl;
+        c << "        float val;" << Endl;
+        c << "        if(LineEditGetFloat("<<name<<", val))" <<Endl;
+        c << "            atts->Set"<<Name<<"(val);" << Endl;
+        c << "        else" << Endl;
+        c << "        {" << Endl;
         QString msgLabel = (label.length()>0) ? label : name;
-        c << "            ResettingError(tr(\""<<msgLabel<<"\")," << endl;
-        c << "                FloatToQString(atts->Get"<<Name<<"()));" << endl;
-        c << "            atts->Set"<<Name<<"(atts->Get"<<Name<<"());" << endl;
-        c << "        }" << endl;
+        c << "            ResettingError(tr(\""<<msgLabel<<"\")," << Endl;
+        c << "                FloatToQString(atts->Get"<<Name<<"()));" << Endl;
+        c << "            atts->Set"<<Name<<"(atts->Get"<<Name<<"());" << Endl;
+        c << "        }" << Endl;
     }
     virtual void            writeSourceUpdateWindow(QTextStream &c)
     {
-        c << "            "<<name<<"->setText(FloatToQString(atts->Get"<<Name<<"()));" << endl;
+        c << "            "<<name<<"->setText(FloatToQString(atts->Get"<<Name<<"()));" << Endl;
     }
     virtual void            writeSourceCallback(QString &classname, QString &windowname, QTextStream &c, bool isEnabler)
     {
-        c << "void" << endl;
-        c << windowname<<"::"<<name<<"ProcessText()" << endl;
-        c << "{" << endl;
-        c << "    GetCurrentValues("<<classname << "::ID_" << name<<");" << endl;
-        c << "    Apply();" << endl;
-        c << "}" << endl;
+        c << "void" << Endl;
+        c << windowname<<"::"<<name<<"ProcessText()" << Endl;
+        c << "{" << Endl;
+        c << "    GetCurrentValues("<<classname << "::ID_" << name<<");" << Endl;
+        c << "    Apply();" << Endl;
+        c << "}" << Endl;
     }
 };
 
@@ -497,46 +607,46 @@ class WindowGeneratorFloatArray : public virtual FloatArray , public virtual Win
         : Field("floatArray",n,l), FloatArray(s,n,l), WindowGeneratorField("floatArray",n,l) { }
     virtual void               writeHeaderCallback(QTextStream &h)
     {
-        h << "    void "<<name<<"ProcessText();" << endl;
+        h << "    void "<<name<<"ProcessText();" << Endl;
     }
     virtual void               writeHeaderData(QTextStream &h)
     {
-        h << "    QLineEdit *"<<name<<";" << endl;
+        h << "    QLineEdit *"<<name<<";" << Endl;
     }
     virtual void               writeSourceCreate(QTextStream &c)
     {
         writeSourceCreateLabel(c);
-        c << "    "<<name<<" = new QLineEdit(central);" << endl;
-        c << "    connect("<<name<<", SIGNAL(returnPressed())," << endl
-          << "            this, SLOT("<<name<<"ProcessText()));" << endl;
-        c << "    mainLayout->addWidget("<<name<<", "<<index<<",1);" << endl;
+        c << "    "<<name<<" = new QLineEdit(central);" << Endl;
+        c << "    connect("<<name<<", SIGNAL(returnPressed())," << Endl
+          << "            this, SLOT("<<name<<"ProcessText()));" << Endl;
+        c << "    mainLayout->addWidget("<<name<<", "<<index<<",1);" << Endl;
     }
     virtual bool               providesSourceGetCurrent() const { return true; }
     virtual void               writeSourceGetCurrent(QTextStream &c)
     {
-        c << "        float val["<<length<<"];"<<endl;
-        c << "        if(LineEditGetFloats("<<name<<", val, " <<length<<"))" <<endl;
-        c << "            atts->Set"<<Name<<"(val);" << endl;
-        c << "        else" << endl;
-        c << "        {" << endl;
+        c << "        float val["<<length<<"];"<<Endl;
+        c << "        if(LineEditGetFloats("<<name<<", val, " <<length<<"))" <<Endl;
+        c << "            atts->Set"<<Name<<"(val);" << Endl;
+        c << "        else" << Endl;
+        c << "        {" << Endl;
         QString msgLabel = (label.length()>0) ? label : name;
-        c << "            ResettingError(tr(\""<<msgLabel<<"\")," << endl;
-        c << "                FloatsToQString(atts->Get"<<Name<<"()," << length <<"));" << endl;
-        c << "            atts->Set"<<Name<<"(atts->Get"<<Name<<"());" << endl;
-        c << "        }" << endl;
+        c << "            ResettingError(tr(\""<<msgLabel<<"\")," << Endl;
+        c << "                FloatsToQString(atts->Get"<<Name<<"()," << length <<"));" << Endl;
+        c << "            atts->Set"<<Name<<"(atts->Get"<<Name<<"());" << Endl;
+        c << "        }" << Endl;
     }
     virtual void               writeSourceUpdateWindow(QTextStream &c)
     {
-        c << "            "<<name<<"->setText(FloatsToQString(atts->Get"<<Name<<"(), "<<length<<");" << endl;
+        c << "            "<<name<<"->setText(FloatsToQString(atts->Get"<<Name<<"(), "<<length<<");" << Endl;
     }
     virtual void               writeSourceCallback(QString &classname, QString &windowname, QTextStream &c, bool isEnabler)
     {
-        c << "void" << endl;
-        c << windowname<<"::"<<name<<"ProcessText()" << endl;
-        c << "{" << endl;
-        c << "    GetCurrentValues("<<classname << "::ID_" << name<<");" << endl;
-        c << "    Apply();" << endl;
-        c << "}" << endl;
+        c << "void" << Endl;
+        c << windowname<<"::"<<name<<"ProcessText()" << Endl;
+        c << "{" << Endl;
+        c << "    GetCurrentValues("<<classname << "::ID_" << name<<");" << Endl;
+        c << "    Apply();" << Endl;
+        c << "}" << Endl;
     }
 };
 
@@ -551,46 +661,46 @@ class WindowGeneratorFloatVector : public virtual FloatVector , public virtual W
         : Field("floatVector",n,l), FloatVector(n,l), WindowGeneratorField("floatVector",n,l) { }
     virtual void               writeHeaderCallback(QTextStream &h)
     {
-        h << "    void "<<name<<"ProcessText();" << endl;
+        h << "    void "<<name<<"ProcessText();" << Endl;
     }
     virtual void               writeHeaderData(QTextStream &h)
     {
-        h << "    QLineEdit *"<<name<<";" << endl;
+        h << "    QLineEdit *"<<name<<";" << Endl;
     }
     virtual void               writeSourceCreate(QTextStream &c)
     {
         writeSourceCreateLabel(c);
-        c << "    "<<name<<" = new QLineEdit(central);" << endl;
-        c << "    connect("<<name<<", SIGNAL(returnPressed())," << endl
-          << "            this, SLOT("<<name<<"ProcessText()));" << endl;
-        c << "    mainLayout->addWidget("<<name<<", "<<index<<",1);" << endl;
+        c << "    "<<name<<" = new QLineEdit(central);" << Endl;
+        c << "    connect("<<name<<", SIGNAL(returnPressed())," << Endl
+          << "            this, SLOT("<<name<<"ProcessText()));" << Endl;
+        c << "    mainLayout->addWidget("<<name<<", "<<index<<",1);" << Endl;
     }
     virtual bool               providesSourceGetCurrent() const { return true; }
     virtual void               writeSourceGetCurrent(QTextStream &c)
     {
-        c << "        floatVector val;"<<endl;
-        c << "        if(LineEditGetFloats("<<name<<", val))" <<endl;
-        c << "            atts->Set"<<Name<<"(val);" << endl;
-        c << "        else" << endl;
-        c << "        {" << endl;
+        c << "        floatVector val;"<<Endl;
+        c << "        if(LineEditGetFloats("<<name<<", val))" <<Endl;
+        c << "            atts->Set"<<Name<<"(val);" << Endl;
+        c << "        else" << Endl;
+        c << "        {" << Endl;
         QString msgLabel = (label.length()>0) ? label : name;
-        c << "            ResettingError(tr(\""<<msgLabel<<"\")," << endl;
-        c << "                FloatsToQString(atts->Get"<<Name<<"()));" << endl;
-        c << "            atts->Set"<<Name<<"(atts->Get"<<Name<<"());" << endl;
-        c << "        }" << endl;
+        c << "            ResettingError(tr(\""<<msgLabel<<"\")," << Endl;
+        c << "                FloatsToQString(atts->Get"<<Name<<"()));" << Endl;
+        c << "            atts->Set"<<Name<<"(atts->Get"<<Name<<"());" << Endl;
+        c << "        }" << Endl;
     }
     virtual void               writeSourceUpdateWindow(QTextStream &c)
     {
-        c << "            "<<name<<"->setText(FloatsToQString(atts->Get"<<Name<<"()));" << endl;
+        c << "            "<<name<<"->setText(FloatsToQString(atts->Get"<<Name<<"()));" << Endl;
     }
     virtual void               writeSourceCallback(QString &classname, QString &windowname, QTextStream &c, bool isEnabler)
     {
-        c << "void" << endl;
-        c << windowname<<"::"<<name<<"ProcessText()" << endl;
-        c << "{" << endl;
-        c << "    GetCurrentValues("<<classname << "::ID_" << name<<");" << endl;
-        c << "    Apply();" << endl;
-        c << "}" << endl;
+        c << "void" << Endl;
+        c << windowname<<"::"<<name<<"ProcessText()" << Endl;
+        c << "{" << Endl;
+        c << "    GetCurrentValues("<<classname << "::ID_" << name<<");" << Endl;
+        c << "    Apply();" << Endl;
+        c << "}" << Endl;
     }
 };
 
@@ -604,46 +714,46 @@ class WindowGeneratorDouble : public virtual Double , public virtual WindowGener
         : Field("double",n,l), Double(n,l), WindowGeneratorField("double",n,l) { }
     virtual void            writeHeaderCallback(QTextStream &h)
     {
-        h << "    void "<<name<<"ProcessText();" << endl;
+        h << "    void "<<name<<"ProcessText();" << Endl;
     }
     virtual void            writeHeaderData(QTextStream &h)
     {
-        h << "    QLineEdit *"<<name<<";" << endl;
+        h << "    QLineEdit *"<<name<<";" << Endl;
     }
     virtual void            writeSourceCreate(QTextStream &c)
     {
         writeSourceCreateLabel(c);
-        c << "    "<<name<<" = new QLineEdit(central);" << endl;
-        c << "    connect("<<name<<", SIGNAL(returnPressed())," << endl
-          << "            this, SLOT("<<name<<"ProcessText()));" << endl;
-        c << "    mainLayout->addWidget("<<name<<", "<<index<<",1);" << endl;
+        c << "    "<<name<<" = new QLineEdit(central);" << Endl;
+        c << "    connect("<<name<<", SIGNAL(returnPressed())," << Endl
+          << "            this, SLOT("<<name<<"ProcessText()));" << Endl;
+        c << "    mainLayout->addWidget("<<name<<", "<<index<<",1);" << Endl;
     }
     virtual bool            providesSourceGetCurrent() const { return true; }
     virtual void            writeSourceGetCurrent(QTextStream &c)
     {
-        c << "        double val;" << endl;
-        c << "        if(LineEditGetDouble("<<name<<", val))" <<endl;
-        c << "            atts->Set"<<Name<<"(val);" << endl;
-        c << "        else" << endl;
-        c << "        {" << endl;
+        c << "        double val;" << Endl;
+        c << "        if(LineEditGetDouble("<<name<<", val))" <<Endl;
+        c << "            atts->Set"<<Name<<"(val);" << Endl;
+        c << "        else" << Endl;
+        c << "        {" << Endl;
         QString msgLabel = (label.length()>0) ? label : name;
-        c << "            ResettingError(tr(\""<<msgLabel<<"\")," << endl;
-        c << "                DoubleToQString(atts->Get"<<Name<<"()));" << endl;
-        c << "            atts->Set"<<Name<<"(atts->Get"<<Name<<"());" << endl;
-        c << "        }" << endl;
+        c << "            ResettingError(tr(\""<<msgLabel<<"\")," << Endl;
+        c << "                DoubleToQString(atts->Get"<<Name<<"()));" << Endl;
+        c << "            atts->Set"<<Name<<"(atts->Get"<<Name<<"());" << Endl;
+        c << "        }" << Endl;
     }
     virtual void            writeSourceUpdateWindow(QTextStream &c)
     {
-        c << "            "<<name<<"->setText(DoubleToQString(atts->Get"<<Name<<"()));" << endl;
+        c << "            "<<name<<"->setText(DoubleToQString(atts->Get"<<Name<<"()));" << Endl;
     }
     virtual void            writeSourceCallback(QString &classname, QString &windowname, QTextStream &c, bool isEnabler)
     {
-        c << "void" << endl;
-        c << windowname<<"::"<<name<<"ProcessText()" << endl;
-        c << "{" << endl;
-        c << "    GetCurrentValues("<<classname << "::ID_" << name<<");" << endl;
-        c << "    Apply();" << endl;
-        c << "}" << endl;
+        c << "void" << Endl;
+        c << windowname<<"::"<<name<<"ProcessText()" << Endl;
+        c << "{" << Endl;
+        c << "    GetCurrentValues("<<classname << "::ID_" << name<<");" << Endl;
+        c << "    Apply();" << Endl;
+        c << "}" << Endl;
     }
 };
 
@@ -658,46 +768,46 @@ class WindowGeneratorDoubleArray : public virtual DoubleArray , public virtual W
         : Field("doubleArray",n,l), DoubleArray(s,n,l), WindowGeneratorField("doubleArray",n,l) { }
     virtual void               writeHeaderCallback(QTextStream &h)
     {
-        h << "    void "<<name<<"ProcessText();" << endl;
+        h << "    void "<<name<<"ProcessText();" << Endl;
     }
     virtual void               writeHeaderData(QTextStream &h)
     {
-        h << "    QLineEdit *"<<name<<";" << endl;
+        h << "    QLineEdit *"<<name<<";" << Endl;
     }
     virtual void               writeSourceCreate(QTextStream &c)
     {
         writeSourceCreateLabel(c);
-        c << "    "<<name<<" = new QLineEdit(central);" << endl;
-        c << "    connect("<<name<<", SIGNAL(returnPressed())," << endl
-          << "            this, SLOT("<<name<<"ProcessText()));" << endl;
-        c << "    mainLayout->addWidget("<<name<<", "<<index<<",1);" << endl;
+        c << "    "<<name<<" = new QLineEdit(central);" << Endl;
+        c << "    connect("<<name<<", SIGNAL(returnPressed())," << Endl
+          << "            this, SLOT("<<name<<"ProcessText()));" << Endl;
+        c << "    mainLayout->addWidget("<<name<<", "<<index<<",1);" << Endl;
     }
     virtual bool               providesSourceGetCurrent() const { return true; }
     virtual void               writeSourceGetCurrent(QTextStream &c)
     {
-        c << "        double val["<<length<<"];"<<endl;
-        c << "        if(LineEditGetDoubles("<<name<<", val, " <<length<<"))" <<endl;
-        c << "            atts->Set"<<Name<<"(val);" << endl;
-        c << "        else" << endl;
-        c << "        {" << endl;
+        c << "        double val["<<length<<"];"<<Endl;
+        c << "        if(LineEditGetDoubles("<<name<<", val, " <<length<<"))" <<Endl;
+        c << "            atts->Set"<<Name<<"(val);" << Endl;
+        c << "        else" << Endl;
+        c << "        {" << Endl;
         QString msgLabel = (label.length()>0) ? label : name;
-        c << "            ResettingError(tr(\""<<msgLabel<<"\")," << endl;
-        c << "                DoublesToQString(atts->Get"<<Name<<"()," << length <<"));" << endl;
-        c << "            atts->Set"<<Name<<"(atts->Get"<<Name<<"());" << endl;
-        c << "        }" << endl;
+        c << "            ResettingError(tr(\""<<msgLabel<<"\")," << Endl;
+        c << "                DoublesToQString(atts->Get"<<Name<<"()," << length <<"));" << Endl;
+        c << "            atts->Set"<<Name<<"(atts->Get"<<Name<<"());" << Endl;
+        c << "        }" << Endl;
     }
     virtual void               writeSourceUpdateWindow(QTextStream &c)
     {
-        c << "            "<<name<<"->setText(DoublesToQString(atts->Get"<<Name<<"(), "<<length<<"));" << endl;
+        c << "            "<<name<<"->setText(DoublesToQString(atts->Get"<<Name<<"(), "<<length<<"));" << Endl;
     }
     virtual void               writeSourceCallback(QString &classname, QString &windowname, QTextStream &c, bool isEnabler)
     {
-        c << "void" << endl;
-        c << windowname<<"::"<<name<<"ProcessText()" << endl;
-        c << "{" << endl;
-        c << "    GetCurrentValues("<<classname << "::ID_" << name<<");" << endl;
-        c << "    Apply();" << endl;
-        c << "}" << endl;
+        c << "void" << Endl;
+        c << windowname<<"::"<<name<<"ProcessText()" << Endl;
+        c << "{" << Endl;
+        c << "    GetCurrentValues("<<classname << "::ID_" << name<<");" << Endl;
+        c << "    Apply();" << Endl;
+        c << "}" << Endl;
     }
 };
 
@@ -712,46 +822,46 @@ class WindowGeneratorDoubleVector : public virtual DoubleVector , public virtual
         : Field("doubleVector",n,l), DoubleVector(n,l), WindowGeneratorField("doubleVector",n,l) { }
     virtual void               writeHeaderCallback(QTextStream &h)
     {
-        h << "    void "<<name<<"ProcessText();" << endl;
+        h << "    void "<<name<<"ProcessText();" << Endl;
     }
     virtual void               writeHeaderData(QTextStream &h)
     {
-        h << "    QLineEdit *"<<name<<";" << endl;
+        h << "    QLineEdit *"<<name<<";" << Endl;
     }
     virtual void               writeSourceCreate(QTextStream &c)
     {
         writeSourceCreateLabel(c);
-        c << "    "<<name<<" = new QLineEdit(central);" << endl;
-        c << "    connect("<<name<<", SIGNAL(returnPressed())," << endl
-          << "            this, SLOT("<<name<<"ProcessText()));" << endl;
-        c << "    mainLayout->addWidget("<<name<<", "<<index<<",1);" << endl;
+        c << "    "<<name<<" = new QLineEdit(central);" << Endl;
+        c << "    connect("<<name<<", SIGNAL(returnPressed())," << Endl
+          << "            this, SLOT("<<name<<"ProcessText()));" << Endl;
+        c << "    mainLayout->addWidget("<<name<<", "<<index<<",1);" << Endl;
     }
     virtual bool               providesSourceGetCurrent() const { return true; }
     virtual void               writeSourceGetCurrent(QTextStream &c)
     {
-        c << "        doubleVector val;"<<endl;
-        c << "        if(LineEditGetDoubles("<<name<<", val))" <<endl;
-        c << "            atts->Set"<<Name<<"(val);" << endl;
-        c << "        else" << endl;
-        c << "        {" << endl;
+        c << "        doubleVector val;"<<Endl;
+        c << "        if(LineEditGetDoubles("<<name<<", val))" <<Endl;
+        c << "            atts->Set"<<Name<<"(val);" << Endl;
+        c << "        else" << Endl;
+        c << "        {" << Endl;
         QString msgLabel = (label.length()>0) ? label : name;
-        c << "            ResettingError(tr(\""<<msgLabel<<"\")," << endl;
-        c << "                DoublesToQString(atts->Get"<<Name<<"()));" << endl;
-        c << "            atts->Set"<<Name<<"(atts->Get"<<Name<<"());" << endl;
-        c << "        }" << endl;
+        c << "            ResettingError(tr(\""<<msgLabel<<"\")," << Endl;
+        c << "                DoublesToQString(atts->Get"<<Name<<"()));" << Endl;
+        c << "            atts->Set"<<Name<<"(atts->Get"<<Name<<"());" << Endl;
+        c << "        }" << Endl;
     }
     virtual void               writeSourceUpdateWindow(QTextStream &c)
     {
-        c << "            "<<name<<"->setText(DoublesToQString(atts->Get"<<Name<<"()));" << endl;
+        c << "            "<<name<<"->setText(DoublesToQString(atts->Get"<<Name<<"()));" << Endl;
     }
     virtual void               writeSourceCallback(QString &classname, QString &windowname, QTextStream &c, bool isEnabler)
     {
-        c << "void" << endl;
-        c << windowname<<"::"<<name<<"ProcessText()" << endl;
-        c << "{" << endl;
-        c << "    GetCurrentValues("<<classname << "::ID_" << name<<");" << endl;
-        c << "    Apply();" << endl;
-        c << "}" << endl;
+        c << "void" << Endl;
+        c << windowname<<"::"<<name<<"ProcessText()" << Endl;
+        c << "{" << Endl;
+        c << "    GetCurrentValues("<<classname << "::ID_" << name<<");" << Endl;
+        c << "    Apply();" << Endl;
+        c << "}" << Endl;
     }
 };
 
@@ -798,46 +908,46 @@ class WindowGeneratorString : public virtual String , public virtual WindowGener
         : Field("string",n,l), String(n,l), WindowGeneratorField("string",n,l) { }
     virtual void            writeHeaderCallback(QTextStream &h)
     {
-        h << "    void "<<name<<"ProcessText();" << endl;
+        h << "    void "<<name<<"ProcessText();" << Endl;
     }
     virtual void            writeHeaderData(QTextStream &h)
     {
-        h << "    QLineEdit *"<<name<<";" << endl;
+        h << "    QLineEdit *"<<name<<";" << Endl;
     }
     virtual void            writeSourceCreate(QTextStream &c)
     {
         writeSourceCreateLabel(c);
-        c << "    "<<name<<" = new QLineEdit(central);" << endl;
-        c << "    connect("<<name<<", SIGNAL(returnPressed())," << endl
-          << "            this, SLOT("<<name<<"ProcessText()));" << endl;
-        c << "    mainLayout->addWidget("<<name<<", "<<index<<",1);" << endl;
+        c << "    "<<name<<" = new QLineEdit(central);" << Endl;
+        c << "    connect("<<name<<", SIGNAL(returnPressed())," << Endl
+          << "            this, SLOT("<<name<<"ProcessText()));" << Endl;
+        c << "    mainLayout->addWidget("<<name<<", "<<index<<",1);" << Endl;
     }
     virtual bool            providesSourceGetCurrent() const { return true; }
     virtual void            writeSourceGetCurrent(QTextStream &c)
     {
-        c << "        QString temp = "<<name<<"->displayText();" << endl;
-        c << "        if(!temp.isEmpty())" << endl;
-        c << "            atts->Set"<<Name<<"(temp.toStdString());" << endl;
-        c << "        else" << endl;
-        c << "        {" << endl;
+        c << "        QString temp = "<<name<<"->displayText();" << Endl;
+        c << "        if(!temp.isEmpty())" << Endl;
+        c << "            atts->Set"<<Name<<"(temp.toStdString());" << Endl;
+        c << "        else" << Endl;
+        c << "        {" << Endl;
         QString msgLabel = (label.length()>0) ? label : name;
-        c << "            ResettingError(tr(\""<<msgLabel<<"\")," << endl;
-        c << "                QString(atts->Get"<<Name<<"().c_str()));" << endl;
-        c << "            atts->Set"<<Name<<"(atts->Get"<<Name<<"());" << endl;
-        c << "        }" << endl;
+        c << "            ResettingError(tr(\""<<msgLabel<<"\")," << Endl;
+        c << "                QString(atts->Get"<<Name<<"().c_str()));" << Endl;
+        c << "            atts->Set"<<Name<<"(atts->Get"<<Name<<"());" << Endl;
+        c << "        }" << Endl;
     }
     virtual void            writeSourceUpdateWindow(QTextStream &c)
     {
-        c << "            "<<name<<"->setText(QString(atts->Get"<<Name<<"().c_str()));" << endl;
+        c << "            "<<name<<"->setText(QString(atts->Get"<<Name<<"().c_str()));" << Endl;
     }
     virtual void            writeSourceCallback(QString &classname, QString &windowname, QTextStream &c, bool isEnabler)
     {
-        c << "void" << endl;
-        c << windowname<<"::"<<name<<"ProcessText()" << endl;
-        c << "{" << endl;
-        c << "    GetCurrentValues("<<classname << "::ID_" << name<<");" << endl;
-        c << "    Apply();" << endl;
-        c << "}" << endl;
+        c << "void" << Endl;
+        c << windowname<<"::"<<name<<"ProcessText()" << Endl;
+        c << "{" << Endl;
+        c << "    GetCurrentValues("<<classname << "::ID_" << name<<");" << Endl;
+        c << "    Apply();" << Endl;
+        c << "}" << Endl;
     }
 };
 
@@ -852,58 +962,58 @@ class WindowGeneratorStringVector : public virtual StringVector , public virtual
         : Field("stringVector",n,l), StringVector(n,l), WindowGeneratorField("stringVector",n,l) { }
     virtual void            writeHeaderCallback(QTextStream &h)
     {
-        h << "    void "<<name<<"ProcessText();" << endl;
+        h << "    void "<<name<<"ProcessText();" << Endl;
     }
     virtual void            writeHeaderData(QTextStream &h)
     {
-        h << "    QLineEdit *"<<name<<";" << endl;
+        h << "    QLineEdit *"<<name<<";" << Endl;
     }
     virtual void            writeSourceCreate(QTextStream &c)
     {
         writeSourceCreateLabel(c);
-        c << "    "<<name<<" = new QLineEdit(central);" << endl;
-        c << "    connect("<<name<<", SIGNAL(returnPressed())," << endl
-          << "            this, SLOT("<<name<<"ProcessText()));" << endl;
-        c << "    mainLayout->addWidget("<<name<<", "<<index<<",1);" << endl;
+        c << "    "<<name<<" = new QLineEdit(central);" << Endl;
+        c << "    connect("<<name<<", SIGNAL(returnPressed())," << Endl
+          << "            this, SLOT("<<name<<"ProcessText()));" << Endl;
+        c << "    mainLayout->addWidget("<<name<<", "<<index<<",1);" << Endl;
     }
     virtual bool            providesSourceGetCurrent() const { return true; }
     virtual void            writeSourceGetCurrent(QTextStream &c)
     {
-        c << "        QString temp = "<<name<<"->displayText();" << endl;
-        c << "        if(!temp.isEmpty())" << endl;
-        c << "        {" << endl;
-        c << "            QStringList s = temp.split(\" \", QString::SkipEmptyParts);" << endl;
-        c << "            stringVector sv;" << endl;
-        c << "            for(int i = 0; i < s.size(); ++i)" << endl;
-        c << "                sv.push_back(s[i].toStdString());" << endl;
-        c << "            atts->Set"<<Name<<"(sv);" << endl;
-        c << "        }" << endl;
-        c << "        else" << endl;
-        c << "        {" << endl;
-        c << "            atts->Set"<<Name<<"(atts->Get"<<Name<<"());" << endl;
-        c << "        }" << endl;
+        c << "        QString temp = "<<name<<"->displayText();" << Endl;
+        c << "        if(!temp.isEmpty())" << Endl;
+        c << "        {" << Endl;
+        c << "            QStringList s = temp.split(\" \", QString::SkipEmptyParts);" << Endl;
+        c << "            stringVector sv;" << Endl;
+        c << "            for(int i = 0; i < s.size(); ++i)" << Endl;
+        c << "                sv.push_back(s[i].toStdString());" << Endl;
+        c << "            atts->Set"<<Name<<"(sv);" << Endl;
+        c << "        }" << Endl;
+        c << "        else" << Endl;
+        c << "        {" << Endl;
+        c << "            atts->Set"<<Name<<"(atts->Get"<<Name<<"());" << Endl;
+        c << "        }" << Endl;
     }
     virtual void            writeSourceUpdateWindow(QTextStream &c)
     {
-        c << "            {" << endl;
-        c << "            QString stmp;" << endl;
-        c << "            for(size_t idx = 0; idx < atts->Get"<<Name<<"().size(); ++idx)" << endl;
-        c << "            {" << endl;
-        c << "                stmp.append(QString(atts->Get"<<Name<<"()[idx].c_str()));" << endl;
-        c << "                if(idx < atts->Get"<<Name<<"().size()-1)" << endl;
-        c << "                    stmp.append(\" \");" << endl;
-        c << "            }" << endl;
-        c << "            "<<name<<"->setText(stmp);" << endl;
-        c << "            }" << endl;
+        c << "            {" << Endl;
+        c << "            QString stmp;" << Endl;
+        c << "            for(size_t idx = 0; idx < atts->Get"<<Name<<"().size(); ++idx)" << Endl;
+        c << "            {" << Endl;
+        c << "                stmp.append(QString(atts->Get"<<Name<<"()[idx].c_str()));" << Endl;
+        c << "                if(idx < atts->Get"<<Name<<"().size()-1)" << Endl;
+        c << "                    stmp.append(\" \");" << Endl;
+        c << "            }" << Endl;
+        c << "            "<<name<<"->setText(stmp);" << Endl;
+        c << "            }" << Endl;
     }
     virtual void            writeSourceCallback(QString &classname, QString &windowname, QTextStream &c, bool isEnabler)
     {
-        c << "void" << endl;
-        c << windowname<<"::"<<name<<"ProcessText()" << endl;
-        c << "{" << endl;
-        c << "    GetCurrentValues("<<classname << "::ID_" << name<<");" << endl;
-        c << "    Apply();" << endl;
-        c << "}" << endl;
+        c << "void" << Endl;
+        c << windowname<<"::"<<name<<"ProcessText()" << Endl;
+        c << "{" << Endl;
+        c << "    GetCurrentValues("<<classname << "::ID_" << name<<");" << Endl;
+        c << "    Apply();" << Endl;
+        c << "}" << Endl;
     }
 };
 
@@ -918,40 +1028,40 @@ class WindowGeneratorColorTable : public virtual ColorTable , public virtual Win
         : Field("colortable",n,l), ColorTable(n,l), WindowGeneratorField("colortable",n,l) { }
     virtual void            writeHeaderCallback(QTextStream &h)
     {
-        h << "    void "<<name<<"Changed(bool useDefault, const QString &ctName);" << endl;
+        h << "    void "<<name<<"Changed(bool useDefault, const QString &ctName);" << Endl;
     }
     virtual void            writeHeaderData(QTextStream &h)
     {
-        h << "    QvisColorTableButton *"<<name<<";" << endl;
+        h << "    QvisColorTableButton *"<<name<<";" << Endl;
     }
     virtual void            writeSourceCreate(QTextStream &c)
     {
         writeSourceCreateLabel(c);
-        c << "    "<<name<<" = new QvisColorTableButton(central);" << endl;
-        c << "    connect("<<name<<", SIGNAL(selectedColorTable(bool, const QString&))," << endl
-          << "            this, SLOT("<<name<<"Changed(bool, const QString&)));" << endl;
-        c << "    mainLayout->addWidget("<<name<<", "<<index<<",1);" << endl;
+        c << "    "<<name<<" = new QvisColorTableButton(central);" << Endl;
+        c << "    connect("<<name<<", SIGNAL(selectedColorTable(bool, const QString&))," << Endl
+          << "            this, SLOT("<<name<<"Changed(bool, const QString&)));" << Endl;
+        c << "    mainLayout->addWidget("<<name<<", "<<index<<",1);" << Endl;
     }
     virtual void            writeSourceGetCurrent(QTextStream &c)
     {
-        c << "        // Nothing for " << name << endl;
+        c << "        // Nothing for " << name << Endl;
     }
     virtual void            writeSourceUpdateWindow(QTextStream &c)
     {
-        c << "            "<<name<<"->blockSignals(true);" << endl;
-        c << "            "<<name<<"->setColorTable(QString(atts->Get"<<Name<<"().c_str()));" << endl;
-        c << "            "<<name<<"->blockSignals(false);" << endl;
+        c << "            "<<name<<"->blockSignals(true);" << Endl;
+        c << "            "<<name<<"->setColorTable(QString(atts->Get"<<Name<<"().c_str()));" << Endl;
+        c << "            "<<name<<"->blockSignals(false);" << Endl;
     }
     virtual void            writeSourceCallback(QString &, QString &windowname, QTextStream &c, bool isEnabler)
     {
-        c << "void" << endl;
-        c << windowname<<"::"<<name<<"Changed(bool useDefault, const QString &ctName)" << endl;
-        c << "{" << endl;
-        c << "    atts->Set"<<Name<<"(ctName.toStdString());" << endl;
+        c << "void" << Endl;
+        c << windowname<<"::"<<name<<"Changed(bool useDefault, const QString &ctName)" << Endl;
+        c << "{" << Endl;
+        c << "    atts->Set"<<Name<<"(ctName.toStdString());" << Endl;
         if(!isEnabler)
-            c << "    SetUpdate(false);" << endl;
-        c << "    Apply();" << endl;
-        c << "}" << endl;
+            c << "    SetUpdate(false);" << Endl;
+        c << "    Apply();" << Endl;
+        c << "}" << Endl;
     }
 };
 
@@ -966,46 +1076,46 @@ class WindowGeneratorColor : public virtual Color , public virtual WindowGenerat
         : Field("color",n,l), Color(n,l), WindowGeneratorField("color",n,l) { }
     virtual void            writeHeaderCallback(QTextStream &h)
     {
-        h << "    void "<<name<<"Changed(const QColor &color);" << endl;
+        h << "    void "<<name<<"Changed(const QColor &color);" << Endl;
     }
     virtual void            writeHeaderData(QTextStream &h)
     {
-        h << "    QvisColorButton *"<<name<<";" << endl;
+        h << "    QvisColorButton *"<<name<<";" << Endl;
     }
     virtual void            writeSourceCreate(QTextStream &c)
     {
         writeSourceCreateLabel(c);
-        c << "    "<<name<<" = new QvisColorButton(central);" << endl;
-        c << "    connect("<<name<<", SIGNAL(selectedColor(const QColor&))," << endl
-          << "            this, SLOT("<<name<<"Changed(const QColor&)));" << endl;
-        c << "    mainLayout->addWidget("<<name<<", "<<index<<",1);" << endl;
+        c << "    "<<name<<" = new QvisColorButton(central);" << Endl;
+        c << "    connect("<<name<<", SIGNAL(selectedColor(const QColor&))," << Endl
+          << "            this, SLOT("<<name<<"Changed(const QColor&)));" << Endl;
+        c << "    mainLayout->addWidget("<<name<<", "<<index<<",1);" << Endl;
     }
     virtual void            writeSourceGetCurrent(QTextStream &c)
     {
-        c << "        // Nothing for " << name << endl;
+        c << "        // Nothing for " << name << Endl;
     }
     virtual void            writeSourceUpdateWindow(QTextStream &c)
     {
-        c << "            { // new scope" << endl;
-        c << "                QColor tempcolor = QColor(atts->Get"<<Name<<"().Red()," << endl;
-        c << "                                   atts->Get"<<Name<<"().Green()," << endl;
-        c << "                                   atts->Get"<<Name<<"().Blue());" << endl;
-        c << "                "<<name<<"->blockSignals(true);" << endl;
-        c << "                "<<name<<"->setButtonColor(tempcolor);" << endl;
-        c << "                "<<name<<"->blockSignals(false);" << endl;
-        c << "            }" << endl;
+        c << "            { // new scope" << Endl;
+        c << "                QColor tempcolor = QColor(atts->Get"<<Name<<"().Red()," << Endl;
+        c << "                                   atts->Get"<<Name<<"().Green()," << Endl;
+        c << "                                   atts->Get"<<Name<<"().Blue());" << Endl;
+        c << "                "<<name<<"->blockSignals(true);" << Endl;
+        c << "                "<<name<<"->setButtonColor(tempcolor);" << Endl;
+        c << "                "<<name<<"->blockSignals(false);" << Endl;
+        c << "            }" << Endl;
     }
     virtual void            writeSourceCallback(QString &, QString &windowname, QTextStream &c, bool isEnabler)
     {
-        c << "void" << endl;
-        c << windowname<<"::"<<name<<"Changed(const QColor &color)" << endl;
-        c << "{" << endl;
-        c << "    ColorAttribute temp(color.red(), color.green(), color.blue());" << endl;
-        c << "    atts->Set"<<Name<<"(temp);" << endl;
+        c << "void" << Endl;
+        c << windowname<<"::"<<name<<"Changed(const QColor &color)" << Endl;
+        c << "{" << Endl;
+        c << "    ColorAttribute temp(color.red(), color.green(), color.blue());" << Endl;
+        c << "    atts->Set"<<Name<<"(temp);" << Endl;
         if(!isEnabler)
-            c << "    SetUpdate(false);" << endl;
-        c << "    Apply();" << endl;
-        c << "}" << endl;
+            c << "    SetUpdate(false);" << Endl;
+        c << "    Apply();" << Endl;
+        c << "}" << Endl;
     }
 };
 
@@ -1020,42 +1130,42 @@ class WindowGeneratorOpacity : public virtual Opacity , public virtual WindowGen
         : Field("opacity",n,l), Opacity(n,l), WindowGeneratorField("opacity",n,l) { }
     virtual void            writeHeaderCallback(QTextStream &h)
     {
-        h << "    void "<<name<<"Changed(int opacity, const void*);" << endl;
+        h << "    void "<<name<<"Changed(int opacity, const void*);" << Endl;
     }
     virtual void            writeHeaderData(QTextStream &h)
     {
-        h << "    QvisOpacitySlider *"<<name<<";" << endl;
+        h << "    QvisOpacitySlider *"<<name<<";" << Endl;
     }
     virtual void            writeSourceCreate(QTextStream &c)
     {
         writeSourceCreateLabel(c);
-        c << "    "<<name<<" = new QvisOpacitySlider(0,255,25,255, central, NULL);" << endl;
-        c << "    "<<name<<"->setTickInterval(64);" << endl;
-        c << "    "<<name<<"->setGradientColor(QColor(0, 0, 0));" << endl;
-        c << "    connect("<<name<<", SIGNAL(valueChanged(int, const void*))," << endl
-          << "            this, SLOT("<<name<<"Changed(int, const void*)));" << endl;
-        c << "    mainLayout->addWidget("<<name<<", "<<index<<",1);" << endl;
+        c << "    "<<name<<" = new QvisOpacitySlider(0,255,25,255, central, NULL);" << Endl;
+        c << "    "<<name<<"->setTickInterval(64);" << Endl;
+        c << "    "<<name<<"->setGradientColor(QColor(0, 0, 0));" << Endl;
+        c << "    connect("<<name<<", SIGNAL(valueChanged(int, const void*))," << Endl
+          << "            this, SLOT("<<name<<"Changed(int, const void*)));" << Endl;
+        c << "    mainLayout->addWidget("<<name<<", "<<index<<",1);" << Endl;
     }
     virtual void            writeSourceGetCurrent(QTextStream &c)
     {
-        c << "        // Nothing for " << name << endl;
+        c << "        // Nothing for " << name << Endl;
     }
     virtual void            writeSourceUpdateWindow(QTextStream &c)
     {
-        c << "            "<<name<<"->blockSignals(true);" << endl;
-        c << "            "<<name<<"->setValue(int(atts->Get"<<Name<<"()*255.));" << endl;
-        c << "            "<<name<<"->blockSignals(false);" << endl;
+        c << "            "<<name<<"->blockSignals(true);" << Endl;
+        c << "            "<<name<<"->setValue(int(atts->Get"<<Name<<"()*255.));" << Endl;
+        c << "            "<<name<<"->blockSignals(false);" << Endl;
     }
     virtual void            writeSourceCallback(QString &, QString &windowname, QTextStream &c, bool isEnabler)
     {
-        c << "void" << endl;
-        c << windowname<<"::"<<name<<"Changed(int opacity, const void*)" << endl;
-        c << "{" << endl;
-        c << "    atts->Set"<<Name<<"((float)opacity/255.);" << endl;
+        c << "void" << Endl;
+        c << windowname<<"::"<<name<<"Changed(int opacity, const void*)" << Endl;
+        c << "{" << Endl;
+        c << "    atts->Set"<<Name<<"((float)opacity/255.);" << Endl;
         if(!isEnabler)
-            c << "    SetUpdate(false);" << endl;
-        c << "    Apply();" << endl;
-        c << "}" << endl;
+            c << "    SetUpdate(false);" << Endl;
+        c << "    Apply();" << Endl;
+        c << "}" << Endl;
     }
 };
 
@@ -1071,40 +1181,40 @@ class WindowGeneratorLineWidth : public virtual LineWidth , public virtual Windo
         : Field("linewidth",n,l), LineWidth(n,l), WindowGeneratorField("linewidth",n,l) { }
     virtual void            writeHeaderCallback(QTextStream &h)
     {
-        h << "    void "<<name<<"Changed(int style);" << endl;
+        h << "    void "<<name<<"Changed(int style);" << Endl;
     }
     virtual void            writeHeaderData(QTextStream &h)
     {
-        h << "    QvisLineWidthWidget *"<<name<<";" << endl;
+        h << "    QvisLineWidthWidget *"<<name<<";" << Endl;
     }
     virtual void            writeSourceCreate(QTextStream &c)
     {
         writeSourceCreateLabel(c);
-        c << "    "<<name<<" = new QvisLineWidthWidget(0, central);" << endl;
-        c << "    connect("<<name<<", SIGNAL(lineWidthChanged(int))," << endl
-          << "            this, SLOT("<<name<<"Changed(int)));" << endl;
-        c << "    mainLayout->addWidget("<<name<<", "<<index<<",1);" << endl;
+        c << "    "<<name<<" = new QvisLineWidthWidget(0, central);" << Endl;
+        c << "    connect("<<name<<", SIGNAL(lineWidthChanged(int))," << Endl
+          << "            this, SLOT("<<name<<"Changed(int)));" << Endl;
+        c << "    mainLayout->addWidget("<<name<<", "<<index<<",1);" << Endl;
     }
     virtual void            writeSourceGetCurrent(QTextStream &c)
     {
-        c << "        // Nothing for " << name << endl;
+        c << "        // Nothing for " << name << Endl;
     }
     virtual void            writeSourceUpdateWindow(QTextStream &c)
     {
-        c << "            "<<name<<"->blockSignals(true);" << endl;
-        c << "            "<<name<<"->SetLineWidth(atts->Get"<<Name<<"());" << endl;
-        c << "            "<<name<<"->blockSignals(false);" << endl;
+        c << "            "<<name<<"->blockSignals(true);" << Endl;
+        c << "            "<<name<<"->SetLineWidth(atts->Get"<<Name<<"());" << Endl;
+        c << "            "<<name<<"->blockSignals(false);" << Endl;
     }
     virtual void            writeSourceCallback(QString &, QString &windowname, QTextStream &c, bool isEnabler)
     {
-        c << "void" << endl;
-        c << windowname<<"::"<<name<<"Changed(int style)" << endl;
-        c << "{" << endl;
-        c << "    atts->Set"<<Name<<"(style);" << endl;
+        c << "void" << Endl;
+        c << windowname<<"::"<<name<<"Changed(int style)" << Endl;
+        c << "{" << Endl;
+        c << "    atts->Set"<<Name<<"(style);" << Endl;
         if(!isEnabler)
-            c << "    SetUpdate(false);" << endl;
-        c << "    Apply();" << endl;
-        c << "}" << endl;
+            c << "    SetUpdate(false);" << Endl;
+        c << "    Apply();" << Endl;
+        c << "}" << Endl;
     }
 };
 
@@ -1127,11 +1237,11 @@ class WindowGeneratorVariableName : public virtual VariableName , public virtual
         : Field("variablename",n,l), VariableName(n,l), WindowGeneratorField("variablename",n,l) { }
     virtual void            writeHeaderCallback(QTextStream &h)
     {
-        h << "    void "<<name<<"Changed(const QString &varName);" << endl;
+        h << "    void "<<name<<"Changed(const QString &varName);" << Endl;
     }
     virtual void            writeHeaderData(QTextStream &h)
     {
-        h << "    QvisVariableButton *"<<name<<";" << endl;
+        h << "    QvisVariableButton *"<<name<<";" << Endl;
     }
     virtual void            writeSourceCreate(QTextStream &c)
     {
@@ -1165,33 +1275,33 @@ class WindowGeneratorVariableName : public virtual VariableName , public virtual
             }
             m = m << 1;
         }
-        c << ";" << endl;
-        c << "    "<<name<<" = new QvisVariableButton(true, true, true, "<<name<<"Mask, central);" << endl;
+        c << ";" << Endl;
+        c << "    "<<name<<" = new QvisVariableButton(true, true, true, "<<name<<"Mask, central);" << Endl;
         if(valueSet)
-            c << "    " << name << "->setDefaultVariable(\"" << val << "\");" << endl;
-        c << "    connect("<<name<<", SIGNAL(activated(const QString&))," << endl
-          << "            this, SLOT("<<name<<"Changed(const QString&)));" << endl;
-        c << "    mainLayout->addWidget("<<name<<", "<<index<<",1);" << endl;
+            c << "    " << name << "->setDefaultVariable(\"" << val << "\");" << Endl;
+        c << "    connect("<<name<<", SIGNAL(activated(const QString&))," << Endl
+          << "            this, SLOT("<<name<<"Changed(const QString&)));" << Endl;
+        c << "    mainLayout->addWidget("<<name<<", "<<index<<",1);" << Endl;
     }
     virtual void            writeSourceGetCurrent(QTextStream &c)
     {
-        c << "        // Nothing for " << name << endl;
+        c << "        // Nothing for " << name << Endl;
     }
     virtual void            writeSourceUpdateWindow(QTextStream &c)
     {
-        c << "            "<<name<<"->blockSignals(true);" << endl;
-        c << "            "<<name<<"->setText(QString(atts->Get"<<Name<<"().c_str()));" << endl;
-        c << "            "<<name<<"->blockSignals(false);" << endl;
+        c << "            "<<name<<"->blockSignals(true);" << Endl;
+        c << "            "<<name<<"->setText(QString(atts->Get"<<Name<<"().c_str()));" << Endl;
+        c << "            "<<name<<"->blockSignals(false);" << Endl;
     }
     virtual void            writeSourceCallback(QString &, QString &windowname, QTextStream &c, bool isEnabler)
     {
-        c << "void" << endl;
-        c << windowname<<"::"<<name<<"Changed(const QString &varName)" << endl;
-        c << "{" << endl;
-        c << "    atts->Set"<<Name<<"(varName.toStdString());" << endl;
-        c << "    SetUpdate(false);" << endl;
-        c << "    Apply();" << endl;
-        c << "}" << endl;
+        c << "void" << Endl;
+        c << windowname<<"::"<<name<<"Changed(const QString &varName)" << Endl;
+        c << "{" << Endl;
+        c << "    atts->Set"<<Name<<"(varName.toStdString());" << Endl;
+        c << "    SetUpdate(false);" << Endl;
+        c << "    Apply();" << Endl;
+        c << "}" << Endl;
     }
 };
 
@@ -1228,58 +1338,58 @@ class WindowGeneratorEnum : public virtual Enum , public virtual WindowGenerator
         : Field("enum",n,l), Enum(t,n,l), WindowGeneratorField("enum",n,l) { }
     virtual void            writeHeaderCallback(QTextStream &h)
     {
-        h << "    void "<<name<<"Changed(int val);" << endl;
+        h << "    void "<<name<<"Changed(int val);" << Endl;
     }
     virtual void            writeHeaderData(QTextStream &h)
     {
-        h << "    QWidget      *"<<name<<";" << endl;
-        h << "    QButtonGroup *"<<name<<"ButtonGroup;" << endl;
+        h << "    QWidget      *"<<name<<";" << Endl;
+        h << "    QButtonGroup *"<<name<<"ButtonGroup;" << Endl;
     }
     virtual void            writeSourceCreate(QTextStream &c)
     {
         writeSourceCreateLabel(c);
-        c << "    "<<name<<" = new QWidget(central);" << endl;
-        c << "    "<<name<<"ButtonGroup= new QButtonGroup("<<name<<");" << endl;
-        c << "    QHBoxLayout *"<<name<<"Layout = new QHBoxLayout("<<name<<");" << endl;
-        c << "    "<<name<<"Layout->setMargin(0);" << endl;
-        c << "    "<<name<<"Layout->setSpacing(10);" << endl;
+        c << "    "<<name<<" = new QWidget(central);" << Endl;
+        c << "    "<<name<<"ButtonGroup= new QButtonGroup("<<name<<");" << Endl;
+        c << "    QHBoxLayout *"<<name<<"Layout = new QHBoxLayout("<<name<<");" << Endl;
+        c << "    "<<name<<"Layout->setContentsMargins(0,0,0,0);" << Endl;
+        c << "    "<<name<<"Layout->setSpacing(10);" << Endl;
 
         for (size_t i=0; i<enumType->values.size(); i++)
         {
             c << "    QRadioButton *"<<name<<enumType->type<<enumType->values[i]
-              << " = new QRadioButton(tr(\""<<enumType->values[i]<<"\"), "<<name<<");" << endl;
-            c << "    "<<name<<"ButtonGroup->addButton("<<name<<enumType->type<<enumType->values[i]<<","<<i<<");"<<endl;
-            c << "    "<<name<<"Layout->addWidget("<<name<<enumType->type<<enumType->values[i]<<");" << endl;
+              << " = new QRadioButton(tr(\""<<enumType->values[i]<<"\"), "<<name<<");" << Endl;
+            c << "    "<<name<<"ButtonGroup->addButton("<<name<<enumType->type<<enumType->values[i]<<","<<i<<");"<<Endl;
+            c << "    "<<name<<"Layout->addWidget("<<name<<enumType->type<<enumType->values[i]<<");" << Endl;
         }
 
-        c << "    connect("<<name<<"ButtonGroup, SIGNAL(buttonClicked(int))," << endl
-          << "            this, SLOT("<<name<<"Changed(int)));" << endl;
-        c << "    mainLayout->addWidget("<<name<<", "<<index<<",1);" << endl;
+        c << "    connect("<<name<<"ButtonGroup, SIGNAL(buttonClicked(int))," << Endl
+          << "            this, SLOT("<<name<<"Changed(int)));" << Endl;
+        c << "    mainLayout->addWidget("<<name<<", "<<index<<",1);" << Endl;
     }
     virtual void            writeSourceGetCurrent(QTextStream &c)
     {
-        c << "        // Nothing for " << name << endl;
+        c << "        // Nothing for " << name << Endl;
     }
     virtual void            writeSourceUpdateWindow(QTextStream &c)
     {
-        c << "            "<<name<<"ButtonGroup->blockSignals(true);" << endl;
-        c << "            if("<<name<<"ButtonGroup->button((int)atts->Get"<<Name<<"()) != 0)" << endl;
-        c << "                "<<name<<"ButtonGroup->button((int)atts->Get"<<Name<<"())->setChecked(true);" << endl;
-        c << "            "<<name<<"ButtonGroup->blockSignals(false);" << endl;
+        c << "            "<<name<<"ButtonGroup->blockSignals(true);" << Endl;
+        c << "            if("<<name<<"ButtonGroup->button((int)atts->Get"<<Name<<"()) != 0)" << Endl;
+        c << "                "<<name<<"ButtonGroup->button((int)atts->Get"<<Name<<"())->setChecked(true);" << Endl;
+        c << "            "<<name<<"ButtonGroup->blockSignals(false);" << Endl;
     }
     virtual void            writeSourceCallback(QString &classname, QString &windowname, QTextStream &c, bool isEnabler)
     {
-        c << "void" << endl;
-        c << windowname<<"::"<<name<<"Changed(int val)" << endl;
-        c << "{" << endl;
-        c << "    if(val != atts->Get"<<Name<<"())" << endl;
-        c << "    {" << endl;
-        c << "        atts->Set"<<Name<<"("<<GetCPPName(true,classname)<<"(val));" << endl;
+        c << "void" << Endl;
+        c << windowname<<"::"<<name<<"Changed(int val)" << Endl;
+        c << "{" << Endl;
+        c << "    if(val != atts->Get"<<Name<<"())" << Endl;
+        c << "    {" << Endl;
+        c << "        atts->Set"<<Name<<"("<<GetCPPName(true,classname)<<"(val));" << Endl;
         if(!isEnabler)
-            c << "        SetUpdate(false);" << endl;
-        c << "        Apply();" << endl;
-        c << "    }" << endl;
-        c << "}" << endl;
+            c << "        SetUpdate(false);" << Endl;
+        c << "        Apply();" << Endl;
+        c << "    }" << Endl;
+        c << "}" << Endl;
     }
 };
 
@@ -1294,59 +1404,59 @@ class WindowGeneratorScaleMode : public virtual ScaleMode , public virtual Windo
         : Field("scalemode",n,l), ScaleMode(n,l), WindowGeneratorField("scalemode",n,l) { }
     virtual void            writeHeaderCallback(QTextStream &h)
     {
-        h << "    void "<<name<<"Changed(int val);" << endl;
+        h << "    void "<<name<<"Changed(int val);" << Endl;
     }
     virtual void            writeHeaderData(QTextStream &h)
     {
-        h << "    QWidget      *"<<name<<";" << endl;
-        h << "    QButtonGroup *"<<name<<"ButtonGroup;" << endl;
+        h << "    QWidget      *"<<name<<";" << Endl;
+        h << "    QButtonGroup *"<<name<<"ButtonGroup;" << Endl;
     }
     virtual void            writeSourceCreate(QTextStream &c)
     {
         writeSourceCreateLabel(c);
-        c << "    QWidget *"<<name<<" = new QWidget(central);"<<endl;
-        c << "    "<<name<<"ButtonGroup = new QButtonGroup("<<name<<");" << endl;
-        c << "    QHBoxLayout *"<<name<<"Layout = new QHBoxLayout("<<name<<");" << endl;
-        c << "    "<<name<<"Layout->setMargin(0);" << endl;
-        c << "    "<<name<<"Layout->setSpacing(10);" << endl;
+        c << "    QWidget *"<<name<<" = new QWidget(central);"<<Endl;
+        c << "    "<<name<<"ButtonGroup = new QButtonGroup("<<name<<");" << Endl;
+        c << "    QHBoxLayout *"<<name<<"Layout = new QHBoxLayout("<<name<<");" << Endl;
+        c << "    "<<name<<"Layout->setContentsMargins(0,0,0,0);" << Endl;
+        c << "    "<<name<<"Layout->setSpacing(10);" << Endl;
 
         c << "    QRadioButton *"<<name<<"ScaleModeLinear"
-          << " = new QRadioButton(tr(\""<<"Linear"<<"\"), "<<name<<");" << endl;
-        c << "    "<<name<<"Layout->addWidget("<<name<<"ScaleModeLinear"<<");" << endl;
-        c << "    "<<name<<"ButtonGroup->addButton("<<name<<"ScaleModeLinear,0);"<<endl;
+          << " = new QRadioButton(tr(\""<<"Linear"<<"\"), "<<name<<");" << Endl;
+        c << "    "<<name<<"Layout->addWidget("<<name<<"ScaleModeLinear"<<");" << Endl;
+        c << "    "<<name<<"ButtonGroup->addButton("<<name<<"ScaleModeLinear,0);"<<Endl;
         c << "    QRadioButton *"<<name<<"ScaleModeLog"
-          << " = new QRadioButton(tr(\""<<"Log"<<"\"), "<<name<<");" << endl;
-        c << "    "<<name<<"ButtonGroup->addButton("<<name<<"ScaleModeLog,1);"<<endl;
-        c << "    "<<name<<"Layout->addWidget("<<name<<"ScaleModeLog"<<");" << endl;
+          << " = new QRadioButton(tr(\""<<"Log"<<"\"), "<<name<<");" << Endl;
+        c << "    "<<name<<"ButtonGroup->addButton("<<name<<"ScaleModeLog,1);"<<Endl;
+        c << "    "<<name<<"Layout->addWidget("<<name<<"ScaleModeLog"<<");" << Endl;
 
-        c << "    connect("<<name<<"ButtonGroup, SIGNAL(buttonClicked(int))," << endl
-          << "            this, SLOT("<<name<<"Changed(int)));" << endl;
-        c << "    mainLayout->addWidget("<<name<<"Widget, "<<index<<",1);" << endl;
+        c << "    connect("<<name<<"ButtonGroup, SIGNAL(buttonClicked(int))," << Endl
+          << "            this, SLOT("<<name<<"Changed(int)));" << Endl;
+        c << "    mainLayout->addWidget("<<name<<"Widget, "<<index<<",1);" << Endl;
     }
     virtual void            writeSourceGetCurrent(QTextStream &c)
     {
-        c << "        // Nothing for " << name << endl;
+        c << "        // Nothing for " << name << Endl;
     }
     virtual void            writeSourceUpdateWindow(QTextStream &c)
     {
-        c << "            "<<name<<"ButtonGroup->blockSignals(true);" << endl;
-        c << "            if("<<name<<"ButtonGroup->button(atts->Get"<<Name<<"()) != 0)"<<endl;
-        c << "                "<<name<<"ButtonGroup->button(atts->Get"<<Name<<"())->setChecked(true);" << endl;
-        c << "            "<<name<<"ButtonGroup->blockSignals(false);" << endl;
+        c << "            "<<name<<"ButtonGroup->blockSignals(true);" << Endl;
+        c << "            if("<<name<<"ButtonGroup->button(atts->Get"<<Name<<"()) != 0)"<<Endl;
+        c << "                "<<name<<"ButtonGroup->button(atts->Get"<<Name<<"())->setChecked(true);" << Endl;
+        c << "            "<<name<<"ButtonGroup->blockSignals(false);" << Endl;
     }
     ///TODO: check fix for overloaded virtual function writeSourceCallback (4 vs 3) params
     virtual void            writeSourceCallback(QString &classname, QString &windowname, QTextStream &c, bool /*isEnabler*/)
     {
-        c << "void" << endl;
-        c << windowname<<"::"<<name<<"Changed(int val)" << endl;
-        c << "{" << endl;
-        c << "    if(val != atts->Get"<<Name<<"())" << endl;
-        c << "    {" << endl;
-        c << "        atts->Set"<<Name<<"("<<GetCPPName(true,classname)<<"(val));" << endl;
-        c << "        SetUpdate(false);" << endl;
-        c << "        Apply();" << endl;
-        c << "    }" << endl;
-        c << "}" << endl;
+        c << "void" << Endl;
+        c << windowname<<"::"<<name<<"Changed(int val)" << Endl;
+        c << "{" << Endl;
+        c << "    if(val != atts->Get"<<Name<<"())" << Endl;
+        c << "    {" << Endl;
+        c << "        atts->Set"<<Name<<"("<<GetCPPName(true,classname)<<"(val));" << Endl;
+        c << "        SetUpdate(false);" << Endl;
+        c << "        Apply();" << Endl;
+        c << "    }" << Endl;
+        c << "}" << Endl;
     }
 };
 
@@ -1358,6 +1468,9 @@ class WindowGeneratorScaleMode : public virtual ScaleMode , public virtual Windo
 //
 //    Kathleen Bonnell, Thu Mar 22 16:58:23 PDT 2007
 //    Added scalemode.
+//
+//    Kathleen Biagas, Tue Nov 15 12:39:09 PST 2022
+//    Added boolArray and boolVector.
 //
 // ----------------------------------------------------------------------------
 class WindowFieldFactory
@@ -1375,6 +1488,8 @@ class WindowFieldFactory
         else if (type == "intArray")     f = new WindowGeneratorIntArray(length,name,label);
         else if (type == "intVector")    f = new WindowGeneratorIntVector(name,label);
         else if (type == "bool")         f = new WindowGeneratorBool(name,label);
+        else if (type == "boolArray")    f = new WindowGeneratorBoolArray(length,name,label);
+        else if (type == "boolVector")   f = new WindowGeneratorBoolVector(name,label);
         else if (type == "float")        f = new WindowGeneratorFloat(name,label);
         else if (type == "floatArray")   f = new WindowGeneratorFloatArray(length,name,label);
         else if (type == "floatVector")  f = new WindowGeneratorFloatVector(name,label);
@@ -1452,7 +1567,7 @@ class WindowGeneratorAttribute : public GeneratorBase
 
     void Print(QTextStream &out) const
     {
-        out << "    Attribute: " << name << " (" << purpose << ")" << endl;
+        out << "    Attribute: " << name << " (" << purpose << ")" << Endl;
         size_t i;
         for (i=0; i<fields.size(); i++)
             fields[i]->Print(out);
@@ -1496,82 +1611,82 @@ class WindowGeneratorAttribute : public GeneratorBase
 
     void WriteHeader(QTextStream &h)
     {
-        h << copyright_str << endl;
-        h << "#ifndef " << windowname.toUpper() << "_H" << endl;
-        h << "#define " << windowname.toUpper() << "_H" << endl;
-        h << endl;
+        h << copyright_str << Endl;
+        h << "#ifndef " << windowname.toUpper() << "_H" << Endl;
+        h << "#define " << windowname.toUpper() << "_H" << Endl;
+        h << Endl;
         if(plugintype == "operator")
-            h << "#include <QvisOperatorWindow.h>" << endl;
+            h << "#include <QvisOperatorWindow.h>" << Endl;
         else if(plugintype == "plot")
-            h << "#include <QvisPostableWindowObserver.h>" << endl;
-        h << "#include <AttributeSubject.h>" << endl;
-        h << endl;
-        h << "class " << name << ";" << endl;
-        h << "class QLabel;" << endl;
-        h << "class QCheckBox;" << endl;
-        h << "class QLineEdit;" << endl;
-        h << "class QSpinBox;" << endl;
-        h << "class QButtonGroup;" << endl;
+            h << "#include <QvisPostableWindowObserver.h>" << Endl;
+        h << "#include <AttributeSubject.h>" << Endl;
+        h << Endl;
+        h << "class " << name << ";" << Endl;
+        h << "class QLabel;" << Endl;
+        h << "class QCheckBox;" << Endl;
+        h << "class QLineEdit;" << Endl;
+        h << "class QSpinBox;" << Endl;
+        h << "class QButtonGroup;" << Endl;
         if(plugintype == "plot")
         {
-            h << "class QvisColorTableButton;" << endl;
-            h << "class QvisOpacitySlider;" << endl;
-            h << "class QvisColorButton;" << endl;
-            h << "class QvisLineWidthWidget;" << endl;
+            h << "class QvisColorTableButton;" << Endl;
+            h << "class QvisOpacitySlider;" << Endl;
+            h << "class QvisColorButton;" << Endl;
+            h << "class QvisLineWidthWidget;" << Endl;
         }
-        h << "class QvisVariableButton;" << endl;
-        h << endl;
+        h << "class QvisVariableButton;" << Endl;
+        h << Endl;
 
         WriteClassComment(h, windowname, QString("Defines ") + windowname + QString(" class."));
 
         if(plugintype == "operator")
-            h << "class " << windowname << " : public QvisOperatorWindow" << endl;
+            h << "class " << windowname << " : public QvisOperatorWindow" << Endl;
         else if(plugintype == "plot")
-            h << "class " << windowname << " : public QvisPostableWindowObserver" << endl;
+            h << "class " << windowname << " : public QvisPostableWindowObserver" << Endl;
         else
-            h << "class " << windowname << " : public QvisPostableWindowObserver" << endl;
-        h << "{" << endl;
-        h << "    Q_OBJECT" << endl;
-        h << "  public:" << endl;
+            h << "class " << windowname << " : public QvisPostableWindowObserver" << Endl;
+        h << "{" << Endl;
+        h << "    Q_OBJECT" << Endl;
+        h << "  public:" << Endl;
         h << "    " << windowname << "("
-          << (plugintype=="" ? "" : "const int type,") << endl
-          << "                         "<<name<<" *subj," << endl
-          << "                         const QString &caption = QString()," << endl
-          << "                         const QString &shortName = QString()," << endl
-          << "                         QvisNotepadArea *notepad = 0);" << endl;
-        h << "    virtual ~"<<windowname<<"();" << endl;
-        h << "    virtual void CreateWindowContents();" << endl;
+          << (plugintype=="" ? "" : "const int type,") << Endl
+          << "                         "<<name<<" *subj," << Endl
+          << "                         const QString &caption = QString()," << Endl
+          << "                         const QString &shortName = QString()," << Endl
+          << "                         QvisNotepadArea *notepad = 0);" << Endl;
+        h << "    virtual ~"<<windowname<<"();" << Endl;
+        h << "    virtual void CreateWindowContents();" << Endl;
         if(plugintype != "operator")
         {
-            h << "  public slots:" << endl;
-            h << "    virtual void apply();" << endl;
-            h << "    virtual void makeDefault();" << endl;
-            h << "    virtual void reset();" << endl;
+            h << "  public slots:" << Endl;
+            h << "    virtual void apply();" << Endl;
+            h << "    virtual void makeDefault();" << Endl;
+            h << "    virtual void reset();" << Endl;
         }
-        h << "  protected:" << endl;
-        h << "    void UpdateWindow(bool doAll);" << endl;
+        h << "  protected:" << Endl;
+        h << "    void UpdateWindow(bool doAll);" << Endl;
         if(plugintype == "operator")
-            h << "    virtual void GetCurrentValues(int which_widget);" << endl;
+            h << "    virtual void GetCurrentValues(int which_widget);" << Endl;
         else if(plugintype == "plot")
         {
-            h << "    void GetCurrentValues(int which_widget);" << endl;
-            h << "    void Apply(bool ignore = false);" << endl;
+            h << "    void GetCurrentValues(int which_widget);" << Endl;
+            h << "    void Apply(bool ignore = false);" << Endl;
         }
         else
         {
-            h << "    void GetCurrentValues(int which_widget);" << endl;
-            h << "    void Apply(bool ignore = false);" << endl;
+            h << "    void GetCurrentValues(int which_widget);" << Endl;
+            h << "    void Apply(bool ignore = false);" << Endl;
         }
-        h << "  private slots:" << endl;
+        h << "  private slots:" << Endl;
         size_t i;
         for (i=0; i<fields.size(); i++)
         {
             if (fields[i]->internal) continue;
             fields[i]->writeHeaderCallback(h);
         }
-        h << "  private:" << endl;
+        h << "  private:" << Endl;
         if (plugintype == "plot")
-            h << "    int plotType;" << endl;
+            h << "    int plotType;" << Endl;
         for (i=0; i<fields.size(); i++)
         {
             if (fields[i]->internal) continue;
@@ -1582,15 +1697,15 @@ class WindowGeneratorAttribute : public GeneratorBase
             if (fields[i]->internal) continue;
             fields[i]->writeHeaderLabelData(h);
         }
-        h << endl;
-        h << "    "<<name<<" *atts;" << endl;
+        h << Endl;
+        h << "    "<<name<<" *atts;" << Endl;
 
-        h << "};" << endl;
-        h << endl;
-        h << endl;
-        h << endl;
+        h << "};" << Endl;
+        h << Endl;
+        h << Endl;
+        h << Endl;
 
-        h << "#endif" << endl;
+        h << "#endif" << Endl;
     }
 
     // ************************************************************************
@@ -1627,116 +1742,116 @@ class WindowGeneratorAttribute : public GeneratorBase
 
     void WriteSource(QTextStream &c)
     {
-        c << copyright_str << endl;
-        c << "#include \""<<windowname<<".h\"" << endl;
-        c << endl;
-        c << "#include <"<<name<<".h>" << endl;
+        c << copyright_str << Endl;
+        c << "#include \""<<windowname<<".h\"" << Endl;
+        c << Endl;
+        c << "#include <"<<name<<".h>" << Endl;
         if(plugintype == "plot")
-            c << "#include <ViewerProxy.h>" << endl;
-        c << endl;
-        c << "#include <QCheckBox>" << endl;
-        c << "#include <QLabel>" << endl;
-        c << "#include <QLayout>" << endl;
-        c << "#include <QLineEdit>" << endl;
-        c << "#include <QSpinBox>" << endl;
-        c << "#include <QButtonGroup>" << endl;
-        c << "#include <QRadioButton>" << endl;
+            c << "#include <ViewerProxy.h>" << Endl;
+        c << Endl;
+        c << "#include <QCheckBox>" << Endl;
+        c << "#include <QLabel>" << Endl;
+        c << "#include <QLayout>" << Endl;
+        c << "#include <QLineEdit>" << Endl;
+        c << "#include <QSpinBox>" << Endl;
+        c << "#include <QButtonGroup>" << Endl;
+        c << "#include <QRadioButton>" << Endl;
         if(plugintype == "plot")
         {
-            c << "#include <QvisColorTableButton.h>" << endl;
-            c << "#include <QvisOpacitySlider.h>" << endl;
-            c << "#include <QvisColorButton.h>" << endl;
-            c << "#include <QvisLineWidthWidget.h>" << endl;
+            c << "#include <QvisColorTableButton.h>" << Endl;
+            c << "#include <QvisOpacitySlider.h>" << Endl;
+            c << "#include <QvisColorButton.h>" << Endl;
+            c << "#include <QvisLineWidthWidget.h>" << Endl;
         }
-        c << "#include <QvisVariableButton.h>" << endl;
-        c << endl;
-        c << endl;
+        c << "#include <QvisVariableButton.h>" << Endl;
+        c << Endl;
+        c << Endl;
 
         // constructor
         WriteMethodComment(c, windowname, windowname, "Constructor");
         c << windowname<<"::"<<windowname<<"("
-          << (plugintype=="" ? "" : "const int type,") << endl
-          << "                         "<<name<<" *subj," << endl
-          << "                         const QString &caption," << endl
-          << "                         const QString &shortName," << endl
-          << "                         QvisNotepadArea *notepad)" << endl;
+          << (plugintype=="" ? "" : "const int type,") << Endl
+          << "                         "<<name<<" *subj," << Endl
+          << "                         const QString &caption," << Endl
+          << "                         const QString &shortName," << Endl
+          << "                         QvisNotepadArea *notepad)" << Endl;
         if(plugintype == "operator")
         {
-            c << "    : QvisOperatorWindow(type,subj, caption, shortName, notepad)" << endl;
-            c << "{" << endl;
-            c << "    atts = subj;" << endl;
-            c << "}" << endl;
+            c << "    : QvisOperatorWindow(type,subj, caption, shortName, notepad)" << Endl;
+            c << "{" << Endl;
+            c << "    atts = subj;" << Endl;
+            c << "}" << Endl;
         }
         else if(plugintype == "plot")
         {
-            c << "    : QvisPostableWindowObserver(subj, caption, shortName, notepad)" << endl;
-            c << "{" << endl;
-            c << "    plotType = type;" << endl;
-            c << "    atts = subj;" << endl;
-            c << "}" << endl;
+            c << "    : QvisPostableWindowObserver(subj, caption, shortName, notepad)" << Endl;
+            c << "{" << Endl;
+            c << "    plotType = type;" << Endl;
+            c << "    atts = subj;" << Endl;
+            c << "}" << Endl;
         }
         else
         {
-            c << "    : QvisPostableWindowObserver(subj, caption, shortName, notepad)" << endl;
-            c << "{" << endl;
-            c << "    atts = subj;" << endl;
-            c << "}" << endl;
+            c << "    : QvisPostableWindowObserver(subj, caption, shortName, notepad)" << Endl;
+            c << "{" << Endl;
+            c << "    atts = subj;" << Endl;
+            c << "}" << Endl;
         }
-        c << endl;
-        c << endl;
+        c << Endl;
+        c << Endl;
 
         // destructor
         WriteMethodComment(c, windowname, QString("~") + windowname, "Destructor");
-        c << windowname<<"::~"<<windowname<<"()" << endl;
-        c << "{" << endl;
-        c << "}" << endl;
-        c << endl;
-        c << endl;
+        c << windowname<<"::~"<<windowname<<"()" << Endl;
+        c << "{" << Endl;
+        c << "}" << Endl;
+        c << Endl;
+        c << Endl;
 
         // CreateWindowContents
         WriteMethodComment(c, windowname, "CreateWindowContents", "Creates the widgets for the window.");
-        c << "void" << endl;
-        c << windowname<<"::CreateWindowContents()" << endl;
-        c << "{" << endl;
-        c << "    QGridLayout *mainLayout = new QGridLayout(0);" << endl;
-        c << "    topLayout->addLayout(mainLayout);" << endl;
-        c << endl;
+        c << "void" << Endl;
+        c << windowname<<"::CreateWindowContents()" << Endl;
+        c << "{" << Endl;
+        c << "    QGridLayout *mainLayout = new QGridLayout(0);" << Endl;
+        c << "    topLayout->addLayout(mainLayout);" << Endl;
+        c << Endl;
         size_t i;
         for (i=0; i<fields.size(); i++)
         {
             if (fields[i]->internal) continue;
             fields[i]->writeSourceCreate(c);
-            c << endl;
+            c << Endl;
         }
-        c << "}" << endl;
-        c << endl;
-        c << endl;
+        c << "}" << Endl;
+        c << Endl;
+        c << Endl;
 
         // updatewindow
         WriteMethodComment(c, windowname, "UpdateWindow",
                            "Updates the widgets in the window when the subject changes.");
-        c << "void" << endl;
-        c << windowname << "::UpdateWindow(bool doAll)" << endl;
-        c << "{" << endl;
-        c << "" << endl;
-        c << "    for(int i = 0; i < atts->NumAttributes(); ++i)" << endl;
-        c << "    {" << endl;
-        c << "        if(!doAll)" << endl;
-        c << "        {" << endl;
-        c << "            if(!atts->IsSelected(i))" << endl;
-        c << "            {" << endl;
-        c << "                continue;" << endl;
-        c << "            }" << endl;
-        c << "        }" << endl;
-        c << "" << endl;
-        c << "        switch(i)" << endl;
-        c << "        {" << endl;
+        c << "void" << Endl;
+        c << windowname << "::UpdateWindow(bool doAll)" << Endl;
+        c << "{" << Endl;
+        c << "" << Endl;
+        c << "    for(int i = 0; i < atts->NumAttributes(); ++i)" << Endl;
+        c << "    {" << Endl;
+        c << "        if(!doAll)" << Endl;
+        c << "        {" << Endl;
+        c << "            if(!atts->IsSelected(i))" << Endl;
+        c << "            {" << Endl;
+        c << "                continue;" << Endl;
+        c << "            }" << Endl;
+        c << "        }" << Endl;
+        c << "" << Endl;
+        c << "        switch(i)" << Endl;
+        c << "        {" << Endl;
         for (i=0; i<fields.size(); i++)
         {
             if (fields[i]->internal) continue;
 
             WindowGeneratorField *field   = fields[i];
-            c << "          case "<<name<<"::ID_"<<field->name << ":" << endl;
+            c << "          case "<<name<<"::ID_"<<field->name << ":" << Endl;
 
             std::vector<Field*> enablees;
             size_t j;
@@ -1765,89 +1880,89 @@ class WindowGeneratorAttribute : public GeneratorBase
                         c << enablees[j]->enableval[k];
                 }
 
-                c << ")" << endl;
+                c << ")" << Endl;
                 c << "            {\n";
-                c << "                "<<enablees[j]->name<<"->setEnabled(true);" << endl;
+                c << "                "<<enablees[j]->name<<"->setEnabled(true);" << Endl;
                 if (enablees[j]->HasLabel())
                 {
-                    c << "                if("<<enablees[j]->name<<"Label)" << endl;
-                    c << "                    "<<enablees[j]->name<<"Label->setEnabled(true);" << endl;
+                    c << "                if("<<enablees[j]->name<<"Label)" << Endl;
+                    c << "                    "<<enablees[j]->name<<"Label->setEnabled(true);" << Endl;
                 }
                 c << "            }\n";
-                c << "            else" << endl;
+                c << "            else" << Endl;
                 c << "            {\n";
-                c << "                "<<enablees[j]->name<<"->setEnabled(false);" << endl;
+                c << "                "<<enablees[j]->name<<"->setEnabled(false);" << Endl;
                 if (enablees[j]->HasLabel())
                 {
-                    c << "                if("<<enablees[j]->name<<"Label)" << endl;
-                    c << "                    "<<enablees[j]->name<<"Label->setEnabled(false);" << endl;
+                    c << "                if("<<enablees[j]->name<<"Label)" << Endl;
+                    c << "                    "<<enablees[j]->name<<"Label->setEnabled(false);" << Endl;
                 }
                 c << "            }\n";
             }
             fields[i]->writeSourceUpdateWindow(c);
-            c << "            break;" << endl;
+            c << "            break;" << Endl;
         }
-        c << "        }" << endl;
-        c << "    }" << endl;
-        c << "}" << endl;
-        c << endl;
-        c << endl;
+        c << "        }" << Endl;
+        c << "    }" << Endl;
+        c << "}" << Endl;
+        c << Endl;
+        c << Endl;
 
         // getcurrent
         WriteMethodComment(c, windowname, "GetCurrentValues",
                            "Gets values from certain widgets and stores them in the subject.");
-        c << "void" << endl;
-        c << windowname << "::GetCurrentValues(int which_widget)" << endl;
-        c << "{" << endl;
+        c << "void" << Endl;
+        c << windowname << "::GetCurrentValues(int which_widget)" << Endl;
+        c << "{" << Endl;
         if(RequiresGetCurrentValues())
         {
-            c << "    bool doAll = (which_widget == -1);" << endl;
-            c << endl;
+            c << "    bool doAll = (which_widget == -1);" << Endl;
+            c << Endl;
         }
         for (i=0; i<fields.size(); i++)
         {
             if (fields[i]->internal || !fields[i]->providesSourceGetCurrent())
                 continue;
-            c << "    // Do " << fields[i]->name << endl;
-            c << "    if(which_widget == "<<name << "::ID_" << fields[i]->name<<" || doAll)" << endl;
-            c << "    {" << endl;
+            c << "    // Do " << fields[i]->name << Endl;
+            c << "    if(which_widget == "<<name << "::ID_" << fields[i]->name<<" || doAll)" << Endl;
+            c << "    {" << Endl;
             fields[i]->writeSourceGetCurrent(c);
-            c << "    }" << endl;
-            c << endl;
+            c << "    }" << Endl;
+            c << Endl;
         }
-        c << "}" << endl;
-        c << endl;
-        c << endl;
+        c << "}" << Endl;
+        c << Endl;
+        c << Endl;
 
         if(plugintype != "operator")
         {
             // Apply
             WriteMethodComment(c, windowname, "Apply", "Called to apply changes in the subject.");
-            c << "void" << endl;
-            c << windowname<<"::Apply(bool ignore)" << endl;
-            c << "{" << endl;
-            c << "    if(AutoUpdate() || ignore)" << endl;
-            c << "    {" << endl;
-            c << "        GetCurrentValues(-1);" << endl;
-            c << "        atts->Notify();" << endl;
-            c << "" << endl;
+            c << "void" << Endl;
+            c << windowname<<"::Apply(bool ignore)" << Endl;
+            c << "{" << Endl;
+            c << "    if(AutoUpdate() || ignore)" << Endl;
+            c << "    {" << Endl;
+            c << "        GetCurrentValues(-1);" << Endl;
+            c << "        atts->Notify();" << Endl;
+            c << "" << Endl;
             if (plugintype == "plot")
-                c << "        GetViewerMethods()->SetPlotOptions(plotType);" << endl;
+                c << "        GetViewerMethods()->SetPlotOptions(plotType);" << Endl;
             else if(plugintype != "operator")
-                c << "        GetViewerMethods()->Set"<<name<<"();" << endl;
-            c << "    }" << endl;
-            c << "    else" << endl;
-            c << "        atts->Notify();" << endl;
-            c << "}" << endl;
-            c << endl;
-            c << endl;
+                c << "        GetViewerMethods()->Set"<<name<<"();" << Endl;
+            c << "    }" << Endl;
+            c << "    else" << Endl;
+            c << "        atts->Notify();" << Endl;
+            c << "}" << Endl;
+            c << Endl;
+            c << Endl;
         }
 
-        c << "//" << endl;
-        c << "// Qt Slot functions" << endl;
-        c << "//" << endl;
-        c << endl;
-        c << endl;
+        c << "//" << Endl;
+        c << "// Qt Slot functions" << Endl;
+        c << "//" << Endl;
+        c << Endl;
+        c << Endl;
 
         // Only plot plugins need to override these at present. Operators
         // now have a base class that does it.
@@ -1855,41 +1970,41 @@ class WindowGeneratorAttribute : public GeneratorBase
         {
             // apply
             WriteMethodComment(c, windowname, "apply", "Qt slot function called when apply button is clicked.");
-            c << "void" << endl;
-            c << windowname << "::apply()" << endl;
-            c << "{" << endl;
-            c << "    Apply(true);" << endl;
-            c << "}" << endl;
-            c << endl;
-            c << endl;
+            c << "void" << Endl;
+            c << windowname << "::apply()" << Endl;
+            c << "{" << Endl;
+            c << "    Apply(true);" << Endl;
+            c << "}" << Endl;
+            c << Endl;
+            c << Endl;
 
             // makeDefault
             WriteMethodComment(c, windowname, "makeDefault", "Qt slot function called when \"Make default\" button is clicked.");
-            c << "void" << endl;
-            c << windowname<<"::makeDefault()" << endl;
-            c << "{" << endl;
-            c << "    GetCurrentValues(-1);" << endl;
-            c << "    atts->Notify();" << endl;
+            c << "void" << Endl;
+            c << windowname<<"::makeDefault()" << Endl;
+            c << "{" << Endl;
+            c << "    GetCurrentValues(-1);" << Endl;
+            c << "    atts->Notify();" << Endl;
             if (plugintype == "plot")
-                c << "    GetViewerMethods()->SetDefaultPlotOptions(plotType);" << endl;
+                c << "    GetViewerMethods()->SetDefaultPlotOptions(plotType);" << Endl;
             else if(plugintype != "operator")
-                c << "    GetViewerMethods()->SetDefault"<<name<<"();" << endl;
-            c << "}" << endl;
-            c << endl;
-            c << endl;
+                c << "    GetViewerMethods()->SetDefault"<<name<<"();" << Endl;
+            c << "}" << Endl;
+            c << Endl;
+            c << Endl;
 
             // reset
             WriteMethodComment(c, windowname, "reset", "Qt slot function called when reset button is clicked.");
-            c << "void" << endl;
-            c << windowname << "::reset()" << endl;
-            c << "{" << endl;
+            c << "void" << Endl;
+            c << windowname << "::reset()" << Endl;
+            c << "{" << Endl;
             if (plugintype == "plot")
-                c << "    GetViewerMethods()->ResetPlotOptions(plotType);" << endl;
+                c << "    GetViewerMethods()->ResetPlotOptions(plotType);" << Endl;
             else if(plugintype != "operator")
-                c << "    GetViewerMethods()->Reset"<<name<<"();" << endl;
-            c << "}" << endl;
-            c << endl;
-            c << endl;
+                c << "    GetViewerMethods()->Reset"<<name<<"();" << Endl;
+            c << "}" << Endl;
+            c << Endl;
+            c << Endl;
         }
 
         // Create a set of the fields that enable other fields so we can
@@ -1909,8 +2024,8 @@ class WindowGeneratorAttribute : public GeneratorBase
             if (fields[i]->internal) continue;
             bool isEnabler = enablers.find(fields[i]) != enablers.end();
             fields[i]->writeSourceCallback(name, windowname, c, isEnabler);
-            c << endl;
-            c << endl;
+            c << Endl;
+            c << Endl;
         }
     }
 };
@@ -1947,7 +2062,7 @@ class WindowGeneratorPlugin : public PluginBase
     }
     void Print(QTextStream &out)
     {
-        out << "Plugin: "<<name<<" (\""<<label<<"\", type="<<type<<") -- version "<<version<< endl;
+        out << "Plugin: "<<name<<" (\""<<label<<"\", type="<<type<<") -- version "<<version<< Endl;
         if (atts)
             atts->Print(out);
     }

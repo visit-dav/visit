@@ -6,6 +6,7 @@
 #include <ObserverToCallback.h>
 #include <stdio.h>
 #include <Py2and3Support.h>
+#include <visit-config.h>
 #include <ColorAttribute.h>
 #include <ColorAttribute.h>
 #include <GlyphTypes.h>
@@ -41,7 +42,7 @@ struct PseudocolorAttributesObject
 //
 static PyObject *NewPseudocolorAttributes(int);
 std::string
-PyPseudocolorAttributes_ToString(const PseudocolorAttributes *atts, const char *prefix)
+PyPseudocolorAttributes_ToString(const PseudocolorAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -3944,41 +3945,6 @@ PyPseudocolorAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "pointColor") == 0)
         return PseudocolorAttributes_GetPointColor(self, NULL);
 
-    // Try and handle legacy fields in PseudocolorAttributes
-
-    //
-    // Removed in 3.0.0
-    //
-    // lineStyle and it's possible enumerations
-    bool lineStyleFound = false;
-    if (strcmp(name, "lineStyle") == 0)
-    {
-        lineStyleFound = true;
-    }
-    else if (strcmp(name, "SOLID") == 0)
-    {
-        lineStyleFound = true;
-    }
-    else if (strcmp(name, "DASH") == 0)
-    {
-        lineStyleFound = true;
-    }
-    else if (strcmp(name, "DOT") == 0)
-    {
-        lineStyleFound = true;
-    }
-    else if (strcmp(name, "DOTDASH") == 0)
-    {
-        lineStyleFound = true;
-    }
-    if (lineStyleFound)
-    {
-        PyErr_WarnEx(NULL,
-            "lineStyle is no longer a valid Pseudocolor "
-            "attribute.\nIt's value is being ignored, please remove "
-            "it from your script.\n", 3);
-        return PyInt_FromLong(0L);
-    }
 
     // Add a __dict__ answer so that dir() works
     if (!strcmp(name, "__dict__"))
@@ -4107,21 +4073,6 @@ PyPseudocolorAttributes_setattr(PyObject *self, char *name, PyObject *args)
     else if(strcmp(name, "pointColor") == 0)
         obj = PseudocolorAttributes_SetPointColor(self, args);
 
-    // Try and handle legacy fields in PseudocolorAttributes
-    if(obj == &NULL_PY_OBJ)
-    {
-        PseudocolorAttributesObject *PseudocolorObj = (PseudocolorAttributesObject *)self;
-
-        //
-        // Removed in 3.0.0
-        //
-        if(strcmp(name, "lineStyle") == 0)
-        {
-            PyErr_WarnEx(NULL, "'lineStyle' is obsolete. It is being ignored.", 3);
-            Py_INCREF(Py_None);
-            obj = Py_None;
-        }
-    }
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
@@ -4140,7 +4091,7 @@ static int
 PseudocolorAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     PseudocolorAttributesObject *obj = (PseudocolorAttributesObject *)v;
-    fprintf(fp, "%s", PyPseudocolorAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyPseudocolorAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -4148,7 +4099,7 @@ PyObject *
 PseudocolorAttributes_str(PyObject *v)
 {
     PseudocolorAttributesObject *obj = (PseudocolorAttributesObject *)v;
-    return PyString_FromString(PyPseudocolorAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyPseudocolorAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -4300,7 +4251,7 @@ PyPseudocolorAttributes_GetLogString()
 {
     std::string s("PseudocolorAtts = PseudocolorAttributes()\n");
     if(currentAtts != 0)
-        s += PyPseudocolorAttributes_ToString(currentAtts, "PseudocolorAtts.");
+        s += PyPseudocolorAttributes_ToString(currentAtts, "PseudocolorAtts.", true);
     return s;
 }
 
@@ -4313,7 +4264,7 @@ PyPseudocolorAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("PseudocolorAtts = PseudocolorAttributes()\n");
-        s += PyPseudocolorAttributes_ToString(currentAtts, "PseudocolorAtts.");
+        s += PyPseudocolorAttributes_ToString(currentAtts, "PseudocolorAtts.", true);
         cb(s);
     }
 }

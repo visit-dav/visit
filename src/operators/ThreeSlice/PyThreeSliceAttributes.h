@@ -22,7 +22,7 @@ PyObject *     PyThreeSliceAttributes_Wrap(const ThreeSliceAttributes *attr);
 void           PyThreeSliceAttributes_SetParent(PyObject *obj, PyObject *parent);
 void           PyThreeSliceAttributes_SetDefaults(const ThreeSliceAttributes *atts);
 std::string    PyThreeSliceAttributes_GetLogString();
-std::string    PyThreeSliceAttributes_ToString(const ThreeSliceAttributes *, const char *);
+std::string    PyThreeSliceAttributes_ToString(const ThreeSliceAttributes *, const char *, const bool=false);
 PyObject *     PyThreeSliceAttributes_getattr(PyObject *self, char *name);
 int            PyThreeSliceAttributes_setattr(PyObject *self, char *name, PyObject *args);
 extern PyMethodDef PyThreeSliceAttributes_methods[THREESLICEATTRIBUTES_NMETH];

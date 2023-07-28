@@ -36,7 +36,7 @@ struct RemapAttributesObject
 //
 static PyObject *NewRemapAttributes(int);
 std::string
-PyRemapAttributes_ToString(const RemapAttributes *atts, const char *prefix)
+PyRemapAttributes_ToString(const RemapAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -965,7 +965,7 @@ static int
 RemapAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     RemapAttributesObject *obj = (RemapAttributesObject *)v;
-    fprintf(fp, "%s", PyRemapAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyRemapAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -973,7 +973,7 @@ PyObject *
 RemapAttributes_str(PyObject *v)
 {
     RemapAttributesObject *obj = (RemapAttributesObject *)v;
-    return PyString_FromString(PyRemapAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyRemapAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -1125,7 +1125,7 @@ PyRemapAttributes_GetLogString()
 {
     std::string s("RemapAtts = RemapAttributes()\n");
     if(currentAtts != 0)
-        s += PyRemapAttributes_ToString(currentAtts, "RemapAtts.");
+        s += PyRemapAttributes_ToString(currentAtts, "RemapAtts.", true);
     return s;
 }
 
@@ -1138,7 +1138,7 @@ PyRemapAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("RemapAtts = RemapAttributes()\n");
-        s += PyRemapAttributes_ToString(currentAtts, "RemapAtts.");
+        s += PyRemapAttributes_ToString(currentAtts, "RemapAtts.", true);
         cb(s);
     }
 }

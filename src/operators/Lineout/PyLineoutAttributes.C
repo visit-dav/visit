@@ -36,7 +36,7 @@ struct LineoutAttributesObject
 //
 static PyObject *NewLineoutAttributes(int);
 std::string
-PyLineoutAttributes_ToString(const LineoutAttributes *atts, const char *prefix)
+PyLineoutAttributes_ToString(const LineoutAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -673,7 +673,7 @@ static int
 LineoutAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     LineoutAttributesObject *obj = (LineoutAttributesObject *)v;
-    fprintf(fp, "%s", PyLineoutAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyLineoutAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -681,7 +681,7 @@ PyObject *
 LineoutAttributes_str(PyObject *v)
 {
     LineoutAttributesObject *obj = (LineoutAttributesObject *)v;
-    return PyString_FromString(PyLineoutAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyLineoutAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -833,7 +833,7 @@ PyLineoutAttributes_GetLogString()
 {
     std::string s("LineoutAtts = LineoutAttributes()\n");
     if(currentAtts != 0)
-        s += PyLineoutAttributes_ToString(currentAtts, "LineoutAtts.");
+        s += PyLineoutAttributes_ToString(currentAtts, "LineoutAtts.", true);
     return s;
 }
 
@@ -846,7 +846,7 @@ PyLineoutAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("LineoutAtts = LineoutAttributes()\n");
-        s += PyLineoutAttributes_ToString(currentAtts, "LineoutAtts.");
+        s += PyLineoutAttributes_ToString(currentAtts, "LineoutAtts.", true);
         cb(s);
     }
 }

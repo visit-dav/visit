@@ -6,8 +6,13 @@
 #include <math.h>
 #include <vtkDashedXorGridMapper2D.h>
 
+#include <visit-config.h> // For LIB_VERSION_GE
+
 #include <vtkActor2D.h>
 #include <vtkCellArray.h>
+#if LIB_VERSION_GE(VTK,9,1,0)
+#include <vtkCellArrayIterator.h> // used by vtkDashedXorGridMapper2D_body.C, which is #included below
+#endif
 #include <vtkCellLinks.h>
 #include <vtkDataSet.h>
 #include <vtkFieldData.h>
@@ -17,6 +22,7 @@
 #include <vtkPolyDataMapper2D.h>
 #include <vtkProperty2D.h>
 #include <vtkScalarsToColors.h>
+#include <vtkUnsignedCharArray.h>
 #include <vtkViewport.h>
 #include <vtkWindow.h>
 

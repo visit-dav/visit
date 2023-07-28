@@ -6,6 +6,7 @@
 #include <ObserverToCallback.h>
 #include <stdio.h>
 #include <Py2and3Support.h>
+#include <visit-config.h>
 #include <ColorAttribute.h>
 #include <ColorAttribute.h>
 #include <GlyphTypes.h>
@@ -39,7 +40,7 @@ struct MeshAttributesObject
 //
 static PyObject *NewMeshAttributes(int);
 std::string
-PyMeshAttributes_ToString(const MeshAttributes *atts, const char *prefix)
+PyMeshAttributes_ToString(const MeshAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -1265,41 +1266,6 @@ PyMeshAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "opacity") == 0)
         return MeshAttributes_GetOpacity(self, NULL);
 
-    // Try and handle legacy fields in MeshAttributes
-
-    //
-    // Removed in 3.0.0
-    //
-    // lineStyle and it's possible enumerations
-    bool lineStyleFound = false;
-    if (strcmp(name, "lineStyle") == 0)
-    {
-        lineStyleFound = true;
-    }
-    else if (strcmp(name, "SOLID") == 0)
-    {
-        lineStyleFound = true;
-    }
-    else if (strcmp(name, "DASH") == 0)
-    {
-        lineStyleFound = true;
-    }
-    else if (strcmp(name, "DOT") == 0)
-    {
-        lineStyleFound = true;
-    }
-    else if (strcmp(name, "DOTDASH") == 0)
-    {
-        lineStyleFound = true;
-    }
-    if (lineStyleFound)
-    {
-        PyErr_WarnEx(NULL,
-            "lineStyle is no longer a valid Mesh "
-            "attribute.\nIt's value is being ignored, please remove "
-            "it from your script.\n", 3);
-        return PyInt_FromLong(0L);
-    }
 
     // Add a __dict__ answer so that dir() works
     if (!strcmp(name, "__dict__"))
@@ -1352,20 +1318,6 @@ PyMeshAttributes_setattr(PyObject *self, char *name, PyObject *args)
     else if(strcmp(name, "opacity") == 0)
         obj = MeshAttributes_SetOpacity(self, args);
 
-    // Try and handle legacy fields in MeshAttributes
-    if(obj == &NULL_PY_OBJ)
-    {
-        MeshAttributesObject *meshObj = (MeshAttributesObject *)self;
-        //
-        // Removed in 3.0.0
-        //
-        if(strcmp(name, "lineStyle") == 0)
-        {
-            PyErr_WarnEx(NULL, "'lineStyle' is obsolete. It is being ignored.", 3);
-            Py_INCREF(Py_None);
-            obj = Py_None;
-        }
-    }
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
@@ -1384,7 +1336,7 @@ static int
 MeshAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     MeshAttributesObject *obj = (MeshAttributesObject *)v;
-    fprintf(fp, "%s", PyMeshAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyMeshAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -1392,7 +1344,7 @@ PyObject *
 MeshAttributes_str(PyObject *v)
 {
     MeshAttributesObject *obj = (MeshAttributesObject *)v;
-    return PyString_FromString(PyMeshAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyMeshAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -1544,7 +1496,7 @@ PyMeshAttributes_GetLogString()
 {
     std::string s("MeshAtts = MeshAttributes()\n");
     if(currentAtts != 0)
-        s += PyMeshAttributes_ToString(currentAtts, "MeshAtts.");
+        s += PyMeshAttributes_ToString(currentAtts, "MeshAtts.", true);
     return s;
 }
 
@@ -1557,7 +1509,7 @@ PyMeshAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("MeshAtts = MeshAttributes()\n");
-        s += PyMeshAttributes_ToString(currentAtts, "MeshAtts.");
+        s += PyMeshAttributes_ToString(currentAtts, "MeshAtts.", true);
         cb(s);
     }
 }

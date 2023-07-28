@@ -5,16 +5,17 @@
 #include <SplashScreen.h>
 #include <QApplication>
 #include <QDate>
+#include <QDateTime>
 #include <QFont>
 #include <QLabel>
 #include <QLayout>
-#include <QPushButton>
-#include <QDateTime>
-#include <QTimer>
-#include <QProgressBar>
 #include <QPainter>
 #include <QPixmap>
-#include <QDesktopWidget>
+#include <QProgressBar>
+#include <QPushButton>
+#include <QRect>
+#include <QScreen>
+#include <QTimer>
 #include <InstallationFunctions.h>
 #include <ConfigureInfo.h>
 
@@ -253,6 +254,18 @@
 //    Eric Brugger, Wed Dec 15 09:48:55 PST 2021
 //    Changed the date on the splash screen to January 2022.
 //
+//    Eric Brugger, Thu May 26 15:47:49 PDT 2022
+//    Changed the date on the splash screen to June 2022.
+//
+//    Eric Brugger, Wed Sep 21 14:40:08 PDT 2022
+//    Changed the date on the splash screen to September 2022.
+//
+//    Eric Brugger, Tue Dec 20 10:06:53 PST 2022
+//    Changed the date on the splash screen to December 2022.
+//
+//    Eric Brugger, Wed Mar 15 09:47:27 PDT 2023
+//    Changed the date on the splash screen to March 2023.
+//
 // ****************************************************************************
 
 SplashScreen::SplashScreen(bool cyclePictures) : QFrame(0, Qt::SplashScreen)
@@ -274,7 +287,7 @@ SplashScreen::SplashScreen(bool cyclePictures) : QFrame(0, Qt::SplashScreen)
 
     topLayout = new QVBoxLayout(this);
     topLayout->setSpacing(5);
-    topLayout->setMargin(5);
+    topLayout->setContentsMargins(5,5,5,5);
 
     // Create a timer to switch pictures
     timer = new QTimer(this);
@@ -373,9 +386,9 @@ SplashScreen::SplashScreen(bool cyclePictures) : QFrame(0, Qt::SplashScreen)
            << tr("October")
            << tr("November")
            << tr("December");
-    int currentMonth = 1;
+    int currentMonth = 3;
     lLayout->addWidget(new QLabel(versionText, this));
-    lLayout->addWidget(new QLabel(months[currentMonth-1] + " 2022", this));
+    lLayout->addWidget(new QLabel(months[currentMonth-1] + " 2023", this));
 
     copyrightButton = 0;
     contributorButton = 0;
@@ -477,6 +490,8 @@ SplashScreen::CreateAboutButtons()
 // Creation:   Wed Jun 18 17:52:11 PST 2003
 //
 // Modifications:
+//   Kathleen Biagas, Wed Apr  5 13:04:35 PDT 2023
+//   Replace obosolete desktop() with primaryScreen().
 //
 // ****************************************************************************
 
@@ -484,8 +499,8 @@ void
 SplashScreen::show()
 {
     // Figure out where to put the window
-    int     W = qApp->desktop()->width();
-    int     H = qApp->desktop()->height();
+    int     W = qApp->primaryScreen()->geometry().width();
+    int     H = qApp->primaryScreen()->geometry().height();
     move((W - pictures[0].width()) / 2, (H - pictures[0].height()) / 2);
 
     // Show the window

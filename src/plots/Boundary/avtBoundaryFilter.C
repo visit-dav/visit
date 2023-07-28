@@ -7,6 +7,9 @@
 // ************************************************************************* // 
 
 #include <avtBoundaryFilter.h>
+
+#include <visit-config.h> // For LIB_VERSION_LE
+
 #include <avtDataAttributes.h>
 #include <avtOriginatingSource.h>
 #include <vtkCellArray.h>
@@ -223,7 +226,12 @@ avtBoundaryFilter::ExecuteDataTree(avtDataRepresentation *in_dr)
                 // insert the cells
                 out_pd->Allocate(boundaryCounts[s]);
 
-                vtkIdType npts, *pts;
+                vtkIdType npts;
+#if LIB_VERSION_LE(VTK,8,1,0)
+                vtkIdType *pts;
+#else
+                const vtkIdType *pts;
+#endif
                 int numNewCells = 0;
                 for (int j = 0; j < ntotalcells; j++)
                 {

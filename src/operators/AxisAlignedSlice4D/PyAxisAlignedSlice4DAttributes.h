@@ -22,7 +22,7 @@ PyObject *     PyAxisAlignedSlice4DAttributes_Wrap(const AxisAlignedSlice4DAttri
 void           PyAxisAlignedSlice4DAttributes_SetParent(PyObject *obj, PyObject *parent);
 void           PyAxisAlignedSlice4DAttributes_SetDefaults(const AxisAlignedSlice4DAttributes *atts);
 std::string    PyAxisAlignedSlice4DAttributes_GetLogString();
-std::string    PyAxisAlignedSlice4DAttributes_ToString(const AxisAlignedSlice4DAttributes *, const char *);
+std::string    PyAxisAlignedSlice4DAttributes_ToString(const AxisAlignedSlice4DAttributes *, const char *, const bool=false);
 PyObject *     PyAxisAlignedSlice4DAttributes_getattr(PyObject *self, char *name);
 int            PyAxisAlignedSlice4DAttributes_setattr(PyObject *self, char *name, PyObject *args);
 extern PyMethodDef PyAxisAlignedSlice4DAttributes_methods[AXISALIGNEDSLICE4DATTRIBUTES_NMETH];

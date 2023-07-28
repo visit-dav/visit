@@ -36,7 +36,7 @@ struct ReflectAttributesObject
 //
 static PyObject *NewReflectAttributes(int);
 std::string
-PyReflectAttributes_ToString(const ReflectAttributes *atts, const char *prefix)
+PyReflectAttributes_ToString(const ReflectAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -1066,7 +1066,7 @@ static int
 ReflectAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     ReflectAttributesObject *obj = (ReflectAttributesObject *)v;
-    fprintf(fp, "%s", PyReflectAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyReflectAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -1074,7 +1074,7 @@ PyObject *
 ReflectAttributes_str(PyObject *v)
 {
     ReflectAttributesObject *obj = (ReflectAttributesObject *)v;
-    return PyString_FromString(PyReflectAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyReflectAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -1226,7 +1226,7 @@ PyReflectAttributes_GetLogString()
 {
     std::string s("ReflectAtts = ReflectAttributes()\n");
     if(currentAtts != 0)
-        s += PyReflectAttributes_ToString(currentAtts, "ReflectAtts.");
+        s += PyReflectAttributes_ToString(currentAtts, "ReflectAtts.", true);
     return s;
 }
 
@@ -1239,7 +1239,7 @@ PyReflectAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("ReflectAtts = ReflectAttributes()\n");
-        s += PyReflectAttributes_ToString(currentAtts, "ReflectAtts.");
+        s += PyReflectAttributes_ToString(currentAtts, "ReflectAtts.", true);
         cb(s);
     }
 }

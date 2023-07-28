@@ -11,9 +11,9 @@
 
 #include <visit-config.h>
 
-#if (VISIT_APP_VERSION_CHECK(2, 5, 1) <= UINTAH_VERSION_HEX )
+#if LIB_VERSION_GE(UINTAH, 2,5,1)
 #include <VisIt/interfaces/datatypes.h>
-#elif (VISIT_APP_VERSION_CHECK(2, 5, 0) <= UINTAH_VERSION_HEX )
+#elif LIB_VERSION_LE(UINTAH, 2,5,0)
 #include <VisIt/uda2vis/udaData.h>
 #else
 #include <StandAlone/tools/uda2vis/udaData.h>

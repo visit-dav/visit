@@ -36,7 +36,7 @@ struct CylinderAttributesObject
 //
 static PyObject *NewCylinderAttributes(int);
 std::string
-PyCylinderAttributes_ToString(const CylinderAttributes *atts, const char *prefix)
+PyCylinderAttributes_ToString(const CylinderAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -460,7 +460,7 @@ static int
 CylinderAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     CylinderAttributesObject *obj = (CylinderAttributesObject *)v;
-    fprintf(fp, "%s", PyCylinderAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyCylinderAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -468,7 +468,7 @@ PyObject *
 CylinderAttributes_str(PyObject *v)
 {
     CylinderAttributesObject *obj = (CylinderAttributesObject *)v;
-    return PyString_FromString(PyCylinderAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyCylinderAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -620,7 +620,7 @@ PyCylinderAttributes_GetLogString()
 {
     std::string s("CylinderAtts = CylinderAttributes()\n");
     if(currentAtts != 0)
-        s += PyCylinderAttributes_ToString(currentAtts, "CylinderAtts.");
+        s += PyCylinderAttributes_ToString(currentAtts, "CylinderAtts.", true);
     return s;
 }
 
@@ -633,7 +633,7 @@ PyCylinderAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("CylinderAtts = CylinderAttributes()\n");
-        s += PyCylinderAttributes_ToString(currentAtts, "CylinderAtts.");
+        s += PyCylinderAttributes_ToString(currentAtts, "CylinderAtts.", true);
         cb(s);
     }
 }

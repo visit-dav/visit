@@ -56,13 +56,13 @@ function bv_uintah_initialize_vars
 
 function bv_uintah_info
 {
-    export UINTAH_VERSION=${UINTAH_VERSION:-"2.6.1"}
+    export UINTAH_VERSION=${UINTAH_VERSION:-"2.6.2"}
     export UINTAH_FILE=${UINTAH_FILE:-"Uintah-${UINTAH_VERSION}.tar.gz"}
     export UINTAH_COMPATIBILITY_VERSION=${UINTAH_COMPATIBILITY_VERSION:-"2.6"}
     export UINTAH_URL=${UINTAH_URL:-"https://gforge.sci.utah.edu/svn/uintah/releases/uintah_v${UINTAH_VERSION}"}
     export UINTAH_BUILD_DIR=${UINTAH_BUILD_DIR:-"Uintah-${UINTAH_VERSION}"}
-    export UINTAH_MD5_CHECKSUM="09cad7b2fcc7b1f41dabcf7ecae21f54"
-    export UINTAH_SHA256_CHECKSUM="0801da6e5700fa826f2cbc6ed01f81f743f92df3e946cc6ba3748458f36f674e"
+    export UINTAH_MD5_CHECKSUM="27206aae5bc2ff4f976c885b8f500c64"
+    export UINTAH_SHA256_CHECKSUM="446f6426d019f277635002e2ec6f7f93227abfe7f433db2ecc59871dcd4afa84"
 }
 
 function bv_uintah_print
@@ -120,69 +120,6 @@ function bv_uintah_dry_run
     fi
 }
 
-function apply_uintah_long64_patch
-{
-    patch -p0 << \EOF
-diff -c src/VisIt/interfaces/utils.h.orig src/VisIt/interfaces/utils.h
-*** src/VisIt/interfaces/utils.h.orig	Fri Jun  7 12:39:50 2019
---- src/VisIt/interfaces/utils.h	Tue Jan  4 10:19:55 2022
-***************
-*** 95,100 ****
---- 95,103 ----
-  void copyComponents(double *dest, const double &src);
-  
-  template <>
-+ void copyComponents(double *dest, const long64 &src);
-+ 
-+ template <>
-  void copyComponents<Vector>(double *dest, const Vector &src);
-  
-  template <>
-EOF
-
-    if [[ $? != 0 ]] ; then
-      warn "uintah patch 1 for reading long64 data failed."
-      return 1
-    fi
-
-    patch -p0 << \EOF
-diff -c src/VisIt/interfaces/utils.cc.orig src/VisIt/interfaces/utils.cc
-*** src/VisIt/interfaces/utils.cc.orig	Fri Jun  7 12:39:50 2019
---- src/VisIt/interfaces/utils.cc	Tue Jan  4 10:26:52 2022
-***************
-*** 113,118 ****
---- 113,124 ----
-  }
-  
-  template <>
-+ void copyComponents(double *dest, const long64 &src)
-+ {
-+   (*dest) = (double) src;
-+ }
-+ 
-+ template <>
-  void copyComponents<Vector>(double *dest, const Vector &src)
-  {
-    dest[0] = (double)src[0];
-EOF
-
-    if [[ $? != 0 ]] ; then
-      warn "uintah patch 2 for reading long64 data failed."
-      return 1
-    fi
-
-    return 0;
-}
-
-function apply_uintah_patch
-{
-    apply_uintah_long64_patch
-    if [[ $? != 0 ]] ; then
-       return 1
-    fi
-
-    return 0
-}
 
 # **************************************************************************** #
 #                          Function 8.1, build_uintah                          #
@@ -193,6 +130,10 @@ function apply_uintah_patch
 #                                                                              #
 # Kevin Griffin, Wed Aug 28 10:25:30 PDT 2019                                  #
 # Added the --with-libxml2 option to ensure that the /usr/lib/ version is used #
+#                                                                              #
+# Todd Harman, Thu Jun 15 15:31:51 MDT 2023                                    #
+# replaced the cp commands for installing the libs & headers with              #
+#   $MAKE install-visit                                                        #
 # **************************************************************************** #
 
 function build_uintah
@@ -300,23 +241,6 @@ function build_uintah
         return 1
     fi
 
-    #
-    # Apply patches
-    #
-    info "Patching UINTAH . . ."
-    cd $UINTAH_BUILD_DIR || error "Can't cd to UINTAH build dir."
-    apply_uintah_patch
-    if [[ $? != 0 ]] ; then
-        if [[ $untarred_uintah == 1 ]] ; then
-            warn "Giving up on Uintah build because the patch failed."
-            return 1
-        else
-            warn "Patch failed, but continuing.  I believe that this script\n" \
-                 "tried to apply a patch to an existing directory that had\n" \
-                 "already been patched ... that is, the patch is\n" \
-                 "failing harmlessly on a second application."
-        fi
-    fi
     # move back up to the start dir
     cd "$START_DIR"
 
@@ -366,7 +290,6 @@ function build_uintah
 
         info "Invoking command to configure UINTAH"
         set -x
-
         sh -c "../src/configure CXX=\"$PAR_COMPILER_CXX\" CC=\"$PAR_COMPILER\" \
         CFLAGS=\"$CFLAGS $C_OPT_FLAGS\" CXXFLAGS=\"$CXXFLAGS $CXX_OPT_FLAGS\" \
         MPI_EXTRA_LIB_FLAG=\"$PAR_LIBRARY_NAMES\" \
@@ -400,29 +323,15 @@ function build_uintah
     #
     info "Installing UINTAH . . ."
 
-    if [[ ! -e $VISITDIR/uintah ]] ; then
-        mkdir $VISITDIR/uintah || error "Can't make UINTAH install dir."
-    fi
-
-    if [[ ! -e $VISITDIR/uintah/$UINTAH_VERSION ]] ; then
-        mkdir $VISITDIR/uintah/$UINTAH_VERSION || error "Can't make UINTAH install dir."
-    fi
-
     if [[ ! -e $VISITDIR/uintah/$UINTAH_VERSION/$VISITARCH ]] ; then
-        mkdir $VISITDIR/uintah/$UINTAH_VERSION/$VISITARCH || error "Can't make UINTAH install dir."
+        mkdir -p $VISITDIR/uintah/$UINTAH_VERSION/$VISITARCH || error "Can't make UINTAH install dir."
     else        
         rm -rf $VISITDIR/uintah/$UINTAH_VERSION/$VISITARCH/* || error "Can't remove old UINTAH install dir."
     fi
 
-    mkdir $VISITDIR/uintah/$UINTAH_VERSION/$VISITARCH/lib || error "Can't make UINTAH install lib dir."
-    mkdir $VISITDIR/uintah/$UINTAH_VERSION/$VISITARCH/include || error "Can't make UINTAH install include dir."
-    mkdir $VISITDIR/uintah/$UINTAH_VERSION/$VISITARCH/include/VisIt || error "Can't make UINTAH install include/VisIt dir."
-    mkdir $VISITDIR/uintah/$UINTAH_VERSION/$VISITARCH/include/VisIt/interfaces || error "Can't make UINTAH install include/VisIt/interfaces dir."
 
-    cp lib/* $VISITDIR/uintah/$UINTAH_VERSION/$VISITARCH/lib
-    cp ../src/VisIt/interfaces/datatypes.h $VISITDIR/uintah/$UINTAH_VERSION/$VISITARCH/include/VisIt/interfaces/datatypes.h
-
-    #    $MAKE install
+    $MAKE install-visit
+    
     if [[ $? != 0 ]] ; then
         warn "UINTAH install failed.  Giving up"
         return 1

@@ -1388,36 +1388,3 @@ MeshAttributes::ChangesRequireRecalculation(const MeshAttributes &obj,
             (showInternal != obj.showInternal && spatDim == 3));
 }
 
-// ****************************************************************************
-// Method: MeshAttributes::ProcessOldVersions
-//
-// Purpose:
-//   This method handles some old fields by converting them to new fields.
-//
-// Programmer: Brad Whitlock
-// Creation:   Fri Mar 12 09:33:52 PST 2010
-//
-// Modifications:
-//   Kathleen Biagas, Tue Feb 15 15:55:04 PST 2022
-//   Removed processing versions older than 2.10.0.
-//
-// ****************************************************************************
-#include <Utility.h>
-void
-MeshAttributes::ProcessOldVersions(DataNode *parentNode,
-    const char *configVersion)
-{
-    if(parentNode == 0)
-        return;
-
-    DataNode *searchNode = parentNode->GetNode("MeshAttributes");
-    if(searchNode == 0)
-        return;
-
-    if(VersionLessThan(configVersion, "3.0.0"))
-    {
-        if (searchNode->GetNode("lineStyle") != 0)
-            searchNode->RemoveNode("lineStyle");
-    }
-}
-

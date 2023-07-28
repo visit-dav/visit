@@ -191,6 +191,7 @@ avtDataAttributes::avtDataAttributes() : plotInfoAtts()
     meshname               = "<unknown>";
     filename               = "<unknown>";
     fullDBName             = "<unknown>";
+    commentInDB            = "";
     containsGhostZones     = AVT_MAYBE_GHOSTS;
     presentGhostZoneTypes  = AVT_NO_GHOST_ZONES;
     containsExteriorBoundaryGhosts = false;
@@ -625,15 +626,16 @@ avtDataAttributes::Print(ostream &out)
         out << endl;
     }
 
-    out << "The mesh's name is " << meshname.c_str() << endl;
-    out << "The filename is " << filename.c_str() << endl;
-    out << "The full db name is " << fullDBName.c_str() << endl;
-    out << "The X-units are " << xUnits.c_str() << endl;
-    out << "The Y-units are " << yUnits.c_str() << endl;
-    out << "The Z-units are " << zUnits.c_str() << endl;
-    out << "The X-labels are " << xLabel.c_str() << endl;
-    out << "The Y-labels are " << yLabel.c_str() << endl;
-    out << "The Z-labels are " << zLabel.c_str() << endl;
+    out << "The mesh's name is " << meshname << endl;
+    out << "The filename is " << filename << endl;
+    out << "The full db name is " << fullDBName << endl;
+    out << "The db comment is " << commentInDB << endl;
+    out << "The X-units are " << xUnits << endl;
+    out << "The Y-units are " << yUnits << endl;
+    out << "The Z-units are " << zUnits << endl;
+    out << "The X-labels are " << xLabel << endl;
+    out << "The Y-labels are " << yLabel << endl;
+    out << "The Z-labels are " << zLabel << endl;
 
     if (originalSpatial != NULL)
     {
@@ -1075,6 +1077,7 @@ avtDataAttributes::Copy(const avtDataAttributes &di)
     SetMeshname(di.GetMeshname());
     SetFilename(di.GetFilename());
     SetFullDBName(di.GetFullDBName());
+    SetCommentInDB(di.GetCommentInDB());
     SetXUnits(di.GetXUnits());
     SetYUnits(di.GetYUnits());
     SetZUnits(di.GetZUnits());
@@ -2961,6 +2964,10 @@ avtDataAttributes::Write(avtDataObjectString &str,
     str.Append((char *) fullDBName.c_str(), (int)fullDBName.size(),
                   avtDataObjectString::DATA_OBJECT_STRING_SHOULD_MAKE_COPY);
 
+    wrtr->WriteInt(str, (int)commentInDB.size());
+    str.Append((char *) commentInDB.c_str(), (int)commentInDB.size(),
+                  avtDataObjectString::DATA_OBJECT_STRING_SHOULD_MAKE_COPY);
+
     wrtr->WriteInt(str, (int)xUnits.size());
     str.Append((char *) xUnits.c_str(), (int)xUnits.size(),
                   avtDataObjectString::DATA_OBJECT_STRING_SHOULD_MAKE_COPY);
@@ -3473,6 +3480,14 @@ avtDataAttributes::Read(char *input)
     fullDBName = l3;
     size += fullDBNameSize;
     input += fullDBNameSize;
+
+    int commentInDBSize;
+    memcpy(&commentInDBSize, input, sizeof(int));
+    input += sizeof(int); size += sizeof(int);
+    string l4(input, commentInDBSize);
+    commentInDB = l4;
+    size += commentInDBSize;
+    input += commentInDBSize;
 
     int unitSize;
     memcpy(&unitSize, input, sizeof(int));
@@ -5315,6 +5330,7 @@ avtDataAttributes::DebugDump(avtWebpage *webpage)
     webpage->StartTable();
     webpage->AddTableHeader2("Field", "Value");
     webpage->AddTableEntry2("Database name", fullDBName.c_str());
+    webpage->AddTableEntry2("Database comment", commentInDB.c_str());
     webpage->AddTableEntry2("File name", filename.c_str());
     webpage->AddTableEntry2("Mesh name", meshname.c_str());
     snprintf(str, 4096, "%d", numStates);

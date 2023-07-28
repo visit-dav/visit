@@ -23,7 +23,7 @@ VISITPY_API PyObject *     PyAxisTickMarks_Wrap(const AxisTickMarks *attr);
 void VISITPY_API           PyAxisTickMarks_SetParent(PyObject *obj, PyObject *parent);
 void VISITPY_API           PyAxisTickMarks_SetDefaults(const AxisTickMarks *atts);
 std::string VISITPY_API    PyAxisTickMarks_GetLogString();
-std::string VISITPY_API    PyAxisTickMarks_ToString(const AxisTickMarks *, const char *);
+std::string VISITPY_API    PyAxisTickMarks_ToString(const AxisTickMarks *, const char *, const bool=false);
 VISITPY_API PyObject *     PyAxisTickMarks_getattr(PyObject *self, char *name);
 int VISITPY_API            PyAxisTickMarks_setattr(PyObject *self, char *name, PyObject *args);
 VISITPY_API extern PyMethodDef PyAxisTickMarks_methods[AXISTICKMARKS_NMETH];
