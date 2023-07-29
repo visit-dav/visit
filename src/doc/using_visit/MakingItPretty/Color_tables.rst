@@ -388,7 +388,7 @@ As can be seen in the side-by-side comparison below, there is a noticeable diffe
 .. list-table:: 
 
     * - .. figure:: images/MakingItPretty-continuous-banded-coloring.png
-           :width: 250 
+           :width: 270 
 
            Continuous table
 
