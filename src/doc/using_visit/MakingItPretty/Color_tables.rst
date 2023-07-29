@@ -387,15 +387,8 @@ As can be seen in the side-by-side comparison below, there is a noticeable diffe
 
 .. list-table:: 
 
-    * - .. figure:: images/MakingItPretty-continuous-banded-coloring.png
-           :width: 270 
-
-           Continuous table
-
-      - .. figure:: images/MakingItPretty-numerically-banded-coloring.png
-           :width: 300
-
-           Discrete table
+    * - .. image:: images/MakingItPretty-continuous-banded-coloring.png
+      - .. image:: images/MakingItPretty-numerically-banded-coloring.png
 
 The second approach (on the right) using the combination of a **Discrete** color table and a conditional expression shows significantly more jagged banding.
 This has to do with the ordering of operations of *interpolation* of the variable across mesh zones and then *mapping* of the variable values to colors.
