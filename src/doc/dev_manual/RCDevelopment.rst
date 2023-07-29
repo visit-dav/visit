@@ -30,7 +30,7 @@ Likewise, sometimes long term enhancements are performed *only* on the ``develop
 
 .. tip::  Unless you have been instructed otherwise, plan to do your work *first* on a branch *from* the current RC branch in one pull request and then apply those same changes on a branch *from* ``develop`` in a second pull request.
 
-.. tip:: Use VisIt_'s `GitHub milestones <https://github.com/visit-dav/visit/milestones>`__ page or get in touch with a key contributor if you need help identifying the current RC branch or deciding upon which branch you should start your work.
+.. tip:: Use VisIt_'s `GitHub milestones <https://github.com/visit-dav/visit/milestones>`__ page or or reach out to the VisIt_ team on our `GitHub discussions <https://github.com/visit-dav/visit/discussions>`__ page if you need help identifying the current RC branch or deciding upon which branch you should start your work.
 
 When doing work on the release candidate the normal sequence of operations is as follows:
 
