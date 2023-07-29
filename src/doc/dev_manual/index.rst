@@ -27,6 +27,7 @@ VisIt_ Developer Manual
     ContributingHostProfiles
     LaunchProcess
     UpdatingPlugins
+    DebuggingTips
 
 .. Indices and tables
 .. ==================
