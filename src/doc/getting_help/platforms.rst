@@ -20,3 +20,16 @@ However, because we do not yet routinely develop or test on these platforms, we 
 
 Finally, for other platforms, :ref:`building <Building>` VisIt_ from sources is an option.
 We do try to be responsive to issues building VisIt_ from sources.
+
+Supported Versions
+~~~~~~~~~~~~~~~~~~
+
+Only in very rare circumstances does the VisIt_ team have the resources to update a previously released version of VisIt_.
+This does occasionally happen but it is very rare.
+Instead, we ask that users please try to keep up to date with the most current minor release of VisIt.
+
+.. tip:: Wherever possible, its best if users can keep a version or two *behind* the current minor release around as a fall back in case the current release introduces any show-stopper behavior.
+
+What this means is that the only *supported* version of VisIt_ is the *current* minor version.
+When users report issues which are reproducible *only* in versions of VisIt_ older than the *current* minor version, the team may be able to suggest work-arounds but will otherwise ask users to please upgrade to the current version.
+On the other hand, when issues reported in older versions are reproducible in the current version as well, the VisIt_ team will try to provide additional support.
