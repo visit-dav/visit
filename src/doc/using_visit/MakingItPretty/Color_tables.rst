@@ -392,6 +392,7 @@ As can be seen in the side-by-side comparison below, there is a noticeable diffe
 
 The second approach (on the right) using the combination of a **Discrete** color table and a conditional expression shows significantly more jagged banding.
 This has to do with the ordering of operations of *interpolation* of the variable across mesh zones and then *mapping* of the variable values to colors.
+
 The first approach performs *interpolation* followed by *mapping*.
 The second approach effectively performs the *mapping* first through its use of the conditional expression replacing the smoothly varying variable with a highly discontinuous variable after which *interpolation* is performed.
 In addition, the legend (on the right) does not do a good a job conveying the mapping of the variable's color to its values.
