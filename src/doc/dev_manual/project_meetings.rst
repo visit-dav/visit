@@ -37,25 +37,6 @@ Inclusive Moment
 ----------------
 To begin the first project meeting of each new month a contributor shares an inclusive moment.
 An inclusive moment is a factoid, resource, event, experience, etc. related to STEAM with the purpose of raising awareness, seeding deeper thinking and/or informing future action.
-Example inclusive moments which are in scope include...
-
-* A short description of the book `"Black Software" <https://en.wikipedia.org/wiki/Black_Software>`_ and key take-aways to be learned from reading it.
-* A reminder and reference explaining how color choices in UI design impact color-blind users.
-* Relaying a recent conversation with a colleague that feels Fortran programmers aren’t sufficiently supported in ECP.
-  
-Example Inclusive Minutes which are out of scope...
-
-* Sharing a recent personal negative interaction with an airport security official
-
-  * **Rationale**: not related to STEAM.
-  
-* Playing the YouTube video `“Wny Diversity Matters?” <https://youtu.be/lHStHPQUzkE>`_.
-
-  * **Rationale**: not appropriate length, not related to STEAM.
-  
-* Playing 5 minutes of music created in a recent STEAM hack-a-thon.
-
-  * **Rationale**: not appropriate length.
 
 Whenever possible, we try to rotate responsibility to a different contributor each time.
-There are :download:`some slides <./framing_inclusive_minute_opt.pdf>` that explain the inclusive moment exercise in a little more detail.
+There is an article that goes into `more details <https://hpc-workforce-development-and-retention.github.io/hpc-wdr/jekyll/update/2023/04/08/inclusive-minute.html>`__ about the inclusive minute exercise.
