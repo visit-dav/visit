@@ -17,6 +17,7 @@
 #       rzgenie (LC, Linux, x86_64, toss3),
 #       rztrona (LC, Linux, x86_64, toss4),
 #       rzansel (LC, Linux, power9),
+#       magma (LC, Linux, x86_64, toss4),
 #       jade (LC, Linux, x86_64),
 #       sierra (LC, Linux, power9)
 #       trinity (LANL, x86_64)
@@ -31,6 +32,9 @@
 #    Eric Brugger, Tue Jul 18 16:30:02 PDT 2023
 #    Added support for building on rzgenie.
 #
+#    Eric Brugger, Thu Jul 27 16:51:41 PDT 2023
+#    Added support for building on magma.
+#
 #-----------------------------------------------------------------------
 
 #
@@ -44,6 +48,7 @@ lassen=false
 rzgenie=false
 rztrona=false
 rzansel=false
+magma=false
 jade=false
 sierra=false
 trinity=false
@@ -93,6 +98,10 @@ do
          rzansel=true
          shift
          ;;
+      +magma)
+         magma=true
+         shift
+         ;;
       +jade)
          jade=true
          shift
@@ -131,6 +140,7 @@ then
    echo "    rzgenie (LC, Linux, x86_64, toss3),"
    echo "    rztrona (LC, Linux, x86_64, toss4),"
    echo "    rzansel (LC, Linux, power9),"
+   echo "    magma (LC, Linux, x86_64, toss4),"
    echo "    jade (LC, Linux, x86_64),"
    echo "    sierra (LC, Linux, power9)"
    echo "    trinity (LANL, Linux, x86_64)"
@@ -368,6 +378,32 @@ then
 fi
 
 #
+# Build on magma.
+#
+if [ $magma = true ]
+then
+   echo "Building on magma"
+   ran_build_visit=true
+   if [ -f ${build_visit_script}_log.magma ]
+   then
+      mv ${build_visit_script}_log.magma ${build_visit_script}_log
+   fi
+   if [ ! -d /usr/workspace/visit/visit/thirdparty_shared/$version ]
+   then
+      mkdir /usr/workspace/visit/visit/thirdparty_shared/$version
+   fi
+   if [ ! -d /usr/workspace/visit/visit/thirdparty_shared/$version/toss4 ]
+   then
+      mkdir /usr/workspace/visit/visit/thirdparty_shared/$version/toss4
+   fi
+   env PAR_COMPILER=/usr/tce/packages/mvapich2/mvapich2-2.3.6-gcc-10.3.1/bin/mpicc \
+       PAR_COMPILER_CXX=/usr/tce/packages/mvapich2/mvapich2-2.3.6-gcc-10.3.1/bin/mpicxx \
+       PAR_INCLUDE=-I/usr/tce/packages/mvapich2/mvapich2-2.3.6-gcc-10.3.1/include \
+       ./$build_visit_script --required --optional --mesagl --uintah --parallel --qt510 --no-pyside --no-gdal --no-visit --thirdparty-path /usr/workspace/visit/visit/thirdparty_shared/$version/toss4 --makeflags -j16
+   mv ${build_visit_script}_log ${build_visit_script}_log.magma
+fi
+
+#
 # Build on jade
 #
 if [ $jade = true ]
@@ -471,6 +507,7 @@ then
    echo "    rzgenie (LC, Linux, x86_64, toss3),"
    echo "    rztrona (LC, Linux, x86_64, toss4),"
    echo "    rzansel (LC, Linux, power9),"
+   echo "    magma (LC, Linux, x86_64, toss4),"
    echo "    jade (LC, Linux, x86_64),"
    echo "    sierra (LC, Linux, power9)"
    echo "    trinity (LANL, Linux, x86_64)"
