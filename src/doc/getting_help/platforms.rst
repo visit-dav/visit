@@ -38,6 +38,6 @@ Instead, we ask that users please try to keep up to date with the most current m
 
 .. tip:: Wherever possible, its best if users can keep a version or two *behind* the current minor release around as a fall back in case the current release introduces any show-stopper behavior.
 
-What this means is that the only *supported* version of VisIt_ is the *current* minor version which can be identified by browsing our [releases](https://visit-dav.github.io/visit-website/releases-as-tables/) page.
+What this means is that the only *supported* version of VisIt_ is the *current* minor version which can be identified by browsing our `releases <https://visit-dav.github.io/visit-website/releases-as-tables/>`__ page.
 When users report issues which are reproducible *only* in versions of VisIt_ older than the *current* minor version, the team may be able to suggest work-arounds but will otherwise ask users to please upgrade to the current version.
 On the other hand, when issues reported in older versions are reproducible in the current version as well, the VisIt_ team will try to provide additional support.
