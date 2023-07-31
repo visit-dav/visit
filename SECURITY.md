@@ -7,7 +7,9 @@ Security issues, when discovered, follow the same process as any other bug fixes
 Security issues are triaged and assessed for severity and likelihood.
 Work to correct security issues is then scheduled as appropriate.
 
-Though the project has so far not encountered the need to respond with urgency to *severe* security vulnerabilities, should any arise the project will use its current communication mechanisms to alert users.
+Though the project has so far not encountered urgent security vulnerabilities, should any arise the project will use GitHub's security communication mechanisms to gather information.
+
+In the event the VisIt user community requires notification of a potential urgent security vulnerability, our intention is to provide an update on or about the same time we use our normal communication mechanisms to alert users.
 
 ## Supported Versions
 
@@ -20,5 +22,4 @@ On very rare occasions, the VisIt project may re-release an already released ver
 
 ## Reporting a Vulnerability
 
-Generally, any issues with security implications should be submitted to the project's [GitHub issues](https://github.com/visit-dav/visit/labels/deliberation).
-Be sure to attach the `security` label.
+Generally, any issues with security implications should be submitted through the project's [GitHub security](https://github.com/visit-dav/visit/security) **Report a vulnerability** button.
