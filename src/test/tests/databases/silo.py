@@ -90,6 +90,9 @@
 #    Don't allow tests using wave_1file.visit to run on Windows, as they
 #    involve symlinks. Symink access on the testing machine is disallowed.
 #
+#    Kathleen Biagas, Fri July 28, 2023
+#    Allow test_26 involving largefile.silo to run on Windows.
+#
 # ----------------------------------------------------------------------------
 
 TurnOffAllAnnotations() # defines global object 'a'
@@ -321,32 +324,31 @@ SetPlotOptions(curveAtts)
 DrawPlots()
 Test("silo_25")
 
+DeleteAllPlots()
+CloseDatabase(silo_data_path("multi_ucd3d.silo"))
+
 #
 # Test objects existing past 2Gig limit in a >2 Gig file
 # Large File Support. Because file is large, it is NOT
 # part of the repo. We create a sym-link to it from the
 # data dir.
 #
-DeleteAllPlots()
-CloseDatabase(silo_data_path("multi_ucd3d.silo"))
 
-# this crashes on windows, so don't try to run it.
-if not sys.platform.startswith("win"):
-    (err, dbname) = FindAndOpenDatabase("largefile.silo")
-    if (err != 1):
-        AddSkipCase("silo_26")
-        Test("silo_26")
-    else:
-        AddPlot("Curve","sincurve")
-        curveAtts.curveColor = (0, 255, 255, 255)
-        SetPlotOptions(curveAtts)
-        AddPlot("Curve","coscurve")
-        curveAtts.curveColor = (255, 0, 255, 255)
-        SetPlotOptions(curveAtts)
-        DrawPlots()
-        Test("silo_26")
-        DeleteAllPlots()
-        CloseDatabase(dbname)
+(err, dbname) = FindAndOpenDatabase("largefile.silo")
+if (err != 1):
+    AddSkipCase("silo_26")
+    Test("silo_26")
+else:
+    AddPlot("Curve","sincurve")
+    curveAtts.curveColor = (0, 255, 255, 255)
+    SetPlotOptions(curveAtts)
+    AddPlot("Curve","coscurve")
+    curveAtts.curveColor = (255, 0, 255, 255)
+    SetPlotOptions(curveAtts)
+    DrawPlots()
+    Test("silo_26")
+    DeleteAllPlots()
+    CloseDatabase(dbname)
 
 #
 # Test time invariant mesh
