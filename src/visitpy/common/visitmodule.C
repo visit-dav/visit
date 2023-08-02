@@ -9680,6 +9680,9 @@ visit_GetQueryOutputString(PyObject *self, PyObject *args)
 //   Kathleen Bonnell, Wed Nov 12 17:55:14 PST 2003
 //   If the query returned multiple values, return them in a python tuple.
 //
+//   Eric Brugger, Wed Aug  2 14:40:31 PDT 2023
+//   If the query returned no values, return Py_None.
+//
 // ****************************************************************************
 
 STATIC PyObject *
@@ -9690,7 +9693,9 @@ visit_GetQueryOutputValue(PyObject *self, PyObject *args)
     QueryAttributes *qa = GetViewerState()->GetQueryAttributes();
     doubleVector vals = qa->GetResultsValue();
     PyObject *retval;
-    if (vals.size() == 1)
+    if (vals.size() == 0)
+        retval = Py_None;
+    else if (vals.size() == 1)
         retval = PyFloat_FromDouble(vals[0]);
     else
     {
