@@ -1246,23 +1246,37 @@ ColorControlPointList::FieldsEqual(int index_, const AttributeGroup *rhs) const
 float
 ColorControlPointList::EvalCubicSpline(float t, const float *allX, const float *allY, int n) const
 {
-    if((allX[0] > t) || (allX[n-1] < t))
-        return 0.f;
+    // If before first sample, return first sample value.
+    if (t < allX[0])
+        return allY[0];
+
+    // If after last sample, return last sample value.
+    if (t > allX[n-1])
+        return allY[n-1];
+
+    // Search and bracket the indices where t is closest to but less than an x.
     int i = 0;
     for(i = 0; i < n; ++i)
         if(allX[i] >= t)
             break;
+
+    // Identify the 4 indices, 2 before and 1 after, around the one seleced.
     int idx[4];
     idx[0] = EVAL_MAX(i-2, 0);
     idx[1] = EVAL_MAX(i-1, 0);
     idx[2] = i;
     idx[3] = EVAL_MIN(i+1, n-1);
+
+    // Obtain the x and y values for these 4 points.
     float X[4], Y[4];
     for(int j = 0; j < 4; ++j)
     {
         X[j] = allX[idx[j]];
         Y[j] = allY[idx[j]];
     }
+
+    // Do the cubic spline interpolation on these 4 points.
+    // Which interpolation is this? Natural, Not-a-knot, periodic?
     float dx = (X[2] - X[1]);
     float invdx = 1. / dx;
     float dy1   = (Y[2] + (Y[0] * -1.)) * (1. / (X[2] - X[0]));
@@ -1315,6 +1329,11 @@ ColorControlPointList::GetColorsCubicSpline(unsigned char *rgb,
     float *g = new float[npoints];
     float *b = new float[npoints];
     float *a = new float[npoints];
+
+    // This first loop just converts r,g,b,a values in color control point data
+    // from unsigned char to float. It also computes the x-values for either the
+    // equal spacing case or uses whetever the position value is for each color
+    // Note that this loop is over npoints...the number of color control points.
     for(int i = 0; i < npoints; ++i)
     {
         const ColorControlPoint &cpt = this->operator[](i);
@@ -1332,6 +1351,12 @@ ColorControlPointList::GetColorsCubicSpline(unsigned char *rgb,
         a[i] = float(cpt.GetColors()[3]) / 255.f;
     }
 
+    // From the above, we effectively have 4 "curves" of r(x), g(x), b(x) and a(x).
+
+    // In the loop below, we use each of these curves to compute ncolors samples
+    // equally spaced in x of each curve. Each sample is converted back from float
+    // to unsigned char and then stored in its respective position in the returned
+    // rgb array.
     int idx = 0;
     for(int i = 0; i < ncolors; ++i, idx += 3)
     {

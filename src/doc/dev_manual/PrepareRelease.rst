@@ -1,16 +1,6 @@
 Preparing for a Release
 =======================
 
-Overview
---------
-
-VisIt_ supports three types of releases, major, minor and patch, where the
-version number consists of "major.minor.patch". Patch releases are the
-most common type of release and typically occur three to four times a year.
-Minor releases are the next most common type of release and may occur
-once or twice a year. Major releases happen very infrequently, with as much
-as 10 years passing between major releases.
-
 Updating copyright notice dates
 -------------------------------
 

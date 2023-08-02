@@ -46,6 +46,9 @@
 #    Eric Brugger, Fri Feb 24 14:57:15 PST 2023
 #    Replace vtkjpeg with vtkjpeg_LIBRARIES and vtkpng with vtkpng_LIBRARIES.
 #
+#    Eric Brugger, Tue Jul 25 11:23:55 EDT 2023
+#    Change CMAKE_THREAD_LIBS to Threads::Threads.
+#
 #****************************************************************************
 
 set(LIBENGINE_SOURCES
@@ -192,7 +195,7 @@ target_link_libraries(engine_ser_exe
     ${vtkjpeg_LIBRARIES}
     ${vtkpng_LIBRARIES}
     ${ALL_THIRDPARTY_IO_LIB}
-    ${CMAKE_THREAD_LIBS}
+    Threads::Threads
     ${ZLIB_LIBRARY}
 )
 
@@ -305,7 +308,7 @@ if(VISIT_PARALLEL)
         ${vtkpng_LIBRARIES}
         ${ALL_THIRDPARTY_IO_LIB}
         ${ICET_STATIC_LIB}
-        ${CMAKE_THREAD_LIBS}
+        Threads::Threads
         ${ZLIB_LIBRARY}
     )
 
