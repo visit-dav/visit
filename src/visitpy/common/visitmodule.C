@@ -9695,7 +9695,6 @@ visit_GetQueryOutputValue(PyObject *self, PyObject *args)
     PyObject *retval;
     if (vals.size() == 0)
     {
-        PyErr_WarnEx(NULL, "The query didn't return any values.", 3);
         Py_INCREF(Py_None);
         retval = Py_None;
     }
