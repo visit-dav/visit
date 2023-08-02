@@ -9694,7 +9694,11 @@ visit_GetQueryOutputValue(PyObject *self, PyObject *args)
     doubleVector vals = qa->GetResultsValue();
     PyObject *retval;
     if (vals.size() == 0)
+    {
+        PyErr_WarnEx(NULL, "The query didn't return any values.", 3);
+        Py_INCREF(Py_None);
         retval = Py_None;
+    }
     else if (vals.size() == 1)
         retval = PyFloat_FromDouble(vals[0]);
     else
