@@ -29,14 +29,15 @@
 //    Kathleen Bonnell, Fri Jul 11 16:19:32 PDT 2003
 //    Initialize value.
 //
+//    Eric Brugger, Wed Aug  2 16:50:25 PDT 2023
+//    No longer always have 1 value since no values now indicates an error.
+//
 // ****************************************************************************
 
 avtDatasetQuery::avtDatasetQuery() : avtDatasetSink()
 {
     currentNode = 0;
     totalNodes = 0;
-    // always have 1 value.
-    resValue.push_back(0.);
 }
 
 
