@@ -146,6 +146,10 @@ avtZoneCenterQuery::GetDefaultInputParams(MapNode &params)
 //    Kathleen Biagas, Thu Feb 13 15:04:58 PST 2014
 //    Add Xml results.
 //
+//    Eric Brugger, Thu Aug  3 14:25:20 PDT 2023
+//    Correct the setting of the results value and results message in the
+//    case where the query fails.
+//
 // ****************************************************************************
 
 void
@@ -268,6 +272,9 @@ avtZoneCenterQuery::PerformQuery(QueryAttributes *qA)
     }
     else
     {
+        doubleVector c;
+        qA->SetResultsValue(c);
+
         if (singleDomain)
         {
             snprintf(msg, 120, "The center of zone %d could not be determined.",
@@ -275,11 +282,13 @@ avtZoneCenterQuery::PerformQuery(QueryAttributes *qA)
         }
         else
         {
+            string domainName;
             avtOriginatingSource *src = GetInput()->GetOriginatingSource();
+            int blockOrigin = GetInput()->GetInfo().GetAttributes().GetBlockOrigin();
+            int dom         = domain  - blockOrigin;
             int ts          = queryAtts.GetTimeStep();
             string var      = queryAtts.GetVariables()[0];
-            string domainName;
-            src->GetDomainName(var, ts, domain, domainName);
+            src->GetDomainName(var, ts, dom, domainName);
             snprintf(msg, 120, "The center of zone %d (%s) could not be determined.",
                      element, domainName.c_str());
         }

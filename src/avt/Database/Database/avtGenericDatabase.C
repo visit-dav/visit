@@ -13077,6 +13077,9 @@ avtGenericDatabase::GetDomainName(const string &varName, const int ts,
 //    Kathleen Biagas, Tue Sep  9 13:57:55 PDT 2014
 //    Don't take ghost zones into account if they came from DB.
 //
+//    Eric Brugger, Thu Aug  3 14:25:20 PDT 2023
+//    Return false if the zone or node index is out of range.
+//
 // ****************************************************************************
 
 bool
@@ -13119,6 +13122,8 @@ avtGenericDatabase::QueryCoords(const string &varName, const int dom,
         if (forZone)
         {
             int zone = currentid;
+	    if (zone < 0 || zone >= ds->GetNumberOfCells())
+                return false;
             if (ds->GetDataObjectType() == VTK_RECTILINEAR_GRID ||
                 ds->GetDataObjectType() == VTK_STRUCTURED_GRID)
             {
@@ -13147,6 +13152,8 @@ avtGenericDatabase::QueryCoords(const string &varName, const int dom,
         else
         {
             int node = currentid;
+	    if (node < 0 || node >= ds->GetNumberOfPoints())
+                return false;
             if (ds->GetDataObjectType() == VTK_RECTILINEAR_GRID ||
                 ds->GetDataObjectType() == VTK_STRUCTURED_GRID)
             {
