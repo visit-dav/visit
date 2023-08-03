@@ -1611,7 +1611,7 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
             conduit::Node verify_info;
             if(!conduit::blueprint::mesh::verify(data_out, verify_info))
             {
-                debug1 << "Blueprint Output failed to verify:\n"
+                debug1 << "X Ray Image Query WARNING: Blueprint Output: failed to verify:\n"
                        << verify_info.to_yaml();
                 SetResultMessage("ERROR: Blueprint mesh verification failed!");
                 EXCEPTION1(VisItException, "Blueprint mesh verification failed!");
@@ -2652,6 +2652,7 @@ avtXRayImageQuery::WriteBlueprintMeshCoordsets(conduit::Node &coordsets,
             out << "Energy group bounds size mismatch: provided " 
                 << nEnergyGroupBounds << " bounds, but " 
                 << z_coords_dim << " in query results.";
+            debug1 << "X Ray Image Query WARNING: Blueprint Output: " << out.str() << "\n";
             spatial_coords["info"] = out.str();
             spatial_coords["values/z"].set(conduit::DataType::float64(z_coords_dim));
             double *zvals = spatial_coords["values/z"].value();
@@ -2660,6 +2661,7 @@ avtXRayImageQuery::WriteBlueprintMeshCoordsets(conduit::Node &coordsets,
     }
     else
     {
+        debug1 << "X Ray Image Query WARNING: Blueprint Output: Energy group bounds not provided." << "\n";
         spatial_coords["info"] = "Energy group bounds not provided.";
         spatial_coords["values/z"].set(conduit::DataType::float64(z_coords_dim));
         double *zvals = spatial_coords["values/z"].value();
