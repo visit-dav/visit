@@ -1,8 +1,8 @@
-#/usr/workspace/visit/visit/thirdparty_shared/3.3.0/toss4/cmake/3.18.2/linux-x86_64_gcc-10.3/bin/cmake
+#/usr/workspace/visit/visit/thirdparty_shared/3.3.0/toss4/cmake/3.24.3/linux-x86_64_gcc-10.3/bin/cmake
 ##
-## ./build_visit3_3_4 generated host.cmake
-## created: Fri Jun  2 17:22:22 PDT 2023
-## system: Linux rztopaz572 4.18.0-425.19.2.1toss.t4.x86_64 #1 SMP Mon Apr 17 14:05:57 PDT 2023 x86_64 x86_64 x86_64 GNU/Linux
+## ./build_visit3_4_0 generated host.cmake
+## created: Wed Aug  2 13:58:21 PDT 2023
+## system: Linux rztopaz188 4.18.0-425.19.2.1toss.t4.x86_64 #1 SMP Mon Apr 17 14:05:57 PDT 2023 x86_64 x86_64 x86_64 GNU/Linux
 ## by: brugger
 
 ##
@@ -251,7 +251,7 @@ VISIT_OPTION_DEFAULT(VISIT_SILO_LIBDEP HDF5_LIBRARY_DIR hdf5 ${VISIT_HDF5_LIBDEP
 ##
 ## Uintah
 ##
-SETUP_APP_VERSION(UINTAH 2.6.1)
+SETUP_APP_VERSION(UINTAH 2.6.2)
 VISIT_OPTION_DEFAULT(VISIT_UINTAH_DIR ${VISITHOME}/uintah/${UINTAH_VERSION}/${VISITARCH})
 
 ##

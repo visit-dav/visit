@@ -4457,8 +4457,8 @@ GetQueryOutputValue
   GetQueryOutputValue() -> double, tuple of doubles
 
 return type : double, tuple of doubles
-    GetQueryOutputValue returns a single double precision number or a tuple of
-    double precision numbers.
+    GetQueryOutputValue returns a single double precision number, a tuple of
+    double precision numbers, or None if an error occured.
 
 
 **Description:**
@@ -4466,7 +4466,8 @@ return type : double, tuple of doubles
     GetQueryOutputObject, GetQueryOutputString, GetQueryOutputValue and
     GetQueryOutputXML all return output from the last query. GetQueryOutputValue
     returns a single number or tuple of numbers, depending on the nature of
-    the last query to be executed.
+    the last query to be executed. If an error occurs, GetQueryOutputValue
+    returns None.
 
 
 **Example:**
@@ -4478,7 +4479,9 @@ return type : double, tuple of doubles
   AddPlot("Pseudocolor", "d")
   DrawPlots()
   Query("MinMax")
-  print("The min is: %g and the max is: %g" % GetQueryOutputValue())
+  min_max = GetQueryOutputValue()
+  if min_max != None:
+      print("The min is: %g and the max is: %g" % min_max)
 
 
 GetQueryOutputXML
