@@ -1319,6 +1319,9 @@ avtXRayImageQuery::GetSecondaryVars(std::vector<std::string> &outVars)
 //    Justin Privitera, Fri Jul 14 17:33:07 PDT 2023
 //    New logic to determine if old camera properties are being used.
 // 
+//    Justin Privitera, Mon Aug  7 15:49:36 PDT 2023
+//    Add more context to debug message for blueprint failing to verify.
+// 
 // ****************************************************************************
 
 void
@@ -2586,6 +2589,10 @@ avtXRayImageQuery::WriteBlueprintMetadata(conduit::Node &metadata,
 //    Justin Privitera, Wed Mar 15 17:51:13 PDT 2023
 //    Leverage conduit's features to make the code more legible.
 //    Added spectra coordset.
+// 
+//    Justin Privitera, Mon Aug  7 15:49:36 PDT 2023
+//    Warn to debug when missing energy group bounds for blueprint output and
+//    when provided energy group bounds are not the right size.
 //
 // ****************************************************************************
 #ifdef HAVE_CONDUIT
