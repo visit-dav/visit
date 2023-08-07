@@ -88,6 +88,9 @@ function bv_vtk_info
     if [[ $DO_QT6 == "yes" ]]; then
         DO_VTK9="yes"
     fi
+    if [[ $DO_PYTHON39 == "yes" ]]; then
+        DO_VTK9="yes"
+    fi
     if [[ "$DO_VTK9" == "yes" ]] ; then
         info "setting up vtk for version 9"
         export VTK_FILE=${VTK_FILE:-"VTK-9.1.0.tar.gz"}

@@ -66,7 +66,7 @@ function install_py_module
     info "Installing ${MOD_NAME} ..."
 
     if [[ "$DO_PYTHON39" == "yes" ]] ; then
-        ${PYTHON_COMMAND} -m pip install --no-deps .
+        ${PYTHON_COMMAND} -m pip install --no-deps --no-cache-dir .
     else
         ${PYTHON_COMMAND} ./setup.py install --prefix="${PYHOME}"
     fi
