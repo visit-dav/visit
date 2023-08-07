@@ -366,15 +366,18 @@ avtDatasetQuery::ApplyFilters(avtDataObject_p dob)
 //  Programmer: Kathleen Bonnell
 //  Creation:   November 12, 2003
 //
+//  Modifications:
+//    Eric Brugger, Mon Aug  7 14:34:00 PDT 2023
+//    Removed the index argument.
+//
 // ****************************************************************************
 
 void
-avtDatasetQuery::SetResultValue(const double &d, const int i)
+avtDatasetQuery::SetResultValue(const double &d)
 {
-    if (i < 0 || i >= (int)resValue.size())
-        EXCEPTION2(BadIndexException, i, (int)resValue.size()-1)
-
-    resValue[i] = d;
+    if (!resValue.empty())
+        resValue.clear();
+    resValue.push_back(d);
 }
 
 
