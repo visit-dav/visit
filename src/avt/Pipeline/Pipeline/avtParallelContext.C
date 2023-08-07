@@ -2985,6 +2985,10 @@ avtParallelContext::UnifyMaximumValue(std::vector<int> &mymax, std::vector<int> 
 //    Cast a Boolean to an int, to make sure that a cast to a pointer was
 //    correctly word aligned.
 //
+//    Eric Brugger, Thu Aug  3 14:25:20 PDT 2023
+//    Don't set the success argument to true in the serial case. Instead
+//    leave it unchanged.
+//
 // ****************************************************************************
 
 void
@@ -2993,7 +2997,7 @@ avtParallelContext::GetDoubleArrayToRootProc(double *da, int nd, bool &success)
 #ifndef PARALLEL
     (void)da;
     (void)nd;
-    success = true;
+    (bool)success;
 #else
     int myRank, numProcs;
     MPI_Comm_rank(this->GetCommunicator(), &myRank);
