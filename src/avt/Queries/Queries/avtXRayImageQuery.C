@@ -1319,6 +1319,9 @@ avtXRayImageQuery::GetSecondaryVars(std::vector<std::string> &outVars)
 //    Justin Privitera, Fri Jul 14 17:33:07 PDT 2023
 //    New logic to determine if old camera properties are being used.
 // 
+//    Justin Privitera, Mon Aug  7 15:49:36 PDT 2023
+//    Add more context to debug message for blueprint failing to verify.
+// 
 // ****************************************************************************
 
 void
@@ -1611,7 +1614,7 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
             conduit::Node verify_info;
             if(!conduit::blueprint::mesh::verify(data_out, verify_info))
             {
-                debug1 << "Blueprint Output failed to verify:\n"
+                debug1 << "X Ray Image Query ERROR: Blueprint Output: failed to verify:\n"
                        << verify_info.to_yaml();
                 SetResultMessage("ERROR: Blueprint mesh verification failed!");
                 EXCEPTION1(VisItException, "Blueprint mesh verification failed!");
@@ -2586,6 +2589,10 @@ avtXRayImageQuery::WriteBlueprintMetadata(conduit::Node &metadata,
 //    Justin Privitera, Wed Mar 15 17:51:13 PDT 2023
 //    Leverage conduit's features to make the code more legible.
 //    Added spectra coordset.
+// 
+//    Justin Privitera, Mon Aug  7 15:49:36 PDT 2023
+//    Warn to debug when missing energy group bounds for blueprint output and
+//    when provided energy group bounds are not the right size.
 //
 // ****************************************************************************
 #ifdef HAVE_CONDUIT
@@ -2652,6 +2659,7 @@ avtXRayImageQuery::WriteBlueprintMeshCoordsets(conduit::Node &coordsets,
             out << "Energy group bounds size mismatch: provided " 
                 << nEnergyGroupBounds << " bounds, but " 
                 << z_coords_dim << " in query results.";
+            debug1 << "X Ray Image Query WARNING: Blueprint Output: " << out.str() << "\n";
             spatial_coords["info"] = out.str();
             spatial_coords["values/z"].set(conduit::DataType::float64(z_coords_dim));
             double *zvals = spatial_coords["values/z"].value();
@@ -2660,6 +2668,7 @@ avtXRayImageQuery::WriteBlueprintMeshCoordsets(conduit::Node &coordsets,
     }
     else
     {
+        debug1 << "X Ray Image Query WARNING: Blueprint Output: Energy group bounds not provided." << "\n";
         spatial_coords["info"] = "Energy group bounds not provided.";
         spatial_coords["values/z"].set(conduit::DataType::float64(z_coords_dim));
         double *zvals = spatial_coords["values/z"].value();
