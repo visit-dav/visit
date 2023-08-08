@@ -263,7 +263,7 @@ avtMeshPlot::SetCellCountMultiplierForSRThreshold(const avtDataObject_p dob)
         // but can include lines and points.
         if (sdim == 2)
         {
-            switch (atts.GetPointType())
+            switch (atts.GetPointAtts().GetPointType())
             {
                 case Box:            cellCountMultiplierForSRThreshold = 1.0; break;
                 case Axis:           cellCountMultiplierForSRThreshold = 1.5; break;
@@ -279,7 +279,7 @@ avtMeshPlot::SetCellCountMultiplierForSRThreshold(const avtDataObject_p dob)
 
         if (sdim == 3)
         {
-            switch (atts.GetPointType())
+            switch (atts.GetPointAtts().GetPointType())
             {
                 case Box:            cellCountMultiplierForSRThreshold = 6.0; break;
                 case Axis:           cellCountMultiplierForSRThreshold = 3.0; break;
@@ -395,20 +395,21 @@ avtMeshPlot::SetAtts(const AttributeGroup *a)
     //
     // Setup glyphMapper
     //
-    mapper->SetScale(atts.GetPointSize());
+    mapper->SetAutoSize(atts.GetPointAtts().GetAutoSizeEnabled());
+    mapper->SetScale(atts.GetPointAtts().GetPointSize());
 
-    if (atts.GetPointSizeVarEnabled() &&
-        atts.GetPointSizeVar() != "default" &&
-        atts.GetPointSizeVar() != "" &&
-        atts.GetPointSizeVar() != "\0")
+    if (atts.GetPointAtts().GetPointSizeVarEnabled() &&
+        atts.GetPointAtts().GetPointSizeVar() != "default" &&
+        atts.GetPointAtts().GetPointSizeVar() != "" &&
+        atts.GetPointAtts().GetPointSizeVar() != "\0")
     {
-        mapper->ScaleByVar(atts.GetPointSizeVar());
+        mapper->ScaleByVar(atts.GetPointAtts().GetPointSizeVar());
     }
     else
     {
         mapper->DataScalingOff();
     }
-    mapper->SetGlyphType(atts.GetPointType());
+    mapper->SetGlyphType(atts.GetPointAtts().GetPointType());
 
     SetPointGlyphSize();
 
@@ -681,7 +682,7 @@ avtMeshPlot::NeedZBufferToCompositeEvenIn2D(void)
 {
     if (atts.GetLineWidth() > 0)
         return true;
-    if (atts.GetPointSizePixels() > 0)
+    if (atts.GetPointAtts().GetPointSizePixels() > 0)
         return true;
 
     return false;
@@ -782,7 +783,7 @@ avtMeshPlot::ApplyRenderingTransformation(avtDataObject_p input)
 
     int topoDim = dob->GetInfo().GetAttributes().GetTopologicalDimension();
 
-    if (topoDim > 0 && atts.GetPointType() != Point)
+    if (topoDim > 0 && atts.GetPointAtts().GetPointType() != Point)
     {
         // vertexExtractor will pull all vertex cells into a separate dataset
         // for rendering via vtkPointGlyphMapper.
@@ -794,7 +795,7 @@ avtMeshPlot::ApplyRenderingTransformation(avtDataObject_p input)
         vertexExtractor->SetLabelPrefix("mesh");
         vertexExtractor->SetConvertAllPoints(false);
         vertexExtractor->SetKeepNonVertex(true);
-        vertexExtractor->SetPointGlyphAtts((PointGlyphAttributes*)(atts.CreateCompatible("PointGlyph")));
+        vertexExtractor->SetPointType(atts.GetPointAtts().GetPointType());
         dob = vertexExtractor->GetOutput();
     }
 
@@ -1212,7 +1213,7 @@ avtMeshPlot::ShouldRenderOpaque(void)
 void
 avtMeshPlot::SetPointGlyphSize()
 {
-    mapper->SetPointSize(atts.GetPointSizePixels());
+    mapper->SetPointSize(atts.GetPointAtts().GetPointSizePixels());
 }
 
 
@@ -1250,6 +1251,7 @@ avtMeshPlot::GetExtraInfoForPick()
 bool
 avtMeshPlot::PlotHasBeenGlyphed()
 {
-    return (atts.GetPointType() != Point && atts.GetPointType() != Sphere);
+    return (atts.GetPointAtts().GetPointType() != Point &&
+            atts.GetPointAtts().GetPointType() != Sphere);
 }
 

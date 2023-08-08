@@ -36,17 +36,19 @@ bool
 MeshAttributes::ChangesRequireRecalculation(const MeshAttributes &obj,
                                             const int spatDim)
 {
-    bool needSecondaryVar = (obj.pointSizeVarEnabled &&
-                            ((pointSizeVar != obj.pointSizeVar) &&
-                             (obj.pointSizeVar != "default") &&
-                             (obj.pointSizeVar != "") &&
-                             (obj.pointSizeVar != "\0")));
+    PointGlyphAttributes pga = obj.GetPointAtts();
+    std::string newPointSizeVar = pga.GetPointSizeVar();
+    bool needSecondaryVar = (pga.GetPointSizeVarEnabled() &&
+                            ((pointAtts.GetPointSizeVar() != newPointSizeVar) &&
+                             (newPointSizeVar != "default") &&
+                             (newPointSizeVar != "") &&
+                             (newPointSizeVar != "\0")));
 
     // Certain point type changes require a recalculation.
-    bool currentPointTypeIsPoint =     pointType == Point;
-    bool newPointTypeIsPoint     = obj.pointType == Point;
+    bool currentPointTypeIsPoint = pointAtts.GetPointType() == Point;
+    bool newPointTypeIsPoint     = pga.GetPointType()  == Point;
 
-    bool changingPointType =  pointType != obj.pointType &&
+    bool changingPointType =  pointAtts.GetPointType() != pga.GetPointType() &&
                               currentPointTypeIsPoint != newPointTypeIsPoint;
 
     return ( needSecondaryVar || changingPointType ||
@@ -54,45 +56,105 @@ MeshAttributes::ChangesRequireRecalculation(const MeshAttributes &obj,
             (showInternal != obj.showInternal && spatDim == 3));
 }
 
-Function: CreateCompatible
-Declaration: virtual AttributeSubject *CreateCompatible(const std::string &) const;
+Function: ProcessOldVersions
+Declaration: virtual void ProcessOldVersions(DataNode *parentNode, const char *configVersion);
 Definition:
 // ****************************************************************************
-// Method: MeshAttributes::CreateCompatible
+// Method: MeshAttributes::ProcessOldVersions
 //
 // Purpose:
-//   CreateCompatible method for the MeshAttributes class.
-//   Can create PointGlyphAttributes.
+//   This method allows handling of older config/session files that may
+//   contain fields that are no longer present or have been modified/renamed.
 //
-// Programmer: Kathleen Biagas
-// Creation:   June 10, 2020
-//
-// Modifications:
+// Programmer: Kathleen Biagas 
+// Creation:   August 8, 2023
 //
 // ****************************************************************************
 
-AttributeSubject *
-MeshAttributes::CreateCompatible(const std::string &tname) const
+#include <visit-config.h>
+#ifdef VIEWER
+#include <avtCallback.h>
+#endif
+
+void
+VolumeAttributes::ProcessOldVersions(DataNode *parentNode,
+                                     const char *configVersion)
 {
-    AttributeSubject *retval = 0;
+    if(parentNode == 0)
+        return;
 
-    if(TypeName() == tname)
-    {
-        retval = new MeshAttributes(*this);
-    }
-    else if(tname == "PointGlyph")
-    {
-        PointGlyphAttributes *pga = new PointGlyphAttributes();
-        pga->SetPointSize(GetPointSize());
-        pga->SetPointType(GetPointType());
-        pga->SetPointSizeVarEnabled(GetPointSizeVarEnabled());
-        pga->SetPointSizeVar(GetPointSizeVar());
-        pga->SetPointSizePixels(GetPointSizePixels());
-        retval = pga;
-    }
+    DataNode *searchNode = parentNode->GetNode("MeshAttributes");
+    if(searchNode == 0)
+        return;
 
-    return retval;
+#if VISIT_OBSOLETE_AT_VERSION(3,5,0)
+#error This code is obsolete in this version of VisIt and should be removed.
+#else
+    if (VersionLessThan(configVersion, "3.4.0"))
+    {
+        DataNode *dn = nullptr;
+        PointGlyphAttributes pga;
+        bool addPointAtts = false;
+        if (searchNode->GetNode("pointSize") != nullptr)
+        {
+#ifdef VIEWER
+            avtCallback::IssueWarning(DeprecationMessage("pointSize", "3.5.0"));
+#endif
+            double dVal = dn->AsDouble();
+            pga.SetPointSize(dVal);
+            addPointAtts = true;
+            searchNode->RemoveNode("compactVariable", true);
+        }
+        if (searchNode->GetNode("pointSizeVarEnabled") != nullptr)
+        {
+#ifdef VIEWER
+            avtCallback::IssueWarning(DeprecationMessage("pointSizeVarEnabled", "3.5.0"));
+#endif
+            int iVal = dn->AsInt();
+            pga.SetPointSizeVarEnabled(iVal);
+            addPointAtts = true;
+            searchNode->RemoveNode("pointSizeVarEnabled", true);
+        }
+        if (searchNode->GetNode("pointSizeVar") != nullptr)
+        {
+#ifdef VIEWER
+            avtCallback::IssueWarning(DeprecationMessage("pointSizeVar", "3.5.0"));
+#endif
+            std::string sVal = dn->AsString();
+            pga.SetPointSizeVar(sVal);
+            addPointAtts = true;
+            searchNode->RemoveNode("pointSizeVar", true);
+        }
+        if (searchNode->GetNode("pointType") != nullptr)
+        {
+#ifdef VIEWER
+            avtCallback::IssueWarning(DeprecationMessage("pointType", "3.5.0"));
+#endif
+            int iVal = dn->AsInt();
+            pga.SetPointType(iVal);
+            addPointAtts = true;
+            searchNode->RemoveNode("pointType", true);
+        }
+        if (searchNode->GetNode("pointSizePixels") != nullptr)
+        {
+#ifdef VIEWER
+            avtCallback::IssueWarning(DeprecationMessage("pointSizePixels", "3.5.0"));
+#endif
+            int iVal = dn->AsInt();
+            pga.SetPointSizePixels(iVal);
+            addPointAtts = true;
+            searchNode->RemoveNode("pointSizePixels", true);
+        }
+        if(addPointAtts)
+        {
+             // preserve old behavior turn off autoSize
+             pga.SetAutoSizeEnabled(false);
+             pga.CreateNode(searchNode, true,true);
+        }
+    }
+#endif
 }
+
 
 Target: xml2info
 Function: MeshViewerEnginePluginInfo::InitializePlotAtts
@@ -181,3 +243,100 @@ MeshViewerEnginePluginInfo::SetAutonomousColors(AttributeSubject *atts,
     if (attsChanged)
         SetClientAtts(atts);
 }
+
+
+
+Target: xml2python
+Code: PyMeshAttributes_getattr
+Prefix:
+Postfix:
+#include <visit-config.h>
+
+#if VISIT_OBSOLETE_AT_VERSION(3,5,0)
+#error This code is obsolete in this version of VisIt and should be removed.
+#else
+    // Try and handle legacy fields
+#define NAME_CHANGE_MESSAGE2(oldname, newname) \
+    PyErr_WarnFormat(NULL, 1, "'%s' is no longer a valid Volume attribute.\n" \
+                    "It's name has been changed to '%s', " \
+                    "please update your script.\n", oldname, newname);
+
+    // point type enums here?
+    if((strcmp(name, "Box") == 0) ||
+       (strcmp(name, "Axis") == 0) ||
+       (strcmp(name, "Icosahedron") == 0) ||
+       (strcmp(name, "Octahedron") == 0) ||
+       (strcmp(name, "Tetrahedron") == 0) ||
+       (strcmp(name, "SphereGeometry") == 0) ||
+       (strcmp(name, "Point") == 0) ||
+       (strcmp(name, "Sphere") == 0))
+    {
+        std::string nn = "pointAtts." + std::string(name);
+        NAME_CHANGE_MESSAGE2(name, nn);
+        GlyphType gtype;
+        GlyphType_FromString(name, gtype);
+        return PyInt_FromLong(int(gtype)); 
+    }
+#endif
+
+
+
+Code: PyMeshAttributes_setattr
+Prefix:
+Postfix:
+#if VISIT_OBSOLETE_AT_VERSION(3,5,0)
+#error This code is obsolete in this version of VisIt. Please remove it
+#else
+#define NAME_CHANGE_MESSAGE(oldname, newname) \
+    PyErr_WarnFormat(NULL, 1, "'%s' is no longer a valid Volume attribute.\n" \
+                    "It's name has been changed to '%s', " \
+                    "please update your script.\n", oldname, newname);
+
+    // Try and handle legacy fields
+    if(obj == &NULL_PY_OBJ)
+    {
+        PointGlyphAttributes *pga = PyPointGlyphAttributes_FromPyObject(
+            MeshAttributes_GetPointAtts(self, args));
+        bool setPointAtts = true;
+        if(strcmp(name, "pointSize") == 0)
+        {
+            NAME_CHANGE_MESSAGE(name, "pointAtts.pointSize");
+            pga->SetPointSize(PyFloat_AsDouble(args));
+        }
+        else if(strcmp(name, "pointSizeVarEnabled") == 0)
+        {
+            NAME_CHANGE_MESSAGE(name, "pointAtts.pointSizeVarEnabled");
+            pga->SetPointSizeVarEnabled(bool(PyLong_AsLong(args)));
+        }
+        else if(strcmp(name, "pointSizeVar") == 0)
+        {
+            NAME_CHANGE_MESSAGE(name, "pointAtts.pointSizeVar");
+            pga->SetPointSizeVar(std::string(PyUnicode_AsUTF8(args)));
+        }
+        else if(strcmp(name, "pointType") == 0)
+        {
+            NAME_CHANGE_MESSAGE(name, "pointAtts.pointType");
+            pga->SetPointType(GlyphType(PyLong_AsLong(args)));
+        }
+        else if(strcmp(name, "pointSizePixels") == 0)
+        {
+            NAME_CHANGE_MESSAGE(name, "pointAtts.pointSizePixels");
+            pga->SetPointSizePixels(int(PyLong_AsLong(args)));
+        }
+        else
+        {
+            setPointAtts = false;
+        }
+        if(setPointAtts)
+        {
+            // handling legacy, turn off autoSize.
+            pga->SetAutoSizeEnabled(false);
+            PyObject *tup = PyTuple_New(1);
+            PyTuple_SetItem(tup, 0,  PyPointGlyphAttributes_Wrap(pga));
+            obj = MeshAttributes_SetPointAtts(self, tup);
+        }
+    }
+#endif
+
+
+

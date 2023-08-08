@@ -55,6 +55,7 @@ class avtMeshPlotMapper : public avtMapper
 
     void        SetScale(double);
     void        SetGlyphType(GlyphType);
+    void        SetAutoSize(bool val);
     void        SetPointSize(double s);
 
     bool        SetFullFrameScaling(bool, const double *) override;
@@ -75,6 +76,7 @@ class avtMeshPlotMapper : public avtMapper
     double      scale;
     std::string scalingVarName;
     GlyphType   glyphType;
+    bool        autoSize;
     double      pointSize;
     bool        dataScaling;
 
@@ -87,6 +89,7 @@ class avtMeshPlotMapper : public avtMapper
 
     void        NotifyTransparencyActor(void);
 
+    double      ComputePointSize(bool);
 };
 
 

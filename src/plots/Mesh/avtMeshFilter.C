@@ -490,13 +490,13 @@ avtMeshFilter::ModifyContract(avtContract_p spec)
     }
     else
     {
-        string pointVar = atts.GetPointSizeVar();
+        string pointVar = atts.GetPointAtts().GetPointSizeVar();
         avtDataRequest_p dataRequest = spec->GetDataRequest();
 
         //
         // Find out if we REALLY need to add the secondary variable.
         //
-        if (atts.GetPointSizeVarEnabled() &&
+        if (atts.GetPointAtts().GetPointSizeVarEnabled() &&
             pointVar != "default" &&
             pointVar != "\0" &&
             pointVar != dataRequest->GetVariable() &&

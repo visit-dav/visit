@@ -22,6 +22,7 @@
 
 void PointGlyphAttributes::Init()
 {
+    autoSizeEnabled = true;
     pointSize = 0.05;
     pointType = Point;
     pointSizeVarEnabled = false;
@@ -47,6 +48,7 @@ void PointGlyphAttributes::Init()
 
 void PointGlyphAttributes::Copy(const PointGlyphAttributes &obj)
 {
+    autoSizeEnabled = obj.autoSizeEnabled;
     pointSize = obj.pointSize;
     pointType = obj.pointType;
     pointSizeVarEnabled = obj.pointSizeVarEnabled;
@@ -211,7 +213,8 @@ bool
 PointGlyphAttributes::operator == (const PointGlyphAttributes &obj) const
 {
     // Create the return value
-    return ((pointSize == obj.pointSize) &&
+    return ((autoSizeEnabled == obj.autoSizeEnabled) &&
+            (pointSize == obj.pointSize) &&
             (pointType == obj.pointType) &&
             (pointSizeVarEnabled == obj.pointSizeVarEnabled) &&
             (pointSizeVar == obj.pointSizeVar) &&
@@ -359,6 +362,7 @@ PointGlyphAttributes::NewInstance(bool copy) const
 void
 PointGlyphAttributes::SelectAll()
 {
+    Select(ID_autoSizeEnabled,     (void *)&autoSizeEnabled);
     Select(ID_pointSize,           (void *)&pointSize);
     Select(ID_pointType,           (void *)&pointType);
     Select(ID_pointSizeVarEnabled, (void *)&pointSizeVarEnabled);
@@ -395,6 +399,12 @@ PointGlyphAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool f
     bool addToParent = false;
     // Create a node for PointGlyphAttributes.
     DataNode *node = new DataNode("PointGlyphAttributes");
+
+    if(completeSave || !FieldsEqual(ID_autoSizeEnabled, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("autoSizeEnabled", autoSizeEnabled));
+    }
 
     if(completeSave || !FieldsEqual(ID_pointSize, &defaultObject))
     {
@@ -462,6 +472,8 @@ PointGlyphAttributes::SetFromNode(DataNode *parentNode)
         return;
 
     DataNode *node;
+    if((node = searchNode->GetNode("autoSizeEnabled")) != 0)
+        SetAutoSizeEnabled(node->AsBool());
     if((node = searchNode->GetNode("pointSize")) != 0)
         SetPointSize(node->AsDouble());
     if((node = searchNode->GetNode("pointType")) != 0)
@@ -491,6 +503,13 @@ PointGlyphAttributes::SetFromNode(DataNode *parentNode)
 ///////////////////////////////////////////////////////////////////////////////
 // Set property methods
 ///////////////////////////////////////////////////////////////////////////////
+
+void
+PointGlyphAttributes::SetAutoSizeEnabled(bool autoSizeEnabled_)
+{
+    autoSizeEnabled = autoSizeEnabled_;
+    Select(ID_autoSizeEnabled, (void *)&autoSizeEnabled);
+}
 
 void
 PointGlyphAttributes::SetPointSize(double pointSize_)
@@ -530,6 +549,12 @@ PointGlyphAttributes::SetPointSizePixels(int pointSizePixels_)
 ///////////////////////////////////////////////////////////////////////////////
 // Get property methods
 ///////////////////////////////////////////////////////////////////////////////
+
+bool
+PointGlyphAttributes::GetAutoSizeEnabled() const
+{
+    return autoSizeEnabled;
+}
 
 double
 PointGlyphAttributes::GetPointSize() const
@@ -601,6 +626,7 @@ PointGlyphAttributes::GetFieldName(int index) const
 {
     switch (index)
     {
+    case ID_autoSizeEnabled:     return "autoSizeEnabled";
     case ID_pointSize:           return "pointSize";
     case ID_pointType:           return "pointType";
     case ID_pointSizeVarEnabled: return "pointSizeVarEnabled";
@@ -630,6 +656,7 @@ PointGlyphAttributes::GetFieldType(int index) const
 {
     switch (index)
     {
+    case ID_autoSizeEnabled:     return FieldType_bool;
     case ID_pointSize:           return FieldType_double;
     case ID_pointType:           return FieldType_glyphtype;
     case ID_pointSizeVarEnabled: return FieldType_bool;
@@ -659,6 +686,7 @@ PointGlyphAttributes::GetFieldTypeName(int index) const
 {
     switch (index)
     {
+    case ID_autoSizeEnabled:     return "bool";
     case ID_pointSize:           return "double";
     case ID_pointType:           return "glyphtype";
     case ID_pointSizeVarEnabled: return "bool";
@@ -690,6 +718,11 @@ PointGlyphAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     bool retval = false;
     switch (index_)
     {
+    case ID_autoSizeEnabled:
+        {  // new scope
+        retval = (autoSizeEnabled == obj.autoSizeEnabled);
+        }
+        break;
     case ID_pointSize:
         {  // new scope
         retval = (pointSize == obj.pointSize);

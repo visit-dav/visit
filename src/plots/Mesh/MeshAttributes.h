@@ -5,10 +5,10 @@
 #ifndef MESHATTRIBUTES_H
 #define MESHATTRIBUTES_H
 #include <string>
-#include <GlyphTypes.h>
 #include <AttributeSubject.h>
 
 #include <ColorAttribute.h>
+#include <PointGlyphAttributes.h>
 
 // ****************************************************************************
 // Class: MeshAttributes
@@ -80,7 +80,7 @@ public:
     virtual void SelectAll();
     void SelectMeshColor();
     void SelectOpaqueColor();
-    void SelectPointSizeVar();
+    void SelectPointAtts();
 
     // Property setting methods
     void SetLegendFlag(bool legendFlag_);
@@ -89,37 +89,29 @@ public:
     void SetMeshColorSource(MeshColor meshColorSource_);
     void SetOpaqueColorSource(OpaqueColor opaqueColorSource_);
     void SetOpaqueMode(OpaqueMode opaqueMode_);
-    void SetPointSize(double pointSize_);
     void SetOpaqueColor(const ColorAttribute &opaqueColor_);
     void SetSmoothingLevel(SmoothingLevel smoothingLevel_);
-    void SetPointSizeVarEnabled(bool pointSizeVarEnabled_);
-    void SetPointSizeVar(const std::string &pointSizeVar_);
-    void SetPointType(GlyphType pointType_);
     void SetOpaqueMeshIsAppropriate(bool opaqueMeshIsAppropriate_);
     void SetShowInternal(bool showInternal_);
-    void SetPointSizePixels(int pointSizePixels_);
     void SetOpacity(double opacity_);
+    void SetPointAtts(const PointGlyphAttributes &pointAtts_);
 
     // Property getting methods
-    bool                 GetLegendFlag() const;
-    int                  GetLineWidth() const;
-    const ColorAttribute &GetMeshColor() const;
-          ColorAttribute &GetMeshColor();
-    MeshColor            GetMeshColorSource() const;
-    OpaqueColor          GetOpaqueColorSource() const;
-    OpaqueMode           GetOpaqueMode() const;
-    double               GetPointSize() const;
-    const ColorAttribute &GetOpaqueColor() const;
-          ColorAttribute &GetOpaqueColor();
-    SmoothingLevel       GetSmoothingLevel() const;
-    bool                 GetPointSizeVarEnabled() const;
-    const std::string    &GetPointSizeVar() const;
-          std::string    &GetPointSizeVar();
-    GlyphType            GetPointType() const;
-    bool                 GetOpaqueMeshIsAppropriate() const;
-    bool                 GetShowInternal() const;
-    int                  GetPointSizePixels() const;
-    double               GetOpacity() const;
+    bool                       GetLegendFlag() const;
+    int                        GetLineWidth() const;
+    const ColorAttribute       &GetMeshColor() const;
+          ColorAttribute       &GetMeshColor();
+    MeshColor                  GetMeshColorSource() const;
+    OpaqueColor                GetOpaqueColorSource() const;
+    OpaqueMode                 GetOpaqueMode() const;
+    const ColorAttribute       &GetOpaqueColor() const;
+          ColorAttribute       &GetOpaqueColor();
+    SmoothingLevel             GetSmoothingLevel() const;
+    bool                       GetOpaqueMeshIsAppropriate() const;
+    bool                       GetShowInternal() const;
+    double                     GetOpacity() const;
+    const PointGlyphAttributes &GetPointAtts() const;
+          PointGlyphAttributes &GetPointAtts();
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -164,41 +156,33 @@ public:
         ID_meshColorSource,
         ID_opaqueColorSource,
         ID_opaqueMode,
-        ID_pointSize,
         ID_opaqueColor,
         ID_smoothingLevel,
-        ID_pointSizeVarEnabled,
-        ID_pointSizeVar,
-        ID_pointType,
         ID_opaqueMeshIsAppropriate,
         ID_showInternal,
-        ID_pointSizePixels,
         ID_opacity,
+        ID_pointAtts,
         ID__LAST
     };
 
 private:
-    bool           legendFlag;
-    int            lineWidth;
-    ColorAttribute meshColor;
-    int            meshColorSource;
-    int            opaqueColorSource;
-    int            opaqueMode;
-    double         pointSize;
-    ColorAttribute opaqueColor;
-    int            smoothingLevel;
-    bool           pointSizeVarEnabled;
-    std::string    pointSizeVar;
-    GlyphType      pointType;
-    bool           opaqueMeshIsAppropriate;
-    bool           showInternal;
-    int            pointSizePixels;
-    double         opacity;
+    bool                 legendFlag;
+    int                  lineWidth;
+    ColorAttribute       meshColor;
+    int                  meshColorSource;
+    int                  opaqueColorSource;
+    int                  opaqueMode;
+    ColorAttribute       opaqueColor;
+    int                  smoothingLevel;
+    bool                 opaqueMeshIsAppropriate;
+    bool                 showInternal;
+    double               opacity;
+    PointGlyphAttributes pointAtts;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define MESHATTRIBUTES_TMFS "biaiiidaibsibbid"
+#define MESHATTRIBUTES_TMFS "biaiiiaibbda"
 
 #endif

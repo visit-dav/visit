@@ -11,7 +11,7 @@
 
 #include <avtSIMODataTreeIterator.h>
 
-#include <PointGlyphAttributes.h>
+#include <GlyphTypes.h>
 #include <filters_exports.h>
 
 class vtkPolyData;
@@ -50,7 +50,7 @@ class AVTFILTERS_API avtVertexExtractor : public avtSIMODataTreeIterator
                               { return "avtVertexExtractor"; }
     virtual const char     *GetDescription(void)
                               { return "Applying Vertex Extractor"; }
-    void                    SetPointGlyphAtts(const PointGlyphAttributes *);
+    void                    SetPointType(const GlyphType);
     void                    SetKeepNonVertex(const bool);
     void                    SetConvertAllPoints(const bool);
     void                    SetLabelPrefix(const std::string &);
@@ -62,7 +62,7 @@ class AVTFILTERS_API avtVertexExtractor : public avtSIMODataTreeIterator
     virtual void            PostExecute(void);
 
   private:
-    PointGlyphAttributes    pointGlyphAtts;
+    GlyphType               pointType;
     bool                    keepNonVertex;
     bool                    convertAllPoints;
     std::string             labelPrefix;

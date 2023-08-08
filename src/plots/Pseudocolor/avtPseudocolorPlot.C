@@ -447,7 +447,7 @@ avtPseudocolorPlot::ApplyRenderingTransformation(avtDataObject_p input)
         vertexExtractor->SetLabelPrefix("pc");
         vertexExtractor->SetConvertAllPoints(atts.GetRenderPoints());
         vertexExtractor->SetKeepNonVertex(atts.GetRenderSurfaces() || atts.GetRenderWireframe());
-        vertexExtractor->SetPointGlyphAtts((PointGlyphAttributes*)(atts.CreateCompatible("PointGlyph")));
+        vertexExtractor->SetPointType(atts.GetPointType());
         dob = vertexExtractor->GetOutput();
     }
 

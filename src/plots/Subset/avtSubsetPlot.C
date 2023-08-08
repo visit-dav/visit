@@ -676,7 +676,7 @@ avtSubsetPlot::ApplyRenderingTransformation(avtDataObject_p input)
         vertexExtractor->SetLabelPrefix("subset");
         vertexExtractor->SetConvertAllPoints(false);
         vertexExtractor->SetKeepNonVertex(true);
-        vertexExtractor->SetPointGlyphAtts((PointGlyphAttributes*)(atts.CreateCompatible("PointGlyph")));
+        vertexExtractor->SetPointType(atts.GetPointType());
         dob = vertexExtractor->GetOutput();
     }
 

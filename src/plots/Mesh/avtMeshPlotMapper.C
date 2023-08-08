@@ -46,9 +46,12 @@ avtMeshPlotMapper::avtMeshPlotMapper()
     opacity = 1.;
     surfaceVis = true;
     glyphType = Point;
-    scale = 0.2;
+    // set by PointSize match its default
+    scale = 0.05;
     scalingVarName = "";
+    // set by PointSizePixels
     pointSize = 2;
+    autoSize = true;
 }
 
 
@@ -406,6 +409,28 @@ avtMeshPlotMapper::SetLineWidth(int lw)
 }
 
 // ****************************************************************************
+//  Method: avtMeshPlotMapper::SetAutoSize
+//
+//  Purpose:
+//     Sets the flag indicating point size should be automagically computed.
+//
+//  Programmer: Kathleen Biagas
+//  Creation:   August 7, 2023
+//
+// ****************************************************************************
+
+void
+avtMeshPlotMapper::SetAutoSize(bool val)
+{
+    if(autoSize != val)
+    {
+        autoSize = val;
+        SetPointSize(pointSize);
+        SetScale(scale);
+    }
+}
+
+// ****************************************************************************
 //  Method: avtMeshPlotMapper::SetPointSize
 //
 //  Purpose:
@@ -419,16 +444,23 @@ avtMeshPlotMapper::SetLineWidth(int lw)
 void
 avtMeshPlotMapper::SetPointSize(double ps)
 {
-    if (pointSize != ps)
+    pointSize = ps;
+    double tmp = pointSize;
+    bool psChanged=false;
+    if(autoSize)
     {
-        pointSize = ps;
-        for (int i = 0; i < nMappers; ++i)
-        {
-            if (actors[i] != NULL)
-                actors[i]->GetProperty()->SetPointSize(pointSize);
-        }
-        NotifyTransparencyActor();
+        tmp = ComputePointSize(false);
     }
+    for (int i = 0; i < nMappers; ++i)
+    {
+        if (actors[i] != NULL)
+        {
+            psChanged = (actors[i]->GetProperty()->GetPointSize() != tmp);
+            actors[i]->GetProperty()->SetPointSize(tmp);
+        }
+    }
+    if(psChanged)
+        NotifyTransparencyActor();
 }
 
 
@@ -653,10 +685,16 @@ void
 avtMeshPlotMapper::SetScale(double s)
 {
     scale = s;
-    for (int i = 0 ; i < nMappers ; i++)
+    double tmp = scale;
+    if (autoSize)
+    {
+        tmp = ComputePointSize(true);
+    }
+
+    for (int i = 0; i < nMappers; ++i)
     {
         if (mappers[i] != NULL && mappers[i]->IsA("vtkPointGlyphMapper"))
-            ((vtkPointGlyphMapper*)mappers[i])->SetScale(scale);
+            ((vtkPointGlyphMapper*)mappers[i])->SetScale(tmp);
     }
 }
 
@@ -683,4 +721,51 @@ avtMeshPlotMapper::SetGlyphType(GlyphType type)
         CustomizeMappers();
     }
 }
+
+// ****************************************************************************
+// Method: avtMeshPlotMapper::ComputePointSize
+//
+// Purpose:
+//   Computes a point size based on spatial extents.
+//   Use for autoSize.
+//
+// Programmer: Kathleen Biagas
+// Creation:   August 8, 2023 
+//
+// Modifications:
+//
+// ****************************************************************************
+
+double
+avtMeshPlotMapper::ComputePointSize(bool forGlyphs)
+{
+    double ps = 0.02;
+    avtDataset_p input = GetTypedInput();
+    if (*input != 0)
+    {
+        avtDataAttributes &atts=input->GetInfo().GetAttributes();
+// should this be actual extents instead?  doesn't work with actual!
+        avtExtents *extents = atts.GetOriginalSpatialExtents();
+        int nDims = extents->GetDimension();
+        double exts[6];
+        extents->CopyTo(exts);
+        double dist = 0.;
+        for (int i = 0; i < nDims; ++i)
+        {
+            dist += (exts[2*i+1] - exts[2*i]) * (exts[2*i+1] - exts[2*i]);
+        }
+        dist = sqrt(dist);
+
+        // Should we be autocomputing for pixels?
+        double mult = forGlyphs ? 0.0002 : 0.05;
+        ps = dist * mult; 
+        cerr << " ComputePointSize dist: " << dist << endl;
+        if (forGlyphs)
+            cerr << " ComputePointSize glyph size: " << ps << endl;
+        else 
+            cerr << " ComputePointSize pixel size: " << ps << endl;
+    }
+    return ps;
+}
+
 

@@ -9,7 +9,7 @@
 #include <visit-config.h>
 #include <ColorAttribute.h>
 #include <ColorAttribute.h>
-#include <GlyphTypes.h>
+#include <PyPointGlyphAttributes.h>
 
 // ****************************************************************************
 // Module: PyMeshAttributes
@@ -112,8 +112,6 @@ PyMeshAttributes_ToString(const MeshAttributes *atts, const char *prefix, const 
           break;
     }
 
-    snprintf(tmpStr, 1000, "%spointSize = %g\n", prefix, atts->GetPointSize());
-    str += tmpStr;
     const unsigned char *opaqueColor = atts->GetOpaqueColor().GetColor();
     snprintf(tmpStr, 1000, "%sopaqueColor = (%d, %d, %d, %d)\n", prefix, int(opaqueColor[0]), int(opaqueColor[1]), int(opaqueColor[2]), int(opaqueColor[3]));
     str += tmpStr;
@@ -136,62 +134,18 @@ PyMeshAttributes_ToString(const MeshAttributes *atts, const char *prefix, const 
           break;
     }
 
-    if(atts->GetPointSizeVarEnabled())
-        snprintf(tmpStr, 1000, "%spointSizeVarEnabled = 1\n", prefix);
-    else
-        snprintf(tmpStr, 1000, "%spointSizeVarEnabled = 0\n", prefix);
-    str += tmpStr;
-    snprintf(tmpStr, 1000, "%spointSizeVar = \"%s\"\n", prefix, atts->GetPointSizeVar().c_str());
-    str += tmpStr;
-    const char *pointType_names = "Box, Axis, Icosahedron, Octahedron, Tetrahedron, "
-        "SphereGeometry, Point, Sphere";
-    switch (atts->GetPointType())
-    {
-      case Box:
-          snprintf(tmpStr, 1000, "%spointType = %sBox  # %s\n", prefix, prefix, pointType_names);
-          str += tmpStr;
-          break;
-      case Axis:
-          snprintf(tmpStr, 1000, "%spointType = %sAxis  # %s\n", prefix, prefix, pointType_names);
-          str += tmpStr;
-          break;
-      case Icosahedron:
-          snprintf(tmpStr, 1000, "%spointType = %sIcosahedron  # %s\n", prefix, prefix, pointType_names);
-          str += tmpStr;
-          break;
-      case Octahedron:
-          snprintf(tmpStr, 1000, "%spointType = %sOctahedron  # %s\n", prefix, prefix, pointType_names);
-          str += tmpStr;
-          break;
-      case Tetrahedron:
-          snprintf(tmpStr, 1000, "%spointType = %sTetrahedron  # %s\n", prefix, prefix, pointType_names);
-          str += tmpStr;
-          break;
-      case SphereGeometry:
-          snprintf(tmpStr, 1000, "%spointType = %sSphereGeometry  # %s\n", prefix, prefix, pointType_names);
-          str += tmpStr;
-          break;
-      case Point:
-          snprintf(tmpStr, 1000, "%spointType = %sPoint  # %s\n", prefix, prefix, pointType_names);
-          str += tmpStr;
-          break;
-      case Sphere:
-          snprintf(tmpStr, 1000, "%spointType = %sSphere  # %s\n", prefix, prefix, pointType_names);
-          str += tmpStr;
-          break;
-      default:
-          break;
-    }
-
     if(atts->GetShowInternal())
         snprintf(tmpStr, 1000, "%sshowInternal = 1\n", prefix);
     else
         snprintf(tmpStr, 1000, "%sshowInternal = 0\n", prefix);
     str += tmpStr;
-    snprintf(tmpStr, 1000, "%spointSizePixels = %d\n", prefix, atts->GetPointSizePixels());
-    str += tmpStr;
     snprintf(tmpStr, 1000, "%sopacity = %g\n", prefix, atts->GetOpacity());
     str += tmpStr;
+    { // new scope
+        std::string objPrefix(prefix);
+        objPrefix += "pointAtts.";
+        str += PyPointGlyphAttributes_ToString(&atts->GetPointAtts(), objPrefix.c_str(), forLogging);
+    }
     return str;
 }
 
@@ -603,66 +557,6 @@ MeshAttributes_GetOpaqueMode(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
-MeshAttributes_SetPointSize(PyObject *self, PyObject *args)
-{
-    MeshAttributesObject *obj = (MeshAttributesObject *)self;
-
-    PyObject *packaged_args = 0;
-
-    // Handle args packaged into a tuple of size one
-    // if we think the unpackaged args matches our needs
-    if (PySequence_Check(args) && PySequence_Size(args) == 1)
-    {
-        packaged_args = PySequence_GetItem(args, 0);
-        if (PyNumber_Check(packaged_args))
-            args = packaged_args;
-    }
-
-    if (PySequence_Check(args))
-    {
-        Py_XDECREF(packaged_args);
-        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
-    }
-
-    if (!PyNumber_Check(args))
-    {
-        Py_XDECREF(packaged_args);
-        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
-    }
-
-    double val = PyFloat_AsDouble(args);
-    double cval = double(val);
-
-    if (val == -1 && PyErr_Occurred())
-    {
-        Py_XDECREF(packaged_args);
-        PyErr_Clear();
-        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
-    }
-    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
-    {
-        Py_XDECREF(packaged_args);
-        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
-    }
-
-    Py_XDECREF(packaged_args);
-
-    // Set the pointSize in the object.
-    obj->data->SetPointSize(cval);
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-MeshAttributes_GetPointSize(PyObject *self, PyObject *args)
-{
-    MeshAttributesObject *obj = (MeshAttributesObject *)self;
-    PyObject *retval = PyFloat_FromDouble(obj->data->GetPointSize());
-    return retval;
-}
-
-/*static*/ PyObject *
 MeshAttributes_SetOpaqueColor(PyObject *self, PyObject *args)
 {
     MeshAttributesObject *obj = (MeshAttributesObject *)self;
@@ -807,153 +701,6 @@ MeshAttributes_GetSmoothingLevel(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
-MeshAttributes_SetPointSizeVarEnabled(PyObject *self, PyObject *args)
-{
-    MeshAttributesObject *obj = (MeshAttributesObject *)self;
-
-    PyObject *packaged_args = 0;
-
-    // Handle args packaged into a tuple of size one
-    // if we think the unpackaged args matches our needs
-    if (PySequence_Check(args) && PySequence_Size(args) == 1)
-    {
-        packaged_args = PySequence_GetItem(args, 0);
-        if (PyNumber_Check(packaged_args))
-            args = packaged_args;
-    }
-
-    if (PySequence_Check(args))
-    {
-        Py_XDECREF(packaged_args);
-        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
-    }
-
-    if (!PyNumber_Check(args))
-    {
-        Py_XDECREF(packaged_args);
-        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
-    }
-
-    long val = PyLong_AsLong(args);
-    bool cval = bool(val);
-
-    if (val == -1 && PyErr_Occurred())
-    {
-        Py_XDECREF(packaged_args);
-        PyErr_Clear();
-        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
-    }
-    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
-    {
-        Py_XDECREF(packaged_args);
-        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
-    }
-
-    Py_XDECREF(packaged_args);
-
-    // Set the pointSizeVarEnabled in the object.
-    obj->data->SetPointSizeVarEnabled(cval);
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-MeshAttributes_GetPointSizeVarEnabled(PyObject *self, PyObject *args)
-{
-    MeshAttributesObject *obj = (MeshAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(obj->data->GetPointSizeVarEnabled()?1L:0L);
-    return retval;
-}
-
-/*static*/ PyObject *
-MeshAttributes_SetPointSizeVar(PyObject *self, PyObject *args)
-{
-    MeshAttributesObject *obj = (MeshAttributesObject *)self;
-
-    PyObject *packaged_args = 0;
-
-    // Handle args packaged as first member of a tuple of size one
-    // if we think the unpackaged args matches our needs
-    if (PySequence_Check(args) && PySequence_Size(args) == 1)
-    {
-        packaged_args = PySequence_GetItem(args, 0);
-        if (PyUnicode_Check(packaged_args))
-            args = packaged_args;
-    }
-
-    if (!PyUnicode_Check(args))
-    {
-        Py_XDECREF(packaged_args);
-        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
-    }
-
-    char const *val = PyUnicode_AsUTF8(args);
-    std::string cval = std::string(val);
-
-    if (val == 0 && PyErr_Occurred())
-    {
-        Py_XDECREF(packaged_args);
-        PyErr_Clear();
-        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
-    }
-
-    Py_XDECREF(packaged_args);
-
-    // Set the pointSizeVar in the object.
-    obj->data->SetPointSizeVar(cval);
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-MeshAttributes_GetPointSizeVar(PyObject *self, PyObject *args)
-{
-    MeshAttributesObject *obj = (MeshAttributesObject *)self;
-    PyObject *retval = PyString_FromString(obj->data->GetPointSizeVar().c_str());
-    return retval;
-}
-
-/*static*/ PyObject *
-MeshAttributes_SetPointType(PyObject *self, PyObject *args)
-{
-    MeshAttributesObject *obj = (MeshAttributesObject *)self;
-
-    int ival = -999;
-    if (PySequence_Check(args) && !PyArg_ParseTuple(args, "i", &ival))
-        return PyErr_Format(PyExc_TypeError, "Expecting scalar integer arg");
-    else if (PyNumber_Check(args) && (ival = (int) PyLong_AsLong(args)) == -1 && PyErr_Occurred())
-        return PyErr_Format(PyExc_TypeError, "Expecting scalar integer arg");
-    if (ival == -999)
-        return PyErr_Format(PyExc_TypeError, "Expecting scalar integer arg");
-
-    if(ival >= 0 && ival < 8)
-    {
-        obj->data->SetPointType(GlyphType(ival));
-    }
-    else
-    {
-        return PyErr_Format(PyExc_ValueError, "An invalid pointType value was given. "
-                        "Valid values are in the range of [0,7]. "
-                        "You can also use the following names: "
-                        "Box, Axis, Icosahedron, Octahedron, Tetrahedron, "
-                        "SphereGeometry, Point, Sphere.");
-    }
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-MeshAttributes_GetPointType(PyObject *self, PyObject *args)
-{
-    MeshAttributesObject *obj = (MeshAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(long(obj->data->GetPointType()));
-    return retval;
-}
-
-/*static*/ PyObject *
 MeshAttributes_SetShowInternal(PyObject *self, PyObject *args)
 {
     MeshAttributesObject *obj = (MeshAttributesObject *)self;
@@ -1010,66 +757,6 @@ MeshAttributes_GetShowInternal(PyObject *self, PyObject *args)
 {
     MeshAttributesObject *obj = (MeshAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetShowInternal()?1L:0L);
-    return retval;
-}
-
-/*static*/ PyObject *
-MeshAttributes_SetPointSizePixels(PyObject *self, PyObject *args)
-{
-    MeshAttributesObject *obj = (MeshAttributesObject *)self;
-
-    PyObject *packaged_args = 0;
-
-    // Handle args packaged into a tuple of size one
-    // if we think the unpackaged args matches our needs
-    if (PySequence_Check(args) && PySequence_Size(args) == 1)
-    {
-        packaged_args = PySequence_GetItem(args, 0);
-        if (PyNumber_Check(packaged_args))
-            args = packaged_args;
-    }
-
-    if (PySequence_Check(args))
-    {
-        Py_XDECREF(packaged_args);
-        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
-    }
-
-    if (!PyNumber_Check(args))
-    {
-        Py_XDECREF(packaged_args);
-        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
-    }
-
-    long val = PyLong_AsLong(args);
-    int cval = int(val);
-
-    if (val == -1 && PyErr_Occurred())
-    {
-        Py_XDECREF(packaged_args);
-        PyErr_Clear();
-        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
-    }
-    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
-    {
-        Py_XDECREF(packaged_args);
-        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
-    }
-
-    Py_XDECREF(packaged_args);
-
-    // Set the pointSizePixels in the object.
-    obj->data->SetPointSizePixels(cval);
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-MeshAttributes_GetPointSizePixels(PyObject *self, PyObject *args)
-{
-    MeshAttributesObject *obj = (MeshAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(long(obj->data->GetPointSizePixels()));
     return retval;
 }
 
@@ -1133,6 +820,39 @@ MeshAttributes_GetOpacity(PyObject *self, PyObject *args)
     return retval;
 }
 
+/*static*/ PyObject *
+MeshAttributes_SetPointAtts(PyObject *self, PyObject *args)
+{
+    MeshAttributesObject *obj = (MeshAttributesObject *)self;
+
+    PyObject *newValue = NULL;
+    if(!PyArg_ParseTuple(args, "O", &newValue))
+        return NULL;
+    if(!PyPointGlyphAttributes_Check(newValue))
+        return PyErr_Format(PyExc_TypeError, "Field pointAtts can be set only with PointGlyphAttributes objects");
+
+    obj->data->SetPointAtts(*PyPointGlyphAttributes_FromPyObject(newValue));
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+MeshAttributes_GetPointAtts(PyObject *self, PyObject *args)
+{
+    MeshAttributesObject *obj = (MeshAttributesObject *)self;
+    // Since the new object will point to data owned by this object,
+    // we need to increment the reference count.
+    Py_INCREF(self);
+
+    PyObject *retval = PyPointGlyphAttributes_Wrap(&obj->data->GetPointAtts());
+    // Set the object's parent so the reference to the parent can be decref'd
+    // when the child goes out of scope.
+    PyPointGlyphAttributes_SetParent(retval, self);
+
+    return retval;
+}
+
 
 
 PyMethodDef PyMeshAttributes_methods[MESHATTRIBUTES_NMETH] = {
@@ -1149,24 +869,16 @@ PyMethodDef PyMeshAttributes_methods[MESHATTRIBUTES_NMETH] = {
     {"GetOpaqueColorSource", MeshAttributes_GetOpaqueColorSource, METH_VARARGS},
     {"SetOpaqueMode", MeshAttributes_SetOpaqueMode, METH_VARARGS},
     {"GetOpaqueMode", MeshAttributes_GetOpaqueMode, METH_VARARGS},
-    {"SetPointSize", MeshAttributes_SetPointSize, METH_VARARGS},
-    {"GetPointSize", MeshAttributes_GetPointSize, METH_VARARGS},
     {"SetOpaqueColor", MeshAttributes_SetOpaqueColor, METH_VARARGS},
     {"GetOpaqueColor", MeshAttributes_GetOpaqueColor, METH_VARARGS},
     {"SetSmoothingLevel", MeshAttributes_SetSmoothingLevel, METH_VARARGS},
     {"GetSmoothingLevel", MeshAttributes_GetSmoothingLevel, METH_VARARGS},
-    {"SetPointSizeVarEnabled", MeshAttributes_SetPointSizeVarEnabled, METH_VARARGS},
-    {"GetPointSizeVarEnabled", MeshAttributes_GetPointSizeVarEnabled, METH_VARARGS},
-    {"SetPointSizeVar", MeshAttributes_SetPointSizeVar, METH_VARARGS},
-    {"GetPointSizeVar", MeshAttributes_GetPointSizeVar, METH_VARARGS},
-    {"SetPointType", MeshAttributes_SetPointType, METH_VARARGS},
-    {"GetPointType", MeshAttributes_GetPointType, METH_VARARGS},
     {"SetShowInternal", MeshAttributes_SetShowInternal, METH_VARARGS},
     {"GetShowInternal", MeshAttributes_GetShowInternal, METH_VARARGS},
-    {"SetPointSizePixels", MeshAttributes_SetPointSizePixels, METH_VARARGS},
-    {"GetPointSizePixels", MeshAttributes_GetPointSizePixels, METH_VARARGS},
     {"SetOpacity", MeshAttributes_SetOpacity, METH_VARARGS},
     {"GetOpacity", MeshAttributes_GetOpacity, METH_VARARGS},
+    {"SetPointAtts", MeshAttributes_SetPointAtts, METH_VARARGS},
+    {"GetPointAtts", MeshAttributes_GetPointAtts, METH_VARARGS},
     {NULL, NULL}
 };
 
@@ -1221,8 +933,6 @@ PyMeshAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "Off") == 0)
         return PyInt_FromLong(long(MeshAttributes::Off));
 
-    if(strcmp(name, "pointSize") == 0)
-        return MeshAttributes_GetPointSize(self, NULL);
     if(strcmp(name, "opaqueColor") == 0)
         return MeshAttributes_GetOpaqueColor(self, NULL);
     if(strcmp(name, "smoothingLevel") == 0)
@@ -1236,36 +946,41 @@ PyMeshAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "High") == 0)
         return PyInt_FromLong(long(MeshAttributes::High));
 
-    if(strcmp(name, "pointSizeVarEnabled") == 0)
-        return MeshAttributes_GetPointSizeVarEnabled(self, NULL);
-    if(strcmp(name, "pointSizeVar") == 0)
-        return MeshAttributes_GetPointSizeVar(self, NULL);
-    if(strcmp(name, "pointType") == 0)
-        return MeshAttributes_GetPointType(self, NULL);
-    if(strcmp(name, "Box") == 0)
-        return PyInt_FromLong(long(Box));
-    if(strcmp(name, "Axis") == 0)
-        return PyInt_FromLong(long(Axis));
-    if(strcmp(name, "Icosahedron") == 0)
-        return PyInt_FromLong(long(Icosahedron));
-    if(strcmp(name, "Octahedron") == 0)
-        return PyInt_FromLong(long(Octahedron));
-    if(strcmp(name, "Tetrahedron") == 0)
-        return PyInt_FromLong(long(Tetrahedron));
-    if(strcmp(name, "SphereGeometry") == 0)
-        return PyInt_FromLong(long(SphereGeometry));
-    if(strcmp(name, "Point") == 0)
-        return PyInt_FromLong(long(Point));
-    if(strcmp(name, "Sphere") == 0)
-        return PyInt_FromLong(long(Sphere));
-
     if(strcmp(name, "showInternal") == 0)
         return MeshAttributes_GetShowInternal(self, NULL);
-    if(strcmp(name, "pointSizePixels") == 0)
-        return MeshAttributes_GetPointSizePixels(self, NULL);
     if(strcmp(name, "opacity") == 0)
         return MeshAttributes_GetOpacity(self, NULL);
+    if(strcmp(name, "pointAtts") == 0)
+        return MeshAttributes_GetPointAtts(self, NULL);
 
+#include <visit-config.h>
+
+#if VISIT_OBSOLETE_AT_VERSION(3,5,0)
+#error This code is obsolete in this version of VisIt and should be removed.
+#else
+    // Try and handle legacy fields
+#define NAME_CHANGE_MESSAGE2(oldname, newname) \
+    PyErr_WarnFormat(NULL, 1, "'%s' is no longer a valid Volume attribute.\n" \
+                    "It's name has been changed to '%s', " \
+                    "please update your script.\n", oldname, newname);
+
+    // point type enums now associated with pointAtts
+    if((strcmp(name, "Box") == 0) ||
+       (strcmp(name, "Axis") == 0) ||
+       (strcmp(name, "Icosahedron") == 0) ||
+       (strcmp(name, "Octahedron") == 0) ||
+       (strcmp(name, "Tetrahedron") == 0) ||
+       (strcmp(name, "SphereGeometry") == 0) ||
+       (strcmp(name, "Point") == 0) ||
+       (strcmp(name, "Sphere") == 0))
+    {
+        std::string nn = "pointAtts." + std::string(name);
+        NAME_CHANGE_MESSAGE2(name, nn.c_str());
+        GlyphType gtype;
+        GlyphType_FromString(name, gtype);
+        return PyInt_FromLong(int(gtype)); 
+    }
+#endif
 
     // Add a __dict__ answer so that dir() works
     if (!strcmp(name, "__dict__"))
@@ -1299,25 +1014,70 @@ PyMeshAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = MeshAttributes_SetOpaqueColorSource(self, args);
     else if(strcmp(name, "opaqueMode") == 0)
         obj = MeshAttributes_SetOpaqueMode(self, args);
-    else if(strcmp(name, "pointSize") == 0)
-        obj = MeshAttributes_SetPointSize(self, args);
     else if(strcmp(name, "opaqueColor") == 0)
         obj = MeshAttributes_SetOpaqueColor(self, args);
     else if(strcmp(name, "smoothingLevel") == 0)
         obj = MeshAttributes_SetSmoothingLevel(self, args);
-    else if(strcmp(name, "pointSizeVarEnabled") == 0)
-        obj = MeshAttributes_SetPointSizeVarEnabled(self, args);
-    else if(strcmp(name, "pointSizeVar") == 0)
-        obj = MeshAttributes_SetPointSizeVar(self, args);
-    else if(strcmp(name, "pointType") == 0)
-        obj = MeshAttributes_SetPointType(self, args);
     else if(strcmp(name, "showInternal") == 0)
         obj = MeshAttributes_SetShowInternal(self, args);
-    else if(strcmp(name, "pointSizePixels") == 0)
-        obj = MeshAttributes_SetPointSizePixels(self, args);
     else if(strcmp(name, "opacity") == 0)
         obj = MeshAttributes_SetOpacity(self, args);
+    else if(strcmp(name, "pointAtts") == 0)
+        obj = MeshAttributes_SetPointAtts(self, args);
 
+#if VISIT_OBSOLETE_AT_VERSION(3,5,0)
+#error This code is obsolete in this version of VisIt. Please remove it
+#else
+#define NAME_CHANGE_MESSAGE(oldname, newname) \
+    PyErr_WarnFormat(NULL, 1, "'%s' is no longer a valid Volume attribute.\n" \
+                    "It's name has been changed to '%s', " \
+                    "please update your script.\n", oldname, newname);
+
+    // Try and handle legacy fields
+    if(obj == &NULL_PY_OBJ)
+    {
+        PointGlyphAttributes *pga = PyPointGlyphAttributes_FromPyObject(
+            MeshAttributes_GetPointAtts(self, args));
+        bool setPointAtts = true;
+        if(strcmp(name, "pointSize") == 0)
+        {
+            NAME_CHANGE_MESSAGE(name, "pointAtts.pointSize");
+            pga->SetPointSize(PyFloat_AsDouble(args));
+        }
+        else if(strcmp(name, "pointSizeVarEnabled") == 0)
+        {
+            NAME_CHANGE_MESSAGE(name, "pointAtts.pointSizeVarEnabled");
+            pga->SetPointSizeVarEnabled(bool(PyLong_AsLong(args)));
+        }
+        else if(strcmp(name, "pointSizeVar") == 0)
+        {
+            NAME_CHANGE_MESSAGE(name, "pointAtts.pointSizeVar");
+            pga->SetPointSizeVar(std::string(PyUnicode_AsUTF8(args)));
+        }
+        else if(strcmp(name, "pointType") == 0)
+        {
+            NAME_CHANGE_MESSAGE(name, "pointAtts.pointType");
+            pga->SetPointType(GlyphType(PyLong_AsLong(args)));
+        }
+        else if(strcmp(name, "pointSizePixels") == 0)
+        {
+            NAME_CHANGE_MESSAGE(name, "pointAtts.pointSizePixels");
+            pga->SetPointSizePixels(int(PyLong_AsLong(args)));
+        }
+        else
+        {
+            setPointAtts = false;
+        }
+        if(setPointAtts)
+        {
+            // handling legacy, turn off autoSize.
+            pga->SetAutoSizeEnabled(false);
+            PyObject *tup = PyTuple_New(1);
+            PyTuple_SetItem(tup, 0,  PyPointGlyphAttributes_Wrap(pga));
+            obj = MeshAttributes_SetPointAtts(self, tup);
+        }
+    }
+#endif
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 

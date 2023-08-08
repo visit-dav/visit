@@ -330,6 +330,7 @@ visitpy/PyPickAttributes.C
 visitpy/PyPickVarInfo.C 
 visitpy/PyPlot.C 
 visitpy/PyPlotList.C 
+visitpy/PyPointGlyphAttributes.C 
 visitpy/PyPrinterAttributes.C 
 visitpy/PyProcessAttributes.C 
 visitpy/PyQueryAttributes.C 

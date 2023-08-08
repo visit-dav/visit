@@ -100,6 +100,7 @@ private slots:
     void opaqueColorClicked(int val);
     void smoothingLevelChanged(int index);
 
+    void autoSizeToggled(bool);
     void pointSizeChanged(double d);
     void pointSizePixelsChanged(int);
     void pointTypeChanged(int index);

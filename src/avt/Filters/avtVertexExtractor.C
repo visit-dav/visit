@@ -54,9 +54,9 @@ avtVertexExtractor::~avtVertexExtractor()
 
 
 // ****************************************************************************
-//  Method: avtVertexExtractor::SetPointGlyphAtts
+//  Method: avtVertexExtractor::SetPointType
 //
-//  Purpose:    Sets the PointGlyphAttributes needed for this filter.
+//  Purpose:    Sets the PointType needed for this filter.
 //
 //  Programmer: Kathleen Biagas
 //  Creation:   June 4, 2020
@@ -64,9 +64,9 @@ avtVertexExtractor::~avtVertexExtractor()
 // ****************************************************************************
 
 void
-avtVertexExtractor::SetPointGlyphAtts(const PointGlyphAttributes *atts)
+avtVertexExtractor::SetPointType(const GlyphType gt)
 {
-    pointGlyphAtts = *atts;
+    pointType = gt;
 }
 
 
@@ -163,7 +163,7 @@ avtVertexExtractor::ExecuteDataTree(avtDataRepresentation *inDR)
         return new avtDataTree(inDS, domain, label);
     }
 
-    if (pointGlyphAtts.GetPointType() == Point)
+    if (pointType == Point)
     {
         // nothing to do here, the mapper can handle points
         return new avtDataTree(inDS, domain, label);

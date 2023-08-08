@@ -14,6 +14,7 @@
 #include <QNarrowLineEdit.h>
 #include <QvisVariableButton.h>
 #include <GlyphTypes.h>
+#include <PointGlyphAttributes.h>
 
 #define POINT_TYPE_POINTS 6
 #define POINT_TYPE_SPHERE 7
@@ -76,20 +77,27 @@ QvisPointControl::QvisPointControl(QWidget *parent,
             this, SLOT(typeComboBoxChanged(int)));
     topLayout->addWidget(typeComboBox, 0, 1);
 
+    // Create the autoSize toggle
+    autoSizeToggle = new QCheckBox(tr("Auto point size"), this);
+    connect(autoSizeToggle, SIGNAL(toggled(bool)),
+            this, SLOT(autoSizeChanged(bool)));
+    topLayout->addWidget(autoSizeToggle, 1, 0);
     // Create the size label and line edit.
     sizeLabel = new QLabel(tr("Point size"), this);
-    topLayout->addWidget(sizeLabel, 0, 2, Qt::AlignRight);
+    sizeLabel->setEnabled(false);
+    topLayout->addWidget(sizeLabel, 1, 1, Qt::AlignRight);
 
     sizeLineEdit = new QNarrowLineEdit(this);
+    sizeLineEdit->setEnabled(false);
     connect(sizeLineEdit, SIGNAL(returnPressed()),
             this, SLOT(processSizeText()));
-    topLayout->addWidget(sizeLineEdit, 0, 3);
+    topLayout->addWidget(sizeLineEdit, 1, 2, 1, 3);
 
     // Create the size variable check box and variable button.
     sizeVarToggle = new QCheckBox(tr("Scale point size by variable"), this);
     connect(sizeVarToggle, SIGNAL(toggled(bool)),
             this, SLOT(sizeVarToggled(bool)));
-    topLayout->addWidget(sizeVarToggle, 1, 0, 1, 2);
+    topLayout->addWidget(sizeVarToggle, 3, 0, 3, 2);
     int query_types = QvisVariableButton::Scalars |
                       QvisVariableButton::Vectors |
                       QvisVariableButton::Tensors;
@@ -97,7 +105,7 @@ QvisPointControl::QvisPointControl(QWidget *parent,
     sizeVarButton->setEnabled(false);
     connect(sizeVarButton, SIGNAL(activated(const QString &)),
             this, SLOT(sizeVarChanged(const QString &)));
-    topLayout->addWidget(sizeVarButton, 1, 2);
+    topLayout->addWidget(sizeVarButton, 3, 2, Qt::AlignVCenter);
 
     if (!enableScaleByVar)
     {
@@ -129,6 +137,30 @@ QvisPointControl::~QvisPointControl()
     // nothing here.
 }
 
+// ****************************************************************************
+// Method: QvisPointControl::autoSizeChanged
+//
+// Purpose: 
+//   This is a Qt slot function that emits the autoSizeToggled signal.
+//
+// Arguments:
+//   val : The new state of the autoSize toggle.
+//
+// Programmer: Kathleen Bonnell
+// Creation:   August 7, 2023 
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisPointControl::autoSizeChanged(bool val)
+{
+    sizeLabel->setEnabled(!val);
+    sizeLineEdit->setEnabled(!val);
+    if (!signalsBlocked())
+        emit autoSizeToggled(val);
+}
 
 // ****************************************************************************
 // Method: QvisPointControl::processSizeText
@@ -223,7 +255,6 @@ QvisPointControl::ProcessSizeText(int pointType)
 
     return okay;
 }
-
 
 // ****************************************************************************
 // Method: QvisPointControl::GetPointSize
@@ -678,3 +709,62 @@ QvisPointControl::GetPointType() const
     return typeComboBox->currentIndex();
 }
 
+// ****************************************************************************
+// Method: QvisPointControl::SetAutoSizeChecked
+//
+// Purpose:
+//   This method sets the autotSize toggle.
+//
+// Arguments:
+//   checked : The value for the toggle
+//
+// Programmer: Kathleen Biagas
+// Creation:   August 7, 2023
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void QvisPointControl::SetAutoSizeChecked(bool checked)
+{
+cerr << "QvisPointControl::SetAutoSizeChecked: " << checked << endl;
+    autoSizeToggle->blockSignals(true);
+    autoSizeToggle->setChecked(checked);
+    autoSizeToggle->blockSignals(false);
+    sizeLabel->setEnabled(!checked);
+    sizeLineEdit->setEnabled(!checked);
+}
+
+
+// ****************************************************************************
+// Method: QvisPointControl::GetAutoSizeEnabled
+//
+// Purpose:
+//   Returns the state of the autoPointSize toggle.
+//
+// Programmer: Kathleen Biagas
+// Creation:   August 7, 2023
+//
+// Modifications:
+//
+// ****************************************************************************
+
+bool
+QvisPointControl::GetAutoSizeEnabled() const
+{
+    return autoSizeToggle->isChecked();
+}
+
+void
+QvisPointControl::SetPointAtts(PointGlyphAttributes *p)
+{
+cerr << "QvisPointControl::SetPointAtts" << endl;
+    SetPointSize(p->GetPointSize());
+    SetPointSizePixels(p->GetPointSizePixels());
+    SetPointSizeVarChecked(p->GetPointSizeVarEnabled());
+	QString tmp(p->GetPointSizeVar().c_str());
+    SetPointSizeVar(tmp);
+    SetPointType(p->GetPointType());
+    SetAutoSizeChecked(p->GetAutoSizeEnabled());
+cerr << "QvisPointControl::SetPointAtts ... done" << endl;
+}

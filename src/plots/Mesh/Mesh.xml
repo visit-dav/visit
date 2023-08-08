@@ -53,9 +53,6 @@
       <Field name="opaqueMode" label="Opaque mode" type="enum" subtype="OpaqueMode">
         Auto
       </Field>
-      <Field name="pointSize" label="Point size" type="double">
-        0.050000
-      </Field>
       <Field name="opaqueColor" label="Color" type="color" length="4">
         255
         255
@@ -65,30 +62,18 @@
       <Field name="smoothingLevel" label="Smoothing" type="enum" subtype="SmoothingLevel">
         None
       </Field>
-      <Field name="pointSizeVarEnabled" label="Point size by var enabled" type="bool">
-        false
-      </Field>
-      <Field name="pointSizeVar" label="Point size by var" type="variablename" vartypes="01000000000">
-        default
-      </Field>
-      <Field name="pointType" label="Point Type" type="glyphtype">
-        Point
-      </Field>
       <Field name="opaqueMeshIsAppropriate" label="Opaque Mesh Is Appropriate" type="bool" internal="true">
         true
       </Field>
       <Field name="showInternal" label="Show Internal" type="bool">
         false
       </Field>
-      <Field name="pointSizePixels" label="Point size pixels" type="int">
-        2
-      </Field>
       <Field name="opacity" label="Opacity" type="opacity">
         1.000000
       </Field>
+      <Field name="pointAtts" label="point atts" type="att" subtype="PointGlyphAttributes">
+      </Field>
       <Function name="ChangesRequireRecalculation" user="true" member="true">
-      </Function>
-      <Function name="CreateCompatible" user="false" member="true">
       </Function>
       <Function name="MeshViewerEnginePluginInfo::InitializePlotAtts" user="false" member="true">
       </Function>

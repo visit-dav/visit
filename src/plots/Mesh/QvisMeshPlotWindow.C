@@ -286,6 +286,8 @@ QvisMeshPlotWindow::CreateWindowContents()
  
     // Create the point control
     pointControl = new QvisPointControl(central);
+    connect(pointControl, SIGNAL(autoSizeToggled(bool)),
+            this, SLOT(autoSizeToggled(bool)));
     connect(pointControl, SIGNAL(pointSizeChanged(double)),
             this, SLOT(pointSizeChanged(double)));
     connect(pointControl, SIGNAL(pointSizePixelsChanged(int)),
@@ -296,7 +298,7 @@ QvisMeshPlotWindow::CreateWindowContents()
             this, SLOT(pointSizeVarToggled(bool)));
     connect(pointControl, SIGNAL(pointTypeChanged(int)),
             this, SLOT(pointTypeChanged(int)));
-    styleLayout->addWidget(pointControl, 0, 0, 1, 4);
+    styleLayout->addWidget(pointControl, 0, 0, 1, 5);
 
 
     // Create the lineWidth widget.
@@ -522,11 +524,6 @@ QvisMeshPlotWindow::UpdateWindow(bool doAll)
             }
             opaqueModeGroup->blockSignals(false);
             break;
-        case MeshAttributes::ID_pointSize:
-            pointControl->blockSignals(true);
-            pointControl->SetPointSize(meshAtts->GetPointSize());
-            pointControl->blockSignals(false);
-            break;
         case MeshAttributes::ID_opaqueColor:
             { // new scope
             QColor temp(meshAtts->GetOpaqueColor().Red(),
@@ -558,24 +555,6 @@ QvisMeshPlotWindow::UpdateWindow(bool doAll)
             smoothingLevelButtons->button((int)meshAtts->GetSmoothingLevel())->setChecked(true);
             smoothingLevelButtons->blockSignals(false);
             break;
-        case MeshAttributes::ID_pointSizeVarEnabled:
-            pointControl->blockSignals(true);
-            pointControl->SetPointSizeVarChecked(meshAtts->GetPointSizeVarEnabled());
-            pointControl->blockSignals(false);
-            break;
-        case MeshAttributes::ID_pointSizeVar:
-            {
-            pointControl->blockSignals(true);
-            QString temp(meshAtts->GetPointSizeVar().c_str());
-            pointControl->SetPointSizeVar(temp);
-            pointControl->blockSignals(false);
-            }
-            break;
-        case MeshAttributes::ID_pointType:
-            pointControl->blockSignals(true);
-            pointControl->SetPointType (meshAtts->GetPointType());
-            pointControl->blockSignals(false);
-            break;
         case MeshAttributes::ID_opaqueMeshIsAppropriate:
             // If in AUTO mode:  if OpaqueMesh is appropriate, handle 
             // opaqueColor and backgroundToggle according to the
@@ -605,15 +584,15 @@ QvisMeshPlotWindow::UpdateWindow(bool doAll)
             showInternalToggle->setChecked(meshAtts->GetShowInternal());
             showInternalToggle->blockSignals(false);
             break;
-        case MeshAttributes::ID_pointSizePixels:
-            pointControl->blockSignals(true);
-            pointControl->SetPointSizePixels(meshAtts->GetPointSizePixels());
-            pointControl->blockSignals(false);
-            break;
         case MeshAttributes::ID_opacity:
             opacitySlider->blockSignals(true);
             opacitySlider->setValue(int((float)meshAtts->GetOpacity() * 255.f));
             opacitySlider->blockSignals(false);
+            break;
+        case MeshAttributes::ID_pointAtts:
+            pointControl->blockSignals(true);
+            pointControl->SetPointAtts(&meshAtts->GetPointAtts());
+            pointControl->blockSignals(false);
             break;
         }
     } // end for
@@ -659,9 +638,9 @@ QvisMeshPlotWindow::GetCurrentValues(int which_widget)
 
     if(doAll)
     {
-        meshAtts->SetPointSize(pointControl->GetPointSize());
-        meshAtts->SetPointSizePixels(pointControl->GetPointSizePixels());
-        meshAtts->SetPointSizeVar(pointControl->GetPointSizeVar().toStdString());
+        meshAtts->GetPointAtts().SetPointSize(pointControl->GetPointSize());
+        meshAtts->GetPointAtts().SetPointSizePixels(pointControl->GetPointSizePixels());
+        meshAtts->GetPointAtts().SetPointSizeVar(pointControl->GetPointSizeVar().toStdString());
     }
 }
 
@@ -1042,8 +1021,30 @@ QvisMeshPlotWindow::smoothingLevelChanged(int level)
 void
 QvisMeshPlotWindow::pointTypeChanged(int type)
 {
-    meshAtts->SetPointType((GlyphType) type);
+    meshAtts->GetPointAtts().SetPointType((GlyphType) type);
     SetUpdate(false);
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisMeshPlotWindow::autoSizeToggled
+//
+// Purpose: 
+//   This is a Qt slot function that is called when the autoSize toggle
+//   button is toggled.
+//
+// Arguments:
+//   val : The new state of the autoSize toggle.
+//
+// Programmer: Kathleen Biagas 
+// Creation:   August 8, 2023 
+//   
+// ****************************************************************************
+
+void
+QvisMeshPlotWindow::autoSizeToggled(bool val)
+{
+    meshAtts->GetPointAtts().SetAutoSizeEnabled(val);
     Apply();
 }
 
@@ -1068,7 +1069,7 @@ QvisMeshPlotWindow::pointTypeChanged(int type)
 void
 QvisMeshPlotWindow::pointSizeChanged(double size)
 {
-    meshAtts->SetPointSize(size); 
+    meshAtts->GetPointAtts().SetPointSize(size); 
     Apply();
 }
 
@@ -1088,7 +1089,7 @@ QvisMeshPlotWindow::pointSizeChanged(double size)
 void
 QvisMeshPlotWindow::pointSizePixelsChanged(int size)
 {
-    meshAtts->SetPointSizePixels(size); 
+    meshAtts->GetPointAtts().SetPointSizePixels(size); 
     Apply();
 }
 
@@ -1110,7 +1111,7 @@ QvisMeshPlotWindow::pointSizePixelsChanged(int size)
 void
 QvisMeshPlotWindow::pointSizeVarToggled(bool val)
 {
-    meshAtts->SetPointSizeVarEnabled(val);
+    meshAtts->GetPointAtts().SetPointSizeVarEnabled(val);
     Apply();
 }
 
@@ -1132,7 +1133,7 @@ QvisMeshPlotWindow::pointSizeVarToggled(bool val)
 void
 QvisMeshPlotWindow::pointSizeVarChanged(const QString &var)
 {
-    meshAtts->SetPointSizeVar(var.toStdString()); 
+    meshAtts->GetPointAtts().SetPointSizeVar(var.toStdString()); 
     Apply();
 }
 

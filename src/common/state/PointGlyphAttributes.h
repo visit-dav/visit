@@ -56,6 +56,7 @@ public:
     void SelectPointSizeVar();
 
     // Property setting methods
+    void SetAutoSizeEnabled(bool autoSizeEnabled_);
     void SetPointSize(double pointSize_);
     void SetPointType(GlyphType pointType_);
     void SetPointSizeVarEnabled(bool pointSizeVarEnabled_);
@@ -63,6 +64,7 @@ public:
     void SetPointSizePixels(int pointSizePixels_);
 
     // Property getting methods
+    bool              GetAutoSizeEnabled() const;
     double            GetPointSize() const;
     GlyphType         GetPointType() const;
     bool              GetPointSizeVarEnabled() const;
@@ -86,7 +88,8 @@ public:
 
     // IDs that can be used to identify fields in case statements
     enum {
-        ID_pointSize = 0,
+        ID_autoSizeEnabled = 0,
+        ID_pointSize,
         ID_pointType,
         ID_pointSizeVarEnabled,
         ID_pointSizeVar,
@@ -95,6 +98,7 @@ public:
     };
 
 private:
+    bool        autoSizeEnabled;
     double      pointSize;
     GlyphType   pointType;
     bool        pointSizeVarEnabled;
@@ -105,6 +109,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define POINTGLYPHATTRIBUTES_TMFS "dibsi"
+#define POINTGLYPHATTRIBUTES_TMFS "bdibsi"
 
 #endif

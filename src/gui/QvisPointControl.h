@@ -12,6 +12,7 @@ class QComboBox;
 class QLabel;
 class QNarrowLineEdit;
 class QvisVariableButton;
+class PointGlyphAttributes;
 
 // ****************************************************************************
 // Class: QvisPointControl
@@ -50,12 +51,17 @@ public:
                      bool enableScaleByVar=true);
     ~QvisPointControl();
 
+    void SetPointAtts(PointGlyphAttributes *p);
+
+
+    void SetAutoSizeChecked(bool);
     void SetPointSize(double);
     void SetPointSizePixels(int);
     void SetPointSizeVarChecked(bool);
     void SetPointSizeVar(QString &);
     void SetPointType(int);
 
+    bool     GetAutoSizeEnabled() const;
     double   GetPointSize();
     int      GetPointSizePixels();
     bool     GetPointSizeVarChecked() const;
@@ -63,6 +69,7 @@ public:
     int      GetPointType() const;
 
 signals:
+    void autoSizeToggled(bool);
     void pointSizeChanged(double);
     void pointSizePixelsChanged(int);
     void pointSizeVarToggled(bool val);
@@ -70,6 +77,7 @@ signals:
     void pointTypeChanged(int);
 
 private slots:
+    void autoSizeChanged(bool);
     void processSizeText();
     void sizeVarChanged(const QString &);
     void sizeVarToggled(bool on);
@@ -80,6 +88,7 @@ private:
     void UpdatePointType();
     bool ProcessSizeText(int pointType);
 
+    QCheckBox              *autoSizeToggle;
     QLabel                 *sizeLabel;
     QNarrowLineEdit        *sizeLineEdit;
     QCheckBox              *sizeVarToggle;

@@ -8,6 +8,7 @@ import llnl.visit.AttributeSubject;
 import llnl.visit.CommunicationBuffer;
 import llnl.visit.Plugin;
 import llnl.visit.ColorAttribute;
+import llnl.visit.PointGlyphAttributes;
 
 // ****************************************************************************
 // Class: MeshAttributes
@@ -26,7 +27,7 @@ import llnl.visit.ColorAttribute;
 
 public class MeshAttributes extends AttributeSubject implements Plugin
 {
-    private static int MeshAttributes_numAdditionalAtts = 16;
+    private static int MeshAttributes_numAdditionalAtts = 12;
 
     // Enum values
     public final static int SMOOTHINGLEVEL_NONE = 0;
@@ -56,16 +57,12 @@ public class MeshAttributes extends AttributeSubject implements Plugin
         meshColorSource = MESHCOLOR_FOREGROUND;
         opaqueColorSource = OPAQUECOLOR_BACKGROUND;
         opaqueMode = OPAQUEMODE_AUTO;
-        pointSize = 0.05;
         opaqueColor = new ColorAttribute(255, 255, 255);
         smoothingLevel = SMOOTHINGLEVEL_NONE;
-        pointSizeVarEnabled = false;
-        pointSizeVar = new String("default");
-        pointType = 6;
         opaqueMeshIsAppropriate = true;
         showInternal = false;
-        pointSizePixels = 2;
         opacity = 1;
+        pointAtts = new PointGlyphAttributes();
     }
 
     public MeshAttributes(int nMoreFields)
@@ -78,16 +75,12 @@ public class MeshAttributes extends AttributeSubject implements Plugin
         meshColorSource = MESHCOLOR_FOREGROUND;
         opaqueColorSource = OPAQUECOLOR_BACKGROUND;
         opaqueMode = OPAQUEMODE_AUTO;
-        pointSize = 0.05;
         opaqueColor = new ColorAttribute(255, 255, 255);
         smoothingLevel = SMOOTHINGLEVEL_NONE;
-        pointSizeVarEnabled = false;
-        pointSizeVar = new String("default");
-        pointType = 6;
         opaqueMeshIsAppropriate = true;
         showInternal = false;
-        pointSizePixels = 2;
         opacity = 1;
+        pointAtts = new PointGlyphAttributes();
     }
 
     public MeshAttributes(MeshAttributes obj)
@@ -100,16 +93,12 @@ public class MeshAttributes extends AttributeSubject implements Plugin
         meshColorSource = obj.meshColorSource;
         opaqueColorSource = obj.opaqueColorSource;
         opaqueMode = obj.opaqueMode;
-        pointSize = obj.pointSize;
         opaqueColor = new ColorAttribute(obj.opaqueColor);
         smoothingLevel = obj.smoothingLevel;
-        pointSizeVarEnabled = obj.pointSizeVarEnabled;
-        pointSizeVar = new String(obj.pointSizeVar);
-        pointType = obj.pointType;
         opaqueMeshIsAppropriate = obj.opaqueMeshIsAppropriate;
         showInternal = obj.showInternal;
-        pointSizePixels = obj.pointSizePixels;
         opacity = obj.opacity;
+        pointAtts = new PointGlyphAttributes(obj.pointAtts);
 
         SelectAll();
     }
@@ -133,16 +122,12 @@ public class MeshAttributes extends AttributeSubject implements Plugin
                 (meshColorSource == obj.meshColorSource) &&
                 (opaqueColorSource == obj.opaqueColorSource) &&
                 (opaqueMode == obj.opaqueMode) &&
-                (pointSize == obj.pointSize) &&
                 (opaqueColor == obj.opaqueColor) &&
                 (smoothingLevel == obj.smoothingLevel) &&
-                (pointSizeVarEnabled == obj.pointSizeVarEnabled) &&
-                (pointSizeVar.equals(obj.pointSizeVar)) &&
-                (pointType == obj.pointType) &&
                 (opaqueMeshIsAppropriate == obj.opaqueMeshIsAppropriate) &&
                 (showInternal == obj.showInternal) &&
-                (pointSizePixels == obj.pointSizePixels) &&
-                (opacity == obj.opacity));
+                (opacity == obj.opacity) &&
+                (pointAtts.equals(obj.pointAtts)));
     }
 
     public String GetName() { return "Mesh"; }
@@ -185,83 +170,55 @@ public class MeshAttributes extends AttributeSubject implements Plugin
         Select(5);
     }
 
-    public void SetPointSize(double pointSize_)
-    {
-        pointSize = pointSize_;
-        Select(6);
-    }
-
     public void SetOpaqueColor(ColorAttribute opaqueColor_)
     {
         opaqueColor = opaqueColor_;
-        Select(7);
+        Select(6);
     }
 
     public void SetSmoothingLevel(int smoothingLevel_)
     {
         smoothingLevel = smoothingLevel_;
-        Select(8);
-    }
-
-    public void SetPointSizeVarEnabled(boolean pointSizeVarEnabled_)
-    {
-        pointSizeVarEnabled = pointSizeVarEnabled_;
-        Select(9);
-    }
-
-    public void SetPointSizeVar(String pointSizeVar_)
-    {
-        pointSizeVar = pointSizeVar_;
-        Select(10);
-    }
-
-    public void SetPointType(int pointType_)
-    {
-        pointType = pointType_;
-        Select(11);
+        Select(7);
     }
 
     public void SetOpaqueMeshIsAppropriate(boolean opaqueMeshIsAppropriate_)
     {
         opaqueMeshIsAppropriate = opaqueMeshIsAppropriate_;
-        Select(12);
+        Select(8);
     }
 
     public void SetShowInternal(boolean showInternal_)
     {
         showInternal = showInternal_;
-        Select(13);
-    }
-
-    public void SetPointSizePixels(int pointSizePixels_)
-    {
-        pointSizePixels = pointSizePixels_;
-        Select(14);
+        Select(9);
     }
 
     public void SetOpacity(double opacity_)
     {
         opacity = opacity_;
-        Select(15);
+        Select(10);
+    }
+
+    public void SetPointAtts(PointGlyphAttributes pointAtts_)
+    {
+        pointAtts = pointAtts_;
+        Select(11);
     }
 
     // Property getting methods
-    public boolean        GetLegendFlag() { return legendFlag; }
-    public int            GetLineWidth() { return lineWidth; }
-    public ColorAttribute GetMeshColor() { return meshColor; }
-    public int            GetMeshColorSource() { return meshColorSource; }
-    public int            GetOpaqueColorSource() { return opaqueColorSource; }
-    public int            GetOpaqueMode() { return opaqueMode; }
-    public double         GetPointSize() { return pointSize; }
-    public ColorAttribute GetOpaqueColor() { return opaqueColor; }
-    public int            GetSmoothingLevel() { return smoothingLevel; }
-    public boolean        GetPointSizeVarEnabled() { return pointSizeVarEnabled; }
-    public String         GetPointSizeVar() { return pointSizeVar; }
-    public int GetPointType() { return pointType; }
-    public boolean        GetOpaqueMeshIsAppropriate() { return opaqueMeshIsAppropriate; }
-    public boolean        GetShowInternal() { return showInternal; }
-    public int            GetPointSizePixels() { return pointSizePixels; }
-    public double         GetOpacity() { return opacity; }
+    public boolean              GetLegendFlag() { return legendFlag; }
+    public int                  GetLineWidth() { return lineWidth; }
+    public ColorAttribute       GetMeshColor() { return meshColor; }
+    public int                  GetMeshColorSource() { return meshColorSource; }
+    public int                  GetOpaqueColorSource() { return opaqueColorSource; }
+    public int                  GetOpaqueMode() { return opaqueMode; }
+    public ColorAttribute       GetOpaqueColor() { return opaqueColor; }
+    public int                  GetSmoothingLevel() { return smoothingLevel; }
+    public boolean              GetOpaqueMeshIsAppropriate() { return opaqueMeshIsAppropriate; }
+    public boolean              GetShowInternal() { return showInternal; }
+    public double               GetOpacity() { return opacity; }
+    public PointGlyphAttributes GetPointAtts() { return pointAtts; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
@@ -279,25 +236,17 @@ public class MeshAttributes extends AttributeSubject implements Plugin
         if(WriteSelect(5, buf))
             buf.WriteInt(opaqueMode);
         if(WriteSelect(6, buf))
-            buf.WriteDouble(pointSize);
-        if(WriteSelect(7, buf))
             opaqueColor.Write(buf);
-        if(WriteSelect(8, buf))
+        if(WriteSelect(7, buf))
             buf.WriteInt(smoothingLevel);
-        if(WriteSelect(9, buf))
-            buf.WriteBool(pointSizeVarEnabled);
-        if(WriteSelect(10, buf))
-            buf.WriteString(pointSizeVar);
-        if(WriteSelect(11, buf))
-            buf.WriteInt(pointType);
-        if(WriteSelect(12, buf))
+        if(WriteSelect(8, buf))
             buf.WriteBool(opaqueMeshIsAppropriate);
-        if(WriteSelect(13, buf))
+        if(WriteSelect(9, buf))
             buf.WriteBool(showInternal);
-        if(WriteSelect(14, buf))
-            buf.WriteInt(pointSizePixels);
-        if(WriteSelect(15, buf))
+        if(WriteSelect(10, buf))
             buf.WriteDouble(opacity);
+        if(WriteSelect(11, buf))
+            pointAtts.Write(buf);
     }
 
     public void ReadAtts(int index, CommunicationBuffer buf)
@@ -324,35 +273,24 @@ public class MeshAttributes extends AttributeSubject implements Plugin
             SetOpaqueMode(buf.ReadInt());
             break;
         case 6:
-            SetPointSize(buf.ReadDouble());
+            opaqueColor.Read(buf);
+            Select(6);
             break;
         case 7:
-            opaqueColor.Read(buf);
-            Select(7);
-            break;
-        case 8:
             SetSmoothingLevel(buf.ReadInt());
             break;
-        case 9:
-            SetPointSizeVarEnabled(buf.ReadBool());
-            break;
-        case 10:
-            SetPointSizeVar(buf.ReadString());
-            break;
-        case 11:
-            SetPointType(buf.ReadInt());
-            break;
-        case 12:
+        case 8:
             SetOpaqueMeshIsAppropriate(buf.ReadBool());
             break;
-        case 13:
+        case 9:
             SetShowInternal(buf.ReadBool());
             break;
-        case 14:
-            SetPointSizePixels(buf.ReadInt());
-            break;
-        case 15:
+        case 10:
             SetOpacity(buf.ReadDouble());
+            break;
+        case 11:
+            pointAtts.Read(buf);
+            Select(11);
             break;
         }
     }
@@ -387,7 +325,6 @@ public class MeshAttributes extends AttributeSubject implements Plugin
         if(opaqueMode == OPAQUEMODE_OFF)
             str = str + "OPAQUEMODE_OFF";
         str = str + "\n";
-        str = str + doubleToString("pointSize", pointSize, indent) + "\n";
         str = str + indent + "opaqueColor = {" + opaqueColor.Red() + ", " + opaqueColor.Green() + ", " + opaqueColor.Blue() + ", " + opaqueColor.Alpha() + "}\n";
         str = str + indent + "smoothingLevel = ";
         if(smoothingLevel == SMOOTHINGLEVEL_NONE)
@@ -397,33 +334,26 @@ public class MeshAttributes extends AttributeSubject implements Plugin
         if(smoothingLevel == SMOOTHINGLEVEL_HIGH)
             str = str + "SMOOTHINGLEVEL_HIGH";
         str = str + "\n";
-        str = str + boolToString("pointSizeVarEnabled", pointSizeVarEnabled, indent) + "\n";
-        str = str + stringToString("pointSizeVar", pointSizeVar, indent) + "\n";
-        str = str + intToString("pointType", pointType, indent) + "\n";
         str = str + boolToString("opaqueMeshIsAppropriate", opaqueMeshIsAppropriate, indent) + "\n";
         str = str + boolToString("showInternal", showInternal, indent) + "\n";
-        str = str + intToString("pointSizePixels", pointSizePixels, indent) + "\n";
         str = str + doubleToString("opacity", opacity, indent) + "\n";
+        str = str + indent + "pointAtts = {\n" + pointAtts.toString(indent + "    ") + indent + "}\n";
         return str;
     }
 
 
     // Attributes
-    private boolean        legendFlag;
-    private int            lineWidth;
-    private ColorAttribute meshColor;
-    private int            meshColorSource;
-    private int            opaqueColorSource;
-    private int            opaqueMode;
-    private double         pointSize;
-    private ColorAttribute opaqueColor;
-    private int            smoothingLevel;
-    private boolean        pointSizeVarEnabled;
-    private String         pointSizeVar;
-    private int pointType;
-    private boolean        opaqueMeshIsAppropriate;
-    private boolean        showInternal;
-    private int            pointSizePixels;
-    private double         opacity;
+    private boolean              legendFlag;
+    private int                  lineWidth;
+    private ColorAttribute       meshColor;
+    private int                  meshColorSource;
+    private int                  opaqueColorSource;
+    private int                  opaqueMode;
+    private ColorAttribute       opaqueColor;
+    private int                  smoothingLevel;
+    private boolean              opaqueMeshIsAppropriate;
+    private boolean              showInternal;
+    private double               opacity;
+    private PointGlyphAttributes pointAtts;
 }
 
