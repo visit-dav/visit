@@ -601,6 +601,7 @@ void avtColorTables::ModifyColor(char unsigned const *inrgb, double mult,
 
 avtColorTables::avtColorTables()
 {
+    std::cout << "avtColorTables creating ctAtts" << std::endl;
     ctAtts = new ColorTableAttributes();
 
     // Just add new, pre-defined color tables to this list

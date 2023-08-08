@@ -8,6 +8,8 @@
 #include <map>
 #include <ColorControlPointList.h>
 
+static int           instanceCount = 0;
+
 // ****************************************************************************
 // Method: ColorTableAttributes::ColorTableAttributes
 //
@@ -99,6 +101,9 @@ ColorTableAttributes::ColorTableAttributes() :
     AttributeSubject(ColorTableAttributes::TypeMapFormatString)
 {
     ColorTableAttributes::Init();
+    std::cout << "CTAtts contructor 1 is being called" << std::endl;
+    instanceCount ++;
+    std::cout << "There are " << instanceCount << " ctAtts out in the wild." << std::endl;
 }
 
 // ****************************************************************************
@@ -120,6 +125,9 @@ ColorTableAttributes::ColorTableAttributes(private_tmfs_t tmfs) :
     AttributeSubject(tmfs.tmfs)
 {
     ColorTableAttributes::Init();
+    std::cout << "CTAtts contructor 2 is being called" << std::endl;
+    instanceCount ++;
+    std::cout << "There are " << instanceCount << " ctAtts out in the wild." << std::endl;
 }
 
 // ****************************************************************************
@@ -141,6 +149,9 @@ ColorTableAttributes::ColorTableAttributes(const ColorTableAttributes &obj) :
     AttributeSubject(ColorTableAttributes::TypeMapFormatString)
 {
     ColorTableAttributes::Copy(obj);
+    std::cout << "CTAtts contructor 3 is being called" << std::endl;
+    instanceCount ++;
+    std::cout << "There are " << instanceCount << " ctAtts out in the wild." << std::endl;
 }
 
 // ****************************************************************************
@@ -162,6 +173,9 @@ ColorTableAttributes::ColorTableAttributes(const ColorTableAttributes &obj, priv
     AttributeSubject(tmfs.tmfs)
 {
     ColorTableAttributes::Copy(obj);
+    std::cout << "CTAtts contructor 4 is being called" << std::endl;
+    instanceCount ++;
+    std::cout << "There are " << instanceCount << " ctAtts out in the wild." << std::endl;
 }
 
 // ****************************************************************************
@@ -186,6 +200,10 @@ ColorTableAttributes::~ColorTableAttributes()
     // Destroy the colorTables field.
     for(pos = colorTables.begin(); pos != colorTables.end(); ++pos)
         delete *pos;
+
+    std::cout << "CTAtts destructor is being called" << std::endl;
+    instanceCount --;
+    std::cout << "There are " << instanceCount << " ctAtts out in the wild." << std::endl;
 }
 
 // ****************************************************************************
@@ -339,7 +357,10 @@ ColorTableAttributes::CreateCompatible(const std::string &tname) const
 {
     AttributeSubject *retval = 0;
     if(TypeName() == tname)
+    {
+        std::cout << "ColorTableAttributes creating ctAtts" << std::endl;
         retval = new ColorTableAttributes(*this);
+    }
     // Other cases could go here too.
 
     return retval;
@@ -363,6 +384,7 @@ ColorTableAttributes::CreateCompatible(const std::string &tname) const
 AttributeSubject *
 ColorTableAttributes::NewInstance(bool copy) const
 {
+    std::cout << "ColorTableAttributes creating ctAtts" << std::endl;
     AttributeSubject *retval = 0;
     if(copy)
         retval = new ColorTableAttributes(*this);
