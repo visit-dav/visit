@@ -9,6 +9,7 @@
 #include <ColorControlPointList.h>
 
 static int           instanceCount = 0;
+static int           creationCount = 0;
 
 // ****************************************************************************
 // Method: ColorTableAttributes::ColorTableAttributes
@@ -101,8 +102,9 @@ ColorTableAttributes::ColorTableAttributes() :
     AttributeSubject(ColorTableAttributes::TypeMapFormatString)
 {
     ColorTableAttributes::Init();
-    std::cout << "CTAtts contructor 1 is being called" << std::endl;
     instanceCount ++;
+    creationCount ++;
+    std::cout << "CTAtts contructor 1 is being called on ctAtts " << creationCount << " " << (void*)this << std::endl;
     std::cout << "There are " << instanceCount << " ctAtts out in the wild." << std::endl;
 }
 
@@ -125,8 +127,9 @@ ColorTableAttributes::ColorTableAttributes(private_tmfs_t tmfs) :
     AttributeSubject(tmfs.tmfs)
 {
     ColorTableAttributes::Init();
-    std::cout << "CTAtts contructor 2 is being called" << std::endl;
     instanceCount ++;
+    creationCount ++;
+    std::cout << "CTAtts contructor 2 is being called on ctAtts " << creationCount << " " << (void*)this << std::endl;
     std::cout << "There are " << instanceCount << " ctAtts out in the wild." << std::endl;
 }
 
@@ -149,8 +152,9 @@ ColorTableAttributes::ColorTableAttributes(const ColorTableAttributes &obj) :
     AttributeSubject(ColorTableAttributes::TypeMapFormatString)
 {
     ColorTableAttributes::Copy(obj);
-    std::cout << "CTAtts contructor 3 is being called" << std::endl;
     instanceCount ++;
+    creationCount ++;
+    std::cout << "CTAtts contructor 3 is being called on ctAtts " << creationCount << " " << (void*)this << std::endl;
     std::cout << "There are " << instanceCount << " ctAtts out in the wild." << std::endl;
 }
 
@@ -173,8 +177,9 @@ ColorTableAttributes::ColorTableAttributes(const ColorTableAttributes &obj, priv
     AttributeSubject(tmfs.tmfs)
 {
     ColorTableAttributes::Copy(obj);
-    std::cout << "CTAtts contructor 4 is being called" << std::endl;
     instanceCount ++;
+    creationCount ++;
+    std::cout << "CTAtts contructor 4 is being called on ctAtts " << creationCount << " " << (void*)this << std::endl;
     std::cout << "There are " << instanceCount << " ctAtts out in the wild." << std::endl;
 }
 
@@ -201,7 +206,7 @@ ColorTableAttributes::~ColorTableAttributes()
     for(pos = colorTables.begin(); pos != colorTables.end(); ++pos)
         delete *pos;
 
-    std::cout << "CTAtts destructor is being called" << std::endl;
+    std::cout << "CTAtts destructor is being called on ctAtts " << creationCount << " " << (void*)this << std::endl;
     instanceCount --;
     std::cout << "There are " << instanceCount << " ctAtts out in the wild." << std::endl;
 }
