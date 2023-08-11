@@ -24,7 +24,7 @@ import java.lang.Integer;
 
 public class ColorTableAttributes extends AttributeSubject
 {
-    private static int ColorTableAttributes_numAdditionalAtts = 7;
+    private static int ColorTableAttributes_numAdditionalAtts = 14;
 
     public ColorTableAttributes()
     {
@@ -36,7 +36,14 @@ public class ColorTableAttributes extends AttributeSubject
         defaultContinuous = new String("hot");
         defaultDiscrete = new String("levels");
         changesMade = false;
-        tagsMatchAny = false;
+        tagsMatchAny = true;
+        tagListNames = new Vector();
+        tagListActive = new Vector();
+        tagListNumRefs = new Vector();
+        tagListTableItemFlag = new Vector();
+        tagChangesTag = new Vector();
+        tagChangesType = new Vector();
+        tagChangesCTName = new Vector();
     }
 
     public ColorTableAttributes(int nMoreFields)
@@ -49,7 +56,14 @@ public class ColorTableAttributes extends AttributeSubject
         defaultContinuous = new String("hot");
         defaultDiscrete = new String("levels");
         changesMade = false;
-        tagsMatchAny = false;
+        tagsMatchAny = true;
+        tagListNames = new Vector();
+        tagListActive = new Vector();
+        tagListNumRefs = new Vector();
+        tagListTableItemFlag = new Vector();
+        tagChangesTag = new Vector();
+        tagChangesType = new Vector();
+        tagChangesCTName = new Vector();
     }
 
     public ColorTableAttributes(ColorTableAttributes obj)
@@ -80,6 +94,44 @@ public class ColorTableAttributes extends AttributeSubject
         defaultDiscrete = new String(obj.defaultDiscrete);
         changesMade = obj.changesMade;
         tagsMatchAny = obj.tagsMatchAny;
+        tagListNames = new Vector(obj.tagListNames.size());
+        for(i = 0; i < obj.tagListNames.size(); ++i)
+            tagListNames.addElement(new String((String)obj.tagListNames.elementAt(i)));
+
+        tagListActive = new Vector();
+        for(i = 0; i < obj.tagListActive.size(); ++i)
+        {
+            Integer iv = (Integer)obj.tagListActive.elementAt(i);
+            tagListActive.addElement(new Integer(iv.intValue()));
+        }
+        tagListNumRefs = new Vector();
+        for(i = 0; i < obj.tagListNumRefs.size(); ++i)
+        {
+            Integer iv = (Integer)obj.tagListNumRefs.elementAt(i);
+            tagListNumRefs.addElement(new Integer(iv.intValue()));
+        }
+        tagListTableItemFlag = new Vector();
+        for(i = 0; i < obj.tagListTableItemFlag.size(); ++i)
+        {
+            Integer iv = (Integer)obj.tagListTableItemFlag.elementAt(i);
+            tagListTableItemFlag.addElement(new Integer(iv.intValue()));
+        }
+        tagChangesTag = new Vector();
+        for(i = 0; i < obj.tagChangesTag.size(); ++i)
+        {
+            Integer iv = (Integer)obj.tagChangesTag.elementAt(i);
+            tagChangesTag.addElement(new Integer(iv.intValue()));
+        }
+        tagChangesType = new Vector();
+        for(i = 0; i < obj.tagChangesType.size(); ++i)
+        {
+            Integer iv = (Integer)obj.tagChangesType.elementAt(i);
+            tagChangesType.addElement(new Integer(iv.intValue()));
+        }
+        tagChangesCTName = new Vector(obj.tagChangesCTName.size());
+        for(i = 0; i < obj.tagChangesCTName.size(); ++i)
+            tagChangesCTName.addElement(new String((String)obj.tagChangesCTName.elementAt(i)));
+
 
         SelectAll();
     }
@@ -116,6 +168,69 @@ public class ColorTableAttributes extends AttributeSubject
             ColorControlPointList colorTables2 = (ColorControlPointList)obj.colorTables.elementAt(i);
             colorTables_equal = colorTables1.equals(colorTables2);
         }
+        // Compare the elements in the tagListNames vector.
+        boolean tagListNames_equal = (obj.tagListNames.size() == tagListNames.size());
+        for(i = 0; (i < tagListNames.size()) && tagListNames_equal; ++i)
+        {
+            // Make references to String from Object.
+            String tagListNames1 = (String)tagListNames.elementAt(i);
+            String tagListNames2 = (String)obj.tagListNames.elementAt(i);
+            tagListNames_equal = tagListNames1.equals(tagListNames2);
+        }
+        // Compare the elements in the tagListActive vector.
+        boolean tagListActive_equal = (obj.tagListActive.size() == tagListActive.size());
+        for(i = 0; (i < tagListActive.size()) && tagListActive_equal; ++i)
+        {
+            // Make references to Integer from Object.
+            Integer tagListActive1 = (Integer)tagListActive.elementAt(i);
+            Integer tagListActive2 = (Integer)obj.tagListActive.elementAt(i);
+            tagListActive_equal = tagListActive1.equals(tagListActive2);
+        }
+        // Compare the elements in the tagListNumRefs vector.
+        boolean tagListNumRefs_equal = (obj.tagListNumRefs.size() == tagListNumRefs.size());
+        for(i = 0; (i < tagListNumRefs.size()) && tagListNumRefs_equal; ++i)
+        {
+            // Make references to Integer from Object.
+            Integer tagListNumRefs1 = (Integer)tagListNumRefs.elementAt(i);
+            Integer tagListNumRefs2 = (Integer)obj.tagListNumRefs.elementAt(i);
+            tagListNumRefs_equal = tagListNumRefs1.equals(tagListNumRefs2);
+        }
+        // Compare the elements in the tagListTableItemFlag vector.
+        boolean tagListTableItemFlag_equal = (obj.tagListTableItemFlag.size() == tagListTableItemFlag.size());
+        for(i = 0; (i < tagListTableItemFlag.size()) && tagListTableItemFlag_equal; ++i)
+        {
+            // Make references to Integer from Object.
+            Integer tagListTableItemFlag1 = (Integer)tagListTableItemFlag.elementAt(i);
+            Integer tagListTableItemFlag2 = (Integer)obj.tagListTableItemFlag.elementAt(i);
+            tagListTableItemFlag_equal = tagListTableItemFlag1.equals(tagListTableItemFlag2);
+        }
+        // Compare the elements in the tagChangesTag vector.
+        boolean tagChangesTag_equal = (obj.tagChangesTag.size() == tagChangesTag.size());
+        for(i = 0; (i < tagChangesTag.size()) && tagChangesTag_equal; ++i)
+        {
+            // Make references to Integer from Object.
+            Integer tagChangesTag1 = (Integer)tagChangesTag.elementAt(i);
+            Integer tagChangesTag2 = (Integer)obj.tagChangesTag.elementAt(i);
+            tagChangesTag_equal = tagChangesTag1.equals(tagChangesTag2);
+        }
+        // Compare the elements in the tagChangesType vector.
+        boolean tagChangesType_equal = (obj.tagChangesType.size() == tagChangesType.size());
+        for(i = 0; (i < tagChangesType.size()) && tagChangesType_equal; ++i)
+        {
+            // Make references to Integer from Object.
+            Integer tagChangesType1 = (Integer)tagChangesType.elementAt(i);
+            Integer tagChangesType2 = (Integer)obj.tagChangesType.elementAt(i);
+            tagChangesType_equal = tagChangesType1.equals(tagChangesType2);
+        }
+        // Compare the elements in the tagChangesCTName vector.
+        boolean tagChangesCTName_equal = (obj.tagChangesCTName.size() == tagChangesCTName.size());
+        for(i = 0; (i < tagChangesCTName.size()) && tagChangesCTName_equal; ++i)
+        {
+            // Make references to String from Object.
+            String tagChangesCTName1 = (String)tagChangesCTName.elementAt(i);
+            String tagChangesCTName2 = (String)obj.tagChangesCTName.elementAt(i);
+            tagChangesCTName_equal = tagChangesCTName1.equals(tagChangesCTName2);
+        }
         // Create the return value
         return (names_equal &&
                 true /* can ignore active */ &&
@@ -123,7 +238,14 @@ public class ColorTableAttributes extends AttributeSubject
                 (defaultContinuous.equals(obj.defaultContinuous)) &&
                 (defaultDiscrete.equals(obj.defaultDiscrete)) &&
                 (changesMade == obj.changesMade) &&
-                (tagsMatchAny == obj.tagsMatchAny));
+                (tagsMatchAny == obj.tagsMatchAny) &&
+                tagListNames_equal &&
+                tagListActive_equal &&
+                tagListNumRefs_equal &&
+                tagListTableItemFlag_equal &&
+                tagChangesTag_equal &&
+                tagChangesType_equal &&
+                tagChangesCTName_equal);
     }
 
     // Property setting methods
@@ -163,6 +285,48 @@ public class ColorTableAttributes extends AttributeSubject
         Select(6);
     }
 
+    public void SetTagListNames(Vector tagListNames_)
+    {
+        tagListNames = tagListNames_;
+        Select(7);
+    }
+
+    public void SetTagListActive(Vector tagListActive_)
+    {
+        tagListActive = tagListActive_;
+        Select(8);
+    }
+
+    public void SetTagListNumRefs(Vector tagListNumRefs_)
+    {
+        tagListNumRefs = tagListNumRefs_;
+        Select(9);
+    }
+
+    public void SetTagListTableItemFlag(Vector tagListTableItemFlag_)
+    {
+        tagListTableItemFlag = tagListTableItemFlag_;
+        Select(10);
+    }
+
+    public void SetTagChangesTag(Vector tagChangesTag_)
+    {
+        tagChangesTag = tagChangesTag_;
+        Select(11);
+    }
+
+    public void SetTagChangesType(Vector tagChangesType_)
+    {
+        tagChangesType = tagChangesType_;
+        Select(12);
+    }
+
+    public void SetTagChangesCTName(Vector tagChangesCTName_)
+    {
+        tagChangesCTName = tagChangesCTName_;
+        Select(13);
+    }
+
     // Property getting methods
     public Vector  GetNames() { return names; }
     public Vector  GetActive() { return active; }
@@ -171,6 +335,13 @@ public class ColorTableAttributes extends AttributeSubject
     public String  GetDefaultDiscrete() { return defaultDiscrete; }
     public boolean GetChangesMade() { return changesMade; }
     public boolean GetTagsMatchAny() { return tagsMatchAny; }
+    public Vector  GetTagListNames() { return tagListNames; }
+    public Vector  GetTagListActive() { return tagListActive; }
+    public Vector  GetTagListNumRefs() { return tagListNumRefs; }
+    public Vector  GetTagListTableItemFlag() { return tagListTableItemFlag; }
+    public Vector  GetTagChangesTag() { return tagChangesTag; }
+    public Vector  GetTagChangesType() { return tagChangesType; }
+    public Vector  GetTagChangesCTName() { return tagChangesCTName; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
@@ -196,6 +367,20 @@ public class ColorTableAttributes extends AttributeSubject
             buf.WriteBool(changesMade);
         if(WriteSelect(6, buf))
             buf.WriteBool(tagsMatchAny);
+        if(WriteSelect(7, buf))
+            buf.WriteStringVector(tagListNames);
+        if(WriteSelect(8, buf))
+            buf.WriteIntVector(tagListActive);
+        if(WriteSelect(9, buf))
+            buf.WriteIntVector(tagListNumRefs);
+        if(WriteSelect(10, buf))
+            buf.WriteIntVector(tagListTableItemFlag);
+        if(WriteSelect(11, buf))
+            buf.WriteIntVector(tagChangesTag);
+        if(WriteSelect(12, buf))
+            buf.WriteIntVector(tagChangesType);
+        if(WriteSelect(13, buf))
+            buf.WriteStringVector(tagChangesCTName);
     }
 
     public void ReadAtts(int index, CommunicationBuffer buf)
@@ -233,6 +418,27 @@ public class ColorTableAttributes extends AttributeSubject
         case 6:
             SetTagsMatchAny(buf.ReadBool());
             break;
+        case 7:
+            SetTagListNames(buf.ReadStringVector());
+            break;
+        case 8:
+            SetTagListActive(buf.ReadIntVector());
+            break;
+        case 9:
+            SetTagListNumRefs(buf.ReadIntVector());
+            break;
+        case 10:
+            SetTagListTableItemFlag(buf.ReadIntVector());
+            break;
+        case 11:
+            SetTagChangesTag(buf.ReadIntVector());
+            break;
+        case 12:
+            SetTagChangesType(buf.ReadIntVector());
+            break;
+        case 13:
+            SetTagChangesCTName(buf.ReadStringVector());
+            break;
         }
     }
 
@@ -255,6 +461,13 @@ public class ColorTableAttributes extends AttributeSubject
         str = str + stringToString("defaultDiscrete", defaultDiscrete, indent) + "\n";
         str = str + boolToString("changesMade", changesMade, indent) + "\n";
         str = str + boolToString("tagsMatchAny", tagsMatchAny, indent) + "\n";
+        str = str + stringVectorToString("tagListNames", tagListNames, indent) + "\n";
+        str = str + intVectorToString("tagListActive", tagListActive, indent) + "\n";
+        str = str + intVectorToString("tagListNumRefs", tagListNumRefs, indent) + "\n";
+        str = str + intVectorToString("tagListTableItemFlag", tagListTableItemFlag, indent) + "\n";
+        str = str + intVectorToString("tagChangesTag", tagChangesTag, indent) + "\n";
+        str = str + intVectorToString("tagChangesType", tagChangesType, indent) + "\n";
+        str = str + stringVectorToString("tagChangesCTName", tagChangesCTName, indent) + "\n";
         return str;
     }
 
@@ -397,5 +610,12 @@ public class ColorTableAttributes extends AttributeSubject
     private String  defaultDiscrete;
     private boolean changesMade;
     private boolean tagsMatchAny;
+    private Vector  tagListNames; // vector of String objects
+    private Vector  tagListActive; // vector of Integer objects
+    private Vector  tagListNumRefs; // vector of Integer objects
+    private Vector  tagListTableItemFlag; // vector of Integer objects
+    private Vector  tagChangesTag; // vector of Integer objects
+    private Vector  tagChangesType; // vector of Integer objects
+    private Vector  tagChangesCTName; // vector of String objects
 }
 

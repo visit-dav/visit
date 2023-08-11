@@ -16,6 +16,33 @@
 #define ADDTAGSTR    "0"
 #define REMOVETAGSTR "1"
 
+// It is time to say goodbye to the tagList. It has now been broken up into a
+// series of vectors that are proper class members. We will describe each one:
+
+// Each of the following has the same number of entries; one for each tag:
+// 
+// tagListNames - houses the names of the tags.
+// tagListActive - a flag indicating whether or not the tag is enabled.
+// tagListNumRefs - a count of how many color tables have this tag.
+// tagListTableItemFlag - a flag indicating if the tag table in the color
+//    table window has an entry for this tag.
+
+// Tag changes are no longer a part of the tag list. The following three
+// vectors are the same length; they have one entry for each tag change that
+// is made.
+// 
+// tagChangesTag - the name of the tag that is being added to or removed 
+//    from a color table.
+// tagChangesType - a constant equal to either ADDTAG (0) or REMOVETAG (1).
+// tagChangesCTName - the name of the color table (std::string) being added
+//    to or removed from.
+
+// These vectors are updated on the fly to reflect the latest tag 
+// changes. They are also used to determine if a tag change is legal
+// (particularly if a color table is built in), and they are saved out to 
+// state files.
+
+// TODO remove class taginfo and the taglist
 class TagInfo
 {
 public:
@@ -44,7 +71,7 @@ public:
 };
 
 // This is your one stop shop for information about each tag.
-static std::map<std::string, TagInfo> tagList;
+std::map<std::string, TagInfo> tagList;
 // We are mapping tag names (std::string) to metadata (TagInfo).
 
 // ****************************************************************************
@@ -68,12 +95,14 @@ void ColorTableAttributes::Init()
     defaultDiscrete = "levels";
     changesMade = false;
     tagsMatchAny = true;
-    
-    // We set the 'Default' and 'User Defined' tags to active by default; this can 
-    // be overridden by setting from node.
-    tagList["Default"].active = true;
-    tagList["User Defined"].active = true;
-    // if no color tables have these tags, then they will be pruned later by the color table window
+    tagListNames.push_back("Default"); // add the "Default" tag to the tag list.
+    tagListNames.push_back("User Defined"); // add the "User Defined" tag to the tag list.
+    tagListActive.push_back(true); // set the "Default" tag to on.
+    tagListActive.push_back(true); // set the "User Defined" tag to on.
+    tagListNumRefs.push_back(0); // the "Default" tag has no refs.
+    tagListNumRefs.push_back(0); // the "User Defined" tag has no refs.
+    tagListTableItemFlag.push_back(false); // the "Default" tag has no tag table entry.
+    tagListTableItemFlag.push_back(false); // the "User Defined" tag has no tag table entry.
 
     ColorTableAttributes::SelectAll();
 }
@@ -118,6 +147,13 @@ void ColorTableAttributes::Copy(const ColorTableAttributes &obj)
     defaultDiscrete = obj.defaultDiscrete;
     changesMade = obj.changesMade;
     tagsMatchAny = obj.tagsMatchAny;
+    tagListNames = obj.tagListNames;
+    tagListActive = obj.tagListActive;
+    tagListNumRefs = obj.tagListNumRefs;
+    tagListTableItemFlag = obj.tagListTableItemFlag;
+    tagChangesTag = obj.tagChangesTag;
+    tagChangesType = obj.tagChangesType;
+    tagChangesCTName = obj.tagChangesCTName;
 
     ColorTableAttributes::SelectAll();
 }
@@ -294,7 +330,14 @@ ColorTableAttributes::operator == (const ColorTableAttributes &obj) const
             (defaultContinuous == obj.defaultContinuous) &&
             (defaultDiscrete == obj.defaultDiscrete) &&
             (changesMade == obj.changesMade) &&
-            (tagsMatchAny == obj.tagsMatchAny));
+            (tagsMatchAny == obj.tagsMatchAny) &&
+            (tagListNames == obj.tagListNames) &&
+            (tagListActive == obj.tagListActive) &&
+            (tagListNumRefs == obj.tagListNumRefs) &&
+            (tagListTableItemFlag == obj.tagListTableItemFlag) &&
+            (tagChangesTag == obj.tagChangesTag) &&
+            (tagChangesType == obj.tagChangesType) &&
+            (tagChangesCTName == obj.tagChangesCTName));
 }
 
 // ****************************************************************************
@@ -438,13 +481,20 @@ ColorTableAttributes::NewInstance(bool copy) const
 void
 ColorTableAttributes::SelectAll()
 {
-    Select(ID_names,             (void *)&names);
-    Select(ID_active,            (void *)&active);
-    Select(ID_colorTables,       (void *)&colorTables);
-    Select(ID_defaultContinuous, (void *)&defaultContinuous);
-    Select(ID_defaultDiscrete,   (void *)&defaultDiscrete);
-    Select(ID_changesMade,       (void *)&changesMade);
-    Select(ID_tagsMatchAny,      (void *)&tagsMatchAny);
+    Select(ID_names,                (void *)&names);
+    Select(ID_active,               (void *)&active);
+    Select(ID_colorTables,          (void *)&colorTables);
+    Select(ID_defaultContinuous,    (void *)&defaultContinuous);
+    Select(ID_defaultDiscrete,      (void *)&defaultDiscrete);
+    Select(ID_changesMade,          (void *)&changesMade);
+    Select(ID_tagsMatchAny,         (void *)&tagsMatchAny);
+    Select(ID_tagListNames,         (void *)&tagListNames);
+    Select(ID_tagListActive,        (void *)&tagListActive);
+    Select(ID_tagListNumRefs,       (void *)&tagListNumRefs);
+    Select(ID_tagListTableItemFlag, (void *)&tagListTableItemFlag);
+    Select(ID_tagChangesTag,        (void *)&tagChangesTag);
+    Select(ID_tagChangesType,       (void *)&tagChangesType);
+    Select(ID_tagChangesCTName,     (void *)&tagChangesCTName);
 }
 
 // ****************************************************************************
@@ -725,6 +775,55 @@ ColorTableAttributes::SetTagsMatchAny(bool tagsMatchAny_)
     Select(ID_tagsMatchAny, (void *)&tagsMatchAny);
 }
 
+void
+ColorTableAttributes::SetTagListNames(const stringVector &tagListNames_)
+{
+    tagListNames = tagListNames_;
+    Select(ID_tagListNames, (void *)&tagListNames);
+}
+
+void
+ColorTableAttributes::SetTagListActive(const intVector &tagListActive_)
+{
+    tagListActive = tagListActive_;
+    Select(ID_tagListActive, (void *)&tagListActive);
+}
+
+void
+ColorTableAttributes::SetTagListNumRefs(const intVector &tagListNumRefs_)
+{
+    tagListNumRefs = tagListNumRefs_;
+    Select(ID_tagListNumRefs, (void *)&tagListNumRefs);
+}
+
+void
+ColorTableAttributes::SetTagListTableItemFlag(const intVector &tagListTableItemFlag_)
+{
+    tagListTableItemFlag = tagListTableItemFlag_;
+    Select(ID_tagListTableItemFlag, (void *)&tagListTableItemFlag);
+}
+
+void
+ColorTableAttributes::SetTagChangesTag(const intVector &tagChangesTag_)
+{
+    tagChangesTag = tagChangesTag_;
+    Select(ID_tagChangesTag, (void *)&tagChangesTag);
+}
+
+void
+ColorTableAttributes::SetTagChangesType(const intVector &tagChangesType_)
+{
+    tagChangesType = tagChangesType_;
+    Select(ID_tagChangesType, (void *)&tagChangesType);
+}
+
+void
+ColorTableAttributes::SetTagChangesCTName(const stringVector &tagChangesCTName_)
+{
+    tagChangesCTName = tagChangesCTName_;
+    Select(ID_tagChangesCTName, (void *)&tagChangesCTName);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Get property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -801,6 +900,90 @@ ColorTableAttributes::GetTagsMatchAny() const
     return tagsMatchAny;
 }
 
+const stringVector &
+ColorTableAttributes::GetTagListNames() const
+{
+    return tagListNames;
+}
+
+stringVector &
+ColorTableAttributes::GetTagListNames()
+{
+    return tagListNames;
+}
+
+const intVector &
+ColorTableAttributes::GetTagListActive() const
+{
+    return tagListActive;
+}
+
+intVector &
+ColorTableAttributes::GetTagListActive()
+{
+    return tagListActive;
+}
+
+const intVector &
+ColorTableAttributes::GetTagListNumRefs() const
+{
+    return tagListNumRefs;
+}
+
+intVector &
+ColorTableAttributes::GetTagListNumRefs()
+{
+    return tagListNumRefs;
+}
+
+const intVector &
+ColorTableAttributes::GetTagListTableItemFlag() const
+{
+    return tagListTableItemFlag;
+}
+
+intVector &
+ColorTableAttributes::GetTagListTableItemFlag()
+{
+    return tagListTableItemFlag;
+}
+
+const intVector &
+ColorTableAttributes::GetTagChangesTag() const
+{
+    return tagChangesTag;
+}
+
+intVector &
+ColorTableAttributes::GetTagChangesTag()
+{
+    return tagChangesTag;
+}
+
+const intVector &
+ColorTableAttributes::GetTagChangesType() const
+{
+    return tagChangesType;
+}
+
+intVector &
+ColorTableAttributes::GetTagChangesType()
+{
+    return tagChangesType;
+}
+
+const stringVector &
+ColorTableAttributes::GetTagChangesCTName() const
+{
+    return tagChangesCTName;
+}
+
+stringVector &
+ColorTableAttributes::GetTagChangesCTName()
+{
+    return tagChangesCTName;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Select property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -833,6 +1016,48 @@ void
 ColorTableAttributes::SelectDefaultDiscrete()
 {
     Select(ID_defaultDiscrete, (void *)&defaultDiscrete);
+}
+
+void
+ColorTableAttributes::SelectTagListNames()
+{
+    Select(ID_tagListNames, (void *)&tagListNames);
+}
+
+void
+ColorTableAttributes::SelectTagListActive()
+{
+    Select(ID_tagListActive, (void *)&tagListActive);
+}
+
+void
+ColorTableAttributes::SelectTagListNumRefs()
+{
+    Select(ID_tagListNumRefs, (void *)&tagListNumRefs);
+}
+
+void
+ColorTableAttributes::SelectTagListTableItemFlag()
+{
+    Select(ID_tagListTableItemFlag, (void *)&tagListTableItemFlag);
+}
+
+void
+ColorTableAttributes::SelectTagChangesTag()
+{
+    Select(ID_tagChangesTag, (void *)&tagChangesTag);
+}
+
+void
+ColorTableAttributes::SelectTagChangesType()
+{
+    Select(ID_tagChangesType, (void *)&tagChangesType);
+}
+
+void
+ColorTableAttributes::SelectTagChangesCTName()
+{
+    Select(ID_tagChangesCTName, (void *)&tagChangesCTName);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1056,13 +1281,20 @@ ColorTableAttributes::GetFieldName(int index) const
 {
     switch (index)
     {
-    case ID_names:             return "names";
-    case ID_active:            return "active";
-    case ID_colorTables:       return "colorTables";
-    case ID_defaultContinuous: return "defaultContinuous";
-    case ID_defaultDiscrete:   return "defaultDiscrete";
-    case ID_changesMade:       return "changesMade";
-    case ID_tagsMatchAny:      return "tagsMatchAny";
+    case ID_names:                return "names";
+    case ID_active:               return "active";
+    case ID_colorTables:          return "colorTables";
+    case ID_defaultContinuous:    return "defaultContinuous";
+    case ID_defaultDiscrete:      return "defaultDiscrete";
+    case ID_changesMade:          return "changesMade";
+    case ID_tagsMatchAny:         return "tagsMatchAny";
+    case ID_tagListNames:         return "tagListNames";
+    case ID_tagListActive:        return "tagListActive";
+    case ID_tagListNumRefs:       return "tagListNumRefs";
+    case ID_tagListTableItemFlag: return "tagListTableItemFlag";
+    case ID_tagChangesTag:        return "tagChangesTag";
+    case ID_tagChangesType:       return "tagChangesType";
+    case ID_tagChangesCTName:     return "tagChangesCTName";
     default:  return "invalid index";
     }
 }
@@ -1087,13 +1319,20 @@ ColorTableAttributes::GetFieldType(int index) const
 {
     switch (index)
     {
-    case ID_names:             return FieldType_stringVector;
-    case ID_active:            return FieldType_intVector;
-    case ID_colorTables:       return FieldType_attVector;
-    case ID_defaultContinuous: return FieldType_string;
-    case ID_defaultDiscrete:   return FieldType_string;
-    case ID_changesMade:       return FieldType_bool;
-    case ID_tagsMatchAny:      return FieldType_bool;
+    case ID_names:                return FieldType_stringVector;
+    case ID_active:               return FieldType_intVector;
+    case ID_colorTables:          return FieldType_attVector;
+    case ID_defaultContinuous:    return FieldType_string;
+    case ID_defaultDiscrete:      return FieldType_string;
+    case ID_changesMade:          return FieldType_bool;
+    case ID_tagsMatchAny:         return FieldType_bool;
+    case ID_tagListNames:         return FieldType_stringVector;
+    case ID_tagListActive:        return FieldType_intVector;
+    case ID_tagListNumRefs:       return FieldType_intVector;
+    case ID_tagListTableItemFlag: return FieldType_intVector;
+    case ID_tagChangesTag:        return FieldType_intVector;
+    case ID_tagChangesType:       return FieldType_intVector;
+    case ID_tagChangesCTName:     return FieldType_stringVector;
     default:  return FieldType_unknown;
     }
 }
@@ -1118,13 +1357,20 @@ ColorTableAttributes::GetFieldTypeName(int index) const
 {
     switch (index)
     {
-    case ID_names:             return "stringVector";
-    case ID_active:            return "intVector";
-    case ID_colorTables:       return "attVector";
-    case ID_defaultContinuous: return "string";
-    case ID_defaultDiscrete:   return "string";
-    case ID_changesMade:       return "bool";
-    case ID_tagsMatchAny:      return "bool";
+    case ID_names:                return "stringVector";
+    case ID_active:               return "intVector";
+    case ID_colorTables:          return "attVector";
+    case ID_defaultContinuous:    return "string";
+    case ID_defaultDiscrete:      return "string";
+    case ID_changesMade:          return "bool";
+    case ID_tagsMatchAny:         return "bool";
+    case ID_tagListNames:         return "stringVector";
+    case ID_tagListActive:        return "intVector";
+    case ID_tagListNumRefs:       return "intVector";
+    case ID_tagListTableItemFlag: return "intVector";
+    case ID_tagChangesTag:        return "intVector";
+    case ID_tagChangesType:       return "intVector";
+    case ID_tagChangesCTName:     return "stringVector";
     default:  return "invalid index";
     }
 }
@@ -1193,6 +1439,41 @@ ColorTableAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_tagsMatchAny:
         {  // new scope
         retval = (tagsMatchAny == obj.tagsMatchAny);
+        }
+        break;
+    case ID_tagListNames:
+        {  // new scope
+        retval = (tagListNames == obj.tagListNames);
+        }
+        break;
+    case ID_tagListActive:
+        {  // new scope
+        retval = (tagListActive == obj.tagListActive);
+        }
+        break;
+    case ID_tagListNumRefs:
+        {  // new scope
+        retval = (tagListNumRefs == obj.tagListNumRefs);
+        }
+        break;
+    case ID_tagListTableItemFlag:
+        {  // new scope
+        retval = (tagListTableItemFlag == obj.tagListTableItemFlag);
+        }
+        break;
+    case ID_tagChangesTag:
+        {  // new scope
+        retval = (tagChangesTag == obj.tagChangesTag);
+        }
+        break;
+    case ID_tagChangesType:
+        {  // new scope
+        retval = (tagChangesType == obj.tagChangesType);
+        }
+        break;
+    case ID_tagChangesCTName:
+        {  // new scope
+        retval = (tagChangesCTName == obj.tagChangesCTName);
         }
         break;
     default: retval = false;
@@ -1802,6 +2083,61 @@ ColorTableAttributes::EnableDisableAllTags(bool enable, std::vector<void *> &tag
 }
 
 // ****************************************************************************
+// Method: ColorTableAttributes::GetIndexOfTag
+//
+// Purpose:
+//    TODO
+//
+// Programmer: Justin Privitera
+// Creation:   08/10/23
+//
+// Modifications:
+//
+// ****************************************************************************
+int
+ColorTableAttributes::GetIndexOfTag(const std::string tagname)
+{
+    for (size_t i = 0; i < tagListNames.size(); i ++)
+    {
+        if (tagListNames[i] == tagname)
+        {
+            return i;
+        }
+    }
+
+    return -1;
+}
+
+// ****************************************************************************
+// Method: ColorTableAttributes::CreateTagTableEntry
+//
+// Purpose:
+//    TODO
+//
+// Programmer: Justin Privitera
+// Creation:   08/10/23
+//
+// Modifications:
+//
+// ****************************************************************************
+void
+ColorTableAttributes::CreateTagTableEntry(const std::string tagname, 
+                                          const bool active,
+                                          const int numrefs,
+                                          const bool tagTableItemExists)
+{
+    tagListNames.push_back(tagname);
+    tagListActive.push_back(active);
+    tagListNumRefs.push_back(numrefs);
+    tagListTableItemFlag.push_back(tagTableItemExists);
+
+    Select(ID_tagListNames,         (void *)&tagListNames);
+    Select(ID_tagListActive,        (void *)&tagListActive);
+    Select(ID_tagListNumRefs,       (void *)&tagListNumRefs);
+    Select(ID_tagListTableItemFlag, (void *)&tagListTableItemFlag);
+}
+
+// ****************************************************************************
 // Method: ColorTableAttributes::SetTagActive
 //
 // Purpose:
@@ -1814,9 +2150,27 @@ ColorTableAttributes::EnableDisableAllTags(bool enable, std::vector<void *> &tag
 //
 // ****************************************************************************
 void
-ColorTableAttributes::SetTagActive(const std::string tagname, bool active)
+ColorTableAttributes::SetTagActive(int index, bool active)
 {
-    tagList[tagname].active = active;
+    bungus;
+}
+
+// ****************************************************************************
+// Method: ColorTableAttributes::SetTagActive
+//
+// Purpose:
+//    TODO
+//
+// Programmer: Justin Privitera
+// Creation:   06/27/23
+//
+// Modifications:
+//
+// ****************************************************************************
+void
+ColorTableAttributes::SetTagActive(int index, bool active)
+{
+    bungus;
 }
 
 // ****************************************************************************
@@ -1895,7 +2249,7 @@ ColorTableAttributes::GetTagTableItem(const std::string tagname)
 // Method: ColorTableAttributes::CheckTagInTagList
 //
 // Purpose:
-//    Returns true if the tag is in the tagList, and false otherwise.
+//    Returns true if the tag is in the tag list, and false otherwise.
 //
 // Programmer: Justin Privitera
 // Creation:   06/27/23
@@ -1906,7 +2260,7 @@ ColorTableAttributes::GetTagTableItem(const std::string tagname)
 bool
 ColorTableAttributes::CheckTagInTagList(const std::string tagname)
 {
-    return tagList.find(tagname) != tagList.end();
+    return tagListNames.find(tagname) != tagListNames.end();
 }
 
 // ****************************************************************************

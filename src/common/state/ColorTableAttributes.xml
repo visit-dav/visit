@@ -2,7 +2,7 @@
   <Attribute name="ColorTableAttributes" purpose="This class contains the list of colortables." persistent="true" keyframe="true" exportAPI="STATE_API" exportInclude="state_exports.h" codefile="ColorTableAttributes.code">
     <Field name="names" label="names" type="stringVector">
     </Field>
-    <Field name="active" label="active" type="intVector" ignoreeq="true">
+    <Field name="colorTableActive" label="colorTableActive" type="intVector" ignoreeq="true">
     </Field>
     <Field name="colorTables" label="colorTables" type="attVector" subtype="ColorControlPointList">
     </Field>
@@ -15,7 +15,22 @@
     <Field name="changesMade" label="changesMade" type="bool">
       false
     </Field>
-    <Field name="tagsMatchAny" label="tagsMatchAny" type="bool" init="true">
+    <Field name="tagsMatchAny" label="tagsMatchAny" type="bool">
+      true
+    </Field>
+    <Field name="tagListNames" label="tagListNames" type="stringVector" init="true">
+    </Field>
+    <Field name="tagListActive" label="tagListActive" type="intVector" init="true">
+    </Field>
+    <Field name="tagListNumRefs" label="tagListNumRefs" type="intVector" init="true">
+    </Field>
+    <Field name="tagListTableItemFlag" label="tagListTableItemFlag" type="intVector" init="true">
+    </Field>
+    <Field name="tagChangesTag" label="tagChangesTag" type="intVector">
+    </Field>
+    <Field name="tagChangesType" label="tagChangesType" type="intVector">
+    </Field>
+    <Field name="tagChangesCTName" label="tagChangesCTName" type="stringVector">
     </Field>
     <Function name="GetColorTableIndex" user="true" member="true">
     </Function>
@@ -41,9 +56,7 @@
     </Function>
     <Function name="GetActiveElement" user="true" member="true">
     </Function>
-    <Function name="StringifyTagChanges" user="true" member="true">
-    </Function>
-    <Function name="UnstringifyAndMergeTagChanges" user="true" member="true">
+    <Function name="MergeTagChanges" user="true" member="true">
     </Function>
     <Function name="addTagToColorTable" user="true" member="true">
     </Function>
@@ -53,13 +66,33 @@
     </Function>
     <Function name="EnableDisableAllTags" user="true" member="true">
     </Function>
+    <Function name="GetIndexOfTag" user="true" member="true">
+    </Function>
+    <Function name="CreateTagListEntry" user="true" member="true">
+    </Function>
+    <Function name="RemoveTagListEntryByIndex" user="true" member="true">
+    </Function>
+    <Function name="RemoveTagChangesEntryByIndex" user="true" member="true">
+    </Function>
     <Function name="SetTagActive" user="true" member="true">
+    </Function>
+    <Function name="SetTagActiveByIndex" user="true" member="true">
     </Function>
     <Function name="GetTagActive" user="true" member="true">
     </Function>
+    <Function name="IncrementTagNumRefs" user="true" member="true">
+    </Function>
+    <Function name="IncrementTagNumRefsByIndex" user="true" member="true">
+    </Function>
+    <Function name="DecrementTagNumRefs" user="true" member="true">
+    </Function>
+    <Function name="DecrementTagNumRefsByIndex" user="true" member="true">
+    </Function>
     <Function name="GetTagNumRefs" user="true" member="true">
     </Function>
-    <Function name="SetTagTableItem" user="true" member="true">
+    <Function name="SetTagTableItemFlag" user="true" member="true">
+    </Function>
+    <Function name="SetTagTableItemFlagByIndex" user="true" member="true">
     </Function>
     <Function name="GetTagTableItem" user="true" member="true">
     </Function>

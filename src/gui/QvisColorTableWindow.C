@@ -939,7 +939,7 @@ QvisColorTableWindow::UpdateEditor()
 void
 QvisColorTableWindow::UpdateTags()
 {
-
+    std::cout << "ct window printing tag list" << std::endl;
     colorAtts->PrintTagList();
     std::cout << "=======================" << std::endl;
 
@@ -1776,10 +1776,7 @@ QvisColorTableWindow::Apply(bool ignore)
     {
         // Send the color table definitions to the viewer.
         GetCurrentValues(1);
-        std::cout << nameLineEdit->displayText().simplified().toStdString() << std::endl;
-        std::cout << "here1" << std::endl;
         colorAtts->Notify();
-        std::cout << "here2" << std::endl;
 
         // Make the viewer update the plots that use the specified colortable.
         GetViewerMethods()->UpdateColorTable(currentColorTable.toStdString());

@@ -60,6 +60,13 @@ public:
     void SelectColorTables();
     void SelectDefaultContinuous();
     void SelectDefaultDiscrete();
+    void SelectTagListNames();
+    void SelectTagListActive();
+    void SelectTagListNumRefs();
+    void SelectTagListTableItemFlag();
+    void SelectTagChangesTag();
+    void SelectTagChangesType();
+    void SelectTagChangesCTName();
 
     // Property setting methods
     void SetNames(const stringVector &names_);
@@ -68,6 +75,13 @@ public:
     void SetDefaultDiscrete(const std::string &defaultDiscrete_);
     void SetChangesMade(bool changesMade_);
     void SetTagsMatchAny(bool tagsMatchAny_);
+    void SetTagListNames(const stringVector &tagListNames_);
+    void SetTagListActive(const intVector &tagListActive_);
+    void SetTagListNumRefs(const intVector &tagListNumRefs_);
+    void SetTagListTableItemFlag(const intVector &tagListTableItemFlag_);
+    void SetTagChangesTag(const intVector &tagChangesTag_);
+    void SetTagChangesType(const intVector &tagChangesType_);
+    void SetTagChangesCTName(const stringVector &tagChangesCTName_);
 
     // Property getting methods
     const stringVector &GetNames() const;
@@ -82,6 +96,20 @@ public:
           std::string  &GetDefaultDiscrete();
     bool               GetChangesMade() const;
     bool               GetTagsMatchAny() const;
+    const stringVector &GetTagListNames() const;
+          stringVector &GetTagListNames();
+    const intVector    &GetTagListActive() const;
+          intVector    &GetTagListActive();
+    const intVector    &GetTagListNumRefs() const;
+          intVector    &GetTagListNumRefs();
+    const intVector    &GetTagListTableItemFlag() const;
+          intVector    &GetTagListTableItemFlag();
+    const intVector    &GetTagChangesTag() const;
+          intVector    &GetTagChangesTag();
+    const intVector    &GetTagChangesType() const;
+          intVector    &GetTagChangesType();
+    const stringVector &GetTagChangesCTName() const;
+          stringVector &GetTagChangesCTName();
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -120,7 +148,10 @@ public:
     std::pair<bool, std::string> removeTagFromColorTable(const std::string ctName, const std::string tagName, ColorControlPointList* ccpl);
     bool AllTagsSelected();
     void EnableDisableAllTags(bool enable, std::vector<void *> &tagTableItems);
-    void SetTagActive(const std::string tagname, bool active);
+    int GetIndexOfTag(const std::string tagname);
+    void CreateTagTableEntry(const std::string tagname, bool active);
+    void SetTagActive(int index, bool active);
+    void SetTagActive(int index, bool active);
     bool GetTagActive(const std::string tagname);
     int GetTagNumRefs(const std::string tagname);
     void SetTagTableItem(const std::string tagname, void * newTagTableItem);
@@ -142,6 +173,13 @@ public:
         ID_defaultDiscrete,
         ID_changesMade,
         ID_tagsMatchAny,
+        ID_tagListNames,
+        ID_tagListActive,
+        ID_tagListNumRefs,
+        ID_tagListTableItemFlag,
+        ID_tagChangesTag,
+        ID_tagChangesType,
+        ID_tagChangesCTName,
         ID__LAST
     };
 
@@ -155,11 +193,18 @@ private:
     std::string          defaultDiscrete;
     bool                 changesMade;
     bool                 tagsMatchAny;
+    stringVector         tagListNames;
+    intVector            tagListActive;
+    intVector            tagListNumRefs;
+    intVector            tagListTableItemFlag;
+    intVector            tagChangesTag;
+    intVector            tagChangesType;
+    stringVector         tagChangesCTName;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define COLORTABLEATTRIBUTES_TMFS "s*i*a*ssbb"
+#define COLORTABLEATTRIBUTES_TMFS "s*i*a*ssbbs*i*i*i*i*i*s*"
 
 #endif

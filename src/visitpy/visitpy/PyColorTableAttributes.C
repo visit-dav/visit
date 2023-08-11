@@ -101,6 +101,118 @@ PyColorTableAttributes_ToString(const ColorTableAttributes *atts, const char *pr
     else
         snprintf(tmpStr, 1000, "%stagsMatchAny = 0\n", prefix);
     str += tmpStr;
+    {   const stringVector &tagListNames = atts->GetTagListNames();
+        snprintf(tmpStr, 1000, "%stagListNames = (", prefix);
+        str += tmpStr;
+        for(size_t i = 0; i < tagListNames.size(); ++i)
+        {
+            snprintf(tmpStr, 1000, "\"%s\"", tagListNames[i].c_str());
+            str += tmpStr;
+            if(i < tagListNames.size() - 1)
+            {
+                snprintf(tmpStr, 1000, ", ");
+                str += tmpStr;
+            }
+        }
+        snprintf(tmpStr, 1000, ")\n");
+        str += tmpStr;
+    }
+    {   const intVector &tagListActive = atts->GetTagListActive();
+        snprintf(tmpStr, 1000, "%stagListActive = (", prefix);
+        str += tmpStr;
+        for(size_t i = 0; i < tagListActive.size(); ++i)
+        {
+            snprintf(tmpStr, 1000, "%d", tagListActive[i]);
+            str += tmpStr;
+            if(i < tagListActive.size() - 1)
+            {
+                snprintf(tmpStr, 1000, ", ");
+                str += tmpStr;
+            }
+        }
+        snprintf(tmpStr, 1000, ")\n");
+        str += tmpStr;
+    }
+    {   const intVector &tagListNumRefs = atts->GetTagListNumRefs();
+        snprintf(tmpStr, 1000, "%stagListNumRefs = (", prefix);
+        str += tmpStr;
+        for(size_t i = 0; i < tagListNumRefs.size(); ++i)
+        {
+            snprintf(tmpStr, 1000, "%d", tagListNumRefs[i]);
+            str += tmpStr;
+            if(i < tagListNumRefs.size() - 1)
+            {
+                snprintf(tmpStr, 1000, ", ");
+                str += tmpStr;
+            }
+        }
+        snprintf(tmpStr, 1000, ")\n");
+        str += tmpStr;
+    }
+    {   const intVector &tagListTableItemFlag = atts->GetTagListTableItemFlag();
+        snprintf(tmpStr, 1000, "%stagListTableItemFlag = (", prefix);
+        str += tmpStr;
+        for(size_t i = 0; i < tagListTableItemFlag.size(); ++i)
+        {
+            snprintf(tmpStr, 1000, "%d", tagListTableItemFlag[i]);
+            str += tmpStr;
+            if(i < tagListTableItemFlag.size() - 1)
+            {
+                snprintf(tmpStr, 1000, ", ");
+                str += tmpStr;
+            }
+        }
+        snprintf(tmpStr, 1000, ")\n");
+        str += tmpStr;
+    }
+    {   const intVector &tagChangesTag = atts->GetTagChangesTag();
+        snprintf(tmpStr, 1000, "%stagChangesTag = (", prefix);
+        str += tmpStr;
+        for(size_t i = 0; i < tagChangesTag.size(); ++i)
+        {
+            snprintf(tmpStr, 1000, "%d", tagChangesTag[i]);
+            str += tmpStr;
+            if(i < tagChangesTag.size() - 1)
+            {
+                snprintf(tmpStr, 1000, ", ");
+                str += tmpStr;
+            }
+        }
+        snprintf(tmpStr, 1000, ")\n");
+        str += tmpStr;
+    }
+    {   const intVector &tagChangesType = atts->GetTagChangesType();
+        snprintf(tmpStr, 1000, "%stagChangesType = (", prefix);
+        str += tmpStr;
+        for(size_t i = 0; i < tagChangesType.size(); ++i)
+        {
+            snprintf(tmpStr, 1000, "%d", tagChangesType[i]);
+            str += tmpStr;
+            if(i < tagChangesType.size() - 1)
+            {
+                snprintf(tmpStr, 1000, ", ");
+                str += tmpStr;
+            }
+        }
+        snprintf(tmpStr, 1000, ")\n");
+        str += tmpStr;
+    }
+    {   const stringVector &tagChangesCTName = atts->GetTagChangesCTName();
+        snprintf(tmpStr, 1000, "%stagChangesCTName = (", prefix);
+        str += tmpStr;
+        for(size_t i = 0; i < tagChangesCTName.size(); ++i)
+        {
+            snprintf(tmpStr, 1000, "\"%s\"", tagChangesCTName[i].c_str());
+            str += tmpStr;
+            if(i < tagChangesCTName.size() - 1)
+            {
+                snprintf(tmpStr, 1000, ", ");
+                str += tmpStr;
+            }
+        }
+        snprintf(tmpStr, 1000, ")\n");
+        str += tmpStr;
+    }
     return str;
 }
 
@@ -577,6 +689,524 @@ ColorTableAttributes_GetTagsMatchAny(PyObject *self, PyObject *args)
     return retval;
 }
 
+/*static*/ PyObject *
+ColorTableAttributes_SetTagListNames(PyObject *self, PyObject *args)
+{
+    ColorTableAttributesObject *obj = (ColorTableAttributesObject *)self;
+
+    stringVector vec;
+
+    if (PyUnicode_Check(args))
+    {
+        char const *val = PyUnicode_AsUTF8(args);
+        std::string cval = std::string(val);
+        if (val == 0 && PyErr_Occurred())
+        {
+            PyErr_Clear();
+            return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ string");
+        }
+        vec.resize(1);
+        vec[0] = cval;
+    }
+    else if (PySequence_Check(args))
+    {
+        vec.resize(PySequence_Size(args));
+        for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)
+        {
+            PyObject *item = PySequence_GetItem(args, i);
+
+            if (!PyUnicode_Check(item))
+            {
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_TypeError, "arg %d is not a unicode string", (int) i);
+            }
+
+            char const *val = PyUnicode_AsUTF8(item);
+            std::string cval = std::string(val);
+
+            if (val == 0 && PyErr_Occurred())
+            {
+                Py_DECREF(item);
+                PyErr_Clear();
+                return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ string", (int) i);
+            }
+            Py_DECREF(item);
+
+            vec[i] = cval;
+        }
+    }
+    else
+        return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more string(s)");
+
+    obj->data->GetTagListNames() = vec;
+    // Mark the tagListNames in the object as modified.
+    obj->data->SelectTagListNames();
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+ColorTableAttributes_GetTagListNames(PyObject *self, PyObject *args)
+{
+    ColorTableAttributesObject *obj = (ColorTableAttributesObject *)self;
+    // Allocate a tuple the with enough entries to hold the tagListNames.
+    const stringVector &tagListNames = obj->data->GetTagListNames();
+    PyObject *retval = PyTuple_New(tagListNames.size());
+    for(size_t i = 0; i < tagListNames.size(); ++i)
+        PyTuple_SET_ITEM(retval, i, PyString_FromString(tagListNames[i].c_str()));
+    return retval;
+}
+
+/*static*/ PyObject *
+ColorTableAttributes_SetTagListActive(PyObject *self, PyObject *args)
+{
+    ColorTableAttributesObject *obj = (ColorTableAttributesObject *)self;
+
+    intVector vec;
+
+    if (PyNumber_Check(args))
+    {
+        long val = PyLong_AsLong(args);
+        int cval = int(val);
+        if (val == -1 && PyErr_Occurred())
+        {
+            PyErr_Clear();
+            return PyErr_Format(PyExc_TypeError, "number not interpretable as C++ int");
+        }
+        if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+            return PyErr_Format(PyExc_ValueError, "number not interpretable as C++ int");
+        vec.resize(1);
+        vec[0] = cval;
+    }
+    else if (PySequence_Check(args) && !PyUnicode_Check(args))
+    {
+        vec.resize(PySequence_Size(args));
+        for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)
+        {
+            PyObject *item = PySequence_GetItem(args, i);
+
+            if (!PyNumber_Check(item))
+            {
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_TypeError, "arg %d is not a number type", (int) i);
+            }
+
+            long val = PyLong_AsLong(item);
+            int cval = int(val);
+
+            if (val == -1 && PyErr_Occurred())
+            {
+                Py_DECREF(item);
+                PyErr_Clear();
+                return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ int", (int) i);
+            }
+            if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+            {
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_ValueError, "arg %d not interpretable as C++ int", (int) i);
+            }
+            Py_DECREF(item);
+
+            vec[i] = cval;
+        }
+    }
+    else
+        return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more ints");
+
+    obj->data->GetTagListActive() = vec;
+    // Mark the tagListActive in the object as modified.
+    obj->data->SelectTagListActive();
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+ColorTableAttributes_GetTagListActive(PyObject *self, PyObject *args)
+{
+    ColorTableAttributesObject *obj = (ColorTableAttributesObject *)self;
+    // Allocate a tuple the with enough entries to hold the tagListActive.
+    const intVector &tagListActive = obj->data->GetTagListActive();
+    PyObject *retval = PyTuple_New(tagListActive.size());
+    for(size_t i = 0; i < tagListActive.size(); ++i)
+        PyTuple_SET_ITEM(retval, i, PyInt_FromLong(long(tagListActive[i])));
+    return retval;
+}
+
+/*static*/ PyObject *
+ColorTableAttributes_SetTagListNumRefs(PyObject *self, PyObject *args)
+{
+    ColorTableAttributesObject *obj = (ColorTableAttributesObject *)self;
+
+    intVector vec;
+
+    if (PyNumber_Check(args))
+    {
+        long val = PyLong_AsLong(args);
+        int cval = int(val);
+        if (val == -1 && PyErr_Occurred())
+        {
+            PyErr_Clear();
+            return PyErr_Format(PyExc_TypeError, "number not interpretable as C++ int");
+        }
+        if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+            return PyErr_Format(PyExc_ValueError, "number not interpretable as C++ int");
+        vec.resize(1);
+        vec[0] = cval;
+    }
+    else if (PySequence_Check(args) && !PyUnicode_Check(args))
+    {
+        vec.resize(PySequence_Size(args));
+        for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)
+        {
+            PyObject *item = PySequence_GetItem(args, i);
+
+            if (!PyNumber_Check(item))
+            {
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_TypeError, "arg %d is not a number type", (int) i);
+            }
+
+            long val = PyLong_AsLong(item);
+            int cval = int(val);
+
+            if (val == -1 && PyErr_Occurred())
+            {
+                Py_DECREF(item);
+                PyErr_Clear();
+                return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ int", (int) i);
+            }
+            if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+            {
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_ValueError, "arg %d not interpretable as C++ int", (int) i);
+            }
+            Py_DECREF(item);
+
+            vec[i] = cval;
+        }
+    }
+    else
+        return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more ints");
+
+    obj->data->GetTagListNumRefs() = vec;
+    // Mark the tagListNumRefs in the object as modified.
+    obj->data->SelectTagListNumRefs();
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+ColorTableAttributes_GetTagListNumRefs(PyObject *self, PyObject *args)
+{
+    ColorTableAttributesObject *obj = (ColorTableAttributesObject *)self;
+    // Allocate a tuple the with enough entries to hold the tagListNumRefs.
+    const intVector &tagListNumRefs = obj->data->GetTagListNumRefs();
+    PyObject *retval = PyTuple_New(tagListNumRefs.size());
+    for(size_t i = 0; i < tagListNumRefs.size(); ++i)
+        PyTuple_SET_ITEM(retval, i, PyInt_FromLong(long(tagListNumRefs[i])));
+    return retval;
+}
+
+/*static*/ PyObject *
+ColorTableAttributes_SetTagListTableItemFlag(PyObject *self, PyObject *args)
+{
+    ColorTableAttributesObject *obj = (ColorTableAttributesObject *)self;
+
+    intVector vec;
+
+    if (PyNumber_Check(args))
+    {
+        long val = PyLong_AsLong(args);
+        int cval = int(val);
+        if (val == -1 && PyErr_Occurred())
+        {
+            PyErr_Clear();
+            return PyErr_Format(PyExc_TypeError, "number not interpretable as C++ int");
+        }
+        if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+            return PyErr_Format(PyExc_ValueError, "number not interpretable as C++ int");
+        vec.resize(1);
+        vec[0] = cval;
+    }
+    else if (PySequence_Check(args) && !PyUnicode_Check(args))
+    {
+        vec.resize(PySequence_Size(args));
+        for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)
+        {
+            PyObject *item = PySequence_GetItem(args, i);
+
+            if (!PyNumber_Check(item))
+            {
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_TypeError, "arg %d is not a number type", (int) i);
+            }
+
+            long val = PyLong_AsLong(item);
+            int cval = int(val);
+
+            if (val == -1 && PyErr_Occurred())
+            {
+                Py_DECREF(item);
+                PyErr_Clear();
+                return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ int", (int) i);
+            }
+            if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+            {
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_ValueError, "arg %d not interpretable as C++ int", (int) i);
+            }
+            Py_DECREF(item);
+
+            vec[i] = cval;
+        }
+    }
+    else
+        return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more ints");
+
+    obj->data->GetTagListTableItemFlag() = vec;
+    // Mark the tagListTableItemFlag in the object as modified.
+    obj->data->SelectTagListTableItemFlag();
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+ColorTableAttributes_GetTagListTableItemFlag(PyObject *self, PyObject *args)
+{
+    ColorTableAttributesObject *obj = (ColorTableAttributesObject *)self;
+    // Allocate a tuple the with enough entries to hold the tagListTableItemFlag.
+    const intVector &tagListTableItemFlag = obj->data->GetTagListTableItemFlag();
+    PyObject *retval = PyTuple_New(tagListTableItemFlag.size());
+    for(size_t i = 0; i < tagListTableItemFlag.size(); ++i)
+        PyTuple_SET_ITEM(retval, i, PyInt_FromLong(long(tagListTableItemFlag[i])));
+    return retval;
+}
+
+/*static*/ PyObject *
+ColorTableAttributes_SetTagChangesTag(PyObject *self, PyObject *args)
+{
+    ColorTableAttributesObject *obj = (ColorTableAttributesObject *)self;
+
+    intVector vec;
+
+    if (PyNumber_Check(args))
+    {
+        long val = PyLong_AsLong(args);
+        int cval = int(val);
+        if (val == -1 && PyErr_Occurred())
+        {
+            PyErr_Clear();
+            return PyErr_Format(PyExc_TypeError, "number not interpretable as C++ int");
+        }
+        if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+            return PyErr_Format(PyExc_ValueError, "number not interpretable as C++ int");
+        vec.resize(1);
+        vec[0] = cval;
+    }
+    else if (PySequence_Check(args) && !PyUnicode_Check(args))
+    {
+        vec.resize(PySequence_Size(args));
+        for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)
+        {
+            PyObject *item = PySequence_GetItem(args, i);
+
+            if (!PyNumber_Check(item))
+            {
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_TypeError, "arg %d is not a number type", (int) i);
+            }
+
+            long val = PyLong_AsLong(item);
+            int cval = int(val);
+
+            if (val == -1 && PyErr_Occurred())
+            {
+                Py_DECREF(item);
+                PyErr_Clear();
+                return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ int", (int) i);
+            }
+            if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+            {
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_ValueError, "arg %d not interpretable as C++ int", (int) i);
+            }
+            Py_DECREF(item);
+
+            vec[i] = cval;
+        }
+    }
+    else
+        return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more ints");
+
+    obj->data->GetTagChangesTag() = vec;
+    // Mark the tagChangesTag in the object as modified.
+    obj->data->SelectTagChangesTag();
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+ColorTableAttributes_GetTagChangesTag(PyObject *self, PyObject *args)
+{
+    ColorTableAttributesObject *obj = (ColorTableAttributesObject *)self;
+    // Allocate a tuple the with enough entries to hold the tagChangesTag.
+    const intVector &tagChangesTag = obj->data->GetTagChangesTag();
+    PyObject *retval = PyTuple_New(tagChangesTag.size());
+    for(size_t i = 0; i < tagChangesTag.size(); ++i)
+        PyTuple_SET_ITEM(retval, i, PyInt_FromLong(long(tagChangesTag[i])));
+    return retval;
+}
+
+/*static*/ PyObject *
+ColorTableAttributes_SetTagChangesType(PyObject *self, PyObject *args)
+{
+    ColorTableAttributesObject *obj = (ColorTableAttributesObject *)self;
+
+    intVector vec;
+
+    if (PyNumber_Check(args))
+    {
+        long val = PyLong_AsLong(args);
+        int cval = int(val);
+        if (val == -1 && PyErr_Occurred())
+        {
+            PyErr_Clear();
+            return PyErr_Format(PyExc_TypeError, "number not interpretable as C++ int");
+        }
+        if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+            return PyErr_Format(PyExc_ValueError, "number not interpretable as C++ int");
+        vec.resize(1);
+        vec[0] = cval;
+    }
+    else if (PySequence_Check(args) && !PyUnicode_Check(args))
+    {
+        vec.resize(PySequence_Size(args));
+        for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)
+        {
+            PyObject *item = PySequence_GetItem(args, i);
+
+            if (!PyNumber_Check(item))
+            {
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_TypeError, "arg %d is not a number type", (int) i);
+            }
+
+            long val = PyLong_AsLong(item);
+            int cval = int(val);
+
+            if (val == -1 && PyErr_Occurred())
+            {
+                Py_DECREF(item);
+                PyErr_Clear();
+                return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ int", (int) i);
+            }
+            if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+            {
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_ValueError, "arg %d not interpretable as C++ int", (int) i);
+            }
+            Py_DECREF(item);
+
+            vec[i] = cval;
+        }
+    }
+    else
+        return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more ints");
+
+    obj->data->GetTagChangesType() = vec;
+    // Mark the tagChangesType in the object as modified.
+    obj->data->SelectTagChangesType();
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+ColorTableAttributes_GetTagChangesType(PyObject *self, PyObject *args)
+{
+    ColorTableAttributesObject *obj = (ColorTableAttributesObject *)self;
+    // Allocate a tuple the with enough entries to hold the tagChangesType.
+    const intVector &tagChangesType = obj->data->GetTagChangesType();
+    PyObject *retval = PyTuple_New(tagChangesType.size());
+    for(size_t i = 0; i < tagChangesType.size(); ++i)
+        PyTuple_SET_ITEM(retval, i, PyInt_FromLong(long(tagChangesType[i])));
+    return retval;
+}
+
+/*static*/ PyObject *
+ColorTableAttributes_SetTagChangesCTName(PyObject *self, PyObject *args)
+{
+    ColorTableAttributesObject *obj = (ColorTableAttributesObject *)self;
+
+    stringVector vec;
+
+    if (PyUnicode_Check(args))
+    {
+        char const *val = PyUnicode_AsUTF8(args);
+        std::string cval = std::string(val);
+        if (val == 0 && PyErr_Occurred())
+        {
+            PyErr_Clear();
+            return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ string");
+        }
+        vec.resize(1);
+        vec[0] = cval;
+    }
+    else if (PySequence_Check(args))
+    {
+        vec.resize(PySequence_Size(args));
+        for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)
+        {
+            PyObject *item = PySequence_GetItem(args, i);
+
+            if (!PyUnicode_Check(item))
+            {
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_TypeError, "arg %d is not a unicode string", (int) i);
+            }
+
+            char const *val = PyUnicode_AsUTF8(item);
+            std::string cval = std::string(val);
+
+            if (val == 0 && PyErr_Occurred())
+            {
+                Py_DECREF(item);
+                PyErr_Clear();
+                return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ string", (int) i);
+            }
+            Py_DECREF(item);
+
+            vec[i] = cval;
+        }
+    }
+    else
+        return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more string(s)");
+
+    obj->data->GetTagChangesCTName() = vec;
+    // Mark the tagChangesCTName in the object as modified.
+    obj->data->SelectTagChangesCTName();
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+ColorTableAttributes_GetTagChangesCTName(PyObject *self, PyObject *args)
+{
+    ColorTableAttributesObject *obj = (ColorTableAttributesObject *)self;
+    // Allocate a tuple the with enough entries to hold the tagChangesCTName.
+    const stringVector &tagChangesCTName = obj->data->GetTagChangesCTName();
+    PyObject *retval = PyTuple_New(tagChangesCTName.size());
+    for(size_t i = 0; i < tagChangesCTName.size(); ++i)
+        PyTuple_SET_ITEM(retval, i, PyString_FromString(tagChangesCTName[i].c_str()));
+    return retval;
+}
+
 
 
 PyMethodDef PyColorTableAttributes_methods[COLORTABLEATTRIBUTES_NMETH] = {
@@ -598,6 +1228,20 @@ PyMethodDef PyColorTableAttributes_methods[COLORTABLEATTRIBUTES_NMETH] = {
     {"GetChangesMade", ColorTableAttributes_GetChangesMade, METH_VARARGS},
     {"SetTagsMatchAny", ColorTableAttributes_SetTagsMatchAny, METH_VARARGS},
     {"GetTagsMatchAny", ColorTableAttributes_GetTagsMatchAny, METH_VARARGS},
+    {"SetTagListNames", ColorTableAttributes_SetTagListNames, METH_VARARGS},
+    {"GetTagListNames", ColorTableAttributes_GetTagListNames, METH_VARARGS},
+    {"SetTagListActive", ColorTableAttributes_SetTagListActive, METH_VARARGS},
+    {"GetTagListActive", ColorTableAttributes_GetTagListActive, METH_VARARGS},
+    {"SetTagListNumRefs", ColorTableAttributes_SetTagListNumRefs, METH_VARARGS},
+    {"GetTagListNumRefs", ColorTableAttributes_GetTagListNumRefs, METH_VARARGS},
+    {"SetTagListTableItemFlag", ColorTableAttributes_SetTagListTableItemFlag, METH_VARARGS},
+    {"GetTagListTableItemFlag", ColorTableAttributes_GetTagListTableItemFlag, METH_VARARGS},
+    {"SetTagChangesTag", ColorTableAttributes_SetTagChangesTag, METH_VARARGS},
+    {"GetTagChangesTag", ColorTableAttributes_GetTagChangesTag, METH_VARARGS},
+    {"SetTagChangesType", ColorTableAttributes_SetTagChangesType, METH_VARARGS},
+    {"GetTagChangesType", ColorTableAttributes_GetTagChangesType, METH_VARARGS},
+    {"SetTagChangesCTName", ColorTableAttributes_SetTagChangesCTName, METH_VARARGS},
+    {"GetTagChangesCTName", ColorTableAttributes_GetTagChangesCTName, METH_VARARGS},
     {NULL, NULL}
 };
 
@@ -634,6 +1278,20 @@ PyColorTableAttributes_getattr(PyObject *self, char *name)
         return ColorTableAttributes_GetChangesMade(self, NULL);
     if(strcmp(name, "tagsMatchAny") == 0)
         return ColorTableAttributes_GetTagsMatchAny(self, NULL);
+    if(strcmp(name, "tagListNames") == 0)
+        return ColorTableAttributes_GetTagListNames(self, NULL);
+    if(strcmp(name, "tagListActive") == 0)
+        return ColorTableAttributes_GetTagListActive(self, NULL);
+    if(strcmp(name, "tagListNumRefs") == 0)
+        return ColorTableAttributes_GetTagListNumRefs(self, NULL);
+    if(strcmp(name, "tagListTableItemFlag") == 0)
+        return ColorTableAttributes_GetTagListTableItemFlag(self, NULL);
+    if(strcmp(name, "tagChangesTag") == 0)
+        return ColorTableAttributes_GetTagChangesTag(self, NULL);
+    if(strcmp(name, "tagChangesType") == 0)
+        return ColorTableAttributes_GetTagChangesType(self, NULL);
+    if(strcmp(name, "tagChangesCTName") == 0)
+        return ColorTableAttributes_GetTagChangesCTName(self, NULL);
 
 #if VISIT_OBSOLETE_AT_VERSION(3,5,0)
 #error This code is obsolete in this version. Please remove it.
@@ -707,6 +1365,20 @@ PyColorTableAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = ColorTableAttributes_SetChangesMade(self, args);
     else if(strcmp(name, "tagsMatchAny") == 0)
         obj = ColorTableAttributes_SetTagsMatchAny(self, args);
+    else if(strcmp(name, "tagListNames") == 0)
+        obj = ColorTableAttributes_SetTagListNames(self, args);
+    else if(strcmp(name, "tagListActive") == 0)
+        obj = ColorTableAttributes_SetTagListActive(self, args);
+    else if(strcmp(name, "tagListNumRefs") == 0)
+        obj = ColorTableAttributes_SetTagListNumRefs(self, args);
+    else if(strcmp(name, "tagListTableItemFlag") == 0)
+        obj = ColorTableAttributes_SetTagListTableItemFlag(self, args);
+    else if(strcmp(name, "tagChangesTag") == 0)
+        obj = ColorTableAttributes_SetTagChangesTag(self, args);
+    else if(strcmp(name, "tagChangesType") == 0)
+        obj = ColorTableAttributes_SetTagChangesType(self, args);
+    else if(strcmp(name, "tagChangesCTName") == 0)
+        obj = ColorTableAttributes_SetTagChangesCTName(self, args);
 
 #if VISIT_OBSOLETE_AT_VERSION(3,5,0)
 #error This code is obsolete in this version. Please remove it.
