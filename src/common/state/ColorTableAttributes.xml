@@ -26,7 +26,7 @@
     </Field>
     <Field name="tagListTableItemFlag" label="tagListTableItemFlag" type="intVector" init="true">
     </Field>
-    <Field name="tagChangesTag" label="tagChangesTag" type="intVector">
+    <Field name="tagChangesTag" label="tagChangesTag" type="stringVector">
     </Field>
     <Field name="tagChangesType" label="tagChangesType" type="intVector">
     </Field>
@@ -72,9 +72,13 @@
     </Function>
     <Function name="RemoveTagListEntry" user="true" member="true">
     </Function>
+    <Function name="SelectTagList" user="true" member="true">
+    </Function>
     <Function name="CreateTagChangesEntry" user="true" member="true">
     </Function>
     <Function name="RemoveTagChangesEntry" user="true" member="true">
+    </Function>
+    <Function name="SelectTagChanges" user="true" member="true">
     </Function>
     <Function name="SetTagActive1" user="true" member="true">
     </Function>

@@ -79,7 +79,7 @@ public:
     void SetTagListActive(const intVector &tagListActive_);
     void SetTagListNumRefs(const intVector &tagListNumRefs_);
     void SetTagListTableItemFlag(const intVector &tagListTableItemFlag_);
-    void SetTagChangesTag(const intVector &tagChangesTag_);
+    void SetTagChangesTag(const stringVector &tagChangesTag_);
     void SetTagChangesType(const intVector &tagChangesType_);
     void SetTagChangesCTName(const stringVector &tagChangesCTName_);
 
@@ -104,8 +104,8 @@ public:
           intVector    &GetTagListNumRefs();
     const intVector    &GetTagListTableItemFlag() const;
           intVector    &GetTagListTableItemFlag();
-    const intVector    &GetTagChangesTag() const;
-          intVector    &GetTagChangesTag();
+    const stringVector &GetTagChangesTag() const;
+          stringVector &GetTagChangesTag();
     const intVector    &GetTagChangesType() const;
           intVector    &GetTagChangesType();
     const stringVector &GetTagChangesCTName() const;
@@ -150,8 +150,10 @@ public:
     int GetIndexOfTag(const std::string tagname);
     void CreateTagListEntry(const std::string tagname, const bool active, const int numrefs, const bool tagTableItemExists);
     void RemoveTagListEntry(const int index);
-    void CreateTagChangesEntry(const std::string tagname, const bool active, const int numrefs, const bool tagTableItemExists);
+    void SelectTagList();
+    void CreateTagChangesEntry(const std::string tagname, const int addOrRemove, const std::string ctName);
     void RemoveTagChangesEntry(const int index);
+    void SelectTagChanges();
     void SetTagActive(const std::string tagname, const bool active);
     void SetTagActive(const int index, const bool active);
     bool GetTagActive(const std::string tagname);
@@ -161,7 +163,7 @@ public:
     void DecrementTagNumRefs(const int index);
     int GetTagNumRefs(const std::string tagname);
     void SetTagTableItemFlag(const std::string tagname, const bool tagTableItemExists);
-    void SetTagTableItemFlag(const std::string tagname, const bool tagTableItemExists);
+    void SetTagTableItemFlag(const int index, const bool tagTableItemExists);
     bool GetTagTableItemFlag(const std::string tagname);
     bool CheckTagInTagList(const std::string tagname);
     void RemoveUnusedTagsFromTagTable(std::vector<std::string> &tagTableItemsToRemove);
@@ -204,7 +206,7 @@ private:
     intVector            tagListActive;
     intVector            tagListNumRefs;
     intVector            tagListTableItemFlag;
-    intVector            tagChangesTag;
+    stringVector         tagChangesTag;
     intVector            tagChangesType;
     stringVector         tagChangesCTName;
 
@@ -212,6 +214,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define COLORTABLEATTRIBUTES_TMFS "s*i*a*ssbbs*i*i*i*i*i*s*"
+#define COLORTABLEATTRIBUTES_TMFS "s*i*a*ssbbs*i*i*i*s*i*s*"
 
 #endif

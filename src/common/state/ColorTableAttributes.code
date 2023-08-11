@@ -463,12 +463,9 @@ ColorTableAttributes::AddColorTable(const std::string &name,
     if (defaultDiscrete)
         SetDefaultDiscrete(name);
 
-    Select(ID_names,                (void *)&names);
-    Select(ID_active,               (void *)&active);
-    Select(ID_tagListNames,         (void *)&tagListNames);
-    Select(ID_tagListActive,        (void *)&tagListActive);
-    Select(ID_tagListNumRefs,       (void *)&tagListNumRefs);
-    Select(ID_tagListTableItemFlag, (void *)&tagListTableItemFlag);
+    SelectNames();
+    SelectColorTableActive();
+    SelectTagList();
 }
 
 Target: xml2java
@@ -592,8 +589,8 @@ ColorTableAttributes::RemoveColorTable(int index)
         }
 
         // Indicate that things have changed by selecting the list.
-        Select(ID_names,            (void *)&names);
-        Select(ID_colorTableActive, (void *)&colorTableActive);
+        SelectNames();
+        SelectColorTableActive();
 
         // erase the color table from the vector.
         RemoveColorTables(index);
@@ -925,7 +922,7 @@ ColorTableAttributes::SetFromNode(DataNode *parentNode)
     if((node = searchNode->GetNode("tagsMatchAny")) != 0)
         tagsMatchAny = node->AsBool();
 
-    DataNode* node2, node3;
+    DataNode *node2, *node3;
     // we need all three vectors to be present for this to work
     if ((node  = searchNode->GetNode("tagChangesTag"   )) != 0 &&
         (node2 = searchNode->GetNode("tagChangesType"  )) != 0 &&
@@ -1090,7 +1087,13 @@ ColorTableAttributes::addTagToColorTable(const std::string ctName,
         CreateTagChangesEntry(tagName, ADDTAG, ctName);
     }
     ccpl->AddTag(tagName);
+
+    // will create an entry for this tag if there is not one already
+    CreateTagListEntry(tagName, false, 0, false);
+
     IncrementTagNumRefs(tagName);
+
+    SelectTagChanges();
 }
 
 Function: removeTagFromColorTable
@@ -1167,6 +1170,8 @@ ColorTableAttributes::removeTagFromColorTable(const std::string ctName,
         }
     }
 
+    SelectTagChanges();
+
     return std::make_pair(success, outstr);
 }
 
@@ -1189,7 +1194,7 @@ bool
 ColorTableAttributes::AllTagsSelected()
 {
     return std::all_of(tagListActive.begin(), tagListActive.end(),
-        [](const int tagListActiveEntry) { return tagListActiveEntry });
+        [](const int tagListActiveEntry) { return tagListActiveEntry; });
 }
 
 Function: EnableDisableAllTags
@@ -1265,17 +1270,14 @@ ColorTableAttributes::CreateTagListEntry(const std::string tagname,
                                          const int numrefs,
                                          const bool tagTableItemExists)
 {
-    if (! CheckTagInTagList(currtag))
+    if (! CheckTagInTagList(tagname))
     {
         tagListNames.push_back(tagname);
         tagListActive.push_back(active);
         tagListNumRefs.push_back(numrefs);
         tagListTableItemFlag.push_back(tagTableItemExists);
 
-        Select(ID_tagListNames,         (void *)&tagListNames);
-        Select(ID_tagListActive,        (void *)&tagListActive);
-        Select(ID_tagListNumRefs,       (void *)&tagListNumRefs);
-        Select(ID_tagListTableItemFlag, (void *)&tagListTableItemFlag);
+        SelectTagList();
     }
 }
 
@@ -1320,15 +1322,36 @@ ColorTableAttributes::RemoveTagListEntry(const int index)
             tagListTableItemFlag.erase(tableitemflagItr);
         }
 
-        Select(ID_tagListNames,         (void *)&tagListNames);
-        Select(ID_tagListActive,        (void *)&tagListActive);
-        Select(ID_tagListNumRefs,       (void *)&tagListNumRefs);
-        Select(ID_tagListTableItemFlag, (void *)&tagListTableItemFlag);
+        SelectTagList();
     }
 }
 
+Function: SelectTagList
+Declaration: void SelectTagList();
+Definition:
+// ****************************************************************************
+// Method: ColorTableAttributes::SelectTagList
+//
+// Purpose:
+//    TODO
+//
+// Programmer: Justin Privitera
+// Creation:   08/11/23
+//
+// Modifications:
+//
+// ****************************************************************************
+void
+ColorTableAttributes::SelectTagList()
+{
+    SelectTagListNames();
+    SelectTagListActive();
+    SelectTagListNumRefs();
+    SelectTagListTableItemFlag();
+}
+
 Function: CreateTagChangesEntry
-Declaration: void CreateTagChangesEntry(const std::string tagname, const bool active, const int numrefs, const bool tagTableItemExists);
+Declaration: void CreateTagChangesEntry(const std::string tagname, const int addOrRemove, const std::string ctName);
 Definition:
 // ****************************************************************************
 // Method: ColorTableAttributes::CreateTagChangesEntry
@@ -1347,16 +1370,11 @@ ColorTableAttributes::CreateTagChangesEntry(const std::string tagname,
                                             const int addOrRemove,
                                             const std::string ctName)
 {
-    if (! CheckTagInTagList(currtag))
-    {
-        tagChangesTag.push_back(tagname);
-        tagChangesType.push_back(addOrRemove);
-        tagChangesCTName.push_back(ctName);
+    tagChangesTag.push_back(tagname);
+    tagChangesType.push_back(addOrRemove);
+    tagChangesCTName.push_back(ctName);
 
-        Select(ID_tagChangesTag,        (void *)&tagChangesTag);
-        Select(ID_tagChangesType,       (void *)&tagChangesType);
-        Select(ID_tagChangesCTName,     (void *)&tagChangesCTName);
-    }
+    SelectTagChanges();
 }
 
 Function: RemoveTagChangesEntry
@@ -1392,15 +1410,36 @@ ColorTableAttributes::RemoveTagChangesEntry(const int index)
 
         if (tagItr != tagChangesTag.end())
         {
-            tagListNames.erase(tagItr);
-            tagListActive.erase(typeItr);
-            tagListNumRefs.erase(ctnameItr);
+            tagChangesTag.erase(tagItr);
+            tagChangesType.erase(typeItr);
+            tagChangesCTName.erase(ctnameItr);
         }
 
-        Select(ID_tagListNames,   (void *)&tagChangesTag);
-        Select(ID_tagListActive,  (void *)&tagChangesType);
-        Select(ID_tagListNumRefs, (void *)&tagChangesCTName);
+        SelectTagChanges();
     }
+}
+
+Function: SelectTagChanges
+Declaration: void SelectTagChanges();
+Definition:
+// ****************************************************************************
+// Method: ColorTableAttributes::SelectTagChanges
+//
+// Purpose:
+//    TODO
+//
+// Programmer: Justin Privitera
+// Creation:   08/11/23
+//
+// Modifications:
+//
+// ****************************************************************************
+void
+ColorTableAttributes::SelectTagChanges()
+{
+    SelectTagChangesTag();
+    SelectTagChangesType();
+    SelectTagChangesCTName();
 }
 
 Function: SetTagActive2
@@ -1425,6 +1464,7 @@ ColorTableAttributes::SetTagActive(const int index, const bool active)
     {
         tagListActive[index] = active;
     }
+    SelectTagList();
 }
 
 Function: SetTagActive1
@@ -1496,6 +1536,7 @@ ColorTableAttributes::IncrementTagNumRefs(const int index)
     {
         tagListNumRefs[index] ++;
     }
+    SelectTagList();
 }
 
 Function: IncrementTagNumRefs1
@@ -1541,6 +1582,7 @@ ColorTableAttributes::DecrementTagNumRefs(const int index)
     {
         tagListNumRefs[index] --;
     }
+    SelectTagList();
 }
 
 Function: DecrementTagNumRefs1
@@ -1591,7 +1633,7 @@ ColorTableAttributes::GetTagNumRefs(const std::string tagname)
 }
 
 Function: SetTagTableItemFlag2
-Declaration: void SetTagTableItemFlag(const std::string tagname, const bool tagTableItemExists);
+Declaration: void SetTagTableItemFlag(const int index, const bool tagTableItemExists);
 Definition:
 // ****************************************************************************
 // Method: ColorTableAttributes::SetTagTableItemFlag
@@ -1613,6 +1655,7 @@ ColorTableAttributes::SetTagTableItemFlag(const int index,
     {
         tagListTableItemFlag[index] = tagTableItemExists;
     }
+    SelectTagList();
 }
 
 Function: SetTagTableItemFlag1
@@ -1716,7 +1759,7 @@ ColorTableAttributes::RemoveUnusedTagsFromTagTable(
         {
             // if this tag list item has an associated tag table entry
             if (*tableitemflagItr)
-                tagTableItemsToRemove.push_back(*namesItr)
+                tagTableItemsToRemove.push_back(*namesItr);
             // else - there is no tag table entry to delete so we can continue
 
             // remove this entry from the tag list

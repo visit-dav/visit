@@ -689,7 +689,7 @@ ColorTableAttributes::SetFromNode(DataNode *parentNode)
     if((node = searchNode->GetNode("tagsMatchAny")) != 0)
         tagsMatchAny = node->AsBool();
 
-    DataNode* node2, node3;
+    DataNode *node2, *node3;
     // we need all three vectors to be present for this to work
     if ((node  = searchNode->GetNode("tagChangesTag"   )) != 0 &&
         (node2 = searchNode->GetNode("tagChangesType"  )) != 0 &&
@@ -818,7 +818,7 @@ ColorTableAttributes::SetTagListTableItemFlag(const intVector &tagListTableItemF
 }
 
 void
-ColorTableAttributes::SetTagChangesTag(const intVector &tagChangesTag_)
+ColorTableAttributes::SetTagChangesTag(const stringVector &tagChangesTag_)
 {
     tagChangesTag = tagChangesTag_;
     Select(ID_tagChangesTag, (void *)&tagChangesTag);
@@ -962,13 +962,13 @@ ColorTableAttributes::GetTagListTableItemFlag()
     return tagListTableItemFlag;
 }
 
-const intVector &
+const stringVector &
 ColorTableAttributes::GetTagChangesTag() const
 {
     return tagChangesTag;
 }
 
-intVector &
+stringVector &
 ColorTableAttributes::GetTagChangesTag()
 {
     return tagChangesTag;
@@ -1344,7 +1344,7 @@ ColorTableAttributes::GetFieldType(int index) const
     case ID_tagListActive:        return FieldType_intVector;
     case ID_tagListNumRefs:       return FieldType_intVector;
     case ID_tagListTableItemFlag: return FieldType_intVector;
-    case ID_tagChangesTag:        return FieldType_intVector;
+    case ID_tagChangesTag:        return FieldType_stringVector;
     case ID_tagChangesType:       return FieldType_intVector;
     case ID_tagChangesCTName:     return FieldType_stringVector;
     default:  return FieldType_unknown;
@@ -1382,7 +1382,7 @@ ColorTableAttributes::GetFieldTypeName(int index) const
     case ID_tagListActive:        return "intVector";
     case ID_tagListNumRefs:       return "intVector";
     case ID_tagListTableItemFlag: return "intVector";
-    case ID_tagChangesTag:        return "intVector";
+    case ID_tagChangesTag:        return "stringVector";
     case ID_tagChangesType:       return "intVector";
     case ID_tagChangesCTName:     return "stringVector";
     default:  return "invalid index";
@@ -1709,12 +1709,9 @@ ColorTableAttributes::AddColorTable(const std::string &name,
     if (defaultDiscrete)
         SetDefaultDiscrete(name);
 
-    Select(ID_names,                (void *)&names);
-    Select(ID_active,               (void *)&active);
-    Select(ID_tagListNames,         (void *)&tagListNames);
-    Select(ID_tagListActive,        (void *)&tagListActive);
-    Select(ID_tagListNumRefs,       (void *)&tagListNumRefs);
-    Select(ID_tagListTableItemFlag, (void *)&tagListTableItemFlag);
+    SelectNames();
+    SelectColorTableActive();
+    SelectTagList();
 }
 
 // ****************************************************************************
@@ -1808,8 +1805,8 @@ ColorTableAttributes::RemoveColorTable(int index)
         }
 
         // Indicate that things have changed by selecting the list.
-        Select(ID_names,            (void *)&names);
-        Select(ID_colorTableActive, (void *)&colorTableActive);
+        SelectNames();
+        SelectColorTableActive();
 
         // erase the color table from the vector.
         RemoveColorTables(index);
@@ -2000,7 +1997,13 @@ ColorTableAttributes::addTagToColorTable(const std::string ctName,
         CreateTagChangesEntry(tagName, ADDTAG, ctName);
     }
     ccpl->AddTag(tagName);
+
+    // will create an entry for this tag if there is not one already
+    CreateTagListEntry(tagName, false, 0, false);
+
     IncrementTagNumRefs(tagName);
+
+    SelectTagChanges();
 }
 
 // ****************************************************************************
@@ -2074,6 +2077,8 @@ ColorTableAttributes::removeTagFromColorTable(const std::string ctName,
         }
     }
 
+    SelectTagChanges();
+
     return std::make_pair(success, outstr);
 }
 
@@ -2093,7 +2098,7 @@ bool
 ColorTableAttributes::AllTagsSelected()
 {
     return std::all_of(tagListActive.begin(), tagListActive.end(),
-        [](const int tagListActiveEntry) { return tagListActiveEntry });
+        [](const int tagListActiveEntry) { return tagListActiveEntry; });
 }
 
 // ****************************************************************************
@@ -2160,17 +2165,14 @@ ColorTableAttributes::CreateTagListEntry(const std::string tagname,
                                          const int numrefs,
                                          const bool tagTableItemExists)
 {
-    if (! CheckTagInTagList(currtag))
+    if (! CheckTagInTagList(tagname))
     {
         tagListNames.push_back(tagname);
         tagListActive.push_back(active);
         tagListNumRefs.push_back(numrefs);
         tagListTableItemFlag.push_back(tagTableItemExists);
 
-        Select(ID_tagListNames,         (void *)&tagListNames);
-        Select(ID_tagListActive,        (void *)&tagListActive);
-        Select(ID_tagListNumRefs,       (void *)&tagListNumRefs);
-        Select(ID_tagListTableItemFlag, (void *)&tagListTableItemFlag);
+        SelectTagList();
     }
 }
 
@@ -2212,11 +2214,29 @@ ColorTableAttributes::RemoveTagListEntry(const int index)
             tagListTableItemFlag.erase(tableitemflagItr);
         }
 
-        Select(ID_tagListNames,         (void *)&tagListNames);
-        Select(ID_tagListActive,        (void *)&tagListActive);
-        Select(ID_tagListNumRefs,       (void *)&tagListNumRefs);
-        Select(ID_tagListTableItemFlag, (void *)&tagListTableItemFlag);
+        SelectTagList();
     }
+}
+
+// ****************************************************************************
+// Method: ColorTableAttributes::SelectTagList
+//
+// Purpose:
+//    TODO
+//
+// Programmer: Justin Privitera
+// Creation:   08/11/23
+//
+// Modifications:
+//
+// ****************************************************************************
+void
+ColorTableAttributes::SelectTagList()
+{
+    SelectTagListNames();
+    SelectTagListActive();
+    SelectTagListNumRefs();
+    SelectTagListTableItemFlag();
 }
 
 // ****************************************************************************
@@ -2236,16 +2256,11 @@ ColorTableAttributes::CreateTagChangesEntry(const std::string tagname,
                                             const int addOrRemove,
                                             const std::string ctName)
 {
-    if (! CheckTagInTagList(currtag))
-    {
-        tagChangesTag.push_back(tagname);
-        tagChangesType.push_back(addOrRemove);
-        tagChangesCTName.push_back(ctName);
+    tagChangesTag.push_back(tagname);
+    tagChangesType.push_back(addOrRemove);
+    tagChangesCTName.push_back(ctName);
 
-        Select(ID_tagChangesTag,        (void *)&tagChangesTag);
-        Select(ID_tagChangesType,       (void *)&tagChangesType);
-        Select(ID_tagChangesCTName,     (void *)&tagChangesCTName);
-    }
+    SelectTagChanges();
 }
 
 // ****************************************************************************
@@ -2278,15 +2293,33 @@ ColorTableAttributes::RemoveTagChangesEntry(const int index)
 
         if (tagItr != tagChangesTag.end())
         {
-            tagListNames.erase(tagItr);
-            tagListActive.erase(typeItr);
-            tagListNumRefs.erase(ctnameItr);
+            tagChangesTag.erase(tagItr);
+            tagChangesType.erase(typeItr);
+            tagChangesCTName.erase(ctnameItr);
         }
 
-        Select(ID_tagListNames,   (void *)&tagChangesTag);
-        Select(ID_tagListActive,  (void *)&tagChangesType);
-        Select(ID_tagListNumRefs, (void *)&tagChangesCTName);
+        SelectTagChanges();
     }
+}
+
+// ****************************************************************************
+// Method: ColorTableAttributes::SelectTagChanges
+//
+// Purpose:
+//    TODO
+//
+// Programmer: Justin Privitera
+// Creation:   08/11/23
+//
+// Modifications:
+//
+// ****************************************************************************
+void
+ColorTableAttributes::SelectTagChanges()
+{
+    SelectTagChangesTag();
+    SelectTagChangesType();
+    SelectTagChangesCTName();
 }
 
 // ****************************************************************************
@@ -2326,6 +2359,7 @@ ColorTableAttributes::SetTagActive(const int index, const bool active)
     {
         tagListActive[index] = active;
     }
+    SelectTagList();
 }
 
 // ****************************************************************************
@@ -2388,6 +2422,7 @@ ColorTableAttributes::IncrementTagNumRefs(const int index)
     {
         tagListNumRefs[index] ++;
     }
+    SelectTagList();
 }
 
 // ****************************************************************************
@@ -2427,6 +2462,7 @@ ColorTableAttributes::DecrementTagNumRefs(const int index)
     {
         tagListNumRefs[index] --;
     }
+    SelectTagList();
 }
 
 // ****************************************************************************
@@ -2491,6 +2527,7 @@ ColorTableAttributes::SetTagTableItemFlag(const int index,
     {
         tagListTableItemFlag[index] = tagTableItemExists;
     }
+    SelectTagList();
 }
 
 // ****************************************************************************
@@ -2563,7 +2600,7 @@ ColorTableAttributes::RemoveUnusedTagsFromTagTable(
         {
             // if this tag list item has an associated tag table entry
             if (*tableitemflagItr)
-                tagTableItemsToRemove.push_back(*namesItr)
+                tagTableItemsToRemove.push_back(*namesItr);
             // else - there is no tag table entry to delete so we can continue
 
             // remove this entry from the tag list

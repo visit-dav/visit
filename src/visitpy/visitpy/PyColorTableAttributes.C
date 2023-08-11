@@ -165,12 +165,12 @@ PyColorTableAttributes_ToString(const ColorTableAttributes *atts, const char *pr
         snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
-    {   const intVector &tagChangesTag = atts->GetTagChangesTag();
+    {   const stringVector &tagChangesTag = atts->GetTagChangesTag();
         snprintf(tmpStr, 1000, "%stagChangesTag = (", prefix);
         str += tmpStr;
         for(size_t i = 0; i < tagChangesTag.size(); ++i)
         {
-            snprintf(tmpStr, 1000, "%d", tagChangesTag[i]);
+            snprintf(tmpStr, 1000, "\"%s\"", tagChangesTag[i].c_str());
             str += tmpStr;
             if(i < tagChangesTag.size() - 1)
             {
@@ -991,48 +991,41 @@ ColorTableAttributes_SetTagChangesTag(PyObject *self, PyObject *args)
 {
     ColorTableAttributesObject *obj = (ColorTableAttributesObject *)self;
 
-    intVector vec;
+    stringVector vec;
 
-    if (PyNumber_Check(args))
+    if (PyUnicode_Check(args))
     {
-        long val = PyLong_AsLong(args);
-        int cval = int(val);
-        if (val == -1 && PyErr_Occurred())
+        char const *val = PyUnicode_AsUTF8(args);
+        std::string cval = std::string(val);
+        if (val == 0 && PyErr_Occurred())
         {
             PyErr_Clear();
-            return PyErr_Format(PyExc_TypeError, "number not interpretable as C++ int");
+            return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ string");
         }
-        if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
-            return PyErr_Format(PyExc_ValueError, "number not interpretable as C++ int");
         vec.resize(1);
         vec[0] = cval;
     }
-    else if (PySequence_Check(args) && !PyUnicode_Check(args))
+    else if (PySequence_Check(args))
     {
         vec.resize(PySequence_Size(args));
         for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)
         {
             PyObject *item = PySequence_GetItem(args, i);
 
-            if (!PyNumber_Check(item))
+            if (!PyUnicode_Check(item))
             {
                 Py_DECREF(item);
-                return PyErr_Format(PyExc_TypeError, "arg %d is not a number type", (int) i);
+                return PyErr_Format(PyExc_TypeError, "arg %d is not a unicode string", (int) i);
             }
 
-            long val = PyLong_AsLong(item);
-            int cval = int(val);
+            char const *val = PyUnicode_AsUTF8(item);
+            std::string cval = std::string(val);
 
-            if (val == -1 && PyErr_Occurred())
+            if (val == 0 && PyErr_Occurred())
             {
                 Py_DECREF(item);
                 PyErr_Clear();
-                return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ int", (int) i);
-            }
-            if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
-            {
-                Py_DECREF(item);
-                return PyErr_Format(PyExc_ValueError, "arg %d not interpretable as C++ int", (int) i);
+                return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ string", (int) i);
             }
             Py_DECREF(item);
 
@@ -1040,7 +1033,7 @@ ColorTableAttributes_SetTagChangesTag(PyObject *self, PyObject *args)
         }
     }
     else
-        return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more ints");
+        return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more string(s)");
 
     obj->data->GetTagChangesTag() = vec;
     // Mark the tagChangesTag in the object as modified.
@@ -1055,10 +1048,10 @@ ColorTableAttributes_GetTagChangesTag(PyObject *self, PyObject *args)
 {
     ColorTableAttributesObject *obj = (ColorTableAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the tagChangesTag.
-    const intVector &tagChangesTag = obj->data->GetTagChangesTag();
+    const stringVector &tagChangesTag = obj->data->GetTagChangesTag();
     PyObject *retval = PyTuple_New(tagChangesTag.size());
     for(size_t i = 0; i < tagChangesTag.size(); ++i)
-        PyTuple_SET_ITEM(retval, i, PyInt_FromLong(long(tagChangesTag[i])));
+        PyTuple_SET_ITEM(retval, i, PyString_FromString(tagChangesTag[i].c_str()));
     return retval;
 }
 

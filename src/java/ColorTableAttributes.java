@@ -116,12 +116,10 @@ public class ColorTableAttributes extends AttributeSubject
             Integer iv = (Integer)obj.tagListTableItemFlag.elementAt(i);
             tagListTableItemFlag.addElement(new Integer(iv.intValue()));
         }
-        tagChangesTag = new Vector();
+        tagChangesTag = new Vector(obj.tagChangesTag.size());
         for(i = 0; i < obj.tagChangesTag.size(); ++i)
-        {
-            Integer iv = (Integer)obj.tagChangesTag.elementAt(i);
-            tagChangesTag.addElement(new Integer(iv.intValue()));
-        }
+            tagChangesTag.addElement(new String((String)obj.tagChangesTag.elementAt(i)));
+
         tagChangesType = new Vector();
         for(i = 0; i < obj.tagChangesType.size(); ++i)
         {
@@ -208,9 +206,9 @@ public class ColorTableAttributes extends AttributeSubject
         boolean tagChangesTag_equal = (obj.tagChangesTag.size() == tagChangesTag.size());
         for(i = 0; (i < tagChangesTag.size()) && tagChangesTag_equal; ++i)
         {
-            // Make references to Integer from Object.
-            Integer tagChangesTag1 = (Integer)tagChangesTag.elementAt(i);
-            Integer tagChangesTag2 = (Integer)obj.tagChangesTag.elementAt(i);
+            // Make references to String from Object.
+            String tagChangesTag1 = (String)tagChangesTag.elementAt(i);
+            String tagChangesTag2 = (String)obj.tagChangesTag.elementAt(i);
             tagChangesTag_equal = tagChangesTag1.equals(tagChangesTag2);
         }
         // Compare the elements in the tagChangesType vector.
@@ -376,7 +374,7 @@ public class ColorTableAttributes extends AttributeSubject
         if(WriteSelect(10, buf))
             buf.WriteIntVector(tagListTableItemFlag);
         if(WriteSelect(11, buf))
-            buf.WriteIntVector(tagChangesTag);
+            buf.WriteStringVector(tagChangesTag);
         if(WriteSelect(12, buf))
             buf.WriteIntVector(tagChangesType);
         if(WriteSelect(13, buf))
@@ -431,7 +429,7 @@ public class ColorTableAttributes extends AttributeSubject
             SetTagListTableItemFlag(buf.ReadIntVector());
             break;
         case 11:
-            SetTagChangesTag(buf.ReadIntVector());
+            SetTagChangesTag(buf.ReadStringVector());
             break;
         case 12:
             SetTagChangesType(buf.ReadIntVector());
@@ -465,7 +463,7 @@ public class ColorTableAttributes extends AttributeSubject
         str = str + intVectorToString("tagListActive", tagListActive, indent) + "\n";
         str = str + intVectorToString("tagListNumRefs", tagListNumRefs, indent) + "\n";
         str = str + intVectorToString("tagListTableItemFlag", tagListTableItemFlag, indent) + "\n";
-        str = str + intVectorToString("tagChangesTag", tagChangesTag, indent) + "\n";
+        str = str + stringVectorToString("tagChangesTag", tagChangesTag, indent) + "\n";
         str = str + intVectorToString("tagChangesType", tagChangesType, indent) + "\n";
         str = str + stringVectorToString("tagChangesCTName", tagChangesCTName, indent) + "\n";
         return str;
@@ -614,7 +612,7 @@ public class ColorTableAttributes extends AttributeSubject
     private Vector  tagListActive; // vector of Integer objects
     private Vector  tagListNumRefs; // vector of Integer objects
     private Vector  tagListTableItemFlag; // vector of Integer objects
-    private Vector  tagChangesTag; // vector of Integer objects
+    private Vector  tagChangesTag; // vector of String objects
     private Vector  tagChangesType; // vector of Integer objects
     private Vector  tagChangesCTName; // vector of String objects
 }

@@ -791,6 +791,8 @@ QvisColorTableWindow::UpdateWindow(bool doAll)
         switch(i)
         {
         case ColorTableAttributes::ID_names:
+            // fall thru
+        case ColorTableAttributes::ID_tagListNames:
             updateNames = true;
             break;
         case ColorTableAttributes::ID_colorTables:
@@ -944,50 +946,52 @@ QvisColorTableWindow::UpdateTags()
     std::cout << "=======================" << std::endl;
 
 
-    // 1. Populate Tag List
-    std::vector<std::string> tagsToAdd;
-    colorAtts->GetNewTagNames(tagsToAdd);
+    // TODO
 
-    // 2. Add Tags to Tag Table
-    std::for_each(tagsToAdd.begin(), tagsToAdd.end(),
-        [this](std::string currtag)
-        {
-            // check if the tag has a tag table entry
-            // TODO wouldn't it be better to just check if the tag list item was null?
-            QList<QTreeWidgetItem*> items = tagTable->findItems(
-                QString::fromStdString(currtag), Qt::MatchExactly, 1);
-            if (items.count() == 0)
-            {
-                QTreeWidgetItem *item = new QTreeWidgetItem(tagTable);
-                colorAtts->SetTagTableItem(currtag, static_cast<void *>(item));
-                item->setCheckState(0, colorAtts->GetTagActive(currtag) ? Qt::Checked : Qt::Unchecked);
-                item->setText(1, currtag.c_str());
-            }
-        });
+    // // 1. Populate Tag List
+    // std::vector<std::string> tagsToAdd;
+    // colorAtts->GetNewTagNames(tagsToAdd);
 
-    colorAtts->PrintTagList();
-    std::cout << "=======================" << std::endl;
+    // // 2. Add Tags to Tag Table
+    // std::for_each(tagsToAdd.begin(), tagsToAdd.end(),
+    //     [this](std::string currtag)
+    //     {
+    //         // check if the tag has a tag table entry
+    //         // TODO wouldn't it be better to just check if the tag list item was null?
+    //         QList<QTreeWidgetItem*> items = tagTable->findItems(
+    //             QString::fromStdString(currtag), Qt::MatchExactly, 1);
+    //         if (items.count() == 0)
+    //         {
+    //             QTreeWidgetItem *item = new QTreeWidgetItem(tagTable);
+    //             colorAtts->SetTagTableItem(currtag, static_cast<void *>(item));
+    //             item->setCheckState(0, colorAtts->GetTagActive(currtag) ? Qt::Checked : Qt::Unchecked);
+    //             item->setText(1, currtag.c_str());
+    //         }
+    //     });
 
-    // 3. Purge tagList/tagTable entries that have 0 refcount.
-    std::vector<void *> tagTableItems;
-    colorAtts->RemoveUnusedTagsFromTagTable(tagTableItems);
-    std::for_each(tagTableItems.begin(), tagTableItems.end(),
-        [this](void * tagTableItemVoidPtr)
-        {
-            QTreeWidgetItem *tagTableItem = static_cast<QTreeWidgetItem *>(tagTableItemVoidPtr);
-            auto index = tagTable->indexOfTopLevelItem(tagTableItem);
-            if (index != -1)
-            {
-                tagTable->takeTopLevelItem(index);
-                delete tagTableItem;
-            }
-            // If the item is not in the tag table, then we will skip deleting it.
-        });
+    // colorAtts->PrintTagList();
+    // std::cout << "=======================" << std::endl;
 
-    colorAtts->PrintTagList();
-    std::cout << "=======================" << std::endl;
+    // // 3. Purge tagList/tagTable entries that have 0 refcount.
+    // std::vector<void *> tagTableItems;
+    // colorAtts->RemoveUnusedTagsFromTagTable(tagTableItems);
+    // std::for_each(tagTableItems.begin(), tagTableItems.end(),
+    //     [this](void * tagTableItemVoidPtr)
+    //     {
+    //         QTreeWidgetItem *tagTableItem = static_cast<QTreeWidgetItem *>(tagTableItemVoidPtr);
+    //         auto index = tagTable->indexOfTopLevelItem(tagTableItem);
+    //         if (index != -1)
+    //         {
+    //             tagTable->takeTopLevelItem(index);
+    //             delete tagTableItem;
+    //         }
+    //         // If the item is not in the tag table, then we will skip deleting it.
+    //     });
 
-    tagTable->sortByColumn(1, Qt::AscendingOrder);
+    // colorAtts->PrintTagList();
+    // std::cout << "=======================" << std::endl;
+
+    // tagTable->sortByColumn(1, Qt::AscendingOrder);
 }
 
 // ****************************************************************************
@@ -1072,7 +1076,7 @@ QvisColorTableWindow::UpdateNames()
     for (int i = 0; i < colorAtts->GetNumColorTables(); i ++)
     {
         // if the color table is active (e.g. within the current filtering selection)
-        if (colorAtts->GetActiveElement(i))
+        // if (colorAtts->GetActiveElement(i)) // TODO reenable
         {
             QString ctName(colorAtts->GetNames()[i].c_str());
             // searching
@@ -1126,9 +1130,7 @@ QvisColorTableWindow::UpdateNames()
     // Set the enabled state of the delete button.
     deleteButton->setEnabled(colorAtts->GetNumColorTables() > 1);
 
-    // TODO
-    // std::cout << "hi7" << std::endl;
-
+    // TODO say goodbye to this!
     // static bool run_before = false;
     // if (!run_before)
     // {
@@ -1143,8 +1145,6 @@ QvisColorTableWindow::UpdateNames()
     //     Apply(true);
     //     std::cout << "test4" << std::endl;
     // }
-
-    // std::cout << "bye" << std::endl;
 }
 
 // ****************************************************************************
@@ -3037,28 +3037,29 @@ QvisColorTableWindow::tagsSelectAll()
 {
     tagTable->blockSignals(true);
     // If all the tags are already enabled
-    if (colorAtts->AllTagsSelected())
-    {
-        // then we want to disable all of them
-        std::vector<void *> tagTableItems;
-        colorAtts->EnableDisableAllTags(false, tagTableItems);
-        std::for_each(tagTableItems.begin(), tagTableItems.end(),
-            [](void * tagTableItem)
-            {
-                static_cast<QTreeWidgetItem *>(tagTableItem)->setCheckState(0, Qt::Unchecked);
-            });
-    }
-    else
-    {
-        // otherwise, we want to enable all of them
-        std::vector<void *> tagTableItems;
-        colorAtts->EnableDisableAllTags(true, tagTableItems);
-        std::for_each(tagTableItems.begin(), tagTableItems.end(),
-            [](void * tagTableItem)
-            {
-                static_cast<QTreeWidgetItem *>(tagTableItem)->setCheckState(0, Qt::Checked);
-            });
-    }
+    // TODO re enable and fix this
+    // if (colorAtts->AllTagsSelected())
+    // {
+    //     // then we want to disable all of them
+    //     std::vector<void *> tagTableItems;
+    //     colorAtts->EnableDisableAllTags(false, tagTableItems);
+    //     std::for_each(tagTableItems.begin(), tagTableItems.end(),
+    //         [](void * tagTableItem)
+    //         {
+    //             static_cast<QTreeWidgetItem *>(tagTableItem)->setCheckState(0, Qt::Unchecked);
+    //         });
+    // }
+    // else
+    // {
+    //     // otherwise, we want to enable all of them
+    //     std::vector<void *> tagTableItems;
+    //     colorAtts->EnableDisableAllTags(true, tagTableItems);
+    //     std::for_each(tagTableItems.begin(), tagTableItems.end(),
+    //         [](void * tagTableItem)
+    //         {
+    //             static_cast<QTreeWidgetItem *>(tagTableItem)->setCheckState(0, Qt::Checked);
+    //         });
+    // }
     tagTable->blockSignals(false);
     UpdateNames();
     colorAtts->SetChangesMade(true);
@@ -3171,12 +3172,13 @@ QvisColorTableWindow::addRemoveTag()
         {
             auto index(colorAtts->GetColorTableIndex(currentColorTable.toStdString()));
             auto ctName(static_cast<std::string>(colorAtts->GetNames()[index]));
+            // if the ccpl already has the tag, then we assume that we are trying to remove it
             if (ccpl->HasTag(tagName))
             {
-                auto result(colorAtts->removeTagFromColorTable(ctName, tagName, ccpl));
-                if (!result.first)
+                auto result2(colorAtts->removeTagFromColorTable(ctName, tagName, ccpl));
+                if (!result2.first)
                 {
-                    auto tmp(tr("Tag Editing WARNING: ") + QString(result.second.c_str()));
+                    auto tmp(tr("Tag Editing WARNING: ") + QString(result2.second.c_str()));
                     Error(tmp);
                     return;
                 }

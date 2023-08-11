@@ -5123,7 +5123,7 @@ ViewerSubject::HandleColorTable()
 
             int nNames = colorAtts->GetNumColorTables();
             const stringVector &names = colorAtts->GetNames();
-            const intVector &active = colorAtts->GetActive();
+            const intVector &active = colorAtts->GetColorTableActive();
             for(int i = 0; i < nNames; ++i)
             {
                 if (active[i])

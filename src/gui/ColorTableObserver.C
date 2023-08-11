@@ -103,7 +103,7 @@ ColorTableObserver::Update(Subject *)
 
         int nNames = colorAtts->GetNumColorTables();
         const stringVector &names = colorAtts->GetNames();
-        const intVector &active = colorAtts->GetActive();
+        const intVector &active = colorAtts->GetColorTableActive();
 
         // This should never happen. Resetting the names will reset the active
         // array as well, and make every color table active. However, this does
