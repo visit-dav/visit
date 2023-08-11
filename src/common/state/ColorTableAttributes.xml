@@ -48,7 +48,7 @@
     </Function>
     <Function name="SetNames" user="false" member="true">
     </Function>
-    <Function name="SetActive" user="false" member="true">
+    <Function name="SetColorTableActive" user="false" member="true">
     </Function>
     <Function name="CreateNode" user="false" member="true">
     </Function>
@@ -70,31 +70,33 @@
     </Function>
     <Function name="CreateTagListEntry" user="true" member="true">
     </Function>
-    <Function name="RemoveTagListEntryByIndex" user="true" member="true">
+    <Function name="RemoveTagListEntry" user="true" member="true">
     </Function>
-    <Function name="RemoveTagChangesEntryByIndex" user="true" member="true">
+    <Function name="CreateTagChangesEntry" user="true" member="true">
     </Function>
-    <Function name="SetTagActive" user="true" member="true">
+    <Function name="RemoveTagChangesEntry" user="true" member="true">
     </Function>
-    <Function name="SetTagActiveByIndex" user="true" member="true">
+    <Function name="SetTagActive1" user="true" member="true">
+    </Function>
+    <Function name="SetTagActive2" user="true" member="true">
     </Function>
     <Function name="GetTagActive" user="true" member="true">
     </Function>
-    <Function name="IncrementTagNumRefs" user="true" member="true">
+    <Function name="IncrementTagNumRefs1" user="true" member="true">
     </Function>
-    <Function name="IncrementTagNumRefsByIndex" user="true" member="true">
+    <Function name="IncrementTagNumRefs2" user="true" member="true">
     </Function>
-    <Function name="DecrementTagNumRefs" user="true" member="true">
+    <Function name="DecrementTagNumRefs1" user="true" member="true">
     </Function>
-    <Function name="DecrementTagNumRefsByIndex" user="true" member="true">
+    <Function name="DecrementTagNumRefs2" user="true" member="true">
     </Function>
     <Function name="GetTagNumRefs" user="true" member="true">
     </Function>
-    <Function name="SetTagTableItemFlag" user="true" member="true">
+    <Function name="SetTagTableItemFlag1" user="true" member="true">
     </Function>
-    <Function name="SetTagTableItemFlagByIndex" user="true" member="true">
+    <Function name="SetTagTableItemFlag2" user="true" member="true">
     </Function>
-    <Function name="GetTagTableItem" user="true" member="true">
+    <Function name="GetTagTableItemFlag" user="true" member="true">
     </Function>
     <Function name="CheckTagInTagList" user="true" member="true">
     </Function>

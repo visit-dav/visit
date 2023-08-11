@@ -56,7 +56,7 @@ public:
     // Property selection methods
     virtual void SelectAll();
     void SelectNames();
-    void SelectActive();
+    void SelectColorTableActive();
     void SelectColorTables();
     void SelectDefaultContinuous();
     void SelectDefaultDiscrete();
@@ -70,7 +70,7 @@ public:
 
     // Property setting methods
     void SetNames(const stringVector &names_);
-    void SetActive(const intVector &active_);
+    void SetColorTableActive(const intVector &colorTableActive_);
     void SetDefaultContinuous(const std::string &defaultContinuous_);
     void SetDefaultDiscrete(const std::string &defaultDiscrete_);
     void SetChangesMade(bool changesMade_);
@@ -86,8 +86,8 @@ public:
     // Property getting methods
     const stringVector &GetNames() const;
           stringVector &GetNames();
-    const intVector    &GetActive() const;
-          intVector    &GetActive();
+    const intVector    &GetColorTableActive() const;
+          intVector    &GetColorTableActive();
     const AttributeGroupVector &GetColorTables() const;
           AttributeGroupVector &GetColorTables();
     const std::string  &GetDefaultContinuous() const;
@@ -142,22 +142,29 @@ public:
     void RemoveColorTable(const std::string &name);
     void RemoveColorTable(int index);
     bool GetActiveElement(int index);
-    stringVector StringifyTagChanges();
-    void UnstringifyAndMergeTagChanges(stringVector changes);
+    void MergeTagChanges(stringVector tagChangesTagFromNode, intVector tagChangesTypeFromNode, stringVector tagChangesCTNameFromNode);
     void addTagToColorTable(const std::string ctName, const std::string tagName, ColorControlPointList* ccpl);
     std::pair<bool, std::string> removeTagFromColorTable(const std::string ctName, const std::string tagName, ColorControlPointList* ccpl);
     bool AllTagsSelected();
-    void EnableDisableAllTags(bool enable, std::vector<void *> &tagTableItems);
+    void EnableDisableAllTags(bool enable);
     int GetIndexOfTag(const std::string tagname);
-    void CreateTagTableEntry(const std::string tagname, bool active);
-    void SetTagActive(int index, bool active);
-    void SetTagActive(int index, bool active);
+    void CreateTagListEntry(const std::string tagname, const bool active, const int numrefs, const bool tagTableItemExists);
+    void RemoveTagListEntry(const int index);
+    void CreateTagChangesEntry(const std::string tagname, const bool active, const int numrefs, const bool tagTableItemExists);
+    void RemoveTagChangesEntry(const int index);
+    void SetTagActive(const std::string tagname, const bool active);
+    void SetTagActive(const int index, const bool active);
     bool GetTagActive(const std::string tagname);
+    void IncrementTagNumRefs(const std::string tagname);
+    void IncrementTagNumRefs(const int index);
+    void DecrementTagNumRefs(const std::string tagname);
+    void DecrementTagNumRefs(const int index);
     int GetTagNumRefs(const std::string tagname);
-    void SetTagTableItem(const std::string tagname, void * newTagTableItem);
-    void * GetTagTableItem(const std::string tagname);
+    void SetTagTableItemFlag(const std::string tagname, const bool tagTableItemExists);
+    void SetTagTableItemFlag(const std::string tagname, const bool tagTableItemExists);
+    bool GetTagTableItemFlag(const std::string tagname);
     bool CheckTagInTagList(const std::string tagname);
-    void RemoveUnusedTagsFromTagTable(std::vector<void *> &tagTableItems);
+    void RemoveUnusedTagsFromTagTable(std::vector<std::string> &tagTableItemsToRemove);
     void GetNewTagNames(std::vector<std::string> &tagsToAdd);
     bool FilterTableByTag(const ColorControlPointList &ccpl);
     void FilterTablesByTag();
@@ -167,7 +174,7 @@ public:
     // IDs that can be used to identify fields in case statements
     enum {
         ID_names = 0,
-        ID_active,
+        ID_colorTableActive,
         ID_colorTables,
         ID_defaultContinuous,
         ID_defaultDiscrete,
@@ -187,7 +194,7 @@ protected:
     AttributeGroup *CreateSubAttributeGroup(int index);
 private:
     stringVector         names;
-    intVector            active;
+    intVector            colorTableActive;
     AttributeGroupVector colorTables;
     std::string          defaultContinuous;
     std::string          defaultDiscrete;
