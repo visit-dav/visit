@@ -1658,9 +1658,7 @@ ColorTableAttributes::AddColorTable(const std::string &name,
 
     // if this table doesn't have tags, then add the no-tags tag
     if (cpts.GetNumTags() == 0)
-    {
         cpts.AddTag("No Tags");
-    }
 
     // iterate thru each tag in the given color table
     for (int j = 0; j < cpts.GetNumTags(); j ++)
@@ -1671,10 +1669,6 @@ ColorTableAttributes::AddColorTable(const std::string &name,
         IncrementTagNumRefs(currtag);
     }
 
-    std::cout << "tag list after adding color table " << name << std::endl;
-    PrintTagList();
-    std::cout << "======" << std::endl;
-
     // TODO this should maybe go away?
     cpts.SetTagChangesMade(true);
 
@@ -1684,25 +1678,33 @@ ColorTableAttributes::AddColorTable(const std::string &name,
     colorTableActive.push_back(true);
     AddColorTables(cpts);
 
-    // Store the name, colortable pairs into a map.
-    std::map<std::string, AttributeGroup *> sortMap;
+    // Store the name, active, and colortable triples into a map.
+    std::map<std::string, std::pair<int, AttributeGroup *>> sortMap;
     size_t i;
     for(i = 0; i < names.size(); ++i)
-        sortMap[names[i]] = colorTables[i];
+    {
+        sortMap[names[i]].first  = colorTableActive[i];
+        sortMap[names[i]].second = colorTables[i];
+    }
 
     // Traverse the map, it will be sorted. Store the names and color table
     // pointer back into the old vectors.
-    std::map<std::string, AttributeGroup *>::iterator pos;
+    std::map<std::string, std::pair<int, AttributeGroup *>>::iterator pos;
     for(i = 0, pos = sortMap.begin(); pos != sortMap.end(); ++pos, ++i)
     {
         names[i] = pos->first;
-        colorTables[i] = pos->second;
+        auto ctpair = pos->second;
+        colorTableActive[i] = ctpair.first;
+        colorTables[i] = ctpair.second;
     }
 
     // determine if this color table belongs in the current tag filtering selection
     int CTindex = GetColorTableIndex(name);
     if (CTindex >= 0 && CTindex < colorTableActive.size())
         colorTableActive[CTindex] = FilterTableByTag(cpts);
+
+    // std::cout << "this color table is " << (colorTableActive[CTindex] ? "active" : "inactive") << std::endl;
+    // std::cout << "======" << std::endl;
 
     if (defaultContinuous)
         SetDefaultContinuous(name);
