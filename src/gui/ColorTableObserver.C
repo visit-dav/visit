@@ -93,7 +93,6 @@ ColorTableObserver::Update(Subject *)
        colorAtts->IsSelected(ColorTableAttributes::ID_colorTables) ||
        colorAtts->GetChangesMade())
     {
-        std::cout << "Time for color tables" << std::endl;
         // reset
         colorAtts->SetChangesMade(false);
 
@@ -107,18 +106,6 @@ ColorTableObserver::Update(Subject *)
         const stringVector &names = colorAtts->GetNames();
         const intVector &active = colorAtts->GetColorTableActive();
 
-        std::cout << "ct observer printing tag list" << std::endl;
-        colorAtts->PrintTagList();
-        std::cout << "=======================" << std::endl;
-
-
-        // TODO JUSTIN I left off here investigating really odd behavior
-        for (int i = 0; i < names.size(); i ++)
-        {
-            std::cout << names[i] << ":\t\t" << (active[i] ? "yes" : "no") << "\ttags: "
-                      << colorAtts->GetColorControlPoints(i)->GetTagsAsString() << std::endl;
-        }
-
         // This should never happen. Resetting the names will reset the active
         // array as well, and make every color table active. However, this does
         // happen; when loading settings from config/session files, `names` is
@@ -127,16 +114,12 @@ ColorTableObserver::Update(Subject *)
         // final guard here works just fine, as which color tables are active
         // is calculated after this.
         if (names.size() != active.size())
-        {
-            std::cout << "WHOOPS!!!" << std::endl;
             colorAtts->SetNames(names);
-        }
         
         for (int i = 0; i < nNames; ++i)
         {
             if (active[i])
             {
-                // std::cout << names[i] << std::endl;
                 QvisColorTableButton::addColorTable(names[i].c_str());
                 QvisNoDefaultColorTableButton::addColorTable(names[i].c_str());
             }
