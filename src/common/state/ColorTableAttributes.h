@@ -9,8 +9,6 @@
 #include <AttributeSubject.h>
 
 class ColorControlPointList;
-class TagInfo;
-
 
 // ****************************************************************************
 // Class: ColorTableAttributes

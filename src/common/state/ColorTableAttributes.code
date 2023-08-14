@@ -30,11 +30,6 @@ Prefix:
 // state files.
 Postfix:
 
-Code: ColorTableAttributes.h
-Prefix:
-class TagInfo;
-Postfix:
-
 Target: xml2python
 Code: PyColorTableAttributes_getattr
 Prefix:
