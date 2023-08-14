@@ -5122,7 +5122,7 @@ ViewerSubject::HandleColorTable()
             QvisNoDefaultColorTableButton::setColorTableAttributes(colorAtts);
 
             int nNames = colorAtts->GetNumColorTables();
-            const stringVector &names = colorAtts->GetNames();
+            const stringVector &names = colorAtts->GetColorTableNames();
             const intVector &active = colorAtts->GetColorTableActive();
             for(int i = 0; i < nNames; ++i)
             {

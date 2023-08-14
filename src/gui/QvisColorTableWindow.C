@@ -754,9 +754,9 @@ QvisColorTableWindow::UpdateWindow(bool doAll)
     ctNames[0] = currentColorTable;
     ctNames[1] = colorAtts->GetDefaultContinuous().c_str();
     ctNames[2] = colorAtts->GetDefaultDiscrete().c_str();
-    if(colorAtts->GetNames().size() > 0)
+    if(colorAtts->GetColorTableNames().size() > 0)
     {
-        ctNames[3] = colorAtts->GetNames()[0].c_str();
+        ctNames[3] = colorAtts->GetColorTableNames()[0].c_str();
         ++nct;
     }
     for(int c = 0; c < nct && invalidCt; ++c)
@@ -790,7 +790,7 @@ QvisColorTableWindow::UpdateWindow(bool doAll)
 
         switch(i)
         {
-        case ColorTableAttributes::ID_names:
+        case ColorTableAttributes::ID_colorTableNames:
             // fall thru
         case ColorTableAttributes::ID_tagListNames:
             updateNames = true;
@@ -1078,7 +1078,7 @@ QvisColorTableWindow::UpdateNames()
         // if the color table is active (e.g. within the current filtering selection)
         // if (colorAtts->GetActiveElement(i)) // TODO reenable
         {
-            QString ctName(colorAtts->GetNames()[i].c_str());
+            QString ctName(colorAtts->GetColorTableNames()[i].c_str());
             // searching
             if (ctName.contains(searchTerm, Qt::CaseInsensitive))
             {
@@ -1117,7 +1117,7 @@ QvisColorTableWindow::UpdateNames()
         auto index = colorAtts->GetColorTableIndex(currentColorTable.toStdString());
         if (index >= 0)
         {
-            nameLineEdit->setText(QString(colorAtts->GetNames()[index].c_str()));
+            nameLineEdit->setText(QString(colorAtts->GetColorTableNames()[index].c_str()));
             tagLineEdit->setText(QString(colorAtts->GetColorTables(index).GetTagsAsString().c_str()));
         }
     }
@@ -3171,7 +3171,7 @@ QvisColorTableWindow::addRemoveTag()
         if (result.first)
         {
             auto index(colorAtts->GetColorTableIndex(currentColorTable.toStdString()));
-            auto ctName(static_cast<std::string>(colorAtts->GetNames()[index]));
+            auto ctName(static_cast<std::string>(colorAtts->GetColorTableNames()[index]));
             // if the ccpl already has the tag, then we assume that we are trying to remove it
             if (ccpl->HasTag(tagName))
             {

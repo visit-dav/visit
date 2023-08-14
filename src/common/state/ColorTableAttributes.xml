@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
   <Attribute name="ColorTableAttributes" purpose="This class contains the list of colortables." persistent="true" keyframe="true" exportAPI="STATE_API" exportInclude="state_exports.h" codefile="ColorTableAttributes.code">
-    <Field name="names" label="names" type="stringVector">
+    <Field name="colorTableNames" label="colorTableNames" type="stringVector">
     </Field>
     <Field name="colorTableActive" label="colorTableActive" type="intVector" ignoreeq="true">
     </Field>
@@ -46,7 +46,7 @@
     </Function>
     <Function name="RemoveColorTable2" user="true" member="true">
     </Function>
-    <Function name="SetNames" user="false" member="true">
+    <Function name="SetColorTableNames" user="false" member="true">
     </Function>
     <Function name="SetColorTableActive" user="false" member="true">
     </Function>

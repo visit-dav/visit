@@ -88,7 +88,7 @@ ColorTableObserver::Update(Subject *)
 
     // If the names or the color table attributes are changing, then we
     // have to update the widget.
-    if(colorAtts->IsSelected(ColorTableAttributes::ID_names) ||
+    if(colorAtts->IsSelected(ColorTableAttributes::ID_colorTableNames) ||
        colorAtts->IsSelected(ColorTableAttributes::ID_tagListNames) ||
        colorAtts->IsSelected(ColorTableAttributes::ID_colorTables) ||
        colorAtts->GetChangesMade())
@@ -103,7 +103,7 @@ ColorTableObserver::Update(Subject *)
         QvisNoDefaultColorTableButton::clearAllColorTables();
 
         int nNames = colorAtts->GetNumColorTables();
-        const stringVector &names = colorAtts->GetNames();
+        const stringVector &names = colorAtts->GetColorTableNames();
         const intVector &active = colorAtts->GetColorTableActive();
 
         // This should never happen. Resetting the names will reset the active
@@ -114,7 +114,7 @@ ColorTableObserver::Update(Subject *)
         // final guard here works just fine, as which color tables are active
         // is calculated after this.
         if (names.size() != active.size())
-            colorAtts->SetNames(names);
+            colorAtts->SetColorTableNames(names);
         
         for (int i = 0; i < nNames; ++i)
         {

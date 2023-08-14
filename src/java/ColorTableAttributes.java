@@ -30,7 +30,7 @@ public class ColorTableAttributes extends AttributeSubject
     {
         super(ColorTableAttributes_numAdditionalAtts);
 
-        names = new Vector();
+        colorTableNames = new Vector();
         colorTableActive = new Vector();
         colorTables = new Vector();
         defaultContinuous = new String("hot");
@@ -50,7 +50,7 @@ public class ColorTableAttributes extends AttributeSubject
     {
         super(ColorTableAttributes_numAdditionalAtts + nMoreFields);
 
-        names = new Vector();
+        colorTableNames = new Vector();
         colorTableActive = new Vector();
         colorTables = new Vector();
         defaultContinuous = new String("hot");
@@ -72,9 +72,9 @@ public class ColorTableAttributes extends AttributeSubject
 
         int i;
 
-        names = new Vector(obj.names.size());
-        for(i = 0; i < obj.names.size(); ++i)
-            names.addElement(new String((String)obj.names.elementAt(i)));
+        colorTableNames = new Vector(obj.colorTableNames.size());
+        for(i = 0; i < obj.colorTableNames.size(); ++i)
+            colorTableNames.addElement(new String((String)obj.colorTableNames.elementAt(i)));
 
         colorTableActive = new Vector();
         for(i = 0; i < obj.colorTableActive.size(); ++i)
@@ -148,14 +148,14 @@ public class ColorTableAttributes extends AttributeSubject
     {
         int i;
 
-        // Compare the elements in the names vector.
-        boolean names_equal = (obj.names.size() == names.size());
-        for(i = 0; (i < names.size()) && names_equal; ++i)
+        // Compare the elements in the colorTableNames vector.
+        boolean colorTableNames_equal = (obj.colorTableNames.size() == colorTableNames.size());
+        for(i = 0; (i < colorTableNames.size()) && colorTableNames_equal; ++i)
         {
             // Make references to String from Object.
-            String names1 = (String)names.elementAt(i);
-            String names2 = (String)obj.names.elementAt(i);
-            names_equal = names1.equals(names2);
+            String colorTableNames1 = (String)colorTableNames.elementAt(i);
+            String colorTableNames2 = (String)obj.colorTableNames.elementAt(i);
+            colorTableNames_equal = colorTableNames1.equals(colorTableNames2);
         }
         // Compare the elements in the colorTables vector.
         boolean colorTables_equal = (obj.colorTables.size() == colorTables.size());
@@ -230,7 +230,7 @@ public class ColorTableAttributes extends AttributeSubject
             tagChangesCTName_equal = tagChangesCTName1.equals(tagChangesCTName2);
         }
         // Create the return value
-        return (names_equal &&
+        return (colorTableNames_equal &&
                 true /* can ignore colorTableActive */ &&
                 colorTables_equal &&
                 (defaultContinuous.equals(obj.defaultContinuous)) &&
@@ -247,9 +247,9 @@ public class ColorTableAttributes extends AttributeSubject
     }
 
     // Property setting methods
-    public void SetNames(Vector names_)
+    public void SetColorTableNames(Vector colorTableNames_)
     {
-        names = names_;
+        colorTableNames = colorTableNames_;
         Select(0);
     }
 
@@ -326,7 +326,7 @@ public class ColorTableAttributes extends AttributeSubject
     }
 
     // Property getting methods
-    public Vector  GetNames() { return names; }
+    public Vector  GetColorTableNames() { return colorTableNames; }
     public Vector  GetColorTableActive() { return colorTableActive; }
     public Vector  GetColorTables() { return colorTables; }
     public String  GetDefaultContinuous() { return defaultContinuous; }
@@ -345,7 +345,7 @@ public class ColorTableAttributes extends AttributeSubject
     public void WriteAtts(CommunicationBuffer buf)
     {
         if(WriteSelect(0, buf))
-            buf.WriteStringVector(names);
+            buf.WriteStringVector(colorTableNames);
         if(WriteSelect(1, buf))
             buf.WriteIntVector(colorTableActive);
         if(WriteSelect(2, buf))
@@ -386,7 +386,7 @@ public class ColorTableAttributes extends AttributeSubject
         switch(index)
         {
         case 0:
-            SetNames(buf.ReadStringVector());
+            SetColorTableNames(buf.ReadStringVector());
             break;
         case 1:
             SetColorTableActive(buf.ReadIntVector());
@@ -443,7 +443,7 @@ public class ColorTableAttributes extends AttributeSubject
     public String toString(String indent)
     {
         String str = new String();
-        str = str + stringVectorToString("names", names, indent) + "\n";
+        str = str + stringVectorToString("colorTableNames", colorTableNames, indent) + "\n";
         str = str + intVectorToString("colorTableActive", colorTableActive, indent) + "\n";
         str = str + indent + "colorTables = {\n";
         for(int i = 0; i < colorTables.size(); ++i)
@@ -506,9 +506,9 @@ public class ColorTableAttributes extends AttributeSubject
     public int GetColorTableIndex(String name)
     {
         int retval = -1;
-        for(int i = 0; i < names.size(); ++i)
+        for(int i = 0; i < colorTableNames.size(); ++i)
         {
-            String n = (String)names.elementAt(i);
+            String n = (String)colorTableNames.elementAt(i);
             if(n.equals(name))
             {
                 retval = i;
@@ -547,7 +547,7 @@ public class ColorTableAttributes extends AttributeSubject
 
     public void AddColorTable(String name, ColorControlPointList cpts)
     {
-        names.addElement(new String(name));
+        colorTableNames.addElement(new String(name));
         colorTableActive.addElement(true);
         Select(0);
         AddColorTables(cpts);
@@ -561,14 +561,14 @@ public class ColorTableAttributes extends AttributeSubject
 
     public void RemoveColorTable(int index)
     {
-        if(index >= 0 && index < names.size())
+        if(index >= 0 && index < colorTableNames.size())
         {
-            String nameAt = (String)names.elementAt(index);
+            String nameAt = (String)colorTableNames.elementAt(index);
             boolean isDefaultContinuous = nameAt.equals(defaultContinuous);
             boolean isDefaultDiscrete = nameAt.equals(defaultDiscrete);
 
             // Remove the name from the vector.
-            names.remove(index);
+            colorTableNames.remove(index);
             colorTableActive.remove(index);
             Select(0);
 
@@ -579,9 +579,9 @@ public class ColorTableAttributes extends AttributeSubject
             // default color table to the first element.
             if(isDefaultContinuous)
             {
-                if(names.size() > 0)
+                if(colorTableNames.size() > 0)
                 {
-                    nameAt = (String)names.elementAt(0);
+                    nameAt = (String)colorTableNames.elementAt(0);
                     SetDefaultContinuous(nameAt);
                 }
                 else
@@ -589,9 +589,9 @@ public class ColorTableAttributes extends AttributeSubject
             }
             if(isDefaultDiscrete)
             {
-                if(names.size() > 0)
+                if(colorTableNames.size() > 0)
                 {
-                    nameAt = (String)names.elementAt(0);
+                    nameAt = (String)colorTableNames.elementAt(0);
                     SetDefaultDiscrete(nameAt);
                 }
                 else
@@ -601,7 +601,7 @@ public class ColorTableAttributes extends AttributeSubject
     }
 
     // Attributes
-    private Vector  names; // vector of String objects
+    private Vector  colorTableNames; // vector of String objects
     private Vector  colorTableActive; // vector of Integer objects
     private Vector  colorTables; // vector of ColorControlPointList objects
     private String  defaultContinuous;

@@ -55,7 +55,7 @@ public:
 
     // Property selection methods
     virtual void SelectAll();
-    void SelectNames();
+    void SelectColorTableNames();
     void SelectColorTableActive();
     void SelectColorTables();
     void SelectDefaultContinuous();
@@ -69,7 +69,7 @@ public:
     void SelectTagChangesCTName();
 
     // Property setting methods
-    void SetNames(const stringVector &names_);
+    void SetColorTableNames(const stringVector &colorTableNames_);
     void SetColorTableActive(const intVector &colorTableActive_);
     void SetDefaultContinuous(const std::string &defaultContinuous_);
     void SetDefaultDiscrete(const std::string &defaultDiscrete_);
@@ -84,8 +84,8 @@ public:
     void SetTagChangesCTName(const stringVector &tagChangesCTName_);
 
     // Property getting methods
-    const stringVector &GetNames() const;
-          stringVector &GetNames();
+    const stringVector &GetColorTableNames() const;
+          stringVector &GetColorTableNames();
     const intVector    &GetColorTableActive() const;
           intVector    &GetColorTableActive();
     const AttributeGroupVector &GetColorTables() const;
@@ -175,7 +175,7 @@ public:
 
     // IDs that can be used to identify fields in case statements
     enum {
-        ID_names = 0,
+        ID_colorTableNames = 0,
         ID_colorTableActive,
         ID_colorTables,
         ID_defaultContinuous,
@@ -195,7 +195,7 @@ public:
 protected:
     AttributeGroup *CreateSubAttributeGroup(int index);
 private:
-    stringVector         names;
+    stringVector         colorTableNames;
     intVector            colorTableActive;
     AttributeGroupVector colorTables;
     std::string          defaultContinuous;

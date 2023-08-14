@@ -232,7 +232,7 @@ avtPLYWriter::GetColorTable()
     int nCT = colorTables->GetNumColorTables();
     for (int i=0; i<nCT; i++)
     {
-        if (colorTables->GetNames()[i] == colorTable)
+        if (colorTables->GetColorTableNames()[i] == colorTable)
         {
             const ColorControlPointList &table = colorTables->GetColorTables(i);
             vtkColorTransferFunction *lut = vtkColorTransferFunction::New();
