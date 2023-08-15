@@ -113,6 +113,9 @@ class VisItModuleState(object):
         launched = False
         try:
             if sys.platform.startswith("win"):
+                # adding launch_args to vcmd here causes problems
+                # with the command constructed for subprocess.Popen
+                # in __read_visit_env so let that method handle them
                 vcmd = cls.__visit_cmd(vdir,[])
             else:
                 vcmd = cls.__visit_cmd(vdir,cls.launch_args)
@@ -247,6 +250,7 @@ class VisItModuleState(object):
     def __read_visit_env(cls,vcmd):
         if sys.platform.startswith("win"):
             pcmd = [vcmd, "-env", "-nodialog"]
+            # launch_args no londer used in constructing the vcmd arg, so add them here
             pcmd += cls.launch_args
         else:
             pcmd = vcmd + " -env"
