@@ -862,6 +862,9 @@ QvisColorTableWindow::SetFromNode(DataNode *parentNode, const int *borders)
 // 
 //   Justin Privitera, Mon Feb 13 14:32:02 PST 2023
 //   The tagging flag is gone, so all the logic associated with it is gone.
+// 
+//   Justin Privitera, Mon Aug 21 15:54:50 PDT 2023
+//   Changed ColorTableAttributes `names` to `colorTableNames`.
 //
 // ****************************************************************************
 
@@ -1274,6 +1277,10 @@ QvisColorTableWindow::UpdateTags()
 //   Justin Privitera, Thu May 11 12:31:12 PDT 2023
 //   Stripped out all code relating to searching being on or off; it is 
 //   always on now.
+// 
+//   Justin Privitera, Mon Aug 21 15:54:50 PDT 2023
+//   Changed ColorTableAttributes `names` to `colorTableNames` and `active` to
+//   `colorTableActiveFlags`.
 //
 // ****************************************************************************
 
@@ -3516,6 +3523,9 @@ QvisColorTableWindow::removeTagFromColorTable(const std::string ctName,
 // Modifications:
 //    Justin Privitera, Thu Sep 29 17:27:37 PDT 2022
 //    Replace braces with parens for auto.
+// 
+//   Justin Privitera, Mon Aug 21 15:54:50 PDT 2023
+//   Changed ColorTableAttributes `names` to `colorTableNames`.
 //
 // ****************************************************************************
 

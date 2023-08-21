@@ -10431,6 +10431,8 @@ visit_GetDomains(PyObject *self, PyObject *args)
 // Creation:   Mon Nov 12 12:15:53 PDT 2001
 //
 // Modifications:
+//    Justin Privitera, Mon Aug 21 15:54:50 PDT 2023
+//    Changed ColorTableAttributes `names` to `colorTableNames`.
 //
 // ****************************************************************************
 
@@ -10470,6 +10472,8 @@ visit_ColorTableNames(PyObject *self, PyObject *args)
 // Creation:   Mon Nov 12 12:15:53 PDT 2001
 //
 // Modifications:
+//    Justin Privitera, Mon Aug 21 15:54:50 PDT 2023
+//    Changed ColorTableAttributes `names` to `colorTableNames`.
 //
 // ****************************************************************************
 

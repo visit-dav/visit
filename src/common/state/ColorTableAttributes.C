@@ -566,6 +566,9 @@ ColorTableAttributes::SetFromNode(DataNode *parentNode)
 // Creation:   Thu Jun 16 11:59:26 PDT 2022
 //
 // Modifications:
+//   Justin Privitera, Mon Aug 21 15:54:50 PDT 2023
+//   Changed ColorTableAttributes `names` to `colorTableNames` and `active` to
+//   `colorTableActiveFlags`.
 //
 // ****************************************************************************
 
@@ -596,6 +599,8 @@ ColorTableAttributes::SetColorTableNames(const stringVector &colorTableNames_)
 // Creation:   Thu Jun 16 11:59:26 PDT 2022
 //
 // Modifications:
+//   Justin Privitera, Mon Aug 21 15:54:50 PDT 2023
+//   Changed ColorTableAttributes `active` to `colorTableActiveFlags`.
 //
 // ****************************************************************************
 
@@ -1113,6 +1118,7 @@ ColorTableAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
 // Creation:   Sat Jun 16 20:32:23 PST 2001
 //
 // Modifications:
+//   Changed ColorTableAttributes `names` to `colorTableNames`.
 //
 // ****************************************************************************
 
@@ -1228,6 +1234,11 @@ ColorTableAttributes::GetColorControlPoints(const std::string &name) const
 // 
 //   Justin Privitera, Wed Aug  3 19:46:13 PDT 2022
 //   Do nothing if the color table is built-in.
+// 
+//   Justin Privitera, Mon Aug 21 15:54:50 PDT 2023
+//   Changed ColorTableAttributes `names` to `colorTableNames` and `active` to
+//   `colorTableActiveFlags`.
+//   Simplified some logic with default color tables.
 //
 // ****************************************************************************
 
@@ -1235,9 +1246,6 @@ void
 ColorTableAttributes::AddColorTable(const std::string &name,
                                     const ColorControlPointList &cpts)
 {
-    bool defaultContinuous = (GetDefaultContinuous() == name);
-    bool defaultDiscrete = (GetDefaultDiscrete() == name);
-
     // Remove the color table if it already exists in the list.
     int index = GetColorTableIndex(name);
     if(index != -1)
@@ -1268,9 +1276,10 @@ ColorTableAttributes::AddColorTable(const std::string &name,
         colorTables[i] = pos->second;
     }
 
-    if (defaultContinuous)
+    // TODO this logic seems redundant
+    if (GetDefaultContinuous() == name)
         SetDefaultContinuous(name);
-    if (defaultDiscrete)
+    if (GetDefaultDiscrete() == name)
         SetDefaultDiscrete(name);
 
     SelectColorTableNames();
@@ -1331,6 +1340,12 @@ ColorTableAttributes::RemoveColorTable(const std::string &name)
 // 
 //    Justin Privitera, Thu Sep 29 17:27:37 PDT 2022
 //    Replace auto w/ bool. Add in missing breaks.
+// 
+//   Justin Privitera, Mon Aug 21 15:54:50 PDT 2023
+//   Changed ColorTableAttributes `names` to `colorTableNames` and `active` to
+//   `colorTableActiveFlags`.
+//   Simplified and reused some logic for default color tables.
+//   Renamed iterators to better describe what they iterate over.
 //
 // ****************************************************************************
 
@@ -1343,10 +1358,8 @@ ColorTableAttributes::RemoveColorTable(int index)
         if (GetColorControlPoints(index)->GetBuiltIn())
             return;
 
-        // Determine if the color table is default.
-        bool isDefaultContinuous, isDefaultDiscrete;
-        isDefaultContinuous = (colorTableNames[index] == defaultContinuous);
-        isDefaultDiscrete = (colorTableNames[index] == defaultDiscrete);
+        // Grab the color table name before we remove anything.
+        std::string ctName = colorTableNames[index];
 
         // Iterate through the vector "index" times.
         auto namesItr  = colorTableNames.begin();
@@ -1388,9 +1401,9 @@ ColorTableAttributes::RemoveColorTable(int index)
 
         // If it is the default color table that was removed, reset the
         // default color table to the first element.
-        if(isDefaultContinuous)
+        if (ctName == defaultContinuous)
             SetDefaultContinuous(determineDefaultColorTable(false));
-        if(isDefaultDiscrete)
+        else if (ctName == defaultDiscrete)
             SetDefaultContinuous(determineDefaultColorTable(true));
     }
 }
@@ -1413,6 +1426,9 @@ ColorTableAttributes::RemoveColorTable(int index)
 // Modifications:
 //    Justin Privitera, Wed Jun 29 17:50:24 PDT 2022
 //    Added guard to prevent index out of bound errors.
+// 
+//   Justin Privitera, Mon Aug 21 15:54:50 PDT 2023
+//   Changed ColorTableAttributes `active` to `colorTableActiveFlags`.
 //
 // ****************************************************************************
 
@@ -1437,6 +1453,9 @@ ColorTableAttributes::SetColorTableActiveFlag(int index, bool val)
 // Creation:   Tue Jun 28 14:04:01 PDT 2022
 //
 // Modifications:
+//   Justin Privitera, Mon Aug 21 15:54:50 PDT 2023
+//   Changed ColorTableAttributes `active` to `colorTableActiveFlags` and 
+//   added a return statement.
 //
 // ****************************************************************************
 
@@ -1445,6 +1464,7 @@ ColorTableAttributes::GetColorTableActiveFlag(int index)
 {
     if (index >= 0 && index < colorTableActiveFlags.size())
         return colorTableActiveFlags[index];
+    return false; // the color table can hardly be active if it does not exist
 }
 
 // ****************************************************************************

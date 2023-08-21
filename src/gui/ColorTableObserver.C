@@ -72,6 +72,10 @@ ColorTableObserver::~ColorTableObserver()
 // 
 //   Justin Privitera, Mon Feb 13 14:32:02 PST 2023
 //   Removed check for tagging flag, as it no longer exists.
+// 
+//   Justin Privitera, Mon Aug 21 15:54:50 PDT 2023
+//   Changed ColorTableAttributes `names` to `colorTableNames` and `active` to
+//   `colorTableActiveFlags`.
 //
 // ****************************************************************************
 

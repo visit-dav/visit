@@ -222,6 +222,8 @@ avtPLYWriter::GetCombineMode(const std::string &) const
 // Creation:    April 26, 2013
 //
 // Modifications:
+//   Justin Privitera, Mon Aug 21 15:54:50 PDT 2023
+//   Changed ColorTableAttributes `names` to `colorTableNames`.
 //
 //****************************************************************************
 
