@@ -1238,7 +1238,7 @@ ColorTableAttributes::GetColorControlPoints(const std::string &name) const
 //   Justin Privitera, Mon Aug 21 15:54:50 PDT 2023
 //   Changed ColorTableAttributes `names` to `colorTableNames` and `active` to
 //   `colorTableActiveFlags`.
-//   Simplified some logic with default color tables.
+//   Removed some redundant logic with default color tables.
 //
 // ****************************************************************************
 
@@ -1275,12 +1275,6 @@ ColorTableAttributes::AddColorTable(const std::string &name,
         colorTableNames[i] = pos->first;
         colorTables[i] = pos->second;
     }
-
-    // TODO this logic seems redundant
-    if (GetDefaultContinuous() == name)
-        SetDefaultContinuous(name);
-    if (GetDefaultDiscrete() == name)
-        SetDefaultDiscrete(name);
 
     SelectColorTableNames();
     SelectColorTableActiveFlags();
