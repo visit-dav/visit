@@ -88,7 +88,7 @@ ColorTableObserver::Update(Subject *)
 
     // If the names or the color table attributes are changing, then we
     // have to update the widget.
-    if(colorAtts->IsSelected(ColorTableAttributes::ID_names) ||
+    if(colorAtts->IsSelected(ColorTableAttributes::ID_colorTableNames) ||
        colorAtts->IsSelected(ColorTableAttributes::ID_colorTables) ||
        colorAtts->GetChangesMade())
     {
@@ -102,8 +102,8 @@ ColorTableObserver::Update(Subject *)
         QvisNoDefaultColorTableButton::clearAllColorTables();
 
         int nNames = colorAtts->GetNumColorTables();
-        const stringVector &names = colorAtts->GetNames();
-        const intVector &active = colorAtts->GetActive();
+        const stringVector &ctnames = colorAtts->GetColorTableNames();
+        const intVector &ctactive = colorAtts->GetColorTableActiveFlags();
 
         // This should never happen. Resetting the names will reset the active
         // array as well, and make every color table active. However, this does
@@ -112,15 +112,15 @@ ColorTableObserver::Update(Subject *)
         // would correctly preserve which color tables are active, but this
         // final guard here works just fine, as which color tables are active
         // is calculated after this.
-        if (names.size() != active.size())
-            colorAtts->SetNames(names);
+        if (ctnames.size() != ctactive.size())
+            colorAtts->SetColorTableNames(ctnames);
         
         for (int i = 0; i < nNames; ++i)
         {
-            if (active[i])
+            if (ctactive[i])
             {
-                QvisColorTableButton::addColorTable(names[i].c_str());
-                QvisNoDefaultColorTableButton::addColorTable(names[i].c_str());
+                QvisColorTableButton::addColorTable(ctnames[i].c_str());
+                QvisNoDefaultColorTableButton::addColorTable(ctnames[i].c_str());
             }
         }
 

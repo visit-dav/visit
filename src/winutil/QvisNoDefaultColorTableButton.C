@@ -542,7 +542,7 @@ QvisNoDefaultColorTableButton::updateColorTableButtons()
                         // Does this color table match the type of this button?
                         if (colorTableAtts->GetColorTables(i).GetDiscreteFlag() == myButtonType)
                         {
-                            std::string myColorTable{colorTableAtts->GetNames()[i]};
+                            std::string myColorTable{colorTableAtts->GetColorTableNames()[i]};
                             if (myButtonType == CONT)
                                 colorTableAtts->SetDefaultContinuous(myColorTable);
                             else

@@ -1339,7 +1339,7 @@ avtDatasetFileWriter::WritePOVRayFamily(const char *filename)
     for (int i=0; i<num; i++)
     {
         ctfile << "#declare "
-               << "ct_" << colortables->GetNames()[i]
+               << "ct_" << colortables->GetColorTableNames()[i]
                << " = color_map {" << endl;
         const ColorControlPointList &ct = colortables->GetColorTables(i);
         for (int j=0; j<ct.GetNumControlPoints(); j++)
@@ -2465,7 +2465,7 @@ static vtkScalarsToColors * GetColorTableFromEnv()
     int nCT = colorTables->GetNumColorTables();
     for (int i=0; i<nCT; i++)
     {
-        if (colorTables->GetNames()[i] == ctName)
+        if (colorTables->GetColorTableNames()[i] == ctName)
         {
             const ColorControlPointList &table = colorTables->GetColorTables(i);
             vtkColorTransferFunction *lut = vtkColorTransferFunction::New();

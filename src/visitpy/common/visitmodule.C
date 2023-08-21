@@ -10443,7 +10443,7 @@ visit_ColorTableNames(PyObject *self, PyObject *args)
     MUTEX_LOCK();
 
     // Allocate a tuple the with enough entries to hold the plugin name list.
-    const stringVector &ctNames = GetViewerState()->GetColorTableAttributes()->GetNames();
+    const stringVector &ctNames = GetViewerState()->GetColorTableAttributes()->GetColorTableNames();
     PyObject *retval = PyTuple_New(ctNames.size());
 
     for(size_t i = 0; i < ctNames.size(); ++i)
@@ -10479,7 +10479,7 @@ visit_NumColorTables(PyObject *self, PyObject *args)
     ENSURE_VIEWER_EXISTS();
     NO_ARGUMENTS();
 
-    const stringVector &ctNames = GetViewerState()->GetColorTableAttributes()->GetNames();
+    const stringVector &ctNames = GetViewerState()->GetColorTableAttributes()->GetColorTableNames();
     PyObject *retval = PyLong_FromLong(ctNames.size());
 
     return retval;

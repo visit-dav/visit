@@ -883,9 +883,9 @@ QvisColorTableWindow::UpdateWindow(bool doAll)
     ctNames[0] = currentColorTable;
     ctNames[1] = colorAtts->GetDefaultContinuous().c_str();
     ctNames[2] = colorAtts->GetDefaultDiscrete().c_str();
-    if(colorAtts->GetNames().size() > 0)
+    if(colorAtts->GetColorTableNames().size() > 0)
     {
-        ctNames[3] = colorAtts->GetNames()[0].c_str();
+        ctNames[3] = colorAtts->GetColorTableNames()[0].c_str();
         ++nct;
     }
     for(int c = 0; c < nct && invalidCt; ++c)
@@ -919,7 +919,7 @@ QvisColorTableWindow::UpdateWindow(bool doAll)
 
         switch(i)
         {
-        case ColorTableAttributes::ID_names:
+        case ColorTableAttributes::ID_colorTableNames:
             updateNames = true;
             break;
         case ColorTableAttributes::ID_colorTables:
@@ -1338,16 +1338,16 @@ QvisColorTableWindow::UpdateNames()
             }
         }
         // we mark the color table as active or inactive
-        colorAtts->SetActiveElement(i, tagFound);
+        colorAtts->SetColorTableActiveFlag(i, tagFound);
     }
 
     // actually populate the name list box
     for (int i = 0; i < colorAtts->GetNumColorTables(); i ++)
     {
         // if the color table is active
-        if (colorAtts->GetActiveElement(i))
+        if (colorAtts->GetColorTableActiveFlag(i))
         {
-            QString ctName(colorAtts->GetNames()[i].c_str());
+            QString ctName(colorAtts->GetColorTableNames()[i].c_str());
             if (ctName.contains(searchTerm, Qt::CaseInsensitive))
             {
                 QTreeWidgetItem *treeItem = new QTreeWidgetItem(nameListBox);
@@ -1385,7 +1385,7 @@ QvisColorTableWindow::UpdateNames()
         auto index = colorAtts->GetColorTableIndex(currentColorTable.toStdString());
         if (index >= 0)
         {
-            nameLineEdit->setText(QString(colorAtts->GetNames()[index].c_str()));
+            nameLineEdit->setText(QString(colorAtts->GetColorTableNames()[index].c_str()));
             tagLineEdit->setText(QString(colorAtts->GetColorTables(index).GetTagsAsString().c_str()));
         }
     }
@@ -3530,7 +3530,7 @@ QvisColorTableWindow::addRemoveTag()
         if (result.first)
         {
             auto index(colorAtts->GetColorTableIndex(currentColorTable.toStdString()));
-            auto ctName(static_cast<std::string>(colorAtts->GetNames()[index]));
+            auto ctName(static_cast<std::string>(colorAtts->GetColorTableNames()[index]));
             if (ccpl->HasTag(tagName))
                 removeTagFromColorTable(ctName, tagName, ccpl);
             else
