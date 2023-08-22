@@ -92,6 +92,7 @@ ColorTableObserver::Update(Subject *)
     // If the names or the color table attributes are changing, then we
     // have to update the widget.
     if(colorAtts->IsSelected(ColorTableAttributes::ID_colorTableNames) ||
+       colorAtts->IsSelected(ColorTableAttributes::ID_tagListNames) ||
        colorAtts->IsSelected(ColorTableAttributes::ID_colorTables) ||
        colorAtts->GetChangesMade())
     {
