@@ -114,8 +114,8 @@ Definition:
 // Creation:   Sat Jun 16 20:32:23 PST 2001
 //
 // Modifications:
+//   Justin Privitera, Mon Aug 21 15:54:50 PDT 2023
 //   Changed ColorTableAttributes `names` to `colorTableNames`.
-//
 // ****************************************************************************
 
 int
@@ -304,7 +304,6 @@ Definition:
 //   Changed ColorTableAttributes `names` to `colorTableNames` and `active` to
 //   `colorTableActiveFlags`.
 //   Removed some redundant logic with default color tables.
-//
 // ****************************************************************************
 
 void
@@ -435,7 +434,6 @@ Definition:
 //   `colorTableActiveFlags`.
 //   Simplified and reused some logic for default color tables.
 //   Renamed iterators to better describe what they iterate over.
-//
 // ****************************************************************************
 
 void
@@ -562,7 +560,6 @@ Definition:
 //   Justin Privitera, Mon Aug 21 15:54:50 PDT 2023
 //   Changed ColorTableAttributes `names` to `colorTableNames` and `active` to
 //   `colorTableActiveFlags`.
-//
 // ****************************************************************************
 
 void
@@ -597,7 +594,6 @@ Definition:
 // Modifications:
 //   Justin Privitera, Mon Aug 21 15:54:50 PDT 2023
 //   Changed ColorTableAttributes `active` to `colorTableActiveFlags`.
-//
 // ****************************************************************************
 
 void
@@ -768,7 +764,6 @@ Definition:
 // 
 //   Justin Privitera, Mon Aug 21 15:54:50 PDT 2023
 //   Changed ColorTableAttributes `active` to `colorTableActiveFlags`.
-//
 // ****************************************************************************
 
 void
@@ -798,7 +793,6 @@ Definition:
 //   Justin Privitera, Mon Aug 21 15:54:50 PDT 2023
 //   Changed ColorTableAttributes `active` to `colorTableActiveFlags` and 
 //   added a return statement.
-//
 // ****************************************************************************
 
 bool

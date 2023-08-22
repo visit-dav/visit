@@ -517,7 +517,6 @@ QvisNoDefaultColorTableButton::addColorTable(const QString &ctName)
 // 
 //   Justin Privitera, Mon Aug 21 15:54:50 PDT 2023
 //   Changed ColorTableAttributes `names` to `colorTableNames`.
-//   
 // ****************************************************************************
 
 void

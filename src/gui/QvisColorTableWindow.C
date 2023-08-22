@@ -865,7 +865,6 @@ QvisColorTableWindow::SetFromNode(DataNode *parentNode, const int *borders)
 // 
 //   Justin Privitera, Mon Aug 21 15:54:50 PDT 2023
 //   Changed ColorTableAttributes `names` to `colorTableNames`.
-//
 // ****************************************************************************
 
 void
@@ -1281,7 +1280,6 @@ QvisColorTableWindow::UpdateTags()
 //   Justin Privitera, Mon Aug 21 15:54:50 PDT 2023
 //   Changed ColorTableAttributes `names` to `colorTableNames` and `active` to
 //   `colorTableActiveFlags`.
-//
 // ****************************************************************************
 
 void
@@ -3526,7 +3524,6 @@ QvisColorTableWindow::removeTagFromColorTable(const std::string ctName,
 // 
 //   Justin Privitera, Mon Aug 21 15:54:50 PDT 2023
 //   Changed ColorTableAttributes `names` to `colorTableNames`.
-//
 // ****************************************************************************
 
 void

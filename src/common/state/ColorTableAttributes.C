@@ -569,7 +569,6 @@ ColorTableAttributes::SetFromNode(DataNode *parentNode)
 //   Justin Privitera, Mon Aug 21 15:54:50 PDT 2023
 //   Changed ColorTableAttributes `names` to `colorTableNames` and `active` to
 //   `colorTableActiveFlags`.
-//
 // ****************************************************************************
 
 void
@@ -601,7 +600,6 @@ ColorTableAttributes::SetColorTableNames(const stringVector &colorTableNames_)
 // Modifications:
 //   Justin Privitera, Mon Aug 21 15:54:50 PDT 2023
 //   Changed ColorTableAttributes `active` to `colorTableActiveFlags`.
-//
 // ****************************************************************************
 
 void
@@ -1118,8 +1116,8 @@ ColorTableAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
 // Creation:   Sat Jun 16 20:32:23 PST 2001
 //
 // Modifications:
+//   Justin Privitera, Mon Aug 21 15:54:50 PDT 2023
 //   Changed ColorTableAttributes `names` to `colorTableNames`.
-//
 // ****************************************************************************
 
 int
@@ -1239,7 +1237,6 @@ ColorTableAttributes::GetColorControlPoints(const std::string &name) const
 //   Changed ColorTableAttributes `names` to `colorTableNames` and `active` to
 //   `colorTableActiveFlags`.
 //   Removed some redundant logic with default color tables.
-//
 // ****************************************************************************
 
 void
@@ -1340,7 +1337,6 @@ ColorTableAttributes::RemoveColorTable(const std::string &name)
 //   `colorTableActiveFlags`.
 //   Simplified and reused some logic for default color tables.
 //   Renamed iterators to better describe what they iterate over.
-//
 // ****************************************************************************
 
 void
@@ -1423,7 +1419,6 @@ ColorTableAttributes::RemoveColorTable(int index)
 // 
 //   Justin Privitera, Mon Aug 21 15:54:50 PDT 2023
 //   Changed ColorTableAttributes `active` to `colorTableActiveFlags`.
-//
 // ****************************************************************************
 
 void
@@ -1450,7 +1445,6 @@ ColorTableAttributes::SetColorTableActiveFlag(int index, bool val)
 //   Justin Privitera, Mon Aug 21 15:54:50 PDT 2023
 //   Changed ColorTableAttributes `active` to `colorTableActiveFlags` and 
 //   added a return statement.
-//
 // ****************************************************************************
 
 bool

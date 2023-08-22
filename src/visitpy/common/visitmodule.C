@@ -10433,7 +10433,6 @@ visit_GetDomains(PyObject *self, PyObject *args)
 // Modifications:
 //    Justin Privitera, Mon Aug 21 15:54:50 PDT 2023
 //    Changed ColorTableAttributes `names` to `colorTableNames`.
-//
 // ****************************************************************************
 
 STATIC PyObject *
@@ -10474,7 +10473,6 @@ visit_ColorTableNames(PyObject *self, PyObject *args)
 // Modifications:
 //    Justin Privitera, Mon Aug 21 15:54:50 PDT 2023
 //    Changed ColorTableAttributes `names` to `colorTableNames`.
-//
 // ****************************************************************************
 
 STATIC PyObject *

@@ -5099,7 +5099,6 @@ ViewerSubject::HandleSILAttsUpdated(const string &host,
 //   Justin Privitera, Mon Aug 21 15:54:50 PDT 2023
 //   Changed ColorTableAttributes `names` to `colorTableNames` and `active` to
 //   `colorTableActiveFlags`.
-//
 // ****************************************************************************
 
 void
