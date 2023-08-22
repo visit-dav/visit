@@ -54,7 +54,7 @@ public:
     // Property selection methods
     virtual void SelectAll();
     void SelectColorTableNames();
-    void SelectColorTableActive();
+    void SelectColorTableActiveFlags();
     void SelectColorTables();
     void SelectDefaultContinuous();
     void SelectDefaultDiscrete();
@@ -68,7 +68,7 @@ public:
 
     // Property setting methods
     void SetColorTableNames(const stringVector &colorTableNames_);
-    void SetColorTableActive(const intVector &colorTableActive_);
+    void SetColorTableActiveFlags(const intVector &colorTableActiveFlags_);
     void SetDefaultContinuous(const std::string &defaultContinuous_);
     void SetDefaultDiscrete(const std::string &defaultDiscrete_);
     void SetChangesMade(bool changesMade_);
@@ -84,8 +84,8 @@ public:
     // Property getting methods
     const stringVector &GetColorTableNames() const;
           stringVector &GetColorTableNames();
-    const intVector    &GetColorTableActive() const;
-          intVector    &GetColorTableActive();
+    const intVector    &GetColorTableActiveFlags() const;
+          intVector    &GetColorTableActiveFlags();
     const AttributeGroupVector &GetColorTables() const;
           AttributeGroupVector &GetColorTables();
     const std::string  &GetDefaultContinuous() const;
@@ -136,10 +136,11 @@ public:
     int GetColorTableIndex(const std::string &name) const;
     const ColorControlPointList *GetColorControlPoints(int index) const;
     const ColorControlPointList *GetColorControlPoints(const std::string &name) const;
-    void AddColorTable(const std::string &name, ColorControlPointList &cpts);
+    void AddColorTable(const std::string &name, const ColorControlPointList &cpts);
     void RemoveColorTable(const std::string &name);
     void RemoveColorTable(int index);
-    bool GetActiveElement(int index);
+    void SetColorTableActiveFlag(int index, bool val);
+    bool GetColorTableActiveFlag(int index);
     void MergeTagChanges(stringVector tagChangesTagFromNode, intVector tagChangesTypeFromNode, stringVector tagChangesCTNameFromNode);
     void addTagToColorTable(const std::string ctName, const std::string tagName, ColorControlPointList* ccpl);
     std::pair<bool, std::string> removeTagFromColorTable(const std::string ctName, const std::string tagName, ColorControlPointList* ccpl);
@@ -174,7 +175,7 @@ public:
     // IDs that can be used to identify fields in case statements
     enum {
         ID_colorTableNames = 0,
-        ID_colorTableActive,
+        ID_colorTableActiveFlags,
         ID_colorTables,
         ID_defaultContinuous,
         ID_defaultDiscrete,
@@ -194,7 +195,7 @@ protected:
     AttributeGroup *CreateSubAttributeGroup(int index);
 private:
     stringVector         colorTableNames;
-    intVector            colorTableActive;
+    intVector            colorTableActiveFlags;
     AttributeGroupVector colorTables;
     std::string          defaultContinuous;
     std::string          defaultDiscrete;

@@ -165,7 +165,8 @@ Definition:
 // Creation:   Sat Jun 16 20:32:23 PST 2001
 //
 // Modifications:
-//
+//   Justin Privitera, Mon Aug 21 15:54:50 PDT 2023
+//   Changed ColorTableAttributes `names` to `colorTableNames`.
 // ****************************************************************************
 
 int
@@ -314,7 +315,7 @@ Definition:
 
 Target: xml2atts
 Function: AddColorTable
-Declaration: void AddColorTable(const std::string &name, ColorControlPointList &cpts);
+Declaration: void AddColorTable(const std::string &name, const ColorControlPointList &cpts);
 Definition:
 // ****************************************************************************
 // Method: ColorTableAttributes::AddColorTable
@@ -349,20 +350,17 @@ Definition:
 // 
 //   Justin Privitera, Wed Aug  3 19:46:13 PDT 2022
 //   Do nothing if the color table is built-in.
-//
+// 
+//   Justin Privitera, Mon Aug 21 15:54:50 PDT 2023
+//   Changed ColorTableAttributes `names` to `colorTableNames` and `active` to
+//   `colorTableActiveFlags`.
+//   Removed some redundant logic with default color tables.
 // ****************************************************************************
 
 void
 ColorTableAttributes::AddColorTable(const std::string &name,
-                                    ColorControlPointList &cpts)
+                                    const ColorControlPointList &cpts)
 {
-    bool defaultContinuous = false;
-    if (GetDefaultContinuous() == name)
-        defaultContinuous = true;
-    bool defaultDiscrete = false;
-    if (GetDefaultDiscrete() == name)
-        defaultDiscrete = true;
-
     // Remove the color table if it already exists in the list.
     int index = GetColorTableIndex(name);
     if(index != -1)
@@ -391,7 +389,7 @@ ColorTableAttributes::AddColorTable(const std::string &name,
 
     // Append the color table to the list.
     colorTableNames.push_back(name);
-    colorTableActive.push_back(true);
+    colorTableActiveFlags.push_back(true);
     AddColorTables(cpts);
 
     // Store the name, active, and colortable triples into a map.
@@ -419,13 +417,8 @@ ColorTableAttributes::AddColorTable(const std::string &name,
     if (CTindex >= 0 && CTindex < colorTableActive.size())
         colorTableActive[CTindex] = FilterTableByTag(cpts);
 
-    if (defaultContinuous)
-        SetDefaultContinuous(name);
-    if (defaultDiscrete)
-        SetDefaultDiscrete(name);
-
     SelectColorTableNames();
-    SelectColorTableActive();
+    SelectColorTableActiveFlags();
     SelectTagList();
 }
 
@@ -436,7 +429,7 @@ Definition:
     public void AddColorTable(String name, ColorControlPointList cpts)
     {
         colorTableNames.addElement(new String(name));
-        colorTableActive.addElement(true);
+        colorTableActiveFlags.addElement(true);
         Select(0);
         AddColorTables(cpts);
     }
@@ -513,7 +506,12 @@ Definition:
 // 
 //    Justin Privitera, Thu Sep 29 17:27:37 PDT 2022
 //    Replace auto w/ bool. Add in missing breaks.
-//
+// 
+//   Justin Privitera, Mon Aug 21 15:54:50 PDT 2023
+//   Changed ColorTableAttributes `names` to `colorTableNames` and `active` to
+//   `colorTableActiveFlags`.
+//   Simplified and reused some logic for default color tables.
+//   Renamed iterators to better describe what they iterate over.
 // ****************************************************************************
 
 void
@@ -525,13 +523,11 @@ ColorTableAttributes::RemoveColorTable(int index)
         if (GetColorControlPoints(index)->GetBuiltIn())
             return;
 
-        // Determine if the color table is default.
-        bool isDefaultContinuous, isDefaultDiscrete;
-        isDefaultContinuous = (colorTableNames[index] == defaultContinuous);
-        isDefaultDiscrete = (colorTableNames[index] == defaultDiscrete);
-
         for (auto tag : GetColorControlPoints(index)->GetTagNames())
             DecrementTagNumRefs(tag);
+
+        // Grab the color table name before we remove anything.
+        std::string ctName = colorTableNames[index];
 
         // Iterate through the vector "index" times.
         auto ctNamesItr = colorTableNames.begin();
@@ -542,62 +538,41 @@ ColorTableAttributes::RemoveColorTable(int index)
             ++ctActiveItr;
         }
 
-        // If ctNamesItr is still a valid iterator, remove that element.
-        if(ctNamesItr != colorTableNames.end())
+        // If namesItr is still a valid iterator, remove that element.
+        if (ctNamesItr  != colorTableNames.end() &&
+            ctActiveItr != colorTableActiveFlags.end())
         {
             colorTableNames.erase(ctNamesItr);
             colorTableActive.erase(ctActiveItr);
         }
 
-        // Indicate that things have changed by selecting the list.
+        // Indicate that things have changed by selecting the lists.
         SelectColorTableNames();
-        SelectColorTableActive();
+        SelectColorTableActiveFlags();
 
         // erase the color table from the vector.
         RemoveColorTables(index);
 
+        auto determineDefaultColorTable = [&](bool discrete)
+        {
+            if (colorTableNames.size() > 0)
+            {
+                for (int i = 0; i < colorTableNames.size(); i ++)
+                {
+                    bool ctDiscrete{GetColorTables(i).GetDiscreteFlag()};
+                    if ((discrete && ctDiscrete) || ((! discrete) && (! ctDiscrete)))
+                        return colorTableNames[i];
+                }
+            }
+            return std::string("");
+        };
+
         // If it is the default color table that was removed, reset the
         // default color table to the first element.
-        if(isDefaultContinuous)
-        {
-            if(colorTableNames.size() > 0)
-            {
-                bool found{false};
-                for (int i = 0; i < colorTableNames.size(); i ++)
-                {
-                    if (! GetColorTables(i).GetDiscreteFlag())
-                    {
-                        SetDefaultContinuous(colorTableNames[i]);
-                        found = true;
-                        break;
-                    }
-                }
-                if (! found)
-                    SetDefaultContinuous(std::string(""));
-            }
-            else
-                SetDefaultContinuous(std::string(""));
-        }
-        if(isDefaultDiscrete)
-        {
-            if(colorTableNames.size() > 0)
-            {
-                bool found{false};
-                for (int i = 0; i < colorTableNames.size(); i ++)
-                {
-                    if (GetColorTables(i).GetDiscreteFlag())
-                    {
-                        SetDefaultDiscrete(colorTableNames[i]);
-                        found = true;
-                        break;
-                    }
-                }
-                if (! found)
-                    SetDefaultDiscrete(std::string(""));
-            }
-            else
-                SetDefaultDiscrete(std::string(""));
-        }
+        if (ctName == defaultContinuous)
+            SetDefaultContinuous(determineDefaultColorTable(false));
+        else if (ctName == defaultDiscrete)
+            SetDefaultContinuous(determineDefaultColorTable(true));
     }
 }
 
@@ -615,7 +590,7 @@ Definition:
 
             // Remove the name from the vector.
             colorTableNames.remove(index);
-            colorTableActive.remove(index);
+            colorTableActiveFlags.remove(index);
             Select(0);
 
             // Remove the color table from the vector.
@@ -648,21 +623,24 @@ Definition:
 
 Target: xml2atts
 Function: SetColorTableNames
-Declaration: virtual bool SetColorTableNames(const stringVector &names_);
+Declaration: virtual bool SetColorTableNames(const stringVector &colorTableNames_);
 Definition:
 // ****************************************************************************
 // Method: ColorTableAttributes::SetColorTableNames
 //
 // Purpose:
-//   Setter for names.
+//   Setter for colorTableNames.
 //
-// Note:       There needs to be a custom setter.
+// Note:       There needs to be a custom setter in order to keep the 
+//             colorTableActiveFlags vector the same length.
 //
 // Programmer: Justin Privitera
 // Creation:   Thu Jun 16 11:59:26 PDT 2022
 //
 // Modifications:
-//
+//   Justin Privitera, Mon Aug 21 15:54:50 PDT 2023
+//   Changed ColorTableAttributes `names` to `colorTableNames` and `active` to
+//   `colorTableActiveFlags`.
 // ****************************************************************************
 
 void
@@ -670,40 +648,42 @@ ColorTableAttributes::SetColorTableNames(const stringVector &colorTableNames_)
 {
     colorTableNames = colorTableNames_;
     Select(ID_colorTableNames, (void *)&colorTableNames);
-    if (colorTableActive.size() != colorTableNames.size())
+    if (colorTableActiveFlags.size() != colorTableNames.size())
     {
-        intVector newActiveColorTables;
+        intVector newColorTableActiveFlags;
         for (int i = 0; i < colorTableNames.size(); i ++)
-            newActiveColorTables.push_back(true);
-        SetColorTableActive(newActiveColorTables);
+            newColorTableActiveFlags.push_back(true);
+        SetColorTableActiveFlags(newColorTableActiveFlags);
     }
 }
 
-Function: SetColorTableActive
-Declaration: virtual void SetColorTableActive(const stringVector &names_);
+Function: SetColorTableActiveFlags
+Declaration: virtual void SetColorTableActiveFlags(const intVector &colorTableActiveFlags_);
 Definition:
 // ****************************************************************************
-// Method: ColorTableAttributes::SetColorTableActive
+// Method: ColorTableAttributes::SetColorTableActiveFlags
 //
 // Purpose:
-//   Setter for colorTableActive.
+//   Setter for colorTableActiveFlags.
 //
-// Note:       There needs to be a custom setter.
+// Note:       There needs to be a custom setter to ensure that the
+//             colorTableNames vector is the same length.
 //
 // Programmer: Justin Privitera
 // Creation:   Thu Jun 16 11:59:26 PDT 2022
 //
 // Modifications:
-//
+//   Justin Privitera, Mon Aug 21 15:54:50 PDT 2023
+//   Changed ColorTableAttributes `active` to `colorTableActiveFlags`.
 // ****************************************************************************
 
 void
-ColorTableAttributes::SetColorTableActive(const intVector &colorTableActive_)
+ColorTableAttributes::SetColorTableActiveFlags(const intVector &colorTableActiveFlags_)
 {
-    if (colorTableActive_.size() == colorTableNames.size())
+    if (colorTableActiveFlags_.size() == colorTableNames.size())
     {
-        colorTableActive = colorTableActive_;
-        Select(ID_colorTableActive, (void *)&colorTableActive);
+        colorTableActiveFlags = colorTableActiveFlags_;
+        Select(ID_colorTableActiveFlags, (void *)&colorTableActiveFlags);
     }
 }
 
@@ -898,11 +878,11 @@ ColorTableAttributes::SetFromNode(DataNode *parentNode)
     FilterTablesByTag();
 }
 
-Function: GetActiveElement
-Declaration: bool GetActiveElement(int index);
+Function: SetColorTableActiveFlag
+Declaration: void SetColorTableActiveFlag(int index, bool val);
 Definition:
 // ****************************************************************************
-// Method: ColorTableAttributes::GetActiveElement
+// Method: ColorTableAttributes::SetColorTableActiveFlag
 //
 // Purpose:
 //   Gets the state of a given color table (active or inactive (appearing in
@@ -915,16 +895,31 @@ Definition:
 // Creation:   Tue Jun 28 14:04:01 PDT 2022
 //
 // Modifications:
-//
+//    Justin Privitera, Wed Jun 29 17:50:24 PDT 2022
+//    Added guard to prevent index out of bound errors.
+// 
+//   Justin Privitera, Mon Aug 21 15:54:50 PDT 2023
+//   Changed ColorTableAttributes `active` to `colorTableActiveFlags`.
 // ****************************************************************************
-
-bool
-ColorTableAttributes::GetActiveElement(int index)
+ColorTableAttributes::SetColorTableActiveFlag(int index, bool val)
 {
-    if (index >= 0 && index < colorTableActive.size())
-        return colorTableActive[index];
-    return false;
+    if (index >= 0 && index < colorTableActiveFlags.size())
+        colorTableActiveFlags[index] = val;
 }
+
+Function: GetColorTableActiveFlag
+Declaration: bool GetColorTableActiveFlag(int index);
+Definition:
+// ****************************************************************************
+// Method: ColorTableAttributes::GetColorTableActiveFlag
+bool
+ColorTableAttributes::GetColorTableActiveFlag(int index)
+{
+    if (index >= 0 && index < colorTableActiveFlags.size())
+        return colorTableActiveFlags[index];
+    return false; // the color table can hardly be active if it does not exist
+}
+
 
 Function: MergeTagChanges
 Declaration: void MergeTagChanges(stringVector tagChangesTagFromNode, intVector tagChangesTypeFromNode, stringVector tagChangesCTNameFromNode);
@@ -1077,6 +1072,9 @@ Definition:
 //    Justin Privitera, Thu Sep 29 17:27:37 PDT 2022
 //    Replace braces with parens for auto.
 //
+//   Justin Privitera, Mon Aug 21 15:54:50 PDT 2023
+//   Changed ColorTableAttributes `active` to `colorTableActiveFlags` and 
+//   added a return statement.
 // ****************************************************************************
 std::pair<bool, std::string>
 ColorTableAttributes::removeTagFromColorTable(const std::string ctName, 

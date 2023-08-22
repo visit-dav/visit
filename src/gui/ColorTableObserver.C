@@ -72,7 +72,10 @@ ColorTableObserver::~ColorTableObserver()
 // 
 //   Justin Privitera, Mon Feb 13 14:32:02 PST 2023
 //   Removed check for tagging flag, as it no longer exists.
-//
+// 
+//   Justin Privitera, Mon Aug 21 15:54:50 PDT 2023
+//   Changed ColorTableAttributes `names` to `colorTableNames` and `active` to
+//   `colorTableActiveFlags`.
 // ****************************************************************************
 
 void
@@ -103,8 +106,8 @@ ColorTableObserver::Update(Subject *)
         QvisNoDefaultColorTableButton::clearAllColorTables();
 
         int nNames = colorAtts->GetNumColorTables();
-        const stringVector &names = colorAtts->GetColorTableNames();
-        const intVector &active = colorAtts->GetColorTableActive();
+        const stringVector &ctnames = colorAtts->GetColorTableNames();
+        const intVector &ctactive = colorAtts->GetColorTableActiveFlags();
 
         // This should never happen. Resetting the names will reset the active
         // array as well, and make every color table active. However, this does
@@ -113,15 +116,15 @@ ColorTableObserver::Update(Subject *)
         // would correctly preserve which color tables are active, but this
         // final guard here works just fine, as which color tables are active
         // is calculated after this.
-        if (names.size() != active.size())
-            colorAtts->SetColorTableNames(names);
+        if (ctnames.size() != ctactive.size())
+            colorAtts->SetColorTableNames(ctnames);
         
         for (int i = 0; i < nNames; ++i)
         {
-            if (active[i])
+            if (ctactive[i])
             {
-                QvisColorTableButton::addColorTable(names[i].c_str());
-                QvisNoDefaultColorTableButton::addColorTable(names[i].c_str());
+                QvisColorTableButton::addColorTable(ctnames[i].c_str());
+                QvisNoDefaultColorTableButton::addColorTable(ctnames[i].c_str());
             }
         }
 

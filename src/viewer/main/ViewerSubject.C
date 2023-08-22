@@ -5095,7 +5095,10 @@ ViewerSubject::HandleSILAttsUpdated(const string &host,
 //   Justin Privitera, Fri Sep  2 16:46:21 PDT 2022
 //   Added the missing logic from the ctObserver. Now we check if a CT is 
 //   "active" before trying to put it in the buttons.
-//
+// 
+//   Justin Privitera, Mon Aug 21 15:54:50 PDT 2023
+//   Changed ColorTableAttributes `names` to `colorTableNames` and `active` to
+//   `colorTableActiveFlags`.
 // ****************************************************************************
 
 void
@@ -5123,7 +5126,7 @@ ViewerSubject::HandleColorTable()
 
             int nNames = colorAtts->GetNumColorTables();
             const stringVector &names = colorAtts->GetColorTableNames();
-            const intVector &active = colorAtts->GetColorTableActive();
+            const intVector &active = colorAtts->GetColorTableActiveFlags();
             for(int i = 0; i < nNames; ++i)
             {
                 if (active[i])

@@ -162,6 +162,8 @@ and **Blue** sliders to change the color. You can also right click on
 a color to select it and open the **Popup color** menu to choose a new
 color.
 
+.. _editing_color_control_point_positions_numerically:
+
 Editing color control point positions numerically
 """""""""""""""""""""""""""""""""""""""""""""""""
 In both of the sections above, the color control points are *positioned*
@@ -297,20 +299,15 @@ behavior.
 
 
 Numerically Controlled Banded Coloring
-""""""""""""""""""""""""""""""""""""""
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Sometimes it is convenient to create numerically controlled *banded*
-coloring of smoothly varying data. A **Discrete** color table does indeed
-wind up *banding* smoothly varying data. However, the band boundaries are
-uniformly spaced in the variable's *range* and this may not always be
-desirable. Sometimes, it is desirable to have finely tuned banding around
-specific portions of the variable's range. This requires the coordination of
-a **Discrete** color table and an appropriately constructed
-:ref:`conditional expression <If_Expression_Function>`.
+Sometimes it is convenient to create *banded* coloring of smoothly varying data.
+For example, it is an easy way to create something akin to a contour plot.
+In VisIt_, it is possible to do this with either a **Continuous** or a **Discrete** color table.
+In general, it is much easier with a **Continuous** color table (with smoothing set to ``None``).
+Trying to do the same thing with a **Discrete** color table requires an additional step to create a *companion* :ref:`conditional expression <If_Expression_Function>` which implements the non-uniform banding.
 
-For example, given the a smoothly varying variable, ``u``, in the range
-``[-1...+1]`` shown in normal (e.g. ``hot``) **Pseudocolor** plot in
-:numref:`Fig. %s <fig-MakingItPretty-smooth-coloring>`.
+For example, given the smoothly varying variable, ``u``, in the range ``[-1...+1]`` shown in normal (e.g. ``hot``) **Pseudocolor** plot in :numref:`Fig. %s <fig-MakingItPretty-smooth-coloring>`.
 
 .. _fig-MakingItPretty-smooth-coloring:
 
@@ -318,18 +315,52 @@ For example, given the a smoothly varying variable, ``u``, in the range
 
    Smoothly colored variable using ``hot`` color table.
 
+we would like to produce a 4-color banded plot using the coloring logic below...
 
-we would like to produce a 4-color banded plot using the coloring logic in
-the table below...
-
-===============   =====================
-Values in Range   Map to this Hex Color
-===============   =====================
+===============   =================
+Values in Range   Map to this Color
+===============   =================
 -inf...-0.95           blue
 -0.95...0              cyan
 0...+0.95              green
 +0.95...+inf           red
-===============   =====================
+===============   =================
+
+Banded Coloring with Continous Color Table
+""""""""""""""""""""""""""""""""""""""""""
+
+The input variable's range is ``[-1...+1]`` and this range needs to be mapped into the color-table range ``[0...1]``.
+This results in color table *positions* for the four colors to be used in the mapping table above...
+
+====================   =================
+Color Table Position   Color Table Color
+====================   =================
+  -inf...0.0125              blue
+0.0125...0.5000              cyan
+0.5000...0.9875              green
+0.9875...+inf                red
+====================   =================
+
+This results in the banded coloring in :numref:`Fig. %s <fig-MakingItPretty-continuous-banded-coloring>`
+
+.. _fig-MakingItPretty-continuous-banded-coloring:
+
+.. figure:: images/MakingItPretty-continuous-banded-coloring.png
+
+   The variable ``u`` plotted with a 4-color **Continuous** color table with ``None`` *smoothing*.
+
+To create the color table for this result, follow the instructions for :ref:`editing color control point positions numerically <editing_color_control_point_positions_numerically>`.
+After editing the color table, re-import it back into VisIt.
+Make sure the color table is **Continuous** and that the *smoothing* is set to ``None``.
+Apply this color table to the Pseudocolor plot used to plot the variable ``u`` and the same coloring as shown in the figure should be observed.
+
+Banded Coloring with Discrete Color Table
+"""""""""""""""""""""""""""""""""""""""""
+
+A **Discrete** color table does indeed wind up *banding* smoothly varying data.
+However, the band boundaries are uniformly spaced in the variable's *range* and this may not always be desirable.
+Sometimes, it is desirable to have finely tuned banding around specific portions of the variable's range.
+This requires the coordination of a **Discrete** color table and an appropriately constructed :ref:`conditional expression <If_Expression_Function>`.
 
 Using a 4-color **Discrete** color table alone, only the plot in
 :numref:`Fig. %s <fig-MakingItPretty-uniform-banded-coloring>` is produced.
@@ -340,21 +371,32 @@ Using a 4-color **Discrete** color table alone, only the plot in
 
    A 4-color **Discrete** color table coloring alone
 
-This is because the colors in a **Discrete** color table are always uniformly
-spaced over the variable's value range. To produce the desired coloring
-we need to use a :ref:`conditional expression <If_Expression_Function>` that
-maps the input variable into 4 distinct values using the range logic from
-the table. In this case, the correct expression would be
-``if(lt(u,-0.95),0, if(lt(u,0),1, if(lt(u,0.95),2,3)))``. Then, plotting this
-expression using the 4-color **Discrete** color table, the desired coloring is
-produced as shown in 
+This is because the colors in a **Discrete** color table are always uniformly spaced over the variable's value range.
+To produce the desired coloring we need to use a :ref:`conditional expression <If_Expression_Function>` that maps the input variable into 4 distinct values using the range logic from the table.
+In this case, the correct expression would be ``if(lt(u,-0.95),0, if(lt(u,0),1, if(lt(u,0.95),2,3)))``.
+Then, plotting this expression using the 4-color **Discrete** color table, the desired coloring is produced as shown in 
 
 .. _fig-MakingItPretty-numerically-banded-coloring:
 
 .. figure:: images/MakingItPretty-numerically-banded-coloring.png
 
-   A 4-color **Discrete** color table coloring combined with a
-   conditional expression
+   A 4-color **Discrete** color table coloring combined with a conditional expression
+
+As can be seen in the side-by-side comparison below, there is a noticeable difference between the results produced by the two approaches demonstrated here to create a banded coloring.
+
+
+.. list-table:: 
+
+    * - .. image:: images/MakingItPretty-continuous-banded-coloring.png
+      - .. image:: images/MakingItPretty-numerically-banded-coloring.png
+
+The second approach (on the right) using the combination of a **Discrete** color table and a conditional expression shows significantly more jagged banding.
+This has to do with the ordering of operations of *interpolation* of the variable across mesh zones and then *mapping* of the variable values to colors.
+
+The first approach performs *interpolation* followed by *mapping*.
+The second approach effectively performs the *mapping* first through its use of the conditional expression replacing the smoothly varying variable with a highly discontinuous variable after which *interpolation* is performed.
+In addition, the legend (on the right) does not do a good a job conveying the mapping of the variable's color to its values.
+This has to do with the use of the *intermediate* expression variable to help perform the mapping.
 
 Converting color table types
 """"""""""""""""""""""""""""

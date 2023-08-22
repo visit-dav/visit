@@ -781,6 +781,9 @@ avtDatabase::GetOutput(const char *var, int ts)
 //    Changed 'for loop' to speed up the action. No need to test all if once
 //    any are true we are going to invalidate the zones.
 //
+//    Brad Whitlock, Fri Jun 16 14:43:44 PDT 2023
+//    Make invalidating nodes/zones for data selections conditional.
+//
 // ****************************************************************************
 
 void
@@ -835,12 +838,15 @@ avtDatabase::PopulateDataObjectInformation(avtDataObject_p &dob,
         {
             if (selectionsApplied[i])
             {
+                const auto selection = spec->GetDataSelection(i);
+
                 // We need to set these as invalid, or else caching could
                 // kick in and we might end up using acceleration structures
                 // across pipeline executions that were no longer valid.
-                validity.InvalidateZones();
-                validity.InvalidateNodes();
-                break;
+                if(selection->InvalidatesZones())
+                    validity.InvalidateZones();
+                if(selection->InvalidatesNodes())
+                    validity.InvalidateNodes();
             }
         }
         if (mmd->zonesWereSplit)

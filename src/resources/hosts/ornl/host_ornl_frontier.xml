@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <Object name="MachineProfile">
-    <Field name="host" type="string">crusher.olcf.ornl.gov</Field>
+    <Field name="host" type="string">frontier.olcf.ornl.gov</Field>
     <Field name="hostAliases" type="string">login#.olcf.ornl.gov login##.olcf.ornl.gov login# login##</Field>
     <Field name="hostNickname" type="string">ORNL Frontier</Field>
     <Field name="directory" type="string">/sw/frontier/ums/ums022/linux-sles15-zen3/gcc-11.2.0/visit-3.3.3-zfoh2caq5tbshlvtujditymjizstvewe</Field>

@@ -2,7 +2,7 @@
   <Attribute name="ColorTableAttributes" purpose="This class contains the list of colortables." persistent="true" keyframe="true" exportAPI="STATE_API" exportInclude="state_exports.h" codefile="ColorTableAttributes.code">
     <Field name="colorTableNames" label="colorTableNames" type="stringVector">
     </Field>
-    <Field name="colorTableActive" label="colorTableActive" type="intVector" ignoreeq="true">
+    <Field name="colorTableActiveFlags" label="colorTableActiveFlags" type="intVector" ignoreeq="true">
     </Field>
     <Field name="colorTables" label="colorTables" type="attVector" subtype="ColorControlPointList">
     </Field>
@@ -48,13 +48,15 @@
     </Function>
     <Function name="SetColorTableNames" user="false" member="true">
     </Function>
-    <Function name="SetColorTableActive" user="false" member="true">
+    <Function name="SetColorTableActiveFlags" user="false" member="true">
     </Function>
     <Function name="CreateNode" user="false" member="true">
     </Function>
     <Function name="SetFromNode" user="false" member="true">
     </Function>
-    <Function name="GetActiveElement" user="true" member="true">
+    <Function name="SetColorTableActiveFlag" user="true" member="true">
+    </Function>
+    <Function name="GetColorTableActiveFlag" user="true" member="true">
     </Function>
     <Function name="MergeTagChanges" user="true" member="true">
     </Function>

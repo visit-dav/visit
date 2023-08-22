@@ -514,7 +514,9 @@ QvisNoDefaultColorTableButton::addColorTable(const QString &ctName)
 //   Guards are in place now to protect the buttons from falling out of sync
 //   with the color table attributes and to ensure that they always represent
 //   valid color table choices.
-//   
+// 
+//   Justin Privitera, Mon Aug 21 15:54:50 PDT 2023
+//   Changed ColorTableAttributes `names` to `colorTableNames`.
 // ****************************************************************************
 
 void

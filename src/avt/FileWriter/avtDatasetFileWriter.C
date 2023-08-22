@@ -1276,6 +1276,9 @@ TakeOffPolyLine(int *seg_list,int start_pt,std::vector< std::vector<int> > &ls)
 //    Removed the sprintfs for color table control point positions.  A user
 //    reported that other locales will insert commas instead of periods,
 //    causing problems for POV-Ray attempts to parse them.
+// 
+//    Justin Privitera, Mon Aug 21 15:54:50 PDT 2023
+//    Changed ColorTableAttributes `names` to `colorTableNames`.
 //
 // ****************************************************************************
 
@@ -2446,6 +2449,10 @@ avtDatasetFileWriter::WritePOVRayDF3File(vtkRectilinearGrid *rgrid,
 //
 // Programmer:  Dave Pugmire
 // Creation:    March  2, 2011
+// 
+// Modifications:
+//    Justin Privitera, Mon Aug 21 15:54:50 PDT 2023
+//    Changed ColorTableAttributes `names` to `colorTableNames`.
 //
 // ****************************************************************************
 

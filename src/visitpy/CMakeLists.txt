@@ -56,6 +56,9 @@
 #  Kathleen Biagas, Fri Sep 9, 2022
 #  Link with CMAKE_THREAD_LIBS.
 #
+#  Eric Brugger, Tue Jul 25 11:23:55 EDT 2023
+#  Change CMAKE_THREAD_LIBS to Threads::Threads.
+#
 #****************************************************************************
 
 #########################################################
@@ -391,7 +394,7 @@ avtdbatts
 viewerrpc
 visitcommon
 ${PYTHON_LIBRARIES}
-${CMAKE_THREAD_LIBS}
+Threads::Threads
 )
 
 # Create the CLI
@@ -412,7 +415,7 @@ avtdbatts
 visitcommon
 visitpy
 ${PYTHON_LIBRARIES}
-${CMAKE_THREAD_LIBS}
+Threads::Threads
 )
 IF(NOT WIN32)
     TARGET_LINK_LIBRARIES(cli dl)

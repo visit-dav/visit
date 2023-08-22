@@ -106,6 +106,13 @@
 #    Justin Privitera, Fri Jun 16 17:17:14 PDT 2023
 #    Added tests for the new view width override and non square pixels 
 #    settings.
+# 
+#    Justin Privitera, Fri Jul 14 17:33:07 PDT 2023
+#    Updated tests to reflect the new reality that the complete camera spec
+#    is now the default.
+# 
+#    Justin Privitera, Tue Aug 22 12:30:01 PDT 2023
+#    Sort filename list produced by os.listdir to prevent test suite failures.
 # ----------------------------------------------------------------------------
 
 import os
@@ -176,9 +183,7 @@ OpenDatabase(silo_data_path("curv2d.silo"))
 AddPlot("Pseudocolor", "d")
 DrawPlots()
 
-#retreive default query parameters
-params = GetQueryParameters("XRay Image")
-#modify as necessary
+params = dict()
 params['image_size'] = (300, 300)
 params['divide_emis_by_absorb'] = 1
 params['width'] = 10.
@@ -833,7 +838,7 @@ blueprint_test("yaml", conduit_dir_yaml, 36, "Blueprint_YAML_X_Ray_Output")
 
 setup_bp_test()
 
-params = dict()
+params = GetQueryParameters("XRay Image")
 params["image_size"] = (400, 300)
 params["output_type"] = "hdf5"
 params["output_dir"] = conduit_dir_detector_dims
@@ -864,7 +869,7 @@ def test_imaging_planes_and_rays():
     for i in range(0, 2):
         setup_bp_test()
 
-        params = dict()
+        params = GetQueryParameters("XRay Image")
         params["image_size"] = (400, 300)
         params["output_dir"] = conduit_dir_imaging_planes0 if i == 0 else conduit_dir_imaging_planes1
         params["output_type"] = "hdf5"
@@ -915,7 +920,7 @@ def test_non_square_pixels():
     DeleteAllPlots()
     setup_bp_test()
 
-    params = dict()
+    params = GetQueryParameters("XRay Image")
 
     params["vars"] = ("d", "p")
     params["image_size"] = (300, 300)
@@ -1242,7 +1247,7 @@ for i in range(0, len(output_types)):
     for j in range(0, len(filename_schemes)):
         for k in range(0, len(vars_options)):
             info += query_variety(output_types[i], filename_schemes[j], vars_options[k], outdir_set_otype)
-    info += str(os.listdir(outdir_set_otype))
+    info += str(sorted(os.listdir(outdir_set_otype)))
     TestText("Test_filenames_for_" + output_types[i] + "_outputs", info)
 
 # test backwards compatibility with family_files option
@@ -1253,7 +1258,7 @@ for i in range(0, len(family_options)):
     info = ""
     for j in range(0, len(vars_options)):
         info += query_family_backwards_compat(family_options[i], vars_options[j], outdir_set_family)
-    info += str(os.listdir(outdir_set_family))
+    info += str(sorted(os.listdir(outdir_set_family)))
     TestText("Test_filenames_for_family" + str(family_options[i]) + "_outputs", info)
 
 #

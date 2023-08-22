@@ -70,7 +70,10 @@ QueryAttributes::Reset()
     if (!resultsValue.empty())
     {
         resultsValue.clear();
-        resultsValue.push_back(0.);
+    }
+    if (!floatResultsValue.empty())
+    {
+        floatResultsValue.clear();
     }
     pipeIndex = -1;
 
@@ -100,6 +103,7 @@ Definition:
 void
 QueryAttributes::SetResultsValue(const double val)
 {
+    resultsValue.resize(1);
     resultsValue[0] = val;
 }
 
