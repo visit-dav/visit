@@ -15,6 +15,23 @@
     <Field name="changesMade" label="changesMade" type="bool">
       false
     </Field>
+    <Field name="tagsMatchAny" label="tagsMatchAny" type="bool">
+      true
+    </Field>
+    <Field name="tagListNames" label="tagListNames" type="stringVector" init="true">
+    </Field>
+    <Field name="tagListActive" label="tagListActive" type="intVector" init="true">
+    </Field>
+    <Field name="tagListNumRefs" label="tagListNumRefs" type="intVector" init="true">
+    </Field>
+    <Field name="tagListTableItemFlag" label="tagListTableItemFlag" type="intVector" init="true">
+    </Field>
+    <Field name="tagChangesTag" label="tagChangesTag" type="stringVector">
+    </Field>
+    <Field name="tagChangesType" label="tagChangesType" type="intVector">
+    </Field>
+    <Field name="tagChangesCTName" label="tagChangesCTName" type="stringVector">
+    </Field>
     <Function name="GetColorTableIndex" user="true" member="true">
     </Function>
     <Function name="GetColorControlPoints1" user="true" member="true">
@@ -43,6 +60,9 @@
     </Function>
     <Function name="ProcessOldVersions" user="true" member="true">
     </Function>
+    <Include file="source" quoted="false">
+      DebugStream.h
+    </Include>
     <Include file="source" quoted="false">
       ColorControlPoint.h
     </Include>
