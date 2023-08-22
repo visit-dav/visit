@@ -110,6 +110,9 @@
 #    Justin Privitera, Fri Jul 14 17:33:07 PDT 2023
 #    Updated tests to reflect the new reality that the complete camera spec
 #    is now the default.
+# 
+#    Justin Privitera, Tue Aug 22 12:30:01 PDT 2023
+#    Sort filename list produced by os.listdir to prevent test suite failures.
 # ----------------------------------------------------------------------------
 
 import os
