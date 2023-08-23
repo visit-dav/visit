@@ -1890,7 +1890,7 @@ ColorTableAttributes::MergeTagChanges(stringVector tagChangesTagFromNode,
             std::string tagName = tagChangesTagFromNode[changeId];
             int changeType      = tagChangesTypeFromNode[changeId];
             std::string ctName  = tagChangesCTNameFromNode[changeId];
-            
+
             auto *ccpl(const_cast<ColorControlPointList *>(GetColorControlPoints(ctName)));
             auto result(ccpl->ValidateTag(tagName));
             if (result.first)
@@ -1920,7 +1920,7 @@ ColorTableAttributes::MergeTagChanges(stringVector tagChangesTagFromNode,
 //
 // Purpose:
 //    Helper function for adding tags to color tables... carefully!
-//
+// 
 // Programmer: Justin Privitera
 // Creation:   Thu Aug 25 15:04:55 PDT 2022
 //
@@ -1998,9 +1998,6 @@ ColorTableAttributes::addTagToColorTable(const std::string ctName,
 //    Justin Privitera, Thu Sep 29 17:27:37 PDT 2022
 //    Replace braces with parens for auto.
 //
-//   Justin Privitera, Mon Aug 21 15:54:50 PDT 2023
-//   Changed ColorTableAttributes `active` to `colorTableActiveFlags` and 
-//   added a return statement.
 // ****************************************************************************
 std::pair<bool, std::string>
 ColorTableAttributes::removeTagFromColorTable(const std::string ctName, 
