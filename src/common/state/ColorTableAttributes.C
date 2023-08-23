@@ -1877,9 +1877,9 @@ ColorTableAttributes::GetColorTableActiveFlag(int index)
 //
 // ****************************************************************************
 void
-ColorTableAttributes::MergeTagChanges(stringVector tagChangesTagFromNode,
-                                      intVector tagChangesTypeFromNode,
-                                      stringVector tagChangesCTNameFromNode)
+ColorTableAttributes::MergeTagChanges(const stringVector tagChangesTagFromNode,
+                                      const intVector tagChangesTypeFromNode,
+                                      const stringVector tagChangesCTNameFromNode)
 {
     // if all three are the same size
     if (tagChangesTagFromNode.size() == tagChangesTypeFromNode.size() &&
@@ -1896,9 +1896,17 @@ ColorTableAttributes::MergeTagChanges(stringVector tagChangesTagFromNode,
             if (result.first)
             {
                 if (changeType == ADDTAG && ! ccpl->HasTag(tagName))
+                {
                     addTagToColorTable(ctName, tagName, ccpl);
+                }
                 else if (changeType == REMOVETAG && ccpl->HasTag(tagName))
-                    removeTagFromColorTable(ctName, tagName, ccpl);
+                {
+                    auto result2(removeTagFromColorTable(ctName, tagName, ccpl));
+                   if (!result2.first)
+                   {
+                       debug1 << "Tag Editing WARNING: " << result2.second;
+                   }
+                }
             }
             else
             {
@@ -2561,7 +2569,7 @@ ColorTableAttributes::CheckTagInTagList(const std::string tagname)
 // ****************************************************************************
 void
 ColorTableAttributes::RemoveUnusedTagsFromTagTable(
-    std::vector<std::string> &tagTableItemsToRemove)
+    std::vector<std::string> &removedTags)
 {
     auto namesItr = tagListNames.begin();
     auto activeItr = tagListActive.begin();
@@ -2575,7 +2583,7 @@ ColorTableAttributes::RemoveUnusedTagsFromTagTable(
         {
             // if this tag list item has an associated tag table entry
             if (*tableitemflagItr)
-                tagTableItemsToRemove.push_back(*namesItr);
+                removedTags.push_back(*namesItr);
             // else - there is no tag table entry to delete so we can continue
 
             // remove this entry from the tag list

@@ -207,6 +207,9 @@ private:
     QString                  searchTerm;
     QString                  tagEdit;
 
+    // a map from tag names to tab table item pointers
+    std::map<std::string, QTreeWidgetItem*> tagTableItems;
+
     // This object also observes the color table attributes.
     ColorTableObserver       ctObserver;    
 

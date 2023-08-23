@@ -916,57 +916,46 @@ QvisColorTableWindow::UpdateEditor()
 void
 QvisColorTableWindow::UpdateTags()
 {
-    std::cout << "ct window printing tag list" << std::endl;
-    colorAtts->PrintTagList();
-    std::cout << "=======================" << std::endl;
+    // TODO in theory all this code works
 
+    // 1. Populate Tag List
+    std::vector<std::string> tagsToAdd;
+    colorAtts->GetNewTagNames(tagsToAdd);
 
-    // TODO
+    // 2. Add Tags to Tag Table
+    std::for_each(tagsToAdd.begin(), tagsToAdd.end(),
+        [this](std::string currtag)
+        {
+            // check if the tag has a tag table entry
+            // TODO wouldn't it be better to just check if the tag list item was null?
+            QList<QTreeWidgetItem*> items = tagTable->findItems(
+                QString::fromStdString(currtag), Qt::MatchExactly, 1);
+            if (items.count() == 0)
+            {
+                QTreeWidgetItem *item = new QTreeWidgetItem(tagTable);
+                colorAtts->SetTagTableItem(currtag, static_cast<void *>(item));
+                item->setCheckState(0, colorAtts->GetTagActive(currtag) ? Qt::Checked : Qt::Unchecked);
+                item->setText(1, currtag.c_str());
+            }
+        });
 
-    // // 1. Populate Tag List
-    // std::vector<std::string> tagsToAdd;
-    // colorAtts->GetNewTagNames(tagsToAdd);
+    // 3. Purge tagList/tagTable entries that have 0 refcount.
+    std::vector<void *> tagTableItems;
+    colorAtts->RemoveUnusedTagsFromTagTable(tagTableItems);
+    std::for_each(tagTableItems.begin(), tagTableItems.end(),
+        [this](void * tagTableItemVoidPtr)
+        {
+            QTreeWidgetItem *tagTableItem = static_cast<QTreeWidgetItem *>(tagTableItemVoidPtr);
+            auto index = tagTable->indexOfTopLevelItem(tagTableItem);
+            if (index != -1)
+            {
+                tagTable->takeTopLevelItem(index);
+                delete tagTableItem;
+            }
+            // If the item is not in the tag table, then we will skip deleting it.
+        });
 
-    // // 2. Add Tags to Tag Table
-    // std::for_each(tagsToAdd.begin(), tagsToAdd.end(),
-    //     [this](std::string currtag)
-    //     {
-    //         // check if the tag has a tag table entry
-    //         // TODO wouldn't it be better to just check if the tag list item was null?
-    //         QList<QTreeWidgetItem*> items = tagTable->findItems(
-    //             QString::fromStdString(currtag), Qt::MatchExactly, 1);
-    //         if (items.count() == 0)
-    //         {
-    //             QTreeWidgetItem *item = new QTreeWidgetItem(tagTable);
-    //             colorAtts->SetTagTableItem(currtag, static_cast<void *>(item));
-    //             item->setCheckState(0, colorAtts->GetTagActive(currtag) ? Qt::Checked : Qt::Unchecked);
-    //             item->setText(1, currtag.c_str());
-    //         }
-    //     });
-
-    // colorAtts->PrintTagList();
-    // std::cout << "=======================" << std::endl;
-
-    // // 3. Purge tagList/tagTable entries that have 0 refcount.
-    // std::vector<void *> tagTableItems;
-    // colorAtts->RemoveUnusedTagsFromTagTable(tagTableItems);
-    // std::for_each(tagTableItems.begin(), tagTableItems.end(),
-    //     [this](void * tagTableItemVoidPtr)
-    //     {
-    //         QTreeWidgetItem *tagTableItem = static_cast<QTreeWidgetItem *>(tagTableItemVoidPtr);
-    //         auto index = tagTable->indexOfTopLevelItem(tagTableItem);
-    //         if (index != -1)
-    //         {
-    //             tagTable->takeTopLevelItem(index);
-    //             delete tagTableItem;
-    //         }
-    //         // If the item is not in the tag table, then we will skip deleting it.
-    //     });
-
-    // colorAtts->PrintTagList();
-    // std::cout << "=======================" << std::endl;
-
-    // tagTable->sortByColumn(1, Qt::AscendingOrder);
+    tagTable->sortByColumn(1, Qt::AscendingOrder);
 }
 
 // ****************************************************************************
@@ -3121,6 +3110,7 @@ QvisColorTableWindow::tagEdited()
 {
     tagEdit = tagEditorLineEdit->text();
 }
+
 
 // ****************************************************************************
 // Method: QvisColorTableWindow::addRemoveTag

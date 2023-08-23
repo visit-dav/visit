@@ -141,7 +141,7 @@ public:
     void RemoveColorTable(int index);
     void SetColorTableActiveFlag(int index, bool val);
     bool GetColorTableActiveFlag(int index);
-    void MergeTagChanges(stringVector tagChangesTagFromNode, intVector tagChangesTypeFromNode, stringVector tagChangesCTNameFromNode);
+    void MergeTagChanges(const stringVector tagChangesTagFromNode, const intVector tagChangesTypeFromNode, const stringVector tagChangesCTNameFromNode);
     void addTagToColorTable(const std::string ctName, const std::string tagName, ColorControlPointList* ccpl);
     std::pair<bool, std::string> removeTagFromColorTable(const std::string ctName, const std::string tagName, ColorControlPointList* ccpl);
     bool AllTagsSelected();
@@ -165,7 +165,7 @@ public:
     void SetTagTableItemFlag(const int index, const bool tagTableItemExists);
     bool GetTagTableItemFlag(const std::string tagname);
     bool CheckTagInTagList(const std::string tagname);
-    void RemoveUnusedTagsFromTagTable(std::vector<std::string> &tagTableItemsToRemove);
+    void RemoveUnusedTagsFromTagTable(std::vector<std::string> &removedTags);
     void GetNewTagNames(std::vector<std::string> &tagsToAdd);
     bool FilterTableByTag(const ColorControlPointList &ccpl);
     void FilterTablesByTag();
