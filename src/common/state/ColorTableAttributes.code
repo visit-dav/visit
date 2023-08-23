@@ -873,7 +873,6 @@ Definition:
 //   Justin Privitera, Mon Aug 21 15:54:50 PDT 2023
 //   Changed ColorTableAttributes `active` to `colorTableActiveFlags`.
 // ****************************************************************************
-
 void
 ColorTableAttributes::SetColorTableActiveFlag(int index, bool val)
 {
@@ -902,7 +901,6 @@ Definition:
 //   Changed ColorTableAttributes `active` to `colorTableActiveFlags` and 
 //   added a return statement.
 // ****************************************************************************
-
 bool
 ColorTableAttributes::GetColorTableActiveFlag(int index)
 {
