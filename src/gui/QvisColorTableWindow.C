@@ -880,6 +880,7 @@ QvisColorTableWindow::UpdateEditor()
     }
 }
 
+
 // ****************************************************************************
 // Method: QvisColorTableWindow::UpdateTags
 //
@@ -913,36 +914,32 @@ QvisColorTableWindow::UpdateEditor()
 //    has been removed.
 //
 // ****************************************************************************
+
 void
 QvisColorTableWindow::UpdateTags()
 {
     // TODO in theory all this code works
 
-    // 1. Populate Tag List
-    std::vector<std::string> tagsToAdd;
-    colorAtts->GetNewTagNames(tagsToAdd);
+    // 1. Get names of tags to add.
+    std::vector<std::string> tagsToAdd = colorAtts->GetNewTagNames();
 
     // 2. Add Tags to Tag Table
     std::for_each(tagsToAdd.begin(), tagsToAdd.end(),
-        [this](std::string currtag)
+        [this](const std::string currtag)
         {
-            // check if the tag has a tag table entry
-            // TODO wouldn't it be better to just check if the tag list item was null?
-            QList<QTreeWidgetItem*> items = tagTable->findItems(
-                QString::fromStdString(currtag), Qt::MatchExactly, 1);
-            if (items.count() == 0)
+            // If this tag does not have a tagTable entry, then create one
+            if (! colorAtts->GetTagTableItemFlag(currtag))
             {
                 QTreeWidgetItem *item = new QTreeWidgetItem(tagTable);
                 tagTableItems[currtag] = item;
-                colorAtts->SetTagTableItem(currtag, true);
+                colorAtts->SetTagTableItemFlag(currtag, true);
                 item->setCheckState(0, colorAtts->GetTagActive(currtag) ? Qt::Checked : Qt::Unchecked);
                 item->setText(1, currtag.c_str());
             }
         });
 
     // 3. Purge tagList/tagTable entries that have 0 refcount.
-    std::vector<std::string> removedTags;
-    colorAtts->RemoveUnusedTagsFromTagTable(removedTags);
+    std::vector<std::string> removedTags = colorAtts->RemoveUnusedTagsFromTagTable();
     std::for_each(removedTags.begin(), removedTags.end(),
         [this](std::string removedTagName)
         {
@@ -959,6 +956,7 @@ QvisColorTableWindow::UpdateTags()
 
     tagTable->sortByColumn(1, Qt::AscendingOrder);
 }
+
 
 // ****************************************************************************
 // Method: QvisColorTableWindow::UpdateNames
