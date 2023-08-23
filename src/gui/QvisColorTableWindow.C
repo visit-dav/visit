@@ -3148,11 +3148,8 @@ void
 QvisColorTableWindow::tagCombiningChanged(int index)
 {
     bool old_val = colorAtts->GetTagsMatchAny();
-    if (index == 0)
-        colorAtts->SetTagsMatchAny(true);
-    else
-        colorAtts->SetTagsMatchAny(false);
-    // have any changes actually been made?
+    colorAtts->SetTagsMatchAny(index == 0);
+    // has the tag combining behavior been changed?
     if (old_val != colorAtts->GetTagsMatchAny())
     {
         UpdateNames();
@@ -3255,7 +3252,7 @@ QvisColorTableWindow::addRemoveTag()
             }
             else
             {
-                addTagToColorTable(ctName, tagName, ccpl);
+                colorAtts->addTagToColorTable(ctName, tagName, ccpl);
             }
         }
         else
