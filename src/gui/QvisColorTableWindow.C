@@ -933,25 +933,27 @@ QvisColorTableWindow::UpdateTags()
             if (items.count() == 0)
             {
                 QTreeWidgetItem *item = new QTreeWidgetItem(tagTable);
-                colorAtts->SetTagTableItem(currtag, static_cast<void *>(item));
+                tagTableItems[currtag] = item;
+                colorAtts->SetTagTableItem(currtag, true);
                 item->setCheckState(0, colorAtts->GetTagActive(currtag) ? Qt::Checked : Qt::Unchecked);
                 item->setText(1, currtag.c_str());
             }
         });
 
     // 3. Purge tagList/tagTable entries that have 0 refcount.
-    std::vector<void *> tagTableItems;
-    colorAtts->RemoveUnusedTagsFromTagTable(tagTableItems);
-    std::for_each(tagTableItems.begin(), tagTableItems.end(),
-        [this](void * tagTableItemVoidPtr)
+    std::vector<std::string> removedTags;
+    colorAtts->RemoveUnusedTagsFromTagTable(removedTags);
+    std::for_each(removedTags.begin(), removedTags.end(),
+        [this](std::string removedTagName)
         {
-            QTreeWidgetItem *tagTableItem = static_cast<QTreeWidgetItem *>(tagTableItemVoidPtr);
+            QTreeWidgetItem *tagTableItem = tagTableItems[removedTagName];
             auto index = tagTable->indexOfTopLevelItem(tagTableItem);
             if (index != -1)
             {
                 tagTable->takeTopLevelItem(index);
                 delete tagTableItem;
             }
+            tagTableItems.erase(removedTagName);
             // If the item is not in the tag table, then we will skip deleting it.
         });
 
