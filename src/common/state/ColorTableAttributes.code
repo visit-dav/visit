@@ -885,14 +885,16 @@ Definition:
 // Method: ColorTableAttributes::SetColorTableActiveFlag
 //
 // Purpose:
-//   Gets the state of a given color table (active or inactive (appearing in
-//   the namelistbox or not)).
+//   Sets the color table corresponding to the given index to active or 
+//   inactive (appearing in the namelistbox or not) depending on the boolean
+//   value passed.
 //
 // Arguments:
-//   index - index of the tag
+//   index - index of the color table
+//   val   - bool to set active or inactive
 //
 // Programmer: Justin Privitera
-// Creation:   Tue Jun 28 14:04:01 PDT 2022
+// Creation:   Mon Jun  6 17:10:40 PDT 2022
 //
 // Modifications:
 //    Justin Privitera, Wed Jun 29 17:50:24 PDT 2022
