@@ -918,12 +918,10 @@ QvisColorTableWindow::UpdateEditor()
 void
 QvisColorTableWindow::UpdateTags()
 {
-    // TODO in theory all this code works
-
     // 1. Get names of tags to add.
     std::vector<std::string> tagsToAdd = colorAtts->GetNewTagNames();
 
-    // 2. Add Tags to Tag Table
+    // 2. Add Tags to Tag Table.
     std::for_each(tagsToAdd.begin(), tagsToAdd.end(),
         [this](const std::string currtag)
         {
@@ -1097,7 +1095,7 @@ QvisColorTableWindow::UpdateNames()
     // Set the enabled state of the delete button.
     deleteButton->setEnabled(colorAtts->GetNumColorTables() > 1);
 
-    // TODO say goodbye to this!
+    // TODO this block will disappear in the next PR
     // static bool run_before = false;
     // if (!run_before)
     // {
@@ -3003,30 +3001,20 @@ void
 QvisColorTableWindow::tagsSelectAll()
 {
     tagTable->blockSignals(true);
-    // If all the tags are already enabled
-    // TODO re enable and fix this
-    // if (colorAtts->AllTagsSelected())
-    // {
-    //     // then we want to disable all of them
-    //     std::vector<void *> tagTableItems;
-    //     colorAtts->EnableDisableAllTags(false, tagTableItems);
-    //     std::for_each(tagTableItems.begin(), tagTableItems.end(),
-    //         [](void * tagTableItem)
-    //         {
-    //             static_cast<QTreeWidgetItem *>(tagTableItem)->setCheckState(0, Qt::Unchecked);
-    //         });
-    // }
-    // else
-    // {
-    //     // otherwise, we want to enable all of them
-    //     std::vector<void *> tagTableItems;
-    //     colorAtts->EnableDisableAllTags(true, tagTableItems);
-    //     std::for_each(tagTableItems.begin(), tagTableItems.end(),
-    //         [](void * tagTableItem)
-    //         {
-    //             static_cast<QTreeWidgetItem *>(tagTableItem)->setCheckState(0, Qt::Checked);
-    //         });
-    // }
+    if (colorAtts->AllTagsSelected())
+    {
+        // then we want to disable all of them
+        colorAtts->EnableDisableAllTags(false);
+        for (auto &tagTableItemsEntry : tagTableItems)
+            tagTableItemsEntry.second->setCheckState(0, Qt::Unchecked);
+    }
+    else
+    {
+        // otherwise, we want to enable all of them
+        colorAtts->EnableDisableAllTags(true);
+        for (auto &tagTableItemsEntry : tagTableItems)
+            tagTableItemsEntry.second->setCheckState(0, Qt::Checked);
+    }
     tagTable->blockSignals(false);
     UpdateNames();
     colorAtts->SetChangesMade(true);
