@@ -3001,6 +3001,7 @@ void
 QvisColorTableWindow::tagsSelectAll()
 {
     tagTable->blockSignals(true);
+    // If all the tags are already enabled
     if (colorAtts->AllTagsSelected())
     {
         // then we want to disable all of them
