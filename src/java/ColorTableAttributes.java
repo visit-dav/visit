@@ -550,6 +550,7 @@ public class ColorTableAttributes extends AttributeSubject
         colorTableNames.addElement(new String(name));
         colorTableActiveFlags.addElement(true);
         Select(0);
+        Select(1);
         AddColorTables(cpts);
     }
 
@@ -571,6 +572,7 @@ public class ColorTableAttributes extends AttributeSubject
             colorTableNames.remove(index);
             colorTableActiveFlags.remove(index);
             Select(0);
+            Select(1);
 
             // Remove the color table from the vector.
             RemoveColorTables(index);

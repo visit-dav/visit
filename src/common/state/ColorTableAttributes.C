@@ -60,6 +60,8 @@ void ColorTableAttributes::Init()
     defaultDiscrete = "levels";
     changesMade = false;
     tagsMatchAny = true;
+    tagListNames.push_back("Default"); // add the "Default" tag to the tag list.
+    tagListNames.push_back("User Defined"); // add the "User Defined" tag to the tag list.
     tagListActive.push_back(true); // set the "Default" tag to on.
     tagListActive.push_back(true); // set the "User Defined" tag to on.
     tagListNumRefs.push_back(0); // the "Default" tag has no refs.
@@ -621,6 +623,9 @@ ColorTableAttributes::SetFromNode(DataNode *parentNode)
     if((node = searchNode->GetNode("defaultColorTable")) != 0)
         SetDefaultContinuous(node->AsString());
 
+    if((node = searchNode->GetNode("tagsMatchAny")) != 0)
+        tagsMatchAny = node->AsBool();
+
     if((node = searchNode->GetNode("tagListNames")) != 0)
     {
         stringVector tagListNamesFromNode = node->AsStringVector();
@@ -631,15 +636,13 @@ ColorTableAttributes::SetFromNode(DataNode *parentNode)
         DataNode *node2;
         if ((node2 = searchNode->GetNode("tagListActive")) != 0)
         {
-            intVector tagListActiveFromNode = node->AsIntVector();
+            intVector tagListActiveFromNode = node2->AsIntVector();
 
             // if the tag name and tag active lists match up 1 to 1, as expected
             if (tagListActiveFromNode.size() == tagListNamesFromNode.size())
             {
                 for (size_t tagId = 0; tagId < tagListNamesFromNode.size(); tagId ++)
-                {
                     SetTagActive(tagListNamesFromNode[tagId], tagListActiveFromNode[tagId]);
-                }
             }
             else
             {
@@ -651,13 +654,10 @@ ColorTableAttributes::SetFromNode(DataNode *parentNode)
         }
     }
 
-    if((node = searchNode->GetNode("tagsMatchAny")) != 0)
-        tagsMatchAny = node->AsBool();
-
     DataNode *node2, *node3;
     // we need all three vectors to be present for this to work
-    if ((node  = searchNode->GetNode("tagChangesTag"   )) != 0 &&
-        (node2 = searchNode->GetNode("tagChangesType"  )) != 0 &&
+    if ((node  = searchNode->GetNode("tagChangesTag"))    != 0 &&
+        (node2 = searchNode->GetNode("tagChangesType"))   != 0 &&
         (node3 = searchNode->GetNode("tagChangesCTName")) != 0)
     {
         MergeTagChanges(node->AsStringVector(), node2->AsIntVector(), node3->AsStringVector());
