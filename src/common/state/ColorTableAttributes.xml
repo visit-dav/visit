@@ -127,4 +127,7 @@
     <Include file="source" quoted="false">
       map
     </Include>
+    <Include file="source" quoted="false">
+      algorithm
+    </Include>
   </Attribute>

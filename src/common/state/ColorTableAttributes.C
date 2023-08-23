@@ -7,6 +7,7 @@
 #include <DebugStream.h>
 #include <ColorControlPoint.h>
 #include <map>
+#include <algorithm>
 #include <ColorControlPointList.h>
 
 constexpr int ADDTAG    = 0;
@@ -1606,7 +1607,7 @@ ColorTableAttributes::GetColorControlPoints(const std::string &name) const
 
 void
 ColorTableAttributes::AddColorTable(const std::string &name,
-                                    const ColorControlPointList &cpts)
+                                    ColorControlPointList &cpts)
 {
     // Remove the color table if it already exists in the list.
     int index = GetColorTableIndex(name);
@@ -2692,8 +2693,8 @@ ColorTableAttributes::FilterTablesByTag()
     for (int i = 0; i < GetNumColorTables(); i ++)
     {
         // we mark the color table as active or inactive
-        if (i >= 0 && i < colorTableActive.size())
-            colorTableActive[i] = FilterTableByTag(GetColorTables(i));;
+        if (i >= 0 && i < colorTableActiveFlags.size())
+            colorTableActiveFlags[i] = FilterTableByTag(GetColorTables(i));;
     }
 }
 
