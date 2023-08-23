@@ -31,7 +31,6 @@ class QvisSpectrumBar;
 class QvisColorSelectionWidget;
 class QvisColorGridWidget;
 class QvisNoDefaultColorTableButton;
-class TagInfo;
 
 // ****************************************************************************
 // Class: QvisColorTableWindow
@@ -156,8 +155,6 @@ protected:
     void UpdateEditor();
     void UpdateColorControlPoints();
     void UpdateDiscreteSettings();
-    void AddGlobalTag(std::string currtag, bool run_before);
-    void AddToTagTable(std::string currtag);
     void UpdateTags();
     void UpdateNames();
     void Apply(bool ignore = false);
@@ -168,8 +165,6 @@ protected:
     void ChangeSelectedColor(const QColor &c);
     void PopupColorSelect(const QColor &, const QPoint &p);
     QColor GetNextColor();
-    stringVector StringifyTagChanges();
-    void UnstringifyAndMergeTagChanges(stringVector changes);
 
 private slots:
     void resizeColorTable(int);
@@ -203,25 +198,14 @@ private slots:
     void searchEdited(const QString &newSearchTerm);
     void tagEdited();
     void addRemoveTag();
-    void addTagToColorTable(const std::string ctName, 
-                            const std::string tagName,
-                            ColorControlPointList* ccpl);
-    void removeTagFromColorTable(const std::string ctName, 
-                                 const std::string tagName,
-                                 ColorControlPointList* ccpl);
 private:
     ColorTableAttributes     *colorAtts;
     int                      colorCycle;
     QString                  currentColorTable;
     int                      popupMode;
     bool                     sliding;
-    bool                     tagsMatchAny;
     QString                  searchTerm;
     QString                  tagEdit;
-
-    // This is your one stop shop for information about each tag.
-    std::map<std::string, TagInfo> tagList;
-    // We are mapping tag names (std::string) to metadata (TagInfo).
 
     // This object also observes the color table attributes.
     ColorTableObserver       ctObserver;    
