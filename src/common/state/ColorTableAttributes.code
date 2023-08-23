@@ -952,9 +952,18 @@ ColorTableAttributes::MergeTagChanges(const stringVector tagChangesTagFromNode,
             if (result.first)
             {
                 if (changeType == ADDTAG && ! ccpl->HasTag(tagName))
+                {
                     addTagToColorTable(ctName, tagName, ccpl);
+                }
                 else if (changeType == REMOVETAG && ccpl->HasTag(tagName))
+                {
+                    auto result2(removeTagFromColorTable(ctName, tagName, ccpl));
+                    if (!result2.first)
+                    {
+                        debug1 << "Tag Editing WARNING: " << result2.second;
+                    }
                     removeTagFromColorTable(ctName, tagName, ccpl);
+                }
             }
             else
             {

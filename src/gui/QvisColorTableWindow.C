@@ -3242,10 +3242,21 @@ QvisColorTableWindow::addRemoveTag()
         {
             auto index(colorAtts->GetColorTableIndex(currentColorTable.toStdString()));
             auto ctName(static_cast<std::string>(colorAtts->GetColorTableNames()[index]));
+            // if the ccpl already has the tag, then we assume that we are trying to remove it
             if (ccpl->HasTag(tagName))
-                removeTagFromColorTable(ctName, tagName, ccpl);
+            {
+                auto result2(colorAtts->removeTagFromColorTable(ctName, tagName, ccpl));
+                if (!result2.first)
+                {
+                    auto tmp(tr("Tag Editing WARNING: ") + QString(result2.second.c_str()));
+                    Error(tmp);
+                    return;
+                }
+            }
             else
+            {
                 addTagToColorTable(ctName, tagName, ccpl);
+            }
         }
         else
         {
