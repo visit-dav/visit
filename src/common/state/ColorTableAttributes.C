@@ -1618,6 +1618,10 @@ ColorTableAttributes::AddColorTable(const std::string &name,
         RemoveColorTable(index);
     }
 
+    // if this table doesn't have tags, then add the no-tags tag
+    if (cpts.GetNumTags() == 0)
+        cpts.AddTag("No Tags");
+
     // Append the color table to the list.
     colorTableNames.push_back(name);
     colorTableActiveFlags.push_back(true);
@@ -2581,11 +2585,12 @@ ColorTableAttributes::RemoveUnusedTagsFromTagTable(
 // Modifications:
 //
 // ****************************************************************************
-void
-ColorTableAttributes::GetNewTagNames(std::vector<std::string> &tagsToAdd)
+std::vector<std::string>
+ColorTableAttributes::GetNewTagNames()
 {
     // TODO this function probably belongs in the dumpster
 
+    std::vector<std::string> tagsToAdd;
     // populate tags list
     // iterate thru each color table
     for (int i = 0; i < GetNumColorTables(); i ++)
@@ -2604,6 +2609,8 @@ ColorTableAttributes::GetNewTagNames(std::vector<std::string> &tagsToAdd)
             ccpl.SetTagChangesMade(false);
         }
     }
+
+    return tagsToAdd;
 }
 
 // ****************************************************************************

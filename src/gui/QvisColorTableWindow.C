@@ -906,69 +906,6 @@ QvisColorTableWindow::AddToTagTable(const std::string currtag)
 }
 
 // ****************************************************************************
-// Method: QvisColorTableWindow::AddGlobalTag
-//
-// Purpose:
-//   Adds a tag discovered when looking through each color table to the global 
-//   tag list. Also adds to the tag table if the tag is not in it.
-//
-// Programmer: Justin Privitera
-// Creation:   Tue Jun  7 12:36:55 PDT 2022
-//
-// Modifications:
-//    Justin Privitera, Mon Jun 27 17:33:23 PDT 2022
-//    Added call to AddToTagTable() to reduce code bloat.
-//    Renamed `run_before` to `first_time`.
-// 
-//    Justin Privitera, Fri Aug 19 20:57:38 PDT 2022
-//    We now throw an error if there are too many tags.
-// 
-//    Justin Privitera, Fri Sep  2 16:46:21 PDT 2022
-//    No limit on the number of tags.
-//    Refactor allows for much cleaner interface for working with tag data.
-//    No need to collect indices of tags anymore due to refactor.
-//    Calculate refcount for each tag on the very first iteration through.
-// 
-//    Justin Privitera, Wed Sep 21 16:51:24 PDT 2022
-//    Extra clarifying comments.
-// 
-//   Justin Privitera, Thu Jan 26 11:39:29 PST 2023
-//   Changed "Standard" tag to "Default" and made "User Defined" turned on by
-//   default.
-//
-// ****************************************************************************
-
-void
-QvisColorTableWindow::AddGlobalTag(const std::string currtag, const bool first_time)
-{
-    // If the given tag is NOT in the global tag list
-    if (! colorAtts->CheckTagInTagList(currtag))
-    {
-        colorAtts->CreateTagListEntry(currtag, false, 0, false);
-        AddToTagTable(currtag);
-    }
-    // If the given tag IS in the global tag list but does not have a tagTable entry
-    else if (! colorAtts->GetTagTableItemFlag())
-    {
-        AddToTagTable(currtag);
-    }
-
-    // Only the very first time can we guarantee that each reference to each
-    // tag has not been encountered before, so it is safe to increment here.
-    // Why is this? `AddGlobalTag()` is getting called unconditionally FOR
-    // EVERY tag in the CCPL, whether or not that tag has been added before.
-    if (first_time)
-        // We have to do this logic AFTER the above logic because otherwise 
-        // currtag will already be added to the tagList, which will mess up
-        // our searching for it.
-        colorAtts->IncrementTagNumRefs(currtag);
-        // Whether or not we end up adding to the tag table, the fact that 
-        // this function was called with this tag means there is another
-        // reference to it, so we should update the numrefs. Hence why
-        // we do NOT update the numrefs in `AddToTagTable()`.
-}
-
-// ****************************************************************************
 // Method: QvisColorTableWindow::UpdateTags
 //
 // Purpose:
@@ -1005,36 +942,40 @@ QvisColorTableWindow::AddGlobalTag(const std::string currtag, const bool first_t
 void
 QvisColorTableWindow::UpdateTags()
 {
+    // Get names of tags
+    std::vector<std::string> tagsToAdd = colorAtts->GetNewTagNames();
+
+    // Add them to tag list and to tag table
     static bool first_time = true;
-    // populate tags list
-    // iterate thru each color table
-    for (int i = 0; i < colorAtts->GetNumColorTables(); i ++)
-    {
-        // only try to add tags if the ccpl thinks it has new info
-        if (colorAtts->GetColorTables(i).GetTagChangesMade())
+    std::for_each(tagsToAdd.begin(), tagsToAdd.end(),
+        [this](std::string currtag)
         {
-            // if this table doesn't have tags, then add the no-tags tag
-            if (colorAtts->GetColorTables(i).GetNumTags() == 0)
+            // If the given tag is NOT in the global tag list
+            if (! colorAtts->CheckTagInTagList(currtag))
             {
-                colorAtts->GetColorTables(i).AddTag("No Tags");
-                // Every time I add a tag, I need to update the refcount.
-                // However, if this is the `first_time`, no tags have any refcount,
-                // until they go through `AddGlobalTag`, so we shouldn't update
-                // the refcount here.
-                if (! first_time)
-                    colorAtts->IncrementTagNumRefs("No Tags");
+                colorAtts->CreateTagListEntry(currtag, false, 0, false);
+                AddToTagTable(currtag);
+            }
+            // If the given tag IS in the global tag list but does not have a tagTable entry
+            else if (! colorAtts->GetTagTableItemFlag())
+            {
+                AddToTagTable(currtag);
             }
 
-            // iterate thru each tag in the given color table
-            for (int j = 0; j < colorAtts->GetColorTables(i).GetNumTags(); j ++)
-            {
-                // add the tag if it is not already in the global tag list
-                AddGlobalTag(colorAtts->GetColorTables(i).GetTag(j), first_time);
-            }
-            // tell the ccpl that we have taken note of all of its tag changes
-            colorAtts->GetColorTables(i).SetTagChangesMade(false);
-        }
-    }
+            // Only the very first time can we guarantee that each reference to each
+            // tag has not been encountered before, so it is safe to increment here.
+            // Why is this? `AddGlobalTag()` is getting called unconditionally FOR
+            // EVERY tag in the CCPL, whether or not that tag has been added before.
+            if (first_time)
+                // We have to do this logic AFTER the above logic because otherwise 
+                // currtag will already be added to the tagList, which will mess up
+                // our searching for it.
+                colorAtts->IncrementTagNumRefs(currtag);
+                // Whether or not we end up adding to the tag table, the fact that 
+                // this function was called with this tag means there is another
+                // reference to it, so we should update the numrefs. Hence why
+                // we do NOT update the numrefs in `AddToTagTable()`.
+        });
     first_time = false;
 
     // Purge tagList/tagTable entries that have 0 refcount.
