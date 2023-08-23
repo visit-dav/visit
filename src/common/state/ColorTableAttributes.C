@@ -6,7 +6,6 @@
 #include <DataNode.h>
 #include <DebugStream.h>
 #include <ColorControlPoint.h>
-#include <DebugStream.h>
 #include <map>
 #include <algorithm>
 #include <set>
