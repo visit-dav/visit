@@ -940,7 +940,7 @@ ColorTableAttributes::GetColorTableActiveFlag(int index)
 }
 
 Function: MergeTagChanges
-Declaration: void MergeTagChanges(stringVector tagChangesTagFromNode, intVector tagChangesTypeFromNode, stringVector tagChangesCTNameFromNode);
+Declaration: void MergeTagChanges(const stringVector tagChangesTagFromNode, const intVector tagChangesTypeFromNode, const stringVector tagChangesCTNameFromNode);
 Definition:
 // ****************************************************************************
 // Method: ColorTableAttributes::MergeTagChanges
@@ -963,9 +963,9 @@ Definition:
 //
 // ****************************************************************************
 void
-ColorTableAttributes::MergeTagChanges(stringVector tagChangesTagFromNode,
-                                      intVector tagChangesTypeFromNode,
-                                      stringVector tagChangesCTNameFromNode)
+ColorTableAttributes::MergeTagChanges(const stringVector tagChangesTagFromNode,
+                                      const intVector tagChangesTypeFromNode,
+                                      const stringVector tagChangesCTNameFromNode)
 {
     // if all three are the same size
     if (tagChangesTagFromNode.size() == tagChangesTypeFromNode.size() &&
