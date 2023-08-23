@@ -962,7 +962,6 @@ ColorTableAttributes::MergeTagChanges(const stringVector tagChangesTagFromNode,
                     {
                         debug1 << "Tag Editing WARNING: " << result2.second;
                     }
-                    removeTagFromColorTable(ctName, tagName, ccpl);
                 }
             }
             else
