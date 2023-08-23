@@ -1134,57 +1134,17 @@ QvisColorTableWindow::UpdateNames()
     // Clear out the existing names.
     nameListBox->clear();
     nameListBox->setRootIsDecorated(false);
-    
-    // for each color table
-    for (int i = 0; i < colorAtts->GetNumColorTables(); i ++)
-    {
-        bool tagFound = false;
-        // go thru global tags
-        for (const auto& mapitem : tagList)
-        {
-            // if the global tag is active
-            if (mapitem.second.active)
-            {
-                tagFound = false;
-                // go thru local tags
-                for (int k = 0; k < colorAtts->GetColorTables(i).GetNumTags(); k ++)
-                {
-                    // if the current global tag is the same as our local tag
-                    if (mapitem.first == colorAtts->GetColorTables(i).GetTag(k))
-                    {
-                        tagFound = true;
-                        break;
-                    }
-                }
-                if (tagFound == colorAtts->GetTagsMatchAny())
-                // If both are true, that means...
-                // 1) tagsMatchAny is true so we only need one tag from 
-                //    the global tag list to be present in the local tag
-                //    list, AND
-                // 2) tagFound is true, so there is no need to keep 
-                //    searching for a tag that is in both the local and
-                //    global tag lists. Thus we can end iteration early.
-                // If both are false, that means...
-                // 1) tagsMatchAny is false so we need every tag from the
-                //    global tag list to be present in the local tag list, AND
-                // 2) tagFound is false, so there exists a global tag that
-                //    is not in the local tag list, hence we can give up 
-                //    early because we know that this color table does not
-                //    have every tag in the global tag list.
-                    break;
-            }
-        }
-        // we mark the color table as active or inactive
-        colorAtts->SetColorTableActiveFlag(i, tagFound);
-    }
+
+    colorAtts->FilterTablesByTag();
 
     // actually populate the name list box
     for (int i = 0; i < colorAtts->GetNumColorTables(); i ++)
     {
-        // if the color table is active
+        // if the color table is active (e.g. within the current filtering selection)
         if (colorAtts->GetColorTableActiveFlag(i))
         {
             QString ctName(colorAtts->GetColorTableNames()[i].c_str());
+            // searching
             if (ctName.contains(searchTerm, Qt::CaseInsensitive))
             {
                 QTreeWidgetItem *treeItem = new QTreeWidgetItem(nameListBox);
