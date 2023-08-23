@@ -31,7 +31,6 @@ class QvisSpectrumBar;
 class QvisColorSelectionWidget;
 class QvisColorGridWidget;
 class QvisNoDefaultColorTableButton;
-class TagInfo;
 
 // ****************************************************************************
 // Class: QvisColorTableWindow
@@ -207,10 +206,6 @@ private:
     bool                     sliding;
     QString                  searchTerm;
     QString                  tagEdit;
-
-    // This is your one stop shop for information about each tag.
-    std::map<std::string, TagInfo> tagList;
-    // We are mapping tag names (std::string) to metadata (TagInfo).
 
     // This object also observes the color table attributes.
     ColorTableObserver       ctObserver;    
