@@ -42,38 +42,6 @@
 #define SELECT_FOR_CONTINUOUS 0
 #define SELECT_FOR_DISCRETE   1
 
-#define ADDTAG        0
-#define REMOVETAG     1
-#define ADDTAGSTR    "0"
-#define REMOVETAGSTR "1"
-
-class TagInfo
-{
-public:
-    // Is this tag turned on or off?
-    bool active = false;
-
-    // How many color tables are associated with this tag
-    int numrefs = 0;
-
-    // data object to store tag changes
-    std::set<std::pair<int, std::string>> changes;
-    // Each tag is associated with a set (std::set) of representations of tag 
-    // changes. These representations consist of pairs (std::pair), where the 
-    // first element in each is a constant equal to either ADDTAG (0) or 
-    // REMOVETAG (1) and the second element is the name of the color table 
-    // (std::string) being added to or removed from.
-    // 
-    // This data structure is updated on the fly to reflect the latest tag 
-    // changes. It is also used to determine if a tag change is legal
-    // (particularly if a color table is built in), and it is saved out to 
-    // state files.
-
-    // A ptr to the tag table entry for this tag so it can be easily found
-    // and deleted if `numrefs` drops to 0.
-    QTreeWidgetItem *tagTableItem = nullptr;
-};
-
 // ****************************************************************************
 // Method: QvisColorTableWindow::QvisColorTableWindow
 //
@@ -131,7 +99,6 @@ QvisColorTableWindow::QvisColorTableWindow(
     sliding = false;
     colorSelect = 0;
     colorTableTypeGroup = 0;
-    tagsMatchAny = true;
     searchTerm = QString("");
     tagEdit = QString("");
 }
@@ -338,7 +305,7 @@ QvisColorTableWindow::CreateWindowContents()
     tagCombiningBehaviorChoice = new QComboBox(colorTableWidgetGroup);
     tagCombiningBehaviorChoice->addItem(tr("Colortables must match ANY selected tag"));
     tagCombiningBehaviorChoice->addItem(tr("Colortables must match EVERY selected tag"));
-    if (tagsMatchAny)
+    if (colorAtts->GetTagsMatchAny())
         tagCombiningBehaviorChoice->setCurrentIndex(0);
     else
         tagCombiningBehaviorChoice->setCurrentIndex(1);        
@@ -590,94 +557,6 @@ QvisColorTableWindow::CreateWindowContents()
             this, SLOT(selectedColor(const QColor &)));
 }
 
-// ****************************************************************************
-// Method: QvisColorTableWindow::StringifyTagChanges
-//
-// Purpose: Packs the tag changes data structure into a string vector so it
-//    can be easily written to a node.
-//
-// Programmer: Justin Privitera
-// Creation:   Thu Aug 25 15:04:55 PDT 2022
-//
-// Modifications:
-//    Justin Privitera, Wed Sep 21 16:51:24 PDT 2022
-//    The tagList and tagChanges data structures have been merged.
-//
-// ****************************************************************************
-stringVector
-QvisColorTableWindow::StringifyTagChanges()
-{
-    stringVector retval;
-    for (const auto& mapitem : tagList)
-    {
-        std::stringstream changes;
-        changes << mapitem.first << ":";
-        for (const auto& setitem : mapitem.second.changes)
-            changes << setitem.first << "," << setitem.second << ";";
-        retval.emplace_back(changes.str());
-    }
-    return retval;
-}
-
-// ****************************************************************************
-// Method: QvisColorTableWindow::UnstringifyAndMergeTagChanges
-//
-// Purpose: Converts a stringvector representation of tag changes into 
-//    actionable tag changes. Adds them to the tag changes data structure and
-//    makes the changes happen.
-//
-// Programmer: Justin Privitera
-// Creation:   Thu Aug 25 15:04:55 PDT 2022
-//
-// Modifications:
-//    Justin Privitera, Wed Sep 21 16:51:24 PDT 2022
-//    Reversed how tag changes are represented (internally and when saved to
-//    files) so now tag names are mapped to sets of pairs of color table names
-//    and integers.
-// 
-//    Justin Privitera, Thu Sep 29 17:27:37 PDT 2022
-//    Replace braces with parens for auto.
-//
-// ****************************************************************************
-void
-QvisColorTableWindow::UnstringifyAndMergeTagChanges(stringVector changes)
-{
-    std::for_each(changes.begin(), changes.end(), 
-        [this](std::string ctTagChanges)
-        {
-            size_t titleSep = ctTagChanges.find(":");
-            std::string tagName{ctTagChanges.substr(0, titleSep)};
-            std::string table{ctTagChanges.substr(titleSep + 1)};
-
-            size_t addRemoveSep{table.find(",")};
-            size_t entrySep{0};
-
-            while (addRemoveSep != std::string::npos)
-            {
-                std::string addRemoveText{table.substr(entrySep, addRemoveSep - entrySep)};
-                entrySep = table.find(";", entrySep);
-                addRemoveSep += 1;
-                std::string ctName{table.substr(addRemoveSep, entrySep - addRemoveSep)};
-                addRemoveSep = table.find(",", addRemoveSep);
-                entrySep += 1;
-
-                auto *ccpl(const_cast<ColorControlPointList *>(colorAtts->GetColorControlPoints(ctName)));
-                auto result(ccpl->ValidateTag(tagName));
-                if (result.first)
-                {
-                    if (addRemoveText == ADDTAGSTR && ! ccpl->HasTag(tagName))
-                        addTagToColorTable(ctName, tagName, ccpl);
-                    else if (addRemoveText == REMOVETAGSTR && ccpl->HasTag(tagName))
-                        removeTagFromColorTable(ctName, tagName, ccpl);
-                }
-                else
-                {
-                    debug1 << "QvisColorTableWindow WARNING: " << result.second;
-                }
-            }
-        });
-}
-
 
 // ****************************************************************************
 // Method: QvisColorTableWindow::CreateNode
@@ -727,17 +606,6 @@ QvisColorTableWindow::CreateNode(DataNode *parentNode)
         // Save the current color table.
         std::string ct(currentColorTable.toStdString());
         node->AddNode(new DataNode("currentColorTable", ct));
-        stringVector tagNames;
-        boolVector activeTags;
-        for (const auto mapitem : tagList)
-        {
-            tagNames.emplace_back(mapitem.first);
-            activeTags.push_back(mapitem.second.active);
-        }
-        node->AddNode(new DataNode("tagList", tagNames));
-        node->AddNode(new DataNode("activeTags", activeTags));
-        node->AddNode(new DataNode("tagsMatchAny", tagsMatchAny));
-        node->AddNode(new DataNode("tagChanges", StringifyTagChanges()));
     }
 }
 
@@ -782,30 +650,6 @@ QvisColorTableWindow::SetFromNode(DataNode *parentNode, const int *borders)
     DataNode *node, *node2;
     if((node = winNode->GetNode("currentColorTable")) != 0)
         currentColorTable = QString(node->AsString().c_str());
-    if((node = winNode->GetNode("tagList")) != 0 && (node2 = winNode->GetNode("activeTags")) != 0)
-    {
-        stringVector tagNames{node->AsStringVector()};
-        std::vector<bool> activeTags{node2->AsBoolVector()};
-        if (tagNames.size() == activeTags.size())
-        {
-            for (int i = 0; i < tagNames.size(); i ++)
-                tagList[tagNames[i]].active = activeTags[i];
-        }
-        else
-        {
-            QString tmp;
-            tmp = tr("The color table tag names list and active tags list ") + 
-                  tr("should be the same size. ") + 
-                  tr("Has your config/session file been corrupted?");
-            Error(tmp);
-            for (int i = 0; i < tagNames.size(); i ++)
-                tagList[tagNames[i]].active = false;
-        }
-    }
-    if((node = winNode->GetNode("tagsMatchAny")) != 0)
-        tagsMatchAny = node->AsBool();
-    if((node = winNode->GetNode("tagChanges")) != 0)
-        UnstringifyAndMergeTagChanges(node->AsStringVector());
 
     // Call the base class's function.
     QvisPostableWindowSimpleObserver::SetFromNode(parentNode, borders);
@@ -1324,7 +1168,7 @@ QvisColorTableWindow::UpdateNames()
                         break;
                     }
                 }
-                if (tagFound == tagsMatchAny)
+                if (tagFound == colorAtts->GetTagsMatchAny())
                 // If both are true, that means...
                 // 1) tagsMatchAny is true so we only need one tag from 
                 //    the global tag list to be present in the local tag
@@ -3355,13 +3199,13 @@ QvisColorTableWindow::tagsSelectAll()
 void
 QvisColorTableWindow::tagCombiningChanged(int index)
 {
-    bool old_val = tagsMatchAny;
+    bool old_val = colorAtts->GetTagsMatchAny();
     if (index == 0)
-        tagsMatchAny = true;
+        colorAtts->SetTagsMatchAny(true);
     else
-        tagsMatchAny = false;
+        colorAtts->SetTagsMatchAny(false);
     // have any changes actually been made?
-    if (old_val != tagsMatchAny)
+    if (old_val != colorAtts->GetTagsMatchAny())
     {
         UpdateNames();
         colorAtts->SetChangesMade(true);
