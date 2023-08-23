@@ -1902,10 +1902,10 @@ ColorTableAttributes::MergeTagChanges(const stringVector tagChangesTagFromNode,
                 else if (changeType == REMOVETAG && ccpl->HasTag(tagName))
                 {
                     auto result2(removeTagFromColorTable(ctName, tagName, ccpl));
-                   if (!result2.first)
-                   {
-                       debug1 << "Tag Editing WARNING: " << result2.second;
-                   }
+                    if (!result2.first)
+                    {
+                        debug1 << "Tag Editing WARNING: " << result2.second;
+                    }
                 }
             }
             else
