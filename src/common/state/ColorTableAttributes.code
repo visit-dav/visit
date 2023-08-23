@@ -144,26 +144,6 @@ Initialization: tagListTableItemFlag
     tagListTableItemFlag.push_back(false); // the "Default" tag has no tag table entry.
     tagListTableItemFlag.push_back(false); // the "User Defined" tag has no tag table entry.
 
-Target: xml2atts
-Initialization: tagListNames
-    tagListNames.push_back("Default"); // add the "Default" tag to the tag list.
-    tagListNames.push_back("User Defined"); // add the "User Defined" tag to the tag list.
-
-Target: xml2atts
-Initialization: tagListActive
-    tagListActive.push_back(true); // set the "Default" tag to on.
-    tagListActive.push_back(true); // set the "User Defined" tag to on.
-
-Target: xml2atts
-Initialization: tagListNumRefs
-    tagListNumRefs.push_back(0); // the "Default" tag has no refs.
-    tagListNumRefs.push_back(0); // the "User Defined" tag has no refs.
-
-Target: xml2atts
-Initialization: tagListTableItemFlag
-    tagListTableItemFlag.push_back(false); // the "Default" tag has no tag table entry.
-    tagListTableItemFlag.push_back(false); // the "User Defined" tag has no tag table entry.
-
 Function: GetColorTableIndex
 Declaration: int GetColorTableIndex(const std::string &name) const;
 Definition:
