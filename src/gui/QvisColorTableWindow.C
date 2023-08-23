@@ -2316,6 +2316,7 @@ QvisColorTableWindow::deleteColorTable()
             Error(tmp);
             return;
         }
+        // TODO move this logic to the ctatts
         for (auto tag : ccpl->GetTagNames())
             tagList[tag].numrefs --;
         GetViewerMethods()->DeleteColorTable(ctName.c_str());
