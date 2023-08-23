@@ -165,7 +165,7 @@ public:
     void SetTagTableItemFlag(const int index, const bool tagTableItemExists);
     bool GetTagTableItemFlag(const std::string tagname);
     bool CheckTagInTagList(const std::string tagname);
-    void RemoveUnusedTagsFromTagTable(std::vector<std::string> &removedTags);
+    std::vector<std::string> RemoveUnusedTagsFromTagTable();
     std::vector<std::string> GetNewTagNames();
     bool FilterTableByTag(const ColorControlPointList &ccpl);
     void FilterTablesByTag();

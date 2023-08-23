@@ -2538,10 +2538,11 @@ ColorTableAttributes::CheckTagInTagList(const std::string tagname)
 // Modifications:
 //
 // ****************************************************************************
-void
-ColorTableAttributes::RemoveUnusedTagsFromTagTable(
-    std::vector<std::string> &removedTags)
+std::vector<std::string>
+ColorTableAttributes::RemoveUnusedTagsFromTagTable()
 {
+    std::vector<std::string> removedTags;
+
     auto namesItr = tagListNames.begin();
     auto activeItr = tagListActive.begin();
     auto numrefsItr = tagListNumRefs.begin();
@@ -2571,6 +2572,8 @@ ColorTableAttributes::RemoveUnusedTagsFromTagTable(
             tableitemflagItr ++;
         }
     }
+
+    return removedTags;
 }
 
 // ****************************************************************************

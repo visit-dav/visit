@@ -880,30 +880,6 @@ QvisColorTableWindow::UpdateEditor()
     }
 }
 
-// ****************************************************************************
-// Method: QvisColorTableWindow::AddToTagTable
-//
-// Purpose:
-//   Adds entries to the tag table. Called by AddGlobalTag().
-//
-// Programmer: Justin Privitera
-// Creation:   Mon Jun 27 17:30:16 PDT 2022
-//
-// Modifications:
-//    Justin Privitera, Fri Sep  2 16:46:21 PDT 2022
-//    Eliminated tag index arg as well as need for secret tag table column.
-//
-// ****************************************************************************
-
-void
-QvisColorTableWindow::AddToTagTable(const std::string currtag)
-{
-    QTreeWidgetItem *item = new QTreeWidgetItem(tagTable);
-    tagTableItems[currtag] = item;
-    colorAtts->SetTagTableItemFlag(currtag, true);
-    item->setCheckState(0, colorAtts->GetTagActive(currtag) ? Qt::Checked : Qt::Unchecked);
-    item->setText(1, currtag.c_str());
-}
 
 // ****************************************************************************
 // Method: QvisColorTableWindow::UpdateTags
@@ -942,34 +918,27 @@ QvisColorTableWindow::AddToTagTable(const std::string currtag)
 void
 QvisColorTableWindow::UpdateTags()
 {
-    // Get names of tags
+    // 1. Get names of tags to add.
     std::vector<std::string> tagsToAdd = colorAtts->GetNewTagNames();
 
-    // Add them to tag list and to tag table
+    // 2. Add tags to tag list.
+    // TODO this whole block will disappear in the next PR, since tag list entries will
+    // be created when color tables are added.
     static bool first_time = true;
     std::for_each(tagsToAdd.begin(), tagsToAdd.end(),
         [this](std::string currtag)
         {
-            // If the given tag is NOT in the global tag list
+            // If the given tag is NOT in the global tag list, we will create an entry for it
             if (! colorAtts->CheckTagInTagList(currtag))
-            {
                 colorAtts->CreateTagListEntry(currtag, false, 0, false);
-                AddToTagTable(currtag);
-            }
-            // If the given tag IS in the global tag list but does not have a tagTable entry
-            else if (! colorAtts->GetTagTableItemFlag())
-            {
-                AddToTagTable(currtag);
-            }
 
             // Only the very first time can we guarantee that each reference to each
             // tag has not been encountered before, so it is safe to increment here.
-            // Why is this? `AddGlobalTag()` is getting called unconditionally FOR
-            // EVERY tag in the CCPL, whether or not that tag has been added before.
+            // Why is this? We are here unconditionally FOR EVERY tag in the CCPL, 
+            // whether or not that tag has been added before.
             if (first_time)
-                // We have to do this logic AFTER the above logic because otherwise 
-                // currtag will already be added to the tagList, which will mess up
-                // our searching for it.
+                // We have to do this logic AFTER the above logic because currtag
+                // needs to be added to the tag list before we can increment it
                 colorAtts->IncrementTagNumRefs(currtag);
                 // Whether or not we end up adding to the tag table, the fact that 
                 // this function was called with this tag means there is another
@@ -978,9 +947,23 @@ QvisColorTableWindow::UpdateTags()
         });
     first_time = false;
 
-    // Purge tagList/tagTable entries that have 0 refcount.
-    std::vector<std::string> removedTags;
-    colorAtts->RemoveUnusedTagsFromTagTable(removedTags);
+    // 3. Add tags to tag table.
+    std::for_each(tagsToAdd.begin(), tagsToAdd.end(),
+        [this](const std::string currtag)
+        {
+            // If this tag does not have a tagTable entry, then create one
+            if (! colorAtts->GetTagTableItemFlag(currtag))
+            {
+                QTreeWidgetItem *item = new QTreeWidgetItem(tagTable);
+                tagTableItems[currtag] = item;
+                colorAtts->SetTagTableItemFlag(currtag, true);
+                item->setCheckState(0, colorAtts->GetTagActive(currtag) ? Qt::Checked : Qt::Unchecked);
+                item->setText(1, currtag.c_str());
+            }
+        });
+
+    // 4. Purge tagList/tagTable entries that have 0 refcount.
+    std::vector<std::string> removedTags = colorAtts->RemoveUnusedTagsFromTagTable();
     std::for_each(removedTags.begin(), removedTags.end(),
         [this](std::string removedTagName)
         {
@@ -996,6 +979,7 @@ QvisColorTableWindow::UpdateTags()
         });
     tagTable->sortByColumn(1, Qt::AscendingOrder);
 }
+
 
 // ****************************************************************************
 // Method: QvisColorTableWindow::UpdateNames
