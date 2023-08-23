@@ -947,7 +947,7 @@ QvisColorTableWindow::UpdateTags()
         });
     first_time = false;
 
-    // 3. Add tags to tag table.
+    // 3. Add Tags to Tag Table.
     std::for_each(tagsToAdd.begin(), tagsToAdd.end(),
         [this](const std::string currtag)
         {
@@ -977,6 +977,7 @@ QvisColorTableWindow::UpdateTags()
             tagTableItems.erase(removedTagName);
             // If the item is not in the tag table, then we will skip deleting it.
         });
+
     tagTable->sortByColumn(1, Qt::AscendingOrder);
 }
 
@@ -1120,6 +1121,7 @@ QvisColorTableWindow::UpdateNames()
     // Set the enabled state of the delete button.
     deleteButton->setEnabled(colorAtts->GetNumColorTables() > 1);
 
+    // TODO this block will disappear in the next PR
     static bool run_before = false;
     if (!run_before)
     {
@@ -2199,7 +2201,7 @@ QvisColorTableWindow::addColorTable()
             cpts.SetBuiltIn(false);
             colorAtts->AddColorTable(currentColorTable.toStdString(), cpts);
             for (auto tag : cpts.GetTagNames())
-                tagList[tag].numrefs ++;
+                colorAtts->IncrementTagNumRefs(tag);
         }
         else
         {
@@ -2218,7 +2220,7 @@ QvisColorTableWindow::addColorTable()
             cpts.SetBuiltIn(false);
             colorAtts->AddColorTable(currentColorTable.toStdString(), cpts);
             for (auto tag : cpts.GetTagNames())
-                tagList[tag].numrefs ++;
+                colorAtts->IncrementTagNumRefs(tag);
         }
 
         // Tell all of the observers to update.
@@ -2298,7 +2300,7 @@ QvisColorTableWindow::deleteColorTable()
             Error(tmp);
             return;
         }
-        if (tagList["Continuous"].numrefs == 1 && ccpl->HasTag("Continuous"))
+        if (colorAtts->GetTagNumRefs("Continuous") == 1 && ccpl->HasTag("Continuous"))
         {
             QString tmp;
             tmp = tr("This is the last Continuous Color Table. There must be"
@@ -2307,7 +2309,7 @@ QvisColorTableWindow::deleteColorTable()
             Error(tmp);
             return;
         }
-        if (tagList["Discrete"].numrefs == 1 && ccpl->HasTag("Discrete"))
+        if (colorAtts->GetTagNumRefs("Discrete") == 1 && ccpl->HasTag("Discrete"))
         {
             QString tmp;
             tmp = tr("This is the last Discrete Color Table. There must be"
