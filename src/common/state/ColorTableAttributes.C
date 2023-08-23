@@ -2594,6 +2594,7 @@ ColorTableAttributes::GetNewTagNames()
     // TODO this function probably belongs in the dumpster
 
     std::vector<std::string> tagsToAdd;
+
     // populate tags list
     // iterate thru each color table
     for (int i = 0; i < GetNumColorTables(); i ++)
