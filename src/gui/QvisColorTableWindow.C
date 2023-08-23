@@ -766,6 +766,8 @@ QvisColorTableWindow::UpdateWindow(bool doAll)
         switch(i)
         {
         case ColorTableAttributes::ID_colorTableNames:
+            // fall thru
+        case ColorTableAttributes::ID_tagListNames:
             updateNames = true;
             break;
         case ColorTableAttributes::ID_colorTables:
@@ -894,11 +896,12 @@ QvisColorTableWindow::UpdateEditor()
 // ****************************************************************************
 
 void
-QvisColorTableWindow::AddToTagTable(std::string currtag)
+QvisColorTableWindow::AddToTagTable(const std::string currtag)
 {
     QTreeWidgetItem *item = new QTreeWidgetItem(tagTable);
-    tagList[currtag].tagTableItem = item;
-    item->setCheckState(0, tagList[currtag].active ? Qt::Checked : Qt::Unchecked);
+    tagTableItems[currtag] = item;
+    colorAtts->SetTagTableItemFlag(currtag, true);
+    item->setCheckState(0, colorAtts->GetTagActive(currtag) ? Qt::Checked : Qt::Unchecked);
     item->setText(1, currtag.c_str());
 }
 
@@ -936,25 +939,20 @@ QvisColorTableWindow::AddToTagTable(std::string currtag)
 // ****************************************************************************
 
 void
-QvisColorTableWindow::AddGlobalTag(std::string currtag, bool first_time)
+QvisColorTableWindow::AddGlobalTag(const std::string currtag, const bool first_time)
 {
-    // if the given tag is NOT in the global tag list
-    if (tagList.find(currtag) == tagList.end())
+    // If the given tag is NOT in the global tag list
+    if (! colorAtts->CheckTagInTagList(currtag))
     {
-        // make the "Default" and "User Defined" tags active by default
-        tagList[currtag].active = 
-            (currtag == "Default" || currtag == "User Defined") && first_time;
+        colorAtts->CreateTagListEntry(currtag, false, 0, false);
         AddToTagTable(currtag);
     }
-    else
+    // If the given tag IS in the global tag list but does not have a tagTable entry
+    else if (! colorAtts->GetTagTableItemFlag())
     {
-        // We only want to run this check if the first case is not true.
-        QList<QTreeWidgetItem*> items = tagTable->findItems(
-            QString::fromStdString(currtag), Qt::MatchExactly, 1);
-        // If the given tag IS in the global tag list but does not have a tagTable entry
-        if (items.count() == 0)
-            AddToTagTable(currtag);
+        AddToTagTable(currtag);
     }
+
     // Only the very first time can we guarantee that each reference to each
     // tag has not been encountered before, so it is safe to increment here.
     // Why is this? `AddGlobalTag()` is getting called unconditionally FOR
@@ -963,7 +961,7 @@ QvisColorTableWindow::AddGlobalTag(std::string currtag, bool first_time)
         // We have to do this logic AFTER the above logic because otherwise 
         // currtag will already be added to the tagList, which will mess up
         // our searching for it.
-        tagList[currtag].numrefs ++;
+        colorAtts->IncrementTagNumRefs(currtag);
         // Whether or not we end up adding to the tag table, the fact that 
         // this function was called with this tag means there is another
         // reference to it, so we should update the numrefs. Hence why
@@ -1007,8 +1005,6 @@ QvisColorTableWindow::AddGlobalTag(std::string currtag, bool first_time)
 void
 QvisColorTableWindow::UpdateTags()
 {
-    // We want the 'Default' and 'User Defined' tags to be checked the very first time a user
-    // opens the color table window, hence the inclusion of `first_time`.
     static bool first_time = true;
     // populate tags list
     // iterate thru each color table
@@ -1026,7 +1022,7 @@ QvisColorTableWindow::UpdateTags()
                 // until they go through `AddGlobalTag`, so we shouldn't update
                 // the refcount here.
                 if (! first_time)
-                    tagList["No Tags"].numrefs ++;
+                    colorAtts->IncrementTagNumRefs("No Tags");
             }
 
             // iterate thru each tag in the given color table
@@ -1042,29 +1038,21 @@ QvisColorTableWindow::UpdateTags()
     first_time = false;
 
     // Purge tagList/tagTable entries that have 0 refcount.
-    for (auto itr = tagList.begin(); itr != tagList.end();)
-    {
-        if (itr->second.numrefs <= 0)
+    std::vector<std::string> removedTags;
+    colorAtts->RemoveUnusedTagsFromTagTable(removedTags);
+    std::for_each(removedTags.begin(), removedTags.end(),
+        [this](std::string removedTagName)
         {
-            // if this tag list item has an associated tag table entry
-            if (QTreeWidgetItem *tagTableItem = itr->second.tagTableItem)
+            QTreeWidgetItem *tagTableItem = tagTableItems[removedTagName];
+            auto index = tagTable->indexOfTopLevelItem(tagTableItem);
+            if (index != -1)
             {
-                auto index = tagTable->indexOfTopLevelItem(tagTableItem);
-                // For some reason, the item is not in the tag table. This 
-                // should not be possible, but if it does happen, we can 
-                // recover.
-                if (index != -1)
-                {
-                    tagTable->takeTopLevelItem(index);
-                    delete tagTableItem;
-                }
+                tagTable->takeTopLevelItem(index);
+                delete tagTableItem;
             }
-            // else - there is no tag table entry to delete so we can continue
-            itr = tagList.erase(itr);
-        }
-        else
-            itr ++;
-    }
+            tagTableItems.erase(removedTagName);
+            // If the item is not in the tag table, then we will skip deleting it.
+        });
     tagTable->sortByColumn(1, Qt::AscendingOrder);
 }
 
