@@ -2567,10 +2567,11 @@ ColorTableAttributes::CheckTagInTagList(const std::string tagname)
 // Modifications:
 //
 // ****************************************************************************
-void
-ColorTableAttributes::RemoveUnusedTagsFromTagTable(
-    std::vector<std::string> &removedTags)
+std::vector<std::string>
+ColorTableAttributes::RemoveUnusedTagsFromTagTable()
 {
+    std::vector<std::string> removedTags;
+
     auto namesItr = tagListNames.begin();
     auto activeItr = tagListActive.begin();
     auto numrefsItr = tagListNumRefs.begin();
@@ -2600,6 +2601,8 @@ ColorTableAttributes::RemoveUnusedTagsFromTagTable(
             tableitemflagItr ++;
         }
     }
+
+    return removedTags;
 }
 
 // ****************************************************************************
@@ -2614,10 +2617,12 @@ ColorTableAttributes::RemoveUnusedTagsFromTagTable(
 // Modifications:
 //
 // ****************************************************************************
-void
-ColorTableAttributes::GetNewTagNames(std::vector<std::string> &tagsToAdd)
+std::vector<std::string>
+ColorTableAttributes::GetNewTagNames()
 {
     // TODO this function probably belongs in the dumpster
+
+    std::vector<std::string> tagsToAdd;
 
     // populate tags list
     // iterate thru each color table
@@ -2637,6 +2642,8 @@ ColorTableAttributes::GetNewTagNames(std::vector<std::string> &tagsToAdd)
             ccpl.SetTagChangesMade(false);
         }
     }
+
+    return tagsToAdd;
 }
 
 // ****************************************************************************
