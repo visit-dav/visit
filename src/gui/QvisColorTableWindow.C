@@ -2320,7 +2320,7 @@ QvisColorTableWindow::deleteColorTable()
         }
         // TODO move this logic to the ctatts
         for (auto tag : ccpl->GetTagNames())
-            tagList[tag].numrefs --;
+            colorAtts->DecrementTagNumRefs(tag);
         GetViewerMethods()->DeleteColorTable(ctName.c_str());
     }
     else
@@ -2404,7 +2404,7 @@ QvisColorTableWindow::highlightColorTable(QTreeWidgetItem *current,
 void
 QvisColorTableWindow::tagTableItemSelected(QTreeWidgetItem *item, int column)
 {
-    tagList[item->text(1).toStdString()].active = item->checkState(0) == Qt::Checked;
+    colorAtts->SetTagActive(item->text(1).toStdString(), item->checkState(0) == Qt::Checked);
     UpdateNames();
     colorAtts->SetChangesMade(true);
     ctObserver.SetUpdate(true);
@@ -3031,26 +3031,19 @@ QvisColorTableWindow::tagsSelectAll()
 {
     tagTable->blockSignals(true);
     // If all the tags are already enabled
-    if (std::all_of(tagList.begin(), tagList.end(), 
-        [](std::pair<std::string, TagInfo> const tagListEntry)
-        { return tagListEntry.second.active; }))
+    if (colorAtts->AllTagsSelected())
     {
         // then we want to disable all of them
-        for (auto &tagListEntry : tagList)
-        {
-            tagListEntry.second.active = false;
-            tagListEntry.second.tagTableItem->setCheckState(0, Qt::Unchecked);
-        }
-        
+        colorAtts->EnableDisableAllTags(false);
+        for (auto &tagTableItemsEntry : tagTableItems)
+            tagTableItemsEntry.second->setCheckState(0, Qt::Unchecked);
     }
     else
     {
         // otherwise, we want to enable all of them
-        for (auto &tagListEntry : tagList)
-        {
-            tagListEntry.second.active = true;
-            tagListEntry.second.tagTableItem->setCheckState(0, Qt::Checked);
-        }
+        colorAtts->EnableDisableAllTags(true);
+        for (auto &tagTableItemsEntry : tagTableItems)
+            tagTableItemsEntry.second->setCheckState(0, Qt::Checked);
     }
     tagTable->blockSignals(false);
     UpdateNames();
