@@ -1790,7 +1790,6 @@ ColorTableAttributes::RemoveColorTable(int index)
 //   Justin Privitera, Mon Aug 21 15:54:50 PDT 2023
 //   Changed ColorTableAttributes `active` to `colorTableActiveFlags`.
 // ****************************************************************************
-
 void
 ColorTableAttributes::SetColorTableActiveFlag(int index, bool val)
 {
@@ -1816,7 +1815,6 @@ ColorTableAttributes::SetColorTableActiveFlag(int index, bool val)
 //   Changed ColorTableAttributes `active` to `colorTableActiveFlags` and 
 //   added a return statement.
 // ****************************************************************************
-
 bool
 ColorTableAttributes::GetColorTableActiveFlag(int index)
 {
