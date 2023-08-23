@@ -903,6 +903,7 @@ Definition:
 //   Justin Privitera, Mon Aug 21 15:54:50 PDT 2023
 //   Changed ColorTableAttributes `active` to `colorTableActiveFlags`.
 // ****************************************************************************
+void
 ColorTableAttributes::SetColorTableActiveFlag(int index, bool val)
 {
     if (index >= 0 && index < colorTableActiveFlags.size())
@@ -914,6 +915,22 @@ Declaration: bool GetColorTableActiveFlag(int index);
 Definition:
 // ****************************************************************************
 // Method: ColorTableAttributes::GetColorTableActiveFlag
+//
+// Purpose:
+//   Gets the state of a given color table (active or inactive (appearing in
+//   the namelistbox or not)).
+//
+// Arguments:
+//   index - index of the tag
+//
+// Programmer: Justin Privitera
+// Creation:   Tue Jun 28 14:04:01 PDT 2022
+//
+// Modifications:
+//   Justin Privitera, Mon Aug 21 15:54:50 PDT 2023
+//   Changed ColorTableAttributes `active` to `colorTableActiveFlags` and 
+//   added a return statement.
+// ****************************************************************************
 bool
 ColorTableAttributes::GetColorTableActiveFlag(int index)
 {
