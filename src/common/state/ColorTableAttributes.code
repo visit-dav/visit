@@ -144,6 +144,7 @@ Initialization: tagListTableItemFlag
     tagListTableItemFlag.push_back(false); // the "Default" tag has no tag table entry.
     tagListTableItemFlag.push_back(false); // the "User Defined" tag has no tag table entry.
 
+Target: xml2atts
 Function: GetColorTableIndex
 Declaration: int GetColorTableIndex(const std::string &name) const;
 Definition:
