@@ -136,7 +136,7 @@ public:
     int GetColorTableIndex(const std::string &name) const;
     const ColorControlPointList *GetColorControlPoints(int index) const;
     const ColorControlPointList *GetColorControlPoints(const std::string &name) const;
-    void AddColorTable(const std::string &name, const ColorControlPointList &cpts);
+    void AddColorTable(const std::string &name, ColorControlPointList &cpts);
     void RemoveColorTable(const std::string &name);
     void RemoveColorTable(int index);
     void SetColorTableActiveFlag(int index, bool val);

@@ -61,6 +61,8 @@ void ColorTableAttributes::Init()
     defaultDiscrete = "levels";
     changesMade = false;
     tagsMatchAny = true;
+    tagListNames.push_back("Default"); // add the "Default" tag to the tag list.
+    tagListNames.push_back("User Defined"); // add the "User Defined" tag to the tag list.
     tagListActive.push_back(true); // set the "Default" tag to on.
     tagListActive.push_back(true); // set the "User Defined" tag to on.
     tagListNumRefs.push_back(0); // the "Default" tag has no refs.
@@ -556,10 +558,59 @@ ColorTableAttributes::CreateNode(DataNode *parentNode, bool, bool)
     node->AddNode(new DataNode("tagListNames", tagListNames));
     node->AddNode(new DataNode("tagListActive", tagListActive));
 
+    // The goal is to create new vectors representing both the 
+    // tag changes and the deferred tag changes. We do not want 
+    // to add all the deferred tag changes to the regular tag
+    // changes before saving out because execution can continue
+    // beyond saving a session or config file, and it is incorrect
+    // to have deferred tag changes ever enter the tag changes 
+    // data structures without being applied. Therefore we create
+    // three new vectors and combine the deferred and actual tag
+    // changes into them to save out to nodes.
+
+    std::vector<std::string> saveTagChangesTag;
+    std::vector<int>         saveTagChangesType;
+    std::vector<std::string> saveTagChangesCTName;
+    for (size_t i = 0; i < tagChangesTag.size(); i ++)
+    {
+        // add the regular tag changes
+        saveTagChangesTag.insert(saveTagChangesTag.end(), 
+                                 tagChangesTag.begin(),
+                                 tagChangesTag.end());
+        saveTagChangesType.insert(saveTagChangesType.end(),
+                                  tagChangesType.begin(),
+                                  tagChangesType.end());
+        saveTagChangesCTName.insert(saveTagChangesCTName.end(),
+                                    tagChangesCTName.begin(),
+                                    tagChangesCTName.end());
+        // add the deferred tag changes
+        saveTagChangesTag.insert(saveTagChangesTag.end(),
+                                 deferredTagChangesTag.begin(),
+                                 deferredTagChangesTag.end());
+        saveTagChangesType.insert(saveTagChangesType.end(),
+                                  deferredTagChangesType.begin(),
+                                  deferredTagChangesType.end());
+        saveTagChangesCTName.insert(saveTagChangesCTName.end(),
+                                    deferredTagChangesCTName.begin(),
+                                    deferredTagChangesCTName.end());
+    }
+
+    // The use case for this is as follows: If a user has user-defined
+    // color tables in their .visit directory, and they make tag changes
+    // to them and then save out a config or session file, their changes
+    // will be saved. Next time they run visit, if they have moved the 
+    // user defined color tables, they will not be loaded, so the tag 
+    // changes for those missing color tables will be added to the 
+    // deferred tag changes. If they again save a config/session file,
+    // they will want visit to honor their original tag changes if they 
+    // put their user defined color tables back into visit. Hence we
+    // must save the deferred tag changes, just in case the missing 
+    // color table they belong to is ever brought back in a future session.
+
     // the tag changes are stored in three parallel vectors
-    node->AddNode(new DataNode("tagChangesTag", tagChangesTag));
-    node->AddNode(new DataNode("tagChangesType", tagChangesType));
-    node->AddNode(new DataNode("tagChangesCTName", tagChangesCTName));
+    node->AddNode(new DataNode("tagChangesTag",    saveTagChangesTag));
+    node->AddNode(new DataNode("tagChangesType",   saveTagChangesType));
+    node->AddNode(new DataNode("tagChangesCTName", saveTagChangesCTName));
 
     // Add the node to the parent node.
     parentNode->AddNode(node);
@@ -622,6 +673,9 @@ ColorTableAttributes::SetFromNode(DataNode *parentNode)
     if((node = searchNode->GetNode("defaultColorTable")) != 0)
         SetDefaultContinuous(node->AsString());
 
+    if((node = searchNode->GetNode("tagsMatchAny")) != 0)
+        tagsMatchAny = node->AsBool();
+
     if((node = searchNode->GetNode("tagListNames")) != 0)
     {
         stringVector tagListNamesFromNode = node->AsStringVector();
@@ -632,15 +686,13 @@ ColorTableAttributes::SetFromNode(DataNode *parentNode)
         DataNode *node2;
         if ((node2 = searchNode->GetNode("tagListActive")) != 0)
         {
-            intVector tagListActiveFromNode = node->AsIntVector();
+            intVector tagListActiveFromNode = node2->AsIntVector();
 
             // if the tag name and tag active lists match up 1 to 1, as expected
             if (tagListActiveFromNode.size() == tagListNamesFromNode.size())
             {
                 for (size_t tagId = 0; tagId < tagListNamesFromNode.size(); tagId ++)
-                {
                     SetTagActive(tagListNamesFromNode[tagId], tagListActiveFromNode[tagId]);
-                }
             }
             else
             {
@@ -652,13 +704,10 @@ ColorTableAttributes::SetFromNode(DataNode *parentNode)
         }
     }
 
-    if((node = searchNode->GetNode("tagsMatchAny")) != 0)
-        tagsMatchAny = node->AsBool();
-
     DataNode *node2, *node3;
     // we need all three vectors to be present for this to work
-    if ((node  = searchNode->GetNode("tagChangesTag"   )) != 0 &&
-        (node2 = searchNode->GetNode("tagChangesType"  )) != 0 &&
+    if ((node  = searchNode->GetNode("tagChangesTag"))    != 0 &&
+        (node2 = searchNode->GetNode("tagChangesType"))   != 0 &&
         (node3 = searchNode->GetNode("tagChangesCTName")) != 0)
     {
         MergeTagChanges(node->AsStringVector(), node2->AsIntVector(), node3->AsStringVector());
@@ -1613,7 +1662,7 @@ ColorTableAttributes::GetColorControlPoints(const std::string &name) const
 
 void
 ColorTableAttributes::AddColorTable(const std::string &name,
-                                    const ColorControlPointList &cpts)
+                                    ColorControlPointList &cpts)
 {
     // Remove the color table if it already exists in the list.
     int index = GetColorTableIndex(name);
@@ -1628,6 +1677,10 @@ ColorTableAttributes::AddColorTable(const std::string &name,
     // if this table doesn't have tags, then add the no-tags tag
     if (cpts.GetNumTags() == 0)
         cpts.AddTag("No Tags");
+
+    // if we had tag changes from a session or config file for this color
+    // table BEFORE we had access to the color table, we can add them in now.
+    ApplyDeferredTagChanges(name, &cpts);
 
     // iterate thru each tag in the given color table
     for (int j = 0; j < cpts.GetNumTags(); j ++)
@@ -1886,30 +1939,22 @@ ColorTableAttributes::MergeTagChanges(const stringVector tagChangesTagFromNode,
     {
         for (size_t changeId = 0; changeId < tagChangesTagFromNode.size(); changeId ++)
         {
-            std::string tagName = tagChangesTagFromNode[changeId];
-            int changeType      = tagChangesTypeFromNode[changeId];
-            std::string ctName  = tagChangesCTNameFromNode[changeId];
+            const std::string tagName = tagChangesTagFromNode[changeId];
+            const int changeType      = tagChangesTypeFromNode[changeId];
+            const std::string ctName  = tagChangesCTNameFromNode[changeId];
 
             auto *ccpl(const_cast<ColorControlPointList *>(GetColorControlPoints(ctName)));
-            auto result(ccpl->ValidateTag(tagName));
-            if (result.first)
+            if (ccpl)
             {
-                if (changeType == ADDTAG && ! ccpl->HasTag(tagName))
-                {
-                    addTagToColorTable(ctName, tagName, ccpl);
-                }
-                else if (changeType == REMOVETAG && ccpl->HasTag(tagName))
-                {
-                    auto result2(removeTagFromColorTable(ctName, tagName, ccpl));
-                    if (!result2.first)
-                    {
-                        debug1 << "Tag Editing WARNING: " << result2.second;
-                    }
-                }
+                ApplyTagChange(tagName, changeType, ctName, ccpl);
             }
             else
             {
-                debug1 << "ColorTableAttributes WARNING: " << result.second;
+                // The ccpl is not valid. The most likely scenario is that it
+                // is a user-defined CT and so it has not been added to visit
+                // at this stage of start up. We will keep note of its tag 
+                // changes and defer them until later when we encounter it.
+                CreateDeferredTagChangesEntry(tagName, changeType, ctName);
             }
         }
     }
@@ -2101,6 +2146,7 @@ ColorTableAttributes::EnableDisableAllTags(bool enable)
     // we trust that the caller will check or uncheck all tag table items
     for (auto &tagListActiveEntry : tagListActive)
         tagListActiveEntry = enable;
+    SelectTagList();
 }
 
 // ****************************************************************************
