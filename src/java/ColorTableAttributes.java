@@ -24,7 +24,7 @@ import java.lang.Integer;
 
 public class ColorTableAttributes extends AttributeSubject
 {
-    private static int ColorTableAttributes_numAdditionalAtts = 14;
+    private static int ColorTableAttributes_numAdditionalAtts = 17;
 
     public ColorTableAttributes()
     {
@@ -44,6 +44,9 @@ public class ColorTableAttributes extends AttributeSubject
         tagChangesTag = new Vector();
         tagChangesType = new Vector();
         tagChangesCTName = new Vector();
+        deferredTagChangesTag = new Vector();
+        deferredTagChangesType = new Vector();
+        deferredTagChangesCTName = new Vector();
     }
 
     public ColorTableAttributes(int nMoreFields)
@@ -64,6 +67,9 @@ public class ColorTableAttributes extends AttributeSubject
         tagChangesTag = new Vector();
         tagChangesType = new Vector();
         tagChangesCTName = new Vector();
+        deferredTagChangesTag = new Vector();
+        deferredTagChangesType = new Vector();
+        deferredTagChangesCTName = new Vector();
     }
 
     public ColorTableAttributes(ColorTableAttributes obj)
@@ -129,6 +135,20 @@ public class ColorTableAttributes extends AttributeSubject
         tagChangesCTName = new Vector(obj.tagChangesCTName.size());
         for(i = 0; i < obj.tagChangesCTName.size(); ++i)
             tagChangesCTName.addElement(new String((String)obj.tagChangesCTName.elementAt(i)));
+
+        deferredTagChangesTag = new Vector(obj.deferredTagChangesTag.size());
+        for(i = 0; i < obj.deferredTagChangesTag.size(); ++i)
+            deferredTagChangesTag.addElement(new String((String)obj.deferredTagChangesTag.elementAt(i)));
+
+        deferredTagChangesType = new Vector();
+        for(i = 0; i < obj.deferredTagChangesType.size(); ++i)
+        {
+            Integer iv = (Integer)obj.deferredTagChangesType.elementAt(i);
+            deferredTagChangesType.addElement(new Integer(iv.intValue()));
+        }
+        deferredTagChangesCTName = new Vector(obj.deferredTagChangesCTName.size());
+        for(i = 0; i < obj.deferredTagChangesCTName.size(); ++i)
+            deferredTagChangesCTName.addElement(new String((String)obj.deferredTagChangesCTName.elementAt(i)));
 
 
         SelectAll();
@@ -229,6 +249,33 @@ public class ColorTableAttributes extends AttributeSubject
             String tagChangesCTName2 = (String)obj.tagChangesCTName.elementAt(i);
             tagChangesCTName_equal = tagChangesCTName1.equals(tagChangesCTName2);
         }
+        // Compare the elements in the deferredTagChangesTag vector.
+        boolean deferredTagChangesTag_equal = (obj.deferredTagChangesTag.size() == deferredTagChangesTag.size());
+        for(i = 0; (i < deferredTagChangesTag.size()) && deferredTagChangesTag_equal; ++i)
+        {
+            // Make references to String from Object.
+            String deferredTagChangesTag1 = (String)deferredTagChangesTag.elementAt(i);
+            String deferredTagChangesTag2 = (String)obj.deferredTagChangesTag.elementAt(i);
+            deferredTagChangesTag_equal = deferredTagChangesTag1.equals(deferredTagChangesTag2);
+        }
+        // Compare the elements in the deferredTagChangesType vector.
+        boolean deferredTagChangesType_equal = (obj.deferredTagChangesType.size() == deferredTagChangesType.size());
+        for(i = 0; (i < deferredTagChangesType.size()) && deferredTagChangesType_equal; ++i)
+        {
+            // Make references to Integer from Object.
+            Integer deferredTagChangesType1 = (Integer)deferredTagChangesType.elementAt(i);
+            Integer deferredTagChangesType2 = (Integer)obj.deferredTagChangesType.elementAt(i);
+            deferredTagChangesType_equal = deferredTagChangesType1.equals(deferredTagChangesType2);
+        }
+        // Compare the elements in the deferredTagChangesCTName vector.
+        boolean deferredTagChangesCTName_equal = (obj.deferredTagChangesCTName.size() == deferredTagChangesCTName.size());
+        for(i = 0; (i < deferredTagChangesCTName.size()) && deferredTagChangesCTName_equal; ++i)
+        {
+            // Make references to String from Object.
+            String deferredTagChangesCTName1 = (String)deferredTagChangesCTName.elementAt(i);
+            String deferredTagChangesCTName2 = (String)obj.deferredTagChangesCTName.elementAt(i);
+            deferredTagChangesCTName_equal = deferredTagChangesCTName1.equals(deferredTagChangesCTName2);
+        }
         // Create the return value
         return (colorTableNames_equal &&
                 true /* can ignore colorTableActiveFlags */ &&
@@ -243,7 +290,10 @@ public class ColorTableAttributes extends AttributeSubject
                 tagListTableItemFlag_equal &&
                 tagChangesTag_equal &&
                 tagChangesType_equal &&
-                tagChangesCTName_equal);
+                tagChangesCTName_equal &&
+                deferredTagChangesTag_equal &&
+                deferredTagChangesType_equal &&
+                deferredTagChangesCTName_equal);
     }
 
     // Property setting methods
@@ -325,6 +375,24 @@ public class ColorTableAttributes extends AttributeSubject
         Select(13);
     }
 
+    public void SetDeferredTagChangesTag(Vector deferredTagChangesTag_)
+    {
+        deferredTagChangesTag = deferredTagChangesTag_;
+        Select(14);
+    }
+
+    public void SetDeferredTagChangesType(Vector deferredTagChangesType_)
+    {
+        deferredTagChangesType = deferredTagChangesType_;
+        Select(15);
+    }
+
+    public void SetDeferredTagChangesCTName(Vector deferredTagChangesCTName_)
+    {
+        deferredTagChangesCTName = deferredTagChangesCTName_;
+        Select(16);
+    }
+
     // Property getting methods
     public Vector  GetColorTableNames() { return colorTableNames; }
     public Vector  GetColorTableActiveFlags() { return colorTableActiveFlags; }
@@ -340,6 +408,9 @@ public class ColorTableAttributes extends AttributeSubject
     public Vector  GetTagChangesTag() { return tagChangesTag; }
     public Vector  GetTagChangesType() { return tagChangesType; }
     public Vector  GetTagChangesCTName() { return tagChangesCTName; }
+    public Vector  GetDeferredTagChangesTag() { return deferredTagChangesTag; }
+    public Vector  GetDeferredTagChangesType() { return deferredTagChangesType; }
+    public Vector  GetDeferredTagChangesCTName() { return deferredTagChangesCTName; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
@@ -379,6 +450,12 @@ public class ColorTableAttributes extends AttributeSubject
             buf.WriteIntVector(tagChangesType);
         if(WriteSelect(13, buf))
             buf.WriteStringVector(tagChangesCTName);
+        if(WriteSelect(14, buf))
+            buf.WriteStringVector(deferredTagChangesTag);
+        if(WriteSelect(15, buf))
+            buf.WriteIntVector(deferredTagChangesType);
+        if(WriteSelect(16, buf))
+            buf.WriteStringVector(deferredTagChangesCTName);
     }
 
     public void ReadAtts(int index, CommunicationBuffer buf)
@@ -437,6 +514,15 @@ public class ColorTableAttributes extends AttributeSubject
         case 13:
             SetTagChangesCTName(buf.ReadStringVector());
             break;
+        case 14:
+            SetDeferredTagChangesTag(buf.ReadStringVector());
+            break;
+        case 15:
+            SetDeferredTagChangesType(buf.ReadIntVector());
+            break;
+        case 16:
+            SetDeferredTagChangesCTName(buf.ReadStringVector());
+            break;
         }
     }
 
@@ -466,6 +552,9 @@ public class ColorTableAttributes extends AttributeSubject
         str = str + stringVectorToString("tagChangesTag", tagChangesTag, indent) + "\n";
         str = str + intVectorToString("tagChangesType", tagChangesType, indent) + "\n";
         str = str + stringVectorToString("tagChangesCTName", tagChangesCTName, indent) + "\n";
+        str = str + stringVectorToString("deferredTagChangesTag", deferredTagChangesTag, indent) + "\n";
+        str = str + intVectorToString("deferredTagChangesType", deferredTagChangesType, indent) + "\n";
+        str = str + stringVectorToString("deferredTagChangesCTName", deferredTagChangesCTName, indent) + "\n";
         return str;
     }
 
@@ -617,5 +706,8 @@ public class ColorTableAttributes extends AttributeSubject
     private Vector  tagChangesTag; // vector of String objects
     private Vector  tagChangesType; // vector of Integer objects
     private Vector  tagChangesCTName; // vector of String objects
+    private Vector  deferredTagChangesTag; // vector of String objects
+    private Vector  deferredTagChangesType; // vector of Integer objects
+    private Vector  deferredTagChangesCTName; // vector of String objects
 }
 

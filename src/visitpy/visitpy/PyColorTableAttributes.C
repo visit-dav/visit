@@ -213,6 +213,54 @@ PyColorTableAttributes_ToString(const ColorTableAttributes *atts, const char *pr
         snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
+    {   const stringVector &deferredTagChangesTag = atts->GetDeferredTagChangesTag();
+        snprintf(tmpStr, 1000, "%sdeferredTagChangesTag = (", prefix);
+        str += tmpStr;
+        for(size_t i = 0; i < deferredTagChangesTag.size(); ++i)
+        {
+            snprintf(tmpStr, 1000, "\"%s\"", deferredTagChangesTag[i].c_str());
+            str += tmpStr;
+            if(i < deferredTagChangesTag.size() - 1)
+            {
+                snprintf(tmpStr, 1000, ", ");
+                str += tmpStr;
+            }
+        }
+        snprintf(tmpStr, 1000, ")\n");
+        str += tmpStr;
+    }
+    {   const intVector &deferredTagChangesType = atts->GetDeferredTagChangesType();
+        snprintf(tmpStr, 1000, "%sdeferredTagChangesType = (", prefix);
+        str += tmpStr;
+        for(size_t i = 0; i < deferredTagChangesType.size(); ++i)
+        {
+            snprintf(tmpStr, 1000, "%d", deferredTagChangesType[i]);
+            str += tmpStr;
+            if(i < deferredTagChangesType.size() - 1)
+            {
+                snprintf(tmpStr, 1000, ", ");
+                str += tmpStr;
+            }
+        }
+        snprintf(tmpStr, 1000, ")\n");
+        str += tmpStr;
+    }
+    {   const stringVector &deferredTagChangesCTName = atts->GetDeferredTagChangesCTName();
+        snprintf(tmpStr, 1000, "%sdeferredTagChangesCTName = (", prefix);
+        str += tmpStr;
+        for(size_t i = 0; i < deferredTagChangesCTName.size(); ++i)
+        {
+            snprintf(tmpStr, 1000, "\"%s\"", deferredTagChangesCTName[i].c_str());
+            str += tmpStr;
+            if(i < deferredTagChangesCTName.size() - 1)
+            {
+                snprintf(tmpStr, 1000, ", ");
+                str += tmpStr;
+            }
+        }
+        snprintf(tmpStr, 1000, ")\n");
+        str += tmpStr;
+    }
     return str;
 }
 
@@ -1200,6 +1248,220 @@ ColorTableAttributes_GetTagChangesCTName(PyObject *self, PyObject *args)
     return retval;
 }
 
+/*static*/ PyObject *
+ColorTableAttributes_SetDeferredTagChangesTag(PyObject *self, PyObject *args)
+{
+    ColorTableAttributesObject *obj = (ColorTableAttributesObject *)self;
+
+    stringVector vec;
+
+    if (PyUnicode_Check(args))
+    {
+        char const *val = PyUnicode_AsUTF8(args);
+        std::string cval = std::string(val);
+        if (val == 0 && PyErr_Occurred())
+        {
+            PyErr_Clear();
+            return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ string");
+        }
+        vec.resize(1);
+        vec[0] = cval;
+    }
+    else if (PySequence_Check(args))
+    {
+        vec.resize(PySequence_Size(args));
+        for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)
+        {
+            PyObject *item = PySequence_GetItem(args, i);
+
+            if (!PyUnicode_Check(item))
+            {
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_TypeError, "arg %d is not a unicode string", (int) i);
+            }
+
+            char const *val = PyUnicode_AsUTF8(item);
+            std::string cval = std::string(val);
+
+            if (val == 0 && PyErr_Occurred())
+            {
+                Py_DECREF(item);
+                PyErr_Clear();
+                return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ string", (int) i);
+            }
+            Py_DECREF(item);
+
+            vec[i] = cval;
+        }
+    }
+    else
+        return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more string(s)");
+
+    obj->data->GetDeferredTagChangesTag() = vec;
+    // Mark the deferredTagChangesTag in the object as modified.
+    obj->data->SelectDeferredTagChangesTag();
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+ColorTableAttributes_GetDeferredTagChangesTag(PyObject *self, PyObject *args)
+{
+    ColorTableAttributesObject *obj = (ColorTableAttributesObject *)self;
+    // Allocate a tuple the with enough entries to hold the deferredTagChangesTag.
+    const stringVector &deferredTagChangesTag = obj->data->GetDeferredTagChangesTag();
+    PyObject *retval = PyTuple_New(deferredTagChangesTag.size());
+    for(size_t i = 0; i < deferredTagChangesTag.size(); ++i)
+        PyTuple_SET_ITEM(retval, i, PyString_FromString(deferredTagChangesTag[i].c_str()));
+    return retval;
+}
+
+/*static*/ PyObject *
+ColorTableAttributes_SetDeferredTagChangesType(PyObject *self, PyObject *args)
+{
+    ColorTableAttributesObject *obj = (ColorTableAttributesObject *)self;
+
+    intVector vec;
+
+    if (PyNumber_Check(args))
+    {
+        long val = PyLong_AsLong(args);
+        int cval = int(val);
+        if (val == -1 && PyErr_Occurred())
+        {
+            PyErr_Clear();
+            return PyErr_Format(PyExc_TypeError, "number not interpretable as C++ int");
+        }
+        if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+            return PyErr_Format(PyExc_ValueError, "number not interpretable as C++ int");
+        vec.resize(1);
+        vec[0] = cval;
+    }
+    else if (PySequence_Check(args) && !PyUnicode_Check(args))
+    {
+        vec.resize(PySequence_Size(args));
+        for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)
+        {
+            PyObject *item = PySequence_GetItem(args, i);
+
+            if (!PyNumber_Check(item))
+            {
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_TypeError, "arg %d is not a number type", (int) i);
+            }
+
+            long val = PyLong_AsLong(item);
+            int cval = int(val);
+
+            if (val == -1 && PyErr_Occurred())
+            {
+                Py_DECREF(item);
+                PyErr_Clear();
+                return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ int", (int) i);
+            }
+            if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+            {
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_ValueError, "arg %d not interpretable as C++ int", (int) i);
+            }
+            Py_DECREF(item);
+
+            vec[i] = cval;
+        }
+    }
+    else
+        return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more ints");
+
+    obj->data->GetDeferredTagChangesType() = vec;
+    // Mark the deferredTagChangesType in the object as modified.
+    obj->data->SelectDeferredTagChangesType();
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+ColorTableAttributes_GetDeferredTagChangesType(PyObject *self, PyObject *args)
+{
+    ColorTableAttributesObject *obj = (ColorTableAttributesObject *)self;
+    // Allocate a tuple the with enough entries to hold the deferredTagChangesType.
+    const intVector &deferredTagChangesType = obj->data->GetDeferredTagChangesType();
+    PyObject *retval = PyTuple_New(deferredTagChangesType.size());
+    for(size_t i = 0; i < deferredTagChangesType.size(); ++i)
+        PyTuple_SET_ITEM(retval, i, PyInt_FromLong(long(deferredTagChangesType[i])));
+    return retval;
+}
+
+/*static*/ PyObject *
+ColorTableAttributes_SetDeferredTagChangesCTName(PyObject *self, PyObject *args)
+{
+    ColorTableAttributesObject *obj = (ColorTableAttributesObject *)self;
+
+    stringVector vec;
+
+    if (PyUnicode_Check(args))
+    {
+        char const *val = PyUnicode_AsUTF8(args);
+        std::string cval = std::string(val);
+        if (val == 0 && PyErr_Occurred())
+        {
+            PyErr_Clear();
+            return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ string");
+        }
+        vec.resize(1);
+        vec[0] = cval;
+    }
+    else if (PySequence_Check(args))
+    {
+        vec.resize(PySequence_Size(args));
+        for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)
+        {
+            PyObject *item = PySequence_GetItem(args, i);
+
+            if (!PyUnicode_Check(item))
+            {
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_TypeError, "arg %d is not a unicode string", (int) i);
+            }
+
+            char const *val = PyUnicode_AsUTF8(item);
+            std::string cval = std::string(val);
+
+            if (val == 0 && PyErr_Occurred())
+            {
+                Py_DECREF(item);
+                PyErr_Clear();
+                return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ string", (int) i);
+            }
+            Py_DECREF(item);
+
+            vec[i] = cval;
+        }
+    }
+    else
+        return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more string(s)");
+
+    obj->data->GetDeferredTagChangesCTName() = vec;
+    // Mark the deferredTagChangesCTName in the object as modified.
+    obj->data->SelectDeferredTagChangesCTName();
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+ColorTableAttributes_GetDeferredTagChangesCTName(PyObject *self, PyObject *args)
+{
+    ColorTableAttributesObject *obj = (ColorTableAttributesObject *)self;
+    // Allocate a tuple the with enough entries to hold the deferredTagChangesCTName.
+    const stringVector &deferredTagChangesCTName = obj->data->GetDeferredTagChangesCTName();
+    PyObject *retval = PyTuple_New(deferredTagChangesCTName.size());
+    for(size_t i = 0; i < deferredTagChangesCTName.size(); ++i)
+        PyTuple_SET_ITEM(retval, i, PyString_FromString(deferredTagChangesCTName[i].c_str()));
+    return retval;
+}
+
 
 
 PyMethodDef PyColorTableAttributes_methods[COLORTABLEATTRIBUTES_NMETH] = {
@@ -1235,6 +1497,12 @@ PyMethodDef PyColorTableAttributes_methods[COLORTABLEATTRIBUTES_NMETH] = {
     {"GetTagChangesType", ColorTableAttributes_GetTagChangesType, METH_VARARGS},
     {"SetTagChangesCTName", ColorTableAttributes_SetTagChangesCTName, METH_VARARGS},
     {"GetTagChangesCTName", ColorTableAttributes_GetTagChangesCTName, METH_VARARGS},
+    {"SetDeferredTagChangesTag", ColorTableAttributes_SetDeferredTagChangesTag, METH_VARARGS},
+    {"GetDeferredTagChangesTag", ColorTableAttributes_GetDeferredTagChangesTag, METH_VARARGS},
+    {"SetDeferredTagChangesType", ColorTableAttributes_SetDeferredTagChangesType, METH_VARARGS},
+    {"GetDeferredTagChangesType", ColorTableAttributes_GetDeferredTagChangesType, METH_VARARGS},
+    {"SetDeferredTagChangesCTName", ColorTableAttributes_SetDeferredTagChangesCTName, METH_VARARGS},
+    {"GetDeferredTagChangesCTName", ColorTableAttributes_GetDeferredTagChangesCTName, METH_VARARGS},
     {NULL, NULL}
 };
 
@@ -1285,6 +1553,12 @@ PyColorTableAttributes_getattr(PyObject *self, char *name)
         return ColorTableAttributes_GetTagChangesType(self, NULL);
     if(strcmp(name, "tagChangesCTName") == 0)
         return ColorTableAttributes_GetTagChangesCTName(self, NULL);
+    if(strcmp(name, "deferredTagChangesTag") == 0)
+        return ColorTableAttributes_GetDeferredTagChangesTag(self, NULL);
+    if(strcmp(name, "deferredTagChangesType") == 0)
+        return ColorTableAttributes_GetDeferredTagChangesType(self, NULL);
+    if(strcmp(name, "deferredTagChangesCTName") == 0)
+        return ColorTableAttributes_GetDeferredTagChangesCTName(self, NULL);
 
 #if VISIT_OBSOLETE_AT_VERSION(3,5,0)
 #error This code is obsolete in this version. Please remove it.
@@ -1372,6 +1646,12 @@ PyColorTableAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = ColorTableAttributes_SetTagChangesType(self, args);
     else if(strcmp(name, "tagChangesCTName") == 0)
         obj = ColorTableAttributes_SetTagChangesCTName(self, args);
+    else if(strcmp(name, "deferredTagChangesTag") == 0)
+        obj = ColorTableAttributes_SetDeferredTagChangesTag(self, args);
+    else if(strcmp(name, "deferredTagChangesType") == 0)
+        obj = ColorTableAttributes_SetDeferredTagChangesType(self, args);
+    else if(strcmp(name, "deferredTagChangesCTName") == 0)
+        obj = ColorTableAttributes_SetDeferredTagChangesCTName(self, args);
 
 #if VISIT_OBSOLETE_AT_VERSION(3,5,0)
 #error This code is obsolete in this version. Please remove it.

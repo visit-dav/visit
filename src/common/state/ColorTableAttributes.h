@@ -65,6 +65,9 @@ public:
     void SelectTagChangesTag();
     void SelectTagChangesType();
     void SelectTagChangesCTName();
+    void SelectDeferredTagChangesTag();
+    void SelectDeferredTagChangesType();
+    void SelectDeferredTagChangesCTName();
 
     // Property setting methods
     void SetColorTableNames(const stringVector &colorTableNames_);
@@ -80,6 +83,9 @@ public:
     void SetTagChangesTag(const stringVector &tagChangesTag_);
     void SetTagChangesType(const intVector &tagChangesType_);
     void SetTagChangesCTName(const stringVector &tagChangesCTName_);
+    void SetDeferredTagChangesTag(const stringVector &deferredTagChangesTag_);
+    void SetDeferredTagChangesType(const intVector &deferredTagChangesType_);
+    void SetDeferredTagChangesCTName(const stringVector &deferredTagChangesCTName_);
 
     // Property getting methods
     const stringVector &GetColorTableNames() const;
@@ -108,6 +114,12 @@ public:
           intVector    &GetTagChangesType();
     const stringVector &GetTagChangesCTName() const;
           stringVector &GetTagChangesCTName();
+    const stringVector &GetDeferredTagChangesTag() const;
+          stringVector &GetDeferredTagChangesTag();
+    const intVector    &GetDeferredTagChangesType() const;
+          intVector    &GetDeferredTagChangesType();
+    const stringVector &GetDeferredTagChangesCTName() const;
+          stringVector &GetDeferredTagChangesCTName();
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -152,6 +164,12 @@ public:
     void SelectTagList();
     void CreateTagChangesEntry(const std::string tagname, const int addOrRemove, const std::string ctName);
     void RemoveTagChangesEntry(const int index);
+    void CreateDeferredTagChangesEntry(const std::string tagname, const int addOrRemove, const std::string ctName);
+    void RemoveDeferredTagChangesEntry(const int index);
+    void RemoveDeferredTagChangesEntry(const std::string tagName, const int addOrRemove, const std::string ctName);
+    int GetIndexOfDeferredTagChangesEntry(const std::string tagName, const int addOrRemove, const std::string ctName);
+    void ApplyDeferredTagChanges(const std::string newCTName, ColorControlPointList *cpts);
+    void ApplyTagChange(const std::string tagName, const int changeType, const std::string ctName, ColorControlPointList *ccpl);
     void SelectTagChanges();
     void SetTagActive(const std::string tagname, const bool active);
     void SetTagActive(const int index, const bool active);
@@ -188,6 +206,9 @@ public:
         ID_tagChangesTag,
         ID_tagChangesType,
         ID_tagChangesCTName,
+        ID_deferredTagChangesTag,
+        ID_deferredTagChangesType,
+        ID_deferredTagChangesCTName,
         ID__LAST
     };
 
@@ -208,11 +229,14 @@ private:
     stringVector         tagChangesTag;
     intVector            tagChangesType;
     stringVector         tagChangesCTName;
+    stringVector         deferredTagChangesTag;
+    intVector            deferredTagChangesType;
+    stringVector         deferredTagChangesCTName;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define COLORTABLEATTRIBUTES_TMFS "s*i*a*ssbbs*i*i*i*s*i*s*"
+#define COLORTABLEATTRIBUTES_TMFS "s*i*a*ssbbs*i*i*i*s*i*s*s*i*s*"
 
 #endif

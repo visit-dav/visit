@@ -32,6 +32,12 @@
     </Field>
     <Field name="tagChangesCTName" label="tagChangesCTName" type="stringVector">
     </Field>
+    <Field name="deferredTagChangesTag" label="deferredTagChangesTag" type="stringVector">
+    </Field>
+    <Field name="deferredTagChangesType" label="deferredTagChangesType" type="intVector">
+    </Field>
+    <Field name="deferredTagChangesCTName" label="deferredTagChangesCTName" type="stringVector">
+    </Field>
     <Function name="GetColorTableIndex" user="true" member="true">
     </Function>
     <Function name="GetColorControlPoints1" user="true" member="true">
@@ -79,6 +85,18 @@
     <Function name="CreateTagChangesEntry" user="true" member="true">
     </Function>
     <Function name="RemoveTagChangesEntry" user="true" member="true">
+    </Function>
+    <Function name="CreateDeferredTagChangesEntry" user="true" member="true">
+    </Function>
+    <Function name="RemoveDeferredTagChangesEntry1" user="true" member="true">
+    </Function>
+    <Function name="RemoveDeferredTagChangesEntry2" user="true" member="true">
+    </Function>
+    <Function name="GetIndexOfDeferredTagChangesEntry" user="true" member="true">
+    </Function>
+    <Function name="ApplyDeferredTagChanges" user="true" member="true">
+    </Function>
+    <Function name="ApplyTagChange" user="true" member="true">
     </Function>
     <Function name="SelectTagChanges" user="true" member="true">
     </Function>
