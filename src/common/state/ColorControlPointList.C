@@ -2002,9 +2002,12 @@ ColorControlPointList::GetTagsAsString() const
 bool
 ColorControlPointList::HasTag(const std::string tag) const
 {
-    for (int i = 0; i < tagNames.size(); i ++)
+    // TODO rewrite this function using range based for
+    for (size_t i = 0; i < tagNames.size(); i ++)
+    {
         if (tagNames[i] == tag)
             return true;
+    }
     return false;
 }
 
