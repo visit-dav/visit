@@ -12,7 +12,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define COLORTABLEATTRIBUTES_NMETH 33
+#define COLORTABLEATTRIBUTES_NMETH 39
 void VISITPY_API           PyColorTableAttributes_StartUp(ColorTableAttributes *subj, void *data);
 void VISITPY_API           PyColorTableAttributes_CloseDown();
 VISITPY_API PyMethodDef *  PyColorTableAttributes_GetMethodTable(int *nMethods);

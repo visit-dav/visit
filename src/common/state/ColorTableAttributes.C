@@ -120,6 +120,9 @@ void ColorTableAttributes::Copy(const ColorTableAttributes &obj)
     tagChangesTag = obj.tagChangesTag;
     tagChangesType = obj.tagChangesType;
     tagChangesCTName = obj.tagChangesCTName;
+    deferredTagChangesTag = obj.deferredTagChangesTag;
+    deferredTagChangesType = obj.deferredTagChangesType;
+    deferredTagChangesCTName = obj.deferredTagChangesCTName;
 
     ColorTableAttributes::SelectAll();
 }
@@ -303,7 +306,10 @@ ColorTableAttributes::operator == (const ColorTableAttributes &obj) const
             (tagListTableItemFlag == obj.tagListTableItemFlag) &&
             (tagChangesTag == obj.tagChangesTag) &&
             (tagChangesType == obj.tagChangesType) &&
-            (tagChangesCTName == obj.tagChangesCTName));
+            (tagChangesCTName == obj.tagChangesCTName) &&
+            (deferredTagChangesTag == obj.deferredTagChangesTag) &&
+            (deferredTagChangesType == obj.deferredTagChangesType) &&
+            (deferredTagChangesCTName == obj.deferredTagChangesCTName));
 }
 
 // ****************************************************************************
@@ -447,20 +453,23 @@ ColorTableAttributes::NewInstance(bool copy) const
 void
 ColorTableAttributes::SelectAll()
 {
-    Select(ID_colorTableNames,       (void *)&colorTableNames);
-    Select(ID_colorTableActiveFlags, (void *)&colorTableActiveFlags);
-    Select(ID_colorTables,           (void *)&colorTables);
-    Select(ID_defaultContinuous,     (void *)&defaultContinuous);
-    Select(ID_defaultDiscrete,       (void *)&defaultDiscrete);
-    Select(ID_changesMade,           (void *)&changesMade);
-    Select(ID_tagsMatchAny,          (void *)&tagsMatchAny);
-    Select(ID_tagListNames,          (void *)&tagListNames);
-    Select(ID_tagListActive,         (void *)&tagListActive);
-    Select(ID_tagListNumRefs,        (void *)&tagListNumRefs);
-    Select(ID_tagListTableItemFlag,  (void *)&tagListTableItemFlag);
-    Select(ID_tagChangesTag,         (void *)&tagChangesTag);
-    Select(ID_tagChangesType,        (void *)&tagChangesType);
-    Select(ID_tagChangesCTName,      (void *)&tagChangesCTName);
+    Select(ID_colorTableNames,          (void *)&colorTableNames);
+    Select(ID_colorTableActiveFlags,    (void *)&colorTableActiveFlags);
+    Select(ID_colorTables,              (void *)&colorTables);
+    Select(ID_defaultContinuous,        (void *)&defaultContinuous);
+    Select(ID_defaultDiscrete,          (void *)&defaultDiscrete);
+    Select(ID_changesMade,              (void *)&changesMade);
+    Select(ID_tagsMatchAny,             (void *)&tagsMatchAny);
+    Select(ID_tagListNames,             (void *)&tagListNames);
+    Select(ID_tagListActive,            (void *)&tagListActive);
+    Select(ID_tagListNumRefs,           (void *)&tagListNumRefs);
+    Select(ID_tagListTableItemFlag,     (void *)&tagListTableItemFlag);
+    Select(ID_tagChangesTag,            (void *)&tagChangesTag);
+    Select(ID_tagChangesType,           (void *)&tagChangesType);
+    Select(ID_tagChangesCTName,         (void *)&tagChangesCTName);
+    Select(ID_deferredTagChangesTag,    (void *)&deferredTagChangesTag);
+    Select(ID_deferredTagChangesType,   (void *)&deferredTagChangesType);
+    Select(ID_deferredTagChangesCTName, (void *)&deferredTagChangesCTName);
 }
 
 // ****************************************************************************
@@ -858,6 +867,27 @@ ColorTableAttributes::SetTagChangesCTName(const stringVector &tagChangesCTName_)
     Select(ID_tagChangesCTName, (void *)&tagChangesCTName);
 }
 
+void
+ColorTableAttributes::SetDeferredTagChangesTag(const stringVector &deferredTagChangesTag_)
+{
+    deferredTagChangesTag = deferredTagChangesTag_;
+    Select(ID_deferredTagChangesTag, (void *)&deferredTagChangesTag);
+}
+
+void
+ColorTableAttributes::SetDeferredTagChangesType(const intVector &deferredTagChangesType_)
+{
+    deferredTagChangesType = deferredTagChangesType_;
+    Select(ID_deferredTagChangesType, (void *)&deferredTagChangesType);
+}
+
+void
+ColorTableAttributes::SetDeferredTagChangesCTName(const stringVector &deferredTagChangesCTName_)
+{
+    deferredTagChangesCTName = deferredTagChangesCTName_;
+    Select(ID_deferredTagChangesCTName, (void *)&deferredTagChangesCTName);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Get property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -1018,6 +1048,42 @@ ColorTableAttributes::GetTagChangesCTName()
     return tagChangesCTName;
 }
 
+const stringVector &
+ColorTableAttributes::GetDeferredTagChangesTag() const
+{
+    return deferredTagChangesTag;
+}
+
+stringVector &
+ColorTableAttributes::GetDeferredTagChangesTag()
+{
+    return deferredTagChangesTag;
+}
+
+const intVector &
+ColorTableAttributes::GetDeferredTagChangesType() const
+{
+    return deferredTagChangesType;
+}
+
+intVector &
+ColorTableAttributes::GetDeferredTagChangesType()
+{
+    return deferredTagChangesType;
+}
+
+const stringVector &
+ColorTableAttributes::GetDeferredTagChangesCTName() const
+{
+    return deferredTagChangesCTName;
+}
+
+stringVector &
+ColorTableAttributes::GetDeferredTagChangesCTName()
+{
+    return deferredTagChangesCTName;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Select property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -1092,6 +1158,24 @@ void
 ColorTableAttributes::SelectTagChangesCTName()
 {
     Select(ID_tagChangesCTName, (void *)&tagChangesCTName);
+}
+
+void
+ColorTableAttributes::SelectDeferredTagChangesTag()
+{
+    Select(ID_deferredTagChangesTag, (void *)&deferredTagChangesTag);
+}
+
+void
+ColorTableAttributes::SelectDeferredTagChangesType()
+{
+    Select(ID_deferredTagChangesType, (void *)&deferredTagChangesType);
+}
+
+void
+ColorTableAttributes::SelectDeferredTagChangesCTName()
+{
+    Select(ID_deferredTagChangesCTName, (void *)&deferredTagChangesCTName);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1315,20 +1399,23 @@ ColorTableAttributes::GetFieldName(int index) const
 {
     switch (index)
     {
-    case ID_colorTableNames:       return "colorTableNames";
-    case ID_colorTableActiveFlags: return "colorTableActiveFlags";
-    case ID_colorTables:           return "colorTables";
-    case ID_defaultContinuous:     return "defaultContinuous";
-    case ID_defaultDiscrete:       return "defaultDiscrete";
-    case ID_changesMade:           return "changesMade";
-    case ID_tagsMatchAny:          return "tagsMatchAny";
-    case ID_tagListNames:          return "tagListNames";
-    case ID_tagListActive:         return "tagListActive";
-    case ID_tagListNumRefs:        return "tagListNumRefs";
-    case ID_tagListTableItemFlag:  return "tagListTableItemFlag";
-    case ID_tagChangesTag:         return "tagChangesTag";
-    case ID_tagChangesType:        return "tagChangesType";
-    case ID_tagChangesCTName:      return "tagChangesCTName";
+    case ID_colorTableNames:          return "colorTableNames";
+    case ID_colorTableActiveFlags:    return "colorTableActiveFlags";
+    case ID_colorTables:              return "colorTables";
+    case ID_defaultContinuous:        return "defaultContinuous";
+    case ID_defaultDiscrete:          return "defaultDiscrete";
+    case ID_changesMade:              return "changesMade";
+    case ID_tagsMatchAny:             return "tagsMatchAny";
+    case ID_tagListNames:             return "tagListNames";
+    case ID_tagListActive:            return "tagListActive";
+    case ID_tagListNumRefs:           return "tagListNumRefs";
+    case ID_tagListTableItemFlag:     return "tagListTableItemFlag";
+    case ID_tagChangesTag:            return "tagChangesTag";
+    case ID_tagChangesType:           return "tagChangesType";
+    case ID_tagChangesCTName:         return "tagChangesCTName";
+    case ID_deferredTagChangesTag:    return "deferredTagChangesTag";
+    case ID_deferredTagChangesType:   return "deferredTagChangesType";
+    case ID_deferredTagChangesCTName: return "deferredTagChangesCTName";
     default:  return "invalid index";
     }
 }
@@ -1353,20 +1440,23 @@ ColorTableAttributes::GetFieldType(int index) const
 {
     switch (index)
     {
-    case ID_colorTableNames:       return FieldType_stringVector;
-    case ID_colorTableActiveFlags: return FieldType_intVector;
-    case ID_colorTables:           return FieldType_attVector;
-    case ID_defaultContinuous:     return FieldType_string;
-    case ID_defaultDiscrete:       return FieldType_string;
-    case ID_changesMade:           return FieldType_bool;
-    case ID_tagsMatchAny:          return FieldType_bool;
-    case ID_tagListNames:          return FieldType_stringVector;
-    case ID_tagListActive:         return FieldType_intVector;
-    case ID_tagListNumRefs:        return FieldType_intVector;
-    case ID_tagListTableItemFlag:  return FieldType_intVector;
-    case ID_tagChangesTag:         return FieldType_stringVector;
-    case ID_tagChangesType:        return FieldType_intVector;
-    case ID_tagChangesCTName:      return FieldType_stringVector;
+    case ID_colorTableNames:          return FieldType_stringVector;
+    case ID_colorTableActiveFlags:    return FieldType_intVector;
+    case ID_colorTables:              return FieldType_attVector;
+    case ID_defaultContinuous:        return FieldType_string;
+    case ID_defaultDiscrete:          return FieldType_string;
+    case ID_changesMade:              return FieldType_bool;
+    case ID_tagsMatchAny:             return FieldType_bool;
+    case ID_tagListNames:             return FieldType_stringVector;
+    case ID_tagListActive:            return FieldType_intVector;
+    case ID_tagListNumRefs:           return FieldType_intVector;
+    case ID_tagListTableItemFlag:     return FieldType_intVector;
+    case ID_tagChangesTag:            return FieldType_stringVector;
+    case ID_tagChangesType:           return FieldType_intVector;
+    case ID_tagChangesCTName:         return FieldType_stringVector;
+    case ID_deferredTagChangesTag:    return FieldType_stringVector;
+    case ID_deferredTagChangesType:   return FieldType_intVector;
+    case ID_deferredTagChangesCTName: return FieldType_stringVector;
     default:  return FieldType_unknown;
     }
 }
@@ -1391,20 +1481,23 @@ ColorTableAttributes::GetFieldTypeName(int index) const
 {
     switch (index)
     {
-    case ID_colorTableNames:       return "stringVector";
-    case ID_colorTableActiveFlags: return "intVector";
-    case ID_colorTables:           return "attVector";
-    case ID_defaultContinuous:     return "string";
-    case ID_defaultDiscrete:       return "string";
-    case ID_changesMade:           return "bool";
-    case ID_tagsMatchAny:          return "bool";
-    case ID_tagListNames:          return "stringVector";
-    case ID_tagListActive:         return "intVector";
-    case ID_tagListNumRefs:        return "intVector";
-    case ID_tagListTableItemFlag:  return "intVector";
-    case ID_tagChangesTag:         return "stringVector";
-    case ID_tagChangesType:        return "intVector";
-    case ID_tagChangesCTName:      return "stringVector";
+    case ID_colorTableNames:          return "stringVector";
+    case ID_colorTableActiveFlags:    return "intVector";
+    case ID_colorTables:              return "attVector";
+    case ID_defaultContinuous:        return "string";
+    case ID_defaultDiscrete:          return "string";
+    case ID_changesMade:              return "bool";
+    case ID_tagsMatchAny:             return "bool";
+    case ID_tagListNames:             return "stringVector";
+    case ID_tagListActive:            return "intVector";
+    case ID_tagListNumRefs:           return "intVector";
+    case ID_tagListTableItemFlag:     return "intVector";
+    case ID_tagChangesTag:            return "stringVector";
+    case ID_tagChangesType:           return "intVector";
+    case ID_tagChangesCTName:         return "stringVector";
+    case ID_deferredTagChangesTag:    return "stringVector";
+    case ID_deferredTagChangesType:   return "intVector";
+    case ID_deferredTagChangesCTName: return "stringVector";
     default:  return "invalid index";
     }
 }
@@ -1508,6 +1601,21 @@ ColorTableAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_tagChangesCTName:
         {  // new scope
         retval = (tagChangesCTName == obj.tagChangesCTName);
+        }
+        break;
+    case ID_deferredTagChangesTag:
+        {  // new scope
+        retval = (deferredTagChangesTag == obj.deferredTagChangesTag);
+        }
+        break;
+    case ID_deferredTagChangesType:
+        {  // new scope
+        retval = (deferredTagChangesType == obj.deferredTagChangesType);
+        }
+        break;
+    case ID_deferredTagChangesCTName:
+        {  // new scope
+        retval = (deferredTagChangesCTName == obj.deferredTagChangesCTName);
         }
         break;
     default: retval = false;
@@ -2306,7 +2414,7 @@ ColorTableAttributes::CreateTagChangesEntry(const std::string tagname,
 void
 ColorTableAttributes::RemoveTagChangesEntry(const int index)
 {
-    if (index >= 0 && index < tagListNames.size())
+    if (index >= 0 && index < tagChangesTag.size())
     {
         auto tagItr = tagChangesTag.begin();
         auto typeItr = tagChangesType.begin();
@@ -2327,6 +2435,180 @@ ColorTableAttributes::RemoveTagChangesEntry(const int index)
         }
 
         SelectTagChanges();
+    }
+}
+
+// ****************************************************************************
+// Method: ColorTableAttributes::CreateDeferredTagChangesEntry
+//
+// Purpose:
+//    TODO
+//
+// Programmer: Justin Privitera
+// Creation:   08/24/23
+//
+// Modifications:
+//
+// ****************************************************************************
+void
+ColorTableAttributes::CreateDeferredTagChangesEntry(const std::string tagname, 
+                                                    const int addOrRemove,
+                                                    const std::string ctName)
+{
+    deferredTagChangesTag.push_back(tagname);
+    deferredTagChangesType.push_back(addOrRemove);
+    deferredTagChangesCTName.push_back(ctName);
+}
+
+// ****************************************************************************
+// Method: ColorTableAttributes::RemoveDeferredTagChangesEntry
+//
+// Purpose:
+//    TODO
+//
+// Programmer: Justin Privitera
+// Creation:   08/24/23
+//
+// Modifications:
+//
+// ****************************************************************************
+void
+ColorTableAttributes::RemoveDeferredTagChangesEntry(const int index)
+{
+    if (index >= 0 && index < deferredTagChangesTag.size())
+    {
+        auto tagItr = deferredTagChangesTag.begin();
+        auto typeItr = deferredTagChangesType.begin();
+        auto ctnameItr = deferredTagChangesCTName.begin();
+
+        for (int i = 0; i < index; i ++)
+        {
+            tagItr ++;
+            typeItr ++;
+            ctnameItr ++;
+        }
+
+        if (tagItr != deferredTagChangesTag.end())
+        {
+            deferredTagChangesTag.erase(tagItr);
+            deferredTagChangesType.erase(typeItr);
+            deferredTagChangesCTName.erase(ctnameItr);
+        }
+    }
+}
+
+// ****************************************************************************
+// Method: ColorTableAttributes::RemoveDeferredTagChangesEntry
+//
+// Purpose:
+//    TODO
+//
+// Programmer: Justin Privitera
+// Creation:   08/24/23
+//
+// Modifications:
+//
+// ****************************************************************************
+void
+ColorTableAttributes::RemoveDeferredTagChangesEntry(const std::string tagName,
+                                                    const int addOrRemove,
+                                                    const std::string ctName)
+{
+    RemoveDeferredTagChangesEntry(GetIndexOfDeferredTagChangesEntry(tagName, addOrRemove, ctName));
+}
+
+// ****************************************************************************
+// Method: ColorTableAttributes::GetIndexOfDeferredTagChangesEntry
+//
+// Purpose:
+//    TODO
+//
+// Programmer: Justin Privitera
+// Creation:   08/24/23
+//
+// Modifications:
+//
+// ****************************************************************************
+int
+ColorTableAttributes::GetIndexOfDeferredTagChangesEntry(const std::string tagName, 
+                                                        const int addOrRemove,
+                                                        const std::string ctName)
+{
+    for (size_t i = 0; i < deferredTagChangesTag.size(); i ++)
+    {
+        if (deferredTagChangesTag[i] == tagName &&
+            deferredTagChangesType[i] == addOrRemove &&
+            deferredTagChangesCTName[i] == ctName)
+        {
+            return i;
+        }
+    }
+    return -1;
+}
+
+// ****************************************************************************
+// Method: ColorTableAttributes::ApplyDeferredTagChanges
+//
+// Purpose:
+//    TODO
+//
+// Programmer: Justin Privitera
+// Creation:   08/24/23
+//
+// Modifications:
+//
+// ****************************************************************************
+void
+ColorTableAttributes::ApplyDeferredTagChanges(const std::string newCTName,
+                                              ColorControlPointList *cpts)
+{
+    for (size_t defChangeId = 0; defChangeId < deferredTagChangesTag.size(); defChangeId ++)
+    {
+        const std::string tagName = deferredTagChangesTag[defChangeId];
+        const int changeType      = deferredTagChangesType[defChangeId];
+        const std::string ctName  = deferredTagChangesCTName[defChangeId];
+
+        if (ctName == newCTName)
+            ApplyTagChange(tagName, changeType, ctName, cpts);
+    }
+}
+
+// ****************************************************************************
+// Method: ColorTableAttributes::ApplyTagChange
+//
+// Purpose: TODO
+//
+// Programmer: Justin Privitera
+// Creation:   08/24/23
+//
+// Modifications:
+// 
+// ****************************************************************************
+void
+ColorTableAttributes::ApplyTagChange(const std::string tagName,
+                                     const int changeType,
+                                     const std::string ctName,
+                                     ColorControlPointList *ccpl)
+{
+    auto result(ccpl->ValidateTag(tagName));
+    if (result.first)
+    {
+        if (changeType == ADDTAG && ! ccpl->HasTag(tagName))
+        {
+            addTagToColorTable(ctName, tagName, ccpl);
+        }
+        else if (changeType == REMOVETAG && ccpl->HasTag(tagName))
+        {
+            auto result2(removeTagFromColorTable(ctName, tagName, ccpl));
+            if (!result2.first)
+            {
+                debug1 << "Tag Editing WARNING: " << result2.second;
+            }
+        }
+    }
+    else
+    {
+        debug1 << "ColorTableAttributes WARNING: " << result.second;
     }
 }
 
@@ -2763,11 +3045,11 @@ void
 ColorTableAttributes::FilterTablesByTag()
 {
     // for each color table
-    for (int i = 0; i < GetNumColorTables(); i ++)
+    for (size_t i = 0; i < GetNumColorTables(); i ++)
     {
         // we mark the color table as active or inactive
-        if (i >= 0 && i < colorTableActive.size())
-            colorTableActive[i] = FilterTableByTag(GetColorTables(i));;
+        if (i >= 0 && i < colorTableActiveFlags.size())
+            colorTableActiveFlags[i] = FilterTableByTag(GetColorTables(i));;
     }
 }
 

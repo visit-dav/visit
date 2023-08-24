@@ -1448,6 +1448,31 @@ ColorTableAttributes::CreateTagChangesEntry(const std::string tagname,
     SelectTagChanges();
 }
 
+Function: CreateDeferredTagChangesEntry
+Declaration: void CreateDeferredTagChangesEntry(const std::string tagname, const int addOrRemove, const std::string ctName);
+Definition:
+// ****************************************************************************
+// Method: ColorTableAttributes::CreateDeferredTagChangesEntry
+//
+// Purpose:
+//    TODO
+//
+// Programmer: Justin Privitera
+// Creation:   08/24/23
+//
+// Modifications:
+//
+// ****************************************************************************
+void
+ColorTableAttributes::CreateDeferredTagChangesEntry(const std::string tagname, 
+                                                    const int addOrRemove,
+                                                    const std::string ctName)
+{
+    deferredTagChangesTag.push_back(tagname);
+    deferredTagChangesType.push_back(addOrRemove);
+    deferredTagChangesCTName.push_back(ctName);
+}
+
 Function: RemoveTagChangesEntry
 Declaration: void RemoveTagChangesEntry(const int index);
 Definition:
@@ -1466,7 +1491,7 @@ Definition:
 void
 ColorTableAttributes::RemoveTagChangesEntry(const int index)
 {
-    if (index >= 0 && index < tagListNames.size())
+    if (index >= 0 && index < tagChangesTag.size())
     {
         auto tagItr = tagChangesTag.begin();
         auto typeItr = tagChangesType.begin();
@@ -1487,6 +1512,131 @@ ColorTableAttributes::RemoveTagChangesEntry(const int index)
         }
 
         SelectTagChanges();
+    }
+}
+
+Function: RemoveDeferredTagChangesEntry1
+Declaration: void RemoveDeferredTagChangesEntry(const int index);
+Definition:
+// ****************************************************************************
+// Method: ColorTableAttributes::RemoveDeferredTagChangesEntry
+//
+// Purpose:
+//    TODO
+//
+// Programmer: Justin Privitera
+// Creation:   08/24/23
+//
+// Modifications:
+//
+// ****************************************************************************
+void
+ColorTableAttributes::RemoveDeferredTagChangesEntry(const int index)
+{
+    if (index >= 0 && index < deferredTagChangesTag.size())
+    {
+        auto tagItr = deferredTagChangesTag.begin();
+        auto typeItr = deferredTagChangesType.begin();
+        auto ctnameItr = deferredTagChangesCTName.begin();
+
+        for (int i = 0; i < index; i ++)
+        {
+            tagItr ++;
+            typeItr ++;
+            ctnameItr ++;
+        }
+
+        if (tagItr != deferredTagChangesTag.end())
+        {
+            deferredTagChangesTag.erase(tagItr);
+            deferredTagChangesType.erase(typeItr);
+            deferredTagChangesCTName.erase(ctnameItr);
+        }
+    }
+}
+
+Function: RemoveDeferredTagChangesEntry2
+Declaration: void RemoveDeferredTagChangesEntry(const std::string tagName, const int addOrRemove, const std::string ctName);
+Definition:
+// ****************************************************************************
+// Method: ColorTableAttributes::RemoveDeferredTagChangesEntry
+//
+// Purpose:
+//    TODO
+//
+// Programmer: Justin Privitera
+// Creation:   08/24/23
+//
+// Modifications:
+//
+// ****************************************************************************
+void
+ColorTableAttributes::RemoveDeferredTagChangesEntry(const std::string tagName,
+                                                    const int addOrRemove,
+                                                    const std::string ctName)
+{
+    RemoveDeferredTagChangesEntry(GetIndexOfDeferredTagChangesEntry(tagName, addOrRemove, ctName));
+}
+
+Function: GetIndexOfDeferredTagChangesEntry
+Declaration: int GetIndexOfDeferredTagChangesEntry(const std::string tagName, const int addOrRemove, const std::string ctName);
+Definition:
+// ****************************************************************************
+// Method: ColorTableAttributes::GetIndexOfDeferredTagChangesEntry
+//
+// Purpose:
+//    TODO
+//
+// Programmer: Justin Privitera
+// Creation:   08/24/23
+//
+// Modifications:
+//
+// ****************************************************************************
+int
+ColorTableAttributes::GetIndexOfDeferredTagChangesEntry(const std::string tagName, 
+                                                        const int addOrRemove,
+                                                        const std::string ctName)
+{
+    for (size_t i = 0; i < deferredTagChangesTag.size(); i ++)
+    {
+        if (deferredTagChangesTag[i] == tagName &&
+            deferredTagChangesType[i] == addOrRemove &&
+            deferredTagChangesCTName[i] == ctName)
+        {
+            return i;
+        }
+    }
+    return -1;
+}
+
+Function: ApplyDeferredTagChanges
+Declaration: void ApplyDeferredTagChanges(const std::string newCTName, ColorControlPointList *cpts);
+Definition:
+// ****************************************************************************
+// Method: ColorTableAttributes::ApplyDeferredTagChanges
+//
+// Purpose:
+//    TODO
+//
+// Programmer: Justin Privitera
+// Creation:   08/24/23
+//
+// Modifications:
+//
+// ****************************************************************************
+void
+ColorTableAttributes::ApplyDeferredTagChanges(const std::string newCTName,
+                                              ColorControlPointList *cpts)
+{
+    for (size_t defChangeId = 0; defChangeId < deferredTagChangesTag.size(); defChangeId ++)
+    {
+        const std::string tagName = deferredTagChangesTag[defChangeId];
+        const int changeType      = deferredTagChangesType[defChangeId];
+        const std::string ctName  = deferredTagChangesCTName[defChangeId];
+
+        if (ctName == newCTName)
+            ApplyTagChange(tagName, changeType, ctName, cpts);
     }
 }
 
@@ -1974,11 +2124,11 @@ void
 ColorTableAttributes::FilterTablesByTag()
 {
     // for each color table
-    for (int i = 0; i < GetNumColorTables(); i ++)
+    for (size_t i = 0; i < GetNumColorTables(); i ++)
     {
         // we mark the color table as active or inactive
-        if (i >= 0 && i < colorTableActive.size())
-            colorTableActive[i] = FilterTableByTag(GetColorTables(i));;
+        if (i >= 0 && i < colorTableActiveFlags.size())
+            colorTableActiveFlags[i] = FilterTableByTag(GetColorTables(i));;
     }
 }
 
