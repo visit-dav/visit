@@ -250,7 +250,7 @@ class VisItModuleState(object):
     def __read_visit_env(cls,vcmd):
         if sys.platform.startswith("win"):
             pcmd = [vcmd, "-env", "-nodialog"]
-            # launch_args no londer used in constructing the vcmd arg, so add them here
+            # launch_args no longer used in constructing the vcmd arg, so add them here
             pcmd += cls.launch_args
         else:
             pcmd = vcmd + " -env"
