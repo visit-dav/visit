@@ -1900,7 +1900,6 @@ ColorControlPointList::RemoveTag(const std::string tag)
 void
 ColorControlPointList::ClearTags()
 {
-    std::cout << "ClearTags" << std::endl;
     tagNames.clear();
     tagChangesMade = true;
 }
