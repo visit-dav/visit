@@ -514,7 +514,9 @@ QvisNoDefaultColorTableButton::addColorTable(const QString &ctName)
 //   Guards are in place now to protect the buttons from falling out of sync
 //   with the color table attributes and to ensure that they always represent
 //   valid color table choices.
-//   
+// 
+//   Justin Privitera, Mon Aug 21 15:54:50 PDT 2023
+//   Changed ColorTableAttributes `names` to `colorTableNames`.
 // ****************************************************************************
 
 void
@@ -542,7 +544,7 @@ QvisNoDefaultColorTableButton::updateColorTableButtons()
                         // Does this color table match the type of this button?
                         if (colorTableAtts->GetColorTables(i).GetDiscreteFlag() == myButtonType)
                         {
-                            std::string myColorTable{colorTableAtts->GetNames()[i]};
+                            std::string myColorTable{colorTableAtts->GetColorTableNames()[i]};
                             if (myButtonType == CONT)
                                 colorTableAtts->SetDefaultContinuous(myColorTable);
                             else
