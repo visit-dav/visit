@@ -110,6 +110,9 @@
 #    Justin Privitera, Fri Jul 14 17:33:07 PDT 2023
 #    Updated tests to reflect the new reality that the complete camera spec
 #    is now the default.
+# 
+#    Justin Privitera, Tue Aug 22 12:30:01 PDT 2023
+#    Sort filename list produced by os.listdir to prevent test suite failures.
 # ----------------------------------------------------------------------------
 
 import os
@@ -1244,7 +1247,7 @@ for i in range(0, len(output_types)):
     for j in range(0, len(filename_schemes)):
         for k in range(0, len(vars_options)):
             info += query_variety(output_types[i], filename_schemes[j], vars_options[k], outdir_set_otype)
-    info += str(os.listdir(outdir_set_otype))
+    info += str(sorted(os.listdir(outdir_set_otype)))
     TestText("Test_filenames_for_" + output_types[i] + "_outputs", info)
 
 # test backwards compatibility with family_files option
@@ -1255,7 +1258,7 @@ for i in range(0, len(family_options)):
     info = ""
     for j in range(0, len(vars_options)):
         info += query_family_backwards_compat(family_options[i], vars_options[j], outdir_set_family)
-    info += str(os.listdir(outdir_set_family))
+    info += str(sorted(os.listdir(outdir_set_family)))
     TestText("Test_filenames_for_family" + str(family_options[i]) + "_outputs", info)
 
 #
