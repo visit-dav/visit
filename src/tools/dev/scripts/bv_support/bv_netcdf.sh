@@ -290,7 +290,7 @@ function apply_netcdf_strlcat_patch
 EOF
 
     if [[ $? != 0 ]] ; then
-      warn "netcdt patch for strlcat failed."
+      warn "netcdf patch for strlcat failed."
       return 1
     fi
     return 0;
