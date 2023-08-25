@@ -464,7 +464,7 @@ What if you want to access the actual lineout data and/or save it to a file?
 Query
 ~~~~~
 
-VisIt can perform a number of different queries based on values calculated about plots or their originating database.
+VisIt_ can perform a number of different queries based on values calculated about plots or their originating database.
 
 .. literalinclude:: ../../test/tests/quickrecipes/quantitative_operations.py
     :language: Python
@@ -487,10 +487,28 @@ Here is a pattern that allows you to print out the min and the max values and th
 Note that the above example parses information from the query output *string* returned from ``GetQueryOutputString()``.
 In some cases, it will be more convenient to use ``GetQueryOutputValue()`` or ``GetQueryOutputObject()``.
 
+Creating a CSV file of a query over time
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+VisIt_ has the ability to perform queries over time to create one or more curves.
+It generates one curve per scalar value returned by the query.
+Frequently, the user want's to process the result of a query over time.
+A CSV file is a convenient was to output the data for further processing.
+
+Here is a pattern where we loop over the time steps writing the results of a ``Time`` query and a ``PickByNode`` to a text file in the form of a CSV file.
+
+.. literalinclude:: ../../test/tests/quickrecipes/quantitative_operations.py
+    :language: Python
+    :start-after: # csv query over time {
+    :end-before: # csv query over time }
+    :dedent: 4
+
+You can substitute the ``Time`` and ``PickByNode`` queries with your favorite query, such as the ``MinMax`` query used in the previous quick recipe.
+
 Subsetting
 ----------
 
-VisIt allows the user to turn off subsets of the visualization using a number of different methods. 
+VisIt_ allows the user to turn off subsets of the visualization using a number of different methods. 
 Databases can be divided up any number of ways: domains, materials, etc. 
 This section provides some details on how to remove materials and domains from your visualization.
 
