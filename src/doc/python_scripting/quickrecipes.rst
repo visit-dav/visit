@@ -492,8 +492,8 @@ Creating a CSV file of a query over time
 
 VisIt_ has the ability to perform queries over time to create one or more curves.
 It generates one curve per scalar value returned by the query.
-Frequently, the user want's to process the result of a query over time.
-A CSV file is a convenient was to output the data for further processing.
+Frequently, the user wants to process the result of a query over time.
+A CSV file is a convenient way to output the data for further processing.
 
 Here is a pattern where we loop over the time steps writing the results of a ``Time`` query and a ``PickByNode`` to a text file in the form of a CSV file.
 

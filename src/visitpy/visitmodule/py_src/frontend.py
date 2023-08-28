@@ -44,6 +44,11 @@
 #      wasn't set.
 #    Add '-nodialog' to 'visit.exe -env' command so that environment string
 #      can be retrieved. Otherwise we get a dialog box and nothing to stdout.
+#
+#  Kathleen Biagas, Tue Aug 15, 2023
+#  For Windows, don't add launch args to vcmd passed to __read_visit_env,
+#  instead add them to the pcmd constructed in that function.
+#
 ###############################################################################
 
 import sys
@@ -107,7 +112,13 @@ class VisItModuleState(object):
     def launch(cls,vdir=None,proxy=None):
         launched = False
         try:
-            vcmd = cls.__visit_cmd(vdir,cls.launch_args)
+            if sys.platform.startswith("win"):
+                # adding launch_args to vcmd here causes problems
+                # with the command constructed for subprocess.Popen
+                # in __read_visit_env so let that method handle them
+                vcmd = cls.__visit_cmd(vdir,[])
+            else:
+                vcmd = cls.__visit_cmd(vdir,cls.launch_args)
             env  = cls.__read_visit_env(vcmd)
             mod  = cls.__visit_module_path(env["LIBPATH"])
             #print("Using visitmodule: %s" % mod)
@@ -239,6 +250,8 @@ class VisItModuleState(object):
     def __read_visit_env(cls,vcmd):
         if sys.platform.startswith("win"):
             pcmd = [vcmd, "-env", "-nodialog"]
+            # launch_args no longer used in constructing the vcmd arg, so add them here
+            pcmd += cls.launch_args
         else:
             pcmd = vcmd + " -env"
         # universal_newlines needed to make sure

@@ -53,24 +53,24 @@ public:
 
     // Property selection methods
     virtual void SelectAll();
-    void SelectNames();
-    void SelectActive();
+    void SelectColorTableNames();
+    void SelectColorTableActiveFlags();
     void SelectColorTables();
     void SelectDefaultContinuous();
     void SelectDefaultDiscrete();
 
     // Property setting methods
-    void SetNames(const stringVector &names_);
-    void SetActive(const intVector &active_);
+    void SetColorTableNames(const stringVector &colorTableNames_);
+    void SetColorTableActiveFlags(const intVector &colorTableActiveFlags_);
     void SetDefaultContinuous(const std::string &defaultContinuous_);
     void SetDefaultDiscrete(const std::string &defaultDiscrete_);
     void SetChangesMade(bool changesMade_);
 
     // Property getting methods
-    const stringVector &GetNames() const;
-          stringVector &GetNames();
-    const intVector    &GetActive() const;
-          intVector    &GetActive();
+    const stringVector &GetColorTableNames() const;
+          stringVector &GetColorTableNames();
+    const intVector    &GetColorTableActiveFlags() const;
+          intVector    &GetColorTableActiveFlags();
     const AttributeGroupVector &GetColorTables() const;
           AttributeGroupVector &GetColorTables();
     const std::string  &GetDefaultContinuous() const;
@@ -109,14 +109,14 @@ public:
     void AddColorTable(const std::string &name, const ColorControlPointList &cpts);
     void RemoveColorTable(const std::string &name);
     void RemoveColorTable(int index);
-    void SetActiveElement(int index, bool val);
-    bool GetActiveElement(int index);
+    void SetColorTableActiveFlag(int index, bool val);
+    bool GetColorTableActiveFlag(int index);
     virtual void ProcessOldVersions(DataNode *parentNode, const char *configVersion);
 
     // IDs that can be used to identify fields in case statements
     enum {
-        ID_names = 0,
-        ID_active,
+        ID_colorTableNames = 0,
+        ID_colorTableActiveFlags,
         ID_colorTables,
         ID_defaultContinuous,
         ID_defaultDiscrete,
@@ -127,8 +127,8 @@ public:
 protected:
     AttributeGroup *CreateSubAttributeGroup(int index);
 private:
-    stringVector         names;
-    intVector            active;
+    stringVector         colorTableNames;
+    intVector            colorTableActiveFlags;
     AttributeGroupVector colorTables;
     std::string          defaultContinuous;
     std::string          defaultDiscrete;
