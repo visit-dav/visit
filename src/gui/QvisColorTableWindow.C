@@ -213,6 +213,9 @@ QvisColorTableWindow::~QvisColorTableWindow()
 //
 //   Kathleen Biagas, Tue Apr 18 16:34:41 PDT 2023
 //   Support Qt6: buttonClicked -> idClicked.
+// 
+//   Justin Privitera, Mon Aug 28 11:22:47 PDT 2023
+//   Moved tagsMatchAny to the CTAtts, so we must access it through them.
 //
 // ****************************************************************************
 
@@ -588,6 +591,10 @@ QvisColorTableWindow::CreateWindowContents()
 // 
 //   Justin Privitera, Mon Feb 13 14:32:02 PST 2023
 //   `tagsVisible` is gone so it is no longer written to nodes.
+// 
+//   Justin Privitera, Mon Aug 28 11:22:47 PDT 2023
+//   Moved all of the tagging infrastructure to the CTAtts, so we no longer 
+//   write so much here.
 //
 // ****************************************************************************
 
@@ -636,6 +643,10 @@ QvisColorTableWindow::CreateNode(DataNode *parentNode)
 // 
 //   Justin Privitera, Mon Feb 13 14:32:02 PST 2023
 //   `tagsVisible` is gone so it is no longer read from nodes.
+// 
+//   Justin Privitera, Mon Aug 28 11:22:47 PDT 2023
+//   Moved all of the tagging infrastructure to the CTAtts, so we no longer 
+//   read so much here.
 //
 // ****************************************************************************
 
@@ -709,6 +720,9 @@ QvisColorTableWindow::SetFromNode(DataNode *parentNode, const int *borders)
 // 
 //   Justin Privitera, Mon Aug 21 15:54:50 PDT 2023
 //   Changed ColorTableAttributes `names` to `colorTableNames`.
+// 
+//   Justin Privitera, Mon Aug 28 11:22:47 PDT 2023
+//   Added a case for when the tag list is selected.
 // ****************************************************************************
 
 void
@@ -912,6 +926,12 @@ QvisColorTableWindow::UpdateEditor()
 //    Justin Privitera, Mon Feb 13 14:32:02 PST 2023
 //    Tagging is always enabled, so any code relating to making it optional
 //    has been removed.
+// 
+//    Justin Privitera, Mon Aug 28 11:22:47 PDT 2023
+//    This function has been completely rewritten. I wanted to transform the 
+//    tag update process into a pipeline of discrete steps. I have removed the
+//    dependence on helper functions. We take advantage of the CTAtts functions
+//    for working with the tag list.
 //
 // ****************************************************************************
 
@@ -1038,6 +1058,9 @@ QvisColorTableWindow::UpdateTags()
 //   Justin Privitera, Mon Aug 21 15:54:50 PDT 2023
 //   Changed ColorTableAttributes `names` to `colorTableNames` and `active` to
 //   `colorTableActiveFlags`.
+// 
+//   Justin Privitera, Mon Aug 28 11:22:47 PDT 2023
+//   Moved the tag filtering to the CTAtts, called it here. Added comments.
 // ****************************************************************************
 
 void
@@ -2177,6 +2200,9 @@ QvisColorTableWindow::equalSpacingToggled(bool)
 // 
 //   Justin Privitera, Thu May 11 12:31:12 PDT 2023
 //   No more error when searching is on; searching is always on.
+// 
+//   Justin Privitera, Mon Aug 28 11:22:47 PDT 2023
+//   Use the CTAtts functions to update the tag reference count.
 //
 // ****************************************************************************
 
@@ -2270,6 +2296,9 @@ QvisColorTableWindow::addColorTable()
 // 
 //     Justin Privitera, Thu May 11 12:31:12 PDT 2023
 //     No more error when searching is enabled; searching is always on.
+// 
+//     Justin Privitera, Mon Aug 28 11:22:47 PDT 2023
+//     Use the new CTAtts functions to get at the tag list.
 // 
 // ****************************************************************************
 
@@ -2398,6 +2427,9 @@ QvisColorTableWindow::highlightColorTable(QTreeWidgetItem *current,
 //    Justin Privitera, Fri Sep  2 16:46:21 PDT 2022
 //    The secret tag table column is gone; there is no need to read the index
 //    from it anymore. We can use the map instead.
+// 
+//    Justin Privitera, Mon Aug 28 11:22:47 PDT 2023
+//    Use the CTAtts function to update the tag list.
 //
 // ****************************************************************************
 
@@ -3024,7 +3056,8 @@ QvisColorTableWindow::exportColorTable()
 // Creation:   Wed Feb  1 16:11:28 PST 2023
 //
 // Modifications:
-//
+//   Justin Privitera, Mon Aug 28 11:22:47 PDT 2023
+//   Use new CTAtts functions.
 // ****************************************************************************
 void
 QvisColorTableWindow::tagsSelectAll()
@@ -3062,7 +3095,9 @@ QvisColorTableWindow::tagsSelectAll()
 // Creation:   Fri Jun  3 15:06:17 PDT 2022
 //
 // Modifications:
-//
+//   Justin Privitera, Mon Aug 28 11:22:47 PDT 2023
+//   Simplified the logic a bit. Also update to reflect that tagsMatchAny lives
+//   in the CTAtts now.
 // ****************************************************************************
 
 void
@@ -3146,6 +3181,10 @@ QvisColorTableWindow::tagEdited()
 // 
 //   Justin Privitera, Mon Aug 21 15:54:50 PDT 2023
 //   Changed ColorTableAttributes `names` to `colorTableNames`.
+// 
+//   Justin Privitera, Mon Aug 28 11:22:47 PDT 2023
+//   Updated to reflect the fact that add and remove functions were moved to
+//   the CTAtts.
 // ****************************************************************************
 
 void
