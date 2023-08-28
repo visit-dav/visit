@@ -19,6 +19,5 @@ sphinx:
 formats: all
 
 python:
-  version: 3.9
   install:
     - requirements: src/doc/requirements.txt
