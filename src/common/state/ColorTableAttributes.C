@@ -39,6 +39,12 @@ constexpr int REMOVETAG = 1;
 // (particularly if a color table is built in), and they are saved out to 
 // state files.
 
+// There are also "deferred" versions of the previous three vectors. The idea
+// is that tag changes may be applied *before* all color tables have been 
+// loaded. If that happens, we store the tag changes in the deferred tag 
+// changes vectors, which are then applied when the color table they belong to
+// is added to the CTAtts.
+
 // ****************************************************************************
 // Method: ColorTableAttributes::ColorTableAttributes
 //
