@@ -554,6 +554,9 @@ ColorTableAttributes::CreateSubAttributeGroup(int)
 // 
 //   Justin Privitera, Mon Feb 13 14:32:02 PST 2023
 //   Removed logic to save the tagging flag, as it no longer exists.
+// 
+//   Justin Privitera, Mon Aug 28 09:57:59 PDT 2023
+//   Added logic to save all of the tagging infrastructure to a node.
 //
 // ****************************************************************************
 
@@ -664,6 +667,9 @@ ColorTableAttributes::CreateNode(DataNode *parentNode, bool, bool)
 // 
 //   Justin Privitera, Mon Feb 13 14:32:02 PST 2023
 //   Removed logic to extract the tagging flag, as it no longer exists.
+// 
+//   Justin Privitera, Mon Aug 28 09:57:59 PDT 2023
+//   Added logic to read all of the tagging infrastructure from a node.
 //
 // ****************************************************************************
 
@@ -1772,6 +1778,13 @@ ColorTableAttributes::GetColorControlPoints(const std::string &name) const
 //   Changed ColorTableAttributes `names` to `colorTableNames` and `active` to
 //   `colorTableActiveFlags`.
 //   Removed some redundant logic with default color tables.
+// 
+//   Justin Privitera, Mon Aug 28 09:57:59 PDT 2023
+//   Made the passed ccpl not const so we can edit its tags.
+//   Add the "No Tags" tag here if the ccpl has no tags.
+//   Apply deferred tag changes.
+//   Fixed a bug where the CTnames and ccpls would get sorted but CTactive
+//   flags would not be.
 // ****************************************************************************
 
 void
@@ -1903,6 +1916,9 @@ ColorTableAttributes::RemoveColorTable(const std::string &name)
 //   `colorTableActiveFlags`.
 //   Simplified and reused some logic for default color tables.
 //   Renamed iterators to better describe what they iterate over.
+// 
+//   Justin Privitera, Mon Aug 28 09:57:59 PDT 2023
+//   Renamed iterators to reduce ambiguity.
 // ****************************************************************************
 
 void
@@ -2041,6 +2057,12 @@ ColorTableAttributes::GetColorTableActiveFlag(int index)
 // 
 //    Justin Privitera, Thu Sep 29 17:27:37 PDT 2022
 //    Replace braces with parens for auto.
+// 
+//    Justin Privitera, Mon Aug 28 09:57:59 PDT 2023
+//    Moved this function from QvisColorTableWindow. Removed the functionality
+//    for digesting strings that represent tag changes as that is no longer
+//    necessary. Renamed the function to reflect this. Rewrote the function to 
+//    take advantage of the new taglist API.
 //
 // ****************************************************************************
 void
@@ -2098,6 +2120,10 @@ ColorTableAttributes::MergeTagChanges(const stringVector tagChangesTagFromNode,
 // 
 //    Justin Privitera, Thu Sep 29 17:27:37 PDT 2022
 //    Replace braces with parens for auto.
+// 
+//    Justin Privitera, Mon Aug 28 09:57:59 PDT 2023
+//    Moved this function from QvisColorTableWindow. Rewrote the function to 
+//    take advantage of the new taglist API.
 //
 // ****************************************************************************
 void
@@ -2160,6 +2186,11 @@ ColorTableAttributes::addTagToColorTable(const std::string ctName,
 // 
 //    Justin Privitera, Thu Sep 29 17:27:37 PDT 2022
 //    Replace braces with parens for auto.
+// 
+//    Justin Privitera, Mon Aug 28 09:57:59 PDT 2023
+//    Moved this function from QvisColorTableWindow. Added a return value so 
+//    this function can return success and an error message. Rewrote the 
+//    function to take advantage of the new taglist API.
 //
 // ****************************************************************************
 std::pair<bool, std::string>
