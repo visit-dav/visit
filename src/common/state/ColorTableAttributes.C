@@ -2164,7 +2164,6 @@ ColorTableAttributes::addTagToColorTable(const std::string ctName,
 //    Moved this function from QvisColorTableWindow. Added a return value so 
 //    this function can return success and an error message. Rewrote the 
 //    function to take advantage of the new taglist API.
-//    
 //
 // ****************************************************************************
 std::pair<bool, std::string>
