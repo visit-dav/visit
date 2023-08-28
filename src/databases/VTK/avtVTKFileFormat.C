@@ -4,15 +4,15 @@
 
 #include <avtVTKFileFormat.h>
 
-avtVTK_STSDFileFormat::avtVTK_STSDFileFormat(const char *filename, const DBOptionsAttributes *opts) : 
+avtVTK_STSDFileFormat::avtVTK_STSDFileFormat(const char *filename, const DBOptionsAttributes *opts) :
     avtSTSDFileFormat(filename)
 {
     GetCycleFromFilename(filename);
     reader = new avtVTKFileReader(filename, opts);
 }
 
-avtVTK_STSDFileFormat::avtVTK_STSDFileFormat(const char *filename, 
-    const DBOptionsAttributes *opts, avtVTKFileReader *r) : 
+avtVTK_STSDFileFormat::avtVTK_STSDFileFormat(const char *filename,
+    const DBOptionsAttributes *opts, avtVTKFileReader *r) :
     avtSTSDFileFormat(filename)
 {
     GetCycleFromFilename(filename);
@@ -126,7 +126,7 @@ avtVTK_STSDFileFormat::GetVectorVar(const char *name)
 }
 
 void *
-avtVTK_STSDFileFormat::GetAuxiliaryData(const char *var, 
+avtVTK_STSDFileFormat::GetAuxiliaryData(const char *var,
     const char *type, void *d, DestructorFunction &df)
 {
     return reader->GetAuxiliaryData(var, 0, type, d, df);
@@ -142,7 +142,7 @@ avtVTK_STSDFileFormat::IsEmpty()
 // ****************************************************************************
 // ****************************************************************************
 
-avtVTK_STMDFileFormat::avtVTK_STMDFileFormat(const char *filename, const DBOptionsAttributes *opts) : 
+avtVTK_STMDFileFormat::avtVTK_STMDFileFormat(const char *filename, const DBOptionsAttributes *opts) :
     avtSTMDFileFormat(&filename, 1)
 {
     GetCycleFromFilename(filename);
@@ -150,7 +150,7 @@ avtVTK_STMDFileFormat::avtVTK_STMDFileFormat(const char *filename, const DBOptio
 }
 
 avtVTK_STMDFileFormat::avtVTK_STMDFileFormat(const char *filename,
-    const DBOptionsAttributes *opts, avtVTKFileReader *r) : 
+    const DBOptionsAttributes *opts, avtVTKFileReader *r) :
     avtSTMDFileFormat(&filename, 1)
 {
     GetCycleFromFilename(filename);
@@ -268,4 +268,87 @@ avtVTK_STMDFileFormat::GetAuxiliaryData(const char *var, int domain,
     const char *type, void *d, DestructorFunction &df)
 {
     return reader->GetAuxiliaryData(var, domain, type, d, df);
+}
+
+// ****************************************************************************
+//   MTMDFileFormat for PVD case.
+// ****************************************************************************
+
+#include <avtPVDFileReader.h>
+
+// ****************************************************************************
+// ****************************************************************************
+// ****************************************************************************
+
+
+avtPVD_MTMDFileFormat::avtPVD_MTMDFileFormat(const char *filename,
+    const DBOptionsAttributes *rdOpts) : avtMTMDFileFormat(filename)
+{
+    reader = new avtPVDFileReader(filename, rdOpts);
+}
+
+avtPVD_MTMDFileFormat::~avtPVD_MTMDFileFormat()
+{
+    delete reader;
+}
+
+const char *
+avtPVD_MTMDFileFormat::GetType(void)
+{
+    return "VTK PVD MD File Format";
+}
+
+void
+avtPVD_MTMDFileFormat::FreeUpResources(void)
+{
+    reader->FreeUpResources();
+}
+
+void
+avtPVD_MTMDFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int /*ts */)
+{
+    reader->PopulateDatabaseMetaData(md);
+}
+
+vtkDataSet *
+avtPVD_MTMDFileFormat::GetMesh(int /*ts*/, int domain, const char *name)
+{
+    return reader->GetMesh(domain, name);
+}
+
+vtkDataArray *
+avtPVD_MTMDFileFormat::GetVar(int /*ts*/, int domain, const char *name)
+{
+    return reader->GetVar(domain, name);
+}
+
+vtkDataArray *
+avtPVD_MTMDFileFormat::GetVectorVar(int /*ts*/, int domain, const char *name)
+{
+    return reader->GetVectorVar(domain, name);
+}
+
+void *
+avtPVD_MTMDFileFormat::GetAuxiliaryData(const char *var, int domain,
+    const char *type, void *d, DestructorFunction &df)
+{
+    return reader->GetAuxiliaryData(var, domain, type, d, df);
+}
+
+void
+avtPVD_MTMDFileFormat::ActivateTimestep(int ts)
+{
+    reader->ActivateTimestep(ts);
+}
+
+int
+avtPVD_MTMDFileFormat::GetNTimesteps()
+{
+    return reader->GetNTimes();
+}
+
+void
+avtPVD_MTMDFileFormat::GetTimes(std::vector<double> &_times)
+{
+    reader->GetTimes(_times);
 }

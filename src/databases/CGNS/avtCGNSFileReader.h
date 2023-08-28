@@ -56,6 +56,9 @@ using namespace std;
 //    Added ReadMixedAndNamedElementSections, ReadNGonSections,
 //    ReadNGonAndNFaceSections.
 //
+//    Eric Brugger, Tue Jul  6 10:27:03 PDT 2021
+//    Added support for reading rind data.
+//
 // ****************************************************************************
 
 class avtCGNSFileReader
@@ -109,15 +112,16 @@ protected:
 
     int                    GetFileHandle();
     void                   ReadTimes();
-    bool                   GetCoords(int timestate, int base, int zone, const cgsize_t *zsize,
-                                     int cell_dim, int phys_dim,
-                                     bool structured, float **coords);
+    bool                   GetCoords(int timestate, int base, int zone,
+                               const cgsize_t *zsize, int cell_dim,
+                               int phys_dim, bool structured, float **coords);
     void                   AddReferenceStateExpressions(avtDatabaseMetaData *md,
-                                     int base, int nBases, const std::string &baseName,
-                                     const std::string &meshName);
+                               int base, int nBases,
+                               const std::string &baseName,
+                               const std::string &meshName);
     void                   AddVectorExpressions(avtDatabaseMetaData *md,
-                               bool *haveVelocity, bool *haveMomentum, int nBases,
-                               const std::string &baseName);
+                               bool *haveVelocity, bool *haveMomentum,
+                               int nBases, const std::string &baseName);
     void                   AddVectorExpression(avtDatabaseMetaData *md,
                                bool *haveComponent, int nBases,
                                const std::string &baseName,
@@ -126,6 +130,9 @@ protected:
     bool                   BaseContainsUnits(int base);
     void                   InitializeMaps(int timeState);
 
+    void                   GetQuadGhostZones(int base, int zone,
+                               const cgsize_t *zsize, int cell_dim,
+                               vtkDataSet *ds);
     vtkDataSet *           GetCurvilinearMesh(int, int, int, const char *,
                                               const cgsize_t *, int, int);
     vtkDataSet *           GetUnstructuredMesh(int, int, int, const char *,

@@ -92,6 +92,9 @@ QvisAnimationWindow::~QvisAnimationWindow()
 //   Brad Whitlock, Wed Dec 10 16:31:13 PST 2008
 //   I added animation increment.
 //
+//   Kathleen Biagas, Tue Apr 18 16:34:41 PDT 2023
+//   Support Qt6: buttonClicked -> idClicked.
+//
 // ****************************************************************************
 
 void
@@ -121,8 +124,13 @@ QvisAnimationWindow::CreateWindowContents()
     rb = new QRadioButton(tr("Swing"), central);
     playbackModeButtonGroup->addButton(rb, 2);
     animLayout->addWidget(rb, 2, 3);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(playbackModeButtonGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(playbackModeChanged(int)));
+#else
+    connect(playbackModeButtonGroup, SIGNAL(idClicked(int)),
+            this, SLOT(playbackModeChanged(int)));
+#endif
 
     // The animation increment
     animationIncrement = new QSpinBox(central);

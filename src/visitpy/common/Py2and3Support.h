@@ -174,7 +174,6 @@ Py_FindMethod(PyMethodDef *table, PyObject *obj, char *name)
     {
         char msg[1024];
         snprintf(msg, 1024, "Could not find method with name `%s`", name);
-        printf("%s\n",msg);
         // set error if we didn't find the method we expected to find
         PyErr_SetString(PyExc_ValueError, msg);
     }
@@ -287,6 +286,14 @@ PyUnicode_From_UTF32_Unicode_Buffer(const char *unicode_buffer,
 #define PyVarObject_TAIL
 #endif
 
+// 2023/01/27 CYRUSH Note:
+// tp_print / tp_vectorcall_offset slot is not used by python 3.0 - 3.7
+// it should not be used for python 3.8 > unless Py_TPFLAGS_HAVE_VECTORCALL
+// is passed, but we choose to always set to 0
+//
+// Also we use VPY_STR to implement both str() and repr(), as this
+// preserves the Python 2 cli behavior to echo object contents via repr()
+//
 
 #define VISIT_PY_TYPE_OBJ( VPY_TYPE,      \
                            VPY_NAME,      \
@@ -306,11 +313,11 @@ static PyTypeObject VPY_TYPE = \
     sizeof(VPY_OBJECT),        /* tp_basicsize */ \
     0,                         /* tp_itemsize */ \
     (destructor)VPY_DEALLOC,   /* tp_dealloc */ \
-    (printfunc)VPY_PRINT,      /* tp_print */ \
+    0,                         /* tp_print (python 2) or tp_vectorcall_offset (python3.8 > ) */ \
     (getattrfunc)VPY_GETATTR,  /* tp_getattr */ \
     (setattrfunc)VPY_SETATTR,  /* tp_setattr */ \
     0,                         /* tp_reserved */ \
-    0,                         /* tp_repr */ \
+    (reprfunc)VPY_STR,         /* tp_repr */ \
     VPY_AS_NUMBER,             /* tp_as_number */ \
     0,                         /* tp_as_sequence */ \
     0,                         /* tp_as_mapping */ \

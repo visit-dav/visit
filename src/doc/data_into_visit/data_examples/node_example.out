@@ -1,0 +1,7 @@
+my: "data"
+a: 
+  b: 
+    c: "d"
+    e: 64.0
+
+total bytes: 15

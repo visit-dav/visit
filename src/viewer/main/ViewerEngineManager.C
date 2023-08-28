@@ -344,10 +344,11 @@ ViewerEngineManager::SaveNamedSelection(const EngineKey &ek,
 bool
 ViewerEngineManager::ExportDatabases(const EngineKey &ek,
                                      const intVector &ids,
-                                     const ExportDBAttributes &expAtts, 
-                                     const std::string &timeSuffix)
+                                     const ExportDBAttributes *expAtts,
+                                     const std::string &timeSuffix,
+                                     ExportDBAttributes &retAtts)
 {
-    return IMPL()->ExportDatabases(ek, ids, expAtts, timeSuffix);
+    return IMPL()->ExportDatabases(ek, ids, expAtts, timeSuffix, retAtts);
 }
 
 bool

@@ -36,7 +36,7 @@ struct GlobalLineoutAttributesObject
 //
 static PyObject *NewGlobalLineoutAttributes(int);
 std::string
-PyGlobalLineoutAttributes_ToString(const GlobalLineoutAttributes *atts, const char *prefix)
+PyGlobalLineoutAttributes_ToString(const GlobalLineoutAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -117,12 +117,48 @@ GlobalLineoutAttributes_SetDynamic(PyObject *self, PyObject *args)
 {
     GlobalLineoutAttributesObject *obj = (GlobalLineoutAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the Dynamic in the object.
-    obj->data->SetDynamic(ival != 0);
+    obj->data->SetDynamic(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -141,12 +177,48 @@ GlobalLineoutAttributes_SetCreateWindow(PyObject *self, PyObject *args)
 {
     GlobalLineoutAttributesObject *obj = (GlobalLineoutAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the createWindow in the object.
-    obj->data->SetCreateWindow(ival != 0);
+    obj->data->SetCreateWindow(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -165,12 +237,48 @@ GlobalLineoutAttributes_SetWindowId(PyObject *self, PyObject *args)
 {
     GlobalLineoutAttributesObject *obj = (GlobalLineoutAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the windowId in the object.
-    obj->data->SetWindowId((int)ival);
+    obj->data->SetWindowId(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -189,12 +297,48 @@ GlobalLineoutAttributes_SetSamplingOn(PyObject *self, PyObject *args)
 {
     GlobalLineoutAttributesObject *obj = (GlobalLineoutAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the samplingOn in the object.
-    obj->data->SetSamplingOn(ival != 0);
+    obj->data->SetSamplingOn(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -213,12 +357,48 @@ GlobalLineoutAttributes_SetNumSamples(PyObject *self, PyObject *args)
 {
     GlobalLineoutAttributesObject *obj = (GlobalLineoutAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the numSamples in the object.
-    obj->data->SetNumSamples((int)ival);
+    obj->data->SetNumSamples(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -237,12 +417,48 @@ GlobalLineoutAttributes_SetCreateReflineLabels(PyObject *self, PyObject *args)
 {
     GlobalLineoutAttributesObject *obj = (GlobalLineoutAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the createReflineLabels in the object.
-    obj->data->SetCreateReflineLabels(ival != 0);
+    obj->data->SetCreateReflineLabels(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -261,21 +477,54 @@ GlobalLineoutAttributes_SetCurveOption(PyObject *self, PyObject *args)
 {
     GlobalLineoutAttributesObject *obj = (GlobalLineoutAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 2)
+    {
+        std::stringstream ss;
+        ss << "An invalid curveOption value was given." << std::endl;
+        ss << "Valid values are in the range [0,1]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << " UpdateCurve";
+        ss << ", CreateCurve";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the curveOption in the object.
-    if(ival >= 0 && ival < 2)
-        obj->data->SetCurveOption(GlobalLineoutAttributes::CurveOptions(ival));
-    else
-    {
-        fprintf(stderr, "An invalid curveOption value was given. "
-                        "Valid values are in the range of [0,1]. "
-                        "You can also use the following names: "
-                        "UpdateCurve, CreateCurve.");
-        return NULL;
-    }
+    obj->data->SetCurveOption(GlobalLineoutAttributes::CurveOptions(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -294,21 +543,54 @@ GlobalLineoutAttributes_SetColorOption(PyObject *self, PyObject *args)
 {
     GlobalLineoutAttributesObject *obj = (GlobalLineoutAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 2)
+    {
+        std::stringstream ss;
+        ss << "An invalid colorOption value was given." << std::endl;
+        ss << "Valid values are in the range [0,1]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << " RepeatColor";
+        ss << ", CreateColor";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the colorOption in the object.
-    if(ival >= 0 && ival < 2)
-        obj->data->SetColorOption(GlobalLineoutAttributes::ColorOptions(ival));
-    else
-    {
-        fprintf(stderr, "An invalid colorOption value was given. "
-                        "Valid values are in the range of [0,1]. "
-                        "You can also use the following names: "
-                        "RepeatColor, CreateColor.");
-        return NULL;
-    }
+    obj->data->SetColorOption(GlobalLineoutAttributes::ColorOptions(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -327,12 +609,48 @@ GlobalLineoutAttributes_SetFreezeInTime(PyObject *self, PyObject *args)
 {
     GlobalLineoutAttributesObject *obj = (GlobalLineoutAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the freezeInTime in the object.
-    obj->data->SetFreezeInTime(ival != 0);
+    obj->data->SetFreezeInTime(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -418,44 +736,57 @@ PyGlobalLineoutAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "freezeInTime") == 0)
         return GlobalLineoutAttributes_GetFreezeInTime(self, NULL);
 
+
+    // Add a __dict__ answer so that dir() works
+    if (!strcmp(name, "__dict__"))
+    {
+        PyObject *result = PyDict_New();
+        for (int i = 0; PyGlobalLineoutAttributes_methods[i].ml_meth; i++)
+            PyDict_SetItem(result,
+                PyString_FromString(PyGlobalLineoutAttributes_methods[i].ml_name),
+                PyString_FromString(PyGlobalLineoutAttributes_methods[i].ml_name));
+        return result;
+    }
+
     return Py_FindMethod(PyGlobalLineoutAttributes_methods, self, name);
 }
 
 int
 PyGlobalLineoutAttributes_setattr(PyObject *self, char *name, PyObject *args)
 {
-    // Create a tuple to contain the arguments since all of the Set
-    // functions expect a tuple.
-    PyObject *tuple = PyTuple_New(1);
-    PyTuple_SET_ITEM(tuple, 0, args);
-    Py_INCREF(args);
-    PyObject *obj = NULL;
+    PyObject NULL_PY_OBJ;
+    PyObject *obj = &NULL_PY_OBJ;
 
     if(strcmp(name, "Dynamic") == 0)
-        obj = GlobalLineoutAttributes_SetDynamic(self, tuple);
+        obj = GlobalLineoutAttributes_SetDynamic(self, args);
     else if(strcmp(name, "createWindow") == 0)
-        obj = GlobalLineoutAttributes_SetCreateWindow(self, tuple);
+        obj = GlobalLineoutAttributes_SetCreateWindow(self, args);
     else if(strcmp(name, "windowId") == 0)
-        obj = GlobalLineoutAttributes_SetWindowId(self, tuple);
+        obj = GlobalLineoutAttributes_SetWindowId(self, args);
     else if(strcmp(name, "samplingOn") == 0)
-        obj = GlobalLineoutAttributes_SetSamplingOn(self, tuple);
+        obj = GlobalLineoutAttributes_SetSamplingOn(self, args);
     else if(strcmp(name, "numSamples") == 0)
-        obj = GlobalLineoutAttributes_SetNumSamples(self, tuple);
+        obj = GlobalLineoutAttributes_SetNumSamples(self, args);
     else if(strcmp(name, "createReflineLabels") == 0)
-        obj = GlobalLineoutAttributes_SetCreateReflineLabels(self, tuple);
+        obj = GlobalLineoutAttributes_SetCreateReflineLabels(self, args);
     else if(strcmp(name, "curveOption") == 0)
-        obj = GlobalLineoutAttributes_SetCurveOption(self, tuple);
+        obj = GlobalLineoutAttributes_SetCurveOption(self, args);
     else if(strcmp(name, "colorOption") == 0)
-        obj = GlobalLineoutAttributes_SetColorOption(self, tuple);
+        obj = GlobalLineoutAttributes_SetColorOption(self, args);
     else if(strcmp(name, "freezeInTime") == 0)
-        obj = GlobalLineoutAttributes_SetFreezeInTime(self, tuple);
+        obj = GlobalLineoutAttributes_SetFreezeInTime(self, args);
 
-    if(obj != NULL)
+    if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
-    Py_DECREF(tuple);
-    if( obj == NULL)
-        PyErr_Format(PyExc_RuntimeError, "Unable to set unknown attribute: '%s'", name);
+    if (obj == &NULL_PY_OBJ)
+    {
+        obj = NULL;
+        PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);
+    }
+    else if (obj == NULL && !PyErr_Occurred())
+        PyErr_Format(PyExc_RuntimeError, "unknown problem with '%s'", name);
+
     return (obj != NULL) ? 0 : -1;
 }
 
@@ -463,7 +794,7 @@ static int
 GlobalLineoutAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     GlobalLineoutAttributesObject *obj = (GlobalLineoutAttributesObject *)v;
-    fprintf(fp, "%s", PyGlobalLineoutAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyGlobalLineoutAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -471,7 +802,7 @@ PyObject *
 GlobalLineoutAttributes_str(PyObject *v)
 {
     GlobalLineoutAttributesObject *obj = (GlobalLineoutAttributesObject *)v;
-    return PyString_FromString(PyGlobalLineoutAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyGlobalLineoutAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -621,7 +952,7 @@ static Observer *GlobalLineoutAttributesObserver = 0;
 std::string
 PyGlobalLineoutAttributes_GetLogString()
 {
-    std::string s("GlobalLineoutAtts = GlobalLineoutAttributes()\n");
+    std::string s("GlobalLineoutAtts = GetGlobalLineoutAttributes()\n");
     if(currentAtts != 0)
         s += PyGlobalLineoutAttributes_ToString(currentAtts, "GlobalLineoutAtts.");
     return s;
@@ -635,7 +966,7 @@ PyGlobalLineoutAttributes_CallLogRoutine(Subject *subj, void *data)
 
     if(cb != 0)
     {
-        std::string s("GlobalLineoutAtts = GlobalLineoutAttributes()\n");
+        std::string s("GlobalLineoutAtts = GetGlobalLineoutAttributes()\n");
         s += PyGlobalLineoutAttributes_ToString(currentAtts, "GlobalLineoutAtts.");
         cb(s);
     }

@@ -71,6 +71,9 @@ class vtkDataSet;
 //    Kathleen Bonnell, Tue Mar  1 15:59:48 PST 2011
 //    Removed AddResultValue, not used.
 //
+//    Eric Brugger, Mon Aug  7 14:34:00 PDT 2023
+//    Removed the index argument from SetResultValue.
+//
 // ****************************************************************************
 
 class QUERY_API avtDatasetQuery : public avtDataObjectQuery,
@@ -87,7 +90,7 @@ class QUERY_API avtDatasetQuery : public avtDataObjectQuery,
                                  { resMsg = m; };
 
     virtual double           GetResultValue(const int i = 0);
-    virtual void             SetResultValue(const double &d, const int i = 0);
+    virtual void             SetResultValue(const double &d);
 
     virtual doubleVector     GetResultValues(void) { return resValue; };
     virtual void             SetResultValues(const doubleVector &d)
@@ -106,6 +109,9 @@ class QUERY_API avtDatasetQuery : public avtDataObjectQuery,
     virtual avtDataObject_p  ApplyFilters(avtDataObject_p);
 
     virtual void             GetSecondaryVars( std::vector<std::string> &outVars );
+
+    virtual void             SetOutputQueryAtts(QueryAttributes *qA, bool /*hadError*/)
+                                 { *qA = queryAtts; }
 
     QueryAttributes          queryAtts;
 

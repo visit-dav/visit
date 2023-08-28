@@ -9,7 +9,7 @@
 #ifndef VTK_LABEL_MAPPER_BASE_H
 #define VTK_LABEL_MAPPER_BASE_H
 
-#include <vtkMapper2D.h>
+#include <vtkVisItFullFrameMapper2D.h>
 #include <vtkSmartPointer.h>
 
 #include <LabelAttributes.h>
@@ -34,12 +34,17 @@ class vtkTextProperty;
 //
 // Modifications:
 //
+//     Alister Maguire, Fri May 21 15:11:53 PDT 2021
+//     Inherit from vtkVistFullFrameMapper2d instead of vtkMapper2D. This
+//     allows us to easily interact with full frame mode in the VisIt
+//     pipeline.
+//
 // ****************************************************************************
 
-class vtkLabelMapperBase : public vtkMapper2D
+class vtkLabelMapperBase : public vtkVisItFullFrameMapper2D
 {
 public:
-    vtkTypeMacro(vtkLabelMapperBase, vtkMapper2D);
+    vtkTypeMacro(vtkLabelMapperBase, vtkVisItFullFrameMapper2D);
     void PrintSelf(ostream &os, vtkIndent indent) override;
 
 
@@ -158,8 +163,8 @@ protected:
     avtViewInfo            visit_view; 
 
 private:
-    vtkLabelMapperBase(const vtkLabelMapperBase&) VTK_DELETE_FUNCTION;
-    void operator=(const vtkLabelMapperBase&) VTK_DELETE_FUNCTION;
+    vtkLabelMapperBase(const vtkLabelMapperBase&) = delete;
+    void operator=(const vtkLabelMapperBase&) = delete;
 };
 
 #endif

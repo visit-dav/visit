@@ -191,7 +191,10 @@ def get_visit_svn_rev(src):
     Attempts to get the VisIt SVN Reversion number from the source tree.
     """
     svnrev = "<Unknown>"
-    proc = subprocess.Popen('svn info %s' % src, shell=True,stdout=subprocess.PIPE)
+    proc = subprocess.Popen('svn info %s' % src,
+                            shell=True,
+                            universal_newlines = True,
+                            stdout=subprocess.PIPE)
     result = proc.communicate()[0]
     res = re.compile(r'Revision:\s[0-9]+\s').search(result)
     if not res is None:

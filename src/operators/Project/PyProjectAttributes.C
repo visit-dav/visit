@@ -36,7 +36,7 @@ struct ProjectAttributesObject
 //
 static PyObject *NewProjectAttributes(int);
 std::string
-PyProjectAttributes_ToString(const ProjectAttributes *atts, const char *prefix)
+PyProjectAttributes_ToString(const ProjectAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -113,22 +113,58 @@ ProjectAttributes_SetProjectionType(PyObject *self, PyObject *args)
 {
     ProjectAttributesObject *obj = (ProjectAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 6)
+    {
+        std::stringstream ss;
+        ss << "An invalid projectionType value was given." << std::endl;
+        ss << "Valid values are in the range [0,5]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << " ZYCartesian";
+        ss << ", XZCartesian";
+        ss << ", XYCartesian";
+        ss << ", XRCylindrical";
+        ss << ", YRCylindrical";
+        ss << ", ZRCylindrical";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the projectionType in the object.
-    if(ival >= 0 && ival < 6)
-        obj->data->SetProjectionType(ProjectAttributes::ProjectionType(ival));
-    else
-    {
-        fprintf(stderr, "An invalid projectionType value was given. "
-                        "Valid values are in the range of [0,5]. "
-                        "You can also use the following names: "
-                        "ZYCartesian, XZCartesian, XYCartesian, XRCylindrical, YRCylindrical, "
-                        "ZRCylindrical.");
-        return NULL;
-    }
+    obj->data->SetProjectionType(ProjectAttributes::ProjectionType(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -147,21 +183,56 @@ ProjectAttributes_SetVectorTransformMethod(PyObject *self, PyObject *args)
 {
     ProjectAttributesObject *obj = (ProjectAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 4)
+    {
+        std::stringstream ss;
+        ss << "An invalid vectorTransformMethod value was given." << std::endl;
+        ss << "Valid values are in the range [0,3]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << " None";
+        ss << ", AsPoint";
+        ss << ", AsDisplacement";
+        ss << ", AsDirection";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the vectorTransformMethod in the object.
-    if(ival >= 0 && ival < 4)
-        obj->data->SetVectorTransformMethod(ProjectAttributes::VectorTransformMethod(ival));
-    else
-    {
-        fprintf(stderr, "An invalid vectorTransformMethod value was given. "
-                        "Valid values are in the range of [0,3]. "
-                        "You can also use the following names: "
-                        "None, AsPoint, AsDisplacement, AsDirection.");
-        return NULL;
-    }
+    obj->data->SetVectorTransformMethod(ProjectAttributes::VectorTransformMethod(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -233,30 +304,43 @@ PyProjectAttributes_getattr(PyObject *self, char *name)
         return PyInt_FromLong(long(ProjectAttributes::AsDirection));
 
 
+
+    // Add a __dict__ answer so that dir() works
+    if (!strcmp(name, "__dict__"))
+    {
+        PyObject *result = PyDict_New();
+        for (int i = 0; PyProjectAttributes_methods[i].ml_meth; i++)
+            PyDict_SetItem(result,
+                PyString_FromString(PyProjectAttributes_methods[i].ml_name),
+                PyString_FromString(PyProjectAttributes_methods[i].ml_name));
+        return result;
+    }
+
     return Py_FindMethod(PyProjectAttributes_methods, self, name);
 }
 
 int
 PyProjectAttributes_setattr(PyObject *self, char *name, PyObject *args)
 {
-    // Create a tuple to contain the arguments since all of the Set
-    // functions expect a tuple.
-    PyObject *tuple = PyTuple_New(1);
-    PyTuple_SET_ITEM(tuple, 0, args);
-    Py_INCREF(args);
-    PyObject *obj = NULL;
+    PyObject NULL_PY_OBJ;
+    PyObject *obj = &NULL_PY_OBJ;
 
     if(strcmp(name, "projectionType") == 0)
-        obj = ProjectAttributes_SetProjectionType(self, tuple);
+        obj = ProjectAttributes_SetProjectionType(self, args);
     else if(strcmp(name, "vectorTransformMethod") == 0)
-        obj = ProjectAttributes_SetVectorTransformMethod(self, tuple);
+        obj = ProjectAttributes_SetVectorTransformMethod(self, args);
 
-    if(obj != NULL)
+    if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
-    Py_DECREF(tuple);
-    if( obj == NULL)
-        PyErr_Format(PyExc_RuntimeError, "Unable to set unknown attribute: '%s'", name);
+    if (obj == &NULL_PY_OBJ)
+    {
+        obj = NULL;
+        PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);
+    }
+    else if (obj == NULL && !PyErr_Occurred())
+        PyErr_Format(PyExc_RuntimeError, "unknown problem with '%s'", name);
+
     return (obj != NULL) ? 0 : -1;
 }
 
@@ -264,7 +348,7 @@ static int
 ProjectAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     ProjectAttributesObject *obj = (ProjectAttributesObject *)v;
-    fprintf(fp, "%s", PyProjectAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyProjectAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -272,7 +356,7 @@ PyObject *
 ProjectAttributes_str(PyObject *v)
 {
     ProjectAttributesObject *obj = (ProjectAttributesObject *)v;
-    return PyString_FromString(PyProjectAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyProjectAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -424,7 +508,7 @@ PyProjectAttributes_GetLogString()
 {
     std::string s("ProjectAtts = ProjectAttributes()\n");
     if(currentAtts != 0)
-        s += PyProjectAttributes_ToString(currentAtts, "ProjectAtts.");
+        s += PyProjectAttributes_ToString(currentAtts, "ProjectAtts.", true);
     return s;
 }
 
@@ -437,7 +521,7 @@ PyProjectAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("ProjectAtts = ProjectAttributes()\n");
-        s += PyProjectAttributes_ToString(currentAtts, "ProjectAtts.");
+        s += PyProjectAttributes_ToString(currentAtts, "ProjectAtts.", true);
         cb(s);
     }
 }

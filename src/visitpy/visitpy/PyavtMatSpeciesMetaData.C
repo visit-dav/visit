@@ -36,7 +36,7 @@ struct avtMatSpeciesMetaDataObject
 //
 static PyObject *NewavtMatSpeciesMetaData(int);
 std::string
-PyavtMatSpeciesMetaData_ToString(const avtMatSpeciesMetaData *atts, const char *prefix)
+PyavtMatSpeciesMetaData_ToString(const avtMatSpeciesMetaData *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -81,12 +81,48 @@ avtMatSpeciesMetaData_SetNumSpecies(PyObject *self, PyObject *args)
 {
     avtMatSpeciesMetaDataObject *obj = (avtMatSpeciesMetaDataObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the numSpecies in the object.
-    obj->data->numSpecies = (int)ival;
+    obj->data->numSpecies = cval;
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -105,37 +141,51 @@ avtMatSpeciesMetaData_SetSpeciesNames(PyObject *self, PyObject *args)
 {
     avtMatSpeciesMetaDataObject *obj = (avtMatSpeciesMetaDataObject *)self;
 
-    stringVector  &vec = obj->data->speciesNames;
-    PyObject     *tuple;
-    if(!PyArg_ParseTuple(args, "O", &tuple))
-        return NULL;
+    stringVector vec;
 
-    if(PyTuple_Check(tuple))
+    if (PyUnicode_Check(args))
     {
-        vec.resize(PyTuple_Size(tuple));
-        for(int i = 0; i < PyTuple_Size(tuple); ++i)
+        char const *val = PyUnicode_AsUTF8(args);
+        std::string cval = std::string(val);
+        if (val == 0 && PyErr_Occurred())
         {
-            PyObject *item = PyTuple_GET_ITEM(tuple, i);
-            if(PyString_Check(item))
+            PyErr_Clear();
+            return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ string");
+        }
+        vec.resize(1);
+        vec[0] = cval;
+    }
+    else if (PySequence_Check(args))
+    {
+        vec.resize(PySequence_Size(args));
+        for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)
+        {
+            PyObject *item = PySequence_GetItem(args, i);
+
+            if (!PyUnicode_Check(item))
             {
-                char *item_cstr = PyString_AsString(item);
-                vec[i] = std::string(item_cstr);
-                PyString_AsString_Cleanup(item_cstr);
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_TypeError, "arg %d is not a unicode string", (int) i);
             }
-            else
-                vec[i] = std::string("");
+
+            char const *val = PyUnicode_AsUTF8(item);
+            std::string cval = std::string(val);
+
+            if (val == 0 && PyErr_Occurred())
+            {
+                Py_DECREF(item);
+                PyErr_Clear();
+                return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ string", (int) i);
+            }
+            Py_DECREF(item);
+
+            vec[i] = cval;
         }
     }
-    else if(PyString_Check(tuple))
-    {
-        vec.resize(1);
-        char *tuple_cstr = PyString_AsString(tuple);
-        vec[0] = std::string(tuple_cstr);
-        PyString_AsString_Cleanup(tuple_cstr);
-    }
     else
-        return NULL;
+        return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more string(s)");
 
+    obj->data->speciesNames = vec;
     // Mark the speciesNames in the object as modified.
     obj->data->SelectAll();
 
@@ -160,12 +210,48 @@ avtMatSpeciesMetaData_SetValidVariable(PyObject *self, PyObject *args)
 {
     avtMatSpeciesMetaDataObject *obj = (avtMatSpeciesMetaDataObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the validVariable in the object.
-    obj->data->validVariable = (ival != 0);
+    obj->data->validVariable = cval;
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -217,32 +303,45 @@ PyavtMatSpeciesMetaData_getattr(PyObject *self, char *name)
     if(strcmp(name, "validVariable") == 0)
         return avtMatSpeciesMetaData_GetValidVariable(self, NULL);
 
+
+    // Add a __dict__ answer so that dir() works
+    if (!strcmp(name, "__dict__"))
+    {
+        PyObject *result = PyDict_New();
+        for (int i = 0; PyavtMatSpeciesMetaData_methods[i].ml_meth; i++)
+            PyDict_SetItem(result,
+                PyString_FromString(PyavtMatSpeciesMetaData_methods[i].ml_name),
+                PyString_FromString(PyavtMatSpeciesMetaData_methods[i].ml_name));
+        return result;
+    }
+
     return Py_FindMethod(PyavtMatSpeciesMetaData_methods, self, name);
 }
 
 int
 PyavtMatSpeciesMetaData_setattr(PyObject *self, char *name, PyObject *args)
 {
-    // Create a tuple to contain the arguments since all of the Set
-    // functions expect a tuple.
-    PyObject *tuple = PyTuple_New(1);
-    PyTuple_SET_ITEM(tuple, 0, args);
-    Py_INCREF(args);
-    PyObject *obj = NULL;
+    PyObject NULL_PY_OBJ;
+    PyObject *obj = &NULL_PY_OBJ;
 
     if(strcmp(name, "numSpecies") == 0)
-        obj = avtMatSpeciesMetaData_SetNumSpecies(self, tuple);
+        obj = avtMatSpeciesMetaData_SetNumSpecies(self, args);
     else if(strcmp(name, "speciesNames") == 0)
-        obj = avtMatSpeciesMetaData_SetSpeciesNames(self, tuple);
+        obj = avtMatSpeciesMetaData_SetSpeciesNames(self, args);
     else if(strcmp(name, "validVariable") == 0)
-        obj = avtMatSpeciesMetaData_SetValidVariable(self, tuple);
+        obj = avtMatSpeciesMetaData_SetValidVariable(self, args);
 
-    if(obj != NULL)
+    if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
-    Py_DECREF(tuple);
-    if( obj == NULL)
-        PyErr_Format(PyExc_RuntimeError, "Unable to set unknown attribute: '%s'", name);
+    if (obj == &NULL_PY_OBJ)
+    {
+        obj = NULL;
+        PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);
+    }
+    else if (obj == NULL && !PyErr_Occurred())
+        PyErr_Format(PyExc_RuntimeError, "unknown problem with '%s'", name);
+
     return (obj != NULL) ? 0 : -1;
 }
 
@@ -250,7 +349,7 @@ static int
 avtMatSpeciesMetaData_print(PyObject *v, FILE *fp, int flags)
 {
     avtMatSpeciesMetaDataObject *obj = (avtMatSpeciesMetaDataObject *)v;
-    fprintf(fp, "%s", PyavtMatSpeciesMetaData_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyavtMatSpeciesMetaData_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -258,7 +357,7 @@ PyObject *
 avtMatSpeciesMetaData_str(PyObject *v)
 {
     avtMatSpeciesMetaDataObject *obj = (avtMatSpeciesMetaDataObject *)v;
-    return PyString_FromString(PyavtMatSpeciesMetaData_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyavtMatSpeciesMetaData_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -410,7 +509,7 @@ PyavtMatSpeciesMetaData_GetLogString()
 {
     std::string s("avtMatSpeciesMetaData = avtMatSpeciesMetaData()\n");
     if(currentAtts != 0)
-        s += PyavtMatSpeciesMetaData_ToString(currentAtts, "avtMatSpeciesMetaData.");
+        s += PyavtMatSpeciesMetaData_ToString(currentAtts, "avtMatSpeciesMetaData.", true);
     return s;
 }
 
@@ -423,7 +522,7 @@ PyavtMatSpeciesMetaData_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("avtMatSpeciesMetaData = avtMatSpeciesMetaData()\n");
-        s += PyavtMatSpeciesMetaData_ToString(currentAtts, "avtMatSpeciesMetaData.");
+        s += PyavtMatSpeciesMetaData_ToString(currentAtts, "avtMatSpeciesMetaData.", true);
         cb(s);
     }
 }

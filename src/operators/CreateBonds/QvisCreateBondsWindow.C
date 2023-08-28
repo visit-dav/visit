@@ -670,7 +670,7 @@ void QvisCreateBondsWindow::maxDistTextChanged(const QString &txt)
         return;
 
     atts->GetMaxDist()[index] = maxDist->displayText().toFloat();
-    item->setText(3, QString("%.1").arg(atts->GetMaxDist()[index],0,'f',4));
+    item->setText(3, QString("%1").arg(atts->GetMaxDist()[index],0,'f',4));
     atts->SelectMaxDist();
 }
 

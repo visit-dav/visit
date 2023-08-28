@@ -38,7 +38,7 @@ struct Axes2DObject
 //
 static PyObject *NewAxes2D(int);
 std::string
-PyAxes2D_ToString(const Axes2D *atts, const char *prefix)
+PyAxes2D_ToString(const Axes2D *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -109,12 +109,12 @@ PyAxes2D_ToString(const Axes2D *atts, const char *prefix)
     { // new scope
         std::string objPrefix(prefix);
         objPrefix += "xAxis.";
-        str += PyAxisAttributes_ToString(&atts->GetXAxis(), objPrefix.c_str());
+        str += PyAxisAttributes_ToString(&atts->GetXAxis(), objPrefix.c_str(), forLogging);
     }
     { // new scope
         std::string objPrefix(prefix);
         objPrefix += "yAxis.";
-        str += PyAxisAttributes_ToString(&atts->GetYAxis(), objPrefix.c_str());
+        str += PyAxisAttributes_ToString(&atts->GetYAxis(), objPrefix.c_str(), forLogging);
     }
     return str;
 }
@@ -133,12 +133,48 @@ Axes2D_SetVisible(PyObject *self, PyObject *args)
 {
     Axes2DObject *obj = (Axes2DObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the visible in the object.
-    obj->data->SetVisible(ival != 0);
+    obj->data->SetVisible(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -157,12 +193,48 @@ Axes2D_SetAutoSetTicks(PyObject *self, PyObject *args)
 {
     Axes2DObject *obj = (Axes2DObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the autoSetTicks in the object.
-    obj->data->SetAutoSetTicks(ival != 0);
+    obj->data->SetAutoSetTicks(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -181,12 +253,48 @@ Axes2D_SetAutoSetScaling(PyObject *self, PyObject *args)
 {
     Axes2DObject *obj = (Axes2DObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the autoSetScaling in the object.
-    obj->data->SetAutoSetScaling(ival != 0);
+    obj->data->SetAutoSetScaling(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -205,12 +313,48 @@ Axes2D_SetLineWidth(PyObject *self, PyObject *args)
 {
     Axes2DObject *obj = (Axes2DObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the lineWidth in the object.
-    obj->data->SetLineWidth(ival);
+    obj->data->SetLineWidth(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -229,21 +373,55 @@ Axes2D_SetTickLocation(PyObject *self, PyObject *args)
 {
     Axes2DObject *obj = (Axes2DObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 3)
+    {
+        std::stringstream ss;
+        ss << "An invalid tickLocation value was given." << std::endl;
+        ss << "Valid values are in the range [0,2]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << " Inside";
+        ss << ", Outside";
+        ss << ", Both";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the tickLocation in the object.
-    if(ival >= 0 && ival < 3)
-        obj->data->SetTickLocation(Axes2D::Location(ival));
-    else
-    {
-        fprintf(stderr, "An invalid tickLocation value was given. "
-                        "Valid values are in the range of [0,2]. "
-                        "You can also use the following names: "
-                        "Inside, Outside, Both.");
-        return NULL;
-    }
+    obj->data->SetTickLocation(Axes2D::Location(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -262,22 +440,57 @@ Axes2D_SetTickAxes(PyObject *self, PyObject *args)
 {
     Axes2DObject *obj = (Axes2DObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 5)
+    {
+        std::stringstream ss;
+        ss << "An invalid tickAxes value was given." << std::endl;
+        ss << "Valid values are in the range [0,4]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << " Off";
+        ss << ", Bottom";
+        ss << ", Left";
+        ss << ", BottomLeft";
+        ss << ", All";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the tickAxes in the object.
-    if(ival >= 0 && ival < 5)
-        obj->data->SetTickAxes(Axes2D::Ticks(ival));
-    else
-    {
-        fprintf(stderr, "An invalid tickAxes value was given. "
-                        "Valid values are in the range of [0,4]. "
-                        "You can also use the following names: "
-                        "Off, Bottom, Left, BottomLeft, All"
-                        ".");
-        return NULL;
-    }
+    obj->data->SetTickAxes(Axes2D::Ticks(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -300,10 +513,7 @@ Axes2D_SetXAxis(PyObject *self, PyObject *args)
     if(!PyArg_ParseTuple(args, "O", &newValue))
         return NULL;
     if(!PyAxisAttributes_Check(newValue))
-    {
-        fprintf(stderr, "The xAxis field can only be set with AxisAttributes objects.\n");
-        return NULL;
-    }
+        return PyErr_Format(PyExc_TypeError, "Field xAxis can be set only with AxisAttributes objects");
 
     obj->data->SetXAxis(*PyAxisAttributes_FromPyObject(newValue));
 
@@ -336,10 +546,7 @@ Axes2D_SetYAxis(PyObject *self, PyObject *args)
     if(!PyArg_ParseTuple(args, "O", &newValue))
         return NULL;
     if(!PyAxisAttributes_Check(newValue))
-    {
-        fprintf(stderr, "The yAxis field can only be set with AxisAttributes objects.\n");
-        return NULL;
-    }
+        return PyErr_Format(PyExc_TypeError, "Field yAxis can be set only with AxisAttributes objects");
 
     obj->data->SetYAxis(*PyAxisAttributes_FromPyObject(newValue));
 
@@ -439,42 +646,55 @@ PyAxes2D_getattr(PyObject *self, char *name)
     if(strcmp(name, "yAxis") == 0)
         return Axes2D_GetYAxis(self, NULL);
 
+
+    // Add a __dict__ answer so that dir() works
+    if (!strcmp(name, "__dict__"))
+    {
+        PyObject *result = PyDict_New();
+        for (int i = 0; PyAxes2D_methods[i].ml_meth; i++)
+            PyDict_SetItem(result,
+                PyString_FromString(PyAxes2D_methods[i].ml_name),
+                PyString_FromString(PyAxes2D_methods[i].ml_name));
+        return result;
+    }
+
     return Py_FindMethod(PyAxes2D_methods, self, name);
 }
 
 int
 PyAxes2D_setattr(PyObject *self, char *name, PyObject *args)
 {
-    // Create a tuple to contain the arguments since all of the Set
-    // functions expect a tuple.
-    PyObject *tuple = PyTuple_New(1);
-    PyTuple_SET_ITEM(tuple, 0, args);
-    Py_INCREF(args);
-    PyObject *obj = NULL;
+    PyObject NULL_PY_OBJ;
+    PyObject *obj = &NULL_PY_OBJ;
 
     if(strcmp(name, "visible") == 0)
-        obj = Axes2D_SetVisible(self, tuple);
+        obj = Axes2D_SetVisible(self, args);
     else if(strcmp(name, "autoSetTicks") == 0)
-        obj = Axes2D_SetAutoSetTicks(self, tuple);
+        obj = Axes2D_SetAutoSetTicks(self, args);
     else if(strcmp(name, "autoSetScaling") == 0)
-        obj = Axes2D_SetAutoSetScaling(self, tuple);
+        obj = Axes2D_SetAutoSetScaling(self, args);
     else if(strcmp(name, "lineWidth") == 0)
-        obj = Axes2D_SetLineWidth(self, tuple);
+        obj = Axes2D_SetLineWidth(self, args);
     else if(strcmp(name, "tickLocation") == 0)
-        obj = Axes2D_SetTickLocation(self, tuple);
+        obj = Axes2D_SetTickLocation(self, args);
     else if(strcmp(name, "tickAxes") == 0)
-        obj = Axes2D_SetTickAxes(self, tuple);
+        obj = Axes2D_SetTickAxes(self, args);
     else if(strcmp(name, "xAxis") == 0)
-        obj = Axes2D_SetXAxis(self, tuple);
+        obj = Axes2D_SetXAxis(self, args);
     else if(strcmp(name, "yAxis") == 0)
-        obj = Axes2D_SetYAxis(self, tuple);
+        obj = Axes2D_SetYAxis(self, args);
 
-    if(obj != NULL)
+    if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
-    Py_DECREF(tuple);
-    if( obj == NULL)
-        PyErr_Format(PyExc_RuntimeError, "Unable to set unknown attribute: '%s'", name);
+    if (obj == &NULL_PY_OBJ)
+    {
+        obj = NULL;
+        PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);
+    }
+    else if (obj == NULL && !PyErr_Occurred())
+        PyErr_Format(PyExc_RuntimeError, "unknown problem with '%s'", name);
+
     return (obj != NULL) ? 0 : -1;
 }
 
@@ -482,7 +702,7 @@ static int
 Axes2D_print(PyObject *v, FILE *fp, int flags)
 {
     Axes2DObject *obj = (Axes2DObject *)v;
-    fprintf(fp, "%s", PyAxes2D_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyAxes2D_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -490,7 +710,7 @@ PyObject *
 Axes2D_str(PyObject *v)
 {
     Axes2DObject *obj = (Axes2DObject *)v;
-    return PyString_FromString(PyAxes2D_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyAxes2D_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -642,7 +862,7 @@ PyAxes2D_GetLogString()
 {
     std::string s("Axes2D = Axes2D()\n");
     if(currentAtts != 0)
-        s += PyAxes2D_ToString(currentAtts, "Axes2D.");
+        s += PyAxes2D_ToString(currentAtts, "Axes2D.", true);
     return s;
 }
 
@@ -655,7 +875,7 @@ PyAxes2D_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("Axes2D = Axes2D()\n");
-        s += PyAxes2D_ToString(currentAtts, "Axes2D.");
+        s += PyAxes2D_ToString(currentAtts, "Axes2D.", true);
         cb(s);
     }
 }

@@ -6,7 +6,6 @@
 #include <QAction>
 #include <QActionGroup>
 #include <QApplication>
-#include <QDesktopWidget>
 #include <QMenu>
 #include <QPainter>
 #include <QPixmap>
@@ -26,7 +25,6 @@ QMenu        *QvisColorTableButton::colorTableMenu = 0;
 QActionGroup *QvisColorTableButton::colorTableMenuActionGroup = 0;
 QvisColorTableButton::ColorTableButtonVector QvisColorTableButton::buttons;
 QStringList  QvisColorTableButton::colorTableNames;
-QMap<QString,QStringList>  QvisColorTableButton::mappedColorTableNames;
 bool        QvisColorTableButton::popupHasEntries = false;
 ColorTableAttributes *QvisColorTableButton::colorTableAtts = NULL;
 
@@ -95,6 +93,9 @@ QvisColorTableButton::QvisColorTableButton(QWidget *parent) :
 // Modifications:
 //   Brad Whitlock, Thu Feb 14 13:31:46 PST 2002
 //   Deleted the popup menu if it exists.
+// 
+//   Justin Privitera, Thu Jun 16 18:01:49 PDT 2022
+//   Removed mappedColorTableNames, so no need to clear it in the destructor.
 //
 // ****************************************************************************
 
@@ -142,7 +143,6 @@ QvisColorTableButton::~QvisColorTableButton()
 
         // Delete the color table names.
         colorTableNames.clear();
-        mappedColorTableNames.clear();
     }
 }
 
@@ -158,13 +158,16 @@ QvisColorTableButton::~QvisColorTableButton()
 // Creation:   Sat Jun 16 20:07:23 PST 2001
 //
 // Modifications:
-//   
+//   Kathleen Biagas, Mon May 22 12:41:37 PDT 2023
+//   Removed use of QApplication::globalStrut, as it is a no-op (deprecated)
+//   in Qt5 and removed in Qt6.
+//
 // ****************************************************************************
 
 QSize
 QvisColorTableButton::sizeHint() const
 {
-     return QSize(125, 40).expandedTo(QApplication::globalStrut());
+     return QSize(125, 40);
 }
 
 // ****************************************************************************
@@ -230,6 +233,10 @@ QvisColorTableButton::useDefaultColorTable()
 //
 //   Brad Whitlock, Tue Jan 17 11:41:44 PDT 2006
 //   Added a tooltip so long color table names can be put in a tooltip.
+// 
+//    Justin Privitera, Wed Aug  3 19:46:13 PDT 2022
+//    Added logic to prevent CT from being changed when CT passed out of the 
+//    tag filtering selection.
 //
 // ****************************************************************************
 
@@ -245,10 +252,15 @@ QvisColorTableButton::setColorTable(const QString &ctName)
     }
     else
     {
-        QString def("Default");
-        setText(def);
-        setToolTip(def);
-        setIcon(QIcon());
+        // if this color table was deleted
+        if (colorTableAtts->GetColorTableIndex(ctName.toStdString()) == -1)
+        {
+            QString def("Default");
+            setText(def);
+            setToolTip(def);
+            setIcon(QIcon());
+        }
+        // but if it was filtered, we don't want to do anything
     }
 }
 
@@ -343,6 +355,9 @@ QvisColorTableButton::popupPressed()
 //
 //   Kathleen Biagas, Mon Aug  4 15:54:14 PDT 2014
 //   Handle grouping.
+// 
+//   Justin Privitera, Thu Jun 16 18:01:49 PDT 2022
+//   Removed grouping.
 //
 // ****************************************************************************
 
@@ -361,28 +376,7 @@ QvisColorTableButton::colorTableSelected(QAction *action)
     }
     else
     {
-        QString ctName;
-        if (!colorTableAtts->GetGroupingFlag() || mappedColorTableNames.count() == 1)
-        {
-            ctName = colorTableNames.at(index-1);
-        }
-        else
-        {
-            int count=1, N=0;
-            QMap<QString, QStringList>::const_iterator iter;
-            for(iter = mappedColorTableNames.constBegin();
-                iter != mappedColorTableNames.constEnd();
-                ++iter)
-            {
-                N = iter.value().size();
-                if(index < (count+N))
-                {
-                    ctName = iter.value().at(index-count);
-                    break;
-                }
-                count += N;
-            }
-        }
+        QString ctName = colorTableNames.at(index-1);
 
         emit selectedColorTable(false, ctName);
         setText(ctName);
@@ -405,6 +399,8 @@ QvisColorTableButton::colorTableSelected(QAction *action)
 // Creation:   Sat Jun 16 20:12:33 PST 2001
 //
 // Modifications:
+//   Justin Privitera, Thu Jun 16 18:01:49 PDT 2022
+//   Removed mappedColorTableNames.
 //
 // ****************************************************************************
 
@@ -412,7 +408,6 @@ void
 QvisColorTableButton::clearAllColorTables()
 {
     colorTableNames.clear();
-    mappedColorTableNames.clear();
 
     // Clear out the popup menu.
     popupHasEntries = false;
@@ -434,17 +429,17 @@ QvisColorTableButton::clearAllColorTables()
 //   Kathleen Biagas, Mon Aug  4 15:55:26 PDT 2014
 //   colorTableNames now a QStringList, so append and sort.
 //   Added mappedColorTableNames.
+// 
+//   Justin Privitera, Thu Jun 16 18:01:49 PDT 2022
+//   No longer takes the category name.
 //
 // ****************************************************************************
 
 void
-QvisColorTableButton::addColorTable(const QString &ctName,
-    const QString &ctCategory)
+QvisColorTableButton::addColorTable(const QString &ctName)
 {
     colorTableNames.append(ctName);
     colorTableNames.sort();
-    mappedColorTableNames[ctCategory].append(ctName);
-    mappedColorTableNames[ctCategory].sort();
 }
 
 // ****************************************************************************
@@ -460,6 +455,9 @@ QvisColorTableButton::addColorTable(const QString &ctName,
 // Creation:   Sat Jun 16 20:13:46 PST 2001
 //
 // Modifications:
+//    Justin Privitera, Wed Aug  3 19:46:13 PDT 2022
+//    Added logic to prevent CT from being changed when CT passed out of the 
+//    tag filtering selection.
 //   
 // ****************************************************************************
 
@@ -468,12 +466,18 @@ QvisColorTableButton::updateColorTableButtons()
 {
     for(size_t i = 0; i < buttons.size(); ++i)
     {
-        // If the color table that was being used by the button is no
-        // longer in the list, make it use the default.
+        // the CT that was being used by the button is no longer in the list
         if(getColorTableIndex(buttons[i]->getColorTable()) == -1)
         {
-            buttons[i]->setText("Default");
-            buttons[i]->setColorTable("Default");
+            // if deleted
+            if (colorTableAtts->GetColorTableIndex(
+                buttons[i]->getColorTable().toStdString()) == -1)
+            {
+                // then use the default
+                buttons[i]->setText("Default");
+                buttons[i]->setColorTable("Default");
+            }
+            // but if it was filtered, we do nothing
         }
         else
             buttons[i]->setIcon(getIcon(buttons[i]->text()));
@@ -526,6 +530,9 @@ QvisColorTableButton::getColorTableIndex(const QString &ctName)
 //
 //   Kathleen Biagas, Mon Aug  4 15:59:56 PDT 2014
 //   Hangle grouping.
+// 
+//   Justin Privitera, Thu Jun 16 18:01:49 PDT 2022
+//   Removed categories/grouping.
 //
 // ****************************************************************************
 
@@ -540,31 +547,11 @@ QvisColorTableButton::regeneratePopupMenu()
 
     colorTableMenuActionGroup->addAction(colorTableMenu->addAction("Default"));
     colorTableMenu->addSeparator();
-    if (!colorTableAtts->GetGroupingFlag() || mappedColorTableNames.count() == 1)
+    // Add an item for each color table.
+    for (int i = 0; i < colorTableNames.size(); ++i)
     {
-        // Add an item for each color table.
-        for(int i = 0; i < colorTableNames.size(); ++i)
-        {
-            QAction *action = colorTableMenu->addAction(makeIcon(colorTableNames.at(i)), colorTableNames.at(i));
-            colorTableMenuActionGroup->addAction(action);
-        }
-    }
-    else
-    {
-        QMap<QString, QStringList>::const_iterator iter = mappedColorTableNames.constBegin();
-        while (iter != mappedColorTableNames.constEnd())
-        {
-            QMenu *subMenu = colorTableMenu->addMenu(iter.key());
-            QStringList ctNames = iter.value();
-
-            // Add an item for each color table.
-            for(int i = 0; i < ctNames.size(); ++i)
-            {
-                QAction *action = subMenu->addAction(makeIcon(ctNames.at(i)), ctNames.at(i));
-                colorTableMenuActionGroup->addAction(action);
-            }
-            ++iter;
-        }
+        QAction *action = colorTableMenu->addAction(makeIcon(colorTableNames.at(i)), colorTableNames.at(i));
+        colorTableMenuActionGroup->addAction(action);
     }
 
     // Indicate that we've added choices to the menu.

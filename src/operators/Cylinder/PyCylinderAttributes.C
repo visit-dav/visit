@@ -36,7 +36,7 @@ struct CylinderAttributesObject
 //
 static PyObject *NewCylinderAttributes(int);
 std::string
-PyCylinderAttributes_ToString(const CylinderAttributes *atts, const char *prefix)
+PyCylinderAttributes_ToString(const CylinderAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -97,35 +97,60 @@ CylinderAttributes_SetPoint1(PyObject *self, PyObject *args)
 {
     CylinderAttributesObject *obj = (CylinderAttributesObject *)self;
 
-    double *dvals = obj->data->GetPoint1();
-    if(!PyArg_ParseTuple(args, "ddd", &dvals[0], &dvals[1], &dvals[2]))
+    PyObject *packaged_args = 0;
+    double *vals = obj->data->GetPoint1();
+
+    if (!PySequence_Check(args) || PyUnicode_Check(args))
+        return PyErr_Format(PyExc_TypeError, "Expecting a sequence of numeric args");
+
+    // break open args seq. if we think it matches this API's needs
+    if (PySequence_Size(args) == 1)
     {
-        PyObject     *tuple;
-        if(!PyArg_ParseTuple(args, "O", &tuple))
-            return NULL;
-
-        if(PyTuple_Check(tuple))
-        {
-            if(PyTuple_Size(tuple) != 3)
-                return NULL;
-
-            PyErr_Clear();
-            for(int i = 0; i < PyTuple_Size(tuple); ++i)
-            {
-                PyObject *item = PyTuple_GET_ITEM(tuple, i);
-                if(PyFloat_Check(item))
-                    dvals[i] = PyFloat_AS_DOUBLE(item);
-                else if(PyInt_Check(item))
-                    dvals[i] = double(PyInt_AS_LONG(item));
-                else if(PyLong_Check(item))
-                    dvals[i] = PyLong_AsDouble(item);
-                else
-                    dvals[i] = 0.;
-            }
-        }
-        else
-            return NULL;
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PySequence_Check(packaged_args) && !PyUnicode_Check(packaged_args) &&
+            PySequence_Size(packaged_args) == 3)
+            args = packaged_args;
     }
+
+    if (PySequence_Size(args) != 3)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "Expecting 3 numeric args");
+    }
+
+    for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)
+    {
+        PyObject *item = PySequence_GetItem(args, i);
+
+        if (!PyNumber_Check(item))
+        {
+            Py_DECREF(item);
+            Py_XDECREF(packaged_args);
+            return PyErr_Format(PyExc_TypeError, "arg %d is not a number type", (int) i);
+        }
+
+        double val = PyFloat_AsDouble(item);
+        double cval = double(val);
+
+        if (val == -1 && PyErr_Occurred())
+        {
+            Py_XDECREF(packaged_args);
+            Py_DECREF(item);
+            PyErr_Clear();
+            return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ double", (int) i);
+        }
+        if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+        {
+            Py_XDECREF(packaged_args);
+            Py_DECREF(item);
+            return PyErr_Format(PyExc_ValueError, "arg %d not interpretable as C++ double", (int) i);
+        }
+        Py_DECREF(item);
+
+        vals[i] = cval;
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Mark the point1 in the object as modified.
     obj->data->SelectPoint1();
@@ -151,35 +176,60 @@ CylinderAttributes_SetPoint2(PyObject *self, PyObject *args)
 {
     CylinderAttributesObject *obj = (CylinderAttributesObject *)self;
 
-    double *dvals = obj->data->GetPoint2();
-    if(!PyArg_ParseTuple(args, "ddd", &dvals[0], &dvals[1], &dvals[2]))
+    PyObject *packaged_args = 0;
+    double *vals = obj->data->GetPoint2();
+
+    if (!PySequence_Check(args) || PyUnicode_Check(args))
+        return PyErr_Format(PyExc_TypeError, "Expecting a sequence of numeric args");
+
+    // break open args seq. if we think it matches this API's needs
+    if (PySequence_Size(args) == 1)
     {
-        PyObject     *tuple;
-        if(!PyArg_ParseTuple(args, "O", &tuple))
-            return NULL;
-
-        if(PyTuple_Check(tuple))
-        {
-            if(PyTuple_Size(tuple) != 3)
-                return NULL;
-
-            PyErr_Clear();
-            for(int i = 0; i < PyTuple_Size(tuple); ++i)
-            {
-                PyObject *item = PyTuple_GET_ITEM(tuple, i);
-                if(PyFloat_Check(item))
-                    dvals[i] = PyFloat_AS_DOUBLE(item);
-                else if(PyInt_Check(item))
-                    dvals[i] = double(PyInt_AS_LONG(item));
-                else if(PyLong_Check(item))
-                    dvals[i] = PyLong_AsDouble(item);
-                else
-                    dvals[i] = 0.;
-            }
-        }
-        else
-            return NULL;
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PySequence_Check(packaged_args) && !PyUnicode_Check(packaged_args) &&
+            PySequence_Size(packaged_args) == 3)
+            args = packaged_args;
     }
+
+    if (PySequence_Size(args) != 3)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "Expecting 3 numeric args");
+    }
+
+    for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)
+    {
+        PyObject *item = PySequence_GetItem(args, i);
+
+        if (!PyNumber_Check(item))
+        {
+            Py_DECREF(item);
+            Py_XDECREF(packaged_args);
+            return PyErr_Format(PyExc_TypeError, "arg %d is not a number type", (int) i);
+        }
+
+        double val = PyFloat_AsDouble(item);
+        double cval = double(val);
+
+        if (val == -1 && PyErr_Occurred())
+        {
+            Py_XDECREF(packaged_args);
+            Py_DECREF(item);
+            PyErr_Clear();
+            return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ double", (int) i);
+        }
+        if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+        {
+            Py_XDECREF(packaged_args);
+            Py_DECREF(item);
+            return PyErr_Format(PyExc_ValueError, "arg %d not interpretable as C++ double", (int) i);
+        }
+        Py_DECREF(item);
+
+        vals[i] = cval;
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Mark the point2 in the object as modified.
     obj->data->SelectPoint2();
@@ -205,12 +255,48 @@ CylinderAttributes_SetRadius(PyObject *self, PyObject *args)
 {
     CylinderAttributesObject *obj = (CylinderAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the radius in the object.
-    obj->data->SetRadius(dval);
+    obj->data->SetRadius(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -229,12 +315,48 @@ CylinderAttributes_SetInverse(PyObject *self, PyObject *args)
 {
     CylinderAttributesObject *obj = (CylinderAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the inverse in the object.
-    obj->data->SetInverse(ival != 0);
+    obj->data->SetInverse(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -290,34 +412,47 @@ PyCylinderAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "inverse") == 0)
         return CylinderAttributes_GetInverse(self, NULL);
 
+
+    // Add a __dict__ answer so that dir() works
+    if (!strcmp(name, "__dict__"))
+    {
+        PyObject *result = PyDict_New();
+        for (int i = 0; PyCylinderAttributes_methods[i].ml_meth; i++)
+            PyDict_SetItem(result,
+                PyString_FromString(PyCylinderAttributes_methods[i].ml_name),
+                PyString_FromString(PyCylinderAttributes_methods[i].ml_name));
+        return result;
+    }
+
     return Py_FindMethod(PyCylinderAttributes_methods, self, name);
 }
 
 int
 PyCylinderAttributes_setattr(PyObject *self, char *name, PyObject *args)
 {
-    // Create a tuple to contain the arguments since all of the Set
-    // functions expect a tuple.
-    PyObject *tuple = PyTuple_New(1);
-    PyTuple_SET_ITEM(tuple, 0, args);
-    Py_INCREF(args);
-    PyObject *obj = NULL;
+    PyObject NULL_PY_OBJ;
+    PyObject *obj = &NULL_PY_OBJ;
 
     if(strcmp(name, "point1") == 0)
-        obj = CylinderAttributes_SetPoint1(self, tuple);
+        obj = CylinderAttributes_SetPoint1(self, args);
     else if(strcmp(name, "point2") == 0)
-        obj = CylinderAttributes_SetPoint2(self, tuple);
+        obj = CylinderAttributes_SetPoint2(self, args);
     else if(strcmp(name, "radius") == 0)
-        obj = CylinderAttributes_SetRadius(self, tuple);
+        obj = CylinderAttributes_SetRadius(self, args);
     else if(strcmp(name, "inverse") == 0)
-        obj = CylinderAttributes_SetInverse(self, tuple);
+        obj = CylinderAttributes_SetInverse(self, args);
 
-    if(obj != NULL)
+    if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
-    Py_DECREF(tuple);
-    if( obj == NULL)
-        PyErr_Format(PyExc_RuntimeError, "Unable to set unknown attribute: '%s'", name);
+    if (obj == &NULL_PY_OBJ)
+    {
+        obj = NULL;
+        PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);
+    }
+    else if (obj == NULL && !PyErr_Occurred())
+        PyErr_Format(PyExc_RuntimeError, "unknown problem with '%s'", name);
+
     return (obj != NULL) ? 0 : -1;
 }
 
@@ -325,7 +460,7 @@ static int
 CylinderAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     CylinderAttributesObject *obj = (CylinderAttributesObject *)v;
-    fprintf(fp, "%s", PyCylinderAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyCylinderAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -333,7 +468,7 @@ PyObject *
 CylinderAttributes_str(PyObject *v)
 {
     CylinderAttributesObject *obj = (CylinderAttributesObject *)v;
-    return PyString_FromString(PyCylinderAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyCylinderAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -485,7 +620,7 @@ PyCylinderAttributes_GetLogString()
 {
     std::string s("CylinderAtts = CylinderAttributes()\n");
     if(currentAtts != 0)
-        s += PyCylinderAttributes_ToString(currentAtts, "CylinderAtts.");
+        s += PyCylinderAttributes_ToString(currentAtts, "CylinderAtts.", true);
     return s;
 }
 
@@ -498,7 +633,7 @@ PyCylinderAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("CylinderAtts = CylinderAttributes()\n");
-        s += PyCylinderAttributes_ToString(currentAtts, "CylinderAtts.");
+        s += PyCylinderAttributes_ToString(currentAtts, "CylinderAtts.", true);
         cb(s);
     }
 }

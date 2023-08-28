@@ -1,0 +1,79 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta http-equiv="Content-Language" content="en-us">
+  <title>VisIt 3.3.1 Release Notes</title>
+</head>
+<body>
+<center><b><font size="6">VisIt 3.3.1 Release Notes</font></b></center>
+
+<p>Welcome to VisIt's release notes page. This page describes the important
+enhancements and bug-fixes that were added to this release.</p>
+
+<p><b>Sections</b></p>
+<ul>
+  <li><a href="#Bugs_fixed">Bug Fixes</a></li>
+  <li><a href="#Enhancements">Enhancements</a></li>
+  <li><a href="#Dev_changes">Changes for VisIt developers</a></li>
+</ul>
+
+<a name="Bugs_fixed"></a>
+<p><b><font size="4">Bugs fixed in version 3.3.1</font></b></p>
+<ul>
+  <li>Fixed a bug with the color table window where the list of color tables could be populated even when no tags were selected.</li>
+  <li>Fixed a discrepancy with the x ray image query where, if Blueprint output was requested, the result message from the query would display differently than the other output types.</li>
+  <li>Fixed a bug with the color table window searching feature where the name text box could no longer be properly edited.</li>
+  <li>Fixed a rare bug in the color table where if tagging was enabled, certain tags were turned on, and searching was enabled, a crash could occur.</li>
+  <li>Fixed a bug with the x ray image query, where a crash would occur if the specified output directory was too long.</li>
+  <li>Fixed an issue with the Tag Bar in the Manager portion of the color table window that caused it to display incorrect information while using the search feature.</li>
+  <li>The color table buttons now correctly preserve their value if the selected table has been filtered out of the list of color tables.</li>
+  <li>Resolved a rare issue with the default color table buttons that caused them to occasionally select a different color table if tagging and searching were enabled at the same time.</li>
+  <li>Fixed a bug where the default continuous and default discrete color table buttons no longer reflected accurate information when large numbers of color tables were deleted.</li>
+  <li>Fixed a bug where if a user deleted the final continuous/discrete color table in a filtering selection, the default continuous/discrete button did not update to a fall-back color table.</li>
+  <li>Fixed an issue where the default continuous and discrete color table buttons had a different idea of what the default color tables were than other parts of VisIt.</li>
+  <li>Added a guard so that it is impossible to delete the last continuous or last discrete color table.</li>
+  <li>Fixed a bug where it was possible to select a color table that was not in the tag-filtered list of color tables.</li>
+  <li>Fixed a crash caused by deleting a color table that was not in the filtered list of color tables.</li>
+  <li>Fixed a crash caused by clicking the delete button when no more color tables were in the filtered list.</li>
+  <li>Fixed an issue with the x ray image query that caused rays to sometimes be cast incorrectly when specifying non-square output.</li>
+  <li>Added a patch for the Mili reader that increases the maximum path length for input files from 300 to 4096 characters.</li>
+  <li>The widget for displaying Blueprint export options was improved to use a fixed-width font and ensure newlines are preserved.</li>
+  <li>The Mili reader now correctly computes displacements from the initial coordinates (via <code>mc_load_nodes()</code> from the Mili A file). Previously, it was computing displacements relative to the nodal positions (<code>nodpos</code> variable) at the initial timestep.</li>
+  <li>Pick now correctly takes into account the node origin.</li>
+</ul>
+
+<a name="Enhancements"></a>
+<p><b><font size="4">Enhancements in version 3.3.1</font></b></p>
+<ul>
+  <li>The x ray image query now supports file familying for Blueprint output.</li>
+  <li>In the color table window, the popup menu accessed via clicking on the default continuous color table button now correctly only displays continuous color tables, and the popup menu accessed from clicking on the default discrete color table button now correctly only displays discrete color tables.</li>
+  <li>Added a color table searching feature to help users more easily find the color tables they wish to use.</li>
+  <li>Added support for MFEM Low Order Refinement of piece-wise constant (L2) basis functions.</li>
+  <li>The x ray image query now outputs result messages in the case of failure while running in batch mode.</li>
+  <li>The Nsight systems cli is now available to profile a VisIt component (viewer, gui, etc).</li>
+  <li>The Tag Bar in the Manager portion of the Color Table Window is now always visible, instead of only being visible when tag filtering was enabled.</li>
+  <li>Color Table Tags are now deleted once no more color tables are associated with them.</li>
+  <li>There is no longer a limit on the number of color table tags VisIt supports.</li>
+  <li>The Mili reader now provides the volumetric strain and relative volume derived variables.</li>
+  <li>The x ray image query now outputs spatial extents metadata (the physical dimensions of the image).</li>
+</ul>
+
+<a name="Dev_changes"></a>
+<p><b><font size="4">Changes for VisIt developers in version 3.3.1</font></b></p>
+<ul>
+  <li>Added a patch to build_visit so that the Mili library will build on Debian 11 systems using gcc 10.2."</li>
+  <li>Enhanced the cmake packaging logic that adds the <code>libicui18n</code>, <code>libicudata</code> and <code>libicuuc</code> system libraries used by Qt to the lib directory to look in additional directories for the libraries to work on a broader set of operating systems.</li>
+  <li>Fixed a bug with <code>FindVTKh.cmake</code> where it wouldn't install the shared libraries when VTK-h was built with <code>spack</code>.</li>
+  <li>Fixed build errors where avtqueries need '-lrt' on Linux, and visitpy needed thread libs.</li>
+  <li>Removed --hdf4 as an option from build_visit.</li>
+  <li>Fixed VisIt's find module for Nektar++ so that it will correctly find the 5.0.0 version built by build_visit.</li>
+  <li>Added a patch to build_visit so that Qt 5.14.2 will build on Arch Linux systems using gcc 12.2.</li>
+  <li>Refactored the Blueprint and MFEM readers such that Blueprint to/from VTK, MFEM to/from VTK, and Blueprint to/from MFEM transformations are now widely available in the new avtBlueprint and avtMFEM libraries.</li>
+  <li>Updated build_visit to build Conduit 0.8.4.</li>
+</ul>
+
+<p>Click the following link to view the release notes for the previous version
+of VisIt: <a href=relnotes3.3.0.html>3.3.0</a>.</p>
+</body>
+</html>

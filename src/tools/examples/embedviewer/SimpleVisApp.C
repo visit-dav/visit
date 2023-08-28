@@ -69,6 +69,9 @@ SimpleVisApp::ReturnVisWin(void *data)
 //   Brad Whitlock, Fri Nov 21 10:23:46 PST 2008
 //   Fixed some slots for Qt 4.
 //
+//   Kathleen Biagas, Tue Apr 18 16:34:41 PDT 2023
+//   Support Qt6: buttonClicked -> idClicked.
+//
 // ****************************************************************************
 
 SimpleVisApp::SimpleVisApp(VisItViewer *v, int *argc, char ***argv)
@@ -83,7 +86,7 @@ SimpleVisApp::SimpleVisApp(VisItViewer *v, int *argc, char ***argv)
     setCentralWidget(central);
 
     QHBoxLayout *hLayout = new QHBoxLayout(central);
-    hLayout->setMargin(10);
+    hLayout->setContentsMargins(10,10,10,10);
     hLayout->setSpacing(10);
     QVBoxLayout *leftLayout = new QVBoxLayout(0);
     leftLayout->setSpacing(10);
@@ -109,8 +112,13 @@ SimpleVisApp::SimpleVisApp(VisItViewer *v, int *argc, char ***argv)
     rb = new QRadioButton(tr("Contour"), plotTypeWidget);
     plotType->addButton(rb, 1);
     ptLayout->addWidget(rb);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(plotType, SIGNAL(buttonClicked(int)),
             this, SLOT(changePlotType(int)));
+#else
+    connect(plotType, SIGNAL(idClicked(int)),
+            this, SLOT(changePlotType(int)));
+#endif
 
     contourWidget = new QWidget(central);
     leftLayout->addWidget(contourWidget);

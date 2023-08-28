@@ -22,7 +22,7 @@ PyObject *     PyLineoutAttributes_Wrap(const LineoutAttributes *attr);
 void           PyLineoutAttributes_SetParent(PyObject *obj, PyObject *parent);
 void           PyLineoutAttributes_SetDefaults(const LineoutAttributes *atts);
 std::string    PyLineoutAttributes_GetLogString();
-std::string    PyLineoutAttributes_ToString(const LineoutAttributes *, const char *);
+std::string    PyLineoutAttributes_ToString(const LineoutAttributes *, const char *, const bool=false);
 PyObject *     PyLineoutAttributes_getattr(PyObject *self, char *name);
 int            PyLineoutAttributes_setattr(PyObject *self, char *name, PyObject *args);
 extern PyMethodDef PyLineoutAttributes_methods[LINEOUTATTRIBUTES_NMETH];

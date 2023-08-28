@@ -23,7 +23,7 @@ VISITPY_API PyObject *     PyProcessAttributes_Wrap(const ProcessAttributes *att
 void VISITPY_API           PyProcessAttributes_SetParent(PyObject *obj, PyObject *parent);
 void VISITPY_API           PyProcessAttributes_SetDefaults(const ProcessAttributes *atts);
 std::string VISITPY_API    PyProcessAttributes_GetLogString();
-std::string VISITPY_API    PyProcessAttributes_ToString(const ProcessAttributes *, const char *);
+std::string VISITPY_API    PyProcessAttributes_ToString(const ProcessAttributes *, const char *, const bool=false);
 VISITPY_API PyObject *     PyProcessAttributes_getattr(PyObject *self, char *name);
 int VISITPY_API            PyProcessAttributes_setattr(PyObject *self, char *name, PyObject *args);
 VISITPY_API extern PyMethodDef PyProcessAttributes_methods[PROCESSATTRIBUTES_NMETH];

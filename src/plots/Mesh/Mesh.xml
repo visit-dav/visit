@@ -88,8 +88,6 @@
       </Field>
       <Function name="ChangesRequireRecalculation" user="true" member="true">
       </Function>
-      <Function name="ProcessOldVersions" user="true" member="true">
-      </Function>
       <Function name="CreateCompatible" user="false" member="true">
       </Function>
       <Function name="MeshViewerEnginePluginInfo::InitializePlotAtts" user="false" member="true">
@@ -98,6 +96,9 @@
       </Function>
       <Include file="source" quoted="false">
         PointGlyphAttributes.h
+      </Include>
+      <Include file="source" quoted="false" target="xml2python">
+        visit-config.h
       </Include>
     </Attribute>
   </Plugin>

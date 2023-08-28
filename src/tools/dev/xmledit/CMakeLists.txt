@@ -7,6 +7,12 @@
 #   Kathleen Bonnell, Wed Jan 05 10:25:13 PST 2010
 #   Add FOLDER property.
 #
+#   Kathleen Biagas, Thu Mar 30, 2023
+#   Use AUTOMOC target property instead of QT_WRAP_CPP macro.
+#
+#   Kathleen Biagas, Tue May 5, 2023
+#   Disable qt6 forcing of defines for UNICODE.
+#
 #****************************************************************************
 
 SET(XMLEDIT_SOURCES
@@ -25,22 +31,6 @@ XMLEditConstants.C
 XMLEditIncludes.C
 XMLEditMakefile.C
 )
-
-SET(XMLEDIT_MOC_SOURCES
-XMLEdit.h
-XMLEditAttribute.h
-XMLEditPlugin.h
-XMLEditEnums.h
-XMLEditFields.h
-XMLEditFunctions.h
-XMLEditCode.h
-XMLEditCodeGeneratorWindow.h
-XMLEditCodeSelectionDialog.h
-XMLEditConstants.h
-XMLEditIncludes.h
-XMLEditMakefile.h
-)
-QT_WRAP_CPP(xmledit XMLEDIT_SOURCES ${XMLEDIT_MOC_SOURCES})
 
 INCLUDE_DIRECTORIES(
 ${CMAKE_CURRENT_SOURCE_DIR}
@@ -61,13 +51,16 @@ IF(APPLE)
     SET(MACOSX_BUNDLE_LONG_VERSION_STRING  "XmlEdit version ${VISIT_VERSION}")
     SET(MACOSX_BUNDLE_SHORT_VERSION_STRING "XmlEdit ${VISIT_VERSION}")
     SET(MACOSX_BUNDLE_BUNDLE_VERSION       ${VISIT_VERSION})
-    SET(MACOSX_BUNDLE_COPYRIGHT            "Copyright (c) 2000 - 2019, Lawrence Livermore National Security, LLC")
+    SET(MACOSX_BUNDLE_COPYRIGHT            "Copyright (c) 2000 - 2023, Lawrence Livermore National Security, LLC")
 ELSE(APPLE)
     ADD_EXECUTABLE(xmledit ${VISIT_APPLICATION_STYLE} ${XMLEDIT_SOURCES})
 ENDIF(APPLE)
 
+set_target_properties(xmledit PROPERTIES AUTOMOC ON)
+
 SET(RELEVANT_QT_LIBS 
 ${QT_QTGUI_LIBRARY}
+${QT_QTWIDGETS_LIBRARY}
 ${QT_QTXML_LIBRARY}
 ${QT_QTCORE_LIBRARY}
 )
@@ -82,6 +75,10 @@ IF(VISIT_STATIC)
 ENDIF(VISIT_STATIC)
 
 TARGET_LINK_LIBRARIES(xmledit ${RELEVANT_QT_LIBS})
+
+if(QT_VERSION VERSION_GREATER_EQUAL "6.2.0")
+    qt6_disable_unicode_defines(xmledit)
+endif()
 
 VISIT_INSTALL_TARGETS(xmledit)
 VISIT_TOOLS_ADD_FOLDER(xml xmledit)

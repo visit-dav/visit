@@ -132,6 +132,9 @@ YoungsMIR::ReconstructMesh(vtkDataSet *orig_ds, avtMaterial *orig_mat, int dim)
         char str[256];
         sprintf(str, "material%05d", mapUsedMatToMat[m]);
         ds->GetCellData()->SetActiveScalars(str);
+        // KSB: VTK (as of version 9) complains if this isn't set, because the
+        // grad filter calls GetInputArrayToProcess
+        grad->SetInputArrayToProcess(0,0,0,vtkDataObject::FIELD_ASSOCIATION_CELLS, str);
 
         char str2[256];
         sprintf(str2, "grad%05d", mapUsedMatToMat[m]);
@@ -213,7 +216,7 @@ YoungsMIR::ReconstructMesh(vtkDataSet *orig_ds, avtMaterial *orig_mat, int dim)
 //    Main method for interface reconstruction in 3D.
 //
 //  Arguments:
-//    
+//
 //
 //  Programmer:  Jeremy Meredith
 //  Creation:    August  4, 2009
@@ -232,7 +235,7 @@ YoungsMIR::Reconstruct3DMesh(vtkDataSet *ds, avtMaterial *mat)
 //    Main method for interface reconstruction in 2D.
 //
 //  Arguments:
-//    
+//
 //
 //  Programmer:  Jeremy Meredith
 //  Creation:    August  4, 2009
@@ -270,7 +273,7 @@ YoungsMIR::Reconstruct2DMesh(vtkDataSet *ds, avtMaterial *mat)
 //
 // ****************************************************************************
 vtkDataSet *
-YoungsMIR::GetDataset(std::vector<int> mats, vtkDataSet *ds, 
+YoungsMIR::GetDataset(std::vector<int> mats, vtkDataSet *ds,
                       std::vector<avtMixedVariable *> mixvars,
                       bool doMats,
                       avtMaterial *mat)
@@ -297,7 +300,7 @@ YoungsMIR::GetDataset(std::vector<int> mats, vtkDataSet *ds,
                     break;
                 }
             }
-        
+
             if (index >= 0)
             {
                 matIndex.push_back(index);

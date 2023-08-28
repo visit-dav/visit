@@ -26,6 +26,9 @@ import time
 #   Kevin Griffin, Wed Jun 19 19:48:07 PDT 2019
 #   Added the QT_XCB_NATIVE_PAINTING environment variable.
 #
+#   Cyrus Harrison, Mon Jun  7 09:53:53 PDT 2021
+#   Python 3 universal_newlines for Popen
+#
 ###############################################################################
 
 class JobSubmitter(object):
@@ -74,17 +77,25 @@ class JobSubmitter(object):
         return str(int(math.ceil(float(self.parallel.np) / float(self.parallel.nn))))
 
     # Open MPI and MPICH have different arguments for the process per node flag.
-    # This function trys to decide with flag to use. It defaults to MPICH.
+    # This function trys to decide which flag to use. If it fails to run mpirun
+    # or DOES NOT find the string "Open MPI" in the result, it assumes MPICH.
     def PPNArgument(self):
-        p = subprocess.Popen(["mpirun", "--version"], stderr=subprocess.PIPE, stdout=subprocess.PIPE)
-        output = p.communicate()
-        new = ' '.join(output)
-        if new.find("Open MPI") == -1:
-            # MPICH
-            return "-ppn"
-        else:
-            # Open MPI
-            return "-npernode"
+        try:
+            p = subprocess.Popen(["mpirun", "--version"],
+                                 universal_newlines=True,
+                                 stderr=subprocess.PIPE,
+                                 stdout=subprocess.PIPE)
+            output = p.communicate()
+            new = ' '.join(output)
+            if new.find("Open MPI") == -1:
+                # MPICH
+                return "-ppn"
+            else:
+                # Open MPI
+                return "-npernode"
+        except:
+            pass
+        return "-ppn"
 
     def CreateCommand(self, args, debugger):
         parcmd = self.Executable()
@@ -532,6 +543,8 @@ class JobSubmitter_psub(JobSubmitter):
 # Date:       Thu May 17 14:22:04 PDT 2012
 #
 # Modifications:
+#   Eric Brugger, Wed 07 Jun 2023 03:56:57 PM PDT
+#   Updated the srun invocation.
 #
 ###############################################################################
 
@@ -561,10 +574,7 @@ class JobSubmitter_salloc(JobSubmitter):
         if self.parallel.launchargs != None:
             parcmd = parcmd + self.parallel.launchargs
 
-        parcmd = parcmd + ["srun","-N1","-n1","--preserve-env","--mpi=none", "mpirun"]
-
-        if self.parallel.nn != None:
-            parcmd = parcmd + ["--npernode", self.PPN()]
+        parcmd = parcmd + ["srun"]
 
         parcmd = debugger.CreateCommand(parcmd + self.VisItExecutable() + args)
 
@@ -643,6 +653,7 @@ output streams.
         env = env + ",VISITHOME=" + GETENV("VISITHOME")
         env = env + ",VISITARCHHOME=" + GETENV("VISITARCHHOME")
         env = env + ",VISITPLUGINDIR=" + GETENV("VISITPLUGINDIR")
+        env = env + ",PYTHONHOME=" + GETENV("PYTHONHOME")
         return [env]
 
     def mpiexec(self):
@@ -1498,6 +1509,38 @@ class CudaMemcheck(Debugger):
         return launcherargs + self.Executable() + visitargs
 
 ###############################################################################
+# Class: NsightSystems
+#
+# Purpose: Launch a VisIt component under Nsight Systems. Anaylzes component
+#          performance system-wide.
+#
+# Programmer: Kevin Griffin
+# Date:       Fri Sep  9 13:56:16 PDT 2022
+#
+# Modifications:
+#
+###############################################################################
+
+class NsightSystems(Debugger):
+    def __init__(self, launcher):
+        super(NsightSystems, self).__init__(launcher)
+
+    def Executable(self):
+        return ["nsys"]
+
+    def CreateCommand(self, args):
+        launcherargs, visitargs = self.SeparateArguments(args)
+        nsysargs = self.DebuggerArguments()
+
+        if len(nsysargs) == 0:
+            nsysargs = ["profile", "--stats=true", "--gpu-metrics-device=all"]
+
+        if len(launcherargs) > 0:
+            return launcherargs + self.Executable() + nsysargs + visitargs
+        else:
+            return self.Executable() + nsysargs + visitargs
+
+###############################################################################
 # Class: ValgrindDebugger
 #
 # Purpose:    Launch a VisIt component under valgrind.
@@ -1607,6 +1650,34 @@ class StraceDebugger(Debugger):
             strace = strace + ["-ttt", "-T"]
         launcherargs, visitargs = self.SeparateArguments(args)
         return launcherargs + strace + visitargs
+
+###############################################################################
+# Class: RocprofDebugger
+#
+# Purpose:    Launch a VisIt component under rocprof.
+#
+# Programmer: Eric Brugger
+# Date:       Fri Feb 24 14:57:15 PST 2023
+#
+# Modifications:
+#
+###############################################################################
+
+class RocprofDebugger(Debugger):
+    def __init__(self, launcher):
+        super(RocprofDebugger, self).__init__(launcher)
+
+    def Executable(self):
+        return ["echo"]
+
+    def CreateCommand(self, args):
+        rocprof = self.Executable()
+        if len(self.debug.debuggerArgs) > 1:
+            rocprof = rocprof + self.DebuggerArguments()
+        else:
+            rocprof = rocprof + ["rocprof", "--hip-trace", "-o", "hiptraceout.csv"]
+        launcherargs, visitargs = self.SeparateArguments(args)
+        return launcherargs + rocprof + visitargs
 
 ###############################################################################
 # Class: ApitraceDebugger
@@ -2157,6 +2228,9 @@ class DebugArguments(object):
 #   Eric Brugger, Mon Jan  6 16:49:51 PST 2020
 #   Added mcurvit to the list of component names.
 #
+#   Cyrus Harrison, Mon Jun  7 09:53:53 PDT 2021
+#   Python 3 universal_newlines for Popen
+#
 ###############################################################################
 
 class MainLauncher(object):
@@ -2264,9 +2338,14 @@ class MainLauncher(object):
         try:
              if stdinpipe:
                   # Launchers like msub need this in order to work.
-                  p = subprocess.Popen(args, stdin=subprocess.PIPE, env=env)
+                  p = subprocess.Popen(args,
+                                       universal_newlines=True,
+                                       stdin=subprocess.PIPE,
+                                       env=env)
              else:
-                  p = subprocess.Popen(args, env=env)
+                  p = subprocess.Popen(args,
+                                       universal_newlines=True,
+                                       env=env)
              p.communicate()
              ret = p.returncode
         except KeyboardInterrupt:
@@ -2442,6 +2521,9 @@ class MainLauncher(object):
     #   I corrected a bug that incorrectly identified the machine architecture
     #   on some Mac systems.
     #
+    #   Cyrus Harrison, Mon Jun  7 09:53:53 PDT 2021
+    #   Python 3 universal_newlines for Popen
+    #
     ############################################################################
 
     def DetermineArchitecture(self):
@@ -2497,7 +2579,9 @@ class MainLauncher(object):
                 # between 32 and 64 bits using system_profiler.
                 #
                 pargs = ["/usr/sbin/system_profiler", "-detailLevel", "-2"]
-                p = subprocess.Popen(pargs, stdout=subprocess.PIPE)
+                p = subprocess.Popen(pargs,
+                                     universal_newlines=True,
+                                     stdout=subprocess.PIPE)
                 output = p.communicate()[0]
                 lines = output.split("\n")
                 for line in lines:
@@ -2649,11 +2733,14 @@ class MainLauncher(object):
     # Date: Tue Apr 29 13:14:51 PDT 2014
     #
     # Modifications:
+    #  Cyrus Harrison, Mon Jun  7 09:53:53 PDT 2021
+    #  Python 3 universal_newlines for Popen
     #
     ############################################################################
     def SourceEnvScript(self,shell_script_file,all_pairs=False):
         shell_script_file = os.path.abspath(shell_script_file)
         p = subprocess.Popen(["-c", "source %s && env " % shell_script_file ],
+                             universal_newlines=True,
                              stdin=subprocess.PIPE,
                              stdout=subprocess.PIPE,
                              shell=True )
@@ -2700,6 +2787,8 @@ class MainLauncher(object):
     # Date: Tue Apr 29 13:14:51 PDT 2014
     #
     # Modifications:
+    #  Cyrus Harrison, Mon Jun  7 09:53:53 PDT 2021
+    #  Python 3 universal_newlines for Popen
     #
     ############################################################################
     def LoadEnvModules(self,module_names,all_pairs=False):
@@ -2708,6 +2797,7 @@ class MainLauncher(object):
             script_src += " && module load " + mod_name
         script_src += " && env "
         p = subprocess.Popen(["-c", script_src],
+                             universal_newlines=True,
                              stdin=subprocess.PIPE,
                              stdout=subprocess.PIPE,
                              shell=True )
@@ -2855,6 +2945,13 @@ class MainLauncher(object):
     #   custom launcher since doing it here interfered with other sites that
     #   were setting LD_PRELOAD to get VisIt to work.
     #
+    #   Eric Brugger, Tue Jul 20 12:41:04 PDT 2021
+    #   Modified to only setenv QT_XCB_NATIVE_PAINTING if using mesagl.
+    #
+    #   Eric Brugger, Fri Jan 21 13:16:48 PST 2022
+    #   Add lib/mesagl to the LD_LIBRARY_PATH for qtviswinExample,
+    #   qtvtkExample and qvtkopenglExample.
+    #
     ############################################################################
 
     def SetupEnvironment(self):
@@ -2940,11 +3037,6 @@ class MainLauncher(object):
         # the GUI and Viewer.
         SETENV("MESA_GLX_FX", "disable")
 
-        # Enabled the native renderer.
-        # This resolves the toolbar rendering issue when doing an initial zoom
-        # while doing X forwarding.
-        SETENV("QT_XCB_NATIVE_PAINTING", "1")
-
         # The -viewerdisplay argument allows the user to specify an argument
         # that the viewer should use, no matter what the GUI was using.  This
         # can be useful for wall-type displays with a separate console, e.g.
@@ -2956,8 +3048,9 @@ class MainLauncher(object):
             SETENV("DISPLAY", self.generalArgs.viewerdisplay)
 
         #
-        # Use mesagl for opengl with the gui, engine, mcurvit or with the
-        # viewer running with a window.
+        # Use mesagl for opengl with the gui, engine, mcurvit, qtviswinExample,
+        # qtvtkExample, qvtkopenglExample or with the viewer running with a
+        # window.
         #
         mesa_gl_dir = os.path.join(self.visitlibdir,"mesagl")
         mesa_gl_lib = os.path.join(mesa_gl_dir,"libGL.so.1")
@@ -2965,9 +3058,18 @@ class MainLauncher(object):
             ( self.generalArgs.exe_name.startswith("gui") or
               self.generalArgs.exe_name.startswith("engine") or
               self.generalArgs.exe_name.startswith("mcurvit") or
+              self.generalArgs.exe_name.startswith("qtviswinExample") or
+              self.generalArgs.exe_name.startswith("qtvtkExample") or
+              self.generalArgs.exe_name.startswith("qvtkopenglExample") or
               (self.generalArgs.exe_name == "viewer" and
                self.generalArgs.nowin == 0))):
             SETENV("LD_LIBRARY_PATH", self.joinpaths([mesa_gl_dir, GETENV("LD_LIBRARY_PATH")]))
+
+        # Enable the native renderer when using mesagl. Enabling it with
+        # opengl results in a black image. This resolves the toolbar
+        # rendering issue when doing an initial zoom while doing X forwarding.
+        if os.path.isfile(mesa_gl_lib):
+            SETENV("QT_XCB_NATIVE_PAINTING", "1")
 
         #
         # OSMesa GL Settings
@@ -3133,6 +3235,8 @@ class MainLauncher(object):
     # Date: Thu May 31 10:19:44 PDT 2012
     #
     # Modifications:
+    #  Cyrus Harrison, Mon Jun  7 09:53:53 PDT 2021
+    #  Python 3 universal_newlines for Popen
     #
     ############################################################################
 
@@ -3163,7 +3267,9 @@ class MainLauncher(object):
                     cdcmd = "cd %s" % os.path.abspath(os.curdir)
                     visitcmd = " ".join(newcmd)
 
-                    osascript = subprocess.Popen(["osascript"], stdin=subprocess.PIPE)
+                    osascript = subprocess.Popen(["osascript"],
+                                                 universal_newlines=True,
+                                                 stdin=subprocess.PIPE)
                     osascript.stdin.write('tell application "Terminal"\n')
                     osascript.stdin.write('activate\n')
                     osascript.stdin.write('do script with command "%s; %s ; exit"\n' % (cdcmd, visitcmd))
@@ -3208,6 +3314,12 @@ VisIt does not recognize your terminal application so it will ignore the -newcon
     #   Kevin Griffin, Mon Mar 21 16:34:52 PDT 2016 
     #   Added cuda-memcheck.
     #
+    #   Kevin Griffin, Fri Sep  9 13:56:16 PDT 2022
+    #   Added nsys.
+    #
+    #   Eric Brugger, Fri Feb 24 14:57:15 PST 2023
+    #   Added rocprof.
+    #
     ############################################################################
     def Debuggers(self):
         return ["gdb",
@@ -3222,7 +3334,9 @@ VisIt does not recognize your terminal application so it will ignore the -newcon
                 "nvprof",
                 "cuda-memcheck",
                 "vtune",
-                "instruments"]
+                "instruments",
+                "nsys",
+                "rocprof"]
 
     ############################################################################
     # Method: DebuggerFactory
@@ -3247,6 +3361,12 @@ VisIt does not recognize your terminal application so it will ignore the -newcon
     #
     #   Kevin Griffin Mon Mar 21 16:34:52 PDT 2016
     #   Added cuda-memcheck.
+    #
+    #   Kevin Griffin, Fri Sep  9 13:56:16 PDT 2022
+    #   Added nsys.
+    #
+    #   Eric Brugger, Fri Feb 24 14:57:15 PST 2023
+    #   Added rocprof.
     #
     ############################################################################
 
@@ -3277,6 +3397,10 @@ VisIt does not recognize your terminal application so it will ignore the -newcon
             return VTuneProfiler(self)
         elif debugger == "instruments":
             return InstrumentsProfiler(self)
+        elif debugger == "nsys":
+            return NsightSystems(self)
+        elif debugger == "rocprof":
+            return RocprofDebugger(self)
         # Return a debugger that does not do anything.
         return Debugger(self)
 

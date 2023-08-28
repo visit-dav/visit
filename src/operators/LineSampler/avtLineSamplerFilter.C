@@ -212,7 +212,7 @@ avtLineSamplerFilter::InitializeTimeLoop(void)
 
     // Misc initializations
     if( atts.GetToroidalIntegration() ==
-        LineSamplerAttributes::ToroidalTimeSample ||
+        LineSamplerAttributes::SampleToroidally ||
         atts.GetToroidalIntegration() ==
         LineSamplerAttributes::IntegrateToroidally )
     {
@@ -307,7 +307,7 @@ avtLineSamplerFilter::Execute()
         GetInput()->GetInfo().GetAttributes().TimeIsAccurate() )
       timeAxisValue =
         GetInput()->GetInfo().GetAttributes().GetTime();
-    
+
     else if( atts.GetDisplayTime() == LineSamplerAttributes::Cycle &&
              GetInput()->GetInfo().GetAttributes().CycleIsAccurate() )
       timeAxisValue =
@@ -329,7 +329,7 @@ avtLineSamplerFilter::Execute()
     double startAngle = 0, stopAngle = 1, deltaAngle = 1;
 
     if( atts.GetToroidalIntegration() ==
-        LineSamplerAttributes::ToroidalTimeSample ||
+        LineSamplerAttributes::SampleToroidally ||
         atts.GetToroidalIntegration() ==
         LineSamplerAttributes::IntegrateToroidally )
     {
@@ -373,7 +373,7 @@ avtLineSamplerFilter::Execute()
     else //if( atts.GetArrayConfiguration() == LineSamplerAttributes::Manual )
     {
       nArrays = atts.GetNChannelListArrays();
-      
+
       // Currently only one type of conf file.
       std::vector<double> listOfChannels = atts.GetChannelList();
       nChannels = (int)listOfChannels.size() / 4;
@@ -409,7 +409,7 @@ avtLineSamplerFilter::Execute()
       else // if( atts.GetTimeSampling() ==
            //     LineSamplerAttributes::MultipleTimeSteps ||
            //     atts.GetToroidalIntegration() ==
-           //     LineSamplerAttributes::ToroidalTimeSample ||
+           //     LineSamplerAttributes::SampleToroidally ||
            //     atts.GetToroidalIntegration() ==
            //     LineSamplerAttributes::IntegrateToroidally )
       {
@@ -420,7 +420,7 @@ avtLineSamplerFilter::Execute()
             std::string(" For collating multiple angles and/or time steps ") +
             std::string("the resulting plots are not two dimensional. ") +
             std::string("Showing the original channel sampling.");
-          
+
           avtCallback::IssueWarning(msg.c_str());
 
           composite_ds = tmp_ds;
@@ -428,8 +428,9 @@ avtLineSamplerFilter::Execute()
           return;
         }
 
+        double heightPlotScale   = atts.GetHeightPlotScale();
         double channelPlotOffset = atts.GetChannelPlotOffset();
-        double heightPlotScale = atts.GetHeightPlotScale();
+        double arrayPlotOffset   = atts.GetArrayPlotOffset();
 
         // Each point becomes a line
         int nLines = tmp_ds->GetNumberOfPoints();
@@ -440,10 +441,10 @@ avtLineSamplerFilter::Execute()
           nPts = nTimeSteps;
         else
           nPts = nTimeSteps * nAngleSamples;
-        
+
         // First time through, create a dataset for the collating.
         if( lineSamples.size() == 0 )
-        {         
+        {
           lineSamples.resize( nLines );
 
           for( int i=0; i<nLines; ++i )
@@ -453,7 +454,7 @@ avtLineSamplerFilter::Execute()
         // // Create groups that represent each channel.
         // vtkPoints *points;
         // vtkCellArray *lines;
-    
+
         // // Create a new VTK polydata.
         // vtkPolyData *polydata;
 
@@ -473,13 +474,13 @@ avtLineSamplerFilter::Execute()
         //   polydata = vtkPolyData::New();
         //   polydata->SetPoints(points);
         //   polydata->SetLines(lines);
-    
+
         //   for( int i=0; i<lineSamples.size(); ++i )
         //   {
         //     // Create a new VTK polyline.
         //     vtkPolyLine *line = vtkPolyLine::New();
         //     line->GetPointIds()->SetNumberOfIds(nPts);
-            
+
         //     for( unsigned int j=0; j<lineSamples[i].size(); ++j )
         //     {
         //       points->InsertPoint(i*nPts+j, 0, 0, 0 );
@@ -496,16 +497,16 @@ avtLineSamplerFilter::Execute()
 
         //   polydata->GetPointData()->ShallowCopy(tmp_ds->GetPointData());
         //   polydata->GetCellData()->ShallowCopy(tmp_ds->GetCellData());
-          
+
         //   composite_ds = polydata;
 
           // //Create and initalize the new dataset
           // uGrid = vtkPolyData::New();
           // uGrid->SetPoints( vtkPoints::New() );
-          
+
           // uGrid->GetPointData()->ShallowCopy(tmp_ds->GetPointData());
           // uGrid->GetCellData()->ShallowCopy(tmp_ds->GetCellData());
-          
+
           // composite_ds = uGrid;
 //         }
 // //        else
@@ -516,81 +517,81 @@ avtLineSamplerFilter::Execute()
 
 //           // uGrid = vtkPolyData::SafeDownCast(composite_ds);
 //         }
-        
+
         // int tPoints = composite_ds->GetNumberOfPoints();
         int nPoints = tmp_ds->GetNumberOfPoints();
-        
+
         // Sanity check.
         if( nPoints != nArrays * nChannels )
         {
           std::string msg;
           msg += "The number of samples per channel is greater than one. " +
             std::string("Each sample will be part of single 1D curve");
-          
+
           avtCallback::IssueWarning(msg.c_str());
         }
 
         // First time through when integrating toroidally set the
         // number entries and initize to zero.
         if( atts.GetToroidalIntegration() ==
-            LineSamplerAttributes::IntegrateToroidally && 
+            LineSamplerAttributes::IntegrateToroidally &&
             ToroidalIntegrationSum.size() == 0 )
         {
           ToroidalIntegrationSum.resize( nPoints );
-          
+
           for( unsigned int i=0; i< (unsigned int)nPoints; ++i )
             ToroidalIntegrationSum[i] = 0;
         }
 
-        double nextPathPoint[3];
+        double xVal;
 
         if( atts.GetViewDimension() == LineSamplerAttributes::One )
         {
           // When samplng toroidally and over time use the time as the
           // major "index" and the angle (0->360) as the minor "index".
           if( atts.GetToroidalIntegration() ==
-              LineSamplerAttributes::ToroidalTimeSample )
+              LineSamplerAttributes::SampleToroidally )
           {
             if( atts.GetTimeSampling() ==
                 LineSamplerAttributes::MultipleTimeSteps )
             {
-              nextPathPoint[0] = currentTime * (stopAngle-startAngle) +
+              xVal = currentTime * (stopAngle-startAngle) +
                 cachedAngle - (double) (360.0 * (int) (cachedAngle / 360.0));
             }
-            
+
             // Toroidal sampling so use the angle (0->360).
             else
             {
-              nextPathPoint[0] =
+              xVal =
                 cachedAngle - (double) (360.0 * (int) (cachedAngle / 360.0));
             }
           }
-          
+
           // Sampling toroidally with integration gives a single value.
           else if( atts.GetToroidalIntegration() ==
                    LineSamplerAttributes::IntegrateToroidally )
           {
-            nextPathPoint[0] = timeAxisValue;
+              xVal = timeAxisValue;
           }
-          
+
           // Pure sampling over time so use the value specifed by the
           // user.
           else if( atts.GetTimeSampling() ==
                    LineSamplerAttributes::MultipleTimeSteps )
           {
-              nextPathPoint[0] = timeAxisValue;
+              xVal = timeAxisValue;
           }
-          
-          nextPathPoint[2] = 0;
         }
 
-        // Traverse all points
-        for( unsigned int i=0; i< (unsigned int)nPoints; ++i )
+        double nextPathPoint[3] = {0,0,0};
+
+        // Traverse all points (across all arrays and all channels).
+        for( unsigned int i=0; i< (unsigned int) nPoints; ++i )
         {
           // Get the next point and update its coordinates if necessary
           vtkDataArray *scalars = tmp_ds->GetPointData()->GetScalars();
 
-          double val = *(scalars->GetTuple(i));
+          double yVal = *(scalars->GetTuple(i));
 
           if( atts.GetViewDimension() == LineSamplerAttributes::One )
           {
@@ -598,12 +599,12 @@ avtLineSamplerFilter::Execute()
             if( atts.GetToroidalIntegration() ==
                 LineSamplerAttributes::IntegrateToroidally )
             {
-              ToroidalIntegrationSum[i] += val;
-              
+              ToroidalIntegrationSum[i] += yVal;
+
               // Last sample so set the value as it is used below.
               if( cachedAngle+deltaAngle>=stopAngle )
               {
-                val = ToroidalIntegrationSum[i];
+                yVal = ToroidalIntegrationSum[i];
               }
             }
           }
@@ -620,11 +621,22 @@ avtLineSamplerFilter::Execute()
                LineSamplerAttributes::IntegrateToroidally &&
                cachedAngle + deltaAngle >= stopAngle) )
           {
-
             if( atts.GetViewDimension() == LineSamplerAttributes::One )
             {
-              nextPathPoint[1] = val * heightPlotScale +
-                (double) i * channelPlotOffset;
+              // Backout the array and channel index.
+              int a = i / nChannels;
+              int c = i % nChannels;
+
+              nextPathPoint[0] = xVal
+                  // Adjust the X coordinate for each array
+                  + (double) a * arrayPlotOffset;
+
+              // Create a height field plot by adjusting Y
+              nextPathPoint[1] = yVal * heightPlotScale
+                  // Adjust the Y coordinate for each channel
+                  + (double) c * channelPlotOffset;
+
+              nextPathPoint[2] = 0;
             }
             else
             {
@@ -632,8 +644,7 @@ avtLineSamplerFilter::Execute()
             }
 
             lineSamples[i].push_back( std::pair< avtVector, float >
-                                      (avtVector( nextPathPoint ), val) );
-;
+                                      (avtVector( nextPathPoint ), yVal) );
 
             // int pIndex = GetFrame() * nAngleSamples + angleCount;
 
@@ -676,11 +687,11 @@ avtLineSamplerFilter::Execute()
             // // Insert the new point into the list.
             // vtkPoints* pathPoints = uGrid->GetPoints();
             // pathPoints->InsertNextPoint( nextPathPoint );
-            
+
             // // The index of the new point
             // int newPointIndex = uGrid->GetPoints()->GetNumberOfPoints()-1;
             // int newCellIndex = uGrid->GetNumberOfCells()-1;
-        
+
             // // Copy the pointdata from the input mesh to the output mesh
             // vtkPointData* allData  = uGrid->GetPointData();
             // vtkPointData* currData = tmp_ds->GetPointData();
@@ -690,16 +701,16 @@ avtLineSamplerFilter::Execute()
             //   allData->GetArray(j)->
             //     InsertTuple( newPointIndex, currData->GetArray(j)->GetTuple(i) );
             // }
-          
+
             // vtkCellData* allCellData = uGrid->GetCellData();
             // vtkCellData* currCellData = tmp_ds->GetCellData();
-          
+
             // for( unsigned int j=0; j<currCellData->GetNumberOfArrays(); j++)
             // {
             //   allCellData->GetArray(j)->
             //     InsertTuple( newCellIndex, currCellData->GetArray(j)->GetTuple(i) );
             // }
-        
+
             // newCellIndex++;
 
             // // If the geometry is not points but only a single time
@@ -707,7 +718,7 @@ avtLineSamplerFilter::Execute()
             // if( atts.GetViewGeometry() == LineSamplerAttributes::Points ||
 
             //     (atts.GetToroidalIntegration() ==
-            //      LineSamplerAttributes::IntegrateToroidally && 
+            //      LineSamplerAttributes::IntegrateToroidally &&
             //      atts.GetTimeSampling() ==
             //      LineSamplerAttributes::CurrentTimeStep) ||
 
@@ -728,7 +739,7 @@ avtLineSamplerFilter::Execute()
             //     allCellData->GetArray(j)->
             //    InsertTuple( newCellIndex, currCellData->GetArray(j)->GetTuple(i) );
             //   }
-          
+
             //   newCellIndex++;
             //   delete[] pointList;
             // }
@@ -749,7 +760,7 @@ avtLineSamplerFilter::Execute()
             //     allCellData->GetArray(j)->
             //       InsertTuple( newCellIndex, currCellData->GetArray(j)->GetTuple(i) );
             //   }
-              
+
             //   newCellIndex++;
             //   delete[] pointList;
             // }
@@ -818,7 +829,7 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
       {
         std::string msg;
         msg += "The number of channels is less than one. Returning.";
-          
+
         avtCallback::IssueWarning(msg.c_str());
 
         return NULL;
@@ -830,14 +841,14 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
       toroidalArrayAngle = atts.GetChannelListToroidalArrayAngle();
 
       toroidalOffsetAngle = atts.GetChannelListToroidalAngle();
-      
+
       nChannels = (int)listOfChannels.size() / 4;
 
       if( nChannels < 1 )
       {
         std::string msg;
         msg += "The number of channels is less than one. Returning.";
-          
+
         avtCallback::IssueWarning(msg.c_str());
 
         return NULL;
@@ -850,7 +861,7 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
       msg += "The number of arrays is greater than one. " +
         std::string("But the angle/distance between each is zero, ") +
         std::string("returning a single array." );
-          
+
       avtCallback::IssueWarning(msg.c_str());
 
       nArrays = 1;
@@ -867,12 +878,12 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
       std::string msg;
       msg += "The number of rows is less than one. " +
         std::string("Returning a single row." );
-          
+
       avtCallback::IssueWarning(msg.c_str());
 
       nRows = 1;
     }
-    
+
     double *arrayOrigin = atts.GetArrayOrigin();
 
     double poloidalOffsetAngle, rTilt, zTilt;
@@ -898,9 +909,9 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
       std::string msg;
       msg += "The sample distance is less than zero. " +
           std::string("Can not create channel(s), returning." );
-      
+
       avtCallback::IssueWarning(msg.c_str());
-      
+
       return NULL;
     }
 
@@ -910,9 +921,9 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
       std::string msg;
       msg += "The radius is less than zero. " +
           std::string("Can not create cylindrical channel(s), returning." );
-      
+
       avtCallback::IssueWarning(msg.c_str());
-      
+
       return NULL;
     }
 
@@ -922,15 +933,15 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
       std::string msg;
       msg += "The divergence is less than zero. " +
           std::string("Can not create conical channel(s), returning." );
-      
+
       avtCallback::IssueWarning(msg.c_str());
-      
+
       return NULL;
     }
 
-    double heightPlotScale = atts.GetHeightPlotScale();
+    double heightPlotScale    = atts.GetHeightPlotScale();
     double channelPlotOffset  = atts.GetChannelPlotOffset();
-    double arrayPlotOffset = atts.GetArrayPlotOffset();
+    double arrayPlotOffset    = atts.GetArrayPlotOffset();
 
     // Get the indexing offset so that it is easy to calculate the
     // line location based on a 0 to nChannels loop.
@@ -952,7 +963,7 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
         msg += "The number of channels is greater than one. " +
           std::string("But the distance between is zero, ") +
           std::string("returning a single channel." );
-        
+
         avtCallback::IssueWarning(msg.c_str());
 
         nChannels = 1;
@@ -981,7 +992,7 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
         msg += "The number of channels is greater than one. " +
           std::string("But the distance between is zero, ") +
           std::string("returning a single channel." );
-        
+
         avtCallback::IssueWarning(msg.c_str());
 
         nChannels = 1;
@@ -995,7 +1006,7 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
         msg += "The number of rows is greater than one. " +
           std::string("But the distance between is zero, ") +
           std::string("returning a single row." );
-        
+
         avtCallback::IssueWarning(msg.c_str());
 
         nRows = 1;
@@ -1026,7 +1037,7 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
         msg += "The number of channels is greater than one. " +
           std::string("But the angle between is zero, ") +
           std::string("returning a single channel." );
-        
+
         avtCallback::IssueWarning(msg.c_str());
 
         nChannels = 1;
@@ -1046,7 +1057,7 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
     }
 
     // Loop through each array.
-    for( int a=0; a<nArrays; ++a ) 
+    for( int a=0; a<nArrays; ++a )
     {
       // Loop through each channel.
       for( int c=0; c<nChannels*nRows; ++c )
@@ -1055,7 +1066,7 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
           avtVector startPoint = avtVector( 0, 0, 0 );
           avtVector stopPoint;
           avtVector normal;
-          
+
           // Stop point based on the channel direction With the normal being
           // at a 45 degree angle so that it can be rotated appropriately.
           if( atts.GetArrayConfiguration() == LineSamplerAttributes::Manual ||
@@ -1065,7 +1076,7 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
                 (localBounds[1] - localBounds[0]) * avtVector( -2, 0, 0 );
               normal = avtVector( 0, 1, 1 );
           }
-          
+
           else //if( atts.GetArrayAxis() == LineSamplerAttributes::Z )
           {
               stopPoint =
@@ -1074,7 +1085,7 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
           }
 
           normal.normalize();
-      
+
           double r, phi, z, poloidalAngle;
 
           if( atts.GetArrayConfiguration() == LineSamplerAttributes::Geometry )
@@ -1096,7 +1107,7 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
 
             // Poloidal rotation
             poloidalAngle = 180.0 - listOfChannels[c*4+3];
-          }         
+          }
 
           // For a divergent channel set, set the angle to the next
           // channel.
@@ -1107,7 +1118,7 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
           double toroidalAngle = 0.;
 
           if( atts.GetToroidalIntegration() ==
-              LineSamplerAttributes::ToroidalTimeSample ||
+              LineSamplerAttributes::SampleToroidally ||
               atts.GetToroidalIntegration() ==
               LineSamplerAttributes::IntegrateToroidally )
           {
@@ -1155,7 +1166,7 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
             // channel.
             if( projection == LineSamplerAttributes::Parallel )
               translate += ((double) (c) - channelIndexOffset) * channelOffsetVec;
-            
+
             // For a grid of channels set add the offset to the next
             // channel.
             if( projection == LineSamplerAttributes::Grid )
@@ -1163,7 +1174,7 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
                 ((double) (c%nChannels) - channelIndexOffset) * channelOffsetVec +
                 ((double) (c/nChannels) -     rowIndexOffset) * rowOffsetVec;
           }
-            
+
           // Now apply the transformations.
 
           // Set up the transform for the normal
@@ -1177,7 +1188,7 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
           if( atts.GetArrayConfiguration() == LineSamplerAttributes::Geometry &&
               rTilt != 0.0)
             transform->RotateX( rTilt );
-          
+
           // Poloidal plane z axis tilting.
           if( atts.GetArrayConfiguration() == LineSamplerAttributes::Geometry &&
               zTilt != 0.0 )
@@ -1203,7 +1214,7 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
               transform->Translate( translate.x, translate.y, translate.z );
 
               applyTransform( transform, startPoint );
-              applyTransform( transform, stopPoint );      
+              applyTransform( transform, stopPoint );
           }
 
           // Rotate the channel poloidially.
@@ -1213,7 +1224,7 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
               transform->Translate( -startPoint.x, -startPoint.y, -startPoint.z );
               transform->RotateY( poloidalAngle );
               transform->Translate( startPoint.x, startPoint.y, startPoint.z );
-              
+
               applyTransform( transform, startPoint );
               applyTransform( transform, stopPoint );
           }
@@ -1230,7 +1241,7 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
                 msg += "Tried to clip a chord against the wall but failed. " +
                   std::string("The cord probably lies outside of the wall ") +
                   std::string("and will be skipped.");
-                
+
                 avtCallback::IssueWarning(msg.c_str());
               }
               continue;
@@ -1245,7 +1256,7 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
                 msg += "Tried to clip a chord against the wall but found more than two clip operations were required. " +
                   std::string("The cord probably traverses the wall multiple times ") +
                   std::string("as such the sampling for this chord may not be correct.");
-                
+
                 avtCallback::IssueWarning(msg.c_str());
               }
               break;
@@ -1259,7 +1270,7 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
                 std::string("poloidal plane R and/or Z tilting as the wall is 2D only. ") +
                 std::string("Poloidal plane R and/or Z tilting will be performed ") +
                 std::string("but the sampling may not be complete.");
-          
+
               avtCallback::IssueWarning(msg.c_str());
             }
           }
@@ -1279,7 +1290,7 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
 
           // Poloidal plane Z Tilting.
           if( atts.GetArrayConfiguration() == LineSamplerAttributes::Geometry &&
-              zTilt != 0.0 ) 
+              zTilt != 0.0 )
           {
               transform->Identity();
               transform->Translate( -r, -0, -z );
@@ -1335,7 +1346,7 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
             // Do the sampling of the original dataset at r = 0
             probeFilter->SetInputData( out_ds );
             probeFilter->Update();
-            
+
             out_ds->Delete();
             out_ds = probeFilter->GetOutput()->NewInstance();
             out_ds->ShallowCopy(probeFilter->GetOutput());
@@ -1361,9 +1372,9 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
               std::string msg;
               msg += "The sample distance and/or volume is less than zero. " +
                 std::string("Can not sum cylindrical channel(s), returning." );
-        
+
               avtCallback::IssueWarning(msg.c_str());
-              
+
               return NULL;
             }
 
@@ -1376,9 +1387,9 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
                 std::string msg;
                 msg += "The standard deviation is less than zero. " +
                   std::string("Can not sum cylindrical channel(s), returning." );
-                
+
                 avtCallback::IssueWarning(msg.c_str());
-                
+
                 return NULL;
               }
 
@@ -1411,7 +1422,7 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
                         (0 - startPoint.y) * (stopPoint.y-startPoint.y) +
                         (0 - startPoint.z) * (stopPoint.z-startPoint.z)) /
               (axis.length() * axis.length());
-            
+
             avtVector normal = startPoint + u * axis;
             normal.normalize();
 
@@ -1437,7 +1448,7 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
               {
                 weight = 1;
               }
-                  
+
               // Loop through all of the sample toroidal angles.
               for( int n=0; n<nRadialSamples; ++n )
               {
@@ -1477,7 +1488,7 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
 
                 float* out_data =
                   (float*) out_ds->GetPointData()->GetScalars()->GetVoidPointer(0);
-                
+
                 float* tmp_data =
                   (float*) tmp_ds->GetPointData()->GetScalars()->GetVoidPointer(0);
                 // Do the summation for each channel
@@ -1507,7 +1518,7 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
 
             else if( atts.GetChannelGeometry() == LineSamplerAttributes::Cone )
               out_ds = createCone( startPoint, stopPoint, normal, 0, divergence, false );
-          
+
             if( out_ds == NULL )
               return NULL;
 
@@ -1542,8 +1553,8 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
               msg += "The view dimension is not one. For integrating along the " +
                 std::string("channel the resulting plots are one dimensional. ") +
                 std::string("Showing the original channel sampling.");
-              
-              avtCallback::IssueWarning(msg.c_str());         
+
+              avtCallback::IssueWarning(msg.c_str());
             }
             else //if( atts.GetViewDimension() == LineSamplerAttributes::One )
             {
@@ -1563,9 +1574,9 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
                 std::string msg;
                 msg += "The sample distance and/or volume is less than zero. " +
                   std::string("Can not integrate along the channel(s), returning." );
-                
+
                 avtCallback::IssueWarning(msg.c_str());
-                
+
                 return NULL;
               }
 
@@ -1584,7 +1595,7 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
 
               points->Allocate(nSamples);
               vertices->Allocate(nSamples);
-  
+
               // Create a new VTK polydata.
               vtkPolyData *polydata = vtkPolyData::New();
               polydata->SetPoints(points);
@@ -1593,15 +1604,15 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
               scalars->Allocate(nSamples);
               scalars->SetName(pipelineVariable);
               polydata->GetPointData()->SetScalars(scalars);
-  
-              vtkIdType pid[1] = {0};
-  
-              points->InsertPoint(0, pts[0], pts[1], pts[2]);
+
+              vtkIdType pIdx = 0;
+
+              points->InsertPoint(pIdx, pts[0], pts[1], pts[2]);
 
               // Create a vertex cell on the point that was just added.
-              vertices->InsertNextCell( 0, pid );
-  
-              scalars->InsertTuple1( 0, sum );
+              vertices->InsertNextCell( 1, &pIdx );
+
+              scalars->InsertTuple1( pIdx, sum );
 
               points->Delete();
               vertices->Delete();
@@ -1649,10 +1660,10 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
                      toroidalAngle != 0 )
             {
                 transform->Identity();
-                
+
                 // Back out the toroidal rotation.
                 transform->RotateZ( -toroidalAngle );
-                
+
                 transformFilter->SetTransform( transform );
                 transformFilter->SetInputData( out_ds );
                 transformFilter->Update();
@@ -1724,7 +1735,7 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
 //               if( atts.GetChannelGeometry() == LineSamplerAttributes::Cylinder ||
 //                   atts.GetChannelGeometry() == LineSamplerAttributes::Cone )
 //                 transform->Translate( 0, (double) c*0.1, 0 );
-        
+
               transformFilter->SetTransform( transform );
               transformFilter->SetInputData( out_ds );
               transformFilter->Update();
@@ -1770,22 +1781,21 @@ avtLineSamplerFilter::ExecuteChannelData(vtkDataSet *in_ds, int, std::string)
                     const char* msg = "Input not vtkPolyData or Unstructured Grid";
                     EXCEPTION1(ImproperUseException, msg);
                   }
-          
+
                   vtkDataArray *scalars = out_ds->GetPointData()->GetScalars();
 
                   unsigned int nPts = scalars->GetNumberOfTuples();
 
-                  // Adjust the X coordinate for each array
-                  for( unsigned int i=0, j=0; i<nPts; ++i, j+=3)
+                  for( unsigned int i=0, x=0, y=1; i<nPts; ++i, x+=3, y+=3)
                   {
-                      points_ptr[j] += (double) a * arrayPlotOffset;
-                  }
+                      // Adjust the X coordinate for each array
+                      points_ptr[x] += (double) a * arrayPlotOffset;
 
-                  // Create a height field plot by adjusting Y
-                  for( unsigned int i=0, j=1; i<nPts; ++i, j+=3)
-                  {
-                      points_ptr[j] = (double) c * channelPlotOffset +
-                        heightPlotScale * *(scalars->GetTuple(i));
+                      // Create a height field plot by adjusting Y
+                      points_ptr[y] = *(scalars->GetTuple(i)) * heightPlotScale
+                          // Adjust the Y coordinate for each channel
+                          + (double) c * channelPlotOffset;
+
                   }
               }
           }
@@ -1854,9 +1864,9 @@ avtLineSamplerFilter::createPoint( avtVector startPoint,
     std::string msg;
     msg += "The sample distance is less than zero. " +
       std::string("Can not create point(s), returning." );
-    
+
     avtCallback::IssueWarning(msg.c_str());
-    
+
     return NULL;
   }
 
@@ -1871,7 +1881,7 @@ avtLineSamplerFilter::createPoint( avtVector startPoint,
     basePoint = stopPoint;
   else
     basePoint = startPoint + delta;
-    
+
   // Create groups that represent each channel.
   vtkPoints *points = vtkPoints::New();
   vtkCellArray *vertices = vtkCellArray::New();
@@ -1879,7 +1889,7 @@ avtLineSamplerFilter::createPoint( avtVector startPoint,
 
   points->Allocate(nSamples);
   vertices->Allocate(nSamples);
-  
+
   // Create a new VTK polydata.
   vtkPolyData *polydata = vtkPolyData::New();
   polydata->SetPoints(points);
@@ -1891,16 +1901,16 @@ avtLineSamplerFilter::createPoint( avtVector startPoint,
     scalars->SetName(pipelineVariable);
     polydata->GetPointData()->SetScalars(scalars);
   }
-  
-  vtkIdType pid[1] = {0};
-  
-  points->InsertPoint( 0, basePoint.x, basePoint.y, basePoint.z );
-  
-  // Create a vertex cell on the point that was just added.
-  vertices->InsertNextCell( 0, pid );
-  
+
+  vtkIdType pIdx = 0;
+
+  points->InsertPoint( pIdx, basePoint.x, basePoint.y, basePoint.z );
+
+  // Create a vertex cell for the point that was just added.
+  vertices->InsertNextCell( 1, &pIdx );
+
   if( allocateScalars && scalars )
-    scalars->InsertTuple1( 0, 0.0 );
+    scalars->InsertTuple1( pIdx, 0.0 );
 
   points->Delete();
   vertices->Delete();
@@ -1935,9 +1945,9 @@ avtLineSamplerFilter::createLine( avtVector startPoint,
     std::string msg;
     msg += "The sample distance is less than zero. " +
       std::string("Can not create point(s), returning." );
-    
+
     avtCallback::IssueWarning(msg.c_str());
-    
+
     return NULL;
   }
 
@@ -1947,7 +1957,7 @@ avtLineSamplerFilter::createLine( avtVector startPoint,
       LineSamplerAttributes::IntegrateAlongChannel )
     nSamples = (int) (ceil(axis.length() / sampleDistance) + 1);
   else if( atts.GetToroidalIntegration() ==
-      LineSamplerAttributes::ToroidalTimeSample ||
+      LineSamplerAttributes::SampleToroidally ||
       atts.GetToroidalIntegration() ==
       LineSamplerAttributes::IntegrateToroidally )
     nSamples = (int) (axis.length() / sampleDistance) + 1;
@@ -1962,7 +1972,7 @@ avtLineSamplerFilter::createLine( avtVector startPoint,
       LineSamplerAttributes::IntegrateAlongChannel )
     delta = (stopPoint - startPoint) / (double) (nSamples-1);
   else if( atts.GetToroidalIntegration() ==
-      LineSamplerAttributes::ToroidalTimeSample ||
+      LineSamplerAttributes::SampleToroidally ||
       atts.GetToroidalIntegration() ==
       LineSamplerAttributes::IntegrateToroidally )
     delta = axis * sampleDistance;
@@ -1998,18 +2008,16 @@ avtLineSamplerFilter::createLine( avtVector startPoint,
         basePoint = stopPoint;
       else
         basePoint = startPoint + (double) i * delta;
-    
-      vtkIdType pid[1];
- 
-      pid[0] = i;
 
-      points->InsertPoint(i, basePoint.x, basePoint.y, basePoint.z);
+      vtkIdType pIdx = i;
 
-      // Create a vertex cell on the point that was just added.
-      vertices->InsertNextCell ( 1, pid );
+      points->InsertPoint(pIdx, basePoint.x, basePoint.y, basePoint.z);
+
+      // Create a vertex cell for the point that was just added.
+      vertices->InsertNextCell ( 1, &pIdx );
 
       if( allocateScalars && scalars )
-        scalars->InsertTuple1(i, 0.0);
+        scalars->InsertTuple1(pIdx, 0.0);
     }
 
     points->Delete();
@@ -2026,7 +2034,7 @@ avtLineSamplerFilter::createLine( avtVector startPoint,
     vtkPoints *points = vtkPoints::New();
     vtkCellArray *lines = vtkCellArray::New();
     vtkFloatArray *scalars = (allocateScalars ? vtkFloatArray::New() : NULL );
-    
+
     points->Allocate(nSamples);
     lines->Allocate(1);
 
@@ -2056,11 +2064,11 @@ avtLineSamplerFilter::createLine( avtVector startPoint,
 
       line->GetPointIds()->SetId(i, i);
       points->InsertPoint(i, basePoint.x, basePoint.y, basePoint.z);
-    
+
       if( allocateScalars && scalars )
         scalars->InsertTuple1(i, 0.0);
     }
-         
+
     // Add the line to line array
     lines->InsertNextCell(line);
     line->Delete();
@@ -2102,9 +2110,9 @@ avtLineSamplerFilter::createCone( avtVector startPoint,
     std::string msg;
     msg += "The sample distance is less than zero. " +
       std::string("Can not create cylinder(s), returning." );
-    
+
     avtCallback::IssueWarning(msg.c_str());
-    
+
     return NULL;
   }
 
@@ -2114,7 +2122,7 @@ avtLineSamplerFilter::createCone( avtVector startPoint,
       LineSamplerAttributes::IntegrateAlongChannel )
     nSamples = (int) (ceil(axis.length() / sampleDistance) + 1);
   else if( atts.GetToroidalIntegration() ==
-      LineSamplerAttributes::ToroidalTimeSample ||
+      LineSamplerAttributes::SampleToroidally ||
       atts.GetToroidalIntegration() ==
       LineSamplerAttributes::IntegrateToroidally )
     nSamples = (int) (axis.length() / sampleDistance) + 1;
@@ -2130,7 +2138,7 @@ avtLineSamplerFilter::createCone( avtVector startPoint,
       LineSamplerAttributes::IntegrateAlongChannel )
     delta = (stopPoint - startPoint) / (double) (nSamples-1);
   else if( atts.GetToroidalIntegration() ==
-      LineSamplerAttributes::ToroidalTimeSample ||
+      LineSamplerAttributes::SampleToroidally ||
       atts.GetToroidalIntegration() ==
       LineSamplerAttributes::IntegrateToroidally )
     delta = axis * sampleDistance;
@@ -2145,7 +2153,7 @@ avtLineSamplerFilter::createCone( avtVector startPoint,
   if( nRadialSamples < 10 )
     nRadialSamples = 10;
 
-  // sampling offset between arcs.
+  // Sampling offset between arcs.
   double sampleArc = 360.0 / (double) nRadialSamples;
 
   double tangent = tan( 2.0 * M_PI * divergence / 360.0 );
@@ -2159,31 +2167,31 @@ avtLineSamplerFilter::createCone( avtVector startPoint,
   points->SetNumberOfPoints(nSamples*nRadialSamples);
 
   vtkFloatArray *scalars = (allocateScalars ? vtkFloatArray::New() : NULL );
-    
+
   if( allocateScalars && scalars )
     scalars->Allocate(nSamples*nRadialSamples);
-    
+
   float *points_ptr = (float *) points->GetVoidPointer(0);
 
-    
+
   for( unsigned int i=0, index=0; i< (unsigned int)nSamples; ++i )
   {
     if( (double) i * delta.length() > (stopPoint - startPoint).length() )
       basePoint = stopPoint;
     else
       basePoint = startPoint + (double) i * delta;
-    
+
     double dradius = ((double) i * delta.length()) * tangent;
-    
+
     avtVector radialPoint = basePoint + (radius+dradius) * normal;
-    
+
     for( unsigned int j=0; j< (unsigned int)nRadialSamples; ++j, ++index )
     {
       double angle = (double) j * sampleArc;
-      
+
       // Now apply the transformations.
       vtkTransform *transform = vtkTransform::New();
-      
+
       transform->Identity();
       transform->PostMultiply();
 
@@ -2194,39 +2202,39 @@ avtLineSamplerFilter::createCone( avtVector startPoint,
       transform->Translate( basePoint.x, basePoint.y, basePoint.z );
 
       vtkMatrix4x4 *matrix = transform->GetMatrix();
-      
+
       float tmpPt[4];
-      
+
       // Transform the start point
       tmpPt[0] = radialPoint.x;
       tmpPt[1] = radialPoint.y;
       tmpPt[2] = radialPoint.z;
       tmpPt[3] = 1.0;
-      
+
       matrix->MultiplyPoint( tmpPt, tmpPt );
-      
+
       points_ptr[index*3  ] = tmpPt[0];
       points_ptr[index*3+1] = tmpPt[1];
       points_ptr[index*3+2] = tmpPt[2];
-          
+
       transform->Delete();
-      
+
       if( allocateScalars && scalars )
         scalars->InsertTuple1(index, index);
-      
+
       // Create the quad.
       if( i<(unsigned int)nSamples-1 )
       {
         int i1 = i+1;
         int j1 = (j+1) % nRadialSamples;
-        
+
         quad->GetPointIds()->SetId( 0, i  * nRadialSamples + j  );
         quad->GetPointIds()->SetId( 1, i1 * nRadialSamples + j  );
         quad->GetPointIds()->SetId( 2, i1 * nRadialSamples + j1 );
         quad->GetPointIds()->SetId( 3, i  * nRadialSamples + j1 );
-        
+
         grid->InsertNextCell( quad->GetCellType(),
-                              quad->GetPointIds() );                
+                              quad->GetPointIds() );
       }
     }
   }
@@ -2239,7 +2247,7 @@ avtLineSamplerFilter::createCone( avtVector startPoint,
     scalars->SetName(pipelineVariable);
     grid->GetPointData()->SetScalars(scalars);
   }
-    
+
   quad->Delete();
   points->Delete();
   if( allocateScalars && scalars )
@@ -2268,9 +2276,9 @@ avtLineSamplerFilter::ProjectPointOnPlane( avtVector planePoint,
   // Find the intersection of the channel with the R = 0 plane.
   double dot = Dot(planeNormal, axis);
   avtVector w(point - planePoint);
-  
+
   double t = -Dot(planeNormal, w ) / dot;
-  
+
   // Get the new stop point
   avtVector intersectingPoint = point + axis * t;
 
@@ -2292,7 +2300,7 @@ avtLineSamplerFilter::applyTransform( vtkTransform* transform,
 {
   vtkMatrix4x4 *matrix;
   double tmpPt[4];
-  
+
   matrix = transform->GetMatrix();
 
   // Transform the start point
@@ -2302,7 +2310,7 @@ avtLineSamplerFilter::applyTransform( vtkTransform* transform,
   tmpPt[3] = 1.0;
 
   matrix->MultiplyPoint( tmpPt, tmpPt );
-  
+
   point.x = tmpPt[0];
   point.y = tmpPt[1];
   point.z = tmpPt[2];
@@ -2319,7 +2327,7 @@ avtLineSamplerFilter::applyTransform( vtkTransform* transform,
 //
 // ****************************************************************************
 void
-avtLineSamplerFilter::checkBounds( vtkDataSet *in_ds, 
+avtLineSamplerFilter::checkBounds( vtkDataSet *in_ds,
                                    avtVector &startPoint,
                                    avtVector &stopPoint )
 {
@@ -2363,7 +2371,7 @@ avtLineSamplerFilter::checkBounds( vtkDataSet *in_ds,
                                        axis );
 
 //     std::cerr << __LINE__ << "  stopPoint " << stopPoint << std::endl;
-    
+
     // Y value is below the Y min or above the Y max then the
     // intersecting plane is that plane rather than the R plane.
     if( stopPoint.y < bounds[2] || bounds[3] < stopPoint.y )
@@ -2376,7 +2384,7 @@ avtLineSamplerFilter::checkBounds( vtkDataSet *in_ds,
                                            avtVector( 0, 1, 0 ),
                                            startPoint,
                                            axis );
-        
+
         else if( stopPoint.y > bounds[3] )
           // Find the intersection of the channel with the max Y plane.
           stopPoint = ProjectPointOnPlane( avtVector( 0, bounds[3], 0 ),
@@ -2413,7 +2421,7 @@ avtLineSamplerFilter::checkBounds( vtkDataSet *in_ds,
                                            avtVector( 0, 0, 1 ),
                                            startPoint,
                                            axis );
-        
+
         else if( stopPoint.z > bounds[5] )
           // Find the intersection of the channel with the max Z plane.
           stopPoint = ProjectPointOnPlane( avtVector( 0, 0, bounds[5] ),
@@ -2478,9 +2486,9 @@ avtLineSamplerFilter::checkWall( avtVector &startPoint,
 {
   // Get the wall points.
   std::vector<double> wallList = atts.GetWallList();
-  
+
   size_t npts = wallList.size() / 2;
-  
+
   // Need at least three point plus the first and last must be the
   // same.
   if( npts <= 4 ||
@@ -2505,17 +2513,17 @@ avtLineSamplerFilter::checkWall( avtVector &startPoint,
   {
     double  x3 = wallList[2*i];
     double  z3 = wallList[2*i+1];
-    
+
     double  x4 = wallList[2*j];
     double  z4 = wallList[2*j+1];
 
-    // Intersection test 
+    // Intersection test
     float u1 = ( ((x4 - x3) * (z1 - z3) - (z4 - z3) * (x1 -x3)) /
                  ((z4 - z3) * (x2 - x1) - (x4 - x3) * (z2 -z1)) );
 
     float u2 = ( ((x2 - x1) * (z1 - z3) - (z2 - z1) * (x1 -x3)) /
                  ((z4 - z3) * (x2 - x1) - (x4 - x3) * (z2 -z1)) );
-    
+
     // If both u1 and and u2 are between 0 and 1 then the line
     // segments intersect.
     if( 0 <= u1 && u1 <= 1.0 && 0 <= u2 && u2 <= 1.0 )
@@ -2599,14 +2607,14 @@ avtLineSamplerFilter::CreateFinalOutput(void)
       msg += "The time ";
     else if( atts.GetDisplayTime() == LineSamplerAttributes::Cycle )
       msg += "The cycle. ";
-    else 
+    else
       msg += "The time step ";
 
     msg += std::string("axis values are present but not valid ") +
       std::string("(not in increasing order). ") +
       std::string("The resulting plot may not be correct. ") +
       std::string("Try using another value for the displaying the time axis.");
-                       
+
     avtCallback::IssueWarning(msg.c_str());
   }
 
@@ -2622,7 +2630,7 @@ avtLineSamplerFilter::CreateFinalOutput(void)
     if( tPts != nPts * nLines )
     {
       std::string msg;
-      msg += std::string("Not all line samples have the same number of samples");                       
+      msg += std::string("Not all line samples have the same number of samples");
       avtCallback::IssueWarning(msg.c_str());
     }
 
@@ -2631,7 +2639,7 @@ avtLineSamplerFilter::CreateFinalOutput(void)
     vtkCellArray *vertices = (nPts == 1 ? vtkCellArray::New() : 0);
     vtkCellArray *lines = (nPts > 1 ? vtkCellArray::New() : 0);
     vtkFloatArray *scalars = vtkFloatArray::New();
-        
+
     points->Allocate(tPts);
     if( nPts == 1 )
       vertices->Allocate(nLines);
@@ -2655,20 +2663,16 @@ avtLineSamplerFilter::CreateFinalOutput(void)
     {
       if( nPts == 1 )
       {
-        vtkIdType pid[1];
- 
-        pid[0] = pIdx;
-
         points->InsertPoint(pIdx,
                             lineSamples[i][0].first[0],
                             lineSamples[i][0].first[1],
                             lineSamples[i][0].first[2] );
-          
+
+        // Create a vertex cell for the point that was just added.
+        vertices->InsertNextCell( 1, &pIdx );
+
         scalars->InsertTuple1(pIdx, lineSamples[i][0].second );
-        
-        // Create a vertex cell on the point that was just added.
-        vertices->InsertNextCell( 1, pid );
-        
+
         ++pIdx;
       }
       else // if( nPts > 1 )
@@ -2676,18 +2680,18 @@ avtLineSamplerFilter::CreateFinalOutput(void)
         // Create a new VTK polyline.
         vtkPolyLine *line = vtkPolyLine::New();
         line->GetPointIds()->SetNumberOfIds(nPts);
-            
+
         for( unsigned int j=0; j<lineSamples[i].size(); ++j )
         {
           points->InsertPoint(pIdx,
                               lineSamples[i][j].first[0],
                               lineSamples[i][j].first[1],
                               lineSamples[i][j].first[2] );
-          
+
           scalars->InsertTuple1(pIdx, lineSamples[i][j].second );
-          
+
           line->GetPointIds()->SetId(j, pIdx);
-          
+
           ++pIdx;
         }
 
@@ -2711,7 +2715,7 @@ avtLineSamplerFilter::CreateFinalOutput(void)
   {
     avtDataTree_p newTree = new avtDataTree(composite_ds, 0);
     SetOutputDataTree(newTree);
-       
+
     double bounds[6];
     composite_ds->GetBounds( bounds );
 
@@ -2766,7 +2770,7 @@ avtLineSamplerFilter::CreateFinalOutput(void)
       outAtts.SetYUnits( inAtts.GetVariableUnits() );
 
       if( atts.GetToroidalIntegration() ==
-          LineSamplerAttributes::ToroidalTimeSample )
+          LineSamplerAttributes::SampleToroidally )
       {
         if( atts.GetTimeSampling() ==
             LineSamplerAttributes::MultipleTimeSteps )

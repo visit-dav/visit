@@ -6,6 +6,7 @@
 #include <ObserverToCallback.h>
 #include <stdio.h>
 #include <Py2and3Support.h>
+#include <visit-config.h>
 #include <ColorAttribute.h>
 #include <ColorAttribute.h>
 
@@ -38,7 +39,7 @@ struct SurfaceAttributesObject
 //
 static PyObject *NewSurfaceAttributes(int);
 std::string
-PySurfaceAttributes_ToString(const SurfaceAttributes *atts, const char *prefix)
+PySurfaceAttributes_ToString(const SurfaceAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -150,12 +151,48 @@ SurfaceAttributes_SetLegendFlag(PyObject *self, PyObject *args)
 {
     SurfaceAttributesObject *obj = (SurfaceAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the legendFlag in the object.
-    obj->data->SetLegendFlag(ival != 0);
+    obj->data->SetLegendFlag(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -174,12 +211,48 @@ SurfaceAttributes_SetLightingFlag(PyObject *self, PyObject *args)
 {
     SurfaceAttributesObject *obj = (SurfaceAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the lightingFlag in the object.
-    obj->data->SetLightingFlag(ival != 0);
+    obj->data->SetLightingFlag(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -198,12 +271,48 @@ SurfaceAttributes_SetSurfaceFlag(PyObject *self, PyObject *args)
 {
     SurfaceAttributesObject *obj = (SurfaceAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the surfaceFlag in the object.
-    obj->data->SetSurfaceFlag(ival != 0);
+    obj->data->SetSurfaceFlag(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -222,12 +331,48 @@ SurfaceAttributes_SetWireframeFlag(PyObject *self, PyObject *args)
 {
     SurfaceAttributesObject *obj = (SurfaceAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the wireframeFlag in the object.
-    obj->data->SetWireframeFlag(ival != 0);
+    obj->data->SetWireframeFlag(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -246,21 +391,54 @@ SurfaceAttributes_SetLimitsMode(PyObject *self, PyObject *args)
 {
     SurfaceAttributesObject *obj = (SurfaceAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 2)
+    {
+        std::stringstream ss;
+        ss << "An invalid limitsMode value was given." << std::endl;
+        ss << "Valid values are in the range [0,1]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << " OriginalData";
+        ss << ", CurrentPlot";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the limitsMode in the object.
-    if(ival >= 0 && ival < 2)
-        obj->data->SetLimitsMode(SurfaceAttributes::LimitsMode(ival));
-    else
-    {
-        fprintf(stderr, "An invalid limitsMode value was given. "
-                        "Valid values are in the range of [0,1]. "
-                        "You can also use the following names: "
-                        "OriginalData, CurrentPlot.");
-        return NULL;
-    }
+    obj->data->SetLimitsMode(SurfaceAttributes::LimitsMode(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -279,12 +457,48 @@ SurfaceAttributes_SetMinFlag(PyObject *self, PyObject *args)
 {
     SurfaceAttributesObject *obj = (SurfaceAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the minFlag in the object.
-    obj->data->SetMinFlag(ival != 0);
+    obj->data->SetMinFlag(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -303,12 +517,48 @@ SurfaceAttributes_SetMaxFlag(PyObject *self, PyObject *args)
 {
     SurfaceAttributesObject *obj = (SurfaceAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the maxFlag in the object.
-    obj->data->SetMaxFlag(ival != 0);
+    obj->data->SetMaxFlag(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -327,12 +577,48 @@ SurfaceAttributes_SetColorByZFlag(PyObject *self, PyObject *args)
 {
     SurfaceAttributesObject *obj = (SurfaceAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the colorByZFlag in the object.
-    obj->data->SetColorByZFlag(ival != 0);
+    obj->data->SetColorByZFlag(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -351,21 +637,55 @@ SurfaceAttributes_SetScaling(PyObject *self, PyObject *args)
 {
     SurfaceAttributesObject *obj = (SurfaceAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 3)
+    {
+        std::stringstream ss;
+        ss << "An invalid scaling value was given." << std::endl;
+        ss << "Valid values are in the range [0,2]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << " Linear";
+        ss << ", Log";
+        ss << ", Skew";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the scaling in the object.
-    if(ival >= 0 && ival < 3)
-        obj->data->SetScaling(SurfaceAttributes::Scaling(ival));
-    else
-    {
-        fprintf(stderr, "An invalid scaling value was given. "
-                        "Valid values are in the range of [0,2]. "
-                        "You can also use the following names: "
-                        "Linear, Log, Skew.");
-        return NULL;
-    }
+    obj->data->SetScaling(SurfaceAttributes::Scaling(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -384,12 +704,48 @@ SurfaceAttributes_SetLineWidth(PyObject *self, PyObject *args)
 {
     SurfaceAttributesObject *obj = (SurfaceAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the lineWidth in the object.
-    obj->data->SetLineWidth(ival);
+    obj->data->SetLineWidth(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -562,12 +918,48 @@ SurfaceAttributes_SetSkewFactor(PyObject *self, PyObject *args)
 {
     SurfaceAttributesObject *obj = (SurfaceAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the skewFactor in the object.
-    obj->data->SetSkewFactor(dval);
+    obj->data->SetSkewFactor(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -586,12 +978,48 @@ SurfaceAttributes_SetMin(PyObject *self, PyObject *args)
 {
     SurfaceAttributesObject *obj = (SurfaceAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the min in the object.
-    obj->data->SetMin(dval);
+    obj->data->SetMin(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -610,12 +1038,48 @@ SurfaceAttributes_SetMax(PyObject *self, PyObject *args)
 {
     SurfaceAttributesObject *obj = (SurfaceAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the max in the object.
-    obj->data->SetMax(dval);
+    obj->data->SetMax(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -634,12 +1098,37 @@ SurfaceAttributes_SetColorTableName(PyObject *self, PyObject *args)
 {
     SurfaceAttributesObject *obj = (SurfaceAttributesObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the colorTableName in the object.
-    obj->data->SetColorTableName(std::string(str));
+    obj->data->SetColorTableName(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -658,12 +1147,48 @@ SurfaceAttributes_SetInvertColorTable(PyObject *self, PyObject *args)
 {
     SurfaceAttributesObject *obj = (SurfaceAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the invertColorTable in the object.
-    obj->data->SetInvertColorTable(ival != 0);
+    obj->data->SetInvertColorTable(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -783,100 +1308,73 @@ PySurfaceAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "invertColorTable") == 0)
         return SurfaceAttributes_GetInvertColorTable(self, NULL);
 
-    // Try and handle legacy fields
 
-    // lineStyle and it's possible enumerations
-    bool lineStyleFound = false;
-    if (strcmp(name, "lineStyle") == 0)
+    // Add a __dict__ answer so that dir() works
+    if (!strcmp(name, "__dict__"))
     {
-        lineStyleFound = true;
+        PyObject *result = PyDict_New();
+        for (int i = 0; PySurfaceAttributes_methods[i].ml_meth; i++)
+            PyDict_SetItem(result,
+                PyString_FromString(PySurfaceAttributes_methods[i].ml_name),
+                PyString_FromString(PySurfaceAttributes_methods[i].ml_name));
+        return result;
     }
-    else if (strcmp(name, "SOLID") == 0)
-    {
-        lineStyleFound = true;
-    }
-    else if (strcmp(name, "DASH") == 0)
-    {
-        lineStyleFound = true;
-    }
-    else if (strcmp(name, "DOT") == 0)
-    {
-        lineStyleFound = true;
-    }
-    else if (strcmp(name, "DOTDASH") == 0)
-    {
-        lineStyleFound = true;
-    }
-    if (lineStyleFound)
-    {
-        fprintf(stdout, "lineStyle is no longer a valid Surface "
-                       "attribute.\nIt's value is being ignored, please remove "
-                       "it from your script.\n");
-        return PyInt_FromLong(0L);
-    }
+
     return Py_FindMethod(PySurfaceAttributes_methods, self, name);
 }
 
 int
 PySurfaceAttributes_setattr(PyObject *self, char *name, PyObject *args)
 {
-    // Create a tuple to contain the arguments since all of the Set
-    // functions expect a tuple.
-    PyObject *tuple = PyTuple_New(1);
-    PyTuple_SET_ITEM(tuple, 0, args);
-    Py_INCREF(args);
-    PyObject *obj = NULL;
+    PyObject NULL_PY_OBJ;
+    PyObject *obj = &NULL_PY_OBJ;
 
     if(strcmp(name, "legendFlag") == 0)
-        obj = SurfaceAttributes_SetLegendFlag(self, tuple);
+        obj = SurfaceAttributes_SetLegendFlag(self, args);
     else if(strcmp(name, "lightingFlag") == 0)
-        obj = SurfaceAttributes_SetLightingFlag(self, tuple);
+        obj = SurfaceAttributes_SetLightingFlag(self, args);
     else if(strcmp(name, "surfaceFlag") == 0)
-        obj = SurfaceAttributes_SetSurfaceFlag(self, tuple);
+        obj = SurfaceAttributes_SetSurfaceFlag(self, args);
     else if(strcmp(name, "wireframeFlag") == 0)
-        obj = SurfaceAttributes_SetWireframeFlag(self, tuple);
+        obj = SurfaceAttributes_SetWireframeFlag(self, args);
     else if(strcmp(name, "limitsMode") == 0)
-        obj = SurfaceAttributes_SetLimitsMode(self, tuple);
+        obj = SurfaceAttributes_SetLimitsMode(self, args);
     else if(strcmp(name, "minFlag") == 0)
-        obj = SurfaceAttributes_SetMinFlag(self, tuple);
+        obj = SurfaceAttributes_SetMinFlag(self, args);
     else if(strcmp(name, "maxFlag") == 0)
-        obj = SurfaceAttributes_SetMaxFlag(self, tuple);
+        obj = SurfaceAttributes_SetMaxFlag(self, args);
     else if(strcmp(name, "colorByZFlag") == 0)
-        obj = SurfaceAttributes_SetColorByZFlag(self, tuple);
+        obj = SurfaceAttributes_SetColorByZFlag(self, args);
     else if(strcmp(name, "scaling") == 0)
-        obj = SurfaceAttributes_SetScaling(self, tuple);
+        obj = SurfaceAttributes_SetScaling(self, args);
     else if(strcmp(name, "lineWidth") == 0)
-        obj = SurfaceAttributes_SetLineWidth(self, tuple);
+        obj = SurfaceAttributes_SetLineWidth(self, args);
     else if(strcmp(name, "surfaceColor") == 0)
-        obj = SurfaceAttributes_SetSurfaceColor(self, tuple);
+        obj = SurfaceAttributes_SetSurfaceColor(self, args);
     else if(strcmp(name, "wireframeColor") == 0)
-        obj = SurfaceAttributes_SetWireframeColor(self, tuple);
+        obj = SurfaceAttributes_SetWireframeColor(self, args);
     else if(strcmp(name, "skewFactor") == 0)
-        obj = SurfaceAttributes_SetSkewFactor(self, tuple);
+        obj = SurfaceAttributes_SetSkewFactor(self, args);
     else if(strcmp(name, "min") == 0)
-        obj = SurfaceAttributes_SetMin(self, tuple);
+        obj = SurfaceAttributes_SetMin(self, args);
     else if(strcmp(name, "max") == 0)
-        obj = SurfaceAttributes_SetMax(self, tuple);
+        obj = SurfaceAttributes_SetMax(self, args);
     else if(strcmp(name, "colorTableName") == 0)
-        obj = SurfaceAttributes_SetColorTableName(self, tuple);
+        obj = SurfaceAttributes_SetColorTableName(self, args);
     else if(strcmp(name, "invertColorTable") == 0)
-        obj = SurfaceAttributes_SetInvertColorTable(self, tuple);
+        obj = SurfaceAttributes_SetInvertColorTable(self, args);
 
-    // Try and handle legacy fields
-    if(obj == NULL)
-    {
-        if(strcmp(name, "lineStyle") == 0)
-        {
-            Py_INCREF(Py_None);
-            obj = Py_None;
-        }
-    }
-    if(obj != NULL)
+    if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
-    Py_DECREF(tuple);
-    if( obj == NULL)
-        PyErr_Format(PyExc_RuntimeError, "Unable to set unknown attribute: '%s'", name);
+    if (obj == &NULL_PY_OBJ)
+    {
+        obj = NULL;
+        PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);
+    }
+    else if (obj == NULL && !PyErr_Occurred())
+        PyErr_Format(PyExc_RuntimeError, "unknown problem with '%s'", name);
+
     return (obj != NULL) ? 0 : -1;
 }
 
@@ -884,7 +1382,7 @@ static int
 SurfaceAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     SurfaceAttributesObject *obj = (SurfaceAttributesObject *)v;
-    fprintf(fp, "%s", PySurfaceAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PySurfaceAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -892,7 +1390,7 @@ PyObject *
 SurfaceAttributes_str(PyObject *v)
 {
     SurfaceAttributesObject *obj = (SurfaceAttributesObject *)v;
-    return PyString_FromString(PySurfaceAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PySurfaceAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -1044,7 +1542,7 @@ PySurfaceAttributes_GetLogString()
 {
     std::string s("SurfaceAtts = SurfaceAttributes()\n");
     if(currentAtts != 0)
-        s += PySurfaceAttributes_ToString(currentAtts, "SurfaceAtts.");
+        s += PySurfaceAttributes_ToString(currentAtts, "SurfaceAtts.", true);
     return s;
 }
 
@@ -1057,7 +1555,7 @@ PySurfaceAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("SurfaceAtts = SurfaceAttributes()\n");
-        s += PySurfaceAttributes_ToString(currentAtts, "SurfaceAtts.");
+        s += PySurfaceAttributes_ToString(currentAtts, "SurfaceAtts.", true);
         cb(s);
     }
 }

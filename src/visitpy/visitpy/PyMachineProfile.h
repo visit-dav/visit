@@ -23,7 +23,7 @@ VISITPY_API PyObject *     PyMachineProfile_Wrap(const MachineProfile *attr);
 void VISITPY_API           PyMachineProfile_SetParent(PyObject *obj, PyObject *parent);
 void VISITPY_API           PyMachineProfile_SetDefaults(const MachineProfile *atts);
 std::string VISITPY_API    PyMachineProfile_GetLogString();
-std::string VISITPY_API    PyMachineProfile_ToString(const MachineProfile *, const char *);
+std::string VISITPY_API    PyMachineProfile_ToString(const MachineProfile *, const char *, const bool=false);
 VISITPY_API PyObject *     PyMachineProfile_getattr(PyObject *self, char *name);
 int VISITPY_API            PyMachineProfile_setattr(PyObject *self, char *name, PyObject *args);
 VISITPY_API extern PyMethodDef PyMachineProfile_methods[MACHINEPROFILE_NMETH];

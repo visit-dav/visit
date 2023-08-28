@@ -65,6 +65,10 @@ class vtkOutlineSource;
 //    Burlen Loring, Wed Oct 21 15:23:16 PDT 2015
 //    I added a get method to query actor visibility.
 //
+//    Kathleen Biagas, Fri Mar 25, 2022
+//    Added currentScaleFlag. Useful for knowing when it is turned off so
+//    the bounding box can be redone.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWinAxes3D : public VisWinColleague
@@ -144,6 +148,7 @@ class VISWINDOW_API VisWinAxes3D : public VisWinColleague
 
     bool                      addedAxes3D;
     double                    currentBounds[6];
+    bool                      currentScaleFlag;
     double                    currentScaleFactors[3];
     bool                      visibility;
 

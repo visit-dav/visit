@@ -41,6 +41,7 @@ public:
     enum DataValue
     {
         Solid,
+        Random,
         SeedPointID,
         Speed,
         Vorticity,
@@ -51,7 +52,8 @@ public:
         CorrelationDistance,
         ClosedCurve,
         Difference,
-        Variable
+        Variable,
+        VariableAtSeed
     };
     enum CleanupMethod
     {
@@ -384,7 +386,6 @@ public:
 
     // User-defined methods
     bool ChangesRequireRecalculation(const IntegralCurveAttributes &) const;
-    virtual void ProcessOldVersions(DataNode *node, const char *configVersion);
 
     // IDs that can be used to identify fields in case statements
     enum {

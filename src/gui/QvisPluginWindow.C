@@ -27,6 +27,7 @@
 #include <QvisDBOptionsDialog.h>
 #include <QvisPluginManagerAttributesDataModel.h>
 
+#include <cctype>
 #include <string>
 #include <vector>
 
@@ -305,16 +306,16 @@ QvisPluginWindow::CreateWindowContents()
             this, SLOT(dbAddToPreferedButtonClicked()));
     db_rlayout->addWidget(dbAddToPreferedButton);
 
-    QGroupBox *preferredGroup = new QGroupBox("Preferred Database Plugins",
+    QGroupBox *preferredGroup = new QGroupBox(tr("Preferred Database Plugins"),
                                               pageDatabases);
     db_rlayout->addWidget(preferredGroup);
     QGridLayout *preferredLayout = new QGridLayout(preferredGroup);
 
-    QLabel *preferredHintLabel = new QLabel(
+    QLabel *preferredHintLabel = new QLabel(tr(
         "This is an ordered list of plugins which take precedence when "
         "opening files.  When they accept the given file name pattern, these "
         "are tried frst.  And when all attempts to guess based on file "
-        "name fail, these are tried before giving up.", preferredGroup);
+        "name fail, these are tried before giving up."), preferredGroup);
     preferredHintLabel->setWordWrap(true);
     preferredLayout->addWidget(preferredHintLabel, 0,0, 1,3);
 
@@ -429,6 +430,9 @@ QvisPluginWindow::Update(Subject *s)
 //
 //    Brad Whitlock, Thu Feb  4 16:54:47 PST 2010
 //    I rewrote the code for plots and operators so it uses a data model.
+// 
+//    Justin Privitera, Fri Apr 22 11:55:32 PDT 2022
+//    Added case-insensitive alphabetization of database plugin names.
 //
 // ****************************************************************************
 
@@ -452,26 +456,52 @@ QvisPluginWindow::UpdateWindow(bool doAll)
     if (doAll || selectedSubject == fileOpenOptions)
     {
         listDatabases->clear();
-        listDatabases->setSortingEnabled(true);
-        listDatabases->sortByColumn(1, Qt::AscendingOrder);
+        listDatabases->setSortingEnabled(false);
 
         databaseItems.clear();
         databaseIndexes.clear();
-        for (int i=0; i<fileOpenOptions->GetNumOpenOptions(); i++)
-        {            
+
+        // Necessary to sort the plugin names so they appear in 
+        // alphabetical case-insensitive order.
+        std::vector<std::pair<std::string, int>> plugins;
+        for (int i = 0; i < fileOpenOptions->GetNumOpenOptions(); i ++)
+        {
+            // Here we populate the list of plugin names.
+            std::string plugin_name = fileOpenOptions->GetTypeNames()[i].c_str();
+            std::transform(
+                plugin_name.begin(), 
+                plugin_name.end(), 
+                plugin_name.begin(),
+                [](unsigned char c) { return std::tolower(c); });
+            plugins.push_back(std::make_pair(plugin_name, i));
+        }
+
+        std::sort(plugins.begin(), plugins.end(),
+            [](std::pair<std::string, int> a, std::pair<std::string, int> b)
+            {
+                return a.first < b.first;
+            });
+
+        for (int i = 0; i < plugins.size(); i ++)
+        {
+            // Now that we have the plugins in the correct order, we can 
+            // retrieve the required data and add items to `listDatabases` in
+            // the correct order.
+            int index = plugins[i].second;
             QTreeWidgetItem *item = new QTreeWidgetItem(listDatabases);
-            item->setCheckState(0,fileOpenOptions->GetEnabled()[i] ? Qt::Checked : Qt::Unchecked);
+            item->setCheckState(0,fileOpenOptions->GetEnabled()[index] ? Qt::Checked : Qt::Unchecked);
 
-            item->setText(1,fileOpenOptions->GetTypeNames()[i].c_str());
+            item->setText(1,fileOpenOptions->GetTypeNames()[index].c_str());
 
-            if (fileOpenOptions->GetOpenOptions(i).GetNumberOfOptions() == 0)
+            if (fileOpenOptions->GetOpenOptions(index).GetNumberOfOptions() == 0)
                 item->setText(2, "  ");
             else
                 item->setText(2, tr("yes"));
 
             databaseItems.push_back(item);
-            databaseIndexes.push_back(i);
+            databaseIndexes.push_back(index);
         }
+
         databaseOptionsSetButton->setEnabled(false);
         dbAddToPreferedButton->setEnabled(false);
 

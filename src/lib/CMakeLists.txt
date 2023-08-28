@@ -46,6 +46,9 @@
 #    Kathleen Biagas, Thu Jun 25 14:13:46 PDT 2020
 #    Check if Pyside installed in python before adding to lib/site-packages.
 #
+#    Kathleen Biagas, Tue Jan 31, 2023
+#    visit_special_builds renamed to visit_util_builds.
+#
 #----------------------------------------------------------------------------
 
 IF(VISIT_PYTHON_DIR)
@@ -65,9 +68,7 @@ IF(VISIT_PYTHON_DIR)
             ${VISIT_PYTHON_DIR}/Lib
             ${VISIT_LIBRARY_DIR}/python/Lib
         COMMENT "Copying ${VISIT_PYTHON_DIR}/Lib/ ${VISIT_LIBRARY_DIR}/python/Lib")
-    if(VISIT_NO_ALLBUILD)
-        add_dependencies(visit_special_builds python_lib)
-    endif()
+    visit_add_to_util_builds(python_lib)
   ENDIF (NOT WIN32)
 ENDIF()
 
@@ -91,6 +92,7 @@ IF(VISIT_PYTHON_FILTERS)
 # We need to be able to locate the vtk python wrapper lib at run time.
 # Place symlinks to its components in lib/site-packages/
     MESSAGE(STATUS "Adding VTK python wrappers to lib/site-packages/")
+  if(VTK_VERSION VERSION_EQUAL "8.1.0")
     IF (NOT WIN32)
         FILE(GLOB VTK_PYTHON_MODULE_ITEMS "${VISIT_VTK_DIR}/lib/python${PYTHON_VERSION}/site-packages/*")
         IF(NOT VTK_PYTHON_MODULE_ITEMS)
@@ -122,10 +124,16 @@ IF(VISIT_PYTHON_FILTERS)
                     ${VISIT_LIBRARY_DIR}/site-packages/vtk
             COMMENT "Copying ${VTK_PY_WRAPPERS_DIR}/site-packages to ${VISIT_LIBRARY_DIR}/site-packages/vtk"
         )
-        if(VISIT_NO_ALLBUILD)
-            add_dependencies(visit_special_builds vtk_python_modules)
-        endif()
+        visit_add_to_util_builds(vtk_python_modules)
     ENDIF (NOT WIN32)
+  else()
+      add_custom_target(vtk_python_modules ALL
+                COMMAND ${CMAKE_COMMAND} -E copy_directory
+                        ${VTK_PY_WRAPPERS_DIR}
+                        ${VISIT_LIBRARY_DIR}/site-packages
+                COMMENT "Copying ${VTK_PY_WRAPPERS_DIR}/vtkmodules to ${VISIT_LIBRARY_DIR}/site-packages/vtkmodules"
+      )
+  endif()
 ENDIF(VISIT_PYTHON_FILTERS)
 
 if(VISIT_PYTHON_SCRIPTING AND HAVE_LIBPYSIDE AND NOT PYSIDE_IN_PYTHON)
@@ -151,5 +159,40 @@ if(VISIT_PYTHON_SCRIPTING AND HAVE_LIBPYSIDE AND NOT PYSIDE_IN_PYTHON)
     message(STATUS "Adding PySide to lib/site-packages/")
     SYMLINK_PYSIDE(PYSIDE_PYTHONPATH)
     SYMLINK_PYSIDE(SHIBOKEN_PYTHON_MODULE_DIR)
+endif()
+
+if(VISIT_PYTHON_SCRIPTING AND CONDUIT_DIR)
+    # symlink conduit python module so it works during dev builds
+    message(STATUS "Adding Conduit python module to lib/site-packages/")
+
+    
+    set(CONDUIT_PY_MODULE ${CONDUIT_DIR}/python-modules/conduit)
+    if(NOT EXISTS ${CONDUIT_PY_MODULE})
+        message(WARNING "Failed to find Conduit Python Module at ${CONDUIT_PY_MODULE}")
+    endif()
+    if(NOT WIN32)
+        
+        execute_process(COMMAND ${CMAKE_COMMAND} -E remove -f
+                                ${CMAKE_CURRENT_BINARY_DIR}/site-packages/conduit
+                                 RESULT_VARIABLE CONDUIT_PY_SYM_REMOTE)
+        execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink
+                                ${CONDUIT_PY_MODULE}
+                                ${CMAKE_CURRENT_BINARY_DIR}/site-packages/conduit
+                                RESULT_VARIABLE CONDUIT_PY_SYM_CREATE)
+
+        if(NOT "${CONDUIT_PY_SYM_CREATE}" STREQUAL "0")
+            message(WARNING "Failed to create Conduit Python module symlink in lib/site-packages/")
+        endif()
+
+    else() # NOT WIN32
+        # correct lib/${CFG} directory
+        add_custom_target(conduit_python_module ALL
+            COMMAND ${CMAKE_COMMAND} -E copy_directory
+                    ${CONDUIT_PY_MODULE}
+                    ${VISIT_LIBRARY_DIR}/site-packages/conduit
+            COMMENT "Copying ${CONDUIT_PY_MODULE} to ${VISIT_LIBRARY_DIR}/site-packages/conduit"
+        )
+        visit_add_to_util_builds(conduit_python_module)
+    endif()
 endif()
 

@@ -36,7 +36,7 @@ struct ViewerRPCObject
 //
 static PyObject *NewViewerRPC(int);
 std::string
-PyViewerRPC_ToString(const ViewerRPC *atts, const char *prefix)
+PyViewerRPC_ToString(const ViewerRPC *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -51,49 +51,49 @@ PyViewerRPC_ToString(const ViewerRPC *atts, const char *prefix)
         "AddEmbeddedPlotRPC, SetPlotFrameRangeRPC, DeletePlotKeyframeRPC, MovePlotKeyframeRPC, "
         "DeleteActivePlotsRPC, HideActivePlotsRPC, DrawPlotsRPC, DisableRedrawRPC, "
         "RedrawRPC, SetActivePlotsRPC, ChangeActivePlotsVarRPC, AddOperatorRPC, "
-        "AddInitializedOperatorRPC, PromoteOperatorRPC, DemoteOperatorRPC, RemoveOperatorRPC, "
-        "RemoveLastOperatorRPC, RemoveAllOperatorsRPC, SaveWindowRPC, SetDefaultPlotOptionsRPC, "
-        "SetPlotOptionsRPC, SetDefaultOperatorOptionsRPC, SetOperatorOptionsRPC, WriteConfigFileRPC, "
-        "ConnectToMetaDataServerRPC, IconifyAllWindowsRPC, DeIconifyAllWindowsRPC, ShowAllWindowsRPC, "
-        "HideAllWindowsRPC, UpdateColorTableRPC, SetAnnotationAttributesRPC, SetDefaultAnnotationAttributesRPC, "
-        "ResetAnnotationAttributesRPC, SetKeyframeAttributesRPC, SetPlotSILRestrictionRPC, SetViewAxisArrayRPC, "
-        "SetViewCurveRPC, SetView2DRPC, SetView3DRPC, ResetPlotOptionsRPC, "
-        "ResetOperatorOptionsRPC, SetAppearanceRPC, ProcessExpressionsRPC, SetLightListRPC, "
-        "SetDefaultLightListRPC, ResetLightListRPC, SetAnimationAttributesRPC, SetWindowAreaRPC, "
-        "PrintWindowRPC, ResetViewRPC, RecenterViewRPC, ToggleAllowPopupRPC, "
-        "ToggleMaintainViewModeRPC, ToggleBoundingBoxModeRPC, ToggleCameraViewModeRPC, TogglePerspectiveViewRPC, "
-        "ToggleSpinModeRPC, ToggleLockTimeRPC, ToggleLockToolsRPC, ToggleLockViewModeRPC, "
-        "ToggleFullFrameRPC, UndoViewRPC, RedoViewRPC, InvertBackgroundRPC, "
-        "ClearPickPointsRPC, RemovePicksRPC, SetWindowModeRPC, EnableToolRPC, "
-        "SetToolUpdateModeRPC, CopyViewToWindowRPC, CopyLightingToWindowRPC, CopyAnnotationsToWindowRPC, "
-        "CopyPlotsToWindowRPC, ClearCacheRPC, ClearCacheForAllEnginesRPC, SetViewExtentsTypeRPC, "
-        "ClearRefLinesRPC, SetRenderingAttributesRPC, QueryRPC, CloneWindowRPC, "
-        "SetMaterialAttributesRPC, SetDefaultMaterialAttributesRPC, ResetMaterialAttributesRPC, SetPlotDatabaseStateRPC, "
-        "DeletePlotDatabaseKeyframeRPC, MovePlotDatabaseKeyframeRPC, ClearViewKeyframesRPC, DeleteViewKeyframeRPC, "
-        "MoveViewKeyframeRPC, SetViewKeyframeRPC, OpenMDServerRPC, EnableToolbarRPC, "
-        "HideToolbarsRPC, HideToolbarsForAllWindowsRPC, ShowToolbarsRPC, ShowToolbarsForAllWindowsRPC, "
-        "SetToolbarIconSizeRPC, SaveViewRPC, SetGlobalLineoutAttributesRPC, SetPickAttributesRPC, "
-        "ExportColorTableRPC, ExportEntireStateRPC, ImportEntireStateRPC, ImportEntireStateWithDifferentSourcesRPC, "
-        "ResetPickAttributesRPC, AddAnnotationObjectRPC, HideActiveAnnotationObjectsRPC, DeleteActiveAnnotationObjectsRPC, "
-        "RaiseActiveAnnotationObjectsRPC, LowerActiveAnnotationObjectsRPC, SetAnnotationObjectOptionsRPC, SetDefaultAnnotationObjectListRPC, "
-        "ResetAnnotationObjectListRPC, ResetPickLetterRPC, SetDefaultPickAttributesRPC, ChooseCenterOfRotationRPC, "
-        "SetCenterOfRotationRPC, SetQueryOverTimeAttributesRPC, SetDefaultQueryOverTimeAttributesRPC, ResetQueryOverTimeAttributesRPC, "
-        "ResetLineoutColorRPC, SetInteractorAttributesRPC, SetDefaultInteractorAttributesRPC, ResetInteractorAttributesRPC, "
-        "GetProcInfoRPC, SendSimulationCommandRPC, UpdateDBPluginInfoRPC, ExportDBRPC, "
-        "SetTryHarderCyclesTimesRPC, OpenClientRPC, OpenGUIClientRPC, OpenCLIClientRPC, "
-        "SuppressQueryOutputRPC, SetQueryFloatFormatRPC, SetMeshManagementAttributesRPC, SetDefaultMeshManagementAttributesRPC, "
-        "ResetMeshManagementAttributesRPC, ResizeWindowRPC, MoveWindowRPC, MoveAndResizeWindowRPC, "
-        "SetStateLoggingRPC, ConstructDataBinningRPC, RequestMetaDataRPC, SetTreatAllDBsAsTimeVaryingRPC, "
-        "SetCreateMeshQualityExpressionsRPC, SetCreateTimeDerivativeExpressionsRPC, SetCreateVectorMagnitudeExpressionsRPC, SetPrecisionTypeRPC, "
-        "SetBackendTypeRPC, CopyActivePlotsRPC, SetPlotFollowsTimeRPC, TurnOffAllLocksRPC, "
-        "SetDefaultFileOpenOptionsRPC, SetSuppressMessagesRPC, ApplyNamedSelectionRPC, CreateNamedSelectionRPC, "
-        "DeleteNamedSelectionRPC, LoadNamedSelectionRPC, SaveNamedSelectionRPC, SetNamedSelectionAutoApplyRPC, "
-        "UpdateNamedSelectionRPC, InitializeNamedSelectionVariablesRPC, MenuQuitRPC, SetPlotDescriptionRPC, "
-        "MovePlotOrderTowardFirstRPC, MovePlotOrderTowardLastRPC, SetPlotOrderToFirstRPC, SetPlotOrderToLastRPC, "
-        "RenamePickLabelRPC, GetQueryParametersRPC, DDTConnectRPC, DDTFocusRPC, "
-        "ReleaseToDDTRPC, PlotDDTVispointVariablesRPC, ExportRPC, ExportHostProfileRPC, "
-        "StartPlotAnimationRPC, StopPlotAnimationRPC, ReadHostProfilesFromDirectoryRPC, SetRemoveDuplicateNodesRPC, "
-        "MaxRPC";
+        "AddInitializedOperatorRPC, DeleteOperatorKeyframeRPC, MoveOperatorKeyframeRPC, PromoteOperatorRPC, "
+        "DemoteOperatorRPC, RemoveOperatorRPC, RemoveLastOperatorRPC, RemoveAllOperatorsRPC, "
+        "SaveWindowRPC, SetDefaultPlotOptionsRPC, SetPlotOptionsRPC, SetDefaultOperatorOptionsRPC, "
+        "SetOperatorOptionsRPC, WriteConfigFileRPC, ConnectToMetaDataServerRPC, IconifyAllWindowsRPC, "
+        "DeIconifyAllWindowsRPC, ShowAllWindowsRPC, HideAllWindowsRPC, UpdateColorTableRPC, "
+        "SetAnnotationAttributesRPC, SetDefaultAnnotationAttributesRPC, ResetAnnotationAttributesRPC, SetKeyframeAttributesRPC, "
+        "SetPlotSILRestrictionRPC, SetViewAxisArrayRPC, SetViewCurveRPC, SetView2DRPC, "
+        "SetView3DRPC, ResetPlotOptionsRPC, ResetOperatorOptionsRPC, SetAppearanceRPC, "
+        "ProcessExpressionsRPC, SetLightListRPC, SetDefaultLightListRPC, ResetLightListRPC, "
+        "SetAnimationAttributesRPC, SetWindowAreaRPC, PrintWindowRPC, ResetViewRPC, "
+        "RecenterViewRPC, ToggleAllowPopupRPC, ToggleMaintainViewModeRPC, ToggleBoundingBoxModeRPC, "
+        "ToggleCameraViewModeRPC, TogglePerspectiveViewRPC, ToggleSpinModeRPC, ToggleLockTimeRPC, "
+        "ToggleLockToolsRPC, ToggleLockViewModeRPC, ToggleFullFrameRPC, UndoViewRPC, "
+        "RedoViewRPC, InvertBackgroundRPC, ClearPickPointsRPC, RemovePicksRPC, "
+        "SetWindowModeRPC, EnableToolRPC, SetToolUpdateModeRPC, CopyViewToWindowRPC, "
+        "CopyLightingToWindowRPC, CopyAnnotationsToWindowRPC, CopyPlotsToWindowRPC, ClearCacheRPC, "
+        "ClearCacheForAllEnginesRPC, SetViewExtentsTypeRPC, ClearRefLinesRPC, SetRenderingAttributesRPC, "
+        "QueryRPC, CloneWindowRPC, SetMaterialAttributesRPC, SetDefaultMaterialAttributesRPC, "
+        "ResetMaterialAttributesRPC, SetPlotDatabaseStateRPC, DeletePlotDatabaseKeyframeRPC, MovePlotDatabaseKeyframeRPC, "
+        "ClearViewKeyframesRPC, DeleteViewKeyframeRPC, MoveViewKeyframeRPC, SetViewKeyframeRPC, "
+        "OpenMDServerRPC, EnableToolbarRPC, HideToolbarsRPC, HideToolbarsForAllWindowsRPC, "
+        "ShowToolbarsRPC, ShowToolbarsForAllWindowsRPC, SetToolbarIconSizeRPC, SaveViewRPC, "
+        "SetGlobalLineoutAttributesRPC, SetPickAttributesRPC, ExportColorTableRPC, ExportEntireStateRPC, "
+        "ImportEntireStateRPC, ImportEntireStateWithDifferentSourcesRPC, ResetPickAttributesRPC, AddAnnotationObjectRPC, "
+        "HideActiveAnnotationObjectsRPC, DeleteActiveAnnotationObjectsRPC, RaiseActiveAnnotationObjectsRPC, LowerActiveAnnotationObjectsRPC, "
+        "SetAnnotationObjectOptionsRPC, SetDefaultAnnotationObjectListRPC, ResetAnnotationObjectListRPC, ResetPickLetterRPC, "
+        "SetDefaultPickAttributesRPC, ChooseCenterOfRotationRPC, SetCenterOfRotationRPC, SetQueryOverTimeAttributesRPC, "
+        "SetDefaultQueryOverTimeAttributesRPC, ResetQueryOverTimeAttributesRPC, ResetLineoutColorRPC, SetInteractorAttributesRPC, "
+        "SetDefaultInteractorAttributesRPC, ResetInteractorAttributesRPC, GetProcInfoRPC, SendSimulationCommandRPC, "
+        "UpdateDBPluginInfoRPC, ExportDBRPC, SetTryHarderCyclesTimesRPC, OpenClientRPC, "
+        "OpenGUIClientRPC, OpenCLIClientRPC, SuppressQueryOutputRPC, SetQueryFloatFormatRPC, "
+        "SetMeshManagementAttributesRPC, SetDefaultMeshManagementAttributesRPC, ResetMeshManagementAttributesRPC, ResizeWindowRPC, "
+        "MoveWindowRPC, MoveAndResizeWindowRPC, SetStateLoggingRPC, ConstructDataBinningRPC, "
+        "RequestMetaDataRPC, SetTreatAllDBsAsTimeVaryingRPC, SetCreateMeshQualityExpressionsRPC, SetCreateTimeDerivativeExpressionsRPC, "
+        "SetCreateVectorMagnitudeExpressionsRPC, SetPrecisionTypeRPC, SetBackendTypeRPC, CopyActivePlotsRPC, "
+        "SetPlotFollowsTimeRPC, TurnOffAllLocksRPC, SetDefaultFileOpenOptionsRPC, SetSuppressMessagesRPC, "
+        "ApplyNamedSelectionRPC, CreateNamedSelectionRPC, DeleteNamedSelectionRPC, LoadNamedSelectionRPC, "
+        "SaveNamedSelectionRPC, SetNamedSelectionAutoApplyRPC, UpdateNamedSelectionRPC, InitializeNamedSelectionVariablesRPC, "
+        "MenuQuitRPC, SetPlotDescriptionRPC, MovePlotOrderTowardFirstRPC, MovePlotOrderTowardLastRPC, "
+        "SetPlotOrderToFirstRPC, SetPlotOrderToLastRPC, RenamePickLabelRPC, GetQueryParametersRPC, "
+        "DDTConnectRPC, DDTFocusRPC, ReleaseToDDTRPC, PlotDDTVispointVariablesRPC, "
+        "ExportRPC, ExportHostProfileRPC, StartPlotAnimationRPC, StopPlotAnimationRPC, "
+        "ReadHostProfilesFromDirectoryRPC, SetRemoveDuplicateNodesRPC, MaxRPC";
     switch (atts->GetRPCType())
     {
       case ViewerRPC::CloseRPC:
@@ -262,6 +262,14 @@ PyViewerRPC_ToString(const ViewerRPC *atts, const char *prefix)
           break;
       case ViewerRPC::AddInitializedOperatorRPC:
           snprintf(tmpStr, 1000, "%sRPCType = %sAddInitializedOperatorRPC  # %s\n", prefix, prefix, RPCType_names);
+          str += tmpStr;
+          break;
+      case ViewerRPC::DeleteOperatorKeyframeRPC:
+          snprintf(tmpStr, 1000, "%sRPCType = %sDeleteOperatorKeyframeRPC  # %s\n", prefix, prefix, RPCType_names);
+          str += tmpStr;
+          break;
+      case ViewerRPC::MoveOperatorKeyframeRPC:
+          snprintf(tmpStr, 1000, "%sRPCType = %sMoveOperatorKeyframeRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
       case ViewerRPC::PromoteOperatorRPC:
@@ -1081,6 +1089,8 @@ PyViewerRPC_ToString(const ViewerRPC *atts, const char *prefix)
     str += tmpStr;
     snprintf(tmpStr, 1000, "%sintArg3 = %d\n", prefix, atts->GetIntArg3());
     str += tmpStr;
+    snprintf(tmpStr, 1000, "%sintArg4 = %d\n", prefix, atts->GetIntArg4());
+    str += tmpStr;
     snprintf(tmpStr, 1000, "%sstringArg1 = \"%s\"\n", prefix, atts->GetStringArg1().c_str());
     str += tmpStr;
     snprintf(tmpStr, 1000, "%sstringArg2 = \"%s\"\n", prefix, atts->GetStringArg2().c_str());
@@ -1105,73 +1115,264 @@ ViewerRPC_SetRPCType(PyObject *self, PyObject *args)
 {
     ViewerRPCObject *obj = (ViewerRPCObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 212)
+    {
+        std::stringstream ss;
+        ss << "An invalid RPCType value was given." << std::endl;
+        ss << "Valid values are in the range [0,211]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << " CloseRPC";
+        ss << ", DetachRPC";
+        ss << ", AddWindowRPC";
+        ss << ", DeleteWindowRPC";
+        ss << ", SetWindowLayoutRPC";
+        ss << ", SetActiveWindowRPC";
+        ss << ", ClearWindowRPC";
+        ss << ", ClearAllWindowsRPC";
+        ss << ", OpenDatabaseRPC";
+        ss << ", CloseDatabaseRPC";
+        ss << ", ActivateDatabaseRPC";
+        ss << ", CheckForNewStatesRPC";
+        ss << ", CreateDatabaseCorrelationRPC";
+        ss << ", AlterDatabaseCorrelationRPC";
+        ss << ", DeleteDatabaseCorrelationRPC";
+        ss << ", ReOpenDatabaseRPC";
+        ss << ", ReplaceDatabaseRPC";
+        ss << ", OverlayDatabaseRPC";
+        ss << ", OpenComputeEngineRPC";
+        ss << ", CloseComputeEngineRPC";
+        ss << ", AnimationSetNFramesRPC";
+        ss << ", AnimationPlayRPC";
+        ss << ", AnimationReversePlayRPC";
+        ss << ", AnimationStopRPC";
+        ss << ", TimeSliderNextStateRPC";
+        ss << ", TimeSliderPreviousStateRPC";
+        ss << ", SetTimeSliderStateRPC";
+        ss << ", SetActiveTimeSliderRPC";
+        ss << ", AddPlotRPC";
+        ss << ", AddEmbeddedPlotRPC";
+        ss << ", SetPlotFrameRangeRPC";
+        ss << ", DeletePlotKeyframeRPC";
+        ss << ", MovePlotKeyframeRPC";
+        ss << ", DeleteActivePlotsRPC";
+        ss << ", HideActivePlotsRPC";
+        ss << ", DrawPlotsRPC";
+        ss << ", DisableRedrawRPC";
+        ss << ", RedrawRPC";
+        ss << ", SetActivePlotsRPC";
+        ss << ", ChangeActivePlotsVarRPC";
+        ss << ", AddOperatorRPC";
+        ss << ", AddInitializedOperatorRPC";
+        ss << ", DeleteOperatorKeyframeRPC";
+        ss << ", MoveOperatorKeyframeRPC";
+        ss << ", PromoteOperatorRPC";
+        ss << ", DemoteOperatorRPC";
+        ss << ", RemoveOperatorRPC";
+        ss << ", RemoveLastOperatorRPC";
+        ss << ", RemoveAllOperatorsRPC";
+        ss << ", SaveWindowRPC";
+        ss << ", SetDefaultPlotOptionsRPC";
+        ss << ", SetPlotOptionsRPC";
+        ss << ", SetDefaultOperatorOptionsRPC";
+        ss << ", SetOperatorOptionsRPC";
+        ss << ", WriteConfigFileRPC";
+        ss << ", ConnectToMetaDataServerRPC";
+        ss << ", IconifyAllWindowsRPC";
+        ss << ", DeIconifyAllWindowsRPC";
+        ss << ", ShowAllWindowsRPC";
+        ss << ", HideAllWindowsRPC";
+        ss << ", UpdateColorTableRPC";
+        ss << ", SetAnnotationAttributesRPC";
+        ss << ", SetDefaultAnnotationAttributesRPC";
+        ss << ", ResetAnnotationAttributesRPC";
+        ss << ", SetKeyframeAttributesRPC";
+        ss << ", SetPlotSILRestrictionRPC";
+        ss << ", SetViewAxisArrayRPC";
+        ss << ", SetViewCurveRPC";
+        ss << ", SetView2DRPC";
+        ss << ", SetView3DRPC";
+        ss << ", ResetPlotOptionsRPC";
+        ss << ", ResetOperatorOptionsRPC";
+        ss << ", SetAppearanceRPC";
+        ss << ", ProcessExpressionsRPC";
+        ss << ", SetLightListRPC";
+        ss << ", SetDefaultLightListRPC";
+        ss << ", ResetLightListRPC";
+        ss << ", SetAnimationAttributesRPC";
+        ss << ", SetWindowAreaRPC";
+        ss << ", PrintWindowRPC";
+        ss << ", ResetViewRPC";
+        ss << ", RecenterViewRPC";
+        ss << ", ToggleAllowPopupRPC";
+        ss << ", ToggleMaintainViewModeRPC";
+        ss << ", ToggleBoundingBoxModeRPC";
+        ss << ", ToggleCameraViewModeRPC";
+        ss << ", TogglePerspectiveViewRPC";
+        ss << ", ToggleSpinModeRPC";
+        ss << ", ToggleLockTimeRPC";
+        ss << ", ToggleLockToolsRPC";
+        ss << ", ToggleLockViewModeRPC";
+        ss << ", ToggleFullFrameRPC";
+        ss << ", UndoViewRPC";
+        ss << ", RedoViewRPC";
+        ss << ", InvertBackgroundRPC";
+        ss << ", ClearPickPointsRPC";
+        ss << ", RemovePicksRPC";
+        ss << ", SetWindowModeRPC";
+        ss << ", EnableToolRPC";
+        ss << ", SetToolUpdateModeRPC";
+        ss << ", CopyViewToWindowRPC";
+        ss << ", CopyLightingToWindowRPC";
+        ss << ", CopyAnnotationsToWindowRPC";
+        ss << ", CopyPlotsToWindowRPC";
+        ss << ", ClearCacheRPC";
+        ss << ", ClearCacheForAllEnginesRPC";
+        ss << ", SetViewExtentsTypeRPC";
+        ss << ", ClearRefLinesRPC";
+        ss << ", SetRenderingAttributesRPC";
+        ss << ", QueryRPC";
+        ss << ", CloneWindowRPC";
+        ss << ", SetMaterialAttributesRPC";
+        ss << ", SetDefaultMaterialAttributesRPC";
+        ss << ", ResetMaterialAttributesRPC";
+        ss << ", SetPlotDatabaseStateRPC";
+        ss << ", DeletePlotDatabaseKeyframeRPC";
+        ss << ", MovePlotDatabaseKeyframeRPC";
+        ss << ", ClearViewKeyframesRPC";
+        ss << ", DeleteViewKeyframeRPC";
+        ss << ", MoveViewKeyframeRPC";
+        ss << ", SetViewKeyframeRPC";
+        ss << ", OpenMDServerRPC";
+        ss << ", EnableToolbarRPC";
+        ss << ", HideToolbarsRPC";
+        ss << ", HideToolbarsForAllWindowsRPC";
+        ss << ", ShowToolbarsRPC";
+        ss << ", ShowToolbarsForAllWindowsRPC";
+        ss << ", SetToolbarIconSizeRPC";
+        ss << ", SaveViewRPC";
+        ss << ", SetGlobalLineoutAttributesRPC";
+        ss << ", SetPickAttributesRPC";
+        ss << ", ExportColorTableRPC";
+        ss << ", ExportEntireStateRPC";
+        ss << ", ImportEntireStateRPC";
+        ss << ", ImportEntireStateWithDifferentSourcesRPC";
+        ss << ", ResetPickAttributesRPC";
+        ss << ", AddAnnotationObjectRPC";
+        ss << ", HideActiveAnnotationObjectsRPC";
+        ss << ", DeleteActiveAnnotationObjectsRPC";
+        ss << ", RaiseActiveAnnotationObjectsRPC";
+        ss << ", LowerActiveAnnotationObjectsRPC";
+        ss << ", SetAnnotationObjectOptionsRPC";
+        ss << ", SetDefaultAnnotationObjectListRPC";
+        ss << ", ResetAnnotationObjectListRPC";
+        ss << ", ResetPickLetterRPC";
+        ss << ", SetDefaultPickAttributesRPC";
+        ss << ", ChooseCenterOfRotationRPC";
+        ss << ", SetCenterOfRotationRPC";
+        ss << ", SetQueryOverTimeAttributesRPC";
+        ss << ", SetDefaultQueryOverTimeAttributesRPC";
+        ss << ", ResetQueryOverTimeAttributesRPC";
+        ss << ", ResetLineoutColorRPC";
+        ss << ", SetInteractorAttributesRPC";
+        ss << ", SetDefaultInteractorAttributesRPC";
+        ss << ", ResetInteractorAttributesRPC";
+        ss << ", GetProcInfoRPC";
+        ss << ", SendSimulationCommandRPC";
+        ss << ", UpdateDBPluginInfoRPC";
+        ss << ", ExportDBRPC";
+        ss << ", SetTryHarderCyclesTimesRPC";
+        ss << ", OpenClientRPC";
+        ss << ", OpenGUIClientRPC";
+        ss << ", OpenCLIClientRPC";
+        ss << ", SuppressQueryOutputRPC";
+        ss << ", SetQueryFloatFormatRPC";
+        ss << ", SetMeshManagementAttributesRPC";
+        ss << ", SetDefaultMeshManagementAttributesRPC";
+        ss << ", ResetMeshManagementAttributesRPC";
+        ss << ", ResizeWindowRPC";
+        ss << ", MoveWindowRPC";
+        ss << ", MoveAndResizeWindowRPC";
+        ss << ", SetStateLoggingRPC";
+        ss << ", ConstructDataBinningRPC";
+        ss << ", RequestMetaDataRPC";
+        ss << ", SetTreatAllDBsAsTimeVaryingRPC";
+        ss << ", SetCreateMeshQualityExpressionsRPC";
+        ss << ", SetCreateTimeDerivativeExpressionsRPC";
+        ss << ", SetCreateVectorMagnitudeExpressionsRPC";
+        ss << ", SetPrecisionTypeRPC";
+        ss << ", SetBackendTypeRPC";
+        ss << ", CopyActivePlotsRPC";
+        ss << ", SetPlotFollowsTimeRPC";
+        ss << ", TurnOffAllLocksRPC";
+        ss << ", SetDefaultFileOpenOptionsRPC";
+        ss << ", SetSuppressMessagesRPC";
+        ss << ", ApplyNamedSelectionRPC";
+        ss << ", CreateNamedSelectionRPC";
+        ss << ", DeleteNamedSelectionRPC";
+        ss << ", LoadNamedSelectionRPC";
+        ss << ", SaveNamedSelectionRPC";
+        ss << ", SetNamedSelectionAutoApplyRPC";
+        ss << ", UpdateNamedSelectionRPC";
+        ss << ", InitializeNamedSelectionVariablesRPC";
+        ss << ", MenuQuitRPC";
+        ss << ", SetPlotDescriptionRPC";
+        ss << ", MovePlotOrderTowardFirstRPC";
+        ss << ", MovePlotOrderTowardLastRPC";
+        ss << ", SetPlotOrderToFirstRPC";
+        ss << ", SetPlotOrderToLastRPC";
+        ss << ", RenamePickLabelRPC";
+        ss << ", GetQueryParametersRPC";
+        ss << ", DDTConnectRPC";
+        ss << ", DDTFocusRPC";
+        ss << ", ReleaseToDDTRPC";
+        ss << ", PlotDDTVispointVariablesRPC";
+        ss << ", ExportRPC";
+        ss << ", ExportHostProfileRPC";
+        ss << ", StartPlotAnimationRPC";
+        ss << ", StopPlotAnimationRPC";
+        ss << ", ReadHostProfilesFromDirectoryRPC";
+        ss << ", SetRemoveDuplicateNodesRPC";
+        ss << ", MaxRPC";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the RPCType in the object.
-    if(ival >= 0 && ival < 210)
-        obj->data->SetRPCType(ViewerRPC::ViewerRPCType(ival));
-    else
-    {
-        fprintf(stderr, "An invalid RPCType value was given. "
-                        "Valid values are in the range of [0,209]. "
-                        "You can also use the following names: "
-                        "CloseRPC, DetachRPC, AddWindowRPC, DeleteWindowRPC, SetWindowLayoutRPC, "
-                        "SetActiveWindowRPC, ClearWindowRPC, ClearAllWindowsRPC, OpenDatabaseRPC, "
-                        "CloseDatabaseRPC, ActivateDatabaseRPC, CheckForNewStatesRPC, CreateDatabaseCorrelationRPC, "
-                        "AlterDatabaseCorrelationRPC, DeleteDatabaseCorrelationRPC, ReOpenDatabaseRPC, ReplaceDatabaseRPC, "
-                        "OverlayDatabaseRPC, OpenComputeEngineRPC, CloseComputeEngineRPC, AnimationSetNFramesRPC, "
-                        "AnimationPlayRPC, AnimationReversePlayRPC, AnimationStopRPC, TimeSliderNextStateRPC, "
-                        "TimeSliderPreviousStateRPC, SetTimeSliderStateRPC, SetActiveTimeSliderRPC, AddPlotRPC, "
-                        "AddEmbeddedPlotRPC, SetPlotFrameRangeRPC, DeletePlotKeyframeRPC, MovePlotKeyframeRPC, "
-                        "DeleteActivePlotsRPC, HideActivePlotsRPC, DrawPlotsRPC, DisableRedrawRPC, "
-                        "RedrawRPC, SetActivePlotsRPC, ChangeActivePlotsVarRPC, AddOperatorRPC, "
-                        "AddInitializedOperatorRPC, PromoteOperatorRPC, DemoteOperatorRPC, RemoveOperatorRPC, "
-                        "RemoveLastOperatorRPC, RemoveAllOperatorsRPC, SaveWindowRPC, SetDefaultPlotOptionsRPC, "
-                        "SetPlotOptionsRPC, SetDefaultOperatorOptionsRPC, SetOperatorOptionsRPC, WriteConfigFileRPC, "
-                        "ConnectToMetaDataServerRPC, IconifyAllWindowsRPC, DeIconifyAllWindowsRPC, ShowAllWindowsRPC, "
-                        "HideAllWindowsRPC, UpdateColorTableRPC, SetAnnotationAttributesRPC, SetDefaultAnnotationAttributesRPC, "
-                        "ResetAnnotationAttributesRPC, SetKeyframeAttributesRPC, SetPlotSILRestrictionRPC, SetViewAxisArrayRPC, "
-                        "SetViewCurveRPC, SetView2DRPC, SetView3DRPC, ResetPlotOptionsRPC, "
-                        "ResetOperatorOptionsRPC, SetAppearanceRPC, ProcessExpressionsRPC, SetLightListRPC, "
-                        "SetDefaultLightListRPC, ResetLightListRPC, SetAnimationAttributesRPC, SetWindowAreaRPC, "
-                        "PrintWindowRPC, ResetViewRPC, RecenterViewRPC, ToggleAllowPopupRPC, "
-                        "ToggleMaintainViewModeRPC, ToggleBoundingBoxModeRPC, ToggleCameraViewModeRPC, TogglePerspectiveViewRPC, "
-                        "ToggleSpinModeRPC, ToggleLockTimeRPC, ToggleLockToolsRPC, ToggleLockViewModeRPC, "
-                        "ToggleFullFrameRPC, UndoViewRPC, RedoViewRPC, InvertBackgroundRPC, "
-                        "ClearPickPointsRPC, RemovePicksRPC, SetWindowModeRPC, EnableToolRPC, "
-                        "SetToolUpdateModeRPC, CopyViewToWindowRPC, CopyLightingToWindowRPC, CopyAnnotationsToWindowRPC, "
-                        "CopyPlotsToWindowRPC, ClearCacheRPC, ClearCacheForAllEnginesRPC, SetViewExtentsTypeRPC, "
-                        "ClearRefLinesRPC, SetRenderingAttributesRPC, QueryRPC, CloneWindowRPC, "
-                        "SetMaterialAttributesRPC, SetDefaultMaterialAttributesRPC, ResetMaterialAttributesRPC, SetPlotDatabaseStateRPC, "
-                        "DeletePlotDatabaseKeyframeRPC, MovePlotDatabaseKeyframeRPC, ClearViewKeyframesRPC, DeleteViewKeyframeRPC, "
-                        "MoveViewKeyframeRPC, SetViewKeyframeRPC, OpenMDServerRPC, EnableToolbarRPC, "
-                        "HideToolbarsRPC, HideToolbarsForAllWindowsRPC, ShowToolbarsRPC, ShowToolbarsForAllWindowsRPC, "
-                        "SetToolbarIconSizeRPC, SaveViewRPC, SetGlobalLineoutAttributesRPC, SetPickAttributesRPC, "
-                        "ExportColorTableRPC, ExportEntireStateRPC, ImportEntireStateRPC, ImportEntireStateWithDifferentSourcesRPC, "
-                        "ResetPickAttributesRPC, AddAnnotationObjectRPC, HideActiveAnnotationObjectsRPC, DeleteActiveAnnotationObjectsRPC, "
-                        "RaiseActiveAnnotationObjectsRPC, LowerActiveAnnotationObjectsRPC, SetAnnotationObjectOptionsRPC, SetDefaultAnnotationObjectListRPC, "
-                        "ResetAnnotationObjectListRPC, ResetPickLetterRPC, SetDefaultPickAttributesRPC, ChooseCenterOfRotationRPC, "
-                        "SetCenterOfRotationRPC, SetQueryOverTimeAttributesRPC, SetDefaultQueryOverTimeAttributesRPC, ResetQueryOverTimeAttributesRPC, "
-                        "ResetLineoutColorRPC, SetInteractorAttributesRPC, SetDefaultInteractorAttributesRPC, ResetInteractorAttributesRPC, "
-                        "GetProcInfoRPC, SendSimulationCommandRPC, UpdateDBPluginInfoRPC, ExportDBRPC, "
-                        "SetTryHarderCyclesTimesRPC, OpenClientRPC, OpenGUIClientRPC, OpenCLIClientRPC, "
-                        "SuppressQueryOutputRPC, SetQueryFloatFormatRPC, SetMeshManagementAttributesRPC, SetDefaultMeshManagementAttributesRPC, "
-                        "ResetMeshManagementAttributesRPC, ResizeWindowRPC, MoveWindowRPC, MoveAndResizeWindowRPC, "
-                        "SetStateLoggingRPC, ConstructDataBinningRPC, RequestMetaDataRPC, SetTreatAllDBsAsTimeVaryingRPC, "
-                        "SetCreateMeshQualityExpressionsRPC, SetCreateTimeDerivativeExpressionsRPC, SetCreateVectorMagnitudeExpressionsRPC, SetPrecisionTypeRPC, "
-                        "SetBackendTypeRPC, CopyActivePlotsRPC, SetPlotFollowsTimeRPC, TurnOffAllLocksRPC, "
-                        "SetDefaultFileOpenOptionsRPC, SetSuppressMessagesRPC, ApplyNamedSelectionRPC, CreateNamedSelectionRPC, "
-                        "DeleteNamedSelectionRPC, LoadNamedSelectionRPC, SaveNamedSelectionRPC, SetNamedSelectionAutoApplyRPC, "
-                        "UpdateNamedSelectionRPC, InitializeNamedSelectionVariablesRPC, MenuQuitRPC, SetPlotDescriptionRPC, "
-                        "MovePlotOrderTowardFirstRPC, MovePlotOrderTowardLastRPC, SetPlotOrderToFirstRPC, SetPlotOrderToLastRPC, "
-                        "RenamePickLabelRPC, GetQueryParametersRPC, DDTConnectRPC, DDTFocusRPC, "
-                        "ReleaseToDDTRPC, PlotDDTVispointVariablesRPC, ExportRPC, ExportHostProfileRPC, "
-                        "StartPlotAnimationRPC, StopPlotAnimationRPC, ReadHostProfilesFromDirectoryRPC, SetRemoveDuplicateNodesRPC, "
-                        "MaxRPC.");
-        return NULL;
-    }
+    obj->data->SetRPCType(ViewerRPC::ViewerRPCType(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1190,12 +1391,48 @@ ViewerRPC_SetWindowLayout(PyObject *self, PyObject *args)
 {
     ViewerRPCObject *obj = (ViewerRPCObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the windowLayout in the object.
-    obj->data->SetWindowLayout((int)ival);
+    obj->data->SetWindowLayout(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1214,12 +1451,48 @@ ViewerRPC_SetWindowId(PyObject *self, PyObject *args)
 {
     ViewerRPCObject *obj = (ViewerRPCObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the windowId in the object.
-    obj->data->SetWindowId((int)ival);
+    obj->data->SetWindowId(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1238,12 +1511,48 @@ ViewerRPC_SetWindowMode(PyObject *self, PyObject *args)
 {
     ViewerRPCObject *obj = (ViewerRPCObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the windowMode in the object.
-    obj->data->SetWindowMode((int)ival);
+    obj->data->SetWindowMode(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1262,12 +1571,37 @@ ViewerRPC_SetWindowArea(PyObject *self, PyObject *args)
 {
     ViewerRPCObject *obj = (ViewerRPCObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the windowArea in the object.
-    obj->data->SetWindowArea(std::string(str));
+    obj->data->SetWindowArea(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1286,12 +1620,37 @@ ViewerRPC_SetDatabase(PyObject *self, PyObject *args)
 {
     ViewerRPCObject *obj = (ViewerRPCObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the database in the object.
-    obj->data->SetDatabase(std::string(str));
+    obj->data->SetDatabase(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1310,12 +1669,37 @@ ViewerRPC_SetProgramHost(PyObject *self, PyObject *args)
 {
     ViewerRPCObject *obj = (ViewerRPCObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the programHost in the object.
-    obj->data->SetProgramHost(std::string(str));
+    obj->data->SetProgramHost(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1334,12 +1718,37 @@ ViewerRPC_SetProgramSim(PyObject *self, PyObject *args)
 {
     ViewerRPCObject *obj = (ViewerRPCObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the programSim in the object.
-    obj->data->SetProgramSim(std::string(str));
+    obj->data->SetProgramSim(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1358,37 +1767,51 @@ ViewerRPC_SetProgramOptions(PyObject *self, PyObject *args)
 {
     ViewerRPCObject *obj = (ViewerRPCObject *)self;
 
-    stringVector  &vec = obj->data->GetProgramOptions();
-    PyObject     *tuple;
-    if(!PyArg_ParseTuple(args, "O", &tuple))
-        return NULL;
+    stringVector vec;
 
-    if(PyTuple_Check(tuple))
+    if (PyUnicode_Check(args))
     {
-        vec.resize(PyTuple_Size(tuple));
-        for(int i = 0; i < PyTuple_Size(tuple); ++i)
+        char const *val = PyUnicode_AsUTF8(args);
+        std::string cval = std::string(val);
+        if (val == 0 && PyErr_Occurred())
         {
-            PyObject *item = PyTuple_GET_ITEM(tuple, i);
-            if(PyString_Check(item))
+            PyErr_Clear();
+            return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ string");
+        }
+        vec.resize(1);
+        vec[0] = cval;
+    }
+    else if (PySequence_Check(args))
+    {
+        vec.resize(PySequence_Size(args));
+        for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)
+        {
+            PyObject *item = PySequence_GetItem(args, i);
+
+            if (!PyUnicode_Check(item))
             {
-                char *item_cstr = PyString_AsString(item);
-                vec[i] = std::string(item_cstr);
-                PyString_AsString_Cleanup(item_cstr);
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_TypeError, "arg %d is not a unicode string", (int) i);
             }
-            else
-                vec[i] = std::string("");
+
+            char const *val = PyUnicode_AsUTF8(item);
+            std::string cval = std::string(val);
+
+            if (val == 0 && PyErr_Occurred())
+            {
+                Py_DECREF(item);
+                PyErr_Clear();
+                return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ string", (int) i);
+            }
+            Py_DECREF(item);
+
+            vec[i] = cval;
         }
     }
-    else if(PyString_Check(tuple))
-    {
-        vec.resize(1);
-        char *tuple_cstr = PyString_AsString(tuple);
-        vec[0] = std::string(tuple_cstr);
-        PyString_AsString_Cleanup(tuple_cstr);
-    }
     else
-        return NULL;
+        return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more string(s)");
 
+    obj->data->GetProgramOptions() = vec;
     // Mark the programOptions in the object as modified.
     obj->data->SelectProgramOptions();
 
@@ -1413,12 +1836,48 @@ ViewerRPC_SetNFrames(PyObject *self, PyObject *args)
 {
     ViewerRPCObject *obj = (ViewerRPCObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the nFrames in the object.
-    obj->data->SetNFrames((int)ival);
+    obj->data->SetNFrames(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1437,12 +1896,48 @@ ViewerRPC_SetStateNumber(PyObject *self, PyObject *args)
 {
     ViewerRPCObject *obj = (ViewerRPCObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the stateNumber in the object.
-    obj->data->SetStateNumber((int)ival);
+    obj->data->SetStateNumber(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1461,35 +1956,60 @@ ViewerRPC_SetFrameRange(PyObject *self, PyObject *args)
 {
     ViewerRPCObject *obj = (ViewerRPCObject *)self;
 
-    int *ivals = obj->data->GetFrameRange();
-    if(!PyArg_ParseTuple(args, "ii", &ivals[0], &ivals[1]))
+    PyObject *packaged_args = 0;
+    int *vals = obj->data->GetFrameRange();
+
+    if (!PySequence_Check(args) || PyUnicode_Check(args))
+        return PyErr_Format(PyExc_TypeError, "Expecting a sequence of numeric args");
+
+    // break open args seq. if we think it matches this API's needs
+    if (PySequence_Size(args) == 1)
     {
-        PyObject     *tuple;
-        if(!PyArg_ParseTuple(args, "O", &tuple))
-            return NULL;
-
-        if(PyTuple_Check(tuple))
-        {
-            if(PyTuple_Size(tuple) != 2)
-                return NULL;
-
-            PyErr_Clear();
-            for(int i = 0; i < PyTuple_Size(tuple); ++i)
-            {
-                PyObject *item = PyTuple_GET_ITEM(tuple, i);
-                if(PyFloat_Check(item))
-                    ivals[i] = int(PyFloat_AS_DOUBLE(item));
-                else if(PyInt_Check(item))
-                    ivals[i] = int(PyInt_AS_LONG(item));
-                else if(PyLong_Check(item))
-                    ivals[i] = int(PyLong_AsDouble(item));
-                else
-                    ivals[i] = 0;
-            }
-        }
-        else
-            return NULL;
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PySequence_Check(packaged_args) && !PyUnicode_Check(packaged_args) &&
+            PySequence_Size(packaged_args) == 2)
+            args = packaged_args;
     }
+
+    if (PySequence_Size(args) != 2)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "Expecting 2 numeric args");
+    }
+
+    for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)
+    {
+        PyObject *item = PySequence_GetItem(args, i);
+
+        if (!PyNumber_Check(item))
+        {
+            Py_DECREF(item);
+            Py_XDECREF(packaged_args);
+            return PyErr_Format(PyExc_TypeError, "arg %d is not a number type", (int) i);
+        }
+
+        long val = PyLong_AsLong(item);
+        int cval = int(val);
+
+        if (val == -1 && PyErr_Occurred())
+        {
+            Py_XDECREF(packaged_args);
+            Py_DECREF(item);
+            PyErr_Clear();
+            return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ int", (int) i);
+        }
+        if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+        {
+            Py_XDECREF(packaged_args);
+            Py_DECREF(item);
+            return PyErr_Format(PyExc_ValueError, "arg %d not interpretable as C++ int", (int) i);
+        }
+        Py_DECREF(item);
+
+        vals[i] = cval;
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Mark the frameRange in the object as modified.
     obj->data->SelectFrameRange();
@@ -1515,12 +2035,48 @@ ViewerRPC_SetFrame(PyObject *self, PyObject *args)
 {
     ViewerRPCObject *obj = (ViewerRPCObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the frame in the object.
-    obj->data->SetFrame((int)ival);
+    obj->data->SetFrame(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1539,12 +2095,48 @@ ViewerRPC_SetPlotType(PyObject *self, PyObject *args)
 {
     ViewerRPCObject *obj = (ViewerRPCObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the plotType in the object.
-    obj->data->SetPlotType((int)ival);
+    obj->data->SetPlotType(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1563,12 +2155,48 @@ ViewerRPC_SetOperatorType(PyObject *self, PyObject *args)
 {
     ViewerRPCObject *obj = (ViewerRPCObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the operatorType in the object.
-    obj->data->SetOperatorType((int)ival);
+    obj->data->SetOperatorType(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1587,12 +2215,37 @@ ViewerRPC_SetVariable(PyObject *self, PyObject *args)
 {
     ViewerRPCObject *obj = (ViewerRPCObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the variable in the object.
-    obj->data->SetVariable(std::string(str));
+    obj->data->SetVariable(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1611,45 +2264,58 @@ ViewerRPC_SetActivePlotIds(PyObject *self, PyObject *args)
 {
     ViewerRPCObject *obj = (ViewerRPCObject *)self;
 
-    intVector  &vec = obj->data->GetActivePlotIds();
-    PyObject   *tuple;
-    if(!PyArg_ParseTuple(args, "O", &tuple))
-        return NULL;
+    intVector vec;
 
-    if(PyTuple_Check(tuple))
+    if (PyNumber_Check(args))
     {
-        vec.resize(PyTuple_Size(tuple));
-        for(int i = 0; i < PyTuple_Size(tuple); ++i)
+        long val = PyLong_AsLong(args);
+        int cval = int(val);
+        if (val == -1 && PyErr_Occurred())
         {
-            PyObject *item = PyTuple_GET_ITEM(tuple, i);
-            if(PyFloat_Check(item))
-                vec[i] = int(PyFloat_AS_DOUBLE(item));
-            else if(PyInt_Check(item))
-                vec[i] = int(PyInt_AS_LONG(item));
-            else if(PyLong_Check(item))
-                vec[i] = int(PyLong_AsLong(item));
-            else
-                vec[i] = 0;
+            PyErr_Clear();
+            return PyErr_Format(PyExc_TypeError, "number not interpretable as C++ int");
+        }
+        if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+            return PyErr_Format(PyExc_ValueError, "number not interpretable as C++ int");
+        vec.resize(1);
+        vec[0] = cval;
+    }
+    else if (PySequence_Check(args) && !PyUnicode_Check(args))
+    {
+        vec.resize(PySequence_Size(args));
+        for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)
+        {
+            PyObject *item = PySequence_GetItem(args, i);
+
+            if (!PyNumber_Check(item))
+            {
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_TypeError, "arg %d is not a number type", (int) i);
+            }
+
+            long val = PyLong_AsLong(item);
+            int cval = int(val);
+
+            if (val == -1 && PyErr_Occurred())
+            {
+                Py_DECREF(item);
+                PyErr_Clear();
+                return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ int", (int) i);
+            }
+            if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+            {
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_ValueError, "arg %d not interpretable as C++ int", (int) i);
+            }
+            Py_DECREF(item);
+
+            vec[i] = cval;
         }
     }
-    else if(PyFloat_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = int(PyFloat_AS_DOUBLE(tuple));
-    }
-    else if(PyInt_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = int(PyInt_AS_LONG(tuple));
-    }
-    else if(PyLong_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = int(PyLong_AsLong(tuple));
-    }
     else
-        return NULL;
+        return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more ints");
 
+    obj->data->GetActivePlotIds() = vec;
     // Mark the activePlotIds in the object as modified.
     obj->data->SelectActivePlotIds();
 
@@ -1674,45 +2340,58 @@ ViewerRPC_SetActiveOperatorIds(PyObject *self, PyObject *args)
 {
     ViewerRPCObject *obj = (ViewerRPCObject *)self;
 
-    intVector  &vec = obj->data->GetActiveOperatorIds();
-    PyObject   *tuple;
-    if(!PyArg_ParseTuple(args, "O", &tuple))
-        return NULL;
+    intVector vec;
 
-    if(PyTuple_Check(tuple))
+    if (PyNumber_Check(args))
     {
-        vec.resize(PyTuple_Size(tuple));
-        for(int i = 0; i < PyTuple_Size(tuple); ++i)
+        long val = PyLong_AsLong(args);
+        int cval = int(val);
+        if (val == -1 && PyErr_Occurred())
         {
-            PyObject *item = PyTuple_GET_ITEM(tuple, i);
-            if(PyFloat_Check(item))
-                vec[i] = int(PyFloat_AS_DOUBLE(item));
-            else if(PyInt_Check(item))
-                vec[i] = int(PyInt_AS_LONG(item));
-            else if(PyLong_Check(item))
-                vec[i] = int(PyLong_AsLong(item));
-            else
-                vec[i] = 0;
+            PyErr_Clear();
+            return PyErr_Format(PyExc_TypeError, "number not interpretable as C++ int");
+        }
+        if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+            return PyErr_Format(PyExc_ValueError, "number not interpretable as C++ int");
+        vec.resize(1);
+        vec[0] = cval;
+    }
+    else if (PySequence_Check(args) && !PyUnicode_Check(args))
+    {
+        vec.resize(PySequence_Size(args));
+        for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)
+        {
+            PyObject *item = PySequence_GetItem(args, i);
+
+            if (!PyNumber_Check(item))
+            {
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_TypeError, "arg %d is not a number type", (int) i);
+            }
+
+            long val = PyLong_AsLong(item);
+            int cval = int(val);
+
+            if (val == -1 && PyErr_Occurred())
+            {
+                Py_DECREF(item);
+                PyErr_Clear();
+                return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ int", (int) i);
+            }
+            if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+            {
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_ValueError, "arg %d not interpretable as C++ int", (int) i);
+            }
+            Py_DECREF(item);
+
+            vec[i] = cval;
         }
     }
-    else if(PyFloat_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = int(PyFloat_AS_DOUBLE(tuple));
-    }
-    else if(PyInt_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = int(PyInt_AS_LONG(tuple));
-    }
-    else if(PyLong_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = int(PyLong_AsLong(tuple));
-    }
     else
-        return NULL;
+        return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more ints");
 
+    obj->data->GetActiveOperatorIds() = vec;
     // Mark the activeOperatorIds in the object as modified.
     obj->data->SelectActiveOperatorIds();
 
@@ -1737,45 +2416,58 @@ ViewerRPC_SetExpandedPlotIds(PyObject *self, PyObject *args)
 {
     ViewerRPCObject *obj = (ViewerRPCObject *)self;
 
-    intVector  &vec = obj->data->GetExpandedPlotIds();
-    PyObject   *tuple;
-    if(!PyArg_ParseTuple(args, "O", &tuple))
-        return NULL;
+    intVector vec;
 
-    if(PyTuple_Check(tuple))
+    if (PyNumber_Check(args))
     {
-        vec.resize(PyTuple_Size(tuple));
-        for(int i = 0; i < PyTuple_Size(tuple); ++i)
+        long val = PyLong_AsLong(args);
+        int cval = int(val);
+        if (val == -1 && PyErr_Occurred())
         {
-            PyObject *item = PyTuple_GET_ITEM(tuple, i);
-            if(PyFloat_Check(item))
-                vec[i] = int(PyFloat_AS_DOUBLE(item));
-            else if(PyInt_Check(item))
-                vec[i] = int(PyInt_AS_LONG(item));
-            else if(PyLong_Check(item))
-                vec[i] = int(PyLong_AsLong(item));
-            else
-                vec[i] = 0;
+            PyErr_Clear();
+            return PyErr_Format(PyExc_TypeError, "number not interpretable as C++ int");
+        }
+        if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+            return PyErr_Format(PyExc_ValueError, "number not interpretable as C++ int");
+        vec.resize(1);
+        vec[0] = cval;
+    }
+    else if (PySequence_Check(args) && !PyUnicode_Check(args))
+    {
+        vec.resize(PySequence_Size(args));
+        for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)
+        {
+            PyObject *item = PySequence_GetItem(args, i);
+
+            if (!PyNumber_Check(item))
+            {
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_TypeError, "arg %d is not a number type", (int) i);
+            }
+
+            long val = PyLong_AsLong(item);
+            int cval = int(val);
+
+            if (val == -1 && PyErr_Occurred())
+            {
+                Py_DECREF(item);
+                PyErr_Clear();
+                return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ int", (int) i);
+            }
+            if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+            {
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_ValueError, "arg %d not interpretable as C++ int", (int) i);
+            }
+            Py_DECREF(item);
+
+            vec[i] = cval;
         }
     }
-    else if(PyFloat_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = int(PyFloat_AS_DOUBLE(tuple));
-    }
-    else if(PyInt_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = int(PyInt_AS_LONG(tuple));
-    }
-    else if(PyLong_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = int(PyLong_AsLong(tuple));
-    }
     else
-        return NULL;
+        return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more ints");
 
+    obj->data->GetExpandedPlotIds() = vec;
     // Mark the expandedPlotIds in the object as modified.
     obj->data->SelectExpandedPlotIds();
 
@@ -1800,12 +2492,37 @@ ViewerRPC_SetColorTableName(PyObject *self, PyObject *args)
 {
     ViewerRPCObject *obj = (ViewerRPCObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the colorTableName in the object.
-    obj->data->SetColorTableName(std::string(str));
+    obj->data->SetColorTableName(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1824,12 +2541,37 @@ ViewerRPC_SetQueryName(PyObject *self, PyObject *args)
 {
     ViewerRPCObject *obj = (ViewerRPCObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the queryName in the object.
-    obj->data->SetQueryName(std::string(str));
+    obj->data->SetQueryName(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1848,35 +2590,60 @@ ViewerRPC_SetQueryPoint1(PyObject *self, PyObject *args)
 {
     ViewerRPCObject *obj = (ViewerRPCObject *)self;
 
-    double *dvals = obj->data->GetQueryPoint1();
-    if(!PyArg_ParseTuple(args, "ddd", &dvals[0], &dvals[1], &dvals[2]))
+    PyObject *packaged_args = 0;
+    double *vals = obj->data->GetQueryPoint1();
+
+    if (!PySequence_Check(args) || PyUnicode_Check(args))
+        return PyErr_Format(PyExc_TypeError, "Expecting a sequence of numeric args");
+
+    // break open args seq. if we think it matches this API's needs
+    if (PySequence_Size(args) == 1)
     {
-        PyObject     *tuple;
-        if(!PyArg_ParseTuple(args, "O", &tuple))
-            return NULL;
-
-        if(PyTuple_Check(tuple))
-        {
-            if(PyTuple_Size(tuple) != 3)
-                return NULL;
-
-            PyErr_Clear();
-            for(int i = 0; i < PyTuple_Size(tuple); ++i)
-            {
-                PyObject *item = PyTuple_GET_ITEM(tuple, i);
-                if(PyFloat_Check(item))
-                    dvals[i] = PyFloat_AS_DOUBLE(item);
-                else if(PyInt_Check(item))
-                    dvals[i] = double(PyInt_AS_LONG(item));
-                else if(PyLong_Check(item))
-                    dvals[i] = PyLong_AsDouble(item);
-                else
-                    dvals[i] = 0.;
-            }
-        }
-        else
-            return NULL;
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PySequence_Check(packaged_args) && !PyUnicode_Check(packaged_args) &&
+            PySequence_Size(packaged_args) == 3)
+            args = packaged_args;
     }
+
+    if (PySequence_Size(args) != 3)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "Expecting 3 numeric args");
+    }
+
+    for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)
+    {
+        PyObject *item = PySequence_GetItem(args, i);
+
+        if (!PyNumber_Check(item))
+        {
+            Py_DECREF(item);
+            Py_XDECREF(packaged_args);
+            return PyErr_Format(PyExc_TypeError, "arg %d is not a number type", (int) i);
+        }
+
+        double val = PyFloat_AsDouble(item);
+        double cval = double(val);
+
+        if (val == -1 && PyErr_Occurred())
+        {
+            Py_XDECREF(packaged_args);
+            Py_DECREF(item);
+            PyErr_Clear();
+            return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ double", (int) i);
+        }
+        if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+        {
+            Py_XDECREF(packaged_args);
+            Py_DECREF(item);
+            return PyErr_Format(PyExc_ValueError, "arg %d not interpretable as C++ double", (int) i);
+        }
+        Py_DECREF(item);
+
+        vals[i] = cval;
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Mark the queryPoint1 in the object as modified.
     obj->data->SelectQueryPoint1();
@@ -1902,12 +2669,48 @@ ViewerRPC_SetToolId(PyObject *self, PyObject *args)
 {
     ViewerRPCObject *obj = (ViewerRPCObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the toolId in the object.
-    obj->data->SetToolId((int)ival);
+    obj->data->SetToolId(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1926,12 +2729,48 @@ ViewerRPC_SetEmbeddedPlotId(PyObject *self, PyObject *args)
 {
     ViewerRPCObject *obj = (ViewerRPCObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the embeddedPlotId in the object.
-    obj->data->SetEmbeddedPlotId((int)ival);
+    obj->data->SetEmbeddedPlotId(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1950,12 +2789,48 @@ ViewerRPC_SetBoolFlag(PyObject *self, PyObject *args)
 {
     ViewerRPCObject *obj = (ViewerRPCObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the boolFlag in the object.
-    obj->data->SetBoolFlag(ival != 0);
+    obj->data->SetBoolFlag(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1974,12 +2849,48 @@ ViewerRPC_SetIntArg1(PyObject *self, PyObject *args)
 {
     ViewerRPCObject *obj = (ViewerRPCObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the intArg1 in the object.
-    obj->data->SetIntArg1((int)ival);
+    obj->data->SetIntArg1(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1998,12 +2909,48 @@ ViewerRPC_SetIntArg2(PyObject *self, PyObject *args)
 {
     ViewerRPCObject *obj = (ViewerRPCObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the intArg2 in the object.
-    obj->data->SetIntArg2((int)ival);
+    obj->data->SetIntArg2(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -2022,12 +2969,48 @@ ViewerRPC_SetIntArg3(PyObject *self, PyObject *args)
 {
     ViewerRPCObject *obj = (ViewerRPCObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the intArg3 in the object.
-    obj->data->SetIntArg3((int)ival);
+    obj->data->SetIntArg3(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -2042,16 +3025,101 @@ ViewerRPC_GetIntArg3(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
+ViewerRPC_SetIntArg4(PyObject *self, PyObject *args)
+{
+    ViewerRPCObject *obj = (ViewerRPCObject *)self;
+
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
+
+    // Set the intArg4 in the object.
+    obj->data->SetIntArg4(cval);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+ViewerRPC_GetIntArg4(PyObject *self, PyObject *args)
+{
+    ViewerRPCObject *obj = (ViewerRPCObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetIntArg4()));
+    return retval;
+}
+
+/*static*/ PyObject *
 ViewerRPC_SetStringArg1(PyObject *self, PyObject *args)
 {
     ViewerRPCObject *obj = (ViewerRPCObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the stringArg1 in the object.
-    obj->data->SetStringArg1(std::string(str));
+    obj->data->SetStringArg1(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -2070,12 +3138,37 @@ ViewerRPC_SetStringArg2(PyObject *self, PyObject *args)
 {
     ViewerRPCObject *obj = (ViewerRPCObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the stringArg2 in the object.
-    obj->data->SetStringArg2(std::string(str));
+    obj->data->SetStringArg2(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -2094,12 +3187,48 @@ ViewerRPC_SetToolUpdateMode(PyObject *self, PyObject *args)
 {
     ViewerRPCObject *obj = (ViewerRPCObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the toolUpdateMode in the object.
-    obj->data->SetToolUpdateMode((int)ival);
+    obj->data->SetToolUpdateMode(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -2197,6 +3326,8 @@ PyMethodDef PyViewerRPC_methods[VIEWERRPC_NMETH] = {
     {"GetIntArg2", ViewerRPC_GetIntArg2, METH_VARARGS},
     {"SetIntArg3", ViewerRPC_SetIntArg3, METH_VARARGS},
     {"GetIntArg3", ViewerRPC_GetIntArg3, METH_VARARGS},
+    {"SetIntArg4", ViewerRPC_SetIntArg4, METH_VARARGS},
+    {"GetIntArg4", ViewerRPC_GetIntArg4, METH_VARARGS},
     {"SetStringArg1", ViewerRPC_SetStringArg1, METH_VARARGS},
     {"GetStringArg1", ViewerRPC_GetStringArg1, METH_VARARGS},
     {"SetStringArg2", ViewerRPC_SetStringArg2, METH_VARARGS},
@@ -2312,6 +3443,10 @@ PyViewerRPC_getattr(PyObject *self, char *name)
         return PyInt_FromLong(long(ViewerRPC::AddOperatorRPC));
     if(strcmp(name, "AddInitializedOperatorRPC") == 0)
         return PyInt_FromLong(long(ViewerRPC::AddInitializedOperatorRPC));
+    if(strcmp(name, "DeleteOperatorKeyframeRPC") == 0)
+        return PyInt_FromLong(long(ViewerRPC::DeleteOperatorKeyframeRPC));
+    if(strcmp(name, "MoveOperatorKeyframeRPC") == 0)
+        return PyInt_FromLong(long(ViewerRPC::MoveOperatorKeyframeRPC));
     if(strcmp(name, "PromoteOperatorRPC") == 0)
         return PyInt_FromLong(long(ViewerRPC::PromoteOperatorRPC));
     if(strcmp(name, "DemoteOperatorRPC") == 0)
@@ -2703,6 +3838,8 @@ PyViewerRPC_getattr(PyObject *self, char *name)
         return ViewerRPC_GetIntArg2(self, NULL);
     if(strcmp(name, "intArg3") == 0)
         return ViewerRPC_GetIntArg3(self, NULL);
+    if(strcmp(name, "intArg4") == 0)
+        return ViewerRPC_GetIntArg4(self, NULL);
     if(strcmp(name, "stringArg1") == 0)
         return ViewerRPC_GetStringArg1(self, NULL);
     if(strcmp(name, "stringArg2") == 0)
@@ -2712,88 +3849,103 @@ PyViewerRPC_getattr(PyObject *self, char *name)
     if(strcmp(name, "queryParams") == 0)
         return ViewerRPC_GetQueryParams(self, NULL);
 
+
+    // Add a __dict__ answer so that dir() works
+    if (!strcmp(name, "__dict__"))
+    {
+        PyObject *result = PyDict_New();
+        for (int i = 0; PyViewerRPC_methods[i].ml_meth; i++)
+            PyDict_SetItem(result,
+                PyString_FromString(PyViewerRPC_methods[i].ml_name),
+                PyString_FromString(PyViewerRPC_methods[i].ml_name));
+        return result;
+    }
+
     return Py_FindMethod(PyViewerRPC_methods, self, name);
 }
 
 int
 PyViewerRPC_setattr(PyObject *self, char *name, PyObject *args)
 {
-    // Create a tuple to contain the arguments since all of the Set
-    // functions expect a tuple.
-    PyObject *tuple = PyTuple_New(1);
-    PyTuple_SET_ITEM(tuple, 0, args);
-    Py_INCREF(args);
-    PyObject *obj = NULL;
+    PyObject NULL_PY_OBJ;
+    PyObject *obj = &NULL_PY_OBJ;
 
     if(strcmp(name, "RPCType") == 0)
-        obj = ViewerRPC_SetRPCType(self, tuple);
+        obj = ViewerRPC_SetRPCType(self, args);
     else if(strcmp(name, "windowLayout") == 0)
-        obj = ViewerRPC_SetWindowLayout(self, tuple);
+        obj = ViewerRPC_SetWindowLayout(self, args);
     else if(strcmp(name, "windowId") == 0)
-        obj = ViewerRPC_SetWindowId(self, tuple);
+        obj = ViewerRPC_SetWindowId(self, args);
     else if(strcmp(name, "windowMode") == 0)
-        obj = ViewerRPC_SetWindowMode(self, tuple);
+        obj = ViewerRPC_SetWindowMode(self, args);
     else if(strcmp(name, "windowArea") == 0)
-        obj = ViewerRPC_SetWindowArea(self, tuple);
+        obj = ViewerRPC_SetWindowArea(self, args);
     else if(strcmp(name, "database") == 0)
-        obj = ViewerRPC_SetDatabase(self, tuple);
+        obj = ViewerRPC_SetDatabase(self, args);
     else if(strcmp(name, "programHost") == 0)
-        obj = ViewerRPC_SetProgramHost(self, tuple);
+        obj = ViewerRPC_SetProgramHost(self, args);
     else if(strcmp(name, "programSim") == 0)
-        obj = ViewerRPC_SetProgramSim(self, tuple);
+        obj = ViewerRPC_SetProgramSim(self, args);
     else if(strcmp(name, "programOptions") == 0)
-        obj = ViewerRPC_SetProgramOptions(self, tuple);
+        obj = ViewerRPC_SetProgramOptions(self, args);
     else if(strcmp(name, "nFrames") == 0)
-        obj = ViewerRPC_SetNFrames(self, tuple);
+        obj = ViewerRPC_SetNFrames(self, args);
     else if(strcmp(name, "stateNumber") == 0)
-        obj = ViewerRPC_SetStateNumber(self, tuple);
+        obj = ViewerRPC_SetStateNumber(self, args);
     else if(strcmp(name, "frameRange") == 0)
-        obj = ViewerRPC_SetFrameRange(self, tuple);
+        obj = ViewerRPC_SetFrameRange(self, args);
     else if(strcmp(name, "frame") == 0)
-        obj = ViewerRPC_SetFrame(self, tuple);
+        obj = ViewerRPC_SetFrame(self, args);
     else if(strcmp(name, "plotType") == 0)
-        obj = ViewerRPC_SetPlotType(self, tuple);
+        obj = ViewerRPC_SetPlotType(self, args);
     else if(strcmp(name, "operatorType") == 0)
-        obj = ViewerRPC_SetOperatorType(self, tuple);
+        obj = ViewerRPC_SetOperatorType(self, args);
     else if(strcmp(name, "variable") == 0)
-        obj = ViewerRPC_SetVariable(self, tuple);
+        obj = ViewerRPC_SetVariable(self, args);
     else if(strcmp(name, "activePlotIds") == 0)
-        obj = ViewerRPC_SetActivePlotIds(self, tuple);
+        obj = ViewerRPC_SetActivePlotIds(self, args);
     else if(strcmp(name, "activeOperatorIds") == 0)
-        obj = ViewerRPC_SetActiveOperatorIds(self, tuple);
+        obj = ViewerRPC_SetActiveOperatorIds(self, args);
     else if(strcmp(name, "expandedPlotIds") == 0)
-        obj = ViewerRPC_SetExpandedPlotIds(self, tuple);
+        obj = ViewerRPC_SetExpandedPlotIds(self, args);
     else if(strcmp(name, "colorTableName") == 0)
-        obj = ViewerRPC_SetColorTableName(self, tuple);
+        obj = ViewerRPC_SetColorTableName(self, args);
     else if(strcmp(name, "queryName") == 0)
-        obj = ViewerRPC_SetQueryName(self, tuple);
+        obj = ViewerRPC_SetQueryName(self, args);
     else if(strcmp(name, "queryPoint1") == 0)
-        obj = ViewerRPC_SetQueryPoint1(self, tuple);
+        obj = ViewerRPC_SetQueryPoint1(self, args);
     else if(strcmp(name, "toolId") == 0)
-        obj = ViewerRPC_SetToolId(self, tuple);
+        obj = ViewerRPC_SetToolId(self, args);
     else if(strcmp(name, "embeddedPlotId") == 0)
-        obj = ViewerRPC_SetEmbeddedPlotId(self, tuple);
+        obj = ViewerRPC_SetEmbeddedPlotId(self, args);
     else if(strcmp(name, "boolFlag") == 0)
-        obj = ViewerRPC_SetBoolFlag(self, tuple);
+        obj = ViewerRPC_SetBoolFlag(self, args);
     else if(strcmp(name, "intArg1") == 0)
-        obj = ViewerRPC_SetIntArg1(self, tuple);
+        obj = ViewerRPC_SetIntArg1(self, args);
     else if(strcmp(name, "intArg2") == 0)
-        obj = ViewerRPC_SetIntArg2(self, tuple);
+        obj = ViewerRPC_SetIntArg2(self, args);
     else if(strcmp(name, "intArg3") == 0)
-        obj = ViewerRPC_SetIntArg3(self, tuple);
+        obj = ViewerRPC_SetIntArg3(self, args);
+    else if(strcmp(name, "intArg4") == 0)
+        obj = ViewerRPC_SetIntArg4(self, args);
     else if(strcmp(name, "stringArg1") == 0)
-        obj = ViewerRPC_SetStringArg1(self, tuple);
+        obj = ViewerRPC_SetStringArg1(self, args);
     else if(strcmp(name, "stringArg2") == 0)
-        obj = ViewerRPC_SetStringArg2(self, tuple);
+        obj = ViewerRPC_SetStringArg2(self, args);
     else if(strcmp(name, "toolUpdateMode") == 0)
-        obj = ViewerRPC_SetToolUpdateMode(self, tuple);
+        obj = ViewerRPC_SetToolUpdateMode(self, args);
 
-    if(obj != NULL)
+    if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
-    Py_DECREF(tuple);
-    if( obj == NULL)
-        PyErr_Format(PyExc_RuntimeError, "Unable to set unknown attribute: '%s'", name);
+    if (obj == &NULL_PY_OBJ)
+    {
+        obj = NULL;
+        PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);
+    }
+    else if (obj == NULL && !PyErr_Occurred())
+        PyErr_Format(PyExc_RuntimeError, "unknown problem with '%s'", name);
+
     return (obj != NULL) ? 0 : -1;
 }
 
@@ -2801,7 +3953,7 @@ static int
 ViewerRPC_print(PyObject *v, FILE *fp, int flags)
 {
     ViewerRPCObject *obj = (ViewerRPCObject *)v;
-    fprintf(fp, "%s", PyViewerRPC_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyViewerRPC_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -2809,7 +3961,7 @@ PyObject *
 ViewerRPC_str(PyObject *v)
 {
     ViewerRPCObject *obj = (ViewerRPCObject *)v;
-    return PyString_FromString(PyViewerRPC_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyViewerRPC_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -2961,7 +4113,7 @@ PyViewerRPC_GetLogString()
 {
     std::string s("ViewerRPC = ViewerRPC()\n");
     if(currentAtts != 0)
-        s += PyViewerRPC_ToString(currentAtts, "ViewerRPC.");
+        s += PyViewerRPC_ToString(currentAtts, "ViewerRPC.", true);
     return s;
 }
 
@@ -2974,7 +4126,7 @@ PyViewerRPC_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("ViewerRPC = ViewerRPC()\n");
-        s += PyViewerRPC_ToString(currentAtts, "ViewerRPC.");
+        s += PyViewerRPC_ToString(currentAtts, "ViewerRPC.", true);
         cb(s);
     }
 }

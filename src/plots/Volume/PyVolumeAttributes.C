@@ -38,7 +38,7 @@ struct VolumeAttributesObject
 //
 static PyObject *NewVolumeAttributes(int);
 std::string
-PyVolumeAttributes_ToString(const VolumeAttributes *atts, const char *prefix)
+PyVolumeAttributes_ToString(const VolumeAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -94,7 +94,7 @@ PyVolumeAttributes_ToString(const VolumeAttributes *atts, const char *prefix)
     { // new scope
         std::string objPrefix(prefix);
         objPrefix += "colorControlPoints.";
-        str += PyColorControlPointList_ToString(&atts->GetColorControlPoints(), objPrefix.c_str());
+        str += PyColorControlPointList_ToString(&atts->GetColorControlPoints(), objPrefix.c_str(), forLogging);
     }
     snprintf(tmpStr, 1000, "%sopacityAttenuation = %g\n", prefix, atts->GetOpacityAttenuation());
     str += tmpStr;
@@ -120,7 +120,7 @@ PyVolumeAttributes_ToString(const VolumeAttributes *atts, const char *prefix)
     { // new scope
         std::string objPrefix(prefix);
         objPrefix += "opacityControlPoints.";
-        str += PyGaussianControlPointList_ToString(&atts->GetOpacityControlPoints(), objPrefix.c_str());
+        str += PyGaussianControlPointList_ToString(&atts->GetOpacityControlPoints(), objPrefix.c_str(), forLogging);
     }
     if(atts->GetResampleFlag())
         snprintf(tmpStr, 1000, "%sresampleFlag = 1\n", prefix);
@@ -346,6 +346,29 @@ PyVolumeAttributes_ToString(const VolumeAttributes *atts, const char *prefix)
         snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
+    const char *renderMode_names = "DefaultRenderMode, RayCastRenderMode, GPURenderMode, OSPRayRenderMode";
+    switch (atts->GetRenderMode())
+    {
+      case VolumeAttributes::DefaultRenderMode:
+          snprintf(tmpStr, 1000, "%srenderMode = %sDefaultRenderMode  # %s\n", prefix, prefix, renderMode_names);
+          str += tmpStr;
+          break;
+      case VolumeAttributes::RayCastRenderMode:
+          snprintf(tmpStr, 1000, "%srenderMode = %sRayCastRenderMode  # %s\n", prefix, prefix, renderMode_names);
+          str += tmpStr;
+          break;
+      case VolumeAttributes::GPURenderMode:
+          snprintf(tmpStr, 1000, "%srenderMode = %sGPURenderMode  # %s\n", prefix, prefix, renderMode_names);
+          str += tmpStr;
+          break;
+      case VolumeAttributes::OSPRayRenderMode:
+          snprintf(tmpStr, 1000, "%srenderMode = %sOSPRayRenderMode  # %s\n", prefix, prefix, renderMode_names);
+          str += tmpStr;
+          break;
+      default:
+          break;
+    }
+
     return str;
 }
 
@@ -363,12 +386,48 @@ VolumeAttributes_SetOsprayShadowsEnabledFlag(PyObject *self, PyObject *args)
 {
     VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the osprayShadowsEnabledFlag in the object.
-    obj->data->SetOsprayShadowsEnabledFlag(ival != 0);
+    obj->data->SetOsprayShadowsEnabledFlag(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -387,12 +446,48 @@ VolumeAttributes_SetOsprayUseGridAcceleratorFlag(PyObject *self, PyObject *args)
 {
     VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the osprayUseGridAcceleratorFlag in the object.
-    obj->data->SetOsprayUseGridAcceleratorFlag(ival != 0);
+    obj->data->SetOsprayUseGridAcceleratorFlag(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -411,12 +506,48 @@ VolumeAttributes_SetOsprayPreIntegrationFlag(PyObject *self, PyObject *args)
 {
     VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the osprayPreIntegrationFlag in the object.
-    obj->data->SetOsprayPreIntegrationFlag(ival != 0);
+    obj->data->SetOsprayPreIntegrationFlag(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -435,12 +566,48 @@ VolumeAttributes_SetOspraySingleShadeFlag(PyObject *self, PyObject *args)
 {
     VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the ospraySingleShadeFlag in the object.
-    obj->data->SetOspraySingleShadeFlag(ival != 0);
+    obj->data->SetOspraySingleShadeFlag(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -459,12 +626,48 @@ VolumeAttributes_SetOsprayOneSidedLightingFlag(PyObject *self, PyObject *args)
 {
     VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the osprayOneSidedLightingFlag in the object.
-    obj->data->SetOsprayOneSidedLightingFlag(ival != 0);
+    obj->data->SetOsprayOneSidedLightingFlag(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -483,12 +686,48 @@ VolumeAttributes_SetOsprayAoTransparencyEnabledFlag(PyObject *self, PyObject *ar
 {
     VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the osprayAoTransparencyEnabledFlag in the object.
-    obj->data->SetOsprayAoTransparencyEnabledFlag(ival != 0);
+    obj->data->SetOsprayAoTransparencyEnabledFlag(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -507,12 +746,48 @@ VolumeAttributes_SetOspraySpp(PyObject *self, PyObject *args)
 {
     VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the ospraySpp in the object.
-    obj->data->SetOspraySpp((int)ival);
+    obj->data->SetOspraySpp(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -531,12 +806,48 @@ VolumeAttributes_SetOsprayAoSamples(PyObject *self, PyObject *args)
 {
     VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the osprayAoSamples in the object.
-    obj->data->SetOsprayAoSamples((int)ival);
+    obj->data->SetOsprayAoSamples(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -555,12 +866,48 @@ VolumeAttributes_SetOsprayAoDistance(PyObject *self, PyObject *args)
 {
     VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the osprayAoDistance in the object.
-    obj->data->SetOsprayAoDistance(dval);
+    obj->data->SetOsprayAoDistance(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -579,12 +926,48 @@ VolumeAttributes_SetOsprayMinContribution(PyObject *self, PyObject *args)
 {
     VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the osprayMinContribution in the object.
-    obj->data->SetOsprayMinContribution(dval);
+    obj->data->SetOsprayMinContribution(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -603,12 +986,48 @@ VolumeAttributes_SetLegendFlag(PyObject *self, PyObject *args)
 {
     VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the legendFlag in the object.
-    obj->data->SetLegendFlag(ival != 0);
+    obj->data->SetLegendFlag(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -627,12 +1046,48 @@ VolumeAttributes_SetLightingFlag(PyObject *self, PyObject *args)
 {
     VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the lightingFlag in the object.
-    obj->data->SetLightingFlag(ival != 0);
+    obj->data->SetLightingFlag(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -655,10 +1110,7 @@ VolumeAttributes_SetColorControlPoints(PyObject *self, PyObject *args)
     if(!PyArg_ParseTuple(args, "O", &newValue))
         return NULL;
     if(!PyColorControlPointList_Check(newValue))
-    {
-        fprintf(stderr, "The colorControlPoints field can only be set with ColorControlPointList objects.\n");
-        return NULL;
-    }
+        return PyErr_Format(PyExc_TypeError, "Field colorControlPoints can be set only with ColorControlPointList objects");
 
     obj->data->SetColorControlPoints(*PyColorControlPointList_FromPyObject(newValue));
 
@@ -687,12 +1139,48 @@ VolumeAttributes_SetOpacityAttenuation(PyObject *self, PyObject *args)
 {
     VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
 
-    float fval;
-    if(!PyArg_ParseTuple(args, "f", &fval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    float cval = float(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ float");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ float");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the opacityAttenuation in the object.
-    obj->data->SetOpacityAttenuation(fval);
+    obj->data->SetOpacityAttenuation(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -711,21 +1199,55 @@ VolumeAttributes_SetOpacityMode(PyObject *self, PyObject *args)
 {
     VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 3)
+    {
+        std::stringstream ss;
+        ss << "An invalid opacityMode value was given." << std::endl;
+        ss << "Valid values are in the range [0,2]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << " FreeformMode";
+        ss << ", GaussianMode";
+        ss << ", ColorTableMode";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the opacityMode in the object.
-    if(ival >= 0 && ival < 3)
-        obj->data->SetOpacityMode(VolumeAttributes::OpacityModes(ival));
-    else
-    {
-        fprintf(stderr, "An invalid opacityMode value was given. "
-                        "Valid values are in the range of [0,2]. "
-                        "You can also use the following names: "
-                        "FreeformMode, GaussianMode, ColorTableMode.");
-        return NULL;
-    }
+    obj->data->SetOpacityMode(VolumeAttributes::OpacityModes(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -748,10 +1270,7 @@ VolumeAttributes_SetOpacityControlPoints(PyObject *self, PyObject *args)
     if(!PyArg_ParseTuple(args, "O", &newValue))
         return NULL;
     if(!PyGaussianControlPointList_Check(newValue))
-    {
-        fprintf(stderr, "The opacityControlPoints field can only be set with GaussianControlPointList objects.\n");
-        return NULL;
-    }
+        return PyErr_Format(PyExc_TypeError, "Field opacityControlPoints can be set only with GaussianControlPointList objects");
 
     obj->data->SetOpacityControlPoints(*PyGaussianControlPointList_FromPyObject(newValue));
 
@@ -780,12 +1299,48 @@ VolumeAttributes_SetResampleFlag(PyObject *self, PyObject *args)
 {
     VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the resampleFlag in the object.
-    obj->data->SetResampleFlag(ival != 0);
+    obj->data->SetResampleFlag(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -804,12 +1359,48 @@ VolumeAttributes_SetResampleTarget(PyObject *self, PyObject *args)
 {
     VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the resampleTarget in the object.
-    obj->data->SetResampleTarget((int)ival);
+    obj->data->SetResampleTarget(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -828,12 +1419,37 @@ VolumeAttributes_SetOpacityVariable(PyObject *self, PyObject *args)
 {
     VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the opacityVariable in the object.
-    obj->data->SetOpacityVariable(std::string(str));
+    obj->data->SetOpacityVariable(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -852,12 +1468,37 @@ VolumeAttributes_SetCompactVariable(PyObject *self, PyObject *args)
 {
     VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the compactVariable in the object.
-    obj->data->SetCompactVariable(std::string(str));
+    obj->data->SetCompactVariable(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -879,6 +1520,8 @@ VolumeAttributes_GetCompactVariable(PyObject *self, PyObject *args)
 //    (list or tuple object) --  as long as it is numeric and has length
 //    of 256, will set the opacity values to the values in the list or tuple.
 //
+//    Mark C. Miller, Fri Jul 23 14:54:46 PDT 2021
+//    Handle args as a "wrapped" tuple or list
 // ****************************************************************************
 
 static PyObject *
@@ -889,51 +1532,69 @@ VolumeAttributes_SetFreeformOpacity(PyObject *self, PyObject *args)
 //
     VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
 
+    PyObject *packaged_args = 0;
     unsigned char *cvals = obj->data->GetFreeformOpacity();
     int opacity, index;
-    if(PyArg_ParseTuple(args, "ii", &index, &opacity))
+    if (PyTuple_Check(args) || PyList_Check(args))
     {
-        if(index >= 0 && index < 256)
+        if (PySequence_Size(args) == 2 && PyArg_ParseTuple(args, "ii", &index, &opacity))
         {
-            if(opacity < 0) opacity = 0;
-            if(opacity > 255) opacity = 255;
+            if (index < 0 || index >= 256)
+                return PyErr_Format(PyExc_IndexError, "first arg (index) must be in range [0...255]");
+            if (opacity < 0 || opacity >= 256)
+                return PyErr_Format(PyExc_ValueError, "second arg (opacity) must be in range [0...255]");
             cvals[index] = (unsigned char)(opacity);
         }
+        else if (PySequence_Size(args) == 1)
+        {
+            packaged_args = PySequence_GetItem(args, 0);
+            if (PyTuple_Check(packaged_args) || PyList_Check(packaged_args))
+            {
+                if (PySequence_Size(packaged_args) != 256)
+                {
+                    Py_XDECREF(packaged_args);
+                    return PyErr_Format(PyExc_TypeError, "when setting whole opacity array, "
+                        "must pass a list or tuple of 256 values");
+                }
+                args = packaged_args;
+            }
+        }
+        else if (PySequence_Size(args) != 256)
+            return PyErr_Format(PyExc_TypeError, "when setting whole opacity array, must pass 256 values");
+
+        PyErr_Clear();
+        for (int i = 0; i < PySequence_Size(args); ++i)
+        {
+            int c;
+            PyObject *item = PySequence_GetItem(args, i);
+            if(PyInt_Check(item))
+                c = int(PyInt_AS_LONG(item));
+            else if(PyFloat_Check(item))
+                c = int(PyFloat_AS_DOUBLE(item));
+            else if(PyLong_Check(item))
+                c = int(PyLong_AsDouble(item));
+            else // bad form here, we're err'ing out having possibly already changed cvals
+                return PyErr_Format(PyExc_TypeError, "opacity value at index %d not a number.", i);
+            Py_DECREF(item);
+            if (c < 0 || c >= 256)
+                return PyErr_Format(PyExc_ValueError, "opacity value at index %d out of range [0...255].", i);
+            cvals[i] = (unsigned char)(c);
+       }
+    }
+    else if (PyArg_ParseTuple(args, "ii", &index, &opacity))
+    {
+        if (index < 0 || index >= 256)
+            return PyErr_Format(PyExc_IndexError, "first arg (index) must be in range [0...255]");
+        if (opacity < 0 || opacity >= 256)
+            return PyErr_Format(PyExc_ValueError, "second arg (opacity) must be in range [0...255]");
+        cvals[index] = (unsigned char)(opacity);
     }
     else
     {
-        PyObject     *tuple;
-        if(!PyArg_ParseTuple(args, "O", &tuple))
-        {
-            return NULL;
-        }
-        if(PyTuple_Check(tuple) || PyList_Check(tuple))
-        {
-            if(PySequence_Size(tuple) != 256)
-                return NULL;
-
-            PyErr_Clear();
-            for(int i = 0; i < PySequence_Size(tuple); ++i)
-            {
-                int c;
-                PyObject *item = PySequence_GetItem(tuple, i);
-                if(PyInt_Check(item))
-                    c = int(PyInt_AS_LONG(item));
-                else if(PyFloat_Check(item))
-                    c = int(PyFloat_AS_DOUBLE(item));
-                else if(PyLong_Check(item))
-                    c = int(PyLong_AsDouble(item));
-                else
-                    c = 0;
-                Py_DECREF(item);
-                if(c < 0) c = 0;
-                if(c > 255) c = 255;
-                cvals[i] = (unsigned char)(c);
-           }
-        }
-        else
-            return NULL;
+        return NULL;
     }
+
+    Py_XDECREF(packaged_args);
 
     // Mark the freeformOpacity in the object as modified.
     obj->data->SelectFreeformOpacity();
@@ -959,12 +1620,48 @@ VolumeAttributes_SetUseColorVarMin(PyObject *self, PyObject *args)
 {
     VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the useColorVarMin in the object.
-    obj->data->SetUseColorVarMin(ival != 0);
+    obj->data->SetUseColorVarMin(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -983,12 +1680,48 @@ VolumeAttributes_SetColorVarMin(PyObject *self, PyObject *args)
 {
     VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
 
-    float fval;
-    if(!PyArg_ParseTuple(args, "f", &fval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    float cval = float(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ float");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ float");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the colorVarMin in the object.
-    obj->data->SetColorVarMin(fval);
+    obj->data->SetColorVarMin(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1007,12 +1740,48 @@ VolumeAttributes_SetUseColorVarMax(PyObject *self, PyObject *args)
 {
     VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the useColorVarMax in the object.
-    obj->data->SetUseColorVarMax(ival != 0);
+    obj->data->SetUseColorVarMax(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1031,12 +1800,48 @@ VolumeAttributes_SetColorVarMax(PyObject *self, PyObject *args)
 {
     VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
 
-    float fval;
-    if(!PyArg_ParseTuple(args, "f", &fval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    float cval = float(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ float");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ float");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the colorVarMax in the object.
-    obj->data->SetColorVarMax(fval);
+    obj->data->SetColorVarMax(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1055,12 +1860,48 @@ VolumeAttributes_SetUseOpacityVarMin(PyObject *self, PyObject *args)
 {
     VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the useOpacityVarMin in the object.
-    obj->data->SetUseOpacityVarMin(ival != 0);
+    obj->data->SetUseOpacityVarMin(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1079,12 +1920,48 @@ VolumeAttributes_SetOpacityVarMin(PyObject *self, PyObject *args)
 {
     VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
 
-    float fval;
-    if(!PyArg_ParseTuple(args, "f", &fval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    float cval = float(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ float");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ float");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the opacityVarMin in the object.
-    obj->data->SetOpacityVarMin(fval);
+    obj->data->SetOpacityVarMin(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1103,12 +1980,48 @@ VolumeAttributes_SetUseOpacityVarMax(PyObject *self, PyObject *args)
 {
     VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the useOpacityVarMax in the object.
-    obj->data->SetUseOpacityVarMax(ival != 0);
+    obj->data->SetUseOpacityVarMax(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1127,12 +2040,48 @@ VolumeAttributes_SetOpacityVarMax(PyObject *self, PyObject *args)
 {
     VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
 
-    float fval;
-    if(!PyArg_ParseTuple(args, "f", &fval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    float cval = float(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ float");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ float");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the opacityVarMax in the object.
-    obj->data->SetOpacityVarMax(fval);
+    obj->data->SetOpacityVarMax(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1151,12 +2100,48 @@ VolumeAttributes_SetSmoothData(PyObject *self, PyObject *args)
 {
     VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the smoothData in the object.
-    obj->data->SetSmoothData(ival != 0);
+    obj->data->SetSmoothData(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1175,12 +2160,48 @@ VolumeAttributes_SetSamplesPerRay(PyObject *self, PyObject *args)
 {
     VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the samplesPerRay in the object.
-    obj->data->SetSamplesPerRay((int)ival);
+    obj->data->SetSamplesPerRay(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1199,22 +2220,57 @@ VolumeAttributes_SetRendererType(PyObject *self, PyObject *args)
 {
     VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 5)
+    {
+        std::stringstream ss;
+        ss << "An invalid rendererType value was given." << std::endl;
+        ss << "Valid values are in the range [0,4]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << " Default";
+        ss << ", RayCasting";
+        ss << ", RayCastingIntegration";
+        ss << ", RayCastingSLIVR";
+        ss << ", RayCastingOSPRay";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the rendererType in the object.
-    if(ival >= 0 && ival < 5)
-        obj->data->SetRendererType(VolumeAttributes::Renderer(ival));
-    else
-    {
-        fprintf(stderr, "An invalid rendererType value was given. "
-                        "Valid values are in the range of [0,4]. "
-                        "You can also use the following names: "
-                        "Default, RayCasting, RayCastingIntegration, RayCastingSLIVR, RayCastingOSPRay"
-                        ".");
-        return NULL;
-    }
+    obj->data->SetRendererType(VolumeAttributes::Renderer(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1233,21 +2289,54 @@ VolumeAttributes_SetGradientType(PyObject *self, PyObject *args)
 {
     VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 2)
+    {
+        std::stringstream ss;
+        ss << "An invalid gradientType value was given." << std::endl;
+        ss << "Valid values are in the range [0,1]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << " CenteredDifferences";
+        ss << ", SobelOperator";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the gradientType in the object.
-    if(ival >= 0 && ival < 2)
-        obj->data->SetGradientType(VolumeAttributes::GradientType(ival));
-    else
-    {
-        fprintf(stderr, "An invalid gradientType value was given. "
-                        "Valid values are in the range of [0,1]. "
-                        "You can also use the following names: "
-                        "CenteredDifferences, SobelOperator.");
-        return NULL;
-    }
+    obj->data->SetGradientType(VolumeAttributes::GradientType(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1266,21 +2355,55 @@ VolumeAttributes_SetScaling(PyObject *self, PyObject *args)
 {
     VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 3)
+    {
+        std::stringstream ss;
+        ss << "An invalid scaling value was given." << std::endl;
+        ss << "Valid values are in the range [0,2]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << " Linear";
+        ss << ", Log";
+        ss << ", Skew";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the scaling in the object.
-    if(ival >= 0 && ival < 3)
-        obj->data->SetScaling(VolumeAttributes::Scaling(ival));
-    else
-    {
-        fprintf(stderr, "An invalid scaling value was given. "
-                        "Valid values are in the range of [0,2]. "
-                        "You can also use the following names: "
-                        "Linear, Log, Skew.");
-        return NULL;
-    }
+    obj->data->SetScaling(VolumeAttributes::Scaling(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1299,12 +2422,48 @@ VolumeAttributes_SetSkewFactor(PyObject *self, PyObject *args)
 {
     VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the skewFactor in the object.
-    obj->data->SetSkewFactor(dval);
+    obj->data->SetSkewFactor(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1323,21 +2482,54 @@ VolumeAttributes_SetLimitsMode(PyObject *self, PyObject *args)
 {
     VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 2)
+    {
+        std::stringstream ss;
+        ss << "An invalid limitsMode value was given." << std::endl;
+        ss << "Valid values are in the range [0,1]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << " OriginalData";
+        ss << ", CurrentPlot";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the limitsMode in the object.
-    if(ival >= 0 && ival < 2)
-        obj->data->SetLimitsMode(VolumeAttributes::LimitsMode(ival));
-    else
-    {
-        fprintf(stderr, "An invalid limitsMode value was given. "
-                        "Valid values are in the range of [0,1]. "
-                        "You can also use the following names: "
-                        "OriginalData, CurrentPlot.");
-        return NULL;
-    }
+    obj->data->SetLimitsMode(VolumeAttributes::LimitsMode(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1356,21 +2548,55 @@ VolumeAttributes_SetSampling(PyObject *self, PyObject *args)
 {
     VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 3)
+    {
+        std::stringstream ss;
+        ss << "An invalid sampling value was given." << std::endl;
+        ss << "Valid values are in the range [0,2]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << " KernelBased";
+        ss << ", Rasterization";
+        ss << ", Trilinear";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the sampling in the object.
-    if(ival >= 0 && ival < 3)
-        obj->data->SetSampling(VolumeAttributes::SamplingType(ival));
-    else
-    {
-        fprintf(stderr, "An invalid sampling value was given. "
-                        "Valid values are in the range of [0,2]. "
-                        "You can also use the following names: "
-                        "KernelBased, Rasterization, Trilinear.");
-        return NULL;
-    }
+    obj->data->SetSampling(VolumeAttributes::SamplingType(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1389,12 +2615,48 @@ VolumeAttributes_SetRendererSamples(PyObject *self, PyObject *args)
 {
     VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
 
-    float fval;
-    if(!PyArg_ParseTuple(args, "f", &fval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    float cval = float(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ float");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ float");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the rendererSamples in the object.
-    obj->data->SetRendererSamples(fval);
+    obj->data->SetRendererSamples(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1413,22 +2675,60 @@ VolumeAttributes_SetLowGradientLightingReduction(PyObject *self, PyObject *args)
 {
     VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 8)
+    {
+        std::stringstream ss;
+        ss << "An invalid lowGradientLightingReduction value was given." << std::endl;
+        ss << "Valid values are in the range [0,7]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << " Off";
+        ss << ", Lowest";
+        ss << ", Lower";
+        ss << ", Low";
+        ss << ", Medium";
+        ss << ", High";
+        ss << ", Higher";
+        ss << ", Highest";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the lowGradientLightingReduction in the object.
-    if(ival >= 0 && ival < 8)
-        obj->data->SetLowGradientLightingReduction(VolumeAttributes::LowGradientLightingReduction(ival));
-    else
-    {
-        fprintf(stderr, "An invalid lowGradientLightingReduction value was given. "
-                        "Valid values are in the range of [0,7]. "
-                        "You can also use the following names: "
-                        "Off, Lowest, Lower, Low, Medium, "
-                        "High, Higher, Highest.");
-        return NULL;
-    }
+    obj->data->SetLowGradientLightingReduction(VolumeAttributes::LowGradientLightingReduction(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1447,12 +2747,48 @@ VolumeAttributes_SetLowGradientLightingClampFlag(PyObject *self, PyObject *args)
 {
     VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the lowGradientLightingClampFlag in the object.
-    obj->data->SetLowGradientLightingClampFlag(ival != 0);
+    obj->data->SetLowGradientLightingClampFlag(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1471,12 +2807,48 @@ VolumeAttributes_SetLowGradientLightingClampValue(PyObject *self, PyObject *args
 {
     VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the lowGradientLightingClampValue in the object.
-    obj->data->SetLowGradientLightingClampValue(dval);
+    obj->data->SetLowGradientLightingClampValue(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1506,7 +2878,7 @@ VolumeAttributes_SetMaterialProperties(PyObject *self, PyObject *args)
         if(PyTuple_Check(tuple))
         {
             if(PyTuple_Size(tuple) != 4)
-                return NULL;
+                return PyErr_Format(PyExc_TypeError, "Expecting 4 double args or tuple thereof.");
 
             PyErr_Clear();
             for(int i = 0; i < PyTuple_Size(tuple); ++i)
@@ -1542,6 +2914,74 @@ VolumeAttributes_GetMaterialProperties(PyObject *self, PyObject *args)
     const double *materialProperties = obj->data->GetMaterialProperties();
     for(int i = 0; i < 4; ++i)
         PyTuple_SET_ITEM(retval, i, PyFloat_FromDouble(materialProperties[i]));
+    return retval;
+}
+
+/*static*/ PyObject *
+VolumeAttributes_SetRenderMode(PyObject *self, PyObject *args)
+{
+    VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
+
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 4)
+    {
+        std::stringstream ss;
+        ss << "An invalid renderMode value was given." << std::endl;
+        ss << "Valid values are in the range [0,3]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << " DefaultRenderMode";
+        ss << ", RayCastRenderMode";
+        ss << ", GPURenderMode";
+        ss << ", OSPRayRenderMode";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
+
+    // Set the renderMode in the object.
+    obj->data->SetRenderMode(VolumeAttributes::RenderMode(cval));
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+VolumeAttributes_GetRenderMode(PyObject *self, PyObject *args)
+{
+    VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetRenderMode()));
     return retval;
 }
 
@@ -1633,6 +3073,8 @@ PyMethodDef PyVolumeAttributes_methods[VOLUMEATTRIBUTES_NMETH] = {
     {"GetLowGradientLightingClampValue", VolumeAttributes_GetLowGradientLightingClampValue, METH_VARARGS},
     {"SetMaterialProperties", VolumeAttributes_SetMaterialProperties, METH_VARARGS},
     {"GetMaterialProperties", VolumeAttributes_GetMaterialProperties, METH_VARARGS},
+    {"SetRenderMode", VolumeAttributes_SetRenderMode, METH_VARARGS},
+    {"GetRenderMode", VolumeAttributes_GetRenderMode, METH_VARARGS},
     {NULL, NULL}
 };
 
@@ -1797,6 +3239,29 @@ PyVolumeAttributes_getattr(PyObject *self, char *name)
         return VolumeAttributes_GetLowGradientLightingClampValue(self, NULL);
     if(strcmp(name, "materialProperties") == 0)
         return VolumeAttributes_GetMaterialProperties(self, NULL);
+    if(strcmp(name, "renderMode") == 0)
+        return VolumeAttributes_GetRenderMode(self, NULL);
+    if(strcmp(name, "DefaultRenderMode") == 0)
+        return PyInt_FromLong(long(VolumeAttributes::DefaultRenderMode));
+    if(strcmp(name, "RayCastRenderMode") == 0)
+        return PyInt_FromLong(long(VolumeAttributes::RayCastRenderMode));
+    if(strcmp(name, "GPURenderMode") == 0)
+        return PyInt_FromLong(long(VolumeAttributes::GPURenderMode));
+    if(strcmp(name, "OSPRayRenderMode") == 0)
+        return PyInt_FromLong(long(VolumeAttributes::OSPRayRenderMode));
+
+
+
+    // Add a __dict__ answer so that dir() works
+    if (!strcmp(name, "__dict__"))
+    {
+        PyObject *result = PyDict_New();
+        for (int i = 0; PyVolumeAttributes_methods[i].ml_meth; i++)
+            PyDict_SetItem(result,
+                PyString_FromString(PyVolumeAttributes_methods[i].ml_name),
+                PyString_FromString(PyVolumeAttributes_methods[i].ml_name));
+        return result;
+    }
 
     return Py_FindMethod(PyVolumeAttributes_methods, self, name);
 }
@@ -1804,104 +3269,107 @@ PyVolumeAttributes_getattr(PyObject *self, char *name)
 int
 PyVolumeAttributes_setattr(PyObject *self, char *name, PyObject *args)
 {
-    // Create a tuple to contain the arguments since all of the Set
-    // functions expect a tuple.
-    PyObject *tuple = PyTuple_New(1);
-    PyTuple_SET_ITEM(tuple, 0, args);
-    Py_INCREF(args);
-    PyObject *obj = NULL;
+    PyObject NULL_PY_OBJ;
+    PyObject *obj = &NULL_PY_OBJ;
 
     if(strcmp(name, "osprayShadowsEnabledFlag") == 0)
-        obj = VolumeAttributes_SetOsprayShadowsEnabledFlag(self, tuple);
+        obj = VolumeAttributes_SetOsprayShadowsEnabledFlag(self, args);
     else if(strcmp(name, "osprayUseGridAcceleratorFlag") == 0)
-        obj = VolumeAttributes_SetOsprayUseGridAcceleratorFlag(self, tuple);
+        obj = VolumeAttributes_SetOsprayUseGridAcceleratorFlag(self, args);
     else if(strcmp(name, "osprayPreIntegrationFlag") == 0)
-        obj = VolumeAttributes_SetOsprayPreIntegrationFlag(self, tuple);
+        obj = VolumeAttributes_SetOsprayPreIntegrationFlag(self, args);
     else if(strcmp(name, "ospraySingleShadeFlag") == 0)
-        obj = VolumeAttributes_SetOspraySingleShadeFlag(self, tuple);
+        obj = VolumeAttributes_SetOspraySingleShadeFlag(self, args);
     else if(strcmp(name, "osprayOneSidedLightingFlag") == 0)
-        obj = VolumeAttributes_SetOsprayOneSidedLightingFlag(self, tuple);
+        obj = VolumeAttributes_SetOsprayOneSidedLightingFlag(self, args);
     else if(strcmp(name, "osprayAoTransparencyEnabledFlag") == 0)
-        obj = VolumeAttributes_SetOsprayAoTransparencyEnabledFlag(self, tuple);
+        obj = VolumeAttributes_SetOsprayAoTransparencyEnabledFlag(self, args);
     else if(strcmp(name, "ospraySpp") == 0)
-        obj = VolumeAttributes_SetOspraySpp(self, tuple);
+        obj = VolumeAttributes_SetOspraySpp(self, args);
     else if(strcmp(name, "osprayAoSamples") == 0)
-        obj = VolumeAttributes_SetOsprayAoSamples(self, tuple);
+        obj = VolumeAttributes_SetOsprayAoSamples(self, args);
     else if(strcmp(name, "osprayAoDistance") == 0)
-        obj = VolumeAttributes_SetOsprayAoDistance(self, tuple);
+        obj = VolumeAttributes_SetOsprayAoDistance(self, args);
     else if(strcmp(name, "osprayMinContribution") == 0)
-        obj = VolumeAttributes_SetOsprayMinContribution(self, tuple);
+        obj = VolumeAttributes_SetOsprayMinContribution(self, args);
     else if(strcmp(name, "legendFlag") == 0)
-        obj = VolumeAttributes_SetLegendFlag(self, tuple);
+        obj = VolumeAttributes_SetLegendFlag(self, args);
     else if(strcmp(name, "lightingFlag") == 0)
-        obj = VolumeAttributes_SetLightingFlag(self, tuple);
+        obj = VolumeAttributes_SetLightingFlag(self, args);
     else if(strcmp(name, "colorControlPoints") == 0)
-        obj = VolumeAttributes_SetColorControlPoints(self, tuple);
+        obj = VolumeAttributes_SetColorControlPoints(self, args);
     else if(strcmp(name, "opacityAttenuation") == 0)
-        obj = VolumeAttributes_SetOpacityAttenuation(self, tuple);
+        obj = VolumeAttributes_SetOpacityAttenuation(self, args);
     else if(strcmp(name, "opacityMode") == 0)
-        obj = VolumeAttributes_SetOpacityMode(self, tuple);
+        obj = VolumeAttributes_SetOpacityMode(self, args);
     else if(strcmp(name, "opacityControlPoints") == 0)
-        obj = VolumeAttributes_SetOpacityControlPoints(self, tuple);
+        obj = VolumeAttributes_SetOpacityControlPoints(self, args);
     else if(strcmp(name, "resampleFlag") == 0)
-        obj = VolumeAttributes_SetResampleFlag(self, tuple);
+        obj = VolumeAttributes_SetResampleFlag(self, args);
     else if(strcmp(name, "resampleTarget") == 0)
-        obj = VolumeAttributes_SetResampleTarget(self, tuple);
+        obj = VolumeAttributes_SetResampleTarget(self, args);
     else if(strcmp(name, "opacityVariable") == 0)
-        obj = VolumeAttributes_SetOpacityVariable(self, tuple);
+        obj = VolumeAttributes_SetOpacityVariable(self, args);
     else if(strcmp(name, "compactVariable") == 0)
-        obj = VolumeAttributes_SetCompactVariable(self, tuple);
+        obj = VolumeAttributes_SetCompactVariable(self, args);
     else if(strcmp(name, "freeformOpacity") == 0)
-        obj = VolumeAttributes_SetFreeformOpacity(self, tuple);
+        obj = VolumeAttributes_SetFreeformOpacity(self, args);
     else if(strcmp(name, "useColorVarMin") == 0)
-        obj = VolumeAttributes_SetUseColorVarMin(self, tuple);
+        obj = VolumeAttributes_SetUseColorVarMin(self, args);
     else if(strcmp(name, "colorVarMin") == 0)
-        obj = VolumeAttributes_SetColorVarMin(self, tuple);
+        obj = VolumeAttributes_SetColorVarMin(self, args);
     else if(strcmp(name, "useColorVarMax") == 0)
-        obj = VolumeAttributes_SetUseColorVarMax(self, tuple);
+        obj = VolumeAttributes_SetUseColorVarMax(self, args);
     else if(strcmp(name, "colorVarMax") == 0)
-        obj = VolumeAttributes_SetColorVarMax(self, tuple);
+        obj = VolumeAttributes_SetColorVarMax(self, args);
     else if(strcmp(name, "useOpacityVarMin") == 0)
-        obj = VolumeAttributes_SetUseOpacityVarMin(self, tuple);
+        obj = VolumeAttributes_SetUseOpacityVarMin(self, args);
     else if(strcmp(name, "opacityVarMin") == 0)
-        obj = VolumeAttributes_SetOpacityVarMin(self, tuple);
+        obj = VolumeAttributes_SetOpacityVarMin(self, args);
     else if(strcmp(name, "useOpacityVarMax") == 0)
-        obj = VolumeAttributes_SetUseOpacityVarMax(self, tuple);
+        obj = VolumeAttributes_SetUseOpacityVarMax(self, args);
     else if(strcmp(name, "opacityVarMax") == 0)
-        obj = VolumeAttributes_SetOpacityVarMax(self, tuple);
+        obj = VolumeAttributes_SetOpacityVarMax(self, args);
     else if(strcmp(name, "smoothData") == 0)
-        obj = VolumeAttributes_SetSmoothData(self, tuple);
+        obj = VolumeAttributes_SetSmoothData(self, args);
     else if(strcmp(name, "samplesPerRay") == 0)
-        obj = VolumeAttributes_SetSamplesPerRay(self, tuple);
+        obj = VolumeAttributes_SetSamplesPerRay(self, args);
     else if(strcmp(name, "rendererType") == 0)
-        obj = VolumeAttributes_SetRendererType(self, tuple);
+        obj = VolumeAttributes_SetRendererType(self, args);
     else if(strcmp(name, "gradientType") == 0)
-        obj = VolumeAttributes_SetGradientType(self, tuple);
+        obj = VolumeAttributes_SetGradientType(self, args);
     else if(strcmp(name, "scaling") == 0)
-        obj = VolumeAttributes_SetScaling(self, tuple);
+        obj = VolumeAttributes_SetScaling(self, args);
     else if(strcmp(name, "skewFactor") == 0)
-        obj = VolumeAttributes_SetSkewFactor(self, tuple);
+        obj = VolumeAttributes_SetSkewFactor(self, args);
     else if(strcmp(name, "limitsMode") == 0)
-        obj = VolumeAttributes_SetLimitsMode(self, tuple);
+        obj = VolumeAttributes_SetLimitsMode(self, args);
     else if(strcmp(name, "sampling") == 0)
-        obj = VolumeAttributes_SetSampling(self, tuple);
+        obj = VolumeAttributes_SetSampling(self, args);
     else if(strcmp(name, "rendererSamples") == 0)
-        obj = VolumeAttributes_SetRendererSamples(self, tuple);
+        obj = VolumeAttributes_SetRendererSamples(self, args);
     else if(strcmp(name, "lowGradientLightingReduction") == 0)
-        obj = VolumeAttributes_SetLowGradientLightingReduction(self, tuple);
+        obj = VolumeAttributes_SetLowGradientLightingReduction(self, args);
     else if(strcmp(name, "lowGradientLightingClampFlag") == 0)
-        obj = VolumeAttributes_SetLowGradientLightingClampFlag(self, tuple);
+        obj = VolumeAttributes_SetLowGradientLightingClampFlag(self, args);
     else if(strcmp(name, "lowGradientLightingClampValue") == 0)
-        obj = VolumeAttributes_SetLowGradientLightingClampValue(self, tuple);
+        obj = VolumeAttributes_SetLowGradientLightingClampValue(self, args);
     else if(strcmp(name, "materialProperties") == 0)
-        obj = VolumeAttributes_SetMaterialProperties(self, tuple);
+        obj = VolumeAttributes_SetMaterialProperties(self, args);
+    else if(strcmp(name, "renderMode") == 0)
+        obj = VolumeAttributes_SetRenderMode(self, args);
 
-    if(obj != NULL)
+    if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
-    Py_DECREF(tuple);
-    if( obj == NULL)
-        PyErr_Format(PyExc_RuntimeError, "Unable to set unknown attribute: '%s'", name);
+    if (obj == &NULL_PY_OBJ)
+    {
+        obj = NULL;
+        PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);
+    }
+    else if (obj == NULL && !PyErr_Occurred())
+        PyErr_Format(PyExc_RuntimeError, "unknown problem with '%s'", name);
+
     return (obj != NULL) ? 0 : -1;
 }
 
@@ -1909,7 +3377,7 @@ static int
 VolumeAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     VolumeAttributesObject *obj = (VolumeAttributesObject *)v;
-    fprintf(fp, "%s", PyVolumeAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyVolumeAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -1917,7 +3385,7 @@ PyObject *
 VolumeAttributes_str(PyObject *v)
 {
     VolumeAttributesObject *obj = (VolumeAttributesObject *)v;
-    return PyString_FromString(PyVolumeAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyVolumeAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -2069,7 +3537,7 @@ PyVolumeAttributes_GetLogString()
 {
     std::string s("VolumeAtts = VolumeAttributes()\n");
     if(currentAtts != 0)
-        s += PyVolumeAttributes_ToString(currentAtts, "VolumeAtts.");
+        s += PyVolumeAttributes_ToString(currentAtts, "VolumeAtts.", true);
     return s;
 }
 
@@ -2082,7 +3550,7 @@ PyVolumeAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("VolumeAtts = VolumeAttributes()\n");
-        s += PyVolumeAttributes_ToString(currentAtts, "VolumeAtts.");
+        s += PyVolumeAttributes_ToString(currentAtts, "VolumeAtts.", true);
         cb(s);
     }
 }

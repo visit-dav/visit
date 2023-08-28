@@ -120,6 +120,13 @@ QvisSliceWindow::~QvisSliceWindow()
 //   Cyrus Harrison, Tue Jul  8 14:48:38 PDT 2008
 //   Initial Qt4 Port.
 //
+//   Kathleen Biagas, Wed Apr 12 12:52:05 PDT 2023
+//   Remove use of deprecated setAutoCompletion for meshName. By default an
+//   editable QComboBox uses a case-insenstive auto completer.
+//
+//   Kathleen Biagas, Tue Apr 18 16:34:41 PDT 2023
+//   Support Qt6: buttonClicked -> idClicked.
+//
 // ****************************************************************************
 
 void
@@ -131,12 +138,17 @@ QvisSliceWindow::CreateWindowContents()
     topLayout->addWidget(normalBox);
 
     QGridLayout *normalLayout = new QGridLayout(normalBox);
-    normalLayout->setMargin(10);
+    normalLayout->setContentsMargins(10,10,10,10);
     normalLayout->setSpacing(5);
 
     normalTypeGroup = new QButtonGroup(normalBox);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(normalTypeGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(normalTypeChanged(int)));
+#else
+    connect(normalTypeGroup, SIGNAL(idClicked(int)),
+            this, SLOT(normalTypeChanged(int)));
+#endif
 
     //    Orthogonal
     normalLayout->addWidget(new QLabel(tr("Orthogonal"), normalBox), 1,0);
@@ -202,14 +214,19 @@ QvisSliceWindow::CreateWindowContents()
     topLayout->addWidget(originBox);
 
     originTypeGroup = new QButtonGroup(originBox);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(originTypeGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(originTypeChanged(int)));
+#else
+    connect(originTypeGroup, SIGNAL(idClicked(int)),
+            this, SLOT(originTypeChanged(int)));
+#endif
 
 
     QGridLayout *originLayout = new QGridLayout(originBox);
 
     QHBoxLayout *originTypeLayout = new QHBoxLayout();
-    originTypeLayout->setMargin(0);
+    originTypeLayout->setContentsMargins(0,0,0,0);
     originLayout->addLayout(originTypeLayout, 1,0,  1,1);
 
     QRadioButton *otPoint     = new QRadioButton(tr("Point"),     originBox);
@@ -231,7 +248,7 @@ QvisSliceWindow::CreateWindowContents()
 
     // -- origin (point)
     originPointLayout = new QHBoxLayout();
-    originPointLayout->setMargin(0);
+    originPointLayout->setContentsMargins(0,0,0,0);
     originPointLabel = new QLabel(tr("Point"), originBox);
 
     originPointLineEdit = new QLineEdit(originBox);
@@ -245,7 +262,7 @@ QvisSliceWindow::CreateWindowContents()
 
     // -- origin (intercept)
     originInterceptLayout = new QHBoxLayout();
-    originInterceptLayout->setMargin(0);
+    originInterceptLayout->setContentsMargins(0,0,0,0);
     originInterceptLabel = new QLabel(tr("Intercept"), originBox);
 
     originInterceptLineEdit = new QLineEdit(originBox);
@@ -259,7 +276,7 @@ QvisSliceWindow::CreateWindowContents()
 
     // -- origin (percent)
     originPercentLayout = new QHBoxLayout();
-    originPercentLayout->setMargin(0);
+    originPercentLayout->setContentsMargins(0,0,0,0);
     originPercentLabel = new QLabel(tr("Percent"), originBox);
 
     originPercentLineEdit = new QNarrowLineEdit(originBox);
@@ -286,7 +303,7 @@ QvisSliceWindow::CreateWindowContents()
 
     // -- origin (zone)
     originZoneLayout = new QHBoxLayout();
-    originZoneLayout->setMargin(0);
+    originZoneLayout->setContentsMargins(0,0,0,0);
     originZoneLabel = new QLabel(tr("Zone"), originBox);
 
     originZoneLineEdit = new QLineEdit(originBox);
@@ -307,7 +324,7 @@ QvisSliceWindow::CreateWindowContents()
 
     // -- origin (node)
     originNodeLayout = new QHBoxLayout();
-    originNodeLayout->setMargin(0);
+    originNodeLayout->setContentsMargins(0,0,0,0);
     originNodeLabel = new QLabel(tr("Node"), originBox);
 
     originNodeLineEdit = new QLineEdit(originBox);
@@ -328,11 +345,10 @@ QvisSliceWindow::CreateWindowContents()
 
     // mesh name
     QHBoxLayout *meshLayout = new QHBoxLayout();
-    meshLayout->setMargin(5);
+    meshLayout->setContentsMargins(5,5,5,5);
     meshLabel = new QLabel(tr("Mesh"), originBox);
     meshName = new QComboBox(originBox);
     meshName->setEditable(true);
-    meshName->setAutoCompletion(true);
     meshName->setInsertPolicy(QComboBox::NoInsert);
     meshName->addItem(defaultItem);
     meshName->setCurrentIndex(0);

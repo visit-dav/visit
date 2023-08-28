@@ -105,7 +105,7 @@ def steps_bv(opts,ctx):
     ctx.actions["create_third_party"]  =  shell(cmd=cmd_clean,
                                                 working_dir=thirdparty_dir,
                                                 description="create %s" % thirdparty_dir)
-    bv_args = " --console "
+    bv_args = ""
     if "make_flags" in opts["build_visit"]:
         bv_args    += " --makeflags '%s'" % opts["build_visit"]["make_flags"]
     elif "make_nthreads" in opts:
@@ -129,7 +129,7 @@ def steps_bv(opts,ctx):
 
 def steps_checkout(opts,ctx):
     git_working = pjoin(opts["build_dir"], "visit")
-    git_cmd = "clone"
+    git_cmd = "clone --recursive"
     if "depth" in opts["git"]:
         git_cmd += " --depth=%s" % opts["git"]["depth"]
     ctx.actions["src_checkout"] = git(git_url=visit_git_path(git_opts=opts["git"]),
@@ -270,11 +270,39 @@ def steps_notarize(opts,build_type,ctx):
                                                  description="notarizing visit")
         ctx.triggers["build"].append(a_notarize_visit)
 
-def steps_sanity_checks(opts,build_type,ctx):
-    if opts["platform"] == "osx":
-        steps_osx_sanity_check(opts,build_type,ctx)    
+def steps_osx_install_sanity_checks(opts,build_type,ctx):
+    """
+    Post build check of OSX install names.
+    Uses "osxcheckup.py" script to do a full check of install names 
+    """
+    # install dir
+    #
+    # we need to read the actual version b/c even if we select "trunk", the package
+    # names will include what is in the src/VERSION file.
+    #
+    actual_version = opts["version"] 
+    actual_version_file = pjoin(opts["build_dir"],"visit/src","VERSION")
+    if os.path.isfile(actual_version_file):
+        actual_version = open(actual_version_file).readline().strip()
+    install_dir = pjoin(opts["build_dir"],"install.%s" % build_type.lower())
+    test_base_dir = "%s/%s" % (actual_version,opts["arch"])
 
-def steps_osx_sanity_check(opts,build_type,ctx):
+    osxcheckup_script = pjoin(opts["build_dir"],"visit","src","osxfixup","osxcheckup.py")
+
+    for check_dir in [ "lib", "bin"]:
+        full_test_dir = pjoin(test_base_dir,check_dir)
+        test_cmd = "python {0} {1}".format(osxcheckup_script,full_test_dir)
+        saction = "osx_install_sanity_" + check_dir + "_" + build_type.lower()
+        ctx.actions[saction] = shell(cmd=test_cmd,
+                                     description="install names check for " + check_dir,
+                                     working_dir=install_dir)
+        ctx.triggers["build"].append(saction)
+
+def steps_install_sanity_checks(opts,build_type,ctx):
+    if opts["platform"] == "osx":
+        steps_osx_install_sanity_checks(opts,build_type,ctx)
+
+def steps_osx_dmg_sanity_checks(opts,build_type,ctx):
     """
     Post build check of OSX install names.
     Checks the names of the vtkRendering.dylib in the resulting DMG. 
@@ -290,14 +318,21 @@ def steps_osx_sanity_check(opts,build_type,ctx):
         actual_version = open(actual_version_file).readline().strip()
     test_base = "mount/VisIt.app/Contents/Resources/%s/%s" % (actual_version, 
                                                               opts["arch"])
-    test_cmd   = "hdiutil attach -mountpoint mount VisIt-%s.dmg\n"
-    test_dylib = "libvtkRenderingCore-6.*.dylib"
-
-    test_cmd += "spctl -a -t exec -vv mount/VisIt.app\n"
+    # stop at any error
+    test_cmd  = ""
+    test_cmd  += "hdiutil attach -mountpoint mount VisIt-%s.dmg\n"
+    test_dylib = "libvtkRenderingCore-*.*.dylib "
     test_cmd += "otool -L %s/lib/%s | grep @exe\n"
     test_cmd += "otool -L %s/lib/%s | grep build-mb\n"
     test_cmd += "otool -L %s/lib/%s | grep build-mb | wc -l\n"
     test_cmd += "otool -L %s/lib/%s | grep RPATH\n"
+    test_cmd += "set -e\n"
+    # check for code sign
+    test_cmd += 'codesign --test-requirement="=notarized" --verify --verbose mount/VisIt.app/\n'
+    # check for any bad symlinks
+    test_cmd += 'find . -type l ! -exec test -e {} \; -print | wc -l\n'
+    # verify the app
+    test_cmd += "spctl -a -t exec -vv mount/VisIt.app\n"
     test_cmd += "hdiutil detach mount\n"
     test_cmd = test_cmd %  (actual_version,test_base,test_dylib,
                                            test_base,test_dylib,
@@ -309,14 +344,17 @@ def steps_osx_sanity_check(opts,build_type,ctx):
                                       working_dir=notarize_dir)
     ctx.triggers["build"].append(saction)
 
+def steps_package_sanity_checks(opts,build_type,ctx):
+    if opts["platform"] == "osx":
+        steps_osx_dmg_sanity_checks(opts,build_type,ctx)
+
 
 def steps_visit(opts,ctx):
     ctx.triggers["build"] = inorder()
-    #if not opts["tarball"] is None:
-    #    steps_untar(opts,ctx)
-    #else:
-    #    steps_checkout(opts,ctx)
-    if not opts["skip_checkout"]:
+
+    if not opts["tarball"] is None:
+        steps_untar(opts,ctx)
+    elif not opts["skip_checkout"]:
         steps_checkout(opts,ctx)
 
     if "build_visit" in opts:
@@ -327,16 +365,17 @@ def steps_visit(opts,ctx):
         steps_build(opts,build_type,ctx)
         steps_manuals(opts,build_type,ctx)
         steps_install(opts,build_type,ctx)
+        steps_install_sanity_checks(opts,build_type,ctx)
         steps_package(opts,build_type,ctx)
         steps_notarize(opts,build_type,ctx)
-        steps_sanity_checks(opts,build_type,ctx)
+        steps_package_sanity_checks(opts,build_type,ctx)
 
 def main(opts_json):
     opts = load_opts(opts_json)
     ctx = Context()
     steps_visit(opts,ctx)
     res = ctx.fire("build")
-    # foward return code 
+    # forward return code 
     return res["trigger"]["results"][-1]["action"]["return_code"]
 
 

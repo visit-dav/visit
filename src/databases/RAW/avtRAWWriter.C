@@ -5,10 +5,14 @@
 // ************************************************************************* //
 //                               avtRAWWriter.C                              //
 // ************************************************************************* //
-    
+
 #include <avtRAWWriter.h>
 
+#include <visit-config.h> // For LIB_VERSION_GE
 #include <vtkCellArray.h>
+#if LIB_VERSION_GE(VTK,9,1,0)
+#include <vtkCellArrayIterator.h>
+#endif
 #include <vtkDataArray.h>
 #include <vtkPointData.h>
 #include <vtkPolyData.h>
@@ -29,14 +33,14 @@
 // ****************************************************************************
 // Method: avtRAWWriter::avtRAWWriter
 //
-// Purpose: 
+// Purpose:
 //   Constructor.
 //
 // Programmer: Brad Whitlock
 // Creation:   Sat Sep 29 16:05:37 PST 2007
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 avtRAWWriter::avtRAWWriter()
@@ -48,14 +52,14 @@ avtRAWWriter::avtRAWWriter()
 // ****************************************************************************
 // Method: avtRAWWriter::~avtRAWWriter
 //
-// Purpose: 
+// Purpose:
 //   Destructor.
 //
 // Programmer: Brad Whitlock
 // Creation:   Sat Sep 29 16:05:37 PST 2007
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 avtRAWWriter::~avtRAWWriter()
@@ -90,7 +94,7 @@ avtRAWWriter::OpenFile(const std::string &stemname, int nb)
         file = fopen(filename, "wt");
         if(file == 0)
         {
-            EXCEPTION1(InvalidDBTypeException, 
+            EXCEPTION1(InvalidDBTypeException,
                        "The RAW writer could not open the output file.");
         }
     }
@@ -138,6 +142,8 @@ avtRAWWriter::WriteHeaders(const avtDatabaseMetaData *md,
 //  Creation:   September 28, 2007
 //
 //  Modifications:
+//    Kathleen Biagas, Thu Aug 11, 2022
+//    Support VTK9: use vtkCellArrayIterator.
 //
 // ****************************************************************************
 
@@ -156,17 +162,17 @@ avtRAWWriter::WriteChunk(vtkDataSet *ds, int chunk)
     }
     else if(ds->GetDataObjectType() == VTK_RECTILINEAR_GRID)
     {
-        vtkRectilinearGridFacelistFilter *flf = 
+        vtkRectilinearGridFacelistFilter *flf =
             vtkRectilinearGridFacelistFilter::New();
         flf->SetInputData((vtkRectilinearGrid *)ds);
         flf->Update();
         pd = flf->GetOutput();
         pd->Register(NULL);
-        flf->Delete();        
+        flf->Delete();
     }
     else if(ds->GetDataObjectType() == VTK_STRUCTURED_GRID)
     {
-        vtkStructuredGridFacelistFilter *flf = 
+        vtkStructuredGridFacelistFilter *flf =
             vtkStructuredGridFacelistFilter::New();
         flf->SetInputData((vtkStructuredGrid *)ds);
         flf->Update();
@@ -176,7 +182,7 @@ avtRAWWriter::WriteChunk(vtkDataSet *ds, int chunk)
     }
     else if(ds->GetDataObjectType() == VTK_UNSTRUCTURED_GRID)
     {
-        vtkUnstructuredGridFacelistFilter *flf = 
+        vtkUnstructuredGridFacelistFilter *flf =
             vtkUnstructuredGridFacelistFilter::New();
         flf->SetInputData((vtkUnstructuredGrid *)ds);
         flf->Update();
@@ -186,7 +192,7 @@ avtRAWWriter::WriteChunk(vtkDataSet *ds, int chunk)
     }
     else
     {
-        EXCEPTION1(InvalidDBTypeException, 
+        EXCEPTION1(InvalidDBTypeException,
                    "The RAW writer can only handle polydata or rectilinear, "
                    "stuctured, unstructured grids.");
     }
@@ -197,10 +203,19 @@ avtRAWWriter::WriteChunk(vtkDataSet *ds, int chunk)
     if(nDomains > 1)
         fprintf(file, "Object%d\n", chunk + 1);
 
+    vtkIdType nids;
+#if LIB_VERSION_LE(VTK,8,1,0)
     pd->GetPolys()->InitTraversal();
-    vtkIdType nids, *ids = 0;
+    vtkIdType *ids = 0;
     while(pd->GetPolys()->GetNextCell(nids, ids))
     {
+#else
+    const vtkIdType *ids = nullptr;
+    auto iter = vtk::TakeSmartPointer(pd->GetPolys()->NewIterator());
+    for (iter->GoToFirstCell(); !iter->IsDoneWithTraversal(); iter->GoToNextCell())
+    {
+        iter->GetCurrentCell(nids, ids);
+#endif
         if(nids == 3)
         {
             float *ptr = (float *)pd->GetPoints()->GetVoidPointer(0);

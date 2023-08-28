@@ -25,13 +25,16 @@
 //    Jeremy Meredith, Tue Jun 18 11:56:22 EDT 2013
 //    Output actual volumes/areas, not VF's, and return total vol/area.
 //
+//    Kathleen Biagas, Thu Aug 11 2022
+//    Removed MIRConnectivity from constructor as it isn't used.
+//
 // ****************************************************************************
 
 class IsovolumeCellReconstructor : public CellReconstructor
 {
   public:
     IsovolumeCellReconstructor(vtkDataSet*, avtMaterial*, ResampledMat&,
-                               int, int, MIRConnectivity&, ZooMIR&);
+                               int, int, ZooMIR&);
 
     double ReconstructCell(int, int, int, vtkIdType*, double*);
 };

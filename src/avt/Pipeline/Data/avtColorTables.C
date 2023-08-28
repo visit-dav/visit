@@ -587,6 +587,16 @@ void avtColorTables::ModifyColor(char unsigned const *inrgb, double mult,
 //
 //   Mark C. Miller, Mon Jun 10 17:37:19 PDT 2019
 //   Make the code a little more automated as color tables are added.
+// 
+//   Justin Privitera, Wed May 18 11:25:46 PDT 2022
+//   Changed *active* to *default* for everything related to color tables.
+// 
+//   Justin Privitera, Thu Jun 16 18:01:49 PDT 2022
+//   Added tagging and removed categories.
+// 
+//   Justin Privitera, Thu Jan 26 11:39:29 PST 2023
+//   Changed "Standard" tag to "Default".
+// 
 // ****************************************************************************
 
 avtColorTables::avtColorTables()
@@ -636,14 +646,18 @@ avtColorTables::avtColorTables()
         ccpl.SetSmoothing(ColorControlPointList::SmoothingMethod(predef_ct_smooth[i]));
         ccpl.SetEqualSpacingFlag(predef_ct_equal[i] == 1);
         ccpl.SetDiscreteFlag(predef_ct_discrete[i] == 1);
-        ccpl.SetCategoryName("Standard");
+        ccpl.AddTag("Default");
+        if (predef_ct_discrete[i] == 1)
+            ccpl.AddTag("Discrete");
+        else
+            ccpl.AddTag("Continuous");
         ctAtts->AddColorTable(predef_ct_names[i], ccpl);
     }
 
-    // Set the active continuous color table to "hot".
-    ctAtts->SetActiveContinuous("hot");
-    // Set the active discrete color table to "levels".
-    ctAtts->SetActiveDiscrete("levels");
+    // Set the default continuous color table to "hot".
+    ctAtts->SetDefaultContinuous("hot");
+    // Set the default discrete color table to "levels".
+    ctAtts->SetDefaultDiscrete("levels");
 }
 
 // ****************************************************************************
@@ -706,13 +720,16 @@ avtColorTables::Instance()
 // Modifications:
 //   Brad Whitlock, Wed Nov 20 13:36:51 PST 2002
 //   I renamed the method.
+// 
+//   Justin Privitera, Wed May 18 11:25:46 PDT 2022
+//   Changed *active* to *default* for everything related to color tables.
 //
 // ****************************************************************************
 
 const std::string &
 avtColorTables::GetDefaultContinuousColorTable() const
 {
-    return ctAtts->GetActiveContinuous();
+    return ctAtts->GetDefaultContinuous();
 }
 
 // ****************************************************************************
@@ -727,13 +744,15 @@ avtColorTables::GetDefaultContinuousColorTable() const
 // Creation:   Fri Jun 15 14:06:07 PST 2001
 //
 // Modifications:
+//   Justin Privitera, Wed May 18 11:25:46 PDT 2022
+//   Changed *active* to *default* for everything related to color tables.
 //   
 // ****************************************************************************
 
 const std::string &
 avtColorTables::GetDefaultDiscreteColorTable() const
 {
-    return ctAtts->GetActiveDiscrete();
+    return ctAtts->GetDefaultDiscrete();
 }
 
 // ****************************************************************************
@@ -807,6 +826,8 @@ avtColorTables::IsDiscrete(const std::string &ctName) const
 // Creation:   Fri Jun 15 14:08:36 PST 2001
 //
 // Modifications:
+//   Justin Privitera, Wed May 18 11:25:46 PDT 2022
+//   Changed *active* to *default* for everything related to color tables.
 //   
 // ****************************************************************************
 
@@ -815,7 +836,7 @@ avtColorTables::SetDefaultContinuousColorTable(const std::string &ctName)
 {
     if(ColorTableExists(ctName))
     {
-        ctAtts->SetActiveContinuous(ctName);
+        ctAtts->SetDefaultContinuous(ctName);
     }
 }
 
@@ -832,6 +853,8 @@ avtColorTables::SetDefaultContinuousColorTable(const std::string &ctName)
 // Creation:   Fri Jun 15 14:08:36 PST 2001
 //
 // Modifications:
+//   Justin Privitera, Wed May 18 11:25:46 PDT 2022
+//   Changed *active* to *default* for everything related to color tables.
 //   
 // ****************************************************************************
 
@@ -840,7 +863,7 @@ avtColorTables::SetDefaultDiscreteColorTable(const std::string &ctName)
 {
     if(ColorTableExists(ctName))
     {
-        ctAtts->SetActiveDiscrete(ctName);
+        ctAtts->SetDefaultDiscrete(ctName);
     }
 }
 

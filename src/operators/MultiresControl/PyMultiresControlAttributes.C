@@ -35,7 +35,7 @@ struct MultiresControlAttributesObject
 //
 static PyObject *NewMultiresControlAttributes(int);
 std::string
-PyMultiresControlAttributes_ToString(const MultiresControlAttributes *atts, const char *prefix)
+PyMultiresControlAttributes_ToString(const MultiresControlAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -63,12 +63,48 @@ MultiresControlAttributes_SetResolution(PyObject *self, PyObject *args)
 {
     MultiresControlAttributesObject *obj = (MultiresControlAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the resolution in the object.
-    obj->data->SetResolution((int)ival);
+    obj->data->SetResolution(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -87,12 +123,48 @@ MultiresControlAttributes_SetMaxResolution(PyObject *self, PyObject *args)
 {
     MultiresControlAttributesObject *obj = (MultiresControlAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the maxResolution in the object.
-    obj->data->SetMaxResolution((int)ival);
+    obj->data->SetMaxResolution(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -111,12 +183,37 @@ MultiresControlAttributes_SetInfo(PyObject *self, PyObject *args)
 {
     MultiresControlAttributesObject *obj = (MultiresControlAttributesObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the info in the object.
-    obj->data->SetInfo(std::string(str));
+    obj->data->SetInfo(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -168,32 +265,45 @@ PyMultiresControlAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "info") == 0)
         return MultiresControlAttributes_GetInfo(self, NULL);
 
+
+    // Add a __dict__ answer so that dir() works
+    if (!strcmp(name, "__dict__"))
+    {
+        PyObject *result = PyDict_New();
+        for (int i = 0; PyMultiresControlAttributes_methods[i].ml_meth; i++)
+            PyDict_SetItem(result,
+                PyString_FromString(PyMultiresControlAttributes_methods[i].ml_name),
+                PyString_FromString(PyMultiresControlAttributes_methods[i].ml_name));
+        return result;
+    }
+
     return Py_FindMethod(PyMultiresControlAttributes_methods, self, name);
 }
 
 int
 PyMultiresControlAttributes_setattr(PyObject *self, char *name, PyObject *args)
 {
-    // Create a tuple to contain the arguments since all of the Set
-    // functions expect a tuple.
-    PyObject *tuple = PyTuple_New(1);
-    PyTuple_SET_ITEM(tuple, 0, args);
-    Py_INCREF(args);
-    PyObject *obj = NULL;
+    PyObject NULL_PY_OBJ;
+    PyObject *obj = &NULL_PY_OBJ;
 
     if(strcmp(name, "resolution") == 0)
-        obj = MultiresControlAttributes_SetResolution(self, tuple);
+        obj = MultiresControlAttributes_SetResolution(self, args);
     else if(strcmp(name, "maxResolution") == 0)
-        obj = MultiresControlAttributes_SetMaxResolution(self, tuple);
+        obj = MultiresControlAttributes_SetMaxResolution(self, args);
     else if(strcmp(name, "info") == 0)
-        obj = MultiresControlAttributes_SetInfo(self, tuple);
+        obj = MultiresControlAttributes_SetInfo(self, args);
 
-    if(obj != NULL)
+    if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
-    Py_DECREF(tuple);
-    if( obj == NULL)
-        PyErr_Format(PyExc_RuntimeError, "Unable to set unknown attribute: '%s'", name);
+    if (obj == &NULL_PY_OBJ)
+    {
+        obj = NULL;
+        PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);
+    }
+    else if (obj == NULL && !PyErr_Occurred())
+        PyErr_Format(PyExc_RuntimeError, "unknown problem with '%s'", name);
+
     return (obj != NULL) ? 0 : -1;
 }
 
@@ -201,7 +311,7 @@ static int
 MultiresControlAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     MultiresControlAttributesObject *obj = (MultiresControlAttributesObject *)v;
-    fprintf(fp, "%s", PyMultiresControlAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyMultiresControlAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -209,7 +319,7 @@ PyObject *
 MultiresControlAttributes_str(PyObject *v)
 {
     MultiresControlAttributesObject *obj = (MultiresControlAttributesObject *)v;
-    return PyString_FromString(PyMultiresControlAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyMultiresControlAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -361,7 +471,7 @@ PyMultiresControlAttributes_GetLogString()
 {
     std::string s("MultiresControlAtts = MultiresControlAttributes()\n");
     if(currentAtts != 0)
-        s += PyMultiresControlAttributes_ToString(currentAtts, "MultiresControlAtts.");
+        s += PyMultiresControlAttributes_ToString(currentAtts, "MultiresControlAtts.", true);
     return s;
 }
 
@@ -374,7 +484,7 @@ PyMultiresControlAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("MultiresControlAtts = MultiresControlAttributes()\n");
-        s += PyMultiresControlAttributes_ToString(currentAtts, "MultiresControlAtts.");
+        s += PyMultiresControlAttributes_ToString(currentAtts, "MultiresControlAtts.", true);
         cb(s);
     }
 }

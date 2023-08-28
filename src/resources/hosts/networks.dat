@@ -2,6 +2,7 @@ Argonne National Laboatory (ANL) network:anl
 Arizona State University network:asu
 Atomic Weapons Establishment network:awe
 Clemson University network:clemson
+King Abdullah University of Science and Technology (KAUST) network:kaust
 Lawrence Livermore National Laboratory (LLNL) closed network:llnl_closed
 Lawrence Livermore National Laboratory (LLNL) open network:llnl
 Los Alamos National Laboratory (LANL) open network:lanl
@@ -12,6 +13,7 @@ National Center for Atmospheric Research (NCAR) network:ncar
 National Center for Supercomputing Applications (NCSA) network:ncsa
 National Energy Scientific Research Computing Center (NERSC) network:nersc
 National Institute for Computational Sciences (NICS) newtwork:nics
+National Computational Infrastructure Australia (NCI) network:nci
 Oak Ridge National Laboratory (ORNL) network:ornl
 Ohio Supercomputer Center (OSC) network:ohio
 Princeton University network:princeton

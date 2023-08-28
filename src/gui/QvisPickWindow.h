@@ -161,6 +161,9 @@ public:
 //   Alister Maguire, Thu Aug 16 10:40:13 PDT 2018
 //   Added an option to set swivel focus to pick.
 //
+//   Alister Maguire, Mon Jul 19 11:06:57 PDT 2021
+//   Added previousPoint and displayDistance.
+//
 // ****************************************************************************
 
 class GUI_API QvisPickWindow : public QvisPostableWindowObserver
@@ -204,6 +207,7 @@ private slots:
     void displayGlobalIdsToggled(bool val);
     void displayPickLetterToggled(bool val);
     void displayPickHighlightToggled(bool val);
+    void displayDistanceToggled(bool val);
     void nodeIdToggled(bool val);
     void nodeDomLogToggled(bool val);
     void nodeBlockLogToggled(bool val);
@@ -274,6 +278,7 @@ private:
     QCheckBox          *displayGlobalIds;
     QCheckBox          *displayPickLetter;
     QCheckBox          *displayPickHighlight;
+    QCheckBox          *displayDistance;
 
     QCheckBox          *nodeId;
     QCheckBox          *nodePhysical;
@@ -301,6 +306,7 @@ private:
     int                 saveCount;
     int                 activeOptionsTab;
     int                 timeOptsTabIndex;
+    double              previousPoint[3];
 
     // Saving attributes for restoring them after re-doing a pick
     bool                createSpreadsheetSave;

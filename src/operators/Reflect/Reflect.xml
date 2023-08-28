@@ -6,7 +6,7 @@
     <Files components="W">
       QvisReflectWidget.h
     </Files>
-    <Attribute name="ReflectAttributes" purpose="This class contains attributes for the reflect operator." persistent="true" keyframe="true" exportAPI="" exportInclude="" codefile="ReflectAttributes.code">
+    <Attribute name="ReflectAttributes" purpose="This class contains attributes for the reflect operator." persistent="true" keyframe="true" exportAPI="" exportInclude="">
       <Enum name="Octant">
         PXPYPZ
         NXPYPZ
@@ -65,7 +65,5 @@
       <Field name="reflectType" label="reflectType" type="enum" subtype="ReflectType" access="protected">
         Axis
       </Field>
-      <Function name="ProcessOldVersions" user="true" member="true">
-      </Function>
     </Attribute>
   </Plugin>

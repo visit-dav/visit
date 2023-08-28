@@ -31,6 +31,9 @@ class VisWindowInteractorProxy;
 //    Moved RotateCamera, PanCamera and ZoomCamera to the VisitInterator
 //    class as RotateAboutCamera3D, PanCamera3D and DollyCameraAndFocus3D.
 //
+//    Kathleen Biagas, Wed Mar 16, 2022
+//    Added OnMouseWheelForward,OnMouseWheelbackward.
+//
 // ****************************************************************************
 
 class VISWINDOW_API FlyThrough: public VisitInteractor
@@ -44,6 +47,8 @@ class VISWINDOW_API FlyThrough: public VisitInteractor
     virtual void        EndLeftButtonAction();
     virtual void        StartMiddleButtonAction();
     virtual void        EndMiddleButtonAction();
+    virtual void        OnMouseWheelForward();
+    virtual void        OnMouseWheelBackward();
 
   protected:
     bool                ctrlOrShiftPushed;

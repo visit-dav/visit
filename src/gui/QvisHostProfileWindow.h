@@ -232,7 +232,7 @@ private slots:
     void clientHostNameMethodChanged(int);
     void clientHostNameChanged(const QString &);
     void toggleCanDoHW(bool);
-    void nGPUsChanged(const QString&);
+    void nGPUsChanged(int);
     void toggleTunnelSSH(bool);
     void toggleXArgs(bool);
     void xArgsChanged(const QString&);

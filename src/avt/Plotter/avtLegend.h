@@ -46,10 +46,10 @@ class  vtkRenderer;
 //    Brad Whitlock, Tue Jul 20 16:40:37 PST 2004
 //    Added SetVarUnits.
 //
-//    Kathleen Bonnell, Thu Aug 12 13:07:29 PDT 2004 
+//    Kathleen Bonnell, Thu Aug 12 13:07:29 PDT 2004
 //    Added SetGlobalVisibility.
 //
-//    Kathleen Bonnell, Tue Oct 25 11:13:14 PDT 2005 
+//    Kathleen Bonnell, Tue Oct 25 11:13:14 PDT 2005
 //    Changed 'legend' from vtkVerticalScalarBarActor to Actor2D to allow
 //    different derived types.  Added pure virtual methods ChangeTitle,
 //    ChangeFontHeight.
@@ -66,6 +66,9 @@ class  vtkRenderer;
 //    Kathleen Bonnell, Thu Oct  1 14:18:11 PDT 2009
 //    Added methods and ivars that allow more user control of tick marks
 //    and tick labels.
+//
+//    Kathleen Biagas, Thu May 20, 2021
+//    Add support for custom title.
 //
 // ****************************************************************************
 
@@ -105,7 +108,7 @@ class PLOTTER_API  avtLegend
     virtual void                  SetBoundingBoxVisibility(bool);
     virtual void                  SetBoundingBoxColor(const double *);
     virtual void                  SetOrientation(LegendOrientation);
-    virtual void                  SetFont(int family, bool bold, bool italic, 
+    virtual void                  SetFont(int family, bool bold, bool italic,
                                           bool shadow);
 
     virtual void                  SetForegroundColor(const double [3]);
@@ -127,8 +130,11 @@ class PLOTTER_API  avtLegend
     virtual void                  GetCalculatedLabels(doubleVector &);
     virtual void                  GetCalculatedLabels(stringVector &);
     virtual int                   GetType(void) { return 2; }
-   
+
     void                          Update();
+
+    void                          UseCustomTitle(bool);
+    void                          SetCustomTitle(const std::string &);
 
   protected:
     double                        position[2];
@@ -146,6 +152,9 @@ class PLOTTER_API  avtLegend
     char                         *varUnits;
     char                         *message;
     LegendOrientation             orientation;
+
+    bool                          useCustomTitle;
+    std::string                   customTitle;
 
     virtual void                  ChangePosition(double, double) = 0;
     virtual void                  ChangeTitle(const char *) = 0;

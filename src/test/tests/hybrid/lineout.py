@@ -72,9 +72,12 @@
 #    Kathleen Biagas, Wed Feb 24 10:11:35 PST 2021
 #    Remove setting of Pseudocolor colorTableName name to 'Default', as
 #    that is now the default anyways.
-#    Reset active continuous color table to 'hot' after a test that changes
+#    Reset default continuous color table to 'hot' after a test that changes
 #    it is finished, so that other tests aren't affected.
 #
+#    Justin Privitera, Wed May 18 11:25:46 PDT 2022
+#    Changed *active* to *default* for everything related to color tables.
+# 
 # ----------------------------------------------------------------------------
 
 def GetOutputArray(plotID = -1, winID = -1):
@@ -122,7 +125,7 @@ def TestLineout2D(time, suffix):
     DrawPlots()
 
     # Set the colortable to one that has white at the bottom values.
-    SetActiveContinuousColorTable("calewhite")
+    SetDefaultContinuousColorTable("calewhite")
 
     # Create the variable list.
     vars = ("default")
@@ -170,7 +173,7 @@ def TestLineout2D(time, suffix):
         TestText("Lineout2d_output_15", s)
 
     # Reset the CT to 'hot'
-    SetActiveContinuousColorTable("hot")
+    SetDefaultContinuousColorTable("hot")
     # Delete the second window.
     DeleteWindow()
     DeleteAllPlots()
@@ -258,7 +261,7 @@ def TestSAMRAI(time, suffix):
     DrawPlots()
 
     # Set the colortable to one that has white at the bottom values.
-    SetActiveContinuousColorTable("rainbow")
+    SetDefaultContinuousColorTable("rainbow")
 
     AddOperator("Slice", 1)
     slice = SliceAttributes()
@@ -296,7 +299,7 @@ def TestSAMRAI(time, suffix):
 
     ResetPickLetter()
     ResetLineoutColor()
-    SetActiveContinuousColorTable("hot")
+    SetDefaultContinuousColorTable("hot")
 
 def TestSpecifyLineoutWindow(time, suffix):
     #window 1

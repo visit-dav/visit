@@ -56,6 +56,9 @@
 //   Place 'useForeground' checkbox before text color button, added
 //   textColorLabel so it can be disabled when the button is disabled.
 //
+//   Kathleen Biagas, Tue Apr 18 16:34:41 PDT 2023
+//   Support Qt6: buttonClicked -> idClicked.
+//
 // ****************************************************************************
 
 QvisText3DInterface::QvisText3DInterface(QWidget *parent) :
@@ -88,8 +91,13 @@ QvisText3DInterface::QvisText3DInterface(QWidget *parent) :
 
     // Add controls for the height.
     heightMode = new QButtonGroup(this);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(heightMode, SIGNAL(buttonClicked(int)),
             this, SLOT(heightModeChanged(int)));
+#else
+    connect(heightMode, SIGNAL(idClicked(int)),
+            this, SLOT(heightModeChanged(int)));
+#endif
     cLayout->addWidget(new QLabel(tr("Height"), this), row, 0);
     QRadioButton *rb = new QRadioButton(tr("Relative"), this);
     heightMode->addButton(rb, 0);
@@ -156,7 +164,7 @@ QvisText3DInterface::QvisText3DInterface(QWidget *parent) :
             this, SLOT(rotateYChanged(int)));
     QLabel *rotateYLabel = new QLabel(tr("Rotate Y"), this);
     QGridLayout *rLayout = new QGridLayout(0);
-    rLayout->setMargin(0);
+    rLayout->setContentsMargins(0,0,0,0);
     cLayout->addLayout(rLayout, row, 0, 1, 3);
     rLayout->addWidget(rotateYLabel, 0, 0);
     rLayout->addWidget(rotateXLabel, 0, 1);

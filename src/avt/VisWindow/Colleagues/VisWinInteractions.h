@@ -45,7 +45,7 @@ class VisitHotPointInteractor;
 //     Replaced all of the interactors with a single VisitHotPointInteractor.
 //
 //     Kathleen Bonnell, Wed May  8 14:06:50 PDT 2002
-//     Add support for curve mode. 
+//     Add support for curve mode.
 //
 //     Brad Whitlock, Wed Sep 10 15:27:35 PST 2003
 //     Added support for temporarily suspending spin mode.
@@ -66,15 +66,18 @@ class VisitHotPointInteractor;
 //     Added the ability to enable/disable interaction mode changes to
 //     support adding a multi resolution dispaly capability for AMR data.
 //
+//     Kathleen Biagas, Wed Aug 17, 2022
+//     Added SetOsprayRendering.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWinInteractions : public VisWinColleague
 {
-  public:                    
+  public:
                              VisWinInteractions(VisWindowColleagueProxy &,
                                                 VisWindowInteractorProxy &);
-    virtual                 ~VisWinInteractions();  
-   
+    virtual                 ~VisWinInteractions();
+
     void                     SetInteractionMode(INTERACTION_MODE);
     INTERACTION_MODE         GetInteractionMode() const;
     void                     SetBoundingBoxMode(int);
@@ -101,6 +104,8 @@ class VISWINDOW_API VisWinInteractions : public VisWinColleague
 
     virtual void             NoPlots();
     virtual void             HasPlots();
+
+    void                     SetOsprayRendering(bool enabled);
 
     VisitHotPointInteractor* GetHotPointInteractor() { return hotPointInteractor; }
   protected:

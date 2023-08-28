@@ -128,6 +128,8 @@ def TestMultiColor():
     Sets = [[1,5.5,11],[1,5.5,11],[1,5.5,8]]
     testNum = 0
     for r in Sets:
+        # the next comment and similar below bracket code to be 'literalincluded' in quickrecipes.rst
+        # contourAtts {
         p = ContourAttributes()
         p.contourMethod = p.Level
         p.contourNLevels=r[2]
@@ -151,6 +153,7 @@ def TestMultiColor():
         p.min=r[0]
         p.max=r[1]
         SetPlotOptions(p)
+        # contourAtts }
         Test("contour_multicolor_%02d"%testNum)
         testNum = testNum + 1
     DeleteAllPlots()

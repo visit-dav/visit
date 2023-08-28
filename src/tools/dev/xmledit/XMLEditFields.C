@@ -30,6 +30,10 @@
 //  Programmer:  Jeremy Meredith
 //  Creation:    September 25, 2001
 //
+//  Modifications:
+//    Kathleen Biagas, Wed Apr 6, 2022
+//    Fix QT_VERSION test to use Qt's QT_VERSION_CHECK.
+//
 // ****************************************************************************
 class QNarrowLineEdit : public QLineEdit
 {
@@ -46,8 +50,12 @@ class QNarrowLineEdit : public QLineEdit
     {
         QSize size = QLineEdit::sizeHint();
         QFontMetrics fm(font());
-        int w = fm.horizontalAdvance('x') * 4; // 4 characters
-        size.setWidth(w);
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 11, 0))
+        int w = fm.horizontalAdvance("x");
+#else
+        int w = fm.width("x");
+#endif
+        size.setWidth(w * 4); // 4 characters
         return size;
     }
 };
@@ -80,6 +88,9 @@ class QNarrowLineEdit : public QLineEdit
 //
 //    Kathleen Biagas, Thu Aug 25 14:24:11 MST 2011
 //    Added persistent checkbox.
+//
+//    Kathleen Biagas, Tue Apr 18 16:34:41 PDT 2023
+//    Support Qt6: buttonClicked -> idClicked.
 //
 // ****************************************************************************
 
@@ -171,13 +182,18 @@ XMLEditFields::XMLEditFields(QWidget *p)
     variableNameGroup->setTitle(tr("Accepted variable types"));
 
     QHBoxLayout *innerVarNameLayout = new QHBoxLayout(variableNameGroup);
-    innerVarNameLayout->setMargin(10);
+    innerVarNameLayout->setContentsMargins(10,10,10,10);
     QGridLayout *vnLayout = new QGridLayout();
     vnLayout->setSpacing(5);
     varNameButtons = new QButtonGroup(this);
     varNameButtons->setExclusive(false);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(varNameButtons, SIGNAL(buttonClicked(int)),
             this, SLOT(variableTypeClicked(int)));
+#else
+    connect(varNameButtons, SIGNAL(idClicked(int)),
+            this, SLOT(variableTypeClicked(int)));
+#endif
     QCheckBox *cb = new QCheckBox(tr("Meshes"), variableNameGroup);
     varNameButtons->addButton(cb,0);
     vnLayout->addWidget(cb, 0, 0);
@@ -291,8 +307,13 @@ XMLEditFields::XMLEditFields(QWidget *p)
             this, SLOT(fieldlistUp()));
     connect(downButton, SIGNAL(pressed()),
             this, SLOT(fieldlistDown()));
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(access, SIGNAL(buttonClicked(int)),
             this, SLOT(accessChanged(int)));
+#else
+    connect(access, SIGNAL(idClicked(int)),
+            this, SLOT(accessChanged(int)));
+#endif
 }
 
 // ****************************************************************************
@@ -547,6 +568,9 @@ XMLEditFields::UpdateWindowSingleItem()
 //    Kathleen Biagas, Wed Dec 21 07:52:13 PST 2016
 //    Added glyphtype.
 //
+//    Kathleen Biagas, Tue Nov 15 12:41:48 PST 2022
+//    Added boolArray and boolVector.
+//
 // ****************************************************************************
 void
 XMLEditFields::UpdateTypeList()
@@ -556,6 +580,8 @@ XMLEditFields::UpdateTypeList()
     type->addItem("intArray");
     type->addItem("intVector");
     type->addItem("bool");
+    type->addItem("boolArray");
+    type->addItem("boolVector");
     type->addItem("float");
     type->addItem("floatArray");
     type->addItem("floatVector");

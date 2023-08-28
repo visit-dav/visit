@@ -63,13 +63,14 @@ QvisTimeSliderControlWidget::QvisTimeSliderControlWidget(QWidget *parent) :
     // Create the top layout that will contain the widgets.
     QVBoxLayout *topLayout = new QVBoxLayout(this);
     topLayout->setSpacing(5);
-    topLayout->setMargin(5);
+    topLayout->setContentsMargins(5,5,5,5);
 
     // Create the active time slider.
     QHBoxLayout *tsLayout = new QHBoxLayout(0);
-    tsLayout->setMargin(0);
+    tsLayout->setContentsMargins(0,0,0,0);
     topLayout->addLayout(tsLayout);
     activeTimeSlider = new QComboBox(this);
+    activeTimeSlider->setSizeAdjustPolicy(QComboBox::AdjustToMinimumContentsLengthWithIcon);
     connect(activeTimeSlider, SIGNAL(activated(int)),
             this, SLOT(changeActiveTimeSlider(int)));
     activeTimeSliderLabel = new QLabel(tr("Active time slider"), this);
@@ -80,7 +81,7 @@ QvisTimeSliderControlWidget::QvisTimeSliderControlWidget(QWidget *parent) :
 
     // Create the animation position slider bar
     QHBoxLayout *animationLayout = new QHBoxLayout(0);
-    animationLayout->setMargin(0);
+    animationLayout->setContentsMargins(0,0,0,0);
     topLayout->addLayout(animationLayout);
     topLayout->setStretchFactor(animationLayout, 10);
     animationPosition = new QvisAnimationSlider(Qt::Horizontal, this);
@@ -673,6 +674,8 @@ QvisTimeSliderControlWidget::UpdateTimeFieldText(int timeState)
 // Creation:
 //
 // Modifications:
+//    Kathleen Biagas, Wed Apr 6, 2022
+//    Fix QT_VERSION test to use Qt's QT_VERSION_CHECK.
 //
 // ****************************************************************************
 
@@ -680,7 +683,11 @@ void
 QvisTimeSliderControlWidget::SetTimeFieldText(const QString &text)
 {
     int w  = timeField->width();
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 11, 0))
     int nw = timeField->fontMetrics().horizontalAdvance("  " + text);
+#else
+    int nw = timeField->fontMetrics().width("  " + text);
+#endif
     if(w < nw)
         timeField->setMinimumWidth(nw);
     timeField->setText(text);

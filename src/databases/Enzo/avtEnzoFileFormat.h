@@ -3,7 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ************************************************************************* //
-//                            avtEnzoFileFormat.h                           //
+//                            avtEnzoFileFormat.h                            //
 // ************************************************************************* //
 
 #ifndef AVT_Enzo_FILE_FORMAT_H
@@ -43,6 +43,9 @@
 //    Jean Favre, Wed Jul 27 09:26:31 PDT 2011
 //    Implement method to handle data selections.
 //
+//    Kathleen Biagas, Mon Sep 26, 2022
+//    Remove HDF4 support.
+//
 // ****************************************************************************
 
 class avtEnzoFileFormat : public avtSTMDFileFormat
@@ -57,7 +60,7 @@ class avtEnzoFileFormat : public avtSTMDFileFormat
     virtual int            GetCycle(void);
 
     virtual const char    *GetType(void)   { return "Enzo"; };
-    virtual void           FreeUpResources(void); 
+    virtual void           FreeUpResources(void);
 
     virtual vtkDataSet    *GetMesh(int, const char *);
     virtual vtkDataArray  *GetVar(int, const char *);
@@ -69,9 +72,9 @@ class avtEnzoFileFormat : public avtSTMDFileFormat
 
     void                   ActivateTimestep(void);
     virtual int            GetCycleFromFilename(const char *f) const;
-    
+
   protected:
-    enum FileType { ENZO_FT_UNKNOWN, ENZO_FT_HDF4, ENZO_FT_HDF5 };
+    enum FileType { ENZO_FT_UNKNOWN, ENZO_FT_HDF5 };
     FileType fileType;
 
     // DATA MEMBERS

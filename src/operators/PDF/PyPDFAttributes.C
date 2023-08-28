@@ -36,7 +36,7 @@ struct PDFAttributesObject
 //
 static PyObject *NewPDFAttributes(int);
 std::string
-PyPDFAttributes_ToString(const PDFAttributes *atts, const char *prefix)
+PyPDFAttributes_ToString(const PDFAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -210,12 +210,37 @@ PDFAttributes_SetVar1(PyObject *self, PyObject *args)
 {
     PDFAttributesObject *obj = (PDFAttributesObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the var1 in the object.
-    obj->data->SetVar1(std::string(str));
+    obj->data->SetVar1(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -234,12 +259,48 @@ PDFAttributes_SetVar1MinFlag(PyObject *self, PyObject *args)
 {
     PDFAttributesObject *obj = (PDFAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the var1MinFlag in the object.
-    obj->data->SetVar1MinFlag(ival != 0);
+    obj->data->SetVar1MinFlag(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -258,12 +319,48 @@ PDFAttributes_SetVar1MaxFlag(PyObject *self, PyObject *args)
 {
     PDFAttributesObject *obj = (PDFAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the var1MaxFlag in the object.
-    obj->data->SetVar1MaxFlag(ival != 0);
+    obj->data->SetVar1MaxFlag(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -282,12 +379,48 @@ PDFAttributes_SetVar1Min(PyObject *self, PyObject *args)
 {
     PDFAttributesObject *obj = (PDFAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the var1Min in the object.
-    obj->data->SetVar1Min(dval);
+    obj->data->SetVar1Min(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -306,12 +439,48 @@ PDFAttributes_SetVar1Max(PyObject *self, PyObject *args)
 {
     PDFAttributesObject *obj = (PDFAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the var1Max in the object.
-    obj->data->SetVar1Max(dval);
+    obj->data->SetVar1Max(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -330,21 +499,55 @@ PDFAttributes_SetVar1Scaling(PyObject *self, PyObject *args)
 {
     PDFAttributesObject *obj = (PDFAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 3)
+    {
+        std::stringstream ss;
+        ss << "An invalid var1Scaling value was given." << std::endl;
+        ss << "Valid values are in the range [0,2]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << " Linear";
+        ss << ", Log";
+        ss << ", Skew";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the var1Scaling in the object.
-    if(ival >= 0 && ival < 3)
-        obj->data->SetVar1Scaling(PDFAttributes::Scaling(ival));
-    else
-    {
-        fprintf(stderr, "An invalid var1Scaling value was given. "
-                        "Valid values are in the range of [0,2]. "
-                        "You can also use the following names: "
-                        "Linear, Log, Skew.");
-        return NULL;
-    }
+    obj->data->SetVar1Scaling(PDFAttributes::Scaling(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -363,12 +566,48 @@ PDFAttributes_SetVar1SkewFactor(PyObject *self, PyObject *args)
 {
     PDFAttributesObject *obj = (PDFAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the var1SkewFactor in the object.
-    obj->data->SetVar1SkewFactor(dval);
+    obj->data->SetVar1SkewFactor(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -387,12 +626,48 @@ PDFAttributes_SetVar1NumSamples(PyObject *self, PyObject *args)
 {
     PDFAttributesObject *obj = (PDFAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the var1NumSamples in the object.
-    obj->data->SetVar1NumSamples((int)ival);
+    obj->data->SetVar1NumSamples(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -411,12 +686,37 @@ PDFAttributes_SetVar2(PyObject *self, PyObject *args)
 {
     PDFAttributesObject *obj = (PDFAttributesObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the var2 in the object.
-    obj->data->SetVar2(std::string(str));
+    obj->data->SetVar2(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -435,12 +735,48 @@ PDFAttributes_SetVar2MinFlag(PyObject *self, PyObject *args)
 {
     PDFAttributesObject *obj = (PDFAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the var2MinFlag in the object.
-    obj->data->SetVar2MinFlag(ival != 0);
+    obj->data->SetVar2MinFlag(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -459,12 +795,48 @@ PDFAttributes_SetVar2MaxFlag(PyObject *self, PyObject *args)
 {
     PDFAttributesObject *obj = (PDFAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the var2MaxFlag in the object.
-    obj->data->SetVar2MaxFlag(ival != 0);
+    obj->data->SetVar2MaxFlag(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -483,12 +855,48 @@ PDFAttributes_SetVar2Min(PyObject *self, PyObject *args)
 {
     PDFAttributesObject *obj = (PDFAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the var2Min in the object.
-    obj->data->SetVar2Min(dval);
+    obj->data->SetVar2Min(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -507,12 +915,48 @@ PDFAttributes_SetVar2Max(PyObject *self, PyObject *args)
 {
     PDFAttributesObject *obj = (PDFAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the var2Max in the object.
-    obj->data->SetVar2Max(dval);
+    obj->data->SetVar2Max(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -531,21 +975,55 @@ PDFAttributes_SetVar2Scaling(PyObject *self, PyObject *args)
 {
     PDFAttributesObject *obj = (PDFAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 3)
+    {
+        std::stringstream ss;
+        ss << "An invalid var2Scaling value was given." << std::endl;
+        ss << "Valid values are in the range [0,2]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << " Linear";
+        ss << ", Log";
+        ss << ", Skew";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the var2Scaling in the object.
-    if(ival >= 0 && ival < 3)
-        obj->data->SetVar2Scaling(PDFAttributes::Scaling(ival));
-    else
-    {
-        fprintf(stderr, "An invalid var2Scaling value was given. "
-                        "Valid values are in the range of [0,2]. "
-                        "You can also use the following names: "
-                        "Linear, Log, Skew.");
-        return NULL;
-    }
+    obj->data->SetVar2Scaling(PDFAttributes::Scaling(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -564,12 +1042,48 @@ PDFAttributes_SetVar2SkewFactor(PyObject *self, PyObject *args)
 {
     PDFAttributesObject *obj = (PDFAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the var2SkewFactor in the object.
-    obj->data->SetVar2SkewFactor(dval);
+    obj->data->SetVar2SkewFactor(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -588,12 +1102,48 @@ PDFAttributes_SetVar2NumSamples(PyObject *self, PyObject *args)
 {
     PDFAttributesObject *obj = (PDFAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the var2NumSamples in the object.
-    obj->data->SetVar2NumSamples((int)ival);
+    obj->data->SetVar2NumSamples(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -612,21 +1162,54 @@ PDFAttributes_SetNumAxes(PyObject *self, PyObject *args)
 {
     PDFAttributesObject *obj = (PDFAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 2)
+    {
+        std::stringstream ss;
+        ss << "An invalid numAxes value was given." << std::endl;
+        ss << "Valid values are in the range [0,1]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << " Two";
+        ss << ", Three";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the numAxes in the object.
-    if(ival >= 0 && ival < 2)
-        obj->data->SetNumAxes(PDFAttributes::NumAxes(ival));
-    else
-    {
-        fprintf(stderr, "An invalid numAxes value was given. "
-                        "Valid values are in the range of [0,1]. "
-                        "You can also use the following names: "
-                        "Two, Three.");
-        return NULL;
-    }
+    obj->data->SetNumAxes(PDFAttributes::NumAxes(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -645,12 +1228,37 @@ PDFAttributes_SetVar3(PyObject *self, PyObject *args)
 {
     PDFAttributesObject *obj = (PDFAttributesObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the var3 in the object.
-    obj->data->SetVar3(std::string(str));
+    obj->data->SetVar3(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -669,12 +1277,48 @@ PDFAttributes_SetVar3MinFlag(PyObject *self, PyObject *args)
 {
     PDFAttributesObject *obj = (PDFAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the var3MinFlag in the object.
-    obj->data->SetVar3MinFlag(ival != 0);
+    obj->data->SetVar3MinFlag(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -693,12 +1337,48 @@ PDFAttributes_SetVar3MaxFlag(PyObject *self, PyObject *args)
 {
     PDFAttributesObject *obj = (PDFAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the var3MaxFlag in the object.
-    obj->data->SetVar3MaxFlag(ival != 0);
+    obj->data->SetVar3MaxFlag(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -717,12 +1397,48 @@ PDFAttributes_SetVar3Min(PyObject *self, PyObject *args)
 {
     PDFAttributesObject *obj = (PDFAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the var3Min in the object.
-    obj->data->SetVar3Min(dval);
+    obj->data->SetVar3Min(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -741,12 +1457,48 @@ PDFAttributes_SetVar3Max(PyObject *self, PyObject *args)
 {
     PDFAttributesObject *obj = (PDFAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the var3Max in the object.
-    obj->data->SetVar3Max(dval);
+    obj->data->SetVar3Max(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -765,21 +1517,55 @@ PDFAttributes_SetVar3Scaling(PyObject *self, PyObject *args)
 {
     PDFAttributesObject *obj = (PDFAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 3)
+    {
+        std::stringstream ss;
+        ss << "An invalid var3Scaling value was given." << std::endl;
+        ss << "Valid values are in the range [0,2]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << " Linear";
+        ss << ", Log";
+        ss << ", Skew";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the var3Scaling in the object.
-    if(ival >= 0 && ival < 3)
-        obj->data->SetVar3Scaling(PDFAttributes::Scaling(ival));
-    else
-    {
-        fprintf(stderr, "An invalid var3Scaling value was given. "
-                        "Valid values are in the range of [0,2]. "
-                        "You can also use the following names: "
-                        "Linear, Log, Skew.");
-        return NULL;
-    }
+    obj->data->SetVar3Scaling(PDFAttributes::Scaling(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -798,12 +1584,48 @@ PDFAttributes_SetVar3SkewFactor(PyObject *self, PyObject *args)
 {
     PDFAttributesObject *obj = (PDFAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the var3SkewFactor in the object.
-    obj->data->SetVar3SkewFactor(dval);
+    obj->data->SetVar3SkewFactor(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -822,12 +1644,48 @@ PDFAttributes_SetVar3NumSamples(PyObject *self, PyObject *args)
 {
     PDFAttributesObject *obj = (PDFAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the var3NumSamples in the object.
-    obj->data->SetVar3NumSamples((int)ival);
+    obj->data->SetVar3NumSamples(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -846,12 +1704,48 @@ PDFAttributes_SetScaleCube(PyObject *self, PyObject *args)
 {
     PDFAttributesObject *obj = (PDFAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the scaleCube in the object.
-    obj->data->SetScaleCube(ival != 0);
+    obj->data->SetScaleCube(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -870,21 +1764,54 @@ PDFAttributes_SetDensityType(PyObject *self, PyObject *args)
 {
     PDFAttributesObject *obj = (PDFAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 2)
+    {
+        std::stringstream ss;
+        ss << "An invalid densityType value was given." << std::endl;
+        ss << "Valid values are in the range [0,1]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << " Probability";
+        ss << ", ZoneCount";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the densityType in the object.
-    if(ival >= 0 && ival < 2)
-        obj->data->SetDensityType(PDFAttributes::DensityType(ival));
-    else
-    {
-        fprintf(stderr, "An invalid densityType value was given. "
-                        "Valid values are in the range of [0,1]. "
-                        "You can also use the following names: "
-                        "Probability, ZoneCount.");
-        return NULL;
-    }
+    obj->data->SetDensityType(PDFAttributes::DensityType(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1063,80 +1990,93 @@ PyPDFAttributes_getattr(PyObject *self, char *name)
         return PyInt_FromLong(long(PDFAttributes::ZoneCount));
 
 
+
+    // Add a __dict__ answer so that dir() works
+    if (!strcmp(name, "__dict__"))
+    {
+        PyObject *result = PyDict_New();
+        for (int i = 0; PyPDFAttributes_methods[i].ml_meth; i++)
+            PyDict_SetItem(result,
+                PyString_FromString(PyPDFAttributes_methods[i].ml_name),
+                PyString_FromString(PyPDFAttributes_methods[i].ml_name));
+        return result;
+    }
+
     return Py_FindMethod(PyPDFAttributes_methods, self, name);
 }
 
 int
 PyPDFAttributes_setattr(PyObject *self, char *name, PyObject *args)
 {
-    // Create a tuple to contain the arguments since all of the Set
-    // functions expect a tuple.
-    PyObject *tuple = PyTuple_New(1);
-    PyTuple_SET_ITEM(tuple, 0, args);
-    Py_INCREF(args);
-    PyObject *obj = NULL;
+    PyObject NULL_PY_OBJ;
+    PyObject *obj = &NULL_PY_OBJ;
 
     if(strcmp(name, "var1") == 0)
-        obj = PDFAttributes_SetVar1(self, tuple);
+        obj = PDFAttributes_SetVar1(self, args);
     else if(strcmp(name, "var1MinFlag") == 0)
-        obj = PDFAttributes_SetVar1MinFlag(self, tuple);
+        obj = PDFAttributes_SetVar1MinFlag(self, args);
     else if(strcmp(name, "var1MaxFlag") == 0)
-        obj = PDFAttributes_SetVar1MaxFlag(self, tuple);
+        obj = PDFAttributes_SetVar1MaxFlag(self, args);
     else if(strcmp(name, "var1Min") == 0)
-        obj = PDFAttributes_SetVar1Min(self, tuple);
+        obj = PDFAttributes_SetVar1Min(self, args);
     else if(strcmp(name, "var1Max") == 0)
-        obj = PDFAttributes_SetVar1Max(self, tuple);
+        obj = PDFAttributes_SetVar1Max(self, args);
     else if(strcmp(name, "var1Scaling") == 0)
-        obj = PDFAttributes_SetVar1Scaling(self, tuple);
+        obj = PDFAttributes_SetVar1Scaling(self, args);
     else if(strcmp(name, "var1SkewFactor") == 0)
-        obj = PDFAttributes_SetVar1SkewFactor(self, tuple);
+        obj = PDFAttributes_SetVar1SkewFactor(self, args);
     else if(strcmp(name, "var1NumSamples") == 0)
-        obj = PDFAttributes_SetVar1NumSamples(self, tuple);
+        obj = PDFAttributes_SetVar1NumSamples(self, args);
     else if(strcmp(name, "var2") == 0)
-        obj = PDFAttributes_SetVar2(self, tuple);
+        obj = PDFAttributes_SetVar2(self, args);
     else if(strcmp(name, "var2MinFlag") == 0)
-        obj = PDFAttributes_SetVar2MinFlag(self, tuple);
+        obj = PDFAttributes_SetVar2MinFlag(self, args);
     else if(strcmp(name, "var2MaxFlag") == 0)
-        obj = PDFAttributes_SetVar2MaxFlag(self, tuple);
+        obj = PDFAttributes_SetVar2MaxFlag(self, args);
     else if(strcmp(name, "var2Min") == 0)
-        obj = PDFAttributes_SetVar2Min(self, tuple);
+        obj = PDFAttributes_SetVar2Min(self, args);
     else if(strcmp(name, "var2Max") == 0)
-        obj = PDFAttributes_SetVar2Max(self, tuple);
+        obj = PDFAttributes_SetVar2Max(self, args);
     else if(strcmp(name, "var2Scaling") == 0)
-        obj = PDFAttributes_SetVar2Scaling(self, tuple);
+        obj = PDFAttributes_SetVar2Scaling(self, args);
     else if(strcmp(name, "var2SkewFactor") == 0)
-        obj = PDFAttributes_SetVar2SkewFactor(self, tuple);
+        obj = PDFAttributes_SetVar2SkewFactor(self, args);
     else if(strcmp(name, "var2NumSamples") == 0)
-        obj = PDFAttributes_SetVar2NumSamples(self, tuple);
+        obj = PDFAttributes_SetVar2NumSamples(self, args);
     else if(strcmp(name, "numAxes") == 0)
-        obj = PDFAttributes_SetNumAxes(self, tuple);
+        obj = PDFAttributes_SetNumAxes(self, args);
     else if(strcmp(name, "var3") == 0)
-        obj = PDFAttributes_SetVar3(self, tuple);
+        obj = PDFAttributes_SetVar3(self, args);
     else if(strcmp(name, "var3MinFlag") == 0)
-        obj = PDFAttributes_SetVar3MinFlag(self, tuple);
+        obj = PDFAttributes_SetVar3MinFlag(self, args);
     else if(strcmp(name, "var3MaxFlag") == 0)
-        obj = PDFAttributes_SetVar3MaxFlag(self, tuple);
+        obj = PDFAttributes_SetVar3MaxFlag(self, args);
     else if(strcmp(name, "var3Min") == 0)
-        obj = PDFAttributes_SetVar3Min(self, tuple);
+        obj = PDFAttributes_SetVar3Min(self, args);
     else if(strcmp(name, "var3Max") == 0)
-        obj = PDFAttributes_SetVar3Max(self, tuple);
+        obj = PDFAttributes_SetVar3Max(self, args);
     else if(strcmp(name, "var3Scaling") == 0)
-        obj = PDFAttributes_SetVar3Scaling(self, tuple);
+        obj = PDFAttributes_SetVar3Scaling(self, args);
     else if(strcmp(name, "var3SkewFactor") == 0)
-        obj = PDFAttributes_SetVar3SkewFactor(self, tuple);
+        obj = PDFAttributes_SetVar3SkewFactor(self, args);
     else if(strcmp(name, "var3NumSamples") == 0)
-        obj = PDFAttributes_SetVar3NumSamples(self, tuple);
+        obj = PDFAttributes_SetVar3NumSamples(self, args);
     else if(strcmp(name, "scaleCube") == 0)
-        obj = PDFAttributes_SetScaleCube(self, tuple);
+        obj = PDFAttributes_SetScaleCube(self, args);
     else if(strcmp(name, "densityType") == 0)
-        obj = PDFAttributes_SetDensityType(self, tuple);
+        obj = PDFAttributes_SetDensityType(self, args);
 
-    if(obj != NULL)
+    if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
-    Py_DECREF(tuple);
-    if( obj == NULL)
-        PyErr_Format(PyExc_RuntimeError, "Unable to set unknown attribute: '%s'", name);
+    if (obj == &NULL_PY_OBJ)
+    {
+        obj = NULL;
+        PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);
+    }
+    else if (obj == NULL && !PyErr_Occurred())
+        PyErr_Format(PyExc_RuntimeError, "unknown problem with '%s'", name);
+
     return (obj != NULL) ? 0 : -1;
 }
 
@@ -1144,7 +2084,7 @@ static int
 PDFAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     PDFAttributesObject *obj = (PDFAttributesObject *)v;
-    fprintf(fp, "%s", PyPDFAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyPDFAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -1152,7 +2092,7 @@ PyObject *
 PDFAttributes_str(PyObject *v)
 {
     PDFAttributesObject *obj = (PDFAttributesObject *)v;
-    return PyString_FromString(PyPDFAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyPDFAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -1304,7 +2244,7 @@ PyPDFAttributes_GetLogString()
 {
     std::string s("PDFAtts = PDFAttributes()\n");
     if(currentAtts != 0)
-        s += PyPDFAttributes_ToString(currentAtts, "PDFAtts.");
+        s += PyPDFAttributes_ToString(currentAtts, "PDFAtts.", true);
     return s;
 }
 
@@ -1317,7 +2257,7 @@ PyPDFAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("PDFAtts = PDFAttributes()\n");
-        s += PyPDFAttributes_ToString(currentAtts, "PDFAtts.");
+        s += PyPDFAttributes_ToString(currentAtts, "PDFAtts.", true);
         cb(s);
     }
 }

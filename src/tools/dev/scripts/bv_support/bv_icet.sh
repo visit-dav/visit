@@ -73,13 +73,6 @@ function bv_icet_ensure
     fi
 }
 
-function bv_icet_dry_run
-{
-    if [[ "$DO_ICET" == "yes" ]] ; then
-        echo "Dry run option not set for icet."
-    fi
-}
-
 # *************************************************************************** #
 #                           Function 8.13, build_icet                         #
 # *************************************************************************** #
@@ -126,47 +119,45 @@ function build_icet
     fi
     rm -f CMakeCache.txt
 
+    iopts=""
     if [[ "$OPSYS" == "Darwin" ]] ; then
         ${CMAKE_BIN} \
-        -DCMAKE_C_COMPILER:STRING=${C_COMPILER} \
-        -DCMAKE_CXX_COMPILER:STRING=${CXX_COMPILER} \
-        -DCMAKE_BUILD_TYPE:STRING="${VISIT_BUILD_MODE}" \
-        -DCMAKE_C_FLAGS:STRING="${CFLAGS} ${C_OPT_FLAGS}" \
-        -DCMAKE_CXX_FLAGS:STRING="${CXXFLAGS} ${CXX_OPT_FLAGS}" \
-        -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON \
-        -DCMAKE_INSTALL_PREFIX:PATH="$VISITDIR/icet/${ICET_VERSION}/${VISITARCH}" \
-        -DCMAKE_C_FLAGS:STRING="-fPIC ${CFLAGS} ${C_OPT_FLAGS}" \
-        -DMPI_COMPILER:PATH="${PAR_COMPILER}" \
-        -DBUILD_TESTING:BOOL=OFF \
-        .
+        iopts="${iopts} -DCMAKE_C_COMPILER:STRING=${C_COMPILER}"
+        iopts="${iopts} -DCMAKE_CXX_COMPILER:STRING=${CXX_COMPILER}"
+        iopts="${iopts} -DCMAKE_BUILD_TYPE:STRING=${VISIT_BUILD_MODE}"
+        iopts="${iopts} -DCMAKE_C_FLAGS:STRING=\"${CFLAGS} ${C_OPT_FLAGS}\""
+        iopts="${iopts} -DCMAKE_CXX_FLAGS:STRING=\"${CXXFLAGS} ${CXX_OPT_FLAGS}\""
+        iopts="${iopts} -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON"
+        iopts="${iopts} -DCMAKE_INSTALL_PREFIX:PATH=$VISITDIR/icet/${ICET_VERSION}/${VISITARCH}"
+        iopts="${iopts} -DCMAKE_C_FLAGS:STRING=\"-fPIC ${CFLAGS} ${C_OPT_FLAGS}\""
+        iopts="${iopts} -DMPI_COMPILER:PATH=${PAR_COMPILER}"
+        iopts="${iopts} -DBUILD_TESTING:BOOL=OFF"
     else
-        mesa_opts=""
         if [[ "$DO_MESAGL" == "yes" ]] ; then
-            mesa_opts="${mesa_opts} -DOPENGL_INCLUDE_DIR:PATH=$VISITDIR/mesagl/${MESAGL_VERSION}/${VISITARCH}/include"
-            mesa_opts="${mesa_opts} -DOPENGL_gl_LIBRARY:FILEPATH=$VISITDIR/mesagl/${MESAGL_VERSION}/${VISITARCH}/lib/libOSMesa.${LIBEXT}"
+            iopts="${iopts} -DOPENGL_INCLUDE_DIR:PATH=$VISITDIR/mesagl/${MESAGL_VERSION}/${VISITARCH}/include"
+            iopts="${iopts} -DOPENGL_gl_LIBRARY:FILEPATH=$VISITDIR/mesagl/${MESAGL_VERSION}/${VISITARCH}/lib/libOSMesa.${LIBEXT}"
         elif [[ "$DO_OSMESA" == "yes" ]] ; then
-            mesa_opts="${mesa_opts} -DOPENGL_INCLUDE_DIR:PATH=$VISITDIR/osmesa/${OSMESA_VERSION}/${VISITARCH}/include"
-            mesa_opts="${mesa_opts} -DOPENGL_gl_LIBRARY:FILEPATH=$VISITDIR/osmesa/${OSMESA_VERSION}/${VISITARCH}/lib/libOSMesa.${LIBEXT}"
+            iopts="${iopts} -DOPENGL_INCLUDE_DIR:PATH=$VISITDIR/osmesa/${OSMESA_VERSION}/${VISITARCH}/include"
+            iopts="${iopts} -DOPENGL_gl_LIBRARY:FILEPATH=$VISITDIR/osmesa/${OSMESA_VERSION}/${VISITARCH}/lib/libOSMesa.${LIBEXT}"
         fi
-        ${CMAKE_BIN} \
-        -DCMAKE_C_COMPILER:STRING=${C_COMPILER} \
-        -DCMAKE_CXX_COMPILER:STRING=${CXX_COMPILER} \
-        -DCMAKE_BUILD_TYPE:STRING="${VISIT_BUILD_MODE}" \
-        -DCMAKE_C_FLAGS:STRING="${CFLAGS} ${C_OPT_FLAGS}" \
-        -DCMAKE_CXX_FLAGS:STRING="${CXXFLAGS} ${CXX_OPT_FLAGS}" \
-        -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON \
-        -DCMAKE_INSTALL_PREFIX:PATH="$VISITDIR/icet/${ICET_VERSION}/${VISITARCH}"\
-        -DCMAKE_C_FLAGS:STRING="-fPIC ${CFLAGS} ${C_OPT_FLAGS}" \
-        -DMPI_COMPILER:PATH="${PAR_COMPILER}" \
-        -DBUILD_TESTING:BOOL=OFF \
-        ${mesa_opts} \
-        .
+        iopts="${iopts} -DCMAKE_C_COMPILER:STRING=${C_COMPILER}"
+        iopts="${iopts} -DCMAKE_CXX_COMPILER:STRING=${CXX_COMPILER}"
+        iopts="${iopts} -DCMAKE_BUILD_TYPE:STRING=${VISIT_BUILD_MODE}"
+        iopts="${iopts} -DCMAKE_C_FLAGS:STRING=\"${CFLAGS} ${C_OPT_FLAGS}\""
+        iopts="${iopts} -DCMAKE_CXX_FLAGS:STRING=\"${CXXFLAGS} ${CXX_OPT_FLAGS}\""
+        iopts="${iopts} -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON"
+        iopts="${iopts} -DCMAKE_INSTALL_PREFIX:PATH=$VISITDIR/icet/${ICET_VERSION}/${VISITARCH}"
+        iopts="${iopts} -DCMAKE_C_FLAGS:STRING=\"-fPIC ${CFLAGS} ${C_OPT_FLAGS}\""
+        iopts="${iopts} -DMPI_COMPILER:PATH=${PAR_COMPILER}"
+        iopts="${iopts} -DBUILD_TESTING:BOOL=OFF"
     fi
 
-    if [[ $? != 0 ]] ; then
-        warn "Cannot get CMAKE to create the makefiles.  Giving up."
-        return 1
+    if test -e bv_run_cmake.sh ; then
+        rm -f bv_run_cmake.sh
     fi
+    echo "\"${CMAKE_BIN}\"" ${iopts} . > bv_run_cmake.sh
+    cat bv_run_cmake.sh
+    issue_command bash bv_run_cmake.sh || error "IceT configuration failed."
 
     #
     # Now build IceT.

@@ -84,7 +84,7 @@ avtRayTracer::~avtRayTracer()
 // ****************************************************************************
 //  Method: avtRayTracer::SetBackgroundMode
 //
-//  Purpose: 
+//  Purpose:
 //      Sets the background mode.
 //
 //  Arguments:
@@ -108,7 +108,7 @@ avtRayTracer::SetBackgroundMode(int mode)
 // ****************************************************************************
 //  Method: avtRayTracer::SetGradientBackgroundColors
 //
-//  Purpose: 
+//  Purpose:
 //      Sets the gradient background colors.
 //
 //  Arguments:
@@ -137,7 +137,7 @@ avtRayTracer::SetGradientBackgroundColors(const double bg1[3],
 //  Method: avtRayTracer::Execute
 //
 //  Purpose:
-//      Executes the ray tracer.  
+//      Executes the ray tracer.
 //      This means:
 //      - Put the input mesh through a transform so it is in camera space.
 //      - Get the sample points.
@@ -168,8 +168,8 @@ avtRayTracer::SetGradientBackgroundColors(const double bg1[3],
 //    Added code to set the gradient background colors, background mode in
 //    the ray compositer.
 //
-//    Kathleen Bonnell, Tue Apr 30 12:34:54 PDT 2002  
-//    Use new version of CopyTo. 
+//    Kathleen Bonnell, Tue Apr 30 12:34:54 PDT 2002
+//    Use new version of CopyTo.
 //
 //    Hank Childs, Fri Sep 13 12:04:04 PDT 2002
 //    Reverse arguments for CopyTo (we weren't sending in the input correctly).
@@ -224,6 +224,10 @@ avtRayTracer::SetGradientBackgroundColors(const double bg1[3],
 //    Fix camera matrices multiplication order for ray casting SLIVR
 //    Also fixed panning for ray casting SLIVR
 //
+//    Kathleen Biagas, Wed Aug 17, 2022
+//    Incorporate ARSanderson's OSPRAY 2.8.0 work for VTK 9: view changed to
+//    viewInfo.
+//
 // ****************************************************************************
 
 void
@@ -248,15 +252,15 @@ avtRayTracer::Execute(void)
 
     double scale[3] = {1,1,1};
     vtkMatrix4x4 *transform = vtkMatrix4x4::New();
-    avtWorldSpaceToImageSpaceTransform::CalculateTransform(view, transform,
+    avtWorldSpaceToImageSpaceTransform::CalculateTransform(viewInfo, transform,
                                                            scale, aspect);
     double newNearPlane, newFarPlane, oldNearPlane, oldFarPlane;
-    TightenClippingPlanes(view, transform, newNearPlane, newFarPlane);
-    oldNearPlane = view.nearPlane;  oldFarPlane  = view.farPlane;
-    view.nearPlane = newNearPlane;  view.farPlane  = newFarPlane;
+    TightenClippingPlanes(viewInfo, transform, newNearPlane, newFarPlane);
+    oldNearPlane = viewInfo.nearPlane;  oldFarPlane  = viewInfo.farPlane;
+    viewInfo.nearPlane = newNearPlane;  viewInfo.farPlane  = newFarPlane;
     transform->Delete();
 
-    avtWorldSpaceToImageSpaceTransform trans(view, aspect);
+    avtWorldSpaceToImageSpaceTransform trans(viewInfo, aspect);
     trans.SetInput(GetInput());
 
 
@@ -286,7 +290,7 @@ avtRayTracer::Execute(void)
     if (!kernelBasedSampling)
     {
         trans.SetPassThruRectilinearGrids(true);
-        extractor.SetRectilinearGridsAreInWorldSpace(true, view, aspect);
+        extractor.SetRectilinearGridsAreInWorldSpace(true, viewInfo, aspect);
     }
 
     debug5 << "Raytracing setup done! " << std::endl;
@@ -325,7 +329,7 @@ avtRayTracer::Execute(void)
     if (*opaqueImage != NULL)
     {
         rc.InsertOpaqueImage(opaqueImage);
-        bool convertToWBuffer = !view.orthographic;
+        bool convertToWBuffer = !viewInfo.orthographic;
         if (convertToWBuffer)
         {
             float *opaqueImageZB  = opaqueImage->GetImage().GetZBuffer();

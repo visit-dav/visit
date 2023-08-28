@@ -195,6 +195,9 @@ QvisViewWindow::~QvisViewWindow()
 //   Jeremy Meredith, Mon Aug  2 14:23:08 EDT 2010
 //   Add shear for oblique projection support.
 //
+//   Kathleen Biagas, Tue Apr 18 16:34:41 PDT 2023
+//   Support Qt6: buttonClicked -> idClicked.
+//
 // ****************************************************************************
 
 void
@@ -213,7 +216,7 @@ QvisViewWindow::CreateWindowContents()
     pageCurve = new QWidget(central);
     QVBoxLayout *pageCurveLayout = new QVBoxLayout(pageCurve);
     pageCurveLayout->setSpacing(5);
-    pageCurveLayout->setMargin(10);
+    pageCurveLayout->setContentsMargins(10,10,10,10);
     tabs->addTab(pageCurve, tr("Curve view"));
 
     QGridLayout *layoutCurve = new QGridLayout(0);
@@ -247,8 +250,13 @@ QvisViewWindow::CreateWindowContents()
     QLabel *domainScaleLabel = new QLabel(tr("Domain Scale"), pageCurve);
     layoutCurve->addWidget(domainScaleLabel, 3, 0);
     domainScaleMode = new QButtonGroup(pageCurve);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(domainScaleMode, SIGNAL(buttonClicked(int)),
             this, SLOT(domainScaleModeChanged(int)));
+#else
+    connect(domainScaleMode, SIGNAL(idClicked(int)),
+            this, SLOT(domainScaleModeChanged(int)));
+#endif
     domainLinear = new QRadioButton(tr("Linear"), pageCurve);
     domainScaleMode->addButton(domainLinear, 0);
     layoutCurve->addWidget(domainLinear, 3, 1);
@@ -259,8 +267,13 @@ QvisViewWindow::CreateWindowContents()
     QLabel *rangeScaleLabel = new QLabel(tr("Range Scale"), pageCurve);
     layoutCurve->addWidget(rangeScaleLabel, 4, 0);
     rangeScaleMode = new QButtonGroup(pageCurve);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(rangeScaleMode, SIGNAL(buttonClicked(int)),
             this, SLOT(rangeScaleModeChanged(int)));
+#else
+    connect(rangeScaleMode, SIGNAL(idClicked(int)),
+            this, SLOT(rangeScaleModeChanged(int)));
+#endif
     rangeLinear = new QRadioButton(tr("Linear"), pageCurve);
     rangeScaleMode->addButton(rangeLinear, 0);
     layoutCurve->addWidget(rangeLinear, 4, 1);
@@ -275,7 +288,7 @@ QvisViewWindow::CreateWindowContents()
     page2D = new QWidget(central);
     QVBoxLayout *page2DLayout = new QVBoxLayout(page2D);
     page2DLayout->setSpacing(5);
-    page2DLayout->setMargin(10);
+    page2DLayout->setContentsMargins(10,10,10,10);
     tabs->addTab(page2D, tr("2D view"));
 
     QGridLayout *layout2D = new QGridLayout(0);
@@ -301,8 +314,13 @@ QvisViewWindow::CreateWindowContents()
     QLabel *fullFrameLabel = new QLabel(tr("Full Frame"), page2D);
     layout2D->addWidget(fullFrameLabel, 2, 0);
     fullFrameActivationMode = new QButtonGroup(page2D);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(fullFrameActivationMode, SIGNAL(buttonClicked(int)),
             this, SLOT(fullFrameActivationModeChanged(int)));
+#else
+    connect(fullFrameActivationMode, SIGNAL(idClicked(int)),
+            this, SLOT(fullFrameActivationModeChanged(int)));
+#endif
     fullFrameAuto = new QRadioButton(tr("Auto"), page2D);
     fullFrameActivationMode->addButton(fullFrameAuto, 0);
     layout2D->addWidget(fullFrameAuto, 2, 1);
@@ -316,8 +334,13 @@ QvisViewWindow::CreateWindowContents()
     QLabel *xScaleLabel = new QLabel(tr("X Scale"), page2D);
     layout2D->addWidget(xScaleLabel, 3, 0);
     xScaleMode = new QButtonGroup(page2D);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(xScaleMode, SIGNAL(buttonClicked(int)),
             this, SLOT(xScaleModeChanged(int)));
+#else
+    connect(xScaleMode, SIGNAL(idClicked(int)),
+            this, SLOT(xScaleModeChanged(int)));
+#endif
     xLinear = new QRadioButton(tr("Linear"), page2D);
     xScaleMode->addButton(xLinear, 0);
     layout2D->addWidget(xLinear, 3, 1);
@@ -328,8 +351,13 @@ QvisViewWindow::CreateWindowContents()
     QLabel *yScaleLabel = new QLabel(tr("Y Scale"), page2D);
     layout2D->addWidget(yScaleLabel, 4, 0);
     yScaleMode = new QButtonGroup(page2D);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(yScaleMode, SIGNAL(buttonClicked(int)),
             this, SLOT(yScaleModeChanged(int)));
+#else
+    connect(yScaleMode, SIGNAL(idClicked(int)),
+            this, SLOT(yScaleModeChanged(int)));
+#endif
     yLinear = new QRadioButton(tr("Linear"), page2D);
     yScaleMode->addButton(yLinear, 0);
     layout2D->addWidget(yLinear, 4, 1);
@@ -344,7 +372,7 @@ QvisViewWindow::CreateWindowContents()
     page3D = new QWidget(central);
     QVBoxLayout *page3DLayout = new QVBoxLayout(page3D);
     page3DLayout->setSpacing(5);
-    page3DLayout->setMargin(10);
+    page3DLayout->setContentsMargins(10,10,10,10);
     tabs->addTab(page3D, tr("3D view"));
 
     QGridLayout *layout3D = new QGridLayout(0);
@@ -499,7 +527,7 @@ QvisViewWindow::CreateWindowContents()
     pageAxisArray = new QWidget(central);
     QVBoxLayout *pageAxisArrayLayout = new QVBoxLayout(pageAxisArray);
     pageAxisArrayLayout->setSpacing(5);
-    pageAxisArrayLayout->setMargin(10);
+    pageAxisArrayLayout->setContentsMargins(10,10,10,10);
     tabs->addTab(pageAxisArray, tr("AxisArray view"));
 
     QGridLayout *layoutAxisArray = new QGridLayout(0);
@@ -537,7 +565,7 @@ QvisViewWindow::CreateWindowContents()
     pageAdvanced = new QWidget(central);
     QVBoxLayout *pageAdvancedLayout = new QVBoxLayout(pageAdvanced);
     pageAdvancedLayout->setSpacing(5);
-    pageAdvancedLayout->setMargin(10);
+    pageAdvancedLayout->setContentsMargins(10,10,10,10);
     tabs->addTab(pageAdvanced, tr("Advanced"));
 
     QGridLayout *advLayout = new QGridLayout(0);

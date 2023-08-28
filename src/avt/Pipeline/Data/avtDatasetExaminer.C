@@ -16,6 +16,34 @@
 
 
 // ****************************************************************************
+//  Method: avtDatasetExaminer::HasData
+//
+//  Purpose:
+//    Examines the data tree for data.
+//
+//  Returns:
+//    Return true if there is a data tree with data.
+//
+//  Programmer:  Allen Sanderson
+//  Creation:    January 24, 2021
+//
+//  Modifications:
+//
+// ****************************************************************************
+bool
+avtDatasetExaminer::HasData(avtDataset_p &ds)
+{
+    avtDataTree_p dataTree = ds->dataTree;
+
+    if(*dataTree != nullptr)
+    {
+        return dataTree->GetNumberOfLeaves() > 0;
+    }
+    else
+        return false;
+}
+
+// ****************************************************************************
 //  Method: avtDatasetExaminer::GetNumberOfZones
 //
 //  Purpose:
@@ -56,7 +84,7 @@ avtDatasetExaminer::GetNumberOfZones(avtDataset_p &ds, bool originalOnly)
     avtDataTree_p dataTree = ds->dataTree;
 
     long long numZones = 0;
-    if (*dataTree != NULL)
+    if (*dataTree != nullptr)
     {
         bool dummy;
         if (!originalOnly)
@@ -94,14 +122,14 @@ avtDatasetExaminer::GetNumberOfZones(avtDataset_p &ds, bool originalOnly)
 //    Moved from class avtDataset.
 //
 //    Hank Childs, Wed Jul  7 08:10:46 PDT 2004
-//    Get the variable list using meta-data information, rather than by 
+//    Get the variable list using meta-data information, rather than by
 //    searching the dataset.
 //
 //    Hank Childs, Thu May 31 22:32:08 PDT 2007
 //    Set the variable size.
 //
 // ****************************************************************************
- 
+
 void
 avtDatasetExaminer::GetVariableList(avtDataset_p &ds, VarList &vl)
 {
@@ -158,24 +186,24 @@ avtDatasetExaminer::GetVariableList(avtDataset_p &ds, VarList &vl)
 //    grids.
 //
 // ****************************************************************************
- 
+
 bool
 avtDatasetExaminer::GetSpatialExtents(avtDataset_p &ds, double *se)
 {
     avtDataTree_p dataTree = ds->dataTree;
 
- 
+
     bool foundExtents = false;
     for (int i = 0 ; i < 3 ; i++)
     {
         se[2*i + 0] = +DBL_MAX;
         se[2*i + 1] = -DBL_MAX;
     }
- 
-    if ( *dataTree != NULL )
+
+    if ( *dataTree != nullptr )
     {
         // See if we're supposed to apply a transform to any rectilinear grids.
-        const double *rectXform = NULL;
+        const double *rectXform = nullptr;
         avtDataAttributes &atts = ds->GetInfo().GetAttributes();
         if (atts.GetRectilinearGridHasTransform())
             rectXform = atts.GetRectilinearGridTransform();
@@ -184,13 +212,13 @@ avtDatasetExaminer::GetSpatialExtents(avtDataset_p &ds, double *se)
         struct {double *se; const double *xform;} info = { se, rectXform };
         dataTree->Traverse(CGetSpatialExtents, &info, foundExtents);
     }
- 
+
     if (!foundExtents)
     {
         debug1 << "Unable to determine spatial extents -- dataset needs an "
                << "update" << endl;
     }
- 
+
     return foundExtents;
 }
 
@@ -214,39 +242,39 @@ avtDatasetExaminer::GetSpatialExtents(avtDataset_p &ds, double *se)
 //  Modifications:
 //    Jeremy Meredith, Thu Jan 18 10:56:28 EST 2007
 //    The CGetSpatialExtents traversal now also expects a unit cell vector
-//    pointer.  We pass in NULL, which is the best we can do without
+//    pointer.  We pass in nullptr, which is the best we can do without
 //    further information from the avtDataAttributes.
 //
 // ****************************************************************************
- 
+
 bool
 avtDatasetExaminer::GetSpatialExtents(std::vector<avtDataTree_p> &l,double *se)
 {
- 
+
     bool foundExtents = false;
     for (size_t i = 0 ; i < 3 ; i++)
     {
         se[2*i + 0] = +DBL_MAX;
         se[2*i + 1] = -DBL_MAX;
     }
- 
+
     for (size_t i = 0 ; i < l.size() ; i++)
     {
         // We don't have access to avtDataAttributes here, so assume
         // that there is no rectilinear transform applied
-        const double *rectXform = NULL;
+        const double *rectXform = nullptr;
 
         // Create an info structure with the needed variables.
         struct {double *se; const double *xform;} info = { se, rectXform };
         l[i]->Traverse(CGetSpatialExtents, &info, foundExtents);
     }
- 
+
     if (!foundExtents)
     {
         debug1 << "Unable to determine spatial extents -- dataset needs an "
                << "update" << endl;
     }
- 
+
     return foundExtents;
 }
 
@@ -290,8 +318,8 @@ avtDatasetExaminer::GetSpatialExtents(std::vector<avtDataTree_p> &l,double *se)
 //    Hank Childs, Tue Feb 24 17:36:32 PST 2004
 //    Account for multiple variables.
 //
-//    Kathleen Bonnell, Thu Mar 11 10:14:20 PST 2004 
-//    DataExtents now always has only 2 components. 
+//    Kathleen Bonnell, Thu Mar 11 10:14:20 PST 2004
+//    DataExtents now always has only 2 components.
 //
 //    Hank Childs, Fri Jun  9 13:25:31 PDT 2006
 //    Remove unused variable
@@ -299,8 +327,12 @@ avtDatasetExaminer::GetSpatialExtents(std::vector<avtDataTree_p> &l,double *se)
 //    Kathleen Biagas, Wed May 28 17:38:40 MST 2014
 //    Added connectedNodesOnly.
 //
+//    Eric Brugger, Thu Jul  6 13:31:48 PDT 2023
+//    Added debug output and return false if no values could be found to
+//    set the limits.
+//
 // ****************************************************************************
- 
+
 bool
 avtDatasetExaminer::GetDataExtents(avtDataset_p &ds, double *de,
                                    const char *varname,
@@ -311,20 +343,20 @@ avtDatasetExaminer::GetDataExtents(avtDataset_p &ds, double *de,
     de[0] = +DBL_MAX;
     de[1] = -DBL_MAX;
 
-    if (*ds != NULL && *(ds->GetDataTree()) != NULL)
+    if (*ds != nullptr && *(ds->GetDataTree()) != nullptr)
     {
-        if (varname == NULL)
+        if (varname == nullptr)
             varname = ds->GetInfo().GetAttributes().GetVariableName().c_str();
 
         avtDataTree_p dataTree = ds->dataTree;
-        
+
         GetVariableRangeArgs gvra;
         gvra.varname = varname;
         gvra.extents = de;
         gvra.connectedNodesOnly = connectedNodesOnly;
 
         dataTree->Traverse(CGetDataExtents, (void *) &gvra, foundExtents);
- 
+
         if (!foundExtents)
         {
             debug1 << "Unable to determine data extents -- dataset needs an "
@@ -332,6 +364,17 @@ avtDatasetExaminer::GetDataExtents(avtDataset_p &ds, double *de,
         }
     }
     
+    //
+    // If the data extents are still their initial values, then there were
+    // no elements or the cells were all ghost cells.
+    //
+    if (de[0] == +DBL_MAX && de[1] == -DBL_MAX)
+    {
+        debug1 << "Unable to determine data extents -- there was either no data "
+               << "or all the data was in ghost zones." << endl;
+        foundExtents = false;
+    }
+
     return foundExtents;
 }
 
@@ -359,7 +402,7 @@ avtDatasetExaminer::FindMaximum(avtDataset_p &ds, double *pt, double &value)
     FindExtremeArgs args;
     bool  success = false;
     args.value = -DBL_MAX;
-    if ( *ds->dataTree != NULL )
+    if ( *ds->dataTree != nullptr )
     {
         ds->dataTree->Traverse(CFindMaximum, (void *) &args, success);
     }
@@ -404,7 +447,7 @@ avtDatasetExaminer::FindMinimum(avtDataset_p &ds, double *pt, double &value)
     FindExtremeArgs args;
     bool  success = false;
     args.value = DBL_MAX;
-    if ( *ds->dataTree != NULL )
+    if ( *ds->dataTree != nullptr )
     {
         ds->dataTree->Traverse(CFindMinimum, (void *) &args, success);
     }
@@ -452,7 +495,7 @@ avtDatasetExaminer::FindZone(avtDataset_p &ds, int dom, int zone, double *pt)
     bool  success = false;
     args.domain = dom;
     args.index  = zone;
-    if ( *ds->dataTree != NULL )
+    if ( *ds->dataTree != nullptr )
     {
         ds->dataTree->Traverse(CLocateZone, (void *) &args, success);
     }
@@ -494,7 +537,7 @@ avtDatasetExaminer::FindNode(avtDataset_p &ds, int dom, int zone, double *pt)
     bool  success = false;
     args.domain = dom;
     args.index  = zone;
-    if ( *ds->dataTree != NULL )
+    if ( *ds->dataTree != nullptr )
     {
         ds->dataTree->Traverse(CLocateNode, (void *) &args, success);
     }
@@ -522,7 +565,7 @@ avtDatasetExaminer::FindNode(avtDataset_p &ds, int dom, int zone, double *pt)
 //      dom      A domain number.
 //      cent     The centering for the variable (output variable).
 //
-//  Returns:     The data array, NULL if it does not exist.
+//  Returns:     The data array, nullptr if it does not exist.
 //
 //  Programmer:  Hank Childs
 //  Creation:    July 29, 2003
@@ -535,11 +578,11 @@ avtDatasetExaminer::GetArray(avtDataset_p &ds, const char *varname, int dom,
 {
     GetArrayArgs args;
     bool  success = false;
-    args.arr = NULL;
+    args.arr = nullptr;
     args.domain = dom;
     args.varname  = varname;
     args.centering = AVT_UNKNOWN_CENT;
-    if ( *ds->dataTree != NULL )
+    if ( *ds->dataTree != nullptr )
     {
         ds->dataTree->Traverse(CGetArray, (void *) &args, success);
     }
@@ -565,7 +608,7 @@ avtDatasetExaminer::GetArray(avtDataset_p &ds, const char *varname, int dom,
 //      dom      A domain number.
 //      cent     The centering for the variable (output variable).
 //
-//  Returns:     The data array, NULL if it does not exist.
+//  Returns:     The data array, nullptr if it does not exist.
 //
 //  Programmer:  Hank Childs
 //  Creation:    July 29, 2003
@@ -577,11 +620,11 @@ avtDatasetExaminer::GetVariableCentering(avtDataset_p &ds, const char *varname)
 {
     GetArrayArgs args;
     bool  success = false;
-    args.arr = NULL;
+    args.arr = nullptr;
     args.domain = -1;
     args.varname  = varname;
     args.centering = AVT_UNKNOWN_CENT;
-    if ( *ds->dataTree != NULL )
+    if ( *ds->dataTree != nullptr )
     {
         ds->dataTree->Traverse(CGetVariableCentering, (void *) &args, success);
     }
@@ -623,7 +666,7 @@ avtDatasetExaminer::GetNumberOfNodes(avtDataset_p &ds, bool originalOnly)
     avtDataTree_p dataTree = ds->dataTree;
 
     long long numNodes = 0;
-    if (*dataTree != NULL)
+    if (*dataTree != nullptr)
     {
         bool dummy;
         if (!originalOnly)
@@ -679,7 +722,7 @@ avtDatasetExaminer::GetNumberOfZones(avtDataset_p &ds, long long &nReal,
     avtDataTree_p dataTree = ds->dataTree;
 
     long long numZones[2] = {0, 0};
-    if (*dataTree != NULL)
+    if (*dataTree != nullptr)
     {
         bool dummy;
         if (!originalOnly)
@@ -718,7 +761,7 @@ avtDatasetExaminer::GetNumberOfZones(avtDataset_p &ds, long long &nReal,
 //    avtDataTree.
 //
 //  Programmer:  Kathleen Bonnell
-//  Creation:    July 29, 2008 
+//  Creation:    July 29, 2008
 //
 //  Modifications:
 //
@@ -741,7 +784,7 @@ avtDatasetExaminer::GetNumberOfNodes(avtDataset_p &ds, long long &nReal,
     avtDataTree_p dataTree = ds->dataTree;
 
     long long numNodes[2] = {0, 0};
-    if (*dataTree != NULL)
+    if (*dataTree != nullptr)
     {
         bool dummy;
         if (!originalOnly)
@@ -784,9 +827,9 @@ avtDatasetExaminer::GetNumberOfNodes(avtDataset_p &ds, long long &nReal,
 //      numvals   An array to store the number of values.  Note that this array
 //                should be sized to the number of bins in the histogram.
 //
-//  Returns:      true if the histogram was successfully calculated, false 
+//  Returns:      true if the histogram was successfully calculated, false
 //                otherwise.
-//  
+//
 //  Programmer: Hank Childs
 //  Creation:   May 21, 2010
 //
@@ -797,7 +840,7 @@ avtDatasetExaminer::GetNumberOfNodes(avtDataset_p &ds, long long &nReal,
 // ****************************************************************************
 
 bool
-avtDatasetExaminer::CalculateHistogram(avtDataset_p &ds, 
+avtDatasetExaminer::CalculateHistogram(avtDataset_p &ds,
                                        const std::string &var,
                                        double min, double max,
                                        std::vector<long long> &numvals)
@@ -808,7 +851,7 @@ avtDatasetExaminer::CalculateHistogram(avtDataset_p &ds,
     CalculateHistogramArgs args;
     int t1 = visitTimer->StartTimer();
 
-    if (*dataTree != NULL)
+    if (*dataTree != nullptr)
     {
         args.min      = min;
         args.max      = max;
@@ -824,4 +867,54 @@ avtDatasetExaminer::CalculateHistogram(avtDataset_p &ds,
     }
 
     return err;
+}
+
+
+// ****************************************************************************
+//  Method: avtDatasetExaminer::GetToplogicalDim
+//
+//  Purpose:
+//      Calculates topological dim by examing the contents of the data tree.
+//
+//  Returns:     The overall topological dimension
+//               (largest in mixed-topology case).
+//
+//  Programmer:  Kathleen Biagas
+//  Creation:    April 5, 2022
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+int
+avtDatasetExaminer::GetTopologicalDim(avtDataTree_p &dataTree, const int reportedDim)
+{
+    // Don't want an empty or nullptr tree contributing
+    if (*dataTree == nullptr)
+        return -1;
+
+    if (dataTree->IsEmpty())
+        return -1;
+
+    int tDim = reportedDim;
+    int newDim = tDim;
+    bool success = false;
+    // Create an info structure with the needed variables.
+    struct {const int *reportedDim; int *dim;} info = { &tDim, &newDim };
+    dataTree->Traverse(CGetTopologicalDim, &info, success);
+    if( success )
+    {
+        tDim = newDim;
+    }
+    return tDim;
+}
+
+int
+avtDatasetExaminer::GetTopologicalDim(avtDataset_p &ds)
+{
+    avtDataAttributes &atts = ds->GetInfo().GetAttributes();
+    int tDim = atts.GetTopologicalDimension();
+    avtDataTree_p dataTree = ds->dataTree;
+
+    return avtDatasetExaminer::GetTopologicalDim(dataTree, tDim);
 }

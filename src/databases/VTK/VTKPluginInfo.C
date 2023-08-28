@@ -132,6 +132,7 @@ VTKGeneralPluginInfo::GetDefaultFilePatterns() const
     defaultPatterns.push_back("*.pvtr");
     defaultPatterns.push_back("*.pvts");
     defaultPatterns.push_back("*.pvtu");
+    defaultPatterns.push_back("*.pvd");
 
     return defaultPatterns;
 }

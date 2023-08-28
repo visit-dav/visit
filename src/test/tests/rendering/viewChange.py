@@ -37,6 +37,9 @@
 #    Kathleen Biagas, Wed Oct 21 11:19:52 PDT 2020
 #    Added TestLargeValueLineoutWithLogScaling
 #
+#    Alister Maguire, Mon May 24 12:50:20 PDT 2021
+#    Added TestViewChangeFullFrameWithLabels.
+#
 # ----------------------------------------------------------------------------
 
 def InitAnnotation():
@@ -409,6 +412,27 @@ def TestLargeValueLineoutWithLogScaling():
     DeleteWindow()
     DeleteAllPlots()
  
+def TestViewChangeFullFrameWithLabels():
+    TestSection("Testing view changes with fullframe and label plots")
+    OpenDatabase(silo_data_path("curv2d.silo"))
+
+    AddPlot("Mesh", "curvmesh2d")
+    AddPlot("Label", "curvmesh2d")
+
+    View2DAtts = View2DAttributes()
+    View2DAtts.windowCoords = (-4.69855, 4.88342, 0.225185, 4.93329)
+    View2DAtts.fullFrameActivationMode = View2DAtts.On
+    SetView2D(View2DAtts)
+
+    DrawPlots()
+
+    Test("ViewChangeFullFrameWithLabels_00")
+
+    DeleteAllPlots()
+    ResetView()
+    CloseDatabase(silo_data_path("curv2d.silo"))
+
+
 
 def ViewChangeMain():
     InitAnnotation()
@@ -418,6 +442,7 @@ def ViewChangeMain():
     TestViewChangeLogScaling2D()
     TestViewChangeLogScalingCurves()
     TestLargeValueLineoutWithLogScaling()
+    TestViewChangeFullFrameWithLabels()
 
 # Call the main function
 ViewChangeMain()

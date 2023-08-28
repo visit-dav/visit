@@ -10,7 +10,7 @@
 #  Date:       August 23, 2006
 #
 #  Modifications:
-# 
+#
 #    Hank Childs, Sun Aug 27 16:52:07 PDT 2006
 #    Added testing for expected value, mass from boundary.
 #
@@ -21,7 +21,10 @@
 #    Added ability to swtich between Silo's HDF5 and PDB data.
 #
 #    Kathleen Biagas, Thu Jul 14 10:44:55 PDT 2011
-#    Use named arguments. 
+#    Use named arguments.
+#
+#    Kathleen Biagas, Wed Feb 16 13:11:57 PST 2022
+#    Replaced Curve atts 'cycleColors' with 'curveColorSource'.
 #
 # ----------------------------------------------------------------------------
 
@@ -29,12 +32,12 @@ import os
 
 
 ca=CurveAttributes()
-ca.cycleColors = 0
+ca.curveColorSource = ca.Custom
 SetDefaultPlotOptions(ca)
 
 def TestOne(index, filename, varname, meshname, limit):
     # Because the queries we are testing output to the file system, we need to
-    # delete previous outputs before running.  If we don't do this, then the 
+    # delete previous outputs before running.  If we don't do this, then the
     # queries will output files to names that are continuously incrementing.
     list = os.listdir(".")
     for i in range(len(list)):
@@ -75,7 +78,7 @@ def TestOne(index, filename, varname, meshname, limit):
     Query("Distance From Boundary", num_lines=15000, num_bins=100, min=0, max=limit)
     Query("Line Scan Transform", num_lines=15000, num_bins=100, min=0, max=limit)
     DeleteAllPlots()
-    
+
     # Now test the outputs
     OpenDatabase("cld_i0.ult")
     ReOpenDatabase("cld_i0.ult")  # Flush out cached version

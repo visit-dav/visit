@@ -19,6 +19,7 @@ struct SimV2Variant
         long    valueL;
         float   valueF;
         double  valueD;
+        int     valueE;
     } storage;
     std::string valueS;
 };
@@ -47,6 +48,9 @@ SimV2Variant_setValue(SimV2Variant &var, int type, void *value)
     case VISIT_DATATYPE_STRING:
         var.valueS = std::string((const char *)value);
         break;
+    case VISIT_DATATYPE_ENUM:
+        var.storage.valueE = *((int *)value);
+        break;
     }
 }
 
@@ -73,6 +77,9 @@ SimV2Variant_getValue(SimV2Variant &var)
         break;
     case VISIT_DATATYPE_STRING:
         ptr = (void*)var.valueS.c_str();
+        break;
+    case VISIT_DATATYPE_ENUM:
+        ptr = (void*)&var.storage.valueE;
         break;
     }
     return ptr;

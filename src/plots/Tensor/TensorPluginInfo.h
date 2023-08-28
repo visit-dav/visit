@@ -70,6 +70,9 @@ class TensorViewerEnginePluginInfo : public virtual ViewerEnginePlotPluginInfo, 
     virtual avtPlot *AllocAvtPlot();
 
     virtual void InitializePlotAtts(AttributeSubject *atts, const avtPlotMetaData &);
+    virtual bool SupportsAnimation() const;
+    virtual bool AnimationReset(AttributeSubject *atts, const avtPlotMetaData &plot);
+    virtual bool AnimationStep(AttributeSubject *atts, const avtPlotMetaData  &plot);
     virtual const char *GetMenuName() const;
     static void InitializeGlobalObjects();
   private:

@@ -1,12 +1,19 @@
+Target: xml2atts
 Function: ChangesRequireRecalculation
 Declaration: bool ChangesRequireRecalculation(const HistogramAttributes &) const;
 Definition:
 bool
 HistogramAttributes::ChangesRequireRecalculation(const HistogramAttributes &obj) const
 {
+    if (limitsMode != obj.GetLimitsMode())
+        return true;
+    if (minFlag != obj.GetMinFlag())
+        return true;
+    if (maxFlag != obj.GetMaxFlag())
+        return true;
     if (minFlag && (min != obj.GetMin()))
         return true;
-    if (minFlag && (max != obj.GetMax()))
+    if (maxFlag && (max != obj.GetMax()))
         return true;
     if (useBinWidths != obj.GetUseBinWidths())
         return true;
@@ -25,6 +32,10 @@ HistogramAttributes::ChangesRequireRecalculation(const HistogramAttributes &obj)
     if ( dataScale != obj.GetDataScale() )
         return true;
     if ( binScale != obj.GetBinScale() )
+        return true;
+    if (normalizeHistogram != obj.GetNormalizeHistogram())
+        return true;
+    if (computeAsCDF != obj.GetComputeAsCDF())
         return true;
     return false;
 }
@@ -65,42 +76,6 @@ HistogramAttributes::CopyAttributes(const AttributeGroup *atts)
 
     return retval;
 }
-
-Function: ProcessOldVersions
-Declaration: virtual void ProcessOldVersions(DataNode *parentNode, const char *configVersion);
-Definition:
-// ****************************************************************************
-// Method: HistogramAttributes::ProcessOldVersions
-//
-// Purpose:
-//   This method allows handling of older config/session files that may
-//   contain fields that are no longer present or have been modified/renamed.
-//
-// Programmer: Kathleen Biagas
-// Creation:   April 4, 2018
-//
-// Modifications:
-//
-// ****************************************************************************
-
-void
-HistogramAttributes::ProcessOldVersions(DataNode *parentNode,
-                                    const char *configVersion)
-{
-    if(parentNode == 0)
-        return;
-
-    DataNode *searchNode = parentNode->GetNode("HistogramAttributes");
-    if(searchNode == 0)
-        return;
-
-    if (VersionLessThan(configVersion, "3.0.0"))
-    {
-        if (searchNode->GetNode("lineStyle") != 0)
-            searchNode->RemoveNode("lineStyle");
-    }
-}
-
 
 Target: xml2info
 Function: HistogramViewerEnginePluginInfo::InitializePlotAtts
@@ -238,56 +213,4 @@ HistogramViewerEnginePluginInfo::ProvidesLegend() const
 {
     return false;
 }
-
-
-Target: xml2python
-Code: PyHistogramAttributes_getattr
-Prefix:
-Postfix:
-    // Try and handle legacy fields
-
-    // lineStyle and it's possible enumerations
-    bool lineStyleFound = false;
-    if (strcmp(name, "lineStyle") == 0)
-    {
-        lineStyleFound = true;
-    }
-    else if (strcmp(name, "SOLID") == 0)
-    {
-        lineStyleFound = true;
-    }
-    else if (strcmp(name, "DASH") == 0)
-    {
-        lineStyleFound = true;
-    }
-    else if (strcmp(name, "DOT") == 0)
-    {
-        lineStyleFound = true;
-    }
-    else if (strcmp(name, "DOTDASH") == 0)
-    {
-        lineStyleFound = true;
-    }
-    if (lineStyleFound)
-    {
-        fprintf(stdout, "lineStyle is no longer a valid Histogram "
-                       "attribute.\nIt's value is being ignored, please remove "
-                       "it from your script.\n");
-        return PyInt_FromLong(0L);
-    }
-
-Code: PyHistogramAttributes_setattr
-Prefix:
-Postfix:
-    // Try and handle legacy fields
-    if(obj == NULL)
-    {
-        if(strcmp(name, "lineStyle") == 0)
-        {
-            Py_INCREF(Py_None);
-            obj = Py_None;
-        }
-    }
-
-
 

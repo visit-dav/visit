@@ -51,6 +51,39 @@ def test0(datapath):
     DeleteAllPlots()
     CloseDatabase(db)
 
+def test1(datapath):
+    TestSection("More distinct refinements")
+
+    db = pjoin(datapath,"chombo.visit")
+    OpenDatabase(db)
+
+    AddPlot("Subset", "patches")
+    AddPlot("Contour", "P_y_Over_Rho")
+    DrawPlots()
+    v = GetView2D()
+    v.fullFrameActivationMode = v.On
+    SetView2D(v)
+
+    Test("Chombo_1_00")
+
+    ResetView()
+    DeleteAllPlots()
+    CloseDatabase(db)
+
+def test2(datapath):
+    TestSection("Anisotropic refinement")
+
+    db = pjoin(datapath,"aniso_refin.2d.hdf5")
+    OpenDatabase(db)
+    AddPlot("Mesh", "Mesh")
+    AddPlot("Subset", "levels")
+    DrawPlots()
+
+    Test("Chombo_2_00")
+
+    DeleteAllPlots()
+    CloseDatabase(db)
+
 def main():
     TurnOffAllAnnotations()
 
@@ -58,6 +91,8 @@ def main():
 
     datapath = data_path("Chombo_test_data")
     test0(datapath)
+    test1(datapath)
+    test2(datapath)
 
     InvertBackgroundColor()
 

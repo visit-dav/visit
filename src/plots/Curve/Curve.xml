@@ -145,8 +145,6 @@
       </Function>
       <Function name="ChangesRequireRecalculation" user="true" member="true">
       </Function>
-      <Function name="ProcessOldVersions" user="true" member="true" access="private">
-      </Function>
       <Function name="CurveViewerEnginePluginInfo::InitializePlotAtts" user="false" member="true">
       </Function>
       <Function name="CurveViewerEnginePluginInfo::SetAutonomousColors" user="true" member="true" access="private">
@@ -165,5 +163,9 @@
       <Include file="header" quoted="false">
         visitstream.h
       </Include>
+      <Include file="source" quoted="false" target="xml2python">
+        visit-config.h
+      </Include>
+
     </Attribute>
   </Plugin>

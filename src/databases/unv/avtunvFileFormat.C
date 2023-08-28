@@ -4840,7 +4840,10 @@ avtunvFileFormat::GetAuxiliaryData(const char *var, const char *type, void *,Des
                 if (debuglevel >= 3) fprintf(stdout,"Material #cells=%d\n",dims[0]);
 #endif
                 for (itre = meshUnvElements.begin(); itre != meshUnvElements.end(); itre++)
-                    matlist[itre->number] = itre->matid;
+                    {
+                        matlist[k] = itre->matid;
+                        k++ ;
+                    }
             }
 
 #if INTERACTIVEPLOT

@@ -37,20 +37,28 @@ struct ColorControlPointListObject
 //
 static PyObject *NewColorControlPointList(int);
 std::string
-PyColorControlPointList_ToString(const ColorControlPointList *atts, const char *prefix)
+PyColorControlPointList_ToString(const ColorControlPointList *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
 
     { // new scope
         int index = 0;
+        if (forLogging)
+        {
+            // this is needed in case the current NumControlPoints is greater
+            // than the default set up by the containing class.
+            snprintf(tmpStr, 1000, "SetNumControlPoints(%d)\n",
+                atts->GetNumControlPoints());
+            str += (prefix + std::string(tmpStr));
+        }
         // Create string representation of controlPoints from atts.
         for(AttributeGroupVector::const_iterator pos = atts->GetControlPoints().begin(); pos != atts->GetControlPoints().end(); ++pos, ++index)
         {
             const ColorControlPoint *current = (const ColorControlPoint *)(*pos);
             snprintf(tmpStr, 1000, "GetControlPoints(%d).", index);
             std::string objPrefix(prefix + std::string(tmpStr));
-            str += PyColorControlPoint_ToString(current, objPrefix.c_str());
+            str += PyColorControlPoint_ToString(current, objPrefix.c_str(), forLogging);
         }
         if(index == 0)
             str += "#controlPoints does not contain any ColorControlPoint objects.\n";
@@ -84,8 +92,22 @@ PyColorControlPointList_ToString(const ColorControlPointList *atts, const char *
     else
         snprintf(tmpStr, 1000, "%sdiscreteFlag = 0\n", prefix);
     str += tmpStr;
-    snprintf(tmpStr, 1000, "%scategoryName = \"%s\"\n", prefix, atts->GetCategoryName().c_str());
-    str += tmpStr;
+    {   const stringVector &tagNames = atts->GetTagNames();
+        snprintf(tmpStr, 1000, "%stagNames = (", prefix);
+        str += tmpStr;
+        for(size_t i = 0; i < tagNames.size(); ++i)
+        {
+            snprintf(tmpStr, 1000, "\"%s\"", tagNames[i].c_str());
+            str += tmpStr;
+            if(i < tagNames.size() - 1)
+            {
+                snprintf(tmpStr, 1000, ", ");
+                str += tmpStr;
+            }
+        }
+        snprintf(tmpStr, 1000, ")\n");
+        str += tmpStr;
+    }
     return str;
 }
 
@@ -102,19 +124,13 @@ ColorControlPointList_Notify(PyObject *self, PyObject *args)
 ColorControlPointList_GetControlPoints(PyObject *self, PyObject *args)
 {
     ColorControlPointListObject *obj = (ColorControlPointListObject *)self;
-    int index;
-    if(!PyArg_ParseTuple(args, "i", &index))
-        return NULL;
-    if(index < 0 || (size_t)index >= obj->data->GetControlPoints().size())
-    {
-        char msg[400] = {'\0'};
-        if(obj->data->GetControlPoints().size() == 0)
-            snprintf(msg, 400, "In ColorControlPointList::GetControlPoints : The index %d is invalid because controlPoints is empty.", index);
-        else
-            snprintf(msg, 400, "In ColorControlPointList::GetControlPoints : The index %d is invalid. Use index values in: [0, %ld).",  index, obj->data->GetControlPoints().size());
-        PyErr_SetString(PyExc_IndexError, msg);
-        return NULL;
-    }
+    int index = -1;
+    if (args == NULL)
+        return PyErr_Format(PyExc_NameError, "Use .GetControlPoints(int index) to get a single entry");
+    if (!PyArg_ParseTuple(args, "i", &index))
+        return PyErr_Format(PyExc_TypeError, "arg must be a single integer index");
+    if (index < 0 || (size_t)index >= obj->data->GetControlPoints().size())
+        return PyErr_Format(PyExc_ValueError, "index out of range");
 
     // Since the new object will point to data owned by the this object,
     // we need to increment the reference count.
@@ -143,12 +159,7 @@ ColorControlPointList_AddControlPoints(PyObject *self, PyObject *args)
     if(!PyArg_ParseTuple(args, "O", &element))
         return NULL;
     if(!PyColorControlPoint_Check(element))
-    {
-        char msg[400] = {'\0'};
-        snprintf(msg, 400, "The ColorControlPointList::AddControlPoints method only accepts ColorControlPoint objects.");
-        PyErr_SetString(PyExc_TypeError, msg);
-        return NULL;
-    }
+        return PyErr_Format(PyExc_TypeError, "expected attr object of type ColorControlPoint");
     ColorControlPoint *newData = PyColorControlPoint_FromPyObject(element);
     obj->data->AddControlPoints(*newData);
     obj->data->SelectControlPoints();
@@ -186,17 +197,12 @@ ColorControlPointList_Remove_One_ControlPoints(PyObject *self, int index)
 PyObject *
 ColorControlPointList_RemoveControlPoints(PyObject *self, PyObject *args)
 {
-    int index;
+    int index = -1;
     if(!PyArg_ParseTuple(args, "i", &index))
-        return NULL;
+        return PyErr_Format(PyExc_TypeError, "Expecting integer index");
     ColorControlPointListObject *obj = (ColorControlPointListObject *)self;
     if(index < 0 || index >= obj->data->GetNumControlPoints())
-    {
-        char msg[400] = {'\0'};
-        snprintf(msg, 400, "In ColorControlPointList::RemoveControlPoints : Index %d is out of range", index);
-        PyErr_SetString(PyExc_IndexError, msg);
-        return NULL;
-    }
+        return PyErr_Format(PyExc_IndexError, "Index out of range");
 
     return ColorControlPointList_Remove_One_ControlPoints(self, index);
 }
@@ -220,21 +226,55 @@ ColorControlPointList_SetSmoothing(PyObject *self, PyObject *args)
 {
     ColorControlPointListObject *obj = (ColorControlPointListObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 3)
+    {
+        std::stringstream ss;
+        ss << "An invalid smoothing value was given." << std::endl;
+        ss << "Valid values are in the range [0,2]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << " None";
+        ss << ", Linear";
+        ss << ", CubicSpline";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the smoothing in the object.
-    if(ival >= 0 && ival < 3)
-        obj->data->SetSmoothing(ColorControlPointList::SmoothingMethod(ival));
-    else
-    {
-        fprintf(stderr, "An invalid smoothing value was given. "
-                        "Valid values are in the range of [0,2]. "
-                        "You can also use the following names: "
-                        "None, Linear, CubicSpline.");
-        return NULL;
-    }
+    obj->data->SetSmoothing(ColorControlPointList::SmoothingMethod(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -253,12 +293,48 @@ ColorControlPointList_SetEqualSpacingFlag(PyObject *self, PyObject *args)
 {
     ColorControlPointListObject *obj = (ColorControlPointListObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the equalSpacingFlag in the object.
-    obj->data->SetEqualSpacingFlag(ival != 0);
+    obj->data->SetEqualSpacingFlag(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -277,12 +353,48 @@ ColorControlPointList_SetDiscreteFlag(PyObject *self, PyObject *args)
 {
     ColorControlPointListObject *obj = (ColorControlPointListObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the discreteFlag in the object.
-    obj->data->SetDiscreteFlag(ival != 0);
+    obj->data->SetDiscreteFlag(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -297,29 +409,86 @@ ColorControlPointList_GetDiscreteFlag(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
-ColorControlPointList_SetCategoryName(PyObject *self, PyObject *args)
+ColorControlPointList_SetTagNames(PyObject *self, PyObject *args)
 {
     ColorControlPointListObject *obj = (ColorControlPointListObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+    stringVector vec;
 
-    // Set the categoryName in the object.
-    obj->data->SetCategoryName(std::string(str));
+    if (PyUnicode_Check(args))
+    {
+        char const *val = PyUnicode_AsUTF8(args);
+        std::string cval = std::string(val);
+        if (val == 0 && PyErr_Occurred())
+        {
+            PyErr_Clear();
+            return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ string");
+        }
+        vec.resize(1);
+        vec[0] = cval;
+    }
+    else if (PySequence_Check(args))
+    {
+        vec.resize(PySequence_Size(args));
+        for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)
+        {
+            PyObject *item = PySequence_GetItem(args, i);
+
+            if (!PyUnicode_Check(item))
+            {
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_TypeError, "arg %d is not a unicode string", (int) i);
+            }
+
+            char const *val = PyUnicode_AsUTF8(item);
+            std::string cval = std::string(val);
+
+            if (val == 0 && PyErr_Occurred())
+            {
+                Py_DECREF(item);
+                PyErr_Clear();
+                return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ string", (int) i);
+            }
+            Py_DECREF(item);
+
+            vec[i] = cval;
+        }
+    }
+    else
+        return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more string(s)");
+
+    obj->data->GetTagNames() = vec;
+    // Mark the tagNames in the object as modified.
+    obj->data->SelectTagNames();
 
     Py_INCREF(Py_None);
     return Py_None;
 }
 
 /*static*/ PyObject *
-ColorControlPointList_GetCategoryName(PyObject *self, PyObject *args)
+ColorControlPointList_GetTagNames(PyObject *self, PyObject *args)
 {
     ColorControlPointListObject *obj = (ColorControlPointListObject *)self;
-    PyObject *retval = PyString_FromString(obj->data->GetCategoryName().c_str());
+    // Allocate a tuple the with enough entries to hold the tagNames.
+    const stringVector &tagNames = obj->data->GetTagNames();
+    PyObject *retval = PyTuple_New(tagNames.size());
+    for(size_t i = 0; i < tagNames.size(); ++i)
+        PyTuple_SET_ITEM(retval, i, PyString_FromString(tagNames[i].c_str()));
     return retval;
 }
 
+
+PyObject *
+ColorControlPointList_SetNumControlPoints(PyObject *self, PyObject *args)
+{
+    ColorControlPointListObject *obj = (ColorControlPointListObject *)self;
+    int numItems = -1;
+    if(!PyArg_ParseTuple(args, "i", &numItems))
+        return PyErr_Format(PyExc_TypeError, "Expecting integer argument");
+    obj->data->SetNumControlPoints(numItems);
+    Py_INCREF(Py_None);
+    return Py_None;
+}
 
 
 PyMethodDef PyColorControlPointList_methods[COLORCONTROLPOINTLIST_NMETH] = {
@@ -335,8 +504,9 @@ PyMethodDef PyColorControlPointList_methods[COLORCONTROLPOINTLIST_NMETH] = {
     {"GetEqualSpacingFlag", ColorControlPointList_GetEqualSpacingFlag, METH_VARARGS},
     {"SetDiscreteFlag", ColorControlPointList_SetDiscreteFlag, METH_VARARGS},
     {"GetDiscreteFlag", ColorControlPointList_GetDiscreteFlag, METH_VARARGS},
-    {"SetCategoryName", ColorControlPointList_SetCategoryName, METH_VARARGS},
-    {"GetCategoryName", ColorControlPointList_GetCategoryName, METH_VARARGS},
+    {"SetTagNames", ColorControlPointList_SetTagNames, METH_VARARGS},
+    {"GetTagNames", ColorControlPointList_GetTagNames, METH_VARARGS},
+    {"SetNumControlPoints", ColorControlPointList_SetNumControlPoints, METH_VARARGS},
     {NULL, NULL}
 };
 
@@ -358,6 +528,7 @@ static PyObject *ColorControlPointList_richcompare(PyObject *self, PyObject *oth
 PyObject *
 PyColorControlPointList_getattr(PyObject *self, char *name)
 {
+#include <visit-config.h>
     if(strcmp(name, "controlPoints") == 0)
         return ColorControlPointList_GetControlPoints(self, NULL);
     if(strcmp(name, "smoothing") == 0)
@@ -375,8 +546,37 @@ PyColorControlPointList_getattr(PyObject *self, char *name)
         return ColorControlPointList_GetEqualSpacingFlag(self, NULL);
     if(strcmp(name, "discreteFlag") == 0)
         return ColorControlPointList_GetDiscreteFlag(self, NULL);
+    if(strcmp(name, "tagNames") == 0)
+        return ColorControlPointList_GetTagNames(self, NULL);
+
+#if VISIT_OBSOLETE_AT_VERSION(3,5,0)
+#error This code is obsolete in this version. Please remove it.
+#else
+    // Try and handle legacy fields in ColorControlPointList
+
+    //
+    // Removed in 3.3.0
+    //
     if(strcmp(name, "categoryName") == 0)
-        return ColorControlPointList_GetCategoryName(self, NULL);
+    {
+        PyErr_WarnEx(NULL,
+                    "categoryName is no longer a valid ColorControlPointList "
+                    "attribute.\nIt's value is being ignored, please remove "
+                    "it from your script.\n", 3);
+        return PyString_FromString("");
+    }
+#endif
+
+    // Add a __dict__ answer so that dir() works
+    if (!strcmp(name, "__dict__"))
+    {
+        PyObject *result = PyDict_New();
+        for (int i = 0; PyColorControlPointList_methods[i].ml_meth; i++)
+            PyDict_SetItem(result,
+                PyString_FromString(PyColorControlPointList_methods[i].ml_name),
+                PyString_FromString(PyColorControlPointList_methods[i].ml_name));
+        return result;
+    }
 
     return Py_FindMethod(PyColorControlPointList_methods, self, name);
 }
@@ -384,28 +584,47 @@ PyColorControlPointList_getattr(PyObject *self, char *name)
 int
 PyColorControlPointList_setattr(PyObject *self, char *name, PyObject *args)
 {
-    // Create a tuple to contain the arguments since all of the Set
-    // functions expect a tuple.
-    PyObject *tuple = PyTuple_New(1);
-    PyTuple_SET_ITEM(tuple, 0, args);
-    Py_INCREF(args);
-    PyObject *obj = NULL;
+#include <visit-config.h>
+    PyObject NULL_PY_OBJ;
+    PyObject *obj = &NULL_PY_OBJ;
 
     if(strcmp(name, "smoothing") == 0)
-        obj = ColorControlPointList_SetSmoothing(self, tuple);
+        obj = ColorControlPointList_SetSmoothing(self, args);
     else if(strcmp(name, "equalSpacingFlag") == 0)
-        obj = ColorControlPointList_SetEqualSpacingFlag(self, tuple);
+        obj = ColorControlPointList_SetEqualSpacingFlag(self, args);
     else if(strcmp(name, "discreteFlag") == 0)
-        obj = ColorControlPointList_SetDiscreteFlag(self, tuple);
-    else if(strcmp(name, "categoryName") == 0)
-        obj = ColorControlPointList_SetCategoryName(self, tuple);
+        obj = ColorControlPointList_SetDiscreteFlag(self, args);
+    else if(strcmp(name, "tagNames") == 0)
+        obj = ColorControlPointList_SetTagNames(self, args);
 
-    if(obj != NULL)
+#if VISIT_OBSOLETE_AT_VERSION(3,5,0)
+#error This code is obsolete in this version. Please remove it.
+#else
+    // Try and handle legacy fields in ColorControlPointList
+    if(obj == &NULL_PY_OBJ)
+    {
+        //
+        // Removed in 3.3.0
+        //
+        if(strcmp(name, "categoryName") == 0)
+        {
+            PyErr_WarnEx(NULL, "'categoryName' is obsolete. It is being ignored.", 3);
+            Py_INCREF(Py_None);
+            obj = Py_None;
+        }
+    }
+#endif
+    if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
-    Py_DECREF(tuple);
-    if( obj == NULL)
-        PyErr_Format(PyExc_RuntimeError, "Unable to set unknown attribute: '%s'", name);
+    if (obj == &NULL_PY_OBJ)
+    {
+        obj = NULL;
+        PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);
+    }
+    else if (obj == NULL && !PyErr_Occurred())
+        PyErr_Format(PyExc_RuntimeError, "unknown problem with '%s'", name);
+
     return (obj != NULL) ? 0 : -1;
 }
 
@@ -413,7 +632,7 @@ static int
 ColorControlPointList_print(PyObject *v, FILE *fp, int flags)
 {
     ColorControlPointListObject *obj = (ColorControlPointListObject *)v;
-    fprintf(fp, "%s", PyColorControlPointList_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyColorControlPointList_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -421,7 +640,7 @@ PyObject *
 ColorControlPointList_str(PyObject *v)
 {
     ColorControlPointListObject *obj = (ColorControlPointListObject *)v;
-    return PyString_FromString(PyColorControlPointList_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyColorControlPointList_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -573,7 +792,7 @@ PyColorControlPointList_GetLogString()
 {
     std::string s("ColorControlPointList = ColorControlPointList()\n");
     if(currentAtts != 0)
-        s += PyColorControlPointList_ToString(currentAtts, "ColorControlPointList.");
+        s += PyColorControlPointList_ToString(currentAtts, "ColorControlPointList.", true);
     return s;
 }
 
@@ -586,7 +805,7 @@ PyColorControlPointList_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("ColorControlPointList = ColorControlPointList()\n");
-        s += PyColorControlPointList_ToString(currentAtts, "ColorControlPointList.");
+        s += PyColorControlPointList_ToString(currentAtts, "ColorControlPointList.", true);
         cb(s);
     }
 }

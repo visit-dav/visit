@@ -44,6 +44,21 @@
 #  Cyrus Harrison, Fri Dec  6 14:51:33 PST 2019
 #  Add python code gen cmake targets for those objects that can be code-gend
 #
+#  Chris Laganella, Mon Jan 17 12:31:49 EST 2022
+#  Add common/PyTable.C
+#
+#  Chris Laganella, Mon Jan 24 18:12:20 EST 2022
+#  Link the cli to "rt" on non windows platforms.
+#
+#  Chris Laganella, Mon Feb  7 20:36:34 EST 2022
+#  Link the visitmodule to "rt" on non windows platforms.
+#
+#  Kathleen Biagas, Fri Sep 9, 2022
+#  Link with CMAKE_THREAD_LIBS.
+#
+#  Eric Brugger, Tue Jul 25 11:23:55 EDT 2023
+#  Change CMAKE_THREAD_LIBS to Threads::Threads.
+#
 #****************************************************************************
 
 #########################################################
@@ -77,9 +92,6 @@
 #####################
 # Metadata Objects that we can't Code-Gen, or have customizations:
 #####################
-# avtMeshMetaData -- OK?
-# avtSimulationInformation -- OK?
-# avtSpeciesMetaData -- OK?
 
 SET(PY_GEN_METADATA_OBJECTS
     avtArrayMetaData
@@ -90,11 +102,11 @@ SET(PY_GEN_METADATA_OBJECTS
     avtLabelMetaData
     avtMatSpeciesMetaData
     avtMaterialMetaData
-    avtMeshMetaData # (see above note)
+    avtMeshMetaData
     avtScalarMetaData
     avtSimulationCommandSpecification
-    avtSimulationInformation # (see above note)
-    avtSpeciesMetaData # (see above note)
+    avtSimulationInformation
+    avtSpeciesMetaData
     avtSubsetsMetaData
     avtSymmetricTensorMetaData
     avtTensorMetaData
@@ -109,9 +121,6 @@ SET(PY_GEN_METADATA_OBJECTS
 #####################
 # State Objects that we can't Code-Gen, or have customizations:
 #####################
-# ColorControlPointList -- OK? 
-# SaveSubWindowAttributes -- OK?
-#
 # DatabaseCorrelation - NOT OK
 # View2DAttributes -- NOT OK -- need as_number worked out
 # View3DAttributes -- NOT OK -- need as_number worked out
@@ -125,11 +134,10 @@ SET(PY_GEN_STATE_OBJECTS
     AxisAttributes
     AxisLabels
     AxisTickMarks
-    AxisTitle
     ColorAttribute
     ColorAttributeList
     ColorControlPoint
-    ColorControlPointList  # (see above note)
+    ColorControlPointList
     ColorTableAttributes 
     ConstructDataBinningAttributes
     # DatabaseCorrelation # (see above note)
@@ -163,7 +171,7 @@ SET(PY_GEN_STATE_OBJECTS
     RenderingAttributes
     SaveWindowAttributes
     SaveSubWindowAttributes 
-    SaveSubWindowsAttributes # (see above note)
+    SaveSubWindowsAttributes
     SelectionProperties
     SelectionSummary
     SelectionVariableSummary
@@ -244,6 +252,7 @@ common/Logging.C
 common/MethodDoc.C
 common/PySILRestrictionBase.C
 common/PySILRestriction.C
+common/PyTable.C
 common/ViewerRPCArguments.C
 common/ViewerRPCCallbacks.C
 common/visitmodule.C
@@ -385,6 +394,7 @@ avtdbatts
 viewerrpc
 visitcommon
 ${PYTHON_LIBRARIES}
+Threads::Threads
 )
 
 # Create the CLI
@@ -405,11 +415,13 @@ avtdbatts
 visitcommon
 visitpy
 ${PYTHON_LIBRARIES}
-${CMAKE_THREAD_LIBS}
+Threads::Threads
 )
 IF(NOT WIN32)
     TARGET_LINK_LIBRARIES(cli dl)
     IF(NOT APPLE)
+        find_library(LIBRT rt)
+        TARGET_LINK_LIBRARIES(cli ${LIBRT})
         IF(NOT AIX)
             # Is this a Python companion libary? We need it for unresolved openpty/forkpty
             TARGET_LINK_LIBRARIES(cli util)
@@ -447,6 +459,10 @@ ELSE(VISIT_STATIC)
     )
 
     IF(NOT WIN32)
+        IF(NOT APPLE)
+            find_library(LIBRT rt)
+            TARGET_LINK_LIBRARIES(visitmodule ${LIBRT})
+        ENDIF(NOT APPLE)
         SET_TARGET_PROPERTIES(visitmodule PROPERTIES
                                           LIBRARY_OUTPUT_DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/site-packages/visit)
     ENDIF(NOT WIN32)

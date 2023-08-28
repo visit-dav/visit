@@ -255,7 +255,7 @@ avtPerformColorTableLookupExpression::DoOperation(vtkDataArray *in,
     // Perform lookup for each scalar in the data set
     for (int i = 0 ; i < ntuples ; i++)
     {
-        unsigned char *col;
+        const unsigned char *col;
         // Added KSB 4-6-2012.  Actually, MapValue is NOT virtual, that is
         // why it must be cast manually in order to use the right method.
         // The reason things work correctly with Log, is that 

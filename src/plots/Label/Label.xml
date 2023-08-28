@@ -1,5 +1,8 @@
 <?xml version="1.0"?>
   <Plugin name="Label" type="plot" label="Label" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" vartype="mesh,scalar,vector,material,subset,tensor,symmetrictensor,label,array" iconFile="Label.xpm">
+    <CXXFLAGS>
+      ${VISIT_INCLUDE_DIR}/avt/Plotter/vtk
+    </CXXFLAGS>
     <Files components="V">
       avtLabelFilter.C
       avtLabelSubsetsFilter.C
@@ -95,8 +98,6 @@
       <Function name="ChangesRequireRecalculation" user="true" member="true">
       </Function>
       <Function name="VarChangeRequiresReset" user="true" member="true">
-      </Function>
-      <Function name="ProcessOldVersions" user="true" member="true">
       </Function>
       <Function name="PyLabelAttributes_SetDefaults" user="false" member="true">
       </Function>

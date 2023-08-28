@@ -1026,5 +1026,6 @@
             <Field name="colors" type="unsignedCharArray" length="4">251 244 32 255 </Field>      
             <Field name="position" type="float">0.996094 </Field>    
         </Object>
+        <Field name="tags" type="stringVector">"Color Blind Safe" "Viridis" "Default" "Continuous" </Field>
     </Object>
 </Object>

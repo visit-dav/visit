@@ -36,7 +36,7 @@ struct DeferExpressionAttributesObject
 //
 static PyObject *NewDeferExpressionAttributes(int);
 std::string
-PyDeferExpressionAttributes_ToString(const DeferExpressionAttributes *atts, const char *prefix)
+PyDeferExpressionAttributes_ToString(const DeferExpressionAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -74,37 +74,51 @@ DeferExpressionAttributes_SetExprs(PyObject *self, PyObject *args)
 {
     DeferExpressionAttributesObject *obj = (DeferExpressionAttributesObject *)self;
 
-    stringVector  &vec = obj->data->GetExprs();
-    PyObject     *tuple;
-    if(!PyArg_ParseTuple(args, "O", &tuple))
-        return NULL;
+    stringVector vec;
 
-    if(PyTuple_Check(tuple))
+    if (PyUnicode_Check(args))
     {
-        vec.resize(PyTuple_Size(tuple));
-        for(int i = 0; i < PyTuple_Size(tuple); ++i)
+        char const *val = PyUnicode_AsUTF8(args);
+        std::string cval = std::string(val);
+        if (val == 0 && PyErr_Occurred())
         {
-            PyObject *item = PyTuple_GET_ITEM(tuple, i);
-            if(PyString_Check(item))
+            PyErr_Clear();
+            return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ string");
+        }
+        vec.resize(1);
+        vec[0] = cval;
+    }
+    else if (PySequence_Check(args))
+    {
+        vec.resize(PySequence_Size(args));
+        for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)
+        {
+            PyObject *item = PySequence_GetItem(args, i);
+
+            if (!PyUnicode_Check(item))
             {
-                char *item_cstr = PyString_AsString(item);
-                vec[i] = std::string(item_cstr);
-                PyString_AsString_Cleanup(item_cstr);
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_TypeError, "arg %d is not a unicode string", (int) i);
             }
-            else
-                vec[i] = std::string("");
+
+            char const *val = PyUnicode_AsUTF8(item);
+            std::string cval = std::string(val);
+
+            if (val == 0 && PyErr_Occurred())
+            {
+                Py_DECREF(item);
+                PyErr_Clear();
+                return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ string", (int) i);
+            }
+            Py_DECREF(item);
+
+            vec[i] = cval;
         }
     }
-    else if(PyString_Check(tuple))
-    {
-        vec.resize(1);
-        char *tuple_cstr = PyString_AsString(tuple);
-        vec[0] = std::string(tuple_cstr);
-        PyString_AsString_Cleanup(tuple_cstr);
-    }
     else
-        return NULL;
+        return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more string(s)");
 
+    obj->data->GetExprs() = vec;
     // Mark the exprs in the object as modified.
     obj->data->SelectExprs();
 
@@ -154,28 +168,41 @@ PyDeferExpressionAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "exprs") == 0)
         return DeferExpressionAttributes_GetExprs(self, NULL);
 
+
+    // Add a __dict__ answer so that dir() works
+    if (!strcmp(name, "__dict__"))
+    {
+        PyObject *result = PyDict_New();
+        for (int i = 0; PyDeferExpressionAttributes_methods[i].ml_meth; i++)
+            PyDict_SetItem(result,
+                PyString_FromString(PyDeferExpressionAttributes_methods[i].ml_name),
+                PyString_FromString(PyDeferExpressionAttributes_methods[i].ml_name));
+        return result;
+    }
+
     return Py_FindMethod(PyDeferExpressionAttributes_methods, self, name);
 }
 
 int
 PyDeferExpressionAttributes_setattr(PyObject *self, char *name, PyObject *args)
 {
-    // Create a tuple to contain the arguments since all of the Set
-    // functions expect a tuple.
-    PyObject *tuple = PyTuple_New(1);
-    PyTuple_SET_ITEM(tuple, 0, args);
-    Py_INCREF(args);
-    PyObject *obj = NULL;
+    PyObject NULL_PY_OBJ;
+    PyObject *obj = &NULL_PY_OBJ;
 
     if(strcmp(name, "exprs") == 0)
-        obj = DeferExpressionAttributes_SetExprs(self, tuple);
+        obj = DeferExpressionAttributes_SetExprs(self, args);
 
-    if(obj != NULL)
+    if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
-    Py_DECREF(tuple);
-    if( obj == NULL)
-        PyErr_Format(PyExc_RuntimeError, "Unable to set unknown attribute: '%s'", name);
+    if (obj == &NULL_PY_OBJ)
+    {
+        obj = NULL;
+        PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);
+    }
+    else if (obj == NULL && !PyErr_Occurred())
+        PyErr_Format(PyExc_RuntimeError, "unknown problem with '%s'", name);
+
     return (obj != NULL) ? 0 : -1;
 }
 
@@ -183,7 +210,7 @@ static int
 DeferExpressionAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     DeferExpressionAttributesObject *obj = (DeferExpressionAttributesObject *)v;
-    fprintf(fp, "%s", PyDeferExpressionAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyDeferExpressionAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -191,7 +218,7 @@ PyObject *
 DeferExpressionAttributes_str(PyObject *v)
 {
     DeferExpressionAttributesObject *obj = (DeferExpressionAttributesObject *)v;
-    return PyString_FromString(PyDeferExpressionAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyDeferExpressionAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -343,7 +370,7 @@ PyDeferExpressionAttributes_GetLogString()
 {
     std::string s("DeferExpressionAtts = DeferExpressionAttributes()\n");
     if(currentAtts != 0)
-        s += PyDeferExpressionAttributes_ToString(currentAtts, "DeferExpressionAtts.");
+        s += PyDeferExpressionAttributes_ToString(currentAtts, "DeferExpressionAtts.", true);
     return s;
 }
 
@@ -356,7 +383,7 @@ PyDeferExpressionAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("DeferExpressionAtts = DeferExpressionAttributes()\n");
-        s += PyDeferExpressionAttributes_ToString(currentAtts, "DeferExpressionAtts.");
+        s += PyDeferExpressionAttributes_ToString(currentAtts, "DeferExpressionAtts.", true);
         cb(s);
     }
 }

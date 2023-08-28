@@ -37,7 +37,7 @@ struct SpreadsheetAttributesObject
 //
 static PyObject *NewSpreadsheetAttributes(int);
 std::string
-PySpreadsheetAttributes_ToString(const SpreadsheetAttributes *atts, const char *prefix)
+PySpreadsheetAttributes_ToString(const SpreadsheetAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -131,12 +131,37 @@ SpreadsheetAttributes_SetSubsetName(PyObject *self, PyObject *args)
 {
     SpreadsheetAttributesObject *obj = (SpreadsheetAttributesObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the subsetName in the object.
-    obj->data->SetSubsetName(std::string(str));
+    obj->data->SetSubsetName(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -155,12 +180,37 @@ SpreadsheetAttributes_SetFormatString(PyObject *self, PyObject *args)
 {
     SpreadsheetAttributesObject *obj = (SpreadsheetAttributesObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the formatString in the object.
-    obj->data->SetFormatString(std::string(str));
+    obj->data->SetFormatString(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -179,12 +229,48 @@ SpreadsheetAttributes_SetUseColorTable(PyObject *self, PyObject *args)
 {
     SpreadsheetAttributesObject *obj = (SpreadsheetAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the useColorTable in the object.
-    obj->data->SetUseColorTable(ival != 0);
+    obj->data->SetUseColorTable(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -203,12 +289,37 @@ SpreadsheetAttributes_SetColorTableName(PyObject *self, PyObject *args)
 {
     SpreadsheetAttributesObject *obj = (SpreadsheetAttributesObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the colorTableName in the object.
-    obj->data->SetColorTableName(std::string(str));
+    obj->data->SetColorTableName(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -227,12 +338,48 @@ SpreadsheetAttributes_SetShowTracerPlane(PyObject *self, PyObject *args)
 {
     SpreadsheetAttributesObject *obj = (SpreadsheetAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the showTracerPlane in the object.
-    obj->data->SetShowTracerPlane(ival != 0);
+    obj->data->SetShowTracerPlane(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -328,21 +475,55 @@ SpreadsheetAttributes_SetNormal(PyObject *self, PyObject *args)
 {
     SpreadsheetAttributesObject *obj = (SpreadsheetAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 3)
+    {
+        std::stringstream ss;
+        ss << "An invalid normal value was given." << std::endl;
+        ss << "Valid values are in the range [0,2]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << " X";
+        ss << ", Y";
+        ss << ", Z";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the normal in the object.
-    if(ival >= 0 && ival < 3)
-        obj->data->SetNormal(SpreadsheetAttributes::NormalAxis(ival));
-    else
-    {
-        fprintf(stderr, "An invalid normal value was given. "
-                        "Valid values are in the range of [0,2]. "
-                        "You can also use the following names: "
-                        "X, Y, Z.");
-        return NULL;
-    }
+    obj->data->SetNormal(SpreadsheetAttributes::NormalAxis(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -361,12 +542,48 @@ SpreadsheetAttributes_SetSliceIndex(PyObject *self, PyObject *args)
 {
     SpreadsheetAttributesObject *obj = (SpreadsheetAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the sliceIndex in the object.
-    obj->data->SetSliceIndex((int)ival);
+    obj->data->SetSliceIndex(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -385,12 +602,37 @@ SpreadsheetAttributes_SetSpreadsheetFont(PyObject *self, PyObject *args)
 {
     SpreadsheetAttributesObject *obj = (SpreadsheetAttributesObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the spreadsheetFont in the object.
-    obj->data->SetSpreadsheetFont(std::string(str));
+    obj->data->SetSpreadsheetFont(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -409,12 +651,48 @@ SpreadsheetAttributes_SetShowPatchOutline(PyObject *self, PyObject *args)
 {
     SpreadsheetAttributesObject *obj = (SpreadsheetAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the showPatchOutline in the object.
-    obj->data->SetShowPatchOutline(ival != 0);
+    obj->data->SetShowPatchOutline(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -433,12 +711,48 @@ SpreadsheetAttributes_SetShowCurrentCellOutline(PyObject *self, PyObject *args)
 {
     SpreadsheetAttributesObject *obj = (SpreadsheetAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the showCurrentCellOutline in the object.
-    obj->data->SetShowCurrentCellOutline(ival != 0);
+    obj->data->SetShowCurrentCellOutline(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -457,12 +771,48 @@ SpreadsheetAttributes_SetCurrentPickType(PyObject *self, PyObject *args)
 {
     SpreadsheetAttributesObject *obj = (SpreadsheetAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the currentPickType in the object.
-    obj->data->SetCurrentPickType((int)ival);
+    obj->data->SetCurrentPickType(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -481,12 +831,37 @@ SpreadsheetAttributes_SetCurrentPickLetter(PyObject *self, PyObject *args)
 {
     SpreadsheetAttributesObject *obj = (SpreadsheetAttributesObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the currentPickLetter in the object.
-    obj->data->SetCurrentPickLetter(std::string(str));
+    obj->data->SetCurrentPickLetter(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -505,37 +880,51 @@ SpreadsheetAttributes_SetPastPickLetters(PyObject *self, PyObject *args)
 {
     SpreadsheetAttributesObject *obj = (SpreadsheetAttributesObject *)self;
 
-    stringVector  &vec = obj->data->GetPastPickLetters();
-    PyObject     *tuple;
-    if(!PyArg_ParseTuple(args, "O", &tuple))
-        return NULL;
+    stringVector vec;
 
-    if(PyTuple_Check(tuple))
+    if (PyUnicode_Check(args))
     {
-        vec.resize(PyTuple_Size(tuple));
-        for(int i = 0; i < PyTuple_Size(tuple); ++i)
+        char const *val = PyUnicode_AsUTF8(args);
+        std::string cval = std::string(val);
+        if (val == 0 && PyErr_Occurred())
         {
-            PyObject *item = PyTuple_GET_ITEM(tuple, i);
-            if(PyString_Check(item))
+            PyErr_Clear();
+            return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ string");
+        }
+        vec.resize(1);
+        vec[0] = cval;
+    }
+    else if (PySequence_Check(args))
+    {
+        vec.resize(PySequence_Size(args));
+        for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)
+        {
+            PyObject *item = PySequence_GetItem(args, i);
+
+            if (!PyUnicode_Check(item))
             {
-                char *item_cstr = PyString_AsString(item);
-                vec[i] = std::string(item_cstr);
-                PyString_AsString_Cleanup(item_cstr);
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_TypeError, "arg %d is not a unicode string", (int) i);
             }
-            else
-                vec[i] = std::string("");
+
+            char const *val = PyUnicode_AsUTF8(item);
+            std::string cval = std::string(val);
+
+            if (val == 0 && PyErr_Occurred())
+            {
+                Py_DECREF(item);
+                PyErr_Clear();
+                return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ string", (int) i);
+            }
+            Py_DECREF(item);
+
+            vec[i] = cval;
         }
     }
-    else if(PyString_Check(tuple))
-    {
-        vec.resize(1);
-        char *tuple_cstr = PyString_AsString(tuple);
-        vec[0] = std::string(tuple_cstr);
-        PyString_AsString_Cleanup(tuple_cstr);
-    }
     else
-        return NULL;
+        return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more string(s)");
 
+    obj->data->GetPastPickLetters() = vec;
     // Mark the pastPickLetters in the object as modified.
     obj->data->SelectPastPickLetters();
 
@@ -644,54 +1033,67 @@ PySpreadsheetAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "pastPickLetters") == 0)
         return SpreadsheetAttributes_GetPastPickLetters(self, NULL);
 
+
+    // Add a __dict__ answer so that dir() works
+    if (!strcmp(name, "__dict__"))
+    {
+        PyObject *result = PyDict_New();
+        for (int i = 0; PySpreadsheetAttributes_methods[i].ml_meth; i++)
+            PyDict_SetItem(result,
+                PyString_FromString(PySpreadsheetAttributes_methods[i].ml_name),
+                PyString_FromString(PySpreadsheetAttributes_methods[i].ml_name));
+        return result;
+    }
+
     return Py_FindMethod(PySpreadsheetAttributes_methods, self, name);
 }
 
 int
 PySpreadsheetAttributes_setattr(PyObject *self, char *name, PyObject *args)
 {
-    // Create a tuple to contain the arguments since all of the Set
-    // functions expect a tuple.
-    PyObject *tuple = PyTuple_New(1);
-    PyTuple_SET_ITEM(tuple, 0, args);
-    Py_INCREF(args);
-    PyObject *obj = NULL;
+    PyObject NULL_PY_OBJ;
+    PyObject *obj = &NULL_PY_OBJ;
 
     if(strcmp(name, "subsetName") == 0)
-        obj = SpreadsheetAttributes_SetSubsetName(self, tuple);
+        obj = SpreadsheetAttributes_SetSubsetName(self, args);
     else if(strcmp(name, "formatString") == 0)
-        obj = SpreadsheetAttributes_SetFormatString(self, tuple);
+        obj = SpreadsheetAttributes_SetFormatString(self, args);
     else if(strcmp(name, "useColorTable") == 0)
-        obj = SpreadsheetAttributes_SetUseColorTable(self, tuple);
+        obj = SpreadsheetAttributes_SetUseColorTable(self, args);
     else if(strcmp(name, "colorTableName") == 0)
-        obj = SpreadsheetAttributes_SetColorTableName(self, tuple);
+        obj = SpreadsheetAttributes_SetColorTableName(self, args);
     else if(strcmp(name, "showTracerPlane") == 0)
-        obj = SpreadsheetAttributes_SetShowTracerPlane(self, tuple);
+        obj = SpreadsheetAttributes_SetShowTracerPlane(self, args);
     else if(strcmp(name, "tracerColor") == 0)
-        obj = SpreadsheetAttributes_SetTracerColor(self, tuple);
+        obj = SpreadsheetAttributes_SetTracerColor(self, args);
     else if(strcmp(name, "normal") == 0)
-        obj = SpreadsheetAttributes_SetNormal(self, tuple);
+        obj = SpreadsheetAttributes_SetNormal(self, args);
     else if(strcmp(name, "sliceIndex") == 0)
-        obj = SpreadsheetAttributes_SetSliceIndex(self, tuple);
+        obj = SpreadsheetAttributes_SetSliceIndex(self, args);
     else if(strcmp(name, "spreadsheetFont") == 0)
-        obj = SpreadsheetAttributes_SetSpreadsheetFont(self, tuple);
+        obj = SpreadsheetAttributes_SetSpreadsheetFont(self, args);
     else if(strcmp(name, "showPatchOutline") == 0)
-        obj = SpreadsheetAttributes_SetShowPatchOutline(self, tuple);
+        obj = SpreadsheetAttributes_SetShowPatchOutline(self, args);
     else if(strcmp(name, "showCurrentCellOutline") == 0)
-        obj = SpreadsheetAttributes_SetShowCurrentCellOutline(self, tuple);
+        obj = SpreadsheetAttributes_SetShowCurrentCellOutline(self, args);
     else if(strcmp(name, "currentPickType") == 0)
-        obj = SpreadsheetAttributes_SetCurrentPickType(self, tuple);
+        obj = SpreadsheetAttributes_SetCurrentPickType(self, args);
     else if(strcmp(name, "currentPickLetter") == 0)
-        obj = SpreadsheetAttributes_SetCurrentPickLetter(self, tuple);
+        obj = SpreadsheetAttributes_SetCurrentPickLetter(self, args);
     else if(strcmp(name, "pastPickLetters") == 0)
-        obj = SpreadsheetAttributes_SetPastPickLetters(self, tuple);
+        obj = SpreadsheetAttributes_SetPastPickLetters(self, args);
 
-    if(obj != NULL)
+    if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
-    Py_DECREF(tuple);
-    if( obj == NULL)
-        PyErr_Format(PyExc_RuntimeError, "Unable to set unknown attribute: '%s'", name);
+    if (obj == &NULL_PY_OBJ)
+    {
+        obj = NULL;
+        PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);
+    }
+    else if (obj == NULL && !PyErr_Occurred())
+        PyErr_Format(PyExc_RuntimeError, "unknown problem with '%s'", name);
+
     return (obj != NULL) ? 0 : -1;
 }
 
@@ -699,7 +1101,7 @@ static int
 SpreadsheetAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     SpreadsheetAttributesObject *obj = (SpreadsheetAttributesObject *)v;
-    fprintf(fp, "%s", PySpreadsheetAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PySpreadsheetAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -707,7 +1109,7 @@ PyObject *
 SpreadsheetAttributes_str(PyObject *v)
 {
     SpreadsheetAttributesObject *obj = (SpreadsheetAttributesObject *)v;
-    return PyString_FromString(PySpreadsheetAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PySpreadsheetAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -859,7 +1261,7 @@ PySpreadsheetAttributes_GetLogString()
 {
     std::string s("SpreadsheetAtts = SpreadsheetAttributes()\n");
     if(currentAtts != 0)
-        s += PySpreadsheetAttributes_ToString(currentAtts, "SpreadsheetAtts.");
+        s += PySpreadsheetAttributes_ToString(currentAtts, "SpreadsheetAtts.", true);
     return s;
 }
 
@@ -872,7 +1274,7 @@ PySpreadsheetAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("SpreadsheetAtts = SpreadsheetAttributes()\n");
-        s += PySpreadsheetAttributes_ToString(currentAtts, "SpreadsheetAtts.");
+        s += PySpreadsheetAttributes_ToString(currentAtts, "SpreadsheetAtts.", true);
         cb(s);
     }
 }

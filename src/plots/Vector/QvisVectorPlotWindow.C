@@ -193,6 +193,8 @@ QvisVectorPlotWindow::CreateWindowContents()
 // Creation:   September 20 2013
 //
 // Modifications:
+//   Kathleen Biagas, Tue Apr 18 16:34:41 PDT 2023
+//   Support Qt6: buttonClicked -> idClicked.
 //
 // ****************************************************************************
 
@@ -200,7 +202,7 @@ void
 QvisVectorPlotWindow::CreateSamplingTab(QWidget *pageVector)
 {
     QGridLayout *topLayout = new QGridLayout(pageVector);
-    topLayout->setMargin(5);
+    topLayout->setContentsMargins(5,5,5,5);
     topLayout->setSpacing(10);
 
     //
@@ -217,8 +219,13 @@ QvisVectorPlotWindow::CreateSamplingTab(QWidget *pageVector)
     QLabel *locationLabel = new QLabel(tr("Placement"), reduceGroupBox);
     rgLayout->addWidget(locationLabel, 0, 0);
     locationButtonGroup = new QButtonGroup(reduceGroupBox);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(locationButtonGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(locationMethodChanged(int)));
+#else
+    connect(locationButtonGroup, SIGNAL(idClicked(int)),
+            this, SLOT(locationMethodChanged(int)));
+#endif
     QRadioButton *rb = new QRadioButton(tr("Adapt to the mesh resolution"), reduceGroupBox);
     rb->setChecked(true);
     locationButtonGroup->addButton(rb, 0);
@@ -235,8 +242,13 @@ QvisVectorPlotWindow::CreateSamplingTab(QWidget *pageVector)
     QLabel *reduceLabel = new QLabel(tr("Sampling"), reduceGroupBox);
     rgLayout->addWidget(reduceLabel, 4, 0);
     reduceButtonGroup = new QButtonGroup(reduceGroupBox);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(reduceButtonGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(reduceMethodChanged(int)));
+#else
+    connect(reduceButtonGroup, SIGNAL(idClicked(int)),
+            this, SLOT(reduceMethodChanged(int)));
+#endif
     rb = new QRadioButton(tr("Fixed number"), reduceGroupBox);
     rb->setChecked(true);
     reduceButtonGroup->addButton(rb, 0);
@@ -280,6 +292,8 @@ QvisVectorPlotWindow::CreateSamplingTab(QWidget *pageVector)
 // Creation:   September 20 2013
 //
 // Modifications:
+//   Kathleen Biagas, Tue Apr 18 16:34:41 PDT 2023
+//   Support Qt6: buttonClicked -> idClicked.
 //
 // ****************************************************************************
 
@@ -287,7 +301,7 @@ void
 QvisVectorPlotWindow::CreateDataTab(QWidget *pageVector)
 {
     QGridLayout *topLayout = new QGridLayout(pageVector);
-    topLayout->setMargin(5);
+    topLayout->setContentsMargins(5,5,5,5);
     topLayout->setSpacing(10);
 
     //
@@ -298,7 +312,7 @@ QvisVectorPlotWindow::CreateDataTab(QWidget *pageVector)
     topLayout->addWidget(limitsGroup);
 
     QGridLayout *limitsLayout = new QGridLayout(limitsGroup);
-    limitsLayout->setMargin(5);
+    limitsLayout->setContentsMargins(5,5,5,5);
     limitsLayout->setSpacing(10);
 
     limitsLayout->addWidget( new QLabel(tr("Limits"), central), 0, 0);
@@ -338,14 +352,19 @@ QvisVectorPlotWindow::CreateDataTab(QWidget *pageVector)
     topLayout->addWidget(colorGroupBox);
 
     QGridLayout *cgLayout = new QGridLayout(colorGroupBox);
-    cgLayout->setMargin(5);
+    cgLayout->setContentsMargins(5,5,5,5);
     cgLayout->setSpacing(10);
     cgLayout->setColumnStretch(1, 10);
 
     // Add the color label.
     colorButtonGroup = new QButtonGroup(colorGroupBox);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(colorButtonGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(colorModeChanged(int)));
+#else
+    connect(colorButtonGroup, SIGNAL(idClicked(int)),
+            this, SLOT(colorModeChanged(int)));
+#endif
     QRadioButton* rb = new QRadioButton(tr("Magnitude"), colorGroupBox);
     colorButtonGroup->addButton(rb, 0);
     cgLayout->addWidget(rb, 0, 0);
@@ -379,7 +398,7 @@ QvisVectorPlotWindow::CreateDataTab(QWidget *pageVector)
     topLayout->addWidget(miscGroup);
 
     QGridLayout *miscLayout = new QGridLayout(miscGroup);
-    miscLayout->setMargin(5);
+    miscLayout->setContentsMargins(5,5,5,5);
     miscLayout->setSpacing(10);
  
     // Create the legend toggle
@@ -400,6 +419,8 @@ QvisVectorPlotWindow::CreateDataTab(QWidget *pageVector)
 // Creation:   September 20 2013
 //
 // Modifications:
+//   Kathleen Biagas, Tue Apr 18 16:34:41 PDT 2023
+//   Support Qt6: buttonClicked -> idClicked.
 //
 // ****************************************************************************
 
@@ -407,7 +428,7 @@ void
 QvisVectorPlotWindow::CreateGeometryTab(QWidget *pageGlyphs)
 {
     QGridLayout *topLayout = new QGridLayout(pageGlyphs);
-    topLayout->setMargin(5);
+    topLayout->setContentsMargins(5,5,5,5);
     topLayout->setSpacing(10);
 
     //
@@ -418,7 +439,7 @@ QvisVectorPlotWindow::CreateGeometryTab(QWidget *pageGlyphs)
     topLayout->addWidget(scaleGroupBox);
 
     QGridLayout *sgLayout = new QGridLayout(scaleGroupBox);
-    sgLayout->setMargin(5);
+    sgLayout->setContentsMargins(5,5,5,5);
     sgLayout->setSpacing(10);
     sgLayout->setColumnStretch(1, 10);
 
@@ -451,7 +472,7 @@ QvisVectorPlotWindow::CreateGeometryTab(QWidget *pageGlyphs)
     topLayout->addWidget(styleGroupBox);
 
     QGridLayout *styleLayout = new QGridLayout(styleGroupBox);
-    styleLayout->setMargin(5);
+    styleLayout->setContentsMargins(5,5,5,5);
     styleLayout->setSpacing(10);
     styleLayout->setColumnStretch(1, 10);
     
@@ -517,11 +538,16 @@ QvisVectorPlotWindow::CreateGeometryTab(QWidget *pageGlyphs)
     QWidget *originBox = new QWidget(styleGroupBox);
     originButtonGroup = new QButtonGroup(originBox);
     QHBoxLayout *originLayout = new QHBoxLayout(originBox);
-    originLayout->setMargin(0);
+    originLayout->setContentsMargins(0,0,0,0);
     originLayout->setSpacing(10);
     QLabel *vectorOriginLabel = new QLabel(tr("Vector origin"), originBox);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(originButtonGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(originTypeChanged(int)));
+#else
+    connect(originButtonGroup, SIGNAL(idClicked(int)),
+            this, SLOT(originTypeChanged(int)));
+#endif
     originLayout->addWidget(vectorOriginLabel);
     QRadioButton* rb = new QRadioButton(tr("Head"), originBox);
     originButtonGroup->addButton(rb,0);
@@ -543,7 +569,7 @@ QvisVectorPlotWindow::CreateGeometryTab(QWidget *pageGlyphs)
     topLayout->addWidget(renderingGroup);
 
     QGridLayout *renderingLayout = new QGridLayout(renderingGroup);
-    renderingLayout->setMargin(5);
+    renderingLayout->setContentsMargins(5,5,5,5);
     renderingLayout->setSpacing(10);
 
     // Create the smoothing options
@@ -551,8 +577,13 @@ QvisVectorPlotWindow::CreateGeometryTab(QWidget *pageGlyphs)
 
     // Create the smoothing level buttons
     geometryQualityButtons = new QButtonGroup(central);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(geometryQualityButtons, SIGNAL(buttonClicked(int)),
             this, SLOT(geometryQualityChanged(int)));
+#else
+    connect(geometryQualityButtons, SIGNAL(idClicked(int)),
+            this, SLOT(geometryQualityChanged(int)));
+#endif
 
     rb = new QRadioButton(tr("Fast"), central);
     geometryQualityButtons->addButton(rb, 0);
@@ -580,7 +611,7 @@ void
 QvisVectorPlotWindow::CreateExtrasTab(QWidget *pageExtras)
 {
     QGridLayout *topLayout = new QGridLayout(pageExtras);
-    topLayout->setMargin(5);
+    topLayout->setContentsMargins(5,5,5,5);
     topLayout->setSpacing(10);
 
     // Create the blank stuff to fill in gaps.
@@ -590,7 +621,7 @@ QvisVectorPlotWindow::CreateExtrasTab(QWidget *pageExtras)
     topLayout->addWidget(blankGroup);
 
     QGridLayout *blankLayout = new QGridLayout(blankGroup);
-    blankLayout->setMargin(5);
+    blankLayout->setContentsMargins(5,5,5,5);
     blankLayout->setSpacing(10);
  
     blankLayout->addWidget(new QLabel(tr(""), central), 0,0);

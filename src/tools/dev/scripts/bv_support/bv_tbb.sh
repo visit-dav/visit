@@ -7,7 +7,12 @@ function bv_tbb_initialize
 
 function bv_tbb_enable
 {
-    DO_TBB="yes"
+    # separate tbb not required by ospray for vtk-9
+    if [[ "$DO_VTK9" == "yes" ]] ; then
+        DO_TBB="no"
+    else
+        DO_TBB="yes"
+    fi
 }
 
 function bv_tbb_disable
@@ -103,13 +108,6 @@ function bv_tbb_ensure
             DO_TBB="no"
             error "Unable to build TBB.  ${TBB_FILE} not found."
         fi
-    fi
-}
-
-function bv_tbb_dry_run
-{
-    if [[ "$DO_TBB" == "yes" ]] ; then
-        echo "Dry run option not set for TBB."
     fi
 }
 

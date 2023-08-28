@@ -36,7 +36,7 @@ struct AnimationAttributesObject
 //
 static PyObject *NewAnimationAttributes(int);
 std::string
-PyAnimationAttributes_ToString(const AnimationAttributes *atts, const char *prefix)
+PyAnimationAttributes_ToString(const AnimationAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -105,21 +105,55 @@ AnimationAttributes_SetAnimationMode(PyObject *self, PyObject *args)
 {
     AnimationAttributesObject *obj = (AnimationAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 3)
+    {
+        std::stringstream ss;
+        ss << "An invalid animationMode value was given." << std::endl;
+        ss << "Valid values are in the range [0,2]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << " ReversePlayMode";
+        ss << ", StopMode";
+        ss << ", PlayMode";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the animationMode in the object.
-    if(ival >= 0 && ival < 3)
-        obj->data->SetAnimationMode(AnimationAttributes::AnimationMode(ival));
-    else
-    {
-        fprintf(stderr, "An invalid animationMode value was given. "
-                        "Valid values are in the range of [0,2]. "
-                        "You can also use the following names: "
-                        "ReversePlayMode, StopMode, PlayMode.");
-        return NULL;
-    }
+    obj->data->SetAnimationMode(AnimationAttributes::AnimationMode(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -138,12 +172,48 @@ AnimationAttributes_SetPipelineCachingMode(PyObject *self, PyObject *args)
 {
     AnimationAttributesObject *obj = (AnimationAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the pipelineCachingMode in the object.
-    obj->data->SetPipelineCachingMode(ival != 0);
+    obj->data->SetPipelineCachingMode(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -162,12 +232,48 @@ AnimationAttributes_SetFrameIncrement(PyObject *self, PyObject *args)
 {
     AnimationAttributesObject *obj = (AnimationAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the frameIncrement in the object.
-    obj->data->SetFrameIncrement((int)ival);
+    obj->data->SetFrameIncrement(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -186,12 +292,48 @@ AnimationAttributes_SetTimeout(PyObject *self, PyObject *args)
 {
     AnimationAttributesObject *obj = (AnimationAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the timeout in the object.
-    obj->data->SetTimeout((int)ival);
+    obj->data->SetTimeout(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -210,21 +352,55 @@ AnimationAttributes_SetPlaybackMode(PyObject *self, PyObject *args)
 {
     AnimationAttributesObject *obj = (AnimationAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 3)
+    {
+        std::stringstream ss;
+        ss << "An invalid playbackMode value was given." << std::endl;
+        ss << "Valid values are in the range [0,2]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << " Looping";
+        ss << ", PlayOnce";
+        ss << ", Swing";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the playbackMode in the object.
-    if(ival >= 0 && ival < 3)
-        obj->data->SetPlaybackMode(AnimationAttributes::PlaybackMode(ival));
-    else
-    {
-        fprintf(stderr, "An invalid playbackMode value was given. "
-                        "Valid values are in the range of [0,2]. "
-                        "You can also use the following names: "
-                        "Looping, PlayOnce, Swing.");
-        return NULL;
-    }
+    obj->data->SetPlaybackMode(AnimationAttributes::PlaybackMode(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -298,36 +474,49 @@ PyAnimationAttributes_getattr(PyObject *self, char *name)
         return PyInt_FromLong(long(AnimationAttributes::Swing));
 
 
+
+    // Add a __dict__ answer so that dir() works
+    if (!strcmp(name, "__dict__"))
+    {
+        PyObject *result = PyDict_New();
+        for (int i = 0; PyAnimationAttributes_methods[i].ml_meth; i++)
+            PyDict_SetItem(result,
+                PyString_FromString(PyAnimationAttributes_methods[i].ml_name),
+                PyString_FromString(PyAnimationAttributes_methods[i].ml_name));
+        return result;
+    }
+
     return Py_FindMethod(PyAnimationAttributes_methods, self, name);
 }
 
 int
 PyAnimationAttributes_setattr(PyObject *self, char *name, PyObject *args)
 {
-    // Create a tuple to contain the arguments since all of the Set
-    // functions expect a tuple.
-    PyObject *tuple = PyTuple_New(1);
-    PyTuple_SET_ITEM(tuple, 0, args);
-    Py_INCREF(args);
-    PyObject *obj = NULL;
+    PyObject NULL_PY_OBJ;
+    PyObject *obj = &NULL_PY_OBJ;
 
     if(strcmp(name, "animationMode") == 0)
-        obj = AnimationAttributes_SetAnimationMode(self, tuple);
+        obj = AnimationAttributes_SetAnimationMode(self, args);
     else if(strcmp(name, "pipelineCachingMode") == 0)
-        obj = AnimationAttributes_SetPipelineCachingMode(self, tuple);
+        obj = AnimationAttributes_SetPipelineCachingMode(self, args);
     else if(strcmp(name, "frameIncrement") == 0)
-        obj = AnimationAttributes_SetFrameIncrement(self, tuple);
+        obj = AnimationAttributes_SetFrameIncrement(self, args);
     else if(strcmp(name, "timeout") == 0)
-        obj = AnimationAttributes_SetTimeout(self, tuple);
+        obj = AnimationAttributes_SetTimeout(self, args);
     else if(strcmp(name, "playbackMode") == 0)
-        obj = AnimationAttributes_SetPlaybackMode(self, tuple);
+        obj = AnimationAttributes_SetPlaybackMode(self, args);
 
-    if(obj != NULL)
+    if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
-    Py_DECREF(tuple);
-    if( obj == NULL)
-        PyErr_Format(PyExc_RuntimeError, "Unable to set unknown attribute: '%s'", name);
+    if (obj == &NULL_PY_OBJ)
+    {
+        obj = NULL;
+        PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);
+    }
+    else if (obj == NULL && !PyErr_Occurred())
+        PyErr_Format(PyExc_RuntimeError, "unknown problem with '%s'", name);
+
     return (obj != NULL) ? 0 : -1;
 }
 
@@ -335,7 +524,7 @@ static int
 AnimationAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     AnimationAttributesObject *obj = (AnimationAttributesObject *)v;
-    fprintf(fp, "%s", PyAnimationAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyAnimationAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -343,7 +532,7 @@ PyObject *
 AnimationAttributes_str(PyObject *v)
 {
     AnimationAttributesObject *obj = (AnimationAttributesObject *)v;
-    return PyString_FromString(PyAnimationAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyAnimationAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -495,7 +684,7 @@ PyAnimationAttributes_GetLogString()
 {
     std::string s("AnimationAtts = AnimationAttributes()\n");
     if(currentAtts != 0)
-        s += PyAnimationAttributes_ToString(currentAtts, "AnimationAtts.");
+        s += PyAnimationAttributes_ToString(currentAtts, "AnimationAtts.", true);
     return s;
 }
 
@@ -508,7 +697,7 @@ PyAnimationAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("AnimationAtts = AnimationAttributes()\n");
-        s += PyAnimationAttributes_ToString(currentAtts, "AnimationAtts.");
+        s += PyAnimationAttributes_ToString(currentAtts, "AnimationAtts.", true);
         cb(s);
     }
 }

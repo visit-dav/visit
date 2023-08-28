@@ -43,6 +43,9 @@
 #    Kathleen Biagas, Fri Jul  7 13:41:36 PDT 2017
 #    Don't run this test if the parallel engine doesn't exist.
 #
+#    Kathleen Biagas, Tue Feb 8 2022
+#    Use run_dir for location of saving windows, it is cleaned up on exit.
+#
 # ----------------------------------------------------------------------------
 
 if not sys.platform.startswith("win"):
@@ -142,7 +145,7 @@ srModeHistory=""
 # function to save temporary windows used to force renders
 def MySaveWindow():
     swa = GetSaveWindowAttributes()
-    swa.fileName = "current/scalable_tmp.png"
+    swa.fileName = pjoin(TestEnv.params["run_dir"], "scalable_tmp.png")
     swa.format = swa.PNG
     swa.family = 0
     SetSaveWindowAttributes(swa)

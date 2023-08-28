@@ -79,6 +79,7 @@ typedef enum
 #define VISIT_DATATYPE_DOUBLE             3
 #define VISIT_DATATYPE_LONG               4
 #define VISIT_DATATYPE_STRING             10
+#define VISIT_DATATYPE_ENUM               11
 
 /* Array Owner */
 #define VISIT_OWNER_SIM                   0

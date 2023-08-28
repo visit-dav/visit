@@ -16,13 +16,17 @@
 #    Cyrus Harrison, Wed Feb 24 10:12:20 PST 2021
 #    Move PySide logic into visit_utils.builtin
 #
+#    Mark C. Miller, Mon Jun 28 17:00:28 PDT 2021
+#    Add apropos and help override
+#
 ###############################################################################
 from .evalfuncs import *
 from .writescript import WriteScript
 from .convert2to3 import ConvertPy2to3
 from .convert2to3 import GetAutoPy2to3
 from .convert2to3 import SetAutoPy2to3
-
+from .apropos import *
+from .flatten import *
 
 #
 # Import PySide2 if it exists.

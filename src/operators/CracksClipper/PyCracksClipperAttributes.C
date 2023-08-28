@@ -36,7 +36,7 @@ struct CracksClipperAttributesObject
 //
 static PyObject *NewCracksClipperAttributes(int);
 std::string
-PyCracksClipperAttributes_ToString(const CracksClipperAttributes *atts, const char *prefix)
+PyCracksClipperAttributes_ToString(const CracksClipperAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -83,12 +83,37 @@ CracksClipperAttributes_SetCrack1Var(PyObject *self, PyObject *args)
 {
     CracksClipperAttributesObject *obj = (CracksClipperAttributesObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the crack1Var in the object.
-    obj->data->SetCrack1Var(std::string(str));
+    obj->data->SetCrack1Var(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -107,12 +132,37 @@ CracksClipperAttributes_SetCrack2Var(PyObject *self, PyObject *args)
 {
     CracksClipperAttributesObject *obj = (CracksClipperAttributesObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the crack2Var in the object.
-    obj->data->SetCrack2Var(std::string(str));
+    obj->data->SetCrack2Var(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -131,12 +181,37 @@ CracksClipperAttributes_SetCrack3Var(PyObject *self, PyObject *args)
 {
     CracksClipperAttributesObject *obj = (CracksClipperAttributesObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the crack3Var in the object.
-    obj->data->SetCrack3Var(std::string(str));
+    obj->data->SetCrack3Var(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -155,12 +230,37 @@ CracksClipperAttributes_SetStrainVar(PyObject *self, PyObject *args)
 {
     CracksClipperAttributesObject *obj = (CracksClipperAttributesObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the strainVar in the object.
-    obj->data->SetStrainVar(std::string(str));
+    obj->data->SetStrainVar(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -179,12 +279,48 @@ CracksClipperAttributes_SetShowCrack1(PyObject *self, PyObject *args)
 {
     CracksClipperAttributesObject *obj = (CracksClipperAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the showCrack1 in the object.
-    obj->data->SetShowCrack1(ival != 0);
+    obj->data->SetShowCrack1(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -203,12 +339,48 @@ CracksClipperAttributes_SetShowCrack2(PyObject *self, PyObject *args)
 {
     CracksClipperAttributesObject *obj = (CracksClipperAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the showCrack2 in the object.
-    obj->data->SetShowCrack2(ival != 0);
+    obj->data->SetShowCrack2(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -227,12 +399,48 @@ CracksClipperAttributes_SetShowCrack3(PyObject *self, PyObject *args)
 {
     CracksClipperAttributesObject *obj = (CracksClipperAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the showCrack3 in the object.
-    obj->data->SetShowCrack3(ival != 0);
+    obj->data->SetShowCrack3(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -251,12 +459,37 @@ CracksClipperAttributes_SetInMassVar(PyObject *self, PyObject *args)
 {
     CracksClipperAttributesObject *obj = (CracksClipperAttributesObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the inMassVar in the object.
-    obj->data->SetInMassVar(std::string(str));
+    obj->data->SetInMassVar(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -328,42 +561,55 @@ PyCracksClipperAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "inMassVar") == 0)
         return CracksClipperAttributes_GetInMassVar(self, NULL);
 
+
+    // Add a __dict__ answer so that dir() works
+    if (!strcmp(name, "__dict__"))
+    {
+        PyObject *result = PyDict_New();
+        for (int i = 0; PyCracksClipperAttributes_methods[i].ml_meth; i++)
+            PyDict_SetItem(result,
+                PyString_FromString(PyCracksClipperAttributes_methods[i].ml_name),
+                PyString_FromString(PyCracksClipperAttributes_methods[i].ml_name));
+        return result;
+    }
+
     return Py_FindMethod(PyCracksClipperAttributes_methods, self, name);
 }
 
 int
 PyCracksClipperAttributes_setattr(PyObject *self, char *name, PyObject *args)
 {
-    // Create a tuple to contain the arguments since all of the Set
-    // functions expect a tuple.
-    PyObject *tuple = PyTuple_New(1);
-    PyTuple_SET_ITEM(tuple, 0, args);
-    Py_INCREF(args);
-    PyObject *obj = NULL;
+    PyObject NULL_PY_OBJ;
+    PyObject *obj = &NULL_PY_OBJ;
 
     if(strcmp(name, "crack1Var") == 0)
-        obj = CracksClipperAttributes_SetCrack1Var(self, tuple);
+        obj = CracksClipperAttributes_SetCrack1Var(self, args);
     else if(strcmp(name, "crack2Var") == 0)
-        obj = CracksClipperAttributes_SetCrack2Var(self, tuple);
+        obj = CracksClipperAttributes_SetCrack2Var(self, args);
     else if(strcmp(name, "crack3Var") == 0)
-        obj = CracksClipperAttributes_SetCrack3Var(self, tuple);
+        obj = CracksClipperAttributes_SetCrack3Var(self, args);
     else if(strcmp(name, "strainVar") == 0)
-        obj = CracksClipperAttributes_SetStrainVar(self, tuple);
+        obj = CracksClipperAttributes_SetStrainVar(self, args);
     else if(strcmp(name, "showCrack1") == 0)
-        obj = CracksClipperAttributes_SetShowCrack1(self, tuple);
+        obj = CracksClipperAttributes_SetShowCrack1(self, args);
     else if(strcmp(name, "showCrack2") == 0)
-        obj = CracksClipperAttributes_SetShowCrack2(self, tuple);
+        obj = CracksClipperAttributes_SetShowCrack2(self, args);
     else if(strcmp(name, "showCrack3") == 0)
-        obj = CracksClipperAttributes_SetShowCrack3(self, tuple);
+        obj = CracksClipperAttributes_SetShowCrack3(self, args);
     else if(strcmp(name, "inMassVar") == 0)
-        obj = CracksClipperAttributes_SetInMassVar(self, tuple);
+        obj = CracksClipperAttributes_SetInMassVar(self, args);
 
-    if(obj != NULL)
+    if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
-    Py_DECREF(tuple);
-    if( obj == NULL)
-        PyErr_Format(PyExc_RuntimeError, "Unable to set unknown attribute: '%s'", name);
+    if (obj == &NULL_PY_OBJ)
+    {
+        obj = NULL;
+        PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);
+    }
+    else if (obj == NULL && !PyErr_Occurred())
+        PyErr_Format(PyExc_RuntimeError, "unknown problem with '%s'", name);
+
     return (obj != NULL) ? 0 : -1;
 }
 
@@ -371,7 +617,7 @@ static int
 CracksClipperAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     CracksClipperAttributesObject *obj = (CracksClipperAttributesObject *)v;
-    fprintf(fp, "%s", PyCracksClipperAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyCracksClipperAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -379,7 +625,7 @@ PyObject *
 CracksClipperAttributes_str(PyObject *v)
 {
     CracksClipperAttributesObject *obj = (CracksClipperAttributesObject *)v;
-    return PyString_FromString(PyCracksClipperAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyCracksClipperAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -531,7 +777,7 @@ PyCracksClipperAttributes_GetLogString()
 {
     std::string s("CracksClipperAtts = CracksClipperAttributes()\n");
     if(currentAtts != 0)
-        s += PyCracksClipperAttributes_ToString(currentAtts, "CracksClipperAtts.");
+        s += PyCracksClipperAttributes_ToString(currentAtts, "CracksClipperAtts.", true);
     return s;
 }
 
@@ -544,7 +790,7 @@ PyCracksClipperAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("CracksClipperAtts = CracksClipperAttributes()\n");
-        s += PyCracksClipperAttributes_ToString(currentAtts, "CracksClipperAtts.");
+        s += PyCracksClipperAttributes_ToString(currentAtts, "CracksClipperAtts.", true);
         cb(s);
     }
 }

@@ -80,15 +80,9 @@ function bv_cgns_ensure
     fi
 }
 
-function bv_cgns_dry_run
-{
-    if [[ "$DO_CGNS" == "yes" ]] ; then
-        echo "Dry run option not set for cgns."
-    fi
-}
-
 function apply_cgns_410_patch
 {
+    info "Patching CGNS 4.1.0"
     patch -p0 << \EOF
 diff -c CGNS-4.1.0/src/configure.orig CGNS-4.1.0/src/configure
 *** CGNS-4.1.0/src/configure.orig	Thu Feb 11 17:51:22 2021
@@ -268,6 +262,24 @@ EOF
         return 1
     fi
 
+    patch -p0 << \EOF
+diff -u CGNS-4.1.0/src/Makefile.in.orig CGNS-4.1.0/src/Makefile.in
+--- CGNS-4.1.0/src/Makefile.in.orig	2021-01-29 09:15:50.000000000 -0800
++++ CGNS-4.1.0/src/Makefile.in	2021-05-05 08:52:32.000000000 -0700
+@@ -53,7 +53,7 @@
+ 
+ $(CGNSLIB) : $(OBJDIR) $(CGNSOBJS) $(FGNSOBJS) $(ADFOBJS) $(F2COBJS)
+ 	-@$(RM) $@
+-	@AR_LIB@ $@ $(CGNSOBJS) $(FGNSOBJS) $(ADFOBJS) $(F2COBJS)
++	@AR_LIB@ $@ $(LDFLAGS) $(CGNSOBJS) $(FGNSOBJS) $(ADFOBJS) $(F2COBJS) $(CLIBS)
+ 	@RAN_LIB@ $@
+ 
+ $(OBJDIR) :
+EOF
+    if [[ $? != 0 ]] ; then
+        return 1
+    fi
+
     return 0
 }
 
@@ -355,21 +367,38 @@ function build_cgns
     fi
 
     # optionally add HDF5 and szip to the configure.
+    LIBS_ENV=""
+    LDFLAGS_ENV=""
     H5ARGS=""
     if [[ "$DO_HDF5" == "yes" ]] ; then
+        LIBS_ENV="-lhdf5"
+        LDFLAGS_ENV="-L$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH/lib"
         H5ARGS="--with-hdf5=$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH"
         if [[ "$DO_SZIP" == "yes" ]] ; then
+            LIBS_ENV="$LIBS_ENV -lsz"
+            LDFLAGS_ENV="$LDFLAGS_ENV -L$VISITDIR/szip/$SZIP_VERSION/$VISITARCH/lib"
             H5ARGS="$H5ARGS --with-szip=$VISITDIR/szip/$SZIP_VERSION/$VISITARCH"
         fi
+        LIBS_ENV="$LIBS_ENV -lz"
+        LDFLAGS_ENV="$LDFLAGS_ENV -L$VISITDIR/zlib/$ZLIB_VERSION/$VISITARCH/lib"
         H5ARGS="$H5ARGS --with-zlib=$VISITDIR/zlib/$ZLIB_VERSION/$VISITARCH"
     fi
-    info "    env CXX=\"$CXX_COMPILER\" CC=\"$C_COMPILER\" \
-        CFLAGS=\"$C_OPT_FLAGS\" CXXFLAGS=\"$CXX_OPT_FLAGS\" \
-        ./configure --enable-64bit ${cf_build_type} $H5ARGS --prefix=\"$VISITDIR/cgns/$CGNS_VERSION/$VISITARCH\""
 
-    env CXX="$CXX_COMPILER" CC="$C_COMPILER" \
-        CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
-        ./configure --enable-64bit ${cf_build_type} $H5ARGS --prefix="$VISITDIR/cgns/$CGNS_VERSION/$VISITARCH"
+    # Disable fortran
+    FORTRANARGS="--with-fortran=no"
+
+    set -x
+    if [[ "$OPSYS" == "Darwin" ]] ; then
+        env CXX="$CXX_COMPILER" CC="$C_COMPILER" \
+            CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
+            LDFLAGS="$LDFLAGS_ENV" LIBS="$LIBS_ENV" \
+            ./configure --enable-64bit --enable-cgnstools=no ${cf_build_type} $H5ARGS $FORTRANARGS --prefix="$VISITDIR/cgns/$CGNS_VERSION/$VISITARCH"
+    else
+        env CXX="$CXX_COMPILER" CC="$C_COMPILER" \
+            CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
+            ./configure --enable-64bit --enable-cgnstools=no ${cf_build_type} $H5ARGS $FORTRANARGS --prefix="$VISITDIR/cgns/$CGNS_VERSION/$VISITARCH"
+    fi
+    set +x
 
     if [[ $? != 0 ]] ; then
         warn "CGNS configure failed.  Giving up"
@@ -381,7 +410,7 @@ function build_cgns
     #
     info "Building CGNS . . . (~2 minutes)"
 
-    $MAKE
+    $MAKE cgns
     if [[ $? != 0 ]] ; then
         warn "CGNS build failed.  Giving up"
         return 1
@@ -392,7 +421,7 @@ function build_cgns
     #
     info "Installing CGNS . . ."
 
-    $MAKE install
+    $MAKE install-cgns
     if [[ $? != 0 ]] ; then
         warn "CGNS install failed.  Giving up"
         return 1

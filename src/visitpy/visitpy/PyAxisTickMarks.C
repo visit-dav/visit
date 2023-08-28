@@ -36,7 +36,7 @@ struct AxisTickMarksObject
 //
 static PyObject *NewAxisTickMarks(int);
 std::string
-PyAxisTickMarks_ToString(const AxisTickMarks *atts, const char *prefix)
+PyAxisTickMarks_ToString(const AxisTickMarks *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -71,12 +71,48 @@ AxisTickMarks_SetVisible(PyObject *self, PyObject *args)
 {
     AxisTickMarksObject *obj = (AxisTickMarksObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the visible in the object.
-    obj->data->SetVisible(ival != 0);
+    obj->data->SetVisible(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -95,12 +131,48 @@ AxisTickMarks_SetMajorMinimum(PyObject *self, PyObject *args)
 {
     AxisTickMarksObject *obj = (AxisTickMarksObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the majorMinimum in the object.
-    obj->data->SetMajorMinimum(dval);
+    obj->data->SetMajorMinimum(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -119,12 +191,48 @@ AxisTickMarks_SetMajorMaximum(PyObject *self, PyObject *args)
 {
     AxisTickMarksObject *obj = (AxisTickMarksObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the majorMaximum in the object.
-    obj->data->SetMajorMaximum(dval);
+    obj->data->SetMajorMaximum(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -143,12 +251,48 @@ AxisTickMarks_SetMinorSpacing(PyObject *self, PyObject *args)
 {
     AxisTickMarksObject *obj = (AxisTickMarksObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the minorSpacing in the object.
-    obj->data->SetMinorSpacing(dval);
+    obj->data->SetMinorSpacing(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -167,12 +311,48 @@ AxisTickMarks_SetMajorSpacing(PyObject *self, PyObject *args)
 {
     AxisTickMarksObject *obj = (AxisTickMarksObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the majorSpacing in the object.
-    obj->data->SetMajorSpacing(dval);
+    obj->data->SetMajorSpacing(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -232,36 +412,49 @@ PyAxisTickMarks_getattr(PyObject *self, char *name)
     if(strcmp(name, "majorSpacing") == 0)
         return AxisTickMarks_GetMajorSpacing(self, NULL);
 
+
+    // Add a __dict__ answer so that dir() works
+    if (!strcmp(name, "__dict__"))
+    {
+        PyObject *result = PyDict_New();
+        for (int i = 0; PyAxisTickMarks_methods[i].ml_meth; i++)
+            PyDict_SetItem(result,
+                PyString_FromString(PyAxisTickMarks_methods[i].ml_name),
+                PyString_FromString(PyAxisTickMarks_methods[i].ml_name));
+        return result;
+    }
+
     return Py_FindMethod(PyAxisTickMarks_methods, self, name);
 }
 
 int
 PyAxisTickMarks_setattr(PyObject *self, char *name, PyObject *args)
 {
-    // Create a tuple to contain the arguments since all of the Set
-    // functions expect a tuple.
-    PyObject *tuple = PyTuple_New(1);
-    PyTuple_SET_ITEM(tuple, 0, args);
-    Py_INCREF(args);
-    PyObject *obj = NULL;
+    PyObject NULL_PY_OBJ;
+    PyObject *obj = &NULL_PY_OBJ;
 
     if(strcmp(name, "visible") == 0)
-        obj = AxisTickMarks_SetVisible(self, tuple);
+        obj = AxisTickMarks_SetVisible(self, args);
     else if(strcmp(name, "majorMinimum") == 0)
-        obj = AxisTickMarks_SetMajorMinimum(self, tuple);
+        obj = AxisTickMarks_SetMajorMinimum(self, args);
     else if(strcmp(name, "majorMaximum") == 0)
-        obj = AxisTickMarks_SetMajorMaximum(self, tuple);
+        obj = AxisTickMarks_SetMajorMaximum(self, args);
     else if(strcmp(name, "minorSpacing") == 0)
-        obj = AxisTickMarks_SetMinorSpacing(self, tuple);
+        obj = AxisTickMarks_SetMinorSpacing(self, args);
     else if(strcmp(name, "majorSpacing") == 0)
-        obj = AxisTickMarks_SetMajorSpacing(self, tuple);
+        obj = AxisTickMarks_SetMajorSpacing(self, args);
 
-    if(obj != NULL)
+    if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
-    Py_DECREF(tuple);
-    if( obj == NULL)
-        PyErr_Format(PyExc_RuntimeError, "Unable to set unknown attribute: '%s'", name);
+    if (obj == &NULL_PY_OBJ)
+    {
+        obj = NULL;
+        PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);
+    }
+    else if (obj == NULL && !PyErr_Occurred())
+        PyErr_Format(PyExc_RuntimeError, "unknown problem with '%s'", name);
+
     return (obj != NULL) ? 0 : -1;
 }
 
@@ -269,7 +462,7 @@ static int
 AxisTickMarks_print(PyObject *v, FILE *fp, int flags)
 {
     AxisTickMarksObject *obj = (AxisTickMarksObject *)v;
-    fprintf(fp, "%s", PyAxisTickMarks_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyAxisTickMarks_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -277,7 +470,7 @@ PyObject *
 AxisTickMarks_str(PyObject *v)
 {
     AxisTickMarksObject *obj = (AxisTickMarksObject *)v;
-    return PyString_FromString(PyAxisTickMarks_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyAxisTickMarks_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -429,7 +622,7 @@ PyAxisTickMarks_GetLogString()
 {
     std::string s("AxisTickMarks = AxisTickMarks()\n");
     if(currentAtts != 0)
-        s += PyAxisTickMarks_ToString(currentAtts, "AxisTickMarks.");
+        s += PyAxisTickMarks_ToString(currentAtts, "AxisTickMarks.", true);
     return s;
 }
 
@@ -442,7 +635,7 @@ PyAxisTickMarks_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("AxisTickMarks = AxisTickMarks()\n");
-        s += PyAxisTickMarks_ToString(currentAtts, "AxisTickMarks.");
+        s += PyAxisTickMarks_ToString(currentAtts, "AxisTickMarks.", true);
         cb(s);
     }
 }

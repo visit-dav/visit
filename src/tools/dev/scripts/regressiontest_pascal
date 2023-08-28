@@ -99,8 +99,61 @@
 #   Eric Brugger, Fri Jan  8 11:12:04 PST 2021
 #   I modified the script to also make the manuals before making the package
 #   since the manuals are now required to make the package.
-
 #
+#   Kathleen Biagas, Thu June 16, 2022
+#   Modified cmakeCmd to use 3.3's 3.18.2 version and to use gcc-7.3
+#   for test_trunk. Modified the test_branch to build 3.2.
+#
+#   Cyrus Harrison, Thu Sep  8 12:42:42 PDT 2022
+#   Use new entry point for visit testing module.
+#
+#   Eric Brugger, Wed Sep 28 10:11:32 PDT 2022
+#   Changed all paths using /usr/workspace/wsa to /usr/WS1 so that the
+#   launcher test would pass. They are both the same directory, but the
+#   current directory when running the tests needs to start with /usr/WS1
+#   for the launcher test to work properly.
+#
+#   Eric Brugger, Wed Feb 15 16:29:23 PST 2023
+#   I corrected the path to the pascal config site file to take into account
+#   that we were now doing out of source builds.
+#
+#   Eric Brugger, Thu Mar  9 13:10:16 PST 2023
+#   I changed the script to run the test scripts directly in the current
+#   directory without scp'ing the scripts to the test machine and running
+#   the scripts on the test machine through ssh. This looses some generality
+#   in that the tests need to be run on the same machine as the script
+#   but avoids some potential authentication issues with scp and ssh. We
+#   currently run the script and the tests on the same machine so this
+#   isn't an issue.
+#
+#   I removed references to nersc, since we no longer involve any nersc
+#   systems in our testing. 
+#
+#   I updated the script to take into account that pascal is now toss4
+#   instead of toss3. This included switching from msub to sbatch, using
+#   a toss4 config site file, and using a toss4 cmake.
+#
+#   Eric Brugger, Fri Mar 10 07:09:59 PST 2023
+#   I reduced the alloted time for the test suite to run from 10 hours to
+#   8 hours. Running the tests with 2 processors reduced the typical time
+#   to complete the tests to 5 1/2 hours, so 8 hours should be plenty. I
+#   also changed the directory to copy the results to the "old_results"
+#   directory outside the repo, which should speed up git operations. I
+#   changed a python reference to python3.
+#
+#   Eric Brugger, Fri Mar 10 14:32:00 PST 2023
+#   I renamed the "linux-x86_64" directory in the visit install to
+#   "linux-x86_64-toss4" so that the launcher script would find the
+#   installation on toss4.
+#
+#   Eric Brugger, Sun Mar 12 16:40:54 PDT 2023
+#   Install git lfs before updating the repository. Added more logging
+#   to the git repository update.
+#
+#   Eric Brugger, Wed Mar 15 13:41:38 PDT 2023
+#   Update the location of where libstripack is copied from.
+#
+
 # Determine the users name and e-mail address.
 #
 user=`whoami`
@@ -108,47 +161,36 @@ user=`whoami`
 #
 # Set the user e-mail address.
 #
-userNersc=unknown
 userEmail=unknown
 case $user in
     bonnell)
-        userNersc=bonnell
         userEmail=biagas2@llnl.gov
         ;;
     kbonnell)
-        userNersc=bonnell
         userEmail=biagas2@llnl.gov
         ;;
     brugger)
-        userNersc=brugger
         userEmail=brugger1@llnl.gov
         ;;
     cyrush)
-        userNersc=cyrush
         userEmail=cyrush@llnl.gov
         ;;
     hrchilds)
-        userNersc=hrchilds
         userEmail=hank@uoregon.edu
         ;;
     mcmiller)
-        userNersc=miller86
         userEmail=miller86@llnl.gov
         ;;
     miller)
-        userNersc=miller86
         userEmail=miller86@llnl.gov
         ;;
     miller86)
-        userNersc=miller86
         userEmail=miller86@llnl.gov
         ;;
     harrison37)
-        userNersc=cyrush
         userEmail=cyrush@llnl.gov
         ;;
     cyrush)
-        userNersc=cyrush
         userEmail=cyrush@llnl.gov
         ;;
 esac
@@ -167,9 +209,8 @@ branch="trunk"
 revision="latest"
 serial="false"
 testHost="pascal"
-testDir="/usr/workspace/wsa/visit"
+testDir="/usr/WS1/visit"
 post="true"
-nerscHost="cori.nersc.gov"
 
 for abc
 do
@@ -211,10 +252,10 @@ done
 
 if test "$branch" = "trunk" ; then
     workingDir="test_trunk"
-    cmakeCmd="/usr/workspace/wsa/visit/visit/thirdparty_shared/3.2.0/toss3/cmake/3.14.7/linux-x86_64_gcc-6.1/bin/cmake"
+    cmakeCmd="/usr/WS1/visit/visit/thirdparty_shared/3.3.2/toss4/cmake/3.24.3/linux-x86_64_gcc-10.3/bin/cmake"
 else
     workingDir="test_branch"
-    cmakeCmd="/usr/gapps/visit/thirdparty_shared/2.12.0/cmake/3.0.2/linux-x86_64_gcc-4.4/bin/cmake"
+    cmakeCmd="/usr/WS1/visit/visit/thirdparty_shared/3.3.2/toss4/cmake/3.24.3/linux-x86_64_gcc-10.3/bin/cmake"
 fi
 
 #
@@ -223,6 +264,9 @@ fi
 rm -f checkout_${testHost}
 cat <<EOF > checkout_${testHost}
 #!/bin/sh
+
+# So the script uses the correct git.
+export PATH=/usr/tce/bin:$PATH
 
 dateTag=\$1
 
@@ -244,15 +288,27 @@ rm -f buildlog installlog
 
 # Clone the repository if necessary.
 if test ! -e $testDir/$workingDir/visit; then
-    git clone ssh://git@github.com/visit-dav/visit.git >> buildlog 2>&1
+    git clone  --recursive ssh://git@github.com/visit-dav/visit.git >> buildlog 2>&1
 fi
 
-# Update the repository.
+# Enter the repository.
 cd visit
+
+# Install git lfs.
+git lfs install --force --skip-smudge >> ../buildlog2>&1
+
+# Update the repository.
+hostname >> ../buildlog 2>&1
+git --version >> ../buildlog 2>&1
+echo "rm -f .git/index.lock" >> ../buildlog 2>&1
 rm -f .git/index.lock >> ../buildlog 2>&1
+echo "git checkout develop" >> ../buildlog 2>&1
 git checkout develop >> ../buildlog 2>&1
+echo "git pull" >> ../buildlog 2>&1
 git pull >> ../buildlog 2>&1
+echo "git lfs pull" >> ../buildlog 2>&1
 git lfs pull >> ../buildlog 2>&1
+echo "Repository updated" >> ../buildlog 2>&1
 
 if test "$branch" = "trunk" ; then
     if test "$revision" = "latest" ; then
@@ -289,6 +345,9 @@ rm -f runit_${testHost}
 cat <<EOF > runit_${testHost}
 #!/bin/sh
 
+# So the script uses the correct git.
+export PATH=/usr/tce/bin:$PATH
+
 dateTag=\$1
 
 if test "$serial" = "true" ; then
@@ -308,18 +367,23 @@ export PATH=/usr/tce/packages/cuda/cuda-8.0/bin:\$PATH
 export CUDA_HOME=/usr/tce/packages/cuda/cuda-8.0
 export LD_LIBRARY_PATH=/usr/tce/packages/cuda/cuda-8.0/lib64:\$LD_LIBRARY_PATH
 
-# since gcc-6 isn't the default, make sure to set CC and CXX, otherwise
+# since gcc-7 or 6 isn't the default, make sure to set CC and CXX, otherwise
 # pluginVsInstall tests won't use the right compiler
 
-export CC=/usr/tce/packages/gcc/gcc-6.1.0/bin/gcc
-export CXX=/usr/tce/packages/gcc/gcc-6.1.0/bin/g++
+if test "$branch" = "trunk" ; then
+  export CC=/usr/tce/packages/gcc/gcc-10.3.1/bin/gcc
+  export CXX=/usr/tce/packages/gcc/gcc-10.3.1/bin/g++
+else
+  export CC=/usr/tce/packages/gcc/gcc-10.3.1/bin/gcc
+  export CXX=/usr/tce/packages/gcc/gcc-10.3.1/bin/g++
+fi
 
 if test "$serial" = "true" ; then
-    sed -i "s/VISIT_PARALLEL ON/VISIT_PARALLEL OFF/" config-site/pascal83.cmake
+    sed -i "s/VISIT_PARALLEL ON/VISIT_PARALLEL OFF/" config-site/poodle18.cmake
 fi
 if test "$branch" = "trunk" ; then
     $cmakeCmd \
-        -DVISIT_CONFIG_SITE=config-site/pascal83.cmake \
+        -DVISIT_CONFIG_SITE=../src/config-site/poodle18.cmake \
         -DCMAKE_BUILD_TYPE=Release \
         -DVISIT_BUILD_ALL_PLUGINS=1 \
         -DVISIT_ENABLE_DATA_MANUAL_EXAMPLES:BOOL=ON \
@@ -330,14 +394,13 @@ if test "$branch" = "trunk" ; then
         ../src >> ../../buildlog 2>&1
 else
     $cmakeCmd \
-        -DVISIT_CONFIG_SITE=config-site/pascal83.cmake \
+        -DVISIT_CONFIG_SITE=../src/config-site/poodle18.cmake \
         -DCMAKE_BUILD_TYPE=Release \
         -DVISIT_BUILD_ALL_PLUGINS=1 \
         -DVISIT_ENABLE_DATA_MANUAL_EXAMPLES:BOOL=ON \
         -DIGNORE_THIRD_PARTY_LIB_PROBLEMS:BOOL=ON \
         -DCMAKE_CXX_FLAGS_RELEASE:STRING="-fopenmp -O3 -DNDEBUG -Wall -pedantic -Wextra -Wno-long-long -Wno-unused-parameter" \
         -DCMAKE_C_FLAGS_RELEASE:STRING="-O3 -DNDEBUG -Wall -pedantic -Wextra -Wno-long-long -Wno-unused-parameter" \
-        -DCMAKE_MAKE_PROGRAM:FILEPATH="/usr/gapps/visit/gmake/4.0/chaos_5_x86_64_ib/bin/make" \
         ../src >> ../../buildlog 2>&1
 fi
 rm -f ../make.out ../make.err
@@ -357,7 +420,7 @@ cat ../make.err >> ../../buildlog
 echo "Source build completed at: \`date\`"
 
 # Copy stripack lib for ffp plugin tests
-cp /usr/workspace/visit/miller86/stripack/libstripack.so ./lib/.
+cp /usr/workspace/wsa/visit/visit/thirdparty_shared/3.3.2/toss4/stripack/libstripack.so ./lib/.
 
 # Update the test baselines
 cd ../test
@@ -386,6 +449,7 @@ cd ../
 version=\`cat $testDir/$workingDir/visit/src/VERSION\`
 
 ../src/tools/dev/scripts/visit-install -c llnl_open \$version linux-x86_64 ./_install >> ../../installlog 2>&1
+mv _install/\$version/linux-x86_64 _install/\$version/linux-x86_64-toss4 >> ../../installlog 2>&1
 
 if test "$debug" = "true" ; then
     echo "Install completed at: \`date\`" | mail -s "Install completed" $userEmail
@@ -401,7 +465,7 @@ echo "Starting tests:\`date\`"
 
 # Run the tests, consolidating the results in one directory
 cd ../src/test
-rm -rf 2019-??-??-??:?? py_src output *.pyc
+rm -rf 2022-??-??-??:?? output *.pyc
 mkdir \$dateTag output
 for m in \$modes; do
     theMode=\`echo \$m | tr ',' '_'\`
@@ -415,7 +479,7 @@ for m in \$modes; do
 
 
     # Run the test
-    python ../../src/test/visit_test_suite.py --parallel-launch "srun" -b ../../test/baseline -d ../../build/testdata -e ../../build/bin/visit -o \$resDir -m "\$m" -n 1 --cmake $cmakeCmd >> ../../../buildlog 2>&1
+    ../../build/test/run_visit_test_suite.sh  --parallel-launch "srun" -o \$resDir -m "\$m" -n 2 --cmake $cmakeCmd >> ../../../buildlog 2>&1
     mv \$resDir/html \$dateTag/\$theMode
 
     # Move the results to the consolidation directory
@@ -437,6 +501,9 @@ rm -f postit_${testHost}
 cat <<EOF > postit_${testHost}
 #!/bin/sh
 
+# So the script uses the correct git.
+export PATH=/usr/tce/bin:$PATH
+
 if test "\$#" -ne 1; then
     echo "Usage: \$0 date_tag"
     exit
@@ -452,8 +519,10 @@ fi
 
 cd $testDir/$workingDir/visit/src/test
 
+# if we don't have a test results directory, exit with failure now
 if test ! -d "\$dateTag"; then
     echo "\$dateTag doesn't exist."
+    src/tools/dev/scripts/visit-notify-test-failure -host $testHost
     exit
 fi
 
@@ -489,7 +558,7 @@ if test "$post" = "true" ; then
 
     # Copy the results to the dashboard checkout on quartz. 
     cd src/test
-    python ../tools/dev/scripts/visit-copy-test-results.py
+    python3 ../tools/dev/scripts/visit-copy-test-results.py
     cd ../..
 
     # Update the main index.html.
@@ -498,7 +567,7 @@ if test "$post" = "true" ; then
     # Check the results into github.
     cd src/test
     newResults=\`ls -d *22:00\`
-    cd /usr/workspace/wsa/visit/dashboard/dashboard
+    cd /usr/WS1/visit/dashboard/dashboard
     git add \$newResults baselines index.html
     git commit -m "Add new results to the dashboard."
     git pull
@@ -507,7 +576,7 @@ if test "$post" = "true" ; then
     
     # Move the new results to old_results.
     cd src/test
-    mv \$newResults old_results
+    mv \$newResults ../../../old_results
     cd ../..
 
     # Send out an e-mail notifying the users of the test suite status.
@@ -552,12 +621,9 @@ chmod 750 postit_${testHost}
 
 # Run the test suite.
 if test "$testHost" = "pascal" ; then
-    scp checkout_pascal pascal:
-    scp runit_pascal pascal:
-    scp postit_pascal pascal:
     subTag=`date +%Y-%m-%d-%H:%M`
-    ssh pascal "./checkout_pascal $subTag"
-    ssh pascal "msub -l nodes=1:ppn=16 -l gres=ignore -l walltime=10:00:00 -o pascal_testit_$subTag.out -q pvis -A wbronze -z ./runit_pascal $subTag"
-    sleep 36000
-    ssh pascal "./postit_pascal $subTag"
+    ./checkout_pascal $subTag
+    sbatch --partition=pvis --account=wbronze --time=8:00:00 --ntasks=36 --nodes=1 --tasks-per-node=36 -o pascal_testit_$subTag.out ./runit_pascal $subTag
+    sleep 28800
+    ./postit_pascal $subTag
 fi

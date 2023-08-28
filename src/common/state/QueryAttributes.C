@@ -5,6 +5,7 @@
 #include <QueryAttributes.h>
 #include <DataNode.h>
 #include <stdio.h>
+#include <DebugStream.h>
 
 //
 // Enum conversion methods for QueryAttributes::VarType
@@ -63,7 +64,6 @@ QueryAttributes::VarType_FromString(const std::string &s, QueryAttributes::VarTy
 
 void QueryAttributes::Init()
 {
-    resultsValue.push_back(0);
     timeStep = 0;
     pipeIndex = -1;
     floatFormat = "%g";
@@ -92,6 +92,7 @@ void QueryAttributes::Copy(const QueryAttributes &obj)
 {
     resultsMessage = obj.resultsMessage;
     resultsValue = obj.resultsValue;
+    floatResultsValue = obj.floatResultsValue;
     timeStep = obj.timeStep;
     varTypes = obj.varTypes;
     pipeIndex = obj.pipeIndex;
@@ -262,6 +263,7 @@ QueryAttributes::operator == (const QueryAttributes &obj) const
     // Create the return value
     return ((resultsMessage == obj.resultsMessage) &&
             (resultsValue == obj.resultsValue) &&
+            (floatResultsValue == obj.floatResultsValue) &&
             (timeStep == obj.timeStep) &&
             (varTypes == obj.varTypes) &&
             (pipeIndex == obj.pipeIndex) &&
@@ -416,19 +418,20 @@ QueryAttributes::NewInstance(bool copy) const
 void
 QueryAttributes::SelectAll()
 {
-    Select(ID_resultsMessage,   (void *)&resultsMessage);
-    Select(ID_resultsValue,     (void *)&resultsValue);
-    Select(ID_timeStep,         (void *)&timeStep);
-    Select(ID_varTypes,         (void *)&varTypes);
-    Select(ID_pipeIndex,        (void *)&pipeIndex);
-    Select(ID_xUnits,           (void *)&xUnits);
-    Select(ID_yUnits,           (void *)&yUnits);
-    Select(ID_floatFormat,      (void *)&floatFormat);
-    Select(ID_xmlResult,        (void *)&xmlResult);
-    Select(ID_suppressOutput,   (void *)&suppressOutput);
-    Select(ID_queryInputParams, (void *)&queryInputParams);
-    Select(ID_defaultName,      (void *)&defaultName);
-    Select(ID_defaultVars,      (void *)&defaultVars);
+    Select(ID_resultsMessage,    (void *)&resultsMessage);
+    Select(ID_resultsValue,      (void *)&resultsValue);
+    Select(ID_floatResultsValue, (void *)&floatResultsValue);
+    Select(ID_timeStep,          (void *)&timeStep);
+    Select(ID_varTypes,          (void *)&varTypes);
+    Select(ID_pipeIndex,         (void *)&pipeIndex);
+    Select(ID_xUnits,            (void *)&xUnits);
+    Select(ID_yUnits,            (void *)&yUnits);
+    Select(ID_floatFormat,       (void *)&floatFormat);
+    Select(ID_xmlResult,         (void *)&xmlResult);
+    Select(ID_suppressOutput,    (void *)&suppressOutput);
+    Select(ID_queryInputParams,  (void *)&queryInputParams);
+    Select(ID_defaultName,       (void *)&defaultName);
+    Select(ID_defaultVars,       (void *)&defaultVars);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -471,6 +474,12 @@ QueryAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool forceA
     {
         addToParent = true;
         node->AddNode(new DataNode("resultsValue", resultsValue));
+    }
+
+    if(completeSave || !FieldsEqual(ID_floatResultsValue, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("floatResultsValue", floatResultsValue));
     }
 
     if(completeSave || !FieldsEqual(ID_timeStep, &defaultObject))
@@ -579,6 +588,8 @@ QueryAttributes::SetFromNode(DataNode *parentNode)
         SetResultsMessage(node->AsString());
     if((node = searchNode->GetNode("resultsValue")) != 0)
         SetResultsValue(node->AsDoubleVector());
+    if((node = searchNode->GetNode("floatResultsValue")) != 0)
+        SetFloatResultsValue(node->AsFloatVector());
     if((node = searchNode->GetNode("timeStep")) != 0)
         SetTimeStep(node->AsInt());
     if((node = searchNode->GetNode("varTypes")) != 0)
@@ -619,6 +630,13 @@ QueryAttributes::SetResultsValue(const doubleVector &resultsValue_)
 {
     resultsValue = resultsValue_;
     Select(ID_resultsValue, (void *)&resultsValue);
+}
+
+void
+QueryAttributes::SetFloatResultsValue(const floatVector &floatResultsValue_)
+{
+    floatResultsValue = floatResultsValue_;
+    Select(ID_floatResultsValue, (void *)&floatResultsValue);
 }
 
 void
@@ -724,6 +742,18 @@ doubleVector &
 QueryAttributes::GetResultsValue()
 {
     return resultsValue;
+}
+
+const floatVector &
+QueryAttributes::GetFloatResultsValue() const
+{
+    return floatResultsValue;
+}
+
+floatVector &
+QueryAttributes::GetFloatResultsValue()
+{
+    return floatResultsValue;
 }
 
 int
@@ -857,6 +887,12 @@ QueryAttributes::SelectResultsValue()
 }
 
 void
+QueryAttributes::SelectFloatResultsValue()
+{
+    Select(ID_floatResultsValue, (void *)&floatResultsValue);
+}
+
+void
 QueryAttributes::SelectVarTypes()
 {
     Select(ID_varTypes, (void *)&varTypes);
@@ -928,19 +964,20 @@ QueryAttributes::GetFieldName(int index) const
 {
     switch (index)
     {
-    case ID_resultsMessage:   return "resultsMessage";
-    case ID_resultsValue:     return "resultsValue";
-    case ID_timeStep:         return "timeStep";
-    case ID_varTypes:         return "varTypes";
-    case ID_pipeIndex:        return "pipeIndex";
-    case ID_xUnits:           return "xUnits";
-    case ID_yUnits:           return "yUnits";
-    case ID_floatFormat:      return "floatFormat";
-    case ID_xmlResult:        return "xmlResult";
-    case ID_suppressOutput:   return "suppressOutput";
-    case ID_queryInputParams: return "queryInputParams";
-    case ID_defaultName:      return "defaultName";
-    case ID_defaultVars:      return "defaultVars";
+    case ID_resultsMessage:    return "resultsMessage";
+    case ID_resultsValue:      return "resultsValue";
+    case ID_floatResultsValue: return "floatResultsValue";
+    case ID_timeStep:          return "timeStep";
+    case ID_varTypes:          return "varTypes";
+    case ID_pipeIndex:         return "pipeIndex";
+    case ID_xUnits:            return "xUnits";
+    case ID_yUnits:            return "yUnits";
+    case ID_floatFormat:       return "floatFormat";
+    case ID_xmlResult:         return "xmlResult";
+    case ID_suppressOutput:    return "suppressOutput";
+    case ID_queryInputParams:  return "queryInputParams";
+    case ID_defaultName:       return "defaultName";
+    case ID_defaultVars:       return "defaultVars";
     default:  return "invalid index";
     }
 }
@@ -965,19 +1002,20 @@ QueryAttributes::GetFieldType(int index) const
 {
     switch (index)
     {
-    case ID_resultsMessage:   return FieldType_string;
-    case ID_resultsValue:     return FieldType_doubleVector;
-    case ID_timeStep:         return FieldType_int;
-    case ID_varTypes:         return FieldType_intVector;
-    case ID_pipeIndex:        return FieldType_int;
-    case ID_xUnits:           return FieldType_string;
-    case ID_yUnits:           return FieldType_string;
-    case ID_floatFormat:      return FieldType_string;
-    case ID_xmlResult:        return FieldType_string;
-    case ID_suppressOutput:   return FieldType_bool;
-    case ID_queryInputParams: return FieldType_MapNode;
-    case ID_defaultName:      return FieldType_string;
-    case ID_defaultVars:      return FieldType_stringVector;
+    case ID_resultsMessage:    return FieldType_string;
+    case ID_resultsValue:      return FieldType_doubleVector;
+    case ID_floatResultsValue: return FieldType_floatVector;
+    case ID_timeStep:          return FieldType_int;
+    case ID_varTypes:          return FieldType_intVector;
+    case ID_pipeIndex:         return FieldType_int;
+    case ID_xUnits:            return FieldType_string;
+    case ID_yUnits:            return FieldType_string;
+    case ID_floatFormat:       return FieldType_string;
+    case ID_xmlResult:         return FieldType_string;
+    case ID_suppressOutput:    return FieldType_bool;
+    case ID_queryInputParams:  return FieldType_MapNode;
+    case ID_defaultName:       return FieldType_string;
+    case ID_defaultVars:       return FieldType_stringVector;
     default:  return FieldType_unknown;
     }
 }
@@ -1002,19 +1040,20 @@ QueryAttributes::GetFieldTypeName(int index) const
 {
     switch (index)
     {
-    case ID_resultsMessage:   return "string";
-    case ID_resultsValue:     return "doubleVector";
-    case ID_timeStep:         return "int";
-    case ID_varTypes:         return "intVector";
-    case ID_pipeIndex:        return "int";
-    case ID_xUnits:           return "string";
-    case ID_yUnits:           return "string";
-    case ID_floatFormat:      return "string";
-    case ID_xmlResult:        return "string";
-    case ID_suppressOutput:   return "bool";
-    case ID_queryInputParams: return "MapNode";
-    case ID_defaultName:      return "string";
-    case ID_defaultVars:      return "stringVector";
+    case ID_resultsMessage:    return "string";
+    case ID_resultsValue:      return "doubleVector";
+    case ID_floatResultsValue: return "floatVector";
+    case ID_timeStep:          return "int";
+    case ID_varTypes:          return "intVector";
+    case ID_pipeIndex:         return "int";
+    case ID_xUnits:            return "string";
+    case ID_yUnits:            return "string";
+    case ID_floatFormat:       return "string";
+    case ID_xmlResult:         return "string";
+    case ID_suppressOutput:    return "bool";
+    case ID_queryInputParams:  return "MapNode";
+    case ID_defaultName:       return "string";
+    case ID_defaultVars:       return "stringVector";
     default:  return "invalid index";
     }
 }
@@ -1049,6 +1088,11 @@ QueryAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_resultsValue:
         {  // new scope
         retval = (resultsValue == obj.resultsValue);
+        }
+        break;
+    case ID_floatResultsValue:
+        {  // new scope
+        retval = (floatResultsValue == obj.floatResultsValue);
         }
         break;
     case ID_timeStep:
@@ -1167,7 +1211,10 @@ QueryAttributes::Reset()
     if (!resultsValue.empty())
     {
         resultsValue.clear();
-        resultsValue.push_back(0.);
+    }
+    if (!floatResultsValue.empty())
+    {
+        floatResultsValue.clear();
     }
     pipeIndex = -1;
 
@@ -1191,6 +1238,7 @@ QueryAttributes::PrintSelf(ostream &os)
 void
 QueryAttributes::SetResultsValue(const double val)
 {
+    resultsValue.resize(1);
     resultsValue[0] = val;
 }
 
@@ -1201,5 +1249,37 @@ QueryAttributes::SetResultsValues(const double *vals, const int numVals)
     resultsValue.clear();
     for (i = 0; i < numVals; ++i)
         resultsValue.push_back(vals[i]);
+}
+
+QueryAttributes &
+QueryAttributes::operator=(QueryAttributes &&obj)
+{
+    Move(std::move(obj));
+    return *this;
+}
+
+QueryAttributes::QueryAttributes(QueryAttributes &&obj)
+    : AttributeSubject(QueryAttributes::TypeMapFormatString)
+{
+    Move(std::move(obj));
+}
+
+void
+QueryAttributes::Move(QueryAttributes &&obj)
+{
+    resultsMessage = std::move(obj.resultsMessage);
+    resultsValue = std::move(obj.resultsValue);
+    floatResultsValue = std::move(obj.floatResultsValue);
+    timeStep = obj.timeStep;
+    varTypes = std::move(obj.varTypes);
+    pipeIndex = obj.pipeIndex;
+    xUnits = std::move(obj.xUnits);
+    yUnits = std::move(obj.yUnits);
+    floatFormat = std::move(obj.floatFormat);
+    xmlResult = std::move(obj.xmlResult);
+    suppressOutput = obj.suppressOutput;
+    queryInputParams = obj.queryInputParams;
+    defaultName = std::move(obj.defaultName);
+    defaultVars = std::move(obj.defaultVars);
 }
 

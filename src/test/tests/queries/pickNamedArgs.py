@@ -165,12 +165,14 @@ def PickUsingQueryResults():
 def doGlobalPicks(centering):
     s = "Global node pick on %s_centered data:\n\n" %centering
     d = PickByGlobalNode(element=246827)
-    s = s + "dictionary output:\n" + str(d) + "\n\n"
+    # use json.dumps for dictionary object, makes for easier parsing
+    # of diffs when there are errors
+    s = s + "dictionary output:\n" + json.dumps(d,indent=2) + "\n\n"
     s = s + "string output: " + GetPickOutput() + "\n\n"
 
     s = s + "\nGlobal zone pick on %s_centered data:\n\n" %centering
     d = PickByGlobalZone(element=237394)
-    s = s + "dictionary output:\n" + str(d) + "\n\n"
+    s = s + "dictionary output:\n" + json.dumps(d,indent=2) + "\n\n"
     s = s + "string output: " + GetPickOutput() + "\n\n"
 
     return s

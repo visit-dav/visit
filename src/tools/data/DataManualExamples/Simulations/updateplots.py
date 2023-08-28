@@ -29,6 +29,9 @@ from simV2 import *
 #  Added call to 'VisItFinalize' at completion of MainLoop to prevent crash
 #  on exit when running in parallel.
 #
+#  Kathleen Biagas, Fri Sep 10 10:27:23 PDT 2021
+#  Added exportVTK option. Set runMode to STOPPED.
+#
 #*****************************************************************************
 
 class Simulation:
@@ -36,14 +39,14 @@ class Simulation:
         self.done = 0
         self.cycle = 0
         self.time = 0.
-        self.runMode = VISIT_SIMMODE_RUNNING #STOPPED
+        self.runMode = VISIT_SIMMODE_STOPPED #RUNNING
         self.par_size = 1
         self.par_rank = 0
         self.savingFiles = 0
         self.saveCounter = 0
         self.rmesh_dims = [50,50,1]
         self.rmesh_ndims = 2
-        self.commands = ("halt", "step", "run", "addplot")
+        self.commands = ("halt", "step", "run", "addplot", "saveon", "saveoff", "exportVTK")
 
     def Initialize(self, simname, visitdir):
         VisItOpenTraceFile("trace.%d.txt" % self.par_rank)
@@ -56,6 +59,35 @@ class Simulation:
 
     def Finalize(self):
         VisItCloseTraceFile()
+
+    def export_vtk(self):
+        filename="updateplots%04d" %self.saveCounter
+        opts = VISIT_INVALID_HANDLE;
+        hvars = VisIt_NameList_alloc()
+        if hvars != VISIT_INVALID_HANDLE:
+            VisIt_NameList_addName(hvars, "default")
+
+            opts = VisIt_OptionList_alloc()
+            if opts != VISIT_INVALID_HANDLE:
+                # FileFormat 0: Legacy ASCII
+                # FileFormat 1: Legacy Binary
+                # FileFormat 2: XML ASCII
+                # FileFormat 3: XML Binary
+                VisIt_OptionList_setValueE(opts, "FileFormat", 3)
+
+                if VisItExportDatabaseWithOptions(filename, "VTK_1.0",
+                                              hvars, opts) == VISIT_OKAY:
+                    self.saveCounter += 1
+                    print("Exported",filename)
+                else:
+                    print("The db could not be exported to",filename)
+            else:
+                print("could not allocate options for export")
+
+            if opts != VISIT_INVALID_HANDLE:
+                VisIt_OptionList_free(opts)
+
+            VisIt_NameList_free(hvars)
 
     def SimulateOneTimestep(self):
         self.cycle = self.cycle + 1
@@ -99,6 +131,8 @@ class Simulation:
         elif cmd == "addplot":
             VisItExecuteCommand('AddPlot("Pseudocolor", "zonal")\n')
             VisItExecuteCommand('DrawPlots()\n')
+        elif cmd == "exportVTK":
+            self.export_vtk()
 
     def GetInputFromConsole(self):
         return VisItReadConsole()
@@ -430,6 +464,7 @@ class ParallelSimulation(Simulation):
 #
 def main():
     sim = Simulation()
+    # update this to point to the correct location of visit's bin directory (don't include bin)
     sim.Initialize("updateplots", "../../..")
     #sim = ParallelSimulation()
     #sim.Initialize("updateplots_par", "../../..")

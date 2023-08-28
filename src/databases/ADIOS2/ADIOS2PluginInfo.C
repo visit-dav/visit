@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: ADIOS2PluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <ADIOS2PluginInfo.h>
 
@@ -124,6 +124,7 @@ ADIOS2GeneralPluginInfo::GetDefaultFilePatterns() const
     defaultPatterns.push_back("*.bp.ssc");
     defaultPatterns.push_back("md.idx");
     defaultPatterns.push_back("md.0");
+
     return defaultPatterns;
 }
 

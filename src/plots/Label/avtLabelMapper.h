@@ -28,6 +28,9 @@
 //
 //  Modifications:
 //
+//    Alister Maguire, Fri May 21 15:11:53 PDT 2021
+//    Added SetFullFrameScaling.
+//
 // ****************************************************************************
 
 class avtLabelMapper : public avtMapper2D
@@ -47,6 +50,7 @@ class avtLabelMapper : public avtMapper2D
     void                       SetUseGlobalLabel(bool val);
     void                       SetCellOrigin(vtkIdType);
     void                       SetNodeOrigin(vtkIdType);
+    bool                       SetFullFrameScaling(bool, const double *);
 
   protected:
     virtual vtkMapper2D       *CreateMapper2D(void);

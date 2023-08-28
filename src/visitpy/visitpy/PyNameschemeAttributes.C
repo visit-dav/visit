@@ -36,7 +36,7 @@ struct NameschemeAttributesObject
 //
 static PyObject *NewNameschemeAttributes(int);
 std::string
-PyNameschemeAttributes_ToString(const NameschemeAttributes *atts, const char *prefix)
+PyNameschemeAttributes_ToString(const NameschemeAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -156,12 +156,37 @@ NameschemeAttributes_SetNamescheme(PyObject *self, PyObject *args)
 {
     NameschemeAttributesObject *obj = (NameschemeAttributesObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the namescheme in the object.
-    obj->data->SetNamescheme(std::string(str));
+    obj->data->SetNamescheme(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -180,37 +205,51 @@ NameschemeAttributes_SetExternalArrayNames(PyObject *self, PyObject *args)
 {
     NameschemeAttributesObject *obj = (NameschemeAttributesObject *)self;
 
-    stringVector  &vec = obj->data->GetExternalArrayNames();
-    PyObject     *tuple;
-    if(!PyArg_ParseTuple(args, "O", &tuple))
-        return NULL;
+    stringVector vec;
 
-    if(PyTuple_Check(tuple))
+    if (PyUnicode_Check(args))
     {
-        vec.resize(PyTuple_Size(tuple));
-        for(int i = 0; i < PyTuple_Size(tuple); ++i)
+        char const *val = PyUnicode_AsUTF8(args);
+        std::string cval = std::string(val);
+        if (val == 0 && PyErr_Occurred())
         {
-            PyObject *item = PyTuple_GET_ITEM(tuple, i);
-            if(PyString_Check(item))
+            PyErr_Clear();
+            return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ string");
+        }
+        vec.resize(1);
+        vec[0] = cval;
+    }
+    else if (PySequence_Check(args))
+    {
+        vec.resize(PySequence_Size(args));
+        for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)
+        {
+            PyObject *item = PySequence_GetItem(args, i);
+
+            if (!PyUnicode_Check(item))
             {
-                char *item_cstr = PyString_AsString(item);
-                vec[i] = std::string(item_cstr);
-                PyString_AsString_Cleanup(item_cstr);
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_TypeError, "arg %d is not a unicode string", (int) i);
             }
-            else
-                vec[i] = std::string("");
+
+            char const *val = PyUnicode_AsUTF8(item);
+            std::string cval = std::string(val);
+
+            if (val == 0 && PyErr_Occurred())
+            {
+                Py_DECREF(item);
+                PyErr_Clear();
+                return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ string", (int) i);
+            }
+            Py_DECREF(item);
+
+            vec[i] = cval;
         }
     }
-    else if(PyString_Check(tuple))
-    {
-        vec.resize(1);
-        char *tuple_cstr = PyString_AsString(tuple);
-        vec[0] = std::string(tuple_cstr);
-        PyString_AsString_Cleanup(tuple_cstr);
-    }
     else
-        return NULL;
+        return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more string(s)");
 
+    obj->data->GetExternalArrayNames() = vec;
     // Mark the externalArrayNames in the object as modified.
     obj->data->SelectExternalArrayNames();
 
@@ -235,45 +274,58 @@ NameschemeAttributes_SetExternalArrayOffsets(PyObject *self, PyObject *args)
 {
     NameschemeAttributesObject *obj = (NameschemeAttributesObject *)self;
 
-    intVector  &vec = obj->data->GetExternalArrayOffsets();
-    PyObject   *tuple;
-    if(!PyArg_ParseTuple(args, "O", &tuple))
-        return NULL;
+    intVector vec;
 
-    if(PyTuple_Check(tuple))
+    if (PyNumber_Check(args))
     {
-        vec.resize(PyTuple_Size(tuple));
-        for(int i = 0; i < PyTuple_Size(tuple); ++i)
+        long val = PyLong_AsLong(args);
+        int cval = int(val);
+        if (val == -1 && PyErr_Occurred())
         {
-            PyObject *item = PyTuple_GET_ITEM(tuple, i);
-            if(PyFloat_Check(item))
-                vec[i] = int(PyFloat_AS_DOUBLE(item));
-            else if(PyInt_Check(item))
-                vec[i] = int(PyInt_AS_LONG(item));
-            else if(PyLong_Check(item))
-                vec[i] = int(PyLong_AsLong(item));
-            else
-                vec[i] = 0;
+            PyErr_Clear();
+            return PyErr_Format(PyExc_TypeError, "number not interpretable as C++ int");
+        }
+        if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+            return PyErr_Format(PyExc_ValueError, "number not interpretable as C++ int");
+        vec.resize(1);
+        vec[0] = cval;
+    }
+    else if (PySequence_Check(args) && !PyUnicode_Check(args))
+    {
+        vec.resize(PySequence_Size(args));
+        for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)
+        {
+            PyObject *item = PySequence_GetItem(args, i);
+
+            if (!PyNumber_Check(item))
+            {
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_TypeError, "arg %d is not a number type", (int) i);
+            }
+
+            long val = PyLong_AsLong(item);
+            int cval = int(val);
+
+            if (val == -1 && PyErr_Occurred())
+            {
+                Py_DECREF(item);
+                PyErr_Clear();
+                return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ int", (int) i);
+            }
+            if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+            {
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_ValueError, "arg %d not interpretable as C++ int", (int) i);
+            }
+            Py_DECREF(item);
+
+            vec[i] = cval;
         }
     }
-    else if(PyFloat_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = int(PyFloat_AS_DOUBLE(tuple));
-    }
-    else if(PyInt_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = int(PyInt_AS_LONG(tuple));
-    }
-    else if(PyLong_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = int(PyLong_AsLong(tuple));
-    }
     else
-        return NULL;
+        return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more ints");
 
+    obj->data->GetExternalArrayOffsets() = vec;
     // Mark the externalArrayOffsets in the object as modified.
     obj->data->SelectExternalArrayOffsets();
 
@@ -298,45 +350,58 @@ NameschemeAttributes_SetExternalArrayData(PyObject *self, PyObject *args)
 {
     NameschemeAttributesObject *obj = (NameschemeAttributesObject *)self;
 
-    intVector  &vec = obj->data->GetExternalArrayData();
-    PyObject   *tuple;
-    if(!PyArg_ParseTuple(args, "O", &tuple))
-        return NULL;
+    intVector vec;
 
-    if(PyTuple_Check(tuple))
+    if (PyNumber_Check(args))
     {
-        vec.resize(PyTuple_Size(tuple));
-        for(int i = 0; i < PyTuple_Size(tuple); ++i)
+        long val = PyLong_AsLong(args);
+        int cval = int(val);
+        if (val == -1 && PyErr_Occurred())
         {
-            PyObject *item = PyTuple_GET_ITEM(tuple, i);
-            if(PyFloat_Check(item))
-                vec[i] = int(PyFloat_AS_DOUBLE(item));
-            else if(PyInt_Check(item))
-                vec[i] = int(PyInt_AS_LONG(item));
-            else if(PyLong_Check(item))
-                vec[i] = int(PyLong_AsLong(item));
-            else
-                vec[i] = 0;
+            PyErr_Clear();
+            return PyErr_Format(PyExc_TypeError, "number not interpretable as C++ int");
+        }
+        if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+            return PyErr_Format(PyExc_ValueError, "number not interpretable as C++ int");
+        vec.resize(1);
+        vec[0] = cval;
+    }
+    else if (PySequence_Check(args) && !PyUnicode_Check(args))
+    {
+        vec.resize(PySequence_Size(args));
+        for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)
+        {
+            PyObject *item = PySequence_GetItem(args, i);
+
+            if (!PyNumber_Check(item))
+            {
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_TypeError, "arg %d is not a number type", (int) i);
+            }
+
+            long val = PyLong_AsLong(item);
+            int cval = int(val);
+
+            if (val == -1 && PyErr_Occurred())
+            {
+                Py_DECREF(item);
+                PyErr_Clear();
+                return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ int", (int) i);
+            }
+            if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+            {
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_ValueError, "arg %d not interpretable as C++ int", (int) i);
+            }
+            Py_DECREF(item);
+
+            vec[i] = cval;
         }
     }
-    else if(PyFloat_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = int(PyFloat_AS_DOUBLE(tuple));
-    }
-    else if(PyInt_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = int(PyInt_AS_LONG(tuple));
-    }
-    else if(PyLong_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = int(PyLong_AsLong(tuple));
-    }
     else
-        return NULL;
+        return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more ints");
 
+    obj->data->GetExternalArrayData() = vec;
     // Mark the externalArrayData in the object as modified.
     obj->data->SelectExternalArrayData();
 
@@ -361,37 +426,51 @@ NameschemeAttributes_SetAllExplicitNames(PyObject *self, PyObject *args)
 {
     NameschemeAttributesObject *obj = (NameschemeAttributesObject *)self;
 
-    stringVector  &vec = obj->data->GetAllExplicitNames();
-    PyObject     *tuple;
-    if(!PyArg_ParseTuple(args, "O", &tuple))
-        return NULL;
+    stringVector vec;
 
-    if(PyTuple_Check(tuple))
+    if (PyUnicode_Check(args))
     {
-        vec.resize(PyTuple_Size(tuple));
-        for(int i = 0; i < PyTuple_Size(tuple); ++i)
+        char const *val = PyUnicode_AsUTF8(args);
+        std::string cval = std::string(val);
+        if (val == 0 && PyErr_Occurred())
         {
-            PyObject *item = PyTuple_GET_ITEM(tuple, i);
-            if(PyString_Check(item))
+            PyErr_Clear();
+            return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ string");
+        }
+        vec.resize(1);
+        vec[0] = cval;
+    }
+    else if (PySequence_Check(args))
+    {
+        vec.resize(PySequence_Size(args));
+        for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)
+        {
+            PyObject *item = PySequence_GetItem(args, i);
+
+            if (!PyUnicode_Check(item))
             {
-                char *item_cstr = PyString_AsString(item);
-                vec[i] = std::string(item_cstr);
-                PyString_AsString_Cleanup(item_cstr);
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_TypeError, "arg %d is not a unicode string", (int) i);
             }
-            else
-                vec[i] = std::string("");
+
+            char const *val = PyUnicode_AsUTF8(item);
+            std::string cval = std::string(val);
+
+            if (val == 0 && PyErr_Occurred())
+            {
+                Py_DECREF(item);
+                PyErr_Clear();
+                return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ string", (int) i);
+            }
+            Py_DECREF(item);
+
+            vec[i] = cval;
         }
     }
-    else if(PyString_Check(tuple))
-    {
-        vec.resize(1);
-        char *tuple_cstr = PyString_AsString(tuple);
-        vec[0] = std::string(tuple_cstr);
-        PyString_AsString_Cleanup(tuple_cstr);
-    }
     else
-        return NULL;
+        return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more string(s)");
 
+    obj->data->GetAllExplicitNames() = vec;
     // Mark the allExplicitNames in the object as modified.
     obj->data->SelectAllExplicitNames();
 
@@ -416,45 +495,58 @@ NameschemeAttributes_SetExplicitIds(PyObject *self, PyObject *args)
 {
     NameschemeAttributesObject *obj = (NameschemeAttributesObject *)self;
 
-    intVector  &vec = obj->data->GetExplicitIds();
-    PyObject   *tuple;
-    if(!PyArg_ParseTuple(args, "O", &tuple))
-        return NULL;
+    intVector vec;
 
-    if(PyTuple_Check(tuple))
+    if (PyNumber_Check(args))
     {
-        vec.resize(PyTuple_Size(tuple));
-        for(int i = 0; i < PyTuple_Size(tuple); ++i)
+        long val = PyLong_AsLong(args);
+        int cval = int(val);
+        if (val == -1 && PyErr_Occurred())
         {
-            PyObject *item = PyTuple_GET_ITEM(tuple, i);
-            if(PyFloat_Check(item))
-                vec[i] = int(PyFloat_AS_DOUBLE(item));
-            else if(PyInt_Check(item))
-                vec[i] = int(PyInt_AS_LONG(item));
-            else if(PyLong_Check(item))
-                vec[i] = int(PyLong_AsLong(item));
-            else
-                vec[i] = 0;
+            PyErr_Clear();
+            return PyErr_Format(PyExc_TypeError, "number not interpretable as C++ int");
+        }
+        if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+            return PyErr_Format(PyExc_ValueError, "number not interpretable as C++ int");
+        vec.resize(1);
+        vec[0] = cval;
+    }
+    else if (PySequence_Check(args) && !PyUnicode_Check(args))
+    {
+        vec.resize(PySequence_Size(args));
+        for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)
+        {
+            PyObject *item = PySequence_GetItem(args, i);
+
+            if (!PyNumber_Check(item))
+            {
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_TypeError, "arg %d is not a number type", (int) i);
+            }
+
+            long val = PyLong_AsLong(item);
+            int cval = int(val);
+
+            if (val == -1 && PyErr_Occurred())
+            {
+                Py_DECREF(item);
+                PyErr_Clear();
+                return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ int", (int) i);
+            }
+            if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+            {
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_ValueError, "arg %d not interpretable as C++ int", (int) i);
+            }
+            Py_DECREF(item);
+
+            vec[i] = cval;
         }
     }
-    else if(PyFloat_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = int(PyFloat_AS_DOUBLE(tuple));
-    }
-    else if(PyInt_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = int(PyInt_AS_LONG(tuple));
-    }
-    else if(PyLong_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = int(PyLong_AsLong(tuple));
-    }
     else
-        return NULL;
+        return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more ints");
 
+    obj->data->GetExplicitIds() = vec;
     // Mark the explicitIds in the object as modified.
     obj->data->SelectExplicitIds();
 
@@ -479,37 +571,51 @@ NameschemeAttributes_SetExplicitNames(PyObject *self, PyObject *args)
 {
     NameschemeAttributesObject *obj = (NameschemeAttributesObject *)self;
 
-    stringVector  &vec = obj->data->GetExplicitNames();
-    PyObject     *tuple;
-    if(!PyArg_ParseTuple(args, "O", &tuple))
-        return NULL;
+    stringVector vec;
 
-    if(PyTuple_Check(tuple))
+    if (PyUnicode_Check(args))
     {
-        vec.resize(PyTuple_Size(tuple));
-        for(int i = 0; i < PyTuple_Size(tuple); ++i)
+        char const *val = PyUnicode_AsUTF8(args);
+        std::string cval = std::string(val);
+        if (val == 0 && PyErr_Occurred())
         {
-            PyObject *item = PyTuple_GET_ITEM(tuple, i);
-            if(PyString_Check(item))
+            PyErr_Clear();
+            return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ string");
+        }
+        vec.resize(1);
+        vec[0] = cval;
+    }
+    else if (PySequence_Check(args))
+    {
+        vec.resize(PySequence_Size(args));
+        for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)
+        {
+            PyObject *item = PySequence_GetItem(args, i);
+
+            if (!PyUnicode_Check(item))
             {
-                char *item_cstr = PyString_AsString(item);
-                vec[i] = std::string(item_cstr);
-                PyString_AsString_Cleanup(item_cstr);
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_TypeError, "arg %d is not a unicode string", (int) i);
             }
-            else
-                vec[i] = std::string("");
+
+            char const *val = PyUnicode_AsUTF8(item);
+            std::string cval = std::string(val);
+
+            if (val == 0 && PyErr_Occurred())
+            {
+                Py_DECREF(item);
+                PyErr_Clear();
+                return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ string", (int) i);
+            }
+            Py_DECREF(item);
+
+            vec[i] = cval;
         }
     }
-    else if(PyString_Check(tuple))
-    {
-        vec.resize(1);
-        char *tuple_cstr = PyString_AsString(tuple);
-        vec[0] = std::string(tuple_cstr);
-        PyString_AsString_Cleanup(tuple_cstr);
-    }
     else
-        return NULL;
+        return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more string(s)");
 
+    obj->data->GetExplicitNames() = vec;
     // Mark the explicitNames in the object as modified.
     obj->data->SelectExplicitNames();
 
@@ -583,40 +689,53 @@ PyNameschemeAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "explicitNames") == 0)
         return NameschemeAttributes_GetExplicitNames(self, NULL);
 
+
+    // Add a __dict__ answer so that dir() works
+    if (!strcmp(name, "__dict__"))
+    {
+        PyObject *result = PyDict_New();
+        for (int i = 0; PyNameschemeAttributes_methods[i].ml_meth; i++)
+            PyDict_SetItem(result,
+                PyString_FromString(PyNameschemeAttributes_methods[i].ml_name),
+                PyString_FromString(PyNameschemeAttributes_methods[i].ml_name));
+        return result;
+    }
+
     return Py_FindMethod(PyNameschemeAttributes_methods, self, name);
 }
 
 int
 PyNameschemeAttributes_setattr(PyObject *self, char *name, PyObject *args)
 {
-    // Create a tuple to contain the arguments since all of the Set
-    // functions expect a tuple.
-    PyObject *tuple = PyTuple_New(1);
-    PyTuple_SET_ITEM(tuple, 0, args);
-    Py_INCREF(args);
-    PyObject *obj = NULL;
+    PyObject NULL_PY_OBJ;
+    PyObject *obj = &NULL_PY_OBJ;
 
     if(strcmp(name, "namescheme") == 0)
-        obj = NameschemeAttributes_SetNamescheme(self, tuple);
+        obj = NameschemeAttributes_SetNamescheme(self, args);
     else if(strcmp(name, "externalArrayNames") == 0)
-        obj = NameschemeAttributes_SetExternalArrayNames(self, tuple);
+        obj = NameschemeAttributes_SetExternalArrayNames(self, args);
     else if(strcmp(name, "externalArrayOffsets") == 0)
-        obj = NameschemeAttributes_SetExternalArrayOffsets(self, tuple);
+        obj = NameschemeAttributes_SetExternalArrayOffsets(self, args);
     else if(strcmp(name, "externalArrayData") == 0)
-        obj = NameschemeAttributes_SetExternalArrayData(self, tuple);
+        obj = NameschemeAttributes_SetExternalArrayData(self, args);
     else if(strcmp(name, "allExplicitNames") == 0)
-        obj = NameschemeAttributes_SetAllExplicitNames(self, tuple);
+        obj = NameschemeAttributes_SetAllExplicitNames(self, args);
     else if(strcmp(name, "explicitIds") == 0)
-        obj = NameschemeAttributes_SetExplicitIds(self, tuple);
+        obj = NameschemeAttributes_SetExplicitIds(self, args);
     else if(strcmp(name, "explicitNames") == 0)
-        obj = NameschemeAttributes_SetExplicitNames(self, tuple);
+        obj = NameschemeAttributes_SetExplicitNames(self, args);
 
-    if(obj != NULL)
+    if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
-    Py_DECREF(tuple);
-    if( obj == NULL)
-        PyErr_Format(PyExc_RuntimeError, "Unable to set unknown attribute: '%s'", name);
+    if (obj == &NULL_PY_OBJ)
+    {
+        obj = NULL;
+        PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);
+    }
+    else if (obj == NULL && !PyErr_Occurred())
+        PyErr_Format(PyExc_RuntimeError, "unknown problem with '%s'", name);
+
     return (obj != NULL) ? 0 : -1;
 }
 
@@ -624,7 +743,7 @@ static int
 NameschemeAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     NameschemeAttributesObject *obj = (NameschemeAttributesObject *)v;
-    fprintf(fp, "%s", PyNameschemeAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyNameschemeAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -632,7 +751,7 @@ PyObject *
 NameschemeAttributes_str(PyObject *v)
 {
     NameschemeAttributesObject *obj = (NameschemeAttributesObject *)v;
-    return PyString_FromString(PyNameschemeAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyNameschemeAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -784,7 +903,7 @@ PyNameschemeAttributes_GetLogString()
 {
     std::string s("NameschemeAtts = NameschemeAttributes()\n");
     if(currentAtts != 0)
-        s += PyNameschemeAttributes_ToString(currentAtts, "NameschemeAtts.");
+        s += PyNameschemeAttributes_ToString(currentAtts, "NameschemeAtts.", true);
     return s;
 }
 
@@ -797,7 +916,7 @@ PyNameschemeAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("NameschemeAtts = NameschemeAttributes()\n");
-        s += PyNameschemeAttributes_ToString(currentAtts, "NameschemeAtts.");
+        s += PyNameschemeAttributes_ToString(currentAtts, "NameschemeAtts.", true);
         cb(s);
     }
 }

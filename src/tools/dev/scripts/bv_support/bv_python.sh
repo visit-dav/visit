@@ -80,7 +80,16 @@ function python_set_vars_helper
     #remove any extra includes
     PYTHON_INCLUDE_PATH="${PYTHON_INCLUDE_PATH%%-I*}"
     PYTHON_INCLUDE_DIR="$PYTHON_INCLUDE_PATH"
-    PYTHON_LIBRARY=`"$PYTHON_CONFIG_COMMAND" --libs`
+    if [[ "$DO_PYTHON2" == "yes" ]] ; then
+        PYTHON_LIBRARY=`"$PYTHON_CONFIG_COMMAND" --libs`
+    else
+        PYTHON_VERSION_MINOR=`echo $PYTHON_VERSION | cut -d. -f2`
+        if [[ $PYTHON_VERSION_MINOR -ge 8 ]] ; then
+            PYTHON_LIBRARY=`"$PYTHON_CONFIG_COMMAND" --libs --embed`
+        else
+            PYTHON_LIBRARY=`"$PYTHON_CONFIG_COMMAND" --libs`
+        fi
+    fi
     #remove all other libraries except for python..
     PYTHON_LIBRARY=`echo $PYTHON_LIBRARY | sed "s/.*\(python[^ ]*\).*/\1/g"`
 
@@ -119,13 +128,32 @@ function python_set_vars_helper
 function bv_python_system_python
 {
     echo "Using system python"
-    TEST=`which python-config`
-    [ $? != 0 ] && error "System python-config not found, cannot configure python"
 
-    bv_python_enable
+    # this method uses 'which' to find the full path to system python and it's config command
+
+    if [[ $DO_PYTHON2 == "no" ]]; then
+        # prefer python3 
+        TEST=`which python3-config`
+        if [ $? == 0 ]
+        then 
+            PYTHON_COMMAND=`which python3`
+            PYTHON_CONFIG_COMMAND=$TEST
+        else
+            TEST=`which python-config`
+            [ $? != 0 ] && error "Neither system python3-config nor python-config found, cannot configure python"
+            PYTHON_COMMAND=`which python`
+            PYTHON_CONFIG_COMMAND=$TEST
+        fi
+    else
+        # only try python 2
+        TEST=`which python-config`
+        [ $? != 0 ] && error "System python-config found, cannot configure python"
+        PYTHON_COMMAND=`which python`
+        PYTHON_CONFIG_COMMAND=$TEST
+    fi
+
     USE_SYSTEM_PYTHON="yes"
-    PYTHON_COMMAND="python"
-    PYTHON_CONFIG_COMMAND="python-config"
+    bv_python_enable
     PYTHON_FILE=""
     python_set_vars_helper #set vars..
 }
@@ -154,16 +182,28 @@ function bv_python_alt_python_dir
 {
     echo "Using alternate python directory"
 
-    if [ -e "$1/bin/python-config" ]
-    then
-        PYTHON_COMMAND="$1/bin/python"
-        PYTHON_CONFIG_COMMAND="$1/bin/python-config"
-    elif [ -e "$1/bin/python3-config" ]
-    then
-        PYTHON_COMMAND="$1/bin/python3"
-        PYTHON_CONFIG_COMMAND="$1/bin/python3-config"
+    if [[ $DO_PYTHON2 == "no" ]]; then
+        # prefer python3
+        if [ -e "$1/bin/python3-config" ]
+        then
+            PYTHON_COMMAND="$1/bin/python3"
+            PYTHON_CONFIG_COMMAND="$1/bin/python3-config"
+        elif [ -e "$1/bin/python-config" ]
+        then
+            PYTHON_COMMAND="$1/bin/python"
+            PYTHON_CONFIG_COMMAND="$1/bin/python-config"
+        else
+            error "Python (python3-config or python-config) not found in $1"
+        fi
     else
-        error "Python not found in $1"
+        # only try python2
+        if [ -e "$1/bin/python-config" ]
+        then
+            PYTHON_COMMAND="$1/bin/python"
+            PYTHON_CONFIG_COMMAND="$1/bin/python-config"
+        else
+            error "Python (python-config) not found in $1"
+        fi
     fi
 
     bv_python_enable
@@ -176,8 +216,11 @@ function bv_python_alt_python_dir
 
 function bv_python_depends_on
 {
-    # we always need openssl b/c of requests.
-    echo "openssl zlib"
+     pydep=""
+     if [[ $USE_SYSTEM_PYTHON == "no" ]] ; then
+        pydep="zlib"
+     fi
+     echo $pydep
 }
 
 function bv_python_info
@@ -251,12 +294,6 @@ function bv_python_info
         export PYREQUESTS_MD5_CHECKSUM="ee28bee2de76e9198fc41e48f3a7dd47"
         export PYREQUESTS_SHA256_CHECKSUM="11e007a8a2aa0323f5a921e9e6a2d7e4e67d9877e85773fba9ba6419025cbeb4"
     fi
-
-    export SEEDME_URL="https://seedme.org/sites/seedme.org/files/downloads/clients/"
-    export SEEDME_FILE="seedme-python-client-v1.2.4.zip"
-    export SEEDME_BUILD_DIR="seedme-python-client-v1.2.4"
-    export SEEDME_MD5_CHECKSUM="84960d455073fd2f51c31b7fcbc64d58"
-    export SEEDME_SHA256_CHECKSUM="71fb233d3b20e95ecd14db1d9cb5deefe775c6ac8bb0ab7604240df7f0e5c5f3"
 
     if [[ "$DO_PYTHON2" == "yes" ]] ; then
         export SETUPTOOLS_URL="https://pypi.python.org/packages/f7/94/eee867605a99ac113c4108534ad7c292ed48bf1d06dfe7b63daa51e49987/"
@@ -443,6 +480,12 @@ function bv_python_info
     export SPHINX_RTD_BUILD_DIR="sphinx_rtd_theme-0.4.3"
     export SPHINX_RTD_MD5_CHECKSUM="6c50f30bc39046f497d336039a0c13fa"
     export SPHINX_RTD_SHA256_CHECKSUM="728607e34d60456d736cc7991fd236afb828b21b82f956c5ea75f94c8414040a"
+
+    export SPHINX_TABS_URL="https://github.com/executablebooks/sphinx-tabs/archive/refs/tags"
+    export SPHINX_TABS_FILE="v2.1.0.tar.gz"
+    export SPHINX_TABS_BUILD_DIR="sphinx-tabs-2.1.0"
+    export SPHINX_TABS_MD5_CHECKSUM="985650c490898ae674492b48f81ae497"
+    export SPHINX_TABS_SHA256_CHECKSUM="39bfc9e2051f2a048eaa9da2dbf1f56b0c03c17cc72192fc8b4357cb32a95765"
 }
 
 function bv_python_print
@@ -523,13 +566,6 @@ function bv_python_ensure
     fi
 }
 
-function bv_python_dry_run
-{
-    if [[ "$DO_PYTHON" == "yes" ]] ; then
-        echo "Dry run option not set for python."
-    fi
-}
-
 function apply_python_osx104_patch
 {
     info "Patching Python: fix _environ issue for OS X 10.4"
@@ -559,6 +595,92 @@ EOF
     return 0
 }
 
+function apply_python_macos11_configure_patch
+{
+    # These two patches come from python-3.7.12, to address build failures on MacOS11
+    info "Patching Python: applying configure patch for MacOS 11"
+    patch -f -p0 << \EOF
+*** configure.orig	Mon Mar  9 23:11:12 2020
+--- configure	Fri Sep  3 20:49:21 2021
+***************
+*** 3374,3380 ****
+    # has no effect, don't bother defining them
+    Darwin/[6789].*)
+      define_xopen_source=no;;
+!   Darwin/1[0-9].*)
+      define_xopen_source=no;;
+    # On AIX 4 and 5.1, mbstate_t is defined only when _XOPEN_SOURCE == 500 but
+    # used in wcsnrtombs() and mbsnrtowcs() even if _XOPEN_SOURCE is not defined
+--- 3374,3380 ----
+    # has no effect, don't bother defining them
+    Darwin/[6789].*)
+      define_xopen_source=no;;
+!   Darwin/[12][0-9].*)
+      define_xopen_source=no;;
+    # On AIX 4 and 5.1, mbstate_t is defined only when _XOPEN_SOURCE == 500 but
+    # used in wcsnrtombs() and mbsnrtowcs() even if _XOPEN_SOURCE is not defined
+***************
+*** 9251,9256 ****
+--- 9251,9259 ----
+      	ppc)
+      		MACOSX_DEFAULT_ARCH="ppc64"
+      		;;
++     	arm64)
++     		MACOSX_DEFAULT_ARCH="arm64"
++     		;;
+      	*)
+      		as_fn_error $? "Unexpected output of 'arch' on OSX" "$LINENO" 5
+      		;;
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "Python patch to configure for MacOS 11  failed."
+        return 1
+    fi
+
+    info "Patching Python: applying configure.ac patch for MacOS 11"
+    patch -f -p0 << \EOF
+*** configure.ac.orig	Mon Mar  9 23:11:12 2020
+--- configure.ac	Fri Sep  3 20:49:21 2021
+***************
+*** 490,496 ****
+    # has no effect, don't bother defining them
+    Darwin/@<:@6789@:>@.*)
+      define_xopen_source=no;;
+!   Darwin/1@<:@0-9@:>@.*)
+      define_xopen_source=no;;
+    # On AIX 4 and 5.1, mbstate_t is defined only when _XOPEN_SOURCE == 500 but
+    # used in wcsnrtombs() and mbsnrtowcs() even if _XOPEN_SOURCE is not defined
+--- 490,496 ----
+    # has no effect, don't bother defining them
+    Darwin/@<:@6789@:>@.*)
+      define_xopen_source=no;;
+!   Darwin/@<:@[12]@:>@@<:@0-9@:>@.*)
+      define_xopen_source=no;;
+    # On AIX 4 and 5.1, mbstate_t is defined only when _XOPEN_SOURCE == 500 but
+    # used in wcsnrtombs() and mbsnrtowcs() even if _XOPEN_SOURCE is not defined
+***************
+*** 2456,2461 ****
+--- 2456,2464 ----
+      	ppc)
+      		MACOSX_DEFAULT_ARCH="ppc64"
+      		;;
++     	arm64)
++     		MACOSX_DEFAULT_ARCH="arm64"
++     		;;
+      	*)
+      		AC_MSG_ERROR([Unexpected output of 'arch' on OSX])
+      		;;
+
+
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "Python patch to configure.ac for MacOS 11 failed."
+        return 1
+    fi
+
+    return 0
+}
+
 function apply_python_patch
 {
     if [[ "$OPSYS" == "Darwin" ]]; then
@@ -569,43 +691,43 @@ function apply_python_patch
                 return 1
             fi
         fi
+
+        # shouldn't do any harm applying this
+        # on all mac versions
+        apply_python_macos11_configure_patch
+        if [[ $? != 0 ]] ; then
+            return 1
+        fi
     fi
 
     return 0
 }
 
-function apply_python_seedme_patch
+function apply_python_pillow_patch
 {
-    info "Patching Python: fix setup.py in seedme."
-    patch -f -p0 << \EOF
-diff -c setup.py.orig setup.py
-*** setup.py.orig    Mon Feb  1 13:39:48 2021
---- setup.py         Mon Feb  1 13:40:03 2021
-***************
-*** 73,79 ****
-                     'interface as well as methods and api for '         +\
-                     'programmatic usage. It performs extensive sanity ' +\
-                     'checks input data and is kept upto date with '     +\
-!                    'REST api at SeedMe.org.',
-  
-  setup(name='seedme',
-        version="1.2.4",
---- 73,79 ----
-                     'interface as well as methods and api for '         +\
-                     'programmatic usage. It performs extensive sanity ' +\
-                     'checks input data and is kept upto date with '     +\
-!                    'REST api at SeedMe.org.'
-  
-  setup(name='seedme',
-        version="1.2.4",
+    info "Patching Python: fix setup.py in Pillow."
+    patch -f -p1 << \EOF
+    diff --git a/setup.py b/setup.py
+    index 3e1a812..3520895 100755
+    --- a/setup.py
+    +++ b/setup.py
+    @@ -896,7 +896,7 @@ try:
+             packages=["PIL"],
+             package_dir={"": "src"},
+             keywords=["Imaging"],
+    -        zip_safe=not (debug_build() or PLATFORM_MINGW),
+    +        zip_safe=False,
+         )
+     except RequiredDependencyException as err:
+         msg = """
 EOF
-    if [[ $? != 0 ]] ; then
-        warn "Python patch for setup.py in seedme failed."
-        return 1
-    fi
+     if [[ $? != 0 ]] ; then
+         warn "Python patch for setup.py in Pillow failed."
+         return 1
+     fi
 
-    return 0
-}
+     return 0
+ }
 
 
 # *************************************************************************** #
@@ -675,26 +797,19 @@ function build_python
         fi
     fi
 
-    if [[ "$DO_OPENSSL" == "yes" ]]; then
-        OPENSSL_INCLUDE="$VISITDIR/openssl/$OPENSSL_VERSION/$VISITARCH/include"
-        OPENSSL_LIB="$VISITDIR/openssl/$OPENSSL_VERSION/$VISITARCH/lib"
-        PYTHON_LDFLAGS="${PYTHON_LDFLAGS} -L${OPENSSL_LIB}"
-        PYTHON_CPPFLAGS="${PYTHON_CPPFLAGS} -I${OPENSSL_INCLUDE}"
-    fi
-
     PY_ZLIB_INCLUDE="$VISITDIR/zlib/$ZLIB_VERSION/$VISITARCH/include"
     PY_ZLIB_LIB="$VISITDIR/zlib/$ZLIB_VERSION/$VISITARCH/lib"
     PYTHON_LDFLAGS="${PYTHON_LDFLAGS} -L${PY_ZLIB_LIB}"
     PYTHON_CPPFLAGS="${PYTHON_CPPFLAGS} -I${PY_ZLIB_INCLUDE}"
 
-    info "Configuring Python : ./configure OPT=\"$PYTHON_OPT\" CXX=\"$cxxCompiler\" CC=\"$cCompiler\"" \
-         "LDFLAGS=\"$PYTHON_LDFLAGS\" CPPFLAGS=\"$PYTHON_CPPFLAGS\""\
-         "${PYTHON_SHARED} --prefix=\"$PYTHON_PREFIX_DIR\" --disable-ipv6"
+    info "Configuring Python"
+    set -x
     ./configure OPT="$PYTHON_OPT" CXX="$cxxCompiler" CC="$cCompiler" \
                 LDFLAGS="$PYTHON_LDFLAGS" \
                 CPPFLAGS="$PYTHON_CPPFLAGS" \
                 ${PYTHON_SHARED} \
                 --prefix="$PYTHON_PREFIX_DIR" --disable-ipv6
+    set +x
 
     if [[ $? != 0 ]] ; then
         warn "Python configure failed.  Giving up"
@@ -764,15 +879,29 @@ function build_pillow
 
     pushd $PILLOW_BUILD_DIR > /dev/null
 
-    info "Building Pillow ...\n" \
-     "CC=${C_COMPILER} CXX=${CXX_COMPILER} " \
-     "  CFLAGS=${PYEXT_CFLAGS} CXXFLAGS=${PYEXT_CXXFLAGS} LDFLAGS=${PYEXT_LDFLAGS} " \
-     "  ${PYTHON_COMMAND} ./setup.py build_ext --disable-jpeg install --prefix=${PYHOME}"
+    #
+    # Apply patches
+    #
+    apply_python_pillow_patch
+    if [[ $? != 0 ]] ; then
+        if [[ $untarred_python == 1 ]] ; then
+            warn "Giving up on pillow install."
+            return 1
+        else
+            warn "Patch failed, but continuing.  I believe that this script\n" \
+                 "tried to apply a patch to an existing directory that had\n" \
+                 "already been patched ... that is, the patch is\n" \
+                 "failing harmlessly on a second application."
+        fi
+    fi
 
+    info "Building Pillow ...\n" \
+    set -x
     CC=${C_COMPILER} CXX=${CXX_COMPILER} CFLAGS="${PYEXT_CFLAGS}" \
      CXXFLAGS="${PYEXT_CXXFLAGS}" \
      LDFLAGS="${PYEXT_LDFLAGS}" \
-     ${PYTHON_COMMAND} ./setup.py build_ext --disable-jpeg install --prefix="${PYHOME}"
+     ${PYTHON_COMMAND} ./setup.py build_ext --disable-webp --disable-webpmux --disable-freetype --disable-lcms --disable-tiff --disable-xcb --disable-jpeg2000 --disable-jpeg install --prefix="${PYHOME}"
+    set +x
 
     if test $? -ne 0 ; then
         popd > /dev/null
@@ -857,7 +986,7 @@ function build_requests
                 return 1
             fi
         fi
-        
+
         if ! test -f ${IDNA_FILE} ; then
             download_file ${IDNA_FILE} "${IDNA_URL}"
             if [[ $? != 0 ]] ; then
@@ -909,7 +1038,7 @@ function build_requests
                 return 1
             fi
         fi
-        
+
         pushd $CERTIFI_BUILD_DIR > /dev/null
         info "Installing certifi ..."
         ${PYTHON_COMMAND} ./setup.py install --prefix="${PYHOME}"
@@ -986,64 +1115,6 @@ function build_requests
     fi
 
     info "Done with python requests module."
-    return 0
-}
-
-# *************************************************************************** #
-#                            Function 7.4, build_seedme                       #
-# *************************************************************************** #
-function build_seedme
-{
-    if ! test -f ${SEEDME_FILE} ; then
-        download_file ${SEEDME_FILE}
-        if [[ $? != 0 ]] ; then
-            warn "Could not download ${SEEDME_FILE}"
-            return 1
-        fi
-    fi
-    if ! test -d ${SEEDME_BUILD_DIR} ; then
-        info "Extracting seedme python module ..."
-        uncompress_untar ${SEEDME_FILE}
-        if test $? -ne 0 ; then
-            warn "Could not extract ${SEEDME_FILE}"
-            return 1
-        fi
-    fi
-
-    #
-    # Apply patches
-    #
-    pushd $SEEDME_BUILD_DIR > /dev/null
-    apply_python_seedme_patch
-    if [[ $? != 0 ]] ; then
-        if [[ $untarred_python == 1 ]] ; then
-            warn "Giving up on seedme install."
-            return 1
-        else
-            warn "Patch failed, but continuing.  I believe that this script\n" \
-                 "tried to apply a patch to an existing directory that had\n" \
-                 "already been patched ... that is, the patch is\n" \
-                 "failing harmlessly on a second application."
-        fi
-    fi
-
-    info "Installing seedme python module ..."
-    ${PYTHON_COMMAND} ./setup.py install --prefix="${PYHOME}"
-    if test $? -ne 0 ; then
-        popd > /dev/null
-        warn "Could not install seedme module"
-        return 1
-    fi
-    popd > /dev/null
-
-    # installs into site-packages dir of VisIt's Python.
-    # Simply re-execute the python perms command.
-    if [[ "$DO_GROUP" == "yes" ]] ; then
-        chmod -R ug+w,a+rX "$VISITDIR/python"
-        chgrp -R ${GROUP} "$VISITDIR/python"
-    fi
-
-    info "Done with seedme python module."
     return 0
 }
 
@@ -1171,9 +1242,15 @@ function build_numpy
     popd > /dev/null
 
     pushd $NUMPY_BUILD_DIR > /dev/null
+    cat << \EOF > site.cfg
+[openblas]
+libraries =
+library_dirs =
+include_dirs =
+EOF
     info "Installing numpy (~ 2 min) ..."
     sed -i 's#\\\\\"%s\\\\\"#%s#' numpy/distutils/system_info.py
-    ${PYTHON_COMMAND} ./setup.py install --prefix="${PYHOME}"
+    CC=${C_COMPILER} BLAS=None LAPACK=None ATLAS=None ${PYTHON_COMMAND} ./setup.py install --prefix="${PYHOME}"
     if test $? -ne 0 ; then
         popd > /dev/null
         warn "Could not install numpy"
@@ -1208,14 +1285,6 @@ function build_sphinx
         download_file ${SETUPTOOLS_FILE} "${SETUPTOOLS_URL}"
         if [[ $? != 0 ]] ; then
             warn "Could not download ${SETUPTOOLS_URL}"
-            return 1
-        fi
-    fi
-
-    if ! test -f ${REQUESTS_FILE} ; then
-        download_file ${REQUESTS_FILE} "${REQUESTS_URL}"
-        if [[ $? != 0 ]] ; then
-            warn "Could not download ${REQUESTS_FILE}"
             return 1
         fi
     fi
@@ -1379,15 +1448,6 @@ function build_sphinx
         uncompress_untar ${SETUPTOOLS_FILE}
         if test $? -ne 0 ; then
             warn "Could not extract ${SETUPTOOLS_FILE}"
-            return 1
-        fi
-    fi
-
-    if ! test -d ${PYREQUESTS_BUILD_DIR} ; then
-        info "Extracting requests ..."
-        uncompress_untar ${PYREQUESTS_FILE}
-        if test $? -ne 0 ; then
-            warn "Could not extract ${PYREQUESTS_FILE}"
             return 1
         fi
     fi
@@ -1557,7 +1617,7 @@ function build_sphinx
     # patch
     SED_CMD="sed -i "
     if [[ "$OPSYS" == "Darwin" ]]; then
-                SED_CMD="sed -i \"\" "
+        SED_CMD="sed -i '' " # the intention of this sed command is foiled by shell variable expansion
     fi
     pushd $SPHINX_BUILD_DIR > /dev/null
     ${SED_CMD} "s/docutils>=0.12/docutils<0.16,>=0.12/" ./Sphinx.egg-info/requires.txt
@@ -1772,6 +1832,23 @@ function build_sphinx
         chgrp -R ${GROUP} "$VISITDIR/python"
     fi
 
+    # fix shebangs. On Darwin, if python is available in Xcode,
+    # Sphinx scripts may get installed with shebangs that are absolute
+    # paths to Xcode's python interpreter. We want VisIt's python.
+    if [[ "$OPSYS" == "Darwin" ]]; then
+        for f in ${VISIT_PYTHON_DIR}/bin/*; do
+            if [[ -z "$(file $f | grep -i 'ascii text')" ]]; then
+                continue # Process only scripts
+            fi
+            # -i '' means do in-place...don't create backups
+            # 1s means do substitution only on line 1
+            # @ choosen as sep char for s sed cmd to not collide w/slashes
+            # ! needs to be escaped with a backslash
+            # don't use ${SED_CMD}
+            sed -i '' -e "1s@^#\!.*\$@#\!${VISIT_PYTHON_DIR}/bin/python3@" $f
+        done
+    fi
+
     return 0
 }
 
@@ -1806,6 +1883,51 @@ function build_sphinx_rtd
     if test $? -ne 0 ; then
         popd > /dev/null
         warn "Could not install sphinx_rtd"
+        return 1
+    fi
+    popd > /dev/null
+
+    # fix the perms
+    if [[ "$DO_GROUP" == "yes" ]] ; then
+        chmod -R ug+w,a+rX "$VISITDIR/python"
+        chgrp -R ${GROUP} "$VISITDIR/python"
+    fi
+
+    return 0
+}
+
+# *************************************************************************** #
+#                              build_sphinx_tabs                              #
+# *************************************************************************** #
+function build_sphinx_tabs
+{
+    # download
+    if ! test -f ${SPHINX_TABS_FILE} ; then
+        download_file ${SPHINX_TABS_FILE} "${SPHINX_TABS_URL}"
+        if [[ $? != 0 ]] ; then
+            warn "Could not download ${SPHINX_TABS_FILE}"
+            return 1
+        fi
+    fi
+
+    # extract
+    if ! test -d ${SPHINX_TABS_BUILD_DIR} ; then
+        info "Extracting sphinx_tabs ..."
+        uncompress_untar ${SPHINX_TABS_FILE}
+        if test $? -ne 0 ; then
+            warn "Could not extract ${SPHINX_TABS_FILE}"
+            return 1
+        fi
+    fi
+
+    # install
+    pushd $SPHINX_TABS_BUILD_DIR > /dev/null
+    cd $SPHINX_TABS_BUILD_DIR
+    info "Installing sphinx_tabs ..."
+    ${PYTHON_COMMAND} ./setup.py install --prefix="${PYHOME}"
+    if test $? -ne 0 ; then
+        popd > /dev/null
+        warn "Could not install sphinx_tabs"
         return 1
     fi
     popd > /dev/null
@@ -1867,14 +1989,6 @@ function bv_python_is_installed
         PY_OK=0
     fi
 
-    check_if_py_module_installed "requests"
-    if [[ $? != 0 ]] ; then
-        if [[ $PY_CHECK_ECHO != 0 ]] ; then
-            info "python module requests is not installed"
-        fi
-        PY_OK=0
-    fi
-
     check_if_py_module_installed "pyparsing"
     if [[ $? != 0 ]] ; then
         if [[ $PY_CHECK_ECHO != 0 ]] ; then
@@ -1883,14 +1997,6 @@ function bv_python_is_installed
         PY_OK=0
     fi
 
-    check_if_py_module_installed "seedme"
-    if [[ $? != 0 ]] ; then
-        if [[ $PY_CHECK_ECHO != 0 ]] ; then
-            info "python module seedme is not installed"
-        fi
-        PY_OK=0
-    fi
-    
     if [[ "$BUILD_SPHINX" == "yes" ]]; then
 
         check_if_py_module_installed "sphinx"
@@ -1905,6 +2011,13 @@ function bv_python_is_installed
         if [[ $? != 0 ]] ; then
             if [[ $PY_CHECK_ECHO != 0 ]] ; then
                 info "python module sphinx_rtd_theme is not installed"
+            fi
+            PY_OK=0
+        fi
+        check_if_py_module_installed "sphinx_tabs"
+        if [[ $? != 0 ]] ; then
+            if [[ $PY_CHECK_ECHO != 0 ]] ; then
+                info "python module sphinx_tabs is not installed"
             fi
             PY_OK=0
         fi
@@ -1977,12 +2090,14 @@ function bv_python_build
 
             check_if_py_module_installed "PIL"
             # use Pillow for when python 3
-            info "Building the Python Pillow Imaging Library"
-            build_pillow
             if [[ $? != 0 ]] ; then
-                error "Pillow build failed. Bailing out."
+                info "Building the Python Pillow Imaging Library"
+                build_pillow
+                if [[ $? != 0 ]] ; then
+                    error "Pillow build failed. Bailing out."
+                fi
+                info "Done building the Python Pillow Imaging Library"
             fi
-            info "Done building the Python Pillow Imaging Library"
 
             if [[ "$BUILD_MPI4PY" == "yes" ]]; then
 
@@ -2008,28 +2123,20 @@ function bv_python_build
                 info "Done building the pyparsing module."
             fi
 
-            check_if_py_module_installed "requests"
-            if [[ $? != 0 ]] ; then
-                build_requests
-                if [[ $? != 0 ]] ; then
-                    error "requests python module build failed. Bailing out."
-                fi
-                info "Done building the requests python module."
-            fi
-
-            check_if_py_module_installed "seedme"
-            if [[ $? != 0 ]] ; then
-                build_seedme
-                if [[ $? != 0 ]] ; then
-                    error "seedme python module build failed. Bailing out."
-                fi
-                info "Done building the seedme python module."
-            fi
-
             if [[ "$BUILD_SPHINX" == "yes" ]]; then
 
                 if [[ "$DO_PYTHON2" == "yes" ]]; then
                     error "sphinx requires python 3 (but DO_PYTHON2=yes). Bailing out."
+                fi
+
+                # requests is needed by sphinx.
+                check_if_py_module_installed "requests"
+                if [[ $? != 0 ]] ; then
+                    build_requests
+                    if [[ $? != 0 ]] ; then
+                        error "requests python module build failed. Bailing out."
+                    fi
+                    info "Done building the requests python module."
                 fi
 
                 check_if_py_module_installed "sphinx"
@@ -2048,6 +2155,15 @@ function bv_python_build
                         error "sphinx rtd python theme build failed. Bailing out."
                     fi
                     info "Done building the sphinx rtd python theme."
+                fi
+
+                check_if_py_module_installed "sphinx_tabs"
+                if [[ $? != 0 ]] ; then
+                    build_sphinx_tabs
+                    if [[ $? != 0 ]] ; then
+                        error "sphinx tabs python module build failed. Bailing out."
+                    fi
+                    info "Done building the sphinx tabs."
                 fi
             fi
         fi

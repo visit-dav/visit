@@ -10,7 +10,6 @@
 #include <QMouseEvent>
 #include <QPen>
 #include <QColor>
-#include <QMatrix>
 #include <QPainter>
 
 // ****************************************************************************
@@ -186,6 +185,8 @@ QViewportItem::setRelativeToSize(const QSize &size,
 // Creation:   Wed Nov  5 08:22:57 PST 2008
 //
 // Modifications:
+//    Kathleen Biagas, Wed Apr 19 14:51:12 PDT 2023
+//    Qt6 support: QMouseEvent::localPos -> QMouseEvent::position. 
 //
 // ****************************************************************************
 
@@ -193,7 +194,11 @@ void
 QViewportItem::updateText()
 {
     QFontMetricsF fmet(textItem->font());
+#if QT_VERSION < QT_VERSION_CHECK(5,11,0)
     float txt_w = fmet.width(id);
+#else
+    float txt_w = fmet.horizontalAdvance(id);
+#endif
     float txt_h = fmet.height();
     if(txt_w > rect().width())
     {
@@ -212,7 +217,11 @@ QViewportItem::updateText()
             name = number;
 
         textItem->setText(name);
+#if QT_VERSION < QT_VERSION_CHECK(5,11,0)
         txt_w = fmet.width(name);
+#else
+        txt_w = fmet.horizontalAdvance(name);
+#endif
     }
     else
     {
@@ -351,6 +360,8 @@ QViewportItem::mousePressEvent(QGraphicsSceneMouseEvent *event)
 // Creation:   Wed Nov  5 08:22:57 PST 2008
 //
 // Modifications:
+//   Kathleen Biagas, Wed Apr 19 14:51:12 PDT 2023
+//   Qt6 support: QMouseEvent::localPos -> QMouseEvent::position. 
 //
 // ****************************************************************************
 
@@ -1041,6 +1052,9 @@ QvisViewportWidget::activateItem(QViewportItem *obj)
 //    Cyrus Harrison, Fri Nov  7 10:36:14 PST 2008
 //    Qt4 Refactor.
 //
+//    Kathleen Biagas, Wed Apr 19 14:51:12 PDT 2023
+//    Qt6 support: QMouseEvent::localPos -> QMouseEvent::position. 
+//
 // ****************************************************************************
 
 void
@@ -1081,7 +1095,11 @@ QvisViewportWidget::mousePressEvent(QMouseEvent* e)
     if(e->button() == Qt::LeftButton && !selected)
     {
         dragViewportOutline = true;
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
         dragMouseStart = e->localPos();
+#else
+        dragMouseStart = e->position();
+#endif
     }
 }
 
@@ -1100,6 +1118,9 @@ QvisViewportWidget::mousePressEvent(QMouseEvent* e)
 // Modifications:
 //    Cyrus Harrison, Fri Nov  7 10:36:14 PST 2008
 //    Qt4 Refactor.
+//
+//    Kathleen Biagas, Wed Apr 19 14:51:12 PDT 2023
+//    Qt6 support: QMouseEvent::localPos -> QMouseEvent::position. 
 //
 // ****************************************************************************
 
@@ -1124,8 +1145,13 @@ QvisViewportWidget::mouseMoveEvent(QMouseEvent* e)
         // set rect
         float x = dragMouseStart.x();
         float y = dragMouseStart.y();
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
         float dx = e->localPos().x() - x;
         float dy = e->localPos().y() - y;
+#else
+        float dx = e->position().x() - x;
+        float dy = e->position().y() - y;
+#endif
 
         float w = dx;
         float h = dy;

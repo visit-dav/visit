@@ -15,26 +15,35 @@
 #   Renamed the parallel library to adios2_mpi.
 #
 #   Kathleen Biagas, Tues Oct 1 09:33:47 MST 2013
-#   On Windows, only look for adios2 and taustubs. 
+#   On Windows, only look for adios2 and taustubs.
+#
+#   Justin Privitera, Wed Apr 27 17:46:52 PDT 2022
+#   Updated adios2 to 2.7.1 and added all the libraries it creates to the
+#   installation as well as additional logic for parallel building.
 #
 #****************************************************************************/
 
 # Use the ADIOS_DIR hint from the config-site .cmake file
 
-INCLUDE(${VISIT_SOURCE_DIR}/CMake/SetUpThirdParty.cmake)
-
-IF(EXISTS ${VISIT_ADIOS2_DIR}/lib64)
-    SET(LIB lib64)
-ELSE()
-    SET(LIB lib)
-ENDIF()
-
 if(NOT WIN32)
-    SET_UP_THIRD_PARTY(ADIOS2 ${LIB} include adios2 adios2_atl adios2_dill adios2_evpath adios2_ffs adios2_sst taustubs)
+    SET_UP_THIRD_PARTY(ADIOS2 LIBS
+        adios2_c adios2_atl adios2_dill adios2_evpath adios2_ffs
+        adios2_taustubs adios2_cmenet adios2_cmzplenet adios2_cmepoll
+        adios2_core adios2_cmmulticast adios2_enet adios2_cmselect
+        adios2_cxx11 adios2_cmsockets adios2_cmudp)
 else()
-    SET_UP_THIRD_PARTY(ADIOS2 ${LIB} include adios2 taustubs)
+    SET_UP_THIRD_PARTY(ADIOS2 LIBS
+        adios2_c adios2_cxx11 adios2_core adios2_taustubs)
 endif()
 
-IF(VISIT_PARALLEL)
-    SET_UP_THIRD_PARTY(ADIOS2_PAR ${LIB} include adios2_mpi)
-ENDIF(VISIT_PARALLEL)
+if(VISIT_PARALLEL)
+    if(NOT WIN32)
+        SET_UP_THIRD_PARTY(ADIOS2_PAR LIBS
+            adios2_c_mpi adios2_cxx11_mpi adios2_core_mpi)
+    else()
+        SET_UP_THIRD_PARTY(ADIOS2_PAR LIBS
+            adios2_c adios2_cxx11 adios2_core
+            adios2_c_mpi adios2_cxx11_mpi adios2_core_mpi)
+    endif()
+endif()
+

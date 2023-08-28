@@ -18,6 +18,7 @@
 #include <QPrinter>
 #include <QPrinterInfo>
 #include <QProcess>
+#include <QRegularExpression>
 #include <QSocketNotifier>
 #include <QStatusBar>
 #include <QStyle>
@@ -109,7 +110,6 @@
 #include <QvisRenderingWindow.h>
 #include <QvisSaveMovieWizard.h>
 #include <QvisSaveWindow.h>
-#include <QvisSeedMeWindow.h>
 #include <QvisSelectionsWindow.h>
 #include <QvisSessionFileDatabaseLoader.h>
 #include <QvisSimulationWindow.h>
@@ -204,7 +204,6 @@
 #define WINDOW_MACRO            32
 #define WINDOW_SELECTIONS       33
 #define WINDOW_SETUP_CFG        34
-#define WINDOW_SEEDME           35
 
 #define BEGINSWITHQUOTE(A) (A[0] == '\'' || A[0] == '\"')
 #define ENDSWITHQUOTE(A) (A[strlen(A)-1] == '\'' || A[strlen(A)-1] == '\"')
@@ -631,6 +630,12 @@ GUI_LogQtMessages(QtMsgType type, const QMessageLogContext &context, const QStri
 //   Kathleen Biagas, Fri Apr 12 15:04:39 PDT 2019
 //   Initialize orientation (used same init value as AppearanceAtts).
 //
+//   Eric Brugger, Thu Aug  5 11:21:21 PDT 2021
+//   Removed support for SeedMe.
+//
+//   Kathleen Biagas, Wed Apr  5 12:46:04 PDT 2023
+//   Remove commented out section around obsolete function setColorSpec.
+//
 // ****************************************************************************
 
 QvisGUIApplication::QvisGUIApplication(int &argc, char **argv, ViewerProxy *proxy) :
@@ -641,17 +646,6 @@ QvisGUIApplication::QvisGUIApplication(int &argc, char **argv, ViewerProxy *prox
 {
     completeInit = visitTimer->StartTimer();
     int total = visitTimer->StartTimer();
-
-#if 0
-    // NOTE: On Ubuntu 9.10/64bit calling setColorSpec with a compositing
-    // window manager causes Qt windows to be semi-transparent and they are
-    // not drawn correctly unless shown over a black background. I'm for either
-    // getting rid of this code (since most displays are better than 256 colors
-    // now) or coming up with clever conditions for conditional compilation.
-
-    // Tell Qt that we want lots of colors.
-    QApplication::setColorSpec(QApplication::ManyColor);
-#endif
 
     // NULL out some window pointers.
     mainWin = 0;
@@ -851,7 +845,6 @@ QvisGUIApplication::QvisGUIApplication(int &argc, char **argv, ViewerProxy *prox
     windowNames += tr("Macros");
     windowNames += tr("Selections");
     windowNames += tr("Setup Host Profiles and Configuration");
-    windowNames += tr("SeedMe");
 
     // If the geometry was not passed on the command line then the
     // savedGUIGeometry flag will still be set to false. If we
@@ -3240,6 +3233,9 @@ QvisGUIApplication::CreateMainWindow()
 //   Renamed signal/slot connection to make Mac configuration window a general
 //   configuration setup window.
 //
+//   Eric Brugger, Thu Aug  5 11:21:21 PDT 2021
+//   Removed support for SeedMe.
+//
 // ****************************************************************************
 
 void
@@ -3373,8 +3369,7 @@ QvisGUIApplication::SetupWindows()
              this, SLOT(showSelectionsWindow2(const QString &)));
      connect(mainWin, SIGNAL(activateSetupHostProfilesAndConfig()),
              this, SLOT(setupHostProfilesAndConfig()));
-     connect(mainWin, SIGNAL(activateSeedMeWindow()),
-             this, SLOT(showSeedMeWindow()));}
+}
 
 // ****************************************************************************
 // Method: QvisGUIApplication::WindowFactory
@@ -3452,6 +3447,9 @@ QvisGUIApplication::SetupWindows()
 //
 //   Kathleen Biagas, Fri Aug 31 14:13:17 PDT 2018
 //   Connect Save Window with DBPluginInfoAtts.
+//
+//   Eric Brugger, Thu Aug  5 11:21:21 PDT 2021
+//   Removed support for SeedMe.
 //
 // ****************************************************************************
 
@@ -3718,15 +3716,6 @@ QvisGUIApplication::WindowFactory(int i)
     case WINDOW_SETUP_CFG:
         {
             win = new QvisSetupHostProfilesAndConfigWindow(windowNames[i]);
-        }
-        break;
-    case WINDOW_SEEDME:
-        {
-            win = new QvisSeedMeWindow(GetViewerState()->GetSeedMeAttributes(),
-                                       windowNames[i], windowNames[i],
-                                       mainWin->GetNotepad());
-            connect(win, SIGNAL(runCommand(const QString &)),
-                    this, SLOT(Interpret(const QString &)));
         }
         break;
     }
@@ -6506,9 +6495,8 @@ QvisGUIApplication::ReadFromViewer(int)
         CATCH(LostConnectionException)
         {
             cerr << "VisIt's viewer exited abnormally! Aborting the Graphical "
-                 << "User Interface. VisIt's developers may be reached via "
-                 << "the visit-users mailing list.  Please see:" << std::endl
-                 << "        https://wci.llnl.gov/simulation/computer-codes/visit/faqs/faq01"
+                 << "User Interface. VisIt's developers may be reached via our "
+                 << "GitHub discussions, https://github.com/visit-dav/visit/discussions"
                  << endl;
             viewerIsAlive = false;
 
@@ -7119,10 +7107,10 @@ QPrinterToPrinterAttributes(QPrinter *printer, PrinterAttributes *p)
     else
         p->SetDocumentName("untitled");
 
-    p->SetNumCopies(printer->numCopies());
-    p->SetPortrait(printer->orientation() == QPrinter::Portrait);
+    p->SetNumCopies(printer->copyCount());
+    p->SetPortrait(printer->pageLayout().orientation() == QPageLayout::Portrait);
     p->SetPrintColor(printer->colorMode() == QPrinter::Color);
-    p->SetPageSize((int)printer->paperSize());
+    p->SetPageSize((int)printer->pageLayout().pageSize().id());
 }
 
 // ****************************************************************************
@@ -7168,9 +7156,9 @@ PrinterAttributesToQPrinter(PrinterAttributes *p, QPrinter *printer)
     printer->setPrintProgram(p->GetPrintProgram().c_str());
     printer->setCreator(p->GetCreator().c_str());
     printer->setDocName(p->GetDocumentName().c_str());
-    printer->setNumCopies(p->GetNumCopies());
-    printer->setOrientation(p->GetPortrait() ? QPrinter::Portrait :
-        QPrinter::Landscape);
+    printer->setCopyCount(p->GetNumCopies());
+    printer->setPageOrientation(p->GetPortrait() ? QPageLayout::Portrait :
+        QPageLayout::Landscape);
     printer->setFromTo(1, 1);
     printer->setColorMode(p->GetPrintColor() ? QPrinter::Color :
         QPrinter::GrayScale);
@@ -7178,7 +7166,7 @@ PrinterAttributesToQPrinter(PrinterAttributes *p, QPrinter *printer)
         printer->setOutputFileName(p->GetOutputToFileName().c_str());
     else
         printer->setOutputFileName(QString());
-    printer->setPaperSize((QPrinter::PaperSize)p->GetPageSize());
+    printer->setPageSize(QPageSize((QPageSize::PageSizeId)p->GetPageSize()));
 }
 
 // ****************************************************************************
@@ -8882,6 +8870,8 @@ QvisGUIApplication::CrashRecoveryFile() const
 // Creation:   Mon Mar 12 14:18:57 PDT 2018
 //
 // Modifications:
+//   Kathleen Biagas, Tue Apr 11, 2023
+//   QString::SkipEmptyParts => Qt::SkipEmptyParts for Qt >= 6.
 //
 // ****************************************************************************
 
@@ -8891,8 +8881,11 @@ QvisGUIApplication::GetCrashFilePIDs(const QFileInfoList &fileList, intVector &o
     for(int i=0; i<fileList.size(); i++)
     {
         QString fn = fileList.at(i).fileName();
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
         QStringList tokens = fn.split(".", QString::SkipEmptyParts);
-
+#else
+        QStringList tokens = fn.split(".", Qt::SkipEmptyParts);
+#endif
         if(tokens.size() > 2) {
             bool ok;
             int pid = tokens[1].toInt(&ok, 10);
@@ -8918,6 +8911,11 @@ QvisGUIApplication::GetCrashFilePIDs(const QFileInfoList &fileList, intVector &o
 // Creation:   Mon Mar 12 14:18:57 PDT 2018
 //
 // Modifications:
+//   Kathleen Biagas, Wed Mar 29 08:10:38 PDT 2023
+//   Replaced QRegExp (which has been deprecated) with QRegularExpression.
+//
+//   Kathleen Biagas, Tue Apr 11, 2023
+//   QString::SkipEmptyParts => Qt::SkipEmptyParts for Qt >= 6.
 //
 // ****************************************************************************
 
@@ -8933,7 +8931,11 @@ QvisGUIApplication::GetSystemPIDs(std::vector<int> &outPIDs)
     while(fgets(buf, 2048, f) != NULL)
     {
         QString pidStr(buf);
-        QStringList tokens = pidStr.split(QRegExp("\\s+"), QString::SkipEmptyParts); // whitespace character
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+        QStringList tokens = pidStr.split(QRegularExpression("\\s+"), QString::SkipEmptyParts); // whitespace character
+#else
+        QStringList tokens = pidStr.split(QRegularExpression("\\s+"), Qt::SkipEmptyParts); // whitespace character
+#endif
 
         int pid = tokens[0].toInt(&ok, 10);
 
@@ -9009,12 +9011,12 @@ QvisGUIApplication::RestoreCrashRecoveryFile()
         GetSystemPIDs(systemPIDs);
 
         // Exclude crash files of any currently running VisIt processes
-        for(int i=0; i<crashFilePIDs.size(); i++)
+        for(size_t i=0; i<crashFilePIDs.size(); i++)
         {
             int crashFilePID = crashFilePIDs[i];
             bool addFile = true;
 
-            for(int j=0; j<systemPIDs.size(); j++)
+            for(size_t j=0; j<systemPIDs.size(); j++)
             {
                 if(crashFilePID == systemPIDs[j])
                 {
@@ -9082,7 +9084,7 @@ QvisGUIApplication::ShowCrashRecoveryDialog(const QFileInfoList &fileInfoList)
             QString filename = QFileDialog::getOpenFileName(0, tr("Select Crash Recovery File"),
                                                             GetUserVisItDirectory().c_str(),
                                                             tr("Session files (*.session)"));
-            if(filename != NULL)
+            if(!filename.isEmpty())
             {
                 PerformRestoreSessionFile(filename);
             }
@@ -9330,4 +9332,3 @@ QvisGUIApplication::showSelectionsWindow2(const QString &selName)
     selWindow->highlightSelection(selName);
 }
 void QvisGUIApplication::setupHostProfilesAndConfig() { GetInitializedWindowPointer(WINDOW_SETUP_CFG)->show(); }
-void QvisGUIApplication::showSeedMeWindow() { GetInitializedWindowPointer(WINDOW_SEEDME)->show(); }

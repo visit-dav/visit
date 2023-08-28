@@ -36,7 +36,7 @@ struct PrinterAttributesObject
 //
 static PyObject *NewPrinterAttributes(int);
 std::string
-PyPrinterAttributes_ToString(const PrinterAttributes *atts, const char *prefix)
+PyPrinterAttributes_ToString(const PrinterAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -87,12 +87,37 @@ PrinterAttributes_SetPrinterName(PyObject *self, PyObject *args)
 {
     PrinterAttributesObject *obj = (PrinterAttributesObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the printerName in the object.
-    obj->data->SetPrinterName(std::string(str));
+    obj->data->SetPrinterName(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -111,12 +136,37 @@ PrinterAttributes_SetPrintProgram(PyObject *self, PyObject *args)
 {
     PrinterAttributesObject *obj = (PrinterAttributesObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the printProgram in the object.
-    obj->data->SetPrintProgram(std::string(str));
+    obj->data->SetPrintProgram(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -135,12 +185,37 @@ PrinterAttributes_SetDocumentName(PyObject *self, PyObject *args)
 {
     PrinterAttributesObject *obj = (PrinterAttributesObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the documentName in the object.
-    obj->data->SetDocumentName(std::string(str));
+    obj->data->SetDocumentName(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -159,12 +234,37 @@ PrinterAttributes_SetCreator(PyObject *self, PyObject *args)
 {
     PrinterAttributesObject *obj = (PrinterAttributesObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the creator in the object.
-    obj->data->SetCreator(std::string(str));
+    obj->data->SetCreator(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -183,12 +283,48 @@ PrinterAttributes_SetNumCopies(PyObject *self, PyObject *args)
 {
     PrinterAttributesObject *obj = (PrinterAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the numCopies in the object.
-    obj->data->SetNumCopies((int)ival);
+    obj->data->SetNumCopies(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -207,12 +343,48 @@ PrinterAttributes_SetPortrait(PyObject *self, PyObject *args)
 {
     PrinterAttributesObject *obj = (PrinterAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the portrait in the object.
-    obj->data->SetPortrait(ival != 0);
+    obj->data->SetPortrait(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -231,12 +403,48 @@ PrinterAttributes_SetPrintColor(PyObject *self, PyObject *args)
 {
     PrinterAttributesObject *obj = (PrinterAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the printColor in the object.
-    obj->data->SetPrintColor(ival != 0);
+    obj->data->SetPrintColor(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -255,12 +463,48 @@ PrinterAttributes_SetOutputToFile(PyObject *self, PyObject *args)
 {
     PrinterAttributesObject *obj = (PrinterAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the outputToFile in the object.
-    obj->data->SetOutputToFile(ival != 0);
+    obj->data->SetOutputToFile(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -279,12 +523,37 @@ PrinterAttributes_SetOutputToFileName(PyObject *self, PyObject *args)
 {
     PrinterAttributesObject *obj = (PrinterAttributesObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the outputToFileName in the object.
-    obj->data->SetOutputToFileName(std::string(str));
+    obj->data->SetOutputToFileName(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -303,12 +572,48 @@ PrinterAttributes_SetPageSize(PyObject *self, PyObject *args)
 {
     PrinterAttributesObject *obj = (PrinterAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the pageSize in the object.
-    obj->data->SetPageSize((int)ival);
+    obj->data->SetPageSize(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -388,46 +693,59 @@ PyPrinterAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "pageSize") == 0)
         return PrinterAttributes_GetPageSize(self, NULL);
 
+
+    // Add a __dict__ answer so that dir() works
+    if (!strcmp(name, "__dict__"))
+    {
+        PyObject *result = PyDict_New();
+        for (int i = 0; PyPrinterAttributes_methods[i].ml_meth; i++)
+            PyDict_SetItem(result,
+                PyString_FromString(PyPrinterAttributes_methods[i].ml_name),
+                PyString_FromString(PyPrinterAttributes_methods[i].ml_name));
+        return result;
+    }
+
     return Py_FindMethod(PyPrinterAttributes_methods, self, name);
 }
 
 int
 PyPrinterAttributes_setattr(PyObject *self, char *name, PyObject *args)
 {
-    // Create a tuple to contain the arguments since all of the Set
-    // functions expect a tuple.
-    PyObject *tuple = PyTuple_New(1);
-    PyTuple_SET_ITEM(tuple, 0, args);
-    Py_INCREF(args);
-    PyObject *obj = NULL;
+    PyObject NULL_PY_OBJ;
+    PyObject *obj = &NULL_PY_OBJ;
 
     if(strcmp(name, "printerName") == 0)
-        obj = PrinterAttributes_SetPrinterName(self, tuple);
+        obj = PrinterAttributes_SetPrinterName(self, args);
     else if(strcmp(name, "printProgram") == 0)
-        obj = PrinterAttributes_SetPrintProgram(self, tuple);
+        obj = PrinterAttributes_SetPrintProgram(self, args);
     else if(strcmp(name, "documentName") == 0)
-        obj = PrinterAttributes_SetDocumentName(self, tuple);
+        obj = PrinterAttributes_SetDocumentName(self, args);
     else if(strcmp(name, "creator") == 0)
-        obj = PrinterAttributes_SetCreator(self, tuple);
+        obj = PrinterAttributes_SetCreator(self, args);
     else if(strcmp(name, "numCopies") == 0)
-        obj = PrinterAttributes_SetNumCopies(self, tuple);
+        obj = PrinterAttributes_SetNumCopies(self, args);
     else if(strcmp(name, "portrait") == 0)
-        obj = PrinterAttributes_SetPortrait(self, tuple);
+        obj = PrinterAttributes_SetPortrait(self, args);
     else if(strcmp(name, "printColor") == 0)
-        obj = PrinterAttributes_SetPrintColor(self, tuple);
+        obj = PrinterAttributes_SetPrintColor(self, args);
     else if(strcmp(name, "outputToFile") == 0)
-        obj = PrinterAttributes_SetOutputToFile(self, tuple);
+        obj = PrinterAttributes_SetOutputToFile(self, args);
     else if(strcmp(name, "outputToFileName") == 0)
-        obj = PrinterAttributes_SetOutputToFileName(self, tuple);
+        obj = PrinterAttributes_SetOutputToFileName(self, args);
     else if(strcmp(name, "pageSize") == 0)
-        obj = PrinterAttributes_SetPageSize(self, tuple);
+        obj = PrinterAttributes_SetPageSize(self, args);
 
-    if(obj != NULL)
+    if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
-    Py_DECREF(tuple);
-    if( obj == NULL)
-        PyErr_Format(PyExc_RuntimeError, "Unable to set unknown attribute: '%s'", name);
+    if (obj == &NULL_PY_OBJ)
+    {
+        obj = NULL;
+        PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);
+    }
+    else if (obj == NULL && !PyErr_Occurred())
+        PyErr_Format(PyExc_RuntimeError, "unknown problem with '%s'", name);
+
     return (obj != NULL) ? 0 : -1;
 }
 
@@ -435,7 +753,7 @@ static int
 PrinterAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     PrinterAttributesObject *obj = (PrinterAttributesObject *)v;
-    fprintf(fp, "%s", PyPrinterAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyPrinterAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -443,7 +761,7 @@ PyObject *
 PrinterAttributes_str(PyObject *v)
 {
     PrinterAttributesObject *obj = (PrinterAttributesObject *)v;
-    return PyString_FromString(PyPrinterAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyPrinterAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -595,7 +913,7 @@ PyPrinterAttributes_GetLogString()
 {
     std::string s("PrinterAtts = PrinterAttributes()\n");
     if(currentAtts != 0)
-        s += PyPrinterAttributes_ToString(currentAtts, "PrinterAtts.");
+        s += PyPrinterAttributes_ToString(currentAtts, "PrinterAtts.", true);
     return s;
 }
 
@@ -608,7 +926,7 @@ PyPrinterAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("PrinterAtts = PrinterAttributes()\n");
-        s += PyPrinterAttributes_ToString(currentAtts, "PrinterAtts.");
+        s += PyPrinterAttributes_ToString(currentAtts, "PrinterAtts.", true);
         cb(s);
     }
 }

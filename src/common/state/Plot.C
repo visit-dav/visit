@@ -112,6 +112,8 @@ void Plot::Copy(const Plot &obj)
     beginFrame = obj.beginFrame;
     endFrame = obj.endFrame;
     keyframes = obj.keyframes;
+    numKeyframesPerOperator = obj.numKeyframesPerOperator;
+    operatorKeyframes = obj.operatorKeyframes;
     databaseKeyframes = obj.databaseKeyframes;
     isFromSimulation = obj.isFromSimulation;
     followsTime = obj.followsTime;
@@ -291,6 +293,8 @@ Plot::operator == (const Plot &obj) const
             (beginFrame == obj.beginFrame) &&
             (endFrame == obj.endFrame) &&
             (keyframes == obj.keyframes) &&
+            (numKeyframesPerOperator == obj.numKeyframesPerOperator) &&
+            (operatorKeyframes == obj.operatorKeyframes) &&
             (databaseKeyframes == obj.databaseKeyframes) &&
             (isFromSimulation == obj.isFromSimulation) &&
             (followsTime == obj.followsTime) &&
@@ -440,28 +444,30 @@ Plot::NewInstance(bool copy) const
 void
 Plot::SelectAll()
 {
-    Select(ID_stateType,         (void *)&stateType);
-    Select(ID_plotType,          (void *)&plotType);
-    Select(ID_plotName,          (void *)&plotName);
-    Select(ID_activeFlag,        (void *)&activeFlag);
-    Select(ID_hiddenFlag,        (void *)&hiddenFlag);
-    Select(ID_expandedFlag,      (void *)&expandedFlag);
-    Select(ID_plotVar,           (void *)&plotVar);
-    Select(ID_databaseName,      (void *)&databaseName);
-    Select(ID_operators,         (void *)&operators);
-    Select(ID_operatorNames,     (void *)&operatorNames);
-    Select(ID_activeOperator,    (void *)&activeOperator);
-    Select(ID_id,                (void *)&id);
-    Select(ID_embeddedPlotId,    (void *)&embeddedPlotId);
-    Select(ID_beginFrame,        (void *)&beginFrame);
-    Select(ID_endFrame,          (void *)&endFrame);
-    Select(ID_keyframes,         (void *)&keyframes);
-    Select(ID_databaseKeyframes, (void *)&databaseKeyframes);
-    Select(ID_isFromSimulation,  (void *)&isFromSimulation);
-    Select(ID_followsTime,       (void *)&followsTime);
-    Select(ID_description,       (void *)&description);
-    Select(ID_selection,         (void *)&selection);
-    Select(ID_animatingFlag,     (void *)&animatingFlag);
+    Select(ID_stateType,               (void *)&stateType);
+    Select(ID_plotType,                (void *)&plotType);
+    Select(ID_plotName,                (void *)&plotName);
+    Select(ID_activeFlag,              (void *)&activeFlag);
+    Select(ID_hiddenFlag,              (void *)&hiddenFlag);
+    Select(ID_expandedFlag,            (void *)&expandedFlag);
+    Select(ID_plotVar,                 (void *)&plotVar);
+    Select(ID_databaseName,            (void *)&databaseName);
+    Select(ID_operators,               (void *)&operators);
+    Select(ID_operatorNames,           (void *)&operatorNames);
+    Select(ID_activeOperator,          (void *)&activeOperator);
+    Select(ID_id,                      (void *)&id);
+    Select(ID_embeddedPlotId,          (void *)&embeddedPlotId);
+    Select(ID_beginFrame,              (void *)&beginFrame);
+    Select(ID_endFrame,                (void *)&endFrame);
+    Select(ID_keyframes,               (void *)&keyframes);
+    Select(ID_numKeyframesPerOperator, (void *)&numKeyframesPerOperator);
+    Select(ID_operatorKeyframes,       (void *)&operatorKeyframes);
+    Select(ID_databaseKeyframes,       (void *)&databaseKeyframes);
+    Select(ID_isFromSimulation,        (void *)&isFromSimulation);
+    Select(ID_followsTime,             (void *)&followsTime);
+    Select(ID_description,             (void *)&description);
+    Select(ID_selection,               (void *)&selection);
+    Select(ID_animatingFlag,           (void *)&animatingFlag);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -578,6 +584,20 @@ Plot::SetKeyframes(const intVector &keyframes_)
 {
     keyframes = keyframes_;
     Select(ID_keyframes, (void *)&keyframes);
+}
+
+void
+Plot::SetNumKeyframesPerOperator(const intVector &numKeyframesPerOperator_)
+{
+    numKeyframesPerOperator = numKeyframesPerOperator_;
+    Select(ID_numKeyframesPerOperator, (void *)&numKeyframesPerOperator);
+}
+
+void
+Plot::SetOperatorKeyframes(const intVector &operatorKeyframes_)
+{
+    operatorKeyframes = operatorKeyframes_;
+    Select(ID_operatorKeyframes, (void *)&operatorKeyframes);
 }
 
 void
@@ -759,6 +779,30 @@ Plot::GetKeyframes()
 }
 
 const intVector &
+Plot::GetNumKeyframesPerOperator() const
+{
+    return numKeyframesPerOperator;
+}
+
+intVector &
+Plot::GetNumKeyframesPerOperator()
+{
+    return numKeyframesPerOperator;
+}
+
+const intVector &
+Plot::GetOperatorKeyframes() const
+{
+    return operatorKeyframes;
+}
+
+intVector &
+Plot::GetOperatorKeyframes()
+{
+    return operatorKeyframes;
+}
+
+const intVector &
 Plot::GetDatabaseKeyframes() const
 {
     return databaseKeyframes;
@@ -853,6 +897,18 @@ Plot::SelectKeyframes()
 }
 
 void
+Plot::SelectNumKeyframesPerOperator()
+{
+    Select(ID_numKeyframesPerOperator, (void *)&numKeyframesPerOperator);
+}
+
+void
+Plot::SelectOperatorKeyframes()
+{
+    Select(ID_operatorKeyframes, (void *)&operatorKeyframes);
+}
+
+void
 Plot::SelectDatabaseKeyframes()
 {
     Select(ID_databaseKeyframes, (void *)&databaseKeyframes);
@@ -894,28 +950,30 @@ Plot::GetFieldName(int index) const
 {
     switch (index)
     {
-    case ID_stateType:         return "stateType";
-    case ID_plotType:          return "plotType";
-    case ID_plotName:          return "plotName";
-    case ID_activeFlag:        return "activeFlag";
-    case ID_hiddenFlag:        return "hiddenFlag";
-    case ID_expandedFlag:      return "expandedFlag";
-    case ID_plotVar:           return "plotVar";
-    case ID_databaseName:      return "databaseName";
-    case ID_operators:         return "operators";
-    case ID_operatorNames:     return "operatorNames";
-    case ID_activeOperator:    return "activeOperator";
-    case ID_id:                return "id";
-    case ID_embeddedPlotId:    return "embeddedPlotId";
-    case ID_beginFrame:        return "beginFrame";
-    case ID_endFrame:          return "endFrame";
-    case ID_keyframes:         return "keyframes";
-    case ID_databaseKeyframes: return "databaseKeyframes";
-    case ID_isFromSimulation:  return "isFromSimulation";
-    case ID_followsTime:       return "followsTime";
-    case ID_description:       return "description";
-    case ID_selection:         return "selection";
-    case ID_animatingFlag:     return "animatingFlag";
+    case ID_stateType:               return "stateType";
+    case ID_plotType:                return "plotType";
+    case ID_plotName:                return "plotName";
+    case ID_activeFlag:              return "activeFlag";
+    case ID_hiddenFlag:              return "hiddenFlag";
+    case ID_expandedFlag:            return "expandedFlag";
+    case ID_plotVar:                 return "plotVar";
+    case ID_databaseName:            return "databaseName";
+    case ID_operators:               return "operators";
+    case ID_operatorNames:           return "operatorNames";
+    case ID_activeOperator:          return "activeOperator";
+    case ID_id:                      return "id";
+    case ID_embeddedPlotId:          return "embeddedPlotId";
+    case ID_beginFrame:              return "beginFrame";
+    case ID_endFrame:                return "endFrame";
+    case ID_keyframes:               return "keyframes";
+    case ID_numKeyframesPerOperator: return "numKeyframesPerOperator";
+    case ID_operatorKeyframes:       return "operatorKeyframes";
+    case ID_databaseKeyframes:       return "databaseKeyframes";
+    case ID_isFromSimulation:        return "isFromSimulation";
+    case ID_followsTime:             return "followsTime";
+    case ID_description:             return "description";
+    case ID_selection:               return "selection";
+    case ID_animatingFlag:           return "animatingFlag";
     default:  return "invalid index";
     }
 }
@@ -940,28 +998,30 @@ Plot::GetFieldType(int index) const
 {
     switch (index)
     {
-    case ID_stateType:         return FieldType_enum;
-    case ID_plotType:          return FieldType_int;
-    case ID_plotName:          return FieldType_string;
-    case ID_activeFlag:        return FieldType_bool;
-    case ID_hiddenFlag:        return FieldType_bool;
-    case ID_expandedFlag:      return FieldType_bool;
-    case ID_plotVar:           return FieldType_string;
-    case ID_databaseName:      return FieldType_string;
-    case ID_operators:         return FieldType_intVector;
-    case ID_operatorNames:     return FieldType_stringVector;
-    case ID_activeOperator:    return FieldType_int;
-    case ID_id:                return FieldType_int;
-    case ID_embeddedPlotId:    return FieldType_int;
-    case ID_beginFrame:        return FieldType_int;
-    case ID_endFrame:          return FieldType_int;
-    case ID_keyframes:         return FieldType_intVector;
-    case ID_databaseKeyframes: return FieldType_intVector;
-    case ID_isFromSimulation:  return FieldType_bool;
-    case ID_followsTime:       return FieldType_bool;
-    case ID_description:       return FieldType_string;
-    case ID_selection:         return FieldType_string;
-    case ID_animatingFlag:     return FieldType_bool;
+    case ID_stateType:               return FieldType_enum;
+    case ID_plotType:                return FieldType_int;
+    case ID_plotName:                return FieldType_string;
+    case ID_activeFlag:              return FieldType_bool;
+    case ID_hiddenFlag:              return FieldType_bool;
+    case ID_expandedFlag:            return FieldType_bool;
+    case ID_plotVar:                 return FieldType_string;
+    case ID_databaseName:            return FieldType_string;
+    case ID_operators:               return FieldType_intVector;
+    case ID_operatorNames:           return FieldType_stringVector;
+    case ID_activeOperator:          return FieldType_int;
+    case ID_id:                      return FieldType_int;
+    case ID_embeddedPlotId:          return FieldType_int;
+    case ID_beginFrame:              return FieldType_int;
+    case ID_endFrame:                return FieldType_int;
+    case ID_keyframes:               return FieldType_intVector;
+    case ID_numKeyframesPerOperator: return FieldType_intVector;
+    case ID_operatorKeyframes:       return FieldType_intVector;
+    case ID_databaseKeyframes:       return FieldType_intVector;
+    case ID_isFromSimulation:        return FieldType_bool;
+    case ID_followsTime:             return FieldType_bool;
+    case ID_description:             return FieldType_string;
+    case ID_selection:               return FieldType_string;
+    case ID_animatingFlag:           return FieldType_bool;
     default:  return FieldType_unknown;
     }
 }
@@ -986,28 +1046,30 @@ Plot::GetFieldTypeName(int index) const
 {
     switch (index)
     {
-    case ID_stateType:         return "enum";
-    case ID_plotType:          return "int";
-    case ID_plotName:          return "string";
-    case ID_activeFlag:        return "bool";
-    case ID_hiddenFlag:        return "bool";
-    case ID_expandedFlag:      return "bool";
-    case ID_plotVar:           return "string";
-    case ID_databaseName:      return "string";
-    case ID_operators:         return "intVector";
-    case ID_operatorNames:     return "stringVector";
-    case ID_activeOperator:    return "int";
-    case ID_id:                return "int";
-    case ID_embeddedPlotId:    return "int";
-    case ID_beginFrame:        return "int";
-    case ID_endFrame:          return "int";
-    case ID_keyframes:         return "intVector";
-    case ID_databaseKeyframes: return "intVector";
-    case ID_isFromSimulation:  return "bool";
-    case ID_followsTime:       return "bool";
-    case ID_description:       return "string";
-    case ID_selection:         return "string";
-    case ID_animatingFlag:     return "bool";
+    case ID_stateType:               return "enum";
+    case ID_plotType:                return "int";
+    case ID_plotName:                return "string";
+    case ID_activeFlag:              return "bool";
+    case ID_hiddenFlag:              return "bool";
+    case ID_expandedFlag:            return "bool";
+    case ID_plotVar:                 return "string";
+    case ID_databaseName:            return "string";
+    case ID_operators:               return "intVector";
+    case ID_operatorNames:           return "stringVector";
+    case ID_activeOperator:          return "int";
+    case ID_id:                      return "int";
+    case ID_embeddedPlotId:          return "int";
+    case ID_beginFrame:              return "int";
+    case ID_endFrame:                return "int";
+    case ID_keyframes:               return "intVector";
+    case ID_numKeyframesPerOperator: return "intVector";
+    case ID_operatorKeyframes:       return "intVector";
+    case ID_databaseKeyframes:       return "intVector";
+    case ID_isFromSimulation:        return "bool";
+    case ID_followsTime:             return "bool";
+    case ID_description:             return "string";
+    case ID_selection:               return "string";
+    case ID_animatingFlag:           return "bool";
     default:  return "invalid index";
     }
 }
@@ -1112,6 +1174,16 @@ Plot::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_keyframes:
         {  // new scope
         retval = (keyframes == obj.keyframes);
+        }
+        break;
+    case ID_numKeyframesPerOperator:
+        {  // new scope
+        retval = (numKeyframesPerOperator == obj.numKeyframesPerOperator);
+        }
+        break;
+    case ID_operatorKeyframes:
+        {  // new scope
+        retval = (operatorKeyframes == obj.operatorKeyframes);
         }
         break;
     case ID_databaseKeyframes:

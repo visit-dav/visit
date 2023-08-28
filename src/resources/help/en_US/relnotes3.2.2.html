@@ -1,0 +1,68 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta http-equiv="Content-Language" content="en-us">
+  <title>VisIt 3.2.2 Release Notes</title>
+</head>
+<body>
+<center><b><font size="6">VisIt 3.2.2 Release Notes</font></b></center>
+
+<p>Welcome to VisIt's release notes page. This page describes the important
+enhancements and bug-fixes that were added to this release.</p>
+
+<p><b>Sections</b></p>
+<ul>
+  <li><a href="#Bugs_fixed">Bug Fixes</a></li>
+  <li><a href="#Enhancements">Enhancements</a></li>
+  <li><a href="#Dev_changes">Changes for VisIt developers</a></li>
+</ul>
+
+<a name="Bugs_fixed"></a>
+<p><b><font size="4">Bugs fixed in version 3.2.2</font></b></p>
+<ul>
+  <li>Fixed a bug in the Blueprint reader preventing unsigned 64-bit array field values.</li>
+  <li>Fixed a bug in the Blueprint reader that caused unnecessary copies of topology connectivity arrays.</li>
+  <li>Fixed a bug in the Blueprint reader where YAML or JSON root files were rewritten on open, which could strip comments and change the file entires. The root file is now opened in a read only mode.</li>
+  <li>Fixed a bug where versions of VisIt that supported hardware accelerated rendering would display a black image in the visualization window.</li>
+  <li>Fixed a crash when saving images greater than approximately 8,000 x 8,000. Now images can be saved up to 16,384 x 16,384.</li>
+  <li>Fixed a bug in the <i>Chombo Users</i> configuration that prevented the macros from being loaded and appearing in the "Macros" window.</li>
+  <li>Fixed a bug where VisIt would hang when connecting to a remote system running Linux when connecting from a Linux or macOS system.</li>
+  <li>The path is now stripped off the filename in the Pick output to be consistent with output on linux.</li>
+  <li>The command recording for GlobalLineoutAttributes now works correctly.</li>
+  <li>Fixed a bug with Pick for Rectilinear grids when real zones are completely surrounded by ghost zones.</li>
+  <li>Fixed a bug where VisIt would hang when working with a AMR meshes and the number of active patches was less than the number of processors and the patches were not rectilinear.</li>
+  <li>Fixed a bug where encoding an mpeg movie on an Ubuntu 21 system failed.</li>
+  <li>Fixed a bug in the Uintah reader where long64 data was read as zeroes. This primarily impacted particle ids.</li>
+</ul>
+
+<a name="Enhancements"></a>
+<p><b><font size="4">Enhancements in version 3.2.2</font></b></p>
+<ul>
+  <li>The VTK reader has been expanded to support .pvd files.</li>
+  <li>The <code>-lang</code> command-line argument was added to start VisIt with a different language translation. For example, use <code>-lang fr</code> to run VisIt with the French translation.</li>
+  <li>Updated the Los Alamos National Laboratory's Trinity host profile to no longer use the gateway.</li>
+  <li>Improved the setting of the tick marks and labels for log scaled axes for curve plots.</li>
+  <li>Python endpoint scripts (such as pip, pyenv) are now installed along with Python inside of VisIt on linux and macOS.</li>
+</ul>
+
+<a name="Dev_changes"></a>
+<p><b><font size="4">Changes for VisIt developers in version 3.2.2</font></b></p>
+<ul>
+  <li>Fixed a compile issue on a Fedora 31 Docker container that didn't have any OpenGL header files installed. This involved modifying engine/main/CMakeLists.txt to add OPENGL_INCLUDE_DIR to the include directories if building with IceT and MesaGL.</li>
+  <li>Enhanced build_visit to apply a patch to fix a compile issue with VTK with gcc 10.3 on Ubuntu 21.04.</li>
+  <li>Added a Docker file for Ubuntu 21.04.</li>
+  <li>Fixed a bug where the test suite files displayed in the dashboard produced by the regression test suite were blank.</li>
+  <li>Enhanced build_visit to apply a patch to fix a compile issue with p7zip with gcc 10.3 on Ubuntu 21.04.</li>
+  <li>Enhanced build_visit so that it worked on systems that only have Python 3 installed.</li>
+  <li>Enhanced build_visit to apply a patch that fixes a compile issue with Python on MacOS 11.</li>
+  <li>Enhanced the building of Qt in build_visit to check for the system libraries being located in /usr/lib if /usr/lib64 doesn't exist.</li>
+  <li>Enhanced build_visit to apply a patch that fixes a compile issue with Qt with gcc-11.</li>
+  <li>Added a Docker file for Debian 11.</li>
+  <li>Added the spack environment files <i>compilers.yaml</i> and <i>packages.yaml</i> for spock.olcf.ornl.gov.</li>
+</ul>
+
+<p>Click the following link to view the release notes for the previous version
+of VisIt: <a href=relnotes3.2.1.html>3.2.1</a>.</p>
+</body>
+</html>

@@ -1,19 +1,17 @@
     int numPts;
     vtkPolyData *input= vtkPolyData::SafeDownCast(this->GetInput());
-    vtkIdType npts, *pts;
     int j;
     vtkPoints *p, *displayPts;
-    vtkCellArray *aPrim;
     vtkUnsignedCharArray *c=NULL;
     unsigned char *rgba;
     double *ftmp;
     int cellScalars = 0;
     int cellNum = 0;
-    int lastX, lastY, X, Y; 
- 
+    int lastX, lastY, X, Y;
+
     vtkDebugMacro (<< "vtkDashedXorGridMapper2D::RenderOverlay");
 
-    if ( input == NULL ) 
+    if ( input == NULL )
     {
         vtkErrorMacro(<< "No input!");
         CLEAN_UP();
@@ -22,7 +20,7 @@
     else
     {
         numPts = input->GetNumberOfPoints();
-    } 
+    }
 
     if (numPts == 0)
     {
@@ -43,7 +41,7 @@
     {
         vtkDebugMacro(<< "Bad settings. Try SetDots first.");
     }
-    
+
     if ( this->LookupTable == NULL )
     {
         this->CreateDefaultLookupTable();
@@ -53,8 +51,8 @@
     // if something has changed regenrate colors and display lists
     // if required
     //
-    if ( this->GetMTime() > this->BuildTime || 
-         input->GetMTime() > this->BuildTime || 
+    if ( this->GetMTime() > this->BuildTime ||
+         input->GetMTime() > this->BuildTime ||
          this->LookupTable->GetMTime() > this->BuildTime ||
          actor->GetProperty()->GetMTime() > this->BuildTime)
     {
@@ -62,9 +60,9 @@
         this->MapScalars(1.0);
         this->BuildTime.Modified();
     }
-  
+
     // Get the position of the text actor
-    int* actorPos = 
+    int* actorPos =
         actor->GetPositionCoordinate()->GetComputedLocalDisplayValue(viewport);
 
     // Transform the points, if necessary
@@ -95,20 +93,37 @@
     }
 
     // Draw the lines.
-    aPrim = input->GetLines();
+    vtkIdType npts;
+    // We need to scale our coordinates by the devicePixelRatio, which takes
+    // the OSX retina display into account. From the docs:
+    //
+    //     "Common values are 1 for normal-dpi displays and 2 for high-dpi
+    //     'retina' displays."
+    //
+    int devicePixelRatio = privateInstance->widget->devicePixelRatio();
+#if LIB_VERSION_LE(VTK,8,1,0)
+    vtkCellArray *aPrim = input->GetLines();
+    vtkIdType *pts;
     for (aPrim->InitTraversal(); aPrim->GetNextCell(npts,pts); cellNum++)
-    { 
-        if (c && cellScalars) 
+    {
+#else
+    const vtkIdType *pts;
+    auto aPrim = vtk::TakeSmartPointer(input->GetLines()->NewIterator());
+    for (aPrim->GoToFirstCell(); !aPrim->IsDoneWithTraversal(); aPrim->GoToNextCell(), cellNum++)
+    {
+        aPrim->GetCurrentCell(npts,pts);
+#endif
+        if (c && cellScalars)
         {
             rgba = c->GetPointer(4*cellNum);
             SET_FOREGROUND(rgba);
         }
         ftmp = p->GetPoint(pts[0]);
 
-        lastX = (int)(actorPos[0] + ftmp[0]);
-        lastY = (int)(actorPos[1] - ftmp[1]);
+        lastX = (int)(actorPos[0] + ftmp[0]) / devicePixelRatio;
+        lastY = (int)(actorPos[1] - ftmp[1]) / devicePixelRatio;
 
-        for (j = 1; j < npts; j++) 
+        for (j = 1; j < npts; j++)
         {
             ftmp = p->GetPoint(pts[j]);
             if (c && !cellScalars)
@@ -116,20 +131,20 @@
                 rgba = c->GetPointer(4*pts[j]);
                 SET_FOREGROUND(rgba)
             }
-            X = (int)(actorPos[0] + ftmp[0]);
-            Y = (int)(actorPos[1] - ftmp[1]);
+            X = (int)(actorPos[0] + ftmp[0]) / devicePixelRatio;
+            Y = (int)(actorPos[1] - ftmp[1]) / devicePixelRatio;
 
             int delta = pixelDrawn + pixelSpaced;
             // Divide the two cases.
-            
+
             bool horizontal;
-            
+
             // If we're asked for a point
             if (X == lastX && Y == lastY)
                 horizontal = horizontalBias;
             else
                 horizontal = (Y == lastY);
-            
+
             // Horizontal line
             if (horizontal)
             {
@@ -140,9 +155,9 @@
                     X = lastX;
                     lastX = tmp;
                 }
-                
+
                 int nextX;
-                
+
                 // Three cases for first dashed line
                 // If we're on a white space, we draw nothing, and advance
                 // to the next state.
@@ -204,9 +219,9 @@
                     Y = lastY;
                     lastY = tmp;
                 }
-                
+
                 int nextY;
-                
+
                 // Three cases for first dashed line
                 // If we're on a white space, we draw nothing, and advance
                 // to the next state.
@@ -236,7 +251,7 @@
                 // If we're at the beginning of a dash, we're fine.
 
                 nextY = Y + pixelDrawn;
-                
+
                 for (;;)
                 {
                     // If Y and nextY strattle lastY, draw a final segment.

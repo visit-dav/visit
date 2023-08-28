@@ -60,8 +60,8 @@ protected:
   float ImposterRadius;
 
 private:
-  vtkPointMapper(const vtkPointMapper&) VTK_DELETE_FUNCTION;
-  void operator=(const vtkPointMapper&) VTK_DELETE_FUNCTION;
+  vtkPointMapper(const vtkPointMapper&) = delete;
+  void operator=(const vtkPointMapper&) = delete;
 };
 
 #endif

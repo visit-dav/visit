@@ -6,15 +6,17 @@
 # Use the CONDUIT_DIR hint from the config-site .cmake file 
 #
 
-INCLUDE(${VISIT_SOURCE_DIR}/CMake/SetUpThirdParty.cmake)
-
-SET_UP_THIRD_PARTY(CONDUIT lib include/conduit conduit conduit_relay conduit_blueprint)
+SET_UP_THIRD_PARTY(CONDUIT
+    INCDIR include/conduit
+    LIBS conduit conduit_relay conduit_blueprint)
 
 # par engine needs conduit relay's mpi lib, find it using setup_third_party
 # so it will be installed properly
 if(VISIT_PARALLEL)
     set(CONDUIT_MPI_DIR ${CONDUIT_DIR})
-    SET_UP_THIRD_PARTY(CONDUIT_MPI lib include/conduit conduit_relay_mpi)
+    SET_UP_THIRD_PARTY(CONDUIT_MPI
+        INCDIR include/conduit
+        LIBS conduit_relay_mpi conduit_blueprint_mpi)
 endif()
 
 
@@ -24,7 +26,7 @@ if(EXISTS ${CONDUIT_DIR}/python-modules/conduit)
     message(STATUS "Found Conduit Python Wrappers - ${CONDUIT_DIR}/python-modules/conduit")
     install(DIRECTORY ${CONDUIT_DIR}/python-modules/conduit
             DESTINATION ${VISIT_INSTALLED_VERSION_LIB}/site-packages/
-            FILE_PERMISSIONS 
+            FILE_PERMISSIONS
                     OWNER_WRITE
                     OWNER_READ
                     GROUP_WRITE
@@ -40,3 +42,8 @@ if(EXISTS ${CONDUIT_DIR}/python-modules/conduit)
                     WORLD_READ WORLD_EXECUTE
                 )
 endif()
+
+if(CONDUIT_FOUND)
+    set(HAVE_CONDUIT TRUE CACHE BOOL "Have Conduit libraries")
+endif()
+

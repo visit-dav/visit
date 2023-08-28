@@ -232,13 +232,16 @@ QvisPseudocolorPlotWindow::CreateWindowContents()
 //    Eddie Rusu, Tue Apr 13 12:08:59 PDT 2021
 //    Changed Use Current Plot to Use Actual Data.
 //
+//    Kathleen Biagas, Tue Apr 18 16:34:41 PDT 2023
+//    Support Qt6: buttonClicked -> idClicked.
+//
 // ****************************************************************************
 
 void
 QvisPseudocolorPlotWindow::CreateDataTab(QWidget *pageData)
 {
     QGridLayout *topLayout = new QGridLayout(pageData);
-    topLayout->setMargin(5);
+    topLayout->setContentsMargins(5,5,5,5);
     topLayout->setSpacing(10);
 
     //
@@ -249,7 +252,7 @@ QvisPseudocolorPlotWindow::CreateDataTab(QWidget *pageData)
     topLayout->addWidget(dataGroup);
 
     QGridLayout *dataLayout = new QGridLayout(dataGroup);
-    dataLayout->setMargin(5);
+    dataLayout->setContentsMargins(5,5,5,5);
     dataLayout->setSpacing(10);
 
     //
@@ -272,8 +275,13 @@ QvisPseudocolorPlotWindow::CreateDataTab(QWidget *pageData)
     dataLayout->addWidget(rb, 0, 3);
 
     // Each time a radio button is clicked, call the scale clicked slot.
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(scalingButtons, SIGNAL(buttonClicked(int)),
             this, SLOT(scaleClicked(int)));
+#else
+    connect(scalingButtons, SIGNAL(idClicked(int)),
+            this, SLOT(scaleClicked(int)));
+#endif
 
     // Create the skew factor line edit
     skewLineEdit = new QLineEdit(central);
@@ -289,7 +297,7 @@ QvisPseudocolorPlotWindow::CreateDataTab(QWidget *pageData)
     dataLayout->addWidget(limitsGroup, 1, 0, 2, 5);
 
     QGridLayout *limitsLayout = new QGridLayout(limitsGroup);
-    limitsLayout->setMargin(5);
+    limitsLayout->setContentsMargins(5,5,5,5);
     limitsLayout->setSpacing(10);
 
     limitsLayout->addWidget( new QLabel(tr("Limits"), central), 0, 0);
@@ -363,9 +371,13 @@ QvisPseudocolorPlotWindow::CreateDataTab(QWidget *pageData)
     dataLayout->addWidget(rb, 3, 3);
     centeringButtons->addButton(rb, 2);
     // Each time a radio button is clicked, call the centeringClicked slot.
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(centeringButtons, SIGNAL(buttonClicked(int)),
             this, SLOT(centeringClicked(int)));
-
+#else
+    connect(centeringButtons, SIGNAL(idClicked(int)),
+            this, SLOT(centeringClicked(int)));
+#endif
     //
     // Create the color stuff
     //
@@ -374,7 +386,7 @@ QvisPseudocolorPlotWindow::CreateDataTab(QWidget *pageData)
     topLayout->addWidget(colorGroup);
 
     QGridLayout *colorLayout = new QGridLayout(colorGroup);
-    colorLayout->setMargin(5);
+    colorLayout->setContentsMargins(5,5,5,5);
     colorLayout->setSpacing(10);
 
     int gRow = 0;
@@ -444,7 +456,7 @@ QvisPseudocolorPlotWindow::CreateDataTab(QWidget *pageData)
     colorLayout->addWidget(opacityMinMaxGroup, gRow, 1, 1, 3);
 
     QGridLayout *opacityMinMaxLayout = new QGridLayout(opacityMinMaxGroup);
-    opacityMinMaxLayout->setMargin(5);
+    opacityMinMaxLayout->setContentsMargins(5,5,5,5);
     opacityMinMaxLayout->setSpacing(10);
 
 
@@ -469,8 +481,13 @@ QvisPseudocolorPlotWindow::CreateDataTab(QWidget *pageData)
     // colorLayout->addWidget(rb, gRow, 2);
 
     // // Each time a radio button is clicked, call the scale clicked slot.
+//#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     // connect(opacityButtons, SIGNAL(buttonClicked(int)),
     //         this, SLOT(setOpaacityClicked(int)));
+//#else 
+    // connect(opacityButtons, SIGNAL(idClicked(int)),
+    //         this, SLOT(setOpaacityClicked(int)));
+//#endif 
 
     // gRow++;
 
@@ -495,7 +512,7 @@ QvisPseudocolorPlotWindow::CreateDataTab(QWidget *pageData)
     topLayout->addWidget(miscGroup);
 
     QGridLayout *miscLayout = new QGridLayout(miscGroup);
-    miscLayout->setMargin(5);
+    miscLayout->setContentsMargins(5,5,5,5);
     miscLayout->setSpacing(10);
 
     // Create the legend toggle
@@ -530,13 +547,16 @@ QvisPseudocolorPlotWindow::CreateDataTab(QWidget *pageData)
 //   I modified the plot to support independently setting the point style
 //   for the two end points of lines.
 //
+//   Kathleen Biagas, Tue Apr 18 16:34:41 PDT 2023
+//   Support Qt6: buttonClicked -> idClicked.
+//
 // ****************************************************************************
 
 void
 QvisPseudocolorPlotWindow::CreateGeometryTab(QWidget *pageGeometry)
 {
     QGridLayout *topLayout = new QGridLayout(pageGeometry);
-    topLayout->setMargin(5);
+    topLayout->setContentsMargins(5,5,5,5);
     topLayout->setSpacing(10);
 
     //
@@ -547,7 +567,7 @@ QvisPseudocolorPlotWindow::CreateGeometryTab(QWidget *pageGeometry)
     topLayout->addWidget(lineGroup);
 
     QGridLayout *lineLayout = new QGridLayout(lineGroup);
-    lineLayout->setMargin(5);
+    lineLayout->setContentsMargins(5,5,5,5);
     lineLayout->setSpacing(10);
 
     //
@@ -710,7 +730,7 @@ QvisPseudocolorPlotWindow::CreateGeometryTab(QWidget *pageGeometry)
     topLayout->addWidget(pointGroup);
 
     QGridLayout *pointLayout = new QGridLayout(pointGroup);
-    pointLayout->setMargin(5);
+    pointLayout->setContentsMargins(5,5,5,5);
     pointLayout->setSpacing(10);
 
     // Create the point control
@@ -735,7 +755,7 @@ QvisPseudocolorPlotWindow::CreateGeometryTab(QWidget *pageGeometry)
     topLayout->addWidget(renderingGroup);
 
     QGridLayout *renderingLayout = new QGridLayout(renderingGroup);
-    renderingLayout->setMargin(5);
+    renderingLayout->setContentsMargins(5,5,5,5);
     renderingLayout->setSpacing(10);
 
 
@@ -772,8 +792,13 @@ QvisPseudocolorPlotWindow::CreateGeometryTab(QWidget *pageGeometry)
 
     // Create the smoothing level buttons
     smoothingLevelButtons = new QButtonGroup(central);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(smoothingLevelButtons, SIGNAL(buttonClicked(int)),
             this, SLOT(smoothingLevelChanged(int)));
+#else
+    connect(smoothingLevelButtons, SIGNAL(idClicked(int)),
+            this, SLOT(smoothingLevelChanged(int)));
+#endif
 
     QRadioButton* rb = new QRadioButton(tr("None"), central);
     smoothingLevelButtons->addButton(rb, 0);
@@ -804,7 +829,7 @@ void
 QvisPseudocolorPlotWindow::CreateExtrasTab(QWidget *pageExtras)
 {
     QGridLayout *topLayout = new QGridLayout(pageExtras);
-    topLayout->setMargin(5);
+    topLayout->setContentsMargins(5,5,5,5);
     topLayout->setSpacing(10);
 
     //
@@ -815,7 +840,7 @@ QvisPseudocolorPlotWindow::CreateExtrasTab(QWidget *pageExtras)
     topLayout->addWidget(blankGroup);
 
     QGridLayout *blankLayout = new QGridLayout(blankGroup);
-    blankLayout->setMargin(5);
+    blankLayout->setContentsMargins(5,5,5,5);
     blankLayout->setSpacing(10);
 
     blankLayout->addWidget(new QLabel(tr(""), central), 0,0);

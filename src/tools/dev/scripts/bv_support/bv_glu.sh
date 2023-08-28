@@ -105,13 +105,6 @@ function bv_glu_ensure
     fi
 }
 
-function bv_glu_dry_run
-{
-    if [[ "$DO_GLU" == "yes" ]] ; then
-        echo "Dry run option not set for glu."
-    fi
-}
-
 function apply_glu_ppc64le_config_patch
 {
   # patch glu's config.guess to allow it to recognize ppc64le
@@ -199,10 +192,12 @@ function build_glu
 
     # NOTE: we install the library into the MesaGL directories.
     if [[ "$DO_MESAGL" == "yes" ]] ; then
+        set -x
         issue_command env GL_LIBS="-L${MESAGL_INSTALL_DIR}/lib" GL_CFLAGS="-I${MESAGL_INSTALL_DIR}/include" \
             CC=${C_COMPILER} CFLAGS="${C_OPT_FLAGS}" \
             CXX=${CXX_COMPILER} CXXFLAGS="${CXX_OPT_FLAGS}" \
            ./configure --prefix=${MESAGL_INSTALL_DIR} ${GLU_STATIC_DYNAMIC}
+        set +x
         if [[ $? != 0 ]] ; then
             warn "GLU: 'configure' failed.  Giving up"
             return 1

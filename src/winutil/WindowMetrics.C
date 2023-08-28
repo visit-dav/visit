@@ -5,12 +5,15 @@
 #include "WindowMetrics.h"
 #include <visitstream.h>
 #include <QApplication>
-#include <QDesktopWidget>
+#include <QRect>
+#include <QScreen>
 
 #if defined(Q_OS_WIN)
 #include <windows.h>
 #elif defined(Q_OS_LINUX)
-#include <QtX11Extras/QX11Info>
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+    #include <QtX11Extras/QX11Info>
+#endif
 #include <X11/Xlib.h>
 static Window GetParent(Display *dpy, Window win, Window *root_ret=NULL);
 #endif
@@ -143,17 +146,16 @@ WindowMetrics::WindowMetrics()
 //    Use Qt to get the information since it does a better job with platform-
 //    specific issues like the Mac dock and multiple screens.
 //
+//    Kathleen Biagas, Wed Apr  5 13:04:35 PDT 2023
+//    Replace obosolete desktop() with primaryScreen().
+//
 // ****************************************************************************
 void
 WindowMetrics::CalculateScreen(QWidget *win,
                                int &screenX, int &screenY,
                                int &screenW, int &screenH)
 {
-    QRect rect;
-    if(win != NULL)
-        rect = qApp->desktop()->availableGeometry(win);
-    else
-        rect = qApp->desktop()->availableGeometry();
+    QRect rect = qApp->primaryScreen()->geometry();
     screenX = rect.x();
 #if defined(Q_OS_MAC)
     screenY = 0;
@@ -203,7 +205,15 @@ WindowMetrics::MeasureScreen(bool waitForWM)
     // Try and determine if we're displaying X11 to a Mac.
     //
     int nExt = 0, appleDisplay = 0;
-    char **ext = XListExtensions(QX11Info::display(), &nExt);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+    char **ext = XListExtensions(QX11Info::display() , &nExt);
+#else
+    auto x11NativeInterface = qApp->nativeInterface<QNativeInterface::QX11Application>();
+    if(x11NativeInterface == NULL)
+        return;
+  
+    char **ext = XListExtensions(x11NativeInterface->display() , &nExt);
+#endif
     for(int e = 0; e < nExt; ++e)
     {
         if(strcmp(ext[e], "Apple-DRI") == 0 ||
@@ -350,7 +360,6 @@ WindowMetrics::CalculateTopLeft(QWidget *w, int &X, int &Y)
 }
 
 #elif defined(Q_OS_MAC)
-#include <QDesktopWidget>
 
 //
 // MacOS coding
@@ -449,6 +458,9 @@ WindowMetrics::CalculateTopLeft(QWidget *w, int &X, int &Y)
 //    Jeremy Meredith, Tue Sep 25 14:38:46 PDT 2001
 //    Made standalone function.
 //
+//    Kathleen Biagas, Wed Apr  5 13:04:35 PDT 2023
+//    Replace obosolete desktop() with primaryScreen().
+//
 // ****************************************************************************
 
 void
@@ -462,7 +474,18 @@ WindowMetrics::CalculateBorders(QWidget *win,
     XWindowAttributes parent_attributes;
 
     // Get the display pointer and window Id from the main window.
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     Display *dpy = QX11Info::display();
+#else
+    auto x11NativeInterface = qApp->nativeInterface<QNativeInterface::QX11Application>();
+    if(x11NativeInterface == NULL)
+    {
+         // ERROR - get out and use defaults.
+         return;
+    }
+
+    Display *dpy = x11NativeInterface->display();
+#endif
     Window main_window = win->winId();
 
     // There is a GUI window, so we must adjust the work area. 
@@ -495,8 +518,8 @@ WindowMetrics::CalculateBorders(QWidget *win,
     int border_width = leaf_attributes.border_width;
     int big_height = 0, big_width = 0;
 
-    int desktop_width  = qApp->desktop()->width();
-    int desktop_height = qApp->desktop()->height();
+    int desktop_width  = qApp->primaryScreen()->geometry().width();
+    int desktop_height = qApp->primaryScreen()->geometry().height();
 
     // Start progressing up the tree.
     int count = 0;
@@ -633,7 +656,17 @@ WindowMetrics::CalculateTopLeft(QWidget *wid, int &X, int &Y)
     XWindowAttributes atts;
 
     // Get the display pointer and window Id from the widget.
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     Display *dpy  = QX11Info::display();
+#else
+    auto x11NativeInterface = qApp->nativeInterface<QNativeInterface::QX11Application>();
+    if(x11NativeInterface == NULL)
+    {
+        // Error ?
+        return;
+    }
+    Display *dpy  = x11NativeInterface->display();
+#endif
     Window window = wid->winId();
 
     // Find the parent and the root.

@@ -70,13 +70,6 @@ function bv_mdsplus_ensure
     fi
 }
 
-function bv_mdsplus_dry_run
-{
-    if [[ "$DO_MDSPLUS" == "yes" ]] ; then
-        echo "Dry run option not set for mdsplus."
-    fi
-}
-
 # ***************************************************************************
 #                         Function 8.20, build_mdsplus
 #
@@ -105,9 +98,11 @@ function build_mdsplus
     info "Configuring MDSplus . . ."
     cd $MDSPLUS_BUILD_DIR || error "Can't cd to mdsplus build dir."
     info "Invoking command to configure MDSplus"
+    set -x
     ./configure ${OPTIONAL} --disable-java CXX="$CXX_COMPILER" \
                 CC="$C_COMPILER" CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
                 --prefix="$VISITDIR/mdsplus/$MDSPLUS_VERSION/$VISITARCH"
+    set +x
     if [[ $? != 0 ]] ; then
         warn "MDSplus configure failed.  Giving up"
         return 1

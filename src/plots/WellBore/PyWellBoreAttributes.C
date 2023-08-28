@@ -6,6 +6,7 @@
 #include <ObserverToCallback.h>
 #include <stdio.h>
 #include <Py2and3Support.h>
+#include <visit-config.h>
 #include <PyColorControlPointList.h>
 #include <ColorAttribute.h>
 #include <PyColorAttributeList.h>
@@ -39,7 +40,7 @@ struct WellBoreAttributesObject
 //
 static PyObject *NewWellBoreAttributes(int);
 std::string
-PyWellBoreAttributes_ToString(const WellBoreAttributes *atts, const char *prefix)
+PyWellBoreAttributes_ToString(const WellBoreAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -47,7 +48,7 @@ PyWellBoreAttributes_ToString(const WellBoreAttributes *atts, const char *prefix
     { // new scope
         std::string objPrefix(prefix);
         objPrefix += "defaultPalette.";
-        str += PyColorControlPointList_ToString(&atts->GetDefaultPalette(), objPrefix.c_str());
+        str += PyColorControlPointList_ToString(&atts->GetDefaultPalette(), objPrefix.c_str(), forLogging);
     }
     {   const unsignedCharVector &changedColors = atts->GetChangedColors();
         snprintf(tmpStr, 1000, "%schangedColors = (", prefix);
@@ -233,10 +234,7 @@ WellBoreAttributes_SetDefaultPalette(PyObject *self, PyObject *args)
     if(!PyArg_ParseTuple(args, "O", &newValue))
         return NULL;
     if(!PyColorControlPointList_Check(newValue))
-    {
-        fprintf(stderr, "The defaultPalette field can only be set with ColorControlPointList objects.\n");
-        return NULL;
-    }
+        return PyErr_Format(PyExc_TypeError, "Field defaultPalette can be set only with ColorControlPointList objects");
 
     obj->data->SetDefaultPalette(*PyColorControlPointList_FromPyObject(newValue));
 
@@ -265,59 +263,59 @@ WellBoreAttributes_SetChangedColors(PyObject *self, PyObject *args)
 {
     WellBoreAttributesObject *obj = (WellBoreAttributesObject *)self;
 
-    unsignedCharVector  &vec = obj->data->GetChangedColors();
-    PyObject     *tuple;
-    if(!PyArg_ParseTuple(args, "O", &tuple))
-        return NULL;
+    typedef unsigned char uchar;
+    ucharVector vec;
 
-    if(PyTuple_Check(tuple))
+    if (PyNumber_Check(args))
     {
-        vec.resize(PyTuple_Size(tuple));
-        for(int i = 0; i < PyTuple_Size(tuple); ++i)
+        long val = PyLong_AsLong(args);
+        uchar cval = uchar(val);
+        if (val == -1 && PyErr_Occurred())
         {
-            int c;
-            PyObject *item = PyTuple_GET_ITEM(tuple, i);
-            if(PyFloat_Check(item))
-                c = int(PyFloat_AS_DOUBLE(item));
-            else if(PyInt_Check(item))
-                c = int(PyInt_AS_LONG(item));
-            else if(PyLong_Check(item))
-                c = int(PyLong_AsDouble(item));
-            else
-                c = 0;
+            PyErr_Clear();
+            return PyErr_Format(PyExc_TypeError, "number not interpretable as C++ uchar");
+        }
+        if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+            return PyErr_Format(PyExc_ValueError, "number not interpretable as C++ uchar");
+        vec.resize(1);
+        vec[0] = cval;
+    }
+    else if (PySequence_Check(args) && !PyUnicode_Check(args))
+    {
+        vec.resize(PySequence_Size(args));
+        for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)
+        {
+            PyObject *item = PySequence_GetItem(args, i);
 
-            if(c < 0) c = 0;
-            if(c > 255) c = 255;
-            vec[i] = (unsigned char)(c);
+            if (!PyNumber_Check(item))
+            {
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_TypeError, "arg %d is not a number type", (int) i);
+            }
+
+            long val = PyLong_AsLong(item);
+            uchar cval = uchar(val);
+
+            if (val == -1 && PyErr_Occurred())
+            {
+                Py_DECREF(item);
+                PyErr_Clear();
+                return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ uchar", (int) i);
+            }
+            if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+            {
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_ValueError, "arg %d not interpretable as C++ uchar", (int) i);
+            }
+            Py_DECREF(item);
+
+            vec[i] = cval;
         }
     }
-    else if(PyFloat_Check(tuple))
-    {
-        vec.resize(1);
-        int c = int(PyFloat_AS_DOUBLE(tuple));
-        if(c < 0) c = 0;
-        if(c > 255) c = 255;
-        vec[0] = (unsigned char)(c);
-    }
-    else if(PyInt_Check(tuple))
-    {
-        vec.resize(1);
-        int c = int(PyInt_AS_LONG(tuple));
-        if(c < 0) c = 0;
-        if(c > 255) c = 255;
-        vec[0] = (unsigned char)(c);
-    }
-    else if(PyLong_Check(tuple))
-    {
-        vec.resize(1);
-        int c = PyLong_AsLong(tuple);
-        if(c < 0) c = 0;
-        if(c > 255) c = 255;
-        vec[0] = (unsigned char)(c);
-    }
     else
-        return NULL;
+        return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more uchars");
 
+    obj->data->GetChangedColors() = vec;
     // Mark the changedColors in the object as modified.
     obj->data->SelectChangedColors();
 
@@ -342,21 +340,55 @@ WellBoreAttributes_SetColorType(PyObject *self, PyObject *args)
 {
     WellBoreAttributesObject *obj = (WellBoreAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 3)
+    {
+        std::stringstream ss;
+        ss << "An invalid colorType value was given." << std::endl;
+        ss << "Valid values are in the range [0,2]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << " ColorBySingleColor";
+        ss << ", ColorByMultipleColors";
+        ss << ", ColorByColorTable";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the colorType in the object.
-    if(ival >= 0 && ival < 3)
-        obj->data->SetColorType(WellBoreAttributes::ColoringMethod(ival));
-    else
-    {
-        fprintf(stderr, "An invalid colorType value was given. "
-                        "Valid values are in the range of [0,2]. "
-                        "You can also use the following names: "
-                        "ColorBySingleColor, ColorByMultipleColors, ColorByColorTable.");
-        return NULL;
-    }
+    obj->data->SetColorType(WellBoreAttributes::ColoringMethod(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -375,12 +407,37 @@ WellBoreAttributes_SetColorTableName(PyObject *self, PyObject *args)
 {
     WellBoreAttributesObject *obj = (WellBoreAttributesObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the colorTableName in the object.
-    obj->data->SetColorTableName(std::string(str));
+    obj->data->SetColorTableName(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -399,12 +456,48 @@ WellBoreAttributes_SetInvertColorTable(PyObject *self, PyObject *args)
 {
     WellBoreAttributesObject *obj = (WellBoreAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the invertColorTable in the object.
-    obj->data->SetInvertColorTable(ival != 0);
+    obj->data->SetInvertColorTable(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -536,12 +629,11 @@ WellBoreAttributes_SetMultiColor(PyObject *self, PyObject *args)
                         {
                             // Make sure that the tuple is the right size.
                             if(PyTuple_Size(pyobj) < cL.GetNumColors())
-                                return NULL;
+                                return PyErr_Format(PyExc_IndexError, "color tuple size=%d, expected=%d", (int) PyTuple_Size(pyobj), (int) cL.GetNumColors());
 
                             // Make sure that the tuple is the right size.
-                            bool badInput = false;
                             int *C = new int[4 * cL.GetNumColors()];
-                            for(int i = 0; i < PyTuple_Size(pyobj) && !badInput; ++i)
+                            for(int i = 0; i < PyTuple_Size(pyobj); ++i)
                             {
                                 PyObject *item = PyTuple_GET_ITEM(pyobj, i);
                                 if(PyTuple_Check(item) &&
@@ -551,7 +643,7 @@ WellBoreAttributes_SetMultiColor(PyObject *self, PyObject *args)
                                     C[i*4+1] = 0;
                                     C[i*4+2] = 0;
                                     C[i*4+3] = 255;
-                                    for(int j = 0; j < PyTuple_Size(item) && !badInput; ++j)
+                                    for(int j = 0; j < PyTuple_Size(item); ++j)
                                     {
                                         PyObject *colorcomp = PyTuple_GET_ITEM(item, j);
                                         if(PyInt_Check(colorcomp))
@@ -559,17 +651,17 @@ WellBoreAttributes_SetMultiColor(PyObject *self, PyObject *args)
                                         else if(PyFloat_Check(colorcomp))
                                            C[i*4+j] = int(PyFloat_AS_DOUBLE(colorcomp));
                                         else
-                                           badInput = true;
+                                        {
+                                           delete [] C;
+                                           return PyErr_Format(PyExc_ValueError, "Unable to interpret component %d at index %d as a color component",j,i);
+                                        }
                                     }
                                 }
                                 else
-                                    badInput = true;
-                            }
-
-                            if(badInput)
-                            {
-                                delete [] C;
-                                return NULL;
+                                {
+                                    delete [] C;
+                                    return PyErr_Format(PyExc_ValueError, "Color tuple must be size 3 or 4");
+                                }
                             }
 
                             for(int i = 0; i < cL.GetNumColors(); ++i)
@@ -580,12 +672,11 @@ WellBoreAttributes_SetMultiColor(PyObject *self, PyObject *args)
                         {
                             // Make sure that the list is the right size.
                             if(PyList_Size(pyobj) < cL.GetNumColors())
-                                return NULL;
+                                return PyErr_Format(PyExc_IndexError, "color tuple size=%d, expected=%d", (int) PyTuple_Size(pyobj), (int) cL.GetNumColors());
 
                             // Make sure that the tuple is the right size.
-                            bool badInput = false;
                             int *C = new int[4 * cL.GetNumColors()];
-                            for(int i = 0; i < PyList_Size(pyobj) && !badInput; ++i)
+                            for(int i = 0; i < PyList_Size(pyobj); ++i)
                             {
                                 PyObject *item = PyList_GET_ITEM(pyobj, i);
                                 if(PyTuple_Check(item) &&
@@ -595,7 +686,7 @@ WellBoreAttributes_SetMultiColor(PyObject *self, PyObject *args)
                                     C[i*4+1] = 0;
                                     C[i*4+2] = 0;
                                     C[i*4+3] = 255;
-                                    for(int j = 0; j < PyTuple_Size(item) && !badInput; ++j)
+                                    for(int j = 0; j < PyTuple_Size(item); ++j)
                                     {
                                         PyObject *colorcomp = PyTuple_GET_ITEM(item, j);
                                         if(PyInt_Check(colorcomp))
@@ -603,17 +694,17 @@ WellBoreAttributes_SetMultiColor(PyObject *self, PyObject *args)
                                         else if(PyFloat_Check(colorcomp))
                                            C[i*4+j] = int(PyFloat_AS_DOUBLE(colorcomp));
                                         else
-                                           badInput = true;
+                                        {
+                                           delete [] C;
+                                           return PyErr_Format(PyExc_ValueError, "Unable to interpret component %d at index %d as a color component",j,i);
+                                        }
                                     }
                                 }
                                 else
-                                    badInput = true;
-                            }
-
-                            if(badInput)
-                            {
-                                delete [] C;
-                                return NULL;
+                                {
+                                    delete [] C;
+                                    return PyErr_Format(PyExc_ValueError, "Color tuple must be size 3 or 4");
+                                }
                             }
 
                             for(int i = 0; i < cL.GetNumColors(); ++i)
@@ -622,7 +713,7 @@ WellBoreAttributes_SetMultiColor(PyObject *self, PyObject *args)
                             delete [] C;
                         }
                         else
-                            return NULL;
+                            return PyErr_Format(PyExc_TypeError, "Expecting tuple or list");
                     }
                 }
                 else
@@ -632,7 +723,7 @@ WellBoreAttributes_SetMultiColor(PyObject *self, PyObject *args)
 
                     // Make sure that the tuple is the right size.
                     if(PyTuple_Size(pyobj) < 3 || PyTuple_Size(pyobj) > 4)
-                        return NULL;
+                        return PyErr_Format(PyExc_ValueError, "Color tuple must be size 3 or 4");
 
                     // Make sure that all elements in the tuple are ints.
                     for(int i = 0; i < PyTuple_Size(pyobj); ++i)
@@ -643,7 +734,7 @@ WellBoreAttributes_SetMultiColor(PyObject *self, PyObject *args)
                         else if(PyFloat_Check(item))
                             c[i] = int(PyFloat_AS_DOUBLE(PyTuple_GET_ITEM(pyobj, i)));
                         else
-                            return NULL;
+                            return PyErr_Format(PyExc_ValueError, "Unable to interpret component %d as a color component", i);
                     }
                 }
             }
@@ -652,7 +743,7 @@ WellBoreAttributes_SetMultiColor(PyObject *self, PyObject *args)
     }
 
     if(index < 0 || index >= cL.GetNumColors())
-        return NULL;
+        return PyErr_Format(PyExc_ValueError, "color index out of range 0 <= i < %d", (int) cL.GetNumColors());
 
     // Set the color in the object.
     if(setTheColor)
@@ -712,21 +803,54 @@ WellBoreAttributes_SetDrawWellsAs(PyObject *self, PyObject *args)
 {
     WellBoreAttributesObject *obj = (WellBoreAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 2)
+    {
+        std::stringstream ss;
+        ss << "An invalid drawWellsAs value was given." << std::endl;
+        ss << "Valid values are in the range [0,1]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << " Lines";
+        ss << ", Cylinders";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the drawWellsAs in the object.
-    if(ival >= 0 && ival < 2)
-        obj->data->SetDrawWellsAs(WellBoreAttributes::WellRenderingMode(ival));
-    else
-    {
-        fprintf(stderr, "An invalid drawWellsAs value was given. "
-                        "Valid values are in the range of [0,1]. "
-                        "You can also use the following names: "
-                        "Lines, Cylinders.");
-        return NULL;
-    }
+    obj->data->SetDrawWellsAs(WellBoreAttributes::WellRenderingMode(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -745,21 +869,56 @@ WellBoreAttributes_SetWellCylinderQuality(PyObject *self, PyObject *args)
 {
     WellBoreAttributesObject *obj = (WellBoreAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 4)
+    {
+        std::stringstream ss;
+        ss << "An invalid wellCylinderQuality value was given." << std::endl;
+        ss << "Valid values are in the range [0,3]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << " Low";
+        ss << ", Medium";
+        ss << ", High";
+        ss << ", Super";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the wellCylinderQuality in the object.
-    if(ival >= 0 && ival < 4)
-        obj->data->SetWellCylinderQuality(WellBoreAttributes::DetailLevel(ival));
-    else
-    {
-        fprintf(stderr, "An invalid wellCylinderQuality value was given. "
-                        "Valid values are in the range of [0,3]. "
-                        "You can also use the following names: "
-                        "Low, Medium, High, Super.");
-        return NULL;
-    }
+    obj->data->SetWellCylinderQuality(WellBoreAttributes::DetailLevel(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -778,12 +937,48 @@ WellBoreAttributes_SetWellRadius(PyObject *self, PyObject *args)
 {
     WellBoreAttributesObject *obj = (WellBoreAttributesObject *)self;
 
-    float fval;
-    if(!PyArg_ParseTuple(args, "f", &fval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    float cval = float(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ float");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ float");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the wellRadius in the object.
-    obj->data->SetWellRadius(fval);
+    obj->data->SetWellRadius(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -802,12 +997,48 @@ WellBoreAttributes_SetWellLineWidth(PyObject *self, PyObject *args)
 {
     WellBoreAttributesObject *obj = (WellBoreAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the wellLineWidth in the object.
-    obj->data->SetWellLineWidth(ival);
+    obj->data->SetWellLineWidth(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -826,21 +1057,56 @@ WellBoreAttributes_SetWellAnnotation(PyObject *self, PyObject *args)
 {
     WellBoreAttributesObject *obj = (WellBoreAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 4)
+    {
+        std::stringstream ss;
+        ss << "An invalid wellAnnotation value was given." << std::endl;
+        ss << "Valid values are in the range [0,3]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << " None";
+        ss << ", StemOnly";
+        ss << ", NameOnly";
+        ss << ", StemAndName";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the wellAnnotation in the object.
-    if(ival >= 0 && ival < 4)
-        obj->data->SetWellAnnotation(WellBoreAttributes::WellAnnotation(ival));
-    else
-    {
-        fprintf(stderr, "An invalid wellAnnotation value was given. "
-                        "Valid values are in the range of [0,3]. "
-                        "You can also use the following names: "
-                        "None, StemOnly, NameOnly, StemAndName.");
-        return NULL;
-    }
+    obj->data->SetWellAnnotation(WellBoreAttributes::WellAnnotation(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -859,12 +1125,48 @@ WellBoreAttributes_SetWellStemHeight(PyObject *self, PyObject *args)
 {
     WellBoreAttributesObject *obj = (WellBoreAttributesObject *)self;
 
-    float fval;
-    if(!PyArg_ParseTuple(args, "f", &fval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    float cval = float(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ float");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ float");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the wellStemHeight in the object.
-    obj->data->SetWellStemHeight(fval);
+    obj->data->SetWellStemHeight(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -883,12 +1185,48 @@ WellBoreAttributes_SetWellNameScale(PyObject *self, PyObject *args)
 {
     WellBoreAttributesObject *obj = (WellBoreAttributesObject *)self;
 
-    float fval;
-    if(!PyArg_ParseTuple(args, "f", &fval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    float cval = float(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ float");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ float");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the wellNameScale in the object.
-    obj->data->SetWellNameScale(fval);
+    obj->data->SetWellNameScale(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -907,12 +1245,48 @@ WellBoreAttributes_SetLegendFlag(PyObject *self, PyObject *args)
 {
     WellBoreAttributesObject *obj = (WellBoreAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the legendFlag in the object.
-    obj->data->SetLegendFlag(ival != 0);
+    obj->data->SetLegendFlag(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -931,12 +1305,48 @@ WellBoreAttributes_SetNWellBores(PyObject *self, PyObject *args)
 {
     WellBoreAttributesObject *obj = (WellBoreAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the nWellBores in the object.
-    obj->data->SetNWellBores((int)ival);
+    obj->data->SetNWellBores(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -955,45 +1365,58 @@ WellBoreAttributes_SetWellBores(PyObject *self, PyObject *args)
 {
     WellBoreAttributesObject *obj = (WellBoreAttributesObject *)self;
 
-    intVector  &vec = obj->data->GetWellBores();
-    PyObject   *tuple;
-    if(!PyArg_ParseTuple(args, "O", &tuple))
-        return NULL;
+    intVector vec;
 
-    if(PyTuple_Check(tuple))
+    if (PyNumber_Check(args))
     {
-        vec.resize(PyTuple_Size(tuple));
-        for(int i = 0; i < PyTuple_Size(tuple); ++i)
+        long val = PyLong_AsLong(args);
+        int cval = int(val);
+        if (val == -1 && PyErr_Occurred())
         {
-            PyObject *item = PyTuple_GET_ITEM(tuple, i);
-            if(PyFloat_Check(item))
-                vec[i] = int(PyFloat_AS_DOUBLE(item));
-            else if(PyInt_Check(item))
-                vec[i] = int(PyInt_AS_LONG(item));
-            else if(PyLong_Check(item))
-                vec[i] = int(PyLong_AsLong(item));
-            else
-                vec[i] = 0;
+            PyErr_Clear();
+            return PyErr_Format(PyExc_TypeError, "number not interpretable as C++ int");
+        }
+        if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+            return PyErr_Format(PyExc_ValueError, "number not interpretable as C++ int");
+        vec.resize(1);
+        vec[0] = cval;
+    }
+    else if (PySequence_Check(args) && !PyUnicode_Check(args))
+    {
+        vec.resize(PySequence_Size(args));
+        for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)
+        {
+            PyObject *item = PySequence_GetItem(args, i);
+
+            if (!PyNumber_Check(item))
+            {
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_TypeError, "arg %d is not a number type", (int) i);
+            }
+
+            long val = PyLong_AsLong(item);
+            int cval = int(val);
+
+            if (val == -1 && PyErr_Occurred())
+            {
+                Py_DECREF(item);
+                PyErr_Clear();
+                return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ int", (int) i);
+            }
+            if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+            {
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_ValueError, "arg %d not interpretable as C++ int", (int) i);
+            }
+            Py_DECREF(item);
+
+            vec[i] = cval;
         }
     }
-    else if(PyFloat_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = int(PyFloat_AS_DOUBLE(tuple));
-    }
-    else if(PyInt_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = int(PyInt_AS_LONG(tuple));
-    }
-    else if(PyLong_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = int(PyLong_AsLong(tuple));
-    }
     else
-        return NULL;
+        return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more ints");
 
+    obj->data->GetWellBores() = vec;
     // Mark the wellBores in the object as modified.
     obj->data->SelectWellBores();
 
@@ -1018,37 +1441,51 @@ WellBoreAttributes_SetWellNames(PyObject *self, PyObject *args)
 {
     WellBoreAttributesObject *obj = (WellBoreAttributesObject *)self;
 
-    stringVector  &vec = obj->data->GetWellNames();
-    PyObject     *tuple;
-    if(!PyArg_ParseTuple(args, "O", &tuple))
-        return NULL;
+    stringVector vec;
 
-    if(PyTuple_Check(tuple))
+    if (PyUnicode_Check(args))
     {
-        vec.resize(PyTuple_Size(tuple));
-        for(int i = 0; i < PyTuple_Size(tuple); ++i)
+        char const *val = PyUnicode_AsUTF8(args);
+        std::string cval = std::string(val);
+        if (val == 0 && PyErr_Occurred())
         {
-            PyObject *item = PyTuple_GET_ITEM(tuple, i);
-            if(PyString_Check(item))
+            PyErr_Clear();
+            return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ string");
+        }
+        vec.resize(1);
+        vec[0] = cval;
+    }
+    else if (PySequence_Check(args))
+    {
+        vec.resize(PySequence_Size(args));
+        for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)
+        {
+            PyObject *item = PySequence_GetItem(args, i);
+
+            if (!PyUnicode_Check(item))
             {
-                char *item_cstr = PyString_AsString(item);
-                vec[i] = std::string(item_cstr);
-                PyString_AsString_Cleanup(item_cstr);
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_TypeError, "arg %d is not a unicode string", (int) i);
             }
-            else
-                vec[i] = std::string("");
+
+            char const *val = PyUnicode_AsUTF8(item);
+            std::string cval = std::string(val);
+
+            if (val == 0 && PyErr_Occurred())
+            {
+                Py_DECREF(item);
+                PyErr_Clear();
+                return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ string", (int) i);
+            }
+            Py_DECREF(item);
+
+            vec[i] = cval;
         }
     }
-    else if(PyString_Check(tuple))
-    {
-        vec.resize(1);
-        char *tuple_cstr = PyString_AsString(tuple);
-        vec[0] = std::string(tuple_cstr);
-        PyString_AsString_Cleanup(tuple_cstr);
-    }
     else
-        return NULL;
+        return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more string(s)");
 
+    obj->data->GetWellNames() = vec;
     // Mark the wellNames in the object as modified.
     obj->data->SelectWellNames();
 
@@ -1198,103 +1635,75 @@ PyWellBoreAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "wellNames") == 0)
         return WellBoreAttributes_GetWellNames(self, NULL);
 
-    // Try and handle legacy fields
 
-    // wellLineStyle and it's possible enumerations
-    bool wellLineStyleFound = false;
-    if (strcmp(name, "wellLineStyle") == 0)
+    // Add a __dict__ answer so that dir() works
+    if (!strcmp(name, "__dict__"))
     {
-        wellLineStyleFound = true;
-    }
-    else if (strcmp(name, "SOLID") == 0)
-    {
-        wellLineStyleFound = true;
-    }
-    else if (strcmp(name, "DASH") == 0)
-    {
-        wellLineStyleFound = true;
-    }
-    else if (strcmp(name, "DOT") == 0)
-    {
-        wellLineStyleFound = true;
-    }
-    else if (strcmp(name, "DOTDASH") == 0)
-    {
-        wellLineStyleFound = true;
+        PyObject *result = PyDict_New();
+        for (int i = 0; PyWellBoreAttributes_methods[i].ml_meth; i++)
+            PyDict_SetItem(result,
+                PyString_FromString(PyWellBoreAttributes_methods[i].ml_name),
+                PyString_FromString(PyWellBoreAttributes_methods[i].ml_name));
+        return result;
     }
 
-    if (wellLineStyleFound)
-    {
-        fprintf(stdout, "wellLineStyle is no longer a valid WellBore "
-                       "attribute.\nIt's value is being ignored, please remove "
-                       "it from your script.\n");
-        return PyInt_FromLong(0L);
-    }
     return Py_FindMethod(PyWellBoreAttributes_methods, self, name);
 }
 
 int
 PyWellBoreAttributes_setattr(PyObject *self, char *name, PyObject *args)
 {
-    // Create a tuple to contain the arguments since all of the Set
-    // functions expect a tuple.
-    PyObject *tuple = PyTuple_New(1);
-    PyTuple_SET_ITEM(tuple, 0, args);
-    Py_INCREF(args);
-    PyObject *obj = NULL;
+    PyObject NULL_PY_OBJ;
+    PyObject *obj = &NULL_PY_OBJ;
 
     if(strcmp(name, "defaultPalette") == 0)
-        obj = WellBoreAttributes_SetDefaultPalette(self, tuple);
+        obj = WellBoreAttributes_SetDefaultPalette(self, args);
     else if(strcmp(name, "changedColors") == 0)
-        obj = WellBoreAttributes_SetChangedColors(self, tuple);
+        obj = WellBoreAttributes_SetChangedColors(self, args);
     else if(strcmp(name, "colorType") == 0)
-        obj = WellBoreAttributes_SetColorType(self, tuple);
+        obj = WellBoreAttributes_SetColorType(self, args);
     else if(strcmp(name, "colorTableName") == 0)
-        obj = WellBoreAttributes_SetColorTableName(self, tuple);
+        obj = WellBoreAttributes_SetColorTableName(self, args);
     else if(strcmp(name, "invertColorTable") == 0)
-        obj = WellBoreAttributes_SetInvertColorTable(self, tuple);
+        obj = WellBoreAttributes_SetInvertColorTable(self, args);
     else if(strcmp(name, "singleColor") == 0)
-        obj = WellBoreAttributes_SetSingleColor(self, tuple);
+        obj = WellBoreAttributes_SetSingleColor(self, args);
     else if(strcmp(name, "multiColor") == 0)
-        obj = WellBoreAttributes_SetMultiColor(self, tuple);
+        obj = WellBoreAttributes_SetMultiColor(self, args);
     else if(strcmp(name, "drawWellsAs") == 0)
-        obj = WellBoreAttributes_SetDrawWellsAs(self, tuple);
+        obj = WellBoreAttributes_SetDrawWellsAs(self, args);
     else if(strcmp(name, "wellCylinderQuality") == 0)
-        obj = WellBoreAttributes_SetWellCylinderQuality(self, tuple);
+        obj = WellBoreAttributes_SetWellCylinderQuality(self, args);
     else if(strcmp(name, "wellRadius") == 0)
-        obj = WellBoreAttributes_SetWellRadius(self, tuple);
+        obj = WellBoreAttributes_SetWellRadius(self, args);
     else if(strcmp(name, "wellLineWidth") == 0)
-        obj = WellBoreAttributes_SetWellLineWidth(self, tuple);
+        obj = WellBoreAttributes_SetWellLineWidth(self, args);
     else if(strcmp(name, "wellAnnotation") == 0)
-        obj = WellBoreAttributes_SetWellAnnotation(self, tuple);
+        obj = WellBoreAttributes_SetWellAnnotation(self, args);
     else if(strcmp(name, "wellStemHeight") == 0)
-        obj = WellBoreAttributes_SetWellStemHeight(self, tuple);
+        obj = WellBoreAttributes_SetWellStemHeight(self, args);
     else if(strcmp(name, "wellNameScale") == 0)
-        obj = WellBoreAttributes_SetWellNameScale(self, tuple);
+        obj = WellBoreAttributes_SetWellNameScale(self, args);
     else if(strcmp(name, "legendFlag") == 0)
-        obj = WellBoreAttributes_SetLegendFlag(self, tuple);
+        obj = WellBoreAttributes_SetLegendFlag(self, args);
     else if(strcmp(name, "nWellBores") == 0)
-        obj = WellBoreAttributes_SetNWellBores(self, tuple);
+        obj = WellBoreAttributes_SetNWellBores(self, args);
     else if(strcmp(name, "wellBores") == 0)
-        obj = WellBoreAttributes_SetWellBores(self, tuple);
+        obj = WellBoreAttributes_SetWellBores(self, args);
     else if(strcmp(name, "wellNames") == 0)
-        obj = WellBoreAttributes_SetWellNames(self, tuple);
+        obj = WellBoreAttributes_SetWellNames(self, args);
 
-    // Try and handle legacy fields
-    if(obj == NULL)
-    {
-        if(strcmp(name, "wellLineStyle") == 0)
-        {
-            Py_INCREF(Py_None);
-            obj = Py_None;
-        }
-    }
-    if(obj != NULL)
+    if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
-    Py_DECREF(tuple);
-    if( obj == NULL)
-        PyErr_Format(PyExc_RuntimeError, "Unable to set unknown attribute: '%s'", name);
+    if (obj == &NULL_PY_OBJ)
+    {
+        obj = NULL;
+        PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);
+    }
+    else if (obj == NULL && !PyErr_Occurred())
+        PyErr_Format(PyExc_RuntimeError, "unknown problem with '%s'", name);
+
     return (obj != NULL) ? 0 : -1;
 }
 
@@ -1302,7 +1711,7 @@ static int
 WellBoreAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     WellBoreAttributesObject *obj = (WellBoreAttributesObject *)v;
-    fprintf(fp, "%s", PyWellBoreAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyWellBoreAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -1310,7 +1719,7 @@ PyObject *
 WellBoreAttributes_str(PyObject *v)
 {
     WellBoreAttributesObject *obj = (WellBoreAttributesObject *)v;
-    return PyString_FromString(PyWellBoreAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyWellBoreAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -1462,7 +1871,7 @@ PyWellBoreAttributes_GetLogString()
 {
     std::string s("WellBoreAtts = WellBoreAttributes()\n");
     if(currentAtts != 0)
-        s += PyWellBoreAttributes_ToString(currentAtts, "WellBoreAtts.");
+        s += PyWellBoreAttributes_ToString(currentAtts, "WellBoreAtts.", true);
     return s;
 }
 
@@ -1475,7 +1884,7 @@ PyWellBoreAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("WellBoreAtts = WellBoreAttributes()\n");
-        s += PyWellBoreAttributes_ToString(currentAtts, "WellBoreAtts.");
+        s += PyWellBoreAttributes_ToString(currentAtts, "WellBoreAtts.", true);
         cb(s);
     }
 }

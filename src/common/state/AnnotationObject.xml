@@ -72,14 +72,7 @@
     </Field>
     <Function name="SetFromNode" user="false" member="true">
     </Function>
-    <Function name="ProcessOldVersions" user="true" member="true">
-    </Function>
-    <Function name="ProcessOldLegend" user="true" member="true">
-    </Function>
-    <Function name="ProcessOldLine3D" user="true" member="true">
-    </Function>
-    <Function name="ProcessOldLine2D" user="true" member="true">
-    </Function>
-    <Function name="ProcessOldText3D" user="true" member="true">
-    </Function>
+    <Include file="source" quoted="false">
+        visit-config.h
+    </Include>
   </Attribute>

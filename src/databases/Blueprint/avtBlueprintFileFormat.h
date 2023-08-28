@@ -9,11 +9,23 @@
 #ifndef AVT_BLUEPRINT_FILE_FORMAT_H
 #define AVT_BLUEPRINT_FILE_FORMAT_H
 
+#include <set>
+
+// NOTE: This is from avtblueprint lib
+#include "avtConduitBlueprintDataAdaptor.h"
+// NOTE: This is from avtmfem lib
+#include "avtMFEMDataAdaptor.h"
+
 #include "avtSTMDFileFormat.h"
 
 #include "conduit.hpp"
 
+#include <string>
+#include <vector>
+#include <map>
+
 class     avtMaterial;
+class     DBOptionsAttributes;
 
 // ****************************************************************************
 //  Class: avtBlueprintFileFormat
@@ -28,6 +40,16 @@ class     avtMaterial;
 //    Cyrus Harrison, Wed Feb 17 10:43:50 PST 2021
 //    Added GetAuxiliaryData() to support material volume fractions 
 //    and mixed-var data.
+// 
+//    Justin Privitera, Mon Apr 11 18:20:19 PDT 2022
+//    Added `m_new_refine`, a boolean to toggle between using new MFEM LOR or 
+//    legacy MFEM LOR. When true, the new scheme is enabled.
+// 
+//     Justin Privitera, Wed Aug 24 11:08:51 PDT 2022
+//     Added includes for new avtmfem and avtblueprint libs.
+// 
+//    Justin Privitera, Wed Mar 22 15:48:01 PDT 2023
+//    Included set and added a set called m_curve_names.
 //
 // ****************************************************************************
 
@@ -36,7 +58,7 @@ class avtBlueprintTreeCache;
 class avtBlueprintFileFormat : public avtSTMDFileFormat
 {
   public:
-                           avtBlueprintFileFormat(const char *);
+                           avtBlueprintFileFormat(const char *, DBOptionsAttributes*);
     virtual               ~avtBlueprintFileFormat();
 
     virtual const char    *GetType(void) 
@@ -103,6 +125,12 @@ class avtBlueprintFileFormat : public avtSTMDFileFormat
                                               const std::string &abs_varname,
                                               conduit::Node &out);
 
+    bool                   DetectHOMaterial(const std::string &mesh_name,
+                                            const std::string &topo_name,
+                                            const std::vector<std::string> &matNames,
+                                            std::map<std::string, std::string> &matFields,
+                                            std::string &freeMatName) const;
+
     void                   ReadBlueprintMatset(int domain,
                                                const std::string &abs_matsetname,
                                                conduit::Node &out);
@@ -126,6 +154,11 @@ class avtBlueprintFileFormat : public avtSTMDFileFormat
     conduit::Node          m_matset_info;
 
     std::map<std::string,bool> m_mfem_mesh_map;
+    std::map<std::string,std::pair<std::string,int> > m_mfem_material_map;
+
+    std::set<std::string>  m_curve_names;
+
+    bool                   m_new_refine;
 
 };
 

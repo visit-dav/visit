@@ -36,7 +36,7 @@ struct ColorControlPointObject
 //
 static PyObject *NewColorControlPoint(int);
 std::string
-PyColorControlPoint_ToString(const ColorControlPoint *atts, const char *prefix)
+PyColorControlPoint_ToString(const ColorControlPoint *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -76,40 +76,61 @@ ColorControlPoint_SetColors(PyObject *self, PyObject *args)
 {
     ColorControlPointObject *obj = (ColorControlPointObject *)self;
 
-    unsigned char *cvals = obj->data->GetColors();
-    if(!PyArg_ParseTuple(args, "cccc", &cvals[0], &cvals[1], &cvals[2], &cvals[3]))
+    typedef unsigned char uchar;
+    PyObject *packaged_args = 0;
+    uchar *vals = obj->data->GetColors();
+
+    if (!PySequence_Check(args) || PyUnicode_Check(args))
+        return PyErr_Format(PyExc_TypeError, "Expecting a sequence of numeric args");
+
+    // break open args seq. if we think it matches this API's needs
+    if (PySequence_Size(args) == 1)
     {
-        PyObject     *tuple;
-        if(!PyArg_ParseTuple(args, "O", &tuple))
-            return NULL;
-
-        if(PyTuple_Check(tuple))
-        {
-            if(PyTuple_Size(tuple) != 4)
-                return NULL;
-
-            PyErr_Clear();
-            for(int i = 0; i < PyTuple_Size(tuple); ++i)
-            {
-                int c;
-                PyObject *item = PyTuple_GET_ITEM(tuple, i);
-                if(PyFloat_Check(item))
-                    c = int(PyFloat_AS_DOUBLE(item));
-                else if(PyInt_Check(item))
-                    c = int(PyInt_AS_LONG(item));
-                else if(PyLong_Check(item))
-                    c = int(PyLong_AsDouble(item));
-                else
-                    c = 0;
-
-                if(c < 0) c = 0;
-                if(c > 255) c = 255;
-                cvals[i] = (unsigned char)(c);
-            }
-        }
-        else
-            return NULL;
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PySequence_Check(packaged_args) && !PyUnicode_Check(packaged_args) &&
+            PySequence_Size(packaged_args) == 4)
+            args = packaged_args;
     }
+
+    if (PySequence_Size(args) != 4)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "Expecting 4 numeric args");
+    }
+
+    for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)
+    {
+        PyObject *item = PySequence_GetItem(args, i);
+
+        if (!PyNumber_Check(item))
+        {
+            Py_DECREF(item);
+            Py_XDECREF(packaged_args);
+            return PyErr_Format(PyExc_TypeError, "arg %d is not a number type", (int) i);
+        }
+
+        long val = PyLong_AsLong(item);
+        uchar cval = uchar(val);
+
+        if (val == -1 && PyErr_Occurred())
+        {
+            Py_XDECREF(packaged_args);
+            Py_DECREF(item);
+            PyErr_Clear();
+            return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ uchar", (int) i);
+        }
+        if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+        {
+            Py_XDECREF(packaged_args);
+            Py_DECREF(item);
+            return PyErr_Format(PyExc_ValueError, "arg %d not interpretable as C++ uchar", (int) i);
+        }
+        Py_DECREF(item);
+
+        vals[i] = cval;
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Mark the colors in the object as modified.
     obj->data->SelectColors();
@@ -135,12 +156,48 @@ ColorControlPoint_SetPosition(PyObject *self, PyObject *args)
 {
     ColorControlPointObject *obj = (ColorControlPointObject *)self;
 
-    float fval;
-    if(!PyArg_ParseTuple(args, "f", &fval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    float cval = float(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ float");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ float");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the position in the object.
-    obj->data->SetPosition(fval);
+    obj->data->SetPosition(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -188,30 +245,43 @@ PyColorControlPoint_getattr(PyObject *self, char *name)
     if(strcmp(name, "position") == 0)
         return ColorControlPoint_GetPosition(self, NULL);
 
+
+    // Add a __dict__ answer so that dir() works
+    if (!strcmp(name, "__dict__"))
+    {
+        PyObject *result = PyDict_New();
+        for (int i = 0; PyColorControlPoint_methods[i].ml_meth; i++)
+            PyDict_SetItem(result,
+                PyString_FromString(PyColorControlPoint_methods[i].ml_name),
+                PyString_FromString(PyColorControlPoint_methods[i].ml_name));
+        return result;
+    }
+
     return Py_FindMethod(PyColorControlPoint_methods, self, name);
 }
 
 int
 PyColorControlPoint_setattr(PyObject *self, char *name, PyObject *args)
 {
-    // Create a tuple to contain the arguments since all of the Set
-    // functions expect a tuple.
-    PyObject *tuple = PyTuple_New(1);
-    PyTuple_SET_ITEM(tuple, 0, args);
-    Py_INCREF(args);
-    PyObject *obj = NULL;
+    PyObject NULL_PY_OBJ;
+    PyObject *obj = &NULL_PY_OBJ;
 
     if(strcmp(name, "colors") == 0)
-        obj = ColorControlPoint_SetColors(self, tuple);
+        obj = ColorControlPoint_SetColors(self, args);
     else if(strcmp(name, "position") == 0)
-        obj = ColorControlPoint_SetPosition(self, tuple);
+        obj = ColorControlPoint_SetPosition(self, args);
 
-    if(obj != NULL)
+    if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
-    Py_DECREF(tuple);
-    if( obj == NULL)
-        PyErr_Format(PyExc_RuntimeError, "Unable to set unknown attribute: '%s'", name);
+    if (obj == &NULL_PY_OBJ)
+    {
+        obj = NULL;
+        PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);
+    }
+    else if (obj == NULL && !PyErr_Occurred())
+        PyErr_Format(PyExc_RuntimeError, "unknown problem with '%s'", name);
+
     return (obj != NULL) ? 0 : -1;
 }
 
@@ -219,7 +289,7 @@ static int
 ColorControlPoint_print(PyObject *v, FILE *fp, int flags)
 {
     ColorControlPointObject *obj = (ColorControlPointObject *)v;
-    fprintf(fp, "%s", PyColorControlPoint_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyColorControlPoint_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -227,7 +297,7 @@ PyObject *
 ColorControlPoint_str(PyObject *v)
 {
     ColorControlPointObject *obj = (ColorControlPointObject *)v;
-    return PyString_FromString(PyColorControlPoint_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyColorControlPoint_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -379,7 +449,7 @@ PyColorControlPoint_GetLogString()
 {
     std::string s("ColorControlPoint = ColorControlPoint()\n");
     if(currentAtts != 0)
-        s += PyColorControlPoint_ToString(currentAtts, "ColorControlPoint.");
+        s += PyColorControlPoint_ToString(currentAtts, "ColorControlPoint.", true);
     return s;
 }
 
@@ -392,7 +462,7 @@ PyColorControlPoint_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("ColorControlPoint = ColorControlPoint()\n");
-        s += PyColorControlPoint_ToString(currentAtts, "ColorControlPoint.");
+        s += PyColorControlPoint_ToString(currentAtts, "ColorControlPoint.", true);
         cb(s);
     }
 }

@@ -36,7 +36,7 @@ struct ViewCurveAttributesObject
 //
 static PyObject *NewViewCurveAttributes(int);
 std::string
-PyViewCurveAttributes_ToString(const ViewCurveAttributes *atts, const char *prefix)
+PyViewCurveAttributes_ToString(const ViewCurveAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -112,35 +112,60 @@ ViewCurveAttributes_SetDomainCoords(PyObject *self, PyObject *args)
 {
     ViewCurveAttributesObject *obj = (ViewCurveAttributesObject *)self;
 
-    double *dvals = obj->data->GetDomainCoords();
-    if(!PyArg_ParseTuple(args, "dd", &dvals[0], &dvals[1]))
+    PyObject *packaged_args = 0;
+    double *vals = obj->data->GetDomainCoords();
+
+    if (!PySequence_Check(args) || PyUnicode_Check(args))
+        return PyErr_Format(PyExc_TypeError, "Expecting a sequence of numeric args");
+
+    // break open args seq. if we think it matches this API's needs
+    if (PySequence_Size(args) == 1)
     {
-        PyObject     *tuple;
-        if(!PyArg_ParseTuple(args, "O", &tuple))
-            return NULL;
-
-        if(PyTuple_Check(tuple))
-        {
-            if(PyTuple_Size(tuple) != 2)
-                return NULL;
-
-            PyErr_Clear();
-            for(int i = 0; i < PyTuple_Size(tuple); ++i)
-            {
-                PyObject *item = PyTuple_GET_ITEM(tuple, i);
-                if(PyFloat_Check(item))
-                    dvals[i] = PyFloat_AS_DOUBLE(item);
-                else if(PyInt_Check(item))
-                    dvals[i] = double(PyInt_AS_LONG(item));
-                else if(PyLong_Check(item))
-                    dvals[i] = PyLong_AsDouble(item);
-                else
-                    dvals[i] = 0.;
-            }
-        }
-        else
-            return NULL;
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PySequence_Check(packaged_args) && !PyUnicode_Check(packaged_args) &&
+            PySequence_Size(packaged_args) == 2)
+            args = packaged_args;
     }
+
+    if (PySequence_Size(args) != 2)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "Expecting 2 numeric args");
+    }
+
+    for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)
+    {
+        PyObject *item = PySequence_GetItem(args, i);
+
+        if (!PyNumber_Check(item))
+        {
+            Py_DECREF(item);
+            Py_XDECREF(packaged_args);
+            return PyErr_Format(PyExc_TypeError, "arg %d is not a number type", (int) i);
+        }
+
+        double val = PyFloat_AsDouble(item);
+        double cval = double(val);
+
+        if (val == -1 && PyErr_Occurred())
+        {
+            Py_XDECREF(packaged_args);
+            Py_DECREF(item);
+            PyErr_Clear();
+            return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ double", (int) i);
+        }
+        if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+        {
+            Py_XDECREF(packaged_args);
+            Py_DECREF(item);
+            return PyErr_Format(PyExc_ValueError, "arg %d not interpretable as C++ double", (int) i);
+        }
+        Py_DECREF(item);
+
+        vals[i] = cval;
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Mark the domainCoords in the object as modified.
     obj->data->SelectDomainCoords();
@@ -166,35 +191,60 @@ ViewCurveAttributes_SetRangeCoords(PyObject *self, PyObject *args)
 {
     ViewCurveAttributesObject *obj = (ViewCurveAttributesObject *)self;
 
-    double *dvals = obj->data->GetRangeCoords();
-    if(!PyArg_ParseTuple(args, "dd", &dvals[0], &dvals[1]))
+    PyObject *packaged_args = 0;
+    double *vals = obj->data->GetRangeCoords();
+
+    if (!PySequence_Check(args) || PyUnicode_Check(args))
+        return PyErr_Format(PyExc_TypeError, "Expecting a sequence of numeric args");
+
+    // break open args seq. if we think it matches this API's needs
+    if (PySequence_Size(args) == 1)
     {
-        PyObject     *tuple;
-        if(!PyArg_ParseTuple(args, "O", &tuple))
-            return NULL;
-
-        if(PyTuple_Check(tuple))
-        {
-            if(PyTuple_Size(tuple) != 2)
-                return NULL;
-
-            PyErr_Clear();
-            for(int i = 0; i < PyTuple_Size(tuple); ++i)
-            {
-                PyObject *item = PyTuple_GET_ITEM(tuple, i);
-                if(PyFloat_Check(item))
-                    dvals[i] = PyFloat_AS_DOUBLE(item);
-                else if(PyInt_Check(item))
-                    dvals[i] = double(PyInt_AS_LONG(item));
-                else if(PyLong_Check(item))
-                    dvals[i] = PyLong_AsDouble(item);
-                else
-                    dvals[i] = 0.;
-            }
-        }
-        else
-            return NULL;
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PySequence_Check(packaged_args) && !PyUnicode_Check(packaged_args) &&
+            PySequence_Size(packaged_args) == 2)
+            args = packaged_args;
     }
+
+    if (PySequence_Size(args) != 2)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "Expecting 2 numeric args");
+    }
+
+    for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)
+    {
+        PyObject *item = PySequence_GetItem(args, i);
+
+        if (!PyNumber_Check(item))
+        {
+            Py_DECREF(item);
+            Py_XDECREF(packaged_args);
+            return PyErr_Format(PyExc_TypeError, "arg %d is not a number type", (int) i);
+        }
+
+        double val = PyFloat_AsDouble(item);
+        double cval = double(val);
+
+        if (val == -1 && PyErr_Occurred())
+        {
+            Py_XDECREF(packaged_args);
+            Py_DECREF(item);
+            PyErr_Clear();
+            return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ double", (int) i);
+        }
+        if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+        {
+            Py_XDECREF(packaged_args);
+            Py_DECREF(item);
+            return PyErr_Format(PyExc_ValueError, "arg %d not interpretable as C++ double", (int) i);
+        }
+        Py_DECREF(item);
+
+        vals[i] = cval;
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Mark the rangeCoords in the object as modified.
     obj->data->SelectRangeCoords();
@@ -220,35 +270,60 @@ ViewCurveAttributes_SetViewportCoords(PyObject *self, PyObject *args)
 {
     ViewCurveAttributesObject *obj = (ViewCurveAttributesObject *)self;
 
-    double *dvals = obj->data->GetViewportCoords();
-    if(!PyArg_ParseTuple(args, "dddd", &dvals[0], &dvals[1], &dvals[2], &dvals[3]))
+    PyObject *packaged_args = 0;
+    double *vals = obj->data->GetViewportCoords();
+
+    if (!PySequence_Check(args) || PyUnicode_Check(args))
+        return PyErr_Format(PyExc_TypeError, "Expecting a sequence of numeric args");
+
+    // break open args seq. if we think it matches this API's needs
+    if (PySequence_Size(args) == 1)
     {
-        PyObject     *tuple;
-        if(!PyArg_ParseTuple(args, "O", &tuple))
-            return NULL;
-
-        if(PyTuple_Check(tuple))
-        {
-            if(PyTuple_Size(tuple) != 4)
-                return NULL;
-
-            PyErr_Clear();
-            for(int i = 0; i < PyTuple_Size(tuple); ++i)
-            {
-                PyObject *item = PyTuple_GET_ITEM(tuple, i);
-                if(PyFloat_Check(item))
-                    dvals[i] = PyFloat_AS_DOUBLE(item);
-                else if(PyInt_Check(item))
-                    dvals[i] = double(PyInt_AS_LONG(item));
-                else if(PyLong_Check(item))
-                    dvals[i] = PyLong_AsDouble(item);
-                else
-                    dvals[i] = 0.;
-            }
-        }
-        else
-            return NULL;
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PySequence_Check(packaged_args) && !PyUnicode_Check(packaged_args) &&
+            PySequence_Size(packaged_args) == 4)
+            args = packaged_args;
     }
+
+    if (PySequence_Size(args) != 4)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "Expecting 4 numeric args");
+    }
+
+    for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)
+    {
+        PyObject *item = PySequence_GetItem(args, i);
+
+        if (!PyNumber_Check(item))
+        {
+            Py_DECREF(item);
+            Py_XDECREF(packaged_args);
+            return PyErr_Format(PyExc_TypeError, "arg %d is not a number type", (int) i);
+        }
+
+        double val = PyFloat_AsDouble(item);
+        double cval = double(val);
+
+        if (val == -1 && PyErr_Occurred())
+        {
+            Py_XDECREF(packaged_args);
+            Py_DECREF(item);
+            PyErr_Clear();
+            return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ double", (int) i);
+        }
+        if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+        {
+            Py_XDECREF(packaged_args);
+            Py_DECREF(item);
+            return PyErr_Format(PyExc_ValueError, "arg %d not interpretable as C++ double", (int) i);
+        }
+        Py_DECREF(item);
+
+        vals[i] = cval;
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Mark the viewportCoords in the object as modified.
     obj->data->SelectViewportCoords();
@@ -274,20 +349,23 @@ ViewCurveAttributes_SetDomainScale(PyObject *self, PyObject *args)
 {
     ViewCurveAttributesObject *obj = (ViewCurveAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    int ival = -999;
+    if (PySequence_Check(args) && !PyArg_ParseTuple(args, "i", &ival))
+        return PyErr_Format(PyExc_TypeError, "Expecting scalar integer arg");
+    else if (PyNumber_Check(args) && (ival = PyLong_AsLong(args)) == -1 && PyErr_Occurred())
+        return PyErr_Format(PyExc_TypeError, "Expecting scalar integer arg");
+    if (ival == -999)
+        return PyErr_Format(PyExc_TypeError, "Expecting scalar integer arg");
 
     // Set the domainScale in the object.
     if(ival >= 0 && ival <= 1)
         obj->data->SetDomainScale(ival);
     else
     {
-        fprintf(stderr, "An invalid  value was given. "
+        return PyErr_Format(PyExc_IndexError, "An invalid  value was given. "
                         "Valid values are in the range of [0,1]. "
                         "You can also use the following names: "
                         "\"LINEAR\", \"LOG\"\n");
-        return NULL;
     }
 
     Py_INCREF(Py_None);
@@ -307,20 +385,23 @@ ViewCurveAttributes_SetRangeScale(PyObject *self, PyObject *args)
 {
     ViewCurveAttributesObject *obj = (ViewCurveAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    int ival = -999;
+    if (PySequence_Check(args) && !PyArg_ParseTuple(args, "i", &ival))
+        return PyErr_Format(PyExc_TypeError, "Expecting scalar integer arg");
+    else if (PyNumber_Check(args) && (ival = PyLong_AsLong(args)) == -1 && PyErr_Occurred())
+        return PyErr_Format(PyExc_TypeError, "Expecting scalar integer arg");
+    if (ival == -999)
+        return PyErr_Format(PyExc_TypeError, "Expecting scalar integer arg");
 
     // Set the rangeScale in the object.
     if(ival >= 0 && ival <= 1)
         obj->data->SetRangeScale(ival);
     else
     {
-        fprintf(stderr, "An invalid  value was given. "
+        return PyErr_Format(PyExc_IndexError, "An invalid  value was given. "
                         "Valid values are in the range of [0,1]. "
                         "You can also use the following names: "
                         "\"LINEAR\", \"LOG\"\n");
-        return NULL;
     }
 
     Py_INCREF(Py_None);
@@ -391,36 +472,49 @@ PyViewCurveAttributes_getattr(PyObject *self, char *name)
         return PyInt_FromLong(long(1));
 
 
+
+    // Add a __dict__ answer so that dir() works
+    if (!strcmp(name, "__dict__"))
+    {
+        PyObject *result = PyDict_New();
+        for (int i = 0; PyViewCurveAttributes_methods[i].ml_meth; i++)
+            PyDict_SetItem(result,
+                PyString_FromString(PyViewCurveAttributes_methods[i].ml_name),
+                PyString_FromString(PyViewCurveAttributes_methods[i].ml_name));
+        return result;
+    }
+
     return Py_FindMethod(PyViewCurveAttributes_methods, self, name);
 }
 
 int
 PyViewCurveAttributes_setattr(PyObject *self, char *name, PyObject *args)
 {
-    // Create a tuple to contain the arguments since all of the Set
-    // functions expect a tuple.
-    PyObject *tuple = PyTuple_New(1);
-    PyTuple_SET_ITEM(tuple, 0, args);
-    Py_INCREF(args);
-    PyObject *obj = NULL;
+    PyObject NULL_PY_OBJ;
+    PyObject *obj = &NULL_PY_OBJ;
 
     if(strcmp(name, "domainCoords") == 0)
-        obj = ViewCurveAttributes_SetDomainCoords(self, tuple);
+        obj = ViewCurveAttributes_SetDomainCoords(self, args);
     else if(strcmp(name, "rangeCoords") == 0)
-        obj = ViewCurveAttributes_SetRangeCoords(self, tuple);
+        obj = ViewCurveAttributes_SetRangeCoords(self, args);
     else if(strcmp(name, "viewportCoords") == 0)
-        obj = ViewCurveAttributes_SetViewportCoords(self, tuple);
+        obj = ViewCurveAttributes_SetViewportCoords(self, args);
     else if(strcmp(name, "domainScale") == 0)
-        obj = ViewCurveAttributes_SetDomainScale(self, tuple);
+        obj = ViewCurveAttributes_SetDomainScale(self, args);
     else if(strcmp(name, "rangeScale") == 0)
-        obj = ViewCurveAttributes_SetRangeScale(self, tuple);
+        obj = ViewCurveAttributes_SetRangeScale(self, args);
 
-    if(obj != NULL)
+    if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
-    Py_DECREF(tuple);
-    if( obj == NULL)
-        PyErr_Format(PyExc_RuntimeError, "Unable to set unknown attribute: '%s'", name);
+    if (obj == &NULL_PY_OBJ)
+    {
+        obj = NULL;
+        PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);
+    }
+    else if (obj == NULL && !PyErr_Occurred())
+        PyErr_Format(PyExc_RuntimeError, "unknown problem with '%s'", name);
+
     return (obj != NULL) ? 0 : -1;
 }
 
@@ -428,7 +522,7 @@ static int
 ViewCurveAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     ViewCurveAttributesObject *obj = (ViewCurveAttributesObject *)v;
-    fprintf(fp, "%s", PyViewCurveAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyViewCurveAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -436,7 +530,7 @@ PyObject *
 ViewCurveAttributes_str(PyObject *v)
 {
     ViewCurveAttributesObject *obj = (ViewCurveAttributesObject *)v;
-    return PyString_FromString(PyViewCurveAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyViewCurveAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -588,7 +682,7 @@ PyViewCurveAttributes_GetLogString()
 {
     std::string s("ViewCurveAtts = ViewCurveAttributes()\n");
     if(currentAtts != 0)
-        s += PyViewCurveAttributes_ToString(currentAtts, "ViewCurveAtts.");
+        s += PyViewCurveAttributes_ToString(currentAtts, "ViewCurveAtts.", true);
     return s;
 }
 
@@ -601,7 +695,7 @@ PyViewCurveAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("ViewCurveAtts = ViewCurveAttributes()\n");
-        s += PyViewCurveAttributes_ToString(currentAtts, "ViewCurveAtts.");
+        s += PyViewCurveAttributes_ToString(currentAtts, "ViewCurveAtts.", true);
         cb(s);
     }
 }

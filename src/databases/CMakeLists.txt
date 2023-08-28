@@ -188,16 +188,28 @@
 #    Kathleen Biagas, Mon Sep 14 2020
 #    Enable Rect as an optional plugin on Windows.
 #
-#   Eddie Rusu, Wed Oct 14 15:52:13 PDT 2020
-#   Removed FastBit and FastQuery
+#    Eddie Rusu, Wed Oct 14 15:52:13 PDT 2020
+#    Removed FastBit and FastQuery
+#
+#    Kathleen Biagas, Tue May 4, 2021
+#    Rename SW4 to sw4img to fix static builds.
+#
+#    Gabriel Wlazłowski & Andrzej Makowski, Tue 15 Sep, 2021
+#    Add WData plugin.
+#
+#    Kathleen Biagas, Mon Sep 26, 2022
+#    Remove HDF4-dependent plugins: Cosmos, RAGE, ZeusMP.
+#
+#    Kathleen Biagas, Mon Jan 30, 2023
+#    Moved setting of RUNTIME_OUTPUT_DIRECTORY and LIBRARY_OUTPUT_DIRECTORY
+#    to macro VISIT_PLUGIN_TARGET_OUTPUT_DIR.
+#
+#    Eric Brugger, Mon May 1 15:28:30 PST 2023
+#    Add HTG plugin.
 #
 #****************************************************************************
 
-IF(NOT WIN32)
-    SET(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${VISIT_PLUGIN_DIR}/databases)
-ELSE(NOT WIN32)
-    SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${VISIT_PLUGIN_DIR}/databases)
-ENDIF(NOT WIN32)
+include(${VISIT_SOURCE_DIR}/CMake/PluginMacros.cmake)
 
 SET(THIRDPARTY_DEPENDENT_PLUGINS)
 
@@ -356,10 +368,6 @@ CHECK_THIRDPARTY_SATISFIED(FITS CFITSIO)
 CHECK_THIRDPARTY_SATISFIED(FMS FMS MFEM)
 CHECK_THIRDPARTY_SATISFIED(GDAL GDAL)
 
-CHECK_THIRDPARTY_SATISFIED(Cosmos HDF4)
-CHECK_THIRDPARTY_SATISFIED(RAGE   HDF4)
-CHECK_THIRDPARTY_SATISFIED(ZeusMP HDF4)
-
 CHECK_THIRDPARTY_SATISFIED(MDSplus MDSPLUS)
 CHECK_THIRDPARTY_SATISFIED(Mili    MILI)
 CHECK_THIRDPARTY_SATISFIED(Uintah  UINTAH)
@@ -418,6 +426,7 @@ GHOST
 GMV
 GULP
 Gadget
+HTG
 Image
 LAMMPS
 Lines
@@ -441,7 +450,7 @@ SAR
 SAS
 SPCTH
 STL
-SW4
+sw4img
 Shapefile
 ${SIMV2_PLUGIN}
 Spheral
@@ -452,6 +461,7 @@ VASP
 VTK
 WavefrontOBJ
 WellLogs
+WData
 XSF
 XYZ
 Xmdv
@@ -463,7 +473,8 @@ ${XDBPLUGIN}
 ZipWrapper
 )
 
-IF(TARGET vtkIOEnSight)
+# vtkIOEnSight -> VTK8, VTK::IOEnSight -> VTK9
+IF(TARGET vtkIOEnSight OR TARGET VTK::IOEnSight)
     LIST(APPEND REQUIRED_DATABASE_PLUGINS EnSight)
 ELSE()
     IF(DEFINED VISIT_SELECTED_DATABASE_PLUGINS)
@@ -471,7 +482,7 @@ ELSE()
     ELSE()
         MESSAGE(STATUS "EnSight plugin requires vtkIOEnSight")
     ENDIF()
-ENDIF(TARGET vtkIOEnSight)
+ENDIF()
 
 SET(OPTIONAL_DATABASE_PLUGINS
     PICS_Tester

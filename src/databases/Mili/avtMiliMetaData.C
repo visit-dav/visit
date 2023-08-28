@@ -1403,6 +1403,9 @@ MiliClassMetaData::GetNumElements(int domain)
 //  Creation:   Jan 15, 2019
 //
 //  Modifications:
+//    Eric Brugger, Thu Jul  6 13:31:48 PDT 2023
+//    Moved the Mili superClassId M_PARTICLE from the PARTICLE to the
+//    CELL classType.
 //
 // ****************************************************************************
 
@@ -1417,6 +1420,7 @@ MiliClassMetaData::DetermineType()
         case M_NODE:
             classType = NODE;
             break;
+        case M_PARTICLE:
         case M_TRUSS:
         case M_BEAM:
         case M_TRI:
@@ -1436,9 +1440,6 @@ MiliClassMetaData::DetermineType()
             break;
         case M_SURFACE:
             classType = SURFACE;
-            break;
-        case M_PARTICLE:
-            classType = PARTICLE;
             break;
         default:
             classType = UNKNOWN;
@@ -3104,6 +3105,8 @@ avtMiliMetaData::GetMaterialNames(stringVector &matNames)
 //  Creation:   Jan 15, 2019
 //
 //  Modifications:
+//      Eric Brugger, Fri May  7 15:54:32 PDT 2021
+//      Return an empty vector if not a single color is specified.
 //
 // ****************************************************************************
 
@@ -3118,13 +3121,26 @@ avtMiliMetaData::GetMaterialColors(stringVector &matColors)
     matColors.clear();
     matColors.reserve(numMaterials);
 
+    string emptyString;
+    bool colorPresent = false;
     for (int i = 0; i < numMaterials; ++i)
     {
-        if (miliMaterials[i] != NULL)
+        if (miliMaterials[i] != NULL && !miliMaterials[i]->GetColor().empty())
         {
+            colorPresent = true;
             matColors.push_back(miliMaterials[i]->GetColor());
         }
+        else
+        {
+            matColors.push_back(emptyString);
+        }
     }
+
+    //
+    // If no colors are present return an empty vector.
+    //
+    if (!colorPresent)
+        matColors.clear();
 }
 
 

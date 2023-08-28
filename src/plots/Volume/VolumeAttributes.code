@@ -480,6 +480,8 @@ Definition:
 //    (list or tuple object) --  as long as it is numeric and has length
 //    of 256, will set the opacity values to the values in the list or tuple.
 //
+//    Mark C. Miller, Fri Jul 23 14:54:46 PDT 2021
+//    Handle args as a "wrapped" tuple or list
 // ****************************************************************************
 
 static PyObject *
@@ -490,51 +492,69 @@ VolumeAttributes_SetFreeformOpacity(PyObject *self, PyObject *args)
 //
     VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
 
+    PyObject *packaged_args = 0;
     unsigned char *cvals = obj->data->GetFreeformOpacity();
     int opacity, index;
-    if(PyArg_ParseTuple(args, "ii", &index, &opacity))
+    if (PyTuple_Check(args) || PyList_Check(args))
     {
-        if(index >= 0 && index < 256)
+        if (PySequence_Size(args) == 2 && PyArg_ParseTuple(args, "ii", &index, &opacity))
         {
-            if(opacity < 0) opacity = 0;
-            if(opacity > 255) opacity = 255;
+            if (index < 0 || index >= 256)
+                return PyErr_Format(PyExc_IndexError, "first arg (index) must be in range [0...255]");
+            if (opacity < 0 || opacity >= 256)
+                return PyErr_Format(PyExc_ValueError, "second arg (opacity) must be in range [0...255]");
             cvals[index] = (unsigned char)(opacity);
         }
+        else if (PySequence_Size(args) == 1)
+        {
+            packaged_args = PySequence_GetItem(args, 0);
+            if (PyTuple_Check(packaged_args) || PyList_Check(packaged_args))
+            {
+                if (PySequence_Size(packaged_args) != 256)
+                {
+                    Py_XDECREF(packaged_args);
+                    return PyErr_Format(PyExc_TypeError, "when setting whole opacity array, "
+                        "must pass a list or tuple of 256 values");
+                }
+                args = packaged_args;
+            }
+        }
+        else if (PySequence_Size(args) != 256)
+            return PyErr_Format(PyExc_TypeError, "when setting whole opacity array, must pass 256 values");
+
+        PyErr_Clear();
+        for (int i = 0; i < PySequence_Size(args); ++i)
+        {
+            int c;
+            PyObject *item = PySequence_GetItem(args, i);
+            if(PyInt_Check(item))
+                c = int(PyInt_AS_LONG(item));
+            else if(PyFloat_Check(item))
+                c = int(PyFloat_AS_DOUBLE(item));
+            else if(PyLong_Check(item))
+                c = int(PyLong_AsDouble(item));
+            else // bad form here, we're err'ing out having possibly already changed cvals
+                return PyErr_Format(PyExc_TypeError, "opacity value at index %d not a number.", i);
+            Py_DECREF(item);
+            if (c < 0 || c >= 256)
+                return PyErr_Format(PyExc_ValueError, "opacity value at index %d out of range [0...255].", i);
+            cvals[i] = (unsigned char)(c);
+       }
+    }
+    else if (PyArg_ParseTuple(args, "ii", &index, &opacity))
+    {
+        if (index < 0 || index >= 256)
+            return PyErr_Format(PyExc_IndexError, "first arg (index) must be in range [0...255]");
+        if (opacity < 0 || opacity >= 256)
+            return PyErr_Format(PyExc_ValueError, "second arg (opacity) must be in range [0...255]");
+        cvals[index] = (unsigned char)(opacity);
     }
     else
     {
-        PyObject     *tuple;
-        if(!PyArg_ParseTuple(args, "O", &tuple))
-        {
-            return NULL;
-        }
-        if(PyTuple_Check(tuple) || PyList_Check(tuple))
-        {
-            if(PySequence_Size(tuple) != 256)
-                return NULL;
-
-            PyErr_Clear();
-            for(int i = 0; i < PySequence_Size(tuple); ++i)
-            {
-                int c;
-                PyObject *item = PySequence_GetItem(tuple, i);
-                if(PyInt_Check(item))
-                    c = int(PyInt_AS_LONG(item));
-                else if(PyFloat_Check(item))
-                    c = int(PyFloat_AS_DOUBLE(item));
-                else if(PyLong_Check(item))
-                    c = int(PyLong_AsDouble(item));
-                else
-                    c = 0;
-                Py_DECREF(item);
-                if(c < 0) c = 0;
-                if(c > 255) c = 255;
-                cvals[i] = (unsigned char)(c);
-           }
-        }
-        else
-            return NULL;
+        return NULL;
     }
+
+    Py_XDECREF(packaged_args);
 
     // Mark the freeformOpacity in the object as modified.
     obj->data->SelectFreeformOpacity();
@@ -620,7 +640,6 @@ VolumeViewerEnginePluginInfo::~VolumeViewerEnginePluginInfo()
     }
 }
 
-
 Target: xml2python
 Function: VolumeAttributes_SetMaterialProperties
 Declaration: VolumeAttributes_SetMaterialProperties
@@ -641,7 +660,7 @@ VolumeAttributes_SetMaterialProperties(PyObject *self, PyObject *args)
         if(PyTuple_Check(tuple))
         {
             if(PyTuple_Size(tuple) != 4)
-                return NULL;
+                return PyErr_Format(PyExc_TypeError, "Expecting 4 double args or tuple thereof.");
 
             PyErr_Clear();
             for(int i = 0; i < PyTuple_Size(tuple); ++i)
@@ -677,5 +696,3 @@ Condition:       VISIT_OSPRAY
 Includes:        ${OSPRAY_INCLUDE_DIR}
 VLinkLibraries:  ${OSPRAY_LIBRARIES}
 ELinkLibraries:  ${OSPRAY_LIBRARIES}
-
-

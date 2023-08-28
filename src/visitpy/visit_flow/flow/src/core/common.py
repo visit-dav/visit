@@ -25,6 +25,7 @@ def sexe(cmd,ret_output=False,echo = False):
     if ret_output:
         p = subprocess.Popen(cmd,
                              shell=True,
+                             universal_newlines=True,
                              stdout=subprocess.PIPE,
                              stderr=subprocess.STDOUT)
         res =p.communicate()[0]

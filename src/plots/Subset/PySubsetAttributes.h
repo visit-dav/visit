@@ -22,7 +22,7 @@ PyObject *     PySubsetAttributes_Wrap(const SubsetAttributes *attr);
 void           PySubsetAttributes_SetParent(PyObject *obj, PyObject *parent);
 void           PySubsetAttributes_SetDefaults(const SubsetAttributes *atts);
 std::string    PySubsetAttributes_GetLogString();
-std::string    PySubsetAttributes_ToString(const SubsetAttributes *, const char *);
+std::string    PySubsetAttributes_ToString(const SubsetAttributes *, const char *, const bool=false);
 PyObject *     PySubsetAttributes_getattr(PyObject *self, char *name);
 int            PySubsetAttributes_setattr(PyObject *self, char *name, PyObject *args);
 extern PyMethodDef PySubsetAttributes_methods[SUBSETATTRIBUTES_NMETH];

@@ -571,7 +571,6 @@ Axes2D::CreateNode(DataNode *parentNode, bool completeSave, bool forceAdd)
 
     return (addToParent || forceAdd);
 }
-
 // ****************************************************************************
 // Method: Axes2D::SetFromNode
 //

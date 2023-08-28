@@ -27,7 +27,7 @@
 // If you have multiple grids, you can write out one file for each grid.
 // There are potential pitfalls in doing this, where extra geometry and
 // interpolation problems appear along grid boundaries.  For additional
-// help with this issue, e-mail visit-users@ornl.gov
+// help with this issue, contact us via https://visit-help.llnl.gov.
 */
 
 

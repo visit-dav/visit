@@ -2,9 +2,7 @@
 # Project developers.  See the top-level LICENSE file for dates and other
 # details.  No copyright assignment is required to contribute to VisIt.
 
-# Use the BOOST_DIR hint from the config-site .cmake file 
-
-INCLUDE(${VISIT_SOURCE_DIR}/CMake/SetUpThirdParty.cmake)
+# Use the BOOST_DIR hint from the config-site .cmake file
 
 SET(BOOST_LIBS NO_LIBS)
 
@@ -21,8 +19,9 @@ IF(NEKTAR++_FOUND)
    boost_program_options)
 ENDIF()
 
-SET_UP_THIRD_PARTY(BOOST lib include ${BOOST_LIBS} )
+SET_UP_THIRD_PARTY(BOOST LIBS ${BOOST_LIBS} )
 
 if(BOOST_FOUND)
     set(HAVE_BOOST true CACHE BOOL "Have boost ")
 endif()
+

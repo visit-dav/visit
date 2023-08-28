@@ -25,6 +25,10 @@ Contents:
     CCL
     RemoteUsage
     MakingMovies
+    MolecularDataFeatures
+    PythonExpressions
+    Partitioning
+    KeyframeAnimation
     
 
 .. Indices and tables

@@ -36,7 +36,7 @@ struct LagrangianAttributesObject
 //
 static PyObject *NewLagrangianAttributes(int);
 std::string
-PyLagrangianAttributes_ToString(const LagrangianAttributes *atts, const char *prefix)
+PyLagrangianAttributes_ToString(const LagrangianAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -142,35 +142,60 @@ LagrangianAttributes_SetSeedPoint(PyObject *self, PyObject *args)
 {
     LagrangianAttributesObject *obj = (LagrangianAttributesObject *)self;
 
-    double *dvals = obj->data->GetSeedPoint();
-    if(!PyArg_ParseTuple(args, "ddd", &dvals[0], &dvals[1], &dvals[2]))
+    PyObject *packaged_args = 0;
+    double *vals = obj->data->GetSeedPoint();
+
+    if (!PySequence_Check(args) || PyUnicode_Check(args))
+        return PyErr_Format(PyExc_TypeError, "Expecting a sequence of numeric args");
+
+    // break open args seq. if we think it matches this API's needs
+    if (PySequence_Size(args) == 1)
     {
-        PyObject     *tuple;
-        if(!PyArg_ParseTuple(args, "O", &tuple))
-            return NULL;
-
-        if(PyTuple_Check(tuple))
-        {
-            if(PyTuple_Size(tuple) != 3)
-                return NULL;
-
-            PyErr_Clear();
-            for(int i = 0; i < PyTuple_Size(tuple); ++i)
-            {
-                PyObject *item = PyTuple_GET_ITEM(tuple, i);
-                if(PyFloat_Check(item))
-                    dvals[i] = PyFloat_AS_DOUBLE(item);
-                else if(PyInt_Check(item))
-                    dvals[i] = double(PyInt_AS_LONG(item));
-                else if(PyLong_Check(item))
-                    dvals[i] = PyLong_AsDouble(item);
-                else
-                    dvals[i] = 0.;
-            }
-        }
-        else
-            return NULL;
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PySequence_Check(packaged_args) && !PyUnicode_Check(packaged_args) &&
+            PySequence_Size(packaged_args) == 3)
+            args = packaged_args;
     }
+
+    if (PySequence_Size(args) != 3)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "Expecting 3 numeric args");
+    }
+
+    for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)
+    {
+        PyObject *item = PySequence_GetItem(args, i);
+
+        if (!PyNumber_Check(item))
+        {
+            Py_DECREF(item);
+            Py_XDECREF(packaged_args);
+            return PyErr_Format(PyExc_TypeError, "arg %d is not a number type", (int) i);
+        }
+
+        double val = PyFloat_AsDouble(item);
+        double cval = double(val);
+
+        if (val == -1 && PyErr_Occurred())
+        {
+            Py_XDECREF(packaged_args);
+            Py_DECREF(item);
+            PyErr_Clear();
+            return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ double", (int) i);
+        }
+        if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+        {
+            Py_XDECREF(packaged_args);
+            Py_DECREF(item);
+            return PyErr_Format(PyExc_ValueError, "arg %d not interpretable as C++ double", (int) i);
+        }
+        Py_DECREF(item);
+
+        vals[i] = cval;
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Mark the seedPoint in the object as modified.
     obj->data->SelectSeedPoint();
@@ -196,12 +221,48 @@ LagrangianAttributes_SetNumSteps(PyObject *self, PyObject *args)
 {
     LagrangianAttributesObject *obj = (LagrangianAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the numSteps in the object.
-    obj->data->SetNumSteps((int)ival);
+    obj->data->SetNumSteps(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -220,22 +281,58 @@ LagrangianAttributes_SetXAxisSample(PyObject *self, PyObject *args)
 {
     LagrangianAttributesObject *obj = (LagrangianAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 6)
+    {
+        std::stringstream ss;
+        ss << "An invalid XAxisSample value was given." << std::endl;
+        ss << "Valid values are in the range [0,5]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << " Step";
+        ss << ", Time";
+        ss << ", ArcLength";
+        ss << ", Speed";
+        ss << ", Vorticity";
+        ss << ", Variable";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the XAxisSample in the object.
-    if(ival >= 0 && ival < 6)
-        obj->data->SetXAxisSample(LagrangianAttributes::sampleType(ival));
-    else
-    {
-        fprintf(stderr, "An invalid XAxisSample value was given. "
-                        "Valid values are in the range of [0,5]. "
-                        "You can also use the following names: "
-                        "Step, Time, ArcLength, Speed, Vorticity, "
-                        "Variable.");
-        return NULL;
-    }
+    obj->data->SetXAxisSample(LagrangianAttributes::sampleType(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -254,22 +351,58 @@ LagrangianAttributes_SetYAxisSample(PyObject *self, PyObject *args)
 {
     LagrangianAttributesObject *obj = (LagrangianAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 6)
+    {
+        std::stringstream ss;
+        ss << "An invalid YAxisSample value was given." << std::endl;
+        ss << "Valid values are in the range [0,5]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << " Step";
+        ss << ", Time";
+        ss << ", ArcLength";
+        ss << ", Speed";
+        ss << ", Vorticity";
+        ss << ", Variable";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the YAxisSample in the object.
-    if(ival >= 0 && ival < 6)
-        obj->data->SetYAxisSample(LagrangianAttributes::sampleType(ival));
-    else
-    {
-        fprintf(stderr, "An invalid YAxisSample value was given. "
-                        "Valid values are in the range of [0,5]. "
-                        "You can also use the following names: "
-                        "Step, Time, ArcLength, Speed, Vorticity, "
-                        "Variable.");
-        return NULL;
-    }
+    obj->data->SetYAxisSample(LagrangianAttributes::sampleType(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -288,12 +421,37 @@ LagrangianAttributes_SetVariable(PyObject *self, PyObject *args)
 {
     LagrangianAttributesObject *obj = (LagrangianAttributesObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the variable in the object.
-    obj->data->SetVariable(std::string(str));
+    obj->data->SetVariable(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -379,36 +537,49 @@ PyLagrangianAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "variable") == 0)
         return LagrangianAttributes_GetVariable(self, NULL);
 
+
+    // Add a __dict__ answer so that dir() works
+    if (!strcmp(name, "__dict__"))
+    {
+        PyObject *result = PyDict_New();
+        for (int i = 0; PyLagrangianAttributes_methods[i].ml_meth; i++)
+            PyDict_SetItem(result,
+                PyString_FromString(PyLagrangianAttributes_methods[i].ml_name),
+                PyString_FromString(PyLagrangianAttributes_methods[i].ml_name));
+        return result;
+    }
+
     return Py_FindMethod(PyLagrangianAttributes_methods, self, name);
 }
 
 int
 PyLagrangianAttributes_setattr(PyObject *self, char *name, PyObject *args)
 {
-    // Create a tuple to contain the arguments since all of the Set
-    // functions expect a tuple.
-    PyObject *tuple = PyTuple_New(1);
-    PyTuple_SET_ITEM(tuple, 0, args);
-    Py_INCREF(args);
-    PyObject *obj = NULL;
+    PyObject NULL_PY_OBJ;
+    PyObject *obj = &NULL_PY_OBJ;
 
     if(strcmp(name, "seedPoint") == 0)
-        obj = LagrangianAttributes_SetSeedPoint(self, tuple);
+        obj = LagrangianAttributes_SetSeedPoint(self, args);
     else if(strcmp(name, "numSteps") == 0)
-        obj = LagrangianAttributes_SetNumSteps(self, tuple);
+        obj = LagrangianAttributes_SetNumSteps(self, args);
     else if(strcmp(name, "XAxisSample") == 0)
-        obj = LagrangianAttributes_SetXAxisSample(self, tuple);
+        obj = LagrangianAttributes_SetXAxisSample(self, args);
     else if(strcmp(name, "YAxisSample") == 0)
-        obj = LagrangianAttributes_SetYAxisSample(self, tuple);
+        obj = LagrangianAttributes_SetYAxisSample(self, args);
     else if(strcmp(name, "variable") == 0)
-        obj = LagrangianAttributes_SetVariable(self, tuple);
+        obj = LagrangianAttributes_SetVariable(self, args);
 
-    if(obj != NULL)
+    if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
-    Py_DECREF(tuple);
-    if( obj == NULL)
-        PyErr_Format(PyExc_RuntimeError, "Unable to set unknown attribute: '%s'", name);
+    if (obj == &NULL_PY_OBJ)
+    {
+        obj = NULL;
+        PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);
+    }
+    else if (obj == NULL && !PyErr_Occurred())
+        PyErr_Format(PyExc_RuntimeError, "unknown problem with '%s'", name);
+
     return (obj != NULL) ? 0 : -1;
 }
 
@@ -416,7 +587,7 @@ static int
 LagrangianAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     LagrangianAttributesObject *obj = (LagrangianAttributesObject *)v;
-    fprintf(fp, "%s", PyLagrangianAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyLagrangianAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -424,7 +595,7 @@ PyObject *
 LagrangianAttributes_str(PyObject *v)
 {
     LagrangianAttributesObject *obj = (LagrangianAttributesObject *)v;
-    return PyString_FromString(PyLagrangianAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyLagrangianAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -576,7 +747,7 @@ PyLagrangianAttributes_GetLogString()
 {
     std::string s("LagrangianAtts = LagrangianAttributes()\n");
     if(currentAtts != 0)
-        s += PyLagrangianAttributes_ToString(currentAtts, "LagrangianAtts.");
+        s += PyLagrangianAttributes_ToString(currentAtts, "LagrangianAtts.", true);
     return s;
 }
 
@@ -589,7 +760,7 @@ PyLagrangianAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("LagrangianAtts = LagrangianAttributes()\n");
-        s += PyLagrangianAttributes_ToString(currentAtts, "LagrangianAtts.");
+        s += PyLagrangianAttributes_ToString(currentAtts, "LagrangianAtts.", true);
         cb(s);
     }
 }

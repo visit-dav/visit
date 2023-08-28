@@ -5,7 +5,7 @@
 #include "Symbol.h"
 #include "Dictionary.h"
 #include "Rule.h"
-#include "Token.h"
+#include "VisItToken.h"
 using std::vector;
 using std::string;
 using std::map;

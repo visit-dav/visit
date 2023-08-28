@@ -39,7 +39,7 @@ struct AxisAttributesObject
 //
 static PyObject *NewAxisAttributes(int);
 std::string
-PyAxisAttributes_ToString(const AxisAttributes *atts, const char *prefix)
+PyAxisAttributes_ToString(const AxisAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -47,17 +47,17 @@ PyAxisAttributes_ToString(const AxisAttributes *atts, const char *prefix)
     { // new scope
         std::string objPrefix(prefix);
         objPrefix += "title.";
-        str += PyAxisTitles_ToString(&atts->GetTitle(), objPrefix.c_str());
+        str += PyAxisTitles_ToString(&atts->GetTitle(), objPrefix.c_str(), forLogging);
     }
     { // new scope
         std::string objPrefix(prefix);
         objPrefix += "label.";
-        str += PyAxisLabels_ToString(&atts->GetLabel(), objPrefix.c_str());
+        str += PyAxisLabels_ToString(&atts->GetLabel(), objPrefix.c_str(), forLogging);
     }
     { // new scope
         std::string objPrefix(prefix);
         objPrefix += "tickMarks.";
-        str += PyAxisTickMarks_ToString(&atts->GetTickMarks(), objPrefix.c_str());
+        str += PyAxisTickMarks_ToString(&atts->GetTickMarks(), objPrefix.c_str(), forLogging);
     }
     if(atts->GetGrid())
         snprintf(tmpStr, 1000, "%sgrid = 1\n", prefix);
@@ -85,10 +85,7 @@ AxisAttributes_SetTitle(PyObject *self, PyObject *args)
     if(!PyArg_ParseTuple(args, "O", &newValue))
         return NULL;
     if(!PyAxisTitles_Check(newValue))
-    {
-        fprintf(stderr, "The title field can only be set with AxisTitles objects.\n");
-        return NULL;
-    }
+        return PyErr_Format(PyExc_TypeError, "Field title can be set only with AxisTitles objects");
 
     obj->data->SetTitle(*PyAxisTitles_FromPyObject(newValue));
 
@@ -121,10 +118,7 @@ AxisAttributes_SetLabel(PyObject *self, PyObject *args)
     if(!PyArg_ParseTuple(args, "O", &newValue))
         return NULL;
     if(!PyAxisLabels_Check(newValue))
-    {
-        fprintf(stderr, "The label field can only be set with AxisLabels objects.\n");
-        return NULL;
-    }
+        return PyErr_Format(PyExc_TypeError, "Field label can be set only with AxisLabels objects");
 
     obj->data->SetLabel(*PyAxisLabels_FromPyObject(newValue));
 
@@ -157,10 +151,7 @@ AxisAttributes_SetTickMarks(PyObject *self, PyObject *args)
     if(!PyArg_ParseTuple(args, "O", &newValue))
         return NULL;
     if(!PyAxisTickMarks_Check(newValue))
-    {
-        fprintf(stderr, "The tickMarks field can only be set with AxisTickMarks objects.\n");
-        return NULL;
-    }
+        return PyErr_Format(PyExc_TypeError, "Field tickMarks can be set only with AxisTickMarks objects");
 
     obj->data->SetTickMarks(*PyAxisTickMarks_FromPyObject(newValue));
 
@@ -189,12 +180,48 @@ AxisAttributes_SetGrid(PyObject *self, PyObject *args)
 {
     AxisAttributesObject *obj = (AxisAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the grid in the object.
-    obj->data->SetGrid(ival != 0);
+    obj->data->SetGrid(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -250,34 +277,47 @@ PyAxisAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "grid") == 0)
         return AxisAttributes_GetGrid(self, NULL);
 
+
+    // Add a __dict__ answer so that dir() works
+    if (!strcmp(name, "__dict__"))
+    {
+        PyObject *result = PyDict_New();
+        for (int i = 0; PyAxisAttributes_methods[i].ml_meth; i++)
+            PyDict_SetItem(result,
+                PyString_FromString(PyAxisAttributes_methods[i].ml_name),
+                PyString_FromString(PyAxisAttributes_methods[i].ml_name));
+        return result;
+    }
+
     return Py_FindMethod(PyAxisAttributes_methods, self, name);
 }
 
 int
 PyAxisAttributes_setattr(PyObject *self, char *name, PyObject *args)
 {
-    // Create a tuple to contain the arguments since all of the Set
-    // functions expect a tuple.
-    PyObject *tuple = PyTuple_New(1);
-    PyTuple_SET_ITEM(tuple, 0, args);
-    Py_INCREF(args);
-    PyObject *obj = NULL;
+    PyObject NULL_PY_OBJ;
+    PyObject *obj = &NULL_PY_OBJ;
 
     if(strcmp(name, "title") == 0)
-        obj = AxisAttributes_SetTitle(self, tuple);
+        obj = AxisAttributes_SetTitle(self, args);
     else if(strcmp(name, "label") == 0)
-        obj = AxisAttributes_SetLabel(self, tuple);
+        obj = AxisAttributes_SetLabel(self, args);
     else if(strcmp(name, "tickMarks") == 0)
-        obj = AxisAttributes_SetTickMarks(self, tuple);
+        obj = AxisAttributes_SetTickMarks(self, args);
     else if(strcmp(name, "grid") == 0)
-        obj = AxisAttributes_SetGrid(self, tuple);
+        obj = AxisAttributes_SetGrid(self, args);
 
-    if(obj != NULL)
+    if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
-    Py_DECREF(tuple);
-    if( obj == NULL)
-        PyErr_Format(PyExc_RuntimeError, "Unable to set unknown attribute: '%s'", name);
+    if (obj == &NULL_PY_OBJ)
+    {
+        obj = NULL;
+        PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);
+    }
+    else if (obj == NULL && !PyErr_Occurred())
+        PyErr_Format(PyExc_RuntimeError, "unknown problem with '%s'", name);
+
     return (obj != NULL) ? 0 : -1;
 }
 
@@ -285,7 +325,7 @@ static int
 AxisAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     AxisAttributesObject *obj = (AxisAttributesObject *)v;
-    fprintf(fp, "%s", PyAxisAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyAxisAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -293,7 +333,7 @@ PyObject *
 AxisAttributes_str(PyObject *v)
 {
     AxisAttributesObject *obj = (AxisAttributesObject *)v;
-    return PyString_FromString(PyAxisAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyAxisAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -445,7 +485,7 @@ PyAxisAttributes_GetLogString()
 {
     std::string s("AxisAtts = AxisAttributes()\n");
     if(currentAtts != 0)
-        s += PyAxisAttributes_ToString(currentAtts, "AxisAtts.");
+        s += PyAxisAttributes_ToString(currentAtts, "AxisAtts.", true);
     return s;
 }
 
@@ -458,7 +498,7 @@ PyAxisAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("AxisAtts = AxisAttributes()\n");
-        s += PyAxisAttributes_ToString(currentAtts, "AxisAtts.");
+        s += PyAxisAttributes_ToString(currentAtts, "AxisAtts.", true);
         cb(s);
     }
 }

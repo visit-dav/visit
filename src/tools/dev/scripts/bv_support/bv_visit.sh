@@ -55,22 +55,22 @@ function bv_visit_ensure_built_or_ready
             info "GIT clone of visit ($GIT_ROOT_PATH) . . ."
             if [[ "$DO_REVISION" == "yes" && "$GITREVISION" != "" ]] ; then
                 # Get the specified revision.
-                git clone $GIT_ROOT_PATH
+                git clone --recursive $GIT_ROOT_PATH
                 cd visit
                 git checkout $GITREVISION
                 cd ..
             elif [[ "$TRUNK_BUILD" == "yes" ]] ; then
                 # Get the trunk version
-                git clone $GIT_ROOT_PATH
+                git clone --recursive $GIT_ROOT_PATH
             elif [[ "$RC_BUILD" == "yes" ]] ; then
                 # Get the RC version
-                git clone $GIT_ROOT_PATH
+                git clone --recursive $GIT_ROOT_PATH
                 cd visit
                 git checkout ${VISIT_VERSION:0:3}RC
                 cd ..
             elif [[ "$TAGGED_BUILD" == "yes" ]] ; then
                 # Get the tagged version
-                git clone $GIT_ROOT_PATH
+                git clone --recursive $GIT_ROOT_PATH
                 cd visit
                 git checkout v${VISIT_VERSION}
                 cd ..
@@ -102,13 +102,6 @@ function bv_visit_ensure_built_or_ready
                 return 1
             fi
         fi
-    fi
-}
-
-function bv_visit_dry_run
-{
-    if [[ "$DO_VISIT" == "yes" ]] ; then
-        echo "Dry run option not set for VisIt"
     fi
 }
 
@@ -352,12 +345,20 @@ function build_visit
         FEATURES="${FEATURES} -DCPACK_RPM_SPEC_MORE_DEFINE:STRING=\"%global_python_bytecompile_errors_terminate_build 0\""
     fi
 
-    issue_command "${CMAKE_BIN}" ${FEATURES} ../src
+    # Several platforms have had problems with the cmake configure command
+    # issued simply via "issue_command".  This was first discovered on
+    # BGQ and then showed up in random cases for both OSX and Linux machines.
+    # Brad resolved this on BGQ  with a simple work around - we write a simple
+    # script that we invoke with bash which calls cmake with all of the
+    # arguments. We are now using this strategy for all platforms.
+    #
 
-    if [[ $? != 0 ]] ; then
-        echo "VisIt configure failed.  Giving up"
-        return 1
+    if test -e bv_run_cmake.sh ; then
+        rm -f bv_run_cmake.sh
     fi
+    echo "\"${CMAKE_BIN}\"" ${FEATURES} ../src > bv_run_cmake.sh
+    cat bv_run_cmake.sh
+    issue_command bash bv_run_cmake.sh || error "VisIt configuration failed."
 
     #
     # Some platforms like to modify the generated Makefiles.
@@ -459,7 +460,7 @@ function bv_visit_build
         info "To install the above tar file in a directory called \"INSTALL_DIR_PATH\""
         info "enter: ./visit-install VERSION ARCH INSTALL_DIR_PATH"
         info
-        info "If you run into problems, contact visit-users@ornl.gov."
+        info "If you run into problems, contact us via https://visit-help.llnl.gov."
     else
         if [[ $ANY_ERRORS == "no" ]] ; then
             info "Finished!"

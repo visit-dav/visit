@@ -2,11 +2,12 @@ FROM ubuntu:bionic
 MAINTAINER Eric Brugger <brugger1@llnl.gov>
 
 # fetch build env
+ENV DEBIAN_FRONTEND=noninteractive
+ENV TZ=America/Los_Angeles
 RUN apt-get update && apt-get install -y \
     git \
     wget \
     curl \
-    p7zip \
     unzip \
     subversion \
     build-essential \
@@ -56,7 +57,7 @@ WORKDIR /home/visit
 # Create the third-party directory
 RUN mkdir third-party
 # Copy build_visit and the script to run it
-COPY build_visit3_2_0 /home/visit
+COPY build_visit3_3_3 /home/visit
 COPY run_build_visit.sh /home/visit
 COPY build_visit_docker_cleanup.py /home/visit
 COPY build_test_visit.sh /home/visit

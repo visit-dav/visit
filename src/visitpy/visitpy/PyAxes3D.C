@@ -39,7 +39,7 @@ struct Axes3DObject
 //
 static PyObject *NewAxes3D(int);
 std::string
-PyAxes3D_ToString(const Axes3D *atts, const char *prefix)
+PyAxes3D_ToString(const Axes3D *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -120,17 +120,17 @@ PyAxes3D_ToString(const Axes3D *atts, const char *prefix)
     { // new scope
         std::string objPrefix(prefix);
         objPrefix += "xAxis.";
-        str += PyAxisAttributes_ToString(&atts->GetXAxis(), objPrefix.c_str());
+        str += PyAxisAttributes_ToString(&atts->GetXAxis(), objPrefix.c_str(), forLogging);
     }
     { // new scope
         std::string objPrefix(prefix);
         objPrefix += "yAxis.";
-        str += PyAxisAttributes_ToString(&atts->GetYAxis(), objPrefix.c_str());
+        str += PyAxisAttributes_ToString(&atts->GetYAxis(), objPrefix.c_str(), forLogging);
     }
     { // new scope
         std::string objPrefix(prefix);
         objPrefix += "zAxis.";
-        str += PyAxisAttributes_ToString(&atts->GetZAxis(), objPrefix.c_str());
+        str += PyAxisAttributes_ToString(&atts->GetZAxis(), objPrefix.c_str(), forLogging);
     }
     if(atts->GetSetBBoxLocation())
         snprintf(tmpStr, 1000, "%ssetBBoxLocation = 1\n", prefix);
@@ -205,12 +205,48 @@ Axes3D_SetVisible(PyObject *self, PyObject *args)
 {
     Axes3DObject *obj = (Axes3DObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the visible in the object.
-    obj->data->SetVisible(ival != 0);
+    obj->data->SetVisible(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -229,12 +265,48 @@ Axes3D_SetAutoSetTicks(PyObject *self, PyObject *args)
 {
     Axes3DObject *obj = (Axes3DObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the autoSetTicks in the object.
-    obj->data->SetAutoSetTicks(ival != 0);
+    obj->data->SetAutoSetTicks(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -253,12 +325,48 @@ Axes3D_SetAutoSetScaling(PyObject *self, PyObject *args)
 {
     Axes3DObject *obj = (Axes3DObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the autoSetScaling in the object.
-    obj->data->SetAutoSetScaling(ival != 0);
+    obj->data->SetAutoSetScaling(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -277,12 +385,48 @@ Axes3D_SetLineWidth(PyObject *self, PyObject *args)
 {
     Axes3DObject *obj = (Axes3DObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the lineWidth in the object.
-    obj->data->SetLineWidth(ival);
+    obj->data->SetLineWidth(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -301,21 +445,55 @@ Axes3D_SetTickLocation(PyObject *self, PyObject *args)
 {
     Axes3DObject *obj = (Axes3DObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 3)
+    {
+        std::stringstream ss;
+        ss << "An invalid tickLocation value was given." << std::endl;
+        ss << "Valid values are in the range [0,2]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << " Inside";
+        ss << ", Outside";
+        ss << ", Both";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the tickLocation in the object.
-    if(ival >= 0 && ival < 3)
-        obj->data->SetTickLocation(Axes3D::Location(ival));
-    else
-    {
-        fprintf(stderr, "An invalid tickLocation value was given. "
-                        "Valid values are in the range of [0,2]. "
-                        "You can also use the following names: "
-                        "Inside, Outside, Both.");
-        return NULL;
-    }
+    obj->data->SetTickLocation(Axes3D::Location(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -334,22 +512,57 @@ Axes3D_SetAxesType(PyObject *self, PyObject *args)
 {
     Axes3DObject *obj = (Axes3DObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 5)
+    {
+        std::stringstream ss;
+        ss << "An invalid axesType value was given." << std::endl;
+        ss << "Valid values are in the range [0,4]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << " ClosestTriad";
+        ss << ", FurthestTriad";
+        ss << ", OutsideEdges";
+        ss << ", StaticTriad";
+        ss << ", StaticEdges";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the axesType in the object.
-    if(ival >= 0 && ival < 5)
-        obj->data->SetAxesType(Axes3D::Axes(ival));
-    else
-    {
-        fprintf(stderr, "An invalid axesType value was given. "
-                        "Valid values are in the range of [0,4]. "
-                        "You can also use the following names: "
-                        "ClosestTriad, FurthestTriad, OutsideEdges, StaticTriad, StaticEdges"
-                        ".");
-        return NULL;
-    }
+    obj->data->SetAxesType(Axes3D::Axes(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -368,12 +581,48 @@ Axes3D_SetTriadFlag(PyObject *self, PyObject *args)
 {
     Axes3DObject *obj = (Axes3DObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the triadFlag in the object.
-    obj->data->SetTriadFlag(ival != 0);
+    obj->data->SetTriadFlag(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -392,12 +641,48 @@ Axes3D_SetBboxFlag(PyObject *self, PyObject *args)
 {
     Axes3DObject *obj = (Axes3DObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the bboxFlag in the object.
-    obj->data->SetBboxFlag(ival != 0);
+    obj->data->SetBboxFlag(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -420,10 +705,7 @@ Axes3D_SetXAxis(PyObject *self, PyObject *args)
     if(!PyArg_ParseTuple(args, "O", &newValue))
         return NULL;
     if(!PyAxisAttributes_Check(newValue))
-    {
-        fprintf(stderr, "The xAxis field can only be set with AxisAttributes objects.\n");
-        return NULL;
-    }
+        return PyErr_Format(PyExc_TypeError, "Field xAxis can be set only with AxisAttributes objects");
 
     obj->data->SetXAxis(*PyAxisAttributes_FromPyObject(newValue));
 
@@ -456,10 +738,7 @@ Axes3D_SetYAxis(PyObject *self, PyObject *args)
     if(!PyArg_ParseTuple(args, "O", &newValue))
         return NULL;
     if(!PyAxisAttributes_Check(newValue))
-    {
-        fprintf(stderr, "The yAxis field can only be set with AxisAttributes objects.\n");
-        return NULL;
-    }
+        return PyErr_Format(PyExc_TypeError, "Field yAxis can be set only with AxisAttributes objects");
 
     obj->data->SetYAxis(*PyAxisAttributes_FromPyObject(newValue));
 
@@ -492,10 +771,7 @@ Axes3D_SetZAxis(PyObject *self, PyObject *args)
     if(!PyArg_ParseTuple(args, "O", &newValue))
         return NULL;
     if(!PyAxisAttributes_Check(newValue))
-    {
-        fprintf(stderr, "The zAxis field can only be set with AxisAttributes objects.\n");
-        return NULL;
-    }
+        return PyErr_Format(PyExc_TypeError, "Field zAxis can be set only with AxisAttributes objects");
 
     obj->data->SetZAxis(*PyAxisAttributes_FromPyObject(newValue));
 
@@ -524,12 +800,48 @@ Axes3D_SetSetBBoxLocation(PyObject *self, PyObject *args)
 {
     Axes3DObject *obj = (Axes3DObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the setBBoxLocation in the object.
-    obj->data->SetSetBBoxLocation(ival != 0);
+    obj->data->SetSetBBoxLocation(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -548,35 +860,60 @@ Axes3D_SetBboxLocation(PyObject *self, PyObject *args)
 {
     Axes3DObject *obj = (Axes3DObject *)self;
 
-    double *dvals = obj->data->GetBboxLocation();
-    if(!PyArg_ParseTuple(args, "dddddd", &dvals[0], &dvals[1], &dvals[2], &dvals[3], &dvals[4], &dvals[5]))
+    PyObject *packaged_args = 0;
+    double *vals = obj->data->GetBboxLocation();
+
+    if (!PySequence_Check(args) || PyUnicode_Check(args))
+        return PyErr_Format(PyExc_TypeError, "Expecting a sequence of numeric args");
+
+    // break open args seq. if we think it matches this API's needs
+    if (PySequence_Size(args) == 1)
     {
-        PyObject     *tuple;
-        if(!PyArg_ParseTuple(args, "O", &tuple))
-            return NULL;
-
-        if(PyTuple_Check(tuple))
-        {
-            if(PyTuple_Size(tuple) != 6)
-                return NULL;
-
-            PyErr_Clear();
-            for(int i = 0; i < PyTuple_Size(tuple); ++i)
-            {
-                PyObject *item = PyTuple_GET_ITEM(tuple, i);
-                if(PyFloat_Check(item))
-                    dvals[i] = PyFloat_AS_DOUBLE(item);
-                else if(PyInt_Check(item))
-                    dvals[i] = double(PyInt_AS_LONG(item));
-                else if(PyLong_Check(item))
-                    dvals[i] = PyLong_AsDouble(item);
-                else
-                    dvals[i] = 0.;
-            }
-        }
-        else
-            return NULL;
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PySequence_Check(packaged_args) && !PyUnicode_Check(packaged_args) &&
+            PySequence_Size(packaged_args) == 6)
+            args = packaged_args;
     }
+
+    if (PySequence_Size(args) != 6)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "Expecting 6 numeric args");
+    }
+
+    for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)
+    {
+        PyObject *item = PySequence_GetItem(args, i);
+
+        if (!PyNumber_Check(item))
+        {
+            Py_DECREF(item);
+            Py_XDECREF(packaged_args);
+            return PyErr_Format(PyExc_TypeError, "arg %d is not a number type", (int) i);
+        }
+
+        double val = PyFloat_AsDouble(item);
+        double cval = double(val);
+
+        if (val == -1 && PyErr_Occurred())
+        {
+            Py_XDECREF(packaged_args);
+            Py_DECREF(item);
+            PyErr_Clear();
+            return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ double", (int) i);
+        }
+        if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+        {
+            Py_XDECREF(packaged_args);
+            Py_DECREF(item);
+            return PyErr_Format(PyExc_ValueError, "arg %d not interpretable as C++ double", (int) i);
+        }
+        Py_DECREF(item);
+
+        vals[i] = cval;
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Mark the bboxLocation in the object as modified.
     obj->data->SelectBboxLocation();
@@ -602,35 +939,60 @@ Axes3D_SetTriadColor(PyObject *self, PyObject *args)
 {
     Axes3DObject *obj = (Axes3DObject *)self;
 
-    int *ivals = obj->data->GetTriadColor();
-    if(!PyArg_ParseTuple(args, "iii", &ivals[0], &ivals[1], &ivals[2]))
+    PyObject *packaged_args = 0;
+    int *vals = obj->data->GetTriadColor();
+
+    if (!PySequence_Check(args) || PyUnicode_Check(args))
+        return PyErr_Format(PyExc_TypeError, "Expecting a sequence of numeric args");
+
+    // break open args seq. if we think it matches this API's needs
+    if (PySequence_Size(args) == 1)
     {
-        PyObject     *tuple;
-        if(!PyArg_ParseTuple(args, "O", &tuple))
-            return NULL;
-
-        if(PyTuple_Check(tuple))
-        {
-            if(PyTuple_Size(tuple) != 3)
-                return NULL;
-
-            PyErr_Clear();
-            for(int i = 0; i < PyTuple_Size(tuple); ++i)
-            {
-                PyObject *item = PyTuple_GET_ITEM(tuple, i);
-                if(PyFloat_Check(item))
-                    ivals[i] = int(PyFloat_AS_DOUBLE(item));
-                else if(PyInt_Check(item))
-                    ivals[i] = int(PyInt_AS_LONG(item));
-                else if(PyLong_Check(item))
-                    ivals[i] = int(PyLong_AsDouble(item));
-                else
-                    ivals[i] = 0;
-            }
-        }
-        else
-            return NULL;
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PySequence_Check(packaged_args) && !PyUnicode_Check(packaged_args) &&
+            PySequence_Size(packaged_args) == 3)
+            args = packaged_args;
     }
+
+    if (PySequence_Size(args) != 3)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "Expecting 3 numeric args");
+    }
+
+    for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)
+    {
+        PyObject *item = PySequence_GetItem(args, i);
+
+        if (!PyNumber_Check(item))
+        {
+            Py_DECREF(item);
+            Py_XDECREF(packaged_args);
+            return PyErr_Format(PyExc_TypeError, "arg %d is not a number type", (int) i);
+        }
+
+        long val = PyLong_AsLong(item);
+        int cval = int(val);
+
+        if (val == -1 && PyErr_Occurred())
+        {
+            Py_XDECREF(packaged_args);
+            Py_DECREF(item);
+            PyErr_Clear();
+            return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ int", (int) i);
+        }
+        if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+        {
+            Py_XDECREF(packaged_args);
+            Py_DECREF(item);
+            return PyErr_Format(PyExc_ValueError, "arg %d not interpretable as C++ int", (int) i);
+        }
+        Py_DECREF(item);
+
+        vals[i] = cval;
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Mark the triadColor in the object as modified.
     obj->data->SelectTriadColor();
@@ -656,12 +1018,48 @@ Axes3D_SetTriadLineWidth(PyObject *self, PyObject *args)
 {
     Axes3DObject *obj = (Axes3DObject *)self;
 
-    float fval;
-    if(!PyArg_ParseTuple(args, "f", &fval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    float cval = float(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ float");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ float");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the triadLineWidth in the object.
-    obj->data->SetTriadLineWidth(fval);
+    obj->data->SetTriadLineWidth(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -680,12 +1078,48 @@ Axes3D_SetTriadFont(PyObject *self, PyObject *args)
 {
     Axes3DObject *obj = (Axes3DObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the triadFont in the object.
-    obj->data->SetTriadFont((int)ival);
+    obj->data->SetTriadFont(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -704,12 +1138,48 @@ Axes3D_SetTriadBold(PyObject *self, PyObject *args)
 {
     Axes3DObject *obj = (Axes3DObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the triadBold in the object.
-    obj->data->SetTriadBold(ival != 0);
+    obj->data->SetTriadBold(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -728,12 +1198,48 @@ Axes3D_SetTriadItalic(PyObject *self, PyObject *args)
 {
     Axes3DObject *obj = (Axes3DObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the triadItalic in the object.
-    obj->data->SetTriadItalic(ival != 0);
+    obj->data->SetTriadItalic(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -752,12 +1258,48 @@ Axes3D_SetTriadSetManually(PyObject *self, PyObject *args)
 {
     Axes3DObject *obj = (Axes3DObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the triadSetManually in the object.
-    obj->data->SetTriadSetManually(ival != 0);
+    obj->data->SetTriadSetManually(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -891,64 +1433,77 @@ PyAxes3D_getattr(PyObject *self, char *name)
     if(strcmp(name, "triadSetManually") == 0)
         return Axes3D_GetTriadSetManually(self, NULL);
 
+
+    // Add a __dict__ answer so that dir() works
+    if (!strcmp(name, "__dict__"))
+    {
+        PyObject *result = PyDict_New();
+        for (int i = 0; PyAxes3D_methods[i].ml_meth; i++)
+            PyDict_SetItem(result,
+                PyString_FromString(PyAxes3D_methods[i].ml_name),
+                PyString_FromString(PyAxes3D_methods[i].ml_name));
+        return result;
+    }
+
     return Py_FindMethod(PyAxes3D_methods, self, name);
 }
 
 int
 PyAxes3D_setattr(PyObject *self, char *name, PyObject *args)
 {
-    // Create a tuple to contain the arguments since all of the Set
-    // functions expect a tuple.
-    PyObject *tuple = PyTuple_New(1);
-    PyTuple_SET_ITEM(tuple, 0, args);
-    Py_INCREF(args);
-    PyObject *obj = NULL;
+    PyObject NULL_PY_OBJ;
+    PyObject *obj = &NULL_PY_OBJ;
 
     if(strcmp(name, "visible") == 0)
-        obj = Axes3D_SetVisible(self, tuple);
+        obj = Axes3D_SetVisible(self, args);
     else if(strcmp(name, "autoSetTicks") == 0)
-        obj = Axes3D_SetAutoSetTicks(self, tuple);
+        obj = Axes3D_SetAutoSetTicks(self, args);
     else if(strcmp(name, "autoSetScaling") == 0)
-        obj = Axes3D_SetAutoSetScaling(self, tuple);
+        obj = Axes3D_SetAutoSetScaling(self, args);
     else if(strcmp(name, "lineWidth") == 0)
-        obj = Axes3D_SetLineWidth(self, tuple);
+        obj = Axes3D_SetLineWidth(self, args);
     else if(strcmp(name, "tickLocation") == 0)
-        obj = Axes3D_SetTickLocation(self, tuple);
+        obj = Axes3D_SetTickLocation(self, args);
     else if(strcmp(name, "axesType") == 0)
-        obj = Axes3D_SetAxesType(self, tuple);
+        obj = Axes3D_SetAxesType(self, args);
     else if(strcmp(name, "triadFlag") == 0)
-        obj = Axes3D_SetTriadFlag(self, tuple);
+        obj = Axes3D_SetTriadFlag(self, args);
     else if(strcmp(name, "bboxFlag") == 0)
-        obj = Axes3D_SetBboxFlag(self, tuple);
+        obj = Axes3D_SetBboxFlag(self, args);
     else if(strcmp(name, "xAxis") == 0)
-        obj = Axes3D_SetXAxis(self, tuple);
+        obj = Axes3D_SetXAxis(self, args);
     else if(strcmp(name, "yAxis") == 0)
-        obj = Axes3D_SetYAxis(self, tuple);
+        obj = Axes3D_SetYAxis(self, args);
     else if(strcmp(name, "zAxis") == 0)
-        obj = Axes3D_SetZAxis(self, tuple);
+        obj = Axes3D_SetZAxis(self, args);
     else if(strcmp(name, "setBBoxLocation") == 0)
-        obj = Axes3D_SetSetBBoxLocation(self, tuple);
+        obj = Axes3D_SetSetBBoxLocation(self, args);
     else if(strcmp(name, "bboxLocation") == 0)
-        obj = Axes3D_SetBboxLocation(self, tuple);
+        obj = Axes3D_SetBboxLocation(self, args);
     else if(strcmp(name, "triadColor") == 0)
-        obj = Axes3D_SetTriadColor(self, tuple);
+        obj = Axes3D_SetTriadColor(self, args);
     else if(strcmp(name, "triadLineWidth") == 0)
-        obj = Axes3D_SetTriadLineWidth(self, tuple);
+        obj = Axes3D_SetTriadLineWidth(self, args);
     else if(strcmp(name, "triadFont") == 0)
-        obj = Axes3D_SetTriadFont(self, tuple);
+        obj = Axes3D_SetTriadFont(self, args);
     else if(strcmp(name, "triadBold") == 0)
-        obj = Axes3D_SetTriadBold(self, tuple);
+        obj = Axes3D_SetTriadBold(self, args);
     else if(strcmp(name, "triadItalic") == 0)
-        obj = Axes3D_SetTriadItalic(self, tuple);
+        obj = Axes3D_SetTriadItalic(self, args);
     else if(strcmp(name, "triadSetManually") == 0)
-        obj = Axes3D_SetTriadSetManually(self, tuple);
+        obj = Axes3D_SetTriadSetManually(self, args);
 
-    if(obj != NULL)
+    if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
-    Py_DECREF(tuple);
-    if( obj == NULL)
-        PyErr_Format(PyExc_RuntimeError, "Unable to set unknown attribute: '%s'", name);
+    if (obj == &NULL_PY_OBJ)
+    {
+        obj = NULL;
+        PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);
+    }
+    else if (obj == NULL && !PyErr_Occurred())
+        PyErr_Format(PyExc_RuntimeError, "unknown problem with '%s'", name);
+
     return (obj != NULL) ? 0 : -1;
 }
 
@@ -956,7 +1511,7 @@ static int
 Axes3D_print(PyObject *v, FILE *fp, int flags)
 {
     Axes3DObject *obj = (Axes3DObject *)v;
-    fprintf(fp, "%s", PyAxes3D_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyAxes3D_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -964,7 +1519,7 @@ PyObject *
 Axes3D_str(PyObject *v)
 {
     Axes3DObject *obj = (Axes3DObject *)v;
-    return PyString_FromString(PyAxes3D_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyAxes3D_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -1116,7 +1671,7 @@ PyAxes3D_GetLogString()
 {
     std::string s("Axes3D = Axes3D()\n");
     if(currentAtts != 0)
-        s += PyAxes3D_ToString(currentAtts, "Axes3D.");
+        s += PyAxes3D_ToString(currentAtts, "Axes3D.", true);
     return s;
 }
 
@@ -1129,7 +1684,7 @@ PyAxes3D_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("Axes3D = Axes3D()\n");
-        s += PyAxes3D_ToString(currentAtts, "Axes3D.");
+        s += PyAxes3D_ToString(currentAtts, "Axes3D.", true);
         cb(s);
     }
 }

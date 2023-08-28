@@ -48,10 +48,6 @@
         but you can customize the process with the -x-args and -display
         parameters, which respect %l and %n formatters.
 
-        See the VisIt wiki for more information:
-
-          http://visitusers.org/index.php?title=Parallel_Hardware_Acceleration
-
     ---------------------------------------------------------------------------
         -hw-accel              Tells VisIt that it should use graphics cards.
         -n-gpus-per-node <int> Number of GPUs per node of the cluster (1).
@@ -373,6 +369,9 @@
                              >>> OpenGUI('-debug-malloc', 'MallocDebug', 'gui')
                              Connect to the gui with MallocDebug and do your
                              sampling.
+        -nsys <args> <comp>
+                             Run Nsight Systems cli with <args> on component <comp>.
+                             Default <args> are: profile --stats=true --gpu-metrics-device=all
         -numrestarts <#>     Number of attempts to restart a failed engine.
         -quiet               Don't print the Running message.
         -protocol            Print the definitions of the state objects that

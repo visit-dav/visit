@@ -265,7 +265,7 @@ def SetupBoundary():
             BoundaryAtts.boundaryType = BoundaryAtts.Material  # Domain, Group, Material, Unknown
             SetPlotOptions(BoundaryAtts)
     else:
-        print "Error: File contains no EB information."
+        print("Error: File contains no EB information.")
 
 def GetActivePlots():
     apl = []

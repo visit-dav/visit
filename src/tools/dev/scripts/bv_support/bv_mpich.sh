@@ -75,13 +75,6 @@ function bv_mpich_ensure
     fi
 }
 
-function bv_mpich_dry_run
-{
-    if [[ "$DO_MPICH" == "yes" ]] ; then
-        echo "Dry run option not set for mpich."
-    fi
-}
-
 # *************************************************************************** #
 #                            Function 8, build_mpich
 #
@@ -135,6 +128,7 @@ function build_mpich
         mpich_opts="${mpich_opts} --enable-fortran=all"	
     fi
 
+    set -x
     issue_command env CXX="$CXX_COMPILER" \
                   CC="$C_COMPILER" \
                   CFLAGS="$MPICH_CFLAGS $MPICH_C_OPT_FLAGS" \
@@ -142,7 +136,7 @@ function build_mpich
                   FFLAGS="$MPICH_FCFLAGS"\
                   ./configure ${mpich_opts} \
                   --prefix="$VISITDIR/mpich/$MPICH_VERSION/$VISITARCH"
-
+    set +x
     if [[ $? != 0 ]] ; then
         warn "MPICH configure failed.  Giving up"
         return 1

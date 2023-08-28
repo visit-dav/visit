@@ -22,7 +22,7 @@ PyObject *     PyScatterAttributes_Wrap(const ScatterAttributes *attr);
 void           PyScatterAttributes_SetParent(PyObject *obj, PyObject *parent);
 void           PyScatterAttributes_SetDefaults(const ScatterAttributes *atts);
 std::string    PyScatterAttributes_GetLogString();
-std::string    PyScatterAttributes_ToString(const ScatterAttributes *, const char *);
+std::string    PyScatterAttributes_ToString(const ScatterAttributes *, const char *, const bool=false);
 PyObject *     PyScatterAttributes_getattr(PyObject *self, char *name);
 int            PyScatterAttributes_setattr(PyObject *self, char *name, PyObject *args);
 extern PyMethodDef PyScatterAttributes_methods[SCATTERATTRIBUTES_NMETH];

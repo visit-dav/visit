@@ -36,7 +36,7 @@ struct TessellateAttributesObject
 //
 static PyObject *NewTessellateAttributes(int);
 std::string
-PyTessellateAttributes_ToString(const TessellateAttributes *atts, const char *prefix)
+PyTessellateAttributes_ToString(const TessellateAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -67,12 +67,48 @@ TessellateAttributes_SetChordError(PyObject *self, PyObject *args)
 {
     TessellateAttributesObject *obj = (TessellateAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the chordError in the object.
-    obj->data->SetChordError(dval);
+    obj->data->SetChordError(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -91,12 +127,48 @@ TessellateAttributes_SetFieldCriterion(PyObject *self, PyObject *args)
 {
     TessellateAttributesObject *obj = (TessellateAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the fieldCriterion in the object.
-    obj->data->SetFieldCriterion(dval);
+    obj->data->SetFieldCriterion(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -115,12 +187,48 @@ TessellateAttributes_SetMergePoints(PyObject *self, PyObject *args)
 {
     TessellateAttributesObject *obj = (TessellateAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the mergePoints in the object.
-    obj->data->SetMergePoints(ival != 0);
+    obj->data->SetMergePoints(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -172,32 +280,45 @@ PyTessellateAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "mergePoints") == 0)
         return TessellateAttributes_GetMergePoints(self, NULL);
 
+
+    // Add a __dict__ answer so that dir() works
+    if (!strcmp(name, "__dict__"))
+    {
+        PyObject *result = PyDict_New();
+        for (int i = 0; PyTessellateAttributes_methods[i].ml_meth; i++)
+            PyDict_SetItem(result,
+                PyString_FromString(PyTessellateAttributes_methods[i].ml_name),
+                PyString_FromString(PyTessellateAttributes_methods[i].ml_name));
+        return result;
+    }
+
     return Py_FindMethod(PyTessellateAttributes_methods, self, name);
 }
 
 int
 PyTessellateAttributes_setattr(PyObject *self, char *name, PyObject *args)
 {
-    // Create a tuple to contain the arguments since all of the Set
-    // functions expect a tuple.
-    PyObject *tuple = PyTuple_New(1);
-    PyTuple_SET_ITEM(tuple, 0, args);
-    Py_INCREF(args);
-    PyObject *obj = NULL;
+    PyObject NULL_PY_OBJ;
+    PyObject *obj = &NULL_PY_OBJ;
 
     if(strcmp(name, "chordError") == 0)
-        obj = TessellateAttributes_SetChordError(self, tuple);
+        obj = TessellateAttributes_SetChordError(self, args);
     else if(strcmp(name, "fieldCriterion") == 0)
-        obj = TessellateAttributes_SetFieldCriterion(self, tuple);
+        obj = TessellateAttributes_SetFieldCriterion(self, args);
     else if(strcmp(name, "mergePoints") == 0)
-        obj = TessellateAttributes_SetMergePoints(self, tuple);
+        obj = TessellateAttributes_SetMergePoints(self, args);
 
-    if(obj != NULL)
+    if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
-    Py_DECREF(tuple);
-    if( obj == NULL)
-        PyErr_Format(PyExc_RuntimeError, "Unable to set unknown attribute: '%s'", name);
+    if (obj == &NULL_PY_OBJ)
+    {
+        obj = NULL;
+        PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);
+    }
+    else if (obj == NULL && !PyErr_Occurred())
+        PyErr_Format(PyExc_RuntimeError, "unknown problem with '%s'", name);
+
     return (obj != NULL) ? 0 : -1;
 }
 
@@ -205,7 +326,7 @@ static int
 TessellateAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     TessellateAttributesObject *obj = (TessellateAttributesObject *)v;
-    fprintf(fp, "%s", PyTessellateAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyTessellateAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -213,7 +334,7 @@ PyObject *
 TessellateAttributes_str(PyObject *v)
 {
     TessellateAttributesObject *obj = (TessellateAttributesObject *)v;
-    return PyString_FromString(PyTessellateAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyTessellateAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -365,7 +486,7 @@ PyTessellateAttributes_GetLogString()
 {
     std::string s("TessellateAtts = TessellateAttributes()\n");
     if(currentAtts != 0)
-        s += PyTessellateAttributes_ToString(currentAtts, "TessellateAtts.");
+        s += PyTessellateAttributes_ToString(currentAtts, "TessellateAtts.", true);
     return s;
 }
 
@@ -378,7 +499,7 @@ PyTessellateAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("TessellateAtts = TessellateAttributes()\n");
-        s += PyTessellateAttributes_ToString(currentAtts, "TessellateAtts.");
+        s += PyTessellateAttributes_ToString(currentAtts, "TessellateAtts.", true);
         cb(s);
     }
 }

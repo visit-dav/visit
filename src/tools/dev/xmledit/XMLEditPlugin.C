@@ -68,6 +68,9 @@
 //    Kathleen Biagas, Thu Jan  2 10:05:15 MST 2020
 //    Added hasLicense.
 //
+//    Kathleen Biagas, Tue Apr 18 16:34:41 PDT 2023
+//    Support Qt6: buttonClicked -> idClicked.
+//
 // ****************************************************************************
 
 XMLEditPlugin::XMLEditPlugin(QWidget *p)
@@ -97,7 +100,7 @@ XMLEditPlugin::XMLEditPlugin(QWidget *p)
     topLayout->addWidget(pluginGroup, row, 0, 1 , 4);
     ++row;
     QVBoxLayout *innerPluginLayout = new QVBoxLayout(pluginGroup);
-    innerPluginLayout->setMargin(10);
+    innerPluginLayout->setContentsMargins(10,10,10,10);
 
     QGridLayout *pluginLayout = new QGridLayout;
     pluginLayout->setSpacing(5);
@@ -145,7 +148,7 @@ XMLEditPlugin::XMLEditPlugin(QWidget *p)
     topLayout->addWidget(plotPluginGroup, row, 0, 1, 4);
     ++row;
     QVBoxLayout *innerPlotPluginLayout = new QVBoxLayout(plotPluginGroup);
-    innerPlotPluginLayout->setMargin(10);
+    innerPlotPluginLayout->setContentsMargins(10,10,10,10);
     QGridLayout *plotPluginLayout = new QGridLayout;
     plotPluginLayout->setSpacing(5);
     int plRow = 0;
@@ -192,7 +195,7 @@ XMLEditPlugin::XMLEditPlugin(QWidget *p)
     topLayout->addWidget(operatorPluginGroup, row, 0, 1, 4);
     ++row;
     QVBoxLayout *innerOperatorPluginLayout = new QVBoxLayout(operatorPluginGroup);
-    innerOperatorPluginLayout->setMargin(10);
+    innerOperatorPluginLayout->setContentsMargins(10,10,10,10);
     QGridLayout *operatorPluginLayout = new QGridLayout;
     operatorPluginLayout->setSpacing(5);
     int opRow = 0;
@@ -275,7 +278,7 @@ XMLEditPlugin::XMLEditPlugin(QWidget *p)
     topLayout->addWidget(dbPluginGroup, row, 0, 1, 4);
     ++row;
     QVBoxLayout *innerdbPluginLayout = new QVBoxLayout(dbPluginGroup);
-    innerdbPluginLayout->setMargin(10);
+    innerdbPluginLayout->setContentsMargins(10,10,10,10);
     QGridLayout *dbPluginLayout = new QGridLayout;
     dbPluginLayout->setSpacing(5);
     int dbRow = 0;
@@ -328,8 +331,13 @@ XMLEditPlugin::XMLEditPlugin(QWidget *p)
 
     xmldoc = NULL;
 
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(attpluginGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(attpluginGroupChanged(int)));
+#else
+    connect(attpluginGroup, SIGNAL(idClicked(int)),
+            this, SLOT(attpluginGroupChanged(int)));
+#endif
     connect(name, SIGNAL(textChanged(const QString &)),
             this,  SLOT(nameTextChanged(const QString &)));
     connect(label, SIGNAL(textChanged(const QString &)),

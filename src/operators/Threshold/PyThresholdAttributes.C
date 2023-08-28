@@ -36,11 +36,11 @@ struct ThresholdAttributesObject
 //
 static PyObject *NewThresholdAttributes(int);
 std::string
-PyThresholdAttributes_ToString(const ThresholdAttributes *atts, const char *prefix)
+PyThresholdAttributes_ToString(const ThresholdAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
 
-    str = PyThresholdOpAttributes_ToString(atts, prefix);
+    str = PyThresholdOpAttributes_ToString(atts, prefix, forLogging);
 
     return str;
 }
@@ -108,6 +108,17 @@ PyThresholdAttributes_getattr(PyObject *self, char *name)
 
     PyThresholdAttributes_ExtendSetGetMethodTable();
 
+    // Add a __dict__ answer so that dir() works
+    if (!strcmp(name, "__dict__"))
+    {
+        PyObject *result = PyDict_New();
+        for (int i = 0; PyThresholdAttributes_methods[i].ml_meth; i++)
+            PyDict_SetItem(result,
+                PyString_FromString(PyThresholdAttributes_methods[i].ml_name),
+                PyString_FromString(PyThresholdAttributes_methods[i].ml_name));
+        return result;
+    }
+
     return Py_FindMethod(PyThresholdAttributes_methods, self, name);
 }
 
@@ -119,20 +130,21 @@ PyThresholdAttributes_setattr(PyObject *self, char *name, PyObject *args)
     else
         PyErr_Clear();
 
-    // Create a tuple to contain the arguments since all of the Set
-    // functions expect a tuple.
-    PyObject *tuple = PyTuple_New(1);
-    PyTuple_SET_ITEM(tuple, 0, args);
-    Py_INCREF(args);
-    PyObject *obj = NULL;
+    PyObject NULL_PY_OBJ;
+    PyObject *obj = &NULL_PY_OBJ;
 
 
-    if(obj != NULL)
+    if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
-    Py_DECREF(tuple);
-    if( obj == NULL)
-        PyErr_Format(PyExc_RuntimeError, "Unable to set unknown attribute: '%s'", name);
+    if (obj == &NULL_PY_OBJ)
+    {
+        obj = NULL;
+        PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);
+    }
+    else if (obj == NULL && !PyErr_Occurred())
+        PyErr_Format(PyExc_RuntimeError, "unknown problem with '%s'", name);
+
     return (obj != NULL) ? 0 : -1;
 }
 
@@ -140,7 +152,7 @@ static int
 ThresholdAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     ThresholdAttributesObject *obj = (ThresholdAttributesObject *)v;
-    fprintf(fp, "%s", PyThresholdAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyThresholdAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -148,7 +160,7 @@ PyObject *
 ThresholdAttributes_str(PyObject *v)
 {
     ThresholdAttributesObject *obj = (ThresholdAttributesObject *)v;
-    return PyString_FromString(PyThresholdAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyThresholdAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -300,7 +312,7 @@ PyThresholdAttributes_GetLogString()
 {
     std::string s("ThresholdAtts = ThresholdAttributes()\n");
     if(currentAtts != 0)
-        s += PyThresholdAttributes_ToString(currentAtts, "ThresholdAtts.");
+        s += PyThresholdAttributes_ToString(currentAtts, "ThresholdAtts.", true);
     return s;
 }
 
@@ -313,7 +325,7 @@ PyThresholdAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("ThresholdAtts = ThresholdAttributes()\n");
-        s += PyThresholdAttributes_ToString(currentAtts, "ThresholdAtts.");
+        s += PyThresholdAttributes_ToString(currentAtts, "ThresholdAtts.", true);
         cb(s);
     }
 }

@@ -44,7 +44,8 @@
         0
         255
       </Field>
-      <Field name="multiColor" label="multiColor" type="att" subtype="ColorAttributeList">
+      <Field name="contourMethod" label="contourMethod" type="enum" subtype="Select_by">
+        Level
       </Field>
       <Field name="contourNLevels" label="contourNLevels" type="int">
         10
@@ -53,8 +54,7 @@
       </Field>
       <Field name="contourPercent" label="contourPercent" type="doubleVector">
       </Field>
-      <Field name="contourMethod" label="contourMethod" type="enum" subtype="Select_by">
-        Level
+      <Field name="multiColor" label="multiColor" type="att" subtype="ColorAttributeList">
       </Field>
       <Field name="minFlag" label="minFlag" type="bool">
         false
@@ -94,8 +94,6 @@
       </Function>
       <Function name="SetValue2" user="true" member="true">
       </Function>
-      <Function name="ProcessOldVersions" user="true" member="true">
-      </Function>
       <Function name="ContourViewerEnginePluginInfo::InitializeGlobalObjects" user="false" member="true">
       </Function>
       <Function name="ContourViewerEnginePluginInfo::InitializePlotAtts" user="false" member="true">
@@ -106,6 +104,9 @@
       </Constant>
       <Include file="source" quoted="false">
         ColorControlPoint.h
+      </Include>
+      <Include file="source" quoted="false" target="xml2python">
+        visit-config.h
       </Include>
     </Attribute>
   </Plugin>

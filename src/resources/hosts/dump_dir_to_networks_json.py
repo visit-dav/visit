@@ -16,3 +16,5 @@ for x in sorted(os.listdir(".")):
           
 with open('networks.json', 'w') as f:
     json.dump(h, f, indent=2)
+    f.write('\n')
+

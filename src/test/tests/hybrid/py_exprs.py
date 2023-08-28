@@ -84,7 +84,22 @@ DrawPlots()
 Test("py_exprs_04")
 DeleteAllPlots()
 
+CloseDatabase(silo_data_path("multi_rect2d.silo"))
 
+OpenDatabase(silo_data_path("curv2d.silo"))
 
+script_file = pjoin(os.path.split(TestScriptPath())[0],"python_example_1.vpe")
+DefinePythonExpression("MyExpression", ['d', 'p'], file=script_file)
+AddPlot("Pseudocolor", "MyExpression")
+DrawPlots()
+Test("py_exprs_05")
+DeleteAllPlots()
+
+script_file = pjoin(os.path.split(TestScriptPath())[0],"python_example_2.vpe")
+DefinePythonExpression("MyExpression", ("d"), file=script_file)
+AddPlot("Pseudocolor", "MyExpression")
+DrawPlots()
+Test("py_exprs_06")
+DeleteAllPlots()
 
 Exit()

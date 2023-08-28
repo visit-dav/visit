@@ -53,27 +53,31 @@ public:
 
     // Property selection methods
     virtual void SelectAll();
-    void SelectNames();
+    void SelectColorTableNames();
+    void SelectColorTableActiveFlags();
     void SelectColorTables();
-    void SelectActiveContinuous();
-    void SelectActiveDiscrete();
+    void SelectDefaultContinuous();
+    void SelectDefaultDiscrete();
 
     // Property setting methods
-    void SetNames(const stringVector &names_);
-    void SetActiveContinuous(const std::string &activeContinuous_);
-    void SetActiveDiscrete(const std::string &activeDiscrete_);
-    void SetGroupingFlag(bool groupingFlag_);
+    void SetColorTableNames(const stringVector &colorTableNames_);
+    void SetColorTableActiveFlags(const intVector &colorTableActiveFlags_);
+    void SetDefaultContinuous(const std::string &defaultContinuous_);
+    void SetDefaultDiscrete(const std::string &defaultDiscrete_);
+    void SetChangesMade(bool changesMade_);
 
     // Property getting methods
-    const stringVector &GetNames() const;
-          stringVector &GetNames();
+    const stringVector &GetColorTableNames() const;
+          stringVector &GetColorTableNames();
+    const intVector    &GetColorTableActiveFlags() const;
+          intVector    &GetColorTableActiveFlags();
     const AttributeGroupVector &GetColorTables() const;
           AttributeGroupVector &GetColorTables();
-    const std::string  &GetActiveContinuous() const;
-          std::string  &GetActiveContinuous();
-    const std::string  &GetActiveDiscrete() const;
-          std::string  &GetActiveDiscrete();
-    bool               GetGroupingFlag() const;
+    const std::string  &GetDefaultContinuous() const;
+          std::string  &GetDefaultContinuous();
+    const std::string  &GetDefaultDiscrete() const;
+          std::string  &GetDefaultDiscrete();
+    bool               GetChangesMade() const;
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -105,30 +109,35 @@ public:
     void AddColorTable(const std::string &name, const ColorControlPointList &cpts);
     void RemoveColorTable(const std::string &name);
     void RemoveColorTable(int index);
+    void SetColorTableActiveFlag(int index, bool val);
+    bool GetColorTableActiveFlag(int index);
+    virtual void ProcessOldVersions(DataNode *parentNode, const char *configVersion);
 
     // IDs that can be used to identify fields in case statements
     enum {
-        ID_names = 0,
+        ID_colorTableNames = 0,
+        ID_colorTableActiveFlags,
         ID_colorTables,
-        ID_activeContinuous,
-        ID_activeDiscrete,
-        ID_groupingFlag,
+        ID_defaultContinuous,
+        ID_defaultDiscrete,
+        ID_changesMade,
         ID__LAST
     };
 
 protected:
     AttributeGroup *CreateSubAttributeGroup(int index);
 private:
-    stringVector         names;
+    stringVector         colorTableNames;
+    intVector            colorTableActiveFlags;
     AttributeGroupVector colorTables;
-    std::string          activeContinuous;
-    std::string          activeDiscrete;
-    bool                 groupingFlag;
+    std::string          defaultContinuous;
+    std::string          defaultDiscrete;
+    bool                 changesMade;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define COLORTABLEATTRIBUTES_TMFS "s*a*ssb"
+#define COLORTABLEATTRIBUTES_TMFS "s*i*a*ssb"
 
 #endif

@@ -12,7 +12,7 @@
 #    Retrieve the correct path on Windows.
 #
 # ----------------------------------------------------------------------------
-import os, sys
+import sys
 
 if sys.platform.startswith("win"):
     tapp = visit_bin_path("MRUCache_test.exe")

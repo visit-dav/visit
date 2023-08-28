@@ -7,6 +7,12 @@
 //
 // Programmer: Jeremy Meredith
 // Date:       August 11, 2003
+//
+// Modifications:
+//   Kathleen Biagas, June 2, 2023
+//   Changed 'upateGL' calls to simple 'update'.  The 'updateGL' method isn't
+//   available in Qt6, and 'update' seems to do the job.
+//
 // ----------------------------------------------------------------------------
 
 #include "Viewer.h"
@@ -15,8 +21,10 @@
 
 #include <QEvent>
 
+
+
 Viewer::Viewer(QWidget *parent)
-    : QGLWidget(parent)
+    : QOpenGLWidget(parent)
 {
     mousedown = false;
     M.CreateIdentity();
@@ -146,7 +154,7 @@ Viewer::mousePressEvent(QMouseEvent *mev)
     lastx = mev->x();
     lasty = mev->y();
     mousedown = true;
-    updateGL();
+    update();
 }
 
 void
@@ -192,7 +200,7 @@ Viewer::mouseMoveEvent(QMouseEvent *mev)
             up   = MM^up;
             V.CreateView(from,at,up);
         }
-        else if (mev->buttons() == Qt::MidButton)
+        else if (mev->buttons() == Qt::MiddleButton)
         {
             Vector view_dir((at-from).normalized());
             at   += view_dir*(y2-y1)*ds_size;
@@ -212,14 +220,14 @@ Viewer::mouseMoveEvent(QMouseEvent *mev)
     lastx = x;
     lasty = y;
 
-    updateGL();
+    update();
 }
 
 void
 Viewer::mouseReleaseEvent(QMouseEvent *mev)
 {
     mousedown = false;
-    updateGL();
+    update();
 }
 
 

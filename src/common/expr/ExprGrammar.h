@@ -6,7 +6,7 @@
 #define EXPRGRAMMAR_H
 #include <expr_exports.h>
 
-#include "Grammar.h"
+#include "VisItGrammar.h"
 
 // ****************************************************************************
 //  Class:  ExprGrammar

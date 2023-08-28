@@ -192,7 +192,6 @@ StatisticalTrends
 Subscripting
 SubsetPlot
 Subsetting
-Supress
 SurfaceNormal
 TACC
 TensorPlot
@@ -574,7 +573,6 @@ viswin
 vlogs
 vses
 vtk
-vtkh
 vtkm
 whitespace
 windowsbuild

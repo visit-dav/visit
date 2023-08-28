@@ -36,7 +36,7 @@ struct ExtractPointFunction2DAttributesObject
 //
 static PyObject *NewExtractPointFunction2DAttributes(int);
 std::string
-PyExtractPointFunction2DAttributes_ToString(const ExtractPointFunction2DAttributes *atts, const char *prefix)
+PyExtractPointFunction2DAttributes_ToString(const ExtractPointFunction2DAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -90,45 +90,58 @@ ExtractPointFunction2DAttributes_SetI(PyObject *self, PyObject *args)
 {
     ExtractPointFunction2DAttributesObject *obj = (ExtractPointFunction2DAttributesObject *)self;
 
-    intVector  &vec = obj->data->GetI();
-    PyObject   *tuple;
-    if(!PyArg_ParseTuple(args, "O", &tuple))
-        return NULL;
+    intVector vec;
 
-    if(PyTuple_Check(tuple))
+    if (PyNumber_Check(args))
     {
-        vec.resize(PyTuple_Size(tuple));
-        for(int i = 0; i < PyTuple_Size(tuple); ++i)
+        long val = PyLong_AsLong(args);
+        int cval = int(val);
+        if (val == -1 && PyErr_Occurred())
         {
-            PyObject *item = PyTuple_GET_ITEM(tuple, i);
-            if(PyFloat_Check(item))
-                vec[i] = int(PyFloat_AS_DOUBLE(item));
-            else if(PyInt_Check(item))
-                vec[i] = int(PyInt_AS_LONG(item));
-            else if(PyLong_Check(item))
-                vec[i] = int(PyLong_AsLong(item));
-            else
-                vec[i] = 0;
+            PyErr_Clear();
+            return PyErr_Format(PyExc_TypeError, "number not interpretable as C++ int");
+        }
+        if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+            return PyErr_Format(PyExc_ValueError, "number not interpretable as C++ int");
+        vec.resize(1);
+        vec[0] = cval;
+    }
+    else if (PySequence_Check(args) && !PyUnicode_Check(args))
+    {
+        vec.resize(PySequence_Size(args));
+        for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)
+        {
+            PyObject *item = PySequence_GetItem(args, i);
+
+            if (!PyNumber_Check(item))
+            {
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_TypeError, "arg %d is not a number type", (int) i);
+            }
+
+            long val = PyLong_AsLong(item);
+            int cval = int(val);
+
+            if (val == -1 && PyErr_Occurred())
+            {
+                Py_DECREF(item);
+                PyErr_Clear();
+                return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ int", (int) i);
+            }
+            if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+            {
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_ValueError, "arg %d not interpretable as C++ int", (int) i);
+            }
+            Py_DECREF(item);
+
+            vec[i] = cval;
         }
     }
-    else if(PyFloat_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = int(PyFloat_AS_DOUBLE(tuple));
-    }
-    else if(PyInt_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = int(PyInt_AS_LONG(tuple));
-    }
-    else if(PyLong_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = int(PyLong_AsLong(tuple));
-    }
     else
-        return NULL;
+        return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more ints");
 
+    obj->data->GetI() = vec;
     // Mark the I in the object as modified.
     obj->data->SelectI();
 
@@ -153,45 +166,58 @@ ExtractPointFunction2DAttributes_SetJ(PyObject *self, PyObject *args)
 {
     ExtractPointFunction2DAttributesObject *obj = (ExtractPointFunction2DAttributesObject *)self;
 
-    intVector  &vec = obj->data->GetJ();
-    PyObject   *tuple;
-    if(!PyArg_ParseTuple(args, "O", &tuple))
-        return NULL;
+    intVector vec;
 
-    if(PyTuple_Check(tuple))
+    if (PyNumber_Check(args))
     {
-        vec.resize(PyTuple_Size(tuple));
-        for(int i = 0; i < PyTuple_Size(tuple); ++i)
+        long val = PyLong_AsLong(args);
+        int cval = int(val);
+        if (val == -1 && PyErr_Occurred())
         {
-            PyObject *item = PyTuple_GET_ITEM(tuple, i);
-            if(PyFloat_Check(item))
-                vec[i] = int(PyFloat_AS_DOUBLE(item));
-            else if(PyInt_Check(item))
-                vec[i] = int(PyInt_AS_LONG(item));
-            else if(PyLong_Check(item))
-                vec[i] = int(PyLong_AsLong(item));
-            else
-                vec[i] = 0;
+            PyErr_Clear();
+            return PyErr_Format(PyExc_TypeError, "number not interpretable as C++ int");
+        }
+        if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+            return PyErr_Format(PyExc_ValueError, "number not interpretable as C++ int");
+        vec.resize(1);
+        vec[0] = cval;
+    }
+    else if (PySequence_Check(args) && !PyUnicode_Check(args))
+    {
+        vec.resize(PySequence_Size(args));
+        for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)
+        {
+            PyObject *item = PySequence_GetItem(args, i);
+
+            if (!PyNumber_Check(item))
+            {
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_TypeError, "arg %d is not a number type", (int) i);
+            }
+
+            long val = PyLong_AsLong(item);
+            int cval = int(val);
+
+            if (val == -1 && PyErr_Occurred())
+            {
+                Py_DECREF(item);
+                PyErr_Clear();
+                return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ int", (int) i);
+            }
+            if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+            {
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_ValueError, "arg %d not interpretable as C++ int", (int) i);
+            }
+            Py_DECREF(item);
+
+            vec[i] = cval;
         }
     }
-    else if(PyFloat_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = int(PyFloat_AS_DOUBLE(tuple));
-    }
-    else if(PyInt_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = int(PyInt_AS_LONG(tuple));
-    }
-    else if(PyLong_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = int(PyLong_AsLong(tuple));
-    }
     else
-        return NULL;
+        return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more ints");
 
+    obj->data->GetJ() = vec;
     // Mark the J in the object as modified.
     obj->data->SelectJ();
 
@@ -245,30 +271,43 @@ PyExtractPointFunction2DAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "J") == 0)
         return ExtractPointFunction2DAttributes_GetJ(self, NULL);
 
+
+    // Add a __dict__ answer so that dir() works
+    if (!strcmp(name, "__dict__"))
+    {
+        PyObject *result = PyDict_New();
+        for (int i = 0; PyExtractPointFunction2DAttributes_methods[i].ml_meth; i++)
+            PyDict_SetItem(result,
+                PyString_FromString(PyExtractPointFunction2DAttributes_methods[i].ml_name),
+                PyString_FromString(PyExtractPointFunction2DAttributes_methods[i].ml_name));
+        return result;
+    }
+
     return Py_FindMethod(PyExtractPointFunction2DAttributes_methods, self, name);
 }
 
 int
 PyExtractPointFunction2DAttributes_setattr(PyObject *self, char *name, PyObject *args)
 {
-    // Create a tuple to contain the arguments since all of the Set
-    // functions expect a tuple.
-    PyObject *tuple = PyTuple_New(1);
-    PyTuple_SET_ITEM(tuple, 0, args);
-    Py_INCREF(args);
-    PyObject *obj = NULL;
+    PyObject NULL_PY_OBJ;
+    PyObject *obj = &NULL_PY_OBJ;
 
     if(strcmp(name, "I") == 0)
-        obj = ExtractPointFunction2DAttributes_SetI(self, tuple);
+        obj = ExtractPointFunction2DAttributes_SetI(self, args);
     else if(strcmp(name, "J") == 0)
-        obj = ExtractPointFunction2DAttributes_SetJ(self, tuple);
+        obj = ExtractPointFunction2DAttributes_SetJ(self, args);
 
-    if(obj != NULL)
+    if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
-    Py_DECREF(tuple);
-    if( obj == NULL)
-        PyErr_Format(PyExc_RuntimeError, "Unable to set unknown attribute: '%s'", name);
+    if (obj == &NULL_PY_OBJ)
+    {
+        obj = NULL;
+        PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);
+    }
+    else if (obj == NULL && !PyErr_Occurred())
+        PyErr_Format(PyExc_RuntimeError, "unknown problem with '%s'", name);
+
     return (obj != NULL) ? 0 : -1;
 }
 
@@ -276,7 +315,7 @@ static int
 ExtractPointFunction2DAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     ExtractPointFunction2DAttributesObject *obj = (ExtractPointFunction2DAttributesObject *)v;
-    fprintf(fp, "%s", PyExtractPointFunction2DAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyExtractPointFunction2DAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -284,7 +323,7 @@ PyObject *
 ExtractPointFunction2DAttributes_str(PyObject *v)
 {
     ExtractPointFunction2DAttributesObject *obj = (ExtractPointFunction2DAttributesObject *)v;
-    return PyString_FromString(PyExtractPointFunction2DAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyExtractPointFunction2DAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -436,7 +475,7 @@ PyExtractPointFunction2DAttributes_GetLogString()
 {
     std::string s("ExtractPointFunction2DAtts = ExtractPointFunction2DAttributes()\n");
     if(currentAtts != 0)
-        s += PyExtractPointFunction2DAttributes_ToString(currentAtts, "ExtractPointFunction2DAtts.");
+        s += PyExtractPointFunction2DAttributes_ToString(currentAtts, "ExtractPointFunction2DAtts.", true);
     return s;
 }
 
@@ -449,7 +488,7 @@ PyExtractPointFunction2DAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("ExtractPointFunction2DAtts = ExtractPointFunction2DAttributes()\n");
-        s += PyExtractPointFunction2DAttributes_ToString(currentAtts, "ExtractPointFunction2DAtts.");
+        s += PyExtractPointFunction2DAttributes_ToString(currentAtts, "ExtractPointFunction2DAtts.", true);
         cb(s);
     }
 }

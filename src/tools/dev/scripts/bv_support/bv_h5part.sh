@@ -75,13 +75,6 @@ function bv_h5part_ensure
     fi
 }
 
-function bv_h5part_dry_run
-{
-    if [[ "$DO_H5PART" == "yes" ]] ; then
-        echo "Dry run option not set for h5part."
-    fi
-}
-
 function apply_h5part_1_6_6_patch
 {
     info "Patching H5Part"
@@ -554,18 +547,23 @@ function build_h5part
     fi
 
     EXTRAARGS=""
-    # detect coral systems, which older versions of autoconf don't detect
+    # detect coral and NVIDIA Grace CPU (ARM) systems, which older versions of 
+    # autoconf don't detect
     if [[ "$(uname -m)" == "ppc64le" ]] ; then
          EXTRAARGS="ac_cv_build=powerpc64le-unknown-linux-gnu"
+    elif [[ "$(uname -m)" == "aarch64" ]] ; then
+         EXTRAARGS="ac_cv_build=aarch64-unknown-linux-gnu"
     fi
 
     info "Invoking command to configure H5Part"
     # In order to ensure $FORTRANARGS is expanded to build the arguments to
     # configure, we wrap the invokation in 'sh -c "..."' syntax
+    set -x
     sh -c "./configure ${WITHHDF5ARG} ${OPTIONAL} CXX=\"$CXX_COMPILER\" \
        CC=\"$C_COMPILER\" CFLAGS=\"$CFLAGS $C_OPT_FLAGS\" CXXFLAGS=\"$CXXFLAGS $CXX_OPT_FLAGS\" \
        $FORTRANARGS $EXTRAARGS \
        --prefix=\"$VISITDIR/h5part/$H5PART_VERSION/$VISITARCH\""
+    set +x
     if [[ $? != 0 ]] ; then
         warn "H5Part configure failed.  Giving up"
         return 1

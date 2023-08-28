@@ -36,7 +36,7 @@ struct SurfCompPrepAttributesObject
 //
 static PyObject *NewSurfCompPrepAttributes(int);
 std::string
-PySurfCompPrepAttributes_ToString(const SurfCompPrepAttributes *atts, const char *prefix)
+PySurfCompPrepAttributes_ToString(const SurfCompPrepAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -132,21 +132,55 @@ SurfCompPrepAttributes_SetSurfaceType(PyObject *self, PyObject *args)
 {
     SurfCompPrepAttributesObject *obj = (SurfCompPrepAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 3)
+    {
+        std::stringstream ss;
+        ss << "An invalid surfaceType value was given." << std::endl;
+        ss << "Valid values are in the range [0,2]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << " Closest";
+        ss << ", Farthest";
+        ss << ", Average";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the surfaceType in the object.
-    if(ival >= 0 && ival < 3)
-        obj->data->SetSurfaceType(SurfCompPrepAttributes::SurfaceType(ival));
-    else
-    {
-        fprintf(stderr, "An invalid surfaceType value was given. "
-                        "Valid values are in the range of [0,2]. "
-                        "You can also use the following names: "
-                        "Closest, Farthest, Average.");
-        return NULL;
-    }
+    obj->data->SetSurfaceType(SurfCompPrepAttributes::SurfaceType(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -165,21 +199,55 @@ SurfCompPrepAttributes_SetCoordSystem(PyObject *self, PyObject *args)
 {
     SurfCompPrepAttributesObject *obj = (SurfCompPrepAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 3)
+    {
+        std::stringstream ss;
+        ss << "An invalid coordSystem value was given." << std::endl;
+        ss << "Valid values are in the range [0,2]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << " Cartesian";
+        ss << ", Cylindrical";
+        ss << ", Spherical";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the coordSystem in the object.
-    if(ival >= 0 && ival < 3)
-        obj->data->SetCoordSystem(SurfCompPrepAttributes::CoordinateSystem(ival));
-    else
-    {
-        fprintf(stderr, "An invalid coordSystem value was given. "
-                        "Valid values are in the range of [0,2]. "
-                        "You can also use the following names: "
-                        "Cartesian, Cylindrical, Spherical.");
-        return NULL;
-    }
+    obj->data->SetCoordSystem(SurfCompPrepAttributes::CoordinateSystem(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -198,12 +266,48 @@ SurfCompPrepAttributes_SetThetaStart(PyObject *self, PyObject *args)
 {
     SurfCompPrepAttributesObject *obj = (SurfCompPrepAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the thetaStart in the object.
-    obj->data->SetThetaStart(dval);
+    obj->data->SetThetaStart(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -222,12 +326,48 @@ SurfCompPrepAttributes_SetThetaStop(PyObject *self, PyObject *args)
 {
     SurfCompPrepAttributesObject *obj = (SurfCompPrepAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the thetaStop in the object.
-    obj->data->SetThetaStop(dval);
+    obj->data->SetThetaStop(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -246,12 +386,48 @@ SurfCompPrepAttributes_SetThetaSteps(PyObject *self, PyObject *args)
 {
     SurfCompPrepAttributesObject *obj = (SurfCompPrepAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the thetaSteps in the object.
-    obj->data->SetThetaSteps((int)ival);
+    obj->data->SetThetaSteps(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -270,12 +446,48 @@ SurfCompPrepAttributes_SetPhiStart(PyObject *self, PyObject *args)
 {
     SurfCompPrepAttributesObject *obj = (SurfCompPrepAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the phiStart in the object.
-    obj->data->SetPhiStart(dval);
+    obj->data->SetPhiStart(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -294,12 +506,48 @@ SurfCompPrepAttributes_SetPhiStop(PyObject *self, PyObject *args)
 {
     SurfCompPrepAttributesObject *obj = (SurfCompPrepAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the phiStop in the object.
-    obj->data->SetPhiStop(dval);
+    obj->data->SetPhiStop(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -318,12 +566,48 @@ SurfCompPrepAttributes_SetPhiSteps(PyObject *self, PyObject *args)
 {
     SurfCompPrepAttributesObject *obj = (SurfCompPrepAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the phiSteps in the object.
-    obj->data->SetPhiSteps((int)ival);
+    obj->data->SetPhiSteps(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -342,12 +626,48 @@ SurfCompPrepAttributes_SetStartRadius(PyObject *self, PyObject *args)
 {
     SurfCompPrepAttributesObject *obj = (SurfCompPrepAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the startRadius in the object.
-    obj->data->SetStartRadius(dval);
+    obj->data->SetStartRadius(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -366,12 +686,48 @@ SurfCompPrepAttributes_SetEndRadius(PyObject *self, PyObject *args)
 {
     SurfCompPrepAttributesObject *obj = (SurfCompPrepAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the endRadius in the object.
-    obj->data->SetEndRadius(dval);
+    obj->data->SetEndRadius(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -390,12 +746,48 @@ SurfCompPrepAttributes_SetRadiusSteps(PyObject *self, PyObject *args)
 {
     SurfCompPrepAttributesObject *obj = (SurfCompPrepAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the radiusSteps in the object.
-    obj->data->SetRadiusSteps((int)ival);
+    obj->data->SetRadiusSteps(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -414,12 +806,48 @@ SurfCompPrepAttributes_SetXStart(PyObject *self, PyObject *args)
 {
     SurfCompPrepAttributesObject *obj = (SurfCompPrepAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the xStart in the object.
-    obj->data->SetXStart(dval);
+    obj->data->SetXStart(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -438,12 +866,48 @@ SurfCompPrepAttributes_SetXStop(PyObject *self, PyObject *args)
 {
     SurfCompPrepAttributesObject *obj = (SurfCompPrepAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the xStop in the object.
-    obj->data->SetXStop(dval);
+    obj->data->SetXStop(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -462,12 +926,48 @@ SurfCompPrepAttributes_SetXSteps(PyObject *self, PyObject *args)
 {
     SurfCompPrepAttributesObject *obj = (SurfCompPrepAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the xSteps in the object.
-    obj->data->SetXSteps((int)ival);
+    obj->data->SetXSteps(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -486,12 +986,48 @@ SurfCompPrepAttributes_SetYStart(PyObject *self, PyObject *args)
 {
     SurfCompPrepAttributesObject *obj = (SurfCompPrepAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the yStart in the object.
-    obj->data->SetYStart(dval);
+    obj->data->SetYStart(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -510,12 +1046,48 @@ SurfCompPrepAttributes_SetYStop(PyObject *self, PyObject *args)
 {
     SurfCompPrepAttributesObject *obj = (SurfCompPrepAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the yStop in the object.
-    obj->data->SetYStop(dval);
+    obj->data->SetYStop(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -534,12 +1106,48 @@ SurfCompPrepAttributes_SetYSteps(PyObject *self, PyObject *args)
 {
     SurfCompPrepAttributesObject *obj = (SurfCompPrepAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the ySteps in the object.
-    obj->data->SetYSteps((int)ival);
+    obj->data->SetYSteps(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -558,12 +1166,48 @@ SurfCompPrepAttributes_SetZStart(PyObject *self, PyObject *args)
 {
     SurfCompPrepAttributesObject *obj = (SurfCompPrepAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the zStart in the object.
-    obj->data->SetZStart(dval);
+    obj->data->SetZStart(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -582,12 +1226,48 @@ SurfCompPrepAttributes_SetZStop(PyObject *self, PyObject *args)
 {
     SurfCompPrepAttributesObject *obj = (SurfCompPrepAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the zStop in the object.
-    obj->data->SetZStop(dval);
+    obj->data->SetZStop(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -606,12 +1286,48 @@ SurfCompPrepAttributes_SetZSteps(PyObject *self, PyObject *args)
 {
     SurfCompPrepAttributesObject *obj = (SurfCompPrepAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the zSteps in the object.
-    obj->data->SetZSteps((int)ival);
+    obj->data->SetZSteps(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -745,66 +1461,79 @@ PySurfCompPrepAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "zSteps") == 0)
         return SurfCompPrepAttributes_GetZSteps(self, NULL);
 
+
+    // Add a __dict__ answer so that dir() works
+    if (!strcmp(name, "__dict__"))
+    {
+        PyObject *result = PyDict_New();
+        for (int i = 0; PySurfCompPrepAttributes_methods[i].ml_meth; i++)
+            PyDict_SetItem(result,
+                PyString_FromString(PySurfCompPrepAttributes_methods[i].ml_name),
+                PyString_FromString(PySurfCompPrepAttributes_methods[i].ml_name));
+        return result;
+    }
+
     return Py_FindMethod(PySurfCompPrepAttributes_methods, self, name);
 }
 
 int
 PySurfCompPrepAttributes_setattr(PyObject *self, char *name, PyObject *args)
 {
-    // Create a tuple to contain the arguments since all of the Set
-    // functions expect a tuple.
-    PyObject *tuple = PyTuple_New(1);
-    PyTuple_SET_ITEM(tuple, 0, args);
-    Py_INCREF(args);
-    PyObject *obj = NULL;
+    PyObject NULL_PY_OBJ;
+    PyObject *obj = &NULL_PY_OBJ;
 
     if(strcmp(name, "surfaceType") == 0)
-        obj = SurfCompPrepAttributes_SetSurfaceType(self, tuple);
+        obj = SurfCompPrepAttributes_SetSurfaceType(self, args);
     else if(strcmp(name, "coordSystem") == 0)
-        obj = SurfCompPrepAttributes_SetCoordSystem(self, tuple);
+        obj = SurfCompPrepAttributes_SetCoordSystem(self, args);
     else if(strcmp(name, "thetaStart") == 0)
-        obj = SurfCompPrepAttributes_SetThetaStart(self, tuple);
+        obj = SurfCompPrepAttributes_SetThetaStart(self, args);
     else if(strcmp(name, "thetaStop") == 0)
-        obj = SurfCompPrepAttributes_SetThetaStop(self, tuple);
+        obj = SurfCompPrepAttributes_SetThetaStop(self, args);
     else if(strcmp(name, "thetaSteps") == 0)
-        obj = SurfCompPrepAttributes_SetThetaSteps(self, tuple);
+        obj = SurfCompPrepAttributes_SetThetaSteps(self, args);
     else if(strcmp(name, "phiStart") == 0)
-        obj = SurfCompPrepAttributes_SetPhiStart(self, tuple);
+        obj = SurfCompPrepAttributes_SetPhiStart(self, args);
     else if(strcmp(name, "phiStop") == 0)
-        obj = SurfCompPrepAttributes_SetPhiStop(self, tuple);
+        obj = SurfCompPrepAttributes_SetPhiStop(self, args);
     else if(strcmp(name, "phiSteps") == 0)
-        obj = SurfCompPrepAttributes_SetPhiSteps(self, tuple);
+        obj = SurfCompPrepAttributes_SetPhiSteps(self, args);
     else if(strcmp(name, "startRadius") == 0)
-        obj = SurfCompPrepAttributes_SetStartRadius(self, tuple);
+        obj = SurfCompPrepAttributes_SetStartRadius(self, args);
     else if(strcmp(name, "endRadius") == 0)
-        obj = SurfCompPrepAttributes_SetEndRadius(self, tuple);
+        obj = SurfCompPrepAttributes_SetEndRadius(self, args);
     else if(strcmp(name, "radiusSteps") == 0)
-        obj = SurfCompPrepAttributes_SetRadiusSteps(self, tuple);
+        obj = SurfCompPrepAttributes_SetRadiusSteps(self, args);
     else if(strcmp(name, "xStart") == 0)
-        obj = SurfCompPrepAttributes_SetXStart(self, tuple);
+        obj = SurfCompPrepAttributes_SetXStart(self, args);
     else if(strcmp(name, "xStop") == 0)
-        obj = SurfCompPrepAttributes_SetXStop(self, tuple);
+        obj = SurfCompPrepAttributes_SetXStop(self, args);
     else if(strcmp(name, "xSteps") == 0)
-        obj = SurfCompPrepAttributes_SetXSteps(self, tuple);
+        obj = SurfCompPrepAttributes_SetXSteps(self, args);
     else if(strcmp(name, "yStart") == 0)
-        obj = SurfCompPrepAttributes_SetYStart(self, tuple);
+        obj = SurfCompPrepAttributes_SetYStart(self, args);
     else if(strcmp(name, "yStop") == 0)
-        obj = SurfCompPrepAttributes_SetYStop(self, tuple);
+        obj = SurfCompPrepAttributes_SetYStop(self, args);
     else if(strcmp(name, "ySteps") == 0)
-        obj = SurfCompPrepAttributes_SetYSteps(self, tuple);
+        obj = SurfCompPrepAttributes_SetYSteps(self, args);
     else if(strcmp(name, "zStart") == 0)
-        obj = SurfCompPrepAttributes_SetZStart(self, tuple);
+        obj = SurfCompPrepAttributes_SetZStart(self, args);
     else if(strcmp(name, "zStop") == 0)
-        obj = SurfCompPrepAttributes_SetZStop(self, tuple);
+        obj = SurfCompPrepAttributes_SetZStop(self, args);
     else if(strcmp(name, "zSteps") == 0)
-        obj = SurfCompPrepAttributes_SetZSteps(self, tuple);
+        obj = SurfCompPrepAttributes_SetZSteps(self, args);
 
-    if(obj != NULL)
+    if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
-    Py_DECREF(tuple);
-    if( obj == NULL)
-        PyErr_Format(PyExc_RuntimeError, "Unable to set unknown attribute: '%s'", name);
+    if (obj == &NULL_PY_OBJ)
+    {
+        obj = NULL;
+        PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);
+    }
+    else if (obj == NULL && !PyErr_Occurred())
+        PyErr_Format(PyExc_RuntimeError, "unknown problem with '%s'", name);
+
     return (obj != NULL) ? 0 : -1;
 }
 
@@ -812,7 +1541,7 @@ static int
 SurfCompPrepAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     SurfCompPrepAttributesObject *obj = (SurfCompPrepAttributesObject *)v;
-    fprintf(fp, "%s", PySurfCompPrepAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PySurfCompPrepAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -820,7 +1549,7 @@ PyObject *
 SurfCompPrepAttributes_str(PyObject *v)
 {
     SurfCompPrepAttributesObject *obj = (SurfCompPrepAttributesObject *)v;
-    return PyString_FromString(PySurfCompPrepAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PySurfCompPrepAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -972,7 +1701,7 @@ PySurfCompPrepAttributes_GetLogString()
 {
     std::string s("SurfCompPrepAtts = SurfCompPrepAttributes()\n");
     if(currentAtts != 0)
-        s += PySurfCompPrepAttributes_ToString(currentAtts, "SurfCompPrepAtts.");
+        s += PySurfCompPrepAttributes_ToString(currentAtts, "SurfCompPrepAtts.", true);
     return s;
 }
 
@@ -985,7 +1714,7 @@ PySurfCompPrepAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("SurfCompPrepAtts = SurfCompPrepAttributes()\n");
-        s += PySurfCompPrepAttributes_ToString(currentAtts, "SurfCompPrepAtts.");
+        s += PySurfCompPrepAttributes_ToString(currentAtts, "SurfCompPrepAtts.", true);
         cb(s);
     }
 }

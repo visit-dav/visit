@@ -25,6 +25,9 @@
 //    Kathleen Biagas, Mon Dec 22 10:12:05 PST 2014
 //    Added UpdateRemoveDuplicateNodes.
 //
+//    Kathleen Biagas, Fri Apr 23 2021
+//    ExportDatabases has new signature with return atts.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerEngineManager : public ViewerEngineManagerInterface
@@ -189,8 +192,9 @@ public:
 
     virtual bool ExportDatabases(const EngineKey &ek,
                                  const intVector &ids,
-                                 const ExportDBAttributes &expAtts, 
-                                 const std::string &timeSuffix);
+                                 const ExportDBAttributes *expAtts,
+                                 const std::string &timeSuffix,
+                                 ExportDBAttributes &retAtts);
 
     virtual bool ConstructDataBinning(const EngineKey &ek, int id);
 

@@ -67,8 +67,8 @@ private:
   float    step[2];
   dtype    dataType;
 
-  vtkStimulateReader(const vtkStimulateReader&);  // Not implemented.
-  void operator=(const vtkStimulateReader&);  // Not implemented.
+  vtkStimulateReader(const vtkStimulateReader&) = delete;
+  void operator=(const vtkStimulateReader&) = delete;
 
   bool GetFilenames(const char *, char *spr_name, char *sdt_name);
   bool ReadSPRFile(const char *);

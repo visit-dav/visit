@@ -52,16 +52,36 @@ function testvercomp ()
 #
 # Way to get version digits from compiler output which is much less
 # sensitive to variations in how compiler vendors choose to output
-# this information. The tr filter replaces every space or dash with
-# a newline, turning each word of output into its own line. The
-# grep then looks for lines that have only digits and dots between
-# the beginning (^) and ending ($) of the line. The final grep takes
-# only lines that actually contain output, presumably the one and only
-# isolated version digit string.
+# this information...
+#   1. The $(...) runs all the intervening commands in a subshell.
+#   2. The $1 -v runs the compiler with -v command-line option which
+#      should print version information (along with potentially a
+#      lot of other stuff).
+#   3. The 2>&1 sends stderr to the same pipe as stdout so that all
+#      output produced is seen by the rest of the commands.
+#   4. The grep -i version matches only lines that have the word 
+#      'version' (case-insensitive) in them so only lines with that
+#      word in them go on to the next step. So far, all compilers
+#      we've seen include that word in the line that includes the
+#      version number itself.
+#   5. The tr ' -' '\n\n' does a mapping of all spaces and dashes
+#      to newlines. This has the effect of putting every word of
+#      output (from the line(s) that had the word version in them
+#      from the preceding step) on its own line.
+#   6. The grep '\.' matches non-blank lines so only non-blank lines
+#      get passed onto the next step.
+#   7. The grep '^[0-9\.]\{5,\}$' matches a line that BEGINs (^) with
+#      any digit and has at least 5 matches for only digits and dots in
+#      it before the line ENDs ($) (e.g. 4.7.5 or 13.2.12).
+#   If all of the above produces an empty string, try it all again looking
+#   for at least 3 digits and dots (e.g. 4.7)
 #
 function get_version_digits()
 {
-    retval=$($1 -v 2>&1 | tr ' -' '\n\n' | grep '^[0-9\.]*$' | grep .)
+    retval=$($1 -v 2>&1 | grep -i version | tr ' -' '\n\n' | grep '\.' | grep '^[0-9\.]\{5,\}$')
+    if [[ -z "$retval" ]] ; then
+        retval=$($1 -v 2>&1 | grep -i version | tr ' -' '\n\n' | grep '\.' | grep '^[0-9\.]\{3,\}$')
+    fi
     echo $retval
 }
 
@@ -70,9 +90,13 @@ function check_minimum_compiler_version()
    if [[ "$CXX_COMPILER" == "g++" ]] ; then
         VERSION=$(get_version_digits g++)
         echo "g++ version $VERSION"
-        testvercomp $VERSION 6.0 '<'
+        gccv=7.3
+        if [[ "$DO_QT6" == "yes" ]] ; then
+            gccv=8.1
+        fi
+        testvercomp $VERSION $gccv '<'
         if [[ $? == 0 ]] ; then
-            echo "Need g++ version >= 6.0"
+            echo "Need g++ version >= $gccv"
             exit 1
         fi
     elif [[ "$OPSYS" == "Darwin"  &&  "$CXX_COMPILER" == "clang++" ]] ; then 
@@ -319,7 +343,7 @@ function initialize_build_visit()
         # Used http://en.wikipedia.org/wiki/Darwin_(operating_system)
         # to map Darwin Kernel versions to OSX version numbers.  Other
         # options for dealing with MACOSX_DEPLOYMENT_TARGET didn't
-        # work See issue #1499 (https://visitbugs.ornl.gov/issues/1499)
+        # work See issue https://github.com/visit-dav/visit/issues/1506
 
         # use gcc for 10.9 & earlier
 
@@ -454,6 +478,17 @@ function initialize_build_visit()
             if [[ "$CXX_COMPILER" == "g++" || "$CXX_COMPILER" == "" ]]; then
                 CXX_OPT_FLAGS="$CXX_OPT_FLAGS -O2"
             fi
+        elif [[ "$(uname -m)" == "aarch64" ]] ; then
+            CFLAGS="$CFLAGS -fPIC"
+            FCFLAGS="$FCFLAGS -fPIC"
+            if [[ "$C_COMPILER" == "gcc" || "$C_COMPILER" == "" ]]; then
+                C_OPT_FLAGS="$C_OPT_FLAGS -O2"
+            fi
+            CXXFLAGS="$CXXFLAGS -fPIC"
+            if [[ "$CXX_COMPILER" == "g++" || "$CXX_COMPILER" == "" ]]; then
+                CXX_OPT_FLAGS="$CXX_OPT_FLAGS -O2"
+            fi
+            QT_PLATFORM="linux-aarch64-gnu-g++"
         fi
         export C_COMPILER=${C_COMPILER:-"gcc"}
         export CXX_COMPILER=${CXX_COMPILER:-"g++"}
@@ -531,9 +566,7 @@ function initialize_build_visit()
         export VISITARCHTMP=${ARCH}_${C_COMPILER}
         if [[ "$CXX_COMPILER" == "g++" ]] ; then
             VERSION=$(g++ -v 2>&1 | grep "gcc version" | cut -d' ' -f3 | cut -d'.' -f1-2)
-            if [[ ${#VERSION} == 3 ]] ; then
-                VISITARCHTMP=${VISITARCHTMP}-${VERSION}
-            fi
+            VISITARCHTMP=${VISITARCHTMP}-${VERSION}
         fi
     else
         # use environment variable value
@@ -544,7 +577,7 @@ function initialize_build_visit()
     ANY_ERRORS="no"
 
     #initialize VisIt
-    bv_visit_initialize
+    bv_visit_initialize "$@"
 
     #
     # OPTIONS
@@ -598,6 +631,8 @@ function initialize_build_visit()
     export CREATE_RPM="no"
     export DO_CONTEXT_CHECK="yes"
     export VISIT_INSTALL_NETWORK=""
+    export DO_QT510="no"
+    export DO_VTK9="no"
     DOWNLOAD_ONLY="no"
 
 
@@ -627,6 +662,23 @@ function initialize_build_visit()
     fi
 
 
+    #
+    # Check the command line arguments for any arguments that need to be
+    # handled before calling the bv_XXX_info methods. This would mainly
+    # be arguments that affect the version of a package being built.
+    #
+    for arg in "$@" ; do
+        case $arg in
+            --qt510) DO_QT510="yes";;
+        esac
+        case $arg in
+            --vtk9) DO_VTK9="yes";;
+        esac
+        case $arg in
+            --qt6) DO_QT6="yes"; DO_QT="no";;
+        esac
+    done
+
     #get visit information..
     bv_visit_info
 
@@ -653,7 +705,6 @@ function initialize_build_visit()
 
     WRITE_UNIFIED_FILE=""
     VISIT_INSTALLATION_BUILD_DIR=""
-    VISIT_DRY_RUN="no"
     DO_SUPER_BUILD="no"
     DO_MANGLED_LIBRARIES="no"
 }
@@ -1180,7 +1231,6 @@ function run_build_visit()
             --installation-build-dir) next_arg="installation-build-dir";;
             --write-unified-file) next_arg="write-unified-file";;
             --parallel-build) DO_SUPER_BUILD="yes";;
-            --dry-run) VISIT_DRY_RUN="yes";;
             --arch) next_arg="arch";;
             --build-mode) next_arg="build-mode";;
             --cflag) next_arg="append-cflags";;
@@ -1227,7 +1277,12 @@ function run_build_visit()
             --thirdparty-path) next_arg="thirdparty-path";;
             --version) next_arg="version";;
             --xdb) DO_XDB="yes";;
-            --console) ;;
+            # "--qt510" is actually handled elsewhere, but it is also here
+            # to prevent it triggering an "Urecognized option" error.
+            --qt510) ;;
+            # "--vtk9" is actually handled elsewhere, but it is also here
+            # to prevent it triggering an "Urecognized option" error.
+            --vtk9) ;;
             --skip-opengl-context-check) DO_CONTEXT_CHECK="no";;
             *)
                 echo "Unrecognized option '${arg}'."
@@ -1242,7 +1297,7 @@ function run_build_visit()
     fi
 
     if [[ "$ANY_ERRORS" == "yes" ]] ; then
-        echo "command line arguments are used incorrectly. unrecognized options..."
+        echo "command line arguments are used incorrectly. see above..."
         exit 1
     fi
 
@@ -1363,26 +1418,6 @@ function run_build_visit()
     info "enabling any dependent libraries"
     enable_dependent_libraries
 
-    # At this point we are after the command line and the visual selection
-    # dry run, don't execute anything just run the enabled stuff..
-    # happens before any downloads have taken place..
-    if [[ $VISIT_DRY_RUN == "yes" ]]; then
-        for (( bv_i=0; bv_i<${#reqlibs[*]}; ++bv_i ))
-        do
-            initializeFunc="bv_${reqlibs[$bv_i]}_dry_run"
-            $initializeFunc
-        done
-
-        for (( bv_i=0; bv_i<${#optlibs[*]}; ++bv_i ))
-        do
-            initializeFunc="bv_${optlibs[$bv_i]}_dry_run"
-            $initializeFunc
-        done
-
-        bv_visit_dry_run
-        exit 0
-    fi
-
     START_DIR="$PWD"
 
     if [[ "$DOWNLOAD_ONLY" == "no" ]] ; then
@@ -1422,9 +1457,7 @@ function run_build_visit()
         export VISITARCH=${ARCH}_${C_COMPILER_BASENAME}
         if [[ "$CXX_COMPILER_BASENAME" == "g++" ]] ; then
             VERSION=$(${CXX_COMPILER} -v 2>&1 | grep "gcc version" | cut -d' ' -f3 | cut -d'.' -f1-2)
-            if [[ ${#VERSION} == 3 ]] ; then
-                VISITARCH=${VISITARCH}-${VERSION}
-            fi
+            VISITARCH=${VISITARCH}-${VERSION}
         elif [[ "$CXX_COMPILER_BASENAME" == "icpc" ]] ; then
             VERSION=$(${CXX_COMPILER} --version | cut -d' ' -f3 | head -n1)
             VISITARCH=${VISITARCH}-${VERSION}

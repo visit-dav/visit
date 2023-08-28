@@ -13,51 +13,21 @@
 #    5) Only Cluster Currently Supported is Owens
 #
 # Thanks to Allen Sanderson for the help!
+#
+# Modifications:
+#   Zhi-Qiang You, Wed Oct 7 2021
+#   1) Remove PBS implementation and use internal launcher.
 ###############################################################################
 
-
-class JobSubmitter_qsub_OSC(JobSubmitter_qsub):
-    def __init__(self, launcher):
-        super(JobSubmitter_qsub_OSC, self).__init__(launcher)
-
-    def Executable(self):
-        if self.launcher.osc_host == "OWENS":
-            return ["/opt/torque/bin/qsub"]
-        else:
-            print("Cannot resolve OSC host, trying default 'qsub'")
-            print("Contact oschelp@osc.edu for help")
-            return ["qsub"]
-
-    def PPNArgument(self):
-        return "-ppn"
-
-
 class OSCLauncher(MainLauncher):
-
     def __init__(self):
         super(OSCLauncher, self).__init__()
-        self.osc_host = ''
-        #if not self.osc_host:
-        #    exit("OSC_HOST is undefined - only Owens cluster is supported", 1)
 
     def Customize(self):
         msg = """ Ohio Supercomputer Center - Custom Launch File \n"""
-        print(msg)
+        print msg
 
-        sys.path.insert(0, "/usr/local/lmod/lmod/init/")
-        import os
-        os.environ["MODULEPATH"] = "/usr/local/share/lmodfiles/Core"
-        os.environ["PBS_HOME"] = "/var/spool/torque"
-        sys.path.insert(0, "/opt/torque/bin")
-        from env_modules_python import module
-        module("load", "visit")
-        self.osc_host =  os.getenv('OSC_HOST', '')
-
-    # Snippet derived from NERSC Resource File
-    # Override the JobSubmitterFactory method with custom job submitter
     def JobSubmitterFactory(self, launch):
-        if launch[:4] == "qsub" or launch[:4] == "msub":
-            return JobSubmitter_qsub_OSC(self)
         return super(OSCLauncher, self).JobSubmitterFactory(launch)
 
 

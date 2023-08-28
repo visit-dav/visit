@@ -36,7 +36,7 @@ struct ExtrudeAttributesObject
 //
 static PyObject *NewExtrudeAttributes(int);
 std::string
-PyExtrudeAttributes_ToString(const ExtrudeAttributes *atts, const char *prefix)
+PyExtrudeAttributes_ToString(const ExtrudeAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -167,35 +167,60 @@ ExtrudeAttributes_SetAxis(PyObject *self, PyObject *args)
 {
     ExtrudeAttributesObject *obj = (ExtrudeAttributesObject *)self;
 
-    double *dvals = obj->data->GetAxis();
-    if(!PyArg_ParseTuple(args, "ddd", &dvals[0], &dvals[1], &dvals[2]))
+    PyObject *packaged_args = 0;
+    double *vals = obj->data->GetAxis();
+
+    if (!PySequence_Check(args) || PyUnicode_Check(args))
+        return PyErr_Format(PyExc_TypeError, "Expecting a sequence of numeric args");
+
+    // break open args seq. if we think it matches this API's needs
+    if (PySequence_Size(args) == 1)
     {
-        PyObject     *tuple;
-        if(!PyArg_ParseTuple(args, "O", &tuple))
-            return NULL;
-
-        if(PyTuple_Check(tuple))
-        {
-            if(PyTuple_Size(tuple) != 3)
-                return NULL;
-
-            PyErr_Clear();
-            for(int i = 0; i < PyTuple_Size(tuple); ++i)
-            {
-                PyObject *item = PyTuple_GET_ITEM(tuple, i);
-                if(PyFloat_Check(item))
-                    dvals[i] = PyFloat_AS_DOUBLE(item);
-                else if(PyInt_Check(item))
-                    dvals[i] = double(PyInt_AS_LONG(item));
-                else if(PyLong_Check(item))
-                    dvals[i] = PyLong_AsDouble(item);
-                else
-                    dvals[i] = 0.;
-            }
-        }
-        else
-            return NULL;
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PySequence_Check(packaged_args) && !PyUnicode_Check(packaged_args) &&
+            PySequence_Size(packaged_args) == 3)
+            args = packaged_args;
     }
+
+    if (PySequence_Size(args) != 3)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "Expecting 3 numeric args");
+    }
+
+    for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)
+    {
+        PyObject *item = PySequence_GetItem(args, i);
+
+        if (!PyNumber_Check(item))
+        {
+            Py_DECREF(item);
+            Py_XDECREF(packaged_args);
+            return PyErr_Format(PyExc_TypeError, "arg %d is not a number type", (int) i);
+        }
+
+        double val = PyFloat_AsDouble(item);
+        double cval = double(val);
+
+        if (val == -1 && PyErr_Occurred())
+        {
+            Py_XDECREF(packaged_args);
+            Py_DECREF(item);
+            PyErr_Clear();
+            return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ double", (int) i);
+        }
+        if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+        {
+            Py_XDECREF(packaged_args);
+            Py_DECREF(item);
+            return PyErr_Format(PyExc_ValueError, "arg %d not interpretable as C++ double", (int) i);
+        }
+        Py_DECREF(item);
+
+        vals[i] = cval;
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Mark the axis in the object as modified.
     obj->data->SelectAxis();
@@ -221,12 +246,48 @@ ExtrudeAttributes_SetByVariable(PyObject *self, PyObject *args)
 {
     ExtrudeAttributesObject *obj = (ExtrudeAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the byVariable in the object.
-    obj->data->SetByVariable(ival != 0);
+    obj->data->SetByVariable(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -245,33 +306,37 @@ ExtrudeAttributes_SetScalarVariableNames(PyObject *self, PyObject *args)
 {
     ExtrudeAttributesObject *obj = (ExtrudeAttributesObject *)self;
 
-    stringVector  &vec = obj->data->GetScalarVariableNames();
-    PyObject     *tuple;
-    if(!PyArg_ParseTuple(args, "O", &tuple))
-        return NULL;
+    PyObject *packaged_args = 0;
 
-    if(PyTuple_Check(tuple))
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
     {
-        vec.resize(PyTuple_Size(tuple));
-        for(int i = 0; i < PyTuple_Size(tuple); ++i)
-        {
-            PyObject *item = PyTuple_GET_ITEM(tuple, i);
-            if(PyString_Check(item))
-                vec[i] = std::string(PyString_AS_STRING(item));
-            else
-                vec[i] = std::string("");
-        }
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
     }
-    else if(PyString_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = std::string(PyString_AS_STRING(tuple));
-    }
-    else
-        return NULL;
 
-    // Mark the scalarVariableNames in the object as modified.
-    obj->data->SelectScalarVariableNames();
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
+
+    // Set the variable in the object.
+    obj->data->SetVariable(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -502,12 +567,48 @@ ExtrudeAttributes_SetLength(PyObject *self, PyObject *args)
 {
     ExtrudeAttributesObject *obj = (ExtrudeAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the length in the object.
-    obj->data->SetLength(dval);
+    obj->data->SetLength(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -526,12 +627,48 @@ ExtrudeAttributes_SetSteps(PyObject *self, PyObject *args)
 {
     ExtrudeAttributesObject *obj = (ExtrudeAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the steps in the object.
-    obj->data->SetSteps((int)ival);
+    obj->data->SetSteps(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -550,12 +687,48 @@ ExtrudeAttributes_SetPreserveOriginalCellNumbers(PyObject *self, PyObject *args)
 {
     ExtrudeAttributesObject *obj = (ExtrudeAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the preserveOriginalCellNumbers in the object.
-    obj->data->SetPreserveOriginalCellNumbers(ival != 0);
+    obj->data->SetPreserveOriginalCellNumbers(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -640,21 +813,29 @@ PyExtrudeAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "preserveOriginalCellNumbers") == 0)
         return ExtrudeAttributes_GetPreserveOriginalCellNumbers(self, NULL);
 
+
+    // Add a __dict__ answer so that dir() works
+    if (!strcmp(name, "__dict__"))
+    {
+        PyObject *result = PyDict_New();
+        for (int i = 0; PyExtrudeAttributes_methods[i].ml_meth; i++)
+            PyDict_SetItem(result,
+                PyString_FromString(PyExtrudeAttributes_methods[i].ml_name),
+                PyString_FromString(PyExtrudeAttributes_methods[i].ml_name));
+        return result;
+    }
+
     return Py_FindMethod(PyExtrudeAttributes_methods, self, name);
 }
 
 int
 PyExtrudeAttributes_setattr(PyObject *self, char *name, PyObject *args)
 {
-    // Create a tuple to contain the arguments since all of the Set
-    // functions expect a tuple.
-    PyObject *tuple = PyTuple_New(1);
-    PyTuple_SET_ITEM(tuple, 0, args);
-    Py_INCREF(args);
-    PyObject *obj = NULL;
+    PyObject NULL_PY_OBJ;
+    PyObject *obj = &NULL_PY_OBJ;
 
     if(strcmp(name, "axis") == 0)
-        obj = ExtrudeAttributes_SetAxis(self, tuple);
+        obj = ExtrudeAttributes_SetAxis(self, args);
     else if(strcmp(name, "byVariable") == 0)
         obj = ExtrudeAttributes_SetByVariable(self, tuple);
     else if(strcmp(name, "scalarVariableNames") == 0)
@@ -668,18 +849,23 @@ PyExtrudeAttributes_setattr(PyObject *self, char *name, PyObject *args)
     else if(strcmp(name, "variableDisplay") == 0)
         obj = ExtrudeAttributes_SetVariableDisplay(self, tuple);
     else if(strcmp(name, "length") == 0)
-        obj = ExtrudeAttributes_SetLength(self, tuple);
+        obj = ExtrudeAttributes_SetLength(self, args);
     else if(strcmp(name, "steps") == 0)
-        obj = ExtrudeAttributes_SetSteps(self, tuple);
+        obj = ExtrudeAttributes_SetSteps(self, args);
     else if(strcmp(name, "preserveOriginalCellNumbers") == 0)
-        obj = ExtrudeAttributes_SetPreserveOriginalCellNumbers(self, tuple);
+        obj = ExtrudeAttributes_SetPreserveOriginalCellNumbers(self, args);
 
-    if(obj != NULL)
+    if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
-    Py_DECREF(tuple);
-    if( obj == NULL)
-        PyErr_Format(PyExc_RuntimeError, "Unable to set unknown attribute: '%s'", name);
+    if (obj == &NULL_PY_OBJ)
+    {
+        obj = NULL;
+        PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);
+    }
+    else if (obj == NULL && !PyErr_Occurred())
+        PyErr_Format(PyExc_RuntimeError, "unknown problem with '%s'", name);
+
     return (obj != NULL) ? 0 : -1;
 }
 
@@ -687,7 +873,7 @@ static int
 ExtrudeAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     ExtrudeAttributesObject *obj = (ExtrudeAttributesObject *)v;
-    fprintf(fp, "%s", PyExtrudeAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyExtrudeAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -695,7 +881,7 @@ PyObject *
 ExtrudeAttributes_str(PyObject *v)
 {
     ExtrudeAttributesObject *obj = (ExtrudeAttributesObject *)v;
-    return PyString_FromString(PyExtrudeAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyExtrudeAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -847,7 +1033,7 @@ PyExtrudeAttributes_GetLogString()
 {
     std::string s("ExtrudeAtts = ExtrudeAttributes()\n");
     if(currentAtts != 0)
-        s += PyExtrudeAttributes_ToString(currentAtts, "ExtrudeAtts.");
+        s += PyExtrudeAttributes_ToString(currentAtts, "ExtrudeAtts.", true);
     return s;
 }
 
@@ -860,7 +1046,7 @@ PyExtrudeAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("ExtrudeAtts = ExtrudeAttributes()\n");
-        s += PyExtrudeAttributes_ToString(currentAtts, "ExtrudeAtts.");
+        s += PyExtrudeAttributes_ToString(currentAtts, "ExtrudeAtts.", true);
         cb(s);
     }
 }

@@ -118,6 +118,9 @@ QvisContourPlotWindow::~QvisContourPlotWindow()
 //   Kathleen Bonnell, Mon Jan 17 17:59:09 MST 2011
 //   Change colorTableButton to colorTableWidget to gain invert toggle.
 //
+//   Kathleen Biagas, Tue Apr 18 16:34:41 PDT 2023
+//   Support Qt6: buttonClicked -> idClicked.
+//
 // ****************************************************************************
 
 void
@@ -131,7 +134,7 @@ QvisContourPlotWindow::CreateWindowContents()
     topLayout->addWidget(dataGroup);
 
     QGridLayout *dataLayout = new QGridLayout(dataGroup);
-    dataLayout->setMargin(5);
+    dataLayout->setContentsMargins(5,5,5,5);
     dataLayout->setSpacing(10);
 
     //
@@ -151,8 +154,13 @@ QvisContourPlotWindow::CreateWindowContents()
     dataLayout->addWidget(rb, 0, 2);
 
     // Each time a radio button is clicked, call the scale clicked slot.
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(scalingButtons, SIGNAL(buttonClicked(int)),
             this, SLOT(scaleClicked(int)));
+#else
+    connect(scalingButtons, SIGNAL(idClicked(int)),
+            this, SLOT(scaleClicked(int)));
+#endif
 
     //
     // Create the Limits stuff
@@ -161,7 +169,7 @@ QvisContourPlotWindow::CreateWindowContents()
     dataLayout->addWidget(limitsGroup, 1, 0, 1, 5);
 
     QGridLayout *limitsLayout = new QGridLayout(limitsGroup);
-    limitsLayout->setMargin(5);
+    limitsLayout->setContentsMargins(5,5,5,5);
     limitsLayout->setSpacing(10);
 
     // Create the min toggle and line edit
@@ -211,14 +219,19 @@ QvisContourPlotWindow::CreateWindowContents()
     topLayout->setStretchFactor(contourColorGroup, 100);
 
     QGridLayout *colorLayout = new QGridLayout(contourColorGroup);
-    colorLayout->setMargin(5);
+    colorLayout->setContentsMargins(5,5,5,5);
     colorLayout->setSpacing(10);
 
     // Create the mode buttons that determine if the window is in single,
     // multiple, or color table color mode.
     colorModeButtons = new QButtonGroup(contourColorGroup);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(colorModeButtons, SIGNAL(buttonClicked(int)),
             this, SLOT(colorModeChanged(int)));
+#else
+    connect(colorModeButtons, SIGNAL(idClicked(int)),
+            this, SLOT(colorModeChanged(int)));
+#endif
 
     rb = new QRadioButton(tr("Color table"), contourColorGroup);
     colorModeButtons->addButton(rb, 0);
@@ -275,7 +288,7 @@ QvisContourPlotWindow::CreateWindowContents()
     topLayout->addWidget(styleGroup);
 
     QGridLayout *styleLayout = new QGridLayout(styleGroup);
-    styleLayout->setMargin(5);
+    styleLayout->setContentsMargins(5,5,5,5);
     styleLayout->setSpacing(10);
  
     // Create the lineWidth widget.
@@ -294,7 +307,7 @@ QvisContourPlotWindow::CreateWindowContents()
     topLayout->addWidget(miscGroup);
 
     QGridLayout *miscLayout = new QGridLayout(miscGroup);
-    miscLayout->setMargin(5);
+    miscLayout->setContentsMargins(5,5,5,5);
     miscLayout->setSpacing(10);
  
     // Create the legend toggle

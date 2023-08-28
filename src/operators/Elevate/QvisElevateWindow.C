@@ -79,6 +79,9 @@ QvisElevateWindow::~QvisElevateWindow()
 //   Cyrus Harrison, Tue Aug 19 10:58:31 PDT 2008
 //   Qt4 Port.
 //
+//   Kathleen Biagas, Tue Apr 18 16:34:41 PDT 2023
+//   Support Qt6: buttonClicked -> idClicked.
+//
 // ****************************************************************************
 
 void
@@ -92,7 +95,7 @@ QvisElevateWindow::CreateWindowContents()
     useXYLimitsWidget = new QWidget(central);
     useXYLimits= new QButtonGroup(useXYLimitsWidget);
     QHBoxLayout *useXYLimitsLayout = new QHBoxLayout(useXYLimitsWidget);
-    useXYLimitsLayout->setMargin(0);
+    useXYLimitsLayout->setContentsMargins(0,0,0,0);
     useXYLimitsLayout->setSpacing(10);
     QRadioButton *useXYLimitsScalingModeNever = new QRadioButton(tr("Never"), useXYLimitsWidget);
     useXYLimits->addButton(useXYLimitsScalingModeNever,0);
@@ -103,8 +106,13 @@ QvisElevateWindow::CreateWindowContents()
     QRadioButton *useXYLimitsScalingModeAlways = new QRadioButton(tr("Always"), useXYLimitsWidget);
     useXYLimits->addButton(useXYLimitsScalingModeAlways,2);
     useXYLimitsLayout->addWidget(useXYLimitsScalingModeAlways);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(useXYLimits, SIGNAL(buttonClicked(int)),
             this, SLOT(useXYLimitsChanged(int)));
+#else
+    connect(useXYLimits, SIGNAL(idClicked(int)),
+            this, SLOT(useXYLimitsChanged(int)));
+#endif
     mainLayout->addWidget(useXYLimitsWidget, 0, 1);
 
     limitsModeLabel = new QLabel(tr("Limits Mode"), central);
@@ -112,7 +120,7 @@ QvisElevateWindow::CreateWindowContents()
     limitsModeWidget = new QWidget(central);
     limitsMode = new QButtonGroup(limitsModeWidget);
     QHBoxLayout *limitsModeLayout = new QHBoxLayout(limitsModeWidget);
-    limitsModeLayout->setMargin(0);
+    limitsModeLayout->setContentsMargins(0,0,0,0);
     limitsModeLayout->setSpacing(10);
     QRadioButton *limitsModeLimitsModeOriginalData = new QRadioButton(tr("Original Data"), limitsModeWidget);
     limitsMode->addButton(limitsModeLimitsModeOriginalData,0);
@@ -120,8 +128,13 @@ QvisElevateWindow::CreateWindowContents()
     QRadioButton *limitsModeLimitsModeCurrentPlot = new QRadioButton(tr("Current Plot"), limitsModeWidget);
     limitsMode->addButton(limitsModeLimitsModeCurrentPlot,1);
     limitsModeLayout->addWidget(limitsModeLimitsModeCurrentPlot);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(limitsMode, SIGNAL(buttonClicked(int)),
             this, SLOT(limitsModeChanged(int)));
+#else
+    connect(limitsMode, SIGNAL(idClicked(int)),
+            this, SLOT(limitsModeChanged(int)));
+#endif
     mainLayout->addWidget(limitsModeWidget, 1,1);
 
     scalingLabel = new QLabel(tr("Scale"), central);
@@ -129,7 +142,7 @@ QvisElevateWindow::CreateWindowContents()
     scalingWidget = new QWidget(central);
     scaling = new QButtonGroup(scalingWidget);
     QHBoxLayout *scalingLayout = new QHBoxLayout(scalingWidget);
-    scalingLayout->setMargin(0);
+    scalingLayout->setContentsMargins(0,0,0,0);
     scalingLayout->setSpacing(10);
     QRadioButton *scalingScalingLinear = new QRadioButton(tr("Linear"), scalingWidget);
     scaling->addButton(scalingScalingLinear,0);
@@ -140,8 +153,13 @@ QvisElevateWindow::CreateWindowContents()
     QRadioButton *scalingScalingSkew = new QRadioButton(tr("Skew"), scalingWidget);
     scaling->addButton(scalingScalingSkew,2);
     scalingLayout->addWidget(scalingScalingSkew);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(scaling, SIGNAL(buttonClicked(int)),
             this, SLOT(scalingChanged(int)));
+#else
+    connect(scaling, SIGNAL(idClicked(int)),
+            this, SLOT(scalingChanged(int)));
+#endif
     mainLayout->addWidget(scalingWidget, 2,1);
 
     skewFactorLabel = new QLabel(tr("Skew factor"), central);

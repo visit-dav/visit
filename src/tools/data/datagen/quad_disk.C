@@ -27,12 +27,14 @@
 //
 
 void
-build_mesh(int N, float **xCoords, float **yCoords, float **sphElev,
-               double **xCoordsD, double **yCoordsD, double **sphElevD)
+build_mesh(int N, int **mat,
+    float **xCoords,   float **yCoords,   float **sphElev,
+    double **xCoordsD, double **yCoordsD, double **sphElevD)
 {
     int iMax = (N - 1) / 2;
     int jMax = (N - 1) / 2;
 
+    int *matvals = new int[N * N];
     float *xvals = new float[N * N];
     float *yvals = new float[N * N];
     float *evals = new float[N * N];
@@ -87,9 +89,11 @@ build_mesh(int N, float **xCoords, float **yCoords, float **sphElev,
             xvalsD[kk] = xD;
             yvals[kk] = y;
             yvalsD[kk] = yD;
-            evals[kk] = sqrt(2.0 * iMax * iMax - radius * radius);
-            //evalsD[kk] = sqrt(2.0 * iMax * iMax - radiusD * radiusD);
-            evalsD[kk] = evals[kk]; 
+            float ck = 2.0 * iMax * iMax - radius * radius;
+            evals[kk] = ck<0?0:sqrt(ck);
+            double ckD = 2.0 * iMax * iMax - radiusD * radiusD;
+            evalsD[kk] = ckD<0?0:sqrt(ckD);
+            matvals[kk] = (radius < (float) N/3.0) ? 1 : 2;
         }
     }
 
@@ -99,6 +103,7 @@ build_mesh(int N, float **xCoords, float **yCoords, float **sphElev,
     *yCoordsD = yvalsD;
     *sphElev = evals;
     *sphElevD = evalsD;
+    *mat = matvals;
 }
 
 int
@@ -136,30 +141,42 @@ main(int argc, char **argv)
     }
 
 
-    float *coords[2] = {0, 0};
-    double *coordsD[2] = {0, 0};
+    int *matlist;
+    float *coords[3] = {0, 0, 0};
+    double *coordsD[3] = {0, 0, 0};
     float *sphElev = 0;
     double *sphElevD = 0;
-    build_mesh(N, &coords[0], &coords[1], &sphElev,
+    build_mesh(N, &matlist, &coords[0], &coords[1], &sphElev,
                   &coordsD[0], &coordsD[1], &sphElevD);
 
     dbfile = DBCreate("quad_disk.silo", DB_CLOBBER, DB_LOCAL,
                       "2D logical grid deformed into a disk", driver);
 
-    char *coordnames[2];
+    char *coordnames[3];
     coordnames[0] = "xcoords";
     coordnames[1] = "ycoords";
+    coordnames[2] = "elevations";
+    int matnos[2] = {1,2};
     int ndims = 2;
-    int dims[2];
+    int dims[3], dims2[3];
     dims[0] = N; 
     dims[1] = N;
 
+    // Output 2D (float) quadmesh on the xy plane (no z coord data)
     DBPutQuadmesh(dbfile, "mesh", coordnames, coords, dims, ndims,
         DB_FLOAT, DB_NONCOLLINEAR, NULL);
 
-    DBPutQuadmesh(dbfile, "meshD", coordnames, (float**) coordsD, dims, ndims,
+    // Output 2D (double) quadmesh on the xy plane (no z coord data)
+    DBPutQuadmesh(dbfile, "meshD", coordnames, coordsD, dims, ndims,
         DB_DOUBLE, DB_NONCOLLINEAR, NULL);
 
+    // Output a material on just the float mesh
+    dims2[0] = dims[0]-1;
+    dims2[1] = dims[1]-1;
+    DBPutMaterial(dbfile, "mat", "mesh", 2, matnos, matlist, dims2,
+                  ndims, 0, 0, 0, 0, 0, DB_FLOAT, 0);
+
+    // Output the two sphere elevation variables on both meshes
     DBPutQuadvar1(dbfile, "sphElevD_on_meshD", "meshD", (float*) sphElevD, dims, ndims,
                              NULL, 0, DB_DOUBLE, DB_NODECENT, NULL);
     DBPutQuadvar1(dbfile, "sphElevD_on_mesh", "mesh", (float*) sphElevD, dims, ndims,
@@ -167,6 +184,35 @@ main(int argc, char **argv)
     DBPutQuadvar1(dbfile, "sphElev_on_meshD", "meshD", sphElev, dims, ndims,
                              NULL, 0, DB_FLOAT, DB_NODECENT, NULL);
     DBPutQuadvar1(dbfile, "sphElev_on_mesh", "mesh", sphElev, dims, ndims,
+                             NULL, 0, DB_FLOAT, DB_NODECENT, NULL);
+
+    // For the "elevated" case, we add a 3rd "dimension" for the z coordinate
+    // and assign the sphere elevation data to that coordinate. But, the logical
+    // extent of this dimension in nodes (dims[2]) is just one, unity.
+    ndims++;
+    dims[2] = 1;
+    coords[2] = sphElev;
+    coordsD[2] = sphElevD;
+
+    DBPutQuadmesh(dbfile, "mesh_3d", coordnames, coords, dims, ndims,
+        DB_FLOAT, DB_NONCOLLINEAR, NULL);
+
+    DBPutQuadmesh(dbfile, "meshD_3d", coordnames, coordsD, dims, ndims,
+        DB_DOUBLE, DB_NONCOLLINEAR, NULL);
+
+    // Output a material on just the float mesh
+    dims2[2] = 1;
+    DBPutMaterial(dbfile, "mat_3d", "mesh_3d", 2, matnos, matlist, dims2,
+                  ndims, 0, 0, 0, 0, 0, DB_FLOAT, 0);
+
+    // Output the two sphere elevation variables on both elevated meshes
+    DBPutQuadvar1(dbfile, "sphElevD_on_meshD_3d", "meshD_3d", (float*) sphElevD, dims, ndims,
+                             NULL, 0, DB_DOUBLE, DB_NODECENT, NULL);
+    DBPutQuadvar1(dbfile, "sphElevD_on_mesh_3d", "mesh_3d", (float*) sphElevD, dims, ndims,
+                             NULL, 0, DB_DOUBLE, DB_NODECENT, NULL);
+    DBPutQuadvar1(dbfile, "sphElev_on_meshD_3d", "meshD_3d", sphElev, dims, ndims,
+                             NULL, 0, DB_FLOAT, DB_NODECENT, NULL);
+    DBPutQuadvar1(dbfile, "sphElev_on_mesh_3d", "mesh_3d", sphElev, dims, ndims,
                              NULL, 0, DB_FLOAT, DB_NODECENT, NULL);
 
     DBClose(dbfile);

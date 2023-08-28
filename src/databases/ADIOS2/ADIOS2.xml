@@ -1,17 +1,5 @@
 <?xml version="1.0"?>
   <Plugin name="ADIOS2" type="database" label="ADIOS2" version="1.0" enabled="true" mdspecificcode="true" engspecificcode="true" onlyengine="false" noengine="false" dbtype="MTSD" haswriter="false" hasoptions="false" filePatternsStrict="false" opensWholeDirectory="false">
-    <CXXFLAGS>
-      $(ADIOS2_INCLUDE_DIR)
-    </CXXFLAGS>
-    <MPI_CXXFLAGS>
-      $(ADIOS2_PAR_INCLUDE_DIR)
-    </MPI_CXXFLAGS>
-    <LDFLAGS>
-      $(ADIOS2_LIBRARY_DIR)
-    </LDFLAGS>
-    <MPI_LDFLAGS>
-      $(ADIOS2_PAR_LIBRARY_DIR)
-    </MPI_LDFLAGS>
     <FilePatterns>
       *.bp
       *.bp.sst
@@ -19,33 +7,43 @@
       md.idx
       md.0
     </FilePatterns>
-    <Files components="M">
-      avtADIOS2FileFormat.C
-      avtMEUMMAPSFileFormat.C
-      avtGTCFileFormat.C
-      avtADIOS2BaseFileFormat.C
-      avtADIOS2SSTFileFormat.C
-      avtLAMMPSFileFormat.C
-      avtSpecFEMFileFormat.C
-    </Files>
-    <LIBS components="M">
-      $(ADIOS2_LIBRARY_DIR)/${ADIOS2_LIB}
+    <DEFINES components="EPar">
+      ADIOS2_USE_MPI
+    </DEFINES>
+    <CXXFLAGS components="M,ESer">
+      $(ADIOS2_INCLUDE_DIR)
+    </CXXFLAGS>
+    <CXXFLAGS components="EPar">
+      $(ADIOS2_PAR_INCLUDE_DIR)
+    </CXXFLAGS>
+    <LDFLAGS components="M,ESer">
+      $(ADIOS2_LIBRARY_DIR)
+    </LDFLAGS>
+    <LDFLAGS components="EPar">
+      $(ADIOS2_PAR_LIBRARY_DIR)
+    </LDFLAGS>
+    <LIBS> 
+      vtkFiltersHybrid
+      vtksys
     </LIBS>
-    <Files components="E">
-      avtADIOS2FileFormat.C
-      avtMEUMMAPSFileFormat.C
-      avtGTCFileFormat.C
-      avtADIOS2BaseFileFormat.C
-      avtADIOS2SSTFileFormat.C
-      avtLAMMPSFileFormat.C
-      avtSpecFEMFileFormat.C
-    </Files>
-    <LIBS components="ESer">
-      $(ADIOS2_LIBRARY_DIR)/${ADIOS2_LIB}
+    <LIBS components="M,ESer">
+      ${ADIOS2_LIB}
     </LIBS>
     <LIBS components="EPar">
-      $(ADIOS2_PAR_LIBRARY_DIR)/${ADIOS2_PAR_LIB}
+      ${ADIOS2_PAR_LIB}
     </LIBS>
+    <Files components="M,E">
+      avtADIOS2FileFormat.C
+      avtMEUMMAPSFileFormat.C
+      avtGTCFileFormat.C
+      avtADIOS2BaseFileFormat.C
+      avtADIOS2SSTFileFormat.C
+      avtLAMMPSFileFormat.C
+      avtSpecFEMFileFormat.C
+      ADIOS2HelperFuncs.C
+    </Files>
     <Attribute name="" purpose="" persistent="true" keyframe="true" exportAPI="" exportInclude="" codefile="ADIOS2.code">
+      <Function name="ADIOS2CommonPluginInfo::SetupDatabase" user="false" member="true">
+      </Function>
     </Attribute>
   </Plugin>

@@ -28,6 +28,7 @@ PYTHON_ADD_DISTUTILS_SETUP(visit_utils_py_setup
                            src/builtin/__init__.py
                            src/builtin/convert2to3.py
                            src/builtin/evalfuncs.py
+                           src/builtin/flatten.py
                            src/builtin/writescript.py
                            # qannote module
                            src/qannote/__init__.py

@@ -1,19 +1,52 @@
 <?xml version="1.0"?>
-  <Attribute name="ColorTableAttributes" codefile="ColorTableAttributes.code" purpose="This class contains the list of colortables." exportAPI="STATE_API" exportInclude="state_exports.h">
-    <Field name="names" type="stringVector"></Field>
-    <Field name="colorTables" type="attVector" subtype="ColorControlPointList"></Field>
-    <Field name="activeContinuous" type="string">"hot"</Field>
-    <Field name="activeDiscrete"   type="string">"levels"</Field>
-    <Field name="groupingFlag"     type="bool">false</Field>
-    <Function name="GetColorTableIndex"           user="true"></Function>
-    <Function name="GetColorControlPoints1"       user="true"></Function>
-    <Function name="GetColorControlPoints2"       user="true"></Function>
-    <Function name="GetActiveColorControlPoints"  user="true"></Function>
-    <Function name="AddColorTable"                user="true"></Function>
-    <Function name="RemoveColorTable1"            user="true"></Function>
-    <Function name="RemoveColorTable2"            user="true"></Function>
-    <Function name="CreateNode"                   user="false"></Function>
-    <Function name="SetFromNode"                  user="false"></Function>
-    <Include file="source">ColorControlPoint.h</Include>
-    <Include file="source">map</Include>
+  <Attribute name="ColorTableAttributes" purpose="This class contains the list of colortables." persistent="true" keyframe="true" exportAPI="STATE_API" exportInclude="state_exports.h" codefile="ColorTableAttributes.code">
+    <Field name="colorTableNames" label="colorTableNames" type="stringVector">
+    </Field>
+    <Field name="colorTableActiveFlags" label="colorTableActiveFlags" type="intVector" ignoreeq="true">
+    </Field>
+    <Field name="colorTables" label="colorTables" type="attVector" subtype="ColorControlPointList">
+    </Field>
+    <Field name="defaultContinuous" label="defaultContinuous" type="string">
+      hot
+    </Field>
+    <Field name="defaultDiscrete" label="defaultDiscrete" type="string">
+      levels
+    </Field>
+    <Field name="changesMade" label="changesMade" type="bool">
+      false
+    </Field>
+    <Function name="GetColorTableIndex" user="true" member="true">
+    </Function>
+    <Function name="GetColorControlPoints1" user="true" member="true">
+    </Function>
+    <Function name="GetColorControlPoints2" user="true" member="true">
+    </Function>
+    <Function name="GetDefaultColorControlPoints" user="true" member="true">
+    </Function>
+    <Function name="AddColorTable" user="true" member="true">
+    </Function>
+    <Function name="RemoveColorTable1" user="true" member="true">
+    </Function>
+    <Function name="RemoveColorTable2" user="true" member="true">
+    </Function>
+    <Function name="SetColorTableNames" user="false" member="true">
+    </Function>
+    <Function name="SetColorTableActiveFlags" user="false" member="true">
+    </Function>
+    <Function name="CreateNode" user="false" member="true">
+    </Function>
+    <Function name="SetFromNode" user="false" member="true">
+    </Function>
+    <Function name="SetColorTableActiveFlag" user="true" member="true">
+    </Function>
+    <Function name="GetColorTableActiveFlag" user="true" member="true">
+    </Function>
+    <Function name="ProcessOldVersions" user="true" member="true">
+    </Function>
+    <Include file="source" quoted="false">
+      ColorControlPoint.h
+    </Include>
+    <Include file="source" quoted="false">
+      map
+    </Include>
   </Attribute>

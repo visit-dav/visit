@@ -37,7 +37,7 @@ struct avtSpeciesMetaDataObject
 //
 static PyObject *NewavtSpeciesMetaData(int);
 std::string
-PyavtSpeciesMetaData_ToString(const avtSpeciesMetaData *atts, const char *prefix)
+PyavtSpeciesMetaData_ToString(const avtSpeciesMetaData *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -65,7 +65,7 @@ PyavtSpeciesMetaData_ToString(const avtSpeciesMetaData *atts, const char *prefix
             const avtMatSpeciesMetaData *current = (const avtMatSpeciesMetaData *)(*pos);
             snprintf(tmpStr, 1000, "GetSpecies(%d).", index);
             std::string objPrefix(prefix + std::string(tmpStr));
-            str += PyavtMatSpeciesMetaData_ToString(current, objPrefix.c_str());
+            str += PyavtMatSpeciesMetaData_ToString(current, objPrefix.c_str(), forLogging);
         }
         if(index == 0)
             str += "#species does not contain any avtMatSpeciesMetaData objects.\n";
@@ -87,12 +87,37 @@ avtSpeciesMetaData_SetName(PyObject *self, PyObject *args)
 {
     avtSpeciesMetaDataObject *obj = (avtSpeciesMetaDataObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the name in the object.
-    obj->data->name = std::string(str);
+    obj->data->name = cval;
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -111,12 +136,37 @@ avtSpeciesMetaData_SetOriginalName(PyObject *self, PyObject *args)
 {
     avtSpeciesMetaDataObject *obj = (avtSpeciesMetaDataObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the originalName in the object.
-    obj->data->originalName = std::string(str);
+    obj->data->originalName = cval;
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -135,12 +185,48 @@ avtSpeciesMetaData_SetValidVariable(PyObject *self, PyObject *args)
 {
     avtSpeciesMetaDataObject *obj = (avtSpeciesMetaDataObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the validVariable in the object.
-    obj->data->validVariable = (ival != 0);
+    obj->data->validVariable = cval;
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -159,12 +245,37 @@ avtSpeciesMetaData_SetMeshName(PyObject *self, PyObject *args)
 {
     avtSpeciesMetaDataObject *obj = (avtSpeciesMetaDataObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the meshName in the object.
-    obj->data->meshName = std::string(str);
+    obj->data->meshName = cval;
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -183,12 +294,37 @@ avtSpeciesMetaData_SetMaterialName(PyObject *self, PyObject *args)
 {
     avtSpeciesMetaDataObject *obj = (avtSpeciesMetaDataObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the materialName in the object.
-    obj->data->materialName = std::string(str);
+    obj->data->materialName = cval;
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -207,12 +343,48 @@ avtSpeciesMetaData_SetNumMaterials(PyObject *self, PyObject *args)
 {
     avtSpeciesMetaDataObject *obj = (avtSpeciesMetaDataObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the numMaterials in the object.
-    obj->data->numMaterials = (int)ival;
+    obj->data->numMaterials = cval;
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -230,19 +402,13 @@ avtSpeciesMetaData_GetNumMaterials(PyObject *self, PyObject *args)
 avtSpeciesMetaData_GetSpecies(PyObject *self, PyObject *args)
 {
     avtSpeciesMetaDataObject *obj = (avtSpeciesMetaDataObject *)self;
-    int index;
-    if(!PyArg_ParseTuple(args, "i", &index))
-        return NULL;
-    if(index < 0 || (size_t)index >= obj->data->GetSpecies().size())
-    {
-        char msg[400] = {'\0'};
-        if(obj->data->GetSpecies().size() == 0)
-            snprintf(msg, 400, "In avtSpeciesMetaData::GetSpecies : The index %d is invalid because species is empty.", index);
-        else
-            snprintf(msg, 400, "In avtSpeciesMetaData::GetSpecies : The index %d is invalid. Use index values in: [0, %ld).",  index, obj->data->GetSpecies().size());
-        PyErr_SetString(PyExc_IndexError, msg);
-        return NULL;
-    }
+    int index = -1;
+    if (args == NULL)
+        return PyErr_Format(PyExc_NameError, "Use .GetSpecies(int index) to get a single entry");
+    if (!PyArg_ParseTuple(args, "i", &index))
+        return PyErr_Format(PyExc_TypeError, "arg must be a single integer index");
+    if (index < 0 || (size_t)index >= obj->data->GetSpecies().size())
+        return PyErr_Format(PyExc_ValueError, "index out of range");
 
     // Since the new object will point to data owned by the this object,
     // we need to increment the reference count.
@@ -271,12 +437,7 @@ avtSpeciesMetaData_AddSpecies(PyObject *self, PyObject *args)
     if(!PyArg_ParseTuple(args, "O", &element))
         return NULL;
     if(!PyavtMatSpeciesMetaData_Check(element))
-    {
-        char msg[400] = {'\0'};
-        snprintf(msg, 400, "The avtSpeciesMetaData::AddSpecies method only accepts avtMatSpeciesMetaData objects.");
-        PyErr_SetString(PyExc_TypeError, msg);
-        return NULL;
-    }
+        return PyErr_Format(PyExc_TypeError, "expected attr object of type avtMatSpeciesMetaData");
     avtMatSpeciesMetaData *newData = PyavtMatSpeciesMetaData_FromPyObject(element);
     obj->data->AddSpecies(*newData);
     obj->data->SelectSpecies();
@@ -314,17 +475,12 @@ avtSpeciesMetaData_Remove_One_Species(PyObject *self, int index)
 PyObject *
 avtSpeciesMetaData_RemoveSpecies(PyObject *self, PyObject *args)
 {
-    int index;
+    int index = -1;
     if(!PyArg_ParseTuple(args, "i", &index))
-        return NULL;
+        return PyErr_Format(PyExc_TypeError, "Expecting integer index");
     avtSpeciesMetaDataObject *obj = (avtSpeciesMetaDataObject *)self;
     if(index < 0 || index >= obj->data->GetNumSpecies())
-    {
-        char msg[400] = {'\0'};
-        snprintf(msg, 400, "In avtSpeciesMetaData::RemoveSpecies : Index %d is out of range", index);
-        PyErr_SetString(PyExc_IndexError, msg);
-        return NULL;
-    }
+        return PyErr_Format(PyExc_IndexError, "Index out of range");
 
     return avtSpeciesMetaData_Remove_One_Species(self, index);
 }
@@ -400,38 +556,51 @@ PyavtSpeciesMetaData_getattr(PyObject *self, char *name)
     if(strcmp(name, "species") == 0)
         return avtSpeciesMetaData_GetSpecies(self, NULL);
 
+
+    // Add a __dict__ answer so that dir() works
+    if (!strcmp(name, "__dict__"))
+    {
+        PyObject *result = PyDict_New();
+        for (int i = 0; PyavtSpeciesMetaData_methods[i].ml_meth; i++)
+            PyDict_SetItem(result,
+                PyString_FromString(PyavtSpeciesMetaData_methods[i].ml_name),
+                PyString_FromString(PyavtSpeciesMetaData_methods[i].ml_name));
+        return result;
+    }
+
     return Py_FindMethod(PyavtSpeciesMetaData_methods, self, name);
 }
 
 int
 PyavtSpeciesMetaData_setattr(PyObject *self, char *name, PyObject *args)
 {
-    // Create a tuple to contain the arguments since all of the Set
-    // functions expect a tuple.
-    PyObject *tuple = PyTuple_New(1);
-    PyTuple_SET_ITEM(tuple, 0, args);
-    Py_INCREF(args);
-    PyObject *obj = NULL;
+    PyObject NULL_PY_OBJ;
+    PyObject *obj = &NULL_PY_OBJ;
 
     if(strcmp(name, "name") == 0)
-        obj = avtSpeciesMetaData_SetName(self, tuple);
+        obj = avtSpeciesMetaData_SetName(self, args);
     else if(strcmp(name, "originalName") == 0)
-        obj = avtSpeciesMetaData_SetOriginalName(self, tuple);
+        obj = avtSpeciesMetaData_SetOriginalName(self, args);
     else if(strcmp(name, "validVariable") == 0)
-        obj = avtSpeciesMetaData_SetValidVariable(self, tuple);
+        obj = avtSpeciesMetaData_SetValidVariable(self, args);
     else if(strcmp(name, "meshName") == 0)
-        obj = avtSpeciesMetaData_SetMeshName(self, tuple);
+        obj = avtSpeciesMetaData_SetMeshName(self, args);
     else if(strcmp(name, "materialName") == 0)
-        obj = avtSpeciesMetaData_SetMaterialName(self, tuple);
+        obj = avtSpeciesMetaData_SetMaterialName(self, args);
     else if(strcmp(name, "numMaterials") == 0)
-        obj = avtSpeciesMetaData_SetNumMaterials(self, tuple);
+        obj = avtSpeciesMetaData_SetNumMaterials(self, args);
 
-    if(obj != NULL)
+    if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
-    Py_DECREF(tuple);
-    if( obj == NULL)
-        PyErr_Format(PyExc_RuntimeError, "Unable to set unknown attribute: '%s'", name);
+    if (obj == &NULL_PY_OBJ)
+    {
+        obj = NULL;
+        PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);
+    }
+    else if (obj == NULL && !PyErr_Occurred())
+        PyErr_Format(PyExc_RuntimeError, "unknown problem with '%s'", name);
+
     return (obj != NULL) ? 0 : -1;
 }
 
@@ -439,7 +608,7 @@ static int
 avtSpeciesMetaData_print(PyObject *v, FILE *fp, int flags)
 {
     avtSpeciesMetaDataObject *obj = (avtSpeciesMetaDataObject *)v;
-    fprintf(fp, "%s", PyavtSpeciesMetaData_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyavtSpeciesMetaData_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -447,7 +616,7 @@ PyObject *
 avtSpeciesMetaData_str(PyObject *v)
 {
     avtSpeciesMetaDataObject *obj = (avtSpeciesMetaDataObject *)v;
-    return PyString_FromString(PyavtSpeciesMetaData_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyavtSpeciesMetaData_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -599,7 +768,7 @@ PyavtSpeciesMetaData_GetLogString()
 {
     std::string s("avtSpeciesMetaData = avtSpeciesMetaData()\n");
     if(currentAtts != 0)
-        s += PyavtSpeciesMetaData_ToString(currentAtts, "avtSpeciesMetaData.");
+        s += PyavtSpeciesMetaData_ToString(currentAtts, "avtSpeciesMetaData.", true);
     return s;
 }
 
@@ -612,7 +781,7 @@ PyavtSpeciesMetaData_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("avtSpeciesMetaData = avtSpeciesMetaData()\n");
-        s += PyavtSpeciesMetaData_ToString(currentAtts, "avtSpeciesMetaData.");
+        s += PyavtSpeciesMetaData_ToString(currentAtts, "avtSpeciesMetaData.", true);
         cb(s);
     }
 }

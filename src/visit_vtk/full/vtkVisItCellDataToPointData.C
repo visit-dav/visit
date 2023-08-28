@@ -17,6 +17,8 @@
 =========================================================================*/
 #include "vtkVisItCellDataToPointData.h"
 
+#include <visit-config.h> // for LIB_VERSION_LE
+
 #include "vtkAccessors.h"
 #include "vtkCellData.h"
 #include "vtkDataSet.h"
@@ -270,7 +272,11 @@ int vtkVisItCellDataToPointData::RequestData(
         }
       else
         {
+#if LIB_VERSION_LE(VTK, 8,1,0)
         outPD->NullPoint(ptId);
+#else
+        outPD->NullData(ptId);
+#endif
         }
       }
     }

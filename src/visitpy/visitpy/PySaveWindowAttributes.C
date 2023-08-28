@@ -38,7 +38,7 @@ struct SaveWindowAttributesObject
 //
 static PyObject *NewSaveWindowAttributes(int);
 std::string
-PySaveWindowAttributes_ToString(const SaveWindowAttributes *atts, const char *prefix)
+PySaveWindowAttributes_ToString(const SaveWindowAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -219,12 +219,12 @@ PySaveWindowAttributes_ToString(const SaveWindowAttributes *atts, const char *pr
     { // new scope
         std::string objPrefix(prefix);
         objPrefix += "subWindowAtts.";
-        str += PySaveSubWindowsAttributes_ToString(&atts->GetSubWindowAtts(), objPrefix.c_str());
+        str += PySaveSubWindowsAttributes_ToString(&atts->GetSubWindowAtts(), objPrefix.c_str(), forLogging);
     }
     { // new scope
         std::string objPrefix(prefix);
         objPrefix += "opts.";
-        str += PyDBOptionsAttributes_ToString(&atts->GetOpts(), objPrefix.c_str());
+        str += PyDBOptionsAttributes_ToString(&atts->GetOpts(), objPrefix.c_str(), forLogging);
     }
     return str;
 }
@@ -243,12 +243,48 @@ SaveWindowAttributes_SetOutputToCurrentDirectory(PyObject *self, PyObject *args)
 {
     SaveWindowAttributesObject *obj = (SaveWindowAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the outputToCurrentDirectory in the object.
-    obj->data->SetOutputToCurrentDirectory(ival != 0);
+    obj->data->SetOutputToCurrentDirectory(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -267,12 +303,37 @@ SaveWindowAttributes_SetOutputDirectory(PyObject *self, PyObject *args)
 {
     SaveWindowAttributesObject *obj = (SaveWindowAttributesObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the outputDirectory in the object.
-    obj->data->SetOutputDirectory(std::string(str));
+    obj->data->SetOutputDirectory(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -291,12 +352,37 @@ SaveWindowAttributes_SetFileName(PyObject *self, PyObject *args)
 {
     SaveWindowAttributesObject *obj = (SaveWindowAttributesObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the fileName in the object.
-    obj->data->SetFileName(std::string(str));
+    obj->data->SetFileName(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -315,12 +401,48 @@ SaveWindowAttributes_SetFamily(PyObject *self, PyObject *args)
 {
     SaveWindowAttributesObject *obj = (SaveWindowAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the family in the object.
-    obj->data->SetFamily(ival != 0);
+    obj->data->SetFamily(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -339,24 +461,67 @@ SaveWindowAttributes_SetFormat(PyObject *self, PyObject *args)
 {
     SaveWindowAttributesObject *obj = (SaveWindowAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 15)
+    {
+        std::stringstream ss;
+        ss << "An invalid format value was given." << std::endl;
+        ss << "Valid values are in the range [0,14]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << " BMP";
+        ss << ", CURVE";
+        ss << ", JPEG";
+        ss << ", OBJ";
+        ss << ", PNG";
+        ss << ", POSTSCRIPT";
+        ss << ", POVRAY";
+        ss << ", PPM";
+        ss << ", RGB";
+        ss << ", STL";
+        ss << ", TIFF";
+        ss << ", ULTRA";
+        ss << ", VTK";
+        ss << ", PLY";
+        ss << ", EXR";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the format in the object.
-    if(ival >= 0 && ival < 15)
-        obj->data->SetFormat(SaveWindowAttributes::FileFormat(ival));
-    else
-    {
-        fprintf(stderr, "An invalid format value was given. "
-                        "Valid values are in the range of [0,14]. "
-                        "You can also use the following names: "
-                        "BMP, CURVE, JPEG, OBJ, PNG, "
-                        "POSTSCRIPT, POVRAY, PPM, RGB, "
-                        "STL, TIFF, ULTRA, VTK, "
-                        "PLY, EXR.");
-        return NULL;
-    }
+    obj->data->SetFormat(SaveWindowAttributes::FileFormat(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -375,12 +540,48 @@ SaveWindowAttributes_SetWidth(PyObject *self, PyObject *args)
 {
     SaveWindowAttributesObject *obj = (SaveWindowAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the width in the object.
-    obj->data->SetWidth((int)ival);
+    obj->data->SetWidth(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -399,12 +600,48 @@ SaveWindowAttributes_SetHeight(PyObject *self, PyObject *args)
 {
     SaveWindowAttributesObject *obj = (SaveWindowAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the height in the object.
-    obj->data->SetHeight((int)ival);
+    obj->data->SetHeight(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -423,12 +660,48 @@ SaveWindowAttributes_SetScreenCapture(PyObject *self, PyObject *args)
 {
     SaveWindowAttributesObject *obj = (SaveWindowAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the screenCapture in the object.
-    obj->data->SetScreenCapture(ival != 0);
+    obj->data->SetScreenCapture(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -447,12 +720,48 @@ SaveWindowAttributes_SetSaveTiled(PyObject *self, PyObject *args)
 {
     SaveWindowAttributesObject *obj = (SaveWindowAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the saveTiled in the object.
-    obj->data->SetSaveTiled(ival != 0);
+    obj->data->SetSaveTiled(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -471,12 +780,48 @@ SaveWindowAttributes_SetQuality(PyObject *self, PyObject *args)
 {
     SaveWindowAttributesObject *obj = (SaveWindowAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the quality in the object.
-    obj->data->SetQuality((int)ival);
+    obj->data->SetQuality(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -495,12 +840,48 @@ SaveWindowAttributes_SetProgressive(PyObject *self, PyObject *args)
 {
     SaveWindowAttributesObject *obj = (SaveWindowAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the progressive in the object.
-    obj->data->SetProgressive(ival != 0);
+    obj->data->SetProgressive(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -519,12 +900,48 @@ SaveWindowAttributes_SetBinary(PyObject *self, PyObject *args)
 {
     SaveWindowAttributesObject *obj = (SaveWindowAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the binary in the object.
-    obj->data->SetBinary(ival != 0);
+    obj->data->SetBinary(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -543,12 +960,48 @@ SaveWindowAttributes_SetStereo(PyObject *self, PyObject *args)
 {
     SaveWindowAttributesObject *obj = (SaveWindowAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the stereo in the object.
-    obj->data->SetStereo(ival != 0);
+    obj->data->SetStereo(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -567,22 +1020,57 @@ SaveWindowAttributes_SetCompression(PyObject *self, PyObject *args)
 {
     SaveWindowAttributesObject *obj = (SaveWindowAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 5)
+    {
+        std::stringstream ss;
+        ss << "An invalid compression value was given." << std::endl;
+        ss << "Valid values are in the range [0,4]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << " None";
+        ss << ", PackBits";
+        ss << ", Jpeg";
+        ss << ", Deflate";
+        ss << ", LZW";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the compression in the object.
-    if(ival >= 0 && ival < 5)
-        obj->data->SetCompression(SaveWindowAttributes::CompressionType(ival));
-    else
-    {
-        fprintf(stderr, "An invalid compression value was given. "
-                        "Valid values are in the range of [0,4]. "
-                        "You can also use the following names: "
-                        "None, PackBits, Jpeg, Deflate, LZW"
-                        ".");
-        return NULL;
-    }
+    obj->data->SetCompression(SaveWindowAttributes::CompressionType(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -601,12 +1089,48 @@ SaveWindowAttributes_SetForceMerge(PyObject *self, PyObject *args)
 {
     SaveWindowAttributesObject *obj = (SaveWindowAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the forceMerge in the object.
-    obj->data->SetForceMerge(ival != 0);
+    obj->data->SetForceMerge(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -625,21 +1149,55 @@ SaveWindowAttributes_SetResConstraint(PyObject *self, PyObject *args)
 {
     SaveWindowAttributesObject *obj = (SaveWindowAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 3)
+    {
+        std::stringstream ss;
+        ss << "An invalid resConstraint value was given." << std::endl;
+        ss << "Valid values are in the range [0,2]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << " NoConstraint";
+        ss << ", EqualWidthHeight";
+        ss << ", ScreenProportions";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the resConstraint in the object.
-    if(ival >= 0 && ival < 3)
-        obj->data->SetResConstraint(SaveWindowAttributes::ResConstraint(ival));
-    else
-    {
-        fprintf(stderr, "An invalid resConstraint value was given. "
-                        "Valid values are in the range of [0,2]. "
-                        "You can also use the following names: "
-                        "NoConstraint, EqualWidthHeight, ScreenProportions.");
-        return NULL;
-    }
+    obj->data->SetResConstraint(SaveWindowAttributes::ResConstraint(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -658,12 +1216,48 @@ SaveWindowAttributes_SetPixelData(PyObject *self, PyObject *args)
 {
     SaveWindowAttributesObject *obj = (SaveWindowAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the pixelData in the object.
-    obj->data->SetPixelData((int)ival);
+    obj->data->SetPixelData(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -682,12 +1276,48 @@ SaveWindowAttributes_SetAdvancedMultiWindowSave(PyObject *self, PyObject *args)
 {
     SaveWindowAttributesObject *obj = (SaveWindowAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the advancedMultiWindowSave in the object.
-    obj->data->SetAdvancedMultiWindowSave(ival != 0);
+    obj->data->SetAdvancedMultiWindowSave(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -710,10 +1340,7 @@ SaveWindowAttributes_SetSubWindowAtts(PyObject *self, PyObject *args)
     if(!PyArg_ParseTuple(args, "O", &newValue))
         return NULL;
     if(!PySaveSubWindowsAttributes_Check(newValue))
-    {
-        fprintf(stderr, "The subWindowAtts field can only be set with SaveSubWindowsAttributes objects.\n");
-        return NULL;
-    }
+        return PyErr_Format(PyExc_TypeError, "Field subWindowAtts can be set only with SaveSubWindowsAttributes objects");
 
     obj->data->SetSubWindowAtts(*PySaveSubWindowsAttributes_FromPyObject(newValue));
 
@@ -746,10 +1373,7 @@ SaveWindowAttributes_SetOpts(PyObject *self, PyObject *args)
     if(!PyArg_ParseTuple(args, "O", &newValue))
         return NULL;
     if(!PyDBOptionsAttributes_Check(newValue))
-    {
-        fprintf(stderr, "The opts field can only be set with DBOptionsAttributes objects.\n");
-        return NULL;
-    }
+        return PyErr_Format(PyExc_TypeError, "Field opts can be set only with DBOptionsAttributes objects");
 
     obj->data->SetOpts(*PyDBOptionsAttributes_FromPyObject(newValue));
 
@@ -930,66 +1554,79 @@ PySaveWindowAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "opts") == 0)
         return SaveWindowAttributes_GetOpts(self, NULL);
 
+
+    // Add a __dict__ answer so that dir() works
+    if (!strcmp(name, "__dict__"))
+    {
+        PyObject *result = PyDict_New();
+        for (int i = 0; PySaveWindowAttributes_methods[i].ml_meth; i++)
+            PyDict_SetItem(result,
+                PyString_FromString(PySaveWindowAttributes_methods[i].ml_name),
+                PyString_FromString(PySaveWindowAttributes_methods[i].ml_name));
+        return result;
+    }
+
     return Py_FindMethod(PySaveWindowAttributes_methods, self, name);
 }
 
 int
 PySaveWindowAttributes_setattr(PyObject *self, char *name, PyObject *args)
 {
-    // Create a tuple to contain the arguments since all of the Set
-    // functions expect a tuple.
-    PyObject *tuple = PyTuple_New(1);
-    PyTuple_SET_ITEM(tuple, 0, args);
-    Py_INCREF(args);
-    PyObject *obj = NULL;
+    PyObject NULL_PY_OBJ;
+    PyObject *obj = &NULL_PY_OBJ;
 
     if(strcmp(name, "outputToCurrentDirectory") == 0)
-        obj = SaveWindowAttributes_SetOutputToCurrentDirectory(self, tuple);
+        obj = SaveWindowAttributes_SetOutputToCurrentDirectory(self, args);
     else if(strcmp(name, "outputDirectory") == 0)
-        obj = SaveWindowAttributes_SetOutputDirectory(self, tuple);
+        obj = SaveWindowAttributes_SetOutputDirectory(self, args);
     else if(strcmp(name, "fileName") == 0)
-        obj = SaveWindowAttributes_SetFileName(self, tuple);
+        obj = SaveWindowAttributes_SetFileName(self, args);
     else if(strcmp(name, "family") == 0)
-        obj = SaveWindowAttributes_SetFamily(self, tuple);
+        obj = SaveWindowAttributes_SetFamily(self, args);
     else if(strcmp(name, "format") == 0)
-        obj = SaveWindowAttributes_SetFormat(self, tuple);
+        obj = SaveWindowAttributes_SetFormat(self, args);
     else if(strcmp(name, "width") == 0)
-        obj = SaveWindowAttributes_SetWidth(self, tuple);
+        obj = SaveWindowAttributes_SetWidth(self, args);
     else if(strcmp(name, "height") == 0)
-        obj = SaveWindowAttributes_SetHeight(self, tuple);
+        obj = SaveWindowAttributes_SetHeight(self, args);
     else if(strcmp(name, "screenCapture") == 0)
-        obj = SaveWindowAttributes_SetScreenCapture(self, tuple);
+        obj = SaveWindowAttributes_SetScreenCapture(self, args);
     else if(strcmp(name, "saveTiled") == 0)
-        obj = SaveWindowAttributes_SetSaveTiled(self, tuple);
+        obj = SaveWindowAttributes_SetSaveTiled(self, args);
     else if(strcmp(name, "quality") == 0)
-        obj = SaveWindowAttributes_SetQuality(self, tuple);
+        obj = SaveWindowAttributes_SetQuality(self, args);
     else if(strcmp(name, "progressive") == 0)
-        obj = SaveWindowAttributes_SetProgressive(self, tuple);
+        obj = SaveWindowAttributes_SetProgressive(self, args);
     else if(strcmp(name, "binary") == 0)
-        obj = SaveWindowAttributes_SetBinary(self, tuple);
+        obj = SaveWindowAttributes_SetBinary(self, args);
     else if(strcmp(name, "stereo") == 0)
-        obj = SaveWindowAttributes_SetStereo(self, tuple);
+        obj = SaveWindowAttributes_SetStereo(self, args);
     else if(strcmp(name, "compression") == 0)
-        obj = SaveWindowAttributes_SetCompression(self, tuple);
+        obj = SaveWindowAttributes_SetCompression(self, args);
     else if(strcmp(name, "forceMerge") == 0)
-        obj = SaveWindowAttributes_SetForceMerge(self, tuple);
+        obj = SaveWindowAttributes_SetForceMerge(self, args);
     else if(strcmp(name, "resConstraint") == 0)
-        obj = SaveWindowAttributes_SetResConstraint(self, tuple);
+        obj = SaveWindowAttributes_SetResConstraint(self, args);
     else if(strcmp(name, "pixelData") == 0)
-        obj = SaveWindowAttributes_SetPixelData(self, tuple);
+        obj = SaveWindowAttributes_SetPixelData(self, args);
     else if(strcmp(name, "advancedMultiWindowSave") == 0)
-        obj = SaveWindowAttributes_SetAdvancedMultiWindowSave(self, tuple);
+        obj = SaveWindowAttributes_SetAdvancedMultiWindowSave(self, args);
     else if(strcmp(name, "subWindowAtts") == 0)
-        obj = SaveWindowAttributes_SetSubWindowAtts(self, tuple);
+        obj = SaveWindowAttributes_SetSubWindowAtts(self, args);
     else if(strcmp(name, "opts") == 0)
-        obj = SaveWindowAttributes_SetOpts(self, tuple);
+        obj = SaveWindowAttributes_SetOpts(self, args);
 
-    if(obj != NULL)
+    if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
-    Py_DECREF(tuple);
-    if( obj == NULL)
-        PyErr_Format(PyExc_RuntimeError, "Unable to set unknown attribute: '%s'", name);
+    if (obj == &NULL_PY_OBJ)
+    {
+        obj = NULL;
+        PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);
+    }
+    else if (obj == NULL && !PyErr_Occurred())
+        PyErr_Format(PyExc_RuntimeError, "unknown problem with '%s'", name);
+
     return (obj != NULL) ? 0 : -1;
 }
 
@@ -997,7 +1634,7 @@ static int
 SaveWindowAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     SaveWindowAttributesObject *obj = (SaveWindowAttributesObject *)v;
-    fprintf(fp, "%s", PySaveWindowAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PySaveWindowAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -1005,7 +1642,7 @@ PyObject *
 SaveWindowAttributes_str(PyObject *v)
 {
     SaveWindowAttributesObject *obj = (SaveWindowAttributesObject *)v;
-    return PyString_FromString(PySaveWindowAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PySaveWindowAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -1157,7 +1794,7 @@ PySaveWindowAttributes_GetLogString()
 {
     std::string s("SaveWindowAtts = SaveWindowAttributes()\n");
     if(currentAtts != 0)
-        s += PySaveWindowAttributes_ToString(currentAtts, "SaveWindowAtts.");
+        s += PySaveWindowAttributes_ToString(currentAtts, "SaveWindowAtts.", true);
     return s;
 }
 
@@ -1170,7 +1807,7 @@ PySaveWindowAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("SaveWindowAtts = SaveWindowAttributes()\n");
-        s += PySaveWindowAttributes_ToString(currentAtts, "SaveWindowAtts.");
+        s += PySaveWindowAttributes_ToString(currentAtts, "SaveWindowAtts.", true);
         cb(s);
     }
 }

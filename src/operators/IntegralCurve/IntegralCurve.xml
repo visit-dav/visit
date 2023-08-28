@@ -31,6 +31,7 @@
       </Enum>
       <Enum name="DataValue">
         Solid
+        Random
         SeedPointID
         Speed
         Vorticity
@@ -42,6 +43,7 @@
         ClosedCurve
         Difference
         Variable
+        VariableAtSeed
       </Enum>
       <Enum name="CleanupMethod">
         NoCleanup
@@ -146,7 +148,7 @@
         0.000000
         1.000000
       </Field>
-      <Field name="useWholeBox" label="Use Whole Box" type="bool" enabler="sourceType:Box">
+      <Field name="useWholeBox" label="Use Whole Box" type="bool" enabler="sourceType:SpecifiedBox">
         true
       </Field>
       <Field name="pointList" label="List of Points" type="doubleVector" enabler="sourceType:PointList">
@@ -160,7 +162,7 @@
         1.000000
         0.000000
       </Field>
-      <Field name="fieldData" label="Field Data" type="doubleVector" enabler="sourceType:FeildData">
+      <Field name="fieldData" label="Field Data" type="doubleVector" enabler="sourceType:FieldData">
       </Field>
       <Field name="sampleDensity0" label="sampleDensity0" type="int">
         2
@@ -341,8 +343,6 @@
       <Function name="CreateCompatible" user="false" member="true">
       </Function>
       <Function name="ChangesRequireRecalculation" user="true" member="true">
-      </Function>
-      <Function name="ProcessOldVersions" user="true" member="true">
       </Function>
       <Function name="IntegralCurveViewerEnginePluginInfo::GetOperatorVarDescription" user="false" member="true">
       </Function>

@@ -187,7 +187,26 @@ def TestSandMesh():
 
 
 def TestMaterials():
+    #
+    # The tests need to be in this order to work around a bug in
+    # the filled boundary plot with getting colors from a database
+    # that causes the colors to be set the same for subsequent
+    # filled boundary plots where the colors are not set in the
+    # database.
+    #
     TestSection("Materials")
+    OpenDatabase(single_domain_path + "/sslide14ball_l.plt.mili")
+    v = GetView3D()
+    v.viewNormal = (0.9, 0.35, -0.88)
+    SetView3D(v)
+    SetTimeSliderState(12)
+
+    AddPlot("FilledBoundary", "materials1")
+    DrawPlots()
+    Test("mili_materials_00")
+
+    DeleteAllPlots()
+
     OpenDatabase(single_domain_path + "/d3samp6.plt.mili")
     v = GetView3D()
     v.viewNormal = (0.9, 0.35, -0.88)
@@ -196,9 +215,9 @@ def TestMaterials():
 
     AddPlot("FilledBoundary", "materials1(mesh1)")
     DrawPlots()
-    Test("mili_materials_00")
-    DeleteAllPlots()
+    Test("mili_materials_01")
 
+    DeleteAllPlots()
 
 def TestMultiDomain():
     TestSection("Multi-domain")
@@ -223,6 +242,7 @@ def TestParticles():
     v = GetView3D()
     v.viewNormal = (0.9, 0.35, -0.88)
     SetView3D(v)
+    SetTimeSliderState(0)
 
     AddPlot("Pseudocolor", "Primal/particle/stress/sxy")
     DrawPlots()
@@ -382,6 +402,16 @@ def TestDerivedVariables():
     AddPlot("Tensor", "Derived/Shared/strain/green_lagrange")
     DrawPlots()
     Test("mili_derived_12")
+    DeleteAllPlots()
+
+    AddPlot("Pseudocolor", "Derived/Shared/relative_volume")
+    DrawPlots()
+    Test("mili_derived_13")
+    DeleteAllPlots()
+
+    AddPlot("Pseudocolor", "Derived/Shared/volumetric_strain")
+    DrawPlots()
+    Test("mili_derived_14")
     DeleteAllPlots()
 
 

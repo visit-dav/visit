@@ -3,16 +3,22 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ************************************************************************* //
-//                            avtLineSamplerInfoQuery.C                       //
+//                           avtLineSamplerInfoQuery.C                       //
 // ************************************************************************* //
 
 #include <avtLineSamplerInfoQuery.h>
+
+#include <visit-config.h> // For LIB_VERSION_GE
+#include <vtkCellArray.h>
+#include <vtkPolyData.h>
+#include <vtkPointData.h>
+#include <vtkPoints.h>
+#if LIB_VERSION_GE(VTK,9,1,0)
+#include <vtkCellArrayIterator.h>
+#endif
 #include <avtDatasetExaminer.h>
 #include <avtParallel.h>
-#include <vtkPolyData.h>
-#include <vtkPoints.h>
-#include <vtkPointData.h>
-#include <vtkCellArray.h>
+
 #include <NonQueryableInputException.h>
 #ifdef PARALLEL
 #include <mpi.h>
@@ -32,7 +38,7 @@
 //
 // ****************************************************************************
 
-avtLineSamplerInfoQuery::avtLineSamplerInfoQuery() : avtDatasetQuery() 
+avtLineSamplerInfoQuery::avtLineSamplerInfoQuery() : avtDatasetQuery()
 {
     dumpCoordinates = false;
     dumpValues = false;
@@ -48,7 +54,7 @@ avtLineSamplerInfoQuery::avtLineSamplerInfoQuery() : avtDatasetQuery()
 //
 // ****************************************************************************
 
-avtLineSamplerInfoQuery::~avtLineSamplerInfoQuery() 
+avtLineSamplerInfoQuery::~avtLineSamplerInfoQuery()
 {
 }
 
@@ -56,12 +62,12 @@ avtLineSamplerInfoQuery::~avtLineSamplerInfoQuery()
 // ****************************************************************************
 // Method:  avtLineSamplerInfoQuery::SetInputParams
 //
-// Programmer:  Kathleen Biagas 
+// Programmer:  Kathleen Biagas
 // Creation:    June 17, 2011
 //
 //  Modifications:
 //    Kathleen Biagas, Thu Jan 10 08:12:47 PST 2013
-//    Use newer MapNode methods that check for numeric entries and retrieves 
+//    Use newer MapNode methods that check for numeric entries and retrieves
 //    to specific type.
 //
 // ****************************************************************************
@@ -78,7 +84,7 @@ avtLineSamplerInfoQuery::SetInputParams(const MapNode &params)
 // ****************************************************************************
 // Method:  avtLineSamplerInfoQuery::GetDefaultInputParams
 //
-// Programmer:  Kathleen Biagas 
+// Programmer:  Kathleen Biagas
 // Creation:    July 15, 2011
 //
 // ****************************************************************************
@@ -140,10 +146,10 @@ avtLineSamplerInfoQuery::PostExecute()
     int *counts = new int[nProcs];
     for (int i = 0; i < nProcs; i++)
         counts[i] = 0;
-    
+
     counts[PAR_Rank()] = lsData.size();
     Collect(counts, nProcs);
-    
+
     int tag = GetUniqueMessageTag();
     MPI_Status stat;
     if (PAR_Rank() == 0)
@@ -172,17 +178,17 @@ avtLineSamplerInfoQuery::PostExecute()
     }
     delete [] counts;
 #endif
-    
+
     std::string msg;
     char str[128];
     size_t i = 0, sz = lsData.size();
-    
+
     int lsIdx = 0;
     while (i < sz)
     {
         float cordLength = lsData[i++];
         unsigned int nSamples = (int) lsData[i++];
-        
+
         if( cordLength > 0 )
         {
           sprintf( str, "LineSample %d:  Number of samples %d  ",
@@ -226,7 +232,7 @@ avtLineSamplerInfoQuery::PostExecute()
 
         lsIdx++;
     }
-    
+
     SetResultMessage(msg.c_str());
 }
 
@@ -237,6 +243,8 @@ avtLineSamplerInfoQuery::PostExecute()
 // Creation:    November  9, 2010
 //
 //  Modifications:
+//    Kathleen Biagas, Thu Aug 11, 2022
+//    Support VTK9: use vtkCellArrayIterator.
 //
 // ****************************************************************************
 
@@ -247,47 +255,52 @@ avtLineSamplerInfoQuery::Execute(vtkDataSet *data, const int chunk)
     {
         EXCEPTION1(NonQueryableInputException,"LineSampler Info query only valid on line sampler operations");
     }
-    
+
     vtkPolyData *ds = (vtkPolyData *) data;
     vtkPoints *points = ds->GetPoints();
-    vtkCellArray *vertices = ds->GetVerts();
-    vtkIdType *verts = vertices->GetPointer();
-    vtkCellArray *lines = ds->GetLines();
-    vtkIdType *segments = lines->GetPointer();
-
     float *scalar =
       (float *) data->GetPointData()->GetScalars()->GetVoidPointer(0);
 
     double pt[3] = {0,0,0};
     double p0[3] = {0,0,0};
 
-    vtkIdType *vertPtr = verts;
-
     if ( ds->GetNumberOfVerts() > 0 )
     {
       std::vector<float> steps;
-        
+      vtkIdType nPts; // = 1 for a vertex
+#if LIB_VERSION_LE(VTK,8,1,0)
+      vtkCellArray *vertices = ds->GetVerts();
+      vtkIdType *verts = vertices->GetPointer();
+      vtkIdType *vertPtr = verts;
+
       for (int i=0; i<ds->GetNumberOfVerts(); i++)
       {
-        int nPts = *vertPtr;  // = 1 for a vertex
+        nPts = *vertPtr;
         vertPtr++; //Now segptr points at vtx0.
-
+#else
+      auto verts = vtk::TakeSmartPointer(ds->GetVerts()->NewIterator());
+      for (verts->GoToFirstCell(); !verts->IsDoneWithTraversal(); verts->GoToNextCell());
+      {
+        const vtkIdType *vertPtr;
+        verts->GetCurrentCell(nPts, vertPtr);
+#endif
         points->GetPoint(vertPtr[0], pt);
-      
+
         if (dumpCoordinates)
         {
           steps.push_back(pt[0]);
           steps.push_back(pt[1]);
           steps.push_back(pt[2]);
         }
-        
+
         if (dumpValues)
         {
           float s = scalar[vertPtr[0]];
           steps.push_back(s);
         }
-
+#if LIB_VERSION_LE(VTK,8,1,0)
         vertPtr += nPts;
+#endif
       }
 
       lsData.push_back(0.0); // No cord length as individual points
@@ -298,18 +311,31 @@ avtLineSamplerInfoQuery::Execute(vtkDataSet *data, const int chunk)
         lsData.insert( lsData.end(), steps.begin(), steps.end() );
       }
     }
-    
-    vtkIdType *segPtr = segments;
 
-    for (int i=0; i<ds->GetNumberOfLines(); i++)
+
+    if (ds->GetNumberOfLines() > 0)
     {
-        int nPts = *segPtr;
+      vtkIdType nPts;
+#if LIB_VERSION_LE(VTK,8,1,0)
+      vtkCellArray *lines = ds->GetLines();
+      vtkIdType *segments = lines->GetPointer();
+      vtkIdType *segPtr = segments;
+
+      for (int i=0; i<ds->GetNumberOfLines(); i++)
+      {
+        nPts = *segPtr;
         segPtr++; //Now segptr points at vtx0.
-        
+#else
+      auto lines = vtk::TakeSmartPointer(ds->GetLines()->NewIterator());
+      for (lines->GoToFirstCell(); !lines->IsDoneWithTraversal(); lines->GoToNextCell());
+      {
+        const vtkIdType *segPtr;
+        lines->GetCurrentCell(nPts, segPtr);
+#endif
         float cordLength = 0.0;
         std::vector<float> steps;
-        
-        for (int j = 0; j < nPts; j++)
+
+        for (vtkIdType j = 0; j < nPts; j++)
         {
             points->GetPoint(segPtr[j], pt);
 
@@ -331,7 +357,7 @@ avtLineSamplerInfoQuery::Execute(vtkDataSet *data, const int chunk)
               double x = p0[0]-pt[0];
               double y = p0[1]-pt[1];
               double z = p0[2]-pt[2];
-              
+
               cordLength += sqrt(x*x + y*y + z*z);
             }
 
@@ -347,7 +373,9 @@ avtLineSamplerInfoQuery::Execute(vtkDataSet *data, const int chunk)
             lsData.push_back( (float) (nPts) );
             lsData.insert( lsData.end(), steps.begin(), steps.end() );
         }
-
+#if LIB_VERSION_LE(VTK,8,1,0)
         segPtr += nPts;
+#endif
+      }
     }
 }

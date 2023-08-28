@@ -36,7 +36,7 @@ struct PlotObject
 //
 static PyObject *NewPlot(int);
 std::string
-PyPlot_ToString(const Plot *atts, const char *prefix)
+PyPlot_ToString(const Plot *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -145,6 +145,38 @@ PyPlot_ToString(const Plot *atts, const char *prefix)
         snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
+    {   const intVector &numKeyframesPerOperator = atts->GetNumKeyframesPerOperator();
+        snprintf(tmpStr, 1000, "%snumKeyframesPerOperator = (", prefix);
+        str += tmpStr;
+        for(size_t i = 0; i < numKeyframesPerOperator.size(); ++i)
+        {
+            snprintf(tmpStr, 1000, "%d", numKeyframesPerOperator[i]);
+            str += tmpStr;
+            if(i < numKeyframesPerOperator.size() - 1)
+            {
+                snprintf(tmpStr, 1000, ", ");
+                str += tmpStr;
+            }
+        }
+        snprintf(tmpStr, 1000, ")\n");
+        str += tmpStr;
+    }
+    {   const intVector &operatorKeyframes = atts->GetOperatorKeyframes();
+        snprintf(tmpStr, 1000, "%soperatorKeyframes = (", prefix);
+        str += tmpStr;
+        for(size_t i = 0; i < operatorKeyframes.size(); ++i)
+        {
+            snprintf(tmpStr, 1000, "%d", operatorKeyframes[i]);
+            str += tmpStr;
+            if(i < operatorKeyframes.size() - 1)
+            {
+                snprintf(tmpStr, 1000, ", ");
+                str += tmpStr;
+            }
+        }
+        snprintf(tmpStr, 1000, ")\n");
+        str += tmpStr;
+    }
     {   const intVector &databaseKeyframes = atts->GetDatabaseKeyframes();
         snprintf(tmpStr, 1000, "%sdatabaseKeyframes = (", prefix);
         str += tmpStr;
@@ -197,21 +229,56 @@ Plot_SetStateType(PyObject *self, PyObject *args)
 {
     PlotObject *obj = (PlotObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 4)
+    {
+        std::stringstream ss;
+        ss << "An invalid stateType value was given." << std::endl;
+        ss << "Valid values are in the range [0,3]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << " NewlyCreated";
+        ss << ", Pending";
+        ss << ", Completed";
+        ss << ", Error";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the stateType in the object.
-    if(ival >= 0 && ival < 4)
-        obj->data->SetStateType(Plot::StateType(ival));
-    else
-    {
-        fprintf(stderr, "An invalid stateType value was given. "
-                        "Valid values are in the range of [0,3]. "
-                        "You can also use the following names: "
-                        "NewlyCreated, Pending, Completed, Error.");
-        return NULL;
-    }
+    obj->data->SetStateType(Plot::StateType(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -230,12 +297,48 @@ Plot_SetPlotType(PyObject *self, PyObject *args)
 {
     PlotObject *obj = (PlotObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the plotType in the object.
-    obj->data->SetPlotType((int)ival);
+    obj->data->SetPlotType(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -254,12 +357,37 @@ Plot_SetPlotName(PyObject *self, PyObject *args)
 {
     PlotObject *obj = (PlotObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the plotName in the object.
-    obj->data->SetPlotName(std::string(str));
+    obj->data->SetPlotName(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -278,12 +406,48 @@ Plot_SetActiveFlag(PyObject *self, PyObject *args)
 {
     PlotObject *obj = (PlotObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the activeFlag in the object.
-    obj->data->SetActiveFlag(ival != 0);
+    obj->data->SetActiveFlag(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -302,12 +466,48 @@ Plot_SetHiddenFlag(PyObject *self, PyObject *args)
 {
     PlotObject *obj = (PlotObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the hiddenFlag in the object.
-    obj->data->SetHiddenFlag(ival != 0);
+    obj->data->SetHiddenFlag(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -326,12 +526,48 @@ Plot_SetExpandedFlag(PyObject *self, PyObject *args)
 {
     PlotObject *obj = (PlotObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the expandedFlag in the object.
-    obj->data->SetExpandedFlag(ival != 0);
+    obj->data->SetExpandedFlag(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -350,12 +586,37 @@ Plot_SetPlotVar(PyObject *self, PyObject *args)
 {
     PlotObject *obj = (PlotObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the plotVar in the object.
-    obj->data->SetPlotVar(std::string(str));
+    obj->data->SetPlotVar(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -374,12 +635,37 @@ Plot_SetDatabaseName(PyObject *self, PyObject *args)
 {
     PlotObject *obj = (PlotObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the databaseName in the object.
-    obj->data->SetDatabaseName(std::string(str));
+    obj->data->SetDatabaseName(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -398,45 +684,58 @@ Plot_SetOperators(PyObject *self, PyObject *args)
 {
     PlotObject *obj = (PlotObject *)self;
 
-    intVector  &vec = obj->data->GetOperators();
-    PyObject   *tuple;
-    if(!PyArg_ParseTuple(args, "O", &tuple))
-        return NULL;
+    intVector vec;
 
-    if(PyTuple_Check(tuple))
+    if (PyNumber_Check(args))
     {
-        vec.resize(PyTuple_Size(tuple));
-        for(int i = 0; i < PyTuple_Size(tuple); ++i)
+        long val = PyLong_AsLong(args);
+        int cval = int(val);
+        if (val == -1 && PyErr_Occurred())
         {
-            PyObject *item = PyTuple_GET_ITEM(tuple, i);
-            if(PyFloat_Check(item))
-                vec[i] = int(PyFloat_AS_DOUBLE(item));
-            else if(PyInt_Check(item))
-                vec[i] = int(PyInt_AS_LONG(item));
-            else if(PyLong_Check(item))
-                vec[i] = int(PyLong_AsLong(item));
-            else
-                vec[i] = 0;
+            PyErr_Clear();
+            return PyErr_Format(PyExc_TypeError, "number not interpretable as C++ int");
+        }
+        if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+            return PyErr_Format(PyExc_ValueError, "number not interpretable as C++ int");
+        vec.resize(1);
+        vec[0] = cval;
+    }
+    else if (PySequence_Check(args) && !PyUnicode_Check(args))
+    {
+        vec.resize(PySequence_Size(args));
+        for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)
+        {
+            PyObject *item = PySequence_GetItem(args, i);
+
+            if (!PyNumber_Check(item))
+            {
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_TypeError, "arg %d is not a number type", (int) i);
+            }
+
+            long val = PyLong_AsLong(item);
+            int cval = int(val);
+
+            if (val == -1 && PyErr_Occurred())
+            {
+                Py_DECREF(item);
+                PyErr_Clear();
+                return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ int", (int) i);
+            }
+            if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+            {
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_ValueError, "arg %d not interpretable as C++ int", (int) i);
+            }
+            Py_DECREF(item);
+
+            vec[i] = cval;
         }
     }
-    else if(PyFloat_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = int(PyFloat_AS_DOUBLE(tuple));
-    }
-    else if(PyInt_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = int(PyInt_AS_LONG(tuple));
-    }
-    else if(PyLong_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = int(PyLong_AsLong(tuple));
-    }
     else
-        return NULL;
+        return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more ints");
 
+    obj->data->GetOperators() = vec;
     // Mark the operators in the object as modified.
     obj->data->SelectOperators();
 
@@ -461,37 +760,51 @@ Plot_SetOperatorNames(PyObject *self, PyObject *args)
 {
     PlotObject *obj = (PlotObject *)self;
 
-    stringVector  &vec = obj->data->GetOperatorNames();
-    PyObject     *tuple;
-    if(!PyArg_ParseTuple(args, "O", &tuple))
-        return NULL;
+    stringVector vec;
 
-    if(PyTuple_Check(tuple))
+    if (PyUnicode_Check(args))
     {
-        vec.resize(PyTuple_Size(tuple));
-        for(int i = 0; i < PyTuple_Size(tuple); ++i)
+        char const *val = PyUnicode_AsUTF8(args);
+        std::string cval = std::string(val);
+        if (val == 0 && PyErr_Occurred())
         {
-            PyObject *item = PyTuple_GET_ITEM(tuple, i);
-            if(PyString_Check(item))
+            PyErr_Clear();
+            return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ string");
+        }
+        vec.resize(1);
+        vec[0] = cval;
+    }
+    else if (PySequence_Check(args))
+    {
+        vec.resize(PySequence_Size(args));
+        for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)
+        {
+            PyObject *item = PySequence_GetItem(args, i);
+
+            if (!PyUnicode_Check(item))
             {
-                char *item_cstr = PyString_AsString(item);
-                vec[i] = std::string(item_cstr);
-                PyString_AsString_Cleanup(item_cstr);
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_TypeError, "arg %d is not a unicode string", (int) i);
             }
-            else
-                vec[i] = std::string("");
+
+            char const *val = PyUnicode_AsUTF8(item);
+            std::string cval = std::string(val);
+
+            if (val == 0 && PyErr_Occurred())
+            {
+                Py_DECREF(item);
+                PyErr_Clear();
+                return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ string", (int) i);
+            }
+            Py_DECREF(item);
+
+            vec[i] = cval;
         }
     }
-    else if(PyString_Check(tuple))
-    {
-        vec.resize(1);
-        char *tuple_cstr = PyString_AsString(tuple);
-        vec[0] = std::string(tuple_cstr);
-        PyString_AsString_Cleanup(tuple_cstr);
-    }
     else
-        return NULL;
+        return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more string(s)");
 
+    obj->data->GetOperatorNames() = vec;
     // Mark the operatorNames in the object as modified.
     obj->data->SelectOperatorNames();
 
@@ -516,12 +829,48 @@ Plot_SetActiveOperator(PyObject *self, PyObject *args)
 {
     PlotObject *obj = (PlotObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the activeOperator in the object.
-    obj->data->SetActiveOperator((int)ival);
+    obj->data->SetActiveOperator(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -540,12 +889,48 @@ Plot_SetId(PyObject *self, PyObject *args)
 {
     PlotObject *obj = (PlotObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the id in the object.
-    obj->data->SetId((int)ival);
+    obj->data->SetId(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -564,12 +949,48 @@ Plot_SetEmbeddedPlotId(PyObject *self, PyObject *args)
 {
     PlotObject *obj = (PlotObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the embeddedPlotId in the object.
-    obj->data->SetEmbeddedPlotId((int)ival);
+    obj->data->SetEmbeddedPlotId(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -588,12 +1009,48 @@ Plot_SetBeginFrame(PyObject *self, PyObject *args)
 {
     PlotObject *obj = (PlotObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the beginFrame in the object.
-    obj->data->SetBeginFrame((int)ival);
+    obj->data->SetBeginFrame(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -612,12 +1069,48 @@ Plot_SetEndFrame(PyObject *self, PyObject *args)
 {
     PlotObject *obj = (PlotObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the endFrame in the object.
-    obj->data->SetEndFrame((int)ival);
+    obj->data->SetEndFrame(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -636,45 +1129,58 @@ Plot_SetKeyframes(PyObject *self, PyObject *args)
 {
     PlotObject *obj = (PlotObject *)self;
 
-    intVector  &vec = obj->data->GetKeyframes();
-    PyObject   *tuple;
-    if(!PyArg_ParseTuple(args, "O", &tuple))
-        return NULL;
+    intVector vec;
 
-    if(PyTuple_Check(tuple))
+    if (PyNumber_Check(args))
     {
-        vec.resize(PyTuple_Size(tuple));
-        for(int i = 0; i < PyTuple_Size(tuple); ++i)
+        long val = PyLong_AsLong(args);
+        int cval = int(val);
+        if (val == -1 && PyErr_Occurred())
         {
-            PyObject *item = PyTuple_GET_ITEM(tuple, i);
-            if(PyFloat_Check(item))
-                vec[i] = int(PyFloat_AS_DOUBLE(item));
-            else if(PyInt_Check(item))
-                vec[i] = int(PyInt_AS_LONG(item));
-            else if(PyLong_Check(item))
-                vec[i] = int(PyLong_AsLong(item));
-            else
-                vec[i] = 0;
+            PyErr_Clear();
+            return PyErr_Format(PyExc_TypeError, "number not interpretable as C++ int");
+        }
+        if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+            return PyErr_Format(PyExc_ValueError, "number not interpretable as C++ int");
+        vec.resize(1);
+        vec[0] = cval;
+    }
+    else if (PySequence_Check(args) && !PyUnicode_Check(args))
+    {
+        vec.resize(PySequence_Size(args));
+        for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)
+        {
+            PyObject *item = PySequence_GetItem(args, i);
+
+            if (!PyNumber_Check(item))
+            {
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_TypeError, "arg %d is not a number type", (int) i);
+            }
+
+            long val = PyLong_AsLong(item);
+            int cval = int(val);
+
+            if (val == -1 && PyErr_Occurred())
+            {
+                Py_DECREF(item);
+                PyErr_Clear();
+                return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ int", (int) i);
+            }
+            if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+            {
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_ValueError, "arg %d not interpretable as C++ int", (int) i);
+            }
+            Py_DECREF(item);
+
+            vec[i] = cval;
         }
     }
-    else if(PyFloat_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = int(PyFloat_AS_DOUBLE(tuple));
-    }
-    else if(PyInt_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = int(PyInt_AS_LONG(tuple));
-    }
-    else if(PyLong_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = int(PyLong_AsLong(tuple));
-    }
     else
-        return NULL;
+        return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more ints");
 
+    obj->data->GetKeyframes() = vec;
     // Mark the keyframes in the object as modified.
     obj->data->SelectKeyframes();
 
@@ -695,49 +1201,214 @@ Plot_GetKeyframes(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
+Plot_SetNumKeyframesPerOperator(PyObject *self, PyObject *args)
+{
+    PlotObject *obj = (PlotObject *)self;
+
+    intVector vec;
+
+    if (PyNumber_Check(args))
+    {
+        long val = PyLong_AsLong(args);
+        int cval = int(val);
+        if (val == -1 && PyErr_Occurred())
+        {
+            PyErr_Clear();
+            return PyErr_Format(PyExc_TypeError, "number not interpretable as C++ int");
+        }
+        if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+            return PyErr_Format(PyExc_ValueError, "number not interpretable as C++ int");
+        vec.resize(1);
+        vec[0] = cval;
+    }
+    else if (PySequence_Check(args) && !PyUnicode_Check(args))
+    {
+        vec.resize(PySequence_Size(args));
+        for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)
+        {
+            PyObject *item = PySequence_GetItem(args, i);
+
+            if (!PyNumber_Check(item))
+            {
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_TypeError, "arg %d is not a number type", (int) i);
+            }
+
+            long val = PyLong_AsLong(item);
+            int cval = int(val);
+
+            if (val == -1 && PyErr_Occurred())
+            {
+                Py_DECREF(item);
+                PyErr_Clear();
+                return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ int", (int) i);
+            }
+            if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+            {
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_ValueError, "arg %d not interpretable as C++ int", (int) i);
+            }
+            Py_DECREF(item);
+
+            vec[i] = cval;
+        }
+    }
+    else
+        return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more ints");
+
+    obj->data->GetNumKeyframesPerOperator() = vec;
+    // Mark the numKeyframesPerOperator in the object as modified.
+    obj->data->SelectNumKeyframesPerOperator();
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+Plot_GetNumKeyframesPerOperator(PyObject *self, PyObject *args)
+{
+    PlotObject *obj = (PlotObject *)self;
+    // Allocate a tuple the with enough entries to hold the numKeyframesPerOperator.
+    const intVector &numKeyframesPerOperator = obj->data->GetNumKeyframesPerOperator();
+    PyObject *retval = PyTuple_New(numKeyframesPerOperator.size());
+    for(size_t i = 0; i < numKeyframesPerOperator.size(); ++i)
+        PyTuple_SET_ITEM(retval, i, PyInt_FromLong(long(numKeyframesPerOperator[i])));
+    return retval;
+}
+
+/*static*/ PyObject *
+Plot_SetOperatorKeyframes(PyObject *self, PyObject *args)
+{
+    PlotObject *obj = (PlotObject *)self;
+
+    intVector vec;
+
+    if (PyNumber_Check(args))
+    {
+        long val = PyLong_AsLong(args);
+        int cval = int(val);
+        if (val == -1 && PyErr_Occurred())
+        {
+            PyErr_Clear();
+            return PyErr_Format(PyExc_TypeError, "number not interpretable as C++ int");
+        }
+        if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+            return PyErr_Format(PyExc_ValueError, "number not interpretable as C++ int");
+        vec.resize(1);
+        vec[0] = cval;
+    }
+    else if (PySequence_Check(args) && !PyUnicode_Check(args))
+    {
+        vec.resize(PySequence_Size(args));
+        for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)
+        {
+            PyObject *item = PySequence_GetItem(args, i);
+
+            if (!PyNumber_Check(item))
+            {
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_TypeError, "arg %d is not a number type", (int) i);
+            }
+
+            long val = PyLong_AsLong(item);
+            int cval = int(val);
+
+            if (val == -1 && PyErr_Occurred())
+            {
+                Py_DECREF(item);
+                PyErr_Clear();
+                return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ int", (int) i);
+            }
+            if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+            {
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_ValueError, "arg %d not interpretable as C++ int", (int) i);
+            }
+            Py_DECREF(item);
+
+            vec[i] = cval;
+        }
+    }
+    else
+        return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more ints");
+
+    obj->data->GetOperatorKeyframes() = vec;
+    // Mark the operatorKeyframes in the object as modified.
+    obj->data->SelectOperatorKeyframes();
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+Plot_GetOperatorKeyframes(PyObject *self, PyObject *args)
+{
+    PlotObject *obj = (PlotObject *)self;
+    // Allocate a tuple the with enough entries to hold the operatorKeyframes.
+    const intVector &operatorKeyframes = obj->data->GetOperatorKeyframes();
+    PyObject *retval = PyTuple_New(operatorKeyframes.size());
+    for(size_t i = 0; i < operatorKeyframes.size(); ++i)
+        PyTuple_SET_ITEM(retval, i, PyInt_FromLong(long(operatorKeyframes[i])));
+    return retval;
+}
+
+/*static*/ PyObject *
 Plot_SetDatabaseKeyframes(PyObject *self, PyObject *args)
 {
     PlotObject *obj = (PlotObject *)self;
 
-    intVector  &vec = obj->data->GetDatabaseKeyframes();
-    PyObject   *tuple;
-    if(!PyArg_ParseTuple(args, "O", &tuple))
-        return NULL;
+    intVector vec;
 
-    if(PyTuple_Check(tuple))
+    if (PyNumber_Check(args))
     {
-        vec.resize(PyTuple_Size(tuple));
-        for(int i = 0; i < PyTuple_Size(tuple); ++i)
+        long val = PyLong_AsLong(args);
+        int cval = int(val);
+        if (val == -1 && PyErr_Occurred())
         {
-            PyObject *item = PyTuple_GET_ITEM(tuple, i);
-            if(PyFloat_Check(item))
-                vec[i] = int(PyFloat_AS_DOUBLE(item));
-            else if(PyInt_Check(item))
-                vec[i] = int(PyInt_AS_LONG(item));
-            else if(PyLong_Check(item))
-                vec[i] = int(PyLong_AsLong(item));
-            else
-                vec[i] = 0;
+            PyErr_Clear();
+            return PyErr_Format(PyExc_TypeError, "number not interpretable as C++ int");
+        }
+        if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+            return PyErr_Format(PyExc_ValueError, "number not interpretable as C++ int");
+        vec.resize(1);
+        vec[0] = cval;
+    }
+    else if (PySequence_Check(args) && !PyUnicode_Check(args))
+    {
+        vec.resize(PySequence_Size(args));
+        for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)
+        {
+            PyObject *item = PySequence_GetItem(args, i);
+
+            if (!PyNumber_Check(item))
+            {
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_TypeError, "arg %d is not a number type", (int) i);
+            }
+
+            long val = PyLong_AsLong(item);
+            int cval = int(val);
+
+            if (val == -1 && PyErr_Occurred())
+            {
+                Py_DECREF(item);
+                PyErr_Clear();
+                return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ int", (int) i);
+            }
+            if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+            {
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_ValueError, "arg %d not interpretable as C++ int", (int) i);
+            }
+            Py_DECREF(item);
+
+            vec[i] = cval;
         }
     }
-    else if(PyFloat_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = int(PyFloat_AS_DOUBLE(tuple));
-    }
-    else if(PyInt_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = int(PyInt_AS_LONG(tuple));
-    }
-    else if(PyLong_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = int(PyLong_AsLong(tuple));
-    }
     else
-        return NULL;
+        return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more ints");
 
+    obj->data->GetDatabaseKeyframes() = vec;
     // Mark the databaseKeyframes in the object as modified.
     obj->data->SelectDatabaseKeyframes();
 
@@ -762,12 +1433,48 @@ Plot_SetIsFromSimulation(PyObject *self, PyObject *args)
 {
     PlotObject *obj = (PlotObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the isFromSimulation in the object.
-    obj->data->SetIsFromSimulation(ival != 0);
+    obj->data->SetIsFromSimulation(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -786,12 +1493,48 @@ Plot_SetFollowsTime(PyObject *self, PyObject *args)
 {
     PlotObject *obj = (PlotObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the followsTime in the object.
-    obj->data->SetFollowsTime(ival != 0);
+    obj->data->SetFollowsTime(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -810,12 +1553,37 @@ Plot_SetDescription(PyObject *self, PyObject *args)
 {
     PlotObject *obj = (PlotObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the description in the object.
-    obj->data->SetDescription(std::string(str));
+    obj->data->SetDescription(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -834,12 +1602,37 @@ Plot_SetSelection(PyObject *self, PyObject *args)
 {
     PlotObject *obj = (PlotObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the selection in the object.
-    obj->data->SetSelection(std::string(str));
+    obj->data->SetSelection(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -858,12 +1651,48 @@ Plot_SetAnimatingFlag(PyObject *self, PyObject *args)
 {
     PlotObject *obj = (PlotObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the animatingFlag in the object.
-    obj->data->SetAnimatingFlag(ival != 0);
+    obj->data->SetAnimatingFlag(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -913,6 +1742,10 @@ PyMethodDef PyPlot_methods[PLOT_NMETH] = {
     {"GetEndFrame", Plot_GetEndFrame, METH_VARARGS},
     {"SetKeyframes", Plot_SetKeyframes, METH_VARARGS},
     {"GetKeyframes", Plot_GetKeyframes, METH_VARARGS},
+    {"SetNumKeyframesPerOperator", Plot_SetNumKeyframesPerOperator, METH_VARARGS},
+    {"GetNumKeyframesPerOperator", Plot_GetNumKeyframesPerOperator, METH_VARARGS},
+    {"SetOperatorKeyframes", Plot_SetOperatorKeyframes, METH_VARARGS},
+    {"GetOperatorKeyframes", Plot_GetOperatorKeyframes, METH_VARARGS},
     {"SetDatabaseKeyframes", Plot_SetDatabaseKeyframes, METH_VARARGS},
     {"GetDatabaseKeyframes", Plot_GetDatabaseKeyframes, METH_VARARGS},
     {"SetIsFromSimulation", Plot_SetIsFromSimulation, METH_VARARGS},
@@ -987,6 +1820,10 @@ PyPlot_getattr(PyObject *self, char *name)
         return Plot_GetEndFrame(self, NULL);
     if(strcmp(name, "keyframes") == 0)
         return Plot_GetKeyframes(self, NULL);
+    if(strcmp(name, "numKeyframesPerOperator") == 0)
+        return Plot_GetNumKeyframesPerOperator(self, NULL);
+    if(strcmp(name, "operatorKeyframes") == 0)
+        return Plot_GetOperatorKeyframes(self, NULL);
     if(strcmp(name, "databaseKeyframes") == 0)
         return Plot_GetDatabaseKeyframes(self, NULL);
     if(strcmp(name, "isFromSimulation") == 0)
@@ -1000,70 +1837,87 @@ PyPlot_getattr(PyObject *self, char *name)
     if(strcmp(name, "animatingFlag") == 0)
         return Plot_GetAnimatingFlag(self, NULL);
 
+
+    // Add a __dict__ answer so that dir() works
+    if (!strcmp(name, "__dict__"))
+    {
+        PyObject *result = PyDict_New();
+        for (int i = 0; PyPlot_methods[i].ml_meth; i++)
+            PyDict_SetItem(result,
+                PyString_FromString(PyPlot_methods[i].ml_name),
+                PyString_FromString(PyPlot_methods[i].ml_name));
+        return result;
+    }
+
     return Py_FindMethod(PyPlot_methods, self, name);
 }
 
 int
 PyPlot_setattr(PyObject *self, char *name, PyObject *args)
 {
-    // Create a tuple to contain the arguments since all of the Set
-    // functions expect a tuple.
-    PyObject *tuple = PyTuple_New(1);
-    PyTuple_SET_ITEM(tuple, 0, args);
-    Py_INCREF(args);
-    PyObject *obj = NULL;
+    PyObject NULL_PY_OBJ;
+    PyObject *obj = &NULL_PY_OBJ;
 
     if(strcmp(name, "stateType") == 0)
-        obj = Plot_SetStateType(self, tuple);
+        obj = Plot_SetStateType(self, args);
     else if(strcmp(name, "plotType") == 0)
-        obj = Plot_SetPlotType(self, tuple);
+        obj = Plot_SetPlotType(self, args);
     else if(strcmp(name, "plotName") == 0)
-        obj = Plot_SetPlotName(self, tuple);
+        obj = Plot_SetPlotName(self, args);
     else if(strcmp(name, "activeFlag") == 0)
-        obj = Plot_SetActiveFlag(self, tuple);
+        obj = Plot_SetActiveFlag(self, args);
     else if(strcmp(name, "hiddenFlag") == 0)
-        obj = Plot_SetHiddenFlag(self, tuple);
+        obj = Plot_SetHiddenFlag(self, args);
     else if(strcmp(name, "expandedFlag") == 0)
-        obj = Plot_SetExpandedFlag(self, tuple);
+        obj = Plot_SetExpandedFlag(self, args);
     else if(strcmp(name, "plotVar") == 0)
-        obj = Plot_SetPlotVar(self, tuple);
+        obj = Plot_SetPlotVar(self, args);
     else if(strcmp(name, "databaseName") == 0)
-        obj = Plot_SetDatabaseName(self, tuple);
+        obj = Plot_SetDatabaseName(self, args);
     else if(strcmp(name, "operators") == 0)
-        obj = Plot_SetOperators(self, tuple);
+        obj = Plot_SetOperators(self, args);
     else if(strcmp(name, "operatorNames") == 0)
-        obj = Plot_SetOperatorNames(self, tuple);
+        obj = Plot_SetOperatorNames(self, args);
     else if(strcmp(name, "activeOperator") == 0)
-        obj = Plot_SetActiveOperator(self, tuple);
+        obj = Plot_SetActiveOperator(self, args);
     else if(strcmp(name, "id") == 0)
-        obj = Plot_SetId(self, tuple);
+        obj = Plot_SetId(self, args);
     else if(strcmp(name, "embeddedPlotId") == 0)
-        obj = Plot_SetEmbeddedPlotId(self, tuple);
+        obj = Plot_SetEmbeddedPlotId(self, args);
     else if(strcmp(name, "beginFrame") == 0)
-        obj = Plot_SetBeginFrame(self, tuple);
+        obj = Plot_SetBeginFrame(self, args);
     else if(strcmp(name, "endFrame") == 0)
-        obj = Plot_SetEndFrame(self, tuple);
+        obj = Plot_SetEndFrame(self, args);
     else if(strcmp(name, "keyframes") == 0)
-        obj = Plot_SetKeyframes(self, tuple);
+        obj = Plot_SetKeyframes(self, args);
+    else if(strcmp(name, "numKeyframesPerOperator") == 0)
+        obj = Plot_SetNumKeyframesPerOperator(self, args);
+    else if(strcmp(name, "operatorKeyframes") == 0)
+        obj = Plot_SetOperatorKeyframes(self, args);
     else if(strcmp(name, "databaseKeyframes") == 0)
-        obj = Plot_SetDatabaseKeyframes(self, tuple);
+        obj = Plot_SetDatabaseKeyframes(self, args);
     else if(strcmp(name, "isFromSimulation") == 0)
-        obj = Plot_SetIsFromSimulation(self, tuple);
+        obj = Plot_SetIsFromSimulation(self, args);
     else if(strcmp(name, "followsTime") == 0)
-        obj = Plot_SetFollowsTime(self, tuple);
+        obj = Plot_SetFollowsTime(self, args);
     else if(strcmp(name, "description") == 0)
-        obj = Plot_SetDescription(self, tuple);
+        obj = Plot_SetDescription(self, args);
     else if(strcmp(name, "selection") == 0)
-        obj = Plot_SetSelection(self, tuple);
+        obj = Plot_SetSelection(self, args);
     else if(strcmp(name, "animatingFlag") == 0)
-        obj = Plot_SetAnimatingFlag(self, tuple);
+        obj = Plot_SetAnimatingFlag(self, args);
 
-    if(obj != NULL)
+    if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
-    Py_DECREF(tuple);
-    if( obj == NULL)
-        PyErr_Format(PyExc_RuntimeError, "Unable to set unknown attribute: '%s'", name);
+    if (obj == &NULL_PY_OBJ)
+    {
+        obj = NULL;
+        PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);
+    }
+    else if (obj == NULL && !PyErr_Occurred())
+        PyErr_Format(PyExc_RuntimeError, "unknown problem with '%s'", name);
+
     return (obj != NULL) ? 0 : -1;
 }
 
@@ -1071,7 +1925,7 @@ static int
 Plot_print(PyObject *v, FILE *fp, int flags)
 {
     PlotObject *obj = (PlotObject *)v;
-    fprintf(fp, "%s", PyPlot_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyPlot_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -1079,7 +1933,7 @@ PyObject *
 Plot_str(PyObject *v)
 {
     PlotObject *obj = (PlotObject *)v;
-    return PyString_FromString(PyPlot_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyPlot_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -1231,7 +2085,7 @@ PyPlot_GetLogString()
 {
     std::string s("Plot = Plot()\n");
     if(currentAtts != 0)
-        s += PyPlot_ToString(currentAtts, "Plot.");
+        s += PyPlot_ToString(currentAtts, "Plot.", true);
     return s;
 }
 
@@ -1244,7 +2098,7 @@ PyPlot_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("Plot = Plot()\n");
-        s += PyPlot_ToString(currentAtts, "Plot.");
+        s += PyPlot_ToString(currentAtts, "Plot.", true);
         cb(s);
     }
 }

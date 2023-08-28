@@ -36,6 +36,9 @@
 #    Edward Rusu, Mon Oct 01 15:09:24 PST 2018
 #    Added a test for vtkGhostType.
 #
+#    Kathleen Biagas, Tue Aug 24, 2021
+#    Added a test for PVD files.
+#
 # ----------------------------------------------------------------------------
 
 def TestMaterials():
@@ -386,6 +389,73 @@ def TestDBExpressions():
     DeleteAllPlots()
     CloseDatabase(data_path("vtk_test_data/higher_order_triangles.vtk"))
 
+def TestPVD():
+
+    TestSection("PVD, single pvti file, no time, no groups")
+    OpenDatabase(data_path("vtk_xml_test_data/earth.pvd"))
+    AddPlot("Truecolor", "PNGImage")
+    DrawPlots()
+    ResetView()
+    Test("vtk_pvd_01")
+    DeleteAllPlots()
+    CloseDatabase(data_path("vtk_xml_test_data/earth.pvd"))
+
+    TestSection("PVD, multiple vtr files, single time, no groups")
+    OpenDatabase(data_path("vtk_xml_test_data/multiRect3d.pvd"))
+    AddPlot("Pseudocolor", "u")
+    DrawPlots()
+    ResetView()
+    Test("vtk_pvd_02")
+    DeleteAllPlots()
+    CloseDatabase(data_path("vtk_xml_test_data/multiRect3d.pvd"))
+
+    TestSection("PVD, multiple pvtr files, multiple times, no groups")
+    OpenDatabase(data_path("vtk_xml_test_data/multi_dir/multi_time_pvtr.pvd"))
+    AddPlot("Pseudocolor", "radial")
+    DrawPlots()
+    ResetView()
+    Test("vtk_pvd_03")
+    TimeSliderSetState(5)
+    Test("vtk_pvd_04")
+    DeleteAllPlots()
+    CloseDatabase(data_path("vtk_xml_test_data/multi_dir/multi_time_pvtr.pvd"))
+
+    TestSection("PVD, multiple vtr files, multiple times, groups")
+    OpenDatabase(data_path("vtk_xml_test_data/multi_dir/multi_time_part_vtr.pvd"))
+    AddPlot("Subset", "parts")
+    DrawPlots()
+    Test("vtk_pvd_05")
+    ChangeActivePlotsVar("blocks")
+    Test("vtk_pvd_06")
+    DeleteAllPlots()
+    CloseDatabase(data_path("vtk_xml_test_data/multi_dir/multi_time_part_vtr.pvd"))
+
+    TestSection("PVD, multiple vtm files,multiple times")
+    OpenDatabase(data_path("vtk_xml_test_data/multi_dir/multi_time_vtm.pvd"))
+    AddPlot("Pseudocolor", "radial")
+    DrawPlots()
+    ResetView()
+    Test("vtk_pvd_07")
+    TimeSliderSetState(5)
+    Test("vtk_pvd_08")
+    DeleteAllPlots()
+    CloseDatabase(data_path("vtk_xml_test_data/multi_dir/multi_time_vtm.pvd"))
+
+    TestSection("PVD, multiple pvti files, multiple times")
+    OpenDatabase(data_path("vtk_xml_test_data/earth_multiTime/earth_time.pvd"))
+    AddPlot("Truecolor", "PNGImage")
+    DrawPlots()
+    ResetView()
+    Test("vtk_pvd_09")
+    TimeSliderNextState()
+    Test("vtk_pvd_10")
+    TimeSliderNextState()
+    Test("vtk_pvd_11")
+    TimeSliderNextState()
+    Test("vtk_pvd_12")
+    DeleteAllPlots()
+    CloseDatabase(data_path("vtk_xml_test_data/earth_multiTime/earth_time.pvd"))
+
 
 TestMaterials()
 TestXML()
@@ -398,5 +468,6 @@ TestVTM()
 TestPVTK()
 TestVTKGhostType()
 TestDBExpressions()
+TestPVD()
 
 Exit()

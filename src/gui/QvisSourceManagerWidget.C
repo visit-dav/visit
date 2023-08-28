@@ -88,7 +88,7 @@ QvisSourceManagerWidget::QvisSourceManagerWidget(QWidget *parent)
     topLayout = new QGridLayout(this);
     topLayout->setColumnStretch(0,1);
     topLayout->setColumnStretch(1,10);
-    topLayout->setMargin(5);
+    topLayout->setContentsMargins(5,5,5,5);
     dbActionsToolbar = new QToolBar(this);
     dbActionsToolbar->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
     dbOpenAction    = dbActionsToolbar->addAction(QIcon(QPixmap(db_open2_xpm)),tr("Open"),

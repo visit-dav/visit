@@ -36,7 +36,7 @@ struct ViewAxisArrayAttributesObject
 //
 static PyObject *NewViewAxisArrayAttributes(int);
 std::string
-PyViewAxisArrayAttributes_ToString(const ViewAxisArrayAttributes *atts, const char *prefix)
+PyViewAxisArrayAttributes_ToString(const ViewAxisArrayAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -106,35 +106,60 @@ ViewAxisArrayAttributes_SetDomainCoords(PyObject *self, PyObject *args)
 {
     ViewAxisArrayAttributesObject *obj = (ViewAxisArrayAttributesObject *)self;
 
-    double *dvals = obj->data->GetDomainCoords();
-    if(!PyArg_ParseTuple(args, "dd", &dvals[0], &dvals[1]))
+    PyObject *packaged_args = 0;
+    double *vals = obj->data->GetDomainCoords();
+
+    if (!PySequence_Check(args) || PyUnicode_Check(args))
+        return PyErr_Format(PyExc_TypeError, "Expecting a sequence of numeric args");
+
+    // break open args seq. if we think it matches this API's needs
+    if (PySequence_Size(args) == 1)
     {
-        PyObject     *tuple;
-        if(!PyArg_ParseTuple(args, "O", &tuple))
-            return NULL;
-
-        if(PyTuple_Check(tuple))
-        {
-            if(PyTuple_Size(tuple) != 2)
-                return NULL;
-
-            PyErr_Clear();
-            for(int i = 0; i < PyTuple_Size(tuple); ++i)
-            {
-                PyObject *item = PyTuple_GET_ITEM(tuple, i);
-                if(PyFloat_Check(item))
-                    dvals[i] = PyFloat_AS_DOUBLE(item);
-                else if(PyInt_Check(item))
-                    dvals[i] = double(PyInt_AS_LONG(item));
-                else if(PyLong_Check(item))
-                    dvals[i] = PyLong_AsDouble(item);
-                else
-                    dvals[i] = 0.;
-            }
-        }
-        else
-            return NULL;
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PySequence_Check(packaged_args) && !PyUnicode_Check(packaged_args) &&
+            PySequence_Size(packaged_args) == 2)
+            args = packaged_args;
     }
+
+    if (PySequence_Size(args) != 2)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "Expecting 2 numeric args");
+    }
+
+    for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)
+    {
+        PyObject *item = PySequence_GetItem(args, i);
+
+        if (!PyNumber_Check(item))
+        {
+            Py_DECREF(item);
+            Py_XDECREF(packaged_args);
+            return PyErr_Format(PyExc_TypeError, "arg %d is not a number type", (int) i);
+        }
+
+        double val = PyFloat_AsDouble(item);
+        double cval = double(val);
+
+        if (val == -1 && PyErr_Occurred())
+        {
+            Py_XDECREF(packaged_args);
+            Py_DECREF(item);
+            PyErr_Clear();
+            return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ double", (int) i);
+        }
+        if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+        {
+            Py_XDECREF(packaged_args);
+            Py_DECREF(item);
+            return PyErr_Format(PyExc_ValueError, "arg %d not interpretable as C++ double", (int) i);
+        }
+        Py_DECREF(item);
+
+        vals[i] = cval;
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Mark the domainCoords in the object as modified.
     obj->data->SelectDomainCoords();
@@ -160,35 +185,60 @@ ViewAxisArrayAttributes_SetRangeCoords(PyObject *self, PyObject *args)
 {
     ViewAxisArrayAttributesObject *obj = (ViewAxisArrayAttributesObject *)self;
 
-    double *dvals = obj->data->GetRangeCoords();
-    if(!PyArg_ParseTuple(args, "dd", &dvals[0], &dvals[1]))
+    PyObject *packaged_args = 0;
+    double *vals = obj->data->GetRangeCoords();
+
+    if (!PySequence_Check(args) || PyUnicode_Check(args))
+        return PyErr_Format(PyExc_TypeError, "Expecting a sequence of numeric args");
+
+    // break open args seq. if we think it matches this API's needs
+    if (PySequence_Size(args) == 1)
     {
-        PyObject     *tuple;
-        if(!PyArg_ParseTuple(args, "O", &tuple))
-            return NULL;
-
-        if(PyTuple_Check(tuple))
-        {
-            if(PyTuple_Size(tuple) != 2)
-                return NULL;
-
-            PyErr_Clear();
-            for(int i = 0; i < PyTuple_Size(tuple); ++i)
-            {
-                PyObject *item = PyTuple_GET_ITEM(tuple, i);
-                if(PyFloat_Check(item))
-                    dvals[i] = PyFloat_AS_DOUBLE(item);
-                else if(PyInt_Check(item))
-                    dvals[i] = double(PyInt_AS_LONG(item));
-                else if(PyLong_Check(item))
-                    dvals[i] = PyLong_AsDouble(item);
-                else
-                    dvals[i] = 0.;
-            }
-        }
-        else
-            return NULL;
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PySequence_Check(packaged_args) && !PyUnicode_Check(packaged_args) &&
+            PySequence_Size(packaged_args) == 2)
+            args = packaged_args;
     }
+
+    if (PySequence_Size(args) != 2)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "Expecting 2 numeric args");
+    }
+
+    for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)
+    {
+        PyObject *item = PySequence_GetItem(args, i);
+
+        if (!PyNumber_Check(item))
+        {
+            Py_DECREF(item);
+            Py_XDECREF(packaged_args);
+            return PyErr_Format(PyExc_TypeError, "arg %d is not a number type", (int) i);
+        }
+
+        double val = PyFloat_AsDouble(item);
+        double cval = double(val);
+
+        if (val == -1 && PyErr_Occurred())
+        {
+            Py_XDECREF(packaged_args);
+            Py_DECREF(item);
+            PyErr_Clear();
+            return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ double", (int) i);
+        }
+        if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+        {
+            Py_XDECREF(packaged_args);
+            Py_DECREF(item);
+            return PyErr_Format(PyExc_ValueError, "arg %d not interpretable as C++ double", (int) i);
+        }
+        Py_DECREF(item);
+
+        vals[i] = cval;
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Mark the rangeCoords in the object as modified.
     obj->data->SelectRangeCoords();
@@ -214,35 +264,60 @@ ViewAxisArrayAttributes_SetViewportCoords(PyObject *self, PyObject *args)
 {
     ViewAxisArrayAttributesObject *obj = (ViewAxisArrayAttributesObject *)self;
 
-    double *dvals = obj->data->GetViewportCoords();
-    if(!PyArg_ParseTuple(args, "dddd", &dvals[0], &dvals[1], &dvals[2], &dvals[3]))
+    PyObject *packaged_args = 0;
+    double *vals = obj->data->GetViewportCoords();
+
+    if (!PySequence_Check(args) || PyUnicode_Check(args))
+        return PyErr_Format(PyExc_TypeError, "Expecting a sequence of numeric args");
+
+    // break open args seq. if we think it matches this API's needs
+    if (PySequence_Size(args) == 1)
     {
-        PyObject     *tuple;
-        if(!PyArg_ParseTuple(args, "O", &tuple))
-            return NULL;
-
-        if(PyTuple_Check(tuple))
-        {
-            if(PyTuple_Size(tuple) != 4)
-                return NULL;
-
-            PyErr_Clear();
-            for(int i = 0; i < PyTuple_Size(tuple); ++i)
-            {
-                PyObject *item = PyTuple_GET_ITEM(tuple, i);
-                if(PyFloat_Check(item))
-                    dvals[i] = PyFloat_AS_DOUBLE(item);
-                else if(PyInt_Check(item))
-                    dvals[i] = double(PyInt_AS_LONG(item));
-                else if(PyLong_Check(item))
-                    dvals[i] = PyLong_AsDouble(item);
-                else
-                    dvals[i] = 0.;
-            }
-        }
-        else
-            return NULL;
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PySequence_Check(packaged_args) && !PyUnicode_Check(packaged_args) &&
+            PySequence_Size(packaged_args) == 4)
+            args = packaged_args;
     }
+
+    if (PySequence_Size(args) != 4)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "Expecting 4 numeric args");
+    }
+
+    for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)
+    {
+        PyObject *item = PySequence_GetItem(args, i);
+
+        if (!PyNumber_Check(item))
+        {
+            Py_DECREF(item);
+            Py_XDECREF(packaged_args);
+            return PyErr_Format(PyExc_TypeError, "arg %d is not a number type", (int) i);
+        }
+
+        double val = PyFloat_AsDouble(item);
+        double cval = double(val);
+
+        if (val == -1 && PyErr_Occurred())
+        {
+            Py_XDECREF(packaged_args);
+            Py_DECREF(item);
+            PyErr_Clear();
+            return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ double", (int) i);
+        }
+        if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+        {
+            Py_XDECREF(packaged_args);
+            Py_DECREF(item);
+            return PyErr_Format(PyExc_ValueError, "arg %d not interpretable as C++ double", (int) i);
+        }
+        Py_DECREF(item);
+
+        vals[i] = cval;
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Mark the viewportCoords in the object as modified.
     obj->data->SelectViewportCoords();
@@ -301,32 +376,45 @@ PyViewAxisArrayAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "viewportCoords") == 0)
         return ViewAxisArrayAttributes_GetViewportCoords(self, NULL);
 
+
+    // Add a __dict__ answer so that dir() works
+    if (!strcmp(name, "__dict__"))
+    {
+        PyObject *result = PyDict_New();
+        for (int i = 0; PyViewAxisArrayAttributes_methods[i].ml_meth; i++)
+            PyDict_SetItem(result,
+                PyString_FromString(PyViewAxisArrayAttributes_methods[i].ml_name),
+                PyString_FromString(PyViewAxisArrayAttributes_methods[i].ml_name));
+        return result;
+    }
+
     return Py_FindMethod(PyViewAxisArrayAttributes_methods, self, name);
 }
 
 int
 PyViewAxisArrayAttributes_setattr(PyObject *self, char *name, PyObject *args)
 {
-    // Create a tuple to contain the arguments since all of the Set
-    // functions expect a tuple.
-    PyObject *tuple = PyTuple_New(1);
-    PyTuple_SET_ITEM(tuple, 0, args);
-    Py_INCREF(args);
-    PyObject *obj = NULL;
+    PyObject NULL_PY_OBJ;
+    PyObject *obj = &NULL_PY_OBJ;
 
     if(strcmp(name, "domainCoords") == 0)
-        obj = ViewAxisArrayAttributes_SetDomainCoords(self, tuple);
+        obj = ViewAxisArrayAttributes_SetDomainCoords(self, args);
     else if(strcmp(name, "rangeCoords") == 0)
-        obj = ViewAxisArrayAttributes_SetRangeCoords(self, tuple);
+        obj = ViewAxisArrayAttributes_SetRangeCoords(self, args);
     else if(strcmp(name, "viewportCoords") == 0)
-        obj = ViewAxisArrayAttributes_SetViewportCoords(self, tuple);
+        obj = ViewAxisArrayAttributes_SetViewportCoords(self, args);
 
-    if(obj != NULL)
+    if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
-    Py_DECREF(tuple);
-    if( obj == NULL)
-        PyErr_Format(PyExc_RuntimeError, "Unable to set unknown attribute: '%s'", name);
+    if (obj == &NULL_PY_OBJ)
+    {
+        obj = NULL;
+        PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);
+    }
+    else if (obj == NULL && !PyErr_Occurred())
+        PyErr_Format(PyExc_RuntimeError, "unknown problem with '%s'", name);
+
     return (obj != NULL) ? 0 : -1;
 }
 
@@ -334,7 +422,7 @@ static int
 ViewAxisArrayAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     ViewAxisArrayAttributesObject *obj = (ViewAxisArrayAttributesObject *)v;
-    fprintf(fp, "%s", PyViewAxisArrayAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyViewAxisArrayAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -342,7 +430,7 @@ PyObject *
 ViewAxisArrayAttributes_str(PyObject *v)
 {
     ViewAxisArrayAttributesObject *obj = (ViewAxisArrayAttributesObject *)v;
-    return PyString_FromString(PyViewAxisArrayAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyViewAxisArrayAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -494,7 +582,7 @@ PyViewAxisArrayAttributes_GetLogString()
 {
     std::string s("ViewAxisArrayAtts = ViewAxisArrayAttributes()\n");
     if(currentAtts != 0)
-        s += PyViewAxisArrayAttributes_ToString(currentAtts, "ViewAxisArrayAtts.");
+        s += PyViewAxisArrayAttributes_ToString(currentAtts, "ViewAxisArrayAtts.", true);
     return s;
 }
 
@@ -507,7 +595,7 @@ PyViewAxisArrayAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("ViewAxisArrayAtts = ViewAxisArrayAttributes()\n");
-        s += PyViewAxisArrayAttributes_ToString(currentAtts, "ViewAxisArrayAtts.");
+        s += PyViewAxisArrayAttributes_ToString(currentAtts, "ViewAxisArrayAtts.", true);
         cb(s);
     }
 }

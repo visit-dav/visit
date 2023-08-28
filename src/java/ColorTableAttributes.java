@@ -5,6 +5,7 @@
 package llnl.visit;
 
 import java.util.Vector;
+import java.lang.Integer;
 
 // ****************************************************************************
 // Class: ColorTableAttributes
@@ -23,28 +24,30 @@ import java.util.Vector;
 
 public class ColorTableAttributes extends AttributeSubject
 {
-    private static int ColorTableAttributes_numAdditionalAtts = 5;
+    private static int ColorTableAttributes_numAdditionalAtts = 6;
 
     public ColorTableAttributes()
     {
         super(ColorTableAttributes_numAdditionalAtts);
 
-        names = new Vector();
+        colorTableNames = new Vector();
+        colorTableActiveFlags = new Vector();
         colorTables = new Vector();
-        activeContinuous = new String("hot");
-        activeDiscrete = new String("levels");
-        groupingFlag = false;
+        defaultContinuous = new String("hot");
+        defaultDiscrete = new String("levels");
+        changesMade = false;
     }
 
     public ColorTableAttributes(int nMoreFields)
     {
         super(ColorTableAttributes_numAdditionalAtts + nMoreFields);
 
-        names = new Vector();
+        colorTableNames = new Vector();
+        colorTableActiveFlags = new Vector();
         colorTables = new Vector();
-        activeContinuous = new String("hot");
-        activeDiscrete = new String("levels");
-        groupingFlag = false;
+        defaultContinuous = new String("hot");
+        defaultDiscrete = new String("levels");
+        changesMade = false;
     }
 
     public ColorTableAttributes(ColorTableAttributes obj)
@@ -53,10 +56,16 @@ public class ColorTableAttributes extends AttributeSubject
 
         int i;
 
-        names = new Vector(obj.names.size());
-        for(i = 0; i < obj.names.size(); ++i)
-            names.addElement(new String((String)obj.names.elementAt(i)));
+        colorTableNames = new Vector(obj.colorTableNames.size());
+        for(i = 0; i < obj.colorTableNames.size(); ++i)
+            colorTableNames.addElement(new String((String)obj.colorTableNames.elementAt(i)));
 
+        colorTableActiveFlags = new Vector();
+        for(i = 0; i < obj.colorTableActiveFlags.size(); ++i)
+        {
+            Integer iv = (Integer)obj.colorTableActiveFlags.elementAt(i);
+            colorTableActiveFlags.addElement(new Integer(iv.intValue()));
+        }
         // *** Copy the colorTables field ***
         colorTables = new Vector(obj.colorTables.size());
         for(i = 0; i < obj.colorTables.size(); ++i)
@@ -65,9 +74,9 @@ public class ColorTableAttributes extends AttributeSubject
             colorTables.addElement(new ColorControlPointList(oldObj));
         }
 
-        activeContinuous = new String(obj.activeContinuous);
-        activeDiscrete = new String(obj.activeDiscrete);
-        groupingFlag = obj.groupingFlag;
+        defaultContinuous = new String(obj.defaultContinuous);
+        defaultDiscrete = new String(obj.defaultDiscrete);
+        changesMade = obj.changesMade;
 
         SelectAll();
     }
@@ -86,14 +95,14 @@ public class ColorTableAttributes extends AttributeSubject
     {
         int i;
 
-        // Compare the elements in the names vector.
-        boolean names_equal = (obj.names.size() == names.size());
-        for(i = 0; (i < names.size()) && names_equal; ++i)
+        // Compare the elements in the colorTableNames vector.
+        boolean colorTableNames_equal = (obj.colorTableNames.size() == colorTableNames.size());
+        for(i = 0; (i < colorTableNames.size()) && colorTableNames_equal; ++i)
         {
             // Make references to String from Object.
-            String names1 = (String)names.elementAt(i);
-            String names2 = (String)obj.names.elementAt(i);
-            names_equal = names1.equals(names2);
+            String colorTableNames1 = (String)colorTableNames.elementAt(i);
+            String colorTableNames2 = (String)obj.colorTableNames.elementAt(i);
+            colorTableNames_equal = colorTableNames1.equals(colorTableNames2);
         }
         // Compare the elements in the colorTables vector.
         boolean colorTables_equal = (obj.colorTables.size() == colorTables.size());
@@ -105,51 +114,61 @@ public class ColorTableAttributes extends AttributeSubject
             colorTables_equal = colorTables1.equals(colorTables2);
         }
         // Create the return value
-        return (names_equal &&
+        return (colorTableNames_equal &&
+                true /* can ignore colorTableActiveFlags */ &&
                 colorTables_equal &&
-                (activeContinuous.equals(obj.activeContinuous)) &&
-                (activeDiscrete.equals(obj.activeDiscrete)) &&
-                (groupingFlag == obj.groupingFlag));
+                (defaultContinuous.equals(obj.defaultContinuous)) &&
+                (defaultDiscrete.equals(obj.defaultDiscrete)) &&
+                (changesMade == obj.changesMade));
     }
 
     // Property setting methods
-    public void SetNames(Vector names_)
+    public void SetColorTableNames(Vector colorTableNames_)
     {
-        names = names_;
+        colorTableNames = colorTableNames_;
         Select(0);
     }
 
-    public void SetActiveContinuous(String activeContinuous_)
+    public void SetColorTableActiveFlags(Vector colorTableActiveFlags_)
     {
-        activeContinuous = activeContinuous_;
-        Select(2);
+        colorTableActiveFlags = colorTableActiveFlags_;
+        Select(1);
     }
 
-    public void SetActiveDiscrete(String activeDiscrete_)
+    public void SetDefaultContinuous(String defaultContinuous_)
     {
-        activeDiscrete = activeDiscrete_;
+        defaultContinuous = defaultContinuous_;
         Select(3);
     }
 
-    public void SetGroupingFlag(boolean groupingFlag_)
+    public void SetDefaultDiscrete(String defaultDiscrete_)
     {
-        groupingFlag = groupingFlag_;
+        defaultDiscrete = defaultDiscrete_;
         Select(4);
     }
 
+    public void SetChangesMade(boolean changesMade_)
+    {
+        changesMade = changesMade_;
+        Select(5);
+    }
+
     // Property getting methods
-    public Vector  GetNames() { return names; }
+    public Vector  GetColorTableNames() { return colorTableNames; }
+    public Vector  GetColorTableActiveFlags() { return colorTableActiveFlags; }
     public Vector  GetColorTables() { return colorTables; }
-    public String  GetActiveContinuous() { return activeContinuous; }
-    public String  GetActiveDiscrete() { return activeDiscrete; }
-    public boolean GetGroupingFlag() { return groupingFlag; }
+    public String  GetDefaultContinuous() { return defaultContinuous; }
+    public String  GetDefaultDiscrete() { return defaultDiscrete; }
+    public boolean GetChangesMade() { return changesMade; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
     {
         if(WriteSelect(0, buf))
-            buf.WriteStringVector(names);
+            buf.WriteStringVector(colorTableNames);
         if(WriteSelect(1, buf))
+            buf.WriteIntVector(colorTableActiveFlags);
+        if(WriteSelect(2, buf))
         {
             buf.WriteInt(colorTables.size());
             for(int i = 0; i < colorTables.size(); ++i)
@@ -158,12 +177,12 @@ public class ColorTableAttributes extends AttributeSubject
                 tmp.Write(buf);
             }
         }
-        if(WriteSelect(2, buf))
-            buf.WriteString(activeContinuous);
         if(WriteSelect(3, buf))
-            buf.WriteString(activeDiscrete);
+            buf.WriteString(defaultContinuous);
         if(WriteSelect(4, buf))
-            buf.WriteBool(groupingFlag);
+            buf.WriteString(defaultDiscrete);
+        if(WriteSelect(5, buf))
+            buf.WriteBool(changesMade);
     }
 
     public void ReadAtts(int index, CommunicationBuffer buf)
@@ -171,9 +190,12 @@ public class ColorTableAttributes extends AttributeSubject
         switch(index)
         {
         case 0:
-            SetNames(buf.ReadStringVector());
+            SetColorTableNames(buf.ReadStringVector());
             break;
         case 1:
+            SetColorTableActiveFlags(buf.ReadIntVector());
+            break;
+        case 2:
             {
                 int len = buf.ReadInt();
                 colorTables.clear();
@@ -184,16 +206,16 @@ public class ColorTableAttributes extends AttributeSubject
                     colorTables.addElement(tmp);
                 }
             }
-            Select(1);
-            break;
-        case 2:
-            SetActiveContinuous(buf.ReadString());
+            Select(2);
             break;
         case 3:
-            SetActiveDiscrete(buf.ReadString());
+            SetDefaultContinuous(buf.ReadString());
             break;
         case 4:
-            SetGroupingFlag(buf.ReadBool());
+            SetDefaultDiscrete(buf.ReadString());
+            break;
+        case 5:
+            SetChangesMade(buf.ReadBool());
             break;
         }
     }
@@ -201,7 +223,8 @@ public class ColorTableAttributes extends AttributeSubject
     public String toString(String indent)
     {
         String str = new String();
-        str = str + stringVectorToString("names", names, indent) + "\n";
+        str = str + stringVectorToString("colorTableNames", colorTableNames, indent) + "\n";
+        str = str + intVectorToString("colorTableActiveFlags", colorTableActiveFlags, indent) + "\n";
         str = str + indent + "colorTables = {\n";
         for(int i = 0; i < colorTables.size(); ++i)
         {
@@ -212,9 +235,9 @@ public class ColorTableAttributes extends AttributeSubject
             str = str + "\n";
         }
         str = str + "}\n";
-        str = str + stringToString("activeContinuous", activeContinuous, indent) + "\n";
-        str = str + stringToString("activeDiscrete", activeDiscrete, indent) + "\n";
-        str = str + boolToString("groupingFlag", groupingFlag, indent) + "\n";
+        str = str + stringToString("defaultContinuous", defaultContinuous, indent) + "\n";
+        str = str + stringToString("defaultDiscrete", defaultDiscrete, indent) + "\n";
+        str = str + boolToString("changesMade", changesMade, indent) + "\n";
         return str;
     }
 
@@ -222,13 +245,13 @@ public class ColorTableAttributes extends AttributeSubject
     public void AddColorTables(ColorControlPointList obj)
     {
         colorTables.addElement(new ColorControlPointList(obj));
-        Select(1);
+        Select(2);
     }
 
     public void ClearColorTables()
     {
         colorTables.clear();
-        Select(1);
+        Select(2);
     }
 
     public void RemoveColorTables(int index)
@@ -236,7 +259,7 @@ public class ColorTableAttributes extends AttributeSubject
         if(index >= 0 && index < colorTables.size())
         {
             colorTables.remove(index);
-            Select(1);
+            Select(2);
         }
     }
 
@@ -255,9 +278,9 @@ public class ColorTableAttributes extends AttributeSubject
     public int GetColorTableIndex(String name)
     {
         int retval = -1;
-        for(int i = 0; i < names.size(); ++i)
+        for(int i = 0; i < colorTableNames.size(); ++i)
         {
-            String n = (String)names.elementAt(i);
+            String n = (String)colorTableNames.elementAt(i);
             if(n.equals(name))
             {
                 retval = i;
@@ -285,9 +308,9 @@ public class ColorTableAttributes extends AttributeSubject
             return null;
     }
 
-    public ColorControlPointList GetActiveColorControlPoints()
+    public ColorControlPointList GetDefaultColorControlPoints()
     {
-        int index = GetColorTableIndex(activeContinuous);
+        int index = GetColorTableIndex(defaultContinuous);
         if(index >= 0 && index < colorTables.size())
             return (ColorControlPointList)colorTables.elementAt(index);
         else
@@ -296,7 +319,8 @@ public class ColorTableAttributes extends AttributeSubject
 
     public void AddColorTable(String name, ColorControlPointList cpts)
     {
-        names.addElement(new String(name));
+        colorTableNames.addElement(new String(name));
+        colorTableActiveFlags.addElement(true);
         Select(0);
         AddColorTables(cpts);
     }
@@ -309,49 +333,51 @@ public class ColorTableAttributes extends AttributeSubject
 
     public void RemoveColorTable(int index)
     {
-        if(index >= 0 && index < names.size())
+        if(index >= 0 && index < colorTableNames.size())
         {
-            String nameAt = (String)names.elementAt(index);
-            boolean isActiveContinuous = nameAt.equals(activeContinuous);
-            boolean isActiveDiscrete = nameAt.equals(activeDiscrete);
+            String nameAt = (String)colorTableNames.elementAt(index);
+            boolean isDefaultContinuous = nameAt.equals(defaultContinuous);
+            boolean isDefaultDiscrete = nameAt.equals(defaultDiscrete);
 
             // Remove the name from the vector.
-            names.remove(index);
+            colorTableNames.remove(index);
+            colorTableActiveFlags.remove(index);
             Select(0);
 
             // Remove the color table from the vector.
             RemoveColorTables(index);
 
-            // If it is the active color table that was removed, reset the
-            // active color table to the first element.
-            if(isActiveContinuous)
+            // If it is the default color table that was removed, reset the
+            // default color table to the first element.
+            if(isDefaultContinuous)
             {
-                if(names.size() > 0)
+                if(colorTableNames.size() > 0)
                 {
-                    nameAt = (String)names.elementAt(0);
-                    SetActiveContinuous(nameAt);
+                    nameAt = (String)colorTableNames.elementAt(0);
+                    SetDefaultContinuous(nameAt);
                 }
                 else
-                    SetActiveContinuous("");
+                    SetDefaultContinuous("");
             }
-            if(isActiveDiscrete)
+            if(isDefaultDiscrete)
             {
-                if(names.size() > 0)
+                if(colorTableNames.size() > 0)
                 {
-                    nameAt = (String)names.elementAt(0);
-                    SetActiveDiscrete(nameAt);
+                    nameAt = (String)colorTableNames.elementAt(0);
+                    SetDefaultDiscrete(nameAt);
                 }
                 else
-                    SetActiveDiscrete("");
+                    SetDefaultDiscrete("");
             }
         }
     }
 
     // Attributes
-    private Vector  names; // vector of String objects
+    private Vector  colorTableNames; // vector of String objects
+    private Vector  colorTableActiveFlags; // vector of Integer objects
     private Vector  colorTables; // vector of ColorControlPointList objects
-    private String  activeContinuous;
-    private String  activeDiscrete;
-    private boolean groupingFlag;
+    private String  defaultContinuous;
+    private String  defaultDiscrete;
+    private boolean changesMade;
 }
 

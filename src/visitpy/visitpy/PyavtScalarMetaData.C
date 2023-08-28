@@ -36,12 +36,12 @@ struct avtScalarMetaDataObject
 //
 static PyObject *NewavtScalarMetaData(int);
 std::string
-PyavtScalarMetaData_ToString(const avtScalarMetaData *atts, const char *prefix)
+PyavtScalarMetaData_ToString(const avtScalarMetaData *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
 
-    str = PyavtVarMetaData_ToString(atts, prefix);
+    str = PyavtVarMetaData_ToString(atts, prefix, forLogging);
 
     if(atts->treatAsASCII)
         snprintf(tmpStr, 1000, "%streatAsASCII = 1\n", prefix);
@@ -270,12 +270,48 @@ avtScalarMetaData_SetTreatAsASCII(PyObject *self, PyObject *args)
 {
     avtScalarMetaDataObject *obj = (avtScalarMetaDataObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the treatAsASCII in the object.
-    obj->data->treatAsASCII = (ival != 0);
+    obj->data->treatAsASCII = cval;
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -294,22 +330,57 @@ avtScalarMetaData_SetEnumerationType(PyObject *self, PyObject *args)
 {
     avtScalarMetaDataObject *obj = (avtScalarMetaDataObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 5)
+    {
+        std::stringstream ss;
+        ss << "An invalid enumerationType value was given." << std::endl;
+        ss << "Valid values are in the range [0,4]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << " None";
+        ss << ", ByValue";
+        ss << ", ByRange";
+        ss << ", ByBitMask";
+        ss << ", ByNChooseR";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the enumerationType in the object.
-    if(ival >= 0 && ival < 5)
-        obj->data->SetEnumerationType(avtScalarMetaData::EnumTypes(ival));
-    else
-    {
-        fprintf(stderr, "An invalid enumerationType value was given. "
-                        "Valid values are in the range of [0,4]. "
-                        "You can also use the following names: "
-                        "None, ByValue, ByRange, ByBitMask, ByNChooseR"
-                        ".");
-        return NULL;
-    }
+    obj->data->SetEnumerationType(avtScalarMetaData::EnumTypes(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -328,37 +399,51 @@ avtScalarMetaData_SetEnumNames(PyObject *self, PyObject *args)
 {
     avtScalarMetaDataObject *obj = (avtScalarMetaDataObject *)self;
 
-    stringVector  &vec = obj->data->enumNames;
-    PyObject     *tuple;
-    if(!PyArg_ParseTuple(args, "O", &tuple))
-        return NULL;
+    stringVector vec;
 
-    if(PyTuple_Check(tuple))
+    if (PyUnicode_Check(args))
     {
-        vec.resize(PyTuple_Size(tuple));
-        for(int i = 0; i < PyTuple_Size(tuple); ++i)
+        char const *val = PyUnicode_AsUTF8(args);
+        std::string cval = std::string(val);
+        if (val == 0 && PyErr_Occurred())
         {
-            PyObject *item = PyTuple_GET_ITEM(tuple, i);
-            if(PyString_Check(item))
+            PyErr_Clear();
+            return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ string");
+        }
+        vec.resize(1);
+        vec[0] = cval;
+    }
+    else if (PySequence_Check(args))
+    {
+        vec.resize(PySequence_Size(args));
+        for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)
+        {
+            PyObject *item = PySequence_GetItem(args, i);
+
+            if (!PyUnicode_Check(item))
             {
-                char *item_cstr = PyString_AsString(item);
-                vec[i] = std::string(item_cstr);
-                PyString_AsString_Cleanup(item_cstr);
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_TypeError, "arg %d is not a unicode string", (int) i);
             }
-            else
-                vec[i] = std::string("");
+
+            char const *val = PyUnicode_AsUTF8(item);
+            std::string cval = std::string(val);
+
+            if (val == 0 && PyErr_Occurred())
+            {
+                Py_DECREF(item);
+                PyErr_Clear();
+                return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ string", (int) i);
+            }
+            Py_DECREF(item);
+
+            vec[i] = cval;
         }
     }
-    else if(PyString_Check(tuple))
-    {
-        vec.resize(1);
-        char *tuple_cstr = PyString_AsString(tuple);
-        vec[0] = std::string(tuple_cstr);
-        PyString_AsString_Cleanup(tuple_cstr);
-    }
     else
-        return NULL;
+        return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more string(s)");
 
+    obj->data->enumNames = vec;
     // Mark the enumNames in the object as modified.
     obj->data->SelectAll();
 
@@ -383,45 +468,58 @@ avtScalarMetaData_SetEnumRanges(PyObject *self, PyObject *args)
 {
     avtScalarMetaDataObject *obj = (avtScalarMetaDataObject *)self;
 
-    doubleVector  &vec = obj->data->enumRanges;
-    PyObject     *tuple;
-    if(!PyArg_ParseTuple(args, "O", &tuple))
-        return NULL;
+    doubleVector vec;
 
-    if(PyTuple_Check(tuple))
+    if (PyNumber_Check(args))
     {
-        vec.resize(PyTuple_Size(tuple));
-        for(int i = 0; i < PyTuple_Size(tuple); ++i)
+        double val = PyFloat_AsDouble(args);
+        double cval = double(val);
+        if (val == -1 && PyErr_Occurred())
         {
-            PyObject *item = PyTuple_GET_ITEM(tuple, i);
-            if(PyFloat_Check(item))
-                vec[i] = PyFloat_AS_DOUBLE(item);
-            else if(PyInt_Check(item))
-                vec[i] = double(PyInt_AS_LONG(item));
-            else if(PyLong_Check(item))
-                vec[i] = PyLong_AsDouble(item);
-            else
-                vec[i] = 0.;
+            PyErr_Clear();
+            return PyErr_Format(PyExc_TypeError, "number not interpretable as C++ double");
+        }
+        if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+            return PyErr_Format(PyExc_ValueError, "number not interpretable as C++ double");
+        vec.resize(1);
+        vec[0] = cval;
+    }
+    else if (PySequence_Check(args) && !PyUnicode_Check(args))
+    {
+        vec.resize(PySequence_Size(args));
+        for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)
+        {
+            PyObject *item = PySequence_GetItem(args, i);
+
+            if (!PyNumber_Check(item))
+            {
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_TypeError, "arg %d is not a number type", (int) i);
+            }
+
+            double val = PyFloat_AsDouble(item);
+            double cval = double(val);
+
+            if (val == -1 && PyErr_Occurred())
+            {
+                Py_DECREF(item);
+                PyErr_Clear();
+                return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ double", (int) i);
+            }
+            if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+            {
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_ValueError, "arg %d not interpretable as C++ double", (int) i);
+            }
+            Py_DECREF(item);
+
+            vec[i] = cval;
         }
     }
-    else if(PyFloat_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = PyFloat_AS_DOUBLE(tuple);
-    }
-    else if(PyInt_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = double(PyInt_AS_LONG(tuple));
-    }
-    else if(PyLong_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = PyLong_AsDouble(tuple);
-    }
     else
-        return NULL;
+        return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more doubles");
 
+    obj->data->enumRanges = vec;
     // Mark the enumRanges in the object as modified.
     obj->data->SelectAll();
 
@@ -446,35 +544,60 @@ avtScalarMetaData_SetEnumAlwaysExclude(PyObject *self, PyObject *args)
 {
     avtScalarMetaDataObject *obj = (avtScalarMetaDataObject *)self;
 
-    double *dvals = obj->data->enumAlwaysExclude;
-    if(!PyArg_ParseTuple(args, "dd", &dvals[0], &dvals[1]))
+    PyObject *packaged_args = 0;
+    double *vals = obj->data->enumAlwaysExclude;
+
+    if (!PySequence_Check(args) || PyUnicode_Check(args))
+        return PyErr_Format(PyExc_TypeError, "Expecting a sequence of numeric args");
+
+    // break open args seq. if we think it matches this API's needs
+    if (PySequence_Size(args) == 1)
     {
-        PyObject     *tuple;
-        if(!PyArg_ParseTuple(args, "O", &tuple))
-            return NULL;
-
-        if(PyTuple_Check(tuple))
-        {
-            if(PyTuple_Size(tuple) != 2)
-                return NULL;
-
-            PyErr_Clear();
-            for(int i = 0; i < PyTuple_Size(tuple); ++i)
-            {
-                PyObject *item = PyTuple_GET_ITEM(tuple, i);
-                if(PyFloat_Check(item))
-                    dvals[i] = PyFloat_AS_DOUBLE(item);
-                else if(PyInt_Check(item))
-                    dvals[i] = double(PyInt_AS_LONG(item));
-                else if(PyLong_Check(item))
-                    dvals[i] = PyLong_AsDouble(item);
-                else
-                    dvals[i] = 0.;
-            }
-        }
-        else
-            return NULL;
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PySequence_Check(packaged_args) && !PyUnicode_Check(packaged_args) &&
+            PySequence_Size(packaged_args) == 2)
+            args = packaged_args;
     }
+
+    if (PySequence_Size(args) != 2)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "Expecting 2 numeric args");
+    }
+
+    for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)
+    {
+        PyObject *item = PySequence_GetItem(args, i);
+
+        if (!PyNumber_Check(item))
+        {
+            Py_DECREF(item);
+            Py_XDECREF(packaged_args);
+            return PyErr_Format(PyExc_TypeError, "arg %d is not a number type", (int) i);
+        }
+
+        double val = PyFloat_AsDouble(item);
+        double cval = double(val);
+
+        if (val == -1 && PyErr_Occurred())
+        {
+            Py_XDECREF(packaged_args);
+            Py_DECREF(item);
+            PyErr_Clear();
+            return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ double", (int) i);
+        }
+        if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+        {
+            Py_XDECREF(packaged_args);
+            Py_DECREF(item);
+            return PyErr_Format(PyExc_ValueError, "arg %d not interpretable as C++ double", (int) i);
+        }
+        Py_DECREF(item);
+
+        vals[i] = cval;
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Mark the enumAlwaysExclude in the object as modified.
     obj->data->SelectAll();
@@ -500,35 +623,60 @@ avtScalarMetaData_SetEnumAlwaysInclude(PyObject *self, PyObject *args)
 {
     avtScalarMetaDataObject *obj = (avtScalarMetaDataObject *)self;
 
-    double *dvals = obj->data->enumAlwaysInclude;
-    if(!PyArg_ParseTuple(args, "dd", &dvals[0], &dvals[1]))
+    PyObject *packaged_args = 0;
+    double *vals = obj->data->enumAlwaysInclude;
+
+    if (!PySequence_Check(args) || PyUnicode_Check(args))
+        return PyErr_Format(PyExc_TypeError, "Expecting a sequence of numeric args");
+
+    // break open args seq. if we think it matches this API's needs
+    if (PySequence_Size(args) == 1)
     {
-        PyObject     *tuple;
-        if(!PyArg_ParseTuple(args, "O", &tuple))
-            return NULL;
-
-        if(PyTuple_Check(tuple))
-        {
-            if(PyTuple_Size(tuple) != 2)
-                return NULL;
-
-            PyErr_Clear();
-            for(int i = 0; i < PyTuple_Size(tuple); ++i)
-            {
-                PyObject *item = PyTuple_GET_ITEM(tuple, i);
-                if(PyFloat_Check(item))
-                    dvals[i] = PyFloat_AS_DOUBLE(item);
-                else if(PyInt_Check(item))
-                    dvals[i] = double(PyInt_AS_LONG(item));
-                else if(PyLong_Check(item))
-                    dvals[i] = PyLong_AsDouble(item);
-                else
-                    dvals[i] = 0.;
-            }
-        }
-        else
-            return NULL;
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PySequence_Check(packaged_args) && !PyUnicode_Check(packaged_args) &&
+            PySequence_Size(packaged_args) == 2)
+            args = packaged_args;
     }
+
+    if (PySequence_Size(args) != 2)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "Expecting 2 numeric args");
+    }
+
+    for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)
+    {
+        PyObject *item = PySequence_GetItem(args, i);
+
+        if (!PyNumber_Check(item))
+        {
+            Py_DECREF(item);
+            Py_XDECREF(packaged_args);
+            return PyErr_Format(PyExc_TypeError, "arg %d is not a number type", (int) i);
+        }
+
+        double val = PyFloat_AsDouble(item);
+        double cval = double(val);
+
+        if (val == -1 && PyErr_Occurred())
+        {
+            Py_XDECREF(packaged_args);
+            Py_DECREF(item);
+            PyErr_Clear();
+            return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ double", (int) i);
+        }
+        if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+        {
+            Py_XDECREF(packaged_args);
+            Py_DECREF(item);
+            return PyErr_Format(PyExc_ValueError, "arg %d not interpretable as C++ double", (int) i);
+        }
+        Py_DECREF(item);
+
+        vals[i] = cval;
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Mark the enumAlwaysInclude in the object as modified.
     obj->data->SelectAll();
@@ -554,21 +702,55 @@ avtScalarMetaData_SetEnumPartialCellMode(PyObject *self, PyObject *args)
 {
     avtScalarMetaDataObject *obj = (avtScalarMetaDataObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 3)
+    {
+        std::stringstream ss;
+        ss << "An invalid enumPartialCellMode value was given." << std::endl;
+        ss << "Valid values are in the range [0,2]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << " Include";
+        ss << ", Exclude";
+        ss << ", Dissect";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the enumPartialCellMode in the object.
-    if(ival >= 0 && ival < 3)
-        obj->data->SetEnumPartialCellMode(avtScalarMetaData::PartialCellModes(ival));
-    else
-    {
-        fprintf(stderr, "An invalid enumPartialCellMode value was given. "
-                        "Valid values are in the range of [0,2]. "
-                        "You can also use the following names: "
-                        "Include, Exclude, Dissect.");
-        return NULL;
-    }
+    obj->data->SetEnumPartialCellMode(avtScalarMetaData::PartialCellModes(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -587,45 +769,58 @@ avtScalarMetaData_SetEnumGraphEdges(PyObject *self, PyObject *args)
 {
     avtScalarMetaDataObject *obj = (avtScalarMetaDataObject *)self;
 
-    intVector  &vec = obj->data->enumGraphEdges;
-    PyObject   *tuple;
-    if(!PyArg_ParseTuple(args, "O", &tuple))
-        return NULL;
+    intVector vec;
 
-    if(PyTuple_Check(tuple))
+    if (PyNumber_Check(args))
     {
-        vec.resize(PyTuple_Size(tuple));
-        for(int i = 0; i < PyTuple_Size(tuple); ++i)
+        long val = PyLong_AsLong(args);
+        int cval = int(val);
+        if (val == -1 && PyErr_Occurred())
         {
-            PyObject *item = PyTuple_GET_ITEM(tuple, i);
-            if(PyFloat_Check(item))
-                vec[i] = int(PyFloat_AS_DOUBLE(item));
-            else if(PyInt_Check(item))
-                vec[i] = int(PyInt_AS_LONG(item));
-            else if(PyLong_Check(item))
-                vec[i] = int(PyLong_AsLong(item));
-            else
-                vec[i] = 0;
+            PyErr_Clear();
+            return PyErr_Format(PyExc_TypeError, "number not interpretable as C++ int");
+        }
+        if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+            return PyErr_Format(PyExc_ValueError, "number not interpretable as C++ int");
+        vec.resize(1);
+        vec[0] = cval;
+    }
+    else if (PySequence_Check(args) && !PyUnicode_Check(args))
+    {
+        vec.resize(PySequence_Size(args));
+        for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)
+        {
+            PyObject *item = PySequence_GetItem(args, i);
+
+            if (!PyNumber_Check(item))
+            {
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_TypeError, "arg %d is not a number type", (int) i);
+            }
+
+            long val = PyLong_AsLong(item);
+            int cval = int(val);
+
+            if (val == -1 && PyErr_Occurred())
+            {
+                Py_DECREF(item);
+                PyErr_Clear();
+                return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ int", (int) i);
+            }
+            if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+            {
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_ValueError, "arg %d not interpretable as C++ int", (int) i);
+            }
+            Py_DECREF(item);
+
+            vec[i] = cval;
         }
     }
-    else if(PyFloat_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = int(PyFloat_AS_DOUBLE(tuple));
-    }
-    else if(PyInt_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = int(PyInt_AS_LONG(tuple));
-    }
-    else if(PyLong_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = int(PyLong_AsLong(tuple));
-    }
     else
-        return NULL;
+        return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more ints");
 
+    obj->data->enumGraphEdges = vec;
     // Mark the enumGraphEdges in the object as modified.
     obj->data->SelectAll();
 
@@ -650,37 +845,51 @@ avtScalarMetaData_SetEnumGraphEdgeNames(PyObject *self, PyObject *args)
 {
     avtScalarMetaDataObject *obj = (avtScalarMetaDataObject *)self;
 
-    stringVector  &vec = obj->data->enumGraphEdgeNames;
-    PyObject     *tuple;
-    if(!PyArg_ParseTuple(args, "O", &tuple))
-        return NULL;
+    stringVector vec;
 
-    if(PyTuple_Check(tuple))
+    if (PyUnicode_Check(args))
     {
-        vec.resize(PyTuple_Size(tuple));
-        for(int i = 0; i < PyTuple_Size(tuple); ++i)
+        char const *val = PyUnicode_AsUTF8(args);
+        std::string cval = std::string(val);
+        if (val == 0 && PyErr_Occurred())
         {
-            PyObject *item = PyTuple_GET_ITEM(tuple, i);
-            if(PyString_Check(item))
+            PyErr_Clear();
+            return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ string");
+        }
+        vec.resize(1);
+        vec[0] = cval;
+    }
+    else if (PySequence_Check(args))
+    {
+        vec.resize(PySequence_Size(args));
+        for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)
+        {
+            PyObject *item = PySequence_GetItem(args, i);
+
+            if (!PyUnicode_Check(item))
             {
-                char *item_cstr = PyString_AsString(item);
-                vec[i] = std::string(item_cstr);
-                PyString_AsString_Cleanup(item_cstr);
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_TypeError, "arg %d is not a unicode string", (int) i);
             }
-            else
-                vec[i] = std::string("");
+
+            char const *val = PyUnicode_AsUTF8(item);
+            std::string cval = std::string(val);
+
+            if (val == 0 && PyErr_Occurred())
+            {
+                Py_DECREF(item);
+                PyErr_Clear();
+                return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ string", (int) i);
+            }
+            Py_DECREF(item);
+
+            vec[i] = cval;
         }
     }
-    else if(PyString_Check(tuple))
-    {
-        vec.resize(1);
-        char *tuple_cstr = PyString_AsString(tuple);
-        vec[0] = std::string(tuple_cstr);
-        PyString_AsString_Cleanup(tuple_cstr);
-    }
     else
-        return NULL;
+        return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more string(s)");
 
+    obj->data->enumGraphEdgeNames = vec;
     // Mark the enumGraphEdgeNames in the object as modified.
     obj->data->SelectAll();
 
@@ -705,45 +914,58 @@ avtScalarMetaData_SetEnumGraphEdgeNameIndexs(PyObject *self, PyObject *args)
 {
     avtScalarMetaDataObject *obj = (avtScalarMetaDataObject *)self;
 
-    intVector  &vec = obj->data->enumGraphEdgeNameIndexs;
-    PyObject   *tuple;
-    if(!PyArg_ParseTuple(args, "O", &tuple))
-        return NULL;
+    intVector vec;
 
-    if(PyTuple_Check(tuple))
+    if (PyNumber_Check(args))
     {
-        vec.resize(PyTuple_Size(tuple));
-        for(int i = 0; i < PyTuple_Size(tuple); ++i)
+        long val = PyLong_AsLong(args);
+        int cval = int(val);
+        if (val == -1 && PyErr_Occurred())
         {
-            PyObject *item = PyTuple_GET_ITEM(tuple, i);
-            if(PyFloat_Check(item))
-                vec[i] = int(PyFloat_AS_DOUBLE(item));
-            else if(PyInt_Check(item))
-                vec[i] = int(PyInt_AS_LONG(item));
-            else if(PyLong_Check(item))
-                vec[i] = int(PyLong_AsLong(item));
-            else
-                vec[i] = 0;
+            PyErr_Clear();
+            return PyErr_Format(PyExc_TypeError, "number not interpretable as C++ int");
+        }
+        if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+            return PyErr_Format(PyExc_ValueError, "number not interpretable as C++ int");
+        vec.resize(1);
+        vec[0] = cval;
+    }
+    else if (PySequence_Check(args) && !PyUnicode_Check(args))
+    {
+        vec.resize(PySequence_Size(args));
+        for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)
+        {
+            PyObject *item = PySequence_GetItem(args, i);
+
+            if (!PyNumber_Check(item))
+            {
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_TypeError, "arg %d is not a number type", (int) i);
+            }
+
+            long val = PyLong_AsLong(item);
+            int cval = int(val);
+
+            if (val == -1 && PyErr_Occurred())
+            {
+                Py_DECREF(item);
+                PyErr_Clear();
+                return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ int", (int) i);
+            }
+            if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+            {
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_ValueError, "arg %d not interpretable as C++ int", (int) i);
+            }
+            Py_DECREF(item);
+
+            vec[i] = cval;
         }
     }
-    else if(PyFloat_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = int(PyFloat_AS_DOUBLE(tuple));
-    }
-    else if(PyInt_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = int(PyInt_AS_LONG(tuple));
-    }
-    else if(PyLong_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = int(PyLong_AsLong(tuple));
-    }
     else
-        return NULL;
+        return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more ints");
 
+    obj->data->enumGraphEdgeNameIndexs = vec;
     // Mark the enumGraphEdgeNameIndexs in the object as modified.
     obj->data->SelectAll();
 
@@ -768,12 +990,48 @@ avtScalarMetaData_SetEnumNChooseRN(PyObject *self, PyObject *args)
 {
     avtScalarMetaDataObject *obj = (avtScalarMetaDataObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the enumNChooseRN in the object.
-    obj->data->SetEnumNChooseRN((int)ival);
+    obj->data->SetEnumNChooseRN(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -792,12 +1050,48 @@ avtScalarMetaData_SetEnumNChooseRMaxR(PyObject *self, PyObject *args)
 {
     avtScalarMetaDataObject *obj = (avtScalarMetaDataObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the enumNChooseRMaxR in the object.
-    obj->data->SetEnumNChooseRMaxR((int)ival);
+    obj->data->SetEnumNChooseRMaxR(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -816,22 +1110,57 @@ avtScalarMetaData_SetMissingDataType(PyObject *self, PyObject *args)
 {
     avtScalarMetaDataObject *obj = (avtScalarMetaDataObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 5)
+    {
+        std::stringstream ss;
+        ss << "An invalid missingDataType value was given." << std::endl;
+        ss << "Valid values are in the range [0,4]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << " MissingData_None";
+        ss << ", MissingData_Value";
+        ss << ", MissingData_Valid_Min";
+        ss << ", MissingData_Valid_Max";
+        ss << ", MissingData_Valid_Range";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the missingDataType in the object.
-    if(ival >= 0 && ival < 5)
-        obj->data->SetMissingDataType(avtScalarMetaData::MissingData(ival));
-    else
-    {
-        fprintf(stderr, "An invalid missingDataType value was given. "
-                        "Valid values are in the range of [0,4]. "
-                        "You can also use the following names: "
-                        "MissingData_None, MissingData_Value, MissingData_Valid_Min, MissingData_Valid_Max, MissingData_Valid_Range"
-                        ".");
-        return NULL;
-    }
+    obj->data->SetMissingDataType(avtScalarMetaData::MissingData(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -850,35 +1179,60 @@ avtScalarMetaData_SetMissingData(PyObject *self, PyObject *args)
 {
     avtScalarMetaDataObject *obj = (avtScalarMetaDataObject *)self;
 
-    double *dvals = obj->data->GetMissingData();
-    if(!PyArg_ParseTuple(args, "dd", &dvals[0], &dvals[1]))
+    PyObject *packaged_args = 0;
+    double *vals = obj->data->GetMissingData();
+
+    if (!PySequence_Check(args) || PyUnicode_Check(args))
+        return PyErr_Format(PyExc_TypeError, "Expecting a sequence of numeric args");
+
+    // break open args seq. if we think it matches this API's needs
+    if (PySequence_Size(args) == 1)
     {
-        PyObject     *tuple;
-        if(!PyArg_ParseTuple(args, "O", &tuple))
-            return NULL;
-
-        if(PyTuple_Check(tuple))
-        {
-            if(PyTuple_Size(tuple) != 2)
-                return NULL;
-
-            PyErr_Clear();
-            for(int i = 0; i < PyTuple_Size(tuple); ++i)
-            {
-                PyObject *item = PyTuple_GET_ITEM(tuple, i);
-                if(PyFloat_Check(item))
-                    dvals[i] = PyFloat_AS_DOUBLE(item);
-                else if(PyInt_Check(item))
-                    dvals[i] = double(PyInt_AS_LONG(item));
-                else if(PyLong_Check(item))
-                    dvals[i] = PyLong_AsDouble(item);
-                else
-                    dvals[i] = 0.;
-            }
-        }
-        else
-            return NULL;
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PySequence_Check(packaged_args) && !PyUnicode_Check(packaged_args) &&
+            PySequence_Size(packaged_args) == 2)
+            args = packaged_args;
     }
+
+    if (PySequence_Size(args) != 2)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "Expecting 2 numeric args");
+    }
+
+    for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)
+    {
+        PyObject *item = PySequence_GetItem(args, i);
+
+        if (!PyNumber_Check(item))
+        {
+            Py_DECREF(item);
+            Py_XDECREF(packaged_args);
+            return PyErr_Format(PyExc_TypeError, "arg %d is not a number type", (int) i);
+        }
+
+        double val = PyFloat_AsDouble(item);
+        double cval = double(val);
+
+        if (val == -1 && PyErr_Occurred())
+        {
+            Py_XDECREF(packaged_args);
+            Py_DECREF(item);
+            PyErr_Clear();
+            return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ double", (int) i);
+        }
+        if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+        {
+            Py_XDECREF(packaged_args);
+            Py_DECREF(item);
+            return PyErr_Format(PyExc_ValueError, "arg %d not interpretable as C++ double", (int) i);
+        }
+        Py_DECREF(item);
+
+        vals[i] = cval;
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Mark the missingData in the object as modified.
     obj->data->SelectMissingData();
@@ -1040,6 +1394,17 @@ PyavtScalarMetaData_getattr(PyObject *self, char *name)
 
     PyavtScalarMetaData_ExtendSetGetMethodTable();
 
+    // Add a __dict__ answer so that dir() works
+    if (!strcmp(name, "__dict__"))
+    {
+        PyObject *result = PyDict_New();
+        for (int i = 0; PyavtScalarMetaData_methods[i].ml_meth; i++)
+            PyDict_SetItem(result,
+                PyString_FromString(PyavtScalarMetaData_methods[i].ml_name),
+                PyString_FromString(PyavtScalarMetaData_methods[i].ml_name));
+        return result;
+    }
+
     return Py_FindMethod(PyavtScalarMetaData_methods, self, name);
 }
 
@@ -1051,48 +1416,49 @@ PyavtScalarMetaData_setattr(PyObject *self, char *name, PyObject *args)
     else
         PyErr_Clear();
 
-    // Create a tuple to contain the arguments since all of the Set
-    // functions expect a tuple.
-    PyObject *tuple = PyTuple_New(1);
-    PyTuple_SET_ITEM(tuple, 0, args);
-    Py_INCREF(args);
-    PyObject *obj = NULL;
+    PyObject NULL_PY_OBJ;
+    PyObject *obj = &NULL_PY_OBJ;
 
     if(strcmp(name, "treatAsASCII") == 0)
-        obj = avtScalarMetaData_SetTreatAsASCII(self, tuple);
+        obj = avtScalarMetaData_SetTreatAsASCII(self, args);
     else if(strcmp(name, "enumerationType") == 0)
-        obj = avtScalarMetaData_SetEnumerationType(self, tuple);
+        obj = avtScalarMetaData_SetEnumerationType(self, args);
     else if(strcmp(name, "enumNames") == 0)
-        obj = avtScalarMetaData_SetEnumNames(self, tuple);
+        obj = avtScalarMetaData_SetEnumNames(self, args);
     else if(strcmp(name, "enumRanges") == 0)
-        obj = avtScalarMetaData_SetEnumRanges(self, tuple);
+        obj = avtScalarMetaData_SetEnumRanges(self, args);
     else if(strcmp(name, "enumAlwaysExclude") == 0)
-        obj = avtScalarMetaData_SetEnumAlwaysExclude(self, tuple);
+        obj = avtScalarMetaData_SetEnumAlwaysExclude(self, args);
     else if(strcmp(name, "enumAlwaysInclude") == 0)
-        obj = avtScalarMetaData_SetEnumAlwaysInclude(self, tuple);
+        obj = avtScalarMetaData_SetEnumAlwaysInclude(self, args);
     else if(strcmp(name, "enumPartialCellMode") == 0)
-        obj = avtScalarMetaData_SetEnumPartialCellMode(self, tuple);
+        obj = avtScalarMetaData_SetEnumPartialCellMode(self, args);
     else if(strcmp(name, "enumGraphEdges") == 0)
-        obj = avtScalarMetaData_SetEnumGraphEdges(self, tuple);
+        obj = avtScalarMetaData_SetEnumGraphEdges(self, args);
     else if(strcmp(name, "enumGraphEdgeNames") == 0)
-        obj = avtScalarMetaData_SetEnumGraphEdgeNames(self, tuple);
+        obj = avtScalarMetaData_SetEnumGraphEdgeNames(self, args);
     else if(strcmp(name, "enumGraphEdgeNameIndexs") == 0)
-        obj = avtScalarMetaData_SetEnumGraphEdgeNameIndexs(self, tuple);
+        obj = avtScalarMetaData_SetEnumGraphEdgeNameIndexs(self, args);
     else if(strcmp(name, "enumNChooseRN") == 0)
-        obj = avtScalarMetaData_SetEnumNChooseRN(self, tuple);
+        obj = avtScalarMetaData_SetEnumNChooseRN(self, args);
     else if(strcmp(name, "enumNChooseRMaxR") == 0)
-        obj = avtScalarMetaData_SetEnumNChooseRMaxR(self, tuple);
+        obj = avtScalarMetaData_SetEnumNChooseRMaxR(self, args);
     else if(strcmp(name, "missingDataType") == 0)
-        obj = avtScalarMetaData_SetMissingDataType(self, tuple);
+        obj = avtScalarMetaData_SetMissingDataType(self, args);
     else if(strcmp(name, "missingData") == 0)
-        obj = avtScalarMetaData_SetMissingData(self, tuple);
+        obj = avtScalarMetaData_SetMissingData(self, args);
 
-    if(obj != NULL)
+    if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
-    Py_DECREF(tuple);
-    if( obj == NULL)
-        PyErr_Format(PyExc_RuntimeError, "Unable to set unknown attribute: '%s'", name);
+    if (obj == &NULL_PY_OBJ)
+    {
+        obj = NULL;
+        PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);
+    }
+    else if (obj == NULL && !PyErr_Occurred())
+        PyErr_Format(PyExc_RuntimeError, "unknown problem with '%s'", name);
+
     return (obj != NULL) ? 0 : -1;
 }
 
@@ -1100,7 +1466,7 @@ static int
 avtScalarMetaData_print(PyObject *v, FILE *fp, int flags)
 {
     avtScalarMetaDataObject *obj = (avtScalarMetaDataObject *)v;
-    fprintf(fp, "%s", PyavtScalarMetaData_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyavtScalarMetaData_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -1108,7 +1474,7 @@ PyObject *
 avtScalarMetaData_str(PyObject *v)
 {
     avtScalarMetaDataObject *obj = (avtScalarMetaDataObject *)v;
-    return PyString_FromString(PyavtScalarMetaData_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyavtScalarMetaData_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -1260,7 +1626,7 @@ PyavtScalarMetaData_GetLogString()
 {
     std::string s("avtScalarMetaData = avtScalarMetaData()\n");
     if(currentAtts != 0)
-        s += PyavtScalarMetaData_ToString(currentAtts, "avtScalarMetaData.");
+        s += PyavtScalarMetaData_ToString(currentAtts, "avtScalarMetaData.", true);
     return s;
 }
 
@@ -1273,7 +1639,7 @@ PyavtScalarMetaData_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("avtScalarMetaData = avtScalarMetaData()\n");
-        s += PyavtScalarMetaData_ToString(currentAtts, "avtScalarMetaData.");
+        s += PyavtScalarMetaData_ToString(currentAtts, "avtScalarMetaData.", true);
         cb(s);
     }
 }

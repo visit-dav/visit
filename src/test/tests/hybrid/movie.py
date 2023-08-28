@@ -19,6 +19,20 @@
 #     Kathleen Biagas, Mon Oct 23 17:41:43 MST 2017
 #     Use Image lib for image conversion instead of 'convert'.
 #
+#     Kathleen Biagas, Tue Sep 14 09:51:45 PDT 2021
+#     Added call to CloseComputeEngine to GenerateMovie method, since the
+#     movie script launches its own. Prevents a hang when run in parallel.
+#
+#     Kathleen Biagas, Tue Sep 21 17:22:58 PDT 2021
+#     Removed CloseComputeEngine, it prevented the non-movie-generation parts
+#     of the test from running in parallel.  If the nightlies use srun,
+#     add "--overlap" srun option.  This allows cinema test to succeed in
+#     parallel with recent changes to slurm.
+#
+#     Kathleen Biagas, Tue Apr 12 11:41:20 PDT 2022
+#     Removed the conversion from .bmp to .png in test5, since visit_composite
+#     output is now fixed. (see bug #2386).
+#
 # ----------------------------------------------------------------------------
 import os
 import subprocess
@@ -26,10 +40,11 @@ import visit_utils
 from PIL import Image
 
 def GenerateMovie(movieArgs):
+    args = [TestEnv.params["visit_bin"], "-noconfig", "-movie"] + movieArgs
     if TestEnv.params["parallel"]:
-        args = [TestEnv.params["visit_bin"], "-movie", "-noconfig", "-np", "2", "-l", TestEnv.params["parallel_launch"]] + movieArgs
-    else:
-        args = [TestEnv.params["visit_bin"], "-movie", "-noconfig"] + movieArgs
+        args = args + ["-np", "2", "-l", TestEnv.params["parallel_launch"]]
+        if TestEnv.params["parallel_launch"] == "srun":
+            args = args + ["-la", "--overlap"]
     p = subprocess.check_output(args)
     return p
 
@@ -333,18 +348,7 @@ def test5():
     img = []
     for f in files:
         if f[0][-4:] == ".bmp":
-            #
-            # NOTE: I could not get ffmpeg to work with png output from visit-composite
-            # now that it uses VTK. I also could not get VisIt to read PNG, TIFF, or 
-            # BMP files made with that VTK export. The files looked okay on my Mac viewer
-            # but VisIt didn't like them. Maybe they had alpha.
-            #
-            bmp = f[0]
-            png = f[0][:-4] + ".png"
-            print("convert %s %s" % (bmp, png))
-            im1 = Image.open(bmp)
-            im1.save(png, "png")
-            img = img + [(png,0)]
+            img = img + [(f[0],0)]
     txt = "\n".join([x[0] for x in img])
     TestText("movie_5_00", txt)
 

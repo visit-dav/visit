@@ -26,12 +26,12 @@ function bv_fms_depends_on
 
 function bv_fms_info
 {
-    export FMS_VERSION=${FMS_VERSION:-"100"}
+    export FMS_VERSION=${FMS_VERSION:-"0.2"}
     export FMS_FILE=${FMS_FILE:-"FMS-${FMS_VERSION}.tar.gz"}
     export FMS_BUILD_DIR=${FMS_BUILD_DIR:-"FMS-${FMS_VERSION}"}
-    export FMS_URL=${FMS_URL:-"http://visit.ilight.com/assets"}
-    export FMS_MD5_CHECKSUM="67241ce13619639a49ae602400b02360"
-    export FMS_SHA256_CHECKSUM="621f413e219dc166160c15ad73727512ef716ef9aeb2fe3a5192ec4376c3a798"
+    export FMS_URL=${FMS_URL:-"https://github.com/CEED/FMS/archive/refs/tags/v0.2.tar.gz"}
+    export FMS_MD5_CHECKSUM="5d2f8a154cee67ff1fb61bfebfa9f60c"
+    export FMS_SHA256_CHECKSUM="872489a1325b247968dbb7265b8736660af94121a86c93f7938441ce7478183e"
 }
 
 function bv_fms_print
@@ -73,13 +73,6 @@ function bv_fms_ensure
             DO_FMS="no"
             error "Unable to build FMS.  ${FMS_FILE} not found."
         fi
-    fi
-}
-
-function bv_fms_dry_run
-{
-    if [[ "$DO_FMS" == "yes" ]] ; then
-        echo "Dry run option not set for FMS."
     fi
 }
 

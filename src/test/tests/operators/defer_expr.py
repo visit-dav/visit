@@ -18,7 +18,7 @@
 #    Explicitly specify the color table for the vector plot.  This is an issue
 #    because this test runs with "-config" (*not* "-noconfig") and the default
 #    color table can get confused if the user has a color table in his .visit
-#    directory that collides with the normal default ("hot").  So we're 
+#    directory that collides with the normal default ("hot").  So we're
 #    skirting that issue by explicitly specifying the color table.
 #
 #    Jeremy Meredith, Mon Jul 14 12:28:50 EDT 2008
@@ -37,6 +37,9 @@
 #
 #    Brad Whitlock, Wed Apr 18 15:40:47 PDT 2012
 #    Make vectors constant color for test 8.
+#
+#    Kathleen Biagas, Mon Nov 28, 2022
+#    Remove obsolete 'colorByMag' vector att with 'colorByMagnitude'.
 #
 # ----------------------------------------------------------------------------
 
@@ -172,7 +175,7 @@ SetPlotOptions(c)
 AddPlot("Vector", "normals")
 v = VectorAttributes()
 v.origOnly = 0
-v.colorByMag = 0
+v.colorByMagnitude = 0
 v.vectorColor = (255,255,0,255)
 SetPlotOptions(v)
 AddOperator("Isosurface")

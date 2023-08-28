@@ -38,7 +38,7 @@ struct ScatterAttributesObject
 //
 static PyObject *NewScatterAttributes(int);
 std::string
-PyScatterAttributes_ToString(const ScatterAttributes *atts, const char *prefix)
+PyScatterAttributes_ToString(const ScatterAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -399,12 +399,37 @@ ScatterAttributes_SetVar1(PyObject *self, PyObject *args)
 {
     ScatterAttributesObject *obj = (ScatterAttributesObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the var1 in the object.
-    obj->data->SetVar1(std::string(str));
+    obj->data->SetVar1(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -423,22 +448,57 @@ ScatterAttributes_SetVar1Role(PyObject *self, PyObject *args)
 {
     ScatterAttributesObject *obj = (ScatterAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 5)
+    {
+        std::stringstream ss;
+        ss << "An invalid var1Role value was given." << std::endl;
+        ss << "Valid values are in the range [0,4]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << " Coordinate0";
+        ss << ", Coordinate1";
+        ss << ", Coordinate2";
+        ss << ", Color";
+        ss << ", None";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the var1Role in the object.
-    if(ival >= 0 && ival < 5)
-        obj->data->SetVar1Role(ScatterAttributes::VariableRole(ival));
-    else
-    {
-        fprintf(stderr, "An invalid var1Role value was given. "
-                        "Valid values are in the range of [0,4]. "
-                        "You can also use the following names: "
-                        "Coordinate0, Coordinate1, Coordinate2, Color, None"
-                        ".");
-        return NULL;
-    }
+    obj->data->SetVar1Role(ScatterAttributes::VariableRole(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -457,12 +517,48 @@ ScatterAttributes_SetVar1MinFlag(PyObject *self, PyObject *args)
 {
     ScatterAttributesObject *obj = (ScatterAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the var1MinFlag in the object.
-    obj->data->SetVar1MinFlag(ival != 0);
+    obj->data->SetVar1MinFlag(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -481,12 +577,48 @@ ScatterAttributes_SetVar1MaxFlag(PyObject *self, PyObject *args)
 {
     ScatterAttributesObject *obj = (ScatterAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the var1MaxFlag in the object.
-    obj->data->SetVar1MaxFlag(ival != 0);
+    obj->data->SetVar1MaxFlag(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -505,12 +637,48 @@ ScatterAttributes_SetVar1Min(PyObject *self, PyObject *args)
 {
     ScatterAttributesObject *obj = (ScatterAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the var1Min in the object.
-    obj->data->SetVar1Min(dval);
+    obj->data->SetVar1Min(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -529,12 +697,48 @@ ScatterAttributes_SetVar1Max(PyObject *self, PyObject *args)
 {
     ScatterAttributesObject *obj = (ScatterAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the var1Max in the object.
-    obj->data->SetVar1Max(dval);
+    obj->data->SetVar1Max(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -553,21 +757,55 @@ ScatterAttributes_SetVar1Scaling(PyObject *self, PyObject *args)
 {
     ScatterAttributesObject *obj = (ScatterAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 3)
+    {
+        std::stringstream ss;
+        ss << "An invalid var1Scaling value was given." << std::endl;
+        ss << "Valid values are in the range [0,2]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << " Linear";
+        ss << ", Log";
+        ss << ", Skew";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the var1Scaling in the object.
-    if(ival >= 0 && ival < 3)
-        obj->data->SetVar1Scaling(ScatterAttributes::Scaling(ival));
-    else
-    {
-        fprintf(stderr, "An invalid var1Scaling value was given. "
-                        "Valid values are in the range of [0,2]. "
-                        "You can also use the following names: "
-                        "Linear, Log, Skew.");
-        return NULL;
-    }
+    obj->data->SetVar1Scaling(ScatterAttributes::Scaling(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -586,12 +824,48 @@ ScatterAttributes_SetVar1SkewFactor(PyObject *self, PyObject *args)
 {
     ScatterAttributesObject *obj = (ScatterAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the var1SkewFactor in the object.
-    obj->data->SetVar1SkewFactor(dval);
+    obj->data->SetVar1SkewFactor(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -610,22 +884,57 @@ ScatterAttributes_SetVar2Role(PyObject *self, PyObject *args)
 {
     ScatterAttributesObject *obj = (ScatterAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 5)
+    {
+        std::stringstream ss;
+        ss << "An invalid var2Role value was given." << std::endl;
+        ss << "Valid values are in the range [0,4]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << " Coordinate0";
+        ss << ", Coordinate1";
+        ss << ", Coordinate2";
+        ss << ", Color";
+        ss << ", None";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the var2Role in the object.
-    if(ival >= 0 && ival < 5)
-        obj->data->SetVar2Role(ScatterAttributes::VariableRole(ival));
-    else
-    {
-        fprintf(stderr, "An invalid var2Role value was given. "
-                        "Valid values are in the range of [0,4]. "
-                        "You can also use the following names: "
-                        "Coordinate0, Coordinate1, Coordinate2, Color, None"
-                        ".");
-        return NULL;
-    }
+    obj->data->SetVar2Role(ScatterAttributes::VariableRole(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -644,12 +953,37 @@ ScatterAttributes_SetVar2(PyObject *self, PyObject *args)
 {
     ScatterAttributesObject *obj = (ScatterAttributesObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the var2 in the object.
-    obj->data->SetVar2(std::string(str));
+    obj->data->SetVar2(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -668,12 +1002,48 @@ ScatterAttributes_SetVar2MinFlag(PyObject *self, PyObject *args)
 {
     ScatterAttributesObject *obj = (ScatterAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the var2MinFlag in the object.
-    obj->data->SetVar2MinFlag(ival != 0);
+    obj->data->SetVar2MinFlag(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -692,12 +1062,48 @@ ScatterAttributes_SetVar2MaxFlag(PyObject *self, PyObject *args)
 {
     ScatterAttributesObject *obj = (ScatterAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the var2MaxFlag in the object.
-    obj->data->SetVar2MaxFlag(ival != 0);
+    obj->data->SetVar2MaxFlag(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -716,12 +1122,48 @@ ScatterAttributes_SetVar2Min(PyObject *self, PyObject *args)
 {
     ScatterAttributesObject *obj = (ScatterAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the var2Min in the object.
-    obj->data->SetVar2Min(dval);
+    obj->data->SetVar2Min(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -740,12 +1182,48 @@ ScatterAttributes_SetVar2Max(PyObject *self, PyObject *args)
 {
     ScatterAttributesObject *obj = (ScatterAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the var2Max in the object.
-    obj->data->SetVar2Max(dval);
+    obj->data->SetVar2Max(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -764,21 +1242,55 @@ ScatterAttributes_SetVar2Scaling(PyObject *self, PyObject *args)
 {
     ScatterAttributesObject *obj = (ScatterAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 3)
+    {
+        std::stringstream ss;
+        ss << "An invalid var2Scaling value was given." << std::endl;
+        ss << "Valid values are in the range [0,2]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << " Linear";
+        ss << ", Log";
+        ss << ", Skew";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the var2Scaling in the object.
-    if(ival >= 0 && ival < 3)
-        obj->data->SetVar2Scaling(ScatterAttributes::Scaling(ival));
-    else
-    {
-        fprintf(stderr, "An invalid var2Scaling value was given. "
-                        "Valid values are in the range of [0,2]. "
-                        "You can also use the following names: "
-                        "Linear, Log, Skew.");
-        return NULL;
-    }
+    obj->data->SetVar2Scaling(ScatterAttributes::Scaling(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -797,12 +1309,48 @@ ScatterAttributes_SetVar2SkewFactor(PyObject *self, PyObject *args)
 {
     ScatterAttributesObject *obj = (ScatterAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the var2SkewFactor in the object.
-    obj->data->SetVar2SkewFactor(dval);
+    obj->data->SetVar2SkewFactor(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -821,22 +1369,57 @@ ScatterAttributes_SetVar3Role(PyObject *self, PyObject *args)
 {
     ScatterAttributesObject *obj = (ScatterAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 5)
+    {
+        std::stringstream ss;
+        ss << "An invalid var3Role value was given." << std::endl;
+        ss << "Valid values are in the range [0,4]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << " Coordinate0";
+        ss << ", Coordinate1";
+        ss << ", Coordinate2";
+        ss << ", Color";
+        ss << ", None";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the var3Role in the object.
-    if(ival >= 0 && ival < 5)
-        obj->data->SetVar3Role(ScatterAttributes::VariableRole(ival));
-    else
-    {
-        fprintf(stderr, "An invalid var3Role value was given. "
-                        "Valid values are in the range of [0,4]. "
-                        "You can also use the following names: "
-                        "Coordinate0, Coordinate1, Coordinate2, Color, None"
-                        ".");
-        return NULL;
-    }
+    obj->data->SetVar3Role(ScatterAttributes::VariableRole(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -855,12 +1438,37 @@ ScatterAttributes_SetVar3(PyObject *self, PyObject *args)
 {
     ScatterAttributesObject *obj = (ScatterAttributesObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the var3 in the object.
-    obj->data->SetVar3(std::string(str));
+    obj->data->SetVar3(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -879,12 +1487,48 @@ ScatterAttributes_SetVar3MinFlag(PyObject *self, PyObject *args)
 {
     ScatterAttributesObject *obj = (ScatterAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the var3MinFlag in the object.
-    obj->data->SetVar3MinFlag(ival != 0);
+    obj->data->SetVar3MinFlag(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -903,12 +1547,48 @@ ScatterAttributes_SetVar3MaxFlag(PyObject *self, PyObject *args)
 {
     ScatterAttributesObject *obj = (ScatterAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the var3MaxFlag in the object.
-    obj->data->SetVar3MaxFlag(ival != 0);
+    obj->data->SetVar3MaxFlag(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -927,12 +1607,48 @@ ScatterAttributes_SetVar3Min(PyObject *self, PyObject *args)
 {
     ScatterAttributesObject *obj = (ScatterAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the var3Min in the object.
-    obj->data->SetVar3Min(dval);
+    obj->data->SetVar3Min(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -951,12 +1667,48 @@ ScatterAttributes_SetVar3Max(PyObject *self, PyObject *args)
 {
     ScatterAttributesObject *obj = (ScatterAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the var3Max in the object.
-    obj->data->SetVar3Max(dval);
+    obj->data->SetVar3Max(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -975,21 +1727,55 @@ ScatterAttributes_SetVar3Scaling(PyObject *self, PyObject *args)
 {
     ScatterAttributesObject *obj = (ScatterAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 3)
+    {
+        std::stringstream ss;
+        ss << "An invalid var3Scaling value was given." << std::endl;
+        ss << "Valid values are in the range [0,2]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << " Linear";
+        ss << ", Log";
+        ss << ", Skew";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the var3Scaling in the object.
-    if(ival >= 0 && ival < 3)
-        obj->data->SetVar3Scaling(ScatterAttributes::Scaling(ival));
-    else
-    {
-        fprintf(stderr, "An invalid var3Scaling value was given. "
-                        "Valid values are in the range of [0,2]. "
-                        "You can also use the following names: "
-                        "Linear, Log, Skew.");
-        return NULL;
-    }
+    obj->data->SetVar3Scaling(ScatterAttributes::Scaling(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1008,12 +1794,48 @@ ScatterAttributes_SetVar3SkewFactor(PyObject *self, PyObject *args)
 {
     ScatterAttributesObject *obj = (ScatterAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the var3SkewFactor in the object.
-    obj->data->SetVar3SkewFactor(dval);
+    obj->data->SetVar3SkewFactor(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1032,22 +1854,57 @@ ScatterAttributes_SetVar4Role(PyObject *self, PyObject *args)
 {
     ScatterAttributesObject *obj = (ScatterAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 5)
+    {
+        std::stringstream ss;
+        ss << "An invalid var4Role value was given." << std::endl;
+        ss << "Valid values are in the range [0,4]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << " Coordinate0";
+        ss << ", Coordinate1";
+        ss << ", Coordinate2";
+        ss << ", Color";
+        ss << ", None";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the var4Role in the object.
-    if(ival >= 0 && ival < 5)
-        obj->data->SetVar4Role(ScatterAttributes::VariableRole(ival));
-    else
-    {
-        fprintf(stderr, "An invalid var4Role value was given. "
-                        "Valid values are in the range of [0,4]. "
-                        "You can also use the following names: "
-                        "Coordinate0, Coordinate1, Coordinate2, Color, None"
-                        ".");
-        return NULL;
-    }
+    obj->data->SetVar4Role(ScatterAttributes::VariableRole(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1066,12 +1923,37 @@ ScatterAttributes_SetVar4(PyObject *self, PyObject *args)
 {
     ScatterAttributesObject *obj = (ScatterAttributesObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the var4 in the object.
-    obj->data->SetVar4(std::string(str));
+    obj->data->SetVar4(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1090,12 +1972,48 @@ ScatterAttributes_SetVar4MinFlag(PyObject *self, PyObject *args)
 {
     ScatterAttributesObject *obj = (ScatterAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the var4MinFlag in the object.
-    obj->data->SetVar4MinFlag(ival != 0);
+    obj->data->SetVar4MinFlag(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1114,12 +2032,48 @@ ScatterAttributes_SetVar4MaxFlag(PyObject *self, PyObject *args)
 {
     ScatterAttributesObject *obj = (ScatterAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the var4MaxFlag in the object.
-    obj->data->SetVar4MaxFlag(ival != 0);
+    obj->data->SetVar4MaxFlag(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1138,12 +2092,48 @@ ScatterAttributes_SetVar4Min(PyObject *self, PyObject *args)
 {
     ScatterAttributesObject *obj = (ScatterAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the var4Min in the object.
-    obj->data->SetVar4Min(dval);
+    obj->data->SetVar4Min(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1162,12 +2152,48 @@ ScatterAttributes_SetVar4Max(PyObject *self, PyObject *args)
 {
     ScatterAttributesObject *obj = (ScatterAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the var4Max in the object.
-    obj->data->SetVar4Max(dval);
+    obj->data->SetVar4Max(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1186,21 +2212,55 @@ ScatterAttributes_SetVar4Scaling(PyObject *self, PyObject *args)
 {
     ScatterAttributesObject *obj = (ScatterAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 3)
+    {
+        std::stringstream ss;
+        ss << "An invalid var4Scaling value was given." << std::endl;
+        ss << "Valid values are in the range [0,2]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << " Linear";
+        ss << ", Log";
+        ss << ", Skew";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the var4Scaling in the object.
-    if(ival >= 0 && ival < 3)
-        obj->data->SetVar4Scaling(ScatterAttributes::Scaling(ival));
-    else
-    {
-        fprintf(stderr, "An invalid var4Scaling value was given. "
-                        "Valid values are in the range of [0,2]. "
-                        "You can also use the following names: "
-                        "Linear, Log, Skew.");
-        return NULL;
-    }
+    obj->data->SetVar4Scaling(ScatterAttributes::Scaling(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1219,12 +2279,48 @@ ScatterAttributes_SetVar4SkewFactor(PyObject *self, PyObject *args)
 {
     ScatterAttributesObject *obj = (ScatterAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the var4SkewFactor in the object.
-    obj->data->SetVar4SkewFactor(dval);
+    obj->data->SetVar4SkewFactor(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1243,12 +2339,48 @@ ScatterAttributes_SetPointSize(PyObject *self, PyObject *args)
 {
     ScatterAttributesObject *obj = (ScatterAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the pointSize in the object.
-    obj->data->SetPointSize(dval);
+    obj->data->SetPointSize(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1267,12 +2399,48 @@ ScatterAttributes_SetPointSizePixels(PyObject *self, PyObject *args)
 {
     ScatterAttributesObject *obj = (ScatterAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the pointSizePixels in the object.
-    obj->data->SetPointSizePixels((int)ival);
+    obj->data->SetPointSizePixels(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1291,9 +2459,13 @@ ScatterAttributes_SetPointType(PyObject *self, PyObject *args)
 {
     ScatterAttributesObject *obj = (ScatterAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    int ival = -999;
+    if (PySequence_Check(args) && !PyArg_ParseTuple(args, "i", &ival))
+        return PyErr_Format(PyExc_TypeError, "Expecting scalar integer arg");
+    else if (PyNumber_Check(args) && (ival = (int) PyLong_AsLong(args)) == -1 && PyErr_Occurred())
+        return PyErr_Format(PyExc_TypeError, "Expecting scalar integer arg");
+    if (ival == -999)
+        return PyErr_Format(PyExc_TypeError, "Expecting scalar integer arg");
 
     if(ival >= 0 && ival < 8)
     {
@@ -1301,12 +2473,11 @@ ScatterAttributes_SetPointType(PyObject *self, PyObject *args)
     }
     else
     {
-        fprintf(stderr, "An invalid pointType value was given. "
+        return PyErr_Format(PyExc_ValueError, "An invalid pointType value was given. "
                         "Valid values are in the range of [0,7]. "
                         "You can also use the following names: "
                         "Box, Axis, Icosahedron, Octahedron, Tetrahedron, "
                         "SphereGeometry, Point, Sphere.");
-        return NULL;
     }
 
     Py_INCREF(Py_None);
@@ -1326,12 +2497,48 @@ ScatterAttributes_SetScaleCube(PyObject *self, PyObject *args)
 {
     ScatterAttributesObject *obj = (ScatterAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the scaleCube in the object.
-    obj->data->SetScaleCube(ival != 0);
+    obj->data->SetScaleCube(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1350,21 +2557,55 @@ ScatterAttributes_SetColorType(PyObject *self, PyObject *args)
 {
     ScatterAttributesObject *obj = (ScatterAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 3)
+    {
+        std::stringstream ss;
+        ss << "An invalid colorType value was given." << std::endl;
+        ss << "Valid values are in the range [0,2]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << " ColorByForegroundColor";
+        ss << ", ColorBySingleColor";
+        ss << ", ColorByColorTable";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the colorType in the object.
-    if(ival >= 0 && ival < 3)
-        obj->data->SetColorType(ScatterAttributes::ColoringMethod(ival));
-    else
-    {
-        fprintf(stderr, "An invalid colorType value was given. "
-                        "Valid values are in the range of [0,2]. "
-                        "You can also use the following names: "
-                        "ColorByForegroundColor, ColorBySingleColor, ColorByColorTable.");
-        return NULL;
-    }
+    obj->data->SetColorType(ScatterAttributes::ColoringMethod(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1460,12 +2701,37 @@ ScatterAttributes_SetColorTableName(PyObject *self, PyObject *args)
 {
     ScatterAttributesObject *obj = (ScatterAttributesObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the colorTableName in the object.
-    obj->data->SetColorTableName(std::string(str));
+    obj->data->SetColorTableName(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1484,12 +2750,48 @@ ScatterAttributes_SetInvertColorTable(PyObject *self, PyObject *args)
 {
     ScatterAttributesObject *obj = (ScatterAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the invertColorTable in the object.
-    obj->data->SetInvertColorTable(ival != 0);
+    obj->data->SetInvertColorTable(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1508,12 +2810,48 @@ ScatterAttributes_SetLegendFlag(PyObject *self, PyObject *args)
 {
     ScatterAttributesObject *obj = (ScatterAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the legendFlag in the object.
-    obj->data->SetLegendFlag(ival != 0);
+    obj->data->SetLegendFlag(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1821,151 +3159,112 @@ PyScatterAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "legendFlag") == 0)
         return ScatterAttributes_GetLegendFlag(self, NULL);
 
-    // try to handle old attributes
-    if(strcmp(name, "foregroundFlag") == 0)
+
+    // Add a __dict__ answer so that dir() works
+    if (!strcmp(name, "__dict__"))
     {
-        if( ScatterAttributes_GetColorType(self, NULL) == PyInt_FromLong(0) )
-        {
-            PyObject *retval = PyInt_FromLong(1);
-            return retval;
-        }
-        else //if( ScatterAttributes_GetColorType(self, NULL) == PyInt_FromLong(1) )
-        {
-            PyObject *retval = PyInt_FromLong(0);
-            return retval;
-        }
+        PyObject *result = PyDict_New();
+        for (int i = 0; PyScatterAttributes_methods[i].ml_meth; i++)
+            PyDict_SetItem(result,
+                PyString_FromString(PyScatterAttributes_methods[i].ml_name),
+                PyString_FromString(PyScatterAttributes_methods[i].ml_name));
+        return result;
     }
+
     return Py_FindMethod(PyScatterAttributes_methods, self, name);
 }
 
 int
 PyScatterAttributes_setattr(PyObject *self, char *name, PyObject *args)
 {
-    // Create a tuple to contain the arguments since all of the Set
-    // functions expect a tuple.
-    PyObject *tuple = PyTuple_New(1);
-    PyTuple_SET_ITEM(tuple, 0, args);
-    Py_INCREF(args);
-    PyObject *obj = NULL;
+    PyObject NULL_PY_OBJ;
+    PyObject *obj = &NULL_PY_OBJ;
 
     if(strcmp(name, "var1") == 0)
-        obj = ScatterAttributes_SetVar1(self, tuple);
+        obj = ScatterAttributes_SetVar1(self, args);
     else if(strcmp(name, "var1Role") == 0)
-        obj = ScatterAttributes_SetVar1Role(self, tuple);
+        obj = ScatterAttributes_SetVar1Role(self, args);
     else if(strcmp(name, "var1MinFlag") == 0)
-        obj = ScatterAttributes_SetVar1MinFlag(self, tuple);
+        obj = ScatterAttributes_SetVar1MinFlag(self, args);
     else if(strcmp(name, "var1MaxFlag") == 0)
-        obj = ScatterAttributes_SetVar1MaxFlag(self, tuple);
+        obj = ScatterAttributes_SetVar1MaxFlag(self, args);
     else if(strcmp(name, "var1Min") == 0)
-        obj = ScatterAttributes_SetVar1Min(self, tuple);
+        obj = ScatterAttributes_SetVar1Min(self, args);
     else if(strcmp(name, "var1Max") == 0)
-        obj = ScatterAttributes_SetVar1Max(self, tuple);
+        obj = ScatterAttributes_SetVar1Max(self, args);
     else if(strcmp(name, "var1Scaling") == 0)
-        obj = ScatterAttributes_SetVar1Scaling(self, tuple);
+        obj = ScatterAttributes_SetVar1Scaling(self, args);
     else if(strcmp(name, "var1SkewFactor") == 0)
-        obj = ScatterAttributes_SetVar1SkewFactor(self, tuple);
+        obj = ScatterAttributes_SetVar1SkewFactor(self, args);
     else if(strcmp(name, "var2Role") == 0)
-        obj = ScatterAttributes_SetVar2Role(self, tuple);
+        obj = ScatterAttributes_SetVar2Role(self, args);
     else if(strcmp(name, "var2") == 0)
-        obj = ScatterAttributes_SetVar2(self, tuple);
+        obj = ScatterAttributes_SetVar2(self, args);
     else if(strcmp(name, "var2MinFlag") == 0)
-        obj = ScatterAttributes_SetVar2MinFlag(self, tuple);
+        obj = ScatterAttributes_SetVar2MinFlag(self, args);
     else if(strcmp(name, "var2MaxFlag") == 0)
-        obj = ScatterAttributes_SetVar2MaxFlag(self, tuple);
+        obj = ScatterAttributes_SetVar2MaxFlag(self, args);
     else if(strcmp(name, "var2Min") == 0)
-        obj = ScatterAttributes_SetVar2Min(self, tuple);
+        obj = ScatterAttributes_SetVar2Min(self, args);
     else if(strcmp(name, "var2Max") == 0)
-        obj = ScatterAttributes_SetVar2Max(self, tuple);
+        obj = ScatterAttributes_SetVar2Max(self, args);
     else if(strcmp(name, "var2Scaling") == 0)
-        obj = ScatterAttributes_SetVar2Scaling(self, tuple);
+        obj = ScatterAttributes_SetVar2Scaling(self, args);
     else if(strcmp(name, "var2SkewFactor") == 0)
-        obj = ScatterAttributes_SetVar2SkewFactor(self, tuple);
+        obj = ScatterAttributes_SetVar2SkewFactor(self, args);
     else if(strcmp(name, "var3Role") == 0)
-        obj = ScatterAttributes_SetVar3Role(self, tuple);
+        obj = ScatterAttributes_SetVar3Role(self, args);
     else if(strcmp(name, "var3") == 0)
-        obj = ScatterAttributes_SetVar3(self, tuple);
+        obj = ScatterAttributes_SetVar3(self, args);
     else if(strcmp(name, "var3MinFlag") == 0)
-        obj = ScatterAttributes_SetVar3MinFlag(self, tuple);
+        obj = ScatterAttributes_SetVar3MinFlag(self, args);
     else if(strcmp(name, "var3MaxFlag") == 0)
-        obj = ScatterAttributes_SetVar3MaxFlag(self, tuple);
+        obj = ScatterAttributes_SetVar3MaxFlag(self, args);
     else if(strcmp(name, "var3Min") == 0)
-        obj = ScatterAttributes_SetVar3Min(self, tuple);
+        obj = ScatterAttributes_SetVar3Min(self, args);
     else if(strcmp(name, "var3Max") == 0)
-        obj = ScatterAttributes_SetVar3Max(self, tuple);
+        obj = ScatterAttributes_SetVar3Max(self, args);
     else if(strcmp(name, "var3Scaling") == 0)
-        obj = ScatterAttributes_SetVar3Scaling(self, tuple);
+        obj = ScatterAttributes_SetVar3Scaling(self, args);
     else if(strcmp(name, "var3SkewFactor") == 0)
-        obj = ScatterAttributes_SetVar3SkewFactor(self, tuple);
+        obj = ScatterAttributes_SetVar3SkewFactor(self, args);
     else if(strcmp(name, "var4Role") == 0)
-        obj = ScatterAttributes_SetVar4Role(self, tuple);
+        obj = ScatterAttributes_SetVar4Role(self, args);
     else if(strcmp(name, "var4") == 0)
-        obj = ScatterAttributes_SetVar4(self, tuple);
+        obj = ScatterAttributes_SetVar4(self, args);
     else if(strcmp(name, "var4MinFlag") == 0)
-        obj = ScatterAttributes_SetVar4MinFlag(self, tuple);
+        obj = ScatterAttributes_SetVar4MinFlag(self, args);
     else if(strcmp(name, "var4MaxFlag") == 0)
-        obj = ScatterAttributes_SetVar4MaxFlag(self, tuple);
+        obj = ScatterAttributes_SetVar4MaxFlag(self, args);
     else if(strcmp(name, "var4Min") == 0)
-        obj = ScatterAttributes_SetVar4Min(self, tuple);
+        obj = ScatterAttributes_SetVar4Min(self, args);
     else if(strcmp(name, "var4Max") == 0)
-        obj = ScatterAttributes_SetVar4Max(self, tuple);
+        obj = ScatterAttributes_SetVar4Max(self, args);
     else if(strcmp(name, "var4Scaling") == 0)
-        obj = ScatterAttributes_SetVar4Scaling(self, tuple);
+        obj = ScatterAttributes_SetVar4Scaling(self, args);
     else if(strcmp(name, "var4SkewFactor") == 0)
-        obj = ScatterAttributes_SetVar4SkewFactor(self, tuple);
+        obj = ScatterAttributes_SetVar4SkewFactor(self, args);
     else if(strcmp(name, "pointSize") == 0)
-        obj = ScatterAttributes_SetPointSize(self, tuple);
+        obj = ScatterAttributes_SetPointSize(self, args);
     else if(strcmp(name, "pointSizePixels") == 0)
-        obj = ScatterAttributes_SetPointSizePixels(self, tuple);
+        obj = ScatterAttributes_SetPointSizePixels(self, args);
     else if(strcmp(name, "pointType") == 0)
-        obj = ScatterAttributes_SetPointType(self, tuple);
+        obj = ScatterAttributes_SetPointType(self, args);
     else if(strcmp(name, "scaleCube") == 0)
-        obj = ScatterAttributes_SetScaleCube(self, tuple);
+        obj = ScatterAttributes_SetScaleCube(self, args);
     else if(strcmp(name, "colorType") == 0)
-        obj = ScatterAttributes_SetColorType(self, tuple);
+        obj = ScatterAttributes_SetColorType(self, args);
     else if(strcmp(name, "singleColor") == 0)
-        obj = ScatterAttributes_SetSingleColor(self, tuple);
+        obj = ScatterAttributes_SetSingleColor(self, args);
     else if(strcmp(name, "colorTableName") == 0)
-        obj = ScatterAttributes_SetColorTableName(self, tuple);
+        obj = ScatterAttributes_SetColorTableName(self, args);
     else if(strcmp(name, "invertColorTable") == 0)
-        obj = ScatterAttributes_SetInvertColorTable(self, tuple);
+        obj = ScatterAttributes_SetInvertColorTable(self, args);
     else if(strcmp(name, "legendFlag") == 0)
-        obj = ScatterAttributes_SetLegendFlag(self, tuple);
-
-
-    // try to handle old attributes
-    if(strcmp(name, "foregroundFlag") == 0)
-    {
-        PyObject *new_args = NULL;
-
-        // from the tuple get the foreground value
-        int ival;
-        if(!PyArg_ParseTuple(tuple, "i", &ival))
-              new_args = Py_BuildValue("(i)", 0);
-
-        // foreground is false so single color and color type is 1
-        else if( ival == 0 )
-        {
-            new_args = Py_BuildValue("(i)", 1);
-        }
-        // foreground is true so foreground color and color type is 0
-        else if( ival == 1 )
-        {
-            new_args = Py_BuildValue("(i)", 0);
-        }
-
-        if (new_args)
-        {
-            obj = ScatterAttributes_SetColorType(self, new_args);
-
-            Py_DECREF(new_args);
-        }
-    }
+        obj = ScatterAttributes_SetLegendFlag(self, args);
 
     // If the user changes one of the roles and one of the roles is
     // "Color" then assume that they want to use the color table.
-
-    // The above maintains backwards compatibility. Below allows new
-    // foreward new capibility.
 
     // If they do not want to use the color table and want to use
     // either the foreground or a single color they must set it after
@@ -1994,12 +3293,17 @@ PyScatterAttributes_setattr(PyObject *self, char *name, PyObject *args)
             Py_DECREF(new_args);
         }
     }
-    if(obj != NULL)
+    if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
-    Py_DECREF(tuple);
-    if( obj == NULL)
-        PyErr_Format(PyExc_RuntimeError, "Unable to set unknown attribute: '%s'", name);
+    if (obj == &NULL_PY_OBJ)
+    {
+        obj = NULL;
+        PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);
+    }
+    else if (obj == NULL && !PyErr_Occurred())
+        PyErr_Format(PyExc_RuntimeError, "unknown problem with '%s'", name);
+
     return (obj != NULL) ? 0 : -1;
 }
 
@@ -2007,7 +3311,7 @@ static int
 ScatterAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     ScatterAttributesObject *obj = (ScatterAttributesObject *)v;
-    fprintf(fp, "%s", PyScatterAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyScatterAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -2015,7 +3319,7 @@ PyObject *
 ScatterAttributes_str(PyObject *v)
 {
     ScatterAttributesObject *obj = (ScatterAttributesObject *)v;
-    return PyString_FromString(PyScatterAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyScatterAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -2167,7 +3471,7 @@ PyScatterAttributes_GetLogString()
 {
     std::string s("ScatterAtts = ScatterAttributes()\n");
     if(currentAtts != 0)
-        s += PyScatterAttributes_ToString(currentAtts, "ScatterAtts.");
+        s += PyScatterAttributes_ToString(currentAtts, "ScatterAtts.", true);
     return s;
 }
 
@@ -2180,7 +3484,7 @@ PyScatterAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("ScatterAtts = ScatterAttributes()\n");
-        s += PyScatterAttributes_ToString(currentAtts, "ScatterAtts.");
+        s += PyScatterAttributes_ToString(currentAtts, "ScatterAtts.", true);
         cb(s);
     }
 }

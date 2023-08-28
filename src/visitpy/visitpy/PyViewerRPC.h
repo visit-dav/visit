@@ -12,7 +12,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define VIEWERRPC_NMETH 66
+#define VIEWERRPC_NMETH 68
 void VISITPY_API           PyViewerRPC_StartUp(ViewerRPC *subj, void *data);
 void VISITPY_API           PyViewerRPC_CloseDown();
 VISITPY_API PyMethodDef *  PyViewerRPC_GetMethodTable(int *nMethods);
@@ -23,7 +23,7 @@ VISITPY_API PyObject *     PyViewerRPC_Wrap(const ViewerRPC *attr);
 void VISITPY_API           PyViewerRPC_SetParent(PyObject *obj, PyObject *parent);
 void VISITPY_API           PyViewerRPC_SetDefaults(const ViewerRPC *atts);
 std::string VISITPY_API    PyViewerRPC_GetLogString();
-std::string VISITPY_API    PyViewerRPC_ToString(const ViewerRPC *, const char *);
+std::string VISITPY_API    PyViewerRPC_ToString(const ViewerRPC *, const char *, const bool=false);
 VISITPY_API PyObject *     PyViewerRPC_getattr(PyObject *self, char *name);
 int VISITPY_API            PyViewerRPC_setattr(PyObject *self, char *name, PyObject *args);
 VISITPY_API extern PyMethodDef PyViewerRPC_methods[VIEWERRPC_NMETH];

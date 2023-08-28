@@ -19,6 +19,8 @@
 #include <avtPolarCoordinatesExpression.h>
 #include <avtPrincipalDeviatoricTensorExpression.h>
 #include <avtPrincipalTensorExpression.h>
+#include <avtRelativeVolumeExpression.h>
+#include <avtStrainVolumetricExpression.h>
 #include <avtStrainAlmansiExpression.h>
 #include <avtStrainGreenLagrangeExpression.h>
 #include <avtStrainInfinitesimalExpression.h>
@@ -49,6 +51,8 @@
 // Creation:   Thu May 21 08:55:58 PDT 2009
 //
 // Modifications:
+//   Justin Privitera, Fri Sep 16 11:58:19 PDT 2022
+//   Added relative volume and volumetric strain.
 //   
 // ****************************************************************************
 
@@ -79,6 +83,10 @@ avtFunctionExpr::CreateVectorMatrixFilters(const std::string &functionName) cons
         f = new avtPrincipalTensorExpression();
     else if (functionName == "principal_deviatoric_tensor")
         f = new avtPrincipalDeviatoricTensorExpression();
+    else if (functionName == "relative_volume")
+        f = new avtRelativeVolumeExpression();
+    else if (functionName == "strain_volumetric")
+        f = new avtStrainVolumetricExpression();
     else if (functionName == "strain_almansi")
         f = new avtStrainAlmansiExpression();
     else if (functionName == "strain_green_lagrange")

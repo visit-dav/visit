@@ -17,10 +17,14 @@
 //  Programmer: Hank Childs
 //  Creation:   May 26, 2005
 //
+//  Modifications:
+//    Kathleen Biagas, Fri Apr 23 2021
+//    Added return Atts.
+//
 // ****************************************************************************
 
-ExportDatabaseRPC::ExportDatabaseRPC() : BlockingRPC("i*as"), ids(), exportDBAtts(),
-    timeSuffix()
+ExportDatabaseRPC::ExportDatabaseRPC() : BlockingRPC("i*as", &returnAtts),
+    ids(), exportDBAtts(), timeSuffix()
 {
 }
 
@@ -65,8 +69,9 @@ ExportDatabaseRPC::~ExportDatabaseRPC()
 // ****************************************************************************
 
 void
-ExportDatabaseRPC::operator()(const intVector &ids_, const ExportDBAttributes &atts, 
-    const std::string &s)
+ExportDatabaseRPC::operator()(const intVector &ids_, 
+                              const ExportDBAttributes *atts, 
+                              const std::string &s)
 {
     SetIDs(ids_);
     SetExportDBAtts(atts);
@@ -153,9 +158,9 @@ ExportDatabaseRPC::GetIDs() const
 // ****************************************************************************
  
 void
-ExportDatabaseRPC::SetExportDBAtts(const ExportDBAttributes &atts)
+ExportDatabaseRPC::SetExportDBAtts(const ExportDBAttributes *atts)
 {
-    exportDBAtts = atts;
+    exportDBAtts = *atts;
     Select(1, (void*)&exportDBAtts);
 }
 
@@ -171,10 +176,10 @@ ExportDatabaseRPC::SetExportDBAtts(const ExportDBAttributes &atts)
 //
 // ****************************************************************************
  
-const ExportDBAttributes &
-ExportDatabaseRPC::GetExportDBAtts() const
+ExportDBAttributes *
+ExportDatabaseRPC::GetExportDBAtts() 
 {
-    return exportDBAtts;
+    return &exportDBAtts;
 }
 
 void

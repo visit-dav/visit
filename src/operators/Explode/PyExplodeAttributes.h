@@ -22,7 +22,7 @@ PyObject *     PyExplodeAttributes_Wrap(const ExplodeAttributes *attr);
 void           PyExplodeAttributes_SetParent(PyObject *obj, PyObject *parent);
 void           PyExplodeAttributes_SetDefaults(const ExplodeAttributes *atts);
 std::string    PyExplodeAttributes_GetLogString();
-std::string    PyExplodeAttributes_ToString(const ExplodeAttributes *, const char *);
+std::string    PyExplodeAttributes_ToString(const ExplodeAttributes *, const char *, const bool=false);
 PyObject *     PyExplodeAttributes_getattr(PyObject *self, char *name);
 int            PyExplodeAttributes_setattr(PyObject *self, char *name, PyObject *args);
 extern PyMethodDef PyExplodeAttributes_methods[EXPLODEATTRIBUTES_NMETH];

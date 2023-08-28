@@ -16,6 +16,9 @@
 #              formats.
 #
 #  Modifications:
+#    Kathleen Biagas, Wed Feb 16 09:15:45 PST 2022
+#    Replace use of meshatts 'foregroundFlag' and 'backgroundFlag' with
+#    meshColorSource and opaqueColorSource.
 #
 # ----------------------------------------------------------------------------
 
@@ -24,8 +27,8 @@ def AddMeshPlot():
     m = MeshAttributes()
     m.legendFlag = 0
     m.opaqueColor = (153, 204, 255, 255)
-    m.backgroundFlag = 0
-    m.foregroundFlag = 0
+    m.opaqueColorSource = m.OpaqueCustom
+    m.meshColorSource = m.MeshCustom
     m.meshColor = (0,0,0,255)
     SetPlotOptions(m)
 

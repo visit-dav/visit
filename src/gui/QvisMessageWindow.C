@@ -15,7 +15,7 @@
 #include <QPushButton>
 #include <QTextEdit>
 
-// *************************************************************************************
+// ****************************************************************************
 // Method: QvisMessageWindow::QvisMessageWindow
 //
 // Purpose: 
@@ -54,7 +54,10 @@
 //   Eric Brugger, Tue Aug 24 13:30:28 PDT 2010
 //   Added a control to enable/disable the popping up of warning messages.
 //
-// *************************************************************************************
+//   Kathleen Biagas, Wed Apr 6, 2022
+//   Fix QT_VERSION test to use Qt's QT_VERSION_CHECK.
+//
+// ****************************************************************************
 
 QvisMessageWindow::QvisMessageWindow(MessageAttributes *msgAttr,
     const QString &captionString) : QvisWindowBase(captionString, Qt::Dialog),
@@ -69,14 +72,19 @@ QvisMessageWindow::QvisMessageWindow(MessageAttributes *msgAttr,
     QWidget *central = new QWidget( this );
     setCentralWidget( central );
     QVBoxLayout *topLayout = new QVBoxLayout(central);
-    topLayout->setMargin(10);
+    topLayout->setContentsMargins(10,10,10,10);
 
     // Create a multi line edit to display the message text.
     messageText = new QTextEdit(central);
     messageText->setWordWrapMode(QTextOption::WordWrap);
     messageText->setReadOnly(true);
-    messageText->setMinimumWidth(3 * fontMetrics().horizontalAdvance("Closed the compute "
-        "engine on host sunburn.llnl.gov.  ") / 2);
+    QString cm("Closed the compute engine on host sunburn.llnl.gov.  ");
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 11, 0))
+    int w = fontMetrics().horizontalAdvance(cm);
+#else
+    int w = fontMetrics().width(cm);
+#endif
+    messageText->setMinimumWidth(3 * w / 2);
     messageText->setMinimumHeight(8 * fontMetrics().lineSpacing());
     severityLabel = new QLabel(tr("Message"), central);
     severityLabel->setBuddy(messageText);

@@ -33,14 +33,12 @@ function bv_mfem_depends_on
 function bv_mfem_info
 {
     # NOTE: we are using a special version of MFEM that has not yet been in an MFEM release.
-    export MFEM_VERSION=${MFEM_VERSION:-"Add_FMS_support"}
+    export MFEM_VERSION=${MFEM_VERSION:-"4.4"}
     export MFEM_FILE=${MFEM_FILE:-"mfem-${MFEM_VERSION}.tgz"}
     export MFEM_BUILD_DIR=${MFEM_BUILD_DIR:-"mfem-${MFEM_VERSION}"}
-    # For the time being, get MFEM tarball from IL website if it cannot be downloaded from third-party
-    export MFEM_URL=${MFEM_URL:-"http://visit.ilight.com/assets"}
-    #export MFEM_URL=${MFEM_URL:-"https://bit.ly/mfem-4-0"}
-    export MFEM_MD5_CHECKSUM="a8124f5a43bef277aeb659a492c05600"
-    export MFEM_SHA256_CHECKSUM="0dec3ebd2163bb2f104bdb6f4009da09a05ac27108b0d2f820c7f67cfda6921a"
+    export MFEM_URL=${MFEM_URL:-"https://bit.ly/mfem-4-4"}
+    export MFEM_MD5_CHECKSUM="9c6ca0e2bee45851b49f4a0cda1cacb6"
+    export MFEM_SHA256_CHECKSUM="37250dbef6e97b16dc9ab50973e8d68bc165bb4afcdaf91b3b72c8972c87deef"
 }
 
 function bv_mfem_print
@@ -98,13 +96,6 @@ function bv_mfem_ensure
             DO_MFEM="no"
             error "Unable to build mfem.  ${MFEM_FILE} not found."
         fi
-    fi
-}
-
-function bv_mfem_dry_run
-{
-    if [[ "$DO_MFEM" == "yes" ]] ; then
-        echo "Dry run option not set for mfem."
     fi
 }
 
@@ -184,13 +175,11 @@ function build_mfem
     mkdir build
     cd build || error "Can't cd to MFEM build dir."
 
-    # Version 4.0 now requires c++11
-    CXXFLAGS="-std=c++11 ${CXXFLAGS}"
-
     vopts="-DCMAKE_C_COMPILER:STRING=${C_COMPILER}"
     vopts="${vopts} -DCMAKE_C_FLAGS:STRING=\"${C_OPT_FLAGS} $CFLAGS\""
     vopts="${vopts} -DCMAKE_CXX_COMPILER:STRING=${CXX_COMPILER}"
-    vopts="${vopts} -DCMAKE_CXX_FLAGS:STRING=\"${CXX_OPT_FLAGS} $CXXFLAGS\""
+    # Version 4.0 now requires c++11
+    vopts="${vopts} -DCMAKE_CXX_FLAGS:STRING=\"${CXX_OPT_FLAGS} $CXXFLAGS -std=c++11\""
     vopts="${vopts} -DCMAKE_INSTALL_PREFIX:PATH=${VISITDIR}/mfem/${MFEM_VERSION}/${VISITARCH}"
     if test "x${DO_STATIC_BUILD}" = "xyes" ; then
         vopts="${vopts} -DBUILD_SHARED_LIBS:BOOL=OFF"

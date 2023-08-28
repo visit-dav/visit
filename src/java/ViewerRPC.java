@@ -24,7 +24,7 @@ import java.lang.Integer;
 
 public class ViewerRPC extends AttributeSubject
 {
-    private static int ViewerRPC_numAdditionalAtts = 32;
+    private static int ViewerRPC_numAdditionalAtts = 33;
 
     // Enum values
     public final static int VIEWERRPCTYPE_CLOSERPC = 0;
@@ -69,174 +69,176 @@ public class ViewerRPC extends AttributeSubject
     public final static int VIEWERRPCTYPE_CHANGEACTIVEPLOTSVARRPC = 39;
     public final static int VIEWERRPCTYPE_ADDOPERATORRPC = 40;
     public final static int VIEWERRPCTYPE_ADDINITIALIZEDOPERATORRPC = 41;
-    public final static int VIEWERRPCTYPE_PROMOTEOPERATORRPC = 42;
-    public final static int VIEWERRPCTYPE_DEMOTEOPERATORRPC = 43;
-    public final static int VIEWERRPCTYPE_REMOVEOPERATORRPC = 44;
-    public final static int VIEWERRPCTYPE_REMOVELASTOPERATORRPC = 45;
-    public final static int VIEWERRPCTYPE_REMOVEALLOPERATORSRPC = 46;
-    public final static int VIEWERRPCTYPE_SAVEWINDOWRPC = 47;
-    public final static int VIEWERRPCTYPE_SETDEFAULTPLOTOPTIONSRPC = 48;
-    public final static int VIEWERRPCTYPE_SETPLOTOPTIONSRPC = 49;
-    public final static int VIEWERRPCTYPE_SETDEFAULTOPERATOROPTIONSRPC = 50;
-    public final static int VIEWERRPCTYPE_SETOPERATOROPTIONSRPC = 51;
-    public final static int VIEWERRPCTYPE_WRITECONFIGFILERPC = 52;
-    public final static int VIEWERRPCTYPE_CONNECTTOMETADATASERVERRPC = 53;
-    public final static int VIEWERRPCTYPE_ICONIFYALLWINDOWSRPC = 54;
-    public final static int VIEWERRPCTYPE_DEICONIFYALLWINDOWSRPC = 55;
-    public final static int VIEWERRPCTYPE_SHOWALLWINDOWSRPC = 56;
-    public final static int VIEWERRPCTYPE_HIDEALLWINDOWSRPC = 57;
-    public final static int VIEWERRPCTYPE_UPDATECOLORTABLERPC = 58;
-    public final static int VIEWERRPCTYPE_SETANNOTATIONATTRIBUTESRPC = 59;
-    public final static int VIEWERRPCTYPE_SETDEFAULTANNOTATIONATTRIBUTESRPC = 60;
-    public final static int VIEWERRPCTYPE_RESETANNOTATIONATTRIBUTESRPC = 61;
-    public final static int VIEWERRPCTYPE_SETKEYFRAMEATTRIBUTESRPC = 62;
-    public final static int VIEWERRPCTYPE_SETPLOTSILRESTRICTIONRPC = 63;
-    public final static int VIEWERRPCTYPE_SETVIEWAXISARRAYRPC = 64;
-    public final static int VIEWERRPCTYPE_SETVIEWCURVERPC = 65;
-    public final static int VIEWERRPCTYPE_SETVIEW2DRPC = 66;
-    public final static int VIEWERRPCTYPE_SETVIEW3DRPC = 67;
-    public final static int VIEWERRPCTYPE_RESETPLOTOPTIONSRPC = 68;
-    public final static int VIEWERRPCTYPE_RESETOPERATOROPTIONSRPC = 69;
-    public final static int VIEWERRPCTYPE_SETAPPEARANCERPC = 70;
-    public final static int VIEWERRPCTYPE_PROCESSEXPRESSIONSRPC = 71;
-    public final static int VIEWERRPCTYPE_SETLIGHTLISTRPC = 72;
-    public final static int VIEWERRPCTYPE_SETDEFAULTLIGHTLISTRPC = 73;
-    public final static int VIEWERRPCTYPE_RESETLIGHTLISTRPC = 74;
-    public final static int VIEWERRPCTYPE_SETANIMATIONATTRIBUTESRPC = 75;
-    public final static int VIEWERRPCTYPE_SETWINDOWAREARPC = 76;
-    public final static int VIEWERRPCTYPE_PRINTWINDOWRPC = 77;
-    public final static int VIEWERRPCTYPE_RESETVIEWRPC = 78;
-    public final static int VIEWERRPCTYPE_RECENTERVIEWRPC = 79;
-    public final static int VIEWERRPCTYPE_TOGGLEALLOWPOPUPRPC = 80;
-    public final static int VIEWERRPCTYPE_TOGGLEMAINTAINVIEWMODERPC = 81;
-    public final static int VIEWERRPCTYPE_TOGGLEBOUNDINGBOXMODERPC = 82;
-    public final static int VIEWERRPCTYPE_TOGGLECAMERAVIEWMODERPC = 83;
-    public final static int VIEWERRPCTYPE_TOGGLEPERSPECTIVEVIEWRPC = 84;
-    public final static int VIEWERRPCTYPE_TOGGLESPINMODERPC = 85;
-    public final static int VIEWERRPCTYPE_TOGGLELOCKTIMERPC = 86;
-    public final static int VIEWERRPCTYPE_TOGGLELOCKTOOLSRPC = 87;
-    public final static int VIEWERRPCTYPE_TOGGLELOCKVIEWMODERPC = 88;
-    public final static int VIEWERRPCTYPE_TOGGLEFULLFRAMERPC = 89;
-    public final static int VIEWERRPCTYPE_UNDOVIEWRPC = 90;
-    public final static int VIEWERRPCTYPE_REDOVIEWRPC = 91;
-    public final static int VIEWERRPCTYPE_INVERTBACKGROUNDRPC = 92;
-    public final static int VIEWERRPCTYPE_CLEARPICKPOINTSRPC = 93;
-    public final static int VIEWERRPCTYPE_REMOVEPICKSRPC = 94;
-    public final static int VIEWERRPCTYPE_SETWINDOWMODERPC = 95;
-    public final static int VIEWERRPCTYPE_ENABLETOOLRPC = 96;
-    public final static int VIEWERRPCTYPE_SETTOOLUPDATEMODERPC = 97;
-    public final static int VIEWERRPCTYPE_COPYVIEWTOWINDOWRPC = 98;
-    public final static int VIEWERRPCTYPE_COPYLIGHTINGTOWINDOWRPC = 99;
-    public final static int VIEWERRPCTYPE_COPYANNOTATIONSTOWINDOWRPC = 100;
-    public final static int VIEWERRPCTYPE_COPYPLOTSTOWINDOWRPC = 101;
-    public final static int VIEWERRPCTYPE_CLEARCACHERPC = 102;
-    public final static int VIEWERRPCTYPE_CLEARCACHEFORALLENGINESRPC = 103;
-    public final static int VIEWERRPCTYPE_SETVIEWEXTENTSTYPERPC = 104;
-    public final static int VIEWERRPCTYPE_CLEARREFLINESRPC = 105;
-    public final static int VIEWERRPCTYPE_SETRENDERINGATTRIBUTESRPC = 106;
-    public final static int VIEWERRPCTYPE_QUERYRPC = 107;
-    public final static int VIEWERRPCTYPE_CLONEWINDOWRPC = 108;
-    public final static int VIEWERRPCTYPE_SETMATERIALATTRIBUTESRPC = 109;
-    public final static int VIEWERRPCTYPE_SETDEFAULTMATERIALATTRIBUTESRPC = 110;
-    public final static int VIEWERRPCTYPE_RESETMATERIALATTRIBUTESRPC = 111;
-    public final static int VIEWERRPCTYPE_SETPLOTDATABASESTATERPC = 112;
-    public final static int VIEWERRPCTYPE_DELETEPLOTDATABASEKEYFRAMERPC = 113;
-    public final static int VIEWERRPCTYPE_MOVEPLOTDATABASEKEYFRAMERPC = 114;
-    public final static int VIEWERRPCTYPE_CLEARVIEWKEYFRAMESRPC = 115;
-    public final static int VIEWERRPCTYPE_DELETEVIEWKEYFRAMERPC = 116;
-    public final static int VIEWERRPCTYPE_MOVEVIEWKEYFRAMERPC = 117;
-    public final static int VIEWERRPCTYPE_SETVIEWKEYFRAMERPC = 118;
-    public final static int VIEWERRPCTYPE_OPENMDSERVERRPC = 119;
-    public final static int VIEWERRPCTYPE_ENABLETOOLBARRPC = 120;
-    public final static int VIEWERRPCTYPE_HIDETOOLBARSRPC = 121;
-    public final static int VIEWERRPCTYPE_HIDETOOLBARSFORALLWINDOWSRPC = 122;
-    public final static int VIEWERRPCTYPE_SHOWTOOLBARSRPC = 123;
-    public final static int VIEWERRPCTYPE_SHOWTOOLBARSFORALLWINDOWSRPC = 124;
-    public final static int VIEWERRPCTYPE_SETTOOLBARICONSIZERPC = 125;
-    public final static int VIEWERRPCTYPE_SAVEVIEWRPC = 126;
-    public final static int VIEWERRPCTYPE_SETGLOBALLINEOUTATTRIBUTESRPC = 127;
-    public final static int VIEWERRPCTYPE_SETPICKATTRIBUTESRPC = 128;
-    public final static int VIEWERRPCTYPE_EXPORTCOLORTABLERPC = 129;
-    public final static int VIEWERRPCTYPE_EXPORTENTIRESTATERPC = 130;
-    public final static int VIEWERRPCTYPE_IMPORTENTIRESTATERPC = 131;
-    public final static int VIEWERRPCTYPE_IMPORTENTIRESTATEWITHDIFFERENTSOURCESRPC = 132;
-    public final static int VIEWERRPCTYPE_RESETPICKATTRIBUTESRPC = 133;
-    public final static int VIEWERRPCTYPE_ADDANNOTATIONOBJECTRPC = 134;
-    public final static int VIEWERRPCTYPE_HIDEACTIVEANNOTATIONOBJECTSRPC = 135;
-    public final static int VIEWERRPCTYPE_DELETEACTIVEANNOTATIONOBJECTSRPC = 136;
-    public final static int VIEWERRPCTYPE_RAISEACTIVEANNOTATIONOBJECTSRPC = 137;
-    public final static int VIEWERRPCTYPE_LOWERACTIVEANNOTATIONOBJECTSRPC = 138;
-    public final static int VIEWERRPCTYPE_SETANNOTATIONOBJECTOPTIONSRPC = 139;
-    public final static int VIEWERRPCTYPE_SETDEFAULTANNOTATIONOBJECTLISTRPC = 140;
-    public final static int VIEWERRPCTYPE_RESETANNOTATIONOBJECTLISTRPC = 141;
-    public final static int VIEWERRPCTYPE_RESETPICKLETTERRPC = 142;
-    public final static int VIEWERRPCTYPE_SETDEFAULTPICKATTRIBUTESRPC = 143;
-    public final static int VIEWERRPCTYPE_CHOOSECENTEROFROTATIONRPC = 144;
-    public final static int VIEWERRPCTYPE_SETCENTEROFROTATIONRPC = 145;
-    public final static int VIEWERRPCTYPE_SETQUERYOVERTIMEATTRIBUTESRPC = 146;
-    public final static int VIEWERRPCTYPE_SETDEFAULTQUERYOVERTIMEATTRIBUTESRPC = 147;
-    public final static int VIEWERRPCTYPE_RESETQUERYOVERTIMEATTRIBUTESRPC = 148;
-    public final static int VIEWERRPCTYPE_RESETLINEOUTCOLORRPC = 149;
-    public final static int VIEWERRPCTYPE_SETINTERACTORATTRIBUTESRPC = 150;
-    public final static int VIEWERRPCTYPE_SETDEFAULTINTERACTORATTRIBUTESRPC = 151;
-    public final static int VIEWERRPCTYPE_RESETINTERACTORATTRIBUTESRPC = 152;
-    public final static int VIEWERRPCTYPE_GETPROCINFORPC = 153;
-    public final static int VIEWERRPCTYPE_SENDSIMULATIONCOMMANDRPC = 154;
-    public final static int VIEWERRPCTYPE_UPDATEDBPLUGININFORPC = 155;
-    public final static int VIEWERRPCTYPE_EXPORTDBRPC = 156;
-    public final static int VIEWERRPCTYPE_SETTRYHARDERCYCLESTIMESRPC = 157;
-    public final static int VIEWERRPCTYPE_OPENCLIENTRPC = 158;
-    public final static int VIEWERRPCTYPE_OPENGUICLIENTRPC = 159;
-    public final static int VIEWERRPCTYPE_OPENCLICLIENTRPC = 160;
-    public final static int VIEWERRPCTYPE_SUPPRESSQUERYOUTPUTRPC = 161;
-    public final static int VIEWERRPCTYPE_SETQUERYFLOATFORMATRPC = 162;
-    public final static int VIEWERRPCTYPE_SETMESHMANAGEMENTATTRIBUTESRPC = 163;
-    public final static int VIEWERRPCTYPE_SETDEFAULTMESHMANAGEMENTATTRIBUTESRPC = 164;
-    public final static int VIEWERRPCTYPE_RESETMESHMANAGEMENTATTRIBUTESRPC = 165;
-    public final static int VIEWERRPCTYPE_RESIZEWINDOWRPC = 166;
-    public final static int VIEWERRPCTYPE_MOVEWINDOWRPC = 167;
-    public final static int VIEWERRPCTYPE_MOVEANDRESIZEWINDOWRPC = 168;
-    public final static int VIEWERRPCTYPE_SETSTATELOGGINGRPC = 169;
-    public final static int VIEWERRPCTYPE_CONSTRUCTDATABINNINGRPC = 170;
-    public final static int VIEWERRPCTYPE_REQUESTMETADATARPC = 171;
-    public final static int VIEWERRPCTYPE_SETTREATALLDBSASTIMEVARYINGRPC = 172;
-    public final static int VIEWERRPCTYPE_SETCREATEMESHQUALITYEXPRESSIONSRPC = 173;
-    public final static int VIEWERRPCTYPE_SETCREATETIMEDERIVATIVEEXPRESSIONSRPC = 174;
-    public final static int VIEWERRPCTYPE_SETCREATEVECTORMAGNITUDEEXPRESSIONSRPC = 175;
-    public final static int VIEWERRPCTYPE_SETPRECISIONTYPERPC = 176;
-    public final static int VIEWERRPCTYPE_SETBACKENDTYPERPC = 177;
-    public final static int VIEWERRPCTYPE_COPYACTIVEPLOTSRPC = 178;
-    public final static int VIEWERRPCTYPE_SETPLOTFOLLOWSTIMERPC = 179;
-    public final static int VIEWERRPCTYPE_TURNOFFALLLOCKSRPC = 180;
-    public final static int VIEWERRPCTYPE_SETDEFAULTFILEOPENOPTIONSRPC = 181;
-    public final static int VIEWERRPCTYPE_SETSUPPRESSMESSAGESRPC = 182;
-    public final static int VIEWERRPCTYPE_APPLYNAMEDSELECTIONRPC = 183;
-    public final static int VIEWERRPCTYPE_CREATENAMEDSELECTIONRPC = 184;
-    public final static int VIEWERRPCTYPE_DELETENAMEDSELECTIONRPC = 185;
-    public final static int VIEWERRPCTYPE_LOADNAMEDSELECTIONRPC = 186;
-    public final static int VIEWERRPCTYPE_SAVENAMEDSELECTIONRPC = 187;
-    public final static int VIEWERRPCTYPE_SETNAMEDSELECTIONAUTOAPPLYRPC = 188;
-    public final static int VIEWERRPCTYPE_UPDATENAMEDSELECTIONRPC = 189;
-    public final static int VIEWERRPCTYPE_INITIALIZENAMEDSELECTIONVARIABLESRPC = 190;
-    public final static int VIEWERRPCTYPE_MENUQUITRPC = 191;
-    public final static int VIEWERRPCTYPE_SETPLOTDESCRIPTIONRPC = 192;
-    public final static int VIEWERRPCTYPE_MOVEPLOTORDERTOWARDFIRSTRPC = 193;
-    public final static int VIEWERRPCTYPE_MOVEPLOTORDERTOWARDLASTRPC = 194;
-    public final static int VIEWERRPCTYPE_SETPLOTORDERTOFIRSTRPC = 195;
-    public final static int VIEWERRPCTYPE_SETPLOTORDERTOLASTRPC = 196;
-    public final static int VIEWERRPCTYPE_RENAMEPICKLABELRPC = 197;
-    public final static int VIEWERRPCTYPE_GETQUERYPARAMETERSRPC = 198;
-    public final static int VIEWERRPCTYPE_DDTCONNECTRPC = 199;
-    public final static int VIEWERRPCTYPE_DDTFOCUSRPC = 200;
-    public final static int VIEWERRPCTYPE_RELEASETODDTRPC = 201;
-    public final static int VIEWERRPCTYPE_PLOTDDTVISPOINTVARIABLESRPC = 202;
-    public final static int VIEWERRPCTYPE_EXPORTRPC = 203;
-    public final static int VIEWERRPCTYPE_EXPORTHOSTPROFILERPC = 204;
-    public final static int VIEWERRPCTYPE_STARTPLOTANIMATIONRPC = 205;
-    public final static int VIEWERRPCTYPE_STOPPLOTANIMATIONRPC = 206;
-    public final static int VIEWERRPCTYPE_READHOSTPROFILESFROMDIRECTORYRPC = 207;
-    public final static int VIEWERRPCTYPE_SETREMOVEDUPLICATENODESRPC = 208;
-    public final static int VIEWERRPCTYPE_MAXRPC = 209;
+    public final static int VIEWERRPCTYPE_DELETEOPERATORKEYFRAMERPC = 42;
+    public final static int VIEWERRPCTYPE_MOVEOPERATORKEYFRAMERPC = 43;
+    public final static int VIEWERRPCTYPE_PROMOTEOPERATORRPC = 44;
+    public final static int VIEWERRPCTYPE_DEMOTEOPERATORRPC = 45;
+    public final static int VIEWERRPCTYPE_REMOVEOPERATORRPC = 46;
+    public final static int VIEWERRPCTYPE_REMOVELASTOPERATORRPC = 47;
+    public final static int VIEWERRPCTYPE_REMOVEALLOPERATORSRPC = 48;
+    public final static int VIEWERRPCTYPE_SAVEWINDOWRPC = 49;
+    public final static int VIEWERRPCTYPE_SETDEFAULTPLOTOPTIONSRPC = 50;
+    public final static int VIEWERRPCTYPE_SETPLOTOPTIONSRPC = 51;
+    public final static int VIEWERRPCTYPE_SETDEFAULTOPERATOROPTIONSRPC = 52;
+    public final static int VIEWERRPCTYPE_SETOPERATOROPTIONSRPC = 53;
+    public final static int VIEWERRPCTYPE_WRITECONFIGFILERPC = 54;
+    public final static int VIEWERRPCTYPE_CONNECTTOMETADATASERVERRPC = 55;
+    public final static int VIEWERRPCTYPE_ICONIFYALLWINDOWSRPC = 56;
+    public final static int VIEWERRPCTYPE_DEICONIFYALLWINDOWSRPC = 57;
+    public final static int VIEWERRPCTYPE_SHOWALLWINDOWSRPC = 58;
+    public final static int VIEWERRPCTYPE_HIDEALLWINDOWSRPC = 59;
+    public final static int VIEWERRPCTYPE_UPDATECOLORTABLERPC = 60;
+    public final static int VIEWERRPCTYPE_SETANNOTATIONATTRIBUTESRPC = 61;
+    public final static int VIEWERRPCTYPE_SETDEFAULTANNOTATIONATTRIBUTESRPC = 62;
+    public final static int VIEWERRPCTYPE_RESETANNOTATIONATTRIBUTESRPC = 63;
+    public final static int VIEWERRPCTYPE_SETKEYFRAMEATTRIBUTESRPC = 64;
+    public final static int VIEWERRPCTYPE_SETPLOTSILRESTRICTIONRPC = 65;
+    public final static int VIEWERRPCTYPE_SETVIEWAXISARRAYRPC = 66;
+    public final static int VIEWERRPCTYPE_SETVIEWCURVERPC = 67;
+    public final static int VIEWERRPCTYPE_SETVIEW2DRPC = 68;
+    public final static int VIEWERRPCTYPE_SETVIEW3DRPC = 69;
+    public final static int VIEWERRPCTYPE_RESETPLOTOPTIONSRPC = 70;
+    public final static int VIEWERRPCTYPE_RESETOPERATOROPTIONSRPC = 71;
+    public final static int VIEWERRPCTYPE_SETAPPEARANCERPC = 72;
+    public final static int VIEWERRPCTYPE_PROCESSEXPRESSIONSRPC = 73;
+    public final static int VIEWERRPCTYPE_SETLIGHTLISTRPC = 74;
+    public final static int VIEWERRPCTYPE_SETDEFAULTLIGHTLISTRPC = 75;
+    public final static int VIEWERRPCTYPE_RESETLIGHTLISTRPC = 76;
+    public final static int VIEWERRPCTYPE_SETANIMATIONATTRIBUTESRPC = 77;
+    public final static int VIEWERRPCTYPE_SETWINDOWAREARPC = 78;
+    public final static int VIEWERRPCTYPE_PRINTWINDOWRPC = 79;
+    public final static int VIEWERRPCTYPE_RESETVIEWRPC = 80;
+    public final static int VIEWERRPCTYPE_RECENTERVIEWRPC = 81;
+    public final static int VIEWERRPCTYPE_TOGGLEALLOWPOPUPRPC = 82;
+    public final static int VIEWERRPCTYPE_TOGGLEMAINTAINVIEWMODERPC = 83;
+    public final static int VIEWERRPCTYPE_TOGGLEBOUNDINGBOXMODERPC = 84;
+    public final static int VIEWERRPCTYPE_TOGGLECAMERAVIEWMODERPC = 85;
+    public final static int VIEWERRPCTYPE_TOGGLEPERSPECTIVEVIEWRPC = 86;
+    public final static int VIEWERRPCTYPE_TOGGLESPINMODERPC = 87;
+    public final static int VIEWERRPCTYPE_TOGGLELOCKTIMERPC = 88;
+    public final static int VIEWERRPCTYPE_TOGGLELOCKTOOLSRPC = 89;
+    public final static int VIEWERRPCTYPE_TOGGLELOCKVIEWMODERPC = 90;
+    public final static int VIEWERRPCTYPE_TOGGLEFULLFRAMERPC = 91;
+    public final static int VIEWERRPCTYPE_UNDOVIEWRPC = 92;
+    public final static int VIEWERRPCTYPE_REDOVIEWRPC = 93;
+    public final static int VIEWERRPCTYPE_INVERTBACKGROUNDRPC = 94;
+    public final static int VIEWERRPCTYPE_CLEARPICKPOINTSRPC = 95;
+    public final static int VIEWERRPCTYPE_REMOVEPICKSRPC = 96;
+    public final static int VIEWERRPCTYPE_SETWINDOWMODERPC = 97;
+    public final static int VIEWERRPCTYPE_ENABLETOOLRPC = 98;
+    public final static int VIEWERRPCTYPE_SETTOOLUPDATEMODERPC = 99;
+    public final static int VIEWERRPCTYPE_COPYVIEWTOWINDOWRPC = 100;
+    public final static int VIEWERRPCTYPE_COPYLIGHTINGTOWINDOWRPC = 101;
+    public final static int VIEWERRPCTYPE_COPYANNOTATIONSTOWINDOWRPC = 102;
+    public final static int VIEWERRPCTYPE_COPYPLOTSTOWINDOWRPC = 103;
+    public final static int VIEWERRPCTYPE_CLEARCACHERPC = 104;
+    public final static int VIEWERRPCTYPE_CLEARCACHEFORALLENGINESRPC = 105;
+    public final static int VIEWERRPCTYPE_SETVIEWEXTENTSTYPERPC = 106;
+    public final static int VIEWERRPCTYPE_CLEARREFLINESRPC = 107;
+    public final static int VIEWERRPCTYPE_SETRENDERINGATTRIBUTESRPC = 108;
+    public final static int VIEWERRPCTYPE_QUERYRPC = 109;
+    public final static int VIEWERRPCTYPE_CLONEWINDOWRPC = 110;
+    public final static int VIEWERRPCTYPE_SETMATERIALATTRIBUTESRPC = 111;
+    public final static int VIEWERRPCTYPE_SETDEFAULTMATERIALATTRIBUTESRPC = 112;
+    public final static int VIEWERRPCTYPE_RESETMATERIALATTRIBUTESRPC = 113;
+    public final static int VIEWERRPCTYPE_SETPLOTDATABASESTATERPC = 114;
+    public final static int VIEWERRPCTYPE_DELETEPLOTDATABASEKEYFRAMERPC = 115;
+    public final static int VIEWERRPCTYPE_MOVEPLOTDATABASEKEYFRAMERPC = 116;
+    public final static int VIEWERRPCTYPE_CLEARVIEWKEYFRAMESRPC = 117;
+    public final static int VIEWERRPCTYPE_DELETEVIEWKEYFRAMERPC = 118;
+    public final static int VIEWERRPCTYPE_MOVEVIEWKEYFRAMERPC = 119;
+    public final static int VIEWERRPCTYPE_SETVIEWKEYFRAMERPC = 120;
+    public final static int VIEWERRPCTYPE_OPENMDSERVERRPC = 121;
+    public final static int VIEWERRPCTYPE_ENABLETOOLBARRPC = 122;
+    public final static int VIEWERRPCTYPE_HIDETOOLBARSRPC = 123;
+    public final static int VIEWERRPCTYPE_HIDETOOLBARSFORALLWINDOWSRPC = 124;
+    public final static int VIEWERRPCTYPE_SHOWTOOLBARSRPC = 125;
+    public final static int VIEWERRPCTYPE_SHOWTOOLBARSFORALLWINDOWSRPC = 126;
+    public final static int VIEWERRPCTYPE_SETTOOLBARICONSIZERPC = 127;
+    public final static int VIEWERRPCTYPE_SAVEVIEWRPC = 128;
+    public final static int VIEWERRPCTYPE_SETGLOBALLINEOUTATTRIBUTESRPC = 129;
+    public final static int VIEWERRPCTYPE_SETPICKATTRIBUTESRPC = 130;
+    public final static int VIEWERRPCTYPE_EXPORTCOLORTABLERPC = 131;
+    public final static int VIEWERRPCTYPE_EXPORTENTIRESTATERPC = 132;
+    public final static int VIEWERRPCTYPE_IMPORTENTIRESTATERPC = 133;
+    public final static int VIEWERRPCTYPE_IMPORTENTIRESTATEWITHDIFFERENTSOURCESRPC = 134;
+    public final static int VIEWERRPCTYPE_RESETPICKATTRIBUTESRPC = 135;
+    public final static int VIEWERRPCTYPE_ADDANNOTATIONOBJECTRPC = 136;
+    public final static int VIEWERRPCTYPE_HIDEACTIVEANNOTATIONOBJECTSRPC = 137;
+    public final static int VIEWERRPCTYPE_DELETEACTIVEANNOTATIONOBJECTSRPC = 138;
+    public final static int VIEWERRPCTYPE_RAISEACTIVEANNOTATIONOBJECTSRPC = 139;
+    public final static int VIEWERRPCTYPE_LOWERACTIVEANNOTATIONOBJECTSRPC = 140;
+    public final static int VIEWERRPCTYPE_SETANNOTATIONOBJECTOPTIONSRPC = 141;
+    public final static int VIEWERRPCTYPE_SETDEFAULTANNOTATIONOBJECTLISTRPC = 142;
+    public final static int VIEWERRPCTYPE_RESETANNOTATIONOBJECTLISTRPC = 143;
+    public final static int VIEWERRPCTYPE_RESETPICKLETTERRPC = 144;
+    public final static int VIEWERRPCTYPE_SETDEFAULTPICKATTRIBUTESRPC = 145;
+    public final static int VIEWERRPCTYPE_CHOOSECENTEROFROTATIONRPC = 146;
+    public final static int VIEWERRPCTYPE_SETCENTEROFROTATIONRPC = 147;
+    public final static int VIEWERRPCTYPE_SETQUERYOVERTIMEATTRIBUTESRPC = 148;
+    public final static int VIEWERRPCTYPE_SETDEFAULTQUERYOVERTIMEATTRIBUTESRPC = 149;
+    public final static int VIEWERRPCTYPE_RESETQUERYOVERTIMEATTRIBUTESRPC = 150;
+    public final static int VIEWERRPCTYPE_RESETLINEOUTCOLORRPC = 151;
+    public final static int VIEWERRPCTYPE_SETINTERACTORATTRIBUTESRPC = 152;
+    public final static int VIEWERRPCTYPE_SETDEFAULTINTERACTORATTRIBUTESRPC = 153;
+    public final static int VIEWERRPCTYPE_RESETINTERACTORATTRIBUTESRPC = 154;
+    public final static int VIEWERRPCTYPE_GETPROCINFORPC = 155;
+    public final static int VIEWERRPCTYPE_SENDSIMULATIONCOMMANDRPC = 156;
+    public final static int VIEWERRPCTYPE_UPDATEDBPLUGININFORPC = 157;
+    public final static int VIEWERRPCTYPE_EXPORTDBRPC = 158;
+    public final static int VIEWERRPCTYPE_SETTRYHARDERCYCLESTIMESRPC = 159;
+    public final static int VIEWERRPCTYPE_OPENCLIENTRPC = 160;
+    public final static int VIEWERRPCTYPE_OPENGUICLIENTRPC = 161;
+    public final static int VIEWERRPCTYPE_OPENCLICLIENTRPC = 162;
+    public final static int VIEWERRPCTYPE_SUPPRESSQUERYOUTPUTRPC = 163;
+    public final static int VIEWERRPCTYPE_SETQUERYFLOATFORMATRPC = 164;
+    public final static int VIEWERRPCTYPE_SETMESHMANAGEMENTATTRIBUTESRPC = 165;
+    public final static int VIEWERRPCTYPE_SETDEFAULTMESHMANAGEMENTATTRIBUTESRPC = 166;
+    public final static int VIEWERRPCTYPE_RESETMESHMANAGEMENTATTRIBUTESRPC = 167;
+    public final static int VIEWERRPCTYPE_RESIZEWINDOWRPC = 168;
+    public final static int VIEWERRPCTYPE_MOVEWINDOWRPC = 169;
+    public final static int VIEWERRPCTYPE_MOVEANDRESIZEWINDOWRPC = 170;
+    public final static int VIEWERRPCTYPE_SETSTATELOGGINGRPC = 171;
+    public final static int VIEWERRPCTYPE_CONSTRUCTDATABINNINGRPC = 172;
+    public final static int VIEWERRPCTYPE_REQUESTMETADATARPC = 173;
+    public final static int VIEWERRPCTYPE_SETTREATALLDBSASTIMEVARYINGRPC = 174;
+    public final static int VIEWERRPCTYPE_SETCREATEMESHQUALITYEXPRESSIONSRPC = 175;
+    public final static int VIEWERRPCTYPE_SETCREATETIMEDERIVATIVEEXPRESSIONSRPC = 176;
+    public final static int VIEWERRPCTYPE_SETCREATEVECTORMAGNITUDEEXPRESSIONSRPC = 177;
+    public final static int VIEWERRPCTYPE_SETPRECISIONTYPERPC = 178;
+    public final static int VIEWERRPCTYPE_SETBACKENDTYPERPC = 179;
+    public final static int VIEWERRPCTYPE_COPYACTIVEPLOTSRPC = 180;
+    public final static int VIEWERRPCTYPE_SETPLOTFOLLOWSTIMERPC = 181;
+    public final static int VIEWERRPCTYPE_TURNOFFALLLOCKSRPC = 182;
+    public final static int VIEWERRPCTYPE_SETDEFAULTFILEOPENOPTIONSRPC = 183;
+    public final static int VIEWERRPCTYPE_SETSUPPRESSMESSAGESRPC = 184;
+    public final static int VIEWERRPCTYPE_APPLYNAMEDSELECTIONRPC = 185;
+    public final static int VIEWERRPCTYPE_CREATENAMEDSELECTIONRPC = 186;
+    public final static int VIEWERRPCTYPE_DELETENAMEDSELECTIONRPC = 187;
+    public final static int VIEWERRPCTYPE_LOADNAMEDSELECTIONRPC = 188;
+    public final static int VIEWERRPCTYPE_SAVENAMEDSELECTIONRPC = 189;
+    public final static int VIEWERRPCTYPE_SETNAMEDSELECTIONAUTOAPPLYRPC = 190;
+    public final static int VIEWERRPCTYPE_UPDATENAMEDSELECTIONRPC = 191;
+    public final static int VIEWERRPCTYPE_INITIALIZENAMEDSELECTIONVARIABLESRPC = 192;
+    public final static int VIEWERRPCTYPE_MENUQUITRPC = 193;
+    public final static int VIEWERRPCTYPE_SETPLOTDESCRIPTIONRPC = 194;
+    public final static int VIEWERRPCTYPE_MOVEPLOTORDERTOWARDFIRSTRPC = 195;
+    public final static int VIEWERRPCTYPE_MOVEPLOTORDERTOWARDLASTRPC = 196;
+    public final static int VIEWERRPCTYPE_SETPLOTORDERTOFIRSTRPC = 197;
+    public final static int VIEWERRPCTYPE_SETPLOTORDERTOLASTRPC = 198;
+    public final static int VIEWERRPCTYPE_RENAMEPICKLABELRPC = 199;
+    public final static int VIEWERRPCTYPE_GETQUERYPARAMETERSRPC = 200;
+    public final static int VIEWERRPCTYPE_DDTCONNECTRPC = 201;
+    public final static int VIEWERRPCTYPE_DDTFOCUSRPC = 202;
+    public final static int VIEWERRPCTYPE_RELEASETODDTRPC = 203;
+    public final static int VIEWERRPCTYPE_PLOTDDTVISPOINTVARIABLESRPC = 204;
+    public final static int VIEWERRPCTYPE_EXPORTRPC = 205;
+    public final static int VIEWERRPCTYPE_EXPORTHOSTPROFILERPC = 206;
+    public final static int VIEWERRPCTYPE_STARTPLOTANIMATIONRPC = 207;
+    public final static int VIEWERRPCTYPE_STOPPLOTANIMATIONRPC = 208;
+    public final static int VIEWERRPCTYPE_READHOSTPROFILESFROMDIRECTORYRPC = 209;
+    public final static int VIEWERRPCTYPE_SETREMOVEDUPLICATENODESRPC = 210;
+    public final static int VIEWERRPCTYPE_MAXRPC = 211;
 
 
     public ViewerRPC()
@@ -276,6 +278,7 @@ public class ViewerRPC extends AttributeSubject
         intArg1 = 0;
         intArg2 = 0;
         intArg3 = 0;
+        intArg4 = 0;
         stringArg1 = new String("");
         stringArg2 = new String("");
         toolUpdateMode = 1;
@@ -319,6 +322,7 @@ public class ViewerRPC extends AttributeSubject
         intArg1 = 0;
         intArg2 = 0;
         intArg3 = 0;
+        intArg4 = 0;
         stringArg1 = new String("");
         stringArg2 = new String("");
         toolUpdateMode = 1;
@@ -384,6 +388,7 @@ public class ViewerRPC extends AttributeSubject
         intArg1 = obj.intArg1;
         intArg2 = obj.intArg2;
         intArg3 = obj.intArg3;
+        intArg4 = obj.intArg4;
         stringArg1 = new String(obj.stringArg1);
         stringArg2 = new String(obj.stringArg2);
         toolUpdateMode = obj.toolUpdateMode;
@@ -481,6 +486,7 @@ public class ViewerRPC extends AttributeSubject
                 (intArg1 == obj.intArg1) &&
                 (intArg2 == obj.intArg2) &&
                 (intArg3 == obj.intArg3) &&
+                (intArg4 == obj.intArg4) &&
                 (stringArg1.equals(obj.stringArg1)) &&
                 (stringArg2.equals(obj.stringArg2)) &&
                 (toolUpdateMode == obj.toolUpdateMode) &&
@@ -674,28 +680,34 @@ public class ViewerRPC extends AttributeSubject
         Select(27);
     }
 
+    public void SetIntArg4(int intArg4_)
+    {
+        intArg4 = intArg4_;
+        Select(28);
+    }
+
     public void SetStringArg1(String stringArg1_)
     {
         stringArg1 = stringArg1_;
-        Select(28);
+        Select(29);
     }
 
     public void SetStringArg2(String stringArg2_)
     {
         stringArg2 = stringArg2_;
-        Select(29);
+        Select(30);
     }
 
     public void SetToolUpdateMode(int toolUpdateMode_)
     {
         toolUpdateMode = toolUpdateMode_;
-        Select(30);
+        Select(31);
     }
 
     public void SetQueryParams(MapNode queryParams_)
     {
         queryParams = queryParams_;
-        Select(31);
+        Select(32);
     }
 
     // Property getting methods
@@ -727,6 +739,7 @@ public class ViewerRPC extends AttributeSubject
     public int      GetIntArg1() { return intArg1; }
     public int      GetIntArg2() { return intArg2; }
     public int      GetIntArg3() { return intArg3; }
+    public int      GetIntArg4() { return intArg4; }
     public String   GetStringArg1() { return stringArg1; }
     public String   GetStringArg2() { return stringArg2; }
     public int      GetToolUpdateMode() { return toolUpdateMode; }
@@ -792,12 +805,14 @@ public class ViewerRPC extends AttributeSubject
         if(WriteSelect(27, buf))
             buf.WriteInt(intArg3);
         if(WriteSelect(28, buf))
-            buf.WriteString(stringArg1);
+            buf.WriteInt(intArg4);
         if(WriteSelect(29, buf))
-            buf.WriteString(stringArg2);
+            buf.WriteString(stringArg1);
         if(WriteSelect(30, buf))
-            buf.WriteInt(toolUpdateMode);
+            buf.WriteString(stringArg2);
         if(WriteSelect(31, buf))
+            buf.WriteInt(toolUpdateMode);
+        if(WriteSelect(32, buf))
             queryParams.Write(buf);
     }
 
@@ -890,15 +905,18 @@ public class ViewerRPC extends AttributeSubject
             SetIntArg3(buf.ReadInt());
             break;
         case 28:
-            SetStringArg1(buf.ReadString());
+            SetIntArg4(buf.ReadInt());
             break;
         case 29:
-            SetStringArg2(buf.ReadString());
+            SetStringArg1(buf.ReadString());
             break;
         case 30:
-            SetToolUpdateMode(buf.ReadInt());
+            SetStringArg2(buf.ReadString());
             break;
         case 31:
+            SetToolUpdateMode(buf.ReadInt());
+            break;
+        case 32:
             queryParams.Read(buf);
             break;
         }
@@ -992,6 +1010,10 @@ public class ViewerRPC extends AttributeSubject
             str = str + "VIEWERRPCTYPE_ADDOPERATORRPC";
         if(RPCType == VIEWERRPCTYPE_ADDINITIALIZEDOPERATORRPC)
             str = str + "VIEWERRPCTYPE_ADDINITIALIZEDOPERATORRPC";
+        if(RPCType == VIEWERRPCTYPE_DELETEOPERATORKEYFRAMERPC)
+            str = str + "VIEWERRPCTYPE_DELETEOPERATORKEYFRAMERPC";
+        if(RPCType == VIEWERRPCTYPE_MOVEOPERATORKEYFRAMERPC)
+            str = str + "VIEWERRPCTYPE_MOVEOPERATORKEYFRAMERPC";
         if(RPCType == VIEWERRPCTYPE_PROMOTEOPERATORRPC)
             str = str + "VIEWERRPCTYPE_PROMOTEOPERATORRPC";
         if(RPCType == VIEWERRPCTYPE_DEMOTEOPERATORRPC)
@@ -1356,6 +1378,7 @@ public class ViewerRPC extends AttributeSubject
         str = str + intToString("intArg1", intArg1, indent) + "\n";
         str = str + intToString("intArg2", intArg2, indent) + "\n";
         str = str + intToString("intArg3", intArg3, indent) + "\n";
+        str = str + intToString("intArg4", intArg4, indent) + "\n";
         str = str + stringToString("stringArg1", stringArg1, indent) + "\n";
         str = str + stringToString("stringArg2", stringArg2, indent) + "\n";
         str = str + intToString("toolUpdateMode", toolUpdateMode, indent) + "\n";
@@ -1393,6 +1416,7 @@ public class ViewerRPC extends AttributeSubject
     private int      intArg1;
     private int      intArg2;
     private int      intArg3;
+    private int      intArg4;
     private String   stringArg1;
     private String   stringArg2;
     private int      toolUpdateMode;

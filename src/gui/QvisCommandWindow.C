@@ -13,7 +13,8 @@
 #include <QLabel>
 #include <QLayout>
 #include <QPushButton>
-#include <QRegExp>
+#include <QRegularExpression>
+#include <QRegularExpressionMatch>
 #include <QTabWidget>
 #include <QTextEdit>
 #include <QTextStream>
@@ -145,6 +146,9 @@ QvisCommandWindow::~QvisCommandWindow()
 //   Kathleen Biagas, Thu Jan 21 2021
 //   Swap use of QString::asprintf for simpler QString.setNum.
 //
+//   Kathleen Biagas, Tue Apr 18 16:34:41 PDT 2023
+//   Support Qt6: buttonClicked -> idClicked.
+//
 // ****************************************************************************
 
 void
@@ -155,7 +159,7 @@ QvisCommandWindow::CreateWindowContents()
     topLayout->addWidget(macroBox);
 
     QVBoxLayout *innerMacroLayout = new QVBoxLayout(macroBox);
-    innerMacroLayout->setMargin(10);
+    innerMacroLayout->setContentsMargins(10,10,10,10);
     innerMacroLayout->addSpacing(15);
     QHBoxLayout *macroLayout = new QHBoxLayout();
     innerMacroLayout->addLayout(macroLayout);
@@ -211,16 +215,31 @@ QvisCommandWindow::CreateWindowContents()
     topLayout->addWidget(tabWidget, 1000);
 
     executeButtonsGroup = new QButtonGroup(central);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(executeButtonsGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(executeClicked(int)));
+#else
+    connect(executeButtonsGroup, SIGNAL(idClicked(int)),
+            this, SLOT(executeClicked(int)));
+#endif
 
     clearButtonsGroup = new QButtonGroup(central);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(clearButtonsGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(clearClicked(int)));
+#else
+    connect(clearButtonsGroup, SIGNAL(idClicked(int)),
+            this, SLOT(clearClicked(int)));
+#endif
 
     addMacroButtonsGroup = new QButtonGroup(central);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(addMacroButtonsGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(macroCreate(int)));
+#else
+    connect(addMacroButtonsGroup, SIGNAL(idClicked(int)),
+            this, SLOT(macroCreate(int)));
+#endif
 
     // Create the tabs that let us edit command scripts.
     editors       = new QTextEdit*[MAXTABS];
@@ -234,7 +253,7 @@ QvisCommandWindow::CreateWindowContents()
     {
         QWidget *widget = new QWidget(central);
         QVBoxLayout *vlayout = new QVBoxLayout(widget);
-        vlayout->setMargin(10);
+        vlayout->setContentsMargins(10,10,10,10);
         vlayout->setSpacing(5);
         editors[i]  = new QTextEdit(widget);
         editors[i]->setReadOnly(false);
@@ -278,7 +297,7 @@ QvisCommandWindow::CreateWindowContents()
     // Create the Macros tab.
     macroTab = new QWidget(central);
     QVBoxLayout *macro_tab_vlayout = new QVBoxLayout(macroTab);
-    macro_tab_vlayout->setMargin(10);
+    macro_tab_vlayout->setContentsMargins(10,10,10,10);
     macro_tab_vlayout->setSpacing(5);
     macroEdit = new QTextEdit(macroTab);
     macroEdit->setWordWrapMode(QTextOption::NoWrap);
@@ -493,6 +512,9 @@ QvisCommandWindow::RCFileName() const
 //   Brad Whitlock, Wed Aug 18 10:57:20 PDT 2010
 //   Set maxUserMacro.
 //
+//   Kathleen Biagas, Wed Mar 29 08:10:38 PDT 2023
+//   Replaced QRegExp (which has been deprecated) with QRegularExpression.
+//
 // ****************************************************************************
 
 void
@@ -522,7 +544,7 @@ QvisCommandWindow::LoadScripts()
     QFile file(RCFileName());
     if(file.open(QIODevice::ReadOnly))
     {
-        QRegExp rx("^def user_macro_([0-9]{1,})");
+        QRegularExpression rx("^def user_macro_([0-9]{1,})");
         QTextStream stream(&file);
         QString lines;
         while(!stream.atEnd())
@@ -532,9 +554,10 @@ QvisCommandWindow::LoadScripts()
             lines += "\n";
 
             // See if the string contains the regex. If so, get the number.
-            if(s.contains(rx))
+            QRegularExpressionMatch regexMatch;
+            if(s.contains(rx, &regexMatch))
             {
-                QStringList list(rx.capturedTexts());
+                QStringList list(regexMatch.capturedTexts());
                 if(list.size() == 2)
                 {
                     bool ok = false;
@@ -958,6 +981,10 @@ QvisCommandWindow::macroClearClicked()
 //   On windows, escape the rcFileName's backslashes before adding it as an
 //   arg for the command.
 //
+//   Kathleen Biagas, Tue Apr 20 2021
+//   On windows, convert the rcFileName's backslashes to forward slashes
+//   before adding it as an arg for the command. (Python 3 change).
+//
 // ****************************************************************************
 
 void
@@ -981,15 +1008,11 @@ QvisCommandWindow::macroUpdateClicked()
            // the changes that have been put into place.
            QString command("ClearMacros()\nSource(\"%1\")\n");
 #ifdef WIN32
-           // On windows, the string passed to the python commands needs to
-           // have it's back-slash's escaped.
-           QString tmp(rcFileName);
-           tmp.replace("\\", "\\\\");
-           command = command.arg(tmp);
-
-#else
-           command = command.arg(rcFileName);
+           // On windows, the path-string passed to the python commands needs
+           // to have it's back-slash's converted.
+           rcFileName.replace("\\", "/");
 #endif
+           command = command.arg(rcFileName);
            emit runCommand(command);
         }
         else

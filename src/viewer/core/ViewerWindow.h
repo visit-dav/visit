@@ -82,7 +82,7 @@ class ViewerPlotList;
 //    Brad Whitlock, Thu Jun 14 16:26:33 PST 2001
 //    I added the UpdateColorTable, RedrawWindow methods.
 //
-//    Kathleen Bonnell, Mon Jun 18 14:56:09 PDT 2001 
+//    Kathleen Bonnell, Mon Jun 18 14:56:09 PDT 2001
 //    I added Get/Set AnnotationAttributes.
 //
 //    Eric Brugger, Mon Aug 20 11:59:46 PDT 2001
@@ -97,9 +97,9 @@ class ViewerPlotList;
 //    I added the InvertBackgroundColor method. I also modified the way
 //    annotation state is handled.
 //
-//    Kathleen Bonnell, Wed Sep 26 11:49:18 PDT 2001 
+//    Kathleen Bonnell, Wed Sep 26 11:49:18 PDT 2001
 //    Added SetPlotColors method, to send background and foreground color
-//    to the plots. 
+//    to the plots.
 //
 //    Brad Whitlock, Mon Oct 1 16:17:05 PST 2001
 //    Added methods for handling tools.
@@ -124,8 +124,8 @@ class ViewerPlotList;
 //    Brad Whitlock, Wed Sep 19 16:13:26 PST 2001
 //    I added the UpdatesEnabled method.
 //
-//    Kathleen Bonnell, Thu Nov 22 16:03:00 PST 2001 
-//    I added methods for pick mode. 
+//    Kathleen Bonnell, Thu Nov 22 16:03:00 PST 2001
+//    I added methods for pick mode.
 //
 //    Brad Whitlock, Tue Feb 12 09:24:56 PDT 2002
 //    Added SetActivePlots. Moved it from a higher level. Added a method to
@@ -138,20 +138,20 @@ class ViewerPlotList;
 //    Added centeringValid2d and centeringValid3d to help handle the case
 //    where the view is recentered when the window has no plots.
 //
-//    Kathleen Bonnell, Fri May 10 16:27:40 PDT 2002 
-//    Added methods in support of avtViewCurve and lineout. 
+//    Kathleen Bonnell, Fri May 10 16:27:40 PDT 2002
+//    Added methods in support of avtViewCurve and lineout.
 //
 //    Sean Ahern, Mon May 20 13:25:47 PDT 2002
 //    Added ability to raise/lower windows.
-//    
+//
 //    Hank Childs, Wed May 29 08:56:16 PDT 2002
 //    Added Get/Set SpinMode.
 //
-//    Kathleen Bonnell, Mon Jun 10 17:22:57 PDT 2002 
+//    Kathleen Bonnell, Mon Jun 10 17:22:57 PDT 2002
 //    Added UpdateQuery, DeleteQuery.
 //
-//    Kathleen Bonnell, Fri Jul 12 17:28:31 PDT 2002  
-//    Added ScalePlots. 
+//    Kathleen Bonnell, Fri Jul 12 17:28:31 PDT 2002
+//    Added ScalePlots.
 //
 //    Hank Childs, Mon Jul 15 10:50:24 PDT 2002
 //    Added SetViewExtentsType.
@@ -159,8 +159,8 @@ class ViewerPlotList;
 //    Brad Whitlock, Tue Jul 23 16:17:58 PST 2002
 //    Added DisableAllTools method.
 //
-//    Kathleen Bonnell, Tue Aug 13 15:15:37 PDT 2002   
-//    Change Set/Get Light methods to use LightList instead of avtLightList. 
+//    Kathleen Bonnell, Tue Aug 13 15:15:37 PDT 2002
+//    Change Set/Get Light methods to use LightList instead of avtLightList.
 //
 //    Brad Whitlock, Mon Sep 16 15:06:17 PST 2002
 //    I added a GetInteractionMode method.
@@ -171,9 +171,9 @@ class ViewerPlotList;
 //    Brad Whitlock, Fri Sep 6 15:21:57 PST 2002
 //    I added some pick and lineout methods.
 //
-//    Kathleen Bonnell, Tue Oct  1 16:25:50 PDT 2002 
+//    Kathleen Bonnell, Tue Oct  1 16:25:50 PDT 2002
 //    Changed argument of ValidateQuery to Line* to convey more information
-//    than just color. 
+//    than just color.
 //
 //    Brad Whitlock, Tue Oct 15 16:50:55 PST 2002
 //    Added CopyPlotList method.
@@ -184,25 +184,25 @@ class ViewerPlotList;
 //    Brad Whitlock, Mon Nov 11 11:14:35 PDT 2002
 //    I added support for locking tools.
 //
-//    Kathleen Bonnell, Fri Nov 15 09:07:36 PST 2002 
+//    Kathleen Bonnell, Fri Nov 15 09:07:36 PST 2002
 //    Removed Set/Get/Copy methods for PickAttributes.
-// 
+//
 //    Kathleen Bonnell, Wed Dec  4 17:38:27 PST 2002
-//    Remove antialiasing frames, no longer needed.  
-// 
-//    Kathleen Bonnell, Thu Dec 19 16:52:45 PST 2002  
-//    Add argument to ValidateQuery. 
-// 
-//    Kathleen Bonnell, Mon Dec 23 13:13:15 PST 2002 
-//    Remove Lineout. 
-// 
+//    Remove antialiasing frames, no longer needed.
+//
+//    Kathleen Bonnell, Thu Dec 19 16:52:45 PST 2002
+//    Add argument to ValidateQuery.
+//
+//    Kathleen Bonnell, Mon Dec 23 13:13:15 PST 2002
+//    Remove Lineout.
+//
 //    Eric Brugger, Mon Jan  6 12:58:35 PST 2003
 //    I added support for keyframing views.  This involved adding
 //    ClearViewKeyframes, DeleteViewKeyframe, SetViewKeyframe,
 //    GetCameraViewMode, SetCameraViewMode and UpdateCameraView.
 //
 //    Mark C. Miller, Mon Jan 13 16:52:33 PST 2003
-//    Added method to forward request to register external render callback 
+//    Added method to forward request to register external render callback
 //    to the VisWindow
 //
 //    Eric Brugger, Tue Jan 14 07:59:05 PST 2003
@@ -214,8 +214,8 @@ class ViewerPlotList;
 //    Brad Whitlock, Wed Jan 29 11:52:17 PDT 2003
 //    I added toolbar support.
 //
-//    Kathleen Bonnell, Fri Jan 31 09:36:54 PST 2003 
-//    Modified ValidateQuery arguments. 
+//    Kathleen Bonnell, Fri Jan 31 09:36:54 PST 2003
+//    Modified ValidateQuery arguments.
 //
 //    Eric Brugger, Tue Feb  4 12:39:59 PST 2003
 //    I added GetViewKeyframeIndices.
@@ -236,13 +236,13 @@ class ViewerPlotList;
 //    Eric Brugger, Fri May  9 13:39:35 PDT 2003
 //    I added AdjustView3d.
 //
-//    Kathleen Bonnell, Thu May 15 13:09:41 PDT 2003 
+//    Kathleen Bonnell, Thu May 15 13:09:41 PDT 2003
 //    Added fullFrame member and Set/Get methods.  Added Compute2DScaleFactor.
 //
 //    Kathleen Bonnell, Fri Jun  6 16:06:25 PDT 2003
-//    Added GetScaleFactorAndType method. 
+//    Added GetScaleFactorAndType method.
 //
-//    Kathleen Bonnell, Wed Jun 25 16:50:48 PDT 2003 
+//    Kathleen Bonnell, Wed Jun 25 16:50:48 PDT 2003
 //    Removed Start/StopPickMode.  Added INTERACTION_MODE argument to Pick.
 //
 //    Brad Whitlock, Mon Jun 30 13:03:48 PST 2003
@@ -316,18 +316,18 @@ class ViewerPlotList;
 //    Mark C. Miller, Wed Jun  9 17:44:38 PDT 2004
 //    Added UpdateVisualCueInfo
 //
-//    Kathleen Bonnell, Fri Jul  9 16:22:50 PDT 2004 
+//    Kathleen Bonnell, Fri Jul  9 16:22:50 PDT 2004
 //    Added Lineout.
 //
 //    Mark C. Miller, Tue Jul 27 15:11:11 PDT 2004
 //    Added method to get frame and state info
 //
-//    Kathleen Bonnell, Wed Aug 18 09:39:29 PDT 2004 
+//    Kathleen Bonnell, Wed Aug 18 09:39:29 PDT 2004
 //    Added SetInteracotrAtts, GetInteractorAtts, CopyInteractorAtts.
 //
 //    Kathleen Bonnell, Thu Sep  2 13:55:05 PDT 2004
 //    Added bool arg to SetPickFunction, to indicate if pick shoul be
-//    performed normally or as intersection-only. 
+//    performed normally or as intersection-only.
 //
 //    Mark C. Miller, Wed Oct  6 18:12:29 PDT 2004
 //    Const qualified GetExtents
@@ -336,7 +336,7 @@ class ViewerPlotList;
 //    Added data member for name of last color table to change
 //
 //    Kathleen Bonnell, Tue Oct 12 16:31:46 PDT 2004
-//    Added GlyphPick method. 
+//    Added GlyphPick method.
 //
 //    Hank Childs, Sun Oct 24 13:39:57 PDT 2004
 //    Added shading.
@@ -357,7 +357,7 @@ class ViewerPlotList;
 //
 //    Brad Whitlock, Tue Mar 7 17:35:28 PST 2006
 //    I added view stacks.
-//    
+//
 //    Mark C. Miller, Sat Jul 22 23:21:09 PDT 2006
 //    Added leftEye to external render methods. Added scalableStereoType
 //    to store knowledge of stereo mode for cases where it is not appropriate
@@ -375,16 +375,16 @@ class ViewerPlotList;
 //    Brad Whitlock, Tue Mar 20 10:02:18 PDT 2007
 //    Name new annotation objects.
 //
-//    Kathleen Bonnell, Thu Mar 22 19:36:05 PDT 2007 
+//    Kathleen Bonnell, Thu Mar 22 19:36:05 PDT 2007
 //    Added SetScaleMode method.
 //
 //    Brad Whitlock, Mon Mar 26 14:49:15 PST 2007
 //    Added argument to CopyAnnotationObjectList.
 //
-//    Kathleen Bonnell, Wed Apr  4 10:08:27 PDT 2007 
+//    Kathleen Bonnell, Wed Apr  4 10:08:27 PDT 2007
 //    Added GetScaleMode.
 //
-//    Kathleen Bonnell, Wed May  9 17:33:41 PDT 2007 
+//    Kathleen Bonnell, Wed May  9 17:33:41 PDT 2007
 //    Added WINDOW_MODE arg to Set/GetScaleMode.
 //
 //    Jeremy Meredith, Tue Jul 17 16:37:04 EDT 2007
@@ -461,6 +461,10 @@ class ViewerPlotList;
 //    Alister Maguire, Wed Aug  8 15:06:17 PDT 2018
 //    Added SwivelFocus3D.
 //
+//    Kathleen Biagas, Wed Aug 17, 2022
+//    Incorporate ARSanderson's OSPRAY 2.8.0 work for VTK 9:
+//    Initialize to nullptr all pointer ivars.
+//
 // ****************************************************************************
 
 class VIEWERCORE_API ViewerWindow : public ViewerBase
@@ -477,8 +481,8 @@ public:
     VisWindow *GetVisWindow();
     void SetActionManager(ViewerActionManager *);
 
-    void CreateNode(DataNode *parentNode, 
-                    const std::map<std::string, std::string> &, 
+    void CreateNode(DataNode *parentNode,
+                    const std::map<std::string, std::string> &,
                     bool detailed);
     bool SetFromNode(DataNode *parentNode,
                      const std::map<std::string, std::string> &,
@@ -583,8 +587,8 @@ public:
     void SetAnnotationAttributes(const AnnotationAttributes *, bool force=false);
     const AnnotationAttributes *GetAnnotationAttributes() const;
     void CopyAnnotationAttributes(const ViewerWindow *);
-    void CopyAnnotationObjectList(const ViewerWindow *, 
-                                  const StringStringMap &nameMap, 
+    void CopyAnnotationObjectList(const ViewerWindow *,
+                                  const StringStringMap &nameMap,
                                   bool copyLegends);
     bool AddAnnotationObject(int annotType, const std::string &annotName);
     void HideActiveAnnotationObjects();
@@ -666,14 +670,14 @@ public:
     bool GetAntialiasing() const;
     void SetOrderComposite(bool enabled);
     bool GetOrderComposite() const;
-    void   SetDepthCompositeThreads(size_t n);
-    size_t GetDepthCompositeThreads() const;
-    void   SetAlphaCompositeThreads(size_t n);
-    size_t GetAlphaCompositeThreads() const;
-    void   SetDepthCompositeBlocking(size_t n);
-    size_t GetDepthCompositeBlocking() const;
-    void   SetAlphaCompositeBlocking(size_t n);
-    size_t GetAlphaCompositeBlocking() const;
+    void SetDepthCompositeThreads(int n);
+    int  GetDepthCompositeThreads() const;
+    void SetAlphaCompositeThreads(int n);
+    int  GetAlphaCompositeThreads() const;
+    void SetDepthCompositeBlocking(int n);
+    int  GetDepthCompositeBlocking() const;
+    void SetAlphaCompositeBlocking(int n);
+    int  GetAlphaCompositeBlocking() const;
     void SetDepthPeeling(bool enabled);
     bool GetDepthPeeling() const;
     void SetOcclusionRatio(double val);
@@ -724,7 +728,7 @@ public:
     int GetCompressionActivationMode() const;
     int SetCompressionActivationMode(int);
     bool GetIsCompressingScalableImage() const;
-#ifdef VISIT_OSPRAY
+#if defined(VISIT_OSPRAY) || defined(HAVE_OSPRAY)
     void SetOsprayRendering(bool);
     bool GetOsprayRendering() const;
     void SetOspraySPP(int);
@@ -741,12 +745,12 @@ public:
     const InteractorAttributes *GetInteractorAtts() const;
     void CopyInteractorAtts(const ViewerWindow *);
 
-    void GlyphPick(const double pt3[3], const double pt2[3], 
+    void GlyphPick(const double pt3[3], const double pt2[3],
                    int &dom, int &elNum, bool &forCell);
 
     void SetScaleMode(ScaleMode ds, ScaleMode rs, WINDOW_MODE);
     void GetScaleMode(ScaleMode &ds, ScaleMode &rs, WINDOW_MODE);
-    
+
     bool GetProcessingViewChanged() {return processingViewChanged;}
     void SetProcessingViewChanged(bool flag) {processingViewChanged = flag;}
 
@@ -802,18 +806,18 @@ protected:
     static void PickFunctionSetSuccessFlag(void *, bool, const PickAttributes *);
     void HandlePick(void *ppi);
 
-    VisWindow           *visWindow;
-    ViewerPlotList      *plotList;
-    ViewerActionManager *actionMgr;
+    VisWindow           *visWindow {nullptr};
+    ViewerPlotList      *plotList {nullptr};
+    ViewerActionManager *actionMgr {nullptr};
 
-    ViewCurveAttributes     *curViewCurve;
-    View2DAttributes        *curView2D;
-    View3DAttributes        *curView3D;
-    ViewAxisArrayAttributes *curViewAxisArray;
-    AttributeSubjectMap     *viewCurveAtts;
-    AttributeSubjectMap     *view2DAtts;
-    AttributeSubjectMap     *view3DAtts;
-    AttributeSubjectMap     *viewAxisArrayAtts;
+    ViewCurveAttributes     *curViewCurve {nullptr};
+    View2DAttributes        *curView2D {nullptr};
+    View3DAttributes        *curView3D {nullptr};
+    ViewAxisArrayAttributes *curViewAxisArray {nullptr};
+    AttributeSubjectMap     *viewCurveAtts {nullptr};
+    AttributeSubjectMap     *view2DAtts {nullptr};
+    AttributeSubjectMap     *view3DAtts {nullptr};
+    AttributeSubjectMap     *viewAxisArrayAtts {nullptr};
 
     ExternalRenderRequestInfo lastExternalRenderRequest;
 
@@ -821,7 +825,7 @@ protected:
     static void           *renderEventFunctionData;
 
     void           (*pickFunction)(void *, bool, const PickAttributes *);
-    void           *pickFunctionData;
+    void           *pickFunctionData {nullptr};
 
     bool            isChangingScalableRenderingMode;
     bool            targetScalableRenderingMode;

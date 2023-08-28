@@ -34,8 +34,8 @@
 //    Eric Brugger, Mon Mar 12 14:48:34 PST 2001
 //    I removed the Get/SetPerspectiveProjection methods.
 //
-//    Kathleen Bonnell, Wed May  8 14:06:50 PDT 2002 
-//    Added support for curve mode. 
+//    Kathleen Bonnell, Wed May  8 14:06:50 PDT 2002
+//    Added support for curve mode.
 //
 //    Jeremy Meredith, Thu Jan 31 14:41:50 EST 2008
 //    Added new AxisArray window mode.
@@ -46,13 +46,16 @@
 //    Kathleen Biagas, Thu Aug  2 13:03:41 MST 2018
 //    Removed ResetView, an ancient code path.
 //
+//    Kathleen Biagas, Wed Aug 17, 2022
+//    Added SetOsprayRendering.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWinView : public VisWinColleague
 {
   public:
                          VisWinView(VisWindowColleagueProxy &);
-    virtual             ~VisWinView() {;};
+    virtual             ~VisWinView() {;}
 
     const avtViewInfo   &GetViewInfo(void);
     void                 SetViewInfo(const avtViewInfo &);
@@ -68,6 +71,9 @@ class VISWINDOW_API VisWinView : public VisWinColleague
 
     virtual void         StartParallelAxesMode(void);
     virtual void         StopParallelAxesMode(void);
+
+    void                 SetOsprayRendering(bool enabled)
+                             { viewInfo.useOSPRay = enabled; }
 
   protected:
     avtViewInfo          viewInfo;

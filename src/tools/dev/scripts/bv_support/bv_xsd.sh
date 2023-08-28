@@ -66,13 +66,6 @@ function bv_xsd_ensure
     fi
 }
 
-function bv_xsd_dry_run
-{
-    if [[ "$DO_XSD" == "yes" ]] ; then
-        echo "Dry run option not set for XSD."
-    fi
-}
-
 function  apply_xsd_patch
 {  
     #for any future patches

@@ -16,7 +16,7 @@ extern bool DeleteAnnotationObjectHelper(AnnotationObject *);
 // ****************************************************************************
 // Module: PyText2DObject
 //
-// Purpose: 
+// Purpose:
 //   This class is a Python wrapper arround AnnotationObject that makes it
 //   look like a Text2D object.
 //
@@ -620,8 +620,8 @@ Text2DObject_print(PyObject *v, FILE *fp, int flags)
 static PyObject *
 PyText2DObject_StringRepresentation(const AnnotationObject *atts)
 {
-    std::string str; 
-    char tmpStr[1000]; 
+    std::string str;
+    char tmpStr[1000];
 
     if(atts->GetVisible())
         snprintf(tmpStr, 1000, "visible = 1\n");
@@ -733,9 +733,9 @@ VISIT_PY_TYPE_OBJ( Text2DObjectType,         \
 static PyObject *
 Text2DObject_richcompare(PyObject *self, PyObject *other, int op)
 {
-    // only compare against the same type 
-    if ( Py_TYPE(self) == Py_TYPE(other) 
-         && Py_TYPE(self) == &Text2DObjectType)
+    // only compare against the same type
+    if ( Py_TYPE(self) != Py_TYPE(other)
+         || Py_TYPE(self) != &Text2DObjectType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;

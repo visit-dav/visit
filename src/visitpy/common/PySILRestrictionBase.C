@@ -23,7 +23,7 @@
 
 
 // ****************************************************************************
-//  Notes:   I wanted the data member to be an actual SIL restriction (as 
+//  Notes:   I wanted the data member to be an actual SIL restriction (as
 //           opposed to a pointer to a SIL restriction).  The problem is that
 //           Python allocates the memory as C-memory, meaning that no
 //           constructors are called.  The ref_ptr then believes that it has
@@ -86,7 +86,7 @@ SILRestriction_Categories(PyObject *self, PyObject *args)
     {
         int cIndex = mapsOut[i];
         avtSILCollection_p collection = silr->GetSILCollection(cIndex);
-        
+
         PyObject *dval = PyString_FromString(collection->GetCategory().c_str());
         if(dval == NULL)
             continue;
@@ -177,10 +177,10 @@ SILRestriction_NumSets(PyObject *self, PyObject *args)
 static PyObject *
 SILRestriction_SetIndex(PyObject *self, PyObject *args)
 {
-    PyObject *retval;
+    PyObject *retval = NULL;
     char *setName;
     if(!PyArg_ParseTuple(args, "s", &setName))
-        return NULL;
+        return PyErr_Format(PyExc_TypeError, "Expecting scalar string for name of set");
 
     TRY
     {
@@ -190,9 +190,8 @@ SILRestriction_SetIndex(PyObject *self, PyObject *args)
     }
     CATCH2(VisItException, e)
     {
-        //TODO set PyError 
-        // VisItErrorFunc(e.Message().c_str());
-        CATCH_RETURN2(1, NULL);
+        Py_XDECREF(retval);
+        CATCH_RETURN2(1, PyErr_Format(PyExc_RuntimeError, "Internal VisIt exception \"%s\"", e.Message().c_str()));
     }
     ENDTRY
 
@@ -221,25 +220,30 @@ SILRestriction_SetIndex(PyObject *self, PyObject *args)
 static PyObject *
 SILRestriction_SetName(PyObject *self, PyObject *args)
 {
-    PyObject *retval;
+    PyObject *retval = NULL;
     int setNumber;
+    int outOfRangeMax = -1;
     if(!PyArg_ParseTuple(args, "i", &setNumber))
-        return NULL;
+        return PyErr_Format(PyExc_TypeError, "Expecting integer set index");
 
     TRY
     {
         PySILRestrictionObject *obj = (PySILRestrictionObject *)self;
         avtSILRestriction_p silr = *(obj->silr);
-        retval = PyString_FromString(
-            silr->GetSILSet(setNumber)->GetName().c_str());
+        if (0 <= setNumber && setNumber < silr->GetNumSets())
+            retval = PyString_FromString(silr->GetSILSet(setNumber)->GetName().c_str());
+        else
+            outOfRangeMax = silr->GetNumSets();
     }
     CATCH2(VisItException, e)
     {
-        //TODO set PyError
-        //VisItErrorFunc(e.Message().c_str());
-        CATCH_RETURN2(1, NULL);
+        Py_XDECREF(retval);
+        CATCH_RETURN2(1, PyErr_Format(PyExc_RuntimeError, "Internal VisIt exception \"%s\"", e.Message().c_str()));
     }
     ENDTRY
+
+    if (outOfRangeMax != -1)
+        return PyErr_Format(PyExc_ValueError, "Set integer index %d out of range [0,%d]", setNumber, outOfRangeMax);
 
     return retval;
 }
@@ -263,28 +267,34 @@ static PyObject *
 SILRestriction_MapsOut(PyObject *self, PyObject *args)
 {
     int setNumber;
+    int outOfRangeMax = -1;
     if(!PyArg_ParseTuple(args, "i", &setNumber))
-        return NULL;
+        return PyErr_Format(PyExc_TypeError, "Expecing integer set index");
 
     PyObject *retval = NULL;
     TRY
     {
         PySILRestrictionObject *obj = (PySILRestrictionObject *)self;
         avtSILRestriction_p silr = *(obj->silr);
-        const std::vector<int> &subsets = silr->GetSILSet(setNumber)->GetMapsOut();
-        retval = PyTuple_New(int(subsets.size()));
-        for(size_t i = 0; i < subsets.size(); ++i)
-            PyTuple_SET_ITEM(retval, i, PyInt_FromLong(subsets[i]));
+        if (0 <= setNumber && setNumber < silr->GetNumSets())
+        {
+            const std::vector<int> &subsets = silr->GetSILSet(setNumber)->GetMapsOut();
+            retval = PyTuple_New(int(subsets.size()));
+            for(size_t i = 0; i < subsets.size(); ++i)
+                PyTuple_SET_ITEM(retval, i, PyInt_FromLong(subsets[i]));
+        }
+        else
+            outOfRangeMax = silr->GetNumSets();
     }
     CATCH2(VisItException, e)
     {
-        //TODO set PyError
-        // VisItErrorFunc(e.Message().c_str());
-        CATCH_RETURN2(1, NULL);
-
-        retval = PyTuple_New(0);
+        Py_XDECREF(retval);
+        CATCH_RETURN2(1, PyErr_Format(PyExc_RuntimeError, "Internal VisIt exception \"%s\"", e.Message().c_str()));
     }
     ENDTRY
+
+    if (outOfRangeMax != -1)
+        return PyErr_Format(PyExc_ValueError, "Set integer index %d out of range [0,%d]", setNumber, outOfRangeMax);
 
     return retval;
 }
@@ -308,8 +318,8 @@ SILRestriction_MapsOut(PyObject *self, PyObject *args)
 //   restriction.  This is consistent with handling elsewhere in the code.
 //
 //   Dave Bremer, Thu Jan 31 17:52:55 PST 2008
-//   Fixed a bug in which a vector<int> &sets is requested from an 
-//   avtSILCollection, but the collection goes out of scope and its vector 
+//   Fixed a bug in which a vector<int> &sets is requested from an
+//   avtSILCollection, but the collection goes out of scope and its vector
 //   of sets is deleted before this method is done using them.
 //
 //   Hank Childs, Tue Dec 15 13:40:40 PST 2009
@@ -326,7 +336,7 @@ SILRestriction_SetsInCategory(PyObject *self, PyObject *args)
     // Get the Collection name.
     char *collectionName;
     if(!PyArg_ParseTuple(args, "s", &collectionName))
-        return NULL;
+        return PyErr_Format(PyExc_TypeError, "Expecting string collection name");
 
     // Search through the Collection list for the specified Collection.
     int i, collectionIndex = -1;
@@ -341,9 +351,7 @@ SILRestriction_SetsInCategory(PyObject *self, PyObject *args)
     }
     if(collectionIndex == -1)
     {
-        //TODO set PyError
-        //VisItErrorFunc("Invalid collection name!");
-        return NULL;
+        return PyErr_Format(PyExc_ValueError, "Invalid collection name");
     }
 
     // Get the subset list.
@@ -422,9 +430,7 @@ SILRestriction_TurnOnAll(PyObject *self, PyObject *args)
     }
     CATCH2(VisItException, e)
     {
-        //TODO set PyError
-        // VisItErrorFunc(e.Message().c_str());
-        CATCH_RETURN2(1, NULL);
+        CATCH_RETURN2(1, PyErr_Format(PyExc_RuntimeError, "Internal VisIt exception \"%s\"", e.Message().c_str()));
     }
     ENDTRY
 
@@ -462,9 +468,7 @@ SILRestriction_TurnOffAll(PyObject *self, PyObject *args)
     }
     CATCH2(VisItException, e)
     {
-        //TODO set PyError
-        //VisItErrorFunc(e.Message().c_str());
-        CATCH_RETURN2(1, NULL);
+        CATCH_RETURN2(1, PyErr_Format(PyExc_RuntimeError, "Internal VisIt exception \"%s\"", e.Message().c_str()));
     }
     ENDTRY
 
@@ -495,22 +499,27 @@ static PyObject *
 SILRestriction_TurnOnSet(PyObject *self, PyObject *args)
 {
     int setNumber;
+    int outOfRangeMax = -1;
     if(!PyArg_ParseTuple(args, "i", &setNumber))
-        return NULL;
+        return PyErr_Format(PyExc_TypeError, "Expecting integer set index");
 
     TRY
     {
         PySILRestrictionObject *obj = (PySILRestrictionObject *)self;
         avtSILRestriction_p silr = *(obj->silr);
-        silr->TurnOnSet(setNumber);
+        if (0 <= setNumber && setNumber < silr->GetNumSets())
+            silr->TurnOnSet(setNumber);
+        else
+            outOfRangeMax = silr->GetNumSets();
     }
     CATCH2(VisItException, e)
     {
-        //TODO set PyError
-        // VisItErrorFunc(e.Message().c_str());
-        CATCH_RETURN2(1, NULL);
+        CATCH_RETURN2(1, PyErr_Format(PyExc_RuntimeError, "Internal VisIt exception \"%s\"", e.Message().c_str()));
     }
     ENDTRY
+
+    if (outOfRangeMax != -1)
+        return PyErr_Format(PyExc_ValueError, "Set integer index %d out of range [0,%d]", setNumber, outOfRangeMax);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -539,22 +548,27 @@ static PyObject *
 SILRestriction_TurnOffSet(PyObject *self, PyObject *args)
 {
     int setNumber;
+    int outOfRangeMax = -1;
     if(!PyArg_ParseTuple(args, "i", &setNumber))
-        return NULL;
+        return PyErr_Format(PyExc_TypeError, "Expecting integer set index");
 
     TRY
     {
         PySILRestrictionObject *obj = (PySILRestrictionObject *)self;
         avtSILRestriction_p silr = *(obj->silr);
-        silr->TurnOffSet(setNumber);
+        if (0 <= setNumber && setNumber < silr->GetNumSets())
+            silr->TurnOffSet(setNumber);
+        else
+            outOfRangeMax = silr->GetNumSets();
     }
     CATCH2(VisItException, e)
     {
-        //TODO set PyError
-        // VisItErrorFunc(e.Message().c_str());
-        CATCH_RETURN2(1, NULL);
+        CATCH_RETURN2(1, PyErr_Format(PyExc_RuntimeError, "Internal VisIt exception \"%s\"", e.Message().c_str()));
     }
     ENDTRY
+
+    if (outOfRangeMax != -1)
+        return PyErr_Format(PyExc_ValueError, "Set integer index %d out of range [0,%d]", setNumber, outOfRangeMax);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -566,13 +580,13 @@ SILRestriction_TurnOffSet(PyObject *self, PyObject *args)
 // Purpose:
 //   Turns the specified set index on or off.
 //
-// Notes:      
+// Notes:
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue Dec 18 14:55:13 PST 2001
 //
 // Modifications:
-//   
+//
 //   Hank Childs, Mon Dec  2 13:41:37 PST 2002
 //   Changed pointer to SIL restriction to reference counted pointer to a SIL
 //   restriction.  This is consistent with handling elsewhere in the code.
@@ -583,25 +597,32 @@ static PyObject *
 SILRestriction_TurnSet(PyObject *self, PyObject *args)
 {
     int setNumber, onOff;
+    int outOfRangeMax = -1;
     if(!PyArg_ParseTuple(args, "ii", &setNumber, &onOff))
-        return NULL;
+        return PyErr_Format(PyExc_TypeError, "Expecting integer set index and integer state (0/1=off/on) pair");
 
     TRY
     {
         PySILRestrictionObject *obj = (PySILRestrictionObject *)self;
         avtSILRestriction_p silr = *(obj->silr);
-        if(onOff)
-            silr->TurnOnSet(setNumber);
+        if (0 <= setNumber && setNumber < silr->GetNumSets())
+        {
+            if (onOff)
+                silr->TurnOnSet(setNumber);
+            else
+                silr->TurnOffSet(setNumber);
+        }
         else
-            silr->TurnOffSet(setNumber);
+           outOfRangeMax = silr->GetNumSets();
     }
     CATCH2(VisItException, e)
     {
-        //TODO set PyError
-        // VisItErrorFunc(e.Message().c_str());
-        CATCH_RETURN2(1, NULL);
+        CATCH_RETURN2(1, PyErr_Format(PyExc_RuntimeError, "Internal VisIt exception \"%s\"", e.Message().c_str()));
     }
     ENDTRY
+
+    if (outOfRangeMax != -1)
+        return PyErr_Format(PyExc_ValueError, "Set integer index %d out of range [0,%d]", setNumber, outOfRangeMax);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -656,24 +677,31 @@ SILRestriction_UsesAllData(PyObject *self, PyObject *args)
 static PyObject *
 SILRestriction_UsesData(PyObject *self, PyObject *args)
 {
-    PyObject *retval;
+    PyObject *retval = NULL;
+    int outOfRangeMax = -1;
     int setNumber;
     if(!PyArg_ParseTuple(args, "i", &setNumber))
-        return NULL;
+        return PyErr_Format(PyExc_TypeError, "Expecting integet set index");
 
     TRY
     {
         PySILRestrictionObject *obj = (PySILRestrictionObject *)self;
-        avtSILRestrictionTraverser trav(*(obj->silr));
-        retval = PyLong_FromLong((long)(trav.UsesData(setNumber)?1:0));
+        avtSILRestriction_p silr = *(obj->silr);
+        avtSILRestrictionTraverser trav(silr);
+        if (0 <= setNumber && setNumber < silr->GetNumSets())
+            retval = PyLong_FromLong((long)(trav.UsesData(setNumber)?1:0));
+        else
+            outOfRangeMax = silr->GetNumSets();
     }
     CATCH2(VisItException, e)
     {
-        //TODO set PyError
-        //VisItErrorFunc(e.Message().c_str());
-        CATCH_RETURN2(1, NULL);
+        Py_XDECREF(retval);
+        CATCH_RETURN2(1, PyErr_Format(PyExc_RuntimeError, "Internal VisIt exception \"%s\"", e.Message().c_str()));
     }
     ENDTRY
+
+    if (outOfRangeMax != -1)
+        return PyErr_Format(PyExc_ValueError, "Set integer index %d out of range [0,%d]", setNumber, outOfRangeMax);
 
     return retval;
 }
@@ -744,7 +772,7 @@ SILRestriction_SuspendCorrectnessChecking(PyObject *self, PyObject *args)
 // ****************************************************************************
 // Method: SILRestriction_EnableCorrectnessChecking
 //
-// Purpose: 
+// Purpose:
 //   Enables SILR correctness checking.
 //
 // Programmer: Brad Whitlock
@@ -759,7 +787,7 @@ SILRestriction_EnableCorrectnessChecking(PyObject *self, PyObject *args)
 {
     PySILRestrictionObject *obj = (PySILRestrictionObject *)self;
     avtSILRestriction_p silr = *(obj->silr);
-    silr->EnableCorrectnessChecking(); 
+    silr->EnableCorrectnessChecking();
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -856,6 +884,17 @@ SILRestriction_compare(PyObject *v, PyObject *w)
 static PyObject *
 SILRestriction_getattr(PyObject *self, char *name)
 {
+    // Add a __dict__ answer so that dir() works
+    if (!strcmp(name, "__dict__"))
+    {
+        PyObject *result = PyDict_New();
+        for (int i = 0; SILRestriction_methods[i].ml_meth; i++)
+            PyDict_SetItem(result,
+                PyString_FromString(SILRestriction_methods[i].ml_name),
+                PyString_FromString(SILRestriction_methods[i].ml_name));
+        return result;
+    }
+
     return Py_FindMethod(SILRestriction_methods, self, name);
 }
 
@@ -940,16 +979,16 @@ VISIT_PY_TYPE_OBJ(PySILRestrictionType,        \
 static PyObject *
 SILRestriction_richcompare(PyObject *self, PyObject *other, int op)
 {
-    // only compare against the same type 
-    if ( Py_TYPE(self) == Py_TYPE(other) 
-         && Py_TYPE(self) == &PySILRestrictionType)
+    // only compare against the same type
+    if ( Py_TYPE(self) != Py_TYPE(other)
+         || Py_TYPE(self) != &PySILRestrictionType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    
+
     avtSILRestriction_p self_silr = *(((PySILRestrictionObject *)self)->silr);
     avtSILRestrictionTraverser trav(self_silr);
     avtSILRestriction_p other_silr = *(((PySILRestrictionObject *)other)->silr);

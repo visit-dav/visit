@@ -57,13 +57,20 @@
 #  creation of the directory is non deterministic with regards to different
 #  operating systems and versions.
 #
+#  Eric Brugger, Fri Jan 21 13:16:48 PST 2022
+#  I added qtviswinExample, qtvtkExample and qvtkopenglExample.
+#
+#  Kathleen Biagas, Tue Jan 31, 2023
+#  Change how files are copied on Windows.
+#
 #****************************************************************************
 
 #-----------------------------------------------------------------------------
 # Copy necessary bin files & directories to the build dir.
 #----------------------------------------------------------------------------
 
-SET(VISIT_BIN_FILES
+if(NOT WIN32)
+    set(VISIT_BIN_FILES
         Doxyfile
         curv3dprep
         frontendlauncher
@@ -72,6 +79,9 @@ SET(VISIT_BIN_FILES
         mcurvit
         mkgrdbl
         mpeg2encode
+        qtviswinExample
+        qtvtkExample
+        qvtkopenglExample
         regen-ajp
         run_doxygen
         surfcomp
@@ -79,7 +89,6 @@ SET(VISIT_BIN_FILES
         time_annotation
         visit
         visit_composite
-        visit_plugin
         visit_transition
         visitconvert
         visitprotocol
@@ -94,83 +103,85 @@ SET(VISIT_BIN_FILES
         xmledit
         xmltest)
 
-IF (NOT WIN32)
+    if(APPLE)
+        #--------------------------------------------------------------------------
+        # Create launcher binary for macos. This is the thing double-clicking the
+        # icon actually has the effect of executing.
+        #--------------------------------------------------------------------------
+        add_executable(visit_macos_launcher ${VISIT_APPLICATION_STYLE} visit_macos_launcher.c ${VISIT_VISIT_RESOURCE_FILE})
+        set_source_files_properties(visit_macos_launcher.c PROPERTIES LANGUAGE C)
+    endif()
+
     #
     # Copy files to the bin and exe directories. We have to explicitly
     # create the exe directory since we can't control when it gets created
-    # otherwiese.
+    # otherwise.
     #
-    FOREACH(VISIT_BIN_ITEM ${VISIT_BIN_FILES} internallauncher makemovie.py makemoviemain.py visitcinema.py visitcinemamain.py visitdiff.py)
-        EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E copy
+    # this is copying to build dir
+    foreach(VISIT_BIN_ITEM ${VISIT_BIN_FILES} internallauncher makemovie.py makemoviemain.py visitcinema.py visitcinemamain.py visitdiff.py)
+        execute_process(COMMAND ${CMAKE_COMMAND} -E copy
                                 ${CMAKE_CURRENT_SOURCE_DIR}/${VISIT_BIN_ITEM}
                                 ${CMAKE_CURRENT_BINARY_DIR}/${VISIT_BIN_ITEM})
-    ENDFOREACH(VISIT_BIN_ITEM)
+    endforeach()
 
-    FILE(MAKE_DIRECTORY ${VISIT_EXECUTABLE_DIR})
-    CONFIGURE_FILE(makemili_driver_ser ${VISIT_EXECUTABLE_DIR} COPYONLY)
+    file(MAKE_DIRECTORY ${VISIT_EXECUTABLE_DIR})
+    configure_file(makemili_driver_ser ${VISIT_EXECUTABLE_DIR} COPYONLY)
 
     #
     # Install the files. This happens with make install or make package.
     #
-    INSTALL(FILES ${VISIT_BIN_FILES}
+    install(FILES ${VISIT_BIN_FILES}
             DESTINATION bin
             PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
                         GROUP_READ GROUP_WRITE GROUP_EXECUTE
                         WORLD_READ             WORLD_EXECUTE) 
 
-    INSTALL(FILES internallauncher
+    install(FILES internallauncher
         DESTINATION ${VISIT_VERSION}/bin
         PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
                     GROUP_READ GROUP_WRITE GROUP_EXECUTE
                     WORLD_READ             WORLD_EXECUTE)
 
-    INSTALL(FILES makemovie.py makemoviemain.py visitcinema.py visitcinemamain.py visitdiff.py
+    install(FILES makemovie.py makemoviemain.py visitcinema.py visitcinemamain.py
+                  visitdiff.py makemili_driver_ser
         DESTINATION ${VISIT_INSTALLED_VERSION_BIN}
         PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
                     GROUP_READ GROUP_WRITE GROUP_EXECUTE
                     WORLD_READ             WORLD_EXECUTE)
 
-    INSTALL(FILES makemili_driver_ser
-        DESTINATION ${VISIT_INSTALLED_VERSION_BIN}
-        PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
-                    GROUP_READ GROUP_WRITE GROUP_EXECUTE
-                    WORLD_READ             WORLD_EXECUTE)
-
-ELSE (NOT WIN32)
+    unset(VISIT_BIN_FILES)
+else()
 
     #--------------------------------------------------------------------------
     # Create VisIt launcher binary for windows
     #--------------------------------------------------------------------------
-    INCLUDE_DIRECTORIES(${VISIT_COMMON_INCLUDES})
-    LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY})
-    ADD_EXECUTABLE(visit_exe ${VISIT_APPLICATION_STYLE} visit.c ${VISIT_VISIT_RESOURCE_FILE})
-    SET_TARGET_PROPERTIES(visit_exe PROPERTIES OUTPUT_NAME visit)
-    SET_SOURCE_FILES_PROPERTIES(visit.c PROPERTIES LANGUAGE CXX)
-    TARGET_LINK_LIBRARIES(visit_exe shlwapi)
+    add_executable(visit_exe ${VISIT_APPLICATION_STYLE} visit.c ${VISIT_VISIT_RESOURCE_FILE})
+    set_target_properties(visit_exe PROPERTIES OUTPUT_NAME visit)
+    set_source_files_properties(visit.c PROPERTIES LANGUAGE CXX)
+    target_include_directories(visit_exe PRIVATE ${VISIT_COMMON_INCLUDES})
+    target_link_libraries(visit_exe PRIVATE shlwapi)
     VISIT_INSTALL_TARGETS(visit_exe)
 
     #--------------------------------------------------------------------------
-    # Copy movie helper scripts
+    # Install and copy to build the movie helper scripts
     #--------------------------------------------------------------------------
-    SET(VISIT_BIN_WIN_FILES
+    set(VISIT_BIN_WIN_FILES
         ${CMAKE_CURRENT_SOURCE_DIR}/makemovie.py
         ${CMAKE_CURRENT_SOURCE_DIR}/makemoviemain.py
         ${CMAKE_CURRENT_SOURCE_DIR}/visitcinema.py
         ${CMAKE_CURRENT_SOURCE_DIR}/visitcinemamain.py
         ${CMAKE_CURRENT_SOURCE_DIR}/visitdiff.py)
 
-    INSTALL(FILES ${VISIT_BIN_WIN_FILES}
+    install(FILES ${VISIT_BIN_WIN_FILES}
             DESTINATION ${VISIT_INSTALLED_VERSION}
             PERMISSIONS OWNER_READ OWNER_WRITE
                         GROUP_READ GROUP_WRITE
                         WORLD_READ)
 
-    FOREACH (CFG Release Debug RelWithDebInfo MinSizeRel)
-        FILE(COPY ${VISIT_BIN_WIN_FILES}
-             DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CFG}
-             FILE_PERMISSIONS OWNER_READ OWNER_WRITE
-                              GROUP_READ GROUP_WRITE
-                              WORLD_READ)
-    ENDFOREACH (CFG)
-ENDIF(NOT WIN32)
+    add_custom_target(copy_movie_files ALL
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different ${VISIT_BIN_WIN_FILES}
+        ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<CONFIG>)
+    visit_add_to_util_builds(copy_movie_files)
+    unset(VISIT_BIN_WIN_FILES)
+endif()
 

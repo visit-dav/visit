@@ -98,13 +98,6 @@ function bv_mesagl_ensure
     fi
 }
 
-function bv_mesagl_dry_run
-{
-    if [[ "$DO_MESAGL" == "yes" ]] ; then
-        echo "Dry run option not set for mesagl."
-    fi
-}
-
 function apply_mesagl_patch
 {
     patch -p0 << \EOF
@@ -176,6 +169,99 @@ EOF
         return 1
     fi
 
+    #
+    # Patch so that building with gcc-10 will work.
+    #
+    patch -p0 << \EOF
+diff -u src/gallium/drivers/swr/rasterizer/common/os.h.orig src/gallium/drivers/swr/rasterizer/common/os.h
+--- src/gallium/drivers/swr/rasterizer/common/os.h.orig 2021-06-28 08:51:12.252643000 -0700
++++ src/gallium/drivers/swr/rasterizer/common/os.h      2021-06-28 08:55:32.676722000 -0700
+@@ -166,14 +166,15 @@
+ #endif
+ 
+ #if !defined( __clang__) && !defined(__INTEL_COMPILER)
+-// Intrinsic not defined in gcc
++// Intrinsic not defined in gcc < 10
++#if (__GNUC__) && (GCC_VERSION < 100000)
+ static INLINE
+ void _mm256_storeu2_m128i(__m128i *hi, __m128i *lo, __m256i a)
+ {
+     _mm_storeu_si128((__m128i*)lo, _mm256_castsi256_si128(a));
+     _mm_storeu_si128((__m128i*)hi, _mm256_extractf128_si256(a, 0x1));
+ }
+-
++#endif
+ // gcc prior to 4.9 doesn't have _mm*_undefined_*
+ #if (__GNUC__) && (GCC_VERSION < 409000)
+ #define _mm_undefined_si128 _mm_setzero_si128
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "MesaGL patch 3 failed."
+        return 1
+    fi
+
+    #
+    # Patch to increase the maximum image size in the llvmpipe
+    # driver to 16K x 16K.
+    #
+    patch -p0 << \EOF
+diff -c src/gallium/drivers/llvmpipe/lp_limits.h.orig src/gallium/drivers/llvmpipe/lp_limits.h
+*** src/gallium/drivers/llvmpipe/lp_limits.h.orig       Fri Jul 30 10:03:06 2021
+--- src/gallium/drivers/llvmpipe/lp_limits.h    Fri Jul 30 10:04:41 2021
+***************
+*** 44,50 ****
+   * Max texture sizes
+   */
+  #define LP_MAX_TEXTURE_SIZE (1 * 1024 * 1024 * 1024ULL)  /* 1GB for now */
+! #define LP_MAX_TEXTURE_2D_LEVELS 14  /* 8K x 8K for now */
+  #define LP_MAX_TEXTURE_3D_LEVELS 12  /* 2K x 2K x 2K for now */
+  #define LP_MAX_TEXTURE_CUBE_LEVELS 14  /* 8K x 8K for now */
+  #define LP_MAX_TEXTURE_ARRAY_LAYERS 512 /* 8K x 512 / 8K x 8K x 512 */
+--- 44,50 ----
+   * Max texture sizes
+   */
+  #define LP_MAX_TEXTURE_SIZE (1 * 1024 * 1024 * 1024ULL)  /* 1GB for now */
+! #define LP_MAX_TEXTURE_2D_LEVELS 15  /* 16K x 16K for now */
+  #define LP_MAX_TEXTURE_3D_LEVELS 12  /* 2K x 2K x 2K for now */
+  #define LP_MAX_TEXTURE_CUBE_LEVELS 14  /* 8K x 8K for now */
+  #define LP_MAX_TEXTURE_ARRAY_LAYERS 512 /* 8K x 512 / 8K x 8K x 512 */
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "MesaGL patch 4 failed."
+        return 1
+    fi
+
+    #
+    # Patch to increase the maximum scene temporary storage in the llvmpipe
+    # driver. This is required for large image sizes.
+    #
+    patch -p0 << \EOF
+diff -c src/gallium/drivers/llvmpipe/lp_scene.h.orig src/gallium/drivers/llvmpipe/lp_scene.h
+*** src/gallium/drivers/llvmpipe/lp_scene.h.orig        Fri Jul 30 12:11:39 2021
+--- src/gallium/drivers/llvmpipe/lp_scene.h     Fri Jul 30 12:11:49 2021
+***************
+*** 60,66 ****
+  
+  /* Scene temporary storage is clamped to this size:
+   */
+! #define LP_SCENE_MAX_SIZE (9*1024*1024)
+  
+  /* The maximum amount of texture storage referenced by a scene is
+   * clamped to this size:
+--- 60,66 ----
+  
+  /* Scene temporary storage is clamped to this size:
+   */
+! #define LP_SCENE_MAX_SIZE (64*1024*1024)
+  
+  /* The maximum amount of texture storage referenced by a scene is
+   * clamped to this size:
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "MesaGL patch 5 failed."
+        return 1
+    fi
+
     return 0;
 }
 
@@ -211,6 +297,15 @@ function build_mesagl
     fi
 
     #
+    # Handle case where python doesn't exist.
+    # The magic to determine if python exist comes from
+    # https://stackoverflow.com/questions/592620/how-can-i-check-if-a-program-exists-from-a-bash-script
+    #
+    if ! command -v python > /dev/null 2>&1 ; then
+        sed -i "s/python2.7/python3 python2.7/" configure.ac
+    fi
+
+    #
     # Build MESAGL.
     #
     if [[ "$DO_STATIC_BUILD" == "yes" ]]; then
@@ -226,31 +321,23 @@ function build_mesagl
     fi
 
     info "Configuring MesaGL . . ."
-    echo CXXFLAGS="${CXXFLAGS} ${CXX_OPT_FLAGS}" \
-        CXX=${CXX_COMPILER} \
-        CFLAGS="${CFLAGS} ${C_OPT_FLAGS}" \
-        CC=${C_COMPILER} \
-        ./autogen.sh \
-        --prefix=${VISITDIR}/mesagl/${MESAGL_VERSION}/${VISITARCH} \
-        --with-platforms=x11 \
-        --disable-dri \
-        --disable-dri3 \
-        --disable-egl \
-        --disable-gbm \
-        --disable-gles1 \
-        --disable-gles2 \
-        --disable-xvmc \
-        --disable-vdpau \
-        --disable-va \
-        --enable-glx \
-        --enable-llvm \
-        --with-gallium-drivers=${MESAGL_GALLIUM_DRIVERS} \
-        --enable-gallium-osmesa $MESAGL_STATIC_DYNAMIC $MESAGL_DEBUG_BUILD \
-        --disable-llvm-shared-libs \
-        --with-llvm-prefix=${VISIT_LLVM_DIR}
+
+    # add -fcommon if gcc >=10 to work around changes in compiler behavior
+    # see: https://wiki.gentoo.org/wiki/Project:Toolchain/Gcc_10_porting_notes/fno_common
+    # otherwise we would need to patch mesa to fix build problems
+
+    mesa_c_opt_flags=""
+    if [[ "$CXX_COMPILER" == "g++" ]] ; then
+        VERSION=$(g++ -v 2>&1 | grep "gcc version" | cut -d' ' -f3 | cut -d'.' -f1-1)
+        if [[ ${VERSION} -ge 10 ]] ; then
+            mesa_c_opt_flags="-fcommon"
+        fi
+    fi
+
+    set -x
     env CXXFLAGS="${CXXFLAGS} ${CXX_OPT_FLAGS}" \
         CXX=${CXX_COMPILER} \
-        CFLAGS="${CFLAGS} ${C_OPT_FLAGS}" \
+        CFLAGS="${CFLAGS} ${C_OPT_FLAGS} ${mesa_c_opt_flags}" \
         CC=${C_COMPILER} \
         ./autogen.sh \
         --prefix=${VISITDIR}/mesagl/${MESAGL_VERSION}/${VISITARCH} \
@@ -270,6 +357,7 @@ function build_mesagl
         --enable-gallium-osmesa $MESAGL_STATIC_DYNAMIC $MESAGL_DEBUG_BUILD \
         --disable-llvm-shared-libs \
         --with-llvm-prefix=${VISIT_LLVM_DIR}
+    set +x
 
     if [[ $? != 0 ]] ; then
         warn "MesaGL configure failed.  Giving up"

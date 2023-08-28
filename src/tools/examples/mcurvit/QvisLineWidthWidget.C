@@ -280,7 +280,7 @@ QvisLineWidthWidget::QvisLineWidthWidget(int width_, QWidget *parent) :
     // Create some pixmaps and store them in the application global
     // pixmap cache.
     QPixmap style1Pixmap;
-    if(!QPixmapCache::find("visit_gui_linewidth1", style1Pixmap))
+    if(!QPixmapCache::find("visit_gui_linewidth1", &style1Pixmap))
     {
         AugmentPixmap(style1);
         QPixmap s1p((const char **)augmentedData);
@@ -288,7 +288,7 @@ QvisLineWidthWidget::QvisLineWidthWidget(int width_, QWidget *parent) :
         style1Pixmap = s1p;
     }
     QPixmap style2Pixmap;
-    if(!QPixmapCache::find("visit_gui_linewidth2", style2Pixmap))
+    if(!QPixmapCache::find("visit_gui_linewidth2", &style2Pixmap))
     {
         AugmentPixmap(style2);
         QPixmap s2p((const char **)augmentedData);
@@ -296,7 +296,7 @@ QvisLineWidthWidget::QvisLineWidthWidget(int width_, QWidget *parent) :
         style2Pixmap = s2p;
     }
     QPixmap style3Pixmap;
-    if(!QPixmapCache::find("visit_gui_linewidth3", style3Pixmap))
+    if(!QPixmapCache::find("visit_gui_linewidth3", &style3Pixmap))
     {
         AugmentPixmap(style3);
         QPixmap s3p((const char **)augmentedData);
@@ -304,7 +304,7 @@ QvisLineWidthWidget::QvisLineWidthWidget(int width_, QWidget *parent) :
         style3Pixmap = s3p;
     }
     QPixmap style4Pixmap;
-    if(!QPixmapCache::find("visit_gui_linewidth4", style4Pixmap))
+    if(!QPixmapCache::find("visit_gui_linewidth4", &style4Pixmap))
     {
         AugmentPixmap(style4);
         QPixmap s4p((const char **)augmentedData);
@@ -312,7 +312,7 @@ QvisLineWidthWidget::QvisLineWidthWidget(int width_, QWidget *parent) :
         style4Pixmap = s4p;
     }
     QPixmap style5Pixmap;
-    if(!QPixmapCache::find("visit_gui_linewidth5", style5Pixmap))
+    if(!QPixmapCache::find("visit_gui_linewidth5", &style5Pixmap))
     {
         AugmentPixmap(style5);
         QPixmap s5p((const char **)augmentedData);
@@ -320,7 +320,7 @@ QvisLineWidthWidget::QvisLineWidthWidget(int width_, QWidget *parent) :
         style5Pixmap = s5p;
     }
     QPixmap style6Pixmap;
-    if(!QPixmapCache::find("visit_gui_linewidth6", style6Pixmap))
+    if(!QPixmapCache::find("visit_gui_linewidth6", &style6Pixmap))
     {
         AugmentPixmap(style6);
         QPixmap s6p((const char **)augmentedData);
@@ -328,7 +328,7 @@ QvisLineWidthWidget::QvisLineWidthWidget(int width_, QWidget *parent) :
         style6Pixmap = s6p;
     }
     QPixmap style7Pixmap;
-    if(!QPixmapCache::find("visit_gui_linewidth7", style7Pixmap))
+    if(!QPixmapCache::find("visit_gui_linewidth7", &style7Pixmap))
     {
         AugmentPixmap(style7);
         QPixmap s7p((const char **)augmentedData);
@@ -336,7 +336,7 @@ QvisLineWidthWidget::QvisLineWidthWidget(int width_, QWidget *parent) :
         style7Pixmap = s7p;
     }
     QPixmap style8Pixmap;
-    if(!QPixmapCache::find("visit_gui_linewidth8", style8Pixmap))
+    if(!QPixmapCache::find("visit_gui_linewidth8", &style8Pixmap))
     {
         AugmentPixmap(style8);
         QPixmap s8p((const char **)augmentedData);
@@ -344,7 +344,7 @@ QvisLineWidthWidget::QvisLineWidthWidget(int width_, QWidget *parent) :
         style8Pixmap = s8p;
     }
     QPixmap style9Pixmap;
-    if(!QPixmapCache::find("visit_gui_linewidth9", style9Pixmap))
+    if(!QPixmapCache::find("visit_gui_linewidth9", &style9Pixmap))
     {
         AugmentPixmap(style9);
         QPixmap s9p((const char **)augmentedData);
@@ -352,7 +352,7 @@ QvisLineWidthWidget::QvisLineWidthWidget(int width_, QWidget *parent) :
         style9Pixmap = s9p;
     }
     QPixmap style10Pixmap;
-    if(!QPixmapCache::find("visit_gui_linewidth10", style10Pixmap))
+    if(!QPixmapCache::find("visit_gui_linewidth10", &style10Pixmap))
     {
         AugmentPixmap(style10);
         QPixmap s10p((const char **)augmentedData);
@@ -362,7 +362,7 @@ QvisLineWidthWidget::QvisLineWidthWidget(int width_, QWidget *parent) :
 
     // Create the combo box and add the pixmaps to it.
     QHBoxLayout *topLayout = new QHBoxLayout(this);
-    topLayout->setMargin(0);
+    topLayout->setContentsMargins(0,0,0,0);
     topLayout->setSpacing(0);
     lineWidthComboBox = new QComboBox(this);
     lineWidthComboBox->addItem(QIcon(style1Pixmap),"1");

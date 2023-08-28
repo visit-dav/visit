@@ -62,6 +62,9 @@ typedef enum
 //   Burlen Loring, Wed Jul 16 18:38:55 PDT 2014
 //   Added cast helper methods to catch invalid casts that lead
 //   to undefined behavior
+// 
+//   Justin Privitera, Thu Jun 16 18:01:49 PDT 2022
+//   Added logic for bool vectors.
 //
 // ****************************************************************************
 
@@ -99,6 +102,7 @@ public:
     DataNode(const std::string &name, const floatVector &vec);
     DataNode(const std::string &name, const doubleVector &vec);
     DataNode(const std::string &name, const stringVector &vec);
+    DataNode(const std::string &name, const boolVector &vec);
 
     DataNode(const std::string &name, const MapNode &val);
 
@@ -130,6 +134,7 @@ public:
     const floatVector         &AsFloatVector() const;
     const doubleVector        &AsDoubleVector() const;
     const stringVector        &AsStringVector() const;
+    const boolVector          &AsBoolVector() const;
 
     const MapNode             &AsMapNode() const;
 
@@ -156,6 +161,7 @@ public:
     void SetFloatVector(const floatVector &vec);
     void SetDoubleVector(const doubleVector &vec);
     void SetStringVector(const stringVector &vec);
+    void SetBoolVector(const boolVector &vec);
 
     void SetMapNode(const MapNode &val);
 
@@ -203,6 +209,7 @@ private:
     static floatVector         bogusFloatVector;
     static doubleVector        bogusDoubleVector;
     static stringVector        bogusStringVector;
+    static boolVector          bogusBoolVector;
     static MapNode             bogusMapNode;
 };
 

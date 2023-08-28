@@ -24,10 +24,14 @@ function bv_silo_silex
 
 function bv_silo_depends_on
 {
-    local depends_on="zlib"
+    local depends_on=""
+
+    if [[ "$DO_ZLIB" == "yes" ]] ; then
+        depends_on="zlib"
+    fi
 
     if [[ "$DO_HDF5" == "yes" ]] ; then
-        depends_on="hdf5"
+        depends_on="$depends_on hdf5"
     fi
     
     if [[ "$DO_SZIP" == "yes" ]] ; then
@@ -99,11 +103,320 @@ function bv_silo_ensure
     fi
 }
 
-function bv_silo_dry_run
+function apply_silo_4102_fpzip_patch
 {
-    if [[ "$DO_SILO" == "yes" ]] ; then
-        echo "Dry run option not set for silo."
+    info "Patching silo for fpzip DOMAIN and RANGE symbols"
+    patch --verbose -p0 <<EOF
+Index: src/fpzip/codec.h
+===================================================================
+--- src/fpzip/codec.h	(revision 809)
++++ src/fpzip/codec.h	(working copy)
+@@ -16,13 +16,13 @@
+ // identity map for integer arithmetic
+ template <typename T, unsigned width>
+ struct PCmap<T, width, T> {
+-  typedef T DOMAIN;
+-  typedef T RANGE;
++  typedef T FPZIP_Domain_t;
++  typedef T FPZIP_Range_t;
+   static const unsigned bits = width;
+   static const T        mask = ~T(0) >> (bitsizeof(T) - bits);
+-  RANGE forward(DOMAIN d) const { return d & mask; }
+-  DOMAIN inverse(RANGE r) const { return r & mask; }
+-  DOMAIN identity(DOMAIN d) const { return d & mask; }
++  FPZIP_Range_t forward(FPZIP_Domain_t d) const { return d & mask; }
++  FPZIP_Domain_t inverse(FPZIP_Range_t r) const { return r & mask; }
++  FPZIP_Domain_t identity(FPZIP_Domain_t d) const { return d & mask; }
+ };
+ #endif
+ 
+Index: src/fpzip/pcdecoder.inl
+===================================================================
+--- src/fpzip/pcdecoder.inl	(revision 809)
++++ src/fpzip/pcdecoder.inl	(working copy)
+@@ -19,7 +19,7 @@
+ T PCdecoder<T, M, false>::decode(T pred, unsigned context)
+ {
+   // map type T to unsigned integer type
+-  typedef typename M::RANGE U;
++  typedef typename M::FPZIP_Range_t U;
+   U p = map.forward(pred);
+   // entropy decode d = r - p
+   U r = p + rd->decode(rm[context]) - bias;
+@@ -46,7 +46,7 @@
+ template <typename T, class M>
+ T PCdecoder<T, M, true>::decode(T pred, unsigned context)
+ {
+-  typedef typename M::RANGE U;
++  typedef typename M::FPZIP_Range_t U;
+   unsigned s = rd->decode(rm[context]);
+   if (s > bias) {      // underprediction
+     unsigned k = s - bias - 1;
+Index: src/fpzip/pcencoder.inl
+===================================================================
+--- src/fpzip/pcencoder.inl	(revision 809)
++++ src/fpzip/pcencoder.inl	(working copy)
+@@ -18,7 +18,7 @@
+ T PCencoder<T, M, false>::encode(T real, T pred, unsigned context)
+ {
+   // map type T to unsigned integer type
+-  typedef typename M::RANGE U;
++  typedef typename M::FPZIP_Range_t U;
+   U r = map.forward(real);
+   U p = map.forward(pred);
+   // entropy encode d = r - p
+@@ -47,7 +47,7 @@
+ T PCencoder<T, M, true>::encode(T real, T pred, unsigned context)
+ {
+   // map type T to unsigned integer type
+-  typedef typename M::RANGE U;
++  typedef typename M::FPZIP_Range_t U;
+   U r = map.forward(real);
+   U p = map.forward(pred);
+   // compute (-1)^s (2^k + m) = r - p, entropy code (s, k),
+Index: src/fpzip/pcmap.h
+===================================================================
+--- src/fpzip/pcmap.h	(revision 809)
++++ src/fpzip/pcmap.h	(working copy)
+@@ -14,53 +14,53 @@
+ // specialized for integer-to-integer map
+ template <typename T, unsigned width>
+ struct PCmap<T, width, void> {
+-  typedef T DOMAIN;
+-  typedef T RANGE;
+-  static const unsigned bits = width;                    // RANGE bits
+-  static const unsigned shift = bitsizeof(RANGE) - bits; // DOMAIN\RANGE bits
+-  RANGE forward(DOMAIN d) const { return d >> shift; }
+-  DOMAIN inverse(RANGE r) const { return r << shift; }
+-  DOMAIN identity(DOMAIN d) const { return inverse(forward(d)); }
++  typedef T FPZIP_Domain_t;
++  typedef T FPZIP_Range_t;
++  static const unsigned bits = width;                    // FPZIP_Range_t bits
++  static const unsigned shift = bitsizeof(FPZIP_Range_t) - bits; // FPZIP_Domain_t\FPZIP_Range_t bits
++  FPZIP_Range_t forward(FPZIP_Domain_t d) const { return d >> shift; }
++  FPZIP_Domain_t inverse(FPZIP_Range_t r) const { return r << shift; }
++  FPZIP_Domain_t identity(FPZIP_Domain_t d) const { return inverse(forward(d)); }
+ };
+ 
+ // specialized for float type
+ template <unsigned width>
+ struct PCmap<float, width, void> {
+-  typedef float    DOMAIN;
+-  typedef unsigned RANGE;
++  typedef float    FPZIP_Domain_t;
++  typedef unsigned FPZIP_Range_t;
+   union UNION {
+-    UNION(DOMAIN d) : d(d) {}
+-    UNION(RANGE r) : r(r) {}
+-    DOMAIN d;
+-    RANGE r;
++    UNION(FPZIP_Domain_t d) : d(d) {}
++    UNION(FPZIP_Range_t r) : r(r) {}
++    FPZIP_Domain_t d;
++    FPZIP_Range_t r;
+   };
+-  static const unsigned bits = width;                    // RANGE bits
+-  static const unsigned shift = bitsizeof(RANGE) - bits; // DOMAIN\RANGE bits
+-  RANGE fcast(DOMAIN d) const;
+-  DOMAIN icast(RANGE r) const;
+-  RANGE forward(DOMAIN d) const;
+-  DOMAIN inverse(RANGE r) const;
+-  DOMAIN identity(DOMAIN d) const;
++  static const unsigned bits = width;                    // FPZIP_Range_t bits
++  static const unsigned shift = bitsizeof(FPZIP_Range_t) - bits; // FPZIP_Domain_t\FPZIP_Range_t bits
++  FPZIP_Range_t fcast(FPZIP_Domain_t d) const;
++  FPZIP_Domain_t icast(FPZIP_Range_t r) const;
++  FPZIP_Range_t forward(FPZIP_Domain_t d) const;
++  FPZIP_Domain_t inverse(FPZIP_Range_t r) const;
++  FPZIP_Domain_t identity(FPZIP_Domain_t d) const;
+ };
+ 
+ // specialized for double type
+ template <unsigned width>
+ struct PCmap<double, width, void> {
+-  typedef double             DOMAIN;
+-  typedef unsigned long long RANGE;
++  typedef double             FPZIP_Domain_t;
++  typedef unsigned long long FPZIP_Range_t;
+   union UNION {
+-    UNION(DOMAIN d) : d(d) {}
+-    UNION(RANGE r) : r(r) {}
+-    DOMAIN d;
+-    RANGE r;
++    UNION(FPZIP_Domain_t d) : d(d) {}
++    UNION(FPZIP_Range_t r) : r(r) {}
++    FPZIP_Domain_t d;
++    FPZIP_Range_t r;
+   };
+-  static const unsigned bits = width;                    // RANGE bits
+-  static const unsigned shift = bitsizeof(RANGE) - bits; // DOMAIN\RANGE bits
+-  RANGE fcast(DOMAIN d) const;
+-  DOMAIN icast(RANGE r) const;
+-  RANGE forward(DOMAIN d) const;
+-  DOMAIN inverse(RANGE r) const;
+-  DOMAIN identity(DOMAIN d) const;
++  static const unsigned bits = width;                    // FPZIP_Range_t bits
++  static const unsigned shift = bitsizeof(FPZIP_Range_t) - bits; // FPZIP_Domain_t\FPZIP_Range_t bits
++  FPZIP_Range_t fcast(FPZIP_Domain_t d) const;
++  FPZIP_Domain_t icast(FPZIP_Range_t r) const;
++  FPZIP_Range_t forward(FPZIP_Domain_t d) const;
++  FPZIP_Domain_t inverse(FPZIP_Range_t r) const;
++  FPZIP_Domain_t identity(FPZIP_Domain_t d) const;
+ };
+ 
+ #include "pcmap.inl"
+Index: src/fpzip/pcmap.inl
+===================================================================
+--- src/fpzip/pcmap.inl	(revision 809)
++++ src/fpzip/pcmap.inl	(working copy)
+@@ -3,12 +3,12 @@
+ PCmap<float, width, void>::fcast(float d) const
+ {
+ #ifdef WITH_REINTERPRET_CAST
+-  return reinterpret_cast<const RANGE&>(d);
++  return reinterpret_cast<const FPZIP_Range_t&>(d);
+ #elif defined WITH_UNION
+   UNION shared(d);
+   return shared.r;
+ #else
+-  RANGE r;
++  FPZIP_Range_t r;
+   memcpy(&r, &d, sizeof(r));
+   return r;
+ #endif
+@@ -19,12 +19,12 @@
+ PCmap<float, width, void>::icast(unsigned r) const
+ {
+ #ifdef WITH_REINTERPRET_CAST
+-  return reinterpret_cast<const DOMAIN&>(r);
++  return reinterpret_cast<const FPZIP_Domain_t&>(r);
+ #elif defined WITH_UNION
+   UNION shared(r);
+   return shared.d;
+ #else
+-  DOMAIN d;
++  FPZIP_Domain_t d;
+   memcpy(&d, &r, sizeof(d));
+   return d;
+ #endif
+@@ -37,7 +37,7 @@
+ unsigned
+ PCmap<float, width, void>::forward(float d) const
+ {
+-  RANGE r = fcast(d);
++  FPZIP_Range_t r = fcast(d);
+   r = ~r;
+   r >>= shift;
+   r ^= -(r >> (bits - 1)) >> (shift + 1);
+@@ -61,7 +61,7 @@
+ float
+ PCmap<float, width, void>::identity(float d) const
+ {
+-  RANGE r = fcast(d);
++  FPZIP_Range_t r = fcast(d);
+   r >>= shift;
+   r <<= shift;
+   return icast(r);
+@@ -72,12 +72,12 @@
+ PCmap<double, width, void>::fcast(double d) const
+ {
+ #ifdef WITH_REINTERPRET_CAST
+-  return reinterpret_cast<const RANGE&>(d);
++  return reinterpret_cast<const FPZIP_Range_t&>(d);
+ #elif defined WITH_UNION
+   UNION shared(d);
+   return shared.r;
+ #else
+-  RANGE r;
++  FPZIP_Range_t r;
+   memcpy(&r, &d, sizeof(r));
+   return r;
+ #endif
+@@ -88,12 +88,12 @@
+ PCmap<double, width, void>::icast(unsigned long long r) const
+ {
+ #ifdef WITH_REINTERPRET_CAST
+-  return reinterpret_cast<const DOMAIN&>(r);
++  return reinterpret_cast<const FPZIP_Domain_t&>(r);
+ #elif defined WITH_UNION
+   UNION shared(r);
+   return shared.d;
+ #else
+-  DOMAIN d;
++  FPZIP_Domain_t d;
+   memcpy(&d, &r, sizeof(d));
+   return d;
+ #endif
+@@ -106,7 +106,7 @@
+ unsigned long long
+ PCmap<double, width, void>::forward(double d) const
+ {
+-  RANGE r = fcast(d);
++  FPZIP_Range_t r = fcast(d);
+   r = ~r;
+   r >>= shift;
+   r ^= -(r >> (bits - 1)) >> (shift + 1);
+@@ -130,7 +130,7 @@
+ double
+ PCmap<double, width, void>::identity(double d) const
+ {
+-  RANGE r = fcast(d);
++  FPZIP_Range_t r = fcast(d);
+   r >>= shift;
+   r <<= shift;
+   return icast(r);
+Index: src/fpzip/read.cpp
+===================================================================
+--- src/fpzip/read.cpp	(revision 809)
++++ src/fpzip/read.cpp	(working copy)
+@@ -103,7 +103,7 @@
+ {
+   // initialize decompressor
+   typedef PCmap<T, bits> TMAP;
+-  typedef typename TMAP::RANGE U;
++  typedef typename TMAP::FPZIP_Range_t U;
+   typedef PCmap<U, bits, U> UMAP;
+   RCmodel* rm = new RCqsmodel(false, PCdecoder<U, UMAP>::symbols);
+   PCdecoder<U, UMAP>* fd = new PCdecoder<U, UMAP>(rd, &rm);
+Index: src/fpzip/write.cpp
+===================================================================
+--- src/fpzip/write.cpp	(revision 809)
++++ src/fpzip/write.cpp	(working copy)
+@@ -103,7 +103,7 @@
+ {
+   // initialize compressor
+   typedef PCmap<T, bits> TMAP;
+-  typedef typename TMAP::RANGE U;
++  typedef typename TMAP::FPZIP_Range_t U;
+   typedef PCmap<U, bits, U> UMAP;
+   RCmodel* rm = new RCqsmodel(true, PCencoder<U, UMAP>::symbols);
+   PCencoder<U, UMAP>* fe = new PCencoder<U, UMAP>(re, &rm);
+EOF
+    if [[ $? != 0 ]] ; then
+        return 1
     fi
+}
+
+function apply_silo_patch
+{
+    info "Patching silo . . ."
+
+    compare_version_strings $SILO_VERSION 4.10.3 -le
+    if [[ $? -eq 0 ]]; then
+        apply_silo_4102_fpzip_patch
+        if [[ $? != 0 ]] ; then
+            if [[ $untarred_silo == 1 ]] ; then
+                warn "Giving up on Silo build because the patch failed."
+                return 1
+            else
+                warn "Patch failed, but continuing.  I believe that this script\n" \
+                     "tried to apply a patch to an existing directory that had\n" \
+                     "already been patched ... that is, the patch is\n" \
+                     "failing harmlessly on a second application."
+            fi
+        fi
+    fi
+    return 0
 }
 
 # *************************************************************************** #
@@ -143,40 +456,31 @@ function build_silo
     #
     info "Configuring Silo . . ."
     cd $SILO_BUILD_DIR || error "Can't cd to Silo build dir."
+    apply_silo_patch || return 1
     info "Invoking command to configure Silo"
-    SILO_LINK_OPT=""
     if [[ "$DO_HDF5" == "yes" ]] ; then
-        export HDF5INCLUDE="$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH/include"
-        export HDF5LIB="$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH/lib"
+        HDF5INCLUDE="$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH/include"
+        HDF5LIB="$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH/lib"
         WITHHDF5ARG="--with-hdf5=$HDF5INCLUDE,$HDF5LIB"
-        SILO_LINK_OPT="-L$HDF5LIB -lhdf5"
     else
         WITHHDF5ARG="--without-hdf5"
     fi
-    SILO_LINK_OPT="$SILO_LINK_OPT -lz"
     if [[ "$DO_SZIP" == "yes" ]] ; then
-        export SZIPDIR="$VISITDIR/szip/$SZIP_VERSION/$VISITARCH"
+        SZIPDIR="$VISITDIR/szip/$SZIP_VERSION/$VISITARCH"
         WITHSZIPARG="--with-szlib=$SZIPDIR"
-        SILO_LINK_OPT="$SILO_LINK_OPT -L$SZIPDIR/lib -lsz"
     else
         WITHSZIPARG="--without-szlib"
+    fi
+    if [[ "$DO_ZLIB" == "no" ]]; then
+        WITH_HZIP_AND_FPZIP="--disable-hzip --disable-fpzip"
+    else
+        ZLIBARGS="--with-zlib=${VISITDIR}/zlib/${ZLIB_VERSION}/${VISITARCH}/include,${VISITDIR}/zlib/${ZLIB_VERSION}/${VISITARCH}/lib"
     fi
     WITHSHAREDARG="--enable-shared"
     if [[ "$DO_STATIC_BUILD" == "yes" ]] ; then
         WITHSHAREDARG="--disable-shared"
     fi
-    #if [[ "$DO_SILEX" == "no" || "$DO_QT" != "yes" || "$DO_STATIC_BUILD" == "yes" ]] ; then
-        WITHSILOQTARG='--disable-silex'
-    #else
-    #    export SILOQTDIR="$QT_INSTALL_DIR" #"${VISITDIR}/qt/${QT_VERSION}/${VISITARCH}"
-    #    if [[ "$OPSYS" == "Darwin" ]] ; then
-    #        WITHSILOQTARG='--enable-silex --with-Qt-dir=$SILOQTDIR --with-Qt-lib="m -F${SILOQTDIR}/lib -framework QtGui -framework QtCore"'
-    #    else
-    #        WITHSILOQTARG='--enable-silex --with-Qt-dir=$SILOQTDIR --with-Qt-lib="QtGui -lQtCore"'
-    #    fi
-    #fi
-
-    ZLIBARGS="--with-zlib=${VISITDIR}/zlib/${ZLIB_VERSION}/${VISITARCH}/include,${VISITDIR}/zlib/${ZLIB_VERSION}/${VISITARCH}/lib"
+    WITHSILOQTARG='--disable-silex'
 
     if [[ "$FC_COMPILER" == "no" ]] ; then
         FORTRANARGS="--disable-fortran"
@@ -185,28 +489,25 @@ function build_silo
     fi
 
     extra_ac_flags=""
-    # detect coral systems, which older versions of autoconf don't detect
+    # detect coral and NVIDIA Grace CPU (ARM) systems, which older versions of 
+    # autoconf don't detect
     if [[ "$(uname -m)" == "ppc64le" ]] ; then
          extra_ac_flags="ac_cv_build=powerpc64le-unknown-linux-gnu"
+    elif [[ "$(uname -m)" == "aarch64" ]] ; then
+         extra_ac_flags="ac_cv_build=aarch64-unknown-linux-gnu"
     fi 
 
-    info "./configure CXX=\"$CXX_COMPILER\" CC=\"$C_COMPILER\" \
-        CFLAGS=\"$CFLAGS $C_OPT_FLAGS\" CXXFLAGS=\"$CXXFLAGS $CXX_OPT_FLAGS\" \
-        $FORTRANARGS \
-        --prefix=\"$VISITDIR/silo/$SILO_VERSION/$VISITARCH\" \
-        $WITHHDF5ARG $WITHSZIPARG $WITHSILOQTARG $WITHSHAREDARG \
-        --enable-install-lite-headers --without-readline \
-        $ZLIBARGS $SILO_EXTRA_OPTIONS ${extra_ac_flags}"
-
+    set -x
     # In order to ensure $FORTRANARGS is expanded to build the arguments to
     # configure, we wrap the invokation in 'sh -c "..."' syntax
     sh -c "./configure CXX=\"$CXX_COMPILER\" CC=\"$C_COMPILER\" \
         CFLAGS=\"$CFLAGS $C_OPT_FLAGS\" CXXFLAGS=\"$CXXFLAGS $CXX_OPT_FLAGS\" \
         $FORTRANARGS \
         --prefix=\"$VISITDIR/silo/$SILO_VERSION/$VISITARCH\" \
-        $WITHHDF5ARG $WITHSZIPARG $WITHSILOQTARG $WITHSHAREDARG \
+        $WITHHDF5ARG $WITHSZIPARG $WITHSILOQTARG $WITHSHAREDARG $WITH_HZIP_AND_FPZIP\
         --enable-install-lite-headers --without-readline \
         $ZLIBARGS $SILO_EXTRA_OPTIONS ${extra_ac_flags}"
+    set +x
 
     if [[ $? != 0 ]] ; then
         warn "Silo configure failed.  Giving up"

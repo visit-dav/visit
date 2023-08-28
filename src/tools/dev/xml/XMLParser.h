@@ -4,10 +4,11 @@
 
 #ifndef XML_PARSER_H
 #define XML_PARSER_H
+#include <QDomDocument>
+#include <QDomElement>
+#include <QDomNamedNodeMap>
+#include <QDomNode>
 #include <QTextStream>
-
-#include <qxml.h>
-#include "Field.h"
 #include "XMLParserUtil.h"
 #include "Attribute.h"
 #include "Plugin.h"
@@ -41,6 +42,7 @@ ParseCharacters(const QString &buff_input)
 
     // split one string into a list of strings when delimited by whitespace
     // or quotation marks, e.g.   <string1  "string two"  ""  string4>
+    // if a quote is escaped, it will be kept
     QString buff(buff_input.trimmed());
     bool quote=false;
     QString tmp="";
@@ -61,6 +63,11 @@ ParseCharacters(const QString &buff_input)
             quote = false;
             output.push_back(tmp);
             tmp="";
+        }
+        else if (buff[i] == '\\' && i < buff.length()-1 && buff[i+1] == '"')
+        {
+            ++i;
+            tmp += buff[i];
         }
         else
         {
@@ -192,18 +199,37 @@ ParseCharacters(const QString &buff_input)
 //    Kathleen Biagas, Thu Jan  2 09:18:18 PST 2020
 //    Added haslicense.
 //
+//    Kathleen Biagas, Fri July 16, 2021
+//    Added support for WIN32DEFINES (preprocessor defines for Win32).
+//
+//    Kathleen Biagas, Wed April 27, 2022
+//    Added support for skipInfoGen flag in db plugin xml files.
+//
+//    Kathleen Biagas, Tue May 3, 2022
+//    Added support for component-specific CXXFLAGS and LDFLAGS.
+//    Add ability for escaped quotes to be retained.
+//
+//    Kathleen Biagas, Tue Apr 25 14:43:17 PDT 2023
+//    Make this a stand-alone class using QDomDocument and other QDom clasess
+//    since QXmlDefaultHandler and the classes that use it are removed in Qt 6.
+//
 // ****************************************************************************
 
-class XMLParser : public QXmlDefaultHandler
+class XMLParser
 {
   public:
     QString    docType;
     Plugin    *plugin;
     Attribute *attribute;
     QString    filepath;
+    QString    filename;
+
+    QDomDocument dom;
+
   public:
-    XMLParser(FieldFactory *fieldFactory_, QString filename)
+    XMLParser(FieldFactory *fieldFactory_, QString filename_)
     {
+        filename = filename_;
         filepath = FilePath(filename);
         currentPlugin = NULL;
         plugin    = NULL;
@@ -212,12 +238,14 @@ class XMLParser : public QXmlDefaultHandler
         currentFunctions = NULL;
         fieldFactory = fieldFactory_;
     }
+
     bool startDocument()
     {
         currentTag = "";
         tagStack.push_back("xml file");
         return true;
     }
+
     bool characters(const QString& buff)
     {
         std::vector<QString> strings = ParseCharacters(buff);
@@ -274,15 +302,43 @@ class XMLParser : public QXmlDefaultHandler
             }
             else if (currentTag == "CXXFLAGS")
             {
-                currentPlugin->cxxflags.push_back(strings[i]);
+                if (currentCxxFlagsComponents & COMP_MDSERVER)
+                    currentPlugin->mcxxflags.push_back(strings[i]);
+                if (currentCxxFlagsComponents & COMP_ENGINESER)
+                    currentPlugin->ecxxflagsSer.push_back(strings[i]);
+                if (currentCxxFlagsComponents & COMP_ENGINEPAR)
+                    currentPlugin->ecxxflagsPar.push_back(strings[i]);
+                // case with no flags (libs for all components)
+                if (currentCxxFlagsComponents & COMP_ALL)
+                    currentPlugin->cxxflags.push_back(strings[i]);
             }
             else if (currentTag == "DEFINES")
             {
-                currentPlugin->defs.push_back(strings[i]);
+                if (currentDefComponents & COMP_MDSERVER)
+                    currentPlugin->mdefs.push_back(strings[i]);
+                if (currentDefComponents & COMP_ENGINESER)
+                    currentPlugin->edefsSer.push_back(strings[i]);
+                if (currentDefComponents & COMP_ENGINEPAR)
+                    currentPlugin->edefsPar.push_back(strings[i]);
+                // case with no flags (libs for all components)
+                if (currentDefComponents & COMP_ALL)
+                    currentPlugin->defs.push_back(strings[i]);
+            }
+            else if (currentTag == "WIN32DEFINES")
+            {
+                currentPlugin->windefs.push_back(strings[i]);
             }
             else if (currentTag == "LDFLAGS")
             {
-                currentPlugin->ldflags.push_back(strings[i]);
+                if (currentLdFlagsComponents & COMP_MDSERVER)
+                    currentPlugin->mldflags.push_back(strings[i]);
+                if (currentLdFlagsComponents & COMP_ENGINESER)
+                    currentPlugin->eldflagsSer.push_back(strings[i]);
+                if (currentLdFlagsComponents & COMP_ENGINEPAR)
+                    currentPlugin->eldflagsPar.push_back(strings[i]);
+                // case with no flags (libs for all components)
+                if (currentLdFlagsComponents & COMP_ALL)
+                    currentPlugin->ldflags.push_back(strings[i]);
             }
             else if (currentTag == "FilePatterns")
             {
@@ -291,37 +347,44 @@ class XMLParser : public QXmlDefaultHandler
         }
         return true;
     }
-    bool startElement(const QString&,
-                      const QString&,
-                      const QString& tag,
-                      const QXmlAttributes& atts)
+
+    QString getAttribute(const QDomElement *el,const QString &name)
     {
+        // will return a null string if 'name' is not an attribute
+        return el->attribute(name, QString());
+    }
+
+    bool startElement(const QDomElement *domEl)
+    {
+        QString tag = domEl->tagName();
         if (currentTag == "")
             docType = tag;
 
-        QString name    = atts.value("name");
+        QString name    = getAttribute(domEl, "name");
         if (tag == "Plugin")
         {
-            QString label     = atts.value("label");
-            QString type      = atts.value("type");
-            QString vartype   = atts.value("vartype");
-            QString dbtype    = atts.value("dbtype");
-            QString haswriter = atts.value("haswriter");
-            QString hasoptions= atts.value("hasoptions");
-            QString haslicense= atts.value("haslicense");
-            QString version   = atts.value("version");
-            QString iconFile  = atts.value("iconFile");
-            QString enabled   = atts.value("enabled");
-            QString mdspecific= atts.value("mdspecificcode");
-            QString engspecific= atts.value("engspecificcode");
-            QString onlyengine= atts.value("onlyengine");
-            QString noengine  = atts.value("noengine");
-            QString filePatternsStrict = atts.value("filePatternsStrict");
-            QString opensWholeDirectory = atts.value("opensWholeDirectory");
-            QString category  = atts.value("category");
-            QString createExpression = atts.value("createExpression");
-            QString exprInType = atts.value("exprInType");
-            QString exprOutType = atts.value("exprOutType");
+            QString label     = getAttribute(domEl, "label");
+            QString type      = getAttribute(domEl, "type");
+            QString vartype   = getAttribute(domEl, "vartype");
+            QString dbtype    = getAttribute(domEl, "dbtype");
+            QString haswriter = getAttribute(domEl, "haswriter");
+            QString hasoptions= getAttribute(domEl, "hasoptions");
+            QString haslicense= getAttribute(domEl, "haslicense");
+            QString version   = getAttribute(domEl, "version");
+            QString iconFile  = getAttribute(domEl, "iconFile");
+            QString enabled   = getAttribute(domEl, "enabled");
+            QString mdspecific= getAttribute(domEl, "mdspecificcode");
+            QString engspecific= getAttribute(domEl, "engspecificcode");
+            QString onlyengine= getAttribute(domEl, "onlyengine");
+            QString noengine  = getAttribute(domEl, "noengine");
+            QString filePatternsStrict = getAttribute(domEl, "filePatternsStrict");
+            QString opensWholeDirectory = getAttribute(domEl, "opensWholeDirectory");
+            QString category  = getAttribute(domEl, "category");
+            QString createExpression = getAttribute(domEl, "createExpression");
+            QString exprInType = getAttribute(domEl, "exprInType");
+            QString exprOutType = getAttribute(domEl, "exprOutType");
+            QString skipInfoGen  = getAttribute(domEl, "skipInfoGen");
+
             currentPlugin = new Plugin(name, label, type, vartype,
                                        dbtype, version, iconFile,
                                        haswriter.isNull() ? false : Text2Bool(haswriter),
@@ -365,18 +428,22 @@ class XMLParser : public QXmlDefaultHandler
             {
                 currentPlugin->exprOutType = exprOutType;
             }
+            if (!skipInfoGen.isNull())
+            {
+                currentPlugin->skipInfoGen = Text2Bool(skipInfoGen);
+            }
         }
         else if (tag == "Attribute")
         {
-            QString purpose       = atts.value("purpose");
-            QString codefile      = atts.value("codefile");
-            QString persistent    = atts.value("persistent");
-            QString keyframe      = atts.value("keyframe");
-            QString exportAPI     = atts.value("exportAPI");
-            QString baseClass     = atts.value("baseClass");
+            QString purpose       = getAttribute(domEl, "purpose");
+            QString codefile      = getAttribute(domEl, "codefile");
+            QString persistent    = getAttribute(domEl, "persistent");
+            QString keyframe      = getAttribute(domEl, "keyframe");
+            QString exportAPI     = getAttribute(domEl, "exportAPI");
+            QString baseClass     = getAttribute(domEl, "baseClass");
             if (exportAPI.isNull())
                 exportAPI = "";
-            QString exportInclude = atts.value("exportInclude");
+            QString exportInclude = getAttribute(domEl, "exportInclude");
             if (exportInclude.isNull())
                 exportInclude = "";
             if (!filepath.isNull() && !codefile.isNull())
@@ -419,9 +486,9 @@ class XMLParser : public QXmlDefaultHandler
         }
         else if (tag == "Include")
         {
-            QString file   = atts.value("file");
-            QString quoted = atts.value("quoted");
-            QString target = atts.value("target");
+            QString file   = getAttribute(domEl, "file");
+            QString quoted = getAttribute(domEl, "quoted");
+            QString target = getAttribute(domEl, "target");
             bool    quote = false;
             if (!quoted.isNull())
                 quote = Text2Bool(quoted);
@@ -432,7 +499,7 @@ class XMLParser : public QXmlDefaultHandler
         }
         else if (tag == "Constant")
         {
-            QString member = atts.value("member");
+            QString member = getAttribute(domEl, "member");
 
             if (!currentAttribute)
                 throw QString("No current attribute when specifying constant %1").arg(name);
@@ -458,11 +525,11 @@ class XMLParser : public QXmlDefaultHandler
         }
         else if (tag == "Function")
         {
-            QString user   = atts.value("user");
-            QString member = atts.value("member");
+            QString user   = getAttribute(domEl, "user");
+            QString member = getAttribute(domEl, "member");
             if (member.isNull())
                 member = "true";
-            QString access = atts.value("access");
+            QString access = getAttribute(domEl, "access");
             Function::AccessType a;
             if(access == "protected")
                 a = Function::AccessProtected;
@@ -496,21 +563,132 @@ class XMLParser : public QXmlDefaultHandler
         }
         else if (tag == "CXXFLAGS")
         {
+            currentCxxFlagsComponents = COMP_NONE;
+            // if we have a "components" attribute, we need to find out
+            // which component the libs are for.
+            // if not, we have libs for all comps
+            if(!domEl->hasAttribute("components"))
+            {
+                currentCxxFlagsComponents = COMP_ALL;
+            }
+            else
+            {
+                QString comps = getAttribute(domEl, "components");
+                std::vector<QString> comps_split = SplitValues(comps);
+                int comps_current = COMP_NONE;
+
+                for (size_t i=0; i<comps_split.size(); i++)
+                {
+                    if (comps_split[i] == "M")
+                    {
+                        currentPlugin->mcxxflags.clear();
+                        comps_current |= COMP_MDSERVER;
+                    }
+                    else if (comps_split[i] == "ESer")
+                    {
+                        currentPlugin->ecxxflagsSer.clear();
+                        comps_current |= COMP_ENGINESER;
+                    }
+                    else if (comps_split[i] == "EPar")
+                    {
+                        currentPlugin->ecxxflagsPar.clear();
+                        comps_current |= COMP_ENGINEPAR;
+                    }
+                    else
+                        throw QString("invalid file '%1' for components attribute of CXXFLAGS tag").arg(comps_split[i]);
+                }
+                currentCxxFlagsComponents = comps_current;
+            }
         }
         else if (tag == "DEFINES")
+        {
+            currentDefComponents = COMP_NONE;
+            // if we have a "components" attribute, we need to find out
+            // which component the libs are for.
+            // if not, we have libs for all comps
+            if(!domEl->hasAttribute("components"))
+            {
+                currentDefComponents = COMP_ALL;
+            }
+            else
+            {
+                QString comps = getAttribute(domEl, "components");
+                std::vector<QString> comps_split = SplitValues(comps);
+                int comps_current = COMP_NONE;
+
+                for (size_t i=0; i<comps_split.size(); i++)
+                {
+                    if (comps_split[i] == "M")
+                    {
+                        currentPlugin->mdefs.clear();
+                        comps_current |= COMP_MDSERVER;
+                    }
+                    else if (comps_split[i] == "ESer")
+                    {
+                        currentPlugin->edefsSer.clear();
+                        comps_current |= COMP_ENGINESER;
+                    }
+                    else if (comps_split[i] == "EPar")
+                    {
+                        currentPlugin->edefsPar.clear();
+                        comps_current |= COMP_ENGINEPAR;
+                    }
+                    else
+                        throw QString("invalid file '%1' for components attribute of DEFINES tag").arg(comps_split[i]);
+                }
+                currentDefComponents = comps_current;
+            }
+        }
+        else if (tag == "WIN32DEFINES")
         {
         }
         else if (tag == "LDFLAGS")
         {
+            currentLdFlagsComponents = COMP_NONE;
+            // if we have a "components" attribute, we need to find out
+            // which component the libs are for.
+            // if not, we have libs for all comps
+            if(!domEl->hasAttribute("components"))
+            {
+                currentLdFlagsComponents = COMP_ALL;
+            }
+            else
+            {
+                QString comps = getAttribute(domEl, "components");
+                std::vector<QString> comps_split = SplitValues(comps);
+                int comps_current = COMP_NONE;
+
+                for (size_t i=0; i<comps_split.size(); i++)
+                {
+                    if (comps_split[i] == "M")
+                    {
+                        currentPlugin->mldflags.clear();
+                        comps_current |= COMP_MDSERVER;
+                    }
+                    else if (comps_split[i] == "ESer")
+                    {
+                        currentPlugin->eldflagsSer.clear();
+                        comps_current |= COMP_ENGINESER;
+                    }
+                    else if (comps_split[i] == "EPar")
+                    {
+                        currentPlugin->eldflagsPar.clear();
+                        comps_current |= COMP_ENGINEPAR;
+                    }
+                    else
+                        throw QString("invalid file '%1' for components attribute of LDFLAGS tag").arg(comps_split[i]);
+                }
+                currentLdFlagsComponents = comps_current;
+            }
         }
         else if (tag == "FilePatterns")
         {
         }
         else if (tag == "Files")
         {
-            QString         comps1 = atts.value("components");
+            QString comps1 = getAttribute(domEl, "components");
             std::vector<QString> comps2 = SplitValues(comps1);
-            int             comps3 = COMP_NONE;
+            int  comps3 = COMP_NONE;
 
             for (size_t i=0; i<comps2.size(); i++)
             {
@@ -585,15 +763,15 @@ class XMLParser : public QXmlDefaultHandler
             // if we have a "components" attribute, we need to find out
             // which component the libs are for.
             // if not, we have libs for all comps
-            if(atts.index("components") == -1)
+            if(!domEl->hasAttribute("components"))
             {
                 currentLibComponents = COMP_ALL;
             }
             else
             {
-                QString         comps         = atts.value("components");
+                QString comps = getAttribute(domEl, "components");
                 std::vector<QString> comps_split   = SplitValues(comps);
-                int             comps_current = COMP_NONE;
+                int comps_current = COMP_NONE;
 
                 for (size_t i=0; i<comps_split.size(); i++)
                 {
@@ -638,25 +816,25 @@ class XMLParser : public QXmlDefaultHandler
             if (!currentAttribute)
                 throw QString("No current attribute when specifying field %1").arg(name);
 
-            QString type      = atts.value("type");
-            QString subtype   = atts.value("subtype");
-            QString length    = atts.value("length");
-            QString label     = atts.value("label");
+            QString type      = getAttribute(domEl, "type");
+            QString subtype   = getAttribute(domEl, "subtype");
+            QString length    = getAttribute(domEl, "length");
+            QString label     = getAttribute(domEl, "label");
 
             currentField = fieldFactory->createField(name,type,subtype,length,label);
             currentField->codeFile = currentAttribute->codeFile;
 
-            QString enabler   = atts.value("enabler");
-            QString internal  = atts.value("internal");
-            QString persistent  = atts.value("persistent");
+            QString enabler   = getAttribute(domEl, "enabler");
+            QString internal  = getAttribute(domEl, "internal");
+            QString persistent  = getAttribute(domEl, "persistent");
 
-            QString ignoreeq  = atts.value("ignoreeq");
+            QString ignoreeq  = getAttribute(domEl, "ignoreeq");
             if (!ignoreeq.isNull())
             {
                 currentField->ignoreEquality = Text2Bool(ignoreeq);
             }
 
-            QString access    = atts.value("access");
+            QString access    = getAttribute(domEl, "access");
             if (!access.isNull())
             {
                 if(access == "public")
@@ -669,7 +847,7 @@ class XMLParser : public QXmlDefaultHandler
             else
                 currentField->SetPrivateAccess();
 
-            QString init      = atts.value("init");
+            QString init      = getAttribute(domEl, "init");
             if (!init.isNull() && Text2Bool(init)==true)
             {
                 if (!currentAttribute->codeFile)
@@ -712,22 +890,28 @@ class XMLParser : public QXmlDefaultHandler
             if (!persistent.isNull())
                 currentField->SetPersistent(persistent);
 
+            // See if there are any other atts
+            QDomNamedNodeMap atts = domEl->attributes();
             for (int j=0; j<atts.length(); j++)
             {
-                if (atts.qName(j) != "name"    &&
-                    atts.qName(j) != "type"    &&
-                    atts.qName(j) != "subtype" &&
-                    atts.qName(j) != "label"   &&
-                    atts.qName(j) != "length"  &&
-                    atts.qName(j) != "enabler" &&
-                    atts.qName(j) != "internal"&&
-                    atts.qName(j) != "persistent"  &&
-                    atts.qName(j) != "ignoreeq"&&
-                    atts.qName(j) != "access"  &&
-                    atts.qName(j) != "init"    )
+                if(atts.item(j).isAttr())
                 {
-                    currentField->SetAttrib(atts.qName(j),atts.value(j));
+                    if (atts.item(j).nodeName() != "name"    &&
+                        atts.item(j).nodeName() != "type"    &&
+                        atts.item(j).nodeName() != "subtype" &&
+                        atts.item(j).nodeName() != "label"   &&
+                        atts.item(j).nodeName() != "length"  &&
+                        atts.item(j).nodeName() != "enabler" &&
+                        atts.item(j).nodeName() != "internal"&&
+                        atts.item(j).nodeName() != "persistent"  &&
+                        atts.item(j).nodeName() != "ignoreeq"&&
+                        atts.item(j).nodeName() != "access"  &&
+                        atts.item(j).nodeName() != "init"    )
+                    {
+                        currentField->SetAttrib(atts.item(j).nodeName(),atts.item(j).nodeValue());
+                    }
                 }
+                // else error ??
             }
         }
         else
@@ -738,10 +922,11 @@ class XMLParser : public QXmlDefaultHandler
         tagStack.push_back(currentTag);
         return true;
     }
-    bool endElement( const QString&, const QString&, const QString &tag)
+    bool endElement(const QString &tag)
     {
-        // NOTE: If you need to add a new tag, make sure you add a case here (even if empty)
-        // so the parser will except it. Default behavior is to throw an exception.
+        // NOTE: If you need to add a new tag, make sure you add a case here
+        //  (even if empty) so the parser will accept it.
+        //  Default behavior is to throw an exception.
 
         if (tagStack.back() != tag)
             throw QString("ending tag (%1) does not match latest tag started (%2)").arg(tagStack.back()).arg(tag);
@@ -785,12 +970,18 @@ class XMLParser : public QXmlDefaultHandler
         }
         else if (tag == "CXXFLAGS")
         {
+            currentCxxFlagsComponents = COMP_NONE;
         }
         else if (tag == "DEFINES")
+        {
+            currentDefComponents = COMP_NONE;
+        }
+        else if (tag == "WIN32DEFINES")
         {
         }
         else if (tag == "LDFLAGS")
         {
+            currentLdFlagsComponents = COMP_NONE;
         }
         else if (tag == "LIBS")
         {
@@ -818,9 +1009,74 @@ class XMLParser : public QXmlDefaultHandler
         currentTag = tagStack.back();
         return true;
     }
+
+    bool parse()
+    {
+        QFile file(filename);
+
+        if(!file.open(QFile::ReadOnly))
+        {
+            cErr << "Could not open: " << filepath << Endl;
+            return false;
+        }
+
+        QDomDocument doc;
+        QString errorStr;
+        int errorLine;
+        int errorColumn;
+        if(!doc.setContent(&file, false, &errorStr, &errorLine, &errorColumn))
+        {
+            cErr << "Parse error at line " << errorLine << ", column "
+                 << errorColumn << ": " << errorStr << "\n" << Endl;
+            return false;
+        }
+
+        QDomElement root = doc.documentElement();
+        if (root.isNull())
+        {
+            cErr << "Root element is null." << Endl;
+            return false;
+        }
+
+        startDocument();
+
+        startElement(&root);
+
+        for (QDomNode n = root.firstChild(); !n.isNull(); n = n.nextSibling())
+        {
+            if (n.isElement())
+            {
+                QDomElement el = n.toElement();
+                startElement(&el);
+                if (!el.text().isEmpty())
+                    characters(el.text());
+                for (QDomNode m = el.firstChild(); !m.isNull(); m = m.nextSibling())
+                {
+                    if (m.isElement())
+                    {
+                        QDomElement em = m.toElement();
+                        startElement(&em);
+                        if (!em.text().isEmpty())
+                            characters(em.text());
+                        endElement(em.tagName());
+                    }
+                }
+                endElement(el.tagName());
+            }
+        }
+
+        endElement(root.tagName());
+
+        file.close();
+        return true;
+    }
+
   private:
     int             currentFileComponents;
     int             currentLibComponents;
+    int             currentCxxFlagsComponents;
+    int             currentLdFlagsComponents;
+    int             currentDefComponents;
     Include        *currentInclude;
     Constant      **currentConstants;
     Function      **currentFunctions;

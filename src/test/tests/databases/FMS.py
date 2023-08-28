@@ -86,6 +86,7 @@ def domain_test(datapath, prefix, protocol, order):
     # Cleanup
     DeleteAllPlots()
     CloseDatabase(db1)
+    CloseComputeEngine()
 
 def quads_test(datapath, prefix, protocol, order):
     db1 = pjoin(datapath,"quads_"+protocol+"_order_"+order+".fms")
@@ -106,6 +107,7 @@ def quads_test(datapath, prefix, protocol, order):
     # Cleanup
     DeleteAllPlots()
     CloseDatabase(db1)
+    CloseComputeEngine()
 
 def hex_test(datapath, prefix, protocol, order):
     db1 = pjoin(datapath,"hex_"+protocol+"_order_"+order+".fms")
@@ -175,6 +177,7 @@ def hex_test(datapath, prefix, protocol, order):
     # Cleanup
     DeleteAllPlots()
     CloseDatabase(db1)
+    CloseComputeEngine()
 
 def test0(datapath):
     protocol = "ascii"
@@ -290,6 +293,7 @@ def test8(datapath):
     # Cleanup
     DeleteAllPlots()
     CloseDatabase(db1)
+    CloseComputeEngine()
 
 def test9(datapath):
     TestSection("Root file")
@@ -323,6 +327,7 @@ def test9(datapath):
     # Cleanup
     DeleteAllPlots()
     CloseDatabase(db1)
+    CloseComputeEngine()
 
 def plot_converted_data(prefix, db, var, v0, resolution, meshName, dodof):
     OpenDatabase(db)
@@ -380,6 +385,7 @@ def plot_converted_data(prefix, db, var, v0, resolution, meshName, dodof):
 
     DeleteAllPlots()
     CloseDatabase(db)
+    CloseComputeEngine()
 
 def escher_view():
     v0 = GetView3D()

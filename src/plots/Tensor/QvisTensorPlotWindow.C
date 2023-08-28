@@ -138,6 +138,8 @@ QvisTensorPlotWindow::CreateWindowContents()
 // Creation:   September 20 2013
 //
 // Modifications:
+//   Kathleen Biagas, Tue Apr 18 16:34:41 PDT 2023
+//   Support Qt6: buttonClicked -> idClicked.
 //
 // ****************************************************************************
 
@@ -145,7 +147,7 @@ void
 QvisTensorPlotWindow::CreateSamplingTab(QWidget *pageTensor)
 {
     QGridLayout *topLayout = new QGridLayout(pageTensor);
-    topLayout->setMargin(5);
+    topLayout->setContentsMargins(5,5,5,5);
     topLayout->setSpacing(10);
 
     //
@@ -162,8 +164,13 @@ QvisTensorPlotWindow::CreateSamplingTab(QWidget *pageTensor)
     QLabel *locationLabel = new QLabel(tr("Placement"), reduceGroupBox);
     rgLayout->addWidget(locationLabel, 0, 0);
     locationButtonGroup = new QButtonGroup(reduceGroupBox);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(locationButtonGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(locationMethodChanged(int)));
+#else
+    connect(locationButtonGroup, SIGNAL(idClicked(int)),
+            this, SLOT(locationMethodChanged(int)));
+#endif
     QRadioButton *rb = new QRadioButton(tr("Adapt to the mesh resolution"), reduceGroupBox);
     rb->setChecked(true);
     locationButtonGroup->addButton(rb, 0);
@@ -180,8 +187,13 @@ QvisTensorPlotWindow::CreateSamplingTab(QWidget *pageTensor)
     QLabel *reduceLabel = new QLabel(tr("Sampling"), reduceGroupBox);
     rgLayout->addWidget(reduceLabel, 4, 0);
     reduceButtonGroup = new QButtonGroup(reduceGroupBox);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(reduceButtonGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(reduceMethodChanged(int)));
+#else
+    connect(reduceButtonGroup, SIGNAL(idClicked(int)),
+            this, SLOT(reduceMethodChanged(int)));
+#endif
     rb = new QRadioButton(tr("Fixed number"), reduceGroupBox);
     rb->setChecked(true);
     reduceButtonGroup->addButton(rb, 0);
@@ -225,6 +237,8 @@ QvisTensorPlotWindow::CreateSamplingTab(QWidget *pageTensor)
 // Creation:   September 20 2013
 //
 // Modifications:
+//   Kathleen Biagas, Tue Apr 18 16:34:41 PDT 2023
+//   Support Qt6: buttonClicked -> idClicked.
 //
 // ****************************************************************************
 
@@ -232,7 +246,7 @@ void
 QvisTensorPlotWindow::CreateDataTab(QWidget *pageTensor)
 {
     QGridLayout *topLayout = new QGridLayout(pageTensor);
-    topLayout->setMargin(5);
+    topLayout->setContentsMargins(5,5,5,5);
     topLayout->setSpacing(10);
 
     //
@@ -243,7 +257,7 @@ QvisTensorPlotWindow::CreateDataTab(QWidget *pageTensor)
     topLayout->addWidget(limitsGroup);
 
     QGridLayout *limitsLayout = new QGridLayout(limitsGroup);
-    limitsLayout->setMargin(5);
+    limitsLayout->setContentsMargins(5,5,5,5);
     limitsLayout->setSpacing(10);
 
     limitsLayout->addWidget( new QLabel(tr("Limits"), central), 0, 0);
@@ -283,14 +297,19 @@ QvisTensorPlotWindow::CreateDataTab(QWidget *pageTensor)
     topLayout->addWidget(colorGroupBox);
 
     QGridLayout *cgLayout = new QGridLayout(colorGroupBox);
-    cgLayout->setMargin(5);
+    cgLayout->setContentsMargins(5,5,5,5);
     cgLayout->setSpacing(10);
     cgLayout->setColumnStretch(1, 10);
 
     // Add the color label.
     colorButtonGroup = new QButtonGroup(colorGroupBox);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     connect(colorButtonGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(colorModeChanged(int)));
+#else
+    connect(colorButtonGroup, SIGNAL(idClicked(int)),
+            this, SLOT(colorModeChanged(int)));
+#endif
     QRadioButton* rb = new QRadioButton(tr("Eigen values"), colorGroupBox);
     colorButtonGroup->addButton(rb, 0);
     cgLayout->addWidget(rb, 0, 0);
@@ -324,7 +343,7 @@ QvisTensorPlotWindow::CreateDataTab(QWidget *pageTensor)
     topLayout->addWidget(miscGroup);
 
     QGridLayout *miscLayout = new QGridLayout(miscGroup);
-    miscLayout->setMargin(5);
+    miscLayout->setContentsMargins(5,5,5,5);
     miscLayout->setSpacing(10);
  
     // Create the legend toggle
@@ -352,7 +371,7 @@ void
 QvisTensorPlotWindow::CreateGeometryTab(QWidget *pageGlyphs)
 {
     QGridLayout *topLayout = new QGridLayout(pageGlyphs);
-    topLayout->setMargin(5);
+    topLayout->setContentsMargins(5,5,5,5);
     topLayout->setSpacing(10);
 
     //
@@ -363,7 +382,7 @@ QvisTensorPlotWindow::CreateGeometryTab(QWidget *pageGlyphs)
     topLayout->addWidget(scaleGroupBox);
 
     QGridLayout *sgLayout = new QGridLayout(scaleGroupBox);
-    sgLayout->setMargin(5);
+    sgLayout->setContentsMargins(5,5,5,5);
     sgLayout->setSpacing(10);
     sgLayout->setColumnStretch(1, 10);
 

@@ -98,6 +98,11 @@
 #
 #    Mark C. Miller, Mon Jan 11 10:37:07 PST 2021
 #    Replace Assert-style with TestValue-style tests
+#
+#    Kathleen Biagas, Wed Feb 16 13:11:57 PST 2022
+#    Replaced Curve atts 'cycleColors' with 'curveColorSource', 'color' with
+#    'curveColor', and 'renderMode=RenderAsLines' with 'showLines'.
+#
 # ----------------------------------------------------------------------------
 
 RequiredDatabasePlugin(("PDB", "Mili", "SAMRAI"))
@@ -124,13 +129,13 @@ def SetCurvePlotDefaults():
     # Disable Color Cycling, default to a blue curve.
     catts = CurveAttributes()
     catts.lineWidth = 0
-    catts.color = (0, 0, 255, 255)
+    catts.curveColor = (0, 0, 255, 255)
     catts.showLabels = 1
     catts.designator = ""
     catts.showPoints = 0
     catts.showLegend = 1
-    catts.cycleColors = 0
-    catts.renderMode = catts.RenderAsLines
+    catts.curveColorSource = catts.Custom
+    catts.showLines = 1
     SetDefaultPlotOptions(catts)
 
 
@@ -675,10 +680,11 @@ def TestPickRangeTimeQuery():
     options["do_time"] = 0
     options["return_curves"] = 1
     output_dict = PickByZone(options)
-    s = str(output_dict)
 
     Test("TimePickRange_00")
-    TestText("TimePickRangeDict_00",s)
+    # use json.dumps for dictionary object, makes for easier parsing
+    # of diffs when there are errors
+    TestText("TimePickRangeDict_00",json.dumps(output_dict, indent=2))
     ClearPickPoints()
 
     #
@@ -694,10 +700,9 @@ def TestPickRangeTimeQuery():
     options["end_time"] = 14
     options["stride"] = 2
     output_dict = PickByNode(options)
-    s = str(output_dict)
     SetActiveWindow(2)
     Test("TimePickRange_01")
-    TestText("TimePickRangeDict_01",s)
+    TestText("TimePickRangeDict_01",json.dumps(output_dict, indent=2))
     ClearPickPoints()
     SetActiveWindow(1)
 
@@ -714,11 +719,10 @@ def TestPickRangeTimeQuery():
     options["end_time"] = 60
     options["stride"] = 2
     output_dict = PickByNode(options)
-    s = str(output_dict)
 
     SetActiveWindow(2)
     Test("TimePickRange_02")
-    TestText("TimePickRangeDict_02",s)
+    TestText("TimePickRangeDict_02",json.dumps(output_dict, indent=2))
     SetActiveWindow(1)
 
     ClearPickPoints()

@@ -37,7 +37,7 @@ struct AxisTitlesObject
 //
 static PyObject *NewAxisTitles(int);
 std::string
-PyAxisTitles_ToString(const AxisTitles *atts, const char *prefix)
+PyAxisTitles_ToString(const AxisTitles *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -50,7 +50,7 @@ PyAxisTitles_ToString(const AxisTitles *atts, const char *prefix)
     { // new scope
         std::string objPrefix(prefix);
         objPrefix += "font.";
-        str += PyFontAttributes_ToString(&atts->GetFont(), objPrefix.c_str());
+        str += PyFontAttributes_ToString(&atts->GetFont(), objPrefix.c_str(), forLogging);
     }
     if(atts->GetUserTitle())
         snprintf(tmpStr, 1000, "%suserTitle = 1\n", prefix);
@@ -83,12 +83,48 @@ AxisTitles_SetVisible(PyObject *self, PyObject *args)
 {
     AxisTitlesObject *obj = (AxisTitlesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the visible in the object.
-    obj->data->SetVisible(ival != 0);
+    obj->data->SetVisible(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -111,10 +147,7 @@ AxisTitles_SetFont(PyObject *self, PyObject *args)
     if(!PyArg_ParseTuple(args, "O", &newValue))
         return NULL;
     if(!PyFontAttributes_Check(newValue))
-    {
-        fprintf(stderr, "The font field can only be set with FontAttributes objects.\n");
-        return NULL;
-    }
+        return PyErr_Format(PyExc_TypeError, "Field font can be set only with FontAttributes objects");
 
     obj->data->SetFont(*PyFontAttributes_FromPyObject(newValue));
 
@@ -143,12 +176,48 @@ AxisTitles_SetUserTitle(PyObject *self, PyObject *args)
 {
     AxisTitlesObject *obj = (AxisTitlesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the userTitle in the object.
-    obj->data->SetUserTitle(ival != 0);
+    obj->data->SetUserTitle(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -167,12 +236,48 @@ AxisTitles_SetUserUnits(PyObject *self, PyObject *args)
 {
     AxisTitlesObject *obj = (AxisTitlesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the userUnits in the object.
-    obj->data->SetUserUnits(ival != 0);
+    obj->data->SetUserUnits(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -191,12 +296,37 @@ AxisTitles_SetTitle(PyObject *self, PyObject *args)
 {
     AxisTitlesObject *obj = (AxisTitlesObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the title in the object.
-    obj->data->SetTitle(std::string(str));
+    obj->data->SetTitle(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -215,12 +345,37 @@ AxisTitles_SetUnits(PyObject *self, PyObject *args)
 {
     AxisTitlesObject *obj = (AxisTitlesObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the units in the object.
-    obj->data->SetUnits(std::string(str));
+    obj->data->SetUnits(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -284,38 +439,51 @@ PyAxisTitles_getattr(PyObject *self, char *name)
     if(strcmp(name, "units") == 0)
         return AxisTitles_GetUnits(self, NULL);
 
+
+    // Add a __dict__ answer so that dir() works
+    if (!strcmp(name, "__dict__"))
+    {
+        PyObject *result = PyDict_New();
+        for (int i = 0; PyAxisTitles_methods[i].ml_meth; i++)
+            PyDict_SetItem(result,
+                PyString_FromString(PyAxisTitles_methods[i].ml_name),
+                PyString_FromString(PyAxisTitles_methods[i].ml_name));
+        return result;
+    }
+
     return Py_FindMethod(PyAxisTitles_methods, self, name);
 }
 
 int
 PyAxisTitles_setattr(PyObject *self, char *name, PyObject *args)
 {
-    // Create a tuple to contain the arguments since all of the Set
-    // functions expect a tuple.
-    PyObject *tuple = PyTuple_New(1);
-    PyTuple_SET_ITEM(tuple, 0, args);
-    Py_INCREF(args);
-    PyObject *obj = NULL;
+    PyObject NULL_PY_OBJ;
+    PyObject *obj = &NULL_PY_OBJ;
 
     if(strcmp(name, "visible") == 0)
-        obj = AxisTitles_SetVisible(self, tuple);
+        obj = AxisTitles_SetVisible(self, args);
     else if(strcmp(name, "font") == 0)
-        obj = AxisTitles_SetFont(self, tuple);
+        obj = AxisTitles_SetFont(self, args);
     else if(strcmp(name, "userTitle") == 0)
-        obj = AxisTitles_SetUserTitle(self, tuple);
+        obj = AxisTitles_SetUserTitle(self, args);
     else if(strcmp(name, "userUnits") == 0)
-        obj = AxisTitles_SetUserUnits(self, tuple);
+        obj = AxisTitles_SetUserUnits(self, args);
     else if(strcmp(name, "title") == 0)
-        obj = AxisTitles_SetTitle(self, tuple);
+        obj = AxisTitles_SetTitle(self, args);
     else if(strcmp(name, "units") == 0)
-        obj = AxisTitles_SetUnits(self, tuple);
+        obj = AxisTitles_SetUnits(self, args);
 
-    if(obj != NULL)
+    if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
-    Py_DECREF(tuple);
-    if( obj == NULL)
-        PyErr_Format(PyExc_RuntimeError, "Unable to set unknown attribute: '%s'", name);
+    if (obj == &NULL_PY_OBJ)
+    {
+        obj = NULL;
+        PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);
+    }
+    else if (obj == NULL && !PyErr_Occurred())
+        PyErr_Format(PyExc_RuntimeError, "unknown problem with '%s'", name);
+
     return (obj != NULL) ? 0 : -1;
 }
 
@@ -323,7 +491,7 @@ static int
 AxisTitles_print(PyObject *v, FILE *fp, int flags)
 {
     AxisTitlesObject *obj = (AxisTitlesObject *)v;
-    fprintf(fp, "%s", PyAxisTitles_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyAxisTitles_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -331,7 +499,7 @@ PyObject *
 AxisTitles_str(PyObject *v)
 {
     AxisTitlesObject *obj = (AxisTitlesObject *)v;
-    return PyString_FromString(PyAxisTitles_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyAxisTitles_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -483,7 +651,7 @@ PyAxisTitles_GetLogString()
 {
     std::string s("AxisTitles = AxisTitles()\n");
     if(currentAtts != 0)
-        s += PyAxisTitles_ToString(currentAtts, "AxisTitles.");
+        s += PyAxisTitles_ToString(currentAtts, "AxisTitles.", true);
     return s;
 }
 
@@ -496,7 +664,7 @@ PyAxisTitles_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("AxisTitles = AxisTitles()\n");
-        s += PyAxisTitles_ToString(currentAtts, "AxisTitles.");
+        s += PyAxisTitles_ToString(currentAtts, "AxisTitles.", true);
         cb(s);
     }
 }

@@ -10,9 +10,12 @@
 
 #include <visit-config.h>
 
-#ifdef HAVE_LIBVTKH
-#include <vtkh/DataSet.hpp>
-#include <vtkh/utils/vtkm_array_utils.hpp>
+#ifdef HAVE_LIBVTKM
+#include <avtVtkmDataSet.h>
+#include <vtkm/cont/ArrayHandle.h>
+#include <vtkm/cont/ArrayHandleCompositeVector.h>
+#include <vtkm/cont/DataSet.h>
+#include <vtkm/cont/UnknownArrayHandle.h>
 #endif
 
 #include <vtkCellData.h>
@@ -54,7 +57,7 @@ using std::vector;
 //
 bool            avtDataRepresentation::initializedNullDatasets = false;
 vtkDataSet     *avtDataRepresentation::nullVTKDataset          = NULL;
-vtkh::DataSet  *avtDataRepresentation::nullVTKmDataset         = NULL;
+avtVtkmDataSet *avtDataRepresentation::nullVTKmDataset         = NULL;
 
 #include <vtkCellArray.h>
 #include <vtkCellData.h>
@@ -74,8 +77,15 @@ vtkh::DataSet  *avtDataRepresentation::nullVTKmDataset         = NULL;
 
 #include <set>
 
-#ifdef HAVE_LIBVTKH
-static vtkh::DataSet *
+#ifdef HAVE_LIBVTKM
+template<typename T>
+T *
+GetVTKmPointer(vtkm::cont::ArrayHandle<T> &handle)
+{
+  return handle.WritePortal().GetArray();
+}
+
+static avtVtkmDataSet *
 ConvertVTKToVTKm(vtkDataSet *data)
 {
     //
@@ -92,9 +102,6 @@ ConvertVTKToVTKm(vtkDataSet *data)
         vtkDataArray *xCoords = rgrid->GetXCoordinates();
         vtkDataArray *yCoords = rgrid->GetYCoordinates();
         vtkDataArray *zCoords = rgrid->GetZCoordinates();
-        float *xPts = static_cast<float*>(xCoords->GetVoidPointer(0));
-        float *yPts = static_cast<float*>(yCoords->GetVoidPointer(0));
-        float *zPts = static_cast<float*>(zCoords->GetVoidPointer(0));
 
         int dims[3];
         rgrid->GetDimensions(dims);
@@ -136,33 +143,79 @@ ConvertVTKToVTKm(vtkDataSet *data)
         }
 
         // Add the coordinate system.
-        vtkm::cont::ArrayHandle<vtkm::Float32> xCoordsHandle;
-        vtkm::cont::ArrayHandle<vtkm::Float32> yCoordsHandle;
-        vtkm::cont::ArrayHandle<vtkm::Float32> zCoordsHandle;
+        if (xCoords->GetDataType() == VTK_FLOAT)
+        {
+            float *xPts = static_cast<float*>(xCoords->GetVoidPointer(0));
+            float *yPts = static_cast<float*>(yCoords->GetVoidPointer(0));
+            float *zPts = static_cast<float*>(zCoords->GetVoidPointer(0));
 
-        xCoordsHandle.Allocate(dims[0]);
-        yCoordsHandle.Allocate(dims[1]);
-        zCoordsHandle.Allocate(dims[2]);
+            vtkm::cont::ArrayHandle<vtkm::Float32> xCoordsHandle;
+            vtkm::cont::ArrayHandle<vtkm::Float32> yCoordsHandle;
+            vtkm::cont::ArrayHandle<vtkm::Float32> zCoordsHandle;
 
-        vtkm::Float32 *x = vtkh::GetVTKMPointer(xCoordsHandle);
-        vtkm::Float32 *y = vtkh::GetVTKMPointer(yCoordsHandle);
-        vtkm::Float32 *z = vtkh::GetVTKMPointer(zCoordsHandle);
+            xCoordsHandle.Allocate(dims[0]);
+            yCoordsHandle.Allocate(dims[1]);
+            zCoordsHandle.Allocate(dims[2]);
 
-        memcpy(x, xPts, sizeof(float) * dims[0]);
-        memcpy(y, yPts, sizeof(float) * dims[1]);
-        memcpy(z, zPts, sizeof(float) * dims[2]);
+            vtkm::Float32 *x = GetVTKmPointer(xCoordsHandle);
+            vtkm::Float32 *y = GetVTKmPointer(yCoordsHandle);
+            vtkm::Float32 *z = GetVTKmPointer(zCoordsHandle);
 
-        vtkm::cont::ArrayHandleCartesianProduct<
-            vtkm::cont::ArrayHandle<vtkm::Float32>,
-            vtkm::cont::ArrayHandle<vtkm::Float32>,
-            vtkm::cont::ArrayHandle<vtkm::Float32> > coords;
+            memcpy(x, xPts, sizeof(float) * dims[0]);
+            memcpy(y, yPts, sizeof(float) * dims[1]);
+            memcpy(z, zPts, sizeof(float) * dims[2]);
 
-        coords = vtkm::cont::make_ArrayHandleCartesianProduct(xCoordsHandle,
-                                                              yCoordsHandle,
-                                                              zCoordsHandle);
+            vtkm::cont::ArrayHandleCartesianProduct<
+                vtkm::cont::ArrayHandle<vtkm::Float32>,
+                vtkm::cont::ArrayHandle<vtkm::Float32>,
+                vtkm::cont::ArrayHandle<vtkm::Float32> > coords;
 
-        ds.AddCoordinateSystem(
-            vtkm::cont::CoordinateSystem("coordinates", coords));
+            coords = vtkm::cont::make_ArrayHandleCartesianProduct(
+                xCoordsHandle, yCoordsHandle, zCoordsHandle);
+
+            ds.AddCoordinateSystem(
+                vtkm::cont::CoordinateSystem("coordinates", coords));
+        }
+        else if (xCoords->GetDataType() == VTK_DOUBLE)
+        {
+            double *xPts = static_cast<double*>(xCoords->GetVoidPointer(0));
+            double *yPts = static_cast<double*>(yCoords->GetVoidPointer(0));
+            double *zPts = static_cast<double*>(zCoords->GetVoidPointer(0));
+
+            vtkm::cont::ArrayHandle<vtkm::Float64> xCoordsHandle;
+            vtkm::cont::ArrayHandle<vtkm::Float64> yCoordsHandle;
+            vtkm::cont::ArrayHandle<vtkm::Float64> zCoordsHandle;
+
+            xCoordsHandle.Allocate(dims[0]);
+            yCoordsHandle.Allocate(dims[1]);
+            zCoordsHandle.Allocate(dims[2]);
+
+            vtkm::Float64 *x = GetVTKmPointer(xCoordsHandle);
+            vtkm::Float64 *y = GetVTKmPointer(yCoordsHandle);
+            vtkm::Float64 *z = GetVTKmPointer(zCoordsHandle);
+
+            memcpy(x, xPts, sizeof(double) * dims[0]);
+            memcpy(y, yPts, sizeof(double) * dims[1]);
+            memcpy(z, zPts, sizeof(double) * dims[2]);
+
+            vtkm::cont::ArrayHandleCartesianProduct<
+                vtkm::cont::ArrayHandle<vtkm::Float64>,
+                vtkm::cont::ArrayHandle<vtkm::Float64>,
+                vtkm::cont::ArrayHandle<vtkm::Float64> > coords;
+
+            coords = vtkm::cont::make_ArrayHandleCartesianProduct(
+                xCoordsHandle, yCoordsHandle, zCoordsHandle);
+
+            ds.AddCoordinateSystem(
+                vtkm::cont::CoordinateSystem("coordinates", coords));
+        }
+        else
+        {
+            //
+            // We didn't handle the conversion case. Throw an exception.
+            //
+            EXCEPTION0(InvalidConversionException);
+        }
     }
     else if (data->GetDataObjectType() == VTK_STRUCTURED_GRID)
     {
@@ -172,7 +225,6 @@ ConvertVTKToVTKm(vtkDataSet *data)
         vtkStructuredGrid *sgrid = (vtkStructuredGrid *) data;
         vtkIdType nPoints = sgrid->GetNumberOfPoints();
         vtkPoints *points = sgrid->GetPoints();
-        float *pts = static_cast<float*>(points->GetVoidPointer(0));
 
         int dims[3];
         sgrid->GetDimensions(dims);
@@ -213,17 +265,45 @@ ConvertVTKToVTKm(vtkDataSet *data)
         }
 
         // Add the coordinate system.
-        vtkm::cont::ArrayHandle<vtkm::Vec<vtkm::Float32,3> > coordinates;
-        coordinates.Allocate(nPoints);
-
-        for (vtkm::Id i = 0; i < nPoints; ++i)
+        if (points->GetDataType() == VTK_FLOAT)
         {
-            vtkm::Vec<vtkm::Float32,3> point(pts[i*3], pts[i*3+1], pts[i*3+2]);
-            coordinates.WritePortal().Set(i, point);
-        }
+            float *pts = static_cast<float*>(points->GetVoidPointer(0));
 
-        ds.AddCoordinateSystem(
-            vtkm::cont::CoordinateSystem("coordinates", coordinates));
+            vtkm::cont::ArrayHandle<vtkm::Vec<vtkm::Float32,3> > coordinates;
+            coordinates.Allocate(nPoints);
+
+            for (vtkm::Id i = 0; i < nPoints; ++i)
+            {
+                vtkm::Vec<vtkm::Float32,3> point(pts[i*3], pts[i*3+1], pts[i*3+2]);
+                coordinates.WritePortal().Set(i, point);
+            }
+
+            ds.AddCoordinateSystem(
+                vtkm::cont::CoordinateSystem("coordinates", coordinates));
+        }
+        else if (points->GetDataType() == VTK_DOUBLE)
+        {
+            double *pts = static_cast<double*>(points->GetVoidPointer(0));
+
+            vtkm::cont::ArrayHandle<vtkm::Vec<vtkm::Float64,3> > coordinates;
+            coordinates.Allocate(nPoints);
+
+            for (vtkm::Id i = 0; i < nPoints; ++i)
+            {
+                vtkm::Vec<vtkm::Float64,3> point(pts[i*3], pts[i*3+1], pts[i*3+2]);
+                coordinates.WritePortal().Set(i, point);
+            }
+
+            ds.AddCoordinateSystem(
+                vtkm::cont::CoordinateSystem("coordinates", coordinates));
+        }
+        else
+        {
+            //
+            // We didn't handle the conversion case. Throw an exception.
+            //
+            EXCEPTION0(InvalidConversionException);
+        }
     }
     else if (data->GetDataObjectType() == VTK_UNSTRUCTURED_GRID)
     {
@@ -296,9 +376,9 @@ ConvertVTKToVTKm(vtkDataSet *data)
         // If we skipped any cells adjust the cell set array lengths.
         if (nCellsActual < nCells)
         {
-            connectivity.Shrink(connInd);
-            nIndices.Shrink(nCellsActual);
-            shapes.Shrink(nCellsActual);
+            connectivity.Allocate(connInd, vtkm::CopyFlag::On);
+            nIndices.Allocate(nCellsActual, vtkm::CopyFlag::On);
+            shapes.Allocate(nCellsActual, vtkm::CopyFlag::On);
         }
 
         vtkm::cont::CellSetExplicit<> cs;
@@ -321,7 +401,7 @@ ConvertVTKToVTKm(vtkDataSet *data)
             ds.AddCoordinateSystem(
                 vtkm::cont::CoordinateSystem("coordinates", coordinates));
         }
-        else
+        else if (points->GetDataType() == VTK_DOUBLE)
         {
             double *pts = static_cast<double*>(points->GetVoidPointer(0));
             vtkm::cont::ArrayHandle<vtkm::Vec<vtkm::Float64,3> > coordinates;
@@ -336,6 +416,20 @@ ConvertVTKToVTKm(vtkDataSet *data)
             ds.AddCoordinateSystem(
                 vtkm::cont::CoordinateSystem("coordinates", coordinates));
         }
+        else
+        {
+            //
+            // We didn't handle the conversion case. Throw an exception.
+            //
+            EXCEPTION0(InvalidConversionException);
+        }
+    }
+    else
+    {
+        //
+        // We didn't handle the conversion case. Throw an exception.
+        //
+        EXCEPTION0(InvalidConversionException);
     }
 
     //
@@ -362,7 +456,7 @@ ConvertVTKToVTKm(vtkDataSet *data)
 
                 ds.AddField(
                     vtkm::cont::Field(array->GetName(),
-                    vtkm::cont::Field::Association::POINTS, fieldArray));
+                    vtkm::cont::Field::Association::Points, fieldArray));
             }
             else if (array->GetDataType() == VTK_DOUBLE)
             {
@@ -378,7 +472,48 @@ ConvertVTKToVTKm(vtkDataSet *data)
 
                 ds.AddField(
                     vtkm::cont::Field(array->GetName(),
-                    vtkm::cont::Field::Association::POINTS, fieldArray));
+                    vtkm::cont::Field::Association::Points, fieldArray));
+            }
+            else if (array->GetDataType() == VTK_UNSIGNED_CHAR)
+            {
+                vtkIdType nVals = array->GetNumberOfTuples();
+                unsigned char *vals =
+                    vtkUnsignedCharArray::SafeDownCast(array)->GetPointer(0);
+
+                vtkm::cont::ArrayHandle<vtkm::UInt8> fieldArray;
+                fieldArray.Allocate(nVals);
+
+                for (vtkm::Id j = 0; j < nVals; ++j)
+                    fieldArray.WritePortal().Set(j, vals[j]);
+
+                ds.AddField(
+                    vtkm::cont::Field(array->GetName(),
+                    vtkm::cont::Field::Association::Points, fieldArray));
+            }
+            else
+            {
+                //
+                // We didn't handle the conversion case. Throw an exception.
+                //
+                EXCEPTION0(InvalidConversionException);
+            }
+        }
+        else if (array->GetNumberOfComponents() == 2)
+        {
+            if (array->GetDataType() == VTK_INT)
+            {
+                vtkIdType nVals = array->GetNumberOfTuples();
+                vtkm::Vec<vtkm::Int32,2> *vals =
+                    reinterpret_cast<vtkm::Vec<vtkm::Int32,2> *>(array->GetVoidPointer(0));
+
+                // Wrap the vector data as an array handle.
+                // This is good as long as the VTK object is around. Is it safe?
+                vtkm::cont::ArrayHandle<vtkm::Vec<vtkm::Int32,2> > fieldArray =
+                    vtkm::cont::make_ArrayHandle(vals, nVals, vtkm::CopyFlag::On);
+
+                ds.AddField(
+                    vtkm::cont::Field(array->GetName(),
+                    vtkm::cont::Field::Association::Points, fieldArray));
             }
         }
         else if (array->GetNumberOfComponents() == 3)
@@ -392,11 +527,11 @@ ConvertVTKToVTKm(vtkDataSet *data)
                 // Wrap the vector data as an array handle.
                 // This is good as long as the VTK object is around. Is it safe?
                 vtkm::cont::ArrayHandle<vtkm::Vec<vtkm::Float32,3> > fieldArray =
-                    vtkm::cont::make_ArrayHandle(vals, nVals);
+                    vtkm::cont::make_ArrayHandle(vals, nVals, vtkm::CopyFlag::On);
 
                 ds.AddField(
                     vtkm::cont::Field(array->GetName(),
-                    vtkm::cont::Field::Association::POINTS, fieldArray));
+                    vtkm::cont::Field::Association::Points, fieldArray));
             }
             else if (array->GetDataType() == VTK_DOUBLE)
             {
@@ -407,12 +542,26 @@ ConvertVTKToVTKm(vtkDataSet *data)
                 // Wrap the vector data as an array handle.
                 // This is good as long as the VTK object is around. Is it safe?
                 vtkm::cont::ArrayHandle<vtkm::Vec<vtkm::Float64,3> > fieldArray =
-                    vtkm::cont::make_ArrayHandle(vals, nVals);
+                    vtkm::cont::make_ArrayHandle(vals, nVals, vtkm::CopyFlag::On);
 
                 ds.AddField(
                     vtkm::cont::Field(array->GetName(),
-                    vtkm::cont::Field::Association::POINTS, fieldArray));
+                    vtkm::cont::Field::Association::Points, fieldArray));
             }
+            else
+            {
+                //
+                // We didn't handle the conversion case. Throw an exception.
+                //
+                EXCEPTION0(InvalidConversionException);
+            }
+        }
+        else
+        {
+            //
+            // We didn't handle the conversion case. Throw an exception.
+            //
+            EXCEPTION0(InvalidConversionException);
         }
     }
 
@@ -440,7 +589,7 @@ ConvertVTKToVTKm(vtkDataSet *data)
 
                 ds.AddField(
                     vtkm::cont::Field(array->GetName(),
-                    vtkm::cont::Field::Association::CELL_SET, fieldArray));
+                    vtkm::cont::Field::Association::Cells, fieldArray));
             }
             else if (array->GetDataType() == VTK_DOUBLE)
             {
@@ -456,7 +605,7 @@ ConvertVTKToVTKm(vtkDataSet *data)
 
                 ds.AddField(
                     vtkm::cont::Field(array->GetName(),
-                    vtkm::cont::Field::Association::CELL_SET, fieldArray));
+                    vtkm::cont::Field::Association::Cells, fieldArray));
             }
             else if (array->GetDataType() == VTK_UNSIGNED_CHAR)
             {
@@ -472,13 +621,32 @@ ConvertVTKToVTKm(vtkDataSet *data)
 
                 ds.AddField(
                     vtkm::cont::Field(array->GetName(),
-                    vtkm::cont::Field::Association::CELL_SET, fieldArray));
+                    vtkm::cont::Field::Association::Cells, fieldArray));
+            }
+            else
+            {
+                //
+                // We didn't handle the conversion case. Throw an exception.
+                //
+                EXCEPTION0(InvalidConversionException);
             }
         }
         else if (array->GetNumberOfComponents() == 2)
         {
             if (array->GetDataType() == VTK_UNSIGNED_INT)
             {
+                vtkIdType nVals = array->GetNumberOfTuples();
+                vtkm::Vec<vtkm::UInt32,2> *vals =
+                    reinterpret_cast<vtkm::Vec<vtkm::UInt32,2> *>(array->GetVoidPointer(0));
+
+                // Wrap the vector data as an array handle.
+                // This is good as long as the VTK object is around. Is it safe?
+                vtkm::cont::ArrayHandle<vtkm::Vec<vtkm::UInt32,2> > fieldArray =
+                    vtkm::cont::make_ArrayHandle(vals, nVals, vtkm::CopyFlag::On);
+
+                ds.AddField(
+                    vtkm::cont::Field(array->GetName(),
+                    vtkm::cont::Field::Association::Cells, fieldArray));
             }
         }
         else if (array->GetNumberOfComponents() == 3)
@@ -492,11 +660,11 @@ ConvertVTKToVTKm(vtkDataSet *data)
                 // Wrap the vector data as an array handle.
                 // This is good as long as the VTK object is around. Is it safe?
                 vtkm::cont::ArrayHandle<vtkm::Vec<vtkm::Float32,3> > fieldArray =
-                    vtkm::cont::make_ArrayHandle(vals, nVals);
+                    vtkm::cont::make_ArrayHandle(vals, nVals, vtkm::CopyFlag::On);
 
                 ds.AddField(
                     vtkm::cont::Field(array->GetName(),
-                    vtkm::cont::Field::Association::CELL_SET, fieldArray));
+                    vtkm::cont::Field::Association::Cells, fieldArray));
             }
             else if (array->GetDataType() == VTK_DOUBLE)
             {
@@ -507,18 +675,32 @@ ConvertVTKToVTKm(vtkDataSet *data)
                 // Wrap the vector data as an array handle.
                 // This is good as long as the VTK object is around. Is it safe?
                 vtkm::cont::ArrayHandle<vtkm::Vec<vtkm::Float64,3> > fieldArray =
-                    vtkm::cont::make_ArrayHandle(vals, nVals);
+                    vtkm::cont::make_ArrayHandle(vals, nVals, vtkm::CopyFlag::On);
 
                 ds.AddField(
                     vtkm::cont::Field(array->GetName(),
-                    vtkm::cont::Field::Association::CELL_SET, fieldArray));
+                    vtkm::cont::Field::Association::Cells, fieldArray));
             }
+            else
+            {
+                //
+                // We didn't handle the conversion case. Throw an exception.
+                //
+                EXCEPTION0(InvalidConversionException);
+            }
+        }
+        else
+        {
+            //
+            // We didn't handle the conversion case. Throw an exception.
+            //
+            EXCEPTION0(InvalidConversionException);
         }
     }
 
-    vtkh::DataSet *ret = new vtkh::DataSet;
+    avtVtkmDataSet *ret = new avtVtkmDataSet;
 
-    ret->AddDomain(ds, 0);
+    ret->ds = ds;
 
     return ret;
 }
@@ -543,17 +725,18 @@ ConvertVTKToVTKm(vtkDataSet *data)
 //    Eric Brugger, Wed Dec  9 09:12:27 PST 2020
 //    Updated to a newer VTKm.
 //
+//    Eric Brugger, Fri Feb 24 14:57:15 PST 2023
+//    I replaced vtkh with vtkm.
+//
 // ****************************************************************************
 
 static vtkPoints *
-vtkPointsFromVTKM(vtkh::DataSet *data)
+vtkPointsFromVTKM(avtVtkmDataSet *data)
 {
     vtkPoints *pts = NULL;
     try
     {
-        vtkm::cont::DataSet ds;
-        vtkm::Id id;
-        data->GetDomain(0, ds, id);
+        vtkm::cont::DataSet ds = data->ds;
 
         //
         // Get the coordinates.
@@ -568,23 +751,34 @@ vtkPointsFromVTKM(vtkh::DataSet *data)
             vtkm::cont::ArrayHandle<vtkm::Float64>,
             vtkm::cont::ArrayHandle<vtkm::Float64>>;
 
+        using CoordsCart32 = vtkm::cont::ArrayHandleCartesianProduct<
+            vtkm::cont::ArrayHandle<vtkm::Float32>,
+            vtkm::cont::ArrayHandle<vtkm::Float32>,
+            vtkm::cont::ArrayHandle<vtkm::Float32>>;
+
+        using CoordsCart64 = vtkm::cont::ArrayHandleCartesianProduct<
+            vtkm::cont::ArrayHandle<vtkm::Float64>,
+            vtkm::cont::ArrayHandle<vtkm::Float64>,
+            vtkm::cont::ArrayHandle<vtkm::Float64>>;
+
         using CoordsVec32 = vtkm::cont::ArrayHandle<vtkm::Vec<vtkm::Float32,3>>;
         using CoordsVec64 = vtkm::cont::ArrayHandle<vtkm::Vec<vtkm::Float64,3>>;
 
         vtkm::cont::CoordinateSystem cs = ds.GetCoordinateSystem(0);
-        vtkm::cont::VariantArrayHandle coordsHandle(cs.GetData());
+        vtkm::cont::UnknownArrayHandle coordsHandle(cs.GetData());
 
         if (coordsHandle.IsType<Coords32>())
         {
-            Coords32 points = coordsHandle.Cast<Coords32>();
+            Coords32 points;
+            coordsHandle.AsArrayHandle(points);
 
-            auto xPoints = vtkm::get<0>(points.GetStorage().GetArrayTuple());
-            auto yPoints = vtkm::get<1>(points.GetStorage().GetArrayTuple());
-            auto zPoints = vtkm::get<2>(points.GetStorage().GetArrayTuple());
+            auto xPoints = vtkm::get<0>(points.GetArrayTuple());
+            auto yPoints = vtkm::get<1>(points.GetArrayTuple());
+            auto zPoints = vtkm::get<2>(points.GetArrayTuple());
 
-            vtkm::Float32 *xPtr = (vtkm::Float32*)vtkh::GetVTKMPointer(xPoints);
-            vtkm::Float32 *yPtr = (vtkm::Float32*)vtkh::GetVTKMPointer(yPoints);
-            vtkm::Float32 *zPtr = (vtkm::Float32*)vtkh::GetVTKMPointer(zPoints);
+            vtkm::Float32 *xPtr = (vtkm::Float32*)GetVTKmPointer(xPoints);
+            vtkm::Float32 *yPtr = (vtkm::Float32*)GetVTKmPointer(yPoints);
+            vtkm::Float32 *zPtr = (vtkm::Float32*)GetVTKmPointer(zPoints);
 
             vtkm::Id nPoints = xPoints.GetNumberOfValues();
 
@@ -595,11 +789,46 @@ vtkPointsFromVTKM(vtkh::DataSet *data)
                 pts->SetPoint((vtkIdType)i, xPtr[i], yPtr[i], zPtr[i]);
             }
         }
+        else if (coordsHandle.IsType<CoordsCart32>())
+        {
+            CoordsCart32 points;
+            coordsHandle.AsArrayHandle(points);
+
+            auto xPoints = points.GetFirstArray();
+            auto yPoints = points.GetSecondArray();
+            auto zPoints = points.GetThirdArray();
+
+            vtkm::Float32 *xPtr = (vtkm::Float32*)GetVTKmPointer(xPoints);
+            vtkm::Float32 *yPtr = (vtkm::Float32*)GetVTKmPointer(yPoints);
+            vtkm::Float32 *zPtr = (vtkm::Float32*)GetVTKmPointer(zPoints);
+
+            vtkm::Id nXPoints = xPoints.GetNumberOfValues();
+            vtkm::Id nYPoints = yPoints.GetNumberOfValues();
+            vtkm::Id nZPoints = zPoints.GetNumberOfValues();
+
+            vtkm::Id nPoints = nXPoints * nYPoints * nZPoints;
+
+            pts = vtkPoints::New();
+            pts->SetNumberOfPoints(nXPoints * nYPoints * nZPoints);
+            vtkm::Id ndx = 0;
+            for (vtkm::Id k = 0; k < nZPoints; ++k)
+            {
+                for (vtkm::Id j = 0; j < nYPoints; ++j)
+                {
+                    for (vtkm::Id i = 0; i < nXPoints; ++i)
+                    {
+                        pts->SetPoint((vtkIdType)ndx, xPtr[i], yPtr[j], zPtr[k]);
+                        ndx++;
+                    }
+                }
+            }
+        }
         else if (coordsHandle.IsType<CoordsVec32>())
         {
-            CoordsVec32 points = coordsHandle.Cast<CoordsVec32>();
+            CoordsVec32 points;
+            coordsHandle.AsArrayHandle(points);
 
-            vtkm::Float32 *pointsPtr = (vtkm::Float32*)vtkh::GetVTKMPointer(points);
+            vtkm::Float32 *pointsPtr = (vtkm::Float32*)GetVTKmPointer(points);
 
             vtkm::Id nPoints = points.GetNumberOfValues();
 
@@ -613,15 +842,16 @@ vtkPointsFromVTKM(vtkh::DataSet *data)
         }
         else if (coordsHandle.IsType<Coords64>())
         {
-            Coords64 points = coordsHandle.Cast<Coords64>();
+            Coords64 points;
+            coordsHandle.AsArrayHandle(points);
 
-            auto xPoints = vtkm::get<0>(points.GetStorage().GetArrayTuple());
-            auto yPoints = vtkm::get<1>(points.GetStorage().GetArrayTuple());
-            auto zPoints = vtkm::get<2>(points.GetStorage().GetArrayTuple());
+            auto xPoints = vtkm::get<0>(points.GetArrayTuple());
+            auto yPoints = vtkm::get<1>(points.GetArrayTuple());
+            auto zPoints = vtkm::get<2>(points.GetArrayTuple());
 
-            vtkm::Float64 *xPtr = (vtkm::Float64*)vtkh::GetVTKMPointer(xPoints);
-            vtkm::Float64 *yPtr = (vtkm::Float64*)vtkh::GetVTKMPointer(yPoints);
-            vtkm::Float64 *zPtr = (vtkm::Float64*)vtkh::GetVTKMPointer(zPoints);
+            vtkm::Float64 *xPtr = (vtkm::Float64*)GetVTKmPointer(xPoints);
+            vtkm::Float64 *yPtr = (vtkm::Float64*)GetVTKmPointer(yPoints);
+            vtkm::Float64 *zPtr = (vtkm::Float64*)GetVTKmPointer(zPoints);
 
             vtkm::Id nPoints = xPoints.GetNumberOfValues();
 
@@ -632,11 +862,46 @@ vtkPointsFromVTKM(vtkh::DataSet *data)
                 pts->SetPoint((vtkIdType)i, xPtr[i], yPtr[i], zPtr[i]);
             }
         }
+        else if (coordsHandle.IsType<CoordsCart64>())
+        {
+            CoordsCart64 points;
+            coordsHandle.AsArrayHandle(points);
+
+            auto xPoints = points.GetFirstArray();
+            auto yPoints = points.GetSecondArray();
+            auto zPoints = points.GetThirdArray();
+
+            vtkm::Float64 *xPtr = (vtkm::Float64*)GetVTKmPointer(xPoints);
+            vtkm::Float64 *yPtr = (vtkm::Float64*)GetVTKmPointer(yPoints);
+            vtkm::Float64 *zPtr = (vtkm::Float64*)GetVTKmPointer(zPoints);
+
+            vtkm::Id nXPoints = xPoints.GetNumberOfValues();
+            vtkm::Id nYPoints = yPoints.GetNumberOfValues();
+            vtkm::Id nZPoints = zPoints.GetNumberOfValues();
+
+            vtkm::Id nPoints = nXPoints * nYPoints * nZPoints;
+
+            pts = vtkPoints::New();
+            pts->SetNumberOfPoints(nXPoints * nYPoints * nZPoints);
+            vtkm::Id ndx = 0;
+            for (vtkm::Id k = 0; k < nZPoints; ++k)
+            {
+                for (vtkm::Id j = 0; j < nYPoints; ++j)
+                {
+                    for (vtkm::Id i = 0; i < nXPoints; ++i)
+                    {
+                        pts->SetPoint((vtkIdType)ndx, xPtr[i], yPtr[j], zPtr[k]);
+                        ndx++;
+                    }
+                }
+            }
+        }
         else if (coordsHandle.IsType<CoordsVec64>())
         {
-            CoordsVec64 points = coordsHandle.Cast<CoordsVec64>();
+            CoordsVec64 points;
+            coordsHandle.AsArrayHandle(points);
 
-            vtkm::Float64 *pointsPtr = (vtkm::Float64*)vtkh::GetVTKMPointer(points);
+            vtkm::Float64 *pointsPtr = (vtkm::Float64*)GetVTKmPointer(points);
 
             vtkm::Id nPoints = points.GetNumberOfValues();
 
@@ -647,6 +912,13 @@ vtkPointsFromVTKM(vtkh::DataSet *data)
                 pts->SetPoint((vtkIdType)i,
                     pointsPtr[i*3], pointsPtr[i*3+1], pointsPtr[i*3+2]);
             }
+        }
+        else
+        {
+            //
+            // We didn't handle the conversion case. Throw an exception.
+            //
+            EXCEPTION0(InvalidConversionException);
         }
     }
     catch(...)
@@ -676,22 +948,23 @@ vtkPointsFromVTKM(vtkh::DataSet *data)
 //    Eric Brugger, Wed Dec  9 09:12:27 PST 2020
 //    Updated to a newer VTKm.
 //
+//    Eric Brugger, Fri Feb 24 14:57:15 PST 2023
+//    I replaced vtkh with vtkm.
+//
 // ****************************************************************************
 
 static vtkDataSet *
-StructuredFromVTKM(vtkh::DataSet *data)
+StructuredFromVTKM(avtVtkmDataSet *data)
 {
     vtkDataSet *out_vtk_ds = NULL;
 
     try
     {
-        vtkm::cont::DataSet ds;
-        vtkm::Id id;
-        data->GetDomain(0, ds, id);
+        vtkm::cont::DataSet ds = data->ds;
 
         // Try and make a structured cell set from the VTKm dataset.
         vtkm::cont::CellSetStructured<3> cs;
-        ds.GetCellSet().CopyTo(cs);
+        ds.GetCellSet().AsCellSet(cs);
 
         // Determine the size of the cell set.
         const vtkm::Id3 vdims = cs.GetPointDimensions();
@@ -722,17 +995,17 @@ StructuredFromVTKM(vtkh::DataSet *data)
             std::set<float> X,Y,Z;
             for(int i = 0; i < dims[0]; ++i)
             {
-                auto pt = pc.GetStorage().GetPortalConst().Get(i);
+                auto pt = pc.ArrayHandle::WritePortal().Get(i);
                 X.insert(pt[0]);
             }
             for(int j = 0; j < dims[1]; ++j)
             {
-                auto pt = pc.GetStorage().GetPortalConst().Get(j*dims[0]);
+                auto pt = pc.ArrayHandle::WritePortal().Get(j*dims[0]);
                 Y.insert(pt[1]);
             }
             for(int k = 0; k < dims[2]; ++k)
             {
-                auto pt = pc.GetStorage().GetPortalConst().Get(k*dims[0]*dims[1]);
+                auto pt = pc.ArrayHandle::WritePortal().Get(k*dims[0]*dims[1]);
                 Z.insert(pt[2]);
             }
 
@@ -821,16 +1094,17 @@ StructuredFromVTKM(vtkh::DataSet *data)
 }
 
 static vtkDataSet *
-ConvertVTKmToVTK(vtkh::DataSet *data)
+ConvertVTKmToVTK(avtVtkmDataSet *data)
 {
     vtkDataSet *ret = NULL;
 
-    if (data->GetNumberOfDomains() == 0)
-        return NULL;
+    vtkm::cont::DataSet vtkm_ds = data->ds;
 
-    vtkm::cont::DataSet vtkm_ds;
-    vtkm::Id vtkm_id;
-    data->GetDomain(0, vtkm_ds, vtkm_id);
+    //
+    // If we don't have any cells return NULL.
+    //
+    if (vtkm_ds.GetCellSet().GetNumberOfCells() == 0)
+        return NULL;
 
     //
     // Use the dataset's cell set to turn the connectivity back into VTK.
@@ -839,11 +1113,11 @@ ConvertVTKmToVTK(vtkh::DataSet *data)
     vtkDataSet *ds = NULL;
     if(vtkm_ds.GetCellSet().GetNumberOfCells() > 0)
     {
-        if(vtkm_ds.GetCellSet().IsSameType(vtkm::cont::CellSetStructured<3>()))
+        if(vtkm_ds.GetCellSet().CanConvert<vtkm::cont::CellSetStructured<3>>())
         {
             ds = StructuredFromVTKM(data);
         }
-        else if(vtkm_ds.GetCellSet().IsSameType(vtkm::cont::CellSetExplicit<>()))
+        else if(vtkm_ds.GetCellSet().CanConvert<vtkm::cont::CellSetExplicit<>>())
         {
             vtkPoints *pts = vtkPointsFromVTKM(data);
             vtkUnstructuredGrid *ugrid = vtkUnstructuredGrid::New();
@@ -851,11 +1125,11 @@ ConvertVTKmToVTK(vtkh::DataSet *data)
             pts->Delete();
             ds = ugrid;
 
-            vtkm::cont::DynamicCellSet cs = vtkm_ds.GetCellSet();
+            vtkm::cont::UnknownCellSet cs = vtkm_ds.GetCellSet();
             vtkm::cont::CellSetExplicit<> cse;
             try
             {
-                cs.CopyTo(cse);
+                cs.AsCellSet(cse);
                 for(vtkm::Id cellid = 0; cellid < cse.GetNumberOfCells(); ++cellid)
                 {
                     vtkm::Id npts = cse.GetNumberOfPointsInCell(cellid);
@@ -929,13 +1203,13 @@ ConvertVTKmToVTK(vtkh::DataSet *data)
                 debug2 << "Caught bad type from cse cast." << endl;
             }
         }
-        else if(vtkm_ds.GetCellSet().IsSameType(vtkm::cont::CellSetSingleType<>()))
+        else if(vtkm_ds.GetCellSet().CanConvert<vtkm::cont::CellSetSingleType<>>())
         {
-            vtkm::cont::DynamicCellSet cs = vtkm_ds.GetCellSet();
+            vtkm::cont::UnknownCellSet cs = vtkm_ds.GetCellSet();
             vtkm::cont::CellSetSingleType<> csst;
             try
             {
-                cs.CopyTo(csst);
+                cs.AsCellSet(csst);
                 if(csst.GetCellShape(0) == vtkm::CELL_SHAPE_TRIANGLE)
                 {
                     vtkPoints *pts = vtkPointsFromVTKM(data);
@@ -999,10 +1273,13 @@ ConvertVTKmToVTK(vtkh::DataSet *data)
     if (ds != NULL)
     {
         using ScalarUInt8 = vtkm::cont::ArrayHandle<vtkm::UInt8>;
-        using Scalar32 = vtkm::cont::ArrayHandle<vtkm::Float32>;
-        using Scalar64 = vtkm::cont::ArrayHandle<vtkm::Float64>;
-        using Vector32 = vtkm::cont::ArrayHandle<vtkm::Vec<vtkm::Float32,3> >;
-        using Vector64 = vtkm::cont::ArrayHandle<vtkm::Vec<vtkm::Float64,3> >;
+        using ScalarFloat32 = vtkm::cont::ArrayHandle<vtkm::Float32>;
+        using ScalarFloat64 = vtkm::cont::ArrayHandle<vtkm::Float64>;
+        using Vector2Int32  = vtkm::cont::ArrayHandle<vtkm::Vec<vtkm::Int32,2> >;
+        using Vector2UInt32 = vtkm::cont::ArrayHandle<vtkm::Vec<vtkm::UInt32,2> >;
+        using Vector2Float64 = vtkm::cont::ArrayHandle<vtkm::Vec<vtkm::Float64,2> >;
+        using Vector3Float32 = vtkm::cont::ArrayHandle<vtkm::Vec<vtkm::Float32,3> >;
+        using Vector3Float64 = vtkm::cont::ArrayHandle<vtkm::Vec<vtkm::Float64,3> >;
 
         int t1 = visitTimer->StartTimer();
         int nFields = vtkm_ds.GetNumberOfFields();
@@ -1015,7 +1292,7 @@ ConvertVTKmToVTK(vtkh::DataSet *data)
             // in vtkm worklets, so if the name matches one of the known
             // internally generated fields, skip it.
             //
-            if (strcmp(fieldName, "slice_field") == 0)
+            if (strcmp(fieldName, "sliceScalars") == 0)
                 continue;
 
             //
@@ -1024,15 +1301,23 @@ ConvertVTKmToVTK(vtkh::DataSet *data)
             //
             vtkDataSetAttributes *attr = ds->GetPointData();
             if (vtkm_ds.GetField(i).GetAssociation() ==
-                vtkm::cont::Field::Association::CELL_SET)
+                vtkm::cont::Field::Association::Cells)
                 attr = ds->GetCellData();
 
             auto field = vtkm_ds.GetField(i).GetData();
 
+            //
+            // If avtOriginalNodeNumbers is a double then it has been
+            // interpolated and is nonsense, so skip it.
+            //
+            if (strcmp(fieldName, "avtOriginalNodeNumbers") == 0 &&
+                field.IsType<Vector2Float64>())
+                continue;
+                
             if (field.IsType<ScalarUInt8>())
             {
                 ScalarUInt8 fieldArray;
-                field.CopyTo(fieldArray);
+                field.AsArrayHandle(fieldArray);
 
                 vtkm::Id nValues = fieldArray.GetNumberOfValues();
 
@@ -1041,17 +1326,17 @@ ConvertVTKmToVTK(vtkh::DataSet *data)
                 outArray->SetNumberOfTuples(nValues);
 
                 memcpy(outArray->GetVoidPointer(0),
-                    fieldArray.GetStorage().GetArray(),
+                    fieldArray.WritePortal().GetArray(),
                     sizeof(unsigned char)*nValues);
                 attr->AddArray(outArray);
                 attr->SetActiveScalars(fieldName);
                 attr->CopyFieldOn(fieldName);
                 outArray->Delete();
             }
-            else if (field.IsType<Scalar32>())
+            else if (field.IsType<ScalarFloat32>())
             {
-                Scalar32 fieldArray;
-                field.CopyTo(fieldArray);
+                ScalarFloat32 fieldArray;
+                field.AsArrayHandle(fieldArray);
 
                 vtkm::Id nValues = fieldArray.GetNumberOfValues();
 
@@ -1060,16 +1345,16 @@ ConvertVTKmToVTK(vtkh::DataSet *data)
                 outArray->SetNumberOfTuples(nValues);
 
                 memcpy(outArray->GetVoidPointer(0),
-                    fieldArray.GetStorage().GetArray(), sizeof(float)*nValues);
+                    fieldArray.WritePortal().GetArray(), sizeof(float)*nValues);
                 attr->AddArray(outArray);
                 attr->SetActiveScalars(fieldName);
                 attr->CopyFieldOn(fieldName);
                 outArray->Delete();
             }
-            else if (field.IsType<Scalar64>())
+            else if (field.IsType<ScalarFloat64>())
             {
-                Scalar64 fieldArray;
-                field.CopyTo(fieldArray);
+                ScalarFloat64 fieldArray;
+                field.AsArrayHandle(fieldArray);
 
                 vtkm::Id nValues = fieldArray.GetNumberOfValues();
 
@@ -1078,16 +1363,56 @@ ConvertVTKmToVTK(vtkh::DataSet *data)
                 outArray->SetNumberOfTuples(nValues);
 
                 memcpy(outArray->GetVoidPointer(0),
-                    fieldArray.GetStorage().GetArray(), sizeof(double)*nValues);
+                    fieldArray.WritePortal().GetArray(), sizeof(double)*nValues);
                 attr->AddArray(outArray);
                 attr->SetActiveScalars(fieldName);
                 attr->CopyFieldOn(fieldName);
                 outArray->Delete();
             }
-            else if (field.IsType<Vector32>())
+            else if (field.IsType<Vector2Int32>())
             {
-                Vector32 fieldArray;
-                field.CopyTo(fieldArray);
+                Vector2Int32 fieldArray;
+                field.AsArrayHandle(fieldArray);
+
+                vtkm::Id nValues = fieldArray.GetNumberOfValues();
+
+                vtkIntArray *outArray = vtkIntArray::New();
+                outArray->SetName(fieldName);
+                outArray->SetNumberOfComponents(2);
+                outArray->SetNumberOfTuples(nValues);
+
+                memcpy(outArray->GetVoidPointer(0),
+                    fieldArray.WritePortal().GetArray(),
+                    2*sizeof(int)*nValues);
+                attr->AddArray(outArray);
+                attr->SetActiveScalars(fieldName);
+                attr->CopyFieldOn(fieldName);
+                outArray->Delete();
+            }
+            else if (field.IsType<Vector2UInt32>())
+            {
+                Vector2UInt32 fieldArray;
+                field.AsArrayHandle(fieldArray);
+
+                vtkm::Id nValues = fieldArray.GetNumberOfValues();
+
+                vtkUnsignedIntArray *outArray = vtkUnsignedIntArray::New();
+                outArray->SetName(fieldName);
+                outArray->SetNumberOfComponents(2);
+                outArray->SetNumberOfTuples(nValues);
+
+                memcpy(outArray->GetVoidPointer(0),
+                    fieldArray.WritePortal().GetArray(),
+                    2*sizeof(unsigned int)*nValues);
+                attr->AddArray(outArray);
+                attr->SetActiveScalars(fieldName);
+                attr->CopyFieldOn(fieldName);
+                outArray->Delete();
+            }
+            else if (field.IsType<Vector3Float32>())
+            {
+                Vector3Float32 fieldArray;
+                field.AsArrayHandle(fieldArray);
 
                 vtkm::Id nValues = fieldArray.GetNumberOfValues();
 
@@ -1097,17 +1422,17 @@ ConvertVTKmToVTK(vtkh::DataSet *data)
                 outArray->SetNumberOfTuples(nValues);
 
                 memcpy(outArray->GetVoidPointer(0),
-                    fieldArray.GetStorage().GetArray(),
+                    fieldArray.WritePortal().GetArray(),
                     3*sizeof(float)*nValues);
                 attr->AddArray(outArray);
                 attr->SetActiveScalars(fieldName);
                 attr->CopyFieldOn(fieldName);
                 outArray->Delete();
             }
-            else if (field.IsType<Vector64>())
+            else if (field.IsType<Vector3Float64>())
             {
-                Vector64 fieldArray;
-                field.CopyTo(fieldArray);
+                Vector3Float64 fieldArray;
+                field.AsArrayHandle(fieldArray);
 
                 vtkm::Id nValues = fieldArray.GetNumberOfValues();
 
@@ -1117,15 +1442,31 @@ ConvertVTKmToVTK(vtkh::DataSet *data)
                 outArray->SetNumberOfTuples(nValues);
 
                 memcpy(outArray->GetVoidPointer(0),
-                    fieldArray.GetStorage().GetArray(),
+                    fieldArray.WritePortal().GetArray(),
                     3*sizeof(double)*nValues);
                 attr->AddArray(outArray);
                 attr->SetActiveScalars(fieldName);
                 attr->CopyFieldOn(fieldName);
                 outArray->Delete();
             }
+            else
+            {
+                //
+                // We didn't handle the conversion case. Throw an exception.
+                //
+                EXCEPTION0(InvalidConversionException);
+            }
         }
         visitTimer->StopTimer(t1, "Converting fields from VTKm to VTK.");
+    }
+
+    //
+    // If the dataset is NULL, we didn't handle the conversion case.
+    // Throw an exception.
+    //
+    if (ds == NULL)
+    {
+        EXCEPTION0(InvalidConversionException);
     }
 
     ret = ds;
@@ -1267,14 +1608,17 @@ avtDataRepresentation::avtDataRepresentation(vtkDataSet *d, int dom, string s,
 //    Eric Brugger, Wed Sep 12 16:41:55 PDT 2018
 //    I replaced support for vtkm with vtkh.
 //
+//    Eric Brugger, Fri Feb 24 14:57:15 PST 2023
+//    I replaced vtkh with vtkm.
+//
 // ****************************************************************************
 
-avtDataRepresentation::avtDataRepresentation(vtkh::DataSet *d, int dom, string s,
-                                             bool dontCopyData)
+avtDataRepresentation::avtDataRepresentation(avtVtkmDataSet *d, int dom,
+                                             string s, bool dontCopyData)
 {
     InitializeNullDatasets();
 
-#ifdef HAVE_LIBVTKH
+#ifdef HAVE_LIBVTKM
     asVTK        = NULL;
     asChar       = NULL;
     asCharLength = 0;
@@ -1296,7 +1640,7 @@ avtDataRepresentation::avtDataRepresentation(vtkh::DataSet *d, int dom, string s
        asVTKm = d;
     }
 #else
-    EXCEPTION1(StubReferencedException,"avtDataRepresentation::avtDataRepresentation(vtkh::DataSet *d)");
+    EXCEPTION1(StubReferencedException,"avtDataRepresentation::avtDataRepresentation(avtVtkmDataSet *d)");
 #endif
 }
 
@@ -1403,6 +1747,9 @@ avtDataRepresentation::avtDataRepresentation(char *d, int dl, int dom,
 //    Kathleen Biagas, Wed Jan 30 10:41:55 PST 2019
 //    Removed support for EAVL.
 //
+//    Eric Brugger, Fri Feb 24 14:57:15 PST 2023
+//    I replaced vtkh with vtkm.
+//
 // ****************************************************************************
 
 avtDataRepresentation::avtDataRepresentation(const avtDataRepresentation &rhs)
@@ -1412,7 +1759,7 @@ avtDataRepresentation::avtDataRepresentation(const avtDataRepresentation &rhs)
     asChar       = NULL;
     asCharLength = 0;
 
-#ifdef HAVE_LIBVTKH
+#ifdef HAVE_LIBVTKM
     if (rhs.asVTKm)
     {
         asVTKm = rhs.asVTKm;
@@ -1466,11 +1813,14 @@ avtDataRepresentation::avtDataRepresentation(const avtDataRepresentation &rhs)
 //    Kathleen Biagas, Wed Jan 30 10:41:55 PST 2019
 //    Removed support for EAVL.
 //
+//    Eric Brugger, Fri Feb 24 14:57:15 PST 2023
+//    I replaced vtkh with vtkm.
+//
 // ****************************************************************************
 
 avtDataRepresentation::~avtDataRepresentation()
 {
-#ifdef HAVE_LIBVTKH
+#ifdef HAVE_LIBVTKM
     if (asVTKm)
     {
         //delete asVTKm;
@@ -1541,6 +1891,9 @@ debug5 << "TODO: Not deleting asVTKm because some reference counting seems to be
 //    Kathleen Biagas, Wed Jan 30 10:41:55 PST 2019
 //    Removed support for EAVL.
 //
+//    Eric Brugger, Fri Feb 24 14:57:15 PST 2023
+//    I replaced vtkh with vtkm.
+//
 // ****************************************************************************
 
 avtDataRepresentation &
@@ -1549,7 +1902,7 @@ avtDataRepresentation::operator=(const avtDataRepresentation &rhs)
     if (&rhs == this)
         return *this;
 
-#ifdef HAVE_LIBVTKH
+#ifdef HAVE_LIBVTKM
     if (asVTKm)
     {
         delete asVTKm;
@@ -1570,7 +1923,7 @@ avtDataRepresentation::operator=(const avtDataRepresentation &rhs)
     asVTKm = NULL;
     asChar = NULL;
 
-#ifdef HAVE_LIBVTKH
+#ifdef HAVE_LIBVTKM
     if (rhs.asVTKm)
     {
         asVTKm = rhs.asVTKm;
@@ -1661,6 +2014,9 @@ avtDataRepresentation::Valid(void)
 //    Kathleen Biagas, Wed Jan 30 10:41:55 PST 2019
 //    Removed support for EAVL.
 //
+//    Eric Brugger, Fri Feb 24 14:57:15 PST 2023
+//    I replaced vtkh with vtkm.
+//
 // ****************************************************************************
 
 long long
@@ -1678,7 +2034,7 @@ avtDataRepresentation::GetNumberOfCells(int topoDim, bool polysOnly) const
    {
       long long numCells = 0;
 
-#ifdef HAVE_LIBVTKH
+#ifdef HAVE_LIBVTKM
       if (dataRepType == DATA_REP_TYPE_VTKM)
       {
           numCells = 0;
@@ -1826,6 +2182,9 @@ avtDataRepresentation::vtkToString(bool compress)
 //    Kathleen Biagas, Wed Jan 30 10:41:55 PST 2019
 //    Removed support for EAVL.
 //
+//    Eric Brugger, Fri Feb 24 14:57:15 PST 2023
+//    I replaced vtkh with vtkm.
+//
 // ****************************************************************************
 
 unsigned char *
@@ -1853,7 +2212,7 @@ avtDataRepresentation::GetDataString(int &length, DataSetType &dst, bool compres
                 dst = datasetType;
             }
         }
-#ifdef HAVE_LIBVTKH
+#ifdef HAVE_LIBVTKM
         else if (dataRepType == DATA_REP_TYPE_VTKM)
         {
             if (asVTKm == nullVTKmDataset)
@@ -1942,6 +2301,9 @@ avtDataRepresentation::GetDataString(int &length, DataSetType &dst, bool compres
 //    Kathleen Biagas, Wed Jan 30 10:41:55 PST 2019
 //    Removed support for EAVL.
 //
+//    Eric Brugger, Fri Feb 24 14:57:15 PST 2023
+//    I replaced vtkh with vtkm.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -1958,7 +2320,7 @@ avtDataRepresentation::GetDataVTK(void)
         }
         else
         {
-#ifdef HAVE_LIBVTKH
+#ifdef HAVE_LIBVTKM
             //try to convert from VTKm dataset
             if (asVTKm != NULL)
                 asVTK = VTKmToVTK(asVTKm);
@@ -2083,12 +2445,15 @@ avtDataRepresentation::GetDataVTK(void)
 //    Eric Brugger, Wed Sep 12 16:41:55 PDT 2018
 //    I replaced support for vtkm with vtkh.
 //
+//    Eric Brugger, Fri Feb 24 14:57:15 PST 2023
+//    I replaced vtkh with vtkm.
+//
 // ****************************************************************************
 
-vtkh::DataSet *
+avtVtkmDataSet *
 avtDataRepresentation::GetDataVTKm(void)
 {
-#ifndef HAVE_LIBVTKH
+#ifndef HAVE_LIBVTKM
     asVTKm = NULL;
 #else
 
@@ -2151,6 +2516,9 @@ avtDataRepresentation::GetDataVTKm(void)
 //    Kathleen Biagas, Wed Jan 30 10:41:55 PST 2019
 //    Removed support for EAVL.
 //
+//    Eric Brugger, Fri Feb 24 14:57:15 PST 2023
+//    I replaced vtkh with vtkm.
+//
 // ****************************************************************************
 
 void
@@ -2167,8 +2535,8 @@ avtDataRepresentation::InitializeNullDatasets(void)
     dummyPoints->Delete();
     nullVTKDataset = ugrid;
 
-#ifdef HAVE_LIBVTKH
-    nullVTKmDataset = new vtkh::DataSet();
+#ifdef HAVE_LIBVTKM
+    nullVTKmDataset = new avtVtkmDataSet();
 #endif
 
     initializedNullDatasets = true;
@@ -2199,6 +2567,9 @@ avtDataRepresentation::InitializeNullDatasets(void)
 //    Kathleen Biagas, Wed Jan 30 10:41:55 PST 2019
 //    Removed support for EAVL.
 //
+//    Eric Brugger, Fri Feb 24 14:57:15 PST 2023
+//    I replaced vtkh with vtkm.
+//
 // ****************************************************************************
 void
 avtDataRepresentation::DeleteNullDatasets(void)
@@ -2209,7 +2580,7 @@ avtDataRepresentation::DeleteNullDatasets(void)
         nullVTKDataset = NULL;
     }
 
-#ifdef HAVE_LIBVTKH
+#ifdef HAVE_LIBVTKM
     delete nullVTKmDataset;
     nullVTKmDataset = NULL;
 #endif
@@ -2737,7 +3108,7 @@ avtDataRepresentation::DebugDump(avtWebpage *webpage, const char *prefix)
 }
 
 
-#ifdef HAVE_LIBVTKH
+#ifdef HAVE_LIBVTKM
 // ****************************************************************************
 //  Method: avtDataRepresentation::VTKmToVTK
 //
@@ -2753,12 +3124,15 @@ avtDataRepresentation::DebugDump(avtWebpage *webpage, const char *prefix)
 //    Eric Brugger, Wed Sep 12 16:41:55 PDT 2018
 //    I replaced support for vtkm with vtkh.
 //
+//    Eric Brugger, Fri Feb 24 14:57:15 PST 2023
+//    I replaced vtkh with vtkm.
+//
 // ****************************************************************************
 
 vtkDataSet*
-avtDataRepresentation::VTKmToVTK(vtkh::DataSet *data)
+avtDataRepresentation::VTKmToVTK(avtVtkmDataSet *data)
 {
-    debug5 << "converting dataset from VTKm to VTK...\n";
+    debug1 << "converting dataset from VTKm to VTK...\n";
 
     vtkDataSet *ret = NULL;
     if (data)
@@ -2766,10 +3140,6 @@ avtDataRepresentation::VTKmToVTK(vtkh::DataSet *data)
         int timerhandle = visitTimer->StartTimer();
 
         ret = ConvertVTKmToVTK(data);
-        if (ret == NULL)
-        {
-            EXCEPTION0(InvalidConversionException);
-        }
 
         visitTimer->StopTimer(timerhandle, "avtDataRepresentation::VTKmToVTK");
     }
@@ -2783,7 +3153,7 @@ avtDataRepresentation::VTKmToVTK(vtkh::DataSet *data)
 //  Purpose:
 //      Convert between VTK and VTKm data representation.
 //
-//  Returns:      The data as a vtkh::DataSet.
+//  Returns:      The data as a avtVtkmDataSet.
 //
 //  Programmer: Eric Brugger
 //  Creation:   Thu Dec 10 11:49:40 PST 2015
@@ -2792,23 +3162,22 @@ avtDataRepresentation::VTKmToVTK(vtkh::DataSet *data)
 //    Eric Brugger, Wed Sep 12 16:41:55 PDT 2018
 //    I replaced support for vtkm with vtkh.
 //
+//    Eric Brugger, Fri Feb 24 14:57:15 PST 2023
+//    I replaced vtkh with vtkm.
+//
 // ****************************************************************************
 
-vtkh::DataSet*
+avtVtkmDataSet*
 avtDataRepresentation::VTKToVTKm(vtkDataSet *data)
 {
-    debug5 << "converting dataset from VTK to VTKm...\n";
+    debug1 << "converting dataset from VTK to VTKm...\n";
 
-    vtkh::DataSet *ret = NULL;
+    avtVtkmDataSet *ret = NULL;
     if (data)
     {
         int timerhandle = visitTimer->StartTimer();
 
         ret = ConvertVTKToVTKm(data);
-        if (ret == NULL)
-        {
-            EXCEPTION0(InvalidConversionException);
-        }
 
         visitTimer->StopTimer(timerhandle, "avtDataRepresentation::VTKToVTKm");
     }

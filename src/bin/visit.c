@@ -145,7 +145,6 @@ string GetVisItEnvironment(stringVector &, bool, bool &, bool &);
 void   SetVisItEnvironment(const stringVector &);
 string AddPath(char *, const char *, const char*);
 bool   ReadKey(const char *key, char **keyval);
-void   PrintEnvironment(void);
 string WinGetEnv(const char * name);
 string GetUsageTextDir(void);
 
@@ -336,6 +335,12 @@ static bool EndsWith(const char *s, const char *suffix)
  *   operation of VisIt when Mesa3D (17.3.0) is used as a drop-in replacment
  *   for system OpenGL.
  *
+ *   Kathleen Biagas, Thur Jun 8, 2021
+ *   Added -nodialog option, to be used with -env when importing VisIt into
+ *   python. It won't be advertised. It allows the environment string to be
+ *   passed via stderr without a dialog box popping up.
+ *   Removed PrintEnvironment as it wasn't printing all environment strings.
+ *
  *****************************************************************************/
 
 int
@@ -350,6 +355,7 @@ VisItLauncherMain(int argc, char *argv[])
     bool parallel = false;
     bool hostset = 0;
     bool envOnly = false;
+    bool noDialog = false;
     bool debugLaunch = false;
     bool apitrace = false;
 
@@ -594,6 +600,10 @@ VisItLauncherMain(int argc, char *argv[])
         {
             envOnly = true;
         }
+        else if(ARG("-nodialog"))
+        {
+            noDialog = true;
+        }
         else if(ARG("-debuglaunch"))
         {
             debugLaunch = true;
@@ -724,10 +734,13 @@ VisItLauncherMain(int argc, char *argv[])
     {
         FreeConsole();
         AllocConsole();
-#ifdef VISIT_WINDOWS_APPLICATION
-        // If we're running a parallel engine then let's hide the console window.
         if(component == "engine_par")
+#ifdef VISIT_WINDOWS_APPLICATION
+            // Hide the parallel engine console window.
             ShowWindow(GetConsoleWindow(), SW_HIDE);
+#else
+            // Prevent parallel engine console window from stealing focus.
+            ShowWindow(GetConsoleWindow(), SW_SHOWMINNOACTIVE);
 #endif
     }
 
@@ -749,23 +762,38 @@ VisItLauncherMain(int argc, char *argv[])
         visitEnv.push_back("MESA_GL_VERSION_OVERRIDE=3.3");
     }
     SetVisItEnvironment(visitEnv);
-#ifdef VISIT_WINDOWS_APPLICATION
-    if(debugLaunch)
+    if(debugLaunch || envOnly)
     {
         // Show the path and the environment we've created.
         string envStr;
         for(size_t i = 0; i < visitEnv.size(); ++i)
             envStr = envStr + visitEnv[i] + "\n";
         string msgStr((visitpath + "\n\n") + envStr);
-        MessageBox(NULL, msgStr.c_str(), component.c_str(), MB_OK);
-    }
-#endif
+#ifdef VISIT_WINDOWS_APPLICATION
+        if(envOnly && noDialog)
+        {
+            // We want the environment string to be readable when
+            // importing VisIt into python, so don't use the dialog
+            cerr << msgStr << endl;
+        }
+        else
+        {
+            MessageBox(NULL, msgStr.c_str(), component.c_str(), MB_OK);
+        }
 
-    if (envOnly)
-    {
-        PrintEnvironment();
-        componentArgs.clear();
-        return 0;
+        if(envOnly)
+        {
+            componentArgs.clear();
+            return 0;
+        }
+#else
+        cerr << msgStr << endl;
+        if (envOnly)
+        {
+            componentArgs.clear();
+            return 0;
+        }
+#endif
     }
 
     stringVector command;
@@ -1134,8 +1162,11 @@ ReadKey(const char *key, char **keyval)
  *   Display message box if VISITSSH set, but does not point
  *   to valid executable.
  *
- *    Kathleen Biagas, Thu Aug 1 13:41:32 MST 2019
- *    Removed useShorFileName argument.
+ *   Kathleen Biagas, Thu Aug 1 13:41:32 MST 2019
+ *   Removed useShorFileName argument.
+ *
+ *   Kathleen Biagas, Thu Jun 8, 2021
+ *   Add LIBPATH for non-dev, needed when importing VisIt into python.
  *
  *****************************************************************************/
 
@@ -1358,13 +1389,15 @@ GetVisItEnvironment(stringVector &env, bool addPluginVars, bool &usingdev,
     }
 
     /*
-     * Set PYTHONPATH
+     * Set PYTHONPATH, PYTHONHOME, LIBPATH (non-dev only)
      */
     if (!usingdev)
     {
         sprintf(tmp, "PYTHONPATH=%s\\lib", visitpath);
         env.push_back(tmp);
         sprintf(tmp, "PYTHONHOME=%s\\lib\\python",visitpath);
+        env.push_back(tmp);
+        sprintf(tmp, "LIBPATH=%s\\lib", visitpath);
         env.push_back(tmp);
     }
     else
@@ -1432,6 +1465,8 @@ GetVisItEnvironment(stringVector &env, bool addPluginVars, bool &usingdev,
             string qpath(visitpath);
             qpath+=string("\\qtssh.exe");
             sprintf(tmp, "VISITSSH=%s", qpath.c_str());
+            env.push_back(tmp);
+            sprintf(tmp, "VISITSSHARGS=-no-antispoof");
             env.push_back(tmp);
             if (!errmsg.empty())
             {
@@ -1569,56 +1604,6 @@ AddPath(char *tmp, const char *visitpath, const char *visitdev)
 
     return string(tmp);
 }
-
-/******************************************************************************
- *
- * Purpose: Prints the VisIt environment variables.
- *
- * Modifications:
- *   Kathleen Biagas, Wednesday Sept 30, 2020
- *   Modified to fill a string and to print to mesage box if WinApp.
- *****************************************************************************/
-void
-PrintEnvironment()
-{
-    char *tmp;
-    string envStr;
-    if((tmp = getenv("VISITHOME")) != NULL)
-    {
-        envStr = envStr + string("LIBPATH=") + string(tmp) + string("\\lib\n");
-        envStr = envStr + "VISITHOME=" + string(tmp) + "\n";
-    }
-    if((tmp = getenv("VISITARCHHOME")) != NULL)
-    {
-        envStr = envStr + "VISITARCHHOME=" + string(tmp) + "\n";
-    }
-    if((tmp = getenv("VISITULTRAHOME")) != NULL)
-    {
-        envStr = envStr + "VISITULTRAHOME=" + string(tmp) + "\n";
-    }
-    if((tmp = getenv("VISITPLUGINDIR")) != NULL)
-    {
-        envStr = envStr + "VISITPLUGINDIR=" + string(tmp) + "\n";
-    }
-    if((tmp = getenv("VISITSSH")) != NULL)
-    {
-        envStr = envStr + "VISITSSH=" + string(tmp) + "\n";
-    }
-    if((tmp = getenv("VISITSSHARGS")) != NULL)
-    {
-        envStr = envStr + "VISITSSHARGS=" + string(tmp) + "\n";
-    }
-
-#ifdef VISIT_WINDOWS_APPLICATION
-    MessageBox(NULL,
-               LPCSTR(envStr.c_str()),
-               LPCSTR("VisIt environment variables:"),
-               MB_ICONINFORMATION | MB_OK);
-#else
-    cerr << envStr << endl;
-#endif
-}
-
 
 string
 WinGetEnv(const char * name)

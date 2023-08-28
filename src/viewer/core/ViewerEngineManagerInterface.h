@@ -53,6 +53,9 @@ class WindowAttributes;
 //    Kathleen Biagas, Mon Dec 22 10:22:11 PST 2014
 //    Add UpdateRemoveDuplicateNodes.
 //
+//    Kathleen Biagas, Fri Apr 23 2021
+//    ExportDatabases has new signature with return atts.
+//
 // ****************************************************************************
 
 class VIEWERCORE_API ViewerEngineManagerInterface : public ViewerBase
@@ -214,8 +217,9 @@ public:
 
     virtual bool ExportDatabases(const EngineKey &ek,
                                  const intVector &ids,
-                                 const ExportDBAttributes &expAtts, 
-                                 const std::string &timeSuffix) = 0;
+                                 const ExportDBAttributes *expAtts,
+                                 const std::string &timeSuffix,
+                                 ExportDBAttributes &retAtts) = 0;
 
     virtual bool ConstructDataBinning(const EngineKey &ek, int id) = 0;
 

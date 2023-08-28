@@ -36,7 +36,7 @@ struct ConstructDataBinningAttributesObject
 //
 static PyObject *NewConstructDataBinningAttributes(int);
 std::string
-PyConstructDataBinningAttributes_ToString(const ConstructDataBinningAttributes *atts, const char *prefix)
+PyConstructDataBinningAttributes_ToString(const ConstructDataBinningAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -213,12 +213,37 @@ ConstructDataBinningAttributes_SetName(PyObject *self, PyObject *args)
 {
     ConstructDataBinningAttributesObject *obj = (ConstructDataBinningAttributesObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the name in the object.
-    obj->data->SetName(std::string(str));
+    obj->data->SetName(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -237,37 +262,51 @@ ConstructDataBinningAttributes_SetVarnames(PyObject *self, PyObject *args)
 {
     ConstructDataBinningAttributesObject *obj = (ConstructDataBinningAttributesObject *)self;
 
-    stringVector  &vec = obj->data->GetVarnames();
-    PyObject     *tuple;
-    if(!PyArg_ParseTuple(args, "O", &tuple))
-        return NULL;
+    stringVector vec;
 
-    if(PyTuple_Check(tuple))
+    if (PyUnicode_Check(args))
     {
-        vec.resize(PyTuple_Size(tuple));
-        for(int i = 0; i < PyTuple_Size(tuple); ++i)
+        char const *val = PyUnicode_AsUTF8(args);
+        std::string cval = std::string(val);
+        if (val == 0 && PyErr_Occurred())
         {
-            PyObject *item = PyTuple_GET_ITEM(tuple, i);
-            if(PyString_Check(item))
+            PyErr_Clear();
+            return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ string");
+        }
+        vec.resize(1);
+        vec[0] = cval;
+    }
+    else if (PySequence_Check(args))
+    {
+        vec.resize(PySequence_Size(args));
+        for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)
+        {
+            PyObject *item = PySequence_GetItem(args, i);
+
+            if (!PyUnicode_Check(item))
             {
-                char *item_cstr = PyString_AsString(item);
-                vec[i] = std::string(item_cstr);
-                PyString_AsString_Cleanup(item_cstr);
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_TypeError, "arg %d is not a unicode string", (int) i);
             }
-            else
-                vec[i] = std::string("");
+
+            char const *val = PyUnicode_AsUTF8(item);
+            std::string cval = std::string(val);
+
+            if (val == 0 && PyErr_Occurred())
+            {
+                Py_DECREF(item);
+                PyErr_Clear();
+                return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ string", (int) i);
+            }
+            Py_DECREF(item);
+
+            vec[i] = cval;
         }
     }
-    else if(PyString_Check(tuple))
-    {
-        vec.resize(1);
-        char *tuple_cstr = PyString_AsString(tuple);
-        vec[0] = std::string(tuple_cstr);
-        PyString_AsString_Cleanup(tuple_cstr);
-    }
     else
-        return NULL;
+        return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more string(s)");
 
+    obj->data->GetVarnames() = vec;
     // Mark the varnames in the object as modified.
     obj->data->SelectVarnames();
 
@@ -292,59 +331,59 @@ ConstructDataBinningAttributes_SetBinType(PyObject *self, PyObject *args)
 {
     ConstructDataBinningAttributesObject *obj = (ConstructDataBinningAttributesObject *)self;
 
-    unsignedCharVector  &vec = obj->data->GetBinType();
-    PyObject     *tuple;
-    if(!PyArg_ParseTuple(args, "O", &tuple))
-        return NULL;
+    typedef unsigned char uchar;
+    ucharVector vec;
 
-    if(PyTuple_Check(tuple))
+    if (PyNumber_Check(args))
     {
-        vec.resize(PyTuple_Size(tuple));
-        for(int i = 0; i < PyTuple_Size(tuple); ++i)
+        long val = PyLong_AsLong(args);
+        uchar cval = uchar(val);
+        if (val == -1 && PyErr_Occurred())
         {
-            int c;
-            PyObject *item = PyTuple_GET_ITEM(tuple, i);
-            if(PyFloat_Check(item))
-                c = int(PyFloat_AS_DOUBLE(item));
-            else if(PyInt_Check(item))
-                c = int(PyInt_AS_LONG(item));
-            else if(PyLong_Check(item))
-                c = int(PyLong_AsDouble(item));
-            else
-                c = 0;
+            PyErr_Clear();
+            return PyErr_Format(PyExc_TypeError, "number not interpretable as C++ uchar");
+        }
+        if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+            return PyErr_Format(PyExc_ValueError, "number not interpretable as C++ uchar");
+        vec.resize(1);
+        vec[0] = cval;
+    }
+    else if (PySequence_Check(args) && !PyUnicode_Check(args))
+    {
+        vec.resize(PySequence_Size(args));
+        for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)
+        {
+            PyObject *item = PySequence_GetItem(args, i);
 
-            if(c < 0) c = 0;
-            if(c > 255) c = 255;
-            vec[i] = (unsigned char)(c);
+            if (!PyNumber_Check(item))
+            {
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_TypeError, "arg %d is not a number type", (int) i);
+            }
+
+            long val = PyLong_AsLong(item);
+            uchar cval = uchar(val);
+
+            if (val == -1 && PyErr_Occurred())
+            {
+                Py_DECREF(item);
+                PyErr_Clear();
+                return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ uchar", (int) i);
+            }
+            if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+            {
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_ValueError, "arg %d not interpretable as C++ uchar", (int) i);
+            }
+            Py_DECREF(item);
+
+            vec[i] = cval;
         }
     }
-    else if(PyFloat_Check(tuple))
-    {
-        vec.resize(1);
-        int c = int(PyFloat_AS_DOUBLE(tuple));
-        if(c < 0) c = 0;
-        if(c > 255) c = 255;
-        vec[0] = (unsigned char)(c);
-    }
-    else if(PyInt_Check(tuple))
-    {
-        vec.resize(1);
-        int c = int(PyInt_AS_LONG(tuple));
-        if(c < 0) c = 0;
-        if(c > 255) c = 255;
-        vec[0] = (unsigned char)(c);
-    }
-    else if(PyLong_Check(tuple))
-    {
-        vec.resize(1);
-        int c = PyLong_AsLong(tuple);
-        if(c < 0) c = 0;
-        if(c > 255) c = 255;
-        vec[0] = (unsigned char)(c);
-    }
     else
-        return NULL;
+        return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more uchars");
 
+    obj->data->GetBinType() = vec;
     // Mark the binType in the object as modified.
     obj->data->SelectBinType();
 
@@ -369,45 +408,58 @@ ConstructDataBinningAttributes_SetBinBoundaries(PyObject *self, PyObject *args)
 {
     ConstructDataBinningAttributesObject *obj = (ConstructDataBinningAttributesObject *)self;
 
-    doubleVector  &vec = obj->data->GetBinBoundaries();
-    PyObject     *tuple;
-    if(!PyArg_ParseTuple(args, "O", &tuple))
-        return NULL;
+    doubleVector vec;
 
-    if(PyTuple_Check(tuple))
+    if (PyNumber_Check(args))
     {
-        vec.resize(PyTuple_Size(tuple));
-        for(int i = 0; i < PyTuple_Size(tuple); ++i)
+        double val = PyFloat_AsDouble(args);
+        double cval = double(val);
+        if (val == -1 && PyErr_Occurred())
         {
-            PyObject *item = PyTuple_GET_ITEM(tuple, i);
-            if(PyFloat_Check(item))
-                vec[i] = PyFloat_AS_DOUBLE(item);
-            else if(PyInt_Check(item))
-                vec[i] = double(PyInt_AS_LONG(item));
-            else if(PyLong_Check(item))
-                vec[i] = PyLong_AsDouble(item);
-            else
-                vec[i] = 0.;
+            PyErr_Clear();
+            return PyErr_Format(PyExc_TypeError, "number not interpretable as C++ double");
+        }
+        if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+            return PyErr_Format(PyExc_ValueError, "number not interpretable as C++ double");
+        vec.resize(1);
+        vec[0] = cval;
+    }
+    else if (PySequence_Check(args) && !PyUnicode_Check(args))
+    {
+        vec.resize(PySequence_Size(args));
+        for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)
+        {
+            PyObject *item = PySequence_GetItem(args, i);
+
+            if (!PyNumber_Check(item))
+            {
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_TypeError, "arg %d is not a number type", (int) i);
+            }
+
+            double val = PyFloat_AsDouble(item);
+            double cval = double(val);
+
+            if (val == -1 && PyErr_Occurred())
+            {
+                Py_DECREF(item);
+                PyErr_Clear();
+                return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ double", (int) i);
+            }
+            if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+            {
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_ValueError, "arg %d not interpretable as C++ double", (int) i);
+            }
+            Py_DECREF(item);
+
+            vec[i] = cval;
         }
     }
-    else if(PyFloat_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = PyFloat_AS_DOUBLE(tuple);
-    }
-    else if(PyInt_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = double(PyInt_AS_LONG(tuple));
-    }
-    else if(PyLong_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = PyLong_AsDouble(tuple);
-    }
     else
-        return NULL;
+        return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more doubles");
 
+    obj->data->GetBinBoundaries() = vec;
     // Mark the binBoundaries in the object as modified.
     obj->data->SelectBinBoundaries();
 
@@ -432,23 +484,61 @@ ConstructDataBinningAttributes_SetReductionOperator(PyObject *self, PyObject *ar
 {
     ConstructDataBinningAttributesObject *obj = (ConstructDataBinningAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 9)
+    {
+        std::stringstream ss;
+        ss << "An invalid reductionOperator value was given." << std::endl;
+        ss << "Valid values are in the range [0,8]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << " Average";
+        ss << ", Minimum";
+        ss << ", Maximum";
+        ss << ", StandardDeviation";
+        ss << ", Variance";
+        ss << ", Sum";
+        ss << ", Count";
+        ss << ", RMS";
+        ss << ", PDF";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the reductionOperator in the object.
-    if(ival >= 0 && ival < 9)
-        obj->data->SetReductionOperator(ConstructDataBinningAttributes::ReductionOperator(ival));
-    else
-    {
-        fprintf(stderr, "An invalid reductionOperator value was given. "
-                        "Valid values are in the range of [0,8]. "
-                        "You can also use the following names: "
-                        "Average, Minimum, Maximum, StandardDeviation, Variance, "
-                        "Sum, Count, RMS, PDF"
-                        ".");
-        return NULL;
-    }
+    obj->data->SetReductionOperator(ConstructDataBinningAttributes::ReductionOperator(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -467,12 +557,37 @@ ConstructDataBinningAttributes_SetVarForReductionOperator(PyObject *self, PyObje
 {
     ConstructDataBinningAttributesObject *obj = (ConstructDataBinningAttributesObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the varForReductionOperator in the object.
-    obj->data->SetVarForReductionOperator(std::string(str));
+    obj->data->SetVarForReductionOperator(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -491,12 +606,48 @@ ConstructDataBinningAttributes_SetUndefinedValue(PyObject *self, PyObject *args)
 {
     ConstructDataBinningAttributesObject *obj = (ConstructDataBinningAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the undefinedValue in the object.
-    obj->data->SetUndefinedValue(dval);
+    obj->data->SetUndefinedValue(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -515,21 +666,54 @@ ConstructDataBinningAttributes_SetBinningScheme(PyObject *self, PyObject *args)
 {
     ConstructDataBinningAttributesObject *obj = (ConstructDataBinningAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 2)
+    {
+        std::stringstream ss;
+        ss << "An invalid binningScheme value was given." << std::endl;
+        ss << "Valid values are in the range [0,1]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << " Uniform";
+        ss << ", Unknown";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the binningScheme in the object.
-    if(ival >= 0 && ival < 2)
-        obj->data->SetBinningScheme(ConstructDataBinningAttributes::BinningScheme(ival));
-    else
-    {
-        fprintf(stderr, "An invalid binningScheme value was given. "
-                        "Valid values are in the range of [0,1]. "
-                        "You can also use the following names: "
-                        "Uniform, Unknown.");
-        return NULL;
-    }
+    obj->data->SetBinningScheme(ConstructDataBinningAttributes::BinningScheme(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -548,45 +732,58 @@ ConstructDataBinningAttributes_SetNumBins(PyObject *self, PyObject *args)
 {
     ConstructDataBinningAttributesObject *obj = (ConstructDataBinningAttributesObject *)self;
 
-    intVector  &vec = obj->data->GetNumBins();
-    PyObject   *tuple;
-    if(!PyArg_ParseTuple(args, "O", &tuple))
-        return NULL;
+    intVector vec;
 
-    if(PyTuple_Check(tuple))
+    if (PyNumber_Check(args))
     {
-        vec.resize(PyTuple_Size(tuple));
-        for(int i = 0; i < PyTuple_Size(tuple); ++i)
+        long val = PyLong_AsLong(args);
+        int cval = int(val);
+        if (val == -1 && PyErr_Occurred())
         {
-            PyObject *item = PyTuple_GET_ITEM(tuple, i);
-            if(PyFloat_Check(item))
-                vec[i] = int(PyFloat_AS_DOUBLE(item));
-            else if(PyInt_Check(item))
-                vec[i] = int(PyInt_AS_LONG(item));
-            else if(PyLong_Check(item))
-                vec[i] = int(PyLong_AsLong(item));
-            else
-                vec[i] = 0;
+            PyErr_Clear();
+            return PyErr_Format(PyExc_TypeError, "number not interpretable as C++ int");
+        }
+        if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+            return PyErr_Format(PyExc_ValueError, "number not interpretable as C++ int");
+        vec.resize(1);
+        vec[0] = cval;
+    }
+    else if (PySequence_Check(args) && !PyUnicode_Check(args))
+    {
+        vec.resize(PySequence_Size(args));
+        for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)
+        {
+            PyObject *item = PySequence_GetItem(args, i);
+
+            if (!PyNumber_Check(item))
+            {
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_TypeError, "arg %d is not a number type", (int) i);
+            }
+
+            long val = PyLong_AsLong(item);
+            int cval = int(val);
+
+            if (val == -1 && PyErr_Occurred())
+            {
+                Py_DECREF(item);
+                PyErr_Clear();
+                return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ int", (int) i);
+            }
+            if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+            {
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_ValueError, "arg %d not interpretable as C++ int", (int) i);
+            }
+            Py_DECREF(item);
+
+            vec[i] = cval;
         }
     }
-    else if(PyFloat_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = int(PyFloat_AS_DOUBLE(tuple));
-    }
-    else if(PyInt_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = int(PyInt_AS_LONG(tuple));
-    }
-    else if(PyLong_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = int(PyLong_AsLong(tuple));
-    }
     else
-        return NULL;
+        return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more ints");
 
+    obj->data->GetNumBins() = vec;
     // Mark the numBins in the object as modified.
     obj->data->SelectNumBins();
 
@@ -611,12 +808,48 @@ ConstructDataBinningAttributes_SetOverTime(PyObject *self, PyObject *args)
 {
     ConstructDataBinningAttributesObject *obj = (ConstructDataBinningAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the overTime in the object.
-    obj->data->SetOverTime(ival != 0);
+    obj->data->SetOverTime(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -635,12 +868,48 @@ ConstructDataBinningAttributes_SetTimeStart(PyObject *self, PyObject *args)
 {
     ConstructDataBinningAttributesObject *obj = (ConstructDataBinningAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the timeStart in the object.
-    obj->data->SetTimeStart((int)ival);
+    obj->data->SetTimeStart(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -659,12 +928,48 @@ ConstructDataBinningAttributes_SetTimeEnd(PyObject *self, PyObject *args)
 {
     ConstructDataBinningAttributesObject *obj = (ConstructDataBinningAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the timeEnd in the object.
-    obj->data->SetTimeEnd((int)ival);
+    obj->data->SetTimeEnd(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -683,12 +988,48 @@ ConstructDataBinningAttributes_SetTimeStride(PyObject *self, PyObject *args)
 {
     ConstructDataBinningAttributesObject *obj = (ConstructDataBinningAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the timeStride in the object.
-    obj->data->SetTimeStride((int)ival);
+    obj->data->SetTimeStride(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -707,21 +1048,54 @@ ConstructDataBinningAttributes_SetOutOfBoundsBehavior(PyObject *self, PyObject *
 {
     ConstructDataBinningAttributesObject *obj = (ConstructDataBinningAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 2)
+    {
+        std::stringstream ss;
+        ss << "An invalid outOfBoundsBehavior value was given." << std::endl;
+        ss << "Valid values are in the range [0,1]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << " Clamp";
+        ss << ", Discard";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the outOfBoundsBehavior in the object.
-    if(ival >= 0 && ival < 2)
-        obj->data->SetOutOfBoundsBehavior(ConstructDataBinningAttributes::OutOfBoundsBehavior(ival));
-    else
-    {
-        fprintf(stderr, "An invalid outOfBoundsBehavior value was given. "
-                        "Valid values are in the range of [0,1]. "
-                        "You can also use the following names: "
-                        "Clamp, Discard.");
-        return NULL;
-    }
+    obj->data->SetOutOfBoundsBehavior(ConstructDataBinningAttributes::OutOfBoundsBehavior(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -846,76 +1220,67 @@ PyConstructDataBinningAttributes_getattr(PyObject *self, char *name)
         return PyInt_FromLong(long(ConstructDataBinningAttributes::Discard));
 
 
-    // try to handle old ddf attributes
-    if(strcmp(name, "ddfName") == 0)
-        return ConstructDataBinningAttributes_GetName(self, NULL);
-    if(strcmp(name, "ranges") == 0)
-        return ConstructDataBinningAttributes_GetBinBoundaries(self, NULL);
-    if(strcmp(name, "statisticalOperator") == 0)
-        return ConstructDataBinningAttributes_GetReductionOperator(self, NULL);
-    if(strcmp(name, "codomainName") == 0)
-        return ConstructDataBinningAttributes_GetVarForReductionOperator(self, NULL);
-    if(strcmp(name, "numSamples") == 0)
-        return ConstructDataBinningAttributes_GetNumBins(self, NULL);
+
+    // Add a __dict__ answer so that dir() works
+    if (!strcmp(name, "__dict__"))
+    {
+        PyObject *result = PyDict_New();
+        for (int i = 0; PyConstructDataBinningAttributes_methods[i].ml_meth; i++)
+            PyDict_SetItem(result,
+                PyString_FromString(PyConstructDataBinningAttributes_methods[i].ml_name),
+                PyString_FromString(PyConstructDataBinningAttributes_methods[i].ml_name));
+        return result;
+    }
+
     return Py_FindMethod(PyConstructDataBinningAttributes_methods, self, name);
 }
 
 int
 PyConstructDataBinningAttributes_setattr(PyObject *self, char *name, PyObject *args)
 {
-    // Create a tuple to contain the arguments since all of the Set
-    // functions expect a tuple.
-    PyObject *tuple = PyTuple_New(1);
-    PyTuple_SET_ITEM(tuple, 0, args);
-    Py_INCREF(args);
-    PyObject *obj = NULL;
+    PyObject NULL_PY_OBJ;
+    PyObject *obj = &NULL_PY_OBJ;
 
     if(strcmp(name, "name") == 0)
-        obj = ConstructDataBinningAttributes_SetName(self, tuple);
+        obj = ConstructDataBinningAttributes_SetName(self, args);
     else if(strcmp(name, "varnames") == 0)
-        obj = ConstructDataBinningAttributes_SetVarnames(self, tuple);
+        obj = ConstructDataBinningAttributes_SetVarnames(self, args);
     else if(strcmp(name, "binType") == 0)
-        obj = ConstructDataBinningAttributes_SetBinType(self, tuple);
+        obj = ConstructDataBinningAttributes_SetBinType(self, args);
     else if(strcmp(name, "binBoundaries") == 0)
-        obj = ConstructDataBinningAttributes_SetBinBoundaries(self, tuple);
+        obj = ConstructDataBinningAttributes_SetBinBoundaries(self, args);
     else if(strcmp(name, "reductionOperator") == 0)
-        obj = ConstructDataBinningAttributes_SetReductionOperator(self, tuple);
+        obj = ConstructDataBinningAttributes_SetReductionOperator(self, args);
     else if(strcmp(name, "varForReductionOperator") == 0)
-        obj = ConstructDataBinningAttributes_SetVarForReductionOperator(self, tuple);
+        obj = ConstructDataBinningAttributes_SetVarForReductionOperator(self, args);
     else if(strcmp(name, "undefinedValue") == 0)
-        obj = ConstructDataBinningAttributes_SetUndefinedValue(self, tuple);
+        obj = ConstructDataBinningAttributes_SetUndefinedValue(self, args);
     else if(strcmp(name, "binningScheme") == 0)
-        obj = ConstructDataBinningAttributes_SetBinningScheme(self, tuple);
+        obj = ConstructDataBinningAttributes_SetBinningScheme(self, args);
     else if(strcmp(name, "numBins") == 0)
-        obj = ConstructDataBinningAttributes_SetNumBins(self, tuple);
+        obj = ConstructDataBinningAttributes_SetNumBins(self, args);
     else if(strcmp(name, "overTime") == 0)
-        obj = ConstructDataBinningAttributes_SetOverTime(self, tuple);
+        obj = ConstructDataBinningAttributes_SetOverTime(self, args);
     else if(strcmp(name, "timeStart") == 0)
-        obj = ConstructDataBinningAttributes_SetTimeStart(self, tuple);
+        obj = ConstructDataBinningAttributes_SetTimeStart(self, args);
     else if(strcmp(name, "timeEnd") == 0)
-        obj = ConstructDataBinningAttributes_SetTimeEnd(self, tuple);
+        obj = ConstructDataBinningAttributes_SetTimeEnd(self, args);
     else if(strcmp(name, "timeStride") == 0)
-        obj = ConstructDataBinningAttributes_SetTimeStride(self, tuple);
+        obj = ConstructDataBinningAttributes_SetTimeStride(self, args);
     else if(strcmp(name, "outOfBoundsBehavior") == 0)
-        obj = ConstructDataBinningAttributes_SetOutOfBoundsBehavior(self, tuple);
+        obj = ConstructDataBinningAttributes_SetOutOfBoundsBehavior(self, args);
 
-    // try to handle old ddf attributes
-    if(strcmp(name, "ddfName") == 0)
-        obj = ConstructDataBinningAttributes_SetName(self, tuple);
-    else if(strcmp(name, "ranges") == 0)
-        obj = ConstructDataBinningAttributes_SetBinBoundaries(self, tuple);
-    else if(strcmp(name, "statisticalOperator") == 0)
-        obj = ConstructDataBinningAttributes_SetReductionOperator(self, tuple);
-    else if(strcmp(name, "codomainName") == 0)
-        obj = ConstructDataBinningAttributes_SetVarForReductionOperator(self, tuple);
-    else if(strcmp(name, "numSamples") == 0)
-        obj = ConstructDataBinningAttributes_SetNumBins(self, tuple);
-    if(obj != NULL)
+    if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
-    Py_DECREF(tuple);
-    if( obj == NULL)
-        PyErr_Format(PyExc_RuntimeError, "Unable to set unknown attribute: '%s'", name);
+    if (obj == &NULL_PY_OBJ)
+    {
+        obj = NULL;
+        PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);
+    }
+    else if (obj == NULL && !PyErr_Occurred())
+        PyErr_Format(PyExc_RuntimeError, "unknown problem with '%s'", name);
+
     return (obj != NULL) ? 0 : -1;
 }
 
@@ -923,7 +1288,7 @@ static int
 ConstructDataBinningAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     ConstructDataBinningAttributesObject *obj = (ConstructDataBinningAttributesObject *)v;
-    fprintf(fp, "%s", PyConstructDataBinningAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyConstructDataBinningAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -931,7 +1296,7 @@ PyObject *
 ConstructDataBinningAttributes_str(PyObject *v)
 {
     ConstructDataBinningAttributesObject *obj = (ConstructDataBinningAttributesObject *)v;
-    return PyString_FromString(PyConstructDataBinningAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyConstructDataBinningAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -1083,7 +1448,7 @@ PyConstructDataBinningAttributes_GetLogString()
 {
     std::string s("ConstructDataBinningAtts = ConstructDataBinningAttributes()\n");
     if(currentAtts != 0)
-        s += PyConstructDataBinningAttributes_ToString(currentAtts, "ConstructDataBinningAtts.");
+        s += PyConstructDataBinningAttributes_ToString(currentAtts, "ConstructDataBinningAtts.", true);
     return s;
 }
 
@@ -1096,7 +1461,7 @@ PyConstructDataBinningAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("ConstructDataBinningAtts = ConstructDataBinningAttributes()\n");
-        s += PyConstructDataBinningAttributes_ToString(currentAtts, "ConstructDataBinningAtts.");
+        s += PyConstructDataBinningAttributes_ToString(currentAtts, "ConstructDataBinningAtts.", true);
         cb(s);
     }
 }

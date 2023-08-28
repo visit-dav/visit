@@ -9,6 +9,9 @@
     <LIBS>
       ${NETCDF_LIB}
     </LIBS>
+    <WIN32DEFINES>
+      ${NETCDF_WIN32_DEFINES}
+    </WIN32DEFINES>
     <FilePatterns>
       *.nc
       *.cdf

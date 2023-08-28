@@ -24,7 +24,7 @@ VISITPY_API PyObject *     PyavtVectorMetaData_Wrap(const avtVectorMetaData *att
 void VISITPY_API           PyavtVectorMetaData_SetParent(PyObject *obj, PyObject *parent);
 void VISITPY_API           PyavtVectorMetaData_SetDefaults(const avtVectorMetaData *atts);
 std::string VISITPY_API    PyavtVectorMetaData_GetLogString();
-std::string VISITPY_API    PyavtVectorMetaData_ToString(const avtVectorMetaData *, const char *);
+std::string VISITPY_API    PyavtVectorMetaData_ToString(const avtVectorMetaData *, const char *, const bool=false);
 VISITPY_API PyObject *     PyavtVectorMetaData_getattr(PyObject *self, char *name);
 int VISITPY_API            PyavtVectorMetaData_setattr(PyObject *self, char *name, PyObject *args);
 VISITPY_API extern PyMethodDef PyavtVectorMetaData_methods[AVTVECTORMETADATA_NMETH];

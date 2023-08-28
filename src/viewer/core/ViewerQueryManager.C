@@ -1233,7 +1233,7 @@ ViewerQueryManager::DatabaseQuery(const MapNode &in_queryParams)
             if (GetViewerEngineManager()->Query(engineKey, networkIds, &qa, qa))
             {
                 qa.SetVariables(vars);
-               *(GetViewerState()->GetQueryAttributes()) = qa;
+               *(GetViewerState()->GetQueryAttributes()) = std::move(qa);
                 GetViewerState()->GetQueryAttributes()->Notify();
                 if (!suppressQueryOutput)
                     GetViewerMessaging()->Message(qa.GetResultsMessage());
@@ -4479,6 +4479,9 @@ GetUniqueVars(const stringVector &vars, const string &activeVar,
 //    Kevin Griffin, Thu Aug 11 10:53:13 PDT 2016
 //    Added the GyRadius Query.
 //
+//    Chris Laganella, Tue Jan 11 18:08:08 EST 2022
+//    Added the "Flatten" query.
+//
 // ****************************************************************************
 
 void
@@ -4618,6 +4621,7 @@ ViewerQueryManager::InitializeQueryList()
 
     GetViewerState()->GetQueryList()->AddQuery("Integral Curve Info", dq, misc_r, ic, 1, 0, qo);
     GetViewerState()->GetQueryList()->AddQuery("Line Sampler Info", dq, misc_r, lsi, 1, 0, qo);
+    GetViewerState()->GetQueryList()->AddQuery("Flatten", dq, vr, basic, 1, 0, qo, 0, 1);
     GetViewerState()->GetQueryList()->SelectAll();
 }
 
@@ -5267,7 +5271,8 @@ ViewerQueryManager::DoTimeQuery(ViewerWindow *origWin,
     if (resWin == NULL)
     {
         GetViewerMessaging()->Error(
-            TR("Please choose a different window method for the time query"));
+            TR("VisIt is unable to identify a window to plot the resulting curve.\n"
+               "Please adjust controls for how VisIt decides which window to use."));
         return;
     }
 

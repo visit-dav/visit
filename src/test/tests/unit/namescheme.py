@@ -12,7 +12,7 @@
 #    Retrieve correct path on Windows.
 #
 # ----------------------------------------------------------------------------
-import os, sys
+import sys
 
 if sys.platform.startswith("win"):
     tapp = visit_bin_path("Namescheme_test.exe")

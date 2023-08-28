@@ -37,7 +37,7 @@ struct ColorAttributeListObject
 //
 static PyObject *NewColorAttributeList(int);
 std::string
-PyColorAttributeList_ToString(const ColorAttributeList *atts, const char *prefix)
+PyColorAttributeList_ToString(const ColorAttributeList *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -50,7 +50,7 @@ PyColorAttributeList_ToString(const ColorAttributeList *atts, const char *prefix
             const ColorAttribute *current = (const ColorAttribute *)(*pos);
             snprintf(tmpStr, 1000, "GetColors(%d).", index);
             std::string objPrefix(prefix + std::string(tmpStr));
-            str += PyColorAttribute_ToString(current, objPrefix.c_str());
+            str += PyColorAttribute_ToString(current, objPrefix.c_str(), forLogging);
         }
         if(index == 0)
             str += "#colors does not contain any ColorAttribute objects.\n";
@@ -71,19 +71,13 @@ ColorAttributeList_Notify(PyObject *self, PyObject *args)
 ColorAttributeList_GetColors(PyObject *self, PyObject *args)
 {
     ColorAttributeListObject *obj = (ColorAttributeListObject *)self;
-    int index;
-    if(!PyArg_ParseTuple(args, "i", &index))
-        return NULL;
-    if(index < 0 || (size_t)index >= obj->data->GetColors().size())
-    {
-        char msg[400] = {'\0'};
-        if(obj->data->GetColors().size() == 0)
-            snprintf(msg, 400, "In ColorAttributeList::GetColors : The index %d is invalid because colors is empty.", index);
-        else
-            snprintf(msg, 400, "In ColorAttributeList::GetColors : The index %d is invalid. Use index values in: [0, %ld).",  index, obj->data->GetColors().size());
-        PyErr_SetString(PyExc_IndexError, msg);
-        return NULL;
-    }
+    int index = -1;
+    if (args == NULL)
+        return PyErr_Format(PyExc_NameError, "Use .GetColors(int index) to get a single entry");
+    if (!PyArg_ParseTuple(args, "i", &index))
+        return PyErr_Format(PyExc_TypeError, "arg must be a single integer index");
+    if (index < 0 || (size_t)index >= obj->data->GetColors().size())
+        return PyErr_Format(PyExc_ValueError, "index out of range");
 
     // Since the new object will point to data owned by the this object,
     // we need to increment the reference count.
@@ -112,12 +106,7 @@ ColorAttributeList_AddColors(PyObject *self, PyObject *args)
     if(!PyArg_ParseTuple(args, "O", &element))
         return NULL;
     if(!PyColorAttribute_Check(element))
-    {
-        char msg[400] = {'\0'};
-        snprintf(msg, 400, "The ColorAttributeList::AddColors method only accepts ColorAttribute objects.");
-        PyErr_SetString(PyExc_TypeError, msg);
-        return NULL;
-    }
+        return PyErr_Format(PyExc_TypeError, "expected attr object of type ColorAttribute");
     ColorAttribute *newData = PyColorAttribute_FromPyObject(element);
     obj->data->AddColors(*newData);
     obj->data->SelectColors();
@@ -155,17 +144,12 @@ ColorAttributeList_Remove_One_Colors(PyObject *self, int index)
 PyObject *
 ColorAttributeList_RemoveColors(PyObject *self, PyObject *args)
 {
-    int index;
+    int index = -1;
     if(!PyArg_ParseTuple(args, "i", &index))
-        return NULL;
+        return PyErr_Format(PyExc_TypeError, "Expecting integer index");
     ColorAttributeListObject *obj = (ColorAttributeListObject *)self;
     if(index < 0 || index >= obj->data->GetNumColors())
-    {
-        char msg[400] = {'\0'};
-        snprintf(msg, 400, "In ColorAttributeList::RemoveColors : Index %d is out of range", index);
-        PyErr_SetString(PyExc_IndexError, msg);
-        return NULL;
-    }
+        return PyErr_Format(PyExc_IndexError, "Index out of range");
 
     return ColorAttributeList_Remove_One_Colors(self, index);
 }
@@ -217,26 +201,39 @@ PyColorAttributeList_getattr(PyObject *self, char *name)
     if(strcmp(name, "colors") == 0)
         return ColorAttributeList_GetColors(self, NULL);
 
+
+    // Add a __dict__ answer so that dir() works
+    if (!strcmp(name, "__dict__"))
+    {
+        PyObject *result = PyDict_New();
+        for (int i = 0; PyColorAttributeList_methods[i].ml_meth; i++)
+            PyDict_SetItem(result,
+                PyString_FromString(PyColorAttributeList_methods[i].ml_name),
+                PyString_FromString(PyColorAttributeList_methods[i].ml_name));
+        return result;
+    }
+
     return Py_FindMethod(PyColorAttributeList_methods, self, name);
 }
 
 int
 PyColorAttributeList_setattr(PyObject *self, char *name, PyObject *args)
 {
-    // Create a tuple to contain the arguments since all of the Set
-    // functions expect a tuple.
-    PyObject *tuple = PyTuple_New(1);
-    PyTuple_SET_ITEM(tuple, 0, args);
-    Py_INCREF(args);
-    PyObject *obj = NULL;
+    PyObject NULL_PY_OBJ;
+    PyObject *obj = &NULL_PY_OBJ;
 
 
-    if(obj != NULL)
+    if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
-    Py_DECREF(tuple);
-    if( obj == NULL)
-        PyErr_Format(PyExc_RuntimeError, "Unable to set unknown attribute: '%s'", name);
+    if (obj == &NULL_PY_OBJ)
+    {
+        obj = NULL;
+        PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);
+    }
+    else if (obj == NULL && !PyErr_Occurred())
+        PyErr_Format(PyExc_RuntimeError, "unknown problem with '%s'", name);
+
     return (obj != NULL) ? 0 : -1;
 }
 
@@ -244,7 +241,7 @@ static int
 ColorAttributeList_print(PyObject *v, FILE *fp, int flags)
 {
     ColorAttributeListObject *obj = (ColorAttributeListObject *)v;
-    fprintf(fp, "%s", PyColorAttributeList_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyColorAttributeList_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -252,7 +249,7 @@ PyObject *
 ColorAttributeList_str(PyObject *v)
 {
     ColorAttributeListObject *obj = (ColorAttributeListObject *)v;
-    return PyString_FromString(PyColorAttributeList_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyColorAttributeList_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -404,7 +401,7 @@ PyColorAttributeList_GetLogString()
 {
     std::string s("ColorAttributeList = ColorAttributeList()\n");
     if(currentAtts != 0)
-        s += PyColorAttributeList_ToString(currentAtts, "ColorAttributeList.");
+        s += PyColorAttributeList_ToString(currentAtts, "ColorAttributeList.", true);
     return s;
 }
 
@@ -417,7 +414,7 @@ PyColorAttributeList_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("ColorAttributeList = ColorAttributeList()\n");
-        s += PyColorAttributeList_ToString(currentAtts, "ColorAttributeList.");
+        s += PyColorAttributeList_ToString(currentAtts, "ColorAttributeList.", true);
         cb(s);
     }
 }

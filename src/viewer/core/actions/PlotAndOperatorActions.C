@@ -886,6 +886,66 @@ MovePlotKeyframeAction::Execute()
 ///////////////////////////////////////////////////////////////////////////////
 
 // ****************************************************************************
+// Method: DeleteOperatorKeyframeAction::Execute
+//
+// Purpose: 
+//   Deletes an operator keyframe.
+//
+// Programmer: Eric Brugger
+// Creation:   Wed Mar 22 16:23:12 PDT 2023   
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+DeleteOperatorKeyframeAction::Execute()
+{
+    //
+    // Delete the plot keyframe.
+    //
+    int plotId = args.GetIntArg1();
+    int operatorId = args.GetIntArg2();
+    int index = args.GetIntArg3();
+    window->GetPlotList()->DeleteOperatorKeyframe(plotId, operatorId, index);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+///
+///////////////////////////////////////////////////////////////////////////////
+
+// ****************************************************************************
+// Method: MoveOperatorKeyframeAction::Execute
+//
+// Purpose: 
+//   Moves an operator keyframe.
+//
+// Programmer: Eric Brugger
+// Creation:   Wed Mar 22 16:23:12 PDT 2023   
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+MoveOperatorKeyframeAction::Execute()
+{
+    //
+    // Move the plot keyframe.
+    //
+    int plotId = args.GetIntArg1();
+    int operatorId = args.GetIntArg2();
+    int oldIndex = args.GetIntArg3();
+    int newIndex = args.GetIntArg4();
+    ViewerPlotList *plotList = window->GetPlotList();
+    plotList->MoveOperatorKeyframe(plotId, operatorId, oldIndex, newIndex);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+///
+///////////////////////////////////////////////////////////////////////////////
+
+// ****************************************************************************
 // Method: SetPlotDatabaseStateAction::Execute
 //
 // Purpose: 

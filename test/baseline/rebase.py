@@ -97,7 +97,7 @@ def confirm_startup_dir():
     retval = True
 
     if not os.getcwd().split('/')[-1] == 'baseline':
-        print('"test" does not appear to be current working directory name.')
+        print('"baseline" does not appear to be current working directory name.')
         retval = False
 
     for subdir in ["databases", "plots", "operators"]:
@@ -106,13 +106,13 @@ def confirm_startup_dir():
             retval = False
 
     if not retval:
-        print("Run this script only from the root of the VisIt test dir tree")
+        print('Run this script only from the "baseline" dir of the VisIt repository.')
         sys.exit(1)
     return True
 
 def parse_args():
     """
-    Parses arguments to runtest.
+    Parses arguments.
     """
     parser = OptionParser(usage())
     parser.add_option("-c",
@@ -214,15 +214,17 @@ def copy_currents_from_html_pages(prefix, filelist, datetag, prompt, test_type):
             urllib.urlretrieve("%s/%s/pascal_trunk_%s/c_%s"%(prefix,datetag,mode,f),
                                filename=target_file)
         # Do some simple sanity checks on the resulting file
+        isLFS = False
         if test_type == 'png' and imghdr.what(target_file) != 'png':
             with open(target_file) as f:
                 if 'https://git-lfs.' in f.readline():
                     f.readline()
                     cursize = f.readline().strip().split(' ')[1]
+                    isLFS = True
                 else:
                     print("Warning: file \"%s\" is not PNG (nor LFS) format!"%target_file)
         newsize = os.stat(target_file).st_size
-        if newsize < (1-0.25)*cursize or newsize > (1+0.25)*cursize:
+        if not isLFS and (newsize < (1-0.25)*cursize or newsize > (1+0.25)*cursize):
             print("Warning: dramatic change in size of file (old=%d/new=%d)\"%s\"!"%(cursize,newsize,target_file))
 
 #
@@ -245,6 +247,11 @@ filelist = get_baseline_filenames(
     vopts['pyfile'],
     vopts['type'],
     cases)
+
+if not filelist:
+    print('Specified parameters resulted in an empty list of files.')
+    print('Make sure all parameters are spelled and/or quoted correctly.')
+    sys.exit(1)
 
 #
 # Iterate, copying currents from HTML pages to baseline dir

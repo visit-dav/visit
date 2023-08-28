@@ -7,11 +7,7 @@
 #include <errno.h>
 #include <sys/types.h>
 #include <stdarg.h>
-#if defined(_WIN32)
-#include <win32-regex.h>
-#else
-#include <regex.h>
-#endif
+#include <regex>
 #include <stdlib.h>
 #include <algorithm>
 #include <map>
@@ -462,6 +458,10 @@ StringHelpers::GroupStringsFixedAlpha(
 //
 //    Mark C. Miller, Mon Aug 31 14:37:23 PDT 2009
 //    Made string version use const references.
+//
+//    Kathleen Biagas, Wed Aug 2, 2023
+//    Use std::regex per patch from Cory Quammen @ Kitware.
+//
 // ****************************************************************************
 
 int
@@ -472,26 +472,27 @@ StringHelpers::FindRE(const string &s, const string &re)
 int
 StringHelpers::FindRE(const char *strToSearch, const char *re)
 {
-    regex_t cre;
-    regmatch_t pm;
-
-    if (regcomp(&cre, re, REG_EXTENDED))
+    std::regex cre;
+    try
+    {
+        cre = std::regex(re, std::regex::extended);
+    }
+    catch (std::regex_error&)
+    {
         return FindError;
+    }
 
-    int rval = regexec(&cre, strToSearch, 1, &pm, 0);
-
-    regfree(&cre);
-
-    if (rval == REG_NOMATCH)
+    std::cmatch m;
+    if (!std::regex_search(strToSearch, m, cre))
         return FindNone;
 
-    if (pm.rm_so >= (int)strlen(strToSearch))
+    if (m.size() < 1)
         return FindError;
 
-    if (pm.rm_so < 0)
+    if (!m[0].matched)
         return FindError;
 
-    return (int) pm.rm_so;
+    return (int) (m[0].first - strToSearch);
 }
 
 // ****************************************************************************
@@ -578,12 +579,14 @@ StringHelpers::Replace(const string &source,
 //  Programmer: Mark C. Miller
 //  Creation:   June 12, 2007
 //
+//  Modifications:
+//    Kathleen Biagas, Wed Aug 2, 2023
+//    Use std::regex per patch from Cory Quammen @ Kitware.
+//
 // ****************************************************************************
 std::string
 StringHelpers::ExtractRESubstr(const char *strToSearch, const char *re)
 {
-    regex_t cre;
-    regmatch_t pm[255];
     string reToUse;
     string retval = "";
 
@@ -615,24 +618,30 @@ StringHelpers::ExtractRESubstr(const char *strToSearch, const char *re)
         return retval;
     }
 
-    if (regcomp(&cre, reToUse.c_str(), REG_EXTENDED))
-        return retval;
-
-    int rval = regexec(&cre, strToSearch, 255, pm, 0);
-
-    regfree(&cre);
-
-    if (rval == REG_NOMATCH)
-        return retval;
-
-    for (int i = 0; i < 255; i++)
+    std::regex cre;
+    try
     {
-        if (pm[i].rm_so == -1)
+        cre = std::regex(reToUse, std::regex::extended);
+    }
+    catch (std::regex_error&)
+    {
+        return retval;
+    }
+
+    std::cmatch m;
+    if (!std::regex_search(strToSearch, m, cre))
+        return retval;
+
+    std::cregex_iterator rit(strToSearch, strToSearch + strlen(strToSearch), cre);
+
+    for (size_t i = 0; i < m.size(); ++i)
+    {
+        const auto& match = m[i];
+        if (!match.matched)
             continue;
         if (i == matchToExtract)
         {
-            retval = std::string(strToSearch, pm[i].rm_so,
-                                              pm[i].rm_eo - pm[i].rm_so);
+            retval = match.str();
             break;
         }
     }
@@ -916,7 +925,7 @@ StringHelpers::append(std::vector<std::string> &argv,
 //
 // ****************************************************************************
 std::vector<std::string>
-StringHelpers::split(const std::string input, const char separator)
+StringHelpers::split(const std::string &input, const char separator)
 {
     std::istringstream iss(input);
     std::string cur;
@@ -1292,7 +1301,7 @@ StringHelpers::StringToInt(const string &input, int &output)
 //
 // ****************************************************************************
 bool
-StringHelpers::ParseRange(const string range, std::vector<int> &list)
+StringHelpers::ParseRange(const string &range, std::vector<int> &list)
 {
     std::vector<std::string> rangeTokens = StringHelpers::split(range, ',');
 
@@ -1364,5 +1373,101 @@ StringHelpers::ParseRange(const string range, std::vector<int> &list)
     }
   
     return parseError;
+}
+
+// ****************************************************************************
+//  Method:  StringHelpers::EscapeString
+//
+//  Purpose:
+//   Escapes any special chars in a string. Need when you want to
+//   prepare a string that can later be parsed by JSON.
+//
+//  Logic from:
+//   conduit::utils::escape_special_chars in:
+//  https://github.com/LLNL/conduit/blob/develop/src/libs/conduit/conduit_utils.cpp
+//
+//
+//  Programmer:  Cyrus Harrison
+//  Creation:    Wed Mar 15 10:28:03 PDT 2023
+//
+//  Modifications:
+//
+// ****************************************************************************
+std::string
+StringHelpers::EscapeSpecialChars(const std::string &input)
+{
+        std::string res;
+        for(size_t i = 0; i < input.size(); ++i)
+        {
+            char val = input[i];
+            // supported special chars
+            switch(val)
+            {
+                // quotes and slashes
+                case '\"':
+                case '\\':
+                {
+                    res += '\\';
+                    res += val;
+                    break;
+                }
+                // newline
+                case '\n':
+                {
+                    res += "\\n";
+                    break;
+                }
+                // tab
+                case '\t':
+                {
+                    res += "\\t";
+                    break;
+                }
+                // backspace
+                case '\b':
+                {
+                    res += "\\b";
+                    break;
+                }
+                // formfeed
+                case '\f':
+                {
+                    res += "\\f";
+                    break;
+                }
+                // carriage return
+                case '\r':
+                {
+                    res += "\\r";
+                    break;
+                }
+
+                default:
+                {
+                    res += val;
+                }
+            }
+        }
+
+        return res;
+}
+
+// ****************************************************************************
+//  Method:  StringHelpers::ends_with
+//
+//  Purpose:
+//   Checks if string ends with another string
+//
+//  Programmer:  Cyrus Harrison
+//  Creation:    Thu Mar  2 09:24:16 PST 2023
+//
+//  Modifications:
+//
+// ****************************************************************************
+bool
+StringHelpers::ends_with(const std::string &var, const std::string &test)
+{
+    return std::equal(test.rbegin(),
+                      test.rend(), var.rbegin());
 }
 

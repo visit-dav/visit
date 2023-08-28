@@ -46,6 +46,9 @@ import llnl.visit.plots.PseudocolorAttributes;
 //
 //   Brad Whitlock, Mon Feb 25 11:07:24 PDT 2008
 //   Changed to new ViewerProxy interface.
+// 
+//   Justin Privitera, Wed May 18 11:25:46 PDT 2022
+//   Changed *active* to *default* for everything related to color tables.
 //
 // ****************************************************************************
 
@@ -76,7 +79,7 @@ public class TryLighting extends RunViewer implements SimpleObserver
             viewer.GetViewerMethods().DrawPlots();
 
             // Set the colortable to one that has white at the bottom values.
-            viewer.GetViewerMethods().SetActiveContinuousColorTable("calewhite");
+            viewer.GetViewerMethods().SetDefaultContinuousColorTable("calewhite");
 
             // Set the view
             View3DAttributes v = viewer.GetViewerState().GetView3DAttributes();

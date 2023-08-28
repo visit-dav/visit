@@ -30,11 +30,17 @@ ${VTK_INCLUDE_DIRS}
 ${VISIT_SOURCE_DIR}/visit_vtk/full
 )
 
+if(VTK_VERSION VERSION_EQUAL "8.1.0")
+    set(vtkimglib vtkIOImage)
+else()
+    set(vtkimglib VTK::IOImage)
+endif()
+
 ADD_EXECUTABLE(visit_composite  ${VISIT_COMPOSITE_SOURCES})
-target_link_libraries(visit_composite vtkIOImage visit_vtk)
+target_link_libraries(visit_composite ${vtkimglib} visit_vtk)
 
 ADD_EXECUTABLE(visit_transition ${VISIT_TRANSITION_SOURCES})
-target_link_libraries(visit_transition vtkIOImage visit_vtk)
+target_link_libraries(visit_transition ${vtkimglib} visit_vtk)
 
 # Installation targets
 VISIT_INSTALL_TARGETS(visit_composite visit_transition)

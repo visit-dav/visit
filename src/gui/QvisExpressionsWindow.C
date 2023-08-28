@@ -21,6 +21,9 @@
 #include <QTextEdit>
 #include <QMenu>
 #include <QPushButton>
+#include <QRegularExpression>
+#include <QRegularExpressionMatch>
+#include <QRegularExpressionMatchIterator>
 #include <QSplitter>
 
 #include <QNarrowLineEdit.h>
@@ -164,6 +167,20 @@
 //    Eddie Rusu, Mon Sep 23 10:33:50 PDT 2019
 //    Added "divide" function under the "Math" menu.
 //
+//    Chris Laganella, Fri Feb  4 19:18:01 EST 2022
+//    Added logical_nodeid, logial_zoneid, node_domain, zone_domain,
+//    and zone_centers under the Mesh menu
+// 
+//    Justin Privitera, Fri 04 Mar 2022 02:03:33 PM PST
+//    Moved curl, divergence, gradient exprs, and laplacian
+//    from misc. submenu to vector submenu.
+// 
+//    Justin Privitera, Wed Mar 30 12:50:59 PDT 2022
+//    Added "ghost_zoneid" expression under mesh submenu.
+//
+//    Kathleen Biagas, Wed Jun 15 2022
+//    Added crack_width to misc submenu.
+//
 // ****************************************************************************
 
 struct ExprNameList
@@ -258,6 +275,7 @@ const char *expr_trig[] = {
     "acos",
     "asin",
     "atan",
+    "atan2",
     "cos",
     "cosh",
     "deg2rad",
@@ -274,8 +292,14 @@ const char *expr_vector[] = {
     "color4",
     "colorlookup",
     "cross",
+    "curl",
+    "divergence",
     "dot",
+    "gradient",
     "hsvcolor",
+    "ij_gradient",
+    "ijk_gradient",
+    "Laplacian",
     "magnitude",
     "normalize",
     NULL
@@ -322,11 +346,15 @@ const char *expr_mesh[] = {
     "cylindrical_theta",
     "external_cell",
     "external_node",
+    "ghost_zoneid",
     "global_nodeid",
     "global_zoneid",
+    "logical_nodeid",
+    "logical_zoneid",
     "max_coord",
     "min_coord",
     "nodeid",
+    "node_domain",
     "polar",
     "polar_radius",
     "polar_theta",
@@ -335,6 +363,8 @@ const char *expr_mesh[] = {
     "revolved_volume",
     "volume",
     "zoneid",
+    "zone_centers",
+    "zone_domain",
     "zonetype_label",
     "zonetype_rank",
     NULL
@@ -344,20 +374,15 @@ const char *expr_misc[] = {
     "bin",
     "cell_constant",
     "conn_components",
-    "curl",
+    "crack_width",
     "curve_domain",
     "curve_integrate",
     "curve_swapxy",
     "cycle",
-    "divergence",
     "enumerate",
     "gauss_curvature",
-    "gradient",
-    "ij_gradient",
-    "ijk_gradient",
     "isnan",
     "lambda2",
-    "Laplacian",
     "map",
     "mean_curvature",
     "nodal_constant",
@@ -671,7 +696,7 @@ QvisExpressionsWindow::CreateStandardEditor()
     stdEditorWidget = new QWidget();
 
     QGridLayout *layout = new QGridLayout(stdEditorWidget);
-    layout->setMargin(5);
+    layout->setContentsMargins(5,5,5,5);
     int row = 0;
 
     stdDefinitionEditLabel = new QLabel(tr("Definition"), stdEditorWidget);
@@ -735,7 +760,7 @@ QvisExpressionsWindow::CreatePythonFilterEditor()
     pyEditorWidget = new QWidget();
 
     QGridLayout *layout = new QGridLayout(pyEditorWidget);
-    layout->setMargin(5);
+    layout->setContentsMargins(5,5,5,5);
     int row = 0;
 
     pyArgsEditLabel = new QLabel(tr("Arguments"), pyEditorWidget);
@@ -1491,6 +1516,9 @@ QvisExpressionsWindow::UpdatePythonExpression()
 //    Cyrus Harrison,Thu Apr  8 12:40:22 PDT 2010
 //    Resolved issue w/ incorrectly flagging non python expressions.
 //
+//    Kathleen Biagas, Wed Mar 29 08:10:38 PDT 2023
+//    Replaced QRegExp (which has been deprecated) with QRegularExpression.
+//
 // ****************************************************************************
 bool
 QvisExpressionsWindow::ParsePythonExpression(const QString &expr_def,
@@ -1520,13 +1548,13 @@ QvisExpressionsWindow::ParsePythonExpression(const QString &expr_def,
     // look for instances of <ws>* , <ws>* " [anything] " <ws>* )
     // all instances of " within the python expression should be escaped.
 
-    QRegExp regx("(\\s*\\,\\s*\\\")(.+)(\\\"\\s*\\))");
-    int match_pos = 0;
-    while((match_pos = regx.indexIn(edef, match_pos)) != -1)
+    QRegularExpression regx("(\\s*\\,\\s*\\\")(.+)(\\\"\\s*\\))");
+    QRegularExpressionMatchIterator iter = regx.globalMatch(edef);
+    while(iter.hasNext())
     {
-        args_stop_idx = regx.pos(1);
-        res_script    = regx.cap(2);
-        match_pos    += regx.matchedLength();
+        QRegularExpressionMatch match = iter.next();
+        args_stop_idx = match.capturedStart(1);
+        res_script    = match.captured(2);
     }
 
     if(args_stop_idx == -1)
@@ -1640,12 +1668,18 @@ QvisExpressionsWindow::UpdateStandardExpressionEditor(const QString &expr_def)
 //    Eddie Rusu, Mon Sep 23 10:33:50 PDT 2019
 //    Added divide expression with optional arguments.
 //
+//    Justin Privitera, Thu 03 Mar 2022 10:41:04 AM PST
+//    Removed angle brackets from constantvalue field 
+//    in all 4 constant functions.
+//
+//    Kathleen Biagas, Wed Jun 15 2022
+//    Added crack_width.
+//
 // ****************************************************************************
 
 QString
 QvisExpressionsWindow::ExpandFunction(const QString &func_name)
 {
-
     QString res;
     bool doParens = (func_name.length() >= 2);
 
@@ -1767,7 +1801,7 @@ QvisExpressionsWindow::ExpandFunction(const QString &func_name)
              func_name == "point_constant" ||
              func_name == "nodal_constant" )
     {
-        res += QString("(<meshvar>, <constantvalue>)");
+        res += QString("(<meshvar>, constantvalue)");
         doParens = false;
     }
     else if(func_name == "average_over_time" || func_name == "min_over_time"
@@ -1834,6 +1868,11 @@ QvisExpressionsWindow::ExpandFunction(const QString &func_name)
     else if (func_name == "divide")
     {
         res += QString("(<val_numerator>, <val_denominator>, [<div_by_zero_value>, <tolerance>])");
+        doParens = false;
+    }
+    else if (func_name == "crack_width")
+    {
+        res += QString("(crack_number, <crack1_dir>, <crack2_dir>, <crack3_dir>, <strain_tensor>, volume2(<mesh_name>))");
         doParens = false;
     }
 

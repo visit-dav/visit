@@ -36,7 +36,7 @@ struct FiveFoldTetSubdivisionAttributesObject
 //
 static PyObject *NewFiveFoldTetSubdivisionAttributes(int);
 std::string
-PyFiveFoldTetSubdivisionAttributes_ToString(const FiveFoldTetSubdivisionAttributes *atts, const char *prefix)
+PyFiveFoldTetSubdivisionAttributes_ToString(const FiveFoldTetSubdivisionAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -108,12 +108,48 @@ FiveFoldTetSubdivisionAttributes_SetOddParityHasSixNeighborhood(PyObject *self, 
 {
     FiveFoldTetSubdivisionAttributesObject *obj = (FiveFoldTetSubdivisionAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the oddParityHasSixNeighborhood in the object.
-    obj->data->SetOddParityHasSixNeighborhood(ival != 0);
+    obj->data->SetOddParityHasSixNeighborhood(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -132,12 +168,48 @@ FiveFoldTetSubdivisionAttributes_SetAddComponentInformation(PyObject *self, PyOb
 {
     FiveFoldTetSubdivisionAttributesObject *obj = (FiveFoldTetSubdivisionAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the addComponentInformation in the object.
-    obj->data->SetAddComponentInformation(ival != 0);
+    obj->data->SetAddComponentInformation(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -156,12 +228,37 @@ FiveFoldTetSubdivisionAttributes_SetIdVar(PyObject *self, PyObject *args)
 {
     FiveFoldTetSubdivisionAttributesObject *obj = (FiveFoldTetSubdivisionAttributesObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the idVar in the object.
-    obj->data->SetIdVar(std::string(str));
+    obj->data->SetIdVar(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -180,12 +277,37 @@ FiveFoldTetSubdivisionAttributes_SetValueVar(PyObject *self, PyObject *args)
 {
     FiveFoldTetSubdivisionAttributesObject *obj = (FiveFoldTetSubdivisionAttributesObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the valueVar in the object.
-    obj->data->SetValueVar(std::string(str));
+    obj->data->SetValueVar(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -204,12 +326,37 @@ FiveFoldTetSubdivisionAttributes_SetContourTreeFilename(PyObject *self, PyObject
 {
     FiveFoldTetSubdivisionAttributesObject *obj = (FiveFoldTetSubdivisionAttributesObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the contourTreeFilename in the object.
-    obj->data->SetContourTreeFilename(std::string(str));
+    obj->data->SetContourTreeFilename(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -228,12 +375,48 @@ FiveFoldTetSubdivisionAttributes_SetIsovalue(PyObject *self, PyObject *args)
 {
     FiveFoldTetSubdivisionAttributesObject *obj = (FiveFoldTetSubdivisionAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the isovalue in the object.
-    obj->data->SetIsovalue(dval);
+    obj->data->SetIsovalue(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -252,45 +435,58 @@ FiveFoldTetSubdivisionAttributes_SetSelectedIds(PyObject *self, PyObject *args)
 {
     FiveFoldTetSubdivisionAttributesObject *obj = (FiveFoldTetSubdivisionAttributesObject *)self;
 
-    intVector  &vec = obj->data->GetSelectedIds();
-    PyObject   *tuple;
-    if(!PyArg_ParseTuple(args, "O", &tuple))
-        return NULL;
+    intVector vec;
 
-    if(PyTuple_Check(tuple))
+    if (PyNumber_Check(args))
     {
-        vec.resize(PyTuple_Size(tuple));
-        for(int i = 0; i < PyTuple_Size(tuple); ++i)
+        long val = PyLong_AsLong(args);
+        int cval = int(val);
+        if (val == -1 && PyErr_Occurred())
         {
-            PyObject *item = PyTuple_GET_ITEM(tuple, i);
-            if(PyFloat_Check(item))
-                vec[i] = int(PyFloat_AS_DOUBLE(item));
-            else if(PyInt_Check(item))
-                vec[i] = int(PyInt_AS_LONG(item));
-            else if(PyLong_Check(item))
-                vec[i] = int(PyLong_AsLong(item));
-            else
-                vec[i] = 0;
+            PyErr_Clear();
+            return PyErr_Format(PyExc_TypeError, "number not interpretable as C++ int");
+        }
+        if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+            return PyErr_Format(PyExc_ValueError, "number not interpretable as C++ int");
+        vec.resize(1);
+        vec[0] = cval;
+    }
+    else if (PySequence_Check(args) && !PyUnicode_Check(args))
+    {
+        vec.resize(PySequence_Size(args));
+        for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)
+        {
+            PyObject *item = PySequence_GetItem(args, i);
+
+            if (!PyNumber_Check(item))
+            {
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_TypeError, "arg %d is not a number type", (int) i);
+            }
+
+            long val = PyLong_AsLong(item);
+            int cval = int(val);
+
+            if (val == -1 && PyErr_Occurred())
+            {
+                Py_DECREF(item);
+                PyErr_Clear();
+                return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ int", (int) i);
+            }
+            if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+            {
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_ValueError, "arg %d not interpretable as C++ int", (int) i);
+            }
+            Py_DECREF(item);
+
+            vec[i] = cval;
         }
     }
-    else if(PyFloat_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = int(PyFloat_AS_DOUBLE(tuple));
-    }
-    else if(PyInt_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = int(PyInt_AS_LONG(tuple));
-    }
-    else if(PyLong_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = int(PyLong_AsLong(tuple));
-    }
     else
-        return NULL;
+        return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more ints");
 
+    obj->data->GetSelectedIds() = vec;
     // Mark the selectedIds in the object as modified.
     obj->data->SelectSelectedIds();
 
@@ -315,45 +511,58 @@ FiveFoldTetSubdivisionAttributes_SetHighlightedIds(PyObject *self, PyObject *arg
 {
     FiveFoldTetSubdivisionAttributesObject *obj = (FiveFoldTetSubdivisionAttributesObject *)self;
 
-    intVector  &vec = obj->data->GetHighlightedIds();
-    PyObject   *tuple;
-    if(!PyArg_ParseTuple(args, "O", &tuple))
-        return NULL;
+    intVector vec;
 
-    if(PyTuple_Check(tuple))
+    if (PyNumber_Check(args))
     {
-        vec.resize(PyTuple_Size(tuple));
-        for(int i = 0; i < PyTuple_Size(tuple); ++i)
+        long val = PyLong_AsLong(args);
+        int cval = int(val);
+        if (val == -1 && PyErr_Occurred())
         {
-            PyObject *item = PyTuple_GET_ITEM(tuple, i);
-            if(PyFloat_Check(item))
-                vec[i] = int(PyFloat_AS_DOUBLE(item));
-            else if(PyInt_Check(item))
-                vec[i] = int(PyInt_AS_LONG(item));
-            else if(PyLong_Check(item))
-                vec[i] = int(PyLong_AsLong(item));
-            else
-                vec[i] = 0;
+            PyErr_Clear();
+            return PyErr_Format(PyExc_TypeError, "number not interpretable as C++ int");
+        }
+        if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+            return PyErr_Format(PyExc_ValueError, "number not interpretable as C++ int");
+        vec.resize(1);
+        vec[0] = cval;
+    }
+    else if (PySequence_Check(args) && !PyUnicode_Check(args))
+    {
+        vec.resize(PySequence_Size(args));
+        for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)
+        {
+            PyObject *item = PySequence_GetItem(args, i);
+
+            if (!PyNumber_Check(item))
+            {
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_TypeError, "arg %d is not a number type", (int) i);
+            }
+
+            long val = PyLong_AsLong(item);
+            int cval = int(val);
+
+            if (val == -1 && PyErr_Occurred())
+            {
+                Py_DECREF(item);
+                PyErr_Clear();
+                return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ int", (int) i);
+            }
+            if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+            {
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_ValueError, "arg %d not interpretable as C++ int", (int) i);
+            }
+            Py_DECREF(item);
+
+            vec[i] = cval;
         }
     }
-    else if(PyFloat_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = int(PyFloat_AS_DOUBLE(tuple));
-    }
-    else if(PyInt_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = int(PyInt_AS_LONG(tuple));
-    }
-    else if(PyLong_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = int(PyLong_AsLong(tuple));
-    }
     else
-        return NULL;
+        return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more ints");
 
+    obj->data->GetHighlightedIds() = vec;
     // Mark the highlightedIds in the object as modified.
     obj->data->SelectHighlightedIds();
 
@@ -431,42 +640,55 @@ PyFiveFoldTetSubdivisionAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "highlightedIds") == 0)
         return FiveFoldTetSubdivisionAttributes_GetHighlightedIds(self, NULL);
 
+
+    // Add a __dict__ answer so that dir() works
+    if (!strcmp(name, "__dict__"))
+    {
+        PyObject *result = PyDict_New();
+        for (int i = 0; PyFiveFoldTetSubdivisionAttributes_methods[i].ml_meth; i++)
+            PyDict_SetItem(result,
+                PyString_FromString(PyFiveFoldTetSubdivisionAttributes_methods[i].ml_name),
+                PyString_FromString(PyFiveFoldTetSubdivisionAttributes_methods[i].ml_name));
+        return result;
+    }
+
     return Py_FindMethod(PyFiveFoldTetSubdivisionAttributes_methods, self, name);
 }
 
 int
 PyFiveFoldTetSubdivisionAttributes_setattr(PyObject *self, char *name, PyObject *args)
 {
-    // Create a tuple to contain the arguments since all of the Set
-    // functions expect a tuple.
-    PyObject *tuple = PyTuple_New(1);
-    PyTuple_SET_ITEM(tuple, 0, args);
-    Py_INCREF(args);
-    PyObject *obj = NULL;
+    PyObject NULL_PY_OBJ;
+    PyObject *obj = &NULL_PY_OBJ;
 
     if(strcmp(name, "oddParityHasSixNeighborhood") == 0)
-        obj = FiveFoldTetSubdivisionAttributes_SetOddParityHasSixNeighborhood(self, tuple);
+        obj = FiveFoldTetSubdivisionAttributes_SetOddParityHasSixNeighborhood(self, args);
     else if(strcmp(name, "addComponentInformation") == 0)
-        obj = FiveFoldTetSubdivisionAttributes_SetAddComponentInformation(self, tuple);
+        obj = FiveFoldTetSubdivisionAttributes_SetAddComponentInformation(self, args);
     else if(strcmp(name, "idVar") == 0)
-        obj = FiveFoldTetSubdivisionAttributes_SetIdVar(self, tuple);
+        obj = FiveFoldTetSubdivisionAttributes_SetIdVar(self, args);
     else if(strcmp(name, "valueVar") == 0)
-        obj = FiveFoldTetSubdivisionAttributes_SetValueVar(self, tuple);
+        obj = FiveFoldTetSubdivisionAttributes_SetValueVar(self, args);
     else if(strcmp(name, "contourTreeFilename") == 0)
-        obj = FiveFoldTetSubdivisionAttributes_SetContourTreeFilename(self, tuple);
+        obj = FiveFoldTetSubdivisionAttributes_SetContourTreeFilename(self, args);
     else if(strcmp(name, "isovalue") == 0)
-        obj = FiveFoldTetSubdivisionAttributes_SetIsovalue(self, tuple);
+        obj = FiveFoldTetSubdivisionAttributes_SetIsovalue(self, args);
     else if(strcmp(name, "selectedIds") == 0)
-        obj = FiveFoldTetSubdivisionAttributes_SetSelectedIds(self, tuple);
+        obj = FiveFoldTetSubdivisionAttributes_SetSelectedIds(self, args);
     else if(strcmp(name, "highlightedIds") == 0)
-        obj = FiveFoldTetSubdivisionAttributes_SetHighlightedIds(self, tuple);
+        obj = FiveFoldTetSubdivisionAttributes_SetHighlightedIds(self, args);
 
-    if(obj != NULL)
+    if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
-    Py_DECREF(tuple);
-    if( obj == NULL)
-        PyErr_Format(PyExc_RuntimeError, "Unable to set unknown attribute: '%s'", name);
+    if (obj == &NULL_PY_OBJ)
+    {
+        obj = NULL;
+        PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);
+    }
+    else if (obj == NULL && !PyErr_Occurred())
+        PyErr_Format(PyExc_RuntimeError, "unknown problem with '%s'", name);
+
     return (obj != NULL) ? 0 : -1;
 }
 
@@ -474,7 +696,7 @@ static int
 FiveFoldTetSubdivisionAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     FiveFoldTetSubdivisionAttributesObject *obj = (FiveFoldTetSubdivisionAttributesObject *)v;
-    fprintf(fp, "%s", PyFiveFoldTetSubdivisionAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyFiveFoldTetSubdivisionAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -482,7 +704,7 @@ PyObject *
 FiveFoldTetSubdivisionAttributes_str(PyObject *v)
 {
     FiveFoldTetSubdivisionAttributesObject *obj = (FiveFoldTetSubdivisionAttributesObject *)v;
-    return PyString_FromString(PyFiveFoldTetSubdivisionAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyFiveFoldTetSubdivisionAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -634,7 +856,7 @@ PyFiveFoldTetSubdivisionAttributes_GetLogString()
 {
     std::string s("FiveFoldTetSubdivisionAtts = FiveFoldTetSubdivisionAttributes()\n");
     if(currentAtts != 0)
-        s += PyFiveFoldTetSubdivisionAttributes_ToString(currentAtts, "FiveFoldTetSubdivisionAtts.");
+        s += PyFiveFoldTetSubdivisionAttributes_ToString(currentAtts, "FiveFoldTetSubdivisionAtts.", true);
     return s;
 }
 
@@ -647,7 +869,7 @@ PyFiveFoldTetSubdivisionAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("FiveFoldTetSubdivisionAtts = FiveFoldTetSubdivisionAttributes()\n");
-        s += PyFiveFoldTetSubdivisionAttributes_ToString(currentAtts, "FiveFoldTetSubdivisionAtts.");
+        s += PyFiveFoldTetSubdivisionAttributes_ToString(currentAtts, "FiveFoldTetSubdivisionAtts.", true);
         cb(s);
     }
 }

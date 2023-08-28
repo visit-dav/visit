@@ -37,7 +37,7 @@ struct FileOpenOptionsObject
 //
 static PyObject *NewFileOpenOptions(int);
 std::string
-PyFileOpenOptions_ToString(const FileOpenOptions *atts, const char *prefix)
+PyFileOpenOptions_ToString(const FileOpenOptions *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -82,7 +82,7 @@ PyFileOpenOptions_ToString(const FileOpenOptions *atts, const char *prefix)
             const DBOptionsAttributes *current = (const DBOptionsAttributes *)(*pos);
             snprintf(tmpStr, 1000, "GetOpenOptions(%d).", index);
             std::string objPrefix(prefix + std::string(tmpStr));
-            str += PyDBOptionsAttributes_ToString(current, objPrefix.c_str());
+            str += PyDBOptionsAttributes_ToString(current, objPrefix.c_str(), forLogging);
         }
         if(index == 0)
             str += "#openOptions does not contain any DBOptionsAttributes objects.\n";
@@ -136,37 +136,51 @@ FileOpenOptions_SetTypeNames(PyObject *self, PyObject *args)
 {
     FileOpenOptionsObject *obj = (FileOpenOptionsObject *)self;
 
-    stringVector  &vec = obj->data->GetTypeNames();
-    PyObject     *tuple;
-    if(!PyArg_ParseTuple(args, "O", &tuple))
-        return NULL;
+    stringVector vec;
 
-    if(PyTuple_Check(tuple))
+    if (PyUnicode_Check(args))
     {
-        vec.resize(PyTuple_Size(tuple));
-        for(int i = 0; i < PyTuple_Size(tuple); ++i)
+        char const *val = PyUnicode_AsUTF8(args);
+        std::string cval = std::string(val);
+        if (val == 0 && PyErr_Occurred())
         {
-            PyObject *item = PyTuple_GET_ITEM(tuple, i);
-            if(PyString_Check(item))
+            PyErr_Clear();
+            return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ string");
+        }
+        vec.resize(1);
+        vec[0] = cval;
+    }
+    else if (PySequence_Check(args))
+    {
+        vec.resize(PySequence_Size(args));
+        for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)
+        {
+            PyObject *item = PySequence_GetItem(args, i);
+
+            if (!PyUnicode_Check(item))
             {
-                char *item_cstr = PyString_AsString(item);
-                vec[i] = std::string(item_cstr);
-                PyString_AsString_Cleanup(item_cstr);
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_TypeError, "arg %d is not a unicode string", (int) i);
             }
-            else
-                vec[i] = std::string("");
+
+            char const *val = PyUnicode_AsUTF8(item);
+            std::string cval = std::string(val);
+
+            if (val == 0 && PyErr_Occurred())
+            {
+                Py_DECREF(item);
+                PyErr_Clear();
+                return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ string", (int) i);
+            }
+            Py_DECREF(item);
+
+            vec[i] = cval;
         }
     }
-    else if(PyString_Check(tuple))
-    {
-        vec.resize(1);
-        char *tuple_cstr = PyString_AsString(tuple);
-        vec[0] = std::string(tuple_cstr);
-        PyString_AsString_Cleanup(tuple_cstr);
-    }
     else
-        return NULL;
+        return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more string(s)");
 
+    obj->data->GetTypeNames() = vec;
     // Mark the typeNames in the object as modified.
     obj->data->SelectTypeNames();
 
@@ -191,37 +205,51 @@ FileOpenOptions_SetTypeIDs(PyObject *self, PyObject *args)
 {
     FileOpenOptionsObject *obj = (FileOpenOptionsObject *)self;
 
-    stringVector  &vec = obj->data->GetTypeIDs();
-    PyObject     *tuple;
-    if(!PyArg_ParseTuple(args, "O", &tuple))
-        return NULL;
+    stringVector vec;
 
-    if(PyTuple_Check(tuple))
+    if (PyUnicode_Check(args))
     {
-        vec.resize(PyTuple_Size(tuple));
-        for(int i = 0; i < PyTuple_Size(tuple); ++i)
+        char const *val = PyUnicode_AsUTF8(args);
+        std::string cval = std::string(val);
+        if (val == 0 && PyErr_Occurred())
         {
-            PyObject *item = PyTuple_GET_ITEM(tuple, i);
-            if(PyString_Check(item))
+            PyErr_Clear();
+            return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ string");
+        }
+        vec.resize(1);
+        vec[0] = cval;
+    }
+    else if (PySequence_Check(args))
+    {
+        vec.resize(PySequence_Size(args));
+        for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)
+        {
+            PyObject *item = PySequence_GetItem(args, i);
+
+            if (!PyUnicode_Check(item))
             {
-                char *item_cstr = PyString_AsString(item);
-                vec[i] = std::string(item_cstr);
-                PyString_AsString_Cleanup(item_cstr);
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_TypeError, "arg %d is not a unicode string", (int) i);
             }
-            else
-                vec[i] = std::string("");
+
+            char const *val = PyUnicode_AsUTF8(item);
+            std::string cval = std::string(val);
+
+            if (val == 0 && PyErr_Occurred())
+            {
+                Py_DECREF(item);
+                PyErr_Clear();
+                return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ string", (int) i);
+            }
+            Py_DECREF(item);
+
+            vec[i] = cval;
         }
     }
-    else if(PyString_Check(tuple))
-    {
-        vec.resize(1);
-        char *tuple_cstr = PyString_AsString(tuple);
-        vec[0] = std::string(tuple_cstr);
-        PyString_AsString_Cleanup(tuple_cstr);
-    }
     else
-        return NULL;
+        return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more string(s)");
 
+    obj->data->GetTypeIDs() = vec;
     // Mark the typeIDs in the object as modified.
     obj->data->SelectTypeIDs();
 
@@ -245,19 +273,13 @@ FileOpenOptions_GetTypeIDs(PyObject *self, PyObject *args)
 FileOpenOptions_GetOpenOptions(PyObject *self, PyObject *args)
 {
     FileOpenOptionsObject *obj = (FileOpenOptionsObject *)self;
-    int index;
-    if(!PyArg_ParseTuple(args, "i", &index))
-        return NULL;
-    if(index < 0 || (size_t)index >= obj->data->GetOpenOptions().size())
-    {
-        char msg[400] = {'\0'};
-        if(obj->data->GetOpenOptions().size() == 0)
-            snprintf(msg, 400, "In FileOpenOptions::GetOpenOptions : The index %d is invalid because openOptions is empty.", index);
-        else
-            snprintf(msg, 400, "In FileOpenOptions::GetOpenOptions : The index %d is invalid. Use index values in: [0, %ld).",  index, obj->data->GetOpenOptions().size());
-        PyErr_SetString(PyExc_IndexError, msg);
-        return NULL;
-    }
+    int index = -1;
+    if (args == NULL)
+        return PyErr_Format(PyExc_NameError, "Use .GetOpenOptions(int index) to get a single entry");
+    if (!PyArg_ParseTuple(args, "i", &index))
+        return PyErr_Format(PyExc_TypeError, "arg must be a single integer index");
+    if (index < 0 || (size_t)index >= obj->data->GetOpenOptions().size())
+        return PyErr_Format(PyExc_ValueError, "index out of range");
 
     // Since the new object will point to data owned by the this object,
     // we need to increment the reference count.
@@ -286,12 +308,7 @@ FileOpenOptions_AddOpenOptions(PyObject *self, PyObject *args)
     if(!PyArg_ParseTuple(args, "O", &element))
         return NULL;
     if(!PyDBOptionsAttributes_Check(element))
-    {
-        char msg[400] = {'\0'};
-        snprintf(msg, 400, "The FileOpenOptions::AddOpenOptions method only accepts DBOptionsAttributes objects.");
-        PyErr_SetString(PyExc_TypeError, msg);
-        return NULL;
-    }
+        return PyErr_Format(PyExc_TypeError, "expected attr object of type DBOptionsAttributes");
     DBOptionsAttributes *newData = PyDBOptionsAttributes_FromPyObject(element);
     obj->data->AddOpenOptions(*newData);
     obj->data->SelectOpenOptions();
@@ -329,17 +346,12 @@ FileOpenOptions_Remove_One_OpenOptions(PyObject *self, int index)
 PyObject *
 FileOpenOptions_RemoveOpenOptions(PyObject *self, PyObject *args)
 {
-    int index;
+    int index = -1;
     if(!PyArg_ParseTuple(args, "i", &index))
-        return NULL;
+        return PyErr_Format(PyExc_TypeError, "Expecting integer index");
     FileOpenOptionsObject *obj = (FileOpenOptionsObject *)self;
     if(index < 0 || index >= obj->data->GetNumOpenOptions())
-    {
-        char msg[400] = {'\0'};
-        snprintf(msg, 400, "In FileOpenOptions::RemoveOpenOptions : Index %d is out of range", index);
-        PyErr_SetString(PyExc_IndexError, msg);
-        return NULL;
-    }
+        return PyErr_Format(PyExc_IndexError, "Index out of range");
 
     return FileOpenOptions_Remove_One_OpenOptions(self, index);
 }
@@ -363,45 +375,58 @@ FileOpenOptions_SetEnabled(PyObject *self, PyObject *args)
 {
     FileOpenOptionsObject *obj = (FileOpenOptionsObject *)self;
 
-    intVector  &vec = obj->data->GetEnabled();
-    PyObject   *tuple;
-    if(!PyArg_ParseTuple(args, "O", &tuple))
-        return NULL;
+    intVector vec;
 
-    if(PyTuple_Check(tuple))
+    if (PyNumber_Check(args))
     {
-        vec.resize(PyTuple_Size(tuple));
-        for(int i = 0; i < PyTuple_Size(tuple); ++i)
+        long val = PyLong_AsLong(args);
+        int cval = int(val);
+        if (val == -1 && PyErr_Occurred())
         {
-            PyObject *item = PyTuple_GET_ITEM(tuple, i);
-            if(PyFloat_Check(item))
-                vec[i] = int(PyFloat_AS_DOUBLE(item));
-            else if(PyInt_Check(item))
-                vec[i] = int(PyInt_AS_LONG(item));
-            else if(PyLong_Check(item))
-                vec[i] = int(PyLong_AsLong(item));
-            else
-                vec[i] = 0;
+            PyErr_Clear();
+            return PyErr_Format(PyExc_TypeError, "number not interpretable as C++ int");
+        }
+        if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+            return PyErr_Format(PyExc_ValueError, "number not interpretable as C++ int");
+        vec.resize(1);
+        vec[0] = cval;
+    }
+    else if (PySequence_Check(args) && !PyUnicode_Check(args))
+    {
+        vec.resize(PySequence_Size(args));
+        for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)
+        {
+            PyObject *item = PySequence_GetItem(args, i);
+
+            if (!PyNumber_Check(item))
+            {
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_TypeError, "arg %d is not a number type", (int) i);
+            }
+
+            long val = PyLong_AsLong(item);
+            int cval = int(val);
+
+            if (val == -1 && PyErr_Occurred())
+            {
+                Py_DECREF(item);
+                PyErr_Clear();
+                return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ int", (int) i);
+            }
+            if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+            {
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_ValueError, "arg %d not interpretable as C++ int", (int) i);
+            }
+            Py_DECREF(item);
+
+            vec[i] = cval;
         }
     }
-    else if(PyFloat_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = int(PyFloat_AS_DOUBLE(tuple));
-    }
-    else if(PyInt_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = int(PyInt_AS_LONG(tuple));
-    }
-    else if(PyLong_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = int(PyLong_AsLong(tuple));
-    }
     else
-        return NULL;
+        return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more ints");
 
+    obj->data->GetEnabled() = vec;
     // Mark the Enabled in the object as modified.
     obj->data->SelectEnabled();
 
@@ -426,37 +451,51 @@ FileOpenOptions_SetPreferredIDs(PyObject *self, PyObject *args)
 {
     FileOpenOptionsObject *obj = (FileOpenOptionsObject *)self;
 
-    stringVector  &vec = obj->data->GetPreferredIDs();
-    PyObject     *tuple;
-    if(!PyArg_ParseTuple(args, "O", &tuple))
-        return NULL;
+    stringVector vec;
 
-    if(PyTuple_Check(tuple))
+    if (PyUnicode_Check(args))
     {
-        vec.resize(PyTuple_Size(tuple));
-        for(int i = 0; i < PyTuple_Size(tuple); ++i)
+        char const *val = PyUnicode_AsUTF8(args);
+        std::string cval = std::string(val);
+        if (val == 0 && PyErr_Occurred())
         {
-            PyObject *item = PyTuple_GET_ITEM(tuple, i);
-            if(PyString_Check(item))
+            PyErr_Clear();
+            return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ string");
+        }
+        vec.resize(1);
+        vec[0] = cval;
+    }
+    else if (PySequence_Check(args))
+    {
+        vec.resize(PySequence_Size(args));
+        for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)
+        {
+            PyObject *item = PySequence_GetItem(args, i);
+
+            if (!PyUnicode_Check(item))
             {
-                char *item_cstr = PyString_AsString(item);
-                vec[i] = std::string(item_cstr);
-                PyString_AsString_Cleanup(item_cstr);
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_TypeError, "arg %d is not a unicode string", (int) i);
             }
-            else
-                vec[i] = std::string("");
+
+            char const *val = PyUnicode_AsUTF8(item);
+            std::string cval = std::string(val);
+
+            if (val == 0 && PyErr_Occurred())
+            {
+                Py_DECREF(item);
+                PyErr_Clear();
+                return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ string", (int) i);
+            }
+            Py_DECREF(item);
+
+            vec[i] = cval;
         }
     }
-    else if(PyString_Check(tuple))
-    {
-        vec.resize(1);
-        char *tuple_cstr = PyString_AsString(tuple);
-        vec[0] = std::string(tuple_cstr);
-        PyString_AsString_Cleanup(tuple_cstr);
-    }
     else
-        return NULL;
+        return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more string(s)");
 
+    obj->data->GetPreferredIDs() = vec;
     // Mark the preferredIDs in the object as modified.
     obj->data->SelectPreferredIDs();
 
@@ -525,34 +564,47 @@ PyFileOpenOptions_getattr(PyObject *self, char *name)
     if(strcmp(name, "preferredIDs") == 0)
         return FileOpenOptions_GetPreferredIDs(self, NULL);
 
+
+    // Add a __dict__ answer so that dir() works
+    if (!strcmp(name, "__dict__"))
+    {
+        PyObject *result = PyDict_New();
+        for (int i = 0; PyFileOpenOptions_methods[i].ml_meth; i++)
+            PyDict_SetItem(result,
+                PyString_FromString(PyFileOpenOptions_methods[i].ml_name),
+                PyString_FromString(PyFileOpenOptions_methods[i].ml_name));
+        return result;
+    }
+
     return Py_FindMethod(PyFileOpenOptions_methods, self, name);
 }
 
 int
 PyFileOpenOptions_setattr(PyObject *self, char *name, PyObject *args)
 {
-    // Create a tuple to contain the arguments since all of the Set
-    // functions expect a tuple.
-    PyObject *tuple = PyTuple_New(1);
-    PyTuple_SET_ITEM(tuple, 0, args);
-    Py_INCREF(args);
-    PyObject *obj = NULL;
+    PyObject NULL_PY_OBJ;
+    PyObject *obj = &NULL_PY_OBJ;
 
     if(strcmp(name, "typeNames") == 0)
-        obj = FileOpenOptions_SetTypeNames(self, tuple);
+        obj = FileOpenOptions_SetTypeNames(self, args);
     else if(strcmp(name, "typeIDs") == 0)
-        obj = FileOpenOptions_SetTypeIDs(self, tuple);
+        obj = FileOpenOptions_SetTypeIDs(self, args);
     else if(strcmp(name, "Enabled") == 0)
-        obj = FileOpenOptions_SetEnabled(self, tuple);
+        obj = FileOpenOptions_SetEnabled(self, args);
     else if(strcmp(name, "preferredIDs") == 0)
-        obj = FileOpenOptions_SetPreferredIDs(self, tuple);
+        obj = FileOpenOptions_SetPreferredIDs(self, args);
 
-    if(obj != NULL)
+    if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
-    Py_DECREF(tuple);
-    if( obj == NULL)
-        PyErr_Format(PyExc_RuntimeError, "Unable to set unknown attribute: '%s'", name);
+    if (obj == &NULL_PY_OBJ)
+    {
+        obj = NULL;
+        PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);
+    }
+    else if (obj == NULL && !PyErr_Occurred())
+        PyErr_Format(PyExc_RuntimeError, "unknown problem with '%s'", name);
+
     return (obj != NULL) ? 0 : -1;
 }
 
@@ -560,7 +612,7 @@ static int
 FileOpenOptions_print(PyObject *v, FILE *fp, int flags)
 {
     FileOpenOptionsObject *obj = (FileOpenOptionsObject *)v;
-    fprintf(fp, "%s", PyFileOpenOptions_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyFileOpenOptions_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -568,7 +620,7 @@ PyObject *
 FileOpenOptions_str(PyObject *v)
 {
     FileOpenOptionsObject *obj = (FileOpenOptionsObject *)v;
-    return PyString_FromString(PyFileOpenOptions_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyFileOpenOptions_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -720,7 +772,7 @@ PyFileOpenOptions_GetLogString()
 {
     std::string s("FileOpenOptions = FileOpenOptions()\n");
     if(currentAtts != 0)
-        s += PyFileOpenOptions_ToString(currentAtts, "FileOpenOptions.");
+        s += PyFileOpenOptions_ToString(currentAtts, "FileOpenOptions.", true);
     return s;
 }
 
@@ -733,7 +785,7 @@ PyFileOpenOptions_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("FileOpenOptions = FileOpenOptions()\n");
-        s += PyFileOpenOptions_ToString(currentAtts, "FileOpenOptions.");
+        s += PyFileOpenOptions_ToString(currentAtts, "FileOpenOptions.", true);
         cb(s);
     }
 }

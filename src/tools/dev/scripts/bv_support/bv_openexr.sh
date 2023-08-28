@@ -85,13 +85,6 @@ function bv_openexr_ensure
     fi
 }
 
-function bv_openexr_dry_run
-{
-    if [[ "$DO_OPENEXR" == "yes" ]] ; then
-        echo "Dry run option not set for OpenEXR."
-    fi
-}
-
 # ***************************************************************************
 # build_ilmbase
 #
@@ -123,9 +116,17 @@ function build_ilmbase
         DISABLE_BUILDTYPE="--disable-static"
     fi
     info "Configuring ILMBase . . ."
+    EXTRA_AC_FLAGS=""
+    # detect NVIDIA Grace CPU (ARM) systems, which older versions of autoconf don't detect
+    if [[ "$(uname -m)" == "aarch64" ]] ; then
+         EXTRA_AC_FLAGS="ac_cv_build=aarch64-unknown-linux-gnu"
+    fi
+
+    set -x
     ./configure ${OPTIONAL} CXX="$CXX_COMPILER" \
                 CC="$C_COMPILER" CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
-                --prefix="$VISITDIR/openexr/$ILMBASE_VERSION/$VISITARCH" $DISABLE_BUILDTYPE
+                $EXTRA_AC_FLAGS --prefix="$VISITDIR/openexr/$ILMBASE_VERSION/$VISITARCH" $DISABLE_BUILDTYPE
+    set +x
     if [[ $? != 0 ]] ; then
         warn "ILMBase configure failed.  Giving up"
         return 1
@@ -189,9 +190,15 @@ function build_openexr
         DISABLE_BUILDTYPE="--disable-static"
     fi
     info "Configuring OpenEXR . . ."
+    EXTRA_AC_FLAGS=""
+    # detect NVIDIA Grace CPU (ARM) system, which older versions of autoconf don't detect
+    if [[ "$(uname -m)" == "aarch64" ]] ; then
+         EXTRA_AC_FLAGS="ac_cv_build=aarch64-unknown-linux-gnu"
+    fi
+
     ./configure ${OPTIONAL} CXX="$CXX_COMPILER" \
                 CC="$C_COMPILER" CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
-                --prefix="$VISITDIR/openexr/$OPENEXR_VERSION/$VISITARCH" \
+                $EXTRA_AC_FLAGS --prefix="$VISITDIR/openexr/$OPENEXR_VERSION/$VISITARCH" \
                 --with-ilmbase-prefix="$VISITDIR/openexr/$OPENEXR_VERSION/$VISITARCH" \
                 --with-pic --enable-imfexamples $DISABLE_BUILDTYPE
     if [[ $? != 0 ]] ; then

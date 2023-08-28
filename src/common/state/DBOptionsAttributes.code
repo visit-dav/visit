@@ -411,6 +411,58 @@ DBOptionsAttributes::SetEnumStrings(const std::string &name,
     enumStringsSizes[eIndex] = values.size();
 }
 
+Function: GetMultiLineString
+Declaration: const std::string &GetMultiLineString(const std::string &name) const;
+Definition:
+// ****************************************************************************
+//  Method: DBOptionsAttributes::GetMultiLineString
+//
+//  Purpose: Gets a multi line string.
+//
+//  Programmer: Chris Laganella
+//  Creation:   Tue Feb  8 18:07:09 EST 2022
+//
+// ****************************************************************************
+
+const std::string &
+DBOptionsAttributes::GetMultiLineString(const std::string &name) const
+{
+    int bIndex = FindIndex(name);
+    if (bIndex < 0)
+        EXCEPTION0(BadDeclareFormatString);
+    return optMultiLineStrings[bIndex];
+}
+
+Function: SetMultiLineString
+Declaration: void SetMultiLineString(const std::string &name, const std::string &defaultValue);
+Definition:
+// ****************************************************************************
+//  Method: DBOptionsAttributes::SetMultiLineString
+//
+//  Purpose: Sets a multi line string.
+//
+//  Programmer: Chris Laganella
+//  Creation:   Tue Feb  8 18:07:09 EST 2022
+//
+// ****************************************************************************
+
+void
+DBOptionsAttributes::SetMultiLineString(const std::string &name,
+                                        const std::string &defaultValue)
+{
+    int bIndex = FindIndex(name);
+    if (bIndex < 0)
+    {
+        names.push_back(name);
+        types.push_back(MultiLineString);
+        optMultiLineStrings.push_back(defaultValue);
+    }
+    else
+    {
+        optMultiLineStrings[bIndex] = defaultValue;
+    }
+}
+
 Function: GetNumberOfOptions
 Declaration: int GetNumberOfOptions(void) const;
 Definition:
@@ -564,6 +616,9 @@ DBOptionsAttributes::Merge(const DBOptionsAttributes &obj)
                 SetEnum(name, obj.GetEnum(name));
                 SetEnumStrings(name, obj.GetEnumStrings(name));
                 break;
+            case MultiLineString:
+                SetMultiLineString(name, obj.GetMultiLineString(name));
+                break;
             }
         }
     }
@@ -575,3 +630,4 @@ DBOptionsAttributes::Merge(const DBOptionsAttributes &obj)
 
     return retval;
 }
+

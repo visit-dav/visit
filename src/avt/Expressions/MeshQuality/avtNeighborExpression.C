@@ -78,6 +78,9 @@ avtNeighborExpression::~avtNeighborExpression()
 //    Eric Brugger, Wed Aug 20 16:19:07 PDT 2014
 //    Modified the class to work with avtDataRepresentation.
 //
+//    Kathleen Biagas, Fri June 30, 2023
+//    Remove call to GetBounds, results never used.
+//
 // ****************************************************************************
  
 avtDataRepresentation *
@@ -120,9 +123,6 @@ avtNeighborExpression::ExecuteData(avtDataRepresentation *in_dr)
 
     data->SetNumberOfComponents(1);
     data->SetNumberOfTuples(nPoints);
-
-    double bounds[6];
-    in_ds->GetBounds(bounds);
 
     // Create the point locator
     vtkPointLocator *ptLoc = vtkPointLocator::New();

@@ -39,6 +39,7 @@
 #include <map>
 #include <string>
 
+using std::ifstream;
 using std::string;
 
 vtkStandardNewMacro(VisItAVSucdReader);

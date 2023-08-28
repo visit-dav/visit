@@ -25,8 +25,39 @@
 #    Matthew Wheeler, Thu Feb 06 12:00:00 GMT 2014
 #    Added two new AWE mesh quality tests
 #
+#    Alister Maguire, Wed Apr 21 13:26:01 PDT 2021
+#    Added TestSideVolume.
+#
 # ----------------------------------------------------------------------------
 
+
+def TestSideVolume():
+    #
+    # This ensures that a bug fix is still working well.
+    #
+    TestSection("Side Volume")
+
+    OpenDatabase(silo_data_path("wave.visit"))
+
+    AddPlot("Pseudocolor", "mesh_quality/min_side_volume")
+    DrawPlots()
+
+    ResetView()
+    v = GetView3D()
+    v.viewNormal = (0.3, 0.8, 0.6)
+    SetView3D(v)
+    SetTimeSliderState(10)
+
+    Test("min_side_volume_00")
+    DeleteAllPlots()
+
+    AddPlot("Pseudocolor", "mesh_quality/max_side_volume")
+    DrawPlots()
+
+    Test("max_side_volume_00")
+    DeleteAllPlots()
+
+    CloseDatabase(silo_data_path("wave.visit"))
 
 
 OpenDatabase(silo_data_path("ucd3d.silo"))
@@ -102,7 +133,7 @@ CloseDatabase(silo_data_path("tire.silo"))
 OpenDatabase(silo_data_path("specmix_ucd.silo"))
 
 AddPlot("Mesh", "Mesh")
-AddPlot("Pseudocolor", "mesh_quality/min_corner_area")
+AddPlot("Pseudocolor", "mesh_quality/Mesh/min_corner_area")
 pc = PseudocolorAttributes()
 pc.invertColorTable = 1
 SetPlotOptions(pc)
@@ -112,7 +143,7 @@ Test("mesh_quality_06")
 DeleteAllPlots()
 
 AddPlot("Mesh", "Mesh")
-AddPlot("Pseudocolor", "mesh_quality/min_sin_corner")
+AddPlot("Pseudocolor", "mesh_quality/Mesh/min_sin_corner")
 pc = PseudocolorAttributes()
 pc.invertColorTable = 1
 SetPlotOptions(pc)
@@ -122,5 +153,7 @@ Test("mesh_quality_07")
 DeleteAllPlots()
 
 CloseDatabase(silo_data_path("specmix_ucd.silo"))
+
+TestSideVolume()
 
 Exit()

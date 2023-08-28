@@ -10,15 +10,17 @@
 #   Kathleen Biagas, Wed Oct 19 09:58:16 MST 2011
 #   Remove ${VISIT_MSVC_VERSION} from lib location.
 #
+#   Kathleen Biagas, Thu July 15, 2021
+#   Add CGNS_WIN32_DEFINES (used by xml2cmake to add preprocessor defines).
+#
 #****************************************************************************/
 
-# Use the CGNS_DIR hint from the config-site .cmake file 
-
-INCLUDE(${VISIT_SOURCE_DIR}/CMake/SetUpThirdParty.cmake)
+# Use the CGNS_DIR hint from the config-site .cmake file
 
 if(WIN32)
-  SET_UP_THIRD_PARTY(CGNS lib include cgnsdll)
+  SET_UP_THIRD_PARTY(CGNS LIBS cgnsdll)
+  set(CGNS_WIN32_DEFINES "USE_DLL")
 else()
-  SET_UP_THIRD_PARTY(CGNS lib include cgns)
+  SET_UP_THIRD_PARTY(CGNS LIBS cgns)
 endif()
 

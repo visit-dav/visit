@@ -2214,19 +2214,11 @@ void avtFLASHFileFormat::ReadBlockExtents()
                     blocks[b].maxSpatialExtents[d] = 0;
                 }
     
-                if (blocks[b].minSpatialExtents[0] < minSpatialExtents[0])
-                    minSpatialExtents[0] = blocks[b].minSpatialExtents[0];
-                if (blocks[b].minSpatialExtents[1] < minSpatialExtents[1])
-                    minSpatialExtents[1] = blocks[b].minSpatialExtents[1];
-                if (blocks[b].minSpatialExtents[2] < minSpatialExtents[2])
-                    minSpatialExtents[2] = blocks[b].minSpatialExtents[2];
+                if (blocks[b].minSpatialExtents[d] < minSpatialExtents[d])
+                    minSpatialExtents[d] = blocks[b].minSpatialExtents[d];
     
-                if (blocks[b].maxSpatialExtents[0] > maxSpatialExtents[0])
-                    maxSpatialExtents[0] = blocks[b].maxSpatialExtents[0];
-                if (blocks[b].maxSpatialExtents[1] > maxSpatialExtents[1])
-                    maxSpatialExtents[1] = blocks[b].maxSpatialExtents[1];
-                if (blocks[b].maxSpatialExtents[2] > maxSpatialExtents[2])
-                    maxSpatialExtents[2] = blocks[b].maxSpatialExtents[2];
+                if (blocks[b].maxSpatialExtents[d] > maxSpatialExtents[d])
+                    maxSpatialExtents[d] = blocks[b].maxSpatialExtents[d];
             }
         }
         // Delete the raw array
@@ -2260,19 +2252,11 @@ void avtFLASHFileFormat::ReadBlockExtents()
                 blocks[b].minSpatialExtents[d] = bbox_line[d*2 + 0];
                 blocks[b].maxSpatialExtents[d] = bbox_line[d*2 + 1];
     
-                if (blocks[b].minSpatialExtents[0] < minSpatialExtents[0])
-                    minSpatialExtents[0] = blocks[b].minSpatialExtents[0];
-                if (blocks[b].minSpatialExtents[1] < minSpatialExtents[1])
-                    minSpatialExtents[1] = blocks[b].minSpatialExtents[1];
-                if (blocks[b].minSpatialExtents[2] < minSpatialExtents[2])
-                    minSpatialExtents[2] = blocks[b].minSpatialExtents[2];
+                if (blocks[b].minSpatialExtents[d] < minSpatialExtents[d])
+                    minSpatialExtents[d] = blocks[b].minSpatialExtents[d];
     
-                if (blocks[b].maxSpatialExtents[0] > maxSpatialExtents[0])
-                    maxSpatialExtents[0] = blocks[b].maxSpatialExtents[0];
-                if (blocks[b].maxSpatialExtents[1] > maxSpatialExtents[1])
-                    maxSpatialExtents[1] = blocks[b].maxSpatialExtents[1];
-                if (blocks[b].maxSpatialExtents[2] > maxSpatialExtents[2])
-                    maxSpatialExtents[2] = blocks[b].maxSpatialExtents[2];
+                if (blocks[b].maxSpatialExtents[d] > maxSpatialExtents[d])
+                    maxSpatialExtents[d] = blocks[b].maxSpatialExtents[d];
             }
         }    
         // Delete the raw array
@@ -2637,7 +2621,7 @@ avtFLASHFileFormat::ReadParticleAttributes()
         // dimension if the grid exists.
         if (strcmp(member_name, "particle_x")==0 && dimension < 1)
             dimension = 1;
-        if (strcmp(member_name, "particle_t")==0 && dimension < 2)
+        if (strcmp(member_name, "particle_y")==0 && dimension < 2)
             dimension = 2;
         if (strcmp(member_name, "particle_z")==0 && dimension < 3)
             dimension = 3;

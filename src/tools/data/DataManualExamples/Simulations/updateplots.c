@@ -215,7 +215,52 @@ void simulate_one_timestep(simulation_data *sim)
         sim->saveCounter++;
 }
 
+/******************************************************************************
+ *
+ * Purpose: This function performs an export to VTK file format.
+ *          Tests changing export options.
+ *
+ * Programmer: Kathleen Biagas 
+ * Date:       September 10, 2021
+ *
+ * Modifications:
+ *
+ *****************************************************************************/
 
+void do_exportVTK(simulation_data *sim)
+{
+    char filename[100];
+    visit_handle vars = VISIT_INVALID_HANDLE;
+    VisIt_NameList_alloc(&vars);
+    VisIt_NameList_addName(vars, "default");
+    /* Add another export variable. */
+    VisIt_NameList_addName(vars, "mesh2d/nodeid");
+
+    {
+        /* Create an option list to change the exported file type */
+
+        visit_handle options = VISIT_INVALID_HANDLE;
+        VisIt_OptionList_alloc(&options);
+        /* FileFormat 0: Legacy ASCII */
+        /* FileFormat 1: Legacy Binary */
+        /* FileFormat 2: XML ASCII */
+        /* FileFormat 3: XML Binary */
+
+        VisIt_OptionList_setValueE(options, "FileFormat", 3);
+
+        sprintf(filename, "updateplots_export%04d", sim->saveCounter);
+        if(VisItExportDatabaseWithOptions(filename, "VTK_1.0", vars, options) &&
+               sim->par_rank == 0)
+        {
+            fprintf(stderr, "Exported %s\n", filename);
+        }
+
+        VisIt_OptionList_free(options);
+    }
+    VisIt_NameList_free(vars);
+
+    sim->saveCounter++;
+}
 
 /* Callback function for control commands, which are the buttons in the 
  * GUI's Simulation window. This type of command is handled automatically
@@ -238,6 +283,8 @@ void ControlCommandCallback(const char *cmd, const char *args, void *cbdata)
     }
     else if(strcmp(cmd, "export") == 0)
         sim->export = 1;
+    else if(strcmp(cmd, "exportVTK") == 0)
+        do_exportVTK(sim);
 }
 
 /* CHANGE 1 */
@@ -377,6 +424,8 @@ ProcessConsoleCommand(simulation_data *sim)
     }
     else if(strcmp(cmd, "export") == 0)
         sim->export = 1;
+    else if(strcmp(cmd, "exportVTK") == 0)
+        do_exportVTK(sim);
 
     if(sim->echo && sim->par_rank == 0)
     {

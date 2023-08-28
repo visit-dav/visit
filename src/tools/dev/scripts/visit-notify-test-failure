@@ -101,6 +101,7 @@ fi
 #
 sed -i "s/mclarsen@users.noreply.github.com/larsen30@llnl.gov/" modifiers
 sed -i "s/jameskress@users.noreply.github.com/kressjm@ornl.gov/" modifiers
+sed -i "s/35237779+JustinPrivitera@users.noreply.github.com/privitera1@llnl.gov/" modifiers
 
 #
 # Build the email list of modifiers.

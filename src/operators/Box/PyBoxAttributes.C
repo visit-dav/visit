@@ -36,7 +36,7 @@ struct BoxAttributesObject
 //
 static PyObject *NewBoxAttributes(int);
 std::string
-PyBoxAttributes_ToString(const BoxAttributes *atts, const char *prefix)
+PyBoxAttributes_ToString(const BoxAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -90,21 +90,54 @@ BoxAttributes_SetAmount(PyObject *self, PyObject *args)
 {
     BoxAttributesObject *obj = (BoxAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 2)
+    {
+        std::stringstream ss;
+        ss << "An invalid amount value was given." << std::endl;
+        ss << "Valid values are in the range [0,1]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << " Some";
+        ss << ", All";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the amount in the object.
-    if(ival >= 0 && ival < 2)
-        obj->data->SetAmount(BoxAttributes::Amount(ival));
-    else
-    {
-        fprintf(stderr, "An invalid amount value was given. "
-                        "Valid values are in the range of [0,1]. "
-                        "You can also use the following names: "
-                        "Some, All.");
-        return NULL;
-    }
+    obj->data->SetAmount(BoxAttributes::Amount(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -123,12 +156,48 @@ BoxAttributes_SetMinx(PyObject *self, PyObject *args)
 {
     BoxAttributesObject *obj = (BoxAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the minx in the object.
-    obj->data->SetMinx(dval);
+    obj->data->SetMinx(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -147,12 +216,48 @@ BoxAttributes_SetMaxx(PyObject *self, PyObject *args)
 {
     BoxAttributesObject *obj = (BoxAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the maxx in the object.
-    obj->data->SetMaxx(dval);
+    obj->data->SetMaxx(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -171,12 +276,48 @@ BoxAttributes_SetMiny(PyObject *self, PyObject *args)
 {
     BoxAttributesObject *obj = (BoxAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the miny in the object.
-    obj->data->SetMiny(dval);
+    obj->data->SetMiny(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -195,12 +336,48 @@ BoxAttributes_SetMaxy(PyObject *self, PyObject *args)
 {
     BoxAttributesObject *obj = (BoxAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the maxy in the object.
-    obj->data->SetMaxy(dval);
+    obj->data->SetMaxy(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -219,12 +396,48 @@ BoxAttributes_SetMinz(PyObject *self, PyObject *args)
 {
     BoxAttributesObject *obj = (BoxAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the minz in the object.
-    obj->data->SetMinz(dval);
+    obj->data->SetMinz(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -243,12 +456,48 @@ BoxAttributes_SetMaxz(PyObject *self, PyObject *args)
 {
     BoxAttributesObject *obj = (BoxAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the maxz in the object.
-    obj->data->SetMaxz(dval);
+    obj->data->SetMaxz(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -267,12 +516,48 @@ BoxAttributes_SetInverse(PyObject *self, PyObject *args)
 {
     BoxAttributesObject *obj = (BoxAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the inverse in the object.
-    obj->data->SetInverse(ival != 0);
+    obj->data->SetInverse(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -349,42 +634,55 @@ PyBoxAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "inverse") == 0)
         return BoxAttributes_GetInverse(self, NULL);
 
+
+    // Add a __dict__ answer so that dir() works
+    if (!strcmp(name, "__dict__"))
+    {
+        PyObject *result = PyDict_New();
+        for (int i = 0; PyBoxAttributes_methods[i].ml_meth; i++)
+            PyDict_SetItem(result,
+                PyString_FromString(PyBoxAttributes_methods[i].ml_name),
+                PyString_FromString(PyBoxAttributes_methods[i].ml_name));
+        return result;
+    }
+
     return Py_FindMethod(PyBoxAttributes_methods, self, name);
 }
 
 int
 PyBoxAttributes_setattr(PyObject *self, char *name, PyObject *args)
 {
-    // Create a tuple to contain the arguments since all of the Set
-    // functions expect a tuple.
-    PyObject *tuple = PyTuple_New(1);
-    PyTuple_SET_ITEM(tuple, 0, args);
-    Py_INCREF(args);
-    PyObject *obj = NULL;
+    PyObject NULL_PY_OBJ;
+    PyObject *obj = &NULL_PY_OBJ;
 
     if(strcmp(name, "amount") == 0)
-        obj = BoxAttributes_SetAmount(self, tuple);
+        obj = BoxAttributes_SetAmount(self, args);
     else if(strcmp(name, "minx") == 0)
-        obj = BoxAttributes_SetMinx(self, tuple);
+        obj = BoxAttributes_SetMinx(self, args);
     else if(strcmp(name, "maxx") == 0)
-        obj = BoxAttributes_SetMaxx(self, tuple);
+        obj = BoxAttributes_SetMaxx(self, args);
     else if(strcmp(name, "miny") == 0)
-        obj = BoxAttributes_SetMiny(self, tuple);
+        obj = BoxAttributes_SetMiny(self, args);
     else if(strcmp(name, "maxy") == 0)
-        obj = BoxAttributes_SetMaxy(self, tuple);
+        obj = BoxAttributes_SetMaxy(self, args);
     else if(strcmp(name, "minz") == 0)
-        obj = BoxAttributes_SetMinz(self, tuple);
+        obj = BoxAttributes_SetMinz(self, args);
     else if(strcmp(name, "maxz") == 0)
-        obj = BoxAttributes_SetMaxz(self, tuple);
+        obj = BoxAttributes_SetMaxz(self, args);
     else if(strcmp(name, "inverse") == 0)
-        obj = BoxAttributes_SetInverse(self, tuple);
+        obj = BoxAttributes_SetInverse(self, args);
 
-    if(obj != NULL)
+    if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
-    Py_DECREF(tuple);
-    if( obj == NULL)
-        PyErr_Format(PyExc_RuntimeError, "Unable to set unknown attribute: '%s'", name);
+    if (obj == &NULL_PY_OBJ)
+    {
+        obj = NULL;
+        PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);
+    }
+    else if (obj == NULL && !PyErr_Occurred())
+        PyErr_Format(PyExc_RuntimeError, "unknown problem with '%s'", name);
+
     return (obj != NULL) ? 0 : -1;
 }
 
@@ -392,7 +690,7 @@ static int
 BoxAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     BoxAttributesObject *obj = (BoxAttributesObject *)v;
-    fprintf(fp, "%s", PyBoxAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyBoxAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -400,7 +698,7 @@ PyObject *
 BoxAttributes_str(PyObject *v)
 {
     BoxAttributesObject *obj = (BoxAttributesObject *)v;
-    return PyString_FromString(PyBoxAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyBoxAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -552,7 +850,7 @@ PyBoxAttributes_GetLogString()
 {
     std::string s("BoxAtts = BoxAttributes()\n");
     if(currentAtts != 0)
-        s += PyBoxAttributes_ToString(currentAtts, "BoxAtts.");
+        s += PyBoxAttributes_ToString(currentAtts, "BoxAtts.", true);
     return s;
 }
 
@@ -565,7 +863,7 @@ PyBoxAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("BoxAtts = BoxAttributes()\n");
-        s += PyBoxAttributes_ToString(currentAtts, "BoxAtts.");
+        s += PyBoxAttributes_ToString(currentAtts, "BoxAtts.", true);
         cb(s);
     }
 }

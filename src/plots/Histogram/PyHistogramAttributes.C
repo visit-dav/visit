@@ -6,6 +6,7 @@
 #include <ObserverToCallback.h>
 #include <stdio.h>
 #include <Py2and3Support.h>
+#include <visit-config.h>
 #include <ColorAttribute.h>
 
 // ****************************************************************************
@@ -37,7 +38,7 @@ struct HistogramAttributesObject
 //
 static PyObject *NewHistogramAttributes(int);
 std::string
-PyHistogramAttributes_ToString(const HistogramAttributes *atts, const char *prefix)
+PyHistogramAttributes_ToString(const HistogramAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -203,21 +204,54 @@ HistogramAttributes_SetBasedOn(PyObject *self, PyObject *args)
 {
     HistogramAttributesObject *obj = (HistogramAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 2)
+    {
+        std::stringstream ss;
+        ss << "An invalid basedOn value was given." << std::endl;
+        ss << "Valid values are in the range [0,1]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << " ManyVarsForSingleZone";
+        ss << ", ManyZonesForSingleVar";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the basedOn in the object.
-    if(ival >= 0 && ival < 2)
-        obj->data->SetBasedOn(HistogramAttributes::BasedOn(ival));
-    else
-    {
-        fprintf(stderr, "An invalid basedOn value was given. "
-                        "Valid values are in the range of [0,1]. "
-                        "You can also use the following names: "
-                        "ManyVarsForSingleZone, ManyZonesForSingleVar.");
-        return NULL;
-    }
+    obj->data->SetBasedOn(HistogramAttributes::BasedOn(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -236,21 +270,55 @@ HistogramAttributes_SetHistogramType(PyObject *self, PyObject *args)
 {
     HistogramAttributesObject *obj = (HistogramAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 3)
+    {
+        std::stringstream ss;
+        ss << "An invalid histogramType value was given." << std::endl;
+        ss << "Valid values are in the range [0,2]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << " Frequency";
+        ss << ", Weighted";
+        ss << ", Variable";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the histogramType in the object.
-    if(ival >= 0 && ival < 3)
-        obj->data->SetHistogramType(HistogramAttributes::BinContribution(ival));
-    else
-    {
-        fprintf(stderr, "An invalid histogramType value was given. "
-                        "Valid values are in the range of [0,2]. "
-                        "You can also use the following names: "
-                        "Frequency, Weighted, Variable.");
-        return NULL;
-    }
+    obj->data->SetHistogramType(HistogramAttributes::BinContribution(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -269,12 +337,37 @@ HistogramAttributes_SetWeightVariable(PyObject *self, PyObject *args)
 {
     HistogramAttributesObject *obj = (HistogramAttributesObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the weightVariable in the object.
-    obj->data->SetWeightVariable(std::string(str));
+    obj->data->SetWeightVariable(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -293,21 +386,54 @@ HistogramAttributes_SetLimitsMode(PyObject *self, PyObject *args)
 {
     HistogramAttributesObject *obj = (HistogramAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 2)
+    {
+        std::stringstream ss;
+        ss << "An invalid limitsMode value was given." << std::endl;
+        ss << "Valid values are in the range [0,1]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << " OriginalData";
+        ss << ", CurrentPlot";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the limitsMode in the object.
-    if(ival >= 0 && ival < 2)
-        obj->data->SetLimitsMode(HistogramAttributes::LimitsMode(ival));
-    else
-    {
-        fprintf(stderr, "An invalid limitsMode value was given. "
-                        "Valid values are in the range of [0,1]. "
-                        "You can also use the following names: "
-                        "OriginalData, CurrentPlot.");
-        return NULL;
-    }
+    obj->data->SetLimitsMode(HistogramAttributes::LimitsMode(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -326,12 +452,48 @@ HistogramAttributes_SetMinFlag(PyObject *self, PyObject *args)
 {
     HistogramAttributesObject *obj = (HistogramAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the minFlag in the object.
-    obj->data->SetMinFlag(ival != 0);
+    obj->data->SetMinFlag(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -350,12 +512,48 @@ HistogramAttributes_SetMaxFlag(PyObject *self, PyObject *args)
 {
     HistogramAttributesObject *obj = (HistogramAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the maxFlag in the object.
-    obj->data->SetMaxFlag(ival != 0);
+    obj->data->SetMaxFlag(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -374,12 +572,48 @@ HistogramAttributes_SetMin(PyObject *self, PyObject *args)
 {
     HistogramAttributesObject *obj = (HistogramAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the min in the object.
-    obj->data->SetMin(dval);
+    obj->data->SetMin(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -398,12 +632,48 @@ HistogramAttributes_SetMax(PyObject *self, PyObject *args)
 {
     HistogramAttributesObject *obj = (HistogramAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the max in the object.
-    obj->data->SetMax(dval);
+    obj->data->SetMax(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -422,12 +692,48 @@ HistogramAttributes_SetNumBins(PyObject *self, PyObject *args)
 {
     HistogramAttributesObject *obj = (HistogramAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the numBins in the object.
-    obj->data->SetNumBins((int)ival);
+    obj->data->SetNumBins(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -446,12 +752,48 @@ HistogramAttributes_SetDomain(PyObject *self, PyObject *args)
 {
     HistogramAttributesObject *obj = (HistogramAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the domain in the object.
-    obj->data->SetDomain((int)ival);
+    obj->data->SetDomain(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -470,12 +812,48 @@ HistogramAttributes_SetZone(PyObject *self, PyObject *args)
 {
     HistogramAttributesObject *obj = (HistogramAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the zone in the object.
-    obj->data->SetZone((int)ival);
+    obj->data->SetZone(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -494,12 +872,48 @@ HistogramAttributes_SetUseBinWidths(PyObject *self, PyObject *args)
 {
     HistogramAttributesObject *obj = (HistogramAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the useBinWidths in the object.
-    obj->data->SetUseBinWidths(ival != 0);
+    obj->data->SetUseBinWidths(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -518,21 +932,54 @@ HistogramAttributes_SetOutputType(PyObject *self, PyObject *args)
 {
     HistogramAttributesObject *obj = (HistogramAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 2)
+    {
+        std::stringstream ss;
+        ss << "An invalid outputType value was given." << std::endl;
+        ss << "Valid values are in the range [0,1]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << " Curve";
+        ss << ", Block";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the outputType in the object.
-    if(ival >= 0 && ival < 2)
-        obj->data->SetOutputType(HistogramAttributes::OutputType(ival));
-    else
-    {
-        fprintf(stderr, "An invalid outputType value was given. "
-                        "Valid values are in the range of [0,1]. "
-                        "You can also use the following names: "
-                        "Curve, Block.");
-        return NULL;
-    }
+    obj->data->SetOutputType(HistogramAttributes::OutputType(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -551,12 +998,48 @@ HistogramAttributes_SetLineWidth(PyObject *self, PyObject *args)
 {
     HistogramAttributesObject *obj = (HistogramAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the lineWidth in the object.
-    obj->data->SetLineWidth(ival);
+    obj->data->SetLineWidth(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -652,21 +1135,55 @@ HistogramAttributes_SetDataScale(PyObject *self, PyObject *args)
 {
     HistogramAttributesObject *obj = (HistogramAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 3)
+    {
+        std::stringstream ss;
+        ss << "An invalid dataScale value was given." << std::endl;
+        ss << "Valid values are in the range [0,2]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << " Linear";
+        ss << ", Log";
+        ss << ", SquareRoot";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the dataScale in the object.
-    if(ival >= 0 && ival < 3)
-        obj->data->SetDataScale(HistogramAttributes::DataScale(ival));
-    else
-    {
-        fprintf(stderr, "An invalid dataScale value was given. "
-                        "Valid values are in the range of [0,2]. "
-                        "You can also use the following names: "
-                        "Linear, Log, SquareRoot.");
-        return NULL;
-    }
+    obj->data->SetDataScale(HistogramAttributes::DataScale(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -685,21 +1202,55 @@ HistogramAttributes_SetBinScale(PyObject *self, PyObject *args)
 {
     HistogramAttributesObject *obj = (HistogramAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 3)
+    {
+        std::stringstream ss;
+        ss << "An invalid binScale value was given." << std::endl;
+        ss << "Valid values are in the range [0,2]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << " Linear";
+        ss << ", Log";
+        ss << ", SquareRoot";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the binScale in the object.
-    if(ival >= 0 && ival < 3)
-        obj->data->SetBinScale(HistogramAttributes::DataScale(ival));
-    else
-    {
-        fprintf(stderr, "An invalid binScale value was given. "
-                        "Valid values are in the range of [0,2]. "
-                        "You can also use the following names: "
-                        "Linear, Log, SquareRoot.");
-        return NULL;
-    }
+    obj->data->SetBinScale(HistogramAttributes::DataScale(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -718,12 +1269,48 @@ HistogramAttributes_SetNormalizeHistogram(PyObject *self, PyObject *args)
 {
     HistogramAttributesObject *obj = (HistogramAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the normalizeHistogram in the object.
-    obj->data->SetNormalizeHistogram(ival != 0);
+    obj->data->SetNormalizeHistogram(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -742,12 +1329,48 @@ HistogramAttributes_SetComputeAsCDF(PyObject *self, PyObject *args)
 {
     HistogramAttributesObject *obj = (HistogramAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the computeAsCDF in the object.
-    obj->data->SetComputeAsCDF(ival != 0);
+    obj->data->SetComputeAsCDF(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -899,104 +1522,77 @@ PyHistogramAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "computeAsCDF") == 0)
         return HistogramAttributes_GetComputeAsCDF(self, NULL);
 
-    // Try and handle legacy fields
 
-    // lineStyle and it's possible enumerations
-    bool lineStyleFound = false;
-    if (strcmp(name, "lineStyle") == 0)
+    // Add a __dict__ answer so that dir() works
+    if (!strcmp(name, "__dict__"))
     {
-        lineStyleFound = true;
+        PyObject *result = PyDict_New();
+        for (int i = 0; PyHistogramAttributes_methods[i].ml_meth; i++)
+            PyDict_SetItem(result,
+                PyString_FromString(PyHistogramAttributes_methods[i].ml_name),
+                PyString_FromString(PyHistogramAttributes_methods[i].ml_name));
+        return result;
     }
-    else if (strcmp(name, "SOLID") == 0)
-    {
-        lineStyleFound = true;
-    }
-    else if (strcmp(name, "DASH") == 0)
-    {
-        lineStyleFound = true;
-    }
-    else if (strcmp(name, "DOT") == 0)
-    {
-        lineStyleFound = true;
-    }
-    else if (strcmp(name, "DOTDASH") == 0)
-    {
-        lineStyleFound = true;
-    }
-    if (lineStyleFound)
-    {
-        fprintf(stdout, "lineStyle is no longer a valid Histogram "
-                       "attribute.\nIt's value is being ignored, please remove "
-                       "it from your script.\n");
-        return PyInt_FromLong(0L);
-    }
+
     return Py_FindMethod(PyHistogramAttributes_methods, self, name);
 }
 
 int
 PyHistogramAttributes_setattr(PyObject *self, char *name, PyObject *args)
 {
-    // Create a tuple to contain the arguments since all of the Set
-    // functions expect a tuple.
-    PyObject *tuple = PyTuple_New(1);
-    PyTuple_SET_ITEM(tuple, 0, args);
-    Py_INCREF(args);
-    PyObject *obj = NULL;
+    PyObject NULL_PY_OBJ;
+    PyObject *obj = &NULL_PY_OBJ;
 
     if(strcmp(name, "basedOn") == 0)
-        obj = HistogramAttributes_SetBasedOn(self, tuple);
+        obj = HistogramAttributes_SetBasedOn(self, args);
     else if(strcmp(name, "histogramType") == 0)
-        obj = HistogramAttributes_SetHistogramType(self, tuple);
+        obj = HistogramAttributes_SetHistogramType(self, args);
     else if(strcmp(name, "weightVariable") == 0)
-        obj = HistogramAttributes_SetWeightVariable(self, tuple);
+        obj = HistogramAttributes_SetWeightVariable(self, args);
     else if(strcmp(name, "limitsMode") == 0)
-        obj = HistogramAttributes_SetLimitsMode(self, tuple);
+        obj = HistogramAttributes_SetLimitsMode(self, args);
     else if(strcmp(name, "minFlag") == 0)
-        obj = HistogramAttributes_SetMinFlag(self, tuple);
+        obj = HistogramAttributes_SetMinFlag(self, args);
     else if(strcmp(name, "maxFlag") == 0)
-        obj = HistogramAttributes_SetMaxFlag(self, tuple);
+        obj = HistogramAttributes_SetMaxFlag(self, args);
     else if(strcmp(name, "min") == 0)
-        obj = HistogramAttributes_SetMin(self, tuple);
+        obj = HistogramAttributes_SetMin(self, args);
     else if(strcmp(name, "max") == 0)
-        obj = HistogramAttributes_SetMax(self, tuple);
+        obj = HistogramAttributes_SetMax(self, args);
     else if(strcmp(name, "numBins") == 0)
-        obj = HistogramAttributes_SetNumBins(self, tuple);
+        obj = HistogramAttributes_SetNumBins(self, args);
     else if(strcmp(name, "domain") == 0)
-        obj = HistogramAttributes_SetDomain(self, tuple);
+        obj = HistogramAttributes_SetDomain(self, args);
     else if(strcmp(name, "zone") == 0)
-        obj = HistogramAttributes_SetZone(self, tuple);
+        obj = HistogramAttributes_SetZone(self, args);
     else if(strcmp(name, "useBinWidths") == 0)
-        obj = HistogramAttributes_SetUseBinWidths(self, tuple);
+        obj = HistogramAttributes_SetUseBinWidths(self, args);
     else if(strcmp(name, "outputType") == 0)
-        obj = HistogramAttributes_SetOutputType(self, tuple);
+        obj = HistogramAttributes_SetOutputType(self, args);
     else if(strcmp(name, "lineWidth") == 0)
-        obj = HistogramAttributes_SetLineWidth(self, tuple);
+        obj = HistogramAttributes_SetLineWidth(self, args);
     else if(strcmp(name, "color") == 0)
-        obj = HistogramAttributes_SetColor(self, tuple);
+        obj = HistogramAttributes_SetColor(self, args);
     else if(strcmp(name, "dataScale") == 0)
-        obj = HistogramAttributes_SetDataScale(self, tuple);
+        obj = HistogramAttributes_SetDataScale(self, args);
     else if(strcmp(name, "binScale") == 0)
-        obj = HistogramAttributes_SetBinScale(self, tuple);
+        obj = HistogramAttributes_SetBinScale(self, args);
     else if(strcmp(name, "normalizeHistogram") == 0)
-        obj = HistogramAttributes_SetNormalizeHistogram(self, tuple);
+        obj = HistogramAttributes_SetNormalizeHistogram(self, args);
     else if(strcmp(name, "computeAsCDF") == 0)
-        obj = HistogramAttributes_SetComputeAsCDF(self, tuple);
+        obj = HistogramAttributes_SetComputeAsCDF(self, args);
 
-    // Try and handle legacy fields
-    if(obj == NULL)
-    {
-        if(strcmp(name, "lineStyle") == 0)
-        {
-            Py_INCREF(Py_None);
-            obj = Py_None;
-        }
-    }
-    if(obj != NULL)
+    if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
-    Py_DECREF(tuple);
-    if( obj == NULL)
-        PyErr_Format(PyExc_RuntimeError, "Unable to set unknown attribute: '%s'", name);
+    if (obj == &NULL_PY_OBJ)
+    {
+        obj = NULL;
+        PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);
+    }
+    else if (obj == NULL && !PyErr_Occurred())
+        PyErr_Format(PyExc_RuntimeError, "unknown problem with '%s'", name);
+
     return (obj != NULL) ? 0 : -1;
 }
 
@@ -1004,7 +1600,7 @@ static int
 HistogramAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     HistogramAttributesObject *obj = (HistogramAttributesObject *)v;
-    fprintf(fp, "%s", PyHistogramAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyHistogramAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -1012,7 +1608,7 @@ PyObject *
 HistogramAttributes_str(PyObject *v)
 {
     HistogramAttributesObject *obj = (HistogramAttributesObject *)v;
-    return PyString_FromString(PyHistogramAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyHistogramAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -1164,7 +1760,7 @@ PyHistogramAttributes_GetLogString()
 {
     std::string s("HistogramAtts = HistogramAttributes()\n");
     if(currentAtts != 0)
-        s += PyHistogramAttributes_ToString(currentAtts, "HistogramAtts.");
+        s += PyHistogramAttributes_ToString(currentAtts, "HistogramAtts.", true);
     return s;
 }
 
@@ -1177,7 +1773,7 @@ PyHistogramAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("HistogramAtts = HistogramAttributes()\n");
-        s += PyHistogramAttributes_ToString(currentAtts, "HistogramAtts.");
+        s += PyHistogramAttributes_ToString(currentAtts, "HistogramAtts.", true);
         cb(s);
     }
 }

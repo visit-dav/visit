@@ -35,7 +35,7 @@ struct RadialResampleAttributesObject
 //
 static PyObject *NewRadialResampleAttributes(int);
 std::string
-PyRadialResampleAttributes_ToString(const RadialResampleAttributes *atts, const char *prefix)
+PyRadialResampleAttributes_ToString(const RadialResampleAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -99,12 +99,48 @@ RadialResampleAttributes_SetIsFast(PyObject *self, PyObject *args)
 {
     RadialResampleAttributesObject *obj = (RadialResampleAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the isFast in the object.
-    obj->data->SetIsFast(ival != 0);
+    obj->data->SetIsFast(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -123,12 +159,48 @@ RadialResampleAttributes_SetMinTheta(PyObject *self, PyObject *args)
 {
     RadialResampleAttributesObject *obj = (RadialResampleAttributesObject *)self;
 
-    float fval;
-    if(!PyArg_ParseTuple(args, "f", &fval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    float cval = float(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ float");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ float");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the minTheta in the object.
-    obj->data->SetMinTheta(fval);
+    obj->data->SetMinTheta(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -147,12 +219,48 @@ RadialResampleAttributes_SetMaxTheta(PyObject *self, PyObject *args)
 {
     RadialResampleAttributesObject *obj = (RadialResampleAttributesObject *)self;
 
-    float fval;
-    if(!PyArg_ParseTuple(args, "f", &fval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    float cval = float(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ float");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ float");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the maxTheta in the object.
-    obj->data->SetMaxTheta(fval);
+    obj->data->SetMaxTheta(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -171,12 +279,48 @@ RadialResampleAttributes_SetDeltaTheta(PyObject *self, PyObject *args)
 {
     RadialResampleAttributesObject *obj = (RadialResampleAttributesObject *)self;
 
-    float fval;
-    if(!PyArg_ParseTuple(args, "f", &fval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    float cval = float(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ float");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ float");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the deltaTheta in the object.
-    obj->data->SetDeltaTheta(fval);
+    obj->data->SetDeltaTheta(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -195,12 +339,48 @@ RadialResampleAttributes_SetRadius(PyObject *self, PyObject *args)
 {
     RadialResampleAttributesObject *obj = (RadialResampleAttributesObject *)self;
 
-    float fval;
-    if(!PyArg_ParseTuple(args, "f", &fval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    float cval = float(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ float");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ float");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the radius in the object.
-    obj->data->SetRadius(fval);
+    obj->data->SetRadius(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -219,12 +399,48 @@ RadialResampleAttributes_SetDeltaRadius(PyObject *self, PyObject *args)
 {
     RadialResampleAttributesObject *obj = (RadialResampleAttributesObject *)self;
 
-    float fval;
-    if(!PyArg_ParseTuple(args, "f", &fval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    float cval = float(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ float");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ float");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the deltaRadius in the object.
-    obj->data->SetDeltaRadius(fval);
+    obj->data->SetDeltaRadius(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -243,35 +459,60 @@ RadialResampleAttributes_SetCenter(PyObject *self, PyObject *args)
 {
     RadialResampleAttributesObject *obj = (RadialResampleAttributesObject *)self;
 
-    float *fvals = obj->data->GetCenter();
-    if(!PyArg_ParseTuple(args, "fff", &fvals[0], &fvals[1], &fvals[2]))
+    PyObject *packaged_args = 0;
+    float *vals = obj->data->GetCenter();
+
+    if (!PySequence_Check(args) || PyUnicode_Check(args))
+        return PyErr_Format(PyExc_TypeError, "Expecting a sequence of numeric args");
+
+    // break open args seq. if we think it matches this API's needs
+    if (PySequence_Size(args) == 1)
     {
-        PyObject     *tuple;
-        if(!PyArg_ParseTuple(args, "O", &tuple))
-            return NULL;
-
-        if(PyTuple_Check(tuple))
-        {
-            if(PyTuple_Size(tuple) != 3)
-                return NULL;
-
-            PyErr_Clear();
-            for(int i = 0; i < PyTuple_Size(tuple); ++i)
-            {
-                PyObject *item = PyTuple_GET_ITEM(tuple, i);
-                if(PyFloat_Check(item))
-                    fvals[i] = float(PyFloat_AS_DOUBLE(item));
-                else if(PyInt_Check(item))
-                    fvals[i] = float(PyInt_AS_LONG(item));
-                else if(PyLong_Check(item))
-                    fvals[i] = float(PyLong_AsDouble(item));
-                else
-                    fvals[i] = 0.;
-            }
-        }
-        else
-            return NULL;
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PySequence_Check(packaged_args) && !PyUnicode_Check(packaged_args) &&
+            PySequence_Size(packaged_args) == 3)
+            args = packaged_args;
     }
+
+    if (PySequence_Size(args) != 3)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "Expecting 3 numeric args");
+    }
+
+    for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)
+    {
+        PyObject *item = PySequence_GetItem(args, i);
+
+        if (!PyNumber_Check(item))
+        {
+            Py_DECREF(item);
+            Py_XDECREF(packaged_args);
+            return PyErr_Format(PyExc_TypeError, "arg %d is not a number type", (int) i);
+        }
+
+        double val = PyFloat_AsDouble(item);
+        float cval = float(val);
+
+        if (val == -1 && PyErr_Occurred())
+        {
+            Py_XDECREF(packaged_args);
+            Py_DECREF(item);
+            PyErr_Clear();
+            return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ float", (int) i);
+        }
+        if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+        {
+            Py_XDECREF(packaged_args);
+            Py_DECREF(item);
+            return PyErr_Format(PyExc_ValueError, "arg %d not interpretable as C++ float", (int) i);
+        }
+        Py_DECREF(item);
+
+        vals[i] = cval;
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Mark the center in the object as modified.
     obj->data->SelectCenter();
@@ -297,12 +538,48 @@ RadialResampleAttributes_SetIs3D(PyObject *self, PyObject *args)
 {
     RadialResampleAttributesObject *obj = (RadialResampleAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the is3D in the object.
-    obj->data->SetIs3D(ival != 0);
+    obj->data->SetIs3D(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -321,12 +598,48 @@ RadialResampleAttributes_SetMinAzimuth(PyObject *self, PyObject *args)
 {
     RadialResampleAttributesObject *obj = (RadialResampleAttributesObject *)self;
 
-    float fval;
-    if(!PyArg_ParseTuple(args, "f", &fval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    float cval = float(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ float");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ float");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the minAzimuth in the object.
-    obj->data->SetMinAzimuth(fval);
+    obj->data->SetMinAzimuth(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -345,12 +658,48 @@ RadialResampleAttributes_SetMaxAzimuth(PyObject *self, PyObject *args)
 {
     RadialResampleAttributesObject *obj = (RadialResampleAttributesObject *)self;
 
-    float fval;
-    if(!PyArg_ParseTuple(args, "f", &fval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    float cval = float(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ float");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ float");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the maxAzimuth in the object.
-    obj->data->SetMaxAzimuth(fval);
+    obj->data->SetMaxAzimuth(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -369,12 +718,48 @@ RadialResampleAttributes_SetDeltaAzimuth(PyObject *self, PyObject *args)
 {
     RadialResampleAttributesObject *obj = (RadialResampleAttributesObject *)self;
 
-    float fval;
-    if(!PyArg_ParseTuple(args, "f", &fval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    float cval = float(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ float");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ float");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the deltaAzimuth in the object.
-    obj->data->SetDeltaAzimuth(fval);
+    obj->data->SetDeltaAzimuth(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -458,48 +843,61 @@ PyRadialResampleAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "deltaAzimuth") == 0)
         return RadialResampleAttributes_GetDeltaAzimuth(self, NULL);
 
+
+    // Add a __dict__ answer so that dir() works
+    if (!strcmp(name, "__dict__"))
+    {
+        PyObject *result = PyDict_New();
+        for (int i = 0; PyRadialResampleAttributes_methods[i].ml_meth; i++)
+            PyDict_SetItem(result,
+                PyString_FromString(PyRadialResampleAttributes_methods[i].ml_name),
+                PyString_FromString(PyRadialResampleAttributes_methods[i].ml_name));
+        return result;
+    }
+
     return Py_FindMethod(PyRadialResampleAttributes_methods, self, name);
 }
 
 int
 PyRadialResampleAttributes_setattr(PyObject *self, char *name, PyObject *args)
 {
-    // Create a tuple to contain the arguments since all of the Set
-    // functions expect a tuple.
-    PyObject *tuple = PyTuple_New(1);
-    PyTuple_SET_ITEM(tuple, 0, args);
-    Py_INCREF(args);
-    PyObject *obj = NULL;
+    PyObject NULL_PY_OBJ;
+    PyObject *obj = &NULL_PY_OBJ;
 
     if(strcmp(name, "isFast") == 0)
-        obj = RadialResampleAttributes_SetIsFast(self, tuple);
+        obj = RadialResampleAttributes_SetIsFast(self, args);
     else if(strcmp(name, "minTheta") == 0)
-        obj = RadialResampleAttributes_SetMinTheta(self, tuple);
+        obj = RadialResampleAttributes_SetMinTheta(self, args);
     else if(strcmp(name, "maxTheta") == 0)
-        obj = RadialResampleAttributes_SetMaxTheta(self, tuple);
+        obj = RadialResampleAttributes_SetMaxTheta(self, args);
     else if(strcmp(name, "deltaTheta") == 0)
-        obj = RadialResampleAttributes_SetDeltaTheta(self, tuple);
+        obj = RadialResampleAttributes_SetDeltaTheta(self, args);
     else if(strcmp(name, "radius") == 0)
-        obj = RadialResampleAttributes_SetRadius(self, tuple);
+        obj = RadialResampleAttributes_SetRadius(self, args);
     else if(strcmp(name, "deltaRadius") == 0)
-        obj = RadialResampleAttributes_SetDeltaRadius(self, tuple);
+        obj = RadialResampleAttributes_SetDeltaRadius(self, args);
     else if(strcmp(name, "center") == 0)
-        obj = RadialResampleAttributes_SetCenter(self, tuple);
+        obj = RadialResampleAttributes_SetCenter(self, args);
     else if(strcmp(name, "is3D") == 0)
-        obj = RadialResampleAttributes_SetIs3D(self, tuple);
+        obj = RadialResampleAttributes_SetIs3D(self, args);
     else if(strcmp(name, "minAzimuth") == 0)
-        obj = RadialResampleAttributes_SetMinAzimuth(self, tuple);
+        obj = RadialResampleAttributes_SetMinAzimuth(self, args);
     else if(strcmp(name, "maxAzimuth") == 0)
-        obj = RadialResampleAttributes_SetMaxAzimuth(self, tuple);
+        obj = RadialResampleAttributes_SetMaxAzimuth(self, args);
     else if(strcmp(name, "deltaAzimuth") == 0)
-        obj = RadialResampleAttributes_SetDeltaAzimuth(self, tuple);
+        obj = RadialResampleAttributes_SetDeltaAzimuth(self, args);
 
-    if(obj != NULL)
+    if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
-    Py_DECREF(tuple);
-    if( obj == NULL)
-        PyErr_Format(PyExc_RuntimeError, "Unable to set unknown attribute: '%s'", name);
+    if (obj == &NULL_PY_OBJ)
+    {
+        obj = NULL;
+        PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);
+    }
+    else if (obj == NULL && !PyErr_Occurred())
+        PyErr_Format(PyExc_RuntimeError, "unknown problem with '%s'", name);
+
     return (obj != NULL) ? 0 : -1;
 }
 
@@ -507,7 +905,7 @@ static int
 RadialResampleAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     RadialResampleAttributesObject *obj = (RadialResampleAttributesObject *)v;
-    fprintf(fp, "%s", PyRadialResampleAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyRadialResampleAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -515,7 +913,7 @@ PyObject *
 RadialResampleAttributes_str(PyObject *v)
 {
     RadialResampleAttributesObject *obj = (RadialResampleAttributesObject *)v;
-    return PyString_FromString(PyRadialResampleAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyRadialResampleAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -667,7 +1065,7 @@ PyRadialResampleAttributes_GetLogString()
 {
     std::string s("RadialResampleAtts = RadialResampleAttributes()\n");
     if(currentAtts != 0)
-        s += PyRadialResampleAttributes_ToString(currentAtts, "RadialResampleAtts.");
+        s += PyRadialResampleAttributes_ToString(currentAtts, "RadialResampleAtts.", true);
     return s;
 }
 
@@ -680,7 +1078,7 @@ PyRadialResampleAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("RadialResampleAtts = RadialResampleAttributes()\n");
-        s += PyRadialResampleAttributes_ToString(currentAtts, "RadialResampleAtts.");
+        s += PyRadialResampleAttributes_ToString(currentAtts, "RadialResampleAtts.", true);
         cb(s);
     }
 }

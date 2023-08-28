@@ -1818,6 +1818,9 @@ EngineRPCExecutor<ConstructDataBinningRPC>::Execute(ConstructDataBinningRPC *rpc
 //    Support multiple plots.
 //    Work partially supported by DOE Grant SC0007548.
 //
+//    Kathleen Biagas, Fri Apr 23 2021
+//    Add Atts to reply.
+//
 // ****************************************************************************
 template<>
 void
@@ -1834,7 +1837,7 @@ EngineRPCExecutor<ExportDatabaseRPC>::Execute(ExportDatabaseRPC *rpc)
     TRY
     {
         netmgr->ExportDatabases(rpc->GetIDs(), rpc->GetExportDBAtts(), rpc->GetTimeSuffix());
-        rpc->SendReply();
+        rpc->SendReply(rpc->GetExportDBAtts());
     }
     CATCH2(VisItException, e)
     {

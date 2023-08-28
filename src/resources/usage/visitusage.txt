@@ -13,8 +13,7 @@
     Startup options
     ---------------------------------------------------------------------------
         -o <filename>        Open the specified data file at startup.
-        -s <filename>        Run the specified VisIt script. Note: This
-                             argument only takes effect with -cli or -movie.
+        -s <filename>        Run the specified VisIt script.
         -sessionfile <filename>  Open the specified session file at startup
                              Note that this argument only takes effect with
                              -gui or -movie.
@@ -79,5 +78,4 @@
     Other resources for help
     ---------------------------------------------------------------------------
         run-time:            While running VisIt, look under the "Help" menu.
-        on-line:             https://visit.llnl.gov
-        email:               visit-users@ornl.gov
+        on-line:             https://visit-help.llnl.gov

@@ -15,7 +15,7 @@
 #    Silo version number.
 #
 #    Mark C. Miller, Tue Jul 20 10:09:44 PDT 2010
-#    Fixed query for Silo version number to use MAJ/MIN/PAT symbols in 
+#    Fixed query for Silo version number to use MAJ/MIN/PAT symbols in
 #    silo.h header file instead of Silo_version_... thingy. This allows
 #    it to correctly interpret '4.8-pre3' for example.
 #
@@ -38,15 +38,20 @@
 #    Kathleen Bonnell, Fri May 2 09:21:12 MST 2014
 #    Install a copy of browser for windows.
 #
+#    Kathleen Biagas, Mon May 22 12:44:32 PDT 2023
+#    Support different library names on Windows.
+#
 #****************************************************************************/
 
-# Use the SILO_DIR hint from the config-site .cmake file 
+# Use the SILO_DIR hint from the config-site .cmake file
 #
 
-INCLUDE(${VISIT_SOURCE_DIR}/CMake/SetUpThirdParty.cmake)
-
 IF (WIN32)
-  SET_UP_THIRD_PARTY(SILO lib include silohdf5)
+  if(EXISTS ${SILO_DIR}/lib/silohdf5.lib)
+      SET_UP_THIRD_PARTY(SILO LIBS silohdf5)
+  else() 
+      SET_UP_THIRD_PARTY(SILO LIBS siloh5)
+  endif()
   IF(EXISTS ${SILO_DIR}/lib/silex.exe)
     EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E copy
          ${SILO_DIR}/lib/silex.exe
@@ -80,10 +85,10 @@ ELSE (WIN32)
       NO_CMAKE_PATH
       NO_SYSTEM_ENVIRONMENT_PATH)
     IF(SILOH5_LIBRARY_EXISTS)
-        SET_UP_THIRD_PARTY(SILO lib include siloh5)
-    ELSE(SILOH5_LIBRARY_EXISTS)
-        SET_UP_THIRD_PARTY(SILO lib include silo)
-    ENDIF(SILOH5_LIBRARY_EXISTS)
+        SET_UP_THIRD_PARTY(SILO LIBS siloh5)
+    ELSE()
+        SET_UP_THIRD_PARTY(SILO LIBS silo)
+    ENDIF()
 ENDIF (WIN32)
 
 # We use Silo for PDB most of the time so set up additional PDB variables.

@@ -37,7 +37,7 @@ struct ViewerClientInformationObject
 //
 static PyObject *NewViewerClientInformation(int);
 std::string
-PyViewerClientInformation_ToString(const ViewerClientInformation *atts, const char *prefix)
+PyViewerClientInformation_ToString(const ViewerClientInformation *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -50,7 +50,7 @@ PyViewerClientInformation_ToString(const ViewerClientInformation *atts, const ch
             const ViewerClientInformationElement *current = (const ViewerClientInformationElement *)(*pos);
             snprintf(tmpStr, 1000, "GetVars(%d).", index);
             std::string objPrefix(prefix + std::string(tmpStr));
-            str += PyViewerClientInformationElement_ToString(current, objPrefix.c_str());
+            str += PyViewerClientInformationElement_ToString(current, objPrefix.c_str(), forLogging);
         }
         if(index == 0)
             str += "#vars does not contain any ViewerClientInformationElement objects.\n";
@@ -87,19 +87,13 @@ ViewerClientInformation_Notify(PyObject *self, PyObject *args)
 ViewerClientInformation_GetVars(PyObject *self, PyObject *args)
 {
     ViewerClientInformationObject *obj = (ViewerClientInformationObject *)self;
-    int index;
-    if(!PyArg_ParseTuple(args, "i", &index))
-        return NULL;
-    if(index < 0 || (size_t)index >= obj->data->GetVars().size())
-    {
-        char msg[400] = {'\0'};
-        if(obj->data->GetVars().size() == 0)
-            snprintf(msg, 400, "In ViewerClientInformation::GetVars : The index %d is invalid because vars is empty.", index);
-        else
-            snprintf(msg, 400, "In ViewerClientInformation::GetVars : The index %d is invalid. Use index values in: [0, %ld).",  index, obj->data->GetVars().size());
-        PyErr_SetString(PyExc_IndexError, msg);
-        return NULL;
-    }
+    int index = -1;
+    if (args == NULL)
+        return PyErr_Format(PyExc_NameError, "Use .GetVars(int index) to get a single entry");
+    if (!PyArg_ParseTuple(args, "i", &index))
+        return PyErr_Format(PyExc_TypeError, "arg must be a single integer index");
+    if (index < 0 || (size_t)index >= obj->data->GetVars().size())
+        return PyErr_Format(PyExc_ValueError, "index out of range");
 
     // Since the new object will point to data owned by the this object,
     // we need to increment the reference count.
@@ -128,12 +122,7 @@ ViewerClientInformation_AddVars(PyObject *self, PyObject *args)
     if(!PyArg_ParseTuple(args, "O", &element))
         return NULL;
     if(!PyViewerClientInformationElement_Check(element))
-    {
-        char msg[400] = {'\0'};
-        snprintf(msg, 400, "The ViewerClientInformation::AddVars method only accepts ViewerClientInformationElement objects.");
-        PyErr_SetString(PyExc_TypeError, msg);
-        return NULL;
-    }
+        return PyErr_Format(PyExc_TypeError, "expected attr object of type ViewerClientInformationElement");
     ViewerClientInformationElement *newData = PyViewerClientInformationElement_FromPyObject(element);
     obj->data->AddVars(*newData);
     obj->data->SelectVars();
@@ -171,17 +160,12 @@ ViewerClientInformation_Remove_One_Vars(PyObject *self, int index)
 PyObject *
 ViewerClientInformation_RemoveVars(PyObject *self, PyObject *args)
 {
-    int index;
+    int index = -1;
     if(!PyArg_ParseTuple(args, "i", &index))
-        return NULL;
+        return PyErr_Format(PyExc_TypeError, "Expecting integer index");
     ViewerClientInformationObject *obj = (ViewerClientInformationObject *)self;
     if(index < 0 || index >= obj->data->GetNumVars())
-    {
-        char msg[400] = {'\0'};
-        snprintf(msg, 400, "In ViewerClientInformation::RemoveVars : Index %d is out of range", index);
-        PyErr_SetString(PyExc_IndexError, msg);
-        return NULL;
-    }
+        return PyErr_Format(PyExc_IndexError, "Index out of range");
 
     return ViewerClientInformation_Remove_One_Vars(self, index);
 }
@@ -205,37 +189,51 @@ ViewerClientInformation_SetSupportedFormats(PyObject *self, PyObject *args)
 {
     ViewerClientInformationObject *obj = (ViewerClientInformationObject *)self;
 
-    stringVector  &vec = obj->data->GetSupportedFormats();
-    PyObject     *tuple;
-    if(!PyArg_ParseTuple(args, "O", &tuple))
-        return NULL;
+    stringVector vec;
 
-    if(PyTuple_Check(tuple))
+    if (PyUnicode_Check(args))
     {
-        vec.resize(PyTuple_Size(tuple));
-        for(int i = 0; i < PyTuple_Size(tuple); ++i)
+        char const *val = PyUnicode_AsUTF8(args);
+        std::string cval = std::string(val);
+        if (val == 0 && PyErr_Occurred())
         {
-            PyObject *item = PyTuple_GET_ITEM(tuple, i);
-            if(PyString_Check(item))
+            PyErr_Clear();
+            return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ string");
+        }
+        vec.resize(1);
+        vec[0] = cval;
+    }
+    else if (PySequence_Check(args))
+    {
+        vec.resize(PySequence_Size(args));
+        for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)
+        {
+            PyObject *item = PySequence_GetItem(args, i);
+
+            if (!PyUnicode_Check(item))
             {
-                char *item_cstr = PyString_AsString(item);
-                vec[i] = std::string(item_cstr);
-                PyString_AsString_Cleanup(item_cstr);
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_TypeError, "arg %d is not a unicode string", (int) i);
             }
-            else
-                vec[i] = std::string("");
+
+            char const *val = PyUnicode_AsUTF8(item);
+            std::string cval = std::string(val);
+
+            if (val == 0 && PyErr_Occurred())
+            {
+                Py_DECREF(item);
+                PyErr_Clear();
+                return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ string", (int) i);
+            }
+            Py_DECREF(item);
+
+            vec[i] = cval;
         }
     }
-    else if(PyString_Check(tuple))
-    {
-        vec.resize(1);
-        char *tuple_cstr = PyString_AsString(tuple);
-        vec[0] = std::string(tuple_cstr);
-        PyString_AsString_Cleanup(tuple_cstr);
-    }
     else
-        return NULL;
+        return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more string(s)");
 
+    obj->data->GetSupportedFormats() = vec;
     // Mark the supportedFormats in the object as modified.
     obj->data->SelectSupportedFormats();
 
@@ -292,28 +290,41 @@ PyViewerClientInformation_getattr(PyObject *self, char *name)
     if(strcmp(name, "supportedFormats") == 0)
         return ViewerClientInformation_GetSupportedFormats(self, NULL);
 
+
+    // Add a __dict__ answer so that dir() works
+    if (!strcmp(name, "__dict__"))
+    {
+        PyObject *result = PyDict_New();
+        for (int i = 0; PyViewerClientInformation_methods[i].ml_meth; i++)
+            PyDict_SetItem(result,
+                PyString_FromString(PyViewerClientInformation_methods[i].ml_name),
+                PyString_FromString(PyViewerClientInformation_methods[i].ml_name));
+        return result;
+    }
+
     return Py_FindMethod(PyViewerClientInformation_methods, self, name);
 }
 
 int
 PyViewerClientInformation_setattr(PyObject *self, char *name, PyObject *args)
 {
-    // Create a tuple to contain the arguments since all of the Set
-    // functions expect a tuple.
-    PyObject *tuple = PyTuple_New(1);
-    PyTuple_SET_ITEM(tuple, 0, args);
-    Py_INCREF(args);
-    PyObject *obj = NULL;
+    PyObject NULL_PY_OBJ;
+    PyObject *obj = &NULL_PY_OBJ;
 
     if(strcmp(name, "supportedFormats") == 0)
-        obj = ViewerClientInformation_SetSupportedFormats(self, tuple);
+        obj = ViewerClientInformation_SetSupportedFormats(self, args);
 
-    if(obj != NULL)
+    if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
-    Py_DECREF(tuple);
-    if( obj == NULL)
-        PyErr_Format(PyExc_RuntimeError, "Unable to set unknown attribute: '%s'", name);
+    if (obj == &NULL_PY_OBJ)
+    {
+        obj = NULL;
+        PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);
+    }
+    else if (obj == NULL && !PyErr_Occurred())
+        PyErr_Format(PyExc_RuntimeError, "unknown problem with '%s'", name);
+
     return (obj != NULL) ? 0 : -1;
 }
 
@@ -321,7 +332,7 @@ static int
 ViewerClientInformation_print(PyObject *v, FILE *fp, int flags)
 {
     ViewerClientInformationObject *obj = (ViewerClientInformationObject *)v;
-    fprintf(fp, "%s", PyViewerClientInformation_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyViewerClientInformation_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -329,7 +340,7 @@ PyObject *
 ViewerClientInformation_str(PyObject *v)
 {
     ViewerClientInformationObject *obj = (ViewerClientInformationObject *)v;
-    return PyString_FromString(PyViewerClientInformation_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyViewerClientInformation_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -481,7 +492,7 @@ PyViewerClientInformation_GetLogString()
 {
     std::string s("ViewerClientInformation = ViewerClientInformation()\n");
     if(currentAtts != 0)
-        s += PyViewerClientInformation_ToString(currentAtts, "ViewerClientInformation.");
+        s += PyViewerClientInformation_ToString(currentAtts, "ViewerClientInformation.", true);
     return s;
 }
 
@@ -494,7 +505,7 @@ PyViewerClientInformation_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("ViewerClientInformation = ViewerClientInformation()\n");
-        s += PyViewerClientInformation_ToString(currentAtts, "ViewerClientInformation.");
+        s += PyViewerClientInformation_ToString(currentAtts, "ViewerClientInformation.", true);
         cb(s);
     }
 }

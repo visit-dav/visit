@@ -515,6 +515,10 @@ class MakeMovie(object):
     #   Change the movie formats to all use PNG as the input format when
     #   ffmpeg is present and PPM otherwise (for use with mpeg2encode).
     #
+    #   Eric Brugger, Mon Dec 19 13:06:50 PST 2022
+    #   I added code to set the number of digits in the movie file names
+    #   based on the number needed rather than always four.
+    #
     ###########################################################################
 
     def __init__(self):
@@ -594,6 +598,7 @@ class MakeMovie(object):
         self.engineRestartInterval = 1000000
         self.sources = []
         self.adjustview = 0
+        self.digitFormat = "%04d"
 
         # Compute engine properties.
         self.useSessionEngineInformation = 1
@@ -856,6 +861,8 @@ class MakeMovie(object):
         print("                       Method is one of the following: mpirun, poe,")
         print("                       psub, srun.")
         print("    -la   <args>       Additional arguments for the parallel launcher.")
+        print("                       Multiple arguments should be space-separated")
+        print("                       and the entire list enclosed in quotes.")
         print("    -p    <part>       Partition to run in.")
         print("    -b    <bank>       Bank from which to draw resources.")
         print("    -t    <time>       Maximum job run time.")
@@ -1135,6 +1142,11 @@ class MakeMovie(object):
     #   Kathleen Biagas, Tue Sep 29 15:52:44 MST 2015
     #   On Windows, only fail if format NOT compatible.
     #
+    #   Kathleen Biagas, Fri Sep 24 08:27:11 PDT 2021
+    #   Modified how launchArgs (-la) is processed. Expect multiple launch args
+    #   to be space-separated and enclosed in quotes, so they can be processed
+    #   as a single entity. Previous processing of -la created an endless loop.
+    #
     ###########################################################################
 
     def ProcessArguments(self):
@@ -1164,15 +1176,7 @@ class MakeMovie(object):
         i = 0
         outputName = "movie"
         outputSpecified = 0
-        processingLA = 0
         while(i < len(commandLine)):
-            # If we're processing launch arguments for the parallel launcher
-            # then append the argument to the the list of launch args.
-            if processingLA == 1:
-                self.engineCommandLineProperties["launchArgs"] = \
-                self.engineCommandLineProperties["launchArgs"] + [commandLine[i]]
-                continue
-
             # We're processing arguments as usual.
             if(commandLine[i] == "-format"):
                 if((i+1) < len(commandLine)):
@@ -1436,9 +1440,13 @@ class MakeMovie(object):
                     self.PrintUsage()
                     sys.exit(-1)
             elif(commandLine[i] == "-la"):
-                self.engineCommandLineProperties["launchArgs"] = []
-                self.engineCommandLineProperties["launchArgsSet"] = 1
-                processingLA = 1
+                if((i+1) < len(commandLine)):
+                    self.engineCommandLineProperties["launchArgs"] = [commandLine[i+1]]
+                    self.engineCommandLineProperties["launchArgsSet"] = 1
+                    i = i + 1
+                else:
+                    self.PrintUsage()
+                    sys.exit(-1)
             elif(commandLine[i] == "-expedite"):
                 if "arguments" in list(self.engineCommandLineProperties.keys()):
                     self.engineCommandLineProperties["arguments"] = self.engineCommandLineProperties["arguments"] + ["-expedite"]
@@ -2047,6 +2055,10 @@ class MakeMovie(object):
     #   Eric Brugger, Tue Jun 16 15:12:46 PDT 2009
     #   Added -enginerestartinterval flag.
     #
+    #   Eric Brugger, Mon Dec 19 13:06:50 PST 2022
+    #   I added code to set the number of digits in the movie file names
+    #   based on the number needed rather than always four.
+    #
     ###########################################################################
     def IterateAndSaveFrames(self):
 
@@ -2067,6 +2079,14 @@ class MakeMovie(object):
             self.frameStart = tmp
 
         self.Debug(1, "*** frameStart=%d, frameEnd=%d" % (self.frameStart, self.frameEnd))
+
+        # Calculate the number of frames in the movie. This may over estimate
+        # the total number in a few rare cases, but overestimating isn't an
+        # issue.
+        nTotalFrames = (self.frameEnd - self.frameStart + 1) / self.frameStep
+
+        # Generate the file names.
+        self.GenerateFileNames(nTotalFrames)
 
         # Save the old rendering mode.
         old_ra = GetRenderingAttributes()
@@ -2117,6 +2137,74 @@ class MakeMovie(object):
 
         # Restore the old rendering attributes.
         SetRenderingAttributes(old_ra)
+
+    ###########################################################################
+    # Method: GenerateFileNames
+    #
+    # Purpose:    This method generates the movie format names.
+    #             This code was extracted from GenerateFrames and then
+    #             modified to set the digitFormat. Note that it generates
+    #             between four and seven digits.
+    #
+    # Programmer: Eric Brugger
+    # Date:       Mon Dec 19 13:06:50 PST 2022
+    #
+    # Modifications:
+    #
+    ###########################################################################
+
+    def GenerateFileNames(self, nTotalFrames):
+
+        if nTotalFrames > 999999:
+            self.digitFormat = "%07d"
+        elif nTotalFrames > 99999:
+            self.digitFormat = "%06d"
+        elif nTotalFrames > 9999:
+            self.digitFormat = "%05d"
+
+        # Determine if the formats contain different resolutions.
+        differentResolutions = 0
+        if len(self.movieFormats) > 1:
+            w = self.movieFormats[0][2]
+            h = self.movieFormats[0][3]
+            for i in range(1, len(self.movieFormats)):
+                if w != self.movieFormats[i][2] or h != self.movieFormats[i][3]:
+                    differentResolutions = 1
+                    break
+
+        # Determine if the formats contain different stereo settings.
+        differentStereo = 0
+        if len(self.movieFormats) > 1:
+            s = self.movieFormats[0][4]
+            for i in range(1, len(self.movieFormats)):
+                if s != self.movieFormats[i][4]:
+                    differentStereo = 1
+                    break
+
+        # Create file format strings for the frames.
+        for index in range(len(self.movieFormats)):
+            filebase = self.movieBase
+            fmt = self.movieFormats[index][1]
+            si = self.movieFormats[index][4]
+            s = list(self.stereoNameToType.keys())[si]
+
+            df = self.digitFormat
+            if differentResolutions:
+                w = self.movieFormats[index][2]
+                h = self.movieFormats[index][3]
+                if differentStereo and si > 0:
+                    filebase = "%s_%dx%d_%s_%s" % (filebase, w, h, s, df)
+                else:
+                    filebase = "%s_%dx%d_%s" % (filebase, w, h, df)
+            else:
+                if differentStereo and si > 0:
+                    filebase = "%s_%s_%s" % (filebase, s, df)
+                else:
+                    filebase = "%s%s" % (filebase, df)
+
+            # Store the file format string in the movieFormats list.
+            self.movieFormats[index][0] = filebase
+        self.Debug(1, "GenerateFrames: movieFormats=" + str(self.movieFormats))
 
     ###########################################################################
     # Method: GenerateFrames
@@ -2186,6 +2274,10 @@ class MakeMovie(object):
     #   Eric Brugger, Thu Jan 28 11:28:09 PST 2021
     #   Replace use of xmllib with xml.sax to parse the movie template file.
     #
+    #   Eric Brugger, Mon Dec 19 13:06:50 PST 2022
+    #   I added code to set the number of digits in the movie file names
+    #   based on the number needed rather than always four.
+    #
     ###########################################################################
 
     def GenerateFrames(self):
@@ -2223,50 +2315,12 @@ class MakeMovie(object):
                         self.movieFormats[index][1] = "ppm"
             index = index + 1
 
-        # Determine if the formats contain different resolutions.
-        differentResolutions = 0
-        if len(self.movieFormats) > 1:
-            w = self.movieFormats[0][2]
-            h = self.movieFormats[0][3]
-            for i in range(1, len(self.movieFormats)):
-                if w != self.movieFormats[i][2] or h != self.movieFormats[i][3]:
-                    differentResolutions = 1
-                    break
-
-        # Determine if the formats contain different stereo settings.
-        differentStereo = 0
-        if len(self.movieFormats) > 1:
-            s = self.movieFormats[0][4]
-            for i in range(1, len(self.movieFormats)):
-                if s != self.movieFormats[i][4]:
-                    differentStereo = 1
-                    break
-
-        # Create file format strings for the frames.
-        for index in range(len(self.movieFormats)):
-            filebase = self.movieBase
-            fmt = self.movieFormats[index][1]
-            si = self.movieFormats[index][4]
-            s = list(self.stereoNameToType.keys())[si]
-
-            if differentResolutions:
-                w = self.movieFormats[index][2]
-                h = self.movieFormats[index][3]
-                if differentStereo and si > 0:
-                    filebase = "%s_%dx%d_%s_%%04d" % (filebase, w, h, s)
-                else:
-                    filebase = "%s_%dx%d_%%04d" % (filebase, w, h)
-            else:
-                if differentStereo and si > 0:
-                    filebase = "%s_%s_%%04d" % (filebase, s)
-                else:
-                    filebase = "%s%%04d" % filebase
-
-            # Store the file format string in the movieFormats list.
-            self.movieFormats[index][0] = filebase
-        self.Debug(1, "GenerateFrames: movieFormats=" + str(self.movieFormats))
-
         if(self.usesTemplateFile):
+            # Generate the file names. Pass 1 as the number of files so
+            # that the number of digits in the family index is four to
+            # match legacy behavior.
+            self.GenerateFileNames(1)
+
             # Determine the name of the movie template base class's file.
             prefix = ""
             if os.name == "nt":
@@ -2431,6 +2485,10 @@ class MakeMovie(object):
             globals()['classSaveWindowObj'] = self
             # Create a modified version of the user's script.
             name = self.CreateMangledSource(self.scriptFile)
+            # Generate the file names. Pass 1 as the number of files so
+            # that the number of digits in the family index is four to
+            # match legacy behavior.
+            self.GenerateFileNames(1)
             # Try executing the modified version of the user's script.
             Source(name)
             # Remove the modified script.
@@ -2564,6 +2622,10 @@ class MakeMovie(object):
     #   Eric Brugger, Thu Jan 28 11:28:09 PST 2021
     #   Replace visit_pipe function with subprocess.Popen.
     #
+    #   Eric Brugger, Mon Dec 19 13:06:50 PST 2022
+    #   I added code to set the number of digits in the movie file names
+    #   based on the number needed rather than always four.
+    #
     ###########################################################################
 
     def EncodeMPEGMovie_old(self, moviename, imageFormatString, xres, yres):
@@ -2593,7 +2655,7 @@ class MakeMovie(object):
                 imgname = imageFormatString % i
                 imgname = self.tmpDir + self.slash + imgname + formatExt
                 for j in range(pad_rate):
-                    number4 = "%04d" % linkindex
+                    number4 = self.digitFormat % linkindex
                     linkname = self.tmpDir+self.slash+linkbase+number4+formatExt
                     linkindex = linkindex + 1
                     CopyFile(imgname, linkname, doSymlink)
@@ -2610,7 +2672,7 @@ class MakeMovie(object):
             # Use VisIt's mpeg2encode MPEG encoder program.
             f = open(paramFile, "w")
             f.write('Generated by VisIt (http://www.llnl.gov/visit), MPEG-1 Movie, 30 frames/sec\n')
-            f.write(self.tmpDir + self.slash + linkbase + '%04d  /* name of source files */\n')
+            f.write(self.tmpDir + self.slash + linkbase + "%s  /* name of source files */\n" % self.digitFormat)
             f.write('-         /* name of reconstructed images ("-": do not store) */\n')
             f.write('-         /* name of intra quant matrix file     ("-": default matrix) */\n')
             f.write('-         /* name of non intra quant matrix file ("-": default matrix) */\n')
@@ -2685,6 +2747,16 @@ class MakeMovie(object):
                     self.Debug(1, line)
                 else:
                     self.Debug(5, line)
+            # Wait for the process to terminate. If we don't wait then it's
+            # possible that the return code could end up being "None", which
+            # will cause the "if (r == 0):" test below to fail, which we
+            # don't want. There is mention that wait can cause a hang if
+            # stdout is a PIPE, which it is, and the child produces enough
+            # data such that it blocks waiting for the OS pipe buffer to
+            # accept more data. I wouldn't expect this to happen since we
+            # only get here when there is no more data being sent by the
+            # child.
+            proc.wait()
             r = proc.returncode
                 
             self.Debug(1, "mpeg2encode returned %s" % r)
@@ -2716,7 +2788,7 @@ class MakeMovie(object):
                 linkindex = 0
                 for i in range(self.numFrames):
                     for j in range(pad_rate):
-                        number4 = "%04d" % linkindex
+                        number4 = self.digitFormat % linkindex
                         linkname=self.tmpDir+self.slash+linkbase+number4+formatExt
                         self.Debug(5, "Removing link %s" % linkname)
                         RemoveFile(linkname)

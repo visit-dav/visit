@@ -36,7 +36,7 @@ struct StaggerAttributesObject
 //
 static PyObject *NewStaggerAttributes(int);
 std::string
-PyStaggerAttributes_ToString(const StaggerAttributes *atts, const char *prefix)
+PyStaggerAttributes_ToString(const StaggerAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -64,12 +64,48 @@ StaggerAttributes_SetOffsetX(PyObject *self, PyObject *args)
 {
     StaggerAttributesObject *obj = (StaggerAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the offsetX in the object.
-    obj->data->SetOffsetX(dval);
+    obj->data->SetOffsetX(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -88,12 +124,48 @@ StaggerAttributes_SetOffsetY(PyObject *self, PyObject *args)
 {
     StaggerAttributesObject *obj = (StaggerAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the offsetY in the object.
-    obj->data->SetOffsetY(dval);
+    obj->data->SetOffsetY(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -112,12 +184,48 @@ StaggerAttributes_SetOffsetZ(PyObject *self, PyObject *args)
 {
     StaggerAttributesObject *obj = (StaggerAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the offsetZ in the object.
-    obj->data->SetOffsetZ(dval);
+    obj->data->SetOffsetZ(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -169,32 +277,45 @@ PyStaggerAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "offsetZ") == 0)
         return StaggerAttributes_GetOffsetZ(self, NULL);
 
+
+    // Add a __dict__ answer so that dir() works
+    if (!strcmp(name, "__dict__"))
+    {
+        PyObject *result = PyDict_New();
+        for (int i = 0; PyStaggerAttributes_methods[i].ml_meth; i++)
+            PyDict_SetItem(result,
+                PyString_FromString(PyStaggerAttributes_methods[i].ml_name),
+                PyString_FromString(PyStaggerAttributes_methods[i].ml_name));
+        return result;
+    }
+
     return Py_FindMethod(PyStaggerAttributes_methods, self, name);
 }
 
 int
 PyStaggerAttributes_setattr(PyObject *self, char *name, PyObject *args)
 {
-    // Create a tuple to contain the arguments since all of the Set
-    // functions expect a tuple.
-    PyObject *tuple = PyTuple_New(1);
-    PyTuple_SET_ITEM(tuple, 0, args);
-    Py_INCREF(args);
-    PyObject *obj = NULL;
+    PyObject NULL_PY_OBJ;
+    PyObject *obj = &NULL_PY_OBJ;
 
     if(strcmp(name, "offsetX") == 0)
-        obj = StaggerAttributes_SetOffsetX(self, tuple);
+        obj = StaggerAttributes_SetOffsetX(self, args);
     else if(strcmp(name, "offsetY") == 0)
-        obj = StaggerAttributes_SetOffsetY(self, tuple);
+        obj = StaggerAttributes_SetOffsetY(self, args);
     else if(strcmp(name, "offsetZ") == 0)
-        obj = StaggerAttributes_SetOffsetZ(self, tuple);
+        obj = StaggerAttributes_SetOffsetZ(self, args);
 
-    if(obj != NULL)
+    if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
-    Py_DECREF(tuple);
-    if( obj == NULL)
-        PyErr_Format(PyExc_RuntimeError, "Unable to set unknown attribute: '%s'", name);
+    if (obj == &NULL_PY_OBJ)
+    {
+        obj = NULL;
+        PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);
+    }
+    else if (obj == NULL && !PyErr_Occurred())
+        PyErr_Format(PyExc_RuntimeError, "unknown problem with '%s'", name);
+
     return (obj != NULL) ? 0 : -1;
 }
 
@@ -202,7 +323,7 @@ static int
 StaggerAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     StaggerAttributesObject *obj = (StaggerAttributesObject *)v;
-    fprintf(fp, "%s", PyStaggerAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyStaggerAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -210,7 +331,7 @@ PyObject *
 StaggerAttributes_str(PyObject *v)
 {
     StaggerAttributesObject *obj = (StaggerAttributesObject *)v;
-    return PyString_FromString(PyStaggerAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyStaggerAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -362,7 +483,7 @@ PyStaggerAttributes_GetLogString()
 {
     std::string s("StaggerAtts = StaggerAttributes()\n");
     if(currentAtts != 0)
-        s += PyStaggerAttributes_ToString(currentAtts, "StaggerAtts.");
+        s += PyStaggerAttributes_ToString(currentAtts, "StaggerAtts.", true);
     return s;
 }
 
@@ -375,7 +496,7 @@ PyStaggerAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("StaggerAtts = StaggerAttributes()\n");
-        s += PyStaggerAttributes_ToString(currentAtts, "StaggerAtts.");
+        s += PyStaggerAttributes_ToString(currentAtts, "StaggerAtts.", true);
         cb(s);
     }
 }

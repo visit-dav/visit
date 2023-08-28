@@ -36,7 +36,7 @@ struct CoordSwapAttributesObject
 //
 static PyObject *NewCoordSwapAttributes(int);
 std::string
-PyCoordSwapAttributes_ToString(const CoordSwapAttributes *atts, const char *prefix)
+PyCoordSwapAttributes_ToString(const CoordSwapAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -115,21 +115,55 @@ CoordSwapAttributes_SetNewCoord1(PyObject *self, PyObject *args)
 {
     CoordSwapAttributesObject *obj = (CoordSwapAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 3)
+    {
+        std::stringstream ss;
+        ss << "An invalid newCoord1 value was given." << std::endl;
+        ss << "Valid values are in the range [0,2]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << " Coord1";
+        ss << ", Coord2";
+        ss << ", Coord3";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the newCoord1 in the object.
-    if(ival >= 0 && ival < 3)
-        obj->data->SetNewCoord1(CoordSwapAttributes::Coord(ival));
-    else
-    {
-        fprintf(stderr, "An invalid newCoord1 value was given. "
-                        "Valid values are in the range of [0,2]. "
-                        "You can also use the following names: "
-                        "Coord1, Coord2, Coord3.");
-        return NULL;
-    }
+    obj->data->SetNewCoord1(CoordSwapAttributes::Coord(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -148,21 +182,55 @@ CoordSwapAttributes_SetNewCoord2(PyObject *self, PyObject *args)
 {
     CoordSwapAttributesObject *obj = (CoordSwapAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 3)
+    {
+        std::stringstream ss;
+        ss << "An invalid newCoord2 value was given." << std::endl;
+        ss << "Valid values are in the range [0,2]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << " Coord1";
+        ss << ", Coord2";
+        ss << ", Coord3";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the newCoord2 in the object.
-    if(ival >= 0 && ival < 3)
-        obj->data->SetNewCoord2(CoordSwapAttributes::Coord(ival));
-    else
-    {
-        fprintf(stderr, "An invalid newCoord2 value was given. "
-                        "Valid values are in the range of [0,2]. "
-                        "You can also use the following names: "
-                        "Coord1, Coord2, Coord3.");
-        return NULL;
-    }
+    obj->data->SetNewCoord2(CoordSwapAttributes::Coord(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -181,21 +249,55 @@ CoordSwapAttributes_SetNewCoord3(PyObject *self, PyObject *args)
 {
     CoordSwapAttributesObject *obj = (CoordSwapAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 3)
+    {
+        std::stringstream ss;
+        ss << "An invalid newCoord3 value was given." << std::endl;
+        ss << "Valid values are in the range [0,2]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << " Coord1";
+        ss << ", Coord2";
+        ss << ", Coord3";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the newCoord3 in the object.
-    if(ival >= 0 && ival < 3)
-        obj->data->SetNewCoord3(CoordSwapAttributes::Coord(ival));
-    else
-    {
-        fprintf(stderr, "An invalid newCoord3 value was given. "
-                        "Valid values are in the range of [0,2]. "
-                        "You can also use the following names: "
-                        "Coord1, Coord2, Coord3.");
-        return NULL;
-    }
+    obj->data->SetNewCoord3(CoordSwapAttributes::Coord(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -268,32 +370,45 @@ PyCoordSwapAttributes_getattr(PyObject *self, char *name)
         return PyInt_FromLong(long(CoordSwapAttributes::Coord3));
 
 
+
+    // Add a __dict__ answer so that dir() works
+    if (!strcmp(name, "__dict__"))
+    {
+        PyObject *result = PyDict_New();
+        for (int i = 0; PyCoordSwapAttributes_methods[i].ml_meth; i++)
+            PyDict_SetItem(result,
+                PyString_FromString(PyCoordSwapAttributes_methods[i].ml_name),
+                PyString_FromString(PyCoordSwapAttributes_methods[i].ml_name));
+        return result;
+    }
+
     return Py_FindMethod(PyCoordSwapAttributes_methods, self, name);
 }
 
 int
 PyCoordSwapAttributes_setattr(PyObject *self, char *name, PyObject *args)
 {
-    // Create a tuple to contain the arguments since all of the Set
-    // functions expect a tuple.
-    PyObject *tuple = PyTuple_New(1);
-    PyTuple_SET_ITEM(tuple, 0, args);
-    Py_INCREF(args);
-    PyObject *obj = NULL;
+    PyObject NULL_PY_OBJ;
+    PyObject *obj = &NULL_PY_OBJ;
 
     if(strcmp(name, "newCoord1") == 0)
-        obj = CoordSwapAttributes_SetNewCoord1(self, tuple);
+        obj = CoordSwapAttributes_SetNewCoord1(self, args);
     else if(strcmp(name, "newCoord2") == 0)
-        obj = CoordSwapAttributes_SetNewCoord2(self, tuple);
+        obj = CoordSwapAttributes_SetNewCoord2(self, args);
     else if(strcmp(name, "newCoord3") == 0)
-        obj = CoordSwapAttributes_SetNewCoord3(self, tuple);
+        obj = CoordSwapAttributes_SetNewCoord3(self, args);
 
-    if(obj != NULL)
+    if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
-    Py_DECREF(tuple);
-    if( obj == NULL)
-        PyErr_Format(PyExc_RuntimeError, "Unable to set unknown attribute: '%s'", name);
+    if (obj == &NULL_PY_OBJ)
+    {
+        obj = NULL;
+        PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);
+    }
+    else if (obj == NULL && !PyErr_Occurred())
+        PyErr_Format(PyExc_RuntimeError, "unknown problem with '%s'", name);
+
     return (obj != NULL) ? 0 : -1;
 }
 
@@ -301,7 +416,7 @@ static int
 CoordSwapAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     CoordSwapAttributesObject *obj = (CoordSwapAttributesObject *)v;
-    fprintf(fp, "%s", PyCoordSwapAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyCoordSwapAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -309,7 +424,7 @@ PyObject *
 CoordSwapAttributes_str(PyObject *v)
 {
     CoordSwapAttributesObject *obj = (CoordSwapAttributesObject *)v;
-    return PyString_FromString(PyCoordSwapAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyCoordSwapAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -461,7 +576,7 @@ PyCoordSwapAttributes_GetLogString()
 {
     std::string s("CoordSwapAtts = CoordSwapAttributes()\n");
     if(currentAtts != 0)
-        s += PyCoordSwapAttributes_ToString(currentAtts, "CoordSwapAtts.");
+        s += PyCoordSwapAttributes_ToString(currentAtts, "CoordSwapAtts.", true);
     return s;
 }
 
@@ -474,7 +589,7 @@ PyCoordSwapAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("CoordSwapAtts = CoordSwapAttributes()\n");
-        s += PyCoordSwapAttributes_ToString(currentAtts, "CoordSwapAtts.");
+        s += PyCoordSwapAttributes_ToString(currentAtts, "CoordSwapAtts.", true);
         cb(s);
     }
 }

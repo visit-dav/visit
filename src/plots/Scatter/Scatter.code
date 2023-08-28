@@ -1,60 +1,9 @@
 Target: xml2python
-Code: PyScatterAttributes_getattr
-Prefix:
-Postfix:
-    // try to handle old attributes
-    if(strcmp(name, "foregroundFlag") == 0)
-    {
-        if( ScatterAttributes_GetColorType(self, NULL) == PyInt_FromLong(0) )
-        {
-            PyObject *retval = PyInt_FromLong(1);
-            return retval;
-        }
-        else //if( ScatterAttributes_GetColorType(self, NULL) == PyInt_FromLong(1) )
-        {
-            PyObject *retval = PyInt_FromLong(0);
-            return retval;
-        }
-    }
-
 Code: PyScatterAttributes_setattr
 Prefix:
 Postfix:
-
-    // try to handle old attributes
-    if(strcmp(name, "foregroundFlag") == 0)
-    {
-        PyObject *new_args = NULL;
-
-        // from the tuple get the foreground value
-        int ival;
-        if(!PyArg_ParseTuple(tuple, "i", &ival))
-              new_args = Py_BuildValue("(i)", 0);
-
-        // foreground is false so single color and color type is 1
-        else if( ival == 0 )
-        {
-            new_args = Py_BuildValue("(i)", 1);
-        }
-        // foreground is true so foreground color and color type is 0
-        else if( ival == 1 )
-        {
-            new_args = Py_BuildValue("(i)", 0);
-        }
-
-        if (new_args)
-        {
-            obj = ScatterAttributes_SetColorType(self, new_args);
-
-            Py_DECREF(new_args);
-        }
-    }
-
     // If the user changes one of the roles and one of the roles is
     // "Color" then assume that they want to use the color table.
-
-    // The above maintains backwards compatibility. Below allows new
-    // foreward new capibility.
 
     // If they do not want to use the color table and want to use
     // either the foreground or a single color they must set it after
@@ -83,6 +32,7 @@ Postfix:
             Py_DECREF(new_args);
         }
     }
+
 
 Target: xml2atts
 Function: ChangesRequireRecalculation

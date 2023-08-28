@@ -6,8 +6,13 @@
 #include <math.h>
 #include <vtkDashedXorGridMapper2D.h>
 
+#include <visit-config.h> // For LIB_VERSION_GE
+
 #include <vtkActor2D.h>
 #include <vtkCellArray.h>
+#if LIB_VERSION_GE(VTK,9,1,0)
+#include <vtkCellArrayIterator.h> // used by vtkDashedXorGridMapper2D_body.C, which is #included below
+#endif
 #include <vtkCellLinks.h>
 #include <vtkDataSet.h>
 #include <vtkFieldData.h>
@@ -17,6 +22,7 @@
 #include <vtkPolyDataMapper2D.h>
 #include <vtkProperty2D.h>
 #include <vtkScalarsToColors.h>
+#include <vtkUnsignedCharArray.h>
 #include <vtkViewport.h>
 #include <vtkWindow.h>
 
@@ -124,7 +130,7 @@ vtkStandardNewMacro(vtkDashedXorGridMapper2D);
 
 vtkDashedXorGridMapper2D::vtkDashedXorGridMapper2D() : vtkPolyDataMapper2D()
 {
-    d = new vtkDashedXorGridMapper2DPrivate;
+    privateInstance = new vtkDashedXorGridMapper2DPrivate;
     SetDots(2, 3);
     SetHorizontalBias(true);
 }
@@ -144,10 +150,10 @@ vtkDashedXorGridMapper2D::vtkDashedXorGridMapper2D() : vtkPolyDataMapper2D()
 
 vtkDashedXorGridMapper2D::~vtkDashedXorGridMapper2D()
 {
-    if(d != 0)
+    if(privateInstance != 0)
     {
-        delete d;
-        d = 0;
+        delete privateInstance;
+        privateInstance = 0;
     }
 }
 
@@ -173,7 +179,7 @@ vtkDashedXorGridMapper2D::~vtkDashedXorGridMapper2D()
 void
 vtkDashedXorGridMapper2D::ReleaseGraphicsResources(vtkWindow *win)
 {
-    d->ReleaseGraphicsResources();
+    privateInstance->ReleaseGraphicsResources();
 
     // Call the superclass's ReleaseGraphicsResources method.
     vtkPolyDataMapper2D::ReleaseGraphicsResources(win);
@@ -198,7 +204,7 @@ vtkDashedXorGridMapper2D::ReleaseGraphicsResources(vtkWindow *win)
 void
 vtkDashedXorGridMapper2D::SetWidget(QWidget *w)
 {
-    d->widget = w;
+    privateInstance->widget = w;
 }
 
 void
@@ -228,9 +234,9 @@ vtkDashedXorGridMapper2D::SetDots(int drawn, int spaced)
 void
 vtkDashedXorGridMapper2D::RenderOverlay(vtkViewport* viewport, vtkActor2D* actor)
 {
-    if(d->widget != 0)
+    if(privateInstance->widget != 0)
     {
-        switch(d->SelectBestRenderer())
+        switch(privateInstance->SelectBestRenderer())
         {
         case 1:
             RenderOverlay_X11(viewport, actor);
@@ -280,7 +286,7 @@ vtkDashedXorGridMapper2D::RenderOverlay_X11(vtkViewport* viewport, vtkActor2D* a
     XPoint *points = new XPoint [1024];
 
     Display* displayId = (Display*) QX11Info::display();
-    Window windowId = (Window) d->widget->winId();
+    Window windowId = (Window) privateInstance->widget->winId();
 
     Screen *screen = XDefaultScreenOfDisplay(displayId);
     int screenN = XScreenNumberOfScreen(screen);
@@ -334,16 +340,16 @@ vtkDashedXorGridMapper2D::RenderOverlay_Qt(vtkViewport* viewport, vtkActor2D* ac
     painter.drawLine(QLine(x1, y1, x2, y2));
 
 #define FLUSH_AND_SYNC() \
-    d->overlay->setPixmap(pixmap);
+    privateInstance->overlay->setPixmap(pixmap);
 
 #define CLEAN_UP()
 
     int x,y,w,h;
-    QPoint tl(d->widget->mapToGlobal(QPoint(0,0)));
+    QPoint tl(privateInstance->widget->mapToGlobal(QPoint(0,0)));
     x = tl.x();
     y = tl.y();
-    w = d->widget->width();
-    h = d->widget->height();
+    w = privateInstance->widget->width();
+    h = privateInstance->widget->height();
 
     QPixmap pixmap(w, h);
     pixmap.fill(Qt::transparent);
@@ -351,19 +357,19 @@ vtkDashedXorGridMapper2D::RenderOverlay_Qt(vtkViewport* viewport, vtkActor2D* ac
     //
     // Try and create the window if we've not yet created it.
     //
-    if(d->overlay == 0)
+    if(privateInstance->overlay == 0)
     {
-        d->overlay = new QLabel(0, Qt::FramelessWindowHint);
-        d->overlay->setAttribute(Qt::WA_TranslucentBackground);
+        privateInstance->overlay = new QLabel(0, Qt::FramelessWindowHint);
+        privateInstance->overlay->setAttribute(Qt::WA_TranslucentBackground);
         // FIXME? We should need the following, but it triggers a Qt
         // bug and  strangely everything seems to work without it.
         // overlay->setAttribute(Qt::WA_TransparentForMouseEvents);
-        d->overlay->setAutoFillBackground(false);
-        d->overlay->setPixmap(pixmap);
+        privateInstance->overlay->setAutoFillBackground(false);
+        privateInstance->overlay->setPixmap(pixmap);
     }
 
-    d->overlay->setGeometry(x, y, w, h);
-    d->overlay->show();
+    privateInstance->overlay->setGeometry(x, y, w, h);
+    privateInstance->overlay->show();
 
     // Clear the window so it's ready for us to draw.
     QPainter painter(&pixmap);

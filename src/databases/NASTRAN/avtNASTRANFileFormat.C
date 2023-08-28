@@ -45,6 +45,7 @@ using namespace NASTRANDBOptions;
 
 #include <errno.h>
 #include <limits.h>
+#include <string.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 
@@ -166,9 +167,9 @@ avtNASTRANFileFormat::ActivateTimestep()
 }
 
 // ****************************************************************************
-// Function: Getf
+// Function: GetVal
 //
-// Purpose: Robust way of reading string for float value
+// Purpose: Robust way of reading string for a numerical (int or float) value.
 //
 // Programmer: Mark C. Miller, Thu Apr  3 16:27:01 PDT 2008
 //
@@ -187,14 +188,26 @@ avtNASTRANFileFormat::ActivateTimestep()
 //    Ok, I 'fixed' this funky logic again. The above 'fix' caused the alg.
 //    to basically completely fail.
 //
+//    Mark C. Miller, Sun Jul  4 16:19:34 PDT 2021
+//    Simplified logic for NASTRAN exponential format
+//
+//    Mark C. Miller, Wed Jul 14 16:27:03 PDT 2021
+//    Output `t` variable in any error messages instead of `s` input arg
+// 
+//    Justin Privitera, Tue Jul  5 14:40:55 PDT 2022
+//    Changed 'supressed' to 'suppressed'.
 // ****************************************************************************
-
-static float Getf(const char *s)
+static double GetVal(const char *s)
 {
-    char *ends;
-    double val = 0.0;
+    double dval;
+    char *endptr = 0;
+    size_t i;
 
-    // Check for one of these funky 'NASTRAN exponential format' strings.
+    // handle a string with no numbers
+    i = strcspn(s, "0123456789");
+    if (s[i] == '\0') return 0;
+
+    // Check for the funky 'NASTRAN exponential format'.
     // This is where a value like '1.2345e-5' is actually represented in the
     // file as '1.2345-5' with the 'e' character missing. It is awkward but
     // apparently a NASTRAN standard. I guess the rationale is that given
@@ -202,75 +215,55 @@ static float Getf(const char *s)
     // one additional digit of precision. This logic is basically looking for
     // the condition of encountering a sign character, '-' or '+', AFTER having
     // seen characters that could represent part of a number. In such a case,
-    // it MUST be the sign of the exponent.
-    const char *p = s;
-    char tmps[32];
-    char *q = tmps;
-    bool haveSeenNumChars = false;
-    while (!haveSeenNumChars || (*p != '-' && *p != '+' && *p != '\0'))
-    {
-        if (('0' <= *p && *p <= '9') || *p == '.' || *p == '+' || *p == '-')
-            haveSeenNumChars = true;
-        *q++ = *p++;
-    }
-    if (haveSeenNumChars && (*p == '-' || *p == '+'))
-    {
-        *q++ = 'e';
-        while (*p != '\0')
-            *q++ = *p++;
-        *q++ = '\0';
-        errno = 0;
-        val = strtod(tmps, &ends);
-    }
-    else
-    {
-        errno = 0;
-        val = strtod(s, &ends);
-    }
-
-    if (errno != 0)
-    {
-        char msg[512];
-        snprintf(msg, sizeof(msg),
-            "Error \"%s\" at word \"%32s\"\n", strerror(errno), s);
-        if (!avtCallback::IssueWarning(msg))
-            cerr << msg << endl;
-        return 0.0;
-    }
-
-    return (float) val;
-}
-
-// ****************************************************************************
-// Function: Geti
-//
-// Purpose: Robust way of reading string for integer value
-//
-// Programmer: Mark C. Miller, Thu Apr  3 16:27:01 PDT 2008
-//
-// Modifications:
-//    Jeremy Meredith, Thu Aug  7 13:43:03 EDT 2008
-//    Format %s doesn't use space modifier.
-//
-// ****************************************************************************
-static int Geti(const char *s)
-{
-    char *ends;
+    // it MUST be the sign of an exponent.
+    std::string t(s);
+    // Loop backwards through string to find rightmost sign char
+    for (i = t.size()-1; i>0 && t[i]!='-' && t[i]!='+'; i--);
+    if (i>0 && (t[i]=='-' || t[i]=='+') && strchr("0123456789",t[i-1]))
+        t.insert(i, "E");
 
     errno = 0;
-    long val = strtol(s, &ends, 10);
+    dval = strtod(t.c_str(), &endptr);
 
-    if (errno != 0)
+    // Handle cases where conversion failed for one reason or another
+    if ((dval == 0 && endptr == t.c_str()) || errno)
     {
-        char msg[512];
-        snprintf(msg, sizeof(msg),
-            "Error \"%s\" at word \"%32s\"\n", strerror(errno), s);
-        if (!avtCallback::IssueWarning(msg))
-            cerr << msg << endl;
-        return 0;
+        static int nwarnings = 0;
+        if (nwarnings <= 5) 
+        {
+            char msg[512];
+            snprintf(msg, sizeof(msg), "%s problem converting numerical value from \"%32s\"\n",
+                errno?strerror(errno):"", t.c_str());
+            if (!avtCallback::IssueWarning(msg))
+            {
+                cerr << msg << endl;
+                debug5 << msg << endl;
+            }
+            if (nwarnings == 5)
+            {
+                if (!avtCallback::IssueWarning("Further warnings will be suppressed."))
+                {
+                    cerr << "Further warnings will be suppressed." << endl;
+                    debug5 << "Further warnings will be suppressed." << endl;
+                }
+            }
+        }
+        nwarnings++;
     }
 
-    return (int) val;
+    return dval;
+}
+
+// Refactored to GetVal()
+static float Getf(const char *s)
+{
+    return (float) GetVal(s);
+}
+
+// Refactored to GetVal()
+static int Geti(const char *s)
+{
+    return (int) GetVal(s);
 }
 
 // ****************************************************************************
@@ -320,6 +313,11 @@ static int Geti(const char *s)
 //    Updated the file reader to handle the new NASTRAN capabilities.
 //    Specifically, many of the of the NASTRAN types now support more nodes to
 //    make quadratic elements, so I've updated the reader to handle this.
+//
+//    Mark C. Miller, Tue Jul  6 10:29:45 PDT 2021
+//    Reduce debug5 output by adding conditional logic to messages about
+//    building linear (buildable==1) elements when such elements were all that
+//    was defined in the file.
 // ****************************************************************************
 
 bool
@@ -658,7 +656,7 @@ avtNASTRANFileFormat::ReadFile(const char *name, int nLines)
             // CELL_TYPE | EID | PID | G1 | G2 | G3 | G4 | G5 | G6
 
             // Parse line into verts array
-            ParseLine(verts, line, 3, 6);
+            bool usesAll6Verts = ParseLine(verts, line, 3, 6);
 
             // Check if element is buildable
             int buildable = CheckBuildable(verts, 6, 3);
@@ -672,9 +670,10 @@ avtNASTRANFileFormat::ReadFile(const char *name, int nLines)
                 ugrid->InsertNextCell(VTK_QUADRATIC_TRIANGLE, 6, verts);
             }
             else if(buildable == 1) { // First order build passed
-                debug4 << "WARNING: Could not build QUADRATIC_TRIANGLE "
-                       << "at CTRIA6 EID: " << ParseField(line, 1) << ". "
-                       << "Building TRIANGLE instead." << endl;
+                if (usesAll6Verts)
+                    debug4 << "Needed but could not build QUADRATIC_TRIANGLE "
+                           << "at CTRIA6 EID: " << ParseField(line, 1) << ". "
+                           << "Building TRIANGLE instead." << endl;
                 ugrid->InsertNextCell(VTK_QUAD, 4, verts);
             } else {
                 debug4 << "ERROR: Could not build element CTRIA6 EID: " << ParseField(line, 1)
@@ -718,7 +717,7 @@ avtNASTRANFileFormat::ReadFile(const char *name, int nLines)
             //           | G7  | G8  |
 
             // Parse line into verts array
-            ParseLine(verts, line, 3, 8);
+            bool usesAll8Verts = ParseLine(verts, line, 3, 8);
 
             // Check if the element is buildable
             int buildable = CheckBuildable(verts, 8, 4);
@@ -733,9 +732,10 @@ avtNASTRANFileFormat::ReadFile(const char *name, int nLines)
                 ugrid->InsertNextCell(VTK_QUADRATIC_QUAD, 8, verts);
             }
             else if(buildable == 1) { // First order build passed
-                debug4 << "WARNING: Could not build QUADRATIC_QUAD "
-                       << "at CQUAD8 EID: " << ParseField(line, 1) << ". "
-                       << "Building QUAD instead." << endl;
+                if (usesAll8Verts)
+                    debug4 << "Needed but could not build QUADRATIC_QUAD "
+                           << "at CQUAD8 EID: " << ParseField(line, 1) << ". "
+                           << "Building QUAD instead." << endl;
                 ugrid->InsertNextCell(VTK_QUAD, 4, verts);
             } else {
                 debug4 << "ERROR: Could not build element CQUAD8 EID: " << ParseField(line, 1)
@@ -752,7 +752,7 @@ avtNASTRANFileFormat::ReadFile(const char *name, int nLines)
             // where G5-10 are only needed for QUADRATIC.
 
             // Parse line into verts array
-            ParseLine(verts, line, 3, 10);
+            bool usesAll10Verts = ParseLine(verts, line, 3, 10);
 
             // Check if the element is buildable
             int buildable = CheckBuildable(verts, 10, 4);
@@ -767,9 +767,10 @@ avtNASTRANFileFormat::ReadFile(const char *name, int nLines)
                 ugrid->InsertNextCell(VTK_QUADRATIC_TETRA, 10, verts);
             }
             else if(buildable == 1) {
-                debug5 << "Could not build QUADRATIC_TETRA "
-                       << "at CTETRA EID: " << ParseField(line, 1) << ". "
-                       << "Building TETRA element." << endl;
+                if (usesAll10Verts)
+                    debug5 << "Needed but could not build QUADRATIC_TETRA "
+                           << "at CTETRA EID: " << ParseField(line, 1) << ". "
+                           << "Building TETRA element." << endl;
                 ugrid->InsertNextCell(VTK_TETRA, 4, verts);
             }
             else {
@@ -790,7 +791,7 @@ avtNASTRANFileFormat::ReadFile(const char *name, int nLines)
             // suite so I've included it here in case the user wants to run an older file.
 
             // Parse line into verts array
-            ParseLine(verts, line, 3, 13);
+            bool usesAll13Verts = ParseLine(verts, line, 3, 13);
 
             // Check if the element is buildable
             int buildable = CheckBuildable(verts, 13, 5);
@@ -805,9 +806,10 @@ avtNASTRANFileFormat::ReadFile(const char *name, int nLines)
                 ugrid->InsertNextCell(VTK_QUADRATIC_PYRAMID, 13, verts);
             }
             else if(buildable == 1) { // First order build passed
-                debug5 << "Could not build QUADRATIC_PYRAMID "
-                       << "at CPYRA EID: " << ParseField(line, 1) << ". "
-                       << "Building PYRAMID element." << endl;
+                if (usesAll13Verts)
+                    debug5 << "Needed but could not build QUADRATIC_PYRAMID "
+                           << "at CPYRA EID: " << ParseField(line, 1) << ". "
+                           << "Building PYRAMID element." << endl;
                 ugrid->InsertNextCell(VTK_PYRAMID, 5, verts);
             } else {
                 debug4 << "ERROR: Could not build element CPYRA EID: " << ParseField(line, 1)
@@ -825,7 +827,7 @@ avtNASTRANFileFormat::ReadFile(const char *name, int nLines)
             // where G7-15. are only needed for QUADRATIC.
 
             // Parse line into verts array
-            ParseLine(verts, line, 3, 15);
+            bool usesAll15Verts = ParseLine(verts, line, 3, 15);
 
             // Check if the element is buildable
             int buildable = CheckBuildable(verts, 15, 6);
@@ -866,17 +868,14 @@ avtNASTRANFileFormat::ReadFile(const char *name, int nLines)
                 ugrid->InsertNextCell(VTK_QUADRATIC_WEDGE, 15, verts);
             }
             else if(buildable == 1) { // First order build passed
-                debug5 << "Could not build QUADRATIC_WEDGE "
-                       << "at CPENTA EID: " << ParseField(line, 1) << ". " << endl;
+                if (usesAll15Verts)
+                    debug5 << "Needed but could not build QUADRATIC_WEDGE "
+                           << "at CPENTA EID: " << ParseField(line, 1) << ". " << endl;
                 if (verts[4] == verts[5])
                 {
-                    debug5 << "Could not build WEDGE at CPENTA EID: "
-                           << ParseField(line, 1) << ". "
-                           << "Building PYRAMID element." << endl;
                     ugrid->InsertNextCell(VTK_PYRAMID, 5, verts);
                 }
                 else {
-                    debug5 << "Building WEDGE element." << endl;
                     ugrid->InsertNextCell(VTK_WEDGE, 6, verts);
                 }
             } else {
@@ -895,7 +894,7 @@ avtNASTRANFileFormat::ReadFile(const char *name, int nLines)
             // where G9-20. are only needed for QUADRATIC.
 
             // Parse line into verts array
-            ParseLine(verts, line, 3, 20);
+            bool usesAll20Verts = ParseLine(verts, line, 3, 20);
 
             // Check if the element is buildable
             int buildable = CheckBuildable(verts, 20, 8);
@@ -922,9 +921,10 @@ avtNASTRANFileFormat::ReadFile(const char *name, int nLines)
                 ugrid->InsertNextCell(VTK_QUADRATIC_HEXAHEDRON, 20, verts);
             }
             else if(buildable == 1) { // First order build passed
-                debug5 << "Could not build QUADRATIC_HEXAHEDRON "
-                       << "at CHEXA EID: " << ParseField(line, 1) << ". "
-                       << "Building HEXAHEDRON." << endl;
+                if (usesAll20Verts)
+                    debug5 << "Needed but could not build QUADRATIC_HEXAHEDRON "
+                           << "at CHEXA EID: " << ParseField(line, 1) << ". "
+                           << "Building HEXAHEDRON." << endl;
                 ugrid->InsertNextCell(VTK_HEXAHEDRON, 8, verts);
             } else {
                 debug4 << "ERROR: Could not build element CHEXA EID: " << ParseField(line, 1)
@@ -1004,6 +1004,10 @@ avtNASTRANFileFormat::ReadFile(const char *name, int nLines)
 //
 //  Programmer: Edward Rusu
 //  Creation:   Tue Jul 31 9:26:18 PST 2018
+//
+//  Modifications:
+//    Mark C. Miller, Tue Jul  6 10:27:50 PDT 2021
+//    Send output to debug1 instead of cerr
 // ****************************************************************************
 bool
 avtNASTRANFileFormat::ReadLine(ifstream& ifile, char *line)
@@ -1040,17 +1044,17 @@ avtNASTRANFileFormat::ReadLine(ifstream& ifile, char *line)
     {
         if (ifile.eof())
         {
-            std::cout << "File successfuly read!" << std::endl;
+            debug1 << "File successfuly read!" << std::endl;
             return false;
         }
         else {
-            std::cout << "ERROR: File reader has failed!" << std::endl;
+            debug1 << "ERROR: File reader has failed!" << std::endl;
             return false;
         }
     }
     else if(!ifile.good())
     {
-        std::cout << "ERROR: File reader is not good!" << std::endl;
+        debug1 << "ERROR: File reader is not good!" << std::endl;
         return false;
     }
     else
@@ -1077,9 +1081,12 @@ avtNASTRANFileFormat::ReadLine(ifstream& ifile, char *line)
 //    later on when it is expected that 'count' values are either valid or
 //    are set to -1.
 //
+//    Mark C. Miller, Tue Jul  6 10:28:19 PDT 2021
+//    Handle DOS line endings (`\r`). Return bool indicating if all (count)
+//    items were actually read.
 // ****************************************************************************
 
-void
+bool
 avtNASTRANFileFormat::ParseLine(vtkIdType *verts, char *line, int start,
                                 int count)
 {
@@ -1087,7 +1094,7 @@ avtNASTRANFileFormat::ParseLine(vtkIdType *verts, char *line, int start,
     char *valend = valstart + INDEX_FIELD_WIDTH;
     char val_t;
     int i;
-    for (i = 0; (i < count) && (*valstart != '\0'); i++) {
+    for (i = 0; (i < count) && (*valstart != '\0') && (*valstart != '\r'); i++) {
         if(*valstart == '+' || *valstart == '*')
         { // At blank continuation element
             valstart += INDEX_FIELD_WIDTH;
@@ -1105,6 +1112,7 @@ avtNASTRANFileFormat::ParseLine(vtkIdType *verts, char *line, int start,
     }
     for (int j = i; j < count; ++j)
         verts[j] = -1;
+    return i == count;
 }
 
 // ****************************************************************************

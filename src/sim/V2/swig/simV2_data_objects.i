@@ -364,6 +364,7 @@ int VisIt_OptionList_setValueI(visit_handle h, const char *, int);
 int VisIt_OptionList_setValueF(visit_handle h, const char *, float);
 int VisIt_OptionList_setValueD(visit_handle h, const char *, double);
 int VisIt_OptionList_setValueS(visit_handle h, const char *, const char *);
+int VisIt_OptionList_setValueE(visit_handle h, const char *, int);
 
 
 #ifdef __cplusplus

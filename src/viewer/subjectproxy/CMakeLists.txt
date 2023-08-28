@@ -4,6 +4,11 @@
 
 #****************************************************************************
 # Modifications:
+#   Kathleen Biagas, Thu Mar 30, 2023
+#   Use AUTOMOC target property instead of QT_WRAP_CPP macro.
+#
+#   Kathleen Biagas, Tue May 5, 2023
+#   Disable qt6 forcing of defines for UNICODE.
 #
 #****************************************************************************
 
@@ -21,11 +26,6 @@ ViewerSubjectProxyFactory.C
 #    SET(VIEWER_STATIC_SOURCES ViewerStaticSymbolLocator.C)
 #ENDIF(VISIT_STATIC)
 
-SET(VIEWERLIB_MOC_HEADERS
-ViewerSubjectProxy.h
-)
-
-QT_WRAP_CPP(viewersubjectproxy VIEWERLIB_MOC_SOURCES ${VIEWERLIB_MOC_HEADERS})
 
 #IF (NOT WIN32)
     # This keeps comm's exceptions visible when using -fvisibility=hidden
@@ -76,10 +76,9 @@ ${VTK_INCLUDE_DIRS}
 LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY})
 
 #*************************** The viewer library ******************************
-ADD_LIBRARY(viewersubjectproxy ${VIEWERLIB_SOURCES} ${VIEWERLIB_MOC_SOURCES})
-#IF (WIN32)
-#    SET_TARGET_PROPERTIES(viewersubject PROPERTIES OUTPUT_NAME viewersubjectlib)
-#ENDIF (WIN32)
+ADD_LIBRARY(viewersubjectproxy ${VIEWERLIB_SOURCES})
+
+set_target_properties(viewersubjectproxy PROPERTIES AUTOMOC ON)
 
 SET(VIEWER_QT_LIBS 
 ${QT_QTGUI_LIBRARY}
@@ -95,6 +94,12 @@ IF(VISIT_STATIC)
         ${QT_QTCORE_LIB_DEPENDENCIES}
     )
 ENDIF(VISIT_STATIC)
+
+
+if(QT_VERSION VERSION_GREATER_EQUAL "6.2.0")
+    qt6_disable_unicode_defines(viewersubjectproxy)
+endif()
+
 
 TARGET_LINK_LIBRARIES(viewersubjectproxy
 viewer
