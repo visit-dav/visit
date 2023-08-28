@@ -133,6 +133,14 @@ class QvisNoDefaultColorTableButton;
 //   Removed gui elements from the header that were not used outside the
 //   CreateWindowContents() function.
 // 
+//   Justin Privitera, Mon Aug 28 11:22:47 PDT 2023
+//   Removed the tagList and TagInfo class declaration.
+//   Removed the tagsMatchAny flag.
+//   Removed the AddGlobalTag(), AddToTagTable(), StringifyTagChanges(),
+//   UnstringifyAndMergeTagChanges(), addTagToColorTable(), and
+//   removeTagFromColorTable() functions.
+//   All tagging infrastructure has been moved to the CTAtts.
+// 
 // ****************************************************************************
 
 class GUI_API QvisColorTableWindow : public QvisPostableWindowObserver
