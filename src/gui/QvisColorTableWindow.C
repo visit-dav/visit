@@ -3077,6 +3077,7 @@ QvisColorTableWindow::tagsSelectAll()
 void
 QvisColorTableWindow::tagCombiningChanged(int index)
 {
+    // TODO simplify this function more
     bool old_val = colorAtts->GetTagsMatchAny();
     colorAtts->SetTagsMatchAny(index == 0);
     // has the tag combining behavior been changed?
