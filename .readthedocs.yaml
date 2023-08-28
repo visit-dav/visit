@@ -8,6 +8,8 @@ version: 2
 # Required field
 build:
   os: ubuntu-22.04
+  tools:
+    python: "3.8"
 
 # Build documentation in the docs/ directory with Sphinx
 sphinx:
