@@ -1884,5 +1884,5 @@ Third party library support
 
 If your plugin depends on an I/O library not already supported by VisIt_, and if the plugin will be contributed to VisIt_'s repo, then support for the library needs to be added to the `build_visit` script.
 Please see :ref:`dev_create_bv_module` for how to add a new module to build_visit.
-A CMake `Find` module will also need to be added to ``src/CMake`` and ``src/CMake/SetupThirdParty.cmake`` modified to include that module.
+A CMake `Find` module will also need to be added to ``src/CMake`` and ``src/CMake/SetupThirdParty.cmake`` will need to be modified to include that module.
 See :ref:`dev_adding_find_module` for more information.
