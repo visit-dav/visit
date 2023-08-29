@@ -62,6 +62,9 @@
 #   Kathleen Biagas, Wed Dec 7, 2022
 #   Moved bulk of code to subdirectories.
 #
+#   Eric Brugger, Tue Jul 25 11:23:55 EDT 2023
+#   Change CMAKE_THREAD_LIBS to Threads::Threads.
+#
 #****************************************************************************
 
 
@@ -84,7 +87,7 @@ target_link_libraries(visitcommon PUBLIC ${ZLIB_LIBRARY})
 if(WIN32)
     target_link_libraries(visitcommon PUBLIC ws2_32 shlwapi userenv )
 else()
-    target_link_libraries(visitcommon PUBLIC ${CMAKE_THREAD_LIBS} ${DL_LIB})
+    target_link_libraries(visitcommon PUBLIC Threads::Threads ${DL_LIB})
 endif()
 
 VISIT_INSTALL_TARGETS(visitcommon)

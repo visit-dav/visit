@@ -8,6 +8,9 @@
 #    Cyrus Harrison, Tue Dec 10 08:51:21 PST 2019
 #    Add xml tools code gen targets
 #
+#    Eric Brugger, Tue Jul 25 11:23:55 EDT 2023
+#    Change CMAKE_THREAD_LIBS to Threads::Threads.
+#
 #****************************************************************************
 
 #
@@ -134,7 +137,7 @@ avtplotter_ser
 avtfilters_ser
 avtviswindow_ser
 avtwriter_ser
-${CMAKE_THREAD_LIBS}
+Threads::Threads
 )
 
 if(HAVE_OSMESA OR HAVE_EGL)

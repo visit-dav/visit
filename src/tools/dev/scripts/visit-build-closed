@@ -111,6 +111,9 @@
 #   Eric Brugger, Tue Jun 14 11:49:17 PDT 2022
 #   I updated the 3.2.0 cmake paths to 3.3.0. I removed winnipeg.
 #
+#   Eric Brugger, Thu Jul 27 16:51:41 PDT 2023
+#   I added magma.
+#
 #-----------------------------------------------------------------------
 
 test=no
@@ -120,6 +123,7 @@ user=`whoami`
 #
 # Parse the execute line, providing default values for error checking.
 #
+magma=true
 jade=true
 sierra=true
 trinity=true
@@ -135,9 +139,18 @@ for abc
 do
    case $1 in
       -none)
+         magma=false
          jade=false
          sierra=false
          trinity=false
+         shift
+         ;;
+      -magma)
+         magma=false
+         shift
+         ;;
+      +magma)
+         magma=true
          shift
          ;;
       -jade)
@@ -178,6 +191,7 @@ if [ $dist = undefined ]
 then
    echo "Usage: [-none] [-<machine name>] -d <distribution>"
    echo "Valid machine names:"
+   echo "    magma (LC, x86_64)"
    echo "    jade (LC, x86_64)"
    echo "    sierra (LC, ppc)"
    echo "    trinity (LANL, x86_64)"
@@ -193,6 +207,59 @@ then
    echo "Distribution file doesn't exist."
    exit
 fi
+
+#
+# Build on magma
+#
+rm -f magma
+cat <<EOF > magma
+#!/bin/sh
+XLOCALEDIR=/usr/lib/X11/locale
+PATH=/usr/bin/X11:\$PATH
+if test ! -d /usr/tmp/$user ; then
+   mkdir /usr/tmp/$user
+fi
+if test ! -d /usr/tmp/$user/magma ; then
+   mkdir /usr/tmp/$user/magma
+fi
+rm -rf /usr/tmp/$user/magma/visitbuild
+mkdir /usr/tmp/$user/magma/visitbuild
+mv magma_$dist.tar.gz /usr/tmp/$user/magma/visitbuild/$dist.tar.gz
+cd /usr/tmp/$user/magma/visitbuild
+gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
+cd $dist/src
+ver=\`cat VERSION\`
+ver2=\`echo \$ver | tr "." "_"\`
+/usr/workspace/visit/visit/thirdparty_shared/3.3.0/toss4/cmake/3.18.2/linux-x86_64_gcc-10.3/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON -DVISIT_PARADIS:BOOL=ON >> ../../buildlog 2>&1
+make manuals >> ../../buildlog 2>&1
+make -j 24 package >> ../../buildlog 2>&1
+mv visit\$ver2.linux-x86_64.tar.gz ../..
+cd ../..
+rm -f resultlog
+echo "        build of visit on magma"        > resultlog 2>&1
+echo "       -------------------------"       >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+ls -l                                         >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+echo "number of database plugins = "\`ls $dist/src/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
+echo "number of operator plugins = "\`ls $dist/src/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
+echo "number of plot plugins = "\`ls $dist/src/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+echo "The database plugins:"                  >> resultlog 2>&1
+ls $dist/src/plugins/databases/libI* | sed "s/$dist\/src\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+EOF
+
+if [ $magma = true ]
+then
+   if [ $test = no ]
+   then
+      echo "Building on magma"
+      scp magma magma:magma_buildit
+      scp $dist.tar.gz magma:magma_$dist.tar.gz
+      ssh magma190 "chmod 750 magma_buildit;./magma_buildit" &
+   fi
+fi
+
 
 #
 # Build on jade.
@@ -351,5 +418,5 @@ fi
 #
 if [ $test = no ]
 then
-   rm -f jade sierra trinity
+   rm -f magma jade sierra trinity
 fi

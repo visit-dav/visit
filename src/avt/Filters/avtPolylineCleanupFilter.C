@@ -9,6 +9,8 @@
 #include <avtPolylineCleanupFilter.h>
 
 #include <vtkCleanPolyData.h>
+#include <vtkGeometryFilter.h>
+#include <vtkNew.h>
 #include <vtkPointData.h>
 #include <vtkPolyData.h>
 
@@ -66,6 +68,10 @@ avtPolylineCleanupFilter::~avtPolylineCleanupFilter()
 //    Remove unnecessary handling of active scalars, vtkCleanPolyData
 //    doesn't modify them.
 //
+//    Kathleen Biagas, Wed July 12, 2023
+//    Support unstructured grids, use vtkGometryFIlter to convert them to
+//    polydata.
+//
 // ****************************************************************************
 
 avtDataRepresentation *
@@ -76,15 +82,32 @@ avtPolylineCleanupFilter::ExecuteData(avtDataRepresentation *inDR)
     //
     vtkDataSet *inDS = inDR->GetDataVTK();
 
+    if (inDS == nullptr)
+    {
+        return inDR;
+    }
+    if (inDS->GetNumberOfPoints() == 0 || inDS->GetNumberOfCells() == 0)
+    {
+        return inDR;
+    }
+
     if (GetInput()->GetInfo().GetAttributes().GetTopologicalDimension() != 1)
     {
         return inDR;
     }
 
     // Clean duplicate points from the polydata.
-    vtkCleanPolyData *cleanFilter = vtkCleanPolyData::New();
-
-    cleanFilter->SetInputData(vtkPolyData::SafeDownCast(inDS));
+    vtkNew<vtkCleanPolyData> cleanFilter;
+    vtkNew<vtkGeometryFilter> geoFilter;
+    if (inDS->GetDataObjectType() == VTK_POLY_DATA)
+    {
+        cleanFilter->SetInputData(vtkPolyData::SafeDownCast(inDS));
+    }
+    else
+    {
+        geoFilter->SetInputData(inDS);
+        cleanFilter->SetInputConnection(geoFilter->GetOutputPort());
+    }
     cleanFilter->Update();
 
     // Get the output.

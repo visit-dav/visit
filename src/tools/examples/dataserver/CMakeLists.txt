@@ -11,6 +11,9 @@
 #   Replaced vtktiff with vtktiff_LIBRARIES, vtkjpeg with vtkjpeg_LIBRARIES,
 #   and vtkpng with vtkpng_LIBRARIES.
 #
+#   Eric Brugger, Tue Jul 25 11:23:55 EDT 2023
+#   Change CMAKE_THREAD_LIBS to Threads::Threads.
+#
 #****************************************************************************
 
 INCLUDE_DIRECTORIES(
@@ -64,7 +67,7 @@ mdserverproxy
 visitcommon
 ${PYTHON_LIBRARY}
 ${VTK_EXTRA_LIBS}
-${CMAKE_THREAD_LIBS}
+Threads::Threads
 ${ZLIB_LIBRARY}
 )
 IF(NOT WIN32)

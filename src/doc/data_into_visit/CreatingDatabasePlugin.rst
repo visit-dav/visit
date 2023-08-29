@@ -358,55 +358,7 @@ Debugging your plug-in
 ~~~~~~~~~~~~~~~~~~~~~~
 
 Before beginning to write code for your plug-in, you should know a few techniques for debugging your plug-in since debugging VisIt_ can be tricky because of its distributed architecture.
-
-Debugging logs
-""""""""""""""
-
-The first method debugging in VisIt_ is by using VisIt_'s debug logs.
-When you run ``visit`` on the command line, you can optionally add the ``-debug 5`` arguments to make VisIt_ write out debugging logs.
-The number of debugging logs can be 1, 2, 3, 4, or 5, with debugging log 5 being the most detailed.
-When VisIt_'s components are told to run with debugging logs turned on, each component writes a set of debugging logs.
-For example, the database server component will write A.mdserver.1.vlog, A.mdserver.2.vlog,...,A.mdserver.5.vlog if you pass ``-debug 5`` on the VisIt_ command line.
-Subsequent runs of VisIt_ will prepend *B* then *C* and so on.
-If you don't want that behavior, you may add ``-clobber_vlogs`` to VisIt_'s command line arguments.
-Since you are writing a database reader plug-in, you will want to look at the A.mdserver*.vlog and A.engine*.vlog files since those components load your *libM* and *libE* plug-ins.
-
-The debugging logs will contain information written to them by the debugging statements in VisIt_'s source code.
-If you want to add debugging statements to your AVT code then you can use the *debug1*, *debug2*, *debug3*, *debug4*, or *debug5* streams as shown in the next code listing.
-
-
-.. container:: collapsible
-
-  .. container:: header
-
-    Example for using debug streams
-
-  .. code-block:: c
-
-    // NOTE - This code is incomplete and is for example purposes only.
-    // Include this header for debug streams.
-    #include <DebugStream.h>
-
-    vtkDataSet *
-    avtXXXXFileFormat::GetMesh(const char *meshname)
-    {
-        // Write messages to different levels of the debug logs.
-        debug1 << "Hi from avtXXXXFileFormat::GetMesh" << endl;
-        debug4 << "Many database plug-ins prefer debug4" << endl;
-        debug5 << "Lots of detail from avtXXXXFileFormat::GetMesh" << endl;
-        return 0;
-    }
-
-
-Dumping VTK objects to disk
-"""""""""""""""""""""""""""
-
-In addition to the ``-debug`` argument, VisIt_ also supports a ``-dump`` argument.
-The ``-dump`` argument tells VisIt_'s compute engine to write VTK files containing the data for every stage of the pipeline execution so you can view the changes to the data made by each AVT filter.
-While this option is more useful when writing plots and operators, you can use it to examine the data at the beginning of the pipeline since, at that stage, the data will contain the VTK object that was created by your database reader plug-in.
-
-When you run VisIt_ with the ``-dump`` argument, many VTK files will be created since the data is saved at every stage in the execution of VisIt_'s data processing pipeline.
-Each VTK filename begins with a number indicating the order of the filter in the pipeline that saved the data.
+See :ref:`Debugging Tips <Debugging Tips>` for detailed information.
 
 
 Opening your file

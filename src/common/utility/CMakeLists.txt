@@ -7,6 +7,9 @@
 #   Kathleen Biagas, Wed Apr 19 14:38:36 PDT 2023
 #   Add target_include_directories for each of the unit tests. 
 #
+#   Kathleen Biagas, Wed Aug 2, 2023
+#   Remove win32-regex.
+#
 #****************************************************************************
 
 target_sources(visitcommon PRIVATE
@@ -18,12 +21,6 @@ target_sources(visitcommon PRIVATE
     Utility.C
     visit_gzstream.C
     void_ref_ptr.C)
-
-if(WIN32)
-    target_sources(visitcommon PRIVATE win32-regex.c)
-    set_source_files_properties(win32-regex.c
-        PROPERTIES LANGUAGE CXX)
-endif()
 
 target_include_directories(visitcommon PUBLIC .)
 

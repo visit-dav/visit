@@ -86,7 +86,15 @@
 #    Kathleen Biagas, Mon Nov 28, 2022
 #    Remove obsolete 'colorByMag' vector att with 'colorByMagnitude'.
 #
+#    Kathleen Biagas, Tue July 11, 2023
+#    Don't allow tests using wave_1file.visit to run on Windows, as they
+#    involve symlinks. Symink access on the testing machine is disallowed.
+#
+#    Kathleen Biagas, Fri July 28, 2023
+#    Allow test_26 involving largefile.silo to run on Windows.
+#
 # ----------------------------------------------------------------------------
+
 TurnOffAllAnnotations() # defines global object 'a'
 
 # Turn off sets by name
@@ -316,32 +324,31 @@ SetPlotOptions(curveAtts)
 DrawPlots()
 Test("silo_25")
 
+DeleteAllPlots()
+CloseDatabase(silo_data_path("multi_ucd3d.silo"))
+
 #
 # Test objects existing past 2Gig limit in a >2 Gig file
 # Large File Support. Because file is large, it is NOT
 # part of the repo. We create a sym-link to it from the
 # data dir.
 #
-DeleteAllPlots()
-CloseDatabase(silo_data_path("multi_ucd3d.silo"))
 
-# this crashes on windows, so don't try to run it.
-if not sys.platform.startswith("win"):
-    (err, dbname) = FindAndOpenDatabase("largefile.silo")
-    if (err != 1):
-        AddSkipCase("silo_26")
-        Test("silo_26")
-    else:
-        AddPlot("Curve","sincurve")
-        curveAtts.curveColor = (0, 255, 255, 255)
-        SetPlotOptions(curveAtts)
-        AddPlot("Curve","coscurve")
-        curveAtts.curveColor = (255, 0, 255, 255)
-        SetPlotOptions(curveAtts)
-        DrawPlots()
-        Test("silo_26")
-        DeleteAllPlots()
-        CloseDatabase(dbname)
+(err, dbname) = FindAndOpenDatabase("largefile.silo")
+if (err != 1):
+    AddSkipCase("silo_26")
+    Test("silo_26")
+else:
+    AddPlot("Curve","sincurve")
+    curveAtts.curveColor = (0, 255, 255, 255)
+    SetPlotOptions(curveAtts)
+    AddPlot("Curve","coscurve")
+    curveAtts.curveColor = (255, 0, 255, 255)
+    SetPlotOptions(curveAtts)
+    DrawPlots()
+    Test("silo_26")
+    DeleteAllPlots()
+    CloseDatabase(dbname)
 
 #
 # Test time invariant mesh
@@ -422,29 +429,33 @@ Test("silo_35")
 DeleteAllPlots()
 CloseDatabase(data_path("silo_pdb_test_data/odd_multi.silo"))
 
-OpenDatabase(silo_data_path("wave_1file.visit"))
+if not sys.platform.startswith("win"):
+    # files listed in the .visit file (eg wave_1file.silo:cycle_xxx)
+    # are symlinks to wave_1file.silo and symlink access is disallowed
+    # on the windows testing machine.
+    OpenDatabase(silo_data_path("wave_1file.visit"))
 
-AddPlot("Mesh","quadmesh")
-AddPlot("Pseudocolor","pressure")
-DrawPlots()
-ResetView()
-Test("silo_36")
-TimeSliderSetState(23)
-Test("silo_37")
-TimeSliderNextState()
-TimeSliderNextState()
-TimeSliderNextState()
-Test("silo_38")
-TimeSliderPreviousState()
-TimeSliderPreviousState()
-TimeSliderPreviousState()
-TimeSliderPreviousState()
-TimeSliderPreviousState()
-TimeSliderPreviousState()
-Test("silo_39")
+    AddPlot("Mesh","quadmesh")
+    AddPlot("Pseudocolor","pressure")
+    DrawPlots()
+    ResetView()
+    Test("silo_36")
+    TimeSliderSetState(23)
+    Test("silo_37")
+    TimeSliderNextState()
+    TimeSliderNextState()
+    TimeSliderNextState()
+    Test("silo_38")
+    TimeSliderPreviousState()
+    TimeSliderPreviousState()
+    TimeSliderPreviousState()
+    TimeSliderPreviousState()
+    TimeSliderPreviousState()
+    TimeSliderPreviousState()
+    Test("silo_39")
 
-DeleteAllPlots()
-CloseDatabase(silo_data_path("wave_1file.visit"))
+    DeleteAllPlots()
+    CloseDatabase(silo_data_path("wave_1file.visit"))
 
 TestSection("Silo AMR w/Mrgtrees")
 TurnOffAllAnnotations()

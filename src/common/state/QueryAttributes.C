@@ -64,8 +64,6 @@ QueryAttributes::VarType_FromString(const std::string &s, QueryAttributes::VarTy
 
 void QueryAttributes::Init()
 {
-    resultsValue.push_back(0);
-    floatResultsValue.push_back(0);
     timeStep = 0;
     pipeIndex = -1;
     floatFormat = "%g";
@@ -1213,7 +1211,10 @@ QueryAttributes::Reset()
     if (!resultsValue.empty())
     {
         resultsValue.clear();
-        resultsValue.push_back(0.);
+    }
+    if (!floatResultsValue.empty())
+    {
+        floatResultsValue.clear();
     }
     pipeIndex = -1;
 

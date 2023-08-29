@@ -4,12 +4,35 @@ Release Candidate (RC) Development
 Overview
 --------
 
-VisIt_ normally has two active branches for doing development. The
-first is develop and the second is the current release candidate. Work
-performed on the develop branch will go into the next major release,
-such as 3.1. Work performed on the current release candidate will go into
-the next minor release, such as 3.0.2. When doing work on the release
-candidate the normal sequence of operations is as follows:
+VisIt_ supports three types of releases, major, minor and patch.
+VisIt_'s version number is of the form ``major.minor.patch``.
+Patch releases are the most common type of release and typically occur three to four times a year.
+Minor releases are the next most common type of release and may occur once or twice a year.
+Major releases happen infrequently, with perhaps several years passing between major releases.
+
+For example, the release sequence goes something like patch (2.12.0), patch (2.12.1), minor (2.13.0), patch (2.13.1), patch (2.13.2), patch (2.13.3), minor (2.14.0), patch (2.14.1), minor (2.15.0), patch (2.15.1), patch (2.15.2), major (3.0).
+
+The VisIt_ project normally maintains just two stable branches of development.
+These are the *current* release candidate (RC) branch named something like ``3.3RC`` and the main *development* branch named ``develop``.
+
+All patch releases of VisIt_ are made from the *current* RC branch.
+For example, ``3.3.0``, ``3.3.1``, ``3.3.2`` and ``3.3.3`` are all *patch* releases made from the ``3.3RC`` branch.
+
+When the next *minor* release is to be made, say ``3.4.0``, a new RC branch, named ``3.4RC``, is created from the current ``develop`` branch.
+The ``3.4RC`` branch becomes the *current* RC branch and all work on the ``3.3RC`` branch ceases.
+However, the ``3.3RC`` branch will remain forever available.
+
+Most work on VisIt_ is performed first on the *current* RC branch and then the same changes are applied also to the ``develop`` branch.
+In this way, ``develop`` will have all changes that were made on the *current* and all previous RC branches.
+
+Sometimes, short term fixes are performed on the RC branch *only* because they are never intended to become perminent.
+Likewise, sometimes long term enhancements are performed *only* on the ``develop`` branch because they introduce significant changes in interfaces and/or dependencies.
+
+.. tip::  Unless you have been instructed otherwise, plan to do your work *first* on a branch *from* the current RC branch in one pull request and then apply those same changes on a branch *from* ``develop`` in a second pull request.
+
+.. tip:: Use VisIt_'s `GitHub milestones <https://github.com/visit-dav/visit/milestones>`__ page or or reach out to the VisIt_ team on our `GitHub discussions <https://github.com/visit-dav/visit/discussions>`__ page if you need help identifying the current RC branch or deciding upon which branch you should start your work.
+
+When doing work on the release candidate the normal sequence of operations is as follows:
 
 * A branch is created off the current release candidate.
 * Changes are made on the branch.

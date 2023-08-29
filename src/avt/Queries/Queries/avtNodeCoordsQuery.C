@@ -30,7 +30,7 @@ using std::string;
 //
 // ****************************************************************************
 
-avtNodeCoordsQuery::avtNodeCoordsQuery() : avtDatasetQuery() 
+avtNodeCoordsQuery::avtNodeCoordsQuery() : avtDatasetQuery()
 {
     domain = 0;
     element = 0;
@@ -42,13 +42,13 @@ avtNodeCoordsQuery::avtNodeCoordsQuery() : avtDatasetQuery()
 //  Method: avtNodeCoordsQuery destructor
 //
 //  Programmer: Kathleen Bonnell
-//  Creation:   June 10, 2004 
+//  Creation:   June 10, 2004
 //
 //  Modifications:
 //
 // ****************************************************************************
 
-avtNodeCoordsQuery::~avtNodeCoordsQuery() 
+avtNodeCoordsQuery::~avtNodeCoordsQuery()
 {
 }
 
@@ -56,7 +56,7 @@ avtNodeCoordsQuery::~avtNodeCoordsQuery()
 //  Method: avtNodeCoordsQuery::SetInputParams
 //
 //  Purpose:  Allows this query to read input parameters set by user.
-//    
+//
 //  Arguments:
 //    params:   MapNode containing input.
 //
@@ -94,7 +94,7 @@ avtNodeCoordsQuery::SetInputParams(const MapNode &params)
 //  Method: avtNodeCoordsQuery::GetDefaultInputParams
 //
 //  Purpose:  Retrieve default input values.
-//    
+//
 //  Arguments:
 //    params:   MapNode to store default input values.
 //
@@ -118,8 +118,8 @@ avtNodeCoordsQuery::GetDefaultInputParams(MapNode &params)
 //  Purpose:
 //    Perform the requested query.
 //
-//  Programmer: Kathleen Bonnell 
-//  Creation:   June 10, 2004 
+//  Programmer: Kathleen Bonnell
+//  Creation:   June 10, 2004
 //
 //  Modifications:
 //
@@ -129,9 +129,9 @@ avtNodeCoordsQuery::GetDefaultInputParams(MapNode &params)
 //    Kathleen Bonnell, Tue Jul  6 15:20:56 PDT 2004
 //    Removed MPI calls, use GetFloatArrayToRootProc.
 //
-//    Kathleen Bonnell, Thu Dec 16 17:16:33 PST 2004 
+//    Kathleen Bonnell, Thu Dec 16 17:16:33 PST 2004
 //    Moved code that actually finds zone center to FindLocalCenter and
-//    FindGlobalCenter. 
+//    FindGlobalCenter.
 //
 //    Kathleen Bonnell, Tue Dec 28 14:52:22 PST 2004
 //    Add 'global' to output string as necessary.
@@ -152,14 +152,19 @@ avtNodeCoordsQuery::GetDefaultInputParams(MapNode &params)
 //    Kathleen Biagas, Thu Feb 13 15:04:58 PST 2014
 //    Add Xml results.
 //
+//    Kathleen Biagas, Thu Aug 10, 2023
+//    If the current process has never owned any domain, don't allow it to
+//    peform the work of this query, as it will not have the correct ghost
+//    type information needed by avtGenericDatabase::QueryCoords
+//
 // ****************************************************************************
 
 void
 avtNodeCoordsQuery::PerformQuery(QueryAttributes *qA)
 {
     queryAtts = *qA;
-    Init(); 
-    
+    Init();
+
     string floatFormat = queryAtts.GetFloatFormat();
     string format ="";
 
@@ -186,17 +191,22 @@ avtNodeCoordsQuery::PerformQuery(QueryAttributes *qA)
 
 
     double coord[3] = {0., 0., 0.};
+    bool success = false;
 
-    bool success;
-    if (useGlobalId)
+    // don't perform the work if never owned a domain, as ghost type
+    // needed by avtGenericDatabase::QueryCoords won't be correct.
+    if(GetInput()->GetInfo().GetValidity().GetHasEverOwnedAnyDomain())
     {
-        success = FindGlobalCoord(coord);
+        if (useGlobalId)
+        {
+            success = FindGlobalCoord(coord);
+        }
+        else
+        {
+            success = FindLocalCoord(coord);
+        }
     }
-    else 
-    {
-        success = FindLocalCoord(coord);
-    }
-    
+
     GetDoubleArrayToRootProc(coord, 3, success);
 
     if (PAR_Rank() != 0)
@@ -309,7 +319,7 @@ avtNodeCoordsQuery::PerformQuery(QueryAttributes *qA)
 //
 //  Purpose:
 //    Find the coordinats of node specified in queryAtts in domain specified
-//    by queryAtts. 
+//    by queryAtts.
 //
 //  Returns:
 //    true upon succesful location of node and determination of its
@@ -367,6 +377,13 @@ avtNodeCoordsQuery::FindLocalCoord(double coord[3])
     avtOriginatingSource *src = GetInput()->GetOriginatingSource();
     if (domainUsed)
     {
+        //
+        //  See if this processor is working with this domain.
+        //  ** THIS IS CURRENTLY BROKEN AS dlist ALWAYS CONTAINS ALL THE
+        //     DOMAINS AVAILABLE, NOT THE DOMAINS THIS PROCESS HAS, SO
+        //     ALL PROCS PARTICIPATE IN THIS QUERY MEANING UNNECESSARY
+        //     READS OF THE DOMAIN BY PROCS THAT DON'T HAVE IT **
+        //
         for (size_t i = 0; i < dlist.size() && !success; ++i)
         {
             if (dlist[i] == dom)
@@ -387,7 +404,7 @@ avtNodeCoordsQuery::FindLocalCoord(double coord[3])
 //  Method: avtNodeCoordsQuery::FindGlobalCoord
 //
 //  Purpose:
-//    Find the coordinates of global node specified in queryAtts.  Must search 
+//    Find the coordinates of global node specified in queryAtts.  Must search
 //    all domains.
 //
 //  Returns:
@@ -398,7 +415,7 @@ avtNodeCoordsQuery::FindLocalCoord(double coord[3])
 //    coord     A place to store the coordinates of the node.
 //
 //  Programmer: Kathleen Bonnell
-//  Creation:   December 16, 2004 
+//  Creation:   December 16, 2004
 //
 //  Modifications:
 //    Mark C. Miller, Tue Mar 27 08:39:55 PDT 2007
