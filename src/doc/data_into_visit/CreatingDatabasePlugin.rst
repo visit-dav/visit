@@ -1886,4 +1886,3 @@ If your plugin depends on an I/O library not already supported by VisIt_, and if
 Please see :ref:`dev_create_bv_module` for how to add a new module to build_visit.
 A CMake `Find` module will also need to be added to ``src/CMake`` and ``src/CMake/SetupThirdParty.cmake`` modified to include that module.
 See :ref:`dev_adding_find_module` for more information.
-
