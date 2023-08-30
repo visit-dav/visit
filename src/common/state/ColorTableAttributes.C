@@ -1809,7 +1809,7 @@ ColorTableAttributes::AddColorTable(const std::string &name,
     ApplyDeferredTagChanges(name, &cpts);
 
     // iterate thru each tag in the given color table
-    for (auto & tagname : cpts.GetTagNames())
+    for (const auto & tagname : cpts.GetTagNames())
     {
         // add the tag to the tag list if it is not already there
         CreateTagListEntry(tagname, false, 0, false);
@@ -1925,7 +1925,7 @@ ColorTableAttributes::RemoveColorTable(int index)
         if (GetColorControlPoints(index)->GetBuiltIn())
             return;
 
-        for (auto & tagname : GetColorControlPoints(index)->GetTagNames())
+        for (const auto & tagname : GetColorControlPoints(index)->GetTagNames())
             DecrementTagNumRefs(tagname);
 
         // Grab the color table name before we remove anything.
@@ -2281,7 +2281,7 @@ void
 ColorTableAttributes::EnableDisableAllTags(bool enable)
 {
     // we trust that the caller will check or uncheck all tag table items
-    for (auto &tagListActiveEntry : tagListActive)
+    for (const auto &tagListActiveEntry : tagListActive)
         tagListActiveEntry = enable;
     SelectTagList();
 }
