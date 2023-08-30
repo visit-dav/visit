@@ -1797,10 +1797,7 @@ ColorTableAttributes::AddColorTable(const std::string &name,
 
     // if this table doesn't have tags, then add the no-tags tag
     if (cpts.GetNumTags() == 0)
-    {
         cpts.AddTag("No Tags");
-        cpts.SetTagChangesMade(true);
-    }
 
     // if we had tag changes from a session or config file for this color
     // table BEFORE we had access to the color table, we can add them in now.
