@@ -53,43 +53,45 @@ class avtExtrudeFilter : public avtPluginDataTreeIterator
   protected:
     ExtrudeAttributes    atts;
 
-    std::string mainVariable;  
+    std::string defaultVariable;
 
     virtual avtContract_p ModifyContract(avtContract_p in_contract);
-  
+
     virtual avtDataRepresentation *ExecuteData(avtDataRepresentation *);
 
     virtual void         PostExecute(void);
     virtual void         UpdateDataObjectInfo(void);
 
-    void                 CopyVariables(vtkDataSet *in_ds, vtkDataSet *out_ds, 
+    void                 CopyVariables(vtkDataSet *in_ds, vtkDataSet *out_ds,
                                        const int *cellReplication = NULL) const;
     vtkPoints           *CreateExtrudedPoints(vtkPoints *inPoints, int nLevels);
-    void                 ExtrudeExtents(double *dbounds) const;
-    vtkDataSet          *ExtrudeToRectilinearGrid(vtkDataSet *in_ds) const;
-    vtkDataSet          *ExtrudeToStructuredGrid(vtkDataSet *in_ds);
+
+    vtkDataSet          *ExtrudeToRectilinearGrid (vtkDataSet  *in_ds) const;
+    vtkDataSet          *ExtrudeToStructuredGrid  (vtkDataSet  *in_ds);
     vtkDataSet          *ExtrudeToUnstructuredGrid(vtkPointSet *in_ds);
 
-    vtkDataSet  *ExtrudeCellVariableToUnstructuredGrid(vtkRectilinearGrid *in_ds,
-                                                       vtkUnstructuredGrid *out_ds = nullptr);
-    vtkDataSet  *ExtrudeCellVariableToUnstructuredGrid(vtkPointSet *in_ds,
-                                                       vtkUnstructuredGrid *out_ds = nullptr);
+    vtkDataSet          *ExtrudeToUnstructuredGrid(vtkRectilinearGrid  *in_ds,
+						   vtkUnstructuredGrid *out_ds);
+    vtkDataSet          *ExtrudeToUnstructuredGrid(vtkPointSet         *in_ds,
+                                                   vtkUnstructuredGrid *out_ds);
 
-   // Flags to indicte if the varArray is node or cell based
-    bool cellData{false};
-    bool nodeData{false};
-    vtkDataArray *varArray{nullptr};
+    void                 ExtrudeExtents(double *dbounds) const;
 
-    double minScalar{0};
-    double maxScalar{0};
+    // Flags to indicte if the varArray is node or cell based
+    bool cellData {false};
+    bool nodeData {false};
+    vtkDataArray *varArray {nullptr};
 
-    // Number of stacked extrusions only set if there are two or
+    double minScalar {0};
+    double maxScalar {0};
+
+    // Number of stacked extrusions only set if there are two or more
     // variables.
-    unsigned int num_stacked_extrusions{0};
-    unsigned int stacked_index{0};
+    unsigned int num_stacked_extrusions {0};
+    unsigned int stacked_index {0};
 
     // Names for the variables created for stacked extrusions
-    std::string stackedVarNames[2]{"StackedIndex", "StackedValue"};
+    std::string stackedVarNames[2] {"StackedIndex", "StackedValue"};
 };
 
 #endif
