@@ -15,28 +15,28 @@
     <Field name="changesMade" label="changesMade" type="bool">
       false
     </Field>
-    <Field name="tagsMatchAny" label="tagsMatchAny" type="bool">
+    <Field name="tagsMatchAny" label="tagsMatchAny" type="bool" internal="true">
       true
     </Field>
-    <Field name="tagListNames" label="tagListNames" type="stringVector" init="true">
+    <Field name="tagListNames" label="tagListNames" type="stringVector" init="true" internal="true">
     </Field>
-    <Field name="tagListActive" label="tagListActive" type="intVector" init="true">
+    <Field name="tagListActive" label="tagListActive" type="intVector" init="true" internal="true">
     </Field>
-    <Field name="tagListNumRefs" label="tagListNumRefs" type="intVector" init="true">
+    <Field name="tagListNumRefs" label="tagListNumRefs" type="intVector" init="true" internal="true">
     </Field>
-    <Field name="tagListTableItemFlag" label="tagListTableItemFlag" type="intVector" init="true">
+    <Field name="tagListTableItemFlag" label="tagListTableItemFlag" type="intVector" init="true" internal="true">
     </Field>
-    <Field name="tagChangesTag" label="tagChangesTag" type="stringVector">
+    <Field name="tagChangesTag" label="tagChangesTag" type="stringVector" internal="true">
     </Field>
-    <Field name="tagChangesType" label="tagChangesType" type="intVector">
+    <Field name="tagChangesType" label="tagChangesType" type="intVector" internal="true">
     </Field>
-    <Field name="tagChangesCTName" label="tagChangesCTName" type="stringVector">
+    <Field name="tagChangesCTName" label="tagChangesCTName" type="stringVector" internal="true">
     </Field>
-    <Field name="deferredTagChangesTag" label="deferredTagChangesTag" type="stringVector">
+    <Field name="deferredTagChangesTag" label="deferredTagChangesTag" type="stringVector" internal="true">
     </Field>
-    <Field name="deferredTagChangesType" label="deferredTagChangesType" type="intVector">
+    <Field name="deferredTagChangesType" label="deferredTagChangesType" type="intVector" internal="true">
     </Field>
-    <Field name="deferredTagChangesCTName" label="deferredTagChangesCTName" type="stringVector">
+    <Field name="deferredTagChangesCTName" label="deferredTagChangesCTName" type="stringVector" internal="true">
     </Field>
     <Function name="GetColorTableIndex" user="true" member="true">
     </Function>
