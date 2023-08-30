@@ -731,12 +731,12 @@ ColorTableAttributes::SetFromNode(DataNode *parentNode)
         (node2 = searchNode->GetNode("tagChangesType"))   != 0 &&
         (node3 = searchNode->GetNode("tagChangesCTName")) != 0)
     {
-        MergeTagChanges(node->AsStringVector(), node2->AsIntVector(), node3->AsStringVector());
+        MergeTagChanges(node->AsStringVector(),
+                        node2->AsIntVector(),
+                        node3->AsStringVector());
     }
 
-    // TODO does it even make sense to save out whether or not a CT is active?
-    // if we are saving the tag selection and are going to run filtering here,
-    // then why bother?
+    // Once we have acquired all the tagging information, we can filter.
     FilterTablesByTag();
 }
 ///////////////////////////////////////////////////////////////////////////////
@@ -1810,7 +1810,7 @@ ColorTableAttributes::AddColorTable(const std::string &name,
     ApplyDeferredTagChanges(name, &cpts);
 
     // iterate thru each tag in the given color table
-    for (auto & tagname : cpts.GetTagNames())
+    for (const auto & tagname : cpts.GetTagNames())
     {
         // add the tag to the tag list if it is not already there
         CreateTagListEntry(tagname, false, 0, false);
@@ -1926,8 +1926,8 @@ ColorTableAttributes::RemoveColorTable(int index)
         if (GetColorControlPoints(index)->GetBuiltIn())
             return;
 
-        for (auto tag : GetColorControlPoints(index)->GetTagNames())
-            DecrementTagNumRefs(tag);
+        for (const auto & tagname : GetColorControlPoints(index)->GetTagNames())
+            DecrementTagNumRefs(tagname);
 
         // Grab the color table name before we remove anything.
         std::string ctName = colorTableNames[index];
@@ -2282,7 +2282,7 @@ void
 ColorTableAttributes::EnableDisableAllTags(bool enable)
 {
     // we trust that the caller will check or uncheck all tag table items
-    for (auto &tagListActiveEntry : tagListActive)
+    for (const auto &tagListActiveEntry : tagListActive)
         tagListActiveEntry = enable;
     SelectTagList();
 }
@@ -3081,7 +3081,7 @@ void
 ColorTableAttributes::FilterTablesByTag()
 {
     // for each color table
-    for (size_t i = 0; i < GetNumColorTables(); i ++)
+    for (int i = 0; i < GetNumColorTables(); i ++)
     {
         // we mark the color table as active or inactive
         if (i >= 0 && i < colorTableActiveFlags.size())
