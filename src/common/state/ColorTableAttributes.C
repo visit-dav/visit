@@ -2982,6 +2982,7 @@ ColorTableAttributes::RemoveUnusedTagsFromTagTable()
 std::vector<std::string>
 ColorTableAttributes::GetNewTagNames()
 {
+    std::vector<std::string> tagsToAdd;
     for (size_t i = 0; i < tagListNames.size(); i ++)
     {
         // if this tag has no tag table item
