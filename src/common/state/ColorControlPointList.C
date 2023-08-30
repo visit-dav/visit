@@ -1996,14 +1996,17 @@ ColorControlPointList::GetTagsAsString() const
 // Modifications:
 //    Justin Privitera, Thu Aug 25 15:04:55 PDT 2022
 //    Made it a const function that takes a const arg.
+// 
+//    Justin Privitera, Wed Aug 30 15:30:58 PDT 2023
+//    Rewritten to use range-based for loop.
 //
 // ****************************************************************************
 
 bool
 ColorControlPointList::HasTag(const std::string tag) const
 {
-    for (int i = 0; i < tagNames.size(); i ++)
-        if (tagNames[i] == tag)
+    for (const auto & currtag : tagNames)
+        if (currtag == tag)
             return true;
     return false;
 }

@@ -1843,8 +1843,8 @@ ColorTableAttributes::AddColorTable(const std::string &name,
 
     // determine if this color table belongs in the current tag filtering selection
     int CTindex = GetColorTableIndex(name);
-    if (CTindex >= 0 && CTindex < colorTableActive.size())
-        colorTableActive[CTindex] = FilterTableByTag(cpts);
+    if (CTindex >= 0 && CTindex < colorTableActiveFlags.size())
+        colorTableActiveFlags[CTindex] = FilterTableByTag(cpts);
 
     SelectColorTableNames();
     SelectColorTableActiveFlags();
@@ -2281,7 +2281,7 @@ void
 ColorTableAttributes::EnableDisableAllTags(bool enable)
 {
     // we trust that the caller will check or uncheck all tag table items
-    for (const auto &tagListActiveEntry : tagListActive)
+    for (auto &tagListActiveEntry : tagListActive)
         tagListActiveEntry = enable;
     SelectTagList();
 }
