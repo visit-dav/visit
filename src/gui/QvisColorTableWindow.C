@@ -88,9 +88,6 @@
 //   Justin Privitera, Mon Aug 28 09:57:59 PDT 2023
 //   Removed `tagsMatchAny`.
 //
-//   Justin Privitera, Mon Aug 28 09:57:59 PDT 2023
-//   Removed `tagsMatchAny`.
-// 
 // ****************************************************************************
 
 QvisColorTableWindow::QvisColorTableWindow(
