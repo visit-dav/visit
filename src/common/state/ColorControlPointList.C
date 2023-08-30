@@ -1847,6 +1847,7 @@ ColorControlPointList::AddTag(const std::string newtag)
     if (!HasTag(newtag))
     {
         tagNames.emplace_back(newtag);
+        // TODO I want this to go away
         tagChangesMade = true;
     }
 }
