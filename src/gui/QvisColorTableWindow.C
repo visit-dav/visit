@@ -944,33 +944,7 @@ QvisColorTableWindow::UpdateTags()
     // 1. Get names of tags to add.
     std::vector<std::string> tagsToAdd = colorAtts->GetNewTagNames();
 
-    // 2. Add tags to tag list.
-    // TODO this whole block will disappear in the next PR, since tag list entries will
-    // be created when color tables are added.
-    static bool first_time = true;
-    std::for_each(tagsToAdd.begin(), tagsToAdd.end(),
-        [this](std::string currtag)
-        {
-            // If the given tag is NOT in the global tag list, we will create an entry for it
-            if (! colorAtts->CheckTagInTagList(currtag))
-                colorAtts->CreateTagListEntry(currtag, false, 0, false);
-
-            // Only the very first time can we guarantee that each reference to each
-            // tag has not been encountered before, so it is safe to increment here.
-            // Why is this? We are here unconditionally FOR EVERY tag in the CCPL, 
-            // whether or not that tag has been added before.
-            if (first_time)
-                // We have to do this logic AFTER the above logic because currtag
-                // needs to be added to the tag list before we can increment it
-                colorAtts->IncrementTagNumRefs(currtag);
-                // Whether or not we end up adding to the tag table, the fact that 
-                // this function was called with this tag means there is another
-                // reference to it, so we should update the numrefs. Hence why
-                // we do NOT update the numrefs in `AddToTagTable()`.
-        });
-    first_time = false;
-
-    // 3. Add Tags to Tag Table.
+    // 2. Add Tags to Tag Table.
     std::for_each(tagsToAdd.begin(), tagsToAdd.end(),
         [this](const std::string currtag)
         {
@@ -985,7 +959,7 @@ QvisColorTableWindow::UpdateTags()
             }
         });
 
-    // 4. Purge tagList/tagTable entries that have 0 refcount.
+    // 3. Purge tagList/tagTable entries that have 0 refcount.
     std::vector<std::string> removedTags = colorAtts->RemoveUnusedTagsFromTagTable();
     std::for_each(removedTags.begin(), removedTags.end(),
         [this](std::string removedTagName)
@@ -2229,8 +2203,6 @@ QvisColorTableWindow::addColorTable()
             cpts.SetTagChangesMade(true); // need to set manually b/c orig val was copied
             cpts.SetBuiltIn(false);
             colorAtts->AddColorTable(currentColorTable.toStdString(), cpts);
-            for (auto tag : cpts.GetTagNames())
-                colorAtts->IncrementTagNumRefs(tag);
         }
         else
         {
@@ -2248,8 +2220,6 @@ QvisColorTableWindow::addColorTable()
             cpts.AddTag("User Defined");
             cpts.SetBuiltIn(false);
             colorAtts->AddColorTable(currentColorTable.toStdString(), cpts);
-            for (auto tag : cpts.GetTagNames())
-                colorAtts->IncrementTagNumRefs(tag);
         }
 
         // Tell all of the observers to update.
@@ -2350,9 +2320,6 @@ QvisColorTableWindow::deleteColorTable()
             Error(tmp);
             return;
         }
-        // TODO move this logic to the ctatts
-        for (auto tag : ccpl->GetTagNames())
-            colorAtts->DecrementTagNumRefs(tag);
         GetViewerMethods()->DeleteColorTable(ctName.c_str());
     }
     else

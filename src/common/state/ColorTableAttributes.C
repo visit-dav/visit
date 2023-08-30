@@ -730,8 +730,13 @@ ColorTableAttributes::SetFromNode(DataNode *parentNode)
         (node2 = searchNode->GetNode("tagChangesType"))   != 0 &&
         (node3 = searchNode->GetNode("tagChangesCTName")) != 0)
     {
-        MergeTagChanges(node->AsStringVector(), node2->AsIntVector(), node3->AsStringVector());
+        MergeTagChanges(node->AsStringVector(),
+                        node2->AsIntVector(),
+                        node3->AsStringVector());
     }
+
+    // Once we have acquired all the tagging information, we can filter.
+    FilterTablesByTag();
 }
 ///////////////////////////////////////////////////////////////////////////////
 // Set property methods
@@ -1919,6 +1924,9 @@ ColorTableAttributes::RemoveColorTable(int index)
         // do nothing if the color table is built-in.
         if (GetColorControlPoints(index)->GetBuiltIn())
             return;
+
+        for (auto & tagname : GetColorControlPoints(index)->GetTagNames())
+            DecrementTagNumRefs(tagname);
 
         // Grab the color table name before we remove anything.
         std::string ctName = colorTableNames[index];
