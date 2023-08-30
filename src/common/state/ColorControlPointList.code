@@ -903,8 +903,7 @@ ColorControlPointList::AddTag(const std::string newtag)
     if (!HasTag(newtag))
     {
         tagNames.emplace_back(newtag);
-        // TODO I want this to go away
-        tagChangesMade = true;
+        Select(ID_tagNames, (void *)&tagNames);
     }
 }
 
@@ -938,7 +937,7 @@ ColorControlPointList::RemoveTag(const std::string tag)
             pos ++;
         if(pos != tagNames.end()) 
             tagNames.erase(pos);
-        tagChangesMade = true;
+        Select(ID_tagNames, (void *)&tagNames);
     }
 }
 
@@ -964,7 +963,7 @@ void
 ColorControlPointList::ClearTags()
 {
     tagNames.clear();
-    tagChangesMade = true;
+    Select(ID_tagNames, (void *)&tagNames);
 }
 
 Function: GetTag
@@ -1071,18 +1070,18 @@ Definition:
 // Modifications:
 //    Justin Privitera, Thu Aug 25 15:04:55 PDT 2022
 //    Made it a const function that takes a const arg.
+// 
+//    Justin Privitera, Wed Aug 30 15:30:58 PDT 2023
+//    Rewritten to use range-based for loop.
 //
 // ****************************************************************************
 
 bool
 ColorControlPointList::HasTag(const std::string tag) const
 {
-    // TODO rewrite this function using range based for
-    for (size_t i = 0; i < tagNames.size(); i ++)
-    {
-        if (tagNames[i] == tag)
+    for (const auto & currtag : tagNames)
+        if (currtag == tag)
             return true;
-    }
     return false;
 }
 
