@@ -1797,11 +1797,22 @@ ColorTableAttributes::AddColorTable(const std::string &name,
 
     // if this table doesn't have tags, then add the no-tags tag
     if (cpts.GetNumTags() == 0)
+    {
         cpts.AddTag("No Tags");
+        cpts.SetTagChangesMade(true);
+    }
 
     // if we had tag changes from a session or config file for this color
     // table BEFORE we had access to the color table, we can add them in now.
     ApplyDeferredTagChanges(name, &cpts);
+
+    // iterate thru each tag in the given color table
+    for (auto & tagname : cpts.GetTagNames())
+    {
+        // add the tag to the tag list if it is not already there
+        CreateTagListEntry(tagname, false, 0, false);
+        IncrementTagNumRefs(tagname);
+    }
 
     // Append the color table to the list.
     colorTableNames.push_back(name);
@@ -1828,8 +1839,14 @@ ColorTableAttributes::AddColorTable(const std::string &name,
         colorTables[i] = ctpair.second;
     }
 
+    // determine if this color table belongs in the current tag filtering selection
+    int CTindex = GetColorTableIndex(name);
+    if (CTindex >= 0 && CTindex < colorTableActive.size())
+        colorTableActive[CTindex] = FilterTableByTag(cpts);
+
     SelectColorTableNames();
     SelectColorTableActiveFlags();
+    SelectTagList();
 }
 
 // ****************************************************************************
