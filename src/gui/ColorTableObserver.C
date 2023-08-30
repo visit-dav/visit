@@ -97,11 +97,8 @@ ColorTableObserver::Update(Subject *)
     if(colorAtts->IsSelected(ColorTableAttributes::ID_colorTableNames) ||
        colorAtts->IsSelected(ColorTableAttributes::ID_tagListNames) ||
        colorAtts->IsSelected(ColorTableAttributes::ID_colorTables) ||
-       colorAtts->GetChangesMade())
+       colorAtts->IsSelected(ColorTableAttributes::ID_tagsMatchAny))
     {
-        // reset
-        colorAtts->SetChangesMade(false);
-
         // Clear all of the color tables.
         QvisColorTableButton::setColorTableAttributes(colorAtts);
         QvisColorTableButton::clearAllColorTables();

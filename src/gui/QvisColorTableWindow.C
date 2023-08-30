@@ -1127,7 +1127,6 @@ QvisColorTableWindow::UpdateNames()
         // this is redundant, but doesn't hurt. If it happens more than once
         // then VisIt will crash.
         run_before = true;
-        colorAtts->SetChangesMade(true);
         ctObserver.SetUpdate(true);
         Apply(true);
     }
@@ -2404,7 +2403,6 @@ QvisColorTableWindow::tagTableItemSelected(QTreeWidgetItem *item, int column)
 {
     colorAtts->SetTagActive(item->text(1).toStdString(), item->checkState(0) == Qt::Checked);
     UpdateNames();
-    colorAtts->SetChangesMade(true);
     ctObserver.SetUpdate(true);
     Apply(true);
 }
@@ -3046,7 +3044,6 @@ QvisColorTableWindow::tagsSelectAll()
     }
     tagTable->blockSignals(false);
     UpdateNames();
-    colorAtts->SetChangesMade(true);
     ctObserver.SetUpdate(true);
     Apply(true);
 }
@@ -3075,7 +3072,6 @@ QvisColorTableWindow::tagCombiningChanged(int index)
     if (old_val != colorAtts->GetTagsMatchAny())
     {
         UpdateNames();
-        colorAtts->SetChangesMade(true);
         ctObserver.SetUpdate(true);
         Apply(true);
     }
