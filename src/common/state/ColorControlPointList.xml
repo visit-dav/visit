@@ -21,9 +21,6 @@
     </Field>
     <Field name="tagNames" label="tagNames" type="stringVector">
     </Field>
-    <Field name="tagChangesMade" label="tagChangesMade" type="bool" internal="true" persistent="false">
-      true
-    </Field>
     <Field name="builtIn" label="builtIn" type="bool" internal="true" persistent="true">
       true
     </Field>

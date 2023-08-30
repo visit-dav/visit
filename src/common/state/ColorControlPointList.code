@@ -903,7 +903,7 @@ ColorControlPointList::AddTag(const std::string newtag)
     if (!HasTag(newtag))
     {
         tagNames.emplace_back(newtag);
-        tagChangesMade = true;
+        Select(ID_tagNames, (void *)&tagNames);
     }
 }
 
@@ -937,7 +937,7 @@ ColorControlPointList::RemoveTag(const std::string tag)
             pos ++;
         if(pos != tagNames.end()) 
             tagNames.erase(pos);
-        tagChangesMade = true;
+        Select(ID_tagNames, (void *)&tagNames);
     }
 }
 
@@ -963,7 +963,7 @@ void
 ColorControlPointList::ClearTags()
 {
     tagNames.clear();
-    tagChangesMade = true;
+    Select(ID_tagNames, (void *)&tagNames);
 }
 
 Function: GetTag

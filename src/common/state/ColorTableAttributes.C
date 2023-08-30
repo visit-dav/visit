@@ -2970,7 +2970,7 @@ ColorTableAttributes::RemoveUnusedTagsFromTagTable()
 // Method: ColorTableAttributes::GetNewTagNames
 //
 // Purpose:
-//    Gets the names of tags that should likely be added to the tag table.
+//    Gets the names of tags that should be added to the tag table.
 //
 // Programmer: Justin Privitera
 // Creation:   06/27/23
@@ -2982,26 +2982,12 @@ std::vector<std::string>
 ColorTableAttributes::GetNewTagNames()
 {
     std::vector<std::string> tagsToAdd;
-
-    // populate tags list
-    // iterate thru each color table
-    for (int i = 0; i < GetNumColorTables(); i ++)
+    for (size_t i = 0; i < tagListNames.size(); i ++)
     {
-        auto ccpl = GetColorTables(i);
-        // only try to add tags if the ccpl thinks it has new info
-        if (ccpl.GetTagChangesMade())
-        {
-            // iterate thru each tag in the given color table
-            for (int j = 0; j < ccpl.GetNumTags(); j ++)
-            {
-                std::string currtag = ccpl.GetTag(j);
-                tagsToAdd.push_back(currtag);
-            }
-            // tell the ccpl that we have taken note of all of its tag changes
-            ccpl.SetTagChangesMade(false);
-        }
+        // if this tag has no tag table item
+        if (! tagListTableItemFlag[i])
+            tagsToAdd.emplace_back(tagListNames[i]);
     }
-
     return tagsToAdd;
 }
 

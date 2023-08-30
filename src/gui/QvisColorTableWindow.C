@@ -902,7 +902,7 @@ QvisColorTableWindow::UpdateEditor()
 // Method: QvisColorTableWindow::UpdateTags
 //
 // Purpose:
-//   Updates the global tag list to reflect current available tags.
+//   Updates the global tag list to reflect current available tags. TODO
 //
 // Programmer: Justin Privitera
 // Creation:   Tue Jun  7 12:36:55 PDT 2022
@@ -948,21 +948,18 @@ QvisColorTableWindow::UpdateTags()
     std::for_each(tagsToAdd.begin(), tagsToAdd.end(),
         [this](const std::string currtag)
         {
-            // If this tag does not have a tagTable entry, then create one
-            if (! colorAtts->GetTagTableItemFlag(currtag))
-            {
-                QTreeWidgetItem *item = new QTreeWidgetItem(tagTable);
-                tagTableItems[currtag] = item;
-                colorAtts->SetTagTableItemFlag(currtag, true);
-                item->setCheckState(0, colorAtts->GetTagActive(currtag) ? Qt::Checked : Qt::Unchecked);
-                item->setText(1, currtag.c_str());
-            }
+            // Create a tag table entry for each tag
+            QTreeWidgetItem *item = new QTreeWidgetItem(tagTable);
+            tagTableItems[currtag] = item;
+            colorAtts->SetTagTableItemFlag(currtag, true);
+            item->setCheckState(0, colorAtts->GetTagActive(currtag) ? Qt::Checked : Qt::Unchecked);
+            item->setText(1, currtag.c_str());
         });
 
     // 3. Purge tagList/tagTable entries that have 0 refcount.
     std::vector<std::string> removedTags = colorAtts->RemoveUnusedTagsFromTagTable();
     std::for_each(removedTags.begin(), removedTags.end(),
-        [this](std::string removedTagName)
+        [this](const std::string removedTagName)
         {
             QTreeWidgetItem *tagTableItem = tagTableItems[removedTagName];
             auto index = tagTable->indexOfTopLevelItem(tagTableItem);
@@ -2200,7 +2197,7 @@ QvisColorTableWindow::addColorTable()
             // Copy the default color table into the new color table.
             ColorControlPointList cpts(*ccpl);
             cpts.AddTag("User Defined");
-            cpts.SetTagChangesMade(true); // need to set manually b/c orig val was copied
+            cpts.SelectTagNames();
             cpts.SetBuiltIn(false);
             colorAtts->AddColorTable(currentColorTable.toStdString(), cpts);
         }
