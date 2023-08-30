@@ -76,6 +76,9 @@ ColorTableObserver::~ColorTableObserver()
 //   Justin Privitera, Mon Aug 21 15:54:50 PDT 2023
 //   Changed ColorTableAttributes `names` to `colorTableNames` and `active` to
 //   `colorTableActiveFlags`.
+// 
+//   Justin Privitera, Mon Aug 28 11:22:47 PDT 2023
+//   The tag list being selected now also triggers the update.
 // ****************************************************************************
 
 void
@@ -92,6 +95,7 @@ ColorTableObserver::Update(Subject *)
     // If the names or the color table attributes are changing, then we
     // have to update the widget.
     if(colorAtts->IsSelected(ColorTableAttributes::ID_colorTableNames) ||
+       colorAtts->IsSelected(ColorTableAttributes::ID_tagListNames) ||
        colorAtts->IsSelected(ColorTableAttributes::ID_colorTables) ||
        colorAtts->GetChangesMade())
     {
