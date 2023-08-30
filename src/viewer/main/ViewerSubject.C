@@ -5116,7 +5116,10 @@ ViewerSubject::HandleColorTable()
 
         // If the names or the color table attributes are changing, then we
         // have to update the widget.
-        if(colorAtts->IsSelected(0) || colorAtts->IsSelected(1))
+        if(colorAtts->IsSelected(ColorTableAttributes::ID_colorTableNames) ||
+           colorAtts->IsSelected(ColorTableAttributes::ID_tagListNames) ||
+           colorAtts->IsSelected(ColorTableAttributes::ID_colorTables) ||
+           colorAtts->IsSelected(ColorTableAttributes::ID_tagsMatchAny))
         {
             // Clear all of the color tables.
             QvisColorTableButton::clearAllColorTables();
