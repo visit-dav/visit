@@ -431,8 +431,7 @@ ColorTableAttributes::AddColorTable(const std::string &name,
     if (CTindex >= 0 && CTindex < colorTableActiveFlags.size())
         colorTableActiveFlags[CTindex] = FilterTableByTag(cpts);
 
-    SelectColorTableNames();
-    SelectColorTableActiveFlags();
+    SelectColorTablesList();
     SelectTagList();
 }
 
@@ -565,8 +564,7 @@ ColorTableAttributes::RemoveColorTable(int index)
         }
 
         // Indicate that things have changed by selecting the lists.
-        SelectColorTableNames();
-        SelectColorTableActiveFlags();
+        SelectColorTablesList();
 
         // erase the color table from the vector.
         RemoveColorTables(index);
@@ -639,6 +637,31 @@ Definition:
             }
         }
     }
+
+Target: xml2atts
+Function: SelectColorTablesList
+Declaration: void SelectColorTablesList();
+Definition:
+// ****************************************************************************
+// Method: ColorTableAttributes::SelectColorTablesList
+//
+// Purpose:
+//   TODO
+//
+// Programmer: Justin Privitera
+// Creation:   TODO
+//
+// Modifications:
+// 
+// ****************************************************************************
+
+void
+ColorTableAttributes::SelectColorTablesList()
+{
+    SelectColorTableNames();
+    SelectColorTableActiveFlags();
+    SelectColorTables();
+}
 
 Target: xml2atts
 Function: SetColorTableNames
@@ -2150,6 +2173,7 @@ ColorTableAttributes::FilterTablesByTag()
         if (i >= 0 && i < colorTableActiveFlags.size())
             colorTableActiveFlags[i] = FilterTableByTag(GetColorTables(i));;
     }
+    SelectColorTablesList();
 }
 
 Function: PrintTagList

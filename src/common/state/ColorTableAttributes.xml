@@ -12,9 +12,6 @@
     <Field name="defaultDiscrete" label="defaultDiscrete" type="string">
       levels
     </Field>
-    <Field name="changesMade" label="changesMade" type="bool">
-      false
-    </Field>
     <Field name="tagsMatchAny" label="tagsMatchAny" type="bool" internal="true">
       true
     </Field>
@@ -51,6 +48,8 @@
     <Function name="RemoveColorTable1" user="true" member="true">
     </Function>
     <Function name="RemoveColorTable2" user="true" member="true">
+    </Function>
+    <Function name="SelectColorTablesList" user="true" member="true">
     </Function>
     <Function name="SetColorTableNames" user="false" member="true">
     </Function>
@@ -147,8 +146,5 @@
     </Include>
     <Include file="source" quoted="false">
       algorithm
-    </Include>
-    <Include file="source" quoted="false">
-      set
     </Include>
   </Attribute>

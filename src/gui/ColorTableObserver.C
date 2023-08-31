@@ -97,11 +97,8 @@ ColorTableObserver::Update(Subject *)
     if(colorAtts->IsSelected(ColorTableAttributes::ID_colorTableNames) ||
        colorAtts->IsSelected(ColorTableAttributes::ID_tagListNames) ||
        colorAtts->IsSelected(ColorTableAttributes::ID_colorTables) ||
-       colorAtts->GetChangesMade())
+       colorAtts->IsSelected(ColorTableAttributes::ID_tagsMatchAny))
     {
-        // reset
-        colorAtts->SetChangesMade(false);
-
         // Clear all of the color tables.
         QvisColorTableButton::setColorTableAttributes(colorAtts);
         QvisColorTableButton::clearAllColorTables();
@@ -110,18 +107,7 @@ ColorTableObserver::Update(Subject *)
 
         int nNames = colorAtts->GetNumColorTables();
         const stringVector &ctnames = colorAtts->GetColorTableNames();
-        const intVector &ctactive = colorAtts->GetColorTableActiveFlags();
-
-        // This should never happen. Resetting the names will reset the active
-        // array as well, and make every color table active. However, this does
-        // happen; when loading settings from config/session files, `names` is
-        // populated but `active` is left empty. Ideally, loading settings
-        // would correctly preserve which color tables are active, but this
-        // final guard here works just fine, as which color tables are active
-        // is calculated after this.
-        if (ctnames.size() != ctactive.size())
-            colorAtts->SetColorTableNames(ctnames);
-        
+        const intVector &ctactive = colorAtts->GetColorTableActiveFlags();        
         for (int i = 0; i < nNames; ++i)
         {
             if (ctactive[i])
