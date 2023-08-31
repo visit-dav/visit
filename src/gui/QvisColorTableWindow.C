@@ -2402,6 +2402,7 @@ void
 QvisColorTableWindow::tagTableItemSelected(QTreeWidgetItem *item, int column)
 {
     colorAtts->SetTagActive(item->text(1).toStdString(), item->checkState(0) == Qt::Checked);
+    // TODO investigate this pattern - is it redundant?
     UpdateNames();
     ctObserver.SetUpdate(true);
     Apply(true);
