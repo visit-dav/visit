@@ -62,85 +62,8 @@ PyExtrudeAttributes_ToString(const ExtrudeAttributes *atts, const char *prefix, 
     else
         snprintf(tmpStr, 1000, "%sbyVariable = 0\n", prefix);
     str += tmpStr;
-    {   const stringVector &scalarVariableNames = atts->GetScalarVariableNames();
-        snprintf(tmpStr, 1000, "%sscalarVariableNames = (", prefix);
-        str += tmpStr;
-        for(size_t i = 0; i < scalarVariableNames.size(); ++i)
-        {
-            snprintf(tmpStr, 1000, "\"%s\"", scalarVariableNames[i].c_str());
-            str += tmpStr;
-            if(i < scalarVariableNames.size() - 1)
-            {
-                snprintf(tmpStr, 1000, ", ");
-                str += tmpStr;
-            }
-        }
-        snprintf(tmpStr, 1000, ")\n");
-        str += tmpStr;
-    }
-    {   const stringVector &visualVariableNames = atts->GetVisualVariableNames();
-        snprintf(tmpStr, 1000, "%svisualVariableNames = (", prefix);
-        str += tmpStr;
-        for(size_t i = 0; i < visualVariableNames.size(); ++i)
-        {
-            snprintf(tmpStr, 1000, "\"%s\"", visualVariableNames[i].c_str());
-            str += tmpStr;
-            if(i < visualVariableNames.size() - 1)
-            {
-                snprintf(tmpStr, 1000, ", ");
-                str += tmpStr;
-            }
-        }
-        snprintf(tmpStr, 1000, ")\n");
-        str += tmpStr;
-    }
-    {   const doubleVector &extentMinima = atts->GetExtentMinima();
-        snprintf(tmpStr, 1000, "%sextentMinima = (", prefix);
-        str += tmpStr;
-        for(size_t i = 0; i < extentMinima.size(); ++i)
-        {
-            snprintf(tmpStr, 1000, "%g", extentMinima[i]);
-            str += tmpStr;
-            if(i < extentMinima.size() - 1)
-            {
-                snprintf(tmpStr, 1000, ", ");
-                str += tmpStr;
-            }
-        }
-        snprintf(tmpStr, 1000, ")\n");
-        str += tmpStr;
-    }
-    {   const doubleVector &extentMaxima = atts->GetExtentMaxima();
-        snprintf(tmpStr, 1000, "%sextentMaxima = (", prefix);
-        str += tmpStr;
-        for(size_t i = 0; i < extentMaxima.size(); ++i)
-        {
-            snprintf(tmpStr, 1000, "%g", extentMaxima[i]);
-            str += tmpStr;
-            if(i < extentMaxima.size() - 1)
-            {
-                snprintf(tmpStr, 1000, ", ");
-                str += tmpStr;
-            }
-        }
-        snprintf(tmpStr, 1000, ")\n");
-        str += tmpStr;
-    }
-    const char *variableDisplay_names = "Index, Value";
-    switch (atts->GetVariableDisplay())
-    {
-      case ExtrudeAttributes::Index:
-          snprintf(tmpStr, 1000, "%svariableDisplay = %sIndex  # %s\n", prefix, prefix, variableDisplay_names);
-          str += tmpStr;
-          break;
-      case ExtrudeAttributes::Value:
-          snprintf(tmpStr, 1000, "%svariableDisplay = %sValue  # %s\n", prefix, prefix, variableDisplay_names);
-          str += tmpStr;
-          break;
-      default:
-          break;
-    }
-
+    snprintf(tmpStr, 1000, "%svariable = \"%s\"\n", prefix, atts->GetVariable().c_str());
+    str += tmpStr;
     snprintf(tmpStr, 1000, "%slength = %g\n", prefix, atts->GetLength());
     str += tmpStr;
     snprintf(tmpStr, 1000, "%ssteps = %d\n", prefix, atts->GetSteps());
@@ -302,358 +225,51 @@ ExtrudeAttributes_GetByVariable(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
-ExtrudeAttributes_SetScalarVariableNames(PyObject *self, PyObject *args)
-{
-    ExtrudeAttributesObject *obj = (ExtrudeAttributesObject *)self;
-
-    stringVector vec;
-
-    if (PyUnicode_Check(args))
-    {
-        char const *val = PyUnicode_AsUTF8(args);
-        std::string cval = std::string(val);
-        if (val == 0 && PyErr_Occurred())
-        {
-            PyErr_Clear();
-            return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ string");
-        }
-        vec.resize(1);
-        vec[0] = cval;
-    }
-    else if (PySequence_Check(args))
-    {
-        vec.resize(PySequence_Size(args));
-        for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)
-        {
-            PyObject *item = PySequence_GetItem(args, i);
-
-            if (!PyUnicode_Check(item))
-            {
-                Py_DECREF(item);
-                return PyErr_Format(PyExc_TypeError, "arg %d is not a unicode string", (int) i);
-            }
-
-            char const *val = PyUnicode_AsUTF8(item);
-            std::string cval = std::string(val);
-
-            if (val == 0 && PyErr_Occurred())
-            {
-                Py_DECREF(item);
-                PyErr_Clear();
-                return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ string", (int) i);
-            }
-            Py_DECREF(item);
-
-            vec[i] = cval;
-        }
-    }
-    else
-        return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more string(s)");
-
-    obj->data->GetScalarVariableNames() = vec;
-    // Mark the scalarVariableNames in the object as modified.
-    obj->data->SelectScalarVariableNames();
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-ExtrudeAttributes_GetScalarVariableNames(PyObject *self, PyObject *args)
-{
-    ExtrudeAttributesObject *obj = (ExtrudeAttributesObject *)self;
-    // Allocate a tuple the with enough entries to hold the scalarVariableNames.
-    const stringVector &scalarVariableNames = obj->data->GetScalarVariableNames();
-    PyObject *retval = PyTuple_New(scalarVariableNames.size());
-    for(size_t i = 0; i < scalarVariableNames.size(); ++i)
-        PyTuple_SET_ITEM(retval, i, PyString_FromString(scalarVariableNames[i].c_str()));
-    return retval;
-}
-
-/*static*/ PyObject *
-ExtrudeAttributes_SetVisualVariableNames(PyObject *self, PyObject *args)
-{
-    ExtrudeAttributesObject *obj = (ExtrudeAttributesObject *)self;
-
-    stringVector vec;
-
-    if (PyUnicode_Check(args))
-    {
-        char const *val = PyUnicode_AsUTF8(args);
-        std::string cval = std::string(val);
-        if (val == 0 && PyErr_Occurred())
-        {
-            PyErr_Clear();
-            return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ string");
-        }
-        vec.resize(1);
-        vec[0] = cval;
-    }
-    else if (PySequence_Check(args))
-    {
-        vec.resize(PySequence_Size(args));
-        for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)
-        {
-            PyObject *item = PySequence_GetItem(args, i);
-
-            if (!PyUnicode_Check(item))
-            {
-                Py_DECREF(item);
-                return PyErr_Format(PyExc_TypeError, "arg %d is not a unicode string", (int) i);
-            }
-
-            char const *val = PyUnicode_AsUTF8(item);
-            std::string cval = std::string(val);
-
-            if (val == 0 && PyErr_Occurred())
-            {
-                Py_DECREF(item);
-                PyErr_Clear();
-                return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ string", (int) i);
-            }
-            Py_DECREF(item);
-
-            vec[i] = cval;
-        }
-    }
-    else
-        return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more string(s)");
-
-    obj->data->GetVisualVariableNames() = vec;
-    // Mark the visualVariableNames in the object as modified.
-    obj->data->SelectVisualVariableNames();
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-ExtrudeAttributes_GetVisualVariableNames(PyObject *self, PyObject *args)
-{
-    ExtrudeAttributesObject *obj = (ExtrudeAttributesObject *)self;
-    // Allocate a tuple the with enough entries to hold the visualVariableNames.
-    const stringVector &visualVariableNames = obj->data->GetVisualVariableNames();
-    PyObject *retval = PyTuple_New(visualVariableNames.size());
-    for(size_t i = 0; i < visualVariableNames.size(); ++i)
-        PyTuple_SET_ITEM(retval, i, PyString_FromString(visualVariableNames[i].c_str()));
-    return retval;
-}
-
-/*static*/ PyObject *
-ExtrudeAttributes_SetExtentMinima(PyObject *self, PyObject *args)
-{
-    ExtrudeAttributesObject *obj = (ExtrudeAttributesObject *)self;
-
-    doubleVector vec;
-
-    if (PyNumber_Check(args))
-    {
-        double val = PyFloat_AsDouble(args);
-        double cval = double(val);
-        if (val == -1 && PyErr_Occurred())
-        {
-            PyErr_Clear();
-            return PyErr_Format(PyExc_TypeError, "number not interpretable as C++ double");
-        }
-        if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
-            return PyErr_Format(PyExc_ValueError, "number not interpretable as C++ double");
-        vec.resize(1);
-        vec[0] = cval;
-    }
-    else if (PySequence_Check(args) && !PyUnicode_Check(args))
-    {
-        vec.resize(PySequence_Size(args));
-        for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)
-        {
-            PyObject *item = PySequence_GetItem(args, i);
-
-            if (!PyNumber_Check(item))
-            {
-                Py_DECREF(item);
-                return PyErr_Format(PyExc_TypeError, "arg %d is not a number type", (int) i);
-            }
-
-            double val = PyFloat_AsDouble(item);
-            double cval = double(val);
-
-            if (val == -1 && PyErr_Occurred())
-            {
-                Py_DECREF(item);
-                PyErr_Clear();
-                return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ double", (int) i);
-            }
-            if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
-            {
-                Py_DECREF(item);
-                return PyErr_Format(PyExc_ValueError, "arg %d not interpretable as C++ double", (int) i);
-            }
-            Py_DECREF(item);
-
-            vec[i] = cval;
-        }
-    }
-    else
-        return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more doubles");
-
-    obj->data->GetExtentMinima() = vec;
-    // Mark the extentMinima in the object as modified.
-    obj->data->SelectExtentMinima();
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-ExtrudeAttributes_GetExtentMinima(PyObject *self, PyObject *args)
-{
-    ExtrudeAttributesObject *obj = (ExtrudeAttributesObject *)self;
-    // Allocate a tuple the with enough entries to hold the extentMinima.
-    const doubleVector &extentMinima = obj->data->GetExtentMinima();
-    PyObject *retval = PyTuple_New(extentMinima.size());
-    for(size_t i = 0; i < extentMinima.size(); ++i)
-        PyTuple_SET_ITEM(retval, i, PyFloat_FromDouble(extentMinima[i]));
-    return retval;
-}
-
-/*static*/ PyObject *
-ExtrudeAttributes_SetExtentMaxima(PyObject *self, PyObject *args)
-{
-    ExtrudeAttributesObject *obj = (ExtrudeAttributesObject *)self;
-
-    doubleVector vec;
-
-    if (PyNumber_Check(args))
-    {
-        double val = PyFloat_AsDouble(args);
-        double cval = double(val);
-        if (val == -1 && PyErr_Occurred())
-        {
-            PyErr_Clear();
-            return PyErr_Format(PyExc_TypeError, "number not interpretable as C++ double");
-        }
-        if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
-            return PyErr_Format(PyExc_ValueError, "number not interpretable as C++ double");
-        vec.resize(1);
-        vec[0] = cval;
-    }
-    else if (PySequence_Check(args) && !PyUnicode_Check(args))
-    {
-        vec.resize(PySequence_Size(args));
-        for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)
-        {
-            PyObject *item = PySequence_GetItem(args, i);
-
-            if (!PyNumber_Check(item))
-            {
-                Py_DECREF(item);
-                return PyErr_Format(PyExc_TypeError, "arg %d is not a number type", (int) i);
-            }
-
-            double val = PyFloat_AsDouble(item);
-            double cval = double(val);
-
-            if (val == -1 && PyErr_Occurred())
-            {
-                Py_DECREF(item);
-                PyErr_Clear();
-                return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ double", (int) i);
-            }
-            if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
-            {
-                Py_DECREF(item);
-                return PyErr_Format(PyExc_ValueError, "arg %d not interpretable as C++ double", (int) i);
-            }
-            Py_DECREF(item);
-
-            vec[i] = cval;
-        }
-    }
-    else
-        return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more doubles");
-
-    obj->data->GetExtentMaxima() = vec;
-    // Mark the extentMaxima in the object as modified.
-    obj->data->SelectExtentMaxima();
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-ExtrudeAttributes_GetExtentMaxima(PyObject *self, PyObject *args)
-{
-    ExtrudeAttributesObject *obj = (ExtrudeAttributesObject *)self;
-    // Allocate a tuple the with enough entries to hold the extentMaxima.
-    const doubleVector &extentMaxima = obj->data->GetExtentMaxima();
-    PyObject *retval = PyTuple_New(extentMaxima.size());
-    for(size_t i = 0; i < extentMaxima.size(); ++i)
-        PyTuple_SET_ITEM(retval, i, PyFloat_FromDouble(extentMaxima[i]));
-    return retval;
-}
-
-/*static*/ PyObject *
-ExtrudeAttributes_SetVariableDisplay(PyObject *self, PyObject *args)
+ExtrudeAttributes_SetVariable(PyObject *self, PyObject *args)
 {
     ExtrudeAttributesObject *obj = (ExtrudeAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
-    // Handle args packaged into a tuple of size one
+    // Handle args packaged as first member of a tuple of size one
     // if we think the unpackaged args matches our needs
     if (PySequence_Check(args) && PySequence_Size(args) == 1)
     {
         packaged_args = PySequence_GetItem(args, 0);
-        if (PyNumber_Check(packaged_args))
+        if (PyUnicode_Check(packaged_args))
             args = packaged_args;
     }
 
-    if (PySequence_Check(args))
+    if (!PyUnicode_Check(args))
     {
         Py_XDECREF(packaged_args);
-        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
     }
 
-    if (!PyNumber_Check(args))
-    {
-        Py_XDECREF(packaged_args);
-        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
-    }
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
 
-    long val = PyLong_AsLong(args);
-    int cval = int(val);
-
-    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
+    if (val == 0 && PyErr_Occurred())
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
-        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
-    }
-
-    if (cval < 0 || cval >= 2)
-    {
-        std::stringstream ss;
-        ss << "An invalid variableDisplay value was given." << std::endl;
-        ss << "Valid values are in the range [0,1]." << std::endl;
-        ss << "You can also use the following symbolic names:";
-        ss << " Index";
-        ss << ", Value";
-        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
     }
 
     Py_XDECREF(packaged_args);
 
-    // Set the variableDisplay in the object.
-    obj->data->SetVariableDisplay(ExtrudeAttributes::VariableDisplayType(cval));
+    // Set the variable in the object.
+    obj->data->SetVariable(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
 }
 
 /*static*/ PyObject *
-ExtrudeAttributes_GetVariableDisplay(PyObject *self, PyObject *args)
+ExtrudeAttributes_GetVariable(PyObject *self, PyObject *args)
 {
     ExtrudeAttributesObject *obj = (ExtrudeAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(long(obj->data->GetVariableDisplay()));
+    PyObject *retval = PyString_FromString(obj->data->GetVariable().c_str());
     return retval;
 }
 
@@ -845,16 +461,8 @@ PyMethodDef PyExtrudeAttributes_methods[EXTRUDEATTRIBUTES_NMETH] = {
     {"GetAxis", ExtrudeAttributes_GetAxis, METH_VARARGS},
     {"SetByVariable", ExtrudeAttributes_SetByVariable, METH_VARARGS},
     {"GetByVariable", ExtrudeAttributes_GetByVariable, METH_VARARGS},
-    {"SetScalarVariableNames", ExtrudeAttributes_SetScalarVariableNames, METH_VARARGS},
-    {"GetScalarVariableNames", ExtrudeAttributes_GetScalarVariableNames, METH_VARARGS},
-    {"SetVisualVariableNames", ExtrudeAttributes_SetVisualVariableNames, METH_VARARGS},
-    {"GetVisualVariableNames", ExtrudeAttributes_GetVisualVariableNames, METH_VARARGS},
-    {"SetExtentMinima", ExtrudeAttributes_SetExtentMinima, METH_VARARGS},
-    {"GetExtentMinima", ExtrudeAttributes_GetExtentMinima, METH_VARARGS},
-    {"SetExtentMaxima", ExtrudeAttributes_SetExtentMaxima, METH_VARARGS},
-    {"GetExtentMaxima", ExtrudeAttributes_GetExtentMaxima, METH_VARARGS},
-    {"SetVariableDisplay", ExtrudeAttributes_SetVariableDisplay, METH_VARARGS},
-    {"GetVariableDisplay", ExtrudeAttributes_GetVariableDisplay, METH_VARARGS},
+    {"SetVariable", ExtrudeAttributes_SetVariable, METH_VARARGS},
+    {"GetVariable", ExtrudeAttributes_GetVariable, METH_VARARGS},
     {"SetLength", ExtrudeAttributes_SetLength, METH_VARARGS},
     {"GetLength", ExtrudeAttributes_GetLength, METH_VARARGS},
     {"SetSteps", ExtrudeAttributes_SetSteps, METH_VARARGS},
@@ -886,21 +494,8 @@ PyExtrudeAttributes_getattr(PyObject *self, char *name)
         return ExtrudeAttributes_GetAxis(self, NULL);
     if(strcmp(name, "byVariable") == 0)
         return ExtrudeAttributes_GetByVariable(self, NULL);
-    if(strcmp(name, "scalarVariableNames") == 0)
-        return ExtrudeAttributes_GetScalarVariableNames(self, NULL);
-    if(strcmp(name, "visualVariableNames") == 0)
-        return ExtrudeAttributes_GetVisualVariableNames(self, NULL);
-    if(strcmp(name, "extentMinima") == 0)
-        return ExtrudeAttributes_GetExtentMinima(self, NULL);
-    if(strcmp(name, "extentMaxima") == 0)
-        return ExtrudeAttributes_GetExtentMaxima(self, NULL);
-    if(strcmp(name, "variableDisplay") == 0)
-        return ExtrudeAttributes_GetVariableDisplay(self, NULL);
-    if(strcmp(name, "Index") == 0)
-        return PyInt_FromLong(long(ExtrudeAttributes::Index));
-    if(strcmp(name, "Value") == 0)
-        return PyInt_FromLong(long(ExtrudeAttributes::Value));
-
+    if(strcmp(name, "variable") == 0)
+        return ExtrudeAttributes_GetVariable(self, NULL);
     if(strcmp(name, "length") == 0)
         return ExtrudeAttributes_GetLength(self, NULL);
     if(strcmp(name, "steps") == 0)
@@ -933,16 +528,8 @@ PyExtrudeAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = ExtrudeAttributes_SetAxis(self, args);
     else if(strcmp(name, "byVariable") == 0)
         obj = ExtrudeAttributes_SetByVariable(self, args);
-    else if(strcmp(name, "scalarVariableNames") == 0)
-        obj = ExtrudeAttributes_SetScalarVariableNames(self, args);
-    else if(strcmp(name, "visualVariableNames") == 0)
-        obj = ExtrudeAttributes_SetVisualVariableNames(self, args);
-    else if(strcmp(name, "extentMinima") == 0)
-        obj = ExtrudeAttributes_SetExtentMinima(self, args);
-    else if(strcmp(name, "extentMaxima") == 0)
-        obj = ExtrudeAttributes_SetExtentMaxima(self, args);
-    else if(strcmp(name, "variableDisplay") == 0)
-        obj = ExtrudeAttributes_SetVariableDisplay(self, args);
+    else if(strcmp(name, "variable") == 0)
+        obj = ExtrudeAttributes_SetVariable(self, args);
     else if(strcmp(name, "length") == 0)
         obj = ExtrudeAttributes_SetLength(self, args);
     else if(strcmp(name, "steps") == 0)

@@ -5,43 +5,6 @@
 #include <ExtrudeAttributes.h>
 #include <DataNode.h>
 
-//
-// Enum conversion methods for ExtrudeAttributes::VariableDisplayType
-//
-
-static const char *VariableDisplayType_strings[] = {
-"Index", "Value"};
-
-std::string
-ExtrudeAttributes::VariableDisplayType_ToString(ExtrudeAttributes::VariableDisplayType t)
-{
-    int index = int(t);
-    if(index < 0 || index >= 2) index = 0;
-    return VariableDisplayType_strings[index];
-}
-
-std::string
-ExtrudeAttributes::VariableDisplayType_ToString(int t)
-{
-    int index = (t < 0 || t >= 2) ? 0 : t;
-    return VariableDisplayType_strings[index];
-}
-
-bool
-ExtrudeAttributes::VariableDisplayType_FromString(const std::string &s, ExtrudeAttributes::VariableDisplayType &val)
-{
-    val = ExtrudeAttributes::Index;
-    for(int i = 0; i < 2; ++i)
-    {
-        if(s == VariableDisplayType_strings[i])
-        {
-            val = (VariableDisplayType)i;
-            return true;
-        }
-    }
-    return false;
-}
-
 // ****************************************************************************
 // Method: ExtrudeAttributes::ExtrudeAttributes
 //
@@ -63,7 +26,6 @@ void ExtrudeAttributes::Init()
     axis[1] = 0;
     axis[2] = 1;
     byVariable = false;
-    variableDisplay = Index;
     length = 1;
     steps = 1;
     preserveOriginalCellNumbers = true;
@@ -93,11 +55,7 @@ void ExtrudeAttributes::Copy(const ExtrudeAttributes &obj)
     axis[2] = obj.axis[2];
 
     byVariable = obj.byVariable;
-    scalarVariableNames = obj.scalarVariableNames;
-    visualVariableNames = obj.visualVariableNames;
-    extentMinima = obj.extentMinima;
-    extentMaxima = obj.extentMaxima;
-    variableDisplay = obj.variableDisplay;
+    variable = obj.variable;
     length = obj.length;
     steps = obj.steps;
     preserveOriginalCellNumbers = obj.preserveOriginalCellNumbers;
@@ -126,7 +84,8 @@ const AttributeGroup::private_tmfs_t ExtrudeAttributes::TmfsStruct = {EXTRUDEATT
 // ****************************************************************************
 
 ExtrudeAttributes::ExtrudeAttributes() :
-    AttributeSubject(ExtrudeAttributes::TypeMapFormatString)
+    AttributeSubject(ExtrudeAttributes::TypeMapFormatString),
+    variable("default")
 {
     ExtrudeAttributes::Init();
 }
@@ -147,7 +106,8 @@ ExtrudeAttributes::ExtrudeAttributes() :
 // ****************************************************************************
 
 ExtrudeAttributes::ExtrudeAttributes(private_tmfs_t tmfs) :
-    AttributeSubject(tmfs.tmfs)
+    AttributeSubject(tmfs.tmfs),
+    variable("default")
 {
     ExtrudeAttributes::Init();
 }
@@ -265,11 +225,7 @@ ExtrudeAttributes::operator == (const ExtrudeAttributes &obj) const
     // Create the return value
     return (axis_equal &&
             (byVariable == obj.byVariable) &&
-            (scalarVariableNames == obj.scalarVariableNames) &&
-            (visualVariableNames == obj.visualVariableNames) &&
-            (extentMinima == obj.extentMinima) &&
-            (extentMaxima == obj.extentMaxima) &&
-            (variableDisplay == obj.variableDisplay) &&
+            (variable == obj.variable) &&
             (length == obj.length) &&
             (steps == obj.steps) &&
             (preserveOriginalCellNumbers == obj.preserveOriginalCellNumbers));
@@ -418,11 +374,7 @@ ExtrudeAttributes::SelectAll()
 {
     Select(ID_axis,                        (void *)axis, 3);
     Select(ID_byVariable,                  (void *)&byVariable);
-    Select(ID_scalarVariableNames,         (void *)&scalarVariableNames);
-    Select(ID_visualVariableNames,         (void *)&visualVariableNames);
-    Select(ID_extentMinima,                (void *)&extentMinima);
-    Select(ID_extentMaxima,                (void *)&extentMaxima);
-    Select(ID_variableDisplay,             (void *)&variableDisplay);
+    Select(ID_variable,                    (void *)&variable);
     Select(ID_length,                      (void *)&length);
     Select(ID_steps,                       (void *)&steps);
     Select(ID_preserveOriginalCellNumbers, (void *)&preserveOriginalCellNumbers);
@@ -470,34 +422,10 @@ ExtrudeAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool forc
         node->AddNode(new DataNode("byVariable", byVariable));
     }
 
-    if(completeSave || !FieldsEqual(ID_scalarVariableNames, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_variable, &defaultObject))
     {
         addToParent = true;
-        node->AddNode(new DataNode("scalarVariableNames", scalarVariableNames));
-    }
-
-    if(completeSave || !FieldsEqual(ID_visualVariableNames, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("visualVariableNames", visualVariableNames));
-    }
-
-    if(completeSave || !FieldsEqual(ID_extentMinima, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("extentMinima", extentMinima));
-    }
-
-    if(completeSave || !FieldsEqual(ID_extentMaxima, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("extentMaxima", extentMaxima));
-    }
-
-    if(completeSave || !FieldsEqual(ID_variableDisplay, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("variableDisplay", VariableDisplayType_ToString(variableDisplay)));
+        node->AddNode(new DataNode("variable", variable));
     }
 
     if(completeSave || !FieldsEqual(ID_length, &defaultObject))
@@ -558,30 +486,8 @@ ExtrudeAttributes::SetFromNode(DataNode *parentNode)
         SetAxis(node->AsDoubleArray());
     if((node = searchNode->GetNode("byVariable")) != 0)
         SetByVariable(node->AsBool());
-    if((node = searchNode->GetNode("scalarVariableNames")) != 0)
-        SetScalarVariableNames(node->AsStringVector());
-    if((node = searchNode->GetNode("visualVariableNames")) != 0)
-        SetVisualVariableNames(node->AsStringVector());
-    if((node = searchNode->GetNode("extentMinima")) != 0)
-        SetExtentMinima(node->AsDoubleVector());
-    if((node = searchNode->GetNode("extentMaxima")) != 0)
-        SetExtentMaxima(node->AsDoubleVector());
-    if((node = searchNode->GetNode("variableDisplay")) != 0)
-    {
-        // Allow enums to be int or string in the config file
-        if(node->GetNodeType() == INT_NODE)
-        {
-            int ival = node->AsInt();
-            if(ival >= 0 && ival < 2)
-                SetVariableDisplay(VariableDisplayType(ival));
-        }
-        else if(node->GetNodeType() == STRING_NODE)
-        {
-            VariableDisplayType value;
-            if(VariableDisplayType_FromString(node->AsString(), value))
-                SetVariableDisplay(value);
-        }
-    }
+    if((node = searchNode->GetNode("variable")) != 0)
+        SetVariable(node->AsString());
     if((node = searchNode->GetNode("length")) != 0)
         SetLength(node->AsDouble());
     if((node = searchNode->GetNode("steps")) != 0)
@@ -611,38 +517,10 @@ ExtrudeAttributes::SetByVariable(bool byVariable_)
 }
 
 void
-ExtrudeAttributes::SetScalarVariableNames(const stringVector &scalarVariableNames_)
+ExtrudeAttributes::SetVariable(const std::string &variable_)
 {
-    scalarVariableNames = scalarVariableNames_;
-    Select(ID_scalarVariableNames, (void *)&scalarVariableNames);
-}
-
-void
-ExtrudeAttributes::SetVisualVariableNames(const stringVector &visualVariableNames_)
-{
-    visualVariableNames = visualVariableNames_;
-    Select(ID_visualVariableNames, (void *)&visualVariableNames);
-}
-
-void
-ExtrudeAttributes::SetExtentMinima(const doubleVector &extentMinima_)
-{
-    extentMinima = extentMinima_;
-    Select(ID_extentMinima, (void *)&extentMinima);
-}
-
-void
-ExtrudeAttributes::SetExtentMaxima(const doubleVector &extentMaxima_)
-{
-    extentMaxima = extentMaxima_;
-    Select(ID_extentMaxima, (void *)&extentMaxima);
-}
-
-void
-ExtrudeAttributes::SetVariableDisplay(ExtrudeAttributes::VariableDisplayType variableDisplay_)
-{
-    variableDisplay = variableDisplay_;
-    Select(ID_variableDisplay, (void *)&variableDisplay);
+    variable = variable_;
+    Select(ID_variable, (void *)&variable);
 }
 
 void
@@ -688,58 +566,16 @@ ExtrudeAttributes::GetByVariable() const
     return byVariable;
 }
 
-const stringVector &
-ExtrudeAttributes::GetScalarVariableNames() const
+const std::string &
+ExtrudeAttributes::GetVariable() const
 {
-    return scalarVariableNames;
+    return variable;
 }
 
-stringVector &
-ExtrudeAttributes::GetScalarVariableNames()
+std::string &
+ExtrudeAttributes::GetVariable()
 {
-    return scalarVariableNames;
-}
-
-const stringVector &
-ExtrudeAttributes::GetVisualVariableNames() const
-{
-    return visualVariableNames;
-}
-
-stringVector &
-ExtrudeAttributes::GetVisualVariableNames()
-{
-    return visualVariableNames;
-}
-
-const doubleVector &
-ExtrudeAttributes::GetExtentMinima() const
-{
-    return extentMinima;
-}
-
-doubleVector &
-ExtrudeAttributes::GetExtentMinima()
-{
-    return extentMinima;
-}
-
-const doubleVector &
-ExtrudeAttributes::GetExtentMaxima() const
-{
-    return extentMaxima;
-}
-
-doubleVector &
-ExtrudeAttributes::GetExtentMaxima()
-{
-    return extentMaxima;
-}
-
-ExtrudeAttributes::VariableDisplayType
-ExtrudeAttributes::GetVariableDisplay() const
-{
-    return VariableDisplayType(variableDisplay);
+    return variable;
 }
 
 double
@@ -771,27 +607,9 @@ ExtrudeAttributes::SelectAxis()
 }
 
 void
-ExtrudeAttributes::SelectScalarVariableNames()
+ExtrudeAttributes::SelectVariable()
 {
-    Select(ID_scalarVariableNames, (void *)&scalarVariableNames);
-}
-
-void
-ExtrudeAttributes::SelectVisualVariableNames()
-{
-    Select(ID_visualVariableNames, (void *)&visualVariableNames);
-}
-
-void
-ExtrudeAttributes::SelectExtentMinima()
-{
-    Select(ID_extentMinima, (void *)&extentMinima);
-}
-
-void
-ExtrudeAttributes::SelectExtentMaxima()
-{
-    Select(ID_extentMaxima, (void *)&extentMaxima);
+    Select(ID_variable, (void *)&variable);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -820,11 +638,7 @@ ExtrudeAttributes::GetFieldName(int index) const
     {
     case ID_axis:                        return "axis";
     case ID_byVariable:                  return "byVariable";
-    case ID_scalarVariableNames:         return "scalarVariableNames";
-    case ID_visualVariableNames:         return "visualVariableNames";
-    case ID_extentMinima:                return "extentMinima";
-    case ID_extentMaxima:                return "extentMaxima";
-    case ID_variableDisplay:             return "variableDisplay";
+    case ID_variable:                    return "variable";
     case ID_length:                      return "length";
     case ID_steps:                       return "steps";
     case ID_preserveOriginalCellNumbers: return "preserveOriginalCellNumbers";
@@ -854,11 +668,7 @@ ExtrudeAttributes::GetFieldType(int index) const
     {
     case ID_axis:                        return FieldType_doubleArray;
     case ID_byVariable:                  return FieldType_bool;
-    case ID_scalarVariableNames:         return FieldType_stringVector;
-    case ID_visualVariableNames:         return FieldType_stringVector;
-    case ID_extentMinima:                return FieldType_doubleVector;
-    case ID_extentMaxima:                return FieldType_doubleVector;
-    case ID_variableDisplay:             return FieldType_enum;
+    case ID_variable:                    return FieldType_variablename;
     case ID_length:                      return FieldType_double;
     case ID_steps:                       return FieldType_int;
     case ID_preserveOriginalCellNumbers: return FieldType_bool;
@@ -888,11 +698,7 @@ ExtrudeAttributes::GetFieldTypeName(int index) const
     {
     case ID_axis:                        return "doubleArray";
     case ID_byVariable:                  return "bool";
-    case ID_scalarVariableNames:         return "stringVector";
-    case ID_visualVariableNames:         return "stringVector";
-    case ID_extentMinima:                return "doubleVector";
-    case ID_extentMaxima:                return "doubleVector";
-    case ID_variableDisplay:             return "enum";
+    case ID_variable:                    return "variablename";
     case ID_length:                      return "double";
     case ID_steps:                       return "int";
     case ID_preserveOriginalCellNumbers: return "bool";
@@ -937,29 +743,9 @@ ExtrudeAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
         retval = (byVariable == obj.byVariable);
         }
         break;
-    case ID_scalarVariableNames:
+    case ID_variable:
         {  // new scope
-        retval = (scalarVariableNames == obj.scalarVariableNames);
-        }
-        break;
-    case ID_visualVariableNames:
-        {  // new scope
-        retval = (visualVariableNames == obj.visualVariableNames);
-        }
-        break;
-    case ID_extentMinima:
-        {  // new scope
-        retval = (extentMinima == obj.extentMinima);
-        }
-        break;
-    case ID_extentMaxima:
-        {  // new scope
-        retval = (extentMaxima == obj.extentMaxima);
-        }
-        break;
-    case ID_variableDisplay:
-        {  // new scope
-        retval = (variableDisplay == obj.variableDisplay);
+        retval = (variable == obj.variable);
         }
         break;
     case ID_length:
@@ -986,181 +772,4 @@ ExtrudeAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
 ///////////////////////////////////////////////////////////////////////////////
 // User-defined methods.
 ///////////////////////////////////////////////////////////////////////////////
-
-// ****************************************************************************
-// Method: ParallelCoordinatesAttributes::InsertVariable
-//
-// Purpose: Inserts an variable (assuming at the end)
-//
-// Programmer: Jeremy Meredith
-// Creation:   January 31, 2008
-//
-// Note: Taken largely from Mark Blair's Parallel Variable plot.
-//
-// Modifications:
-//    Jeremy Meredith, Fri Feb  1 17:55:14 EST 2008
-//    Made it use float min/max for non-limiting extents values.
-//   
-//    Jeremy Meredith, Mon Feb  4 16:07:37 EST 2008
-//    Remove the variable extents; they were unusued.
-//
-//    Jeremy Meredith, Fri Feb 15 13:16:46 EST 2008
-//    Renamed orderedVariableNames to scalarVariableNames to distinguish these
-//    as names of actual scalars instead of just display names.  Added
-//    visualVariableNames.
-//
-// ****************************************************************************
-
-void
-ExtrudeAttributes::InsertVariable(const std::string &variableName_)
-{
-    std::string newVariableName = variableName_;
-
-    size_t curVariableCount = scalarVariableNames.size();
-    size_t variableOrdinal;
-    double saveExtentMin, saveExtentMax;
-
-    stringVector::iterator svariableNamesIt;
-    stringVector::iterator vvariableNamesIt;
-    doubleVector::iterator extentMinIt;
-    doubleVector::iterator extentMaxIt;
-    
-    for (variableOrdinal = 0; variableOrdinal < curVariableCount; variableOrdinal++)
-    {
-        if (scalarVariableNames[variableOrdinal] == newVariableName) break;
-    }
-
-    if (variableOrdinal < curVariableCount)
-    {
-        saveExtentMin  = extentMinima[variableOrdinal];
-        saveExtentMax  = extentMaxima[variableOrdinal];
-
-        svariableNamesIt = scalarVariableNames.begin()  + variableOrdinal;
-        vvariableNamesIt = visualVariableNames.begin()  + variableOrdinal;
-        extentMinIt  = extentMinima.begin()     + variableOrdinal;
-        extentMaxIt  = extentMaxima.begin()     + variableOrdinal;
-
-        scalarVariableNames.erase(svariableNamesIt);
-        visualVariableNames.erase(vvariableNamesIt);
-        extentMinima.erase(extentMinIt);
-        extentMaxima.erase(extentMaxIt);
-    }
-    else
-    {
-        saveExtentMin  = -1e+37;
-        saveExtentMax  = +1e+37;
-    }
-
-    size_t insertOrdinal = scalarVariableNames.size();
-
-    svariableNamesIt = scalarVariableNames.begin()  + insertOrdinal;
-    vvariableNamesIt = visualVariableNames.begin()  + insertOrdinal;
-    extentMinIt  = extentMinima.begin()     + insertOrdinal;
-    extentMaxIt  = extentMaxima.begin()     + insertOrdinal;
-
-    scalarVariableNames.insert(svariableNamesIt, newVariableName);
-    visualVariableNames.insert(vvariableNamesIt, newVariableName);
-    extentMinima.insert(extentMinIt, saveExtentMin);
-    extentMaxima.insert(extentMaxIt, saveExtentMax);
-    
-    SelectAll();
-}
-
-// ****************************************************************************
-// Method: ExtrudeAttributes::DeleteVariable
-//
-// Purpose: Deletes an variable (as long as there are enough remaining)
-//
-// Programmer: Jeremy Meredith
-// Creation:   January 31, 2008
-//
-// Note: Taken largely from Mark Blair's Parallel Variable plot.
-//
-// Modifications:
-//    Jeremy Meredith, Mon Feb  4 16:07:37 EST 2008
-//    Remove the variable extents; they were unusued.
-//   
-//    Jeremy Meredith, Fri Feb 15 13:16:46 EST 2008
-//    Renamed orderedVariableNames to scalarVariableNames to distinguish these
-//    as names of actual scalars instead of just display names.  Added
-//    visualVariableNames.
-//
-//    Kathleen Bonnell, Wed Jun 4 07:54:16 PDT 2008 
-//    Removed unused variables leftSelectedVariableID, rightSelectedVariableID.
-//
-// ****************************************************************************
-
-void
-ExtrudeAttributes::DeleteVariable(const std::string &variableName_,
-                                          int minVariableCount)
-{
-    if ((int)scalarVariableNames.size() <= minVariableCount) return;
-
-    std::string newVariableName = variableName_;
-
-    size_t curVariableCount = scalarVariableNames.size();
-    size_t variableOrdinal;
-
-    for (variableOrdinal = 0; variableOrdinal < curVariableCount; variableOrdinal++)
-    {
-        if (scalarVariableNames[variableOrdinal] == newVariableName) break;
-    }
-
-    if (variableOrdinal < curVariableCount)
-    {
-        visualVariableNames.erase(visualVariableNames.begin() + variableOrdinal);
-        scalarVariableNames.erase(scalarVariableNames.begin() + variableOrdinal);
-        extentMinima.erase(extentMinima.begin() + variableOrdinal);
-        extentMaxima.erase(extentMaxima.begin() + variableOrdinal);
-        
-        SelectAll();
-    }
-}
-
-// ****************************************************************************
-// Method: ExtrudeAttributes::AttributesAreConsistent
-//
-// Purpose: Returns true only if (1) all vector attributes are the same length,
-//          (2) all variable names are unique, and (3) the index of the currently
-//          displayable variable information in the GUI is in range.
-//
-// Programmer: Jeremy Meredith
-// Creation:   January 31, 2008
-//
-// ****************************************************************************
-
-bool
-ExtrudeAttributes::AttributesAreConsistent() const
-{
-    size_t variableNamesSize = scalarVariableNames.size();
-    size_t variableNum, variable2Num;
-    std::string variableName;
-    
-    if (variableNamesSize == 0)
-    {
-        if (extentMinima.size() != extentMaxima.size())
-            return false;
-
-        return true;
-    }
-    
-    if ((extentMinima.size() != variableNamesSize) ||
-        (extentMaxima.size() != variableNamesSize))
-    {
-        return false;
-    }
-    
-    for (variableNum = 0; variableNum < variableNamesSize - 1; variableNum++)
-    {
-        variableName = scalarVariableNames[variableNum];
-
-        for (variable2Num = variableNum + 1; variable2Num < variableNamesSize; variable2Num++ )
-        {
-            if (scalarVariableNames[variable2Num] == variableName)
-                return false;
-        }
-    }
-    
-    return true;
-}
 

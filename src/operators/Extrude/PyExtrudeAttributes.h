@@ -11,7 +11,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define EXTRUDEATTRIBUTES_NMETH 22
+#define EXTRUDEATTRIBUTES_NMETH 14
 void           PyExtrudeAttributes_StartUp(ExtrudeAttributes *subj, void *data);
 void           PyExtrudeAttributes_CloseDown();
 PyMethodDef *  PyExtrudeAttributes_GetMethodTable(int *nMethods);

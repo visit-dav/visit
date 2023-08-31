@@ -26,12 +26,6 @@
 class ExtrudeAttributes : public AttributeSubject
 {
 public:
-    enum VariableDisplayType
-    {
-        Index,
-        Value
-    };
-
     // These constructors are for objects of this class
     ExtrudeAttributes();
     ExtrudeAttributes(const ExtrudeAttributes &obj);
@@ -58,50 +52,30 @@ public:
     // Property selection methods
     virtual void SelectAll();
     void SelectAxis();
-    void SelectScalarVariableNames();
-    void SelectVisualVariableNames();
-    void SelectExtentMinima();
-    void SelectExtentMaxima();
+    void SelectVariable();
 
     // Property setting methods
     void SetAxis(const double *axis_);
     void SetByVariable(bool byVariable_);
-    void SetScalarVariableNames(const stringVector &scalarVariableNames_);
-    void SetVisualVariableNames(const stringVector &visualVariableNames_);
-    void SetExtentMinima(const doubleVector &extentMinima_);
-    void SetExtentMaxima(const doubleVector &extentMaxima_);
-    void SetVariableDisplay(VariableDisplayType variableDisplay_);
+    void SetVariable(const std::string &variable_);
     void SetLength(double length_);
     void SetSteps(int steps_);
     void SetPreserveOriginalCellNumbers(bool preserveOriginalCellNumbers_);
 
     // Property getting methods
-    const double       *GetAxis() const;
-          double       *GetAxis();
-    bool               GetByVariable() const;
-    const stringVector &GetScalarVariableNames() const;
-          stringVector &GetScalarVariableNames();
-    const stringVector &GetVisualVariableNames() const;
-          stringVector &GetVisualVariableNames();
-    const doubleVector &GetExtentMinima() const;
-          doubleVector &GetExtentMinima();
-    const doubleVector &GetExtentMaxima() const;
-          doubleVector &GetExtentMaxima();
-    VariableDisplayType GetVariableDisplay() const;
-    double             GetLength() const;
-    int                GetSteps() const;
-    bool               GetPreserveOriginalCellNumbers() const;
+    const double      *GetAxis() const;
+          double      *GetAxis();
+    bool              GetByVariable() const;
+    const std::string &GetVariable() const;
+          std::string &GetVariable();
+    double            GetLength() const;
+    int               GetSteps() const;
+    bool              GetPreserveOriginalCellNumbers() const;
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
     virtual void SetFromNode(DataNode *node);
 
-    // Enum conversion functions
-    static std::string VariableDisplayType_ToString(VariableDisplayType);
-    static bool VariableDisplayType_FromString(const std::string &, VariableDisplayType &);
-protected:
-    static std::string VariableDisplayType_ToString(int);
-public:
 
     // Keyframing methods
     virtual std::string               GetFieldName(int index) const;
@@ -109,20 +83,12 @@ public:
     virtual std::string               GetFieldTypeName(int index) const;
     virtual bool                      FieldsEqual(int index, const AttributeGroup *rhs) const;
 
-    // User-defined methods
-    void InsertVariable(const std::string &variableName_);
-    void DeleteVariable(const std::string &variableName_, int minVariableCount);
-    bool AttributesAreConsistent() const;
 
     // IDs that can be used to identify fields in case statements
     enum {
         ID_axis = 0,
         ID_byVariable,
-        ID_scalarVariableNames,
-        ID_visualVariableNames,
-        ID_extentMinima,
-        ID_extentMaxima,
-        ID_variableDisplay,
+        ID_variable,
         ID_length,
         ID_steps,
         ID_preserveOriginalCellNumbers,
@@ -130,21 +96,17 @@ public:
     };
 
 private:
-    double       axis[3];
-    bool         byVariable;
-    stringVector scalarVariableNames;
-    stringVector visualVariableNames;
-    doubleVector extentMinima;
-    doubleVector extentMaxima;
-    int          variableDisplay;
-    double       length;
-    int          steps;
-    bool         preserveOriginalCellNumbers;
+    double      axis[3];
+    bool        byVariable;
+    std::string variable;
+    double      length;
+    int         steps;
+    bool        preserveOriginalCellNumbers;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define EXTRUDEATTRIBUTES_TMFS "Dbs*s*d*d*idib"
+#define EXTRUDEATTRIBUTES_TMFS "Dbsdib"
 
 #endif
