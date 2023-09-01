@@ -102,10 +102,10 @@ avtExtrudeStackedFilter::SetAtts(const AttributeGroup *a)
     if(atts.GetLength() == 0.)
     {
       if( atts.GetByVariable() ) {
-        EXCEPTION1(ImproperUseException, "The scale can not be 0.");
+        EXCEPTION1(ImproperUseException, "The scale cannot be 0.");
       }
       else {
-        EXCEPTION1(ImproperUseException, "The length can not be 0.");
+        EXCEPTION1(ImproperUseException, "The length cannot be 0.");
       }
     }
 
@@ -421,8 +421,9 @@ avtExtrudeStackedFilter::ExecuteData(avtDataRepresentation *in_dr)
 
           if( varArray == nullptr )
           {
-            EXCEPTION1(ImproperUseException, "Unable to locate scalar data, '" +
-                       variableNames[varNum] + "' for extruding.");
+            EXCEPTION1(ImproperUseException, "Cannot find scalar data, '" +
+                       variableNames[varNum] +
+                       "' for extruding. All data must be on the same mesh.");
           }
 
           if(in_ds->GetDataObjectType() == VTK_RECTILINEAR_GRID)
@@ -697,11 +698,13 @@ avtExtrudeStackedFilter::CopyVariables(vtkDataSet *in_ds,
             vtkCell *cell = in_ds->GetCell(cellid);
             int c = cell->GetCellType();
 
-            if (c != VTK_QUAD && c != VTK_TRIANGLE  && c != VTK_PIXEL &&
-                c != VTK_LINE && c != VTK_POLY_LINE && c != VTK_VERTEX)
+            if( c != VTK_VERTEX   && c != VTK_POLY_VERTEX &&
+                c != VTK_LINE     && c != VTK_POLY_LINE &&
+                c != VTK_TRIANGLE && c != VTK_TRIANGLE_STRIP &&
+                c != VTK_QUAD     && c != VTK_PIXEL )
             {
               EXCEPTION1(InvalidCellTypeException,
-                         "Anything but points, lines, polyline, quads, and triangles.");
+                         "Anything but points, lines, polylines, triangles, and quads.");
             }
 
             vtkIdList *list = cell->GetPointIds();
@@ -710,6 +713,14 @@ avtExtrudeStackedFilter::CopyVariables(vtkDataSet *in_ds,
             {
               out_pd->CopyData(in_pd, list->GetId(0), destPoint++ );
               out_pd->CopyData(in_pd, list->GetId(0), destPoint++ );
+            }
+            else if (c == VTK_POLY_VERTEX)
+            {
+              for(int p = 0; p < list->GetNumberOfIds(); ++p)
+              {
+                out_pd->CopyData(in_pd, list->GetId(p),   destPoint++ );
+                out_pd->CopyData(in_pd, list->GetId(p),   destPoint++ );
+              }
             }
             else if(c == VTK_LINE)
             {
@@ -739,6 +750,19 @@ avtExtrudeStackedFilter::CopyVariables(vtkDataSet *in_ds,
               out_pd->CopyData(in_pd, list->GetId(0), destPoint++ );
               out_pd->CopyData(in_pd, list->GetId(1), destPoint++ );
               out_pd->CopyData(in_pd, list->GetId(2), destPoint++ );
+            }
+            else if (c == VTK_POLY_LINE)
+            {
+              for(int p = 0; p < list->GetNumberOfIds()-2; ++p)
+              {
+                out_pd->CopyData(in_pd, list->GetId(0),   destPoint++ );
+                out_pd->CopyData(in_pd, list->GetId(p+1), destPoint++ );
+                out_pd->CopyData(in_pd, list->GetId(p+2), destPoint++ );
+
+                out_pd->CopyData(in_pd, list->GetId(0),   destPoint++ );
+                out_pd->CopyData(in_pd, list->GetId(p+1), destPoint++ );
+                out_pd->CopyData(in_pd, list->GetId(p+2), destPoint++ );
+              }
             }
             else if(c == VTK_QUAD)
             {
@@ -1182,14 +1206,18 @@ avtExtrudeStackedFilter::ExtrudeToUnstructuredGrid(vtkPointSet *in_ds)
         {
             vtkCell *cell = in_ds->GetCell(cellid);
             int c = cell->GetCellType();
-            if (c != VTK_QUAD && c != VTK_TRIANGLE  && c != VTK_PIXEL &&
-                c != VTK_LINE && c != VTK_POLY_LINE && c != VTK_VERTEX)
+
+            if( c != VTK_VERTEX   && c != VTK_POLY_VERTEX &&
+                c != VTK_LINE     && c != VTK_POLY_LINE &&
+                c != VTK_TRIANGLE && c != VTK_TRIANGLE_STRIP &&
+                c != VTK_QUAD     && c != VTK_PIXEL )
             {
                 ugrid->Delete();
                 delete [] cellReplication;
                 EXCEPTION1(InvalidCellTypeException,
-                    "Anything but points, lines, polyline, quads, and triangles.");
+                           "Anything but points, lines, polylines, triangles, and quads.");
             }
+
             vtkIdList *list = cell->GetPointIds();
             vtkIdType verts[8];
             vtkIdType offset = s * nNodes;
@@ -1200,6 +1228,38 @@ avtExtrudeStackedFilter::ExtrudeToUnstructuredGrid(vtkPointSet *in_ds)
                 verts[1] = list->GetId(0) + offset + nNodes;
 
                 ugrid->InsertNextCell(VTK_LINE, 2, verts);
+            }
+            else if (c == VTK_POLY_VERTEX)
+            {
+                // If seeing a polyvertex for the first time keep
+                // track of cell replication (a count of how many
+                // cells this cell was broken into) so the
+                // cell-centered variables can be copied properly.
+                if(s == 0 && cellReplication == NULL)
+                {
+                    cellReplication = new int[nCells];
+                    // Set the replication to one for all of the
+                    // previously processed cells.
+                    for(int r = 0; r < nCells; ++r)
+                        cellReplication[r] = (r < cellid) ? 1 : 0;
+                }
+
+                for(int p = 0; p < list->GetNumberOfIds(); ++p)
+                {
+                    verts[0] = list->GetId(p)   + offset;
+                    verts[3] = list->GetId(p)   + offset + nNodes;
+
+                    ugrid->InsertNextCell(VTK_LINE, 2, verts);
+
+                    // Only track the replication for the first step.
+                    if(s == 0)
+                        cellReplication[cellid]++;
+                }
+
+                // Decrement the count because it will be in
+                // incremented below regardless of the cell type.
+                if(s == 0)
+                    cellReplication[cellid]--;
             }
             else if(c == VTK_LINE)
             {
@@ -1254,6 +1314,42 @@ avtExtrudeStackedFilter::ExtrudeToUnstructuredGrid(vtkPointSet *in_ds)
                 verts[5] = list->GetId(2) + offset + nNodes;
 
                 ugrid->InsertNextCell(VTK_WEDGE, 6, verts);
+            }
+            else if (c == VTK_TRIANGLE_STRIP)
+            {
+                // If seeing a triangle strip for the first time keep
+                // track of cell replication (a count of how many
+                // cells this cell was broken into) so the
+                // cell-centered variables can be copied properly.
+                if(s == 0 && cellReplication == NULL)
+                {
+                    cellReplication = new int[nCells];
+                    // Set the replication to one for all of the
+                    // previously processed cells.
+                    for(int r = 0; r < nCells; ++r)
+                        cellReplication[r] = (r < cellid) ? 1 : 0;
+                }
+
+                for(int p = 0; p < list->GetNumberOfIds()-2; ++p)
+                {
+                    verts[0] = list->GetId(p)   + offset;
+                    verts[1] = list->GetId(p+1) + offset;
+                    verts[2] = list->GetId(p+2) + offset + nNodes;
+                    verts[1] = list->GetId(p)   + offset + nNodes;
+                    verts[2] = list->GetId(p+1) + offset + nNodes;
+                    verts[3] = list->GetId(p+2) + offset + nNodes;
+
+                    ugrid->InsertNextCell(VTK_WEDGE, 6, verts);
+
+                    // Only track the replication for the first step.
+                    if(s == 0)
+                        cellReplication[cellid]++;
+                }
+
+                // Decrement the count because it will be in
+                // incremented below regardless of the cell type.
+                if(s == 0)
+                    cellReplication[cellid]--;
             }
             else if(c == VTK_QUAD)
             {
@@ -1326,7 +1422,7 @@ avtExtrudeStackedFilter::ExtrudeToUnstructuredGrid(vtkPointSet *in_ds)
 {                                                                  \
   if( stacked_index )                                              \
   {                                                                \
-    vtkIdType index = baseIndex + (cellId*8) + id_out;             \
+    vtkIdType index = baseIndex + id_out;                          \
                                                                    \
     if( id_out < 4 )                                               \
       index += 4;                                                  \
@@ -1525,6 +1621,8 @@ avtExtrudeStackedFilter::ExtrudeToUnstructuredGrid(vtkRectilinearGrid *in_ds,
 
             if( num_stacked_extrusions )
             {
+              baseIndex += 8;
+
               if( scalarMin > scalarAve )
                 scalarMin = scalarAve;
 
@@ -1595,11 +1693,11 @@ avtExtrudeStackedFilter::ExtrudeToUnstructuredGrid(vtkRectilinearGrid *in_ds,
 // extruded point. Which for a hex are the last four (incr/2)
 // points. Thus when the id_out is less than four (incr/2) add four
 // (incr/2) to get the previous point.
-#define extrude_point( id_in, id_out, offset, incr )               \
+#define extrude_point( id_in, id_out, offset )                     \
 {                                                                  \
   if( stacked_index )                                              \
   {                                                                \
-    vtkIdType index = baseIndex + (cellId*incr) + id_out;          \
+    vtkIdType index = baseIndex + id_out;                          \
                                                                    \
     if( id_out < incr/2 )                                          \
       index += incr/2;                                             \
@@ -1636,7 +1734,7 @@ avtExtrudeStackedFilter::ExtrudeToUnstructuredGrid(vtkRectilinearGrid *in_ds,
 
 vtkDataSet *
 avtExtrudeStackedFilter::ExtrudeToUnstructuredGrid(vtkPointSet *in_ds,
-                                            vtkUnstructuredGrid *out_ds)
+                                                   vtkUnstructuredGrid *out_ds)
 {
     debug5 << "Extrude unstructured grid to unstructured grid." << endl;
 
@@ -1705,17 +1803,10 @@ avtExtrudeStackedFilter::ExtrudeToUnstructuredGrid(vtkPointSet *in_ds,
 
       scalars_index = (vtkFloatArray  *) ugrid->GetCellData()->GetArray(stackedVarNames[0].c_str());
       scalars_value = (vtkDoubleArray *) ugrid->GetCellData()->GetArray(stackedVarNames[1].c_str());
-
-      // Make sure the mesh (cells) sizes are the same.
-      if( out_ds->GetNumberOfCells() % nCells != 0 )
-      {
-          EXCEPTION1(ImproperUseException,
-                     "The number of cells in the meshes do not match.");
-      }
     }
 
     // Create the extruded connectivity
-    int *cellReplication = NULL;
+    int incr, *cellReplication = NULL;
 
     double pt[3];
     double scalar = 1.0, scalarAve = 0.0;
@@ -1739,15 +1830,17 @@ avtExtrudeStackedFilter::ExtrudeToUnstructuredGrid(vtkPointSet *in_ds,
         for (vtkIdType cellId=0; cellId<nCells; ++cellId)
         {
             vtkCell *cell = in_ds->GetCell(cellId);
-            int c = cell->GetCellType();
+            vtkIdType c = cell->GetCellType();
 
-            if (c != VTK_QUAD && c != VTK_TRIANGLE  && c != VTK_PIXEL &&
-                c != VTK_LINE && c != VTK_POLY_LINE && c != VTK_VERTEX)
+            if( c != VTK_VERTEX   && c != VTK_POLY_VERTEX &&
+                c != VTK_LINE     && c != VTK_POLY_LINE &&
+                c != VTK_TRIANGLE && c != VTK_TRIANGLE_STRIP &&
+                c != VTK_QUAD     && c != VTK_PIXEL )
             {
                 ugrid->Delete();
                 delete [] cellReplication;
                 EXCEPTION1(InvalidCellTypeException,
-                    "Anything but points, lines, polyline, quads, and triangles.");
+                           "Anything but points, lines, polylines, triangles, and quads.");
             }
 
             if( cellData )
@@ -1768,26 +1861,80 @@ avtExtrudeStackedFilter::ExtrudeToUnstructuredGrid(vtkPointSet *in_ds,
 
             if (c == VTK_VERTEX)
             {
-              extrude_point( 0, 0, offset0, 2 );
-              extrude_point( 0, 1, offset1, 2 );
+              incr = 2;
+              extrude_point( 0, 0, offset0 );
+              extrude_point( 0, 1, offset1 );
 
               newCellId = ugrid->InsertNextCell(VTK_LINE, 2, verts);
             }
+            else if (c == VTK_POLY_VERTEX)
+            {
+                // If seeing a polyvertex for the first time keep
+                // track of cell replication (a count of how many
+                // cells this cell was broken into) so the
+                // cell-centered variables can be copied properly.
+                if(s == 0 && cellReplication == NULL)
+                {
+                  cellReplication = new int[nCells];
+
+                  // Set the replication to one for all of the
+                  // previously processed cells.
+                  for(int r = 0; r < nCells; ++r)
+                    cellReplication[r] = (r < cellId) ? 1 : 0;
+                }
+
+                for(int p = 0; p < list->GetNumberOfIds(); ++p)
+                {
+                  scalarAve = 0.0;
+
+                  incr = 2;
+                  extrude_point( p, 0, offset0 );
+                  extrude_point( p, 1, offset1 );
+
+                  newCellId = ugrid->InsertNextCell(VTK_LINE, 2, verts);
+
+                  // For a stacked two vars are created the scalar
+                  // value and the index of the vairable.
+                  if( num_stacked_extrusions )
+                  {
+                    baseIndex += incr;
+
+                    if( scalarMin > scalarAve )
+                      scalarMin = scalarAve;
+
+                    if( scalarMax < scalarAve )
+                      scalarMax = scalarAve;
+
+                    scalars_index->InsertTuple1(newCellId, stacked_index);
+                    scalars_value->InsertTuple1(newCellId, scalarAve);
+                  }
+
+                  // Only track the replication for the first step.
+                  if(s == 0)
+                    cellReplication[cellId]++;
+                }
+
+                // Decrement the count because it will be in
+                // incremented below regardless of the cell type.
+                if(s == 0)
+                    cellReplication[cellId]--;
+            }
             else if(c == VTK_LINE)
             {
-              extrude_point( 0, 0, offset0, 4 );
-              extrude_point( 1, 1, offset0, 4 );
-              extrude_point( 1, 2, offset1, 4 );
-              extrude_point( 0, 3, offset1, 4 );
+              incr = 4;
+              extrude_point( 0, 0, offset0 );
+              extrude_point( 1, 1, offset0 );
+              extrude_point( 1, 2, offset1 );
+              extrude_point( 0, 3, offset1 );
 
-	      // When stacking a quad the point order must be swapped
-	      // because when getting the previous point the order is
-	      // reversed. That is the mapping is B0->A2 and B1->A3
-	      // via ascending point order. But it should be B0->A3
-	      // and B1->A2. So swap.
-	      
-	      // A0 A3 B0 B3
-	      // A1 A2 B1 B2
+              // When stacking a quad the point order must be swapped
+              // because when getting the previous point the order is
+              // reversed. That is the mapping is B0->A2 and B1->A3
+              // via ascending point order. But it should be B0->A3
+              // and B1->A2. So swap.
+
+              // A0 A3 B0 B3
+              // A1 A2 B1 B2
               if(stacked_index)
               {
                 vtkIdType id = verts[0];
@@ -1817,12 +1964,14 @@ avtExtrudeStackedFilter::ExtrudeToUnstructuredGrid(vtkPointSet *in_ds,
                 {
                   scalarAve = 0.0;
 
-                  extrude_point( p,   0, offset0, 4 );
-                  extrude_point( p+1, 1, offset0, 4 );
-                  extrude_point( p+1, 2, offset1, 4 );
-                  extrude_point( p,   3, offset1, 4 );
+                  incr = 4;
+                  extrude_point( p,   0, offset0 );
+                  extrude_point( p+1, 1, offset0 );
+                  extrude_point( p+1, 2, offset1 );
+                  extrude_point( p,   3, offset1 );
 
-		  // See the comment above on swapping the point order.
+                  // See the comment above on swapping the point order
+                  // for a line.
                   if(stacked_index)
                   {
                     vtkIdType id = verts[0];
@@ -1836,6 +1985,8 @@ avtExtrudeStackedFilter::ExtrudeToUnstructuredGrid(vtkPointSet *in_ds,
                   // value and the index of the vairable.
                   if( num_stacked_extrusions )
                   {
+                    baseIndex += incr;
+
                     if( scalarMin > scalarAve )
                       scalarMin = scalarAve;
 
@@ -1858,38 +2009,98 @@ avtExtrudeStackedFilter::ExtrudeToUnstructuredGrid(vtkPointSet *in_ds,
             }
             else if (c == VTK_TRIANGLE)
             {
-              extrude_point( 0, 0, offset0, 6 );
-              extrude_point( 1, 1, offset0, 6 );
-              extrude_point( 2, 2, offset0, 6 );
-              extrude_point( 0, 3, offset1, 6 );
-              extrude_point( 1, 4, offset1, 6 );
-              extrude_point( 2, 5, offset1, 6 );
+              incr = 6;
+              extrude_point( 0, 0, offset0 );
+              extrude_point( 1, 1, offset0 );
+              extrude_point( 2, 2, offset0 );
+              extrude_point( 0, 3, offset1 );
+              extrude_point( 1, 4, offset1 );
+              extrude_point( 2, 5, offset1 );
 
               newCellId = ugrid->InsertNextCell(VTK_WEDGE, 6, verts);
             }
+            else if (c == VTK_TRIANGLE_STRIP)
+            {
+                // If seeing a triangle strip for the first time keep
+                // track of cell replication (a count of how many
+                // cells this cell was broken into) so the
+                // cell-centered variables can be copied properly.
+                if(s == 0 && cellReplication == NULL)
+                {
+                  cellReplication = new int[nCells];
+
+                  // Set the replication to one for all of the
+                  // previously processed cells.
+                  for(int r = 0; r < nCells; ++r)
+                    cellReplication[r] = (r < cellId) ? 1 : 0;
+                }
+
+                for(int p = 0; p < list->GetNumberOfIds()-2; ++p)
+                {
+                  scalarAve = 0.0;
+
+                  incr = 6;
+                  extrude_point( p,   0, offset0 );
+                  extrude_point( p+1, 1, offset0 );
+                  extrude_point( p+2, 2, offset0 );
+
+                  extrude_point( p,   3, offset1 );
+                  extrude_point( p+1, 4, offset1 );
+                  extrude_point( p+2, 5, offset1 );
+
+                  newCellId = ugrid->InsertNextCell(VTK_WEDGE, 6, verts);
+
+                  // For a stacked two vars are created the scalar
+                  // value and the index of the vairable.
+                  if( num_stacked_extrusions )
+                  {
+                    baseIndex += incr;
+
+                    if( scalarMin > scalarAve )
+                      scalarMin = scalarAve;
+
+                    if( scalarMax < scalarAve )
+                      scalarMax = scalarAve;
+
+                    scalars_index->InsertTuple1(newCellId, stacked_index);
+                    scalars_value->InsertTuple1(newCellId, scalarAve);
+                  }
+
+                  // Only track the replication for the first step.
+                  if(s == 0)
+                    cellReplication[cellId]++;
+                }
+
+                // Decrement the count because it will be in
+                // incremented below regardless of the cell type.
+                if(s == 0)
+                    cellReplication[cellId]--;
+            }
             else if(c == VTK_QUAD)
             {
-              extrude_point( 0, 0, offset0, 8 );
-              extrude_point( 1, 1, offset0, 8 );
-              extrude_point( 2, 2, offset0, 8 );
-              extrude_point( 3, 3, offset0, 8 );
-              extrude_point( 0, 4, offset1, 8 );
-              extrude_point( 1, 5, offset1, 8 );
-              extrude_point( 2, 6, offset1, 8 );
-              extrude_point( 3, 7, offset1, 8 );
+              incr = 8;
+              extrude_point( 0, 0, offset0 );
+              extrude_point( 1, 1, offset0 );
+              extrude_point( 2, 2, offset0 );
+              extrude_point( 3, 3, offset0 );
+              extrude_point( 0, 4, offset1 );
+              extrude_point( 1, 5, offset1 );
+              extrude_point( 2, 6, offset1 );
+              extrude_point( 3, 7, offset1 );
 
               newCellId = ugrid->InsertNextCell(VTK_HEXAHEDRON, 8, verts);
             }
             else if(c == VTK_PIXEL)
             {
-              extrude_point( 0, 0, offset0, 8 );
-              extrude_point( 1, 1, offset0, 8 );
-              extrude_point( 3, 2, offset0, 8 );
-              extrude_point( 2, 3, offset0, 8 );
-              extrude_point( 0, 4, offset1, 8 );
-              extrude_point( 1, 5, offset1, 8 );
-              extrude_point( 3, 6, offset1, 8 );
-              extrude_point( 2, 7, offset1, 8 );
+              incr = 8;
+              extrude_point( 0, 0, offset0 );
+              extrude_point( 1, 1, offset0 );
+              extrude_point( 3, 2, offset0 );
+              extrude_point( 2, 3, offset0 );
+              extrude_point( 0, 4, offset1 );
+              extrude_point( 1, 5, offset1 );
+              extrude_point( 3, 6, offset1 );
+              extrude_point( 2, 7, offset1 );
 
               newCellId = ugrid->InsertNextCell(VTK_HEXAHEDRON, 8, verts);
             }
@@ -1897,8 +2108,12 @@ avtExtrudeStackedFilter::ExtrudeToUnstructuredGrid(vtkPointSet *in_ds,
             // For a stacked extrusion two vars are created the scalar
             // value and the index of the vairable. The polyline cells
             // were done above as they were broken into mulitple cells.
-            if( num_stacked_extrusions && c != VTK_POLY_LINE)
+            if( num_stacked_extrusions &&
+                c != VTK_POLY_VERTEX &&
+                c != VTK_POLY_LINE && c != VTK_TRIANGLE_STRIP)
             {
+              baseIndex += incr;
+
               if( scalarMin > scalarAve )
                 scalarMin = scalarAve;
 

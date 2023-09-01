@@ -71,7 +71,7 @@ class avtExtrudeStackedFilter : public avtPluginDataTreeIterator
     vtkDataSet          *ExtrudeToUnstructuredGrid(vtkPointSet *in_ds);
 
     vtkDataSet          *ExtrudeToUnstructuredGrid(vtkRectilinearGrid  *in_ds,
-						   vtkUnstructuredGrid *out_ds);
+                                                   vtkUnstructuredGrid *out_ds);
     vtkDataSet          *ExtrudeToUnstructuredGrid(vtkPointSet         *in_ds,
                                                    vtkUnstructuredGrid *out_ds);
 
