@@ -899,7 +899,7 @@ QvisColorTableWindow::UpdateEditor()
 
 
 // ****************************************************************************
-// Method: QvisColorTableWindow::UpdateTags
+// Method: QvisColorTableWindow::UpdateTagTable
 //
 // Purpose:
 //   Updates the global tag list to reflect current available tags. TODO
@@ -939,7 +939,7 @@ QvisColorTableWindow::UpdateEditor()
 // ****************************************************************************
 
 void
-QvisColorTableWindow::UpdateTags()
+QvisColorTableWindow::UpdateTagTable()
 {
     // 1. Get names of tags to add.
     std::vector<std::string> tagsToAdd = colorAtts->GetNewTagNames();
@@ -1048,7 +1048,7 @@ QvisColorTableWindow::UpdateNames()
     // 
     // Populate tag list
     // 
-    UpdateTags();
+    UpdateTagTable();
 
     // 
     // Populate Color Table Name List
@@ -1117,19 +1117,6 @@ QvisColorTableWindow::UpdateNames()
 
     // Set the enabled state of the delete button.
     deleteButton->setEnabled(colorAtts->GetNumColorTables() > 1);
-
-    // // TODO this block will disappear in the next PR
-    // static bool run_before = false;
-    // if (!run_before)
-    // {
-    //     // This only needs to happen the very first time for loading options.
-    //     // If visit isn't opened with saved config and guiconfig files, then
-    //     // this is redundant, but doesn't hurt. If it happens more than once
-    //     // then VisIt will crash.
-    //     run_before = true;
-    //     ctObserver.SetUpdate(true);
-    //     Apply(true);
-    // }
 }
 
 // ****************************************************************************

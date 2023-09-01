@@ -163,7 +163,7 @@ protected:
     void UpdateEditor();
     void UpdateColorControlPoints();
     void UpdateDiscreteSettings();
-    void UpdateTags();
+    void UpdateTagTable();
     void UpdateNames();
     void Apply(bool ignore = false);
     void GetCurrentValues(int which_widget);
