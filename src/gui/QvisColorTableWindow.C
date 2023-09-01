@@ -1118,18 +1118,18 @@ QvisColorTableWindow::UpdateNames()
     // Set the enabled state of the delete button.
     deleteButton->setEnabled(colorAtts->GetNumColorTables() > 1);
 
-    // TODO this block will disappear in the next PR
-    static bool run_before = false;
-    if (!run_before)
-    {
-        // This only needs to happen the very first time for loading options.
-        // If visit isn't opened with saved config and guiconfig files, then
-        // this is redundant, but doesn't hurt. If it happens more than once
-        // then VisIt will crash.
-        run_before = true;
-        ctObserver.SetUpdate(true);
-        Apply(true);
-    }
+    // // TODO this block will disappear in the next PR
+    // static bool run_before = false;
+    // if (!run_before)
+    // {
+    //     // This only needs to happen the very first time for loading options.
+    //     // If visit isn't opened with saved config and guiconfig files, then
+    //     // this is redundant, but doesn't hurt. If it happens more than once
+    //     // then VisIt will crash.
+    //     run_before = true;
+    //     ctObserver.SetUpdate(true);
+    //     Apply(true);
+    // }
 }
 
 // ****************************************************************************

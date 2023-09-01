@@ -35,7 +35,17 @@
     </Field>
     <Field name="deferredTagChangesCTName" label="deferredTagChangesCTName" type="stringVector" internal="true">
     </Field>
-    <Function name="GetColorTableIndex" user="true" member="true">
+    <Function name="CreateNode" user="false" member="true">
+    </Function>
+    <Function name="SetFromNode" user="false" member="true">
+    </Function>
+    <Function name="SetColorTableNames" user="false" member="true">
+    </Function>
+    <Function name="SetColorTableActiveFlags" user="false" member="true">
+    </Function>
+    <Function name="SetColorTableActiveFlag" user="true" member="true">
+    </Function>
+    <Function name="GetColorTableActiveFlag" user="true" member="true">
     </Function>
     <Function name="GetColorControlPoints1" user="true" member="true">
     </Function>
@@ -43,61 +53,9 @@
     </Function>
     <Function name="GetDefaultColorControlPoints" user="true" member="true">
     </Function>
-    <Function name="AddColorTable" user="true" member="true">
-    </Function>
-    <Function name="RemoveColorTable1" user="true" member="true">
-    </Function>
-    <Function name="RemoveColorTable2" user="true" member="true">
-    </Function>
-    <Function name="SelectColorTablesList" user="true" member="true">
-    </Function>
-    <Function name="SetColorTableNames" user="false" member="true">
-    </Function>
-    <Function name="SetColorTableActiveFlags" user="false" member="true">
-    </Function>
-    <Function name="CreateNode" user="false" member="true">
-    </Function>
-    <Function name="SetFromNode" user="false" member="true">
-    </Function>
-    <Function name="SetColorTableActiveFlag" user="true" member="true">
-    </Function>
-    <Function name="GetColorTableActiveFlag" user="true" member="true">
-    </Function>
-    <Function name="MergeTagChanges" user="true" member="true">
-    </Function>
-    <Function name="addTagToColorTable" user="true" member="true">
-    </Function>
-    <Function name="removeTagFromColorTable" user="true" member="true">
-    </Function>
     <Function name="AllTagsSelected" user="true" member="true">
     </Function>
     <Function name="EnableDisableAllTags" user="true" member="true">
-    </Function>
-    <Function name="GetIndexOfTag" user="true" member="true">
-    </Function>
-    <Function name="CreateTagListEntry" user="true" member="true">
-    </Function>
-    <Function name="RemoveTagListEntry" user="true" member="true">
-    </Function>
-    <Function name="SelectTagList" user="true" member="true">
-    </Function>
-    <Function name="CreateTagChangesEntry" user="true" member="true">
-    </Function>
-    <Function name="RemoveTagChangesEntry" user="true" member="true">
-    </Function>
-    <Function name="CreateDeferredTagChangesEntry" user="true" member="true">
-    </Function>
-    <Function name="RemoveDeferredTagChangesEntry1" user="true" member="true">
-    </Function>
-    <Function name="RemoveDeferredTagChangesEntry2" user="true" member="true">
-    </Function>
-    <Function name="GetIndexOfDeferredTagChangesEntry" user="true" member="true">
-    </Function>
-    <Function name="ApplyDeferredTagChanges" user="true" member="true">
-    </Function>
-    <Function name="ApplyTagChange" user="true" member="true">
-    </Function>
-    <Function name="SelectTagChanges" user="true" member="true">
     </Function>
     <Function name="SetTagActive1" user="true" member="true">
     </Function>
@@ -121,15 +79,65 @@
     </Function>
     <Function name="GetTagTableItemFlag" user="true" member="true">
     </Function>
+    <Function name="AddColorTable" user="true" member="true">
+    </Function>
+    <Function name="RemoveColorTable1" user="true" member="true">
+    </Function>
+    <Function name="RemoveColorTable2" user="true" member="true">
+    </Function>
+    <Function name="CreateTagListEntry" user="true" member="true">
+    </Function>
+    <Function name="RemoveTagListEntry" user="true" member="true">
+    </Function>
+    <Function name="CreateTagChangesEntry" user="true" member="true">
+    </Function>
+    <Function name="RemoveTagChangesEntry" user="true" member="true">
+    </Function>
+    <Function name="CreateDeferredTagChangesEntry" user="true" member="true">
+    </Function>
+    <Function name="RemoveDeferredTagChangesEntry1" user="true" member="true">
+    </Function>
+    <Function name="RemoveDeferredTagChangesEntry2" user="true" member="true">
+    </Function>
+    <Function name="ApplyTagChange" user="true" member="true">
+    </Function>
+    <Function name="ApplyDeferredTagChanges" user="true" member="true">
+    </Function>
+    <Function name="MergeTagChanges" user="true" member="true">
+    </Function>
+    <Function name="addTagToColorTable" user="true" member="true">
+    </Function>
+    <Function name="removeTagFromColorTable" user="true" member="true">
+    </Function>
+    <Function name="SelectColorTablesList" user="true" member="true">
+    </Function>
+    <Function name="SelectTagList" user="true" member="true">
+    </Function>
+    <Function name="SelectTagChanges" user="true" member="true">
+    </Function>
+    <Function name="SelectDeferredTagChanges" user="true" member="true">
+    </Function>
+    <Function name="GetColorTableIndex" user="true" member="true">
+    </Function>
+    <Function name="GetIndexOfTag" user="true" member="true">
+    </Function>
+    <Function name="GetIndexOfTagChangesEntry" user="true" member="true">
+    </Function>
+    <Function name="GetIndexOfDeferredTagChangesEntry" user="true" member="true">
+    </Function>
     <Function name="CheckTagInTagList" user="true" member="true">
     </Function>
-    <Function name="RemoveUnusedTagsFromTagTable" user="true" member="true">
+    <Function name="CheckTagChangesEntryInTagChanges" user="true" member="true">
+    </Function>
+    <Function name="CheckTagChangesEntryInDeferredTagChanges" user="true" member="true">
     </Function>
     <Function name="GetNewTagNames" user="true" member="true">
     </Function>
     <Function name="FilterTableByTag" user="true" member="true">
     </Function>
     <Function name="FilterTablesByTag" user="true" member="true">
+    </Function>
+    <Function name="RemoveUnusedTagsFromTagTable" user="true" member="true">
     </Function>
     <Function name="PrintTagList" user="true" member="true">
     </Function>
