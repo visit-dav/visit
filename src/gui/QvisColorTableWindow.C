@@ -785,6 +785,8 @@ QvisColorTableWindow::UpdateWindow(bool doAll)
         case ColorTableAttributes::ID_colorTableNames:
             // fall thru
         case ColorTableAttributes::ID_tagListNames:
+            // fall thru
+        case ColorTableAttributes::ID_tagsMatchAny:
             updateNames = true;
             break;
         case ColorTableAttributes::ID_colorTables:
@@ -2389,9 +2391,6 @@ void
 QvisColorTableWindow::tagTableItemSelected(QTreeWidgetItem *item, int column)
 {
     colorAtts->SetTagActive(item->text(1).toStdString(), item->checkState(0) == Qt::Checked);
-    // TODO investigate this pattern - is it redundant?
-    UpdateNames();
-    ctObserver.SetUpdate(true);
     Apply(true);
 }
 
@@ -3031,8 +3030,6 @@ QvisColorTableWindow::tagsSelectAll()
             tagTableItemsEntry.second->setCheckState(0, Qt::Checked);
     }
     tagTable->blockSignals(false);
-    UpdateNames();
-    ctObserver.SetUpdate(true);
     Apply(true);
 }
 
@@ -3054,13 +3051,10 @@ QvisColorTableWindow::tagsSelectAll()
 void
 QvisColorTableWindow::tagCombiningChanged(int index)
 {
-    bool old_val = colorAtts->GetTagsMatchAny();
-    colorAtts->SetTagsMatchAny(index == 0);
-    // has the tag combining behavior been changed?
-    if (old_val != colorAtts->GetTagsMatchAny())
+    const bool new_behavior = index == 0;
+    if (new_behavior != colorAtts->GetTagsMatchAny())
     {
-        UpdateNames();
-        ctObserver.SetUpdate(true);
+        colorAtts->SetTagsMatchAny(new_behavior);
         Apply(true);
     }
 }
