@@ -2455,7 +2455,6 @@ ColorTableAttributes::RemoveDeferredTagChangesEntry(const std::string tagName,
                                                     const int addOrRemove,
                                                     const std::string ctName)
 {
-    std::cout << "I am being called" << std::endl;
     RemoveDeferredTagChangesEntry(GetIndexOfDeferredTagChangesEntry(tagName, addOrRemove, ctName));
 }
 
