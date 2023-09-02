@@ -2245,7 +2245,7 @@ function build_vtk
     vopts="${vopts} -DCMAKE_MODULE_LINKER_FLAGS:STRING=${lf}"
     vopts="${vopts} -DCMAKE_SHARED_LINKER_FLAGS:STRING=${lf}"
     if [[ "$DO_VTK9" == "yes" ]] ; then
-        vopts="${vopts} -DVTK_BUILD_TESTING:BOOL=false"
+        vopts="${vopts} -DVTK_BUILD_TESTING:STRING=OFF"
         vopts="${vopts} -DVTK_BUILD_DOCUMENTATION:BOOL=false"
         # setting this to true causes errors when building debug versions of
         # visit, so set it to false

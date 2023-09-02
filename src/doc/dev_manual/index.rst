@@ -28,6 +28,8 @@ VisIt_ Developer Manual
     LaunchProcess
     UpdatingPlugins
     DebuggingTips
+    CreatingABuildVisItModule
+    AddingFindModule
 
 .. Indices and tables
 .. ==================
