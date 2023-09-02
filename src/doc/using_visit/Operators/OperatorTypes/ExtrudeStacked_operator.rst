@@ -46,17 +46,16 @@ fields.
    ExtrudeStacked operator window
 
 The most useful feature of the ExtrudeStacked operator is its ability
-to extrude plots using multiple arbitrary scalar variables. By
-default, the ExtrudeStacked operator uses the plotted variable in
-order to extrude the plot's mesh. This only works when the plotted
-variable is a scalar variable. When you apply the ExtrudeStacked
-operator to plots that do not accept scalar variables, the
-ExtrudeStacked operator will fail unless you choose a specific scalar
-variable using the **Extrude by Variable** variable menu in the
-**ExtrudeStacked attributes window**. (see: :numref:`Figure %s
-<extrudeStacked>`).
+to extrude using multiple arbitrary scalar variables. By default,
+the ExtrudeStacked operator uses the plotted variable to extrude the
+plot's mesh. This only works when the plotted variable is a scalar
+variable. When you apply the ExtrudeStacked operator to plots that do
+not accept scalar variables, the ExtrudeStacked operator will fail
+unless you choose a specific scalar variable using the **Extrude by
+Variable** variable menu in the **ExtrudeStacked attributes window**.
+(see: :numref:`Figure %s <extrudeStacked>`).
 
-.. _extrudewStacked:
+.. _extrudeStacked:
 
 .. figure:: images/extrudeStacked.png
 
