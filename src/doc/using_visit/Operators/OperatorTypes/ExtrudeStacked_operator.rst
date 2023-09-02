@@ -1,7 +1,7 @@
 .. _ExtrudeStacked operator:
 
 ExtrudeStacked operator
-~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~
 
 The ExtrudeStacked operator uses a scalar field on a 2D mesh to
 extrude each node in the input mesh, resulting in a 3D mesh. The The
@@ -20,7 +20,7 @@ plot of scalar variable A is extrudes by scalar variable B (see:
    by the cell number.
 
 Using the ExtrudeStacked operator
-""""""""""""""""""""""""""
+"""""""""""""""""""""""""""""""""
 
 The ExtrudeStacked operator can be used to create 3D height field
 plots by applying operator to a plot that accepts scalar values. The
@@ -65,7 +65,7 @@ variable using the **Extrude by Variable** variable menu in the
    right image is color based on the variable index.
 
 Changing extrusion scaling
-"""""""""""""""""""""""""
+""""""""""""""""""""""""""
 
 The ExtrudeStacked operator uses a scalar variable's data values as
 the Z component when converting a mesh's 2D coordinates into 3D
