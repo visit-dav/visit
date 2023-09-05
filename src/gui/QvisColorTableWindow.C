@@ -726,6 +726,9 @@ QvisColorTableWindow::SetFromNode(DataNode *parentNode, const int *borders)
 // 
 //   Justin Privitera, Mon Aug 28 11:22:47 PDT 2023
 //   Added a case for when the tag list is selected.
+// 
+//   Justin Privitera, Tue Sep  5 12:49:42 PDT 2023
+//   Changing tags match all or any now triggers updateNames.
 // ****************************************************************************
 
 void
@@ -904,7 +907,7 @@ QvisColorTableWindow::UpdateEditor()
 // Method: QvisColorTableWindow::UpdateTagTable
 //
 // Purpose:
-//   Updates the global tag list to reflect current available tags. TODO
+//   Updates the tag table to reflect the current state of the tag list.
 //
 // Programmer: Justin Privitera
 // Creation:   Tue Jun  7 12:36:55 PDT 2022
@@ -937,6 +940,16 @@ QvisColorTableWindow::UpdateEditor()
 //    tag update process into a pipeline of discrete steps. I have removed the
 //    dependence on helper functions. We take advantage of the CTAtts functions
 //    for working with the tag list.
+// 
+//    Justin Privitera, Tue Sep  5 12:49:42 PDT 2023
+//    Changed the name form UpdateTags to UpdateTagTable since this function 
+//    no longer updates tags and only updates the table.
+//    Removed the second step, which was adding tags to the tag list, since
+//    this now happens in the CTAtts.
+//    Made the adding tags to tag table step (old step 3, now step 2) 
+//    unconditional since we can guarantee that all tag names that arrive there
+//    do not have a tag table entry.
+//    Added a const to the last step.
 //
 // ****************************************************************************
 
@@ -1037,6 +1050,10 @@ QvisColorTableWindow::UpdateTagTable()
 // 
 //   Justin Privitera, Mon Aug 28 11:22:47 PDT 2023
 //   Moved the tag filtering to the CTAtts, called it here. Added comments.
+// 
+//   Justin Privitera, Tue Sep  5 12:49:42 PDT 2023
+//   Removed failsafe logic at the end of the function for reading 
+//   config/session files as it is no longer necessary.
 // ****************************************************************************
 
 void
@@ -2165,6 +2182,10 @@ QvisColorTableWindow::equalSpacingToggled(bool)
 // 
 //   Justin Privitera, Mon Aug 28 11:22:47 PDT 2023
 //   Use the CTAtts functions to update the tag reference count.
+// 
+//    Justin Privitera, Tue Sep  5 12:49:42 PDT 2023
+//    Moved tag numrefs increment on addition to CTAtts.
+//    Removed obsolete SetTagChangesMade.
 //
 // ****************************************************************************
 
@@ -2256,6 +2277,9 @@ QvisColorTableWindow::addColorTable()
 // 
 //     Justin Privitera, Mon Aug 28 11:22:47 PDT 2023
 //     Use the new CTAtts functions to get at the tag list.
+// 
+//    Justin Privitera, Tue Sep  5 12:49:42 PDT 2023
+//    Moved tag numrefs decrement on removal to CTAtts.
 // 
 // ****************************************************************************
 
@@ -2384,6 +2408,9 @@ QvisColorTableWindow::highlightColorTable(QTreeWidgetItem *current,
 // 
 //    Justin Privitera, Mon Aug 28 11:22:47 PDT 2023
 //    Use the CTAtts function to update the tag list.
+// 
+//    Justin Privitera, Tue Sep  5 12:49:42 PDT 2023
+//    Removed redundant update names and buttons pattern.
 //
 // ****************************************************************************
 
@@ -3009,6 +3036,9 @@ QvisColorTableWindow::exportColorTable()
 // Modifications:
 //   Justin Privitera, Mon Aug 28 11:22:47 PDT 2023
 //   Use new CTAtts functions.
+// 
+//   Justin Privitera, Tue Sep  5 12:49:42 PDT 2023
+//   Removed redundant update names and buttons pattern.
 // ****************************************************************************
 void
 QvisColorTableWindow::tagsSelectAll()
@@ -3046,6 +3076,10 @@ QvisColorTableWindow::tagsSelectAll()
 //   Justin Privitera, Mon Aug 28 11:22:47 PDT 2023
 //   Simplified the logic a bit. Also update to reflect that tagsMatchAny lives
 //   in the CTAtts now.
+// 
+//   Justin Privitera, Tue Sep  5 12:49:42 PDT 2023
+//   Simplified this function and removed redundant update names and buttons 
+//   pattern.
 // ****************************************************************************
 
 void
