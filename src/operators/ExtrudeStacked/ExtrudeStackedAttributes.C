@@ -1000,7 +1000,7 @@ ExtrudeStackedAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) con
 // Modifications:
 //    Jeremy Meredith, Fri Feb  1 17:55:14 EST 2008
 //    Made it use float min/max for non-limiting extents values.
-//   
+//
 //    Jeremy Meredith, Mon Feb  4 16:07:37 EST 2008
 //    Remove the variable extents; they were unusued.
 //
@@ -1024,7 +1024,7 @@ ExtrudeStackedAttributes::InsertVariable(const std::string &variableName_)
     stringVector::iterator vvariableNamesIt;
     doubleVector::iterator extentMinIt;
     doubleVector::iterator extentMaxIt;
-    
+
     for (variableOrdinal = 0; variableOrdinal < curVariableCount; variableOrdinal++)
     {
         if (scalarVariableNames[variableOrdinal] == newVariableName) break;
@@ -1062,7 +1062,7 @@ ExtrudeStackedAttributes::InsertVariable(const std::string &variableName_)
     visualVariableNames.insert(vvariableNamesIt, newVariableName);
     extentMinima.insert(extentMinIt, saveExtentMin);
     extentMaxima.insert(extentMaxIt, saveExtentMax);
-    
+
     SelectAll();
 }
 
@@ -1079,13 +1079,13 @@ ExtrudeStackedAttributes::InsertVariable(const std::string &variableName_)
 // Modifications:
 //    Jeremy Meredith, Mon Feb  4 16:07:37 EST 2008
 //    Remove the variable extents; they were unusued.
-//   
+//
 //    Jeremy Meredith, Fri Feb 15 13:16:46 EST 2008
 //    Renamed orderedVariableNames to scalarVariableNames to distinguish these
 //    as names of actual scalars instead of just display names.  Added
 //    visualVariableNames.
 //
-//    Kathleen Bonnell, Wed Jun 4 07:54:16 PDT 2008 
+//    Kathleen Bonnell, Wed Jun 4 07:54:16 PDT 2008
 //    Removed unused variables leftSelectedVariableID, rightSelectedVariableID.
 //
 // ****************************************************************************
@@ -1112,7 +1112,7 @@ ExtrudeStackedAttributes::DeleteVariable(const std::string &variableName_,
         scalarVariableNames.erase(scalarVariableNames.begin() + variableOrdinal);
         extentMinima.erase(extentMinima.begin() + variableOrdinal);
         extentMaxima.erase(extentMaxima.begin() + variableOrdinal);
-        
+
         SelectAll();
     }
 }
@@ -1135,7 +1135,7 @@ ExtrudeStackedAttributes::AttributesAreConsistent() const
     size_t variableNamesSize = scalarVariableNames.size();
     size_t variableNum, variable2Num;
     std::string variableName;
-    
+
     if (variableNamesSize == 0)
     {
         if (extentMinima.size() != extentMaxima.size())
@@ -1143,13 +1143,13 @@ ExtrudeStackedAttributes::AttributesAreConsistent() const
 
         return true;
     }
-    
+
     if ((extentMinima.size() != variableNamesSize) ||
         (extentMaxima.size() != variableNamesSize))
     {
         return false;
     }
-    
+
     for (variableNum = 0; variableNum < variableNamesSize - 1; variableNum++)
     {
         variableName = scalarVariableNames[variableNum];
@@ -1160,7 +1160,7 @@ ExtrudeStackedAttributes::AttributesAreConsistent() const
                 return false;
         }
     }
-    
+
     return true;
 }
 
