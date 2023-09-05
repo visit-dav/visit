@@ -2415,11 +2415,14 @@ ColorTableAttributes::CreateTagChangesEntry(const std::string tagname,
                                             const int addOrRemove,
                                             const std::string ctName)
 {
-    tagChangesTag.push_back(tagname);
-    tagChangesType.push_back(addOrRemove);
-    tagChangesCTName.push_back(ctName);
+    if (! CheckTagChangesEntryInTagChanges(tagname, addOrRemove, ctName))
+    {
+        tagChangesTag.push_back(tagname);
+        tagChangesType.push_back(addOrRemove);
+        tagChangesCTName.push_back(ctName);
 
-    SelectTagChanges();
+        SelectTagChanges();
+    }
 }
 
 // ****************************************************************************
@@ -2463,6 +2466,56 @@ ColorTableAttributes::RemoveTagChangesEntry(const int index)
 }
 
 // ****************************************************************************
+// Method: ColorTableAttributes::GetIndexOfTagChangesEntry
+//
+// Purpose:
+//    Returns the index of a tag changes value, or -1 if the value
+//    is not present in the data structure.
+//
+// Programmer: Justin Privitera
+// Creation:   08/31/23
+//
+// Modifications:
+//
+// ****************************************************************************
+int
+ColorTableAttributes::GetIndexOfTagChangesEntry(const std::string tagName, 
+                                                const int addOrRemove,
+                                                const std::string ctName)
+{
+    for (size_t i = 0; i < tagChangesTag.size(); i ++)
+    {
+        if (tagChangesTag[i] == tagName &&
+            tagChangesType[i] == addOrRemove &&
+            tagChangesCTName[i] == ctName)
+        {
+            return i;
+        }
+    }
+    return -1;
+}
+
+// ****************************************************************************
+// Method: ColorTableAttributes::CheckTagChangesEntryInTagChanges
+//
+// Purpose:
+//    Returns true if the tag is in the tag list, and false otherwise.
+//
+// Programmer: Justin Privitera
+// Creation:   06/27/23
+//
+// Modifications:
+//
+// ****************************************************************************
+bool
+ColorTableAttributes::CheckTagChangesEntryInTagChanges(const std::string tagName, 
+                                                       const int addOrRemove,
+                                                       const std::string ctName)
+{
+    return GetIndexOfTagChangesEntry(tagName, addOrRemove, ctName) >= 0;
+}
+
+// ****************************************************************************
 // Method: ColorTableAttributes::CreateDeferredTagChangesEntry
 //
 // Purpose:
@@ -2480,9 +2533,14 @@ ColorTableAttributes::CreateDeferredTagChangesEntry(const std::string tagname,
                                                     const int addOrRemove,
                                                     const std::string ctName)
 {
-    deferredTagChangesTag.push_back(tagname);
-    deferredTagChangesType.push_back(addOrRemove);
-    deferredTagChangesCTName.push_back(ctName);
+    if (! CheckTagChangesEntryInDeferredTagChanges(tagname, addOrRemove, ctName))
+    {
+        deferredTagChangesTag.push_back(tagname);
+        deferredTagChangesType.push_back(addOrRemove);
+        deferredTagChangesCTName.push_back(ctName);
+
+        SelectDeferredTagChanges();
+    }
 }
 
 // ****************************************************************************
@@ -2520,6 +2578,8 @@ ColorTableAttributes::RemoveDeferredTagChangesEntry(const int index)
             deferredTagChangesType.erase(typeItr);
             deferredTagChangesCTName.erase(ctnameItr);
         }
+
+        SelectDeferredTagChanges();
     }
 }
 
@@ -2541,6 +2601,26 @@ ColorTableAttributes::RemoveDeferredTagChangesEntry(const std::string tagName,
                                                     const std::string ctName)
 {
     RemoveDeferredTagChangesEntry(GetIndexOfDeferredTagChangesEntry(tagName, addOrRemove, ctName));
+}
+
+// ****************************************************************************
+// Method: ColorTableAttributes::SelectDeferredTagChanges
+//
+// Purpose:
+//    Selects the pieces of the deferred tag changes list data structure.
+//
+// Programmer: Justin Privitera
+// Creation:   08/31/23
+//
+// Modifications:
+//
+// ****************************************************************************
+void
+ColorTableAttributes::SelectDeferredTagChanges()
+{
+    SelectDeferredTagChangesTag();
+    SelectDeferredTagChangesType();
+    SelectDeferredTagChangesCTName();
 }
 
 // ****************************************************************************
@@ -2571,6 +2651,26 @@ ColorTableAttributes::GetIndexOfDeferredTagChangesEntry(const std::string tagNam
         }
     }
     return -1;
+}
+
+// ****************************************************************************
+// Method: ColorTableAttributes::CheckTagChangesEntryInDeferredTagChanges
+//
+// Purpose:
+//    Returns true if the tag is in the tag list, and false otherwise.
+//
+// Programmer: Justin Privitera
+// Creation:   06/27/23
+//
+// Modifications:
+//
+// ****************************************************************************
+bool
+ColorTableAttributes::CheckTagChangesEntryInDeferredTagChanges(const std::string tagName, 
+                                                               const int addOrRemove,
+                                                               const std::string ctName)
+{
+    return GetIndexOfDeferredTagChangesEntry(tagName, addOrRemove, ctName) >= 0;
 }
 
 // ****************************************************************************

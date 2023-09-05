@@ -163,10 +163,14 @@ public:
     void SelectTagList();
     void CreateTagChangesEntry(const std::string tagname, const int addOrRemove, const std::string ctName);
     void RemoveTagChangesEntry(const int index);
+    int GetIndexOfTagChangesEntry(const std::string tagName, const int addOrRemove, const std::string ctName);
+    bool CheckTagChangesEntryInTagChanges(const std::string tagName, const int addOrRemove, const std::string ctName);
     void CreateDeferredTagChangesEntry(const std::string tagname, const int addOrRemove, const std::string ctName);
     void RemoveDeferredTagChangesEntry(const int index);
     void RemoveDeferredTagChangesEntry(const std::string tagName, const int addOrRemove, const std::string ctName);
+    void SelectDeferredTagChanges();
     int GetIndexOfDeferredTagChangesEntry(const std::string tagName, const int addOrRemove, const std::string ctName);
+    bool CheckTagChangesEntryInDeferredTagChanges(const std::string tagName, const int addOrRemove, const std::string ctName);
     void ApplyDeferredTagChanges(const std::string newCTName, ColorControlPointList *cpts);
     void ApplyTagChange(const std::string tagName, const int changeType, const std::string ctName, ColorControlPointList *ccpl);
     void SelectTagChanges();

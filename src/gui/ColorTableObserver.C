@@ -107,7 +107,7 @@ ColorTableObserver::Update(Subject *)
 
         int nNames = colorAtts->GetNumColorTables();
         const stringVector &ctnames = colorAtts->GetColorTableNames();
-        const intVector &ctactive = colorAtts->GetColorTableActiveFlags();        
+        const intVector &ctactive = colorAtts->GetColorTableActiveFlags();
         for (int i = 0; i < nNames; ++i)
         {
             if (ctactive[i])

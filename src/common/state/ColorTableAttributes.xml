@@ -85,13 +85,21 @@
     </Function>
     <Function name="RemoveTagChangesEntry" user="true" member="true">
     </Function>
+    <Function name="GetIndexOfTagChangesEntry" user="true" member="true">
+    </Function>
+    <Function name="CheckTagChangesEntryInTagChanges" user="true" member="true">
+    </Function>
     <Function name="CreateDeferredTagChangesEntry" user="true" member="true">
     </Function>
     <Function name="RemoveDeferredTagChangesEntry1" user="true" member="true">
     </Function>
     <Function name="RemoveDeferredTagChangesEntry2" user="true" member="true">
     </Function>
+    <Function name="SelectDeferredTagChanges" user="true" member="true">
+    </Function>
     <Function name="GetIndexOfDeferredTagChangesEntry" user="true" member="true">
+    </Function>
+    <Function name="CheckTagChangesEntryInDeferredTagChanges" user="true" member="true">
     </Function>
     <Function name="ApplyDeferredTagChanges" user="true" member="true">
     </Function>
