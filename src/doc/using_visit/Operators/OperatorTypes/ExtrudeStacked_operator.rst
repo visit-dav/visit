@@ -1,7 +1,7 @@
 .. _ExtrudeStacked operator:
 
 ExtrudeStacked operator
-~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~
 
 The ExtrudeStacked operator uses a scalar field on a 2D mesh to
 extrude each node in the input mesh, resulting in a 3D mesh. The The
@@ -20,7 +20,7 @@ plot of scalar variable A is extrudes by scalar variable B (see:
    by the cell number.
 
 Using the ExtrudeStacked operator
-""""""""""""""""""""""""""
+"""""""""""""""""""""""""""""""""
 
 The ExtrudeStacked operator can be used to create 3D height field
 plots by applying operator to a plot that accepts scalar values. The
@@ -46,17 +46,16 @@ fields.
    ExtrudeStacked operator window
 
 The most useful feature of the ExtrudeStacked operator is its ability
-to extrude plots using multiple arbitrary scalar variables. By
-default, the ExtrudeStacked operator uses the plotted variable in
-order to extrude the plot's mesh. This only works when the plotted
-variable is a scalar variable. When you apply the ExtrudeStacked
-operator to plots that do not accept scalar variables, the
-ExtrudeStacked operator will fail unless you choose a specific scalar
-variable using the **Extrude by Variable** variable menu in the
-**ExtrudeStacked attributes window**. (see: :numref:`Figure %s
-<extrudeStacked>`).
+to extrude using multiple arbitrary scalar variables. By default,
+the ExtrudeStacked operator uses the plotted variable to extrude the
+plot's mesh. This only works when the plotted variable is a scalar
+variable. When you apply the ExtrudeStacked operator to plots that do
+not accept scalar variables, the ExtrudeStacked operator will fail
+unless you choose a specific scalar variable using the **Extrude by
+Variable** variable menu in the **ExtrudeStacked attributes window**.
+(see: :numref:`Figure %s <extrudeStacked>`).
 
-.. _extrudewStacked:
+.. _extrudeStacked:
 
 .. figure:: images/extrudeStacked.png
 
@@ -65,7 +64,7 @@ variable using the **Extrude by Variable** variable menu in the
    right image is color based on the variable index.
 
 Changing extrusion scaling
-"""""""""""""""""""""""""
+""""""""""""""""""""""""""
 
 The ExtrudeStacked operator uses a scalar variable's data values as
 the Z component when converting a mesh's 2D coordinates into 3D

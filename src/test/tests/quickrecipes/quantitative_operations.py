@@ -181,11 +181,38 @@ def finding_the_min_and_max():
     pass
   vqr_cleanup()
  
+def csv_query_over_time():
+
+  try:
+    # csv query over time {
+    OpenDatabase("~juanita/silo/stuff/wave.visit")
+    AddPlot("Pseudocolor", "pressure")
+    DrawPlots()
+
+    n_time_steps = TimeSliderGetNStates()
+    f = open('points.txt', 'w', encoding='utf-8')
+    f.write('time, x, y, z, u, v, w\n')
+    for time_step in range(0, n_time_steps):
+        TimeSliderSetState(time_step)
+        pick = PickByNode(domain=0, element=3726, vars=["u", "v", "w"])
+        Query("Time")
+        time = GetQueryOutputValue()
+        f.write('%g, %g, %g, %g, %g, %g, %g\n' % (time, pick['point'][0], pick['point'][1], pick['point'][2], pick['u'], pick['v'], pick['w']))
+    f.close()
+    # csv query over time }
+    TestValueEQ('csv query over time error message',GetLastError(),'')
+    TestPOA('csv query over time exceptions')
+  except Exception as inst:
+    TestFOA('csv query over time exception "%s"'%str(inst), LINE())
+    pass
+  vqr_cleanup()
+
 defining_expressions()
 pick()
 lineout1()
 lineout2()
 query()
 finding_the_min_and_max()
+csv_query_over_time()
 
 Exit()
