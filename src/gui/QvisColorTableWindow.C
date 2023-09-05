@@ -785,6 +785,8 @@ QvisColorTableWindow::UpdateWindow(bool doAll)
         case ColorTableAttributes::ID_colorTableNames:
             // fall thru
         case ColorTableAttributes::ID_tagListNames:
+            // fall thru
+        case ColorTableAttributes::ID_tagsMatchAny:
             updateNames = true;
             break;
         case ColorTableAttributes::ID_colorTables:
@@ -899,7 +901,7 @@ QvisColorTableWindow::UpdateEditor()
 
 
 // ****************************************************************************
-// Method: QvisColorTableWindow::UpdateTags
+// Method: QvisColorTableWindow::UpdateTagTable
 //
 // Purpose:
 //   Updates the global tag list to reflect current available tags.
@@ -939,7 +941,7 @@ QvisColorTableWindow::UpdateEditor()
 // ****************************************************************************
 
 void
-QvisColorTableWindow::UpdateTags()
+QvisColorTableWindow::UpdateTagTable()
 {
     // 1. Get names of tags to add.
     std::vector<std::string> tagsToAdd = colorAtts->GetNewTagNames();
@@ -1048,7 +1050,7 @@ QvisColorTableWindow::UpdateNames()
     // 
     // Populate tag list
     // 
-    UpdateTags();
+    UpdateTagTable();
 
     // 
     // Populate Color Table Name List
@@ -1117,22 +1119,6 @@ QvisColorTableWindow::UpdateNames()
 
     // Set the enabled state of the delete button.
     deleteButton->setEnabled(colorAtts->GetNumColorTables() > 1);
-
-    // TODO this block will disappear in the next PR
-    // static bool run_before = false;
-    // if (!run_before)
-    // {
-    //     // This only needs to happen the very first time for loading options.
-    //     // If visit isn't opened with saved config and guiconfig files, then
-    //     // this is redundant, but doesn't hurt. If it happens more than once
-    //     // then VisIt will crash.
-    //     run_before = true;
-    //     colorAtts->SetChangesMade(true);
-    //     ctObserver.SetUpdate(true);
-    //     std::cout << "test3" << std::endl;
-    //     Apply(true);
-    //     std::cout << "test4" << std::endl;
-    // }
 }
 
 // ****************************************************************************
@@ -2407,9 +2393,6 @@ void
 QvisColorTableWindow::tagTableItemSelected(QTreeWidgetItem *item, int column)
 {
     colorAtts->SetTagActive(item->text(1).toStdString(), item->checkState(0) == Qt::Checked);
-    UpdateNames();
-    colorAtts->SetChangesMade(true);
-    ctObserver.SetUpdate(true);
     Apply(true);
 }
 
@@ -3049,9 +3032,6 @@ QvisColorTableWindow::tagsSelectAll()
             tagTableItemsEntry.second->setCheckState(0, Qt::Checked);
     }
     tagTable->blockSignals(false);
-    UpdateNames();
-    colorAtts->SetChangesMade(true);
-    ctObserver.SetUpdate(true);
     Apply(true);
 }
 
@@ -3073,15 +3053,11 @@ QvisColorTableWindow::tagsSelectAll()
 void
 QvisColorTableWindow::tagCombiningChanged(int index)
 {
-    // TODO simplify this function more
-    bool old_val = colorAtts->GetTagsMatchAny();
-    colorAtts->SetTagsMatchAny(index == 0);
+    const bool new_behavior = index == 0;
     // has the tag combining behavior been changed?
-    if (old_val != colorAtts->GetTagsMatchAny())
+    if (new_behavior != colorAtts->GetTagsMatchAny())
     {
-        UpdateNames();
-        colorAtts->SetChangesMade(true);
-        ctObserver.SetUpdate(true);
+        colorAtts->SetTagsMatchAny(new_behavior);
         Apply(true);
     }
 }
