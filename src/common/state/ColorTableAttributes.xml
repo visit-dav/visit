@@ -61,9 +61,27 @@
     </Function>
     <Function name="GetColorTableActiveFlag" user="true" member="true">
     </Function>
+    <Function name="MergeTagChanges" user="true" member="true">
+    </Function>
+    <Function name="addTagToColorTable" user="true" member="true">
+    </Function>
+    <Function name="removeTagFromColorTable" user="true" member="true">
+    </Function>
     <Function name="AllTagsSelected" user="true" member="true">
     </Function>
     <Function name="EnableDisableAllTags" user="true" member="true">
+    </Function>
+    <Function name="GetIndexOfTag" user="true" member="true">
+    </Function>
+    <Function name="CreateTagListEntry" user="true" member="true">
+    </Function>
+    <Function name="RemoveTagListEntry" user="true" member="true">
+    </Function>
+    <Function name="SelectTagList" user="true" member="true">
+    </Function>
+    <Function name="CreateTagChangesEntry" user="true" member="true">
+    </Function>
+    <Function name="RemoveTagChangesEntry" user="true" member="true">
     </Function>
     <Function name="SetTagActive1" user="true" member="true">
     </Function>
@@ -87,14 +105,6 @@
     </Function>
     <Function name="GetTagTableItemFlag" user="true" member="true">
     </Function>
-    <Function name="CreateTagListEntry" user="true" member="true">
-    </Function>
-    <Function name="RemoveTagListEntry" user="true" member="true">
-    </Function>
-    <Function name="CreateTagChangesEntry" user="true" member="true">
-    </Function>
-    <Function name="RemoveTagChangesEntry" user="true" member="true">
-    </Function>
     <Function name="CreateDeferredTagChangesEntry" user="true" member="true">
     </Function>
     <Function name="RemoveDeferredTagChangesEntry1" user="true" member="true">
@@ -105,21 +115,11 @@
     </Function>
     <Function name="ApplyDeferredTagChanges" user="true" member="true">
     </Function>
-    <Function name="MergeTagChanges" user="true" member="true">
-    </Function>
-    <Function name="addTagToColorTable" user="true" member="true">
-    </Function>
-    <Function name="removeTagFromColorTable" user="true" member="true">
-    </Function>
     <Function name="SelectColorTablesList" user="true" member="true">
-    </Function>
-    <Function name="SelectTagList" user="true" member="true">
     </Function>
     <Function name="SelectTagChanges" user="true" member="true">
     </Function>
     <Function name="SelectDeferredTagChanges" user="true" member="true">
-    </Function>
-    <Function name="GetIndexOfTag" user="true" member="true">
     </Function>
     <Function name="GetIndexOfTagChangesEntry" user="true" member="true">
     </Function>
