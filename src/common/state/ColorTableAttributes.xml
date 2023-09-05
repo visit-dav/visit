@@ -43,6 +43,24 @@
     </Function>
     <Function name="GetDefaultColorControlPoints" user="true" member="true">
     </Function>
+    <Function name="AddColorTable" user="true" member="true">
+    </Function>
+    <Function name="RemoveColorTable1" user="true" member="true">
+    </Function>
+    <Function name="RemoveColorTable2" user="true" member="true">
+    </Function>
+    <Function name="SetColorTableNames" user="false" member="true">
+    </Function>
+    <Function name="SetColorTableActiveFlags" user="false" member="true">
+    </Function>
+    <Function name="CreateNode" user="false" member="true">
+    </Function>
+    <Function name="SetFromNode" user="false" member="true">
+    </Function>
+    <Function name="SetColorTableActiveFlag" user="true" member="true">
+    </Function>
+    <Function name="GetColorTableActiveFlag" user="true" member="true">
+    </Function>
     <Function name="AllTagsSelected" user="true" member="true">
     </Function>
     <Function name="EnableDisableAllTags" user="true" member="true">
@@ -52,18 +70,6 @@
     <Function name="SetTagActive2" user="true" member="true">
     </Function>
     <Function name="GetTagActive" user="true" member="true">
-    </Function>
-    <Function name="CreateNode" user="false" member="true">
-    </Function>
-    <Function name="SetFromNode" user="false" member="true">
-    </Function>
-    <Function name="SetColorTableNames" user="false" member="true">
-    </Function>
-    <Function name="SetColorTableActiveFlags" user="false" member="true">
-    </Function>
-    <Function name="SetColorTableActiveFlag" user="true" member="true">
-    </Function>
-    <Function name="GetColorTableActiveFlag" user="true" member="true">
     </Function>
     <Function name="IncrementTagNumRefs1" user="true" member="true">
     </Function>
@@ -80,12 +86,6 @@
     <Function name="SetTagTableItemFlag2" user="true" member="true">
     </Function>
     <Function name="GetTagTableItemFlag" user="true" member="true">
-    </Function>
-    <Function name="AddColorTable" user="true" member="true">
-    </Function>
-    <Function name="RemoveColorTable1" user="true" member="true">
-    </Function>
-    <Function name="RemoveColorTable2" user="true" member="true">
     </Function>
     <Function name="CreateTagListEntry" user="true" member="true">
     </Function>
