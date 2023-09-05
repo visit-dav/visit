@@ -90,6 +90,9 @@ class avtExtrudeStackedFilter : public avtPluginDataTreeIterator
     unsigned int num_stacked_extrusions {0};
     unsigned int stacked_index {0};
 
+    doubleVector variableMinimums;
+    doubleVector variableMaximums;
+
     // Names for the variables created for stacked extrusions
     std::string stackedVarNames[2] {"StackedIndex", "StackedValue"};
 };

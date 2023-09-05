@@ -373,12 +373,16 @@ avtExtrudeStackedFilter::ExecuteData(avtDataRepresentation *in_dr)
         if( atts.GetScalarVariableNames().size() == 0 )
         {
           variableNames.push_back( defaultVariable );
+          variableMinimums.push_back( scalarMax );
+          variableMaximums.push_back( scalarMin );
           variableCount = 1;
         }
         // Secondary scalar value(s) have been specified.
         else
         {
-          variableNames = atts.GetScalarVariableNames();
+          variableNames    = atts.GetScalarVariableNames();
+          variableMinimums = atts.GetExtentMinima();
+          variableMaximums = atts.GetExtentMaxima();
           variableCount = variableNames.size();
         }
 
@@ -814,8 +818,8 @@ avtExtrudeStackedFilter::CopyVariables(vtkDataSet *in_ds,
 // Method: avtExtrudeStackedFilter::CreateExtrudedPoints
 //
 // Purpose:
-//   Create a new vtkPoints object that contains extruded versions of the
-//   input points.
+//   Create a new vtkPoints object that contains a fixed length
+//   extruded version of the input points.
 //
 // Arguments:
 //   oldPoints : The old points that we're extruding.
@@ -834,12 +838,12 @@ avtExtrudeStackedFilter::CopyVariables(vtkDataSet *in_ds,
 //
 // ****************************************************************************
 
-// Helper function to extrude and insert a point into a VTK point list
+// Helper function to extrude a fixed length and insert a point into a
+// VTK point list.
 #define extrude_points(type)                         \
 {                                                    \
     type *pts = (type *) points->GetVoidPointer(0);  \
                                                      \
-    double scalar = 1.0;                             \
     double length = atts.GetLength();                \
     avtVector axis = atts.GetAxis();                 \
     axis.normalize();                                \
@@ -852,23 +856,12 @@ avtExtrudeStackedFilter::CopyVariables(vtkDataSet *in_ds,
                                                      \
         for(int n=0; n<nNodes; ++n)                  \
         {                                            \
-            if( nodeData )                           \
-            {                                        \
-              scalar = varArray->GetTuple1(n);       \
-                                                     \
-              if( scalarMin > scalar )               \
-                scalarMin = scalar;                  \
-                                                     \
-              if( scalarMax < scalar )               \
-                scalarMax = scalar;                  \
-            }                                        \
-                                                     \
             double pt[3];                            \
             inPoints->GetPoint(n, pt);               \
                                                      \
-            *pts++ = pt[0] + offset.x * scalar;      \
-            *pts++ = pt[1] + offset.y * scalar;      \
-            *pts++ = pt[2] + offset.z * scalar;      \
+            *pts++ = pt[0] + offset.x;               \
+            *pts++ = pt[1] + offset.y;               \
+            *pts++ = pt[2] + offset.z;               \
         }                                            \
     }                                                \
 }
@@ -898,6 +891,8 @@ avtExtrudeStackedFilter::CreateExtrudePoints(vtkPoints *inPoints, int nSteps)
 //
 // Purpose:
 //   Extrude an XY planar rectilinear grid into a new rectilinear grid.
+//
+//   This extrusion is for a fixed length extrusion only.
 //
 // Arguments:
 //   in_ds : The input dataset.
@@ -987,6 +982,8 @@ avtExtrudeStackedFilter::ExtrudeToRectilinearGrid(vtkDataSet *in_ds) const
 // Purpose:
 //   Extrude a rectilinear or structured data into a structured grid.
 //
+//   This extrusion is for a fixed length extrusion only.
+//
 // Arguments:
 //   in_ds : The input dataset.
 //
@@ -1003,12 +1000,12 @@ avtExtrudeStackedFilter::ExtrudeToRectilinearGrid(vtkDataSet *in_ds) const
 //
 // ****************************************************************************
 
-// Helper function to extrude and insert a point into a VTK point list
+// Helper function to extrude a fixed length and insert a point into a
+// VTK point list
 #define extrude_coords(type)                                   \
 {                                                              \
     type *pts = (type *) points->GetVoidPointer(0);            \
                                                                \
-    double scalar = 1.0;                                       \
     double length = atts.GetLength();                          \
     avtVector axis = atts.GetAxis();                           \
     axis.normalize();                                          \
@@ -1029,20 +1026,9 @@ avtExtrudeStackedFilter::ExtrudeToRectilinearGrid(vtkDataSet *in_ds) const
         {                                                      \
           double x = rgrid->GetXCoordinates()->GetTuple1(i);   \
                                                                \
-          if( nodeData )                                       \
-          {                                                    \
-            scalar = varArray->GetTuple1(cc++);                \
-                                                               \
-            if( scalarMin > scalar )                           \
-              scalarMin = scalar;                              \
-                                                               \
-            if( scalarMax < scalar )                           \
-              scalarMax = scalar;                              \
-          }                                                    \
-                                                               \
-          *pts++ = x + offset.x * scalar;                      \
-          *pts++ = y + offset.y * scalar;                      \
-          *pts++ = z + offset.z * scalar;                      \
+          *pts++ = x + offset.x;                               \
+          *pts++ = y + offset.y;                               \
+          *pts++ = z + offset.z;                               \
         }                                                      \
       }                                                        \
     }                                                          \
@@ -1070,16 +1056,6 @@ avtExtrudeStackedFilter::ExtrudeToStructuredGrid(vtkDataSet *in_ds)
         if(dims[1] == 1)
         {
             EXCEPTION1(ImproperUseException, "Extruding curves is not implemented.");
-        }
-
-        if( atts.GetByVariable() )
-        {
-          vtkIdType nNodes = dims[0] * dims[1];
-          vtkIdType nTuples = varArray->GetNumberOfTuples();
-
-          if( nNodes != nTuples )
-            EXCEPTION1(ImproperUseException,
-                       "The number of scalar values does match the number of points.");
         }
 
         // Get the original z coordinate.
@@ -1117,16 +1093,6 @@ avtExtrudeStackedFilter::ExtrudeToStructuredGrid(vtkDataSet *in_ds)
 
         dims[2] = atts.GetSteps()+1;
 
-        if( atts.GetByVariable() )
-        {
-          vtkIdType nNodes = sgrid->GetPoints()->GetNumberOfPoints();
-          vtkIdType nTuples = varArray->GetNumberOfTuples();
-
-          if( nNodes != nTuples )
-            EXCEPTION1(ImproperUseException,
-                       "The number of scalar values does match the number of points.");
-        }
-
         points = CreateExtrudePoints(sgrid->GetPoints(), dims[2]);
     }
     else
@@ -1152,7 +1118,7 @@ avtExtrudeStackedFilter::ExtrudeToStructuredGrid(vtkDataSet *in_ds)
 // Purpose:
 //   Extrude unstructured grids and polydata into a new unstructured grid.
 //
-//   This extrusion is for a single scalar extrusion only.
+//   This extrusion is for a fixed length extrusion only.
 //
 // Arguments:
 //   in_ds : The input dataset.
@@ -1397,7 +1363,7 @@ avtExtrudeStackedFilter::ExtrudeToUnstructuredGrid(vtkPointSet *in_ds)
 //
 // Purpose:
 //   Extrude a rectilinear grid into a new unstructured grid using
-//   a cell based scalar value.
+//   node or cell based scalar data value.
 //
 // Arguments:
 //   in_ds : The input dataset.
@@ -1440,14 +1406,17 @@ avtExtrudeStackedFilter::ExtrudeToUnstructuredGrid(vtkPointSet *in_ds)
   {                                                                \
     scalar = varArray->GetTuple1(list->GetId(id_in));              \
                                                                    \
-    if( num_stacked_extrusions == 0)                               \
-    {                                                              \
-      if( scalarMin > scalar )                                     \
-        scalarMin = scalar;                                        \
+    if( scalar < variableMinimums[stacked_index] )                 \
+      scalar = variableMinimums[stacked_index];                    \
                                                                    \
-      if( scalarMax < scalar )                                     \
-        scalarMax = scalar;                                        \
-    }                                                              \
+    if( scalar > variableMaximums[stacked_index] )                 \
+      scalar = variableMaximums[stacked_index];                    \
+                                                                   \
+    if( scalarMin > scalar )                                       \
+      scalarMin = scalar;                                          \
+                                                                   \
+    if( scalarMax < scalar )                                       \
+      scalarMax = scalar;                                          \
   }                                                                \
                                                                    \
   scalarAve += (scalar / 8.0);                                     \
@@ -1594,6 +1563,12 @@ avtExtrudeStackedFilter::ExtrudeToUnstructuredGrid(vtkRectilinearGrid *in_ds,
             {
               scalar = varArray->GetTuple1( cellId );
 
+              if( scalar < variableMinimums[stacked_index] )
+                scalar = variableMinimums[stacked_index];
+
+              if( scalar > variableMaximums[stacked_index] )
+                scalar = variableMaximums[stacked_index];
+
               if( scalarMin > scalar )
                 scalarMin = scalar;
 
@@ -1670,7 +1645,8 @@ avtExtrudeStackedFilter::ExtrudeToUnstructuredGrid(vtkRectilinearGrid *in_ds,
 // Method: avtExtrudeStackedFilter::ExtrudeToUnstructuredGrid
 //
 // Purpose:
-//   Extrude unstructured grids and polydata into a new unstructured grid.
+//   Extrude unstructured grids and polydata into a new unstructured
+//   grid using node or cell based scalar data value.
 //
 // Arguments:
 //   in_ds : The input dataset.
@@ -1713,14 +1689,17 @@ avtExtrudeStackedFilter::ExtrudeToUnstructuredGrid(vtkRectilinearGrid *in_ds,
   {                                                                \
     scalar = varArray->GetTuple1(list->GetId(id_in));              \
                                                                    \
-    if( num_stacked_extrusions == 0 )                              \
-    {                                                              \
-      if( scalarMin > scalar )                                     \
-        scalarMin = scalar;                                        \
+    if( scalar < variableMinimums[stacked_index] )                 \
+      scalar = variableMinimums[stacked_index];                    \
                                                                    \
-      if( scalarMax < scalar )                                     \
-        scalarMax = scalar;                                        \
-    }                                                              \
+    if( scalar > variableMaximums[stacked_index] )                 \
+      scalar = variableMaximums[stacked_index];                    \
+                                                                   \
+    if( scalarMin > scalar )                                       \
+      scalarMin = scalar;                                          \
+                                                                   \
+    if( scalarMax < scalar )                                       \
+      scalarMax = scalar;                                          \
   }                                                                \
                                                                    \
   scalarAve += (scalar / double(incr));                            \
@@ -1846,6 +1825,12 @@ avtExtrudeStackedFilter::ExtrudeToUnstructuredGrid(vtkPointSet *in_ds,
             if( cellData )
             {
               scalar = varArray->GetTuple1(cellId);
+
+              if( scalar < variableMinimums[stacked_index] )
+                scalar = variableMinimums[stacked_index];
+
+              if( scalar > variableMaximums[stacked_index] )
+                scalar = variableMaximums[stacked_index];
 
               if( scalarMin > scalar )
                 scalarMin = scalar;
