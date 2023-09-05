@@ -83,6 +83,20 @@
     </Function>
     <Function name="RemoveTagChangesEntry" user="true" member="true">
     </Function>
+    <Function name="CreateDeferredTagChangesEntry" user="true" member="true">
+    </Function>
+    <Function name="RemoveDeferredTagChangesEntry1" user="true" member="true">
+    </Function>
+    <Function name="RemoveDeferredTagChangesEntry2" user="true" member="true">
+    </Function>
+    <Function name="GetIndexOfDeferredTagChangesEntry" user="true" member="true">
+    </Function>
+    <Function name="ApplyDeferredTagChanges" user="true" member="true">
+    </Function>
+    <Function name="ApplyTagChange" user="true" member="true">
+    </Function>
+    <Function name="SelectTagChanges" user="true" member="true">
+    </Function>
     <Function name="SetTagActive1" user="true" member="true">
     </Function>
     <Function name="SetTagActive2" user="true" member="true">
@@ -105,25 +119,11 @@
     </Function>
     <Function name="GetTagTableItemFlag" user="true" member="true">
     </Function>
-    <Function name="CreateDeferredTagChangesEntry" user="true" member="true">
-    </Function>
-    <Function name="RemoveDeferredTagChangesEntry1" user="true" member="true">
-    </Function>
-    <Function name="RemoveDeferredTagChangesEntry2" user="true" member="true">
-    </Function>
-    <Function name="ApplyTagChange" user="true" member="true">
-    </Function>
-    <Function name="ApplyDeferredTagChanges" user="true" member="true">
+    <Function name="SelectDeferredTagChanges" user="true" member="true">
     </Function>
     <Function name="SelectColorTablesList" user="true" member="true">
     </Function>
-    <Function name="SelectTagChanges" user="true" member="true">
-    </Function>
-    <Function name="SelectDeferredTagChanges" user="true" member="true">
-    </Function>
     <Function name="GetIndexOfTagChangesEntry" user="true" member="true">
-    </Function>
-    <Function name="GetIndexOfDeferredTagChangesEntry" user="true" member="true">
     </Function>
     <Function name="CheckTagInTagList" user="true" member="true">
     </Function>
