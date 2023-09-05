@@ -1812,6 +1812,9 @@ ColorControlPointList::CompactCreateNode(DataNode *parentNode, bool completeSave
 // 
 //    Justin Privitera, Thu Aug 25 15:04:55 PDT 2022
 //    Now takes a const string and uses `emplace_back`.
+// 
+//    Justin Privitera, Tue Sep  5 12:49:42 PDT 2023
+//    Use select instead of a bool.
 //
 // ****************************************************************************
 
@@ -1838,6 +1841,9 @@ ColorControlPointList::AddTag(const std::string newtag)
 // Modifications:
 //    Justin Privitera, Thu Aug 25 15:04:55 PDT 2022
 //    Made the "tag" arg const.
+// 
+//    Justin Privitera, Tue Sep  5 12:49:42 PDT 2023
+//    Use select instead of a bool.
 //
 // ****************************************************************************
 
@@ -1869,6 +1875,9 @@ ColorControlPointList::RemoveTag(const std::string tag)
 // Modifications:
 //    Justin Privitera, Wed Jun 29 17:50:24 PDT 2022
 //    Set tagChangesMade to true each time the tags are cleared.
+// 
+//    Justin Privitera, Tue Sep  5 12:49:42 PDT 2023
+//    Use select instead of a bool.
 //
 // ****************************************************************************
 

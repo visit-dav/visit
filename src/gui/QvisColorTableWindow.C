@@ -3052,6 +3052,7 @@ void
 QvisColorTableWindow::tagCombiningChanged(int index)
 {
     const bool new_behavior = index == 0;
+    // has the tag combining behavior been changed?
     if (new_behavior != colorAtts->GetTagsMatchAny())
     {
         colorAtts->SetTagsMatchAny(new_behavior);
