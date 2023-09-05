@@ -666,6 +666,8 @@ ColorTableAttributes::CreateNode(DataNode *parentNode, bool, bool)
 //   Justin Privitera, Mon Aug 28 09:57:59 PDT 2023
 //   Added logic to read all of the tagging infrastructure from a node.
 //
+//   Justin Privitera, Tue Sep  5 12:49:42 PDT 2023
+//   Filter tables by tag at the end, once all data has been read from node.
 // ****************************************************************************
 
 void
@@ -1759,6 +1761,12 @@ ColorTableAttributes::GetColorControlPoints(const std::string &name) const
 //   Apply deferred tag changes.
 //   Fixed a bug where the CTnames and ccpls would get sorted but CTactive
 //   flags would not be.
+// 
+//    Justin Privitera, Tue Sep  5 12:49:42 PDT 2023
+//    Create tag list entry on CT addition.
+//    Increment tag list entry on CT addition.
+//    Filter CT by tags when it is added.
+//    Use new selection methods to select CTs and tags lists.
 // ****************************************************************************
 
 void
@@ -1888,6 +1896,10 @@ ColorTableAttributes::RemoveColorTable(const std::string &name)
 // 
 //   Justin Privitera, Mon Aug 28 09:57:59 PDT 2023
 //   Renamed iterators to reduce ambiguity.
+//
+//    Justin Privitera, Tue Sep  5 12:49:42 PDT 2023
+//    Use the new color tables list selection method.
+//    Decrement tag num refs on CT removal.
 // ****************************************************************************
 
 void
@@ -1955,10 +1967,10 @@ ColorTableAttributes::RemoveColorTable(int index)
 // Method: ColorTableAttributes::SelectColorTablesList
 //
 // Purpose:
-//   TODO
+//   Selects the pieces of the color tables list.
 //
 // Programmer: Justin Privitera
-// Creation:   TODO
+// Creation:   09/05/23
 //
 // Modifications:
 // 
@@ -2408,7 +2420,8 @@ ColorTableAttributes::SelectTagList()
 // Creation:   08/10/23
 //
 // Modifications:
-//
+//    Justin Privitera, Tue Sep  5 12:49:42 PDT 2023
+//    Check before adding to this list.
 // ****************************************************************************
 void
 ColorTableAttributes::CreateTagChangesEntry(const std::string tagname, 
@@ -2502,7 +2515,7 @@ ColorTableAttributes::GetIndexOfTagChangesEntry(const std::string tagName,
 //    Returns true if the tag is in the tag list, and false otherwise.
 //
 // Programmer: Justin Privitera
-// Creation:   06/27/23
+// Creation:   08/27/23
 //
 // Modifications:
 //
@@ -2526,7 +2539,8 @@ ColorTableAttributes::CheckTagChangesEntryInTagChanges(const std::string tagName
 // Creation:   08/24/23
 //
 // Modifications:
-//
+//    Justin Privitera, Tue Sep  5 12:49:42 PDT 2023
+//    Check before adding an entry to this list, and select the list when done.
 // ****************************************************************************
 void
 ColorTableAttributes::CreateDeferredTagChangesEntry(const std::string tagname, 
@@ -2554,7 +2568,8 @@ ColorTableAttributes::CreateDeferredTagChangesEntry(const std::string tagname,
 // Creation:   08/24/23
 //
 // Modifications:
-//
+//    Justin Privitera, Tue Sep  5 12:49:42 PDT 2023
+//    Select deferred tag changes if we are removing.
 // ****************************************************************************
 void
 ColorTableAttributes::RemoveDeferredTagChangesEntry(const int index)
@@ -2660,7 +2675,7 @@ ColorTableAttributes::GetIndexOfDeferredTagChangesEntry(const std::string tagNam
 //    Returns true if the tag is in the tag list, and false otherwise.
 //
 // Programmer: Justin Privitera
-// Creation:   06/27/23
+// Creation:   08/27/23
 //
 // Modifications:
 //
@@ -3070,7 +3085,9 @@ ColorTableAttributes::RemoveUnusedTagsFromTagTable()
 // Creation:   06/27/23
 //
 // Modifications:
-//
+//    Justin Privitera, Tue Sep  5 12:49:42 PDT 2023
+//    Greatly simplified function; uses internal bookkeeping to see if tags
+//    need to be added to the tag table.
 // ****************************************************************************
 std::vector<std::string>
 ColorTableAttributes::GetNewTagNames()
@@ -3152,7 +3169,8 @@ ColorTableAttributes::FilterTableByTag(const ColorControlPointList &ccpl)
 // Creation:   06/27/23
 //
 // Modifications:
-//
+//    Justin Privitera, Tue Sep  5 12:49:42 PDT 2023
+//    Select the CT list after we have filtered.
 // ****************************************************************************
 void
 ColorTableAttributes::FilterTablesByTag()
