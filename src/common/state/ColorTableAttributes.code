@@ -1531,6 +1531,8 @@ ColorTableAttributes::CreateDeferredTagChangesEntry(const std::string tagname,
         deferredTagChangesTag.push_back(tagname);
         deferredTagChangesType.push_back(addOrRemove);
         deferredTagChangesCTName.push_back(ctName);
+
+        SelectDeferredTagChanges();
     }
 }
 

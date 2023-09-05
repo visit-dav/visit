@@ -143,8 +143,7 @@ public:
     virtual bool                      FieldsEqual(int index, const AttributeGroup *rhs) const;
 
     // User-defined methods
-    void SetColorTableActiveFlag(int index, bool val);
-    bool GetColorTableActiveFlag(int index);
+    int GetColorTableIndex(const std::string &name) const;
     const ColorControlPointList *GetColorControlPoints(int index) const;
     const ColorControlPointList *GetColorControlPoints(const std::string &name) const;
     bool AllTagsSelected();
@@ -152,6 +151,8 @@ public:
     void SetTagActive(const std::string tagname, const bool active);
     void SetTagActive(const int index, const bool active);
     bool GetTagActive(const std::string tagname);
+    void SetColorTableActiveFlag(int index, bool val);
+    bool GetColorTableActiveFlag(int index);
     void IncrementTagNumRefs(const std::string tagname);
     void IncrementTagNumRefs(const int index);
     void DecrementTagNumRefs(const std::string tagname);
@@ -179,7 +180,6 @@ public:
     void SelectTagList();
     void SelectTagChanges();
     void SelectDeferredTagChanges();
-    int GetColorTableIndex(const std::string &name) const;
     int GetIndexOfTag(const std::string tagname);
     int GetIndexOfTagChangesEntry(const std::string tagName, const int addOrRemove, const std::string ctName);
     int GetIndexOfDeferredTagChangesEntry(const std::string tagName, const int addOrRemove, const std::string ctName);

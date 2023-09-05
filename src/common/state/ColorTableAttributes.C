@@ -1615,60 +1615,40 @@ ColorTableAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
 ///////////////////////////////////////////////////////////////////////////////
 
 // ****************************************************************************
-// Method: ColorTableAttributes::SetColorTableActiveFlag
+// Method: ColorTableAttributes::GetColorTableIndex
 //
 // Purpose:
-//   Sets the color table corresponding to the given index to active or 
-//   inactive (appearing in the namelistbox or not) depending on the boolean
-//   value passed.
+//   Returns the index of the specified color table.
 //
 // Arguments:
-//   index - index of the color table
-//   val   - bool to set active or inactive
+//   name : The name of the color table that we want.
 //
-// Programmer: Justin Privitera
-// Creation:   Mon Jun  6 17:10:40 PDT 2022
+// Returns:    The index or -1 if the color table is not in the list.
 //
-// Modifications:
-//    Justin Privitera, Wed Jun 29 17:50:24 PDT 2022
-//    Added guard to prevent index out of bound errors.
-// 
-//   Justin Privitera, Mon Aug 21 15:54:50 PDT 2023
-//   Changed ColorTableAttributes `active` to `colorTableActiveFlags`.
-// ****************************************************************************
-
-void
-ColorTableAttributes::SetColorTableActiveFlag(int index, bool val)
-{
-    if (index >= 0 && index < colorTableActiveFlags.size())
-        colorTableActiveFlags[index] = val;
-}
-
-// ****************************************************************************
-// Method: ColorTableAttributes::GetColorTableActiveFlag
+// Note:
 //
-// Purpose:
-//   Gets the state of a given color table (active or inactive (appearing in
-//   the namelistbox or not)).
-//
-// Arguments:
-//   index - index of the tag
-//
-// Programmer: Justin Privitera
-// Creation:   Tue Jun 28 14:04:01 PDT 2022
+// Programmer: Brad Whitlock
+// Creation:   Sat Jun 16 20:32:23 PST 2001
 //
 // Modifications:
 //   Justin Privitera, Mon Aug 21 15:54:50 PDT 2023
-//   Changed ColorTableAttributes `active` to `colorTableActiveFlags` and 
-//   added a return statement.
+//   Changed ColorTableAttributes `names` to `colorTableNames`.
 // ****************************************************************************
 
-bool
-ColorTableAttributes::GetColorTableActiveFlag(int index)
+int
+ColorTableAttributes::GetColorTableIndex(const std::string &name) const
 {
-    if (index >= 0 && index < colorTableActiveFlags.size())
-        return colorTableActiveFlags[index];
-    return false; // the color table can hardly be active if it does not exist
+    int retval = -1;
+    for(size_t i = 0; i < colorTableNames.size(); ++i)
+    {
+        if(colorTableNames[i] == name)
+        {
+            retval = i;
+            break;
+        }
+    }
+
+    return retval;
 }
 
 // ****************************************************************************
@@ -1831,6 +1811,63 @@ ColorTableAttributes::GetTagActive(const std::string tagname)
     if (index >= 0 && index < tagListActive.size())
         return tagListActive[index];
     return false; // the tag certainly isn't active if it doesn't exist
+}
+
+// ****************************************************************************
+// Method: ColorTableAttributes::SetColorTableActiveFlag
+//
+// Purpose:
+//   Sets the color table corresponding to the given index to active or 
+//   inactive (appearing in the namelistbox or not) depending on the boolean
+//   value passed.
+//
+// Arguments:
+//   index - index of the color table
+//   val   - bool to set active or inactive
+//
+// Programmer: Justin Privitera
+// Creation:   Mon Jun  6 17:10:40 PDT 2022
+//
+// Modifications:
+//    Justin Privitera, Wed Jun 29 17:50:24 PDT 2022
+//    Added guard to prevent index out of bound errors.
+// 
+//   Justin Privitera, Mon Aug 21 15:54:50 PDT 2023
+//   Changed ColorTableAttributes `active` to `colorTableActiveFlags`.
+// ****************************************************************************
+
+void
+ColorTableAttributes::SetColorTableActiveFlag(int index, bool val)
+{
+    if (index >= 0 && index < colorTableActiveFlags.size())
+        colorTableActiveFlags[index] = val;
+}
+
+// ****************************************************************************
+// Method: ColorTableAttributes::GetColorTableActiveFlag
+//
+// Purpose:
+//   Gets the state of a given color table (active or inactive (appearing in
+//   the namelistbox or not)).
+//
+// Arguments:
+//   index - index of the tag
+//
+// Programmer: Justin Privitera
+// Creation:   Tue Jun 28 14:04:01 PDT 2022
+//
+// Modifications:
+//   Justin Privitera, Mon Aug 21 15:54:50 PDT 2023
+//   Changed ColorTableAttributes `active` to `colorTableActiveFlags` and 
+//   added a return statement.
+// ****************************************************************************
+
+bool
+ColorTableAttributes::GetColorTableActiveFlag(int index)
+{
+    if (index >= 0 && index < colorTableActiveFlags.size())
+        return colorTableActiveFlags[index];
+    return false; // the color table can hardly be active if it does not exist
 }
 
 // ****************************************************************************
@@ -2397,6 +2434,8 @@ ColorTableAttributes::CreateDeferredTagChangesEntry(const std::string tagname,
         deferredTagChangesTag.push_back(tagname);
         deferredTagChangesType.push_back(addOrRemove);
         deferredTagChangesCTName.push_back(ctName);
+
+        SelectDeferredTagChanges();
     }
 }
 
@@ -2824,43 +2863,6 @@ ColorTableAttributes::SelectDeferredTagChanges()
     SelectDeferredTagChangesTag();
     SelectDeferredTagChangesType();
     SelectDeferredTagChangesCTName();
-}
-
-// ****************************************************************************
-// Method: ColorTableAttributes::GetColorTableIndex
-//
-// Purpose:
-//   Returns the index of the specified color table.
-//
-// Arguments:
-//   name : The name of the color table that we want.
-//
-// Returns:    The index or -1 if the color table is not in the list.
-//
-// Note:
-//
-// Programmer: Brad Whitlock
-// Creation:   Sat Jun 16 20:32:23 PST 2001
-//
-// Modifications:
-//   Justin Privitera, Mon Aug 21 15:54:50 PDT 2023
-//   Changed ColorTableAttributes `names` to `colorTableNames`.
-// ****************************************************************************
-
-int
-ColorTableAttributes::GetColorTableIndex(const std::string &name) const
-{
-    int retval = -1;
-    for(size_t i = 0; i < colorTableNames.size(); ++i)
-    {
-        if(colorTableNames[i] == name)
-        {
-            retval = i;
-            break;
-        }
-    }
-
-    return retval;
 }
 
 // ****************************************************************************

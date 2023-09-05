@@ -575,6 +575,22 @@ public class ColorTableAttributes extends AttributeSubject
     }
 
 
+    public int GetColorTableIndex(String name)
+    {
+        int retval = -1;
+        for(int i = 0; i < colorTableNames.size(); ++i)
+        {
+            String n = (String)colorTableNames.elementAt(i);
+            if(n.equals(name))
+            {
+                retval = i;
+                break;
+            }
+        }
+
+        return retval;
+    }
+
     public ColorControlPointList GetColorControlPoints(int index)
     {
         if(index >= 0 && index < colorTables.size())
@@ -656,22 +672,6 @@ public class ColorTableAttributes extends AttributeSubject
                     SetDefaultDiscrete("");
             }
         }
-    }
-
-    public int GetColorTableIndex(String name)
-    {
-        int retval = -1;
-        for(int i = 0; i < colorTableNames.size(); ++i)
-        {
-            String n = (String)colorTableNames.elementAt(i);
-            if(n.equals(name))
-            {
-                retval = i;
-                break;
-            }
-        }
-
-        return retval;
     }
 
     // Attributes

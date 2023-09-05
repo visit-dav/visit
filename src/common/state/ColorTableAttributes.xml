@@ -35,17 +35,7 @@
     </Field>
     <Field name="deferredTagChangesCTName" label="deferredTagChangesCTName" type="stringVector" internal="true">
     </Field>
-    <Function name="CreateNode" user="false" member="true">
-    </Function>
-    <Function name="SetFromNode" user="false" member="true">
-    </Function>
-    <Function name="SetColorTableNames" user="false" member="true">
-    </Function>
-    <Function name="SetColorTableActiveFlags" user="false" member="true">
-    </Function>
-    <Function name="SetColorTableActiveFlag" user="true" member="true">
-    </Function>
-    <Function name="GetColorTableActiveFlag" user="true" member="true">
+    <Function name="GetColorTableIndex" user="true" member="true">
     </Function>
     <Function name="GetColorControlPoints1" user="true" member="true">
     </Function>
@@ -62,6 +52,18 @@
     <Function name="SetTagActive2" user="true" member="true">
     </Function>
     <Function name="GetTagActive" user="true" member="true">
+    </Function>
+    <Function name="CreateNode" user="false" member="true">
+    </Function>
+    <Function name="SetFromNode" user="false" member="true">
+    </Function>
+    <Function name="SetColorTableNames" user="false" member="true">
+    </Function>
+    <Function name="SetColorTableActiveFlags" user="false" member="true">
+    </Function>
+    <Function name="SetColorTableActiveFlag" user="true" member="true">
+    </Function>
+    <Function name="GetColorTableActiveFlag" user="true" member="true">
     </Function>
     <Function name="IncrementTagNumRefs1" user="true" member="true">
     </Function>
@@ -116,8 +118,6 @@
     <Function name="SelectTagChanges" user="true" member="true">
     </Function>
     <Function name="SelectDeferredTagChanges" user="true" member="true">
-    </Function>
-    <Function name="GetColorTableIndex" user="true" member="true">
     </Function>
     <Function name="GetIndexOfTag" user="true" member="true">
     </Function>
