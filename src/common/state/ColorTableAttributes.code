@@ -828,29 +828,26 @@ ColorTableAttributes::CreateNode(DataNode *parentNode, bool, bool)
     std::vector<std::string> saveTagChangesTag;
     std::vector<int>         saveTagChangesType;
     std::vector<std::string> saveTagChangesCTName;
-    for (size_t i = 0; i < tagChangesTag.size(); i ++)
-    {
-        // add the regular tag changes
-        saveTagChangesTag.insert(saveTagChangesTag.end(), 
-                                 tagChangesTag.begin(),
-                                 tagChangesTag.end());
-        saveTagChangesType.insert(saveTagChangesType.end(),
-                                  tagChangesType.begin(),
-                                  tagChangesType.end());
-        saveTagChangesCTName.insert(saveTagChangesCTName.end(),
-                                    tagChangesCTName.begin(),
-                                    tagChangesCTName.end());
-        // add the deferred tag changes
-        saveTagChangesTag.insert(saveTagChangesTag.end(),
-                                 deferredTagChangesTag.begin(),
-                                 deferredTagChangesTag.end());
-        saveTagChangesType.insert(saveTagChangesType.end(),
-                                  deferredTagChangesType.begin(),
-                                  deferredTagChangesType.end());
-        saveTagChangesCTName.insert(saveTagChangesCTName.end(),
-                                    deferredTagChangesCTName.begin(),
-                                    deferredTagChangesCTName.end());
-    }
+    // add the regular tag changes
+    saveTagChangesTag.insert(saveTagChangesTag.end(), 
+                             tagChangesTag.begin(),
+                             tagChangesTag.end());
+    saveTagChangesType.insert(saveTagChangesType.end(),
+                              tagChangesType.begin(),
+                              tagChangesType.end());
+    saveTagChangesCTName.insert(saveTagChangesCTName.end(),
+                                tagChangesCTName.begin(),
+                                tagChangesCTName.end());
+    // add the deferred tag changes
+    saveTagChangesTag.insert(saveTagChangesTag.end(),
+                             deferredTagChangesTag.begin(),
+                             deferredTagChangesTag.end());
+    saveTagChangesType.insert(saveTagChangesType.end(),
+                              deferredTagChangesType.begin(),
+                              deferredTagChangesType.end());
+    saveTagChangesCTName.insert(saveTagChangesCTName.end(),
+                                deferredTagChangesCTName.begin(),
+                                deferredTagChangesCTName.end());
 
     // The use case for this is as follows: If a user has user-defined
     // color tables in their .visit directory, and they make tag changes
