@@ -2578,6 +2578,8 @@ ColorTableAttributes::RemoveDeferredTagChangesEntry(const int index)
             deferredTagChangesType.erase(typeItr);
             deferredTagChangesCTName.erase(ctnameItr);
         }
+
+        SelectDeferredTagChanges();
     }
 }
 
@@ -2703,7 +2705,6 @@ ColorTableAttributes::ApplyDeferredTagChanges(const std::string newCTName,
             defChangeId ++;
         }
     }
-    SelectDeferredTagChanges();
 }
 
 // ****************************************************************************
