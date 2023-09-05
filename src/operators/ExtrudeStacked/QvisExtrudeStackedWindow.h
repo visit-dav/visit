@@ -31,7 +31,7 @@ class QvisVariableButton;
 // Creation:   omitted
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 class QvisExtrudeStackedWindow : public QvisOperatorWindow
@@ -71,32 +71,33 @@ class QvisExtrudeStackedWindow : public QvisOperatorWindow
   private:
     int GetSelectedVariableIndex();
 
-    QLineEdit *axis;
-    QLineEdit *length;
+    QLineEdit *axis {nullptr};
+    QLineEdit *length {nullptr};
 
-    QGroupBox          *variableGroup;
-    QTreeWidget        *variableTree;
-    QvisVariableButton *variableNewButton;
-    QPushButton        *variableDeleteButton;
-    QPushButton        *variableUpButton;
-    QPushButton        *variableDownButton;
-    QPushButton        *variableResetExtentsButton;
-    QLabel             **variableDisplayLabel;
-    QWidget            *variableDisplay;
-    QButtonGroup       *variableDisplayButtonGroup;
+    QGroupBox          *variableGroup {nullptr};
+    QTreeWidget        *variableTree {nullptr};
+    QvisVariableButton *variableNewButton {nullptr};
+    QPushButton        *variableDeleteButton {nullptr};
+    QPushButton        *variableUpButton {nullptr};
+    QPushButton        *variableDownButton {nullptr};
+    QPushButton        *variableResetExtentsButton {nullptr};
+    QLabel             **variableDisplayLabel {nullptr};
+    QWidget            *variableDisplay {nullptr};
+    QGroupBox          *variableDisplayGroup {nullptr};
+    QButtonGroup       *variableDisplayButtonGroup {nullptr};
 
-    QLabel             *variableMinValLabel;
-    QLineEdit          *variableMinVal;
-    QLabel             *variableMaxValLabel;
-    QLineEdit          *variableMaxVal;
-  
-    QLineEdit *steps;
-    QCheckBox *preserveOriginalCellNumbers;
-    QLabel *axisLabel;
-    QLabel *lengthLabel;
-    QLabel *stepsLabel;
+    QLabel             *variableMinValLabel {nullptr};
+    QLineEdit          *variableMinVal {nullptr};
+    QLabel             *variableMaxValLabel {nullptr};
+    QLineEdit          *variableMaxVal {nullptr};
 
-    ExtrudeStackedAttributes *atts;
+    QLineEdit *steps {nullptr};
+    QCheckBox *preserveOriginalCellNumbers {nullptr};
+    QLabel *axisLabel {nullptr};
+    QLabel *lengthLabel {nullptr};
+    QLabel *stepsLabel {nullptr};
+
+    ExtrudeStackedAttributes *atts {nullptr};
 };
 
 #endif
