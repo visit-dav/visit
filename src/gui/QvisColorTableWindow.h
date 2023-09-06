@@ -141,6 +141,8 @@ class QvisNoDefaultColorTableButton;
 //   removeTagFromColorTable() functions.
 //   All tagging infrastructure has been moved to the CTAtts.
 // 
+//   Justin Privitera, Tue Sep  5 12:49:42 PDT 2023
+//   Change UpdateTags to UpdateTagTable.
 // ****************************************************************************
 
 class GUI_API QvisColorTableWindow : public QvisPostableWindowObserver

@@ -226,6 +226,10 @@ QvisNoDefaultColorTableButton::sizePolicy() const
 //    Logic was added to ensure no desync with the color table atts and to
 //    react to color tables outside the filtering selection.
 //
+//   Justin Privitera, Wed Sep  6 11:52:18 PDT 2023
+//   Fixed bug where the button could have no CT in it when using a config or
+//   session file.
+// 
 // ****************************************************************************
 
 void
@@ -247,6 +251,7 @@ debug1 <<"    ctName: " << ctName.toStdString() << endl;
         // if this color table was deleted
         if (colorTableAtts->GetColorTableIndex(ctName.toStdString()) == -1)
         {
+            // TODO how could this logic ever be hit?
             if (buttonType == CONT)
                 colorTableAtts->SetDefaultContinuous(colorTableNames[buttonType][0].toStdString());
             else
@@ -256,7 +261,14 @@ debug1 <<"    ctName: " << ctName.toStdString() << endl;
             setToolTip(colorTable);
             setIcon(getIcon(colorTable));
         }
-        // but if it was filtered, we don't want to do anything
+        else
+        {
+            colorTable = ctName;
+            setText(colorTable);
+            setToolTip(colorTable);
+            setIcon(getIcon(colorTable));
+            // TODO is adding the above 4 lines here to this case going to break things?
+        }
     }
     // The color table is not in our list of color tables because our list is empty...
     // so we can't make any assumptions about its type and must check it at the door
@@ -553,10 +565,15 @@ QvisNoDefaultColorTableButton::updateColorTableButtons()
                             break;
                         }
                     }
+                    // It is impossible to delete the last continuous/discrete color table
+                    // thanks to code in the CT window so we don't have to worry about not
+                    // finding one.
                 }
                 // Else there are CTs here of the correct type
                 else
                 {
+                    // TODO how do you get to this block?
+                    // TODO I hate how this uses a qstring but above we use a string for the same thing
                     // This code might *seem* redundant, but it ensures `setColorTable`
                     // hits the first case, instead of it having to go through
                     // 3 conditions to get to the right behavior.
