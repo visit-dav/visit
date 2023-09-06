@@ -2141,7 +2141,7 @@ ColorTableAttributes::addTagToColorTable(const std::string ctName,
     // delete the opposite action.
 
     bool found_opposite = false;
-    for (size_t changeId; changeId < tagChangesTag.size(); changeId ++)
+    for (size_t changeId = 0; changeId < tagChangesTag.size(); changeId ++)
     {
         // the tag that is being added or removed
         std::string actionTag = tagChangesTag[changeId];
@@ -2211,7 +2211,7 @@ ColorTableAttributes::removeTagFromColorTable(const std::string ctName,
     // delete the opposite action.
 
     bool found_opposite = false;
-    for (size_t changeId; changeId < tagChangesTag.size(); changeId ++)
+    for (size_t changeId = 0; changeId < tagChangesTag.size(); changeId ++)
     {
         // the tag that is being added or removed
         std::string actionTag = tagChangesTag[changeId];
