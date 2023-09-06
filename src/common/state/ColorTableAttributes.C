@@ -2519,7 +2519,7 @@ ColorTableAttributes::GetIndexOfTagChangesEntry(const std::string tagName,
 //    Returns true if the tag is in the tag list, and false otherwise.
 //
 // Programmer: Justin Privitera
-// Creation:   06/27/23
+// Creation:   08/27/23
 //
 // Modifications:
 //
@@ -2679,7 +2679,7 @@ ColorTableAttributes::GetIndexOfDeferredTagChangesEntry(const std::string tagNam
 //    Returns true if the tag is in the tag list, and false otherwise.
 //
 // Programmer: Justin Privitera
-// Creation:   06/27/23
+// Creation:   08/27/23
 //
 // Modifications:
 //
@@ -3015,7 +3015,7 @@ ColorTableAttributes::GetTagTableItemFlag(const std::string tagname)
 //    Returns true if the tag is in the tag list, and false otherwise.
 //
 // Programmer: Justin Privitera
-// Creation:   08/27/23
+// Creation:   06/27/23
 //
 // Modifications:
 //
@@ -3089,7 +3089,9 @@ ColorTableAttributes::RemoveUnusedTagsFromTagTable()
 // Creation:   06/27/23
 //
 // Modifications:
-//
+//    Justin Privitera, Tue Sep  5 12:49:42 PDT 2023
+//    Greatly simplified function; uses internal bookkeeping to see if tags
+//    need to be added to the tag table.
 // ****************************************************************************
 std::vector<std::string>
 ColorTableAttributes::GetNewTagNames()
@@ -3171,7 +3173,8 @@ ColorTableAttributes::FilterTableByTag(const ColorControlPointList &ccpl)
 // Creation:   06/27/23
 //
 // Modifications:
-//
+//    Justin Privitera, Tue Sep  5 12:49:42 PDT 2023
+//    Select the CT list after we have filtered.
 // ****************************************************************************
 void
 ColorTableAttributes::FilterTablesByTag()

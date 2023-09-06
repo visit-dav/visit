@@ -225,11 +225,11 @@ QvisNoDefaultColorTableButton::sizePolicy() const
 //    Justin Privitera, Fri Sep  2 16:46:21 PDT 2022
 //    Logic was added to ensure no desync with the color table atts and to
 //    react to color tables outside the filtering selection.
-//
+// 
 //   Justin Privitera, Wed Sep  6 11:52:18 PDT 2023
 //   Fixed bug where the button could have no CT in it when using a config or
 //   session file.
-// 
+//
 // ****************************************************************************
 
 void
@@ -269,6 +269,7 @@ debug1 <<"    ctName: " << ctName.toStdString() << endl;
             setIcon(getIcon(colorTable));
             // TODO is adding the above 4 lines here to this case going to break things?
         }
+
     }
     // The color table is not in our list of color tables because our list is empty...
     // so we can't make any assumptions about its type and must check it at the door

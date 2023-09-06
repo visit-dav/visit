@@ -79,6 +79,12 @@ ColorTableObserver::~ColorTableObserver()
 // 
 //   Justin Privitera, Mon Aug 28 11:22:47 PDT 2023
 //   The tag list being selected now also triggers the update.
+//
+//   Justin Privitera, Tue Sep  5 12:49:42 PDT 2023
+//   Check if tags match any has been selected to trigger update.
+//   Removed obsolete GetChangesMade check and setting.
+//   Removed disaster recovery code for CTactive and CTnames not being the same
+//   length as it it no longer necessary.
 // ****************************************************************************
 
 void
@@ -91,6 +97,9 @@ ColorTableObserver::Update(Subject *)
     // 2. If just #1 is selected , we're modifying a color table.
     // 3. If just #2 is selected, we're changing the default colormap. This is
     //    only of concern if I decide to show what the default is in a widget.
+
+    // NOTE: The logic here is identical to that in ViewerSubject::HandleColorTable.
+    // If you are making a change to either, change in both places.
 
     // If the names or the color table attributes are changing, then we
     // have to update the widget.

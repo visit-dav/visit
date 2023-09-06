@@ -2078,7 +2078,7 @@ Definition:
 //    Returns true if the tag is in the tag list, and false otherwise.
 //
 // Programmer: Justin Privitera
-// Creation:   08/27/23
+// Creation:   06/27/23
 //
 // Modifications:
 //
@@ -2099,7 +2099,7 @@ Definition:
 //    Returns true if the tag is in the tag list, and false otherwise.
 //
 // Programmer: Justin Privitera
-// Creation:   06/27/23
+// Creation:   08/27/23
 //
 // Modifications:
 //
@@ -2122,7 +2122,7 @@ Definition:
 //    Returns true if the tag is in the tag list, and false otherwise.
 //
 // Programmer: Justin Privitera
-// Creation:   06/27/23
+// Creation:   08/27/23
 //
 // Modifications:
 //
@@ -2204,7 +2204,9 @@ Definition:
 // Creation:   06/27/23
 //
 // Modifications:
-//
+//    Justin Privitera, Tue Sep  5 12:49:42 PDT 2023
+//    Greatly simplified function; uses internal bookkeeping to see if tags
+//    need to be added to the tag table.
 // ****************************************************************************
 std::vector<std::string>
 ColorTableAttributes::GetNewTagNames()
@@ -2292,7 +2294,8 @@ Definition:
 // Creation:   06/27/23
 //
 // Modifications:
-//
+//    Justin Privitera, Tue Sep  5 12:49:42 PDT 2023
+//    Select the CT list after we have filtered.
 // ****************************************************************************
 void
 ColorTableAttributes::FilterTablesByTag()
