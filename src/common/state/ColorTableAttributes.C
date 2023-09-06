@@ -1897,6 +1897,8 @@ ColorTableAttributes::RemoveColorTable(const std::string &name)
 //    Justin Privitera, Tue Sep  5 12:49:42 PDT 2023
 //    Use the new color tables list selection method.
 //    Decrement tag num refs on CT removal.
+//    Fixed bug where I accidentally set the default continuous instead of the
+//    default discrete.
 // ****************************************************************************
 
 void
@@ -1944,7 +1946,7 @@ ColorTableAttributes::RemoveColorTable(int index)
                 for (int i = 0; i < colorTableNames.size(); i ++)
                 {
                     bool ctDiscrete{GetColorTables(i).GetDiscreteFlag()};
-                    if ((discrete && ctDiscrete) || ((! discrete) && (! ctDiscrete)))
+                    if (discrete == ctDiscrete)
                         return colorTableNames[i];
                 }
             }
@@ -1956,7 +1958,7 @@ ColorTableAttributes::RemoveColorTable(int index)
         if (ctName == defaultContinuous)
             SetDefaultContinuous(determineDefaultColorTable(false));
         else if (ctName == defaultDiscrete)
-            SetDefaultContinuous(determineDefaultColorTable(true));
+            SetDefaultDiscrete(determineDefaultColorTable(true));
     }
 }
 
