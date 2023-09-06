@@ -251,7 +251,6 @@ debug1 <<"    ctName: " << ctName.toStdString() << endl;
         // if this color table was deleted
         if (colorTableAtts->GetColorTableIndex(ctName.toStdString()) == -1)
         {
-            // TODO how could this logic ever be hit?
             if (buttonType == CONT)
                 colorTableAtts->SetDefaultContinuous(colorTableNames[buttonType][0].toStdString());
             else
@@ -267,7 +266,6 @@ debug1 <<"    ctName: " << ctName.toStdString() << endl;
             setText(colorTable);
             setToolTip(colorTable);
             setIcon(getIcon(colorTable));
-            // TODO is adding the above 4 lines here to this case going to break things?
         }
         
     }
@@ -573,7 +571,6 @@ QvisNoDefaultColorTableButton::updateColorTableButtons()
                 // Else there are CTs here of the correct type
                 else
                 {
-                    // TODO how do you get to this block?
                     // This code might *seem* redundant, but it ensures `setColorTable`
                     // hits the first case, instead of it having to go through
                     // 3 conditions to get to the right behavior.
