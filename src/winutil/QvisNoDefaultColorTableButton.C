@@ -269,7 +269,7 @@ debug1 <<"    ctName: " << ctName.toStdString() << endl;
             setIcon(getIcon(colorTable));
             // TODO is adding the above 4 lines here to this case going to break things?
         }
-
+        
     }
     // The color table is not in our list of color tables because our list is empty...
     // so we can't make any assumptions about its type and must check it at the door
