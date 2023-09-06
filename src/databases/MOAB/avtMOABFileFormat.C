@@ -68,6 +68,13 @@ avtMOABFileFormat::avtMOABFileFormat(const char *filename, const DBOptionsAttrib
 
 	debug1<< " constructor called, file " << filename << "\n";
     fileName = strdup(filename);
+    opt1d = false;
+    opt2d = true;
+    opt3d = true;
+    edges = new moab::Range;
+    faces = new moab::Range;
+    solids = new moab::Range;
+    select = new moab::Range;
 }
 
 
@@ -109,6 +116,10 @@ avtMOABFileFormat::FreeUpResources(void) {
 	}
 #endif
     if (mbCore) {
+        delete edges;
+        delete faces;
+        delete solids;
+        delete select;
         delete mbCore;
         mbCore = NULL;
     }
@@ -622,6 +633,20 @@ avtMOABFileFormat::GetMesh(int domain, const char *meshname)
         if (NULL==mbCore)
         {
             mbCore = new moab::Core();
+            if (readOptions->FindIndex("edge") >= 0)
+            {
+                opt1d = readOptions->GetBool("edge");
+            }
+            if (readOptions->FindIndex("face") >= 0)
+            {
+                opt2d = readOptions->GetBool("face");
+            }
+            if (readOptions->FindIndex("solid") >= 0)
+            {
+                opt3d = readOptions->GetBool("solid");
+            }
+            debug1 << "avtMOABFileFormat dim options: 1d:" << (int)opt1d << " 2d:" << (int)opt2d
+                    << " 3d:" << (int)opt3d <<"\n";
 #ifdef PARALLEL
             string partitionMethod = readOptions->GetString("Partition:");
             string ropts="STORE_SETS_FILEIDS;PARALLEL=READ_PART;PARTITION="+partitionMethod+";";
@@ -648,10 +673,12 @@ avtMOABFileFormat::GetMesh(int domain, const char *meshname)
         {
             // Get the list of vertices
             merr = mbCore->get_entities_by_dimension(0, 0, verts, true);MBVIS_CHK_ERR(merr);
+            debug1 << "avtMOABFileFormat::GetMesh: verts.size()=" << verts.size() << "\n";
             //
             // Get the coordinates for the vertex elements.
             //
             std::vector<double> coords(verts.size()*3);
+            debug1 << "avtMOABFileFormat::GetMesh: coords.size()=" << coords.size() << "\n";
             merr = mbCore->get_coords(verts, &coords[0]);MBVIS_CHK_ERR(merr);
 
             //
@@ -659,6 +686,7 @@ avtMOABFileFormat::GetMesh(int domain, const char *meshname)
             //
             vtkPoints *points  = vtkPoints::New();
             points->SetNumberOfPoints(verts.size());
+            debug1 << "avtMOABFileFormat::GetMesh: points:" <<  (vtkPoints*)points << "\n";
             float *pts = (float *) points->GetVoidPointer(0);
             for (size_t i = 0; i < verts.size()*3; i++)
             {
@@ -673,7 +701,7 @@ avtMOABFileFormat::GetMesh(int domain, const char *meshname)
         // TODO: Do we want all entities recursively ? If we are not working on the root set
         // think about how to handle it here
         merr = mbCore->get_entities_by_handle(0, ents, false);MBVIS_CHK_ERR(merr);
-
+        debug1 << "avtMOABFileFormat::GetMesh: ents:" <<  ents.size() << "\n";
         const moab::EntityHandle* connect;
 
         std::vector<vtkIdType> conn_data; // might need reordering because moab and vtk have
@@ -685,15 +713,23 @@ avtMOABFileFormat::GetMesh(int domain, const char *meshname)
         ents = subtract(ents, vts);
         vts = ents.subset_by_type(moab::MBENTITYSET);
         ents = subtract(ents, vts);
-
-        for (size_t  i = 0; i < ents.size(); i++)
+        debug1 << "avtMOABFileFormat::GetMesh: strip: ents:" <<  ents.size() << "\n";
+        // filter by dimension
+        if (opt1d) *edges = ents.subset_by_dimension(1); // edges
+        if (opt2d) *faces = ents.subset_by_dimension(2); // faces
+        if (opt3d) *solids = ents.subset_by_dimension(3); // solids
+        *select = *edges;
+        select->merge(*faces);
+        select->merge(*solids);
+        debug1 << "avtMOABFileFormat::GetMesh: strip: selected ents:" <<  select->size() << " psize:" << select->psize() << "\n";
+        for (size_t  i = 0; i < select->size(); i++)
         {
-            moab::EntityType eType = mbCore->type_from_handle(ents[i]);
+            moab::EntityType eType = mbCore->type_from_handle((*select)[i]);
 
             int numnodes;
 
             // get all nodes now, not only corner nodes
-            merr = mbCore->get_connectivity(ents[i], connect, numnodes);MBVIS_CHK_ERR(merr);
+            merr = mbCore->get_connectivity((*select)[i], connect, numnodes);MBVIS_CHK_ERR(merr);
             const moab::VtkElemType * mbToVtk = moab::VtkUtil::get_vtk_type(eType, numnodes);
 
             if (!mbToVtk)
@@ -854,14 +890,10 @@ avtMOABFileFormat::GetVar(int domain, const char *varname)
         }
         else if (elemTag)
         {
-            merr = mbCore->get_entities_by_handle(0, ents, false);MBVIS_CHK_ERR(merr);
-            // remove the vertices and the entity sets
-            moab::Range vts = ents.subset_by_type(moab::MBVERTEX);
-            ents = subtract(ents, vts);
-            vts = ents.subset_by_type(moab::MBENTITYSET);
-            ents = subtract(ents, vts);
+            ents = *select;
         }
 
+        debug1 << "avtMOABFileFormat::GetVar: ents.size()=" <<  ents.size() <<  "  psize :" << ents.psize() << "\n";
 
         moab::Tag tag;
         merr = mbCore->tag_get_handle(tagName.c_str(),  tag);MBVIS_CHK_ERR(merr);
@@ -950,9 +982,9 @@ avtMOABFileFormat::GetPartitionTagAsEnumScalar(){
         moab::ErrorCode merr = mbCore->get_entities_by_handle(0, ents, false);MBVIS_CHK_ERR(merr);
         // remove the vertices and the entity sets
         moab::Range vts = ents.subset_by_type(moab::MBVERTEX);
-        ents = subtract(ents, vts);
-        vts = ents.subset_by_type(moab::MBENTITYSET);
-        ents = subtract(ents, vts);
+        ents = *select;
+	if (ents.empty())
+          ents = vts; 
         vtkIntArray *pparr = vtkIntArray::New();
         pparr->SetNumberOfComponents(1);
         pparr->SetNumberOfTuples(ents.size());
@@ -1027,9 +1059,7 @@ avtMOABFileFormat::GetMaterialTagAsEnumScalar()
       moab::ErrorCode merr = mbCore->get_entities_by_handle(0, ents, false);MBVIS_CHK_ERR(merr);
       // remove the vertices and the entity sets
       moab::Range vts = ents.subset_by_type(moab::MBVERTEX);
-      ents = subtract(ents, vts);
-      vts = ents.subset_by_type(moab::MBENTITYSET);
-      ents = subtract(ents, vts);
+      ents = *select;
       vtkIntArray *pparr = vtkIntArray::New();
       pparr->SetNumberOfComponents(1);
       pparr->SetNumberOfTuples(ents.size());
@@ -1101,9 +1131,7 @@ avtMOABFileFormat::GetNeumannSetsVar()
         moab::ErrorCode merr = mbCore->get_entities_by_handle(0, ents, false);MBVIS_CHK_ERR(merr);
         // remove the vertices and the entity sets
         moab::Range vts = ents.subset_by_type(moab::MBVERTEX);
-        ents = subtract(ents, vts);
-        vts = ents.subset_by_type(moab::MBENTITYSET);
-        ents = subtract(ents, vts);
+        ents = *select;
 
         const int bpuc = sizeof(unsigned char)*8;
         vtkBitArray *retval = 0;
@@ -1247,9 +1275,7 @@ avtMOABFileFormat::GetGeometrySetsVar()
         moab::ErrorCode merr = mbCore->get_entities_by_handle(0, ents, false);MBVIS_CHK_ERR(merr);
         // remove the vertices and the entity sets
         moab::Range vts = ents.subset_by_type(moab::MBVERTEX);
-        ents = subtract(ents, vts);
-        vts = ents.subset_by_type(moab::MBENTITYSET);
-        ents = subtract(ents, vts);
+        ents = *select;
 
         const int bpuc = sizeof(unsigned char)*8;
         vtkBitArray *retval = 0;
@@ -1383,13 +1409,7 @@ avtMOABFileFormat::GetVectorVar(int domain, const char *varname)
       merr = mbCore->get_entities_by_type(0, moab::MBVERTEX, ents);
       MBVIS_CHK_ERR(merr);
     } else if (elemTag) {
-      merr = mbCore->get_entities_by_handle(0, ents, false);
-      MBVIS_CHK_ERR(merr);
-      // remove the vertices and the entity sets
-      moab::Range vts = ents.subset_by_type(moab::MBVERTEX);
-      ents = subtract(ents, vts);
-      vts = ents.subset_by_type(moab::MBENTITYSET);
-      ents = subtract(ents, vts); // maybe we should have some dimensions (edges, faces, regions)?
+      ents = *select;
     }
 
     moab::Tag tag;
