@@ -552,6 +552,9 @@ ColorTableAttributes::CreateSubAttributeGroup(int)
 // 
 //   Justin Privitera, Mon Aug 28 09:57:59 PDT 2023
 //   Added logic to save all of the tagging infrastructure to a node.
+// 
+//   Justin Privitera, Wed Sep  6 11:52:18 PDT 2023
+//   Fixed bug where I was saving out the tag changes multiple times.
 //
 // ****************************************************************************
 
@@ -584,29 +587,26 @@ ColorTableAttributes::CreateNode(DataNode *parentNode, bool, bool)
     std::vector<std::string> saveTagChangesTag;
     std::vector<int>         saveTagChangesType;
     std::vector<std::string> saveTagChangesCTName;
-    for (size_t i = 0; i < tagChangesTag.size(); i ++)
-    {
-        // add the regular tag changes
-        saveTagChangesTag.insert(saveTagChangesTag.end(), 
-                                 tagChangesTag.begin(),
-                                 tagChangesTag.end());
-        saveTagChangesType.insert(saveTagChangesType.end(),
-                                  tagChangesType.begin(),
-                                  tagChangesType.end());
-        saveTagChangesCTName.insert(saveTagChangesCTName.end(),
-                                    tagChangesCTName.begin(),
-                                    tagChangesCTName.end());
-        // add the deferred tag changes
-        saveTagChangesTag.insert(saveTagChangesTag.end(),
-                                 deferredTagChangesTag.begin(),
-                                 deferredTagChangesTag.end());
-        saveTagChangesType.insert(saveTagChangesType.end(),
-                                  deferredTagChangesType.begin(),
-                                  deferredTagChangesType.end());
-        saveTagChangesCTName.insert(saveTagChangesCTName.end(),
-                                    deferredTagChangesCTName.begin(),
-                                    deferredTagChangesCTName.end());
-    }
+    // add the regular tag changes
+    saveTagChangesTag.insert(saveTagChangesTag.end(), 
+                             tagChangesTag.begin(),
+                             tagChangesTag.end());
+    saveTagChangesType.insert(saveTagChangesType.end(),
+                              tagChangesType.begin(),
+                              tagChangesType.end());
+    saveTagChangesCTName.insert(saveTagChangesCTName.end(),
+                                tagChangesCTName.begin(),
+                                tagChangesCTName.end());
+    // add the deferred tag changes
+    saveTagChangesTag.insert(saveTagChangesTag.end(),
+                             deferredTagChangesTag.begin(),
+                             deferredTagChangesTag.end());
+    saveTagChangesType.insert(saveTagChangesType.end(),
+                              deferredTagChangesType.begin(),
+                              deferredTagChangesType.end());
+    saveTagChangesCTName.insert(saveTagChangesCTName.end(),
+                                deferredTagChangesCTName.begin(),
+                                deferredTagChangesCTName.end());
 
     // The use case for this is as follows: If a user has user-defined
     // color tables in their .visit directory, and they make tag changes
@@ -666,6 +666,8 @@ ColorTableAttributes::CreateNode(DataNode *parentNode, bool, bool)
 //   Justin Privitera, Mon Aug 28 09:57:59 PDT 2023
 //   Added logic to read all of the tagging infrastructure from a node.
 //
+//   Justin Privitera, Tue Sep  5 12:49:42 PDT 2023
+//   Filter tables by tag at the end, once all data has been read from node.
 // ****************************************************************************
 
 void
@@ -1759,6 +1761,12 @@ ColorTableAttributes::GetColorControlPoints(const std::string &name) const
 //   Apply deferred tag changes.
 //   Fixed a bug where the CTnames and ccpls would get sorted but CTactive
 //   flags would not be.
+// 
+//    Justin Privitera, Tue Sep  5 12:49:42 PDT 2023
+//    Create tag list entry on CT addition.
+//    Increment tag list entry on CT addition.
+//    Filter CT by tags when it is added.
+//    Use new selection methods to select CTs and tags lists.
 // ****************************************************************************
 
 void
@@ -1888,6 +1896,14 @@ ColorTableAttributes::RemoveColorTable(const std::string &name)
 // 
 //   Justin Privitera, Mon Aug 28 09:57:59 PDT 2023
 //   Renamed iterators to reduce ambiguity.
+//
+//    Justin Privitera, Tue Sep  5 12:49:42 PDT 2023
+//    Use the new color tables list selection method.
+//    Decrement tag num refs on CT removal.
+// 
+//   Justin Privitera, Wed Sep  6 11:52:18 PDT 2023
+//   Fixed bug where I was saving out the tag changes multiple times.
+//   Simplified logic for determining the default color table.
 // ****************************************************************************
 
 void
@@ -1935,7 +1951,7 @@ ColorTableAttributes::RemoveColorTable(int index)
                 for (int i = 0; i < colorTableNames.size(); i ++)
                 {
                     bool ctDiscrete{GetColorTables(i).GetDiscreteFlag()};
-                    if ((discrete && ctDiscrete) || ((! discrete) && (! ctDiscrete)))
+                    if (discrete == ctDiscrete)
                         return colorTableNames[i];
                 }
             }
@@ -1947,7 +1963,7 @@ ColorTableAttributes::RemoveColorTable(int index)
         if (ctName == defaultContinuous)
             SetDefaultContinuous(determineDefaultColorTable(false));
         else if (ctName == defaultDiscrete)
-            SetDefaultContinuous(determineDefaultColorTable(true));
+            SetDefaultDiscrete(determineDefaultColorTable(true));
     }
 }
 
@@ -1955,10 +1971,10 @@ ColorTableAttributes::RemoveColorTable(int index)
 // Method: ColorTableAttributes::SelectColorTablesList
 //
 // Purpose:
-//   TODO
+//   Selects the pieces of the color tables list.
 //
 // Programmer: Justin Privitera
-// Creation:   TODO
+// Creation:   09/05/23
 //
 // Modifications:
 // 
@@ -2408,7 +2424,8 @@ ColorTableAttributes::SelectTagList()
 // Creation:   08/10/23
 //
 // Modifications:
-//
+//    Justin Privitera, Tue Sep  5 12:49:42 PDT 2023
+//    Check before adding to this list.
 // ****************************************************************************
 void
 ColorTableAttributes::CreateTagChangesEntry(const std::string tagname, 
@@ -2526,7 +2543,8 @@ ColorTableAttributes::CheckTagChangesEntryInTagChanges(const std::string tagName
 // Creation:   08/24/23
 //
 // Modifications:
-//
+//    Justin Privitera, Tue Sep  5 12:49:42 PDT 2023
+//    Check before adding an entry to this list, and select the list when done.
 // ****************************************************************************
 void
 ColorTableAttributes::CreateDeferredTagChangesEntry(const std::string tagname, 
@@ -2554,7 +2572,8 @@ ColorTableAttributes::CreateDeferredTagChangesEntry(const std::string tagname,
 // Creation:   08/24/23
 //
 // Modifications:
-//
+//    Justin Privitera, Tue Sep  5 12:49:42 PDT 2023
+//    Select deferred tag changes if we are removing.
 // ****************************************************************************
 void
 ColorTableAttributes::RemoveDeferredTagChangesEntry(const int index)
@@ -2996,7 +3015,7 @@ ColorTableAttributes::GetTagTableItemFlag(const std::string tagname)
 //    Returns true if the tag is in the tag list, and false otherwise.
 //
 // Programmer: Justin Privitera
-// Creation:   06/27/23
+// Creation:   08/27/23
 //
 // Modifications:
 //
