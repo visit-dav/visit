@@ -25,6 +25,9 @@
 #   Eric Brugger, Tue Jul 25 11:23:55 EDT 2023
 #   Change CMAKE_THREAD_LIBS to Threads::Threads.
 #
+#   Kathleen Biagas, Tue Sep 5, 2023 
+#   Remove untested, unused EGL logic.
+#
 #****************************************************************************
 
 INCLUDE_DIRECTORIES(
@@ -100,8 +103,6 @@ ${ZLIB_LIBRARY}
 
 if(HAVE_OSMESA)
     target_link_libraries(avtFilterExample ${OSMESA_LIBRARIES})
-elseif(HAVE_EGL)
-    target_link_libraries(avtFilterExample ${EGL_LIBRARIES})
 endif()
 
 ADD_EXECUTABLE(avtRenderExample avtRenderExample.C)
@@ -130,8 +131,6 @@ ${ZLIB_LIBRARY}
 
 if(HAVE_OSMESA)
     target_link_libraries(avtRenderExample ${OSMESA_LIBRARIES})
-elseif(HAVE_EGL)
-    target_link_libraries(avtRenderExample ${EGL_LIBRARIES})
 endif()
 
 
@@ -157,8 +156,6 @@ ${ZLIB_LIBRARY}
 
 if(HAVE_OSMESA)
     target_link_libraries(avtPluginExample ${OSMESA_LIBRARIES})
-elseif(HAVE_EGL)
-    target_link_libraries(avtPluginExample ${EGL_LIBRARIES})
 endif()
 
 ADD_EXECUTABLE(avtPlotPluginExample avtPlotPluginExample.C)
@@ -187,8 +184,6 @@ ${ZLIB_LIBRARY}
 
 if(HAVE_OSMESA)
     target_link_libraries(avtPlotPluginExample ${OSMESA_LIBRARIES})
-elseif(HAVE_EGL)
-    target_link_libraries(avtPlotPluginExample ${EGL_LIBRARIES})
 endif()
 
 ADD_EXECUTABLE(networkManagerExample networkManagerExample.C)

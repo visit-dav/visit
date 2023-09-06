@@ -4,6 +4,8 @@
 
 #****************************************************************************
 # Modifications:
+#   Kathleen Biagas, Tue Sep 5, 2023 
+#   Remove untested, unused EGL logic.
 #
 #****************************************************************************
 
@@ -12,8 +14,8 @@ project(visit_vtk)
 add_subdirectory(lightweight)
 add_subdirectory(full)
 
-# if osmesa or egl is enabled, add our offscreen rendering factory
-if(HAVE_OSMESA OR HAVE_EGL)
+# if osmesa is enabled, add our offscreen rendering factory
+if(HAVE_OSMESA)
     add_subdirectory(offscreen)
 endif()
 

@@ -28,6 +28,9 @@
 #   Eric Brugger, Tue Jul 25 11:23:55 EDT 2023
 #   Change CMAKE_THREAD_LIBS to Threads::Threads.
 #
+#   Kathleen Biagas, Tue Sep 5, 2023 
+#   Remove untested, unused EGL logic.
+#
 #****************************************************************************
 
 INCLUDE_DIRECTORIES(
@@ -133,8 +136,6 @@ ELSE()
     )
     if(HAVE_OSMESA)
         target_link_libraries(visitconvert_ser ${OSMESA_LIBRARIES})
-    elseif(HAVE_EGL)
-        target_link_libraries(visitconvert_ser ${EGL_LIBRARIES})
     endif()
 ENDIF()
 
@@ -196,8 +197,6 @@ IF(VISIT_PARALLEL)
         )
         if(HAVE_OSMESA)
             target_link_libraries(visitconvert_par ${OSMESA_LIBRARIES})
-        elseif(HAVE_EGL)
-            target_link_libraries(visitconvert_par ${EGL_LIBRARIES})
         endif()
     ENDIF()
 
