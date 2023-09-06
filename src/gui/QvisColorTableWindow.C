@@ -726,6 +726,9 @@ QvisColorTableWindow::SetFromNode(DataNode *parentNode, const int *borders)
 // 
 //   Justin Privitera, Mon Aug 28 11:22:47 PDT 2023
 //   Added a case for when the tag list is selected.
+// 
+//   Justin Privitera, Tue Sep  5 12:49:42 PDT 2023
+//   Changing tags match all or any now triggers updateNames.
 // ****************************************************************************
 
 void
@@ -785,6 +788,8 @@ QvisColorTableWindow::UpdateWindow(bool doAll)
         case ColorTableAttributes::ID_colorTableNames:
             // fall thru
         case ColorTableAttributes::ID_tagListNames:
+            // fall thru
+        case ColorTableAttributes::ID_tagsMatchAny:
             updateNames = true;
             break;
         case ColorTableAttributes::ID_colorTables:
@@ -899,10 +904,10 @@ QvisColorTableWindow::UpdateEditor()
 
 
 // ****************************************************************************
-// Method: QvisColorTableWindow::UpdateTags
+// Method: QvisColorTableWindow::UpdateTagTable
 //
 // Purpose:
-//   Updates the global tag list to reflect current available tags.
+//   Updates the tag table to reflect the current state of the tag list.
 //
 // Programmer: Justin Privitera
 // Creation:   Tue Jun  7 12:36:55 PDT 2022
@@ -935,60 +940,41 @@ QvisColorTableWindow::UpdateEditor()
 //    tag update process into a pipeline of discrete steps. I have removed the
 //    dependence on helper functions. We take advantage of the CTAtts functions
 //    for working with the tag list.
+// 
+//    Justin Privitera, Tue Sep  5 12:49:42 PDT 2023
+//    Changed the name form UpdateTags to UpdateTagTable since this function 
+//    no longer updates tags and only updates the table.
+//    Removed the second step, which was adding tags to the tag list, since
+//    this now happens in the CTAtts.
+//    Made the adding tags to tag table step (old step 3, now step 2) 
+//    unconditional since we can guarantee that all tag names that arrive there
+//    do not have a tag table entry.
+//    Added a const to the last step.
 //
 // ****************************************************************************
 
 void
-QvisColorTableWindow::UpdateTags()
+QvisColorTableWindow::UpdateTagTable()
 {
     // 1. Get names of tags to add.
     std::vector<std::string> tagsToAdd = colorAtts->GetNewTagNames();
 
-    // 2. Add tags to tag list.
-    // TODO this whole block will disappear in the next PR, since tag list entries will
-    // be created when color tables are added.
-    static bool first_time = true;
-    std::for_each(tagsToAdd.begin(), tagsToAdd.end(),
-        [this](std::string currtag)
-        {
-            // If the given tag is NOT in the global tag list, we will create an entry for it
-            if (! colorAtts->CheckTagInTagList(currtag))
-                colorAtts->CreateTagListEntry(currtag, false, 0, false);
-
-            // Only the very first time can we guarantee that each reference to each
-            // tag has not been encountered before, so it is safe to increment here.
-            // Why is this? We are here unconditionally FOR EVERY tag in the CCPL, 
-            // whether or not that tag has been added before.
-            if (first_time)
-                // We have to do this logic AFTER the above logic because currtag
-                // needs to be added to the tag list before we can increment it
-                colorAtts->IncrementTagNumRefs(currtag);
-                // Whether or not we end up adding to the tag table, the fact that 
-                // this function was called with this tag means there is another
-                // reference to it, so we should update the numrefs. Hence why
-                // we do NOT update the numrefs in `AddToTagTable()`.
-        });
-    first_time = false;
-
-    // 3. Add Tags to Tag Table.
+    // 2. Add Tags to Tag Table.
     std::for_each(tagsToAdd.begin(), tagsToAdd.end(),
         [this](const std::string currtag)
         {
-            // If this tag does not have a tagTable entry, then create one
-            if (! colorAtts->GetTagTableItemFlag(currtag))
-            {
-                QTreeWidgetItem *item = new QTreeWidgetItem(tagTable);
-                tagTableItems[currtag] = item;
-                colorAtts->SetTagTableItemFlag(currtag, true);
-                item->setCheckState(0, colorAtts->GetTagActive(currtag) ? Qt::Checked : Qt::Unchecked);
-                item->setText(1, currtag.c_str());
-            }
+            // Create a tag table entry for each tag
+            QTreeWidgetItem *item = new QTreeWidgetItem(tagTable);
+            tagTableItems[currtag] = item;
+            colorAtts->SetTagTableItemFlag(currtag, true);
+            item->setCheckState(0, colorAtts->GetTagActive(currtag) ? Qt::Checked : Qt::Unchecked);
+            item->setText(1, currtag.c_str());
         });
 
-    // 4. Purge tagList/tagTable entries that have 0 refcount.
+    // 3. Purge tagList/tagTable entries that have 0 refcount.
     std::vector<std::string> removedTags = colorAtts->RemoveUnusedTagsFromTagTable();
     std::for_each(removedTags.begin(), removedTags.end(),
-        [this](std::string removedTagName)
+        [this](const std::string removedTagName)
         {
             QTreeWidgetItem *tagTableItem = tagTableItems[removedTagName];
             auto index = tagTable->indexOfTopLevelItem(tagTableItem);
@@ -1064,6 +1050,10 @@ QvisColorTableWindow::UpdateTags()
 // 
 //   Justin Privitera, Mon Aug 28 11:22:47 PDT 2023
 //   Moved the tag filtering to the CTAtts, called it here. Added comments.
+// 
+//   Justin Privitera, Tue Sep  5 12:49:42 PDT 2023
+//   Removed failsafe logic at the end of the function for reading 
+//   config/session files as it is no longer necessary.
 // ****************************************************************************
 
 void
@@ -1077,7 +1067,7 @@ QvisColorTableWindow::UpdateNames()
     // 
     // Populate tag list
     // 
-    UpdateTags();
+    UpdateTagTable();
 
     // 
     // Populate Color Table Name List
@@ -1146,20 +1136,6 @@ QvisColorTableWindow::UpdateNames()
 
     // Set the enabled state of the delete button.
     deleteButton->setEnabled(colorAtts->GetNumColorTables() > 1);
-
-    // TODO this block will disappear in the next PR
-    static bool run_before = false;
-    if (!run_before)
-    {
-        // This only needs to happen the very first time for loading options.
-        // If visit isn't opened with saved config and guiconfig files, then
-        // this is redundant, but doesn't hurt. If it happens more than once
-        // then VisIt will crash.
-        run_before = true;
-        colorAtts->SetChangesMade(true);
-        ctObserver.SetUpdate(true);
-        Apply(true);
-    }
 }
 
 // ****************************************************************************
@@ -2206,6 +2182,10 @@ QvisColorTableWindow::equalSpacingToggled(bool)
 // 
 //   Justin Privitera, Mon Aug 28 11:22:47 PDT 2023
 //   Use the CTAtts functions to update the tag reference count.
+// 
+//    Justin Privitera, Tue Sep  5 12:49:42 PDT 2023
+//    Moved tag numrefs increment on addition to CTAtts.
+//    Removed obsolete SetTagChangesMade.
 //
 // ****************************************************************************
 
@@ -2226,11 +2206,8 @@ QvisColorTableWindow::addColorTable()
             // Copy the default color table into the new color table.
             ColorControlPointList cpts(*ccpl);
             cpts.AddTag("User Defined");
-            cpts.SetTagChangesMade(true); // need to set manually b/c orig val was copied
             cpts.SetBuiltIn(false);
             colorAtts->AddColorTable(currentColorTable.toStdString(), cpts);
-            for (auto tag : cpts.GetTagNames())
-                colorAtts->IncrementTagNumRefs(tag);
         }
         else
         {
@@ -2248,8 +2225,6 @@ QvisColorTableWindow::addColorTable()
             cpts.AddTag("User Defined");
             cpts.SetBuiltIn(false);
             colorAtts->AddColorTable(currentColorTable.toStdString(), cpts);
-            for (auto tag : cpts.GetTagNames())
-                colorAtts->IncrementTagNumRefs(tag);
         }
 
         // Tell all of the observers to update.
@@ -2303,6 +2278,9 @@ QvisColorTableWindow::addColorTable()
 //     Justin Privitera, Mon Aug 28 11:22:47 PDT 2023
 //     Use the new CTAtts functions to get at the tag list.
 // 
+//    Justin Privitera, Tue Sep  5 12:49:42 PDT 2023
+//    Moved tag numrefs decrement on removal to CTAtts.
+// 
 // ****************************************************************************
 
 void
@@ -2350,9 +2328,6 @@ QvisColorTableWindow::deleteColorTable()
             Error(tmp);
             return;
         }
-        // TODO move this logic to the ctatts
-        for (auto tag : ccpl->GetTagNames())
-            colorAtts->DecrementTagNumRefs(tag);
         GetViewerMethods()->DeleteColorTable(ctName.c_str());
     }
     else
@@ -2433,6 +2408,9 @@ QvisColorTableWindow::highlightColorTable(QTreeWidgetItem *current,
 // 
 //    Justin Privitera, Mon Aug 28 11:22:47 PDT 2023
 //    Use the CTAtts function to update the tag list.
+// 
+//    Justin Privitera, Tue Sep  5 12:49:42 PDT 2023
+//    Removed redundant update names and buttons pattern.
 //
 // ****************************************************************************
 
@@ -2440,9 +2418,6 @@ void
 QvisColorTableWindow::tagTableItemSelected(QTreeWidgetItem *item, int column)
 {
     colorAtts->SetTagActive(item->text(1).toStdString(), item->checkState(0) == Qt::Checked);
-    UpdateNames();
-    colorAtts->SetChangesMade(true);
-    ctObserver.SetUpdate(true);
     Apply(true);
 }
 
@@ -3061,6 +3036,9 @@ QvisColorTableWindow::exportColorTable()
 // Modifications:
 //   Justin Privitera, Mon Aug 28 11:22:47 PDT 2023
 //   Use new CTAtts functions.
+// 
+//   Justin Privitera, Tue Sep  5 12:49:42 PDT 2023
+//   Removed redundant update names and buttons pattern.
 // ****************************************************************************
 void
 QvisColorTableWindow::tagsSelectAll()
@@ -3082,9 +3060,6 @@ QvisColorTableWindow::tagsSelectAll()
             tagTableItemsEntry.second->setCheckState(0, Qt::Checked);
     }
     tagTable->blockSignals(false);
-    UpdateNames();
-    colorAtts->SetChangesMade(true);
-    ctObserver.SetUpdate(true);
     Apply(true);
 }
 
@@ -3101,19 +3076,20 @@ QvisColorTableWindow::tagsSelectAll()
 //   Justin Privitera, Mon Aug 28 11:22:47 PDT 2023
 //   Simplified the logic a bit. Also update to reflect that tagsMatchAny lives
 //   in the CTAtts now.
+// 
+//   Justin Privitera, Tue Sep  5 12:49:42 PDT 2023
+//   Simplified this function and removed redundant update names and buttons 
+//   pattern.
 // ****************************************************************************
 
 void
 QvisColorTableWindow::tagCombiningChanged(int index)
 {
-    bool old_val = colorAtts->GetTagsMatchAny();
-    colorAtts->SetTagsMatchAny(index == 0);
+    const bool new_behavior = index == 0;
     // has the tag combining behavior been changed?
-    if (old_val != colorAtts->GetTagsMatchAny())
+    if (new_behavior != colorAtts->GetTagsMatchAny())
     {
-        UpdateNames();
-        colorAtts->SetChangesMade(true);
-        ctObserver.SetUpdate(true);
+        colorAtts->SetTagsMatchAny(new_behavior);
         Apply(true);
     }
 }

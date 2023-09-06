@@ -74,7 +74,6 @@ public:
     void SetColorTableActiveFlags(const intVector &colorTableActiveFlags_);
     void SetDefaultContinuous(const std::string &defaultContinuous_);
     void SetDefaultDiscrete(const std::string &defaultDiscrete_);
-    void SetChangesMade(bool changesMade_);
     void SetTagsMatchAny(bool tagsMatchAny_);
     void SetTagListNames(const stringVector &tagListNames_);
     void SetTagListActive(const intVector &tagListActive_);
@@ -98,7 +97,6 @@ public:
           std::string  &GetDefaultContinuous();
     const std::string  &GetDefaultDiscrete() const;
           std::string  &GetDefaultDiscrete();
-    bool               GetChangesMade() const;
     bool               GetTagsMatchAny() const;
     const stringVector &GetTagListNames() const;
           stringVector &GetTagListNames();
@@ -151,6 +149,7 @@ public:
     void AddColorTable(const std::string &name, ColorControlPointList &cpts);
     void RemoveColorTable(const std::string &name);
     void RemoveColorTable(int index);
+    void SelectColorTablesList();
     void SetColorTableActiveFlag(int index, bool val);
     bool GetColorTableActiveFlag(int index);
     void MergeTagChanges(const stringVector tagChangesTagFromNode, const intVector tagChangesTypeFromNode, const stringVector tagChangesCTNameFromNode);
@@ -164,10 +163,14 @@ public:
     void SelectTagList();
     void CreateTagChangesEntry(const std::string tagname, const int addOrRemove, const std::string ctName);
     void RemoveTagChangesEntry(const int index);
+    int GetIndexOfTagChangesEntry(const std::string tagName, const int addOrRemove, const std::string ctName);
+    bool CheckTagChangesEntryInTagChanges(const std::string tagName, const int addOrRemove, const std::string ctName);
     void CreateDeferredTagChangesEntry(const std::string tagname, const int addOrRemove, const std::string ctName);
     void RemoveDeferredTagChangesEntry(const int index);
     void RemoveDeferredTagChangesEntry(const std::string tagName, const int addOrRemove, const std::string ctName);
+    void SelectDeferredTagChanges();
     int GetIndexOfDeferredTagChangesEntry(const std::string tagName, const int addOrRemove, const std::string ctName);
+    bool CheckTagChangesEntryInDeferredTagChanges(const std::string tagName, const int addOrRemove, const std::string ctName);
     void ApplyDeferredTagChanges(const std::string newCTName, ColorControlPointList *cpts);
     void ApplyTagChange(const std::string tagName, const int changeType, const std::string ctName, ColorControlPointList *ccpl);
     void SelectTagChanges();
@@ -197,7 +200,6 @@ public:
         ID_colorTables,
         ID_defaultContinuous,
         ID_defaultDiscrete,
-        ID_changesMade,
         ID_tagsMatchAny,
         ID_tagListNames,
         ID_tagListActive,
@@ -220,7 +222,6 @@ private:
     AttributeGroupVector colorTables;
     std::string          defaultContinuous;
     std::string          defaultDiscrete;
-    bool                 changesMade;
     bool                 tagsMatchAny;
     stringVector         tagListNames;
     intVector            tagListActive;
@@ -237,6 +238,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define COLORTABLEATTRIBUTES_TMFS "s*i*a*ssbbs*i*i*i*s*i*s*s*i*s*"
+#define COLORTABLEATTRIBUTES_TMFS "s*i*a*ssbs*i*i*i*s*i*s*s*i*s*"
 
 #endif

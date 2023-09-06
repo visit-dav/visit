@@ -5099,6 +5099,9 @@ ViewerSubject::HandleSILAttsUpdated(const string &host,
 //   Justin Privitera, Mon Aug 21 15:54:50 PDT 2023
 //   Changed ColorTableAttributes `names` to `colorTableNames` and `active` to
 //   `colorTableActiveFlags`.
+// 
+//   Justin Privitera, Tue Sep  5 12:49:42 PDT 2023
+//   Use the same if-statement as the color table observer.
 // ****************************************************************************
 
 void
@@ -5114,9 +5117,15 @@ ViewerSubject::HandleColorTable()
         // 3. If just #2 is selected, we're changing the default colormap. This is
         //    only of concern if I decide to show what the default is in a widget.
 
+        // NOTE: The logic here is identical to that in ColorTableObserver::Update.
+        // If you are making a change to either, change in both places.
+
         // If the names or the color table attributes are changing, then we
         // have to update the widget.
-        if(colorAtts->IsSelected(0) || colorAtts->IsSelected(1))
+        if(colorAtts->IsSelected(ColorTableAttributes::ID_colorTableNames) ||
+           colorAtts->IsSelected(ColorTableAttributes::ID_tagListNames) ||
+           colorAtts->IsSelected(ColorTableAttributes::ID_colorTables) ||
+           colorAtts->IsSelected(ColorTableAttributes::ID_tagsMatchAny))
         {
             // Clear all of the color tables.
             QvisColorTableButton::clearAllColorTables();
