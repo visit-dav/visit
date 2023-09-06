@@ -7,9 +7,6 @@
 #if defined(HAVE_OSMESA)
   #include <vtkOSOpenGLRenderWindow.h>
   VTK_CREATE_CREATE_FUNCTION(vtkOSOpenGLRenderWindow);
-#elif defined(HAVE_EGL)
-  #include <vtkEGLRenderWindow.h>
-  VTK_CREATE_CREATE_FUNCTION(vtkEGLRenderWindow);
 #endif
 
 
@@ -30,30 +27,21 @@ vtkOffScreenRenderingFactory::vtkOffScreenRenderingFactory()
     // If VTK was compiled with VTK_OPENGL_HAS_OSMESA then
     // vtkOSOpenGLRenderWindow was compiled into vtkRenderingOpenGL.
     //
-    // If VTK was compiled with VTK_OPENGL_HAS_EGL then
-    // vtkEGLRenderWindow was compiled into vtkRenderingOpenGL.
-    //
     // If VTK was comiled with VTK_USE_X, then, despite either of the above
     // vtkXOpenGLRenderWindow will be the override when instantiating a
     // vtkRenderWindow.
     //
     // This will cause problems for us on headless nodes, so here we create
     // overrides for vtkXOpenGLRenderWindow, depending on whether we want
-    // OSMesa or EGL.
+    // OSMesa.
     //
 
-#if defined(HAVE_OSMESA)
+#ifdef HAVE_OSMESA
     this->RegisterOverride("vtkXOpenGLRenderWindow",
                            "vtkOSOpenGLRenderWindow",
                            "Render Window Hijack Overrride",
                            1,
                            vtkObjectFactoryCreatevtkOSOpenGLRenderWindow);
-#elif defined(HAVE_EGL)
-    this->RegisterOverride("vtkXOpenGLRenderWindow",
-                           "vtkEGLRenderWindow",
-                           "Render Window Hijack Overrride",
-                           1,
-                           vtkObjectFactoryCreatevtkEGLRenderWindow);
 #endif
 }
 
@@ -71,7 +59,7 @@ vtkOffScreenRenderingFactory::vtkOffScreenRenderingFactory()
 void
 vtkOffScreenRenderingFactory::ForceOffScreen()
 {
-#if defined(HAVE_OSMESA) || defined(HAVE_EGL)
+#ifdef HAVE_OSMESA
     vtkOffScreenRenderingFactory *os_factory = vtkOffScreenRenderingFactory::New();
     vtkObjectFactory::RegisterFactory(os_factory);
     os_factory->Delete();

@@ -13,6 +13,9 @@
 #    Kathleen Biagas, Tue May 5, 2023
 #    Disable qt6 forcing of defines for UNICODE.
 #
+#    Kathleen Biagas, Tue Sep 5, 2023 
+#    Remove untested, unused EGL logic.
+#
 #****************************************************************************
 
 set(VTKQT_SOURCES
@@ -53,8 +56,6 @@ target_link_libraries(vtkqt ${vtklibs} ${QT_QTCORE_LIBRARY} ${QT_QTGUI_LIBRARY}
 
 if(HAVE_OSMESA)
     target_link_libraries(vtkqt ${OSMESA_LIBRARIES})
-elseif(HAVE_EGL)
-    target_link_libraries(vtkqt ${EGL_LIBRARIES})
 endif()
 
 if(APPLE)
