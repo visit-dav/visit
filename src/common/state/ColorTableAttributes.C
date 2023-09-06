@@ -552,6 +552,9 @@ ColorTableAttributes::CreateSubAttributeGroup(int)
 // 
 //   Justin Privitera, Mon Aug 28 09:57:59 PDT 2023
 //   Added logic to save all of the tagging infrastructure to a node.
+// 
+//   Justin Privitera, Wed Sep  6 11:52:18 PDT 2023
+//   Fixed bug where I was saving out the tag changes multiple times.
 //
 // ****************************************************************************
 
@@ -1897,8 +1900,10 @@ ColorTableAttributes::RemoveColorTable(const std::string &name)
 //    Justin Privitera, Tue Sep  5 12:49:42 PDT 2023
 //    Use the new color tables list selection method.
 //    Decrement tag num refs on CT removal.
-//    Fixed bug where I accidentally set the default continuous instead of the
-//    default discrete.
+// 
+//   Justin Privitera, Wed Sep  6 11:52:18 PDT 2023
+//   Fixed bug where I was saving out the tag changes multiple times.
+//   Simplified logic for determining the default color table.
 // ****************************************************************************
 
 void

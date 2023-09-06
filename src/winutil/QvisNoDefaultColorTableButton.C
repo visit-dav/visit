@@ -225,6 +225,10 @@ QvisNoDefaultColorTableButton::sizePolicy() const
 //    Justin Privitera, Fri Sep  2 16:46:21 PDT 2022
 //    Logic was added to ensure no desync with the color table atts and to
 //    react to color tables outside the filtering selection.
+// 
+//   Justin Privitera, Wed Sep  6 11:52:18 PDT 2023
+//   Fixed bug where the button could have no CT in it when using a config or
+//   session file.
 //
 // ****************************************************************************
 
@@ -257,7 +261,6 @@ debug1 <<"    ctName: " << ctName.toStdString() << endl;
             setToolTip(colorTable);
             setIcon(getIcon(colorTable));
         }
-        // but if it was filtered, we don't want to do anything... or do we??? TODO
         else
         {
             colorTable = ctName;
