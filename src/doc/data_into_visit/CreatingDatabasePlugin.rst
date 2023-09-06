@@ -1879,3 +1879,10 @@ This means that the places where global communication can occur are few.
 VisIt_'s database plug-in interfaces provide the *ActivateTimestep* method as a location where global, parallel communication can be performed safely.
 If your parallel database reader needs to do parallel communication such as broadcasting metadata to all processors, or figuring out data extents in parallel then that code must be added in the *ActivateTimestep* method.
 
+Third party library support
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+If your plugin depends on an I/O library not already supported by VisIt_, and if the plugin will be contributed to VisIt_'s repo, then support for the library needs to be added to the `build_visit` script.
+Please see :ref:`dev_create_bv_module` for how to add a new module to build_visit.
+A CMake `Find` module will also need to be added to ``src/CMake`` and ``src/CMake/SetupThirdParty.cmake`` will need to be modified to include that module.
+See :ref:`dev_adding_find_module` for more information.
