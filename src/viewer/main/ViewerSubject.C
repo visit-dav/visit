@@ -166,7 +166,7 @@ static int nConfigArgs = 1;
 #include <sstream>
 
 #include <visit-config.h>
-#if defined(HAVE_OSMESA) || defined(HAVE_EGL)
+#ifdef HAVE_OSMESA
 #  include <vtkOffScreenRenderingFactory.h>
 #endif
 
@@ -2607,7 +2607,7 @@ ViewerSubject::ProcessCommandLine(int argc, char **argv)
         }
         else if (strcmp(argv[i], "-nowin") == 0)
         {
-#if defined(HAVE_OSMESA) || defined(HAVE_EGL)
+#ifdef HAVE_OSMESA
             vtkOffScreenRenderingFactory::ForceOffScreen();
 #endif
             RemoteProcess::DisablePTY();

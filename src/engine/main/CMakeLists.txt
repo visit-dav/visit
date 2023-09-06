@@ -49,6 +49,9 @@
 #    Eric Brugger, Tue Jul 25 11:23:55 EDT 2023
 #    Change CMAKE_THREAD_LIBS to Threads::Threads.
 #
+#    Kathleen Biagas, Tue Sep 5, 2023 
+#    Remove untested, unused EGL logic.
+#
 #****************************************************************************
 
 set(LIBENGINE_SOURCES
@@ -124,7 +127,7 @@ ${VISIT_SOURCE_DIR}/visit_vtk/lightweight
 ${VTK_INCLUDE_DIRS}
 )
 
-if(HAVE_OSMESA OR HAVE_EGL)
+if(HAVE_OSMESA)
   include_directories(${VISIT_SOURCE_DIR}/visit_vtk/offscreen)
 endif()
 
@@ -165,7 +168,7 @@ if(CONDUIT_FOUND AND MFEM_FOUND)
 endif()
 
 
-if(HAVE_OSMESA OR HAVE_EGL)
+if(HAVE_OSMESA)
     target_link_libraries(engine_ser visit_vtk_offscreen)
 endif()
 
@@ -267,7 +270,7 @@ if(VISIT_PARALLEL)
             )
     endif()
 
-    if(HAVE_OSMESA OR HAVE_EGL)
+    if(HAVE_OSMESA)
         target_link_libraries(engine_par visit_vtk_offscreen)
     endif()
 
