@@ -968,6 +968,7 @@ function build_qt
     qt_flags="${qt_flags} -confirm-license"
 
     QT_VER_MSG="Qt5"
+    qt_flags="${qt_flags} -skip qtwebengine"
     qt_flags="${qt_flags} -skip 3d"
     qt_flags="${qt_flags} -skip charts"
     qt_flags="${qt_flags} -skip connectivity"

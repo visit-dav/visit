@@ -23,8 +23,8 @@ function bv_mpich_depends_on
 function bv_mpich_info
 {
     if [[ "$OPSYS" == "Darwin" ]]; then
-        export MPICH_VERSION=${MPICH_VERSION:-"3.3.1-libtool-2.4.6"}
-        export MPICH_FILE=${MPICH_FILE:-"mpich-${MPICH_VERSION}.tar.gz"}
+        export MPICH_VERSION=${MPICH_VERSION:-"3.3.1"}
+        export MPICH_FILE=${MPICH_FILE:-"mpich-${MPICH_VERSION}-libtool-2.4.6.tar.gz"}
         export MPICH_COMPATIBILITY_VERSION=${MPICH_COMPATIBILITY_VERSION:-"3.3"}
         export MPICH_BUILD_DIR=${MPICH_BUILD_DIR:-"mpich-${MPICH_VERSION}"}
         export MPICH_URL=${MPICH_URL:-https://media.githubusercontent.com/media/visit-dav/third-party/master/lib/}
