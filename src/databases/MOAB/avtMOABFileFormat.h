@@ -19,6 +19,7 @@ namespace moab
 {
   class Core;
   class ParallelComm;
+  class Range;
 }
 struct mhdf_FileDesc ;
 
@@ -98,6 +99,12 @@ class avtMOABFileFormat : public avtSTMDFileFormat
     std::set<int>          materials;
     std::set<int>          neumannsets;
     std::set<int>          dirichsets;
+
+    bool opt1d, opt2d, opt3d;
+    moab::Range           *edges;
+    moab::Range           *faces;
+    moab::Range           *solids;
+    moab::Range           *select;
 
     std::set<struct tagBasic, compare1>       elemTags;
     std::vector<struct tagBasic>    nodeTags;
