@@ -28,8 +28,9 @@ class ExtrudeStackedAttributes : public AttributeSubject
 public:
     enum VariableDisplayType
     {
-        Index,
-        Value
+        NodeHeight,
+        CellHeight,
+        VarIndex
     };
 
     // These constructors are for objects of this class
@@ -58,18 +59,22 @@ public:
     // Property selection methods
     virtual void SelectAll();
     void SelectAxis();
+    void SelectDefaultVariable();
     void SelectScalarVariableNames();
     void SelectVisualVariableNames();
     void SelectExtentMinima();
     void SelectExtentMaxima();
+    void SelectExtentScale();
 
     // Property setting methods
     void SetAxis(const double *axis_);
     void SetByVariable(bool byVariable_);
+    void SetDefaultVariable(const std::string &defaultVariable_);
     void SetScalarVariableNames(const stringVector &scalarVariableNames_);
     void SetVisualVariableNames(const stringVector &visualVariableNames_);
     void SetExtentMinima(const doubleVector &extentMinima_);
     void SetExtentMaxima(const doubleVector &extentMaxima_);
+    void SetExtentScale(const doubleVector &extentScale_);
     void SetVariableDisplay(VariableDisplayType variableDisplay_);
     void SetLength(double length_);
     void SetSteps(int steps_);
@@ -79,6 +84,8 @@ public:
     const double       *GetAxis() const;
           double       *GetAxis();
     bool               GetByVariable() const;
+    const std::string  &GetDefaultVariable() const;
+          std::string  &GetDefaultVariable();
     const stringVector &GetScalarVariableNames() const;
           stringVector &GetScalarVariableNames();
     const stringVector &GetVisualVariableNames() const;
@@ -87,6 +94,8 @@ public:
           doubleVector &GetExtentMinima();
     const doubleVector &GetExtentMaxima() const;
           doubleVector &GetExtentMaxima();
+    const doubleVector &GetExtentScale() const;
+          doubleVector &GetExtentScale();
     VariableDisplayType GetVariableDisplay() const;
     double             GetLength() const;
     int                GetSteps() const;
@@ -110,7 +119,8 @@ public:
     virtual bool                      FieldsEqual(int index, const AttributeGroup *rhs) const;
 
     // User-defined methods
-    void InsertVariable(const std::string &variableName_);
+    void addVariable(const std::string &variableName_);
+    void InsertVariable(const std::string &variableName_, const int index = 0);
     void DeleteVariable(const std::string &variableName_, int minVariableCount);
     bool AttributesAreConsistent() const;
 
@@ -118,10 +128,12 @@ public:
     enum {
         ID_axis = 0,
         ID_byVariable,
+        ID_defaultVariable,
         ID_scalarVariableNames,
         ID_visualVariableNames,
         ID_extentMinima,
         ID_extentMaxima,
+        ID_extentScale,
         ID_variableDisplay,
         ID_length,
         ID_steps,
@@ -132,10 +144,12 @@ public:
 private:
     double       axis[3];
     bool         byVariable;
+    std::string  defaultVariable;
     stringVector scalarVariableNames;
     stringVector visualVariableNames;
     doubleVector extentMinima;
     doubleVector extentMaxima;
+    doubleVector extentScale;
     int          variableDisplay;
     double       length;
     int          steps;
@@ -145,6 +159,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define EXTRUDESTACKEDATTRIBUTES_TMFS "Dbs*s*d*d*idib"
+#define EXTRUDESTACKEDATTRIBUTES_TMFS "Dbss*s*d*d*d*idib"
 
 #endif

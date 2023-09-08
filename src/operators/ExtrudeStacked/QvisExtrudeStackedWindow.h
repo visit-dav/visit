@@ -65,7 +65,8 @@ class QvisExtrudeStackedWindow : public QvisOperatorWindow
     void resetVariableExtents();
     void variableMinValueChanged(const QString &val);
     void variableMaxValueChanged(const QString &val);
-    void variableMinOrMaxValProcessText();
+    void variableScaleValueChanged(const QString &val);
+    void variableValueProcessText();
     void variableDisplayChanged(int val);
 
   private:
@@ -76,7 +77,7 @@ class QvisExtrudeStackedWindow : public QvisOperatorWindow
 
     QGroupBox          *variableGroup {nullptr};
     QTreeWidget        *variableTree {nullptr};
-    QvisVariableButton *variableNewButton {nullptr};
+    QvisVariableButton *variableAddButton {nullptr};
     QPushButton        *variableDeleteButton {nullptr};
     QPushButton        *variableUpButton {nullptr};
     QPushButton        *variableDownButton {nullptr};
@@ -90,6 +91,8 @@ class QvisExtrudeStackedWindow : public QvisOperatorWindow
     QLineEdit          *variableMinVal {nullptr};
     QLabel             *variableMaxValLabel {nullptr};
     QLineEdit          *variableMaxVal {nullptr};
+    QLabel             *variableScaleValLabel {nullptr};
+    QLineEdit          *variableScaleVal {nullptr};
 
     QLineEdit *steps {nullptr};
     QCheckBox *preserveOriginalCellNumbers {nullptr};

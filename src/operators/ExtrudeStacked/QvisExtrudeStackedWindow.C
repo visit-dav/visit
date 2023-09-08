@@ -19,6 +19,7 @@
 #include <QTreeWidgetItem>
 #include <QvisVariableButton.h>
 
+// Largely adapted from the original extrude operator.
 
 // ****************************************************************************
 // Method: QvisExtrudeStackedWindow::QvisExtrudeStackedWindow
@@ -36,11 +37,11 @@
 // ****************************************************************************
 
 QvisExtrudeStackedWindow::QvisExtrudeStackedWindow(const int type,
-                                     ExtrudeStackedAttributes *subj,
-                                     const QString &caption,
-                                     const QString &shortName,
-                                     QvisNotepadArea *notepad)
-    : QvisOperatorWindow(type,subj, caption, shortName, notepad)
+                                                   ExtrudeStackedAttributes *subj,
+                                                   const QString &caption,
+                                                   const QString &shortName,
+                                                   QvisNotepadArea *notepad)
+: QvisOperatorWindow(type,subj, caption, shortName, notepad)
 {
     atts = subj;
 }
@@ -94,15 +95,15 @@ QvisExtrudeStackedWindow::CreateWindowContents()
             this, SLOT(axisProcessText()));
     mainLayout->addWidget(axis, 0,1);
 
-    //
     // Variable to extrude
-    //
     variableGroup = new QGroupBox(tr("Extrude by variable"),central);
+#if defined(REPLICATE_EXTRUDE_OPERATOR)
     variableGroup->setCheckable( true );
-    variableGroup->setChecked( false );
+#endif
+    variableGroup->setChecked( true );
     connect(variableGroup, SIGNAL(toggled(bool)),
             this, SLOT(variableGroupChanged(bool)));
-    mainLayout->addWidget(variableGroup, 1,0, 6,2);
+    mainLayout->addWidget(variableGroup, 1,0, 6,4);
     QGridLayout *variableLayout = new QGridLayout(variableGroup);
 
     // Axes tree list
@@ -111,9 +112,11 @@ QvisExtrudeStackedWindow::CreateWindowContents()
     variableTree->setRootIsDecorated(false);
 
     QTreeWidgetItem *header = new QTreeWidgetItem();
-    header->setText(0,tr("Variable"));
-    header->setText(1,tr("Min"));
-    header->setText(2,tr("Max"));
+    header->setText(0,tr("Index"));
+    header->setText(1,tr("Variable"));
+    header->setText(2,tr("Min"));
+    header->setText(3,tr("Max"));
+    header->setText(4,tr("Scale"));
     variableTree->setHeaderItem(header);
 
     variableLayout->addWidget(variableTree, 0,0, 4,4);
@@ -122,13 +125,13 @@ QvisExtrudeStackedWindow::CreateWindowContents()
 
     // Variable new/delete/up/down buttons
     int variableMask = QvisVariableButton::Scalars;
-    variableNewButton = new QvisVariableButton(false, true, true,
+    variableAddButton = new QvisVariableButton(false, true, true,
                                                variableMask,
                                                variableGroup);
-    variableNewButton->setText(tr("Add variable"));
-    variableNewButton->setChangeTextOnVariableChange(false);
-    variableLayout->addWidget(variableNewButton, 0, 4);
-    connect(variableNewButton, SIGNAL(activated(const QString &)),
+    variableAddButton->setText(tr("Add variable"));
+    variableAddButton->setChangeTextOnVariableChange(false);
+    variableLayout->addWidget(variableAddButton, 0, 4);
+    connect(variableAddButton, SIGNAL(activated(const QString &)),
             this, SLOT(addVariable(const QString &)));
 
     variableDeleteButton = new QPushButton(tr("Delete"), variableGroup);
@@ -146,16 +149,16 @@ QvisExtrudeStackedWindow::CreateWindowContents()
     connect(variableDownButton, SIGNAL(clicked()),
             this, SLOT(moveVariableDown()));
 
+    // Variable min/max/scale values
     variableMinValLabel = new QLabel(tr("Min value"),variableGroup);
     variableLayout->addWidget(variableMinValLabel, 4,0);
 
-    // variable min and max values
     variableMinVal = new QNarrowLineEdit(variableGroup);
     variableLayout->addWidget(variableMinVal, 4,1);
     connect(variableMinVal, SIGNAL(textChanged(const QString&)),
             this, SLOT(variableMinValueChanged(const QString&)));
     connect(variableMinVal, SIGNAL(returnPressed()),
-            this, SLOT(variableMinOrMaxValProcessText()));
+            this, SLOT(variableValueProcessText()));
 
     variableMaxValLabel = new QLabel(tr("Max value"),variableGroup);
     variableLayout->addWidget(variableMaxValLabel, 4,2);
@@ -165,29 +168,39 @@ QvisExtrudeStackedWindow::CreateWindowContents()
     connect(variableMaxVal, SIGNAL(textChanged(const QString&)),
             this, SLOT(variableMaxValueChanged(const QString&)));
     connect(variableMaxVal, SIGNAL(returnPressed()),
-            this, SLOT(variableMinOrMaxValProcessText()));
+            this, SLOT(variableValueProcessText()));
+
+    variableScaleValLabel = new QLabel(tr("Scale"),variableGroup);
+    variableLayout->addWidget(variableScaleValLabel, 5,0);
+
+    variableScaleVal = new QNarrowLineEdit(variableGroup);
+    variableLayout->addWidget(variableScaleVal, 5,1);
+    connect(variableScaleVal, SIGNAL(textChanged(const QString&)),
+            this, SLOT(variableScaleValueChanged(const QString&)));
+    connect(variableScaleVal, SIGNAL(returnPressed()),
+            this, SLOT(variableValueProcessText()));
 
     variableMinValLabel->setEnabled(false);
     variableMinVal->setEnabled(false);
     variableMaxValLabel->setEnabled(false);
     variableMaxVal->setEnabled(false);
+    variableScaleValLabel->setEnabled(false);
+    variableScaleVal->setEnabled(false);
 
-    variableResetExtentsButton = new QPushButton(tr("Reset all variable restrictions"),
-                                                 variableGroup);
-    variableLayout->addWidget(variableResetExtentsButton, 5,0, 1,4);
+    variableResetExtentsButton =
+      new QPushButton(tr("Reset all"), variableGroup);
+    variableLayout->addWidget(variableResetExtentsButton, 5,2, 1,2);
     connect(variableResetExtentsButton, SIGNAL(clicked()),
             this, SLOT(resetVariableExtents()));
 
 
     variableDisplayGroup = new QGroupBox(variableGroup);
-    variableDisplayGroup->setTitle(tr(""));
+    variableDisplayGroup->setTitle(tr("Display by"));
     variableLayout->addWidget(variableDisplayGroup, 4,4, 2,1);
     QGridLayout *variableDisplayLayout = new QGridLayout(variableDisplayGroup);
     variableDisplayLayout->setMargin(5);
     variableDisplayLayout->setSpacing(10);
 
-    // variableDisplayLabel = new QLabel(tr("Puncture Plane"), central);
-    // variableDisplayLayout->addWidget(variableDisplayLabel, 1, 0);
     variableDisplay = new QWidget(central);
     variableDisplayButtonGroup= new QButtonGroup(variableDisplay);
 
@@ -195,18 +208,23 @@ QvisExtrudeStackedWindow::CreateWindowContents()
     variableDisplayTypeLayout->setMargin(0);
     variableDisplayTypeLayout->setSpacing(10);
     QRadioButton *variableDisplayTypeIndex =
-      new QRadioButton(tr("Index"), variableDisplay);
+      new QRadioButton(tr("Node Height"), variableDisplay);
     variableDisplayButtonGroup->addButton(variableDisplayTypeIndex,0);
     variableDisplayTypeLayout->addWidget(variableDisplayTypeIndex);
     QRadioButton *variableDisplayTypeValue =
-      new QRadioButton(tr("Value"), variableDisplay);
+      new QRadioButton(tr("Cell Height"), variableDisplay);
     variableDisplayButtonGroup->addButton(variableDisplayTypeValue,1);
     variableDisplayTypeLayout->addWidget(variableDisplayTypeValue);
+    QRadioButton *variableDisplayTypeHeight =
+      new QRadioButton(tr("Index"), variableDisplay);
+    variableDisplayButtonGroup->addButton(variableDisplayTypeHeight,2);
+    variableDisplayTypeLayout->addWidget(variableDisplayTypeHeight);
     connect(variableDisplayButtonGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(variableDisplayChanged(int)));
     variableDisplayLayout->addWidget(variableDisplay, 1, 1);
 
 
+#if defined(REPLICATE_EXTRUDE_OPERATOR)
     // Fixed length or scaled variable.
     lengthLabel = new QLabel(tr("Length"), central);
     mainLayout->addWidget(lengthLabel,7,0);
@@ -222,12 +240,15 @@ QvisExtrudeStackedWindow::CreateWindowContents()
     connect(steps, SIGNAL(returnPressed()),
             this, SLOT(stepsProcessText()));
     mainLayout->addWidget(steps, 8,1);
+#endif
 
     // Preserve the cell numbers.
     preserveOriginalCellNumbers = new QCheckBox(tr("Preserve original cell numbers"), central);
     connect(preserveOriginalCellNumbers, SIGNAL(toggled(bool)),
             this, SLOT(preserveOriginalCellNumbersChanged(bool)));
     mainLayout->addWidget(preserveOriginalCellNumbers, 9,0);
+
+    variableSelected(nullptr);
 }
 
 
@@ -250,7 +271,7 @@ void
 QvisExtrudeStackedWindow::UpdateWindow(bool doAll)
 {
     QString oldVariable = variableTree->currentItem() ?
-        variableTree->currentItem()->text(0) : QString("");
+        variableTree->currentItem()->text(1) : QString("");
 
     for(int i = 0; i < atts->NumAttributes(); ++i)
     {
@@ -269,14 +290,16 @@ QvisExtrudeStackedWindow::UpdateWindow(bool doAll)
             break;
 
           case ExtrudeStackedAttributes::ID_byVariable:
+#if defined(REPLICATE_EXTRUDE_OPERATOR)
             variableGroup->blockSignals(true);
             variableGroup->setChecked(atts->GetByVariable());
             variableGroup->blockSignals(false);
 
-            if(atts->GetByVariable())
-              lengthLabel->setText("Scale Factor");
-            else
-              lengthLabel->setText("Length");
+            length     ->setEnabled(atts->GetByVariable() == false);
+            lengthLabel->setEnabled(atts->GetByVariable() == false);
+            steps      ->setEnabled(atts->GetByVariable() == false);
+            stepsLabel ->setEnabled(atts->GetByVariable() == false);
+#endif
             break;
 
           case ExtrudeStackedAttributes::ID_variableDisplay:
@@ -289,43 +312,87 @@ QvisExtrudeStackedWindow::UpdateWindow(bool doAll)
           case ExtrudeStackedAttributes::ID_visualVariableNames:
           case ExtrudeStackedAttributes::ID_extentMinima:
           case ExtrudeStackedAttributes::ID_extentMaxima:
+          case ExtrudeStackedAttributes::ID_extentScale:
             variableTree->blockSignals(true);
-            variableTree->clear();
-            for (size_t ax=0; ax<atts->GetExtentMinima().size(); ax++)
+
+            // If the user changes the variable it is possible to have
+            // the variable and the 'default' in the list. When that
+            // happens delete the specific instance, keeping the more
+            // general default.
+
+            // Note the check is done on BOTH the Qvis and avt side.
+            if( atts->GetVisualVariableNames().size() )
             {
-                QString name, emin("min"), emax("max");
-                if (atts->GetExtentMinima()[ax] > -1e+37)
-                    emin = DoubleToQString(atts->GetExtentMinima()[ax]);
-                if (atts->GetExtentMaxima()[ax] < +1e+37)
-                    emax = DoubleToQString(atts->GetExtentMaxima()[ax]);
+              int haveBoth = 0;
+
+              for (size_t ax=0; ax<atts->GetVisualVariableNames().size(); ax++)
+              {
+                if(atts->GetVisualVariableNames()[ax] == "default" ||
+                   atts->GetVisualVariableNames()[ax] == atts->GetDefaultVariable())
+                  ++haveBoth;
+              }
+
+              if( haveBoth == 2 )
+              {
+                // atts->DeleteVariable("default", 0);
+                atts->DeleteVariable(atts->GetDefaultVariable(), 0);
+              }
+            }
+
+            variableTree->clear();
+
+            if( atts->GetVisualVariableNames().size() )
+            {
+              size_t nVars = atts->GetVisualVariableNames().size();
+
+              for (size_t ax=0; ax<nVars; ax++)
+              {
+                QString index, name, emin("min"), emax("max"), escale("1.0");
+                index = IntToQString(nVars-1-ax);
                 if (atts->GetVisualVariableNames().size() > ax)
-                    name = (atts->GetVisualVariableNames()[ax]).c_str();
+                  name = (atts->GetVisualVariableNames()[ax]).c_str();
                 else
                 {
-                    name.sprintf(" %02ld",ax);
-                    name = tr("Variable") + name;
+                  name.sprintf(" %02ld", ax);
+                  name = tr("Variable") + name;
                 }
-                QTreeWidgetItem *item =
-                    new QTreeWidgetItem(variableTree);
-                item->setText(0,name);
-                item->setText(1,emin);
-                item->setText(2,emax);
+                if (atts->GetExtentMinima()[ax] > -1e+37)
+                  emin = DoubleToQString(atts->GetExtentMinima()[ax]);
+                if (atts->GetExtentMaxima()[ax] < +1e+37)
+                  emax = DoubleToQString(atts->GetExtentMaxima()[ax]);
+                if (atts->GetExtentScale()[ax] != 0)
+                  escale = DoubleToQString(atts->GetExtentScale()[ax]);
+
+                QTreeWidgetItem *item = new QTreeWidgetItem(variableTree);
+                item->setText(0, index);
+                item->setText(1, name);
+                item->setText(2, emin);
+                item->setText(3, emax);
+                item->setText(4, escale);
+              }
             }
+            else
+            {
+              addVariable("default");
+            }
+
             variableTree->resizeColumnToContents(0);
             variableTree->resizeColumnToContents(1);
             variableTree->resizeColumnToContents(2);
+            variableTree->resizeColumnToContents(3);
             variableTree->blockSignals(false);
+
+            variableSelected(nullptr);
             break;
 
-
-
-
+#if defined(REPLICATE_EXTRUDE_OPERATOR)
           case ExtrudeStackedAttributes::ID_length:
             length->setText(DoubleToQString(atts->GetLength()));
             break;
           case ExtrudeStackedAttributes::ID_steps:
             steps->setText(IntToQString(atts->GetSteps()));
             break;
+#endif
           case ExtrudeStackedAttributes::ID_preserveOriginalCellNumbers:
             preserveOriginalCellNumbers->blockSignals(true);
             preserveOriginalCellNumbers->setChecked(atts->GetPreserveOriginalCellNumbers());
@@ -338,10 +405,10 @@ QvisExtrudeStackedWindow::UpdateWindow(bool doAll)
     // regenerated the tree contents
     bool found = false;
     int nitems = variableTree->topLevelItemCount();
-    for(int i=0;i< nitems && !found; i++)
+    for(int i=0; i<nitems && !found; ++i)
     {
         QTreeWidgetItem *item = variableTree->topLevelItem(i);
-        if(item->text(0) == oldVariable)
+        if(item->text(1) == oldVariable)
         {
             variableTree->setCurrentItem(item);
             variableSelected(item);
@@ -391,6 +458,7 @@ QvisExtrudeStackedWindow::GetCurrentValues(int which_widget)
         }
     }
 
+#if defined(REPLICATE_EXTRUDE_OPERATOR)
     // Do length
     if(which_widget == ExtrudeStackedAttributes::ID_length || doAll)
     {
@@ -418,6 +486,7 @@ QvisExtrudeStackedWindow::GetCurrentValues(int which_widget)
             atts->SetSteps(atts->GetSteps());
         }
     }
+#endif
 }
 
 
@@ -466,20 +535,24 @@ QvisExtrudeStackedWindow::preserveOriginalCellNumbersChanged(bool val)
 //  Arguments:
 //    val   boolean true - extrude by variable
 //
-//  Programmer:  Jeremy Meredith
-//  Creation:    March 16, 2007
+//  Programmer: Allen Sanderson
+//  Creation:   August 31, 2023
 //
 // ****************************************************************************
 
 void
 QvisExtrudeStackedWindow::variableGroupChanged(bool val)
 {
+#if defined(REPLICATE_EXTRUDE_OPERATOR)
     atts->SetByVariable(val);
 
-    if(atts->GetByVariable())
-      lengthLabel->setText("Scale Factor");
-    else
-      lengthLabel->setText("Length");
+    length     ->setEnabled(atts->GetByVariable() == false);
+    lengthLabel->setEnabled(atts->GetByVariable() == false);
+    steps      ->setEnabled(atts->GetByVariable() == false);
+    stepsLabel ->setEnabled(atts->GetByVariable() == false);
+#else
+    atts->SetByVariable(true);
+#endif
 
     variableSelected(nullptr);
 
@@ -496,16 +569,37 @@ QvisExtrudeStackedWindow::variableGroupChanged(bool val)
 //  Arguments:
 //    variableToAdd   the name of the new variable to add
 //
-//  Programmer:  Jeremy Meredith
-//  Creation:    March 16, 2007
+//  Programmer: Allen Sanderson
+//  Creation:   August 31, 2023
 //
 // ****************************************************************************
 
 void
 QvisExtrudeStackedWindow::addVariable(const QString &variableToAdd)
 {
-    atts->InsertVariable(variableToAdd.toStdString());
-    //SetUpdate(false);
+    // The stacking order is "reversed" so insert at the beginning.
+    atts->InsertVariable(variableToAdd.toStdString(), 0);
+
+    // If the variable added is the default variable and one of the
+    // variables entries is "default." Remove the "default" entry.
+    if( variableToAdd.toStdString() == atts->GetDefaultVariable() )
+    {
+      int nitems = variableTree->topLevelItemCount();
+      for(int i =0; i<nitems; ++i)
+      {
+        QTreeWidgetItem *item = variableTree->topLevelItem(i);
+
+        if( item->text(1) == "default" )
+        {
+          variableTree->setCurrentItem(item);
+
+          deleteVariable();
+
+          break;
+        }
+      }
+    }
+
     Apply();
 }
 
@@ -518,8 +612,8 @@ QvisExtrudeStackedWindow::addVariable(const QString &variableToAdd)
 //  Arguments:
 //    none
 //
-//  Programmer:  Jeremy Meredith
-//  Creation:    March 16, 2007
+//  Programmer: Allen Sanderson
+//  Creation:   August 31, 2023
 //
 // ****************************************************************************
 
@@ -528,8 +622,12 @@ QvisExtrudeStackedWindow::deleteVariable()
 {
     if (variableTree->currentItem())
     {
-        QString variable = variableTree->currentItem()->text(0);
+        QString variable = variableTree->currentItem()->text(1);
         atts->DeleteVariable(variable.toStdString(), 0);
+
+        // Make sure there is always one variable.
+        if(atts->GetScalarVariableNames().size() == 0)
+          atts->addVariable("default");
 
         variableSelected(nullptr);
 
@@ -546,33 +644,33 @@ QvisExtrudeStackedWindow::deleteVariable()
 //  Arguments:
 //    none
 //
-//  Programmer:  Jeremy Meredith
-//  Creation:    March 16, 2007
+//  Programmer: Allen Sanderson
+//  Creation:   August 31, 2023
 //
 // ****************************************************************************
 
 void
 QvisExtrudeStackedWindow::moveVariableUp()
 {
-    // Find the index of the current item
+    // Get the index of the current item
     int index = GetSelectedVariableIndex();
-    // verify something is selected
-    // and it wasn't the first itme (can't move first variable up in list)
+    // Verify something is selected and it is not the first item
+    // (can't move first variable up in list)
     if (index <= 0)
         return;
 
-    // must make a local copy
-    stringVector axes = atts->GetScalarVariableNames();
-    int naxes = (int)axes.size();
+    // Must make a local copy
+    stringVector variableNames = atts->GetScalarVariableNames();
+    int nVars = (int) variableNames.size();
 
-    // InsertVariable() will reorder axes already in the list, so we
-    // just insert all the changed ones in the new desired order
-    atts->InsertVariable(axes[index]);
-    atts->InsertVariable(axes[index-1]);
-    for (int i=index+1; i<naxes; i++)
-        atts->InsertVariable(axes[i]);
+    // addVariable() will reorder the entries already in the list, so
+    // just add all the changed ones in the new desired order.
+    atts->addVariable(variableNames[index]);
+    atts->addVariable(variableNames[index-1]);
 
-    // Done; apply changes
+    for (int i=index+1; i<nVars; i++)
+        atts->addVariable(variableNames[i]);
+
     Apply();
 }
 
@@ -585,33 +683,34 @@ QvisExtrudeStackedWindow::moveVariableUp()
 //  Arguments:
 //    none
 //
-//  Programmer:  Jeremy Meredith
-//  Creation:    March 16, 2007
+//  Programmer: Allen Sanderson
+//  Creation:   August 31, 2023
 //
 // ****************************************************************************
 
 void
 QvisExtrudeStackedWindow::moveVariableDown()
 {
-
+    // Get the index of the current item
     int index = GetSelectedVariableIndex();
+    // Verify something is selected.
     if( index < 0)
         return;
 
-    // must make a local copy
-    stringVector axes = atts->GetScalarVariableNames();
-    int naxes = (int)axes.size();
+    // Must make a local copy
+    stringVector variableNames = atts->GetScalarVariableNames();
+    int nVars = (int) variableNames.size();
 
-    // can't move last variable down in list
-    if (index >= naxes-1)
+    // Can't move last variable down in list
+    if (index >= nVars-1)
         return;
 
-    // InsertVariable() will reorder axes already in the list, so we
-    // just insert all the changed ones in the new desired order
-    atts->InsertVariable(axes[index+1]);
-    atts->InsertVariable(axes[index]);
-    for (int i=index+2; i<naxes; i++)
-        atts->InsertVariable(axes[i]);
+    // addVariable() will reorder the entries already in the list, so
+    // just add all the changed ones in the new desired order.
+    atts->addVariable(variableNames[index+1]);
+    atts->addVariable(variableNames[index]);
+    for (int i=index+2; i<nVars; i++)
+        atts->addVariable(variableNames[i]);
 
     // Done; apply changes
     Apply();
@@ -622,27 +721,36 @@ QvisExtrudeStackedWindow::moveVariableDown()
 //  Method:  QvisExtrudeStackedWindow::variableSelected
 //
 //  Purpose:
-//    Executed when they click on an variable in the list.
-//    This only sets the enabled states of the variable modifier buttons.
+//    Executed when a variable is seected in the list.  This function
+//    only sets the enabled states of the variable modifier buttons.
 //
 //  Arguments:
 //    variable       the index in the list box
 //
 //  Programmer:  Jeremy Meredith
 //  Creation:    March 16, 2007
+//  Programmer: Allen Sanderson
+//  Creation:   August 31, 2023
 //
 // ****************************************************************************
 
 void
 QvisExtrudeStackedWindow::variableSelected(QTreeWidgetItem*)
 {
-    int nitems = (int)atts->GetScalarVariableNames().size();
+    size_t nitems;
+    if( atts->GetByVariable() )
+      nitems = atts->GetScalarVariableNames().size();
+    else
+      nitems = 0;
 
+#if defined(REPLICATE_EXTRUDE_OPERATOR)
     variableDisplayGroup->setEnabled(nitems > 1);
+#else
+    variableDisplayGroup->setEnabled(nitems > 0);
+#endif
 
     QTreeWidgetItem *ci = variableTree->currentItem();
-    variableDeleteButton->setEnabled(nitems > 0 &&
-                                     ci != NULL);
+    variableDeleteButton->setEnabled(nitems > 0 && ci != NULL);
     variableUpButton->setEnabled(nitems > 0 &&
                                  ci != variableTree->topLevelItem(0));
     variableDownButton->setEnabled(nitems > 0 &&
@@ -652,38 +760,43 @@ QvisExtrudeStackedWindow::variableSelected(QTreeWidgetItem*)
     variableMinVal->setEnabled(nitems > 0);
     variableMaxValLabel->setEnabled(nitems > 0);
     variableMaxVal->setEnabled(nitems > 0);
+    variableScaleValLabel->setEnabled(nitems > 0);
+    variableScaleVal->setEnabled(nitems > 0);
 
     variableResetExtentsButton->setEnabled(nitems > 0);
 
     if (ci)
     {
-        variableMinVal->setText(ci->text(1));
-        variableMaxVal->setText(ci->text(2));
+        variableMinVal  ->setText(ci->text(2));
+        variableMaxVal  ->setText(ci->text(3));
+        variableScaleVal->setText(ci->text(4));
     }
     else
     {
-        variableMinVal->setText("");
-        variableMaxVal->setText("");
+        variableMinVal  ->setText("");
+        variableMaxVal  ->setText("");
+        variableScaleVal->setText("");
     }
 }
 
 // ****************************************************************************
-// Method:  QvisExtrudeStackedWindow::variableMinOrMaxValProcessText
+// Method:  QvisExtrudeStackedWindow::variableValueProcessText
 //
 // Purpose:
-//   When return is pressed in the min or max variable value text field,
-//   this method is called.  We don't have to actually populate the value
-//   in the local atts since that gets updated as they type.
+//   When return is pressed in the min, max, or scale variable value
+//   text field, this method is called.  We don't have to actually
+//   populate the value in the local atts since that gets updated as
+//   they type.
 //
 // Arguments:
 //   none
 //
-// Programmer:  Jeremy Meredith
-// Creation:    October 27, 2009
+//  Programmer: Allen Sanderson
+//  Creation:   August 31, 2023
 //
 // ****************************************************************************
 void
-QvisExtrudeStackedWindow::variableMinOrMaxValProcessText()
+QvisExtrudeStackedWindow::variableValueProcessText()
 {
     atts->Notify();
     Apply();
@@ -702,8 +815,8 @@ QvisExtrudeStackedWindow::variableMinOrMaxValProcessText()
 // Arguments:
 //   val        the current contents of the field
 //
-// Programmer:  Jeremy Meredith
-// Creation:    October 27, 2009
+//  Programmer: Allen Sanderson
+//  Creation:   August 31, 2023
 //
 // ****************************************************************************
 void
@@ -725,12 +838,13 @@ QvisExtrudeStackedWindow::variableMinValueChanged(const QString &val)
         ok = true;
         v = +1e+37;
     }
+
     if (!ok)
         return;
 
     atts->GetExtentMinima()[index] = v;
     atts->SelectExtentMinima();
-    variableTree->topLevelItem(index)->setText(1, val);
+    variableTree->topLevelItem(index)->setText(2, val);
 }
 
 // ****************************************************************************
@@ -746,8 +860,8 @@ QvisExtrudeStackedWindow::variableMinValueChanged(const QString &val)
 // Arguments:
 //   val        the current contents of the field
 //
-// Programmer:  Jeremy Meredith
-// Creation:    October 27, 2009
+//  Programmer: Allen Sanderson
+//  Creation:   August 31, 2023
 //
 // ****************************************************************************
 void
@@ -775,20 +889,56 @@ QvisExtrudeStackedWindow::variableMaxValueChanged(const QString &val)
 
     atts->GetExtentMaxima()[index] = v;
     atts->SelectExtentMaxima();
-    variableTree->topLevelItem(index)->setText(2, val);
+    variableTree->topLevelItem(index)->setText(3, val);
+}
+
+// ****************************************************************************
+// Method:  QvisExtrudeStackedWindow::variableScaleValueChanged
+//
+// Purpose:
+//   Called when the user types in the variable scale value text field.
+//   We update the local copy here as they type so that if they
+//   click on another variable before hitting apply or enter, it retains
+//   the values they entered.  (Which means they can update all axes
+//   before hitting apply -- or return for auto-update.)
+//
+// Arguments:
+//   val        the current contents of the field
+//
+//  Programmer: Allen Sanderson
+//  Creation:   August 31, 2023
+//
+// ****************************************************************************
+void
+QvisExtrudeStackedWindow::variableScaleValueChanged(const QString &val)
+{
+    int index = GetSelectedVariableIndex();
+    if (index < 0)
+        return;
+
+    bool ok = false;
+    double v = val.toDouble(&ok);
+    if (val == "0" || v == 0)
+    {
+        return;
+    }
+
+    atts->GetExtentScale()[index] = v;
+    atts->SelectExtentScale();
+    variableTree->topLevelItem(index)->setText(4, val);
 }
 
 // ****************************************************************************
 //  Method:  QvisExtrudeStackedWindow::resetVariableExtents
 //
 //  Purpose:
-//    resets all extents to the full min/max range
+//    Resets all extents to the full min/max range and the scale to 1.
 //
 //  Arguments:
 //    none
 //
-//  Programmer:  Jeremy Meredith
-//  Creation:    February  8, 2008
+//  Programmer: Allen Sanderson
+//  Creation:   August 31, 2023
 //
 // ****************************************************************************
 
@@ -803,8 +953,16 @@ QvisExtrudeStackedWindow::resetVariableExtents()
     {
         atts->GetExtentMaxima()[i] = +1e+37;
     }
+
+    for (size_t i=0; i<atts->GetExtentScale().size(); i++)
+    {
+        atts->GetExtentScale()[i] = 1.0;
+    }
+
     atts->SelectExtentMinima();
     atts->SelectExtentMaxima();
+    atts->SelectExtentScale();
+
     Apply();
 }
 
@@ -815,9 +973,8 @@ QvisExtrudeStackedWindow::resetVariableExtents()
 //    Helper that obtains the index of the currently selected variable, or
 //    -1 if no variable is selected.
 //
-//
-//  Programmer:  Cyrus Harrison
-//  Creation:    Mon Jul 21 09:12:28 PDT 2008
+//  Programmer: Allen Sanderson
+//  Creation:   August 31, 2023
 //
 // ****************************************************************************
 
@@ -825,7 +982,7 @@ int
 QvisExtrudeStackedWindow::GetSelectedVariableIndex()
 {
     int nitems = variableTree->topLevelItemCount();
-    for(int i =0;i<nitems;i++)
+    for(int i =0; i<nitems; ++i)
     {
         if(variableTree->currentItem() == variableTree->topLevelItem(i))
             return i;
@@ -841,8 +998,8 @@ QvisExtrudeStackedWindow::GetSelectedVariableIndex()
 //    -1 if no variable is selected.
 //
 //
-//  Programmer:  Cyrus Harrison
-//  Creation:    Mon Jul 21 09:12:28 PDT 2008
+//  Programmer: Allen Sanderson
+//  Creation:   August 31, 2023
 //
 // ****************************************************************************
 

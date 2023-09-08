@@ -62,6 +62,8 @@ PyExtrudeStackedAttributes_ToString(const ExtrudeStackedAttributes *atts, const 
     else
         snprintf(tmpStr, 1000, "%sbyVariable = 0\n", prefix);
     str += tmpStr;
+    snprintf(tmpStr, 1000, "%sdefaultVariable = \"%s\"\n", prefix, atts->GetDefaultVariable().c_str());
+    str += tmpStr;
     {   const stringVector &scalarVariableNames = atts->GetScalarVariableNames();
         snprintf(tmpStr, 1000, "%sscalarVariableNames = (", prefix);
         str += tmpStr;
@@ -126,15 +128,35 @@ PyExtrudeStackedAttributes_ToString(const ExtrudeStackedAttributes *atts, const 
         snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
-    const char *variableDisplay_names = "Index, Value";
+    {   const doubleVector &extentScale = atts->GetExtentScale();
+        snprintf(tmpStr, 1000, "%sextentScale = (", prefix);
+        str += tmpStr;
+        for(size_t i = 0; i < extentScale.size(); ++i)
+        {
+            snprintf(tmpStr, 1000, "%g", extentScale[i]);
+            str += tmpStr;
+            if(i < extentScale.size() - 1)
+            {
+                snprintf(tmpStr, 1000, ", ");
+                str += tmpStr;
+            }
+        }
+        snprintf(tmpStr, 1000, ")\n");
+        str += tmpStr;
+    }
+    const char *variableDisplay_names = "NodeHeight, CellHeight, VarIndex";
     switch (atts->GetVariableDisplay())
     {
-      case ExtrudeStackedAttributes::Index:
-          snprintf(tmpStr, 1000, "%svariableDisplay = %sIndex  # %s\n", prefix, prefix, variableDisplay_names);
+      case ExtrudeStackedAttributes::NodeHeight:
+          snprintf(tmpStr, 1000, "%svariableDisplay = %sNodeHeight  # %s\n", prefix, prefix, variableDisplay_names);
           str += tmpStr;
           break;
-      case ExtrudeStackedAttributes::Value:
-          snprintf(tmpStr, 1000, "%svariableDisplay = %sValue  # %s\n", prefix, prefix, variableDisplay_names);
+      case ExtrudeStackedAttributes::CellHeight:
+          snprintf(tmpStr, 1000, "%svariableDisplay = %sCellHeight  # %s\n", prefix, prefix, variableDisplay_names);
+          str += tmpStr;
+          break;
+      case ExtrudeStackedAttributes::VarIndex:
+          snprintf(tmpStr, 1000, "%svariableDisplay = %sVarIndex  # %s\n", prefix, prefix, variableDisplay_names);
           str += tmpStr;
           break;
       default:
@@ -298,6 +320,55 @@ ExtrudeStackedAttributes_GetByVariable(PyObject *self, PyObject *args)
 {
     ExtrudeStackedAttributesObject *obj = (ExtrudeStackedAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetByVariable()?1L:0L);
+    return retval;
+}
+
+/*static*/ PyObject *
+ExtrudeStackedAttributes_SetDefaultVariable(PyObject *self, PyObject *args)
+{
+    ExtrudeStackedAttributesObject *obj = (ExtrudeStackedAttributesObject *)self;
+
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
+
+    // Set the defaultVariable in the object.
+    obj->data->SetDefaultVariable(cval);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+ExtrudeStackedAttributes_GetDefaultVariable(PyObject *self, PyObject *args)
+{
+    ExtrudeStackedAttributesObject *obj = (ExtrudeStackedAttributesObject *)self;
+    PyObject *retval = PyString_FromString(obj->data->GetDefaultVariable().c_str());
     return retval;
 }
 
@@ -592,6 +663,82 @@ ExtrudeStackedAttributes_GetExtentMaxima(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
+ExtrudeStackedAttributes_SetExtentScale(PyObject *self, PyObject *args)
+{
+    ExtrudeStackedAttributesObject *obj = (ExtrudeStackedAttributesObject *)self;
+
+    doubleVector vec;
+
+    if (PyNumber_Check(args))
+    {
+        double val = PyFloat_AsDouble(args);
+        double cval = double(val);
+        if (val == -1 && PyErr_Occurred())
+        {
+            PyErr_Clear();
+            return PyErr_Format(PyExc_TypeError, "number not interpretable as C++ double");
+        }
+        if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+            return PyErr_Format(PyExc_ValueError, "number not interpretable as C++ double");
+        vec.resize(1);
+        vec[0] = cval;
+    }
+    else if (PySequence_Check(args) && !PyUnicode_Check(args))
+    {
+        vec.resize(PySequence_Size(args));
+        for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)
+        {
+            PyObject *item = PySequence_GetItem(args, i);
+
+            if (!PyNumber_Check(item))
+            {
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_TypeError, "arg %d is not a number type", (int) i);
+            }
+
+            double val = PyFloat_AsDouble(item);
+            double cval = double(val);
+
+            if (val == -1 && PyErr_Occurred())
+            {
+                Py_DECREF(item);
+                PyErr_Clear();
+                return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ double", (int) i);
+            }
+            if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+            {
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_ValueError, "arg %d not interpretable as C++ double", (int) i);
+            }
+            Py_DECREF(item);
+
+            vec[i] = cval;
+        }
+    }
+    else
+        return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more doubles");
+
+    obj->data->GetExtentScale() = vec;
+    // Mark the extentScale in the object as modified.
+    obj->data->SelectExtentScale();
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+ExtrudeStackedAttributes_GetExtentScale(PyObject *self, PyObject *args)
+{
+    ExtrudeStackedAttributesObject *obj = (ExtrudeStackedAttributesObject *)self;
+    // Allocate a tuple the with enough entries to hold the extentScale.
+    const doubleVector &extentScale = obj->data->GetExtentScale();
+    PyObject *retval = PyTuple_New(extentScale.size());
+    for(size_t i = 0; i < extentScale.size(); ++i)
+        PyTuple_SET_ITEM(retval, i, PyFloat_FromDouble(extentScale[i]));
+    return retval;
+}
+
+/*static*/ PyObject *
 ExtrudeStackedAttributes_SetVariableDisplay(PyObject *self, PyObject *args)
 {
     ExtrudeStackedAttributesObject *obj = (ExtrudeStackedAttributesObject *)self;
@@ -629,14 +776,15 @@ ExtrudeStackedAttributes_SetVariableDisplay(PyObject *self, PyObject *args)
         return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
     }
 
-    if (cval < 0 || cval >= 2)
+    if (cval < 0 || cval >= 3)
     {
         std::stringstream ss;
         ss << "An invalid variableDisplay value was given." << std::endl;
-        ss << "Valid values are in the range [0,1]." << std::endl;
+        ss << "Valid values are in the range [0,2]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << " Index";
-        ss << ", Value";
+        ss << " NodeHeight";
+        ss << ", CellHeight";
+        ss << ", VarIndex";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -845,6 +993,8 @@ PyMethodDef PyExtrudeStackedAttributes_methods[EXTRUDESTACKEDATTRIBUTES_NMETH] =
     {"GetAxis", ExtrudeStackedAttributes_GetAxis, METH_VARARGS},
     {"SetByVariable", ExtrudeStackedAttributes_SetByVariable, METH_VARARGS},
     {"GetByVariable", ExtrudeStackedAttributes_GetByVariable, METH_VARARGS},
+    {"SetDefaultVariable", ExtrudeStackedAttributes_SetDefaultVariable, METH_VARARGS},
+    {"GetDefaultVariable", ExtrudeStackedAttributes_GetDefaultVariable, METH_VARARGS},
     {"SetScalarVariableNames", ExtrudeStackedAttributes_SetScalarVariableNames, METH_VARARGS},
     {"GetScalarVariableNames", ExtrudeStackedAttributes_GetScalarVariableNames, METH_VARARGS},
     {"SetVisualVariableNames", ExtrudeStackedAttributes_SetVisualVariableNames, METH_VARARGS},
@@ -853,6 +1003,8 @@ PyMethodDef PyExtrudeStackedAttributes_methods[EXTRUDESTACKEDATTRIBUTES_NMETH] =
     {"GetExtentMinima", ExtrudeStackedAttributes_GetExtentMinima, METH_VARARGS},
     {"SetExtentMaxima", ExtrudeStackedAttributes_SetExtentMaxima, METH_VARARGS},
     {"GetExtentMaxima", ExtrudeStackedAttributes_GetExtentMaxima, METH_VARARGS},
+    {"SetExtentScale", ExtrudeStackedAttributes_SetExtentScale, METH_VARARGS},
+    {"GetExtentScale", ExtrudeStackedAttributes_GetExtentScale, METH_VARARGS},
     {"SetVariableDisplay", ExtrudeStackedAttributes_SetVariableDisplay, METH_VARARGS},
     {"GetVariableDisplay", ExtrudeStackedAttributes_GetVariableDisplay, METH_VARARGS},
     {"SetLength", ExtrudeStackedAttributes_SetLength, METH_VARARGS},
@@ -886,6 +1038,8 @@ PyExtrudeStackedAttributes_getattr(PyObject *self, char *name)
         return ExtrudeStackedAttributes_GetAxis(self, NULL);
     if(strcmp(name, "byVariable") == 0)
         return ExtrudeStackedAttributes_GetByVariable(self, NULL);
+    if(strcmp(name, "defaultVariable") == 0)
+        return ExtrudeStackedAttributes_GetDefaultVariable(self, NULL);
     if(strcmp(name, "scalarVariableNames") == 0)
         return ExtrudeStackedAttributes_GetScalarVariableNames(self, NULL);
     if(strcmp(name, "visualVariableNames") == 0)
@@ -894,12 +1048,16 @@ PyExtrudeStackedAttributes_getattr(PyObject *self, char *name)
         return ExtrudeStackedAttributes_GetExtentMinima(self, NULL);
     if(strcmp(name, "extentMaxima") == 0)
         return ExtrudeStackedAttributes_GetExtentMaxima(self, NULL);
+    if(strcmp(name, "extentScale") == 0)
+        return ExtrudeStackedAttributes_GetExtentScale(self, NULL);
     if(strcmp(name, "variableDisplay") == 0)
         return ExtrudeStackedAttributes_GetVariableDisplay(self, NULL);
-    if(strcmp(name, "Index") == 0)
-        return PyInt_FromLong(long(ExtrudeStackedAttributes::Index));
-    if(strcmp(name, "Value") == 0)
-        return PyInt_FromLong(long(ExtrudeStackedAttributes::Value));
+    if(strcmp(name, "NodeHeight") == 0)
+        return PyInt_FromLong(long(ExtrudeStackedAttributes::NodeHeight));
+    if(strcmp(name, "CellHeight") == 0)
+        return PyInt_FromLong(long(ExtrudeStackedAttributes::CellHeight));
+    if(strcmp(name, "VarIndex") == 0)
+        return PyInt_FromLong(long(ExtrudeStackedAttributes::VarIndex));
 
     if(strcmp(name, "length") == 0)
         return ExtrudeStackedAttributes_GetLength(self, NULL);
@@ -933,6 +1091,8 @@ PyExtrudeStackedAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = ExtrudeStackedAttributes_SetAxis(self, args);
     else if(strcmp(name, "byVariable") == 0)
         obj = ExtrudeStackedAttributes_SetByVariable(self, args);
+    else if(strcmp(name, "defaultVariable") == 0)
+        obj = ExtrudeStackedAttributes_SetDefaultVariable(self, args);
     else if(strcmp(name, "scalarVariableNames") == 0)
         obj = ExtrudeStackedAttributes_SetScalarVariableNames(self, args);
     else if(strcmp(name, "visualVariableNames") == 0)
@@ -941,6 +1101,8 @@ PyExtrudeStackedAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = ExtrudeStackedAttributes_SetExtentMinima(self, args);
     else if(strcmp(name, "extentMaxima") == 0)
         obj = ExtrudeStackedAttributes_SetExtentMaxima(self, args);
+    else if(strcmp(name, "extentScale") == 0)
+        obj = ExtrudeStackedAttributes_SetExtentScale(self, args);
     else if(strcmp(name, "variableDisplay") == 0)
         obj = ExtrudeStackedAttributes_SetVariableDisplay(self, args);
     else if(strcmp(name, "length") == 0)

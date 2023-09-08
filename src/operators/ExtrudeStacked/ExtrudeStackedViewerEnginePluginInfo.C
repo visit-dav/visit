@@ -148,7 +148,10 @@ ExtrudeStackedViewerEnginePluginInfo::InitializeOperatorAtts(AttributeSubject *a
 //  Method: ExtrudeStackedViewerEnginePluginInfo::UpdateOperatorAtts
 //
 //  Purpose:
-//    Update the operator attributes when using operator expressions.
+//    Update the operator attributes. This function is *only* called
+//    when the plot variable name is set or changed. The plot variable
+//    name is used in operator expressions and may be used as the
+//    'default' variable in GUIs.
 //
 //  Arguments:
 //    atts        The attribute subject to update.
@@ -158,10 +161,14 @@ ExtrudeStackedViewerEnginePluginInfo::InitializeOperatorAtts(AttributeSubject *a
 //  Creation:   omitted
 //
 // ****************************************************************************
+#include <avtPlotMetaData.h>
 
 void
 ExtrudeStackedViewerEnginePluginInfo::UpdateOperatorAtts(AttributeSubject *atts, const avtPlotMetaData &plot)
 {
+    ExtrudeStackedAttributes *esAtts = (ExtrudeStackedAttributes*)atts;
+
+    esAtts->SetDefaultVariable(plot.GetVariableName());
 }
 
 // ****************************************************************************

@@ -7,7 +7,9 @@
         1.000000
       </Field>
       <Field name="byVariable" label="By variable" type="bool">
-        false
+        true
+      </Field>
+      <Field name="defaultVariable" label="defaultVariable" type="string">
       </Field>
       <Field name="scalarVariableNames" label="scalarVariableNames" type="stringVector">
       </Field>
@@ -17,12 +19,15 @@
       </Field>
       <Field name="extentMaxima" label="extentMaxima" type="doubleVector">
       </Field>
+      <Field name="extentScale" label="extentScale" type="doubleVector">
+      </Field>
       <Enum name="VariableDisplayType">
-        Index
-        Value
+        NodeHeight
+	CellHeight
+        VarIndex
       </Enum>
       <Field name="variableDisplay" label="Variable Display" type="enum" subtype="VariableDisplayType">
-        Index
+        VarIndex
       </Field>
       <Field name="length" label="Length" type="double">
         1.
@@ -33,11 +38,15 @@
       <Field name="preserveOriginalCellNumbers" label="Preserve original cell numbers" type="bool">
         true
       </Field>
+      <Function name="addVariable" user="true" member="true">
+      </Function>
       <Function name="InsertVariable" user="true" member="true">
       </Function>
       <Function name="DeleteVariable" user="true" member="true">
       </Function>
       <Function name="AttributesAreConsistent" user="true" member="true">
+      </Function>
+      <Function name="ExtrudeStackedViewerEnginePluginInfo::UpdateOperatorAtts" user="false" member="true">
       </Function>
     </Attribute>
   </Plugin>

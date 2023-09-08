@@ -10,28 +10,29 @@
 //
 
 static const char *VariableDisplayType_strings[] = {
-"Index", "Value"};
+"NodeHeight", "CellHeight", "VarIndex"
+};
 
 std::string
 ExtrudeStackedAttributes::VariableDisplayType_ToString(ExtrudeStackedAttributes::VariableDisplayType t)
 {
     int index = int(t);
-    if(index < 0 || index >= 2) index = 0;
+    if(index < 0 || index >= 3) index = 0;
     return VariableDisplayType_strings[index];
 }
 
 std::string
 ExtrudeStackedAttributes::VariableDisplayType_ToString(int t)
 {
-    int index = (t < 0 || t >= 2) ? 0 : t;
+    int index = (t < 0 || t >= 3) ? 0 : t;
     return VariableDisplayType_strings[index];
 }
 
 bool
 ExtrudeStackedAttributes::VariableDisplayType_FromString(const std::string &s, ExtrudeStackedAttributes::VariableDisplayType &val)
 {
-    val = ExtrudeStackedAttributes::Index;
-    for(int i = 0; i < 2; ++i)
+    val = ExtrudeStackedAttributes::NodeHeight;
+    for(int i = 0; i < 3; ++i)
     {
         if(s == VariableDisplayType_strings[i])
         {
@@ -62,8 +63,8 @@ void ExtrudeStackedAttributes::Init()
     axis[0] = 0;
     axis[1] = 0;
     axis[2] = 1;
-    byVariable = false;
-    variableDisplay = Index;
+    byVariable = true;
+    variableDisplay = VarIndex;
     length = 1;
     steps = 1;
     preserveOriginalCellNumbers = true;
@@ -93,10 +94,12 @@ void ExtrudeStackedAttributes::Copy(const ExtrudeStackedAttributes &obj)
     axis[2] = obj.axis[2];
 
     byVariable = obj.byVariable;
+    defaultVariable = obj.defaultVariable;
     scalarVariableNames = obj.scalarVariableNames;
     visualVariableNames = obj.visualVariableNames;
     extentMinima = obj.extentMinima;
     extentMaxima = obj.extentMaxima;
+    extentScale = obj.extentScale;
     variableDisplay = obj.variableDisplay;
     length = obj.length;
     steps = obj.steps;
@@ -265,10 +268,12 @@ ExtrudeStackedAttributes::operator == (const ExtrudeStackedAttributes &obj) cons
     // Create the return value
     return (axis_equal &&
             (byVariable == obj.byVariable) &&
+            (defaultVariable == obj.defaultVariable) &&
             (scalarVariableNames == obj.scalarVariableNames) &&
             (visualVariableNames == obj.visualVariableNames) &&
             (extentMinima == obj.extentMinima) &&
             (extentMaxima == obj.extentMaxima) &&
+            (extentScale == obj.extentScale) &&
             (variableDisplay == obj.variableDisplay) &&
             (length == obj.length) &&
             (steps == obj.steps) &&
@@ -418,10 +423,12 @@ ExtrudeStackedAttributes::SelectAll()
 {
     Select(ID_axis,                        (void *)axis, 3);
     Select(ID_byVariable,                  (void *)&byVariable);
+    Select(ID_defaultVariable,             (void *)&defaultVariable);
     Select(ID_scalarVariableNames,         (void *)&scalarVariableNames);
     Select(ID_visualVariableNames,         (void *)&visualVariableNames);
     Select(ID_extentMinima,                (void *)&extentMinima);
     Select(ID_extentMaxima,                (void *)&extentMaxima);
+    Select(ID_extentScale,                 (void *)&extentScale);
     Select(ID_variableDisplay,             (void *)&variableDisplay);
     Select(ID_length,                      (void *)&length);
     Select(ID_steps,                       (void *)&steps);
@@ -470,6 +477,12 @@ ExtrudeStackedAttributes::CreateNode(DataNode *parentNode, bool completeSave, bo
         node->AddNode(new DataNode("byVariable", byVariable));
     }
 
+    if(completeSave || !FieldsEqual(ID_defaultVariable, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("defaultVariable", defaultVariable));
+    }
+
     if(completeSave || !FieldsEqual(ID_scalarVariableNames, &defaultObject))
     {
         addToParent = true;
@@ -492,6 +505,12 @@ ExtrudeStackedAttributes::CreateNode(DataNode *parentNode, bool completeSave, bo
     {
         addToParent = true;
         node->AddNode(new DataNode("extentMaxima", extentMaxima));
+    }
+
+    if(completeSave || !FieldsEqual(ID_extentScale, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("extentScale", extentScale));
     }
 
     if(completeSave || !FieldsEqual(ID_variableDisplay, &defaultObject))
@@ -558,6 +577,8 @@ ExtrudeStackedAttributes::SetFromNode(DataNode *parentNode)
         SetAxis(node->AsDoubleArray());
     if((node = searchNode->GetNode("byVariable")) != 0)
         SetByVariable(node->AsBool());
+    if((node = searchNode->GetNode("defaultVariable")) != 0)
+        SetDefaultVariable(node->AsString());
     if((node = searchNode->GetNode("scalarVariableNames")) != 0)
         SetScalarVariableNames(node->AsStringVector());
     if((node = searchNode->GetNode("visualVariableNames")) != 0)
@@ -566,13 +587,15 @@ ExtrudeStackedAttributes::SetFromNode(DataNode *parentNode)
         SetExtentMinima(node->AsDoubleVector());
     if((node = searchNode->GetNode("extentMaxima")) != 0)
         SetExtentMaxima(node->AsDoubleVector());
+    if((node = searchNode->GetNode("extentScale")) != 0)
+        SetExtentScale(node->AsDoubleVector());
     if((node = searchNode->GetNode("variableDisplay")) != 0)
     {
         // Allow enums to be int or string in the config file
         if(node->GetNodeType() == INT_NODE)
         {
             int ival = node->AsInt();
-            if(ival >= 0 && ival < 2)
+            if(ival >= 0 && ival < 3)
                 SetVariableDisplay(VariableDisplayType(ival));
         }
         else if(node->GetNodeType() == STRING_NODE)
@@ -611,6 +634,13 @@ ExtrudeStackedAttributes::SetByVariable(bool byVariable_)
 }
 
 void
+ExtrudeStackedAttributes::SetDefaultVariable(const std::string &defaultVariable_)
+{
+    defaultVariable = defaultVariable_;
+    Select(ID_defaultVariable, (void *)&defaultVariable);
+}
+
+void
 ExtrudeStackedAttributes::SetScalarVariableNames(const stringVector &scalarVariableNames_)
 {
     scalarVariableNames = scalarVariableNames_;
@@ -636,6 +666,13 @@ ExtrudeStackedAttributes::SetExtentMaxima(const doubleVector &extentMaxima_)
 {
     extentMaxima = extentMaxima_;
     Select(ID_extentMaxima, (void *)&extentMaxima);
+}
+
+void
+ExtrudeStackedAttributes::SetExtentScale(const doubleVector &extentScale_)
+{
+    extentScale = extentScale_;
+    Select(ID_extentScale, (void *)&extentScale);
 }
 
 void
@@ -688,6 +725,18 @@ ExtrudeStackedAttributes::GetByVariable() const
     return byVariable;
 }
 
+const std::string &
+ExtrudeStackedAttributes::GetDefaultVariable() const
+{
+    return defaultVariable;
+}
+
+std::string &
+ExtrudeStackedAttributes::GetDefaultVariable()
+{
+    return defaultVariable;
+}
+
 const stringVector &
 ExtrudeStackedAttributes::GetScalarVariableNames() const
 {
@@ -736,6 +785,18 @@ ExtrudeStackedAttributes::GetExtentMaxima()
     return extentMaxima;
 }
 
+const doubleVector &
+ExtrudeStackedAttributes::GetExtentScale() const
+{
+    return extentScale;
+}
+
+doubleVector &
+ExtrudeStackedAttributes::GetExtentScale()
+{
+    return extentScale;
+}
+
 ExtrudeStackedAttributes::VariableDisplayType
 ExtrudeStackedAttributes::GetVariableDisplay() const
 {
@@ -771,6 +832,12 @@ ExtrudeStackedAttributes::SelectAxis()
 }
 
 void
+ExtrudeStackedAttributes::SelectDefaultVariable()
+{
+    Select(ID_defaultVariable, (void *)&defaultVariable);
+}
+
+void
 ExtrudeStackedAttributes::SelectScalarVariableNames()
 {
     Select(ID_scalarVariableNames, (void *)&scalarVariableNames);
@@ -792,6 +859,12 @@ void
 ExtrudeStackedAttributes::SelectExtentMaxima()
 {
     Select(ID_extentMaxima, (void *)&extentMaxima);
+}
+
+void
+ExtrudeStackedAttributes::SelectExtentScale()
+{
+    Select(ID_extentScale, (void *)&extentScale);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -820,10 +893,12 @@ ExtrudeStackedAttributes::GetFieldName(int index) const
     {
     case ID_axis:                        return "axis";
     case ID_byVariable:                  return "byVariable";
+    case ID_defaultVariable:             return "defaultVariable";
     case ID_scalarVariableNames:         return "scalarVariableNames";
     case ID_visualVariableNames:         return "visualVariableNames";
     case ID_extentMinima:                return "extentMinima";
     case ID_extentMaxima:                return "extentMaxima";
+    case ID_extentScale:                 return "extentScale";
     case ID_variableDisplay:             return "variableDisplay";
     case ID_length:                      return "length";
     case ID_steps:                       return "steps";
@@ -854,10 +929,12 @@ ExtrudeStackedAttributes::GetFieldType(int index) const
     {
     case ID_axis:                        return FieldType_doubleArray;
     case ID_byVariable:                  return FieldType_bool;
+    case ID_defaultVariable:             return FieldType_string;
     case ID_scalarVariableNames:         return FieldType_stringVector;
     case ID_visualVariableNames:         return FieldType_stringVector;
     case ID_extentMinima:                return FieldType_doubleVector;
     case ID_extentMaxima:                return FieldType_doubleVector;
+    case ID_extentScale:                 return FieldType_doubleVector;
     case ID_variableDisplay:             return FieldType_enum;
     case ID_length:                      return FieldType_double;
     case ID_steps:                       return FieldType_int;
@@ -888,10 +965,12 @@ ExtrudeStackedAttributes::GetFieldTypeName(int index) const
     {
     case ID_axis:                        return "doubleArray";
     case ID_byVariable:                  return "bool";
+    case ID_defaultVariable:             return "string";
     case ID_scalarVariableNames:         return "stringVector";
     case ID_visualVariableNames:         return "stringVector";
     case ID_extentMinima:                return "doubleVector";
     case ID_extentMaxima:                return "doubleVector";
+    case ID_extentScale:                 return "doubleVector";
     case ID_variableDisplay:             return "enum";
     case ID_length:                      return "double";
     case ID_steps:                       return "int";
@@ -937,6 +1016,11 @@ ExtrudeStackedAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) con
         retval = (byVariable == obj.byVariable);
         }
         break;
+    case ID_defaultVariable:
+        {  // new scope
+        retval = (defaultVariable == obj.defaultVariable);
+        }
+        break;
     case ID_scalarVariableNames:
         {  // new scope
         retval = (scalarVariableNames == obj.scalarVariableNames);
@@ -955,6 +1039,11 @@ ExtrudeStackedAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) con
     case ID_extentMaxima:
         {  // new scope
         retval = (extentMaxima == obj.extentMaxima);
+        }
+        break;
+    case ID_extentScale:
+        {  // new scope
+        retval = (extentScale == obj.extentScale);
         }
         break;
     case ID_variableDisplay:
@@ -988,111 +1077,174 @@ ExtrudeStackedAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) con
 ///////////////////////////////////////////////////////////////////////////////
 
 // ****************************************************************************
-// Method: ParallelCoordinatesAttributes::InsertVariable
+//  Method: ExtrudeStackedAttributes::InsertVariable
 //
-// Purpose: Inserts an variable (assuming at the end)
+//  Purpose: adds a variable (assuming at the end)
 //
-// Programmer: Jeremy Meredith
-// Creation:   January 31, 2008
+//  Programmer: Allen Sanderson
+//  Creation:   August 31, 2023
 //
-// Note: Taken largely from Mark Blair's Parallel Variable plot.
-//
-// Modifications:
-//    Jeremy Meredith, Fri Feb  1 17:55:14 EST 2008
-//    Made it use float min/max for non-limiting extents values.
-//
-//    Jeremy Meredith, Mon Feb  4 16:07:37 EST 2008
-//    Remove the variable extents; they were unusued.
-//
-//    Jeremy Meredith, Fri Feb 15 13:16:46 EST 2008
-//    Renamed orderedVariableNames to scalarVariableNames to distinguish these
-//    as names of actual scalars instead of just display names.  Added
-//    visualVariableNames.
+//  Note: Taken largely from Parallel Coordinates plot.
 //
 // ****************************************************************************
 
 void
-ExtrudeStackedAttributes::InsertVariable(const std::string &variableName_)
+ExtrudeStackedAttributes::addVariable(const std::string &variableName_)
 {
     std::string newVariableName = variableName_;
 
     size_t curVariableCount = scalarVariableNames.size();
     size_t variableOrdinal;
-    double saveExtentMin, saveExtentMax;
+    double saveExtentMin, saveExtentMax, saveExtentScale;
 
     stringVector::iterator svariableNamesIt;
     stringVector::iterator vvariableNamesIt;
     doubleVector::iterator extentMinIt;
     doubleVector::iterator extentMaxIt;
+    doubleVector::iterator extentScaleIt;
 
     for (variableOrdinal = 0; variableOrdinal < curVariableCount; variableOrdinal++)
     {
-        if (scalarVariableNames[variableOrdinal] == newVariableName) break;
+        if (scalarVariableNames[variableOrdinal] == newVariableName)
+            break;
     }
 
     if (variableOrdinal < curVariableCount)
     {
-        saveExtentMin  = extentMinima[variableOrdinal];
-        saveExtentMax  = extentMaxima[variableOrdinal];
+        saveExtentMin    = extentMinima[variableOrdinal];
+        saveExtentMax    = extentMaxima[variableOrdinal];
+        saveExtentScale  = extentScale[variableOrdinal];
 
-        svariableNamesIt = scalarVariableNames.begin()  + variableOrdinal;
-        vvariableNamesIt = visualVariableNames.begin()  + variableOrdinal;
-        extentMinIt  = extentMinima.begin()     + variableOrdinal;
-        extentMaxIt  = extentMaxima.begin()     + variableOrdinal;
+        svariableNamesIt = scalarVariableNames.begin() + variableOrdinal;
+        vvariableNamesIt = visualVariableNames.begin() + variableOrdinal;
+        extentMinIt      = extentMinima       .begin() + variableOrdinal;
+        extentMaxIt      = extentMaxima       .begin() + variableOrdinal;
+        extentScaleIt    = extentScale        .begin() + variableOrdinal;
 
         scalarVariableNames.erase(svariableNamesIt);
         visualVariableNames.erase(vvariableNamesIt);
         extentMinima.erase(extentMinIt);
         extentMaxima.erase(extentMaxIt);
+        extentScale .erase(extentScaleIt);
     }
     else
     {
-        saveExtentMin  = -1e+37;
-        saveExtentMax  = +1e+37;
+        saveExtentMin   = -1e+37;
+        saveExtentMax   = +1e+37;
+        saveExtentScale = 1.0;
     }
 
     size_t insertOrdinal = scalarVariableNames.size();
 
-    svariableNamesIt = scalarVariableNames.begin()  + insertOrdinal;
-    vvariableNamesIt = visualVariableNames.begin()  + insertOrdinal;
-    extentMinIt  = extentMinima.begin()     + insertOrdinal;
-    extentMaxIt  = extentMaxima.begin()     + insertOrdinal;
+    svariableNamesIt = scalarVariableNames.begin() + insertOrdinal;
+    vvariableNamesIt = visualVariableNames.begin() + insertOrdinal;
+    extentMinIt      = extentMinima       .begin() + insertOrdinal;
+    extentMaxIt      = extentMaxima       .begin() + insertOrdinal;
+    extentScaleIt    = extentScale        .begin() + insertOrdinal;
 
     scalarVariableNames.insert(svariableNamesIt, newVariableName);
     visualVariableNames.insert(vvariableNamesIt, newVariableName);
-    extentMinima.insert(extentMinIt, saveExtentMin);
-    extentMaxima.insert(extentMaxIt, saveExtentMax);
+    extentMinima       .insert(extentMinIt,      saveExtentMin);
+    extentMaxima       .insert(extentMaxIt,      saveExtentMax);
+    extentScale        .insert(extentScaleIt,    saveExtentScale);
 
     SelectAll();
 }
 
 // ****************************************************************************
-// Method: ExtrudeStackedAttributes::DeleteVariable
+//  Method: ExtrudeStackedAttributes::InsertVariable
 //
-// Purpose: Deletes an variable (as long as there are enough remaining)
+//  Purpose: Inserts an variable at a given index;
 //
-// Programmer: Jeremy Meredith
-// Creation:   January 31, 2008
+//  Programmer: Allen Sanderson
+//  Creation:   August 31, 2023
 //
-// Note: Taken largely from Mark Blair's Parallel Variable plot.
+//  Note: Taken largely from Parallel Coordinates plot.
 //
-// Modifications:
-//    Jeremy Meredith, Mon Feb  4 16:07:37 EST 2008
-//    Remove the variable extents; they were unusued.
+// ****************************************************************************
+
+void
+ExtrudeStackedAttributes::InsertVariable(const std::string &variableName_, const int index)
+{
+    std::string newVariableName = variableName_;
+
+    size_t curVariableCount = scalarVariableNames.size();
+    size_t variableOrdinal;
+    double saveExtentMin, saveExtentMax, saveExtentScale;
+
+    stringVector::iterator svariableNamesIt;
+    stringVector::iterator vvariableNamesIt;
+    doubleVector::iterator extentMinIt;
+    doubleVector::iterator extentMaxIt;
+    doubleVector::iterator extentScaleIt;
+
+    for (variableOrdinal = 0; variableOrdinal < curVariableCount; variableOrdinal++)
+    {
+        if (scalarVariableNames[variableOrdinal] == newVariableName)
+            break;
+    }
+
+    if (variableOrdinal < curVariableCount)
+    {
+        saveExtentMin    = extentMinima[variableOrdinal];
+        saveExtentMax    = extentMaxima[variableOrdinal];
+        saveExtentScale  = extentScale[variableOrdinal];
+
+        svariableNamesIt = scalarVariableNames.begin() + variableOrdinal;
+        vvariableNamesIt = visualVariableNames.begin() + variableOrdinal;
+        extentMinIt      = extentMinima       .begin() + variableOrdinal;
+        extentMaxIt      = extentMaxima       .begin() + variableOrdinal;
+        extentScaleIt    = extentScale        .begin() + variableOrdinal;
+
+        scalarVariableNames.erase(svariableNamesIt);
+        visualVariableNames.erase(vvariableNamesIt);
+        extentMinima.erase(extentMinIt);
+        extentMaxima.erase(extentMaxIt);
+        extentScale .erase(extentScaleIt);
+    }
+    else
+    {
+        saveExtentMin   = -1e+37;
+        saveExtentMax   = +1e+37;
+        saveExtentScale = 1.0;
+    }
+
+    size_t insertOrdinal;
+    if( 0 <= index && index < scalarVariableNames.size() )
+        insertOrdinal = index;
+    else
+        insertOrdinal = scalarVariableNames.size();
+
+    svariableNamesIt = scalarVariableNames.begin() + insertOrdinal;
+    vvariableNamesIt = visualVariableNames.begin() + insertOrdinal;
+    extentMinIt      = extentMinima       .begin() + insertOrdinal;
+    extentMaxIt      = extentMaxima       .begin() + insertOrdinal;
+    extentScaleIt    = extentScale        .begin() + insertOrdinal;
+
+    scalarVariableNames.insert(svariableNamesIt, newVariableName);
+    visualVariableNames.insert(vvariableNamesIt, newVariableName);
+    extentMinima       .insert(extentMinIt,      saveExtentMin);
+    extentMaxima       .insert(extentMaxIt,      saveExtentMax);
+    extentScale        .insert(extentScaleIt,    saveExtentScale);
+
+    SelectAll();
+}
+
+// ****************************************************************************
+//  Method: ExtrudeStackedAttributes::DeleteVariable
 //
-//    Jeremy Meredith, Fri Feb 15 13:16:46 EST 2008
-//    Renamed orderedVariableNames to scalarVariableNames to distinguish these
-//    as names of actual scalars instead of just display names.  Added
-//    visualVariableNames.
+//  Purpose: Deletes an variable (as long as there are enough remaining)
 //
-//    Kathleen Bonnell, Wed Jun 4 07:54:16 PDT 2008
-//    Removed unused variables leftSelectedVariableID, rightSelectedVariableID.
+//  Programmer: Allen Sanderson
+//  Creation:   August 31, 2023
+//
+//  Note: Taken largely from Parallel Coordinates plot.
 //
 // ****************************************************************************
 
 void
 ExtrudeStackedAttributes::DeleteVariable(const std::string &variableName_,
-                                          int minVariableCount)
+                                         int minVariableCount)
 {
     if ((int)scalarVariableNames.size() <= minVariableCount) return;
 
@@ -1112,20 +1264,22 @@ ExtrudeStackedAttributes::DeleteVariable(const std::string &variableName_,
         scalarVariableNames.erase(scalarVariableNames.begin() + variableOrdinal);
         extentMinima.erase(extentMinima.begin() + variableOrdinal);
         extentMaxima.erase(extentMaxima.begin() + variableOrdinal);
+        extentScale .erase(extentScale .begin() + variableOrdinal);
 
         SelectAll();
     }
 }
 
 // ****************************************************************************
-// Method: ExtrudeStackedAttributes::AttributesAreConsistent
+//  Method: ExtrudeStackedAttributes::AttributesAreConsistent
 //
-// Purpose: Returns true only if (1) all vector attributes are the same length,
-//          (2) all variable names are unique, and (3) the index of the currently
-//          displayable variable information in the GUI is in range.
+//  Purpose: Returns true only if (1) all vector attributes are the same 
+//           length, (2) all variable names are unique, and (3) the index
+//           of the currently displayable variable information in the GUI
+//           is in range.
 //
-// Programmer: Jeremy Meredith
-// Creation:   January 31, 2008
+//  Programmer: Allen Sanderson
+//  Creation:   August 31, 2023
 //
 // ****************************************************************************
 
@@ -1133,30 +1287,21 @@ bool
 ExtrudeStackedAttributes::AttributesAreConsistent() const
 {
     size_t variableNamesSize = scalarVariableNames.size();
-    size_t variableNum, variable2Num;
-    std::string variableName;
-
-    if (variableNamesSize == 0)
-    {
-        if (extentMinima.size() != extentMaxima.size())
-            return false;
-
-        return true;
-    }
 
     if ((extentMinima.size() != variableNamesSize) ||
-        (extentMaxima.size() != variableNamesSize))
+        (extentMaxima.size() != variableNamesSize) ||
+        (extentScale.size()  != variableNamesSize))
     {
         return false;
     }
 
-    for (variableNum = 0; variableNum < variableNamesSize - 1; variableNum++)
+    for (size_t i = 0; i < variableNamesSize - 1; i++)
     {
-        variableName = scalarVariableNames[variableNum];
+        std::string variableName = scalarVariableNames[i];
 
-        for (variable2Num = variableNum + 1; variable2Num < variableNamesSize; variable2Num++ )
+        for (size_t j = i + 1; j < variableNamesSize; j++ )
         {
-            if (scalarVariableNames[variable2Num] == variableName)
+            if (scalarVariableNames[j] == variableName)
                 return false;
         }
     }

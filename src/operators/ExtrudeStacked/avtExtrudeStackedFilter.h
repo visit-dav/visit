@@ -26,14 +26,10 @@ class vtkUnstructuredGrid;
 //  Purpose:
 //      A plugin operator for ExtrudeStacked.
 //
-//  Programmer: Brad Whitlock
-//  Creation:   Wed Jun 22 13:48:57 PST 2011
+//  Note: Adapted from the original extrude operator.
 //
-//  Modifications:
-//    Eric Brugger, Thu Jul 24 13:31:45 PDT 2014
-//    Modified the class to work with avtDataRepresentation.
-//
-// ****************************************************************************
+//  Programmer: Allen Sanderson
+//  Creation:   August 31, 2023
 
 class avtExtrudeStackedFilter : public avtPluginDataTreeIterator
 {
@@ -87,14 +83,17 @@ class avtExtrudeStackedFilter : public avtPluginDataTreeIterator
 
     // Number of stacked extrusions only set if there are two or more
     // variables.
-    unsigned int num_stacked_extrusions {0};
-    unsigned int stacked_index {0};
+    size_t num_stacked_extrusions {0};
+    size_t varStackedIndex {0};
+    int    varNum {0};
 
     doubleVector variableMinimums;
     doubleVector variableMaximums;
+    doubleVector variableScales;
 
     // Names for the variables created for stacked extrusions
-    std::string stackedVarNames[2] {"StackedIndex", "StackedValue"};
+    std::string stackedVarNames[3]
+      {"NodeHeight", "CellHeight", "VarIndex"};
 };
 
 #endif

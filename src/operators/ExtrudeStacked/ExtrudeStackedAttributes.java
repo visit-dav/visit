@@ -27,11 +27,12 @@ import java.lang.Double;
 
 public class ExtrudeStackedAttributes extends AttributeSubject implements Plugin
 {
-    private static int ExtrudeStackedAttributes_numAdditionalAtts = 10;
+    private static int ExtrudeStackedAttributes_numAdditionalAtts = 12;
 
     // Enum values
-    public final static int VARIABLEDISPLAYTYPE_INDEX = 0;
-    public final static int VARIABLEDISPLAYTYPE_VALUE = 1;
+    public final static int VARIABLEDISPLAYTYPE_NODEHEIGHT = 0;
+    public final static int VARIABLEDISPLAYTYPE_CELLHEIGHT = 1;
+    public final static int VARIABLEDISPLAYTYPE_VARINDEX = 2;
 
 
     public ExtrudeStackedAttributes()
@@ -42,12 +43,14 @@ public class ExtrudeStackedAttributes extends AttributeSubject implements Plugin
         axis[0] = 0;
         axis[1] = 0;
         axis[2] = 1;
-        byVariable = false;
+        byVariable = true;
+        defaultVariable = new String("");
         scalarVariableNames = new Vector();
         visualVariableNames = new Vector();
         extentMinima = new Vector();
         extentMaxima = new Vector();
-        variableDisplay = VARIABLEDISPLAYTYPE_INDEX;
+        extentScale = new Vector();
+        variableDisplay = VARIABLEDISPLAYTYPE_VARINDEX;
         length = 1;
         steps = 1;
         preserveOriginalCellNumbers = true;
@@ -61,12 +64,14 @@ public class ExtrudeStackedAttributes extends AttributeSubject implements Plugin
         axis[0] = 0;
         axis[1] = 0;
         axis[2] = 1;
-        byVariable = false;
+        byVariable = true;
+        defaultVariable = new String("");
         scalarVariableNames = new Vector();
         visualVariableNames = new Vector();
         extentMinima = new Vector();
         extentMaxima = new Vector();
-        variableDisplay = VARIABLEDISPLAYTYPE_INDEX;
+        extentScale = new Vector();
+        variableDisplay = VARIABLEDISPLAYTYPE_VARINDEX;
         length = 1;
         steps = 1;
         preserveOriginalCellNumbers = true;
@@ -84,6 +89,7 @@ public class ExtrudeStackedAttributes extends AttributeSubject implements Plugin
         axis[2] = obj.axis[2];
 
         byVariable = obj.byVariable;
+        defaultVariable = new String(obj.defaultVariable);
         scalarVariableNames = new Vector(obj.scalarVariableNames.size());
         for(i = 0; i < obj.scalarVariableNames.size(); ++i)
             scalarVariableNames.addElement(new String((String)obj.scalarVariableNames.elementAt(i)));
@@ -104,6 +110,13 @@ public class ExtrudeStackedAttributes extends AttributeSubject implements Plugin
         {
             Double dv = (Double)obj.extentMaxima.elementAt(i);
             extentMaxima.addElement(new Double(dv.doubleValue()));
+        }
+
+        extentScale = new Vector(obj.extentScale.size());
+        for(i = 0; i < obj.extentScale.size(); ++i)
+        {
+            Double dv = (Double)obj.extentScale.elementAt(i);
+            extentScale.addElement(new Double(dv.doubleValue()));
         }
 
         variableDisplay = obj.variableDisplay;
@@ -169,13 +182,24 @@ public class ExtrudeStackedAttributes extends AttributeSubject implements Plugin
             Double extentMaxima2 = (Double)obj.extentMaxima.elementAt(i);
             extentMaxima_equal = extentMaxima1.equals(extentMaxima2);
         }
+        // Compare the elements in the extentScale vector.
+        boolean extentScale_equal = (obj.extentScale.size() == extentScale.size());
+        for(i = 0; (i < extentScale.size()) && extentScale_equal; ++i)
+        {
+            // Make references to Double from Object.
+            Double extentScale1 = (Double)extentScale.elementAt(i);
+            Double extentScale2 = (Double)obj.extentScale.elementAt(i);
+            extentScale_equal = extentScale1.equals(extentScale2);
+        }
         // Create the return value
         return (axis_equal &&
                 (byVariable == obj.byVariable) &&
+                (defaultVariable.equals(obj.defaultVariable)) &&
                 scalarVariableNames_equal &&
                 visualVariableNames_equal &&
                 extentMinima_equal &&
                 extentMaxima_equal &&
+                extentScale_equal &&
                 (variableDisplay == obj.variableDisplay) &&
                 (length == obj.length) &&
                 (steps == obj.steps) &&
@@ -208,61 +232,75 @@ public class ExtrudeStackedAttributes extends AttributeSubject implements Plugin
         Select(1);
     }
 
+    public void SetDefaultVariable(String defaultVariable_)
+    {
+        defaultVariable = defaultVariable_;
+        Select(2);
+    }
+
     public void SetScalarVariableNames(Vector scalarVariableNames_)
     {
         scalarVariableNames = scalarVariableNames_;
-        Select(2);
+        Select(3);
     }
 
     public void SetVisualVariableNames(Vector visualVariableNames_)
     {
         visualVariableNames = visualVariableNames_;
-        Select(3);
+        Select(4);
     }
 
     public void SetExtentMinima(Vector extentMinima_)
     {
         extentMinima = extentMinima_;
-        Select(4);
+        Select(5);
     }
 
     public void SetExtentMaxima(Vector extentMaxima_)
     {
         extentMaxima = extentMaxima_;
-        Select(5);
+        Select(6);
+    }
+
+    public void SetExtentScale(Vector extentScale_)
+    {
+        extentScale = extentScale_;
+        Select(7);
     }
 
     public void SetVariableDisplay(int variableDisplay_)
     {
         variableDisplay = variableDisplay_;
-        Select(6);
+        Select(8);
     }
 
     public void SetLength(double length_)
     {
         length = length_;
-        Select(7);
+        Select(9);
     }
 
     public void SetSteps(int steps_)
     {
         steps = steps_;
-        Select(8);
+        Select(10);
     }
 
     public void SetPreserveOriginalCellNumbers(boolean preserveOriginalCellNumbers_)
     {
         preserveOriginalCellNumbers = preserveOriginalCellNumbers_;
-        Select(9);
+        Select(11);
     }
 
     // Property getting methods
     public double[] GetAxis() { return axis; }
     public boolean  GetByVariable() { return byVariable; }
+    public String   GetDefaultVariable() { return defaultVariable; }
     public Vector   GetScalarVariableNames() { return scalarVariableNames; }
     public Vector   GetVisualVariableNames() { return visualVariableNames; }
     public Vector   GetExtentMinima() { return extentMinima; }
     public Vector   GetExtentMaxima() { return extentMaxima; }
+    public Vector   GetExtentScale() { return extentScale; }
     public int      GetVariableDisplay() { return variableDisplay; }
     public double   GetLength() { return length; }
     public int      GetSteps() { return steps; }
@@ -276,20 +314,24 @@ public class ExtrudeStackedAttributes extends AttributeSubject implements Plugin
         if(WriteSelect(1, buf))
             buf.WriteBool(byVariable);
         if(WriteSelect(2, buf))
-            buf.WriteStringVector(scalarVariableNames);
+            buf.WriteString(defaultVariable);
         if(WriteSelect(3, buf))
-            buf.WriteStringVector(visualVariableNames);
+            buf.WriteStringVector(scalarVariableNames);
         if(WriteSelect(4, buf))
-            buf.WriteDoubleVector(extentMinima);
+            buf.WriteStringVector(visualVariableNames);
         if(WriteSelect(5, buf))
-            buf.WriteDoubleVector(extentMaxima);
+            buf.WriteDoubleVector(extentMinima);
         if(WriteSelect(6, buf))
-            buf.WriteInt(variableDisplay);
+            buf.WriteDoubleVector(extentMaxima);
         if(WriteSelect(7, buf))
-            buf.WriteDouble(length);
+            buf.WriteDoubleVector(extentScale);
         if(WriteSelect(8, buf))
-            buf.WriteInt(steps);
+            buf.WriteInt(variableDisplay);
         if(WriteSelect(9, buf))
+            buf.WriteDouble(length);
+        if(WriteSelect(10, buf))
+            buf.WriteInt(steps);
+        if(WriteSelect(11, buf))
             buf.WriteBool(preserveOriginalCellNumbers);
     }
 
@@ -304,27 +346,33 @@ public class ExtrudeStackedAttributes extends AttributeSubject implements Plugin
             SetByVariable(buf.ReadBool());
             break;
         case 2:
-            SetScalarVariableNames(buf.ReadStringVector());
+            SetDefaultVariable(buf.ReadString());
             break;
         case 3:
-            SetVisualVariableNames(buf.ReadStringVector());
+            SetScalarVariableNames(buf.ReadStringVector());
             break;
         case 4:
-            SetExtentMinima(buf.ReadDoubleVector());
+            SetVisualVariableNames(buf.ReadStringVector());
             break;
         case 5:
-            SetExtentMaxima(buf.ReadDoubleVector());
+            SetExtentMinima(buf.ReadDoubleVector());
             break;
         case 6:
-            SetVariableDisplay(buf.ReadInt());
+            SetExtentMaxima(buf.ReadDoubleVector());
             break;
         case 7:
-            SetLength(buf.ReadDouble());
+            SetExtentScale(buf.ReadDoubleVector());
             break;
         case 8:
-            SetSteps(buf.ReadInt());
+            SetVariableDisplay(buf.ReadInt());
             break;
         case 9:
+            SetLength(buf.ReadDouble());
+            break;
+        case 10:
+            SetSteps(buf.ReadInt());
+            break;
+        case 11:
             SetPreserveOriginalCellNumbers(buf.ReadBool());
             break;
         }
@@ -335,15 +383,19 @@ public class ExtrudeStackedAttributes extends AttributeSubject implements Plugin
         String str = new String();
         str = str + doubleArrayToString("axis", axis, indent) + "\n";
         str = str + boolToString("byVariable", byVariable, indent) + "\n";
+        str = str + stringToString("defaultVariable", defaultVariable, indent) + "\n";
         str = str + stringVectorToString("scalarVariableNames", scalarVariableNames, indent) + "\n";
         str = str + stringVectorToString("visualVariableNames", visualVariableNames, indent) + "\n";
         str = str + doubleVectorToString("extentMinima", extentMinima, indent) + "\n";
         str = str + doubleVectorToString("extentMaxima", extentMaxima, indent) + "\n";
+        str = str + doubleVectorToString("extentScale", extentScale, indent) + "\n";
         str = str + indent + "variableDisplay = ";
-        if(variableDisplay == VARIABLEDISPLAYTYPE_INDEX)
-            str = str + "VARIABLEDISPLAYTYPE_INDEX";
-        if(variableDisplay == VARIABLEDISPLAYTYPE_VALUE)
-            str = str + "VARIABLEDISPLAYTYPE_VALUE";
+        if(variableDisplay == VARIABLEDISPLAYTYPE_NODEHEIGHT)
+            str = str + "VARIABLEDISPLAYTYPE_NODEHEIGHT";
+        if(variableDisplay == VARIABLEDISPLAYTYPE_CELLHEIGHT)
+            str = str + "VARIABLEDISPLAYTYPE_CELLHEIGHT";
+        if(variableDisplay == VARIABLEDISPLAYTYPE_VARINDEX)
+            str = str + "VARIABLEDISPLAYTYPE_VARINDEX";
         str = str + "\n";
         str = str + doubleToString("length", length, indent) + "\n";
         str = str + intToString("steps", steps, indent) + "\n";
@@ -355,10 +407,12 @@ public class ExtrudeStackedAttributes extends AttributeSubject implements Plugin
     // Attributes
     private double[] axis;
     private boolean  byVariable;
+    private String   defaultVariable;
     private Vector   scalarVariableNames; // vector of String objects
     private Vector   visualVariableNames; // vector of String objects
     private Vector   extentMinima; // vector of Double objects
     private Vector   extentMaxima; // vector of Double objects
+    private Vector   extentScale; // vector of Double objects
     private int      variableDisplay;
     private double   length;
     private int      steps;
