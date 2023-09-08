@@ -1077,7 +1077,7 @@ ExtrudeStackedAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) con
 ///////////////////////////////////////////////////////////////////////////////
 
 // ****************************************************************************
-//  Method: ExtrudeStackedAttributes::InsertVariable
+//  Method: ExtrudeStackedAttributes::addVariable
 //
 //  Purpose: adds a variable (assuming at the end)
 //
@@ -1091,64 +1091,7 @@ ExtrudeStackedAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) con
 void
 ExtrudeStackedAttributes::addVariable(const std::string &variableName_)
 {
-    std::string newVariableName = variableName_;
-
-    size_t curVariableCount = scalarVariableNames.size();
-    size_t variableOrdinal;
-    double saveExtentMin, saveExtentMax, saveExtentScale;
-
-    stringVector::iterator svariableNamesIt;
-    stringVector::iterator vvariableNamesIt;
-    doubleVector::iterator extentMinIt;
-    doubleVector::iterator extentMaxIt;
-    doubleVector::iterator extentScaleIt;
-
-    for (variableOrdinal = 0; variableOrdinal < curVariableCount; variableOrdinal++)
-    {
-        if (scalarVariableNames[variableOrdinal] == newVariableName)
-            break;
-    }
-
-    if (variableOrdinal < curVariableCount)
-    {
-        saveExtentMin    = extentMinima[variableOrdinal];
-        saveExtentMax    = extentMaxima[variableOrdinal];
-        saveExtentScale  = extentScale[variableOrdinal];
-
-        svariableNamesIt = scalarVariableNames.begin() + variableOrdinal;
-        vvariableNamesIt = visualVariableNames.begin() + variableOrdinal;
-        extentMinIt      = extentMinima       .begin() + variableOrdinal;
-        extentMaxIt      = extentMaxima       .begin() + variableOrdinal;
-        extentScaleIt    = extentScale        .begin() + variableOrdinal;
-
-        scalarVariableNames.erase(svariableNamesIt);
-        visualVariableNames.erase(vvariableNamesIt);
-        extentMinima.erase(extentMinIt);
-        extentMaxima.erase(extentMaxIt);
-        extentScale .erase(extentScaleIt);
-    }
-    else
-    {
-        saveExtentMin   = -1e+37;
-        saveExtentMax   = +1e+37;
-        saveExtentScale = 1.0;
-    }
-
-    size_t insertOrdinal = scalarVariableNames.size();
-
-    svariableNamesIt = scalarVariableNames.begin() + insertOrdinal;
-    vvariableNamesIt = visualVariableNames.begin() + insertOrdinal;
-    extentMinIt      = extentMinima       .begin() + insertOrdinal;
-    extentMaxIt      = extentMaxima       .begin() + insertOrdinal;
-    extentScaleIt    = extentScale        .begin() + insertOrdinal;
-
-    scalarVariableNames.insert(svariableNamesIt, newVariableName);
-    visualVariableNames.insert(vvariableNamesIt, newVariableName);
-    extentMinima       .insert(extentMinIt,      saveExtentMin);
-    extentMaxima       .insert(extentMaxIt,      saveExtentMax);
-    extentScale        .insert(extentScaleIt,    saveExtentScale);
-
-    SelectAll();
+    InsertVariable(variableName_, scalarVariableNames.size());
 }
 
 // ****************************************************************************
@@ -1210,7 +1153,7 @@ ExtrudeStackedAttributes::InsertVariable(const std::string &variableName_, const
     }
 
     size_t insertOrdinal;
-    if( 0 <= index && index < scalarVariableNames.size() )
+    if( 0 <= index && index <= scalarVariableNames.size() )
         insertOrdinal = index;
     else
         insertOrdinal = scalarVariableNames.size();
