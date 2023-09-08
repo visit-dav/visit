@@ -11,25 +11,25 @@
 # ----------------------------------------------------------------------------
 RequiredDatabasePlugin("ExtrudeStacked_Tester")
 
-# For testing using the CLI
+# For local testing using the CLI
 
-def data_path( db_name ):
-  db="/Users/allen/Projects/VisIt/git/visit/data/%s" %(db_name)
-  return db
+#def data_path( db_name ):
+#  db="/Users/allen/Projects/VisIt/git/visit/data/%s" %(db_name)
+#  return db
 
-def Test(case_name):
-   swatts = SaveWindowAttributes()
-   swatts.family = 0
-   swatts.fileName = "/Users/allen/Projects/VisIt/git/visit/data/%s" %(case_name)
-   SetSaveWindowAttributes(swatts)
-   SaveWindow()
-   return
+#def Test(case_name):
+#   swatts = SaveWindowAttributes()
+#   swatts.family = 0
+#   swatts.fileName = "/Users/allen/Projects/VisIt/git/visit/data/%s" %(case_name)
+#   SetSaveWindowAttributes(swatts)
+#   SaveWindow()
+#   return
 
-def TestSection(tmpstr):
-   return
+#def TestSection(tmpstr):
+#   return
 
-def Exit():
-   return
+#def Exit():
+#   return
 
 # Set the local view
 def SetLocalView():
@@ -81,8 +81,7 @@ for i in range(len(databases)):
   TestSection(tmpstr)
   OpenDatabase(db)
   #
-  # Replace the database from before with this one as a new plot can not
-  # be opened within the loop when using runtest. This issue is a bug
+  # Replace the database from before with the one just openned.
   ReplaceDatabase(db)
   #
   ExtrudeStackedAtts = ExtrudeStackedAttributes()
