@@ -4,6 +4,8 @@
 
 #****************************************************************************
 # Modifications:
+#   Kathleen Biagas, Tue Sep 5, 2023 
+#   Remove untested, unused EGL logic.
 #
 #****************************************************************************
 
@@ -22,8 +24,6 @@ if(VTK_VERSION VERSION_GREATER_EQUAL "9.1.0")
 endif()
 if(HAVE_OSMESA)
     target_link_libraries(visit_vtk_offscreen ${OSMESA_LIBRARIES})
-elseif(HAVE_EGL)
-    target_link_libraries(visit_vtk_offscreen ${EGL_LIBRARIES})
 endif()
 
 VISIT_INSTALL_TARGETS(visit_vtk_offscreen)

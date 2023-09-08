@@ -24,7 +24,7 @@ import java.lang.Integer;
 
 public class ColorTableAttributes extends AttributeSubject
 {
-    private static int ColorTableAttributes_numAdditionalAtts = 17;
+    private static int ColorTableAttributes_numAdditionalAtts = 16;
 
     public ColorTableAttributes()
     {
@@ -35,7 +35,6 @@ public class ColorTableAttributes extends AttributeSubject
         colorTables = new Vector();
         defaultContinuous = new String("hot");
         defaultDiscrete = new String("levels");
-        changesMade = false;
         tagsMatchAny = true;
         tagListNames = new Vector();
         tagListActive = new Vector();
@@ -58,7 +57,6 @@ public class ColorTableAttributes extends AttributeSubject
         colorTables = new Vector();
         defaultContinuous = new String("hot");
         defaultDiscrete = new String("levels");
-        changesMade = false;
         tagsMatchAny = true;
         tagListNames = new Vector();
         tagListActive = new Vector();
@@ -98,7 +96,6 @@ public class ColorTableAttributes extends AttributeSubject
 
         defaultContinuous = new String(obj.defaultContinuous);
         defaultDiscrete = new String(obj.defaultDiscrete);
-        changesMade = obj.changesMade;
         tagsMatchAny = obj.tagsMatchAny;
         tagListNames = new Vector(obj.tagListNames.size());
         for(i = 0; i < obj.tagListNames.size(); ++i)
@@ -282,7 +279,6 @@ public class ColorTableAttributes extends AttributeSubject
                 colorTables_equal &&
                 (defaultContinuous.equals(obj.defaultContinuous)) &&
                 (defaultDiscrete.equals(obj.defaultDiscrete)) &&
-                (changesMade == obj.changesMade) &&
                 (tagsMatchAny == obj.tagsMatchAny) &&
                 tagListNames_equal &&
                 tagListActive_equal &&
@@ -321,76 +317,70 @@ public class ColorTableAttributes extends AttributeSubject
         Select(4);
     }
 
-    public void SetChangesMade(boolean changesMade_)
-    {
-        changesMade = changesMade_;
-        Select(5);
-    }
-
     public void SetTagsMatchAny(boolean tagsMatchAny_)
     {
         tagsMatchAny = tagsMatchAny_;
-        Select(6);
+        Select(5);
     }
 
     public void SetTagListNames(Vector tagListNames_)
     {
         tagListNames = tagListNames_;
-        Select(7);
+        Select(6);
     }
 
     public void SetTagListActive(Vector tagListActive_)
     {
         tagListActive = tagListActive_;
-        Select(8);
+        Select(7);
     }
 
     public void SetTagListNumRefs(Vector tagListNumRefs_)
     {
         tagListNumRefs = tagListNumRefs_;
-        Select(9);
+        Select(8);
     }
 
     public void SetTagListTableItemFlag(Vector tagListTableItemFlag_)
     {
         tagListTableItemFlag = tagListTableItemFlag_;
-        Select(10);
+        Select(9);
     }
 
     public void SetTagChangesTag(Vector tagChangesTag_)
     {
         tagChangesTag = tagChangesTag_;
-        Select(11);
+        Select(10);
     }
 
     public void SetTagChangesType(Vector tagChangesType_)
     {
         tagChangesType = tagChangesType_;
-        Select(12);
+        Select(11);
     }
 
     public void SetTagChangesCTName(Vector tagChangesCTName_)
     {
         tagChangesCTName = tagChangesCTName_;
-        Select(13);
+        Select(12);
     }
 
     public void SetDeferredTagChangesTag(Vector deferredTagChangesTag_)
     {
         deferredTagChangesTag = deferredTagChangesTag_;
-        Select(14);
+        Select(13);
     }
 
     public void SetDeferredTagChangesType(Vector deferredTagChangesType_)
     {
         deferredTagChangesType = deferredTagChangesType_;
-        Select(15);
+        Select(14);
     }
 
     public void SetDeferredTagChangesCTName(Vector deferredTagChangesCTName_)
     {
         deferredTagChangesCTName = deferredTagChangesCTName_;
-        Select(16);
+        Select(15);
     }
 
     // Property getting methods
@@ -399,7 +389,6 @@ public class ColorTableAttributes extends AttributeSubject
     public Vector  GetColorTables() { return colorTables; }
     public String  GetDefaultContinuous() { return defaultContinuous; }
     public String  GetDefaultDiscrete() { return defaultDiscrete; }
-    public boolean GetChangesMade() { return changesMade; }
     public boolean GetTagsMatchAny() { return tagsMatchAny; }
     public Vector  GetTagListNames() { return tagListNames; }
     public Vector  GetTagListActive() { return tagListActive; }
@@ -433,28 +422,26 @@ public class ColorTableAttributes extends AttributeSubject
         if(WriteSelect(4, buf))
             buf.WriteString(defaultDiscrete);
         if(WriteSelect(5, buf))
-            buf.WriteBool(changesMade);
-        if(WriteSelect(6, buf))
             buf.WriteBool(tagsMatchAny);
-        if(WriteSelect(7, buf))
+        if(WriteSelect(6, buf))
             buf.WriteStringVector(tagListNames);
-        if(WriteSelect(8, buf))
+        if(WriteSelect(7, buf))
             buf.WriteIntVector(tagListActive);
-        if(WriteSelect(9, buf))
+        if(WriteSelect(8, buf))
             buf.WriteIntVector(tagListNumRefs);
-        if(WriteSelect(10, buf))
+        if(WriteSelect(9, buf))
             buf.WriteIntVector(tagListTableItemFlag);
-        if(WriteSelect(11, buf))
+        if(WriteSelect(10, buf))
             buf.WriteStringVector(tagChangesTag);
-        if(WriteSelect(12, buf))
+        if(WriteSelect(11, buf))
             buf.WriteIntVector(tagChangesType);
-        if(WriteSelect(13, buf))
+        if(WriteSelect(12, buf))
             buf.WriteStringVector(tagChangesCTName);
-        if(WriteSelect(14, buf))
+        if(WriteSelect(13, buf))
             buf.WriteStringVector(deferredTagChangesTag);
-        if(WriteSelect(15, buf))
+        if(WriteSelect(14, buf))
             buf.WriteIntVector(deferredTagChangesType);
-        if(WriteSelect(16, buf))
+        if(WriteSelect(15, buf))
             buf.WriteStringVector(deferredTagChangesCTName);
     }
 
@@ -488,39 +475,36 @@ public class ColorTableAttributes extends AttributeSubject
             SetDefaultDiscrete(buf.ReadString());
             break;
         case 5:
-            SetChangesMade(buf.ReadBool());
-            break;
-        case 6:
             SetTagsMatchAny(buf.ReadBool());
             break;
-        case 7:
+        case 6:
             SetTagListNames(buf.ReadStringVector());
             break;
-        case 8:
+        case 7:
             SetTagListActive(buf.ReadIntVector());
             break;
-        case 9:
+        case 8:
             SetTagListNumRefs(buf.ReadIntVector());
             break;
-        case 10:
+        case 9:
             SetTagListTableItemFlag(buf.ReadIntVector());
             break;
-        case 11:
+        case 10:
             SetTagChangesTag(buf.ReadStringVector());
             break;
-        case 12:
+        case 11:
             SetTagChangesType(buf.ReadIntVector());
             break;
-        case 13:
+        case 12:
             SetTagChangesCTName(buf.ReadStringVector());
             break;
-        case 14:
+        case 13:
             SetDeferredTagChangesTag(buf.ReadStringVector());
             break;
-        case 15:
+        case 14:
             SetDeferredTagChangesType(buf.ReadIntVector());
             break;
-        case 16:
+        case 15:
             SetDeferredTagChangesCTName(buf.ReadStringVector());
             break;
         }
@@ -543,7 +527,6 @@ public class ColorTableAttributes extends AttributeSubject
         str = str + "}\n";
         str = str + stringToString("defaultContinuous", defaultContinuous, indent) + "\n";
         str = str + stringToString("defaultDiscrete", defaultDiscrete, indent) + "\n";
-        str = str + boolToString("changesMade", changesMade, indent) + "\n";
         str = str + boolToString("tagsMatchAny", tagsMatchAny, indent) + "\n";
         str = str + stringVectorToString("tagListNames", tagListNames, indent) + "\n";
         str = str + intVectorToString("tagListActive", tagListActive, indent) + "\n";
@@ -697,7 +680,6 @@ public class ColorTableAttributes extends AttributeSubject
     private Vector  colorTables; // vector of ColorControlPointList objects
     private String  defaultContinuous;
     private String  defaultDiscrete;
-    private boolean changesMade;
     private boolean tagsMatchAny;
     private Vector  tagListNames; // vector of String objects
     private Vector  tagListActive; // vector of Integer objects

@@ -1863,7 +1863,6 @@ ViewerPlot::SetVariableName(const std::string &name)
     // Save the new variable name.
     variableName = name;
 
-
     if (curPlotAtts->VarChangeRequiresReset())
     {
         const avtDatabaseMetaData *md;
@@ -1898,6 +1897,7 @@ ViewerPlot::SetVariableName(const std::string &name)
         ExpressionList *exprs = NULL;
         if (md != 0)
             exprs = info->GetCreatedExpressions(md);
+
         if (exprs)
         {
             for (int k = 0 ; k < exprs->GetNumExpressions() ; k++)
@@ -1931,6 +1931,25 @@ ViewerPlot::SetVariableName(const std::string &name)
                 }
             }
             delete exprs;
+        }
+        // No operator expressions but the attributes may still need
+        // to be updated so handle the update separately. Some
+        // operator GUIs may want the new current (aka primary,
+        // default) variable.
+
+	// Note: Currently the only place UpdateOperatorAtts is called
+	// is when the plot variable name is set or changes, i.e. this
+	// function. However, there maybe other instances where it
+	// could be called.
+        else
+        {
+            int nOps = GetNOperators();
+            for (int opId = 0 ; opId < nOps ; opId++)
+            {
+                ViewerOperator *op = GetOperator(opId);
+                if (op->GetPluginID() == id)
+                  op->UpdateOperatorAtts();
+            }
         }
     }
 
@@ -6756,4 +6775,3 @@ ViewerPlot::PlotHasBeenGlyphed()
     }
     return beenGlyphed;
 }
-

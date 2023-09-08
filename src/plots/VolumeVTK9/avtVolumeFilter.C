@@ -273,6 +273,7 @@ avtVolumeFilter::CreateOpacityMap(double range[2])
                              atts.GetOpacityAttenuation() * 2.0 - 1.0,
                              atts.GetRendererSamples());
     }
+#ifdef VISIT_SLIVR
     else if (atts.GetRendererType() == VolumeAttributes::SLIVR)
     {
         // Set the opacity map with opacity correction. This
@@ -281,6 +282,7 @@ avtVolumeFilter::CreateOpacityMap(double range[2])
                              atts.GetOpacityAttenuation() * 2.0 - 1.0,
                              atts.GetRendererSamples());
     }
+#endif
     else
     {
         // Set the opacity map just using the transfer function.
@@ -644,10 +646,12 @@ avtVolumeFilter::RenderImage(avtImage_p opaque_image,
         return RenderImageVTK(opaque_image, window);
     }
 
+#ifdef VISIT_SLIVR
     else if (atts.GetRendererType() == VolumeAttributes::SLIVR )
     {
         return RenderImageSLIVR(opaque_image, window);
     }
+#endif
 
     //
     // Create a dummy pipeline with the volume renderer that can be
@@ -1007,11 +1011,11 @@ avtVolumeFilter::RenderImageVTK(avtImage_p opaque_image,
 //  Modifications:
 //
 // ****************************************************************************
+#ifdef VISIT_SLIVR
 avtImage_p
 avtVolumeFilter::RenderImageSLIVR(avtImage_p opaque_image,
                                   const WindowAttributes &window)
 {
-#ifdef VISIT_SLIVR
     //
     // Create a dummy pipeline with the volume renderer that can be
     // executed within the volume filter "Execute".  Start with the
@@ -1153,8 +1157,8 @@ avtVolumeFilter::RenderImageSLIVR(avtImage_p opaque_image,
     avtImage_p output;
     CopyTo(output, dob);
     return output;
-#endif
 }
+#endif
 
 
 
