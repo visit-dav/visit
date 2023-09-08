@@ -13,23 +13,23 @@ RequiredDatabasePlugin("ExtrudeStacked_Tester")
 
 # For testing using the CLI
 
-#def data_path( db_name ):
-#  db="/Users/allen/Projects/VisIt/git/visit/data/%s" %(db_name)
-#  return db
+def data_path( db_name ):
+  db="/Users/allen/Projects/VisIt/git/visit/data/%s" %(db_name)
+  return db
 
-#def Test(case_name):
-#   swatts = SaveWindowAttributes()
-#   swatts.family = 0
-#   swatts.fileName = "/Users/allen/Projects/VisIt/git/visit/data/%s" %(case_name)
-#   SetSaveWindowAttributes(swatts)
-#   SaveWindow()
-#   return
+def Test(case_name):
+   swatts = SaveWindowAttributes()
+   swatts.family = 0
+   swatts.fileName = "/Users/allen/Projects/VisIt/git/visit/data/%s" %(case_name)
+   SetSaveWindowAttributes(swatts)
+   SaveWindow()
+   return
 
-#def TestSection(tmpstr):
-#   return
+def TestSection(tmpstr):
+   return
 
-#def Exit():
-#   return
+def Exit():
+   return
 
 # Set the local view
 def SetLocalView():
@@ -87,34 +87,19 @@ for i in range(len(databases)):
   #
   ExtrudeStackedAtts = ExtrudeStackedAttributes()
   ExtrudeStackedAtts.axis = (0, 0, 1)
-  ExtrudeStackedAtts.byVariable = 0
-  ExtrudeStackedAtts.scalarVariableNames = ()
-  ExtrudeStackedAtts.visualVariableNames = ()
-  ExtrudeStackedAtts.extentMinima = ()
-  ExtrudeStackedAtts.extentMaxima = ()
-  ExtrudeStackedAtts.variableDisplay = ExtrudeStackedAtts.Index  # Index, Value
-  ExtrudeStackedAtts.length = 1
-  ExtrudeStackedAtts.steps = 1
-  ExtrudeStackedAtts.preserveOriginalCellNumbers = 1
-  SetOperatorOptions(ExtrudeStackedAtts, 0, 0)
-  #
-  tmpstr="extrude_%s_fixed" %(databases[i])
-  Test(tmpstr)
-  #
-  ExtrudeStackedAtts = ExtrudeStackedAttributes()
-  ExtrudeStackedAtts.axis = (0, 0, 1)
   ExtrudeStackedAtts.byVariable = 1
-  ExtrudeStackedAtts.scalarVariableNames = ()
-  ExtrudeStackedAtts.visualVariableNames = ()
-  ExtrudeStackedAtts.extentMinima = ()
-  ExtrudeStackedAtts.extentMaxima = ()
-  ExtrudeStackedAtts.variableDisplay = ExtrudeStackedAtts.Index  # Index, Value
+  ExtrudeStackedAtts.scalarVariableNames = ("default")
+  ExtrudeStackedAtts.visualVariableNames = ("default")
+  ExtrudeStackedAtts.extentMinima = (-1e+37)
+  ExtrudeStackedAtts.extentMaxima = (1e+37)
+  ExtrudeStackedAtts.extentScale = (1)
+  ExtrudeStackedAtts.variableDisplay = ExtrudeStackedAtts.NodeHeight
   ExtrudeStackedAtts.length = 1
   ExtrudeStackedAtts.steps = 1
   ExtrudeStackedAtts.preserveOriginalCellNumbers = 1
   SetOperatorOptions(ExtrudeStackedAtts, 0, 0)
   #
-  tmpstr="extrude_%s_v0_value" %(databases[i])
+  tmpstr="extrude_%s_v0_node_height" %(databases[i])
   Test(tmpstr)
   #
   ExtrudeStackedAtts = ExtrudeStackedAttributes()
@@ -124,13 +109,31 @@ for i in range(len(databases)):
   ExtrudeStackedAtts.visualVariableNames = ("V1")
   ExtrudeStackedAtts.extentMinima = (-1e+37)
   ExtrudeStackedAtts.extentMaxima = (1e+37)
-  ExtrudeStackedAtts.variableDisplay = ExtrudeStackedAtts.Value  # Index, Value
+  ExtrudeStackedAtts.extentScale = (1)
+  ExtrudeStackedAtts.variableDisplay = ExtrudeStackedAtts.NodeHeight
   ExtrudeStackedAtts.length = 1
   ExtrudeStackedAtts.steps = 1
   ExtrudeStackedAtts.preserveOriginalCellNumbers = 1
   SetOperatorOptions(ExtrudeStackedAtts, 0, 0)
   #
-  tmpstr="extrude_%s_v1_value" %(databases[i])
+  tmpstr="extrude_%s_v1_node_height" %(databases[i])
+  Test(tmpstr)
+  #
+  ExtrudeStackedAtts = ExtrudeStackedAttributes()
+  ExtrudeStackedAtts.axis = (0, 0, 1)
+  ExtrudeStackedAtts.byVariable = 1
+  ExtrudeStackedAtts.scalarVariableNames = ("V1")
+  ExtrudeStackedAtts.visualVariableNames = ("V1")
+  ExtrudeStackedAtts.extentMinima = (-1e+37)
+  ExtrudeStackedAtts.extentMaxima = (1e+37)
+  ExtrudeStackedAtts.extentScale = (1)
+  ExtrudeStackedAtts.variableDisplay = ExtrudeStackedAtts.CellHeight
+  ExtrudeStackedAtts.length = 1
+  ExtrudeStackedAtts.steps = 1
+  ExtrudeStackedAtts.preserveOriginalCellNumbers = 1
+  SetOperatorOptions(ExtrudeStackedAtts, 0, 0)
+  #
+  tmpstr="extrude_%s_v1_cell_height" %(databases[i])
   Test(tmpstr)
   #
   ExtrudeStackedAtts = ExtrudeStackedAttributes()
@@ -140,13 +143,14 @@ for i in range(len(databases)):
   ExtrudeStackedAtts.visualVariableNames = ("V1", "V2")
   ExtrudeStackedAtts.extentMinima = (-1e+37, -1e+37)
   ExtrudeStackedAtts.extentMaxima = (1e+37, 1e+37)
-  ExtrudeStackedAtts.variableDisplay = ExtrudeStackedAtts.Value  # Index, Value
+  ExtrudeStackedAtts.extentScale = (1, 1)
+  ExtrudeStackedAtts.variableDisplay = ExtrudeStackedAtts.NodeHeight
   ExtrudeStackedAtts.length = 1
   ExtrudeStackedAtts.steps = 1
   ExtrudeStackedAtts.preserveOriginalCellNumbers = 1
   SetOperatorOptions(ExtrudeStackedAtts, 0, 0)
   #
-  tmpstr="extrude_%s_v2_value" %(databases[i])
+  tmpstr="extrude_%s_v2_node_height" %(databases[i])
   Test(tmpstr)
   #
   ExtrudeStackedAtts = ExtrudeStackedAttributes()
@@ -156,7 +160,25 @@ for i in range(len(databases)):
   ExtrudeStackedAtts.visualVariableNames = ("V1", "V2")
   ExtrudeStackedAtts.extentMinima = (-1e+37, -1e+37)
   ExtrudeStackedAtts.extentMaxima = (1e+37, 1e+37)
-  ExtrudeStackedAtts.variableDisplay = ExtrudeStackedAtts.Index  # Index, Value
+  ExtrudeStackedAtts.extentScale = (1, 1)
+  ExtrudeStackedAtts.variableDisplay = ExtrudeStackedAtts.CellHeight
+  ExtrudeStackedAtts.length = 1
+  ExtrudeStackedAtts.steps = 1
+  ExtrudeStackedAtts.preserveOriginalCellNumbers = 1
+  SetOperatorOptions(ExtrudeStackedAtts, 0, 0)
+  #
+  tmpstr="extrude_%s_v2_cell_height" %(databases[i])
+  Test(tmpstr)
+  #
+  ExtrudeStackedAtts = ExtrudeStackedAttributes()
+  ExtrudeStackedAtts.axis = (0, 0, 1)
+  ExtrudeStackedAtts.byVariable = 1
+  ExtrudeStackedAtts.scalarVariableNames = ("V1", "V2")
+  ExtrudeStackedAtts.visualVariableNames = ("V1", "V2")
+  ExtrudeStackedAtts.extentMinima = (-1e+37, -1e+37)
+  ExtrudeStackedAtts.extentMaxima = (1e+37, 1e+37)
+  ExtrudeStackedAtts.extentScale = (1, 1)
+  ExtrudeStackedAtts.variableDisplay = ExtrudeStackedAtts.VarIndex
   ExtrudeStackedAtts.length = 1
   ExtrudeStackedAtts.steps = 1
   ExtrudeStackedAtts.preserveOriginalCellNumbers = 1
@@ -172,13 +194,14 @@ for i in range(len(databases)):
   ExtrudeStackedAtts.visualVariableNames = ("V1", "V2", "V3")
   ExtrudeStackedAtts.extentMinima = (-1e+37, -1e+37, -1e+37)
   ExtrudeStackedAtts.extentMaxima = (1e+37, 1e+37, 1e+37)
-  ExtrudeStackedAtts.variableDisplay = ExtrudeStackedAtts.Value  # Index, Value
+  ExtrudeStackedAtts.extentScale = (1, 1, 1)
+  ExtrudeStackedAtts.variableDisplay = ExtrudeStackedAtts.NodeHeight
   ExtrudeStackedAtts.length = 1
   ExtrudeStackedAtts.steps = 1
   ExtrudeStackedAtts.preserveOriginalCellNumbers = 1
   SetOperatorOptions(ExtrudeStackedAtts, 0, 0)
   #
-  tmpstr="extrude_%s_v3_value" %(databases[i])
+  tmpstr="extrude_%s_v3_node_height" %(databases[i])
   Test(tmpstr)
   #
   ExtrudeStackedAtts = ExtrudeStackedAttributes()
@@ -188,7 +211,25 @@ for i in range(len(databases)):
   ExtrudeStackedAtts.visualVariableNames = ("V1", "V2", "V3")
   ExtrudeStackedAtts.extentMinima = (-1e+37, -1e+37, -1e+37)
   ExtrudeStackedAtts.extentMaxima = (1e+37, 1e+37, 1e+37)
-  ExtrudeStackedAtts.variableDisplay = ExtrudeStackedAtts.Index  # Index, Value
+  ExtrudeStackedAtts.extentScale = (1, 1, 1)
+  ExtrudeStackedAtts.variableDisplay = ExtrudeStackedAtts.CellHeight
+  ExtrudeStackedAtts.length = 1
+  ExtrudeStackedAtts.steps = 1
+  ExtrudeStackedAtts.preserveOriginalCellNumbers = 1
+  SetOperatorOptions(ExtrudeStackedAtts, 0, 0)
+  #
+  tmpstr="extrude_%s_v3_cell_height" %(databases[i])
+  Test(tmpstr)
+  #
+  ExtrudeStackedAtts = ExtrudeStackedAttributes()
+  ExtrudeStackedAtts.axis = (0, 0, 1)
+  ExtrudeStackedAtts.byVariable = 1
+  ExtrudeStackedAtts.scalarVariableNames = ("V1", "V2", "V3")
+  ExtrudeStackedAtts.visualVariableNames = ("V1", "V2", "V3")
+  ExtrudeStackedAtts.extentMinima = (-1e+37, -1e+37, -1e+37)
+  ExtrudeStackedAtts.extentMaxima = (1e+37, 1e+37, 1e+37)
+  ExtrudeStackedAtts.extentScale = (1, 1, 1)
+  ExtrudeStackedAtts.variableDisplay = ExtrudeStackedAtts.VarIndex
   ExtrudeStackedAtts.length = 1
   ExtrudeStackedAtts.steps = 1
   ExtrudeStackedAtts.preserveOriginalCellNumbers = 1
@@ -204,13 +245,14 @@ for i in range(len(databases)):
   ExtrudeStackedAtts.visualVariableNames = ("V1", "V2", "V3", "V4")
   ExtrudeStackedAtts.extentMinima = (-1e+37, -1e+37, -1e+37, -1e+37)
   ExtrudeStackedAtts.extentMaxima = (1e+37, 1e+37, 1e+37, 1e+37)
-  ExtrudeStackedAtts.variableDisplay = ExtrudeStackedAtts.Value  # Index, Value
+  ExtrudeStackedAtts.extentScale = (1, 1, 1, 1)
+  ExtrudeStackedAtts.variableDisplay = ExtrudeStackedAtts.NodeHeight
   ExtrudeStackedAtts.length = 1
   ExtrudeStackedAtts.steps = 1
   ExtrudeStackedAtts.preserveOriginalCellNumbers = 1
   SetOperatorOptions(ExtrudeStackedAtts, 0, 0)
   #
-  tmpstr="extrude_%s_v4_value" %(databases[i])
+  tmpstr="extrude_%s_v4_node_height" %(databases[i])
   Test(tmpstr)
   #
   ExtrudeStackedAtts = ExtrudeStackedAttributes()
@@ -220,7 +262,25 @@ for i in range(len(databases)):
   ExtrudeStackedAtts.visualVariableNames = ("V1", "V2", "V3", "V4")
   ExtrudeStackedAtts.extentMinima = (-1e+37, -1e+37, -1e+37, -1e+37)
   ExtrudeStackedAtts.extentMaxima = (1e+37, 1e+37, 1e+37, 1e+37)
-  ExtrudeStackedAtts.variableDisplay = ExtrudeStackedAtts.Index  # Index, Value
+  ExtrudeStackedAtts.extentScale = (1, 1, 1, 1)
+  ExtrudeStackedAtts.variableDisplay = ExtrudeStackedAtts.CellHeight
+  ExtrudeStackedAtts.length = 1
+  ExtrudeStackedAtts.steps = 1
+  ExtrudeStackedAtts.preserveOriginalCellNumbers = 1
+  SetOperatorOptions(ExtrudeStackedAtts, 0, 0)
+  #
+  tmpstr="extrude_%s_v4_cell_height" %(databases[i])
+  Test(tmpstr)
+  #
+  ExtrudeStackedAtts = ExtrudeStackedAttributes()
+  ExtrudeStackedAtts.axis = (0, 0, 1)
+  ExtrudeStackedAtts.byVariable = 1
+  ExtrudeStackedAtts.scalarVariableNames = ("V1", "V2", "V3", "V4")
+  ExtrudeStackedAtts.visualVariableNames = ("V1", "V2", "V3", "V4")
+  ExtrudeStackedAtts.extentMinima = (-1e+37, -1e+37, -1e+37, -1e+37)
+  ExtrudeStackedAtts.extentMaxima = (1e+37, 1e+37, 1e+37, 1e+37)
+  ExtrudeStackedAtts.extentScale = (1, 1, 1, 1)
+  ExtrudeStackedAtts.variableDisplay = ExtrudeStackedAtts.VarIndex
   ExtrudeStackedAtts.length = 1
   ExtrudeStackedAtts.steps = 1
   ExtrudeStackedAtts.preserveOriginalCellNumbers = 1
