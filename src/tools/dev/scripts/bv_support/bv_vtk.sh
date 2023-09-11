@@ -1953,7 +1953,47 @@ EOF
     return 0;
 }
 
-function apply_vtk_osmesa_render_patch
+function apply_vtk9_osmesa_render_patch
+{
+    # I updated this patch for VTK 9.2.6, but not really sure it is still needed
+    # VTK modified the Resize method ... perhaps that change fixes what this
+    # patch was trying to fix?
+
+    # Apply a patch where the OSMesaMakeCurrent could sometimes pass the
+    # wrong window size for the buffer.
+    patch -p0 << \EOF
+diff -u Rendering/OpenGL2/vtkOSOpenGLRenderWindow.cxx.orig Rendering/OpenGL2/vtkOSOpenGLRenderWindow.cxx
+--- Rendering/OpenGL2/vtkOSOpenGLRenderWindow.cxx.orig    2023-09-11 08:28:50.273945000 -0700
++++ Rendering/OpenGL2/vtkOSOpenGLRenderWindow.cxx 2023-09-11 08:37:20.796870000 -0700
+@@ -187,7 +187,6 @@
+   {
+     this->Internal->OffScreenContextId = OSMesaCreateContext(GL_RGBA, nullptr);
+   }
+-  this->MakeCurrent();
+ 
+   this->Mapped = 0;
+   this->Size[0] = width;
+@@ -301,8 +300,8 @@
+ {
+   if ((this->Size[0] != width) || (this->Size[1] != height))
+   {
+-    this->Superclass::SetSize(width, height);
+     this->ResizeOffScreenWindow(width, height);
++    this->Superclass::SetSize(width, height);
+     this->Modified();
+   }
+ }
+EOF
+
+    if [[ $? != 0 ]] ; then
+      warn "vtk patch for osmesa render window failed."
+      return 1
+    fi
+
+    return 0;
+}
+
+function apply_vtk8_osmesa_render_patch
 {
     # Apply a patch where the OSMesaMakeCurrent could sometimes pass the
     # wrong window size for the buffer.
@@ -1982,7 +2022,7 @@ diff -u Rendering/OpenGL2/vtkOSOpenGLRenderWindow.cxx.orig Rendering/OpenGL2/vtk
 EOF
 
     if [[ $? != 0 ]] ; then
-      warn "vtk patch for compiler version check failed."
+      warn "vtk patch for osmesa render window failed."
       return 1
     fi
 
@@ -2030,6 +2070,11 @@ function apply_vtk_patch
         apply_vtk9_vtkdatawriter_patch
         if [[ $? != 0 ]] ; then
            return 1
+        fi
+
+        apply_vtk9_osmesa_render_patch
+        if [[ $? != 0 ]] ; then
+            return 1
         fi
 
     else
@@ -2080,12 +2125,13 @@ function apply_vtk_patch
         if [[ $? != 0 ]] ; then
             return 1
         fi
+
+        apply_vtk8_osmesa_render_patch
+        if [[ $? != 0 ]] ; then
+            return 1
+        fi
     fi
 
-    apply_vtk_osmesa_render_patch
-    if [[ $? != 0 ]] ; then
-        return 1
-    fi
     return 0
 }
 
