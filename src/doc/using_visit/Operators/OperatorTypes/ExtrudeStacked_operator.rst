@@ -66,7 +66,7 @@ The values will automatically be updated in the variable table and then applied 
    The left image used node based scalar values to extrude the mesh, the right image scaled the scalar values by two.
    Both are displayed by the node based scalar values (see the next section).
 
-It is possible to **Display by** the resulting field via the **Index** of the varible in the stack or by the scalar values used to extrude the mesh.
+It is possible to **Display by** the resulting field via the **Index** of the variable in the stack or by the scalar values used to extrude the mesh.
 If cell based scalar values are used then the **Node Height** and the **Cell Height** will be same.
 If node based scalar values are used then the **Node Height** will relfect the scalar value while the **Cell Height** will be average scalar value for that cell.
 (see: :numref:`Figure %s <extrudeStacked>`).
