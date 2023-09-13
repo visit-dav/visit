@@ -333,18 +333,18 @@ QvisExtrudeStackedWindow::UpdateWindow(bool doAll)
             // happens delete the specific instance, keeping the more
             // general default.
 
-            std::cerr << std::endl;
-            std::cerr << "qvis default from UpdateOperatorAtts "
-                      << atts->GetDefaultVariable() << std::endl;
-            for (size_t ax=0; ax<atts->GetVisualVariableNames().size(); ax++)
-              std::cerr << "qvis visible " << ax << "  "
-                        << atts->GetScalarVariableNames()[ax]  << "  "
-                        << atts->GetVisualVariableNames()[ax] << std::endl;
+            // std::cerr << std::endl;
+            // std::cerr << "qvis default from UpdateOperatorAtts "
+            //           << atts->GetDefaultVariable() << std::endl;
+            // for (size_t ax=0; ax<atts->GetVisualVariableNames().size(); ax++)
+            //   std::cerr << "qvis visible " << ax << "  "
+            //             << atts->GetScalarVariableNames()[ax]  << "  "
+            //             << atts->GetVisualVariableNames()[ax] << std::endl;
 
-            for (size_t ax=0; ax<atts->GetScalarVariableNames().size(); ax++)
-              std::cerr << "qvis scalar " << ax << "  "
-                        << atts->GetScalarVariableNames()[ax]  << "  "
-                        << atts->GetVisualVariableNames()[ax] << std::endl;
+            // for (size_t ax=0; ax<atts->GetScalarVariableNames().size(); ax++)
+            //   std::cerr << "qvis scalar " << ax << "  "
+            //             << atts->GetScalarVariableNames()[ax]  << "  "
+            //             << atts->GetVisualVariableNames()[ax] << std::endl;
 
             if(atts->GetVisualVariableNames().size() == 1)
             {

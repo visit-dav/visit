@@ -143,8 +143,8 @@ avtExtrudeStackedFilter::ModifyContract(avtContract_p in_contract)
     defaultVariable =
       std::string( in_contract->GetDataRequest()->GetVariable() );
 
-    std::cerr << "Mod Contract original " << originalVariable << "    "
-              << "default " << defaultVariable << std::endl;
+    // std::cerr << "Mod Contract original " << originalVariable << "    "
+    //           << "default " << defaultVariable << std::endl;
 
     // Create the output contract.
     avtContract_p out_contract = nullptr;
@@ -402,8 +402,6 @@ avtExtrudeStackedFilter::ExecuteData(avtDataRepresentation *in_dr)
 
     varArray = nullptr;
 
-    std::cerr << __LINE__ << "  GetDataObjectType " << in_ds->GetDataObjectType() << std::endl;
-
     // Extrude using a scalar value.
     if( atts.GetByVariable() )
     {
@@ -433,20 +431,20 @@ avtExtrudeStackedFilter::ExecuteData(avtDataRepresentation *in_dr)
           // Note the check is done on BOTH the Qvis and avt side.
           int haveBoth = 0;
 
-          std::cerr << std::endl;
-          std::cerr << "avt default from "
-                    << "UpdateOperatorAtts " << atts.GetDefaultVariable() << "    "
-                    << "contract " << defaultVariable << "  "
-                    << std::endl;
-          for (size_t ax=0; ax<atts.GetVisualVariableNames().size(); ax++)
-            std::cerr << "avt visible " << ax << "  "
-                      << atts.GetScalarVariableNames()[ax]  << "  "
-                      << atts.GetVisualVariableNames()[ax] << std::endl;
+          // std::cerr << std::endl;
+          // std::cerr << "avt default from "
+          //           << "UpdateOperatorAtts " << atts.GetDefaultVariable() << "    "
+          //           << "contract " << defaultVariable << "  "
+          //           << std::endl;
+          // for (size_t ax=0; ax<atts.GetVisualVariableNames().size(); ax++)
+          //   std::cerr << "avt visible " << ax << "  "
+          //             << atts.GetScalarVariableNames()[ax]  << "  "
+          //             << atts.GetVisualVariableNames()[ax] << std::endl;
 
-          for (size_t ax=0; ax<atts.GetScalarVariableNames().size(); ax++)
-            std::cerr << "avt scalar " << ax << "  "
-                      << atts.GetScalarVariableNames()[ax]  << "  "
-                      << atts.GetVisualVariableNames()[ax] << std::endl;
+          // for (size_t ax=0; ax<atts.GetScalarVariableNames().size(); ax++)
+          //   std::cerr << "avt scalar " << ax << "  "
+          //             << atts.GetScalarVariableNames()[ax]  << "  "
+          //             << atts.GetVisualVariableNames()[ax] << std::endl;
 
           for (size_t ax=0; ax<atts.GetScalarVariableNames().size(); ax++)
           {
