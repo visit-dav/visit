@@ -92,7 +92,7 @@ for i in range(len(databases)):
   ExtrudeStackedAtts.extentMinima = (-1e+37)
   ExtrudeStackedAtts.extentMaxima = (1e+37)
   ExtrudeStackedAtts.extentScale = (1)
-  ExtrudeStackedAtts.variableDisplay = ExtrudeStackedAtts.NodeHeight
+  ExtrudeStackedAtts.variableDisplay = ExtrudeStackedAtts.OriginalData
   ExtrudeStackedAtts.length = 1
   ExtrudeStackedAtts.steps = 1
   ExtrudeStackedAtts.preserveOriginalCellNumbers = 1
@@ -177,7 +177,7 @@ for i in range(len(databases)):
   ExtrudeStackedAtts.extentMinima = (-1e+37, -1e+37)
   ExtrudeStackedAtts.extentMaxima = (1e+37, 1e+37)
   ExtrudeStackedAtts.extentScale = (1, 1)
-  ExtrudeStackedAtts.variableDisplay = ExtrudeStackedAtts.VarIndex
+  ExtrudeStackedAtts.variableDisplay = ExtrudeStackedAtts.VariableIndex
   ExtrudeStackedAtts.length = 1
   ExtrudeStackedAtts.steps = 1
   ExtrudeStackedAtts.preserveOriginalCellNumbers = 1
@@ -228,7 +228,7 @@ for i in range(len(databases)):
   ExtrudeStackedAtts.extentMinima = (-1e+37, -1e+37, -1e+37)
   ExtrudeStackedAtts.extentMaxima = (1e+37, 1e+37, 1e+37)
   ExtrudeStackedAtts.extentScale = (1, 1, 1)
-  ExtrudeStackedAtts.variableDisplay = ExtrudeStackedAtts.VarIndex
+  ExtrudeStackedAtts.variableDisplay = ExtrudeStackedAtts.VariableIndex
   ExtrudeStackedAtts.length = 1
   ExtrudeStackedAtts.steps = 1
   ExtrudeStackedAtts.preserveOriginalCellNumbers = 1
@@ -279,7 +279,7 @@ for i in range(len(databases)):
   ExtrudeStackedAtts.extentMinima = (-1e+37, -1e+37, -1e+37, -1e+37)
   ExtrudeStackedAtts.extentMaxima = (1e+37, 1e+37, 1e+37, 1e+37)
   ExtrudeStackedAtts.extentScale = (1, 1, 1, 1)
-  ExtrudeStackedAtts.variableDisplay = ExtrudeStackedAtts.VarIndex
+  ExtrudeStackedAtts.variableDisplay = ExtrudeStackedAtts.VariableIndex
   ExtrudeStackedAtts.length = 1
   ExtrudeStackedAtts.steps = 1
   ExtrudeStackedAtts.preserveOriginalCellNumbers = 1
