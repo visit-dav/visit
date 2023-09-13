@@ -2,8 +2,8 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-#ifndef QVISEXTRUDEWINDOW_H
-#define QVISEXTRUDEWINDOW_H
+#ifndef QVISEXTRUDESTACKEDWINDOW_H
+#define QVISEXTRUDESTACKEDWINDOW_H
 
 #include <QvisOperatorWindow.h>
 #include <AttributeSubject.h>
