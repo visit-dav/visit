@@ -48,9 +48,6 @@ This allows one to eliminate data that might otherwise cause the extruded mesh t
 To set the minimum and maximum values and scale for the ExtrudeStacked operator, one first selects the variable, then sets the **Min** or **Max** or **Scale** in the **ExtrudeStacked attributes window** (see :numref:`Figure %s <extrudeWindowScaled>`).
 The values will automatically be updated in the variable table and then applied to the mesh (see :numref:`Figure %s <extrudeScaled>`).
 
-
-(see :numref:`Figure %s <extrudeWindowScaled>`).
-
 .. _extrudeWindowScaled:
 
 .. figure:: images/extrudeWindowScaled.png
