@@ -32,7 +32,8 @@ public class ExtrudeStackedAttributes extends AttributeSubject implements Plugin
     // Enum values
     public final static int VARIABLEDISPLAYTYPE_NODEHEIGHT = 0;
     public final static int VARIABLEDISPLAYTYPE_CELLHEIGHT = 1;
-    public final static int VARIABLEDISPLAYTYPE_VARINDEX = 2;
+    public final static int VARIABLEDISPLAYTYPE_VARIABLEINDEX = 2;
+    public final static int VARIABLEDISPLAYTYPE_ORIGINALDATA = 3;
 
 
     public ExtrudeStackedAttributes()
@@ -50,7 +51,7 @@ public class ExtrudeStackedAttributes extends AttributeSubject implements Plugin
         extentMinima = new Vector();
         extentMaxima = new Vector();
         extentScale = new Vector();
-        variableDisplay = VARIABLEDISPLAYTYPE_VARINDEX;
+        variableDisplay = VARIABLEDISPLAYTYPE_ORIGINALDATA;
         length = 1;
         steps = 1;
         preserveOriginalCellNumbers = true;
@@ -71,7 +72,7 @@ public class ExtrudeStackedAttributes extends AttributeSubject implements Plugin
         extentMinima = new Vector();
         extentMaxima = new Vector();
         extentScale = new Vector();
-        variableDisplay = VARIABLEDISPLAYTYPE_VARINDEX;
+        variableDisplay = VARIABLEDISPLAYTYPE_ORIGINALDATA;
         length = 1;
         steps = 1;
         preserveOriginalCellNumbers = true;
@@ -394,8 +395,10 @@ public class ExtrudeStackedAttributes extends AttributeSubject implements Plugin
             str = str + "VARIABLEDISPLAYTYPE_NODEHEIGHT";
         if(variableDisplay == VARIABLEDISPLAYTYPE_CELLHEIGHT)
             str = str + "VARIABLEDISPLAYTYPE_CELLHEIGHT";
-        if(variableDisplay == VARIABLEDISPLAYTYPE_VARINDEX)
-            str = str + "VARIABLEDISPLAYTYPE_VARINDEX";
+        if(variableDisplay == VARIABLEDISPLAYTYPE_VARIABLEINDEX)
+            str = str + "VARIABLEDISPLAYTYPE_VARIABLEINDEX";
+        if(variableDisplay == VARIABLEDISPLAYTYPE_ORIGINALDATA)
+            str = str + "VARIABLEDISPLAYTYPE_ORIGINALDATA";
         str = str + "\n";
         str = str + doubleToString("length", length, indent) + "\n";
         str = str + intToString("steps", steps, indent) + "\n";

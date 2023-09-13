@@ -274,3 +274,4 @@ ExtrudeStackedViewerEnginePluginInfo::UpdateOperatorAtts(AttributeSubject *atts,
 
     esAtts->SetDefaultVariable(plot.GetVariableName());
 }
+

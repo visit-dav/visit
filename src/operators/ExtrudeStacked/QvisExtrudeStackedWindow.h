@@ -15,6 +15,7 @@ class QGroupBox;
 class QLabel;
 class QLineEdit;
 class QPushButton;
+class QRadioButton;
 class QTreeWidget;
 class QTreeWidgetItem;
 class QvisVariableButton;
@@ -72,8 +73,8 @@ class QvisExtrudeStackedWindow : public QvisOperatorWindow
   private:
     int GetSelectedVariableIndex();
 
+    QLabel *axisLabel {nullptr};
     QLineEdit *axis {nullptr};
-    QLineEdit *length {nullptr};
 
     QGroupBox          *variableGroup {nullptr};
     QTreeWidget        *variableTree {nullptr};
@@ -86,6 +87,8 @@ class QvisExtrudeStackedWindow : public QvisOperatorWindow
     QWidget            *variableDisplay {nullptr};
     QGroupBox          *variableDisplayGroup {nullptr};
     QButtonGroup       *variableDisplayButtonGroup {nullptr};
+    QRadioButton       *variableDisplayTypeIndex {nullptr};
+    QRadioButton       *variableDisplayTypeValue {nullptr};
 
     QLabel             *variableMinValLabel {nullptr};
     QLineEdit          *variableMinVal {nullptr};
@@ -94,11 +97,13 @@ class QvisExtrudeStackedWindow : public QvisOperatorWindow
     QLabel             *variableScaleValLabel {nullptr};
     QLineEdit          *variableScaleVal {nullptr};
 
-    QLineEdit *steps {nullptr};
+    QGroupBox          *fixedGroup {nullptr};
+    QLabel             *lengthLabel {nullptr};
+    QLineEdit          *length {nullptr};
+    QLabel             *stepsLabel {nullptr};
+    QLineEdit          *steps {nullptr};
+
     QCheckBox *preserveOriginalCellNumbers {nullptr};
-    QLabel *axisLabel {nullptr};
-    QLabel *lengthLabel {nullptr};
-    QLabel *stepsLabel {nullptr};
 
     ExtrudeStackedAttributes *atts {nullptr};
 };

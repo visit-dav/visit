@@ -30,7 +30,8 @@ public:
     {
         NodeHeight,
         CellHeight,
-        VarIndex
+        VariableIndex,
+        OriginalData
     };
 
     // These constructors are for objects of this class

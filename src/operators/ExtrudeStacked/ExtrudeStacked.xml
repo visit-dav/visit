@@ -24,10 +24,11 @@
       <Enum name="VariableDisplayType">
         NodeHeight
 	CellHeight
-        VarIndex
+        VariableIndex
+        OriginalData
       </Enum>
       <Field name="variableDisplay" label="Variable Display" type="enum" subtype="VariableDisplayType">
-        VarIndex
+        OriginalData
       </Field>
       <Field name="length" label="Length" type="double">
         1.

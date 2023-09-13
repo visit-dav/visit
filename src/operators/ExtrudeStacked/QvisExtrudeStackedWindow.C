@@ -19,6 +19,8 @@
 #include <QTreeWidgetItem>
 #include <QvisVariableButton.h>
 
+#define REPLICATE_EXTRUDE_OPERATOR
+
 // Largely adapted from the original extrude operator.
 
 // ****************************************************************************
@@ -89,21 +91,21 @@ QvisExtrudeStackedWindow::CreateWindowContents()
     topLayout->addLayout(mainLayout);
 
     axisLabel = new QLabel(tr("Extrusion axis"), central);
-    mainLayout->addWidget(axisLabel,0,0);
+    mainLayout->addWidget(axisLabel, 0,0);
     axis = new QLineEdit(central);
     connect(axis, SIGNAL(returnPressed()),
             this, SLOT(axisProcessText()));
     mainLayout->addWidget(axis, 0,1);
 
     // Variable to extrude
-    variableGroup = new QGroupBox(tr("Extrude by variable"),central);
+    variableGroup = new QGroupBox(tr("Extrude by variable"), central);
 #if defined(REPLICATE_EXTRUDE_OPERATOR)
     variableGroup->setCheckable( true );
 #endif
     variableGroup->setChecked( true );
     connect(variableGroup, SIGNAL(toggled(bool)),
             this, SLOT(variableGroupChanged(bool)));
-    mainLayout->addWidget(variableGroup, 1,0, 6,4);
+    mainLayout->addWidget(variableGroup, 1,0, 8,4);
     QGridLayout *variableLayout = new QGridLayout(variableGroup);
 
     // Axes tree list
@@ -207,46 +209,60 @@ QvisExtrudeStackedWindow::CreateWindowContents()
     QVBoxLayout *variableDisplayTypeLayout = new QVBoxLayout(variableDisplay);
     variableDisplayTypeLayout->setMargin(0);
     variableDisplayTypeLayout->setSpacing(10);
-    QRadioButton *variableDisplayTypeIndex =
+    QRadioButton *variableDisplayTypeNodeHeight =
       new QRadioButton(tr("Node Height"), variableDisplay);
-    variableDisplayButtonGroup->addButton(variableDisplayTypeIndex,0);
-    variableDisplayTypeLayout->addWidget(variableDisplayTypeIndex);
-    QRadioButton *variableDisplayTypeValue =
+    variableDisplayButtonGroup->addButton(variableDisplayTypeNodeHeight,
+                                          ExtrudeStackedAttributes::NodeHeight);
+    variableDisplayTypeLayout->addWidget(variableDisplayTypeNodeHeight);
+    QRadioButton *variableDisplayTypeCellHeight =
       new QRadioButton(tr("Cell Height"), variableDisplay);
-    variableDisplayButtonGroup->addButton(variableDisplayTypeValue,1);
-    variableDisplayTypeLayout->addWidget(variableDisplayTypeValue);
-    QRadioButton *variableDisplayTypeHeight =
+    variableDisplayButtonGroup->addButton(variableDisplayTypeCellHeight,
+                                          ExtrudeStackedAttributes::CellHeight);
+    variableDisplayTypeLayout->addWidget(variableDisplayTypeCellHeight);
+    variableDisplayTypeIndex =
       new QRadioButton(tr("Index"), variableDisplay);
-    variableDisplayButtonGroup->addButton(variableDisplayTypeHeight,2);
-    variableDisplayTypeLayout->addWidget(variableDisplayTypeHeight);
+    variableDisplayButtonGroup->addButton(variableDisplayTypeIndex,
+                                          ExtrudeStackedAttributes::VariableIndex);
+    variableDisplayTypeLayout->addWidget(variableDisplayTypeIndex);
+    connect(variableDisplayButtonGroup, SIGNAL(buttonClicked(int)),
+            this, SLOT(variableDisplayChanged(int)));
+    variableDisplayTypeValue =
+      new QRadioButton(tr("Original Data"), variableDisplay);
+    variableDisplayButtonGroup->addButton(variableDisplayTypeValue,
+                                          ExtrudeStackedAttributes::OriginalData);
+    variableDisplayTypeLayout->addWidget(variableDisplayTypeValue);
     connect(variableDisplayButtonGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(variableDisplayChanged(int)));
     variableDisplayLayout->addWidget(variableDisplay, 1, 1);
 
-
 #if defined(REPLICATE_EXTRUDE_OPERATOR)
+    // Fixed to extrude
+    fixedGroup = new QGroupBox(tr("Extrude by fixed length"), central);
+    mainLayout->addWidget(fixedGroup, 9,0, 2,4);
+    QGridLayout *fixedLayout = new QGridLayout(fixedGroup);
+
     // Fixed length or scaled variable.
     lengthLabel = new QLabel(tr("Length"), central);
-    mainLayout->addWidget(lengthLabel,7,0);
+    fixedLayout->addWidget(lengthLabel,0,0);
     length = new QLineEdit(central);
     connect(length, SIGNAL(returnPressed()),
             this, SLOT(lengthProcessText()));
-    mainLayout->addWidget(length, 7,1);
+    fixedLayout->addWidget(length, 0,1);
 
     // For breaking up the geometry.
     stepsLabel = new QLabel(tr("Number of steps"), central);
-    mainLayout->addWidget(stepsLabel,8,0);
+    fixedLayout->addWidget(stepsLabel,1,0);
     steps = new QLineEdit(central);
     connect(steps, SIGNAL(returnPressed()),
             this, SLOT(stepsProcessText()));
-    mainLayout->addWidget(steps, 8,1);
+    fixedLayout->addWidget(steps, 1,1);
 #endif
 
     // Preserve the cell numbers.
     preserveOriginalCellNumbers = new QCheckBox(tr("Preserve original cell numbers"), central);
     connect(preserveOriginalCellNumbers, SIGNAL(toggled(bool)),
             this, SLOT(preserveOriginalCellNumbersChanged(bool)));
-    mainLayout->addWidget(preserveOriginalCellNumbers, 9,0);
+    mainLayout->addWidget(preserveOriginalCellNumbers, 11,0);
 
     variableSelected(nullptr);
 }
@@ -290,15 +306,12 @@ QvisExtrudeStackedWindow::UpdateWindow(bool doAll)
             break;
 
           case ExtrudeStackedAttributes::ID_byVariable:
-#if defined(REPLICATE_EXTRUDE_OPERATOR)
             variableGroup->blockSignals(true);
             variableGroup->setChecked(atts->GetByVariable());
             variableGroup->blockSignals(false);
 
-            length     ->setEnabled(atts->GetByVariable() == false);
-            lengthLabel->setEnabled(atts->GetByVariable() == false);
-            steps      ->setEnabled(atts->GetByVariable() == false);
-            stepsLabel ->setEnabled(atts->GetByVariable() == false);
+#if defined(REPLICATE_EXTRUDE_OPERATOR)
+            fixedGroup->setEnabled(atts->GetByVariable() == false);
 #endif
             break;
 
@@ -320,8 +333,46 @@ QvisExtrudeStackedWindow::UpdateWindow(bool doAll)
             // happens delete the specific instance, keeping the more
             // general default.
 
+            std::cerr << std::endl;
+            std::cerr << "qvis default from UpdateOperatorAtts "
+                      << atts->GetDefaultVariable() << std::endl;
+            for (size_t ax=0; ax<atts->GetVisualVariableNames().size(); ax++)
+              std::cerr << "qvis visible " << ax << "  "
+                        << atts->GetScalarVariableNames()[ax]  << "  "
+                        << atts->GetVisualVariableNames()[ax] << std::endl;
+
+            for (size_t ax=0; ax<atts->GetScalarVariableNames().size(); ax++)
+              std::cerr << "qvis scalar " << ax << "  "
+                        << atts->GetScalarVariableNames()[ax]  << "  "
+                        << atts->GetVisualVariableNames()[ax] << std::endl;
+
+            if(atts->GetVisualVariableNames().size() == 1)
+            {
+              variableDisplayTypeIndex->hide();
+              variableDisplayTypeValue->show();
+
+              if(atts->GetVariableDisplay() == ExtrudeStackedAttributes::VariableIndex )
+              {
+                atts->SetVariableDisplay(ExtrudeStackedAttributes::OriginalData );
+                variableDisplayButtonGroup->button((int)atts->GetVariableDisplay())->setChecked(true);
+                Apply();
+              }
+            }
+            else
+            {
+              variableDisplayTypeIndex->show();
+              variableDisplayTypeValue->hide();
+
+              if(atts->GetVariableDisplay() == ExtrudeStackedAttributes::OriginalData )
+              {
+                atts->SetVariableDisplay(ExtrudeStackedAttributes::VariableIndex );
+                variableDisplayButtonGroup->button((int)atts->GetVariableDisplay())->setChecked(true);
+                Apply();
+              }
+            }
+
             // Note the check is done on BOTH the Qvis and avt side.
-            if( atts->GetVisualVariableNames().size() )
+            if( atts->GetVisualVariableNames().size() > 1 )
             {
               int haveBoth = 0;
 
@@ -336,6 +387,8 @@ QvisExtrudeStackedWindow::UpdateWindow(bool doAll)
               {
                 // atts->DeleteVariable("default", 0);
                 atts->DeleteVariable(atts->GetDefaultVariable(), 0);
+
+                Apply(true);
               }
             }
 
@@ -404,8 +457,9 @@ QvisExtrudeStackedWindow::UpdateWindow(bool doAll)
     // Re-select the previously selected item in case updating this window
     // regenerated the tree contents
     bool found = false;
-    int nitems = variableTree->topLevelItemCount();
-    for(int i=0; i<nitems && !found; ++i)
+    int nItems = variableTree->topLevelItemCount();
+
+    for(int i=0; i<nItems && !found; ++i)
     {
         QTreeWidgetItem *item = variableTree->topLevelItem(i);
         if(item->text(1) == oldVariable)
@@ -415,7 +469,8 @@ QvisExtrudeStackedWindow::UpdateWindow(bool doAll)
             found = true;
         }
     }
-    if (!found && nitems > 0)
+
+    if (!found && nItems > 0)
     {
         QTreeWidgetItem *item = variableTree->topLevelItem(0);
         variableTree->setCurrentItem(item);
@@ -543,15 +598,10 @@ QvisExtrudeStackedWindow::preserveOriginalCellNumbersChanged(bool val)
 void
 QvisExtrudeStackedWindow::variableGroupChanged(bool val)
 {
-#if defined(REPLICATE_EXTRUDE_OPERATOR)
     atts->SetByVariable(val);
 
-    length     ->setEnabled(atts->GetByVariable() == false);
-    lengthLabel->setEnabled(atts->GetByVariable() == false);
-    steps      ->setEnabled(atts->GetByVariable() == false);
-    stepsLabel ->setEnabled(atts->GetByVariable() == false);
-#else
-    atts->SetByVariable(true);
+#if defined(REPLICATE_EXTRUDE_OPERATOR)
+    fixedGroup->setEnabled(atts->GetByVariable() == false);
 #endif
 
     variableSelected(nullptr);
@@ -584,8 +634,8 @@ QvisExtrudeStackedWindow::addVariable(const QString &variableToAdd)
     // variables entries is "default." Remove the "default" entry.
     if( variableToAdd.toStdString() == atts->GetDefaultVariable() )
     {
-      int nitems = variableTree->topLevelItemCount();
-      for(int i =0; i<nitems; ++i)
+      int nItems = variableTree->topLevelItemCount();
+      for(int i =0; i<nItems; ++i)
       {
         QTreeWidgetItem *item = variableTree->topLevelItem(i);
 
@@ -601,6 +651,13 @@ QvisExtrudeStackedWindow::addVariable(const QString &variableToAdd)
     }
 
     Apply();
+
+    if( variableTree->topLevelItemCount() > 0 )
+    {
+      QTreeWidgetItem *item = variableTree->topLevelItem(0);
+      variableTree->setCurrentItem(item);
+      variableSelected(item);
+    }
 }
 
 // ****************************************************************************
@@ -737,33 +794,29 @@ QvisExtrudeStackedWindow::moveVariableDown()
 void
 QvisExtrudeStackedWindow::variableSelected(QTreeWidgetItem*)
 {
-    size_t nitems;
+    size_t nItems;
     if( atts->GetByVariable() )
-      nitems = atts->GetScalarVariableNames().size();
+      nItems = atts->GetScalarVariableNames().size();
     else
-      nitems = 0;
+      nItems = 0;
 
-#if defined(REPLICATE_EXTRUDE_OPERATOR)
-    variableDisplayGroup->setEnabled(nitems > 1);
-#else
-    variableDisplayGroup->setEnabled(nitems > 0);
-#endif
+    variableDisplayGroup->setEnabled(nItems > 0);
 
     QTreeWidgetItem *ci = variableTree->currentItem();
-    variableDeleteButton->setEnabled(nitems > 0 && ci != NULL);
-    variableUpButton->setEnabled(nitems > 0 &&
+    variableDeleteButton->setEnabled(nItems > 0 && ci != NULL);
+    variableUpButton->setEnabled(nItems > 0 &&
                                  ci != variableTree->topLevelItem(0));
-    variableDownButton->setEnabled(nitems > 0 &&
-                                   ci != variableTree->topLevelItem(nitems-1));
+    variableDownButton->setEnabled(nItems > 0 &&
+                                   ci != variableTree->topLevelItem(nItems-1));
 
-    variableMinValLabel->setEnabled(nitems > 0);
-    variableMinVal->setEnabled(nitems > 0);
-    variableMaxValLabel->setEnabled(nitems > 0);
-    variableMaxVal->setEnabled(nitems > 0);
-    variableScaleValLabel->setEnabled(nitems > 0);
-    variableScaleVal->setEnabled(nitems > 0);
+    variableMinValLabel->setEnabled(nItems > 0);
+    variableMinVal->setEnabled(nItems > 0);
+    variableMaxValLabel->setEnabled(nItems > 0);
+    variableMaxVal->setEnabled(nItems > 0);
+    variableScaleValLabel->setEnabled(nItems > 0);
+    variableScaleVal->setEnabled(nItems > 0);
 
-    variableResetExtentsButton->setEnabled(nitems > 0);
+    variableResetExtentsButton->setEnabled(nItems > 0);
 
     if (ci)
     {
@@ -981,8 +1034,8 @@ QvisExtrudeStackedWindow::resetVariableExtents()
 int
 QvisExtrudeStackedWindow::GetSelectedVariableIndex()
 {
-    int nitems = variableTree->topLevelItemCount();
-    for(int i =0; i<nitems; ++i)
+    int nItems = variableTree->topLevelItemCount();
+    for(int i =0; i<nItems; ++i)
     {
         if(variableTree->currentItem() == variableTree->topLevelItem(i))
             return i;

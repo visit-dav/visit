@@ -144,7 +144,7 @@ PyExtrudeStackedAttributes_ToString(const ExtrudeStackedAttributes *atts, const 
         snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
-    const char *variableDisplay_names = "NodeHeight, CellHeight, VarIndex";
+    const char *variableDisplay_names = "NodeHeight, CellHeight, VariableIndex, OriginalData";
     switch (atts->GetVariableDisplay())
     {
       case ExtrudeStackedAttributes::NodeHeight:
@@ -155,8 +155,12 @@ PyExtrudeStackedAttributes_ToString(const ExtrudeStackedAttributes *atts, const 
           snprintf(tmpStr, 1000, "%svariableDisplay = %sCellHeight  # %s\n", prefix, prefix, variableDisplay_names);
           str += tmpStr;
           break;
-      case ExtrudeStackedAttributes::VarIndex:
-          snprintf(tmpStr, 1000, "%svariableDisplay = %sVarIndex  # %s\n", prefix, prefix, variableDisplay_names);
+      case ExtrudeStackedAttributes::VariableIndex:
+          snprintf(tmpStr, 1000, "%svariableDisplay = %sVariableIndex  # %s\n", prefix, prefix, variableDisplay_names);
+          str += tmpStr;
+          break;
+      case ExtrudeStackedAttributes::OriginalData:
+          snprintf(tmpStr, 1000, "%svariableDisplay = %sOriginalData  # %s\n", prefix, prefix, variableDisplay_names);
           str += tmpStr;
           break;
       default:
@@ -776,15 +780,16 @@ ExtrudeStackedAttributes_SetVariableDisplay(PyObject *self, PyObject *args)
         return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
     }
 
-    if (cval < 0 || cval >= 3)
+    if (cval < 0 || cval >= 4)
     {
         std::stringstream ss;
         ss << "An invalid variableDisplay value was given." << std::endl;
-        ss << "Valid values are in the range [0,2]." << std::endl;
+        ss << "Valid values are in the range [0,3]." << std::endl;
         ss << "You can also use the following symbolic names:";
         ss << " NodeHeight";
         ss << ", CellHeight";
-        ss << ", VarIndex";
+        ss << ", VariableIndex";
+        ss << ", OriginalData";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -1056,8 +1061,10 @@ PyExtrudeStackedAttributes_getattr(PyObject *self, char *name)
         return PyInt_FromLong(long(ExtrudeStackedAttributes::NodeHeight));
     if(strcmp(name, "CellHeight") == 0)
         return PyInt_FromLong(long(ExtrudeStackedAttributes::CellHeight));
-    if(strcmp(name, "VarIndex") == 0)
-        return PyInt_FromLong(long(ExtrudeStackedAttributes::VarIndex));
+    if(strcmp(name, "VariableIndex") == 0)
+        return PyInt_FromLong(long(ExtrudeStackedAttributes::VariableIndex));
+    if(strcmp(name, "OriginalData") == 0)
+        return PyInt_FromLong(long(ExtrudeStackedAttributes::OriginalData));
 
     if(strcmp(name, "length") == 0)
         return ExtrudeStackedAttributes_GetLength(self, NULL);

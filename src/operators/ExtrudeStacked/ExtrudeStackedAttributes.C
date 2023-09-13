@@ -10,21 +10,21 @@
 //
 
 static const char *VariableDisplayType_strings[] = {
-"NodeHeight", "CellHeight", "VarIndex"
-};
+"NodeHeight", "CellHeight", "VariableIndex",
+"OriginalData"};
 
 std::string
 ExtrudeStackedAttributes::VariableDisplayType_ToString(ExtrudeStackedAttributes::VariableDisplayType t)
 {
     int index = int(t);
-    if(index < 0 || index >= 3) index = 0;
+    if(index < 0 || index >= 4) index = 0;
     return VariableDisplayType_strings[index];
 }
 
 std::string
 ExtrudeStackedAttributes::VariableDisplayType_ToString(int t)
 {
-    int index = (t < 0 || t >= 3) ? 0 : t;
+    int index = (t < 0 || t >= 4) ? 0 : t;
     return VariableDisplayType_strings[index];
 }
 
@@ -32,7 +32,7 @@ bool
 ExtrudeStackedAttributes::VariableDisplayType_FromString(const std::string &s, ExtrudeStackedAttributes::VariableDisplayType &val)
 {
     val = ExtrudeStackedAttributes::NodeHeight;
-    for(int i = 0; i < 3; ++i)
+    for(int i = 0; i < 4; ++i)
     {
         if(s == VariableDisplayType_strings[i])
         {
@@ -64,7 +64,7 @@ void ExtrudeStackedAttributes::Init()
     axis[1] = 0;
     axis[2] = 1;
     byVariable = true;
-    variableDisplay = VarIndex;
+    variableDisplay = OriginalData;
     length = 1;
     steps = 1;
     preserveOriginalCellNumbers = true;
@@ -595,7 +595,7 @@ ExtrudeStackedAttributes::SetFromNode(DataNode *parentNode)
         if(node->GetNodeType() == INT_NODE)
         {
             int ival = node->AsInt();
-            if(ival >= 0 && ival < 3)
+            if(ival >= 0 && ival < 4)
                 SetVariableDisplay(VariableDisplayType(ival));
         }
         else if(node->GetNodeType() == STRING_NODE)

@@ -30,6 +30,8 @@ class vtkUnstructuredGrid;
 //
 //  Programmer: Allen Sanderson
 //  Creation:   August 31, 2023
+//
+// ****************************************************************************
 
 class avtExtrudeStackedFilter : public avtPluginDataTreeIterator
 {
@@ -58,7 +60,8 @@ class avtExtrudeStackedFilter : public avtPluginDataTreeIterator
     virtual void         PostExecute(void);
     virtual void         UpdateDataObjectInfo(void);
 
-    void                 CopyVariables(vtkDataSet *in_ds, vtkDataSet *out_ds,
+    void                 CopyVariables(const int index,
+                                       vtkDataSet *in_ds, vtkDataSet *out_ds,
                                        const int *cellReplication = NULL) const;
     vtkPoints           *CreateExtrudePoints(vtkPoints *inPoints, int nLevels);
 
@@ -66,14 +69,12 @@ class avtExtrudeStackedFilter : public avtPluginDataTreeIterator
     vtkDataSet          *ExtrudeToStructuredGrid  (vtkDataSet  *in_ds);
     vtkDataSet          *ExtrudeToUnstructuredGrid(vtkPointSet *in_ds);
 
-    vtkDataSet          *ExtrudeToUnstructuredGrid(vtkRectilinearGrid  *in_ds,
-                                                   vtkUnstructuredGrid *out_ds);
-    vtkDataSet          *ExtrudeToUnstructuredGrid(vtkPointSet         *in_ds,
+    vtkDataSet          *ExtrudeToUnstructuredGrid(vtkDataSet          *in_ds,
                                                    vtkUnstructuredGrid *out_ds);
 
     void                 ExtrudeExtents(double *dbounds) const;
 
-    // Flags to indicte if the varArray is node or cell based
+    // Flags to indicate if the varArray is node or cell based
     bool cellData {false};
     bool nodeData {false};
     vtkDataArray *varArray {nullptr};
@@ -83,9 +84,9 @@ class avtExtrudeStackedFilter : public avtPluginDataTreeIterator
 
     // Number of stacked extrusions only set if there are two or more
     // variables.
-    size_t num_stacked_extrusions {0};
+    size_t nStackedExtrusions {0};
     size_t varStackedIndex {0};
-    int    varNum {0};
+    int    varNum {-1};
 
     doubleVector variableMinimums;
     doubleVector variableMaximums;

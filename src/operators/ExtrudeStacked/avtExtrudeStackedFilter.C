@@ -137,7 +137,14 @@ avtContract_p
 avtExtrudeStackedFilter::ModifyContract(avtContract_p in_contract)
 {
     avtDataRequest_p in_dr = in_contract->GetDataRequest();
-    std::string var = in_dr->GetOriginalVariable();
+
+    std::string originalVariable = in_dr->GetOriginalVariable();
+
+    defaultVariable =
+      std::string( in_contract->GetDataRequest()->GetVariable() );
+
+    std::cerr << "Mod Contract original " << originalVariable << "    "
+              << "default " << defaultVariable << std::endl;
 
     // Create the output contract.
     avtContract_p out_contract = nullptr;
@@ -167,15 +174,12 @@ avtExtrudeStackedFilter::ModifyContract(avtContract_p in_contract)
           }
       }
 
-      // If multiple extrustions see if the current output variable is
-      // in the list of variables.
-      int variableCount = curVariableVarNames.size();
-#if defined(REPLICATE_EXTRUDE_OPERATOR)
-      num_stacked_extrusions = (variableCount > 1 ? variableCount : 0);
-#else
-      num_stacked_extrusions = variableCount;
-#endif
-      if( num_stacked_extrusions )
+      // If multiple extrusions check if the current output variable
+      // is in the list of variables.
+      ExtrudeStackedAttributes::VariableDisplayType dType =
+        atts.GetVariableDisplay();
+
+      if( dType != ExtrudeStackedAttributes::OriginalData )
       {
         for (size_t i=0; i<curVariableVarNames.size(); ++i)
         {
@@ -278,9 +282,6 @@ avtExtrudeStackedFilter::ModifyContract(avtContract_p in_contract)
       out_contract->GetDataRequest()->TurnNodeNumbersOn();
     }
 
-    defaultVariable =
-      std::string( out_contract->GetDataRequest()->GetVariable() );
-
     return out_contract;
 }
 
@@ -322,14 +323,14 @@ avtExtrudeStackedFilter::UpdateDataObjectInfo(void)
     // Extrude using multiple scalar values so new variables will be
     // introduced, an index or the height values. All other original
     // variables will be removed.
-    if( num_stacked_extrusions > 0)
+    ExtrudeStackedAttributes::VariableDisplayType dType =
+      atts.GetVariableDisplay();
+
+    if( dType != ExtrudeStackedAttributes::OriginalData )
     {
       // Remove all of the old variables.
       for( size_t i=0; i<outAtts.GetNumberOfVariables(); ++i)
         outAtts.RemoveVariable( outAtts.GetVariableName(i) );
-
-      ExtrudeStackedAttributes::VariableDisplayType dType =
-        atts.GetVariableDisplay();
 
       // Add the new variables.
       for( size_t i=0; i<3; ++i)
@@ -342,7 +343,7 @@ avtExtrudeStackedFilter::UpdateDataObjectInfo(void)
 
         if( (i == 0 && dType == ExtrudeStackedAttributes::NodeHeight) ||
             (i == 1 && dType == ExtrudeStackedAttributes::CellHeight) ||
-            (i == 2 && dType == ExtrudeStackedAttributes::VarIndex) )
+            (i == 2 && dType == ExtrudeStackedAttributes::VariableIndex) )
         {
           outAtts.SetActiveVariable( varName.c_str() );
           outAtts.SetCentering(i == 0 ? AVT_NODECENT : AVT_ZONECENT);
@@ -401,6 +402,8 @@ avtExtrudeStackedFilter::ExecuteData(avtDataRepresentation *in_dr)
 
     varArray = nullptr;
 
+    std::cerr << __LINE__ << "  GetDataObjectType " << in_ds->GetDataObjectType() << std::endl;
+
     // Extrude using a scalar value.
     if( atts.GetByVariable() )
     {
@@ -430,6 +433,21 @@ avtExtrudeStackedFilter::ExecuteData(avtDataRepresentation *in_dr)
           // Note the check is done on BOTH the Qvis and avt side.
           int haveBoth = 0;
 
+          std::cerr << std::endl;
+          std::cerr << "avt default from "
+                    << "UpdateOperatorAtts " << atts.GetDefaultVariable() << "    "
+                    << "contract " << defaultVariable << "  "
+                    << std::endl;
+          for (size_t ax=0; ax<atts.GetVisualVariableNames().size(); ax++)
+            std::cerr << "avt visible " << ax << "  "
+                      << atts.GetScalarVariableNames()[ax]  << "  "
+                      << atts.GetVisualVariableNames()[ax] << std::endl;
+
+          for (size_t ax=0; ax<atts.GetScalarVariableNames().size(); ax++)
+            std::cerr << "avt scalar " << ax << "  "
+                      << atts.GetScalarVariableNames()[ax]  << "  "
+                      << atts.GetVisualVariableNames()[ax] << std::endl;
+
           for (size_t ax=0; ax<atts.GetScalarVariableNames().size(); ax++)
           {
             if(atts.GetScalarVariableNames()[ax] == "default" ||
@@ -442,10 +460,10 @@ avtExtrudeStackedFilter::ExecuteData(avtDataRepresentation *in_dr)
             // atts.DeleteVariable("default", 0);
             atts.DeleteVariable(defaultVariable, 0);
 
-            avtCallback::IssueWarning(
-                "ExtrudeStacked - The default variable '" + defaultVariable +
-                "' was displayed twice as the 'default' and itself. Which is not allowed. "
-                "The specific instance '" + defaultVariable + "' was removed.");
+            avtCallback::IssueWarning("ExtrudeStacked - "
+                "Cannot display the variable '" + defaultVariable + "' as "
+                "both the 'default' and as '" + defaultVariable + "'. The "
+                "specific instance of '" +defaultVariable + "' was removed.");
           }
 
           variableNames    = atts.GetScalarVariableNames();
@@ -466,22 +484,13 @@ avtExtrudeStackedFilter::ExecuteData(avtDataRepresentation *in_dr)
         }
 
         // Variable indicating that there multiple stacked extrusions.
-#if defined(REPLICATE_EXTRUDE_OPERATOR)
-        atts.SetSteps(1);
-        num_stacked_extrusions = (variableCount > 1 ? variableCount : 0);
-#else
-        num_stacked_extrusions = variableCount;
-#endif
-        if( num_stacked_extrusions )
-        {
-            // Not sure if the steps should be limited to one or
-            // not. Might make more sense to have a step size.
-            if( atts.GetSteps() > 1 )
-            {
-              EXCEPTION1(ImproperUseException,
-                      "ExtrudeStacked - When creating a stacked extrusion, the number of steps must be 1.");
-            }
-        }
+        nStackedExtrusions = variableCount;
+
+        // The number of steps is limited to one when more than one
+        // extrusion. Note: this is only setable in the GUI when doing
+        // a fixed extrusion. So really a no-op.
+        if( nStackedExtrusions > 1 && atts.GetSteps() > 1 )
+          atts.SetSteps(1);
 
         varStackedIndex = 0;
 
@@ -513,17 +522,13 @@ avtExtrudeStackedFilter::ExecuteData(avtDataRepresentation *in_dr)
                        "' for extruding. All data must be on the same mesh.");
           }
 
-          if(in_ds->GetDataObjectType() == VTK_RECTILINEAR_GRID)
+          if(in_ds->GetDataObjectType() == VTK_RECTILINEAR_GRID ||
+             in_ds->GetDataObjectType() == VTK_STRUCTURED_GRID ||
+             in_ds->GetDataObjectType() == VTK_UNSTRUCTURED_GRID ||
+             in_ds->GetDataObjectType() == VTK_POLY_DATA)
           {
-              out_ds = ExtrudeToUnstructuredGrid(vtkRectilinearGrid::SafeDownCast(in_ds),
-                                                 vtkUnstructuredGrid::SafeDownCast(out_ds));
-          }
-          else if(in_ds->GetDataObjectType() == VTK_STRUCTURED_GRID ||
-                  in_ds->GetDataObjectType() == VTK_UNSTRUCTURED_GRID ||
-                  in_ds->GetDataObjectType() == VTK_POLY_DATA)
-          {
-              out_ds = ExtrudeToUnstructuredGrid(vtkPointSet::SafeDownCast(in_ds),
-                                                 vtkUnstructuredGrid::SafeDownCast(out_ds));
+              out_ds = ExtrudeToUnstructuredGrid(in_ds,
+                           vtkUnstructuredGrid::SafeDownCast(out_ds));
           }
           else
           {
@@ -535,7 +540,8 @@ avtExtrudeStackedFilter::ExecuteData(avtDataRepresentation *in_dr)
     // Fixed length extrusion.
     else
     {
-        num_stacked_extrusions = 0;
+        varNum = -1;
+        nStackedExtrusions = 0;
 
         scalarMin = 1.0;
         scalarMax = 1.0;
@@ -544,7 +550,14 @@ avtExtrudeStackedFilter::ExecuteData(avtDataRepresentation *in_dr)
         {
           const double *axis = atts.GetAxis();
 
-          if(axis[0] == 0. && axis[1] == 0. && axis[2] == 1.)
+          vtkRectilinearGrid *rgrid = (vtkRectilinearGrid *) in_ds;
+
+          int dims[3] = {1,1,1};
+          rgrid->GetDimensions(dims);
+
+          if( (dims[0] == 1 && axis[0] == 1. && axis[1] == 0. && axis[2] == 0.) ||
+              (dims[1] == 1 && axis[0] == 0. && axis[1] == 1. && axis[2] == 0.) ||
+              (dims[2] == 1 && axis[0] == 0. && axis[1] == 0. && axis[2] == 1.) )
             out_ds = ExtrudeToRectilinearGrid(in_ds);
           else
             out_ds = ExtrudeToStructuredGrid(in_ds);
@@ -599,7 +612,7 @@ avtExtrudeStackedFilter::PostExecute(void)
     avtDataAttributes &outAtts     = GetOutput()->GetInfo().GetAttributes();
     avtDataValidity   &outValidity = GetOutput()->GetInfo().GetValidity();
 
-    if( num_stacked_extrusions )
+    if( nStackedExtrusions > 1 )
     {
       // Spatial extents have changed, so clear them.
       outAtts.GetOriginalSpatialExtents()->Clear();
@@ -623,9 +636,9 @@ avtExtrudeStackedFilter::PostExecute(void)
         range[0] = scalarMin;
         range[1] = scalarMax;
       }
-      else if( dType == ExtrudeStackedAttributes::VarIndex ) {
+      else if( dType == ExtrudeStackedAttributes::VariableIndex ) {
         range[0] = 0;
-        range[1] = num_stacked_extrusions-1;
+        range[1] = nStackedExtrusions-1;
       }
 
       outAtts.GetThisProcsOriginalDataExtents()->Set(range);
@@ -699,7 +712,8 @@ avtExtrudeStackedFilter::PostExecute(void)
 // ****************************************************************************
 
 void
-avtExtrudeStackedFilter::CopyVariables(vtkDataSet *in_ds,
+avtExtrudeStackedFilter::CopyVariables(int plane,
+                                       vtkDataSet *in_ds,
                                        vtkDataSet *out_ds,
                                        const int *cellReplication) const
 {
@@ -846,11 +860,11 @@ avtExtrudeStackedFilter::CopyVariables(vtkDataSet *in_ds,
             {
               for(int p = 0; p < list->GetNumberOfIds()-2; ++p)
               {
-                out_pd->CopyData(in_pd, list->GetId(0),   destPoint++ );
+                out_pd->CopyData(in_pd, list->GetId(p),   destPoint++ );
                 out_pd->CopyData(in_pd, list->GetId(p+1), destPoint++ );
                 out_pd->CopyData(in_pd, list->GetId(p+2), destPoint++ );
 
-                out_pd->CopyData(in_pd, list->GetId(0),   destPoint++ );
+                out_pd->CopyData(in_pd, list->GetId(p),   destPoint++ );
                 out_pd->CopyData(in_pd, list->GetId(p+1), destPoint++ );
                 out_pd->CopyData(in_pd, list->GetId(p+2), destPoint++ );
               }
@@ -884,19 +898,69 @@ avtExtrudeStackedFilter::CopyVariables(vtkDataSet *in_ds,
       }
     }
     // Fixed length extrusion.
-    else
+    else if(out_ds->GetDataObjectType() == VTK_RECTILINEAR_GRID ||
+            out_ds->GetDataObjectType() == VTK_STRUCTURED_GRID)
     {
+      int dims[3] = {1,1,1};
+
+      if(out_ds->GetDataObjectType() == VTK_RECTILINEAR_GRID )
+      {
+        vtkRectilinearGrid *rgrid = (vtkRectilinearGrid *) out_ds;
+        rgrid->GetDimensions(dims);
+      }
+      else if(out_ds->GetDataObjectType() == VTK_STRUCTURED_GRID)
+      {
+        vtkStructuredGrid *sgrid = (vtkStructuredGrid *) out_ds;
+        sgrid->GetDimensions(dims);
+      }
+
       vtkIdType n_out_pts = in_pd->GetNumberOfTuples() * (nSteps+1);
+
       out_pd->CopyAllocate(in_pd, n_out_pts);
 
       vtkIdType destPoint = 0;
 
+      vtkIdType nt = in_pd->GetNumberOfTuples();
+
+      // For rectilinear and structured grids the extrusion is based
+      // on a plane which determines the order of the copy.
+      if( plane == 0 )
+      {
+        for( vtkIdType srcPoint=0; srcPoint<nt; ++srcPoint)
+        {
+          for( vtkIdType i=0; i<dims[plane]; ++i)
+          {
+            out_pd->CopyData(in_pd, srcPoint, destPoint++);
+          }
+        }
+      }
+      else if( plane == 1 || plane == 2 )
+      {
+        for( vtkIdType i=0; i<dims[plane]; ++i)
+        {
+          for( vtkIdType srcPoint=0; srcPoint<nt; ++srcPoint)
+          {
+            out_pd->CopyData(in_pd, srcPoint, destPoint++);
+          }
+        }
+      }
+    }
+    else
+    {
+      vtkIdType n_out_pts = in_pd->GetNumberOfTuples() * (nSteps+1);
+
+      out_pd->CopyAllocate(in_pd, n_out_pts);
+
+      vtkIdType destPoint = 0;
+
+      vtkIdType nt = in_pd->GetNumberOfTuples();
+
       for (vtkIdType l=0; l<nSteps+1; ++l)
       {
-        vtkIdType nt = in_pd->GetNumberOfTuples();
-
-        for( vtkIdType srcPoint=0; srcPoint<nt; ++srcPoint, ++destPoint)
-          out_pd->CopyData(in_pd, srcPoint, destPoint);
+        for( vtkIdType srcPoint=0; srcPoint<nt; ++srcPoint)
+        {
+          out_pd->CopyData(in_pd, srcPoint, destPoint++);
+        }
       }
     }
 }
@@ -988,51 +1052,114 @@ avtExtrudeStackedFilter::CreateExtrudePoints(vtkPoints *inPoints, int nSteps)
 vtkDataSet *
 avtExtrudeStackedFilter::ExtrudeToRectilinearGrid(vtkDataSet *in_ds) const
 {
+    debug5 << "Extrude rectilinear grid to rectilinear grid." << endl;
+
     vtkRectilinearGrid *out_ds  = NULL;
     vtkRectilinearGrid *rgrid = (vtkRectilinearGrid *) in_ds;
 
     int dims[3] = {1,1,1};
     rgrid->GetDimensions(dims);
 
-    if(dims[2] > 1)
+    if( (dims[0] >= 1 && dims[1] >= 1 && dims[2] != 1) &&
+        (dims[0] >= 1 && dims[1] != 1 && dims[2] >= 1) &&
+        (dims[0] != 1 && dims[1] >= 1 && dims[2] >= 1) )
     {
         EXCEPTION1(ImproperUseException, "ExtrudeStacked - 3D data cannot be extruded.");
     }
 
-    if(dims[1] == 1)
+    avtVector axis = atts.GetAxis();
+    axis.normalize();
+
+    // Get the extrusion plane
+    int plane;
+
+    if( dims[0] == 1 )
     {
-        EXCEPTION1(ImproperUseException, "ExtrudeStacked - Extruding curves is not implemented.");
+      plane = 0;
+    }
+    else if( dims[1] == 1 )
+    {
+      plane = 1;
+    }
+    else if( dims[2] == 1 )
+    {
+      plane = 2;
     }
 
-    debug5 << "Extrude rectilinear grid to rectilinear grid." << endl;
+    // Check for an abiguous axis. It will happen when two or more
+    // dimension are 1.  If ambiguous use the axis specified in the
+    // GUI. Default to the z axis.
+    if(dims[0] > 1 && dims[1] == 1 && dims[2] == 1)
+    {
+      if( axis[1] > axis[2] )
+        plane = 1;
+      else
+        plane = 2;
+    }
+    else if(dims[0] == 1 && dims[1] > 1 && dims[2] == 1)
+    {
+      if( axis[0] > axis[2] )
+        plane = 0;
+      else
+        plane = 2;
+    }
+    else if(dims[0] == 1 && dims[1] == 1 && dims[2] > 1)
+    {
+      if( axis[0] > axis[1] )
+        plane = 0;
+      else
+        plane = 1;
+    }
+    else if(dims[0] == 1 && dims[1] == 1 && dims[2] == 1)
+    {
+      if( axis[0] > axis[1] && axis[0] > axis[2] )
+        plane = 0;
+      else if( axis[1] > axis[0] && axis[1] > axis[2] )
+        plane = 1;
+      else
+        plane = 2;
+    }
 
-    // Get the original z coordinate.
-    double z;
-    if( dims[2] == 1 )
-      z = rgrid->GetZCoordinates()->GetTuple1(0);
-    else
-      z = 0;
+    // Get the original coordinate.
+    double coord;
 
-    dims[2] = atts.GetSteps() + 1;
+    if( plane == 0 )
+      coord = rgrid->GetXCoordinates()->GetTuple1(0);
+    else if( plane == 1 )
+      coord = rgrid->GetYCoordinates()->GetTuple1(0);
+    else if( plane == 2 )
+      coord = rgrid->GetZCoordinates()->GetTuple1(0);
+
+    dims[plane] = atts.GetSteps() + 1;
 
     // Create mesh coordinates.
     vtkDataArray *coords[3] = {NULL, NULL, NULL};
+
     coords[0] = rgrid->GetXCoordinates()->NewInstance();
-    coords[0]->DeepCopy(rgrid->GetXCoordinates());
+    if( plane != 0 )
+      coords[0]->DeepCopy(rgrid->GetXCoordinates());
+    else
+      coords[0]->SetNumberOfTuples(dims[0]);
 
     coords[1] = rgrid->GetYCoordinates()->NewInstance();
-    coords[1]->DeepCopy(rgrid->GetYCoordinates());
+    if( plane != 1 )
+      coords[1]->DeepCopy(rgrid->GetYCoordinates());
+    else
+      coords[1]->SetNumberOfTuples(dims[1]);
 
-    coords[2] = coords[0]->NewInstance();
-    coords[2]->SetNumberOfTuples(dims[2]);
+    coords[2] = rgrid->GetZCoordinates()->NewInstance();
+    if( plane != 2 )
+      coords[2]->DeepCopy(rgrid->GetZCoordinates());
+    else
+      coords[2]->SetNumberOfTuples(dims[2]);
 
     // Fixed length.
     double offset = atts.GetLength();
 
-    for(int i = 0; i < dims[2]; ++i)
+    for(int i = 0; i < dims[plane]; ++i)
     {
-        double t = double(i) / double(dims[2]-1);
-        coords[2]->SetTuple1(i, z + t * offset);
+      double t = double(i) / double(dims[plane]-1);
+      coords[plane]->SetTuple1(i, coord + t * offset);
     }
 
     // Make a new mesh
@@ -1046,7 +1173,7 @@ avtExtrudeStackedFilter::ExtrudeToRectilinearGrid(vtkDataSet *in_ds) const
     coords[2]->Delete();
 
     // Copy variables
-    CopyVariables(in_ds, out_ds);
+    CopyVariables(plane, in_ds, out_ds);
 
     return out_ds;
 }
@@ -1071,102 +1198,203 @@ avtExtrudeStackedFilter::ExtrudeToRectilinearGrid(vtkDataSet *in_ds) const
 
 // Helper function to extrude a fixed length and insert a point into a
 // VTK point list
-#define extrude_coords(type)                                   \
-{                                                              \
-    type *pts = (type *) points->GetVoidPointer(0);            \
-                                                               \
-    double length = atts.GetLength();                          \
-    avtVector axis = atts.GetAxis();                           \
-    axis.normalize();                                          \
-                                                               \
-    for(int k = 0; k < dims[2]; ++k)                           \
-    {                                                          \
-      type t = type(k) / type(dims[2]-1);                      \
-                                                               \
-      avtVector offset = axis * (length * t);                  \
-                                                               \
-      vtkIdType cc = 0;                                        \
-                                                               \
-      for(int j = 0; j < dims[1]; ++j)                         \
-      {                                                        \
-        double y = rgrid->GetYCoordinates()->GetTuple1(j);     \
-                                                               \
-        for(int i = 0; i < dims[0]; ++i)                       \
-        {                                                      \
-          double x = rgrid->GetXCoordinates()->GetTuple1(i);   \
-                                                               \
-          *pts++ = x + offset.x;                               \
-          *pts++ = y + offset.y;                               \
-          *pts++ = z + offset.z;                               \
-        }                                                      \
-      }                                                        \
-    }                                                          \
+#define extrude_coords(type)                                      \
+{                                                                 \
+    type *pts = (type *) points->GetVoidPointer(0);               \
+                                                                  \
+    double length = atts.GetLength();                             \
+    avtVector axis = atts.GetAxis();                              \
+    axis.normalize();                                             \
+                                                                  \
+    for(int k = 0; k < dims[2]; ++k)                              \
+    {                                                             \
+      double z = rgrid->GetZCoordinates()->GetTuple1(k%kk);       \
+                                                                  \
+      for(int j = 0; j < dims[1]; ++j)                            \
+      {                                                           \
+        double y = rgrid->GetYCoordinates()->GetTuple1(j%jj);     \
+                                                                  \
+        for(int i = 0; i < dims[0]; ++i)                          \
+        {                                                         \
+          double x = rgrid->GetXCoordinates()->GetTuple1(i%ii);   \
+                                                                  \
+          type t;                                                 \
+                                                                  \
+          if(plane == 0)                                          \
+            t = type(i) / type(dims[plane]-1);                    \
+          else if(plane == 1)                                     \
+            t = type(j) / type(dims[plane]-1);                    \
+          else if(plane == 2)                                     \
+            t = type(k) / type(dims[plane]-1);                    \
+                                                                  \
+          avtVector offset = axis * (length * t);                 \
+                                                                  \
+          *pts++ = x + offset.x;                                  \
+          *pts++ = y + offset.y;                                  \
+          *pts++ = z + offset.z;                                  \
+        }                                                         \
+      }                                                           \
+    }                                                             \
+}
+
+#define extrude_structured_points(type)                           \
+{                                                                 \
+    type *pts = (type *) points->GetVoidPointer(0);               \
+                                                                  \
+    double length = atts.GetLength();                             \
+    avtVector axis = atts.GetAxis();                              \
+    axis.normalize();                                             \
+                                                                  \
+    for(int k = 0; k < dims[2]; ++k)                              \
+    {                                                             \
+      for(int j = 0; j < dims[1]; ++j)                            \
+      {                                                           \
+        for(int i = 0; i < dims[0]; ++i)                          \
+        {                                                         \
+          vtkIdType n = k * jj * ii + j * ii + i;                 \
+                                                                  \
+          double pt[3];                                           \
+          points->GetPoint(n, pt);                                \
+                                                                  \
+          type t;                                                 \
+                                                                  \
+          if(plane == 0)                                          \
+            t = type(i) / type(dims[plane]-1);                    \
+          else if(plane == 1)                                     \
+            t = type(j) / type(dims[plane]-1);                    \
+          else if(plane == 2)                                     \
+            t = type(k) / type(dims[plane]-1);                    \
+                                                                  \
+          avtVector offset = axis * (length * t);                 \
+                                                                  \
+          *pts++ = pt[0] + offset.x;                              \
+          *pts++ = pt[1] + offset.y;                              \
+          *pts++ = pt[2] + offset.z;                              \
+        }                                                         \
+      }                                                           \
+    }                                                             \
  }
 
 vtkDataSet *
 avtExtrudeStackedFilter::ExtrudeToStructuredGrid(vtkDataSet *in_ds)
 {
     int dims[3] = {1,1,1};
+
+    vtkRectilinearGrid *rgrid = nullptr;
+    vtkStructuredGrid  *sgrid = nullptr;
+
+    if(in_ds->GetDataObjectType() == VTK_RECTILINEAR_GRID )
+    {
+      debug5 << "Extrude rectilinear grid to structured grid." << endl;
+
+      rgrid = (vtkRectilinearGrid *) in_ds;
+      rgrid->GetDimensions(dims);
+    }
+    else if(in_ds->GetDataObjectType() == VTK_STRUCTURED_GRID)
+    {
+      debug5 << "Extrude structured grid to structured grid." << endl;
+
+      sgrid = (vtkStructuredGrid *) in_ds;
+      sgrid->GetDimensions(dims);
+    }
+    else
+    {
+        EXCEPTION0(ImproperUseException);
+    }
+
+    if( (dims[0] >= 1 && dims[1] >= 1 && dims[2] != 1) &&
+        (dims[0] >= 1 && dims[1] != 1 && dims[2] >= 1) &&
+        (dims[0] != 1 && dims[1] >= 1 && dims[2] >= 1) )
+    {
+      EXCEPTION1(ImproperUseException, "ExtrudeStacked - 3D data cannot be extruded.");
+    }
+
+    avtVector axis = atts.GetAxis();
+    axis.normalize();
+
+    int plane;
+
+    // Get the extrustion axis
+    if( dims[0] == 1 )
+    {
+      plane = 0;
+    }
+    else if( dims[1] == 1 )
+    {
+      plane = 1;
+    }
+    else if( dims[2] == 1 )
+    {
+      plane = 2;
+    }
+
+    // Check for an abiguous axis. It will happen when two or more
+    // dimension are 1.  If ambiguous use the axis specified in the
+    // GUI. Default to the z axis.
+    if(dims[0] > 1 && dims[1] == 1 && dims[2] == 1)
+    {
+      if( axis[1] > axis[2] )
+        plane = 1;
+      else
+        plane = 2;
+    }
+    else if(dims[0] == 1 && dims[1] > 1 && dims[2] == 1)
+    {
+      if( axis[0] > axis[2] )
+        plane = 0;
+      else
+        plane = 2;
+    }
+    else if(dims[0] == 1 && dims[1] == 1 && dims[2] > 1)
+    {
+      if( axis[0] > axis[1] )
+        plane = 0;
+      else
+        plane = 1;
+    }
+    else if(dims[0] == 1 && dims[1] == 1 && dims[2] == 1)
+    {
+      if( axis[0] > axis[1] && axis[0] > axis[2] )
+        plane = 0;
+      else if( axis[1] > axis[0] && axis[1] > axis[2] )
+        plane = 1;
+      else
+        plane = 2;
+    }
+
+    if(in_ds->GetDataObjectType() == VTK_RECTILINEAR_GRID && atts.GetAxis()[plane] == 0)
+    {
+      avtCallback::IssueWarning("ExtrudeStacked - "
+                                "The extrusion axis in the plane is zero. "
+                                "The resulting mesh will be flat.");
+    }
+
+    int ii = dims[0], jj = dims[1], kk = dims[2];
+
+    dims[plane] = atts.GetSteps() + 1;
+
     vtkPoints *points = NULL;
 
     // Assemble the coordinates differently according to the input mesh type.
     if(in_ds->GetDataObjectType() == VTK_RECTILINEAR_GRID)
     {
-        debug5 << "Extrude rectilinear grid to structured grid." << endl;
-
-        vtkRectilinearGrid *rgrid = (vtkRectilinearGrid *) in_ds;
-        rgrid->GetDimensions(dims);
-
-        if(dims[2] > 1)
-        {
-            EXCEPTION1(ImproperUseException, "ExtrudeStacked - 3D data cannot be extruded.");
-        }
-
-        if(dims[1] == 1)
-        {
-            EXCEPTION1(ImproperUseException, "ExtrudeStacked - Extruding curves is not implemented.");
-        }
-
-        // Get the original z coordinate.
-        double z;
-        if( dims[2] == 1 )
-          z = rgrid->GetZCoordinates()->GetTuple1(0);
-        else
-          z = 0;
-
-        dims[2] = atts.GetSteps()+1;
-
         points = vtkVisItUtility::NewPoints(rgrid);
         points->SetNumberOfPoints(dims[0] * dims[1] * dims[2]);
 
         if (points->GetDataType() == VTK_FLOAT)
-        {
-            extrude_coords(float);
-        }
+          extrude_coords(float)
         else if (points->GetDataType() == VTK_DOUBLE)
-        {
-            extrude_coords(double);
-        }
+          extrude_coords(double)
     }
     else if(in_ds->GetDataObjectType() == VTK_STRUCTURED_GRID)
     {
-        debug5 << "Extrude structured grid to structured grid." << endl;
+      vtkPoints *points = vtkPoints::New(sgrid->GetPoints()->GetDataType());
+      points->SetNumberOfPoints(dims[0] * dims[1] * dims[2]);
 
-        vtkStructuredGrid *sgrid = (vtkStructuredGrid *) in_ds;
-        sgrid->GetDimensions(dims);
-
-        if(dims[2] > 1)
-        {
-            EXCEPTION1(ImproperUseException, "ExtrudeStacked - 3D data cannot be extruded.");
-        }
-
-        dims[2] = atts.GetSteps()+1;
-
-        points = CreateExtrudePoints(sgrid->GetPoints(), dims[2]);
-    }
-    else
-    {
-        EXCEPTION0(ImproperUseException);
+      if (points->GetDataType() == VTK_FLOAT)
+        extrude_structured_points(float)
+      else if (points->GetDataType() == VTK_DOUBLE)
+        extrude_structured_points(double)
     }
 
     // Assemble the mesh from the points.
@@ -1176,7 +1404,7 @@ avtExtrudeStackedFilter::ExtrudeToStructuredGrid(vtkDataSet *in_ds)
     points->Delete();
 
     // Copy variables
-    CopyVariables(in_ds, out_ds);
+    CopyVariables(plane, in_ds, out_ds);
 
     return out_ds;
 }
@@ -1416,7 +1644,7 @@ avtExtrudeStackedFilter::ExtrudeToUnstructuredGrid(vtkPointSet *in_ds)
     }
 
     // Copy the variables
-    CopyVariables(in_ds, ugrid, cellReplication);
+    CopyVariables(-1, in_ds, ugrid, cellReplication);
 
     delete [] cellReplication;
 
@@ -1424,54 +1652,38 @@ avtExtrudeStackedFilter::ExtrudeToUnstructuredGrid(vtkPointSet *in_ds)
 }
 
 // ****************************************************************************
-//  Method: avtExtrudeStackedFilter::ExtrudeToUnstructuredGrid
-//
-//  Purpose:
-//    Extrude a rectilinear grid into a new unstructured grid using
-//    node or cell based scalar data value.
-//
-//  Arguments:
-//    in_ds : The input dataset.
-//
-//  Returns : A new structured grid.
-//
-//  Programmer: Allen Sanderson
-//  Creation:   August 31, 2023
-//
-// ****************************************************************************
-
-// Helper function to extrude and insert a point into a VTK vertex list.
+// Helper function to extrude a point by a scalar value and insert it
+// into a VTK vertex list.
 //
 // If there are previous points the base point is the previously
-// extruded point. Which for a hex are the last four points. Thus when
-// the id_out is less than four add four to get the previous point.
-#define extrude_2Dpoint( ix, iy, id_in, id_out, offset )           \
+// extruded point. Which for a hex are the last four (incr/2)
+// points. Thus when the id_out is less than four (incr/2) add four
+// (incr/2) to get the previous point.
+#define extrude_point( id_in, id_out, offset )                     \
 {                                                                  \
-  if( varStackedIndex )                                              \
+  if( varStackedIndex )                                            \
   {                                                                \
     vtkIdType index = baseIndex + id_out;                          \
                                                                    \
-    if( id_out < 4 )                                               \
-      index += 4;                                                  \
+    if( id_out < incr/2 )                                          \
+      index += incr/2;                                             \
                                                                    \
     points->GetPoint(index, pt);                                   \
   }                                                                \
   else                                                             \
   {                                                                \
-    pt[0] = in_ds->GetXCoordinates()->GetTuple1(ix);               \
-    pt[1] = in_ds->GetYCoordinates()->GetTuple1(iy);               \
-    pt[2] = z0;                                                    \
+    in_ds->GetPoint(list->GetId(id_in), pt);                       \
   }                                                                \
                                                                    \
   if(nodeData)                                                     \
   {                                                                \
     scalar = varArray->GetTuple1(list->GetId(id_in));              \
                                                                    \
-    if( scalar < variableMinimums[varNum] )                        \
-      scalar = variableMinimums[varNum];                           \
+    if( scalar < variableMinimums[varStackedIndex] )               \
+      scalar = variableMinimums[varStackedIndex];                  \
                                                                    \
-    if( scalar > variableMaximums[varNum] )                        \
-      scalar = variableMaximums[varNum];                           \
+    if( scalar > variableMaximums[varStackedIndex] )               \
+      scalar = variableMaximums[varStackedIndex];                  \
                                                                    \
     if( scalarMin > scalar )                                       \
       scalarMin = scalar;                                          \
@@ -1480,7 +1692,7 @@ avtExtrudeStackedFilter::ExtrudeToUnstructuredGrid(vtkPointSet *in_ds)
       scalarMax = scalar;                                          \
   }                                                                \
                                                                    \
-  scalarAve += (scalar / 8.0);                                     \
+  scalarAve += (scalar / double(incr));                            \
                                                                    \
   pt[0] += offset.x * scalar;                                      \
   pt[1] += offset.y * scalar;                                      \
@@ -1488,34 +1700,54 @@ avtExtrudeStackedFilter::ExtrudeToUnstructuredGrid(vtkPointSet *in_ds)
                                                                    \
   verts[id_out] = points->InsertNextPoint( pt[0], pt[1], pt[2] );  \
                                                                    \
-  if( num_stacked_extrusions )                                     \
+  if( dType != ExtrudeStackedAttributes::OriginalData )           \
     scalars_node_height->InsertTuple1(verts[id_out], scalar);      \
 }
 
 
+// ****************************************************************************
+//  Method: avtExtrudeStackedFilter::ExtrudeToUnstructuredGrid
+//
+//  Purpose:
+//    Extrude unstructured grids and polydata into a new unstructured
+//    grid using node or cell based scalar data value.
+//
+//  Arguments:
+//    in_ds : The input dataset.
+//
+//  Returns : A new unstructured grid.
+//
+//  Programmer: Allen Sanderson
+//  Creation:   August 31, 2023
+//
+// ****************************************************************************
+
 vtkDataSet *
-avtExtrudeStackedFilter::ExtrudeToUnstructuredGrid(vtkRectilinearGrid *in_ds,
-                                                   vtkUnstructuredGrid *out_ds )
+avtExtrudeStackedFilter::ExtrudeToUnstructuredGrid(vtkDataSet *in_ds,
+                                                   vtkUnstructuredGrid *out_ds)
 {
-    debug5 << "Extrude rectilinear grid to unstructured grid." << endl;
+    debug5 << "Extrude to unstructured grid." << endl;
+
+    if( vtkRectilinearGrid::SafeDownCast(in_ds) )
+    {
+      int dims[3] = {1,1,1};
+      vtkRectilinearGrid::SafeDownCast(in_ds)->GetDimensions(dims);
+
+      if( (dims[0] >= 1 && dims[1] >= 1 && dims[2] != 1) &&
+          (dims[0] >= 1 && dims[1] != 1 && dims[2] >= 1) &&
+          (dims[0] != 1 && dims[1] >= 1 && dims[2] >= 1) )
+        {
+          EXCEPTION1(ImproperUseException, "ExtrudeStacked - 3D data cannot be extruded.");
+        }
+    }
 
     int nSteps = atts.GetSteps();
 
-    int dims[3] = {1,1,1};
-    in_ds->GetDimensions(dims);
-
-    if(dims[2] > 1)
-    {
-      EXCEPTION1(ImproperUseException, "ExtrudeStacked - 3D data cannot be extruded.");
-    }
-
-    if(dims[1] == 1)
-    {
-      EXCEPTION1(ImproperUseException, "ExtrudeStacked - Extruding curves is not implemented.");
-    }
-
     vtkIdType nNodes = in_ds->GetNumberOfPoints();
     vtkIdType nCells = in_ds->GetNumberOfCells();
+
+    ExtrudeStackedAttributes::VariableDisplayType dType =
+      atts.GetVariableDisplay();
 
     if( atts.GetByVariable() )
     {
@@ -1527,7 +1759,6 @@ avtExtrudeStackedFilter::ExtrudeToUnstructuredGrid(vtkRectilinearGrid *in_ds,
         if( cellData && nCells != nTuples )
           EXCEPTION1(ImproperUseException,
                      "ExtrudeStacked - The number of scalar values does match the number of cells.");
-
     }
 
     vtkUnstructuredGrid *ugrid = nullptr;
@@ -1536,6 +1767,7 @@ avtExtrudeStackedFilter::ExtrudeToUnstructuredGrid(vtkRectilinearGrid *in_ds,
     vtkDoubleArray *scalars_cell_height = nullptr;
     vtkFloatArray  *scalars_var_index   = nullptr;
 
+    // Set the grid so it can be used for multiple stacked extrusions.
     vtkIdType n_cells_out = nCells * nSteps;
     unsigned int nPtsPerStack;
     unsigned int nPointsAdded = n_cells_out * 8;
@@ -1545,13 +1777,17 @@ avtExtrudeStackedFilter::ExtrudeToUnstructuredGrid(vtkRectilinearGrid *in_ds,
       ugrid = vtkUnstructuredGrid::New();
       ugrid->Allocate(n_cells_out, n_cells_out);
 
-      points = vtkPoints::New(in_ds->GetYCoordinates()->GetDataType());
+      if( vtkRectilinearGrid::SafeDownCast(in_ds) )
+        points = vtkPoints::New(vtkRectilinearGrid::SafeDownCast(in_ds)->GetXCoordinates()->GetDataType());
+      else if( vtkPointSet::SafeDownCast(in_ds) )
+        points = vtkPoints::New(vtkPointSet::SafeDownCast(in_ds)->GetPoints()->GetDataType());
+
       points->Allocate( nPointsAdded, nPointsAdded );
 
       nPtsPerStack = 0;
 
-      // For multiple stacked extrusions two new variables are used.
-      if( num_stacked_extrusions )
+      // For multiple stacked extrusions three new variables are used.
+      if( dType != ExtrudeStackedAttributes::OriginalData )
       {
         // The variable used for the extrusion. Doubles are used as
         // there may be multiple type (floats or doubles).
@@ -1589,287 +1825,6 @@ avtExtrudeStackedFilter::ExtrudeToUnstructuredGrid(vtkRectilinearGrid *in_ds,
         ugrid->GetCellData()->GetArray(stackedVarNames[1].c_str());
       scalars_var_index   = (vtkFloatArray  *)
         ugrid->GetCellData()->GetArray(stackedVarNames[2].c_str());
-
-      // Make sure the mesh (cells) sizes are the same.
-      if( nPtsPerStack % nPointsAdded != 0 )
-      {
-          EXCEPTION1(ImproperUseException,
-                     "ExtrudeStacked - The number of cells in the meshes do not match.");
-      }
-    }
-
-    // Create the extruded cells
-    double pt[3];
-    double scalar = 1.0, scalarAve = 0.0;
-
-    vtkIdType baseIndex = nPtsPerStack * (varStackedIndex - 1);
-
-    avtVector axis(atts.GetAxis());
-    axis.normalize();
-
-    double scale = variableScales[varNum];
-    axis *= scale;
-
-    // Get the original z coordinate.
-    double z0;
-    if( dims[2] == 1 )
-      z0 = in_ds->GetZCoordinates()->GetTuple1(0);
-    else
-      z0 = 0;
-
-    for(int s=0; s<nSteps; ++s)
-    {
-        double t0 = double(s  ) / double(nSteps);
-        double t1 = double(s+1) / double(nSteps);
-
-        avtVector offset0 = axis * t0;
-        avtVector offset1 = axis * t1;
-
-        for(int j=0; j<dims[1]-1; ++j)
-        {
-          for(int i=0; i<dims[0]-1; ++i)
-          {
-            vtkIdType cellId = j * (dims[0]-1) + i;
-            vtkCell *cell = in_ds->GetCell(cellId);
-
-            if( cellData )
-            {
-              scalar = varArray->GetTuple1( cellId );
-
-              if( scalar < variableMinimums[varNum] )
-                scalar = variableMinimums[varNum];
-
-              if( scalar > variableMaximums[varNum] )
-                scalar = variableMaximums[varNum];
-
-              if( scalarMin > scalar )
-                scalarMin = scalar;
-
-              if( scalarMax < scalar )
-                scalarMax = scalar;
-            }
-
-            vtkIdList *list = cell->GetPointIds();
-            vtkIdType verts[8];
-
-            scalarAve = 0.0;
-
-            extrude_2Dpoint( i+0, j+0, 0, 0, offset0 );
-            extrude_2Dpoint( i+1, j+0, 1, 1, offset0 );
-            extrude_2Dpoint( i+1, j+1, 3, 2, offset0 );
-            extrude_2Dpoint( i+0, j+1, 2, 3, offset0 );
-
-            extrude_2Dpoint( i+0, j+0, 0, 4, offset1 );
-            extrude_2Dpoint( i+1, j+0, 1, 5, offset1 );
-            extrude_2Dpoint( i+1, j+1, 3, 6, offset1 );
-            extrude_2Dpoint( i+0, j+1, 2, 7, offset1 );
-
-            vtkIdType newCellId =
-              ugrid->InsertNextCell(VTK_HEXAHEDRON, 8, verts);
-
-            if( num_stacked_extrusions )
-            {
-              baseIndex += 8;
-
-              if( scalarMin > scalarAve )
-                scalarMin = scalarAve;
-
-              if( scalarMax < scalarAve )
-                scalarMax = scalarAve;
-
-              scalars_cell_height->InsertTuple1(newCellId, scalarAve);
-              scalars_var_index ->InsertTuple1(newCellId, varStackedIndex);
-            }
-          }
-        }
-    }
-
-    // Assemble the mesh from the points.
-    if( out_ds == nullptr )
-    {
-      out_ds = ugrid;
-
-      ugrid->SetPoints(points);
-      points->Delete();
-
-      // For multiple stacked extrusions save only the scalar value
-      // and the index.
-      if( num_stacked_extrusions )
-      {
-        ugrid->GetPointData()->AddArray( scalars_node_height );
-        ugrid->GetCellData() ->AddArray( scalars_cell_height );
-        ugrid->GetCellData() ->AddArray( scalars_var_index );
-
-      ExtrudeStackedAttributes::VariableDisplayType dType =
-        atts.GetVariableDisplay();
-
-        if( dType == ExtrudeStackedAttributes::NodeHeight )
-          ugrid->GetPointData()->SetScalars( scalars_node_height );
-        else if( dType == ExtrudeStackedAttributes::CellHeight )
-          ugrid->GetCellData()->SetScalars( scalars_cell_height );
-        else if( dType == ExtrudeStackedAttributes::VarIndex )
-          ugrid->GetCellData()->SetScalars( scalars_var_index );
-
-        scalars_node_height->Delete();
-        scalars_cell_height->Delete();
-        scalars_var_index  ->Delete();
-      }
-      else // Otherwise copy all of the previous variables
-        CopyVariables(in_ds, ugrid);
-    }
-
-    return out_ds;
-}
-
-// ****************************************************************************
-//  Method: avtExtrudeStackedFilter::ExtrudeToUnstructuredGrid
-//
-//  Purpose:
-//    Extrude unstructured grids and polydata into a new unstructured
-//    grid using node or cell based scalar data value.
-//
-//  Arguments:
-//    in_ds : The input dataset.
-//
-//  Returns : A new unstructured grid.
-//
-//  Programmer: Allen Sanderson
-//  Creation:   August 31, 2023
-//
-// ****************************************************************************
-
-// Helper function to extrude a point by a cell value and insert it
-// into a VTK vertex list.
-//
-// If there are previous points the base point is the previously
-// extruded point. Which for a hex are the last four (incr/2)
-// points. Thus when the id_out is less than four (incr/2) add four
-// (incr/2) to get the previous point.
-#define extrude_point( id_in, id_out, offset )                     \
-{                                                                  \
-  if( varStackedIndex )                                              \
-  {                                                                \
-    vtkIdType index = baseIndex + id_out;                          \
-                                                                   \
-    if( id_out < incr/2 )                                          \
-      index += incr/2;                                             \
-                                                                   \
-    points->GetPoint(index, pt);                                   \
-  }                                                                \
-  else                                                             \
-  {                                                                \
-    in_ds->GetPoint(list->GetId(id_in), pt);                       \
-  }                                                                \
-                                                                   \
-  if(nodeData)                                                     \
-  {                                                                \
-    scalar = varArray->GetTuple1(list->GetId(id_in));              \
-                                                                   \
-    if( scalar < variableMinimums[varStackedIndex] )                 \
-      scalar = variableMinimums[varStackedIndex];                    \
-                                                                   \
-    if( scalar > variableMaximums[varStackedIndex] )                 \
-      scalar = variableMaximums[varStackedIndex];                    \
-                                                                   \
-    if( scalarMin > scalar )                                       \
-      scalarMin = scalar;                                          \
-                                                                   \
-    if( scalarMax < scalar )                                       \
-      scalarMax = scalar;                                          \
-  }                                                                \
-                                                                   \
-  scalarAve += (scalar / double(incr));                            \
-                                                                   \
-  pt[0] += offset.x * scalar;                                      \
-  pt[1] += offset.y * scalar;                                      \
-  pt[2] += offset.z * scalar;                                      \
-                                                                   \
-  verts[id_out] = points->InsertNextPoint( pt[0], pt[1], pt[2] );  \
-                                                                   \
-  if( num_stacked_extrusions )                                     \
-    scalars_node_height->InsertTuple1(verts[id_out], scalar);      \
-}
-
-vtkDataSet *
-avtExtrudeStackedFilter::ExtrudeToUnstructuredGrid(vtkPointSet *in_ds,
-                                                   vtkUnstructuredGrid *out_ds)
-{
-    debug5 << "Extrude unstructured grid to unstructured grid." << endl;
-
-    int nSteps = atts.GetSteps();
-
-    vtkIdType nNodes = in_ds->GetNumberOfPoints();
-    vtkIdType nCells = in_ds->GetNumberOfCells();
-
-    if( atts.GetByVariable() )
-    {
-        vtkIdType nTuples = varArray->GetNumberOfTuples();
-
-        if( nodeData && nNodes != nTuples )
-          EXCEPTION1(ImproperUseException,
-                     "ExtrudeStacked - The number of scalar values does match the number of points.");
-        if( cellData && nCells != nTuples )
-          EXCEPTION1(ImproperUseException,
-                     "ExtrudeStacked - The number of scalar values does match the number of cells.");
-    }
-
-    vtkUnstructuredGrid *ugrid = nullptr;
-    vtkPoints *points = nullptr;
-    vtkDoubleArray *scalars_node_height = nullptr;
-    vtkDoubleArray *scalars_cell_height = nullptr;
-    vtkFloatArray  *scalars_var_index   = nullptr;
-
-    // Set the grid so it can be used for multiple stacked extrusions.
-    vtkIdType n_cells_out = nCells * nSteps;
-    unsigned int nPtsPerStack;
-    unsigned int nPointsAdded = n_cells_out * 8;
-
-    // Set the grid so it can be used for multiple stacked extrusions.
-    if( out_ds == nullptr ) {
-      ugrid = vtkUnstructuredGrid::New();
-      ugrid->Allocate(n_cells_out, n_cells_out);
-
-      points = vtkPoints::New(in_ds->GetPoints()->GetDataType());
-      points->Allocate( nPointsAdded, nPointsAdded );
-
-      nPtsPerStack = 0;
-
-      // For multiple stacked extrusions two new variables are used.
-      if( num_stacked_extrusions )
-      {
-        // The variable used for the extrusion. Doubles are used as
-        // there may be multiple type (floats or doubles).
-        scalars_node_height = vtkDoubleArray::New();
-        scalars_node_height->SetName(stackedVarNames[0].c_str());
-        scalars_node_height->SetNumberOfTuples(1);
-        scalars_node_height->Allocate( nPointsAdded, nPointsAdded );
-
-        // The height used for the extrusion. Doubles are used as
-        // there may be multiple type (floats or doubles).
-        scalars_cell_height = vtkDoubleArray::New();
-        scalars_cell_height->SetName(stackedVarNames[1].c_str());
-        scalars_cell_height->SetNumberOfTuples(1);
-        scalars_cell_height->Allocate( n_cells_out, n_cells_out );
-
-        // The index of the variable.
-        scalars_var_index = vtkFloatArray::New();
-        scalars_var_index->SetName(stackedVarNames[2].c_str());
-        scalars_var_index->SetNumberOfTuples(1);
-        scalars_var_index->Allocate( n_cells_out, n_cells_out );
-      }
-    }
-    // Used for the next stacked extrusion.
-    else
-    {
-      ugrid = out_ds;
-
-      points = ugrid->GetPoints();
-
-      nPtsPerStack = points->GetNumberOfPoints() / varStackedIndex;
-
-      scalars_node_height = (vtkDoubleArray *) ugrid->GetPointData()->GetArray(stackedVarNames[0].c_str());
-      scalars_cell_height = (vtkDoubleArray *) ugrid->GetCellData()->GetArray(stackedVarNames[1].c_str());
-      scalars_var_index   = (vtkFloatArray  *) ugrid->GetCellData()->GetArray(stackedVarNames[2].c_str());
     }
 
     // Create the extruded connectivity
@@ -1883,7 +1838,13 @@ avtExtrudeStackedFilter::ExtrudeToUnstructuredGrid(vtkPointSet *in_ds,
     avtVector axis(atts.GetAxis());
     axis.normalize();
 
-    double scale = variableScales[varNum];
+    double scale;
+
+    if(varNum == - 1)
+      scale = atts.GetLength();
+    else
+      scale = variableScales[varNum];
+
     axis *= scale;
 
     for(int s=0; s<nSteps; ++s)
@@ -1907,7 +1868,7 @@ avtExtrudeStackedFilter::ExtrudeToUnstructuredGrid(vtkPointSet *in_ds,
                 ugrid->Delete();
                 delete [] cellReplication;
                 EXCEPTION1(InvalidCellTypeException,
-                           "ExtrudeStacked - Anything but points, lines, polylines, triangles, and quads.");
+                           "ExtrudeStacked - only points, lines, polylines, triangles, quads and pixels can be extruded.");
             }
 
             if( cellData )
@@ -1968,10 +1929,11 @@ avtExtrudeStackedFilter::ExtrudeToUnstructuredGrid(vtkPointSet *in_ds,
 
                   // For a stacked two vars are created the scalar
                   // value and the index of the vairable.
-                  if( num_stacked_extrusions )
-                  {
+                  if( nStackedExtrusions > 1 )
                     baseIndex += incr;
 
+                  if( dType != ExtrudeStackedAttributes::OriginalData )
+                  {
                     if( scalarMin > scalarAve )
                       scalarMin = scalarAve;
 
@@ -2056,10 +2018,11 @@ avtExtrudeStackedFilter::ExtrudeToUnstructuredGrid(vtkPointSet *in_ds,
 
                   // For a stacked two vars are created the scalar
                   // value and the index of the vairable.
-                  if( num_stacked_extrusions )
-                  {
+                  if( nStackedExtrusions > 1 )
                     baseIndex += incr;
 
+                  if( dType != ExtrudeStackedAttributes::OriginalData )
+                  {
                     if( scalarMin > scalarAve )
                       scalarMin = scalarAve;
 
@@ -2125,10 +2088,11 @@ avtExtrudeStackedFilter::ExtrudeToUnstructuredGrid(vtkPointSet *in_ds,
 
                   // For a stacked two vars are created the scalar
                   // value and the index of the vairable.
-                  if( num_stacked_extrusions )
-                  {
+                  if( nStackedExtrusions > 1 )
                     baseIndex += incr;
 
+                  if( dType != ExtrudeStackedAttributes::OriginalData )
+                  {
                     if( scalarMin > scalarAve )
                       scalarMin = scalarAve;
 
@@ -2181,20 +2145,23 @@ avtExtrudeStackedFilter::ExtrudeToUnstructuredGrid(vtkPointSet *in_ds,
             // For a stacked extrusion two vars are created the scalar
             // value and the index of the vairable. The polyline cells
             // were done above as they were broken into mulitple cells.
-            if( num_stacked_extrusions &&
-                c != VTK_POLY_VERTEX &&
+            if( c != VTK_POLY_VERTEX &&
                 c != VTK_POLY_LINE && c != VTK_TRIANGLE_STRIP)
             {
-              baseIndex += incr;
+              if( nStackedExtrusions > 1 )
+                baseIndex += incr;
 
-              if( scalarMin > scalarAve )
-                scalarMin = scalarAve;
+              if( dType != ExtrudeStackedAttributes::OriginalData )
+              {
+                if( scalarMin > scalarAve )
+                  scalarMin = scalarAve;
 
-              if( scalarMax < scalarAve )
-                scalarMax = scalarAve;
+                if( scalarMax < scalarAve )
+                  scalarMax = scalarAve;
 
-              scalars_cell_height->InsertTuple1(newCellId, scalarAve);
-              scalars_var_index  ->InsertTuple1(newCellId, varStackedIndex);
+                scalars_cell_height->InsertTuple1(newCellId, scalarAve);
+                scalars_var_index  ->InsertTuple1(newCellId, varStackedIndex);
+              }
             }
 
             // Increment the replication by one all cells.
@@ -2213,28 +2180,31 @@ avtExtrudeStackedFilter::ExtrudeToUnstructuredGrid(vtkPointSet *in_ds,
 
       // For multiple stacked extrusions save only the scalar value
       // and the index.
-      if( num_stacked_extrusions )
+      ExtrudeStackedAttributes::VariableDisplayType dType =
+        atts.GetVariableDisplay();
+
+      if( dType != ExtrudeStackedAttributes::OriginalData )
       {
         ugrid->GetPointData()->AddArray( scalars_node_height );
         ugrid->GetCellData() ->AddArray( scalars_cell_height );
         ugrid->GetCellData() ->AddArray( scalars_var_index );
 
-        ExtrudeStackedAttributes::VariableDisplayType dType =
-          atts.GetVariableDisplay();
-
         if( dType == ExtrudeStackedAttributes::NodeHeight )
           ugrid->GetPointData()->SetScalars( scalars_node_height );
         else if( dType == ExtrudeStackedAttributes::CellHeight )
           ugrid->GetCellData()->SetScalars( scalars_cell_height );
-        else if( dType == ExtrudeStackedAttributes::VarIndex )
+        else if( dType == ExtrudeStackedAttributes::VariableIndex )
           ugrid->GetCellData()->SetScalars( scalars_var_index );
 
         scalars_node_height->Delete();
         scalars_cell_height->Delete();
         scalars_var_index  ->Delete();
       }
-      else // Otherwise copy all of the previous variables
-        CopyVariables(in_ds, ugrid, cellReplication);
+      else
+      {
+        // Otherwise copy all of the previous variables
+        CopyVariables(-1, in_ds, ugrid, cellReplication);
+      }
     }
 
     delete [] cellReplication;
