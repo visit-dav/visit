@@ -32,9 +32,7 @@ When one applies the ExtrudeStacked operator to plots that do not accept scalar 
 
 When a variable is added, it is added to the top of the stack and given the next largest index.
 That is the bottom of the stack is the variable with index 0.
-It is possible to reorder and delete variables via the **Move up** or **Move down** and **Delete** buttons in the **ExtrudeStacked attributes window**.
-
-(see :numref:`Figure %s <extrudeWindowStacked>`).
+It is possible to reorder and delete variables via the **Move up** or **Move down** and **Delete** buttons in the **ExtrudeStacked attributes window** (see :numref:`Figure %s <extrudeWindowStacked>`).
 
 .. _extrudeWindowStacked:
 
