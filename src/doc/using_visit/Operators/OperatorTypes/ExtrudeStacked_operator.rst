@@ -22,8 +22,7 @@ The ExtrudeStacked operator is quite flexible as it can extrude by more than one
 The most useful feature of the ExtrudeStacked operator is its ability to extrude a mesh using multiple arbitrary scalar variables along an arbitrary **Extrusion axis**.
 By **default**, the ExtrudeStacked operator uses the plot's current variable to extrude the mesh.
 This only works when the plotted variable is a scalar variable.
-When one applies the ExtrudeStacked operator to plots that do not accept scalar variables, the ExtrudeStacked operator will
-fail unless a specific scalar variable is chosen int the **Add Variable** variable menu in the **ExtrudeStacked attributes window** (see :numref:`Figure %s <extrudeWindow>`).
+When one applies the ExtrudeStacked operator to plots that do not accept scalar variables, the ExtrudeStacked operator will fail unless a specific scalar variable is chosen in the **Add Variable** variable menu in the **ExtrudeStacked attributes window** (see :numref:`Figure %s <extrudeWindow>`).
 
 .. _extrudeWindow:
 
