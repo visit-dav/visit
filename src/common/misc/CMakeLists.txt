@@ -9,28 +9,33 @@
 
 # Store some configure information into a C file (like version, GIT revision
 # and platform things that change).
+
 configure_file(ConfigureInfo.C.in
                ${VISIT_BINARY_DIR}/common/misc/ConfigureInfo.C @ONLY IMMEDIATE)
 
-target_sources(visitcommon PRIVATE
-    DebugStreamFull.C
-    Environment.C
-    FileFunctions.C
-    InstallationFunctions.C
-    PTY.C
-    RuntimeSetting.C
-    StackTimer.C
-    TimingsManager.C
-    VisItException.C
-    VisItInit.C
-    ${VISIT_BINARY_DIR}/common/misc/ConfigureInfo.C)
+visit_append_list(
+    NAME  visitcommon_SOURCES
+    ITEMS ${CMAKE_CURRENT_SOURCE_DIR}/DebugStreamFull.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/Environment.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/FileFunctions.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/InstallationFunctions.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/PTY.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/RuntimeSetting.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/StackTimer.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/TimingsManager.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/VisItException.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/VisItInit.C
+          ${VISIT_BINARY_DIR}/common/misc/ConfigureInfo.C)
 
-target_include_directories(visitcommon PUBLIC .)
+visit_append_list(
+    NAME  visitcommon_INCLUDES
+    ITEMS $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+          $<INSTALL_INTERFACE:${VISIT_INSTALLED_VERSION_INCLUDE}/visit/common/misc>)
 
 if(WIN32)
     # for GetProfilesDirectory used in FileFunctions
-    target_link_libraries(visitcommon PRIVATE userenv)
+    visit_append_list(NAME visitcommon_DEPENDS ITEMS userenv)
     # for std::filesystem::path used in FileFunctions
-    target_compile_features(visitcommon PRIVATE cxx_std_17)
+    visit_append_list(NAME visitcommon_FEATURES ITEMS cxx_std_17)
 endif()
 

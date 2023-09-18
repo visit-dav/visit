@@ -7,34 +7,30 @@
 #
 #****************************************************************************
 
-SET(AVTMATH_SOURCES
-avtFactorial.C
-avtHermitePolynomial.C
-avtMatrix.C
-avtPlane.C
-avtPolynomial.C
-avtQuaternion.C
-avtTrackball.C
-avtVecArray.C
-avtVector.C
-)
-
-INCLUDE_DIRECTORIES(
-${CMAKE_CURRENT_SOURCE_DIR}
-${VISIT_COMMON_INCLUDES}
-${VTK_INCLUDE_DIRS}
-)
-
 if(VTK_VERSION VERSION_EQUAL "8.1.0")
     set(vtklibs vtkCommonCore)
 else()
     set(vtklibs VTK::CommonCore)
 endif()
 
-# Add link directories
-LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY} )
+blt_add_library(
+    NAME       avtmath
+    SOURCES    avtFactorial.C
+               avtHermitePolynomial.C
+               avtMatrix.C
+               avtPlane.C
+               avtPolynomial.C
+               avtQuaternion.C
+               avtTrackball.C
+               avtVecArray.C
+               avtVector.C
+    INCLUDES   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+               $<INSTALL_INTERFACE:${VISIT_INSTALLED_VERSION_INCLUDE}/visit/include/avt/Math>
+    DEPENDS_ON visitcommon ${vtklibs})
 
-ADD_LIBRARY(avtmath ${AVTMATH_SOURCES})
-TARGET_LINK_LIBRARIES(avtmath visitcommon ${vtklibs})
+if(VTK_VERSION VERSION_EQUAL "8.1.0")
+    target_include_directories(avtmath PUBLIC "$<BUILD_INTERFACE:${VTK_INCLUDE_DIRS}>")
+endif()
 
-VISIT_INSTALL_TARGETS(avtmath)
+visit_install_export_targets(avtmath)
+

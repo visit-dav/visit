@@ -13,61 +13,55 @@
 #
 #****************************************************************************/
 
-SET(LIGHTWEIGHT_VISIT_VTK_SOURCES
-ClipCasesHex.C  
-ClipCasesLin.C  
-ClipCasesPix.C  
-ClipCasesPyr.C  
-ClipCasesQua.C  
-ClipCasesTet.C  
-ClipCasesTri.C  
-ClipCasesWdg.C          
-ClipCasesVox.C          
-ClipCasesVtx.C          
-ClipCasesPoly5.C          
-ClipCasesPoly6.C          
-ClipCasesPoly7.C          
-ClipCasesPoly8.C          
-InitVTKLite.C     
-vtkCellIntersections.C  
-vtkDataSetFromVolume.C  
-vtkDebugStream.C        
-vtkEnumThreshold.C
-vtkMultiLineSource.C
-vtkElementLabelArray.C
-vtkPolyDataRelevantPointsFilter.C
-vtkSkewLookupTable.C
-vtkTriangulationTables.C
-vtkUnstructuredGridBoundaryFilter.C
-vtkUnstructuredGridFacelistFilter.C
-vtkVisItCellLocator.C
-vtkVisItPointDataToCellData.C
-vtkVisItPointLocator.C
-vtkVisItUtility.C
-)
-
-INCLUDE_DIRECTORIES(
-${VISIT_BINARY_DIR}/include
-${VISIT_SOURCE_DIR}/visit_vtk/full
-${VISIT_SOURCE_DIR}/visit_vtk/lightweight
-${VISIT_SOURCE_DIR}/common/misc
-${VISIT_SOURCE_DIR}/common/utility
-${VTK_INCLUDE_DIRS}
-)
-
-# Add link directories needed to use our libraries and VTK.
-LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY})
-
-ADD_LIBRARY(lightweight_visit_vtk
-    ${LIGHTWEIGHT_VISIT_VTK_SOURCES}
-)
-
 if(VTK_VERSION VERSION_EQUAL "8.1.0")
     set(vtklibs vtkCommonCore vtkFiltersCore vtkIOCore vtkIOLegacy)
 else()
     set(vtklibs VTK::CommonCore VTK::FiltersCore VTK::IOCore VTK::IOLegacy)
 endif()
 
-target_link_libraries(lightweight_visit_vtk visitcommon ${vtklibs})
+blt_add_library(
+    NAME    lightweight_visit_vtk
 
-VISIT_INSTALL_TARGETS(lightweight_visit_vtk)
+    SOURCES  ClipCasesHex.C
+             ClipCasesLin.C
+             ClipCasesPix.C
+             ClipCasesPyr.C
+             ClipCasesQua.C
+             ClipCasesTet.C
+             ClipCasesTri.C
+             ClipCasesWdg.C
+             ClipCasesVox.C
+             ClipCasesVtx.C
+             ClipCasesPoly5.C
+             ClipCasesPoly6.C
+             ClipCasesPoly7.C
+             ClipCasesPoly8.C
+             InitVTKLite.C
+             vtkCellIntersections.C
+             vtkDataSetFromVolume.C
+             vtkDebugStream.C
+             vtkEnumThreshold.C
+             vtkMultiLineSource.C
+             vtkElementLabelArray.C
+             vtkPolyDataRelevantPointsFilter.C
+             vtkSkewLookupTable.C
+             vtkTriangulationTables.C
+             vtkUnstructuredGridBoundaryFilter.C
+             vtkUnstructuredGridFacelistFilter.C
+             vtkVisItCellLocator.C
+             vtkVisItPointDataToCellData.C
+             vtkVisItPointLocator.C
+             vtkVisItUtility.C
+
+    INCLUDES $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+             $<BUILD_INTERFACE:${VISIT_BINARY_DIR}/include>
+             $<INSTALL_INTERFACE:${VISIT_INSTALLED_VERSION_INCLUDE}/visit/include/visit_vtk/lightweight>
+
+    DEPENDS_ON visitcommon ${vtklibs})
+
+if(VTK_VERSION VERSION_EQUAL "8.1.0")
+    target_include_directories(lightweight_visit_vtk PUBLIC "$<BUILD_INTERFACE:${VTK_INCLUDE_DIRS}>")
+endif()
+
+visit_install_export_targets(lightweight_visit_vtk)
+

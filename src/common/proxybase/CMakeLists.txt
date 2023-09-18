@@ -7,7 +7,12 @@
 #
 #****************************************************************************
 
-target_sources(visitcommon PRIVATE RemoteProxyBase.C)
+visit_append_list(
+    NAME  visitcommon_SOURCES
+    ITEMS ${CMAKE_CURRENT_SOURCE_DIR}/RemoteProxyBase.C)
 
-target_include_directories(visitcommon PUBLIC .)
+visit_append_list(
+    NAME  visitcommon_INCLUDES
+    ITEMS $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+          $<INSTALL_INTERFACE:${VISIT_INSTALLED_VERSION_INCLUDE}/visit/common/proxybase>)
 

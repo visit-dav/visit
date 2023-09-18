@@ -234,3 +234,22 @@ function(ADD_CMAKE_GEN_TARGET gen_name
 endfunction()
 
 
+##############################################################################
+# This macro appends to a CACHE var list denoted by the NAME argument.
+# Caller is responsible for unsetting the CACHE var when no longer needed
+# to avoid polluting the CACHE.
+#
+# Designed mainly for targets whose sources live in subdirectories,
+# as a means for them to add to the parent's list of source/includes/etc
+# to prepare for a 'blt_add_library' call which requires SOURCES.
+#
+##############################################################################
+
+macro(visit_append_list)
+    cmake_parse_arguments(arg "" "NAME" "ITEMS" ${ARGN})
+    if(NOT DEFINED arg_NAME OR NOT DEFINED arg_ITEMS)
+        message(FATAL_ERROR "visit_append_list called with invalid arguments. Must supply 'NAME' (name of list) and 'ITEMS' (list of items to be added to named list.)")
+    endif()
+    set(${arg_NAME} ${${arg_NAME}} ${arg_ITEMS} CACHE STRING "" FORCE)
+endmacro()
+

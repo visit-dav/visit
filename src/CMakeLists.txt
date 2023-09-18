@@ -612,7 +612,6 @@ set(CMAKE_INVOKE "${CMAKE_COMMAND} ${CMAKE_INVOKE_ARGS} ${CMAKE_CURRENT_SOURCE_D
 # Create a simple shell script that allows us to reinvoke cmake with the captured command line.
 if(NOT WIN32)
     file(WRITE ${CMAKE_BINARY_DIR}/recmake_visit.sh "#!/bin/sh\n"
-                                                     "rm -f CMakeCache.txt\n"
                                                      "${CMAKE_INVOKE}\n")
 endif()
 
@@ -1349,4 +1348,36 @@ endif()
 if(VISIT_INSTALL_THIRD_PARTY)
     include(${VISIT_SOURCE_DIR}/CMake/PluginVsInstallHelpers.cmake)
 endif()
+
+
+
+#-------------------------------------------------------------------------
+#
+# Setup Export package configurations
+#
+#-------------------------------------------------------------------------
+
+include(CMakePackageConfigHelpers)
+
+# generate the top level config file
+configure_package_config_file(${CMAKE_CURRENT_SOURCE_DIR}/CMake/visitConfig.cmake.in
+    ${CMAKE_CURRENT_BINARY_DIR}/CMake/visitConfig.cmake
+    INSTALL_DESTINATION ${VISIT_INSTALLED_VERSION}/cmake)
+
+# generate the version config file
+write_basic_package_version_file(
+  ${CMAKE_CURRENT_BINARY_DIR}/CMake/visitConfigVersion.cmake
+  VERSION ${VISIT_VERSION}
+  COMPATIBILITY SameMinorVersion)
+
+# install the config files
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/CMake/visitConfig.cmake
+              ${CMAKE_CURRENT_BINARY_DIR}/CMake/visitConfigVersion.cmake
+        DESTINATION ${VISIT_INSTALLED_VERSION}/cmake)
+
+
+# install the target files
+install(EXPORT visitTargets
+        DESTINATION ${VISIT_INSTALLED_VERSION}/cmake)
+
 
