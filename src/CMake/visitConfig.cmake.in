@@ -1,29 +1,9 @@
-# this gets us the directory containing this file
-# on Linux: /some/install/path/<version>/<arch>/cmake/visitConfig.cmake
-# so first result will be /some/install/path/<version>/<arch>/cmake
-get_filename_component(_IMPORT_PREFIX ${CMAKE_CURRENT_LIST_FILE} PATH)
-
-# this moves us one directory up from the directory containing this file.
-# on Linux result will be /some/install/path/<version>/<arch>
-get_filename_component(_IMPORT_PREFIX ${_IMPORT_PREFIX} PATH)
-
-if(LINUX)
-    # since the the targets files reference _INSTALL_PREFIX/<version>/<arch>
-    # then we need to move up to /some/install/path/<version>
-    get_filename_component(_IMPORT_PREFIX ${_IMPORT_PREFIX} PATH)
-    # then we need to move up to /some/install/path
-    get_filename_component(_IMPORT_PREFIX ${_IMPORT_PREFIX} PATH)
-endif()
-
-if(_IMPORT_PREFIX STREQUAL "/")
-    set(_IMPORT_PREFIX "")
-endif()
-
 # VisIt settings
 
 set(VISIT_PARALLEL @VISIT_PARALLEL@)
 set(VISIT_BUILD_SHARED_LIBS @BUILD_SHARED_LIBS@)
 
 
+# Include visit targets
 include("${CMAKE_CURRENT_LIST_DIR}/visitTargets.cmake")
 
