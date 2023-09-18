@@ -235,7 +235,7 @@ function(visit_install_export_targets_relative dest_dir)
             endif()
         endforeach()
     else()
-        INSTALL(TARGETS ${ARGN} EXPORT visitTargets
+        install(TARGETS ${ARGN} EXPORT visitTargets
             RUNTIME DESTINATION ${VISIT_INSTALLED_VERSION_BIN}/${dest_dir}
             BUNDLE  DESTINATION ${VISIT_INSTALLED_VERSION_BIN}/${dest_dir}
             LIBRARY DESTINATION ${VISIT_INSTALLED_VERSION_LIB}/${dest_dir}
