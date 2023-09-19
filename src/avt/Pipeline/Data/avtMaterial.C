@@ -386,9 +386,8 @@ avtMaterial::avtMaterial(int nMats, const int *mats, char **names,
 //
 //  Arguments:
 //      nMats      The number of materials in mats.
-//      mats       A list of material names.
-//      ndims      The number of entries in dims.
-//      dims       The number of material entries in each direction.
+//      mats       A list of material numbers.
+//      nzon       The number of zones.
 //      ml         The material list.
 //      mixl       The mix_len.
 //      mixm       The mix_mat.
@@ -457,7 +456,14 @@ avtMaterial::avtMaterial(int nMats,
 //
 //  Arguments:
 //      nMats      The number of materials in mats.
-//      TODO
+//      mats       A vector of strings containing material names.
+//      matnos     A list of material numbers.
+//      nzon       The number of zones.
+//      ml         The material list.
+//      mixl       The mix_len.
+//      mixm       The mix_mat.
+//      mixz       The mix_zone.
+//      mixv       The mix_vf.
 //
 //  Programmer: Justin Privitera
 //  Creation:   09/19/23
