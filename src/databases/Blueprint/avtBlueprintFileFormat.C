@@ -2286,6 +2286,8 @@ avtBlueprintFileFormat::GetAuxiliaryData(const char *var,
 //     Justin Privitera, Wed Aug 24 11:08:51 PDT 2022
 //     Encased in try-catch block.
 //
+//     Justin Privitera, Tue Sep 19 11:36:45 PDT 2023
+//     Get the material numbers and use a new avtMaterial constructor.
 //
 // ****************************************************************************
 avtMaterial *
@@ -2318,6 +2320,7 @@ avtBlueprintFileFormat::GetMaterial(int domain,
         int *mix_mat  = NULL;
         int *mix_next = NULL;
 
+        // get the material numbers
         std::vector<int> matnos;
         auto matmap_itr = n_silo_matset["material_map"].children();
         while (matmap_itr.has_next())
@@ -2379,8 +2382,6 @@ avtBlueprintFileFormat::GetMaterial(int domain,
                                            NULL,          // mix_zone array (OPTIONAL)
                                            mix_vf         // mix_vf array
                                            );
-
-        mat->Print(std::cout);
 
         return mat;
     }
