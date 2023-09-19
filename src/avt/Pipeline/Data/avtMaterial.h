@@ -136,9 +136,6 @@ struct MatZoneMap
 //    Added variable names to avtMaterial(int nmats, std::vector<string> ... )
 //    variant of the constructor to make it easer to interpret what data 
 //    is needed.
-// 
-//    Justin Privitera, Tue Sep 19 11:36:45 PDT 2023
-//    Added a new constructor that the Blueprint plugin can use.
 //
 // ****************************************************************************
 
