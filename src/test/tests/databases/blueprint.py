@@ -51,6 +51,7 @@ bp_part_map_test_dir = "blueprint_v0.8.4_part_map_examples"
 bp_struct_strided_test_dir = "blueprint_v0.8.4_strided_structured_examples"
 bp_rz_test_dir = "blueprint_v0.8.6_rz_examples"
 bp_1d_curve_test_dir = "blueprint_v0.8.6_1d_curve_examples"
+bp_venn_modded_matnos_dir = "blueprint_v0.8.7_venn_modded_matnos_example"
 
 braid_2d_hdf5_root = data_path(pjoin(bp_test_dir,"braid_2d_examples.blueprint_root_hdf5"))
 braid_3d_hdf5_root = data_path(pjoin(bp_test_dir,"braid_3d_examples.blueprint_root_hdf5"))
@@ -92,6 +93,9 @@ venn_s_by_e_yaml_root  =  data_path(pjoin(bp_venn_test_dir,
 
 venn_s_by_m_yaml_root  =  data_path(pjoin(bp_venn_test_dir,
                                "venn_small_example_sparse_by_material_yaml.root"))
+
+venn_modded_matnos_root = data_path(pjoin(bp_venn_modded_matnos_dir,
+                                "venn_w_modded_matnos.root"))
 
 bp_part_map_root = data_path(pjoin(bp_part_map_test_dir,
                              "tout_custom_part_map_index_hdf5.root"))
@@ -569,6 +573,15 @@ test_venn("venn_small_sparse_by_material", venn_s_by_m_root)
 test_venn("venn_small_full_yaml", venn_full_yaml_root)
 test_venn("venn_small_sparse_by_element_yaml", venn_s_by_e_yaml_root)
 test_venn("venn_small_sparse_by_material_yaml", venn_s_by_m_yaml_root)
+
+TestSection("Venn With Modded Material Numbers, 0.8.7")
+OpenDatabase(venn_modded_matnos_root)
+AddPlot("FilledBoundary", "mesh_topo_matset")
+DrawPlots()
+ResetView()
+Test("Venn_with_modded_matnos")
+DeleteAllPlots()
+ResetView()
 
 TestSection("2D Example HDF5 Mesh Files, 0.8.2")
 OpenDatabase(braid_2d_0_8_2_hdf5_root)
