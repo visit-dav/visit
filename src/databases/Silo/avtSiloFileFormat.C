@@ -3923,7 +3923,6 @@ avtSiloFileFormat::ReadMultimats(DBfile *dbfile,
             else
                 mmd = new avtMaterialMetaData(name_w_dir, meshname,
                                               minfo_nmats, matnames);
-
             mmd->validVariable = valid_var;
             mmd->hideFromGUI = mm->guihide;
             md->Add(mmd);
@@ -15080,6 +15079,7 @@ avtSiloFileFormat::CalcMaterial(DBfile *dbfile, const char *matname, const char 
             matListArr?(int*)(matListArr->GetVoidPointer(0)):silomat->matlist,
             silomat->mixlen, silomat->mix_mat, silomat->mix_next, silomat->mix_zone,
             mix_vf, dom_string ,silomat->allowmat0);
+       mat->Print(std::cout);
     }
 
     if(mix_vf && mix_vf != (float*)silomat->mix_vf)

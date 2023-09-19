@@ -1122,32 +1122,39 @@ avtBlueprintFileFormat::AddBlueprintMaterialsMetadata(avtDatabaseMetaData *md,
 
             // construct material map in matset order
             // NOTE: This assumes ids are [0,N)
-            Node &mid_to_name = m_matset_info[mesh_matset_name]["material_ids_to_name"];
+            // Node &mid_to_name = m_matset_info[mesh_matset_name]["material_ids_to_name"];
 
-            while (itr.has_next())
-            {
-                const Node &curr_mat = itr.next();
-                mid_to_name.append();
-            }
+            // while (itr.has_next())
+            // {
+            //     const Node &curr_mat = itr.next();
+            //     mid_to_name.append();
+            // }
 
-            itr.to_front();
+            std::map<int, std::string> mids_to_name;
+
+            // itr.to_front();
             while (itr.has_next())
             {
                 const Node &curr_mat = itr.next();
                 int32 mat_id = curr_mat.to_int32();
-                mid_to_name[mat_id] = itr.name();
+                // mid_to_name[mat_id] = itr.name();
+
+                mids_to_name[mat_id] = itr.name();
             }
 
-            // now create a material mapp where the child order matches
-            // the id order
-            itr = mid_to_name.children();
-            while (itr.has_next())
-            {
-                itr.next();
-                std::string mat_name = itr.node().as_string();
-                int mat_id = itr.index();
-                m_matset_info[mesh_matset_name]["matnames"][mat_name] = mat_id;
-            }
+            for (const auto & mapitem : mids_to_name)
+                m_matset_info[mesh_matset_name]["matnames"][mapitem.second] = mapitem.first;
+
+            // // // now create a material mapp where the child order matches
+            // // // the id order
+            // itr = mid_to_name.children();
+            // while (itr.has_next())
+            // {
+            //     itr.next();
+            //     std::string mat_name = itr.node().as_string();
+            //     int mat_id = itr.index();
+            //     m_matset_info[mesh_matset_name]["matnames"][mat_name] = mat_id;
+            // }
         }
         else // "materials" case, old path
         {
@@ -2388,6 +2395,8 @@ avtBlueprintFileFormat::GetMaterial(int domain,
                                            NULL,     // mix_zone array (OPTIONAL)
                                            mix_vf    // mix_vf array
                                            );
+
+        mat->Print(std::cout);
 
         return mat;
     }
