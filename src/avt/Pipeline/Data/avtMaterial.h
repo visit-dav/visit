@@ -165,6 +165,17 @@ class PIPELINE_API avtMaterial
                                                  const int *mix_zone,
                                                  const float *mix_vf);
 
+                                     avtMaterial(int nmats,
+                                                 const std::vector<std::string> &matnames,
+                                                 const int *matnos,
+                                                 int nzones,
+                                                 const int *mat_list,
+                                                 int mix_len,
+                                                 const int *mix_mat,
+                                                 const int *mix_next,
+                                                 const int *mix_zone,
+                                                 const float *mix_vf);
+
                                      avtMaterial(int nTotMats,
                                                  const int *mats,
                                                  const char **names,

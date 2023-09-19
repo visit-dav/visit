@@ -2343,6 +2343,14 @@ avtBlueprintFileFormat::GetMaterial(int domain,
         int *mix_mat  = NULL;
         int *mix_next = NULL;
 
+        std::vector<int> matnos;
+        auto matmap_itr = n_silo_matset["material_map"].children();
+        while (matmap_itr.has_next())
+        {
+            const Node &n_mat = matmap_itr.next();
+            matnos.push_back(n_mat.to_int());
+        }
+
         // we need int ptrs for the avtMaterial object,
         // convert if needed
 
@@ -2385,15 +2393,16 @@ avtBlueprintFileFormat::GetMaterial(int domain,
             mix_vf = n_silo_matset["mix_vf_float"].as_float_ptr();
         }
 
-        avtMaterial *mat = new avtMaterial(nmats,    // The number of materials in mats.
-                                           matnames, // material names
-                                           nzones,   // number of zones (len of matlist)
-                                           matlist,  // matlist
-                                           mix_len,  // length of mix arrays
-                                           mix_mat,  // mix_mat array
-                                           mix_next, // mix_next array
-                                           NULL,     // mix_zone array (OPTIONAL)
-                                           mix_vf    // mix_vf array
+        avtMaterial *mat = new avtMaterial(nmats,         // The number of materials in mats.
+                                           matnames,      // material names
+                                           matnos.data(), // material numbers
+                                           nzones,        // number of zones (len of matlist)
+                                           matlist,       // matlist
+                                           mix_len,       // length of mix arrays
+                                           mix_mat,       // mix_mat array
+                                           mix_next,      // mix_next array
+                                           NULL,          // mix_zone array (OPTIONAL)
+                                           mix_vf         // mix_vf array
                                            );
 
         mat->Print(std::cout);

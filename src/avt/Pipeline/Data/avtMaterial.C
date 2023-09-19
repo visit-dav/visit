@@ -432,6 +432,52 @@ avtMaterial::avtMaterial(int nMats,
                          const int *mixz,
                          const float *mixv)
 {
+    int i;
+    vector<bool> matUsed(nMats+1, false);
+
+    for (i = 0 ; i < nzon ; i++)
+    {
+        if (ml[i] >= 0)
+            matUsed[ml[i]] = true;
+    }
+
+    for (i = 0 ; i < mixl ; i++)
+    {
+        matUsed[mixm[i]] = true;
+    }
+
+    int nActualMats = (matUsed[nMats] ? nMats+1 : nMats);
+
+    Initialize(nActualMats, mats, mats, matUsed, nzon, 1, &nzon, 0, ml, mixl,
+               mixm, mixn, mixz, mixv);
+}
+
+
+// ****************************************************************************
+//  Method: avtMaterial constructor
+//
+//  Arguments:
+//      nMats      The number of materials in mats.
+//      TODO
+//
+//  Programmer: TODO
+//  Creation:   TODO
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+avtMaterial::avtMaterial(int nMats,
+                         const vector<string> &mats,
+                         const int *matnos,
+                         int nzon,
+                         const int *ml,
+                         int mixl,
+                         const int *mixm,
+                         const int *mixn,
+                         const int *mixz,
+                         const float *mixv)
+{
     int timerHandle = visitTimer->StartTimer();
     int i;
     vector<bool> matUsed(nMats+1, false);
@@ -441,8 +487,7 @@ avtMaterial::avtMaterial(int nMats,
     //
     int *newml   = new int[nzon];
     int *newmixm = new int[mixl];
-    // TODO JUSTIN the mats argument is wrong, it needs to be ints not strings
-    RenumberMaterialsZeroToNminusOne(nMats, mats,
+    RenumberMaterialsZeroToNminusOne(nMats, matnos,
                                      nzon, ml,
                                      mixl, mixm,
                                      newml, newmixm,
