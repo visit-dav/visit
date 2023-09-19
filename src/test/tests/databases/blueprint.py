@@ -35,6 +35,9 @@
 #    Justin Privitera, Fri Mar 24 17:47:26 PDT 2023
 #    Fixed view issue for mfem lor vector field tests.
 #    Fixed an issue where test names had two consecutive underscores.
+# 
+#    Justin Privitera, Tue Sep 19 11:36:45 PDT 2023
+#    Added a test for material numbers not in the range [0, N)
 #
 # ----------------------------------------------------------------------------
 RequiredDatabasePlugin("Blueprint")

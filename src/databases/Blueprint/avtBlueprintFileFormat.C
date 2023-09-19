@@ -2287,7 +2287,7 @@ avtBlueprintFileFormat::GetAuxiliaryData(const char *var,
 //     Encased in try-catch block.
 //
 //     Justin Privitera, Tue Sep 19 11:36:45 PDT 2023
-//     Get the material numbers and use a new avtMaterial constructor.
+//     Get the material numbers and use a different avtMaterial constructor.
 //
 // ****************************************************************************
 avtMaterial *
