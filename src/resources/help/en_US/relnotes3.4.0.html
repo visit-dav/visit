@@ -73,6 +73,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>VisIt's Blueprint reader has been enhanced so related high order volume fraction fields from a <i>matset</i> are grouped into a material that can be used with the FilledBoundary plot. The high order material data fields are refined through MFEM LOR, whose refinement level can be controlled with the <i>MultiresControl</i> operator.</li>
   <li>HDF 4 based readers were removed: Cosmos, RAGE, ZeusMP</li>
   <li>HDF 4 support in the Enzo reader was removed</li>
+  <li>VisIt's Blueprint reader now supports materials with material numbers that do NOT fall in the range [0, N), where N is the number of materials.</li>
 </ul>
 
 <a name="Plot_changes"></a>
