@@ -9,7 +9,7 @@
 #  Date:       30 August 2023
 #
 # ----------------------------------------------------------------------------
-RequiredDatabasePlugin("ExtrudeStacked_Tester")
+RequiredDatabasePlugin("VTK")
 
 # For local testing using the CLI
 
