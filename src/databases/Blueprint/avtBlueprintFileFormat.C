@@ -1061,6 +1061,10 @@ avtBlueprintFileFormat::AddBlueprintMeshAndFieldMetadata(avtDatabaseMetaData *md
 // Modifications:
 //   Brad Whitlock, Tue May 23 16:04:30 PDT 2023
 //   Added some special handling if the materials are HO.
+// 
+//   Justin Privitera, Tue Sep 19 11:36:45 PDT 2023
+//   No longer assume material ids will be in the range [0, N) and no longer
+//   sort the names before sending to avtMaterialMetaData.
 //
 // ****************************************************************************
 void
@@ -1119,44 +1123,13 @@ avtBlueprintFileFormat::AddBlueprintMaterialsMetadata(avtDatabaseMetaData *md,
             BP_PLUGIN_INFO("material map " << n_mset["material_map"].to_yaml());
         
             NodeConstIterator itr = n_mset["material_map"].children();
-
-            // construct material map in matset order
-            // NOTE: This assumes ids are [0,N)
-            // Node &mid_to_name = m_matset_info[mesh_matset_name]["material_ids_to_name"];
-
-            // while (itr.has_next())
-            // {
-            //     const Node &curr_mat = itr.next();
-            //     mid_to_name.append();
-            // }
-
-            // std::map<int, std::string> mids_to_name;
-
-            // itr.to_front();
             while (itr.has_next())
             {
                 const Node &curr_mat = itr.next();
-                int32 mat_id = curr_mat.to_int32();
-                // mid_to_name[mat_id] = itr.name();
-
-                m_matset_info[mesh_matset_name]["matnames"][itr.name()] = mat_id;
-
-                // mids_to_name[mat_id] = itr.name();
+                const int32 mat_id = curr_mat.to_int32();
+                const std::string matname = itr.name();
+                m_matset_info[mesh_matset_name]["matnames"][matname] = mat_id;
             }
-
-            // for (const auto & mapitem : mids_to_name)
-            //     m_matset_info[mesh_matset_name]["matnames"][mapitem.second] = mapitem.first;
-
-            // // // now create a material map where the child order matches
-            // // // the id order
-            // itr = mid_to_name.children();
-            // while (itr.has_next())
-            // {
-            //     itr.next();
-            //     std::string mat_name = itr.node().as_string();
-            //     int mat_id = itr.index();
-            //     m_matset_info[mesh_matset_name]["matnames"][mat_name] = mat_id;
-            // }
         }
         else // "materials" case, old path
         {
@@ -1173,8 +1146,8 @@ avtBlueprintFileFormat::AddBlueprintMaterialsMetadata(avtDatabaseMetaData *md,
             }
         }
 
-        // get matnames vec in TODO sorted order.
-        std::vector<string>  matnames = m_matset_info[mesh_matset_name]["matnames"].child_names();
+        // get matnames vec. No need to sort
+        std::vector<string> matnames = m_matset_info[mesh_matset_name]["matnames"].child_names();
 
         // If the materials were HO then we may need to add a "free" material
         // to the list.

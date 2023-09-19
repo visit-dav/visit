@@ -434,7 +434,6 @@ avtMaterial::avtMaterial(int nMats,
 {
     int i;
     vector<bool> matUsed(nMats+1, false);
-
     for (i = 0 ; i < nzon ; i++)
     {
         if (ml[i] >= 0)
@@ -460,8 +459,8 @@ avtMaterial::avtMaterial(int nMats,
 //      nMats      The number of materials in mats.
 //      TODO
 //
-//  Programmer: TODO
-//  Creation:   TODO
+//  Programmer: Justin Privitera
+//  Creation:   09/19/23
 //
 //  Modifications:
 //
