@@ -2306,6 +2306,11 @@ avtBlueprintFileFormat::GetMaterial(int domain,
                             n_matset);
 
         std::vector<std::string> matnames = n_matset["matnames"].child_names();
+        // package up char ptrs
+        std::vector<const char *> matnames_ptrs;
+        for (const auto &matname : matnames)
+            matnames_ptrs.push_back(matname.c_str());
+        auto names = const_cast<char **>(matnames_ptrs.data());
 
         // use to_silo util to convert from bp to the mixslot rep
         // that silo and visit use
@@ -2371,17 +2376,22 @@ avtBlueprintFileFormat::GetMaterial(int domain,
             mix_vf = n_silo_matset["mix_vf_float"].as_float_ptr();
         }
 
-        avtMaterial *mat = new avtMaterial(nmats,         // The number of materials in mats.
-                                           matnames,      // material names
-                                           matnos.data(), // material numbers
-                                           nzones,        // number of zones (len of matlist)
-                                           matlist,       // matlist
-                                           mix_len,       // length of mix arrays
-                                           mix_mat,       // mix_mat array
-                                           mix_next,      // mix_next array
-                                           NULL,          // mix_zone array (OPTIONAL)
-                                           mix_vf         // mix_vf array
-                                           );
+        const std::string domain_name = std::to_string(domain);
+
+        avtMaterial *mat = new avtMaterial(nmats,               // The number of materials
+                                           matnos.data(),       // material numbers
+                                           names,               // material names
+                                           1,                   // number of dimensions
+                                           &nzones,             // pointer to dimensions
+                                           0,                   // major order. row major is 0
+                                           matlist,             // matlist
+                                           mix_len,             // length of mix arrays
+                                           mix_mat,             // mix_mat array
+                                           mix_next,            // mix_next array
+                                           NULL,                // mix_zone array (OPTIONAL)
+                                           mix_vf,              // mix_vf array
+                                           domain_name.c_str(), // domain name
+                                           0);                  // allow mat0
 
         return mat;
     }

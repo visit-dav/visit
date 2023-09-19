@@ -452,65 +452,6 @@ avtMaterial::avtMaterial(int nMats,
 
 
 // ****************************************************************************
-//  Method: avtMaterial constructor
-//
-//  Arguments:
-//      nMats      The number of materials in mats.
-//      mats       A vector of strings containing material names.
-//      matnos     A list of material numbers.
-//      nzon       The number of zones.
-//      ml         The material list.
-//      mixl       The mix_len.
-//      mixm       The mix_mat.
-//      mixz       The mix_zone.
-//      mixv       The mix_vf.
-//
-//  Programmer: Justin Privitera
-//  Creation:   09/19/23
-//
-//  Modifications:
-//
-// ****************************************************************************
-
-avtMaterial::avtMaterial(int nMats,
-                         const vector<string> &mats,
-                         const int *matnos,
-                         int nzon,
-                         const int *ml,
-                         int mixl,
-                         const int *mixm,
-                         const int *mixn,
-                         const int *mixz,
-                         const float *mixv)
-{
-    int timerHandle = visitTimer->StartTimer();
-    int i;
-    vector<bool> matUsed(nMats+1, false);
-
-    //
-    // Translate the arbitrarily numbered material lists to 0 -> n-1
-    //
-    int *newml   = new int[nzon];
-    int *newmixm = new int[mixl];
-    RenumberMaterialsZeroToNminusOne(nMats, matnos,
-                                     nzon, ml,
-                                     mixl, mixm,
-                                     newml, newmixm,
-                                     matUsed,
-                                     NULL, 0);
-
-    int nActualMats = (matUsed[nMats] ? nMats+1 : nMats);
-
-    Initialize(nActualMats, mats, mats, matUsed, nzon, 1, &nzon, 0, newml, mixl,
-               newmixm, mixn, mixz, mixv);
-    delete[] newml;
-    delete[] newmixm;
-
-    visitTimer->StopTimer(timerHandle, "Constructing avtMaterial object");
-}
-
-
-// ****************************************************************************
 //  Method: avtMaterial constructor for constructing materials from lists of
 //          zones containing them cleanly and/or partially
 //
