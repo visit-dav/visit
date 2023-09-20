@@ -8,7 +8,13 @@
 #  Programmer: Allen Sanderson
 #  Date:       30 August 2023
 #
+#  Modifications:
+#    Kathleen Biagas, Wed Sep 20, 2023
+#    Changed SetLocalView to retrieve the view via GetView3D() and only
+#    change the viewNormal and viewUp, so that test images are larger.
+#
 # ----------------------------------------------------------------------------
+
 RequiredDatabasePlugin("VTK")
 
 # For local testing using the CLI
@@ -35,24 +41,9 @@ RequiredDatabasePlugin("VTK")
 def SetLocalView():
   ResetView()
   #
-  View3DAtts = View3DAttributes()
+  View3DAtts = GetView3D()
   View3DAtts.viewNormal = (0, -1, 0)
-  View3DAtts.focus = (5, 0.5, 13)
   View3DAtts.viewUp = (0, 0, 1)
-  View3DAtts.viewAngle = 30
-  View3DAtts.parallelScale = 13.9374
-  View3DAtts.nearPlane = -27.8747
-  View3DAtts.farPlane = 27.8747
-  View3DAtts.imagePan = (0, 0)
-  View3DAtts.imageZoom = 1
-  View3DAtts.perspective = 0
-  View3DAtts.eyeAngle = 2
-  View3DAtts.centerOfRotationSet = 0
-  View3DAtts.centerOfRotation = (5, 0.5, 13)
-  View3DAtts.axis3DScaleFlag = 0
-  View3DAtts.axis3DScales = (1, 1, 1)
-  View3DAtts.shear = (0, 0, 1)
-  View3DAtts.windowValid = 1
   SetView3D(View3DAtts)
 
 # Open the database here and add a plot.
