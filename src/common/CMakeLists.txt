@@ -93,7 +93,7 @@ endif()
 
 visit_append_list(NAME visitcommon_DEPENDS ITEMS ${ZLIB_LIBRARY})
 
-blt_add_library(
+visit_add_library(
     NAME       visitcommon
     SOURCES    ${visitcommon_SOURCES}
     INCLUDES   ${visitcommon_INCLUDES}
@@ -105,7 +105,3 @@ endif()
 
 visit_install_export_targets(visitcommon)
 
-unset(visitcommon_SOURCES CACHE)
-unset(visitcommon_INCLUDES CACHE)
-unset(visitcommon_DEPENDS CACHE)
-unset(visitcommon_FEATURES CACHE)

@@ -253,3 +253,53 @@ macro(visit_append_list)
     set(${arg_NAME} ${${arg_NAME}} ${arg_ITEMS} CACHE STRING "" FORCE)
 endmacro()
 
+##############################################################################
+# Adds a library target. Wrapper around blt_add_library so that CACHE vars
+# possibly created by visit_append_list for forming SOURCES/INCLUDES, etc
+# can be unset.
+#
+# ARGUMENTS:
+#    NAME         library name               REQUIRED
+#    SOURCES      [source1 [source2 ...]]    REQUIRED
+#    INCLUDES     [dir1 [dir2 ...]]          OPTIONAL
+#    DEFINES      [define1 [define2 ...]]    OPTIONAL
+#    DEPENDS      [dep1 ...]                 OPTIONAL
+#    OUTPUT_NAME  [name]                     OPTIONAL
+#    FOLDER       [name])                    OPTIONAL
+#
+##############################################################################
+
+macro(visit_add_library)
+    set(options)
+    set(singleValueArgs NAME OUTPUT_NAME FOLDER)
+    set(multiValueArgs SOURCES INCLUDES DEFINES DEPENDS)
+
+    # parse the arguments
+    cmake_parse_arguments(arg
+        "${options}" "${singleValueArgs}" "${multiValueArgs}" ${ARGN} )
+
+    # Sanity checks
+    if(NOT arg_NAME)
+        message(FATAL_ERROR "visit_add_library() must be called with argument NAME <name>")
+    endif()
+
+    if (NOT arg_SOURCES)
+        message(FATAL_ERROR "visit_add_library(NAME ${arg_NAME} ...) called with no given sources")
+    endif()
+
+    blt_add_library(
+        NAME       ${arg_NAME}
+        SOURCES    ${arg_SOURCES}
+        INCLUDES   ${arg_INCLUDES}
+        DEFINES    ${arg_DEFINES}
+        DEPENDS_ON ${arg_DEPENDS}
+        FOLDER     ${arg_FOLDER})
+
+    # vars that may have been created by calls to visit_append_list
+    unset(${arg_NAME}_SOURCES CACHE)
+    unset(${arg_NAME}_INCLUDES CACHE)
+    unset(${arg_NAME}_DEFINES CACHE)
+    unset(${arg_NAME}_DEPENDS CACHE)
+    unset(${arg_NAME}_FEATURES CACHE)
+endmacro()
+

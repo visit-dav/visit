@@ -13,7 +13,7 @@ else()
     set(vtklibs VTK::CommonCore)
 endif()
 
-blt_add_library(
+visit_add_library(
     NAME       avtmath
     SOURCES    avtFactorial.C
                avtHermitePolynomial.C

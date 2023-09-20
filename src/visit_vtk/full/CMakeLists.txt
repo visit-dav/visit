@@ -50,7 +50,7 @@ else()
 endif()
 
 
-blt_add_library(
+visit_add_library(
     NAME        visit_vtk
     SOURCES     InitVTK.C
                 vtkAxisDepthSort.C

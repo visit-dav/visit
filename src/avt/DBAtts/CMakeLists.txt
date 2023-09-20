@@ -19,14 +19,11 @@
 add_subdirectory(MetaData)
 add_subdirectory(SIL)
 
-blt_add_library(
+visit_add_library(
     NAME       avtdbatts
     SOURCES    ${avtdbatts_SOURCES}
     INCLUDES   ${avtdbatts_INCLUDES}
     DEPENDS_ON visitcommon)
-
-unset(avtdbatts_SOURCES CACHE)
-unset(avtdbatts_INCLUDES CACHE)
 
 visit_install_export_targets(avtdbatts)
 

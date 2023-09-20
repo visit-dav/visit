@@ -19,7 +19,7 @@ else()
     set(vtklibs VTK::CommonCore VTK::FiltersCore VTK::IOCore VTK::IOLegacy)
 endif()
 
-blt_add_library(
+visit_add_library(
     NAME    lightweight_visit_vtk
 
     SOURCES  ClipCasesHex.C
