@@ -265,6 +265,7 @@ endmacro()
 #    DEFINES      [define1 [define2 ...]]    OPTIONAL
 #    DEPENDS      [dep1 ...]                 OPTIONAL
 #    OUTPUT_NAME  [name]                     OPTIONAL
+#    FEATURES     [feat1 [feat2 ...]]        OPTIONAL
 #    FOLDER       [name])                    OPTIONAL
 #
 ##############################################################################
@@ -272,7 +273,7 @@ endmacro()
 macro(visit_add_library)
     set(options)
     set(singleValueArgs NAME OUTPUT_NAME FOLDER)
-    set(multiValueArgs SOURCES INCLUDES DEFINES DEPENDS)
+    set(multiValueArgs SOURCES INCLUDES DEFINES DEPENDS FEATURES)
 
     # parse the arguments
     cmake_parse_arguments(arg
@@ -295,6 +296,9 @@ macro(visit_add_library)
         DEPENDS_ON ${arg_DEPENDS}
         FOLDER     ${arg_FOLDER})
 
+    if (arg_FEATURES)
+        target_compile_features(${arg_NAME} PRIVATE ${arg_FEATURES})
+    endif()
     # vars that may have been created by calls to visit_append_list
     unset(${arg_NAME}_SOURCES CACHE)
     unset(${arg_NAME}_INCLUDES CACHE)

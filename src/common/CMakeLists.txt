@@ -97,11 +97,8 @@ visit_add_library(
     NAME       visitcommon
     SOURCES    ${visitcommon_SOURCES}
     INCLUDES   ${visitcommon_INCLUDES}
-    DEPENDS_ON ${visitcommon_DEPENDS})
-
-if(visitcommon_FEATURES)
-    target_compile_features(visitcommon PRIVATE ${visitcommon_FEATURES})
-endif()
+    DEPENDS_ON ${visitcommon_DEPENDS}
+    FEATURES   ${visitcommon_FEATURES})
 
 visit_install_export_targets(visitcommon)
 
