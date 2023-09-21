@@ -911,8 +911,6 @@ avtVariableLegend::ChangeFontHeight(double fh)
 void                          
 avtVariableLegend::SetNumTicks(int nt)
 {
-cerr << "avtVariableLegend::SetNumTicks" << endl;
-cerr << "    min,max: " << min << ", " << max << endl;
     numTicks = nt;
     if (min != max)
         sBar->SetNumberOfLabels(numTicks);
