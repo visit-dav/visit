@@ -1874,7 +1874,6 @@ QvisColorTableWindow::controlPointMoved(int index, float position)
               QString("\"") + currentColorTable + QString("\"") +
               tr(" is built-in. You cannot edit a built-in color table.");
         Error(tmp);
-        // TODO this looks super wrong
         spectrumBar->blockSignals(true);
         // This is overkill, but it gets the job done.
         const int num_ctrl_pts = ccpl->GetNumControlPoints();
