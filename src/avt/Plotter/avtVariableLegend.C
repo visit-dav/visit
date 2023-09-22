@@ -633,6 +633,9 @@ avtVariableLegend::SetColorBarVisibility(const bool val)
 //    Alister Maguire, Wed Jan 16 13:54:14 PST 2019
 //    Tell the lookup table to grey out nan values. 
 //
+//    Kathleen Biagas, Tue Sep 19, 2023
+//    Call 'SetMessage(NULL)' when not constant.
+//
 // ****************************************************************************
 
 void
@@ -646,12 +649,13 @@ avtVariableLegend::SetRange(double nmin, double nmax)
         //
         //  Set a message and don't build labels.
         //
-        SetMessage("Constant.");
+        SetMessage("Constant");
         sBar->SetNumberOfLabels(0);
         sBar->SetRange(min, max);
     }
     else if (min == FLT_MAX || max == -FLT_MAX )
     {
+        SetMessage(NULL);
         debug5 << "avtVariableLegend did not get valid range." << endl;
         //
         //  We didn't get good values for the range. 
@@ -660,6 +664,7 @@ avtVariableLegend::SetRange(double nmin, double nmax)
     }
     else 
     {
+        SetMessage(NULL);
         sBar->SetNumberOfLabels(numTicks);
         if (lut != NULL)
         {
