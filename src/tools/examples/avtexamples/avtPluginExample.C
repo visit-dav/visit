@@ -21,6 +21,7 @@
 #include <VisItException.h>
 #include <visitstream.h>
 
+#include <cstring>
 #include <string>
 #include <vector>
 

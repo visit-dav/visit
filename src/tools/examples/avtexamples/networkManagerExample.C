@@ -28,6 +28,7 @@
 #include <VisItException.h>
 #include <visitstream.h>
 
+#include <cstring>
 #include <string>
 #include <vector>
 
@@ -83,6 +84,7 @@ main(int argc, char *argv[])
     //
     // Create the network manager.
     //
+    cerr << "Creating the NetworkManager." << endl;
     NetworkManager *netmgr = new NetworkManager;
 
     netmgr->SetDatabasePluginManager(dbmgr);
