@@ -1875,7 +1875,12 @@ QvisColorTableWindow::controlPointMoved(int index, float position)
               tr(" is built-in. You cannot edit a built-in color table.");
         Error(tmp);
         spectrumBar->blockSignals(true);
-        // This is overkill, but it gets the job done.
+        // We go through every color control point and make sure
+        // it is synced with the spectrum bar. This is overkill.
+        // The reason we do this is because the provided control
+        // point index might not be the old index it had before,
+        // i.e. the order of the points may have changed. If that's
+        // the case, then we need to reset all just to be safe.
         const int num_ctrl_pts = ccpl->GetNumControlPoints();
         for (int i = 0; i < num_ctrl_pts; i ++)
         {
