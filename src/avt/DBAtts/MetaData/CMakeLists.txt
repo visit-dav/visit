@@ -46,27 +46,34 @@ foreach(obj_name ${METADATA_GEN_OBJECTS})
                        ${CMAKE_CURRENT_SOURCE_DIR})
 endforeach()
 
-target_sources(avtdbatts PRIVATE
-    avtArrayMetaData.C
-    avtBaseVarMetaData.C
-    avtCurveMetaData.C
-    avtDatabaseMetaData.C
-    avtDefaultPlotMetaData.C
-    avtExpressionTypeConversions.C
-    avtLabelMetaData.C
-    avtMaterialMetaData.C
-    avtMatSpeciesMetaData.C
-    avtMeshMetaData.C
-    avtScalarMetaData.C
-    avtSimulationCommandSpecification.C
-    avtSimulationInformation.C
-    avtSpeciesMetaData.C
-    avtSubsetsMetaData.C
-    avtSymmetricTensorMetaData.C
-    avtTensorMetaData.C
-    avtTypes.C
-    avtVarMetaData.C
-    avtVectorMetaData.C)
 
-target_include_directories(avtdbatts PUBLIC .)
+# add to the sources list
+visit_append_list(
+    NAME  avtdbatts_SOURCES
+    ITEMS ${CMAKE_CURRENT_SOURCE_DIR}/avtArrayMetaData.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtBaseVarMetaData.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtCurveMetaData.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtDatabaseMetaData.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtDefaultPlotMetaData.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtExpressionTypeConversions.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtLabelMetaData.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtMaterialMetaData.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtMatSpeciesMetaData.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtMeshMetaData.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtScalarMetaData.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtSimulationCommandSpecification.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtSimulationInformation.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtSpeciesMetaData.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtSubsetsMetaData.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtSymmetricTensorMetaData.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtTensorMetaData.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtTypes.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtVarMetaData.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtVectorMetaData.C)
+
+# add to the includes list
+visit_append_list(
+    NAME  avtdbatts_INCLUDES
+    ITEMS $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+          $<INSTALL_INTERFACE:${VISIT_INSTALLED_VERSION_INCLUDE}/visit/include/avt/DBatts/MetaData>)
 

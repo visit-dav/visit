@@ -7,17 +7,21 @@
 #
 #****************************************************************************
 
-target_sources(avtdbatts PRIVATE
-    avtSIL.C
-    avtSILArray.C
-    avtSILCollection.C
-    avtSILEnumeratedNamespace.C
-    avtSILMatrix.C
-    avtSILNamespace.C 
-    avtSILRangeNamespace.C
-    avtSILRestriction.C
-    avtSILRestrictionTraverser.C
-    avtSILSet.C)
+visit_append_list(
+    NAME  avtdbatts_SOURCES
+    ITEMS ${CMAKE_CURRENT_SOURCE_DIR}/avtSIL.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtSILArray.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtSILCollection.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtSILEnumeratedNamespace.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtSILMatrix.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtSILNamespace.C 
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtSILRangeNamespace.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtSILRestriction.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtSILRestrictionTraverser.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtSILSet.C)
 
-target_include_directories(avtdbatts PUBLIC .)
+visit_append_list(
+    NAME  avtdbatts_INCLUDES
+    ITEMS $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+          $<INSTALL_INTERFACE:${VISIT_INSTALLED_VERSION_INCLUDE}/visit/include/avt/DBatts/SIL>)
 

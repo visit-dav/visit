@@ -7,9 +7,13 @@
 #
 #****************************************************************************
 
-target_sources(visitcommon PRIVATE
-    InvalidColortableException.C
-    LibraryNotFoundException.C)
+visit_append_list(
+    NAME  visitcommon_SOURCES
+    ITEMS ${CMAKE_CURRENT_SOURCE_DIR}/InvalidColortableException.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/LibraryNotFoundException.C)
 
-target_include_directories(visitcommon PUBLIC .)
+visit_append_list(
+    NAME  visitcommon_INCLUDES
+    ITEMS $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+          $<INSTALL_INTERFACE:${VISIT_INSTALLED_VERSION_INCLUDE}/visit/common/Exceptions/Plotter>)
 

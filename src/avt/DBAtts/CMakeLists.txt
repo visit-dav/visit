@@ -16,13 +16,14 @@
 #
 #****************************************************************************
 
-add_library(avtdbatts)
-
 add_subdirectory(MetaData)
 add_subdirectory(SIL)
 
-target_link_libraries(avtdbatts visitcommon)
-target_include_directories(avtdbatts PUBLIC ${VISIT_COMMON_INCLUDES})
+visit_add_library(
+    NAME       avtdbatts
+    SOURCES    ${avtdbatts_SOURCES}
+    INCLUDES   ${avtdbatts_INCLUDES}
+    DEPENDS_ON visitcommon)
 
-VISIT_INSTALL_TARGETS(avtdbatts)
+visit_install_export_targets(avtdbatts)
 

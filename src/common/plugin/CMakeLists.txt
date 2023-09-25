@@ -7,15 +7,19 @@
 #
 #****************************************************************************
 
-target_sources(visitcommon PRIVATE
-    DatabasePluginInfo.C
-    DatabasePluginManager.C
-    InvalidDirectoryException.C
-    InvalidPluginException.C
-    OperatorPluginManager.C
-    PlotPluginManager.C
-    PluginBroadcaster.C
-    PluginManager.C)
+visit_append_list(
+    NAME  visitcommon_SOURCES
+    ITEMS ${CMAKE_CURRENT_SOURCE_DIR}/DatabasePluginInfo.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/DatabasePluginManager.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/InvalidDirectoryException.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/InvalidPluginException.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/OperatorPluginManager.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/PlotPluginManager.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/PluginBroadcaster.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/PluginManager.C)
 
-target_include_directories(visitcommon PUBLIC .)
+visit_append_list(
+    NAME  visitcommon_INCLUDES
+    ITEMS $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+          $<INSTALL_INTERFACE:${VISIT_INSTALLED_VERSION_INCLUDE}/visit/common/plugin>)
 
