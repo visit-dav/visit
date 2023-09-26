@@ -179,10 +179,11 @@ protected:
 private slots:
     void resizeColorTable(int);
     void setColorTableType(int);
+    void colorValueChanged(int rgba, int value);
     void redValueChanged(int r);
     void greenValueChanged(int g);
     void blueValueChanged(int b);
-    void alphaValueChanged(int b);
+    void alphaValueChanged(int a);
     void activateDiscreteColor(const QColor &, int);
     void activateContinuousColor(int index);
     void chooseContinuousColor(int, const QPoint &);
