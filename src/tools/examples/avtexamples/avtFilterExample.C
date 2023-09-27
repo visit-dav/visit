@@ -42,7 +42,7 @@ main(int argc, char *argv[])
     std::string dataDir("/usr/gapps/visit/data");
     for(int i = 1; i < argc; ++i)
     {
-        if(strcmp(argv[i], "-datadir") == 0 && (i+1) < argc)
+        if(std::strcmp(argv[i], "-datadir") == 0 && (i+1) < argc)
         {
             dataDir = std::string(argv[i+1]);
             break;
