@@ -181,7 +181,6 @@ ${VISIT_SOURCE_DIR}/avt/VisWindow/Proxies
 ${VISIT_SOURCE_DIR}/avt/VisWindow/Tools
 ${VISIT_SOURCE_DIR}/avt/VisWindow/VisWindow
 ${VISIT_SOURCE_DIR}/engine/main
-${VTKm_INCLUDE_DIRS}
 ${VTK_INCLUDE_DIRS}
 )
 

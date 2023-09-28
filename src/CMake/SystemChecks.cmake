@@ -11,6 +11,9 @@
 #   Eric Brugger, Tue Jul 25 11:23:55 EDT 2023
 #   Switched pthreads check to modern usage using find_package.
 #
+#   Kathleen Biagas, Tue Sep 26, 2023
+#   Removed use of CMakeBackwardCompatibility.
+#
 #******************************************************************************
 
 function(visit_check_isfinite_exists VAR)
@@ -73,8 +76,6 @@ endfunction()
 
 
 include(${CMAKE_ROOT}/Modules/CheckIncludeFiles.cmake)
-include(${CMAKE_ROOT}/Modules/CMakeBackwardCompatibilityC.cmake)
-include(${CMAKE_ROOT}/Modules/CMakeBackwardCompatibilityCXX.cmake)
 include(${CMAKE_ROOT}/Modules/CheckTypeSize.cmake)
 include(${CMAKE_ROOT}/Modules/CheckFunctionExists.cmake)
 include(${CMAKE_ROOT}/Modules/CheckSymbolExists.cmake)
