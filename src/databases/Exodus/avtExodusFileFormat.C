@@ -3185,7 +3185,7 @@ ConvertGlobalElementIdsToInt(vtkDataArray *da)
 static vtkDataArray *
 EnsureGlobalElementIdsAreInt(vtkDataArray *da)
 {
-#if VISIT_VERSION_GE(3,4,0)
+#if VISIT_VERSION_GE(3,5,0)
 #error EITHER FIX GLOBAL ELEMENT ID BASED GHOST-ZONE COMM OR UPDATE THIS VERSION TRIGGER
 #endif
 
