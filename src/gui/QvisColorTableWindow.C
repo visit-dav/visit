@@ -2439,6 +2439,10 @@ QvisColorTableWindow::tagTableItemSelected(QTreeWidgetItem *item, int column)
 // 
 //    Justin Privitera, Wed Jul 27 12:23:56 PDT 2022
 //    Error on edit of a builtin color table and reset original values.
+// 
+//    Justin Privitera, Thu Sep 28 13:33:44 PDT 2023
+//    Remove the Discrete tag if changing to Continuous, and vice versa.
+//    Do proper bookkeeping.
 //
 // ****************************************************************************
 
