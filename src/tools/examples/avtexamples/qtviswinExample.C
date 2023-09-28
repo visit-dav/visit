@@ -8,6 +8,7 @@
 
 #include <QVTKOpenGLWidget.h>
 
+#include <cstring>
 #include <iostream>
 #include <string>
 #include <vector>
@@ -110,7 +111,7 @@ vtkVisItGraphicsFactory::vtkVisItGraphicsFactory()
 }
 
 void
-AddPlot(VisWindow *visWindow)
+AddPlot(VisWindow *visWindow, string dataDir)
 {
     //
     // Create the database plugin manager.
@@ -126,7 +127,8 @@ AddPlot(VisWindow *visWindow)
     // Instantiate the database.
     //
     cerr << "Opening the file." << endl;
-    const char *filename = "/usr/gapps/visit/data/rect2d.silo";
+    string fn = dataDir + "/rect2d.silo";
+    const char*filename(fn.c_str());
     avtDatabase *db = NULL;
     vector<string> pluginList;
     TRY
@@ -239,6 +241,16 @@ AddPlot(VisWindow *visWindow)
 int
 main(int argc, char **argv)
 {
+    string dataDir("/usr/gapps/visit/data");
+    for(int i = 1; i < argc; ++i)
+    {
+        if(std::strcmp(argv[i], "-datadir") == 0 && (i+1) < argc)
+        {
+            dataDir = string(argv[i+1]);
+            break;
+        }
+    }
+
     int retval = 0;
 
     // Initialize VTK debugstream. From InitVTKLite.
@@ -276,7 +288,7 @@ main(int argc, char **argv)
     visWindow->Show();
     visWindow->Raise();
 
-    AddPlot(visWindow);
+    AddPlot(visWindow, dataDir);
 
     retval = mainApp->exec();
 
