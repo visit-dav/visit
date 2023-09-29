@@ -105,6 +105,7 @@ avtDatasetSink::SetTypedInput(avtDataObject_p in)
 avtDataObject_p
 avtDatasetSink::GetInput(void)
 {
+    // std::cout << "avtDatasetSink::GetInput" << std::endl;
     avtDataObject_p rv;
     CopyTo(rv, input);
     return rv;

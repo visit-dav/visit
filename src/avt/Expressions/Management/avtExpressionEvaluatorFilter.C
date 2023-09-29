@@ -35,6 +35,9 @@
 #include <NoInputException.h>
 #include <TimingsManager.h>
 
+#include <chrono>
+using namespace std::chrono;
+
 using std::vector;
 using std::set;
 using std::string;
@@ -383,6 +386,7 @@ avtExpressionEvaluatorFilter::AdditionalPipelineFilters(void)
 avtContract_p
 avtExpressionEvaluatorFilter::ModifyContract(avtContract_p spec)
 {
+    std::cout << "avtExpressionEvaluatorFilter::ModifyContract" << std::endl;
     pipelineState.Clear();
 
     avtContract_p rv = spec;
@@ -433,6 +437,7 @@ avtExpressionEvaluatorFilter::ModifyContract(avtContract_p spec)
         pipelineState.SetDataObject(NULL);
 
     int num_recursive_checks = 0;
+
     while (!candidates.empty())
     {
         std::set<string>::iterator front = candidates.begin();
@@ -528,10 +533,17 @@ avtExpressionEvaluatorFilter::ModifyContract(avtContract_p spec)
     }
     expr_list_fromLastTime = expr_list;
 
+    std::cout << "\tcheckpoint 2/4" << std::endl;
+
     // Take the list of expressions and make the filters for them.
     int numFiltersLastTime = 0;
     while (createFilters && !expr_list.empty())
     {
+        auto start = high_resolution_clock::now(); // Start time
+        static int bungus = 1;
+        std::cout << "we are doing iteration " << bungus << std::endl;
+        bungus ++;
+
         std::vector<string>::iterator back = expr_list.end() - 1;
         string var = *back;
         expr_list.erase(back);
@@ -570,7 +582,13 @@ avtExpressionEvaluatorFilter::ModifyContract(avtContract_p spec)
         }
         f->SetOutputVariableName(var.c_str());
         numFiltersLastTime = (int)filters.size();
+
+        auto stop = high_resolution_clock::now(); // Stop time
+        auto duration = duration_cast<milliseconds>(stop - start); // Duration
+        std::cout << "while loop iteration took " << duration.count() << " ms" << std::endl;
     }
+
+    std::cout << "\tcheckpoint 5/8" << std::endl;
 
     // Make sure we have real variables to pass to the database.
     if (real_list.empty())
@@ -585,6 +603,8 @@ avtExpressionEvaluatorFilter::ModifyContract(avtContract_p spec)
     //
     // Now that we know the real variables, re-set up the data specification.
     //
+    std::cout << "\tcheckpoint 3/4" << std::endl;
+
 
     // Check if the original variable is in our "real" list.
     std::set<string>::iterator it;

@@ -198,24 +198,32 @@ avtFilter::Update(avtContract_p contract)
 {
     debug1 << "Entered update for " << GetType() << endl;
 
+    std::cout << "Entered update for " << GetType() << std::endl;
+
     bool debug_dump = avtDebugDumpOptions::DumpEnabled();
     
     CheckAbort();
+    std::cout << "CheckAbort();" << std::endl;
 
     //
     // If we don't have an input, there isn't much we can do.
     //
     avtDataObject_p input = GetInput();
+    std::cout << "avtDataObject_p input = GetInput();" << std::endl;
     if (*input == NULL)
     {
+        std::cout << "*input == NULL" << std::endl;
         EXCEPTION0(NoInputException);
     }
 
     if (debug_dump)
     {
+        std::cout << "debug_dump" << std::endl;
         InitializeWebpage();
         DumpContract(contract, "input");
     }
+
+    std::cout << "move on" << std::endl;
 
     //
     // By using meta-data, we can potentially reduce the amount of data that
@@ -223,11 +231,14 @@ avtFilter::Update(avtContract_p contract)
     // opportunity to reduce the data we are interested in.
     //
     avtContract_p newSpec = ModifyContractAndDoBookkeeping(contract);
+    std::cout << "avtContract_p newSpec = ModifyContractAndDoBookkeeping(contract);" << std::endl;
 
     if (debug_dump)
         DumpContract(newSpec, "output");
+    std::cout << "DumpContract(newSpec, 'output');" << std::endl;
 
     bool modifiedUpstream = UpdateInput(newSpec);
+    std::cout << "bool modifiedUpstream = UpdateInput(newSpec);" << std::endl;
 
     bool re_execute = modifiedUpstream || modified;
     if (re_execute)
@@ -336,6 +347,7 @@ avtFilter::Update(avtContract_p contract)
     }
 
     debug1 << "Done Updating " << GetType() << endl;
+    std::cout << "Done Updating " << GetType() << std::endl;
     return re_execute;
 }
 
@@ -378,6 +390,7 @@ avtFilter::Update(avtContract_p contract)
 avtContract_p
 avtFilter::ModifyContractAndDoBookkeeping(avtContract_p contract)
 {
+    std::cout << "avtFilter::ModifyContractAndDoBookkeeping" << std::endl;
     int   i;
 
     if (contract->DoingOnDemandStreaming())
@@ -390,14 +403,20 @@ avtFilter::ModifyContractAndDoBookkeeping(avtContract_p contract)
     // Some derived types need to examine a contract as it goes up.
     //
     ExamineContract(contract);
+    std::cout << "ExamineContract(contract);" << std::endl;
 
+    std::cout << "time to modify contract" << std::endl;
     avtContract_p newcontract = ModifyContract(contract);
+    std::cout << "avtContract_p newcontract = ModifyContract(contract);" << std::endl;
     newcontract->AddFilter();
+    std::cout << "newcontract->AddFilter();" << std::endl;
     int additionalFilters = AdditionalPipelineFilters();
+    std::cout << "int additionalFilters = AdditionalPipelineFilters();" << std::endl;
     for (i = 0 ; i < additionalFilters ; i++)
     {
         newcontract->AddFilter();
     }
+    std::cout << "added filters" << std::endl;
 
     //
     // Allow our dynamic attributes to add any variables they may need, etc.
