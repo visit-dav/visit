@@ -2439,15 +2439,25 @@ QvisColorTableWindow::tagTableItemSelected(QTreeWidgetItem *item, int column)
 // 
 //    Justin Privitera, Wed Jul 27 12:23:56 PDT 2022
 //    Error on edit of a builtin color table and reset original values.
+// 
+//    Justin Privitera, Thu Sep 28 13:33:44 PDT 2023
+//    Remove the Discrete tag if changing to Continuous, and vice versa.
+//    Do proper bookkeeping.
 //
 // ****************************************************************************
 
 void
 QvisColorTableWindow::setColorTableType(int index)
 {
+    const int continuous = 0;
+    const int discrete = 1;
     ColorControlPointList *ccpl = GetDefaultColorControlPoints();
-    if(ccpl)
+    if (ccpl)
     {
+        // if nothing is changing
+        if (ccpl->GetDiscreteFlag() == (index == discrete))
+            return;
+
         // built-in CTs should not be editable
         if (ccpl->GetBuiltIn())
         {
@@ -2457,14 +2467,40 @@ QvisColorTableWindow::setColorTableType(int index)
                   tr(" is built-in. You cannot edit a built-in color table.");
             Error(tmp);
             colorTableTypeGroup->blockSignals(true);
-            colorTableTypeGroup->button(ccpl->GetDiscreteFlag()?1:0)->setChecked(true);
+            colorTableTypeGroup->button(ccpl->GetDiscreteFlag() ? discrete : continuous)->setChecked(true);
             colorTableTypeGroup->blockSignals(false);
             return;
         }
-        ccpl->SetDiscreteFlag(index == 1);
+
+        ccpl->SetDiscreteFlag(index == discrete);
+
+        // we don't want to use the addTagToColorTable or removeTagFromColorTable
+        // functions since they track tag changes, which we want to avoid here.
+        // The user is not changing the tags, they are changing the color table
+        // which affects what the tags ought to be.
+        auto swap_tag = [&](const std::string oldtag, const std::string newtag)
+        {
+            if (ccpl->HasTag(oldtag))
+            {
+                ccpl->RemoveTag(oldtag);
+                colorAtts->DecrementTagNumRefs(oldtag);
+            }
+            if (! ccpl->HasTag(newtag))
+            {
+                ccpl->AddTag(newtag);
+                colorAtts->IncrementTagNumRefs(newtag);
+            }
+        };
+        
+        if (index == discrete)
+            swap_tag("Continuous", "Discrete");
+        else // continuous
+            swap_tag("Discrete", "Continuous");
+        colorAtts->SelectTagChanges();
         colorAtts->SelectColorTables();
+        
         // When discrete set the smoothing to none so the legend is correct.
-        if(index == 1)
+        if (index == discrete)
           ccpl->SetSmoothing(ColorControlPointList::None);
         Apply();
     }
