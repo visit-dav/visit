@@ -540,26 +540,35 @@ avtExpressionEvaluatorFilter::ModifyContract(avtContract_p spec)
     while (createFilters && !expr_list.empty())
     {
         auto start = high_resolution_clock::now(); // Start time
-        static int bungus = 1;
-        std::cout << "we are doing iteration " << bungus << std::endl;
-        bungus ++;
+        static int iter_counter = 1;
+        std::cout << "\nwe are doing iteration " << iter_counter << std::endl;
+        iter_counter ++;
 
         std::vector<string>::iterator back = expr_list.end() - 1;
         string var = *back;
         expr_list.erase(back);
-       
+        
         // Get the expression tree again.  (We could save trees between the
         // first and second sections of the code.  It wouldn't save much
         // time, but would be cleaner.)
         avtExprNode *tree = dynamic_cast<avtExprNode*>
                                      (ParsingExprList::GetExpressionTree(var));
 
+        std::cout << "the expr is " << var << std::endl;
+        tree->PrintNode(std::cout);
+
+        // JUSTIN - this is the block that takes a super long time
+        auto create_filters_start = high_resolution_clock::now(); // Start time
         // Create the filters that the tree uses.  Put them into the
         // filters stack in pipelineState.
         tree->CreateFilters(&pipelineState);
         delete tree;
+        auto create_filters_stop = high_resolution_clock::now(); // Stop time
+        auto create_filters_duration = duration_cast<milliseconds>(create_filters_stop - create_filters_start); // Duration
+        std::cout << "\tcreate_filters took " << create_filters_duration.count() << " ms" << std::endl;
 
         vector<avtExpressionFilter*> &filters = pipelineState.GetFilters();
+
         avtExpressionFilter *f = NULL;
         if (filters.size() == (size_t)numFiltersLastTime)
         {
@@ -580,12 +589,13 @@ avtExpressionEvaluatorFilter::ModifyContract(avtContract_p spec)
         {
             f = filters.back();
         }
+        
         f->SetOutputVariableName(var.c_str());
         numFiltersLastTime = (int)filters.size();
 
         auto stop = high_resolution_clock::now(); // Stop time
         auto duration = duration_cast<milliseconds>(stop - start); // Duration
-        std::cout << "while loop iteration took " << duration.count() << " ms" << std::endl;
+        std::cout << "total loop iteration took " << duration.count() << " ms" << std::endl;
     }
 
     std::cout << "\tcheckpoint 5/8" << std::endl;
