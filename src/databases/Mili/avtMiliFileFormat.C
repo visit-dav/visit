@@ -3249,6 +3249,37 @@ avtMiliFileFormat::GetAuxiliaryData(const char *varName,
         df = vtkElementLabelArray::Destruct;
         return (void *)this->GetVar(ts, dom, varName);
     }
+    else if (strcmp(auxType, AUXILIARY_DATA_GLOBAL_NODE_IDS) == 0)
+    {
+        int meshId = ???;
+
+        int nNodes        = miliMetaData[meshId]->GetNumNodes(dom);
+        int numBlocks     = 0;
+        int *blockRanges  = NULL;
+        int *labelIds     = new int[nNodes];
+        int rval = mc_load_node_labels(dbid[dom], meshId, varName,
+                                       &numBlocks, &blockRanges, labelIds);
+        if (rval != OK)
+        {
+            debug1 << "MILI: mc_load_node_labels failed!\n";
+            numBlocks   = 0;
+            blockRanges = NULL;
+        }
+
+        vtkIntArray *rv = vtkIntArray::New();
+        rv->SetArray(labelIds, nNodes, 0);
+        rv->SetNumberOfComponents(1);
+
+        //
+        // Mili mallocs blockRanges using C style.
+        //
+        if (blockRanges != NULL)
+            free(blockRanges);
+        delete [] labelIds;
+
+        df = avtVariableCache::DestructVTKObject;
+        return (void *) rv;
+    }
     else if (strcmp(auxType, AUXILIARY_DATA_MATERIAL) == 0)
     {
         //
