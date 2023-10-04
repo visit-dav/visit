@@ -327,7 +327,6 @@ avtDatasetQuery::PostExecute()
 avtDataObject_p
 avtDatasetQuery::ApplyFilters(avtDataObject_p dob)
 {
-    std::cout << "avtDatasetQuery::ApplyFilters" << std::endl;
     std::vector<std::string>  secondaryVars;
     GetSecondaryVars( secondaryVars );
 
@@ -339,7 +338,6 @@ avtDatasetQuery::ApplyFilters(avtDataObject_p dob)
     }
     else
     {
-        std::cout << "else" << std::endl;
         avtContract_p orig_contract = dob->GetOriginatingSource()->
             GetGeneralContract();
 
@@ -352,27 +350,18 @@ avtDatasetQuery::ApplyFilters(avtDataObject_p dob)
         {
             newDS->SetTimestep(queryAtts.GetTimeStep());
         }
-        std::cout << "done timeVarying" << std::endl;
 
         for (size_t ii = 0 ; ii < secondaryVars.size() ; ii++)
         {
-            std::cout << "this loop is bad" << std::endl;
             newDS->AddSecondaryVariable( secondaryVars[ii].c_str() );
         }
-
-        std::cout << "done with loop" << std::endl;
 
         avtContract_p contract =
             new avtContract(newDS, queryAtts.GetPipeIndex());
 
-        std::cout << "new avtContract(newDS, queryAtts.GetPipeIndex());" << std::endl;
-
         avtDataObject_p rv;
-        std::cout << "avtDataObject_p rv;" << std::endl;
         CopyTo(rv, dob);
-        std::cout << "CopyTo(rv, dob);" << std::endl;
         rv->Update(contract);
-        std::cout << "rv->Update(contract);" << std::endl;
         return rv;
     }
 }

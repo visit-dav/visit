@@ -16,10 +16,6 @@
 #include <avtDataObjectWriter.h>
 #include <avtWebpage.h>
 
-#include <chrono>
-using namespace std::chrono;
-
-
 // ****************************************************************************
 //  Method: avtDataObjectInformation constructor
 //
@@ -78,18 +74,8 @@ avtDataObjectInformation::~avtDataObjectInformation()
 void
 avtDataObjectInformation::Copy(const avtDataObjectInformation &di)
 {
-   // JUSTIN - the problem is here
-   auto start = high_resolution_clock::now(); // Start time
     atts.Copy(di.atts);
-    auto stop = high_resolution_clock::now(); // Stop time
-    auto duration = duration_cast<milliseconds>(stop - start); // Duration
-    std::cout << "\t\tatts copying took " << duration.count() << " ms" << std::endl;
-
-    // auto start1 = high_resolution_clock::now(); // Start time
     validity.Copy(di.validity);
-    // auto stop1 = high_resolution_clock::now(); // Stop time
-    // auto duration1 = duration_cast<milliseconds>(stop1 - start1); // Duration
-    // std::cout << "\t\tvalidity copying took " << duration1.count() << " ms" << std::endl;
 }
 
 
