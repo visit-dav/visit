@@ -1049,7 +1049,6 @@ avtDataAttributes::Print(ostream &out)
 void
 avtDataAttributes::Copy(const avtDataAttributes &di)
 {
-    // auto start1 = high_resolution_clock::now(); // Start time    
     DestructSelf();
 
     SetTopologicalDimension(di.topologicalDimension);
@@ -1095,14 +1094,9 @@ avtDataAttributes::Copy(const avtDataAttributes &di)
     *(actualSpatial)            = *(di.actualSpatial);
     *(thisProcsActualSpatial)  = *(di.thisProcsActualSpatial);
 
-    // auto stop1 = high_resolution_clock::now(); // Stop time
-    // auto duration1 = duration_cast<milliseconds>(stop1 - start1); // Duration
-    // std::cout << "\t\t checkpoint 1 took " << duration1.count() << " ms" << std::endl;
-
-
     auto start2 = high_resolution_clock::now(); // Start time   
 
-    std::cout << "num vars " << di.variables.size() << std::endl;
+    // std::cout << "num vars " << di.variables.size() << std::endl;
 
     canUseThisProcsAsOriginalOrActual = di.canUseThisProcsAsOriginalOrActual;
 
@@ -1133,9 +1127,7 @@ avtDataAttributes::Copy(const avtDataAttributes &di)
 
     auto stop2 = high_resolution_clock::now(); // Stop time
     auto duration2 = duration_cast<milliseconds>(stop2 - start2); // Duration
-    std::cout << "\t\t checkpoint 2 took " << duration2.count() << " ms" << std::endl;
-
-    // auto start3 = high_resolution_clock::now(); // Start time   
+    // std::cout << "\t\t checkpoint 2 took " << duration2.count() << " ms" << std::endl;
 
     labels = di.labels;
     SetContainsGhostZones(di.GetContainsGhostZones());
@@ -1174,10 +1166,6 @@ avtDataAttributes::Copy(const avtDataAttributes &di)
     multiresCellSize = di.multiresCellSize;
     constructMultipleCurves = di.constructMultipleCurves;
     forceRemoveFacesBeforeGhosts = di.forceRemoveFacesBeforeGhosts;
-
-    // auto stop3 = high_resolution_clock::now(); // Stop time
-    // auto duration3 = duration_cast<milliseconds>(stop3 - start3); // Duration
-    // std::cout << "\t\t checkpoint 3 took " << duration3.count() << " ms" << std::endl;
 }
 
 

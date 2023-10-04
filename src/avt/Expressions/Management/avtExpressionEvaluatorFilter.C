@@ -386,7 +386,6 @@ avtExpressionEvaluatorFilter::AdditionalPipelineFilters(void)
 avtContract_p
 avtExpressionEvaluatorFilter::ModifyContract(avtContract_p spec)
 {
-    std::cout << "avtExpressionEvaluatorFilter::ModifyContract" << std::endl;
     pipelineState.Clear();
 
     avtContract_p rv = spec;
@@ -533,23 +532,17 @@ avtExpressionEvaluatorFilter::ModifyContract(avtContract_p spec)
     }
     expr_list_fromLastTime = expr_list;
 
-    std::cout << "\tcheckpoint 2/4" << std::endl;
-
     // Take the list of expressions and make the filters for them.
     int numFiltersLastTime = 0;
     while (createFilters && !expr_list.empty())
     {
-        auto start = high_resolution_clock::now(); // Start time
-        static int iter_counter = 1;
-        std::cout << "\nwe are doing iteration " << iter_counter << std::endl;
-        iter_counter ++;
+        // auto start = high_resolution_clock::now(); // Start time
+        // static int iter_counter = 1;
+        // std::cout << "\nwe are doing iteration " << iter_counter << std::endl;
+        // iter_counter ++;
 
         std::vector<string>::iterator back = expr_list.end() - 1;
         string var = *back;
-
-
-        std::cout << "var = " << var << std::endl;
-
         expr_list.erase(back);
         
         // Get the expression tree again.  (We could save trees between the
@@ -558,18 +551,15 @@ avtExpressionEvaluatorFilter::ModifyContract(avtContract_p spec)
         avtExprNode *tree = dynamic_cast<avtExprNode*>
                                      (ParsingExprList::GetExpressionTree(var));
 
-        std::cout << "the expr is " << var << std::endl;
-        tree->PrintNode(std::cout);
-
         // JUSTIN - this is the block that takes a super long time
-        auto create_filters_start = high_resolution_clock::now(); // Start time
+        // auto create_filters_start = high_resolution_clock::now(); // Start time
         // Create the filters that the tree uses.  Put them into the
         // filters stack in pipelineState.
         tree->CreateFilters(&pipelineState);
         delete tree;
-        auto create_filters_stop = high_resolution_clock::now(); // Stop time
-        auto create_filters_duration = duration_cast<milliseconds>(create_filters_stop - create_filters_start); // Duration
-        std::cout << "\tcreate_filters took " << create_filters_duration.count() << " ms" << std::endl;
+        // auto create_filters_stop = high_resolution_clock::now(); // Stop time
+        // auto create_filters_duration = duration_cast<milliseconds>(create_filters_stop - create_filters_start); // Duration
+        // std::cout << "\tcreate_filters took " << create_filters_duration.count() << " ms" << std::endl;
 
         vector<avtExpressionFilter*> &filters = pipelineState.GetFilters();
 
@@ -597,12 +587,10 @@ avtExpressionEvaluatorFilter::ModifyContract(avtContract_p spec)
         f->SetOutputVariableName(var.c_str());
         numFiltersLastTime = (int)filters.size();
 
-        auto stop = high_resolution_clock::now(); // Stop time
-        auto duration = duration_cast<milliseconds>(stop - start); // Duration
-        std::cout << "total loop iteration took " << duration.count() << " ms" << std::endl;
+        // auto stop = high_resolution_clock::now(); // Stop time
+        // auto duration = duration_cast<milliseconds>(stop - start); // Duration
+        // std::cout << "total loop iteration took " << duration.count() << " ms" << std::endl;
     }
-
-    std::cout << "\tcheckpoint 5/8" << std::endl;
 
     // Make sure we have real variables to pass to the database.
     if (real_list.empty())
@@ -617,8 +605,6 @@ avtExpressionEvaluatorFilter::ModifyContract(avtContract_p spec)
     //
     // Now that we know the real variables, re-set up the data specification.
     //
-    std::cout << "\tcheckpoint 3/4" << std::endl;
-
 
     // Check if the original variable is in our "real" list.
     std::set<string>::iterator it;

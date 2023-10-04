@@ -102,7 +102,7 @@ using std::string;
 void
 avtIntegerConstExpr::CreateFilters(ExprPipelineState *state)
 {
-    std::cout << "I am an avtIntegerConstExpr" << std::endl;
+    // std::cout << "I am an avtIntegerConstExpr" << std::endl;
     auto start = high_resolution_clock::now(); // Start time
     
     // auto start1 = high_resolution_clock::now(); // Start time    
@@ -140,7 +140,7 @@ avtIntegerConstExpr::CreateFilters(ExprPipelineState *state)
     auto state_data_object = state->GetDataObject();
     auto stop5 = high_resolution_clock::now(); // Stop time
     auto duration5 = duration_cast<milliseconds>(stop5 - start5); // Duration
-    std::cout << "\tavtIntegerConstExpr state get data object took " << duration5.count() << " ms" << std::endl;
+    // std::cout << "\tavtIntegerConstExpr state get data object took " << duration5.count() << " ms" << std::endl;
 
     auto start6 = high_resolution_clock::now(); // Start time  
     // Keep track of the current dataObject.
@@ -148,7 +148,7 @@ avtIntegerConstExpr::CreateFilters(ExprPipelineState *state)
     f->SetInput(state_data_object);
     auto stop6 = high_resolution_clock::now(); // Stop time
     auto duration6 = duration_cast<milliseconds>(stop6 - start6); // Duration
-    std::cout << "\tavtIntegerConstExpr f set input took " << duration6.count() << " ms" << std::endl;
+    // std::cout << "\tavtIntegerConstExpr f set input took " << duration6.count() << " ms" << std::endl;
 
     // auto start7 = high_resolution_clock::now(); // Start time  
     state->SetDataObject(f->GetOutput());
@@ -165,7 +165,7 @@ avtIntegerConstExpr::CreateFilters(ExprPipelineState *state)
 
     auto stop = high_resolution_clock::now(); // Stop time
     auto duration = duration_cast<milliseconds>(stop - start); // Duration
-    std::cout << "\tavtIntegerConstExpr took " << duration.count() << " ms" << std::endl;
+    // std::cout << "\tavtIntegerConstExpr took " << duration.count() << " ms" << std::endl;
 }
 
 // ****************************************************************************
