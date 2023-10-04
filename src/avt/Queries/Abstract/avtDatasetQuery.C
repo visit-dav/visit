@@ -106,29 +106,21 @@ avtDatasetQuery::~avtDatasetQuery()
 void
 avtDatasetQuery::PerformQuery(QueryAttributes *qA)
 {
-    std::cout << "avtDatasetQuery::PerformQuery" << std::endl;
     queryAtts = *qA;
 
-    std::cout << "Init();" << std::endl;
     Init();
 
-    std::cout << "UpdateProgress(0, 0);" << std::endl;
     UpdateProgress(0, 0);
     //
     // Allow derived types to apply any necessary filters.
     //
-    std::cout << "avtDataObject_p dob = ApplyFilters(GetInput());" << std::endl;
-    avtDataObject_p whatever = GetInput();
-
-    avtDataObject_p dob = ApplyFilters(whatever);
+    avtDataObject_p dob = ApplyFilters(GetInput());
 
     //
     // Reset the input so that we have access to the data tree.
     //
-    std::cout << "SetTypedInput(dob);" << std::endl;
     SetTypedInput(dob);
 
-    std::cout << "avtDataTree_p tree = GetInputDataTree();" << std::endl;
     avtDataTree_p tree = GetInputDataTree();
     int validInputTree = 0;
     totalNodes = 0;
@@ -146,7 +138,6 @@ avtDatasetQuery::PerformQuery(QueryAttributes *qA)
     }
 
     bool hadError = false;
-    std::cout << "PreExecute();" << std::endl;
     PreExecute();
     TRY
     {

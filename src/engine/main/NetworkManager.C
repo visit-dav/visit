@@ -4310,7 +4310,6 @@ NetworkManager::Query(const std::vector<int> &ids, QueryAttributes *qa)
     TRY
     {
 
-        std::cout << "avtQueryFactory::Instance()->CreateQuery(qa)" << std::endl;
         query = avtQueryFactory::Instance()->CreateQuery(qa);
 
         if (query == NULL)
@@ -4360,9 +4359,7 @@ NetworkManager::Query(const std::vector<int> &ids, QueryAttributes *qa)
 
             query->SetInput(queryInput);
             int queryTimer = visitTimer->StartTimer();
-            std::cout << "query->PerformQuery(qa);" << std::endl;
             query->PerformQuery(qa);
-            std::cout << "completed query" << std::endl;
             visitTimer->StopTimer(queryTimer, query->GetType());
             delete query;
             query = NULL;
