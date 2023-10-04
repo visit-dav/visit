@@ -1327,6 +1327,7 @@ avtXRayImageQuery::GetSecondaryVars(std::vector<std::string> &outVars)
 void
 avtXRayImageQuery::Execute(avtDataTree_p tree)
 {
+    std::cout << "avtXRayImageQuery::Execute" << std::endl;
     // check validity of output type before proceeding
     if (!outputTypeValid(outputType))
     {

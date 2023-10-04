@@ -206,6 +206,7 @@ avtFilter::Update(avtContract_p contract)
     // If we don't have an input, there isn't much we can do.
     //
     avtDataObject_p input = GetInput();
+    std::cout << "avtDataObject_p input = GetInput();" << std::endl;
     if (*input == NULL)
     {
         EXCEPTION0(NoInputException);
@@ -222,11 +223,13 @@ avtFilter::Update(avtContract_p contract)
     // we are actually interested in using.  Give the derived types an
     // opportunity to reduce the data we are interested in.
     //
+    std::cout << "avtContract_p newSpec = ModifyContractAndDoBookkeeping(contract);" << std::endl;
     avtContract_p newSpec = ModifyContractAndDoBookkeeping(contract);
 
     if (debug_dump)
         DumpContract(newSpec, "output");
 
+    std::cout << "bool modifiedUpstream = UpdateInput(newSpec);" << std::endl;
     bool modifiedUpstream = UpdateInput(newSpec);
 
     bool re_execute = modifiedUpstream || modified;
@@ -335,6 +338,7 @@ avtFilter::Update(avtContract_p contract)
         }
     }
 
+    std::cout << "Done Updating " << GetType() << std::endl;
     debug1 << "Done Updating " << GetType() << endl;
     return re_execute;
 }
@@ -378,6 +382,7 @@ avtFilter::Update(avtContract_p contract)
 avtContract_p
 avtFilter::ModifyContractAndDoBookkeeping(avtContract_p contract)
 {
+    std::cout << "avtFilter::ModifyContractAndDoBookkeeping" << std::endl;
     int   i;
 
     if (contract->DoingOnDemandStreaming())
@@ -408,6 +413,7 @@ avtFilter::ModifyContractAndDoBookkeeping(avtContract_p contract)
         newcontract = dynamicAttributes[i]->ModifyContract(newcontract);
     }
 
+    std::cout << "end avtFilter::ModifyContractAndDoBookkeeping" << std::endl;
     return newcontract;
 }
 

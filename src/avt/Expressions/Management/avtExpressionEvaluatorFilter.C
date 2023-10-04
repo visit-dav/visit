@@ -386,6 +386,7 @@ avtExpressionEvaluatorFilter::AdditionalPipelineFilters(void)
 avtContract_p
 avtExpressionEvaluatorFilter::ModifyContract(avtContract_p spec)
 {
+    std::cout << "avtExpressionEvaluatorFilter::ModifyContract" << std::endl;
     pipelineState.Clear();
 
     avtContract_p rv = spec;
@@ -534,6 +535,8 @@ avtExpressionEvaluatorFilter::ModifyContract(avtContract_p spec)
 
     // Take the list of expressions and make the filters for them.
     int numFiltersLastTime = 0;
+    auto start = high_resolution_clock::now(); // Start time
+    std::cout << "I'm doing the while loop" << std::endl;
     while (createFilters && !expr_list.empty())
     {
         // auto start = high_resolution_clock::now(); // Start time
@@ -591,6 +594,10 @@ avtExpressionEvaluatorFilter::ModifyContract(avtContract_p spec)
         // auto duration = duration_cast<milliseconds>(stop - start); // Duration
         // std::cout << "total loop iteration took " << duration.count() << " ms" << std::endl;
     }
+
+    auto stop = high_resolution_clock::now(); // Stop time
+    auto duration = duration_cast<milliseconds>(stop - start); // Duration
+    std::cout << "total while loop iteration took " << duration.count() << " ms" << std::endl;
 
     // Make sure we have real variables to pass to the database.
     if (real_list.empty())
