@@ -1105,30 +1105,28 @@ avtDataAttributes::Copy(const avtDataAttributes &di)
     std::cout << "num vars " << di.variables.size() << std::endl;
 
     canUseThisProcsAsOriginalOrActual = di.canUseThisProcsAsOriginalOrActual;
+
+    // We assume that variables is empty, and that everything in di.variables is valid.
+    // Therefore, rather than performing checks and searching for indices each step of
+    // the way, we can just perform a straight copy.
     for (size_t i = 0 ; i < di.variables.size() ; i++)
     {
-        // JUSTIN - this is ground zero. Optimize this
-        // first step; check if index i is the same as the index we find
-        // in the functions below. If so, write new functions that take
-        // advantage of that fact.
+        // JUSTIN - this is ground zero. Optimize this.
         const char *vname = di.variables[i]->varname.c_str();
-        // std::cout << vname << std::endl;
-        AddVariable(vname, di.variables[i]->varunits);
-        SetVariableType(di.variables[i]->vartype, vname);
-        SetVariableSubnames(di.variables[i]->subnames, vname);
-        SetVariableBinRanges(di.variables[i]->binRange, vname);
-        SetVariableDimension(di.variables[i]->dimension, vname);
-        SetCentering(di.variables[i]->centering, vname);
-        SetTreatAsASCII(di.variables[i]->treatAsASCII, vname);
-        SetUseForAxis(di.variables[i]->useForAxis, vname);
-        *(variables[i]->originalData)              = *(di.variables[i]->originalData);
-        *(variables[i]->thisProcsOriginalData)    = 
-                                      *(di.variables[i]->thisProcsOriginalData);
-        *(variables[i]->desiredData)         =
-                                      *(di.variables[i]->desiredData);
-        *(variables[i]->actualData)           = *(di.variables[i]->actualData);
-        *(variables[i]->thisProcsActualData) = 
-                                      *(di.variables[i]->thisProcsActualData);
+        VarInfo *new_var = new VarInfo(vname, di.variables[i]->varunits);
+        variables.push_back(new_var);
+        variables[i]->vartype = di.variables[i]->vartype;
+        variables[i]->subnames = di.variables[i]->subnames;
+        variables[i]->binRange = di.variables[i]->binRange;
+        SetVariableDimension(di.variables[i]->dimension, i);
+        variables[i]->centering = di.variables[i]->centering;
+        variables[i]->treatAsASCII = di.variables[i]->treatAsASCII;
+        variables[i]->useForAxis = di.variables[i]->useForAxis;
+        *(variables[i]->originalData) = *(di.variables[i]->originalData);
+        *(variables[i]->thisProcsOriginalData) = *(di.variables[i]->thisProcsOriginalData);
+        *(variables[i]->desiredData) = *(di.variables[i]->desiredData);
+        *(variables[i]->actualData) = *(di.variables[i]->actualData);
+        *(variables[i]->thisProcsActualData) = *(di.variables[i]->thisProcsActualData);
         *(variables[i]->componentExtents) = *(di.variables[i]->componentExtents);
     }
     activeVariable = di.activeVariable;
@@ -2109,6 +2107,70 @@ avtDataAttributes::SetSpatialDimension(int td)
     multiresExtents = new avtExtents(spatialDimension);
 }
 
+// ****************************************************************************
+//  Method: avtDataAttributes::SetVariableDimension
+//
+//  Purpose:
+//      Sets the variable dimension.
+//
+//  Arguments:
+//      vd       The new variable dimension.
+//      index    The index of the variable.
+//
+//  Programmer: Justin Privitera
+//  Creation:   October 4th, 2023
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtDataAttributes::SetVariableDimension(int vd, int index)
+{
+    if (vd == variables[index]->dimension)
+    {
+        return;
+    }
+
+    variables[index]->dimension  = vd;
+
+    if (variables[index]->originalData != NULL)
+    {
+        delete variables[index]->originalData;
+    }
+    variables[index]->originalData = new avtExtents(1);
+
+    if (variables[index]->thisProcsOriginalData != NULL)
+    {
+        delete variables[index]->thisProcsOriginalData;
+    }
+    variables[index]->thisProcsOriginalData = new avtExtents(1);
+
+    if (variables[index]->desiredData != NULL)
+    {
+        delete variables[index]->desiredData;
+    }
+    variables[index]->desiredData =new avtExtents(1);
+
+    if (variables[index]->actualData != NULL)
+    {
+        delete variables[index]->actualData;
+    }
+    variables[index]->actualData = new avtExtents(1);
+
+    if (variables[index]->thisProcsActualData != NULL)
+    {
+        delete variables[index]->thisProcsActualData;
+    }
+    variables[index]->thisProcsActualData = new avtExtents(1);
+
+    if (variables[index]->componentExtents != NULL)
+    {
+        delete variables[index]->componentExtents;
+    }
+    variables[index]->componentExtents = new avtExtents(vd);
+}
+
 
 // ****************************************************************************
 //  Method: avtDataAttributes::SetVariableDimension
@@ -2160,48 +2222,7 @@ avtDataAttributes::SetVariableDimension(int vd, const char *varname)
         EXCEPTION1(ImproperUseException, reason);
     }
 
-    if (vd == variables[index]->dimension)
-    {
-        return;
-    }
-
-    variables[index]->dimension  = vd;
-
-    if (variables[index]->originalData != NULL)
-    {
-        delete variables[index]->originalData;
-    }
-    variables[index]->originalData = new avtExtents(1);
-
-    if (variables[index]->thisProcsOriginalData != NULL)
-    {
-        delete variables[index]->thisProcsOriginalData;
-    }
-    variables[index]->thisProcsOriginalData = new avtExtents(1);
-
-    if (variables[index]->desiredData != NULL)
-    {
-        delete variables[index]->desiredData;
-    }
-    variables[index]->desiredData =new avtExtents(1);
-
-    if (variables[index]->actualData != NULL)
-    {
-        delete variables[index]->actualData;
-    }
-    variables[index]->actualData = new avtExtents(1);
-
-    if (variables[index]->thisProcsActualData != NULL)
-    {
-        delete variables[index]->thisProcsActualData;
-    }
-    variables[index]->thisProcsActualData = new avtExtents(1);
-
-    if (variables[index]->componentExtents != NULL)
-    {
-        delete variables[index]->componentExtents;
-    }
-    variables[index]->componentExtents = new avtExtents(vd);
+    SetVariableDimension(vd, index);
 }
 
 

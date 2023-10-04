@@ -317,6 +317,7 @@ class PIPELINE_API avtDataAttributes
                                    { return spatialDimension; };
 
     void                     SetVariableDimension(int, const char * = NULL);
+    void                     SetVariableDimension(int, int);
     int                      GetVariableDimension(const char * = NULL) const;
 
     void                     SetVariableType(avtVarType, const char * = NULL);
