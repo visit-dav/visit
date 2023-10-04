@@ -38,10 +38,6 @@ using std::string;
 using std::vector;
 using std::ostringstream;
 
-#include <chrono>
-using namespace std::chrono;
-
-
 int  avtFilter::numInExecute = 0;
 
 
@@ -201,32 +197,24 @@ avtFilter::Update(avtContract_p contract)
 {
     debug1 << "Entered update for " << GetType() << endl;
 
-    std::cout << "Entered update for " << GetType() << std::endl;
-
     bool debug_dump = avtDebugDumpOptions::DumpEnabled();
     
     CheckAbort();
-    std::cout << "CheckAbort();" << std::endl;
 
     //
     // If we don't have an input, there isn't much we can do.
     //
     avtDataObject_p input = GetInput();
-    std::cout << "avtDataObject_p input = GetInput();" << std::endl;
     if (*input == NULL)
     {
-        std::cout << "*input == NULL" << std::endl;
         EXCEPTION0(NoInputException);
     }
 
     if (debug_dump)
     {
-        std::cout << "debug_dump" << std::endl;
         InitializeWebpage();
         DumpContract(contract, "input");
     }
-
-    std::cout << "move on" << std::endl;
 
     //
     // By using meta-data, we can potentially reduce the amount of data that
@@ -234,14 +222,11 @@ avtFilter::Update(avtContract_p contract)
     // opportunity to reduce the data we are interested in.
     //
     avtContract_p newSpec = ModifyContractAndDoBookkeeping(contract);
-    std::cout << "avtContract_p newSpec = ModifyContractAndDoBookkeeping(contract);" << std::endl;
 
     if (debug_dump)
         DumpContract(newSpec, "output");
-    std::cout << "DumpContract(newSpec, 'output');" << std::endl;
 
     bool modifiedUpstream = UpdateInput(newSpec);
-    std::cout << "bool modifiedUpstream = UpdateInput(newSpec);" << std::endl;
 
     bool re_execute = modifiedUpstream || modified;
     if (re_execute)
@@ -350,7 +335,6 @@ avtFilter::Update(avtContract_p contract)
     }
 
     debug1 << "Done Updating " << GetType() << endl;
-    std::cout << "Done Updating " << GetType() << std::endl;
     return re_execute;
 }
 
@@ -393,7 +377,6 @@ avtFilter::Update(avtContract_p contract)
 avtContract_p
 avtFilter::ModifyContractAndDoBookkeeping(avtContract_p contract)
 {
-    std::cout << "avtFilter::ModifyContractAndDoBookkeeping" << std::endl;
     int   i;
 
     if (contract->DoingOnDemandStreaming())
@@ -406,20 +389,14 @@ avtFilter::ModifyContractAndDoBookkeeping(avtContract_p contract)
     // Some derived types need to examine a contract as it goes up.
     //
     ExamineContract(contract);
-    std::cout << "ExamineContract(contract);" << std::endl;
 
-    std::cout << "time to modify contract" << std::endl;
     avtContract_p newcontract = ModifyContract(contract);
-    std::cout << "avtContract_p newcontract = ModifyContract(contract);" << std::endl;
     newcontract->AddFilter();
-    std::cout << "newcontract->AddFilter();" << std::endl;
     int additionalFilters = AdditionalPipelineFilters();
-    std::cout << "int additionalFilters = AdditionalPipelineFilters();" << std::endl;
     for (i = 0 ; i < additionalFilters ; i++)
     {
         newcontract->AddFilter();
     }
-    std::cout << "added filters" << std::endl;
 
     //
     // Allow our dynamic attributes to add any variables they may need, etc.
@@ -545,32 +522,19 @@ avtFilter::GetQueryableSource(void)
 void
 avtFilter::ChangedInput(void)
 {
-    // auto start5 = high_resolution_clock::now(); // Start time  
     //
     // Give the derived types an opportunity to throw an exception if they
     // don't like the input.
     //
     VerifyInput();
-    // auto stop5 = high_resolution_clock::now(); // Stop time
-    // auto duration5 = duration_cast<milliseconds>(stop5 - start5); // Duration
-    // std::cout << "\t\tVerifyInput took " << duration5.count() << " ms" << std::endl;
 
-    // JUSTIN this is where the slowdown is
-    // auto start6 = high_resolution_clock::now(); // Start time  
     PassOnDataObjectInfo();
-    // auto stop6 = high_resolution_clock::now(); // Stop time
-    // auto duration6 = duration_cast<milliseconds>(stop6 - start6); // Duration
-    // std::cout << "\t\tPassOnDataObjectInfo took " << duration6.count() << " ms" << std::endl;
 
-    // auto start7 = high_resolution_clock::now(); // Start time  
     //
     // Some filters may want to do some special things to initialize
     // themselves.  Give them that chance.
     //
     InitializeFilter();
-    // auto stop7 = high_resolution_clock::now(); // Stop time
-    // auto duration7 = duration_cast<milliseconds>(stop7 - start7); // Duration
-    // std::cout << "\t\tInitializeFilter took " << duration7.count() << " ms" << std::endl;
 
     modified = true;
 }
@@ -643,43 +607,20 @@ avtFilter::VerifyInput(void)
 void
 avtFilter::PassOnDataObjectInfo(void)
 {
-    // auto start5 = high_resolution_clock::now(); // Start time  
     avtDataObject_p output = GetOutput();
-    // auto stop5 = high_resolution_clock::now(); // Stop time
-    // auto duration5 = duration_cast<milliseconds>(stop5 - start5); // Duration
-    // std::cout << "\t\tGetOutput took " << duration5.count() << " ms" << std::endl;
-
-    // auto start6 = high_resolution_clock::now(); // Start time  
     avtDataObject_p input  = GetInput();
-    // auto stop6 = high_resolution_clock::now(); // Stop time
-    // auto duration6 = duration_cast<milliseconds>(stop6 - start6); // Duration
-    // std::cout << "\t\tGetInput took " << duration6.count() << " ms" << std::endl;
-    
-    // JUSTIN - the copy is what is taking all the time
-    // auto start7 = high_resolution_clock::now(); // Start time  
     if (*input != NULL)
     {
         output->GetInfo().Copy(input->GetInfo());
     }
-    // auto stop7 = high_resolution_clock::now(); // Stop time
-    // auto duration7 = duration_cast<milliseconds>(stop7 - start7); // Duration
-    // std::cout << "\t\tCopy took " << duration7.count() << " ms" << std::endl;
 
-    // auto start8 = high_resolution_clock::now(); // Start time  
     UpdateDataObjectInfo();
-    // auto stop8 = high_resolution_clock::now(); // Stop time
-    // auto duration8 = duration_cast<milliseconds>(stop8 - start8); // Duration
-    // std::cout << "\t\tUpdateDataObjectInfo took " << duration8.count() << " ms" << std::endl;
 
-    // auto start9 = high_resolution_clock::now(); // Start time  
     // Call a callback that can let other entities participate in the update.
     if(updateDOI != NULL)
     {
         (*updateDOI)(input, output, updateDOIData);
     }
-    // auto stop9 = high_resolution_clock::now(); // Stop time
-    // auto duration9 = duration_cast<milliseconds>(stop9 - start9); // Duration
-    // std::cout << "\t\tupdateDOI took " << duration9.count() << " ms" << std::endl;
 }
 
 // ****************************************************************************
