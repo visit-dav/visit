@@ -84,7 +84,7 @@ avtDataObject::~avtDataObject()
 bool
 avtDataObject::Update(avtContract_p contract)
 {
-    std::cout << "avtDataObject::Update" << std::endl;
+    std::cout << "\tavtDataObject::Update" << std::endl;
     bool rv = false;
     if (source == NULL)
     {
@@ -95,9 +95,9 @@ avtDataObject::Update(avtContract_p contract)
     }
     else
     {
-        std::cout << "rv = source->Update(contract);" << std::endl;
+        std::cout << "\trv = source->Update(contract);" << std::endl;
         rv = source->Update(contract);
-        std::cout << "completed" << std::endl;
+        std::cout << "\tcompleted" << std::endl;
     }
 
     contractFromPrevExecution = contract;
