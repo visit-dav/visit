@@ -104,17 +104,65 @@ avtIntegerConstExpr::CreateFilters(ExprPipelineState *state)
 {
     std::cout << "I am an avtIntegerConstExpr" << std::endl;
     auto start = high_resolution_clock::now(); // Start time
+    
+    // auto start1 = high_resolution_clock::now(); // Start time    
     avtConstantCreatorExpression *f = new avtConstantCreatorExpression();
+    // auto stop1 = high_resolution_clock::now(); // Stop time
+    // auto duration1 = duration_cast<milliseconds>(stop1 - start1); // Duration
+    // std::cout << "\tavtIntegerConstExpr creation took " << duration1.count() << " ms" << std::endl;
+
+    // auto start2 = high_resolution_clock::now(); // Start time   
     f->SetValue(value);
+    // auto stop2 = high_resolution_clock::now(); // Stop time
+    // auto duration2 = duration_cast<milliseconds>(stop2 - start2); // Duration
+    // std::cout << "\tavtIntegerConstExpr setvalue took " << duration2.count() << " ms" << std::endl;
+
+    // auto start3 = high_resolution_clock::now(); // Start time  
     char strrep[30];
     snprintf(strrep, 30, "'%d'", value);
-    state->PushName(string(strrep));
-    f->SetOutputVariableName(strrep);
+    // auto stop3 = high_resolution_clock::now(); // Stop time
+    // auto duration3 = duration_cast<milliseconds>(stop3 - start3); // Duration
+    // std::cout << "\tavtIntegerConstExpr create string rep took " << duration3.count() << " ms" << std::endl;
 
+    // auto start4 = high_resolution_clock::now(); // Start time  
+    state->PushName(string(strrep));
+    // auto stop4 = high_resolution_clock::now(); // Stop time
+    // auto duration4 = duration_cast<milliseconds>(stop4 - start4); // Duration
+    // std::cout << "\tavtIntegerConstExpr state push name took " << duration4.count() << " ms" << std::endl;
+
+    // auto start5 = high_resolution_clock::now(); // Start time  
+    f->SetOutputVariableName(strrep);
+    // auto stop5 = high_resolution_clock::now(); // Stop time
+    // auto duration5 = duration_cast<milliseconds>(stop5 - start5); // Duration
+    // std::cout << "\tavtIntegerConstExpr f set output var name took " << duration5.count() << " ms" << std::endl;
+
+    auto start5 = high_resolution_clock::now(); // Start time  
+    auto state_data_object = state->GetDataObject();
+    auto stop5 = high_resolution_clock::now(); // Stop time
+    auto duration5 = duration_cast<milliseconds>(stop5 - start5); // Duration
+    std::cout << "\tavtIntegerConstExpr state get data object took " << duration5.count() << " ms" << std::endl;
+
+    auto start6 = high_resolution_clock::now(); // Start time  
     // Keep track of the current dataObject.
-    f->SetInput(state->GetDataObject());
+    // f->SetInput(state->GetDataObject());
+    f->SetInput(state_data_object);
+    auto stop6 = high_resolution_clock::now(); // Stop time
+    auto duration6 = duration_cast<milliseconds>(stop6 - start6); // Duration
+    std::cout << "\tavtIntegerConstExpr f set input took " << duration6.count() << " ms" << std::endl;
+
+    // auto start7 = high_resolution_clock::now(); // Start time  
     state->SetDataObject(f->GetOutput());
+    // auto stop7 = high_resolution_clock::now(); // Stop time
+    // auto duration7 = duration_cast<milliseconds>(stop7 - start7); // Duration
+    // std::cout << "\tavtIntegerConstExpr state set data object took " << duration7.count() << " ms" << std::endl;
+
+    // auto start8 = high_resolution_clock::now(); // Start time  
     state->AddFilter(f);
+    // auto stop8 = high_resolution_clock::now(); // Stop time
+    // auto duration8 = duration_cast<milliseconds>(stop8 - start8); // Duration
+    // std::cout << "\tavtIntegerConstExpr state add filter took " << duration8.count() << " ms" << std::endl;
+    
+
     auto stop = high_resolution_clock::now(); // Stop time
     auto duration = duration_cast<milliseconds>(stop - start); // Duration
     std::cout << "\tavtIntegerConstExpr took " << duration.count() << " ms" << std::endl;
@@ -138,7 +186,7 @@ avtIntegerConstExpr::CreateFilters(ExprPipelineState *state)
 void
 avtFloatConstExpr::CreateFilters(ExprPipelineState *state)
 {
-    std::cout << "I am an avtFloatConstExpr" << std::endl;
+    // std::cout << "I am an avtFloatConstExpr" << std::endl;
     auto start = high_resolution_clock::now(); // Start time
     avtConstantCreatorExpression *f = new avtConstantCreatorExpression();
     f->SetValue(value);
@@ -153,7 +201,7 @@ avtFloatConstExpr::CreateFilters(ExprPipelineState *state)
     state->AddFilter(f);
     auto stop = high_resolution_clock::now(); // Stop time
     auto duration = duration_cast<milliseconds>(stop - start); // Duration
-    std::cout << "\tavtFloatConstExpr took " << duration.count() << " ms" << std::endl;
+    // std::cout << "\tavtFloatConstExpr took " << duration.count() << " ms" << std::endl;
 }
 
 // ****************************************************************************
@@ -200,14 +248,14 @@ avtBooleanConstExpr::CreateFilters(ExprPipelineState *state)
 void
 avtUnaryExpr::CreateFilters(ExprPipelineState *state)
 {
-    std::cout << "I am an avtUnaryExpr" << std::endl;
+    // std::cout << "I am an avtUnaryExpr" << std::endl;
     auto start = high_resolution_clock::now(); // Start time
     
     auto recursion_start = high_resolution_clock::now(); // Start time
     dynamic_cast<avtExprNode*>(expr)->CreateFilters(state);
     auto recursion_stop = high_resolution_clock::now(); // Stop time
     auto recursion_duration = duration_cast<milliseconds>(recursion_stop - recursion_start); // Duration
-    std::cout << "\tavtUnaryExpr recursion took " << recursion_duration.count() << " ms" << std::endl;
+    // std::cout << "\tavtUnaryExpr recursion took " << recursion_duration.count() << " ms" << std::endl;
 
     avtSingleInputExpressionFilter *f = NULL;
     if (op == '-')
@@ -234,21 +282,25 @@ avtUnaryExpr::CreateFilters(ExprPipelineState *state)
     state->SetDataObject(f->GetOutput());
     state->AddFilter(f);
     auto stop = high_resolution_clock::now(); // Stop time
+    
+    auto non_recursion_duration = duration_cast<milliseconds>(stop - recursion_stop); // Duration
+    // std::cout << "\tavtUnaryExpr non recursion took " << non_recursion_duration.count() << " ms" << std::endl;
+
     auto duration = duration_cast<milliseconds>(stop - start); // Duration
-    std::cout << "\tavtUnaryExpr took " << duration.count() << " ms" << std::endl;
+    // std::cout << "\tavtUnaryExpr took " << duration.count() << " ms" << std::endl;
 }
 
 void
 avtBinaryExpr::CreateFilters(ExprPipelineState *state)
 {
-    std::cout << "I am an avtBinaryExpr" << std::endl;
+    // std::cout << "I am an avtBinaryExpr" << std::endl;
     auto start = high_resolution_clock::now(); // Start time
     auto recursion_start = high_resolution_clock::now(); // Start time
     dynamic_cast<avtExprNode*>(left)->CreateFilters(state);
     dynamic_cast<avtExprNode*>(right)->CreateFilters(state);
     auto recursion_stop = high_resolution_clock::now(); // Stop time
     auto recursion_duration = duration_cast<milliseconds>(recursion_stop - recursion_start); // Duration
-    std::cout << "\tavtBinaryExpr recursion took " << recursion_duration.count() << " ms" << std::endl;
+    // std::cout << "\tavtBinaryExpr recursion took " << recursion_duration.count() << " ms" << std::endl;
 
     avtMultipleInputExpressionFilter *f = NULL;
     if (op == '+')
@@ -287,21 +339,25 @@ avtBinaryExpr::CreateFilters(ExprPipelineState *state)
     state->SetDataObject(f->GetOutput());
     state->AddFilter(f);
     auto stop = high_resolution_clock::now(); // Stop time
+
+    auto non_recursion_duration = duration_cast<milliseconds>(stop - recursion_stop); // Duration
+    // std::cout << "\tavtBinaryExpr non recursion took " << non_recursion_duration.count() << " ms" << std::endl;
+
     auto duration = duration_cast<milliseconds>(stop - start); // Duration
-    std::cout << "\tavtBinaryExpr took " << duration.count() << " ms" << std::endl;
+    // std::cout << "\tavtBinaryExpr took " << duration.count() << " ms" << std::endl;
 }
 
 void
 avtIndexExpr::CreateFilters(ExprPipelineState *state)
 {
-    std::cout << "I am an avtIndexExpr" << std::endl;
+    // std::cout << "I am an avtIndexExpr" << std::endl;
     auto start = high_resolution_clock::now(); // Start time
 
     auto recursion_start = high_resolution_clock::now(); // Start time
     dynamic_cast<avtExprNode*>(expr)->CreateFilters(state);
     auto recursion_stop = high_resolution_clock::now(); // Stop time
     auto recursion_duration = duration_cast<milliseconds>(recursion_stop - recursion_start); // Duration
-    std::cout << "\tavtIndexExpr recursion took " << recursion_duration.count() << " ms" << std::endl;
+    // std::cout << "\tavtIndexExpr recursion took " << recursion_duration.count() << " ms" << std::endl;
 
     avtVectorDecomposeExpression *f = new avtVectorDecomposeExpression(ind);
 
@@ -321,8 +377,12 @@ avtIndexExpr::CreateFilters(ExprPipelineState *state)
     state->SetDataObject(f->GetOutput());
     state->AddFilter(f);
     auto stop = high_resolution_clock::now(); // Stop time
+
+    auto non_recursion_duration = duration_cast<milliseconds>(stop - recursion_stop); // Duration
+    // std::cout << "\tavtIndexExpr non recursion took " << non_recursion_duration.count() << " ms" << std::endl;
+
     auto duration = duration_cast<milliseconds>(stop - start); // Duration
-    std::cout << "\tavtIndexExpr took " << duration.count() << " ms" << std::endl;
+    // std::cout << "\tavtIndexExpr took " << duration.count() << " ms" << std::endl;
 }
 
 // ****************************************************************************
@@ -344,7 +404,7 @@ avtIndexExpr::CreateFilters(ExprPipelineState *state)
 void
 avtVectorExpr::CreateFilters(ExprPipelineState *state)
 {
-    std::cout << "I am an avtVectorExpr" << std::endl;
+    // std::cout << "I am an avtVectorExpr" << std::endl;
     auto start = high_resolution_clock::now(); // Start time
 
     auto recursion_start = high_resolution_clock::now(); // Start time
@@ -354,7 +414,7 @@ avtVectorExpr::CreateFilters(ExprPipelineState *state)
         dynamic_cast<avtExprNode*>(z)->CreateFilters(state);
     auto recursion_stop = high_resolution_clock::now(); // Stop time
     auto recursion_duration = duration_cast<milliseconds>(recursion_stop - recursion_start); // Duration
-    std::cout << "\tavtVectorExpr recursion took " << recursion_duration.count() << " ms" << std::endl;
+    // std::cout << "\tavtVectorExpr recursion took " << recursion_duration.count() << " ms" << std::endl;
 
     avtVectorComposeExpression *f = new avtVectorComposeExpression();
 
@@ -383,8 +443,12 @@ avtVectorExpr::CreateFilters(ExprPipelineState *state)
     state->SetDataObject(f->GetOutput());
     state->AddFilter(f);
     auto stop = high_resolution_clock::now(); // Stop time
+
+    auto non_recursion_duration = duration_cast<milliseconds>(stop - recursion_stop); // Duration
+    // std::cout << "\tavtVectorExpr non recursion took " << non_recursion_duration.count() << " ms" << std::endl;
+    
     auto duration = duration_cast<milliseconds>(stop - start); // Duration
-    std::cout << "\tavtVectorExpr took " << duration.count() << " ms" << std::endl;
+    // std::cout << "\tavtVectorExpr took " << duration.count() << " ms" << std::endl;
 }
 
 // ****************************************************************************
@@ -825,7 +889,7 @@ avtFunctionExpr::CreateFilters(string functionName)
 void
 avtFunctionExpr::CreateFilters(ExprPipelineState *state)
 {
-    std::cout << "I am an avtFunctionExpr" << std::endl;
+    // std::cout << "I am an avtFunctionExpr" << std::endl;
     auto start = high_resolution_clock::now(); // Start time
     // Figure out which filter to add and add it.
     string functionName = name;
@@ -908,16 +972,16 @@ avtFunctionExpr::CreateFilters(ExprPipelineState *state)
     state->AddFilter(f);
     auto stop = high_resolution_clock::now(); // Stop time
     auto duration = duration_cast<milliseconds>(stop - start); // Duration
-    std::cout << "\tavtFunctionExpr took " << duration.count() << " ms" << std::endl;
+    // std::cout << "\tavtFunctionExpr took " << duration.count() << " ms" << std::endl;
 }
 
 void
 avtVarExpr::CreateFilters(ExprPipelineState *state)
 {
-    std::cout << "I am an avtVarExpr" << std::endl;
+    // std::cout << "I am an avtVarExpr" << std::endl;
     auto start = high_resolution_clock::now(); // Start time
     state->PushName(var->GetFullpath());
     auto stop = high_resolution_clock::now(); // Stop time
     auto duration = duration_cast<milliseconds>(stop - start); // Duration
-    std::cout << "\tavtVarExpr took " << duration.count() << " ms" << std::endl;
+    // std::cout << "\tavtVarExpr took " << duration.count() << " ms" << std::endl;
 }

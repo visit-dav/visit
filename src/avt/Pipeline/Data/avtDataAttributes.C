@@ -27,6 +27,9 @@
 #include <cstring>
 #include <float.h>
 
+#include <chrono>
+using namespace std::chrono;
+
 using     std::string;
 using     std::vector;
 using     std::sort;
@@ -1046,6 +1049,7 @@ avtDataAttributes::Print(ostream &out)
 void
 avtDataAttributes::Copy(const avtDataAttributes &di)
 {
+    // auto start1 = high_resolution_clock::now(); // Start time    
     DestructSelf();
 
     SetTopologicalDimension(di.topologicalDimension);
@@ -1091,10 +1095,24 @@ avtDataAttributes::Copy(const avtDataAttributes &di)
     *(actualSpatial)            = *(di.actualSpatial);
     *(thisProcsActualSpatial)  = *(di.thisProcsActualSpatial);
 
+    // auto stop1 = high_resolution_clock::now(); // Stop time
+    // auto duration1 = duration_cast<milliseconds>(stop1 - start1); // Duration
+    // std::cout << "\t\t checkpoint 1 took " << duration1.count() << " ms" << std::endl;
+
+
+    auto start2 = high_resolution_clock::now(); // Start time   
+
+    std::cout << "num vars " << di.variables.size() << std::endl;
+
     canUseThisProcsAsOriginalOrActual = di.canUseThisProcsAsOriginalOrActual;
     for (size_t i = 0 ; i < di.variables.size() ; i++)
     {
+        // JUSTIN - this is ground zero. Optimize this
+        // first step; check if index i is the same as the index we find
+        // in the functions below. If so, write new functions that take
+        // advantage of that fact.
         const char *vname = di.variables[i]->varname.c_str();
+        // std::cout << vname << std::endl;
         AddVariable(vname, di.variables[i]->varunits);
         SetVariableType(di.variables[i]->vartype, vname);
         SetVariableSubnames(di.variables[i]->subnames, vname);
@@ -1114,6 +1132,12 @@ avtDataAttributes::Copy(const avtDataAttributes &di)
         *(variables[i]->componentExtents) = *(di.variables[i]->componentExtents);
     }
     activeVariable = di.activeVariable;
+
+    auto stop2 = high_resolution_clock::now(); // Stop time
+    auto duration2 = duration_cast<milliseconds>(stop2 - start2); // Duration
+    std::cout << "\t\t checkpoint 2 took " << duration2.count() << " ms" << std::endl;
+
+    // auto start3 = high_resolution_clock::now(); // Start time   
 
     labels = di.labels;
     SetContainsGhostZones(di.GetContainsGhostZones());
@@ -1152,6 +1176,10 @@ avtDataAttributes::Copy(const avtDataAttributes &di)
     multiresCellSize = di.multiresCellSize;
     constructMultipleCurves = di.constructMultipleCurves;
     forceRemoveFacesBeforeGhosts = di.forceRemoveFacesBeforeGhosts;
+
+    // auto stop3 = high_resolution_clock::now(); // Stop time
+    // auto duration3 = duration_cast<milliseconds>(stop3 - start3); // Duration
+    // std::cout << "\t\t checkpoint 3 took " << duration3.count() << " ms" << std::endl;
 }
 
 

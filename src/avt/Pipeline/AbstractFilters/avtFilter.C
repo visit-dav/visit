@@ -38,6 +38,9 @@ using std::string;
 using std::vector;
 using std::ostringstream;
 
+#include <chrono>
+using namespace std::chrono;
+
 
 int  avtFilter::numInExecute = 0;
 
@@ -542,19 +545,32 @@ avtFilter::GetQueryableSource(void)
 void
 avtFilter::ChangedInput(void)
 {
+    // auto start5 = high_resolution_clock::now(); // Start time  
     //
     // Give the derived types an opportunity to throw an exception if they
     // don't like the input.
     //
     VerifyInput();
+    // auto stop5 = high_resolution_clock::now(); // Stop time
+    // auto duration5 = duration_cast<milliseconds>(stop5 - start5); // Duration
+    // std::cout << "\t\tVerifyInput took " << duration5.count() << " ms" << std::endl;
 
+    // JUSTIN this is where the slowdown is
+    // auto start6 = high_resolution_clock::now(); // Start time  
     PassOnDataObjectInfo();
+    // auto stop6 = high_resolution_clock::now(); // Stop time
+    // auto duration6 = duration_cast<milliseconds>(stop6 - start6); // Duration
+    // std::cout << "\t\tPassOnDataObjectInfo took " << duration6.count() << " ms" << std::endl;
 
+    // auto start7 = high_resolution_clock::now(); // Start time  
     //
     // Some filters may want to do some special things to initialize
     // themselves.  Give them that chance.
     //
     InitializeFilter();
+    // auto stop7 = high_resolution_clock::now(); // Stop time
+    // auto duration7 = duration_cast<milliseconds>(stop7 - start7); // Duration
+    // std::cout << "\t\tInitializeFilter took " << duration7.count() << " ms" << std::endl;
 
     modified = true;
 }
@@ -627,20 +643,43 @@ avtFilter::VerifyInput(void)
 void
 avtFilter::PassOnDataObjectInfo(void)
 {
+    // auto start5 = high_resolution_clock::now(); // Start time  
     avtDataObject_p output = GetOutput();
+    // auto stop5 = high_resolution_clock::now(); // Stop time
+    // auto duration5 = duration_cast<milliseconds>(stop5 - start5); // Duration
+    // std::cout << "\t\tGetOutput took " << duration5.count() << " ms" << std::endl;
+
+    // auto start6 = high_resolution_clock::now(); // Start time  
     avtDataObject_p input  = GetInput();
+    // auto stop6 = high_resolution_clock::now(); // Stop time
+    // auto duration6 = duration_cast<milliseconds>(stop6 - start6); // Duration
+    // std::cout << "\t\tGetInput took " << duration6.count() << " ms" << std::endl;
+    
+    // JUSTIN - the copy is what is taking all the time
+    // auto start7 = high_resolution_clock::now(); // Start time  
     if (*input != NULL)
     {
         output->GetInfo().Copy(input->GetInfo());
     }
+    // auto stop7 = high_resolution_clock::now(); // Stop time
+    // auto duration7 = duration_cast<milliseconds>(stop7 - start7); // Duration
+    // std::cout << "\t\tCopy took " << duration7.count() << " ms" << std::endl;
 
+    // auto start8 = high_resolution_clock::now(); // Start time  
     UpdateDataObjectInfo();
+    // auto stop8 = high_resolution_clock::now(); // Stop time
+    // auto duration8 = duration_cast<milliseconds>(stop8 - start8); // Duration
+    // std::cout << "\t\tUpdateDataObjectInfo took " << duration8.count() << " ms" << std::endl;
 
+    // auto start9 = high_resolution_clock::now(); // Start time  
     // Call a callback that can let other entities participate in the update.
     if(updateDOI != NULL)
     {
         (*updateDOI)(input, output, updateDOIData);
     }
+    // auto stop9 = high_resolution_clock::now(); // Stop time
+    // auto duration9 = duration_cast<milliseconds>(stop9 - start9); // Duration
+    // std::cout << "\t\tupdateDOI took " << duration9.count() << " ms" << std::endl;
 }
 
 // ****************************************************************************

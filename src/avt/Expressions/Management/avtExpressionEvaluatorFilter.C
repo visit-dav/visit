@@ -546,6 +546,10 @@ avtExpressionEvaluatorFilter::ModifyContract(avtContract_p spec)
 
         std::vector<string>::iterator back = expr_list.end() - 1;
         string var = *back;
+
+
+        std::cout << "var = " << var << std::endl;
+
         expr_list.erase(back);
         
         // Get the expression tree again.  (We could save trees between the
