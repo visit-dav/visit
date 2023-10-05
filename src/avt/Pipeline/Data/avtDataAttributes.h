@@ -250,6 +250,9 @@ class     avtWebpage;
 //
 //    Mark C. Miller, Tue Jun 21 10:46:44 PDT 2022
 //    Added commentInDB for holding the database comment
+// 
+//    Justin Privitera, Thu Oct  5 14:50:38 PDT 2023
+//    Added an alternative version of SetVariableDimension.
 // ****************************************************************************
 
 class PIPELINE_API avtDataAttributes

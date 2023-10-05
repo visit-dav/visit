@@ -1040,6 +1040,11 @@ avtDataAttributes::Print(ostream &out)
 //
 //    Alister Maguire, Tue Jul 16 14:34:29 PDT 2019
 //    Added forceRemoveFacesBeforeGhosts.
+// 
+//    Justin Privitera, Thu Oct  5 14:50:38 PDT 2023
+//    Greatly simplified the for-loop in this function. This fixes a 
+//    performance bottleneck I ran into when using a huge number of 
+//    complicated expressions.
 //
 // ****************************************************************************
 
