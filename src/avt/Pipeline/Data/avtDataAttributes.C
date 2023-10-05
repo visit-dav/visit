@@ -1105,7 +1105,6 @@ avtDataAttributes::Copy(const avtDataAttributes &di)
     // the way, we can just perform a straight copy.
     for (size_t i = 0 ; i < di.variables.size() ; i++)
     {
-        // JUSTIN - this is ground zero. Optimize this.
         const char *vname = di.variables[i]->varname.c_str();
         VarInfo *new_var = new VarInfo(vname, di.variables[i]->varunits);
         variables.push_back(new_var);

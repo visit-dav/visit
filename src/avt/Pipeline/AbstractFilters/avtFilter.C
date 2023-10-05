@@ -197,8 +197,10 @@ bool
 avtFilter::Update(avtContract_p contract)
 {
     static int count = 0;
-    if (count > 100) exit(-1);
+    if (count > 85) exit(-1);
     count ++;
+
+    std::cout << "recursion depth: " << count << std::endl;
 
     std::cout << "\t\t\tEntered avtFilter::Update for " << GetType() << std::endl;
     debug1 << "Entered update for " << GetType() << endl;
@@ -229,13 +231,17 @@ avtFilter::Update(avtContract_p contract)
     // opportunity to reduce the data we are interested in.
     //
     std::cout << "\t\t\tavtContract_p newSpec = ModifyContractAndDoBookkeeping(contract);" << std::endl;
-    avtContract_p newSpec = ModifyContractAndDoBookkeeping(contract);
+    avtContract_p newSpec = ModifyContractAndDoBookkeeping(std::move(contract));
 
     if (debug_dump)
         DumpContract(newSpec, "output");
 
     std::cout << "\t\t\tbool modifiedUpstream = UpdateInput(newSpec);" << std::endl;
-    bool modifiedUpstream = UpdateInput(newSpec);
+    bool modifiedUpstream = UpdateInput(std::move(newSpec));
+    std::cout << "\t\t\tdone modifying upstream update" << std::endl;
+
+    // JUSTIN TODO put timings all over this function and see what takes the longest
+    // and what can be optimized
 
     bool re_execute = modifiedUpstream || modified;
     if (re_execute)
@@ -401,7 +407,7 @@ avtFilter::ModifyContractAndDoBookkeeping(avtContract_p contract)
     //
     ExamineContract(contract);
 
-    avtContract_p newcontract = ModifyContract(contract);
+    avtContract_p newcontract = ModifyContract(std::move(contract));
     newcontract->AddFilter();
     int additionalFilters = AdditionalPipelineFilters();
     for (i = 0 ; i < additionalFilters ; i++)

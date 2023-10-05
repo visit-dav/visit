@@ -120,7 +120,7 @@ avtDataObjectSink::ChangedInput(void)
 bool
 avtDataObjectSink::UpdateInput(avtContract_p spec)
 {
-    return GetInput()->Update(spec);
+    return GetInput()->Update(std::move(spec));
 }
 
 
