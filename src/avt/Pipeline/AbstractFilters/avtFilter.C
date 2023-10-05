@@ -34,6 +34,9 @@
 #include <fenv.h>
 #endif
 
+#include <chrono>
+using namespace std::chrono;
+
 using std::string;
 using std::vector;
 using std::ostringstream;
@@ -196,11 +199,7 @@ avtFilter::UpdateProgress(int current, int total)
 bool
 avtFilter::Update(avtContract_p contract)
 {
-    static int count = 0;
-    if (count > 85) exit(-1);
-    count ++;
-
-    std::cout << "recursion depth: " << count << std::endl;
+    auto start = high_resolution_clock::now(); // Start time
 
     std::cout << "\t\t\tEntered avtFilter::Update for " << GetType() << std::endl;
     debug1 << "Entered update for " << GetType() << endl;
@@ -236,12 +235,18 @@ avtFilter::Update(avtContract_p contract)
     if (debug_dump)
         DumpContract(newSpec, "output");
 
+    auto beforeUpdate = high_resolution_clock::now(); // Start time
+
     std::cout << "\t\t\tbool modifiedUpstream = UpdateInput(newSpec);" << std::endl;
     bool modifiedUpstream = UpdateInput(std::move(newSpec));
     std::cout << "\t\t\tdone modifying upstream update" << std::endl;
 
-    // JUSTIN TODO put timings all over this function and see what takes the longest
-    // and what can be optimized
+    auto update = high_resolution_clock::now(); // Start time
+
+    auto re_exec_prep = high_resolution_clock::now(); // Start time
+    auto pre_exec = high_resolution_clock::now(); // Start time
+    auto exec = high_resolution_clock::now(); // Start time
+    auto post_exec = high_resolution_clock::now(); // Start time
 
     bool re_execute = modifiedUpstream || modified;
     if (re_execute)
@@ -278,9 +283,14 @@ avtFilter::Update(avtContract_p contract)
             feclearexcept(FE_ALL_EXCEPT);
 #endif
 
+            re_exec_prep = high_resolution_clock::now(); // Start time
+
             PreExecute();
+            pre_exec = high_resolution_clock::now(); // Start time
             Execute();
+            exec = high_resolution_clock::now(); // Start time
             PostExecute();
+            post_exec = high_resolution_clock::now(); // Start time
 
 #ifdef FECHECKS
             int feerr = fetestexcept(FE_INVALID | FE_DIVBYZERO | FE_OVERFLOW | FE_UNDERFLOW);
@@ -335,22 +345,68 @@ avtFilter::Update(avtContract_p contract)
         debug1 << "Decided to *not* re-execute " << GetType() << endl;
     }
 
+    auto re_exec_finish = high_resolution_clock::now(); // Start time
+
     //
     // If we are doing dynamic load balancing, clean up as we go.
     //
-    if (GetInput()->GetInfo().GetValidity().AreWeStreaming() ||
-        GetInput()->IsTransient())
+    if (input->GetInfo().GetValidity().AreWeStreaming() ||
+        input->IsTransient())
     {
-        if (GetInput()->GetSource() != NULL)
+        auto input_source = input->GetSource();
+        if (input_source != NULL)
         {
             int t0 = visitTimer->StartTimer();
-            GetInput()->GetSource()->ReleaseData();
+            input_source->ReleaseData();
             visitTimer->StopTimer(t0, "Calling release data");
         }
     }
 
+    auto dynamic_load_balancing = high_resolution_clock::now(); // Start time
+
+#ifdef VISIT_BLUE_GENE_Q
+    std::cout << "blue gene Q" << std::endl;
+#endif
+
+#ifdef FECHECKS
+    std::cout << "fechecks" << std::endl;
+#endif
+
+    auto stop = high_resolution_clock::now(); // Stop time
+
+    std::cout << "========================================" << std::endl;
     std::cout << "\t\t\tDone Updating " << GetType() << std::endl;
     debug1 << "Done Updating " << GetType() << endl;
+
+    auto total_duration                  = duration_cast<microseconds>(stop - start); // Duration
+    auto beforeUpdate_duration           = duration_cast<microseconds>(beforeUpdate - start);
+    auto update_duration                 = duration_cast<microseconds>(update - beforeUpdate);
+    auto re_exec_prep_duration           = duration_cast<microseconds>(re_exec_prep - update);
+    auto pre_exec_duration               = duration_cast<microseconds>(pre_exec - re_exec_prep);
+    auto exec_duration                   = duration_cast<microseconds>(exec - pre_exec);
+    auto post_exec_duration              = duration_cast<microseconds>(post_exec - exec);
+    auto re_exec_finish_duration         = duration_cast<microseconds>(re_exec_finish - post_exec);
+    auto dynamic_load_balancing_duration = duration_cast<microseconds>(dynamic_load_balancing - re_exec_finish);
+
+
+    std::cout << "total duration:                  " << total_duration.count() << " us" << std::endl;
+    std::cout << "beforeUpdate duration:           " << beforeUpdate_duration.count() << " us" << std::endl;
+    std::cout << "update duration:                 " << update_duration.count() << " us" << std::endl;
+    std::cout << "re_exec_prep duration:           " << re_exec_prep_duration.count() << " us" << std::endl;
+    std::cout << "pre_exec duration:               " << pre_exec_duration.count() << " us" << std::endl;
+    std::cout << "exec duration:                   " << exec_duration.count() << " us" << std::endl;
+    std::cout << "post_exec duration:              " << post_exec_duration.count() << " us" << std::endl;
+    std::cout << "re_exec_finish duration:         " << re_exec_finish_duration.count() << " us" << std::endl;
+    std::cout << "dynamic_load_balancing duration: " << dynamic_load_balancing_duration.count() << " us" << std::endl;
+
+
+    static int count = -75;
+    // if (count > 25) exit(-1);
+    count ++;
+    std::cout << "recursion depth: " << count << std::endl;
+
+    std::cout << "========================================" << std::endl;
+
     return re_execute;
 }
 

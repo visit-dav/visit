@@ -123,7 +123,7 @@ avtSIMODataTreeIterator::Execute(void)
     if (*tree != NULL)
     {
         totalNodes = tree->GetNumberOfLeaves();
-        Execute(tree, newTree);
+        Execute(std::move(tree), newTree);
 
         // If in threaded mode wait until Execute has completed.
         FinishExecute();
@@ -146,7 +146,7 @@ avtSIMODataTreeIterator::Execute(void)
         newTree = new avtDataTree();
     }
 
-    SetOutputDataTree(newTree);
+    SetOutputDataTree(std::move(newTree));
 }
 
 

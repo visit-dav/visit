@@ -77,7 +77,7 @@ avtExpExpression::DoOperation(vtkDataArray *in, vtkDataArray *out,
         for (int j = 0 ; j < ncomponents ; j++)
         {
             double val = in->GetComponent(i, j);
-            out->SetComponent(i, j, exp(val));
+            out->SetComponent(i, j, exp(std::move(val)));
         }
     }
 }
