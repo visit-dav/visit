@@ -35,7 +35,7 @@ release = '3.2.2'
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-extensions = ['sphinx.ext.mathjax', 'sphinx_rtd_theme']
+extensions = ['sphinx.ext.mathjax']
 
 # Force installation of any special stuff in the RTD virtual machine instance
 # needed to support any custom extensions.
@@ -95,10 +95,10 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-try:
-    html_theme
-except:
-    html_theme = "sphinx_rtd_theme"
+#try:
+#    html_theme
+#except:
+#    html_theme = "sphinx_rtd_theme"
 if not os.environ.get('READTHEDOCS'):
     try:
         version
