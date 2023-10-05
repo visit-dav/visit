@@ -231,28 +231,24 @@ vtkScalarsToColors *
 avtPLYWriter::GetColorTable()
 {
     const ColorTableAttributes *colorTables = avtColorTables::Instance()->GetColorTables();
-    int nCT = colorTables->GetNumColorTables();
-    for (int i=0; i<nCT; i++)
+    const ColorControlPointList *table = colorTables->GetColorControlPoints(colorTable);
+    if (table)
     {
-        if (colorTables->GetColorTableNames()[i] == colorTable)
+        vtkColorTransferFunction *lut = vtkColorTransferFunction::New();
+
+        double *vals = new double[3*table->GetNumControlPoints()];
+        for (int j=0; j<table->GetNumControlPoints(); j++)
         {
-            const ColorControlPointList &table = colorTables->GetColorTables(i);
-            vtkColorTransferFunction *lut = vtkColorTransferFunction::New();
-
-            double *vals = new double[3*table.GetNumControlPoints()];
-            for (int j=0; j<table.GetNumControlPoints(); j++)
-            {
-                const ColorControlPoint &pt = table.GetControlPoints(j);
-                vals[j*3 + 0] = pt.GetColors()[0]/255.0;
-                vals[j*3 + 1] = pt.GetColors()[1]/255.0;
-                vals[j*3 + 2] = pt.GetColors()[2]/255.0;
-            }
-            
-            lut->BuildFunctionFromTable(colorTableMin, colorTableMax, table.GetNumControlPoints(), vals);
-            delete [] vals;
-
-            return lut;
+            const ColorControlPoint &pt = table->GetControlPoints(j);
+            vals[j*3 + 0] = pt.GetColors()[0]/255.0;
+            vals[j*3 + 1] = pt.GetColors()[1]/255.0;
+            vals[j*3 + 2] = pt.GetColors()[2]/255.0;
         }
+        
+        lut->BuildFunctionFromTable(colorTableMin, colorTableMax, table->GetNumControlPoints(), vals);
+        delete [] vals;
+
+        return lut;
     }
     return NULL;
 }

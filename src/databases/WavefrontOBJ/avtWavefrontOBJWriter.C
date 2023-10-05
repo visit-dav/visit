@@ -156,7 +156,7 @@ avtWavefrontOBJWriter::CreateTrianglePolyData() const
 }
 
 // ****************************************************************************
-//  Method: avtTecplotWriter::GetCombineMode
+//  Method: avtWavefrontOBJWriter::GetCombineMode
 //
 //  Purpose:
 //     Provides a hint to the export mechanism to tell it how to combine data.
@@ -172,4 +172,68 @@ avtDatabaseWriter::CombineMode
 avtWavefrontOBJWriter::GetCombineMode(const std::string &) const
 {
     return CombineAll;
+}
+
+//****************************************************************************
+// Method:  avtWavefrontOBJWriter::GetColorTable()
+//
+// Purpose:
+//   Create color table
+//
+//
+// Programmer:  TODO
+// Creation:    TODO
+//
+// Modifications:
+//
+//****************************************************************************
+
+vtkImageData *
+avtWavefrontOBJWriter::GetColorTable()
+{
+    const ColorTableAttributes *colorTables = avtColorTables::Instance()->GetColorTables();
+    const ColorControlPointList *table = colorTables->GetColorControlPoints(colorTable);
+    if (table)
+    {
+        const int num_ctrl_pts = table->GetNumControlPoints();
+
+
+        vtkImageData *imageData = vtkImageData::New();
+        double spacing[3] = { 1.0, 1.0, 1.0 };
+        int size[3] = { num_ctrl_pts, 0, 0 };
+        double origin[3] = { 0.0, 0.0, 0.0 };
+        imageData->SetDimensions(size);
+        imageData->SetSpacing(spacing);
+        imageData->SetOrigin(origin);
+        imageData->AllocateScalars(VTK_FLOAT, 3);
+        vtkFloatArray *scalars = vtkFloatArray::SafeDownCast(imageData->GetPointData()->GetScalars());
+
+        vtkImagePointIterator iter(imageData);
+        while (!iter.IsAtEnd())
+        {
+            double point[3];
+            iter.GetPosition(point);
+            double value = point[0]*point[0] + point[1]*point[1] + point[2]*point[2];
+            scalars->SetValue(iter.GetId(), value);
+            iter.Next();
+        }
+
+
+        vtkColorTransferFunction *lut = vtkColorTransferFunction::New();
+
+        double *vals = new double[3 * num_ctrl_pts];
+        for (int j = 0; j < num_ctrl_pts; j++)
+        {
+            const ColorControlPoint &pt = table->GetControlPoints(j);
+            vals[j * 3 + 0] = pt.GetColors()[0] / 255.0;
+            vals[j * 3 + 1] = pt.GetColors()[1] / 255.0;
+            vals[j * 3 + 2] = pt.GetColors()[2] / 255.0;
+        }
+        
+        lut->BuildFunctionFromTable(colorTableMin, colorTableMax, num_ctrl_pts, vals);
+        delete [] vals;
+
+        return lut;
+    }
+    return NULL;
 }

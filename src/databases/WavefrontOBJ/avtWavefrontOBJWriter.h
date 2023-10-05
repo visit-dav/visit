@@ -50,6 +50,13 @@ avtWavefrontOBJWriter : public avtDatabaseWriter
 
     virtual bool          CreateTrianglePolyData() const;
     virtual CombineMode   GetCombineMode(const std::string &plotName) const;
+
+  private:
+    vtkScalarsToColors * GetColorTable();
+    
+    bool                       doColor;
+    std::string                colorTable;
+    double                     colorTableMin, colorTableMax;
 };
 
 
