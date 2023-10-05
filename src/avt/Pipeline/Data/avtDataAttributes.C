@@ -1092,27 +1092,25 @@ avtDataAttributes::Copy(const avtDataAttributes &di)
     *(thisProcsActualSpatial)  = *(di.thisProcsActualSpatial);
 
     canUseThisProcsAsOriginalOrActual = di.canUseThisProcsAsOriginalOrActual;
-
-    // We assume that variables is empty, and that everything in di.variables is valid.
-    // Therefore, rather than performing checks and searching for indices each step of
-    // the way, we can just perform a straight copy.
     for (size_t i = 0 ; i < di.variables.size() ; i++)
     {
         const char *vname = di.variables[i]->varname.c_str();
-        VarInfo *new_var = new VarInfo(vname, di.variables[i]->varunits);
-        variables.push_back(new_var);
-        variables[i]->vartype = di.variables[i]->vartype;
-        variables[i]->subnames = di.variables[i]->subnames;
-        variables[i]->binRange = di.variables[i]->binRange;
-        SetVariableDimension(di.variables[i]->dimension, i);
-        variables[i]->centering = di.variables[i]->centering;
-        variables[i]->treatAsASCII = di.variables[i]->treatAsASCII;
-        variables[i]->useForAxis = di.variables[i]->useForAxis;
-        *(variables[i]->originalData) = *(di.variables[i]->originalData);
-        *(variables[i]->thisProcsOriginalData) = *(di.variables[i]->thisProcsOriginalData);
-        *(variables[i]->desiredData) = *(di.variables[i]->desiredData);
-        *(variables[i]->actualData) = *(di.variables[i]->actualData);
-        *(variables[i]->thisProcsActualData) = *(di.variables[i]->thisProcsActualData);
+        AddVariable(vname, di.variables[i]->varunits);
+        SetVariableType(di.variables[i]->vartype, vname);
+        SetVariableSubnames(di.variables[i]->subnames, vname);
+        SetVariableBinRanges(di.variables[i]->binRange, vname);
+        SetVariableDimension(di.variables[i]->dimension, vname);
+        SetCentering(di.variables[i]->centering, vname);
+        SetTreatAsASCII(di.variables[i]->treatAsASCII, vname);
+        SetUseForAxis(di.variables[i]->useForAxis, vname);
+        *(variables[i]->originalData)              = *(di.variables[i]->originalData);
+        *(variables[i]->thisProcsOriginalData)    = 
+                                      *(di.variables[i]->thisProcsOriginalData);
+        *(variables[i]->desiredData)         =
+                                      *(di.variables[i]->desiredData);
+        *(variables[i]->actualData)           = *(di.variables[i]->actualData);
+        *(variables[i]->thisProcsActualData) = 
+                                      *(di.variables[i]->thisProcsActualData);
         *(variables[i]->componentExtents) = *(di.variables[i]->componentExtents);
     }
     activeVariable = di.activeVariable;
@@ -2093,16 +2091,47 @@ avtDataAttributes::SetSpatialDimension(int td)
 //  Arguments:
 //      vd       The new variable dimension.
 //
-//  Programmer: Justin Privitera
-//  Creation:   October 4th, 2023
+//  Programmer: Hank Childs
+//  Creation:   September 4, 2001
 //
 //  Modifications:
+//    Kathleen Bonnell, Wed Oct  3 10:57:13 PDT 2001
+//    Add actualData, thisProcsActualData.
+//
+//    Hank Childs, Mon Feb 23 14:19:15 PST 2004
+//    Account for multiple variables.
+//
+//    Kathleen Bonnell, Thu Mar 11 10:32:04 PST 2004 
+//    DataExtents now always have dimension of 1. 
+//
+//    Kathleen Bonnell, Wed Mar 31 08:03:47 PST 2004
+//    Added a reason to the exception.
+//
+//    Hank Childs, Wed Dec  1 15:29:56 PST 2004
+//    Make sure varname is non-NULL, or we'll crash.
+//
+//    Jeremy Meredith, Thu Feb  7 17:52:59 EST 2008
+//    Added component extents for array variables.
 //
 // ****************************************************************************
 
 void
-avtDataAttributes::SetVariableDimension(int vd, int index)
+avtDataAttributes::SetVariableDimension(int vd, const char *varname)
 {
+    int index = VariableNameToIndex(varname);
+    if (index < 0)
+    {
+        //
+        // We were asked to set the variable dimension of a non-existent
+        // variable.
+        //
+        const char *varname_to_print = (varname != NULL ? varname
+                                         : "<null>");
+        string reason = "Attempting to set dimension of non-existent";
+        reason = reason +  " variable: " + varname_to_print + ".\n";
+        EXCEPTION1(ImproperUseException, reason);
+    }
+
     if (vd == variables[index]->dimension)
     {
         return;
@@ -2145,60 +2174,6 @@ avtDataAttributes::SetVariableDimension(int vd, int index)
         delete variables[index]->componentExtents;
     }
     variables[index]->componentExtents = new avtExtents(vd);
-}
-
-
-// ****************************************************************************
-//  Method: avtDataAttributes::SetVariableDimension
-//
-//  Purpose:
-//      Sets the variable dimension.
-//
-//  Arguments:
-//      vd       The new variable dimension.
-//
-//  Programmer: Hank Childs
-//  Creation:   September 4, 2001
-//
-//  Modifications:
-//    Kathleen Bonnell, Wed Oct  3 10:57:13 PDT 2001
-//    Add actualData, thisProcsActualData.
-//
-//    Hank Childs, Mon Feb 23 14:19:15 PST 2004
-//    Account for multiple variables.
-//
-//    Kathleen Bonnell, Thu Mar 11 10:32:04 PST 2004 
-//    DataExtents now always have dimension of 1. 
-//
-//    Kathleen Bonnell, Wed Mar 31 08:03:47 PST 2004
-//    Added a reason to the exception.
-//
-//    Hank Childs, Wed Dec  1 15:29:56 PST 2004
-//    Make sure varname is non-NULL, or we'll crash.
-//
-//    Jeremy Meredith, Thu Feb  7 17:52:59 EST 2008
-//    Added component extents for array variables.
-//
-// ****************************************************************************
-
-void
-avtDataAttributes::SetVariableDimension(int vd, const char *varname)
-{
-    int index = VariableNameToIndex(varname);
-    if (index < 0)
-    {
-        //
-        // We were asked to set the variable dimension of a non-existent
-        // variable.
-        //
-        const char *varname_to_print = (varname != NULL ? varname
-                                         : "<null>");
-        string reason = "Attempting to set dimension of non-existent";
-        reason = reason +  " variable: " + varname_to_print + ".\n";
-        EXCEPTION1(ImproperUseException, reason);
-    }
-
-    SetVariableDimension(vd, index);
 }
 
 
