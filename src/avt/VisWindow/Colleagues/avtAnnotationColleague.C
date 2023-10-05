@@ -62,9 +62,9 @@ avtAnnotationColleague::~avtAnnotationColleague()
 // Creation:   Mon Mar  2 14:13:57 PST 2009
 //
 // Modifications:
-//   
 //   Mark C. Miller, Thu Oct  5 14:15:30 PDT 2023
 //   Moved here from avtTimeSliderColleague.C
+//   
 // ****************************************************************************
 
 void

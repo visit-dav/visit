@@ -153,11 +153,11 @@ hasKeyMatch(char const *fmtStr, int idx)
 // Mark C. Miller, Thu Jun 23 09:37:47 PDT 2022
 //
 // Modifications
-//
 //   Mark C. Miller, Thu Oct  5 15:32:11 PDT 2023
 //   Added annotdata_t argument for handling any additional annotation data.
 //   Also deref cda here instead of inside TEXT_MACRO.
 //   Handled case where $time macro may need timeScale and timeOffset.
+//
 // ****************************************************************************
 
 static void
@@ -204,9 +204,9 @@ processMacro(char *rv, size_t rvsize=0, char const *key=0, char const *fmt=0,
 // Mark C. Miller, Thu Jun 23 09:36:41 PDT 2022
 //
 // Modifications
-//
 //   Mark C. Miller, Thu Oct  5 15:31:36 PDT 2023
 //   Added annotdata_t arg for passing additional annotation data.
+//
 // ****************************************************************************
 
 static char const *
@@ -265,10 +265,10 @@ avtDataAttributes const *cda, annotdata_t const *ad)
 // Caller must delete what is returned
 //
 // Modifications
-//
 //   Mark C. Miller, Thu Oct  5 15:33:40 PDT 2023
 //   Added logic to capture timeScale,timeOffset and pass into key string
 //   processing methods.
+//
 // ****************************************************************************
 
 char *

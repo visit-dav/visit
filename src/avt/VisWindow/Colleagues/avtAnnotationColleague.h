@@ -37,6 +37,7 @@ class AnnotationObject;
 //   Moved timeScale,timeOffset from avtTimeSliderCollegue
 //   This is because by virtue of annotation macros, half the annotations
 //   could potentially need to access this info when handling $time macros.
+//
 // ****************************************************************************
 
 class VISWINDOW_API avtAnnotationColleague : protected VisWinColleague
