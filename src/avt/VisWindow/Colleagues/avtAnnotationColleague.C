@@ -27,6 +27,8 @@ avtAnnotationColleague::avtAnnotationColleague(VisWindowColleagueProxy &m) :
 {
     active = false;
     visible = true;
+    timeScale = 1.0;
+    timeOffset = 0.0;
 }
 
 // ****************************************************************************
@@ -44,4 +46,30 @@ avtAnnotationColleague::avtAnnotationColleague(VisWindowColleagueProxy &m) :
 
 avtAnnotationColleague::~avtAnnotationColleague()
 {
+}
+
+// ****************************************************************************
+// Method: avtAnnotationColleague::SetTimeScaleAndOffset
+//
+// Purpose: 
+//   Sets the scale and offset that will be applied to the time.
+//
+// Arguments:
+//   scale  : Multiplier for the time.
+//   offset : Offset that will be added to the time.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Mar  2 14:13:57 PST 2009
+//
+// Modifications:
+//   
+//   Mark C. Miller, Thu Oct  5 14:15:30 PDT 2023
+//   Moved here from avtTimeSliderColleague.C
+// ****************************************************************************
+
+void
+avtAnnotationColleague::SetTimeScaleAndOffset(double scale, double offset)
+{
+    timeScale = scale; 
+    timeOffset = offset;
 }
