@@ -4268,6 +4268,7 @@ NetworkManager::Pick(const int id, const int winId, PickAttributes *pa)
 void
 NetworkManager::Query(const std::vector<int> &ids, QueryAttributes *qa)
 {
+    std::cout << "NetworkManager::Query" << std::endl;
     std::vector<avtDataObject_p> queryInputs;
     for (size_t i = 0 ; i < ids.size() ; i++)
     {
@@ -4375,6 +4376,8 @@ NetworkManager::Query(const std::vector<int> &ids, QueryAttributes *qa)
         RETHROW;
     }
     ENDTRY
+
+    std::cout << "end NetworkManager::Query" << std::endl;
 }
 
 // ****************************************************************************

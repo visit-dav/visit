@@ -106,27 +106,27 @@ avtDatasetQuery::~avtDatasetQuery()
 void
 avtDatasetQuery::PerformQuery(QueryAttributes *qA)
 {
-    std::cout << "avtDatasetQuery::PerformQuery" << std::endl;
+    std::cout << "   avtDatasetQuery::PerformQuery" << std::endl;
     queryAtts = *qA;
 
-    std::cout << "Init();" << std::endl;
+    std::cout << "   Init();" << std::endl;
     Init();
 
-    std::cout << "UpdateProgress(0, 0);" << std::endl;
+    std::cout << "   UpdateProgress(0, 0);" << std::endl;
     UpdateProgress(0, 0);
     //
     // Allow derived types to apply any necessary filters.
     //
-    std::cout << "avtDataObject_p dob = ApplyFilters(GetInput());" << std::endl;
+    std::cout << "   avtDataObject_p dob = ApplyFilters(GetInput());" << std::endl;
     avtDataObject_p dob = ApplyFilters(GetInput());
 
     //
     // Reset the input so that we have access to the data tree.
     //
-    std::cout << "SetTypedInput(dob);" << std::endl;
+    std::cout << "   SetTypedInput(dob);" << std::endl;
     SetTypedInput(dob);
 
-    std::cout << "avtDataTree_p tree = GetInputDataTree();" << std::endl;
+    std::cout << "   avtDataTree_p tree = GetInputDataTree();" << std::endl;
     avtDataTree_p tree = GetInputDataTree();
     int validInputTree = 0;
     totalNodes = 0;
@@ -144,7 +144,7 @@ avtDatasetQuery::PerformQuery(QueryAttributes *qA)
     }
 
     bool hadError = false;
-    std::cout << "PreExecute();" << std::endl;
+    std::cout << "   PreExecute();" << std::endl;
     PreExecute();
     TRY
     {
@@ -185,6 +185,8 @@ avtDatasetQuery::PerformQuery(QueryAttributes *qA)
 
     UpdateProgress(1, 0);
     SetOutputQueryAtts(qA, hadError);
+
+    std::cout << "   end avtDatasetQuery::PerformQuery" << std::endl;
 }
 
 
@@ -325,7 +327,7 @@ avtDatasetQuery::PostExecute()
 avtDataObject_p
 avtDatasetQuery::ApplyFilters(avtDataObject_p dob)
 {
-    std::cout << "avtDatasetQuery::ApplyFilters" << std::endl;
+    std::cout << "\tavtDatasetQuery::ApplyFilters" << std::endl;
     std::vector<std::string>  secondaryVars;
     GetSecondaryVars( secondaryVars );
 
@@ -337,7 +339,6 @@ avtDatasetQuery::ApplyFilters(avtDataObject_p dob)
     }
     else
     {
-        std::cout << "else" << std::endl;
         avtContract_p orig_contract = dob->GetOriginatingSource()->
             GetGeneralContract();
 
@@ -350,24 +351,21 @@ avtDatasetQuery::ApplyFilters(avtDataObject_p dob)
         {
             newDS->SetTimestep(queryAtts.GetTimeStep());
         }
-        std::cout << "done timeVarying" << std::endl;
 
         for (size_t ii = 0 ; ii < secondaryVars.size() ; ii++)
         {
             newDS->AddSecondaryVariable( secondaryVars[ii].c_str() );
         }
-        std::cout << "done with loop" << std::endl;
 
         avtContract_p contract =
             new avtContract(newDS, queryAtts.GetPipeIndex());
-        std::cout << "new avtContract(newDS, queryAtts.GetPipeIndex());" << std::endl;
 
         avtDataObject_p rv;
-        std::cout << "avtDataObject_p rv;" << std::endl;
         CopyTo(rv, dob);
-        std::cout << "CopyTo(rv, dob);" << std::endl;
+        // JUSTIN this is what is slow
+        std::cout << "\trv->Update(contract);" << std::endl;
         rv->Update(contract);
-        std::cout << "rv->Update(contract);" << std::endl;
+        std::cout << "\tend avtDatasetQuery::ApplyFilters" << std::endl;
         return rv;
     }
 }

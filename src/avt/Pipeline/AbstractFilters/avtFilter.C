@@ -196,7 +196,11 @@ avtFilter::UpdateProgress(int current, int total)
 bool
 avtFilter::Update(avtContract_p contract)
 {
-    std::cout << "\t\tEntered avtFilter::Update for " << GetType() << std::endl;
+    static int count = 0;
+    if (count > 100) exit(-1);
+    count ++;
+
+    std::cout << "\t\t\tEntered avtFilter::Update for " << GetType() << std::endl;
     debug1 << "Entered update for " << GetType() << endl;
 
     bool debug_dump = avtDebugDumpOptions::DumpEnabled();
@@ -207,7 +211,7 @@ avtFilter::Update(avtContract_p contract)
     // If we don't have an input, there isn't much we can do.
     //
     avtDataObject_p input = GetInput();
-    std::cout << "\t\tavtDataObject_p input = GetInput();" << std::endl;
+    std::cout << "\t\t\tavtDataObject_p input = GetInput();" << std::endl;
     if (*input == NULL)
     {
         EXCEPTION0(NoInputException);
@@ -224,13 +228,13 @@ avtFilter::Update(avtContract_p contract)
     // we are actually interested in using.  Give the derived types an
     // opportunity to reduce the data we are interested in.
     //
-    std::cout << "\t\tavtContract_p newSpec = ModifyContractAndDoBookkeeping(contract);" << std::endl;
+    std::cout << "\t\t\tavtContract_p newSpec = ModifyContractAndDoBookkeeping(contract);" << std::endl;
     avtContract_p newSpec = ModifyContractAndDoBookkeeping(contract);
 
     if (debug_dump)
         DumpContract(newSpec, "output");
 
-    std::cout << "\t\tbool modifiedUpstream = UpdateInput(newSpec);" << std::endl;
+    std::cout << "\t\t\tbool modifiedUpstream = UpdateInput(newSpec);" << std::endl;
     bool modifiedUpstream = UpdateInput(newSpec);
 
     bool re_execute = modifiedUpstream || modified;
@@ -339,7 +343,7 @@ avtFilter::Update(avtContract_p contract)
         }
     }
 
-    std::cout << "\t\tDone Updating " << GetType() << std::endl;
+    std::cout << "\t\t\tDone Updating " << GetType() << std::endl;
     debug1 << "Done Updating " << GetType() << endl;
     return re_execute;
 }
@@ -383,7 +387,7 @@ avtFilter::Update(avtContract_p contract)
 avtContract_p
 avtFilter::ModifyContractAndDoBookkeeping(avtContract_p contract)
 {
-    std::cout << "\t\t\tavtFilter::ModifyContractAndDoBookkeeping" << std::endl;
+    // std::cout << "\t\t\t\tavtFilter::ModifyContractAndDoBookkeeping" << std::endl;
     int   i;
 
     if (contract->DoingOnDemandStreaming())
@@ -414,7 +418,7 @@ avtFilter::ModifyContractAndDoBookkeeping(avtContract_p contract)
         newcontract = dynamicAttributes[i]->ModifyContract(newcontract);
     }
 
-    std::cout << "\t\t\tend avtFilter::ModifyContractAndDoBookkeeping" << std::endl;
+    // std::cout << "\t\t\t\tend avtFilter::ModifyContractAndDoBookkeeping" << std::endl;
     return newcontract;
 }
 
