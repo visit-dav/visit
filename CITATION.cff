@@ -32,7 +32,10 @@
 # And here's the CITATION.cff format:
 #
 cff-version: 1.2.0
-message: "If you are referencing VisIt in a publication, please cite the book chapter below."
+message: >-
+  If you use VisIt, please cite it using the
+  metadata from this file.
+type: software
 preferred-citation:
   collection-title: "High Performance Visualization--Enabling Extreme-Scale Scientific Insight"
   type: generic
