@@ -7224,7 +7224,7 @@ avtGenericDatabase::CommunicateGhosts(avtGhostDataType ghostType,
                       avtDataRequest_p &spec, avtSourceFromDatabase *src,
                       intVector &allDomains, bool canDoCollectiveCommunication)
 {
-
+    std::cout << "avtGenericDatabase::CommunicateGhosts" << std::endl;
 #ifndef PARALLEL
     (void)canDoCollectiveCommunication;
 #endif
@@ -7254,7 +7254,10 @@ avtGenericDatabase::CommunicateGhosts(avtGhostDataType ghostType,
     }
 #endif
     if (shouldStop != 0)
+    {
+        std::cout << "I'm returning early" << std::endl;
         return false;
+    }
 
     avtDomainBoundaries *dbi = GetDomainBoundaryInformation(ds, doms, spec);
     bool hasDomainBoundaryInfo = (dbi != NULL);
@@ -7294,6 +7297,10 @@ avtGenericDatabase::CommunicateGhosts(avtGhostDataType ghostType,
 #endif
     bool canUseGlobalNodeIds = !haveDomainWithoutGlobalNodeIds &&
                                haveGlobalNodeIdsForAtLeastOneDom;
+
+    std::cout << (canUseGlobalNodeIds ? "yes canUseGlobalNodeIds" : "no canUseGlobalNodeIds") << std::endl;
+    std::cout << (haveDomainWithoutGlobalNodeIds ? "yes haveDomainWithoutGlobalNodeIds" : "no haveDomainWithoutGlobalNodeIds") << std::endl;
+    std::cout << (haveGlobalNodeIdsForAtLeastOneDom ? "yes haveGlobalNodeIdsForAtLeastOneDom" : "no haveGlobalNodeIdsForAtLeastOneDom") << std::endl;
 
     avtStreamingGhostGenerator *sgg = GetStreamingGhostGenerator();
     bool canDoStreamingGhosts = (sgg != NULL);
@@ -9172,6 +9179,7 @@ avtGenericDatabase::CommunicateGhostNodesFromGlobalNodeIds(
                       avtDatasetCollection &ds, intVector &doms,
                       avtDataRequest_p &spec, avtSourceFromDatabase *src)
 {
+    std::cout << "eric help me!" << std::endl;
     (void)src;
     int ts = spec->GetTimestep();
     avtDatabaseMetaData *md = GetMetaData(ts);

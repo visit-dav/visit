@@ -402,6 +402,9 @@ class MiliClassMetaData
                                                             int);
     int                               GetConnectivityOffset(int);
 
+    std::vector< intVector >          GetLabelIds()
+                                        { return labelIds; };
+
     void                              PopulateLabelIds(int,
                                                        int *,
                                                        int,

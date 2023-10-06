@@ -791,73 +791,73 @@ avtMiliFileFormat::GetMesh(int timestep, int dom, const char *mesh)
             }
         }
 
-        vtkUnsignedCharArray *ghostNodes = vtkUnsignedCharArray::New();
-        ghostNodes->SetName("avtGhostNodes");
-        ghostNodes->SetNumberOfTuples(nNodes);
+//         vtkUnsignedCharArray *ghostNodes = vtkUnsignedCharArray::New();
+//         ghostNodes->SetName("avtGhostNodes");
+//         ghostNodes->SetNumberOfTuples(nNodes);
 
-        unsigned char *ghostNodePtr = ghostNodes->GetPointer(0);
+//         unsigned char *ghostNodePtr = ghostNodes->GetPointer(0);
 
-        for (int i = 0; i < nNodes; ++i)
-        {
-            ghostNodePtr[i] = 0;
-            avtGhostData::AddGhostNodeType(ghostNodePtr[i],
-                NODE_NOT_APPLICABLE_TO_PROBLEM);
-        }
+//         for (int i = 0; i < nNodes; ++i)
+//         {
+//             ghostNodePtr[i] = 0;
+//             avtGhostData::AddGhostNodeType(ghostNodePtr[i],
+//                 NODE_NOT_APPLICABLE_TO_PROBLEM);
+//         }
 
-        vtkUnsignedCharArray *ghostZones = vtkUnsignedCharArray::New();
-        ghostZones->SetName("avtGhostZones");
-        ghostZones->SetNumberOfTuples(nCells);
+//         vtkUnsignedCharArray *ghostZones = vtkUnsignedCharArray::New();
+//         ghostZones->SetName("avtGhostZones");
+//         ghostZones->SetNumberOfTuples(nCells);
 
-        unsigned char *ghostZonePtr = ghostZones->GetPointer(0);
+//         unsigned char *ghostZonePtr = ghostZones->GetPointer(0);
 
-        for (int i = 0; i < nNodes; ++i)
-        {
-            ghostNodePtr[i] = 0;
-            avtGhostData::AddGhostNodeType(ghostNodePtr[i],
-                NODE_NOT_APPLICABLE_TO_PROBLEM);
-        }
+//         for (int i = 0; i < nNodes; ++i)
+//         {
+//             ghostNodePtr[i] = 0;
+//             avtGhostData::AddGhostNodeType(ghostNodePtr[i],
+//                 NODE_NOT_APPLICABLE_TO_PROBLEM);
+//         }
 
-        for (int i = 0; i < nCells; ++i)
-        {
-            ghostZonePtr[i] = 0;
+//         for (int i = 0; i < nCells; ++i)
+//         {
+//             ghostZonePtr[i] = 0;
 
-            //
-            // Element status > .5 is good.
-            //
-            if (sandBuffer[i] > 0.5)
-            {
-                vtkIdType nCellPts = 0;
-#if LIB_VERSION_LE(VTK,8,1,0)
-                vtkIdType *cellPts = NULL;
-#else
-                const vtkIdType *cellPts = nullptr;
-#endif
+//             //
+//             // Element status > .5 is good.
+//             //
+//             if (sandBuffer[i] > 0.5)
+//             {
+//                 vtkIdType nCellPts = 0;
+// #if LIB_VERSION_LE(VTK,8,1,0)
+//                 vtkIdType *cellPts = NULL;
+// #else
+//                 const vtkIdType *cellPts = nullptr;
+// #endif
 
-                rv->GetCellPoints(i, nCellPts, cellPts);
+//                 rv->GetCellPoints(i, nCellPts, cellPts);
 
-                if (nCellPts && cellPts)
-                {
-                    for (int j = 0; j < nCellPts; ++j)
-                    {
-                        avtGhostData::RemoveGhostNodeType(
-                            ghostNodePtr[cellPts[j]],
-                            NODE_NOT_APPLICABLE_TO_PROBLEM);
-                    }
-                }
-            }
-            else
-            {
-                avtGhostData::AddGhostZoneType(ghostZonePtr[i],
-                    ZONE_NOT_APPLICABLE_TO_PROBLEM);
-            }
-        }
+//                 if (nCellPts && cellPts)
+//                 {
+//                     for (int j = 0; j < nCellPts; ++j)
+//                     {
+//                         avtGhostData::RemoveGhostNodeType(
+//                             ghostNodePtr[cellPts[j]],
+//                             NODE_NOT_APPLICABLE_TO_PROBLEM);
+//                     }
+//                 }
+//             }
+//             else
+//             {
+//                 avtGhostData::AddGhostZoneType(ghostZonePtr[i],
+//                     ZONE_NOT_APPLICABLE_TO_PROBLEM);
+//             }
+//         }
 
         delete [] sandBuffer;
 
-        rv->GetPointData()->AddArray(ghostNodes);
-        rv->GetCellData()->AddArray(ghostZones);
-        ghostNodes->Delete();
-        ghostZones->Delete();
+        // rv->GetPointData()->AddArray(ghostNodes);
+        // rv->GetCellData()->AddArray(ghostZones);
+        // ghostNodes->Delete();
+        // ghostZones->Delete();
     }
 
 
@@ -3251,31 +3251,35 @@ avtMiliFileFormat::GetAuxiliaryData(const char *varName,
     }
     else if (strcmp(auxType, AUXILIARY_DATA_GLOBAL_NODE_IDS) == 0)
     {
-        int meshId = ???;
-
-        int nNodes        = miliMetaData[meshId]->GetNumNodes(dom);
-        int numBlocks     = 0;
-        int *blockRanges  = NULL;
-        int *labelIds     = new int[nNodes];
-        int rval = mc_load_node_labels(dbid[dom], meshId, varName,
-                                       &numBlocks, &blockRanges, labelIds);
-        if (rval != OK)
+        std::cout << "I'm here" << std::endl;
+        const char *mesh = "mesh";
+        char *check = 0;
+        int meshId;
+        int offset = 4;
+        //
+        // Do a checked conversion to integer.
+        //
+        meshId = (int) strtol(mesh + offset, &check, 10);
+        if (meshId == 0 || check == mesh + offset)
         {
-            debug1 << "MILI: mc_load_node_labels failed!\n";
-            numBlocks   = 0;
-            blockRanges = NULL;
+            EXCEPTION1(InvalidVariableException, mesh)
+        }
+        --meshId;
+
+        MiliClassMetaData *miliClass =
+            miliMetaData[meshId]->GetClassMDByShortName("node");
+
+        intVector labelIds = miliClass->GetLabelIds()[dom];
+
+        int *myLabelIds = new int[labelIds.size()];
+        for (int i = 0; i < labelIds.size(); i ++)
+        {
+            myLabelIds[i] = labelIds[i];
         }
 
         vtkIntArray *rv = vtkIntArray::New();
-        rv->SetArray(labelIds, nNodes, 0);
+        rv->SetArray(myLabelIds, labelIds.size(), 0);
         rv->SetNumberOfComponents(1);
-
-        //
-        // Mili mallocs blockRanges using C style.
-        //
-        if (blockRanges != NULL)
-            free(blockRanges);
-        delete [] labelIds;
 
         df = avtVariableCache::DestructVTKObject;
         return (void *) rv;
