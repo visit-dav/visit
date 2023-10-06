@@ -87,6 +87,11 @@ typedef struct _keyfmt {
 } keyfmt_t;
 static std::vector<keyfmt_t> keysAndFmts;
 
+typedef struct _annotdata {
+    double timeScale;
+    double timeOffset;
+} annotdata_t;
+
 // ****************************************************************************
 // static function: hasKeyMatch
 //
@@ -119,7 +124,7 @@ hasKeyMatch(char const *fmtStr, int idx)
 // Mark C. Miller, Thu Jun 23 10:05:58 PDT 2022
 // ****************************************************************************
 
-#define TEXT_MACRO(NAME, FMT, GETTER)                  \
+#define TEXT_MACRO(NAME, FMT, VAL)                     \
     do                                                 \
     {                                                  \
         if (!initialized)                              \
@@ -129,7 +134,7 @@ hasKeyMatch(char const *fmtStr, int idx)
         }                                              \
         else if (!strncmp(key, #NAME, sizeof(#NAME)))  \
         {                                              \
-            snprintf(rv, rvsize, fmt, cda->GETTER);    \
+            snprintf(rv, rvsize, fmt, VAL);            \
             return;                                    \
         }                                              \
    } while (false) 
@@ -146,37 +151,44 @@ hasKeyMatch(char const *fmtStr, int idx)
 // The first function is performed only once at startup.
 //
 // Mark C. Miller, Thu Jun 23 09:37:47 PDT 2022
+//
+// Modifications
+//   Mark C. Miller, Thu Oct  5 15:32:11 PDT 2023
+//   Added annotdata_t argument for handling any additional annotation data.
+//   Also deref cda here instead of inside TEXT_MACRO.
+//   Handled case where $time macro may need timeScale and timeOffset.
+//
 // ****************************************************************************
 
 static void
 processMacro(char *rv, size_t rvsize=0, char const *key=0, char const *fmt=0,
-    avtDataAttributes const *cda=0)
+    avtDataAttributes const *cda=0, annotdata_t const *ad=0)
 {
     static bool initialized = false;
 
     if (initialized && rv==0) return;
 
-    TEXT_MACRO(time, %g, GetTime());
-    TEXT_MACRO(cycle, %d, GetCycle());
-    TEXT_MACRO(index, %d, GetTimeIndex());
-    TEXT_MACRO(numstates, %d, GetNumStates());
-    TEXT_MACRO(dbcomment, %s, GetCommentInDB().c_str());
-    TEXT_MACRO(lod, %z, GetLevelsOfDetail());
-    TEXT_MACRO(vardim, %d, GetVariableDimension());
-    TEXT_MACRO(numvar, %d, GetNumberOfVariables());
-    TEXT_MACRO(topodim, %d, GetTopologicalDimension());
-    TEXT_MACRO(spatialdim, %d, GetSpatialDimension());
-    TEXT_MACRO(varname, %s, GetVariableName().c_str());
-    TEXT_MACRO(varunits, %s, GetVariableUnits().c_str());
-    TEXT_MACRO(meshname, %s, GetMeshname().c_str());
-    TEXT_MACRO(filename, %s, GetFilename().c_str());
-    TEXT_MACRO(fulldbname, %s, GetFullDBName().c_str());
-    TEXT_MACRO(xunits, %s, GetXUnits().c_str());
-    TEXT_MACRO(yunits, %s, GetYUnits().c_str());
-    TEXT_MACRO(zunits, %s, GetZUnits().c_str());
-    TEXT_MACRO(xlabel, %s, GetXLabel().c_str());
-    TEXT_MACRO(ylabel, %s, GetYLabel().c_str());
-    TEXT_MACRO(zlabel, %s, GetZLabel().c_str());
+    TEXT_MACRO(time, %g, (cda->GetTime()*ad->timeScale+ad->timeOffset));
+    TEXT_MACRO(cycle, %d, cda->GetCycle());
+    TEXT_MACRO(index, %d, cda->GetTimeIndex());
+    TEXT_MACRO(numstates, %d, cda->GetNumStates());
+    TEXT_MACRO(dbcomment, %s, cda->GetCommentInDB().c_str());
+    TEXT_MACRO(lod, %z, cda->GetLevelsOfDetail());
+    TEXT_MACRO(vardim, %d, cda->GetVariableDimension());
+    TEXT_MACRO(numvar, %d, cda->GetNumberOfVariables());
+    TEXT_MACRO(topodim, %d, cda->GetTopologicalDimension());
+    TEXT_MACRO(spatialdim, %d, cda->GetSpatialDimension());
+    TEXT_MACRO(varname, %s, cda->GetVariableName().c_str());
+    TEXT_MACRO(varunits, %s, cda->GetVariableUnits().c_str());
+    TEXT_MACRO(meshname, %s, cda->GetMeshname().c_str());
+    TEXT_MACRO(filename, %s, cda->GetFilename().c_str());
+    TEXT_MACRO(fulldbname, %s, cda->GetFullDBName().c_str());
+    TEXT_MACRO(xunits, %s, cda->GetXUnits().c_str());
+    TEXT_MACRO(yunits, %s, cda->GetYUnits().c_str());
+    TEXT_MACRO(zunits, %s, cda->GetZUnits().c_str());
+    TEXT_MACRO(xlabel, %s, cda->GetXLabel().c_str());
+    TEXT_MACRO(ylabel, %s, cda->GetYLabel().c_str());
+    TEXT_MACRO(zlabel, %s, cda->GetZLabel().c_str());
 
     initialized = true;
 }
@@ -190,11 +202,16 @@ processMacro(char *rv, size_t rvsize=0, char const *key=0, char const *fmt=0,
 // is returned on a local static var.
 //
 // Mark C. Miller, Thu Jun 23 09:36:41 PDT 2022
+//
+// Modifications
+//   Mark C. Miller, Thu Oct  5 15:31:36 PDT 2023
+//   Added annotdata_t arg for passing additional annotation data.
+//
 // ****************************************************************************
 
 static char const *
 getKeyString(char const *fmtStr, int inlen, int idx, int kid,
-avtDataAttributes const *cda)
+avtDataAttributes const *cda, annotdata_t const *ad)
 {
     static char retval[256];
     char const *key = keysAndFmts[kid].key;
@@ -213,7 +230,7 @@ avtDataAttributes const *cda)
         strcpy(fmt, defaultFmt); // (e.g. fmt = "%g")
     }
 
-    processMacro(retval, sizeof(retval), key, fmt, cda);
+    processMacro(retval, sizeof(retval), key, fmt, cda, ad);
 
     return retval;
 }
@@ -247,12 +264,19 @@ avtDataAttributes const *cda)
 //
 // Caller must delete what is returned
 //
+// Modifications
+//   Mark C. Miller, Thu Oct  5 15:33:40 PDT 2023
+//   Added logic to capture timeScale,timeOffset and pass into key string
+//   processing methods.
+//
 // ****************************************************************************
 
 char *
 avtAnnotationWithTextColleague::CreateAnnotationString(const char *formatString)
 {
     std::string rv;
+
+    annotdata_t ad = {timeScale, timeOffset};
 
     processMacro(0); // initialize keysAndFmts;
 
@@ -266,7 +290,7 @@ avtAnnotationWithTextColleague::CreateAnnotationString(const char *formatString)
             if (keyMatch != -1)
             {
                 i++; // move to next char after '$'                
-                rv += getKeyString(formatString, inlen, i, keyMatch, currentDataAttributes);
+                rv += getKeyString(formatString, inlen, i, keyMatch, currentDataAttributes, &ad);
                 i += (int) strlen(keysAndFmts[keyMatch].key); // skip over key
                 if (formatString[i] == '%')
                 {
