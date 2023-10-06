@@ -11,7 +11,7 @@
 // function.
 // 2023/10/05 Olivier Cessenat.
 // Verbosity for poor man's debugging
-#define INTERACTIVEPLOT 1
+#define INTERACTIVEPLOT 0
 // Consider white space indicates a split
 #define MULTSEG 1
 // ************************************************************************* //
