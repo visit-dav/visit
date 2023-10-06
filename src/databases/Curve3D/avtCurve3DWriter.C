@@ -13,7 +13,7 @@
 #include <vtkCellData.h>
 #include <vtkDataArray.h>
 #include <vtkPointData.h>
-#include <vtkRectilinearGrid.h>
+#include <vtkUnstructuredGrid.h>
 
 #include <avtDatabaseMetaData.h>
 #include <StringHelpers.h>
@@ -144,48 +144,15 @@ avtCurve3DWriter::WriteChunk(vtkDataSet *ds, int chunk)
     if(atts.TimeIsAccurate())
         ofile << commentStyle << " TIME " << atts.GetTime() << endl;
 
-    bool isCurve = false;
-    vtkRectilinearGrid *rgrid = vtkRectilinearGrid::SafeDownCast(ds);
-    int dims[3] = {0,0,0};
-    if(rgrid != NULL)
+    vtkUnstructuredGrid *rgrid = vtkUnstructuredGrid::SafeDownCast(ds);
+
+    vtkPoints *lpts = rgrid->GetPoints() ;
+    int npoints = lpts->GetNumberOfPoints();
+
+    for(int i=0; i<npoints; ++i)
     {
-        rgrid->GetDimensions(dims);
-        isCurve = (dims[1] <= 1 && dims[2] <= 1 && rgrid->GetXCoordinates() != NULL);
-    }
-    if(isCurve)
-    {
-        vtkDataArray *xc = rgrid->GetXCoordinates();
-        for(int i = 0; i < rgrid->GetPointData()->GetNumberOfArrays(); ++i)
-        {
-            vtkDataArray *arr = rgrid->GetPointData()->GetArray(i);
-            ofile << commentStyle << " " << SanitizeName(arr->GetName()) << endl;
-            for(vtkIdType j = 0; j < arr->GetNumberOfTuples(); ++j)
-                ofile << xc->GetTuple1(j) << " " << arr->GetTuple1(j) << endl;
-        }
-        for(int i = 0; i < rgrid->GetCellData()->GetNumberOfArrays(); ++i)
-        {
-            vtkDataArray *arr = rgrid->GetCellData()->GetArray(i);
-            ofile << commentStyle << " " << SanitizeName(arr->GetName()) << endl;
-            for(vtkIdType j = 0; j < arr->GetNumberOfTuples(); ++j)
-                ofile << j << " " << arr->GetTuple1(j) << endl;
-        }
-    }
-    else
-    {
-        for(int i = 0; i < ds->GetPointData()->GetNumberOfArrays(); ++i)
-        {
-            vtkDataArray *arr = ds->GetPointData()->GetArray(i);
-            ofile << commentStyle << " " << SanitizeName(arr->GetName()) << endl;
-            for(vtkIdType j = 0; j < arr->GetNumberOfTuples(); ++j)
-                ofile << j << " " << arr->GetTuple1(j) << endl;
-        }
-        for(int i = 0; i < ds->GetCellData()->GetNumberOfArrays(); ++i)
-        {
-            vtkDataArray *arr = ds->GetCellData()->GetArray(i);
-            ofile << commentStyle << " " << SanitizeName(arr->GetName()) << endl;
-            for(vtkIdType j = 0; j < arr->GetNumberOfTuples(); ++j)
-                ofile << j << " " << arr->GetTuple1(j) << endl;
-        }
+        double * positions = lpts->GetPoint(i) ;
+        ofile << positions[0] << " " << positions[1] << " " << positions[2] << " " << endl;
     }
 }
 
