@@ -16635,12 +16635,12 @@ AddAle3drlxstatEnumerationInfo(avtScalarMetaData *smd)
     smd->AddEnumNameValue("RLX_SALE_25",25);
     smd->AddEnumNameValue("RLX_AdvTime_26",26);
     smd->AddEnumNameValue("RLX_HoldUntilActive_27",27);
-    smd->AddEnumNameValue("RLX_SlaveExtension_29",29);
+    smd->AddEnumNameValue("RLX_WorkerExtension_29",29);
     smd->AddEnumNameValue("RLX_PartialInvalid_30",30);
     smd->AddEnumNameValue("RLX_FreeSurface_31",31);
     smd->AddEnumNameValue("RLX_MixedNode_32",32);
     smd->AddEnumNameValue("RLX_IgnitionPt_33",33);
-    smd->AddEnumNameValue("RLX_SlideMaster_34",34);
+    smd->AddEnumNameValue("RLX_SlideManager_34",34);
     smd->AddEnumNameValue("RLX_PeriodicRelax_35",35);
     smd->AddEnumNameValue("RLX_HoldUntilGrace_36",36);
     smd->AddEnumNameValue("RLX_HeldIntHist_37",37);

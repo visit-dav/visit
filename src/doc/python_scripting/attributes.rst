@@ -1695,7 +1695,7 @@ This behavior is represented by the type ``CLI_return_t`` in an attempt to disti
     | parallelizationAlgorithmType           |  **VisItSelects**,          |
     |                                        |  LoadOnDemand,              |
     |                                        |  ParallelStaticDomains,     |
-    |                                        |  MasterSlave                |
+    |                                        |  ManagerWorker                |
     +----------------------------------------+-----------------------------+
     | maxProcessCount                        | 10                          |
     +----------------------------------------+-----------------------------+
@@ -1950,7 +1950,7 @@ This behavior is represented by the type ``CLI_return_t`` in an attempt to disti
     | parallelizationAlgorithmType          |  **VisItSelects**,         |
     |                                       |  LoadOnDemand,             |
     |                                       |  ParallelStaticDomains,    |
-    |                                       |  MasterSlave               |
+    |                                       |  ManagerWorker               |
     +---------------------------------------+----------------------------+
     | maxProcessCount                       | 10                         |
     +---------------------------------------+----------------------------+
@@ -2176,7 +2176,7 @@ This behavior is represented by the type ``CLI_return_t`` in an attempt to disti
     | parallelizationAlgorithmType           |  **VisItSelects**,         |
     |                                        |  LoadOnDemand,             |
     |                                        |  ParallelStaticDomains,    |
-    |                                        |  MasterSlave               |
+    |                                        |  ManagerWorker               |
     +----------------------------------------+----------------------------+
     | maxProcessCount                        | 10                         |
     +----------------------------------------+----------------------------+
@@ -2919,7 +2919,7 @@ This behavior is represented by the type ``CLI_return_t`` in an attempt to disti
     | parallelizationAlgorithmType          |  **VisItSelects**,          |
     |                                       |  LoadOnDemand,              |
     |                                       |  ParallelStaticDomains,     |
-    |                                       |  MasterSlave                |
+    |                                       |  ManagerWorker                |
     +---------------------------------------+-----------------------------+
     | maxProcessCount                       | 10                          |
     +---------------------------------------+-----------------------------+

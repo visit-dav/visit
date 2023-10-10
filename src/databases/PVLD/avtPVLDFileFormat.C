@@ -374,21 +374,21 @@ avtPVLDFileFormat::GetMesh(int domain, const char *meshname)
                     preader_->ReadTiedSetBlockMesh( domain, crd, ele );
                     if( crd.size()>0 ) return GenerateShellMesh( crd, ele );
                 }
-                else if( vs[1] == "Master" )
+                else if( vs[1] == "Manager" )
                 {
-                    preader_->ReadTiedSetMasterBlockMesh( domain, crd );
+                    preader_->ReadTiedSetManagerBlockMesh( domain, crd );
                     if( crd.size()>0 ) return GeneratePointMesh( crd );
                 }
-                else if( vs[1] == "Slave" )
+                else if( vs[1] == "Worker" )
                 {
-                    preader_->ReadTiedSetSlaveBlockMesh( domain, crd );
+                    preader_->ReadTiedSetWorkerBlockMesh( domain, crd );
                     if( crd.size()>0 ) return GeneratePointMesh( crd );
                 }
                 else if( vs[1] == "Bond" )
                 {
                     vector<float> crd2;
-                    preader_->ReadTiedSetMasterBlockMesh( domain, crd );
-                    preader_->ReadTiedSetSlaveBlockMesh( domain, crd2 );
+                    preader_->ReadTiedSetManagerBlockMesh( domain, crd );
+                    preader_->ReadTiedSetWorkerBlockMesh( domain, crd2 );
                     if( crd.size()>0 ) return GenerateBondMesh( crd, crd2 );
                 }
             }
@@ -399,21 +399,21 @@ avtPVLDFileFormat::GetMesh(int domain, const char *meshname)
                     preader_->ReadContactBlockMesh( domain, crd, ele );
                     if( crd.size()>0 ) return GenerateShellMesh( crd, ele );
                 }
-                else if( vs[1] == "Master" )
+                else if( vs[1] == "Manager" )
                 {
-                    preader_->ReadContactMasterBlockMesh( domain, crd );
+                    preader_->ReadContactManagerBlockMesh( domain, crd );
                     if( crd.size()>0 ) return GeneratePointMesh( crd );
                 }
-                else if( vs[1] == "Slave" )
+                else if( vs[1] == "Worker" )
                 {
-                    preader_->ReadContactSlaveBlockMesh( domain, crd );
+                    preader_->ReadContactWorkerBlockMesh( domain, crd );
                     if( crd.size()>0 ) return GeneratePointMesh( crd );
                 }
                 else if( vs[1] == "Bond" )
                 {
                     vector<float> crd2;
-                    preader_->ReadContactMasterBlockMesh( domain, crd );
-                    preader_->ReadContactSlaveBlockMesh( domain, crd2 );
+                    preader_->ReadContactManagerBlockMesh( domain, crd );
+                    preader_->ReadContactWorkerBlockMesh( domain, crd2 );
                     if( crd.size()>0 ) return GenerateBondMesh( crd, crd2 );
                 }
             }
@@ -1065,7 +1065,7 @@ avtPVLDFileFormat::AddTiedSetMesh( avtDatabaseMetaData *md )
         md->Add(mmd);
 
         mmd = new avtMeshMetaData;
-        mmd->name = PVLD_Reader::ComposeNames( bn, "Master" );
+        mmd->name = PVLD_Reader::ComposeNames( bn, "Manager" );
         mmd->spatialDimension = 3;
         mmd->topologicalDimension = 0;
         mmd->meshType = AVT_UNSTRUCTURED_MESH;
@@ -1073,7 +1073,7 @@ avtPVLDFileFormat::AddTiedSetMesh( avtDatabaseMetaData *md )
         md->Add(mmd);
 
         mmd = new avtMeshMetaData;
-        mmd->name = PVLD_Reader::ComposeNames( bn, "Slave" );
+        mmd->name = PVLD_Reader::ComposeNames( bn, "Worker" );
         mmd->spatialDimension = 3;
         mmd->topologicalDimension = 0;
         mmd->meshType = AVT_UNSTRUCTURED_MESH;
@@ -1107,7 +1107,7 @@ avtPVLDFileFormat::AddContactMesh( avtDatabaseMetaData *md )
         md->Add(mmd);
 
         mmd = new avtMeshMetaData;
-        mmd->name = PVLD_Reader::ComposeNames( bn, "Master" );
+        mmd->name = PVLD_Reader::ComposeNames( bn, "Manager" );
         mmd->spatialDimension = 3;
         mmd->topologicalDimension = 0;
         mmd->meshType = AVT_UNSTRUCTURED_MESH;
@@ -1115,7 +1115,7 @@ avtPVLDFileFormat::AddContactMesh( avtDatabaseMetaData *md )
         md->Add(mmd);
 
         mmd = new avtMeshMetaData;
-        mmd->name = PVLD_Reader::ComposeNames( bn, "Slave" );
+        mmd->name = PVLD_Reader::ComposeNames( bn, "Worker" );
         mmd->spatialDimension = 3;
         mmd->topologicalDimension = 0;
         mmd->meshType = AVT_UNSTRUCTURED_MESH;
@@ -1877,8 +1877,8 @@ avtPVLDFileFormat::AddTiedSetVariables( avtDatabaseMetaData *md )
     {
         const string& basename = PVLD_Reader::tiedset_name;
         string mesh1name = PVLD_Reader::ComposeNames( basename, "Segment" );
-        string mesh2name = PVLD_Reader::ComposeNames( basename, "Master" );
-        string mesh3name = PVLD_Reader::ComposeNames( basename, "Slave" );
+        string mesh2name = PVLD_Reader::ComposeNames( basename, "Manager" );
+        string mesh3name = PVLD_Reader::ComposeNames( basename, "Worker" );
         string mesh4name = PVLD_Reader::ComposeNames( basename, "Bond" );
 
         for( int i=0; i<preader_->GetNumOfTiedSetVariables(); i++ )
@@ -1887,8 +1887,8 @@ avtPVLDFileFormat::AddTiedSetVariables( avtDatabaseMetaData *md )
             const vector<int>& dims = preader_->GetTiedSetVariableDims(i);
 
             if( name == "MstSeg"  ) continue;
-            if( name == "XMaster" ) continue;
-            if( name == "XSlave"  ) continue;
+            if( name == "XManager" ) continue;
+            if( name == "XWorker"  ) continue;
 
             if( dims.size()==1 )
             {
@@ -1933,8 +1933,8 @@ avtPVLDFileFormat::AddContactVariables( avtDatabaseMetaData *md )
     {
         const string& basename = PVLD_Reader::contact_name;
         string mesh1name = PVLD_Reader::ComposeNames( basename, "Segment" );
-        string mesh2name = PVLD_Reader::ComposeNames( basename, "Master" );
-        string mesh3name = PVLD_Reader::ComposeNames( basename, "Slave" );
+        string mesh2name = PVLD_Reader::ComposeNames( basename, "Manager" );
+        string mesh3name = PVLD_Reader::ComposeNames( basename, "Worker" );
         string mesh4name = PVLD_Reader::ComposeNames( basename, "Bond" );
 
         for( int i=0; i<preader_->GetNumOfContactVariables(); i++ )
@@ -1943,8 +1943,8 @@ avtPVLDFileFormat::AddContactVariables( avtDatabaseMetaData *md )
             const vector<int>& dims = preader_->GetContactVariableDims(i);
 
             if( name == "MstSeg"  ) continue;
-            if( name == "XMaster" ) continue;
-            if( name == "XSlave"  ) continue;
+            if( name == "XManager" ) continue;
+            if( name == "XWorker"  ) continue;
 
             if( dims.size()==1 )
             {

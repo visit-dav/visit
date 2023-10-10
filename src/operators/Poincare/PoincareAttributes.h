@@ -120,7 +120,7 @@ public:
     {
         LoadOnDemand,
         ParallelStaticDomains,
-        MasterSlave,
+        ManagerWorker,
         VisItSelects
     };
     enum PathlinesCMFE

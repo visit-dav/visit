@@ -129,7 +129,7 @@ QvisIntegralCurveWindow::~QvisIntegralCurveWindow()
 //   Changed 'Termination Criteria' to 'Termination Criterion'
 //
 //   Dave Pugmire, Thu Feb  5 12:20:15 EST 2009
-//   Added workGroupSize for the masterSlave algorithm.
+//   Added workGroupSize for the managerWorker algorithm.
 //
 //   Dave Pugmire, Mon Feb 23, 09:11:34 EST 2009
 //   Added number of steps as a termination criterion.
@@ -1119,7 +1119,7 @@ QvisIntegralCurveWindow::CreateAdvancedTab(QWidget *pageAdvanced)
 //   Removed the accurate distance calculation option.
 //
 //   Dave Pugmire, Thu Feb  5 12:20:15 EST 2009
-//   Added workGroupSize for the masterSlave algorithm.
+//   Added workGroupSize for the managerWorker algorithm.
 //
 //   Dave Pugmire, Tue Dec 29 14:37:53 EST 2009
 //   Add custom renderer and lots of appearance options to the integral curves plots.
@@ -2150,7 +2150,7 @@ QvisIntegralCurveWindow::UpdateIntegrationAttributes()
 // Modifications:
 //
 //   Dave Pugmire, Thu Feb  5 12:20:15 EST 2009
-//   Added workGroupSize for the masterSlave algorithm.
+//   Added workGroupSize for the managerWorker algorithm.
 //
 // ****************************************************************************
 
@@ -2161,8 +2161,8 @@ QvisIntegralCurveWindow::UpdateAlgorithmAttributes()
                             IntegralCurveAttributes::LoadOnDemand);
     bool useStaticDomains = (atts->GetParallelizationAlgorithmType() ==
                              IntegralCurveAttributes::ParallelStaticDomains);
-    bool useMasterSlave = (atts->GetParallelizationAlgorithmType() ==
-                           IntegralCurveAttributes::MasterSlave);
+    bool useManagerWorker = (atts->GetParallelizationAlgorithmType() ==
+                           IntegralCurveAttributes::ManagerWorker);
 
     //Turn off everything.
     maxDomainCacheLabel->hide();
@@ -2182,7 +2182,7 @@ QvisIntegralCurveWindow::UpdateAlgorithmAttributes()
         maxSLCountLabel->show();
         maxSLCount->show();
     }
-    else if (useMasterSlave)
+    else if (useManagerWorker)
     {
         maxDomainCacheLabel->show();
         maxDomainCache->show();
@@ -2221,7 +2221,7 @@ QvisIntegralCurveWindow::UpdateAlgorithmAttributes()
 //   Use new methods.
 //
 //   Dave Pugmire, Thu Feb  5 12:20:15 EST 2009
-//   Added workGroupSize for the masterSlave algorithm.
+//   Added workGroupSize for the managerWorker algorithm.
 //
 //   Dave Pugmire, Tue Dec 29 14:37:53 EST 2009
 //   Add custom renderer and lots of appearance options to the integral curves plots.

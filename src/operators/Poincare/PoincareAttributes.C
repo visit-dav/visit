@@ -505,7 +505,7 @@ PoincareAttributes::DataValue_FromString(const std::string &s, PoincareAttribute
 //
 
 static const char *ParallelizationAlgorithmType_strings[] = {
-"LoadOnDemand", "ParallelStaticDomains", "MasterSlave",
+"LoadOnDemand", "ParallelStaticDomains", "ManagerWorker",
 "VisItSelects"};
 
 std::string

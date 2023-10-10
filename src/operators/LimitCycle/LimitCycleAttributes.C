@@ -133,7 +133,7 @@ LimitCycleAttributes::IntegrationDirection_FromString(const std::string &s, Limi
 //
 
 static const char *ParallelizationAlgorithmType_strings[] = {
-"LoadOnDemand", "ParallelStaticDomains", "MasterSlave",
+"LoadOnDemand", "ParallelStaticDomains", "ManagerWorker",
 "VisItSelects"};
 
 std::string

@@ -486,7 +486,7 @@ PyIntegralCurveAttributes_ToString(const IntegralCurveAttributes *atts, const ch
           break;
     }
 
-    const char *parallelizationAlgorithmType_names = "LoadOnDemand, ParallelStaticDomains, MasterSlave, VisItSelects";
+    const char *parallelizationAlgorithmType_names = "LoadOnDemand, ParallelStaticDomains, ManagerWorker, VisItSelects";
     switch (atts->GetParallelizationAlgorithmType())
     {
       case IntegralCurveAttributes::LoadOnDemand:
@@ -497,8 +497,8 @@ PyIntegralCurveAttributes_ToString(const IntegralCurveAttributes *atts, const ch
           snprintf(tmpStr, 1000, "%sparallelizationAlgorithmType = %sParallelStaticDomains  # %s\n", prefix, prefix, parallelizationAlgorithmType_names);
           str += tmpStr;
           break;
-      case IntegralCurveAttributes::MasterSlave:
-          snprintf(tmpStr, 1000, "%sparallelizationAlgorithmType = %sMasterSlave  # %s\n", prefix, prefix, parallelizationAlgorithmType_names);
+      case IntegralCurveAttributes::ManagerWorker:
+          snprintf(tmpStr, 1000, "%sparallelizationAlgorithmType = %sManagerWorker  # %s\n", prefix, prefix, parallelizationAlgorithmType_names);
           str += tmpStr;
           break;
       case IntegralCurveAttributes::VisItSelects:
@@ -3113,7 +3113,7 @@ IntegralCurveAttributes_SetParallelizationAlgorithmType(PyObject *self, PyObject
         ss << "You can also use the following symbolic names:";
         ss << " LoadOnDemand";
         ss << ", ParallelStaticDomains";
-        ss << ", MasterSlave";
+        ss << ", ManagerWorker";
         ss << ", VisItSelects";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
@@ -5593,8 +5593,8 @@ PyIntegralCurveAttributes_getattr(PyObject *self, char *name)
         return PyInt_FromLong(long(IntegralCurveAttributes::LoadOnDemand));
     if(strcmp(name, "ParallelStaticDomains") == 0)
         return PyInt_FromLong(long(IntegralCurveAttributes::ParallelStaticDomains));
-    if(strcmp(name, "MasterSlave") == 0)
-        return PyInt_FromLong(long(IntegralCurveAttributes::MasterSlave));
+    if(strcmp(name, "ManagerWorker") == 0)
+        return PyInt_FromLong(long(IntegralCurveAttributes::ManagerWorker));
     if(strcmp(name, "VisItSelects") == 0)
         return PyInt_FromLong(long(IntegralCurveAttributes::VisItSelects));
 

@@ -96,7 +96,7 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
 
     public final static int PARALLELIZATIONALGORITHMTYPE_LOADONDEMAND = 0;
     public final static int PARALLELIZATIONALGORITHMTYPE_PARALLELSTATICDOMAINS = 1;
-    public final static int PARALLELIZATIONALGORITHMTYPE_MASTERSLAVE = 2;
+    public final static int PARALLELIZATIONALGORITHMTYPE_MANAGERWORKER = 2;
     public final static int PARALLELIZATIONALGORITHMTYPE_VISITSELECTS = 3;
 
     public final static int PATHLINESCMFE_CONN_CMFE = 0;
@@ -1719,8 +1719,8 @@ public class PoincareAttributes extends AttributeSubject implements Plugin
             str = str + "PARALLELIZATIONALGORITHMTYPE_LOADONDEMAND";
         if(parallelizationAlgorithmType == PARALLELIZATIONALGORITHMTYPE_PARALLELSTATICDOMAINS)
             str = str + "PARALLELIZATIONALGORITHMTYPE_PARALLELSTATICDOMAINS";
-        if(parallelizationAlgorithmType == PARALLELIZATIONALGORITHMTYPE_MASTERSLAVE)
-            str = str + "PARALLELIZATIONALGORITHMTYPE_MASTERSLAVE";
+        if(parallelizationAlgorithmType == PARALLELIZATIONALGORITHMTYPE_MANAGERWORKER)
+            str = str + "PARALLELIZATIONALGORITHMTYPE_MANAGERWORKER";
         if(parallelizationAlgorithmType == PARALLELIZATIONALGORITHMTYPE_VISITSELECTS)
             str = str + "PARALLELIZATIONALGORITHMTYPE_VISITSELECTS";
         str = str + "\n";

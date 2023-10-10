@@ -293,11 +293,11 @@ avtSAMIFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
             if (strncmp(toc->dir_names[i], "slide_", 6) == 0)
             {
                 char tmpName[256];
-                snprintf(tmpName, sizeof(tmpName), "%s/master", toc->dir_names[i]);
+                snprintf(tmpName, sizeof(tmpName), "%s/manager", toc->dir_names[i]);
                 avtMeshMetaData *smmmd = new avtMeshMetaData(tmpName, 1, 0, 0,
                                                0, ndims, ndims-1, AVT_UNSTRUCTURED_MESH);
                 md->Add(smmmd);
-                snprintf(tmpName, sizeof(tmpName), "%s/slave", toc->dir_names[i]);
+                snprintf(tmpName, sizeof(tmpName), "%s/worker", toc->dir_names[i]);
                 avtMeshMetaData *ssmmd = new avtMeshMetaData(tmpName, 1, 0, 0,
                                                0, ndims, ndims-1, AVT_UNSTRUCTURED_MESH);
                 md->Add(ssmmd);

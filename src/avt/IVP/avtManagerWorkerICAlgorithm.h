@@ -3,11 +3,11 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ************************************************************************* //
-//                              avtMasterSlaveICAlgorithm.h                  //
+//                              avtManagerWorkerICAlgorithm.h                  //
 // ************************************************************************* //
 
-#ifndef AVT_MASTER_SLAVE_IC_ALGORITHM_H
-#define AVT_MASTER_SLAVE_IC_ALGORITHM_H
+#ifndef AVT_MANAGER_WORKER_IC_ALGORITHM_H
+#define AVT_MANAGER_WORKER_IC_ALGORITHM_H
 
 #if 0
 
@@ -17,13 +17,13 @@
 
 #ifdef PARALLEL
 
-class SlaveInfo;
+class WorkerInfo;
 
 // ****************************************************************************
-// Class: avtMasterSlaveICAlgorithm
+// Class: avtManagerWorkerICAlgorithm
 //
 // Purpose:
-//    Abstract base class for master-slave algorithm.
+//    Abstract base class for manager-worker algorithm.
 //
 // Programmer: Dave Pugmire
 // Creation:   Mon Jan 26 13:25:58 EST 2009
@@ -34,7 +34,7 @@ class SlaveInfo;
 //   Generalized domain to include domain/time. Pathine cleanup.
 //
 //   Dave Pugmire, Wed Mar 18 17:17:40 EDT 2009
-//   Allow masters to share work loads.
+//   Allow managers to share work loads.
 //   
 //   Dave Pugmire, Mon Mar 23 12:48:12 EDT 2009
 //   Change how timings are reported/calculated.
@@ -50,21 +50,21 @@ class SlaveInfo;
 //
 // ****************************************************************************
 
-class avtMasterSlaveICAlgorithm : public avtParICAlgorithm
+class avtManagerWorkerICAlgorithm : public avtParICAlgorithm
 {
   public:
-    avtMasterSlaveICAlgorithm(avtPICSFilter *picsFilter,
+    avtManagerWorkerICAlgorithm(avtPICSFilter *picsFilter,
                               int maxCount);
-    virtual ~avtMasterSlaveICAlgorithm();
+    virtual ~avtManagerWorkerICAlgorithm();
     
     virtual void              Initialize(std::vector<avtIntegralCurve *> &);
-    virtual const char*       AlgoName() const {return "MasterSlave";}
+    virtual const char*       AlgoName() const {return "ManagerWorker";}
     
     virtual void              ResetIntegralCurvesForContinueExecute(int curTimeSlice=-1);
     virtual bool              CheckNextTimeStepNeeded(int curTimeSlice) { return true; }
     virtual void              AddIntegralCurves(std::vector<avtIntegralCurve*> &ics);
 
-    static avtMasterSlaveICAlgorithm* Create(avtPICSFilter *picsFilter,
+    static avtManagerWorkerICAlgorithm* Create(avtPICSFilter *picsFilter,
                                              int maxCount,
                                              int rank,
                                              int nProcs,
@@ -95,7 +95,7 @@ class avtMasterSlaveICAlgorithm : public avtParICAlgorithm
     
     static int                 MSG_STATUS, MSG_DONE, MSG_SEND_IC,
                                MSG_LOAD_DOMAIN, MSG_SEND_IC_HINT,
-                               MSG_FORCE_SEND_STATUS, MSG_MASTER_STATUS,
+                               MSG_FORCE_SEND_STATUS, MSG_MANAGER_STATUS,
                                MSG_OFFLOAD_IC;
 
     //Statistics and coutners.
@@ -112,10 +112,10 @@ class avtMasterSlaveICAlgorithm : public avtParICAlgorithm
 
 
 // ****************************************************************************
-// Class: avtMasterICAlgorithm
+// Class: avtManagerICAlgorithm
 //
 // Purpose:
-//    Master portion of the master-slave algorithm.
+//    Manager portion of the manager-worker algorithm.
 //
 // Programmer: Dave Pugmire
 // Creation:   Mon Jan 26 13:25:58 EST 2009
@@ -124,30 +124,30 @@ class avtMasterSlaveICAlgorithm : public avtParICAlgorithm
 //
 //  Dave Pugmire, Sat Mar 28 10:04:01 EDT 2009
 //  Report case counter information. Temporary fix for a sporadic bug where
-//  it looks like messages are not being delivered to the master. Master will
-//  detect when slave set is done and mark done. Modify logic in how masters
+//  it looks like messages are not being delivered to the manager. Manager will
+//  detect when worker set is done and mark done. Modify logic in how managers
 //  make decisions. Add domainOffloading (case 5).
 //
 //  Dave Pugmire, Thu Sep 24 13:52:59 EDT 2009
 //  Change Execute to RunAlgorithm.
 //
 //  Hank Childs, Sat Jun  5 11:29:13 CDT 2010
-//  Change return value of UpdateSlaveStatus.
+//  Change return value of UpdateWorkerStatus.
 //
 // ****************************************************************************
 
-class avtMasterICAlgorithm : public avtMasterSlaveICAlgorithm
+class avtManagerICAlgorithm : public avtManagerWorkerICAlgorithm
 {
   public:
-    avtMasterICAlgorithm(avtPICSFilter *picsFilter,
+    avtManagerICAlgorithm(avtPICSFilter *picsFilter,
                          int maxCount,
                          int workGrpSz,
-                         std::vector<int> &slaves,
-                         int master,
-                         std::vector<int> &masters);
-    virtual ~avtMasterICAlgorithm();
+                         std::vector<int> &workers,
+                         int manager,
+                         std::vector<int> &managers);
+    virtual ~avtManagerICAlgorithm();
 
-    virtual const char*       AlgoName() const {return "MasterSlave";}
+    virtual const char*       AlgoName() const {return "ManagerWorker";}
     virtual void              Initialize(std::vector<avtIntegralCurve *> &);
 
   protected:
@@ -157,33 +157,33 @@ class avtMasterICAlgorithm : public avtMasterSlaveICAlgorithm
     std::vector<int>          status, prevStatus;
     virtual void              UpdateStatus();
     virtual void              SendStatus(bool forceSend=false);
-    virtual void              ProcessSlaveUpdate(std::vector<int> &);
-    virtual void              ProcessMasterUpdate(std::vector<int> &);
+    virtual void              ProcessWorkerUpdate(std::vector<int> &);
+    virtual void              ProcessManagerUpdate(std::vector<int> &);
     virtual void              ProcessOffloadIC(std::vector<int> &);
     virtual void              ProcessNewIntegralCurves();
     virtual void              ManageWorkgroup();
-    virtual void              ManageSlaves();
-    virtual void              ManageMasters();
+    virtual void              ManageWorkers();
+    virtual void              ManageManagers();
     virtual void              CompileTimingStatistics();
     virtual void              CompileCounterStatistics();
     virtual void              ReportCounters(ostream &os, bool totals);
 
     int                       workGroupActiveICs, workGroupSz;
-    bool                      done, slaveUpdate, masterUpdate;
+    bool                      done, workerUpdate, managerUpdate;
     int                       case1Cnt, case2Cnt, case3ACnt, case3BCnt, case3CCnt, case4ACnt, case4BCnt,
                               case5ACnt, case5BCnt, case6Cnt;
-    int                       master;
-    std::vector<SlaveInfo>    slaveInfo, masterInfo;
+    int                       manager;
+    std::vector<WorkerInfo>    workerInfo, managerInfo;
     std::vector<int>          icDomCnts, domLoaded, slackers;
     std::list<avtIntegralCurve *> activeICs;
 
-    void                      SendAllSlavesMsg(int msg);
-    void                      SendAllSlavesMsg(std::vector<int> &msg);
-    void                      SendSlaveMsg(int slave, std::vector<int> &msg);
+    void                      SendAllWorkersMsg(int msg);
+    void                      SendAllWorkersMsg(std::vector<int> &msg);
+    void                      SendWorkerMsg(int worker, std::vector<int> &msg);
     void                      FindSlackers(int oobFactor=-1,
                                            bool randomize= true,
                                            bool checkJustUpdated=false);
-    void                      UpdateSlaveStatus(std::vector<int> &);
+    void                      UpdateWorkerStatus(std::vector<int> &);
     void                      PrintStatus();
 
     void                      Case1(int &counter);
@@ -200,10 +200,10 @@ class avtMasterICAlgorithm : public avtMasterSlaveICAlgorithm
 
 
 // ****************************************************************************
-// Class: avtSlaveICAlgorithm
+// Class: avtWorkerICAlgorithm
 //
 // Purpose:
-//    Slave portion of the master-slave algorithm.
+//    Worker portion of the manager-worker algorithm.
 //
 // Programmer: Dave Pugmire
 // Creation:   Mon Jan 26 13:25:58 EST 2009
@@ -211,7 +211,7 @@ class avtMasterICAlgorithm : public avtMasterSlaveICAlgorithm
 // Modifications:
 //
 //   Dave Pugmire, Mon Feb 23 13:38:49 EST 2009
-//   Add timeout counter for slaves.
+//   Add timeout counter for workers.
 //   
 //   Dave Pugmire, Wed Apr  1 11:21:05 EDT 2009
 //   Add HandleLatencyTimer method.
@@ -221,13 +221,13 @@ class avtMasterICAlgorithm : public avtMasterSlaveICAlgorithm
 //
 // ****************************************************************************
 
-class avtSlaveICAlgorithm : public avtMasterSlaveICAlgorithm
+class avtWorkerICAlgorithm : public avtManagerWorkerICAlgorithm
 {
   public:
-    avtSlaveICAlgorithm(avtPICSFilter *picsFilter,
+    avtWorkerICAlgorithm(avtPICSFilter *picsFilter,
                         int maxCount,
-                        int masterRank);
-    virtual ~avtSlaveICAlgorithm();
+                        int managerRank);
+    virtual ~avtWorkerICAlgorithm();
 
     virtual void              Initialize(std::vector<avtIntegralCurve *> &);
     virtual void              SendStatus(bool forceSend=false);
@@ -236,7 +236,7 @@ class avtSlaveICAlgorithm : public avtMasterSlaveICAlgorithm
   protected:
     virtual void              RunAlgorithm();
 
-    int                       master, numTerminated, timeout;
+    int                       manager, numTerminated, timeout;
     bool                      workToDo;
     std::vector<int>          status, prevStatus;
     std::list<avtIntegralCurve *> activeICs, oobICs;
@@ -248,10 +248,10 @@ class avtSlaveICAlgorithm : public avtMasterSlaveICAlgorithm
 
 
 // ****************************************************************************
-// Class: SlaveInfo
+// Class: WorkerInfo
 //
 // Purpose:
-//    Class to keep track of slave information.
+//    Class to keep track of worker information.
 //
 // Programmer: Dave Pugmire
 // Creation:   Mon Jan 26 13:25:58 EST 2009
@@ -259,14 +259,14 @@ class avtSlaveICAlgorithm : public avtMasterSlaveICAlgorithm
 // Modifications:
 // 
 //   Dave Pugmire, Wed Mar 18 17:17:40 EDT 2009
-//   Allow masters to share work loads.
+//   Allow managers to share work loads.
 //
 // ****************************************************************************
-class SlaveInfo
+class WorkerInfo
 {
   public:
-    SlaveInfo( int r, int nDomains );
-    ~SlaveInfo() {}
+    WorkerInfo( int r, int nDomains );
+    ~WorkerInfo() {}
 
     void AddIC(int icDomain, int domCache);
     void LoadDom( int icDomain );

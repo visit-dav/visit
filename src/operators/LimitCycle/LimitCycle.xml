@@ -43,7 +43,7 @@
       <Enum name="ParallelizationAlgorithmType">
         LoadOnDemand
         ParallelStaticDomains
-        MasterSlave
+        ManagerWorker
         VisItSelects
       </Enum>
       <Enum name="FieldType">

@@ -275,7 +275,7 @@ LCSAttributes::SizeType_FromString(const std::string &s, LCSAttributes::SizeType
 //
 
 static const char *ParallelizationAlgorithmType_strings[] = {
-"LoadOnDemand", "ParallelStaticDomains", "MasterSlave",
+"LoadOnDemand", "ParallelStaticDomains", "ManagerWorker",
 "VisItSelects"};
 
 std::string

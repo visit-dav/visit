@@ -75,7 +75,7 @@ public:
     {
         LoadOnDemand,
         ParallelStaticDomains,
-        MasterSlave,
+        ManagerWorker,
         VisItSelects
     };
     enum OperationType

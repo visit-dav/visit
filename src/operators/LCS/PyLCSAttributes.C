@@ -433,7 +433,7 @@ PyLCSAttributes_ToString(const LCSAttributes *atts, const char *prefix, const bo
     else
         snprintf(tmpStr, 1000, "%sclampLogValues = 0\n", prefix);
     str += tmpStr;
-    const char *parallelizationAlgorithmType_names = "LoadOnDemand, ParallelStaticDomains, MasterSlave, VisItSelects";
+    const char *parallelizationAlgorithmType_names = "LoadOnDemand, ParallelStaticDomains, ManagerWorker, VisItSelects";
     switch (atts->GetParallelizationAlgorithmType())
     {
       case LCSAttributes::LoadOnDemand:
@@ -444,8 +444,8 @@ PyLCSAttributes_ToString(const LCSAttributes *atts, const char *prefix, const bo
           snprintf(tmpStr, 1000, "%sparallelizationAlgorithmType = %sParallelStaticDomains  # %s\n", prefix, prefix, parallelizationAlgorithmType_names);
           str += tmpStr;
           break;
-      case LCSAttributes::MasterSlave:
-          snprintf(tmpStr, 1000, "%sparallelizationAlgorithmType = %sMasterSlave  # %s\n", prefix, prefix, parallelizationAlgorithmType_names);
+      case LCSAttributes::ManagerWorker:
+          snprintf(tmpStr, 1000, "%sparallelizationAlgorithmType = %sManagerWorker  # %s\n", prefix, prefix, parallelizationAlgorithmType_names);
           str += tmpStr;
           break;
       case LCSAttributes::VisItSelects:
@@ -2803,7 +2803,7 @@ LCSAttributes_SetParallelizationAlgorithmType(PyObject *self, PyObject *args)
         ss << "You can also use the following symbolic names:";
         ss << " LoadOnDemand";
         ss << ", ParallelStaticDomains";
-        ss << ", MasterSlave";
+        ss << ", ManagerWorker";
         ss << ", VisItSelects";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
@@ -4285,8 +4285,8 @@ PyLCSAttributes_getattr(PyObject *self, char *name)
         return PyInt_FromLong(long(LCSAttributes::LoadOnDemand));
     if(strcmp(name, "ParallelStaticDomains") == 0)
         return PyInt_FromLong(long(LCSAttributes::ParallelStaticDomains));
-    if(strcmp(name, "MasterSlave") == 0)
-        return PyInt_FromLong(long(LCSAttributes::MasterSlave));
+    if(strcmp(name, "ManagerWorker") == 0)
+        return PyInt_FromLong(long(LCSAttributes::ManagerWorker));
     if(strcmp(name, "VisItSelects") == 0)
         return PyInt_FromLong(long(LCSAttributes::VisItSelects));
 
