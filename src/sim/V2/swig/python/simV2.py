@@ -147,13 +147,13 @@ def VisItReadConsole(*args):
     return _simV2.VisItReadConsole(*args)
 VisItReadConsole = _simV2.VisItReadConsole
 
-def VisItSetSlaveProcessCallback(spcb):
-    return _simV2.VisItSetSlaveProcessCallback(spcb)
-VisItSetSlaveProcessCallback = _simV2.VisItSetSlaveProcessCallback
+def VisItSetWorkerProcessCallback(spcb):
+    return _simV2.VisItSetWorkerProcessCallback(spcb)
+VisItSetWorkerProcessCallback = _simV2.VisItSetWorkerProcessCallback
 
-def VisItSetSlaveProcessCallback2(cb, arg2):
-    return _simV2.VisItSetSlaveProcessCallback2(cb, arg2)
-VisItSetSlaveProcessCallback2 = _simV2.VisItSetSlaveProcessCallback2
+def VisItSetWorkerProcessCallback2(cb, arg2):
+    return _simV2.VisItSetWorkerProcessCallback2(cb, arg2)
+VisItSetWorkerProcessCallback2 = _simV2.VisItSetWorkerProcessCallback2
 
 def VisItSetCommandCallback(cb, cbdata1):
     return _simV2.VisItSetCommandCallback(cb, cbdata1)
