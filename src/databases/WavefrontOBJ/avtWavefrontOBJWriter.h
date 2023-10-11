@@ -14,6 +14,7 @@
 #include <string>
 
 class vtkPolyData;
+class vtkImageData;
 
 // ****************************************************************************
 //  Class: avtWavefrontOBJWriter
@@ -52,7 +53,7 @@ avtWavefrontOBJWriter : public avtDatabaseWriter
     virtual CombineMode   GetCombineMode(const std::string &plotName) const;
 
   private:
-    vtkScalarsToColors * GetColorTable();
+    vtkImageData   *GetColorTable();
     
     bool                       doColor;
     std::string                colorTable;

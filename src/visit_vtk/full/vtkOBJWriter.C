@@ -43,7 +43,8 @@ void vtkOBJWriter::WriteData()
 {
   FILE *fpObj;
   vtkIdType idStart = 1;
-  vtkPolyData *pd = this->GetInput();
+  vtkPolyData *pd = this->GetInput(0);
+  vtkPolyData *imageData = this->GetInput(1);
   vtkPointData *pntData;
   vtkPoints *points = NULL;
   vtkDataArray *normals = NULL;

@@ -21,7 +21,17 @@
 #include <vtkPolyData.h>
 #include <vtkTriangleFilter.h>
 #include <avtDatabaseMetaData.h>
+#include <vtkImageData.h>
+#include <vtkImagePointIterator.h>
+#include <vtkFloatArray.h>
+#include <vtkPointData.h>
+#include <avtColorTables.h>
+#include <ColorTableAttributes.h>
+#include <ColorControlPointList.h>
+#include <ColorControlPoint.h>
 #include <vtkOBJWriter.h>
+// #include <vtkOBJExporter.h>
+#include <vtkExporter.h>
 
 #include <avtDatabaseMetaData.h>
 #include <DebugStream.h>
@@ -113,7 +123,10 @@ avtWavefrontOBJWriter::WriteChunk(vtkDataSet *ds, int chunk)
 
     vtkOBJWriter *writer = vtkOBJWriter::New();  
     writer->SetFileName(filename.c_str());
+
+    vtkImageData *imageData = GetColorTable();
     writer->SetInputData(ds);
+    writer->SetInputData(1, imageData);
     writer->Update();
     writer->Delete();
 }
@@ -211,29 +224,28 @@ avtWavefrontOBJWriter::GetColorTable()
         vtkImagePointIterator iter(imageData);
         while (!iter.IsAtEnd())
         {
-            double point[3];
-            iter.GetPosition(point);
-            double value = point[0]*point[0] + point[1]*point[1] + point[2]*point[2];
-            scalars->SetValue(iter.GetId(), value);
+            scalars->SetTuple3(iter.GetId(), 255.0, 0.0, 146.0);
             iter.Next();
         }
 
+        return imageData;
 
-        vtkColorTransferFunction *lut = vtkColorTransferFunction::New();
 
-        double *vals = new double[3 * num_ctrl_pts];
-        for (int j = 0; j < num_ctrl_pts; j++)
-        {
-            const ColorControlPoint &pt = table->GetControlPoints(j);
-            vals[j * 3 + 0] = pt.GetColors()[0] / 255.0;
-            vals[j * 3 + 1] = pt.GetColors()[1] / 255.0;
-            vals[j * 3 + 2] = pt.GetColors()[2] / 255.0;
-        }
+        // vtkColorTransferFunction *lut = vtkColorTransferFunction::New();
+
+        // double *vals = new double[3 * num_ctrl_pts];
+        // for (int j = 0; j < num_ctrl_pts; j++)
+        // {
+        //     const ColorControlPoint &pt = table->GetControlPoints(j);
+        //     vals[j * 3 + 0] = pt.GetColors()[0] / 255.0;
+        //     vals[j * 3 + 1] = pt.GetColors()[1] / 255.0;
+        //     vals[j * 3 + 2] = pt.GetColors()[2] / 255.0;
+        // }
         
-        lut->BuildFunctionFromTable(colorTableMin, colorTableMax, num_ctrl_pts, vals);
-        delete [] vals;
+        // lut->BuildFunctionFromTable(colorTableMin, colorTableMax, num_ctrl_pts, vals);
+        // delete [] vals;
 
-        return lut;
+        // return lut;
     }
     return NULL;
 }

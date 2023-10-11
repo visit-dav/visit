@@ -122,7 +122,7 @@ ADD_LIBRARY(visit_vtk ${VISIT_VTK_SOURCES})
 if(VTK_VERSION VERSION_EQUAL "8.1.0")
     set(vtklibs vtkCommonExecutionModel vtkCommonMisc
         vtkFiltersExtraction vtkFiltersFlowPaths vtkFiltersSources
-        vtkImagingHybrid vtkIOImage vtktiff)
+        vtkImagingHybrid vtkIOImage vtkIOExport vtktiff)
 else()
     set(vtklibs VTK::CommonExecutionModel VTK::CommonMisc
         VTK::FiltersExtraction VTK::FiltersFlowPaths VTK::FiltersSources
