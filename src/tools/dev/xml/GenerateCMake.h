@@ -183,6 +183,9 @@
 //    Kathleen Biagas, Thu Mar 30, 2023
 //    Use AUTOMOC target property instead of QT_WRAP_CPP macro.
 //
+//    Kathleen Biagas, Thu Sep 28 13:33:32 PDT 2023
+//    Add AUTOMOC_EXECUTABLE target property when building against an install.
+//
 // ****************************************************************************
 
 class CMakeGeneratorPlugin : public Plugin
@@ -820,6 +823,9 @@ class CMakeGeneratorPlugin : public Plugin
         }
         out << "    ADD_LIBRARY(G"<<name<<ptype<<" ${LIBG_SOURCES})" << Endl;
         out << "    set_target_properties(G"<<name<<ptype<<" PROPERTIES AUTOMOC ON)" << Endl;
+        if (!using_dev)
+            out << "    set_target_properties(G"<<name<<ptype<<" PROPERTIES AUTOMOC_EXECUTABLE \${QT_MOC_EXECUTABLE})" << Endl;
+
         out << "    TARGET_LINK_LIBRARIES(G" << name << ptype <<" visitcommon "
             << guilibname << " " << ToString(libs) << ToString(glibs);
         if (!vtk8_libs.empty())
