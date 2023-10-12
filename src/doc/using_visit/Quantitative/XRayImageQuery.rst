@@ -54,6 +54,8 @@ If the ``divide_emis_by_absorb`` is set, then the following integration is perfo
         :start-after: begin absorbtivity-normalized integration
         :end-before: end absorbtivity-normalized integration
 
+When using the ``divide_emis_by_absorb`` option, beware of the case where zones have zero absorbtivity. This will lead to NaN intensity results.
+
 When the goal of the query is to generate a radiograph, the user supplies a background intensity (using either *background_intensity* or *background_intensities*; see :ref:`Standard_Arguments`) and sets the emissivity arrays to zero. 
 The self-emission image produced by the query is then a radiograph. 
 
