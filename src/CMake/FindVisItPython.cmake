@@ -78,6 +78,9 @@
 #   Fix a few uses of paths on Windows, now that VISIT_INSTALLED_VERSION_XXX
 #   are relative paths. 
 #
+#   Kathleen Biagas, Thu Sep 28 16:33:45 PDT 2023
+#   Set PYLIB to the python library name, used by PluginVsInstall.cmake.in.
+#
 #****************************************************************************/
 
 # - Find python libraries
@@ -202,6 +205,8 @@ if(PYTHONINTERP_FOUND)
         message(STATUS "PYTHON_CONFIG_LIBRARY:    ${PYTHON_CONFIG_LIBRARY}")
 
         set(PYTHON_LIBRARY "")
+        set(PYLIB "") # for PluginVsInstall.cmake.in
+
         # look for shared libs first
         # shared libdir + ldlibrary
         if(NOT EXISTS ${PYTHON_LIBRARY})
@@ -210,6 +215,7 @@ if(PYTHONINTERP_FOUND)
                 message(STATUS "Checking for python library at: ${_PYTHON_LIBRARY_TEST}")
                 if(EXISTS ${_PYTHON_LIBRARY_TEST})
                     set(PYTHON_LIBRARY ${_PYTHON_LIBRARY_TEST})
+                    set(PYLIB ${PYTHON_CONFIG_LDLIBRARY})
                 endif()
             endif()
         endif()
@@ -221,6 +227,7 @@ if(PYTHONINTERP_FOUND)
                 message(STATUS "Checking for python library at: ${_PYTHON_LIBRARY_TEST}")
                 if(EXISTS ${_PYTHON_LIBRARY_TEST})
                     set(PYTHON_LIBRARY ${_PYTHON_LIBRARY_TEST})
+                    set(PYLIB ${PYTHON_CONFIG_LDLIBRARY})
                 endif()
             endif()
         endif()
@@ -232,6 +239,7 @@ if(PYTHONINTERP_FOUND)
                 message(STATUS "Checking for python library at: ${_PYTHON_LIBRARY_TEST}")
                 if(EXISTS ${_PYTHON_LIBRARY_TEST})
                     set(PYTHON_LIBRARY ${_PYTHON_LIBRARY_TEST})
+                    set(PYLIB ${PYTHON_CONFIG_LIBRARY})
                 endif()
             endif()
         endif()
@@ -243,6 +251,7 @@ if(PYTHONINTERP_FOUND)
                 message(STATUS "Checking for python library at: ${_PYTHON_LIBRARY_TEST}")
                 if(EXISTS ${_PYTHON_LIBRARY_TEST})
                     set(PYTHON_LIBRARY ${_PYTHON_LIBRARY_TEST})
+                    set(PYLIB ${PYTHON_CONFIG_LIBRARY})
                 endif()
             endif()
         endif()
@@ -253,6 +262,7 @@ if(PYTHONINTERP_FOUND)
         message(STATUS "Checking for python library at: ${_PYTHON_LIBRARY_TEST}")
         if(EXISTS ${_PYTHON_LIBRARY_TEST})
             set(PYTHON_LIBRARY ${_PYTHON_LIBRARY_TEST})
+            set(PYLIB python${PYTHON_CONFIG_VERSION}.lib)
         endif()
     endif()
 
