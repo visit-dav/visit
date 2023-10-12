@@ -1976,6 +1976,9 @@ QvisColorTableWindow::chooseDiscreteColor(const QColor &c, int, int,
 // 
 //    Justin Privitera, Wed Jul 27 12:23:56 PDT 2022
 //    Error on edit of a builtin color table and reset original values.
+// 
+//    Justin Privitera, Wed Oct 11 19:25:42 PDT 2023
+//    Removed useless smoothing method change.
 //
 // ****************************************************************************
 
