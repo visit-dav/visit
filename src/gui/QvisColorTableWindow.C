@@ -1982,7 +1982,6 @@ QvisColorTableWindow::chooseDiscreteColor(const QColor &c, int, int,
 void
 QvisColorTableWindow::selectedColor(const QColor &color)
 {
-    std::cout << "QvisColorTableWindow::selectedColor" << std::endl;
     // Hide the popup menu.
     colorSelect->hide();
 
@@ -1992,7 +1991,6 @@ QvisColorTableWindow::selectedColor(const QColor &color)
     // built-in CTs should not be editable
     if (ccpl->GetBuiltIn())
     {
-        std::cout << "built in" << std::endl;
         QString tmp;
         tmp = tr("The color table ") +
               QString("\"") + currentColorTable + QString("\"") +
