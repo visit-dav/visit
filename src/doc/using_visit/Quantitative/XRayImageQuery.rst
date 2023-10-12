@@ -503,9 +503,7 @@ Now we will look at the pyramids in the center of the globe.
 
 Here is the Python code for generating an x ray image from the same
 orientation using the full view specification. The view specification
-was merely copied from the 3D tab on the View window. Note that we
-have created the dictionary from scratch, rather than starting with
-the default ones. This is necessary to use the full view specification. ::
+was merely copied from the 3D tab on the View window. ::
 
   params = dict(output_type="png")
   params['image_size'] = (300, 300)
