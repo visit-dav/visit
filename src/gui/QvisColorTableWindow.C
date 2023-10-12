@@ -1982,6 +1982,7 @@ QvisColorTableWindow::chooseDiscreteColor(const QColor &c, int, int,
 void
 QvisColorTableWindow::selectedColor(const QColor &color)
 {
+    std::cout << "QvisColorTableWindow::selectedColor" << std::endl;
     // Hide the popup menu.
     colorSelect->hide();
 
@@ -1991,14 +1992,12 @@ QvisColorTableWindow::selectedColor(const QColor &color)
     // built-in CTs should not be editable
     if (ccpl->GetBuiltIn())
     {
+        std::cout << "built in" << std::endl;
         QString tmp;
         tmp = tr("The color table ") +
               QString("\"") + currentColorTable + QString("\"") +
               tr(" is built-in. You cannot edit a built-in color table.");
         Error(tmp);
-        smoothingMethod->blockSignals(true);
-        smoothingMethod->setCurrentIndex(ccpl->GetSmoothing());
-        smoothingMethod->blockSignals(false);
         return;
     }
 
@@ -2612,10 +2611,10 @@ QvisColorTableWindow::colorValueChanged(int rgba, int value)
             return;
         }
 
-        int r = (rgba == 0 ? value : c.red());
-        int g = (rgba == 1 ? value : c.green());
-        int b = (rgba == 2 ? value : c.blue());
-        int a = (rgba == 3 ? value : c.alpha());
+        const int r = (rgba == 0 ? value : c.red());
+        const int g = (rgba == 1 ? value : c.green());
+        const int b = (rgba == 2 ? value : c.blue());
+        const int a = (rgba == 3 ? value : c.alpha());
 
         c.setRgb(r, g, b, a);
         ChangeSelectedColor(c);
