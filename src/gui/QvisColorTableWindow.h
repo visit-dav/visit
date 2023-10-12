@@ -143,6 +143,10 @@ class QvisNoDefaultColorTableButton;
 // 
 //   Justin Privitera, Tue Sep  5 12:49:42 PDT 2023
 //   Change UpdateTags to UpdateTagTable.
+// 
+//   Justin Privitera, Wed Oct 11 19:25:42 PDT 2023
+//   Added colorValueChanged and changed the argument name for
+//   alphaValueChanged.
 // ****************************************************************************
 
 class GUI_API QvisColorTableWindow : public QvisPostableWindowObserver

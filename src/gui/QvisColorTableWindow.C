@@ -2561,10 +2561,11 @@ QvisColorTableWindow::activateDiscreteColor(const QColor &c, int)
 // Method: QvisColorTableWindow::colordValueChanged
 //
 // Purpose:
-//   TODO
+//   Common implementation of the different color value changed functions.
 //
 // Arguments:
-//   r : The new red value.
+//   rgba  : Which color we are changing.
+//   value : The new color value.
 //
 // Programmer: Justin Privitera
 // Creation:   09/22/23
@@ -2641,6 +2642,9 @@ QvisColorTableWindow::colorValueChanged(int rgba, int value)
 // 
 //    Justin Privitera, Wed Jul 27 12:23:56 PDT 2022
 //    Error on edit of a builtin color table and reset original values.
+// 
+//    Justin Privitera, Wed Oct 11 19:25:42 PDT 2023
+//    Now use colorValueChanged.
 //
 // ****************************************************************************
 
@@ -2672,6 +2676,9 @@ QvisColorTableWindow::redValueChanged(int r)
 // 
 //    Justin Privitera, Wed Jul 27 12:23:56 PDT 2022
 //    Error on edit of a builtin color table and reset original values.
+// 
+//    Justin Privitera, Wed Oct 11 19:25:42 PDT 2023
+//    Now use colorValueChanged.
 //
 // ****************************************************************************
 
@@ -2703,6 +2710,9 @@ QvisColorTableWindow::greenValueChanged(int g)
 // 
 //    Justin Privitera, Wed Jul 27 12:23:56 PDT 2022
 //    Error on edit of a builtin color table and reset original values.
+// 
+//    Justin Privitera, Wed Oct 11 19:25:42 PDT 2023
+//    Now use colorValueChanged.
 //
 // ****************************************************************************
 
@@ -2731,6 +2741,9 @@ QvisColorTableWindow::blueValueChanged(int b)
 // 
 //    Justin Privitera, Wed Jul 27 12:23:56 PDT 2022
 //    Error on edit of a builtin color table and reset original values.
+// 
+//    Justin Privitera, Wed Oct 11 19:25:42 PDT 2023
+//    Now use colorValueChanged.
 //
 // ****************************************************************************
 
