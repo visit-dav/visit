@@ -1991,7 +1991,6 @@ QvisColorTableWindow::selectedColor(const QColor &color)
               QString("\"") + currentColorTable + QString("\"") +
               tr(" is built-in. You cannot edit a built-in color table.");
         Error(tmp);
-        // TODO what is this
         smoothingMethod->blockSignals(true);
         smoothingMethod->setCurrentIndex(ccpl->GetSmoothing());
         smoothingMethod->blockSignals(false);
@@ -2580,7 +2579,6 @@ QvisColorTableWindow::activateDiscreteColor(const QColor &c, int)
 //    Error on edit of a builtin color table and reset original values.
 //
 // ****************************************************************************
-// TODO refactor so that all colorChanged functions use the same methods
 void
 QvisColorTableWindow::redValueChanged(int r)
 {
