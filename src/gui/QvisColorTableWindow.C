@@ -1875,7 +1875,12 @@ QvisColorTableWindow::controlPointMoved(int index, float position)
               tr(" is built-in. You cannot edit a built-in color table.");
         Error(tmp);
         spectrumBar->blockSignals(true);
-        // This is overkill, but it gets the job done.
+        // We go through every color control point and make sure
+        // it is synced with the spectrum bar. This is overkill.
+        // The reason we do this is because the provided control
+        // point index might not be the old index it had before,
+        // i.e. the order of the points may have changed. If that's
+        // the case, then we need to reset all just to be safe.
         const int num_ctrl_pts = ccpl->GetNumControlPoints();
         for (int i = 0; i < num_ctrl_pts; i ++)
         {
@@ -1971,6 +1976,9 @@ QvisColorTableWindow::chooseDiscreteColor(const QColor &c, int, int,
 // 
 //    Justin Privitera, Wed Jul 27 12:23:56 PDT 2022
 //    Error on edit of a builtin color table and reset original values.
+// 
+//    Justin Privitera, Wed Oct 11 19:25:42 PDT 2023
+//    Removed useless smoothing method change.
 //
 // ****************************************************************************
 
@@ -1991,9 +1999,6 @@ QvisColorTableWindow::selectedColor(const QColor &color)
               QString("\"") + currentColorTable + QString("\"") +
               tr(" is built-in. You cannot edit a built-in color table.");
         Error(tmp);
-        smoothingMethod->blockSignals(true);
-        smoothingMethod->setCurrentIndex(ccpl->GetSmoothing());
-        smoothingMethod->blockSignals(false);
         return;
     }
 
@@ -2556,6 +2561,69 @@ QvisColorTableWindow::activateDiscreteColor(const QColor &c, int)
 }
 
 // ****************************************************************************
+// Method: QvisColorTableWindow::colordValueChanged
+//
+// Purpose:
+//   Common implementation of the different color value changed functions.
+//
+// Arguments:
+//   rgba  : Which color we are changing.
+//   value : The new color value.
+//
+// Programmer: Justin Privitera
+// Creation:   09/22/23
+//
+// Modifications:
+// 
+// ****************************************************************************
+
+void
+QvisColorTableWindow::colorValueChanged(int rgba, int value)
+{
+    const ColorControlPointList *ccpl = GetDefaultColorControlPoints();
+    if (ccpl)
+    {
+        QColor c;
+
+        if (ccpl->GetDiscreteFlag())
+            c = discreteColors->selectedColor();
+        else
+            c = spectrumBar->controlPointColor(spectrumBar->activeControlPoint());
+
+        // built-in CTs should not be editable
+        if (ccpl->GetBuiltIn())
+        {
+            QString tmp;
+            tmp = tr("The color table ") +
+                  QString("\"") + currentColorTable + QString("\"") +
+                  tr(" is built-in. You cannot edit a built-in color table.");
+            Error(tmp);
+
+            int reset_value = (rgba == 0 ? c.red()   : 
+                              (rgba == 1 ? c.green() : 
+                              (rgba == 2 ? c.blue()  : 
+                                           c.alpha())));
+
+            componentSpinBoxes[rgba]->blockSignals(true);
+            componentSliders[rgba]->blockSignals(true);
+            componentSpinBoxes[rgba]->setValue(reset_value);
+            componentSliders[rgba]->setValue(reset_value);
+            componentSpinBoxes[rgba]->blockSignals(false);
+            componentSliders[rgba]->blockSignals(false);
+            return;
+        }
+
+        const int r = (rgba == 0 ? value : c.red());
+        const int g = (rgba == 1 ? value : c.green());
+        const int b = (rgba == 2 ? value : c.blue());
+        const int a = (rgba == 3 ? value : c.alpha());
+
+        c.setRgb(r, g, b, a);
+        ChangeSelectedColor(c);
+    }
+}
+
+// ****************************************************************************
 // Method: QvisColorTableWindow::redValueChanged
 //
 // Purpose:
@@ -2577,42 +2645,16 @@ QvisColorTableWindow::activateDiscreteColor(const QColor &c, int)
 // 
 //    Justin Privitera, Wed Jul 27 12:23:56 PDT 2022
 //    Error on edit of a builtin color table and reset original values.
+// 
+//    Justin Privitera, Wed Oct 11 19:25:42 PDT 2023
+//    Now use colorValueChanged.
 //
 // ****************************************************************************
 
 void
 QvisColorTableWindow::redValueChanged(int r)
 {
-    const ColorControlPointList *ccpl = GetDefaultColorControlPoints();
-    if(ccpl)
-    {
-        QColor c;
-
-        if(ccpl->GetDiscreteFlag())
-            c = discreteColors->selectedColor();
-        else
-            c = spectrumBar->controlPointColor(spectrumBar->activeControlPoint());
-
-        // built-in CTs should not be editable
-        if (ccpl->GetBuiltIn())
-        {
-            QString tmp;
-            tmp = tr("The color table ") +
-                  QString("\"") + currentColorTable + QString("\"") +
-                  tr(" is built-in. You cannot edit a built-in color table.");
-            Error(tmp);
-            componentSpinBoxes[0]->blockSignals(true);
-            componentSliders[0]->blockSignals(true);
-            componentSpinBoxes[0]->setValue(c.red());
-            componentSliders[0]->setValue(c.red());
-            componentSpinBoxes[0]->blockSignals(false);
-            componentSliders[0]->blockSignals(false);
-            return;
-        }
-
-        c.setRgb(r, c.green(), c.blue(), c.alpha());
-        ChangeSelectedColor(c);
-    }
+    colorValueChanged(0, r);
 }
 
 // ****************************************************************************
@@ -2637,42 +2679,16 @@ QvisColorTableWindow::redValueChanged(int r)
 // 
 //    Justin Privitera, Wed Jul 27 12:23:56 PDT 2022
 //    Error on edit of a builtin color table and reset original values.
+// 
+//    Justin Privitera, Wed Oct 11 19:25:42 PDT 2023
+//    Now use colorValueChanged.
 //
 // ****************************************************************************
 
 void
 QvisColorTableWindow::greenValueChanged(int g)
 {
-    const ColorControlPointList *ccpl = GetDefaultColorControlPoints();
-    if(ccpl)
-    {
-        QColor c;
-
-        if(ccpl->GetDiscreteFlag())
-            c = discreteColors->selectedColor();
-        else
-            c = spectrumBar->controlPointColor(spectrumBar->activeControlPoint());
-
-        // built-in CTs should not be editable
-        if (ccpl->GetBuiltIn())
-        {
-            QString tmp;
-            tmp = tr("The color table ") +
-                  QString("\"") + currentColorTable + QString("\"") +
-                  tr(" is built-in. You cannot edit a built-in color table.");
-            Error(tmp);
-            componentSpinBoxes[1]->blockSignals(true);
-            componentSliders[1]->blockSignals(true);
-            componentSpinBoxes[1]->setValue(c.green());
-            componentSliders[1]->setValue(c.green());
-            componentSpinBoxes[1]->blockSignals(false);
-            componentSliders[1]->blockSignals(false);
-            return;
-        }
-
-        c.setRgb(c.red(), g, c.blue(), c.alpha());
-        ChangeSelectedColor(c);
-    }
+    colorValueChanged(1, g);
 }
 
 // ****************************************************************************
@@ -2697,42 +2713,16 @@ QvisColorTableWindow::greenValueChanged(int g)
 // 
 //    Justin Privitera, Wed Jul 27 12:23:56 PDT 2022
 //    Error on edit of a builtin color table and reset original values.
+// 
+//    Justin Privitera, Wed Oct 11 19:25:42 PDT 2023
+//    Now use colorValueChanged.
 //
 // ****************************************************************************
 
 void
 QvisColorTableWindow::blueValueChanged(int b)
 {
-    const ColorControlPointList *ccpl = GetDefaultColorControlPoints();
-    if(ccpl)
-    {
-        QColor c;
-
-        if(ccpl->GetDiscreteFlag())
-            c = discreteColors->selectedColor();
-        else
-            c = spectrumBar->controlPointColor(spectrumBar->activeControlPoint());
-
-        // built-in CTs should not be editable
-        if (ccpl->GetBuiltIn())
-        {
-            QString tmp;
-            tmp = tr("The color table ") +
-                  QString("\"") + currentColorTable + QString("\"") +
-                  tr(" is built-in. You cannot edit a built-in color table.");
-            Error(tmp);
-            componentSpinBoxes[2]->blockSignals(true);
-            componentSliders[2]->blockSignals(true);
-            componentSpinBoxes[2]->setValue(c.blue());
-            componentSliders[2]->setValue(c.blue());
-            componentSpinBoxes[2]->blockSignals(false);
-            componentSliders[2]->blockSignals(false);
-            return;
-        }
-
-        c.setRgb(c.red(), c.green(), b, c.alpha());
-        ChangeSelectedColor(c);
-    }
+    colorValueChanged(2, b);
 }
 
 // ****************************************************************************
@@ -2754,42 +2744,16 @@ QvisColorTableWindow::blueValueChanged(int b)
 // 
 //    Justin Privitera, Wed Jul 27 12:23:56 PDT 2022
 //    Error on edit of a builtin color table and reset original values.
+// 
+//    Justin Privitera, Wed Oct 11 19:25:42 PDT 2023
+//    Now use colorValueChanged.
 //
 // ****************************************************************************
 
 void
 QvisColorTableWindow::alphaValueChanged(int a)
 {
-    const ColorControlPointList *ccpl = GetDefaultColorControlPoints();
-    if(ccpl)
-    {
-        QColor c;
-
-        if(ccpl->GetDiscreteFlag())
-            c = discreteColors->selectedColor();
-        else
-            c = spectrumBar->controlPointColor(spectrumBar->activeControlPoint());
-
-        // built-in CTs should not be editable
-        if (ccpl->GetBuiltIn())
-        {
-            QString tmp;
-            tmp = tr("The color table ") +
-                  QString("\"") + currentColorTable + QString("\"") +
-                  tr(" is built-in. You cannot edit a built-in color table.");
-            Error(tmp);
-            componentSpinBoxes[3]->blockSignals(true);
-            componentSliders[3]->blockSignals(true);
-            componentSpinBoxes[3]->setValue(c.alpha());
-            componentSliders[3]->setValue(c.alpha());
-            componentSpinBoxes[3]->blockSignals(false);
-            componentSliders[3]->blockSignals(false);
-            return;
-        }
-
-        c.setRgb(c.red(), c.green(), c.blue(), a);
-        ChangeSelectedColor(c);
-    }
+    colorValueChanged(3, a);
 }
 
 // ****************************************************************************
