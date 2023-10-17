@@ -247,16 +247,16 @@ The following spack command is used to build with spack.
 
 ::
 
-    spack install visit@3.3.3%gcc@11.2.0+mpi+gui+osmesa~vtkm ^python@3.7.7+shared ^mesa@21.2.5+opengl ^llvm@11.0.1 ^vtk@8.1.0+osmesa
+    spack install visit@3.3.3%gcc@11.2.0+mpi+gui+osmesa~vtkm ^python@3.8.17+shared ^mesa@21.2.5+opengl ^llvm@11.0.1 ^vtk@8.1.0+osmesa ^silo@4.11 ^libfabric@1.15.2.0 ^adios2~libcatalyst
 
 The installation will fail to install some shared libraries in the VisIt_ lib directory.
-The following script will copy the necessary libraries.
+The following script will copy the necessary libraries (you will need to modify the paths as appropriate.)
 
 ::
 
     #!/bin/bash
-    cp /global/homes/b/brugger/spack/spack/opt/spack/linux-sles15-zen3/gcc-11.2.0/libtiff-4.5.0-ijtdgosjdshvhhtnhmh2jmmrfobk2udg/lib64/libtiff.so.6.0.0 /global/homes/b/brugger/spack/spack/opt/spack/linux-sles15-zen3/gcc-11.2.0/visit-3.3.3-th5ncewyylv4p4gszkpciogov3ky5cb6/3.3.3/linux-x86_64/lib
-    ln -s libtiff.so.6.0.0 /global/homes/b/brugger/spack/spack/opt/spack/linux-sles15-zen3/gcc-11.2.0/visit-3.3.3-th5ncewyylv4p4gszkpciogov3ky5cb6/3.3.3/linux-x86_64/lib/libtiff.so.6
+    cp /global/cfs/cdirs/alpine/brugger/spack/opt/spack/linux-sles15-zen3/gcc-11.2.0/libtiff-4.5.1-vour2lgk4cvegrlxnuhwk3bz3ldfwzb5/lib64/libtiff.so.6.0.1 /global/cfs/cdirs/alpine/brugger/spack/opt/spack/linux-sles15-zen3/gcc-11.2.0/visit-3.3.3-gud54yyp44tv4gomn3i62wewdknpc2at/3.3.3/linux-x86_64/lib
+    ln -s libtiff.so.6.0.1 /global/cfs/cdirs/alpine/brugger/spack/opt/spack/linux-sles15-zen3/gcc-11.2.0/visit-3.3.3-gud54yyp44tv4gomn3i62wewdknpc2at/3.3.3/linux-x86_64/lib/libtiff.so.6
 
 Working around recurring download failures
 ------------------------------------------
@@ -290,8 +290,8 @@ The ``packages.yaml`` file is used to specify information about external package
 By default, spack will want to build everything from scratch for your system.
 If some of the packages are already installed on the system you can use those by listing them in a ``packages.yaml`` file.
 Typically, you will want to use an external MPI library on most HPC systems.
-The ``spack externals find`` command will create an initial ``packages.yaml`` file for you.
-The ``spack externals find`` command is non-destructive and will append to an existing ``packages.yaml`` file.
+The ``spack external find`` command will create an initial ``packages.yaml`` file for you.
+The ``spack external find`` command is non-destructive and will append to an existing ``packages.yaml`` file.
 You can then customize it.
 The complete documentation on the ``packages.yaml`` file can be found `here <https://spack.readthedocs.io/en/latest/build_settings.html>`__.
 
