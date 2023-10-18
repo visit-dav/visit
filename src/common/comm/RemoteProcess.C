@@ -44,7 +44,6 @@
 #include <Utility.h>
 
 
-#ifdef HAVE_THREADS
 #if !defined(_WIN32)
 #include <pthread.h>
 // Variables required for pthreads.
@@ -75,7 +74,6 @@ struct ThreadCallbackDataStruct
     bool                alive;
     MUTEX_TYPE          mutex;
 };
-#endif
 
 // The port that we try to get for listening for remote connections.
 #define INITIAL_PORT_NUMBER 5600
@@ -584,18 +582,18 @@ RemoteProcess::CloseListenSocket()
 // Creation:   Mon Sep 30 07:32:38 PDT 2002
 //
 // Modifications:
-//   
+//  Kathleen Biagas, Tue Oct 17, 2023
+//  Threads are always required, so removed #ifdef HAVE_THREADS.
+// 
 // ****************************************************************************
 
 bool
 RemoteProcess::CallProgressCallback(int stage)
 {
     bool retval = true;
-#ifdef HAVE_THREADS
     // Call the progress callback.
     if(progressCallback != 0)
         retval = (*progressCallback)(progressCallbackData, stage);
-#endif
     return retval;
 }
 
@@ -639,6 +637,9 @@ RemoteProcess::CallProgressCallback(int stage)
 //    Brad Whitlock, Tue Jan 17 14:21:27 PST 2006
 //    Added debug logging.
 //
+//    Kathleen Biagas, Tue Oct 17, 2023
+//    Threads are always required, so removed #ifdef HAVE_THREADS.
+// 
 // ****************************************************************************
 
 int
@@ -648,7 +649,6 @@ RemoteProcess::AcceptSocket()
     int desc = -1;
     int opt = 1;
 
-#ifdef HAVE_THREADS
     if(progressCallback == 0)
     {
         debug5 << mName << "0: Calling SingleThreadedAcceptSocket." << endl;
@@ -659,10 +659,6 @@ RemoteProcess::AcceptSocket()
         debug5 << mName << "Calling MultiThreadedAcceptSocket." << endl;
         desc = MultiThreadedAcceptSocket();
     }
-#else
-    debug5 << mName << "1: Calling SingleThreadedAcceptSocket." << endl;
-    desc = SingleThreadedAcceptSocket();
-#endif
 
     // If the descriptor is -1, we could not connect to the remote process.
     if(desc == -1)
@@ -748,7 +744,6 @@ RemoteProcess::SingleThreadedAcceptSocket()
     return desc;
 }
 
-#ifdef HAVE_THREADS
 // ****************************************************************************
 // Function: threaded_accept_callback
 //
@@ -813,7 +808,6 @@ static void *threaded_accept_callback(void *data)
 
     return 0;
 }
-#endif
 
 // ****************************************************************************
 // Method: RemoteProcess::MultiThreadedAcceptSocket
@@ -854,13 +848,15 @@ static void *threaded_accept_callback(void *data)
 //   Kathleen Biagas, Wed Apr 29 16:29:39 PDT 2020
 //   Reduce amount of '.' printed to log file.
 //
+//   Kathleen Biagas, Tue Oct 17, 2023
+//   Threads are always required, so removed #ifdef HAVE_THREADS.
+// 
 // ****************************************************************************
 
 int
 RemoteProcess::MultiThreadedAcceptSocket()
 {
     const char *mName = "RemoteProcess::MultiThreadedAcceptSocket: ";
-#ifdef HAVE_THREADS
     int desc = -1;
  
     debug5 << mName << "Initializing thread callback data" << endl;
@@ -997,10 +993,6 @@ RemoteProcess::MultiThreadedAcceptSocket()
 
     // Return the descriptor.
     return desc;
-#else
-    // No threads implementation.
-    return -1;
-#endif
 }
 
 // ****************************************************************************
