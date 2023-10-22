@@ -175,23 +175,29 @@ else() # ospray > 1.6.1
   #message(STATUS "  OSPRAY_VERSION=${OSPRAY_VERSION}")
   #message(STATUS "  VISIT_OSPRAY_DIR=${VISIT_OSPRAY_DIR}")
 
-  # The libraries as of ospray 2.8
+  # The libraries as of ospray 3.0
+  #DDM - why do I now need lib and .so.V where it wasn't needed before?
   set(OSPRAY_LIBRARIES ospray
-                       ospray_imgui
-                       ospray_module_ispc
-                       embree3
-                       openvkl
-                       openvkl_module_cpu_device
-                       openvkl_module_cpu_device_16
-                       openvkl_module_cpu_device_8
-                       openvkl_module_cpu_device_4
-                       rkcommon
-                       tbbmalloc)
+                       libembree4.so.4
+                       libispcrt.so.1
+                       libispcrt_device_cpu.so
+                       libispcrt_device_gpu.so
+                       libopenvkl.so.2
+                       libopenvkl_module_cpu_device_16.so.2.0.0
+                       libopenvkl_module_cpu_device_8.so.2.0.0
+                       libopenvkl_module_cpu_device_4.so.2.0.0
+                       libospray_module_cpu.so.3.0.0
+                       libpi_level_zero.so
+                       librkcommon.so.1
+                       libsycl.so.7
+                       libtbbbind.so.3
+                       libtbbmalloc.so.2
+                       libtbb.so.12)
 
   if(WIN32)
-      list(APPEND OSPRAY_LIBRARIES tbb12)
+      #list(APPEND OSPRAY_LIBRARIES tbb12)
   else()
-      list(APPEND OSPRAY_LIBRARIES tbb)
+      #list(APPEND OSPRAY_LIBRARIES tbb)
   endif()
 
   if(EXISTS ${VISIT_OSPRAY_DIR})

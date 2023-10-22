@@ -82,7 +82,7 @@ function bv_ospray_info
 {
     # versions
     if [[ "$DO_VTK9" == "yes" ]]; then
-        export OSPRAY_VERSION=${OSPRAY_VERSION:-"2.8.0"}
+        export OSPRAY_VERSION=${OSPRAY_VERSION:-"3.0.0"}
         export OSPRAY_FILE=${OSPRAY_FILE:-"ospray-${OSPRAY_VERSION}.tar.gz"}
         export OSPRAY_SRC_DIR=${OSPRAY_SRC_DIR:-"${OSPRAY_FILE%.tar*}"}
         export OSPRAY_BUILD_DIR=${OSPRAY_BUILD_DIR:-"${OSPRAY_SRC_DIR}-build"}
