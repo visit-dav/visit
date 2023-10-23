@@ -40,7 +40,7 @@ add_library(vtkqt ${VTKQT_SOURCES})
 
 # Specify the libraries to link against on Windows & Mac
 if(VTK_VERSION VERSION_EQUAL "8.1.0")
-    set(vtklibs vtkCommonCore vtkGUISupportQt vtkGUISupportQtOpenGL vtkIOImage vtkIOExport
+    set(vtklibs vtkCommonCore vtkGUISupportQt vtkGUISupportQtOpenGL vtkIOImage
         vtkRenderingOpenGL2 vtkRenderingFreeType)
 else()
     set(vtklibs VTK::CommonCore VTK::GUISupportQt VTK::IOImage

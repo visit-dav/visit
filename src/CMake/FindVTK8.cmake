@@ -82,6 +82,7 @@ SET(REQ_VTK_MODS
         vtkFiltersModeling
         vtkIOLegacy
         vtkIOPLY
+        # vtkIOExport
         vtkIOXML
         vtkInteractionStyle
         vtkRenderingAnnotation

@@ -30,8 +30,7 @@
 #include <ColorControlPointList.h>
 #include <ColorControlPoint.h>
 #include <vtkOBJWriter.h>
-// #include <vtkOBJExporter.h>
-#include <vtkExporter.h>
+#include <vtkOBJExporter.h>
 
 #include <avtDatabaseMetaData.h>
 #include <DebugStream.h>

@@ -35,24 +35,24 @@ ${VISIT_DATABASE_INCLUDES}
 LINK_DIRECTORIES(${VISIT_LIBRARY_DIR} )
 
 ADD_LIBRARY(IWavefrontOBJDatabase ${LIBI_SOURCES})
-TARGET_LINK_LIBRARIES(IWavefrontOBJDatabase visitcommon)
+TARGET_LINK_LIBRARIES(IWavefrontOBJDatabase visitcommon vtkIOExport)
 SET(INSTALLTARGETS IWavefrontOBJDatabase)
 
 IF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
     ADD_LIBRARY(MWavefrontOBJDatabase ${LIBM_SOURCES})
-    TARGET_LINK_LIBRARIES(MWavefrontOBJDatabase visitcommon avtdbatts avtdatabase_ser )
+    TARGET_LINK_LIBRARIES(MWavefrontOBJDatabase visitcommon avtdbatts avtdatabase_ser vtkIOExport)
     ADD_TARGET_DEFINITIONS(MWavefrontOBJDatabase MDSERVER)
     SET(INSTALLTARGETS ${INSTALLTARGETS} MWavefrontOBJDatabase)
 ENDIF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
 
 ADD_LIBRARY(EWavefrontOBJDatabase_ser ${LIBE_SOURCES})
-TARGET_LINK_LIBRARIES(EWavefrontOBJDatabase_ser visitcommon avtpipeline_ser avtdatabase_ser )
+TARGET_LINK_LIBRARIES(EWavefrontOBJDatabase_ser visitcommon avtpipeline_ser avtdatabase_ser vtkIOExport)
 ADD_TARGET_DEFINITIONS(EWavefrontOBJDatabase_ser ENGINE)
 SET(INSTALLTARGETS ${INSTALLTARGETS} EWavefrontOBJDatabase_ser)
 
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(EWavefrontOBJDatabase_par ${LIBE_SOURCES})
-    TARGET_LINK_LIBRARIES(EWavefrontOBJDatabase_par visitcommon avtpipeline_par avtdatabase_par )
+    TARGET_LINK_LIBRARIES(EWavefrontOBJDatabase_par visitcommon avtpipeline_par avtdatabase_par vtkIOExport)
     ADD_TARGET_DEFINITIONS(EWavefrontOBJDatabase_par ENGINE)
     SET(INSTALLTARGETS ${INSTALLTARGETS} EWavefrontOBJDatabase_par)
 ENDIF(VISIT_PARALLEL)
