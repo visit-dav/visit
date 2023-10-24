@@ -843,17 +843,19 @@ function build_qt
         mkdir $QT_BUILD_DIR
     fi
 
-    cd ${QT_BUILD_DIR}
-
     #
     # Handle case where python doesn't exist.
     # The magic to determine if python exist comes from
     # https://stackoverflow.com/questions/592620/how-can-i-check-if-a-program-exists-from-a-bash-script
     #
+    pushd ${QT_SRC_DIR} > /dev/null 2>&1
     if ! command -v python > /dev/null 2>&1 ; then
-        sed -i "s/python/python3/" ./qtdeclarative/src/3rdparty/masm/masm.pri
-        sed -i "s/python -c/python3 -c/" ./qtdeclarative/qtdeclarative.pro
+        sed -i.orig -e 's/python/python3/' ./qtdeclarative/src/3rdparty/masm/masm.pri
+        sed -i.orig -e 's/python -c/python3 -c/' ./qtdeclarative/qtdeclarative.pro
     fi
+    popd > /dev/null 2>&1
+
+    cd ${QT_BUILD_DIR}
 
     #
     # Platform specific configuration
@@ -943,6 +945,7 @@ function build_qt
     qt_flags="${qt_flags} -confirm-license"
 
     QT_VER_MSG="Qt5"
+    qt_flags="${qt_flags} -skip qtwebengine"
     qt_flags="${qt_flags} -skip 3d"
     qt_flags="${qt_flags} -skip charts"
     qt_flags="${qt_flags} -skip connectivity"
