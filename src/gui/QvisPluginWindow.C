@@ -776,7 +776,7 @@ QvisPluginWindow::databaseOptionsSetButtonClicked()
     {
         QvisDBOptionsDialog *optsdlg = new QvisDBOptionsDialog(&opts, NULL);
         QString caption = tr("Default file opening options for %1 reader").
-                          arg(fileOpenOptions->GetTypeNames()[index].c_str());
+                          arg(fileOpenOptions->GetTypeNames()[databaseIndexes[index]].c_str());
         optsdlg->setWindowTitle(caption);
         int result = optsdlg->exec();
         delete optsdlg;
@@ -906,7 +906,7 @@ QvisPluginWindow::dbAddToPreferedButtonClicked()
     if (index < 0)
         return;
 
-    string id = fileOpenOptions->GetTypeIDs()[index];
+    string id = fileOpenOptions->GetTypeIDs()[databaseIndexes[index]];
     if (! preferredOptionsContainsID(id))
     {
         fileOpenOptions->GetPreferredIDs().push_back(id);
