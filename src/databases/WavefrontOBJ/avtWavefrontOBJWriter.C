@@ -36,6 +36,23 @@
 #include <DebugStream.h>
 #include <avtParallelContext.h>
 
+
+
+
+// random stuff
+#include <vtkRenderWindow.h>
+#include <vtkRenderer.h>
+#include <vtkOBJExporter.h>
+
+#include <vtkActor.h>
+#include <vtkCamera.h>
+#include <vtkCubeSource.h>
+#include <vtkPolyDataMapper.h>
+#include <vtkProperty.h>
+#include <vtkRenderWindowInteractor.h>
+
+
+
 using     std::string;
 using     std::vector;
 
@@ -120,14 +137,62 @@ avtWavefrontOBJWriter::WriteChunk(vtkDataSet *ds, int chunk)
     else
         filename = stem + ".obj";
 
-    vtkOBJWriter *writer = vtkOBJWriter::New();  
-    writer->SetFileName(filename.c_str());
 
-    vtkImageData *imageData = GetColorTable();
-    writer->SetInputData(ds);
-    writer->SetInputData(1, imageData);
-    writer->Update();
-    writer->Delete();
+    // Create a rendering window and renderer.
+    vtkRenderer *ren = vtkRenderer::New();
+    vtkRenderWindow *renWin = vtkRenderWindow::New();
+    renWin->SetWindowName("Cube");
+    renWin->AddRenderer(ren);
+    // Create a renderwindow interactor.
+    vtkRenderWindowInteractor *iren = vtkRenderWindowInteractor::New();
+    iren->SetRenderWindow(renWin);
+
+    // Create a cube.
+    vtkCubeSource *cube = vtkCubeSource::New();
+    cube->Update();
+
+    // Mapper.
+    vtkPolyDataMapper *cubeMapper = vtkPolyDataMapper::New();
+    cubeMapper->SetInputData(cube->GetOutput());
+
+    // Actor.
+    vtkActor *cubeActor = vtkActor::New();
+    cubeActor->SetMapper(cubeMapper);
+    cubeActor->GetProperty()->SetColor(1.0, 1.0, 0.0);
+
+    // Assign actor to the renderer.
+    ren->AddActor(cubeActor);
+
+    ren->ResetCamera();
+    ren->GetActiveCamera()->Azimuth(30);
+    ren->GetActiveCamera()->Elevation(30);
+    ren->ResetCameraClippingRange();
+    ren->SetBackground(0.5, 0.5, 0.5);
+
+    renWin->SetSize(300, 300);
+    renWin->SetWindowName("Cube1");
+
+    // Enable user interface interaction.
+    iren->Initialize();
+    renWin->Render();
+    iren->Start();
+
+    std::string exportFileName = "test.obj";
+    vtkOBJExporter *exporter = vtkOBJExporter::New();
+    // exporter->SetActiveRenderer(ren);
+    exporter->SetRenderWindow(renWin);
+    exporter->SetFilePrefix("test");
+    std::cout << "Writing " << exportFileName << std::endl;
+    exporter->Write();
+
+    // vtkOBJExporter *exporter = vtkOBJExporter::New();  
+    // exporter->SetFilePrefix(filename.c_str());
+
+    // vtkImageData *imageData = GetColorTable();
+    // exporter->SetInput(ds);
+    // exporter->SetInput(1, imageData);
+    // exporter->Update();
+    exporter->Delete();
 }
 
 // ****************************************************************************
