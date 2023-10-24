@@ -2357,7 +2357,7 @@ function build_vtk
                     if [[ "$DO_QT6" == "yes" ]]; then
                         vopts="${vopts} -DQt6_DIR:FILEPATH=${QT6_INSTALL_DIR}/lib/cmake/Qt6"
                     else
-                        vopts="${vopts} -DQt6_DIR:FILEPATH=${QT_INSTALL_DIR}/lib/cmake/Qt5"
+                        vopts="${vopts} -DQt5_DIR:FILEPATH=${QT_INSTALL_DIR}/lib/cmake/Qt5"
                     fi
                 else
                     vopts="${vopts} -DModule_vtkGUISupportQtOpenGL:BOOL=true"
