@@ -761,6 +761,9 @@ QvisPluginWindow::clearOperatorCategories()
 //
 //    Jeremy Meredith, Wed Dec 30 16:44:59 EST 2009
 //    Moved some contents to a common function.
+// 
+//    Justin Privitera, Tue Oct 24 15:37:50 PDT 2023
+//    Use index redirection to get at the fileOpenOptions.
 //
 // ****************************************************************************
 void
@@ -896,6 +899,9 @@ QvisPluginWindow::unSelectAllReadersButtonClicked()
 // Modifications:
 //   Jeremy Meredith, Fri Jan 15 17:08:22 EST 2010
 //   Give visual cue when a disabled plugin is preferred.
+// 
+//   Justin Privitera, Tue Oct 24 15:37:50 PDT 2023
+//   Use index redirection to get at the fileOpenOptions.
 //
 // ****************************************************************************
 
