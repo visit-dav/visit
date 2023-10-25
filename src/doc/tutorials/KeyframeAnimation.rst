@@ -8,6 +8,8 @@ Keyframe Animation
 
 This tutorial describes how to use keyframe animations.
 
+There is also a `video <https://youtu.be/tLm_3Vl9rLg>`__ that demonstrates keyframe animation creation using a different example than what is described here.
+
 Keyframe animation overview
 ---------------------------
 
