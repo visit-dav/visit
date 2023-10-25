@@ -1712,6 +1712,38 @@ avtBlueprintFileFormat::GetTime()
     }
 }
 
+// ****************************************************************************
+//  Method: GenerateOffsetsForPolyhedralMesh
+//
+//  Purpose:
+//      Polyhedral meshes require offsets to verify. We can generate them
+//      before verification takes place.
+//
+//  Arguments:
+//      data        The mesh domain we wish to add offsets to.
+//
+//  Programmer: Justin Privitera
+//  Creation:   10/25/23
+//
+//  Modifications:
+//
+// ****************************************************************************
+void
+GenerateOffsetsForPolyhedralMesh(Node &data)
+{
+    // using short circuit evaluation, so these statements will only execute
+    // until we hit the first one that is false
+    if (data.has_child("topologies") && 
+        data["topologies"].number_of_children() > 0 && 
+        data["topologies"][0].has_child("type") && 
+        data["topologies"][0]["type"].as_string() == "unstructured" && 
+        data["topologies"][0].has_path("elements/shape") && 
+        (data["topologies"][0]["elements/shape"].as_string() == "polyhedral" || 
+         data["topologies"][0]["elements/shape"].as_string() == "polygonal") && 
+        (! data["topologies"][0].has_path("elements/offsets")))
+        blueprint::mesh::utils::topology::unstructured::generate_offsets_inline(data["topologies"][0]);
+}
+
 
 // ****************************************************************************
 //  Method: avtBlueprintFileFormat::GetMesh
@@ -1785,14 +1817,9 @@ avtBlueprintFileFormat::GetMesh(int domain, const char *abs_meshname)
             return NULL;
         }
 
-        // before we verify, we want to generate offsets for unstructured meshes
-        // if they do not already exist
-        if (data.has_child("topologies"))
-            if (data["topologies"].number_of_children() > 0)
-                if (data["topologies"][0].has_child("type"))
-                    if (data["topologies"][0]["type"].as_string() == "unstructured")
-                        if (! data["topologies"][0].has_path("elements/offsets"))
-                            blueprint::mesh::utils::topology::unstructured::generate_offsets_inline(data["topologies"][0]);
+        // before we verify, we want to generate offsets for unstructured polytopal
+        // meshes if they do not already exist
+        GenerateOffsetsForPolyhedralMesh(data);
 
         Node verify_info;
         if(!blueprint::mesh::verify(data, verify_info))
@@ -1961,6 +1988,10 @@ avtBlueprintFileFormat::GetVar(int domain, const char *abs_varname)
                 return NULL;
             }
 
+            // before we verify, we want to generate offsets for unstructured polytopal
+            // meshes if they do not already exist
+            GenerateOffsetsForPolyhedralMesh(n_mesh);
+
             Node verify_info;
             if(!blueprint::mesh::verify(n_mesh,verify_info))
             {
@@ -2026,6 +2057,10 @@ avtBlueprintFileFormat::GetVar(int domain, const char *abs_varname)
                 // support empty mesh case by returning NULL
                 return NULL;
             }
+
+            // before we verify, we want to generate offsets for unstructured polytopal
+            // meshes if they do not already exist
+            GenerateOffsetsForPolyhedralMesh(n_mesh);
 
             Node verify_info;
             if(!blueprint::mesh::verify(n_mesh,verify_info))
@@ -2103,6 +2138,10 @@ avtBlueprintFileFormat::GetVar(int domain, const char *abs_varname)
                 // support empty mesh case by returning NULL
                 return NULL;
             }
+
+            // before we verify, we want to generate offsets for unstructured polytopal
+            // meshes if they do not already exist
+            GenerateOffsetsForPolyhedralMesh(n_mesh);
 
             Node verify_info;
             if(!blueprint::mesh::verify(n_mesh,verify_info))
