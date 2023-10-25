@@ -55,6 +55,7 @@ bp_struct_strided_test_dir = "blueprint_v0.8.4_strided_structured_examples"
 bp_rz_test_dir = "blueprint_v0.8.6_rz_examples"
 bp_1d_curve_test_dir = "blueprint_v0.8.6_1d_curve_examples"
 bp_venn_modded_matnos_dir = "blueprint_v0.8.7_venn_modded_matnos_example"
+bp_poly_no_offsets_dir = "blueprint_v0.8.7_polytopal_mesh_no_offsets"
 
 braid_2d_hdf5_root = data_path(pjoin(bp_test_dir,"braid_2d_examples.blueprint_root_hdf5"))
 braid_3d_hdf5_root = data_path(pjoin(bp_test_dir,"braid_3d_examples.blueprint_root_hdf5"))
@@ -99,6 +100,9 @@ venn_s_by_m_yaml_root  =  data_path(pjoin(bp_venn_test_dir,
 
 venn_modded_matnos_root = data_path(pjoin(bp_venn_modded_matnos_dir,
                                 "venn_w_modded_matnos.root"))
+
+polytopal_mesh_no_offsets_root = data_path(pjoin(bp_poly_no_offsets_dir,
+                                "polytopal_mesh_no_offsets.root"))
 
 bp_part_map_root = data_path(pjoin(bp_part_map_test_dir,
                              "tout_custom_part_map_index_hdf5.root"))
@@ -739,5 +743,15 @@ for db in bp_1d_curve_examples:
     DrawPlots()
     Test("blueprint_1d_curve_element_assoc")
     DeleteAllPlots()
+
+TestSection("Blueprint Polytopal Mesh Missing Offsets, 0.8.7")
+OpenDatabase(polytopal_mesh_no_offsets_root)
+AddPlot("Mesh", "mesh_test")
+AddPlot("Pseudocolor", "mesh_test/field")
+DrawPlots()
+ResetView()
+Test("Polytopal_mesh_missing_offsets")
+DeleteAllPlots()
+ResetView()
 
 Exit()
