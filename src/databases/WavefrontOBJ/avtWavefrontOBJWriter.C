@@ -139,48 +139,41 @@ avtWavefrontOBJWriter::WriteChunk(vtkDataSet *ds, int chunk)
 
 
     // Create a rendering window and renderer.
-    vtkRenderer *ren = vtkRenderer::New();
-    vtkRenderWindow *renWin = vtkRenderWindow::New();
-    renWin->SetWindowName("Cube");
-    renWin->AddRenderer(ren);
-    // Create a renderwindow interactor.
-    // vtkRenderWindowInteractor *iren = vtkRenderWindowInteractor::New();
-    // iren->SetRenderWindow(renWin);
+    vtkRenderer *renderer = vtkRenderer::New();
+    vtkRenderWindow *renderWindow = vtkRenderWindow::New();
+    renderWindow->SetWindowName("Cube");
+    renderWindow->AddRenderer(renderer);
 
     // Create a cube.
     vtkCubeSource *cube = vtkCubeSource::New();
     cube->Update();
 
     // Mapper.
-    vtkPolyDataMapper *cubeMapper = vtkPolyDataMapper::New();
-    cubeMapper->SetInputData(cube->GetOutput());
+    vtkPolyDataMapper *polyDataMapper = vtkPolyDataMapper::New();
+    polyDataMapper->SetInputData(vtkPolyData::SafeDownCast(ds));
 
     // Actor.
-    vtkActor *cubeActor = vtkActor::New();
-    cubeActor->SetMapper(cubeMapper);
-    cubeActor->GetProperty()->SetColor(1.0, 1.0, 0.0);
+    vtkActor *actor = vtkActor::New();
+    actor->SetMapper(polyDataMapper);
+    actor->GetProperty()->SetColor(1.0, 1.0, 0.0);
 
     // Assign actor to the renderer.
-    ren->AddActor(cubeActor);
+    renderer->AddActor(actor);
 
-    ren->ResetCamera();
-    ren->GetActiveCamera()->Azimuth(30);
-    ren->GetActiveCamera()->Elevation(30);
-    ren->ResetCameraClippingRange();
-    ren->SetBackground(0.5, 0.5, 0.5);
+    renderer->ResetCamera();
+    renderer->GetActiveCamera()->Azimuth(30);
+    renderer->GetActiveCamera()->Elevation(30);
+    renderer->ResetCameraClippingRange();
+    renderer->SetBackground(0.5, 0.5, 0.5);
 
-    renWin->SetSize(300, 300);
-    renWin->SetWindowName("Cube1");
+    renderWindow->SetSize(300, 300);
+    renderWindow->SetWindowName("Cube1");
 
-    // Enable user interface interaction.
-    // iren->Initialize();
-    renWin->Render();
-    // iren->Start();
+    renderWindow->Render();
 
     std::string exportFileName = "test.obj";
     vtkOBJExporter *exporter = vtkOBJExporter::New();
-    // exporter->SetActiveRenderer(ren);
-    exporter->SetRenderWindow(renWin);
+    exporter->SetRenderWindow(renderWindow);
     exporter->SetFilePrefix("test");
     std::cout << "Writing " << exportFileName << std::endl;
     exporter->Write();
@@ -265,51 +258,51 @@ avtWavefrontOBJWriter::GetCombineMode(const std::string &) const
 //
 //****************************************************************************
 
-// vtkImageData *
-// avtWavefrontOBJWriter::GetColorTable()
-// {
-//     const ColorTableAttributes *colorTables = avtColorTables::Instance()->GetColorTables();
-//     const ColorControlPointList *table = colorTables->GetColorControlPoints(colorTable);
-//     if (table)
-//     {
-//         const int num_ctrl_pts = table->GetNumControlPoints();
+vtkImageData *
+avtWavefrontOBJWriter::GetColorTable()
+{
+    const ColorTableAttributes *colorTables = avtColorTables::Instance()->GetColorTables();
+    const ColorControlPointList *table = colorTables->GetColorControlPoints(colorTable);
+    if (table)
+    {
+        const int num_ctrl_pts = table->GetNumControlPoints();
 
 
-//         vtkImageData *imageData = vtkImageData::New();
-//         double spacing[3] = { 1.0, 1.0, 1.0 };
-//         int size[3] = { num_ctrl_pts, 0, 0 };
-//         double origin[3] = { 0.0, 0.0, 0.0 };
-//         imageData->SetDimensions(size);
-//         imageData->SetSpacing(spacing);
-//         imageData->SetOrigin(origin);
-//         imageData->AllocateScalars(VTK_FLOAT, 3);
-//         vtkFloatArray *scalars = vtkFloatArray::SafeDownCast(imageData->GetPointData()->GetScalars());
+        vtkImageData *imageData = vtkImageData::New();
+        double spacing[3] = { 1.0, 1.0, 1.0 };
+        int size[3] = { num_ctrl_pts, 0, 0 };
+        double origin[3] = { 0.0, 0.0, 0.0 };
+        imageData->SetDimensions(size);
+        imageData->SetSpacing(spacing);
+        imageData->SetOrigin(origin);
+        imageData->AllocateScalars(VTK_FLOAT, 3);
+        vtkFloatArray *scalars = vtkFloatArray::SafeDownCast(imageData->GetPointData()->GetScalars());
 
-//         vtkImagePointIterator iter(imageData);
-//         while (!iter.IsAtEnd())
-//         {
-//             scalars->SetTuple3(iter.GetId(), 255.0, 0.0, 146.0);
-//             iter.Next();
-//         }
+        vtkImagePointIterator iter(imageData);
+        while (!iter.IsAtEnd())
+        {
+            scalars->SetTuple3(iter.GetId(), 255.0, 0.0, 146.0);
+            iter.Next();
+        }
 
-//         return imageData;
+        return imageData;
 
 
-//         // vtkColorTransferFunction *lut = vtkColorTransferFunction::New();
+        // vtkColorTransferFunction *lut = vtkColorTransferFunction::New();
 
-//         // double *vals = new double[3 * num_ctrl_pts];
-//         // for (int j = 0; j < num_ctrl_pts; j++)
-//         // {
-//         //     const ColorControlPoint &pt = table->GetControlPoints(j);
-//         //     vals[j * 3 + 0] = pt.GetColors()[0] / 255.0;
-//         //     vals[j * 3 + 1] = pt.GetColors()[1] / 255.0;
-//         //     vals[j * 3 + 2] = pt.GetColors()[2] / 255.0;
-//         // }
+        // double *vals = new double[3 * num_ctrl_pts];
+        // for (int j = 0; j < num_ctrl_pts; j++)
+        // {
+        //     const ColorControlPoint &pt = table->GetControlPoints(j);
+        //     vals[j * 3 + 0] = pt.GetColors()[0] / 255.0;
+        //     vals[j * 3 + 1] = pt.GetColors()[1] / 255.0;
+        //     vals[j * 3 + 2] = pt.GetColors()[2] / 255.0;
+        // }
         
-//         // lut->BuildFunctionFromTable(colorTableMin, colorTableMax, num_ctrl_pts, vals);
-//         // delete [] vals;
+        // lut->BuildFunctionFromTable(colorTableMin, colorTableMax, num_ctrl_pts, vals);
+        // delete [] vals;
 
-//         // return lut;
-//     }
-//     return NULL;
-// }
+        // return lut;
+    }
+    return NULL;
+}
