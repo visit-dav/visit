@@ -3219,6 +3219,7 @@ avtMiliFileFormat::GetAuxiliaryData(const char *varName,
                                     void       *typeArgs,
                                     DestructorFunction &df)
 {
+    std::cout << "avtMiliFileFormat::GetAuxiliaryData" << std::endl;
     //
     // If we know that the request can't be handled, just
     // leave.
