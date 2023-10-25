@@ -144,8 +144,8 @@ avtWavefrontOBJWriter::WriteChunk(vtkDataSet *ds, int chunk)
     renWin->SetWindowName("Cube");
     renWin->AddRenderer(ren);
     // Create a renderwindow interactor.
-    vtkRenderWindowInteractor *iren = vtkRenderWindowInteractor::New();
-    iren->SetRenderWindow(renWin);
+    // vtkRenderWindowInteractor *iren = vtkRenderWindowInteractor::New();
+    // iren->SetRenderWindow(renWin);
 
     // Create a cube.
     vtkCubeSource *cube = vtkCubeSource::New();
@@ -173,9 +173,9 @@ avtWavefrontOBJWriter::WriteChunk(vtkDataSet *ds, int chunk)
     renWin->SetWindowName("Cube1");
 
     // Enable user interface interaction.
-    iren->Initialize();
+    // iren->Initialize();
     renWin->Render();
-    iren->Start();
+    // iren->Start();
 
     std::string exportFileName = "test.obj";
     vtkOBJExporter *exporter = vtkOBJExporter::New();
