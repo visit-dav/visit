@@ -265,51 +265,51 @@ avtWavefrontOBJWriter::GetCombineMode(const std::string &) const
 //
 //****************************************************************************
 
-vtkImageData *
-avtWavefrontOBJWriter::GetColorTable()
-{
-    const ColorTableAttributes *colorTables = avtColorTables::Instance()->GetColorTables();
-    const ColorControlPointList *table = colorTables->GetColorControlPoints(colorTable);
-    if (table)
-    {
-        const int num_ctrl_pts = table->GetNumControlPoints();
+// vtkImageData *
+// avtWavefrontOBJWriter::GetColorTable()
+// {
+//     const ColorTableAttributes *colorTables = avtColorTables::Instance()->GetColorTables();
+//     const ColorControlPointList *table = colorTables->GetColorControlPoints(colorTable);
+//     if (table)
+//     {
+//         const int num_ctrl_pts = table->GetNumControlPoints();
 
 
-        vtkImageData *imageData = vtkImageData::New();
-        double spacing[3] = { 1.0, 1.0, 1.0 };
-        int size[3] = { num_ctrl_pts, 0, 0 };
-        double origin[3] = { 0.0, 0.0, 0.0 };
-        imageData->SetDimensions(size);
-        imageData->SetSpacing(spacing);
-        imageData->SetOrigin(origin);
-        imageData->AllocateScalars(VTK_FLOAT, 3);
-        vtkFloatArray *scalars = vtkFloatArray::SafeDownCast(imageData->GetPointData()->GetScalars());
+//         vtkImageData *imageData = vtkImageData::New();
+//         double spacing[3] = { 1.0, 1.0, 1.0 };
+//         int size[3] = { num_ctrl_pts, 0, 0 };
+//         double origin[3] = { 0.0, 0.0, 0.0 };
+//         imageData->SetDimensions(size);
+//         imageData->SetSpacing(spacing);
+//         imageData->SetOrigin(origin);
+//         imageData->AllocateScalars(VTK_FLOAT, 3);
+//         vtkFloatArray *scalars = vtkFloatArray::SafeDownCast(imageData->GetPointData()->GetScalars());
 
-        vtkImagePointIterator iter(imageData);
-        while (!iter.IsAtEnd())
-        {
-            scalars->SetTuple3(iter.GetId(), 255.0, 0.0, 146.0);
-            iter.Next();
-        }
+//         vtkImagePointIterator iter(imageData);
+//         while (!iter.IsAtEnd())
+//         {
+//             scalars->SetTuple3(iter.GetId(), 255.0, 0.0, 146.0);
+//             iter.Next();
+//         }
 
-        return imageData;
+//         return imageData;
 
 
-        // vtkColorTransferFunction *lut = vtkColorTransferFunction::New();
+//         // vtkColorTransferFunction *lut = vtkColorTransferFunction::New();
 
-        // double *vals = new double[3 * num_ctrl_pts];
-        // for (int j = 0; j < num_ctrl_pts; j++)
-        // {
-        //     const ColorControlPoint &pt = table->GetControlPoints(j);
-        //     vals[j * 3 + 0] = pt.GetColors()[0] / 255.0;
-        //     vals[j * 3 + 1] = pt.GetColors()[1] / 255.0;
-        //     vals[j * 3 + 2] = pt.GetColors()[2] / 255.0;
-        // }
+//         // double *vals = new double[3 * num_ctrl_pts];
+//         // for (int j = 0; j < num_ctrl_pts; j++)
+//         // {
+//         //     const ColorControlPoint &pt = table->GetControlPoints(j);
+//         //     vals[j * 3 + 0] = pt.GetColors()[0] / 255.0;
+//         //     vals[j * 3 + 1] = pt.GetColors()[1] / 255.0;
+//         //     vals[j * 3 + 2] = pt.GetColors()[2] / 255.0;
+//         // }
         
-        // lut->BuildFunctionFromTable(colorTableMin, colorTableMax, num_ctrl_pts, vals);
-        // delete [] vals;
+//         // lut->BuildFunctionFromTable(colorTableMin, colorTableMax, num_ctrl_pts, vals);
+//         // delete [] vals;
 
-        // return lut;
-    }
-    return NULL;
-}
+//         // return lut;
+//     }
+//     return NULL;
+// }

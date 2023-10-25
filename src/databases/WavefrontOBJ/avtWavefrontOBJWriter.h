@@ -14,7 +14,7 @@
 #include <string>
 
 class vtkPolyData;
-class vtkImageData;
+// class vtkImageData;
 
 // ****************************************************************************
 //  Class: avtWavefrontOBJWriter
@@ -52,12 +52,12 @@ avtWavefrontOBJWriter : public avtDatabaseWriter
     virtual bool          CreateTrianglePolyData() const;
     virtual CombineMode   GetCombineMode(const std::string &plotName) const;
 
-  private:
-    vtkImageData   *GetColorTable();
+  // private:
+  //   vtkImageData   *GetColorTable();
     
-    bool                       doColor;
-    std::string                colorTable;
-    double                     colorTableMin, colorTableMax;
+  //   bool                       doColor;
+  //   std::string                colorTable;
+  //   double                     colorTableMin, colorTableMax;
 };
 
 
