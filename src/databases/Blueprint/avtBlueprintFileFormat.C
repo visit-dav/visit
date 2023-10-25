@@ -49,6 +49,7 @@
 #include "conduit_relay.hpp"
 #include "conduit_relay_io_hdf5.hpp"
 #include "conduit_blueprint.hpp"
+#include "conduit_blueprint_mesh_utils.hpp"
 
 //-----------------------------------------------------------------------------
 // mfem includes
@@ -1783,6 +1784,15 @@ avtBlueprintFileFormat::GetMesh(int domain, const char *abs_meshname)
             // support empty mesh case by returning NULL
             return NULL;
         }
+
+        // before we verify, we want to generate offsets for unstructured meshes
+        // if they do not already exist
+        if (data.has_child("topologies"))
+            if (data["topologies"].number_of_children() > 0)
+                if (data["topologies"][0].has_child("type"))
+                    if (data["topologies"][0]["type"].as_string() == "unstructured")
+                        if (! data["topologies"][0].has_path("elements/offsets"))
+                            blueprint::mesh::utils::topology::unstructured::generate_offsets_inline(data["topologies"][0]);
 
         Node verify_info;
         if(!blueprint::mesh::verify(data, verify_info))
