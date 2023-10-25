@@ -1713,7 +1713,7 @@ avtBlueprintFileFormat::GetTime()
 }
 
 // ****************************************************************************
-//  Method: GenerateOffsetsForPolyhedralMesh
+//  Method: GenerateOffsetsForPolytopalMesh
 //
 //  Purpose:
 //      Polyhedral meshes require offsets to verify. We can generate them
@@ -1729,7 +1729,7 @@ avtBlueprintFileFormat::GetTime()
 //
 // ****************************************************************************
 void
-GenerateOffsetsForPolyhedralMesh(Node &data)
+GenerateOffsetsForPolytopalMesh(Node &data)
 {
     // using short circuit evaluation, so these statements will only execute
     // until we hit the first one that is false
@@ -1819,7 +1819,7 @@ avtBlueprintFileFormat::GetMesh(int domain, const char *abs_meshname)
 
         // before we verify, we want to generate offsets for unstructured polytopal
         // meshes if they do not already exist
-        GenerateOffsetsForPolyhedralMesh(data);
+        GenerateOffsetsForPolytopalMesh(data);
 
         Node verify_info;
         if(!blueprint::mesh::verify(data, verify_info))
@@ -1990,7 +1990,7 @@ avtBlueprintFileFormat::GetVar(int domain, const char *abs_varname)
 
             // before we verify, we want to generate offsets for unstructured polytopal
             // meshes if they do not already exist
-            GenerateOffsetsForPolyhedralMesh(n_mesh);
+            GenerateOffsetsForPolytopalMesh(n_mesh);
 
             Node verify_info;
             if(!blueprint::mesh::verify(n_mesh,verify_info))
@@ -2060,7 +2060,7 @@ avtBlueprintFileFormat::GetVar(int domain, const char *abs_varname)
 
             // before we verify, we want to generate offsets for unstructured polytopal
             // meshes if they do not already exist
-            GenerateOffsetsForPolyhedralMesh(n_mesh);
+            GenerateOffsetsForPolytopalMesh(n_mesh);
 
             Node verify_info;
             if(!blueprint::mesh::verify(n_mesh,verify_info))
@@ -2141,7 +2141,7 @@ avtBlueprintFileFormat::GetVar(int domain, const char *abs_varname)
 
             // before we verify, we want to generate offsets for unstructured polytopal
             // meshes if they do not already exist
-            GenerateOffsetsForPolyhedralMesh(n_mesh);
+            GenerateOffsetsForPolytopalMesh(n_mesh);
 
             Node verify_info;
             if(!blueprint::mesh::verify(n_mesh,verify_info))
