@@ -109,6 +109,11 @@ typedef struct _keyfmt {
 } keyfmt_t;
 static std::vector<keyfmt_t> keysAndFmts;
 
+typedef struct _annotdata {
+    double timeScale;
+    double timeOffset;
+} annotdata_t;
+
 // ****************************************************************************
 // static function: hasKeyMatch
 //
@@ -254,7 +259,7 @@ GetFltFromTAFile(int ifile, avtDataAttributes const *cda)
 // Mark C. Miller, Thu Jun 23 10:05:58 PDT 2022
 // ****************************************************************************
 
-#define TEXT_MACRO(NAME, FMT, GETTER)                  \
+#define TEXT_MACRO(NAME, FMT, VAL)                     \
     do                                                 \
     {                                                  \
         if (!initialized)                              \
@@ -264,7 +269,7 @@ GetFltFromTAFile(int ifile, avtDataAttributes const *cda)
         }                                              \
         else if (!std::strncmp(key, #NAME, sizeof(#NAME)))  \
         {                                              \
-            snprintf(rv, rvsize, fmt, GETTER);         \
+            snprintf(rv, rvsize, fmt, VAL);            \
             return;                                    \
         }                                              \
    } while (false) 
@@ -281,17 +286,24 @@ GetFltFromTAFile(int ifile, avtDataAttributes const *cda)
 // The first function, initialization, is performed only once at startup.
 //
 // Mark C. Miller, Thu Jun 23 09:37:47 PDT 2022
+//
+// Modifications
+//   Mark C. Miller, Thu Oct  5 15:32:11 PDT 2023
+//   Added annotdata_t argument for handling any additional annotation data.
+//   Also deref cda here instead of inside TEXT_MACRO.
+//   Handled case where $time macro may need timeScale and timeOffset.
+//
 // ****************************************************************************
 
 static void
 processMacro(char *rv, size_t rvsize=0, char const *key=0, char const *fmt=0,
-    avtDataAttributes const *cda=0)
+    avtDataAttributes const *cda=0, annotdata_t const *ad=0)
 {
     static bool initialized = false;
 
     if (initialized && rv==0) return;
 
-    TEXT_MACRO(time, %g, cda->GetTime());
+    TEXT_MACRO(time, %g, (cda->GetTime()*ad->timeScale+ad->timeOffset));
     TEXT_MACRO(cycle, %d, cda->GetCycle());
     TEXT_MACRO(index, %d, cda->GetTimeIndex());
     TEXT_MACRO(numstates, %d, cda->GetNumStates());
@@ -334,11 +346,16 @@ processMacro(char *rv, size_t rvsize=0, char const *key=0, char const *fmt=0,
 // is returned on a local static var.
 //
 // Mark C. Miller, Thu Jun 23 09:36:41 PDT 2022
+//
+// Modifications
+//   Mark C. Miller, Thu Oct  5 15:31:36 PDT 2023
+//   Added annotdata_t arg for passing additional annotation data.
+//
 // ****************************************************************************
 
 static char const *
 getKeyString(char const *fmtStr, int inlen, int idx, int kid,
-avtDataAttributes const *cda)
+avtDataAttributes const *cda, annotdata_t const *ad)
 {
     static char retval[256];
     char const *key = keysAndFmts[kid].key;
@@ -357,7 +374,7 @@ avtDataAttributes const *cda)
         std::strcpy(fmt, defaultFmt); // (e.g. fmt = "%g")
     }
 
-    processMacro(retval, sizeof(retval), key, fmt, cda);
+    processMacro(retval, sizeof(retval), key, fmt, cda, ad);
 
     return retval;
 }
@@ -391,12 +408,19 @@ avtDataAttributes const *cda)
 //
 // Caller must delete what is returned
 //
+// Modifications
+//   Mark C. Miller, Thu Oct  5 15:33:40 PDT 2023
+//   Added logic to capture timeScale,timeOffset and pass into key string
+//   processing methods.
+//
 // ****************************************************************************
 
 char *
 avtAnnotationWithTextColleague::CreateAnnotationString(const char *formatString)
 {
     std::string rv;
+
+    annotdata_t ad = {timeScale, timeOffset};
 
     processMacro(0); // initialize keysAndFmts;
 
@@ -410,8 +434,8 @@ avtAnnotationWithTextColleague::CreateAnnotationString(const char *formatString)
             if (keyMatch != -1)
             {
                 i++; // move to next char after '$'                
-                rv += getKeyString(formatString, inlen, i, keyMatch, currentDataAttributes);
-                i += (int) std::strlen(keysAndFmts[keyMatch].key); // skip over key
+                rv += getKeyString(formatString, inlen, i, keyMatch, currentDataAttributes, &ad);
+                i += (int) strlen(keysAndFmts[keyMatch].key); // skip over key
                 if (formatString[i] == '%')
                 {
                     while (i < inlen && formatString[i] != '$')
