@@ -46,7 +46,6 @@
 
 #include <vtkActor.h>
 #include <vtkCamera.h>
-#include <vtkCubeSource.h>
 #include <vtkPolyDataMapper.h>
 #include <vtkProperty.h>
 #include <vtkRenderWindowInteractor.h>
@@ -137,16 +136,11 @@ avtWavefrontOBJWriter::WriteChunk(vtkDataSet *ds, int chunk)
     else
         filename = stem + ".obj";
 
-
     // Create a rendering window and renderer.
     vtkRenderer *renderer = vtkRenderer::New();
     vtkRenderWindow *renderWindow = vtkRenderWindow::New();
-    renderWindow->SetWindowName("Cube");
+    renderWindow->SetWindowName("OBJ Output");
     renderWindow->AddRenderer(renderer);
-
-    // Create a cube.
-    vtkCubeSource *cube = vtkCubeSource::New();
-    cube->Update();
 
     // Mapper.
     vtkPolyDataMapper *polyDataMapper = vtkPolyDataMapper::New();
@@ -167,8 +161,6 @@ avtWavefrontOBJWriter::WriteChunk(vtkDataSet *ds, int chunk)
     renderer->SetBackground(0.5, 0.5, 0.5);
 
     renderWindow->SetSize(300, 300);
-    renderWindow->SetWindowName("Cube1");
-
     renderWindow->Render();
 
     std::string exportFileName = "test.obj";
