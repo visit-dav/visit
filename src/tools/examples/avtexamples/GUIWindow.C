@@ -13,7 +13,12 @@
 #include <QVBoxLayout>
 #include <QWidget>
 
+#include <visit-config.h> // For LIB_VERSION_LE
+#if LIB_VERSION_LE(VTK, 8,1,0)
 #include <QVTKOpenGLWidget.h>
+#else
+#include <QVTKOpenGLNativeWidget.h>
+#endif
 
 #include <vtkActor.h>
 #include <vtkCamera.h>
@@ -155,6 +160,7 @@ GUIWindow::CreateMainWindow()
     //
     // Create the visualization window.
     //
+ #if LIB_VERSION_LE(VTK, 8,1,0)
     QVTKOpenGLWidget *gl = new QVTKOpenGLWidget(central);;
     if (!gl->GetRenderWindow())
     {
@@ -171,7 +177,24 @@ GUIWindow::CreateMainWindow()
     // Draw a cylinder in the render window.
     //
     DrawCylinder(gl->GetRenderWindow());
+#else
+    QVTKOpenGLNativeWidget *gl = new QVTKOpenGLNativeWidget(central);;
+    if (!gl->renderWindow())
+    {
+        vtkGenericOpenGLRenderWindow *renWin = vtkGenericOpenGLRenderWindow::New();
+        gl->setRenderWindow(renWin);
+        renWin->Delete();
+    }
+    gl->renderWindow()->AlphaBitPlanesOn();
+    gl->renderWindow()->SetStereoRender(false);
+    gl->setMinimumSize(QSize(500,500));
+    hLayout->addWidget(gl, 100);
 
+    //
+    // Draw a cylinder in the render window.
+    //
+    DrawCylinder(gl->renderWindow());
+#endif
     //
     // Create the menus.
     //
