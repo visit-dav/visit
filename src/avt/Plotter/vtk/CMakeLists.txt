@@ -38,7 +38,7 @@ if(VTK_VERSION VERSION_EQUAL "8.1.0" AND VISIT_OSPRAY)
          vtkOSPRayVisItAxisActorNode.C
          vtkOSPRayVisItCubeAxesActorNode.C
          vtkVisItViewNodeFactory.C)
-elseif(VTK_VERSION VERSION_EQUAL "9.1.0" AND HAVE_LIBOSPRAY)
+elseif(VTK_VERSION VERSION_GREATER_EQUAL "9.1.0" AND HAVE_LIBOSPRAY)
     list(APPEND AVTPLOTTER_VTK_SOURCES
          vtkOSPRayVisItAxisActorNode.C
          vtkOSPRayVisItCubeAxesActorNode.C

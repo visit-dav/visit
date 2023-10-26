@@ -13,7 +13,7 @@
 #include <vtkQtRenderWindow.h>
 
 #if LIB_VERSION_LE(VTK, 8,1,0)
-#include "QVTKOpenGLWidget.h"
+#include <QVTKOpenGLWidget.h>
 #else
 #include <QVTKOpenGLNativeWidget.h>
 #endif
