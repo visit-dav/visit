@@ -38,6 +38,9 @@
 # 
 #    Justin Privitera, Tue Sep 19 11:36:45 PDT 2023
 #    Added a test for material numbers not in the range [0, N)
+# 
+#    Justin Privitera, Wed Oct 25 17:29:07 PDT 2023
+#    Added a test for a polygonal mesh with no offsets.
 #
 # ----------------------------------------------------------------------------
 RequiredDatabasePlugin("Blueprint")

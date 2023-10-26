@@ -1721,6 +1721,13 @@ avtBlueprintFileFormat::GetTime()
 //
 //  Arguments:
 //      data        The mesh domain we wish to add offsets to.
+// 
+//  Notes:
+//      We cannot assume much about the data we are working with, as it has
+//      not passed verification yet. If it has the structure we expect, we can
+//      assume that the passed data node consists of a single coordset and
+//      topology, as ReadBlueprintMesh() is called directly before this 
+//      function and should return a node with a single coordset and topology.
 //
 //  Programmer: Justin Privitera
 //  Creation:   10/25/23
@@ -1783,6 +1790,9 @@ GenerateOffsetsForPolytopalMesh(Node &data)
 //    Brad Whitlock, Mon May 22 17:29:05 PDT 2023
 //    I added some code to clear the mesh's material from the cache if it
 //    has an obsolete LOD.
+// 
+//    Justin Privitera, Wed Oct 25 17:29:07 PDT 2023
+//    Call GenerateOffsetsForPolytopalMesh() before calling verify.
 //
 // ****************************************************************************
 
@@ -1955,6 +1965,9 @@ avtBlueprintFileFormat::GetMesh(int domain, const char *abs_meshname)
 // 
 //    Justin Privitera, Tue Aug 23 14:40:24 PDT 2022
 //    Removed `CONDUIT_HAVE_PARTITION_FLATTEN` check.
+// 
+//    Justin Privitera, Wed Oct 25 17:29:07 PDT 2023
+//    Call GenerateOffsetsForPolytopalMesh() before calling verify.
 // 
 // ****************************************************************************
 
