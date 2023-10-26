@@ -271,6 +271,9 @@ GenerateOffsetsForPolytopalMesh(Node &data)
 //    Justin Privitera, Wed Oct 25 17:29:07 PDT 2023
 //    Call GenerateOffsetsForPolytopalMesh() at the end of this function, 
 //    before calling verify.
+// 
+//     Justin Privitera, Thu Oct 26 12:26:32 PDT 2023
+//     Fixed warnings.
 //
 // ****************************************************************************
 void
@@ -513,6 +516,9 @@ avtBlueprintFileFormat::ReadBlueprintMesh(int domain,
 // 
 //    Justin Privitera, Wed Mar 22 16:09:52 PDT 2023
 //    Handle the 1D curve case.
+// 
+//     Justin Privitera, Thu Oct 26 12:26:32 PDT 2023
+//     Fixed warnings.
 //
 // ****************************************************************************
 
@@ -601,6 +607,8 @@ avtBlueprintFileFormat::ReadBlueprintField(int domain,
 //  Creation:   Mon May 22 16:51:12 PDT 2023
 //
 //  Modifications:
+//     Justin Privitera, Thu Oct 26 12:26:32 PDT 2023
+//     Fixed warnings.
 //
 // ****************************************************************************
 
@@ -664,6 +672,9 @@ avtBlueprintFileFormat::DetectHOMaterial(const std::string &mesh_name,
 //    Brad Whitlock, Mon May 22 16:51:12 PDT 2023
 //    I added code to treat HO materials specially since we want them to be
 //    refined according to the selected level of detail (m_selected_lod).
+// 
+//     Justin Privitera, Thu Oct 26 12:26:32 PDT 2023
+//     Fixed warnings.
 //
 // ****************************************************************************
 
@@ -837,6 +848,9 @@ avtBlueprintFileFormat::ReadBlueprintMatset(int domain,
 // 
 //    Justin Privitera, Wed Mar 22 16:09:52 PDT 2023
 //    Handle 1D curve case.
+// 
+//     Justin Privitera, Thu Oct 26 12:26:32 PDT 2023
+//     Fixed warnings.
 //
 // ****************************************************************************
 void
@@ -1112,6 +1126,9 @@ avtBlueprintFileFormat::AddBlueprintMeshAndFieldMetadata(avtDatabaseMetaData *md
 //   Justin Privitera, Tue Sep 19 11:36:45 PDT 2023
 //   No longer assume material ids will be in the range [0, N) and no longer
 //   sort the names before sending to avtMaterialMetaData.
+// 
+//   Justin Privitera, Thu Oct 26 12:26:32 PDT 2023
+//   Fixed warnings.
 //
 // ****************************************************************************
 void
@@ -1549,6 +1566,9 @@ avtBlueprintFileFormat::ReadRootIndexItems(const std::string &root_fname,
 // 
 //    Justin Privitera, Wed Mar 22 16:09:52 PDT 2023
 //    Bookkeeping for 1D curves.
+// 
+//     Justin Privitera, Thu Oct 26 12:26:32 PDT 2023
+//     Fixed warnings.
 //
 // ****************************************************************************
 
@@ -1798,6 +1818,9 @@ avtBlueprintFileFormat::GetTime()
 //    I added some code to clear the mesh's material from the cache if it
 //    has an obsolete LOD.
 // 
+//     Justin Privitera, Thu Oct 26 12:26:32 PDT 2023
+//     Fixed warnings.
+// 
 // ****************************************************************************
 
 vtkDataSet *
@@ -1965,6 +1988,9 @@ avtBlueprintFileFormat::GetMesh(int domain, const char *abs_meshname)
 // 
 //    Justin Privitera, Tue Aug 23 14:40:24 PDT 2022
 //    Removed `CONDUIT_HAVE_PARTITION_FLATTEN` check.
+// 
+//     Justin Privitera, Thu Oct 26 12:26:32 PDT 2023
+//     Fixed warnings.
 // 
 // ****************************************************************************
 
@@ -2291,7 +2317,8 @@ avtBlueprintFileFormat::GetVectorVar(int domain, const char *varname)
 //  Creation:   December 8, 2020
 //
 //  Modifications:
-//
+//     Justin Privitera, Thu Oct 26 12:26:32 PDT 2023
+//     Fixed warnings.
 //
 // ****************************************************************************
 void *
@@ -2335,6 +2362,9 @@ avtBlueprintFileFormat::GetAuxiliaryData(const char *var,
 //
 //     Justin Privitera, Tue Sep 19 11:36:45 PDT 2023
 //     Get the material numbers and use a different avtMaterial constructor.
+// 
+//     Justin Privitera, Thu Oct 26 12:26:32 PDT 2023
+//     Fixed warnings.
 //
 // ****************************************************************************
 avtMaterial *
