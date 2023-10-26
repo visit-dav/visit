@@ -12,12 +12,14 @@
 #pragma GCC diagnostic ignored "-Wshadow"
 #pragma GCC diagnostic ignored "-Wnon-virtual-dtor"
 #pragma GCC diagnostic ignored "-Wold-style-cast"
+#pragma GCC diagnostic ignored "-Wcast-function-type"
 #pragma GCC diagnostic ignored "-Wcast-align"
 #pragma GCC diagnostic ignored "-Wunused"
 #pragma GCC diagnostic ignored "-Woverloaded-virtual"
 #pragma GCC diagnostic ignored "-Wpedantic"
 #pragma GCC diagnostic ignored "-Wconversion"
 #pragma GCC diagnostic ignored "-Wsign-conversion"
+#pragma GCC diagnostic ignored "-Wfloat-conversion"
 #pragma GCC diagnostic ignored "-Wmisleading-indentation"
 #pragma GCC diagnostic ignored "-Wduplicated-cond"
 #pragma GCC diagnostic ignored "-Wduplicated-branches"
@@ -26,6 +28,7 @@
 #pragma GCC diagnostic ignored "-Wuseless-cast"
 #pragma GCC diagnostic ignored "-Wdouble-promotion"
 #pragma GCC diagnostic ignored "-Wformat=2"
+#pragma GCC diagnostic ignored "-Wpragmas"
 #pragma GCC diagnostic ignored "-pedantic"
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 
@@ -515,7 +518,7 @@ avtBlueprintFileFormat::ReadBlueprintField(int domain,
 
     string mesh_name;
     string topo_name;
-    FetchMeshAndTopoNames(std::string(abs_meshname),
+    FetchMeshAndTopoNames(abs_meshname,
                           mesh_name,
                           topo_name);
 
@@ -615,7 +618,7 @@ avtBlueprintFileFormat::DetectHOMaterial(const std::string &mesh_name,
         }
         // If all of the material names had a matching HO field for the volume
         // fractions then our material is made up of HO fields.
-        HOmaterials = matFields.size() == static_cast<size_t>(matNames.size());
+        HOmaterials = matFields.size() == matNames.size();
 
         // See whether a free material needs to be created. Use Axom convention.
         const std::string free_mat_name("vol_frac_free");
@@ -729,10 +732,10 @@ avtBlueprintFileFormat::ReadBlueprintMatset(int domain,
             if(make_free_mat)
             {
                 if(freevf.empty())
-                    freevf.resize(nzones, 1.f);
+                    freevf.resize(static_cast<size_t>(nzones), 1.f);
                 // Now, subtract the current vf from the free mat.
                 for(vtkIdType zi = 0; zi < nzones; ++zi)
-                    freevf[zi] -= fptr[zi];
+                    freevf[static_cast<size_t>(zi)] -= fptr[zi];
             }
 
             // Add the material name to the list.
@@ -744,7 +747,7 @@ avtBlueprintFileFormat::ReadBlueprintMatset(int domain,
             // See whether any zones have sufficient free material.
             auto it = std::find_if(freevf.begin(), freevf.end(), [](float value)
             {
-                constexpr float SUFFICIENT_MATERIAL = 1.e-6;
+                constexpr float SUFFICIENT_MATERIAL = 1.e-6f;
                 return (1.f - value) > SUFFICIENT_MATERIAL;
             });
             if(it != freevf.end())
@@ -926,7 +929,7 @@ avtBlueprintFileFormat::AddBlueprintMeshAndFieldMetadata(avtDatabaseMetaData *md
 
         std::string coord_sys_type = n_coords["coord_system/type"].as_string();
 
-        int ndims = n_coords["coord_system/axes"].number_of_children();
+        int ndims = static_cast<int>(n_coords["coord_system/axes"].number_of_children());
         topo_dims[topo_name] = ndims;
 
         BP_PLUGIN_INFO("coordinate system: "
@@ -1162,7 +1165,7 @@ avtBlueprintFileFormat::AddBlueprintMaterialsMetadata(avtDatabaseMetaData *md,
             while (itr.has_next())
             {
                 itr.next();
-                int32 mat_id = itr.index();
+                int32 mat_id = static_cast<int32>(itr.index());
                 std::string mat_name = itr.name();
                 // cache mat names and idx (implied order)
                 m_matset_info[mesh_matset_name]["matnames"][mat_name] = mat_id;
@@ -1193,7 +1196,7 @@ avtBlueprintFileFormat::AddBlueprintMaterialsMetadata(avtDatabaseMetaData *md,
 
         avtMaterialMetaData *mmd = new avtMaterialMetaData(mesh_matset_name,
                                                            mesh_topo_name,
-                                                           matnames.size(),
+                                                           static_cast<int>(matnames.size()),
                                                            matnames);
 
         mmd->validVariable = true;
@@ -1529,7 +1532,7 @@ avtBlueprintFileFormat::ReadRootIndexItems(const std::string &root_fname,
 // ****************************************************************************
 
 void
-avtBlueprintFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
+avtBlueprintFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *)
 {
     BP_PLUGIN_INFO("Begin avtBlueprintFileFormat::PopulateDatabaseMetaData");
 
@@ -1795,7 +1798,7 @@ avtBlueprintFileFormat::GetMesh(int domain, const char *abs_meshname)
             // This means that abs_meshname is of the form:
             // "mesh_name/field_name", so we need to separate it
             abs_meshname_str = abs_meshname_str.substr(0, abs_meshname_str.find('/'));
-            string abs_1d_curve_field_name = FileFunctions::Basename(abs_meshname);
+            abs_1d_curve_field_name = FileFunctions::Basename(abs_meshname);
         }
 
         // reads a single mesh into a blueprint conforming output
@@ -1843,7 +1846,7 @@ avtBlueprintFileFormat::GetMesh(int domain, const char *abs_meshname)
         BP_PLUGIN_INFO("topo name: " << topo_name);
 
         conduit::Node &n_coords = data["coordsets"][0];
-        int ndims = n_coords["values"].number_of_children();
+        int ndims = static_cast<int>(n_coords["values"].number_of_children());
 
         // check for the mfem case
         if( m_mfem_mesh_map[topo_name] )
@@ -2013,13 +2016,13 @@ avtBlueprintFileFormat::GetVar(int domain, const char *abs_varname)
             return NULL;
         }
 
-        Node verify_info;
-        if(!blueprint::mesh::field::verify(*field_ptr,verify_info))
+        Node field_verify_info;
+        if(!blueprint::mesh::field::verify(*field_ptr,field_verify_info))
         {
             BP_PLUGIN_INFO("blueprint::mesh::field::verify failed for field "
                            << abs_varname_str << " [domain " << domain << "]" << endl
                            << "Verify Info " << endl
-                           << verify_info.to_yaml() << endl
+                           << field_verify_info.to_yaml() << endl
                            << "Data Schema " << endl
                            << field_ptr->schema().to_yaml());
             return NULL;
@@ -2054,7 +2057,7 @@ avtBlueprintFileFormat::GetVar(int domain, const char *abs_varname)
 
             string mesh_name, topo_name;
 
-            FetchMeshAndTopoNames(std::string(abs_meshname),
+            FetchMeshAndTopoNames(abs_meshname,
                                   mesh_name,
                                   topo_name);
 
@@ -2161,7 +2164,7 @@ avtBlueprintFileFormat::GetVar(int domain, const char *abs_varname)
 
             string mesh_name;
             string topo_name;
-            FetchMeshAndTopoNames(std::string(abs_meshname),
+            FetchMeshAndTopoNames(abs_meshname,
                                   mesh_name,
                                   topo_name);
 
@@ -2184,7 +2187,7 @@ avtBlueprintFileFormat::GetVar(int domain, const char *abs_varname)
                                                      n_matset,
                                                      n_silo_matset);
 
-            int mix_len  = (int) n_silo_matset["field_mixvar_values"].dtype().number_of_elements();
+            int mix_len  = static_cast<int>(n_silo_matset["field_mixvar_values"].dtype().number_of_elements());
 
             float *mixvals_ptr = NULL;
             if(n_silo_matset["field_mixvar_values"].dtype().is_float())
@@ -2281,7 +2284,7 @@ avtBlueprintFileFormat::GetAuxiliaryData(const char *var,
 
     if (strcmp(type, AUXILIARY_DATA_MATERIAL) == 0)
     {
-        rv = (void *) GetMaterial(domain, var);
+        rv = static_cast<void *>(GetMaterial(domain, var));
         df = avtMaterial::Destruct;
     }
 
@@ -2342,8 +2345,8 @@ avtBlueprintFileFormat::GetMaterial(int domain,
         conduit::blueprint::mesh::matset::to_silo(n_matset,
                                                   n_silo_matset);
 
-        int nmats = (int) matnames.size();
-        int nzones = (int) n_silo_matset["matlist"].dtype().number_of_elements();
+        int nmats = static_cast<int>(matnames.size());
+        int nzones = static_cast<int>(n_silo_matset["matlist"].dtype().number_of_elements());
         int *matlist  = NULL;
         int *mix_mat  = NULL;
         int *mix_next = NULL;
@@ -2386,7 +2389,7 @@ avtBlueprintFileFormat::GetMaterial(int domain,
             }
         }
 
-        int mix_len  = (int) n_silo_matset["mix_mat"].dtype().number_of_elements();
+        int mix_len  = static_cast<int>(n_silo_matset["mix_mat"].dtype().number_of_elements());
 
         float *mix_vf = NULL;
         if(n_silo_matset["mix_vf"].dtype().is_float())
