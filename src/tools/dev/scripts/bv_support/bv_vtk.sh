@@ -158,6 +158,68 @@ function bv_vtk_ensure
 # *************************************************************************** #
 #                            Function 6, build_vtk                            #
 # *************************************************************************** #
+function apply_vtk9_allow_onscreen_and_osmesa_patch
+{
+  # patch that allows VTK9 to be built with onscreen and osmesa support.
+   patch -p0 << \EOF
+--- CMake/vtkOpenGLOptions.cmake.orig	2023-10-26 15:53:06.351818000 -0700
++++ CMake/vtkOpenGLOptions.cmake	2023-10-26 16:09:34.984852000 -0700
+@@ -112,15 +112,6 @@
+     "Please set to `OFF` any of these two.")
+ endif ()
+
+-if (VTK_OPENGL_HAS_OSMESA AND VTK_CAN_DO_ONSCREEN)
+-  message(FATAL_ERROR
+-    "The `VTK_OPENGL_HAS_OSMESA` can't be set to `ON` if any of the following is true: "
+-    "the target platform is Windows, `VTK_USE_COCOA` is `ON`, or `VTK_USE_X` "
+-    "is `ON` or `VTK_USE_SDL2` is `ON`. OSMesa does not support on-screen "
+-    "rendering and VTK's OpenGL selection is at build time, so the current "
+-    "build configuration is not satisfiable.")
+-endif ()
+-
+ cmake_dependent_option(
+   VTK_USE_OPENGL_DELAYED_LOAD
+   "Use delay loading for OpenGL"
+EOF
+
+   patch -p0 << \EOF
+--- Utilities/OpenGL/CMakeLists.txt.orig	2023-10-26 15:56:37.290225000 -0700
++++ Utilities/OpenGL/CMakeLists.txt	2023-10-26 16:12:18.817101000 -0700
+@@ -45,7 +45,7 @@
+   list(APPEND opengl_targets OpenGL::EGL)
+ endif ()
+
+-if (VTK_OPENGL_HAS_OSMESA AND NOT VTK_CAN_DO_ONSCREEN)
++if (VTK_OPENGL_HAS_OSMESA)
+   vtk_module_third_party_external(
+     PACKAGE OSMesa
+     TARGETS OSMesa::OSMesa)
+EOF
+
+   patch -p0 << \EOF
+--- Rendering/OpenGL2/CMakeLists.txt.orig	2023-10-26 15:57:15.850399000 -0700
++++ Rendering/OpenGL2/CMakeLists.txt	2023-10-26 15:57:31.520455000 -0700
+@@ -350,8 +350,11 @@
+     PUBLIC SDL2::SDL2)
+ endif ()
+
++# Not sure if find_package is necessary, should it be vtk_module_find_package?
++find_package(OpenGL REQUIRED)
+ if (VTK_USE_X)
+   vtk_module_find_package(PACKAGE X11)
++  vtk_module_link(VTK::RenderingOpenGL2 PRIVATE ${OPENGL_gl_LIBRARY})
+   vtk_module_link(VTK::RenderingOpenGL2 PUBLIC X11::X11)
+   if (TARGET X11::Xcursor)
+     vtk_module_link(VTK::RenderingOpenGL2 PRIVATE X11::Xcursor)
+EOF
+
+    if [[ $? != 0 ]] ; then
+      warn "vtk patch allowing onscreen and osmesa failed."
+      return 1
+    fi
+    return 0;
+}
+
 function apply_vtk9_vtkdatawriter_patch
 {
   # patch vtkDataWriter to fix a bug when writing a vtkBitArray
@@ -2034,6 +2096,11 @@ function apply_vtk_patch
 {
 
     if [[ "$DO_VTK9" == "yes" ]] ; then
+        apply_vtk9_allow_onscreen_and_osmesa_patch
+        if [[ $? != 0 ]] ; then
+            return 1
+        fi
+
         # vtk8 version needs to be reworked for 9.1.0
         #apply_vtk9_vtkopenfoamreader_patch
         #if [[ $? != 0 ]] ; then
@@ -2414,10 +2481,9 @@ function build_vtk
             vopts="${vopts} -DOPENGL_glu_LIBRARY:FILEPATH=${MESAGL_GLU_LIB}"
             # for now, until Mesa can be updated to a version that supports GLVND, set LEGACY preference
             vopts="${vopts} -DOpenGL_GL_PREFERENCE:STRING=LEGACY"
-            # Cannot build onscreen and offscreen this way anymore
-            #vopts="${vopts} -DVTK_OPENGL_HAS_OSMESA:BOOL=ON"
-            #vopts="${vopts} -DOSMESA_LIBRARY:STRING=${MESAGL_OSMESA_LIB}"
-            #vopts="${vopts} -DOSMESA_INCLUDE_DIR:PATH=${MESAGL_INCLUDE_DIR}"
+            vopts="${vopts} -DVTK_OPENGL_HAS_OSMESA:BOOL=ON"
+            vopts="${vopts} -DOSMESA_LIBRARY:STRING=${MESAGL_OSMESA_LIB}"
+            vopts="${vopts} -DOSMESA_INCLUDE_DIR:PATH=${MESAGL_INCLUDE_DIR}"
 
             if [[ "$DO_STATIC_BUILD" == "yes" ]] ; then
                 if [[ "$DO_SERVER_COMPONENTS_ONLY" == "yes" || "$DO_ENGINE_ONLY" == "yes" ]] ; then
