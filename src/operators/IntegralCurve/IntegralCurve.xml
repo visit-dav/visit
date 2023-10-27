@@ -6,6 +6,12 @@
       ${NEKTAR++_TP_LIBRARY_DIRS}
       ${ACCELERATE_FRAMEWORK_LINK_FLAGS}
     </LDFLAGS>
+    <LIBS components="ESer">
+      avtivp_ser
+    </LIBS>
+    <LIBS components="EPar">
+      avtivp_par
+    </LIBS>
     <Files components="V">
     </Files>
     <Files components="E">
@@ -265,7 +271,7 @@
         NoCleanup
       </Field>
       <Field name="cleanupThreshold" label="Cleanup Threshold" type="double">
-        1e-08
+        0.000000
       </Field>
       <Field name="cropBeginFlag" label="Crop from" type="bool">
         false
@@ -345,6 +351,8 @@
       <Function name="ChangesRequireRecalculation" user="true" member="true">
       </Function>
       <Function name="IntegralCurveViewerEnginePluginInfo::GetOperatorVarDescription" user="false" member="true">
+      </Function>
+      <Function name="ProcessOldVersions" user="true" member="true">
       </Function>
       <Include file="source" quoted="false">
         PointAttributes.h
