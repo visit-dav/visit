@@ -810,13 +810,6 @@ avtMiliFileFormat::GetMesh(int timestep, int dom, const char *mesh)
 
 //         unsigned char *ghostZonePtr = ghostZones->GetPointer(0);
 
-//         for (int i = 0; i < nNodes; ++i)
-//         {
-//             ghostNodePtr[i] = 0;
-//             avtGhostData::AddGhostNodeType(ghostNodePtr[i],
-//                 NODE_NOT_APPLICABLE_TO_PROBLEM);
-//         }
-
 //         for (int i = 0; i < nCells; ++i)
 //         {
 //             ghostZonePtr[i] = 0;
@@ -3252,6 +3245,7 @@ avtMiliFileFormat::GetAuxiliaryData(const char *varName,
     }
     else if (strcmp(auxType, AUXILIARY_DATA_GLOBAL_NODE_IDS) == 0)
     {
+        // TODO how to get the right name?
         const char *mesh = "mesh1";
         char *check = 0;
         int meshId;
