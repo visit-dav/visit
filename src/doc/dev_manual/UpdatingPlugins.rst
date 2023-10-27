@@ -89,12 +89,15 @@ and the corresponding entry in the .xml file
 Attributes
 ----------
 
-Regeneration of Attributes is handled by three :ref:`XML Tools<XML Tools>`: one for cpp files (*xml2atts*), one for python (*xml2python*) and one for java (*xml2java*).
+Regeneration of Attributes is handled by three :ref:`XML Tools<XML Tools>`: one for cpp files (``ml2atts``, one for python (``ml2python`` and one for java (``ml2java``.
 
-If fields are removed or renamed, custom *ProcessOldVersions* (cpp) and *getattr/setattr* (python) methods should be created for temporary support of the old fields saved in config/session files and python scripts.
-The *VISIT_OBSOLETE_AT_VERSION* macro must be used to specify a version number where support for the old fields will be completely removed from VisIt, at least 2 point releases or later from the version where the removal/renaming occurs. 
+When Attributes objects are changed (e.g. members removed or renamed), our policy is to maintain backward compatibility with older versions for at least 2 point releases.
+VisIt_ can encounter older Attributes objects in either Python CLI code or from previous saves of XML content (e.g. settings).
+The logic to support backward compatibility is handled in custom ``ProcessOldVersions`` (cpp) and ``getattr/setattr`` (python) methods.
+
+The ``VISIT_OBSOLETE_AT_VERSION`` macro must be used to specify a version number where support for the old fields will be completely removed from VisIt, at least 2 point releases or later from the version where the removal/renaming occurs. 
 A deprecation message should be issued from both the cpp and python code.
-Cpp code has a default 'DeprecationMessage' method. 
+Cpp code has a default ``DeprecationMessage`` method. 
 For a removed field, it takes as arguments: the name of the removed field, the version where it will be completely unsupported. 
 The arguments for a renamed field: the old field name, the new field name, the version where the old name will be completely unsupported.
 
@@ -222,8 +225,3 @@ Now for the python getattr and setattr methods::
 
 
 **Important**: Changes to fields in the Attributes are not allowed in patch releases, as it may cause incompatibility between client and server running different patches of the same major.minor release.
-
-
-
-
-
