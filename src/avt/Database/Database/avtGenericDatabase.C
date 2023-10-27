@@ -4613,6 +4613,8 @@ avtGenericDatabase::GetAuxiliaryData(avtDataRequest_p spec,
         }
         else
         {
+            if (strcmp(type, AUXILIARY_DATA_GLOBAL_NODE_IDS) == 0)
+                std::cout << "calling GetAuxiliaryData for AUXILIARY_DATA_GLOBAL_NODE_IDS" << std::endl;
             //
             // We did not have it, so calculate it and then store it.
             //
@@ -5605,6 +5607,7 @@ avtGenericDatabase::GetSpecies(int dom, const char *var, int ts)
 vtkDataArray *
 avtGenericDatabase::GetGlobalNodeIds(int dom, const char *var, int ts)
 {
+    std::cout << "avtGenericDatabase::GetGlobalNodeIds" << std::endl;
     avtDatabaseMetaData *md = GetMetaData(ts);
 
     //
@@ -5615,6 +5618,7 @@ avtGenericDatabase::GetGlobalNodeIds(int dom, const char *var, int ts)
     avtDataRequest_p dataRequest = new avtDataRequest(meshname.c_str(),
                                                             ts, dom);
     VoidRefList gnodeIds;
+    std::cout << "calling GetAuxiliaryData" << std::endl;
     GetAuxiliaryData(dataRequest, gnodeIds, AUXILIARY_DATA_GLOBAL_NODE_IDS, NULL);
     if (gnodeIds.nList > 1)
     {
@@ -5632,6 +5636,7 @@ avtGenericDatabase::GetGlobalNodeIds(int dom, const char *var, int ts)
     }
     else
     {
+        std::cout << "gnodeIds.nList " << gnodeIds.nList << std::endl;
         return NULL;
     }
 }
@@ -7280,7 +7285,10 @@ avtGenericDatabase::CommunicateGhosts(avtGhostDataType ghostType,
     for (i = 0 ; i < doms.size() ; i++)
     {
         if (GetGlobalNodeIds(doms[i], meshname.c_str(), ts) == NULL)
+        {
+            std::cout << "haveDomainWithoutGlobalNodeIds = true;" << std::endl;
             haveDomainWithoutGlobalNodeIds = true;
+        }
         else
             haveGlobalNodeIdsForAtLeastOneDom = true;
     }

@@ -3219,13 +3219,13 @@ avtMiliFileFormat::GetAuxiliaryData(const char *varName,
                                     void       *typeArgs,
                                     DestructorFunction &df)
 {
-    std::cout << "avtMiliFileFormat::GetAuxiliaryData" << std::endl;
     //
     // If we know that the request can't be handled, just
     // leave.
     //
     if ( (strcmp(auxType, AUXILIARY_DATA_MATERIAL) != 0) &&
-         (strcmp(auxType, "AUXILIARY_DATA_IDENTIFIERS") != 0) )
+         (strcmp(auxType, AUXILIARY_DATA_IDENTIFIERS) != 0) &&
+         (strcmp(auxType, AUXILIARY_DATA_GLOBAL_NODE_IDS) != 0) )
     {
         return NULL;
     }
@@ -3235,7 +3235,7 @@ avtMiliFileFormat::GetAuxiliaryData(const char *varName,
         ReadMesh(dom);
     }
 
-    if (strcmp(auxType, "AUXILIARY_DATA_IDENTIFIERS") == 0)
+    if (strcmp(auxType, AUXILIARY_DATA_IDENTIFIERS) == 0)
     {
         //
         // Retrieve the node/zone labels.
@@ -3252,8 +3252,7 @@ avtMiliFileFormat::GetAuxiliaryData(const char *varName,
     }
     else if (strcmp(auxType, AUXILIARY_DATA_GLOBAL_NODE_IDS) == 0)
     {
-        std::cout << "I'm here" << std::endl;
-        const char *mesh = "mesh";
+        const char *mesh = "mesh1";
         char *check = 0;
         int meshId;
         int offset = 4;
@@ -3283,6 +3282,7 @@ avtMiliFileFormat::GetAuxiliaryData(const char *varName,
         rv->SetNumberOfComponents(1);
 
         df = avtVariableCache::DestructVTKObject;
+
         return (void *) rv;
     }
     else if (strcmp(auxType, AUXILIARY_DATA_MATERIAL) == 0)
