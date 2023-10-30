@@ -15,7 +15,7 @@
 #include <DebugStream.h>
 
 //
-// Static data that describes the eight default color tables.
+// Constant data that describes the default color tables.
 //
 
 constexpr const char *predef_ct_names[]  = { "bluehot", "caleblack", "calewhite",
@@ -596,6 +596,9 @@ void avtColorTables::ModifyColor(char unsigned const *inrgb, double mult,
 // 
 //   Justin Privitera, Thu Jan 26 11:39:29 PST 2023
 //   Changed "Standard" tag to "Default".
+// 
+//   Justin Privitera, Mon Oct 30 11:11:34 PDT 2023
+//   Use constexpr to take advantage of compile time evaluation.
 // 
 // ****************************************************************************
 
