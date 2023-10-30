@@ -225,10 +225,10 @@ class QUERY_API avtXRayImageQuery : public avtDatasetQuery
     virtual void              Execute(avtDataTree_p);
 
     template <typename T>
-    void                      WriteImage(const char *, int, int, T*, bool);
+    std::string               WriteImage(const char *, int, int, T*, bool);
     template <typename T>
-    void                      WriteFloats(const char *, int, int, T*);
-    void                      WriteBOVHeader(const char *, const char *,
+    std::string               WriteFloats(const char *, int, int, T*);
+    std::string               WriteBOVHeader(const char *, const char *,
                                   int, int, int, const char *);
 #ifdef HAVE_CONDUIT
     template <typename T>
