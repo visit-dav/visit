@@ -378,6 +378,8 @@
       </Function>
       <Function name="PoincareViewerEnginePluginInfo::GetOperatorVarDescription" user="false" member="true">
       </Function>
+      <Function name="ProcessOldVersions" user="true" member="true">
+      </Function>
       <Include file="source" quoted="false">
         PlaneAttributes.h
       </Include>

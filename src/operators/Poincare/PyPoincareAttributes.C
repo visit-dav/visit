@@ -5935,6 +5935,28 @@ PyPoincareAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "criticalPointThreshold") == 0)
         return PoincareAttributes_GetCriticalPointThreshold(self, NULL);
 
+#include <visit-config.h>
+
+#if VISIT_OBSOLETE_AT_VERSION(3,5,0) 
+#error This code is obsolete in this version of VisIt and should be removed.
+#else
+    // Try and handle legacy fields
+#define NAME_CHANGE_MESSAGE2(oldname, newname) \
+    PyErr_WarnFormat(NULL, 1, "'%s' is no longer a valid Poincare attribute.\n" \
+                    "It's name has been changed to '%s', " \
+                    "please update your script.\n", oldname, newname);
+        
+    // parallelizationAlgorithmType
+    if(strcmp(name, "MasterSlave") == 0)
+    {       
+        NAME_CHANGE_MESSAGE2(name, "ManagerWorker");
+        return PyInt_FromLong(long(PoincareAttributes::ManagerWorker));
+    }           
+    // end parallelizationAlgorithmType 
+    // NOTE: no cooresponding _setattr method is needed for this case because this
+    // is handling only a change in enum symbol name. Those are constants in the
+    // python object and never set
+#endif  
 
     // Add a __dict__ answer so that dir() works
     if (!strcmp(name, "__dict__"))
