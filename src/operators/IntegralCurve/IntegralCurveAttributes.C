@@ -526,7 +526,7 @@ void IntegralCurveAttributes::Init()
     pathlinesCMFE = POS_CMFE;
     displayGeometry = Lines;
     cleanupMethod = NoCleanup;
-    cleanupThreshold = 0;
+    cleanupThreshold = 1e-08;
     cropBeginFlag = false;
     cropBegin = 0;
     cropEndFlag = false;

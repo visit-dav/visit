@@ -271,7 +271,7 @@
         NoCleanup
       </Field>
       <Field name="cleanupThreshold" label="Cleanup Threshold" type="double">
-        0.000000
+        1e-08
       </Field>
       <Field name="cropBeginFlag" label="Crop from" type="bool">
         false
