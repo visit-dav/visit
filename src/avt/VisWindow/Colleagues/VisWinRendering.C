@@ -66,6 +66,8 @@ bool VisWinRendering::stereoEnabled = false;
 #include <vtkFloatArray.h>
 #endif
 
+#if LIB_VERSION_LE(VTK,8,1,0)
+#else
 // For vtkBackgroundPass
 #include <vtkOpenGLQuadHelper.h>
 #include <vtkOpenGLRenderUtilities.h>
@@ -161,6 +163,7 @@ private:
 };
 
 vtkStandardNewMacro(vtkBackgroundPass);
+#endif
 
 // ****************************************************************************
 //  Method: VisWinRendering constructor
@@ -1962,6 +1965,23 @@ VisWinRendering::PostProcessScreenCapture(avtImage_p input,
     writer->Delete();
 #endif
 
+#if LIB_VERSION_LE(VTK,8,1,0)
+    // temporarily remove canvas and background renderers
+    vtkRenderWindow *renWin = GetRenderWindow();
+    renWin->RemoveRenderer(canvas);
+    renWin->RemoveRenderer(background);
+
+    // set pixel data
+    unsigned char *pixels = input->GetImage().GetRGBBuffer();
+    int nChannels = input->GetImage().GetNumberOfColorChannels();
+    if(nChannels == 4)
+        renWin->SetRGBACharPixelData(c0, r0, c0+w-1, r0+h-1, pixels, /*front=*/1);
+    else
+        renWin->SetPixelData(c0, r0, c0+w-1, r0+h-1, pixels, /*front=*/1);
+
+    // render (foreground layer only)
+    RenderRenderWindow();
+#else
     // Get the render window.
     vtkRenderWindow *renWin = GetRenderWindow();
 
@@ -1990,6 +2010,7 @@ VisWinRendering::PostProcessScreenCapture(avtImage_p input,
     // Clean up the image renderer.
     imagePass->Delete();
     imageRenderer->Delete();
+#endif
 
     // Capture the whole image now.
     GetCaptureRegion(r0, c0, w, h, false);
@@ -2027,6 +2048,11 @@ VisWinRendering::PostProcessScreenCapture(avtImage_p input,
 
     im->Delete();
 
+#if LIB_VERSION_LE(VTK,8,1,0)
+    // add canvas and background renderers back in
+    renWin->AddRenderer(background);
+    renWin->AddRenderer(canvas);
+#endif
     return output;
 }
 
