@@ -273,5 +273,7 @@
       </Function>
       <Function name="LCSViewerEnginePluginInfo::GetOperatorVarDescription" user="false" member="true">
       </Function>
+      <Function name="ProcessOldVersions" user="true" member="true">
+      </Function>
     </Attribute>
   </Plugin>
