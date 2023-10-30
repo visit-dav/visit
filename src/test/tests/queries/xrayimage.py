@@ -436,6 +436,15 @@ def teardown_bp_test(lite = False):
         DeleteExpression("parr")
     CloseDatabase(silo_data_path("curv3d.silo"))
 
+# In conduit python, int types are assumed to be int64
+# The xray query saves bools out as int32s
+# So the diff fails unless we take the int32 type and 
+# cast it to int64.
+def cast_to_wide_int_type_conduit(node, leafname):
+    val = int(node[leafname])
+    node.remove_child(leafname)
+    node[leafname] = val
+
 def test_bp_state_xray_view(testname, xray_view):
     yaml_text = """normal:
   x: 0.0
@@ -462,123 +471,61 @@ image_zoom: 1.0
 perspective: 0
 perspective_str: \"parallel\""""
 
-    print(xray_view.to_yaml())
-
     xray_view_base = conduit.Node()
     xray_view_base.parse(yaml_text, "yaml")
-    
-    print(xray_view_base.to_yaml())
+
+    # We must make changes so that the diff will pass:
+    cast_to_wide_int_type_conduit(xray_view, "perspective")
 
     info = conduit.Node()
-
     diffval = xray_view.diff(xray_view_base, info)
-
-    TestValueEQ(testname + "_xray_view", diffval, False);
-    if diffval:
-        print(info.to_yaml())
-
-    # normalx = xray_view["normal/x"]
-    # normaly = xray_view["normal/y"]
-    # normalz = xray_view["normal/z"]
-    # TestValueEQ(testname + "_view_normal", [normalx, normaly, normalz], [0,0,1])
-    
-    # focusx = xray_view["focus/x"]
-    # focusy = xray_view["focus/y"]
-    # focusz = xray_view["focus/z"]
-    # TestValueEQ(testname + "_view_focus", [focusx, focusy, focusz], [0,2.5,10])
-    
-    # view_upx = xray_view["view_up/x"]
-    # view_upy = xray_view["view_up/y"]
-    # view_upz = xray_view["view_up/z"]
-    # TestValueEQ(testname + "_view_view_up", [view_upx, view_upy, view_upz], [0,1,0])
-    
-    # view_angle = xray_view["view_angle"]
-    # TestValueEQ(testname + "_view_view_angle", view_angle, 30)
-    
-    # parallel_scale = xray_view["parallel_scale"]
-    # TestValueEQ(testname + "_view_parallel_scale", parallel_scale, 5)
-
-    # view_width = xray_view["view_width"]
-    # TestValueEQ(testname + "_view_view_width", view_width, 7.5)
-
-    # non_square_pixels = xray_view["non_square_pixels"]
-    # TestValueEQ(testname + "_view_non_square_pixels", non_square_pixels, "yes")
-    
-    # near_plane = xray_view["near_plane"]
-    # TestValueEQ(testname + "_view_near_plane", near_plane, -100)
-    
-    # far_plane = xray_view["far_plane"]
-    # TestValueEQ(testname + "_view_far_plane", far_plane, 100)
-    
-    # image_panx = xray_view["image_pan/x"]
-    # image_pany = xray_view["image_pan/y"]
-    # TestValueEQ(testname + "_view_image_pan", [image_panx, image_pany], [0,0])
-    
-    # image_zoom = xray_view["image_zoom"]
-    # TestValueEQ(testname + "_view_image_zoom", image_zoom, 1)
-    
-    # perspective = xray_view["perspective"]
-    # TestValueEQ(testname + "_view_perspective", perspective, 0)
-
-    # perspective_str = xray_view["perspective_str"]
-    # TestValueEQ(testname + "_view_perspective_str", perspective_str, "parallel")
+    diff_str = info.to_yaml() if diffval else ""
+    TestValueEQ(testname + "_xray_view", diff_str, "");
 
 UNITS_OFF = 0
 UNITS_ON = 1
 
-def test_bp_state_xray_query(testname, xrayout, num_bins, abs_name, emis_name, units):
-    divide_emis_by_absorb = xrayout["domain_000000/state/xray_query/divide_emis_by_absorb"]
-    TestValueEQ(testname + "_query_divide_emis_by_absorb", divide_emis_by_absorb, 1)
-    
-    divide_emis_by_absorb_str = xrayout["domain_000000/state/xray_query/divide_emis_by_absorb_str"]
-    TestValueEQ(testname + "_query_divide_emis_by_absorb_str", divide_emis_by_absorb_str, "yes")
-    
-    num_x_pixels = xrayout["domain_000000/state/xray_query/num_x_pixels"]
-    TestValueEQ(testname + "_query_num_x_pixels", num_x_pixels, 300)
-    
-    num_y_pixels = xrayout["domain_000000/state/xray_query/num_y_pixels"]
-    TestValueEQ(testname + "_query_num_y_pixels", num_y_pixels, 200)
-    
-    num_bins = xrayout["domain_000000/state/xray_query/num_bins"]
-    TestValueEQ(testname + "_query_num_bins", num_bins, num_bins)
-    
-    abs_var_name = xrayout["domain_000000/state/xray_query/abs_var_name"]
-    TestValueEQ(testname + "_query_abs_var_name", abs_var_name, abs_name)
-    
-    emis_var_name = xrayout["domain_000000/state/xray_query/emis_var_name"]
-    TestValueEQ(testname + "_query_emis_var_name", emis_var_name, emis_name)
+def test_bp_state_xray_query(testname, xray_query, num_bins, abs_name, emis_name, units):
+    yaml_text = f"""divide_emis_by_absorb: 1
+divide_emis_by_absorb_str: \"yes\"
+num_x_pixels: 300
+num_y_pixels: 200
+num_bins: {num_bins}
+abs_var_name: {abs_name}
+emis_var_name: {emis_name}
+abs_units: {"abs units" if units == UNITS_ON else "no units provided"}
+emis_units: {"emis units" if units == UNITS_ON else "no units provided"}"""
 
-    abs_units = xrayout["domain_000000/state/xray_query/abs_units"]
-    emis_units = xrayout["domain_000000/state/xray_query/emis_units"]
+    xray_query_base = conduit.Node()
+    xray_query_base.parse(yaml_text, "yaml")
 
-    if (units == UNITS_ON):
-        TestValueEQ(testname + "_query_abs_units", abs_units, "abs units")
-        TestValueEQ(testname + "_query_emis_units", emis_units, "emis units")
-    else:
-        TestValueEQ(testname + "_query_abs_units", abs_units, "no units provided")
-        TestValueEQ(testname + "_query_emis_units", emis_units, "no units provided")
+    # We must make changes so that the diff will pass:
+    cast_to_wide_int_type_conduit(xray_query, "divide_emis_by_absorb")
+    cast_to_wide_int_type_conduit(xray_query, "num_x_pixels")
+    cast_to_wide_int_type_conduit(xray_query, "num_y_pixels")
+    cast_to_wide_int_type_conduit(xray_query, "num_bins")
 
-def test_bp_state_xray_data(testname, xrayout, int_max, pl_max):
-    detector_width = xrayout["domain_000000/state/xray_data/detector_width"]
-    TestValueEQ(testname + "_data_detector_width", detector_width, 15)
+    info = conduit.Node()
+    diffval = xray_query.diff(xray_query_base, info)
+    diff_str = info.to_yaml() if diffval else ""
+    TestValueEQ(testname + "_xray_query", diff_str, "");
 
-    detector_height = xrayout["domain_000000/state/xray_data/detector_height"]
-    TestValueEQ(testname + "_data_detector_height", detector_height, 10)
+def test_bp_state_xray_data(testname, xray_data, int_max, pl_max):
+    yaml_text = f"""detector_width: 15.0
+detector_height: 10.0
+intensity_max: {int_max}
+intensity_min: 0.0
+path_length_max: {pl_max}
+path_length_min: 0.0
+image_topo_order_of_domain_variables: \"xyz\""""
     
-    intensity_max = xrayout["domain_000000/state/xray_data/intensity_max"]
-    TestValueEQ(testname + "_data_intensity_max", intensity_max, int_max)
-    
-    intensity_min = xrayout["domain_000000/state/xray_data/intensity_min"]
-    TestValueEQ(testname + "_data_intensity_min", intensity_min, 0)
-    
-    path_length_max = xrayout["domain_000000/state/xray_data/path_length_max"]
-    TestValueEQ(testname + "_data_path_length_max", path_length_max, pl_max)
-    
-    path_length_min = xrayout["domain_000000/state/xray_data/path_length_min"]
-    TestValueEQ(testname + "_data_path_length_min", path_length_min, 0)
+    xray_data_base = conduit.Node()
+    xray_data_base.parse(yaml_text, "yaml")
 
-    image_topo_order_of_domain_variables = xrayout["domain_000000/state/xray_data/image_topo_order_of_domain_variables"]
-    TestValueEQ(testname + "_data_image_topo_order_of_domain_variables", image_topo_order_of_domain_variables, "xyz")
+    info = conduit.Node()
+    diffval = xray_data.diff(xray_data_base, info)
+    diff_str = info.to_yaml() if diffval else ""
+    TestValueEQ(testname + "_xray_data", diff_str, "");
 
 NO_ENERGY_GROUP_BOUNDS = 0
 ENERGY_GROUP_BOUNDS_MISMATCH = 1
@@ -599,75 +546,84 @@ def test_bp_data(testname, conduit_db, qro):
     conduit.relay.io.blueprint.load_mesh(xrayout, conduit_db)
 
     # test metadata
+    xray_state = xrayout["domain_000000/state"]
 
-    time = xrayout["domain_000000/state/time"]
+    time = xray_state["time"]
     TestValueEQ(testname + "_Time", time, 4.8)
     
-    cycle = xrayout["domain_000000/state/cycle"]
+    cycle = xray_state["cycle"]
     TestValueEQ(testname + "_Cycle", cycle, 48)
 
-    test_bp_state_xray_view(testname, xrayout["domain_000000/state/xray_view"])
-    # test_bp_state_xray_query(testname, xrayout, qro.num_bins, qro.abs_name, qro.emis_name, qro.units)
-    # test_bp_state_xray_data(testname, xrayout, qro.int_max, qro.pl_max)
+    test_bp_state_xray_view(testname, xray_state["xray_view"])
+    test_bp_state_xray_query(testname, xray_state["xray_query"],
+        qro.num_bins, qro.abs_name, qro.emis_name, qro.units)
+    test_bp_state_xray_data(testname, xray_state["xray_data"], qro.int_max, qro.pl_max)
 
-    # # test data embedded within the meshes
+    # test data embedded within the fields
 
-    # intensityUnits = xrayout["domain_000000/fields/intensities/units"]
-    # pathLengthUnits = xrayout["domain_000000/fields/path_length/units"]
+    xray_fields = xrayout["domain_000000/fields"]
 
-    # if (qro.units == UNITS_ON):
-    #     TestValueEQ(testname + "_IntensityUnits", intensityUnits, "intensity units")
-    #     TestValueEQ(testname + "_PathLengthUnits", pathLengthUnits, "path length metadata")
-    # else:
-    #     TestValueEQ(testname + "_IntensityUnits", intensityUnits, "no units provided")
-    #     TestValueEQ(testname + "_PathLengthUnits", pathLengthUnits, "no info provided")
+    intensityUnits = xray_fields["intensities/units"]
+    pathLengthUnits = xray_fields["path_length/units"]
 
-    # spatial_coords_x = xrayout["domain_000000/coordsets/spatial_coords/values/x"]
-    # spatial_coords_y = xrayout["domain_000000/coordsets/spatial_coords/values/y"]
-    # energy_group_bounds = xrayout["domain_000000/coordsets/spatial_coords/values/z"]
-    # energy_group_info = xrayout["domain_000000/coordsets/spatial_coords/info"]
-    # TestValueEQ(testname + "_data_SpatialExtents0", [spatial_coords_x[0], spatial_coords_y[0]], [0.0, 0.0])
-    # TestValueEQ(testname + "_data_SpatialExtents1", [spatial_coords_x[1], spatial_coords_y[1]], [0.05, 0.05])
-    # TestValueEQ(testname + "_data_SpatialExtents2", [spatial_coords_x[2], spatial_coords_y[2]], [0.1, 0.1])
-    # TestValueEQ(testname + "_data_SpatialExtents3", [spatial_coords_x[-1], spatial_coords_y[-1]], [15.0, 10.0])
+    if (qro.units == UNITS_ON):
+        TestValueEQ(testname + "_IntensityUnits", intensityUnits, "intensity units")
+        TestValueEQ(testname + "_PathLengthUnits", pathLengthUnits, "path length metadata")
+    else:
+        TestValueEQ(testname + "_IntensityUnits", intensityUnits, "no units provided")
+        TestValueEQ(testname + "_PathLengthUnits", pathLengthUnits, "no info provided")
 
-    # if (qro.bin_state == NO_ENERGY_GROUP_BOUNDS):
-    #     TestValueEQ(testname + "_data_EnergyGroupInfo", energy_group_info, "Energy group bounds not provided.")
-    #     TestValueEQ(testname + "_data_EnergyGroupBounds", [energy_group_bounds[0], energy_group_bounds[1]], [0, 1])
-    # elif (qro.bin_state == ENERGY_GROUP_BOUNDS_MISMATCH):
-    #     baseline_string = "Energy group bounds size mismatch: provided 3 bounds, but 2 in query results."
-    #     TestValueEQ(testname + "_data_EnergyGroupInfo", energy_group_info, baseline_string)
-    #     TestValueEQ(testname + "_data_EnergyGroupBounds", [energy_group_bounds[0], energy_group_bounds[1]], [0, 1])
-    # elif (qro.bin_state == ENERGY_GROUP_BOUNDS):
-    #     TestValueEQ(testname + "_data_EnergyGroupBounds", energy_group_bounds, [0, 2, 6, 8])
+    # test data embedded within the coordsets
 
-    # xunits = xrayout["domain_000000/coordsets/spatial_coords/units/x"]
-    # yunits = xrayout["domain_000000/coordsets/spatial_coords/units/y"]
-    # zunits = xrayout["domain_000000/coordsets/spatial_coords/units/z"]
+    xray_coordsets = xrayout["domain_000000/coordsets"]
 
-    # if (qro.units == UNITS_ON):
-    #     TestValueEQ(testname + "_data_XUnits", xunits, "cm")
-    #     TestValueEQ(testname + "_data_YUnits", yunits, "cm")
-    #     TestValueEQ(testname + "_data_ZUnits", zunits, "kev")
-    # else:
-    #     TestValueEQ(testname + "_data_XUnits", xunits, "no units provided")
-    #     TestValueEQ(testname + "_data_YUnits", yunits, "no units provided")
-    #     TestValueEQ(testname + "_data_ZUnits", zunits, "no units provided")
+    spatial_coords_x = xray_coordsets["spatial_coords/values/x"]
+    spatial_coords_y = xray_coordsets["spatial_coords/values/y"]
+    energy_group_bounds = xray_coordsets["spatial_coords/values/z"]
+    energy_group_info = xray_coordsets["spatial_coords/info"]
+    TestValueEQ(testname + "_data_SpatialExtents0", [spatial_coords_x[0], spatial_coords_y[0]], [0.0, 0.0])
+    TestValueEQ(testname + "_data_SpatialExtents1", [spatial_coords_x[1], spatial_coords_y[1]], [0.05, 0.05])
+    TestValueEQ(testname + "_data_SpatialExtents2", [spatial_coords_x[2], spatial_coords_y[2]], [0.1, 0.1])
+    TestValueEQ(testname + "_data_SpatialExtents3", [spatial_coords_x[-1], spatial_coords_y[-1]], [15.0, 10.0])
 
-    # xlabel = xrayout["domain_000000/coordsets/spatial_coords/labels/x"];
-    # ylabel = xrayout["domain_000000/coordsets/spatial_coords/labels/y"];
-    # zlabel = xrayout["domain_000000/coordsets/spatial_coords/labels/z"];
-    # TestValueEQ(testname + "_data_XLabels", xlabel, "width")
-    # TestValueEQ(testname + "_data_YLabels", ylabel, "height")
-    # TestValueEQ(testname + "_data_ZLabels", zlabel, "energy_group")
+    if (qro.bin_state == NO_ENERGY_GROUP_BOUNDS):
+        TestValueEQ(testname + "_data_EnergyGroupInfo", energy_group_info, "Energy group bounds not provided.")
+        TestValueEQ(testname + "_data_EnergyGroupBounds", [energy_group_bounds[0], energy_group_bounds[1]], [0, 1])
+    elif (qro.bin_state == ENERGY_GROUP_BOUNDS_MISMATCH):
+        baseline_string = "Energy group bounds size mismatch: provided 3 bounds, but 2 in query results."
+        TestValueEQ(testname + "_data_EnergyGroupInfo", energy_group_info, baseline_string)
+        TestValueEQ(testname + "_data_EnergyGroupBounds", [energy_group_bounds[0], energy_group_bounds[1]], [0, 1])
+    elif (qro.bin_state == ENERGY_GROUP_BOUNDS):
+        TestValueEQ(testname + "_data_EnergyGroupBounds", energy_group_bounds, [0, 2, 6, 8])
 
-    # xlabel = xrayout["domain_000000/coordsets/spatial_energy_reduced_coords/labels/x"];
-    # ylabel = xrayout["domain_000000/coordsets/spatial_energy_reduced_coords/labels/y"];
-    # TestValueEQ(testname + "_data_ser_XLabels", xlabel, "width")
-    # TestValueEQ(testname + "_data_ser_YLabels", ylabel, "height")
+    yaml_text = f"""x: {"cm" if qro.units == UNITS_ON else "no units provided"}
+y: {"cm" if qro.units == UNITS_ON else "no units provided"}
+z: {"kev" if qro.units == UNITS_ON else "no units provided"}"""
 
-    # xlabel = xrayout["domain_000000/coordsets/spectra_coords/labels/x"];
-    # TestValueEQ(testname + "_data_spectra_XLabels", xlabel, "energy_group")
+    spatial_units_base = conduit.Node()
+    spatial_units_base.parse(yaml_text, "yaml")
+    spatial_units = xray_coordsets["spatial_coords/units"]
+
+    info = conduit.Node()
+    diffval = spatial_units.diff(spatial_units_base, info)
+    TestValueEQ(testname + "_spatial_units", diffval, False);
+    if diffval:
+        print(info.to_yaml())
+
+    xlabel = xray_coordsets["spatial_coords/labels/x"];
+    ylabel = xray_coordsets["spatial_coords/labels/y"];
+    zlabel = xray_coordsets["spatial_coords/labels/z"];
+    TestValueEQ(testname + "_data_XLabels", xlabel, "width")
+    TestValueEQ(testname + "_data_YLabels", ylabel, "height")
+    TestValueEQ(testname + "_data_ZLabels", zlabel, "energy_group")
+
+    xlabel = xray_coordsets["spatial_energy_reduced_coords/labels/x"];
+    ylabel = xray_coordsets["spatial_energy_reduced_coords/labels/y"];
+    TestValueEQ(testname + "_data_ser_XLabels", xlabel, "width")
+    TestValueEQ(testname + "_data_ser_YLabels", ylabel, "height")
+
+    xlabel = xray_coordsets["spectra_coords/labels/x"];
+    TestValueEQ(testname + "_data_spectra_XLabels", xlabel, "energy_group")
 
 def calc_midpoints(arr):
     midpts = []
@@ -851,486 +807,486 @@ def blueprint_test(output_type, outdir, testtextnumber, testname):
     
     qro = query_result_options(num_bins=3, abs_name="darr", emis_name="parr", \
         bin_state=ENERGY_GROUP_BOUNDS, units=units, \
-        int_max=1, pl_max=892.02588)
+        int_max=1.0, pl_max=892.02587890625)
     test_bp_data(testname + str(i), conduit_db, qro) # bounds
     
-    # setup_bp_test()
+    setup_bp_test()
     
-    # Query("XRay Image", output_type, outdir, 1, 0.0, 2.5, 10.0, 0, 0, 15., 10., 300, 200, ("d", "p"), [1,2,3])
-    # qro = query_result_options(num_bins=1, abs_name="d", emis_name="p", \
-    #     bin_state=ENERGY_GROUP_BOUNDS_MISMATCH, units=UNITS_OFF, \
-    #     int_max=0.24153, pl_max=148.67099)
-    # test_bp_data(testname + str(i), conduit_db, qro) # bounds mismatch
+    Query("XRay Image", output_type, outdir, 1, 0.0, 2.5, 10.0, 0, 0, 15., 10., 300, 200, ("d", "p"), [1,2,3])
+    qro = query_result_options(num_bins=1, abs_name="d", emis_name="p", \
+        bin_state=ENERGY_GROUP_BOUNDS_MISMATCH, units=UNITS_OFF, \
+        int_max=0.241531997919083, pl_max=148.670989990234)
+    test_bp_data(testname + str(i), conduit_db, qro) # bounds mismatch
     
-    # Query("XRay Image", output_type, outdir, 1, 0.0, 2.5, 10.0, 0, 0, 15., 10., 300, 200, ("d", "p"))
-    # qro = query_result_options(num_bins=1, abs_name="d", emis_name="p", \
-    #     bin_state=NO_ENERGY_GROUP_BOUNDS, units=UNITS_OFF, \
-    #     int_max=0.24153, pl_max=148.67099)
-    # test_bp_data(testname + str(i), conduit_db, qro) # no bounds
+    Query("XRay Image", output_type, outdir, 1, 0.0, 2.5, 10.0, 0, 0, 15., 10., 300, 200, ("d", "p"))
+    qro = query_result_options(num_bins=1, abs_name="d", emis_name="p", \
+        bin_state=NO_ENERGY_GROUP_BOUNDS, units=UNITS_OFF, \
+        int_max=0.241531997919083, pl_max=148.670989990234)
+    test_bp_data(testname + str(i), conduit_db, qro) # no bounds
     
-    # teardown_bp_test()
+    teardown_bp_test()
 
 blueprint_test("hdf5", conduit_dir_hdf5, 32, "Blueprint_HDF5_X_Ray_Output")
-# blueprint_test("json", conduit_dir_json, 34, "Blueprint_JSON_X_Ray_Output")
-# blueprint_test("yaml", conduit_dir_yaml, 36, "Blueprint_YAML_X_Ray_Output")
+blueprint_test("json", conduit_dir_json, 34, "Blueprint_JSON_X_Ray_Output")
+blueprint_test("yaml", conduit_dir_yaml, 36, "Blueprint_YAML_X_Ray_Output")
 
 # test detector height and width are always positive in blueprint output
 
-# setup_bp_test()
+setup_bp_test()
 
-# params = GetQueryParameters("XRay Image")
-# params["image_size"] = (400, 300)
-# params["output_type"] = "hdf5"
-# params["output_dir"] = conduit_dir_detector_dims
-# params["focus"] = (0., 2.5, 10.)
-# params["perspective"] = 1
-# params["near_plane"] = -50.
-# params["far_plane"] = 50.
-# params["vars"] = ("d", "p")
-# params["energy_group_bounds"] = [3.7, 4.2];
-# params["parallel_scale"] = 5.
-# Query("XRay Image", params)
+params = GetQueryParameters("XRay Image")
+params["image_size"] = (400, 300)
+params["output_type"] = "hdf5"
+params["output_dir"] = conduit_dir_detector_dims
+params["focus"] = (0., 2.5, 10.)
+params["perspective"] = 1
+params["near_plane"] = -50.
+params["far_plane"] = 50.
+params["vars"] = ("d", "p")
+params["energy_group_bounds"] = [3.7, 4.2];
+params["parallel_scale"] = 5.
+Query("XRay Image", params)
 
-# teardown_bp_test()
+teardown_bp_test()
 
-# conduit_db = pjoin(conduit_dir_detector_dims, "output.root")
-# xrayout = conduit.Node()
-# conduit.relay.io.blueprint.load_mesh(xrayout, conduit_db)
+conduit_db = pjoin(conduit_dir_detector_dims, "output.root")
+xrayout = conduit.Node()
+conduit.relay.io.blueprint.load_mesh(xrayout, conduit_db)
 
-# detector_width = xrayout["domain_000000/state/xray_data/detector_width"]
-# TestValueEQ("Blueprint_Positive_Detector_width", detector_width, 22.3932263237838)
+detector_width = xrayout["domain_000000/state/xray_data/detector_width"]
+TestValueEQ("Blueprint_Positive_Detector_width", detector_width, 22.3932263237838)
 
-# detector_height = xrayout["domain_000000/state/xray_data/detector_height"]
-# TestValueEQ("Blueprint_Positive_Detector_height", detector_height, 16.7949192423103)
+detector_height = xrayout["domain_000000/state/xray_data/detector_height"]
+TestValueEQ("Blueprint_Positive_Detector_height", detector_height, 16.7949192423103)
 
-# # test imaging plane topos and ray output
+# test imaging plane topos and ray output
 
-# def test_imaging_planes_and_rays():
-#     for i in range(0, 2):
-#         setup_bp_test()
+def test_imaging_planes_and_rays():
+    for i in range(0, 2):
+        setup_bp_test()
 
-#         params = GetQueryParameters("XRay Image")
-#         params["image_size"] = (400, 300)
-#         params["output_dir"] = conduit_dir_imaging_planes0 if i == 0 else conduit_dir_imaging_planes1
-#         params["output_type"] = "hdf5"
-#         params["focus"] = (0., 2.5, 10.)
-#         params["perspective"] = 1
-#         params["near_plane"] = -50.
-#         params["far_plane"] = 50.
-#         params["vars"] = ("d", "p")
-#         params["parallel_scale"] = 5.
-#         Query("XRay Image", params)
+        params = GetQueryParameters("XRay Image")
+        params["image_size"] = (400, 300)
+        params["output_dir"] = conduit_dir_imaging_planes0 if i == 0 else conduit_dir_imaging_planes1
+        params["output_type"] = "hdf5"
+        params["focus"] = (0., 2.5, 10.)
+        params["perspective"] = 1
+        params["near_plane"] = -50.
+        params["far_plane"] = 50.
+        params["vars"] = ("d", "p")
+        params["parallel_scale"] = 5.
+        Query("XRay Image", params)
 
-#         conduit_db = pjoin(conduit_dir_imaging_planes0 if i == 0 else conduit_dir_imaging_planes1, "output.root")
+        conduit_db = pjoin(conduit_dir_imaging_planes0 if i == 0 else conduit_dir_imaging_planes1, "output.root")
 
-#         OpenDatabase(conduit_db)
+        OpenDatabase(conduit_db)
 
-#         AddPlot("Pseudocolor", "mesh_far_plane_topo/far_plane_field", 1, 1)
-#         AddPlot("Pseudocolor", "mesh_view_plane_topo/view_plane_field", 1, 1)
-#         AddPlot("Pseudocolor", "mesh_near_plane_topo/near_plane_field", 1, 1)
-#         if i == 0:
-#             AddPlot("Pseudocolor", "mesh_ray_corners_topo/ray_corners_field", 1, 1)
-#         else:
-#             AddPlot("Pseudocolor", "mesh_ray_topo/ray_field", 1, 1)
-#         DrawPlots()
+        AddPlot("Pseudocolor", "mesh_far_plane_topo/far_plane_field", 1, 1)
+        AddPlot("Pseudocolor", "mesh_view_plane_topo/view_plane_field", 1, 1)
+        AddPlot("Pseudocolor", "mesh_near_plane_topo/near_plane_field", 1, 1)
+        if i == 0:
+            AddPlot("Pseudocolor", "mesh_ray_corners_topo/ray_corners_field", 1, 1)
+        else:
+            AddPlot("Pseudocolor", "mesh_ray_topo/ray_field", 1, 1)
+        DrawPlots()
 
-#         SetActivePlots(4)
-#         PseudocolorAtts = PseudocolorAttributes()
-#         PseudocolorAtts.invertColorTable = 1
-#         SetPlotOptions(PseudocolorAtts)
+        SetActivePlots(4)
+        PseudocolorAtts = PseudocolorAttributes()
+        PseudocolorAtts.invertColorTable = 1
+        SetPlotOptions(PseudocolorAtts)
 
-#         View3DAtts = View3DAttributes()
-#         View3DAtts.viewNormal = (-0.519145, 0.199692, -0.831031)
-#         View3DAtts.focus = (0, 2.5, 10)
-#         View3DAtts.viewUp = (-0.0954901, 0.952683, 0.288577)
-#         View3DAtts.viewAngle = 30
-#         View3DAtts.parallelScale = 58.6531
-#         View3DAtts.nearPlane = -117.306
-#         View3DAtts.farPlane = 117.306
-#         SetView3D(View3DAtts)
+        View3DAtts = View3DAttributes()
+        View3DAtts.viewNormal = (-0.519145, 0.199692, -0.831031)
+        View3DAtts.focus = (0, 2.5, 10)
+        View3DAtts.viewUp = (-0.0954901, 0.952683, 0.288577)
+        View3DAtts.viewAngle = 30
+        View3DAtts.parallelScale = 58.6531
+        View3DAtts.nearPlane = -117.306
+        View3DAtts.farPlane = 117.306
+        SetView3D(View3DAtts)
 
-#         Test("Blueprint_HDF5_Imaging_Planes" + str(i))
+        Test("Blueprint_HDF5_Imaging_Planes" + str(i))
 
-#         teardown_bp_test()
-#         CloseDatabase(conduit_db)
+        teardown_bp_test()
+        CloseDatabase(conduit_db)
 
-# test_imaging_planes_and_rays()
+test_imaging_planes_and_rays()
 
-# def test_non_square_pixels():
-#     DeleteAllPlots()
-#     setup_bp_test()
+def test_non_square_pixels():
+    DeleteAllPlots()
+    setup_bp_test()
 
-#     params = GetQueryParameters("XRay Image")
+    params = GetQueryParameters("XRay Image")
 
-#     params["vars"] = ("d", "p")
-#     params["image_size"] = (300, 300)
-#     params["energy_group_bounds"] = [2.7, 6.2]
+    params["vars"] = ("d", "p")
+    params["image_size"] = (300, 300)
+    params["energy_group_bounds"] = [2.7, 6.2]
 
-#     # filename, directory, and output type choices
-#     params["output_dir"] = conduit_dir_nonsquare_pixels
-#     params["filename_scheme"] = "family" # "none", "family", or "cycle" 
-#     params["output_type"] = "hdf5"
+    # filename, directory, and output type choices
+    params["output_dir"] = conduit_dir_nonsquare_pixels
+    params["filename_scheme"] = "family" # "none", "family", or "cycle" 
+    params["output_type"] = "hdf5"
 
-#     params["focus"] = (0., 2.5, 10.)
-#     params["parallel_scale"] = 10.
-#     params["near_plane"] = -25.
-#     params["far_plane"] = 25.
-#     params["view_angle"] = 30
-#     params["perspective"] = 1 # 0 parallel, 1 perspective
+    params["focus"] = (0., 2.5, 10.)
+    params["parallel_scale"] = 10.
+    params["near_plane"] = -25.
+    params["far_plane"] = 25.
+    params["view_angle"] = 30
+    params["perspective"] = 1 # 0 parallel, 1 perspective
 
-#     # default
-#     Query("XRay Image", params)
-#     params["image_size"] = (4, 4)
-#     Query("XRay Image", params)
-#     params["image_size"] = (300, 300)
+    # default
+    Query("XRay Image", params)
+    params["image_size"] = (4, 4)
+    Query("XRay Image", params)
+    params["image_size"] = (300, 300)
 
-#     # view width is set but is equal to what it would have been if it were calculated
-#     params["view_width"] = 10.
-#     Query("XRay Image", params)
-#     params["image_size"] = (4, 4)
-#     Query("XRay Image", params)
-#     params["image_size"] = (300, 300)
+    # view width is set but is equal to what it would have been if it were calculated
+    params["view_width"] = 10.
+    Query("XRay Image", params)
+    params["image_size"] = (4, 4)
+    Query("XRay Image", params)
+    params["image_size"] = (300, 300)
 
-#     # view width is twice the length of the parallel scale
-#     params["view_width"] = 20.
-#     Query("XRay Image", params)
-#     params["image_size"] = (4, 4)
-#     Query("XRay Image", params)
-#     params["image_size"] = (300, 300)
+    # view width is twice the length of the parallel scale
+    params["view_width"] = 20.
+    Query("XRay Image", params)
+    params["image_size"] = (4, 4)
+    Query("XRay Image", params)
+    params["image_size"] = (300, 300)
 
-#     # view width is half the length of the parallel scale
-#     params["view_width"] = 5.
-#     Query("XRay Image", params)
-#     params["image_size"] = (4, 4)
-#     Query("XRay Image", params)
+    # view width is half the length of the parallel scale
+    params["view_width"] = 5.
+    Query("XRay Image", params)
+    params["image_size"] = (4, 4)
+    Query("XRay Image", params)
 
-#     conduit_db = pjoin(conduit_dir_nonsquare_pixels, "output.*.root database")
-#     OpenDatabase(conduit_db)
+    conduit_db = pjoin(conduit_dir_nonsquare_pixels, "output.*.root database")
+    OpenDatabase(conduit_db)
     
-#     # first we test the imaging planes and rays look as we expect
-#     AddPlot("Pseudocolor", "mesh_near_plane_topo/near_plane_field")
-#     AddPlot("Pseudocolor", "mesh_view_plane_topo/view_plane_field")
-#     AddPlot("Pseudocolor", "mesh_far_plane_topo/far_plane_field")
-#     DrawPlots()
+    # first we test the imaging planes and rays look as we expect
+    AddPlot("Pseudocolor", "mesh_near_plane_topo/near_plane_field")
+    AddPlot("Pseudocolor", "mesh_view_plane_topo/view_plane_field")
+    AddPlot("Pseudocolor", "mesh_far_plane_topo/far_plane_field")
+    DrawPlots()
 
-#     # Make the plot of the near plane active
-#     SetActivePlots(1)
-#     PseudocolorAtts = PseudocolorAttributes()
-#     # We invert the color table so that it is a different color from the far plane
-#     PseudocolorAtts.invertColorTable = 1
-#     SetPlotOptions(PseudocolorAtts)
+    # Make the plot of the near plane active
+    SetActivePlots(1)
+    PseudocolorAtts = PseudocolorAttributes()
+    # We invert the color table so that it is a different color from the far plane
+    PseudocolorAtts.invertColorTable = 1
+    SetPlotOptions(PseudocolorAtts)
 
-#     # Make the plot of the view plane active
-#     SetActivePlots(2)
-#     PseudocolorAtts = PseudocolorAttributes()
-#     PseudocolorAtts.colorTableName = "hot_and_cold"
-#     PseudocolorAtts.invertColorTable = 1
-#     PseudocolorAtts.opacityType = PseudocolorAtts.Constant  # ColorTable, FullyOpaque, Constant, Ramp, VariableRange
-#     # We lower the opacity so that the view plane does not obstruct our view of anything.
-#     PseudocolorAtts.opacity = 0.7
-#     SetPlotOptions(PseudocolorAtts)
+    # Make the plot of the view plane active
+    SetActivePlots(2)
+    PseudocolorAtts = PseudocolorAttributes()
+    PseudocolorAtts.colorTableName = "hot_and_cold"
+    PseudocolorAtts.invertColorTable = 1
+    PseudocolorAtts.opacityType = PseudocolorAtts.Constant  # ColorTable, FullyOpaque, Constant, Ramp, VariableRange
+    # We lower the opacity so that the view plane does not obstruct our view of anything.
+    PseudocolorAtts.opacity = 0.7
+    SetPlotOptions(PseudocolorAtts)
 
-#     # leave the far plane as is
+    # leave the far plane as is
 
-#     # add ray corners topo
-#     AddPlot("Mesh", "mesh_ray_corners_topo")
-#     DrawPlots()
-#     MeshAtts = MeshAttributes()
-#     MeshAtts.lineWidth = 1
-#     SetPlotOptions(MeshAtts)
+    # add ray corners topo
+    AddPlot("Mesh", "mesh_ray_corners_topo")
+    DrawPlots()
+    MeshAtts = MeshAttributes()
+    MeshAtts.lineWidth = 1
+    SetPlotOptions(MeshAtts)
 
-#     # set view
-#     View3DAtts = View3DAttributes()
-#     View3DAtts.viewNormal = (-0.350116, 0.224905, -0.909306)
-#     View3DAtts.focus = (0, 2.5, 10)
-#     View3DAtts.viewUp = (0.0306245, 0.972977, 0.228862)
-#     View3DAtts.viewAngle = 30
-#     View3DAtts.parallelScale = 34.3903
-#     View3DAtts.nearPlane = -68.7807
-#     View3DAtts.farPlane = 68.7807
-#     View3DAtts.imagePan = (0, 0)
-#     View3DAtts.imageZoom = 1
-#     View3DAtts.perspective = 1
-#     View3DAtts.eyeAngle = 2
-#     View3DAtts.centerOfRotationSet = 0
-#     View3DAtts.centerOfRotation = (0, 2.5, 10)
-#     View3DAtts.axis3DScaleFlag = 0
-#     View3DAtts.axis3DScales = (1, 1, 1)
-#     View3DAtts.shear = (0, 0, 1)
-#     View3DAtts.windowValid = 1
-#     SetView3D(View3DAtts)
+    # set view
+    View3DAtts = View3DAttributes()
+    View3DAtts.viewNormal = (-0.350116, 0.224905, -0.909306)
+    View3DAtts.focus = (0, 2.5, 10)
+    View3DAtts.viewUp = (0.0306245, 0.972977, 0.228862)
+    View3DAtts.viewAngle = 30
+    View3DAtts.parallelScale = 34.3903
+    View3DAtts.nearPlane = -68.7807
+    View3DAtts.farPlane = 68.7807
+    View3DAtts.imagePan = (0, 0)
+    View3DAtts.imageZoom = 1
+    View3DAtts.perspective = 1
+    View3DAtts.eyeAngle = 2
+    View3DAtts.centerOfRotationSet = 0
+    View3DAtts.centerOfRotation = (0, 2.5, 10)
+    View3DAtts.axis3DScaleFlag = 0
+    View3DAtts.axis3DScales = (1, 1, 1)
+    View3DAtts.shear = (0, 0, 1)
+    View3DAtts.windowValid = 1
+    SetView3D(View3DAtts)
 
-#     # take pictures of all the ray setups
-#     Test("NonSquare_Pixels_Ray_trace_setup_1")
-#     TimeSliderNextState()
-#     AddPlot("Pseudocolor", "mesh_ray_topo/ray_field")
-#     DrawPlots()
-#     Test("NonSquare_Pixels_Ray_trace_setup_2")
-#     HideActivePlots()
-#     TimeSliderNextState()
-#     Test("NonSquare_Pixels_Ray_trace_setup_3")
-#     TimeSliderNextState()
-#     HideActivePlots()
-#     Test("NonSquare_Pixels_Ray_trace_setup_4")
-#     HideActivePlots()
-#     TimeSliderNextState()
-#     Test("NonSquare_Pixels_Ray_trace_setup_5")
-#     TimeSliderNextState()
-#     HideActivePlots()
-#     Test("NonSquare_Pixels_Ray_trace_setup_6")
-#     HideActivePlots()
-#     TimeSliderNextState()
-#     Test("NonSquare_Pixels_Ray_trace_setup_7")
-#     TimeSliderNextState()
-#     HideActivePlots()
-#     Test("NonSquare_Pixels_Ray_trace_setup_8")
-#     HideActivePlots()
+    # take pictures of all the ray setups
+    Test("NonSquare_Pixels_Ray_trace_setup_1")
+    TimeSliderNextState()
+    AddPlot("Pseudocolor", "mesh_ray_topo/ray_field")
+    DrawPlots()
+    Test("NonSquare_Pixels_Ray_trace_setup_2")
+    HideActivePlots()
+    TimeSliderNextState()
+    Test("NonSquare_Pixels_Ray_trace_setup_3")
+    TimeSliderNextState()
+    HideActivePlots()
+    Test("NonSquare_Pixels_Ray_trace_setup_4")
+    HideActivePlots()
+    TimeSliderNextState()
+    Test("NonSquare_Pixels_Ray_trace_setup_5")
+    TimeSliderNextState()
+    HideActivePlots()
+    Test("NonSquare_Pixels_Ray_trace_setup_6")
+    HideActivePlots()
+    TimeSliderNextState()
+    Test("NonSquare_Pixels_Ray_trace_setup_7")
+    TimeSliderNextState()
+    HideActivePlots()
+    Test("NonSquare_Pixels_Ray_trace_setup_8")
+    HideActivePlots()
 
-#     # cleanup
-#     TimeSliderNextState()
-#     DeleteAllPlots()
+    # cleanup
+    TimeSliderNextState()
+    DeleteAllPlots()
 
-#     # take pictures of the hi-res images
-#     AddPlot("Pseudocolor", "mesh_image_topo/intensities", 1, 1)
-#     DrawPlots()
-#     ResetView()
-#     AddPlot("Pseudocolor", "mesh_spatial_topo/intensities_spatial", 1, 1)
-#     DrawPlots()
-#     HideActivePlots()
-#     SetActivePlots((0, 1))
-#     Test("NonSquare_Pixels_hi_res_images1")
-#     HideActivePlots()
-#     Test("NonSquare_Pixels_hi_res_images2")
-#     HideActivePlots()
-#     TimeSliderNextState()
-#     TimeSliderNextState()
-#     Test("NonSquare_Pixels_hi_res_images3")
-#     HideActivePlots()
-#     Test("NonSquare_Pixels_hi_res_images4")
-#     HideActivePlots()
-#     TimeSliderNextState()
-#     TimeSliderNextState()
-#     Test("NonSquare_Pixels_hi_res_images5")
-#     HideActivePlots()
-#     Test("NonSquare_Pixels_hi_res_images6")
-#     HideActivePlots()
-#     TimeSliderNextState()
-#     TimeSliderNextState()
-#     Test("NonSquare_Pixels_hi_res_images7")
-#     HideActivePlots()
-#     Test("NonSquare_Pixels_hi_res_images8")
-#     HideActivePlots()
-#     TimeSliderNextState()
+    # take pictures of the hi-res images
+    AddPlot("Pseudocolor", "mesh_image_topo/intensities", 1, 1)
+    DrawPlots()
+    ResetView()
+    AddPlot("Pseudocolor", "mesh_spatial_topo/intensities_spatial", 1, 1)
+    DrawPlots()
+    HideActivePlots()
+    SetActivePlots((0, 1))
+    Test("NonSquare_Pixels_hi_res_images1")
+    HideActivePlots()
+    Test("NonSquare_Pixels_hi_res_images2")
+    HideActivePlots()
+    TimeSliderNextState()
+    TimeSliderNextState()
+    Test("NonSquare_Pixels_hi_res_images3")
+    HideActivePlots()
+    Test("NonSquare_Pixels_hi_res_images4")
+    HideActivePlots()
+    TimeSliderNextState()
+    TimeSliderNextState()
+    Test("NonSquare_Pixels_hi_res_images5")
+    HideActivePlots()
+    Test("NonSquare_Pixels_hi_res_images6")
+    HideActivePlots()
+    TimeSliderNextState()
+    TimeSliderNextState()
+    Test("NonSquare_Pixels_hi_res_images7")
+    HideActivePlots()
+    Test("NonSquare_Pixels_hi_res_images8")
+    HideActivePlots()
+    TimeSliderNextState()
 
-#     # cleanup
-#     TimeSliderNextState()
-#     DeleteAllPlots()
+    # cleanup
+    TimeSliderNextState()
+    DeleteAllPlots()
 
-#     # take pictures of the low res images
-#     AddPlot("Pseudocolor", "mesh_image_topo/intensities", 1, 1)
-#     DrawPlots()
-#     AddPlot("Mesh", "mesh_image_topo", 1, 1)
-#     DrawPlots()
-#     AddPlot("Pseudocolor", "mesh_spatial_topo/intensities_spatial", 1, 1)
-#     DrawPlots()
-#     AddPlot("Mesh", "mesh_spatial_topo", 1, 1)
-#     DrawPlots()
-#     SetActivePlots((2, 3))
-#     HideActivePlots()
-#     TimeSliderNextState()
-#     ResetView()
-#     SetActivePlots((0, 2, 3))
-#     SetActivePlots((0, 1, 2, 3))
-#     Test("NonSquare_Pixels_low_res_mesh_plots1")
-#     HideActivePlots()
-#     Test("NonSquare_Pixels_low_res_mesh_plots2")
-#     HideActivePlots()
-#     TimeSliderNextState()
-#     TimeSliderNextState()
-#     ResetView()
-#     Test("NonSquare_Pixels_low_res_mesh_plots3")
-#     HideActivePlots()
-#     Test("NonSquare_Pixels_low_res_mesh_plots4")
-#     HideActivePlots()
-#     TimeSliderNextState()
-#     TimeSliderNextState()
-#     ResetView()
-#     Test("NonSquare_Pixels_low_res_mesh_plots5")
-#     HideActivePlots()
-#     Test("NonSquare_Pixels_low_res_mesh_plots6")
-#     HideActivePlots()
-#     TimeSliderNextState()
-#     TimeSliderNextState()
-#     ResetView()
-#     Test("NonSquare_Pixels_low_res_mesh_plots7")
-#     HideActivePlots()
-#     Test("NonSquare_Pixels_low_res_mesh_plots8")
-#     HideActivePlots()
+    # take pictures of the low res images
+    AddPlot("Pseudocolor", "mesh_image_topo/intensities", 1, 1)
+    DrawPlots()
+    AddPlot("Mesh", "mesh_image_topo", 1, 1)
+    DrawPlots()
+    AddPlot("Pseudocolor", "mesh_spatial_topo/intensities_spatial", 1, 1)
+    DrawPlots()
+    AddPlot("Mesh", "mesh_spatial_topo", 1, 1)
+    DrawPlots()
+    SetActivePlots((2, 3))
+    HideActivePlots()
+    TimeSliderNextState()
+    ResetView()
+    SetActivePlots((0, 2, 3))
+    SetActivePlots((0, 1, 2, 3))
+    Test("NonSquare_Pixels_low_res_mesh_plots1")
+    HideActivePlots()
+    Test("NonSquare_Pixels_low_res_mesh_plots2")
+    HideActivePlots()
+    TimeSliderNextState()
+    TimeSliderNextState()
+    ResetView()
+    Test("NonSquare_Pixels_low_res_mesh_plots3")
+    HideActivePlots()
+    Test("NonSquare_Pixels_low_res_mesh_plots4")
+    HideActivePlots()
+    TimeSliderNextState()
+    TimeSliderNextState()
+    ResetView()
+    Test("NonSquare_Pixels_low_res_mesh_plots5")
+    HideActivePlots()
+    Test("NonSquare_Pixels_low_res_mesh_plots6")
+    HideActivePlots()
+    TimeSliderNextState()
+    TimeSliderNextState()
+    ResetView()
+    Test("NonSquare_Pixels_low_res_mesh_plots7")
+    HideActivePlots()
+    Test("NonSquare_Pixels_low_res_mesh_plots8")
+    HideActivePlots()
 
-#     teardown_bp_test()
-#     CloseDatabase(conduit_db)
+    teardown_bp_test()
+    CloseDatabase(conduit_db)
 
-# test_non_square_pixels()
+test_non_square_pixels()
 
-# # 
-# # test catching failures
-# # 
+# 
+# test catching failures
+# 
 
-# # write to dir that does not exist
+# write to dir that does not exist
 
-# dir_dne = pjoin(outdir_set, "doesnotexist")
-# if os.path.isdir(dir_dne):
-#     os.rmdir(dir_dne)
+dir_dne = pjoin(outdir_set, "doesnotexist")
+if os.path.isdir(dir_dne):
+    os.rmdir(dir_dne)
 
-# setup_bp_test()
+setup_bp_test()
 
-# Query("XRay Image", "hdf5", dir_dne, 1, 0.0, 2.5, 10.0, 0, 0, 10., 10., 300, 300, ("d", "p"))
-# s = GetQueryOutputString()
-# TestText("xrayimage38", s)
+Query("XRay Image", "hdf5", dir_dne, 1, 0.0, 2.5, 10.0, 0, 0, 10., 10., 300, 300, ("d", "p"))
+s = GetQueryOutputString()
+TestText("xrayimage38", s)
 
-# teardown_bp_test(True)
+teardown_bp_test(True)
 
-# # os.chmod does not work on windows
-# if not platform.system() == "Windows":
-#     # write to dir w/ read only permissions
+# os.chmod does not work on windows
+if not platform.system() == "Windows":
+    # write to dir w/ read only permissions
 
-#     outdir_bad = pjoin(outdir_set, "baddir")
-#     if not os.path.isdir(outdir_bad):
-#         os.mkdir(outdir_bad)
-#     os.chmod(outdir_bad, 0o444)
+    outdir_bad = pjoin(outdir_set, "baddir")
+    if not os.path.isdir(outdir_bad):
+        os.mkdir(outdir_bad)
+    os.chmod(outdir_bad, 0o444)
 
-#     OpenDatabase(silo_data_path("curv3d.silo"))
-#     AddPlot("Pseudocolor", "d")
-#     DrawPlots()
+    OpenDatabase(silo_data_path("curv3d.silo"))
+    AddPlot("Pseudocolor", "d")
+    DrawPlots()
 
-#     Query("XRay Image", "hdf5", outdir_bad, 1, 0.0, 2.5, 10.0, 0, 0, 10., 10., 300, 300, ("d", "p"))
-#     s = GetQueryOutputString()
-#     # strip out two lines that make the test machine dependent
-#     s = '\n'.join([line if line[:4] != "file" else '' for line in s.split('\n')])
-#     s = '\n'.join([line if line[:4] != "line" else '' for line in s.split('\n')])
-#     TestText("xrayimage39", s)
-#     teardown_bp_test(True)
+    Query("XRay Image", "hdf5", outdir_bad, 1, 0.0, 2.5, 10.0, 0, 0, 10., 10., 300, 300, ("d", "p"))
+    s = GetQueryOutputString()
+    # strip out two lines that make the test machine dependent
+    s = '\n'.join([line if line[:4] != "file" else '' for line in s.split('\n')])
+    s = '\n'.join([line if line[:4] != "line" else '' for line in s.split('\n')])
+    TestText("xrayimage39", s)
+    teardown_bp_test(True)
 
-# # 
-# # Test filenames and output types
-# # 
+# 
+# Test filenames and output types
+# 
 
-# setup_bp_test()
+setup_bp_test()
 
-# DefineScalarExpression("d1", 'recenter(d, "zonal")')
-# DefineScalarExpression("p1", 'recenter(p, "zonal")')
+DefineScalarExpression("d1", 'recenter(d, "zonal")')
+DefineScalarExpression("p1", 'recenter(p, "zonal")')
 
-# DefineArrayExpression("da", "array_compose(d1,d1)")
-# DefineArrayExpression("pa", "array_compose(p1,p1)")
+DefineArrayExpression("da", "array_compose(d1,d1)")
+DefineArrayExpression("pa", "array_compose(p1,p1)")
 
-# def query_variety(otype, scheme, thevars, outdir):
-#     SetQueryFloatFormat("%g")
-#     Query("XRay Image", 
-#         background_intensity=0, 
-#         divide_emis_by_absorb=0, 
-#         far_plane=20, 
-#         filename_scheme=scheme, 
-#         family_files=0, # this is to test that family_files is ignored when filename_scheme is set
-#         focus=(0, 0, 0), 
-#         image_pan=(0, 0), 
-#         image_size=(3, 3), 
-#         image_zoom=1, 
-#         near_plane=-20, 
-#         normal=(0, 0, 1), 
-#         output_dir=outdir, 
-#         output_ray_bounds=0, 
-#         output_type=otype, 
-#         parallel_scale=10, 
-#         perspective=0, 
-#         view_angle=30, 
-#         view_up=(0, 1, 0), 
-#         vars=thevars)
-#     return GetQueryOutputString()
+def query_variety(otype, scheme, thevars, outdir):
+    SetQueryFloatFormat("%g")
+    Query("XRay Image", 
+        background_intensity=0, 
+        divide_emis_by_absorb=0, 
+        far_plane=20, 
+        filename_scheme=scheme, 
+        family_files=0, # this is to test that family_files is ignored when filename_scheme is set
+        focus=(0, 0, 0), 
+        image_pan=(0, 0), 
+        image_size=(3, 3), 
+        image_zoom=1, 
+        near_plane=-20, 
+        normal=(0, 0, 1), 
+        output_dir=outdir, 
+        output_ray_bounds=0, 
+        output_type=otype, 
+        parallel_scale=10, 
+        perspective=0, 
+        view_angle=30, 
+        view_up=(0, 1, 0), 
+        vars=thevars)
+    return GetQueryOutputString()
 
-# def query_family_backwards_compat(family, thevars, outdir):
-#     SetQueryFloatFormat("%g")
-#     Query("XRay Image", 
-#         background_intensity=0, 
-#         divide_emis_by_absorb=0, 
-#         far_plane=20, 
-#         family_files=family,
-#         focus=(0, 0, 0), 
-#         image_pan=(0, 0), 
-#         image_size=(3, 3), 
-#         image_zoom=1, 
-#         near_plane=-20, 
-#         normal=(0, 0, 1), 
-#         output_dir=outdir, 
-#         output_ray_bounds=0, 
-#         output_type="png", 
-#         parallel_scale=10, 
-#         perspective=0, 
-#         view_angle=30, 
-#         view_up=(0, 1, 0), 
-#         vars=thevars)
-#     return GetQueryOutputString()
+def query_family_backwards_compat(family, thevars, outdir):
+    SetQueryFloatFormat("%g")
+    Query("XRay Image", 
+        background_intensity=0, 
+        divide_emis_by_absorb=0, 
+        far_plane=20, 
+        family_files=family,
+        focus=(0, 0, 0), 
+        image_pan=(0, 0), 
+        image_size=(3, 3), 
+        image_zoom=1, 
+        near_plane=-20, 
+        normal=(0, 0, 1), 
+        output_dir=outdir, 
+        output_ray_bounds=0, 
+        output_type="png", 
+        parallel_scale=10, 
+        perspective=0, 
+        view_angle=30, 
+        view_up=(0, 1, 0), 
+        vars=thevars)
+    return GetQueryOutputString()
 
-# output_types = ["jpeg", "png", "tif", "bof", "bov", "json", "hdf5", "yaml"]
-# filename_schemes = ["family", "family", "cycle", "none"]
-# family_options = [0, 1]
-# vars_options = [("d", "p"), ("da", "pa")]
+output_types = ["jpeg", "png", "tif", "bof", "bov", "json", "hdf5", "yaml"]
+filename_schemes = ["family", "family", "cycle", "none"]
+family_options = [0, 1]
+vars_options = [("d", "p"), ("da", "pa")]
 
-# info = ""
-# for i in range(0, len(output_types)):
-#     outdir_set_otype = outdir_set + "_" + output_types[i]
-#     if not os.path.isdir(outdir_set_otype):
-#         os.mkdir(outdir_set_otype)
-#     if output_types[i] == "jpeg":
-#         # create a dummy file to test the file familying
-#         open(outdir_set_otype + "/output.0000.jpg", 'w').close()
-#     info = ""
-#     for j in range(0, len(filename_schemes)):
-#         for k in range(0, len(vars_options)):
-#             info += query_variety(output_types[i], filename_schemes[j], vars_options[k], outdir_set_otype)
-#     info += str(sorted(os.listdir(outdir_set_otype)))
-#     TestText("Test_filenames_for_" + output_types[i] + "_outputs", info)
+info = ""
+for i in range(0, len(output_types)):
+    outdir_set_otype = outdir_set + "_" + output_types[i]
+    if not os.path.isdir(outdir_set_otype):
+        os.mkdir(outdir_set_otype)
+    if output_types[i] == "jpeg":
+        # create a dummy file to test the file familying
+        open(outdir_set_otype + "/output.0000.jpg", 'w').close()
+    info = ""
+    for j in range(0, len(filename_schemes)):
+        for k in range(0, len(vars_options)):
+            info += query_variety(output_types[i], filename_schemes[j], vars_options[k], outdir_set_otype)
+    info += str(sorted(os.listdir(outdir_set_otype)))
+    TestText("Test_filenames_for_" + output_types[i] + "_outputs", info)
 
-# # test backwards compatibility with family_files option
-# for i in range(0, len(family_options)):
-#     outdir_set_family = outdir_set + "_family_" + str(family_options[i])
-#     if not os.path.isdir(outdir_set_family):
-#         os.mkdir(outdir_set_family)
-#     info = ""
-#     for j in range(0, len(vars_options)):
-#         info += query_family_backwards_compat(family_options[i], vars_options[j], outdir_set_family)
-#     info += str(sorted(os.listdir(outdir_set_family)))
-#     TestText("Test_filenames_for_family" + str(family_options[i]) + "_outputs", info)
+# test backwards compatibility with family_files option
+for i in range(0, len(family_options)):
+    outdir_set_family = outdir_set + "_family_" + str(family_options[i])
+    if not os.path.isdir(outdir_set_family):
+        os.mkdir(outdir_set_family)
+    info = ""
+    for j in range(0, len(vars_options)):
+        info += query_family_backwards_compat(family_options[i], vars_options[j], outdir_set_family)
+    info += str(sorted(os.listdir(outdir_set_family)))
+    TestText("Test_filenames_for_family" + str(family_options[i]) + "_outputs", info)
 
-# #
-# # Test that we get decent error messages for common cases
-# #
-# import numpy
+#
+# Test that we get decent error messages for common cases
+#
+import numpy
 
-# nporig = numpy.array([0.0, 2.5, 10.0])
+nporig = numpy.array([0.0, 2.5, 10.0])
 
-# params = dict(output_type=1, output_dir=".", divide_emis_by_absorb=1, \
-#     origin=nporig, up_vector=(0, 1, 0), theta=0, phi=0, \
-#     width = 10., height=10., image_size=(300, 300), vars=("da", "pa"))
-# try:
-#     Query("XRay Image", params)
-# except (visit.VisItException, VisItException) as e:
-#     if '"origin"' in e.args[0] and "position 4" in e.args[0] and "type numpy.ndarray" in e.args[0]:
-#         TestPOA('detect and warn numpy array as query param')
-#     else:
-#         TestFOA('detect and warn numpy array as query param', LINE())
-#     pass
-# except:
-#     TestFOA('detect and warn numpy array as query param', LINE())
-#     pass
+params = dict(output_type=1, output_dir=".", divide_emis_by_absorb=1, \
+    origin=nporig, up_vector=(0, 1, 0), theta=0, phi=0, \
+    width = 10., height=10., image_size=(300, 300), vars=("da", "pa"))
+try:
+    Query("XRay Image", params)
+except (visit.VisItException, VisItException) as e:
+    if '"origin"' in e.args[0] and "position 4" in e.args[0] and "type numpy.ndarray" in e.args[0]:
+        TestPOA('detect and warn numpy array as query param')
+    else:
+        TestFOA('detect and warn numpy array as query param', LINE())
+    pass
+except:
+    TestFOA('detect and warn numpy array as query param', LINE())
+    pass
 
-# params = dict(output_type=1, output_dir=".", divide_emis_by_absorb=1, \
-#     origin=nporig.tolist(), up_vector=(0, 1, 0), theta=0, phi=0, \
-#     width = 10., height=10., image_size=(300, 300), vars=("da", "pa"))
-# try:
-#     Query("XRay Image", params)
-#     TestPOA('numpy array converted to list works as query param')
-# except:
-#     TestFOA('numpy array converted to list works as query param', LINE())
-#     pass
+params = dict(output_type=1, output_dir=".", divide_emis_by_absorb=1, \
+    origin=nporig.tolist(), up_vector=(0, 1, 0), theta=0, phi=0, \
+    width = 10., height=10., image_size=(300, 300), vars=("da", "pa"))
+try:
+    Query("XRay Image", params)
+    TestPOA('numpy array converted to list works as query param')
+except:
+    TestFOA('numpy array converted to list works as query param', LINE())
+    pass
 
 Exit()
