@@ -113,6 +113,9 @@
 # 
 #    Justin Privitera, Tue Aug 22 12:30:01 PDT 2023
 #    Sort filename list produced by os.listdir to prevent test suite failures.
+# 
+#    Justin Privitera, Mon Oct 30 14:45:55 PDT 2023
+#    Use conduit node diff to compare query results to baselines.
 # ----------------------------------------------------------------------------
 
 import os
