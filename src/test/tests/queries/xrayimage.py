@@ -113,6 +113,9 @@
 # 
 #    Justin Privitera, Tue Aug 22 12:30:01 PDT 2023
 #    Sort filename list produced by os.listdir to prevent test suite failures.
+# 
+#    Justin Privitera, Mon Oct 30 14:45:55 PDT 2023
+#    Use conduit node diff to compare query results to baselines.
 # ----------------------------------------------------------------------------
 
 import os
@@ -436,109 +439,96 @@ def teardown_bp_test(lite = False):
         DeleteExpression("parr")
     CloseDatabase(silo_data_path("curv3d.silo"))
 
-def test_bp_state_xray_view(testname, xrayout):
-    normalx = xrayout["domain_000000/state/xray_view/normal/x"]
-    normaly = xrayout["domain_000000/state/xray_view/normal/y"]
-    normalz = xrayout["domain_000000/state/xray_view/normal/z"]
-    TestValueEQ(testname + "_view_normal", [normalx, normaly, normalz], [0,0,1])
-    
-    focusx = xrayout["domain_000000/state/xray_view/focus/x"]
-    focusy = xrayout["domain_000000/state/xray_view/focus/y"]
-    focusz = xrayout["domain_000000/state/xray_view/focus/z"]
-    TestValueEQ(testname + "_view_focus", [focusx, focusy, focusz], [0,2.5,10])
-    
-    view_upx = xrayout["domain_000000/state/xray_view/view_up/x"]
-    view_upy = xrayout["domain_000000/state/xray_view/view_up/y"]
-    view_upz = xrayout["domain_000000/state/xray_view/view_up/z"]
-    TestValueEQ(testname + "_view_view_up", [view_upx, view_upy, view_upz], [0,1,0])
-    
-    view_angle = xrayout["domain_000000/state/xray_view/view_angle"]
-    TestValueEQ(testname + "_view_view_angle", view_angle, 30)
-    
-    parallel_scale = xrayout["domain_000000/state/xray_view/parallel_scale"]
-    TestValueEQ(testname + "_view_parallel_scale", parallel_scale, 5)
+# In conduit python, int types are assumed to be int64
+# The xray query saves bools out as int32s
+# So the diff fails unless we take the int32 type and 
+# cast it to int64.
+def cast_to_wide_int_type_conduit(node, leafname):
+    val = int(node[leafname])
+    node.remove_child(leafname)
+    node[leafname] = val
 
-    view_width = xrayout["domain_000000/state/xray_view/view_width"]
-    TestValueEQ(testname + "_view_view_width", view_width, 7.5)
+def test_bp_state_xray_view(testname, xray_view):
+    yaml_text = """normal:
+  x: 0.0
+  y: 0.0
+  z: 1.0
+focus:
+  x: 0.0
+  y: 2.5
+  z: 10.0
+view_up:
+  x: 0.0
+  y: 1.0
+  z: 0.0
+view_angle: 30.0
+parallel_scale: 5.0
+view_width: 7.5
+non_square_pixels: \"yes\"
+near_plane: -100.0
+far_plane: 100.0
+image_pan:
+  x: 0.0
+  y: 0.0
+image_zoom: 1.0
+perspective: 0
+perspective_str: \"parallel\""""
 
-    non_square_pixels = xrayout["domain_000000/state/xray_view/non_square_pixels"]
-    TestValueEQ(testname + "_view_non_square_pixels", non_square_pixels, "yes")
-    
-    near_plane = xrayout["domain_000000/state/xray_view/near_plane"]
-    TestValueEQ(testname + "_view_near_plane", near_plane, -100)
-    
-    far_plane = xrayout["domain_000000/state/xray_view/far_plane"]
-    TestValueEQ(testname + "_view_far_plane", far_plane, 100)
-    
-    image_panx = xrayout["domain_000000/state/xray_view/image_pan/x"]
-    image_pany = xrayout["domain_000000/state/xray_view/image_pan/y"]
-    TestValueEQ(testname + "_view_image_pan", [image_panx, image_pany], [0,0])
-    
-    image_zoom = xrayout["domain_000000/state/xray_view/image_zoom"]
-    TestValueEQ(testname + "_view_image_zoom", image_zoom, 1)
-    
-    perspective = xrayout["domain_000000/state/xray_view/perspective"]
-    TestValueEQ(testname + "_view_perspective", perspective, 0)
+    xray_view_base = conduit.Node()
+    xray_view_base.parse(yaml_text, "yaml")
 
-    perspective_str = xrayout["domain_000000/state/xray_view/perspective_str"]
-    TestValueEQ(testname + "_view_perspective_str", perspective_str, "parallel")
+    # We must make changes so that the diff will pass:
+    cast_to_wide_int_type_conduit(xray_view, "perspective")
+
+    info = conduit.Node()
+    diffval = xray_view.diff(xray_view_base, info)
+    diff_str = info.to_yaml() if diffval else ""
+    TestValueEQ(testname + "_xray_view", diff_str, "");
 
 UNITS_OFF = 0
 UNITS_ON = 1
 
-def test_bp_state_xray_query(testname, xrayout, num_bins, abs_name, emis_name, units):
-    divide_emis_by_absorb = xrayout["domain_000000/state/xray_query/divide_emis_by_absorb"]
-    TestValueEQ(testname + "_query_divide_emis_by_absorb", divide_emis_by_absorb, 1)
-    
-    divide_emis_by_absorb_str = xrayout["domain_000000/state/xray_query/divide_emis_by_absorb_str"]
-    TestValueEQ(testname + "_query_divide_emis_by_absorb_str", divide_emis_by_absorb_str, "yes")
-    
-    num_x_pixels = xrayout["domain_000000/state/xray_query/num_x_pixels"]
-    TestValueEQ(testname + "_query_num_x_pixels", num_x_pixels, 300)
-    
-    num_y_pixels = xrayout["domain_000000/state/xray_query/num_y_pixels"]
-    TestValueEQ(testname + "_query_num_y_pixels", num_y_pixels, 200)
-    
-    num_bins = xrayout["domain_000000/state/xray_query/num_bins"]
-    TestValueEQ(testname + "_query_num_bins", num_bins, num_bins)
-    
-    abs_var_name = xrayout["domain_000000/state/xray_query/abs_var_name"]
-    TestValueEQ(testname + "_query_abs_var_name", abs_var_name, abs_name)
-    
-    emis_var_name = xrayout["domain_000000/state/xray_query/emis_var_name"]
-    TestValueEQ(testname + "_query_emis_var_name", emis_var_name, emis_name)
+def test_bp_state_xray_query(testname, xray_query, num_bins, abs_name, emis_name, units):
+    yaml_text = f"""divide_emis_by_absorb: 1
+divide_emis_by_absorb_str: \"yes\"
+num_x_pixels: 300
+num_y_pixels: 200
+num_bins: {num_bins}
+abs_var_name: {abs_name}
+emis_var_name: {emis_name}
+abs_units: {"abs units" if units == UNITS_ON else "no units provided"}
+emis_units: {"emis units" if units == UNITS_ON else "no units provided"}"""
 
-    abs_units = xrayout["domain_000000/state/xray_query/abs_units"]
-    emis_units = xrayout["domain_000000/state/xray_query/emis_units"]
+    xray_query_base = conduit.Node()
+    xray_query_base.parse(yaml_text, "yaml")
 
-    if (units == UNITS_ON):
-        TestValueEQ(testname + "_query_abs_units", abs_units, "abs units")
-        TestValueEQ(testname + "_query_emis_units", emis_units, "emis units")
-    else:
-        TestValueEQ(testname + "_query_abs_units", abs_units, "no units provided")
-        TestValueEQ(testname + "_query_emis_units", emis_units, "no units provided")
+    # We must make changes so that the diff will pass:
+    cast_to_wide_int_type_conduit(xray_query, "divide_emis_by_absorb")
+    cast_to_wide_int_type_conduit(xray_query, "num_x_pixels")
+    cast_to_wide_int_type_conduit(xray_query, "num_y_pixels")
+    cast_to_wide_int_type_conduit(xray_query, "num_bins")
 
-def test_bp_state_xray_data(testname, xrayout, int_max, pl_max):
-    detector_width = xrayout["domain_000000/state/xray_data/detector_width"]
-    TestValueEQ(testname + "_data_detector_width", detector_width, 15)
+    info = conduit.Node()
+    diffval = xray_query.diff(xray_query_base, info)
+    diff_str = info.to_yaml() if diffval else ""
+    TestValueEQ(testname + "_xray_query", diff_str, "");
 
-    detector_height = xrayout["domain_000000/state/xray_data/detector_height"]
-    TestValueEQ(testname + "_data_detector_height", detector_height, 10)
+def test_bp_state_xray_data(testname, xray_data, int_max, pl_max):
+    yaml_text = f"""detector_width: 15.0
+detector_height: 10.0
+intensity_max: {int_max}
+intensity_min: 0.0
+path_length_max: {pl_max}
+path_length_min: 0.0
+image_topo_order_of_domain_variables: \"xyz\""""
     
-    intensity_max = xrayout["domain_000000/state/xray_data/intensity_max"]
-    TestValueEQ(testname + "_data_intensity_max", intensity_max, int_max)
-    
-    intensity_min = xrayout["domain_000000/state/xray_data/intensity_min"]
-    TestValueEQ(testname + "_data_intensity_min", intensity_min, 0)
-    
-    path_length_max = xrayout["domain_000000/state/xray_data/path_length_max"]
-    TestValueEQ(testname + "_data_path_length_max", path_length_max, pl_max)
-    
-    path_length_min = xrayout["domain_000000/state/xray_data/path_length_min"]
-    TestValueEQ(testname + "_data_path_length_min", path_length_min, 0)
+    xray_data_base = conduit.Node()
+    xray_data_base.parse(yaml_text, "yaml")
 
-    image_topo_order_of_domain_variables = xrayout["domain_000000/state/xray_data/image_topo_order_of_domain_variables"]
-    TestValueEQ(testname + "_data_image_topo_order_of_domain_variables", image_topo_order_of_domain_variables, "xyz")
+    info = conduit.Node()
+    diffval = xray_data.diff(xray_data_base, info)
+    diff_str = info.to_yaml() if diffval else ""
+    TestValueEQ(testname + "_xray_data", diff_str, "");
 
 NO_ENERGY_GROUP_BOUNDS = 0
 ENERGY_GROUP_BOUNDS_MISMATCH = 1
@@ -559,21 +549,25 @@ def test_bp_data(testname, conduit_db, qro):
     conduit.relay.io.blueprint.load_mesh(xrayout, conduit_db)
 
     # test metadata
+    xray_state = xrayout["domain_000000/state"]
 
-    time = xrayout["domain_000000/state/time"]
+    time = xray_state["time"]
     TestValueEQ(testname + "_Time", time, 4.8)
     
-    cycle = xrayout["domain_000000/state/cycle"]
+    cycle = xray_state["cycle"]
     TestValueEQ(testname + "_Cycle", cycle, 48)
 
-    test_bp_state_xray_view(testname, xrayout)
-    test_bp_state_xray_query(testname, xrayout, qro.num_bins, qro.abs_name, qro.emis_name, qro.units)
-    test_bp_state_xray_data(testname, xrayout, qro.int_max, qro.pl_max)
+    test_bp_state_xray_view(testname, xray_state["xray_view"])
+    test_bp_state_xray_query(testname, xray_state["xray_query"],
+        qro.num_bins, qro.abs_name, qro.emis_name, qro.units)
+    test_bp_state_xray_data(testname, xray_state["xray_data"], qro.int_max, qro.pl_max)
 
-    # test data embedded within the meshes
+    # test data embedded within the fields
 
-    intensityUnits = xrayout["domain_000000/fields/intensities/units"]
-    pathLengthUnits = xrayout["domain_000000/fields/path_length/units"]
+    xray_fields = xrayout["domain_000000/fields"]
+
+    intensityUnits = xray_fields["intensities/units"]
+    pathLengthUnits = xray_fields["path_length/units"]
 
     if (qro.units == UNITS_ON):
         TestValueEQ(testname + "_IntensityUnits", intensityUnits, "intensity units")
@@ -582,10 +576,14 @@ def test_bp_data(testname, conduit_db, qro):
         TestValueEQ(testname + "_IntensityUnits", intensityUnits, "no units provided")
         TestValueEQ(testname + "_PathLengthUnits", pathLengthUnits, "no info provided")
 
-    spatial_coords_x = xrayout["domain_000000/coordsets/spatial_coords/values/x"]
-    spatial_coords_y = xrayout["domain_000000/coordsets/spatial_coords/values/y"]
-    energy_group_bounds = xrayout["domain_000000/coordsets/spatial_coords/values/z"]
-    energy_group_info = xrayout["domain_000000/coordsets/spatial_coords/info"]
+    # test data embedded within the coordsets
+
+    xray_coordsets = xrayout["domain_000000/coordsets"]
+
+    spatial_coords_x = xray_coordsets["spatial_coords/values/x"]
+    spatial_coords_y = xray_coordsets["spatial_coords/values/y"]
+    energy_group_bounds = xray_coordsets["spatial_coords/values/z"]
+    energy_group_info = xray_coordsets["spatial_coords/info"]
     TestValueEQ(testname + "_data_SpatialExtents0", [spatial_coords_x[0], spatial_coords_y[0]], [0.0, 0.0])
     TestValueEQ(testname + "_data_SpatialExtents1", [spatial_coords_x[1], spatial_coords_y[1]], [0.05, 0.05])
     TestValueEQ(testname + "_data_SpatialExtents2", [spatial_coords_x[2], spatial_coords_y[2]], [0.1, 0.1])
@@ -601,32 +599,33 @@ def test_bp_data(testname, conduit_db, qro):
     elif (qro.bin_state == ENERGY_GROUP_BOUNDS):
         TestValueEQ(testname + "_data_EnergyGroupBounds", energy_group_bounds, [0, 2, 6, 8])
 
-    xunits = xrayout["domain_000000/coordsets/spatial_coords/units/x"]
-    yunits = xrayout["domain_000000/coordsets/spatial_coords/units/y"]
-    zunits = xrayout["domain_000000/coordsets/spatial_coords/units/z"]
+    yaml_text = f"""x: {"cm" if qro.units == UNITS_ON else "no units provided"}
+y: {"cm" if qro.units == UNITS_ON else "no units provided"}
+z: {"kev" if qro.units == UNITS_ON else "no units provided"}"""
 
-    if (qro.units == UNITS_ON):
-        TestValueEQ(testname + "_data_XUnits", xunits, "cm")
-        TestValueEQ(testname + "_data_YUnits", yunits, "cm")
-        TestValueEQ(testname + "_data_ZUnits", zunits, "kev")
-    else:
-        TestValueEQ(testname + "_data_XUnits", xunits, "no units provided")
-        TestValueEQ(testname + "_data_YUnits", yunits, "no units provided")
-        TestValueEQ(testname + "_data_ZUnits", zunits, "no units provided")
+    spatial_units_base = conduit.Node()
+    spatial_units_base.parse(yaml_text, "yaml")
+    spatial_units = xray_coordsets["spatial_coords/units"]
 
-    xlabel = xrayout["domain_000000/coordsets/spatial_coords/labels/x"];
-    ylabel = xrayout["domain_000000/coordsets/spatial_coords/labels/y"];
-    zlabel = xrayout["domain_000000/coordsets/spatial_coords/labels/z"];
+    info = conduit.Node()
+    diffval = spatial_units.diff(spatial_units_base, info)
+    TestValueEQ(testname + "_spatial_units", diffval, False);
+    if diffval:
+        print(info.to_yaml())
+
+    xlabel = xray_coordsets["spatial_coords/labels/x"];
+    ylabel = xray_coordsets["spatial_coords/labels/y"];
+    zlabel = xray_coordsets["spatial_coords/labels/z"];
     TestValueEQ(testname + "_data_XLabels", xlabel, "width")
     TestValueEQ(testname + "_data_YLabels", ylabel, "height")
     TestValueEQ(testname + "_data_ZLabels", zlabel, "energy_group")
 
-    xlabel = xrayout["domain_000000/coordsets/spatial_energy_reduced_coords/labels/x"];
-    ylabel = xrayout["domain_000000/coordsets/spatial_energy_reduced_coords/labels/y"];
+    xlabel = xray_coordsets["spatial_energy_reduced_coords/labels/x"];
+    ylabel = xray_coordsets["spatial_energy_reduced_coords/labels/y"];
     TestValueEQ(testname + "_data_ser_XLabels", xlabel, "width")
     TestValueEQ(testname + "_data_ser_YLabels", ylabel, "height")
 
-    xlabel = xrayout["domain_000000/coordsets/spectra_coords/labels/x"];
+    xlabel = xray_coordsets["spectra_coords/labels/x"];
     TestValueEQ(testname + "_data_spectra_XLabels", xlabel, "energy_group")
 
 def calc_midpoints(arr):
@@ -811,7 +810,7 @@ def blueprint_test(output_type, outdir, testtextnumber, testname):
     
     qro = query_result_options(num_bins=3, abs_name="darr", emis_name="parr", \
         bin_state=ENERGY_GROUP_BOUNDS, units=units, \
-        int_max=1, pl_max=892.02588)
+        int_max=1.0, pl_max=892.02587890625)
     test_bp_data(testname + str(i), conduit_db, qro) # bounds
     
     setup_bp_test()
@@ -819,13 +818,13 @@ def blueprint_test(output_type, outdir, testtextnumber, testname):
     Query("XRay Image", output_type, outdir, 1, 0.0, 2.5, 10.0, 0, 0, 15., 10., 300, 200, ("d", "p"), [1,2,3])
     qro = query_result_options(num_bins=1, abs_name="d", emis_name="p", \
         bin_state=ENERGY_GROUP_BOUNDS_MISMATCH, units=UNITS_OFF, \
-        int_max=0.24153, pl_max=148.67099)
+        int_max=0.241531997919083, pl_max=148.670989990234)
     test_bp_data(testname + str(i), conduit_db, qro) # bounds mismatch
     
     Query("XRay Image", output_type, outdir, 1, 0.0, 2.5, 10.0, 0, 0, 15., 10., 300, 200, ("d", "p"))
     qro = query_result_options(num_bins=1, abs_name="d", emis_name="p", \
         bin_state=NO_ENERGY_GROUP_BOUNDS, units=UNITS_OFF, \
-        int_max=0.24153, pl_max=148.67099)
+        int_max=0.241531997919083, pl_max=148.670989990234)
     test_bp_data(testname + str(i), conduit_db, qro) # no bounds
     
     teardown_bp_test()
