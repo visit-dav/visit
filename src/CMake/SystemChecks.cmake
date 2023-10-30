@@ -121,7 +121,7 @@ check_type_size("off64_t" SIZEOF_OFF64_T)
 test_big_endian(WORDS_BIGENDIAN)
 
 # Check for threads
-find_package(Threads)
+find_package(Threads REQUIRED)
 message(STATUS "Threads_FOUND=${Threads_FOUND}")
 set(HAVE_THREADS  ${Threads_FOUND})
 

@@ -49,6 +49,7 @@
 #include "conduit_relay.hpp"
 #include "conduit_relay_io_hdf5.hpp"
 #include "conduit_blueprint.hpp"
+#include "conduit_blueprint_mesh_utils.hpp"
 
 //-----------------------------------------------------------------------------
 // mfem includes
@@ -208,6 +209,45 @@ avtBlueprintFileFormat::FreeUpResources(void)
 }
 
 // ****************************************************************************
+//  Method: GenerateOffsetsForPolytopalMesh
+//
+//  Purpose:
+//      Polyhedral meshes require offsets to verify. We can generate them
+//      before verification takes place.
+//
+//  Arguments:
+//      data        The mesh domain we wish to add offsets to.
+// 
+//  Notes:
+//      We cannot assume much about the data we are working with, as it has
+//      not passed verification yet. If it has the structure we expect, we can
+//      assume that the passed data node consists of a single coordset and
+//      topology, as ReadBlueprintMesh() is called directly before this 
+//      function and should return a node with a single coordset and topology.
+//
+//  Programmer: Justin Privitera
+//  Creation:   10/25/23
+//
+//  Modifications:
+//
+// ****************************************************************************
+void
+GenerateOffsetsForPolytopalMesh(Node &data)
+{
+    // using short circuit evaluation, so these statements will only execute
+    // until we hit the first one that is false
+    if (data.has_child("topologies") && 
+        data["topologies"].number_of_children() > 0 && 
+        data["topologies"][0].has_child("type") && 
+        data["topologies"][0]["type"].as_string() == "unstructured" && 
+        data["topologies"][0].has_path("elements/shape") && 
+        (data["topologies"][0]["elements/shape"].as_string() == "polyhedral" || 
+         data["topologies"][0]["elements/shape"].as_string() == "polygonal") && 
+        (! data["topologies"][0].has_path("elements/offsets")))
+        blueprint::mesh::utils::topology::unstructured::generate_offsets_inline(data["topologies"][0]);
+}
+
+// ****************************************************************************
 //  Method: avtBlueprintFileFormat::ReadBlueprintMesh
 //
 //  Purpose:
@@ -227,6 +267,10 @@ avtBlueprintFileFormat::FreeUpResources(void)
 //    Cyrus Harrison, Tue Dec 13 12:17:17 PST 2022
 //    Refactor to pass mesh name to tree cache for part map style index
 //    support.
+// 
+//    Justin Privitera, Wed Oct 25 17:29:07 PDT 2023
+//    Call GenerateOffsetsForPolytopalMesh() at the end of this function, 
+//    before calling verify.
 //
 // ****************************************************************************
 void
@@ -443,6 +487,10 @@ avtBlueprintFileFormat::ReadBlueprintMesh(int domain,
                                              out["fields/boundary_attribute"]);
         }
     }
+
+    // before we verify, we want to generate offsets for unstructured polytopal
+    // meshes if they do not already exist
+    GenerateOffsetsForPolytopalMesh(out);
 
 }
 
@@ -1750,7 +1798,7 @@ avtBlueprintFileFormat::GetTime()
 //    Brad Whitlock, Mon May 22 17:29:05 PDT 2023
 //    I added some code to clear the mesh's material from the cache if it
 //    has an obsolete LOD.
-//
+// 
 // ****************************************************************************
 
 vtkDataSet *
