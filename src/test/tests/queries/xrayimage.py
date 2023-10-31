@@ -1213,11 +1213,8 @@ if not platform.system() == "Windows":
 
 setup_bp_test()
 
-DefineScalarExpression("d1", 'recenter(d, "zonal")')
-DefineScalarExpression("p1", 'recenter(p, "zonal")')
-
-DefineArrayExpression("da", "array_compose(d1,d1)")
-DefineArrayExpression("pa", "array_compose(p1,p1)")
+DefineArrayExpression("da", "array_compose(d,d)")
+DefineArrayExpression("pa", "array_compose(p,p)")
 
 def query_variety(otype, scheme, thevars, outdir):
     SetQueryFloatFormat("%g")
@@ -1241,7 +1238,7 @@ def query_variety(otype, scheme, thevars, outdir):
         view_angle=30, 
         view_up=(0, 1, 0), 
         vars=thevars)
-    return GetQueryOutputString()
+    return GetQueryOutputObject()
 
 def query_family_backwards_compat(family, thevars, outdir):
     SetQueryFloatFormat("%g")
@@ -1264,7 +1261,7 @@ def query_family_backwards_compat(family, thevars, outdir):
         view_angle=30, 
         view_up=(0, 1, 0), 
         vars=thevars)
-    return GetQueryOutputString()
+    return GetQueryOutputObject()
 
 filename_schemes = ["family", "family", "cycle", "none"]
 vars_options = [("d", "p"), ("da", "pa")]
@@ -1277,8 +1274,11 @@ for i in range(0, len(output_types)):
     info = ""
     for j in range(0, len(filename_schemes)):
         for k in range(0, len(vars_options)):
-            info += query_variety(output_types[i], filename_schemes[j], vars_options[k], outdir_set_otype)
-    info += str(sorted(os.listdir(outdir_set_otype)))
+            info += str(query_variety(output_types[i], 
+                                      filename_schemes[j], 
+                                      vars_options[k], 
+                                      outdir_set_otype)) + "\n"
+    info += str(sorted(os.listdir(outdir_set_otype))) + "\n"
     TestText("Test_filenames_for_" + output_types[i] + "_outputs", info)
 
 # test backwards compatibility with family_files option
@@ -1286,8 +1286,10 @@ for i in range(0, len(family_options)):
     outdir_set_family = outdir_set + "_family_" + str(family_options[i])
     info = ""
     for j in range(0, len(vars_options)):
-        info += query_family_backwards_compat(family_options[i], vars_options[j], outdir_set_family)
-    info += str(sorted(os.listdir(outdir_set_family)))
+        info += str(query_family_backwards_compat(family_options[i], 
+                                                  vars_options[j], 
+                                                  outdir_set_family)) + "\n"
+    info += str(sorted(os.listdir(outdir_set_family))) + "\n"
     TestText("Test_filenames_for_family" + str(family_options[i]) + "_outputs", info)
 
 #
