@@ -89,7 +89,7 @@ and the corresponding entry in the .xml file
 Attributes
 ----------
 
-Regeneration of Attributes is handled by three :ref:`XML Tools<XML Tools>`: one for cpp files (``ml2atts``, one for python (``ml2python`` and one for java (``ml2java``.
+Regeneration of Attributes is handled by three :ref:`XML Tools<XML Tools>`: one for cpp files (``xml2atts``, one for python (``xml2python`` and one for java (``xml2java``.
 
 When Attributes objects are changed (e.g. members removed or renamed), our policy is to maintain backward compatibility with older versions for at least 2 point releases.
 VisIt_ can encounter older Attributes objects in either Python CLI code or from previous saves of XML content (e.g. settings).
