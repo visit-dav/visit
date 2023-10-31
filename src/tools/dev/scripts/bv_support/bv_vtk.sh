@@ -90,10 +90,10 @@ function bv_vtk_info
     fi
     if [[ "$DO_VTK9" == "yes" ]] ; then
         info "setting up vtk for version 9"
-        export VTK_FILE=${VTK_FILE:-"VTK-9.1.0.tar.gz"}
-        export VTK_VERSION=${VTK_VERSION:-"9.1.0"}
-        export VTK_SHORT_VERSION=${VTK_SHORT_VERSION:-"9.1"}
-        export VTK_SHA256_CHECKSUM="8fed42f4f8f1eb8083107b68eaa9ad71da07110161a3116ad807f43e5ca5ce96"
+        export VTK_FILE=${VTK_FILE:-"VTK-9.2.6.tar.gz"}
+        export VTK_VERSION=${VTK_VERSION:-"9.2.6"}
+        export VTK_SHORT_VERSION=${VTK_SHORT_VERSION:-"9.2"}
+        export VTK_SHA256_CHECKSUM="06fc8d49c4e56f498c40fcb38a563ed8d4ec31358d0101e8988f0bb4d539dd12"
     else
         export VTK_FILE=${VTK_FILE:-"VTK-8.1.0.tar.gz"}
         export VTK_VERSION=${VTK_VERSION:-"8.1.0"}
@@ -585,40 +585,6 @@ EOF
     fi
 }
 
-function apply_vtk9_libxmlversionheader_patch
-{
-  # patch vtk's libxml CMakeLists.txt so that xmlversion header is installed.
-   patch -p0 << \EOF
-*** ThirdParty/libxml2/vtklibxml2/CMakeLists.txt.orig	Wed Jan 12 11:24:42 2022
---- ThirdParty/libxml2/vtklibxml2/CMakeLists.txt	Wed Jan 12 11:25:57 2022
-***************
-*** 771,779 ****
-  endif ()
-  
-  configure_file(include/libxml/xmlversion.h.in include/libxml/xmlversion.h)
-! if (FALSE) # XXX(kitware): mask installation rules
-! install(FILES ${CMAKE_CURRENT_BINARY_DIR}/libxml/xmlversion.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/libxml2/libxml COMPONENT development)
-! endif ()
-  
-  if(MSVC)
-  	configure_file(include/libxml/xmlwin32version.h.in libxml/xmlwin32version.h)
---- 771,779 ----
-  endif ()
-  
-  configure_file(include/libxml/xmlversion.h.in include/libxml/xmlversion.h)
-! #if (FALSE) # XXX(kitware): mask installation rules
-! install(FILES ${CMAKE_CURRENT_BINARY_DIR}/include/libxml/xmlversion.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/vtk-9.1/vtklibxml2/include/libxml)
-! #endif ()
-  
-  if(MSVC)
-  	configure_file(include/libxml/xmlwin32version.h.in libxml/xmlwin32version.h)
-
-EOF
-    if [[ $? != 0 ]] ; then
-        warn "vtk patch for xml_version.h installation failed."
-        return 1
-    fi
-}
 
 function apply_vtk9_vtkRectilinearGridReader_patch
 {
@@ -1987,7 +1953,47 @@ EOF
     return 0;
 }
 
-function apply_vtk_osmesa_render_patch
+function apply_vtk9_osmesa_render_patch
+{
+    # I updated this patch for VTK 9.2.6, but not really sure it is still needed
+    # VTK modified the Resize method ... perhaps that change fixes what this
+    # patch was trying to fix?
+
+    # Apply a patch where the OSMesaMakeCurrent could sometimes pass the
+    # wrong window size for the buffer.
+    patch -p0 << \EOF
+diff -u Rendering/OpenGL2/vtkOSOpenGLRenderWindow.cxx.orig Rendering/OpenGL2/vtkOSOpenGLRenderWindow.cxx
+--- Rendering/OpenGL2/vtkOSOpenGLRenderWindow.cxx.orig    2023-09-11 08:28:50.273945000 -0700
++++ Rendering/OpenGL2/vtkOSOpenGLRenderWindow.cxx 2023-09-11 08:37:20.796870000 -0700
+@@ -187,7 +187,6 @@
+   {
+     this->Internal->OffScreenContextId = OSMesaCreateContext(GL_RGBA, nullptr);
+   }
+-  this->MakeCurrent();
+ 
+   this->Mapped = 0;
+   this->Size[0] = width;
+@@ -301,8 +300,8 @@
+ {
+   if ((this->Size[0] != width) || (this->Size[1] != height))
+   {
+-    this->Superclass::SetSize(width, height);
+     this->ResizeOffScreenWindow(width, height);
++    this->Superclass::SetSize(width, height);
+     this->Modified();
+   }
+ }
+EOF
+
+    if [[ $? != 0 ]] ; then
+      warn "vtk patch for osmesa render window failed."
+      return 1
+    fi
+
+    return 0;
+}
+
+function apply_vtk8_osmesa_render_patch
 {
     # Apply a patch where the OSMesaMakeCurrent could sometimes pass the
     # wrong window size for the buffer.
@@ -2016,7 +2022,7 @@ diff -u Rendering/OpenGL2/vtkOSOpenGLRenderWindow.cxx.orig Rendering/OpenGL2/vtk
 EOF
 
     if [[ $? != 0 ]] ; then
-      warn "vtk patch for compiler version check failed."
+      warn "vtk patch for osmesa render window failed."
       return 1
     fi
 
@@ -2051,11 +2057,6 @@ function apply_vtk_patch
             return 1
         fi
 
-        apply_vtk9_libxmlversionheader_patch
-        if [[ $? != 0 ]] ; then
-            return 1
-        fi
-
         apply_vtk9_vtkRectilinearGridReader_patch
         if [[ $? != 0 ]] ; then
             return 1
@@ -2069,6 +2070,11 @@ function apply_vtk_patch
         apply_vtk9_vtkdatawriter_patch
         if [[ $? != 0 ]] ; then
            return 1
+        fi
+
+        apply_vtk9_osmesa_render_patch
+        if [[ $? != 0 ]] ; then
+            return 1
         fi
 
     else
@@ -2119,12 +2125,13 @@ function apply_vtk_patch
         if [[ $? != 0 ]] ; then
             return 1
         fi
+
+        apply_vtk8_osmesa_render_patch
+        if [[ $? != 0 ]] ; then
+            return 1
+        fi
     fi
 
-    apply_vtk_osmesa_render_patch
-    if [[ $? != 0 ]] ; then
-        return 1
-    fi
     return 0
 }
 
@@ -2350,7 +2357,7 @@ function build_vtk
                     if [[ "$DO_QT6" == "yes" ]]; then
                         vopts="${vopts} -DQt6_DIR:FILEPATH=${QT6_INSTALL_DIR}/lib/cmake/Qt6"
                     else
-                        vopts="${vopts} -DQt6_DIR:FILEPATH=${QT_INSTALL_DIR}/lib/cmake/Qt5"
+                        vopts="${vopts} -DQt5_DIR:FILEPATH=${QT_INSTALL_DIR}/lib/cmake/Qt5"
                     fi
                 else
                     vopts="${vopts} -DModule_vtkGUISupportQtOpenGL:BOOL=true"
