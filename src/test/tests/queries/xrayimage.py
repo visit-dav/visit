@@ -116,6 +116,15 @@
 # 
 #    Justin Privitera, Mon Oct 30 14:45:55 PDT 2023
 #    Use conduit node diff to compare query results to baselines.
+# 
+#    Justin Privitera, Tue Oct 31 13:20:23 PDT 2023
+#    All output folders are created at the top of the file now.
+#    Several visit expressions have been cleaned up or removed entirely.
+#    Code cleanup for readability.
+#    Lowered pixel resolution for query results where we are not testing the
+#    images.
+#    Use the python dictionary returned by the query to tell if the query was
+#    successful or not.
 # ----------------------------------------------------------------------------
 
 import os

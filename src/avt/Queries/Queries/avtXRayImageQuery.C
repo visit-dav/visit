@@ -1322,6 +1322,11 @@ avtXRayImageQuery::GetSecondaryVars(std::vector<std::string> &outVars)
 //    Justin Privitera, Mon Aug  7 15:49:36 PDT 2023
 //    Add more context to debug message for blueprint failing to verify.
 // 
+//    Justin Privitera, Tue Oct 31 13:20:23 PDT 2023
+//    Collects filenames and other info into a mapnode which is set as the 
+//    query xml result.
+//    BOV and rawfloats output logic has been simplified.
+// 
 // ****************************************************************************
 
 void
@@ -1870,6 +1875,9 @@ avtXRayImageQuery::CheckData(vtkDataSet **dataSets,  const int nsets)
 // 
 //    Justin Privitera, Wed Oct 12 11:38:11 PDT 2022
 //    Removed bmp output type.
+// 
+//    Justin Privitera, Tue Oct 31 13:20:23 PDT 2023
+//    Now returns the name of the file that was written.
 //
 // ****************************************************************************
 
@@ -1973,6 +1981,9 @@ avtXRayImageQuery::WriteImage(const char *baseName, int iImage, int nPixels,
 // 
 //    Justin Privitera, Tue Sep 27 10:52:59 PDT 2022
 //    Extra dot added for filenames.
+// 
+//    Justin Privitera, Tue Oct 31 13:20:23 PDT 2023
+//    Now returns the name of the file that was written.
 //
 // ****************************************************************************
 
@@ -2011,6 +2022,9 @@ avtXRayImageQuery::WriteFloats(const char *baseName, int iImage, int nPixels,
 // 
 //    Justin Privitera, Tue Sep 27 10:52:59 PDT 2022
 //    Extra dot added for filenames.
+// 
+//    Justin Privitera, Tue Oct 31 13:20:23 PDT 2023
+//    Now returns the name of the file that was written.
 //
 // ****************************************************************************
 

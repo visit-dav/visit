@@ -123,6 +123,9 @@
 // 
 //    Justin Privitera, Fri Jul 14 17:33:07 PDT 2023
 //    Added useNewView.
+// 
+//    Justin Privitera, Tue Oct 31 13:20:23 PDT 2023
+//    Functions that write files now return the name of the file they wrote.
 //
 // ****************************************************************************
 
