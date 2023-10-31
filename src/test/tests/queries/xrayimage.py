@@ -120,8 +120,61 @@
 
 import os
 import conduit
-import conduit.blueprint
-import conduit.relay 
+
+if not os.path.isdir(out_path("current","queries")):
+    os.mkdir(out_path("current","queries"))
+out_base = out_path("current","queries","xrayimage")
+if not os.path.isdir(out_base):
+    os.mkdir(out_base)
+
+outdir_set = pjoin(TestEnv.params["run_dir"], "testdir")
+if not os.path.isdir(outdir_set):
+    os.mkdir(outdir_set)
+
+conduit_dir_hdf5 = pjoin(outdir_set, "hdf5")
+if not os.path.isdir(conduit_dir_hdf5):
+    os.mkdir(conduit_dir_hdf5)
+conduit_dir_json = pjoin(outdir_set, "json")
+if not os.path.isdir(conduit_dir_json):
+    os.mkdir(conduit_dir_json)
+conduit_dir_yaml = pjoin(outdir_set, "yaml")
+if not os.path.isdir(conduit_dir_yaml):
+    os.mkdir(conduit_dir_yaml)
+conduit_dir_imaging_planes0 = pjoin(outdir_set, "imaging_planes0")
+if not os.path.isdir(conduit_dir_imaging_planes0):
+    os.mkdir(conduit_dir_imaging_planes0)
+conduit_dir_imaging_planes1 = pjoin(outdir_set, "imaging_planes1")
+if not os.path.isdir(conduit_dir_imaging_planes1):
+    os.mkdir(conduit_dir_imaging_planes1)
+conduit_dir_detector_dims = pjoin(outdir_set, "detector_dims")
+if not os.path.isdir(conduit_dir_detector_dims):
+    os.mkdir(conduit_dir_detector_dims)
+conduit_dir_nonsquare_pixels = pjoin(outdir_set, "nonsquare_pix")
+if not os.path.isdir(conduit_dir_nonsquare_pixels):
+    os.mkdir(conduit_dir_nonsquare_pixels)
+
+dir_dne = pjoin(outdir_set, "doesnotexist")
+if os.path.isdir(dir_dne):
+    os.rmdir(dir_dne)
+
+# os.chmod does not work on windows
+if not platform.system() == "Windows":
+    outdir_bad = pjoin(outdir_set, "baddir")
+    if not os.path.isdir(outdir_bad):
+        os.mkdir(outdir_bad)
+    os.chmod(outdir_bad, 0o444)
+
+output_types = ["jpeg", "png", "tif", "bof", "bov", "json", "hdf5", "yaml"]
+for i in range(0, len(output_types)):
+    outdir_set_otype = outdir_set + "_" + output_types[i]
+    if not os.path.isdir(outdir_set_otype):
+        os.mkdir(outdir_set_otype)
+
+family_options = [0, 1]
+for i in range(0, len(family_options)):
+    outdir_set_family = outdir_set + "_family_" + str(family_options[i])
+    if not os.path.isdir(outdir_set_family):
+        os.mkdir(outdir_set_family)
 
 #
 # Test a single block structured grid with scalars.
@@ -134,13 +187,6 @@ DrawPlots()
 # old style argument passing
 Query("XRay Image", 1, ".", 1, 0.0, 2.5, 10.0, 0, 0, 10., 10., 300, 300, ("d", "p"))
 
-
-if not os.path.isdir(out_path("current","queries")):
-    os.mkdir(out_path("current","queries"))
-out_base = out_path("current","queries","xrayimage")
-if not os.path.isdir(out_base):
-    os.mkdir(out_base)
-
 os.rename("output.png", out_path(out_base,"xrayimage00.png"))
 Test("xrayimage00", 0, 1)
 
@@ -150,11 +196,8 @@ TestText("xrayimage01", s)
 #
 # Test a multi block structured grid with an array variable.
 #
-DefineScalarExpression("d1", 'd')
-DefineScalarExpression("p1", 'p')
-
-DefineArrayExpression("da", "array_compose(d1,d1)")
-DefineArrayExpression("pa", "array_compose(p1,p1)")
+DefineArrayExpression("da", "array_compose(d,d)")
+DefineArrayExpression("pa", "array_compose(p,p)")
 
 DeleteAllPlots()
 
@@ -163,8 +206,18 @@ OpenDatabase(silo_data_path("multi_curv3d.silo"))
 AddPlot("Pseudocolor", "d")
 DrawPlots()
 
-#create our own dictionary
-params = dict(output_type=1, output_dir=".", divide_emis_by_absorb=1, origin=(0.0, 2.5, 10.0), up_vector=(0, 1, 0), theta=0, phi=0, width = 10., height=10., image_size=(300, 300), vars=("da", "pa"))
+# create our own dictionary
+params = dict(output_type=1, 
+              output_dir=".", 
+              divide_emis_by_absorb=1, 
+              origin=(0.0, 2.5, 10.0), 
+              up_vector=(0, 1, 0), 
+              theta=0, 
+              phi=0, 
+              width = 10., 
+              height=10., 
+              image_size=(300, 300), 
+              vars=("da", "pa"))
 Query("XRay Image", params)
 
 os.rename("output.00.png", out_path(out_base,"xrayimage02.png"))
@@ -328,7 +381,21 @@ OpenDatabase(silo_data_path("multi_curv3d.silo"))
 AddPlot("Pseudocolor", "d")
 DrawPlots()
 
-params = dict(output_type="png", output_dir=".", divide_emis_by_absorb=1, focus=(0.0, 2.5, 15.0), view_up=(0., 1., 0.), normal=(0., 0., 1.), view_angle=30., parallel_scale = 16.0078, near_plane = -32.0156, far_plane = 32.0156, image_pan=(0., 0.), image_zoom = 2.4, perspective = 1, image_size=(300, 300), vars=("d", "p"))
+params = dict(output_type="png", 
+              output_dir=".", 
+              divide_emis_by_absorb=1, 
+              focus=(0.0, 2.5, 15.0), 
+              view_up=(0., 1., 0.), 
+              normal=(0., 0., 1.), 
+              view_angle=30., 
+              parallel_scale = 16.0078, 
+              near_plane = -32.0156, 
+              far_plane = 32.0156, 
+              image_pan=(0., 0.), 
+              image_zoom = 2.4, 
+              perspective = 1, 
+              image_size=(300, 300), 
+              vars=("d", "p"))
 Query("XRay Image", params)
 
 os.rename("output.png", out_path(out_base,"xrayimage25.png"))
@@ -351,7 +418,16 @@ OpenDatabase(silo_data_path("globe.silo"))
 AddPlot("Pseudocolor", "u")
 DrawPlots()
 
-params = dict(output_type="png", output_dir=".", divide_emis_by_absorb=1, theta=90., phi=0., width=20., height=20., image_size=(300, 300), vars=("wa", "va"), background_intensities=(0.05, 0.1))
+params = dict(output_type="png", 
+              output_dir=".", 
+              divide_emis_by_absorb=1, 
+              theta=90., 
+              phi=0., 
+              width=20., 
+              height=20., 
+              image_size=(300, 300), 
+              vars=("wa", "va"), 
+              background_intensities=(0.05, 0.1))
 Query("XRay Image", params)
 
 os.rename("output.00.png", out_path(out_base,"xrayimage27.png"))
@@ -368,9 +444,6 @@ DeleteAllPlots()
 # 
 # test setting output directory
 # 
-outdir_set = pjoin(TestEnv.params["run_dir"], "testdir")
-if not os.path.isdir(outdir_set):
-    os.mkdir(outdir_set)
 
 OpenDatabase(silo_data_path("curv3d.silo"))
 
@@ -391,36 +464,14 @@ CloseDatabase(silo_data_path("curv3d.silo"))
 # test blueprint output
 #
 
-conduit_dir_hdf5 = pjoin(outdir_set, "hdf5")
-if not os.path.isdir(conduit_dir_hdf5):
-    os.mkdir(conduit_dir_hdf5)
-conduit_dir_json = pjoin(outdir_set, "json")
-if not os.path.isdir(conduit_dir_json):
-    os.mkdir(conduit_dir_json)
-conduit_dir_yaml = pjoin(outdir_set, "yaml")
-if not os.path.isdir(conduit_dir_yaml):
-    os.mkdir(conduit_dir_yaml)
-conduit_dir_imaging_planes0 = pjoin(outdir_set, "imaging_planes0")
-if not os.path.isdir(conduit_dir_imaging_planes0):
-    os.mkdir(conduit_dir_imaging_planes0)
-conduit_dir_imaging_planes1 = pjoin(outdir_set, "imaging_planes1")
-if not os.path.isdir(conduit_dir_imaging_planes1):
-    os.mkdir(conduit_dir_imaging_planes1)
-conduit_dir_detector_dims = pjoin(outdir_set, "detector_dims")
-if not os.path.isdir(conduit_dir_detector_dims):
-    os.mkdir(conduit_dir_detector_dims)
-conduit_dir_nonsquare_pixels = pjoin(outdir_set, "nonsquare_pix")
-if not os.path.isdir(conduit_dir_nonsquare_pixels):
-    os.mkdir(conduit_dir_nonsquare_pixels)
-
 def setup_bp_test():
     OpenDatabase(silo_data_path("curv3d.silo"))
     DefineScalarExpression("d1", 'd')
     DefineScalarExpression("p1", 'p')
-    DefineScalarExpression("d2", 'd1 * 6')
-    DefineScalarExpression("p2", 'p1 * 6')
-    DefineScalarExpression("d3", 'd1 * 3')
-    DefineScalarExpression("p3", 'p1 * 3')
+    DefineScalarExpression("d2", 'd * 6')
+    DefineScalarExpression("p2", 'p * 6')
+    DefineScalarExpression("d3", 'd * 3')
+    DefineScalarExpression("p3", 'p * 3')
     DefineArrayExpression("darr", "array_compose(d1,d2,d3)")
     DefineArrayExpression("parr", "array_compose(p1,p2,d3)")
     AddPlot("Pseudocolor", "d")
@@ -670,21 +721,21 @@ def blueprint_test(output_type, outdir, testtextnumber, testname):
         # run query
         if (i == 0):
             # test legacy call
-            Query("XRay Image", \
-                output_type, \
-                outdir, \
-                divide_emis_by_absorb, \
-                origin[0], \
-                origin[1], \
-                origin[2], \
-                theta, \
-                phi, \
-                width, \
-                height, \
-                image_size[0], \
-                image_size[1], \
-                ("darr", "parr"), \
-                energy_group_bounds)
+            Query("XRay Image",
+                  output_type,
+                  outdir,
+                  divide_emis_by_absorb,
+                  origin[0],
+                  origin[1],
+                  origin[2],
+                  theta,
+                  phi,
+                  width,
+                  height,
+                  image_size[0],
+                  image_size[1],
+                  ("darr", "parr"),
+                  energy_group_bounds)
         elif (i == 1):
             # test modern call
             params = dict()
@@ -833,12 +884,14 @@ blueprint_test("hdf5", conduit_dir_hdf5, 32, "Blueprint_HDF5_X_Ray_Output")
 blueprint_test("json", conduit_dir_json, 34, "Blueprint_JSON_X_Ray_Output")
 blueprint_test("yaml", conduit_dir_yaml, 36, "Blueprint_YAML_X_Ray_Output")
 
+#
 # test detector height and width are always positive in blueprint output
+#
 
 setup_bp_test()
 
 params = GetQueryParameters("XRay Image")
-params["image_size"] = (400, 300)
+params["image_size"] = (4, 3)
 params["output_type"] = "hdf5"
 params["output_dir"] = conduit_dir_detector_dims
 params["focus"] = (0., 2.5, 10.)
@@ -862,7 +915,9 @@ TestValueEQ("Blueprint_Positive_Detector_width", detector_width, 22.393226323783
 detector_height = xrayout["domain_000000/state/xray_data/detector_height"]
 TestValueEQ("Blueprint_Positive_Detector_height", detector_height, 16.7949192423103)
 
+#
 # test imaging plane topos and ray output
+#
 
 def test_imaging_planes_and_rays():
     for i in range(0, 2):
@@ -1137,38 +1192,20 @@ test_non_square_pixels()
 
 # write to dir that does not exist
 
-dir_dne = pjoin(outdir_set, "doesnotexist")
-if os.path.isdir(dir_dne):
-    os.rmdir(dir_dne)
-
 setup_bp_test()
-
 Query("XRay Image", "hdf5", dir_dne, 1, 0.0, 2.5, 10.0, 0, 0, 10., 10., 300, 300, ("d", "p"))
-s = GetQueryOutputString()
-TestText("xrayimage38", s)
-
+output_obj = GetQueryOutputObject()
+TestValueEQ("xrayimage38", output_obj, None)
 teardown_bp_test(True)
 
 # os.chmod does not work on windows
 if not platform.system() == "Windows":
     # write to dir w/ read only permissions
-
-    outdir_bad = pjoin(outdir_set, "baddir")
-    if not os.path.isdir(outdir_bad):
-        os.mkdir(outdir_bad)
-    os.chmod(outdir_bad, 0o444)
-
-    OpenDatabase(silo_data_path("curv3d.silo"))
-    AddPlot("Pseudocolor", "d")
-    DrawPlots()
-
+    setup_bp_test()
     Query("XRay Image", "hdf5", outdir_bad, 1, 0.0, 2.5, 10.0, 0, 0, 10., 10., 300, 300, ("d", "p"))
-    s = GetQueryOutputString()
-    # strip out two lines that make the test machine dependent
-    s = '\n'.join([line if line[:4] != "file" else '' for line in s.split('\n')])
-    s = '\n'.join([line if line[:4] != "line" else '' for line in s.split('\n')])
-    TestText("xrayimage39", s)
-    teardown_bp_test(True)
+    output_obj = GetQueryOutputObject()
+    TestValueEQ("xrayimage39", output_obj, None)
+    teardown_bp_test()
 
 # 
 # Test filenames and output types
@@ -1229,16 +1266,11 @@ def query_family_backwards_compat(family, thevars, outdir):
         vars=thevars)
     return GetQueryOutputString()
 
-output_types = ["jpeg", "png", "tif", "bof", "bov", "json", "hdf5", "yaml"]
 filename_schemes = ["family", "family", "cycle", "none"]
-family_options = [0, 1]
 vars_options = [("d", "p"), ("da", "pa")]
 
-info = ""
 for i in range(0, len(output_types)):
     outdir_set_otype = outdir_set + "_" + output_types[i]
-    if not os.path.isdir(outdir_set_otype):
-        os.mkdir(outdir_set_otype)
     if output_types[i] == "jpeg":
         # create a dummy file to test the file familying
         open(outdir_set_otype + "/output.0000.jpg", 'w').close()
@@ -1252,8 +1284,6 @@ for i in range(0, len(output_types)):
 # test backwards compatibility with family_files option
 for i in range(0, len(family_options)):
     outdir_set_family = outdir_set + "_family_" + str(family_options[i])
-    if not os.path.isdir(outdir_set_family):
-        os.mkdir(outdir_set_family)
     info = ""
     for j in range(0, len(vars_options)):
         info += query_family_backwards_compat(family_options[i], vars_options[j], outdir_set_family)
