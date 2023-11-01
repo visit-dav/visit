@@ -49,6 +49,7 @@
 #include <vtkPolyDataMapper.h>
 #include <vtkProperty.h>
 #include <vtkRenderWindowInteractor.h>
+#include <vtkCellData.h>
 
 
 
@@ -136,15 +137,34 @@ avtWavefrontOBJWriter::WriteChunk(vtkDataSet *ds, int chunk)
     else
         filename = stem + ".obj";
 
-    // Create a rendering window and renderer.
+    vtkPolyData *polydata = vtkPolyData::SafeDownCast(ds);
+
+    vtkTexture *tex = vtkTexture::New();
+
+
+
+    // unsigned char red[3] = {255, 0, 0};
+    vtkUnsignedCharArray *colors = vtkUnsignedCharArray::New();
+    colors->SetNumberOfComponents(3);
+    colors->SetName("Colors");
+    colors->InsertNextTuple3(255, 0, 0);
+
+    polydata->GetCellData()->Update();
+    polydata->GetCellData()->SetScalars(colors);
+
+    // Create a rendering window and renderer and interactor.
     vtkRenderer *renderer = vtkRenderer::New();
     vtkRenderWindow *renderWindow = vtkRenderWindow::New();
     renderWindow->SetWindowName("OBJ Output");
     renderWindow->AddRenderer(renderer);
 
+    vtkRenderWindowInteractor *iren = vtkRenderWindowInteractor::New();
+    iren->SetRenderWindow(renWin);
+
     // Mapper.
     vtkPolyDataMapper *polyDataMapper = vtkPolyDataMapper::New();
-    polyDataMapper->SetInputData(vtkPolyData::SafeDownCast(ds));
+    // polyDataMapper->SetInputData(vtkPolyData::SafeDownCast(ds));
+    polyDataMapper->SetInputData(polydata);
 
     // Actor.
     vtkActor *actor = vtkActor::New();
