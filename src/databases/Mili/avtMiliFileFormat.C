@@ -791,66 +791,66 @@ avtMiliFileFormat::GetMesh(int timestep, int dom, const char *mesh)
             }
         }
 
-//         vtkUnsignedCharArray *ghostNodes = vtkUnsignedCharArray::New();
-//         ghostNodes->SetName("avtGhostNodes");
-//         ghostNodes->SetNumberOfTuples(nNodes);
+        vtkUnsignedCharArray *ghostNodes = vtkUnsignedCharArray::New();
+        ghostNodes->SetName("avtGhostNodes");
+        ghostNodes->SetNumberOfTuples(nNodes);
 
-//         unsigned char *ghostNodePtr = ghostNodes->GetPointer(0);
+        unsigned char *ghostNodePtr = ghostNodes->GetPointer(0);
 
-//         for (int i = 0; i < nNodes; ++i)
-//         {
-//             ghostNodePtr[i] = 0;
-//             avtGhostData::AddGhostNodeType(ghostNodePtr[i],
-//                 NODE_NOT_APPLICABLE_TO_PROBLEM);
-//         }
+        for (int i = 0; i < nNodes; ++i)
+        {
+            ghostNodePtr[i] = 0;
+            avtGhostData::AddGhostNodeType(ghostNodePtr[i],
+                NODE_NOT_APPLICABLE_TO_PROBLEM);
+        }
 
-//         vtkUnsignedCharArray *ghostZones = vtkUnsignedCharArray::New();
-//         ghostZones->SetName("avtGhostZones");
-//         ghostZones->SetNumberOfTuples(nCells);
+        vtkUnsignedCharArray *ghostZones = vtkUnsignedCharArray::New();
+        ghostZones->SetName("avtGhostZones");
+        ghostZones->SetNumberOfTuples(nCells);
 
-//         unsigned char *ghostZonePtr = ghostZones->GetPointer(0);
+        unsigned char *ghostZonePtr = ghostZones->GetPointer(0);
 
-//         for (int i = 0; i < nCells; ++i)
-//         {
-//             ghostZonePtr[i] = 0;
+        for (int i = 0; i < nCells; ++i)
+        {
+            ghostZonePtr[i] = 0;
 
-//             //
-//             // Element status > .5 is good.
-//             //
-//             if (sandBuffer[i] > 0.5)
-//             {
-//                 vtkIdType nCellPts = 0;
-// #if LIB_VERSION_LE(VTK,8,1,0)
-//                 vtkIdType *cellPts = NULL;
-// #else
-//                 const vtkIdType *cellPts = nullptr;
-// #endif
+            //
+            // Element status > .5 is good.
+            //
+            if (sandBuffer[i] > 0.5)
+            {
+                vtkIdType nCellPts = 0;
+#if LIB_VERSION_LE(VTK,8,1,0)
+                vtkIdType *cellPts = NULL;
+#else
+                const vtkIdType *cellPts = nullptr;
+#endif
 
-//                 rv->GetCellPoints(i, nCellPts, cellPts);
+                rv->GetCellPoints(i, nCellPts, cellPts);
 
-//                 if (nCellPts && cellPts)
-//                 {
-//                     for (int j = 0; j < nCellPts; ++j)
-//                     {
-//                         avtGhostData::RemoveGhostNodeType(
-//                             ghostNodePtr[cellPts[j]],
-//                             NODE_NOT_APPLICABLE_TO_PROBLEM);
-//                     }
-//                 }
-//             }
-//             else
-//             {
-//                 avtGhostData::AddGhostZoneType(ghostZonePtr[i],
-//                     ZONE_NOT_APPLICABLE_TO_PROBLEM);
-//             }
-//         }
+                if (nCellPts && cellPts)
+                {
+                    for (int j = 0; j < nCellPts; ++j)
+                    {
+                        avtGhostData::RemoveGhostNodeType(
+                            ghostNodePtr[cellPts[j]],
+                            NODE_NOT_APPLICABLE_TO_PROBLEM);
+                    }
+                }
+            }
+            else
+            {
+                avtGhostData::AddGhostZoneType(ghostZonePtr[i],
+                    ZONE_NOT_APPLICABLE_TO_PROBLEM);
+            }
+        }
 
         delete [] sandBuffer;
 
-        // rv->GetPointData()->AddArray(ghostNodes);
-        // rv->GetCellData()->AddArray(ghostZones);
-        // ghostNodes->Delete();
-        // ghostZones->Delete();
+        rv->GetPointData()->AddArray(ghostNodes);
+        rv->GetCellData()->AddArray(ghostZones);
+        ghostNodes->Delete();
+        ghostZones->Delete();
     }
 
 

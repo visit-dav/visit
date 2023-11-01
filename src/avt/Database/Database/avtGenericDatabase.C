@@ -7247,7 +7247,9 @@ avtGenericDatabase::CommunicateGhosts(avtGhostDataType ghostType,
     // is the case, just return now.
     //
     int shouldStop = 0;
-    if (md->GetContainsGhostZones(meshname) == AVT_HAS_GHOSTS)
+    if (avtGhostData::IsZoneDuplicatedInternalToProblem(
+        md->GetGhostZoneTypesPresent(meshname)))
+    // if (md->GetContainsGhostZones(meshname) == AVT_HAS_GHOSTS)
         shouldStop = 1;
 #ifdef PARALLEL
     if (canDoCollectiveCommunication)
