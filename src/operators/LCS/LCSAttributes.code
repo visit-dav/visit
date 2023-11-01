@@ -303,3 +303,86 @@ LCSViewerEnginePluginInfo::GetOperatorVarDescription(AttributeSubject *atts,
     return var;
 }
 
+Target: xml2atts
+Function: ProcessOldVersions
+Declaration: virtual void ProcessOldVersions(DataNode *parentNode, const char *configVersion);
+Definition:
+// ****************************************************************************
+// Method: LCSAttributes::ProcessOldVersions
+//
+// Purpose:
+//   This method allows handling of older config/session files that may
+//   contain fields that are no longer present or have been modified/renamed.
+//
+// Programmer: Mark C. Miller
+// Creation:   October 27, 2023
+//
+// ****************************************************************************
+#include <visit-config.h>
+#ifdef VIEWER
+#include <avtCallback.h>
+#endif
+
+void
+LCSAttributes::ProcessOldVersions(DataNode *parentNode,
+                                     const char *configVersion)
+{
+    if(parentNode == 0)
+        return;
+
+    DataNode *searchNode = parentNode->GetNode("LCSAttributes");
+    if(searchNode == 0)
+        return;
+
+#if VISIT_OBSOLETE_AT_VERSION(3,5,0)
+#error This code is obsolete in this version of VisIt and should be removed.
+#else
+    if (VersionLessThan(configVersion, "3.4.0"))
+    {
+        DataNode *dn = nullptr;
+
+        // We need deal with only ManagerWorker case here because it replaces
+        // the old entry of MasterSlave
+        if ((dn = searchNode->GetNode("parallelizationAlgorithmType")) != nullptr)
+        {
+            std::string type = dn->AsString();
+            if (type == "MasterSlave")
+            {
+#ifdef VIEWER
+                avtCallback::IssueWarning(DeprecationMessage("MasterSlave",
+                    "ManagerWorker", "3.5.0"));
+#endif
+                dn->SetString(ParallelizationAlgorithmType_ToString(LCSAttributes::ManagerWorker));
+            }
+        }
+    }
+#endif
+}
+
+Target: xml2python
+Code: PyLCSAttributes_getattr
+Prefix:
+Postfix:
+#include <visit-config.h>
+
+#if VISIT_OBSOLETE_AT_VERSION(3,5,0) 
+#error This code is obsolete in this version of VisIt and should be removed.
+#else
+    // Try and handle legacy fields
+#define NAME_CHANGE_MESSAGE2(oldname, newname) \
+    PyErr_WarnFormat(NULL, 1, "'%s' is no longer a valid LCS attribute.\n" \
+                    "It's name has been changed to '%s', " \
+                    "please update your script.\n", oldname, newname);
+        
+    // parallelizationAlgorithmType
+    if(strcmp(name, "MasterSlave") == 0)
+    {       
+        NAME_CHANGE_MESSAGE2(name, "ManagerWorker");
+        return PyInt_FromLong(long(LCSAttributes::ManagerWorker));
+    }           
+    // end parallelizationAlgorithmType 
+    // NOTE: no cooresponding _setattr method is needed for this case because this
+    // is handling only a change in enum symbol name. Those are constants in the
+    // python object and never set
+#endif  
+

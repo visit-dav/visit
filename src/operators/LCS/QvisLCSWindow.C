@@ -1531,8 +1531,8 @@ QvisLCSWindow::UpdateAlgorithmAttributes()
                             LCSAttributes::LoadOnDemand);
     bool useStaticDomains = (atts->GetParallelizationAlgorithmType() ==
                              LCSAttributes::ParallelStaticDomains);
-    bool useMasterSlave = (atts->GetParallelizationAlgorithmType() ==
-                           LCSAttributes::MasterSlave);
+    bool useManagerWorker = (atts->GetParallelizationAlgorithmType() ==
+                           LCSAttributes::ManagerWorker);
 
     //Turn off everything.
     maxDomainCacheLabel->hide();
@@ -1552,7 +1552,7 @@ QvisLCSWindow::UpdateAlgorithmAttributes()
         maxSLCountLabel->show();
         maxSLCount->show();
     }
-    else if (useMasterSlave)
+    else if (useManagerWorker)
     {
         maxDomainCacheLabel->show();
         maxDomainCache->show();

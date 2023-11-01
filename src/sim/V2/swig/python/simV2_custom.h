@@ -26,11 +26,11 @@ simV2_CallbackData *newCallbackData(
 // those which have static variable
 void pylibsim_setBroadcastStringCallback(PyObject*);
 void pylibsim_setBroadcastIntCallback(PyObject*);
-void pylibsim_setSlaveProcessCallback(PyObject*);
+void pylibsim_setWorkerProcessCallback(PyObject*);
 
 int pylibsim_invokeBroadcastIntCallback(int*,int);
 int pylibsim_invokeBroadcastStringCallback(char*,int,int);
-void pylibsim_invokeSlaveProcessCallback(void);
+void pylibsim_invokeWorkerProcessCallback(void);
 
 // invoker which expect pair of callback and data
 int pylibsim_invoke_i_F_pi_i_pv(int*,int,void*);

@@ -293,14 +293,33 @@ avtSAMIFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
             if (strncmp(toc->dir_names[i], "slide_", 6) == 0)
             {
                 char tmpName[256];
+
+                // old way
                 snprintf(tmpName, sizeof(tmpName), "%s/master", toc->dir_names[i]);
-                avtMeshMetaData *smmmd = new avtMeshMetaData(tmpName, 1, 0, 0,
+                if (DBInqVarExists(dbFile, tmpName))
+                {
+                    avtMeshMetaData *smmmd = new avtMeshMetaData(tmpName, 1, 0, 0,
                                                0, ndims, ndims-1, AVT_UNSTRUCTURED_MESH);
-                md->Add(smmmd);
-                snprintf(tmpName, sizeof(tmpName), "%s/slave", toc->dir_names[i]);
-                avtMeshMetaData *ssmmd = new avtMeshMetaData(tmpName, 1, 0, 0,
+                    md->Add(smmmd);
+                    snprintf(tmpName, sizeof(tmpName), "%s/slave", toc->dir_names[i]);
+                    avtMeshMetaData *ssmmd = new avtMeshMetaData(tmpName, 1, 0, 0,
+                                                   0, ndims, ndims-1, AVT_UNSTRUCTURED_MESH);
+                    md->Add(ssmmd);
+                    continue;
+                }
+
+                // new way
+                snprintf(tmpName, sizeof(tmpName), "%s/sideA", toc->dir_names[i]);
+                if (DBInqVarExists(dbFile, tmpName))
+                {
+                    avtMeshMetaData *smmmd = new avtMeshMetaData(tmpName, 1, 0, 0,
                                                0, ndims, ndims-1, AVT_UNSTRUCTURED_MESH);
-                md->Add(ssmmd);
+                    md->Add(smmmd);
+                    snprintf(tmpName, sizeof(tmpName), "%s/sideB", toc->dir_names[i]);
+                    avtMeshMetaData *ssmmd = new avtMeshMetaData(tmpName, 1, 0, 0,
+                                                   0, ndims, ndims-1, AVT_UNSTRUCTURED_MESH);
+                    md->Add(ssmmd);
+               }
             }
         }
     }
