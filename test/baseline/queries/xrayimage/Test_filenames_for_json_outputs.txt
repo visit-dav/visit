@@ -1,9 +1,9 @@
-The x ray image query results were written to the file VISIT_TOP_DIR/test/testdir_json/output.0028.root
-The x ray image query results were written to the file VISIT_TOP_DIR/test/testdir_json/output.0029.root
-The x ray image query results were written to the file VISIT_TOP_DIR/test/testdir_json/output.0030.root
-The x ray image query results were written to the file VISIT_TOP_DIR/test/testdir_json/output.0031.root
-The x ray image query results were written to the file VISIT_TOP_DIR/test/testdir_json/output.cycle_000048.root
-The x ray image query results were written to the file VISIT_TOP_DIR/test/testdir_json/output.cycle_000048.root
-The x ray image query results were written to the file VISIT_TOP_DIR/test/testdir_json/output.root
-The x ray image query results were written to the file VISIT_TOP_DIR/test/testdir_json/output.root
+{'file extension': 'root', 'file protocol': 'json', 'filename scheme': 'family', 'filenames': ('VISIT_TOP_DIR/test/testdir_json/output.0028.root',), 'number of files': 1, 'result message': 'The x ray image query results were written to the file VISIT_TOP_DIR/test/testdir_json/output.0028.root\n'}
+{'file extension': 'root', 'file protocol': 'json', 'filename scheme': 'family', 'filenames': ('VISIT_TOP_DIR/test/testdir_json/output.0029.root',), 'number of files': 1, 'result message': 'The x ray image query results were written to the file VISIT_TOP_DIR/test/testdir_json/output.0029.root\n'}
+{'file extension': 'root', 'file protocol': 'json', 'filename scheme': 'family', 'filenames': ('VISIT_TOP_DIR/test/testdir_json/output.0030.root',), 'number of files': 1, 'result message': 'The x ray image query results were written to the file VISIT_TOP_DIR/test/testdir_json/output.0030.root\n'}
+{'file extension': 'root', 'file protocol': 'json', 'filename scheme': 'family', 'filenames': ('VISIT_TOP_DIR/test/testdir_json/output.0031.root',), 'number of files': 1, 'result message': 'The x ray image query results were written to the file VISIT_TOP_DIR/test/testdir_json/output.0031.root\n'}
+{'file extension': 'root', 'file protocol': 'json', 'filename scheme': 'cycle', 'filenames': ('VISIT_TOP_DIR/test/testdir_json/output.cycle_000048.root',), 'number of files': 1, 'result message': 'The x ray image query results were written to the file VISIT_TOP_DIR/test/testdir_json/output.cycle_000048.root\n'}
+{'file extension': 'root', 'file protocol': 'json', 'filename scheme': 'cycle', 'filenames': ('VISIT_TOP_DIR/test/testdir_json/output.cycle_000048.root',), 'number of files': 1, 'result message': 'The x ray image query results were written to the file VISIT_TOP_DIR/test/testdir_json/output.cycle_000048.root\n'}
+{'file extension': 'root', 'file protocol': 'json', 'filename scheme': 'none', 'filenames': ('VISIT_TOP_DIR/test/testdir_json/output.root',), 'number of files': 1, 'result message': 'The x ray image query results were written to the file VISIT_TOP_DIR/test/testdir_json/output.root\n'}
+{'file extension': 'root', 'file protocol': 'json', 'filename scheme': 'none', 'filenames': ('VISIT_TOP_DIR/test/testdir_json/output.root',), 'number of files': 1, 'result message': 'The x ray image query results were written to the file VISIT_TOP_DIR/test/testdir_json/output.root\n'}
 ['output.0028.root', 'output.0029.root', 'output.0030.root', 'output.0031.root', 'output.cycle_000048.root', 'output.root']

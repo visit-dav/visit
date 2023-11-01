@@ -22,7 +22,7 @@
 /* Communication Function prototypes */
 int SimBroadcastInt(int *value, int sender, void *cbdata);
 int SimBroadcastString(char *str, int len, int sender, void *cbdata);
-void SimSlaveProcessCallback(void *);
+void SimWorkerProcessCallback(void *);
 
 /* Data Adaptor Function prototypes */
 visit_handle SimGetMetaData(void *);
@@ -257,7 +257,7 @@ void mainloop_batch(simulation_data *sim)
 #endif
     /* Explicitly load VisIt runtime functions and install callbacks. */
     VisItInitializeRuntime();
-    VisItSetSlaveProcessCallback2(SimSlaveProcessCallback, (void*)sim);
+    VisItSetWorkerProcessCallback2(SimWorkerProcessCallback, (void*)sim);
     VisItSetGetMetaData(SimGetMetaData, (void*)sim);
     VisItSetGetMesh(SimGetMesh, (void*)sim);
     VisItSetGetVariable(SimGetVariable, (void*)sim);
@@ -633,7 +633,7 @@ int SimBroadcastString(char *str, int len, int sender, void *cbdata)
 }
 #endif
 
-void SimSlaveProcessCallback(void *cbdata)
+void SimWorkerProcessCallback(void *cbdata)
 {
 #ifdef PARALLEL
     simulation_data *sim = (simulation_data *)cbdata;

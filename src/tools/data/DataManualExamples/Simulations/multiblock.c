@@ -129,7 +129,7 @@ static int visit_broadcast_string_callback(char *str, int len, int sender, void 
 
 
 /* Helper function for ProcessVisItCommand */
-static void BroadcastSlaveCommand(int *command, simulation_data *sim)
+static void BroadcastWorkerCommand(int *command, simulation_data *sim)
 {
 #ifdef PARALLEL
     MPI_Bcast(command, 1, MPI_INT, 0, sim->par_comm);
@@ -137,11 +137,11 @@ static void BroadcastSlaveCommand(int *command, simulation_data *sim)
 }
 
 /* Callback involved in command communication. */
-void SlaveProcessCallback(void *cbdata)
+void WorkerProcessCallback(void *cbdata)
 {
     simulation_data *sim = (simulation_data *)cbdata;
     int command = VISIT_COMMAND_PROCESS;
-    BroadcastSlaveCommand(&command, sim);
+    BroadcastWorkerCommand(&command, sim);
 }
 
 /* Process commands from viewer on all processors. */
@@ -155,24 +155,24 @@ int ProcessVisItCommand(simulation_data *sim)
         if (success == VISIT_OKAY)
         {
             command = VISIT_COMMAND_SUCCESS;
-            BroadcastSlaveCommand(&command, sim);
+            BroadcastWorkerCommand(&command, sim);
             return 1;
         }
         else
         {
             command = VISIT_COMMAND_FAILURE;
-            BroadcastSlaveCommand(&command, sim);
+            BroadcastWorkerCommand(&command, sim);
             return 0;
         }
     }
     else
     {
-        /* Note: only through the SlaveProcessCallback callback
+        /* Note: only through the WorkerProcessCallback callback
          * above can the rank 0 process send a VISIT_COMMAND_PROCESS
          * instruction to the non-rank 0 processes. */
         while (1)
         {
-            BroadcastSlaveCommand(&command, sim);
+            BroadcastWorkerCommand(&command, sim);
             switch (command)
             {
             case VISIT_COMMAND_PROCESS:
@@ -280,7 +280,7 @@ void mainloop(simulation_data *sim)
             {
                 fprintf(stderr, "VisIt connected\n");
                 VisItSetCommandCallback(ControlCommandCallback, (void*)sim);
-                VisItSetSlaveProcessCallback2(SlaveProcessCallback, (void*)sim);
+                VisItSetWorkerProcessCallback2(WorkerProcessCallback, (void*)sim);
 
                 VisItSetGetMetaData(SimGetMetaData, (void*)sim);
                 VisItSetGetMesh(SimGetMesh, (void*)sim);

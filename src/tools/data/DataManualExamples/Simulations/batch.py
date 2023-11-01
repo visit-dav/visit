@@ -568,7 +568,7 @@ class ParallelBatch(Batch):
 
     def ConnectCallbacks(self):
         super(ParallelBatch, self).ConnectCallbacks()
-        VisItSetSlaveProcessCallback(self.slave_process_callback)
+        VisItSetWorkerProcessCallback(self.worker_process_callback)
         VisItSetGetDomainList(self.GetDomainList, 0)
 
     ############################################################################
@@ -589,7 +589,7 @@ class ParallelBatch(Batch):
             ret = mpicom.broadcast()
         return ret
 
-    def slave_process_callback(self):
+    def worker_process_callback(self):
         s = self.VISIT_COMMAND_PROCESS
         if self.par_rank == 0:
             mpicom.broadcast(s)

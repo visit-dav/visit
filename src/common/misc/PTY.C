@@ -26,7 +26,7 @@
 //
 //  Arguments:
 //    fdm       : new file descriptor
-//    slave_name: new pty path
+//    worker_name: new pty path
 //
 //  Programmer:  Jeremy Meredith
 //  Creation:    April 27, 2001
@@ -38,16 +38,16 @@
 //
 // ****************************************************************************
 pid_t
-pty_fork(int &fdm, void (*sigchld_handler)(int), char *slave_name)
+pty_fork(int &fdm, void (*sigchld_handler)(int), char *worker_name)
 {
     int         fds;
     pid_t       pid;
     char        pts_name[20];
 
     if ( (fdm = ptym_open(pts_name)) < 0)
-        fprintf(stderr,"can't open master pty: %s, returned %d\n", pts_name, fdm);
-    if (slave_name != NULL)
-        strcpy(slave_name, pts_name);   // return name of slave
+        fprintf(stderr,"can't open manager pty: %s, returned %d\n", pts_name, fdm);
+    if (worker_name != NULL)
+        strcpy(worker_name, pts_name);   // return name of worker
 
     if (sigchld_handler != NULL)
         signal(SIGCHLD, sigchld_handler);
@@ -61,8 +61,8 @@ pty_fork(int &fdm, void (*sigchld_handler)(int), char *slave_name)
 
         // SVR4 acquires controlling terminal on open()
         if ( (fds = ptys_open(fdm, pts_name)) < 0)
-            fprintf(stderr,"can't open slave pty: %d\n",fds);
-        close(fdm);             // all done with master in child
+            fprintf(stderr,"can't open worker pty: %d\n",fds);
+        close(fdm);             // all done with manager in child
 
 #if     defined(TIOCSCTTY) && !defined(CIBAUD)
         // 44BSD way to acquire controlling terminal
@@ -70,7 +70,7 @@ pty_fork(int &fdm, void (*sigchld_handler)(int), char *slave_name)
         if (ioctl(fds, TIOCSCTTY, (char *) 0) < 0)
             fprintf(stderr,"TIOCSCTTY error");
 #endif
-        // slave becomes stdin/stdout/stderr of child
+        // worker becomes stdin/stdout/stderr of child
         if (dup2(fds, STDIN_FILENO) != STDIN_FILENO)
             fprintf(stderr,"dup2 error to stdin");
         if (dup2(fds, STDOUT_FILENO) != STDOUT_FILENO)
@@ -93,7 +93,7 @@ pty_fork(int &fdm, void (*sigchld_handler)(int), char *slave_name)
 //  Method:  ptym_open  (SYSV)
 //
 //  Purpose:
-//    Open the pty master.
+//    Open the pty manager.
 //
 //  Arguments:
 //    pts_name:  output pts name
@@ -112,31 +112,31 @@ ptym_open(char *pts_name)
     strcpy(pts_name, "/dev/ptmx");  // in case open fails
     if ( (fdm = open(pts_name, O_RDWR)) < 0)
         return(-1);
-    if (grantpt(fdm) < 0) {         // grant access to slave
+    if (grantpt(fdm) < 0) {         // grant access to worker
         close(fdm);
         return(-2);
     }
-    if (unlockpt(fdm) < 0) {        // clear slave's lock flag
+    if (unlockpt(fdm) < 0) {        // clear worker's lock flag
         close(fdm);
         return(-3);
     }
-    if ( (ptr = ptsname(fdm)) == NULL) {    // get slave's name
+    if ( (ptr = ptsname(fdm)) == NULL) {    // get worker's name
         close(fdm);
         return(-4);
     }
 
-    strcpy(pts_name, ptr);  // return name of slave
-    return(fdm);            // return fd of master
+    strcpy(pts_name, ptr);  // return name of worker
+    return(fdm);            // return fd of manager
 }
 
 // ****************************************************************************
 //  Method:  ptys_open  (SYSV)
 //
 //  Purpose:
-//    Open the pty slave
+//    Open the pty worker
 //
 //  Arguments:
-//    fdm      : the master file descriptor
+//    fdm      : the manager file descriptor
 //    pts_name : pts name
 //
 //  Programmer:  Jeremy Meredith
@@ -211,7 +211,7 @@ ug_RW(const char *name)
 //  Method:  ptym_open  (BSD)
 //
 //  Purpose:
-//    Open the pty master.
+//    Open the pty manager.
 //
 //  Arguments:
 //    pts_name:  output pts name
@@ -252,7 +252,7 @@ ptym_open(char *tty_name)
             if(!ug_RW(tty_name))
                 continue;
 
-            // try to open master
+            // try to open manager
             if ( (fdm = open(pty_name, O_RDWR)) < 0)
             {
                 if (errno == ENOENT)    // different from EIO
@@ -261,7 +261,7 @@ ptym_open(char *tty_name)
                     continue;           // try next pty device
             }
 
-            return(fdm);        // got it, return fd of master
+            return(fdm);        // got it, return fd of manager
         }
     }
 
@@ -272,10 +272,10 @@ ptym_open(char *tty_name)
 //  Method:  ptys_open  (BSD)
 //
 //  Purpose:
-//    Open the pty slave
+//    Open the pty worker
 //
 //  Arguments:
-//    fdm      : the master file descriptor
+//    fdm      : the manager file descriptor
 //    pts_name : pts name
 //
 //  Programmer:  Jeremy Meredith

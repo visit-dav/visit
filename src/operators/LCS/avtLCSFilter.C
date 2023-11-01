@@ -1005,7 +1005,7 @@ avtLCSFilter::GetAllSeedsSentToAllProcs(void)
       return false;
     // else if (selectedAlgo == PICS_PARALLEL_COMM_DOMAINS)
     //   return false;
-    // else if (selectedAlgo == PICS_PARALLEL_MASTER_SLAVE)
+    // else if (selectedAlgo == PICS_PARALLEL_MANAGER_WORKER)
     //   return false;
 #else
     return true;

@@ -30,7 +30,7 @@ extern "C" {
  *
  * Purpose:
  *   This function installs a callback function that allows libsim to broadcast
- *   an integer from the root process to slave processes.
+ *   an integer from the root process to worker processes.
  *
  * Arguments: A pointer to a callback function with prototype:
  *            int func(int *, int);
@@ -56,7 +56,7 @@ void  VisItSetBroadcastIntFunction(int (*bicb)(int *, int));
  *
  * Purpose:
  *   This function installs a callback function that allows libsim to broadcast
- *   an integer from the root process to slave processes.
+ *   an integer from the root process to worker processes.
  *
  * Arguments: A pointer to a callback function with prototype:
  *            int func(int *, int, void *);
@@ -83,7 +83,7 @@ void  VisItSetBroadcastIntFunction2(int (*cb)(int *, int, void *), void *);
  *
  * Purpose:
  *   This function installs a callback function that allows libsim to broadcast
- *   a character string from the root process to slave processes.
+ *   a character string from the root process to worker processes.
  *
  * Arguments: A pointer to a callback function with prototype:
  *            int func(char *, int, int);
@@ -109,7 +109,7 @@ void  VisItSetBroadcastStringFunction(int (*bscb)(char *, int, int));
  *
  * Purpose:
  *   This function installs a callback function that allows libsim to broadcast
- *   a character string from the root process to slave processes.
+ *   a character string from the root process to worker processes.
  *
  * Arguments: A pointer to a callback function with prototype:
  *            int func(char *, int, int, void *);
@@ -435,10 +435,10 @@ int   VisItAttemptToCompleteConnection(void);
 int VisItReadConsole(int maxlen, char *buffer);
 
 /******************************************************************************
- * Function: VisItSetSlaveProcessCallback
+ * Function: VisItSetWorkerProcessCallback
  *
  * Purpose:
- *   Set the callback function used to inform slave processes that they should
+ *   Set the callback function used to inform worker processes that they should
  *   call VisItfor ProcessEngineCommand. The provided callback function is used
  *   internally in libsim
  *
@@ -447,25 +447,25 @@ int VisItReadConsole(int maxlen, char *buffer);
  *
  * Returns:    None
  *
- * Note:       The slave process callback is required for a parallel simulation.
+ * Note:       The worker process callback is required for a parallel simulation.
  *             This function should be called when VisItAttemptToCompleteConnection
  *             returns successfully.
  *
  *             MPI simulations may define the callback like this:
- *                 void slave_process_callback()
+ *                 void worker_process_callback()
  *                 {
  *                     int command = 0;
  *                     MPI_BCast(&command, 1, MPI_INT, 0, MPI_COMM_WORLD);
  *                 }
  *
  * ****************************************************************************/
-void  VisItSetSlaveProcessCallback(void(*spcb)(void));
+void  VisItSetWorkerProcessCallback(void(*spcb)(void));
 
 /******************************************************************************
- * Function: VisItSetSlaveProcessCallback2
+ * Function: VisItSetWorkerProcessCallback2
  *
  * Purpose:
- *   Set the callback function used to inform slave processes that they should
+ *   Set the callback function used to inform worker processes that they should
  *   call VisItProcessEngineCommand. The provided callback function is used
  *   internally in libsim
  *
@@ -475,12 +475,12 @@ void  VisItSetSlaveProcessCallback(void(*spcb)(void));
  *
  * Returns:    None
  *
- * Note:       The slave process callback is required for a parallel simulation.
+ * Note:       The worker process callback is required for a parallel simulation.
  *             This function should be called when VisItAttemptToCompleteConnection
  *             returns successfully.
  *
  *             MPI simulations may define the callback like this:
- *                 void slave_process_callback(void *ptr)
+ *                 void worker_process_callback(void *ptr)
  *                 {
  *                     int command = 0;
  *                     simdata_t *sim = (simdata_t *)ptr;
@@ -488,7 +488,7 @@ void  VisItSetSlaveProcessCallback(void(*spcb)(void));
  *                 }
  *
  * ****************************************************************************/
-void  VisItSetSlaveProcessCallback2(void(*cb)(void *), void *);
+void  VisItSetWorkerProcessCallback2(void(*cb)(void *), void *);
 
 /******************************************************************************
  * Function: VisItSetCommandCallback
@@ -564,9 +564,9 @@ void  VisItTimeStepChanged(void);
  *
  * Returns:   None
  *
- * Note:      This function has no effect when called by non-master
+ * Note:      This function has no effect when called by non-manager
  *            processes. When VisIt is connected to the simulation, calling
- *            this function on the master process will send commands to process
+ *            this function on the manager process will send commands to process
  *            to VisIt's viewer. The sim will then process VisIt commands in
  *            a synchronization loop if synchronization is enabled. In that case,
  *            ALL processors must call this function. During the synchronization
@@ -595,9 +595,9 @@ void  VisItUpdatePlots(void);
  * Note:      And example call to this function could look like:
  *            VisItExecuteCommand("AddPlot(\"Pseudocolor\", \"zonal\")\n");
  *
- *            This function has no effect when called by non-master
+ *            This function has no effect when called by non-manager
  *            processes. When VisIt is connected to the simulation, calling
- *            this function on the master process will send commands to process
+ *            this function on the manager process will send commands to process
  *            to VisIt's viewer. The sim will then process VisIt commands in
  *            a synchronization loop if synchronization is enabled. In that case,
  *            ALL processors must call this function. During the synchronization

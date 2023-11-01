@@ -24,7 +24,7 @@ int MPIXfer::nanoSecsOfSleeps = 50000000; // 1/20th of a second
 int MPIXfer::nanoSecsOfSleeps = 0;        // Use MPI_Bcast
 #endif
 int MPIXfer::secsOfSpinBeforeSleeps = 5;  // 5 seconds
-void (*MPIXfer::slaveProcessInstruction)() = NULL;
+void (*MPIXfer::workerProcessInstruction)() = NULL;
 const int UI_BCAST_TAG = GetUniqueStaticMessageTag();
 
 // ****************************************************************************
@@ -197,9 +197,9 @@ MPIXfer::SendInterruption(int mpiInterruptTag)
 //    mess up MPIXfer if we don't keep track of the length for each message.
 //
 //    Jeremy Meredith, Thu Oct  7 14:09:10 PDT 2004
-//    Added callback so the master process could tell the slaves they
+//    Added callback so the manager process could tell the workers they
 //    are about to receive data.  This was needed for running inside a
-//    parallel simulation because slave processes need some way to know
+//    parallel simulation because worker processes need some way to know
 //    that the next command coming is visit-specific.
 //
 //    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
@@ -211,7 +211,7 @@ MPIXfer::SendInterruption(int mpiInterruptTag)
 //    now send 1 size message and then we send the entire command at once.
 //
 //    Brad Whitlock, Tue Nov  3 10:58:50 PST 2009
-//    I removed one of the calls to slaveprocesscallback since it was incorrect
+//    I removed one of the calls to workerprocesscallback since it was incorrect
 //    to have it.
 //
 //    Brad Whitlock, Wed Oct 15 17:59:03 PDT 2014
@@ -279,8 +279,8 @@ MPIXfer::Process()
                 // what's happening in PAR_EventLoop in the engine. This version
                 // of bcast allows engines to reduce their activity instead of
                 // using a spin-wait bcast.
-                if (slaveProcessInstruction)
-                    slaveProcessInstruction();
+                if (workerProcessInstruction)
+                    workerProcessInstruction();
 
                 VisIt_MPI_Bcast((void *)&msgLength, 1, MPI_INT,
                               0, VISIT_MPI_COMM);
@@ -352,10 +352,10 @@ MPIXfer::Update(Subject *TheChangedSubject)
 }
 
 // ****************************************************************************
-//  Method:  MPIXfer::SetSlaveProcessInstructionCallback
+//  Method:  MPIXfer::SetWorkerProcessInstructionCallback
 //
 //  Purpose:
-//    Sets the callback for the master process to tell the slaves
+//    Sets the callback for the manager process to tell the workers
 //    they are about to receive data to process.
 //
 //  Arguments:
@@ -366,9 +366,9 @@ MPIXfer::Update(Subject *TheChangedSubject)
 //
 // ****************************************************************************
 void
-MPIXfer::SetSlaveProcessInstructionCallback(void (*spi)())
+MPIXfer::SetWorkerProcessInstructionCallback(void (*spi)())
 {
-    slaveProcessInstruction = spi;
+    workerProcessInstruction = spi;
 }
 
 // ****************************************************************************
