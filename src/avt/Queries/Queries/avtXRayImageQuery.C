@@ -1322,6 +1322,11 @@ avtXRayImageQuery::GetSecondaryVars(std::vector<std::string> &outVars)
 //    Justin Privitera, Mon Aug  7 15:49:36 PDT 2023
 //    Add more context to debug message for blueprint failing to verify.
 // 
+//    Justin Privitera, Tue Oct 31 13:20:23 PDT 2023
+//    Collects filenames and other info into a mapnode which is set as the 
+//    query xml result.
+//    BOV and rawfloats output logic has been simplified.
+// 
 // ****************************************************************************
 
 void
@@ -1507,6 +1512,7 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
 #ifdef HAVE_CONDUIT
         conduit::Node data_out;
 #endif
+        std::vector<std::string> filenames;
         if (outputTypeIsJpegPngOrTif(outputType))
         {
             const bool write_bin_info_to_filename{numBins > 1};
@@ -1514,17 +1520,20 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
             {
                 intensity = leaves[i]->GetPointData()->GetArray("Intensity");
                 if (intensity->GetDataType() == VTK_FLOAT)
-                    WriteImage(out_filename_w_path.c_str(), i, numPixels,
-                        (float*) intensity->GetVoidPointer(0), 
-                        write_bin_info_to_filename);
+                    filenames.push_back(
+                        WriteImage(out_filename_w_path.c_str(), i, numPixels,
+                            (float*) intensity->GetVoidPointer(0), 
+                            write_bin_info_to_filename));
                 else if (intensity->GetDataType() == VTK_DOUBLE)
-                    WriteImage(out_filename_w_path.c_str(), i, numPixels,
-                        (double*) intensity->GetVoidPointer(0), 
-                        write_bin_info_to_filename);
+                    filenames.push_back(
+                        WriteImage(out_filename_w_path.c_str(), i, numPixels,
+                            (double*) intensity->GetVoidPointer(0), 
+                            write_bin_info_to_filename));
                 else if (intensity->GetDataType() == VTK_INT)
-                    WriteImage(out_filename_w_path.c_str(), i, numPixels,
-                        (int*) intensity->GetVoidPointer(0), 
-                        write_bin_info_to_filename);
+                    filenames.push_back(
+                        WriteImage(out_filename_w_path.c_str(), i, numPixels,
+                            (int*) intensity->GetVoidPointer(0), 
+                            write_bin_info_to_filename));
             }
         }
         else if (outputTypeIsRawfloatsOrBov(outputType))
@@ -1534,42 +1543,33 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
             {
                 intensity = leaves[i]->GetPointData()->GetArray("Intensity");
                 pathLength = leaves[numBins+i]->GetPointData()->GetArray("PathLength");
+
+                auto write_rawfloats_or_bov = [&](auto *in_ptr, auto *pl_ptr, const char* type){
+                    filenames.push_back(
+                        WriteFloats(out_filename_w_path.c_str(), 
+                            i, numPixels, in_ptr));
+                    if (bovOut)
+                        filenames.push_back(
+                            WriteBOVHeader(out_filename_w_path.c_str(), 
+                                "intensity", i, nx, ny, type));
+                    filenames.push_back(
+                        WriteFloats(out_filename_w_path.c_str(), 
+                            numBins + i, numPixels, pl_ptr));
+                    if (bovOut)
+                        filenames.push_back(
+                            WriteBOVHeader(out_filename_w_path.c_str(), 
+                                "path_length", numBins + i, nx, ny, type));
+                };
+
                 if (intensity->GetDataType() == VTK_FLOAT)
-                {
-                    WriteFloats(out_filename_w_path.c_str(), i, numPixels,
-                        (float*)intensity->GetVoidPointer(0));
-                    if (bovOut)
-                        WriteBOVHeader(out_filename_w_path.c_str(), "intensity", i, nx, ny, "FLOAT");
-                    WriteFloats(out_filename_w_path.c_str(), numBins+i, numPixels,
-                        (float*)pathLength->GetVoidPointer(0));
-                    if (bovOut)
-                        WriteBOVHeader(out_filename_w_path.c_str(), "path_length", numBins+i,
-                            nx, ny, "FLOAT");
-                }
+                    write_rawfloats_or_bov((float*)intensity->GetVoidPointer(0), 
+                        (float*)pathLength->GetVoidPointer(0), "FLOAT");
                 else if (intensity->GetDataType() == VTK_DOUBLE)
-                {
-                    WriteFloats(out_filename_w_path.c_str(), i, numPixels,
-                        (double*)intensity->GetVoidPointer(0));
-                    if (bovOut)
-                        WriteBOVHeader(out_filename_w_path.c_str(), "intensity", i, nx, ny, "DOUBLE");
-                    WriteFloats(out_filename_w_path.c_str(), numBins+i, numPixels,
-                        (double*)pathLength->GetVoidPointer(0));
-                    if (bovOut)
-                        WriteBOVHeader(out_filename_w_path.c_str(), "path_length", numBins+i,
-                            nx, ny, "DOUBLE");
-                }
+                    write_rawfloats_or_bov((double*)intensity->GetVoidPointer(0), 
+                        (double*)pathLength->GetVoidPointer(0), "DOUBLE");
                 else if (intensity->GetDataType() == VTK_INT)
-                {
-                    WriteFloats(out_filename_w_path.c_str(), i, numPixels,
-                        (int*)intensity->GetVoidPointer(0));
-                    if (bovOut)
-                        WriteBOVHeader(out_filename_w_path.c_str(), "intensity", i, nx, ny, "INT");
-                    WriteFloats(out_filename_w_path.c_str(), numBins+i, numPixels,
-                        (int*)pathLength->GetVoidPointer(0));
-                    if (bovOut)
-                        WriteBOVHeader(out_filename_w_path.c_str(), "path_length", numBins+i,
-                            nx, ny, "INT");
-                }
+                    write_rawfloats_or_bov((int*)intensity->GetVoidPointer(0), 
+                        (int*)pathLength->GetVoidPointer(0), "INT");
             }
         }
         else if (outputTypeIsBlueprint(outputType))
@@ -1629,6 +1629,7 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
                                                          out_filename_w_path.c_str(),
                                                          file_protocols[outputType],
                                                          opts);
+                filenames.push_back(out_filename_w_path + "." + file_extensions[outputType]);
             }
             catch (conduit::Error &e)
             {
@@ -1714,6 +1715,16 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
             EXCEPTION1(VisItException, err_oss.str());
         }
         SetResultMessage(buf.str());
+
+        // set Xml result
+        MapNode result_node;
+        result_node["result message"] = buf.str();
+        result_node["filenames"] = filenames;
+        result_node["number of files"] = static_cast<int>(filenames.size());
+        result_node["file protocol"] = file_protocols[outputType];
+        result_node["file extension"] = file_extensions[outputType];
+        result_node["filename scheme"] = filename_schemes[filenameScheme];
+        SetXmlResult(result_node.ToXML());
 
         // Free the memory from the GetAllLeaves function call.
         delete [] leaves;
@@ -1864,11 +1875,14 @@ avtXRayImageQuery::CheckData(vtkDataSet **dataSets,  const int nsets)
 // 
 //    Justin Privitera, Wed Oct 12 11:38:11 PDT 2022
 //    Removed bmp output type.
+// 
+//    Justin Privitera, Tue Oct 31 13:20:23 PDT 2023
+//    Now returns the name of the file that was written.
 //
 // ****************************************************************************
 
 template <typename T>
-void
+std::string
 avtXRayImageQuery::WriteImage(const char *baseName, int iImage, int nPixels,
     T *fbuf, bool write_bin_info_to_filename)
 {
@@ -1941,6 +1955,8 @@ avtXRayImageQuery::WriteImage(const char *baseName, int iImage, int nPixels,
         writer->Write();
         writer->Delete();
     }
+
+    return fileName.str();
 }
 
 // ****************************************************************************
@@ -1965,11 +1981,14 @@ avtXRayImageQuery::WriteImage(const char *baseName, int iImage, int nPixels,
 // 
 //    Justin Privitera, Tue Sep 27 10:52:59 PDT 2022
 //    Extra dot added for filenames.
+// 
+//    Justin Privitera, Tue Oct 31 13:20:23 PDT 2023
+//    Now returns the name of the file that was written.
 //
 // ****************************************************************************
 
 template <typename T>
-void
+std::string
 avtXRayImageQuery::WriteFloats(const char *baseName, int iImage, int nPixels,
     T *fbuf)
 {
@@ -1978,6 +1997,7 @@ avtXRayImageQuery::WriteFloats(const char *baseName, int iImage, int nPixels,
     FILE *file = fopen(fileName.str().c_str(), "w");
     fwrite(fbuf, sizeof(T), nPixels, file);
     fclose(file);
+    return fileName.str();
 }
 
 // ****************************************************************************
@@ -2002,10 +2022,13 @@ avtXRayImageQuery::WriteFloats(const char *baseName, int iImage, int nPixels,
 // 
 //    Justin Privitera, Tue Sep 27 10:52:59 PDT 2022
 //    Extra dot added for filenames.
+// 
+//    Justin Privitera, Tue Oct 31 13:20:23 PDT 2023
+//    Now returns the name of the file that was written.
 //
 // ****************************************************************************
 
-void
+std::string
 avtXRayImageQuery::WriteBOVHeader(const char *baseName, const char *varName,
     int iBin, int nx, int ny, const char *type)
 {
@@ -2027,6 +2050,8 @@ avtXRayImageQuery::WriteBOVHeader(const char *baseName, const char *varName,
     fprintf(file, "BRICK_ORIGIN: 1 1 1\n");
     fprintf(file, "BRICK_SIZE: %d %d 1\n", nx, ny);
     fclose(file);
+
+    return fileName.str();
 }
 
 // ****************************************************************************
