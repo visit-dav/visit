@@ -347,6 +347,25 @@ avtDatasetFileWriter::WriteOBJTree(avtDataTree_p dt, int idx,
     return totalWritten;
 }
 
+// ****************************************************************************
+//  Method: avtDatasetFileWriter::WriteOBJFile
+//
+//  Purpose:
+//      Writes the OBJ file associated with a single vtkDataSet.
+//
+//  Arguments:
+//      ds     The vtkDataSet to write.
+//      fname  The filename to use.
+//      label  A description describing this file.
+//
+//  Programmer: Justin Privitera
+//  Creation:   11/01/23
+//
+//  Modifications:
+//
+// ****************************************************************************
+void
+
 
 // ****************************************************************************
 //  Method: avtDatasetFileWriter::WriteOBJFile
@@ -447,6 +466,7 @@ avtDatasetFileWriter::WriteOBJFile(vtkDataSet *ds, const char *fname,
     }
     writer->SetInputData((vtkPolyData *) toBeWritten);
     writer->SetFileName(fname);
+    writer->Set
     writer->Write();
     writer->Delete();
 

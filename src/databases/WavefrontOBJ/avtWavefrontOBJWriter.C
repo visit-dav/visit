@@ -30,26 +30,11 @@
 #include <ColorControlPointList.h>
 #include <ColorControlPoint.h>
 #include <vtkOBJWriter.h>
-#include <vtkOBJExporter.h>
 
 #include <avtDatabaseMetaData.h>
 #include <DebugStream.h>
 #include <avtParallelContext.h>
-
-
-
-
-// random stuff
-#include <vtkRenderWindow.h>
-#include <vtkRenderer.h>
-#include <vtkOBJExporter.h>
-
-#include <vtkActor.h>
-#include <vtkCamera.h>
-#include <vtkPolyDataMapper.h>
-#include <vtkProperty.h>
-#include <vtkRenderWindowInteractor.h>
-#include <vtkCellData.h>
+#include <avtDatasetFileWriter.h>
 
 
 
@@ -137,67 +122,39 @@ avtWavefrontOBJWriter::WriteChunk(vtkDataSet *ds, int chunk)
     else
         filename = stem + ".obj";
 
-    vtkPolyData *polydata = vtkPolyData::SafeDownCast(ds);
+    avtDatasetFileWriter::WriteOBJFile(ds, filename.c_str(), nullptr);
 
-    vtkTexture *tex = vtkTexture::New();
+    // // // TODO
+    // // const double num_ctrl_pts = 5;
+
+    // // const double field_value_max = 46.1;
+    // // const double field_value_min = -3.0;
+
+    // // const double field_value = 22.7;
+
+    // // // we want the value to sit between 0 and 1
+    // // const double color_value = (field_value - field_value_min) / (field_value_max - field_value_min);
 
 
+    // // vtkPolyData *polydata = vtkPolyData::SafeDownCast(ds);
+    // // vtkPoints *points = polydata->GetPoints();
+    // // const int number_of_points = points->GetNumberOfPoints();
 
-    // unsigned char red[3] = {255, 0, 0};
-    vtkUnsignedCharArray *colors = vtkUnsignedCharArray::New();
-    colors->SetNumberOfComponents(3);
-    colors->SetName("Colors");
-    colors->InsertNextTuple3(255, 0, 0);
+    // // vtkFloatArray *tcoords = vtkFloatArray::New();
+    // // tcoords->SetNumberOfComponents(2);
+    // // tcoords->SetNumberOfTuples(number_of_points);
+    // // for (vtkIdType i = 0; i < number_of_points; i ++)
+    // // {
+    // //     tcoords->SetTuple2(i, color_value, 0.5);
+    // // }
 
-    polydata->GetCellData()->Update();
-    polydata->GetCellData()->SetScalars(colors);
+    // // polydata->GetPointData()->SetTCoords(tcoords);
 
-    // Create a rendering window and renderer and interactor.
-    vtkRenderer *renderer = vtkRenderer::New();
-    vtkRenderWindow *renderWindow = vtkRenderWindow::New();
-    renderWindow->SetWindowName("OBJ Output");
-    renderWindow->AddRenderer(renderer);
-
-    vtkRenderWindowInteractor *iren = vtkRenderWindowInteractor::New();
-    iren->SetRenderWindow(renWin);
-
-    // Mapper.
-    vtkPolyDataMapper *polyDataMapper = vtkPolyDataMapper::New();
-    // polyDataMapper->SetInputData(vtkPolyData::SafeDownCast(ds));
-    polyDataMapper->SetInputData(polydata);
-
-    // Actor.
-    vtkActor *actor = vtkActor::New();
-    actor->SetMapper(polyDataMapper);
-    actor->GetProperty()->SetColor(1.0, 1.0, 0.0);
-
-    // Assign actor to the renderer.
-    renderer->AddActor(actor);
-
-    renderer->ResetCamera();
-    renderer->GetActiveCamera()->Azimuth(30);
-    renderer->GetActiveCamera()->Elevation(30);
-    renderer->ResetCameraClippingRange();
-    renderer->SetBackground(0.5, 0.5, 0.5);
-
-    renderWindow->SetSize(300, 300);
-    renderWindow->Render();
-
-    std::string exportFileName = "test.obj";
-    vtkOBJExporter *exporter = vtkOBJExporter::New();
-    exporter->SetRenderWindow(renderWindow);
-    exporter->SetFilePrefix("test");
-    std::cout << "Writing " << exportFileName << std::endl;
-    exporter->Write();
-
-    // vtkOBJExporter *exporter = vtkOBJExporter::New();  
-    // exporter->SetFilePrefix(filename.c_str());
-
-    // vtkImageData *imageData = GetColorTable();
-    // exporter->SetInput(ds);
-    // exporter->SetInput(1, imageData);
-    // exporter->Update();
-    exporter->Delete();
+    // vtkOBJWriter *writer = vtkOBJWriter::New();  
+    // writer->SetFileName(filename.c_str());
+    // writer->SetInputData(ds);
+    // writer->Update();
+    // writer->Delete();
 }
 
 // ****************************************************************************

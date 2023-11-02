@@ -83,6 +83,8 @@ class AVTFILEWRITER_API avtDatasetFileWriter : public avtTerminatingDatasetSink
 
     void               SetOptions(const DBOptionsAttributes &);
 
+    static void        WriteOBJFile(vtkDataSet *, const char *, const char *);
+
   protected:
     static const char *extensions[];
     int                nFilesWritten;
@@ -108,7 +110,6 @@ class AVTFILEWRITER_API avtDatasetFileWriter : public avtTerminatingDatasetSink
 
     void               WriteOBJFamily(const char *);
     int                WriteOBJTree(avtDataTree_p, int, const char *);
-    void               WriteOBJFile(vtkDataSet *, const char *, const char *);
 
     vtkDataSet        *GetSingleDataset(void);
     char              *GenerateName(const char *, const char *,

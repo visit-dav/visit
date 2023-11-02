@@ -24,6 +24,9 @@ public:
   vtkSetStringMacro(Label);
   vtkGetStringMacro(Label);
 
+  void SetWriteMTL(bool writeMTL);
+  void SetMTLHasTexture(bool hasTex);
+
 protected:
   vtkOBJWriter();
   ~vtkOBJWriter();
