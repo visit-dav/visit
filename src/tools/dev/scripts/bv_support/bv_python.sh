@@ -66,7 +66,9 @@ function install_py_module
     info "Installing ${MOD_NAME} ..."
 
     if [[ "$DO_PYTHON39" == "yes" ]] ; then
-        ${PYTHON_COMMAND} -m pip install --no-deps --no-cache-dir .
+        echo "Building in $PWD"
+        echo ${PYTHON_COMMAND} -m pip --no-cache-dir --disable-pip-version-check install --no-index --no-deps --no-build-isolation .
+        ${PYTHON_COMMAND} -m pip --no-cache-dir --disable-pip-version-check install --no-index --no-deps --no-build-isolation .
     else
         ${PYTHON_COMMAND} ./setup.py install --prefix="${PYHOME}"
     fi
@@ -332,19 +334,19 @@ function bv_python_info
         export PILLOW_SHA256_CHECKSUM="a0b49960110bc6ff5fead46013bcb8825d101026d466f3a4de3476defe0fb0dd"
     fi
 
-    if [[ "$DO_PYTHON39" == "yes" ]] ; then
-        export PYPARSING_URL=""
-        export PYPARSING_FILE="pyparsing-3.1.0.tar.gz"
-        export PYPARSING_BUILD_DIR="pyparsing-3.1.0"
-        export PYPARSING_MD5_CHECKSUM=""
-        export PYPARSING_SHA256_CHECKSUM=""
-    else
-        export PYPARSING_URL=""
-        export PYPARSING_FILE="pyparsing-2.4.6.tar.gz"
-        export PYPARSING_BUILD_DIR="pyparsing-2.4.6"
-        export PYPARSING_MD5_CHECKSUM="29733ea8cbee0291aad121c69c6e51a1"
-        export PYPARSING_SHA256_CHECKSUM="4c830582a84fb022400b85429791bc551f1f4871c33f23e44f353119e92f969f"
-    fi
+    # if [[ "$DO_PYTHON39" == "yes" ]] ; then
+    #     export PYPARSING_URL=""
+    #     export PYPARSING_FILE="pyparsing-3.1.0.tar.gz"
+    #     export PYPARSING_BUILD_DIR="pyparsing-3.1.0"
+    #     export PYPARSING_MD5_CHECKSUM=""
+    #     export PYPARSING_SHA256_CHECKSUM=""
+    # else
+    #     export PYPARSING_URL=""
+    #     export PYPARSING_FILE="pyparsing-2.4.6.tar.gz"
+    #     export PYPARSING_BUILD_DIR="pyparsing-2.4.6"
+    #     export PYPARSING_MD5_CHECKSUM="29733ea8cbee0291aad121c69c6e51a1"
+    #     export PYPARSING_SHA256_CHECKSUM="4c830582a84fb022400b85429791bc551f1f4871c33f23e44f353119e92f969f"
+    # fi
 
     if [[ "$DO_PYTHON39" == "yes" ]] ; then
         export REQUESTS_URL=""
@@ -666,6 +668,85 @@ function bv_python_info
         export CERTIFI_BUILD_DIR="certifi-2019.11.28"
         export CERTIFI_MD5_CHECKSUM="4d5229c4d9f0a4a79106f9e2c2cfd381"
         export CERTIFI_SHA256_CHECKSUM="25b64c7da4cd7479594d035c08c2d809eb4aab3a26e5a990ea98cc450c320f1f"
+    fi
+
+    if [[ "$DO_PYTHON39" == "yes" ]] ; then
+        export FLITCORE_URL=""
+        export FLITCORE_FILE="flit_core-3.9.0.tar.gz"
+        export FLITCORE_BUILD_DIR="flit_core-3.9.0"
+        export FLITCORE_MD5_CHECKSUM=""
+    fi
+
+    if [[ "$DO_PYTHON39" == "yes" ]] ; then
+        export TOML_URL=""
+        export TOML_FILE="toml-0.10.2.tar.gz"
+        export TOML_BUILD_DIR="toml-0.10.2"
+        export TOML_MD5_CHECKSUM=""
+    fi
+
+    # and yes, this is a different one from toml!
+    if [[ "$DO_PYTHON39" == "yes" ]] ; then
+        export TOMLI_URL=""
+        export TOMLI_FILE="tomli-2.0.1.tar.gz"
+        export TOMLI_BUILD_DIR="tomli-2.0.1"
+        export TOMLI_MD5_CHECKSUM=""
+    fi
+
+
+    if [[ "$DO_PYTHON39" == "yes" ]] ; then
+        export PATHSPEC_URL=""
+        export PATHSPEC_FILE="pathspec-0.11.2.tar.gz"
+        export PATHSPEC_BUILD_DIR="pathspec-0.11.2"
+        export PATHSPEC_MD5_CHECKSUM=""
+    fi
+
+    if [[ "$DO_PYTHON39" == "yes" ]] ; then
+        export WHEEL_URL=""
+        export WHEEL_FILE="wheel-0.41.1.tar.gz"
+        export WHEEL_BUILD_DIR="wheel-0.41.1"
+        export WHEEL_MD5_CHECKSUM=""
+    fi
+
+    if [[ "$DO_PYTHON39" == "yes" ]] ; then
+        export CALVER_URL=""
+        export CALVER_FILE="calver-2022.6.26.tar.gz"
+        export CALVER_BUILD_DIR="calver-2022.6.26"
+        export CALVER_MD5_CHECKSUM=""
+    fi
+
+    if [[ "$DO_PYTHON39" == "yes" ]] ; then
+        export TROVECLASSIFIERS_URL=""
+        export TROVECLASSIFIERS_FILE="trove-classifiers-2023.8.7.tar.gz"
+        export TROVECLASSIFIERS_BUILD_DIR="trove-classifiers-2023.8.7"
+        export TROVECLASSIFIERS_MD5_CHECKSUM=""
+    fi
+
+    if [[ "$DO_PYTHON39" == "yes" ]] ; then
+        export PACKAGING_URL=""
+        export PACKAGING_FILE="packaging-23.1.tar.gz "
+        export PACKAGING_BUILD_DIR="packaging-23.1"
+        export PACKAGING_MD5_CHECKSUM=""
+    fi
+
+    if [[ "$DO_PYTHON39" == "yes" ]] ; then
+        export EDITABLES_URL=""
+        export EDITABLES_FILE="editables-0.5.tar.gz"
+        export EDITABLES_BUILD_DIR="editables-0.5"
+        export EDITABLES_MD5_CHECKSUM=""
+    fi
+
+    if [[ "$DO_PYTHON39" == "yes" ]] ; then
+        export PLUGGY_URL=""
+        export PLUGGY_FILE="pluggy-1.2.0.tar.gz "
+        export PLUGGY_BUILD_DIR="pluggy-1.2.0"
+        export PLUGGY_MD5_CHECKSUM=""
+    fi
+
+    if [[ "$DO_PYTHON39" == "yes" ]] ; then
+        export HATCHLING_URL=""
+        export HATCHLING_FILE="hatchling-1.18.0.tar.gz"
+        export HATCHLING_BUILD_DIR="hatchling-1.18.0"
+        export HATCHLING_MD5_CHECKSUM=""
     fi
 
     if [[ "$DO_PYTHON39" == "no" ]] ; then
@@ -1207,33 +1288,34 @@ function build_pillow
     return 0
 }
 
-# *************************************************************************** #
-#                            Function 7.2, build_pyparsing                    #
-# *************************************************************************** #
-function build_pyparsing
-{
-    download_py_module ${PYPARSING_FILE} ${PYPARSING_URL}
-    if [[ $? != 0 ]] ; then
-        return 1
-    fi
-
-    extract_py_module ${PYPARSING_BUILD_DIR} ${PYPARSING_FILE} "pyparsing"
-    if [[ $? != 0 ]] ; then
-        return 1
-    fi
-
-    install_py_module ${PYPARSING_BUILD_DIR} "pyparsing"
-    if test $? -ne 0 ; then
-        return 1
-    fi
-
-    # pyparsing installs into site-packages dir of Visit's Python.
-    # Simply re-execute the python perms command.
-    fix_py_permissions
-
-    info "Done with pyparsing."
-    return 0
-}
+# # *************************************************************************** #
+# #                            Function 7.2, build_pyparsing                    #
+# # *************************************************************************** #
+# function build_pyparsing
+# {
+#
+#     download_py_module ${PYPARSING_FILE} ${PYPARSING_URL}
+#     if [[ $? != 0 ]] ; then
+#         return 1
+#     fi
+#
+#     extract_py_module ${PYPARSING_BUILD_DIR} ${PYPARSING_FILE} "pyparsing"
+#     if [[ $? != 0 ]] ; then
+#         return 1
+#     fi
+#
+#     install_py_module ${PYPARSING_BUILD_DIR} "pyparsing"
+#     if test $? -ne 0 ; then
+#         return 1
+#     fi
+#
+#     # pyparsing installs into site-packages dir of Visit's Python.
+#     # Simply re-execute the python perms command.
+#     fix_py_permissions
+#
+#     info "Done with pyparsing."
+#     return 0
+# }
 
 # *************************************************************************** #
 #                            Function 7.3, build_requests                     #
@@ -1246,6 +1328,90 @@ function build_requests
     download_py_module ${CERTIFI_FILE} ${CERTIFIY_URL}
     if test $? -ne 0 ; then
         return 1
+    fi
+
+    if [[ "$DO_PYTHON39" == "yes" ]] ; then
+        export PLUGGY_URL=""
+        export PLUGGY_FILE="pluggy-1.2.0.tar.gz "
+        export PLUGGY_BUILD_DIR="pluggy-1.2.0"
+        export PLUGGY_MD5_CHECKSUM=""
+    fi
+
+    if [[ "$DO_PYTHON39" == "yes" ]] ; then
+      download_py_module ${FLITCORE_FILE} ${FLITCORE_URL}
+      if test $? -ne 0 ; then
+          return 1
+        fi
+    fi
+
+    if [[ "$DO_PYTHON39" == "yes" ]] ; then
+      download_py_module ${TOML_FILE} ${TOML_URL}
+      if test $? -ne 0 ; then
+          return 1
+        fi
+    fi
+
+    if [[ "$DO_PYTHON39" == "yes" ]] ; then
+      download_py_module ${TOMLI_FILE} ${TOMLI_URL}
+      if test $? -ne 0 ; then
+          return 1
+        fi
+    fi
+
+    if [[ "$DO_PYTHON39" == "yes" ]] ; then
+      download_py_module ${PATHSPEC_FILE} ${PATHSPEC_URL}
+      if test $? -ne 0 ; then
+          return 1
+        fi
+    fi
+
+    if [[ "$DO_PYTHON39" == "yes" ]] ; then
+      download_py_module ${WHEEL_FILE} ${WHEEL_URL}
+      if test $? -ne 0 ; then
+          return 1
+        fi
+    fi
+
+    if [[ "$DO_PYTHON39" == "yes" ]] ; then
+      download_py_module ${CALVER_FILE} ${TCALVER_URL}
+      if test $? -ne 0 ; then
+          return 1
+        fi
+    fi
+
+    if [[ "$DO_PYTHON39" == "yes" ]] ; then
+      download_py_module ${TROVECLASSIFIERS_FILE} ${TROVECLASSIFIERS_URL}
+      if test $? -ne 0 ; then
+          return 1
+        fi
+    fi
+
+    if [[ "$DO_PYTHON39" == "yes" ]] ; then
+      download_py_module ${PACKAGING_FILE} ${PACKAGING_URL}
+      if test $? -ne 0 ; then
+          return 1
+        fi
+    fi
+
+    if [[ "$DO_PYTHON39" == "yes" ]] ; then
+      download_py_module ${EDITABLES_FILE} ${EDITABLES_URL}
+      if test $? -ne 0 ; then
+          return 1
+        fi
+    fi
+
+    if [[ "$DO_PYTHON39" == "yes" ]] ; then
+      download_py_module ${PLUGGY_FILE} ${PLUGGY_URL}
+      if test $? -ne 0 ; then
+          return 1
+        fi
+    fi
+
+    if [[ "$DO_PYTHON39" == "yes" ]] ; then
+      download_py_module ${HATCHLING_FILE} ${HATCHLING_URL}
+      if test $? -ne 0 ; then
+          return 1
+        fi
     fi
 
     download_py_module ${URLLIB3_FILE} ${URLLIB3_URL}
@@ -1275,6 +1441,83 @@ function build_requests
         return 1
     fi
 
+    if [[ "$DO_PYTHON39" == "yes" ]] ; then
+      extract_py_module ${FLITCORE_BUILD_DIR} ${FLITCORE_FILE} "flit_core"
+      if test $? -ne 0 ; then
+        return 1
+      fi
+    fi
+
+    if [[ "$DO_PYTHON39" == "yes" ]] ; then
+      extract_py_module ${TOML_BUILD_DIR} ${TOML_FILE} "toml"
+      if test $? -ne 0 ; then
+        return 1
+      fi
+    fi
+
+    if [[ "$DO_PYTHON39" == "yes" ]] ; then
+      extract_py_module ${TOMLI_BUILD_DIR} ${TOMLI_FILE} "tomli"
+      if test $? -ne 0 ; then
+        return 1
+      fi
+    fi
+
+    if [[ "$DO_PYTHON39" == "yes" ]] ; then
+      extract_py_module ${PATHSPEC_BUILD_DIR} ${PATHSPEC_FILE} "pathspec"
+      if test $? -ne 0 ; then
+        return 1
+      fi
+    fi
+
+    if [[ "$DO_PYTHON39" == "yes" ]] ; then
+      extract_py_module ${WHEEL_BUILD_DIR} ${WHEEL_FILE} "wheel"
+      if test $? -ne 0 ; then
+        return 1
+      fi
+    fi
+
+    if [[ "$DO_PYTHON39" == "yes" ]] ; then
+      extract_py_module ${CALVER_BUILD_DIR} ${CALVER_FILE} "calver"
+      if test $? -ne 0 ; then
+        return 1
+      fi
+    fi
+
+    if [[ "$DO_PYTHON39" == "yes" ]] ; then
+      extract_py_module ${TROVECLASSIFIERS_BUILD_DIR} ${TROVECLASSIFIERS_FILE} "trove_classifiers"
+      if test $? -ne 0 ; then
+        return 1
+      fi
+    fi
+
+    if [[ "$DO_PYTHON39" == "yes" ]] ; then
+      extract_py_module ${PACKAGING_BUILD_DIR} ${PACKAGING_FILE} "packaging"
+      if test $? -ne 0 ; then
+        return 1
+      fi
+    fi
+
+    if [[ "$DO_PYTHON39" == "yes" ]] ; then
+      extract_py_module ${EDITABLES_BUILD_DIR} ${EDITABLES_FILE} "editables"
+      if test $? -ne 0 ; then
+        return 1
+      fi
+    fi
+
+    if [[ "$DO_PYTHON39" == "yes" ]] ; then
+      extract_py_module ${PLUGGY_BUILD_DIR} ${PLUGGY_FILE} "pluggy"
+      if test $? -ne 0 ; then
+        return 1
+      fi
+    fi
+
+    if [[ "$DO_PYTHON39" == "yes" ]] ; then
+      extract_py_module ${HATCHLING_BUILD_DIR} ${HATCHLING_FILE} "hatchling"
+      if test $? -ne 0 ; then
+        return 1
+      fi
+    fi
+
     extract_py_module ${URLLIB3_BUILD_DIR} ${URLLIB3_FILE} "urllib3"
     if test $? -ne 0 ; then
         return 1
@@ -1300,6 +1543,83 @@ function build_requests
     install_py_module ${CERTIFI_BUILD_DIR} "certifi"
     if test $? -ne 0 ; then
         return 1
+    fi
+
+    if [[ "$DO_PYTHON39" == "yes" ]] ; then
+      install_py_module ${FLITCORE_BUILD_DIR} "flit_core"
+      if test $? -ne 0 ; then
+          return 1
+      fi
+    fi
+
+    if [[ "$DO_PYTHON39" == "yes" ]] ; then
+      install_py_module ${TOML_BUILD_DIR} "toml"
+      if test $? -ne 0 ; then
+          return 1
+      fi
+    fi
+
+    if [[ "$DO_PYTHON39" == "yes" ]] ; then
+      install_py_module ${TOMLI_BUILD_DIR} "tomlI"
+      if test $? -ne 0 ; then
+          return 1
+      fi
+    fi
+
+    if [[ "$DO_PYTHON39" == "yes" ]] ; then
+      install_py_module ${PATHSPEC_BUILD_DIR} "pathspec"
+      if test $? -ne 0 ; then
+          return 1
+      fi
+    fi
+
+    if [[ "$DO_PYTHON39" == "yes" ]] ; then
+      install_py_module ${WHEEL_BUILD_DIR} "wheel"
+      if test $? -ne 0 ; then
+          return 1
+      fi
+    fi
+
+    if [[ "$DO_PYTHON39" == "yes" ]] ; then
+      install_py_module ${CALVER_BUILD_DIR} "calver"
+      if test $? -ne 0 ; then
+          return 1
+      fi
+    fi
+
+    if [[ "$DO_PYTHON39" == "yes" ]] ; then
+      install_py_module ${TROVECLASSIFIERS_BUILD_DIR} "trove_classifiers"
+      if test $? -ne 0 ; then
+          return 1
+      fi
+    fi
+
+    if [[ "$DO_PYTHON39" == "yes" ]] ; then
+      install_py_module ${PACKAGING_BUILD_DIR} "packaging"
+      if test $? -ne 0 ; then
+          return 1
+      fi
+    fi
+
+    if [[ "$DO_PYTHON39" == "yes" ]] ; then
+      install_py_module ${EDITABLES_BUILD_DIR} "editables"
+      if test $? -ne 0 ; then
+          return 1
+      fi
+    fi
+
+    if [[ "$DO_PYTHON39" == "yes" ]] ; then
+      install_py_module ${PLUGGY_BUILD_DIR} "pluggy"
+      if test $? -ne 0 ; then
+          return 1
+      fi
+    fi
+
+    if [[ "$DO_PYTHON39" == "yes" ]] ; then
+      install_py_module ${HATCHLING_BUILD_DIR} "hatchling"
+      if test $? -ne 0 ; then
+          return 1
+      fi
     fi
 
     install_py_module ${URLLIB3_BUILD_DIR} "urllib3"
@@ -1419,22 +1739,27 @@ function build_numpy
         return 1
     fi
 
-    pushd $NUMPY_BUILD_DIR > /dev/null
-    cat << \EOF > site.cfg
+    if [[ "$DO_PYTHON39" == "no" ]] ; then
+      install_py_module ${NUMPY_BUILD_DIR} "numpy"
+    else
+      pushd $NUMPY_BUILD_DIR > /dev/null
+
+      cat << \EOF > site.cfg
 [openblas]
 libraries =
 library_dirs =
 include_dirs =
 EOF
-    info "Installing numpy (~ 2 min) ..."
-    sed -i 's#\\\\\"%s\\\\\"#%s#' numpy/distutils/system_info.py
-    CC=${C_COMPILER} BLAS=None LAPACK=None ATLAS=None ${PYTHON_COMMAND} ./setup.py install --prefix="${PYHOME}"
-    if test $? -ne 0 ; then
-        popd > /dev/null
-        warn "Could not install numpy"
-        return 1
+      info "Installing numpy (~ 2 min)..."
+      sed -i 's#\\\\\"%s\\\\\"#%s#' numpy/distutils/system_info.py
+      CC=${C_COMPILER} BLAS=None LAPACK=None ATLAS=None ${PYTHON_COMMAND} ./setup.py install --prefix="${PYHOME}"
+      if test $? -ne 0 ; then
+          popd > /dev/null
+          warn "Could not install numpy"
+          return 1
+        fi
+      popd > /dev/null
     fi
-    popd > /dev/null
 
     fix_py_permissions
 
@@ -1689,17 +2014,17 @@ function build_sphinx
             return 1
         fi
 
-        # pyparsing may already have been installed by function bv_python_build
-        check_if_py_module_installed "pyparsing"
-        if [[ $? != 0 ]] ; then
-            info "Building the pyparsing module"
-
-            build_pyparsing
-            if [[ $? != 0 ]] ; then
-                error "pyparsing build failed. Bailing out."
-            fi
-            info "Done building the pyparsing module."
-        fi
+        # # pyparsing may already have been installed by function bv_python_build
+        # check_if_py_module_installed "pyparsing"
+        # if [[ $? != 0 ]] ; then
+        #     info "Building the pyparsing module"
+        #
+        #     build_pyparsing
+        #     if [[ $? != 0 ]] ; then
+        #         error "pyparsing build failed. Bailing out."
+        #     fi
+        #     info "Done building the pyparsing module."
+        # fi
     fi
 
     install_py_module ${PACKAGING_BUILD_DIR} "packaging"
@@ -1950,13 +2275,13 @@ function bv_python_is_installed
         PY_OK=0
     fi
 
-    check_if_py_module_installed "pyparsing"
-    if [[ $? != 0 ]] ; then
-        if [[ $PY_CHECK_ECHO != 0 ]] ; then
-            info "python module pyparsing is not installed"
-        fi
-        PY_OK=0
-    fi
+    # check_if_py_module_installed "pyparsing"
+    # if [[ $? != 0 ]] ; then
+    #     if [[ $PY_CHECK_ECHO != 0 ]] ; then
+    #         info "python module pyparsing is not installed"
+    #     fi
+    #     PY_OK=0
+    # fi
 
     if [[ "$BUILD_SPHINX" == "yes" ]]; then
 
@@ -2068,16 +2393,16 @@ function bv_python_build
                 fi
             fi
 
-            check_if_py_module_installed "pyparsing"
-            if [[ $? != 0 ]] ; then
-                info "Building the pyparsing module"
-
-                build_pyparsing
-                if [[ $? != 0 ]] ; then
-                    error "pyparsing build failed. Bailing out."
-                fi
-                info "Done building the pyparsing module."
-            fi
+            # check_if_py_module_installed "pyparsing"
+            # if [[ $? != 0 ]] ; then
+            #     info "Building the pyparsing module"
+            #
+            #     build_pyparsing
+            #     if [[ $? != 0 ]] ; then
+            #         error "pyparsing build failed. Bailing out."
+            #     fi
+            #     info "Done building the pyparsing module."
+            # fi
 
             if [[ "$BUILD_SPHINX" == "yes" ]]; then
                 # requests is needed by sphinx.

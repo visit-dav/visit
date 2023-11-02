@@ -28,7 +28,7 @@ function bv_zlib_info
     export ZLIB_URL=${ZLIB_URL:-https://www.zlib.net}
     export ZLIB_BUILD_DIR=${ZLIB_BUILD_DIR:-"zlib-${ZLIB_VERSION}"}
     export ZLIB_MD5_CHECKSUM=""
-    export ZLIB_SHA256_CHECKSUM="d233fca7cf68db4c16dc5287af61f3cd01ab62495224c66639ca3da537701e42"
+    export ZLIB_SHA256_CHECKSUM="d14c38e313afc35a9a8760dadf26042f51ea0f5d154b0630a31da0540107fb98"
 }
 
 function bv_zlib_print

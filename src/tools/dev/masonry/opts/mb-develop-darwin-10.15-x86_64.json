@@ -13,7 +13,7 @@
  "skip_checkout": "yes",
  "git": {"mode":"ssh","git_uname":"cyrush"},
  "build_visit":  { "cmake_ver": "3.14.7",
-                   "args":"--no-thirdparty",
+                   "args":"--no-thirdparty --use-python39",
                    "libs":["cmake",
                        "openssl",
                        "vtkh",

@@ -332,9 +332,101 @@ function apply_qt_patch
                 fi
             fi
         fi
+        if [[ "$OPSYS" == "Darwin" ]]; then
+            apply_qt_5142_missing_cgcolorspace_header
+            if [[ $? != 0 ]] ; then
+                return 1
+            fi
+        fi
+    elif [[ ${QT_VERSION} == 6.4.2 ]] ; then
+        apply_qt_642_macos_cpp_std_libs_symbol_issues
+        if [[ $? != 0 ]] ; then
+            return 1
+        fi
     fi
     return 0
 }
+
+function apply_qt_642_macos_cpp_std_libs_symbol_issues
+{
+  info "Patching qt 6.4.2 for c++ std lib incompatibilities"
+  patch -p0 <<EOF
+  From c70145c6bf54cda9723cccdc7ca07f8d8fd321cd Mon Sep 17 00:00:00 2001
+  From: Tor Arne Vestbø <tor.arne.vestbo@qt.io>
+  Date: Wed, 07 Jun 2023 02:31:42 +0200
+  Subject: [PATCH] Opt out of standard library memory_resource on macOS < 14 and iOS < 17
+
+  Although the header is available, and the compiler reports that the
+  standard library supports memory_resource, the feature is only
+  available on macOS 14 and iOS 17, as reported by
+
+    https://developer.apple.com/xcode/cpp/
+
+  As long as our deployment target is lower we can't unconditionally
+  use this feature. It's not clear whether the expectation is that
+  consumers of the standard library on these platforms will have to
+  runtime check their uses of these APIs.
+
+  Includes e84c0df50f51c61aa49b47823582b0f8de406e3d for fixing
+  missing line continuations.
+
+  Task-number: QTBUG-114316
+  Change-Id: I50c1425334b9b9842b253442e2b3aade637783ea
+  Reviewed-by: Thiago Macieira <thiago.macieira@intel.com>
+  (cherry picked from commit f7c8ff511c30dc4310a72b3da4b4a345efe1fba0)
+  Reviewed-by: Tor Arne Vestbø <tor.arne.vestbo@qt.io>
+  ---
+
+  diff --git a/src/corelib/global/qcompilerdetection.h b/src/corelib/global/qcompilerdetection.h
+  index f121893..70fa7f6 100644
+  --- a/src/corelib/global/qcompilerdetection.h
+  +++ b/src/corelib/global/qcompilerdetection.h
+  @@ -895,16 +895,22 @@
+   #   endif // !_HAS_CONSTEXPR
+   #  endif // !__GLIBCXX__ && !_LIBCPP_VERSION
+   # endif // Q_OS_QNX
+  -# if defined(Q_CC_CLANG) && defined(Q_OS_MAC) && defined(__GNUC_LIBSTD__) \
+  -    && ((__GNUC_LIBSTD__-0) * 100 + __GNUC_LIBSTD_MINOR__-0 <= 402)
+  +# if defined(Q_CC_CLANG) && defined(Q_OS_MAC)
+  +#  if defined(__GNUC_LIBSTD__) && ((__GNUC_LIBSTD__-0) * 100 + __GNUC_LIBSTD_MINOR__-0 <= 402)
+   // Apple has not updated libstdc++ since 2007, which means it does not have
+   // <initializer_list> or std::move. Let's disable these features
+  -#  undef Q_COMPILER_INITIALIZER_LISTS
+  -#  undef Q_COMPILER_RVALUE_REFS
+  -#  undef Q_COMPILER_REF_QUALIFIERS
+  +#   undef Q_COMPILER_INITIALIZER_LISTS
+  +#   undef Q_COMPILER_RVALUE_REFS
+  +#   undef Q_COMPILER_REF_QUALIFIERS
+   // Also disable <atomic>, since it's clearly not there
+  -#  undef Q_COMPILER_ATOMICS
+  -# endif
+  +#   undef Q_COMPILER_ATOMICS
+  +#  endif
+  +#  if defined(__cpp_lib_memory_resource) \
+  +    && ((defined(__MAC_OS_X_VERSION_MIN_REQUIRED)  && __MAC_OS_X_VERSION_MIN_REQUIRED  < 140000) \
+  +     || (defined(__IPHONE_OS_VERSION_MIN_REQUIRED) && __IPHONE_OS_VERSION_MIN_REQUIRED < 170000))
+  +#   undef __cpp_lib_memory_resource // Only supported on macOS 14 and iOS 17
+  +#  endif
+  +# endif // defined(Q_CC_CLANG) && defined(Q_OS_DARWIN)
+   #endif
+ 
+   // Don't break code that is already using Q_COMPILER_DEFAULT_DELETE_MEMBERS
+  diff --git a/src/corelib/tools/qduplicatetracker_p.h b/src/corelib/tools/qduplicatetracker_p.h
+  index 9502201..23465ec 100644
+  --- a/src/corelib/tools/qduplicatetracker_p.h
+  +++ b/src/corelib/tools/qduplicatetracker_p.h
+  @@ -16,7 +16,7 @@
+ 
+   #include <private/qglobal_p.h>
+ 
+  -#if __has_include(<memory_resource>)
+  +#ifdef __cpp_lib_memory_resource
+   #  include <unordered_set>
+   #  include <memory_resource>
+   #  include <qhash.h> // for the hashing helpers
+EOF
+}
+
 
 function apply_qt_5101_linux_mesagl_patch
 {
@@ -799,6 +891,30 @@ EOF
     return 0
 }
 
+function apply_qt_5142_missing_cgcolorspace_header
+{
+    info "Patching qt 5.14.2 for macOS missing <CoreGraphics/CGColorSpace.h> header"
+    patch -p0 << \EOF
+--- qtbase/src/plugins/platforms/cocoa/qiosurfacegraphicsbuffer.h.orig	2023-04-14 17:11:54.000000000 -0700
++++ qtbase/src/plugins/platforms/cocoa/qiosurfacegraphicsbuffer.h	2023-04-14 17:12:08.000000000 -0700
+@@ -40,6 +40,7 @@
+ #ifndef QIOSURFACEGRAPHICSBUFFER_H
+ #define QIOSURFACEGRAPHICSBUFFER_H
+ 
++#include <CoreGraphics/CGColorSpace.h>
+ #include <qpa/qplatformgraphicsbuffer.h>
+ #include <private/qcore_mac_p.h>
+ 
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "Patching qt 5.14.2 for macOS missing <CoreGraphics/CGColorSpace.h> header failed."
+        return 1
+    fi
+
+    return 0
+
+}
+
 function build_qt
 {
     #
@@ -818,18 +934,18 @@ function build_qt
     #
     info "Patching qt . . ."
     cd $QT_BUILD_DIR || error "Can't cd to Qt build dir."
-    apply_qt_patch
-    if [[ $? != 0 ]] ; then
-        if [[ $untarred_qt == 1 ]] ; then
-            warn "Giving up on Qt build because the patch failed."
-            return 1
-        else
-            warn "Patch failed, but continuing.  I believe that this script\n" \
-                 "tried to apply a patch to an existing directory that had\n" \
-                 "already been patched ... that is, the patch is\n" \
-                 "failing harmlessly on a second application."
-        fi
-    fi
+    # #apply_qt_patch
+  #   if [[ $? != 0 ]] ; then
+  #       if [[ $untarred_qt == 1 ]] ; then
+  #           warn "Giving up on Qt build because the patch failed."
+  #           return 1
+  #       else
+  #           warn "Patch failed, but continuing.  I believe that this script\n" \
+  #                "tried to apply a patch to an existing directory that had\n" \
+  #                "already been patched ... that is, the patch is\n" \
+  #                "failing harmlessly on a second application."
+  #       fi
+  #   fi
 
     # move back up to the start dir
     cd "$START_DIR"
@@ -843,17 +959,25 @@ function build_qt
         mkdir $QT_BUILD_DIR
     fi
 
-    cd ${QT_BUILD_DIR}
-
     #
     # Handle case where python doesn't exist.
     # The magic to determine if python exist comes from
     # https://stackoverflow.com/questions/592620/how-can-i-check-if-a-program-exists-from-a-bash-script
     #
-    if ! command -v python > /dev/null 2>&1 ; then
-        sed -i "s/python/python3/" ./qtdeclarative/src/3rdparty/masm/masm.pri
-        sed -i "s/python -c/python3 -c/" ./qtdeclarative/qtdeclarative.pro
-    fi
+    echo ${QT_SRC_DIR}
+    # pushd ${QT_SRC_DIR} > /dev/null 2>&1
+    # if ! command -v python > /dev/null 2>&1 ; then
+    #     if [[ "$OPSYS" == "Darwin" ]]; then
+    #         sed -i orig -e 's/python/python3/' ./qtdeclarative/src/3rdparty/masm/masm.pri
+    #         sed -i orig -e 's/python -c/python3 -c/' ./qtdeclarative/qtdeclarative.pro
+    #     else
+    #         sed -i.orig -e 's/python/python3/' ./qtdeclarative/src/3rdparty/masm/masm.pri
+    #         sed -i.orig -e 's/python -c/python3 -c/' ./qtdeclarative/qtdeclarative.pro
+    #     fi
+    # fi
+    # popd > /dev/null 2>&1
+
+    cd ${QT_BUILD_DIR}
 
     #
     # Platform specific configuration
@@ -868,7 +992,7 @@ function build_qt
     # CC and CXX and see if that is enough to trigger qt's detection logic.
     #
     #   
-    if [[ "$OPSYS" == "Darwin" ]]; then       
+    if [[ "$OPSYS" == "Darwin" ]]; then
         QT_PLATFORM="macx-clang"
 
     elif [[ "$OPSYS" == "AIX" ]]; then
