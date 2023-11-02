@@ -122,7 +122,14 @@ avtWavefrontOBJWriter::WriteChunk(vtkDataSet *ds, int chunk)
     else
         filename = stem + ".obj";
 
-    avtDatasetFileWriter::WriteOBJFile(ds, filename.c_str(), nullptr);
+    std::string textureFilename = "colortable.png";
+
+    avtDatasetFileWriter::WriteOBJFile(ds, // dataset to write
+                                       filename.c_str(), // filename
+                                       nullptr, // label
+                                       true, // YES writeMTL
+                                       true, // YES MTLHasTex
+                                       textureFilename); // name of texture file
 
     // // // TODO
     // // const double num_ctrl_pts = 5;

@@ -347,25 +347,6 @@ avtDatasetFileWriter::WriteOBJTree(avtDataTree_p dt, int idx,
     return totalWritten;
 }
 
-// ****************************************************************************
-//  Method: avtDatasetFileWriter::WriteOBJFile
-//
-//  Purpose:
-//      Writes the OBJ file associated with a single vtkDataSet.
-//
-//  Arguments:
-//      ds     The vtkDataSet to write.
-//      fname  The filename to use.
-//      label  A description describing this file.
-//
-//  Programmer: Justin Privitera
-//  Creation:   11/01/23
-//
-//  Modifications:
-//
-// ****************************************************************************
-void
-
 
 // ****************************************************************************
 //  Method: avtDatasetFileWriter::WriteOBJFile
@@ -394,8 +375,12 @@ void
 // ****************************************************************************
 
 void
-avtDatasetFileWriter::WriteOBJFile(vtkDataSet *ds, const char *fname,
-                                   const char *label)
+avtDatasetFileWriter::WriteOBJFile(vtkDataSet *ds,
+                                   const char *fname,
+                                   const char *label,
+                                   bool writeMTL, 
+                                   bool MTLHasTex,
+                                   std::string texFilename)
 {
     vtkDataSet *activeDS = ds;
 
@@ -459,14 +444,24 @@ avtDatasetFileWriter::WriteOBJFile(vtkDataSet *ds, const char *fname,
         tcoords->Delete();
     }
 
+    std::string filename = fname;
+    std::string basename;
+    auto pos = filename.find_last_of(".");
+    if (filename.substr(pos + 1) == "obj")
+        basename = filename.substr(0, pos);
+    else
+        basename = filename;
+
     vtkOBJWriter *writer = vtkOBJWriter::New();
     if (label != NULL && strlen(label) > 0)
     {
         writer->SetLabel(label);
     }
     writer->SetInputData((vtkPolyData *) toBeWritten);
-    writer->SetFileName(fname);
-    writer->Set
+    writer->SetBasename(basename);
+    writer->SetWriteMTL(writeMTL);
+    writer->SetMTLHasTexture(MTLHasTex);
+    writer->SetTexFilename(texFilename);
     writer->Write();
     writer->Delete();
 

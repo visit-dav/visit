@@ -23,7 +23,10 @@ vtkStandardNewMacro(vtkOBJWriter);
 
 vtkOBJWriter::vtkOBJWriter()
 {
-  this->Label = NULL;
+    this->Label = NULL;
+    writeMTL = false;
+    hasTex = false;
+    basename = "";
 }
 
 vtkOBJWriter::~vtkOBJWriter()
@@ -34,7 +37,25 @@ vtkOBJWriter::~vtkOBJWriter()
     }
 }
 
+void vtkOBJWriter::SetWriteMTL(bool _writeMTL)
+{
+    writeMTL = _writeMTL;
+}
 
+void vtkOBJWriter::SetMTLHasTexture(bool _hasTex)
+{
+    hasTex = _hasTex;
+}
+
+void vtkOBJWriter::SetBasename(std::string _basename)
+{
+    basename = _basename;
+}
+
+void vtkOBJWriter::SetTexFilename(std::string _texFilename)
+{
+    texFilename = _texFilename;
+}
 
 //
 //  Modifications:
@@ -43,16 +64,6 @@ vtkOBJWriter::~vtkOBJWriter()
 //
 void vtkOBJWriter::WriteData()
 {
-    FILE *fpObj;
-    File *fpMtl;
-    vtkIdType idStart = 1;
-    vtkPolyData *pd = this->GetInput(0);
-    vtkPolyData *imageData = this->GetInput(1);
-    vtkPointData *pntData;
-    vtkPoints *points = NULL;
-    vtkDataArray *normals = NULL;
-    vtkDataArray *tcoords = NULL;
-    vtkIdType idNext;
     double *p;
     vtkIdType npts;
 #if LIB_VERSION_LE(VTK, 8,1,0)
@@ -62,27 +73,33 @@ void vtkOBJWriter::WriteData()
     const vtkIdType *indx;
 #endif
 
-    if (pd == NULL)
+    vtkPolyData *polydata = this->GetInput(0);
+
+    if (polydata == NULL)
     {
         vtkErrorMacro(<< "No input to writer");
         return;
     }
 
-    if (this->FileName == NULL)
+    std::string objFilename = basename + ".obj";
+    std::string mtlFilename = basename + ".mtl";
+
+    if (basename.empty())
     {
         vtkErrorMacro(<< "Please specify FileName to write");
         return;
     }
 
-    fpObj = fopen(this->FileName,"w");
+    FILE *fpObj;
+    fpObj = fopen(objFilename.c_str(), "w");
     if (!fpObj)
     {
-        vtkErrorMacro(<< "unable to open output file");
+        vtkErrorMacro(<< "unable to open output obj file");
         return;
     }
 
     //
-    //  Write header
+    //  Write obj header
     //
     vtkDebugMacro("Writing wavefront files");
     fprintf(fpObj, "# wavefront obj file written by VisIt\n");
@@ -92,24 +109,74 @@ void vtkOBJWriter::WriteData()
     }
     fprintf(fpObj, "\n");
 
-    // write out a group name and material
-    fprintf (fpObj, "\ng grp%i\n", idStart);
-    fprintf (fpObj, "usemtl mtl%i\n", idStart);
+    vtkIdType idStart = 1;
+    
+    FILE *fpMtl;
+    if (writeMTL)
+    {
+        // open mtl file
+        fpMtl = fopen(mtlFilename.c_str(), "w");
+        if (!fpMtl)
+        {
+            vtkErrorMacro(<< "unable to open output mtl file");
+            return;
+        }
+
+        // if we are writing mtl, we need to link it in the obj file
+        fprintf (fpObj, "\nmtllib %s\n", mtlFilename.c_str());
+
+        // write out a group name and material
+        fprintf (fpObj, "\ng grp%i\n", idStart);
+        fprintf (fpObj, "usemtl mtl%i\n", idStart);
+
+        // now write to mtl file
+        //
+        //  Write mtl header
+        //
+        fprintf(fpMtl, "# wavefront mtl file written by VisIt\n");
+        if (this->Label)
+        {
+            fprintf(fpMtl, "# Description: %s\n", this->Label);
+        }
+        fprintf(fpMtl, "\n");
+
+        fprintf(fpMtl,"newmtl mtl%i\n",idStart);
+        fprintf(fpMtl,"\tKa 0.000 0.000 0.000\n");
+        fprintf(fpMtl,"\tKd 0.000 0.000 0.000\n");
+        fprintf(fpMtl,"\tKs 0.000 0.000 0.000\n");
+        fprintf(fpMtl,"\tNs 100\n");
+        fprintf(fpMtl,"\tillum 2\n\n");
+
+        if (hasTex)
+        {
+            if (texFilename.empty())
+            {
+                vtkErrorMacro(<< "Please specify texture FileName");
+                return;
+            }
+
+            fprintf(fpMtl,"\tmap_Ka %s\n", texFilename.c_str());
+            fprintf(fpMtl,"\tmap_Kd %s\n", texFilename.c_str());
+            fprintf(fpMtl,"\tmap_Ks %s\n", texFilename.c_str());
+        }
+
+        fclose(fpMtl);
+    }
 
     // write out the points
-    points = pd->GetPoints();
+    vtkPoints *points = polydata->GetPoints();
     for (vtkIdType i = 0; i < points->GetNumberOfPoints(); i++)
     {
         p = points->GetPoint(i);
         fprintf (fpObj, "v %g %g %g\n", p[0], p[1], p[2]);
     }
-    idNext = idStart + (int)(points->GetNumberOfPoints());
+    vtkIdType idNext = idStart + (int)(points->GetNumberOfPoints());
 
     // write out the point data
-    pntData = pd->GetPointData();
-    if (pntData->GetNormals())
+    vtkPointData *pntData = polydata->GetPointData();
+    vtkDataArray *normals = pntData->GetNormals();
+    if (normals)
     {
-        normals = pntData->GetNormals();
         for (vtkIdType i = 0; i < normals->GetNumberOfTuples(); i++)
         {
             p = normals->GetTuple(i);
@@ -117,7 +184,7 @@ void vtkOBJWriter::WriteData()
         }
     }
 
-    tcoords = pntData->GetTCoords();
+    vtkDataArray *tcoords = pntData->GetTCoords();
     if (tcoords)
     {
         for (vtkIdType i = 0; i < tcoords->GetNumberOfTuples(); i++)
@@ -128,14 +195,14 @@ void vtkOBJWriter::WriteData()
     }
 
     // write out polys if any
-    if (pd->GetNumberOfPolys() > 0)
+    if (polydata->GetNumberOfPolys() > 0)
     {
 #if LIB_VERSION_LE(VTK, 8,1,0)
-        cells = pd->GetPolys();
+        cells = polydata->GetPolys();
         for (cells->InitTraversal(); cells->GetNextCell(npts,indx); )
         {
 #else
-        cells = vtk::TakeSmartPointer(pd->GetPolys()->NewIterator());
+        cells = vtk::TakeSmartPointer(polydata->GetPolys()->NewIterator());
         for (cells->GoToFirstCell(); !cells->IsDoneWithTraversal(); cells->GoToNextCell())
         {
             cells->GetCurrentCell(npts,indx);

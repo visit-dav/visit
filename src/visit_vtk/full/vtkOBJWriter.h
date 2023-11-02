@@ -24,8 +24,10 @@ public:
   vtkSetStringMacro(Label);
   vtkGetStringMacro(Label);
 
-  void SetWriteMTL(bool writeMTL);
-  void SetMTLHasTexture(bool hasTex);
+  void SetWriteMTL(bool);
+  void SetMTLHasTexture(bool);
+  void SetBasename(std::string);
+  void SetTexFilename(std::string);
 
 protected:
   vtkOBJWriter();
@@ -37,6 +39,10 @@ private:
   void operator=(const vtkOBJWriter&);  // Not implemented.
 
   char *Label;
+  bool writeMTL;
+  bool hasTex;
+  std::string basename;
+  std::string texFilename;
 };
 
 #endif

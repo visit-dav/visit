@@ -83,7 +83,12 @@ class AVTFILEWRITER_API avtDatasetFileWriter : public avtTerminatingDatasetSink
 
     void               SetOptions(const DBOptionsAttributes &);
 
-    static void        WriteOBJFile(vtkDataSet *, const char *, const char *);
+    static void        WriteOBJFile(vtkDataSet *, 
+                                    const char *, 
+                                    const char *, 
+                                    bool writeMTL = false,
+                                    bool MTLHasTex = false,
+                                    std::string texFilename = "");
 
   protected:
     static const char *extensions[];
