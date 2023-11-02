@@ -1617,7 +1617,7 @@ avtBlueprintFileFormat::AugmentBlueprintIndex(conduit::Node &blueprint_index)
                 Node &mats_list = mset["materials"];
                 for(index_t idx=1;idx<num_volfracs+1;idx++)
                 {
-                    mats_list[conduit_fmt::format("{:03d}",idx)] = idx
+                    mats_list[conduit_fmt::format("{:03d}",idx)] = idx;
                 }
 
                 BP_PLUGIN_INFO("Auto generated matset for mesh: " << mesh_name <<
