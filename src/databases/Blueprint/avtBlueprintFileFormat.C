@@ -567,6 +567,7 @@ avtBlueprintFileFormat::DetectHOMaterial(const std::string &mesh_name,
     std::map<std::string, std::string> &matFields, std::string &freeMatName) const
 {
     bool HOmaterials = false;
+    bool axom_vol_frac_convention = false;
     freeMatName.clear();
     if (m_root_node["blueprint_index"][mesh_name].has_child("fields"))
     {
@@ -582,6 +583,10 @@ avtBlueprintFileFormat::DetectHOMaterial(const std::string &mesh_name,
                 std::string fieldName(prefix_list[prefix_idx] + matname);
                 if(n_fields.has_child(fieldName))
                 {
+                    if(prefix_list[prefix_idx] == "vol_frac_")
+                    {
+                        axom_vol_frac_convention = true;
+                    }
                     const conduit::Node &f = n_fields.fetch_existing(fieldName);
                     if(f.has_child("basis") &&
                     f.has_child("topology") &&
@@ -602,10 +607,13 @@ avtBlueprintFileFormat::DetectHOMaterial(const std::string &mesh_name,
         HOmaterials = matFields.size() == static_cast<size_t>(matNames.size());
 
         // See whether a free material needs to be created. Use Axom convention.
-        const std::string free_mat_name("vol_frac_free");
-        bool make_free_mat = !m_root_node["blueprint_index"][mesh_name]["fields"].has_child(free_mat_name);
-        if(make_free_mat)
-            freeMatName = "free";
+        if(axom_vol_frac_convention)
+        {
+            const std::string free_mat_name("vol_frac_free");
+            bool make_free_mat = !m_root_node["blueprint_index"][mesh_name]["fields"].has_child(free_mat_name);
+            if(make_free_mat)
+                freeMatName = "free";
+        }
     }
     return HOmaterials;
 }
