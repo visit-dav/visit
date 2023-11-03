@@ -50,6 +50,7 @@
 #include "conduit_relay_io_hdf5.hpp"
 #include "conduit_blueprint.hpp"
 #include "conduit_blueprint_mesh_utils.hpp"
+#include "conduit_fmt/conduit_fmt.h"
 
 //-----------------------------------------------------------------------------
 // mfem includes
@@ -610,6 +611,9 @@ avtBlueprintFileFormat::ReadBlueprintField(int domain,
 //     Justin Privitera, Thu Oct 26 12:26:32 PDT 2023
 //     Fixed warnings.
 //
+//     Cyrus Harrison Thu Nov  2 11:23:40 PDT 2023
+//     Added new detection case for "volume_fraction_" prefix.
+//
 // ****************************************************************************
 
 bool
@@ -619,28 +623,38 @@ avtBlueprintFileFormat::DetectHOMaterial(const std::string &mesh_name,
     std::map<std::string, std::string> &matFields, std::string &freeMatName) const
 {
     bool HOmaterials = false;
+    bool axom_vol_frac_convention = false;
     freeMatName.clear();
     if (m_root_node["blueprint_index"][mesh_name].has_child("fields"))
     {
         const conduit::Node &n_fields = m_root_node["blueprint_index"][mesh_name]["fields"];
         // Look for Axom convention.
-        const std::string prefix("vol_frac_");
+        std::vector<std::string> prefix_list = {"vol_frac_","volume_fraction_"};
+
         for(size_t i = 0; i < matNames.size(); i++)
         {
             const auto &matname = matNames[i];
-            std::string fieldName(prefix + matname);
-            if(n_fields.has_child(fieldName))
+            for(size_t prefix_idx = 0; prefix_idx < prefix_list.size(); prefix_idx++)
             {
-                const conduit::Node &f = n_fields.fetch_existing(fieldName);
-                if(f.has_child("basis") &&
-                   f.has_child("topology") &&
-                   f.has_child("number_of_components"))
+                std::string fieldName(prefix_list[prefix_idx] + matname);
+                if(n_fields.has_child(fieldName))
                 {
-                    std::string tname = f["topology"].as_string();
-                    int nc = f["number_of_components"].to_int();
-                    if(tname == topo_name && nc == 1)
+                    if(prefix_list[prefix_idx] == "vol_frac_")
                     {
-                        matFields[matname] = fieldName;
+                        axom_vol_frac_convention = true;
+                    }
+
+                    const conduit::Node &f = n_fields.fetch_existing(fieldName);
+                    if(f.has_child("basis") &&
+                    f.has_child("topology") &&
+                    f.has_child("number_of_components"))
+                    {
+                        std::string tname = f["topology"].as_string();
+                        int nc = f["number_of_components"].to_int();
+                        if(tname == topo_name && nc == 1)
+                        {
+                            matFields[matname] = fieldName;
+                        }
                     }
                 }
             }
@@ -650,10 +664,14 @@ avtBlueprintFileFormat::DetectHOMaterial(const std::string &mesh_name,
         HOmaterials = matFields.size() == matNames.size();
 
         // See whether a free material needs to be created. Use Axom convention.
-        const std::string free_mat_name("vol_frac_free");
-        bool make_free_mat = !m_root_node["blueprint_index"][mesh_name]["fields"].has_child(free_mat_name);
-        if(make_free_mat)
-            freeMatName = "free";
+        if(axom_vol_frac_convention)
+        {
+            // See whether a free material needs to be created. Use Axom convention.
+            const std::string free_mat_name("vol_frac_free");
+            bool make_free_mat = !m_root_node["blueprint_index"][mesh_name]["fields"].has_child(free_mat_name);
+            if(make_free_mat)
+                freeMatName = "free";
+        }
     }
     return HOmaterials;
 }
@@ -1503,6 +1521,10 @@ avtBlueprintFileFormat::ReadRootFile()
 //   Cyrus Harrison, Tue Dec 13 12:04:01 PST 2022
 //   Remove special case for HDF5 and use relay::io::IOHandle for all cases
 //
+//   Cyrus Harrison, Thu Nov  2 11:19:32 PDT 2023
+//   Added call to AugmentBlueprintIndex to identify meshes with HO
+//   volume fractions and auto a matset for them.
+//
 // ****************************************************************************
 void
 avtBlueprintFileFormat::ReadRootIndexItems(const std::string &root_fname,
@@ -1539,7 +1561,72 @@ avtBlueprintFileFormat::ReadRootIndexItems(const std::string &root_fname,
     }
 
     root_hnd.close();
+
+    AugmentBlueprintIndex(root_info["blueprint_index"]);
 }
+
+// ****************************************************************************
+//  Method: avtBlueprintFileFormat::AugmentBlueprintIndex
+//
+//  Purpose: Identify special case for high order materials and create a matset
+//
+//  Programmer: cyrush
+//  Creation:   Wed Nov  1 15:10:15 PDT 2023
+//
+//
+// ****************************************************************************
+void
+avtBlueprintFileFormat::AugmentBlueprintIndex(conduit::Node &blueprint_index)
+{
+    // loop over all meshes and see if we have high order volume fractions
+    // that aren't published as a `matset`
+    NodeIterator mesh_itr = blueprint_index.children();
+    while(mesh_itr.has_next())
+    {
+        Node &mesh = mesh_itr.next();
+        std::string mesh_name = mesh.name();
+        index_t num_volfracs = 0;
+        if(!mesh.has_path("matsets/matset") && mesh.has_child("fields"))
+        {
+            // walk index and look for the field volume_fraction_001
+            if(mesh.has_path("fields/volume_fraction_001"))
+            {
+                BP_PLUGIN_INFO("Found HO material volume fractions for mesh: " << mesh_name);
+                // we have materials !!!!
+                // count to find number of vol fracs
+                NodeConstIterator fields_itr = mesh["fields"].children();
+                while(fields_itr.has_next())
+                {
+                    const Node &field = fields_itr.next();
+                    if(field.name().find("volume_fraction_") !=std::string::npos)
+                    {
+                        num_volfracs++;
+                    }
+                }
+            }
+
+            if(num_volfracs > 0)
+            {
+                BP_PLUGIN_INFO("Matset for mesh " << mesh_name  <<
+                                "has " << num_volfracs << " material regions.");
+                // create matset
+                Node &mset = mesh["matsets/matset"];
+                mset["topology"] = mesh["fields/volume_fraction_001/topology"];
+                // fake it
+                mset["path"] = mesh["fields/volume_fraction_001/path"];
+                Node &mats_list = mset["materials"];
+                for(index_t idx=1;idx<num_volfracs+1;idx++)
+                {
+                    mats_list[conduit_fmt::format("{:03d}",idx)] = idx;
+                }
+
+                BP_PLUGIN_INFO("Auto generated matset for mesh: " << mesh_name <<
+                               std::endl << mesh["matsets/matset"].to_yaml());
+            }
+        }
+    }
+}
+
 
 // ****************************************************************************
 //  Method: avtBlueprintFileFormat::PopulateDatabaseMetaData
