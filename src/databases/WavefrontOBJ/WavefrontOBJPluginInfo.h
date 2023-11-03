@@ -26,6 +26,8 @@ class avtDatabaseWriter;
 //  Creation:   omitted
 //
 //  Modifications:
+//    Justin Privitera, Fri Nov  3 15:25:32 PDT 2023
+//    Added GetWriteOptions().
 //
 // ****************************************************************************
 
