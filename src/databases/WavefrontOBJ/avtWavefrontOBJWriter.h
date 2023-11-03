@@ -29,6 +29,9 @@ class vtkImageData;
 //  Modifications:
 //    Brad Whitlock, Tue Sep  8 17:03:17 PDT 2015
 //    Rely on base class for geometry aggregation.
+// 
+//    Justin Privitera, Fri Nov  3 15:25:32 PDT 2023
+//    Added doColor, colorTable, and GetColorTable().
 //
 // ****************************************************************************
 

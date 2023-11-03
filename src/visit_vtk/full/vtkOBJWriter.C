@@ -6,6 +6,13 @@
 //
 // Written by Hank Childs, May 27, 2002.
 
+// Modifications:
+//   Justin Privitera, Fri Nov  3 15:25:32 PDT 2023
+//   Added writeMTL, MTLHasTexture, basename, and texFilename.
+//   Reformatted the entire file.
+//   Added ability to write out mtllib with a linked texture.
+// ****************************************************************************
+
 #include "vtkOBJWriter.h"
 
 #include <visit-config.h>

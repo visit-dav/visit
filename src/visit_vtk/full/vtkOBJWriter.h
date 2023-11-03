@@ -6,6 +6,11 @@
 //
 // Written by Hank Childs on May 27th, 2002.
 
+// Modifications:
+//   Justin Privitera, Fri Nov  3 15:25:32 PDT 2023
+//   Added writeMTL, MTLHasTexture, basename, and texFilename.
+// ****************************************************************************
+
 
 #ifndef __vtkOBJWriter_
 #define __vtkOBJWriter_
