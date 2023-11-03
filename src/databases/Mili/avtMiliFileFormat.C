@@ -3245,8 +3245,7 @@ avtMiliFileFormat::GetAuxiliaryData(const char *varName,
     }
     else if (strcmp(auxType, AUXILIARY_DATA_GLOBAL_NODE_IDS) == 0)
     {
-        // TODO how to get the right name?
-        const char *mesh = "mesh1";
+        const char *mesh = varName;
         char *check = 0;
         int meshId;
         int offset = 4;
