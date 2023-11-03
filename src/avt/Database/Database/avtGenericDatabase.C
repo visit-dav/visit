@@ -4613,8 +4613,6 @@ avtGenericDatabase::GetAuxiliaryData(avtDataRequest_p spec,
         }
         else
         {
-            if (strcmp(type, AUXILIARY_DATA_GLOBAL_NODE_IDS) == 0)
-                std::cout << "calling GetAuxiliaryData for AUXILIARY_DATA_GLOBAL_NODE_IDS" << std::endl;
             //
             // We did not have it, so calculate it and then store it.
             //
@@ -5607,7 +5605,6 @@ avtGenericDatabase::GetSpecies(int dom, const char *var, int ts)
 vtkDataArray *
 avtGenericDatabase::GetGlobalNodeIds(int dom, const char *var, int ts)
 {
-    std::cout << "avtGenericDatabase::GetGlobalNodeIds" << std::endl;
     avtDatabaseMetaData *md = GetMetaData(ts);
 
     //
@@ -5618,7 +5615,6 @@ avtGenericDatabase::GetGlobalNodeIds(int dom, const char *var, int ts)
     avtDataRequest_p dataRequest = new avtDataRequest(meshname.c_str(),
                                                             ts, dom);
     VoidRefList gnodeIds;
-    std::cout << "calling GetAuxiliaryData" << std::endl;
     GetAuxiliaryData(dataRequest, gnodeIds, AUXILIARY_DATA_GLOBAL_NODE_IDS, NULL);
     if (gnodeIds.nList > 1)
     {
@@ -5636,7 +5632,6 @@ avtGenericDatabase::GetGlobalNodeIds(int dom, const char *var, int ts)
     }
     else
     {
-        std::cout << "gnodeIds.nList " << gnodeIds.nList << std::endl;
         return NULL;
     }
 }
@@ -7229,7 +7224,6 @@ avtGenericDatabase::CommunicateGhosts(avtGhostDataType ghostType,
                       avtDataRequest_p &spec, avtSourceFromDatabase *src,
                       intVector &allDomains, bool canDoCollectiveCommunication)
 {
-    std::cout << "avtGenericDatabase::CommunicateGhosts" << std::endl;
 #ifndef PARALLEL
     (void)canDoCollectiveCommunication;
 #endif
@@ -7247,9 +7241,9 @@ avtGenericDatabase::CommunicateGhosts(avtGhostDataType ghostType,
     // is the case, just return now.
     //
     int shouldStop = 0;
-    if (avtGhostData::IsZoneDuplicatedInternalToProblem(
-        md->GetGhostZoneTypesPresent(meshname)))
-    // if (md->GetContainsGhostZones(meshname) == AVT_HAS_GHOSTS)
+    unsigned char bit = (1 << AVT_BOUNDARY_GHOST_ZONES);
+    unsigned char u = static_cast<unsigned char>(md->GetGhostZoneTypesPresent(meshname));
+    if (u & bit)
         shouldStop = 1;
 #ifdef PARALLEL
     if (canDoCollectiveCommunication)
@@ -7262,7 +7256,6 @@ avtGenericDatabase::CommunicateGhosts(avtGhostDataType ghostType,
 #endif
     if (shouldStop != 0)
     {
-        std::cout << "I'm returning early" << std::endl;
         return false;
     }
 
@@ -7288,7 +7281,6 @@ avtGenericDatabase::CommunicateGhosts(avtGhostDataType ghostType,
     {
         if (GetGlobalNodeIds(doms[i], meshname.c_str(), ts) == NULL)
         {
-            std::cout << "haveDomainWithoutGlobalNodeIds = true;" << std::endl;
             haveDomainWithoutGlobalNodeIds = true;
         }
         else
@@ -7307,10 +7299,6 @@ avtGenericDatabase::CommunicateGhosts(avtGhostDataType ghostType,
 #endif
     bool canUseGlobalNodeIds = !haveDomainWithoutGlobalNodeIds &&
                                haveGlobalNodeIdsForAtLeastOneDom;
-
-    std::cout << (canUseGlobalNodeIds ? "yes canUseGlobalNodeIds" : "no canUseGlobalNodeIds") << std::endl;
-    std::cout << (haveDomainWithoutGlobalNodeIds ? "yes haveDomainWithoutGlobalNodeIds" : "no haveDomainWithoutGlobalNodeIds") << std::endl;
-    std::cout << (haveGlobalNodeIdsForAtLeastOneDom ? "yes haveGlobalNodeIdsForAtLeastOneDom" : "no haveGlobalNodeIdsForAtLeastOneDom") << std::endl;
 
     avtStreamingGhostGenerator *sgg = GetStreamingGhostGenerator();
     bool canDoStreamingGhosts = (sgg != NULL);
@@ -9189,7 +9177,6 @@ avtGenericDatabase::CommunicateGhostNodesFromGlobalNodeIds(
                       avtDatasetCollection &ds, intVector &doms,
                       avtDataRequest_p &spec, avtSourceFromDatabase *src)
 {
-    std::cout << "eric help me!" << std::endl;
     (void)src;
     int ts = spec->GetTimestep();
     avtDatabaseMetaData *md = GetMetaData(ts);

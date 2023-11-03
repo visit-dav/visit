@@ -125,12 +125,6 @@ class avtGhostData
         return (u & bit);
     }
 
-    static inline bool IsZoneDuplicatedInternalToProblem(const unsigned char &u)
-    {
-        unsigned char bit = (1 << DUPLICATED_ZONE_INTERNAL_TO_PROBLEM);
-        return (u & bit);
-    }
-
     static inline bool IsZoneDuplicated(const unsigned char &u)
     {
         unsigned char bit1 = (1 << DUPLICATED_ZONE_INTERNAL_TO_PROBLEM);
