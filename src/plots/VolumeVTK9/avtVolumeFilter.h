@@ -78,9 +78,10 @@ class avtVolumeFilter : public avtDatasetToDatasetFilter
 
     avtImage_p               RenderImageVTK(avtImage_p,
                                             const WindowAttributes &);
-
+#ifdef VISIT_SLIVR
     avtImage_p               RenderImageSLIVR(avtImage_p,
                                               const WindowAttributes &);
+#endif
 
     virtual void             Execute(void);
     virtual avtContract_p    ModifyContract(avtContract_p);

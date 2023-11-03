@@ -11,6 +11,9 @@
 #   Remove use of VTK_DEFINTIONS in compiler. It initializes some vtk
 #   modules, which is now being done in avt/Plotter/vtk/InitVTKRendering.C.
 #
+#   Kathleen Biagas, Tue Sep 5, 2023 
+#   Remove untested, unused EGL logic.
+#
 #****************************************************************************
 
 INCLUDE_DIRECTORIES(
@@ -41,8 +44,6 @@ endif()
 
 if(HAVE_OSMESA)
     target_link_libraries(time_annotation ${OSMESA_LIBRARIES})
-elseif(HAVE_EGL)
-    target_link_libraries(time_annotation ${EGL_LIBRARIES})
 endif()
 
 VISIT_INSTALL_TARGETS(text2polys time_annotation)

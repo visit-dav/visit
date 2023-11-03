@@ -72,7 +72,19 @@ ColorTableObserver::~ColorTableObserver()
 // 
 //   Justin Privitera, Mon Feb 13 14:32:02 PST 2023
 //   Removed check for tagging flag, as it no longer exists.
+// 
+//   Justin Privitera, Mon Aug 21 15:54:50 PDT 2023
+//   Changed ColorTableAttributes `names` to `colorTableNames` and `active` to
+//   `colorTableActiveFlags`.
+// 
+//   Justin Privitera, Mon Aug 28 11:22:47 PDT 2023
+//   The tag list being selected now also triggers the update.
 //
+//   Justin Privitera, Tue Sep  5 12:49:42 PDT 2023
+//   Check if tags match any has been selected to trigger update.
+//   Removed obsolete GetChangesMade check and setting.
+//   Removed disaster recovery code for CTactive and CTnames not being the same
+//   length as it it no longer necessary.
 // ****************************************************************************
 
 void
@@ -86,15 +98,16 @@ ColorTableObserver::Update(Subject *)
     // 3. If just #2 is selected, we're changing the default colormap. This is
     //    only of concern if I decide to show what the default is in a widget.
 
+    // NOTE: The logic here is identical to that in ViewerSubject::HandleColorTable.
+    // If you are making a change to either, change in both places.
+
     // If the names or the color table attributes are changing, then we
     // have to update the widget.
-    if(colorAtts->IsSelected(ColorTableAttributes::ID_names) ||
+    if(colorAtts->IsSelected(ColorTableAttributes::ID_colorTableNames) ||
+       colorAtts->IsSelected(ColorTableAttributes::ID_tagListNames) ||
        colorAtts->IsSelected(ColorTableAttributes::ID_colorTables) ||
-       colorAtts->GetChangesMade())
+       colorAtts->IsSelected(ColorTableAttributes::ID_tagsMatchAny))
     {
-        // reset
-        colorAtts->SetChangesMade(false);
-
         // Clear all of the color tables.
         QvisColorTableButton::setColorTableAttributes(colorAtts);
         QvisColorTableButton::clearAllColorTables();
@@ -102,25 +115,14 @@ ColorTableObserver::Update(Subject *)
         QvisNoDefaultColorTableButton::clearAllColorTables();
 
         int nNames = colorAtts->GetNumColorTables();
-        const stringVector &names = colorAtts->GetNames();
-        const intVector &active = colorAtts->GetActive();
-
-        // This should never happen. Resetting the names will reset the active
-        // array as well, and make every color table active. However, this does
-        // happen; when loading settings from config/session files, `names` is
-        // populated but `active` is left empty. Ideally, loading settings
-        // would correctly preserve which color tables are active, but this
-        // final guard here works just fine, as which color tables are active
-        // is calculated after this.
-        if (names.size() != active.size())
-            colorAtts->SetNames(names);
-        
+        const stringVector &ctnames = colorAtts->GetColorTableNames();
+        const intVector &ctactive = colorAtts->GetColorTableActiveFlags();
         for (int i = 0; i < nNames; ++i)
         {
-            if (active[i])
+            if (ctactive[i])
             {
-                QvisColorTableButton::addColorTable(names[i].c_str());
-                QvisNoDefaultColorTableButton::addColorTable(names[i].c_str());
+                QvisColorTableButton::addColorTable(ctnames[i].c_str());
+                QvisNoDefaultColorTableButton::addColorTable(ctnames[i].c_str());
             }
         }
 

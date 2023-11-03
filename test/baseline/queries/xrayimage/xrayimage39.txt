@@ -1,6 +1,0 @@
-engine_ser: ERROR: Conduit Exception in X Ray Image Query Execute: 
-
-
-
-message: 
-HDF5 Error code-1 Error opening HDF5 file for writing: VISIT_TOP_DIR/test/testdir/baddir/output.root

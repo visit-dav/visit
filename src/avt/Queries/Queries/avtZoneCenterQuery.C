@@ -22,8 +22,8 @@ using std::string;
 // ****************************************************************************
 //  Method: avtZoneCenterQuery constructor
 //
-//  Programmer: Kathleen Bonnell 
-//  Creation:   May 25, 2004 
+//  Programmer: Kathleen Bonnell
+//  Creation:   May 25, 2004
 //
 //  Modifications:
 //    Kathleen Biagas, Tue Jun 21 10:13:00 PDT 2011
@@ -31,7 +31,7 @@ using std::string;
 //
 // ****************************************************************************
 
-avtZoneCenterQuery::avtZoneCenterQuery() : avtDatasetQuery() 
+avtZoneCenterQuery::avtZoneCenterQuery() : avtDatasetQuery()
 {
     domain = 0;
     element = 0;
@@ -42,14 +42,14 @@ avtZoneCenterQuery::avtZoneCenterQuery() : avtDatasetQuery()
 // ****************************************************************************
 //  Method: avtZoneCenterQuery destructor
 //
-//  Programmer: Kathleen Bonnell 
-//  Creation:   May 25, 2004 
+//  Programmer: Kathleen Bonnell
+//  Creation:   May 25, 2004
 //
 //  Modifications:
 //
 // ****************************************************************************
 
-avtZoneCenterQuery::~avtZoneCenterQuery() 
+avtZoneCenterQuery::~avtZoneCenterQuery()
 {
 }
 
@@ -62,18 +62,18 @@ avtZoneCenterQuery::~avtZoneCenterQuery()
 //  Arguments:
 //    params:   MapNode containing input parameters.
 //
-//  Programmer: Kathleen Biagas 
+//  Programmer: Kathleen Biagas
 //  Creation:   June 20, 2011
 //
 //  Modifications:
 //    Kathleen Biagas, Thu Jan 10 08:12:47 PST 2013
-//    Use newer MapNode methods that check for numeric entries and retrieves 
+//    Use newer MapNode methods that check for numeric entries and retrieves
 //    to specific type.
 //
 // ****************************************************************************
 
 void
-avtZoneCenterQuery::SetInputParams(const MapNode &params) 
+avtZoneCenterQuery::SetInputParams(const MapNode &params)
 {
     if(params.HasNumericEntry("use_global_id"))
         useGlobalId = params.GetEntry("use_global_id")->ToBool();
@@ -96,13 +96,13 @@ avtZoneCenterQuery::SetInputParams(const MapNode &params)
 //  Arguments:
 //    params:   MapNode to store the default input values.
 //
-//  Programmer: Kathleen Biagas 
+//  Programmer: Kathleen Biagas
 //  Creation:   July 15, 2011
 //
 // ****************************************************************************
 
 void
-avtZoneCenterQuery::GetDefaultInputParams(MapNode &params) 
+avtZoneCenterQuery::GetDefaultInputParams(MapNode &params)
 {
     params["use_global_id"] = 0;
     params["domain"] = 0;
@@ -114,28 +114,28 @@ avtZoneCenterQuery::GetDefaultInputParams(MapNode &params)
 //  Method: avtZoneCenterQuery::PerformQuery
 //
 //  Purpose:
-//    Perform the requested query. 
+//    Perform the requested query.
 //
-//  Programmer: Kathleen Bonnell 
-//  Creation:   May 25, 2004 
+//  Programmer: Kathleen Bonnell
+//  Creation:   May 25, 2004
 //
 //  Modifications:
 //
 //    Mark C. Miller, Wed Jun  9 21:50:12 PDT 2004
 //    Eliminated use of MPI_ANY_TAG and modified to use GetUniqueMessageTags
 //
-//    Kathleen Bonnell, Fri Jun 11 14:35:50 PDT 2004 
-//    Renamed QueryZoneCenter to QueryCoords, added bool arg. 
+//    Kathleen Bonnell, Fri Jun 11 14:35:50 PDT 2004
+//    Renamed QueryZoneCenter to QueryCoords, added bool arg.
 //
-//    Kathleen Bonnell, Tue Jul  6 15:25:02 PDT 2004 
-//    Removed MPI calls, use GetFloatArrayToRootProc. 
+//    Kathleen Bonnell, Tue Jul  6 15:25:02 PDT 2004
+//    Removed MPI calls, use GetFloatArrayToRootProc.
 //
-//    Kathleen Bonnell, Thu Dec 16 17:16:33 PST 2004 
+//    Kathleen Bonnell, Thu Dec 16 17:16:33 PST 2004
 //    Moved code that actually finds zone center to FindLocalCenter and
-//    FindGlobalCenter. 
+//    FindGlobalCenter.
 //
-//    Kathleen Bonnell, Tue Dec 28 14:52:22 PST 2004 
-//    Add 'global' to output string as necessary. 
+//    Kathleen Bonnell, Tue Dec 28 14:52:22 PST 2004
+//    Add 'global' to output string as necessary.
 //
 //    Cyrus Harrison, Tue Sep 18 13:45:35 PDT 2007
 //    Added support for user settable floating point format string
@@ -150,27 +150,31 @@ avtZoneCenterQuery::GetDefaultInputParams(MapNode &params)
 //    Correct the setting of the results value and results message in the
 //    case where the query fails.
 //
+//    Kathleen Biagas, Thu Aug 10, 2023
+//    If the current process has never owned any domain, don't allow it to
+//    peform the work of this query, as it will not have the correct ghost
+//    type information needed by avtGenericDatabase::QueryCoords
+//
 // ****************************************************************************
 
 void
 avtZoneCenterQuery::PerformQuery(QueryAttributes *qA)
 {
     queryAtts = *qA;
-    Init(); 
+    Init();
 
     string floatFormat = queryAtts.GetFloatFormat();
     string format = "";
-    
+
     UpdateProgress(0, 0);
 
     bool singleDomain = false;
     if (!useGlobalId)
     {
         intVector dlist;
-        avtDataRequest_p dataRequest = 
+        avtDataRequest_p dataRequest =
             GetInput()->GetOriginatingSource()->GetFullDataRequest();
         dataRequest->GetSIL().GetDomainList(dlist);
-
         if (dlist.size() == 1 && dataRequest->UsesAllDomains())
         {
             singleDomain = true;
@@ -184,12 +188,17 @@ avtZoneCenterQuery::PerformQuery(QueryAttributes *qA)
     double coord[3] = {0., 0., 0.};
     bool success = false;
 
-    if (!useGlobalId)
-        success = FindLocalCenter(coord);    
-    else 
-        success = FindGlobalCenter(coord);    
+    // don't perform the work if never owned a domain, as ghost type
+    // needed by avtGenericDatabase::QueryCoords won't be correct.
+    if(GetInput()->GetInfo().GetValidity().GetHasEverOwnedAnyDomain())
+    {
+        if (!useGlobalId)
+            success = FindLocalCenter(coord);
+        else
+            success = FindGlobalCenter(coord);
+    }
 
-    GetDoubleArrayToRootProc(coord, 3, success);   
+    GetDoubleArrayToRootProc(coord, 3, success);
 
     if (PAR_Rank() != 0)
         return;
@@ -209,7 +218,7 @@ avtZoneCenterQuery::PerformQuery(QueryAttributes *qA)
 
         MapNode result_node;
         result_node["center"] = c;
- 
+
         if (singleDomain)
         {
             string global;
@@ -224,17 +233,17 @@ avtZoneCenterQuery::PerformQuery(QueryAttributes *qA)
             }
             if (dim == 2)
             {
-                format = "The center of %s zone %d is (" + floatFormat + ", " 
+                format = "The center of %s zone %d is (" + floatFormat + ", "
                                                          + floatFormat + ").";
-                snprintf(msg, 120, format.c_str(), 
+                snprintf(msg, 120, format.c_str(),
                          global.c_str(), element, c[0], c[1]);
             }
-            else 
+            else
             {
-                format = "The center of %s zone %d is (" + floatFormat + ", " 
-                                                         + floatFormat + ", " 
+                format = "The center of %s zone %d is (" + floatFormat + ", "
+                                                         + floatFormat + ", "
                                                          + floatFormat + ").";
-                snprintf(msg, 120, format.c_str(), 
+                snprintf(msg, 120, format.c_str(),
                          global.c_str(), element,
                          c[0], c[1], c[2]);
             }
@@ -252,18 +261,18 @@ avtZoneCenterQuery::PerformQuery(QueryAttributes *qA)
             result_node["domain"] = domainName;
             if (dim == 2)
             {
-                format = "The center of zone %d (%s) is (" + floatFormat + ", " 
+                format = "The center of zone %d (%s) is (" + floatFormat + ", "
                                                          + floatFormat + ").";
                 snprintf(msg, 120, format.c_str(),
                          element, domainName.c_str(),
                          c[0], c[1]);
             }
-            else 
+            else
             {
-                format = "The center of zone %d (%s) is (" + floatFormat + ", " 
-                                                           + floatFormat + ", " 
+                format = "The center of zone %d (%s) is (" + floatFormat + ", "
+                                                           + floatFormat + ", "
                                                            + floatFormat + ").";
-                snprintf(msg, 120, format.c_str(), 
+                snprintf(msg, 120, format.c_str(),
                          element, domainName.c_str(),
                          c[0], c[1], c[2]);
             }
@@ -313,8 +322,8 @@ avtZoneCenterQuery::PerformQuery(QueryAttributes *qA)
 //  Arguments:
 //    coord     A place to store the coordinates of the zone center.
 //
-//  Programmer: Kathleen Bonnell 
-//  Creation:   December 16, 2004 
+//  Programmer: Kathleen Bonnell
+//  Creation:   December 16, 2004
 //
 //  Modifications:
 //    Kathleen Biagas, Tue Jun 21 10:14:51 PDT 2011
@@ -351,7 +360,7 @@ avtZoneCenterQuery::FindGlobalCenter(double coord[3])
 //
 //  Purpose:
 //    Find the center of zone specified in queryAtts in domain specified
-//    by queryAtts. 
+//    by queryAtts.
 //
 //  Returns:
 //    true upon succesful location of zone and determination of its center,
@@ -360,29 +369,26 @@ avtZoneCenterQuery::FindGlobalCenter(double coord[3])
 //  Arguments:
 //    coord     A place to store the coordinates of the zone center.
 //
-//  Programmer: Kathleen Bonnell 
+//  Programmer: Kathleen Bonnell
 //  Creation:   December 16, 2004 (moved from method PerformQuery)
 //
 //  Modifications:
 //    Kathleen Biagas, Tue Jun 21 10:14:51 PDT 2011
 //    Domain, zone, retrieved in SetInputParams.
 //
+//    Kathleen Biagas, Thu Aug 10, 2023
+//    Removed initial call to retreive DataRequest and DomainList as
+//    they aren't used.
+//
 // ****************************************************************************
 
 bool
 avtZoneCenterQuery::FindLocalCenter(double coord[3])
 {
-    intVector dlist;
-    avtDataRequest_p dataRequest = 
-        GetInput()->GetOriginatingSource()->GetFullDataRequest();
-    dataRequest->GetSIL().GetDomainList(dlist);
-
     int blockOrigin = GetInput()->GetInfo().GetAttributes().GetBlockOrigin();
     int cellOrigin  = GetInput()->GetInfo().GetAttributes().GetCellOrigin();
     int dom         = domain  - blockOrigin;
     int zone        = element - cellOrigin;
-
-
     int ts          = queryAtts.GetTimeStep();
     string var      = queryAtts.GetVariables()[0];
 
@@ -393,6 +399,7 @@ avtZoneCenterQuery::FindLocalCenter(double coord[3])
     dom  = (dom < 0 ? 0 : dom);
     zone = (zone < 0 ? 0 : zone);
 
+    intVector dlist;
     avtSILRestrictionTraverser trav(querySILR);
     trav.GetDomainList(dlist);
     bool success = false;
@@ -412,6 +419,13 @@ avtZoneCenterQuery::FindLocalCenter(double coord[3])
     avtOriginatingSource *src = GetInput()->GetOriginatingSource();
     if (domainUsed)
     {
+        //
+        //  See if this processor is working with this domain.
+        //  ** THIS IS CURRENTLY BROKEN AS dlist ALWAYS CONTAINS ALL THE
+        //     DOMAINS AVAILABLE, NOT THE DOMAINS THIS PROCESS HAS, SO
+        //     ALL PROCS PARTICIPATE IN THIS QUERY MEANING UNNECESSARY
+        //     READS OF THE DOMAIN BY PROCS THAT DON'T HAVE IT **
+        //
         for (size_t i = 0; i < dlist.size() && !success; ++i)
         {
             if (dlist[i] == dom)

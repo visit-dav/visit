@@ -1,3 +1,41 @@
+Code: ColorTableAttributes.C
+Prefix:
+constexpr int ADDTAG    = 0;
+constexpr int REMOVETAG = 1;
+
+// It is time to say goodbye to the tagList. It has now been broken up into a
+// series of vectors that are proper class members. We will describe each one:
+
+// Each of the following has the same number of entries; one for each tag:
+// 
+// tagListNames - houses the names of the tags.
+// tagListActive - a flag indicating whether or not the tag is enabled.
+// tagListNumRefs - a count of how many color tables have this tag.
+// tagListTableItemFlag - a flag indicating if the tag table in the color
+//    table window has an entry for this tag.
+
+// Tag changes are no longer a part of the tag list. The following three
+// vectors are the same length; they have one entry for each tag change that
+// is made.
+// 
+// tagChangesTag - the name of the tag that is being added to or removed 
+//    from a color table.
+// tagChangesType - a constant equal to either ADDTAG (0) or REMOVETAG (1).
+// tagChangesCTName - the name of the color table (std::string) being added
+//    to or removed from.
+
+// These vectors are updated on the fly to reflect the latest tag 
+// changes. They are also used to determine if a tag change is legal
+// (particularly if a color table is built in), and they are saved out to 
+// state files.
+
+// There are also "deferred" versions of the previous three vectors. The idea
+// is that tag changes may be applied *before* all color tables have been 
+// loaded. If that happens, we store the tag changes in the deferred tag 
+// changes vectors, which are then applied when the color table they belong to
+// is added to the CTAtts.
+Postfix:
+
 Target: xml2python
 Code: PyColorTableAttributes_getattr
 Prefix:
@@ -94,6 +132,26 @@ Postfix:
 #endif
 
 Target: xml2atts
+Initialization: tagListNames
+    tagListNames.push_back("Default"); // add the "Default" tag to the tag list.
+    tagListNames.push_back("User Defined"); // add the "User Defined" tag to the tag list.
+
+Target: xml2atts
+Initialization: tagListActive
+    tagListActive.push_back(true); // set the "Default" tag to on.
+    tagListActive.push_back(true); // set the "User Defined" tag to on.
+
+Target: xml2atts
+Initialization: tagListNumRefs
+    tagListNumRefs.push_back(0); // the "Default" tag has no refs.
+    tagListNumRefs.push_back(0); // the "User Defined" tag has no refs.
+
+Target: xml2atts
+Initialization: tagListTableItemFlag
+    tagListTableItemFlag.push_back(false); // the "Default" tag has no tag table entry.
+    tagListTableItemFlag.push_back(false); // the "User Defined" tag has no tag table entry.
+
+Target: xml2atts
 Function: GetColorTableIndex
 Declaration: int GetColorTableIndex(const std::string &name) const;
 Definition:
@@ -114,16 +172,17 @@ Definition:
 // Creation:   Sat Jun 16 20:32:23 PST 2001
 //
 // Modifications:
-//
+//   Justin Privitera, Mon Aug 21 15:54:50 PDT 2023
+//   Changed ColorTableAttributes `names` to `colorTableNames`.
 // ****************************************************************************
 
 int
 ColorTableAttributes::GetColorTableIndex(const std::string &name) const
 {
     int retval = -1;
-    for(size_t i = 0; i < names.size(); ++i)
+    for(size_t i = 0; i < colorTableNames.size(); ++i)
     {
-        if(names[i] == name)
+        if(colorTableNames[i] == name)
         {
             retval = i;
             break;
@@ -140,9 +199,9 @@ Definition:
     public int GetColorTableIndex(String name)
     {
         int retval = -1;
-        for(int i = 0; i < names.size(); ++i)
+        for(int i = 0; i < colorTableNames.size(); ++i)
         {
-            String n = (String)names.elementAt(i);
+            String n = (String)colorTableNames.elementAt(i);
             if(n.equals(name))
             {
                 retval = i;
@@ -263,7 +322,7 @@ Definition:
 
 Target: xml2atts
 Function: AddColorTable
-Declaration: void AddColorTable(const std::string &name, const ColorControlPointList &cpts);
+Declaration: void AddColorTable(const std::string &name, ColorControlPointList &cpts);
 Definition:
 // ****************************************************************************
 // Method: ColorTableAttributes::AddColorTable
@@ -298,20 +357,30 @@ Definition:
 // 
 //   Justin Privitera, Wed Aug  3 19:46:13 PDT 2022
 //   Do nothing if the color table is built-in.
-//
+// 
+//   Justin Privitera, Mon Aug 21 15:54:50 PDT 2023
+//   Changed ColorTableAttributes `names` to `colorTableNames` and `active` to
+//   `colorTableActiveFlags`.
+//   Removed some redundant logic with default color tables.
+// 
+//   Justin Privitera, Mon Aug 28 09:57:59 PDT 2023
+//   Made the passed ccpl not const so we can edit its tags.
+//   Add the "No Tags" tag here if the ccpl has no tags.
+//   Apply deferred tag changes.
+//   Fixed a bug where the CTnames and ccpls would get sorted but CTactive
+//   flags would not be.
+// 
+//    Justin Privitera, Tue Sep  5 12:49:42 PDT 2023
+//    Create tag list entry on CT addition.
+//    Increment tag list entry on CT addition.
+//    Filter CT by tags when it is added.
+//    Use new selection methods to select CTs and tags lists.
 // ****************************************************************************
 
 void
 ColorTableAttributes::AddColorTable(const std::string &name,
-    const ColorControlPointList &cpts)
+                                    ColorControlPointList &cpts)
 {
-    bool defaultContinuous = false;
-    if (GetDefaultContinuous() == name)
-        defaultContinuous = true;
-    bool defaultDiscrete = false;
-    if (GetDefaultDiscrete() == name)
-        defaultDiscrete = true;
-
     // Remove the color table if it already exists in the list.
     int index = GetColorTableIndex(name);
     if(index != -1)
@@ -322,32 +391,54 @@ ColorTableAttributes::AddColorTable(const std::string &name,
         RemoveColorTable(index);
     }
 
-    // Append the color table to the list.
-    names.push_back(name);
-    active.push_back(true);
-    AddColorTables(cpts);
+    // if this table doesn't have tags, then add the no-tags tag
+    if (cpts.GetNumTags() == 0)
+        cpts.AddTag("No Tags");
 
-    // Store the name, colortable pairs into a map.
-    std::map<std::string, AttributeGroup *> sortMap;
-    size_t i;
-    for(i = 0; i < names.size(); ++i)
-        sortMap[names[i]] = colorTables[i];
+    // if we had tag changes from a session or config file for this color
+    // table BEFORE we had access to the color table, we can add them in now.
+    ApplyDeferredTagChanges(name, &cpts);
 
-    // Traverse the map, it will be sorted. Store the names and color table
-    // pointer back into the old vectors.
-    std::map<std::string, AttributeGroup *>::iterator pos;
-    for(i = 0, pos = sortMap.begin(); pos != sortMap.end(); ++pos, ++i)
+    // iterate thru each tag in the given color table
+    for (const auto & tagname : cpts.GetTagNames())
     {
-        names[i] = pos->first;
-        colorTables[i] = pos->second;
+        // add the tag to the tag list if it is not already there
+        CreateTagListEntry(tagname, false, 0, false);
+        IncrementTagNumRefs(tagname);
     }
 
-    if (defaultContinuous)
-        SetDefaultContinuous(name);
-    if (defaultDiscrete)
-        SetDefaultDiscrete(name);
+    // Append the color table to the list.
+    colorTableNames.push_back(name);
+    colorTableActiveFlags.push_back(true);
+    AddColorTables(cpts);
 
-    Select(0, (void *)&names);
+    // Store the name, active, and colortable triples into a map.
+    std::map<std::string, std::pair<int, AttributeGroup *>> sortMap;
+    for(size_t i = 0; i < colorTableNames.size(); ++i)
+    {
+        sortMap[colorTableNames[i]].first  = colorTableActiveFlags[i];
+        sortMap[colorTableNames[i]].second = colorTables[i];
+    }
+
+    // Traverse the map, it will be sorted. Store the colorTableNames and color table
+    // pointer back into the old vectors.
+    std::map<std::string, std::pair<int, AttributeGroup *>>::iterator pos;
+    size_t i;
+    for(i = 0, pos = sortMap.begin(); pos != sortMap.end(); ++pos, ++i)
+    {
+        colorTableNames[i] = pos->first;
+        auto ctpair = pos->second;
+        colorTableActiveFlags[i] = ctpair.first;
+        colorTables[i] = ctpair.second;
+    }
+
+    // determine if this color table belongs in the current tag filtering selection
+    int CTindex = GetColorTableIndex(name);
+    if (CTindex >= 0 && CTindex < colorTableActiveFlags.size())
+        colorTableActiveFlags[CTindex] = FilterTableByTag(cpts);
+
+    SelectColorTablesList();
+    SelectTagList();
 }
 
 Target: xml2java
@@ -356,9 +447,10 @@ Declaration: AddColorTable
 Definition:
     public void AddColorTable(String name, ColorControlPointList cpts)
     {
-        names.addElement(new String(name));
-        active.addElement(true);
+        colorTableNames.addElement(new String(name));
+        colorTableActiveFlags.addElement(true);
         Select(0);
+        Select(1);
         AddColorTables(cpts);
     }
 
@@ -434,87 +526,83 @@ Definition:
 // 
 //    Justin Privitera, Thu Sep 29 17:27:37 PDT 2022
 //    Replace auto w/ bool. Add in missing breaks.
+// 
+//   Justin Privitera, Mon Aug 21 15:54:50 PDT 2023
+//   Changed ColorTableAttributes `names` to `colorTableNames` and `active` to
+//   `colorTableActiveFlags`.
+//   Simplified and reused some logic for default color tables.
+//   Renamed iterators to better describe what they iterate over.
+// 
+//   Justin Privitera, Mon Aug 28 09:57:59 PDT 2023
+//   Renamed iterators to reduce ambiguity.
 //
+//    Justin Privitera, Tue Sep  5 12:49:42 PDT 2023
+//    Use the new color tables list selection method.
+//    Decrement tag num refs on CT removal.
+// 
+//   Justin Privitera, Wed Sep  6 11:52:18 PDT 2023
+//   Fixed bug where I was saving out the tag changes multiple times.
+//   Simplified logic for determining the default color table.
 // ****************************************************************************
 
 void
 ColorTableAttributes::RemoveColorTable(int index)
 {
-    if(index >= 0 && (size_t)index < names.size())
+    if(index >= 0 && (size_t)index < colorTableNames.size())
     {
         // do nothing if the color table is built-in.
         if (GetColorControlPoints(index)->GetBuiltIn())
             return;
 
-        // Determine if the color table is default.
-        bool isDefaultContinuous, isDefaultDiscrete;
-        isDefaultContinuous = (names[index] == defaultContinuous);
-        isDefaultDiscrete = (names[index] == defaultDiscrete);
+        for (const auto & tagname : GetColorControlPoints(index)->GetTagNames())
+            DecrementTagNumRefs(tagname);
+
+        // Grab the color table name before we remove anything.
+        std::string ctName = colorTableNames[index];
 
         // Iterate through the vector "index" times.
-        stringVector::iterator pos = names.begin();
-        intVector::iterator pos2 = active.begin();
+        auto ctNamesItr  = colorTableNames.begin();
+        auto ctActiveItr = colorTableActiveFlags.begin();
         for(int i = 0; i < index; ++i)
         {
-            ++pos;
-            ++pos2;
+            ++ ctNamesItr;
+            ++ ctActiveItr;
         }
 
-        // If pos is still a valid iterator, remove that element.
-        if(pos != names.end())
+        // If ctNamesItr is still a valid iterator, remove that element.
+        if (ctNamesItr  != colorTableNames.end() &&
+            ctActiveItr != colorTableActiveFlags.end())
         {
-            names.erase(pos);
-            active.erase(pos2);
+            colorTableNames.erase(ctNamesItr);
+            colorTableActiveFlags.erase(ctActiveItr);
         }
 
-        // Indicate that things have changed by selecting the list.
-        Select(0, (void *)&names);
+        // Indicate that things have changed by selecting the lists.
+        SelectColorTablesList();
 
         // erase the color table from the vector.
         RemoveColorTables(index);
 
+        auto determineDefaultColorTable = [&](bool discrete)
+        {
+            if (colorTableNames.size() > 0)
+            {
+                for (int i = 0; i < colorTableNames.size(); i ++)
+                {
+                    bool ctDiscrete{GetColorTables(i).GetDiscreteFlag()};
+                    if (discrete == ctDiscrete)
+                        return colorTableNames[i];
+                }
+            }
+            return std::string("");
+        };
+
         // If it is the default color table that was removed, reset the
         // default color table to the first element.
-        if(isDefaultContinuous)
-        {
-            if(names.size() > 0)
-            {
-                bool found{false};
-                for (int i = 0; i < names.size(); i ++)
-                {
-                    if (! GetColorTables(i).GetDiscreteFlag())
-                    {
-                        SetDefaultContinuous(names[i]);
-                        found = true;
-                        break;
-                    }
-                }
-                if (! found)
-                    SetDefaultContinuous(std::string(""));
-            }
-            else
-                SetDefaultContinuous(std::string(""));
-        }
-        if(isDefaultDiscrete)
-        {
-            if(names.size() > 0)
-            {
-                bool found{false};
-                for (int i = 0; i < names.size(); i ++)
-                {
-                    if (GetColorTables(i).GetDiscreteFlag())
-                    {
-                        SetDefaultDiscrete(names[i]);
-                        found = true;
-                        break;
-                    }
-                }
-                if (! found)
-                    SetDefaultDiscrete(std::string(""));
-            }
-            else
-                SetDefaultDiscrete(std::string(""));
-        }
+        if (ctName == defaultContinuous)
+            SetDefaultContinuous(determineDefaultColorTable(false));
+        else if (ctName == defaultDiscrete)
+            SetDefaultDiscrete(determineDefaultColorTable(true));
     }
 }
 
@@ -524,16 +612,17 @@ Declaration: RemoveColorTable2
 Definition:
     public void RemoveColorTable(int index)
     {
-        if(index >= 0 && index < names.size())
+        if(index >= 0 && index < colorTableNames.size())
         {
-            String nameAt = (String)names.elementAt(index);
+            String nameAt = (String)colorTableNames.elementAt(index);
             boolean isDefaultContinuous = nameAt.equals(defaultContinuous);
             boolean isDefaultDiscrete = nameAt.equals(defaultDiscrete);
 
             // Remove the name from the vector.
-            names.remove(index);
-            active.remove(index);
+            colorTableNames.remove(index);
+            colorTableActiveFlags.remove(index);
             Select(0);
+            Select(1);
 
             // Remove the color table from the vector.
             RemoveColorTables(index);
@@ -542,9 +631,9 @@ Definition:
             // default color table to the first element.
             if(isDefaultContinuous)
             {
-                if(names.size() > 0)
+                if(colorTableNames.size() > 0)
                 {
-                    nameAt = (String)names.elementAt(0);
+                    nameAt = (String)colorTableNames.elementAt(0);
                     SetDefaultContinuous(nameAt);
                 }
                 else
@@ -552,9 +641,9 @@ Definition:
             }
             if(isDefaultDiscrete)
             {
-                if(names.size() > 0)
+                if(colorTableNames.size() > 0)
                 {
-                    nameAt = (String)names.elementAt(0);
+                    nameAt = (String)colorTableNames.elementAt(0);
                     SetDefaultDiscrete(nameAt);
                 }
                 else
@@ -564,63 +653,93 @@ Definition:
     }
 
 Target: xml2atts
-Function: SetNames
-Declaration: virtual bool SetNames(const stringVector &names_);
+Function: SelectColorTablesList
+Declaration: void SelectColorTablesList();
 Definition:
 // ****************************************************************************
-// Method: ColorTableAttributes::SetNames
+// Method: ColorTableAttributes::SelectColorTablesList
 //
 // Purpose:
-//   Setter for names.
+//   Selects the pieces of the color tables list.
 //
-// Note:       There needs to be a custom setter.
+// Programmer: Justin Privitera
+// Creation:   09/05/23
+//
+// Modifications:
+// 
+// ****************************************************************************
+
+void
+ColorTableAttributes::SelectColorTablesList()
+{
+    SelectColorTableNames();
+    SelectColorTableActiveFlags();
+    SelectColorTables();
+}
+
+Target: xml2atts
+Function: SetColorTableNames
+Declaration: virtual bool SetColorTableNames(const stringVector &colorTableNames_);
+Definition:
+// ****************************************************************************
+// Method: ColorTableAttributes::SetColorTableNames
+//
+// Purpose:
+//   Setter for colorTableNames.
+//
+// Note:       There needs to be a custom setter in order to keep the 
+//             colorTableActiveFlags vector the same length.
 //
 // Programmer: Justin Privitera
 // Creation:   Thu Jun 16 11:59:26 PDT 2022
 //
 // Modifications:
-//
+//   Justin Privitera, Mon Aug 21 15:54:50 PDT 2023
+//   Changed ColorTableAttributes `names` to `colorTableNames` and `active` to
+//   `colorTableActiveFlags`.
 // ****************************************************************************
 
 void
-ColorTableAttributes::SetNames(const stringVector &names_)
+ColorTableAttributes::SetColorTableNames(const stringVector &colorTableNames_)
 {
-    names = names_;
-    Select(ID_names, (void *)&names);
-    if (active.size() != names.size())
+    colorTableNames = colorTableNames_;
+    Select(ID_colorTableNames, (void *)&colorTableNames);
+    if (colorTableActiveFlags.size() != colorTableNames.size())
     {
-        intVector newactive;
-        for (int i = 0; i < names.size(); i ++)
-            newactive.push_back(true);
-        SetActive(newactive);
+        intVector newColorTableActiveFlags;
+        for (int i = 0; i < colorTableNames.size(); i ++)
+            newColorTableActiveFlags.push_back(true);
+        SetColorTableActiveFlags(newColorTableActiveFlags);
     }
 }
 
-Function: SetActive
-Declaration: virtual void SetActive(const stringVector &names_);
+Function: SetColorTableActiveFlags
+Declaration: virtual void SetColorTableActiveFlags(const intVector &colorTableActiveFlags_);
 Definition:
 // ****************************************************************************
-// Method: ColorTableAttributes::SetActive
+// Method: ColorTableAttributes::SetColorTableActiveFlags
 //
 // Purpose:
-//   Setter for active.
+//   Setter for colorTableActiveFlags.
 //
-// Note:       There needs to be a custom setter.
+// Note:       There needs to be a custom setter to ensure that the
+//             colorTableNames vector is the same length.
 //
 // Programmer: Justin Privitera
 // Creation:   Thu Jun 16 11:59:26 PDT 2022
 //
 // Modifications:
-//
+//   Justin Privitera, Mon Aug 21 15:54:50 PDT 2023
+//   Changed ColorTableAttributes `active` to `colorTableActiveFlags`.
 // ****************************************************************************
 
 void
-ColorTableAttributes::SetActive(const intVector &active_)
+ColorTableAttributes::SetColorTableActiveFlags(const intVector &colorTableActiveFlags_)
 {
-    if (active_.size() == names.size())
+    if (colorTableActiveFlags_.size() == colorTableNames.size())
     {
-        active = active_;
-        Select(ID_active, (void *)&active);
+        colorTableActiveFlags = colorTableActiveFlags_;
+        Select(ID_colorTableActiveFlags, (void *)&colorTableActiveFlags);
     }
 }
 
@@ -678,6 +797,12 @@ Definition:
 // 
 //   Justin Privitera, Mon Feb 13 14:32:02 PST 2023
 //   Removed logic to save the tagging flag, as it no longer exists.
+// 
+//   Justin Privitera, Mon Aug 28 09:57:59 PDT 2023
+//   Added logic to save all of the tagging infrastructure to a node.
+// 
+//   Justin Privitera, Wed Sep  6 11:52:18 PDT 2023
+//   Fixed bug where I was saving out the tag changes multiple times.
 //
 // ****************************************************************************
 
@@ -691,6 +816,62 @@ ColorTableAttributes::CreateNode(DataNode *parentNode, bool, bool)
     DataNode *node = new DataNode("ColorTableAttributes");
     node->AddNode(new DataNode("defaultContinuous", defaultContinuous));
     node->AddNode(new DataNode("defaultDiscrete", defaultDiscrete));
+    node->AddNode(new DataNode("tagsMatchAny", tagsMatchAny));
+
+    // we only need to save out these two parts of the tag list
+    node->AddNode(new DataNode("tagListNames", tagListNames));
+    node->AddNode(new DataNode("tagListActive", tagListActive));
+
+    // The goal is to create new vectors representing both the 
+    // tag changes and the deferred tag changes. We do not want 
+    // to add all the deferred tag changes to the regular tag
+    // changes before saving out because execution can continue
+    // beyond saving a session or config file, and it is incorrect
+    // to have deferred tag changes ever enter the tag changes 
+    // data structures without being applied. Therefore we create
+    // three new vectors and combine the deferred and actual tag
+    // changes into them to save out to nodes.
+
+    std::vector<std::string> saveTagChangesTag;
+    std::vector<int>         saveTagChangesType;
+    std::vector<std::string> saveTagChangesCTName;
+    // add the regular tag changes
+    saveTagChangesTag.insert(saveTagChangesTag.end(), 
+                             tagChangesTag.begin(),
+                             tagChangesTag.end());
+    saveTagChangesType.insert(saveTagChangesType.end(),
+                              tagChangesType.begin(),
+                              tagChangesType.end());
+    saveTagChangesCTName.insert(saveTagChangesCTName.end(),
+                                tagChangesCTName.begin(),
+                                tagChangesCTName.end());
+    // add the deferred tag changes
+    saveTagChangesTag.insert(saveTagChangesTag.end(),
+                             deferredTagChangesTag.begin(),
+                             deferredTagChangesTag.end());
+    saveTagChangesType.insert(saveTagChangesType.end(),
+                              deferredTagChangesType.begin(),
+                              deferredTagChangesType.end());
+    saveTagChangesCTName.insert(saveTagChangesCTName.end(),
+                                deferredTagChangesCTName.begin(),
+                                deferredTagChangesCTName.end());
+
+    // The use case for this is as follows: If a user has user-defined
+    // color tables in their .visit directory, and they make tag changes
+    // to them and then save out a config or session file, their changes
+    // will be saved. Next time they run visit, if they have moved the 
+    // user defined color tables, they will not be loaded, so the tag 
+    // changes for those missing color tables will be added to the 
+    // deferred tag changes. If they again save a config/session file,
+    // they will want visit to honor their original tag changes if they 
+    // put their user defined color tables back into visit. Hence we
+    // must save the deferred tag changes, just in case the missing 
+    // color table they belong to is ever brought back in a future session.
+
+    // the tag changes are stored in three parallel vectors
+    node->AddNode(new DataNode("tagChangesTag",    saveTagChangesTag));
+    node->AddNode(new DataNode("tagChangesType",   saveTagChangesType));
+    node->AddNode(new DataNode("tagChangesCTName", saveTagChangesCTName));
 
     // Add the node to the parent node.
     parentNode->AddNode(node);
@@ -733,7 +914,12 @@ Definition:
 // 
 //   Justin Privitera, Mon Feb 13 14:32:02 PST 2023
 //   Removed logic to extract the tagging flag, as it no longer exists.
+// 
+//   Justin Privitera, Mon Aug 28 09:57:59 PDT 2023
+//   Added logic to read all of the tagging infrastructure from a node.
 //
+//   Justin Privitera, Tue Sep  5 12:49:42 PDT 2023
+//   Filter tables by tag at the end, once all data has been read from node.
 // ****************************************************************************
 
 void
@@ -756,13 +942,58 @@ ColorTableAttributes::SetFromNode(DataNode *parentNode)
     // For older version compatibility...
     if((node = searchNode->GetNode("defaultColorTable")) != 0)
         SetDefaultContinuous(node->AsString());
+
+    if((node = searchNode->GetNode("tagsMatchAny")) != 0)
+        tagsMatchAny = node->AsBool();
+
+    if((node = searchNode->GetNode("tagListNames")) != 0)
+    {
+        stringVector tagListNamesFromNode = node->AsStringVector();
+        for (auto tagname : tagListNamesFromNode)
+            CreateTagListEntry(tagname, false, 0, false);
+
+        // we only care about the list of active tags if we have the tag names
+        DataNode *node2;
+        if ((node2 = searchNode->GetNode("tagListActive")) != 0)
+        {
+            intVector tagListActiveFromNode = node2->AsIntVector();
+
+            // if the tag name and tag active lists match up 1 to 1, as expected
+            if (tagListActiveFromNode.size() == tagListNamesFromNode.size())
+            {
+                for (size_t tagId = 0; tagId < tagListNamesFromNode.size(); tagId ++)
+                    SetTagActive(tagListNamesFromNode[tagId], tagListActiveFromNode[tagId]);
+            }
+            else
+            {
+                debug1 << "ColorTableAttributes WARNING: "
+                       << "The color table tag names list and active tags list "
+                       << "should be the same size. "
+                       << "Has your config/session file been corrupted?";
+            }
+        }
+    }
+
+    DataNode *node2, *node3;
+    // we need all three vectors to be present for this to work
+    if ((node  = searchNode->GetNode("tagChangesTag"))    != 0 &&
+        (node2 = searchNode->GetNode("tagChangesType"))   != 0 &&
+        (node3 = searchNode->GetNode("tagChangesCTName")) != 0)
+    {
+        MergeTagChanges(node->AsStringVector(),
+                        node2->AsIntVector(),
+                        node3->AsStringVector());
+    }
+
+    // Once we have acquired all the tagging information, we can filter.
+    FilterTablesByTag();
 }
 
-Function: SetActiveElement
-Declaration: void SetActiveElement(int index, bool val);
+Function: SetColorTableActiveFlag
+Declaration: void SetColorTableActiveFlag(int index, bool val);
 Definition:
 // ****************************************************************************
-// Method: ColorTableAttributes::SetActiveElement
+// Method: ColorTableAttributes::SetColorTableActiveFlag
 //
 // Purpose:
 //   Sets the color table corresponding to the given index to active or 
@@ -779,21 +1010,23 @@ Definition:
 // Modifications:
 //    Justin Privitera, Wed Jun 29 17:50:24 PDT 2022
 //    Added guard to prevent index out of bound errors.
-//
+// 
+//   Justin Privitera, Mon Aug 21 15:54:50 PDT 2023
+//   Changed ColorTableAttributes `active` to `colorTableActiveFlags`.
 // ****************************************************************************
 
 void
-ColorTableAttributes::SetActiveElement(int index, bool val)
+ColorTableAttributes::SetColorTableActiveFlag(int index, bool val)
 {
-    if (index >= 0 && index < active.size())
-        active[index] = val;
+    if (index >= 0 && index < colorTableActiveFlags.size())
+        colorTableActiveFlags[index] = val;
 }
 
-Function: GetActiveElement
-Declaration: bool GetActiveElement(int index);
+Function: GetColorTableActiveFlag
+Declaration: bool GetColorTableActiveFlag(int index);
 Definition:
 // ****************************************************************************
-// Method: ColorTableAttributes::GetActiveElement
+// Method: ColorTableAttributes::GetColorTableActiveFlag
 //
 // Purpose:
 //   Gets the state of a given color table (active or inactive (appearing in
@@ -806,14 +1039,1314 @@ Definition:
 // Creation:   Tue Jun 28 14:04:01 PDT 2022
 //
 // Modifications:
-//
+//   Justin Privitera, Mon Aug 21 15:54:50 PDT 2023
+//   Changed ColorTableAttributes `active` to `colorTableActiveFlags` and 
+//   added a return statement.
 // ****************************************************************************
 
 bool
-ColorTableAttributes::GetActiveElement(int index)
+ColorTableAttributes::GetColorTableActiveFlag(int index)
 {
-    if (index >= 0 && index < active.size())
-        return active[index];
+    if (index >= 0 && index < colorTableActiveFlags.size())
+        return colorTableActiveFlags[index];
+    return false; // the color table can hardly be active if it does not exist
+}
+
+Function: ApplyTagChange
+Declaration: void ApplyTagChange(const std::string tagName, const int changeType, const std::string ctName, ColorControlPointList *ccpl);
+Definition:
+// ****************************************************************************
+// Method: ColorTableAttributes::ApplyTagChange
+//
+// Purpose: Takes the elements of a tag change and applies that change to a 
+//          CCPL.
+//
+// Programmer: Justin Privitera
+// Creation:   08/24/23
+//
+// Modifications:
+// 
+// ****************************************************************************
+void
+ColorTableAttributes::ApplyTagChange(const std::string tagName,
+                                     const int changeType,
+                                     const std::string ctName,
+                                     ColorControlPointList *ccpl)
+{
+    auto result(ccpl->ValidateTag(tagName));
+    if (result.first)
+    {
+        if (changeType == ADDTAG && ! ccpl->HasTag(tagName))
+        {
+            addTagToColorTable(ctName, tagName, ccpl);
+        }
+        else if (changeType == REMOVETAG && ccpl->HasTag(tagName))
+        {
+            auto result2(removeTagFromColorTable(ctName, tagName, ccpl));
+            if (!result2.first)
+            {
+                debug1 << "Tag Editing WARNING: " << result2.second;
+            }
+        }
+    }
+    else
+    {
+        debug1 << "ColorTableAttributes WARNING: " << result.second;
+    }
+}
+
+Function: MergeTagChanges
+Declaration: void MergeTagChanges(const stringVector tagChangesTagFromNode, const intVector tagChangesTypeFromNode, const stringVector tagChangesCTNameFromNode);
+Definition:
+// ****************************************************************************
+// Method: ColorTableAttributes::MergeTagChanges
+//
+// Purpose: Takes tag changes vectors from a node and either applies them or 
+//    saves them to apply later.
+//
+// Programmer: Justin Privitera
+// Creation:   Thu Aug 25 15:04:55 PDT 2022
+//
+// Modifications:
+//    Justin Privitera, Wed Sep 21 16:51:24 PDT 2022
+//    Reversed how tag changes are represented (internally and when saved to
+//    files) so now tag names are mapped to sets of pairs of color table names
+//    and integers.
+// 
+//    Justin Privitera, Thu Sep 29 17:27:37 PDT 2022
+//    Replace braces with parens for auto.
+// 
+//    Justin Privitera, Mon Aug 28 09:57:59 PDT 2023
+//    Moved this function from QvisColorTableWindow. Removed the functionality
+//    for digesting strings that represent tag changes as that is no longer
+//    necessary. Renamed the function to reflect this. Rewrote the function to 
+//    take advantage of the new taglist API.
+//
+// ****************************************************************************
+void
+ColorTableAttributes::MergeTagChanges(const stringVector tagChangesTagFromNode,
+                                      const intVector tagChangesTypeFromNode,
+                                      const stringVector tagChangesCTNameFromNode)
+{
+    // if all three are the same size
+    if (tagChangesTagFromNode.size() == tagChangesTypeFromNode.size() &&
+        tagChangesTagFromNode.size() == tagChangesCTNameFromNode.size())
+    {
+        for (size_t changeId = 0; changeId < tagChangesTagFromNode.size(); changeId ++)
+        {
+            const std::string tagName = tagChangesTagFromNode[changeId];
+            const int changeType      = tagChangesTypeFromNode[changeId];
+            const std::string ctName  = tagChangesCTNameFromNode[changeId];
+
+            auto *ccpl(const_cast<ColorControlPointList *>(GetColorControlPoints(ctName)));
+            if (ccpl)
+            {
+                ApplyTagChange(tagName, changeType, ctName, ccpl);
+            }
+            else
+            {
+                // The ccpl is not valid. The most likely scenario is that it
+                // is a user-defined CT and so it has not been added to visit
+                // at this stage of start up. We will keep note of its tag 
+                // changes and defer them until later when we encounter it.
+                CreateDeferredTagChangesEntry(tagName, changeType, ctName);
+            }
+        }
+    }
+    else
+    {
+        debug1 << "ColorTableAttributes WARNING: "
+               << "The color table tag changes lists "
+               << "should be the same size. "
+               << "Has your config/session file been corrupted?";
+    }
+}
+
+Function: addTagToColorTable
+Declaration: void addTagToColorTable(const std::string ctName, const std::string tagName, ColorControlPointList* ccpl);
+Definition:
+// ****************************************************************************
+// Method: ColorTableAttributes::addTagToColorTable
+//
+// Purpose:
+//    Helper function for adding tags to color tables... carefully!
+// 
+// Programmer: Justin Privitera
+// Creation:   Thu Aug 25 15:04:55 PDT 2022
+//
+// Modifications:
+//    Justin Privitera, Wed Sep 21 16:51:24 PDT 2022
+//    Merged tagList and tagChanges data structures.
+//    Kept track of tag refcount on deletion.
+// 
+//    Justin Privitera, Thu Sep 29 17:27:37 PDT 2022
+//    Replace braces with parens for auto.
+// 
+//    Justin Privitera, Mon Aug 28 09:57:59 PDT 2023
+//    Moved this function from QvisColorTableWindow. Rewrote the function to 
+//    take advantage of the new taglist API.
+//
+// ****************************************************************************
+void
+ColorTableAttributes::addTagToColorTable(const std::string ctName, 
+                                         const std::string tagName,
+                                         ColorControlPointList* ccpl)
+{
+    // First we will check if the opposite action of the one we 
+    // are trying to take has already happened. If so, we can just
+    // delete the opposite action.
+
+    bool found_opposite = false;
+    for (size_t changeId = 0; changeId < tagChangesTag.size(); changeId ++)
+    {
+        // the tag that is being added or removed
+        std::string actionTag = tagChangesTag[changeId];
+        // whether or not that tag is being added or removed
+        int actionType = tagChangesType[changeId];
+        // the color table that the change is happening to
+        std::string actionCT = tagChangesCTName[changeId];
+
+        // opposite day
+        if (actionTag == tagName &&
+            actionType == REMOVETAG &&
+            actionCT == ctName)
+        {
+            found_opposite = true;
+            RemoveTagChangesEntry(changeId);
+            break;
+        }
+    }
+    // if the opposite tag change was not in the list of tag changes
+    if (! found_opposite)
+    {
+        CreateTagChangesEntry(tagName, ADDTAG, ctName);
+    }
+    ccpl->AddTag(tagName);
+
+    // will create an entry for this tag if there is not one already
+    CreateTagListEntry(tagName, false, 0, false);
+
+    IncrementTagNumRefs(tagName);
+
+    SelectTagChanges();
+}
+
+Function: removeTagFromColorTable
+Declaration: std::pair<bool, std::string> removeTagFromColorTable(const std::string ctName, const std::string tagName, ColorControlPointList* ccpl);
+Definition:
+// ****************************************************************************
+// Method: ColorTableAttributes::removeTagFromColorTable
+//
+// Purpose:
+//    Helper function for removing tags from color tables... carefully!
+//
+// Programmer: Justin Privitera
+// Creation:   Thu Aug 25 15:04:55 PDT 2022
+//
+// Modifications:
+//    Justin Privitera, Wed Sep 21 16:51:24 PDT 2022
+//    Merged tagList and tagChanges data structures.
+//    Kept track of tag refcount on deletion.
+// 
+//    Justin Privitera, Thu Sep 29 17:27:37 PDT 2022
+//    Replace braces with parens for auto.
+// 
+//    Justin Privitera, Mon Aug 28 09:57:59 PDT 2023
+//    Moved this function from QvisColorTableWindow. Added a return value so 
+//    this function can return success and an error message. Rewrote the 
+//    function to take advantage of the new taglist API.
+//
+// ****************************************************************************
+std::pair<bool, std::string>
+ColorTableAttributes::removeTagFromColorTable(const std::string ctName, 
+                                              const std::string tagName,
+                                              ColorControlPointList* ccpl)
+{
+    bool success{true};
+    std::string outstr{""};
+
+    // First we will check if the opposite action of the one we 
+    // are trying to take has already happened. If so, we can just
+    // delete the opposite action.
+
+    bool found_opposite = false;
+    for (size_t changeId = 0; changeId < tagChangesTag.size(); changeId ++)
+    {
+        // the tag that is being added or removed
+        std::string actionTag = tagChangesTag[changeId];
+        // whether or not that tag is being added or removed
+        int actionType = tagChangesType[changeId];
+        // the color table that the change is happening to
+        std::string actionCT = tagChangesCTName[changeId];
+
+        // opposite day
+        if (actionTag == tagName &&
+            actionType == ADDTAG &&
+            actionCT == ctName)
+        {
+            found_opposite = true;
+            RemoveTagChangesEntry(changeId);
+            ccpl->RemoveTag(tagName);
+            DecrementTagNumRefs(tagName);
+            break;
+        }
+    }
+    // if the opposite tag change was not in the list of tag changes
+    if (! found_opposite)
+    {
+        // if this is a built in color table, you can only remove a 
+        // tag if the add tag action is already there (the previous case)
+        if (ccpl->GetBuiltIn())
+        {
+            success = false;
+            outstr = "The color table \"" + ctName + "\" is built-in. You "
+                     "cannot delete a default tag from a built-in color table.";
+        }
+        else
+        {
+            CreateTagChangesEntry(tagName, REMOVETAG, ctName);
+            ccpl->RemoveTag(tagName);
+            DecrementTagNumRefs(tagName);
+        }
+    }
+
+    SelectTagChanges();
+
+    return std::make_pair(success, outstr);
+}
+
+Function: AllTagsSelected
+Declaration: bool AllTagsSelected();
+Definition:
+// ****************************************************************************
+// Method: ColorTableAttributes::AllTagsSelected
+//
+// Purpose:
+//    Returns whether or not all tags are currently selected/enabled.
+//
+// Programmer: Justin Privitera
+// Creation:   06/27/23
+//
+// Modifications:
+//
+// ****************************************************************************
+bool
+ColorTableAttributes::AllTagsSelected()
+{
+    return std::all_of(tagListActive.begin(), tagListActive.end(),
+        [](const int tagListActiveEntry) { return tagListActiveEntry; });
+}
+
+Function: EnableDisableAllTags
+Declaration: void EnableDisableAllTags(bool enable);
+Definition:
+// ****************************************************************************
+// Method: ColorTableAttributes::EnableDisableAllTags
+//
+// Purpose:
+//    Enables or disables all tags based on the provided argument.
+//
+// Programmer: Justin Privitera
+// Creation:   06/27/23
+//
+// Modifications:
+//
+// ****************************************************************************
+void
+ColorTableAttributes::EnableDisableAllTags(bool enable)
+{
+    // we trust that the caller will check or uncheck all tag table items
+    for (auto &tagListActiveEntry : tagListActive)
+        tagListActiveEntry = enable;
+    SelectTagList();
+}
+
+Function: GetIndexOfTag
+Declaration: int GetIndexOfTag(const std::string tagname);
+Definition:
+// ****************************************************************************
+// Method: ColorTableAttributes::GetIndexOfTag
+//
+// Purpose:
+//    Returns the index of a tag with the name tagname, or returns -1.
+//
+// Programmer: Justin Privitera
+// Creation:   08/10/23
+//
+// Modifications:
+//
+// ****************************************************************************
+int
+ColorTableAttributes::GetIndexOfTag(const std::string tagname)
+{
+    for (size_t i = 0; i < tagListNames.size(); i ++)
+    {
+        if (tagListNames[i] == tagname)
+            return i;
+    }
+    return -1;
+}
+
+Function: CreateTagListEntry
+Declaration: void CreateTagListEntry(const std::string tagname, const bool active, const int numrefs, const bool tagTableItemExists);
+Definition:
+// ****************************************************************************
+// Method: ColorTableAttributes::CreateTagListEntry
+//
+// Purpose:
+//    Creates an entry in the tag list by adding the constituent pieces to 
+//    the 4 parallel vectors.
+//
+// Programmer: Justin Privitera
+// Creation:   08/10/23
+//
+// Modifications:
+//
+// ****************************************************************************
+void
+ColorTableAttributes::CreateTagListEntry(const std::string tagname, 
+                                         const bool active,
+                                         const int numrefs,
+                                         const bool tagTableItemExists)
+{
+    if (! CheckTagInTagList(tagname))
+    {
+        tagListNames.push_back(tagname);
+        tagListActive.push_back(active);
+        tagListNumRefs.push_back(numrefs);
+        tagListTableItemFlag.push_back(tagTableItemExists);
+
+        SelectTagList();
+    }
+}
+
+Function: RemoveTagListEntry
+Declaration: void RemoveTagListEntry(const int index);
+Definition:
+// ****************************************************************************
+// Method: ColorTableAttributes::RemoveTagListEntry
+//
+// Purpose:
+//    Removes an entry in the tag list by index. Must remove from all four
+//    parallel vectors.
+//
+// Programmer: Justin Privitera
+// Creation:   08/10/23
+//
+// Modifications:
+//
+// ****************************************************************************
+void
+ColorTableAttributes::RemoveTagListEntry(const int index)
+{
+    if (index >= 0 && index < tagListNames.size())
+    {
+        auto namesItr = tagListNames.begin();
+        auto activeItr = tagListActive.begin();
+        auto numrefsItr = tagListNumRefs.begin();
+        auto tableitemflagItr = tagListTableItemFlag.begin();
+
+        for (int i = 0; i < index; i ++)
+        {
+            namesItr ++;
+            activeItr ++;
+            numrefsItr ++;
+            tableitemflagItr ++;
+        }
+
+        if (namesItr != tagListNames.end())
+        {
+            tagListNames.erase(namesItr);
+            tagListActive.erase(activeItr);
+            tagListNumRefs.erase(numrefsItr);
+            tagListTableItemFlag.erase(tableitemflagItr);
+        }
+
+        SelectTagList();
+    }
+}
+
+Function: SelectTagList
+Declaration: void SelectTagList();
+Definition:
+// ****************************************************************************
+// Method: ColorTableAttributes::SelectTagList
+//
+// Purpose:
+//    Selects the pieces of the tag list data structure.
+//
+// Programmer: Justin Privitera
+// Creation:   08/11/23
+//
+// Modifications:
+//
+// ****************************************************************************
+void
+ColorTableAttributes::SelectTagList()
+{
+    SelectTagListNames();
+    SelectTagListActive();
+    SelectTagListNumRefs();
+    SelectTagListTableItemFlag();
+}
+
+Function: CreateTagChangesEntry
+Declaration: void CreateTagChangesEntry(const std::string tagname, const int addOrRemove, const std::string ctName);
+Definition:
+// ****************************************************************************
+// Method: ColorTableAttributes::CreateTagChangesEntry
+//
+// Purpose:
+//    Creates an entry in the tag changes list by adding the constituent pieces
+//    to the 3 parallel vectors.
+//
+// Programmer: Justin Privitera
+// Creation:   08/10/23
+//
+// Modifications:
+//    Justin Privitera, Tue Sep  5 12:49:42 PDT 2023
+//    Check before adding to this list.
+// ****************************************************************************
+void
+ColorTableAttributes::CreateTagChangesEntry(const std::string tagname, 
+                                            const int addOrRemove,
+                                            const std::string ctName)
+{
+    if (! CheckTagChangesEntryInTagChanges(tagname, addOrRemove, ctName))
+    {
+        tagChangesTag.push_back(tagname);
+        tagChangesType.push_back(addOrRemove);
+        tagChangesCTName.push_back(ctName);
+
+        SelectTagChanges();
+    }
+}
+
+Function: CreateDeferredTagChangesEntry
+Declaration: void CreateDeferredTagChangesEntry(const std::string tagname, const int addOrRemove, const std::string ctName);
+Definition:
+// ****************************************************************************
+// Method: ColorTableAttributes::CreateDeferredTagChangesEntry
+//
+// Purpose:
+//    Creates an entry in the deferred tag changes list by adding the 
+//    constituent pieces to the 3 parallel vectors.
+//
+// Programmer: Justin Privitera
+// Creation:   08/24/23
+//
+// Modifications:
+//    Justin Privitera, Tue Sep  5 12:49:42 PDT 2023
+//    Check before adding an entry to this list, and select the list when done.
+// ****************************************************************************
+void
+ColorTableAttributes::CreateDeferredTagChangesEntry(const std::string tagname, 
+                                                    const int addOrRemove,
+                                                    const std::string ctName)
+{
+    if (! CheckTagChangesEntryInDeferredTagChanges(tagname, addOrRemove, ctName))
+    {
+        deferredTagChangesTag.push_back(tagname);
+        deferredTagChangesType.push_back(addOrRemove);
+        deferredTagChangesCTName.push_back(ctName);
+
+        SelectDeferredTagChanges();
+    }
+}
+
+Function: RemoveTagChangesEntry
+Declaration: void RemoveTagChangesEntry(const int index);
+Definition:
+// ****************************************************************************
+// Method: ColorTableAttributes::RemoveTagChangesEntry
+//
+// Purpose:
+//    Removes an entry in the tag changes list by index. Must remove from all 
+//    three parallel vectors.
+//
+// Programmer: Justin Privitera
+// Creation:   08/11/23
+//
+// Modifications:
+//
+// ****************************************************************************
+void
+ColorTableAttributes::RemoveTagChangesEntry(const int index)
+{
+    if (index >= 0 && index < tagChangesTag.size())
+    {
+        auto tagItr = tagChangesTag.begin();
+        auto typeItr = tagChangesType.begin();
+        auto ctnameItr = tagChangesCTName.begin();
+
+        for (int i = 0; i < index; i ++)
+        {
+            tagItr ++;
+            typeItr ++;
+            ctnameItr ++;
+        }
+
+        if (tagItr != tagChangesTag.end())
+        {
+            tagChangesTag.erase(tagItr);
+            tagChangesType.erase(typeItr);
+            tagChangesCTName.erase(ctnameItr);
+        }
+
+        SelectTagChanges();
+    }
+}
+
+Function: RemoveDeferredTagChangesEntry1
+Declaration: void RemoveDeferredTagChangesEntry(const int index);
+Definition:
+// ****************************************************************************
+// Method: ColorTableAttributes::RemoveDeferredTagChangesEntry
+//
+// Purpose:
+//    Removes an entry in the deferred tag changes list by index. Must remove 
+//    from all three parallel vectors.
+//
+// Programmer: Justin Privitera
+// Creation:   08/24/23
+//
+// Modifications:
+//    Justin Privitera, Tue Sep  5 12:49:42 PDT 2023
+//    Select deferred tag changes if we are removing.
+// ****************************************************************************
+void
+ColorTableAttributes::RemoveDeferredTagChangesEntry(const int index)
+{
+    if (index >= 0 && index < deferredTagChangesTag.size())
+    {
+        auto tagItr = deferredTagChangesTag.begin();
+        auto typeItr = deferredTagChangesType.begin();
+        auto ctnameItr = deferredTagChangesCTName.begin();
+
+        for (int i = 0; i < index; i ++)
+        {
+            tagItr ++;
+            typeItr ++;
+            ctnameItr ++;
+        }
+
+        if (tagItr != deferredTagChangesTag.end())
+        {
+            deferredTagChangesTag.erase(tagItr);
+            deferredTagChangesType.erase(typeItr);
+            deferredTagChangesCTName.erase(ctnameItr);
+        }
+
+        SelectDeferredTagChanges();
+    }
+}
+
+Function: RemoveDeferredTagChangesEntry2
+Declaration: void RemoveDeferredTagChangesEntry(const std::string tagName, const int addOrRemove, const std::string ctName);
+Definition:
+// ****************************************************************************
+// Method: ColorTableAttributes::RemoveDeferredTagChangesEntry
+//
+// Purpose:
+//    Removes an entry in the deferred tag changes list by value.
+//
+// Programmer: Justin Privitera
+// Creation:   08/24/23
+//
+// Modifications:
+//
+// ****************************************************************************
+void
+ColorTableAttributes::RemoveDeferredTagChangesEntry(const std::string tagName,
+                                                    const int addOrRemove,
+                                                    const std::string ctName)
+{
+    RemoveDeferredTagChangesEntry(GetIndexOfDeferredTagChangesEntry(tagName, addOrRemove, ctName));
+}
+
+Function: GetIndexOfDeferredTagChangesEntry
+Declaration: int GetIndexOfDeferredTagChangesEntry(const std::string tagName, const int addOrRemove, const std::string ctName);
+Definition:
+// ****************************************************************************
+// Method: ColorTableAttributes::GetIndexOfDeferredTagChangesEntry
+//
+// Purpose:
+//    Returns the index of a deferred tag changes value, or -1 if the value
+//    is not present in the data structure.
+//
+// Programmer: Justin Privitera
+// Creation:   08/24/23
+//
+// Modifications:
+//
+// ****************************************************************************
+int
+ColorTableAttributes::GetIndexOfDeferredTagChangesEntry(const std::string tagName, 
+                                                        const int addOrRemove,
+                                                        const std::string ctName)
+{
+    for (size_t i = 0; i < deferredTagChangesTag.size(); i ++)
+    {
+        if (deferredTagChangesTag[i] == tagName &&
+            deferredTagChangesType[i] == addOrRemove &&
+            deferredTagChangesCTName[i] == ctName)
+        {
+            return i;
+        }
+    }
+    return -1;
+}
+
+Function: GetIndexOfTagChangesEntry
+Declaration: int GetIndexOfTagChangesEntry(const std::string tagName, const int addOrRemove, const std::string ctName);
+Definition:
+// ****************************************************************************
+// Method: ColorTableAttributes::GetIndexOfTagChangesEntry
+//
+// Purpose:
+//    Returns the index of a tag changes value, or -1 if the value
+//    is not present in the data structure.
+//
+// Programmer: Justin Privitera
+// Creation:   08/31/23
+//
+// Modifications:
+//
+// ****************************************************************************
+int
+ColorTableAttributes::GetIndexOfTagChangesEntry(const std::string tagName, 
+                                                const int addOrRemove,
+                                                const std::string ctName)
+{
+    for (size_t i = 0; i < tagChangesTag.size(); i ++)
+    {
+        if (tagChangesTag[i] == tagName &&
+            tagChangesType[i] == addOrRemove &&
+            tagChangesCTName[i] == ctName)
+        {
+            return i;
+        }
+    }
+    return -1;
+}
+
+Function: ApplyDeferredTagChanges
+Declaration: void ApplyDeferredTagChanges(const std::string newCTName, ColorControlPointList *cpts);
+Definition:
+// ****************************************************************************
+// Method: ColorTableAttributes::ApplyDeferredTagChanges
+//
+// Purpose:
+//    Applies deferred tag changes and removes them, if applicable.
+//
+// Programmer: Justin Privitera
+// Creation:   08/24/23
+//
+// Modifications:
+//
+// ****************************************************************************
+void
+ColorTableAttributes::ApplyDeferredTagChanges(const std::string newCTName,
+                                              ColorControlPointList *cpts)
+{
+    for (size_t defChangeId = 0; defChangeId < deferredTagChangesTag.size(); )
+    {
+        const std::string tagName = deferredTagChangesTag[defChangeId];
+        const int changeType      = deferredTagChangesType[defChangeId];
+        const std::string ctName  = deferredTagChangesCTName[defChangeId];
+
+        if (ctName == newCTName)
+        {
+            ApplyTagChange(tagName, changeType, ctName, cpts);
+            RemoveDeferredTagChangesEntry(defChangeId);
+        }
+        else
+        {
+            defChangeId ++;
+        }
+    }
+}
+
+Function: SelectTagChanges
+Declaration: void SelectTagChanges();
+Definition:
+// ****************************************************************************
+// Method: ColorTableAttributes::SelectTagChanges
+//
+// Purpose:
+//    Selects the pieces of the tag changes list data structure.
+//
+// Programmer: Justin Privitera
+// Creation:   08/11/23
+//
+// Modifications:
+//
+// ****************************************************************************
+void
+ColorTableAttributes::SelectTagChanges()
+{
+    SelectTagChangesTag();
+    SelectTagChangesType();
+    SelectTagChangesCTName();
+}
+
+Function: SelectDeferredTagChanges
+Declaration: void SelectDeferredTagChanges();
+Definition:
+// ****************************************************************************
+// Method: ColorTableAttributes::SelectDeferredTagChanges
+//
+// Purpose:
+//    Selects the pieces of the deferred tag changes list data structure.
+//
+// Programmer: Justin Privitera
+// Creation:   08/31/23
+//
+// Modifications:
+//
+// ****************************************************************************
+void
+ColorTableAttributes::SelectDeferredTagChanges()
+{
+    SelectDeferredTagChangesTag();
+    SelectDeferredTagChangesType();
+    SelectDeferredTagChangesCTName();
+}
+
+Function: SetTagActive2
+Declaration: void SetTagActive(const int index, const bool active);
+Definition:
+// ****************************************************************************
+// Method: ColorTableAttributes::SetTagActive
+//
+// Purpose:
+//    Sets a particular tag in the tag list to active by index.
+//
+// Programmer: Justin Privitera
+// Creation:   08/10/23
+//
+// Modifications:
+//
+// ****************************************************************************
+void
+ColorTableAttributes::SetTagActive(const int index, const bool active)
+{
+    if (index >= 0 && index < tagListActive.size())
+        tagListActive[index] = active;
+    SelectTagList();
+}
+
+Function: SetTagActive1
+Declaration: void SetTagActive(const std::string tagname, const bool active);
+Definition:
+// ****************************************************************************
+// Method: ColorTableAttributes::SetTagActive
+//
+// Purpose:
+//    Sets a particular tag in the tag list to active by name.
+//
+// Programmer: Justin Privitera
+// Creation:   06/27/23
+//
+// Modifications:
+//
+// ****************************************************************************
+void
+ColorTableAttributes::SetTagActive(const std::string tagname, const bool active)
+{
+    SetTagActive(GetIndexOfTag(tagname), active);
+}
+
+Function: GetTagActive
+Declaration: bool GetTagActive(const std::string tagname);
+Definition:
+// ****************************************************************************
+// Method: ColorTableAttributes::GetTagActive
+//
+// Purpose:
+//    Returns whether a particular tag in the tag list is active.
+//
+// Programmer: Justin Privitera
+// Creation:   06/27/23
+//
+// Modifications:
+//
+// ****************************************************************************
+bool
+ColorTableAttributes::GetTagActive(const std::string tagname)
+{
+    int index = GetIndexOfTag(tagname);
+    if (index >= 0 && index < tagListActive.size())
+        return tagListActive[index];
+    return false; // the tag certainly isn't active if it doesn't exist
+}
+
+Function: IncrementTagNumRefs2
+Declaration: void IncrementTagNumRefs(const int index);
+Definition:
+// ****************************************************************************
+// Method: ColorTableAttributes::IncrementTagNumRefs
+//
+// Purpose:
+//    Increments the number of references to a given tag in the tag list by
+//    index.
+//
+// Programmer: Justin Privitera
+// Creation:   08/10/23
+//
+// Modifications:
+//
+// ****************************************************************************
+void
+ColorTableAttributes::IncrementTagNumRefs(const int index)
+{
+    if (index >= 0 && index < tagListNumRefs.size())
+        tagListNumRefs[index] ++;
+    SelectTagList();
+}
+
+Function: IncrementTagNumRefs1
+Declaration: void IncrementTagNumRefs(const std::string tagname);
+Definition:
+// ****************************************************************************
+// Method: ColorTableAttributes::IncrementTagNumRefs
+//
+// Purpose:
+//    Increments the number of references to a given tag in the tag list by
+//    name.
+//
+// Programmer: Justin Privitera
+// Creation:   08/10/23
+//
+// Modifications:
+//
+// ****************************************************************************
+void
+ColorTableAttributes::IncrementTagNumRefs(const std::string tagname)
+{
+    IncrementTagNumRefs(GetIndexOfTag(tagname));
+}
+
+Function: DecrementTagNumRefs2
+Declaration: void DecrementTagNumRefs(const int index);
+Definition:
+// ****************************************************************************
+// Method: ColorTableAttributes::DecrementTagNumRefs
+//
+// Purpose:
+//    Decrements the number of references to a given tag in the tag list by
+//    index.
+//
+// Programmer: Justin Privitera
+// Creation:   08/10/23
+//
+// Modifications:
+//
+// ****************************************************************************
+void
+ColorTableAttributes::DecrementTagNumRefs(const int index)
+{
+    if (index >= 0 && index < tagListNumRefs.size())
+        tagListNumRefs[index] --;
+    SelectTagList();
+}
+
+Function: DecrementTagNumRefs1
+Declaration: void DecrementTagNumRefs(const std::string tagname);
+Definition:
+// ****************************************************************************
+// Method: ColorTableAttributes::DecrementTagNumRefs
+//
+// Purpose:
+//    Decrements the number of references to a given tag in the tag list by
+//    name.
+//
+// Programmer: Justin Privitera
+// Creation:   08/10/23
+//
+// Modifications:
+//
+// ****************************************************************************
+void
+ColorTableAttributes::DecrementTagNumRefs(const std::string tagname)
+{
+    DecrementTagNumRefs(GetIndexOfTag(tagname));
+}
+
+Function: GetTagNumRefs
+Declaration: int GetTagNumRefs(const std::string tagname);
+Definition:
+// ****************************************************************************
+// Method: ColorTableAttributes::GetTagNumRefs
+//
+// Purpose:
+//    Returns how many color tables have this tag (numrefs).
+//
+// Programmer: Justin Privitera
+// Creation:   06/27/23
+//
+// Modifications:
+//
+// ****************************************************************************
+int
+ColorTableAttributes::GetTagNumRefs(const std::string tagname)
+{
+    int index = GetIndexOfTag(tagname);
+    if (index >= 0 && index < tagListNumRefs.size())
+        return tagListNumRefs[index];
+    return 0; // the tag has no references if it doesn't exist
+}
+
+Function: SetTagTableItemFlag2
+Declaration: void SetTagTableItemFlag(const int index, const bool tagTableItemExists);
+Definition:
+// ****************************************************************************
+// Method: ColorTableAttributes::SetTagTableItemFlag
+//
+// Purpose:
+//    Sets a particular tag's tag table item flag by index.
+//
+// Programmer: Justin Privitera
+// Creation:   06/27/23
+//
+// Modifications:
+//
+// ****************************************************************************
+void
+ColorTableAttributes::SetTagTableItemFlag(const int index,
+                                          const bool tagTableItemExists)
+{
+    if (index >= 0 && index < tagListTableItemFlag.size())
+        tagListTableItemFlag[index] = tagTableItemExists;
+    SelectTagList();
+}
+
+Function: SetTagTableItemFlag1
+Declaration: void SetTagTableItemFlag(const std::string tagname, const bool tagTableItemExists);
+Definition:
+// ****************************************************************************
+// Method: ColorTableAttributes::SetTagTableItemFlag
+//
+// Purpose:
+//    Sets a particular tag's tag table item flag by name.
+//
+// Programmer: Justin Privitera
+// Creation:   06/27/23
+//
+// Modifications:
+//
+// ****************************************************************************
+void
+ColorTableAttributes::SetTagTableItemFlag(const std::string tagname,
+                                          const bool tagTableItemExists)
+{
+    SetTagTableItemFlag(GetIndexOfTag(tagname), tagTableItemExists);
+}
+
+Function: GetTagTableItemFlag
+Declaration: bool GetTagTableItemFlag(const std::string tagname);
+Definition:
+// ****************************************************************************
+// Method: ColorTableAttributes::GetTagTableItemFlag
+//
+// Purpose:
+//    Returns whether or not the provided tag has a tag table item.
+//
+// Programmer: Justin Privitera
+// Creation:   06/27/23
+//
+// Modifications:
+//
+// ****************************************************************************
+bool
+ColorTableAttributes::GetTagTableItemFlag(const std::string tagname)
+{
+    int index = GetIndexOfTag(tagname);
+    if (index >= 0 && index < tagListTableItemFlag.size())
+        return tagListTableItemFlag[index];
+    // the tag is unlikely to have a tag table item if it doesn't exist
+    return false;
+}
+
+Function: CheckTagInTagList
+Declaration: bool CheckTagInTagList(const std::string tagname);
+Definition:
+// ****************************************************************************
+// Method: ColorTableAttributes::CheckTagInTagList
+//
+// Purpose:
+//    Returns true if the tag is in the tag list, and false otherwise.
+//
+// Programmer: Justin Privitera
+// Creation:   06/27/23
+//
+// Modifications:
+//
+// ****************************************************************************
+bool
+ColorTableAttributes::CheckTagInTagList(const std::string tagname)
+{
+    return GetIndexOfTag(tagname) >= 0;
+}
+
+Function: CheckTagChangesEntryInTagChanges
+Declaration: bool CheckTagChangesEntryInTagChanges(const std::string tagName, const int addOrRemove, const std::string ctName);
+Definition:
+// ****************************************************************************
+// Method: ColorTableAttributes::CheckTagChangesEntryInTagChanges
+//
+// Purpose:
+//    Returns true if the tag is in the tag list, and false otherwise.
+//
+// Programmer: Justin Privitera
+// Creation:   08/27/23
+//
+// Modifications:
+//
+// ****************************************************************************
+bool
+ColorTableAttributes::CheckTagChangesEntryInTagChanges(const std::string tagName, 
+                                                       const int addOrRemove,
+                                                       const std::string ctName)
+{
+    return GetIndexOfTagChangesEntry(tagName, addOrRemove, ctName) >= 0;
+}
+
+Function: CheckTagChangesEntryInDeferredTagChanges
+Declaration: bool CheckTagChangesEntryInDeferredTagChanges(const std::string tagName, const int addOrRemove, const std::string ctName);
+Definition:
+// ****************************************************************************
+// Method: ColorTableAttributes::CheckTagChangesEntryInDeferredTagChanges
+//
+// Purpose:
+//    Returns true if the tag is in the tag list, and false otherwise.
+//
+// Programmer: Justin Privitera
+// Creation:   08/27/23
+//
+// Modifications:
+//
+// ****************************************************************************
+bool
+ColorTableAttributes::CheckTagChangesEntryInDeferredTagChanges(const std::string tagName, 
+                                                               const int addOrRemove,
+                                                               const std::string ctName)
+{
+    return GetIndexOfDeferredTagChangesEntry(tagName, addOrRemove, ctName) >= 0;
+}
+
+Function: RemoveUnusedTagsFromTagTable
+Declaration: std::vector<std::string> RemoveUnusedTagsFromTagTable();
+Definition:
+// ****************************************************************************
+// Method: ColorTableAttributes::RemoveUnusedTagsFromTagTable
+//
+// Purpose:
+//    Removes tags and their metadata from the tag list if their refcount is 
+//    less than or equal to 0. Collects a list of tag names that represent tags
+//    that have been removed and have tag table items, so that the caller can
+//    delete the tag table items.
+//
+// Programmer: Justin Privitera
+// Creation:   06/27/23
+//
+// Modifications:
+//
+// ****************************************************************************
+std::vector<std::string>
+ColorTableAttributes::RemoveUnusedTagsFromTagTable()
+{
+    std::vector<std::string> removedTags;
+
+    auto namesItr = tagListNames.begin();
+    auto activeItr = tagListActive.begin();
+    auto numrefsItr = tagListNumRefs.begin();
+    auto tableitemflagItr = tagListTableItemFlag.begin();
+
+    // these four vectors are all the same length so we can get away with this
+    while (namesItr != tagListNames.end())
+    {
+        if (*numrefsItr <= 0)
+        {
+            // if this tag list item has an associated tag table entry
+            if (*tableitemflagItr)
+                removedTags.push_back(*namesItr);
+            // else - there is no tag table entry to delete so we can continue
+
+            // remove this entry from the tag list
+            namesItr = tagListNames.erase(namesItr);
+            activeItr = tagListActive.erase(activeItr);
+            numrefsItr = tagListNumRefs.erase(numrefsItr);
+            tableitemflagItr = tagListTableItemFlag.erase(tableitemflagItr);
+        }
+        else
+        {
+            namesItr ++;
+            activeItr ++;
+            numrefsItr ++;
+            tableitemflagItr ++;
+        }
+    }
+
+    return removedTags;
+}
+
+Function: GetNewTagNames
+Declaration: std::vector<std::string> GetNewTagNames();
+Definition:
+// ****************************************************************************
+// Method: ColorTableAttributes::GetNewTagNames
+//
+// Purpose:
+//    Gets the names of tags that should be added to the tag table.
+//
+// Programmer: Justin Privitera
+// Creation:   06/27/23
+//
+// Modifications:
+//    Justin Privitera, Tue Sep  5 12:49:42 PDT 2023
+//    Greatly simplified function; uses internal bookkeeping to see if tags
+//    need to be added to the tag table.
+// ****************************************************************************
+std::vector<std::string>
+ColorTableAttributes::GetNewTagNames()
+{
+    std::vector<std::string> tagsToAdd;
+    for (size_t i = 0; i < tagListNames.size(); i ++)
+    {
+        // if this tag has no tag table item
+        if (! tagListTableItemFlag[i])
+            tagsToAdd.emplace_back(tagListNames[i]);
+    }
+    return tagsToAdd;
+}
+
+Function: FilterTableByTag
+Declaration: bool FilterTableByTag(const ColorControlPointList &ccpl);
+Definition:
+// ****************************************************************************
+// Method: ColorTableAttributes::FilterTableByTag
+//
+// Purpose:
+//    Determines whether or not a given color table falls within the current
+//    tag filtering selection.
+//
+// Programmer: Justin Privitera
+// Creation:   07/13/23
+//
+// Modifications:
+//
+// ****************************************************************************
+bool
+ColorTableAttributes::FilterTableByTag(const ColorControlPointList &ccpl)
+{
+    bool tagFound = false;
+    // go thru global tags
+    for (size_t i = 0; i < tagListNames.size(); i ++)
+    {
+        // if the global tag is active
+        if (tagListActive[i])
+        {
+            tagFound = false;
+            // go thru local tags
+            for (int localTagId = 0; localTagId < ccpl.GetNumTags(); localTagId ++)
+            {
+                // if the current global tag is the same as our local tag
+                if (tagListNames[i] == ccpl.GetTag(localTagId))
+                {
+                    tagFound = true;
+                    break;
+                }
+            }
+            if (tagFound == GetTagsMatchAny())
+            // If both are true, that means...
+            // 1) tagsMatchAny is true so we only need one tag from 
+            //    the global tag list to be present in the local tag
+            //    list, AND
+            // 2) tagFound is true, so there is no need to keep 
+            //    searching for a tag that is in both the local and
+            //    global tag lists. Thus we can end iteration early.
+            // If both are false, that means...
+            // 1) tagsMatchAny is false so we need every tag from the
+            //    global tag list to be present in the local tag list, AND
+            // 2) tagFound is false, so there exists a global tag that
+            //    is not in the local tag list, hence we can give up 
+            //    early because we know that this color table does not
+            //    have every tag in the global tag list.
+                break;
+        }
+    }
+    // we mark the color table as active or inactive
+    return tagFound;
+}
+
+Function: FilterTablesByTag
+Declaration: void FilterTablesByTag();
+Definition:
+// ****************************************************************************
+// Method: ColorTableAttributes::FilterTablesByTag
+//
+// Purpose:
+//    Filters color tables by tag, setting tables to active if they are within
+//    the current tag filtering selection.
+//
+// Programmer: Justin Privitera
+// Creation:   06/27/23
+//
+// Modifications:
+//    Justin Privitera, Tue Sep  5 12:49:42 PDT 2023
+//    Select the CT list after we have filtered.
+// ****************************************************************************
+void
+ColorTableAttributes::FilterTablesByTag()
+{
+    // for each color table
+    for (int i = 0; i < GetNumColorTables(); i ++)
+    {
+        // we mark the color table as active or inactive
+        if (i >= 0 && i < colorTableActiveFlags.size())
+            colorTableActiveFlags[i] = FilterTableByTag(GetColorTables(i));;
+    }
+    SelectColorTablesList();
+}
+
+Function: PrintTagList
+Declaration: void PrintTagList();
+Definition:
+// ****************************************************************************
+// Method: ColorTableAttributes::PrintTagList
+//
+// Purpose:
+//    Prints the tag list. Useful for debugging purposes. This function is not
+//    used anywhere.
+//
+// Programmer: Justin Privitera
+// Creation:   06/27/23
+//
+// Modifications:
+//
+// ****************************************************************************
+void
+ColorTableAttributes::PrintTagList()
+{
+    auto namesItr = tagListNames.begin();
+    auto activeItr = tagListActive.begin();
+    auto numrefsItr = tagListNumRefs.begin();
+    auto tableitemflagItr = tagListTableItemFlag.begin();
+
+    // these four vectors are all the same length so we can get away with this
+    while (namesItr != tagListNames.end())
+    {
+        std::cout << *namesItr << ":" << std::endl;
+        std::cout << "   active: " << *activeItr << std::endl;
+        std::cout << "   numrefs: " << *numrefsItr << std::endl;
+        std::cout << "   tagTableItem valid: " << (*tableitemflagItr ? "yes" : "no") << std::endl;
+
+        namesItr ++;
+        activeItr ++;
+        numrefsItr ++;
+        tableitemflagItr ++;
+    }
 }
 
 Target: xml2atts

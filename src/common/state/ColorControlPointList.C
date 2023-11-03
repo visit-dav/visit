@@ -69,7 +69,6 @@ void ColorControlPointList::Init()
     equalSpacingFlag = false;
     discreteFlag = false;
     externalFlag = false;
-    tagChangesMade = true;
     builtIn = true;
 
     ColorControlPointList::SelectAll();
@@ -114,7 +113,6 @@ void ColorControlPointList::Copy(const ColorControlPointList &obj)
     discreteFlag = obj.discreteFlag;
     externalFlag = obj.externalFlag;
     tagNames = obj.tagNames;
-    tagChangesMade = obj.tagChangesMade;
     builtIn = obj.builtIn;
 
     ColorControlPointList::SelectAll();
@@ -292,7 +290,6 @@ ColorControlPointList::operator == (const ColorControlPointList &obj) const
             (discreteFlag == obj.discreteFlag) &&
             (externalFlag == obj.externalFlag) &&
             (tagNames == obj.tagNames) &&
-            (tagChangesMade == obj.tagChangesMade) &&
             (builtIn == obj.builtIn));
 }
 
@@ -443,7 +440,6 @@ ColorControlPointList::SelectAll()
     Select(ID_discreteFlag,     (void *)&discreteFlag);
     Select(ID_externalFlag,     (void *)&externalFlag);
     Select(ID_tagNames,         (void *)&tagNames);
-    Select(ID_tagChangesMade,   (void *)&tagChangesMade);
     Select(ID_builtIn,          (void *)&builtIn);
 }
 
@@ -746,13 +742,6 @@ ColorControlPointList::SetTagNames(const stringVector &tagNames_)
 }
 
 void
-ColorControlPointList::SetTagChangesMade(bool tagChangesMade_)
-{
-    tagChangesMade = tagChangesMade_;
-    Select(ID_tagChangesMade, (void *)&tagChangesMade);
-}
-
-void
 ColorControlPointList::SetBuiltIn(bool builtIn_)
 {
     builtIn = builtIn_;
@@ -809,12 +798,6 @@ stringVector &
 ColorControlPointList::GetTagNames()
 {
     return tagNames;
-}
-
-bool
-ColorControlPointList::GetTagChangesMade() const
-{
-    return tagChangesMade;
 }
 
 bool
@@ -1066,7 +1049,6 @@ ColorControlPointList::GetFieldName(int index) const
     case ID_discreteFlag:     return "discreteFlag";
     case ID_externalFlag:     return "externalFlag";
     case ID_tagNames:         return "tagNames";
-    case ID_tagChangesMade:   return "tagChangesMade";
     case ID_builtIn:          return "builtIn";
     default:  return "invalid index";
     }
@@ -1098,7 +1080,6 @@ ColorControlPointList::GetFieldType(int index) const
     case ID_discreteFlag:     return FieldType_bool;
     case ID_externalFlag:     return FieldType_bool;
     case ID_tagNames:         return FieldType_stringVector;
-    case ID_tagChangesMade:   return FieldType_bool;
     case ID_builtIn:          return FieldType_bool;
     default:  return FieldType_unknown;
     }
@@ -1130,7 +1111,6 @@ ColorControlPointList::GetFieldTypeName(int index) const
     case ID_discreteFlag:     return "bool";
     case ID_externalFlag:     return "bool";
     case ID_tagNames:         return "stringVector";
-    case ID_tagChangesMade:   return "bool";
     case ID_builtIn:          return "bool";
     default:  return "invalid index";
     }
@@ -1195,11 +1175,6 @@ ColorControlPointList::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_tagNames:
         {  // new scope
         retval = (tagNames == obj.tagNames);
-        }
-        break;
-    case ID_tagChangesMade:
-        {  // new scope
-        retval = (tagChangesMade == obj.tagChangesMade);
         }
         break;
     case ID_builtIn:
@@ -1837,6 +1812,9 @@ ColorControlPointList::CompactCreateNode(DataNode *parentNode, bool completeSave
 // 
 //    Justin Privitera, Thu Aug 25 15:04:55 PDT 2022
 //    Now takes a const string and uses `emplace_back`.
+// 
+//    Justin Privitera, Tue Sep  5 12:49:42 PDT 2023
+//    Use select instead of a bool.
 //
 // ****************************************************************************
 
@@ -1847,7 +1825,7 @@ ColorControlPointList::AddTag(const std::string newtag)
     if (!HasTag(newtag))
     {
         tagNames.emplace_back(newtag);
-        tagChangesMade = true;
+        Select(ID_tagNames, (void *)&tagNames);
     }
 }
 
@@ -1863,6 +1841,9 @@ ColorControlPointList::AddTag(const std::string newtag)
 // Modifications:
 //    Justin Privitera, Thu Aug 25 15:04:55 PDT 2022
 //    Made the "tag" arg const.
+// 
+//    Justin Privitera, Tue Sep  5 12:49:42 PDT 2023
+//    Use select instead of a bool.
 //
 // ****************************************************************************
 
@@ -1878,7 +1859,7 @@ ColorControlPointList::RemoveTag(const std::string tag)
             pos ++;
         if(pos != tagNames.end()) 
             tagNames.erase(pos);
-        tagChangesMade = true;
+        Select(ID_tagNames, (void *)&tagNames);
     }
 }
 
@@ -1894,6 +1875,9 @@ ColorControlPointList::RemoveTag(const std::string tag)
 // Modifications:
 //    Justin Privitera, Wed Jun 29 17:50:24 PDT 2022
 //    Set tagChangesMade to true each time the tags are cleared.
+// 
+//    Justin Privitera, Tue Sep  5 12:49:42 PDT 2023
+//    Use select instead of a bool.
 //
 // ****************************************************************************
 
@@ -1901,7 +1885,7 @@ void
 ColorControlPointList::ClearTags()
 {
     tagNames.clear();
-    tagChangesMade = true;
+    Select(ID_tagNames, (void *)&tagNames);
 }
 
 // ****************************************************************************
@@ -1996,14 +1980,17 @@ ColorControlPointList::GetTagsAsString() const
 // Modifications:
 //    Justin Privitera, Thu Aug 25 15:04:55 PDT 2022
 //    Made it a const function that takes a const arg.
+// 
+//    Justin Privitera, Wed Aug 30 15:30:58 PDT 2023
+//    Rewritten to use range-based for loop.
 //
 // ****************************************************************************
 
 bool
 ColorControlPointList::HasTag(const std::string tag) const
 {
-    for (int i = 0; i < tagNames.size(); i ++)
-        if (tagNames[i] == tag)
+    for (const auto & currtag : tagNames)
+        if (currtag == tag)
             return true;
     return false;
 }

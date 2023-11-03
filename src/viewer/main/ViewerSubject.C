@@ -166,7 +166,7 @@ static int nConfigArgs = 1;
 #include <sstream>
 
 #include <visit-config.h>
-#if defined(HAVE_OSMESA) || defined(HAVE_EGL)
+#ifdef HAVE_OSMESA
 #  include <vtkOffScreenRenderingFactory.h>
 #endif
 
@@ -2607,7 +2607,7 @@ ViewerSubject::ProcessCommandLine(int argc, char **argv)
         }
         else if (strcmp(argv[i], "-nowin") == 0)
         {
-#if defined(HAVE_OSMESA) || defined(HAVE_EGL)
+#ifdef HAVE_OSMESA
             vtkOffScreenRenderingFactory::ForceOffScreen();
 #endif
             RemoteProcess::DisablePTY();
@@ -5095,7 +5095,13 @@ ViewerSubject::HandleSILAttsUpdated(const string &host,
 //   Justin Privitera, Fri Sep  2 16:46:21 PDT 2022
 //   Added the missing logic from the ctObserver. Now we check if a CT is 
 //   "active" before trying to put it in the buttons.
-//
+// 
+//   Justin Privitera, Mon Aug 21 15:54:50 PDT 2023
+//   Changed ColorTableAttributes `names` to `colorTableNames` and `active` to
+//   `colorTableActiveFlags`.
+// 
+//   Justin Privitera, Tue Sep  5 12:49:42 PDT 2023
+//   Use the same if-statement as the color table observer.
 // ****************************************************************************
 
 void
@@ -5111,9 +5117,15 @@ ViewerSubject::HandleColorTable()
         // 3. If just #2 is selected, we're changing the default colormap. This is
         //    only of concern if I decide to show what the default is in a widget.
 
+        // NOTE: The logic here is identical to that in ColorTableObserver::Update.
+        // If you are making a change to either, change in both places.
+
         // If the names or the color table attributes are changing, then we
         // have to update the widget.
-        if(colorAtts->IsSelected(0) || colorAtts->IsSelected(1))
+        if(colorAtts->IsSelected(ColorTableAttributes::ID_colorTableNames) ||
+           colorAtts->IsSelected(ColorTableAttributes::ID_tagListNames) ||
+           colorAtts->IsSelected(ColorTableAttributes::ID_colorTables) ||
+           colorAtts->IsSelected(ColorTableAttributes::ID_tagsMatchAny))
         {
             // Clear all of the color tables.
             QvisColorTableButton::clearAllColorTables();
@@ -5122,8 +5134,8 @@ ViewerSubject::HandleColorTable()
             QvisNoDefaultColorTableButton::setColorTableAttributes(colorAtts);
 
             int nNames = colorAtts->GetNumColorTables();
-            const stringVector &names = colorAtts->GetNames();
-            const intVector &active = colorAtts->GetActive();
+            const stringVector &names = colorAtts->GetColorTableNames();
+            const intVector &active = colorAtts->GetColorTableActiveFlags();
             for(int i = 0; i < nNames; ++i)
             {
                 if (active[i])

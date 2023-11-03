@@ -23,10 +23,8 @@ Query("Zone Center", domain=0, element=10)
 s = GetQueryOutputString()
 v = GetQueryOutputValue()
 
-# Commenting out these tests since they give different results in serial
-# and parallel (they shouldn't). See ticket #18873.
-#TestValueEQ("Zone_Center_Curv2d_Valid_Str", s, "The center of  zone 10 is (0.923738, 1.81294).")
-#TestValueEQ("Zone_Center_Curv2d_Valid_Val", v, (0.9237379878759384, 1.8129377663135529))
+TestValueEQ("Zone_Center_Curv2d_Valid_Str", s, "The center of  zone 10 is (0.923738, 1.81294).")
+TestValueEQ("Zone_Center_Curv2d_Valid_Val", v, (0.9237379878759384, 1.8129377663135529))
 
 Query("Zone Center", domain=0, element=1000000)
 s = GetQueryOutputString()

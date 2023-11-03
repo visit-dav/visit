@@ -31,7 +31,6 @@ class QvisSpectrumBar;
 class QvisColorSelectionWidget;
 class QvisColorGridWidget;
 class QvisNoDefaultColorTableButton;
-class TagInfo;
 
 // ****************************************************************************
 // Class: QvisColorTableWindow
@@ -134,6 +133,20 @@ class TagInfo;
 //   Removed gui elements from the header that were not used outside the
 //   CreateWindowContents() function.
 // 
+//   Justin Privitera, Mon Aug 28 11:22:47 PDT 2023
+//   Removed the tagList and TagInfo class declaration.
+//   Removed the tagsMatchAny flag.
+//   Removed the AddGlobalTag(), AddToTagTable(), StringifyTagChanges(),
+//   UnstringifyAndMergeTagChanges(), addTagToColorTable(), and
+//   removeTagFromColorTable() functions.
+//   All tagging infrastructure has been moved to the CTAtts.
+// 
+//   Justin Privitera, Tue Sep  5 12:49:42 PDT 2023
+//   Change UpdateTags to UpdateTagTable.
+// 
+//   Justin Privitera, Wed Oct 11 19:25:42 PDT 2023
+//   Added colorValueChanged and changed the argument name for
+//   alphaValueChanged.
 // ****************************************************************************
 
 class GUI_API QvisColorTableWindow : public QvisPostableWindowObserver
@@ -156,9 +169,7 @@ protected:
     void UpdateEditor();
     void UpdateColorControlPoints();
     void UpdateDiscreteSettings();
-    void AddGlobalTag(std::string currtag, bool run_before);
-    void AddToTagTable(std::string currtag);
-    void UpdateTags();
+    void UpdateTagTable();
     void UpdateNames();
     void Apply(bool ignore = false);
     void GetCurrentValues(int which_widget);
@@ -168,16 +179,15 @@ protected:
     void ChangeSelectedColor(const QColor &c);
     void PopupColorSelect(const QColor &, const QPoint &p);
     QColor GetNextColor();
-    stringVector StringifyTagChanges();
-    void UnstringifyAndMergeTagChanges(stringVector changes);
 
 private slots:
     void resizeColorTable(int);
     void setColorTableType(int);
+    void colorValueChanged(int rgba, int value);
     void redValueChanged(int r);
     void greenValueChanged(int g);
     void blueValueChanged(int b);
-    void alphaValueChanged(int b);
+    void alphaValueChanged(int a);
     void activateDiscreteColor(const QColor &, int);
     void activateContinuousColor(int index);
     void chooseContinuousColor(int, const QPoint &);
@@ -203,25 +213,17 @@ private slots:
     void searchEdited(const QString &newSearchTerm);
     void tagEdited();
     void addRemoveTag();
-    void addTagToColorTable(const std::string ctName, 
-                            const std::string tagName,
-                            ColorControlPointList* ccpl);
-    void removeTagFromColorTable(const std::string ctName, 
-                                 const std::string tagName,
-                                 ColorControlPointList* ccpl);
 private:
     ColorTableAttributes     *colorAtts;
     int                      colorCycle;
     QString                  currentColorTable;
     int                      popupMode;
     bool                     sliding;
-    bool                     tagsMatchAny;
     QString                  searchTerm;
     QString                  tagEdit;
 
-    // This is your one stop shop for information about each tag.
-    std::map<std::string, TagInfo> tagList;
-    // We are mapping tag names (std::string) to metadata (TagInfo).
+    // a map from tag names to tab table item pointers
+    std::map<std::string, QTreeWidgetItem*> tagTableItems;
 
     // This object also observes the color table attributes.
     ColorTableObserver       ctObserver;    

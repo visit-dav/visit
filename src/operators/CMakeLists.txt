@@ -80,6 +80,7 @@ EllipsoidSlice
 ExternalSurface
 ExtractPointFunction2D
 Extrude
+ExtrudeStacked
 Explode
 FFT
 FiveFoldTetSubdivision

@@ -49,6 +49,8 @@
 #include "conduit_relay.hpp"
 #include "conduit_relay_io_hdf5.hpp"
 #include "conduit_blueprint.hpp"
+#include "conduit_blueprint_mesh_utils.hpp"
+#include "conduit_fmt/conduit_fmt.h"
 
 //-----------------------------------------------------------------------------
 // mfem includes
@@ -208,6 +210,45 @@ avtBlueprintFileFormat::FreeUpResources(void)
 }
 
 // ****************************************************************************
+//  Method: GenerateOffsetsForPolytopalMesh
+//
+//  Purpose:
+//      Polyhedral meshes require offsets to verify. We can generate them
+//      before verification takes place.
+//
+//  Arguments:
+//      data        The mesh domain we wish to add offsets to.
+// 
+//  Notes:
+//      We cannot assume much about the data we are working with, as it has
+//      not passed verification yet. If it has the structure we expect, we can
+//      assume that the passed data node consists of a single coordset and
+//      topology, as ReadBlueprintMesh() is called directly before this 
+//      function and should return a node with a single coordset and topology.
+//
+//  Programmer: Justin Privitera
+//  Creation:   10/25/23
+//
+//  Modifications:
+//
+// ****************************************************************************
+void
+GenerateOffsetsForPolytopalMesh(Node &data)
+{
+    // using short circuit evaluation, so these statements will only execute
+    // until we hit the first one that is false
+    if (data.has_child("topologies") && 
+        data["topologies"].number_of_children() > 0 && 
+        data["topologies"][0].has_child("type") && 
+        data["topologies"][0]["type"].as_string() == "unstructured" && 
+        data["topologies"][0].has_path("elements/shape") && 
+        (data["topologies"][0]["elements/shape"].as_string() == "polyhedral" || 
+         data["topologies"][0]["elements/shape"].as_string() == "polygonal") && 
+        (! data["topologies"][0].has_path("elements/offsets")))
+        blueprint::mesh::utils::topology::unstructured::generate_offsets_inline(data["topologies"][0]);
+}
+
+// ****************************************************************************
 //  Method: avtBlueprintFileFormat::ReadBlueprintMesh
 //
 //  Purpose:
@@ -227,6 +268,13 @@ avtBlueprintFileFormat::FreeUpResources(void)
 //    Cyrus Harrison, Tue Dec 13 12:17:17 PST 2022
 //    Refactor to pass mesh name to tree cache for part map style index
 //    support.
+// 
+//    Justin Privitera, Wed Oct 25 17:29:07 PDT 2023
+//    Call GenerateOffsetsForPolytopalMesh() at the end of this function, 
+//    before calling verify.
+// 
+//     Justin Privitera, Thu Oct 26 12:26:32 PDT 2023
+//     Fixed warnings.
 //
 // ****************************************************************************
 void
@@ -268,7 +316,7 @@ avtBlueprintFileFormat::ReadBlueprintMesh(int domain,
                                          coords_path,
                                          out["coordsets"][coordset_name]);
     }
-    catch(InvalidVariableException)
+    catch(InvalidVariableException const&)
     {
         BP_PLUGIN_WARNING("failed to load conduit coordset for "
                            << abs_meshname << " [domain "<< domain << "]"
@@ -290,7 +338,7 @@ avtBlueprintFileFormat::ReadBlueprintMesh(int domain,
                                          topo_path,
                                          out["topologies"][topo_name]);
     }
-    catch(InvalidVariableException)
+    catch(InvalidVariableException const&)
     {
         BP_PLUGIN_WARNING("failed to load conduit topo for "
                            << abs_meshname << " [domain "<< domain << "]"
@@ -444,6 +492,10 @@ avtBlueprintFileFormat::ReadBlueprintMesh(int domain,
         }
     }
 
+    // before we verify, we want to generate offsets for unstructured polytopal
+    // meshes if they do not already exist
+    GenerateOffsetsForPolytopalMesh(out);
+
 }
 
 // ****************************************************************************
@@ -465,6 +517,9 @@ avtBlueprintFileFormat::ReadBlueprintMesh(int domain,
 // 
 //    Justin Privitera, Wed Mar 22 16:09:52 PDT 2023
 //    Handle the 1D curve case.
+// 
+//     Justin Privitera, Thu Oct 26 12:26:32 PDT 2023
+//     Fixed warnings.
 //
 // ****************************************************************************
 
@@ -491,7 +546,7 @@ avtBlueprintFileFormat::ReadBlueprintField(int domain,
 
     string mesh_name;
     string topo_name;
-    FetchMeshAndTopoNames(std::string(abs_meshname),
+    FetchMeshAndTopoNames(abs_meshname,
                           mesh_name,
                           topo_name);
 
@@ -531,7 +586,7 @@ avtBlueprintFileFormat::ReadBlueprintField(int domain,
                                          out);
         BP_PLUGIN_INFO("done loading conduit data for " << abs_varname << " [domain "<< domain << "]" );
     }
-    catch(InvalidVariableException)
+    catch(InvalidVariableException const&)
     {
         BP_PLUGIN_WARNING("failed to load conduit data for "
                            << abs_varname << " [domain "<< domain << "]"
@@ -553,6 +608,11 @@ avtBlueprintFileFormat::ReadBlueprintField(int domain,
 //  Creation:   Mon May 22 16:51:12 PDT 2023
 //
 //  Modifications:
+//     Justin Privitera, Thu Oct 26 12:26:32 PDT 2023
+//     Fixed warnings.
+//
+//     Cyrus Harrison Thu Nov  2 11:23:40 PDT 2023
+//     Added new detection case for "volume_fraction_" prefix.
 //
 // ****************************************************************************
 
@@ -563,42 +623,55 @@ avtBlueprintFileFormat::DetectHOMaterial(const std::string &mesh_name,
     std::map<std::string, std::string> &matFields, std::string &freeMatName) const
 {
     bool HOmaterials = false;
+    bool axom_vol_frac_convention = false;
     freeMatName.clear();
     if (m_root_node["blueprint_index"][mesh_name].has_child("fields"))
     {
         const conduit::Node &n_fields = m_root_node["blueprint_index"][mesh_name]["fields"];
         // Look for Axom convention.
-        const std::string prefix("vol_frac_");
-        size_t nmats = 0;
+        std::vector<std::string> prefix_list = {"vol_frac_","volume_fraction_"};
+
         for(size_t i = 0; i < matNames.size(); i++)
         {
             const auto &matname = matNames[i];
-            std::string fieldName(prefix + matname);
-            if(n_fields.has_child(fieldName))
+            for(size_t prefix_idx = 0; prefix_idx < prefix_list.size(); prefix_idx++)
             {
-                const conduit::Node &f = n_fields.fetch_existing(fieldName);
-                if(f.has_child("basis") &&
-                   f.has_child("topology") &&
-                   f.has_child("number_of_components"))
+                std::string fieldName(prefix_list[prefix_idx] + matname);
+                if(n_fields.has_child(fieldName))
                 {
-                    std::string tname = f["topology"].as_string();
-                    int nc = f["number_of_components"].to_int();
-                    if(tname == topo_name && nc == 1)
+                    if(prefix_list[prefix_idx] == "vol_frac_")
                     {
-                        matFields[matname] = fieldName;
+                        axom_vol_frac_convention = true;
+                    }
+
+                    const conduit::Node &f = n_fields.fetch_existing(fieldName);
+                    if(f.has_child("basis") &&
+                    f.has_child("topology") &&
+                    f.has_child("number_of_components"))
+                    {
+                        std::string tname = f["topology"].as_string();
+                        int nc = f["number_of_components"].to_int();
+                        if(tname == topo_name && nc == 1)
+                        {
+                            matFields[matname] = fieldName;
+                        }
                     }
                 }
             }
         }
         // If all of the material names had a matching HO field for the volume
         // fractions then our material is made up of HO fields.
-        HOmaterials = matFields.size() == static_cast<size_t>(matNames.size());
+        HOmaterials = matFields.size() == matNames.size();
 
         // See whether a free material needs to be created. Use Axom convention.
-        const std::string free_mat_name("vol_frac_free");
-        bool make_free_mat = !m_root_node["blueprint_index"][mesh_name]["fields"].has_child(free_mat_name);
-        if(make_free_mat)
-            freeMatName = "free";
+        if(axom_vol_frac_convention)
+        {
+            // See whether a free material needs to be created. Use Axom convention.
+            const std::string free_mat_name("vol_frac_free");
+            bool make_free_mat = !m_root_node["blueprint_index"][mesh_name]["fields"].has_child(free_mat_name);
+            if(make_free_mat)
+                freeMatName = "free";
+        }
     }
     return HOmaterials;
 }
@@ -617,6 +690,9 @@ avtBlueprintFileFormat::DetectHOMaterial(const std::string &mesh_name,
 //    Brad Whitlock, Mon May 22 16:51:12 PDT 2023
 //    I added code to treat HO materials specially since we want them to be
 //    refined according to the selected level of detail (m_selected_lod).
+// 
+//     Justin Privitera, Thu Oct 26 12:26:32 PDT 2023
+//     Fixed warnings.
 //
 // ****************************************************************************
 
@@ -706,10 +782,10 @@ avtBlueprintFileFormat::ReadBlueprintMatset(int domain,
             if(make_free_mat)
             {
                 if(freevf.empty())
-                    freevf.resize(nzones, 1.f);
+                    freevf.resize(static_cast<size_t>(nzones), 1.f);
                 // Now, subtract the current vf from the free mat.
                 for(vtkIdType zi = 0; zi < nzones; ++zi)
-                    freevf[zi] -= fptr[zi];
+                    freevf[static_cast<size_t>(zi)] -= fptr[zi];
             }
 
             // Add the material name to the list.
@@ -721,7 +797,7 @@ avtBlueprintFileFormat::ReadBlueprintMatset(int domain,
             // See whether any zones have sufficient free material.
             auto it = std::find_if(freevf.begin(), freevf.end(), [](float value)
             {
-                constexpr float SUFFICIENT_MATERIAL = 1.e-6;
+                constexpr float SUFFICIENT_MATERIAL = 1.e-6f;
                 return (1.f - value) > SUFFICIENT_MATERIAL;
             });
             if(it != freevf.end())
@@ -755,7 +831,7 @@ avtBlueprintFileFormat::ReadBlueprintMatset(int domain,
             BP_PLUGIN_INFO("done loading conduit data for " 
                             << abs_matsetname << " [domain "<< domain << "]" );
         }
-        catch(InvalidVariableException)
+        catch(InvalidVariableException const&)
         {
             BP_PLUGIN_WARNING("failed to load conduit data for "
                                << abs_matsetname << " [domain "<< domain << "]"
@@ -790,6 +866,9 @@ avtBlueprintFileFormat::ReadBlueprintMatset(int domain,
 // 
 //    Justin Privitera, Wed Mar 22 16:09:52 PDT 2023
 //    Handle 1D curve case.
+// 
+//     Justin Privitera, Thu Oct 26 12:26:32 PDT 2023
+//     Fixed warnings.
 //
 // ****************************************************************************
 void
@@ -903,7 +982,7 @@ avtBlueprintFileFormat::AddBlueprintMeshAndFieldMetadata(avtDatabaseMetaData *md
 
         std::string coord_sys_type = n_coords["coord_system/type"].as_string();
 
-        int ndims = n_coords["coord_system/axes"].number_of_children();
+        int ndims = static_cast<int>(n_coords["coord_system/axes"].number_of_children());
         topo_dims[topo_name] = ndims;
 
         BP_PLUGIN_INFO("coordinate system: "
@@ -1061,6 +1140,13 @@ avtBlueprintFileFormat::AddBlueprintMeshAndFieldMetadata(avtDatabaseMetaData *md
 // Modifications:
 //   Brad Whitlock, Tue May 23 16:04:30 PDT 2023
 //   Added some special handling if the materials are HO.
+// 
+//   Justin Privitera, Tue Sep 19 11:36:45 PDT 2023
+//   No longer assume material ids will be in the range [0, N) and no longer
+//   sort the names before sending to avtMaterialMetaData.
+// 
+//   Justin Privitera, Thu Oct 26 12:26:32 PDT 2023
+//   Fixed warnings.
 //
 // ****************************************************************************
 void
@@ -1119,34 +1205,12 @@ avtBlueprintFileFormat::AddBlueprintMaterialsMetadata(avtDatabaseMetaData *md,
             BP_PLUGIN_INFO("material map " << n_mset["material_map"].to_yaml());
         
             NodeConstIterator itr = n_mset["material_map"].children();
-
-            // construct material map in matset order
-            // NOTE: This assumes ids are [0,N)
-            Node &mid_to_name = m_matset_info[mesh_matset_name]["material_ids_to_name"];
-
             while (itr.has_next())
             {
                 const Node &curr_mat = itr.next();
-                mid_to_name.append();
-            }
-
-            itr.to_front();
-            while (itr.has_next())
-            {
-                const Node &curr_mat = itr.next();
-                int32 mat_id = curr_mat.to_int32();
-                mid_to_name[mat_id] = itr.name();
-            }
-
-            // now create a material mapp where the child order matches
-            // the id order
-            itr = mid_to_name.children();
-            while (itr.has_next())
-            {
-                itr.next();
-                std::string mat_name = itr.node().as_string();
-                int mat_id = itr.index();
-                m_matset_info[mesh_matset_name]["matnames"][mat_name] = mat_id;
+                const int32 mat_id = curr_mat.to_int32();
+                const std::string matname = itr.name();
+                m_matset_info[mesh_matset_name]["matnames"][matname] = mat_id;
             }
         }
         else // "materials" case, old path
@@ -1157,15 +1221,15 @@ avtBlueprintFileFormat::AddBlueprintMaterialsMetadata(avtDatabaseMetaData *md,
             while (itr.has_next())
             {
                 itr.next();
-                int32 mat_id = itr.index();
+                int32 mat_id = static_cast<int32>(itr.index());
                 std::string mat_name = itr.name();
                 // cache mat names and idx (implied order)
                 m_matset_info[mesh_matset_name]["matnames"][mat_name] = mat_id;
             }
         }
 
-        // get matnames vec in sorted order.
-        std::vector<string>  matnames = m_matset_info[mesh_matset_name]["matnames"].child_names();
+        // get matnames vec. No need to sort
+        std::vector<string> matnames = m_matset_info[mesh_matset_name]["matnames"].child_names();
 
         // If the materials were HO then we may need to add a "free" material
         // to the list.
@@ -1188,7 +1252,7 @@ avtBlueprintFileFormat::AddBlueprintMaterialsMetadata(avtDatabaseMetaData *md,
 
         avtMaterialMetaData *mmd = new avtMaterialMetaData(mesh_matset_name,
                                                            mesh_topo_name,
-                                                           matnames.size(),
+                                                           static_cast<int>(matnames.size()),
                                                            matnames);
 
         mmd->validVariable = true;
@@ -1457,6 +1521,10 @@ avtBlueprintFileFormat::ReadRootFile()
 //   Cyrus Harrison, Tue Dec 13 12:04:01 PST 2022
 //   Remove special case for HDF5 and use relay::io::IOHandle for all cases
 //
+//   Cyrus Harrison, Thu Nov  2 11:19:32 PDT 2023
+//   Added call to AugmentBlueprintIndex to identify meshes with HO
+//   volume fractions and auto a matset for them.
+//
 // ****************************************************************************
 void
 avtBlueprintFileFormat::ReadRootIndexItems(const std::string &root_fname,
@@ -1493,7 +1561,72 @@ avtBlueprintFileFormat::ReadRootIndexItems(const std::string &root_fname,
     }
 
     root_hnd.close();
+
+    AugmentBlueprintIndex(root_info["blueprint_index"]);
 }
+
+// ****************************************************************************
+//  Method: avtBlueprintFileFormat::AugmentBlueprintIndex
+//
+//  Purpose: Identify special case for high order materials and create a matset
+//
+//  Programmer: cyrush
+//  Creation:   Wed Nov  1 15:10:15 PDT 2023
+//
+//
+// ****************************************************************************
+void
+avtBlueprintFileFormat::AugmentBlueprintIndex(conduit::Node &blueprint_index)
+{
+    // loop over all meshes and see if we have high order volume fractions
+    // that aren't published as a `matset`
+    NodeIterator mesh_itr = blueprint_index.children();
+    while(mesh_itr.has_next())
+    {
+        Node &mesh = mesh_itr.next();
+        std::string mesh_name = mesh.name();
+        index_t num_volfracs = 0;
+        if(!mesh.has_path("matsets/matset") && mesh.has_child("fields"))
+        {
+            // walk index and look for the field volume_fraction_001
+            if(mesh.has_path("fields/volume_fraction_001"))
+            {
+                BP_PLUGIN_INFO("Found HO material volume fractions for mesh: " << mesh_name);
+                // we have materials !!!!
+                // count to find number of vol fracs
+                NodeConstIterator fields_itr = mesh["fields"].children();
+                while(fields_itr.has_next())
+                {
+                    const Node &field = fields_itr.next();
+                    if(field.name().find("volume_fraction_") !=std::string::npos)
+                    {
+                        num_volfracs++;
+                    }
+                }
+            }
+
+            if(num_volfracs > 0)
+            {
+                BP_PLUGIN_INFO("Matset for mesh " << mesh_name  <<
+                                "has " << num_volfracs << " material regions.");
+                // create matset
+                Node &mset = mesh["matsets/matset"];
+                mset["topology"] = mesh["fields/volume_fraction_001/topology"];
+                // fake it
+                mset["path"] = mesh["fields/volume_fraction_001/path"];
+                Node &mats_list = mset["materials"];
+                for(index_t idx=1;idx<num_volfracs+1;idx++)
+                {
+                    mats_list[conduit_fmt::format("{:03d}",idx)] = idx;
+                }
+
+                BP_PLUGIN_INFO("Auto generated matset for mesh: " << mesh_name <<
+                               std::endl << mesh["matsets/matset"].to_yaml());
+            }
+        }
+    }
+}
+
 
 // ****************************************************************************
 //  Method: avtBlueprintFileFormat::PopulateDatabaseMetaData
@@ -1520,11 +1653,14 @@ avtBlueprintFileFormat::ReadRootIndexItems(const std::string &root_fname,
 // 
 //    Justin Privitera, Wed Mar 22 16:09:52 PDT 2023
 //    Bookkeeping for 1D curves.
+// 
+//     Justin Privitera, Thu Oct 26 12:26:32 PDT 2023
+//     Fixed warnings.
 //
 // ****************************************************************************
 
 void
-avtBlueprintFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
+avtBlueprintFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *)
 {
     BP_PLUGIN_INFO("Begin avtBlueprintFileFormat::PopulateDatabaseMetaData");
 
@@ -1768,7 +1904,10 @@ avtBlueprintFileFormat::GetTime()
 //    Brad Whitlock, Mon May 22 17:29:05 PDT 2023
 //    I added some code to clear the mesh's material from the cache if it
 //    has an obsolete LOD.
-//
+// 
+//     Justin Privitera, Thu Oct 26 12:26:32 PDT 2023
+//     Fixed warnings.
+// 
 // ****************************************************************************
 
 vtkDataSet *
@@ -1790,7 +1929,7 @@ avtBlueprintFileFormat::GetMesh(int domain, const char *abs_meshname)
             // This means that abs_meshname is of the form:
             // "mesh_name/field_name", so we need to separate it
             abs_meshname_str = abs_meshname_str.substr(0, abs_meshname_str.find('/'));
-            string abs_1d_curve_field_name = FileFunctions::Basename(abs_meshname);
+            abs_1d_curve_field_name = FileFunctions::Basename(abs_meshname);
         }
 
         // reads a single mesh into a blueprint conforming output
@@ -1838,7 +1977,7 @@ avtBlueprintFileFormat::GetMesh(int domain, const char *abs_meshname)
         BP_PLUGIN_INFO("topo name: " << topo_name);
 
         conduit::Node &n_coords = data["coordsets"][0];
-        int ndims = n_coords["values"].number_of_children();
+        int ndims = static_cast<int>(n_coords["values"].number_of_children());
 
         // check for the mfem case
         if( m_mfem_mesh_map[topo_name] )
@@ -1937,6 +2076,9 @@ avtBlueprintFileFormat::GetMesh(int domain, const char *abs_meshname)
 //    Justin Privitera, Tue Aug 23 14:40:24 PDT 2022
 //    Removed `CONDUIT_HAVE_PARTITION_FLATTEN` check.
 // 
+//     Justin Privitera, Thu Oct 26 12:26:32 PDT 2023
+//     Fixed warnings.
+// 
 // ****************************************************************************
 
 vtkDataArray *
@@ -2008,13 +2150,13 @@ avtBlueprintFileFormat::GetVar(int domain, const char *abs_varname)
             return NULL;
         }
 
-        Node verify_info;
-        if(!blueprint::mesh::field::verify(*field_ptr,verify_info))
+        Node field_verify_info;
+        if(!blueprint::mesh::field::verify(*field_ptr,field_verify_info))
         {
             BP_PLUGIN_INFO("blueprint::mesh::field::verify failed for field "
                            << abs_varname_str << " [domain " << domain << "]" << endl
                            << "Verify Info " << endl
-                           << verify_info.to_yaml() << endl
+                           << field_verify_info.to_yaml() << endl
                            << "Data Schema " << endl
                            << field_ptr->schema().to_yaml());
             return NULL;
@@ -2049,7 +2191,7 @@ avtBlueprintFileFormat::GetVar(int domain, const char *abs_varname)
 
             string mesh_name, topo_name;
 
-            FetchMeshAndTopoNames(std::string(abs_meshname),
+            FetchMeshAndTopoNames(abs_meshname,
                                   mesh_name,
                                   topo_name);
 
@@ -2156,7 +2298,7 @@ avtBlueprintFileFormat::GetVar(int domain, const char *abs_varname)
 
             string mesh_name;
             string topo_name;
-            FetchMeshAndTopoNames(std::string(abs_meshname),
+            FetchMeshAndTopoNames(abs_meshname,
                                   mesh_name,
                                   topo_name);
 
@@ -2179,7 +2321,7 @@ avtBlueprintFileFormat::GetVar(int domain, const char *abs_varname)
                                                      n_matset,
                                                      n_silo_matset);
 
-            int mix_len  = (int) n_silo_matset["field_mixvar_values"].dtype().number_of_elements();
+            int mix_len  = static_cast<int>(n_silo_matset["field_mixvar_values"].dtype().number_of_elements());
 
             float *mixvals_ptr = NULL;
             if(n_silo_matset["field_mixvar_values"].dtype().is_float())
@@ -2262,7 +2404,8 @@ avtBlueprintFileFormat::GetVectorVar(int domain, const char *varname)
 //  Creation:   December 8, 2020
 //
 //  Modifications:
-//
+//     Justin Privitera, Thu Oct 26 12:26:32 PDT 2023
+//     Fixed warnings.
 //
 // ****************************************************************************
 void *
@@ -2276,7 +2419,7 @@ avtBlueprintFileFormat::GetAuxiliaryData(const char *var,
 
     if (strcmp(type, AUXILIARY_DATA_MATERIAL) == 0)
     {
-        rv = (void *) GetMaterial(domain, var);
+        rv = static_cast<void *>(GetMaterial(domain, var));
         df = avtMaterial::Destruct;
     }
 
@@ -2304,6 +2447,11 @@ avtBlueprintFileFormat::GetAuxiliaryData(const char *var,
 //     Justin Privitera, Wed Aug 24 11:08:51 PDT 2022
 //     Encased in try-catch block.
 //
+//     Justin Privitera, Tue Sep 19 11:36:45 PDT 2023
+//     Get the material numbers and use a different avtMaterial constructor.
+// 
+//     Justin Privitera, Thu Oct 26 12:26:32 PDT 2023
+//     Fixed warnings.
 //
 // ****************************************************************************
 avtMaterial *
@@ -2322,6 +2470,11 @@ avtBlueprintFileFormat::GetMaterial(int domain,
                             n_matset);
 
         std::vector<std::string> matnames = n_matset["matnames"].child_names();
+        // package up char ptrs
+        std::vector<const char *> matnames_ptrs;
+        for (const auto &matname : matnames)
+            matnames_ptrs.push_back(matname.c_str());
+        auto names = const_cast<char **>(matnames_ptrs.data());
 
         // use to_silo util to convert from bp to the mixslot rep
         // that silo and visit use
@@ -2330,11 +2483,20 @@ avtBlueprintFileFormat::GetMaterial(int domain,
         conduit::blueprint::mesh::matset::to_silo(n_matset,
                                                   n_silo_matset);
 
-        int nmats = (int) matnames.size();
-        int nzones = (int) n_silo_matset["matlist"].dtype().number_of_elements();
+        int nmats = static_cast<int>(matnames.size());
+        int nzones = static_cast<int>(n_silo_matset["matlist"].dtype().number_of_elements());
         int *matlist  = NULL;
         int *mix_mat  = NULL;
         int *mix_next = NULL;
+
+        // get the material numbers
+        std::vector<int> matnos;
+        auto matmap_itr = n_silo_matset["material_map"].children();
+        while (matmap_itr.has_next())
+        {
+            const Node &n_mat = matmap_itr.next();
+            matnos.push_back(n_mat.to_int());
+        }
 
         // we need int ptrs for the avtMaterial object,
         // convert if needed
@@ -2365,7 +2527,7 @@ avtBlueprintFileFormat::GetMaterial(int domain,
             }
         }
 
-        int mix_len  = (int) n_silo_matset["mix_mat"].dtype().number_of_elements();
+        int mix_len  = static_cast<int>(n_silo_matset["mix_mat"].dtype().number_of_elements());
 
         float *mix_vf = NULL;
         if(n_silo_matset["mix_vf"].dtype().is_float())
@@ -2378,16 +2540,22 @@ avtBlueprintFileFormat::GetMaterial(int domain,
             mix_vf = n_silo_matset["mix_vf_float"].as_float_ptr();
         }
 
-        avtMaterial *mat = new avtMaterial(nmats,    // The number of materials in mats.
-                                           matnames, // material names
-                                           nzones,   // number of zones (len of matlist)
-                                           matlist,  // matlist
-                                           mix_len,  // length of mix arrays
-                                           mix_mat,  // mix_mat array
-                                           mix_next, // mix_next array
-                                           NULL,     // mix_zone array (OPTIONAL)
-                                           mix_vf    // mix_vf array
-                                           );
+        const std::string domain_name = std::to_string(domain);
+
+        avtMaterial *mat = new avtMaterial(nmats,               // The number of materials
+                                           matnos.data(),       // material numbers
+                                           names,               // material names
+                                           1,                   // number of dimensions
+                                           &nzones,             // pointer to dimensions
+                                           0,                   // major order. row major is 0
+                                           matlist,             // matlist
+                                           mix_len,             // length of mix arrays
+                                           mix_mat,             // mix_mat array
+                                           mix_next,            // mix_next array
+                                           NULL,                // mix_zone array (OPTIONAL)
+                                           mix_vf,              // mix_vf array
+                                           domain_name.c_str(), // domain name
+                                           0);                  // allow mat0
 
         return mat;
     }

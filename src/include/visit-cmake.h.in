@@ -68,9 +68,6 @@
 /* Define if you have the OSMESA */
 #cmakedefine HAVE_OSMESA
 
-/* Define if you have the EGL */
-#cmakedefine HAVE_EGL
-
 /* Define if you have Conduit. */
 #cmakedefine HAVE_CONDUIT
 
@@ -117,9 +114,6 @@
 
 /* Define to 1 if you have the <sys/types.h> header file. */
 #cmakedefine HAVE_SYS_TYPES_H 1
-
-/* Define if you have the pthread library. */
-#cmakedefine HAVE_THREADS
 
 /* Define to 1 if you have the <unistd.h> header file. */
 #cmakedefine HAVE_UNISTD_H 1

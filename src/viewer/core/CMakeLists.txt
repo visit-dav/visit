@@ -11,6 +11,12 @@
 #    Eric Brugger, Tue Jul 25 11:23:55 EDT 2023
 #    Change CMAKE_THREAD_LIBS to Threads::Threads.
 #
+#    Kathleen Biagas, Tue Sep 5, 2023
+#    Remove untested, unused EGL logic.
+#
+#    Kathleen Biagas, Tue Sep 26, 2023
+#    Replace ${CMAKE_THREAD_LIBS} with Threads::Threads.
+#
 #****************************************************************************
 
 #
@@ -20,7 +26,7 @@
 
 # Add XML Code Gen Targets
 
-set(VIEWER_CORE_GEN_OBJECTS 
+set(VIEWER_CORE_GEN_OBJECTS
     ViewerWindowManagerAttributes
     ViewerProperties
     ActionGroupDescription)
@@ -140,7 +146,7 @@ avtwriter_ser
 Threads::Threads
 )
 
-if(HAVE_OSMESA OR HAVE_EGL)
+if(HAVE_OSMESA)
     target_link_libraries(viewercore_ser visit_vtk_offscreen)
 endif()
 
@@ -162,10 +168,10 @@ if(VISIT_PARALLEL)
     avtfilters_par
     avtviswindow_par
     avtwriter_par
-    ${CMAKE_THREAD_LIBS}
+    Threads::Threads
     )
 
-    if(HAVE_OSMESA OR HAVE_EGL)
+    if(HAVE_OSMESA)
         target_link_libraries(viewercore_par visit_vtk_offscreen)
     endif()
 

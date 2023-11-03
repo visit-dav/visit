@@ -1901,7 +1901,10 @@ class InfoGeneratorPlugin : public Plugin
                 c << "//  Method: "<<funcName << Endl;
                 c << "//" << Endl;
                 c << "//  Purpose:" << Endl;
-                c << "//    Update the "<<type<<" attributes when using operator expressions." << Endl;
+                c << "//    Update the "<<type<<" attributes. This function is *only* called" << Endl;
+                c << "//    when the plot variable name is set or changed. The plot variable" << Endl;
+                c << "//    name is used in operator expressions and may be used as the" << Endl;
+                c << "//    'default' variable in GUIs." << Endl;
                 c << "//" << Endl;
                 c << "//  Arguments:" << Endl;
                 c << "//    atts        The attribute subject to update." << Endl;

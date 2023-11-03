@@ -44,7 +44,7 @@ SIMV2_API int     simv2_process_input(void*);
 SIMV2_API void    simv2_time_step_changed(void*);
 SIMV2_API void    simv2_execute_command(void *, const char *);
 SIMV2_API void    simv2_disconnect();
-SIMV2_API void    simv2_set_slave_process_callback(void(*)());
+SIMV2_API void    simv2_set_worker_process_callback(void(*)());
 SIMV2_API void    simv2_set_command_callback(void*,void(*)(const char*,const char*,void*),void*);
 SIMV2_API int     simv2_save_window(void*, const char *, int, int, int);
 SIMV2_API void    simv2_debug_logs(int level, const char *msg);

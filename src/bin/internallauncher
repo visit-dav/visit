@@ -2951,6 +2951,9 @@ class MainLauncher(object):
     #   Eric Brugger, Fri Jan 21 13:16:48 PST 2022
     #   Add lib/mesagl to the LD_LIBRARY_PATH for qtviswinExample,
     #   qtvtkExample and qvtkopenglExample.
+    # 
+    #   Justin Privitera, Wed Nov  1 13:55:47 PDT 2023
+    #   Unset QT_SCALE_FACTOR.
     #
     ############################################################################
 
@@ -3028,6 +3031,9 @@ class MainLauncher(object):
 
         # Unset QT_PLUGIN_PATH
         UNSETENV("QT_PLUGIN_PATH")
+
+        # Unset QT_SCALE_FACTOR
+        UNSETENV("QT_SCALE_FACTOR")
 
         # Turn off trapping of floating point exceptions.
         SETENV("TRAP_FPE", "")

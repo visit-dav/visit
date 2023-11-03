@@ -1,0 +1,277 @@
+Function: addVariable
+Declaration: void addVariable(const std::string &variableName_);
+Definition:
+// ****************************************************************************
+//  Method: ExtrudeStackedAttributes::addVariable
+//
+//  Purpose: adds a variable (assuming at the end)
+//
+//  Programmer: Allen Sanderson
+//  Creation:   August 31, 2023
+//
+//  Note: Taken largely from Parallel Coordinates plot.
+//
+// ****************************************************************************
+
+void
+ExtrudeStackedAttributes::addVariable(const std::string &variableName_)
+{
+    InsertVariable(variableName_, scalarVariableNames.size());
+}
+
+Function: InsertVariable
+Declaration: void InsertVariable(const std::string &variableName_, const int index = 0);
+Definition:
+// ****************************************************************************
+//  Method: ExtrudeStackedAttributes::InsertVariable
+//
+//  Purpose: Inserts an variable at a given index;
+//
+//  Programmer: Allen Sanderson
+//  Creation:   August 31, 2023
+//
+//  Note: Taken largely from Parallel Coordinates plot.
+//
+// ****************************************************************************
+
+void
+ExtrudeStackedAttributes::InsertVariable(const std::string &variableName_, const int index)
+{
+    std::string newVariableName = variableName_;
+
+    size_t curVariableCount = scalarVariableNames.size();
+    size_t variableOrdinal;
+    double saveExtentMin, saveExtentMax, saveExtentScale;
+
+    stringVector::iterator svariableNamesIt;
+    stringVector::iterator vvariableNamesIt;
+    doubleVector::iterator extentMinIt;
+    doubleVector::iterator extentMaxIt;
+    doubleVector::iterator extentScaleIt;
+
+    for (variableOrdinal = 0; variableOrdinal < curVariableCount; variableOrdinal++)
+    {
+        if (scalarVariableNames[variableOrdinal] == newVariableName)
+            break;
+    }
+
+    if (variableOrdinal < curVariableCount)
+    {
+        saveExtentMin    = extentMinima[variableOrdinal];
+        saveExtentMax    = extentMaxima[variableOrdinal];
+        saveExtentScale  = extentScale[variableOrdinal];
+
+        svariableNamesIt = scalarVariableNames.begin() + variableOrdinal;
+        vvariableNamesIt = visualVariableNames.begin() + variableOrdinal;
+        extentMinIt      = extentMinima       .begin() + variableOrdinal;
+        extentMaxIt      = extentMaxima       .begin() + variableOrdinal;
+        extentScaleIt    = extentScale        .begin() + variableOrdinal;
+
+        scalarVariableNames.erase(svariableNamesIt);
+        visualVariableNames.erase(vvariableNamesIt);
+        extentMinima.erase(extentMinIt);
+        extentMaxima.erase(extentMaxIt);
+        extentScale .erase(extentScaleIt);
+    }
+    else
+    {
+        saveExtentMin   = -1e+37;
+        saveExtentMax   = +1e+37;
+        saveExtentScale = 1.0;
+    }
+
+    size_t insertOrdinal;
+    if( 0 <= index && index <= scalarVariableNames.size() )
+        insertOrdinal = index;
+    else
+        insertOrdinal = scalarVariableNames.size();
+
+    svariableNamesIt = scalarVariableNames.begin() + insertOrdinal;
+    vvariableNamesIt = visualVariableNames.begin() + insertOrdinal;
+    extentMinIt      = extentMinima       .begin() + insertOrdinal;
+    extentMaxIt      = extentMaxima       .begin() + insertOrdinal;
+    extentScaleIt    = extentScale        .begin() + insertOrdinal;
+
+    scalarVariableNames.insert(svariableNamesIt, newVariableName);
+    visualVariableNames.insert(vvariableNamesIt, newVariableName);
+    extentMinima       .insert(extentMinIt,      saveExtentMin);
+    extentMaxima       .insert(extentMaxIt,      saveExtentMax);
+    extentScale        .insert(extentScaleIt,    saveExtentScale);
+
+    SelectAll();
+}
+
+Function: DeleteVariable
+Declaration: void DeleteVariable(const std::string &variableName_, int minVariableCount);
+Definition:
+// ****************************************************************************
+//  Method: ExtrudeStackedAttributes::DeleteVariable
+//
+//  Purpose: Deletes an variable (as long as there are enough remaining)
+//
+//  Programmer: Allen Sanderson
+//  Creation:   August 31, 2023
+//
+//  Note: Taken largely from Parallel Coordinates plot.
+//
+// ****************************************************************************
+
+void
+ExtrudeStackedAttributes::DeleteVariable(const std::string &variableName_,
+                                         int minVariableCount)
+{
+    if ((int)scalarVariableNames.size() <= minVariableCount) return;
+
+    std::string newVariableName = variableName_;
+
+    size_t curVariableCount = scalarVariableNames.size();
+    size_t variableOrdinal;
+
+    for (variableOrdinal = 0; variableOrdinal < curVariableCount; variableOrdinal++)
+    {
+        if (scalarVariableNames[variableOrdinal] == newVariableName) break;
+    }
+
+    if (variableOrdinal < curVariableCount)
+    {
+        visualVariableNames.erase(visualVariableNames.begin() + variableOrdinal);
+        scalarVariableNames.erase(scalarVariableNames.begin() + variableOrdinal);
+        extentMinima.erase(extentMinima.begin() + variableOrdinal);
+        extentMaxima.erase(extentMaxima.begin() + variableOrdinal);
+        extentScale .erase(extentScale .begin() + variableOrdinal);
+
+        SelectAll();
+    }
+}
+
+Function: AttributesAreConsistent
+Declaration: bool AttributesAreConsistent() const;
+Definition:
+// ****************************************************************************
+//  Method: ExtrudeStackedAttributes::AttributesAreConsistent
+//
+//  Purpose: Returns true only if (1) all vector attributes are the same 
+//           length, (2) all variable names are unique, and (3) the index
+//           of the currently displayable variable information in the GUI
+//           is in range.
+//
+//  Programmer: Allen Sanderson
+//  Creation:   August 31, 2023
+//
+// ****************************************************************************
+
+bool
+ExtrudeStackedAttributes::AttributesAreConsistent() const
+{
+    size_t variableNamesSize = scalarVariableNames.size();
+
+    if ((extentMinima.size() != variableNamesSize) ||
+        (extentMaxima.size() != variableNamesSize) ||
+        (extentScale.size()  != variableNamesSize))
+    {
+        return false;
+    }
+
+    for (size_t i = 0; i < variableNamesSize - 1; i++)
+    {
+        std::string variableName = scalarVariableNames[i];
+
+        for (size_t j = i + 1; j < variableNamesSize; j++ )
+        {
+            if (scalarVariableNames[j] == variableName)
+                return false;
+        }
+    }
+
+    return true;
+}
+
+Function: CopyAttributes
+Declaration: virtual bool CopyAttributes(const AttributeGroup *);
+Definition:
+// ****************************************************************************
+//  Method: ExtrudeStackedAttributes::CopyAttributes
+//
+//  Purpose: Sets the attributes from another attribute group
+//
+//  Programmer: Allen Sanderson
+//  Creation:   August 31, 2023
+//
+// ****************************************************************************
+bool
+ExtrudeStackedAttributes::CopyAttributes(const AttributeGroup *atts)
+{
+    bool retval = false;
+
+    if(TypeName() == atts->TypeName())
+    {
+        // Call the assignment operator.
+        const ExtrudeStackedAttributes *tmp =
+            (const ExtrudeStackedAttributes *)atts;
+        *this = *tmp;
+        retval = true;
+    }
+    else if (atts->TypeName() == "VariableRestrictionAttributes")
+    {
+        const VariableRestrictionAttributes *ar =
+            (const VariableRestrictionAttributes *)atts;
+
+        if (scalarVariableNames.size() == 0)
+        {
+            visualVariableNames = ar->GetNames();
+            extentMinima = ar->GetMinima();
+            extentMaxima = ar->GetMaxima();
+            extentScale  = ar->GetScale();
+        }
+        else
+        {
+            for (size_t i=0; i<extentMinima.size(); i++)
+            {
+                extentMinima[i] = ar->GetMinima()[i];
+                extentMaxima[i] = ar->GetMaxima()[i];
+                extentScale[i] = ar->GetScale()[i];
+            }
+        }
+
+        SelectVisualVariableNames();
+        SelectExtentMinima();
+        SelectExtentMaxima();
+        SelectExtentScale();
+
+        retval = true;
+    }
+
+    return retval;
+}
+
+Target: xml2info
+Function: ExtrudeStackedViewerEnginePluginInfo::UpdateOperatorAtts
+Declaration: virtual void UpdateOperatorAtts(AttributeSubject *atts, const avtPlotMetaData &plot)
+Definition:
+// ****************************************************************************
+//  Method: ExtrudeStackedViewerEnginePluginInfo::UpdateOperatorAtts
+//
+//  Purpose:
+//    Update the operator attributes. This function is *only* called
+//    when the plot variable name is set or changed. The plot variable
+//    name is used in operator expressions and may be used as the
+//    'default' variable in GUIs.
+//
+//  Arguments:
+//    atts        The attribute subject to update.
+//    plot        The viewer plot that owns the operator.
+//
+//  Programmer: generated by xml2info
+//  Creation:   omitted
+//
+// ****************************************************************************
+#include <avtPlotMetaData.h>
+
+void
+ExtrudeStackedViewerEnginePluginInfo::UpdateOperatorAtts(AttributeSubject *atts, const avtPlotMetaData &plot)
+{
+    ExtrudeStackedAttributes *esAtts = (ExtrudeStackedAttributes*)atts;
+
+    esAtts->SetDefaultVariable(plot.GetVariableName());
+}
+
