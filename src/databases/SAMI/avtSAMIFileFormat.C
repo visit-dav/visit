@@ -286,22 +286,33 @@ avtSAMIFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     // Add Slide meshes if we have 'em
     //
     toc = DBGetToc(dbFile);
+
+    // copy just the dir entries from the TOC
+    int toc_copy_ndir = toc->ndir;
+    char **toc_copy_dir_names = (char **) malloc(toc->ndir * sizeof(char*));
+    for (i = 0; i < toc->ndir; i++)
+        toc_copy_dir_names[i] = strdup(toc->dir_names[i]);
+
     if (toc != 0)
     {
-        for (i = 0; i < toc->ndir; i++)
+        for (i = 0; i < toc_copy_ndir; i++)
         {
-            if (strncmp(toc->dir_names[i], "slide_", 6) == 0)
+            if (strncmp(toc_copy_dir_names[i], "slide_", 6) == 0)
             {
                 char tmpName[256];
 
                 // old way
-                snprintf(tmpName, sizeof(tmpName), "%s/master", toc->dir_names[i]);
+                // Unforunately, I don't think we can ever remove this if we intend to support
+                // older SAMI files. Those files will likely not ever be updated and we loose
+                // ability to plot them if we remove this block.
+                snprintf(tmpName, sizeof(tmpName), "/%s/master/face_node0", toc_copy_dir_names[i]);
                 if (DBInqVarExists(dbFile, tmpName))
                 {
+                    snprintf(tmpName, sizeof(tmpName), "%s/master", toc_copy_dir_names[i]);
                     avtMeshMetaData *smmmd = new avtMeshMetaData(tmpName, 1, 0, 0,
                                                0, ndims, ndims-1, AVT_UNSTRUCTURED_MESH);
                     md->Add(smmmd);
-                    snprintf(tmpName, sizeof(tmpName), "%s/slave", toc->dir_names[i]);
+                    snprintf(tmpName, sizeof(tmpName), "%s/slave", toc_copy_dir_names[i]);
                     avtMeshMetaData *ssmmd = new avtMeshMetaData(tmpName, 1, 0, 0,
                                                    0, ndims, ndims-1, AVT_UNSTRUCTURED_MESH);
                     md->Add(ssmmd);
@@ -309,20 +320,24 @@ avtSAMIFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
                 }
 
                 // new way
-                snprintf(tmpName, sizeof(tmpName), "%s/sideA", toc->dir_names[i]);
+                snprintf(tmpName, sizeof(tmpName), "/%s/sideA/face_node0", toc_copy_dir_names[i]);
                 if (DBInqVarExists(dbFile, tmpName))
                 {
+                    snprintf(tmpName, sizeof(tmpName), "%s/sideA", toc_copy_dir_names[i]);
                     avtMeshMetaData *smmmd = new avtMeshMetaData(tmpName, 1, 0, 0,
                                                0, ndims, ndims-1, AVT_UNSTRUCTURED_MESH);
                     md->Add(smmmd);
-                    snprintf(tmpName, sizeof(tmpName), "%s/sideB", toc->dir_names[i]);
+                    snprintf(tmpName, sizeof(tmpName), "%s/sideB", toc_copy_dir_names[i]);
                     avtMeshMetaData *ssmmd = new avtMeshMetaData(tmpName, 1, 0, 0,
                                                    0, ndims, ndims-1, AVT_UNSTRUCTURED_MESH);
                     md->Add(ssmmd);
-               }
+                }
             }
         }
     }
+
+    for (i = 0; i < toc_copy_ndir; i++)
+        free(toc_copy_dir_names[i]);
 
     //
     // Add a material object, if present
