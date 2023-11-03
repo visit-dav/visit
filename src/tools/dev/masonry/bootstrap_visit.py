@@ -85,14 +85,18 @@ def visit_git_path(git_opts):
 
 def cmake_bin(opts):
     if "build_visit" in opts: # use cmake created by build_visit
-        cmake_cmd = "../thirdparty_shared/third_party/cmake/%s/%s/bin/cmake"
+        cmake_cmd = pjoin(opts["build_dir"],"thirdparty_shared")
+        cmake_cmd += "/third_party/cmake/%s/%s/bin/cmake"
         cmake_cmd = cmake_cmd % (opts["build_visit"]["cmake_ver"],opts["arch"])
     else: 
         # assume a suitable cmake exists in the user's PATH
         cmake_cmd = "cmake"
     return cmake_cmd
 
-
+def build_visit_exe():
+    # find build_visit relative to this script
+    masonry_dir = os.path.abspath(os.path.split(__file__)[0])
+    return os.path.abspath(pjoin(masonry_dir,"..","scripts","build_visit"))
 
 def steps_bv(opts,ctx):
     if(opts["force_clean"] == True):
@@ -119,7 +123,7 @@ def steps_bv(opts,ctx):
         bv_args += " " + opts["build_visit"]["args"]
     if "libs" in opts["build_visit"]:
         bv_args +=  " " + " ".join(["--%s" % l for l in opts["build_visit"]["libs"]])
-    bv_cmd   = "echo yes | ../visit/src/tools/dev/scripts/build_visit %s" % bv_args
+    bv_cmd   = "echo yes | %s %s" % (build_visit_exe(), bv_args)
     ctx.actions["bv_run"] = shell(cmd=bv_cmd,
                                   description="building dependencies",
                                   working_dir=bv_working,
@@ -375,6 +379,8 @@ def main(opts_json):
     ctx = Context()
     steps_visit(opts,ctx)
     res = ctx.fire("build")
+    # print out any results
+    print(res["trigger"]["results"][-1]["action"]["output"])
     # forward return code 
     return res["trigger"]["results"][-1]["action"]["return_code"]
 
