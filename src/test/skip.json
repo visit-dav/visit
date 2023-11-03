@@ -31,7 +31,16 @@
                     {"platform":"win", "category":"simulation","file":"updateplots.py"},
                     {"platform":"win", "category":"simulation","file":"updateplots_session.py"},
                     {"platform":"win", "category":"simulation","file":"zerocopy.py"},
-                    {"platform":"win", "category":"unit","file":"launcher.py"}
+                    {"platform":"win", "category":"unit","file":"launcher.py"},
+                    {"category":"operators", "file":"cart_proj.py", "cases":["ops_cart_proj_1.png","ops_cart_proj_1.png"]},
+                    {"category":"operators", "file":"dual_mesh.py", "cases":["ops_dualmesh_mesh_plot_2d_01.png"]},
+                    {"category":"plots", "file":"volumePlot.py", "cases":["volumeOpacity_05.png"]},
+                    {"category":"queries", "file":"avg_value.py", "cases":["avg_value_02.txt"]},
+                    {"category":"queries", "file":"pick.py", "cases":["Pick2D.txt", "Pick3DTo2D.txt", "PickAMR.txt", "PickBox.txt", "PickIndexSelect.txt", "PickSamrai_01.txt", "PickSamrai_05.txt"]},
+                    {"category":"rendering", "file":"bigdata.py", "cases":["bigdata_01.png"]},
+                    {"category":"rendering", "file":"legends.py", "cases":["legends_07.png"]},
+                    {"category":"rendering", "file":"pixeldata.py", "cases":["pixeldata_0_05.png", "pixeldata_0_07.png", "pixeldata_0_08.png", "pixeldata_0_09.png", "pixeldata_0_10.png", "pixeldata_0_11.png"]},
+                    {"category":"rendering", "file":"volume.py", "cases":["volume_01.png", "volume_02.png"]}
                   ]},
  {"mode":"parallel","tests":[
 		    {"category":"databases","file":"blueprint.py","cases":["blueprint_rz_cyl_rectilinear.root_plot_revolved_to_3D","blueprint_rz_cyl_uniform.root_plot_revolved_to_3D","blueprint_rz_cyl_structured.root_plot_revolved_to_3D","blueprint_rz_cyl_unstructured.root_plot_revolved_to_3D"]},
