@@ -48,6 +48,7 @@ class WavefrontOBJCommonPluginInfo : public virtual CommonDatabasePluginInfo, pu
     virtual DatabaseType              GetDatabaseType();
     virtual avtDatabase              *SetupDatabase(const char * const *list,
                                                     int nList, int nBlock);
+    virtual DBOptionsAttributes      *GetWriteOptions() const;
 };
 
 class WavefrontOBJMDServerPluginInfo : public virtual MDServerDatabasePluginInfo, public virtual WavefrontOBJCommonPluginInfo

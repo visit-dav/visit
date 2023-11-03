@@ -20,6 +20,7 @@
 #include <vtkCharArray.h>
 #include <vtkPolyData.h>
 #include <vtkTriangleFilter.h>
+#include <DBOptionsAttributes.h>
 #include <avtDatabaseMetaData.h>
 #include <vtkImageData.h>
 #include <vtkImagePointIterator.h>
@@ -35,8 +36,7 @@
 #include <DebugStream.h>
 #include <avtParallelContext.h>
 #include <avtDatasetFileWriter.h>
-
-
+#include <vtkPNGWriter.h>
 
 using     std::string;
 using     std::vector;
@@ -50,8 +50,10 @@ using     std::vector;
 //
 // ****************************************************************************
 
-avtWavefrontOBJWriter::avtWavefrontOBJWriter(void)
+avtWavefrontOBJWriter::avtWavefrontOBJWriter(const DBOptionsAttributes *atts)
 {
+    doColor = atts->GetBool("Output colors");
+    colorTable = atts->GetString("Color table");
 }
 
 // ****************************************************************************
@@ -122,46 +124,32 @@ avtWavefrontOBJWriter::WriteChunk(vtkDataSet *ds, int chunk)
     else
         filename = stem + ".obj";
 
-    std::string textureFilename = "colortable.png";
+    if (doColor)
+    {
+        std::string textureFilename = stem + ".png";
 
-    avtDatasetFileWriter::WriteOBJFile(ds, // dataset to write
-                                       filename.c_str(), // filename
-                                       nullptr, // label
-                                       true, // YES writeMTL
-                                       true, // YES MTLHasTex
-                                       textureFilename); // name of texture file
+        avtDatasetFileWriter::WriteOBJFile(ds, // dataset to write
+                                           filename.c_str(), // filename
+                                           nullptr, // label
+                                           true, // YES writeMTL
+                                           true, // YES MTLHasTex
+                                           textureFilename); // name of texture file
 
-    // // // TODO
-    // // const double num_ctrl_pts = 5;
+        // TODO write texture as well
 
-    // // const double field_value_max = 46.1;
-    // // const double field_value_min = -3.0;
-
-    // // const double field_value = 22.7;
-
-    // // // we want the value to sit between 0 and 1
-    // // const double color_value = (field_value - field_value_min) / (field_value_max - field_value_min);
-
-
-    // // vtkPolyData *polydata = vtkPolyData::SafeDownCast(ds);
-    // // vtkPoints *points = polydata->GetPoints();
-    // // const int number_of_points = points->GetNumberOfPoints();
-
-    // // vtkFloatArray *tcoords = vtkFloatArray::New();
-    // // tcoords->SetNumberOfComponents(2);
-    // // tcoords->SetNumberOfTuples(number_of_points);
-    // // for (vtkIdType i = 0; i < number_of_points; i ++)
-    // // {
-    // //     tcoords->SetTuple2(i, color_value, 0.5);
-    // // }
-
-    // // polydata->GetPointData()->SetTCoords(tcoords);
-
-    // vtkOBJWriter *writer = vtkOBJWriter::New();  
-    // writer->SetFileName(filename.c_str());
-    // writer->SetInputData(ds);
-    // writer->Update();
-    // writer->Delete();
+        vtkImageData *image = GetColorTable();
+        vtkImageWriter *writer = vtkPNGWriter::New();
+        writer->SetFileName(textureFilename.c_str());
+        writer->SetInputData(image);
+        writer->Write();
+        writer->Delete();
+    }
+    else
+    {
+        avtDatasetFileWriter::WriteOBJFile(ds, // dataset to write
+                                           filename.c_str(), // filename
+                                           nullptr); // label
+    }
 }
 
 // ****************************************************************************
@@ -241,44 +229,34 @@ avtWavefrontOBJWriter::GetColorTable()
     const ColorControlPointList *table = colorTables->GetColorControlPoints(colorTable);
     if (table)
     {
-        const int num_ctrl_pts = table->GetNumControlPoints();
-
+        unsigned char rgb[256*3];
+        int ncolors = 256;
+        table->GetColors(rgb, ncolors);
 
         vtkImageData *imageData = vtkImageData::New();
-        double spacing[3] = { 1.0, 1.0, 1.0 };
-        int size[3] = { num_ctrl_pts, 0, 0 };
-        double origin[3] = { 0.0, 0.0, 0.0 };
-        imageData->SetDimensions(size);
-        imageData->SetSpacing(spacing);
-        imageData->SetOrigin(origin);
-        imageData->AllocateScalars(VTK_FLOAT, 3);
-        vtkFloatArray *scalars = vtkFloatArray::SafeDownCast(imageData->GetPointData()->GetScalars());
 
-        vtkImagePointIterator iter(imageData);
-        while (!iter.IsAtEnd())
+        // TODO change image extent dynamically based on num_ctrl_pts
+        // x: [0, ncolors - 1], y: [0, 0], z: [0, 0]
+        imageData->SetExtent(0, ncolors - 1, 0, 0, 0, 0);
+        imageData->SetSpacing(1., 1., 1.);
+        imageData->SetOrigin(0., 0., 0.);
+        imageData->AllocateScalars(VTK_UNSIGNED_CHAR, 3);
+        unsigned char *pixels = (unsigned char *)imageData->GetScalarPointer(0, 0, 0);
+        unsigned char *ipixel = pixels;
+        for (int i = 0; i < ncolors * 3; i += 3)
         {
-            scalars->SetTuple3(iter.GetId(), 255.0, 0.0, 146.0);
-            iter.Next();
+            *ipixel = rgb[i];
+            ipixel ++;
+            *ipixel = rgb[i + 1];
+            ipixel ++;
+            *ipixel = rgb[i + 2];
+            ipixel ++;
         }
 
         return imageData;
-
-
-        // vtkColorTransferFunction *lut = vtkColorTransferFunction::New();
-
-        // double *vals = new double[3 * num_ctrl_pts];
-        // for (int j = 0; j < num_ctrl_pts; j++)
-        // {
-        //     const ColorControlPoint &pt = table->GetControlPoints(j);
-        //     vals[j * 3 + 0] = pt.GetColors()[0] / 255.0;
-        //     vals[j * 3 + 1] = pt.GetColors()[1] / 255.0;
-        //     vals[j * 3 + 2] = pt.GetColors()[2] / 255.0;
-        // }
-        
-        // lut->BuildFunctionFromTable(colorTableMin, colorTableMax, num_ctrl_pts, vals);
-        // delete [] vals;
-
-        // return lut;
     }
-    return NULL;
+
+    std::cout << "no table" << std::endl;
+
+    return nullptr;
 }

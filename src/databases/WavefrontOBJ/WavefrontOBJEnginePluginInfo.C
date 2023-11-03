@@ -22,6 +22,6 @@ VISIT_DATABASE_PLUGIN_ENTRY(WavefrontOBJ,Engine)
 avtDatabaseWriter *
 WavefrontOBJEnginePluginInfo::GetWriter(void)
 {
-    return new avtWavefrontOBJWriter;
+    return new avtWavefrontOBJWriter(writeOptions);
 }
 

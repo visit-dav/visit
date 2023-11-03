@@ -13,6 +13,7 @@
 
 #include <string>
 
+class DBOptionsAttributes;
 class vtkPolyData;
 class vtkImageData;
 
@@ -35,7 +36,7 @@ class
 avtWavefrontOBJWriter : public avtDatabaseWriter
 {
   public:
-                   avtWavefrontOBJWriter();
+                   avtWavefrontOBJWriter(const DBOptionsAttributes *);
     virtual       ~avtWavefrontOBJWriter() {}
 
   protected:
@@ -57,7 +58,6 @@ avtWavefrontOBJWriter : public avtDatabaseWriter
     
     bool                       doColor;
     std::string                colorTable;
-    double                     colorTableMin, colorTableMax;
 };
 
 

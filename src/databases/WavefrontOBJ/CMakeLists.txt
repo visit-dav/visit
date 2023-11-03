@@ -17,6 +17,7 @@ WavefrontOBJMDServerPluginInfo.C
 ${COMMON_SOURCES}
 avtWavefrontOBJFileFormat.C
 vtkVisItOBJReader.C
+avtWavefrontOBJOptions.C
 )
 
 SET(LIBE_SOURCES
@@ -25,6 +26,7 @@ ${COMMON_SOURCES}
 avtWavefrontOBJFileFormat.C
 avtWavefrontOBJWriter.C
 vtkVisItOBJReader.C
+avtWavefrontOBJOptions.C
 )
 
 INCLUDE_DIRECTORIES(
