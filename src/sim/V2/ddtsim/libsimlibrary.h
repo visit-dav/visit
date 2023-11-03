@@ -26,8 +26,8 @@ public:
     LibsimLibrary(const char* lib);
     bool isLoaded() { return mLibsim.isLoaded(); }
 
-    void SetSlaveProcessCallback(void (*callback)()) {
-        ((void (*)(void (*)())) mLibsim.symbol("VisItSetSlaveProcessCallback")) (callback); }
+    void SetWorkerProcessCallback(void (*callback)()) {
+        ((void (*)(void (*)())) mLibsim.symbol("VisItSetWorkerProcessCallback")) (callback); }
 
     void SetBroadcastIntFunction(int (*callback)(int*, int)) {
         ((void (*)(int (*)(int*, int))) mLibsim.symbol("VisItSetBroadcastIntFunction")) (callback); }
@@ -168,7 +168,7 @@ public:
     LibsimLibrary(const char* lib) {}
     bool isLoaded() { return true; }
 
-    void SetSlaveProcessCallback(void (*callback)())                  { VisItSetSlaveProcessCallback(callback); }
+    void SetWorkerProcessCallback(void (*callback)())                  { VisItSetWorkerProcessCallback(callback); }
     void SetBroadcastIntFunction(int (*callback)(int*, int))          { VisItSetBroadcastIntFunction(callback); }
     void SetBroadcastStringFunction(int (*callback)(char*, int, int)) { VisItSetBroadcastStringFunction(callback); }
     void SetCommandCallback(void (*callback)(const char *, const char *, void *), void *cbdata) {

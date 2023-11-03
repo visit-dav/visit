@@ -30,7 +30,7 @@ static int visit_broadcast_string_callback(char *str, int len, int sender)
 #define VISIT_COMMAND_FAILURE 2
 
 /* Helper function for ProcessVisItCommand */
-static void BroadcastSlaveCommand(int *command)
+static void BroadcastWorkerCommand(int *command)
 {
 #ifdef PARALLEL
     MPI_Bcast(command, 1, MPI_INT, 0, MPI_COMM_WORLD);
@@ -38,10 +38,10 @@ static void BroadcastSlaveCommand(int *command)
 }
 
 /* Callback involved in command communication. */
-void SlaveProcessCallback()
+void WorkerProcessCallback()
 {
     int command = VISIT_COMMAND_PROCESS;
-    BroadcastSlaveCommand(&command);
+    BroadcastWorkerCommand(&command);
 }
 
 /******************************************************************************
@@ -65,24 +65,24 @@ int ProcessVisItCommand(simulation_data *sim)
         if (success)
         {
             command = VISIT_COMMAND_SUCCESS;
-            BroadcastSlaveCommand(&command);
+            BroadcastWorkerCommand(&command);
             return 1;
         }
         else
         {
             command = VISIT_COMMAND_FAILURE;
-            BroadcastSlaveCommand(&command);
+            BroadcastWorkerCommand(&command);
             return 0;
         }
     }
     else
     {
-        /* Note: only through the SlaveProcessCallback callback
+        /* Note: only through the WorkerProcessCallback callback
          * above can the rank 0 process send a VISIT_COMMAND_PROCESS
          * instruction to the non-rank 0 processes. */
         while (1)
         {
-            BroadcastSlaveCommand(&command);
+            BroadcastWorkerCommand(&command);
             switch (command)
             {
             case VISIT_COMMAND_PROCESS:

@@ -3,12 +3,12 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ************************************************************************* //
-//                              avtMasterSlaveICAlgorithm.C                  //
+//                              avtManagerWorkerICAlgorithm.C                  //
 // ************************************************************************* //
 
 #if 0
 
-#include "avtMasterSlaveICAlgorithm.h"
+#include "avtManagerWorkerICAlgorithm.h"
 #include <TimingsManager.h>
 #include <iostream>
 #include <iomanip>
@@ -18,21 +18,21 @@ using namespace std;
 
 #ifdef PARALLEL
 static int MAX_DOMAIN_PRINT = 30;
-static bool MASTER_BALANCING = false;
-static bool SLAVE_AUTO_LOAD_DOMS = false;
+static bool MANAGER_BALANCING = false;
+static bool WORKER_AUTO_LOAD_DOMS = false;
 static int LATENCY_SEND_CNT = 2;
 
-int avtMasterSlaveICAlgorithm::MSG_STATUS = 420003;
-int avtMasterSlaveICAlgorithm::MSG_DONE = 420004;
-int avtMasterSlaveICAlgorithm::MSG_SEND_IC = 420005;
-int avtMasterSlaveICAlgorithm::MSG_LOAD_DOMAIN = 420006;
-int avtMasterSlaveICAlgorithm::MSG_SEND_IC_HINT = 420007;
-int avtMasterSlaveICAlgorithm::MSG_FORCE_SEND_STATUS = 420008;
-int avtMasterSlaveICAlgorithm::MSG_MASTER_STATUS = 420009;
-int avtMasterSlaveICAlgorithm::MSG_OFFLOAD_IC = 420010;
+int avtManagerWorkerICAlgorithm::MSG_STATUS = 420003;
+int avtManagerWorkerICAlgorithm::MSG_DONE = 420004;
+int avtManagerWorkerICAlgorithm::MSG_SEND_IC = 420005;
+int avtManagerWorkerICAlgorithm::MSG_LOAD_DOMAIN = 420006;
+int avtManagerWorkerICAlgorithm::MSG_SEND_IC_HINT = 420007;
+int avtManagerWorkerICAlgorithm::MSG_FORCE_SEND_STATUS = 420008;
+int avtManagerWorkerICAlgorithm::MSG_MANAGER_STATUS = 420009;
+int avtManagerWorkerICAlgorithm::MSG_OFFLOAD_IC = 420010;
 
 // ****************************************************************************
-//  Method: avtMasterSlaveICAlgorithm::Create
+//  Method: avtManagerWorkerICAlgorithm::Create
 //
 //  Purpose:
 //      Static method to create and conifigure classes.
@@ -43,91 +43,91 @@ int avtMasterSlaveICAlgorithm::MSG_OFFLOAD_IC = 420010;
 //  Modifications:
 //
 //  Dave Pugmire, Wed Mar 18 17:17:40 EDT 2009
-//  Allow masters to share work loads.
+//  Allow managers to share work loads.
 //
 //  Dave Pugmire, Wed Mar 25 10:04:29 EDT 2009
-//  Add flag that enables master balancing.
+//  Add flag that enables manager balancing.
 //
 // ****************************************************************************
 
-avtMasterSlaveICAlgorithm*
-avtMasterSlaveICAlgorithm::Create(avtPICSFilter *picsFilter,
+avtManagerWorkerICAlgorithm*
+avtManagerWorkerICAlgorithm::Create(avtPICSFilter *picsFilter,
                                   int maxCount,
                                   int rank,
                                   int nProcs,
                                   int workGroupSz)
 {
-    debug1<<"avtMasterSlaveICAlgorithm::Create\n";
+    debug1<<"avtManagerWorkerICAlgorithm::Create\n";
     
-    avtMasterSlaveICAlgorithm *algo = NULL;
-    int numMasters = 1;
+    avtManagerWorkerICAlgorithm *algo = NULL;
+    int numManagers = 1;
     int extra = 0;
     
     if (nProcs < workGroupSz)
         workGroupSz = nProcs;
     else
     {
-        numMasters = nProcs/workGroupSz;
+        numManagers = nProcs/workGroupSz;
         extra = nProcs%workGroupSz;
     }
     
-    int extraPerMaster = extra / numMasters;
-    int extraTill = extra % numMasters;
+    int extraPerManager = extra / numManagers;
+    int extraTill = extra % numManagers;
 
-    debug1<<"numMasters= "<<numMasters<<endl;
+    debug1<<"numManagers= "<<numManagers<<endl;
 
-    int nextSlave = numMasters;
-    vector<vector<int> > masterList(numMasters);
-    for (int m = 0; m < numMasters; m++)
+    int nextWorker = numManagers;
+    vector<vector<int> > managerList(numManagers);
+    for (int m = 0; m < numManagers; m++)
     {
-        masterList[m].resize(2);
-        int N = workGroupSz-1 + extraPerMaster;
+        managerList[m].resize(2);
+        int N = workGroupSz-1 + extraPerManager;
         if (m < extraTill)
             N++;
 
-        masterList[m][0] = nextSlave;
-        masterList[m][1] = (nextSlave+N-1);
-        debug1<<"Master: "<<m<<" ["<<masterList[m][0]<<" "<<masterList[m][1]<<"]"<<endl;
-        nextSlave += N;
+        managerList[m][0] = nextWorker;
+        managerList[m][1] = (nextWorker+N-1);
+        debug1<<"Manager: "<<m<<" ["<<managerList[m][0]<<" "<<managerList[m][1]<<"]"<<endl;
+        nextWorker += N;
     }
 
-    //I am a master.
-    if (rank < numMasters)
+    //I am a manager.
+    if (rank < numManagers)
     {
-        vector<int> slaves;
-        for (int i = masterList[rank][0]; i <= masterList[rank][1]; i++)
-            slaves.push_back(i);
+        vector<int> workers;
+        for (int i = managerList[rank][0]; i <= managerList[rank][1]; i++)
+            workers.push_back(i);
         
-        vector<int> masters;
-        int master = -1;
+        vector<int> managers;
+        int manager = -1;
 
-        if (MASTER_BALANCING)
+        if (MANAGER_BALANCING)
         {
             if (rank == 0)
             {
-                master = -1;
-                if (numMasters > 1)
-                    for (int i = 0; i < numMasters; i++)
-                        masters.push_back(i);
+                manager = -1;
+                if (numManagers > 1)
+                    for (int i = 0; i < numManagers; i++)
+                        managers.push_back(i);
             }
             else
-                master = 0;
+                manager = 0;
         }
         
-        algo = new avtMasterICAlgorithm(picsFilter, maxCount, workGroupSz, slaves, master, masters);
+        algo = new avtManagerICAlgorithm(picsFilter, maxCount, workGroupSz, workers, manager, managers);
 
-        debug1<<"I am a master. My slaves are: "<<slaves<<endl;
-        debug1<<"My masterMaster is "<<master<<". Masters= "<<masters<<endl;
+        debug1<<"I am a manager. My workers are: "<<workers<<endl;
+        debug1<<"My managerManager is "<<manager<<". Managers= "<<managers<<endl;
     }
     
-    // I'm a slave. Look for my master.
+    // I'm a worker. Look for my manager.
     else
     {
-        for (int m = 0; m < numMasters; m++)
-            if (rank >= masterList[m][0] && rank <= masterList[m][1])
+        for (int m = 0; m < numManagers; m++)
+            if (rank >= managerList[m][0] && rank <= managerList[m][1])
             {
-                debug1<<"I am a slave. My master is "<<m<<endl;
-                algo = new avtSlaveICAlgorithm(picsFilter, maxCount, m);
+                debug1<<"I am a worker. My manager is "<<m<<endl;
+                algo = new avtWorkerICAlgorithm(picsFilter, maxCount, m);
                 break;
             }
     }
@@ -140,10 +140,10 @@ avtMasterSlaveICAlgorithm::Create(avtPICSFilter *picsFilter,
 
 
 // ****************************************************************************
-//  Method: avtMasterSlaveICAlgorithm::avtMasterSlaveICAlgorithm
+//  Method: avtManagerWorkerICAlgorithm::avtManagerWorkerICAlgorithm
 //
 //  Purpose:
-//      avtMasterSlaveICAlgorithm constructor.
+//      avtManagerWorkerICAlgorithm constructor.
 //
 //  Programmer: Dave Pugmire
 //  Creation:   January 27, 2009
@@ -165,7 +165,7 @@ avtMasterSlaveICAlgorithm::Create(avtPICSFilter *picsFilter,
 //  
 // ****************************************************************************
 
-avtMasterSlaveICAlgorithm::avtMasterSlaveICAlgorithm(avtPICSFilter *picsFilter,
+avtManagerWorkerICAlgorithm::avtManagerWorkerICAlgorithm(avtPICSFilter *picsFilter,
                                                      int maxCount)
     : avtParICAlgorithm(picsFilter),
       SleepTime("sleepT"), LatencyTime("latT"), MaxLatencyTime("maxLatT"), SleepCnt("sleepC"),
@@ -179,22 +179,22 @@ avtMasterSlaveICAlgorithm::avtMasterSlaveICAlgorithm(avtPICSFilter *picsFilter,
 }
 
 // ****************************************************************************
-//  Method: avtMasterSlaveICAlgorithm::~avtMasterSlaveICAlgorithm
+//  Method: avtManagerWorkerICAlgorithm::~avtManagerWorkerICAlgorithm
 //
 //  Purpose:
-//      avtMasterSlaveICAlgorithm destructor
+//      avtManagerWorkerICAlgorithm destructor
 //
 //  Programmer: Dave Pugmire
 //  Creation:   January 27, 2009
 //
 // ****************************************************************************
 
-avtMasterSlaveICAlgorithm::~avtMasterSlaveICAlgorithm()
+avtManagerWorkerICAlgorithm::~avtManagerWorkerICAlgorithm()
 {
 }
 
 // ****************************************************************************
-//  Method: avtMasterSlaveICAlgorithm::Initialize
+//  Method: avtManagerWorkerICAlgorithm::Initialize
 //
 //  Purpose:
 //      Initializization.
@@ -216,7 +216,7 @@ avtMasterSlaveICAlgorithm::~avtMasterSlaveICAlgorithm()
 // ****************************************************************************
 
 void
-avtMasterSlaveICAlgorithm::Initialize(std::vector<avtIntegralCurve *> &seedPts)
+avtManagerWorkerICAlgorithm::Initialize(std::vector<avtIntegralCurve *> &seedPts)
 {
     int numRecvs = nProcs-1;
     if (numRecvs > 64)
@@ -226,19 +226,19 @@ avtMasterSlaveICAlgorithm::Initialize(std::vector<avtIntegralCurve *> &seedPts)
 }
 
 void
-avtMasterSlaveICAlgorithm::ResetIntegralCurvesForContinueExecute(int curTimeSlice)
+avtManagerWorkerICAlgorithm::ResetIntegralCurvesForContinueExecute(int curTimeSlice)
 {
     EXCEPTION0(ImproperUseException);
 }
 
 void
-avtMasterSlaveICAlgorithm::AddIntegralCurves(std::vector<avtIntegralCurve*> &ics)
+avtManagerWorkerICAlgorithm::AddIntegralCurves(std::vector<avtIntegralCurve*> &ics)
 {
     EXCEPTION0(ImproperUseException);
 }
 
 // ****************************************************************************
-// Method:  avtMasterSlaveICAlgorithm::ExchangeICs
+// Method:  avtManagerWorkerICAlgorithm::ExchangeICs
 //
 // Purpose:
 //   
@@ -248,7 +248,7 @@ avtMasterSlaveICAlgorithm::AddIntegralCurves(std::vector<avtIntegralCurve*> &ics
 // ****************************************************************************
 
 bool
-avtMasterSlaveICAlgorithm::ExchangeICs(list<avtIntegralCurve *> &ics,
+avtManagerWorkerICAlgorithm::ExchangeICs(list<avtIntegralCurve *> &ics,
                                        vector<vector< avtIntegralCurve *> > &sendICs)
 {
     bool newIntegralCurves = false;
@@ -273,7 +273,7 @@ avtMasterSlaveICAlgorithm::ExchangeICs(list<avtIntegralCurve *> &ics,
 }
 
 // ****************************************************************************
-//  Method: avtMasterSlaveICAlgorithm::NSleep
+//  Method: avtManagerWorkerICAlgorithm::NSleep
 //
 //  Purpose:
 //      Sleep for a spell
@@ -288,7 +288,7 @@ avtMasterSlaveICAlgorithm::ExchangeICs(list<avtIntegralCurve *> &ics,
 // ****************************************************************************
 
 void
-avtMasterSlaveICAlgorithm::NSleep()
+avtManagerWorkerICAlgorithm::NSleep()
 {
     if (sleepMicroSec > 0)
     {
@@ -306,7 +306,7 @@ avtMasterSlaveICAlgorithm::NSleep()
 }
 
 // ****************************************************************************
-//  Method: avtMasterSlaveICAlgorithm::CompileTimingStatistics
+//  Method: avtManagerWorkerICAlgorithm::CompileTimingStatistics
 //
 //  Purpose:
 //      Calculate statistics.
@@ -320,7 +320,7 @@ avtMasterSlaveICAlgorithm::NSleep()
 // ****************************************************************************
 
 void
-avtMasterSlaveICAlgorithm::CompileTimingStatistics()
+avtManagerWorkerICAlgorithm::CompileTimingStatistics()
 {
     avtParICAlgorithm::CompileTimingStatistics();
 
@@ -330,7 +330,7 @@ avtMasterSlaveICAlgorithm::CompileTimingStatistics()
 }
 
 // ****************************************************************************
-//  Method: avtMasterSlaveICAlgorithm::CompileCounterStatistics
+//  Method: avtManagerWorkerICAlgorithm::CompileCounterStatistics
 //
 //  Purpose:
 //      Calculate statistics.
@@ -341,7 +341,7 @@ avtMasterSlaveICAlgorithm::CompileTimingStatistics()
 // ****************************************************************************
 
 void
-avtMasterSlaveICAlgorithm::CompileCounterStatistics()
+avtManagerWorkerICAlgorithm::CompileCounterStatistics()
 {
     avtParICAlgorithm::CompileCounterStatistics();
     ComputeStatistic(SleepCnt);
@@ -349,7 +349,7 @@ avtMasterSlaveICAlgorithm::CompileCounterStatistics()
 }
 
 // ****************************************************************************
-//  Method: avtMasterSlaveICAlgorithm::CalculateExtraTime
+//  Method: avtManagerWorkerICAlgorithm::CalculateExtraTime
 //
 //  Purpose:
 //      Calculate ExtraTime.
@@ -363,7 +363,7 @@ avtMasterSlaveICAlgorithm::CompileCounterStatistics()
 // ****************************************************************************
 
 void
-avtMasterSlaveICAlgorithm::CalculateExtraTime()
+avtManagerWorkerICAlgorithm::CalculateExtraTime()
 {
     avtParICAlgorithm::CalculateExtraTime();
     
@@ -372,7 +372,7 @@ avtMasterSlaveICAlgorithm::CalculateExtraTime()
 }
 
 // ****************************************************************************
-//  Method: avtMasterSlaveICAlgorithm::ReportTimings
+//  Method: avtManagerWorkerICAlgorithm::ReportTimings
 //
 //  Purpose:
 //      Report timings.
@@ -383,7 +383,7 @@ avtMasterSlaveICAlgorithm::CalculateExtraTime()
 // ****************************************************************************
 
 void
-avtMasterSlaveICAlgorithm::ReportTimings(ostream &os, bool totals)
+avtManagerWorkerICAlgorithm::ReportTimings(ostream &os, bool totals)
 {
     avtParICAlgorithm::ReportTimings(os, totals);
     
@@ -393,7 +393,7 @@ avtMasterSlaveICAlgorithm::ReportTimings(ostream &os, bool totals)
 }
 
 // ****************************************************************************
-//  Method: avtMasterSlaveICAlgorithm::ReportCounters
+//  Method: avtManagerWorkerICAlgorithm::ReportCounters
 //
 //  Purpose:
 //      Report counters.
@@ -410,7 +410,7 @@ avtMasterSlaveICAlgorithm::ReportTimings(ostream &os, bool totals)
 // ****************************************************************************
 
 void
-avtMasterSlaveICAlgorithm::ReportCounters(ostream &os, bool totals)
+avtManagerWorkerICAlgorithm::ReportCounters(ostream &os, bool totals)
 {
     avtParICAlgorithm::ReportCounters(os, totals);
     PrintCounter(os, "SleepCnt", SleepCnt, totals);
@@ -422,10 +422,10 @@ avtMasterSlaveICAlgorithm::ReportCounters(ostream &os, bool totals)
 
 
 // ****************************************************************************
-//  Method: avtMasterICAlgorithm::avtMasterICAlgorithm
+//  Method: avtManagerICAlgorithm::avtManagerICAlgorithm
 //
 //  Purpose:
-//      avtMasterICAlgorithm constructor.
+//      avtManagerICAlgorithm constructor.
 //
 //  Programmer: Dave Pugmire
 //  Creation:   January 27, 2009
@@ -436,33 +436,33 @@ avtMasterSlaveICAlgorithm::ReportCounters(ostream &os, bool totals)
 //   Generalized domain to include domain/time. Pathine cleanup.
 //   
 //  Dave Pugmire, Wed Mar 18 17:17:40 EDT 2009
-//  Allow masters to share work loads.
+//  Allow managers to share work loads.
 //
 //   Dave Pugmire, Fri Sep 25 15:35:32 EDT 2009
 //   Initialize new counters.
 //
 // ****************************************************************************
 
-avtMasterICAlgorithm::avtMasterICAlgorithm(avtPICSFilter *picsFilter,
+avtManagerICAlgorithm::avtManagerICAlgorithm(avtPICSFilter *picsFilter,
                                            int maxCount,
                                            int workGrpSz,
-                                           vector<int> &slaves,
+                                           vector<int> &workers,
                                            int mst,
-                                           vector<int> &masters)
-    : avtMasterSlaveICAlgorithm(picsFilter, maxCount)
+                                           vector<int> &managers)
+    : avtManagerWorkerICAlgorithm(picsFilter, maxCount)
 {
-    // Sleeping master seems to increase latency.
+    // Sleeping manager seems to increase latency.
     sleepMicroSec = 0;
     
     workGroupSz = workGrpSz;
-    //Create my slaves.
-    for (int i = 0; i < slaves.size(); i++)
-        slaveInfo.push_back(SlaveInfo(slaves[i], NUM_DOMAINS));
+    //Create my workers.
+    for (int i = 0; i < workers.size(); i++)
+        workerInfo.push_back(WorkerInfo(workers[i], NUM_DOMAINS));
 
-    //Create any masters to manage.
-    master = mst;
-    for (int i = 0; i < masters.size(); i++)
-        masterInfo.push_back(SlaveInfo(masters[i], NUM_DOMAINS));
+    //Create any managers to manage.
+    manager = mst;
+    for (int i = 0; i < managers.size(); i++)
+        managerInfo.push_back(WorkerInfo(managers[i], NUM_DOMAINS));
     
     icDomCnts.resize(NUM_DOMAINS,0);
     domLoaded.resize(NUM_DOMAINS,0);
@@ -477,22 +477,22 @@ avtMasterICAlgorithm::avtMasterICAlgorithm(avtPICSFilter *picsFilter,
 
 
 // ****************************************************************************
-//  Method: avtMasterICAlgorithm::~avtMasterICAlgorithm
+//  Method: avtManagerICAlgorithm::~avtManagerICAlgorithm
 //
 //  Purpose:
-//      avtMasterICAlgorithm destructor.
+//      avtManagerICAlgorithm destructor.
 //
 //  Programmer: Dave Pugmire
 //  Creation:   January 27, 2009
 //
 // ****************************************************************************
 
-avtMasterICAlgorithm::~avtMasterICAlgorithm()
+avtManagerICAlgorithm::~avtManagerICAlgorithm()
 {
 }
 
 // ****************************************************************************
-//  Method: avtMasterICAlgorithm::Initialize
+//  Method: avtManagerICAlgorithm::Initialize
 //
 //  Purpose:
 //      Initializization
@@ -503,7 +503,7 @@ avtMasterICAlgorithm::~avtMasterICAlgorithm()
 //  Modifications:
 //  
 //   Dave Pugmire, Wed Mar 18 17:17:40 EDT 2009
-//   Allow masters to share work loads.
+//   Allow managers to share work loads.
 //
 //   Dave Pugmire, Fri Sep 25 15:35:32 EDT 2009
 //   Better initial SL distribution.
@@ -514,20 +514,20 @@ avtMasterICAlgorithm::~avtMasterICAlgorithm()
 // ****************************************************************************
 
 void
-avtMasterICAlgorithm::Initialize(std::vector<avtIntegralCurve *> &seedPts)
+avtManagerICAlgorithm::Initialize(std::vector<avtIntegralCurve *> &seedPts)
 {
     SortIntegralCurves(seedPts);
-    avtMasterSlaveICAlgorithm::Initialize(seedPts);
+    avtManagerWorkerICAlgorithm::Initialize(seedPts);
     int nSeeds = seedPts.size();
 
-    int numMasters;
+    int numManagers;
     if (nProcs < workGroupSz)
-        numMasters = 1;
+        numManagers = 1;
     else
-        numMasters = nProcs/workGroupSz;
+        numManagers = nProcs/workGroupSz;
     
-    int nSeedsPerProc = (nSeeds / numMasters);
-    int oneExtraUntil = (nSeeds % numMasters);
+    int nSeedsPerProc = (nSeeds / numManagers);
+    int oneExtraUntil = (nSeeds % numManagers);
     int i0 = 0, i1 = nSeeds;
 
     if (rank < oneExtraUntil)
@@ -554,18 +554,18 @@ avtMasterICAlgorithm::Initialize(std::vector<avtIntegralCurve *> &seedPts)
     
     workGroupActiveICs = activeICs.size();
     done = false;
-    slaveUpdate = false;
-    masterUpdate = false;
+    workerUpdate = false;
+    managerUpdate = false;
     status.resize(NUM_DOMAINS+1,0);
     prevStatus.resize(NUM_DOMAINS+1,0);
 }
 
 // ****************************************************************************
-//  Method: avtMasterICAlgorithm::CompileTimingStatistics
+//  Method: avtManagerICAlgorithm::CompileTimingStatistics
 //
 //  Purpose:
-//      Calculate statistics. For the master, we need to be a little tricky.
-//      The master doesn't do a lot of things, so we don't want to skew the
+//      Calculate statistics. For the manager, we need to be a little tricky.
+//      The manager doesn't do a lot of things, so we don't want to skew the
 //      statistics. So, set the timer/counters to -1 and then ignore these values
 //      when reporting statistics.
 //
@@ -578,22 +578,22 @@ avtMasterICAlgorithm::Initialize(std::vector<avtIntegralCurve *> &seedPts)
 // ****************************************************************************
 
 void
-avtMasterICAlgorithm::CompileTimingStatistics()
+avtManagerICAlgorithm::CompileTimingStatistics()
 {
     LatencyTime.value = -1;
     MaxLatencyTime.value = -1;
     IOTime.value = -1;
     IntegrateTime.value = -1;
     SortTime.value = -1;
-    avtMasterSlaveICAlgorithm::CompileTimingStatistics();
+    avtManagerWorkerICAlgorithm::CompileTimingStatistics();
 }
 
 // ****************************************************************************
-//  Method: avtMasterICAlgorithm::CompileCounterStatistics
+//  Method: avtManagerICAlgorithm::CompileCounterStatistics
 //
 //  Purpose:
-//      Calculate statistics. For the master, we need to be a little tricky.
-//      The master doesn't do a lot of things, so we don't want to skew the
+//      Calculate statistics. For the manager, we need to be a little tricky.
+//      The manager doesn't do a lot of things, so we don't want to skew the
 //      statistics. So, set the timer/counters to -1 and then ignore these values
 //      when reporting statistics.
 //
@@ -603,17 +603,17 @@ avtMasterICAlgorithm::CompileTimingStatistics()
 // ****************************************************************************
 
 void
-avtMasterICAlgorithm::CompileCounterStatistics()
+avtManagerICAlgorithm::CompileCounterStatistics()
 {
     IntegrateCnt.value = -1;
     DomLoadCnt.value = -1;
     DomPurgeCnt.value = -1;
-    avtMasterSlaveICAlgorithm::CompileCounterStatistics();
+    avtManagerWorkerICAlgorithm::CompileCounterStatistics();
 }
 
 
 // ****************************************************************************
-//  Method: avtMasterICAlgorithm::ReportCounters
+//  Method: avtManagerICAlgorithm::ReportCounters
 //
 //  Purpose:
 //      Report counters.
@@ -629,9 +629,9 @@ avtMasterICAlgorithm::CompileCounterStatistics()
 // ****************************************************************************
 
 void
-avtMasterICAlgorithm::ReportCounters(ostream &os, bool totals)
+avtManagerICAlgorithm::ReportCounters(ostream &os, bool totals)
 {
-    avtMasterSlaveICAlgorithm::ReportCounters(os, totals);
+    avtManagerWorkerICAlgorithm::ReportCounters(os, totals);
     
     if (!totals)
     {
@@ -666,10 +666,10 @@ avtMasterICAlgorithm::ReportCounters(ostream &os, bool totals)
 }
 
 // ****************************************************************************
-//  Method: avtMasterICAlgorithm::PrintStatus
+//  Method: avtManagerICAlgorithm::PrintStatus
 //
 //  Purpose:
-//      Display the slave status
+//      Display the worker status
 //
 //  Programmer: Dave Pugmire
 //  Creation:   January 27, 2009
@@ -680,7 +680,7 @@ avtMasterICAlgorithm::ReportCounters(ostream &os, bool totals)
 //   Generalized domain to include domain/time. Pathine cleanup.
 //   
 //  Dave Pugmire, Wed Mar 18 17:17:40 EDT 2009
-//  Allow masters to share work loads.
+//  Allow managers to share work loads.
 //
 //  Dave Pugmire, Wed Mar 25 10:04:29 EDT 2009
 //  Control print information for large domain problems.
@@ -688,13 +688,13 @@ avtMasterICAlgorithm::ReportCounters(ostream &os, bool totals)
 // ****************************************************************************
 
 void
-avtMasterICAlgorithm::PrintStatus()
+avtManagerICAlgorithm::PrintStatus()
 {
-    if (masterInfo.size() > 0)
+    if (managerInfo.size() > 0)
     {
-        debug1<<"Masters:\n";
-        for (int i = 0; i < masterInfo.size(); i++)
-            masterInfo[i].Debug();
+        debug1<<"Managers:\n";
+        for (int i = 0; i < managerInfo.size(); i++)
+            managerInfo[i].Debug();
         debug1<<endl;
     }
 
@@ -705,7 +705,7 @@ avtMasterICAlgorithm::PrintStatus()
             debug1<<setw(4)<<i<<" ";
     }
     debug1<<"]\n";
-    debug1<<"Master:            [";
+    debug1<<"Manager:            [";
     if (NUM_DOMAINS < MAX_DOMAIN_PRINT)
     {
         for ( int i = 0; i < NUM_DOMAINS; i++)
@@ -714,8 +714,8 @@ avtMasterICAlgorithm::PrintStatus()
     debug1<<"]\n";
     
     debug1<<" R:  T ( L, OOB)"<<endl;
-    for (int i = 0; i < slaveInfo.size(); i++)
-        slaveInfo[i].Debug();
+    for (int i = 0; i < workerInfo.size(); i++)
+        workerInfo[i].Debug();
     debug1<<"DCounts:           [";
     int cnt = 0;
     if (NUM_DOMAINS < MAX_DOMAIN_PRINT)
@@ -728,17 +728,17 @@ avtMasterICAlgorithm::PrintStatus()
     }
     debug1<<"] ("<<cnt<<")"<<endl;
 
-    vector<int> slaveICs(NUM_DOMAINS,0);
-    for (int i = 0; i < slaveInfo.size(); i++)
+    vector<int> workerICs(NUM_DOMAINS,0);
+    for (int i = 0; i < workerInfo.size(); i++)
         for (int j = 0; j < NUM_DOMAINS; j++)
-            slaveICs[j] += slaveInfo[i].domainCnt[j];
+            workerICs[j] += workerInfo[i].domainCnt[j];
     debug1<<"SCounts:           [";
     if (NUM_DOMAINS < MAX_DOMAIN_PRINT)
     {
         for ( int i = 0; i < NUM_DOMAINS; i++)
         {
-            debug1<<setw(4)<<slaveICs[i]<<" ";
-            cnt += slaveICs[i];
+            debug1<<setw(4)<<workerICs[i]<<" ";
+            cnt += workerICs[i];
         }
     }
     debug1<<"] ("<<cnt<<")"<<endl;
@@ -747,10 +747,10 @@ avtMasterICAlgorithm::PrintStatus()
 
 
 // ****************************************************************************
-//  Method: avtMasterICAlgorithm::UpdateSlaveStatus
+//  Method: avtManagerICAlgorithm::UpdateWorkerStatus
 //
 //  Purpose:
-//      Update the slave status.
+//      Update the worker status.
 //
 //  Programmer: Dave Pugmire
 //  Creation:   January 27, 2009
@@ -758,7 +758,7 @@ avtMasterICAlgorithm::PrintStatus()
 //  Modifications:
 //  
 //  Dave Pugmire, Wed Mar 18 17:17:40 EDT 2009
-//  Allow masters to share work loads.    
+//  Allow managers to share work loads.    
 //
 //  Dave Pugmire, Wed Mar 25 10:04:29 EDT 2009
 //  Control print information for large domain problems.
@@ -770,7 +770,7 @@ avtMasterICAlgorithm::PrintStatus()
 // ****************************************************************************
 
 void
-avtMasterICAlgorithm::UpdateSlaveStatus(vector<int> &status)
+avtManagerICAlgorithm::UpdateWorkerStatus(vector<int> &status)
 {
     int src = status[0];
     int msg = status[1];
@@ -783,29 +783,29 @@ avtMasterICAlgorithm::UpdateSlaveStatus(vector<int> &status)
         workGroupActiveICs = 0;
     }
 
-    debug1<<"SlaveStatus: "<<src<<" ";
+    debug1<<"WorkerStatus: "<<src<<" ";
     if (NUM_DOMAINS < MAX_DOMAIN_PRINT)  debug1<<status;
     debug1<<endl;
     
-    for (int i = 0; i < slaveInfo.size(); i++)
+    for (int i = 0; i < workerInfo.size(); i++)
     {
-        if (slaveInfo[i].rank == src)
+        if (workerInfo[i].rank == src)
         {
             debug5<<"Update for rank= "<<src<<endl;
             vector<int> domStatus;
             for (int j = 3; j < status.size(); j++)
                 domStatus.push_back(status[j]);
-            slaveInfo[i].Update(domStatus, false);
+            workerInfo[i].Update(domStatus, false);
             break;
         }
     }
 }
 
 // ****************************************************************************
-//  Method: avtMasterICAlgorithm::RunAlgorithm
+//  Method: avtManagerICAlgorithm::RunAlgorithm
 //
 //  Purpose:
-//      Execute the master loop of the master/slave algorithm.
+//      Execute the manager loop of the manager/worker algorithm.
 //
 //  Programmer: Dave Pugmire
 //  Creation:   January 27, 2009
@@ -816,7 +816,7 @@ avtMasterICAlgorithm::UpdateSlaveStatus(vector<int> &status)
 //   Add call to check for sent buffers.
 //
 //  Dave Pugmire, Wed Mar 18 17:17:40 EDT 2009
-//  Allow masters to share work loads.
+//  Allow managers to share work loads.
 //
 //   Dave Pugmire, Thu Sep 24 13:52:59 EDT 2009
 //   Change Execute to RunAlgorithm.
@@ -824,11 +824,11 @@ avtMasterICAlgorithm::UpdateSlaveStatus(vector<int> &status)
 // ****************************************************************************
 
 void
-avtMasterICAlgorithm::RunAlgorithm()
+avtManagerICAlgorithm::RunAlgorithm()
 {
     int timer = visitTimer->StartTimer();
     
-    //Each slave has to send information. Don't proceed until they have.
+    //Each worker has to send information. Don't proceed until they have.
     Barrier();
 
     while (!done)
@@ -844,13 +844,13 @@ avtMasterICAlgorithm::RunAlgorithm()
         PostLoopProcessing();
     }
 
-    // We are done, tell all slaves to pack it up.
-    SendAllSlavesMsg(MSG_DONE);
+    // We are done, tell all workers to pack it up.
+    SendAllWorkersMsg(MSG_DONE);
     TotalTime.value += visitTimer->StopTimer(timer, "Execute");
 }
 
 // ****************************************************************************
-//  Method: avtMasterICAlgorithm::PostLoopProcessing()
+//  Method: avtManagerICAlgorithm::PostLoopProcessing()
 //
 //  Purpose:
 //      See if we are done.
@@ -862,26 +862,26 @@ avtMasterICAlgorithm::RunAlgorithm()
 //
 //  Dave Pugmire, Sat Mar 28 10:04:01 EDT 2009
 //  Temporary fix for a sporadic bug where it looks like messages are not
-//  being delivered to the master. Detect this case, and signal done.
+//  being delivered to the manager. Detect this case, and signal done.
 //
 // ****************************************************************************
 
 void
-avtMasterICAlgorithm::PostLoopProcessing()
+avtManagerICAlgorithm::PostLoopProcessing()
 {
     SendStatus();
     
     //This is a hack....
     if (activeICs.empty() && workGroupActiveICs > 0)
     {
-        bool haveActiveSlaves = false;
-        for (int i = 0; i < slaveInfo.size(); i++)
-            if (slaveInfo[i].icCount != 0)
+        bool haveActiveWorkers = false;
+        for (int i = 0; i < workerInfo.size(); i++)
+            if (workerInfo[i].icCount != 0)
             {
-                haveActiveSlaves = true;
+                haveActiveWorkers = true;
                 break;
             }
-        if (!haveActiveSlaves)
+        if (!haveActiveWorkers)
         {
             debug1<<"HACK: Need to figure out how the count got messed up!"<<endl;
             //workGroupActiveICs = 0;
@@ -891,15 +891,15 @@ avtMasterICAlgorithm::PostLoopProcessing()
     //end hack....
 
     //See if we are done.
-    if (master == -1) //I'm root master.
+    if (manager == -1) //I'm root manager.
     {
         debug1<<"See if we are done.\n";
         if (workGroupActiveICs == 0)
         {
             debug1<<"I'm done!\n";
             done = true;
-            for (int i = 0; i < masterInfo.size(); i++)
-                if (masterInfo[i].icCount != 0)
+            for (int i = 0; i < managerInfo.size(); i++)
+                if (managerInfo[i].icCount != 0)
                 {
                     done = false;
                     break;
@@ -908,10 +908,10 @@ avtMasterICAlgorithm::PostLoopProcessing()
             debug1<<"Done= "<<done<<endl;
             if (done)
             {
-                for (int i = 0; i < masterInfo.size(); i++)
+                for (int i = 0; i < managerInfo.size(); i++)
                 {
                     vector<int> msg(1, MSG_DONE);
-                    SendMsg(masterInfo[i].rank, msg);
+                    SendMsg(managerInfo[i].rank, msg);
                 }
             }
         }
@@ -919,7 +919,7 @@ avtMasterICAlgorithm::PostLoopProcessing()
 }
 
 // ****************************************************************************
-//  Method: avtMasterICAlgorithm::UpdateStatus
+//  Method: avtManagerICAlgorithm::UpdateStatus
 //
 //  Purpose:
 //      Update my status.
@@ -930,7 +930,7 @@ avtMasterICAlgorithm::PostLoopProcessing()
 // ****************************************************************************
 
 void
-avtMasterICAlgorithm::UpdateStatus()
+avtManagerICAlgorithm::UpdateStatus()
 {
     for (int i = 0; i < status.size(); i++)
         status[i] = 0;
@@ -942,10 +942,10 @@ avtMasterICAlgorithm::UpdateStatus()
 
 
 // ****************************************************************************
-//  Method: avtMasterICAlgorithm::SendStatus
+//  Method: avtManagerICAlgorithm::SendStatus
 //
 //  Purpose:
-//      Send master status to my master.
+//      Send manager status to my manager.
 //
 //  Programmer: Dave Pugmire
 //  Creation:   March 18, 2009
@@ -958,7 +958,7 @@ avtMasterICAlgorithm::UpdateStatus()
 // ****************************************************************************
 
 void
-avtMasterICAlgorithm::SendStatus(bool forceSend)
+avtManagerICAlgorithm::SendStatus(bool forceSend)
 {
     UpdateStatus();
 
@@ -980,21 +980,21 @@ avtMasterICAlgorithm::SendStatus(bool forceSend)
     if (statusChanged)
     {
         vector<int> msg(NUM_DOMAINS+2);
-        msg[0] = MSG_MASTER_STATUS;
+        msg[0] = MSG_MANAGER_STATUS;
         msg[1] = workGroupActiveICs;
         for (int i = 0; i < NUM_DOMAINS; i++)
             msg[i+2] = domLoaded[i];
 
-        debug1<<"MasterStatusSend: ";
+        debug1<<"ManagerStatusSend: ";
         if (NUM_DOMAINS < MAX_DOMAIN_PRINT) debug1<<msg;
         debug1<<endl;
         
-        if (master != -1)
-            SendMsg(master, msg);
+        if (manager != -1)
+            SendMsg(manager, msg);
         else
         {
             msg.insert(msg.begin(), rank);
-            ProcessMasterUpdate(msg);
+            ProcessManagerUpdate(msg);
         }
 
         
@@ -1004,7 +1004,7 @@ avtMasterICAlgorithm::SendStatus(bool forceSend)
 }
 
 // ****************************************************************************
-//  Method: avtMasterICAlgorithm::ProcessMessages
+//  Method: avtManagerICAlgorithm::ProcessMessages
 //
 //  Purpose:
 //      Handle incoming messages.
@@ -1018,7 +1018,7 @@ avtMasterICAlgorithm::SendStatus(bool forceSend)
 // ****************************************************************************
 
 void
-avtMasterICAlgorithm::ProcessMessages()
+avtManagerICAlgorithm::ProcessMessages()
 {
     vector<MsgCommData> msgs;
     RecvMsg(msgs);
@@ -1042,9 +1042,9 @@ avtMasterICAlgorithm::ProcessMessages()
                 status[i] = msg[i-1];
             
             if (msgType == MSG_STATUS)
-                ProcessSlaveUpdate(status);
-            else if (msgType == MSG_MASTER_STATUS)
-                ProcessMasterUpdate(status);
+                ProcessWorkerUpdate(status);
+            else if (msgType == MSG_MANAGER_STATUS)
+                ProcessManagerUpdate(status);
             else if (msgType == MSG_OFFLOAD_IC)
                 ProcessOffloadIC(status);
         }
@@ -1052,10 +1052,10 @@ avtMasterICAlgorithm::ProcessMessages()
 }
 
 // ****************************************************************************
-//  Method: avtMasterICAlgorithm::ProcessSlaveUpdate
+//  Method: avtManagerICAlgorithm::ProcessWorkerUpdate
 //
 //  Purpose:
-//      Process status messages from slaves.
+//      Process status messages from workers.
 //
 //  Programmer: Dave Pugmire
 //  Creation:   March 18, 2009
@@ -1063,17 +1063,17 @@ avtMasterICAlgorithm::ProcessMessages()
 // ****************************************************************************
 
 void
-avtMasterICAlgorithm::ProcessSlaveUpdate(vector<int> &status)
+avtManagerICAlgorithm::ProcessWorkerUpdate(vector<int> &status)
 {
-    UpdateSlaveStatus(status);
-    slaveUpdate = true;
+    UpdateWorkerStatus(status);
+    workerUpdate = true;
 }
 
 // ****************************************************************************
-//  Method: avtMasterICAlgorithm::ProcessMasterUpdate
+//  Method: avtManagerICAlgorithm::ProcessManagerUpdate
 //
 //  Purpose:
-//      Process status messages from masters.
+//      Process status messages from managers.
 //
 //  Programmer: Dave Pugmire
 //  Creation:   March 18, 2009
@@ -1086,38 +1086,38 @@ avtMasterICAlgorithm::ProcessSlaveUpdate(vector<int> &status)
 // ****************************************************************************
 
 void
-avtMasterICAlgorithm::ProcessMasterUpdate(vector<int> &status)
+avtManagerICAlgorithm::ProcessManagerUpdate(vector<int> &status)
 {
     int src = status[0];
     int msg = status[1];
     int nICs = status[2];
 
-    debug1<<"MasterUpdateStatus: "<<src<<" "<<msg<<" "<<nICs<<" ";
+    debug1<<"ManagerUpdateStatus: "<<src<<" "<<msg<<" "<<nICs<<" ";
     if (NUM_DOMAINS < MAX_DOMAIN_PRINT) debug1<<status;
     debug1<<endl;
     
-    for (int i = 0; i < masterInfo.size(); i++)
+    for (int i = 0; i < managerInfo.size(); i++)
     {
-        if (masterInfo[i].rank == src)
+        if (managerInfo[i].rank == src)
         {
             debug5<<"Update for rank= "<<src<<endl;
             vector<int> domStatus;
             for (int j = 3; j < status.size(); j++)
                 domStatus.push_back(status[j]);
-            masterInfo[i].Update(domStatus, false);
-            masterInfo[i].icCount = nICs;
+            managerInfo[i].Update(domStatus, false);
+            managerInfo[i].icCount = nICs;
             break;
         }
     }
 
-    masterUpdate = true;
+    managerUpdate = true;
 }
 
 // ****************************************************************************
-//  Method: avtMasterICAlgorithm::ProcessOffloadIC
+//  Method: avtManagerICAlgorithm::ProcessOffloadIC
 //
 //  Purpose:
-//      Offload work to another master.
+//      Offload work to another manager.
 //
 //  Programmer: Dave Pugmire
 //  Creation:   March 18, 2009
@@ -1125,12 +1125,12 @@ avtMasterICAlgorithm::ProcessMasterUpdate(vector<int> &status)
 //  Modifications:
 //
 //  Dave Pugmire, Wed Mar 18 21:55:32 EDT 2009
-//  Modify how masters handle offloading work to other masters.
+//  Modify how managers handle offloading work to other managers.
 //
 // ****************************************************************************
 
 void
-avtMasterICAlgorithm::ProcessOffloadIC(vector<int> &status)
+avtManagerICAlgorithm::ProcessOffloadIC(vector<int> &status)
 {
     int src = status[0];
     int msg = status[1];
@@ -1145,20 +1145,20 @@ avtMasterICAlgorithm::ProcessOffloadIC(vector<int> &status)
 
     debug1<<"Doms to consider: "<<doms<<endl;
 
-    // Find slaves with domains send offload message.
-    for (int i = 0; i < slaveInfo.size(); i++)
+    // Find workers with domains send offload message.
+    for (int i = 0; i < workerInfo.size(); i++)
     {
-        debug1<<" "<<slaveInfo[i].rank<<": "<<slaveInfo[i].icCount<<endl;
-        if (slaveInfo[i].icCount > 0)
+        debug1<<" "<<workerInfo[i].rank<<": "<<workerInfo[i].icCount<<endl;
+        if (workerInfo[i].icCount > 0)
         {
             vector<int> domsToSend;
             for (int d = 0; d < doms.size(); d++)
             {
-                if (slaveInfo[i].domainCnt[doms[d]] > 0)
+                if (workerInfo[i].domainCnt[doms[d]] > 0)
                     domsToSend.push_back(doms[d]);
             }
 
-            // This slave has some domains that this master has loaded.
+            // This worker has some domains that this manager has loaded.
             if (domsToSend.size() > 0)
             {
                 vector<int> msg;
@@ -1167,20 +1167,20 @@ avtMasterICAlgorithm::ProcessOffloadIC(vector<int> &status)
                 msg.push_back(domsToSend.size());
                 for (int j = 0; j < domsToSend.size(); j++)
                     msg.push_back(domsToSend[j]);
-                //slaveInfo[i].RemoveIC(doms[d]);
+                //workerInfo[i].RemoveIC(doms[d]);
                 
-                debug1<<"Send OFFLOAD MSG: "<<slaveInfo[i].rank<<" ==> "<<dst<<" "<<msg<<endl;
-                SendMsg(slaveInfo[i].rank, msg);
+                debug1<<"Send OFFLOAD MSG: "<<workerInfo[i].rank<<" ==> "<<dst<<" "<<msg<<endl;
+                SendMsg(workerInfo[i].rank, msg);
             }
         }
     }
 
-    masterUpdate = true;
+    managerUpdate = true;
 }
 
 
 // ****************************************************************************
-//  Method: avtMasterICAlgorithm::NewIntegralCurves
+//  Method: avtManagerICAlgorithm::NewIntegralCurves
 //
 //  Purpose:
 //      Handle incoming integral curves.
@@ -1193,25 +1193,25 @@ avtMasterICAlgorithm::ProcessOffloadIC(vector<int> &status)
 // ****************************************************************************
 
 void
-avtMasterICAlgorithm::ProcessNewIntegralCurves()
+avtManagerICAlgorithm::ProcessNewIntegralCurves()
 {
     list<avtIntegralCurve*> newICs;
     RecvICs(newICs);
     if (!newICs.empty())
     {
-        debug1<<"avtMasterICAlgorithm::ProcessNewIntegralCurves() cnt "<<workGroupActiveICs<<" ==> ";
+        debug1<<"avtManagerICAlgorithm::ProcessNewIntegralCurves() cnt "<<workGroupActiveICs<<" ==> ";
         workGroupActiveICs += newICs.size();
         debug1<<workGroupActiveICs<<endl;
 
         activeICs.splice(activeICs.end(), newICs);
 
-        // We need to process for slaves now.
-        slaveUpdate = true;
+        // We need to process for workers now.
+        workerUpdate = true;
     }
 }
 
 // ****************************************************************************
-//  Method: avtMasterICAlgorithm::ManageWorkgroup
+//  Method: avtManagerICAlgorithm::ManageWorkgroup
 //
 //  Purpose:
 //      Manage workgroup.
@@ -1226,9 +1226,9 @@ avtMasterICAlgorithm::ProcessNewIntegralCurves()
 // ****************************************************************************
 
 void
-avtMasterICAlgorithm::ManageWorkgroup()
+avtManagerICAlgorithm::ManageWorkgroup()
 {
-    if (slaveUpdate)
+    if (workerUpdate)
     {
         //Update our counters.
         for (int i = 0; i < NUM_DOMAINS; i++)
@@ -1241,38 +1241,38 @@ avtMasterICAlgorithm::ManageWorkgroup()
         for (s = activeICs.begin(); s != activeICs.end(); ++s)
             icDomCnts[DomToIdx( (*s)->domain )] ++;
     
-        for (int i = 0; i < slaveInfo.size(); i++)
+        for (int i = 0; i < workerInfo.size(); i++)
             for ( int d = 0; d < NUM_DOMAINS; d++)
-                if (slaveInfo[i].domainLoaded[d])
+                if (workerInfo[i].domainLoaded[d])
                     domLoaded[d]++;
     }
     
     //PrintStatus();
 
-    if (!slaveUpdate && !masterUpdate)
+    if (!workerUpdate && !managerUpdate)
     {
         NSleep();
     }
     else
     {
-        if (slaveUpdate)
-            ManageSlaves();
-        if (masterUpdate)
-            ManageMasters();
+        if (workerUpdate)
+            ManageWorkers();
+        if (managerUpdate)
+            ManageManagers();
     }
 
     debug1<<endl<<"Post-Mortem"<<endl;
     //PrintStatus();
 
-    slaveUpdate = false;
-    masterUpdate = false;
+    workerUpdate = false;
+    managerUpdate = false;
 }
 
 // ****************************************************************************
-//  Method: avtMasterICAlgorithm::ManageSlaves
+//  Method: avtManagerICAlgorithm::ManageWorkers
 //
 //  Purpose:
-//      Manage slaves workgroup.
+//      Manage workers workgroup.
 //
 //  Programmer: Dave Pugmire
 //  Creation:   March 18, 2009
@@ -1287,7 +1287,7 @@ avtMasterICAlgorithm::ManageWorkgroup()
 // ****************************************************************************
 
 void
-avtMasterICAlgorithm::ManageSlaves()
+avtManagerICAlgorithm::ManageWorkers()
 {
     /*
       Case1(case1Cnt);
@@ -1322,15 +1322,15 @@ avtMasterICAlgorithm::ManageSlaves()
     }
     
     //Resets.
-    for (int i = 0; i < slaveInfo.size(); i++)
-        slaveInfo[i].Reset();
+    for (int i = 0; i < workerInfo.size(); i++)
+        workerInfo[i].Reset();
 }
 
 // ****************************************************************************
-//  Method: avtMasterICAlgorithm::ManageMasters
+//  Method: avtManagerICAlgorithm::ManageManagers
 //
 //  Purpose:
-//      Manage slaves workgroup.
+//      Manage workers workgroup.
 //
 //  Programmer: Dave Pugmire
 //  Creation:   March 18, 2009
@@ -1343,41 +1343,41 @@ avtMasterICAlgorithm::ManageSlaves()
 // ****************************************************************************
 
 void
-avtMasterICAlgorithm::ManageMasters()
+avtManagerICAlgorithm::ManageManagers()
 {
-    // Don't bother if no masters...
-    if (masterInfo.size() == 0)
+    // Don't bother if no managers...
+    if (managerInfo.size() == 0)
         return;
 
-    // Get all the masters with no work.
-    vector<int> idleMasters, busyMasters;
-    for (int i = 0; i < masterInfo.size(); i++)
+    // Get all the managers with no work.
+    vector<int> idleManagers, busyManagers;
+    for (int i = 0; i < managerInfo.size(); i++)
     {
-        if (masterInfo[i].initialized)
+        if (managerInfo[i].initialized)
         {
-            if (masterInfo[i].icCount == 0)
-                idleMasters.push_back(masterInfo[i].rank);
+            if (managerInfo[i].icCount == 0)
+                idleManagers.push_back(managerInfo[i].rank);
             else
-                busyMasters.push_back(masterInfo[i].rank);
+                busyManagers.push_back(managerInfo[i].rank);
         }
     }
 
     // Nothing to do!
-    if (idleMasters.size() == 0 ||
-        busyMasters.size() == 0)
+    if (idleManagers.size() == 0 ||
+        busyManagers.size() == 0)
         return;
     
     //Randomize things.
-    random_shuffle(idleMasters.begin(), idleMasters.end());
-    random_shuffle(busyMasters.begin(), busyMasters.end());
+    random_shuffle(idleManagers.begin(), idleManagers.end());
+    random_shuffle(busyManagers.begin(), busyManagers.end());
     
-    debug1<<"IdleMasters: "<<idleMasters<<endl;
-    debug1<<"BusyMasters: "<<busyMasters<<endl;
+    debug1<<"IdleManagers: "<<idleManagers<<endl;
+    debug1<<"BusyManagers: "<<busyManagers<<endl;
 
-    // Tell each busyMaster to offload to an idleMaster.
-    int N = idleMasters.size();
-    if (busyMasters.size() < N)
-        N = busyMasters.size();
+    // Tell each busyManager to offload to an idleManager.
+    int N = idleManagers.size();
+    if (busyManagers.size() < N)
+        N = busyManagers.size();
     
     //TODO: Should we wrap around?
     for (int i = 0; i < N; i++)
@@ -1385,27 +1385,27 @@ avtMasterICAlgorithm::ManageMasters()
         // Have busy
         vector<int> msg(NUM_DOMAINS+2,0);
         msg[0] = MSG_OFFLOAD_IC;
-        msg[1] = idleMasters[i];
+        msg[1] = idleManagers[i];
         for (int j = 0; j < NUM_DOMAINS; j++)
-            msg[2+j] = masterInfo[idleMasters[i]].domainLoaded[j];
+            msg[2+j] = managerInfo[idleManagers[i]].domainLoaded[j];
         
-        debug1<<busyMasters[i]<<": MasterOffload to "<<idleMasters[i]<<" : "<<msg<<endl;
-        if (busyMasters[i] == rank)
+        debug1<<busyManagers[i]<<": ManagerOffload to "<<idleManagers[i]<<" : "<<msg<<endl;
+        if (busyManagers[i] == rank)
         {
             msg.insert(msg.begin(), rank);
             ProcessOffloadIC(msg);
         }
         else
-            SendMsg(busyMasters[i], msg);
+            SendMsg(busyManagers[i], msg);
     }
 }
 
 
 // ****************************************************************************
-//  Method: avtMasterICAlgorithm::SendAllSlavesMsg
+//  Method: avtManagerICAlgorithm::SendAllWorkersMsg
 //
 //  Purpose:
-//      Send a message to all slaves.
+//      Send a message to all workers.
 //
 //  Programmer: Dave Pugmire
 //  Creation:   January 27, 2009
@@ -1413,17 +1413,17 @@ avtMasterICAlgorithm::ManageMasters()
 // ****************************************************************************
 
 void
-avtMasterICAlgorithm::SendAllSlavesMsg(int msg)
+avtManagerICAlgorithm::SendAllWorkersMsg(int msg)
 {
     vector<int> msgVec(1,msg);
-    SendAllSlavesMsg(msgVec);
+    SendAllWorkersMsg(msgVec);
 }
 
 // ****************************************************************************
-//  Method: avtMasterICAlgorithm::SendAllSlavesMsg
+//  Method: avtManagerICAlgorithm::SendAllWorkersMsg
 //
 //  Purpose:
-//      Send a message to all slaves.
+//      Send a message to all workers.
 //
 //  Programmer: Dave Pugmire
 //  Creation:   January 27, 2009
@@ -1431,17 +1431,17 @@ avtMasterICAlgorithm::SendAllSlavesMsg(int msg)
 // ****************************************************************************
 
 void
-avtMasterICAlgorithm::SendAllSlavesMsg(vector<int> &msg)
+avtManagerICAlgorithm::SendAllWorkersMsg(vector<int> &msg)
 {
-    for (int i = 0; i < slaveInfo.size(); i++)
-        SendMsg(slaveInfo[i].rank, msg);
+    for (int i = 0; i < workerInfo.size(); i++)
+        SendMsg(workerInfo[i].rank, msg);
 }
 
 // ****************************************************************************
-//  Method: avtMasterICAlgorithm::FindSlackers
+//  Method: avtManagerICAlgorithm::FindSlackers
 //
 //  Purpose:
-//      Find slaves with no work to do
+//      Find workers with no work to do
 //
 //  Programmer: Dave Pugmire
 //  Creation:   January 27, 2009
@@ -1458,22 +1458,22 @@ avtMasterICAlgorithm::SendAllSlavesMsg(vector<int> &msg)
 // ****************************************************************************
 
 void
-avtMasterICAlgorithm::FindSlackers(int oobFactor,
+avtManagerICAlgorithm::FindSlackers(int oobFactor,
                                    bool randomize,
                                    bool checkJustUpdated)
 {
     slackers.resize(0);
 
-    //if oobFactor != -1, find slaves with between 0 and oobFactor OOB
+    //if oobFactor != -1, find workers with between 0 and oobFactor OOB
     //integral curves.
 
-    for (int i = 0; i < slaveInfo.size(); i++)
-        if (slaveInfo[i].icLoadedCount <= LATENCY_SEND_CNT ||
-            (slaveInfo[i].justUpdated && checkJustUpdated))
+    for (int i = 0; i < workerInfo.size(); i++)
+        if (workerInfo[i].icLoadedCount <= LATENCY_SEND_CNT ||
+            (workerInfo[i].justUpdated && checkJustUpdated))
         {
             if ( oobFactor != -1 &&
-                 slaveInfo[i].icOOBCount > 0 &&
-                 slaveInfo[i].icOOBCount < oobFactor)
+                 workerInfo[i].icOOBCount > 0 &&
+                 workerInfo[i].icOOBCount < oobFactor)
                 slackers.push_back(i);
             else
                 slackers.push_back(i);
@@ -1485,10 +1485,10 @@ avtMasterICAlgorithm::FindSlackers(int oobFactor,
 
 
 // ****************************************************************************
-//  Method: avtMasterICAlgorithm::Case1
+//  Method: avtManagerICAlgorithm::Case1
 //
 //  Purpose:
-//      Case1 of masterslave algorithm. Give ICs to slaves who have domain
+//      Case1 of managerworker algorithm. Give ICs to workers who have domain
 //      loaded.
 //
 //  Programmer: Dave Pugmire
@@ -1505,7 +1505,7 @@ avtMasterICAlgorithm::FindSlackers(int oobFactor,
 // ****************************************************************************
 
 void
-avtMasterICAlgorithm::Case1(int &counter)
+avtManagerICAlgorithm::Case1(int &counter)
 {
     if (activeICs.empty())
         return;
@@ -1521,16 +1521,16 @@ avtMasterICAlgorithm::Case1(int &counter)
             break;
         
         int cnt = 0;
-        int slackerRank = slaveInfo[slackers[i]].rank;
+        int slackerRank = workerInfo[slackers[i]].rank;
         list<avtIntegralCurve *>::iterator s = activeICs.begin();
 
         while ( !activeICs.empty() && cnt < maxCnt)
         {
             int sDom = DomToIdx( (*s)->domain );
-            if (slaveInfo[slackers[i]].domainLoaded[sDom])
+            if (workerInfo[slackers[i]].domainLoaded[sDom])
             {
                 distributeICs[slackerRank].push_back(*s);
-                slaveInfo[slackers[i]].AddIC(sDom, DomCacheSize());
+                workerInfo[slackers[i]].AddIC(sDom, DomCacheSize());
                 s = activeICs.erase(s);
                 icsToSend = true;
                 cnt++;
@@ -1557,10 +1557,10 @@ avtMasterICAlgorithm::Case1(int &counter)
 
 
 // ****************************************************************************
-//  Method: avtMasterICAlgorithm::Case2
+//  Method: avtManagerICAlgorithm::Case2
 //
 //  Purpose:
-//      Case2 of masterslave algorithm. Give ICs to slaves and force domain load
+//      Case2 of managerworker algorithm. Give ICs to workers and force domain load
 //
 //  Programmer: Dave Pugmire
 //  Creation:   January 27, 2009
@@ -1578,7 +1578,7 @@ avtMasterICAlgorithm::Case1(int &counter)
 static bool domCntCompare( const int *a, const int *b) { return a[1] > b[1]; }
 
 void
-avtMasterICAlgorithm::Case2(int &counter)
+avtManagerICAlgorithm::Case2(int &counter)
 {
     if (activeICs.empty())
         return;
@@ -1593,7 +1593,7 @@ avtMasterICAlgorithm::Case2(int &counter)
         if (activeICs.empty())
             break;
         
-        int slackerRank = slaveInfo[slackers[s]].rank;
+        int slackerRank = workerInfo[slackers[s]].rank;
     
         vector<int*> domCnts;
         for (int i = 0; i < icDomCnts.size(); i++)
@@ -1621,8 +1621,8 @@ avtMasterICAlgorithm::Case2(int &counter)
         for (int i = 0; i < domCnts.size(); i++)
         {
             bool anyLoaded = false;
-            for (int j = 0; j < slaveInfo.size(); j++)
-                if (slaveInfo[j].domainLoaded[domCnts[i][0]])
+            for (int j = 0; j < workerInfo.size(); j++)
+                if (workerInfo[j].domainLoaded[domCnts[i][0]])
                     anyLoaded = true;
             if (!anyLoaded)
             {
@@ -1648,7 +1648,7 @@ avtMasterICAlgorithm::Case2(int &counter)
             if (sDom == domToLoad && cnt < maxCnt)
             {
                 distributeICs[slackerRank].push_back(*ic);
-                slaveInfo[slackers[s]].AddIC(sDom, DomCacheSize());
+                workerInfo[slackers[s]].AddIC(sDom, DomCacheSize());
                 cnt++;
                 icDomCnts[domToLoad]--;
                 ic = activeICs.erase(ic);
@@ -1687,10 +1687,10 @@ avtMasterICAlgorithm::Case2(int &counter)
 }
 
 // ****************************************************************************
-//  Method: avtMasterICAlgorithm::Case3
+//  Method: avtManagerICAlgorithm::Case3
 //
 //  Purpose:
-//      Case3 of masterslave algorithm. Send ICs to another slave.
+//      Case3 of managerworker algorithm. Send ICs to another worker.
 //
 //  Programmer: Dave Pugmire
 //  Creation:   January 27, 2009
@@ -1704,12 +1704,12 @@ avtMasterICAlgorithm::Case2(int &counter)
 //   Bug fix. Didn't use new BlockIDType structure for MSG_SEND_IC.
 //   
 //   Dave Pugmire, Wed Mar 18 17:17:40 EDT 2009
-//   Allow masters to share work loads.
+//   Allow managers to share work loads.
 //
 // ****************************************************************************
 
 void
-avtMasterICAlgorithm::Case3(int overloadFactor,
+avtManagerICAlgorithm::Case3(int overloadFactor,
                             int NDomainFactor,
                             int &counter )
 {
@@ -1721,20 +1721,20 @@ avtMasterICAlgorithm::Case3(int overloadFactor,
     for (int i = 0; i < slackers.size(); i++)
     {
         int slackerIdx = slackers[i];
-        //debug1<<"Case 3: slackerRank="<<slaveInfo[slackerIdx].rank<<endl;
+        //debug1<<"Case 3: slackerRank="<<workerInfo[slackerIdx].rank<<endl;
         
         for (int d = 0; d < NUM_DOMAINS; d++)
         {
             vector<int> domPartner;
-            if ( !slaveInfo[slackerIdx].domainLoaded[d] &&
-                 slaveInfo[slackerIdx].domainCnt[d] > 0)
+            if ( !workerInfo[slackerIdx].domainLoaded[d] &&
+                 workerInfo[slackerIdx].domainCnt[d] > 0)
             {
                 //debug1<<"   dom= "<<d<<endl;
                 // Find a partner who has the domain and has fewer than overloadFactor ICs.
-                for (int j = 0; j < slaveInfo.size(); j++)
+                for (int j = 0; j < workerInfo.size(); j++)
                 {
-                    if (j != slackerIdx && slaveInfo[j].domainLoaded[d] &&
-                        slaveInfo[j].icCount < overloadFactor)
+                    if (j != slackerIdx && workerInfo[j].domainLoaded[d] &&
+                        workerInfo[j].icCount < overloadFactor)
                     {
                         //debug1<<"      partner= "<<j<<endl;
                         domPartner.push_back(j);
@@ -1770,25 +1770,25 @@ avtMasterICAlgorithm::Case3(int overloadFactor,
     // Send messages out.
     for (int i = 0; i < sender.size(); i++)
     {
-        SlaveInfo &recvSlave = slaveInfo[recv[i]];
-        SlaveInfo &sendSlave = slaveInfo[sender[i]];
+        WorkerInfo &recvWorker = workerInfo[recv[i]];
+        WorkerInfo &sendWorker = workerInfo[sender[i]];
         int d = dom[i];
-        int n = sendSlave.domainCnt[d];
+        int n = sendWorker.domainCnt[d];
 
         if (n > maxICsToSend)
             n = maxICsToSend;
 
         //Dest already has enough work.
-        if (recvSlave.icCount > maxDestICs)
+        if (recvWorker.icCount > maxDestICs)
             continue;
     
         // Cap it.
-        if (recvSlave.icCount + n > maxDestICs)
-            n = maxDestICs - recvSlave.icCount;
+        if (recvWorker.icCount + n > maxDestICs)
+            n = maxDestICs - recvWorker.icCount;
 
         vector<int> msg;
         msg.push_back(MSG_SEND_IC);
-        msg.push_back(recvSlave.rank);
+        msg.push_back(recvWorker.rank);
 
         BlockIDType dd = IdxToDom(d);
         msg.push_back(d);
@@ -1796,25 +1796,25 @@ avtMasterICAlgorithm::Case3(int overloadFactor,
         
         for (int i = 0; i < n; i++)
         {
-            recvSlave.AddIC(d, DomCacheSize());
-            sendSlave.RemoveIC(d);
+            recvWorker.AddIC(d, DomCacheSize());
+            sendWorker.RemoveIC(d);
         }
 
         if (n > 0)
         {
-            debug1<<"Case 3: "<<sendSlave.rank<<" ==["<<n<<"]==> "<<recvSlave.rank<<"  d= "<<d;
-            debug1<<" ***   "<<recvSlave.rank<<" now has "<<recvSlave.icCount<<" cap= "<<maxDestICs<<endl;
-            SendMsg(sendSlave.rank, msg);
+            debug1<<"Case 3: "<<sendWorker.rank<<" ==["<<n<<"]==> "<<recvWorker.rank<<"  d= "<<d;
+            debug1<<" ***   "<<recvWorker.rank<<" now has "<<recvWorker.icCount<<" cap= "<<maxDestICs<<endl;
+            SendMsg(sendWorker.rank, msg);
             counter++;
         }
     }
 }
 
 // ****************************************************************************
-//  Method: avtMasterICAlgorithm::Case4
+//  Method: avtManagerICAlgorithm::Case4
 //
 //  Purpose:
-//      Case4 of masterslave algorithm. Tell a slave to load a domain.
+//      Case4 of managerworker algorithm. Tell a worker to load a domain.
 //
 //  Programmer: Dave Pugmire
 //  Creation:   January 27, 2009
@@ -1830,13 +1830,13 @@ avtMasterICAlgorithm::Case3(int overloadFactor,
 // ****************************************************************************
 
 void
-avtMasterICAlgorithm::Case4(int oobThreshold,
+avtManagerICAlgorithm::Case4(int oobThreshold,
                             int &counter )
 {
     slackers.resize(0);
     
-    for (int i = 0; i < slaveInfo.size(); i++)
-        if (slaveInfo[i].icLoadedCount == 0 && slaveInfo[i].icOOBCount >= oobThreshold)
+    for (int i = 0; i < workerInfo.size(); i++)
+        if (workerInfo[i].icLoadedCount == 0 && workerInfo[i].icOOBCount >= oobThreshold)
             slackers.push_back(i);
     random_shuffle(slackers.begin(), slackers.end());
 
@@ -1845,13 +1845,13 @@ avtMasterICAlgorithm::Case4(int oobThreshold,
     {
         int idx = slackers[i];
         int domToLoad = -1, maxOOBCnt=-1;
-        for (int j = 0; j < slaveInfo[idx].domainCnt.size(); j++)
+        for (int j = 0; j < workerInfo[idx].domainCnt.size(); j++)
         {
-            if (slaveInfo[idx].domainCnt[j] > 0 && slaveInfo[idx].domainCnt[j] > maxOOBCnt &&
-                slaveInfo[idx].domainCnt[j] > oobThreshold)
+            if (workerInfo[idx].domainCnt[j] > 0 && workerInfo[idx].domainCnt[j] > maxOOBCnt &&
+                workerInfo[idx].domainCnt[j] > oobThreshold)
             {
                 domToLoad = j;
-                maxOOBCnt = slaveInfo[idx].domainCnt[j];
+                maxOOBCnt = workerInfo[idx].domainCnt[j];
             }
         }
         
@@ -1862,9 +1862,9 @@ avtMasterICAlgorithm::Case4(int oobThreshold,
             BlockIDType dom = IdxToDom(domToLoad);
             msg.push_back(dom.domain);
             msg.push_back(dom.timeStep);
-            SendMsg(slaveInfo[idx].rank, msg);
-            debug1<<"Case 4: "<<slaveInfo[idx].rank<<" load dom= "<<domToLoad<<" oobThreshold: "<<oobThreshold<<endl;
-            slaveInfo[idx].LoadDom(domToLoad);
+            SendMsg(workerInfo[idx].rank, msg);
+            debug1<<"Case 4: "<<workerInfo[idx].rank<<" load dom= "<<domToLoad<<" oobThreshold: "<<oobThreshold<<endl;
+            workerInfo[idx].LoadDom(domToLoad);
             counter++;
         }
     }
@@ -1872,10 +1872,10 @@ avtMasterICAlgorithm::Case4(int oobThreshold,
 
 
 // ****************************************************************************
-//  Method: avtMasterICAlgorithm::Case5
+//  Method: avtManagerICAlgorithm::Case5
 //
 //  Purpose:
-//      Case5 of masterslave algorithm. Advise slave to send ICs to other slave.
+//      Case5 of managerworker algorithm. Advise worker to send ICs to other worker.
 //  
 //
 //  Programmer: Dave Pugmire
@@ -1895,17 +1895,17 @@ avtMasterICAlgorithm::Case4(int oobThreshold,
 // ****************************************************************************
 
 void
-avtMasterICAlgorithm::Case5(int overworkThreshold, bool domainCheck, int &counter)
+avtManagerICAlgorithm::Case5(int overworkThreshold, bool domainCheck, int &counter)
 {
     vector<int> slackers, overWorked;
     vector<int *> overWorkedCnt;
     //Get folks with too much work to do.
-    for (int i = 0; i < slaveInfo.size(); i++)
-        if (slaveInfo[i].icCount > overworkThreshold)
+    for (int i = 0; i < workerInfo.size(); i++)
+        if (workerInfo[i].icCount > overworkThreshold)
         {
             int *v = new int[2];
             v[0] = i;
-            v[1] = slaveInfo[i].icCount;
+            v[1] = workerInfo[i].icCount;
             overWorkedCnt.push_back(v);
         }
 
@@ -1919,8 +1919,8 @@ avtMasterICAlgorithm::Case5(int overworkThreshold, bool domainCheck, int &counte
     }
 
     //Get slackers with no work and no unloaded domains.
-    for (int i = 0; i < slaveInfo.size(); i++)
-        if (!slaveInfo[i].justUpdated && slaveInfo[i].icCount == 0)
+    for (int i = 0; i < workerInfo.size(); i++)
+        if (!workerInfo[i].justUpdated && workerInfo[i].icCount == 0)
             slackers.push_back(i);
     if (slackers.size() == 0)
         return;
@@ -1939,22 +1939,22 @@ avtMasterICAlgorithm::Case5(int overworkThreshold, bool domainCheck, int &counte
                 vector<int> commonDoms;
                 for (int d = 0; d < NUM_DOMAINS; d++)
                 {
-                    if (slaveInfo[overWorked[w]].domainCnt[d] > 0 &&
-                        slaveInfo[slackers[s]].domainLoaded[d])
+                    if (workerInfo[overWorked[w]].domainCnt[d] > 0 &&
+                        workerInfo[slackers[s]].domainLoaded[d])
                         commonDoms.push_back(d);
                 }
                 
                 if (commonDoms.size() > 0)
                 {
-                    senders.push_back(slaveInfo[overWorked[w]].rank);
-                    receivers.push_back(slaveInfo[slackers[s]].rank);
+                    senders.push_back(workerInfo[overWorked[w]].rank);
+                    receivers.push_back(workerInfo[slackers[s]].rank);
                     doms.push_back(commonDoms);
                 }
             }
             else
             {
-                senders.push_back(slaveInfo[overWorked[w]].rank);
-                receivers.push_back(slaveInfo[slackers[s]].rank);
+                senders.push_back(workerInfo[overWorked[w]].rank);
+                receivers.push_back(workerInfo[slackers[s]].rank);
                 vector<int> commonDoms;
                 doms.push_back(commonDoms);
             }
@@ -1993,10 +1993,10 @@ avtMasterICAlgorithm::Case5(int overworkThreshold, bool domainCheck, int &counte
 
 
 // ****************************************************************************
-//  Method: avtSlaveICAlgorithm::avtSlaveICAlgorithm
+//  Method: avtWorkerICAlgorithm::avtWorkerICAlgorithm
 //
 //  Purpose:
-//      avtSlaveICAlgorithm constructor.
+//      avtWorkerICAlgorithm constructor.
 //
 //  Programmer: Dave Pugmire
 //  Creation:   January 27, 2009
@@ -2004,36 +2004,36 @@ avtMasterICAlgorithm::Case5(int overworkThreshold, bool domainCheck, int &counte
 //  Modifications:
 //
 //   Dave Pugmire, Mon Feb 23 13:38:49 EST 2009
-//   Add timeout counter for slaves.
+//   Add timeout counter for workers.
 //
 // ****************************************************************************
 
-avtSlaveICAlgorithm::avtSlaveICAlgorithm(avtPICSFilter *picsFilter,
+avtWorkerICAlgorithm::avtWorkerICAlgorithm(avtPICSFilter *picsFilter,
                                          int maxCount,
-                                         int masterRank)
-    : avtMasterSlaveICAlgorithm(picsFilter, maxCount)
+                                         int managerRank)
+    : avtManagerWorkerICAlgorithm(picsFilter, maxCount)
 {
-    master = masterRank;
+    manager = managerRank;
     timeout = 0;
 }
 
 // ****************************************************************************
-//  Method: avtSlaveICAlgorithm::avtSlaveICAlgorithm
+//  Method: avtWorkerICAlgorithm::avtWorkerICAlgorithm
 //
 //  Purpose:
-//      avtSlaveICAlgorithm destructor
+//      avtWorkerICAlgorithm destructor
 //
 //  Programmer: Dave Pugmire
 //  Creation:   January 27, 2009
 //
 // ****************************************************************************
 
-avtSlaveICAlgorithm::~avtSlaveICAlgorithm()
+avtWorkerICAlgorithm::~avtWorkerICAlgorithm()
 {
 }
 
 // ****************************************************************************
-//  Method: avtSlaveICAlgorithm::HandleLatencyTimer
+//  Method: avtWorkerICAlgorithm::HandleLatencyTimer
 //
 //  Purpose:
 //      Handle latency timer.
@@ -2049,7 +2049,7 @@ avtSlaveICAlgorithm::~avtSlaveICAlgorithm()
 // ****************************************************************************
 
 void
-avtSlaveICAlgorithm::HandleLatencyTimer(int activeICCnt, bool checkMaxLatency)
+avtWorkerICAlgorithm::HandleLatencyTimer(int activeICCnt, bool checkMaxLatency)
 {
     if (latencyTimer == -1 && activeICCnt == 0)
     {
@@ -2072,10 +2072,10 @@ avtSlaveICAlgorithm::HandleLatencyTimer(int activeICCnt, bool checkMaxLatency)
 
 
 // ****************************************************************************
-//  Method: avtSlaveICAlgorithm::Initialize
+//  Method: avtWorkerICAlgorithm::Initialize
 //
 //  Purpose:
-//      Initialize the slave
+//      Initialize the worker
 //
 //  Programmer: Dave Pugmire
 //  Creation:   January 27, 2009
@@ -2088,9 +2088,9 @@ avtSlaveICAlgorithm::HandleLatencyTimer(int activeICCnt, bool checkMaxLatency)
 // ****************************************************************************
 
 void
-avtSlaveICAlgorithm::Initialize(std::vector<avtIntegralCurve *> &seedPts)
+avtWorkerICAlgorithm::Initialize(std::vector<avtIntegralCurve *> &seedPts)
 {
-    avtMasterSlaveICAlgorithm::Initialize(seedPts);
+    avtManagerWorkerICAlgorithm::Initialize(seedPts);
     status.resize(NUM_DOMAINS,0);
     prevStatus.resize(NUM_DOMAINS,0);
     numTerminated = 0;
@@ -2099,7 +2099,7 @@ avtSlaveICAlgorithm::Initialize(std::vector<avtIntegralCurve *> &seedPts)
 
 
 // ****************************************************************************
-//  Method: avtSlaveICAlgorithm::UpdateStatus
+//  Method: avtWorkerICAlgorithm::UpdateStatus
 //
 //  Purpose:
 //      Update status vectors.
@@ -2112,7 +2112,7 @@ avtSlaveICAlgorithm::Initialize(std::vector<avtIntegralCurve *> &seedPts)
 // ****************************************************************************
 
 void
-avtSlaveICAlgorithm::UpdateStatus()
+avtWorkerICAlgorithm::UpdateStatus()
 {
     for (int i = 0; i < status.size(); i++)
         status[i] = 0;
@@ -2157,10 +2157,10 @@ avtSlaveICAlgorithm::UpdateStatus()
 
 
 // ****************************************************************************
-//  Method: avtSlaveICAlgorithm::SendStatus
+//  Method: avtWorkerICAlgorithm::SendStatus
 //
 //  Purpose:
-//      Send status to master.
+//      Send status to manager.
 //
 //  Programmer: Dave Pugmire
 //  Creation:   January 27, 2009
@@ -2173,7 +2173,7 @@ avtSlaveICAlgorithm::UpdateStatus()
 // ****************************************************************************
 
 void
-avtSlaveICAlgorithm::SendStatus(bool forceSend)
+avtWorkerICAlgorithm::SendStatus(bool forceSend)
 {
     UpdateStatus();
     
@@ -2192,17 +2192,17 @@ avtSlaveICAlgorithm::SendStatus(bool forceSend)
 
     if (forceSend || (numTerminated > 0) || statusChanged)
     {
-        //Send the status message to master.
+        //Send the status message to manager.
         vector<int> msg;
         msg.push_back(MSG_STATUS);
         msg.push_back(numTerminated);
         for (int i = 0; i < status.size(); i++)
             msg.push_back(status[i]);
 
-        debug1<<"Slave SendStatus: "<<numTerminated;
+        debug1<<"Worker SendStatus: "<<numTerminated;
         if (NUM_DOMAINS < MAX_DOMAIN_PRINT) debug1<<msg;
         debug1<<endl;
-        SendMsg(master, msg);
+        SendMsg(manager, msg);
         
         //Status just sent, reset.
         numTerminated = 0;
@@ -2213,26 +2213,26 @@ avtSlaveICAlgorithm::SendStatus(bool forceSend)
 
 
 // ****************************************************************************
-//  Method: avtSlaveICAlgorithm::RunAlgorithm
+//  Method: avtWorkerICAlgorithm::RunAlgorithm
 //
 //  Purpose:
-//      Execute the slave loop of the master/slave algorithm.
+//      Execute the worker loop of the manager/worker algorithm.
 //
 //  Programmer: Dave Pugmire
 //  Creation:   January 27, 2009
 //
 //   Dave Pugmire, Wed Mar 18 17:17:40 EDT 2009
-//   Allow masters to share work loads.
+//   Allow managers to share work loads.
 //
 //   Dave Pugmire, Mon Mar 23 12:48:12 EDT 2009
-//   Changes related to trying to hide latency with slaves.
+//   Changes related to trying to hide latency with workers.
 //
 //   Dave Pugmire, Wed Mar 25 09:10:52 EDT 2009
 //   Enable latency.
 //
 //   Dave Pugmire, Sat Mar 28 10:04:01 EDT 2009
-//   Resend status if getting no work from master. This is related to the tmp
-//   fix above in the master.
+//   Resend status if getting no work from manager. This is related to the tmp
+//   fix above in the manager.
 //  
 //   Dave Pugmire, Wed Apr  1 11:21:05 EDT 2009
 //   Latency time was not always being reported accurately. Only send the 
@@ -2242,7 +2242,7 @@ avtSlaveICAlgorithm::SendStatus(bool forceSend)
 //   Change Execute to RunAlgorithm.
 //   
 //   Dave Pugmire, Fri Sep 25 15:35:32 EDT 2009
-//   Add auto-load code for slaves.
+//   Add auto-load code for workers.
 //
 //   Dave Pugmire, Tue Jan 18 06:58:40 EST 2011
 //   Regression fix. The old recvICs code was doing a domain load, as a side effect.
@@ -2250,7 +2250,7 @@ avtSlaveICAlgorithm::SendStatus(bool forceSend)
 // ****************************************************************************
 
 void
-avtSlaveICAlgorithm::RunAlgorithm()
+avtWorkerICAlgorithm::RunAlgorithm()
 {
     list<avtIntegralCurve *>::const_iterator si;
     int timer = visitTimer->StartTimer();
@@ -2279,7 +2279,7 @@ avtSlaveICAlgorithm::RunAlgorithm()
         bool sentLatencySavingStatus = false;
         
         //Check for a case4A overide...
-        if (SLAVE_AUTO_LOAD_DOMS && activeICs.empty() && (oobICs.size() > case4AThreshold))
+        if (WORKER_AUTO_LOAD_DOMS && activeICs.empty() && (oobICs.size() > case4AThreshold))
         {
             debug1<<"Checking for 4A.... "<<endl;
             int candidate = -1;
@@ -2379,7 +2379,7 @@ avtSlaveICAlgorithm::RunAlgorithm()
     HandleLatencyTimer(0,false);
     CheckPendingSendRequests();
 
-    debug1<<"Slave done: activeICs= "<<activeICs.size()<<" oobICs= "<<oobICs.size()<<endl;
+    debug1<<"Worker done: activeICs= "<<activeICs.size()<<" oobICs= "<<oobICs.size()<<endl;
     if (!activeICs.empty())
     {
         debug1<<"activeproblem "<<endl;
@@ -2396,10 +2396,10 @@ avtSlaveICAlgorithm::RunAlgorithm()
 
 
 // ****************************************************************************
-//  Method: avtSlaveICAlgorithm::ProcessMessages
+//  Method: avtWorkerICAlgorithm::ProcessMessages
 //
 //  Purpose:
-//      Processes messages from master.
+//      Processes messages from manager.
 //
 //  Programmer: Dave Pugmire
 //  Creation:   January 27, 2009
@@ -2419,7 +2419,7 @@ avtSlaveICAlgorithm::RunAlgorithm()
 // ****************************************************************************
 
 void
-avtSlaveICAlgorithm::ProcessMessages(bool &done, bool &newMsgs)
+avtWorkerICAlgorithm::ProcessMessages(bool &done, bool &newMsgs)
 {
     vector<MsgCommData> msgs;
     RecvMsg(msgs);
@@ -2451,7 +2451,7 @@ avtSlaveICAlgorithm::ProcessMessages(bool &done, bool &newMsgs)
         else if (msgType == MSG_OFFLOAD_IC ||
                  msgType == MSG_SEND_IC_HINT)
         {
-            debug1<<"Slave: MSG_OFFLOAD_IC I have "<<activeICs.size()<<" to offer"<<endl;
+            debug1<<"Worker: MSG_OFFLOAD_IC I have "<<activeICs.size()<<" to offer"<<endl;
             debug1<<msg<<endl;
             
             int dst = msg[1];
@@ -2506,7 +2506,7 @@ avtSlaveICAlgorithm::ProcessMessages(bool &done, bool &newMsgs)
             }
         }
         
-        //Send integral curves to another slave.
+        //Send integral curves to another worker.
         else if (msgType == MSG_SEND_IC)
         {
             int dst = msg[1];
@@ -2537,20 +2537,20 @@ avtSlaveICAlgorithm::ProcessMessages(bool &done, bool &newMsgs)
 
 
 // ****************************************************************************
-//  Method: SlaveInfo::SlaveInfo
+//  Method: WorkerInfo::WorkerInfo
 //
 //  Purpose:
-//      SlaveInfo constructor
+//      WorkerInfo constructor
 //
 //  Programmer: Dave Pugmire
 //  Creation:   January 27, 2009
 //
 //   Dave Pugmire, Wed Mar 18 17:17:40 EDT 2009
-//   Allow masters to share work loads.
+//   Allow managers to share work loads.
 //   
 // ****************************************************************************
 
-SlaveInfo::SlaveInfo( int r, int nDomains )
+WorkerInfo::WorkerInfo( int r, int nDomains )
 {
     justUpdated = false;
     initialized = false;
@@ -2562,7 +2562,7 @@ SlaveInfo::SlaveInfo( int r, int nDomains )
 }
 
 // ****************************************************************************
-//  Method: SlaveInfo::AddIC
+//  Method: WorkerInfo::AddIC
 //
 //  Purpose:
 //      Update when passing a IC.
@@ -2578,7 +2578,7 @@ SlaveInfo::SlaveInfo( int r, int nDomains )
 // ****************************************************************************
 
 void
-SlaveInfo::AddIC(int icDomain, int domCache)
+WorkerInfo::AddIC(int icDomain, int domCache)
 {
     bool underPurgeLimit = (domLoadedCount <= domCache);
     //We assume that it will get loaded..
@@ -2598,7 +2598,7 @@ SlaveInfo::AddIC(int icDomain, int domCache)
 }
 
 // ****************************************************************************
-//  Method: SlaveInfo::LoadDom
+//  Method: WorkerInfo::LoadDom
 //
 //  Purpose:
 //      Update when loading a domain.
@@ -2609,7 +2609,7 @@ SlaveInfo::AddIC(int icDomain, int domCache)
 // ****************************************************************************
 
 void
-SlaveInfo::LoadDom( int icDomain )
+WorkerInfo::LoadDom( int icDomain )
 {
     bool underPurgeLimit = (domLoadedCount <= 3);
     if (domainLoaded[icDomain] == false)
@@ -2629,7 +2629,7 @@ SlaveInfo::LoadDom( int icDomain )
 
 
 // ****************************************************************************
-//  Method: SlaveInfo::RemoveIC
+//  Method: WorkerInfo::RemoveIC
 //
 //  Purpose:
 //      Update when removing a domain.
@@ -2640,7 +2640,7 @@ SlaveInfo::LoadDom( int icDomain )
 // ****************************************************************************
     
 void
-SlaveInfo::RemoveIC( int dom )
+WorkerInfo::RemoveIC( int dom )
 {
     domainCnt[dom]--;
     //We assume that it will get loaded..
@@ -2653,21 +2653,21 @@ SlaveInfo::RemoveIC( int dom )
 }
 
 // ****************************************************************************
-//  Method: SlaveInfo::Update
+//  Method: WorkerInfo::Update
 //
 //  Purpose:
-//      Update with a new status from the slave.
+//      Update with a new status from the worker.
 //
 //  Programmer: Dave Pugmire
 //  Creation:   January 27, 2009
 //
 //   Dave Pugmire, Wed Mar 18 17:17:40 EDT 2009
-//   Allow masters to share work loads.
+//   Allow managers to share work loads.
 //   
 // ****************************************************************************
 
 void
-SlaveInfo::Update( vector<int> &status, bool debug )
+WorkerInfo::Update( vector<int> &status, bool debug )
 {
     justUpdated = true;
     initialized = true;
@@ -2708,7 +2708,7 @@ SlaveInfo::Update( vector<int> &status, bool debug )
 }
 
 // ****************************************************************************
-//  Method: SlaveInfo::Debug
+//  Method: WorkerInfo::Debug
 //
 //  Purpose:
 //      Print your self out.
@@ -2722,12 +2722,12 @@ SlaveInfo::Update( vector<int> &status, bool debug )
 //  Control print information for large domain problems.
 //  
 //   Dave Pugmire, Wed Apr  1 11:21:05 EDT 2009
-//   Print slave status based on LATENCY_SEND_CNT.
+//   Print worker status based on LATENCY_SEND_CNT.
 //   
 // ****************************************************************************
 
 void
-SlaveInfo::Debug()
+WorkerInfo::Debug()
 {
     bool slacker = (icLoadedCount == 0);
     debug1<<setw(2)<<rank;

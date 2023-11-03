@@ -84,17 +84,17 @@ int assignCallback(simV2_PyObject &dest, PyObject *src)
 }
 
 /******************************************************************************
- * SlaveProcessCallback
+ * WorkerProcessCallback
  ******************************************************************************/
 %typemap(in) (void (*spcb)(void)) {
     simV2_PyObject temp;
     if (assignCallback(temp, $input))
     {
-        pylibsim_setSlaveProcessCallback(NULL);
+        pylibsim_setWorkerProcessCallback(NULL);
         return NULL;
     }
-    pylibsim_setSlaveProcessCallback(temp);
-    $1 = pylibsim_invokeSlaveProcessCallback;
+    pylibsim_setWorkerProcessCallback(temp);
+    $1 = pylibsim_invokeWorkerProcessCallback;
 }
 
 /******************************************************************************
@@ -151,7 +151,7 @@ int assignCallback(simV2_PyObject &dest, PyObject *src)
 }
 
 /******************************************************************************
- * used by: SlaveProcess2
+ * used by: WorkerProcess2
  ******************************************************************************/
 %typemap(in, fragment="util") (void (*)(void*)) (simV2_PyObject callback) {
     if (assignCallback(callback, $input)) { return NULL; }

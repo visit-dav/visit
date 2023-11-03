@@ -114,9 +114,9 @@ c     REPLACE WITH MPI COMMUNICATION IF SIMULATION IS PARALLEL
       end
 
 c---------------------------------------------------------------------------
-c visitslaveprocesscallback
+c visitworkerprocesscallback
 c---------------------------------------------------------------------------
-      subroutine visitslaveprocesscallback ()
+      subroutine visitworkerprocesscallback ()
       implicit none
 c     REPLACE WITH MPI COMMUNICATION IF SIMULATION IS PARALLEL
       end

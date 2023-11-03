@@ -52,20 +52,20 @@ visit_handle VisItGetDomainNesting(const char *, void *);
  *****************************************************************************/
 
 /* Functions to be provided by the FORTRAN simulation. */
-#define F_VISITSLAVEPROCESSCALLBACK    F77_ID(visitslaveprocesscallback_,visitslaveprocesscallback,VISITSLAVEPROCESSCALLBACK)
+#define F_VISITWORKERPROCESSCALLBACK    F77_ID(visitworkerprocesscallback_,visitworkerprocesscallback,VISITWORKERPROCESSCALLBACK)
 #define F_VISITBROADCASTINTFUNCTION    F77_ID(visitbroadcastintfunction_,visitbroadcastintfunction,VISITBROADCASTINTFUNCTION)
 #define F_VISITBROADCASTSTRINGFUNCTION F77_ID(visitbroadcaststringfunction_,visitbroadcaststringfunction,VISITBROADCASTSTRINGFUNCTION)
 #define F_VISITCOMMANDCALLBACK         F77_ID(visitcommandcallback_,visitcommandcallback,VISITCOMMANDCALLBACK)
-extern void F_VISITSLAVEPROCESSCALLBACK(void);
+extern void F_VISITWORKERPROCESSCALLBACK(void);
 extern int  F_VISITBROADCASTINTFUNCTION(int *, int *);
 extern int  F_VISITBROADCASTSTRINGFUNCTION(char *, int *, int *);
 extern void F_VISITCOMMANDCALLBACK(const char*, int*, const char*, int *);
 
 void
-f_visit_internal_slaveprocesscallback(void)
+f_visit_internal_workerprocesscallback(void)
 {
     /* Call the fortran function. */
-    F_VISITSLAVEPROCESSCALLBACK();
+    F_VISITWORKERPROCESSCALLBACK();
 }
 
 int
@@ -137,7 +137,7 @@ f_visit_internal_InstallCallbacks(void)
     /* These functions need to be set up but they can't be set up until
      * after the VisItAttemptToCompleteConnection function completes.
      */
-    VisItSetSlaveProcessCallback(f_visit_internal_slaveprocesscallback);
+    VisItSetWorkerProcessCallback(f_visit_internal_workerprocesscallback);
     VisItSetCommandCallback(f_visit_internal_commandcallback, NULL);
 }
 
