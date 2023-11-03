@@ -23,7 +23,6 @@
 #include <DBOptionsAttributes.h>
 #include <avtDatabaseMetaData.h>
 #include <vtkImageData.h>
-#include <vtkImagePointIterator.h>
 #include <vtkFloatArray.h>
 #include <vtkPointData.h>
 #include <avtColorTables.h>
@@ -135,8 +134,6 @@ avtWavefrontOBJWriter::WriteChunk(vtkDataSet *ds, int chunk)
                                            true, // YES MTLHasTex
                                            textureFilename); // name of texture file
 
-        // TODO write texture as well
-
         vtkImageData *image = GetColorTable();
         vtkImageWriter *writer = vtkPNGWriter::New();
         writer->SetFileName(textureFilename.c_str());
@@ -215,8 +212,8 @@ avtWavefrontOBJWriter::GetCombineMode(const std::string &) const
 //   Create color table
 //
 //
-// Programmer:  TODO
-// Creation:    TODO
+// Programmer:  Justin Privitera
+// Creation:    11/03/23
 //
 // Modifications:
 //
