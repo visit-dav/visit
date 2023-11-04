@@ -67,6 +67,10 @@ typedef enum
 //
 //    Kathleen Biagas, Fri Aug 31 13:21:14 PDT 2018
 //    Added DBOptionsAttributes.
+// 
+//    Justin Privitera, Fri Nov  3 15:25:32 PDT 2023
+//    Made WriteOBJFile static and public and added some new arguments with
+//    default parameters.
 //
 // ****************************************************************************
 

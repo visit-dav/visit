@@ -224,6 +224,9 @@ avtPLYWriter::GetCombineMode(const std::string &) const
 // Modifications:
 //   Justin Privitera, Mon Aug 21 15:54:50 PDT 2023
 //   Changed ColorTableAttributes `names` to `colorTableNames`.
+// 
+//   Justin Privitera, Fri Nov  3 15:25:32 PDT 2023
+//   Uses color table utility methods to improve performance.
 //
 //****************************************************************************
 
@@ -237,12 +240,12 @@ avtPLYWriter::GetColorTable()
         vtkColorTransferFunction *lut = vtkColorTransferFunction::New();
 
         double *vals = new double[3*table->GetNumControlPoints()];
-        for (int j=0; j<table->GetNumControlPoints(); j++)
+        for (int i=0; i<table->GetNumControlPoints(); i++)
         {
-            const ColorControlPoint &pt = table->GetControlPoints(j);
-            vals[j*3 + 0] = pt.GetColors()[0]/255.0;
-            vals[j*3 + 1] = pt.GetColors()[1]/255.0;
-            vals[j*3 + 2] = pt.GetColors()[2]/255.0;
+            const ColorControlPoint &pt = table->GetControlPoints(i);
+            vals[i*3 + 0] = pt.GetColors()[0]/255.0;
+            vals[i*3 + 1] = pt.GetColors()[1]/255.0;
+            vals[i*3 + 2] = pt.GetColors()[2]/255.0;
         }
         
         lut->BuildFunctionFromTable(colorTableMin, colorTableMax, table->GetNumControlPoints(), vals);

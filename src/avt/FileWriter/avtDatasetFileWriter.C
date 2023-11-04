@@ -371,6 +371,10 @@ avtDatasetFileWriter::WriteOBJTree(avtDataTree_p dt, int idx,
 //
 //    Kathleen Biagas, Fri Feb 22 15:39:02 PST 2013
 //    If using cd2pd, use it's ouput port as input to the geometry filter.
+// 
+//    Justin Privitera, Fri Nov  3 15:25:32 PDT 2023
+//    The new arguments (writeMTL, MTLHasTex, and texFilename) are used to
+//    setup needed parameters for the upgraded vtkOBJWriter.
 //
 // ****************************************************************************
 
