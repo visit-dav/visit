@@ -288,7 +288,7 @@ visit_broadcast_string_callback(char *str, int len, int sender)
 
 /* Helper function for ProcessVisItCommand */
 static void
-BroadcastSlaveCommand(int *command)
+BroadcastWorkerCommand(int *command)
 {
     if (DDTSim::getInstance()->isParallel())
         ddtMpiCompat_Bcast(command, 1, DDTSIM_MPI_INT, 0, DDTSIM_MPI_COMM_WORLD);
@@ -296,10 +296,10 @@ BroadcastSlaveCommand(int *command)
 
 /* Callback involved in command communication */
 static void
-SlaveProcessCallback()
+WorkerProcessCallback()
 {
     int command = VISIT_COMMAND_PROCESS;
-    BroadcastSlaveCommand(&command);
+    BroadcastWorkerCommand(&command);
 }
 
 //! Callback for processing user issued program control commands issued from VisIt
@@ -459,24 +459,24 @@ DDTSim::processVisItCommand()
         if (success)
         {
             command = VISIT_COMMAND_SUCCESS;
-            BroadcastSlaveCommand(&command);
+            BroadcastWorkerCommand(&command);
             return 1;
         }
         else
         {
             command = VISIT_COMMAND_FAILURE;
-            BroadcastSlaveCommand(&command);
+            BroadcastWorkerCommand(&command);
             return 0;
         }
     }
     else
     {
-        /* Note: only through the SlaveProcessCallback callback above can the
+        /* Note: only through the WorkerProcessCallback callback above can the
         * rank 0 process send a VISIT_COMMAND_PROCESS instruction to the
         * non-rank-0 processes */
         while(1)
         {
-            BroadcastSlaveCommand(&command);
+            BroadcastWorkerCommand(&command);
             switch(command)
             {
                 case VISIT_COMMAND_PROCESS:
@@ -651,7 +651,7 @@ void DDTSim::visitloop()
             if (connected)
             {
                 visitSim.setAutoupdate(true);
-                libsim.SetSlaveProcessCallback(SlaveProcessCallback);
+                libsim.SetWorkerProcessCallback(WorkerProcessCallback);
 
                 /* Register command callback */
                 libsim.SetCommandCallback(ControlCommandCallback,(void*)&pointers);

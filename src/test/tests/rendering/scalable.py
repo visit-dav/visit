@@ -28,7 +28,7 @@
 #    Added tests '08-10, testing auto-opaque mesh and sr mode.
 #
 #    Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
-#    Added ability to swtich between Silo's HDF5 and PDB data.
+#    Added ability to switch between Silo's HDF5 and PDB data.
 #
 #    Eric Brugger, Fri Aug 15 10:19:33 PDT 2014
 #    Modified the script to use srun to launch the parallel engine on edge.
@@ -45,6 +45,10 @@
 #
 #    Kathleen Biagas, Tue Feb 8 2022
 #    Use run_dir for location of saving windows, it is cleaned up on exit.
+#
+#    Eric Brugger, Wed Nov  1 13:46:08 PDT 2023
+#    Updated the list of hosts where srun was used to launch a parallel
+#    compute engine.
 #
 # ----------------------------------------------------------------------------
 
@@ -76,9 +80,9 @@ if len(engines) > 0:
         # explicitly open a parallel engine, if possible
         # if it fails, the OpenDatabase will start a serial engine
         import socket
-        if "surface" in socket.gethostname() or \
+        if "quartz" in socket.gethostname() or \
            "pascal"  in socket.gethostname() or \
-           "quartz"  in socket.gethostname() or \
+           "poodle"  in socket.gethostname() or \
            "syrah"   in socket.gethostname():
             haveParallelEngine = OpenComputeEngine("localhost", ("-l", "srun", "-np", "2"))
         else:

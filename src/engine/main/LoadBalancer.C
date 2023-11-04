@@ -214,9 +214,9 @@ LoadBalancer::RegisterProgressCallback(ProgressCallback pc, void *args)
 // ****************************************************************************
 
 bool
-LoadBalancer::CheckAbort(bool informSlaves)
+LoadBalancer::CheckAbort(bool informWorkers)
 {
-    return abortCallback(abortCallbackArgs, informSlaves);
+    return abortCallback(abortCallbackArgs, informWorkers);
 }
 
 // ****************************************************************************
@@ -529,7 +529,7 @@ LoadBalancer::DetermineAppropriateScheme(avtContract_p input)
 //    to processors.
 //
 //    Jeremy Meredith, Mon Sep 17 23:07:43 PDT 2001
-//    Made the master be aware of the domains already cached on each 
+//    Made the manager be aware of the domains already cached on each 
 //    processor, and to choose those domains for a processor when possible.
 //
 //    Jeremy Meredith, Thu Sep 20 00:52:37 PDT 2001
@@ -540,7 +540,7 @@ LoadBalancer::DetermineAppropriateScheme(avtContract_p input)
 //    Jeremy Meredith, Fri Sep 21 14:41:08 PDT 2001
 //    Added support for aborting dynamic loadbalanced execution.
 //    Changed dynamic loadbalancing to delay sending the "complete"
-//    signal to slave processes until it is sure no abort has happened.
+//    signal to worker processes until it is sure no abort has happened.
 //
 //    Hank Childs, Mon Dec  2 14:46:03 PST 2002
 //    Use a SIL restriction traverser to find the domain list.
@@ -870,7 +870,7 @@ LoadBalancer::Reduce(avtContract_p input)
         if (rank == 0)
         {
             // -------------------------------------
-            //     MASTER LOADBALANCER PROCESSES
+            //     MANAGER LOADBALANCER PROCESSES
             // -------------------------------------
 
             // Allocate enough space to hold the completed domains
@@ -887,7 +887,7 @@ LoadBalancer::Reduce(avtContract_p input)
             deque<int>  incomplete(domainList.begin(), domainList.end());
             vector<int> complete;
 
-            debug5 << "LoadBalancer Master -- starting with " 
+            debug5 << "LoadBalancer Manager -- starting with " 
                    << incomplete.size() << " domains\n";
 
             // pull from the incomplete list and push onto the complete list
@@ -917,7 +917,7 @@ LoadBalancer::Reduce(avtContract_p input)
                          lastDomDoneMsg, VISIT_MPI_COMM, &stat);
                 int processor = stat.MPI_SOURCE;
 
-                // -1 means the first pass by the slave; nothing completed yet
+                // -1 means the first pass by the worker; nothing completed yet
                 if (domain != -1)
                 {
                     // add it to the complete list
@@ -993,7 +993,7 @@ LoadBalancer::Reduce(avtContract_p input)
                     ioInfo.files[processor].insert(0);
 
                 // send the new domain number to that processor
-                debug5 << "LoadBalancer Master: sending domain " 
+                debug5 << "LoadBalancer Manager: sending domain " 
                        << domain << " to processor "<<processor<<"\n";
                 MPI_Send(&domain, 1, MPI_INT, processor, newDomToDoMsg, VISIT_MPI_COMM);
             }
@@ -1015,10 +1015,10 @@ LoadBalancer::Reduce(avtContract_p input)
         else
         {
             // -------------------------------------
-            //            SLAVE PROCESSES
+            //            WORKER PROCESSES
             // -------------------------------------
 
-            // send our last completed domain to the master
+            // send our last completed domain to the manager
             int domain = lbInfo.current;
             MPI_Send(&domain, 1, MPI_INT, 0, lastDomDoneMsg, VISIT_MPI_COMM);
 

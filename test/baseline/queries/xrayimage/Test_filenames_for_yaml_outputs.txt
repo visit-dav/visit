@@ -1,9 +1,9 @@
-The x ray image query results were written to the file VISIT_TOP_DIR/test/testdir_yaml/output.0036.root
-The x ray image query results were written to the file VISIT_TOP_DIR/test/testdir_yaml/output.0037.root
-The x ray image query results were written to the file VISIT_TOP_DIR/test/testdir_yaml/output.0038.root
-The x ray image query results were written to the file VISIT_TOP_DIR/test/testdir_yaml/output.0039.root
-The x ray image query results were written to the file VISIT_TOP_DIR/test/testdir_yaml/output.cycle_000048.root
-The x ray image query results were written to the file VISIT_TOP_DIR/test/testdir_yaml/output.cycle_000048.root
-The x ray image query results were written to the file VISIT_TOP_DIR/test/testdir_yaml/output.root
-The x ray image query results were written to the file VISIT_TOP_DIR/test/testdir_yaml/output.root
+{'file extension': 'root', 'file protocol': 'yaml', 'filename scheme': 'family', 'filenames': ('VISIT_TOP_DIR/test/testdir_yaml/output.0036.root',), 'number of files': 1, 'result message': 'The x ray image query results were written to the file VISIT_TOP_DIR/test/testdir_yaml/output.0036.root\n'}
+{'file extension': 'root', 'file protocol': 'yaml', 'filename scheme': 'family', 'filenames': ('VISIT_TOP_DIR/test/testdir_yaml/output.0037.root',), 'number of files': 1, 'result message': 'The x ray image query results were written to the file VISIT_TOP_DIR/test/testdir_yaml/output.0037.root\n'}
+{'file extension': 'root', 'file protocol': 'yaml', 'filename scheme': 'family', 'filenames': ('VISIT_TOP_DIR/test/testdir_yaml/output.0038.root',), 'number of files': 1, 'result message': 'The x ray image query results were written to the file VISIT_TOP_DIR/test/testdir_yaml/output.0038.root\n'}
+{'file extension': 'root', 'file protocol': 'yaml', 'filename scheme': 'family', 'filenames': ('VISIT_TOP_DIR/test/testdir_yaml/output.0039.root',), 'number of files': 1, 'result message': 'The x ray image query results were written to the file VISIT_TOP_DIR/test/testdir_yaml/output.0039.root\n'}
+{'file extension': 'root', 'file protocol': 'yaml', 'filename scheme': 'cycle', 'filenames': ('VISIT_TOP_DIR/test/testdir_yaml/output.cycle_000048.root',), 'number of files': 1, 'result message': 'The x ray image query results were written to the file VISIT_TOP_DIR/test/testdir_yaml/output.cycle_000048.root\n'}
+{'file extension': 'root', 'file protocol': 'yaml', 'filename scheme': 'cycle', 'filenames': ('VISIT_TOP_DIR/test/testdir_yaml/output.cycle_000048.root',), 'number of files': 1, 'result message': 'The x ray image query results were written to the file VISIT_TOP_DIR/test/testdir_yaml/output.cycle_000048.root\n'}
+{'file extension': 'root', 'file protocol': 'yaml', 'filename scheme': 'none', 'filenames': ('VISIT_TOP_DIR/test/testdir_yaml/output.root',), 'number of files': 1, 'result message': 'The x ray image query results were written to the file VISIT_TOP_DIR/test/testdir_yaml/output.root\n'}
+{'file extension': 'root', 'file protocol': 'yaml', 'filename scheme': 'none', 'filenames': ('VISIT_TOP_DIR/test/testdir_yaml/output.root',), 'number of files': 1, 'result message': 'The x ray image query results were written to the file VISIT_TOP_DIR/test/testdir_yaml/output.root\n'}
 ['output.0036.root', 'output.0037.root', 'output.0038.root', 'output.0039.root', 'output.cycle_000048.root', 'output.root']

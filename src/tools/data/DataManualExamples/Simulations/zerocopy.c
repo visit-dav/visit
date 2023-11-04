@@ -26,7 +26,7 @@
 /* Communication Function prototypes */
 int SimBroadcastInt(int *value, int sender, void *cbdata);
 int SimBroadcastString(char *str, int len, int sender, void *cbdata);
-void SimSlaveProcessCallback(void *);
+void SimWorkerProcessCallback(void *);
 
 /* Data Adaptor Function prototypes */
 visit_handle SimGetMetaData(void *);
@@ -290,7 +290,7 @@ void
 SetupCallbacks(simulation_data *sim)
 {
     VisItSetCommandCallback(SimControlCommandCallback, (void*)sim);
-    VisItSetSlaveProcessCallback2(SimSlaveProcessCallback, (void*)sim);
+    VisItSetWorkerProcessCallback2(SimWorkerProcessCallback, (void*)sim);
     VisItSetGetMetaData(SimGetMetaData, (void*)sim);
     VisItSetGetMesh(SimGetMesh, (void*)sim);
     VisItSetGetVariable(SimGetVariable, (void*)sim);
@@ -636,7 +636,7 @@ int SimBroadcastString(char *str, int len, int sender, void *cbdata)
 }
 #endif
 
-void SimSlaveProcessCallback(void *cbdata)
+void SimWorkerProcessCallback(void *cbdata)
 {
 #ifdef PARALLEL
     simulation_data *sim = (simulation_data *)cbdata;
@@ -646,7 +646,7 @@ void SimSlaveProcessCallback(void *cbdata)
 }
 
 /* Helper function for SimProcessVisItCommand */
-static void BroadcastSlaveCommand(int *command, simulation_data *sim)
+static void BroadcastWorkerCommand(int *command, simulation_data *sim)
 {
 #ifdef PARALLEL
     MPI_Bcast(command, 1, MPI_INT, 0, sim->par_comm);
@@ -664,24 +664,24 @@ int SimProcessVisItCommand(simulation_data *sim)
         if (success == VISIT_OKAY)
         {
             command = VISIT_COMMAND_SUCCESS;
-            BroadcastSlaveCommand(&command, sim);
+            BroadcastWorkerCommand(&command, sim);
             return 1;
         }
         else
         {
             command = VISIT_COMMAND_FAILURE;
-            BroadcastSlaveCommand(&command, sim);
+            BroadcastWorkerCommand(&command, sim);
             return 0;
         }
     }
     else
     {
-        /* Note: only through the SlaveProcessCallback callback
+        /* Note: only through the WorkerProcessCallback callback
          * above can the rank 0 process send a VISIT_COMMAND_PROCESS
          * instruction to the non-rank 0 processes. */
         while (1)
         {
-            BroadcastSlaveCommand(&command, sim);
+            BroadcastWorkerCommand(&command, sim);
             switch (command)
             {
             case VISIT_COMMAND_PROCESS:

@@ -188,7 +188,7 @@ typedef struct
     void  (*time_step_changed)(void*);
     void  (*execute_command)(void*,const char*);
     void  (*disconnect)();
-    void  (*set_slave_process_callback)(void(*)());
+    void  (*set_worker_process_callback)(void(*)());
     void  (*set_command_callback)(void*,void(*)(const char*,const char*,void*),void*);
     int   (*save_window)(void*,const char *, int, int, int);
     void  (*debug_logs)(int,const char *);
@@ -286,9 +286,9 @@ static int           visit_sync_callbacks_size = 0;
 static int           visit_sync_id = 1;
 static void        (*visit_command_callback)(const char*,const char*,void*) = NULL;
 static void         *visit_command_callback_data = NULL;
-static void        (*visit_slave_process_callback)(void) = NULL;
-static void        (*visit_slave_process_callback2)(void *) = NULL;
-static void         *visit_slave_process_callback2_data = NULL;
+static void        (*visit_worker_process_callback)(void) = NULL;
+static void        (*visit_worker_process_callback2)(void *) = NULL;
+static void         *visit_worker_process_callback2_data = NULL;
 static void         *visit_communicator = NULL;
 static int           visit_batch_mode = 0;
 static int          *visit_communicator_f = NULL;
@@ -772,7 +772,7 @@ visit_process_engine_command(void)
         }
         else
         {
-            /* Note: only through the SlaveProcessCallback callback
+            /* Note: only through the WorkerProcessCallback callback
              * above can the rank 0 process send a VISIT_COMMAND_PROCESS
              * instruction to the non-rank 0 processes. */
             while (1)
@@ -2079,7 +2079,7 @@ static int LoadVisItLibrary(void)
         CONTROL_DLSYM(time_step_changed,          void,   (void *));
         CONTROL_DLSYM(execute_command,            void,   (void *,const char*));
         CONTROL_DLSYM(disconnect,                 void,   ());
-        CONTROL_DLSYM(set_slave_process_callback, void,   (void (*)()));
+        CONTROL_DLSYM(set_worker_process_callback, void,   (void (*)()));
         CONTROL_DLSYM(set_command_callback,       void,   (void*,void (*)(const char*,const char*,void*),void*));
         CONTROL_DLSYM(save_window,                int,    (void*,const char *,int,int,int));
         CONTROL_DLSYM(debug_logs,                 void,   (int,const char *));
@@ -3346,9 +3346,9 @@ int VisItAttemptToCompleteConnection(void)
 
 /*******************************************************************************
 *
-* Name: VisItSetSlaveProcessCallback
+* Name: VisItSetWorkerProcessCallback
 *
-* Purpose: Set the callback to inform slave processes that they should
+* Purpose: Set the callback to inform worker processes that they should
 *          call VisItProcessEngineCommand.
 *
 * Author: Jeremy Meredith, B Division, Lawrence Livermore National Laboratory
@@ -3358,29 +3358,29 @@ int VisItAttemptToCompleteConnection(void)
 *   Trace information.
 *
 *   Brad Whitlock, Thu Jan 27 15:13:25 PST 2011
-*   Store off the slave process callback because we'll need to install a new
+*   Store off the worker process callback because we'll need to install a new
 *   one during synchronization in case the user has a funky callback.
 *
 *******************************************************************************/
-void VisItSetSlaveProcessCallback(void (*spic)(void))
+void VisItSetWorkerProcessCallback(void (*spic)(void))
 {
-    LIBSIM_API_ENTER1(VisItSetSlaveProcessCallback, "spic=%p", (void*)spic);
-    LIBSIM_MESSAGE("  Calling simv2_set_slave_process_callback");
-    if(callbacks != NULL && callbacks->control.set_slave_process_callback)
+    LIBSIM_API_ENTER1(VisItSetWorkerProcessCallback, "spic=%p", (void*)spic);
+    LIBSIM_MESSAGE("  Calling simv2_set_worker_process_callback");
+    if(callbacks != NULL && callbacks->control.set_worker_process_callback)
     {
-        visit_slave_process_callback = spic;
-        visit_slave_process_callback2 = NULL;
-        visit_slave_process_callback2_data = NULL;
-        (*callbacks->control.set_slave_process_callback)(spic);
+        visit_worker_process_callback = spic;
+        visit_worker_process_callback2 = NULL;
+        visit_worker_process_callback2_data = NULL;
+        (*callbacks->control.set_worker_process_callback)(spic);
     }
-    LIBSIM_API_LEAVE(VisItSetSlaveProcessCallback);
+    LIBSIM_API_LEAVE(VisItSetWorkerProcessCallback);
 }
 
 /*******************************************************************************
 *
-* Name: VisItSetSlaveProcessCallback2
+* Name: VisItSetWorkerProcessCallback2
 *
-* Purpose: Set the callback to inform slave processes that they should
+* Purpose: Set the callback to inform worker processes that they should
 *          call VisItProcessEngineCommand. This version lets us pass callback
 *          function data.
 *
@@ -3391,24 +3391,24 @@ void VisItSetSlaveProcessCallback(void (*spic)(void))
 *******************************************************************************/
 
 static void
-visit_slave_process_callback2_thunk(void)
+visit_worker_process_callback2_thunk(void)
 {
-    if(visit_slave_process_callback2 != NULL)
-        (*visit_slave_process_callback2)(visit_slave_process_callback2_data);
+    if(visit_worker_process_callback2 != NULL)
+        (*visit_worker_process_callback2)(visit_worker_process_callback2_data);
 }
 
-void VisItSetSlaveProcessCallback2(void (*spic)(void *), void *spicdata)
+void VisItSetWorkerProcessCallback2(void (*spic)(void *), void *spicdata)
 {
-    LIBSIM_API_ENTER1(VisItSetSlaveProcessCallback2, "spic=%p", (void*)spic);
-    LIBSIM_MESSAGE("  Calling simv2_set_slave_process_callback");
-    if(callbacks != NULL && callbacks->control.set_slave_process_callback)
+    LIBSIM_API_ENTER1(VisItSetWorkerProcessCallback2, "spic=%p", (void*)spic);
+    LIBSIM_MESSAGE("  Calling simv2_set_worker_process_callback");
+    if(callbacks != NULL && callbacks->control.set_worker_process_callback)
     {
-        visit_slave_process_callback = NULL;
-        visit_slave_process_callback2 = spic;
-        visit_slave_process_callback2_data = spicdata;
-        (*callbacks->control.set_slave_process_callback)(visit_slave_process_callback2_thunk);
+        visit_worker_process_callback = NULL;
+        visit_worker_process_callback2 = spic;
+        visit_worker_process_callback2_data = spicdata;
+        (*callbacks->control.set_worker_process_callback)(visit_worker_process_callback2_thunk);
     }
-    LIBSIM_API_LEAVE(VisItSetSlaveProcessCallback2);
+    LIBSIM_API_LEAVE(VisItSetWorkerProcessCallback2);
 }
 
 /*******************************************************************************
@@ -3799,12 +3799,12 @@ DECLARE_DATA_CALLBACKS(VISIT_SET_CALLBACK_BODY)
 * Modifications:
 *   Brad Whitlock, Thu Jan 27 15:22:00 PST 2011
 *   The visit_process_engine_command function we use internally assumes that
-*   messages that tell slave processes what to do are ints. We must install
-*   our own int-based slave process callback to ensure that we're broadcasting
-*   ints since the sim's slave process callback can do whatever it wants.
+*   messages that tell worker processes what to do are ints. We must install
+*   our own int-based worker process callback to ensure that we're broadcasting
+*   ints since the sim's worker process callback can do whatever it wants.
 *
 *   Brad Whitlock, Tue Apr 17 11:05:08 PDT 2012
-*   Account for different style slave process callback.
+*   Account for different style worker process callback.
 *
 ******************************************************************************/
 
@@ -3816,7 +3816,7 @@ visit_sync_helper(void *cbdata)
 }
 
 static void
-visit_sync_slave_process_callback(void)
+visit_sync_worker_process_callback(void)
 {
     int command = VISIT_COMMAND_PROCESS;
     BroadcastInt(&command, 0);
@@ -3828,9 +3828,9 @@ VisItSynchronize(void)
     int blocking = 1;
     int syncing = 1;
     int visitstate = 0, err = 0;
-    void (*sim_spc)(void) = visit_slave_process_callback;
-    void (*sim_spc2)(void*) = visit_slave_process_callback2;
-    void *sim_spc2data = visit_slave_process_callback2_data;
+    void (*sim_spc)(void) = visit_worker_process_callback;
+    void (*sim_spc2)(void*) = visit_worker_process_callback2;
+    void *sim_spc2data = visit_worker_process_callback2_data;
 
     LIBSIM_API_ENTER(VisItSynchronize);
 
@@ -3843,8 +3843,8 @@ VisItSynchronize(void)
     /* Send a sync to the viewer. When we get it back the loop will end. */
     visit_add_sync(visit_sync_helper, &syncing);
 
-    /* Save the sim's slave process callback and install a new one temporarily. */
-    VisItSetSlaveProcessCallback(visit_sync_slave_process_callback);
+    /* Save the sim's worker process callback and install a new one temporarily. */
+    VisItSetWorkerProcessCallback(visit_sync_worker_process_callback);
 
     do
     {
@@ -3885,11 +3885,11 @@ VisItSynchronize(void)
         }
     } while(syncing && err == 0);
 
-    /* Restore the sim's slave process callback. */
+    /* Restore the sim's worker process callback. */
     if(sim_spc != NULL)
-        VisItSetSlaveProcessCallback(sim_spc);
+        VisItSetWorkerProcessCallback(sim_spc);
     else
-        VisItSetSlaveProcessCallback2(sim_spc2, sim_spc2data);
+        VisItSetWorkerProcessCallback2(sim_spc2, sim_spc2data);
 
     LIBSIM_API_LEAVE(VisItSynchronize);
     return (err==0) ? VISIT_OKAY : VISIT_ERROR;
