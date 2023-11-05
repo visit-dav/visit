@@ -342,7 +342,7 @@ function build_ospray
         fi
 
         CMAKE_VARS=""
-        CMAKE_VARS="${CMAKE_VARS} -DCMAKE_INSTALL_PREFIX:PATH=${OSPRAY_INSTALL_DIR}"
+        CMAKE_VARS="${CMAKE_VARS} -DCMAKE_INSTALL_PREFIX:PATH=${OSPRAY_INSTALL_DIR} -DBUILD_OIDN:BOOL=OFF -DBUILD_OSPRAY_APPS:BOOL=OFF -DBUILD_GLFW:BOOL=OFF -DBUILD_BENCHMARK:BOOL=OFF"
 
         #
         # Several platforms have had problems with the cmake configure
