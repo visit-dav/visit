@@ -20,10 +20,13 @@ using std::vector;
 //  Function: GetCurve3DReadOptions
 //
 //  Purpose:
-//      Creates the options for Curve3D readers. (currently none)
+//      Creates the options for Curve3D readers.
 //
-//  Programmer: Kathleen Biagas
-//  Creation:   August 31, 2018
+//  Programmer: Olivier Cessenat
+//  Creation:   Oct 5, 2023
+//
+//  Copied from Curve2D plugin as of Aug 31, 2018 and adjusted for 3D
+//  and make a global mesh with materials out of the figures.
 //
 // ****************************************************************************
 
@@ -31,6 +34,7 @@ DBOptionsAttributes *
 GetCurve3DReadOptions(void)
 {
     DBOptionsAttributes *rv = new DBOptionsAttributes;
+    rv->SetBool("Use blank line as another curve as in gnuplot", true);
     return rv;
 }
 
@@ -41,10 +45,11 @@ GetCurve3DReadOptions(void)
 //  Purpose:
 //      Creates the options for Curve3D writers.
 //
-//  Programmer: Kathleen Biagas 
-//  Creation:   August 31, 2018
+//  Programmer: Olivier Cessenat
+//  Creation:   Oct 5, 2023
 //
-//  Modifications:
+//  Copied from Curve2D plugin as of Aug 31, 2018 and adjusted for 3D
+//  and make a global mesh with materials out of the figures.
 //
 // ****************************************************************************
 
