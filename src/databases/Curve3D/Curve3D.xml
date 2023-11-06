@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+  <Plugin name="Curve3D" type="database" label="Curve3D" version="1.0" enabled="true" mdspecificcode="true" onlyengine="false" noengine="false" dbtype="STSD" haswriter="true" hasoptions="true">
+    <FilePatterns>
+      *.curve3D
+      *.curve3d
+      *.curve3D.gz
+      *.curve3d.gz
+    </FilePatterns>
+    <Attribute name="" purpose="" persistent="false">
+    </Attribute>
+  </Plugin>
