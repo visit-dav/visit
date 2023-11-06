@@ -252,10 +252,10 @@ done
 
 if test "$branch" = "trunk" ; then
     workingDir="test_trunk"
-    cmakeCmd="/usr/WS1/visit/visit/thirdparty_shared/3.3.2/toss4/cmake/3.24.3/linux-x86_64_gcc-10.3/bin/cmake"
+    cmakeCmd="/usr/WS1/visit/visit/thirdparty_shared/3.4.0/toss4/cmake/3.24.3/linux-x86_64_gcc-10.3/bin/cmake"
 else
     workingDir="test_branch"
-    cmakeCmd="/usr/WS1/visit/visit/thirdparty_shared/3.3.2/toss4/cmake/3.24.3/linux-x86_64_gcc-10.3/bin/cmake"
+    cmakeCmd="/usr/WS1/visit/visit/thirdparty_shared/3.4.0/toss4/cmake/3.24.3/linux-x86_64_gcc-10.3/bin/cmake"
 fi
 
 #

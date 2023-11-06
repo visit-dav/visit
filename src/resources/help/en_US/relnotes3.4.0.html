@@ -43,7 +43,8 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Color Table Searching is no longer optional; it is always on. A dedicated search bar has been added.</li>
   <li>The Color Table Window has a new horizontal layout.</li>
   <li>A tutorial has been added for creating keyframe animations.</li>
-  <li>To address an inclusivity bug regarding use of <em>Master/Slave</em> terminology, the interfaces to <b>LibSim</b> and <b>IntegraulCurve, Poincare, LimitCycle</b> and <b>LCS</b> operators were changed. <code>Master</code> is replaced with <code>Manager</code>, <code>Slave</code> is replaced with <code>Worker</code> and <code>MasterSlave</code> is replaced with <code>ManagerWorker</code>. Old behavior will continue to be supported through this release of VisIt but will be removed after this release. You will want to update any LibSim code, any python CLI code and any saved settings that may use the old interface.</li>
+  <li>To address an inclusivity bug regarding use of <em>Master/Slave</em> terminology, the interfaces to <b>LibSim</b> and <b>IntegralCurve, Poincare, LimitCycle</b> and <b>LCS</b> operators were changed. <code>Master</code> is replaced with <code>Manager</code>, <code>Slave</code> is replaced with <code>Worker</code> and <code>MasterSlave</code> is replaced with <code>ManagerWorker</code>. Old behavior will continue to be supported through this release of VisIt but will be removed after this release. You will want to update any LibSim code, any python CLI code and any saved settings that may use the old interface.</li>
+  <li>Support has been added for installing ffmpeg as part of a VisIt installation.</li>
 </ul>
 
 <a name="Advanced_features"></a>
@@ -75,6 +76,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>HDF 4 based readers were removed: Cosmos, RAGE, ZeusMP</li>
   <li>HDF 4 support in the Enzo reader was removed</li>
   <li>VisIt's Blueprint reader now supports materials with material numbers that do NOT fall in the range [0, N), where N is the number of materials.</li>
+  <li>VisIt's Blueprint reader now detects high-order volume fractions fields following the naming pattern <i>volume_fraction_ZZZ</i> as a material.</li>
 </ul>
 
 <a name="Plot_changes"></a>
@@ -105,6 +107,13 @@ enhancements and bug-fixes that were added to this release.</p>
 <a name="Bugs_fixed"></a>
 <p><b><font size="4">Other bugs fixed in version 3.4</font></b></p>
 <ul>
+  <li>A better error message was added for Revolved volume query when applied to meshes whose spatial dimension is not 2.</li>
+  <li>Avert potential crash in mdserver matching file names for virtual database recognition.</li>
+  <li>Fixed a bug where an error would incorrectly be detected when creating ghost zones. Specifically, it occurred when a block had mixed materials and the block didn't contain the material the variable was defined on.</li>
+  <li>Fixed a bug reading particle data from Mili files. The particle data would not appear and could cause the engine to crash if the number of particles was larger than the number of elements.</li>
+  <li>Fixed a bug where the pseudocolor plot would have NaNs in the legend if the mesh contained no elements or all the elements were ghost elements. Now it preints an error message with a description of the error.</li>
+  <li>Fixed a bug where 'LaunchNowin' would fail on Windows when additional launch arguments were specified with `AddArgument`.</li>
+  <li>Fixed a bug where the time scale and offset were not honored by the time slider annotation or $time annotation macro.</li>
   <li>Fixed a bug that caused VisIt's viewer to crash in rare occasions involving failed queries.</li>
   <li>Fixed an issue that caused VisIt to treat color tables created via the CLI as though they were built-in color tables.</li>
   <li>Fixed an issue that caused the "No Tags" tag to not appear in the tag table.</li>
@@ -124,11 +133,15 @@ enhancements and bug-fixes that were added to this release.</p>
 <p><b><font size="4">Configuration changes in version 3.4</font></b></p>
 <ul>
   <li>Added a host profile for Lawrence Livermore National Laboratory's RZWhippet system.</li>
+  <li>A host profile has been added for running on ORNL's Frontier system.</li>
+  <li>A host profile has been added for running on NERSC's Perlmutter system.</li>
 </ul>
 
 <a name="Build_features"></a>
 <p><b><font size="4">Changes to build_visit in version 3.4</font></b></p>
 <ul>
+  <li>The Mili library was upgraded to version 23.02 from 22.1.</li>
+  <li>The Uintah libary was upgraded to version 2.6.2 from 2.6.1.</li>
   <li>Removed HDF 4 support.</li>
   <li>Added support for building VisIt on NVIDIA Grace CPU and Arm Architecture.</li> 
 </ul>
@@ -138,6 +151,7 @@ enhancements and bug-fixes that were added to this release.</p>
 <ul>
   <li>Support for boolArray and boolVector was added to xml code gen tools.</li>
   <li>Updated the "Creating a Release" section of the developer manual to describe the current process.</li>
+  <li>The Building with Spack section of the user manual was enhanced with instructions for building with the develpment version of spack. Specific instructions for building on Frontier and Perlmutter were also added.</li>
   <li>Add support for Qt6.  The build_visit option is '--qt6', which will build qt version 6.4.2, and also force building of VTK-9 if '--vtk' is also enabled.</li>
   <li>Added ability to create tabbed content in the sphinx documentation by adding sphinx-tabs extension.</li>
 </ul>
