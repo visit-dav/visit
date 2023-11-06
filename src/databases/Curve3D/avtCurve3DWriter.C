@@ -26,12 +26,11 @@ using     std::vector;
 // ****************************************************************************
 //  Method: avtCurve3DWriter constructor
 //
-//  Programmer: Brad Whitlock
-//  Creation:   Thu Jul 26 16:32:43 PST 2012
+//  Programmer: Olivier Cessenat
+//  Creation:   Oct 5, 2023
 //
-//  Modifications:
-//    Kathleen Biagas, Fri Aug 31 14:18:46 PDT 2018
-//    Read comment style from write options.
+//  Copied from Curve2D plugin as of Aug 31, 2018 and adjusted for 3D
+//  and make a global mesh with materials out of the figures.
 //
 // ****************************************************************************
 
@@ -48,8 +47,11 @@ avtCurve3DWriter::avtCurve3DWriter(const DBOptionsAttributes *atts) : commentSty
 //  Purpose:
 //      Does no actual work.  Just records the stem name for the files.
 //
-//  Programmer: Brad Whitlock
-//  Creation:   Thu Jul 26 16:32:43 PST 2012
+//  Programmer: Olivier Cessenat
+//  Creation:   Oct 5, 2023
+//
+//  Copied from Curve2D plugin as of Jul 26, 2012 and adjusted for 3D
+//  and make a global mesh with materials out of the figures.
 //
 // ****************************************************************************
 
@@ -67,8 +69,11 @@ avtCurve3DWriter::OpenFile(const string &stemname, int numblocks)
 //  Purpose:
 //      Writes out a VisIt file to tie the Curve3D files together.
 //
-//  Programmer: Brad Whitlock
-//  Creation:   Thu Jul 26 16:32:43 PST 2012
+//  Programmer: Olivier Cessenat
+//  Creation:   Oct 5, 2023
+//
+//  Copied from Curve2D plugin as of Jul 26, 2012 and adjusted for 3D
+//  and make a global mesh with materials out of the figures.
 //
 // ****************************************************************************
 
@@ -92,10 +97,11 @@ avtCurve3DWriter::WriteHeaders(const avtDatabaseMetaData *md,
 //
 // Note:       
 //
-// Programmer: Brad Whitlock
-// Creation:   Fri Jul 27 11:14:10 PDT 2012
+// Programmer: Olivier Cessenat
+// Creation:   Oct 5, 2023
 //
-// Modifications:
+// Copied from Curve2D plugin as of Jul 27, 2012 and adjusted for 3D
+// and make a global mesh with materials out of the figures.
 //   
 // ****************************************************************************
 
@@ -120,8 +126,11 @@ avtCurve3DWriter::SanitizeName(const std::string &name) const
 //  Purpose:
 //      This writes out one chunk of an avtDataset.
 //
-//  Programmer: Brad Whitlock
-//  Creation:   Thu Jul 26 16:32:43 PST 2012
+//  Programmer: Olivier Cessenat
+//  Creation:   Oct 5, 2023
+//
+//  Copied from Curve2D plugin as of Jul 26, 2012 and adjusted for 3D
+//  and make a global mesh with materials out of the figures.
 //
 // ****************************************************************************
 
@@ -130,9 +139,9 @@ avtCurve3DWriter::WriteChunk(vtkDataSet *ds, int chunk)
 {
     char name[1024];
     if (nBlocks == 1)
-        snprintf(name, 1024, "%s.curve", stem.c_str());
+        snprintf(name, 1024, "%s.curve3d", stem.c_str());
     else
-        snprintf(name, 1024, "%s.%03d.curve", stem.c_str(), chunk);
+        snprintf(name, 1024, "%s.%03d.curve3d", stem.c_str(), chunk);
 
     ofstream ofile(name);
     if (ofile.fail())
@@ -144,6 +153,9 @@ avtCurve3DWriter::WriteChunk(vtkDataSet *ds, int chunk)
     if(atts.TimeIsAccurate())
         ofile << commentStyle << " TIME " << atts.GetTime() << endl;
 
+    ofile << commentStyle << stem.c_str() << endl;
+
+    // vtkRectilinearGrid *rgrid = vtkRectilinearGrid::SafeDownCast(ds);
     vtkUnstructuredGrid *rgrid = vtkUnstructuredGrid::SafeDownCast(ds);
 
     vtkPoints *lpts = rgrid->GetPoints() ;
@@ -163,8 +175,11 @@ avtCurve3DWriter::WriteChunk(vtkDataSet *ds, int chunk)
 //  Purpose:
 //      Closes the file.  This does nothing in this case.
 //
-//  Programmer: Brad Whitlock
-//  Creation:   Thu Jul 26 16:32:43 PST 2012
+//  Programmer: Olivier Cessenat
+//  Creation:   Oct 5, 2023
+//
+//  Copied from Curve2D plugin as of Jul 26, 2012 and adjusted for 3D
+//  and make a global mesh with materials out of the figures.
 //
 // ****************************************************************************
 
