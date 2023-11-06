@@ -61,37 +61,31 @@ using namespace std;
 //  Arguments:
 //      fname    The name of the curve file.
 //
-//  Programmer:  Hank Childs
-//  Creation:    May 28, 2002
+//  Programmer:  Olivier Cessenat
+//  Creation:    Oct 5, 2023
 //
-//  Modifications:
-//
-//    Hank Childs, Tue Apr  8 11:09:03 PDT 2003
-//    Do not do so much work in the constructor.
-//
-//    Kathleen Bonnell, Fri Oct 28 13:02:51 PDT 2005
-//    Added curveTime, curveCycle.
-//
-//    Kathleen Biagas, Fri Aug 31 14:22:49 PDT 2018
-//    Added read options (currently unused).
+//  Copied from Curve2D plugin as of Aug 31, 2018 and adjusted for 3D
+//  and make a global mesh with materials out of the figures.
 //
 // ****************************************************************************
 
-avtCurve3DFileFormat::avtCurve3DFileFormat(const char *fname, const DBOptionsAttributes *)
+avtCurve3DFileFormat::avtCurve3DFileFormat(const char *fname,
+                                           const DBOptionsAttributes *opts)
     : avtSTSDFileFormat(fname)
 {
     filename = fname;
     readFile = false;
     curveTime = INVALID_TIME;
     curveCycle = INVALID_CYCLE;
+    gnuplotStyle = opts->GetBool("Use blank line as another curve as in gnuplot");
 }
 
 
 // ****************************************************************************
 //  Method: avtCurve3DFileFormat destructor
 //
-//  Programmer: Hank Childs
-//  Creation:   May 28, 2002
+//  Programmer: Olivier Cessenat
+//  Creation:   Oct 5, 2023
 //
 // ****************************************************************************
 
@@ -113,34 +107,17 @@ avtCurve3DFileFormat::~avtCurve3DFileFormat()
 //  Arguments:
 //      name       The mesh name.
 //
-//  Programmer: Hank Childs
-//  Creation:   May 28, 2002
+//  Programmer: Olivier Cessenat
+//  Creation:   Oct 5, 2023
 //
-//  Modifications:
-//
-//    Hank Childs, Wed Jan 15 10:54:14 PST 2003
-//    Increment the reference count for the curve, since we own the memory for
-//    it and the calling function believes it also owns it.
-//
-//    Hank Childs, Tue Apr  8 11:09:03 PDT 2003
-//    Make sure we have read in the file first.
-//
-//    Hank Childs, Fri Aug  1 21:19:28 PDT 2003
-//    Retro-fit for STSD.
-//
-//    Olivier Cessenat, Thu Oct  5 18:38:05 CEST 2023
-//    Add the build of the global mesh, the one that contains all the segments.
+//  Copied from Curve2D plugin as of Aug 1, 2003 and adjusted for 3D
+//  and make a global mesh with materials out of the figures.
 //
 // ****************************************************************************
 
 vtkDataSet *
 avtCurve3DFileFormat::GetMesh(const char *name)
 {
-    if (!readFile)
-    {
-        ReadFile();
-    }
-
     if (strcmp("mesh", name) == 0)
     {
         // This is the global mesh :
@@ -224,13 +201,11 @@ avtCurve3DFileFormat::GetMesh(const char *name)
 //      <unused>  The domain number.
 //      name      The variable name.
 //
-//  Programmer:   Hank Childs
-//  Creation:     May 28, 2002
+//  Programmer: Olivier Cessenat
+//  Creation:   Oct 5, 2023
 //
-//  Modifications:
-//
-//    Hank Childs, Fri Aug  1 21:19:28 PDT 2003
-//    Retro-fit for STSD.
+//  Copied from Curve2D plugin as of Aug 1, 2003 and adjusted for 3D
+//  and make a global mesh with materials out of the figures.
 //
 // ****************************************************************************
 
@@ -247,29 +222,13 @@ avtCurve3DFileFormat::GetVar(const char *name)
 //  Purpose:
 //      Sets the database meta-data for this curve file.  There is only one
 //      mesh, the curve.  Each curve gets its own domain,for easy subselection.
+//      One unstructured mesh per segment, then a gloval mesh with materials.
 //
-//  Programmer: Hank Childs
-//  Creation:   May 28, 2002
+//  Programmer: Olivier Cessenat
+//  Creation:   Oct 5, 2023
 //
-//  Modifications:
-//
-//    Hank Childs, Tue Apr  8 11:09:03 PDT 2003
-//    Make sure we have read in the file first.
-//
-//    Hank Childs, Fri Aug  1 21:01:51 PDT 2003
-//    Mark curves as "curve" type.
-//
-//    Kathleen Bonnell, Thu Aug  3 08:42:33 PDT 2006 
-//    Added DataExtents to CurveMetaData. 
-//
-//    Kathleen Bonnell, Tue Jan 20 11:04:33 PST 2009
-//    Added SpatialExtents to CurveMetaData. 
-//
-//    Brad Whitlock, Mon Jul 23 12:07:07 PDT 2012
-//    Iterate based on curveNames since curves will not be populated on mdserver.
-//
-//    Olivier Cessenat, Thu Oct  5 18:41:09 CEST 2023
-//    One unstructured mesh per segment, then a gloval mesh with materials.
+//  Copied from Curve2D plugin as of Jul 23, 2012 and adjusted for 3D
+//  and make a global mesh with materials out of the figures.
 //
 // ****************************************************************************
 
@@ -278,7 +237,13 @@ avtCurve3DFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 {
     if (!readFile)
     {
-        ReadFile();
+#ifdef MDSERVER 
+        bool const clearData = true;
+        ReadFile(clearData);
+#else
+        bool const clearData = false;
+        ReadFile(clearData);
+#endif  
     }
 
     avtMeshType mt = AVT_UNSTRUCTURED_MESH;
@@ -323,79 +288,17 @@ avtCurve3DFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //      Actually reads in from a file.  This is pretty dependent on formats
 //      that have one point per line.  When there are runs of points, followed
 //      by non-points, that is assumed to be a new line.
+//      We segment the curve when a whitespace line is met
+//      to mimic splot behaviour of Gnuplot.
 //
 //  Arguments:
 //      ifile   The file to read in.
 //
-//  Programmer: Hank Childs
-//  Creation:   May 28, 2002
+//  Programmer: Olivier Cessenat
+//  Creation:   Oct 5, 2023
 //
-//  Modifications:
-//
-//    Hank Childs, Wed Jan 15 13:44:39 PST 2003
-//    Fix parsing error where whitespace was getting prepended to the curve
-//    names.
-//
-//    Hank Childs, Thu Apr  3 16:58:33 PST 2003
-//    It is now acceptable to have whitespace between the curves to indicate
-//    a break in the curve.  Add parsing for this.
-//
-//    Hank Childs, Fri Apr  4 09:04:17 PST 2003
-//    Fixed bug from yesterday where wrong string is being sent into GetPoint.
-//
-//    Hank Childs, Tue Apr  8 11:09:03 PDT 2003
-//    Do some of the work formerly done by the constructor.
-//
-//    Hank Childs, Thu Sep 23 14:54:07 PDT 2004
-//    Add support for files with extra whitespace and files that have no 
-//    headers.
-//
-//    Kathleen Bonnell, Fri Oct 28 13:02:51 PDT 2005
-//    Parse 'TIME' and 'CYCLE' from headers not followed by data values. 
-//
-//    Kathleen Bonnell, Mon Jul 31 10:15:00 PDT 2006 
-//    Represent curve as 1D RectilinearGrid instead of PolyData. 
-//
-//    Kathleen Bonnell, Thu Aug  3 08:42:33 PDT 2006 
-//    Save DataExtents. 
-//
-//    Mark C. Miller, Tue Oct 31 20:33:29 PST 2006
-//    Replaced Exception on INVALID_POINT with warning macro.
-//    Added VALID_XVALUE for case where X but no Y is given at the END of
-//    a curve specification and interpreted it as a "zone-centered" curve.
-//    Added logic to re-center curve for the "zone-centered" case
-//
-//    Mark C. Miller, Wed Nov 15 16:24:06 PST 2006
-//    Deal with possible exception during INVALID_POINT_WARNING. Fix
-//    lack of suppression of more than 5 lines of errors. Fix possible
-//    reference to array index -1 when xl.size() or yl.size()==0
-//
-//    Hank Childs, Mon Dec  8 13:51:16 PST 2008
-//    For files with multiple curves, we were incorrectly throwing away
-//    the first point of curve N+1 if it was identical to the last point
-//    of curve N.
-//
-//    Kathleen Bonnell, Tue Jan 20 11:12:54 PST 2009
-//    Add spatial extents.
-//
-//    Jeremy Meredith, Fri Jan  8 16:32:25 EST 2010
-//    Made warning be invalid file exception in strict mode.
-//
-//    Brad Whitlock, Mon Jul 23 12:06:38 PDT 2012
-//    Build lightweight rectilinear grids on mdserver.
-//
-//    Kathleen Biagas, Tue Jul 15 14:16:46 MST 2014
-//    Change from using float to double.
-//
-//    Kathleen Biagas, Fri Aug 31 14:23:59 PDT 2018
-//    Support matlab-sytle comments ("%").
-//
-//    Justin Privitera, Tue Jul  5 14:40:55 PDT 2022
-//    Changed 'supressed' to 'suppressed'.
-//
-//    Olivier Cessenat, Thu Oct  5 18:42:50 CEST 2023
-//    We segment the curve when a whitespace line is met
-//    to mimic splot behaviour
+//  Copied from Curve2D plugin as of Jul 5, 2022 and adjusted for 3D
+//  and make a global mesh with materials out of the figures.
 //
 // ****************************************************************************
 
@@ -433,7 +336,7 @@ avtCurve3DFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 }
 
 void
-avtCurve3DFileFormat::ReadFile(void)
+avtCurve3DFileFormat::ReadFile(bool clearData = false)
 {
     int invalidPointCount = 0;
     int lineCount = 1;
@@ -498,12 +401,15 @@ avtCurve3DFileFormat::ReadFile(void)
                 string str2 = str1.substr(str1.find_first_not_of(" \t"));
                 curveNames.push_back(str2);
 #if MULTSEG
-                centering.push_back(useCentering);
-                cutoff.push_back((int)xl.size());
-                justStartedNewCurve = true;
-                if (nseg == 0)
-                    // Normal way: store the previous value
-                    peaderName = str1 ;
+                if (gnuplotStyle)
+                {
+                    centering.push_back(useCentering);
+                    cutoff.push_back((int)xl.size());
+                    justStartedNewCurve = true;
+                    if (nseg == 0)
+                        // Normal way: store the previous value
+                        peaderName = str1 ;
+                }
 #endif
                 headerName = "";
             }
@@ -570,22 +476,32 @@ avtCurve3DFileFormat::ReadFile(void)
             justStartedNewCurve = true;
 #endif
 #if MULTSEG
-            nseg = 0 ;
+            if (gnuplotStyle)
+                nseg = 0 ;
+            else
+            {
+                centering.push_back(useCentering);
+                cutoff.push_back((int)xl.size());
+                justStartedNewCurve = true;
+            }
 #endif
             break;
           }
           case WHITESPACE:
           {
 #if MULTSEG
+              if (gnuplotStyle)
+              {
 #if INTERACTIVEPLOT
-              fprintf(stdout,"white: ") ;
+                  fprintf(stdout,"white: ") ;
 #endif
-              sprintf(segname, "%d", nseg) ;
-              nseg++ ;
-              headerName = "#" + peaderName + "_" + string(segname) ;
+                  sprintf(segname, "%d", nseg) ;
+                  nseg++ ;
+                  headerName = "#" + peaderName + "_" + string(segname) ;
 #if INTERACTIVEPLOT
-              fprintf(stdout,"headerName=%s\n", headerName.c_str()) ;
+                  fprintf(stdout,"headerName=%s\n", headerName.c_str()) ;
 #endif
+              }
 #endif
             if (breakpoint_following.size() > 0)
                 breakpoint_following[breakpoint_following.size()-1] = true;
@@ -808,7 +724,13 @@ avtCurve3DFileFormat::ReadFile(void)
                << "names.  Cannot continue with this file." << endl;
         EXCEPTION1(InvalidFilesException, filename.c_str());
     }
-
+    if (clearData == true)
+    {
+        xl.clear() ;
+        yl.clear() ;
+        zl.clear() ;
+    }
+    
     readFile = true;
 }
 
@@ -818,50 +740,13 @@ avtCurve3DFileFormat::ReadFile(void)
 //
 //  Purpose:
 //      Gets a point from a line.
+//      Go 3D now.
 //
-//  Programmer: Hank Childs
-//  Creation:   May 28, 2002
+//  Programmer: Olivier Cessenat
+//  Creation:   Oct 5, 2023
 //
-//  Modifications:
-//
-//    Hank Childs, Thu Apr  3 16:58:33 PST 2003
-//    Identify different return types to make parsing easier.
-//
-//    Hank Childs, Mon May 24 14:45:14 PDT 2004
-//    Treat the line "end" as white space, since it screws up our parsing
-//    and is not really necessary for us.  Also treat parenthesis as square
-//    brackets, since parenthesis are special for us.
-//
-//    Brad Whitlock, Tue Jun 29 11:50:41 PDT 2004
-//    Fixed for Windows compiler.
-//
-//    Hank Childs, Thu Sep 23 14:54:07 PDT 2004
-//    Add support for Fortran-style scientific notation (5.05D-2).
-//
-//    Hank Childs, Fri Jul 29 14:34:39 PDT 2005
-//    Add support for tabs.
-//
-//    Mark C. Miller, Tue Oct 31 20:33:29 PST 2006
-//    Added code to detect more closely possible errors from strtod.
-//    Added logic to handle VALID_XVALUE case.
-//
-//    Mark C. Miller, Wed Nov 15 16:24:06 PST 2006
-//    Reset errno before calling strtod
-//
-//    Jeremy Meredith, Thu Jan  7 12:11:29 EST 2010
-//    Make sure read data is ASCII.
-//
-//    Jeremy Meredith, Fri Jan  8 16:32:40 EST 2010
-//    Only to ASCII check in strict mode since it's basically the whole file.
-//
-//    Kathleen Biagas, Tue Jul 15 14:16:46 MST 2014
-//    Change from using float to double.
-//
-//    Kathleen Biagas, Fri Aug 31 14:23:59 PDT 2018
-//    Support matlab-sytle comments ("%").
-//
-//    Olivier Cessenat, Thu Oct  5 18:45:12 CEST 2023
-//    Go 3D now.
+//  Copied from Curve2D plugin as of Aug 31, 2018 and adjusted for 3D
+//  and make a global mesh with materials out of the figures.
 //
 // ****************************************************************************
 
@@ -990,8 +875,8 @@ avtCurve3DFileFormat::GetPoint(istream &ifile, double &x, double &y, double &z, 
 //
 //  Purpose: Return the time associated with this curve file
 //
-//  Programmer: Kathleen Bonnell 
-//  Creation:   October 28, 2005 
+//  Programmer: Olivier Cessenat
+//  Creation:   Oct 5, 2023
 //
 // ****************************************************************************
 
@@ -1007,8 +892,8 @@ avtCurve3DFileFormat::GetTime(void)
 //
 //  Purpose: Return the cycle associated with this curve file
 //
-//  Programmer: Kathleen Bonnell 
-//  Creation:   October 28, 2005 
+//  Programmer: Olivier Cessenat
+//  Creation:   Oct 5, 2023
 //
 // ****************************************************************************
 
