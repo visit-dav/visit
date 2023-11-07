@@ -1,4 +1,4 @@
-{"modes":
+{"modes":[
     {"parallel":
         {"boxlib_05.png" : "parallel"}
      },
@@ -6,4 +6,4 @@
         {"boxlib_01.png" : "scalable_parallel",
          "boxlib_03.png" : "scalable_parallel"}
      }
-}
+]}
