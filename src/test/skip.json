@@ -149,7 +149,7 @@
                     {"category":"plots","file":"contour.py","cases":["contour_colorMethod_03","contour_colorMethod_05","contour_colorMethod_06","contour_colorMethod_07","contour_colorMethod_08","contour_colorMethod_09","contour_multicolor_00","contour_multicolor_01","contour_multicolor_02"]},
                     {"category":"plots","file":"filledboundary.py","cases":["fb_lines_03"]},
                     {"category":"queries","file":"xrayimage.py","cases":["NonSquare_Pixels_Ray_trace_setup_1","NonSquare_Pixels_Ray_trace_setup_2","NonSquare_Pixels_Ray_trace_setup_3","NonSquare_Pixels_Ray_trace_setup_4","NonSquare_Pixels_Ray_trace_setup_5","NonSquare_Pixels_Ray_trace_setup_6","NonSquare_Pixels_Ray_trace_setup_8"]},
-                    {"category":"queries","file":"compositing.py","cases":["compositing_01"]},
+                    {"category":"rendering","file":"compositing.py","cases":["compositing_01"]},
                     {"category":"rendering","file":"pixeldata.py","cases":["pixeldata_0_00","pixeldata_0_01","pixeldata_0_02","pixeldata_0_03","pixeldata_0_04","pixeldata_0_06"]},
                     {"category":"rendering","file":"transparency.py"},
                     {"category":"session","file":"rect3d-contour.py","cases":["rect3d-contour00"]},
