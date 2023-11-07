@@ -90,10 +90,10 @@ function bv_vtk_info
     fi
     if [[ "$DO_VTK9" == "yes" ]] ; then
         info "setting up vtk for version 9"
-        export VTK_FILE=${VTK_FILE:-"VTK-9.1.0.tar.gz"}
-        export VTK_VERSION=${VTK_VERSION:-"9.1.0"}
-        export VTK_SHORT_VERSION=${VTK_SHORT_VERSION:-"9.1"}
-        export VTK_SHA256_CHECKSUM="8fed42f4f8f1eb8083107b68eaa9ad71da07110161a3116ad807f43e5ca5ce96"
+        export VTK_FILE=${VTK_FILE:-"VTK-9.2.6.tar.gz"}
+        export VTK_VERSION=${VTK_VERSION:-"9.2.6"}
+        export VTK_SHORT_VERSION=${VTK_SHORT_VERSION:-"9.2"}
+        export VTK_SHA256_CHECKSUM="06fc8d49c4e56f498c40fcb38a563ed8d4ec31358d0101e8988f0bb4d539dd12"
     else
         export VTK_FILE=${VTK_FILE:-"VTK-8.1.0.tar.gz"}
         export VTK_VERSION=${VTK_VERSION:-"8.1.0"}
@@ -158,6 +158,68 @@ function bv_vtk_ensure
 # *************************************************************************** #
 #                            Function 6, build_vtk                            #
 # *************************************************************************** #
+function apply_vtk9_allow_onscreen_and_osmesa_patch
+{
+  # patch that allows VTK9 to be built with onscreen and osmesa support.
+   patch -p0 << \EOF
+--- CMake/vtkOpenGLOptions.cmake.orig	2023-10-26 15:53:06.351818000 -0700
++++ CMake/vtkOpenGLOptions.cmake	2023-10-26 16:09:34.984852000 -0700
+@@ -112,15 +112,6 @@
+     "Please set to `OFF` any of these two.")
+ endif ()
+
+-if (VTK_OPENGL_HAS_OSMESA AND VTK_CAN_DO_ONSCREEN)
+-  message(FATAL_ERROR
+-    "The `VTK_OPENGL_HAS_OSMESA` can't be set to `ON` if any of the following is true: "
+-    "the target platform is Windows, `VTK_USE_COCOA` is `ON`, or `VTK_USE_X` "
+-    "is `ON` or `VTK_USE_SDL2` is `ON`. OSMesa does not support on-screen "
+-    "rendering and VTK's OpenGL selection is at build time, so the current "
+-    "build configuration is not satisfiable.")
+-endif ()
+-
+ cmake_dependent_option(
+   VTK_USE_OPENGL_DELAYED_LOAD
+   "Use delay loading for OpenGL"
+EOF
+
+   patch -p0 << \EOF
+--- Utilities/OpenGL/CMakeLists.txt.orig	2023-10-26 15:56:37.290225000 -0700
++++ Utilities/OpenGL/CMakeLists.txt	2023-10-26 16:12:18.817101000 -0700
+@@ -45,7 +45,7 @@
+   list(APPEND opengl_targets OpenGL::EGL)
+ endif ()
+
+-if (VTK_OPENGL_HAS_OSMESA AND NOT VTK_CAN_DO_ONSCREEN)
++if (VTK_OPENGL_HAS_OSMESA)
+   vtk_module_third_party_external(
+     PACKAGE OSMesa
+     TARGETS OSMesa::OSMesa)
+EOF
+
+   patch -p0 << \EOF
+--- Rendering/OpenGL2/CMakeLists.txt.orig	2023-10-26 15:57:15.850399000 -0700
++++ Rendering/OpenGL2/CMakeLists.txt	2023-10-26 15:57:31.520455000 -0700
+@@ -350,8 +350,11 @@
+     PUBLIC SDL2::SDL2)
+ endif ()
+
++# Not sure if find_package is necessary, should it be vtk_module_find_package?
++find_package(OpenGL REQUIRED)
+ if (VTK_USE_X)
+   vtk_module_find_package(PACKAGE X11)
++  vtk_module_link(VTK::RenderingOpenGL2 PRIVATE ${OPENGL_gl_LIBRARY})
+   vtk_module_link(VTK::RenderingOpenGL2 PUBLIC X11::X11)
+   if (TARGET X11::Xcursor)
+     vtk_module_link(VTK::RenderingOpenGL2 PRIVATE X11::Xcursor)
+EOF
+
+    if [[ $? != 0 ]] ; then
+      warn "vtk patch allowing onscreen and osmesa failed."
+      return 1
+    fi
+    return 0;
+}
+
 function apply_vtk9_vtkdatawriter_patch
 {
   # patch vtkDataWriter to fix a bug when writing a vtkBitArray
@@ -585,40 +647,6 @@ EOF
     fi
 }
 
-function apply_vtk9_libxmlversionheader_patch
-{
-  # patch vtk's libxml CMakeLists.txt so that xmlversion header is installed.
-   patch -p0 << \EOF
-*** ThirdParty/libxml2/vtklibxml2/CMakeLists.txt.orig	Wed Jan 12 11:24:42 2022
---- ThirdParty/libxml2/vtklibxml2/CMakeLists.txt	Wed Jan 12 11:25:57 2022
-***************
-*** 771,779 ****
-  endif ()
-  
-  configure_file(include/libxml/xmlversion.h.in include/libxml/xmlversion.h)
-! if (FALSE) # XXX(kitware): mask installation rules
-! install(FILES ${CMAKE_CURRENT_BINARY_DIR}/libxml/xmlversion.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/libxml2/libxml COMPONENT development)
-! endif ()
-  
-  if(MSVC)
-  	configure_file(include/libxml/xmlwin32version.h.in libxml/xmlwin32version.h)
---- 771,779 ----
-  endif ()
-  
-  configure_file(include/libxml/xmlversion.h.in include/libxml/xmlversion.h)
-! #if (FALSE) # XXX(kitware): mask installation rules
-! install(FILES ${CMAKE_CURRENT_BINARY_DIR}/include/libxml/xmlversion.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/vtk-9.1/vtklibxml2/include/libxml)
-! #endif ()
-  
-  if(MSVC)
-  	configure_file(include/libxml/xmlwin32version.h.in libxml/xmlwin32version.h)
-
-EOF
-    if [[ $? != 0 ]] ; then
-        warn "vtk patch for xml_version.h installation failed."
-        return 1
-    fi
-}
 
 function apply_vtk9_vtkRectilinearGridReader_patch
 {
@@ -1987,7 +2015,47 @@ EOF
     return 0;
 }
 
-function apply_vtk_osmesa_render_patch
+function apply_vtk9_osmesa_render_patch
+{
+    # I updated this patch for VTK 9.2.6, but not really sure it is still needed
+    # VTK modified the Resize method ... perhaps that change fixes what this
+    # patch was trying to fix?
+
+    # Apply a patch where the OSMesaMakeCurrent could sometimes pass the
+    # wrong window size for the buffer.
+    patch -p0 << \EOF
+diff -u Rendering/OpenGL2/vtkOSOpenGLRenderWindow.cxx.orig Rendering/OpenGL2/vtkOSOpenGLRenderWindow.cxx
+--- Rendering/OpenGL2/vtkOSOpenGLRenderWindow.cxx.orig    2023-09-11 08:28:50.273945000 -0700
++++ Rendering/OpenGL2/vtkOSOpenGLRenderWindow.cxx 2023-09-11 08:37:20.796870000 -0700
+@@ -187,7 +187,6 @@
+   {
+     this->Internal->OffScreenContextId = OSMesaCreateContext(GL_RGBA, nullptr);
+   }
+-  this->MakeCurrent();
+ 
+   this->Mapped = 0;
+   this->Size[0] = width;
+@@ -301,8 +300,8 @@
+ {
+   if ((this->Size[0] != width) || (this->Size[1] != height))
+   {
+-    this->Superclass::SetSize(width, height);
+     this->ResizeOffScreenWindow(width, height);
++    this->Superclass::SetSize(width, height);
+     this->Modified();
+   }
+ }
+EOF
+
+    if [[ $? != 0 ]] ; then
+      warn "vtk patch for osmesa render window failed."
+      return 1
+    fi
+
+    return 0;
+}
+
+function apply_vtk8_osmesa_render_patch
 {
     # Apply a patch where the OSMesaMakeCurrent could sometimes pass the
     # wrong window size for the buffer.
@@ -2016,7 +2084,7 @@ diff -u Rendering/OpenGL2/vtkOSOpenGLRenderWindow.cxx.orig Rendering/OpenGL2/vtk
 EOF
 
     if [[ $? != 0 ]] ; then
-      warn "vtk patch for compiler version check failed."
+      warn "vtk patch for osmesa render window failed."
       return 1
     fi
 
@@ -2028,6 +2096,11 @@ function apply_vtk_patch
 {
 
     if [[ "$DO_VTK9" == "yes" ]] ; then
+        apply_vtk9_allow_onscreen_and_osmesa_patch
+        if [[ $? != 0 ]] ; then
+            return 1
+        fi
+
         # vtk8 version needs to be reworked for 9.1.0
         #apply_vtk9_vtkopenfoamreader_patch
         #if [[ $? != 0 ]] ; then
@@ -2051,11 +2124,6 @@ function apply_vtk_patch
             return 1
         fi
 
-        apply_vtk9_libxmlversionheader_patch
-        if [[ $? != 0 ]] ; then
-            return 1
-        fi
-
         apply_vtk9_vtkRectilinearGridReader_patch
         if [[ $? != 0 ]] ; then
             return 1
@@ -2069,6 +2137,11 @@ function apply_vtk_patch
         apply_vtk9_vtkdatawriter_patch
         if [[ $? != 0 ]] ; then
            return 1
+        fi
+
+        apply_vtk9_osmesa_render_patch
+        if [[ $? != 0 ]] ; then
+            return 1
         fi
 
     else
@@ -2119,12 +2192,13 @@ function apply_vtk_patch
         if [[ $? != 0 ]] ; then
             return 1
         fi
+
+        apply_vtk8_osmesa_render_patch
+        if [[ $? != 0 ]] ; then
+            return 1
+        fi
     fi
 
-    apply_vtk_osmesa_render_patch
-    if [[ $? != 0 ]] ; then
-        return 1
-    fi
     return 0
 }
 
@@ -2350,7 +2424,7 @@ function build_vtk
                     if [[ "$DO_QT6" == "yes" ]]; then
                         vopts="${vopts} -DQt6_DIR:FILEPATH=${QT6_INSTALL_DIR}/lib/cmake/Qt6"
                     else
-                        vopts="${vopts} -DQt6_DIR:FILEPATH=${QT_INSTALL_DIR}/lib/cmake/Qt5"
+                        vopts="${vopts} -DQt5_DIR:FILEPATH=${QT_INSTALL_DIR}/lib/cmake/Qt5"
                     fi
                 else
                     vopts="${vopts} -DModule_vtkGUISupportQtOpenGL:BOOL=true"
@@ -2407,10 +2481,9 @@ function build_vtk
             vopts="${vopts} -DOPENGL_glu_LIBRARY:FILEPATH=${MESAGL_GLU_LIB}"
             # for now, until Mesa can be updated to a version that supports GLVND, set LEGACY preference
             vopts="${vopts} -DOpenGL_GL_PREFERENCE:STRING=LEGACY"
-            # Cannot build onscreen and offscreen this way anymore
-            #vopts="${vopts} -DVTK_OPENGL_HAS_OSMESA:BOOL=ON"
-            #vopts="${vopts} -DOSMESA_LIBRARY:STRING=${MESAGL_OSMESA_LIB}"
-            #vopts="${vopts} -DOSMESA_INCLUDE_DIR:PATH=${MESAGL_INCLUDE_DIR}"
+            vopts="${vopts} -DVTK_OPENGL_HAS_OSMESA:BOOL=ON"
+            vopts="${vopts} -DOSMESA_LIBRARY:STRING=${MESAGL_OSMESA_LIB}"
+            vopts="${vopts} -DOSMESA_INCLUDE_DIR:PATH=${MESAGL_INCLUDE_DIR}"
 
             if [[ "$DO_STATIC_BUILD" == "yes" ]] ; then
                 if [[ "$DO_SERVER_COMPONENTS_ONLY" == "yes" || "$DO_ENGINE_ONLY" == "yes" ]] ; then

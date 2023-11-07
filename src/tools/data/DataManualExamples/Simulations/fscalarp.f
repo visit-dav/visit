@@ -35,7 +35,7 @@ c     VisIt's libsim about it.
 
       call simulationarguments()
       err = visitsetupenv()
-c     Have the master process write the sim file.
+c     Have the manager process write the sim file.
       if(par_rank.eq.0) then
           err = visitinitializesim("fscalarp", 8,
      .     "Demonstrates scalar data access function", 40,
@@ -247,9 +247,9 @@ c---------------------------------------------------------------------------
       end
 
 c---------------------------------------------------------------------------
-c visitslaveprocesscallback
+c visitworkerprocesscallback
 c---------------------------------------------------------------------------
-      subroutine visitslaveprocesscallback ()
+      subroutine visitworkerprocesscallback ()
       implicit none
       include "mpif.h"
       integer c, ierr, VISIT_COMMAND_PROCESS

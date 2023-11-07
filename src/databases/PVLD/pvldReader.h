@@ -406,14 +406,14 @@ public:
 
 
     void ReadTiedSetBlockMesh( int nb, std::vector<float>& vcrd, std::vector<int>& elmt );
-    void ReadTiedSetSlaveBlockMesh( int blkInd, std::vector<float>& crd );
-    void ReadTiedSetMasterBlockMesh( int blkInd, std::vector<float>& crd );
+    void ReadTiedSetWorkerBlockMesh( int blkInd, std::vector<float>& crd );
+    void ReadTiedSetManagerBlockMesh( int blkInd, std::vector<float>& crd );
     bool ReadTiedSetBlockData( const char* varname, int nb,
                                std::vector<int>& dims, std::vector<float>& data );
 
     void ReadContactBlockMesh( int nb, std::vector<float>& vcrd, std::vector<int>& elmt );
-    void ReadContactSlaveBlockMesh( int blkInd, std::vector<float>& crd );
-    void ReadContactMasterBlockMesh( int blkInd, std::vector<float>& crd );
+    void ReadContactWorkerBlockMesh( int blkInd, std::vector<float>& crd );
+    void ReadContactManagerBlockMesh( int blkInd, std::vector<float>& crd );
     bool ReadContactBlockData( const char* varname, int nb,
                                std::vector<int>& dims, std::vector<float>& data );
 
@@ -510,15 +510,15 @@ protected:
 
     void ReadTiedSetBlockMesh( hid_t file_id, int blkInd,
                                std::vector<int>& vmap, std::vector<float>& vcrd, std::vector<int>& elmt );
-    void ReadTiedSetSlaveBlockMesh( hid_t file_id, int blkInd, std::vector<float>& crd );
-    void ReadTiedSetMasterBlockMesh( hid_t file_id, int blkInd, std::vector<float>& crd );
+    void ReadTiedSetWorkerBlockMesh( hid_t file_id, int blkInd, std::vector<float>& crd );
+    void ReadTiedSetManagerBlockMesh( hid_t file_id, int blkInd, std::vector<float>& crd );
     void ReadTiedSetBlockData( hid_t file_id, int varInd, int blkInd,
                                std::vector<int>& dims, std::vector<float>& edat );
 
     void ReadContactBlockMesh( hid_t file_id, int blkInd,
                                std::vector<int>& vmap, std::vector<float>& vcrd, std::vector<int>& elmt );
-    void ReadContactSlaveBlockMesh( hid_t file_id, int blkInd, std::vector<float>& crd );
-    void ReadContactMasterBlockMesh( hid_t file_id, int blkInd, std::vector<float>& crd );
+    void ReadContactWorkerBlockMesh( hid_t file_id, int blkInd, std::vector<float>& crd );
+    void ReadContactManagerBlockMesh( hid_t file_id, int blkInd, std::vector<float>& crd );
     void ReadContactBlockData( hid_t file_id, int varInd, int blkInd,
                                std::vector<int>& dims, std::vector<float>& edat );
 
@@ -754,9 +754,9 @@ public:
     static const std::string surface_name;
     static const std::string sph_name;
     static const std::string tiedset_name;
-    static const std::string tiedset_slave_name;
+    static const std::string tiedset_worker_name;
     static const std::string contact_name;
-    static const std::string contact_slave_name;
+    static const std::string contact_worker_name;
     static const std::string node_index_name;
     static const std::string number_of_history_name;
     static const std::string history_name;

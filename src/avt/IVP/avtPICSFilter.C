@@ -19,7 +19,7 @@ Consider the leaveDomains ICs and the balancing at the same time.
 #include "avtParDomICAlgorithm.h"
 #include "avtPODICAlgorithm.h"
 #include "avtCommDSOnDemandICAlgorithm.h"
-#include "avtMasterSlaveICAlgorithm.h"
+#include "avtManagerWorkerICAlgorithm.h"
 #include "avtVariableCache.h"
 #include <visitstream.h>
 
@@ -967,7 +967,7 @@ avtPICSFilter::SetPathlines(bool pathlines,
 // Modifications:
 //
 //   Dave Pugmire, Thu Feb  5 12:23:33 EST 2009
-//   Add workGroupSize for masterSlave algorithm.
+//   Add workGroupSize for managerWorker algorithm.
 //
 // ****************************************************************************
 
@@ -1080,7 +1080,7 @@ AlgorithmToString(int algo)
         static const char *s = "Communicate domains";
         return s;
     }
-    if (algo == PICS_PARALLEL_MASTER_SLAVE)
+    if (algo == PICS_PARALLEL_MANAGER_WORKER)
     {
         static const char *s = "Parallelize over curves and domains";
         return s;
@@ -1284,7 +1284,7 @@ avtPICSFilter::CheckOnDemandViability(void)
 //    In serial mode, set the cacheQLen to be the total number of domains.
 //
 //   Dave Pugmire, Thu Dec 18 13:24:23 EST 2008
-//   Add MasterSlave method.
+//   Add ManagerWorker method.
 //
 //   Dave Pugmire, Mon Feb 23 13:38:49 EST 2009
 //   Initialize the initial domain load count and timer.
@@ -1336,9 +1336,9 @@ avtPICSFilter::Execute(void)
     /*
     else if (selectedAlgo == PICS_PARALLEL_COMM_DOMAINS)
         icAlgo = new avtCommDSOnDemandICAlgorithm(this, cacheQLen);
-    else if (selectedAlgo == PICS_PARALLEL_MASTER_SLAVE)
+    else if (selectedAlgo == PICS_PARALLEL_MANAGER_WORKER)
     {
-        icAlgo = avtMasterSlaveICAlgorithm::Create(this,
+        icAlgo = avtManagerWorkerICAlgorithm::Create(this,
                                                    maxCount,
                                                    PAR_Rank(),
                                                    PAR_Size(),

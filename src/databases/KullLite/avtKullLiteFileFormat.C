@@ -104,13 +104,13 @@ avtKullLiteFileFormat::avtKullLiteFileFormat(const char *fname)
     m_kullmesh2d = NULL;
     m_tags = NULL;
 
-    // Figure out if we were given a master file list,
+    // Figure out if we were given a manager file list,
     // and if so, build the filename list
     ifstream inf;
     inf.open(fname);
     char a,b,c;
     inf >> a >> b >> c;
-    // This is how the Master Kull Files start out
+    // This is how the Manager Kull Files start out
     // Other pdb files are fine, since they all start with the 
     // pdb version identifier
     if (a=='M' && b=='K' && c=='F')
@@ -150,9 +150,9 @@ avtKullLiteFileFormat::avtKullLiteFileFormat(const char *fname)
 
     TRY
     {
-        // We might read them in from the master file eventually, but for
+        // We might read them in from the manager file eventually, but for
         // now, we'll do it here in the constructor [so it's a straight
-        // modification if we do put them in the master file]
+        // modification if we do put them in the manager file]
         ReadInMaterialNames();
     }
     CATCH(VisItException)
@@ -424,10 +424,10 @@ avtKullLiteFileFormat::ClassifyAndAdd3DZone(pdb_mesh3d *mesh3d, int zone,
          faceI++)
     {
         int faceIndex = mesh3d->faceIndices[faceI];
-        bool sharedSlave = false;
+        bool sharedWorker = false;
         if (faceIndex < 0) //shared face
         {
-            sharedSlave = true;
+            sharedWorker = true;
             faceIndex = -1 - faceIndex; //one's complement to get index
         }
 
@@ -439,7 +439,7 @@ avtKullLiteFileFormat::ClassifyAndAdd3DZone(pdb_mesh3d *mesh3d, int zone,
         nodes[faceI-startZoneToFaceIndex].resize(nodesForThisFace);
 
         // Let's grab the nodeId's and store them
-        if (sharedSlave) // Shared face, grab them in reverse order
+        if (sharedWorker) // Shared face, grab them in reverse order
         {
             //for (i = nodesForThisFace-1; i >= 0; i--)
             for (int i=nodesForThisFace; i-- > 0 ;)

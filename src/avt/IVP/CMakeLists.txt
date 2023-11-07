@@ -41,7 +41,7 @@ avtIntegralCurveIC.C
 MemStream.C
 avtCommDSOnDemandICAlgorithm.C
 avtICAlgorithm.C
-avtMasterSlaveICAlgorithm.C
+avtManagerWorkerICAlgorithm.C
 avtParDomICAlgorithm.C
 avtParICAlgorithm.C
 avtPICSFilter.C

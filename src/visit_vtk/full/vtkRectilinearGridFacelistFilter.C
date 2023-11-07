@@ -1059,8 +1059,8 @@ vtkRectilinearGridFacelistFilter::ConsolidateFacesWithoutGhostZones(
       polys->InsertNextCell(4, quads[i]);
 
   outCellData->CopyAllocate(inCellData, numOutCells);
-  for (int i = 0 ; i < numOutCells ; ++i)
-      outCellData->CopyData(inCellData, 0, i);
+  for (vtkIdType i = 0 ; i < numOutCells ; ++i)
+      outCellData->CopyData(inCellData, vtkIdType(0), i);
 
   outPointData->CopyAllocate(inPointData, numOutPoints);
   vtkPoints *pts = vtkVisItUtility::NewPoints(input);

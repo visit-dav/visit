@@ -6,6 +6,12 @@
       ${NEKTAR++_TP_LIBRARY_DIRS}
       ${ACCELERATE_FRAMEWORK_LINK_FLAGS}
     </LDFLAGS>
+    <LIBS components="ESer">
+      avtivp_ser
+    </LIBS>
+    <LIBS components="EPar">
+      avtivp_par
+    </LIBS>
     <Files components="V">
     </Files>
     <Files components="E">
@@ -72,7 +78,7 @@
       <Enum name="ParallelizationAlgorithmType">
         LoadOnDemand
         ParallelStaticDomains
-        MasterSlave
+        ManagerWorker
         VisItSelects
       </Enum>
       <Enum name="FieldType">
@@ -345,6 +351,8 @@
       <Function name="ChangesRequireRecalculation" user="true" member="true">
       </Function>
       <Function name="IntegralCurveViewerEnginePluginInfo::GetOperatorVarDescription" user="false" member="true">
+      </Function>
+      <Function name="ProcessOldVersions" user="true" member="true">
       </Function>
       <Include file="source" quoted="false">
         PointAttributes.h

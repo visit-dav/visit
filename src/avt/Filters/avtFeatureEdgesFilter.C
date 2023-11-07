@@ -141,7 +141,6 @@ avtFeatureEdgesFilter::ExecuteData(avtDataRepresentation *inDR)
         // VTK doesn't do a good job with 1-cell feature edges, so just do it
         // ourselves.
         //
-        int  i, j;
 
         vtkCell *cell = inDS->GetCell(0);
         vtkPolyData  *output = vtkPolyData::New();
@@ -151,12 +150,12 @@ avtFeatureEdgesFilter::ExecuteData(avtDataRepresentation *inDR)
         vtkPointData *outPD  = output->GetPointData();
         
         vtkIdList *ids = cell->GetPointIds();
-        int npts = ids->GetNumberOfIds();
+        vtkIdType npts = ids->GetNumberOfIds();
         vtkPoints *pts = vtkVisItUtility::NewPoints(inDS);
         pts->SetNumberOfPoints(npts);
         outPD->CopyAllocate(inPD, npts);
         std::vector<int> origId(npts, -1);
-        for (i = 0 ; i < npts ; i++)
+        for (vtkIdType i = 0 ; i < npts ; i++)
         {
              origId[i] = ids->GetId(i);
              outPD->CopyData(inPD, ids->GetId(i), i);
@@ -164,20 +163,20 @@ avtFeatureEdgesFilter::ExecuteData(avtDataRepresentation *inDR)
              inDS->GetPoint(ids->GetId(i), pt);
              pts->SetPoint(i, pt);
         }
-        int ncells = cell->GetNumberOfEdges();
+        vtkIdType ncells = cell->GetNumberOfEdges();
         outCD->CopyAllocate(inCD, ncells);
         vtkCellArray *lines = vtkCellArray::New();
         lines->Allocate(ncells*(2+1));
-        for (i = 0 ; i < ncells ; i++)
+        for (vtkIdType i = 0 ; i < ncells ; i++)
         {
-             outCD->CopyData(inCD, 0, i);
+             outCD->CopyData(inCD, vtkIdType(0), i);
              vtkCell *edge = cell->GetEdge(i);
              vtkIdList *edge_ids = edge->GetPointIds();
              vtkIdType line[2];
              int origId0 = edge_ids->GetId(0);
              int origId1 = edge_ids->GetId(1);
              int newId0 = 0, newId1 = 0;
-             for (j = 0 ; j < npts ; j++)
+             for (vtkIdType j = 0 ; j < npts ; j++)
              {
                  if (origId0 == origId[j])
                      newId0 = j;

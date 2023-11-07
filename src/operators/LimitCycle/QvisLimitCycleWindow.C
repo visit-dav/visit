@@ -843,7 +843,7 @@ QvisLimitCycleWindow::CreateAdvancedTab(QWidget *pageAdvanced)
 //   Removed the accurate distance calculation option.
 //
 //   Dave Pugmire, Thu Feb  5 12:20:15 EST 2009
-//   Added workGroupSize for the masterSlave algorithm.
+//   Added workGroupSize for the managerWorker algorithm.
 //
 //   Dave Pugmire, Tue Dec 29 14:37:53 EST 2009
 //   Add custom renderer and lots of appearance options to the integral curves plots.
@@ -1532,7 +1532,7 @@ QvisLimitCycleWindow::UpdateIntegrationAttributes()
 // Modifications:
 //
 //   Dave Pugmire, Thu Feb  5 12:20:15 EST 2009
-//   Added workGroupSize for the masterSlave algorithm.
+//   Added workGroupSize for the managerWorker algorithm.
 //
 // ****************************************************************************
 
@@ -1543,8 +1543,8 @@ QvisLimitCycleWindow::UpdateAlgorithmAttributes()
                             LimitCycleAttributes::LoadOnDemand);
     bool useStaticDomains = (atts->GetParallelizationAlgorithmType() ==
                              LimitCycleAttributes::ParallelStaticDomains);
-    bool useMasterSlave = (atts->GetParallelizationAlgorithmType() ==
-                           LimitCycleAttributes::MasterSlave);
+    bool useManagerWorker = (atts->GetParallelizationAlgorithmType() ==
+                           LimitCycleAttributes::ManagerWorker);
 
     //Turn off everything.
     maxDomainCacheLabel->hide();
@@ -1564,7 +1564,7 @@ QvisLimitCycleWindow::UpdateAlgorithmAttributes()
         maxSLCountLabel->show();
         maxSLCount->show();
     }
-    else if (useMasterSlave)
+    else if (useManagerWorker)
     {
         maxDomainCacheLabel->show();
         maxDomainCache->show();
@@ -1603,7 +1603,7 @@ QvisLimitCycleWindow::UpdateAlgorithmAttributes()
 //   Use new methods.
 //
 //   Dave Pugmire, Thu Feb  5 12:20:15 EST 2009
-//   Added workGroupSize for the masterSlave algorithm.
+//   Added workGroupSize for the managerWorker algorithm.
 //
 //   Dave Pugmire, Tue Dec 29 14:37:53 EST 2009
 //   Add custom renderer and lots of appearance options to the integral curves plots.
