@@ -216,8 +216,8 @@ avtWavefrontOBJWriter::GetCombineMode(const std::string &) const
 // Method:  avtWavefrontOBJWriter::GetColorTable()
 //
 // Purpose:
-//   Create color table
-//
+//   This function is creating a vtkImageData which contains a 1D strip of
+//   pixels representing the selected color table.
 //
 // Programmer:  Justin Privitera
 // Creation:    11/03/23
@@ -233,13 +233,14 @@ avtWavefrontOBJWriter::GetColorTable()
     const ColorControlPointList *table = colorTables->GetColorControlPoints(colorTable);
     if (table)
     {
-        unsigned char rgb[256*3];
-        int ncolors = 256;
+        // We don't have color tables that have this many control points:
+        const int ncolors = 256;
+        unsigned char rgb[ncolors * 3];
+        
         table->GetColors(rgb, ncolors);
 
         vtkImageData *imageData = vtkImageData::New();
 
-        // TODO change image extent dynamically based on num_ctrl_pts
         // x: [0, ncolors - 1], y: [0, 0], z: [0, 0]
         imageData->SetExtent(0, ncolors - 1, 0, 0, 0, 0);
         imageData->SetSpacing(1., 1., 1.);
@@ -259,8 +260,6 @@ avtWavefrontOBJWriter::GetColorTable()
 
         return imageData;
     }
-
-    std::cout << "no table" << std::endl;
 
     return nullptr;
 }
