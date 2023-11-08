@@ -40,6 +40,12 @@
 #   Kathleen Biagas, Tue Jan 31, 2023
 #   Remove check for OSMESA_SIZE, it is no longer used.
 #
+#   Kathleen Biagas, Tue Sep 26, 2023
+#   Replace ${CMAKE_THREAD_LIBS} with Threads::Threads.
+#
+#   Kathleen Biagas, Tue October 17, 2023
+#   Threads is now required, so no need to test for existence.
+#
 #****************************************************************************/
 
 # Use the OSMESA_DIR hint from the config-site .cmake file
@@ -137,12 +143,9 @@ if (VISIT_OSMESA_DIR)
     endif()
 
     # Check for OSMesa size limit --- IS THIS STILL NECESSARY?
-    set(MY_LIBS ${OSMESA_LIBRARIES})
+    set(MY_LIBS ${OSMESA_LIBRARIES} Threads::Threads)
     if (CMAKE_X_LIBS)
         list(APPEND MY_LIBS ${CMAKE_X_LIBS})
-    endif()
-    if (CMAKE_THREAD_LIBS)
-        list(APPEND MY_LIBS ${CMAKE_THREAD_LIBS})
     endif()
 
     if (VISIT_LLVM_DIR)

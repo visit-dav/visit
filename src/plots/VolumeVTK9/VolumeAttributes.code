@@ -479,7 +479,7 @@ VolumeAttributes::ProcessOldVersions(DataNode *parentNode,
         if (searchNode->GetNode("renderMode") != nullptr)
         {
 #ifdef VIEWER
-            avtCallback::IssueWarning(DeprecationMessage("renderNode", "3.5.0"));
+            avtCallback::IssueWarning(DeprecationMessage("renderMode", "3.5.0"));
 #endif
             searchNode->RemoveNode("renderMode", true);
         }

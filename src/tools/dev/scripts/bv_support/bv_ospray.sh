@@ -143,12 +143,12 @@ function bv_ospray_host_profile
         echo "##" >> $HOSTCONF
         echo "## OSPRay" >> $HOSTCONF
         echo "##" >> $HOSTCONF
-        echo "VISIT_OPTION_DEFAULT(VISIT_OSPRAY ON TYPE BOOL)" >> $HOSTCONF
         if [[ "$USE_SYSTEM_OSPRAY" == "no" ]]; then
             echo "SETUP_APP_VERSION(OSPRAY ${OSPRAY_VERSION})" >> $HOSTCONF
             if [[ "$DO_VTK9" == "yes" ]]; then
                 echo "VISIT_OPTION_DEFAULT(VISIT_OSPRAY_DIR \${VISITHOME}/ospray/\${OSPRAY_VERSION}/\${VISITARCH}/ospray)" >> $HOSTCONF
             else
+                echo "VISIT_OPTION_DEFAULT(VISIT_OSPRAY ON TYPE BOOL)" >> $HOSTCONF
                 echo "VISIT_OPTION_DEFAULT(VISIT_OSPRAY_DIR \${VISITHOME}/ospray/\${OSPRAY_VERSION}/\${VISITARCH})" >> $HOSTCONF
             fi
         else

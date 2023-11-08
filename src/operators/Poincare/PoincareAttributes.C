@@ -505,7 +505,7 @@ PoincareAttributes::DataValue_FromString(const std::string &s, PoincareAttribute
 //
 
 static const char *ParallelizationAlgorithmType_strings[] = {
-"LoadOnDemand", "ParallelStaticDomains", "MasterSlave",
+"LoadOnDemand", "ParallelStaticDomains", "ManagerWorker",
 "VisItSelects"};
 
 std::string
@@ -4234,5 +4234,57 @@ PoincareAttributes::PoincareAttsRequireRecalculation(const PoincareAttributes &o
 
            showLines != obj.showLines ||
            showPoints != obj.showPoints;
+}
+
+// ****************************************************************************
+// Method: PoincareAttributes::ProcessOldVersions
+//
+// Purpose:
+//   This method allows handling of older config/session files that may
+//   contain fields that are no longer present or have been modified/renamed.
+//
+// Programmer: Mark C. Miller
+// Creation:   October 27, 2023
+//
+// ****************************************************************************
+#include <visit-config.h>
+#ifdef VIEWER
+#include <avtCallback.h>
+#endif
+
+void
+PoincareAttributes::ProcessOldVersions(DataNode *parentNode,
+                                     const char *configVersion)
+{
+    if(parentNode == 0)
+        return;
+
+    DataNode *searchNode = parentNode->GetNode("PoincareAttributes");
+    if(searchNode == 0)
+        return;
+
+#if VISIT_OBSOLETE_AT_VERSION(3,5,0)
+#error This code is obsolete in this version of VisIt and should be removed.
+#else
+    if (VersionLessThan(configVersion, "3.4.0"))
+    {
+        DataNode *dn = nullptr;
+
+        // We need deal with only ManagerWorker case here because it replaces
+        // the old entry of MasterSlave
+        if ((dn = searchNode->GetNode("parallelizationAlgorithmType")) != nullptr)
+        {
+            std::string type = dn->AsString();
+            if (type == "MasterSlave")
+            {
+#ifdef VIEWER
+                avtCallback::IssueWarning(DeprecationMessage("MasterSlave",
+                    "ManagerWorker", "3.5.0"));
+#endif
+                dn->SetString(ParallelizationAlgorithmType_ToString(PoincareAttributes::ManagerWorker));
+            }
+        }
+    }
+#endif
 }
 

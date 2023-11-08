@@ -4804,23 +4804,23 @@ fail:
 }
 
 
-SWIGINTERN PyObject *_wrap_VisItSetSlaveProcessCallback(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+SWIGINTERN PyObject *_wrap_VisItSetWorkerProcessCallback(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *resultobj = 0;
   void (*arg1)(void) = (void (*)(void)) 0 ;
   PyObject * obj0 = 0 ;
   
-  if (!PyArg_ParseTuple(args,(char *)"O:VisItSetSlaveProcessCallback",&obj0)) SWIG_fail;
+  if (!PyArg_ParseTuple(args,(char *)"O:VisItSetWorkerProcessCallback",&obj0)) SWIG_fail;
   {
     simV2_PyObject temp;
     if (assignCallback(temp, obj0))
     {
-      pylibsim_setSlaveProcessCallback(NULL);
+      pylibsim_setWorkerProcessCallback(NULL);
       return NULL;
     }
-    pylibsim_setSlaveProcessCallback(temp);
-    arg1 = pylibsim_invokeSlaveProcessCallback;
+    pylibsim_setWorkerProcessCallback(temp);
+    arg1 = pylibsim_invokeWorkerProcessCallback;
   }
-  VisItSetSlaveProcessCallback(arg1);
+  VisItSetWorkerProcessCallback(arg1);
   resultobj = SWIG_Py_Void();
   return resultobj;
 fail:
@@ -4828,7 +4828,7 @@ fail:
 }
 
 
-SWIGINTERN PyObject *_wrap_VisItSetSlaveProcessCallback2(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+SWIGINTERN PyObject *_wrap_VisItSetWorkerProcessCallback2(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *resultobj = 0;
   void (*arg1)(void *) = (void (*)(void *)) 0 ;
   void *arg2 = (void *) 0 ;
@@ -4837,7 +4837,7 @@ SWIGINTERN PyObject *_wrap_VisItSetSlaveProcessCallback2(PyObject *SWIGUNUSEDPAR
   PyObject * obj0 = 0 ;
   PyObject * obj1 = 0 ;
   
-  if (!PyArg_ParseTuple(args,(char *)"OO:VisItSetSlaveProcessCallback2",&obj0,&obj1)) SWIG_fail;
+  if (!PyArg_ParseTuple(args,(char *)"OO:VisItSetWorkerProcessCallback2",&obj0,&obj1)) SWIG_fail;
   {
     if (assignCallback(callback1, obj0)) {
       return NULL; 
@@ -4846,9 +4846,9 @@ SWIGINTERN PyObject *_wrap_VisItSetSlaveProcessCallback2(PyObject *SWIGUNUSEDPAR
   }
   res2 = SWIG_ConvertPtr(obj1,SWIG_as_voidptrptr(&arg2), 0, 0);
   if (!SWIG_IsOK(res2)) {
-    SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "VisItSetSlaveProcessCallback2" "', argument " "2"" of type '" "void *""'"); 
+    SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "VisItSetWorkerProcessCallback2" "', argument " "2"" of type '" "void *""'"); 
   }
-  VisItSetSlaveProcessCallback2(arg1,arg2);
+  VisItSetWorkerProcessCallback2(arg1,arg2);
   resultobj = SWIG_Py_Void();
   return resultobj;
 fail:
@@ -18097,8 +18097,8 @@ static PyMethodDef SwigMethods[] = {
 	 { (char *)"VisItGetSockets", _wrap_VisItGetSockets, METH_VARARGS, NULL},
 	 { (char *)"VisItAttemptToCompleteConnection", _wrap_VisItAttemptToCompleteConnection, METH_VARARGS, NULL},
 	 { (char *)"VisItReadConsole", _wrap_VisItReadConsole, METH_VARARGS, NULL},
-	 { (char *)"VisItSetSlaveProcessCallback", _wrap_VisItSetSlaveProcessCallback, METH_VARARGS, NULL},
-	 { (char *)"VisItSetSlaveProcessCallback2", _wrap_VisItSetSlaveProcessCallback2, METH_VARARGS, NULL},
+	 { (char *)"VisItSetWorkerProcessCallback", _wrap_VisItSetWorkerProcessCallback, METH_VARARGS, NULL},
+	 { (char *)"VisItSetWorkerProcessCallback2", _wrap_VisItSetWorkerProcessCallback2, METH_VARARGS, NULL},
 	 { (char *)"VisItSetCommandCallback", _wrap_VisItSetCommandCallback, METH_VARARGS, NULL},
 	 { (char *)"VisItTimeStepChanged", _wrap_VisItTimeStepChanged, METH_VARARGS, NULL},
 	 { (char *)"VisItUpdatePlots", _wrap_VisItUpdatePlots, METH_VARARGS, NULL},

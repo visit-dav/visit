@@ -78,10 +78,10 @@ int main()
     delete ns;
 
     // Test embedded string value results
-    ns = new Namescheme("#foo_%s#(n-5)?'master':'slave':");
-    if (strcmp(ns->GetName(5), "foo_slave") != 0)
+    ns = new Namescheme("#foo_%s#(n-5)?'manager':'worker':");
+    if (strcmp(ns->GetName(5), "foo_worker") != 0)
         return 1;
-    if (strcmp(ns->GetName(6), "foo_master") != 0)
+    if (strcmp(ns->GetName(6), "foo_manager") != 0)
         return 1;
     delete ns;
 

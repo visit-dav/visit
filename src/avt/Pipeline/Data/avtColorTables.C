@@ -15,19 +15,19 @@
 #include <DebugStream.h>
 
 //
-// Static data that describes the eight default color tables.
+// Constant data that describes the default color tables.
 //
 
-static const char *predef_ct_names[]  = { "bluehot", "caleblack", "calewhite",
+constexpr const char *predef_ct_names[]  = { "bluehot", "caleblack", "calewhite",
     "contoured", "difference", "gray", "hot", "hot_and_cold", 
     "hot_desaturated", "levels", "orangehot", "rainbow", "xray",
     "cpk_jmol", "cpk_rasmol", "amino_rasmol", "amino_shapely",
     "distinct"
 };
-static const int predef_ct_ncolors[]  = {4, 7, 7, 4, 3, 2, 5, 5, 8, 30, 4, 6, 2, 110, 110, 23, 23, 22};
-static const int predef_ct_smooth[]   = {1, 1, 1, 0, 1, 1, 1, 1, 1,  0, 1, 1, 1,   0,   0,  0,  0,  0};
-static const int predef_ct_equal[]    = {0, 0, 0, 1, 0, 0, 0, 0, 0,  1, 0, 0, 0,   1,   1,  1,  1,  1};
-static const int predef_ct_discrete[] = {0, 0, 0, 0, 0, 0, 0, 0, 0,  1, 0, 0, 0,   1,   1,  1,  1,  1};
+constexpr int predef_ct_ncolors[]  = {4, 7, 7, 4, 3, 2, 5, 5, 8, 30, 4, 6, 2, 110, 110, 23, 23, 22};
+constexpr int predef_ct_smooth[]   = {1, 1, 1, 0, 1, 1, 1, 1, 1,  0, 1, 1, 1,   0,   0,  0,  0,  0};
+constexpr int predef_ct_equal[]    = {0, 0, 0, 1, 0, 0, 0, 0, 0,  1, 0, 0, 0,   1,   1,  1,  1,  1};
+constexpr int predef_ct_discrete[] = {0, 0, 0, 0, 0, 0, 0, 0, 0,  1, 0, 0, 0,   1,   1,  1,  1,  1};
 
 //
 // The 4-tuples in the tables below are defining
@@ -37,7 +37,7 @@ static const int predef_ct_discrete[] = {0, 0, 0, 0, 0, 0, 0, 0, 0,  1, 0, 0, 0,
 //
 
 /* Hot */
-static const float ct_hot[] = {
+constexpr float ct_hot[] = {
  0.f,   0.f, 0.f, 1.f,
  0.25f, 0.f, 1.f, 1.f, 
  0.5f,  0.f, 1.f, 0.f, 
@@ -46,7 +46,7 @@ static const float ct_hot[] = {
 };
 
 /* Caleblack */
-static const float ct_caleblack[] = {
+constexpr float ct_caleblack[] = {
  0.f,   0.f, 0.f, 0.f,
  0.17f, 0.f, 0.f, 1.f, 
  0.34f, 0.f, 1.f, 1.f, 
@@ -57,7 +57,7 @@ static const float ct_caleblack[] = {
 };
 
 /* Calewhite */
-static const float ct_calewhite[] = {
+constexpr float ct_calewhite[] = {
  0.f,   1.f, 1.f, 1.f, 
  0.17f, 0.f, 0.f, 1.f, 
  0.34f, 0.f, 1.f, 1.f, 
@@ -68,12 +68,12 @@ static const float ct_calewhite[] = {
 };
 
 /* Gray */
-static const float ct_gray[] = {0.f, 0.f, 0.f, 0.f, 1.f, 1.f, 1.f, 1.f};
+constexpr float ct_gray[] = {0.f, 0.f, 0.f, 0.f, 1.f, 1.f, 1.f, 1.f};
 /* Xray */
-static const float ct_xray[] = {0.f, 1.f, 1.f, 1.f, 1.f, 0.f, 0.f, 0.f};
+constexpr float ct_xray[] = {0.f, 1.f, 1.f, 1.f, 1.f, 0.f, 0.f, 0.f};
 
 /* Rainbow */
-static const float ct_rainbow[] = {
+constexpr float ct_rainbow[] = {
  0.f,  1.f, 0.f, 1.f, 
  0.2f, 0.f, 0.f, 1.f, 
  0.4f, 0.f, 1.f, 1.f, 
@@ -83,7 +83,7 @@ static const float ct_rainbow[] = {
 };
 
 /* Contoured */
-static const float ct_contoured[] = {
+constexpr float ct_contoured[] = {
  0.f,    0.f, 0.f, 1.f, 
  0.333f, 0.f, 1.f, 0.f, 
  0.666f, 1.f, 1.f, 0.f, 
@@ -91,7 +91,7 @@ static const float ct_contoured[] = {
 };
 
 /* Levels discrete color table. */
-static const float ct_levels[] = {
+constexpr float ct_levels[] = {
  0.000f, 1.00f, 0.00f, 0.00f,
  0.034f, 0.00f, 1.00f, 0.00f,
  0.069f, 0.00f, 0.00f, 1.00f,
@@ -125,7 +125,7 @@ static const float ct_levels[] = {
 };
 
 /* Bluehot */
-static const float ct_bluehot[] = {
+constexpr float ct_bluehot[] = {
  0.f,    0.f, 0.f,  0.f, 
  0.333f, 0.f, 0.f,  0.5f, 
  0.666f, 0.f, 0.5f, 1.f, 
@@ -133,7 +133,7 @@ static const float ct_bluehot[] = {
 };
 
 /* Orangehot */
-static const float ct_orangehot[] = {
+constexpr float ct_orangehot[] = {
  0.f,    0.f,  0.f,  0.f, 
  0.333f, 0.5f, 0.f,  0.f, 
  0.666f, 1.f,  0.5f, 0.f, 
@@ -141,7 +141,7 @@ static const float ct_orangehot[] = {
 };
 
 /* Hot-and-cold */
-static const float ct_hot_and_cold[] = {
+constexpr float ct_hot_and_cold[] = {
  0.f,    0.f, 1.f, 1.f, 
  0.45f,  0.f, 0.f, 1.f, 
  0.5f,   0.f, 0.f, 0.5f, 
@@ -150,7 +150,7 @@ static const float ct_hot_and_cold[] = {
 };
 
 /* Hot desaturated */
-static const float ct_hot_desaturated[] = {
+constexpr float ct_hot_desaturated[] = {
  0.0f,   0.28f, 0.28f, 0.86f, 
  0.143f, 0.f,   0.f,   0.36f, 
  0.285f, 0.f,   1.f,   1.f, 
@@ -162,14 +162,14 @@ static const float ct_hot_desaturated[] = {
 };
 
 /* Difference */
-static const float ct_difference[] = {
+constexpr float ct_difference[] = {
  0.f,    0.f,  0.f,  1.f, 
  0.5f,   1.f,  1.f,  1.f, 
  1.0f,   1.f,  0.f,  0.f, 
 };
 
 /* CPK Molecular Colors used by Jmol */
-static const float ct_jmol_colors[] = {
+constexpr float ct_jmol_colors[] = {
  0.000f, 0.125f, 0.125f, 0.125f,
  0.009f, 1.000f, 1.000f, 1.000f,
  0.018f, 0.851f, 1.000f, 1.000f,
@@ -283,7 +283,7 @@ static const float ct_jmol_colors[] = {
 };
 
 /* CPK Molecular Colors used by Rasmol */
-static const float ct_rasmol_colors[] = {
+constexpr float ct_rasmol_colors[] = {
  0.000f, 0.125f, 0.125f, 0.125f,
  0.009f, 1.000f, 1.000f, 1.000f,
  0.018f, 1.000f, 0.753f, 0.796f,
@@ -396,7 +396,7 @@ static const float ct_rasmol_colors[] = {
  1.000f, 1.000f, 0.078f, 0.576f,
 };
 
-static const float ct_amino_colors[] = {
+constexpr float ct_amino_colors[] = {
  0.000f, 0.745f, 0.627f, 0.431f,
  0.009f, 0.784f, 0.784f, 0.784f,
  0.019f, 1.000f, 0.412f, 0.706f,
@@ -422,7 +422,7 @@ static const float ct_amino_colors[] = {
  0.204f, 1.000f, 0.412f, 0.706f,
 };
 
-static const float ct_shapely_colors[] = {
+constexpr float ct_shapely_colors[] = {
  0.000f, 1.000f, 0.000f, 1.000f,
  0.009f, 0.549f, 1.000f, 0.549f,
  0.019f, 1.000f, 0.000f, 1.000f,
@@ -450,7 +450,7 @@ static const float ct_shapely_colors[] = {
 
 /* 22 maximally perceptually distinct colors */
 // Grabbed 29May19 from https://sashat.me/2017/01/11/list-of-20-simple-distinct-colors/
-static const float ct_distinct[] = {
+constexpr float ct_distinct[] = {
 0.000f, 0.902f, 0.098f, 0.294f,
 0.048f, 0.235f, 0.706f, 0.294f,
 0.095f, 1.000f, 0.882f, 0.098f,
@@ -597,6 +597,9 @@ void avtColorTables::ModifyColor(char unsigned const *inrgb, double mult,
 //   Justin Privitera, Thu Jan 26 11:39:29 PST 2023
 //   Changed "Standard" tag to "Default".
 // 
+//   Justin Privitera, Mon Oct 30 11:11:34 PDT 2023
+//   Use constexpr to take advantage of compile time evaluation.
+// 
 // ****************************************************************************
 
 avtColorTables::avtColorTables()
@@ -604,7 +607,7 @@ avtColorTables::avtColorTables()
     ctAtts = new ColorTableAttributes();
 
     // Just add new, pre-defined color tables to this list
-    float const *predef_ct_colors[] = {
+    constexpr float const *predef_ct_colors[] = {
         ct_bluehot,
         ct_caleblack,
         ct_calewhite,
@@ -624,7 +627,7 @@ avtColorTables::avtColorTables()
         ct_shapely_colors,
         ct_distinct
     };
-    int const ntables = sizeof(predef_ct_colors)/sizeof(predef_ct_colors[0]);
+    int constexpr ntables = sizeof(predef_ct_colors)/sizeof(predef_ct_colors[0]);
 
     // Add each colortable.
     for(int i = 0; i < ntables; ++i)

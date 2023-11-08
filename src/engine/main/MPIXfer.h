@@ -39,9 +39,9 @@
 //    Added arg for mpiInterruptTag to SendInterruption
 //
 //    Jeremy Meredith, Thu Oct  7 14:09:10 PDT 2004
-//    Added callback so the master process could tell the slaves they
+//    Added callback so the manager process could tell the workers they
 //    are about to receive data.  This was needed for running inside a
-//    parallel simulation because slave processes need some way to know
+//    parallel simulation because worker processes need some way to know
 //    that the next command coming is visit-specific.
 //
 //    Mark C. Miller, Tue Feb 13 16:24:58 PST 2007
@@ -62,7 +62,7 @@ public:
     virtual void SendInterruption(int mpiInterruptTag);
 
     void SetEnableReadHeader(bool val);
-    static void SetSlaveProcessInstructionCallback(void (*)());
+    static void SetWorkerProcessInstructionCallback(void (*)());
 
     static int VisIt_MPI_Bcast(void *buf, int count, MPI_Datatype datatype,
                                 int root, MPI_Comm comm);
@@ -75,7 +75,7 @@ protected:
 private:
     bool enableReadHeader;
     int  readsSinceReadHeaderDisabled;
-    static void (*slaveProcessInstruction)();
+    static void (*workerProcessInstruction)();
     static int nanoSecsOfSleeps;
     static int secsOfSpinBeforeSleeps;
 };

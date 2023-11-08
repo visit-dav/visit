@@ -123,6 +123,9 @@
 // 
 //    Justin Privitera, Fri Jul 14 17:33:07 PDT 2023
 //    Added useNewView.
+// 
+//    Justin Privitera, Tue Oct 31 13:20:23 PDT 2023
+//    Functions that write files now return the name of the file they wrote.
 //
 // ****************************************************************************
 
@@ -225,10 +228,10 @@ class QUERY_API avtXRayImageQuery : public avtDatasetQuery
     virtual void              Execute(avtDataTree_p);
 
     template <typename T>
-    void                      WriteImage(const char *, int, int, T*, bool);
+    std::string               WriteImage(const char *, int, int, T*, bool);
     template <typename T>
-    void                      WriteFloats(const char *, int, int, T*);
-    void                      WriteBOVHeader(const char *, const char *,
+    std::string               WriteFloats(const char *, int, int, T*);
+    std::string               WriteBOVHeader(const char *, const char *,
                                   int, int, int, const char *);
 #ifdef HAVE_CONDUIT
     template <typename T>

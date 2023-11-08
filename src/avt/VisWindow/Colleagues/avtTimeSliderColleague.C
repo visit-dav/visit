@@ -65,8 +65,6 @@ avtTimeSliderColleague::avtTimeSliderColleague(VisWindowColleagueProxy &m) :
     addedToRenderer = false;
     timeFormatString = 0;
     timeDisplayMode = 0;
-    timeScale = 1.;
-    timeOffset = 0.;
 
     //
     // Create and position the time slider actor
@@ -793,28 +791,4 @@ avtTimeSliderColleague::GetSliderRect(double x, double y, double width,
     rect[1] = y + height - SliderHeight(height);
     rect[2] = width;
     rect[3] = SliderHeight(height);
-}
-
-// ****************************************************************************
-// Method: avtTimeSliderColleague::SetTimeScaleAndOffset
-//
-// Purpose: 
-//   Sets the scale and offset that will be applied to the time.
-//
-// Arguments:
-//   scale  : Multiplier for the time.
-//   offset : Offset that will be added to the time.
-//
-// Programmer: Brad Whitlock
-// Creation:   Mon Mar  2 14:13:57 PST 2009
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-avtTimeSliderColleague::SetTimeScaleAndOffset(double scale, double offset)
-{
-    timeScale = scale;
-    timeOffset = offset;
 }

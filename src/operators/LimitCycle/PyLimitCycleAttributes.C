@@ -355,7 +355,7 @@ PyLimitCycleAttributes_ToString(const LimitCycleAttributes *atts, const char *pr
           break;
     }
 
-    const char *parallelizationAlgorithmType_names = "LoadOnDemand, ParallelStaticDomains, MasterSlave, VisItSelects";
+    const char *parallelizationAlgorithmType_names = "LoadOnDemand, ParallelStaticDomains, ManagerWorker, VisItSelects";
     switch (atts->GetParallelizationAlgorithmType())
     {
       case LimitCycleAttributes::LoadOnDemand:
@@ -366,8 +366,8 @@ PyLimitCycleAttributes_ToString(const LimitCycleAttributes *atts, const char *pr
           snprintf(tmpStr, 1000, "%sparallelizationAlgorithmType = %sParallelStaticDomains  # %s\n", prefix, prefix, parallelizationAlgorithmType_names);
           str += tmpStr;
           break;
-      case LimitCycleAttributes::MasterSlave:
-          snprintf(tmpStr, 1000, "%sparallelizationAlgorithmType = %sMasterSlave  # %s\n", prefix, prefix, parallelizationAlgorithmType_names);
+      case LimitCycleAttributes::ManagerWorker:
+          snprintf(tmpStr, 1000, "%sparallelizationAlgorithmType = %sManagerWorker  # %s\n", prefix, prefix, parallelizationAlgorithmType_names);
           str += tmpStr;
           break;
       case LimitCycleAttributes::VisItSelects:
@@ -2343,7 +2343,7 @@ LimitCycleAttributes_SetParallelizationAlgorithmType(PyObject *self, PyObject *a
         ss << "You can also use the following symbolic names:";
         ss << " LoadOnDemand";
         ss << ", ParallelStaticDomains";
-        ss << ", MasterSlave";
+        ss << ", ManagerWorker";
         ss << ", VisItSelects";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
@@ -4512,8 +4512,8 @@ PyLimitCycleAttributes_getattr(PyObject *self, char *name)
         return PyInt_FromLong(long(LimitCycleAttributes::LoadOnDemand));
     if(strcmp(name, "ParallelStaticDomains") == 0)
         return PyInt_FromLong(long(LimitCycleAttributes::ParallelStaticDomains));
-    if(strcmp(name, "MasterSlave") == 0)
-        return PyInt_FromLong(long(LimitCycleAttributes::MasterSlave));
+    if(strcmp(name, "ManagerWorker") == 0)
+        return PyInt_FromLong(long(LimitCycleAttributes::ManagerWorker));
     if(strcmp(name, "VisItSelects") == 0)
         return PyInt_FromLong(long(LimitCycleAttributes::VisItSelects));
 
@@ -4590,6 +4590,28 @@ PyLimitCycleAttributes_getattr(PyObject *self, char *name)
         return PyInt_FromLong(long(LimitCycleAttributes::FractionOfBBox));
 
 
+#include <visit-config.h>
+
+#if VISIT_OBSOLETE_AT_VERSION(3,5,0) 
+#error This code is obsolete in this version of VisIt and should be removed.
+#else
+    // Try and handle legacy fields
+#define NAME_CHANGE_MESSAGE2(oldname, newname) \
+    PyErr_WarnFormat(NULL, 1, "'%s' is no longer a valid LimitCycle attribute.\n" \
+                    "It's name has been changed to '%s', " \
+                    "please update your script.\n", oldname, newname);
+        
+    // parallelizationAlgorithmType
+    if(strcmp(name, "MasterSlave") == 0)
+    {       
+        NAME_CHANGE_MESSAGE2(name, "ManagerWorker");
+        return PyInt_FromLong(long(LimitCycleAttributes::ManagerWorker));
+    }           
+    // end parallelizationAlgorithmType 
+    // NOTE: no cooresponding _setattr method is needed for this case because this
+    // is handling only a change in enum symbol name. Those are constants in the
+    // python object and never set
+#endif  
 
     // Add a __dict__ answer so that dir() works
     if (!strcmp(name, "__dict__"))

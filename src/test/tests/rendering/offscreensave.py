@@ -165,7 +165,7 @@ def TestLargeImage():
         # Read and update hash in chunks of 4K
         for byte_block in iter(lambda: f.read(4096),b""):
             md5_hash.update(byte_block)
-    TestValueEQ("md5 hash for 16384x16384 image", md5_hash.hexdigest(), "9196b516c25ecbeac1fab4cd54ee0c59")
+    TestValueEQ("md5 hash for 16384x16384 image", md5_hash.hexdigest(), "3ec309acbd64eb52f8d7bf4c1f9e9628")
 
 GeneralTests()
 

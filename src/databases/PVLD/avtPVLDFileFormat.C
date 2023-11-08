@@ -376,19 +376,19 @@ avtPVLDFileFormat::GetMesh(int domain, const char *meshname)
                 }
                 else if( vs[1] == "Master" )
                 {
-                    preader_->ReadTiedSetMasterBlockMesh( domain, crd );
+                    preader_->ReadTiedSetManagerBlockMesh( domain, crd );
                     if( crd.size()>0 ) return GeneratePointMesh( crd );
                 }
                 else if( vs[1] == "Slave" )
                 {
-                    preader_->ReadTiedSetSlaveBlockMesh( domain, crd );
+                    preader_->ReadTiedSetWorkerBlockMesh( domain, crd );
                     if( crd.size()>0 ) return GeneratePointMesh( crd );
                 }
                 else if( vs[1] == "Bond" )
                 {
                     vector<float> crd2;
-                    preader_->ReadTiedSetMasterBlockMesh( domain, crd );
-                    preader_->ReadTiedSetSlaveBlockMesh( domain, crd2 );
+                    preader_->ReadTiedSetManagerBlockMesh( domain, crd );
+                    preader_->ReadTiedSetWorkerBlockMesh( domain, crd2 );
                     if( crd.size()>0 ) return GenerateBondMesh( crd, crd2 );
                 }
             }
@@ -401,19 +401,19 @@ avtPVLDFileFormat::GetMesh(int domain, const char *meshname)
                 }
                 else if( vs[1] == "Master" )
                 {
-                    preader_->ReadContactMasterBlockMesh( domain, crd );
+                    preader_->ReadContactManagerBlockMesh( domain, crd );
                     if( crd.size()>0 ) return GeneratePointMesh( crd );
                 }
                 else if( vs[1] == "Slave" )
                 {
-                    preader_->ReadContactSlaveBlockMesh( domain, crd );
+                    preader_->ReadContactWorkerBlockMesh( domain, crd );
                     if( crd.size()>0 ) return GeneratePointMesh( crd );
                 }
                 else if( vs[1] == "Bond" )
                 {
                     vector<float> crd2;
-                    preader_->ReadContactMasterBlockMesh( domain, crd );
-                    preader_->ReadContactSlaveBlockMesh( domain, crd2 );
+                    preader_->ReadContactManagerBlockMesh( domain, crd );
+                    preader_->ReadContactWorkerBlockMesh( domain, crd2 );
                     if( crd.size()>0 ) return GenerateBondMesh( crd, crd2 );
                 }
             }

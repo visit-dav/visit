@@ -469,7 +469,7 @@ ProcessConsoleCommand()
 }
 
 /*****************************************************************************
-* Function: BroadcastSlaveCommand
+* Function: BroadcastWorkerCommand
 *
 * Purpose:
 *   Send command out to all engines
@@ -488,7 +488,7 @@ ProcessConsoleCommand()
 #define VISIT_COMMAND_FAILURE 2
 
 static void
-BroadcastSlaveCommand(int *command)
+BroadcastWorkerCommand(int *command)
 {
 #ifdef PARALLEL
     MPI_Bcast(command, 1, MPI_INT, 0, MPI_COMM_WORLD);
@@ -496,7 +496,7 @@ BroadcastSlaveCommand(int *command)
 }
 
 /*****************************************************************************
-* Function: SlaveProcessCallback
+* Function: WorkerProcessCallback
 *
 * Purpose:
 *   Catches a visit command and send it out to the rest of the engines.
@@ -510,10 +510,10 @@ BroadcastSlaveCommand(int *command)
 *
 *****************************************************************************/
 void
-SlaveProcessCallback()
+WorkerProcessCallback()
 {
     int command = VISIT_COMMAND_PROCESS;
-    BroadcastSlaveCommand(&command);
+    BroadcastWorkerCommand(&command);
 }
 
 /*****************************************************************************
@@ -569,25 +569,25 @@ ProcessVisItCommand(void)
         if (success)
         {
             command = VISIT_COMMAND_SUCCESS;
-            BroadcastSlaveCommand(&command);
+            BroadcastWorkerCommand(&command);
             return 1;
         }
         else
         {
          command = VISIT_COMMAND_FAILURE;
-         BroadcastSlaveCommand(&command);
+         BroadcastWorkerCommand(&command);
          return 0;
         }
     }
     else
     {
-        /* Note: only through the SlaveProcessCallback callback
+        /* Note: only through the WorkerProcessCallback callback
          * above can the rank 0 process send a VISIT_COMMAND_PROCESS
          * instruction to the non-rank 0 processes. */
         while (1)
         {
             int command;
-            BroadcastSlaveCommand(&command);
+            BroadcastWorkerCommand(&command);
             switch (command)
             {
               case VISIT_COMMAND_PROCESS:
@@ -710,7 +710,7 @@ MainLoop()
                 {
                     fprintf(stderr, "Connected successfully!\n");
                 }
-                VisItSetSlaveProcessCallback(SlaveProcessCallback);
+                VisItSetWorkerProcessCallback(WorkerProcessCallback);
                 VisItSetCommandCallback(ControlCommandCallback);
             }
             if (par_rank == 0)

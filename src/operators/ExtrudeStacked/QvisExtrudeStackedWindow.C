@@ -81,6 +81,8 @@ QvisExtrudeStackedWindow::~QvisExtrudeStackedWindow()
 // Creation:   omitted
 //
 // Modifications:
+//   Kathleen Biagas, Mon Oct 16 14:05:19 PDT 2023
+//   Qt6 support: setMargin->setContentsMargins.
 //
 // ****************************************************************************
 
@@ -200,14 +202,14 @@ QvisExtrudeStackedWindow::CreateWindowContents()
     variableDisplayGroup->setTitle(tr("Display by"));
     variableLayout->addWidget(variableDisplayGroup, 4,4, 2,1);
     QGridLayout *variableDisplayLayout = new QGridLayout(variableDisplayGroup);
-    variableDisplayLayout->setMargin(5);
+    variableDisplayLayout->setContentsMargins(5,5,5,5);
     variableDisplayLayout->setSpacing(10);
 
     variableDisplay = new QWidget(central);
     variableDisplayButtonGroup= new QButtonGroup(variableDisplay);
 
     QVBoxLayout *variableDisplayTypeLayout = new QVBoxLayout(variableDisplay);
-    variableDisplayTypeLayout->setMargin(0);
+    variableDisplayTypeLayout->setContentsMargins(0,0,0,0);
     variableDisplayTypeLayout->setSpacing(10);
     QRadioButton *variableDisplayTypeNodeHeight =
       new QRadioButton(tr("Node Height"), variableDisplay);
@@ -280,6 +282,8 @@ QvisExtrudeStackedWindow::CreateWindowContents()
 // Creation:   omitted
 //
 // Modifications:
+//   Kathleen Biagas, Mon Oct 16 14:05:19 PDT 2023
+//   Qt6 support: sprintf->asprintf.
 //
 // ****************************************************************************
 
@@ -406,7 +410,7 @@ QvisExtrudeStackedWindow::UpdateWindow(bool doAll)
                   name = (atts->GetVisualVariableNames()[ax]).c_str();
                 else
                 {
-                  name.sprintf(" %02ld", ax);
+                  name.asprintf(" %02ld", ax);
                   name = tr("Variable") + name;
                 }
                 if (atts->GetExtentMinima()[ax] > -1e+37)

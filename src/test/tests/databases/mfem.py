@@ -1,6 +1,6 @@
 # ----------------------------------------------------------------------------
 #  CLASSES: nightly
-#  LIMIT: 900
+#  LIMIT: 1200
 #  Test Case:  mfem.py 
 #
 #  Tests:      mfem files 

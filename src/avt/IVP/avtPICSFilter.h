@@ -50,7 +50,7 @@ class avtICAlgorithm;
 
 #define PICS_SERIAL                0
 #define PICS_PARALLEL_OVER_DOMAINS 1
-#define PICS_PARALLEL_MASTER_SLAVE 2
+#define PICS_PARALLEL_MANAGER_WORKER 2
 #define PICS_VISIT_SELECTS         3
 
 #define PICS_CONN_CMFE 0

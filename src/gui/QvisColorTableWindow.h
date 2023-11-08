@@ -143,6 +143,10 @@ class QvisNoDefaultColorTableButton;
 // 
 //   Justin Privitera, Tue Sep  5 12:49:42 PDT 2023
 //   Change UpdateTags to UpdateTagTable.
+// 
+//   Justin Privitera, Wed Oct 11 19:25:42 PDT 2023
+//   Added colorValueChanged and changed the argument name for
+//   alphaValueChanged.
 // ****************************************************************************
 
 class GUI_API QvisColorTableWindow : public QvisPostableWindowObserver
@@ -179,10 +183,11 @@ protected:
 private slots:
     void resizeColorTable(int);
     void setColorTableType(int);
+    void colorValueChanged(int rgba, int value);
     void redValueChanged(int r);
     void greenValueChanged(int g);
     void blueValueChanged(int b);
-    void alphaValueChanged(int b);
+    void alphaValueChanged(int a);
     void activateDiscreteColor(const QColor &, int);
     void activateContinuousColor(int index);
     void chooseContinuousColor(int, const QPoint &);

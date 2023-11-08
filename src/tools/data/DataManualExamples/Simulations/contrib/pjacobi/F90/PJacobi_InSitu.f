@@ -160,9 +160,9 @@ c---------------------------------------------------------------------------
       end
 
 c---------------------------------------------------------------------------
-c visitslaveprocesscallback
+c visitworkerprocesscallback
 c---------------------------------------------------------------------------
-      subroutine visitslaveprocesscallback ()
+      subroutine visitworkerprocesscallback ()
       implicit none
       include "mpif.h"
       integer c, VISIT_COMMAND_PROCESS, ierr

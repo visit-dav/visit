@@ -36,6 +36,8 @@ class vtkTimeSliderActor;
 //   Brad Whitlock, Wed Sep 28 15:24:47 PDT 2011
 //   Change the text actor type.
 //
+//   Mark C. Miller, Thu Oct  5 15:29:27 PDT 2023
+//   Moved timeScale, timeOffset to avtAnnotationColleague
 // ****************************************************************************
 
 class VISWINDOW_API avtTimeSliderColleague : public avtAnnotationWithTextColleague
@@ -47,8 +49,6 @@ public:
     virtual void AddToRenderer();
     virtual void RemoveFromRenderer();
     virtual void Hide();
-
-    virtual void SetTimeScaleAndOffset(double,double);
 
     virtual std::string TypeName() const { return "TimeSlider"; }
 
@@ -75,8 +75,6 @@ private:
     char               *timeFormatString;
     int                timeDisplayMode;
 
-    double             timeScale;
-    double             timeOffset;
     bool               useForegroundForTextColor;
     bool               addedToRenderer;
     ColorAttribute     textColor;

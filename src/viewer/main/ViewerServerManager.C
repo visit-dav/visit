@@ -283,20 +283,21 @@ ViewerServerManager::AddArguments(RemoteProxyBase *component,
 //   Brad Whitlock, Sat Sep  6 00:15:33 PDT 2014
 //   Use factory.
 //
+//   Kathleen Biagas, Tue Oct 17, 2023
+//   Threads are always required, so removed #ifdef HAVE_THREADS.
+//
 // ****************************************************************************
 
 ViewerConnectionProgress *
 ViewerServerManager::CreateConnectionProgress(const std::string &host)
 {
     ViewerConnectionProgress *progress = NULL;
-#ifdef HAVE_THREADS
     //
     // Set the engine proxy's progress callback.
     //
     progress = GetViewerFactory()->CreateConnectionProgress();
     if(progress != NULL)
         progress->SetHostName(host);
-#endif
 
     return progress;
 }
@@ -324,13 +325,15 @@ ViewerServerManager::CreateConnectionProgress(const std::string &host)
 //    Brad Whitlock, Tue Sep  2 13:01:25 PDT 2014
 //    Changed how the callbacks are set up.
 //   
+//   Kathleen Biagas, Tue Oct 17, 2023
+//   Threads are always required, so removed #ifdef HAVE_THREADS.
+//
 // ****************************************************************************
 
 void
 ViewerServerManager::SetupConnectionProgress(RemoteProxyBase *component,
     ViewerConnectionProgress *progress)
 {
-#ifdef HAVE_THREADS
     if(progress != NULL)
     {
         // Set some properties on the object.
@@ -345,7 +348,6 @@ ViewerServerManager::SetupConnectionProgress(RemoteProxyBase *component,
         cbData[1] = (void *)progress;
         component->SetProgressCallback(LaunchProgressCB, cbData);
     }
-#endif
 }
 
 // ****************************************************************************
