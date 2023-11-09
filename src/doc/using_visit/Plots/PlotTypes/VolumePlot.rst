@@ -20,7 +20,7 @@ The **Volume Plot Attributes Window**, shown in (:numref:`Figure %s<volume_plot_
 The **Rendering Options** tab controls the rendering setting.
 Each volume rendering method has a different set of inputs.
 Additionally, the **Rendering Options** tab contains controls for lighting.
-**Transfer function** tab controls how the data is mapped onto colors and the opacities to use for different scalar values.
+The **Transfer function** tab has controls for how the data is mapped to colors and the opacities to use for different scalar values.
 
 .. _volume_plot_atts_window:
 
@@ -39,9 +39,9 @@ Rendering Options
 """""""""""""""""
 
 The volume plot uses hardware-accelerated graphics by default (Serial).
-Though this mode is faster the image resolution is typically lower.
+Though this mode is faster, the image resolution is typically lower.
 Images drawn by software volume rendering, Parallel, Compositing, Integration, SLIVR typically have a higher resolution and thus are more accurate.
-Note software volume rendering can be a compute intensive process if the database or the visualization window is large.
+Note that software volume rendering can be a compute intensive process if the database or the visualization window is large.
 Shrinking the size of the visualization window before using a software rendering method will reduce the time and resources required to draw the plot.
 
 It is worth noting that if the dataset is large with intricate details, the software volume rendering method is preferred because it scales well in parallel.
@@ -72,7 +72,7 @@ This method of volume-rendering yields superior pictures at the cost of speed an
 
 Serial and Parallel Rendering Options:
 
-When rendering in Serial and Parallel the data must be on rectilinear grid which often requires the data to be resampled.
+When rendering in Serial and Parallel the data must be defined on a rectilinear grid, which often requires the data to be resampled.
 The user may select one the following options:
 
 ``No Resampling``: Do not resample the data.
@@ -81,7 +81,7 @@ The user may select one the following options:
 
 ``Single Domain``: Resample the data on to a single rectilinear grid on rank zero (0).
 
-``Parallel Redistribute``: Resample the data over all ranks on to a rectilinear grid and redistribute the results over all rank.
+``Parallel Redistribute``: Resample the data over all ranks on to a rectilinear grid and redistribute the results over all ranks.
 
 ``Parallel Per Rank``: Resample the data on each rank on to a rectilinear grid. Does not account for multiple samples on boundaries.
 
@@ -155,7 +155,7 @@ The **Transfer function** tab provides controls for setting the limits of the va
 Limits are artificial minima or maxima that are specified by the user.
 Setting the limits to a smaller range of values than present in the database cause the plot's colors to be distributed among a smaller range of values, resulting in a plot with more color variety.
 
-To set the limits are set by first clicking the **Min** or **Max** check box next to the **Min** or **Max** text field.
+To set the limits you first click the **Min** or **Max** check box next to the **Min** or **Max** text field.
 Clicking a check box enables a text field into which the user can type a new minimum or maximum value.
 
 Like VisIt_'s other plots that map scalar values to colors, the Volume plot allows for the data values to be scaled using Linear, Log, and Skew functions.
@@ -213,7 +213,7 @@ The basic paradigm followed by the **Gaussian** control is that new curves are a
 You add new curves by clicking and dragging in the control.
 Right clicking with the mouse on an existing curve removes the curve.
 Each curve has five control points which can change the curve's position and shape.
-The control points are shown in along with the shapes that a curve can assume.
+The control points are shown along with the shapes that a curve can assume.
 A control point changes color when it becomes active so there the user knows which control point is used.
 Curves start as a smooth Gaussian shape but they can change between the shapes shown in by moving the shape control point up and down or left and right.
 Opacity maps are typically created by adding several curves to the window and altering their shapes and sizes until the desired image is obtained in the visualization window.
