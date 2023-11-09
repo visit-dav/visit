@@ -67,6 +67,10 @@ typedef enum
 //
 //    Kathleen Biagas, Fri Aug 31 13:21:14 PDT 2018
 //    Added DBOptionsAttributes.
+// 
+//    Justin Privitera, Fri Nov  3 15:25:32 PDT 2023
+//    Made WriteOBJFile static and public and added some new arguments with
+//    default parameters.
 //
 // ****************************************************************************
 
@@ -82,6 +86,13 @@ class AVTFILEWRITER_API avtDatasetFileWriter : public avtTerminatingDatasetSink
                                       DatasetFileFormat);
 
     void               SetOptions(const DBOptionsAttributes &);
+
+    static void        WriteOBJFile(vtkDataSet *, 
+                                    const char *, 
+                                    const char *, 
+                                    bool writeMTL = false,
+                                    bool MTLHasTex = false,
+                                    std::string texFilename = "");
 
   protected:
     static const char *extensions[];
@@ -108,7 +119,6 @@ class AVTFILEWRITER_API avtDatasetFileWriter : public avtTerminatingDatasetSink
 
     void               WriteOBJFamily(const char *);
     int                WriteOBJTree(avtDataTree_p, int, const char *);
-    void               WriteOBJFile(vtkDataSet *, const char *, const char *);
 
     vtkDataSet        *GetSingleDataset(void);
     char              *GenerateName(const char *, const char *,

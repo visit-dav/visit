@@ -371,12 +371,20 @@ avtDatasetFileWriter::WriteOBJTree(avtDataTree_p dt, int idx,
 //
 //    Kathleen Biagas, Fri Feb 22 15:39:02 PST 2013
 //    If using cd2pd, use it's ouput port as input to the geometry filter.
+// 
+//    Justin Privitera, Fri Nov  3 15:25:32 PDT 2023
+//    The new arguments (writeMTL, MTLHasTex, and texFilename) are used to
+//    setup needed parameters for the upgraded vtkOBJWriter.
 //
 // ****************************************************************************
 
 void
-avtDatasetFileWriter::WriteOBJFile(vtkDataSet *ds, const char *fname,
-                                   const char *label)
+avtDatasetFileWriter::WriteOBJFile(vtkDataSet *ds,
+                                   const char *fname,
+                                   const char *label,
+                                   bool writeMTL, 
+                                   bool MTLHasTex,
+                                   std::string texFilename)
 {
     vtkDataSet *activeDS = ds;
 
@@ -440,13 +448,24 @@ avtDatasetFileWriter::WriteOBJFile(vtkDataSet *ds, const char *fname,
         tcoords->Delete();
     }
 
+    std::string filename = fname;
+    std::string basename;
+    auto pos = filename.find_last_of(".");
+    if (filename.substr(pos + 1) == "obj")
+        basename = filename.substr(0, pos);
+    else
+        basename = filename;
+
     vtkOBJWriter *writer = vtkOBJWriter::New();
     if (label != NULL && strlen(label) > 0)
     {
         writer->SetLabel(label);
     }
     writer->SetInputData((vtkPolyData *) toBeWritten);
-    writer->SetFileName(fname);
+    writer->SetBasename(basename);
+    writer->SetWriteMTL(writeMTL);
+    writer->SetMTLHasTexture(MTLHasTex);
+    writer->SetTexFilename(texFilename);
     writer->Write();
     writer->Delete();
 

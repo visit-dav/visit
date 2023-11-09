@@ -43,6 +43,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Color Table Searching is no longer optional; it is always on. A dedicated search bar has been added.</li>
   <li>The Color Table Window has a new horizontal layout.</li>
   <li>A tutorial has been added for creating keyframe animations.</li>
+  <li>The Wavefront OBJ Writer has been upgraded to optionally output mtllib and texture files.</li>
   <li>To address an inclusivity bug regarding use of <em>Master/Slave</em> terminology, the interfaces to <b>LibSim</b> and <b>IntegralCurve, Poincare, LimitCycle</b> and <b>LCS</b> operators were changed. <code>Master</code> is replaced with <code>Manager</code>, <code>Slave</code> is replaced with <code>Worker</code> and <code>MasterSlave</code> is replaced with <code>ManagerWorker</code>. Old behavior will continue to be supported through this release of VisIt but will be removed after this release. You will want to update any LibSim code, any python CLI code and any saved settings that may use the old interface.</li>
   <li>Support has been added for installing ffmpeg as part of a VisIt installation.</li>
 </ul>
@@ -154,6 +155,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>The Building with Spack section of the user manual was enhanced with instructions for building with the develpment version of spack. Specific instructions for building on Frontier and Perlmutter were also added.</li>
   <li>Add support for Qt6.  The build_visit option is '--qt6', which will build qt version 6.4.2, and also force building of VTK-9 if '--vtk' is also enabled.</li>
   <li>Added ability to create tabbed content in the sphinx documentation by adding sphinx-tabs extension.</li>
+  <li>The released Windows version is now compiled with MSVC2022.</li>
 </ul>
 
 <p>Click the following link to view the release notes for the previous version
