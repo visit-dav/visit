@@ -217,7 +217,9 @@ avtWavefrontOBJWriter::GetCombineMode(const std::string &) const
 //
 // Purpose:
 //   This function is creating a vtkImageData which contains a 1D strip of
-//   pixels representing the selected color table.
+//   pixels representing the selected color table. A vtkImageData is needed
+//   to present to the vtkPNGWriter so that it can write out the texture
+//   for the OBJ file.
 //
 // Programmer:  Justin Privitera
 // Creation:    11/03/23
