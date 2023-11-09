@@ -209,7 +209,7 @@ void vtkOBJWriter::WriteData()
         for (cells->InitTraversal(); cells->GetNextCell(npts,indx); )
         {
 #else
-        cells = vtk::TakeSmartPointer(polydata->GetPolys()->NewIterator());
+        auto cells = vtk::TakeSmartPointer(polydata->GetPolys()->NewIterator());
         for (cells->GoToFirstCell(); !cells->IsDoneWithTraversal(); cells->GoToNextCell())
         {
             cells->GetCurrentCell(npts,indx);
