@@ -6,12 +6,20 @@
     <Files components="M">
       avtWavefrontOBJFileFormat.C
       vtkVisItOBJReader.C
+      avtWavefrontOBJOptions.C
     </Files>
     <Files components="E">
       avtWavefrontOBJFileFormat.C
       avtWavefrontOBJWriter.C
       vtkVisItOBJReader.C
+      avtWavefrontOBJOptions.C
     </Files>
+    <LIBS components="ESer">
+      avtwriter_ser
+    </LIBS>
+    <LIBS components="EPar">
+      avtwriter_par
+    </LIBS>
     <Attribute name="" purpose="" persistent="true" keyframe="true" exportAPI="" exportInclude="">
     </Attribute>
   </Plugin>
