@@ -6,6 +6,7 @@
 #include <avtWavefrontOBJFileFormat.h>
 #include <avtSTSDFileFormatInterface.h>
 #include <avtGenericDatabase.h>
+#include <avtWavefrontOBJOptions.h>
 
 // ****************************************************************************
 //  Method:  WavefrontOBJCommonPluginInfo::GetDatabaseType
@@ -57,4 +58,21 @@ WavefrontOBJCommonPluginInfo::SetupDatabase(const char *const *list,
     avtSTSDFileFormatInterface *inter
            = new avtSTSDFileFormatInterface(ffl, nTimestep, nBlock);
     return new avtGenericDatabase(inter);
+}
+
+// ****************************************************************************
+//  Method: WavefrontOBJCommonPluginInfo::GetWriteOptions
+//
+//  Purpose:
+//      Gets the write options.
+//
+//  Programmer: Justin Privitera
+//  Creation:   11/03/23
+//
+// ****************************************************************************
+
+DBOptionsAttributes *
+WavefrontOBJCommonPluginInfo::GetWriteOptions() const
+{
+    return GetWavefrontOBJWriteOptions();
 }
