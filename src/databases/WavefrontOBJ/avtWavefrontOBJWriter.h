@@ -13,7 +13,9 @@
 
 #include <string>
 
+class DBOptionsAttributes;
 class vtkPolyData;
+class vtkImageData;
 
 // ****************************************************************************
 //  Class: avtWavefrontOBJWriter
@@ -27,6 +29,9 @@ class vtkPolyData;
 //  Modifications:
 //    Brad Whitlock, Tue Sep  8 17:03:17 PDT 2015
 //    Rely on base class for geometry aggregation.
+// 
+//    Justin Privitera, Fri Nov  3 15:25:32 PDT 2023
+//    Added doColor, colorTable, and GetColorTable().
 //
 // ****************************************************************************
 
@@ -34,7 +39,7 @@ class
 avtWavefrontOBJWriter : public avtDatabaseWriter
 {
   public:
-                   avtWavefrontOBJWriter();
+                   avtWavefrontOBJWriter(const DBOptionsAttributes *);
     virtual       ~avtWavefrontOBJWriter() {}
 
   protected:
@@ -50,6 +55,12 @@ avtWavefrontOBJWriter : public avtDatabaseWriter
 
     virtual bool          CreateTrianglePolyData() const;
     virtual CombineMode   GetCombineMode(const std::string &plotName) const;
+
+  private:
+    vtkImageData   *GetColorTable();
+    
+    bool                       doColor;
+    std::string                colorTable;
 };
 
 
