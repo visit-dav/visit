@@ -18,14 +18,14 @@
 # To create your own modular file, see the docs at
 # //https://visit-sphinx-github-user-manual.readthedocs.io/en/develop/dev_manual/CreatingABuildVisItModule.html
 
-export VISIT_VERSION=${VISIT_VERSION:-"3.3.2"}
+export VISIT_VERSION=${VISIT_VERSION:-"3.4.0"}
 
 ####
 # Trunk:
 ####
-export TRUNK_BUILD="yes"
-export RC_BUILD="no"
-export TAGGED_BUILD="no"
+#export TRUNK_BUILD="yes"
+#export RC_BUILD="no"
+#export TAGGED_BUILD="no"
 
 ###
 # RC Branch:
@@ -38,9 +38,9 @@ export TAGGED_BUILD="no"
 ###
 # Tagged Release:
 ###
-#export TRUNK_BUILD="no"
-#export RC_BUILD="no"
-#export TAGGED_BUILD="yes"
+export TRUNK_BUILD="no"
+export RC_BUILD="no"
+export TAGGED_BUILD="yes"
 
 export INITIAL_PWD=$PWD
 
