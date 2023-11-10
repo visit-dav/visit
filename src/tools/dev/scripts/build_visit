@@ -30,17 +30,17 @@ export VISIT_VERSION=${VISIT_VERSION:-"3.4.0"}
 ###
 # RC Branch:
 ###
-#export TRUNK_BUILD="no"
-#export RC_BUILD="yes"
-#export TAGGED_BUILD="no"
+export TRUNK_BUILD="no"
+export RC_BUILD="yes"
+export TAGGED_BUILD="no"
 
 
 ###
 # Tagged Release:
 ###
-export TRUNK_BUILD="no"
-export RC_BUILD="no"
-export TAGGED_BUILD="yes"
+#export TRUNK_BUILD="no"
+#export RC_BUILD="no"
+#export TAGGED_BUILD="yes"
 
 export INITIAL_PWD=$PWD
 
